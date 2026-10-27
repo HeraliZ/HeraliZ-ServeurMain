@@ -235,6 +235,23 @@ public final class ChallengeManager {
         return s != null && s.buildOk;
     }
 
+    /** Numéro de version de Spartan reçu du jeu du joueur (validation du jeu). */
+    public static boolean buildRecu(UUID uuid) {
+        return STATES.containsKey(uuid);
+    }
+
+    /** Défis réussis depuis la connexion (validation du jeu). */
+    public static int reussis(UUID uuid) {
+        State s = STATES.get(uuid);
+        return s == null ? 0 : s.passed;
+    }
+
+    /** Défis à la réponse fausse depuis la connexion (validation du jeu). */
+    public static int echoues(UUID uuid) {
+        State s = STATES.get(uuid);
+        return s == null ? 0 : s.failed;
+    }
+
     public static void clear(UUID uuid) {
         STATES.remove(uuid);
     }

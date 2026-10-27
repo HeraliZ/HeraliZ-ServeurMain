@@ -136,6 +136,10 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue GARDIEN_CAPTURE;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GARDIEN_IGNORED_TOOLS;
 
+    // --- validation du jeu à la connexion ---
+    public static final ForgeConfigSpec.BooleanValue VALIDATION_ENABLED;
+    public static final ForgeConfigSpec.IntValue VALIDATION_TIMEOUT;
+
     // --- anti-ESP / anti-wallhack ---
     public static final ForgeConfigSpec.BooleanValue ESP_ENABLED;
     public static final ForgeConfigSpec.IntValue ESP_THREADS;
@@ -421,6 +425,20 @@ public class SpartanConfig {
                 "autorisée).").define("captureOnTool", true);
         GARDIEN_IGNORED_TOOLS = b.comment("Noms de la liste du launcher à ne plus signaler (fausses alertes), ex. \"injector\".")
                 .defineList("ignoredTools", List.of(), o -> o instanceof String);
+        b.pop();
+
+        b.comment("Validation du jeu à chaque connexion (demande du propriétaire, 27/10). Une fois le joueur vérifié (jeton",
+                "du launcher + /login), quand le jeton est accepté, le défi d'intégrité réussi et le premier contrôle",
+                "d'intégrité terminé sans rien de suspect (jeu identique au jeu officiel) : « ✅ Jeu validé » dans le fil",
+                "Discord du joueur et une ligne dans la console, une fois par connexion. Sinon, au bout du délai :",
+                "« ⚠️ Validation jamais reçue » au staff (fil du joueur, « Informations du staff », staff en jeu) avec ce qui",
+                "manque. Un joueur sans message de validation n'a donc jamais été validé. Bots ignorés.")
+                .push("validation");
+        VALIDATION_ENABLED = b.comment("Active les messages de validation du jeu.").define("enabled", true);
+        VALIDATION_TIMEOUT = b.comment(
+                "Délai (secondes) après le /login pour que le jeu soit validé, sinon alerte au staff. Un jeu honnête",
+                "est validé en 10 à 20 s (premier contrôle 3 à 8 s après la connexion, premier défi 2 à 6 s).")
+                .defineInRange("timeoutSeconds", 60, 20, 600);
         b.pop();
 
         b.comment("Correction instantanée : le tricheur détecté ne profite pas de sa triche.",

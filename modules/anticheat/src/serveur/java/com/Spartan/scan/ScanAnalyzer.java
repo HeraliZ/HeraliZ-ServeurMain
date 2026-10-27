@@ -73,9 +73,17 @@ public final class ScanAnalyzer {
     private static final java.util.regex.Pattern JDK_NATIF = java.util.regex.Pattern.compile("^(lib)?(attach|awt|awt_xawt|awt_headless"
             + "|dt_shmem|dt_socket|extnet|fontmanager|freetype|instrument|j2gss|j2pcsc|j2pkcs11|jaas|jabsysinfo|java"
             + "|javaaccessbridge|javajpeg|jawt|jdwp|jimage|jli|jsig|jsound|jsvml|jvm|lcms|le|management|management_agent"
-            + "|management_ext|mlib_image|net|nio|prefs|rmi|saproc|sctp|simdsort|splashscreen|sspi_bridge|sunmscapi|syslookup"
-            + "|verify|w2k_lsa_auth|windowsaccessbridge-64|zip|msvcp140(_1|_2|_atomic_wait|_codecvt_ids)?|vcruntime140(_1)?"
-            + "|ucrtbase|concrt140)\\.(dll|so)$|^api-ms-win-[a-z0-9-]+\\.dll$|^(java|javaw)\\.exe$");
+            + "|management_ext|mlib_image|net|nio|prefs|rmi|saproc|sawindbg|sctp|simdsort|splashscreen|sspi_bridge|sunec"
+            + "|sunmscapi|syslookup|verify|w2k_lsa_auth|windowsaccessbridge-64|zip|msvcp140(_1|_2|_atomic_wait|_codecvt_ids)?"
+            + "|vcruntime140(_1)?|ucrtbase|concrt140)\\.(dll|so)$|^api-ms-win-[a-z0-9-]+\\.dll$|^(java|javaw)\\.exe$");
+
+    /**
+     * Bibliothèque rangée dans le Java du jeu : son dossier java.home ou un de ses sous-dossiers (bin, bin/server, lib…).
+     * Le jeu du joueur ne marque « %JAVA% » que ce qui est sous le java.home du jeu en cours (NativeCollector.classify).
+     */
+    static boolean dansJavaDuJeu(String place) {
+        return place.equals("%JAVA%") || place.startsWith("%JAVA%/");
+    }
 
     /** Réglages venant de la config du serveur. */
     public record Settings(List<String> allowedAgents, List<String> blacklistedMods) {
@@ -120,7 +128,7 @@ public final class ScanAnalyzer {
             if (!n.reason().isEmpty()) {
                 out.add(new Finding(Severity.SUSPECT, "dll:" + n.name().toLowerCase(Locale.ROOT),
                         "bibliothèque native chargée dans le jeu : " + n.name() + " (" + n.place() + ", " + n.reason() + ")"));
-            } else if (n.place().startsWith("%JAVA%") && !JDK_NATIF.matcher(n.name().toLowerCase(Locale.ROOT)).matches()) {
+            } else if (dansJavaDuJeu(n.place()) && !JDK_NATIF.matcher(n.name().toLowerCase(Locale.ROOT)).matches()) {
                 // une DLL glissée dans le dossier du Java du jeu (souvent celui du launcher) est chargée à la place de la vraie
                 out.add(new Finding(Severity.SUSPECT, "dll:jdk:" + n.name().toLowerCase(Locale.ROOT),
                         "bibliothèque inconnue dans le Java du jeu : " + n.name() + " (" + n.place() + ") : DLL ajoutée au Java ?"));
@@ -287,15 +295,18 @@ public final class ScanAnalyzer {
         if (!hasRef) {
             return;
         }
+        Map<String, Boolean> officiels = off == null ? Map.of() : jarsOfficiels(r, off);
         for (String m : r.modules) {
             String key = ReferenceProfile.moduleKey(m);
             if (ref.modules.contains(key)) {
                 continue;
             }
-            // Mod du jeu dont le jar est un jar officiel (son empreinte est contrôlée par files()) : un mod ajouté
-            // ou renommé après l'apprentissage du client de référence n'est pas « inconnu ».
+            // Module venu d'un jar officiel : un mod ajouté ou renommé après l'apprentissage du client de référence n'est
+            // pas « inconnu ». Reconnu par l'EMPREINTE du jar (27/10) : le launcher range les mods dans son propre dossier
+            // sous un autre nom (« heraliz_noyau-1.0.2.jar » pour « heraliz_noyau-1.0.3-client.jar » d'officiel.json :
+            // nom et version lus dans le mods.toml), le nom seul ne correspondait jamais.
             int at = m.indexOf('@');
-            if (off != null && key.startsWith("GAME/") && at >= 0 && off.knowsName(m.substring(at + 1))) {
+            if (off != null && at >= 0 && depuisJarOfficiel(m.substring(at + 1), key, off, officiels)) {
                 continue;
             }
             String layer = key.contains("/") ? key.substring(0, key.indexOf('/')) : "?";
@@ -303,6 +314,41 @@ public final class ScanAnalyzer {
             out.add(new Finding(launchLayer ? Severity.STRONG : Severity.SUSPECT, "module:" + key,
                     (launchLayer ? "composant de lancement inconnu (transformateur / coremod) : " : "module de code inconnu chargé : ") + m));
         }
+    }
+
+    /**
+     * Le module vient-il d'un jar officiel ? {@code fichier} est ce que le jeu du joueur note après « @ » : le nom du jar,
+     * ou « conteneur.jar/imbrique.jar » pour un jar imbriqué (JarInJar, Spartan 2.9.3 ; un nom de fichier ne contient
+     * jamais « / »). Le jar (ou son conteneur) doit avoir une empreinte du modpack officiel (actuel ou précédent encore
+     * accepté). Repli d'avant : un module du jeu dont le jar porte le nom exact d'un jar officiel.
+     */
+    private static boolean depuisJarOfficiel(String fichier, String key, OfficialProfile off, Map<String, Boolean> officiels) {
+        int slash = fichier.indexOf('/');
+        String jar = (slash >= 0 ? fichier.substring(0, slash) : fichier).toLowerCase(Locale.ROOT);
+        if (!jar.isEmpty() && officiels.getOrDefault(jar, false)) {
+            return true;
+        }
+        return slash < 0 && key.startsWith("GAME/") && off.knowsName(fichier);
+    }
+
+    /**
+     * Nom de jar (minuscules) → vrai si CHAQUE jar de ce nom relevé dans le jeu (dossier mods, dossier du launcher, couches
+     * de modules) a une empreinte du modpack officiel. Un jar sans empreinte (trop gros, verrouillé) ou un homonyme
+     * inconnu : faux. Agents Java exclus (jugés à part).
+     */
+    public static Map<String, Boolean> jarsOfficiels(ScanReport r, OfficialProfile off) {
+        Map<String, Boolean> out = new java.util.HashMap<>();
+        if (off == null || off.isEmpty()) {
+            return out;
+        }
+        for (ScanReport.FileEntry f : r.files) {
+            if (f.origin().equals("agent")) {
+                continue;
+            }
+            boolean ok = !f.sha256().isEmpty() && off.knowsFile(f.sha256());
+            out.merge(f.name().toLowerCase(Locale.ROOT), ok, Boolean::logicalAnd);
+        }
+        return out;
     }
 
     /** Classes que la config Mixin de Spartan lui-même modifie (anti-ESP). */
@@ -410,9 +456,18 @@ public final class ScanAnalyzer {
             if (item.startsWith("d:")) {
                 ScanReport.NativeEntry n = natives.get(item);
                 String place = n == null ? "" : n.place();
+                // Java du jeu (27/10, fausse alerte « javajpeg.dll — injection probable » chez le propriétaire) : Java charge
+                // beaucoup de ses bibliothèques à la demande, bien après le lancement (javajpeg pour la capture d'écran de
+                // l'anticheat, awt, polices, lcms…). Une bibliothèque d'un Java normal rangée dans le Java du jeu ne dit
+                // rien ; une autre DLL de ce dossier est déjà relevée plus haut (« bibliothèque inconnue dans le Java du
+                // jeu ») et reste un soupçon, jamais une injection probable (le launcher vérifie son Java avant chaque partie).
+                boolean javaDuJeu = dansJavaDuJeu(place);
+                if (javaDuJeu && JDK_NATIF.matcher(what.toLowerCase(Locale.ROOT)).matches()) {
+                    continue;
+                }
                 // Programmes installés et dossier du jeu : un pilote ou un outil peut se charger tard (soupçon). Ailleurs
                 // (profil, Temp, Téléchargements, dossier quelconque), hors overlay connu : c'est la trace d'une injection.
-                boolean sure = place.startsWith("%PROGRAMFILES%") || place.startsWith("%JEU%") || overlay(what);
+                boolean sure = javaDuJeu || place.startsWith("%PROGRAMFILES%") || place.startsWith("%JEU%") || overlay(what);
                 out.add(new Finding(sure ? Severity.SUSPECT : Severity.STRONG, "late:" + item,
                         "bibliothèque native chargée en cours de partie : " + what + (place.isEmpty() ? "" : " (" + place + ")")
                                 + (sure ? "" : " — injection probable")));

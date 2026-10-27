@@ -388,15 +388,16 @@ public final class ScanManager {
             notifyRequesters(s, summaryLine(s.name, verdict, findings, evidence));
         }
         // Jeu identique au jeu officiel, sinon refusé (règle d'accès) : seulement les écarts certains, après l'alerte
-        // (le staff a le rapport complet avec la preuve)
-        if (com.Spartan.integrity.ConformiteStricte.actif()) {
-            List<String> ecarts = com.Spartan.integrity.ConformiteStricte.ecarts(r, official,
-                    SpartanConfig.getAllowedJavaAgents(), SpartanConfig.getBlacklistedMods());
-            if (!ecarts.isEmpty()) {
-                com.Spartan.integrity.ConformiteStricte.refuser(p, String.join(" ; ", ecarts.subList(0, Math.min(4, ecarts.size())))
-                        + (ecarts.size() > 4 ? " (+" + (ecarts.size() - 4) + " autre(s))" : "") + " [" + trigger + "]");
-            }
+        // (le staff a le rapport complet avec la preuve). Calculés aussi sans le mode strict : la validation du jeu dit
+        // « identique au jeu officiel » seulement sans aucun écart.
+        List<String> ecarts = com.Spartan.integrity.ConformiteStricte.ecarts(r, official,
+                SpartanConfig.getAllowedJavaAgents(), SpartanConfig.getBlacklistedMods());
+        if (com.Spartan.integrity.ConformiteStricte.actif() && !ecarts.isEmpty()) {
+            com.Spartan.integrity.ConformiteStricte.refuser(p, String.join(" ; ", ecarts.subList(0, Math.min(4, ecarts.size())))
+                    + (ecarts.size() > 4 ? " (+" + (ecarts.size() - 4) + " autre(s))" : "") + " [" + trigger + "]");
         }
+        // « ✅ Jeu validé » à la connexion (premier contrôle de la connexion seulement)
+        com.Spartan.integrity.ValidationJeu.controle(p, verdict, findings, ecarts, r);
     }
 
     // ------------------------------------------------------------------ alertes

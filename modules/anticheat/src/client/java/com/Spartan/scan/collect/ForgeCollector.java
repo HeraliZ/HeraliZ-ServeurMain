@@ -110,8 +110,8 @@ public final class ForgeCollector {
         for (Map.Entry<ModuleLayer, String> en : layers.entrySet()) {
             for (ResolvedModule rm : en.getKey().configuration().modules()) {
                 String fileName = rm.reference().location().map(ForgeCollector::lastSegment).orElse("");
-                entries.add(en.getValue() + "/" + rm.name() + "@" + fileName);
                 Path file = location(rm);
+                entries.add(en.getValue() + "/" + rm.name() + "@" + avecConteneur(fileName, file));
                 if (file == null) {
                     continue;
                 }
@@ -128,6 +128,19 @@ public final class ForgeCollector {
         }
         entries.sort(null);
         r.modules.addAll(entries);
+    }
+
+    /**
+     * « conteneur.jar/imbrique.jar » pour un jar imbriqué (JarInJar : le fichier réel est le jar qui le contient), sinon
+     * le nom du jar. Un nom de fichier ne contient jamais « / » : le serveur sépare sans ambiguïté et reconnaît le
+     * module d'un jar officiel par l'empreinte de son conteneur.
+     */
+    static String avecConteneur(String fileName, Path file) {
+        String conteneur = file == null ? "" : JvmCollector.fileName(file.toString());
+        if (conteneur.isEmpty() || fileName.isEmpty() || conteneur.equals(fileName)) {
+            return fileName;
+        }
+        return conteneur + "/" + fileName;
     }
 
     /**

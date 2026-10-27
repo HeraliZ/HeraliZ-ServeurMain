@@ -68,6 +68,11 @@ public final class ConformiteStricte {
         refuser(p, raison, null);
     }
 
+    /** Joueur déjà refusé pendant cette connexion (le staff a reçu la raison : rien d'autre à lui dire). */
+    public static boolean estRefuse(ServerPlayer p) {
+        return REFUSES.contains(p);
+    }
+
     /** Consigne pour un Spartan d'une autre version (mise à jour pas encore faite d'un côté ou de l'autre). */
     public static Component consigneVersion() {
         return Component.translatableWithFallback("spartan.expulsion.version_stricte",
@@ -170,6 +175,7 @@ public final class ConformiteStricte {
                     + (manquants.size() > 5 ? " (+" + (manquants.size() - 5) + ")" : ""));
         }
         // Configs Mixin : inconnue (hors d'un jar officiel) ou déguisée sous le nom d'une config officielle
+        Map<String, Boolean> jarsOfficiels = null;
         for (ScanReport.MixinEntry m : r.mixins) {
             String fp = ScanReport.hex(ScanReport.mixinFingerprint(m.name()));
             if (off.knowsMixin(fp)) {
@@ -182,9 +188,15 @@ public final class ConformiteStricte {
             if (com.Spartan.scan.ScanAnalyzer.isSpartanOwn(m)) {
                 continue;
             }
-            // déclarée par un jar officiel mais absente de la liste : liste incomplète, pas une triche (alerte seulement)
-            if (!m.source().isEmpty() && off.knowsName(m.source())) {
-                continue;
+            // déclarée par un jar officiel mais absente de la liste : liste incomplète, pas une triche (alerte seulement).
+            // Jar reconnu par son nom ou, rangé par le launcher sous un autre nom, par son empreinte (27/10).
+            if (!m.source().isEmpty()) {
+                if (jarsOfficiels == null) {
+                    jarsOfficiels = com.Spartan.scan.ScanAnalyzer.jarsOfficiels(r, off);
+                }
+                if (off.knowsName(m.source()) || jarsOfficiels.getOrDefault(m.source().toLowerCase(Locale.ROOT), false)) {
+                    continue;
+                }
             }
             out.add("config Mixin inconnue : " + m.name() + (m.pkg().isEmpty() ? "" : " (" + m.pkg() + ")"));
         }

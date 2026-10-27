@@ -69,6 +69,10 @@ public class SpartanEvents {
         com.Spartan.capture.CaptureManager.tick(player);
         ChallengeManager.tick(player);
         ScanManager.tick(player);
+        if (!player.hasDisconnected()) {
+            // « ✅ Jeu validé » ou « ⚠ Validation jamais reçue », une fois par connexion
+            com.Spartan.integrity.ValidationJeu.tick(player);
+        }
     }
 
     @SubscribeEvent
@@ -151,6 +155,7 @@ public class SpartanEvents {
         MovementEngine.onLogin(player);
         HandshakeMonitor.onLogin(player.getUUID());
         ScanManager.onLogin(player);
+        com.Spartan.integrity.ValidationJeu.onLogin(player);
         PlayerRegistry.recordLogin(player.getUUID(), player.getName().getString(), ip);
 
         // Même IP qu'un joueur banni : simple alerte (une IP peut être partagée).
@@ -264,6 +269,8 @@ public class SpartanEvents {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            // d'abord : lit l'état des autres parties (jeton, défis, contrôle) avant qu'elles oublient le joueur
+            com.Spartan.integrity.ValidationJeu.deconnexion(player);
             EvidenceRecorder.clear(player.getUUID());
             MovementEngine.clear(player.getUUID());
             CheckManager.clear(player.getUUID());

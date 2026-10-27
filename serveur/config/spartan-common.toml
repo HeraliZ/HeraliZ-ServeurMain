@@ -413,3 +413,17 @@
 	#Noms de la liste du launcher à ne plus signaler (fausses alertes), ex. "injector".
 	ignoredTools = []
 
+#Validation du jeu à chaque connexion (demande du propriétaire, 27/10). Une fois le joueur vérifié (jeton
+#du launcher + /login), quand le jeton est accepté, le défi d'intégrité réussi et le premier contrôle
+#d'intégrité terminé sans rien de suspect (jeu identique au jeu officiel) : « ✅ Jeu validé » dans le fil
+#Discord du joueur et une ligne dans la console, une fois par connexion. Sinon, au bout du délai :
+#« ⚠️ Validation jamais reçue » au staff (fil du joueur, « Informations du staff », staff en jeu) avec ce qui
+#manque. Un joueur sans message de validation n'a donc jamais été validé. Bots ignorés.
+[validation]
+	#Active les messages de validation du jeu.
+	enabled = true
+	#Délai (secondes) après le /login pour que le jeu soit validé, sinon alerte au staff. Un jeu honnête
+	#est validé en 10 à 20 s (premier contrôle 3 à 8 s après la connexion, premier défi 2 à 6 s).
+	#Range: 20 ~ 600
+	timeoutSeconds = 60
+

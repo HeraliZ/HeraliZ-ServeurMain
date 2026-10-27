@@ -43,6 +43,22 @@ réussi, contrôle propre), jeu avec un jar en plus refusé en 3 s.
 webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur ;
 `/spartan discordtest` (op 3 ou console) envoie un message d'essai sur chaque webhook et donne la réponse de Discord.
 
+**Jeu validé à chaque connexion (2.9.3, 27/10, demande du propriétaire, section `[validation]`)** : une fois le joueur
+vérifié (jeton + `/login`), quand le jeton du launcher est accepté (dossier mods officiel), le défi d'intégrité réussi
+(Spartan de la même version, aucune réponse fausse) et le premier contrôle d'intégrité terminé sans rien de suspect et
+sans aucun écart au jeu officiel : « ✅ Jeu validé » dans le fil Discord du joueur (temps du contrôle, launcher, jeu,
+Gardien) et une ligne dans la console et `alerts.log`. Rien dans les `timeoutSeconds` (60 s) après le `/login`, ou
+déconnecté sans validation après 30 s : « ⚠️ Validation jamais reçue » avec ce qui manque, dans le fil du joueur, dans
+« Informations du staff » et au staff en jeu. Un message par connexion ; bots ignorés ; joueur refusé par le mode strict :
+seulement l'alerte du refus. `/spartan status <joueur>` donne l'état (`integrity/ValidationJeu`).
+
+**Fausses alertes corrigées (2.9.3)** : une bibliothèque d'un Java normal rangée dans le Java du jeu (`%JAVA%` et ses
+sous-dossiers : javajpeg pour la capture d'écran, awt, polices, lcms…) chargée en cours de partie n'est plus « injection
+probable » (une autre DLL de ce dossier reste orange) ; un module venu d'un jar officiel n'est plus « module de code
+inconnu » : reconnu par l'empreinte de son jar (le launcher range les mods sous le nom de leur mods.toml, ex.
+`heraliz_noyau-1.0.2.jar`, jamais celui d'`officiel.json`), conteneur compris pour un jar imbriqué
+(« conteneur.jar/imbriqué.jar »), modpack précédent compris.
+
 **Détection silencieuse (par défaut) :** tout ce qui vient du jeu du joueur
 (murailles 1 à 4, 7, 8) ne fait JAMAIS d'expulsion ni de ban automatique, et rien
 n'est affiché au joueur. Le staff reçoit sur Discord le pseudo, les indices et le

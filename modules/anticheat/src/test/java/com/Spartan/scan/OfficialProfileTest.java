@@ -138,6 +138,50 @@ class OfficialProfileTest {
         assertTrue(f.text().contains("launcher"), f.text());
     }
 
+    private static List<Finding> analyzeWithReference(ScanReport r, OfficialProfile off) {
+        return ScanAnalyzer.analyze(r, ScanTestData.reference(), off, null, ScanTestData.settings());
+    }
+
+    @Test
+    void moduleFromOfficialJarStoredUnderAnotherNameIsKnown() {
+        // 27/10 : le launcher range les mods sous le nom lu dans leur mods.toml (« heraliz_noyau-1.0.2.jar » pour
+        // « heraliz_noyau-1.0.3-client.jar ») ; un mod ajouté après l'apprentissage de la référence était « inconnu »
+        ScanReport r = launcherClient();
+        r.files.add(new ScanReport.FileEntry("layer:GAME", "jei-1.20.1-11.jar", 1_000_000, ScanTestData.JEI_SHA));
+        r.modules.add("GAME/jei_nouveau@jei-1.20.1-11.jar");
+        // jar imbriqué d'un jar officiel (conteneur noté devant par le jeu du joueur)
+        r.modules.add("GAME/mixinextras@create-1.20.1-0.5.jar/mixinextras-forge-0.3.5.jar");
+        List<Finding> fs = analyzeWithReference(r, official());
+        assertNull(find(fs, "module:"), fs.toString());
+    }
+
+    @Test
+    void moduleFromPreviousOfficialModpackIsKnown() {
+        OfficialProfile off = official();
+        off.precedent = OfficialProfile.fromJson("""
+                {"genere": "2026-10-01T00:00:00Z", "mods": {"ancien-1.0-client.jar": "%s"}, "mixins": {}}
+                """.formatted("c".repeat(64)));
+        ScanReport r = launcherClient();
+        r.files.add(new ScanReport.FileEntry("modlist", "ancien-1.0.jar", 5_000, "c".repeat(64)));
+        r.modules.add("GAME/ancien@ancien-1.0.jar");
+        assertNull(find(analyzeWithReference(r, off), "module:"));
+    }
+
+    @Test
+    void moduleFromUnofficialJarIsStillReported() {
+        ScanReport r = launcherClient();
+        r.files.add(new ScanReport.FileEntry("modlist", "esp-client.jar", 50_000, "a".repeat(64)));
+        r.modules.add("GAME/esp@esp-client.jar");
+        r.modules.add("GAME/cache@esp-client.jar/inner.jar");
+        // homonyme d'un jar officiel, d'une autre empreinte : pas reconnu
+        r.files.add(new ScanReport.FileEntry("mods", "jei-1.20.1-11.jar", 900_000, "b".repeat(64)));
+        r.modules.add("GAME/jei_copie@jei-1.20.1-11.jar");
+        List<Finding> fs = analyzeWithReference(r, official());
+        assertEquals(Severity.SUSPECT, find(fs, "module:GAME/esp").severity(), fs.toString());
+        assertNotNull(find(fs, "module:GAME/cache"), fs.toString());
+        assertNotNull(find(fs, "module:GAME/jei_copie"), fs.toString());
+    }
+
     @Test
     void launcherArgsStayStrongWithoutOfficialModpack() {
         List<Finding> fs = ScanAnalyzer.analyze(launcherClient(), new ReferenceProfile(), null, null, ScanTestData.settings());

@@ -255,6 +255,32 @@ class ScanAnalyzerTest {
     }
 
     @Test
+    void gameJavaLibraryLoadedLaterIsNormal() {
+        // 27/10 : javajpeg.dll du Java du jeu, chargée à la demande (capture d'écran de l'anticheat), était signalée
+        // « injection probable » chez le propriétaire
+        Set<String> baseline = ScanAnalyzer.inventory(ScanTestData.clean());
+        ScanReport later = ScanTestData.clean();
+        later.natives.add(new ScanReport.NativeEntry("javajpeg.dll", "%JAVA%/bin", ""));
+        later.natives.add(new ScanReport.NativeEntry("lcms.dll", "%JAVA%/bin", ""));
+        later.natives.add(new ScanReport.NativeEntry("jvm.dll", "%JAVA%/bin/server", ""));
+        List<Finding> fs = ScanAnalyzer.analyze(later, ScanTestData.reference(), baseline, ScanTestData.settings());
+        assertNull(ScanAnalyzer.verdict(fs), fs.toString());
+    }
+
+    @Test
+    void unknownDllInGameJavaLoadedLaterStaysSuspect() {
+        Set<String> baseline = ScanAnalyzer.inventory(ScanTestData.clean());
+        ScanReport later = ScanTestData.clean();
+        later.natives.add(new ScanReport.NativeEntry("helper.dll", "%JAVA%/bin", ""));
+        List<Finding> fs = ScanAnalyzer.analyze(later, ScanTestData.reference(), baseline, ScanTestData.settings());
+        assertEquals(Severity.SUSPECT, ScanAnalyzer.verdict(fs), fs.toString());
+        Finding late = find(fs, "late:d:helper.dll");
+        assertEquals(Severity.SUSPECT, late.severity());
+        assertTrue(!late.text().contains("injection"), late.text());
+        assertEquals(Severity.SUSPECT, find(fs, "dll:jdk:helper.dll").severity());
+    }
+
+    @Test
     void unknownCodeAppearingAfterJoiningIsStrongWithoutReference() {
         Set<String> baseline = ScanAnalyzer.inventory(ScanTestData.clean());
         ScanReport later = ScanTestData.clean();

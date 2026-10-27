@@ -8,6 +8,7 @@ import com.Spartan.scan.ScanManager;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -27,17 +28,30 @@ public final class LauncherGate {
     /** Empreinte d'un dossier mods vide (aucune ligne). */
     private static final String SHA256_VIDE = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     private static final Map<UUID, String> STATUS = new ConcurrentHashMap<>();
+    /** Jeton accepté (ou non vérifié faute de secret) ET dossier mods officiel ou vide : pour la validation du jeu. */
+    private static final Set<UUID> CONFORMES = ConcurrentHashMap.newKeySet();
     private static boolean warnedNoSecret = false;
 
     private LauncherGate() {
     }
 
     public static String describe(UUID uuid) {
-        return "launcher : " + STATUS.getOrDefault(uuid, "rien reçu");
+        return "launcher : " + statut(uuid);
+    }
+
+    /** État du jeton en clair : « jeton valide, mods conformes », la raison d'un refus, ou « rien reçu ». */
+    public static String statut(UUID uuid) {
+        return STATUS.getOrDefault(uuid, "rien reçu");
+    }
+
+    /** Jeton du launcher accepté et dossier mods officiel (validation du jeu). */
+    public static boolean conforme(UUID uuid) {
+        return CONFORMES.contains(uuid);
     }
 
     public static void clear(UUID uuid) {
         STATUS.remove(uuid);
+        CONFORMES.remove(uuid);
     }
 
     public static void onToken(ServerPlayer p, String token, String clientModsHash) {
@@ -58,6 +72,7 @@ public final class LauncherGate {
             PorteJoueurs.jetonAccepte(p.getUUID());
         }
         if (hashProblem == null && tokenProblem == null) {
+            CONFORMES.add(p.getUUID());
             return;
         }
         String problem = hashProblem != null ? hashProblem : tokenProblem;

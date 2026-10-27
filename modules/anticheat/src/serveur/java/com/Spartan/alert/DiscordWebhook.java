@@ -386,24 +386,7 @@ public class DiscordWebhook {
             return;
         }
         try {
-            JsonObject embed = new JsonObject();
-            embed.addProperty("title", Text.discord(title));
-            embed.addProperty("description", description);
-            embed.addProperty("color", color);
-            embed.addProperty("timestamp", Instant.now().toString());
-            JsonArray arr = new JsonArray();
-            for (String[] f : fields) {
-                arr.add(field(f[0], f[1].length() > 1024 ? f[1].substring(0, 1021) + "…" : f[1], false));
-            }
-            embed.add("fields", arr);
-            JsonObject footer = new JsonObject();
-            footer.addProperty("text", "Spartan AntiCheat — détection silencieuse");
-            embed.add("footer", footer);
-            JsonArray embeds = new JsonArray();
-            embeds.add(embed);
-            JsonObject payload = new JsonObject();
-            payload.add("embeds", embeds);
-            denyMentions(payload);
+            JsonObject payload = embedChamps(title, color, description, fields, "Spartan AntiCheat — détection silencieuse");
             if (file != null && fileName != null) {
                 postWithFile(url, payload, fileName, file, cleJoueur, nomJoueur, null);
             } else {
@@ -412,6 +395,53 @@ public class DiscordWebhook {
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
         }
+    }
+
+    /**
+     * Message court dans le fil Discord du joueur, sans pièce jointe (validation du jeu à la connexion…), par la file
+     * d'envoi ordinaire.
+     * @param fields paires {nom, valeur} déjà neutralisées par l'appelant si elles viennent du client
+     */
+    public static void sendJoueur(String cleJoueur, String nomJoueur, String title, int color, String description,
+                                  List<String[]> fields) {
+        if (!SpartanConfig.DISCORD_ENABLED.get()) {
+            return;
+        }
+        String url = SpartanConfig.secret(SpartanConfig.DISCORD_WEBHOOK);
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        try {
+            post(url, embedChamps(title, color, description, fields, "Spartan AntiCheat — validation à la connexion"),
+                    cleJoueur, nomJoueur, false, null);
+        } catch (Exception e) {
+            Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
+        }
+    }
+
+    /** Embed à champs (titre neutralisé, description et champs déjà prêts) ; un champ vide devient « - » (refusé sinon). */
+    private static JsonObject embedChamps(String title, int color, String description, List<String[]> fields,
+                                          String pied) {
+        JsonObject embed = new JsonObject();
+        embed.addProperty("title", Text.discord(title));
+        embed.addProperty("description", description);
+        embed.addProperty("color", color);
+        embed.addProperty("timestamp", Instant.now().toString());
+        JsonArray arr = new JsonArray();
+        for (String[] f : fields) {
+            String v = f[1] == null || f[1].isBlank() ? "-" : f[1];
+            arr.add(field(f[0], v.length() > 1024 ? v.substring(0, 1021) + "…" : v, false));
+        }
+        embed.add("fields", arr);
+        JsonObject footer = new JsonObject();
+        footer.addProperty("text", pied);
+        embed.add("footer", footer);
+        JsonArray embeds = new JsonArray();
+        embeds.add(embed);
+        JsonObject payload = new JsonObject();
+        payload.add("embeds", embeds);
+        denyMentions(payload);
+        return payload;
     }
 
     /** Capture d'écran d'un joueur : embed avec l'image jointe, dans le fil du joueur (salon privé du staff). */

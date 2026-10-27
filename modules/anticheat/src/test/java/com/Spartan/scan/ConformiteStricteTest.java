@@ -123,6 +123,22 @@ class ConformiteStricteTest {
     }
 
     @Test
+    void mixinDUnJarOfficielRangeSousUnAutreNomParLeLauncherNeRefusePas() {
+        // 27/10 : le launcher range les mods sous le nom de leur mods.toml ; le jar est reconnu par son empreinte
+        ScanReport r = ScanTestData.clean();
+        r.files.removeIf(f -> f.origin().equals("mods"));
+        r.files.add(new ScanReport.FileEntry("modlist", "jei-1.20.1-11.jar", 1_000_000, ScanTestData.JEI_SHA));
+        r.files.add(new ScanReport.FileEntry("modlist", "create-1.20.1-0.5.jar", 15_000_000, ScanTestData.CREATE_SHA));
+        r.mixins.add(new ScanReport.MixinEntry("create.compat.mixins.json", "com.simibubi.create.compat",
+                "create-1.20.1-0.5.jar", 1, List.of()));
+        assertEquals(List.of(), ecarts(r));
+        // la même config déclarée par un jar qui n'est pas officiel : refusée
+        r.files.add(new ScanReport.FileEntry("modlist", "esp.jar", 10_000, "a".repeat(64)));
+        r.mixins.add(new ScanReport.MixinEntry("esp.mixins.json", "net.cheat.mixin", "esp.jar", 1, List.of()));
+        assertTrue(ecarts(r).stream().anyMatch(s -> s.contains("Mixin inconnue : esp.mixins.json")), ecarts(r).toString());
+    }
+
+    @Test
     void lancementModifieRefuse() {
         for (String flag : List.of("-javaagent:C:/x/cheat.jar", "-agentlib:jdwp=transport=dt_socket", "-agentpath:inject.dll",
                 "-Xbootclasspath/a:cheat.jar", "-Djava.system.class.loader=x.Y", "-Djdk.attach.allowAttachSelf", "arg:--fml.coreMods")) {

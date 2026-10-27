@@ -50,6 +50,30 @@ public final class GardienServeur {
         ETATS.remove(id);
     }
 
+    /** État du Gardien de ce joueur, en clair (message « Jeu validé ») : jamais exigé pour la validation. */
+    public static String etat(UUID id) {
+        if (!SpartanConfig.GARDIEN_ENABLED.get()) {
+            return "désactivé sur le serveur";
+        }
+        Etat e = ETATS.get(id);
+        if (e == null) {
+            return "pas encore de rapport (un toutes les 15 s)";
+        }
+        if (e.absent) {
+            return "jeu lancé sans le Gardien (alerte envoyée)";
+        }
+        if (e.muet) {
+            return "muet (alerte envoyée)";
+        }
+        if (!e.invalides.isEmpty()) {
+            return "rapport refusé (alerte envoyée)";
+        }
+        if (!e.outils.isEmpty() || e.jars > 0) {
+            return "a vu quelque chose (alerte envoyée)";
+        }
+        return e.dernier == 0 ? "pas encore de rapport (un toutes les 15 s)" : "actif, rapports reçus";
+    }
+
     private static boolean fictif(ServerPlayer p) {
         return p instanceof FakePlayer || p.getTags().contains("heraliz_bot");
     }
