@@ -144,7 +144,7 @@ public class StructureBlock extends BaseEntityBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         if (level.getBlockEntity(pos) instanceof StructureBlockEntity be) {
-            return be.avecObjets(level, true);   // gardée un tick (StructureBlockEntity#avecObjets)
+            return be.avecObjets(level, true);   // gardée (StructureBlockEntity#avecObjets)
         }
         return fr.heraliz.crac.block.Adosse.morceaux(level, pos);
     }
@@ -174,7 +174,7 @@ public class StructureBlock extends BaseEntityBlock {
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         if (level.getBlockEntity(pos) instanceof StructureBlockEntity be) {
-            return be.avecObjets(level, false);   // gardée un tick (StructureBlockEntity#avecObjets)
+            return be.avecObjets(level, false);   // gardée (StructureBlockEntity#avecObjets)
         }
         return fr.heraliz.crac.block.Adosse.morceaux(level, pos);
     }

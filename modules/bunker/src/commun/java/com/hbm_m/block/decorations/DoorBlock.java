@@ -19,7 +19,6 @@ import com.hbm_m.multiblock.PartRole;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -246,21 +245,9 @@ public class DoorBlock extends BaseEntityBlock implements IMultiblockController 
       Direction facing = (Direction)state.getValue(FACING);
       DoorDecl decl = doorBE.getDoorDecl();
       if (decl != null && decl.getStructureDefinition() != null) {
-         VoxelShape combined = Shapes.empty();
+         // HeralisZ : forme gardée par la définition (sens + ouverte / fermée), plus refaite à chaque appel
          boolean isOpen = doorBE.getState() != 0;
-         Map<BlockPos, VoxelShape> currentMap = isOpen ? decl.getStructureDefinition().getOpenShapes() : decl.getStructureDefinition().getClosedShapes();
-
-         for (Entry<BlockPos, VoxelShape> entry : currentMap.entrySet()) {
-            VoxelShape partShape = entry.getValue();
-            if (!partShape.isEmpty()) {
-               BlockPos relativePos = entry.getKey();
-               BlockPos rotatedPos = MultiblockStructureHelper.rotate(relativePos, facing);
-               VoxelShape rotatedShape = MultiblockStructureHelper.rotateShape(partShape, facing);
-               combined = Shapes.or(combined, rotatedShape.move(rotatedPos.getX(), rotatedPos.getY(), rotatedPos.getZ()));
-            }
-         }
-
-         return combined.optimize();
+         return decl.getStructureDefinition().getFullShape(facing, isOpen);
       } else {
          return Shapes.empty();
       }

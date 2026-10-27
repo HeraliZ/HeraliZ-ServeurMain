@@ -29,6 +29,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -239,6 +240,16 @@ public class SpartanEvents {
         PlayerRegistry.flushIfDirty();
         AsyncIO.flush(5000);
         VisibilityEngine.reset();
+    }
+
+    /**
+     * Fin de l'arrêt (joueurs déconnectés, monde sauvegardé) : ce qui a été mis en file depuis ServerStopping (preuves,
+     * journal, registre) est écrit avant la fin du programme (le fil d'écriture est un fil « démon »).
+     */
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        PlayerRegistry.flushIfDirty();
+        AsyncIO.flush(10000);
     }
 
     /**

@@ -35,12 +35,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Stockage des clans et des liens joueurs : <dossier serveur>/heralisz_clans/clans.json et joueurs.json. Global au
  * serveur (independant du monde : survit a un wipe de map). Ecriture atomique (fichier temporaire puis renommage),
  * sauvegarde toutes les 60 s si quelque chose a change, a l'arret (ServerStopping puis ServerStopped), et a la demande
- * (apres toute operation d'argent).
+ * (apres toute operation d'argent). Depuis le 27/10, la mise en texte et l'ecriture se font sur le fil d'ecriture des
+ * clans ({@link EcrituresFond}) ; la sauvegarde a la demande et celle de l'arret attendent qu'elles soient finies.
  * Index par id, tag et nom (insensibles a la casse) et par joueur. Toujours utilise depuis le thread serveur.
  */
 public final class ClanStore {
@@ -341,39 +343,51 @@ public final class ClanStore {
         }
     }
 
-    /** Sauvegarde ce qui a change (tout si force). */
+    /** Une écriture en fond a échoué : le fichier redevient « à sauver » à la sauvegarde suivante. */
+    private final AtomicBoolean echecClans = new AtomicBoolean(), echecJoueurs = new AtomicBoolean();
+
+    /**
+     * Sauvegarde ce qui a change (tout si force). 27/10 (perf) : le contenu est releve ici (arbre JSON neuf), la mise en
+     * texte et l'ecriture partent sur le fil d'ecriture des clans ({@link EcrituresFond}), dans l'ordre.
+     */
     public void sauvegarder(boolean force) {
-        try {
-            if (force || dirtyClans) {
-                JsonObject root = new JsonObject();
-                root.addProperty("version", 1);
-                JsonArray a = new JsonArray();
-                for (Clan c : clans.values()) a.add(c.toJson());
-                root.add("clans", a);
-                ecrireAtomique(fClans(), root);
-                dirtyClans = false;
-            }
-            if (force || dirtyJoueurs) {
-                JsonObject root = new JsonObject();
-                root.addProperty("version", 1);
-                JsonArray a = new JsonArray();
-                for (LienJoueur l : liens.values()) a.add(l.toJson());
-                root.add("joueurs", a);
-                ecrireAtomique(fJoueurs(), root);
-                dirtyJoueurs = false;
-            }
-        } catch (IOException ex) {
-            HeraliszClans.LOG.error("[clans] sauvegarde impossible dans {}", dossier, ex);
+        if (echecClans.getAndSet(false)) dirtyClans = true;
+        if (echecJoueurs.getAndSet(false)) dirtyJoueurs = true;
+        if (force || dirtyClans) {
+            JsonObject root = new JsonObject();
+            root.addProperty("version", 1);
+            JsonArray a = new JsonArray();
+            for (Clan c : clans.values()) a.add(c.toJson());
+            root.add("clans", a);
+            Path f = fClans();
+            dirtyClans = false;
+            EcrituresFond.ecrire(f, () -> ecrireAtomique(f, root), () -> echecClans.set(true));
+        }
+        if (force || dirtyJoueurs) {
+            JsonObject root = new JsonObject();
+            root.addProperty("version", 1);
+            JsonArray a = new JsonArray();
+            for (LienJoueur l : liens.values()) a.add(l.toJson());
+            root.add("joueurs", a);
+            Path f = fJoueurs();
+            dirtyJoueurs = false;
+            EcrituresFond.ecrire(f, () -> ecrireAtomique(f, root), () -> echecJoueurs.set(true));
         }
         CoffreClan.sauvegarder();
     }
 
-    /** Sauvegarde immediate (apres toute operation d'argent). */
+    /**
+     * Sauvegarde immediate (apres toute operation d'argent) : attend que les fichiers soient ecrits, comme avant le
+     * 27/10 (l'ordre « banque sur le disque, puis compte du joueur » des operations d'argent en depend). Seule la
+     * sauvegarde toutes les 60 s se fait sans attendre.
+     */
     public void sauvegarderMaintenant() {
         dirtyClans = dirtyJoueurs = true;
         sauvegarder(false);
+        EcrituresFond.attendre();
     }
 
+    /** Fil d'ecriture : texte JSON, fichier temporaire puis renommage. */
     private static void ecrireAtomique(Path f, JsonObject o) throws IOException {
         Files.createDirectories(f.getParent());
         Path tmp = f.resolveSibling(f.getFileName() + ".tmp");

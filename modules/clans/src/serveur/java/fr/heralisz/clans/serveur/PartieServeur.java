@@ -22,6 +22,8 @@ public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
         ClansApiServeur.installer();
+        // fil d'ecriture des fichiers des clans et de la saison (attendu a l'arret du serveur)
+        fr.heralisz.clans.server.EcrituresFond.init();
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.server.ClanStore.class);
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.server.ClanCommands.class);
         // regles de jeu : stats, chat de clan, liste Tab, synchronisation groupee, quetes, evenements des territoires

@@ -81,6 +81,10 @@ final class Etat {
         }
     }
 
+    /**
+     * Relevé sur le fil serveur (arbre JSON neuf), écriture sur le fil d'écriture des événements (27/10, perf : appelé à
+     * chaque passage du planning). Ce qui doit être sur le disque avant de continuer passe par {@link #sauverEtAttendre}.
+     */
     static void sauver() {
         if (fichier == null) return;
         JsonObject o = new JsonObject();
@@ -99,20 +103,29 @@ final class Etat {
         JsonArray r = new JsonArray();
         RECOMPENSES.forEach(r::add);
         o.add("recompenses", r);
-        try {
-            Files.createDirectories(fichier.getParent());
-            Path tmp = fichier.resolveSibling("etat.json.tmp");
-            Files.writeString(tmp, GSON.toJson(o), StandardCharsets.UTF_8);
-            Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException ex) {
-            HeralizEvenements.LOG.error("[evenements] ecriture de {} impossible", fichier, ex);
-        }
+        Path f = fichier;
+        EcrituresFond.ecrire(f, () -> {
+            try {
+                Files.createDirectories(f.getParent());
+                Path tmp = f.resolveSibling("etat.json.tmp");
+                Files.writeString(tmp, GSON.toJson(o), StandardCharsets.UTF_8);
+                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException ex) {
+                HeralizEvenements.LOG.error("[evenements] ecriture de {} impossible", f, ex);
+            }
+        }, null);
     }
 
-    /** Numéro du prochain événement (écrit tout de suite). */
+    /** Comme {@link #sauver}, puis attend que le fichier soit écrit (ce qui suit compte sur le disque). */
+    private static void sauverEtAttendre() {
+        sauver();
+        EcrituresFond.attendre();
+    }
+
+    /** Numéro du prochain événement (écrit tout de suite : un numéro n'est jamais redonné après un redémarrage). */
     static int suivant() {
         numero++;
-        sauver();
+        sauverEtAttendre();
         return numero;
     }
 
@@ -149,7 +162,7 @@ final class Etat {
         if (RECOMPENSES_SET.contains(id)) return false;
         ajouterRecompense(id);
         OUVERTS.remove(id);
-        sauver();
+        sauverEtAttendre();
         return true;
     }
 

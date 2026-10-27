@@ -1,9 +1,12 @@
 package fr.heralisz.camo.client;
 
+import com.tacz.guns.client.model.bedrock.BedrockModel;
 import fr.heralisz.camo.HeraliszCamo;
 import fr.heralisz.camo.knife.KnifeFinish;
 import fr.heralisz.camo.knife.KnifeType;
+import fr.heralisz.tactical.api.client.HeraliszTacticalClientAPI;
 import fr.heralisz.tactical.api.client.MeleeRenderHooks;
+import fr.heralisz.tactical.client.resource.display.MeleeDisplayInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -39,6 +42,19 @@ public final class MeleeCamo {
          return map == null ? original
             : CamoRenderType.get(texture, map.glId, skin.finish.shaderId, 15 | ((skin.knife.ordinal() + 1) << 4));
       });
+   }
+
+   /**
+    * Préchauffage (PrechauffageCamo) : demande la carte de la lame d'une arme de mêlée skinnée, sur le modèle que dessine
+    * MeleeItemRenderer (celui de son affichage). Vrai si une demande est partie.
+    */
+   static boolean prechauffer(ItemStack stack) {
+      Skin skin = of(stack);
+      if (skin == null || CamoShaders.get(skin.finish.shaderId) == null) {
+         return false;
+      }
+      BedrockModel model = HeraliszTacticalClientAPI.getMeleeDisplay(stack).map(MeleeDisplayInstance::getModel).orElse(null);
+      return model != null && PosMapCache.prechauffer(model, skin.knife, null);
    }
 
    private record Skin(KnifeType knife, KnifeFinish finish) {}

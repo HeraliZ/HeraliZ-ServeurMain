@@ -11,6 +11,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
+        // fil d'écriture des fichiers des événements (attendu à l'arrêt du serveur)
+        EcrituresFond.init();
         Directeur.enregistrer(new Largage());
         Directeur.enregistrer(new Helico());
         MinecraftForge.EVENT_BUS.register(Directeur.class);

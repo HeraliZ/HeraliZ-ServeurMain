@@ -462,3 +462,21 @@ Rien de tout cela n'a été testé en jeu (fabriqué et vérifié : `verifier.py
 
 Rien de tout cela n'a été testé en jeu.
 
+**Perf du 27/10** (relevé spark et `gc.log` de 8 h 43 sur le Ptero, sans joueur ; pas de fuite : ~4 Go vivants, stable) :
+- Ptero : `sync-chunk-writes=false` posé à la main (il était resté à true : la mise en ligne ne touche pas
+  `server.properties`). Mémoire Java réglée à 32 Go pile par l'hébergeur : Java coupe alors les « Compressed Oops »
+  (pauses de 85 à 165 ms serveur vide) ; à lui demander 16 Go et les réglages Aikar (`docs/DEPLOIEMENT.md`).
+- Sauvegardes hors du fil serveur : clans, saison, événements, hélicoptère, rotation du loot, butin des zombies,
+  statistiques du casino, registre des joueurs de Spartan. Relevé sur le fil serveur (arbre JSON ou NBT neuf), texte,
+  compression et écriture sur un fil par module (`EcrituresFond`), attendus à l'arrêt ; ce dont la suite dépend
+  (opérations d'argent, points d'un événement) attend toujours que le fichier soit écrit.
+- Formes gardées : portes du bunker (`rotateShape`, forme entière par sens et par état), cases de mur de CRac (forme
+  avec les objets adossés gardée jusqu'au prochain changement d'un objet adossé, `Adosse.version()`), armoire et caisse
+  en métal (tables par sens et par décalage) ; plus de ticker vide sur chaque bloc de porte.
+- Skins et camos : la carte de positions est calculée sur un fil à part (`HeraliZ-camo-carte`) et envoyée à la carte
+  graphique en demi-flottants (8 Mo au lieu de 16) ; l'arme est dessinée sans skin quelques images au lieu de figer le
+  jeu. Préchauffage des armes skinnées de l'inventaire dont TaCZ a déjà chargé le modèle (`PrechauffageCamo`).
+- Succès de Minecraft coupés (`SuccesMixin`, `[succes] actifs` de `heraliz_noyau-server.toml`).
+
+Rien de tout cela n'a été testé en jeu.
+

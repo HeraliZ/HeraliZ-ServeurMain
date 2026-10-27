@@ -17,9 +17,11 @@ import com.tacz.guns.client.model.BedrockGunModel;
 import com.tacz.guns.client.model.SlotModel;
 import com.tacz.guns.client.model.bedrock.BedrockPart;
 import com.tacz.guns.client.resource.GunDisplayInstance;
+import fr.heralisz.camo.Camo;
 import fr.heralisz.camo.CamoData;
 import fr.heralisz.camo.HeraliszCamo;
 import fr.heralisz.camo.knife.KnifeSkins;
+import fr.heralisz.camo.knife.KnifeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -67,7 +69,8 @@ import java.util.Set;
  * Une icône par modèle d'arme et par skin (deux AK-47 Or partagent la même), MAX au plus (environ 5 Mo) : au-delà, la plus
  * anciennement vue laisse sa place. Rien sur le disque ni sur le serveur ; tout est libéré à la déconnexion et au
  * rechargement des ressources. Les photos se font au début d'une image (rien d'autre en cours de dessin), une par image :
- * en attendant, l'icône dessinée de TaCZ s'affiche. Une arme qu'on ne peut pas photographier garde l'icône dessinée.
+ * en attendant, l'icône dessinée de TaCZ s'affiche. Une arme dont la carte du skin se calcule encore (PosMapCache) attend
+ * qu'elle soit prête. Une arme qu'on ne peut pas photographier garde l'icône dessinée.
  */
 @Mod.EventBusSubscriber(modid = HeraliszCamo.MODID, value = Dist.CLIENT)
 public final class IconesArmes {
@@ -212,6 +215,24 @@ public final class IconesArmes {
       return camo != null ? camo : KnifeSkins.of(stack);
    }
 
+   /**
+    * Vrai si le skin de l'arme n'est pas encore prêt : sa carte de positions se calcule à part (PosMapCache), et une photo
+    * prise avant garderait l'arme sans skin jusqu'au prochain rechargement. La carte est demandée au passage.
+    */
+   private static boolean skinPasPret(ItemStack stack, BedrockGunModel modele, ResourceLocation texture) {
+      Camo camo = CamoData.get(stack);
+      KnifeSkins.Skin lame = camo == null ? KnifeSkins.of(stack) : null;
+      if (camo == null && lame == null) {
+         return false;
+      }
+      if (CamoShaders.get(camo != null ? camo.shaderId : lame.finish().shaderId) == null) {
+         return false;
+      }
+      KnifeType couteau = camo != null ? null : lame.knife();
+      PosMapCache.get(modele, couteau, texture);
+      return PosMapCache.pasPrete(modele, couteau);
+   }
+
    /** Copie de l'arme sans ses accessoires (lunette, silencieux…) : l'icône ne dépend que du modèle et du skin. */
    private static ItemStack sansAccessoires(ItemStack stack) {
       ItemStack copie = stack.copy();
@@ -230,6 +251,10 @@ public final class IconesArmes {
       ResourceLocation texture = display == null ? null : display.getModelTexture();
       if (modele == null || texture == null) {
          ECHECS.add(cle);
+         return;
+      }
+      if (skinPasPret(stack, modele, texture)) {
+         FILE.put(cle, stack);   // reprise à une image suivante
          return;
       }
       // rendu « entité découpée » comme TaCZ hors de la 1re personne ; remplacé par le rendu camo quand l'arme a un skin

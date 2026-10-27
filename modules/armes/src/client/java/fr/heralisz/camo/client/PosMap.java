@@ -13,6 +13,7 @@ import com.tacz.guns.client.model.bedrock.BedrockCubePerFace;
 import com.tacz.guns.client.model.bedrock.BedrockPart;
 import fr.heralisz.camo.fx.GunShape;
 import fr.heralisz.camo.knife.KnifeType;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
@@ -21,7 +22,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.annotation.Nullable;
-import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -40,6 +41,9 @@ import java.util.regex.Pattern;
  * gardent leur texture ; les faces ternes (boîtiers, vis, caches) prennent le camo, lues sur la vraie texture de l'arme.
  * Quand une face du corps partage ses texels avec une pièce exclue (UV réutilisées par le modèle), le corps l'emporte, sauf
  * sur les texels d'une face lumineuse vive (0.9.13 : Wonder Weapons du gunpack heraliz_wonder).
+ * <p>Une carte d'arme se fait en trois temps (PosMapCache) : relevé du modèle sur le fil de rendu ({@link #relever}, seule
+ * lecture du modèle TaCZ et de la texture), calcul sur le fil des cartes ({@link #preparer}, le gros du travail, rien de
+ * Minecraft ni de TaCZ), envoi à la carte graphique sur le fil de rendu ({@link #televerser}).
  */
 public final class PosMap {
    /** Pièces jamais camouflées (le camo suit aussi leurs enfants). */
@@ -197,12 +201,61 @@ public final class PosMap {
     */
    private static final java.util.Map<Long, PosMap> SHARED = new java.util.concurrent.ConcurrentHashMap<>();
 
-   public static PosMap bake(BedrockModel model, @Nullable KnifeType knife) {
-      return bake(model, knife, null);
+   /**
+    * Relevé d'un modèle pour sa carte, fait sur le fil de rendu : quads au repos, bouches du canon, taille plancher et
+    * empreinte de la forme. Ce sont des copies : le fil de calcul des cartes ne lit jamais le modèle ni la texture.
+    */
+   static final class Releve {
+      final List<Quad> quads;
+      final List<Vector3f> muzzles;
+      @Nullable
+      final KnifeType knife;
+      /** Côté plancher de la carte (texture déclarée du modèle). */
+      final int plancher;
+      /** Empreinte de la forme : même empreinte, même carte (SHARED). */
+      final long cle;
+
+      private Releve(List<Quad> quads, List<Vector3f> muzzles, @Nullable KnifeType knife, int plancher, long cle) {
+         this.quads = quads;
+         this.muzzles = muzzles;
+         this.knife = knife;
+         this.plancher = plancher;
+         this.cle = cle;
+      }
    }
 
-   /** @param texture pixels de la texture de l'arme (lus une fois sur la carte graphique), ou null : pièces lumineuses exclues en entier */
-   public static PosMap bake(BedrockModel model, @Nullable KnifeType knife, @Nullable TexturePixels texture) {
+   /** Carte calculée hors du fil de rendu, en attente d'envoi à la carte graphique. */
+   static final class Preparee {
+      final int n;
+      final byte[] parts;
+      final java.util.Map<Long, float[]> rest;
+      final GunShape shape;
+      /** Texels RGBA en demi-précision, hors du tas Java : libérés à l'envoi, ou si la carte est abandonnée. */
+      @Nullable
+      private ShortBuffer texels;
+
+      private Preparee(int n, ShortBuffer texels, byte[] parts, java.util.Map<Long, float[]> rest, GunShape shape) {
+         this.n = n;
+         this.texels = texels;
+         this.parts = parts;
+         this.rest = rest;
+         this.shape = shape;
+      }
+
+      /** Libère les texels (une seule fois). */
+      void liberer() {
+         ShortBuffer t = this.texels;
+         this.texels = null;
+         if (t != null) MemoryUtil.memFree(t);
+      }
+   }
+
+   /**
+    * Relevé du modèle, sur le fil de rendu (lecture du modèle TaCZ, et de sa texture si besoin).
+    * @param texture texture de l'arme à feu (relue sur la carte graphique seulement si l'arme a des pièces lumineuses), ou
+    *                null : pièces lumineuses exclues en entier
+    */
+   static Releve relever(BedrockModel model, @Nullable KnifeType knife, @Nullable ResourceLocation texture) {
       List<Quad> quads = new ArrayList<>();
       List<Vector3f> muzzles = new ArrayList<>();
       PoseStack ps = new PoseStack();
@@ -212,20 +265,58 @@ public final class PosMap {
       if (knife != null && knife.cut > 0) {
          quads = cut(quads, knife);
       }
-      if (knife == null && texture != null) {
-         quads = classerLumineuses(quads, texture);
-      }
-      long key = shapeKey(quads, muzzles, knife);
-      PosMap shared = SHARED.get(key);
-      if (shared != null) {
-         return shared;
+      if (knife == null && texture != null && aDesLumineuses(quads)) {
+         // relecture de la texture : seulement pour les armes qui ont des pièces lumineuses (la plupart n'en ont pas)
+         TexturePixels pixels = TexturePixels.lire(texture);
+         if (pixels != null) {
+            quads = classerLumineuses(quads, pixels);
+         }
       }
       // couteaux : toujours la carte pleine. Les modèles ArkaniaZ déclarent une texture 64² / 128² mais leurs faces ont des UV
       // de fractions de pixel (textures réelles 2048-4096 px) : à 256², la moitié de la surface du Butterfly tombe sur des faces
       // de moins d'un texel -> positions et rôles mélangés entre faces voisines, finitions en taches (régression de la 0.9.9).
-      PosMap map = build(quads, muzzles, knife, knife != null ? MAX_SIZE : mapSize(model, quads), null, 0, 0, knife == null);
-      SHARED.put(key, map);
+      return new Releve(quads, muzzles, knife, knife != null ? MAX_SIZE : mapSize(model), shapeKey(quads, muzzles, knife));
+   }
+
+   /** Carte déjà envoyée pour cette forme (même géométrie, mêmes UV, même rôle), ou null. */
+   @Nullable
+   static PosMap partagee(long cle) {
+      return SHARED.get(cle);
+   }
+
+   /** Calcul de la carte, sur le fil des cartes : rien de Minecraft ni de TaCZ n'y est lu, rien n'est envoyé à la carte graphique. */
+   static Preparee preparer(Releve r) {
+      return calculer(r.quads, r.muzzles, r.knife, r.knife != null ? MAX_SIZE : mapSize(r.plancher, r.quads), null, 0, 0, r.knife == null);
+   }
+
+   /** Envoi d'une carte calculée (fil de rendu) ; elle sert ensuite à tous les modèles de même forme. Texels libérés dans tous les cas. */
+   static PosMap televerser(Preparee p, long cle) {
+      PosMap map = envoyer(p);
+      SHARED.put(cle, map);
       return map;
+   }
+
+   private static PosMap envoyer(Preparee p) {
+      try {
+         ShortBuffer t = p.texels;
+         if (t == null) throw new IllegalStateException("carte de positions déjà libérée");
+         return new PosMap(upload(t, p.n), p.n, p.parts, p.rest, p.shape);
+      } finally {
+         p.liberer();
+      }
+   }
+
+   /** Libère les cartes partagées qui resteraient (rechargement des ressources) ; celles déjà libérées ne bougent pas. */
+   static void libererPartagees() {
+      new ArrayList<>(SHARED.values()).forEach(PosMap::release);
+      SHARED.clear();
+   }
+
+   private static boolean aDesLumineuses(List<Quad> quads) {
+      for (Quad q : quads) {
+         if (q.kind == K_LUMIERE && q.alt != NONE) return true;
+      }
+      return false;
    }
 
    /** Empreinte de ce qui détermine la carte : quads (positions, UV, rôle), bouches du canon, type de couteau. */
@@ -253,12 +344,16 @@ public final class PosMap {
     * mask (mw x mh, 0 = pas de camo) : le tissu seul reçoit le camo ; boucles, têtes et visages d'animaux gardent leur texture.
     */
    static PosMap bakeQuads(List<Quad> quads, int n, @Nullable byte[] mask, int mw, int mh) {
-      return build(quads, List.of(), null, n, mask, mw, mh, false);
+      return envoyer(calculer(quads, List.of(), null, n, mask, mw, mh, false));
    }
 
-   /** @param gun arme à feu (carcasse à repérer pour le Diamond) ; ni couteau ni sac */
-   private static PosMap build(List<Quad> quads, List<Vector3f> muzzles, @Nullable KnifeType knife, int n, @Nullable byte[] mask, int mw, int mh,
-                               boolean gun) {
+   /**
+    * Calcul de la carte (aucune lecture de Minecraft ni de TaCZ, aucun appel à la carte graphique : peut tourner sur un autre
+    * fil que celui du rendu).
+    * @param gun arme à feu (carcasse à repérer pour le Diamond) ; ni couteau ni sac
+    */
+   private static Preparee calculer(List<Quad> quads, List<Vector3f> muzzles, @Nullable KnifeType knife, int n, @Nullable byte[] mask, int mw,
+                                    int mh, boolean gun) {
       // repère de l'arme : axe le plus long = longueur, orienté vers le canon
       float[] min = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
       float[] max = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
@@ -395,7 +490,47 @@ public final class PosMap {
          partArr[qi++] = q.part;
          rest.putIfAbsent(uvKey(u0, v0, u1, v1), rec);
       }
-      return new PosMap(upload(px, n), n, parts, rest, GunShape.build(restArr, partArr, qi));
+      GunShape shape = GunShape.build(restArr, partArr, qi);
+      // texels en demi-précision (format de la texture, RGBA16F) : moitié moins à envoyer qu'en GL_FLOAT, conversion faite ici
+      ShortBuffer texels = MemoryUtil.memAllocShort(px.length);
+      for (int i = 0; i < px.length; i++) texels.put(i, demi(px[i]));
+      return new Preparee(n, texels, parts, rest, shape);
+   }
+
+   /**
+    * Flottant -> demi-précision IEEE 754 (arrondi au plus proche, à égalité vers le pair, comme la conversion de la carte
+    * graphique quand elle recevait des GL_FLOAT pour une texture RGBA16F). Les valeurs de la carte (positions autour de 0,
+    * partie + 2 x id de face jusqu'à 17) sont loin des limites du format.
+    */
+   static short demi(float f) {
+      int b = Float.floatToRawIntBits(f);
+      int signe = (b >>> 16) & 0x8000;
+      int e = (b >>> 23) & 0xFF;
+      int m = b & 0x7FFFFF;
+      if (e == 0xFF) {
+         return (short) (signe | 0x7C00 | (m != 0 ? 0x200 : 0));   // infini, ou NaN
+      }
+      int eh = e - 127 + 15;
+      if (eh >= 0x1F) {
+         return (short) (signe | 0x7C00);   // trop grand : infini
+      }
+      if (eh <= 0) {
+         if (eh < -10) {
+            return (short) signe;   // trop petit : zéro
+         }
+         // nombre dénormalisé : bit implicite remis, mantisse décalée
+         m |= 0x800000;
+         int decal = 14 - eh;
+         int h = m >> decal;
+         int reste = m & ((1 << decal) - 1), moitie = 1 << (decal - 1);
+         if (reste > moitie || (reste == moitie && (h & 1) != 0)) h++;
+         return (short) (signe | h);
+      }
+      int h = (eh << 10) | (m >> 13);
+      int reste = m & 0x1FFF;
+      // une retenue passe d'elle-même à l'exposant suivant (ou à l'infini)
+      if (reste > 0x1000 || (reste == 0x1000 && (h & 1) != 0)) h++;
+      return (short) (signe | h);
    }
 
    /** Composante k du point (s, t) du quad (coins 0 1 en haut, 2 3 en bas). */
@@ -412,8 +547,8 @@ public final class PosMap {
     * texture ne suffit pas : la plupart des modèles posent des UV en fractions de pixel. Modèles détaillés : 1024² (8 Mo de
     * mémoire vidéo) ; modèles LOD (grosses faces) : 256² à 512² (0,5 à 2 Mo).
     */
-   static int mapSize(BedrockModel model, List<Quad> quads) {
-      int n = mapSize(model);
+   static int mapSize(int plancher, List<Quad> quads) {
+      int n = plancher;
       float[] side = new float[quads.size()], area = new float[quads.size()];
       int k = 0;
       double total = 0;
@@ -801,7 +936,8 @@ public final class PosMap {
       voisins.get(b).add(a);
    }
 
-   private static int upload(float[] px, int n) {
+   /** Envoi des texels (demi-précision, RGBA) dans une nouvelle texture RGBA16F (fil de rendu). */
+   private static int upload(ShortBuffer texels, int n) {
       RenderSystem.assertOnRenderThreadOrInit();
       int id = TextureUtil.generateTextureId();
       GlStateManager._bindTexture(id);
@@ -813,13 +949,7 @@ public final class PosMap {
       GlStateManager._pixelStore(GL11.GL_UNPACK_SKIP_PIXELS, 0);
       GlStateManager._pixelStore(GL11.GL_UNPACK_SKIP_ROWS, 0);
       GlStateManager._pixelStore(GL11.GL_UNPACK_ALIGNMENT, 4);
-      FloatBuffer buf = MemoryUtil.memAllocFloat(px.length);
-      try {
-         buf.put(px).flip();
-         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA16F, n, n, 0, GL11.GL_RGBA, GL11.GL_FLOAT, buf);
-      } finally {
-         MemoryUtil.memFree(buf);
-      }
+      GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA16F, n, n, 0, GL11.GL_RGBA, GL30.GL_HALF_FLOAT, texels);
       return id;
    }
 

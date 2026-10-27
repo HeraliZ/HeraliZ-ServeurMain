@@ -352,10 +352,39 @@ public class CasinoStats extends SavedData {
         return l;
     }
 
+    /** Écriture en fond ratée : les statistiques redeviennent « à sauver » à la sauvegarde suivante. */
+    private final java.util.concurrent.atomic.AtomicBoolean echecFond = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * Comme Minecraft (relevé {@link #save(CompoundTag)} sur le fil serveur, à la sauvegarde du monde), mais la compression
+     * et l'écriture partent sur le fil d'écriture du casino ({@link EcrituresFond}, 27/10, perf). Même fichier, même
+     * format ; écrit dans un fichier à côté puis mis à sa place.
+     */
+    @Override
+    public void save(java.io.File fichier) {
+        if (echecFond.getAndSet(false)) setDirty(true);
+        if (!isDirty()) return;
+        CompoundTag racine = new CompoundTag();
+        racine.put("data", save(new CompoundTag()));
+        net.minecraft.nbt.NbtUtils.addCurrentDataVersion(racine);
+        setDirty(false);
+        java.nio.file.Path cible = fichier.toPath();
+        EcrituresFond.ecrire(cible, () -> {
+            java.nio.file.Path tmp = cible.resolveSibling(cible.getFileName() + ".tmp");
+            net.minecraft.nbt.NbtIo.writeCompressed(racine, tmp.toFile());
+            try {
+                java.nio.file.Files.move(tmp, cible, java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException ex) {
+                java.nio.file.Files.move(tmp, cible, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        }, () -> echecFond.set(true));
+    }
+
+    /** Relevé : les tableaux de compteurs sont copiés (le NBT part sur le fil d'écriture, le jeu continue de compter). */
     @Override
     public CompoundTag save(CompoundTag tag) {
         CompoundTag m = new CompoundTag();
-        for (Map.Entry<MachineType, long[]> e : machines.entrySet()) m.putLongArray(e.getKey().id, e.getValue());
+        for (Map.Entry<MachineType, long[]> e : machines.entrySet()) m.putLongArray(e.getKey().id, e.getValue().clone());
         tag.put("Machines", m);
         CompoundTag mp = new CompoundTag();
         for (Map.Entry<MachineType, Set<UUID>> e : machinePlayers.entrySet()) mp.put(e.getKey().id, list(e.getValue()));
@@ -366,7 +395,7 @@ public class CasinoStats extends SavedData {
             Map<MachineType, Set<UUID>> pmap = dayPlayers.getOrDefault(de.getKey(), Map.of());
             for (Map.Entry<MachineType, long[]> e : de.getValue().entrySet()) {
                 CompoundTag c = new CompoundTag();
-                c.putLongArray("V", e.getValue());
+                c.putLongArray("V", e.getValue().clone());
                 c.put("P", list(pmap.getOrDefault(e.getKey(), Set.of())));
                 dm.put(e.getKey().id, c);
             }
@@ -374,7 +403,7 @@ public class CasinoStats extends SavedData {
         }
         tag.put("Days", ds);
         CompoundTag p = new CompoundTag();
-        for (Map.Entry<UUID, long[]> e : players.entrySet()) p.putLongArray(e.getKey().toString(), e.getValue());
+        for (Map.Entry<UUID, long[]> e : players.entrySet()) p.putLongArray(e.getKey().toString(), e.getValue().clone());
         tag.put("Players", p);
         if (recordPlayer != null) {
             tag.putUUID("RecordPlayer", recordPlayer);

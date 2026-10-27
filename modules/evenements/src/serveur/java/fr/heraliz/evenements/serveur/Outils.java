@@ -79,17 +79,24 @@ public final class Outils {
     }
 
     // ------------------------------------------------------------------ journal
-    /** Une ligne dans {@code <serveur>/heraliz_evenements/journal.log} (rare : écrite tout de suite). */
+    /**
+     * Une ligne dans {@code <serveur>/heraliz_evenements/journal.log} : heure prise ici, ajout au fichier sur le fil
+     * d'écriture des événements, dans l'ordre (27/10, perf : le planning en écrit à chaque passage).
+     */
     public static void journal(String ligne) {
         HeralizEvenements.LOG.info("[evenements] {}", ligne);
-        if (dossier == null) return;
-        try {
-            Files.createDirectories(dossier);
-            Files.writeString(dossier.resolve("journal.log"), HEURE.format(ZonedDateTime.now(PARIS)) + " | " + ligne + "\n", StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            HeralizEvenements.LOG.warn("[evenements] journal impossible a ecrire : {}", e.toString());
-        }
+        Path dir = dossier;
+        if (dir == null) return;
+        String texte = HEURE.format(ZonedDateTime.now(PARIS)) + " | " + ligne + "\n";
+        Path f = dir.resolve("journal.log");
+        EcrituresFond.ajouter(f, () -> {
+            try {
+                Files.createDirectories(dir);
+                Files.writeString(f, texte, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                HeralizEvenements.LOG.warn("[evenements] journal impossible a ecrire : {}", e.toString());
+            }
+        });
     }
 
     // ------------------------------------------------------------------ autres mods (réflexion)

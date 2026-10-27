@@ -6,7 +6,6 @@ import com.hbm_m.block.entity.doors.DoorBlockEntity;
 import com.hbm_m.block.entity.doors.DoorDecl;
 import com.hbm_m.block.entity.doors.DoorDeclRegistry;
 import com.hbm_m.block.machines.TransitionSealBlock;
-import com.hbm_m.blockentity.ModBlockEntities;
 import com.hbm_m.blockentity.machines.TransitionSealBlockEntity;
 import com.hbm_m.blockentity.machines.UniversalMachinePartBlockEntity;
 import com.hbm_m.compat.ContraptionDoorState;
@@ -94,13 +93,9 @@ public class UniversalMachinePartBlock extends BaseEntityBlock implements IDeton
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-      return level.isClientSide
-         ? null
-         : createTickerHelper(
-            type,
-            ModBlockEntities.UNIVERSAL_MACHINE_PART_BE.get(),
-            UniversalMachinePartBlockEntity::tick
-         );
+      // HeralisZ : une partie n'a rien à faire à chaque tick (UniversalMachinePartBlockEntity.tick est vide) : pas de
+      // ticker, sinon le serveur appelait une méthode vide pour chaque bloc de chaque porte chargée
+      return null;
    }
 
    public RenderShape getRenderShape(BlockState pState) {

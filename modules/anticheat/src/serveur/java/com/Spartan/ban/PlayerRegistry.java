@@ -1,6 +1,7 @@
 package com.Spartan.ban;
 
 import com.Spartan.Spartan;
+import com.Spartan.util.AsyncIO;
 import com.Spartan.util.JsonFiles;
 import com.Spartan.util.HardwareId;
 import com.Spartan.util.NetUtil;
@@ -66,6 +67,18 @@ public final class PlayerRegistry {
                 last = ip;
             }
             return last;
+        }
+
+        /** Copie pour l'écriture en fond (tous les champs : un champ ajouté ici doit l'être aussi dans la copie). */
+        Record copie() {
+            Record c = new Record();
+            c.uuid = uuid;
+            c.name = name;
+            c.ips = ips == null ? null : new LinkedHashSet<>(ips);
+            c.serials = serials == null ? null : new LinkedHashSet<>(serials);
+            c.firstSeen = firstSeen;
+            c.lastSeen = lastSeen;
+            return c;
         }
     }
 
@@ -184,8 +197,7 @@ public final class PlayerRegistry {
     /** Écrit le registre s'il a changé (appelé périodiquement et à l'arrêt). */
     public static synchronized void flushIfDirty() {
         if (loaded && dirty) {
-            dirty = false;
-            JsonFiles.writeAsync(file(), GSON.toJson(new ArrayList<>(BY_UUID.values())));
+            saveNow();
         }
     }
 
@@ -259,11 +271,22 @@ public final class PlayerRegistry {
         return isNew;
     }
 
+    /**
+     * Seule une copie des fiches est faite ici (sous le verrou, sur le thread serveur) ; la mise en JSON de tout le
+     * registre (des milliers de fiches, écriture « jolie ») et l'écriture partent sur le fil d'écriture de Spartan, dans
+     * l'ordre (27/10, perf : c'était fait sur le thread serveur). Même fichier, même format ; vidé à l'arrêt
+     * ({@link AsyncIO#flush}).
+     */
     private static void saveNow() {
         if (!loaded) {
             return;
         }
         dirty = false;
-        JsonFiles.writeAsync(file(), GSON.toJson(new ArrayList<>(BY_UUID.values())));
+        List<Record> copie = new ArrayList<>(BY_UUID.size());
+        for (Record r : BY_UUID.values()) {
+            copie.add(r.copie());
+        }
+        Path f = file();
+        AsyncIO.submit(() -> JsonFiles.write(f, GSON.toJson(copie)));
     }
 }

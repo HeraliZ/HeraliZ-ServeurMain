@@ -40,6 +40,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.DoubleValue FAIM_FACTEUR;
    /** Vitesse de la faim, relue avec les réglages (FaimMixin de la partie serveur). */
    public static volatile float faimFacteur = 0.5F;
+   public static final ForgeConfigSpec.BooleanValue SUCCES_ACTIFS;
+   /** Succès de Minecraft suivis, relu avec les réglages (SuccesMixin de la partie serveur). */
+   public static volatile boolean succesActifs = false;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -89,6 +92,12 @@ public final class NoyauConfig {
             "multipliée par ce nombre. 1 : comme Minecraft ; 0,5 : la barre de faim dure deux fois plus longtemps.")
             .defineInRange("faim_facteur", 0.5, 0.1, 2.0);
       b.pop();
+      b.push("succes");
+      SUCCES_ACTIFS = b.comment("Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à",
+            "chaque changement d'inventaire (chaque tir de TaCZ), environ 1 % du serveur à 90 joueurs, et ne servent pas ici (quêtes,",
+            "saison et statistiques sont à part ; notifications déjà cachées chez les joueurs). Relu à l'arrivée de chaque joueur.")
+            .define("actifs", false);
+      b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
             "redémarrer le serveur par le panel si son redémarrage après plantage est activé). Sinon : tâche « restart » du panel.")
@@ -107,6 +116,7 @@ public final class NoyauConfig {
       if (c.getSpec() != SPEC) return;
       CombatTag.dureeMs(TAG_COMBAT_S.get() * 1000L);
       faimFacteur = (float) (double) FAIM_FACTEUR.get();
+      succesActifs = SUCCES_ACTIFS.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 

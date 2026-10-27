@@ -613,15 +613,18 @@ final class Helico implements Evenement {
         JsonObject o = new JsonObject();
         o.addProperty("prochain", prochainMs);
         o.addProperty("prochain_lisible", heure(prochainMs));
-        Path f = dossierCharge.resolve("helico_etat.json");
-        try {
-            Files.createDirectories(dossierCharge);
-            Path tmp = f.resolveSibling("helico_etat.json.tmp");
-            Files.writeString(tmp, GSON.toJson(o), StandardCharsets.UTF_8);
-            Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException ex) {
-            HeralizEvenements.LOG.error("[evenements] ecriture de {} impossible", f, ex);
-        }
+        Path dir = dossierCharge, f = dir.resolve("helico_etat.json");
+        // 27/10 (perf) : écrit sur le fil d'écriture des événements (relevé ci-dessus, arbre neuf)
+        EcrituresFond.ecrire(f, () -> {
+            try {
+                Files.createDirectories(dir);
+                Path tmp = f.resolveSibling("helico_etat.json.tmp");
+                Files.writeString(tmp, GSON.toJson(o), StandardCharsets.UTF_8);
+                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException ex) {
+                HeralizEvenements.LOG.error("[evenements] ecriture de {} impossible", f, ex);
+            }
+        }, null);
     }
 
     // ------------------------------------------------------------------ réglages
