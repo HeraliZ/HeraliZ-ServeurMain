@@ -67,9 +67,13 @@
                                 </button>
                             </form>
                         @else
-                            <h2 class="h4 text-uppercase">Connecte-toi pour voter</h2>
-                            <p class="texte-mute">Les récompenses arrivent sur ton compte du site.</p>
-                            <a href="{{ route('login') }}" class="btn rouge">{{ trans('auth.login') }}</a>
+                            {{-- #voteNameForm toujours présent, comme dans la page d'origine : après un vote, le script de
+                                 l'extension Vote y lit l'adresse des délais (sinon il s'arrête sur une erreur) --}}
+                            <form action="{{ route('vote.verify-user', '/') }}" id="voteNameForm">
+                                <h2 class="h4 text-uppercase">Connecte-toi pour voter</h2>
+                                <p class="texte-mute">Les récompenses arrivent sur ton compte du site.</p>
+                                <a href="{{ route('login') }}" class="btn rouge">{{ trans('auth.login') }}</a>
+                            </form>
                         @endif
                     </div>
                 </div>
@@ -89,10 +93,14 @@
                             $gainSite = $site->rewards->pluck('money')->filter(fn ($m) => $m > 0);
                             $delai = (int) $site->vote_delay;
                             $prochain = $user !== null ? $site->getNextVoteTime($user, $request) : null;
-                            // vérification pas branchée, ou connexion déjà récompensée pour un autre compte
+                            // connexion déjà récompensée pour un autre compte
                             $raisonSite = $gardeActive && $garde === null && $prochain === null
                                 ? rescue(fn () => $Garde::pourSite($site, $user, $request), null, false) : null;
                             $bloque = $garde !== null || $raisonSite !== null;
+                            // site sans vérification possible (Top-Serveurs sans jeton) : clic « Voter » noté par le site,
+                            // anti-robot compris (Votes\Clic)
+                            $avecClic = $gardeActive && ! rescue(fn () => $Garde::verifiable($site), false, false);
+                            $clics = ($clics ?? false) || ($avecClic && ! $bloque);
                         @endphp
                         <div class="mission coins">
                             <span class="num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
@@ -116,6 +124,7 @@
                                     <a class="btn rouge" href="{{ $site->url }}" target="_blank" rel="noopener noreferrer"
                                        data-vote-id="{{ $site->id }}"
                                        data-vote-url="{{ route('vote.vote', $site) }}"
+                                       @if($avecClic) data-heraliz-clic="{{ route('heraliz.vote.clic', $site) }}" @endif
                                        @auth data-vote-time="{{ $prochain?->valueOf() }}" @endauth>
                                         <span class="lab-voter">Voter</span><span class="lab-attente">Prochain vote</span><span class="vote-timer"></span>
                                     </a>
@@ -129,8 +138,15 @@
                             <p>{{ trans('vote::messages.errors.site') }}</p>
                         </div>
                     @endforelse
+                    @php
+                        $turnstile = ($clics ?? false) ? rescue(fn () => \Azuriom\Plugin\Heraliz\Votes\Clic::turnstile(), null, false) : null;
+                    @endphp
+                    @if($turnstile !== null)
+                        {{-- anti-robot de Cloudflare : invisible tant qu'il ne demande rien au joueur --}}
+                        <div id="heraliz-turnstile" class="turnstile-vote" data-sitekey="{{ $turnstile }}"></div>
+                    @endif
                     @if($gardeActive && $sites->isNotEmpty())
-                        <p class="note-vote">Chaque vote est vérifié auprès du site de vote : vote depuis la même connexion internet que cette page (pas en 4G si cette page est en Wi-Fi), puis reviens ici. Une récompense par connexion internet et par site.</p>
+                        <p class="note-vote">Clique sur « Voter » ici, vote sur le site qui s’ouvre, puis reviens sur cette page : la récompense arrive toute seule. Vote depuis la même connexion internet que cette page (pas en 4G si cette page est en Wi-Fi). Une récompense par connexion internet et par site.</p>
                     @endif
                 </div>
 
@@ -212,4 +228,90 @@
 
 @push('scripts')
     @include('vote::partials._scripts')
+    @if($clics ?? false)
+        <script>
+            // Votes protégés (extension HeraliZ, Votes\Clic) : pour un site de vote sans vérification, le clic sur « Voter »
+            // est d'abord noté par le site (anti-robot Turnstile s'il est réglé), puis le site de vote s'ouvre et la page
+            // demande la récompense comme d'habitude (fonctions de vote.js de l'extension Vote).
+            (function () {
+                let jeton = null;
+                let widget = null;
+
+                function preparer() {
+                    const boite = document.getElementById('heraliz-turnstile');
+                    if (!boite || !window.turnstile || widget !== null) {
+                        return;
+                    }
+                    widget = window.turnstile.render(boite, {
+                        sitekey: boite.dataset.sitekey,
+                        theme: 'dark',
+                        appearance: 'interaction-only',
+                        'refresh-expired': 'auto',
+                        callback: function (t) { jeton = t; },
+                        'expired-callback': function () { jeton = null; },
+                        'error-callback': function () { jeton = null; },
+                    });
+                }
+
+                window.heralizTurnstile = function () {
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', preparer);
+                    } else {
+                        preparer();
+                    }
+                };
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    const boite = document.getElementById('heraliz-turnstile');
+
+                    document.querySelectorAll('[data-heraliz-clic]').forEach(function (lien) {
+                        const surClic = function (ev) {
+                            if (ev.type === 'auxclick' && ev.button !== 1) {
+                                return;
+                            }
+                            // délai pas fini, ou script de l'extension Vote absent : l'extension Vote s'en occupe
+                            if (lien.classList.contains('disabled') || typeof refreshVote !== 'function') {
+                                return;
+                            }
+                            ev.preventDefault();
+                            ev.stopImmediatePropagation();
+
+                            if (boite && !jeton) {
+                                displayVoteAlert('Vérification anti-robot en cours : réessaie dans une seconde.', 'warning');
+                                return;
+                            }
+
+                            clearVoteAlert();
+                            window.open(lien.href, '_blank', 'noopener');
+                            lien.classList.add('disabled');
+                            document.getElementById('vote-card').classList.add('voting');
+
+                            const corps = boite ? {'cf-turnstile-response': jeton} : {};
+                            jeton = null;
+                            axios.post(lien.dataset.heralizClic, corps)
+                                .then(function () {
+                                    refreshVote(lien.dataset.voteUrl);
+                                })
+                                .catch(function (erreur) {
+                                    document.getElementById('vote-card').classList.remove('voting');
+                                    lien.classList.remove('disabled');
+                                    catchVoteError(erreur);
+                                })
+                                .finally(function () {
+                                    if (widget !== null) {
+                                        window.turnstile.reset(widget);
+                                    }
+                                });
+                        };
+
+                        lien.addEventListener('click', surClic, true);
+                        lien.addEventListener('auxclick', surClic, true);
+                    });
+                });
+            })();
+        </script>
+        @if($turnstile ?? null)
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=heralizTurnstile" async defer></script>
+        @endif
+    @endif
 @endpush

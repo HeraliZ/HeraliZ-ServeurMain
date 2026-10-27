@@ -3,6 +3,7 @@
 namespace Azuriom\Plugin\Heraliz\Middleware;
 
 use Azuriom\Plugin\Heraliz\Adresse;
+use Azuriom\Plugin\Heraliz\Votes\Clic;
 use Azuriom\Plugin\Heraliz\Votes\Garde;
 use Azuriom\Plugin\Heraliz\Votes\VerificationStricte;
 use Azuriom\Plugin\Vote\Models\Site;
@@ -16,7 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Garde de la récompense des votes (POST /vote/site/{site}/done de l'extension Vote, demandé toutes les 5 s par la page
  * de vote après le clic sur « Voter ») : règles de Votes\Garde, puis vote vu par le site de vote (Votes\VerificationStricte)
- * avant de laisser l'extension Vote donner la récompense. Les réponses gardent la forme de l'extension Vote : « pending »
+ * ou, sans vérification possible, clic « Voter » de notre page (Votes\Clic), avant de laisser l'extension Vote donner la
+ * récompense. Les réponses gardent la forme de l'extension Vote : « pending »
  * pour attendre le vote, un message d'erreur sinon (affiché tel quel par la page).
  *
  * Une connexion ne prend la récompense qu'une fois : vérification et récompense se font sous un verrou par site et par
@@ -52,9 +54,6 @@ class VotesProteges
         if (($empechement = Garde::compte($user, $request)) !== null) {
             return self::refus($empechement['message'], 403);
         }
-        if (! Garde::verifiable($site)) {
-            return self::refus(Garde::MESSAGE_PAUSE, 403);
-        }
 
         $ip = Adresse::de($request);
         if (($jusqua = Garde::ipPrise($site, $ip, $user->id)) !== null) {
@@ -63,8 +62,19 @@ class VotesProteges
             return self::refus(Garde::messageIp($jusqua), 429);
         }
 
-        // le site de vote n'a pas (encore) vu de vote depuis cette connexion : la page redemande dans 5 s
-        if (VerificationStricte::geree($site) && ! VerificationStricte::aVote($site, (string) $request->ip())) {
+        $verifiable = Garde::verifiable($site);
+        if (! $verifiable) {
+            // pas de preuve du site de vote (Top-Serveurs sans jeton) : seulement après un clic « Voter » de notre page,
+            // anti-robot passé, depuis cette connexion, et le temps de voter pour de vrai
+            $depuis = Clic::depuis($user, $site, $ip);
+            if ($depuis === null) {
+                return self::refus(Garde::MESSAGE_SANS_CLIC, 403);
+            }
+            if ($depuis < Clic::DELAI_MIN) {
+                return response()->json(['status' => 'pending']);
+            }
+        } elseif (VerificationStricte::geree($site) && ! VerificationStricte::aVote($site, (string) $request->ip())) {
+            // le site de vote n'a pas (encore) vu de vote depuis cette connexion : la page redemande dans 5 s
             return response()->json(['status' => 'pending']);
         }
 
@@ -81,6 +91,8 @@ class VotesProteges
                 $reponse = $next($request);
                 if (Vote::where('user_id', $user->id)->where('site_id', $site->id)->where('id', '>', $avant)->exists()) {
                     Garde::noter($user->id, $site, $ip, true);
+                    // un clic = une récompense
+                    Clic::oublier($user, $site);
                 }
 
                 return $reponse;

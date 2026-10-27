@@ -391,6 +391,8 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Oswald', sa
 .garde-vote p { max-width: 520px; margin-left: auto; margin-right: auto; }
 .mission .d.raison { color: var(--bs-code-color); max-width: 46ch; }
 .note-vote { font-size: 12.5px; color: var(--muted); margin: 14px 4px 0; line-height: 1.5; }
+.turnstile-vote { margin-top: 12px; }
+.turnstile-vote:empty { display: none; }
 .honneur { padding: 26px 24px 16px; }
 .honneur h3 { font: 700 22px 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 0; }
 .honneur .st { font-size: 12.5px; color: var(--muted); margin-top: 4px; }

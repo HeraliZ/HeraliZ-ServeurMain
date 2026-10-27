@@ -22,7 +22,8 @@ use Throwable;
  * des hérals et des PB : un vote ne rapporte que
  *  - à un compte connecté au site (réglage « vote.auth-required » de l'extension Vote, remis par reglages.php) ;
  *  - dont le Discord est lié, membre et validé comme pour jouer (Discord\Comptes), et qui a déjà joué (TempsDeJeu) ;
- *  - sur un site de vote dont la vérification est branchée (jeton Top-Serveurs) et a vu le vote (VerificationStricte) ;
+ *  - si le site de vote a vu le vote quand sa vérification est branchée (jeton Top-Serveurs : VerificationStricte) ;
+ *    sinon, seulement après un clic sur « Voter » de notre page, anti-robot passé, il y a au moins 20 s (Clic) ;
  *  - une fois par connexion internet et par site sur la durée du vote, tous comptes confondus.
  * Une même connexion qui vote pour plusieurs comptes en 24 h est signalée au staff (salon privé des comptes).
  * Appliqué par Middleware\VotesProteges sur la route du vote, et montré à l'avance sur la page de vote (thème) : un joueur
@@ -33,7 +34,7 @@ final class Garde
     /** Comptes différents vus sur une même connexion en 24 h à partir desquels le staff est prévenu. */
     public const SEUIL_ALERTE = 3;
 
-    public const MESSAGE_PAUSE = 'Votes en pause sur ce site : la vérification des votes n’est pas encore branchée. Aucune récompense pour l’instant.';
+    public const MESSAGE_SANS_CLIC = 'Pour être récompensé, clique sur « Voter » sur la page de vote du site HeraliZ, puis vote.';
 
     /**
      * Ce qui empêche ce compte de voter (null : rien), avec de quoi le régler : ['message' => …, 'lien' => …|null,
@@ -64,12 +65,9 @@ final class Garde
         return null;
     }
 
-    /** Ce qui empêche ce vote sur ce site en particulier (null : rien) : vérification absente, connexion déjà récompensée. */
+    /** Ce qui empêche ce vote sur ce site en particulier (null : rien) : connexion déjà récompensée pour un autre compte. */
     public static function pourSite(Site $site, User $user, Request $request): ?string
     {
-        if (! self::verifiable($site)) {
-            return self::MESSAGE_PAUSE;
-        }
         $jusqua = self::ipPrise($site, Adresse::de($request), $user->id);
 
         return $jusqua === null ? null : self::messageIp($jusqua);
@@ -77,8 +75,7 @@ final class Garde
 
     /**
      * La vérification du site de vote est branchée : case « vérification » cochée, site connu de l'extension Vote, et
-     * jeton présent quand le site en demande un (Top-Serveurs). Sinon, aucune récompense : sans vérification, il suffirait
-     * d'appeler la page du vote avec n'importe quel compte.
+     * jeton présent quand le site en demande un (Top-Serveurs). Sinon, le passage par notre page est exigé (Clic).
      */
     public static function verifiable(Site $site): bool
     {

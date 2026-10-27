@@ -79,6 +79,8 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // Top-Serveurs, une récompense par connexion) ; temps de jeu compté sur les relevés d'AzLink (Votes\TempsDeJeu)
         $this->router->pushMiddlewareToGroup('web', VotesProteges::class);
         $this->router->pushMiddlewareToGroup('api', SuiviAzLink::class);
+        // clics sur « Voter » (Votes\Clic) : 20 par minute et par compte
+        RateLimiter::for('heraliz-vote-clic', fn (Request $request) => Limit::perMinute(20)->by('u'.($request->user()?->id ?? Adresse::de($request))));
 
         // adresses des connexions et inscriptions du site (et des inscriptions du launcher, qui envoient Registered)
         Event::listen(Login::class, fn (Login $e) => rescue(fn () => Comptes::noterIp((int) $e->user->getAuthIdentifier(), Adresse::de(request())), null, false));

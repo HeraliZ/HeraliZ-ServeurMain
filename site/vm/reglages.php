@@ -446,7 +446,8 @@ function recompenseVote(): void
  * Votes protégés (règles dans Votes\Garde de l'extension HeraliZ) : vote réservé aux comptes connectés (plus de vote par
  * simple pseudo) ; vérification de chaque site de vote cochée quand l'extension Vote sait la faire ; jeton du serveur
  * Top-Serveurs repris du secret GitHub TOPSERVEURS_TOKEN (passé par theme.sh dans l'environnement, jamais dans le dépôt ;
- * sans le secret, la clé déjà réglée dans l'administration est gardée). Un site sans vérification ne donne plus rien.
+ * sans le secret, la clé déjà réglée dans l'administration est gardée). Un site sans vérification possible ne récompense
+ * qu'après le clic « Voter » de notre page, anti-robot passé (Votes\Clic de l'extension HeraliZ).
  */
 function votesProteges(): void
 {
@@ -475,14 +476,19 @@ function votesProteges(): void
             continue;
         }
         if (class_exists($Garde) && $Garde::verifiable($site->fresh())) {
-            dire('Votes : '.$site->name.' : vérification des votes active');
+            dire('Votes : '.$site->name.' : chaque vote vérifié auprès du site de vote');
         } else {
-            $quoi = $hote === 'top-serveurs.net'
-                ? 'jeton du serveur absent (secret GitHub TOPSERVEURS_TOKEN, ou « clé de vérification » dans l’administration → Votes → Sites)'
-                : 'site de vote sans vérification possible (le désactiver, ou le remplacer par un site vérifiable)';
-            dire('::warning::Votes : '.$site->name.' ne donne AUCUNE récompense tant que ce n’est pas réglé : '.$quoi);
+            dire('Votes : '.$site->name.' : vérification impossible'.($hote === 'top-serveurs.net' ? ' (pas de jeton Top-Serveurs)' : '')
+                .' : récompense seulement après le clic « Voter » de la page du site, anti-robot passé, au moins 20 s avant');
         }
     }
+
+    // anti-robot du bouton « Voter » : le Turnstile de Cloudflare réglé dans l'administration (Paramètres → Sécurité,
+    // captcha), le même qui protège l'inscription sur le site
+    $turnstile = class_exists(\Azuriom\Plugin\Heraliz\Votes\Clic::class) && \Azuriom\Plugin\Heraliz\Votes\Clic::turnstile() !== null;
+    dire($turnstile
+        ? 'Votes : anti-robot Turnstile actif sur le bouton « Voter »'
+        : '::warning::Votes : anti-robot Turnstile pas réglé (administration → Paramètres → Sécurité → captcha « Turnstile ») : un programme connecté à un compte validé peut encore cliquer « Voter » à la place du joueur');
 }
 
 function pbParVote(): void
