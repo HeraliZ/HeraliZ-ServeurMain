@@ -517,7 +517,8 @@ Rien de tout cela n'a été testé en jeu.
   (`allowedItemsInClaims`) ; rampes sans poteaux (cases réservées inchangées) ; amélioration au marteau à 4 blocs
   (`upgradeReach`) ; moitié de mur laissée à une armoire ou une caisse posée avant le mur dessinée par la case voisine,
   et reprise quand un bloc posé avant le mur part ; zones interdites en rouge plan en main (`S2CZonesInterdites`) ;
-  aide au saut des montées donnée plus tôt (`SautRebord`).
+  aide au saut des montées donnée plus tôt (`SautRebord`) ; rampe triangle posée à l'inverse (28/10, choix du
+  propriétaire : côté haut vers le joueur, coin bas au fond, `Sockets.volumeRot` ; CRac 1.25.1-beta).
 - **Frappe aérienne** : animation de recharge sur une horloge régulière (`HorlogeJumelles`) ; explosion sans le calcul
   des blocs (27 000 à 55 000 lectures par bombe pour rien), créatures attirées lancées 3 par tick, mesures dans le journal.
 - **Réanimation** : compte à rebours visible jusqu'à la réponse du serveur, recalé tous les 5 ticks.

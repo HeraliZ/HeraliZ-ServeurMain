@@ -1,7 +1,7 @@
 # À tester en jeu — correctifs du 27/10 (bases, combat, frappe aérienne, réanimation)
 
 Rien de cette liste n'a été testé en jeu par Claude. Fabriqué et vérifié hors du jeu (`construire.py`, `verifier.py`).
-Canal réseau CRac version 26 : joueurs et serveur doivent avoir les jars de la **même** fabrication.
+CRac 1.25.1-beta. Canal réseau CRac version 26 : joueurs et serveur doivent avoir les jars de la **même** fabrication.
 
 ## Combat
 - [ ] Deux joueurs de part et d'autre d'une porte fermée (ou d'un mur), collés : ni balle ni coup de mêlée (poing,
@@ -19,6 +19,9 @@ Canal réseau CRac version 26 : joueurs et serveur doivent avoir les jars de la 
 - [ ] Dans une base (zone de l'armoire) : barricade en bois, mannequin, laisse, feu d'artifice… refusés (« Dans une base,
       seuls les pièces et objets de construction se posent »). Hors des bases : comme avant. Plan, marteau, C4, charge,
       armoire, caisse en métal : comme avant. Ouvrir une caisse, une porte, l'armoire avec un objet en main : comme avant.
+- [ ] Rampe triangle (28/10, choix du propriétaire) : à la pose, le côté haut (la sortie) est maintenant de ton côté et le
+      coin bas au fond (avant : l'inverse) ; l'aide du plan dit « côté haut face à toi » ; R tourne toujours d'un tiers de
+      tour et change la demi-montée. Collision, raccords et amélioration inchangés.
 - [ ] Rampes (carrée et triangle) : plus de poteaux sous le bout haut ; on passe dessous, on monte dessus, les rampes
       voisines se raccordent toujours.
 - [ ] Marteau : améliorer une pièce seulement à 4 blocs au plus (roue du marteau : « Approche-toi pour améliorer ») ;

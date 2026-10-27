@@ -118,7 +118,7 @@ public final class PlanState {
         if (kind == PieceKind.TRI_RAMP) {
             int r = Math.floorMod(rot, 6);
             out.add(r >= 3 ? Frag.of("crac.rot.half_rise", "Half rise") : Frag.of("crac.rot.full_rise", "Full rise"));
-            out.add(r % 3 == 0 ? Frag.of("crac.rot.low_corner_facing", "low corner facing you")
+            out.add(r % 3 == 0 ? Frag.of("crac.rot.high_side_facing", "high side facing you")
                 : new Frag("crac.rot.turned", "turned %s°", r % 3 * 120));
             return out;
         }

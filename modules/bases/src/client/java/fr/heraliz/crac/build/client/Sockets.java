@@ -664,16 +664,19 @@ public final class Sockets {
 
     /**
      * Volume rotation: the quarter turn that puts the entry of stairs or the low end of a ramp in front of a player
-     * looking along {@code look}, plus the R counter (bits 0-1 more quarter turns, bit 2 mirror or half rise).
+     * looking along {@code look}, plus the R counter (bits 0-1 more quarter turns, bit 2 mirror or half rise). HeraliZ
+     * (28/10, choix du propriétaire) : la rampe triangle, elle, se pose à l'inverse, côté haut (la sortie) vers le joueur
+     * et coin bas au fond.
      */
     public static int volumeRot(PieceKey square, int rot, Vec3 look) {
         if (square.kind() == PieceKind.TRI_RAMP) {
-            // low corner q climbs towards the opposite side: lattice direction orient + 1 + 4 q (local frame)
+            // low corner q climbs towards the opposite side: lattice direction orient + 1 + 4 q (local frame) ; on prend
+            // la montée la plus opposée au regard : le côté haut est devant le joueur, le coin bas au fond
             int bestQ = 0;
             double best = -Double.MAX_VALUE;
             for (int q = 0; q < 3; q++) {
                 int k = square.orient() + 1 + 4 * q;
-                double dot = look.x * Dirs.ex(k) + look.z * Dirs.ez(k);
+                double dot = -(look.x * Dirs.ex(k) + look.z * Dirs.ez(k));
                 if (dot > best + 1e-9) {
                     best = dot;
                     bestQ = q;

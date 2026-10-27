@@ -636,5 +636,6 @@
   "crac.build.retired": "Cette pièce ne se construit plus.",
   "crac.claim.objet_etranger": "Dans une base, seuls les pièces et objets de construction se posent.",
   "crac.hammer.trop_loin": "Approche-toi pour améliorer (%s blocs au plus).",
-  "crac.zone.interdite_plan": "Zone en rouge : on ne construit pas ici (ville, loot, rails, zone dangereuse ou enneigée)."
+  "crac.zone.interdite_plan": "Zone en rouge : on ne construit pas ici (ville, loot, rails, zone dangereuse ou enneigée).",
+  "crac.rot.high_side_facing": "côté haut face à toi"
 }

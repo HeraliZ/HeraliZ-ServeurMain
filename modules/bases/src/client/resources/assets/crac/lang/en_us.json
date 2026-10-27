@@ -636,5 +636,6 @@
   "crac.build.retired": "This piece can no longer be built.",
   "crac.claim.objet_etranger": "Inside a base, only building pieces and building objects can be placed.",
   "crac.hammer.trop_loin": "Get closer to upgrade (%s blocks at most).",
-  "crac.zone.interdite_plan": "Red area: you can't build here (town, loot, rails, hazardous or snowy area)."
+  "crac.zone.interdite_plan": "Red area: you can't build here (town, loot, rails, hazardous or snowy area).",
+  "crac.rot.high_side_facing": "high side facing you"
 }
