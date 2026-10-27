@@ -99,12 +99,12 @@ function effacerDonneesJeu(options) {
     return resultat
 }
 
-// Anciens dossiers de gunpacks (noms hérités d'ArkaniaZ, renommés le 26/10 ; Cislumen_Armory retiré) : le pack ne les
+// Anciens dossiers de gunpacks (noms hérités d'ArkaniaZ, renommés le 26/10 ; Cislumen_Armory et heraliz_wonder retirés) : le pack ne les
 // contient plus, mais le launcher ne retire jamais seul un fichier tacz qui a quitté le pack. Liste fixe, jamais un
 // dossier inconnu : seul ce qui est nommé ici, dans <instance>/tacz, est effacé (même contrôle que effacerDonneesJeu).
 const ANCIENS_GUNPACKS = ['arkaniaz_pack_0_converted', 'arkaniaz_pack_1_converted', 'arkaniaz_pack_2_converted',
     'arkaniaz_pack_3_converted', 'arkaniaz_pack_4_converted', 'arkaniaz_pack_5_converted', 'arkaniaz_custom_converted',
-    'Cislumen_Armory']
+    'Cislumen_Armory', 'heraliz_wonder']
 
 // { effaces: [chemins], erreurs: [{ chemin, code }] } ; rien hors de <dossierInstances>/<serveur>/tacz.
 function retirerAnciensGunpacks({ dossierInstances, serveur }) {

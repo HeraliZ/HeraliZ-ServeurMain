@@ -38,6 +38,8 @@ joueurs.
 - `defaultconfigs/` : envoyer `serveur/defaultconfigs/`, **et** le recopier dans `dayz_map/serverconfig/` (sinon le monde
   garde les anciens réglages). Fichiers des mods retirés à supprimer de `dayz_map/serverconfig/` :
   `heraliz_wonder-server.toml`, `heralisz_matchs-moteur.toml` (gardé sans effet sinon).
+  Le gunpack `tacz/heraliz_wonder` (armes du mode Zombies : Blundergat, Ray Gun, Thundergun…) était resté sur le Ptero :
+  listé dans `serveur/tacz_retires.txt` le 27/10, la mise en ligne l'efface (redémarrer ensuite).
 - `tacz/` : envoyer `serveur/tacz/`, puis le workflow « Gunpacks du serveur » (ou à la main) pour retirer du Ptero les
   gunpacks qui ne sont plus dans le dépôt (sinon carrés roses chez les joueurs).
   **26/10 : dossiers renommés.** Supprimer du Ptero les dossiers entiers `arkaniaz_pack_0_converted` à
