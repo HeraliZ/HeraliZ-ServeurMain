@@ -23,6 +23,7 @@ public final class ClansConfig {
     public static final ForgeConfigSpec.IntValue HAUTEUR_CAPTURE;
     public static final ForgeConfigSpec.IntValue DUREE_CAPTURE_NEUTRE_S;
     public static final ForgeConfigSpec.IntValue PROTECTION_MIN;
+    public static final ForgeConfigSpec.IntValue TENUE_MIN;
     public static final ForgeConfigSpec.IntValue RAVITAILLEMENT_MIN;
     public static final ForgeConfigSpec.BooleanValue CAISSE_VERROUILLEE_CLAN;
     public static final ForgeConfigSpec.IntValue XP_CAPTURE;
@@ -64,7 +65,15 @@ public final class ClansConfig {
                 .defineInRange("hauteur_capture", 6, 1, 64);
         DUREE_CAPTURE_S = b.comment("Secondes pour capturer une zone tenue par un autre clan (un seul capteur)").defineInRange("duree_capture_s", 180, 5, 3600);
         DUREE_CAPTURE_NEUTRE_S = b.comment("Secondes pour capturer une zone libre").defineInRange("duree_capture_neutre_s", 120, 5, 3600);
-        PROTECTION_MIN = b.comment("Minutes de protection apres une capture").defineInRange("protection_min", 10, 0, 24 * 60);
+        // 27/10 (regle du proprietaire) : « on le cap, pendant 2 h on n'est pas attaquable, et 2 h apres le territoire
+        // redevient neutre, il faut le recap »
+        TENUE_MIN = b.comment("Minutes pendant lesquelles un clan tient une zone apres l'avoir capturee : protegee tout ce temps (personne",
+                        "ne peut la prendre), puis elle redevient libre toute seule (revenu, bonus de loot et minutes tenues",
+                        "s'arretent) : il faut la recapturer. Une zone capturee avant cette regle redevient libre au demarrage si sa",
+                        "capture date de plus longtemps. 0 = ancienne regle : zone gardee jusqu'a ce qu'un autre clan la prenne")
+                .defineInRange("tenue_min", 120, 0, 7 * 24 * 60);
+        PROTECTION_MIN = b.comment("Minutes de protection apres une capture, seulement avec tenue_min = 0 ; avec une tenue, la zone est",
+                        "protegee pendant toute la tenue").defineInRange("protection_min", 10, 0, 24 * 60);
         RAVITAILLEMENT_MIN = b.comment("Minutes entre deux signaux de ravitaillement sur une meme zone").defineInRange("ravitaillement_min", 90, 1, 24 * 60);
         CAISSE_VERROUILLEE_CLAN = b.comment("true : seule l'equipe qui a lance le signal ouvre la caisse larguee").define("caisse_verrouillee_clan", false);
         b.pop();

@@ -77,8 +77,12 @@ public final class SaisonVue {
         double[] co = b.pvpCoefs;
         l.add(new LigneBareme(pvp, "meme_victime", "coefs", new double[]{co[0], co.length > 1 ? co[1] : co[0], co[co.length - 1]}, "fenetre",
                 new String[]{entier(b.pvpFenetreH)}));
-        l.add(new LigneBareme(pvp, "capture_prise", "par_niveau", new double[]{b.captureParValeur * b.capturePriseCoef}, "capture_prise",
-                new String[]{entier(b.captureTenueMin), entier(b.capturePlafondJour)}));
+        // 27/10 : avec une tenue (tenue_min > 0), une zone tenue reste protegee jusqu'a redevenir libre : on ne la prend plus
+        // a un clan, la ligne n'est montree que sous l'ancienne regle (tenue_min = 0)
+        if (fr.heralisz.clans.territory.Territoires.tenueMs() <= 0) {
+            l.add(new LigneBareme(pvp, "capture_prise", "par_niveau", new double[]{b.captureParValeur * b.capturePriseCoef}, "capture_prise",
+                    new String[]{entier(b.captureTenueMin), entier(b.capturePlafondJour)}));
+        }
         l.add(new LigneBareme(pvp, "coeur", "pct", new double[]{b.raidGagnePct}, "coeur", new String[]{entier(b.raidPerduPct)}));
         // events
         double m = b.multiplicateur("clashwar");

@@ -23,11 +23,12 @@ public final class CarteApi {
     /**
      * Une zone capturable telle que la carte la montre.
      *
-     * @param etat              NEUTRE (libre), TENUE, CAPTURE, CONTESTE ou PROTEGEE (10 min après une capture)
+     * @param etat              NEUTRE (libre), TENUE, CAPTURE, CONTESTE ou PROTEGEE (toute la tenue après une capture,
+     *                          {@code tenue_min} : ensuite la zone redevient libre)
      * @param capteurTag        clan qui capture (vide hors capture), avec sa couleur et sa bannière
      * @param progression       avancée de la capture, 0..1
      * @param tenueDepuisMs     depuis quand le propriétaire la tient (0 si libre)
-     * @param protegeeMs        reste de la protection (0 si aucune)
+     * @param protegeeMs        reste de la protection (0 si aucune) : depuis le 27/10, le temps avant que la zone redevienne libre
      * @param valeur            niveau de loot de la ville (1 à 7)
      * @param bonusLoot         bonus de loot (%) des membres du propriétaire présents dans la zone
      * @param monClan           la zone est tenue par le clan du joueur

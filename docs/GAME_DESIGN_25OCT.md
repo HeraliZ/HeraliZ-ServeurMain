@@ -210,7 +210,7 @@ mis de côté pour l'ouverture. Restent : plafond par clan, salles à carte au 2
 | Rachat des armes | 15 / 30 / 60 / 120 / 250 / 500 |
 | Quêtes de Varga | 100 à 5 000 par quête, ~43 000 au total, 16 000 payés pour passer les grades |
 | Quêtes de clan | 250 à 900 (jour), 1 500 à 3 000 (semaine) |
-| Territoire tenu | 100 hérals par heure et par zone (3 zones = 7 200 par jour) |
+| Territoire tenu | 100 hérals par heure et par zone ; depuis le 27/10 (règle du propriétaire), une zone n'est tenue que 2 h après sa capture puis redevient libre : 200 hérals par capture et par zone, il faut la recapturer |
 | ClashWar | 5 000 / 2 000 / 1 000 / 750 + clé d'event |
 | Création de clan | 1 750 |
 | Arbre du clan + membres | 605 000 + 455 000 |

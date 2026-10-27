@@ -36,16 +36,23 @@ public final class TerritoireEvents {
         }
     }
 
-    /** Un clan vient de perdre une zone (capture adverse, reset admin, dissolution). */
+    /** Un clan vient de perdre une zone (capture adverse, reset admin, dissolution, fin de la tenue). */
     public static class Perdu extends Event {
         public final UUID clanId;
         public final String zoneId;
         public final String nomZone;
+        /** 27/10 : la zone redevient libre parce que sa tenue est finie ({@code tenue_min}), pas prise par un autre clan. */
+        public final boolean finTenue;
 
         public Perdu(UUID clanId, String zoneId, String nomZone) {
+            this(clanId, zoneId, nomZone, false);
+        }
+
+        public Perdu(UUID clanId, String zoneId, String nomZone, boolean finTenue) {
             this.clanId = clanId;
             this.zoneId = zoneId;
             this.nomZone = nomZone;
+            this.finTenue = finTenue;
         }
     }
 

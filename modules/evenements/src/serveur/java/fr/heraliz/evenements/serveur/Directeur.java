@@ -53,10 +53,12 @@ public final class Directeur {
      * avec {@code toutes_les} (25/10, demande du propriétaire : un largage toutes les 3 h 30), à intervalle régulier
      * ({@code intervalleMs} &gt; 0 : jours et heures ignorés). Le prochain départ est gardé dans {@link Etat} : un
      * redémarrage ne remet pas l'attente à zéro ; serveur éteint à l'heure prévue : départ {@code premierMs} après le
-     * démarrage. Refusé (pas assez de joueurs, ClashWar…) : nouvel essai {@code reessaiMs} plus tard.
+     * démarrage. Refusé (pas assez de joueurs, ClashWar, aucun lieu…) : 27/10, règle du propriétaire, jamais de nouvel
+     * essai rapproché : l'attente repart pour un intervalle entier, comme si l'événement avait eu lieu (l'ancienne clé
+     * {@code reessai_apres} est ignorée).
      */
     record Creneau(String evenement, Set<DayOfWeek> jours, List<LocalTime> heures, double probabilite, int joueursMin,
-                   long intervalleMs, long premierMs, long reessaiMs) {
+                   long intervalleMs, long premierMs) {
         boolean intervalle() {
             return intervalleMs > 0;
         }
@@ -174,11 +176,15 @@ public final class Directeur {
                 int min = c.has("joueurs_min") ? c.get("joueurs_min").getAsInt() : 0;
                 long intervalle = c.has("toutes_les") ? duree(c.get("toutes_les").getAsString()) : 0;
                 long premier = c.has("premier_apres") ? duree(c.get("premier_apres").getAsString()) : 30 * 60_000L;
-                long reessai = c.has("reessai_apres") ? duree(c.get("reessai_apres").getAsString()) : 15 * 60_000L;
+                // 27/10 : plus de nouvel essai rapproché (règle du propriétaire) ; la clé d'un ancien fichier est seulement signalée
+                if (c.has("reessai_apres")) {
+                    HeralizEvenements.LOG.warn("[evenements] planning.json : reessai_apres ignore pour {} (un depart refuse attend"
+                            + " l'intervalle normal)", c.has("evenement") ? c.get("evenement").getAsString() : "?");
+                }
                 if (c.has("toutes_les") && intervalle < 10 * 60_000L) throw new IllegalArgumentException("toutes_les : 0:10 au moins");
                 if (intervalle == 0 && (jours.isEmpty() || heures.isEmpty())) throw new IllegalArgumentException("ni jours/heures ni toutes_les");
                 PLANNING.add(new Creneau(c.get("evenement").getAsString(), jours, heures, Math.max(0, Math.min(1, proba)), Math.max(0, min),
-                        intervalle, Math.max(60_000L, premier), Math.max(60_000L, reessai)));
+                        intervalle, Math.max(60_000L, premier)));
             } catch (RuntimeException ex) {
                 HeralizEvenements.LOG.warn("[evenements] planning.json : creneau illisible ignore ({}) : {}", ex.getMessage(), el);
             }
@@ -212,16 +218,16 @@ public final class Directeur {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", "Planning des evenements de la carte (heure de Paris). Un creneau a heures fixes : jours (tous, lundi..."
                 + " dimanche) et heures (HH:MM). Ou a intervalle : toutes_les (H:MM), premier_apres (H:MM apres le demarrage si rien n'est"
-                + " prevu, 0:30 par defaut), reessai_apres (H:MM si le depart est refuse, 0:15 par defaut). probabilite : chance qu'il"
-                + " parte (1 = toujours) ; joueurs_min : joueurs en survie sur la carte au moins. Jamais pendant un ClashWar."
-                + " Relu par /event recharger.");
+                + " prevu, 0:30 par defaut). probabilite : chance qu'il parte (1 = toujours) ; joueurs_min : joueurs en survie sur la"
+                + " carte au moins. Jamais pendant un ClashWar. Depart refuse (pas assez de joueurs, ClashWar, aucun lieu...) : pas de"
+                + " nouvel essai rapproche, l'attente repart pour un intervalle entier (toutes_les), comme s'il avait eu lieu ; a heures"
+                + " fixes, il attend le creneau suivant. Relu par /event recharger.");
         o.addProperty("actif", true);
         JsonArray a = new JsonArray();
         JsonObject c = new JsonObject();
         c.addProperty("evenement", "largage");
         c.addProperty("toutes_les", "3:30");
         c.addProperty("premier_apres", "0:30");
-        c.addProperty("reessai_apres", "0:15");
         c.addProperty("probabilite", 1.0);
         c.addProperty("joueurs_min", 4);
         a.add(c);
@@ -248,11 +254,12 @@ public final class Directeur {
                     continue;
                 }
                 String refus = lancer(server, c.evenement(), true, "planning", c.joueursMin());
-                if (refus == null) {
-                    Etat.prochain(c.evenement(), maintenant + c.intervalleMs());
-                } else {
-                    Etat.prochain(c.evenement(), maintenant + c.reessaiMs());
-                    Outils.journal("planning : " + c.evenement() + " pas lance (" + refus + "), nouvel essai a " + heure(Etat.prochain(c.evenement())));
+                // 27/10 (règle du propriétaire : « pas de nouvel essai rapproché ») : parti ou refusé, l'attente repart pour un
+                // intervalle entier, comme s'il avait eu lieu ; au prochain passage, il part si les conditions sont remplies
+                Etat.prochain(c.evenement(), maintenant + c.intervalleMs());
+                if (refus != null) {
+                    Outils.journal("planning : " + c.evenement() + " pas lance (" + refus + "), prochain essai a "
+                            + heure(Etat.prochain(c.evenement())) + " (intervalle normal)");
                 }
                 continue;
             }
@@ -263,8 +270,26 @@ public final class Directeur {
                 continue;
             }
             String refus = lancer(server, c.evenement(), true, "planning", c.joueursMin());
-            if (refus != null) Outils.journal("planning : " + c.evenement() + " de " + minute + " pas lance : " + refus);
+            if (refus != null) {
+                long suivant = creneauSuivant(c, now);
+                Outils.journal("planning : " + c.evenement() + " de " + minute + " pas lance (" + refus + "), prochain essai "
+                        + (suivant > 0 ? "a " + heure(suivant) + " (creneau suivant)" : ": aucun creneau dans les 7 jours"));
+            }
         }
+    }
+
+    /** Prochain créneau à heure fixe après {@code now} (heure en ms, 0 : aucun dans les 7 jours) : pour le journal. */
+    private static long creneauSuivant(Creneau c, ZonedDateTime now) {
+        long apres = now.toInstant().toEpochMilli() + 60_000L, mieux = 0;
+        for (int jour = 0; jour <= 7; jour++) {
+            ZonedDateTime d = now.plusDays(jour);
+            if (!c.jours().contains(d.getDayOfWeek())) continue;
+            for (LocalTime h : c.heures()) {
+                long t = d.with(h).toInstant().toEpochMilli();
+                if (t >= apres && (mieux == 0 || t < mieux)) mieux = t;
+            }
+        }
+        return mieux;
     }
 
     // ------------------------------------------------------------------ lancement

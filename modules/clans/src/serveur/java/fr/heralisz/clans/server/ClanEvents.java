@@ -594,6 +594,13 @@ public final class ClanEvents {
         // annonce a tout le serveur : chat + toast + son
         annoncerATous(ClanService.prefixe(c).append(Component.translatable("msg.capture", e.nomZone, c.tag)),
                 new Packets.NoticeS2C(Packets.NoticeS2C.Genre.CAPTURE, List.of(e.nomZone, c.tag), "capture_reussie", c.banniere));
+        // 27/10 (regle du proprietaire) : la zone n'est tenue que tenue_min, protegee, puis redevient libre : le clan le sait
+        long tenue = fr.heralisz.clans.territory.Territoires.tenueMs();
+        if (tenue > 0) {
+            ClanService.diffuserChat(c, ClanService.prefixe(c).append(Component.translatableWithFallback("msg.capture_tenue",
+                    "%s est à vous pendant %s : personne ne peut la prendre, ensuite elle redevient libre (à recapturer).",
+                    e.nomZone, fr.heralisz.clans.territory.Territoires.duree(tenue))));
+        }
     }
 
     @SubscribeEvent
@@ -604,6 +611,14 @@ public final class ClanEvents {
         c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.ZONE_PERDUE, e.nomZone));
         store.marquerDirty();
         Sync.marquer(c);
+        if (e.finTenue) {
+            // 27/10 : fin de la tenue (tenue_min) : la zone redevient libre, personne ne l'a prise
+            ClanService.diffuserChat(c, ClanService.prefixe(c).append(Component.translatableWithFallback("msg.zone_fin_tenue",
+                    "Fin de la tenue : %s redevient libre. Recapturez-la au drapeau.", e.nomZone)));
+            ClanService.diffuser(c, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO, List.of("notice.zone_fin_tenue", e.nomZone),
+                    "zone_perdue", null));
+            return;
+        }
         ClanService.diffuserChat(c, "msg.zone_perdue", e.nomZone);
         ClanService.diffuser(c, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.ZONE_PERDUE, List.of(e.nomZone), "zone_perdue", null));
     }

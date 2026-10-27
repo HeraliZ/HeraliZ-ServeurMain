@@ -192,6 +192,11 @@ la fermeture, le serveur recycle tout ce qui a été déposé :
   soins, explosifs) ; sinon une **règle de famille** (armures et sacs : tissu, scotch, caoutchouc ; soins : tissu et
   alcool ; nourriture : plastique ou ferraille ; mêlée, kits, outils de véhicule…), au niveau de la rareté de l'objet
   (Commun / Peu commun = I, Rare = II, Épique = III, Légendaire et Unique = IV) ;
+- **paquet incomplet** (27/10, règle du propriétaire) : une règle « par 15 » (munitions) accepte aussi 1 à 14 objets ;
+  pour n objets, le tirage d'un paquet complet a lieu une fois sur 15 / n, sinon rien (1 balle : 15 fois moins de
+  chances d'avoir une pièce) ; temps x n / 15 (0,5 s au moins) ; même gain moyen par balle qu'un paquet complet, plafond
+  de 2 pièces et hérals compris ; une munition empilée par moins de 15 (roquettes par 6) se recycle donc case par case
+  (l'aperçu dit « 6 sur 15 : moins de chances » et montre les chances réduites) ;
 - un objet qui ne rend rien donne quelques hérals (1 à 8 selon sa rareté) : vider son sac au lieu de jeter ;
 - jamais recyclés, rendus tels quels : composants (sauf la corde, les objets cassés et les plaques, 26/10), capsules,
   fragments de cartes, clés, bons, objets à vie, prêtés par un match ou de quête.

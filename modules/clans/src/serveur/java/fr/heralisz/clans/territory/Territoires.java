@@ -61,11 +61,19 @@ import java.util.UUID;
  * <li>aucun C : la progression decroit de 1 %/s vers 0 ; etat NEUTRE (libre) ou TENUE ; un membre de O voit DEFENSE
  * (1 - progression) tant qu'elle n'est pas revenue a 0 ;</li>
  * <li>un seul C mais des membres de O presents, ou >= 2 C : CONTESTE, rien ne bouge ;</li>
- * <li>un seul C, zone protegee (10 min apres une capture) : PROTEGEE, rien ne bouge ;</li>
+ * <li>un seul C, zone protegee (toute la tenue apres une capture, voir plus bas) : PROTEGEE, rien ne bouge ;</li>
  * <li>un seul C qui a atteint la limite de territoires de son niveau : LIMITE, rien ne bouge ;</li>
  * <li>un seul C : CAPTURE, progression += 0,5 s / duree (120 s si libre, 180 s sinon) x min(1,5, 1 + 0,125 (n - 1)) ;
  * a 100 % : capture (proprietaire = C, protection, prochain ravitaillement dans 1 h 30, evenements Perdu + Capture).</li>
  * </ul>
+ *
+ * <p>Tenue (27/10, regle du proprietaire : « on le cap, pendant 2 h on n'est pas attaquable, et 2 h apres le territoire
+ * redevient neutre, il faut le recap ») : une zone capturee est tenue {@code tenue_min} minutes (120), protegee tout ce
+ * temps ({@code protegeeJusque} = capture + tenue : le HUD, la carte et /territoire montrent ce reste), puis elle redevient
+ * libre toute seule ({@link #finDeTenue} : evenement Perdu, donc plus de revenu, de bonus de loot ni de minutes tenues) ;
+ * n'importe quel clan peut la recapturer, le meme compris. Verifie a chaque cycle, zone par zone (une comparaison) : une
+ * zone capturee avant la regle, ou dont la tenue s'est finie serveur eteint, redevient libre au premier cycle.
+ * {@code tenue_min = 0} : ancienne regle (gardee jusqu'a une prise, {@code protection_min} minutes de protection).
  */
 @Mod.EventBusSubscriber(modid = HeraliszClans.MODID)
 public final class Territoires {
@@ -414,9 +422,41 @@ public final class Territoires {
         return c;
     }
 
+    /** Duree d'une tenue apres une capture (27/10, {@code tenue_min}) en ms ; 0 : zone gardee jusqu'a une prise (ancienne regle). */
+    public static long tenueMs() {
+        return ClansConfig.TENUE_MIN.get() * 60_000L;
+    }
+
+    /**
+     * Fin de la tenue (27/10) : la zone redevient libre comme apres une perte (evenement Perdu marque « fin de tenue » :
+     * revenu, bonus de loot, minutes tenues et carte s'arretent ; les membres connectes du clan sont prevenus par
+     * {@code ClanEvents.onPerdu}). Le drapeau et le HUD suivent dans le meme cycle ({@link #traiter}).
+     */
+    private void finDeTenue(Zone zone, EtatTerritoire e, Clan O, long now) {
+        String depuis = e.captureLe > 0 ? (now - e.captureLe) / 60_000L + " min apres la capture" : "capture sans date";
+        e.liberer();
+        data.setDirty();
+        etatsAffiches.put(zone.id, EtatZone.NEUTRE);
+        HeraliszClans.LOG.info("[clans] zone {} : fin de la tenue de [{}] ({}), redevient libre", zone.id, O.tag, depuis);
+        MinecraftForge.EVENT_BUS.post(new TerritoireEvents.Perdu(O.id, zone.id, zone.nom, true));
+    }
+
     private void traiter(ServerLevel level, ClanStore store, Zone zone, List<ServerPlayer> joueurs, long now) {
         EtatTerritoire e = data.etat(zone.id);
         Clan O = clanProprio(store, e);
+        // 27/10 (regle du proprietaire) : tenue de tenue_min apres la capture, protegee tout ce temps, puis zone libre ; une
+        // capture d'avant la regle (ou dont la tenue s'est finie serveur eteint) redevient libre ici, au premier cycle
+        long tenue = O == null ? 0 : tenueMs();
+        if (tenue > 0) {
+            long fin = e.captureLe + tenue;
+            if (now >= fin) {
+                finDeTenue(zone, e, O, now);
+                O = null;
+            } else if (e.protegeeJusque != fin) {
+                e.protegeeJusque = fin;   // protegee toute la tenue (aussi apres un changement de tenue_min)
+                data.setDirty();
+            }
+        }
         float progAvant = e.progression;
         // regroupement des presents : membres de O (bonus de loot), un clan capteur C (n membres), ou plusieurs
         int nO = 0, nC = 0;
@@ -486,7 +526,7 @@ public final class Territoires {
         rafraichirDrapeau(level, zone, O, etat);
         // barre de capture des joueurs presents (4 Hz max : ce cycle fait 2 Hz ; envoi seulement si changement).
         // Le reste de protection est arrondi a la minute superieure (ce que le client affiche) : sinon chaque cycle
-        // produirait un paquet different pendant les 10 min de protection.
+        // produirait un paquet different pendant toute la protection (la tenue entiere depuis le 27/10).
         long protegeeMs = e.protegeeJusque > now ? (e.protegeeJusque - now + 59_999) / 60_000 * 60_000 : 0;
         String capteurTag = "";
         if (e.capteur != null) {
@@ -523,7 +563,9 @@ public final class Territoires {
         e.proprio = C.id;
         e.captureLe = now;
         e.prochainRavitaillement = now + ClansConfig.RAVITAILLEMENT_MIN.get() * 60_000L * (100 - fr.heralisz.clans.model.Arbre.ravitaillementPct(C.palier(fr.heralisz.clans.model.Arbre.Branche.RAVITAILLEMENT))) / 100;
-        e.protegeeJusque = now + ClansConfig.PROTECTION_MIN.get() * 60_000L;
+        // 27/10 : protegee toute la tenue (puis libre, traiter) ; sans tenue, protection_min comme avant
+        long tenue = tenueMs();
+        e.protegeeJusque = now + (tenue > 0 ? tenue : ClansConfig.PROTECTION_MIN.get() * 60_000L);
         e.progression = 0;
         e.capteur = null;
         data.setDirty();

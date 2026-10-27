@@ -5,6 +5,12 @@ quelques composants (à revendre à Mila ou à garder pour fabriquer). C'est un 
 richesse : chaque composant de la règle a CHANCE (10 %) de sortir, MAX_PIECES (2) au plus par objet, et un objet qui ne
 rend rien donne quelques hérals. Un objet se recycle en SECONDES_PAR_OBJET (3 s) dans l'écran du recycleur.
 
+Paquets (« par ») : une règle peut demander N objets à la fois (munitions : un paquet de 15, comme la recette). Depuis le
+27/10 (règle du propriétaire : « pouvoir recycler au moins 1 balle ; 1 balle, tu divises la proba par 15 »), le serveur
+accepte aussi un paquet incomplet de n objets (1 à N) : le tirage d'un paquet complet a lieu avec une chance n / N, sinon
+rien, et le temps est x n / N ; même espérance par objet (plafond MAX_PIECES et hérals compris). Rien à changer ici quand N dépasse la taille d'une pile (roquettes empilées par 6, règle « par 15 ») : chaque case
+se recycle au prorata. N reste donc celui de la recette (le refus « trop rentable » se juge sur un paquet complet).
+
 Règles, de la plus précise à la plus large :
   1. l'objet a une recette à la Table d'armurier (gunpack heraliz_crafts) : ses composants, unité par unité ;
   2. sinon une règle de famille (armures, sacs, soins, nourriture, mêlée, kits, outils...) : composants du niveau de la
@@ -82,7 +88,7 @@ def composants_jamais():
     return ["heraliz_composants:" + i for i in sorted(set(ids)) if i not in COMPOSANTS_RECYCLABLES]
 
 
-# munitions sans recette : une chance par paquet de 15
+# munitions sans recette : une chance par paquet de 15 (un paquet incomplet au prorata, côté serveur, depuis le 27/10)
 MUNITIONS = ("tacz:ammo", "AmmoId", ["bocal_poudre", "ferraille"], 15)
 
 

@@ -108,7 +108,9 @@ TEXTES = {
     "gui.heraliz_quetes.recycleur.herals_n": ("%s hérals", "%s herals", "%s гералов"),
     "gui.heraliz_quetes.recycleur.herals_n_un": ("1 héral", "1 heral", "1 герал"),
     "gui.heraliz_quetes.recycleur.herals_un": ("+ 1 héral sur ton compte", "+ 1 heral to your account", "+ 1 герал на счёт"),
-    "gui.heraliz_quetes.recycleur.paquet": ("Par paquet de %s", "In packs of %s", "Пачками по %s"),
+    # 27/10 : un paquet incomplet se recycle aussi, chances au prorata (règle du propriétaire)
+    "gui.heraliz_quetes.recycleur.paquet": ("Paquet de %s", "Pack of %s", "Пачка из %s"),
+    "gui.heraliz_quetes.recycleur.paquet_partiel": ("%s sur %s : moins de chances", "%s of %s: lower odds", "%s из %s: шансы ниже"),
     "gui.heraliz_quetes.recycleur.etat_objet": ("état %s %%", "condition %s %%", "состояние %s %%"),
     "gui.heraliz_quetes.recycleur.etat.0": ("Se recycle", "Recyclable", "Перерабатывается"),
     "gui.heraliz_quetes.recycleur.etat.1": ("Ne se recycle pas", "Not recyclable", "Не перерабатывается"),

@@ -62,8 +62,9 @@ import java.util.UUID;
  * fait pas perdre le cycle. Heure réelle, gardée hors du monde ({@code <serveur>/heraliz_evenements/helico_etat.json}) ;
  * au démarrage, une heure déjà passée (ou absente, ou dans la minute) est repoussée de 30 à 60 min au hasard : jamais
  * d'hélicoptère juste après un redémarrage. À l'heure prévue, conditions du Directeur (joueurs en survie sur la carte, pas
- * de ClashWar, un seul à la fois) ; refusé : nouvel essai toutes les {@code reessai_minutes}. Jamais annoncé à l'avance aux
- * joueurs (le staff le voit : {@code /event helico info}).</li>
+ * de ClashWar, un seul à la fois) ; refusé (27/10, règle du propriétaire : jamais de nouvel essai rapproché) : le cycle
+ * repart comme s'il avait eu lieu, pause puis instant au hasard dans la fenêtre (l'ancienne clé {@code reessai_minutes}
+ * est ignorée). Jamais annoncé à l'avance aux joueurs (le staff le voit : {@code /event helico info}).</li>
  * <li><b>Filet de sécurité</b> : un hélicoptère encore « en cours » après sa durée de vie la plus longue possible (vol
  * maximal, chute, feu, retrait, marge ; ×1,5 contre un serveur qui rame), en heure réelle, est annulé
  * ({@link #seconde}).</li>
@@ -93,7 +94,7 @@ final class Helico implements Evenement {
 
     // ------------------------------------------------------------------ réglages (helico.json)
     private static int joueursMin = 10;
-    private static long pauseMs = 240 * 60_000L, fenetreMs = 120 * 60_000L, reessaiMs = 5 * 60_000L;
+    private static long pauseMs = 240 * 60_000L, fenetreMs = 120 * 60_000L;
     private static String coffreT7 = "t7_coffre_armes";
     private static int coffreT7Min = 15;
     private static final HelicoApi.Reglages R = new HelicoApi.Reglages();
@@ -138,7 +139,9 @@ final class Helico implements Evenement {
     // ------------------------------------------------------------------ cycle
     /**
      * Une fois par minute, actif ou non (planificateur propre : pas d'heure fixe). À l'heure tirée, demande le départ au
-     * Directeur ; refusé, nouvel essai {@code reessai_minutes} plus tard.
+     * Directeur. Refusé (27/10, règle du propriétaire : jamais de nouvel essai rapproché) : le cycle repart comme s'il
+     * avait eu lieu, pause puis instant au hasard dans la fenêtre ({@link #tirer}) ; il partira alors si les conditions
+     * sont remplies.
      */
     @Override
     public void minute(MinecraftServer server) {
@@ -154,13 +157,11 @@ final class Helico implements Evenement {
             dernierRefus = null;
             return;
         }
-        prochainMs = maintenant + reessaiMs;
+        prochainMs = tirer();
         sauverEtat();
-        // une ligne au journal par sorte de refus (pas à chaque essai, ni à chaque joueur de plus ou de moins)
-        String sorte = refus.replaceAll("\\d+", "N");
-        if (dernierRefus == null || !sorte.equals(dernierRefus.replaceAll("\\d+", "N"))) {
-            Outils.journal("helico : pas lance (" + refus + "), nouvel essai toutes les " + reessaiMs / 60_000L + " min");
-        }
+        // un essai toutes les 4 à 6 h : une ligne au journal à chaque refus
+        Outils.journal("helico : pas lance (" + refus + "), prochain essai vers " + heure(prochainMs) + " (intervalle normal : "
+                + pauseMs / 60_000L + " min + hasard sur " + fenetreMs / 60_000L + " min)");
         dernierRefus = refus;
     }
 
@@ -641,7 +642,8 @@ final class Helico implements Evenement {
             joueursMin = entier(o, "joueurs_min", 10, 0, 200);
             pauseMs = entier(o, "pause_minutes", 240, 10, 7 * 24 * 60) * 60_000L;
             fenetreMs = entier(o, "fenetre_minutes", 120, 0, 24 * 60) * 60_000L;
-            reessaiMs = entier(o, "reessai_minutes", 5, 1, 120) * 60_000L;
+            // 27/10 : plus de nouvel essai rapproché (refusé : pause + fenêtre, comme s'il avait eu lieu) ; ancienne clé signalée
+            if (o.has("reessai_minutes")) HeralizEvenements.LOG.warn("[evenements] helico.json : reessai_minutes ignore (un depart refuse attend l'intervalle normal)");
             coffreT7 = o.has("coffre_t7") ? o.get("coffre_t7").getAsString() : "t7_coffre_armes";
             coffreT7Min = entier(o, "coffre_t7_minutes", 15, 1, 120);
             R.pv = (float) reel(o, "pv", 600, 10, 100_000);
@@ -695,7 +697,8 @@ final class Helico implements Evenement {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", "Helicoptere militaire (evenement aleatoire, aucune heure dans planning.json). Apres chaque helicoptere"
                 + " (abattu, parti, annule) : pause_minutes, puis apparition a un instant tire au hasard dans fenetre_minutes ; refuse"
-                + " (joueurs_min en survie sur la carte, ClashWar, un seul a la fois) : nouvel essai toutes les reessai_minutes."
+                + " (joueurs_min en survie sur la carte, ClashWar, un seul a la fois) : pas de nouvel essai rapproche, le cycle repart"
+                + " comme s'il avait eu lieu (pause_minutes puis fenetre_minutes)."
                 + " Il n'attaque que les joueurs qui lui ont fait des degats (oublies apres oubli_agresseurs_s), tire jusqu'a"
                 + " portee_tir blocs, les suit jusqu'a poursuite blocs. Patrouille de patrouille_min a patrouille_max minutes (au"
                 + " hasard) ; attaque, il ne part que reste_apres_attaque_s secondes apres le dernier coup recu, jamais apres"
@@ -706,7 +709,6 @@ final class Helico implements Evenement {
         o.addProperty("joueurs_min", 10);
         o.addProperty("pause_minutes", 240);
         o.addProperty("fenetre_minutes", 120);
-        o.addProperty("reessai_minutes", 5);
         o.addProperty("pv", 600);
         o.addProperty("mult_explosifs", 2.0);
         o.addProperty("mult_queue", 1.25);

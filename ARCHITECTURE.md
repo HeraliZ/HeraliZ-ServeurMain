@@ -486,3 +486,23 @@ Rien de tout cela n'a été testé en jeu.
 
 Rien de tout cela n'a été testé en jeu.
 
+**Règles du propriétaire du 27/10** (Événements 1.1.2, Clans 3.7.2, Quêtes 1.13.1) :
+- **Événements refusés** (Directeur) : un événement du planning qui ne peut pas partir (pas assez de joueurs, ClashWar,
+  aucun lieu…) n'est plus réessayé 15 min plus tard : son attente repart pour un intervalle entier, comme s'il avait eu
+  lieu (largage : 3 h 30 ; hélicoptère : 4 h de pause puis 2 h de hasard ; créneau à heure fixe : le suivant). Journal :
+  « pas lance (…), prochain essai a HH:MM (intervalle normal) ». Clés `reessai_apres` (planning.json) et
+  `reessai_minutes` (helico.json) retirées et ignorées. `/event lancer`, `/event helico lancer|prochain` inchangés.
+- **Territoires tenus 2 h** : après une capture, la zone est protégée pendant toute la tenue (`tenue_min` = 120 de
+  `heralisz_clans-common.toml` ; `protection_min` ne sert plus qu'avec `tenue_min = 0`, ancienne règle), puis elle
+  redevient libre toute seule (`Territoires.finDeTenue` : évènement `Perdu` marqué `finTenue`, donc plus de revenu, de
+  bonus de loot ni de minutes tenues ; message aux membres connectés du clan, 3 langues) et n'importe qui la recapture.
+  Le HUD (« Protégée 1 h 52 »), la carte M et `/territoire info` montrent le reste. Une zone capturée avant la règle
+  redevient libre au premier passage après le démarrage. On ne prend donc plus une zone à un clan : la ligne PVP
+  « Prendre une zone à un clan » de l'onglet Saison n'est montrée qu'avec `tenue_min = 0`.
+- **Recycleur, paquets incomplets** : une règle « par 15 » (munitions) accepte 1 à 14 objets : le tirage d'un paquet
+  complet a lieu une fois sur 15 / n, sinon rien (même gain moyen par objet, plafond et hérals compris), temps x n / 15
+  (0,5 s au moins) ; les roquettes (piles de 6) se recyclent case par case ; aperçu « 6 sur 15 : moins de chances » avec
+  les chances réduites.
+
+Rien de tout cela n'a été testé en jeu.
+

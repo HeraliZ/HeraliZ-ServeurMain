@@ -278,7 +278,12 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         g.renderItem(objet, (int) xi + 6, (int) iy + 6);
         float nx = xi + 34, nw = x + w - 10 - nx;
         Net.texte(g, f, Net.couper(f, objet.getHoverName().getString(), Ui.BOLD, nw), Ui.BOLD, nx, y0 + 21 + Net.cap(Ui.BOLD) / 2, Ui.TEXT);
-        String sous = TexteClient.tr("gui.heraliz_quetes.rarete." + rang) + (a.par() > 1 ? " · " + t("paquet", a.par()) : "")
+        // 27/10 : un paquet incomplet se recycle aussi : le tirage d'un paquet complet a lieu une fois sur par / dansCase
+        // (serveur, Recyclage.tirer) ; chances, moyenne et hérals ci-dessous multipliés par cette part
+        int dansCase = Math.min(objet.getCount(), a.par());
+        float part = a.par() <= 1 ? 1f : Math.max(0f, Math.min(1f, dansCase / (float) a.par()));
+        String paquet = a.par() <= 1 ? "" : " · " + (dansCase < a.par() ? t("paquet_partiel", dansCase, a.par()) : t("paquet", a.par()));
+        String sous = TexteClient.tr("gui.heraliz_quetes.rarete." + rang) + paquet
                 + (a.usure() < 100 ? " · " + t("etat_objet", a.usure()) : "");
         Net.texte(g, f, Net.couper(f, sous, Ui.SMALL, nw), Ui.SMALL, nx, y0 + 34 + Net.cap(Ui.SMALL) / 2, RARETES[rang]);
         float y = y0 + 58;
@@ -302,11 +307,11 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
                 g.renderItem(c, 0, 0);
                 g.pose().popPose();
                 Net.texte(g, f, Net.couper(f, c.getHoverName().getString(), Ui.SMALL, w - 70), Ui.SMALL, xi + 19, y + 6, Ui.TEXT);
-                int pct = Math.round((float) (1 - Math.pow(1 - chance, n)) * 100);
+                int pct = Math.round((float) (part * (1 - Math.pow(1 - chance, n))) * 100);
                 Net.droite(g, f, pct + " %", PG, x + w - 10, y + 6, Ui.TEXT);
                 y += 17;
             }
-            List<FormattedCharSequence> l = f.split(Ui.lit(t("chance", Math.round(1 / Math.max(0.001f, chance)), max), Ui.SMALL), (int) w - 20);
+            List<FormattedCharSequence> l = f.split(Ui.lit(t("chance", Math.round(1 / Math.max(0.001f, chance * part)), max), Ui.SMALL), (int) w - 20);
             for (int i = 0; i < Math.min(2, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, xi, y + 3 + i * 9, Ui.MUTED);
             y += 4 + Math.min(2, l.size()) * 9 + 3;
             Net.rect(g, xi, y, x + w - 10, y + Net.point(), Ui.argb(BLANC, 26));
@@ -315,11 +320,13 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         if (a.etat() == 0 || a.etat() == 4) {
             int total = 0;
             for (int n : a.nombres()) total += n;
-            double rien = Math.pow(1 - chance, total), moyenne = moyenne(total, chance, max);
+            // paquet incomplet (27/10) : « rien » = tirage pas fait, ou fait sans pièce ; hérals = moyenne quand rien ne sort
+            double rienPlein = Math.pow(1 - chance, total), rien = 1 - part * (1 - rienPlein), moyenne = part * moyenne(total, chance, max);
+            long herals = part >= 1f ? a.herals() : Math.round(a.herals() * part * rienPlein / Math.max(1e-6, rien));
             Net.texte(g, f, t("moyenne"), Ui.SMALL, xi, y + 4, Ui.MUTED);
             Net.droite(g, f, t("pieces", String.format(Locale.ROOT, "%.1f", moyenne).replace('.', ',')), PG, x + w - 10, y + 4, Ui.OK);
             Net.texte(g, f, Net.couper(f, t("rien_du_tout", Math.round(rien * 100)), Ui.SMALL, w - 70), Ui.SMALL, xi, y + 16, Ui.MUTED);
-            Net.droite(g, f, a.herals() == 1 ? t("herals_n_un") : t("herals_n", a.herals()), PG, x + w - 10, y + 16, Ui.OR);
+            Net.droite(g, f, herals == 1 ? t("herals_n_un") : t("herals_n", herals), PG, x + w - 10, y + 16, Ui.OR);
             if (a.etat() == 4) {
                 List<FormattedCharSequence> l = f.split(Ui.lit(t("raison.4", a.par()), Ui.SMALL), (int) w - 20);
                 for (int i = 0; i < Math.min(2, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, xi, y + 30 + i * 9, Ui.AMBRE);

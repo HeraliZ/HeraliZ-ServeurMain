@@ -194,7 +194,7 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
 | Kill d'un joueur / mort | +1 / −1 | hors même IP, même clan, victime sans arme ni armure ; même victime ×1, ×0,5 puis 0 sur 6 h ; jamais sous 0 | `ClanEvents`, `Saison.kill` |
 | ClashWar | places 100 / 60 / 40 / 20, participation 5, **×2** | au moins 4 clans différents | `clashwar` · `Recompenses` |
 | Prise du cœur pendant la Purge | −15 % au clan pris, +10 % à l'attaquant | une fois par clan pris et par Purge | `bases` · `PriseCoeur` |
-| Capture d'un drapeau (25/10) | zone libre : 3 × valeur × difficulté (PVE) ; prise à un clan qui la tenait depuis 60 min : × 2 (PVP) | même zone et même clan : 12 h ; mêmes deux clans sur la même zone : 48 h ; 40 points de capture par clan et par jour | `clans` · `Territoires.capturer`, `Saison.capture` |
+| Capture d'un drapeau (25/10) | zone libre : 3 × valeur × difficulté (PVE) ; prise à un clan qui la tenait depuis 60 min : × 2 (PVP) — **depuis le 27/10, une zone n'est tenue que 2 h, protégée tout ce temps, puis redevient libre** (`tenue_min` de `heralisz_clans-common.toml`) : on ne la prend plus à un clan, seule la capture d'une zone libre compte (la ligne PVP de l'onglet Saison n'est montrée qu'avec `tenue_min = 0`) | même zone et même clan : 12 h ; mêmes deux clans sur la même zone : 48 h ; 40 points de capture par clan et par jour | `clans` · `Territoires.capturer`, `Saison.capture` |
 
 | Largage public (25/10) | 8 au clan du premier qui ouvre la caisse | 3 par clan et par jour ; lancé par le staff : sans points sauf `avec_points` | `evenements` · `Largage` |
 | Hélicoptère abattu (25/10, rien testé en jeu) | aucun par lui-même : 12 à la revente de sa boîte noire (`objet_boite_noire_helico`) | 2 par clan et par jour ; lancé par le staff : boîte noire « essai » (sans points) sauf `avec_points` | `evenements` · `Helico` |
@@ -212,8 +212,10 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
 ### 4.1 Largage public disputé — **codé le 25/10** (rien testé en jeu)
 - **But** : escarmouche courte et fréquente : **toutes les 3 h 30** (demande du propriétaire, 25/10 ; `planning.json` :
   `"toutes_les": "3:30"`, premier départ 30 min après le démarrage si rien n'est prévu ; l'heure du suivant est gardée
-  dans `heraliz_evenements/etat.json` : un redémarrage ne remet pas l'attente à zéro ; refusé faute de joueurs : nouvel
-  essai 15 min plus tard).
+  dans `heraliz_evenements/etat.json` : un redémarrage ne remet pas l'attente à zéro ; **refusé** (pas assez de joueurs,
+  ClashWar, aucun lieu… ; règle du propriétaire du 27/10) : **pas de nouvel essai rapproché**, l'attente repart pour
+  3 h 30 comme s'il avait eu lieu, et il part à ce moment-là si les conditions sont remplies ; journal : « pas lance (…),
+  prochain essai a HH:MM (intervalle normal) » ; l'ancienne clé `reessai_apres` est ignorée).
 - **Déroulement** : un point est **tiré au hasard sur la carte** (dans la bordure du monde moins 150 blocs ; sol à ciel
   ouvert, ni eau ni feuillage, terrain à peu près plat, à 48 blocs au moins des bases ; réglages dans
   `serveur/config/heraliz_evenements/largage.json`, `"lieux": "poses"` ou `"les_deux"` pour utiliser aussi les lieux du
@@ -277,8 +279,9 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
   écrite (un arrêt du serveur pendant le vol ne casse pas le cycle). Heure gardée dans
   `heraliz_evenements/helico_etat.json` (hors du monde) ; au démarrage du serveur, une heure absente, passée ou dans la
   minute est repoussée de 30 à 60 min au hasard (jamais d'hélicoptère juste après un redémarrage). À l'heure prévue :
-  10 joueurs en survie sur la carte au moins, pas de ClashWar, un seul à la fois, sinon nouvel essai toutes les 5 min.
-  Jamais annoncé à l'avance (staff : `/event helico info`). Le Directeur appelle `Evenement.minute` une fois par minute.
+  10 joueurs en survie sur la carte au moins, pas de ClashWar, un seul à la fois ; sinon (27/10, règle du propriétaire)
+  **pas de nouvel essai rapproché** : le cycle repart comme s'il avait eu lieu (4 h de pause puis un instant dans les 2 h ;
+  l'ancienne clé `reessai_minutes` de `helico.json` est ignorée). Jamais annoncé à l'avance (staff : `/event helico info`). Le Directeur appelle `Evenement.minute` une fois par minute.
 - **Vol** (module monde, `airstrike/entity/HelicopterServeur`, `api/HelicoApi`, `helico/Veille`) : entre par le bord de la
   carte le plus proche d'un joueur, au moins 56 blocs à l'intérieur de la bordure ; son tronçon d'arrivée est demandé par
   un ticket et jamais chargé sur le fil du serveur (60 s au plus, sinon perdu). Patrouille entre des points tirés sur la

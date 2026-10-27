@@ -40,6 +40,15 @@ import java.util.Map;
  * {@code chance} (10 %), au plus {@code max_pieces} (2) pièces par objet, et un objet qui n'a rien rendu donne quelques
  * hérals. C'est un tri pour qui est plein, pas une source de richesse.
  *
+ * <p>Paquets incomplets (27/10, règle du propriétaire : « pouvoir recycler au moins 1 balle : si 15 balles c'est 15 %
+ * d'avoir un scrap, 1 balle tu divises la proba par 15 ») : une règle « par N » ({@code par}, munitions par 15) accepte
+ * de 1 à N objets d'une case. Pour n objets : le tirage d'un paquet complet a lieu avec une chance n / N, sinon rien (ni
+ * pièce ni héral) ; chaque pièce a donc n / N fois sa chance (jamais plus que la chance entière) et l'espérance par objet
+ * est exactement celle d'un paquet complet, plafond {@code max_pieces} et hérals « rien » compris (un tirage par pièce
+ * réduit aurait moins buté sur le plafond : recycler balle par balle aurait rapporté plus). Le temps de recyclage est
+ * aussi x n / N (0,5 s au moins). Une munition qui s'empile par moins de N (roquettes par 6) se recycle donc case par
+ * case. Plus jamais d'état « il en manque » ({@link #MANQUE} gardé pour l'écran, plus donné).
+ *
  * <p>Sécurité : tout se décide sur le fil serveur, objet par objet ; à la fermeture, ce qui reste (à recycler ou récupéré)
  * est rendu, ou tombe aux pieds d'un joueur mort ou déconnecté. Objets à vie, prêtés par un match, à camo à vie, de
  * quête : jamais recyclés ({@link Echanges#interdit}) ; objets achetés chez un marchand, refusés s'ils rapporteraient
@@ -171,8 +180,15 @@ final class Recyclage {
         return null;
     }
 
-    /** Ce que le recycleur ferait de cet objet : état, composants possibles, taille du paquet, hérals si rien ne sort. */
+    /**
+     * Ce que le recycleur ferait de cet objet : état, composants possibles, taille du paquet complet ({@code par} ; 27/10 :
+     * un paquet incomplet est permis, {@link #tirer}), hérals si rien ne sort, facteur d'usure.
+     */
     record Verdict(int etat, int rang, int par, List<String> rend, long herals, float facteur, int usure) {
+        /** Part d'un paquet complet que représentent {@code n} objets (1 pour un objet seul ou un paquet complet). */
+        float part(int n) {
+            return Math.max(0f, Math.min(1f, n / (float) Math.max(1, par)));
+        }
     }
 
     /**
@@ -209,12 +225,16 @@ final class Recyclage {
         if (r == null) return new Verdict(NON, rang, 1, List.of(), herals, f, u);
         List<String> rend = r.rendPour(rang);
         long achat = SaisonQuetes.prixVente(ventes, s);
+        // refus « trop rentable » jugé sur un paquet complet : un paquet incomplet a la même espérance par objet (tirer)
         if (achat >= 0 && tropRentable(e, rend, rang, achat * r.par(), ventes, valeurs)) return new Verdict(REFUSE, rang, r.par(), rend, herals, f, u);
-        if (s.getCount() < r.par()) return new Verdict(MANQUE, rang, r.par(), rend, herals, f, u);
+        // 27/10 : plus d'état MANQUE, un paquet incomplet se recycle au prorata (tirer)
         return new Verdict(OK, rang, r.par(), rend, herals, f, u);
     }
 
-    /** Aperçu d'une case pour l'écran : composants regroupés (« Ferraille III » x 4), dans l'ordre de la règle. */
+    /**
+     * Aperçu d'une case pour l'écran : composants regroupés (« Ferraille III » x 4), dans l'ordre de la règle. Chances et
+     * hérals d'un paquet complet : l'écran les multiplie lui-même par la part du paquet posée dans la case (27/10).
+     */
     static Reseau.ApercuCase apercu(int index, Verdict v) {
         Map<String, Integer> parComposant = new LinkedHashMap<>();
         for (String c : v.rend()) parComposant.merge(c, 1, Integer::sum);
@@ -226,8 +246,16 @@ final class Recyclage {
     record Tirage(List<ItemStack> pieces, long herals) {
     }
 
-    static Tirage tirer(Verdict v) {
+    private static final Tirage RIEN = new Tirage(List.of(), 0);
+
+    /**
+     * Tirage pour {@code n} objets retirés de la case (1 à {@code par}). Paquet incomplet (27/10) : le tirage d'un paquet
+     * complet n'a lieu qu'avec une chance n / par, sinon rien du tout ; chaque pièce a ainsi n / par fois sa chance et
+     * l'espérance par objet (pièces, plafond et hérals « rien » compris) est celle d'un paquet complet.
+     */
+    static Tirage tirer(Verdict v, int n) {
         Etat e = etat;
+        if (n < v.par() && Moteur.RANDOM.nextDouble() >= v.part(n)) return RIEN;
         List<String> sortis = new ArrayList<>();
         double chance = e.chance * v.facteur();   // objet abîmé : moins de chances (26/10)
         for (String c : v.rend()) if (Moteur.RANDOM.nextDouble() < chance) sortis.add(c);

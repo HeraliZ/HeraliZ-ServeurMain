@@ -133,7 +133,8 @@ Cocher au fur et à mesure ; noter ce qui ne va pas (capture d'écran + langue d
 - [ ] Largage lancé sans « avec_points » : aucun point. Redémarrer le serveur avec une caisse au sol non ouverte puis
       l'ouvrir : les points sont donnés une fois.
 - [ ] `/event` (joueur, sur la carte) : « Prochains événements : 20:39 largage · 00:09 largage · … » (toutes les 3 h 30) ;
-      au planning, avec moins de 4 joueurs sur la carte : pas de largage, nouvel essai 15 min plus tard (journal).
+      au planning, avec moins de 4 joueurs sur la carte : pas de largage, et (27/10) pas de nouvel essai rapproché : le
+      suivant 3 h 30 plus tard, comme s'il avait eu lieu (journal : « prochain essai a HH:MM (intervalle normal) », `/event`).
 - [ ] **Caisse de largage façon T7** : à l'ouverture, l'écran des coffres T7 (sans badge « T7 »), objets en « ? »
       découverts un par un (cadre rouge qui se trace, son, fondu, couleur de la rareté), plus long pour un objet rare ;
       on ne prend un objet qu'une fois découvert ; on ne peut rien déposer ; à deux joueurs devant la même caisse, la
@@ -192,8 +193,8 @@ en **survie** (un tir en créatif ou en spectateur passe l'hélicoptère en « e
       « +12 points de saison » (2 par clan et par jour) ; hélicoptère lancé par le staff sans « avec_points », ou touché en
       créatif ou en spectateur : boîte noire « essai » (hérals seulement).
 - [ ] **Cycle** : jamais annoncé à l'avance ; après un hélicoptère (abattu, parti, annulé), le suivant 4 h à 6 h plus tard
-      (`/event helico info`) ; avec moins de 10 joueurs sur la carte ou un ClashWar : nouvel essai toutes les 5 min (une
-      ligne au journal par sorte de refus). Redémarrage pendant le vol ou l'incendie : plus rien dans le monde, aucun point
+      (`/event helico info`) ; avec moins de 10 joueurs sur la carte ou un ClashWar (27/10) : pas de nouvel essai
+      rapproché, le prochain encore 4 h à 6 h plus tard (une ligne au journal par refus, « intervalle normal »). Redémarrage pendant le vol ou l'incendie : plus rien dans le monde, aucun point
       donné deux fois, prochain passage gardé (heure écrite dès le départ) ; heure dépassée pendant l'arrêt : 30 à 60 min
       après le démarrage, jamais tout de suite.
 - [ ] **Perf** : `/diag mesure` pendant un combat et un crash (ticks dans les objectifs) ; petit PC : FPS près de l'épave.

@@ -94,3 +94,21 @@ Serveur d'essai local déjà à jour (`C:\hzt`, jars de `livraison/` du 26/10, n
 - [ ] Gunpacks : après la mise en ligne (anciens dossiers supprimés du Ptero) et le nouveau launcher, plus aucun dossier
       `arkaniaz_*` dans `tacz` chez un joueur ; aucune case rose et noir dans le menu créatif.
 
+## 8. Règles du 27/10 (événements refusés, territoires tenus 2 h, recycleur)
+
+- [ ] Largage du planning avec moins de 4 joueurs sur la carte : pas de largage ; journal `heraliz_evenements/journal.log`
+      : « pas lance (…), prochain essai a HH:MM (intervalle normal) », 3 h 30 plus tard ; `/event` montre cette heure ;
+      à cette heure, avec 4 joueurs, il part. `/event lancer largage` part toujours tout de suite.
+- [ ] Hélicoptère à l'heure tirée avec moins de 10 joueurs : pas d'hélicoptère, `/event helico info` donne une heure 4 h à
+      6 h plus tard (plus d'essai toutes les 5 min) ; `/event helico prochain 1` puis `lancer` marchent toujours.
+- [ ] Capturer un drapeau : message au clan « … est à vous pendant 2 h 00 … » ; HUD « Protégée 1 h 59 » ; un autre clan
+      au drapeau ne fait pas avancer la barre (« Protégée ») ; carte M : protection 2 h ; au bout de 2 h, message « Fin de
+      la tenue … redevient libre » et notification, zone libre sur le HUD, la carte et le drapeau ; plus de revenu
+      (« banque … creditee … (territoires) » s'arrête), plus de bonus de loot ; recapture possible tout de suite, par
+      n'importe quel clan. Pour aller vite : `tenue_min = 3` dans `heralisz_clans-common.toml` (relu par Forge).
+- [ ] Au premier démarrage avec Clans 3.7.2 : une zone capturée il y a plus de 2 h redevient libre tout de suite (ligne
+      « fin de la tenue » dans le journal du serveur) ; onglet Saison : plus de ligne « Prendre une zone à un clan ».
+- [ ] Recycleur : 1 balle de 9 mm se recycle (« 1 sur 15 : moins de chances », chances divisées par 15, 0,5 s) ; 15 balles
+      : « Paquet de 15 », 3 s ; 20 balles : un paquet de 15 puis un de 5 ; 6 roquettes dans une case : se recyclent
+      (« 6 sur 15 »), plus jamais « Il en manque » ; les 3 langues : la ligne sous le nom ne déborde pas.
+

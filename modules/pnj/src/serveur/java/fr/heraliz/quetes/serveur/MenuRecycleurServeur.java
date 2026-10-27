@@ -21,8 +21,9 @@ import java.util.function.Predicate;
 
 /**
  * Recycleur, partie serveur (25/10) : à chaque tick (broadcastChanges, appelé par le serveur pour le menu ouvert), la
- * première case « à recycler » qui se recycle avance de 1 / (secondes x 20) ; au bout, un paquet de l'objet est retiré, le
- * tirage ({@link Recyclage#tirer}) va dans les cases « récupéré », les hérals sur le compte. Rien ne démarre si la sortie
+ * première case « à recycler » qui se recycle avance de 1 / (secondes x 20) ; au bout, un paquet de l'objet est retiré (27/10 :
+ * complet, ou ce qui reste de la case, avec des chances et un temps au prorata), le tirage ({@link Recyclage#tirer}) va dans
+ * les cases « récupéré », les hérals sur le compte. Rien ne démarre si la sortie
  * n'a pas assez de cases libres pour le pire tirage (rien ne se perd). L'aperçu de chaque case est renvoyé à l'écran quand
  * le contenu change. Fermeture : tout ce qui reste est rendu (ou tombe au sol si le joueur est mort ou parti).
  */
@@ -56,10 +57,11 @@ final class MenuRecycleurServeur extends MenuRecycleur {
 
     private void avancer() {
         if (++tick % 5 == 1) apercuSiChange();
-        int total = Math.max(10, Recyclage.ticksParObjet());
-        donnees.set(D_DIXIEMES, total / 2);
         donnees.set(D_HERALS, (int) Math.min(Short.MAX_VALUE, herals));
         int i = choisir();
+        // durée de l'objet en cours (27/10 : paquet incomplet, au prorata) ; l'écran l'affiche (« 1,2 s par objet »)
+        int total = duree(i);
+        donnees.set(D_DIXIEMES, total / 2);
         if (i < 0) {
             enCours = -1;
             progres = 0;
@@ -96,15 +98,30 @@ final class MenuRecycleurServeur extends MenuRecycleur {
         return -1;
     }
 
+    /** 27/10 : un paquet incomplet se recycle aussi (chances au prorata, {@link Recyclage#tirer}). */
     private boolean ok(int i) {
         Recyclage.Verdict v = verdicts[i];
-        return v != null && v.etat() == Recyclage.OK && entree.getItem(i).getCount() >= v.par();
+        return v != null && v.etat() == Recyclage.OK && !entree.getItem(i).isEmpty();
     }
 
-    /** Paquets qui attendent, celui en cours compris. */
+    /** Objets retirés de la case à la fois : un paquet complet, ou ce qui reste (1 à {@code par}). */
+    private int quantite(int i) {
+        return Math.max(1, Math.min(entree.getItem(i).getCount(), verdicts[i].par()));
+    }
+
+    /** Ticks pour l'objet (ou le paquet) de la case : {@code secondes_par_objet} x part du paquet, 0,5 s au moins. */
+    private int duree(int i) {
+        int plein = Math.max(10, Recyclage.ticksParObjet());
+        if (i < 0) return plein;
+        return Math.max(10, Math.round(plein * verdicts[i].part(quantite(i))));
+    }
+
+    /** Paquets (complets ou non) qui attendent, celui en cours compris. */
     private int attente() {
         int n = 0;
-        for (int i = 0; i < ENTREES; i++) if (ok(i)) n += entree.getItem(i).getCount() / verdicts[i].par();
+        for (int i = 0; i < ENTREES; i++) {
+            if (ok(i)) n += (entree.getItem(i).getCount() + verdicts[i].par() - 1) / verdicts[i].par();
+        }
         return n;
     }
 
@@ -138,20 +155,21 @@ final class MenuRecycleurServeur extends MenuRecycleur {
 
     private void recycler(int i) {
         Recyclage.Verdict v = verdicts[i];
-        ItemStack retire = entree.removeItem(i, v.par());
-        if (retire.getCount() < v.par()) {
-            // ne devrait pas arriver (vérifié juste avant) : rien n'est perdu, le paquet incomplet est remis
+        int n = quantite(i);
+        ItemStack retire = entree.removeItem(i, n);
+        if (retire.getCount() < n) {
+            // ne devrait pas arriver (vérifié juste avant) : rien n'est perdu, ce qui a été retiré est remis
             entree.setItem(i, retire);
             return;
         }
-        Recyclage.Tirage t = Recyclage.tirer(v);
+        Recyclage.Tirage t = Recyclage.tirer(v, n);
         for (ItemStack piece : t.pieces()) {
             ItemStack reste = ((SimpleContainer) sortie).addItem(piece);
             if (!reste.isEmpty()) joueur.getInventory().placeItemBackInInventory(reste);
             composants += piece.getCount();
         }
         if (t.herals() > 0 && Ponts.deposer(joueur.getUUID(), t.herals(), "Recycleur")) herals += t.herals();
-        recycles += v.par();
+        recycles += n;
         joueur.playNotifySound(t.pieces().isEmpty() ? SoundEvents.GRINDSTONE_USE : SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS,
                 0.35F, t.pieces().isEmpty() ? 0.8F : 1.1F);
     }

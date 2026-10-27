@@ -281,7 +281,8 @@ public final class ClanHud {
             }
             case PROTEGEE -> {
                 couleur = z.proprioTag().isEmpty() ? Ui.ACCENT_NEUTRE : z.couleur();
-                etat = Component.translatable("gui.hud.protegee", Math.max(1, (z.protegeeMs() + 59_999) / 60_000)).getString();
+                // 27/10 : protegee toute la tenue (2 h) : reste en « 1 h 52 » ou « 12 min » (arrondi a la minute par le serveur)
+                etat = Component.translatable("gui.hud.protegee", Ui.duree(Math.max(60_000L, z.protegeeMs()))).getString();
                 ratio = 1;
             }
             case LIMITE -> {

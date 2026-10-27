@@ -35,7 +35,14 @@
 	#Secondes pour capturer une zone libre
 	#Range: 5 ~ 3600
 	duree_capture_neutre_s = 120
-	#Minutes de protection apres une capture
+	#Minutes pendant lesquelles un clan tient une zone apres l'avoir capturee : protegee tout ce temps (personne
+	#ne peut la prendre), puis elle redevient libre toute seule (revenu, bonus de loot et minutes tenues
+	#s'arretent) : il faut la recapturer. Une zone capturee avant cette regle redevient libre au demarrage si sa
+	#capture date de plus longtemps. 0 = ancienne regle : zone gardee jusqu'a ce qu'un autre clan la prenne
+	#Range: 0 ~ 10080
+	tenue_min = 120
+	#Minutes de protection apres une capture, seulement avec tenue_min = 0 ; avec une tenue, la zone est
+	#protegee pendant toute la tenue
 	#Range: 0 ~ 1440
 	protection_min = 10
 	#Minutes entre deux signaux de ravitaillement sur une meme zone
