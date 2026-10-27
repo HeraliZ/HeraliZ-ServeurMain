@@ -7,6 +7,8 @@ use Azuriom\Plugin\Heraliz\Adresse;
 use Azuriom\Plugin\Heraliz\Discord\Comptes;
 use Azuriom\Plugin\Heraliz\Middleware\IpsBannies;
 use Azuriom\Plugin\Heraliz\Middleware\LimiteConnexion;
+use Azuriom\Plugin\Heraliz\Middleware\SuiviAzLink;
+use Azuriom\Plugin\Heraliz\Middleware\VotesProteges;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -72,6 +74,11 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // adresses des connexions du launcher notées pour chaque compte
         $this->router->pushMiddlewareToGroup('api', IpsBannies::class);
         $this->router->pushMiddlewareToGroup('web', IpsBannies::class);
+
+        // votes protégés contre les bots et les fermes de comptes (Votes\Garde : compte validé qui a joué, vote vu par
+        // Top-Serveurs, une récompense par connexion) ; temps de jeu compté sur les relevés d'AzLink (Votes\TempsDeJeu)
+        $this->router->pushMiddlewareToGroup('web', VotesProteges::class);
+        $this->router->pushMiddlewareToGroup('api', SuiviAzLink::class);
 
         // adresses des connexions et inscriptions du site (et des inscriptions du launcher, qui envoient Registered)
         Event::listen(Login::class, fn (Login $e) => rescue(fn () => Comptes::noterIp((int) $e->user->getAuthIdentifier(), Adresse::de(request())), null, false));

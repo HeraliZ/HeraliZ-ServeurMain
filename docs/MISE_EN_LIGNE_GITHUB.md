@@ -43,7 +43,8 @@ de Mohist) ne change pas.
 - Le monde, les données des joueurs (clans, hérals, grades, quêtes…), `ops.json` et `server.properties` ne sont jamais
   touchés.
 
-Secrets GitHub : les mêmes qu'avant (Settings → Secrets and variables → Actions), rien à ajouter.
+Secrets GitHub : les mêmes qu'avant (Settings → Secrets and variables → Actions), plus `TOPSERVEURS_TOKEN` pour les votes
+du site (section 6).
 
 ## 4. Après l'envoi
 
@@ -73,3 +74,21 @@ Secrets GitHub : les mêmes qu'avant (Settings → Secrets and variables → Act
 
 Retirés (outils de l'ancienne carte qui ne sont plus dans le projet) : props de la carte, inventaire de la carte, monde
 du spawn, grotte, schematic, extractions, gunpacks, diagnostic CRac, test de charge. Ils restent dans l'historique Git.
+
+## 6. Votes du site protégés contre les bots (27/10)
+
+Chaque vote donne une clé, 10 hérals et 2 PB : une ferme de votes casse l'économie. L'extension HeraliZ du site
+(`site/extension/heraliz/src/Votes/`) ne laisse l'extension Vote d'Azuriom donner la récompense que :
+- à un **compte du site connecté** (plus de vote par simple pseudo : réglage remis à chaque envoi par `reglages.php`) ;
+- dont le **Discord est lié, membre et validé**, comme pour jouer, et qui a **déjà joué 10 minutes** (temps compté sur
+  les relevés d'AzLink, `TempsDeJeu` ; tant qu'AzLink n'a rien envoyé, cette règle ne s'applique pas) ;
+- quand **Top-Serveurs a vu le vote** depuis la même connexion internet (vérification stricte : une panne de
+  Top-Serveurs ou un jeton refusé ne donnent rien, contrairement à l'extension Vote seule) ;
+- **une fois par connexion internet et par site** sur la durée du vote, tous comptes confondus (même bloc /64 en IPv6).
+
+Une connexion qui vote pour 3 comptes ou plus en 24 h est signalée dans le salon privé des comptes (Discord). La page de
+vote dit au joueur ce qui bloque AVANT qu'il clique (il ne gâche pas son vote sur Top-Serveurs).
+
+Secret GitHub à créer : **`TOPSERVEURS_TOKEN`** = le jeton (« token ») du serveur dans le panel Top-Serveurs. Sans lui
+(ou sans la « clé de vérification » réglée dans l'administration → Votes → Sites), les votes Top-Serveurs ne rapportent
+plus rien. Il passe par `site.yml` → `theme.sh` (environnement) → `reglages.php`, jamais dans un fichier du dépôt.

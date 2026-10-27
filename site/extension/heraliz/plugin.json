@@ -1,8 +1,8 @@
 {
     "id": "heraliz",
     "name": "HeraliZ",
-    "description": "Comptes HeraliZ depuis le launcher : création de compte, double authentification (A2F) et Discord obligatoire (lien, validation du staff, bans) par l'API du site.",
-    "version": "1.2.0",
+    "description": "Comptes HeraliZ depuis le launcher : création de compte, double authentification (A2F), Discord obligatoire (lien, validation du staff, bans) par l'API du site, et votes protégés contre les bots (vote vérifié, compte validé qui a joué, une récompense par connexion).",
+    "version": "1.3.0",
     "url": "https://heraliz.fr",
     "authors": [
         "HeraliZ"

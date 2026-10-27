@@ -8,6 +8,11 @@
     $gains = $sites->flatMap(fn ($site) => $site->rewards->pluck('money'))->filter(fn ($m) => $m > 0);
     $gainCommun = $gains->isNotEmpty() && $gains->unique()->count() === 1 && $sites->every(fn ($site) => $site->rewards->isNotEmpty()) ? $gains->first() : null;
     $podium = collect([2, 1, 3])->map(fn ($rang) => $votes->get($rang));
+    // votes protégés (extension HeraliZ, Votes\Garde) : ce qui empêche ce compte de voter, montré AVANT le clic, pour
+    // qu'un joueur ne gâche pas son vote sur le site de vote pour rien
+    $Garde = \Azuriom\Plugin\Heraliz\Votes\Garde::class;
+    $gardeActive = $user !== null && class_exists($Garde);
+    $garde = $gardeActive ? rescue(fn () => $Garde::compte($user, $request), null, false) : null;
 @endphp
 
 @section('content')
@@ -70,10 +75,24 @@
                 </div>
 
                 <div class="@guest d-none @endguest" data-vote-step="2">
+                    @if($garde !== null)
+                        <div class="etape-vote coins mt-3 garde-vote">
+                            <h2 class="h4 text-uppercase">Avant de voter</h2>
+                            <p class="texte-mute mb-0">{{ $garde['message'] }}</p>
+                            @if($garde['lien'] !== null)
+                                <a href="{{ $garde['lien'] }}" class="btn rouge mt-3" @if(! str_starts_with($garde['lien'], url('/'))) target="_blank" rel="noopener noreferrer" @endif>{{ $garde['bouton'] }}</a>
+                            @endif
+                        </div>
+                    @endif
                     @forelse($sites as $site)
                         @php
                             $gainSite = $site->rewards->pluck('money')->filter(fn ($m) => $m > 0);
                             $delai = (int) $site->vote_delay;
+                            $prochain = $user !== null ? $site->getNextVoteTime($user, $request) : null;
+                            // vérification pas branchée, ou connexion déjà récompensée pour un autre compte
+                            $raisonSite = $gardeActive && $garde === null && $prochain === null
+                                ? rescue(fn () => $Garde::pourSite($site, $user, $request), null, false) : null;
+                            $bloque = $garde !== null || $raisonSite !== null;
                         @endphp
                         <div class="mission coins">
                             <span class="num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
@@ -82,17 +101,25 @@
                                 @if($delai > 0)
                                     <div class="d">Toutes les {{ $delai >= 60 ? intdiv($delai, 60).' h'.($delai % 60 ? ' '.str_pad($delai % 60, 2, '0', STR_PAD_LEFT) : '') : $delai.' min' }}</div>
                                 @endif
+                                @if($raisonSite !== null)
+                                    <div class="d raison">{{ $raisonSite }}</div>
+                                @endif
                             </div>
                             <div class="r">
                                 @if($gainSite->isNotEmpty())
                                     <span class="gain"><span class="piece p"></span>@if($gainSite->unique()->count() > 1)jusqu’à @endif+{{ $gainSite->max() }}</span>
                                 @endif
-                                <a class="btn rouge" href="{{ $site->url }}" target="_blank" rel="noopener noreferrer"
-                                   data-vote-id="{{ $site->id }}"
-                                   data-vote-url="{{ route('vote.vote', $site) }}"
-                                   @auth data-vote-time="{{ $site->getNextVoteTime($user, $request)?->valueOf() }}" @endauth>
-                                    <span class="lab-voter">Voter</span><span class="lab-attente">Prochain vote</span><span class="vote-timer"></span>
-                                </a>
+                                @if($bloque)
+                                    {{-- sans data-vote-url : le script de l'extension Vote n'y touche pas, et le site de vote ne s'ouvre pas --}}
+                                    <span class="btn rouge disabled" aria-disabled="true"><span class="lab-attente">Indisponible</span></span>
+                                @else
+                                    <a class="btn rouge" href="{{ $site->url }}" target="_blank" rel="noopener noreferrer"
+                                       data-vote-id="{{ $site->id }}"
+                                       data-vote-url="{{ route('vote.vote', $site) }}"
+                                       @auth data-vote-time="{{ $prochain?->valueOf() }}" @endauth>
+                                        <span class="lab-voter">Voter</span><span class="lab-attente">Prochain vote</span><span class="vote-timer"></span>
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -102,6 +129,9 @@
                             <p>{{ trans('vote::messages.errors.site') }}</p>
                         </div>
                     @endforelse
+                    @if($gardeActive && $sites->isNotEmpty())
+                        <p class="note-vote">Chaque vote est vérifié auprès du site de vote : vote depuis la même connexion internet que cette page (pas en 4G si cette page est en Wi-Fi), puis reviens ici. Une récompense par connexion internet et par site.</p>
+                    @endif
                 </div>
 
                 <div class="d-none" data-vote-step="3">
