@@ -41,6 +41,12 @@
 	#Range: 0.1 ~ 2.0
 	faim_facteur = 0.5
 
+[succes]
+	#Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à
+	#chaque changement d'inventaire (chaque tir de TaCZ), environ 1 % du serveur à 90 joueurs, et ne servent pas ici (quêtes,
+	#saison et statistiques sont à part ; notifications déjà cachées chez les joueurs). Relu à l'arrivée de chaque joueur.
+	actifs = false
+
 [redemarrage]
 	#/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait
 	#redémarrer le serveur par le panel si son redémarrage après plantage est activé). Sinon : tâche « restart » du panel.

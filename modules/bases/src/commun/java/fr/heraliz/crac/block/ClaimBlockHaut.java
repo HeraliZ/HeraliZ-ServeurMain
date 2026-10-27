@@ -28,6 +28,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class ClaimBlockHaut extends Block implements Adosse.Adossable {
     /** Formes du haut, par sens (x 0,5 à 15,5, z 3 à 15,75 dans le modèle tourné au nord). */
     private static final VoxelShape[] HAUT = ClaimBlock.formes(0.5, 3, 15.5, 15.75);
+    /** Formes du haut poussées contre le mur, par sens et par décalage ({@link Adosse#formesDecalees}). */
+    private static final VoxelShape[][] HAUT_DECALEES =
+        Adosse.formesDecalees(f -> HAUT[f.get2DDataValue()], ClaimBlock.BOITE);
 
     public ClaimBlockHaut(Properties properties) {
         super(properties);
@@ -62,8 +65,7 @@ public class ClaimBlockHaut extends Block implements Adosse.Adossable {
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        Direction f = s.getValue(ClaimBlock.FACING);
-        return Adosse.decaler(HAUT[f.get2DDataValue()], ClaimBlock.BOITE, f, s.getValue(Adosse.ADOSSE));
+        return HAUT_DECALEES[s.getValue(ClaimBlock.FACING).get2DDataValue()][s.getValue(Adosse.ADOSSE)];
     }
 
     @Override

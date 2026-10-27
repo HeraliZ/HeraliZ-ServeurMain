@@ -30,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -59,6 +60,8 @@ public class ClaimBlock extends Block implements EntityBlock, Adosse.Adossable {
     private static final VoxelShape[] BAS = formes(1, 3, 15, 15.75);
     /** Boîte du modèle tourné vers le nord (px), pour le pousser contre un mur ({@link Adosse}) : la même qu'adossement.py. */
     static final double[] BOITE = {0.25, 2.5, 15.75, 15.75};
+    /** Formes du bas poussées contre le mur, par sens et par décalage ({@link Adosse#formesDecalees}). */
+    private static final VoxelShape[][] BAS_DECALEES = Adosse.formesDecalees(f -> BAS[f.get2DDataValue()], BOITE);
 
     public ClaimBlock(Properties properties) {
         super(properties);
@@ -151,8 +154,20 @@ public class ClaimBlock extends Block implements EntityBlock, Adosse.Adossable {
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        Direction f = s.getValue(FACING);
-        return Adosse.decaler(BAS[f.get2DDataValue()], BOITE, f, s.getValue(Adosse.ADOSSE));
+        return BAS_DECALEES[s.getValue(FACING).get2DDataValue()][s.getValue(Adosse.ADOSSE)];
+    }
+
+    /** Serveur : pose ou changement d'état ; les cases de mur voisines refont leur forme si la boîte a bougé. */
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
+        super.onPlace(state, level, pos, oldState, moving);
+        Adosse.changement(oldState, state);
+    }
+
+    /** Les deux côtés (le joueur reçoit les poses et changements d'état par le réseau) : comme {@link #onPlace}. */
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        Adosse.changement(oldState, newState);
     }
 
     @Nullable
@@ -176,6 +191,7 @@ public class ClaimBlock extends Block implements EntityBlock, Adosse.Adossable {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (!state.is(newState.getBlock())) {
+            Adosse.changement();   // les cases de mur voisines refont leur forme (sans l'armoire)
             if (level.getBlockEntity(pos) instanceof ClaimBlockEntity be) {
                 for (ItemStack drop : be.drainToStacks()) {
                     Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, drop);

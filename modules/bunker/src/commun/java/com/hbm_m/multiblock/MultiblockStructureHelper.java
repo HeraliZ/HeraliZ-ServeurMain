@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -48,7 +49,14 @@ public class MultiblockStructureHelper {
    private final Supplier<BlockState> phantomBlockState;
    private final Map<Character, PartRole> symbolRoleMap;
    private final Map<BlockPos, Character> positionSymbolMap;
-   private final Map<Direction, VoxelShape> shapeCache = new HashMap<>();
+   // HeralisZ : lue par le fil du serveur et par celui du rendu (jeu solo) : une HashMap pouvait lever une erreur
+   private final Map<Direction, VoxelShape> shapeCache = new ConcurrentHashMap<>();
+   // HeralisZ : formes tournées gardées (SUD, OUEST, EST), clé = la forme d'origine elle-même (VoxelShape ne redéfinit
+   // pas equals : comparaison par objet). rotateShape est appelée à chaque collision d'entité et à chaque balle, et
+   // refaisait la forme boîte par boîte. Les formes d'origine viennent des définitions de structure (elles vivent
+   // tout le jeu) : la table reste petite ; plafond de sécurité au cas où.
+   private static final int ROTATIONS_MAX = 2048;
+   private static final Map<VoxelShape, VoxelShape[]> ROTATIONS = new ConcurrentHashMap<>();
    private final EnumMap<Direction, AABB> localRenderBoundsCache = new EnumMap<>(Direction.class);
    private final Map<BlockPos, Set<Direction>> ladderLocalDirections = new HashMap<>();
    private final Map<BlockPos, Set<Direction>> energyLocalDirections = new HashMap<>();
@@ -1063,6 +1071,38 @@ public class MultiblockStructureHelper {
          return shape;
       }
 
+      // HeralisZ : forme tournée gardée (même géométrie qu'avant, simplifiée une fois pour toutes)
+      int index = switch (facing) {
+         case SOUTH -> 0;
+         case WEST -> 1;
+         case EAST -> 2;
+         default -> -1;
+      };
+      if (index < 0) {
+         return buildRotatedShape(shape, facing);
+      }
+
+      VoxelShape[] rotated = ROTATIONS.get(shape);
+      if (rotated == null) {
+         rotated = new VoxelShape[]{
+            buildRotatedShape(shape, Direction.SOUTH).optimize(),
+            buildRotatedShape(shape, Direction.WEST).optimize(),
+            buildRotatedShape(shape, Direction.EAST).optimize()
+         };
+         if (ROTATIONS.size() >= ROTATIONS_MAX) {
+            ROTATIONS.clear();
+         }
+
+         VoxelShape[] existing = ROTATIONS.putIfAbsent(shape, rotated);
+         if (existing != null) {
+            rotated = existing;
+         }
+      }
+
+      return rotated[index];
+   }
+
+   private static VoxelShape buildRotatedShape(VoxelShape shape, Direction facing) {
       VoxelShape[] buffer = new VoxelShape[]{Shapes.empty()};
       shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
          double newMinX = minX;

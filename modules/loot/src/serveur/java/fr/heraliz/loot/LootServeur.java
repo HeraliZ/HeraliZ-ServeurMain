@@ -20,6 +20,8 @@ public final class LootServeur {
     }
 
     public static void brancher(IEventBus bus) {
+        // fil d'écriture de la rotation du loot et du butin des zombies (attendu à l'arrêt du serveur)
+        EcrituresFond.init();
         HeralizLoot.COFFRE_USINE.serveur(CoffreBlockEntityServeur::new);
         FouilleServeur.brancher();
         ConteneurBlock.ROTATION = new ConteneurBlock.Rotation() {

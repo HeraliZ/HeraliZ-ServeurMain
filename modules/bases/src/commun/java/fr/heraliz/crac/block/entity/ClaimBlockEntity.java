@@ -367,6 +367,23 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
         this.input = LazyOptional.of(() -> new UpkeepInput(this));
     }
 
+    /**
+     * Armoire ajoutée au monde (pose, chargement du tronçon, aussi chez le joueur) : les cases de mur voisines refont leur
+     * forme avec objets ({@link fr.heraliz.crac.block.Adosse#changement()}).
+     */
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        fr.heraliz.crac.block.Adosse.changement();
+    }
+
+    /** Armoire retirée ou tronçon déchargé, aussi chez le joueur (seul signal du retrait de son côté) : idem. */
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        fr.heraliz.crac.block.Adosse.changement();
+    }
+
     /** What hoppers and pipes see: the stock's windows, room up to the capacity, and no way to take anything out. */
     private static final class UpkeepInput implements IItemHandler {
         private final ClaimBlockEntity be;

@@ -39,6 +39,8 @@ public final class PartieServeur implements Partie {
         RoundsServeur.installer();
         DuelsServeur.installer();
         EconomieServeurPont.installer();
+        // fil d'ecriture de la comptabilite du casino (attendu a l'arret du serveur)
+        fr.heraliz.casino.data.EcrituresFond.init();
 
         // versions serveur des machines (avant les evenements d'enregistrement)
         MachineType.CAISSE.usine.serveur(CashierBlockEntityServeur::new);

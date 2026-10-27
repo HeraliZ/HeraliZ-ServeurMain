@@ -46,13 +46,18 @@ joueurs.
   contient `retirerAnciensGunpacks` (monter la version, puis « publier »).
 - `plugins/` : les jars de `livraison/plugins/`.
 - `server.properties` : celui du dépôt dit maintenant `level-name=dayz_map` (comme le Ptero) et `sync-chunk-writes=false`.
-  Sur le Ptero, changer au moins `sync-chunk-writes=false` (gel de 6 s à une sauvegarde pendant l'ouverture du 24/10).
+  Sur le Ptero, changer au moins `sync-chunk-writes=false` (gel de 6 s à une sauvegarde pendant l'ouverture du 24/10 ;
+  fait le 27/10).
   Changer aussi la description du serveur (`motd`) : celle du Ptero est vulgaire et s'affiche dans la liste des serveurs
   de tous les joueurs.
 - `bukkit.yml` : envoyer celui du dépôt (monstres naturels 70 au lieu de 250, chauves-souris coupées : le peuplement
   des zombies est fait par HeraliZ Utils).
 - **Java** (à demander à l'hébergeur, la commande est verrouillée) : réglages Aikar du §12 de l'ancien CLAUDE.md, avec
-  `-Xms` égal à `-Xmx` (12 à 16 Go), au lieu de `-Xmx32G` seul.
+  `-Xms` égal à `-Xmx` (12 à 16 Go), au lieu de `-Xmx32G` seul. Le 27/10, l'hébergeur a mis `-Xms32G -Xmx32G` sans les
+  réglages Aikar : à 32 Go pile, Java coupe les « Compressed Oops » (`gc.log` : « Compressed Oops: Disabled »), chaque objet
+  prend plus de place et les pauses du ramasse-miettes durent 85 à 165 ms serveur vide, alors que le serveur n'utilise
+  qu'environ 4 Go (4,5 Go au test de 90 bots). Demander 16 Go (31 Go au plus) avec `-XX:MaxTenuringThreshold=1` et la
+  suite des réglages Aikar.
 - Vérifier sur le Ptero `/forceload query` dans chaque monde (tronçons forcés par les scripts de pose, chargés à vie) et
   `/forceload remove all` s'il en reste.
 

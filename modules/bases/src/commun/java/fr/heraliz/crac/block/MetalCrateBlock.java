@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -39,11 +40,12 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
 
     /** Boîte de la caisse tournée vers le nord (px) : la même qu'outils/adossement.py. */
     private static final double[] BOITE = {0.0, 1.5, 16.0, 14.5};
+    /** Formes poussées contre le mur, par sens et par décalage ({@link Adosse#formesDecalees}). */
+    private static final VoxelShape[][] DECALEES = Adosse.formesDecalees(
+        f -> f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW, BOITE);
 
     private static VoxelShape shapeFor(BlockState state) {
-        Direction f = state.getValue(FACING);
-        VoxelShape s = f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW;
-        return Adosse.decaler(s, BOITE, f, state.getValue(Adosse.ADOSSE));
+        return DECALEES[state.getValue(FACING).get2DDataValue()][state.getValue(Adosse.ADOSSE)];
     }
 
     @Override
@@ -116,8 +118,24 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
         return level.getBlockEntity(pos) instanceof MetalCrateBlockEntity be ? be : null;
     }
 
+    /** Serveur : pose ou changement d'état ; les cases de mur voisines refont leur forme si la boîte a bougé. */
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
+        super.onPlace(state, level, pos, oldState, moving);
+        Adosse.changement(oldState, state);
+    }
+
+    /** Les deux côtés (le joueur reçoit les poses et changements d'état par le réseau) : comme {@link #onPlace}. */
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        Adosse.changement(oldState, newState);
+    }
+
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        if (!state.is(newState.getBlock())) {
+            Adosse.changement();   // les cases de mur voisines refont leur forme (sans la caisse)
+        }
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof MetalCrateBlockEntity be) {
             Containers.dropContents(level, pos, be);
         }

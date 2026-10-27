@@ -108,7 +108,8 @@ final class SaisonDonnees {
         return d;
     }
 
-    void sauvegarder(Path f) {
+    /** Relevé sur le fil serveur (arbre JSON neuf), écriture sur le fil d'écriture des clans ; {@code siEchec} : voir {@link #ecrire}. */
+    void sauvegarder(Path f, @javax.annotation.Nullable Runnable siEchec) {
         JsonObject o = new JsonObject();
         o.addProperty("numero", numero);
         o.addProperty("debut", debut);
@@ -147,17 +148,28 @@ final class SaisonDonnees {
         JsonObject ej = new JsonObject();
         for (Map.Entry<String, Integer> e : evenementsJour.entrySet()) ej.addProperty(e.getKey(), e.getValue());
         o.add("evenements_jour", ej);
-        ecrire(f, o);
+        ecrire(f, o, siEchec);
     }
 
     static void ecrire(Path f, JsonObject o) {
-        try {
-            Files.createDirectories(f.getParent());
-            Path tmp = f.resolveSibling(f.getFileName() + ".tmp");
-            Files.writeString(tmp, GSON.toJson(o), StandardCharsets.UTF_8);
-            Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException ex) {
-            HeraliszClans.LOG.error("[saison] ecriture de {} impossible", f, ex);
-        }
+        ecrire(f, o, null);
+    }
+
+    /**
+     * Écrit {@code o} (arbre neuf, plus touché par le fil serveur) dans {@code f} sur le fil d'écriture des clans (27/10,
+     * perf) ; {@code siEchec} est appelé sur ce fil si l'écriture rate (seulement poser un drapeau).
+     */
+    static void ecrire(Path f, JsonObject o, @javax.annotation.Nullable Runnable siEchec) {
+        fr.heralisz.clans.server.EcrituresFond.ecrire(f, () -> {
+            try {
+                Files.createDirectories(f.getParent());
+                Path tmp = f.resolveSibling(f.getFileName() + ".tmp");
+                Files.writeString(tmp, GSON.toJson(o), StandardCharsets.UTF_8);
+                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException ex) {
+                HeraliszClans.LOG.error("[saison] ecriture de {} impossible", f, ex);
+                if (siEchec != null) siEchec.run();
+            }
+        }, null);
     }
 }

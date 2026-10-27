@@ -11,9 +11,15 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -33,6 +40,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -218,6 +227,7 @@ public final class RotationLoot extends SavedData {
             if (a.contenu != null) {
                 c.putBoolean("Tire", true);
                 ContainerHelper.saveAllItems(c, a.contenu.objets, true);
+                detacherCaps(c);
             }
             la.add(c);
         }
@@ -279,6 +289,51 @@ public final class RotationLoot extends SavedData {
         for (String z : sallesOuvertes) lo.add(net.minecraft.nbt.StringTag.valueOf(z));
         t.put("SallesOuvertes", lo);
         return t;
+    }
+
+    /**
+     * Les données des capacités Forge des objets ({@code ForgeCaps}, écrites par d'autres mods) sont copiées : le relevé
+     * part sur le fil d'écriture, il ne doit garder aucun tag qu'un autre mod pourrait encore modifier.
+     */
+    private static void detacherCaps(CompoundTag c) {
+        ListTag objets = c.getList("Items", Tag.TAG_COMPOUND);
+        for (int i = 0; i < objets.size(); i++) {
+            CompoundTag o = objets.getCompound(i);
+            if (o.contains("ForgeCaps", Tag.TAG_COMPOUND)) o.put("ForgeCaps", o.getCompound("ForgeCaps").copy());
+        }
+    }
+
+    /** Écriture en fond ratée : la rotation redevient « à sauver » à la sauvegarde suivante. */
+    private final AtomicBoolean echecFond = new AtomicBoolean();
+
+    /**
+     * Comme Minecraft (relevé {@link #save(CompoundTag)} sur le fil serveur, à la sauvegarde du monde), mais la compression
+     * et l'écriture partent sur le fil d'écriture du loot ({@link EcrituresFond}). 27/10 (perf) : des milliers de
+     * conteneurs, marqués « à sauver » à chaque objet déplacé et à chaque remplissage, étaient compressés et écrits sur le
+     * fil serveur à chaque sauvegarde automatique (gel de 100 ms et plus). Même fichier, même format ; écrit dans un
+     * fichier à côté puis mis à sa place (un arrêt brutal pendant l'écriture ne l'abîme plus).
+     */
+    @Override
+    public void save(File fichier) {
+        if (echecFond.getAndSet(false)) setDirty(true);
+        if (!isDirty()) return;
+        CompoundTag racine = new CompoundTag();
+        racine.put("data", save(new CompoundTag()));
+        NbtUtils.addCurrentDataVersion(racine);
+        setDirty(false);
+        Path cible = fichier.toPath();
+        EcrituresFond.ecrire(cible, () -> ecrireNbt(racine, cible), () -> echecFond.set(true));
+    }
+
+    /** Fil d'écriture : NBT compressé dans un fichier à côté, puis renommé à la place de l'ancien. */
+    private static void ecrireNbt(CompoundTag racine, Path cible) throws IOException {
+        Path tmp = cible.resolveSibling(cible.getFileName() + ".tmp");
+        NbtIo.writeCompressed(racine, tmp.toFile());
+        try {
+            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     // ------------------------------------------------------------------------------------------ actifs

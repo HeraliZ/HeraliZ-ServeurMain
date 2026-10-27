@@ -108,9 +108,12 @@ public final class Saison {
         cacheSale = true;
     }
 
+    /** Écriture en fond de l'état ratée : il redevient « à sauver » (fil d'écriture des clans). */
+    private static final java.util.concurrent.atomic.AtomicBoolean ECHEC = new java.util.concurrent.atomic.AtomicBoolean();
+
     static void sauvegarder() {
         if (dossier == null) return;
-        d.sauvegarder(dossier.resolve("saison_etat.json"));
+        d.sauvegarder(dossier.resolve("saison_etat.json"), () -> ECHEC.set(true));
         sale = false;
     }
 
@@ -118,6 +121,7 @@ public final class Saison {
     public static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || dossier == null) return;
         if (++ticks % 20 != 0) return;
+        if (ECHEC.getAndSet(false)) sale = true;
         ecrireJournal();
         if (d.active && d.fin > 0 && System.currentTimeMillis() >= d.fin) terminer("fin de la date prevue");
         if (ticks % 1200 == 0 && sale) sauvegarder();
@@ -581,17 +585,20 @@ public final class Saison {
         if (JOURNAL_ATTENTE.length() > 65536) ecrireJournal();
     }
 
+    /** Lignes en attente ajoutées au journal sur le fil d'écriture des clans (27/10, perf), dans l'ordre. */
     private static void ecrireJournal() {
         if (JOURNAL_ATTENTE.length() == 0 || dossier == null) return;
         String bloc = JOURNAL_ATTENTE.toString();
         JOURNAL_ATTENTE.setLength(0);
-        try {
-            Files.createDirectories(dossier);
-            Files.writeString(dossier.resolve("saison_journal.log"), bloc, StandardCharsets.UTF_8, StandardOpenOption.CREATE,
-                    StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            HeraliszClans.LOG.warn("[saison] journal impossible a ecrire : {}", e.toString());
-        }
+        Path dir = dossier, f = dir.resolve("saison_journal.log");
+        fr.heralisz.clans.server.EcrituresFond.ajouter(f, () -> {
+            try {
+                Files.createDirectories(dir);
+                Files.writeString(f, bloc, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                HeraliszClans.LOG.warn("[saison] journal impossible a ecrire : {}", e.toString());
+            }
+        });
     }
 
     /** Les {@code n} dernieres lignes du journal qui parlent du clan (tag), les plus recentes a la fin. */
@@ -599,6 +606,8 @@ public final class Saison {
         List<String> l = new ArrayList<>();
         if (dossier == null) return l;
         ecrireJournal();
+        // le journal s'écrit en fond : on attend que les lignes en file soient sur le disque avant de le lire
+        fr.heralisz.clans.server.EcrituresFond.attendre();
         Path f = dossier.resolve("saison_journal.log");
         if (!Files.exists(f)) return l;
         try {

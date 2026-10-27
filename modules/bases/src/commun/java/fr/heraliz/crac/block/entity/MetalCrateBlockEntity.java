@@ -88,6 +88,23 @@ public class MetalCrateBlockEntity extends RandomizableContainerBlockEntity {
         }
     }
 
+    /**
+     * Caisse ajoutée au monde (pose, chargement du tronçon, aussi chez le joueur) : les cases de mur voisines refont leur
+     * forme avec objets ({@link fr.heraliz.crac.block.Adosse#changement()}).
+     */
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        fr.heraliz.crac.block.Adosse.changement();
+    }
+
+    /** Caisse retirée ou tronçon déchargé, aussi chez le joueur (seul signal du retrait de son côté) : idem. */
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        fr.heraliz.crac.block.Adosse.changement();
+    }
+
     public boolean isEmptyCrate() {
         for (ItemStack s : this.items) {
             if (!s.isEmpty()) {

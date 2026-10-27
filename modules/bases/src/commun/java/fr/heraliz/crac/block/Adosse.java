@@ -2,6 +2,8 @@ package fr.heraliz.crac.block;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import fr.heraliz.crac.build.world.StructureBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,8 +38,38 @@ public final class Adosse {
     static final double LIMITE_HAUT = 29.75, LIMITE_BAS = -13.75;
     /** Case visée par le joueur quand l'objet a été posé à côté (objet tenu : {@link ObjetAdossable}). */
     static final ThreadLocal<BlockPos> CIBLE = new ThreadLocal<>();
+    /**
+     * Version des objets adossés, montée à chaque pose, retrait, chargement ou déchargement d'un objet adossé, et quand
+     * son sens ou son décalage change. Les cases de mur gardent leur forme avec objets
+     * ({@code StructureBlockEntity#avecObjets}) tant qu'elle n'a pas bougé : avant, elles relisaient leurs 26 voisines
+     * à chaque tick. Une seule pour tous les mondes (serveur et joueur) : un changement n'importe où fait refaire ces
+     * formes au prochain appel, jamais de forme en retard.
+     */
+    private static final AtomicLong VERSION = new AtomicLong();
 
     private Adosse() {
+    }
+
+    /** Version actuelle des objets adossés (voir {@link #VERSION}). */
+    public static long version() {
+        return VERSION.get();
+    }
+
+    /** Un objet adossé a été posé, retiré, chargé ou déchargé : les formes gardées des cases de mur sont à refaire. */
+    public static void changement() {
+        VERSION.incrementAndGet();
+    }
+
+    /** Un état d'objet adossé a changé : formes à refaire si sa boîte ({@link #boiteMonde}) a pu changer. */
+    public static void changement(BlockState avant, BlockState apres) {
+        boolean meme = avant.getBlock() == apres.getBlock()
+            && avant.hasProperty(ClaimBlock.FACING) && apres.hasProperty(ClaimBlock.FACING)
+            && avant.getValue(ClaimBlock.FACING) == apres.getValue(ClaimBlock.FACING)
+            && avant.hasProperty(ADOSSE) && apres.hasProperty(ADOSSE)
+            && avant.getValue(ADOSSE).intValue() == apres.getValue(ADOSSE).intValue();
+        if (!meme) {
+            changement();
+        }
     }
 
     /** Un objet qui peut se coller aux murs. */
@@ -91,6 +123,21 @@ public final class Adosse {
         }
         double[] d = decalage(tourner(boiteNord, facing), v);
         return forme.move(d[0] / 16.0, 0, d[1] / 16.0);
+    }
+
+    /**
+     * {@link #decaler} calculée une fois pour chaque sens (index {@link Direction#get2DDataValue()}) et chaque valeur de
+     * {@link #ADOSSE} : les formes des objets adossés sont demandées à chaque collision, sans rien refaire.
+     */
+    public static VoxelShape[][] formesDecalees(Function<Direction, VoxelShape> formeDuSens, double[] boiteNord) {
+        VoxelShape[][] t = new VoxelShape[4][9];
+        for (Direction f : Direction.Plane.HORIZONTAL) {
+            VoxelShape forme = formeDuSens.apply(f);
+            for (int v = 0; v < 9; v++) {
+                t[f.get2DDataValue()][v] = decaler(forme, boiteNord, f, v);
+            }
+        }
+        return t;
     }
 
     /** Boîte de l'objet dans le monde (son modèle et sa forme), décalage compris. */

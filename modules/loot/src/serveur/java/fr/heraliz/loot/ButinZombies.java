@@ -131,9 +131,14 @@ public final class ButinZombies {
             JOUEURS.clear();
         });
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
-            if (e.phase == TickEvent.Phase.END && sale && e.getServer().getTickCount() % 1200 == 0) ecrire();
+            if (e.phase != TickEvent.Phase.END || e.getServer().getTickCount() % 1200 != 0) return;
+            if (ECHEC.getAndSet(false)) sale = true;
+            if (sale) ecrire();
         });
     }
+
+    /** Écriture en fond ratée (fil d'écriture du loot) : l'état redevient « à sauver ». */
+    private static final java.util.concurrent.atomic.AtomicBoolean ECHEC = new java.util.concurrent.atomic.AtomicBoolean();
 
     // ------------------------------------------------------------------ règles
     /** Relit config/heraliz_loot/zombies.json (avec les tables, /heralizloot tables) ; un fichier illisible garde les anciennes. */
@@ -370,14 +375,19 @@ public final class ButinZombies {
         }
     }
 
+    /**
+     * Relevé sur le fil serveur (arbre JSON neuf), mise en texte et écriture sur le fil d'écriture du loot (27/10, perf :
+     * toutes les minutes, sur le fil serveur, avant).
+     */
     private static void ecrire() {
         if (fichier == null || !sale) return;
         long maintenant = System.currentTimeMillis();
+        String aujourdhui = LocalDate.now(PARIS).toString();
         JsonObject racine = new JsonObject(), joueurs = new JsonObject();
         JOUEURS.forEach((u, j) -> {
             // joueur oublié : moins d'un kill en mémoire et rien de compté aujourd'hui
             boolean ancien = j.charge * Math.exp(-Math.max(0, maintenant - j.t) / 3_600_000.0) < 1
-                    && !j.jour.equals(LocalDate.now(PARIS).toString());
+                    && !j.jour.equals(aujourdhui);
             if (ancien) return;
             JsonObject x = new JsonObject();
             x.addProperty("charge", j.charge);
@@ -396,19 +406,18 @@ public final class ButinZombies {
             joueurs.add(u.toString(), x);
         });
         racine.add("joueurs", joueurs);
-        try {
-            Files.createDirectories(fichier.getParent());
-            Path tmp = fichier.resolveSibling("zombies_etat.json.tmp");
+        Path f = fichier;
+        sale = false;
+        EcrituresFond.ecrire(f, () -> {
+            Files.createDirectories(f.getParent());
+            Path tmp = f.resolveSibling("zombies_etat.json.tmp");
             Files.writeString(tmp, GSON.toJson(racine), StandardCharsets.UTF_8);
             try {
-                Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } catch (Exception atomiqueImpossible) {
-                Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
             }
-            sale = false;
-        } catch (Exception ex) {
-            HeralizLoot.LOG.error("Écriture de {} impossible", fichier, ex);
-        }
+        }, () -> ECHEC.set(true));
     }
 
     // ------------------------------------------------------------------ commandes (op 2) : /heralizloot zombies ...

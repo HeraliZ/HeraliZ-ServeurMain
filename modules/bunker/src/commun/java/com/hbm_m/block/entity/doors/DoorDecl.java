@@ -3,11 +3,14 @@ package com.hbm_m.block.entity.doors;
 import com.hbm_m.block.entity.doors.variant.DoorModelSelection;
 import com.hbm_m.block.entity.doors.variant.DoorSkin;
 import com.hbm_m.interfaces.IDoorAnimator;
+import com.hbm_m.multiblock.MultiblockStructureHelper;
 import com.hbm_m.multiblock.PartRole;
 import com.hbm_m.sound.ModSounds;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -1548,8 +1551,47 @@ public abstract class DoorDecl {
       private int maxY;
       private int maxZ;
       private BlockPos controllerOffset = BlockPos.ZERO;
+      // HeralisZ : forme entière de la porte (toutes ses cases, tournée), gardée par sens et par état ouvert / fermé :
+      // elle ne dépend que de ces deux choses et était refaite à chaque appel (contour, visée, chaque bloc de la porte)
+      private final AtomicReferenceArray<VoxelShape> fullShapes = new AtomicReferenceArray<>(8);
 
       private DoorStructureDefinition() {
+      }
+
+      /** HeralisZ : forme entière de la porte pour ce sens, ouverte (vrai) ou fermée (faux). */
+      public VoxelShape getFullShape(Direction facing, boolean open) {
+         int horizontal = facing.get2DDataValue();
+         if (horizontal < 0) {
+            return this.buildFullShape(facing, open);
+         }
+
+         int index = horizontal * 2 + (open ? 1 : 0);
+         VoxelShape shape = this.fullShapes.get(index);
+         if (shape == null) {
+            shape = this.buildFullShape(facing, open);
+            if (!this.fullShapes.compareAndSet(index, null, shape)) {
+               shape = this.fullShapes.get(index);
+            }
+         }
+
+         return shape;
+      }
+
+      private VoxelShape buildFullShape(Direction facing, boolean open) {
+         VoxelShape combined = Shapes.empty();
+         Map<BlockPos, VoxelShape> currentMap = open ? this.openShapes : this.closedShapes;
+
+         for (Entry<BlockPos, VoxelShape> entry : currentMap.entrySet()) {
+            VoxelShape partShape = entry.getValue();
+            if (!partShape.isEmpty()) {
+               BlockPos relativePos = entry.getKey();
+               BlockPos rotatedPos = MultiblockStructureHelper.rotate(relativePos, facing);
+               VoxelShape rotatedShape = MultiblockStructureHelper.rotateShape(partShape, facing);
+               combined = Shapes.or(combined, rotatedShape.move(rotatedPos.getX(), rotatedPos.getY(), rotatedPos.getZ()));
+            }
+         }
+
+         return combined.optimize();
       }
 
       public static DoorDecl.DoorStructureDefinition.Builder create() {

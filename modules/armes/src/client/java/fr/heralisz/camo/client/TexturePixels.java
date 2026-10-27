@@ -14,7 +14,8 @@ import javax.annotation.Nullable;
 /**
  * Pixels de la texture d'une arme, relus une fois sur la carte graphique (fil de rendu) quand sa carte de positions est
  * préparée : sert à reconnaître les faces vraiment lumineuses des pièces {@code *_illuminated} (voir
- * {@link PosMap#classerLumineuses}). Quelques millisecondes une seule fois par modèle ; rien n'est gardé ensuite.
+ * {@link PosMap#classerLumineuses}). Seulement pour les armes qui ont de telles pièces, une seule fois par modèle ; rien
+ * n'est gardé ensuite.
  */
 public final class TexturePixels {
    private static final Logger LOG = LogUtils.getLogger();
@@ -40,11 +41,8 @@ public final class TexturePixels {
          if (w <= 0 || h <= 0 || (long) w * h > 4096L * 4096L) return null;
          try (NativeImage img = new NativeImage(w, h, false)) {
             img.downloadTexture(0, false);
-            int[] px = new int[w * h];
-            for (int y = 0; y < h; y++) {
-               for (int x = 0; x < w; x++) px[y * w + x] = img.getPixelRGBA(x, y);
-            }
-            return new TexturePixels(w, h, px);
+            // copie d'un bloc : mêmes valeurs ABGR que getPixelRGBA point par point, sans les millions d'appels
+            return new TexturePixels(w, h, img.getPixelsRGBA());
          }
       } catch (RuntimeException e) {
          LOG.debug("Camo : texture {} illisible ({}), pièces lumineuses exclues en entier", texture, e.toString());

@@ -38,16 +38,29 @@ public class StructureBlockEntity extends BlockEntity {
     private VoxelShape occlusion;
     /**
      * Forme de la case avec les morceaux des objets adossés voisins ({@link fr.heraliz.crac.block.Adosse#morceaux}), pour
-     * un tick de jeu et une forme de pièce donnés (collision, visée). Avant, chaque demande de collision ou de visée sur
-     * la case (déplacement de chaque entité proche, recherche de chemin des créatures, balles, à chaque tick) relisait ses
-     * 26 cases voisines et refaisait l'union des formes. Gardée un tick au plus : un objet posé ou retiré compte au tick
-     * suivant.
+     * une forme de pièce donnée (collision, visée). Avant, chaque demande de collision ou de visée sur la case
+     * (déplacement de chaque entité proche, recherche de chemin des créatures, balles, à chaque tick) relisait ses 26 cases
+     * voisines et refaisait l'union des formes. Gardée tant que la version des objets adossés
+     * ({@link fr.heraliz.crac.block.Adosse#version()}) ne bouge pas (un objet posé, retiré ou chargé la fait monter) si
+     * elle a été lue dans le monde de la case ({@code monde}) ; lue ailleurs (région de la recherche de chemin, qui ne voit
+     * pas les tronçons hors de ses bornes), le temps d'un tick seulement, comme avant.
      */
-    private record AvecObjets(long tick, VoxelShape piece, VoxelShape forme) {
+    private record AvecObjets(long version, long tick, boolean monde, VoxelShape piece, VoxelShape forme) {
     }
 
     @Nullable
     private volatile AvecObjets collisionObjets, viseeObjets;
+
+    /**
+     * Forme de visée gardée avec la liste d'occupants dont elle vient (une nouvelle liste à chaque changement) : avec une
+     * porte de sas bloquée, elle était refaite à chaque appel, et la forme neuve empêchait aussi de garder
+     * {@link #avecObjets} (comparée par objet).
+     */
+    private record Visee(List<Occupant> occupants, VoxelShape forme) {
+    }
+
+    @Nullable
+    private volatile Visee visee;
 
     public StructureBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STRUCTURE.get(), pos, state);
@@ -93,7 +106,7 @@ public class StructureBlockEntity extends BlockEntity {
 
     /**
      * La forme de la pièce ({@link #shape()}, ou {@link #shapeVisee()} si {@code visee}) avec ce que les objets adossés
-     * voisins ont dans cette case, comme {@code piece ∪ Adosse.morceaux(level, pos)}, gardée le temps d'un tick de jeu.
+     * voisins ont dans cette case, comme {@code piece ∪ Adosse.morceaux(level, pos)}, gardée (voir {@link AvecObjets}).
      */
     public VoxelShape avecObjets(net.minecraft.world.level.BlockGetter level, boolean visee) {
         VoxelShape piece = visee ? this.shapeVisee() : this.shape();
@@ -102,12 +115,14 @@ public class StructureBlockEntity extends BlockEntity {
             return joindre(piece, fr.heraliz.crac.block.Adosse.morceaux(level, this.worldPosition));
         }
         long t = l.getGameTime();
+        // lue avant les voisines : un objet changé pendant le calcul fait refaire la forme au prochain appel
+        long v = fr.heraliz.crac.block.Adosse.version();
         AvecObjets c = visee ? this.viseeObjets : this.collisionObjets;
-        if (c != null && c.tick() == t && c.piece() == piece) {
+        if (c != null && c.version() == v && (c.monde() || c.tick() == t) && c.piece() == piece) {
             return c.forme();
         }
         VoxelShape forme = joindre(piece, fr.heraliz.crac.block.Adosse.morceaux(level, this.worldPosition));
-        c = new AvecObjets(t, piece, forme);
+        c = new AvecObjets(v, t, level == l, piece, forme);
         if (visee) {
             this.viseeObjets = c;
         } else {
@@ -122,18 +137,25 @@ public class StructureBlockEntity extends BlockEntity {
 
     /** Forme de visée : {@link #shape()}, sauf les portes de sas bloquées, visées ouvertes (Piece.STATE_SAS). */
     public VoxelShape shapeVisee() {
+        List<Occupant> occ = this.occupants;
         boolean sas = false;
-        for (Occupant o : this.occupants) {
+        for (Occupant o : occ) {
             sas |= o.key().kind().hasDoor() && (o.state() & fr.heraliz.crac.build.model.Piece.STATE_SAS) != 0;
         }
         if (!sas) {
             return this.shape();
         }
+        Visee c = this.visee;
+        if (c != null && c.occupants() == occ) {
+            return c.forme();
+        }
         VoxelShape s = Shapes.empty();
-        for (Occupant o : this.occupants) {
+        for (Occupant o : occ) {
             s = Shapes.joinUnoptimized(s, o.visee(this.worldPosition), BooleanOp.OR);
         }
-        return s.optimize();
+        s = s.optimize();
+        this.visee = new Visee(occ, s);
+        return s;
     }
 
     /** Union of the occupants that close faces ({@link Occupant#occludes}): drives the block state's face flags. */

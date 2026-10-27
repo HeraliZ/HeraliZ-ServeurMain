@@ -6,7 +6,8 @@
   "refmap": "heraliz_noyau-serveur.refmap.json",
   "mixins": [
     "FaimMixin",
-    "StatsSansDisqueMixin"
+    "StatsSansDisqueMixin",
+    "SuccesMixin"
   ],
   "injectors": {
     "defaultRequire": 1
