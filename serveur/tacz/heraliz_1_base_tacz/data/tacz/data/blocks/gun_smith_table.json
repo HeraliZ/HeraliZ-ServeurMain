@@ -101,6 +101,13 @@
       "icon": {
         "item": "airstrike:designator"
       }
+    },
+    {
+      "id": "heraliz_crafts:rangement",
+      "name": "heraliz_crafts.onglet.rangement",
+      "icon": {
+        "item": "crac:coffre_fort"
+      }
     }
   ]
 }

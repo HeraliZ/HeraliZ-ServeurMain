@@ -220,6 +220,9 @@ RARETES_IMPOSEES = {
     # dans le loot, les caisses ni les récompenses ; jumelles Légendaires, cartouches de plus en plus chères
     "airstrike:designator": "legendaire", "airstrike:cartridge_light": "rare", "airstrike:cartridge_heavy": "epique",
     "airstrike:cartridge_special": "legendaire",
+    # coffres de base par rareté (27/10) : fabrication seulement (Table d'armurier, onglet Rangement), jamais dans le loot
+    "crac:metal_crate": "commun", "crac:malle_chantier": "peu_commun", "crac:casier_metallique": "rare",
+    "crac:caisse_armes": "epique", "crac:coffre_fort": "legendaire",
     # cartes d'accès entières (26/10) : même rareté que leurs fragments
     "heralisz_bunker:keycard_green": "rare", "heralisz_bunker:keycard_blue": "epique", "heralisz_bunker:keycard_red": "legendaire",
 }

@@ -447,7 +447,12 @@
     "backpacked:backpack_tactical_red": "peu_commun",
     "backpacked:backpack_tactical_snow": "peu_commun",
     "backpacked:backpack_tactical_white": "peu_commun",
-    "backpacked:backpack_tactical_yellow": "peu_commun"
+    "backpacked:backpack_tactical_yellow": "peu_commun",
+    "crac:metal_crate": "commun",
+    "crac:malle_chantier": "peu_commun",
+    "crac:casier_metallique": "rare",
+    "crac:caisse_armes": "epique",
+    "crac:coffre_fort": "legendaire"
   },
   "armes": {
     "heralisz_skins:butterfly__blue_carbon": "unique",

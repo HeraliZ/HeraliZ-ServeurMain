@@ -36,7 +36,7 @@ public final class Armurier {
 
    /** Onglets de la Table d'armurier, dans l'ordre de l'écran (groupes des recettes de heraliz_crafts). */
    public static final List<String> ONGLETS = List.of("munitions", "pistolets", "mitraillettes", "fusils", "pompes", "soins",
-      "viseurs", "accessoires", "explosifs", "composants", "divers");
+      "viseurs", "accessoires", "explosifs", "composants", "divers", "rangement");
    public static final String NS_ONGLETS = "heraliz_crafts";
 
    /** Un op demande l'éditeur (clic droit avec le registre) : branché par la partie serveur. */

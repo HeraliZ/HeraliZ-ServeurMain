@@ -92,6 +92,8 @@
   "overlay.heraliz_tactique.secondes": "%s s",
   "gui.heraliz_tactique.armurier.onglet.divers": "Misc",
   "heraliz_crafts.onglet.divers": "Misc",
+  "gui.heraliz_tactique.armurier.onglet.rangement": "Storage",
+  "heraliz_crafts.onglet.rangement": "Storage",
   "hud.heraliz_tactique.tir.auto": "Auto",
   "hud.heraliz_tactique.tir.semi": "Semi",
   "hud.heraliz_tactique.tir.burst": "Burst"

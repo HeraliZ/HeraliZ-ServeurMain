@@ -2,6 +2,7 @@ package fr.heraliz.crac.registry;
 
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
 import fr.heraliz.crac.block.entity.CoeurClanBlockEntity;
+import fr.heraliz.crac.block.entity.CoffreBlockEntity;
 import fr.heraliz.crac.block.entity.MetalCrateBlockEntity;
 import fr.heraliz.crac.build.world.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -24,6 +25,12 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<CoeurClanBlockEntity>> COEUR_CLAN = BLOCK_ENTITIES.register(
         "coeur_clan", () -> Builder.of(CoeurClanBlockEntity::new, ModBlocks.COEUR_CLAN.get()).build(null)
+    );
+
+    /** Inventaire des coffres par rareté (case principale de chacun des quatre). */
+    public static final RegistryObject<BlockEntityType<CoffreBlockEntity>> COFFRE = BLOCK_ENTITIES.register(
+        "coffre", () -> Builder.of(CoffreBlockEntity::new, ModBlocks.MALLE_CHANTIER.get(), ModBlocks.CASIER_METALLIQUE.get(),
+            ModBlocks.CAISSE_ARMES.get(), ModBlocks.COFFRE_FORT.get()).build(null)
     );
 
     private ModBlockEntities() {

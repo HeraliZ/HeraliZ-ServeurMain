@@ -1,6 +1,12 @@
 package fr.heraliz.crac.client;
 
+import fr.heraliz.crac.block.CoffreBlock;
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
+import fr.heraliz.crac.client.render.CoffreRendu;
+import fr.heraliz.crac.client.ui.CoffreScreen;
+import java.util.List;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.RegistryObject;
 import fr.heraliz.crac.client.admin.AdminKeyHandler;
 import fr.heraliz.crac.client.render.C4Renderer;
 import fr.heraliz.crac.client.render.CoeurClanRendu;
@@ -42,8 +48,16 @@ public class ClientInit {
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.METAL_CRATE.get(), RenderType.cutoutMipped());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.CLAIM_BLOCK.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.COEUR_CLAN.get(), RenderType.cutout());
+        for (var coffre : COFFRES) {
+            ItemBlockRenderTypes.setRenderLayer(coffre.get(), RenderType.cutout());
+        }
         MenuScreens.register(ModMenus.CLAIM_UPKEEP.get(), ClaimUpkeepScreen::new);
+        MenuScreens.register(ModMenus.COFFRE.get(), CoffreScreen::new);
     }
+
+    /** Coffres par rareté (27/10). */
+    private static final List<RegistryObject<CoffreBlock>> COFFRES = List.of(ModBlocks.MALLE_CHANTIER, ModBlocks.CASIER_METALLIQUE,
+        ModBlocks.CAISSE_ARMES, ModBlocks.COFFRE_FORT);
 
     @SubscribeEvent
     public static void onRegisterBlockColors(Block event) {
@@ -76,6 +90,7 @@ public class ClientInit {
         event.registerEntityRenderer(ModEntities.EXPLOSIVE_CHARGE.get(), ExplosiveChargeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.CLAIM_BLOCK.get(), EcranArmoireRendu::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COEUR_CLAN.get(), CoeurClanRendu::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.COFFRE.get(), CoffreRendu::new);
     }
 
     /** Parties du cœur de clan dessinées à part (filets lumineux, cristal qui tourne). */
@@ -83,5 +98,9 @@ public class ClientInit {
     public static void onRegisterModels(ModelEvent.RegisterAdditional event) {
         event.register(CoeurClanRendu.LUEUR);
         event.register(CoeurClanRendu.CRISTAL);
+        // pièces mobiles des coffres par rareté (couvercle, porte, volant), dessinées pendant l'ouverture
+        for (ResourceLocation rl : CoffreRendu.modeles("malle_chantier", "casier_metallique", "caisse_armes", "coffre_fort")) {
+            event.register(rl);
+        }
     }
 }

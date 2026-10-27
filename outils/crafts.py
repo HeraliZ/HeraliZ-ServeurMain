@@ -46,6 +46,7 @@ ONGLETS = [
     ("explosifs", ("Explosifs", "Explosives", "Взрывчатка"), {"item": "crac:c4"}),
     ("composants", ("Composants", "Components", "Компоненты"), {"item": C + "canon_ii"}),
     ("divers", ("Divers", "Misc", "Разное"), {"item": "airstrike:designator"}),
+    ("rangement", ("Rangement", "Storage", "Хранение"), {"item": "crac:coffre_fort"}),
 ]
 
 # armes : type TaCZ -> onglet et composants (canon, ressort, kit de pièces, ferraille), au niveau de la rareté
@@ -115,6 +116,21 @@ DIVERS = [
                                                             C + "batterie_iii": 2, C + "ferraille_iii": 4, C + "metal_renforce": 1}),
     # barricade en bois (26/10, demande du propriétaire ; avant : seulement dans les caisses) : planches, clous, corde
     ("8_barricade", "heralisz_bunker:wooden_barricade", {C + "planche": 6, C + "clou": 6, C + "corde": 1}),
+]
+
+# coffres de base par rareté (27/10, validés par le propriétaire) : comme le reste, le niveau des composants suit la
+# rareté du coffre (I Commun, II Peu commun, III Rare, IV Épique) ; le coffre-fort (Légendaire) est une exception comme les
+# jumelles : composants IV et matériaux légendaires des bases (métal renforcé, fil à souder). La caisse en métal reste aussi
+# vendue 150 hérals par le Bâtisseur (outils/marchands.py). Raretés dans RARETES_IMPOSEES de outils/loot_armes.py.
+RANGEMENT = [
+    ("1_caisse_metal", "crac:metal_crate", {C + "ferraille": 6, C + "clou": 4}),
+    ("2_malle_chantier", "crac:malle_chantier", {C + "planches": 8, C + "clou": 8, C + "corde": 2, C + "ferraille_ii": 3}),
+    ("3_casier_metallique", "crac:casier_metallique", {C + "fragments_metal": 6, C + "equerres_acier": 2, C + "ferraille_iii": 3,
+                                                       C + "kit_pieces_iii": 1}),
+    ("4_caisse_armes", "crac:caisse_armes", {C + "fragments_metal": 8, C + "equerres_acier": 4, C + "ferraille_iv": 2,
+                                             C + "caoutchouc_iv": 2, C + "circuit_imprime_iv": 1}),
+    ("5_coffre_fort", "crac:coffre_fort", {C + "metal_renforce": 6, C + "fil_souder": 3, C + "ferraille_iv": 4,
+                                           C + "kit_pieces_iv": 2, C + "circuit_imprime_iv": 1}),
 ]
 
 # composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, sans retour possible (23/10, choix du
@@ -197,6 +213,9 @@ def main():
     for nom, item, compo in DIVERS:
         recettes[f"divers/{nom}"] = recette([{"item": {"item": i}, "count": n} for i, n in compo.items()],
                                             {"type": "custom", "item": {"item": item}, "group": f"{NS}:divers"})
+    for nom, item, compo in RANGEMENT:
+        recettes[f"rangement/{nom}"] = recette([{"item": {"item": i}, "count": n} for i, n in compo.items()],
+                                               {"type": "custom", "item": {"item": item}, "group": f"{NS}:rangement"})
 
     niveaux = ["", "_ii", "_iii", "_iv"]
     # noms numérotés : la table range les recettes par nom, donc composant par composant, niveau par niveau

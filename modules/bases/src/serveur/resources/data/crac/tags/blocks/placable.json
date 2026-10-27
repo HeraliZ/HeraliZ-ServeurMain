@@ -2,6 +2,10 @@
   "replace": false,
   "values": [
     "crac:metal_crate",
+    "crac:malle_chantier",
+    "crac:casier_metallique",
+    "crac:caisse_armes",
+    "crac:coffre_fort",
     "minecraft:lectern",
     "minecraft:crafting_table",
     "minecraft:furnace",

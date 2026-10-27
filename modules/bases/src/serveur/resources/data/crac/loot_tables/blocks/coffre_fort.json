@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "crac:coffre_fort"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "crac:coffre_fort",
+          "properties": {
+            "annexe": "false"
+          }
+        }
+      ]
+    }
+  ]
+}

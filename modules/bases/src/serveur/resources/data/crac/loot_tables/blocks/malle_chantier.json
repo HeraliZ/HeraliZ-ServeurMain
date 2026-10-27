@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "crac:malle_chantier"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "crac:malle_chantier",
+          "properties": {
+            "annexe": "false"
+          }
+        }
+      ]
+    }
+  ]
+}

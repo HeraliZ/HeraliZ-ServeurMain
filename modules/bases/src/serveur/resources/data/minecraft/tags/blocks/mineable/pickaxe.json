@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "crac:metal_crate"
+    "crac:metal_crate",
+    "crac:casier_metallique",
+    "crac:caisse_armes",
+    "crac:coffre_fort"
   ]
 }

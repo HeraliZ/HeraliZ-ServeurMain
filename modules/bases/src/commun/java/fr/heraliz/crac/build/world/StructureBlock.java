@@ -220,8 +220,11 @@ public class StructureBlock extends BaseEntityBlock {
         fr.heraliz.crac.block.Adosse.Voisin objet = fr.heraliz.crac.block.Adosse.contenant(level, pos, hit.getLocation());
         if (objet != null) {
             BlockHitResult h = new BlockHitResult(hit.getLocation(), hit.getDirection(), objet.pos(), hit.isInside());
-            if (!level.isClientSide() && net.minecraftforge.common.ForgeHooks.onRightClickBlock(player, hand, objet.pos(), h).isCanceled()) {
-                return InteractionResult.FAIL;   // mêmes règles que sur l'objet lui-même (base protégée, accès)
+            if (!level.isClientSide()) {
+                var ev = net.minecraftforge.common.ForgeHooks.onRightClickBlock(player, hand, objet.pos(), h);
+                if (ev.isCanceled() || ev.getUseBlock() == net.minecraftforge.eventbus.api.Event.Result.DENY) {
+                    return InteractionResult.FAIL;   // mêmes règles que sur l'objet lui-même (base protégée, droit d'ouvrir)
+                }
             }
             return objet.state().use(level, player, hand, h);
         }

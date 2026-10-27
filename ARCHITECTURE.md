@@ -480,3 +480,28 @@ Rien de tout cela n'a été testé en jeu.
 
 Rien de tout cela n'a été testé en jeu.
 
+**Coffres de base par rareté** (27/10, rendus validés par le propriétaire ; `bases`, CRac 1.25.0-beta) :
+- Commune : la caisse en métal, passée à 2 lignes (18 cases ; une caisse posée avant garde sa 3e ligne tant qu'elle
+  n'est pas vide, `MetalCrateBlockEntity`). Peu commune : malle de chantier, 2 de large × 1 de haut, 45 cases (9 × 5).
+  Rare : casier métallique, 1 × 2 de haut, 54 (9 × 6). Épique : caisse d'armes renforcée, 2 × 1, 66 (11 × 6).
+  Légendaire : coffre-fort, 1 × 2, 78 (13 × 6). Cases par bloc : 18, 22,5, 27, 33, 39.
+- Blocs `crac:malle_chantier`, `casier_metallique`, `caisse_armes`, `coffre_fort` (`block/CoffreBlock`, inventaire
+  `block/entity/CoffreBlockEntity` dans la case principale ; l'autre case `annexe=true` renvoie les clics ; les deux
+  partent ensemble : `MultiBlocks`). Collés aux murs comme la caisse en métal (les deux cases poussées du même décalage).
+- Modèles, textures, variantes adossées, états, objets et `block/CoffresDonnees.java` **écrits** par
+  `python modules/bases/outils/coffres_modeles.py --installer` (`--apercu DOSSIER` : rendus ; maquettes dans
+  `maquettes/coffres_rarete/`), jamais à la main. Modèles cuits : rien n'est dessiné à chaque image coffre fermé ; à
+  l'ouverture, seule la pièce mobile (couvercle, porte, volant) est dessinée (`client/render/CoffreRendu`, évènement de
+  bloc et état `open` des deux cases ; la fermeture attend la fin de l'animation).
+- Écran : coffre de Minecraft pour 9 colonnes ; `menu/CoffreMenu` + `client/ui/CoffreScreen` (texture de coffre du pack,
+  élargie) pour 11 et 13 colonnes.
+- Limite par base (zone de l'armoire) et par rareté : 14 / 12 / 10 / 8 / 5, `serveur/config/crac/coffres.json`
+  (`heraliz/CoffresLimites`, `/coffres voir|recharger`, op) ; les coffres déjà posés comptent. Points de vie (raids) :
+  100 / 200 / 300 / 450 / 600 (`serveur/defaultconfigs/crac-placable-hp.txt`).
+- Fabrication à la Table d'armurier, onglet « Rangement » (`outils/crafts.py` `RANGEMENT`) ; raretés dans
+  `RARETES_IMPOSEES` de `outils/loot_armes.py` (jamais dans le loot). L'ancienne recette de la caisse (8 lingots de fer)
+  est retirée ; le Bâtisseur la vend toujours 150 hérals.
+- Droit « Ouvrir les coffres » aussi vérifié pour un clic sur la partie d'un objet adossé qui est dans une case de mur
+  (`StructureBlock.use` : un refus d'ouvrir comptait seulement s'il annulait tout le clic).
+
+Rien de tout cela n'a été testé en jeu.
