@@ -383,9 +383,16 @@ public final class Bots {
         for (int i = 0; i < 8; i++) {
             double a = R.nextDouble() * Math.PI * 2, rr = R.nextDouble() * p.rayon();
             int x = Mth.floor(p.centre().x + Math.cos(a) * rr), z = Mth.floor(p.centre().z + Math.sin(a) * rr);
+            // le tronçon d'abord (chargé ou créé) : sur un tronçon pas encore chargé, la hauteur lue est le fond du monde
+            // (-64) et le bot y restait figé (test du 27/10 sur le Ptero : 90 bots à y -64, 0 tir)
+            lv.getChunk(x >> 4, z >> 4);
             int y = lv.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            if (y <= lv.getMinBuildHeight() + 1 && i < 7) continue;
             if (!lv.getFluidState(new BlockPos(x, y - 1, z)).isEmpty() && i < 7) continue;
             b.teleportTo(lv, x + 0.5, y, z + 0.5, R.nextFloat() * 360f, 0f);
+            // tout de suite, sans attendre son tick : un bot ne dit où il est aux tronçons que dans son propre tick, qui ne
+            // tourne pas dans un tronçon inactif (bots figés loin du spawn, 27/10)
+            lv.getChunkSource().move(b);
             return;
         }
     }
