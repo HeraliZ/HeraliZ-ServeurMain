@@ -20,6 +20,7 @@
     "TimelessApiAffichageMixin",
     "ItemRendererBagMixin",
     "GunSmithTableScreenAccessor",
+    "GunItemIconeMixin",
     "IconeOngletMixin",
     "ClientGunTooltipMixin",
     "ClientAttachmentTooltipMixin"

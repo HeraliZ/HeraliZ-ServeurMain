@@ -443,8 +443,13 @@ Rien de tout cela n'a été testé en jeu (fabriqué et vérifié : `verifier.py
   ferraille / plastique, plaques -> ferraille (`outils/recyclage.py`, `COMPOSANTS_RECYCLABLES`).
 - **Crafts** (`outils/crafts.py`) : C4 poudre IV, charge poudre III + 2 tissus IV, barricade en bois dans « Divers »,
   accessoires et viseurs au niveau de composant de leur rareté (comme les armes).
-- **Icônes des armes** : photos 3D coupées (`GunItemIconeMixin` retiré), icônes des gunpacks ; le nom du skin reste
-  dans l'infobulle, couleur de sa rareté.
+- **Icônes des armes** : photos 3D coupées, icônes des gunpacks ; le nom du skin reste dans l'infobulle, couleur de sa
+  rareté. Depuis Tactique 2.38.0 (28/10, rendus validés `maquettes/icones_armes/`) : images `slot` des armes à feu
+  rendues HORS DU JEU en 128 px depuis le vrai modèle 3D et la texture de chaque arme (de profil, canon à droite,
+  penchée de 34°), **écrites** par `python outils/icones_armes.py --installer` (`--apercu DOSSIER [--armes a,b]`),
+  jamais à la main ; à relancer après l'ajout d'un gunpack ou d'une arme. Couteaux non touchés (image de leur skin).
+  En jeu, rien n'est photographié : `GunItemIconeMixin` dessine la même image du pack, lissée quand elle est réduite
+  (`camo/client/IconesPack` : copie avec ses mipmaps). Rien testé en jeu.
 - **Gunpacks** : dossiers renommés `heraliz_1_base_tacz` … `heraliz_7_vector_custom` (identifiants des objets inchangés),
   `Cislumen_Armory` (RPG-7 jamais obtenable) et `maxstuff:m82a2` (refusée par TaCZ) retirés ; anciens dossiers listés
   dans `serveur/tacz_retires.txt` (à effacer du Ptero, `docs/DEPLOIEMENT.md`) et retirés chez les joueurs par le

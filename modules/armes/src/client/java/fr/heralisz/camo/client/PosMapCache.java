@@ -249,6 +249,7 @@ public final class PosMapCache {
       CamoFx.clearCache();
       BagCamo.clear();
       IconesArmes.vider();
+      IconesPack.vider();
    }
 
    private PosMapCache() {}
