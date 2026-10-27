@@ -43,6 +43,11 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue SUCCES_ACTIFS;
    /** Succès de Minecraft suivis, relu avec les réglages (SuccesMixin de la partie serveur). */
    public static volatile boolean succesActifs = false;
+   public static final ForgeConfigSpec.BooleanValue LEVEL_DAT_FOND;
+   /** level.dat compressé et écrit à côté du fil serveur, relu avec les réglages (LevelDatFond de la partie serveur). */
+   public static volatile boolean levelDatEnFond = true;
+   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MONDES_SANS_SPAWN;
+   public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:bases", "heraliz_clashwar:arenes");
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -98,6 +103,14 @@ public final class NoyauConfig {
             "saison et statistiques sont à part ; notifications déjà cachées chez les joueurs). Relu à l'arrivée de chaque joueur.")
             .define("actifs", false);
       b.pop();
+      b.push("perf");
+      LEVEL_DAT_FOND = b.comment("level.dat (27/10) : true = compressé et écrit à côté du fil serveur à chaque sauvegarde automatique (son",
+            "contenu est toujours relevé par Minecraft) ; à l'arrêt du serveur, écrit tout de suite. false : comme Minecraft.")
+            .define("level_dat_en_fond", true);
+      MONDES_SANS_SPAWN = b.comment("Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est",
+            "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.")
+            .defineListAllowEmpty(List.of("mondes_sans_spawn"), () -> MONDES_SANS_SPAWN_DEFAUT, o -> o instanceof String);
+      b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
             "redémarrer le serveur par le panel si son redémarrage après plantage est activé). Sinon : tâche « restart » du panel.")
@@ -117,6 +130,7 @@ public final class NoyauConfig {
       CombatTag.dureeMs(TAG_COMBAT_S.get() * 1000L);
       faimFacteur = (float) (double) FAIM_FACTEUR.get();
       succesActifs = SUCCES_ACTIFS.get();
+      levelDatEnFond = LEVEL_DAT_FOND.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 

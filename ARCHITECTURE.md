@@ -477,6 +477,12 @@ Rien de tout cela n'a été testé en jeu.
   graphique en demi-flottants (8 Mo au lieu de 16) ; l'arme est dessinée sans skin quelques images au lieu de figer le
   jeu. Préchauffage des armes skinnées de l'inventaire dont TaCZ a déjà chargé le modèle (`PrechauffageCamo`).
 - Succès de Minecraft coupés (`SuccesMixin`, `[succes] actifs` de `heraliz_noyau-server.toml`).
+- Noyau 1.0.3 (après mesure : le gel des sauvegardes restait de 110 à 230 ms serveur vide, surtout Minecraft) :
+  level.dat (400 Ko avec les registres de Forge) compressé et écrit sur le fil « HeraliZ-level-dat » (`LevelDatFond`,
+  `LevelDatEnFondMixin`), écrit tout de suite à l'arrêt ; zone de départ (2 209 tronçons gardés chargés par Mohist dans
+  chaque monde, même vide) libérée pour le monde du tutoriel des bases et celui des arènes (`MondesSansSpawn`,
+  `[perf]` de `heraliz_noyau-server.toml`). Essayé sur le serveur de test du PC (Forge, sans Mohist) : level.dat lisible
+  après une sauvegarde en marche, l'arrêt et le redémarrage.
 
 Rien de tout cela n'a été testé en jeu.
 
