@@ -37,8 +37,15 @@ public final class EcransPleins {
     /** Écrans à cases de nos mods qui sont des panneaux pleins (charte du clan, pas le style DayZ) : HUD caché aussi. */
     private static final Set<String> PANNEAUX = Set.of("EcranRecycleur");
 
+    /**
+     * Écran de modification d'arme de TaCZ et ses sous-classes (l'atelier d'arme du mod tactique) : TaCZ y dessine l'arme
+     * par le rendu de la main, caméra sur l'arme. La main y reste donc dessinée (27/10 : l'arme n'apparaissait plus dans
+     * l'atelier) ; le HUD reste caché comme derrière nos autres écrans.
+     */
+    private static final String ECRAN_MODIFICATION_TACZ = "com.tacz.guns.client.gui.GunRefitScreen";
+
     private static Screen dernier;
-    private static boolean plein, fond;
+    private static boolean plein, fond, armeVisible;
 
     /** L'écran ouvert est un écran plein écran de nos mods (pas le chat, pas un inventaire ni un coffre). */
     public static boolean plein() {
@@ -48,8 +55,16 @@ public final class EcransPleins {
             plein = s != null && !(s instanceof ChatScreen) && nous(s)
                     && (!(s instanceof AbstractContainerScreen<?>) || PANNEAUX.contains(s.getClass().getSimpleName()));
             fond = plein && FOND.contains(s.getClass().getSimpleName());
+            armeVisible = plein && modificationTacz(s.getClass());
         }
         return plein;
+    }
+
+    private static boolean modificationTacz(Class<?> c) {
+        for (; c != null; c = c.getSuperclass()) {
+            if (c.getName().equals(ECRAN_MODIFICATION_TACZ)) return true;
+        }
+        return false;
     }
 
     private static boolean nous(Screen s) {
@@ -66,7 +81,7 @@ public final class EcransPleins {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void main(RenderHandEvent e) {
         LocalPlayer p = Minecraft.getInstance().player;
-        if (plein() || p != null && p.isDeadOrDying()) e.setCanceled(true);
+        if (plein() && !armeVisible || p != null && p.isDeadOrDying()) e.setCanceled(true);
     }
 
     /** Fond des écrans du clan (dégradé noir, plus sombre en bas), avant que l'écran ne se dessine. */
