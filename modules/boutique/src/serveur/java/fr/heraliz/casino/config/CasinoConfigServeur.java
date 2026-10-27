@@ -70,7 +70,7 @@ public final class CasinoConfigServeur {
             case OLYMPE -> s.portesOlympe = CasinoConfig.GSON.fromJson(json, fr.heraliz.casino.game.slot.OlympeRules.class);
             case LOUP -> s.souffleLoup = CasinoConfig.GSON.fromJson(json, fr.heraliz.casino.game.slot.LoupRules.class);
             case NICHE -> s.laNiche = CasinoConfig.GSON.fromJson(json, fr.heraliz.casino.game.slot.NicheRules.class);
-            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> {
+            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> {
             }
             case PLINKO -> s.plinko = CasinoConfig.GSON.fromJson(json, PlinkoRules.class);
             case BLACKJACK -> s.blackjack = CasinoConfig.GSON.fromJson(json, BlackjackRules.class);

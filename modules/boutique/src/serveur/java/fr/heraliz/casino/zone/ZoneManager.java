@@ -83,13 +83,20 @@ public final class ZoneManager {
      * Ce que le joueur donnerait pour payer l'entree : ses jetons de casino (chips), sinon des jetons de son compte
      * (server, mod HeraliZ Economie), sinon des objets que la caisse achete (la monnaie etant rendue en jetons de casino).
      */
-    public record Offer(boolean possible, long chips, @Nullable Item item, int count, long change, long server) {
+    public record Offer(boolean possible, long chips, @Nullable Item item, int count, long change, long server, boolean compte) {
         Offer(boolean possible, long chips, @Nullable Item item, int count, long change) {
-            this(possible, chips, item, count, change, 0);
+            this(possible, chips, item, count, change, 0, false);
+        }
+
+        Offer(boolean possible, long chips, @Nullable Item item, int count, long change, long server) {
+            this(possible, chips, item, count, change, server, false);
         }
 
         public Component text() {
             if (server > 0) return Component.translatable("casino.heralizcasino.from_account", EconomieServeur.format(server));
+            // 27/10 : capsules prises en partie (ou en tout) sur le compte de capsules
+            if (compte) return Component.translatableWithFallback("casino.heralizcasino.from_caps_account", "%s (avec ton compte de capsules)",
+                    Chips.text(chips));
             if (item == null) return Chips.text(chips);
             return Component.literal(count + " × ").append(new ItemStack(item).getHoverName());
         }
@@ -313,6 +320,11 @@ public final class ZoneManager {
      */
     public static Offer offer(ServerPlayer p, long price) {
         if (Chips.count(p) >= price) return new Offer(true, price, null, 0, 0);
+        // 27/10 : capsules de l'inventaire complétées par le compte de capsules (sinon un joueur qui a tout déposé ne
+        // pourrait plus entrer jusqu'à la caisse pour retirer)
+        if (fr.heraliz.casino.economy.CompteCapsules.paiementOuvert() && fr.heraliz.casino.economy.CompteCapsules.disponible(p) >= price) {
+            return new Offer(true, price, null, 0, 0, 0, true);
+        }
         if (serverEntry()) {
             long cost = EconomieServeur.prixServeur(price);
             if (EconomieServeur.solde(p.getUUID()) >= cost) return new Offer(true, 0, null, 0, 0, cost);
@@ -348,6 +360,8 @@ public final class ZoneManager {
         if (o.server() > 0) {
             // retrait atomique du compte (refuse si le solde a baisse entre-temps), inscrit au journal de l'economie
             if (!EconomieServeur.retirer(p.getUUID(), o.server(), EconomieServeur.MOTIF_ENTREE)) return false;
+        } else if (o.compte()) {
+            if (fr.heraliz.casino.economy.CompteCapsules.payer(p, o.chips(), "entree du casino") == null) return false;
         } else if (o.item() == null) {
             if (!ChipsServeur.take(p, o.chips())) return false;
         } else {
@@ -400,7 +414,10 @@ public final class ZoneManager {
      * temps pour aller les changer a la caisse (voir hasSellable).
      */
     public static boolean isBroke(ServerLevel level, CasinoZone zone, ServerPlayer p) {
-        if (Chips.count(p) >= CasinoConfig.get().minimalBet()) return false;
+        // 27/10 : les capsules du compte comptent (il peut les retirer à la caisse)
+        long a = fr.heraliz.casino.economy.CompteCapsules.actif() ? Chips.count(p) + fr.heraliz.casino.economy.CompteCapsules.solde(p.getUUID())
+                : Chips.count(p);
+        if (a >= CasinoConfig.get().minimalBet()) return false;
         return !engaged(level, zone, p.getUUID());
     }
 

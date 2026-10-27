@@ -41,6 +41,8 @@ public final class PartieServeur implements Partie {
         EconomieServeurPont.installer();
         // fil d'ecriture de la comptabilite du casino (attendu a l'arret du serveur)
         fr.heraliz.casino.data.EcrituresFond.init();
+        // compte de capsules des joueurs (hors du monde ; cache oublie a l'arret)
+        fr.heraliz.casino.economy.CompteCapsules.init();
 
         // versions serveur des machines (avant les evenements d'enregistrement)
         MachineType.CAISSE.usine.serveur(CashierBlockEntityServeur::new);
@@ -59,6 +61,7 @@ public final class PartieServeur implements Partie {
         MachineType.TABLEAU.usine.serveur(LeaderboardBlockEntityServeur::new);
         MachineType.TABLEAU_PERDANTS.usine.serveur(LeaderboardBlockEntityServeur::new);
         MachineType.TABLEAU_PARIEURS.usine.serveur(LeaderboardBlockEntityServeur::new);
+        MachineType.ATM.usine.serveur(fr.heraliz.casino.block.entity.AtmBlockEntityServeur::new);
         for (MachineType t : MachineType.values()) {
             if (!t.usine.serveurBranche()) throw new IllegalStateException("[heralizcasino] machine sans version serveur : " + t.id);
         }

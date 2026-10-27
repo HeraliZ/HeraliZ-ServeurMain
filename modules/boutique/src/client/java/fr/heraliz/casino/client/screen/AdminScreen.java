@@ -99,7 +99,7 @@ public class AdminScreen extends Screen {
 
     public AdminScreen(@Nullable MachineType type) {
         super(Component.translatable("screen.heralizcasino.admin.title"));
-        this.selected = type == null || type.board() ? MachineType.ROTTEN : type;
+        this.selected = type == null || type.board() || type == MachineType.ATM ? MachineType.ROTTEN : type;
         this.statsSel = type == null || !type.game() ? null : type;
     }
 
@@ -209,7 +209,7 @@ public class AdminScreen extends Screen {
 
     private void buildSettings() {
         buildKnobs();
-        MachineType[] types = java.util.Arrays.stream(MachineType.values()).filter(x -> !x.board()).toArray(MachineType[]::new);
+        MachineType[] types = java.util.Arrays.stream(MachineType.values()).filter(x -> !x.board() && x != MachineType.ATM).toArray(MachineType[]::new);
         // une ligne de plus en bas de la liste : les lumieres de toutes les machines
         int rowH = Math.min(18, (ph - 40) / (types.length + 1));
         for (int i = 0; i < types.length; i++) {
@@ -377,7 +377,7 @@ public class AdminScreen extends Screen {
             case OLYMPE -> copy.portesOlympe = fresh.portesOlympe;
             case LOUP -> copy.souffleLoup = fresh.souffleLoup;
             case NICHE -> copy.laNiche = fresh.laNiche;
-            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> {
+            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> {
             }
             case PLINKO -> copy.plinko = fresh.plinko;
             case BLACKJACK -> copy.blackjack = fresh.blackjack;

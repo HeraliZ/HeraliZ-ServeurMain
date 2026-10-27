@@ -17,7 +17,7 @@ public final class Designs {
     public static final float LOD_DETAIL = 0.5f;
 
     public static final String[] IDS = {"caisse", "rotten", "portes_olympe", "souffle_loup", "la_niche", "plinko", "blackjack", "roulette", "crash", "mines", "course",
-            "pierre_feuille_ciseaux", "bataille_navale", "tableau_gagnants", "tableau_perdants", "tableau_parieurs"};
+            "pierre_feuille_ciseaux", "bataille_navale", "tableau_gagnants", "tableau_perdants", "tableau_parieurs", "atm"};
 
     public static MachineDesign<?> create(String id, float detail) {
         MachineDesign<?> d = create(id);
@@ -43,6 +43,7 @@ public final class Designs {
             case "mines" -> new fr.heraliz.casino.client.render.scene.machines.MinesDesign();
             case "course" -> new fr.heraliz.casino.client.render.scene.machines.RaceDesign();
             case "caisse" -> new fr.heraliz.casino.client.render.scene.machines.CashierDesign();
+            case "atm" -> new fr.heraliz.casino.client.render.scene.machines.AtmDesign();
             case "pierre_feuille_ciseaux" -> new fr.heraliz.casino.client.render.scene.machines.RpsDesign();
             case "bataille_navale" -> new fr.heraliz.casino.client.render.scene.machines.NavalDesign();
             default -> new PlaceholderDesign(id);

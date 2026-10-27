@@ -70,6 +70,20 @@ public final class EcrituresFond {
         if (arret) attendre();
     }
 
+    /**
+     * Met en file une écriture qui ne remplace aucune autre (27/10 : lignes du journal du compte de capsules, toutes
+     * gardées, dans l'ordre d'arrivée). À l'arrêt du serveur, attend la fin de l'écriture.
+     */
+    public static void ajouter(Path f, Ecriture ecriture) {
+        Runnable r = () -> lancer(f, ecriture, null);
+        try {
+            FIL.execute(r);
+        } catch (RejectedExecutionException ex) {
+            r.run();
+        }
+        if (arret) attendre();
+    }
+
     private static void faire(Path f) {
         Tache t = EN_ATTENTE.remove(f);
         if (t != null) lancer(f, t.ecriture(), t.siEchec());

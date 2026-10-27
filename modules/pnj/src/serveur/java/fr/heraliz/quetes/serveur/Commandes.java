@@ -372,7 +372,7 @@ final class Commandes {
      * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, échanges /trade en
      * attente, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
      * coffres personnels (planque, VIP), clan (retiré ; chef : direction passée au membre suivant, ou clan dissous s'il
-     * était seul), hérals remis à 0, marques de la cinématique et du guide ; puis le joueur est expulsé : à sa
+     * était seul), hérals et compte de capsules remis à 0, marques de la cinématique et du guide ; puis le joueur est expulsé : à sa
      * reconnexion il refait toute l'arrivée (créateur de personnage, cinématique, guide). Gardés : objets à vie
      * (couteaux, skins à vie, rendus dans l'inventaire), collection de camos à vie, grades et compte AuthMe. Chaque mod
      * absent est simplement sauté (commandes passées au serveur, appels par réflexion).
@@ -397,6 +397,8 @@ final class Commandes {
         // 25/10 : clés de caisse sur le compte (HeraliZ Caisses) : celles des caisses de jeu partent, comme quand elles
         // étaient dans l'inventaire ; les clés cosmétiques achetées (Gemme, Camo, emotes) restent. Avant de vider l'inventaire.
         appel("fr.heraliz.crates.api.ClesApi", "wipe", new Class<?>[]{UUID.class}, p.getUUID());
+        // 27/10 : compte de capsules du casino (HeraliZ Casino) remis à 0, comme les hérals et les capsules de l'inventaire
+        appel("fr.heraliz.casino.api.CapsulesApi", "wipe", new Class<?>[]{UUID.class}, p.getUUID());
         List<ItemStack> aVie = new ArrayList<>();
         garderAVie(aVie, p.getInventory());
         garderAVie(aVie, p.getEnderChestInventory());

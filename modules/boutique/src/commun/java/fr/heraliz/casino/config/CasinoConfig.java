@@ -38,6 +38,8 @@ public final class CasinoConfig {
                 + "Apres modification : /casino reload";
         public General general = new General();
         public Cashier caisse = new Cashier();
+        /** Compte de capsules des joueurs (27/10) : dépôts, retraits, paiement à la caisse et à l'entrée. */
+        public Compte compte = new Compte();
         public RottenRules rotten = new RottenRules();
         public fr.heraliz.casino.game.slot.OlympeRules portesOlympe = new fr.heraliz.casino.game.slot.OlympeRules();
         public fr.heraliz.casino.game.slot.LoupRules souffleLoup = new fr.heraliz.casino.game.slot.LoupRules();
@@ -116,7 +118,8 @@ public final class CasinoConfig {
             if (caisse.encaissements == null) caisse.encaissements = new ArrayList<>();
             caisse.entree = (caisse.entree == null ? new Entree() : caisse.entree).sanitized();
             caisse.economie = (caisse.economie == null ? new JetonsServeur() : caisse.economie).sanitized();
-            rotten = (rotten == null ? new RottenRules() : rotten).sanitized();
+            compte = (compte == null ? new Compte() : compte).sanitized();
+            rotten =(rotten == null ? new RottenRules() : rotten).sanitized();
             portesOlympe = (portesOlympe == null ? new fr.heraliz.casino.game.slot.OlympeRules() : portesOlympe).sanitized();
             souffleLoup = (souffleLoup == null ? new fr.heraliz.casino.game.slot.LoupRules() : souffleLoup).sanitized();
             laNiche = (laNiche == null ? new fr.heraliz.casino.game.slot.NicheRules() : laNiche).sanitized();
@@ -268,6 +271,34 @@ public final class CasinoConfig {
         }
     }
 
+    /**
+     * Compte de capsules (27/10, demande du proprietaire) : chaque joueur range ses capsules sur un compte garde par le
+     * serveur, hors du monde ({@code heralizcasino/comptes/<uuid>.json} a la racine du serveur), et les reprend quand il veut.
+     */
+    public static class Compte {
+        public String aide = AIDE;
+        /** false : compte ferme (ni depot, ni retrait, ni paiement) ; les soldes restent dans leurs fichiers. */
+        public boolean actif = true;
+        /** La caisse et l'entree du casino prennent sur le compte ce qui manque en capsules dans l'inventaire. */
+        public boolean payerCaisse = true;
+        /** /capsules : depots et retraits a moins de ce nombre de blocs d'un distributeur ou d'une caisse (0 = partout hors de la carte). */
+        public double distance = 6;
+        /** Plafond d'un compte (capsules). */
+        public long max = 1_000_000_000L;
+
+        static final String AIDE = "Compte de capsules : distributeur de capsules (ATM) du casino, ou /capsules (solde), /capsules deposer "
+                + "[nombre] (rien = tout), /capsules retirer <nombre>, a moins de \"distance\" blocs d'un distributeur ou d'une caisse "
+                + "(0 = partout hors de la carte). "
+                + "payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.";
+
+        Compte sanitized() {
+            aide = AIDE;
+            distance = Double.isFinite(distance) ? Math.max(0, Math.min(64, distance)) : 6;
+            max = Math.max(1, Math.min(1_000_000_000_000L, max));
+            return this;
+        }
+    }
+
     public static class Exchange {
         /** Objet echange (identifiant Minecraft). */
         public String item = "minecraft:emerald";
@@ -390,7 +421,7 @@ public final class CasinoConfig {
     public static Object section(MachineType t, Settings s) {
         return switch (t) {
             case CAISSE -> s.caisse;
-            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
             case ROTTEN -> s.rotten;
             case OLYMPE -> s.portesOlympe;
             case LOUP -> s.souffleLoup;
@@ -414,7 +445,7 @@ public final class CasinoConfig {
     /** Redistribution {min, max} d'une machine avec ces reglages (null pour la caisse). */
     public static double[] rtp(MachineType t, Settings s) {
         return switch (t) {
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
             case ROTTEN -> RtpCalc.rotten(s.rotten);
             case OLYMPE -> RtpCalc.olympe(s.portesOlympe);
             case LOUP -> RtpCalc.loup(s.souffleLoup);
@@ -457,7 +488,7 @@ public final class CasinoConfig {
             case COURSE -> fr.heraliz.casino.game.Simulator.race(s.course, n, seed);
             case PIERRE_FEUILLE_CISEAUX -> fr.heraliz.casino.game.Simulator.duel(s.pierreFeuilleCiseaux);
             case BATAILLE_NAVALE -> fr.heraliz.casino.game.Simulator.duel(s.batailleNavale);
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
         };
     }
 
@@ -473,7 +504,7 @@ public final class CasinoConfig {
             case OLYMPE -> RtpCalc.report(s.portesOlympe);
             case LOUP -> RtpCalc.report(s.souffleLoup);
             case NICHE -> RtpCalc.report(s.laNiche);
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> null;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> null;
             default -> fr.heraliz.casino.game.SimCache.get(oddsKey(t, s), () -> {
                 Settings copy = GSON.fromJson(GSON.toJson(s), Settings.class).sanitized();
                 return fr.heraliz.casino.game.Simulator.once(() -> simulate(t, copy, rounds(t), 4242));
@@ -488,7 +519,7 @@ public final class CasinoConfig {
             case OLYMPE -> RtpCalc.settled(s.portesOlympe);
             case LOUP -> RtpCalc.settled(s.souffleLoup);
             case NICHE -> RtpCalc.settled(s.laNiche);
-            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS -> true;
+            case CAISSE, TABLEAU, TABLEAU_PERDANTS, TABLEAU_PARIEURS, ATM -> true;
             default -> fr.heraliz.casino.game.SimCache.done(oddsKey(t, s));
         };
     }
