@@ -491,8 +491,8 @@ Rien de tout cela n'a été testé en jeu.
   (`compte.payer_caisse` de `casino.json` ; indispensable au-delà de 23 040 capsules, le plus qu'un inventaire porte) ; un
   joueur qui a des capsules sur son compte n'est pas « fauché » pour les videurs. Remis à 0 par `/wipe` et `/wipe tout`.
   Canal du casino version 5 (`ComptePacket`). Écran et borne : maquette `maquettes/atm_capsules/`, à valider.
-- **Prix de la caisse** refaits (`casino.json`, grades à la journée inchangés en attendant la confirmation du
-  propriétaire) ; le finisher **Main du Joker** (80 000) ne sort plus d'aucune caisse (`EXCLUSIFS_CASINO` de
+- **Prix de la caisse** refaits (`casino.json` ; grades à la journée, confirmés par le propriétaire : Rescapé 10 000,
+  Traqueur 18 000, Roi de la Zone 30 000 le jour) ; le finisher **Main du Joker** (80 000) ne sort plus d'aucune caisse (`EXCLUSIFS_CASINO` de
   `outils/caisses.py`). Une commande de la caisse qui rend 0 (émote au hasard alors qu'il les a toutes, grade déjà à vie)
   est remboursée ; `emote debloquer` rend le nombre de joueurs qui ont vraiment reçu une emote.
 

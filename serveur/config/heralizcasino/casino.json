@@ -234,19 +234,19 @@
       {
         "nom": "Grade Rescapé (jours)",
         "commande": "grade acheter {player} rescape {amount}",
-        "jetons": 1000,
+        "jetons": 10000,
         "montant": 1
       },
       {
         "nom": "Grade Traqueur (jours)",
         "commande": "grade acheter {player} traqueur {amount}",
-        "jetons": 1800,
+        "jetons": 18000,
         "montant": 1
       },
       {
         "nom": "Grade Roi de la Zone (jours)",
         "commande": "grade acheter {player} roi_de_la_zone {amount}",
-        "jetons": 3000,
+        "jetons": 30000,
         "montant": 1
       },
       {
