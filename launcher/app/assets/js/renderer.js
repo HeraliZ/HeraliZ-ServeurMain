@@ -37,9 +37,21 @@ function el(tag, classe, texte) {
     return e
 }
 
+// Le launcher ne répond pas à sa page : Electron rend « No handler registered for 'heraliz:…' » (vieux launcher resté
+// ouvert sans fenêtre, démarrage raté), index.js « Accès refusé. ». Partout, ce message clair à la place de l'erreur
+// brute en anglais (error.muet).
+const LAUNCHER_MUET = 'Le launcher ne répond pas : ferme-le complètement (gestionnaire des tâches, tous les « HeraliZ Launcher ») puis relance-le. Si ça recommence, retélécharge-le sur heraliz.fr/telecharger.'
+const launcherMuet = message => /No handler registered|Accès refusé/i.test(String(message ?? ''))
+
 async function call(promise) {
-    const result = await promise
-    if (!result.ok) throw Object.assign(new Error(result.error), result.champs ? { champs: result.champs } : {}, result.discord ? { discord: result.discord } : {})
+    let result
+    try {
+        result = await promise
+    } catch (error) {
+        if (launcherMuet(error?.message)) throw Object.assign(new Error(LAUNCHER_MUET), { muet: true })
+        throw error
+    }
+    if (!result?.ok) throw Object.assign(new Error(result?.error || 'Une erreur est survenue. Réessaie dans un instant.'), result?.champs ? { champs: result.champs } : {}, result?.discord ? { discord: result.discord } : {})
     return result.data
 }
 
@@ -47,7 +59,14 @@ function toast(message) {
     $('toast').textContent = message
     $('toast').hidden = false
     clearTimeout(toastTimeout)
-    toastTimeout = setTimeout(() => { $('toast').hidden = true }, 6500)
+    // launcher qui ne répond pas : le message reste affiché (rien d'autre ne marchera)
+    if (message !== LAUNCHER_MUET) toastTimeout = setTimeout(() => { $('toast').hidden = true }, 6500)
+}
+
+// Fermer la fenêtre : par le launcher ; s'il ne répond pas, la page se ferme elle-même (fenêtre sans cadre, sinon
+// impossible à fermer autrement que par Alt + F4).
+function fermerFenetre() {
+    call(api.windowAction('close')).catch(error => { if (error.muet) window.close(); else toast(error.message) })
 }
 
 function feedback(id, message, error = false) {
@@ -389,7 +408,9 @@ async function refreshStatus() {
 
 /* ---------- branchements ---------- */
 
-for (const b of document.querySelectorAll('[data-window]')) b.addEventListener('click', () => call(api.windowAction(b.dataset.window)).catch(error => toast(error.message)))
+for (const b of document.querySelectorAll('[data-window]')) {
+    b.addEventListener('click', () => b.dataset.window === 'close' ? fermerFenetre() : call(api.windowAction(b.dataset.window)).catch(error => toast(error.message)))
+}
 for (const b of document.querySelectorAll('[data-dialog]')) b.addEventListener('click', () => { fermerMenu(); $(b.dataset.dialog).showModal() })
 for (const b of document.querySelectorAll('.dialog-close')) b.addEventListener('click', () => b.closest('dialog').close())
 for (const b of document.querySelectorAll('[data-link]')) b.addEventListener('click', () => call(api.openLink(b.dataset.link)).catch(error => toast(error.message)))
@@ -714,7 +735,7 @@ $('discord-ouvrir').addEventListener('click', () => {
     if (lien) call(api.openLink(lien)).catch(error => feedback('discord-feedback', error.message, true))
 })
 $('discord-verifier').addEventListener('click', () => controlerDiscord(true))
-$('discord-quitter').addEventListener('click', () => call(api.windowAction('close')).catch(error => toast(error.message)))
+$('discord-quitter').addEventListener('click', fermerFenetre)
 $('discord-deconnexion').addEventListener('click', async () => {
     $('discord-deconnexion').disabled = true
     try {
@@ -779,13 +800,13 @@ function demanderAccord() {
                 confirmation.close()
                 resolve(true)
             } catch (error) {
-                // dans la fenêtre : un message en bas de l'écran serait caché derrière elle
-                const muet = /No handler registered|Accès refusé/i.test(error.message)
-                feedback('accord-feedback', muet ? 'Le launcher ne répond pas : ferme-le complètement puis relance-le. Si ça recommence, retélécharge-le sur heraliz.fr/telecharger.' : error.message, true)
+                // dans la fenêtre : un message en bas de l'écran serait caché derrière elle (launcher qui ne répond
+                // pas compris : call() le traduit)
+                feedback('accord-feedback', error.message, true)
                 $('accord-confirmer').disabled = false
             }
         })
-        $('accord-non').addEventListener('click', () => { api.windowAction('close'); resolve(false) })
+        $('accord-non').addEventListener('click', () => { fermerFenetre(); resolve(false) })
         fenetre.showModal()
     })
 }
@@ -816,7 +837,12 @@ async function init() {
             // Un serveur lent ne doit pas bloquer le démarrage.
             await Promise.race([refreshStatus(), wait(4000)])
             setInterval(refreshStatus, 60000)
-        } catch (error) { toast(error.message); $('play').disabled = true }
+        } catch (error) {
+            toast(error.message)
+            $('play').disabled = true
+            // le launcher ne répond pas : rien d'autre ne marchera, l'écran de démarrage reste avec le message
+            if (error.muet) { splashStep(100, 'Le launcher ne répond pas'); return }
+        }
     }
     splashStep(90)
     await minSplash

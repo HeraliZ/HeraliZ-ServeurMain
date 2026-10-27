@@ -31,7 +31,7 @@ files:
   - 'app/assets/images/nouveautes/*.jpg'
   - 'app/assets/images/pb/*.webp'
   - 'app/assets/images/minecraft.icns'
-  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,signature,renderer,spartan,topo,nouveautes,compte-site,mise-a-jour,effacement,gardien,integrite}.js'
+  - 'app/assets/js/{configmanager,processbuilder,launcher-service,offline-profile,security,signature,renderer,spartan,topo,nouveautes,compte-site,mise-a-jour,effacement,gardien,integrite,secours}.js'
 
 extraResources:
   - 'libraries'

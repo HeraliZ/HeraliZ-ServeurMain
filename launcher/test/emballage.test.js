@@ -67,3 +67,29 @@ test('chaque image, police, feuille de style et script de la page est emballé',
         assert.ok(emballes.has(f), `nouveautes.js affiche ${f}, absent de files dans electron-builder.yml`)
     }
 })
+
+// Installeur Windows (NSIS d'electron-builder) : un launcher encore ouvert, même sans fenêtre (les 1.14.0 à 1.15.0
+// restaient parfois ouverts en arrière-plan après leur plantage), est fermé avant l'installation. Sans ça, le vieux
+// launcher garde la place (une seule instance) et ouvre au lancement suivant une fenêtre qui ne répond pas
+// (« No handler registered for 'heraliz:state' »). Rien à régler : c'est le comportement d'electron-builder, gardé tant
+// que rien ne le remplace (customCheckAppRunning) ; ce test le vérifie après chaque mise à jour d'electron-builder.
+test('l’installeur Windows ferme le launcher encore ouvert avant d’installer', () => {
+    const nsis = path.join(RACINE, 'node_modules', 'app-builder-lib', 'templates', 'nsis')
+    const verif = fs.readFileSync(path.join(nsis, 'include', 'allowOnlyOneInstallerInstance.nsh'), 'utf8')
+    // tous les processus lancés depuis le dossier d'installation (PowerShell), sinon par le nom du programme
+    assert.match(verif, /!macro _CHECK_APP_RUNNING[\s\S]*FIND_PROCESS[\s\S]*KILL_PROCESS[\s\S]*KILL_PROCESS "\$\{APP_EXECUTABLE_FILENAME\}" 1/)
+    assert.match(verif, /Path\.StartsWith\('\$INSTDIR'/)
+    assert.match(verif, /taskkill/)
+    // fait par l'installeur et par l'ancien désinstalleur (lancé sur l'ancien dossier pendant la mise à jour)
+    assert.match(fs.readFileSync(path.join(nsis, 'installSection.nsh'), 'utf8'), /!insertmacro CHECK_APP_RUNNING/)
+    assert.match(fs.readFileSync(path.join(nsis, 'uninstaller.nsh'), 'utf8'), /!insertmacro CHECK_APP_RUNNING/)
+    // rien chez nous ne remplace cette vérification
+    assert.equal(config.nsis?.include, undefined)
+    assert.equal(config.nsis?.script, undefined)
+    const inclus = path.join(RACINE, 'build', 'installer.nsh')
+    assert.ok(!fs.existsSync(inclus) || !/customCheckAppRunning/.test(fs.readFileSync(inclus, 'utf8')))
+    // mêmes identité, dossier et raccourcis qu'avant : l'installeur reconnaît et remplace l'ancien launcher
+    assert.equal(config.appId, 'fr.heraliz.launcher')
+    assert.equal(config.nsis.perMachine, false)
+    assert.equal(config.nsis.oneClick, false)
+})
