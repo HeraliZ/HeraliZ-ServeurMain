@@ -91,10 +91,14 @@ public final class PlacableGhostRenderer {
                     if (hit.getType() == Type.BLOCK) {
                         UseOnContext useCtx = new UseOnContext(player, activeHand, hit);
                         BlockPlaceContext ctx = new BlockPlaceContext(useCtx);
-                        if (ctx.canPlace()) {
-                            BlockPos placePos = ctx.getClickedPos();
+                        // HeraliZ (28/10) : même place que la pose (objet collé aux murs visé sur une case de mur : case
+                        // libre voisine, poussé vers elle ; descente sur un plancher à mi-bloc ; sens choisi avec R)
+                        fr.heraliz.crac.block.ObjetAdossable.Place place = stack.getItem() instanceof fr.heraliz.crac.block.ObjetAdossable oa
+                            ? oa.placeDePose(ctx) : ctx.canPlace() ? new fr.heraliz.crac.block.ObjetAdossable.Place(ctx, null) : null;
+                        if (place != null) {
+                            BlockPos placePos = place.ctx().getClickedPos();
                             BlockItem blockItem = (BlockItem)stack.getItem();
-                            BlockState state = blockItem.getBlock().getStateForPlacement(ctx);
+                            BlockState state = place.etat(blockItem.getBlock());
                             boolean blocked = state == null;
                             if (state == null) {
                                 state = blockItem.getBlock().defaultBlockState();
@@ -176,6 +180,12 @@ public final class PlacableGhostRenderer {
         }
     }
 
+    /** Pourquoi le fantôme de cette image est rouge, sinon null (lu par l'aide de la touche R, RotationObjetClient). */
+    @Nullable
+    static String raison() {
+        return reason;
+    }
+
     @SubscribeEvent
     public static void onRenderGui(RenderGuiOverlayEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
@@ -214,6 +224,10 @@ public final class PlacableGhostRenderer {
     }
 
     private static BlockState secondPartOf(BlockState state) {
+        if (state.getBlock() instanceof fr.heraliz.crac.block.CoffreBlock c) {
+            // coffre large : sa case de droite a son propre modèle ; coffre haut : la case du bas dessine tout
+            return c.large() ? state.setValue(fr.heraliz.crac.block.CoffreBlock.ANNEXE, true) : null;
+        }
         if (state.getBlock() instanceof BedBlock && state.hasProperty(BedBlock.PART)) {
             return state.setValue(BedBlock.PART, BedPart.HEAD);
         } else {
@@ -224,6 +238,9 @@ public final class PlacableGhostRenderer {
     }
 
     private static BlockPos secondCellOf(BlockState state, BlockPos pos) {
+        if (state.getBlock() instanceof fr.heraliz.crac.block.CoffreBlock c) {
+            return c.annexeDe(pos, state.getValue(fr.heraliz.crac.block.CoffreBlock.FACING));
+        }
         if (state.getBlock() instanceof BedBlock) {
             return pos.relative(state.getValue(BedBlock.FACING));
         } else {

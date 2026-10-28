@@ -5,31 +5,31 @@
       "item": {
         "item": "heraliz_composants:fragments_metal"
       },
-      "count": 8
+      "count": 16
     },
     {
       "item": {
         "item": "heraliz_composants:equerres_acier"
       },
-      "count": 4
+      "count": 8
     },
     {
       "item": {
         "item": "heraliz_composants:ferraille_iv"
       },
-      "count": 2
+      "count": 4
     },
     {
       "item": {
         "item": "heraliz_composants:caoutchouc_iv"
       },
-      "count": 2
+      "count": 4
     },
     {
       "item": {
         "item": "heraliz_composants:circuit_imprime_iv"
       },
-      "count": 1
+      "count": 2
     }
   ],
   "result": {

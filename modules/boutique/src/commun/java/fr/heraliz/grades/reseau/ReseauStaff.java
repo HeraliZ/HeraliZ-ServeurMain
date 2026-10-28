@@ -25,12 +25,13 @@ public final class ReseauStaff {
     private ReseauStaff() {
     }
 
-    private static final String VERSION = "1";
+    /** 2 (28/10) : onglet « Commandes du Fondateur » (masques des commandes dans l'état, case d'une commande). */
+    private static final String VERSION = "2";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "staff"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
     /** Bornes de lecture (un paquet trafiqué ne fait pas exploser la mémoire). */
-    public static final int MAX_ID = 32, MAX_TEXTE = 160, MAX_LIGNES = 120, MAX_JOUEURS = 500;
+    public static final int MAX_ID = 32, MAX_TEXTE = 160, MAX_LIGNES = 120, MAX_JOUEURS = 500, MAX_COMMANDES = 600;
 
     /** Une ligne du journal du staff : heure, staff et son grade, action, joueur visé, détail (durée, grade…), raison. */
     public record Ligne(long ms, String staff, String grade, String action, String cible, String detail, String raison) {
@@ -39,10 +40,11 @@ public final class ReseauStaff {
     /**
      * État du panel (serveur -> staff) : rang (1 Guide … 5 Fondateur), grade affiché, actions permises, masques de toutes
      * les actions (Fondateur seulement, sinon vide), grades qu'il peut donner (Fondateur seulement), journal récent,
-     * joueurs rendus muets depuis le panel, réponse à la dernière action.
+     * joueurs rendus muets depuis le panel, réponse à la dernière action, et (Fondateur seulement, 28/10) les commandes
+     * données à des grades : racine -> masque des rangs (bit r = rang r).
      */
     public record Etat(boolean ouvrir, int rang, String grade, List<String> permises, Map<String, Integer> masques, List<String> grades,
-                       List<Ligne> historique, List<UUID> muets, String message, boolean ok) {
+                       List<Ligne> historique, List<UUID> muets, String message, boolean ok, Map<String, Integer> commandes) {
     }
 
     /** Fiche d'un joueur connecté (serveur -> staff). */
@@ -66,6 +68,10 @@ public final class ReseauStaff {
     public record Permission(String action, int rang, boolean permis) {
     }
 
+    /** Une case de l'onglet « Commandes du Fondateur » (Fondateur -> serveur) : cette commande, pour ce grade. */
+    public record PermissionCommande(String racine, int rang, boolean permis) {
+    }
+
     /** Vider le chat (serveur -> chaque joueur). */
     public record ViderChat() {
     }
@@ -81,6 +87,7 @@ public final class ReseauStaff {
     public static final Crochet<Recu<DemandeFiche>> RECEPTION_DEMANDE_FICHE = new Crochet<>();
     public static final Crochet<Recu<Agir>> RECEPTION_AGIR = new Crochet<>();
     public static final Crochet<Recu<Permission>> RECEPTION_PERMISSION = new Crochet<>();
+    public static final Crochet<Recu<PermissionCommande>> RECEPTION_PERMISSION_COMMANDE = new Crochet<>();
 
     public static void enregistrer() {
         CANAL.messageBuilder(Etat.class, 0, NetworkDirection.PLAY_TO_CLIENT)
@@ -142,6 +149,18 @@ public final class ReseauStaff {
                 .consumerMainThread((m, ctx) -> {
                     ServerPlayer p = ctx.get().getSender();
                     if (p != null) RECEPTION_PERMISSION.accept(new Recu<>(p, m));
+                    ctx.get().setPacketHandled(true);
+                }).add();
+        CANAL.messageBuilder(PermissionCommande.class, 7, NetworkDirection.PLAY_TO_SERVER)
+                .encoder((m, b) -> {
+                    b.writeUtf(m.racine(), MAX_ID);
+                    b.writeVarInt(m.rang());
+                    b.writeBoolean(m.permis());
+                })
+                .decoder(b -> new PermissionCommande(b.readUtf(MAX_ID), b.readVarInt(), b.readBoolean()))
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) RECEPTION_PERMISSION_COMMANDE.accept(new Recu<>(p, m));
                     ctx.get().setPacketHandled(true);
                 }).add();
     }
@@ -207,6 +226,14 @@ public final class ReseauStaff {
         for (int j = 0; j < nm; j++) b.writeUUID(m.muets().get(j));
         b.writeUtf(m.message(), MAX_TEXTE * 2);
         b.writeBoolean(m.ok());
+        int nc = Math.min(m.commandes().size(), MAX_COMMANDES);
+        b.writeVarInt(nc);
+        int k = 0;
+        for (Map.Entry<String, Integer> e : m.commandes().entrySet()) {
+            if (k++ >= nc) break;
+            b.writeUtf(e.getKey(), MAX_ID);
+            b.writeVarInt(e.getValue());
+        }
     }
 
     private static Etat lireEtat(FriendlyByteBuf b) {
@@ -222,7 +249,12 @@ public final class ReseauStaff {
         int nm = Math.min(b.readVarInt(), MAX_JOUEURS);
         List<UUID> muets = new ArrayList<>(nm);
         for (int j = 0; j < nm; j++) muets.add(b.readUUID());
-        return new Etat(ouvrir, rang, grade, permises, masques, grades, historique, muets, b.readUtf(MAX_TEXTE * 2), b.readBoolean());
+        String message = b.readUtf(MAX_TEXTE * 2);
+        boolean ok = b.readBoolean();
+        int nc = Math.min(b.readVarInt(), MAX_COMMANDES);
+        Map<String, Integer> commandes = new LinkedHashMap<>();
+        for (int i = 0; i < nc; i++) commandes.put(b.readUtf(MAX_ID), b.readVarInt());
+        return new Etat(ouvrir, rang, grade, permises, masques, grades, historique, muets, message, ok, commandes);
     }
 
     private static void ecrireFiche(Fiche m, FriendlyByteBuf b) {

@@ -274,6 +274,7 @@
   "heralisz_utils.suicide.spawn": "Not possible at spawn: you are safe here.",
   "heralisz_utils.suicide.combat": "Not possible in combat.",
   "heralisz_utils.suicide.terre": "Not possible while downed.",
+  "heralisz_utils.suicide.delai": "You must wait %s more before using /suicide again.",
   "block.heralisz_utils.voie_pleine": "Solid track (invisible collision)",
   "heralisz_utils.train.voie.genre.plat": "flat",
   "heralisz_utils.train.voie.genre.remblai": "embankment",

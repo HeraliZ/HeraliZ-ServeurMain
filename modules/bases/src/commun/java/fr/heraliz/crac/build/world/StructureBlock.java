@@ -305,6 +305,28 @@ public class StructureBlock extends BaseEntityBlock {
     }
 
     /**
+     * HeraliZ (28/10) : un objet qui sait descendre d'un demi-bloc ({@code Adosse.BAS}) tient sur la case de construction
+     * {@code pos} : des fondations ou planchers dont le dessus est au milieu de la case (plancher posé sur des demi-murs)
+     * en couvrent toute la surface, comme {@link #holdsBlockOnTop} pour un dessus à ras de la case.
+     */
+    public static boolean tientEnBas(BlockGetter level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof StructureBlockEntity be)) {
+            return false;
+        }
+        double mid = 16.0 * pos.getY() + fr.heraliz.crac.block.Adosse.DEMI;
+        double covered = 0;
+        for (Occupant o : be.occupants()) {
+            PieceKey k = o.key();
+            if (!k.kind().isWalkableSurface() || Math.abs(16.0 * k.origin().getY() + k.baseY() - mid) > 1e-6) continue;
+            double x0 = (pos.getX() - k.origin().getX()) * 16.0;
+            double z0 = (pos.getZ() - k.origin().getZ()) * 16.0;
+            double[][] c = Poly.clipRect(Footprints.solidPolygon(k), x0, z0, x0 + 16, z0 + 16);
+            covered += c == null ? 0 : Poly.area(c);
+        }
+        return covered >= 256.0 - 1e-6;
+    }
+
+    /**
      * The block under a foundation column changed (mined, exploded, picked up): its ground is checked next tick. HeraliZ
      * (27/10) : un bloc à côté (même hauteur) devenu libre peut être la moitié d'un mur laissée à un bloc posé avant le mur
      * (terrain, bloc posé par le staff) : le mur la reprend (StructureService.reboucher, comme pour une armoire ou une caisse

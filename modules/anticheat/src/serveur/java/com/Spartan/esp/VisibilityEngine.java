@@ -82,7 +82,7 @@ public final class VisibilityEngine {
     private static boolean changesOverflow;
 
     // Calcul sur le thread serveur : première vue d'une paire et mode synchrone.
-    private static final LevelVoxels MAIN_VOXELS = new LevelVoxels();
+    private static final LevelVoxels MAIN_VOXELS = new LevelVoxels(true);
     private static final Raycaster MAIN_RAYS = new Raycaster(MAIN_VOXELS);
     private static final Sight MAIN_SIGHT = new Sight(MAIN_RAYS);
 
@@ -235,6 +235,8 @@ public final class VisibilityEngine {
         long rays0 = MAIN_RAYS.rays();
         long steps0 = MAIN_RAYS.steps();
         Occluders.refresh();
+        // cases de construction de CRac demandées par les threads au tick d'avant (avant le tri des paires)
+        StructuresCrac.resoudre(VisibilityEngine::marquer);
         MAIN_VOXELS.reset();
         configureWorkers();
         int viewRange = server.getPlayerList().getViewDistance() * 16;
@@ -552,7 +554,16 @@ public final class VisibilityEngine {
 
     /** Un bloc a changé (porte ouverte, mur cassé…) : appelé par ServerLevel.sendBlockUpdated (Mixin). */
     public static void onBlockChanged(Level level, BlockPos pos) {
-        if (!active || changesOverflow) {
+        if (!active) {
+            return;
+        }
+        StructuresCrac.oublier(level, pos);
+        marquer(level, pos);
+    }
+
+    /** Bloc à reprendre dans les lignes de vue (bloc changé, case de construction calculée). Thread serveur. */
+    private static void marquer(Level level, BlockPos pos) {
+        if (changesOverflow) {
             return;
         }
         LongArrayList list = CHANGES.computeIfAbsent(level, k -> new LongArrayList());
@@ -746,6 +757,7 @@ public final class VisibilityEngine {
         SNAPS.clear();
         LAST_POS.clear();
         CHANGES.clear();
+        StructuresCrac.vider();
     }
 
     /** Arrêt du serveur : rien ne doit survivre (serveur intégré). */
@@ -765,6 +777,7 @@ public final class VisibilityEngine {
         VOICE.clear();
         CHANGES.clear();
         ChunkTable.clear();
+        StructuresCrac.vider();
     }
 
     /** Chunk chargé (thread serveur) : lisible par les threads de calcul. */

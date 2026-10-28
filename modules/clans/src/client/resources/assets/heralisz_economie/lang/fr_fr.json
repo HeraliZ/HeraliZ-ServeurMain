@@ -48,5 +48,9 @@
   "economie.msg.admin.sauvegarde_forcee": "Blocage levé : l'ancien fichier est conservé sous %s. Comptes sauvegardés.",
   "economie.msg.admin.sauvegarde_mise_de_cote_echec": "Impossible de mettre l'ancien fichier de côté (%s) : la sauvegarde reste bloquée.",
   "economie.msg.admin.chargement_echoue": "HeraliZ Économie : %s n'a pas pu être lu au démarrage. Toute sauvegarde est bloquée pour protéger les soldes. Corrigez le fichier puis /eco recharger, ou /eco sauvegarder --forcer pour repartir des comptes en mémoire.",
-  "economie.msg.admin.info_bloque": "Sauvegarde bloquée : fichier illisible au démarrage (/eco recharger ou /eco sauvegarder --forcer)."
+  "economie.msg.admin.info_bloque": "Sauvegarde bloquée : fichier illisible au démarrage (/eco recharger ou /eco sauvegarder --forcer).",
+  "economie.msg.admin.login": "Connecte-toi d'abord avec /login.",
+  "economie.msg.admin.plafond": "Refusé : le solde de %s dépasserait le plafond (%s).",
+  "economie.msg.admin.recu": "Le staff t'a crédité de %s (solde : %s).",
+  "economie.msg.admin.perdu": "Le staff t'a retiré %s (solde : %s)."
 }

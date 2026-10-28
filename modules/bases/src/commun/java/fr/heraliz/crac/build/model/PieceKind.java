@@ -114,9 +114,11 @@ public enum PieceKind {
      * Toit classique et toit triangle retirés de la construction (choix du propriétaire, 26/10) : plus dans la roue du
      * plan ni posables par les joueurs. Ceux déjà posés restent (leurs règles et leur rendu sont gardés), comme leur
      * place dans l'énumération (ordinaux des blocs et des paquets).
+     * Rampe triangle retirée de même (choix du propriétaire, 28/10) : celles déjà posées restent (rendu, collision,
+     * amélioration, réparation, casse), plus aucune nouvelle. La rampe carrée ne change pas.
      */
     public boolean isRetired() {
-        return this.isRoof();
+        return this.isRoof() || this == TRI_RAMP;
     }
 
     /** RAMP or TRI_RAMP: open slopes that lean on walls and join their neighbours. */

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
@@ -12,6 +13,8 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
  * thread de l'anti-ESP : sections lues via ChunkTable, occultation via la table
  * immuable d'Occluders, petits caches locaux (chunks récents, dernier état).
  * Une instance par thread. Un chunk non chargé est transparent.
+ * Case de construction de CRac : lue à sa position ({@link StructuresCrac}, 2.9.4), jamais par son
+ * seul état ; tant qu'elle n'est pas calculée, drapeaux de l'état (lecture d'avant).
  */
 final class LevelVoxels implements Raycaster.Voxels {
     private static final int CACHE = 4;
@@ -27,11 +30,25 @@ final class LevelVoxels implements Raycaster.Voxels {
     private LevelChunkSection[] cur;
     private BlockState lastState;
     private double[] lastOcc;
+    private ServerLevel level;
+    private Block parPosition;
+    /** Thread serveur : une case de construction inconnue est calculée tout de suite. */
+    private final boolean main;
+
+    LevelVoxels() {
+        this(false);
+    }
+
+    LevelVoxels(boolean main) {
+        this.main = main;
+    }
 
     /** Monde des prochains rayons (à appeler avant chaque paire). */
     void use(ServerLevel level, int minSection, int sectionCount) {
         Map<Long, LevelChunkSection[]> c = ChunkTable.of(level);
         Reference2ObjectOpenHashMap<BlockState, double[]> t = Occluders.table();
+        this.level = level;
+        this.parPosition = Occluders.parPosition();
         if (c != chunks || t != table) {
             chunks = c;
             table = t;
@@ -72,6 +89,13 @@ final class LevelVoxels implements Raycaster.Voxels {
             return null;
         }
         BlockState state = section.getBlockState(x & 15, y & 15, z & 15);
+        if (parPosition != null && state.getBlock() == parPosition) {
+            double[] occ = StructuresCrac.at(level, x, y, z, state, main);
+            if (occ != null) {
+                return occ == StructuresCrac.AUCUNE ? null : occ;
+            }
+            return table.get(state); // pas encore calculée : drapeaux de l'état
+        }
         if (state == lastState) {
             return lastOcc;
         }

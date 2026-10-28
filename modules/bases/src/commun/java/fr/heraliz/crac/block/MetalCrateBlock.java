@@ -43,9 +43,11 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
     /** Formes poussées contre le mur, par sens et par décalage ({@link Adosse#formesDecalees}). */
     private static final VoxelShape[][] DECALEES = Adosse.formesDecalees(
         f -> f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW, BOITE);
+    /** Les mêmes, descendues d'un demi-bloc sur un plancher à mi-bloc ({@link Adosse#BAS}). */
+    private static final VoxelShape[][] DESCENDUES = Adosse.descendre(DECALEES);
 
     private static VoxelShape shapeFor(BlockState state) {
-        return DECALEES[state.getValue(FACING).get2DDataValue()][state.getValue(Adosse.ADOSSE)];
+        return (state.getValue(Adosse.BAS) ? DESCENDUES : DECALEES)[state.getValue(FACING).get2DDataValue()][state.getValue(Adosse.ADOSSE)];
     }
 
     @Override
@@ -58,20 +60,27 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
         return 9;
     }
 
+    @Override
+    public double dessous(BlockState state) {
+        return Adosse.bas(state) ? Adosse.DEMI : 0;
+    }
+
     public MetalCrateBlock() {
         super(Properties.of().mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false)
-            .setValue(Adosse.ADOSSE, Adosse.AUCUN));
+            .setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false));
     }
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, Adosse.ADOSSE);
+        builder.add(FACING, OPEN, Adosse.ADOSSE, Adosse.BAS);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        BlockState s = this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite()).setValue(OPEN, false);
+        // face vers le joueur, tournée par R (OrientationObjet) ; descendue sur un plancher à mi-bloc (Adosse.BAS)
+        BlockState s = this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false)
+            .setValue(Adosse.BAS, Adosse.doitDescendre(ctx.getLevel(), ctx.getClickedPos()));
         return s.setValue(Adosse.ADOSSE, Adosse.choisir(ctx, s));
     }
 

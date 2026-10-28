@@ -15,6 +15,11 @@ public final class PartieClient implements Partie {
     @Override
     public void init(IEventBus busMod) {
         CoffreBlockEntity.TICK_CLIENT = EffetsCoffre::tick;
+        // étoiles des conteneurs remplis (28/10) : vie courte, montrées même avec « Particules : minimales »
+        busMod.addListener((net.minecraftforge.client.event.RegisterParticleProvidersEvent e) -> {
+            e.registerSpriteSet(fr.heraliz.loot.ParticulesLoot.ETOILE.get(), EtoileParticule.Blanche::new);
+            e.registerSpriteSet(fr.heraliz.loot.ParticulesLoot.ETOILE_OR.get(), EtoileParticule.Doree::new);
+        });
         CoffreItem.RENDU_CLIENT.brancher(consumer -> consumer.accept(new IClientItemExtensions() {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {

@@ -411,6 +411,14 @@ réelle contre l'ESP, et elle est entièrement côté serveur.
   (`opaqueBlocks`, la porte ouverte ne cache plus).
 - Ne cachent jamais : verre, vitres, feuilles, clôtures, barreaux, eau, chunks non
   chargés. Dans le doute, on montre.
+- **Bases de CRac (2.9.4)** : chaque case de construction est lue à sa place, pièce
+  par pièce (`esp/StructuresCrac`) : mur plein, porte fermée et vitre cachent ;
+  ouverture de fenêtre, barreaux, porte ouverte et murs en brindilles laissent voir.
+  Avant, l'anti-ESP lisait seulement les six drapeaux « face fermée » de la case
+  (faits pour la lumière, pas recalculés quand CRac change une forme : les fenêtres
+  posées avant l'ouverture de 28 px gardaient des bords « fermés ») : un joueur vu par
+  le bord d'une fenêtre pouvait rester caché. Forme lue par `fr.heraliz.crac.api.VueApi`
+  si CRac l'expose, sinon par ses classes (réflexion, sans dépendance).
 
 ### Jamais d'invisibilité injuste
 - **Anticipation du ping** : un joueur est envoyé dès qu'il serait visible après un

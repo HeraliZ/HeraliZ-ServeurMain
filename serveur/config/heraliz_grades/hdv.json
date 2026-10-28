@@ -1,0 +1,16 @@
+{
+  "_aide": "Hôtel des ventes (/hdv au spawn, PNJ commissaire-priseur). Relu tout seul toutes les 10 s. plafond_pb : prix maximal d'une offre en PB selon la rareté de l'objet (contre les PB passés d'un compte à l'autre avec un objet sans valeur ; 100 PB = 1 €), pour toute la pile. frais_pb_pourcent : payés par l'acheteur, brûlés. Ventes en hérals : sans frais.",
+  "ventes_max": 5,
+  "durees_heures": [12, 24, 48],
+  "frais_pb_pourcent": 10,
+  "prix_herals_max": 10000000,
+  "plafond_pb": {
+    "aucune": 30,
+    "commun": 30,
+    "peu_commun": 75,
+    "rare": 200,
+    "epique": 500,
+    "legendaire": 1200,
+    "unique": 2500
+  }
+}

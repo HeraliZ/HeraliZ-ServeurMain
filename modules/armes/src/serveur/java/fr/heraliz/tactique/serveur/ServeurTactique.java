@@ -8,7 +8,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * qui repoussent (VitresServeur, diagnostic du staff {@code /vitres pourquoi} : CommandeVitres), les tirs silencieux
  * entendus de loin (SonLointainServeur), les coups des couteaux TaCZ (CouteauxServeur) et les dégâts des armes TaCZ
  * contre les joueurs (DegatsArmes, config heraliz_tactique/armes.json), le tir automatique par défaut (TirAutoServeur), plus de deuxième main
- * (SansMainGauche).
+ * (SansMainGauche), la jambe cassée sans perte des coups (JambeCasseeServeur).
  */
 public final class ServeurTactique implements Partie {
    @Override
@@ -25,5 +25,7 @@ public final class ServeurTactique implements Partie {
       SansMainGauche.brancher();
       // anciens soins d'ArkaniaZ (pansement de terrain, bandages, chiffons) : remplacés par le Bandage (25/10)
       AnciensSoins.brancher();
+      // jambe cassée de geckolib222 : plus de Faiblesse II cachée qui empêchait de frapper (28/10)
+      JambeCasseeServeur.brancher();
    }
 }

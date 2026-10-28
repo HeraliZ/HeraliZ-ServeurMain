@@ -10,7 +10,8 @@ niveau I (Peu commun) -> objet Commun, II (Rare) -> Peu commun, III (Épique) ->
 Rien de Légendaire ni d'Unique ne se fabrique ; ni fusils de précision, ni mitrailleuses, ni lance-grenades, ni RPG.
 Exceptions voulues par le propriétaire : la C4 de CRac (23/10) et, dans « Divers » (26/10), la carte d'accès rouge et les
 jumelles de désignation (Légendaires, fabrication seulement) et la munition de frappe puissante.
-Munitions : bocal de poudre du niveau de la rareté de la munition (24/10, choix du propriétaire), ferraille de niveau I.
+Munitions : bocal de poudre I (munitions Commun et Peu commun) ou II (Rare et Épique) (28/10, choix du propriétaire),
+ferraille de niveau I.
 Raretés lues dans serveur/config/heraliz_loot/raretes.json (écrites par equilibrage_armes.py).
 """
 import glob, json, os, re, shutil
@@ -66,6 +67,10 @@ ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}
 PAQUET = 15
 BOCAUX = {"commun": 2, "peu_commun": 2, "rare": 2, "epique": 3}
 FERRAILLE = {"commun": 4, "peu_commun": 6, "rare": 8, "epique": 12}
+# 28/10 (demande du propriétaire) : niveau du bocal de poudre des munitions ramené à deux niveaux : les munitions qui
+# demandaient de la poudre I ou II prennent de la poudre I, celles qui demandaient III ou IV prennent de la poudre II
+# (mêmes quantités). Rareté de la munition -> suffixe du bocal.
+POUDRE = {"commun": "", "peu_commun": "", "rare": "_ii", "epique": "_ii"}
 
 # soins : Commun = 1 tissu ; au-dessus, 1 tissu + 1 alcool, au niveau de la rareté
 SOIN_COMMUN = {"tissu": 1}
@@ -95,8 +100,8 @@ EXPLOSIFS = [
 ]
 
 # divers (26/10, demande du propriétaire) : objets spéciaux, matériaux donnés par leur identifiant complet.
-# - cartes d'accès : les 4 fragments numérotés de leur couleur (même règle que le clic droit avec un fragment ; l'ancienne
-#   recette de la grille d'artisanat 2 x 2 est retirée : un seul endroit pour fabriquer) ;
+# - cartes d'accès : les 4 fragments numérotés de leur couleur (seul endroit pour fabriquer : ni grille d'artisanat 2 x 2,
+#   retirée le 26/10, ni clic droit avec un fragment, retiré le 28/10) ;
 # - jumelles de désignation (Légendaire, jamais dans le loot, les caisses ni les récompenses) : composants de haut niveau et
 #   matériaux de la carte qui ont déjà une valeur (fil à souder) ; elles ne frappent rien sans munition ;
 # - munitions de frappe, 2 frappes chacune : légère (mitraillage, fumée ; composants I-II, loot T2-T3), lourde (bombes,
@@ -122,15 +127,17 @@ DIVERS = [
 # rareté du coffre (I Commun, II Peu commun, III Rare, IV Épique) ; le coffre-fort (Légendaire) est une exception comme les
 # jumelles : composants IV et matériaux légendaires des bases (métal renforcé, fil à souder). La caisse en métal reste aussi
 # vendue 150 hérals par le Bâtisseur (outils/marchands.py). Raretés dans RARETES_IMPOSEES de outils/loot_armes.py.
+# 28/10 (demande du propriétaire) : coût de tous les coffres de base doublé (avant : caisse en métal 6 ferraille + 4 clous,
+# malle 8/8/2/3, casier 6/2/3/1, caisse à armes 8/4/2/2/1, coffre-fort 6/3/4/2/1).
 RANGEMENT = [
-    ("1_caisse_metal", "crac:metal_crate", {C + "ferraille": 6, C + "clou": 4}),
-    ("2_malle_chantier", "crac:malle_chantier", {C + "planches": 8, C + "clou": 8, C + "corde": 2, C + "ferraille_ii": 3}),
-    ("3_casier_metallique", "crac:casier_metallique", {C + "fragments_metal": 6, C + "equerres_acier": 2, C + "ferraille_iii": 3,
-                                                       C + "kit_pieces_iii": 1}),
-    ("4_caisse_armes", "crac:caisse_armes", {C + "fragments_metal": 8, C + "equerres_acier": 4, C + "ferraille_iv": 2,
-                                             C + "caoutchouc_iv": 2, C + "circuit_imprime_iv": 1}),
-    ("5_coffre_fort", "crac:coffre_fort", {C + "metal_renforce": 6, C + "fil_souder": 3, C + "ferraille_iv": 4,
-                                           C + "kit_pieces_iv": 2, C + "circuit_imprime_iv": 1}),
+    ("1_caisse_metal", "crac:metal_crate", {C + "ferraille": 12, C + "clou": 8}),
+    ("2_malle_chantier", "crac:malle_chantier", {C + "planches": 16, C + "clou": 16, C + "corde": 4, C + "ferraille_ii": 6}),
+    ("3_casier_metallique", "crac:casier_metallique", {C + "fragments_metal": 12, C + "equerres_acier": 4, C + "ferraille_iii": 6,
+                                                       C + "kit_pieces_iii": 2}),
+    ("4_caisse_armes", "crac:caisse_armes", {C + "fragments_metal": 16, C + "equerres_acier": 8, C + "ferraille_iv": 4,
+                                             C + "caoutchouc_iv": 4, C + "circuit_imprime_iv": 2}),
+    ("5_coffre_fort", "crac:coffre_fort", {C + "metal_renforce": 12, C + "fil_souder": 6, C + "ferraille_iv": 8,
+                                           C + "kit_pieces_iv": 4, C + "circuit_imprime_iv": 2}),
 ]
 
 # composants à niveaux : PAR_NIVEAU d'un niveau donnent 1 du niveau suivant, sans retour possible (23/10, choix du
@@ -188,7 +195,7 @@ def main():
         if r not in NIVEAU:
             continue
         recettes[f"munitions/{aid.replace(':', '_')}"] = recette(
-            materiaux({"bocal_poudre" + NIVEAU[r]: BOCAUX[r], "ferraille": FERRAILLE[r]}, "commun"),
+            materiaux({"bocal_poudre" + POUDRE[r]: BOCAUX[r], "ferraille": FERRAILLE[r]}, "commun"),
             {"type": "ammo", "id": aid, "count": PAQUET, "group": f"{NS}:munitions"})
     for sid, r in sorted(ra["soins"].items()):
         if r not in NIVEAU:

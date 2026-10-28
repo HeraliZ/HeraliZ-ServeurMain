@@ -312,6 +312,112 @@ final class PontBukkit {
         };
     }
 
+    // ------------------------------------------------------------------ commandes données à un grade (28/10)
+    private static Method getCommandMap, getCommand, getPermission, getPluginCommande, getNomPlugin;
+    private static boolean commandesCherche;
+
+    /**
+     * Permissions Bukkit à donner pour qu'un joueur puisse lancer la commande {@code racine} : celle déclarée par la commande
+     * dans la table de Bukkit (plugins, et commandes de Minecraft / des mods enveloppées par Mohist), plus
+     * {@code <plugin>.<racine>} (habitude des plugins, LiteBans compris) et {@code minecraft.command.<racine>}. Ensemble vide
+     * sans Bukkit.
+     */
+    static java.util.Set<String> permissionsCommande(String racine) {
+        java.util.Set<String> l = new java.util.LinkedHashSet<>();
+        if (bukkit() == null) return l;
+        l.add("minecraft.command." + racine);
+        try {
+            if (!commandesCherche) {
+                commandesCherche = true;
+                Object srv = bukkit.getMethod("getServer").invoke(null);
+                getCommandMap = srv.getClass().getMethod("getCommandMap");
+                ClassLoader cl = bukkit.getClassLoader();
+                Class<?> commandMap = Class.forName("org.bukkit.command.CommandMap", false, cl);
+                Class<?> commande = Class.forName("org.bukkit.command.Command", false, cl);
+                getCommand = commandMap.getMethod("getCommand", String.class);
+                getPermission = commande.getMethod("getPermission");
+                try {
+                    getPluginCommande = Class.forName("org.bukkit.command.PluginIdentifiableCommand", false, cl).getMethod("getPlugin");
+                    getNomPlugin = Class.forName("org.bukkit.plugin.Plugin", false, cl).getMethod("getName");
+                } catch (ReflectiveOperationException ignore) {
+                    getPluginCommande = null;
+                }
+            }
+            if (getCommandMap == null) return l;
+            Object map = getCommandMap.invoke(bukkit.getMethod("getServer").invoke(null));
+            Object cmd = map == null ? null : getCommand.invoke(map, racine);
+            if (cmd == null) return l;
+            if (getPermission.invoke(cmd) instanceof String perm && !perm.isBlank()) {
+                // une commande peut déclarer plusieurs permissions séparées par « ; »
+                for (String x : perm.split(";")) if (!x.isBlank()) l.add(x.strip());
+            }
+            if (getPluginCommande != null && getPluginCommande.getDeclaringClass().isInstance(cmd)) {
+                Object plugin = getPluginCommande.invoke(cmd);
+                if (plugin != null && getNomPlugin.invoke(plugin) instanceof String nom) l.add(nom.toLowerCase(java.util.Locale.ROOT) + "." + racine);
+            }
+        } catch (Throwable ex) {
+            getCommandMap = null;
+            LOG.warn("[grades] table des commandes de Bukkit illisible ({}) : seules les commandes de Minecraft et des mods seront données", ex.toString());
+        }
+        return l;
+    }
+
+    /** Pièces jointes de permissions Bukkit posées par nous, par joueur (retirées et refaites à chaque changement). */
+    private static final java.util.Map<UUID, Object> PIECES = new java.util.HashMap<>();
+    private static Method addAttachment, setPermission, removeAttachment, updateCommands;
+
+    /**
+     * Donne au joueur exactement ces permissions Bukkit (et retire celles données avant), par une pièce jointe rattachée à un
+     * plugin déjà chargé, puis lui renvoie la liste des commandes. Ensemble vide : tout est retiré. Faux sans Bukkit ou en
+     * cas d'erreur (alors rien n'est donné).
+     */
+    static boolean accorder(ServerPlayer p, java.util.Set<String> permissions) {
+        if (bukkit() == null) return false;
+        try {
+            Object bp = joueurBukkit(p.getUUID());
+            if (bp == null) return false;
+            ClassLoader cl = bukkit.getClassLoader();
+            if (addAttachment == null) {
+                Class<?> permissible = Class.forName("org.bukkit.permissions.Permissible", false, cl);
+                Class<?> piece = Class.forName("org.bukkit.permissions.PermissionAttachment", false, cl);
+                addAttachment = permissible.getMethod("addAttachment", Class.forName("org.bukkit.plugin.Plugin", false, cl));
+                removeAttachment = permissible.getMethod("removeAttachment", piece);
+                setPermission = piece.getMethod("setPermission", String.class, boolean.class);
+                try {
+                    updateCommands = Class.forName("org.bukkit.entity.Player", false, cl).getMethod("updateCommands");
+                } catch (NoSuchMethodException ignore) {
+                    updateCommands = null;
+                }
+            }
+            Object ancienne = PIECES.remove(p.getUUID());
+            if (ancienne != null) {
+                try {
+                    removeAttachment.invoke(bp, ancienne);
+                } catch (Throwable ignore) {
+                    // déjà retirée (reconnexion)
+                }
+            }
+            if (!permissions.isEmpty()) {
+                Object proprio = porteur();
+                if (proprio == null) return false;
+                Object piece = addAttachment.invoke(bp, proprio);
+                for (String perm : permissions) setPermission.invoke(piece, perm, true);
+                PIECES.put(p.getUUID(), piece);
+            }
+            if (updateCommands != null) updateCommands.invoke(bp);
+            return true;
+        } catch (Throwable ex) {
+            addAttachment = null;
+            LOG.warn("[grades] permissions Bukkit impossibles à donner à {} : {}", p.getGameProfile().getName(), ex.toString());
+            return false;
+        }
+    }
+
+    /** Oubli d'un joueur parti (Bukkit retire seul ses pièces jointes à la déconnexion). */
+    static void oublierPieces(UUID u) {
+        PIECES.remove(u);
+    }
+
     /** Met le nom affiché Bukkit (chat des serveurs hybrides) ; sans Bukkit, rien. */
     static void nomAffiche(ServerPlayer p, String nom) {
         try {

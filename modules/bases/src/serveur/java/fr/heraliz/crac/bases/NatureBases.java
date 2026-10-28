@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * L'ANCIEN monde des bases ({@code crac:bases}) est vide de vie et d'eau (demande du propriétaire, CRac 1.6.0) ; depuis
+ * L'ANCIEN monde des bases ({@code crac:bases}) et le monde du tutoriel ({@code crac:tuto}, 28/10) sont vides de vie et d'eau (demande du propriétaire, CRac 1.6.0) ; depuis
  * CRac 1.16.0, les bases sont sur la carte principale, où rien de tout cela ne s'applique (zombies et seaux comme ailleurs) :
  * <ul>
  *   <li>aucune créature : toute entité {@link Mob} (animaux, monstres, villageois, marchands ambulants, golems, PNJ et
@@ -65,7 +65,7 @@ public final class NatureBases {
     /** Aucune créature n'entre dans le monde des bases. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void arrivee(EntityJoinLevelEvent e) {
-        if (!e.getLevel().isClientSide() && MondeBases.estAncien(e.getLevel()) && creatureInterdite(e.getEntity())) {
+        if (!e.getLevel().isClientSide() && (MondeBases.estAncien(e.getLevel()) || MondeBases.estTuto(e.getLevel())) && creatureInterdite(e.getEntity())) {
             e.setCanceled(true);
         }
     }
@@ -73,7 +73,7 @@ public final class NatureBases {
     /** Apparitions naturelles, cages, œufs, renforts, patrouilles : refusées avant même de préparer la créature. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void apparition(MobSpawnEvent.FinalizeSpawn e) {
-        if (MondeBases.estAncien(e.getLevel().getLevel()) && creatureInterdite(e.getEntity())) {
+        if ((MondeBases.estAncien(e.getLevel().getLevel()) || MondeBases.estTuto(e.getLevel().getLevel())) && creatureInterdite(e.getEntity())) {
             e.setSpawnCancelled(true);
         }
     }
@@ -83,12 +83,14 @@ public final class NatureBases {
         if (e.phase != TickEvent.Phase.END || e.getServer() == null || ++ticks % 20 != 0) {
             return;
         }
-        ServerLevel l = e.getServer().getLevel(MondeBases.ANCIEN_CLE);
-        if (l != null) {
-            try {
-                retirer(l);
-            } catch (RuntimeException ex) {
-                Crac.LOGGER.error("[CRac] monde des bases : retrait des créatures en erreur", ex);
+        // l'ancien monde des bases et, depuis le 28/10, le monde du tutoriel (crac:tuto)
+        for (ServerLevel l : new ServerLevel[]{e.getServer().getLevel(MondeBases.ANCIEN_CLE), e.getServer().getLevel(MondeBases.TUTO)}) {
+            if (l != null) {
+                try {
+                    retirer(l);
+                } catch (RuntimeException ex) {
+                    Crac.LOGGER.error("[CRac] monde des bases : retrait des créatures en erreur", ex);
+                }
             }
         }
     }
@@ -116,7 +118,7 @@ public final class NatureBases {
     /** Seau plein vidé (eau, lave, poisson) dans le monde des bases : refusé, même dans une base. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void seau(FillBucketEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer sp) || !MondeBases.estAncien(e.getLevel())
+        if (!(e.getEntity() instanceof ServerPlayer sp) || !MondeBases.estAncien(e.getLevel()) && !MondeBases.estTuto(e.getLevel())
             || BasesReglages.b(BasesReglages.SEAUX, false) || sp.isCreative() || sp.isSpectator()) {
             return;
         }

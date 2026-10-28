@@ -320,7 +320,7 @@ public final class ClanEvents {
 
     // ------------------------------------------------------------------ saison des clans
     /** Monde du spawn et monde du tutoriel des bases : jamais de points de saison. */
-    private static final Set<String> MONDES_SANS_POINTS = Set.of("heralisz:spawn", "crac:bases");
+    private static final Set<String> MONDES_SANS_POINTS = Set.of("heralisz:spawn", "crac:bases", "crac:tuto");
     /** Etiquette posee sur un boss invoque par le staff (/summon, oeuf) : pas de points. */
     public static final String SANS_POINTS = "heraliz_saison_sans_points";
     /** Degats des joueurs sur chaque boss vivant (boss -> joueur -> degats) : points du boss partages a sa mort. */

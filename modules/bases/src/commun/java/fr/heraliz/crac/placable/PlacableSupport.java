@@ -42,6 +42,11 @@ public final class PlacableSupport {
         }
         BlockPos below = pos.below();
         BlockState under = level.getBlockState(below);
+        if (fr.heraliz.crac.block.Adosse.bas(state)) {
+            // HeraliZ (28/10) : descendu d'un demi-bloc, il repose sur un plancher à mi-bloc qui couvre toute la case, et
+            // rien de cette case (mur, demi-mur) ne rentre dans sa moitié basse
+            return StructureBlock.tientEnBas(level, below) && fr.heraliz.crac.block.Adosse.libreDessous(level, pos, state);
+        }
         if (under.getBlock() instanceof StructureBlock) {
             // on a building only foundations and floors hold placables, whatever the collision of the block's top
             return StructureBlock.holdsBlockOnTop(level, below);
@@ -69,6 +74,9 @@ public final class PlacableSupport {
     public static String supportProblem(Level level, Collection<BlockPos> cells, BlockState state) {
         for (BlockPos cell : cells) {
             if (cells.contains(cell.below()) || isSupported(level, cell, state)) continue;
+            if (fr.heraliz.crac.block.Adosse.bas(state) && StructureBlock.tientEnBas(level, cell.below())) {
+                return "crac.placable.bas_gene";   // un mur ou un demi-mur dépasse du plancher là où l'objet descendrait
+            }
             StructureBlock.StandIssue issue = StructureBlock.standIssue(level, cell.below());
             if (issue == StructureBlock.StandIssue.HALF_LEVEL) {
                 return "crac.placable.half_level";

@@ -85,7 +85,13 @@ public final class EcranStaff extends Screen {
     private long ficheDemandee;
     private ActionStaff action;
     private final Map<ActionStaff, String> options = new EnumMap<>(ActionStaff.class);
-    private final Saisie recherche = new Saisie(16), texte = new Saisie(ReseauStaff.MAX_TEXTE);
+    private final Saisie recherche = new Saisie(16), texte = new Saisie(ReseauStaff.MAX_TEXTE), rechercheCmd = new Saisie(24);
+    /** Onglet « Commandes du Fondateur » : racines lues dans l'arbre des commandes reçu du serveur (cache), commande survolée. */
+    private List<String> racinesCmd;
+    private String rechercheCmdVue;
+    private List<String> filtreesCmd = List.of();
+    private String survolCmd, survolCmdAvant;
+    private float defCmds;
     private Saisie focus;
     private ActionStaff arme;
     private long armeA;
@@ -190,7 +196,11 @@ public final class EcranStaff extends Screen {
             if (o != ActionStaff.Onglet.JOUEURS && !permises(o).isEmpty()) l.add(o.name().toLowerCase(Locale.ROOT));
         }
         l.add("historique");
-        if (!etat.masques().isEmpty()) l.add("permissions");
+        if (!etat.masques().isEmpty()) {
+            l.add("permissions");
+            // 28/10 : commandes données à un grade, commande par commande (Fondateur seulement, comme Permissions)
+            l.add("commandes");
+        }
         return l;
     }
 
@@ -211,6 +221,16 @@ public final class EcranStaff extends Screen {
     public void removed() {
         Echelle.restaurer();
         super.removed();
+    }
+
+    /**
+     * Découpe (liste, historique, permissions, commandes) en coordonnées du canevas. 28/10 : le {@code enableScissor} de
+     * Minecraft 1.20.1 ne suit PAS la translation de la pose (ox, oy) : la découpe tombait à côté de la liste dès que la
+     * fenêtre n'avait pas exactement 640 x 360 unités (1366 x 768, 1600 x 900, fenêtre 1080p avec sa barre de titre…) et
+     * coupait les pseudos des joueurs en ligne (en partie ou en entier).
+     */
+    private void decoupe(GuiGraphics g, float x0, float y0, float x1, float y1) {
+        g.enableScissor(Math.round(ox + x0), Math.round(oy + y0), Math.round(ox + x1), Math.round(oy + y1));
     }
 
     private void zone(float x, float y, float w, float h, Runnable r) {
@@ -305,6 +325,7 @@ public final class EcranStaff extends Screen {
         if ("joueurs".equals(onglet) && x >= LX && x < LX + LW && y >= HAUT && y < BAS) defListe = Math.max(0, defListe + pas);
         else if ("historique".equals(onglet)) defHisto = Math.max(0, defHisto + pas);
         else if ("permissions".equals(onglet)) defPerms = Math.max(0, defPerms + pas);
+        else if ("commandes".equals(onglet)) defCmds = Math.max(0, defCmds + pas);
         return true;
     }
 
@@ -373,6 +394,7 @@ public final class EcranStaff extends Screen {
             case "joueurs" -> joueurs(g, f);
             case "historique" -> historique(g, f);
             case "permissions" -> permissions(g, f);
+            case "commandes" -> commandes(g, f);
             default -> colonnes(g, f, ActionStaff.Onglet.valueOf(onglet.toUpperCase(Locale.ROOT)));
         }
         pied(g, f);
@@ -396,7 +418,7 @@ public final class EcranStaff extends Screen {
     }
 
     private void entete(GuiGraphics g, Font f) {
-        float tw = Trace.texte(g, f, t("titre"), M, 17, TITRE, a(LIGHT, 255));
+        float tw = Trace.texte(g, f, t("commandes".equals(onglet) ? "titre_commandes" : "titre"), M, 17, TITRE, a(LIGHT, 255));
         // badge du grade
         String gr = nomGrade(etat.grade());
         int c = couleurGrade(etat.grade());
@@ -404,12 +426,19 @@ public final class EcranStaff extends Screen {
         Trace.rect(g, bx, 16.5F, bx + bw, 27.5F, a(c, 40));
         Trace.bord(g, bx, 16.5F, bw, 11, 1 / 3F, a(c, 200));
         Trace.c(g, f, gr.toUpperCase(Locale.ROOT), bx + bw / 2, 22, PETIT_GRAS, a(c, 255), 0);
-        String sous = "permissions".equals(onglet) ? t("sous_permissions") : t("sous", etat.permises().size());
+        String sous = "permissions".equals(onglet) ? t("sous_permissions")
+                : "commandes".equals(onglet) ? (survolCmdAvant != null ? "/" + survolCmdAvant + " · " + descriptionCmd(survolCmdAvant) : t("sous_commandes"))
+                : t("sous", etat.permises().size());
         Trace.texte(g, f, Trace.tenir(f, sous, TEXTE, GW - 2 * M), M, 35, TEXTE, a(MUTED, 255));
         float x = M;
-        for (String o : onglets()) {
+        // 28/10 : marge des onglets réduite si la rangée ne tient pas (Fondateur : 8 onglets ; russe)
+        List<String> ogs = onglets();
+        float texteTotal = 0;
+        for (String o : ogs) texteTotal += Trace.largeur(f, t("onglet." + o), ONGLET);
+        float marge = Math.max(6, Math.min(16, (GW - 2 * M - 4 * (ogs.size() - 1) - texteTotal) / ogs.size()));
+        for (String o : ogs) {
             String nom = t("onglet." + o);
-            float w = Trace.largeur(f, nom, ONGLET) + 16;
+            float w = Trace.largeur(f, nom, ONGLET) + marge;
             boolean actif = o.equals(onglet), hv = survol(x, 50, w, 20);
             Trace.rect(g, x, 50, x + w, 70, a(actif ? ACCENT : WHITE, actif ? 46 : hv ? 18 : 9));
             Trace.bord(g, x, 50, w, 20, 1 / 3F, a(actif ? ACCENT : WHITE, actif ? 160 : 30));
@@ -431,7 +460,7 @@ public final class EcranStaff extends Screen {
 
     private void pied(GuiGraphics g, Font f) {
         float x = M, cy = 348;
-        String[][] touches = "permissions".equals(onglet) ? new String[][]{{t("t_clic"), t("cocher")}, {t("t_echap"), t("fermer")}}
+        String[][] touches = "permissions".equals(onglet) || "commandes".equals(onglet) ? new String[][]{{t("t_clic"), t("cocher")}, {t("t_echap"), t("fermer")}}
                 : new String[][]{{"P", t("panel")}, {t("t_echap"), t("fermer")}, {t("t_entree"), t("valider")}};
         for (String[] k : touches) {
             float kw = Trace.largeur(f, k[0], PETIT_GRAS) + 6;
@@ -501,8 +530,11 @@ public final class EcranStaff extends Screen {
         List<PlayerInfo> l = new ArrayList<>();
         if (Minecraft.getInstance().getConnection() == null) return l;
         String q = recherche.v.strip().toLowerCase(Locale.ROOT);
-        for (PlayerInfo p : Minecraft.getInstance().getConnection().getOnlinePlayers()) {
-            if (q.isEmpty() || p.getProfile().getName().toLowerCase(Locale.ROOT).contains(q)) l.add(p);
+        // joueurs listés seulement (comme le tab) : pas les entrées cachées que d'autres mods ou plugins ajoutent pour des skins
+        for (PlayerInfo p : Minecraft.getInstance().getConnection().getListedOnlinePlayers()) {
+            String n = p.getProfile().getName();
+            if (n == null || n.isBlank()) continue;
+            if (q.isEmpty() || n.toLowerCase(Locale.ROOT).contains(q)) l.add(p);
         }
         l.sort((x, y) -> x.getProfile().getName().compareToIgnoreCase(y.getProfile().getName()));
         return l;
@@ -512,7 +544,7 @@ public final class EcranStaff extends Screen {
         List<PlayerInfo> liste = joueursEnLigne();
         Set<UUID> enLigne = new HashSet<>();
         if (Minecraft.getInstance().getConnection() != null) {
-            for (PlayerInfo p : Minecraft.getInstance().getConnection().getOnlinePlayers()) enLigne.add(p.getProfile().getId());
+            for (PlayerInfo p : Minecraft.getInstance().getConnection().getListedOnlinePlayers()) enLigne.add(p.getProfile().getId());
         }
         if (choisi != null && !enLigne.contains(choisi)) {
             choisi = null;
@@ -530,7 +562,7 @@ public final class EcranStaff extends Screen {
         float y0 = HAUT + 38, hLigne = 15, visibles = (BAS - 6 - y0) / hLigne;
         defListe = Math.min(defListe, Math.max(0, (liste.size() - visibles) * hLigne));
         Set<UUID> muets = new HashSet<>(etat.muets());
-        g.enableScissor(Math.round(LX + 1), Math.round(y0), Math.round(LX + LW - 1), Math.round(BAS - 4));
+        decoupe(g, LX + 1, y0, LX + LW - 1, BAS - 4);
         for (int i = 0; i < liste.size(); i++) {
             float y = y0 + i * hLigne - defListe;
             if (y + hLigne < y0 || y > BAS) continue;
@@ -562,7 +594,8 @@ public final class EcranStaff extends Screen {
                 Trace.d(g, f, t("cache"), droite - 6, cy, PETIT_GRAS, a(VIOLET, 255), 0);
                 droite -= Trace.largeur(f, t("cache"), PETIT_GRAS) + 6;
             }
-            Trace.m(g, f, p.getProfile().getName(), x, cy, TEXTE, a(sel ? WHITE : LIGHT, 255), droite - x - 6);
+            // largeur jamais nulle ou négative (Trace.tenir ne coupe rien en dessous de 0 : le pseudo passait sous le ping)
+            Trace.m(g, f, p.getProfile().getName(), x, cy, TEXTE, a(sel ? WHITE : LIGHT, 255), Math.max(14, droite - x - 6));
             if (y >= y0 - 1 && y + hLigne <= BAS - 3) zone(LX + 4, y, LW - 8, hLigne, () -> choisirJoueur(u));
         }
         g.disableScissor();
@@ -733,7 +766,9 @@ public final class EcranStaff extends Screen {
         x += Trace.m(g, f, l.staff(), x, cy, PETIT_GRAS, a(couleurGrade(l.grade()), 255), 0) + 3;
         x += Trace.m(g, f, "(" + nomGrade(l.grade()) + ")", x, cy, PETIT, a(MUTED, 255), 0) + 5;
         ActionStaff a = ActionStaff.parId(l.action());
-        StringBuilder s = new StringBuilder(a != null ? nomAction(a) : l.action());
+        // actions sans carte (28/10 : commande donnée à un grade, commande utilisée) : nom dans les langues du mod
+        StringBuilder s = new StringBuilder(a != null ? nomAction(a)
+                : Component.translatableWithFallback("heraliz_grades.staff.histo." + l.action(), l.action()).getString());
         if (!l.cible().isEmpty()) s.append(" · ").append(l.cible());
         if (!l.detail().isEmpty()) s.append(" · ").append(l.detail());
         if (!l.raison().isEmpty()) s.append(" — « ").append(l.raison()).append(" »");
@@ -748,7 +783,7 @@ public final class EcranStaff extends Screen {
         float y0 = HAUT + 22, pas = 12;
         float visibles = (BAS - 6 - y0) / pas;
         defHisto = Math.min(defHisto, Math.max(0, (h.size() - visibles) * pas));
-        g.enableScissor(M + 1, Math.round(y0 - 2), GW - M - 1, BAS - 4);
+        decoupe(g, M + 1, y0 - 2, GW - M - 1, BAS - 4);
         for (int i = 0; i < h.size(); i++) {
             float cy = y0 + i * pas + pas / 2 - defHisto;
             if (cy < y0 - pas || cy > BAS) continue;
@@ -770,7 +805,7 @@ public final class EcranStaff extends Screen {
         ActionStaff[] toutes = ActionStaff.values();
         float visibles = (BAS - 6 - y0) / pas;
         defPerms = Math.min(defPerms, Math.max(0, (toutes.length - visibles) * pas));
-        g.enableScissor(M + 1, Math.round(y0), GW - M - 1, BAS - 4);
+        decoupe(g, M + 1, y0, GW - M - 1, BAS - 4);
         String ongletVu = null;
         for (int i = 0; i < toutes.length; i++) {
             ActionStaff a = toutes[i];
@@ -801,7 +836,7 @@ public final class EcranStaff extends Screen {
                         Map<String, Integer> m = new HashMap<>(etat.masques());
                         m.put(a.id, apres ? m.getOrDefault(a.id, 0) | 1 << rang : m.getOrDefault(a.id, 0) & ~(1 << rang));
                         etat = new ReseauStaff.Etat(false, etat.rang(), etat.grade(), etat.permises(), m, etat.grades(), etat.historique(), etat.muets(), "",
-                                true);
+                                true, etat.commandes());
                         SonsUi.clic(0.5F);
                         ReseauStaff.CANAL.sendToServer(new ReseauStaff.Permission(a.id, rang, apres));
                     });
@@ -809,5 +844,109 @@ public final class EcranStaff extends Screen {
             }
         }
         g.disableScissor();
+    }
+
+    // ------------------------------------------------------------------ commandes du Fondateur (28/10)
+    /** Description d'une commande : texte des langues du mod, sinon texte générique (plugin ou mod inconnu). */
+    private static String descriptionCmd(String racine) {
+        return Component.translatableWithFallback("heraliz_grades.staff.cmd." + racine, t(racine.startsWith("/") ? "cmd_worldedit" : "cmd_inconnue"))
+                .getString();
+    }
+
+    /**
+     * Toutes les commandes du serveur : racines de l'arbre des commandes que le serveur envoie (le Fondateur est op 4 : il
+     * les reçoit toutes, plugins compris), sans les doublons à espace de noms ({@code minecraft:tp}), plus celles déjà
+     * données à un grade (plugin retiré depuis) pour pouvoir les décocher.
+     */
+    private List<String> racinesCmd() {
+        if (racinesCmd == null) {
+            java.util.TreeSet<String> s = new java.util.TreeSet<>();
+            var co = Minecraft.getInstance().getConnection();
+            if (co != null) {
+                for (var n : co.getCommands().getRoot().getChildren()) {
+                    String nom = n.getName();
+                    if (nom.indexOf(':') >= 0) continue;
+                    String r = fr.heraliz.grades.staff.CommandesStaff.racine(nom);
+                    if (r.equals(nom)) s.add(r);
+                }
+            }
+            s.addAll(etat.commandes().keySet());
+            racinesCmd = new ArrayList<>(s);
+            rechercheCmdVue = null;
+        }
+        String q = rechercheCmd.v.strip().toLowerCase(Locale.ROOT);
+        if (!q.equals(rechercheCmdVue)) {
+            rechercheCmdVue = q;
+            List<String> l = new ArrayList<>();
+            for (String r : racinesCmd) {
+                if (q.isEmpty() || r.contains(q) || descriptionCmd(r).toLowerCase(Locale.ROOT).contains(q)) l.add(r);
+            }
+            filtreesCmd = l;
+        }
+        return filtreesCmd;
+    }
+
+    private void commandes(GuiGraphics g, Font f) {
+        verre(g, M, HAUT, GW - 2 * M, BAS - HAUT, 199);
+        survolCmdAvant = survolCmd;
+        survolCmd = null;
+        // colonnes : Guide, Helpeur, Modérateur, Admin, Fondateur (toujours tout : op 4)
+        float[] cx = {388, 440, 492, 544, 596};
+        champ(g, f, rechercheCmd, M + 8, HAUT + 4, 150, 13, t("cmd_rechercher"));
+        List<String> liste = racinesCmd();
+        Trace.m(g, f, t("cmd_nombre", liste.size()), M + 166, HAUT + 10.5F, PETIT, a(FAINT, 255), cx[0] - 26 - M - 166 - 4);
+        for (int r = 0; r < COLONNES.length; r++) {
+            Trace.c(g, f, COLONNES[r].nom().getString().toUpperCase(Locale.ROOT), cx[r], HAUT + 10.5F, PETIT_GRAS, a(COLONNES[r].couleur, 255), 50);
+        }
+        float y0 = HAUT + 22, pas = 16, nx = M + 12, dx = M + 100;
+        float visibles = (BAS - 6 - y0) / pas;
+        defCmds = Math.min(defCmds, Math.max(0, (liste.size() - visibles) * pas));
+        decoupe(g, M + 1, y0, GW - M - 1, BAS - 4);
+        for (int i = 0; i < liste.size(); i++) {
+            String racine = liste.get(i);
+            float y = y0 + i * pas - defCmds, cy = y + pas / 2;
+            if (y + pas < y0 || y > BAS) continue;
+            boolean dedans = y >= y0 - 1 && y + pas <= BAS - 3;
+            boolean hvLigne = dedans && survol(M + 4, y, GW - 2 * M - 8, pas);
+            if (hvLigne) survolCmd = racine;
+            if (hvLigne) Trace.rect(g, M + 4, y, GW - M - 4, y + pas, a(WHITE, 16));
+            else if (i % 2 == 0) Trace.rect(g, M + 4, y, GW - M - 4, y + pas, a(WHITE, 7));
+            boolean donnable = fr.heraliz.grades.staff.CommandesStaff.donnable(racine);
+            Trace.m(g, f, "/" + racine, nx, cy, VALEUR, a(donnable ? LIGHT : MUTED, 255), dx - nx - 6);
+            Trace.m(g, f, descriptionCmd(racine), dx, cy, PETIT, a(MUTED, 255), cx[0] - 30 - dx);
+            if (!donnable) {
+                // jamais donnable (op, execute, permissions…) : cadenas à la place des cases des grades
+                Trace.c(g, f, t("cmd_bloquee"), (cx[0] + cx[3]) / 2, cy, PETIT, a(FAINT, 255), cx[3] - cx[0] + 40);
+            }
+            int masque = etat.commandes().getOrDefault(racine, 0);
+            for (int r = 0; r < COLONNES.length; r++) {
+                int rang = r + 1;
+                boolean fonda = rang == ActionStaff.RANG_MAX;
+                if (!donnable && !fonda) continue;
+                boolean coche = fonda || (masque & 1 << rang) != 0;
+                int c = COLONNES[r].couleur;
+                float bx = cx[r] - 5, by = cy - 5;
+                boolean hv = !fonda && dedans && survol(bx - 3, by - 3, 16, 16);
+                Trace.rect(g, bx, by, bx + 10, by + 10, a(coche ? c : WHITE, coche ? (fonda ? 40 : 70) : hv ? 25 : 10));
+                Trace.bord(g, bx, by, 10, 10, 1 / 3F, a(coche ? c : WHITE, coche ? (fonda ? 120 : 230) : hv ? 120 : 60));
+                if (coche) Trace.coche(g, bx + 2, by + 2, 6, 1.1F, a(WHITE, fonda ? 150 : 255));
+                if (!fonda && dedans) {
+                    zone(bx - 3, by - 3, 16, 16, () -> {
+                        int avant = etat.commandes().getOrDefault(racine, 0);
+                        boolean apres = (avant & 1 << rang) == 0;
+                        Map<String, Integer> m = new HashMap<>(etat.commandes());
+                        int nouveau = apres ? avant | 1 << rang : avant & ~(1 << rang);
+                        if (nouveau == 0) m.remove(racine);
+                        else m.put(racine, nouveau);
+                        etat = new ReseauStaff.Etat(false, etat.rang(), etat.grade(), etat.permises(), etat.masques(), etat.grades(), etat.historique(),
+                                etat.muets(), "", true, m);
+                        SonsUi.clic(0.5F);
+                        ReseauStaff.CANAL.sendToServer(new ReseauStaff.PermissionCommande(racine, rang, apres));
+                    });
+                }
+            }
+        }
+        g.disableScissor();
+        if (liste.isEmpty()) Trace.m(g, f, t("cmd_aucune"), M + 12, y0 + 8, PETIT, a(FAINT, 255), GW - 2 * M - 24);
     }
 }

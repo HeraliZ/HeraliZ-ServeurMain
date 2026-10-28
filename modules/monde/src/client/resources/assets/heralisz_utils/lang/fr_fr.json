@@ -274,6 +274,7 @@
   "heralisz_utils.suicide.spawn": "Impossible au spawn : tu y es à l'abri.",
   "heralisz_utils.suicide.combat": "Impossible en combat.",
   "heralisz_utils.suicide.terre": "Impossible à terre.",
+  "heralisz_utils.suicide.delai": "Tu dois attendre encore %s avant de refaire /suicide.",
   "block.heralisz_utils.voie_pleine": "Voie pleine (collision invisible)",
   "heralisz_utils.train.voie.genre.plat": "plat",
   "heralisz_utils.train.voie.genre.remblai": "remblai",

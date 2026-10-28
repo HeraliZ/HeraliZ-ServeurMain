@@ -42,7 +42,8 @@ import java.util.UUID;
 
 /**
  * Commandes : /herals [joueur], /herals payer &lt;joueur&gt; &lt;montant&gt;, /herals classement, et pour les operateurs
- * /eco donner|retirer|definir &lt;joueurs&gt; &lt;montant&gt; [motif], /eco journal &lt;joueur&gt; [n], /eco info,
+ * /eco donner|retirer|definir &lt;joueur&gt; &lt;montant&gt; [motif] (op 4 + AuthMe ou console, connecté ou non, 28/10),
+ * /eco journal &lt;joueur&gt; [n], /eco info,
  * /eco recharger, /eco sauvegarder [--forcer]. Tous les textes passent par les cles economie.msg.* (francais d'abord).
  */
 public final class EconomieCommands {
@@ -93,19 +94,22 @@ public final class EconomieCommands {
                 .then(Commands.argument("joueur", StringArgumentType.word()).requires(s -> s.hasPermission(2)).suggests(NOMS)
                         .executes(EconomieCommands::soldeAutre)));
 
+        // 28/10 : donner / retirer / definir réservés aux op niveau 4 (et à la console), connectés sur AuthMe, un seul joueur
+        // à la fois, connecté ou non (compte connu), montant borné, chaque opération notée (journal du compte, journal du
+        // serveur, heralisz_economie/journal_admin.log)
         d.register(lit("eco").requires(s -> s.hasPermission(2))
-                .then(lit("donner").then(Commands.argument("joueurs", EntityArgument.players())
-                        .then(Commands.argument("montant", LongArgumentType.longArg(1))
+                .then(lit("donner").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", StringArgumentType.word()).suggests(NOMS)
+                        .then(Commands.argument("montant", LongArgumentType.longArg(1, MAX_OPERATION))
                                 .executes(ctx -> admin(ctx, Op.DONNER, null))
                                 .then(Commands.argument("motif", StringArgumentType.greedyString())
                                         .executes(ctx -> admin(ctx, Op.DONNER, StringArgumentType.getString(ctx, "motif")))))))
-                .then(lit("retirer").then(Commands.argument("joueurs", EntityArgument.players())
-                        .then(Commands.argument("montant", LongArgumentType.longArg(1))
+                .then(lit("retirer").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", StringArgumentType.word()).suggests(NOMS)
+                        .then(Commands.argument("montant", LongArgumentType.longArg(1, MAX_OPERATION))
                                 .executes(ctx -> admin(ctx, Op.RETIRER, null))
                                 .then(Commands.argument("motif", StringArgumentType.greedyString())
                                         .executes(ctx -> admin(ctx, Op.RETIRER, StringArgumentType.getString(ctx, "motif")))))))
-                .then(lit("definir").then(Commands.argument("joueurs", EntityArgument.players())
-                        .then(Commands.argument("montant", LongArgumentType.longArg(0))
+                .then(lit("definir").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", StringArgumentType.word()).suggests(NOMS)
+                        .then(Commands.argument("montant", LongArgumentType.longArg(0, MAX_OPERATION))
                                 .executes(ctx -> admin(ctx, Op.DEFINIR, null))
                                 .then(Commands.argument("motif", StringArgumentType.greedyString())
                                         .executes(ctx -> admin(ctx, Op.DEFINIR, StringArgumentType.getString(ctx, "motif")))))))
@@ -229,44 +233,88 @@ public final class EconomieCommands {
     // ------------------------------------------------------------------ /eco donner|retirer|definir
     private enum Op { DONNER, RETIRER, DEFINIR }
 
-    private static int admin(CommandContext<CommandSourceStack> ctx, Op op, @Nullable String motif) throws CommandSyntaxException {
+    /** Plus gros montant d'une opération d'admin (une faute de frappe ne crée pas des milliards). */
+    public static final long MAX_OPERATION = 10_000_000L;
+
+    /** Op connecté sur AuthMe (HeraliZ Grades, par réflexion) ; console et RCON : toujours. Grades absent : refusé à un joueur. */
+    private static boolean authentifie(CommandSourceStack src) {
+        if (!(src.getEntity() instanceof ServerPlayer p)) return true;
+        try {
+            Object r = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("authentifie", ServerPlayer.class).invoke(null, p);
+            return Boolean.TRUE.equals(r);
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ex) {
+            return false;
+        }
+    }
+
+    private static int admin(CommandContext<CommandSourceStack> ctx, Op op, @Nullable String motif) {
         ComptesStore s = store(ctx);
         if (s == null) return 0;
-        Collection<ServerPlayer> cibles = EntityArgument.getPlayers(ctx, "joueurs");
+        CommandSourceStack src = ctx.getSource();
+        if (!authentifie(src)) return echec(ctx, "admin.login");
+        String saisi = StringArgumentType.getString(ctx, "joueur");
         long montant = LongArgumentType.getLong(ctx, "montant");
-        String m = motif == null || motif.isBlank() ? "admin" : (motif.startsWith("admin") ? motif : "admin:" + motif.trim());
-        int ok = 0;
-        for (ServerPlayer p : cibles) {
-            UUID u = p.getUUID();
-            String n = p.getGameProfile().getName();
-            s.compte(u, n);
-            switch (op) {
-                case DONNER -> {
-                    EconomieApi.deposer(u, montant, m);
-                    long apres = EconomieApi.solde(u);
-                    repondre(ctx.getSource(), () -> msg("admin.donner", nom(n), montant(montant), montant(apres)), true);
-                    ok++;
-                }
-                case RETIRER -> {
-                    if (EconomieApi.retirer(u, montant, m)) {
-                        long apres = EconomieApi.solde(u);
-                        repondre(ctx.getSource(), () -> msg("admin.retirer", nom(n), montant(montant), montant(apres)), true);
-                        ok++;
-                    } else {
-                        ctx.getSource().sendFailure(msg("admin.retirer_echec", nom(n), montant(EconomieApi.solde(u))));
-                    }
-                }
-                case DEFINIR -> {
-                    if (EconomieApi.definir(u, montant, m)) {
-                        repondre(ctx.getSource(), () -> msg("admin.definir", nom(n), montant(montant)), true);
-                        ok++;
-                    } else {
-                        ctx.getSource().sendFailure(msg("admin.definir_echec", montant(EconomieApi.maxSolde())));
-                    }
-                }
+        // joueur connecté (pseudo exact) d'abord, sinon un compte connu (dernier pseudo vu)
+        ServerPlayer enLigne = null;
+        for (ServerPlayer p : s.server().getPlayerList().getPlayers()) {
+            if (p.getGameProfile().getName().equalsIgnoreCase(saisi)) enLigne = p;
+        }
+        UUID u = enLigne != null ? enLigne.getUUID() : s.resoudre(saisi);
+        if (u == null) return echec(ctx, "joueur_introuvable", saisi);
+        String n = enLigne != null ? enLigne.getGameProfile().getName() : s.nomDe(u);
+        if (enLigne != null) s.compte(u, n);
+        String auteur = src.getEntity() instanceof ServerPlayer p ? p.getGameProfile().getName() : "console";
+        String libre = motif == null ? "" : motif.replace('\n', ' ').replace('\r', ' ').strip();
+        if (libre.length() > 80) libre = libre.substring(0, 80);
+        String m = "admin:" + auteur + (libre.isEmpty() ? "" : ":" + libre);
+        long avant = EconomieApi.solde(u), max = EconomieApi.maxSolde();
+        boolean fait;
+        switch (op) {
+            case DONNER -> {
+                if (avant + montant > max) return echec(ctx, "admin.plafond", nom(n), montant(max));
+                EconomieApi.deposer(u, montant, m);
+                fait = true;
+            }
+            case RETIRER -> {
+                // jamais de solde négatif : refusé s'il n'a pas assez (rien ne change)
+                if (!EconomieApi.retirer(u, montant, m)) return echec(ctx, "admin.retirer_echec", nom(n), montant(avant));
+                fait = true;
+            }
+            default -> {
+                if (!EconomieApi.definir(u, montant, m)) return echec(ctx, "admin.definir_echec", montant(max));
+                fait = true;
             }
         }
-        return ok;
+        long apres = EconomieApi.solde(u);
+        switch (op) {
+            case DONNER -> repondre(src, () -> msg("admin.donner", nom(n), montant(montant), montant(apres)), true);
+            case RETIRER -> repondre(src, () -> msg("admin.retirer", nom(n), montant(montant), montant(apres)), true);
+            default -> repondre(src, () -> msg("admin.definir", nom(n), montant(apres)), true);
+        }
+        noterAdmin(s, auteur, op, n, u, montant, avant, apres, libre);
+        // prévenu seulement d'un geste du staff (pas des récompenses jouées par la console : caisses, votes)
+        if (enLigne != null && apres != avant && src.getEntity() instanceof ServerPlayer) {
+            long delta = apres - avant;
+            enLigne.sendSystemMessage(Component.translatableWithFallback(delta > 0 ? "economie.msg.admin.recu" : "economie.msg.admin.perdu",
+                    delta > 0 ? "Le staff t'a crédité de %s (solde : %s)." : "Le staff t'a retiré %s (solde : %s).",
+                    montant(Math.abs(delta)), montant(apres)));
+        }
+        return fait ? 1 : 0;
+    }
+
+    /** Journal des opérations d'admin : une ligne par opération, à côté de comptes.json, jamais réécrit. */
+    private static void noterAdmin(ComptesStore s, String auteur, Op op, String nom, UUID u, long montant, long avant, long apres, String motif) {
+        String ligne = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(java.time.LocalDateTime.now()) + " | " + auteur + " | "
+                + op.name().toLowerCase(java.util.Locale.ROOT) + " | " + nom + " (" + u + ") | " + montant + " | " + avant + " -> " + apres
+                + " | " + motif.replace('|', '/');
+        fr.heralisz.economie.HeraliszEconomie.LOG.info("[economie] admin : {}", ligne);
+        try {
+            Path f = s.fichier().toAbsolutePath().getParent().resolve("journal_admin.log");
+            java.nio.file.Files.writeString(f, ligne + System.lineSeparator(), java.nio.charset.StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch (IOException | RuntimeException ex) {
+            fr.heralisz.economie.HeraliszEconomie.LOG.warn("[economie] journal_admin.log impossible à écrire : {}", ex.toString());
+        }
     }
 
     // ------------------------------------------------------------------ /eco journal

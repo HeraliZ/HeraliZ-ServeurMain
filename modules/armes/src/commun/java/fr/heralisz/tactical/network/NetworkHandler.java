@@ -14,6 +14,7 @@ import fr.heralisz.tactical.network.message.SShakeScreenMessage;
 import fr.heralisz.tactical.network.message.SShieldDisable;
 import fr.heralisz.tactical.network.message.SShieldShake;
 import fr.heralisz.tactical.network.message.SSplashParticle;
+import fr.heralisz.tactical.network.message.SStopConsumableUse;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,9 +29,10 @@ import net.minecraftforge.network.PacketDistributor.TargetPoint;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class NetworkHandler {
-   private static final String VERSION = "0.3.0";
+   // 0.4.0 (28/10) : paquet SStopConsumableUse ajouté : jars joueurs et serveur de la même fabrication
+   private static final String VERSION = "0.4.0";
    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-      new ResourceLocation("heralisz_tactical", "network"), () -> "0.3.0", it -> it.equals("0.3.0"), it -> it.equals("0.3.0")
+      new ResourceLocation("heralisz_tactical", "network"), () -> VERSION, VERSION::equals, VERSION::equals
    );
    private static final AtomicInteger ID_COUNT = new AtomicInteger(1);
 
@@ -67,6 +69,12 @@ public class NetworkHandler {
          CCancelToggleConsumableUse::encode,
          CCancelToggleConsumableUse::new,
          CCancelToggleConsumableUse::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+      CHANNEL.registerMessage(
+         ID_COUNT.getAndIncrement(),
+         SStopConsumableUse.class,
+         SStopConsumableUse::encode,
+         SStopConsumableUse::decode,
+         SStopConsumableUse::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
    }
 
    public static void sendToServer(Object message) {

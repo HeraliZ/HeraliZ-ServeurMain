@@ -247,10 +247,13 @@ public class BuildEventHandler {
                     }
 
                     Item item = event.getItemStack().getItem();
-                    if (placesSomething(item) && item instanceof BlockItem && event.getFace() == Direction.UP
+                    if (placesSomething(item) && item instanceof BlockItem hb && event.getFace() == Direction.UP
+                        && !fr.heraliz.crac.block.Adosse.peutDescendre(hb.getBlock())
                         && StructureBlock.standIssue(sl, event.getPos()) == StructureBlock.StandIssue.HALF_LEVEL) {
                         // HeraliZ (28/10) : un plancher posé sur des demi-murs a son dessus à mi-bloc ; avec un plancher
-                        // au-dessus, il n'y a même aucune case libre entre les deux : rien ne s'y pose
+                        // au-dessus, il n'y a même aucune case libre entre les deux : rien ne s'y pose. Sauf les coffres
+                        // et la caisse en métal, qui y descendent d'un demi-bloc (Adosse.BAS) ; leur appui est vérifié
+                        // à la pose (PlacableSupport)
                         event.setUseItem(Result.DENY);
                         player.displayClientMessage(Txt.red(item instanceof fr.heraliz.crac.item.ClaimBlockItem
                             ? "crac.claim.half_level" : "crac.placable.half_level"), true);

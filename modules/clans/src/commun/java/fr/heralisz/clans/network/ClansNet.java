@@ -22,7 +22,8 @@ public final class ClansNet {
     }
 
     /** 4 (25/10) : onglet Saison (SaisonS2C a la place de ClassementS2C) ; jars joueurs et serveur de la meme fabrication. */
-    private static final String VERSION = "4";
+    /** 5 (28/10) : facteur de prix de l'arbre a la fin de l'etat du clan (ClanSnapshot). */
+    private static final String VERSION = "5";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 

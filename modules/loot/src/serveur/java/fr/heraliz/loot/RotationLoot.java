@@ -36,7 +36,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -891,7 +890,8 @@ public final class RotationLoot extends SavedData {
                         BlockPos b = BlockPos.of(k);
                         if (!l.isLoaded(b)) continue;
                         Actif a = actifs.get(k);
-                        if (a == null) continue;
+                        // vidé (même encore ouvert par quelqu'un, ou en attente du passage de la rotation) : plus d'étoiles
+                        if (a == null || (a.contenu != null && a.contenu.isEmpty())) continue;
                         BlockState st = l.getBlockState(b);
                         if (!(st.getBlock() instanceof ConteneurBlock cb) || !cb.nom.equals(a.nom)) {
                             fautifs.put(k, st);
@@ -909,7 +909,6 @@ public final class RotationLoot extends SavedData {
         });
     }
 
-    /** Quelques étoiles (END_ROD, dorées en T7) sur le dessus, l'avant et les côtés de l'objet (pas le dos, contre le mur). */
     /**
      * Les étoiles d'un joueur partent en un seul paquet groupé par seconde (25/10 : avant, un paquet par étoile, soit des
      * dizaines par seconde et par joueur en ville, chacun envoyé à part). Même rendu chez le joueur.
@@ -927,6 +926,7 @@ public final class RotationLoot extends SavedData {
         }
     }
 
+    /** Quelques étoiles (blanches, dorées en T7) sur le dessus, l'avant et les côtés de l'objet (pas le dos, contre le mur). */
     private static void scintiller(ServerLevel l, ServerPlayer p, BlockPos b, BlockState st, ConteneurBlock cb, int nb,
                                    List<net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener>> lot) {
         Direction face = st.getValue(HorizontalDirectionalBlock.FACING);
@@ -936,7 +936,10 @@ public final class RotationLoot extends SavedData {
         AABB box = new AABB(o.minX - m, o.minY + 0.05, o.minZ - m, o.maxX + m, o.maxY + m, o.maxZ + m);
         RandomSource r = l.random;
         // T7 : petites étoiles dorées (éclat de cire), les autres paliers : étoiles blanches (23/10, choix du propriétaire)
-        net.minecraft.core.particles.SimpleParticleType etoile = ConteneurBlock.palier(cb.nom) >= 7 ? ParticleTypes.WAX_ON : ParticleTypes.END_ROD;
+        // 28/10 : nos propres étoiles (ParticulesLoot), vie courte et montrées même avec « Particules : minimales »
+        // (le profil Performance de HeraliZ Interface, posé chez tous le 25/10, cachait l'END_ROD et le WAX_ON d'avant)
+        net.minecraft.core.particles.SimpleParticleType etoile = ConteneurBlock.palier(cb.nom) >= 7
+                ? ParticulesLoot.ETOILE_OR.get() : ParticulesLoot.ETOILE.get();
         for (int i = 0; i < nb; i++) {
             double x = box.minX + r.nextDouble() * (box.maxX - box.minX);
             double y = box.minY + r.nextDouble() * (box.maxY - box.minY);
@@ -955,7 +958,9 @@ public final class RotationLoot extends SavedData {
             double px = b.getX() + x, py = b.getY() + y, pz = b.getZ() + z;
             // même portée que ServerLevel.sendParticles sans « longue distance » : 32 blocs
             if (p.distanceToSqr(px, py, pz) > 32 * 32) continue;
-            lot.add(new net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket(etoile, false, px, py, pz, 0F, 0F, 0F, 0F, 1));
+            // count 0 : une étoile exactement à cet endroit, sans dispersion ; overrideLimiter vrai : jamais filtrée par le réglage
+            // des particules du joueur
+            lot.add(new net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket(etoile, true, px, py, pz, 0F, 0F, 0F, 0F, 0));
         }
     }
 

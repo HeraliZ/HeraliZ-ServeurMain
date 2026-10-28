@@ -79,8 +79,16 @@ final class Accueil {
     static final String GUIDE = "guide";
     /** Donnée persistante du joueur : la visite du guide est faite (ou passée). */
     private static final String VISITE_FAITE = "heraliz_guide_visite";
-    /** Les PNJ présentés, dans l'ordre de la visite ; Varga en dernier (on finit chez lui). */
-    private static final String[] VISITE = {"mila", BATISSEUR, "jacqueline", "doyen", "jack", PNJ};
+    /**
+     * Les étapes de la visite, dans l'ordre : les PNJ, puis (28/10, demande du propriétaire) les points d'intérêt posés
+     * par le staff ({@code @id}, {@link PointsGuide}) : casino et capsules, Table d'armurier, coffre « Safe Planque 1 »,
+     * caisses, borne de départ, recycleur ; Varga en dernier (on finit chez lui). Phrase du guide : clé
+     * {@code heraliz_quetes.guide.<id>}.
+     */
+    private static final String[] VISITE = {"mila", BATISSEUR, "jacqueline", "doyen", "jack", "@casino", "@armurier", "@coffre",
+            "@caisses", "@borne", "@recycleur", PNJ};
+    /** Donnée persistante du joueur : il a parlé au Commandant Varga (fin du guidage : traînée et surbrillance). */
+    private static final String VARGA_PARLE = "heraliz_varga_parle";
     /** Secondes par PNJ (le temps que la phrase s'écrive et se lise) et durée du tour de caméra (ticks). */
     // 20/10 : le tour dure 1 s de plus que l'écart : le PNJ suivant arrive caméra encore partie, sans retour au joueur
     private static final int VISITE_ECART = 12, VISITE_TICKS = VISITE_ECART * 20 + 20;
@@ -139,11 +147,28 @@ final class Accueil {
             Moteur.suiviBientot(p);
             return;
         }
-        Pnj e = pnj(p, VISITE[rang], 200);
-        if (e != null) {
-            Reseau.envoyer(p, new Reseau.Presentation(e.getX(), e.getY(), e.getZ(), VISITE_RAYON, VISITE_TICKS));
+        String etape = VISITE[rang];
+        if (etape.startsWith("@")) {
+            String id = etape.substring(1);
+            PointsGuide.Point pt = PointsGuide.point(id);
+            Pnj e;
+            if (pt != null && pt.monde().equals(p.level().dimension().location().toString())
+                    && p.distanceToSqr(pt.x(), pt.y(), pt.z()) < 512 * 512) {
+                // centre envoyé 1,4 bloc plus bas : la caméra du joueur vise « y + 1,4 » (les yeux d'un PNJ)
+                Reseau.envoyer(p, new Reseau.Presentation(pt.x(), pt.y() - 1.4, pt.z(), pt.rayon(), VISITE_TICKS, pt.angle()));
+            } else if ("recycleur".equals(id) && (e = pnj(p, "recycleur", 200)) != null) {
+                // recycleur sans point posé : le PNJ recycleur, s'il existe
+                Reseau.envoyer(p, new Reseau.Presentation(e.getX(), e.getY(), e.getZ(), VISITE_RAYON, VISITE_TICKS, Float.NaN));
+            }
+            // point pas posé par le staff (/guide point <id>) : la phrase seule, sans caméra
+            radio(p, GUIDE, 0, "heraliz_quetes.guide." + id);
+        } else {
+            Pnj e = pnj(p, etape, 200);
+            if (e != null) {
+                Reseau.envoyer(p, new Reseau.Presentation(e.getX(), e.getY(), e.getZ(), VISITE_RAYON, VISITE_TICKS, Float.NaN));
+            }
+            radio(p, GUIDE, 0, "heraliz_quetes.guide." + etape);
         }
-        radio(p, GUIDE, 0, "heraliz_quetes.guide." + VISITE[rang]);
         VISITES.put(p.getUUID(), new Visite(rang, 0));
     }
 
@@ -299,7 +324,7 @@ final class Accueil {
             ARRIVEE.remove(p.getUUID());
             persiste(p).putBoolean(PRESENTE, true);
             if (b != null) {
-                Reseau.envoyer(p, new Reseau.Presentation(b.getX(), b.getY(), b.getZ(), PRES_RAYON, PRES_TICKS));
+                Reseau.envoyer(p, new Reseau.Presentation(b.getX(), b.getY(), b.getZ(), PRES_RAYON, PRES_TICKS, Float.NaN));
             }
             pr = new Pres(0, b != null);
             Moteur.suiviBientot(p);
@@ -367,10 +392,21 @@ final class Accueil {
         return new Reseau.Suivi(entete, titre, lignes);
     }
 
-    /** Lueurs sur Varga quand on doit aller le voir et qu'il est près. */
+    /** Le joueur parle au Commandant Varga (Dialogues) : le guidage vers lui (traînée, surbrillance) s'arrête. */
+    static void vargaParle(ServerPlayer p) {
+        // seulement visite faite : un joueur passé chez Varga avant la visite est guidé vers lui après
+        if (!visiteAFaire(p) && !persiste(p).getBoolean(VARGA_PARLE)) persiste(p).putBoolean(VARGA_PARLE, true);
+    }
+
+    /**
+     * Lueur au-dessus du PNJ à aller voir (le guide, puis Varga). Chez le joueur, elle met ce PNJ en avant : repère,
+     * surbrillance et traînée verte au sol jusqu'à lui (28/10, client {@code Guidage}) ; vers Varga, seulement tant que le
+     * joueur ne lui a pas parlé.
+     */
     static void lueurs(ServerPlayer p, List<BlockPos> l) {
         if (!intro(p, Ponts.tutoEtat(p)) || VISITES.containsKey(p.getUUID())) return;
         String id = cible(p);
+        if (id.equals(PNJ) && persiste(p).getBoolean(VARGA_PARLE)) return;
         Pnj v = id.equals(PNJ) ? varga(p) : pnj(p, id, 4096);
         // 20/10 : à toute distance (le repère du PNJ au spawn se met en avant, avec la distance)
         if (v != null) l.add(v.blockPosition().above(2));

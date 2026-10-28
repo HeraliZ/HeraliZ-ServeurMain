@@ -93,7 +93,8 @@ public class ConsumableItem extends Item implements IAnimationItem, IConsumable 
       }
 
       ItemStack stack = player.getItemInHand(usedHand);
-      boolean drawing = player.getCapability(CombatPropertiesProvider.CAPABILITY).map(cap -> cap.getCoolDownTick() > 0).orElse(false);
+      int tolerance = this.toleranceSortie(level);
+      boolean drawing = player.getCapability(CombatPropertiesProvider.CAPABILITY).map(cap -> cap.getCoolDownTick() > tolerance).orElse(false);
       if (drawing) {
          return InteractionResultHolder.fail(stack);
       }
@@ -107,6 +108,14 @@ public class ConsumableItem extends Item implements IAnimationItem, IConsumable 
 
       player.startUsingItem(usedHand);
       return InteractionResultHolder.consume(stack);
+   }
+
+   /**
+    * Ticks de sortie de l'objet encore permis au moment du clic : 0 chez le joueur ; la partie serveur
+    * (ConsumableItemServeur) en laisse quelques-uns, son compte de sortie commençant toujours un peu après celui du joueur.
+    */
+   protected int toleranceSortie(Level level) {
+      return 0;
    }
 
    @ParametersAreNonnullByDefault

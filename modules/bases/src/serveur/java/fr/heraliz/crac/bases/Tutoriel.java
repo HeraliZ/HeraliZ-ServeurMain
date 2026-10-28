@@ -82,7 +82,8 @@ import org.jetbrains.annotations.Nullable;
  *   <li>Titres à l'écran, puis le kit : de quoi bâtir avec CRac une cabane 2 × 1 avec une porte (2 fondations, 5 murs,
  *   1 pièce « Porte », 2 planchers en toit), calculé avec les coûts réels de crac-building.toml, plus la mise en bois au
  *   marteau, un jour d'entretien du Claim Block et une marge de 10 % ; un groupe CRac est créé pour lui s'il n'en a pas.</li>
- *   <li>Envoi dans le monde des bases, à un point plat tiré au hasard loin des autres bases. Six étapes, suivies ici
+ *   <li>Envoi dans le monde du tutoriel ({@code crac:tuto}, plat et vide, depuis le 28/10), au centre de SA parcelle de
+ *   64 × 64 blocs, murs invisibles autour ({@link PlotsTuto} ; libérée à la fin). Six étapes, suivies ici
  *   d'après la cabane elle-même ({@link #progression}) et dites par Varga à la radio (HeraliZ Quêtes) : la première
  *   fondation sur un coin plat, le Claim Block dessus (hors d'un claim, CRac n'accepte rien d'autre), la deuxième
  *   fondation, 5 murs + la porte + 2 planchers, toute la cabane en bois, des planches dans le Claim Block (entretien).
@@ -181,6 +182,13 @@ public final class Tutoriel {
         if (tuto != null) {
             EffacerBase.effacerDans(p.server, p.getUUID(), tuto, recup);
         }
+        // 28/10 : fin d'un tutoriel commencé dans l'ancien monde (crac:bases, avant le monde à part) : sa cabane y est effacée
+        ServerLevel ancien = MondeBases.estAncien(p.level()) ? p.server.getLevel(MondeBases.ANCIEN_CLE) : null;
+        if (ancien != null) {
+            EffacerBase.effacerDans(p.server, p.getUUID(), ancien, recup);
+        }
+        // sa parcelle du monde du tutoriel redevient libre (cabane effacée juste avant)
+        PlotsTuto.liberer(p.server, p.getUUID());
         // ce qu'il avait rangé dans la caisse de la cabane revient dans son inventaire (le kit marqué est repris juste après)
         List<ItemStack> reste = new ArrayList<>();
         for (ItemStack s : recup) {
@@ -189,7 +197,7 @@ public final class Tutoriel {
             }
         }
         reprendreKit(p);
-        if (MondeBases.estTuto(p.level())) {
+        if (MondeBases.estTuto(p.level()) || ancien != null) {
             if (!Deplacements.allerAuSpawn(p)) {
                 ServerLevel o = p.server.overworld();
                 net.minecraft.core.BlockPos s = o.getSharedSpawnPos();
@@ -211,7 +219,9 @@ public final class Tutoriel {
     public static int effacerCabaneEssai(MinecraftServer server, UUID u) {
         ServerLevel tuto = server.getLevel(MondeBases.TUTO);
         FINS.remove(u);
-        return tuto == null ? 0 : EffacerBase.effacerDans(server, u, tuto)[0];
+        int n = tuto == null ? 0 : EffacerBase.effacerDans(server, u, tuto)[0];
+        PlotsTuto.liberer(server, u);
+        return n;
     }
 
     /** Tout ce que {@code u} a bâti, dans tous les mondes ({@code fr.heraliz.crac.api.BancApi.effacer}, bots de charge). */
@@ -225,6 +235,7 @@ public final class Tutoriel {
         if (tuto != null) {
             EffacerBase.effacerDans(server, u, tuto);
         }
+        PlotsTuto.liberer(server, u);
         // le kit est repris à sa prochaine connexion (connexion ci-dessous)
     }
 
@@ -440,6 +451,18 @@ public final class Tutoriel {
             ramener(p, j);
             return;
         }
+        if (MondeBases.estAncien(p.level())) {
+            // 28/10 : tutoriel commencé dans l'ancien monde (crac:bases) avant le monde à part : cabane d'essai effacée,
+            // kit repris, et le tutoriel repart du début sur une parcelle du nouveau monde (crac:tuto)
+            ServerLevel ancien = p.server.getLevel(MondeBases.ANCIEN_CLE);
+            if (ancien != null) {
+                EffacerBase.effacerDans(p.server, p.getUUID(), ancien);
+            }
+            lancer(p);
+            T.chat(p, T.t("crac.tuto.nouveau_monde", "[Tuto] Le tutoriel a maintenant son propre monde : il repart du début, sur ta parcelle."),
+                ChatFormatting.YELLOW);
+            return;
+        }
         if (!MondeBases.estTuto(p.level())) {
             return;
         }
@@ -460,7 +483,7 @@ public final class Tutoriel {
         }
     }
 
-    /** Renvoie le joueur à sa cabane (sur sa première fondation), sinon à un point au hasard du monde des bases. */
+    /** Renvoie le joueur à sa cabane (sur sa première fondation), sinon au centre de sa parcelle du monde du tutoriel. */
     private static void ramener(ServerPlayer p, BasesDonnees.Joueur j) {
         ServerLevel bases = p.server.getLevel(MondeBases.TUTO);
         if (bases == null) {
@@ -478,7 +501,7 @@ public final class Tutoriel {
             }
         }
         if (dest == null) {
-            dest = Points.auHasard(bases, p);
+            dest = PlotsTuto.arrivee(p);   // sa parcelle (28/10 ; avant : un point au hasard du monde)
         }
         if (dest == null) {
             return;
@@ -502,6 +525,15 @@ public final class Tutoriel {
      * kit soit donné ; protection de base due seulement s'il n'a pas de base (dans le kit).
      */
     static void lancer(ServerPlayer p) {
+        // 28/10 : tutoriel relancé alors qu'une cabane d'essai existe déjà sur sa parcelle : effacée (il garde la même
+        // parcelle), et l'ancien kit repris (sinon il en avait deux)
+        if (PlotsTuto.de(p.server, p.getUUID()) >= 0) {
+            ServerLevel tuto = p.server.getLevel(MondeBases.TUTO);
+            if (tuto != null) {
+                EffacerBase.effacerDans(p.server, p.getUUID(), tuto);
+            }
+        }
+        reprendreKit(p);
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
         j.etape = BasesDonnees.Etape.AUCUNE;
@@ -664,9 +696,10 @@ public final class Tutoriel {
             avertir(p, T.t("crac.tuto.attente_combat", "[Tuto] Départ pour le tutoriel dès que tu n'es plus en combat."));
             return;
         }
-        Vec3 dest = Points.auHasard(bases, p);
+        // 28/10 : sa propre parcelle de 64 × 64 blocs, murs invisibles autour (PlotsTuto), au lieu d'un point au hasard
+        Vec3 dest = PlotsTuto.arrivee(p);
         if (dest == null) {
-            T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée : réessaie dans un instant."),
+            T.chat(p, T.t("crac.tuto.pas_de_parcelle", "Aucune parcelle libre dans le monde du tutoriel : réessaie dans un instant."),
                 ChatFormatting.RED);
             int n = ESSAIS.merge(p.getUUID(), 1, Integer::sum);
             if (force && n < ESSAIS_MAX) {
@@ -1247,7 +1280,7 @@ public final class Tutoriel {
 
     private static int lancer(CommandSourceStack src, ServerPlayer p) {
         if (src.getServer().getLevel(MondeBases.TUTO) == null) {
-            Reply.fail(src, T.t("crac.tuto.monde_absent", "Le monde du tutoriel n'existe pas sur ce serveur (crac:bases)."));
+            Reply.fail(src, T.t("crac.tuto.monde_absent", "Le monde du tutoriel n'existe pas sur ce serveur (crac:tuto)."));
             return 0;
         }
         boolean base = aUneBase(p);
@@ -1315,6 +1348,14 @@ public final class Tutoriel {
         d.marquer();
         oublier(p.getUUID());
         effacerGuide(p);
+        // 28/10 : cabane d'essai effacée, parcelle libérée, kit repris ; s'il est dans le monde du tutoriel, retour au spawn
+        effacerCabaneEssai(src.getServer(), p.getUUID());
+        reprendreKit(p);
+        if (MondeBases.estTuto(p.level()) && !Deplacements.allerAuSpawn(p)) {
+            ServerLevel o = p.server.overworld();
+            net.minecraft.core.BlockPos s = o.getSharedSpawnPos();
+            p.teleportTo(o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);
+        }
         fr.heraliz.crac.heraliz.Reply.ok(src, (base
             ? T.t("crac.tuto.rejouer_base", "%s a déjà une base : le tutoriel ne repartira que s'il la perd.", p.getGameProfile().getName())
             : T.t("crac.tuto.rejouer", "Tutoriel remis à zéro pour %s : il repart au spawn.", p.getGameProfile().getName()))

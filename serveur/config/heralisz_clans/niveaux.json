@@ -1,5 +1,7 @@
 {
-  "_aide": "index = niveau - 1 ; xp_suivant = XP pour passer au niveau suivant (le dernier est ignore) ; membres et territoires : arbre d'ameliorations du clan",
+  "_aide": "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore), multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan (28/10 : XP x3, arbre x2) ; membres et territoires : arbre d'ameliorations du clan",
+  "facteur_xp": 3.0,
+  "facteur_prix_arbre": 2.0,
   "xp_suivant": [
     20,
     60,

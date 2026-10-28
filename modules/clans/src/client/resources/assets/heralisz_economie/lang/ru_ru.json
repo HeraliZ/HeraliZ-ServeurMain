@@ -48,5 +48,9 @@
   "economie.msg.admin.sauvegarde_forcee": "Блокировка снята: старый файл сохранён как %s. Счета сохранены.",
   "economie.msg.admin.sauvegarde_mise_de_cote_echec": "Не удалось отложить старый файл (%s): сохранение по-прежнему заблокировано.",
   "economie.msg.admin.chargement_echoue": "HeraliZ Экономика: %s не удалось прочитать при запуске. Все сохранения заблокированы, чтобы защитить балансы. Исправьте файл и выполните /eco recharger или /eco sauvegarder --forcer, чтобы начать заново со счетов из памяти.",
-  "economie.msg.admin.info_bloque": "Сохранение заблокировано: файл не прочитан при запуске (/eco recharger или /eco sauvegarder --forcer)."
+  "economie.msg.admin.info_bloque": "Сохранение заблокировано: файл не прочитан при запуске (/eco recharger или /eco sauvegarder --forcer).",
+  "economie.msg.admin.login": "Сначала войди с помощью /login.",
+  "economie.msg.admin.plafond": "Отказано: баланс %s превысит предел (%s).",
+  "economie.msg.admin.recu": "Персонал начислил тебе %s (баланс: %s).",
+  "economie.msg.admin.perdu": "Персонал списал у тебя %s (баланс: %s)."
 }

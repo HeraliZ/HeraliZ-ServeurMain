@@ -50,6 +50,8 @@ final class Defs {
         final List<Modele> contrats = new ArrayList<>();
         /** Ce qu'il vend ou rachète (clé « marchand »), null s'il n'est pas marchand. */
         Marchand marchand;
+        /** Questions fréquentes (clé « faq » : [{"question": ..., "reponse": ...}], 28/10), bouton « Questions ». */
+        final List<Faq> faq = new ArrayList<>();
 
         Quete quete(String id) {
             for (Quete q : suite) if (q.id.equals(id)) return q;
@@ -60,6 +62,10 @@ final class Defs {
             Texte t = niveau >= 3 && !ami.vide() ? ami : niveau == 0 && !inconnu.vide() ? inconnu : connu;
             return t.vide() ? inconnu : t;
         }
+    }
+
+    /** Une question fréquente d'un PNJ et sa réponse (textes en trois langues). */
+    record Faq(Texte question, Texte reponse) {
     }
 
     // ------------------------------------------------------------------ quête
@@ -161,6 +167,8 @@ final class Defs {
         boolean troc;
         /** « recyclage » : il recycle les objets déposés contre des composants (Recyclage, 24/10). */
         boolean recyclage;
+        /** « hdv » : il ouvre l'hôtel des ventes de HeraliZ Grades (commissaire-priseur, 28/10). */
+        boolean hdv;
         final List<ArticleDef> articles = new ArrayList<>();
         final List<Regle> regles = new ArrayList<>();
         /** Ses échanges (tout marchand peut en avoir, en plus de ses ventes ou de son rachat). */
@@ -181,6 +189,7 @@ final class Defs {
         m.rachat = type.equalsIgnoreCase("rachat");
         m.troc = type.equalsIgnoreCase("troc");
         m.recyclage = type.equalsIgnoreCase("recyclage");
+        m.hdv = type.equalsIgnoreCase("hdv");
         m.bouton = Texte.json(o.get("bouton"));
         if (o.has("articles") && o.get("articles").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("articles")) {
@@ -249,6 +258,14 @@ final class Defs {
             textes(a.get("en_cours"), p.enCours);
         }
         if (o.has("marchand") && o.get("marchand").isJsonObject()) p.marchand = marchand(o.getAsJsonObject("marchand"));
+        if (o.has("faq") && o.get("faq").isJsonArray()) {
+            for (JsonElement e : o.getAsJsonArray("faq")) {
+                if (!e.isJsonObject()) continue;
+                Texte q = Texte.json(e.getAsJsonObject().get("question")), r = Texte.json(e.getAsJsonObject().get("reponse"));
+                if (q.vide() || r.vide()) erreurs.add(p.id + " : une question de « faq » sans « question » ou « reponse »");
+                else p.faq.add(new Faq(q, r));
+            }
+        }
         if (o.has("suite") && o.get("suite").isJsonArray()) {
             for (JsonElement e : o.getAsJsonArray("suite")) {
                 if (!e.isJsonObject()) continue;

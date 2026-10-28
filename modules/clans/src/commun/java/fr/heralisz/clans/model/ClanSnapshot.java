@@ -222,6 +222,8 @@ public record ClanSnapshot(UUID id, String tag, String nom, String description, 
             b.writeUUID(e.getKey());
             e.getValue().write(b);
         }
+        // ajout du 28/10 : facteur de prix de l'arbre (pourcents), pour que le joueur voie le prix demandé par le serveur
+        b.writeVarInt(Arbre.facteurPrixPct());
     }
 
     public static ClanSnapshot read(FriendlyByteBuf b) {
@@ -269,6 +271,7 @@ public record ClanSnapshot(UUID id, String tag, String nom, String description, 
                 if (!r.vide()) reglages.put(u, r);
             }
         }
+        if (b.isReadable()) Arbre.facteurPrixPct(b.readVarInt());
         return new ClanSnapshot(id, tag, nom, desc, ban, chef, creeLe, banque, niveau, xp, xpSuivant, membresMax, territoiresMax,
                 membres, perms, moi, monGrade, monSolde, symbole, cdNom, cdTag, cdDesc, cdBan, jb, qj, qs, rj, rs, terr, journal, maintenant,
                 reglages);

@@ -83,6 +83,7 @@ final class Dialogues {
                     "Ce PNJ (%s) n'a pas de fichier dans config/heraliz_quetes/pnj/.", ent.pnjId()));
             return;
         }
+        if (def.id.equals(Accueil.PNJ)) Accueil.vargaParle(p);   // 28/10 : fin du guidage (traînée, surbrillance) vers Varga
         Donnees.DPnj dp = Donnees.de(p.getUUID()).pnj(def.id);
         if (!dp.rencontre) {
             page(p, ent, def, def.presentation.vide() ? def.inconnu : def.presentation, List.of(
@@ -123,6 +124,7 @@ final class Dialogues {
                 fermer(p);
                 Ponts.tutoFiche(p);
             }));
+            if (!def.faq.isEmpty()) choix.add(new Rep(Texte.cle("heraliz_quetes.faq.bouton"), 0, () -> faq(p, ent, def, 0, null)));
             choix.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
             page(p, ent, def, Texte.cle("heraliz_quetes.tuto.varga"), choix);
             return;
@@ -199,7 +201,8 @@ final class Dialogues {
         // 5. son commerce
         if (def.marchand != null) {
             Texte bouton = !def.marchand.bouton.vide() ? def.marchand.bouton
-                    : Texte.cle(def.marchand.recyclage ? "heraliz_quetes.dialogue.recycler"
+                    : Texte.cle(def.marchand.hdv ? "heraliz_quetes.dialogue.hdv"
+                    : def.marchand.recyclage ? "heraliz_quetes.dialogue.recycler"
                     : def.marchand.troc ? "heraliz_quetes.dialogue.echanger"
                     : def.marchand.rachat ? "heraliz_quetes.dialogue.vendre" : "heraliz_quetes.dialogue.acheter");
             reps.add(new Rep(bouton, 2, () -> {
@@ -222,6 +225,8 @@ final class Dialogues {
                 Ponts.tutoFiche(p);
             }));
         }
+        // 7. ses questions fréquentes (28/10 : clé « faq » de son fichier, Varga d'abord)
+        if (!def.faq.isEmpty()) reps.add(new Rep(Texte.cle("heraliz_quetes.faq.bouton"), 0, () -> faq(p, ent, def, 0, null)));
         reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.revoir"), 3, () -> fermer(p)));
 
         if ((texte == null || texte.vide()) && prochaine != null && !def.besoin.isEmpty()) {
@@ -236,6 +241,28 @@ final class Dialogues {
             if (texte == null) texte = Texte.VIDE;
         }
         page(p, ent, def, texte, reps);
+    }
+
+    /** Questions par page (touches 1 à 9 : 7 questions + « Autres questions » + « Retour »). */
+    private static final int FAQ_PAGE = 7;
+
+    /**
+     * Questions fréquentes du PNJ (clé « faq » de son fichier, Quêtes 1.14.0) : la liste des questions, page par page ;
+     * une question choisie = sa réponse, puis « Autre question » ou « Retour ». {@code reponse} : texte affiché en haut.
+     */
+    private static void faq(ServerPlayer p, Pnj ent, Defs.Pnj def, int page, Texte reponse) {
+        int n = def.faq.size(), pages = (n + FAQ_PAGE - 1) / FAQ_PAGE;
+        int pg = Math.max(0, Math.min(page, pages - 1));
+        List<Rep> reps = new ArrayList<>();
+        for (int i = pg * FAQ_PAGE; i < Math.min(n, (pg + 1) * FAQ_PAGE); i++) {
+            Defs.Faq f = def.faq.get(i);
+            reps.add(new Rep(f.question(), 0, () -> page(p, ent, def, f.reponse(), List.of(
+                    new Rep(Texte.cle("heraliz_quetes.faq.autre"), 1, () -> faq(p, ent, def, pg, null)),
+                    new Rep(Texte.cle("heraliz_quetes.dialogue.retour"), 3, () -> accueil(p, ent, def, null))))));
+        }
+        if (pages > 1) reps.add(new Rep(Texte.cle("heraliz_quetes.faq.suite"), 1, () -> faq(p, ent, def, (pg + 1) % pages, null)));
+        reps.add(new Rep(Texte.cle("heraliz_quetes.dialogue.retour"), 3, () -> accueil(p, ent, def, null)));
+        page(p, ent, def, reponse != null ? reponse : Texte.cle("heraliz_quetes.faq.intro"), reps);
     }
 
     private static boolean aUneQuete(Donnees.DJoueur j, Defs.Pnj def) {

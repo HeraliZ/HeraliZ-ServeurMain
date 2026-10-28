@@ -50,7 +50,7 @@ final class Restrictions {
 
     /** Tutoriel des bases de CRac en cours (kit reçu ou cabane en cours), ou joueur dans le monde du tutoriel. */
     static boolean enTutoriel(ServerPlayer p) {
-        if (p.level().dimension().location().toString().equals("crac:bases")) return true;
+        if (p.level().dimension().location().toString().equals("crac:bases") || p.level().dimension().location().toString().equals("crac:tuto")) return true;
         if (!tutoCherche) {
             tutoCherche = true;
             try {

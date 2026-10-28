@@ -5,25 +5,25 @@
       "item": {
         "item": "heraliz_composants:planches"
       },
-      "count": 8
+      "count": 16
     },
     {
       "item": {
         "item": "heraliz_composants:clou"
       },
-      "count": 8
+      "count": 16
     },
     {
       "item": {
         "item": "heraliz_composants:corde"
       },
-      "count": 2
+      "count": 4
     },
     {
       "item": {
         "item": "heraliz_composants:ferraille_ii"
       },
-      "count": 3
+      "count": 6
     }
   ],
   "result": {

@@ -19,6 +19,8 @@ import fr.heralisz.tactical.network.message.SShakeScreenMessage;
 import fr.heralisz.tactical.network.message.SShieldDisable;
 import fr.heralisz.tactical.network.message.SShieldShake;
 import fr.heralisz.tactical.network.message.SSplashParticle;
+import fr.heralisz.tactical.network.message.SStopConsumableUse;
+import fr.heralisz.tactical.api.item.IConsumable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -53,6 +55,15 @@ public final class ReceptionClient {
       SResetMeleeSyncMessage.RECEPTION_CLIENT.brancher(ReceptionClient::remiseAZeroMelee);
       SMeleeAnimationSync.RECEPTION_CLIENT.brancher(ReceptionClient::animationMelee);
       SShakeScreenMessage.RECEPTION_CLIENT.brancher(m -> ClientEventsHandler.handleShakeClient(m.time(), m.radius(), m.amplitude(), m.position()));
+      SStopConsumableUse.RECEPTION_CLIENT.brancher(ReceptionClient::arretSoin);
+   }
+
+   // HeraliZ (28/10) : soin refusé par le serveur alors que le joueur l'avait commencé chez lui
+   static void arretSoin(SStopConsumableUse message) {
+      Player player = Minecraft.getInstance().player;
+      if (player != null && player.isUsingItem() && player.getUseItem().getItem() instanceof IConsumable) {
+         player.stopUsingItem();
+      }
    }
 
    // SCustomCoolDownMessage.handle (client)

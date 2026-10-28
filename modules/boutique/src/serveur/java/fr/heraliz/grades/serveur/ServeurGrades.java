@@ -65,6 +65,9 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> CommandesPb.enregistrer(e.getDispatcher()));
         BoutiqueServeur.brancher();
         EchangeServeur.brancher();
+        // hôtel des ventes (2.9.0) : /hdv au spawn, PNJ commissaire-priseur (HeraliZ Quêtes, HdvApi)
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> HdvServeur.enregistrer(e.getDispatcher()));
+        HdvServeur.brancher();
         // bons réglés par les op (/bon editeur) : hérals, PB, grade, bonus de loot, commande au clic droit
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> BonServeur.enregistrer(e.getDispatcher()));
         BonServeur.brancher();
@@ -79,6 +82,7 @@ public final class ServeurGrades implements Partie {
             if (e.phase != TickEvent.Phase.END) return;
             BoutiqueServeur.tick();
             EchangeServeur.tick();
+            HdvServeur.tick();
             BonServeur.tick();
         });
     }
@@ -96,6 +100,7 @@ public final class ServeurGrades implements Partie {
         Pb.demarrer(e.getServer());
         BoutiqueServeur.demarrer(e.getServer(), dossier);
         EchangeServeur.demarrer(e.getServer(), dossier);
+        HdvServeur.demarrer(e.getServer(), dossier);
         BonServeur.demarrer(e.getServer(), dossier);
         VanishServeur.demarrer(dossier);
         PanelStaff.demarrer(dossier);
@@ -110,6 +115,7 @@ public final class ServeurGrades implements Partie {
         TabServeur.oublier();
         LienDiscord.arreter();
         EchangeServeur.arreter();
+        HdvServeur.arreter();
         BoutiqueServeur.arreter();
         BonServeur.arreter();
         VanishServeur.arreter();
@@ -151,6 +157,8 @@ public final class ServeurGrades implements Partie {
         TabServeur.maj(p.server, true);
         // objets d'un échange conclu pendant son absence
         EchangeServeur.connexion(p);
+        // hôtel des ventes : ventes interrompues par un arrêt, objets achetés en attente
+        HdvServeur.connexion(p);
         // effet « Bonus de loot » et bons restés en cours
         BonServeur.connexion(p);
     }
@@ -162,6 +170,7 @@ public final class ServeurGrades implements Partie {
         SurnomsServeur.oublier(e.getEntity().getUUID());
         LienDiscord.oublier(e.getEntity().getUUID());
         EchangeServeur.deconnexion(e.getEntity().getUUID());
+        HdvServeur.deconnexion(e.getEntity().getUUID());
         VanishServeur.deconnexion(e.getEntity().getUUID());
     }
 

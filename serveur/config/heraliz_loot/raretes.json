@@ -392,6 +392,11 @@
     "heralisz_bunker:keycard_green": "rare",
     "heralisz_bunker:keycard_blue": "epique",
     "heralisz_bunker:keycard_red": "legendaire",
+    "crac:metal_crate": "commun",
+    "crac:malle_chantier": "peu_commun",
+    "crac:casier_metallique": "rare",
+    "crac:caisse_armes": "epique",
+    "crac:coffre_fort": "legendaire",
     "backpacked:backpack": "peu_commun",
     "backpacked:backpack_hiking_black": "epique",
     "backpacked:backpack_hiking_blue": "epique",
@@ -447,12 +452,7 @@
     "backpacked:backpack_tactical_red": "peu_commun",
     "backpacked:backpack_tactical_snow": "peu_commun",
     "backpacked:backpack_tactical_white": "peu_commun",
-    "backpacked:backpack_tactical_yellow": "peu_commun",
-    "crac:metal_crate": "commun",
-    "crac:malle_chantier": "peu_commun",
-    "crac:casier_metallique": "rare",
-    "crac:caisse_armes": "epique",
-    "crac:coffre_fort": "legendaire"
+    "backpacked:backpack_tactical_yellow": "peu_commun"
   },
   "armes": {
     "heralisz_skins:butterfly__blue_carbon": "unique",

@@ -65,7 +65,8 @@ public class CoffreRendu implements BlockEntityRenderer<CoffreBlockEntity> {
         VertexConsumer vc = buffers.getBuffer(RenderType.cutout());
         CoffresDonnees.Mobile[] mobiles = c.mesures().mobiles();
         ps.pushPose();
-        ps.translate(d[0] / 16.0, 0, d[1] / 16.0);     // collé au mur, comme le modèle du bloc
+        // collé au mur, et descendu sur un plancher à mi-bloc (Adosse.BAS), comme le modèle du bloc
+        ps.translate(d[0] / 16.0, Adosse.bas(s) ? -Adosse.DEMI / 16.0 : 0, d[1] / 16.0);
         ps.translate(0.5, 0, 0.5);
         ps.mulPose(Axis.YP.rotationDegrees(-switch (f) {
             case EAST -> 90F;

@@ -87,6 +87,35 @@ sa première mission et « Infos sur les bases » (fiche /base info). Le tutorie
 Ses textes d'accueil et de radio sont dans les langues du mod (`outils/langues.py`, clés `heraliz_quetes.tuto.*`), pas
 dans `varga.json`. Le poser au spawn avant d'ouvrir le serveur : sans lui, les nouveaux ne peuvent pas commencer.
 
+### Le Guide et sa visite du spawn
+
+Le **Guide** (`/pnj creer guide`) accueille les nouveaux après la cinématique : une traînée verte au sol et un contour
+vert les mènent à lui (seulement chez eux). « Fais-moi visiter » : la caméra montre Mila, le Bâtisseur, Jacqueline, le
+Doyen, Jack, puis les **points de la visite**, puis le Commandant Varga (Espace maintenu 1 s pour passer). Ensuite la
+traînée et le contour passent sur Varga, jusqu'à ce que le joueur lui parle.
+
+Les points de la visite se posent EN JEU (op niveau 2) : se placer là où la caméra doit se tenir, **regarder la chose à
+montrer** (le bloc visé, jusqu'à 24 blocs), puis taper la commande. La caméra tourne un peu autour, de ce côté-là.
+
+| Commande | Point |
+|---|---|
+| `/guide point casino` | le casino (capsules) |
+| `/guide point armurier` | la Table d'armurier |
+| `/guide point coffre` | le coffre « Safe Planque 1 » |
+| `/guide point caisses` | les caisses |
+| `/guide point borne` | la borne de départ |
+| `/guide point recycleur` | le recycleur (sans point : le PNJ `recycleur` s'il est posé) |
+| `/guide points` · `/guide retirer <id>` | liste · effacer |
+| `/guide visite` | jouer la visite pour soi (essai) |
+
+Un point non posé : le Guide dit sa phrase sans caméra. Gardés à la racine du serveur
+(`heraliz_quetes/guide_points.json`), jamais écrasés par la mise en ligne.
+
+### Questions fréquentes (bouton « Questions »)
+
+Clé `faq` du fichier d'un PNJ (aujourd'hui Varga) : `[{"question": {"fr", "en", "ru"}, "reponse": {"fr", "en", "ru"}}]`.
+Le bouton apparaît dès qu'il y a une question ; 7 questions par page. Relu par `/quete recharger`.
+
 ### Apparence des PNJ : le créateur de personnage (CaraCrea)
 
 Chaque PNJ a une apparence faite avec le créateur de personnage du serveur (le même que `/perso`), écrite dans son
@@ -216,4 +245,8 @@ Une quête dont la dernière étape ne se fait pas chez le PNJ se termine en rev
 
 PNJ `recycleur` (`pnj/recycleur.json`, marchand `"type": "recyclage"`) : à poser une fois au spawn, `/pnj creer recycleur`.
 Ses règles sont dans `recyclage.json`, **écrit par `outils/recyclage.py`** (jamais à la main) ; relu par `/quete recharger`.
+
+PNJ `commissaire` (`pnj/commissaire.json`, marchand `"type": "hdv"`, 28/10) : le commissaire-priseur ; son bouton ouvre
+l'hôtel des ventes de HeraliZ Grades (`/hdv`, mêmes règles : au spawn seulement). À poser une fois : `/pnj creer commissaire`.
+Tout marchand de type `hdv` fait de même (aucun article, aucune règle de rachat).
 

@@ -34,7 +34,7 @@ public record Occupant(long pieceId, long buildingId, PieceKey key, Tier tier, i
 
     /** Forme de visée (contour, clic) : celle de la collision, sauf qu'une porte de sas bloquée se vise ouverte. */
     public VoxelShape visee(BlockPos pos) {
-        return PieceShapes.shape(this.key, Piece.etatVisible(this.state), this.variant, pos);
+        return PieceShapes.shape(this.key, Piece.etatVisible(this.key.kind(), this.state), this.variant, pos);
     }
 
     /** Collision shape of the piece inside the world block {@code pos}. */
@@ -45,7 +45,23 @@ public record Occupant(long pieceId, long buildingId, PieceKey key, Tier tier, i
     /** Occlusion shape (inward raster) of the piece inside the world block {@code pos}. */
     public VoxelShape occlusion(BlockPos pos) {
         // une porte de sas bloquée cache ce qu'une porte ouverte cache (rien de plus : sinon des faces disparaissent)
-        return PieceShapes.occlusion(this.key, Piece.etatVisible(this.state), this.variant, pos);
+        return PieceShapes.occlusion(this.key, etatOcclusion(this.key.kind(), Piece.etatVisible(this.key.kind(), this.state)), this.variant, pos);
+    }
+
+    /**
+     * Fenêtre (HeraliZ, 28/10, demande du propriétaire : « on voit à travers les barreaux, pas à travers la vitre ») : la
+     * collision des barreaux et de la vitre est la même (plaque pleine qui arrête joueurs et balles), mais leur occlusion
+     * ne l'était pas non plus pour la vue. La plaque couvrait toute la face de la case du milieu de l'ouverture : l'état
+     * du bloc la marquait « face pleine » (StructureBlock.FACE) et l'anti-ESP de Spartan, qui lit la forme d'occlusion de
+     * chaque état, cachait les joueurs derrière des barreaux ; la lumière ne passait pas non plus. Ni les barreaux ni la
+     * vitre (transparente, 28/10 : « on doit voir à travers, sans qu'un joueur derrière disparaisse ») ne cachent : on voit,
+     * la lumière passe, l'anti-ESP montre le joueur. La collision (joueurs, balles) ne change pas.
+     */
+    static int etatOcclusion(fr.heraliz.crac.build.model.PieceKind kind, int state) {
+        if (kind == fr.heraliz.crac.build.model.PieceKind.WINDOW) {
+            return state & ~Piece.INSERT_MASK;
+        }
+        return state;
     }
 
     /**

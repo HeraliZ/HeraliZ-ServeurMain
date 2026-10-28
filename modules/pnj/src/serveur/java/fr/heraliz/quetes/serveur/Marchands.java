@@ -63,7 +63,7 @@ final class Marchands {
         }
         if (p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis()) return Texte.cle("heraliz_quetes.marchand.regle.combat");
         if (Ponts.aTerre(p)) return Texte.cle("heraliz_quetes.marchand.regle.a_terre");
-        if (p.level().dimension().location().toString().equals("crac:bases")) return Texte.cle("heraliz_quetes.marchand.regle.tutoriel");
+        if (p.level().dimension().location().toString().equals("crac:bases") || p.level().dimension().location().toString().equals("crac:tuto")) return Texte.cle("heraliz_quetes.marchand.regle.tutoriel");
         if (p.level().dimension() == net.minecraft.world.level.Level.OVERWORLD) return Texte.cle("heraliz_quetes.marchand.regle.carte");
         return null;
     }
@@ -81,6 +81,11 @@ final class Marchands {
         }
         if (m.recyclage) {
             if (ouvrir) Recyclage.ouvrir(p, ent);
+            return;
+        }
+        // commissaire-priseur (28/10) : l'hôtel des ventes de HeraliZ Grades, avec ses propres règles (au spawn seulement)
+        if (m.hdv) {
+            if (ouvrir) Ponts.hdv(p);
             return;
         }
         OUVERTS.put(p.getUUID(), ent.getId());

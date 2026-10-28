@@ -48,5 +48,9 @@
   "economie.msg.admin.sauvegarde_forcee": "Lock lifted: the old file is kept as %s. Accounts saved.",
   "economie.msg.admin.sauvegarde_mise_de_cote_echec": "Could not set the old file aside (%s): saving stays blocked.",
   "economie.msg.admin.chargement_echoue": "HeraliZ Economy: %s could not be read at startup. All saves are blocked to protect balances. Fix the file then /eco recharger, or /eco sauvegarder --forcer to start over from the accounts in memory.",
-  "economie.msg.admin.info_bloque": "Saving blocked: file unreadable at startup (/eco recharger or /eco sauvegarder --forcer)."
+  "economie.msg.admin.info_bloque": "Saving blocked: file unreadable at startup (/eco recharger or /eco sauvegarder --forcer).",
+  "economie.msg.admin.login": "Log in first with /login.",
+  "economie.msg.admin.plafond": "Refused: %s's balance would exceed the cap (%s).",
+  "economie.msg.admin.recu": "The staff credited you %s (balance: %s).",
+  "economie.msg.admin.perdu": "The staff took %s from you (balance: %s)."
 }

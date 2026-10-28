@@ -493,8 +493,11 @@ TACZ = {
     "m9": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "m9__lore_display.json",
     "karambit": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "karambit__tiger_tooth_display.json",
     "butterfly": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "butterfly__fade_display.json",
-    "ct_knife": ARKANIAZ / "ct_knife_display.json",
-    "t_knife": ARKANIAZ / "t_knife_display.json",
+    # 28/10 : les affichages d'origine (arkaniaz/display/guns/ct_knife_display.json, t_knife_display.json) ont été
+    # retirés avec les couteaux de base (serveur/tacz_retires.txt) : on part d'un skin existant (même affichage, seule
+    # l'icône « slot » change, réécrite plus bas)
+    "ct_knife": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "ct_knife__blue_satin_display.json",
+    "t_knife": GUNPACK / "assets" / "heralisz_skins" / "display" / "guns" / "t_knife__desert_digital_display.json",
 }
 NOMS_TACZ = {
     "m9": ("M9 Bayonet", "M9 Bayonet", "M9 Bayonet"),
@@ -530,7 +533,11 @@ for _n, _cles in {
         "t_knife__red_splatter", "t_knife__inferno_circuit", "t_knife__desert_sakura", "t_knife__desert_digital",
         "m9__damascus_steel", "m9__battle_worn", "m9__shard", "m9__forest_ddpat", "m9__satin",
         "karambit__copper_patina", "butterfly__forest_camo", "karambit__arid_digital", "butterfly__blue_carbon",
-        "ct_knife__blue_satin", "ct_knife__blue_stripe", "ct_knife__steel_blue"],
+        "ct_knife__blue_satin", "ct_knife__blue_stripe", "ct_knife__steel_blue",
+        # 28/10 (liste du propriétaire) : couteaux du pack CS2 ; Push à 1 étoile par défaut
+        "cs2_push__blued_steel", "cs2_push__arctic_camo", "cs2_push__damascus", "cs2_push__rust_veil",
+        "cs2_skeleton__black_laminate", "cs2_skeleton__boreal_forest", "cs2_skeleton__crimson_web",
+        "cs2_stiletto__vendetta", "cs2_stiletto__nero_marble"],
     2: ["ct_knife__ranger_digital", "ct_knife__navy_worn", "ct_knife__cobalt_damascus", "ct_knife__ice_shard",
         "butterfly__marble_fade", "ct_knife__blue_circuit", "butterfly__neon_stripe", "karambit__coyote",
         "karambit__splatter", "creed__midnight_camo", "creed__freehand", "m9__night_ops", "m9__slaughter",
@@ -540,13 +547,21 @@ for _n, _cles in {
         "creed__frostbite", "creed__ink_splatter", "executor__urban_digital", "executor__charcoal_worn",
         "executor__violet_shard", "mercy__steel_worn", "sea_gleam__coral_worn", "sea_gleam__reef_splatter",
         "sea_gleam__deep_hammered", "tac_dagger__satin_bronze", "tac_dagger__snow_leopard",
-        "tac_dagger__tiger_stripe", "tac_dagger__urban_worn"],
+        "tac_dagger__tiger_stripe", "tac_dagger__urban_worn",
+        "cs2_push__tiger_tooth", "cs2_skeleton__ossuary", "cs2_skeleton__stained", "cs2_stiletto__rosso",
+        "cs2_stiletto__slaughter"],
     3: ["ct_knife__glacier_marble", "butterfly__polar_spray", "butterfly__scorched", "karambit__tiger_tooth",
         "m9__autotronic", "baseball_bat__graffiti", "baseball_bat__midnight_fade", "creed__blackout",
         "creed__imperial_marble", "sea_gleam__aquamarine", "executor__toxic_splatter", "executor__toxic_fade",
         "executor__hazard", "dragons_fang__citrine", "desmoulins_edge__rose_gold", "desmoulins_edge__silver_lore",
         "desmoulins_edge__molten_gold", "creed__twin_tone", "sea_gleam__navy", "sea_gleam__tidal_marble",
-        "m9__sakura"],
+        "m9__sakura",
+        "cs2_push__crimson_web", "cs2_push__marble_fade", "cs2_skeleton__fade", "cs2_skeleton__volt",
+        "cs2_stiletto__lore", "cs2_stiletto__mirage"],
+    # 4 étoiles (rappel, c'est aussi le rang par défaut) : Push Doppler Sapphire, Skeleton Case Hardened et Doppler Ruby,
+    # Stiletto Doppler Black Pearl et Gamma Doppler
+    4: ["cs2_push__doppler_sapphire", "cs2_skeleton__case_hardened_cs", "cs2_skeleton__doppler_ruby",
+        "cs2_stiletto__doppler_black_pearl", "cs2_stiletto__gamma_emerald"],
 }.items():
     for _c in _cles:
         assert _c not in ETOILES, "deux rangs pour " + _c

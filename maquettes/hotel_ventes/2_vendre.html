@@ -1,0 +1,91 @@
+﻿<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="hv.css"><title>Hôtel des ventes</title>
+<style>
+.inv { display: grid; grid-template-columns: repeat(9, 72px); gap: 8px; }
+.inv .case { width: 72px; height: 72px; background: rgba(255,255,255,.03); }
+.inv .case img { width: 58px; height: 58px; }
+.inv .vide::after { background: #2a2e36; }
+.inv .sel { outline: 2px solid var(--or); outline-offset: 2px; }
+.inv .bloque { opacity: .35; }
+.inv .n { position: absolute; right: 4px; bottom: 6px; font-size: 15px; font-weight: 700; }
+.champ { height: 52px; border: 1px solid #4a4f59; background: rgba(0,0,0,.3); display: flex; align-items: center; padding: 0 18px; font-size: 26px; font-weight: 700; gap: 12px; }
+.champ .curseur { width: 2px; height: 28px; background: var(--or); }
+</style></head><body>
+<div class="fond"></div>
+<div class="panneau">
+  <div class="entete">
+    <div class="logo"></div>
+    <div><div class="titre">Hôtel des ventes</div><div class="sous">Spawn · 214 offres en cours</div></div>
+    <div class="soldes">
+      <div class="solde"><div class="piece"></div><b>12 450</b> hérals</div>
+      <div class="solde"><div class="pbico">PB</div><b>320</b> PB</div>
+    </div>
+    <div class="fermer">×</div>
+  </div>
+  <div class="onglets">
+    <div class="onglet">ACHETER</div><div class="onglet actif">VENDRE</div><div class="onglet">MES VENTES<span class="pastille">2</span></div>
+  </div>
+
+  <div class="corps">
+    <div class="carte" style="flex:1; padding:28px; display:flex; flex-direction:column;">
+      <div class="label or">1 · Choisis un objet de ton inventaire</div>
+      <div class="gris" style="font-size:18px; margin:10px 0 24px">Les objets grisés ne peuvent pas être vendus.</div>
+      <div class="inv">
+        <div class="case r sel"><img src="icones/m4a1.png"></div>
+        <div class="case c"><img src="icones/glock_17.png"></div>
+        <div class="case p"><img src="icones/m870.png"></div>
+        <div class="case e"><img src="icones/scope_acog_ta31.png"></div>
+        <div class="case r"><img src="icones/muzzle_brake_pioneer.png"></div>
+        <div class="case c"><img src="icones/bandage.png"><span class="n">5</span></div>
+        <div class="case r"><img src="icones/ai2.png"><span class="n">2</span></div>
+        <div class="case p"><img src="icones/blood_pack.png"></div>
+        <div class="case vide"></div>
+        <div class="case r"><img src="icones/circuit_imprime_ii.png"><span class="n">4</span></div>
+        <div class="case e"><img src="icones/batterie_iii.png"><span class="n">2</span></div>
+        <div class="case r"><img src="icones/canon_iii.png"></div>
+        <div class="case e"><img src="icones/keycard_blue_front.png"></div>
+        <div class="case l bloque"><img src="icones/deagle.png"></div>
+        <div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div>
+        <div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div><div class="case vide"></div>
+      </div>
+      <div style="margin-top:auto; display:flex; gap:14px; align-items:center;" class="gris">
+        <div class="case l bloque" style="width:40px;height:40px"><img src="icones/deagle.png" style="width:32px;height:32px"></div>
+        <span style="font-size:18px">Desert Eagle · camo à vie : ne se vend pas (comme les objets à vie, prêtés par un match ou de quête)</span>
+      </div>
+    </div>
+
+    <div class="carte" style="width:600px; padding:26px 28px; display:flex; flex-direction:column; gap:12px;">
+      <div class="label or">2 · Fixe ton prix <span class="gris" style="float:right">ventes 3 / 5</span></div>
+      <div style="display:flex; gap:18px; align-items:center;">
+        <div class="case r" style="width:80px;height:80px"><img src="icones/m4a1.png" style="width:70px;height:70px"></div>
+        <div><div class="nom tr" style="font-size:26px">M4A1</div><div class="gris" style="font-size:18px;margin-top:6px">Usure 82 % · ACOG TA31, Pioneer</div><div class="gris" style="font-size:16px;margin-top:4px">Déchargée à la mise en vente : les balles te sont rendues</div></div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:10px">Monnaie</div>
+        <div class="choix"><div>Hérals</div><div class="on">PB</div></div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:10px">Prix</div>
+        <div class="champ">100<div class="curseur"></div><span style="margin-left:auto" class="pbico">PB</span></div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:10px">Durée</div>
+        <div class="choix"><div>12 h</div><div>24 h</div><div class="on">48 h</div></div>
+      </div>
+      <div class="sep"></div>
+      <div class="kv"><span class="gris">L'acheteur paie</span><span>110 PB</span></div>
+      <div class="kv" style="font-size:24px;font-weight:700"><span>Tu reçois</span><span style="color:var(--pb)">100 PB</span></div>
+      
+      <div style="margin-top:auto"><div class="bouton or">METTRE EN VENTE</div></div>
+    </div>
+  </div>
+
+  <div class="pied">
+    <div><span class="touche">CLIC</span>Choisir l'objet</div>
+    <div><span class="touche">ENTRÉE</span>Mettre en vente</div>
+    <div><span class="touche">ÉCHAP</span>Fermer</div>
+    <div class="droite">L'objet quitte ton inventaire tout de suite · retirable avant la vente</div>
+  </div>
+</div>
+</body></html>
+
+

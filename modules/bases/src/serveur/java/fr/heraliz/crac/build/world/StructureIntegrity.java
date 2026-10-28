@@ -153,8 +153,12 @@ public final class StructureIntegrity {
             }
             if (want.isEmpty()) {
                 StructureService.setBlockInternal(level, pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            } else if (!sameOccupants(want, be.occupants())) {
-                be.setOccupants(want);
+            } else {
+                if (!sameOccupants(want, be.occupants())) {
+                    be.setOccupants(want);
+                }
+                // HeraliZ (28/10) : les faces pleines de l'état suivent toujours l'occlusion d'aujourd'hui (fenêtres à
+                // barreaux posées avant : elles cachaient la vue) ; rien n'est écrit quand l'état est déjà le bon
                 StructureService.syncFaces(level, pos, be);
             }
         }

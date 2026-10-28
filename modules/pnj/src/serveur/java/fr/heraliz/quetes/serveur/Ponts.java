@@ -468,6 +468,18 @@ final class Ponts {
     }
 
     /** Ouvre la fiche technique des bases de CRac (/base info) chez le joueur ; false si impossible. */
+    private static Method hdvOuvrir;
+
+    /** Hôtel des ventes de HeraliZ Grades ({@code HdvApi.ouvrir}, par réflexion) ; sans le mod : rien. */
+    static void hdv(ServerPlayer p) {
+        try {
+            if (hdvOuvrir == null) hdvOuvrir = Class.forName("fr.heraliz.grades.serveur.HdvApi").getMethod("ouvrir", ServerPlayer.class);
+            hdvOuvrir.invoke(null, p);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            LOG.warn("[heraliz_quetes] hôtel des ventes indisponible ({})", e.toString());
+        }
+    }
+
     static boolean tutoFiche(ServerPlayer p) {
         if (!tuto() || tutoFiche == null) return false;
         try {

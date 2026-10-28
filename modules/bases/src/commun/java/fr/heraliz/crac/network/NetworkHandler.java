@@ -32,7 +32,7 @@ public final class NetworkHandler {
 
     public static final fr.heraliz.crac.pont.Crochet<Object> RECEPTION_CLIENT = new fr.heraliz.crac.pont.Crochet<>();
 
-    private static final String PROTOCOL = "27";
+    private static final String PROTOCOL = "28";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation("crac", "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     private NetworkHandler() {
@@ -82,6 +82,8 @@ public final class NetworkHandler {
         toClient(id++, S2CPurge.class, S2CPurge::encode, S2CPurge::decode, S2CPurge::handle);
         // zones où l'on ne construit pas, en rouge plan en main (27/10, protocole 26)
         toClient(id++, S2CZonesInterdites.class, S2CZonesInterdites::encode, S2CZonesInterdites::decode, S2CZonesInterdites::handle);
+        // sens des objets collés aux murs, touche R (28/10, protocole 28)
+        toServer(id++, C2SRotationObjet.class, C2SRotationObjet::encode, C2SRotationObjet::decode, C2SRotationObjet::handle);
     }
 
     private static <M> void toServer(

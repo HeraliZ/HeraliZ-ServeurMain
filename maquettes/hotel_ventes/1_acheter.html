@@ -1,0 +1,86 @@
+﻿<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="hv.css"><title>Hôtel des ventes</title></head><body>
+<div class="fond"></div>
+<div class="panneau">
+  <div class="entete">
+    <div class="logo"></div>
+    <div><div class="titre">Hôtel des ventes</div><div class="sous">Spawn · 214 offres en cours</div></div>
+    <div class="soldes">
+      <div class="solde"><div class="piece"></div><b>12 450</b> hérals</div>
+      <div class="solde"><div class="pbico">PB</div><b>320</b> PB</div>
+    </div>
+    <div class="fermer">×</div>
+  </div>
+  <div class="onglets">
+    <div class="onglet actif">ACHETER</div><div class="onglet">VENDRE</div><div class="onglet">MES VENTES<span class="pastille">2</span></div>
+  </div>
+
+  <div class="corps">
+    <!-- filtres -->
+    <div style="width:300px; display:flex; flex-direction:column; gap:22px;">
+      <div class="recherche"><div class="loupe"></div>Rechercher un objet…</div>
+      <div>
+        <div class="label" style="margin-bottom:10px">Catégories</div>
+        <div class="cat actif">Tout <span>214</span></div>
+        <div class="cat">Armes <span>48</span></div>
+        <div class="cat">Accessoires <span>61</span></div>
+        <div class="cat">Armures <span>33</span></div>
+        <div class="cat">Soins <span>27</span></div>
+        <div class="cat">Composants <span>30</span></div>
+        <div class="cat">Cartes et divers <span>15</span></div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:10px">Payer en</div>
+        <div class="choix"><div class="on">Tout</div><div>Hérals</div><div>PB</div></div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:10px">Trier par</div>
+        <div class="choix"><div class="on">Récent</div><div>Prix ↑</div><div>Prix ↓</div></div>
+      </div>
+    </div>
+
+    <!-- liste -->
+    <div class="carte liste" style="flex:1;">
+      <div class="tab-tete label"><div></div><div>Objet</div><div>Vendeur</div><div>Reste</div><div style="text-align:right">Prix</div></div>
+      <div class="ligne"><div class="case l"><img src="icones/hk416d.png"></div><div class="nom tl">HK416D</div><div class="gris">Korvin</div><div class="gris">22 h</div><div class="prix">450 <div class="pbico">PB</div></div></div>
+      <div class="ligne sel"><div class="case r"><img src="icones/m4a1.png"></div><div class="nom tr">M4A1</div><div class="gris">Sacha_77</div><div class="gris">17 h</div><div class="prix">100 <div class="pbico">PB</div></div></div>
+      <div class="ligne"><div class="case r"><img src="icones/ak47.png"></div><div class="nom tr">AK-47</div><div class="gris">Lynx</div><div class="gris">9 h</div><div class="prix">18 000 <div class="piece"></div></div></div>
+      <div class="ligne"><div class="case e"><img src="icones/scope_elcan_4x.png"></div><div class="nom te">Lunette Elcan 4×</div><div class="gris">Brouillard</div><div class="gris">31 h</div><div class="prix">6 500 <div class="piece"></div></div></div>
+      <div class="ligne"><div class="case r"><img src="icones/keycard_green_front.png"></div><div class="nom tr">Carte d'accès verte</div><div class="gris">Nox</div><div class="gris">40 h</div><div class="prix">60 <div class="pbico">PB</div></div></div>
+      <div class="ligne"><div class="case p"><img src="icones/ump45.png"></div><div class="nom tp">UMP-45</div><div class="gris">Korvin</div><div class="gris">5 h</div><div class="prix">4 200 <div class="piece"></div></div></div>
+      <div class="ligne"><div class="case r"><img src="icones/ai2.png"></div><div class="nom tr">Trousse AI-2<span class="qte">×3</span></div><div class="gris">Méduse</div><div class="gris">12 h</div><div class="prix">1 800 <div class="piece"></div></div></div>
+      <div class="ligne"><div class="case r"><img src="icones/canon_iii.png"></div><div class="nom tr">Canon III<span class="qte">×2</span></div><div class="gris">Lynx</div><div class="gris">28 h</div><div class="prix">3 100 <div class="piece"></div></div></div>
+      <div class="bas">Page 1 / 22 · molette pour défiler</div>
+    </div>
+
+    <!-- détail -->
+    <div class="carte" style="width:430px; padding:26px; display:flex; flex-direction:column;">
+      <div class="label or">Offre choisie</div>
+      <div style="display:flex; gap:20px; align-items:center; margin-top:20px;">
+        <div class="case r" style="width:110px;height:110px"><img src="icones/m4a1.png" style="width:96px;height:96px"></div>
+        <div><div class="nom tr" style="font-size:28px">M4A1</div><div class="etoile tr" style="margin-top:8px">RARE</div><div class="gris" style="font-size:18px;margin-top:6px">Vendu par Sacha_77</div></div>
+      </div>
+      <div style="margin-top:22px">
+        <div class="kv"><span class="gris">Usure</span><span>82 %</span></div>
+        <div class="kv"><span class="gris">Accessoires</span><span>ACOG TA31, Pioneer</span></div>
+        <div class="kv"><span class="gris">Munitions</span><span>déchargée</span></div>
+      </div>
+      <div class="sep"></div>
+      <div class="kv"><span class="gris">Prix du vendeur</span><span>100 PB</span></div>
+      <div class="kv"><span class="gris">Frais (10 %)</span><span>+ 10 PB</span></div>
+      <div class="kv" style="font-size:24px;font-weight:700"><span>Tu paies</span><span style="color:var(--pb)">110 PB</span></div>
+      <div class="kv"><span class="gris">Solde après l'achat</span><span>210 PB</span></div>
+      <div style="margin-top:auto"><div class="bouton or">ACHETER · 110 PB</div>
+      <div class="gris" style="font-size:16px;text-align:center;margin-top:12px">Deuxième clic pour confirmer (5 s)</div></div>
+    </div>
+  </div>
+
+  <div class="pied">
+    <div><span class="touche">ÉCHAP</span>Fermer</div>
+    <div><span class="touche">MOLETTE</span>Défiler</div>
+    <div><span class="touche">CLIC ×2</span>Acheter</div>
+    <div class="droite">Objet livré dans ton inventaire, ou dans Mes ventes s'il est plein</div>
+  </div>
+</div>
+</body></html>
+
+

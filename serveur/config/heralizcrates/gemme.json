@@ -5,217 +5,280 @@
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:butterfly__blue_carbon\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:butterfly__forest_camo\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:ct_knife__blue_satin\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:ct_knife__blue_stripe\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:ct_knife__steel_blue\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:karambit__arid_digital\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:karambit__copper_patina\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:m9__battle_worn\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:m9__damascus_steel\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:m9__forest_ddpat\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:m9__satin\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:m9__shard\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:t_knife__desert_digital\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:t_knife__desert_sakura\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:t_knife__inferno_circuit\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:t_knife__red_splatter\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:t_knife__red_worn\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "tacz:modern_kinetic_gun",
       "count": 1,
       "nbt": "{GunId:\"heralisz_skins:t_knife__sunburst\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat__graphite\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat__red_crackle\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat__slugger_stripes\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:baseball_bat__walnut\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:creed__hammered_steel\"}",
-      "weight": 1700,
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__arctic_camo\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__blued_steel\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__damascus\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__rust_veil\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__black_laminate\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__boreal_forest\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__crimson_web\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__nero_marble\"}",
+      "weight": 1202,
+      "rarity": "uncommon"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__vendetta\"}",
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:desmoulins_edge__ash\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:desmoulins_edge__night_digital\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:dragons_fang__dragon_gold\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:dragons_fang__forged_damascus\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:mercy__celestial_shard\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:mercy__snow_camo\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:sea_gleam__tide_stripe\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:tac_dagger__ember_shard\"}",
-      "weight": 1700,
+      "weight": 1202,
       "rarity": "uncommon"
     },
     {
@@ -348,6 +411,41 @@
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:creed__midnight_camo\"}",
+      "weight": 800,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__tiger_tooth\"}",
+      "weight": 800,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__ossuary\"}",
+      "weight": 800,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__stained\"}",
+      "weight": 800,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__rosso\"}",
+      "weight": 800,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__slaughter\"}",
       "weight": 800,
       "rarity": "epic"
     },
@@ -551,6 +649,48 @@
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:creed__twin_tone\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__crimson_web\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__marble_fade\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__fade\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__volt\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__lore\"}",
+      "weight": 500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_tactical:melee",
+      "count": 1,
+      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__mirage\"}",
       "weight": 500,
       "rarity": "legendary"
     },
@@ -816,70 +956,7 @@
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__arctic_camo\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__blued_steel\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__crimson_web\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__damascus\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__doppler_sapphire\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__marble_fade\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__rust_veil\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_push__tiger_tooth\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__black_laminate\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__boreal_forest\"}",
       "weight": 120,
       "rarity": "mythic"
     },
@@ -893,42 +970,7 @@
     {
       "item": "heralisz_tactical:melee",
       "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__crimson_web\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__doppler_ruby\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__fade\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__ossuary\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__stained\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_skeleton__volt\"}",
       "weight": 120,
       "rarity": "mythic"
     },
@@ -943,48 +985,6 @@
       "item": "heralisz_tactical:melee",
       "count": 1,
       "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__gamma_emerald\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__lore\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__mirage\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__nero_marble\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__rosso\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__slaughter\"}",
-      "weight": 120,
-      "rarity": "mythic"
-    },
-    {
-      "item": "heralisz_tactical:melee",
-      "count": 1,
-      "nbt": "{MeleeWeaponId:\"heralisz_melee:cs2_stiletto__vendetta\"}",
       "weight": 120,
       "rarity": "mythic"
     },

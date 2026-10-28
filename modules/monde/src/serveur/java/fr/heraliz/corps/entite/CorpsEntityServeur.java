@@ -70,6 +70,7 @@ public class CorpsEntityServeur extends CorpsEntity {
         contenu.surChangement(this::contenuChange);
         this.entityData.set(DATA_EXPIRE, maintenant + CorpsConfig.DISPARITION_MIN.get() * 60L * 20L);
         this.entityData.set(DATA_VIDE, contenu.isEmpty());
+        if (contenu.isEmpty()) raccourcirVide();
         majTenue();
     }
 
@@ -88,6 +89,7 @@ public class CorpsEntityServeur extends CorpsEntity {
         contenu.surChangement(this::contenuChange);
         this.entityData.set(DATA_EXPIRE, maintenant + CorpsConfig.DISPARITION_MIN.get() * 60L * 20L);
         this.entityData.set(DATA_VIDE, contenu.isEmpty());
+        if (contenu.isEmpty()) raccourcirVide();
         majTenue();
     }
 
@@ -133,15 +135,23 @@ public class CorpsEntityServeur extends CorpsEntity {
         return reste;
     }
 
-    /** Appele a chaque modification du contenu (prise d'objet) : un corps vide disparait peu apres. */
+    /**
+     * Appele a chaque modification du contenu (prise d'objet) : un corps vide disparait (28/10 : tout de suite par defaut).
+     * <p>Cause du « corps vide qui reste » : la disparition n'etait verifiee que par le tick de l'entite, une fois par seconde.
+     * Or sous Mohist (spigot.yml, {@code entity-activation-range.misc} = 16), une entite « divers » loin des joueurs n'est
+     * plus du tout tickee : un corps vide reste jusqu'a ce que quelqu'un revienne a 16 blocs. Un corps cree ou recharge vide
+     * gardait en plus son minuteur de 10 min (le minuteur n'etait raccourci que si le corps PASSAIT de plein a vide). La
+     * disparition passe maintenant par une tache du serveur (tick suivant), qui ne depend pas du tick de l'entite.
+     */
     private void contenuChange() {
         if (contenu == null || level().isClientSide) return;
         boolean vide = contenu.isEmpty();
         if (vide && !entityData.get(DATA_VIDE)) {
-            long fin = level().getGameTime() + CorpsConfig.DISPARITION_VIDE_S.get() * 20L;
-            if (fin < expire()) entityData.set(DATA_EXPIRE, fin);
             entityData.set(DATA_VIDE, true);
             HeralizCorps.LOG.info("[corps] corps n{} de {} vide : disparition dans {} s", numero, nom, CorpsConfig.DISPARITION_VIDE_S.get());
+            raccourcirVide();
+        } else if (!vide && entityData.get(DATA_VIDE)) {
+            entityData.set(DATA_VIDE, false);
         }
         majTenue();
         if (level() instanceof ServerLevel sl) {
@@ -149,6 +159,26 @@ public class CorpsEntityServeur extends CorpsEntity {
             r.objets(getUUID(), contenu.nbObjets());
             r.expire(getUUID(), expire());
         }
+    }
+
+    /**
+     * Corps vide : minuteur ramene a {@code disparition_vide_secondes}. Avec 0 (defaut), disparition planifiee par le
+     * serveur lui-meme au tick suivant, sans attendre le tick de l'entite (voir contenuChange). Avec un delai, c'est le
+     * tick de l'entite qui s'en charge (seconde) : une tache « dans N ticks » peut etre jouee plus tot par le serveur.
+     */
+    private void raccourcirVide() {
+        long delai = CorpsConfig.DISPARITION_VIDE_S.get() * 20L;
+        long fin = level().getGameTime() + delai;
+        if (fin < expire()) entityData.set(DATA_EXPIRE, fin);
+        if (delai > 0 || !(level() instanceof ServerLevel sl)) return;
+        net.minecraft.server.MinecraftServer serveur = sl.getServer();
+        serveur.tell(new net.minecraft.server.TickTask(serveur.getTickCount() + 1, this::retirerSiVide));
+    }
+
+    /** Tache planifiee (une seule fois) : retire le corps s'il est toujours vide. */
+    private void retirerSiVide() {
+        if (isRemoved() || contenu == null || !contenu.isEmpty()) return;
+        disparaitre("vide");
     }
 
     /** Force la fin du minuteur (banc d'essai). */
@@ -213,6 +243,15 @@ public class CorpsEntityServeur extends CorpsEntity {
             return false;
         }
         if (a == Registre.Action.VIDER) vider();
+        if (contenu.isEmpty()) {
+            // cree ou recharge vide : rien a fouiller, il disparait (tout de suite avec le reglage par defaut)
+            entityData.set(DATA_VIDE, true);
+            if (CorpsConfig.DISPARITION_VIDE_S.get() <= 0) {
+                disparaitre("vide");
+                return false;
+            }
+            raccourcirVide();
+        }
         return true;
     }
 
@@ -297,6 +336,7 @@ public class CorpsEntityServeur extends CorpsEntity {
         contenu = CorpsContenu.charger(t.getCompound("Contenu"));
         contenu.surChangement(this::contenuChange);
         entityData.set(DATA_VIDE, contenu.isEmpty());
+        // corps recharge vide (sauvegarde d'avant le 28/10) : il part au premier tick (accueillir)
         majTenue();
     }
 

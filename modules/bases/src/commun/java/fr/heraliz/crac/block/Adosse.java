@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -33,6 +34,16 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class Adosse {
     public static final IntegerProperty ADOSSE = IntegerProperty.create("adosse", 0, 8);
+    /**
+     * Objet posé sur un plancher à mi-bloc (HeraliZ, 28/10, demande du propriétaire : un plancher posé sur des demi-murs a
+     * son dessus au milieu d'une case ; avant, rien ne s'y posait ou l'objet flottait). L'objet reste dans la case du
+     * dessus, mais son modèle ET sa forme (collision, visée) descendent d'un demi-bloc ({@link #DEMI} px) : le bas du
+     * modèle est sur le vrai dessus du plancher. Gardé dans l'état du bloc (sauvegarde, envoi aux joueurs). Coffres et
+     * caisse en métal seulement ({@link #peutDescendre}).
+     */
+    public static final BooleanProperty BAS = BooleanProperty.create("bas");
+    /** Descente d'un objet {@link #BAS} : un demi-bloc (px), la hauteur du dessus d'un plancher posé sur des demi-murs. */
+    public static final double DEMI = 8.0;
     public static final int AUCUN = 4;
     /** Bord de la boîte poussée (px de la case de l'objet) : face du mur de la case voisine moins 0,25 px. */
     static final double LIMITE_HAUT = 29.75, LIMITE_BAS = -13.75;
@@ -66,7 +77,8 @@ public final class Adosse {
             && avant.hasProperty(ClaimBlock.FACING) && apres.hasProperty(ClaimBlock.FACING)
             && avant.getValue(ClaimBlock.FACING) == apres.getValue(ClaimBlock.FACING)
             && avant.hasProperty(ADOSSE) && apres.hasProperty(ADOSSE)
-            && avant.getValue(ADOSSE).intValue() == apres.getValue(ADOSSE).intValue();
+            && avant.getValue(ADOSSE).intValue() == apres.getValue(ADOSSE).intValue()
+            && bas(avant) == bas(apres);
         if (!meme) {
             changement();
         }
@@ -84,6 +96,42 @@ public final class Adosse {
         default double dessous(BlockState state) {
             return 0;
         }
+    }
+
+    /** L'objet de cet état est descendu sur un plancher à mi-bloc ({@link #BAS}). */
+    public static boolean bas(BlockState s) {
+        return s.hasProperty(BAS) && s.getValue(BAS);
+    }
+
+    /** Ce bloc sait descendre sur un plancher à mi-bloc (coffres, caisse en métal). */
+    public static boolean peutDescendre(net.minecraft.world.level.block.Block b) {
+        return b.defaultBlockState().hasProperty(BAS);
+    }
+
+    /**
+     * Pose en {@code pos} : l'objet doit descendre ({@link #BAS}) quand la case dessous est une case de construction dont un
+     * plancher a son dessus au milieu ({@link StructureBlock#tientEnBas}).
+     */
+    public static boolean doitDescendre(BlockGetter level, BlockPos pos) {
+        return StructureBlock.tientEnBas(level, pos.below());
+    }
+
+    /**
+     * L'objet descendu ne rentre dans rien de la case de construction de sa colonne, sous lui (mur, demi-mur ou rampe qui
+     * dépasse du plancher) : sa boîte, poussée comprise, ne touche pas leur collision. Vrai pour un objet qui n'est pas
+     * descendu.
+     */
+    public static boolean libreDessous(BlockGetter level, BlockPos pos, BlockState etat) {
+        if (!bas(etat)) {
+            return true;
+        }
+        AABB boite = boiteMonde(etat, pos).deflate(1.0E-4);
+        BlockPos c = pos.below();
+        if (!(level.getBlockEntity(c) instanceof fr.heraliz.crac.build.world.StructureBlockEntity be)) {
+            return false;
+        }
+        VoxelShape pieces = be.shape();
+        return pieces.isEmpty() || !Shapes.joinIsNotEmpty(pieces.move(c.getX(), c.getY(), c.getZ()), Shapes.create(boite), BooleanOp.AND);
     }
 
     public static int sx(int v) {
@@ -140,6 +188,18 @@ public final class Adosse {
         return t;
     }
 
+    /** Les formes d'une table {@link #formesDecalees} descendues d'un demi-bloc ({@link #BAS}). */
+    public static VoxelShape[][] descendre(VoxelShape[][] t) {
+        VoxelShape[][] out = new VoxelShape[t.length][];
+        for (int i = 0; i < t.length; i++) {
+            out[i] = new VoxelShape[t[i].length];
+            for (int j = 0; j < t[i].length; j++) {
+                out[i][j] = t[i][j].move(0, -DEMI / 16.0, 0);
+            }
+        }
+        return out;
+    }
+
     /** Boîte de l'objet dans le monde (son modèle et sa forme), décalage compris. */
     public static AABB boiteMonde(BlockState s, BlockPos pos) {
         Adossable a = (Adossable) s.getBlock();
@@ -178,7 +238,7 @@ public final class Adosse {
         for (int[] c : new int[][]{{x, z}, {x, 0}, {0, z}}) {
             if ((c[0] != 0 || c[1] != 0)) {
                 BlockState essai = etat.setValue(ADOSSE, code(c[0], c[1]));
-                if (tient(level, pos, essai)) {
+                if (tient(level, pos, essai) && appuye(level, List.of(pos), essai)) {
                     return code(c[0], c[1]);
                 }
             }
@@ -186,12 +246,68 @@ public final class Adosse {
         return AUCUN;
     }
 
-    private static int axe(BlockGetter level, BlockPos pos, Direction plus, double clic) {
-        boolean p = estStructure(level, pos.relative(plus)), m = estStructure(level, pos.relative(plus.getOpposite()));
-        if (p && m) {
-            return clic >= 0 ? 1 : -1;
+    /**
+     * Part de la case visée, de chaque côté, où un clic pousse l'objet vers le mur de ce côté (HeraliZ, 28/10). Avant,
+     * n'importe quel clic dans une case libre bordée de murs poussait l'objet de près d'un bloc vers le mur (du côté de la
+     * moitié visée) : un coffre visé au milieu d'une pièce partait contre un mur ou dans un angle. Un clic au milieu de la
+     * case le laisse au milieu ; viser la case du mur (ou le quart de la case contre lui) le colle au mur.
+     */
+    static final double BORD_CLIC = 0.25;
+
+    /**
+     * L'objet poussé ({@link #ADOSSE}) touche vraiment, de chaque côté où il est poussé, la forme d'une pièce de
+     * construction (HeraliZ, 28/10) : la poussée est faite pour un mur droit au bord d'une fondation (face à 0,25 px) ; vers
+     * une case de construction qui n'a pas de mur à cet endroit (rampe, escalier, mur de biais d'un triangle, plancher), il
+     * restait un vide ou l'objet partait de travers. {@code cases} : les cases de l'objet (deux pour un coffre de deux cases).
+     */
+    public static boolean appuye(BlockGetter level, List<BlockPos> cases, BlockState etat) {
+        int v = etat.getValue(ADOSSE);
+        if (v == AUCUN) {
+            return true;
         }
-        return p ? 1 : m ? -1 : 0;
+        int x = sx(v), z = sz(v);
+        boolean okX = x == 0, okZ = z == 0;
+        double e = 1.0 / 16.0;   // un pixel au-delà de la boîte
+        for (BlockPos pos : cases) {
+            BlockState s = etat.getBlock() instanceof CoffreBlock && !pos.equals(cases.get(0)) ? etat.setValue(CoffreBlock.ANNEXE, true) : etat;
+            AABB b = boiteMonde(s, pos).deflate(1.0E-3);
+            if (!okX) {
+                AABB tranche = x > 0 ? new AABB(b.maxX, b.minY, b.minZ, b.maxX + e, b.maxY, b.maxZ)
+                    : new AABB(b.minX - e, b.minY, b.minZ, b.minX, b.maxY, b.maxZ);
+                okX = touchePiece(level, tranche);
+            }
+            if (!okZ) {
+                AABB tranche = z > 0 ? new AABB(b.minX, b.minY, b.maxZ, b.maxX, b.maxY, b.maxZ + e)
+                    : new AABB(b.minX, b.minY, b.minZ - e, b.maxX, b.maxY, b.minZ);
+                okZ = touchePiece(level, tranche);
+            }
+        }
+        return okX && okZ;
+    }
+
+    /** Une pièce de construction (pas un objet adossé) occupe une partie de cette boîte. */
+    private static boolean touchePiece(BlockGetter level, AABB boite) {
+        for (BlockPos c : BlockPos.betweenClosed(BlockPos.containing(boite.minX, boite.minY, boite.minZ),
+            BlockPos.containing(boite.maxX, boite.maxY, boite.maxZ))) {
+            if (level.getBlockEntity(c) instanceof fr.heraliz.crac.build.world.StructureBlockEntity be) {
+                VoxelShape p = be.shape();
+                if (!p.isEmpty() && Shapes.joinIsNotEmpty(p.move(c.getX(), c.getY(), c.getZ()), Shapes.create(boite), BooleanOp.AND)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Côté (1, -1) vers lequel pousser sur un axe : le mur du côté du quart de case visé ({@link #BORD_CLIC}), sinon 0. */
+    private static int axe(BlockGetter level, BlockPos pos, Direction plus, double clic) {
+        if (clic >= 0.5 - BORD_CLIC) {
+            return estStructure(level, pos.relative(plus)) ? 1 : 0;
+        }
+        if (clic <= -(0.5 - BORD_CLIC)) {
+            return estStructure(level, pos.relative(plus.getOpposite())) ? -1 : 0;
+        }
+        return 0;   // clic au milieu de la case : pas de poussée de ce côté
     }
 
     /**
@@ -252,8 +368,9 @@ public final class Adosse {
                     m.set(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz);
                     BlockState s = level.getBlockState(m);
                     // la case du haut de l'armoire est comptée avec sa case du bas (boîte de toute l'armoire)
+                    // un objet descendu ({@link #BAS}) dépasse dans la case dessous, même sans être poussé
                     if (s.getBlock() instanceof Adossable && !(s.getBlock() instanceof ClaimBlockHaut)
-                        && s.hasProperty(ADOSSE) && s.getValue(ADOSSE) != AUCUN) {
+                        && s.hasProperty(ADOSSE) && (s.getValue(ADOSSE) != AUCUN || bas(s))) {
                         BlockPos p = m.immutable();
                         out.add(new Voisin(p, s, boiteMonde(s, p)));
                     }
@@ -343,7 +460,9 @@ public final class Adosse {
                 }
                 // HeraliZ (28/10) : seulement une case qui le porte (fondation, plancher plein) ; avant, un objet visé
                 // sur un plancher de demi-mur sous un autre plancher partait dans une case voisine, parfois en l'air
-                libre = libre && fr.heraliz.crac.placable.PlacableSupport.isSupported(level, c, etat);
+                // (28/10) un coffre ou une caisse descend sur un plancher à mi-bloc (BAS) : la case est jugée comme il s'y poserait
+                BlockState ici = etat.hasProperty(BAS) ? etat.setValue(BAS, doitDescendre(level, c)) : etat;
+                libre = libre && fr.heraliz.crac.placable.PlacableSupport.isSupported(level, c, ici);
                 double d = Vec3.atCenterOf(c).distanceToSqr(oeil);
                 if (libre && d < bestD) {
                     bestD = d;

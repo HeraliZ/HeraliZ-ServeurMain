@@ -127,6 +127,7 @@ public final class HeralizLoot {
         ENTITES.register(bus);
         MENUS.register(bus);
         SonsLoot.SONS.register(bus);
+        ParticulesLoot.PARTICULES.register(bus);
         // raretés des objets envoyées aux joueurs (fond des cases, infobulle)
         ReseauLoot.enregistrer();
         // accroupi avec un objet en main, le clic droit ouvre quand même les conteneurs (des deux côtés)

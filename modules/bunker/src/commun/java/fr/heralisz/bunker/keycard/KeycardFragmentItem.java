@@ -2,10 +2,6 @@ package fr.heralisz.bunker.keycard;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -16,10 +12,9 @@ import java.util.List;
 
 /**
  * Fragment numéroté (1 à 4) d'une carte d'accès, trouvé dans le loot de la carte. Les 4 fragments DIFFÉRENTS d'une même
- * carte donnent la carte : Table d'armurier, onglet Divers (26/10 ; recette écrite par outils/crafts.py, l'ancienne
- * recette de la grille 2 x 2 est retirée) ou clic droit
- * avec un fragment en main quand les 4 numéros sont dans l'inventaire (décidé par le serveur, FragmentsPont). Plusieurs
- * fois le même numéro ne sert à rien. Nom en couleur de rareté par HeraliZ Loot (raretes.json, outils/loot_armes.py).
+ * carte donnent la carte, seulement à la Table d'armurier, onglet Divers (26/10 ; recette écrite par outils/crafts.py ;
+ * l'ancienne recette de la grille 2 x 2 et l'assemblage au clic droit sont retirés, le 28/10 pour le clic droit).
+ * Plusieurs fois le même numéro ne sert à rien. Nom en couleur de rareté par HeraliZ Loot (raretes.json, outils/loot_armes.py).
  */
 public class KeycardFragmentItem extends Item {
    public static final int MORCEAUX = 4;
@@ -32,17 +27,6 @@ public class KeycardFragmentItem extends Item {
       this.numero = numero;
    }
 
-   @Override
-   public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-      ItemStack stack = player.getItemInHand(hand);
-      for (int n = 1; n <= MORCEAUX; n++) {
-         player.getCooldowns().addCooldown(KeycardRegistry.fragment(this.level, n), 10);   // pas de clics en rafale
-      }
-      if (!world.isClientSide && player instanceof ServerPlayer sp) {
-         FragmentsPont.assembler(sp, this.level);
-      }
-      return InteractionResultHolder.sidedSuccess(stack, world.isClientSide);
-   }
 
    @Override
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {

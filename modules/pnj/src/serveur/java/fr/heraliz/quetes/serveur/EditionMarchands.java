@@ -124,7 +124,7 @@ final class EditionMarchands {
 
     private static JsonObject versJson(Defs.Marchand m) {
         JsonObject o = new JsonObject();
-        o.addProperty("type", m.troc ? "troc" : m.rachat ? "rachat" : "achat");
+        o.addProperty("type", m.hdv ? "hdv" : m.recyclage ? "recyclage" : m.troc ? "troc" : m.rachat ? "rachat" : "achat");
         // les deux listes sont gardées quand elles ne sont pas vides : changer le rôle d'un marchand créé ne perd rien
         if (m.rachat || !m.regles.isEmpty()) {
             JsonArray l = new JsonArray();

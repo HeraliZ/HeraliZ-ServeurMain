@@ -5,31 +5,31 @@
       "item": {
         "item": "heraliz_composants:metal_renforce"
       },
-      "count": 6
+      "count": 12
     },
     {
       "item": {
         "item": "heraliz_composants:fil_souder"
       },
-      "count": 3
+      "count": 6
     },
     {
       "item": {
         "item": "heraliz_composants:ferraille_iv"
       },
-      "count": 4
+      "count": 8
     },
     {
       "item": {
         "item": "heraliz_composants:kit_pieces_iv"
       },
-      "count": 2
+      "count": 4
     },
     {
       "item": {
         "item": "heraliz_composants:circuit_imprime_iv"
       },
-      "count": 1
+      "count": 2
     }
   ],
   "result": {

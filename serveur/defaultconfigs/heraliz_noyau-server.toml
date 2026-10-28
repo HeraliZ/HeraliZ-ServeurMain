@@ -37,9 +37,9 @@
 
 [survie]
 	#Vitesse de la faim (25/10) : la fatigue de Minecraft (course, sauts, coups, vie qui remonte) est
-	#multipliée par ce nombre. 1 : comme Minecraft ; 0,5 : la barre de faim dure deux fois plus longtemps.
+	#multipliée par ce nombre. 1 : comme Minecraft ; 0,35 (28/10) : la barre de faim dure environ trois fois plus longtemps.
 	#Range: 0.1 ~ 2.0
-	faim_facteur = 0.5
+	faim_facteur = 0.35
 
 [succes]
 	#Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à
@@ -53,7 +53,7 @@
 	level_dat_en_fond = true
 	#Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est
 	#libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.
-	mondes_sans_spawn = ["crac:bases", "heraliz_clashwar:arenes"]
+	mondes_sans_spawn = ["crac:bases", "crac:tuto", "heraliz_clashwar:arenes"]
 
 [redemarrage]
 	#/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait

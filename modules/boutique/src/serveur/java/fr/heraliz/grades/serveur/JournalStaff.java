@@ -82,7 +82,16 @@ final class JournalStaff {
 
     /** Note une action réussie (fichier, mémoire, console du serveur). */
     static ReseauStaff.Ligne noter(String staff, String grade, ActionStaff a, String cible, String detail, String raison) {
-        ReseauStaff.Ligne l = new ReseauStaff.Ligne(System.currentTimeMillis(), champ(staff), champ(grade), a.id, champ(cible), champ(detail), champ(raison));
+        return noterId(staff, grade, a.id, cible, detail, raison);
+    }
+
+    /**
+     * Comme {@link #noter}, avec un identifiant d'action libre (28/10 : {@code perm_commande} quand le Fondateur donne ou
+     * retire une commande à un grade, {@code commande} quand un grade utilise une commande donnée).
+     */
+    static ReseauStaff.Ligne noterId(String staff, String grade, String action, String cible, String detail, String raison) {
+        ReseauStaff.Ligne l = new ReseauStaff.Ligne(System.currentTimeMillis(), champ(staff), champ(grade), champ(action), champ(cible), champ(detail),
+                champ(raison));
         garder(l);
         String texte = LocalDateTime.now().format(DATE) + " | " + l.staff() + " | " + l.grade() + " | " + l.action() + " | " + l.cible() + " | "
                 + l.detail() + " | " + l.raison();

@@ -22,6 +22,8 @@ public class HeralizGrades {
       ObjetRegistre.OBJETS.register(bus);
       ReseauGrades.enregistrer();
       fr.heraliz.grades.reseau.ReseauBoutique.enregistrer();
+      // hôtel des ventes (2.9.0) : canal à part
+      fr.heraliz.grades.reseau.ReseauHdv.enregistrer();
       // bons réglés par les op (2.5.0) : objet, effet « Bonus de loot », canal de l'éditeur
       fr.heraliz.grades.bon.ObjetBon.OBJETS.register(bus);
       fr.heraliz.grades.bon.ObjetBon.EFFETS.register(bus);

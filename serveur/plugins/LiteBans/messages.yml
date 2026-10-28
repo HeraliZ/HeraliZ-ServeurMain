@@ -86,34 +86,10 @@ default_unban_reason: No Reason
 default_unmute_reason: No Reason
 default_unwarn_reason: No Reason
 
-banned_message_base: |
-  #FFEE59⚡  #fb0000&l$serverOrigin&r  #FFEE59⚡
-  &f&m                   &r
-
-  &f❕ #fc5555&lʏᴏᴜ'ʀᴇ ʙᴀɴɴᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ sᴇʀᴠᴇʀ&r &f❕
-
-  #fc5555👤 &fᴜsᴇʀɴᴀᴍᴇ &8→ #fc5555$playerName &8←
-  #fc5555⌚ &fᴘᴜɴɪsʜᴇᴅ ᴏɴ &8→ #fc5555$dateStart &8←
-  #fc5555🛠 &fᴘᴜɴɪsʜᴇᴅ ʙʏ &8→ #fc5555$executor &8←
-  #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason &8←
-
-  &f&m                                              &r
-
-  #fc5555📆 &fᴇxᴘɪʀʏ ᴅᴀᴛᴇ &8→ #fc5555$dateEnd &8←
-  #fc5555⌛ &fᴇxᴘɪʀᴇs ɪɴ &8→ #fc5555$duration &8←
-
-  &f&m                                              &r
-
-  #fc5555ℹ &fᴘᴜɴɪsʜᴍᴇɴᴛ ɪᴅ &8→ #fc5555$id &8←
-banned_message: |
-  $base
-  $appealMessage
-banned_message_permanent: |
-  $base
-  &f❕  #fc5555&lᴛʜɪs ᴘᴜɴɪsʜᴍᴇɴᴛ ɪs ᴘᴇʀᴍᴀɴᴇɴᴛ&r  &f❕
-  $appealMessage
-banned_message_appeal_message: '#fc5555✉ &fᴀᴘᴘᴇᴀʟ &8→ #fc5555ᴀᴘᴘᴇᴀʟ.sᴇʀᴠᴇʀɴᴀᴍᴇ.ɴᴇᴛ
-  &8←'
+banned_message_base: '&cTu es banni de HeraliZ.\n&7Raison : &f$reason\n&7Fin : &f$duration'
+banned_message: '$base\n$appealMessage'
+banned_message_permanent: '&cTu es banni définitivement de HeraliZ.\n&7Raison : &f$reason\n$appealMessage'
+banned_message_appeal_message: '&7Contester : discord.gg/heraliz'
 banned_message_geoip_blacklist: |
   #FFEE59⚡  #fb0000&l$serverOrigin&r  #FFEE59⚡
   &f&m                   &r
@@ -131,41 +107,10 @@ bungee_switch_banned: |
   #fc5555🔥 &fsᴇʀᴠᴇʀ &8→ #fc5555$serverScope &8←
   #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason &8←
   &r
-muted: "&r\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛         \
-  \               \n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛ \
-  \  #fb0000&l❕&r #fb0000&lʏᴏᴜ ᴀʀᴇ ᴍᴜᴛᴇᴅ&r #fb0000&l❕\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛\
-  #FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛                        \n&r  #fb3939⬛#fb4339⬛#fb4c38⬛\
-  #FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Muted By &8→ &f$executor\n&r  #fb3939⬛\
-  #fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Duration &8→ &f$duration\n\
-  &r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Reason\
-  \ &8→ &f$reason\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛  \
-  \                      {hoverText: &f&l┆ #fb0000&lMUTED &f&l┆ #fc5555[$duration]&r\
-  \ \\n&r\\n&f ● &7You got muted because of &f$reason&r\\n&f ● &7Make sure to not\
-  \ repeat your actions!}\n&r\n"
-muted_permanent: "&r\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛\
-  \                        \n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛\
-  #fb7237⬛   #fb0000&l❕&r #fb0000&lʏᴏᴜ ᴀʀᴇ ᴍᴜᴛᴇᴅ&r #fb0000&l❕\n&r  #fb3939⬛#fb4339⬛\
-  #fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛                        \n&r  #fb3939⬛#fb4339⬛\
-  #fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Muted By &8→ &f$executor\n\
-  &r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Duration\
-  \ &8→ &fPermanent\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛\
-  \    &f▪ #fc5555Reason &8→ &f$reason\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛\
-  #fb6937⬛#fb7237⬛                        {hoverText: &f&l┆ #fb0000&lMUTED &f&l┆ #fc5555[Permanent]&r\
-  \ \\n&r\\n&f ● &7You got muted because of &f$reason&r\\n&f ● &7Make sure to not\
-  \ repeat your actions!}\n&r\n"
-warned_join: '&f&lYOU HAVE NEW WARNINGS\n'
-warned_join_entry: "&r\n&r  #fb7237⬛#fb8437⬛#fb9536⬛#fba736⬛#fbb835⬛#fbca35⬛#fbdb34⬛\
-  \                        \n&r  #fb7237⬛#fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛\
-  #fbdb34⬛   #fb0000&l❕&r #fb0000&lʏᴏᴜ ʀᴇᴄɪᴇᴠᴇᴅ ᴀ ᴡᴀʀɴɪɴɢ&r #fb0000&l❕\n&r  #fb7237⬛\
-  #fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛#fbdb34⬛                        \n&r  #fb7237⬛\
-  #fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛#fbdb34⬛    &f▪ #fc5555Warned By &8→ &f$executor\n\
-  &r  #fb7237⬛#fb8437⬛#fb9536⬛#fba736⬛#fbb835⬛#fbca35⬛#fbdb34⬛    &f▪ #fc5555Expires\
-  \ in &8→ &f$duration\n&r  #fb7237⬛#fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛#fbdb34⬛\
-  \    &f▪ #fc5555Reason &8→ &f$reason\n&r  #fb7237⬛#fb8437⬛#fb9536⬛#fba736⬛#fbb835⬛\
-  #fbca35⬛#fbdb34⬛                        {hoverText: &f&l┆ #fb0000&lWARNING &f&l┆\
-  \ #fc5555[$duration]&r \\n&r\\n&f ● &7You got warned because of &f$reason&7!&r\\\
-  n&f ● &7Make sure to not repeat your actions!&r\\n&f ● &7Active Warnings &8→ &f$activeWarnings}\n\
-  &r\n"
+muted: '&cTu es muet ($duration) : &f$reason'
+muted_permanent: '&cTu es muet définitivement : &f$reason'
+warned_join: ''
+warned_join_entry: '&6Avertissement du staff : &f$reason'
 notify:
   banned_player_join: '&c$player&f tried to join, but is banned ($duration)!'
   banned_geoip_blacklist: '&c$player&f tried to join, but is blacklisted ($geoip)!'
@@ -185,34 +130,12 @@ command:
   ban:
     usage: '&cUsage: $command [-s] <player> [time spec] [reason]'
     example: '&cExample: $command Player 7d [reason]'
-    silent_prefix: '&8[&fSilent&8] &7&l| '
-    
-    broadcast_ban: "&r\n#fc5555&m                                                \
-      \            &r\n&f  [&l🔨&f]&r #FB0000$playerDisplayName has been Banned\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Banned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerDisplayName\\n #fc5555✎ &fʀ\
-      ᴇᴀsᴏɴ &8→ #fc5555$reason\\n #fc5555🛠 &fᴘᴜɴɪsʜᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_tempban: "&r\n#fc5555&m                                            \
-      \                &r\n&f  [&l🔨&f]&r #FB0000$playerDisplayName has been Temp-Banned\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Temporarily Banned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerDisplayName\\\
-      n #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\n #fc5555⌚ &fᴅᴜʀᴀᴛɪᴏɴ &8→ #fc5555$tempDuration\\\
-      n #fc5555🛠 &fᴘᴜɴɪsʜᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_ip_ban: "&r\n#fc5555&m                                             \
-      \               &r\n&f  [&l🔨&f]&r #FB0000$playerDisplayName has been IP-Banned\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ IP Banned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerDisplayName\\n #fc5555✎\
-      \ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\n #fc5555🛠 &fᴘᴜɴɪsʜᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_temp_ip_ban: "&r\n#fc5555&m                                        \
-      \                    &r\n&f  [&l🔨&f]&r #FB0000$playerDisplayName has been Temp-IP-Banned\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Temporarily IP Banned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerDisplayName\\\
-      n #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\n #fc5555⌚ &fᴅᴜʀᴀᴛɪᴏɴ &8→ #fc5555$tempDuration\\\
-      n #fc5555🛠 &fᴘᴜɴɪsʜᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
+    silent_prefix: '&8[Staff] '
+
+    broadcast_ban: '&c$playerName banni par $executor : &f$reason'
+    broadcast_tempban: '&c$playerName banni $tempDuration par $executor : &f$reason'
+    broadcast_ip_ban: '&c$playerName banni (IP) par $executor : &f$reason'
+    broadcast_temp_ip_ban: '&c$playerName banni (IP) $tempDuration par $executor : &f$reason'
     previous_ban_removed: '&aPrevious ban for $playerDisplayName removed.'
     previous_ban_existing: '&c$playerDisplayName is already banned, and you do not
       have permission to replace existing bans.'
@@ -224,12 +147,7 @@ command:
     modify_success: '&aPunishment modified successfully.'
     ip_hidden: '[IP Address]'
     unban_usage: '&cUsage: $command <player>'
-    broadcast_unban: "&r\n#fc5555&m                                              \
-      \              &r\n&f  [&l🔨&f]&r #FB0000$playerDisplayName's Ban has been Revoked\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Un-Banned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerDisplayName\\n #fc5555✎\
-      \ &fʀᴇᴀsᴏɴ &8→ #fc5555$removalReason\\n #fc5555🛠 &fʀᴇᴠᴏᴋᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
+    broadcast_unban: '&a$playerName débanni par $executor : &f$removalReason'
     unban_queued: '&cTarget is not banned!&6 If they try to reconnect, they will be
       unbanned.'
     alts_guardrail_ban_self: |-
@@ -253,54 +171,12 @@ command:
   mute:
     usage: '&cUsage: $command [-s] <player> [time spec] [reason]'
     example: '&cExample: $command Player 7d [reason]'
-    broadcast: "&r\n#fc5555&m                                                    \
-      \        &r\n&f  [&l🔨&f]&r #FB0000$playerName has been Muted\n&f         #fc5555ʜ\
-      ᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m                         \
-      \                                   &r\n&r {hoverText: #FB0000&lPlayer Muted!\\\
-      n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\\
-      n #fc5555🛠 &fᴍᴜᴛᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_tempmute: "&r\n#fc5555&m                                           \
-      \                 &r\n&f  [&l🔨&f]&r #FB0000$playerName has been Temp-Muted\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Temporarily Muted!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎\
-      \ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\n #fc5555⌚ &fᴅᴜʀᴀᴛɪᴏɴ &8→ #fc5555$tempDuration\\\
-      n #fc5555🛠 &fᴍᴜᴛᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_ip_mute: "&r\n#fc5555&m                                            \
-      \                &r\n&f  [&l🔨&f]&r #FB0000$playerName has been IP-Muted\n&f\
-      \         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m       \
-      \                                                     &r\n&r {hoverText: #FB0000&lPlayer\
-      \ IP Muted!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎ &fʀᴇᴀsᴏ\
-      ɴ &8→ #fc5555$reason\\n #fc5555🛠 &fᴍᴜᴛᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_temp_ip_mute: "&r\n#fc5555&m                                       \
-      \                     &r\n&f  [&l🔨&f]&r #FB0000$playerName has been Temp-IP-Muted\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Temporarily IP Muted!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎\
-      \ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\n #fc5555⌚ &fᴅᴜʀᴀᴛɪᴏɴ &8→ #fc5555$tempDuration\\\
-      n #fc5555🛠 &fᴍᴜᴛᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    message: "&r\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛   \
-      \                     \n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛\
-      #fb7237⬛   #fb0000&l❕&r #fb0000&lʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴍᴜᴛᴇᴅ&r #fb0000&l❕\n&r  #fb3939⬛\
-      #fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛                        \n&r\
-      \  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Muted\
-      \ By &8→ &f$executor\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛\
-      \    &f▪ #fc5555Duration &8→ &f$duration\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛\
-      #fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Reason &8→ &f$reason\n&r  #fb3939⬛#fb4339⬛\
-      #fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛                        {hoverText:\
-      \ &f&l┆ #fb0000&lMUTED &f&l┆ #fc5555[$duration]&r \\n&r\\n&f ● &7You got muted\
-      \ because of &f$reason&r\\n&f ● &7Make sure to not repeat your actions!}\n&r\n"
-    message_permanent: "&r\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛\
-      \                        \n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛\
-      #fb7237⬛   #fb0000&l❕&r #fb0000&lʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴍᴜᴛᴇᴅ&r #fb0000&l❕\n&r  #fb3939⬛\
-      #fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛                        \n&r\
-      \  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛#fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Muted\
-      \ By &8→ &f$executor\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛\
-      \    &f▪ #fc5555Duration &8→ &fPermanent\n&r  #fb3939⬛#fb4339⬛#fb4c38⬛#FFFFFF⬛\
-      #fb5f38⬛#fb6937⬛#fb7237⬛    &f▪ #fc5555Reason &8→ &f$reason\n&r  #fb3939⬛#fb4339⬛\
-      #fb4c38⬛#fb5638⬛#fb5f38⬛#fb6937⬛#fb7237⬛                        {hoverText:\
-      \ &f&l┆ #fb0000&lMUTED &f&l┆ #fc5555[Permanent]&r \\n&r\\n&f ● &7You got muted\
-      \ because of &f$reason&r\\n&f ● &7Make sure to not repeat your actions!}\n&r\n"
+    broadcast: '&6$playerName rendu muet par $executor : &f$reason'
+    broadcast_tempmute: '&6$playerName rendu muet $tempDuration par $executor : &f$reason'
+    broadcast_ip_mute: '&6$playerName rendu muet (IP) par $executor : &f$reason'
+    broadcast_temp_ip_mute: '&6$playerName rendu muet (IP) $tempDuration par $executor : &f$reason'
+    message: '&cTu es muet ($duration) : &f$reason'
+    message_permanent: '&cTu es muet définitivement : &f$reason'
     unmute_fail: '&cTarget is not muted!'
     no_override: '&cPlayer is already muted!'
     previous_mute_removed: '&aPrevious mute for $playerDisplayName removed.'
@@ -311,87 +187,29 @@ command:
     error_not_enabled: '&cMuting is not enabled in the configuration!'
     response: ''
     unmute_usage: '&cUsage: $command <player>'
-    broadcast_unmute: "&r\n#fc5555&m                                             \
-      \               &r\n&f  [&l🔨&f]&r #FB0000$playerName has been Un-Muted\n&f\
-      \         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m       \
-      \                                                     &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Un-Muted!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎ &fʀᴇᴀsᴏ\
-      ɴ &8→ #fc5555$removalReason\\n #fc5555🛠 &fᴜɴᴍᴜᴛᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
+    broadcast_unmute: '&a$playerName peut de nouveau parler ($executor) : &f$removalReason'
   warn:
     usage: '&cUsage: $command [-s] <player> [reason]'
     example: ''
-    broadcast: "&r\n#fc5555&m                                                    \
-      \        &r\n&f  [&l🔨&f]&r #FB0000$playerName has recieved a Warning\n&f  \
-      \       #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m         \
-      \                                                   &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Warned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎ &fʀᴇᴀsᴏɴ\
-      \ &8→ #fc5555$reason\\n #fc5555⌚ &fᴇxᴘɪʀʏ &8→ #fc5555$duration\\n #fc5555🛠\
-      \ &fᴡᴀʀɴᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    message: "&r\n&r  #fb7237⬛#fb8437⬛#fb9536⬛#fba736⬛#fbb835⬛#fbca35⬛#fbdb34⬛   \
-      \                     \n&r  #fb7237⬛#fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛\
-      #fbdb34⬛   #fb0000&l❕&r #fb0000&lʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴡᴀʀɴᴇᴅ&r #fb0000&l❕\n&r  #fb7237⬛\
-      #fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛#fbdb34⬛                        \n&r\
-      \  #fb7237⬛#fb8437⬛#fb9536⬛#ffffff⬛#fbb835⬛#fbca35⬛#fbdb34⬛    &f▪ #fc5555Warned\
-      \ By &8→ &f$executor\n&r  #fb7237⬛#fb8437⬛#fb9536⬛#fba736⬛#fbb835⬛#fbca35⬛#fbdb34⬛\
-      \    &f▪ #fc5555Expires in &8→ &f$duration\n&r  #fb7237⬛#fb8437⬛#fb9536⬛#ffffff⬛\
-      #fbb835⬛#fbca35⬛#fbdb34⬛    &f▪ #fc5555Reason &8→ &f$reason\n&r  #fb7237⬛#fb8437⬛\
-      #fb9536⬛#fba736⬛#fbb835⬛#fbca35⬛#fbdb34⬛                        {hoverText:\
-      \ &f&l┆ #fb0000&lWARNING &f&l┆ #fc5555[$duration]&r \\n&r\\n&f ● &7You got warned\
-      \ because of &f$reason&7!&r\\n&f ● &7Make sure to not repeat your actions!&r\\\
-      n&f ● &7Active Warnings &8→ &f$activeWarnings}\n&r\n"
+    broadcast: '&e$playerName averti par $executor : &f$reason'
+    message: '&6Avertissement du staff : &f$reason'
     list_entry: '&f \- Warned by $executor: ''$reason&f'''
     unwarn_response: '&aLast warning removed for $player.'
     unwarn_fail: '&cTarget has no warnings!'
     exempt: '&cYou can''t warn $player!'
     response: ''
     unwarn_usage: '&cUsage: $command <player>'
-    broadcast_unwarn: "&r\n#fc5555&m                                             \
-      \               &r\n&f  [&l🔨&f]&r #FB0000$playerName's Warning has been revoked\n\
-      &f         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m      \
-      \                                                      &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Un-Warned!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎ &fᴡᴀʀɴ\
-      ɪɴɢ &8→ #fc5555$reason\\n #fc5555🛠 &fᴜɴᴡᴀʀɴᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
+    broadcast_unwarn: '&a$playerName : avertissement retiré par $executor'
   kick:
     usage: '&c$command <player> [reason]'
     no_match: '&cError: &4Player not found.'
     kick_requested: '&6Player $player is not online on this server. Cross-server kick
       has been requested.'
-    message: |
-      #FFEE59⚡  #fb0000&l$serverOrigin&r  #FFEE59⚡
-      &f&m                   &r
-
-      &f❕ #fc5555&lʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴋɪᴄᴋᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ sᴇʀᴠᴇʀ&r &f❕
-
-      #fc5555❌ &fᴋɪᴄᴋᴇᴅ ʙʏ &8→ #fc5555$executor &8←
-      #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason &8←
-
-      &f&m                                              &r
-
-      #fc5555ℹ &fʀᴇꜰʀᴀɪɴ ꜰʀᴏᴍ ʙʀᴇᴀᴋɪɴɢ ᴛʜᴇ ʀᴜʟᴇs #fc5555ℹ
-    message_no_reason: |
-      #FFEE59⚡  #fb0000&l$serverOrigin&r  #FFEE59⚡
-      &f&m                   &r
-
-      &f❕ #fc5555&lʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴋɪᴄᴋᴇᴅ ꜰʀᴏᴍ ᴛʜᴇ sᴇʀᴠᴇʀ&r &f❕
-
-      #fc5555❌ &fᴋɪᴄᴋᴇᴅ ʙʏ &8→ #fc5555$executor &8←
-
-      &f&m                                              &r
-
-      #fc5555ℹ &fʀᴇꜰʀᴀɪɴ ꜰʀᴏᴍ ʙʀᴇᴀᴋɪɴɢ ᴛʜᴇ ʀᴜʟᴇs #fc5555ℹ
+    message: '&cTu as été expulsé de HeraliZ.\n&7Raison : &f$reason'
+    message_no_reason: '&cTu as été expulsé de HeraliZ.'
     response: '&6$player has been kicked.'
-    broadcast: "&r\n#fc5555&m                                                    \
-      \        &r\n&f  [&l🔨&f]&r #FB0000$playerName has been Kicked\n&f         #fc5555ʜ\
-      ᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m                         \
-      \                                   &r\n&r {hoverText: #FB0000&lPlayer Kicked!\\\
-      n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555✎ &fʀᴇᴀsᴏɴ &8→ #fc5555$reason\\\
-      n #fc5555🛠 &fᴋɪᴄᴋᴇᴅ ʙʏ &8→ #fc5555$executor}\n"
-    broadcast_no_reason: "&r\n#fc5555&m                                          \
-      \                  &r\n&f  [&l🔨&f]&r #FB0000$playerName has been Kicked\n&f\
-      \         #fc5555ʜᴏᴠᴇʀ ꜰᴏʀ ɪɴꜰᴏ                          \n#fc5555&m       \
-      \                                                     &r\n&r {hoverText: #FB0000&lPlayer\
-      \ Kicked!\\n #fc5555👤 &fᴘʟᴀʏᴇʀ &8→ #fc5555$playerName\\n #fc5555🛠 &fᴋɪᴄᴋᴇᴅ\
-      \ ʙʏ &8→ #fc5555$executor}\n"
+    broadcast: '&c$playerName expulsé par $executor : &f$reason'
+    broadcast_no_reason: '&c$playerName expulsé par $executor'
     exempt: '&cYou can''t kick $player!'
   
   history:

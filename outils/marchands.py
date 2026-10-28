@@ -36,7 +36,8 @@ NOURRITURE = [  # (objet, points de faim, prix)
     ("geckolib:food_sardines", 6, 65),
     ("geckolib:food_deez", 4, 40),
 ]
-PRIX_ACCESSOIRES = {"commun": 60, "peu_commun": 150, "rare": 350}
+# 28/10 (demande du propriétaire) : prix de vente de Jack multipliés par 4 (avant 60 / 150 / 350)
+PRIX_ACCESSOIRES = {"commun": 240, "peu_commun": 600, "rare": 1400}
 MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), prix à l'unité
     ("heraliz_composants:brindilles", 2),
     ("heraliz_composants:planches", 50),
@@ -49,7 +50,7 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
     # base ne pouvait ranger quoi que ce soit, et le cœur de clan (points de saison) n'existait qu'en créatif.
     # CRac garde ses règles : une armoire par joueur, un cœur par clan, posés seulement dans sa base.
     ("crac:claim_block", 500),
-    ("crac:metal_crate", 150),
+    ("crac:metal_crate", 300),
     ("crac:coeur_clan", 1000),
 ]
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}

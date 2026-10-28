@@ -105,7 +105,8 @@ public class ClaimBlock extends Block implements EntityBlock, Adosse.Adossable {
         if (haut.getY() >= ctx.getLevel().getMaxBuildHeight() || !ctx.getLevel().getBlockState(haut).canBeReplaced(ctx)) {
             return null;
         }
-        BlockState s = this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
+        // face vers le joueur, tournée des quarts de tour choisis avec R (OrientationObjet, 28/10)
+        BlockState s = this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx));
         return s.setValue(Adosse.ADOSSE, Adosse.choisir(ctx, s));   // collée au mur voisin (1.11.0)
     }
 

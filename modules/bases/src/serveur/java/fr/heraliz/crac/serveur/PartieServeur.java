@@ -104,6 +104,8 @@ public final class PartieServeur implements Partie {
             fr.heraliz.crac.bases.AccesBaseTraitement.traiter(p, recu.ctx());
         } else if (paquet instanceof fr.heraliz.crac.network.C2SReapparition p) {
             fr.heraliz.crac.bases.Reapparition.traiter(p, recu.ctx());
+        } else if (paquet instanceof fr.heraliz.crac.network.C2SRotationObjet p) {
+            fr.heraliz.crac.network.C2SRotationObjetTraitement.traiter(p, recu.ctx());
         }
     }
 

@@ -41,6 +41,8 @@ final class Commandes {
             SharedSuggestionProvider.suggest(Catalogue.tous().stream().map(p -> p.id), b);
     private static final SuggestionProvider<CommandSourceStack> POINTS = (c, b) ->
             SharedSuggestionProvider.suggest(Moteur.points().tous().stream().map(Points.Point::id), b);
+    private static final SuggestionProvider<CommandSourceStack> POINTS_GUIDE = (c, b) ->
+            SharedSuggestionProvider.suggest(PointsGuide.IDS, b);
     private static final SuggestionProvider<CommandSourceStack> GROUPES = (c, b) ->
             SharedSuggestionProvider.suggest(Moteur.points().tous().stream().map(Points.Point::groupe).distinct(), b);
 
@@ -97,6 +99,18 @@ final class Commandes {
                 .then(Commands.literal("liste").executes(Commandes::listePnj)));
 
         EditionMarchands.commandes(d);
+
+        // 28/10 : points d'intérêt de la visite du Guide (casino, armurier, coffre, caisses, borne, recycleur)
+        d.register(Commands.literal("guide").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("point").then(Commands.argument("id", StringArgumentType.word()).suggests(POINTS_GUIDE)
+                        .executes(c -> poserPointGuide(c, StringArgumentType.getString(c, "id")))))
+                .then(Commands.literal("retirer").then(Commands.argument("id", StringArgumentType.word()).suggests(POINTS_GUIDE)
+                        .executes(c -> retirerPointGuide(c, StringArgumentType.getString(c, "id")))))
+                .then(Commands.literal("points").executes(Commandes::listePointsGuide))
+                .then(Commands.literal("visite").executes(c -> {
+                    Accueil.visite(c.getSource().getPlayerOrException());
+                    return 1;
+                })));
 
         d.register(Commands.literal("quete").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("baguette").then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
@@ -272,6 +286,35 @@ final class Commandes {
         return 1;
     }
 
+    // ------------------------------------------------------------------ points de la visite du Guide (28/10)
+    private static int poserPointGuide(CommandContext<CommandSourceStack> c, String id) throws CommandSyntaxException {
+        ServerPlayer moi = c.getSource().getPlayerOrException();
+        if (!PointsGuide.IDS.contains(id)) {
+            return erreur(c, "heraliz_quetes.cmd.guide_inconnu", "Point de la visite inconnu : %s (%s)", id, String.join(", ", PointsGuide.IDS));
+        }
+        PointsGuide.Point pt = PointsGuide.poser(moi, id);
+        if (pt == null) return erreur(c, "heraliz_quetes.cmd.guide_erreur", "Enregistrement impossible (voir le journal du serveur).");
+        dire(c, "heraliz_quetes.cmd.guide_pose", "Point « %s » de la visite posé : la caméra regardera %s %s %s, d'ici (%s blocs).",
+                id, (int) Math.floor(pt.x()), (int) Math.floor(pt.y()), (int) Math.floor(pt.z()), Math.round(pt.rayon()));
+        return 1;
+    }
+
+    private static int retirerPointGuide(CommandContext<CommandSourceStack> c, String id) {
+        if (!PointsGuide.retirer(id)) return erreur(c, "heraliz_quetes.cmd.point_inconnu", "Point inconnu : %s", id);
+        dire(c, "heraliz_quetes.cmd.point_retire", "Point %s retiré.", id);
+        return 1;
+    }
+
+    private static int listePointsGuide(CommandContext<CommandSourceStack> c) {
+        for (String id : PointsGuide.IDS) {
+            PointsGuide.Point pt = PointsGuide.point(id);
+            if (pt == null) dire(c, "heraliz_quetes.cmd.guide_absent", "%s : pas posé (le Guide dit sa phrase sans caméra)", id);
+            else dire(c, "heraliz_quetes.cmd.guide_ligne", "%s : %s %s %s (%s)", id, (int) Math.floor(pt.x()), (int) Math.floor(pt.y()),
+                    (int) Math.floor(pt.z()), pt.monde());
+        }
+        return 1;
+    }
+
     private static int retirerPoint(CommandContext<CommandSourceStack> c, String id) {
         if (!Moteur.points().retirer(id)) return erreur(c, "heraliz_quetes.cmd.point_inconnu", "Point inconnu : %s", id);
         dire(c, "heraliz_quetes.cmd.point_retire", "Point %s retiré.", id);
@@ -366,7 +409,7 @@ final class Commandes {
 
     /** Données du joueur gardées à la mort et qui disent « déjà fait » (cinématique, guide, Bâtisseur). */
     private static final String[] MARQUES = {"heraliz_cinematique_vue", "heraliz_cinematique_finie", "heraliz_guide_visite",
-            "heraliz_batisseur_presente", "heraliz_kit_depart"};
+            "heraliz_batisseur_presente", "heraliz_kit_depart", "heraliz_varga_parle"};
 
     /**
      * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, échanges /trade en
@@ -411,6 +454,8 @@ final class Commandes {
         garderAVie(aVie, appelObjets("fr.heraliz.clashwar.serveur.WipeClashWar", "vider",
                 new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class}, srv, p.getUUID()));
         garderAVie(aVie, appelObjets("fr.heraliz.grades.serveur.EchangeServeur", "wipe", new Class<?>[]{UUID.class}, p.getUUID()));
+        // 28/10 : ses ventes à l'hôtel des ventes et ce qui l'y attendait
+        garderAVie(aVie, appelObjets("fr.heraliz.grades.serveur.HdvApi", "wipe", new Class<?>[]{UUID.class}, p.getUUID()));
         // 23/10 : seulement sa cabane d'essai du tutoriel, AVANT de le retirer de son clan ; plus jamais « base effacer »
         // (le groupe CRac du clan ne suit le clan que toutes les 5 s : c'était la base de tout le clan qui partait)
         appel("fr.heraliz.crac.api.WipeApi", "cabaneEssai", new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class},

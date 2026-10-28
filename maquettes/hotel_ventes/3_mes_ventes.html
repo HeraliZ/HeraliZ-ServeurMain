@@ -1,0 +1,46 @@
+﻿<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="hv.css"><title>Hôtel des ventes</title>
+<style>
+.mv { display: grid; grid-template-columns: 72px 1fr 260px 200px 230px; padding: 0 22px; height: 84px; align-items: center; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 20px; }
+.mvt { display: grid; grid-template-columns: 72px 1fr 260px 200px 230px; padding: 0 22px; height: 52px; align-items: center; border-bottom: 1px solid var(--ligne); }
+.etat { font-size: 15px; letter-spacing: 3px; font-weight: 700; }
+.mv .prix { padding-right: 24px; } .mvt > div:nth-child(4) { padding-right: 24px; } .mv .bouton { height: 48px; font-size: 16px; letter-spacing: 4px; }
+</style></head><body>
+<div class="fond"></div>
+<div class="panneau">
+  <div class="entete">
+    <div class="logo"></div>
+    <div><div class="titre">Hôtel des ventes</div><div class="sous">Spawn · 214 offres en cours</div></div>
+    <div class="soldes">
+      <div class="solde"><div class="piece"></div><b>12 450</b> hérals</div>
+      <div class="solde"><div class="pbico">PB</div><b>320</b> PB</div>
+    </div>
+    <div class="fermer">×</div>
+  </div>
+  <div class="onglets">
+    <div class="onglet">ACHETER</div><div class="onglet">VENDRE</div><div class="onglet actif">MES VENTES<span class="pastille">2</span></div>
+  </div>
+
+  <div class="corps" style="flex-direction:column; gap:20px;">
+    <div style="display:flex; align-items:center; gap:24px;">
+      <div class="label">Ventes en cours 3 / 5 · 2 à récupérer</div>
+      <div class="bouton or" style="margin-left:auto; width:340px; height:52px; font-size:17px">TOUT RÉCUPÉRER</div>
+    </div>
+    <div class="carte" style="flex:1; overflow:hidden">
+      <div class="mvt label"><div></div><div>Objet</div><div>État</div><div style="text-align:right">Prix</div><div></div></div>
+      <div class="mv"><div class="case r"><img src="icones/ak47.png"></div><div class="nom tr">AK-47</div><div><div class="etat" style="color:var(--peu)">VENDU</div><div class="gris" style="font-size:17px;margin-top:4px">à Korvin · il y a 12 min</div></div><div class="prix">18 000 <div class="piece"></div></div><div class="bouton or">RÉCUPÉRER</div></div>
+      <div class="mv"><div class="case e"><img src="icones/scope_acog_ta31.png"></div><div class="nom te">ACOG TA31</div><div><div class="etat" style="color:var(--peu)">VENDU</div><div class="gris" style="font-size:17px;margin-top:4px">PB versés sur ton compte</div></div><div class="prix">75 <div class="pbico">PB</div></div><div class="gris" style="text-align:center;font-size:17px">déjà versé ✓</div></div>
+      <div class="mv"><div class="case c"><img src="icones/bandage.png"></div><div class="nom tc">Bandage<span class="qte">×8</span></div><div><div class="etat" style="color:var(--unique)">EXPIRÉ</div><div class="gris" style="font-size:17px;margin-top:4px">personne ne l'a acheté</div></div><div class="prix gris">320 <div class="piece"></div></div><div class="bouton or">RÉCUPÉRER</div></div>
+      <div class="mv"><div class="case r"><img src="icones/m4a1.png"></div><div class="nom tr">M4A1</div><div><div class="etat" style="color:var(--or)">EN VENTE</div><div class="gris" style="font-size:17px;margin-top:4px">reste 47 h</div></div><div class="prix">100 <div class="pbico">PB</div></div><div class="bouton contour">RETIRER</div></div>
+      <div class="mv"><div class="case r"><img src="icones/canon_iii.png"></div><div class="nom tr">Canon III<span class="qte">×2</span></div><div><div class="etat" style="color:var(--or)">EN VENTE</div><div class="gris" style="font-size:17px;margin-top:4px">reste 28 h</div></div><div class="prix">3 100 <div class="piece"></div></div><div class="bouton contour">RETIRER</div></div>
+      <div class="mv"><div class="case p"><img src="icones/ump45.png"></div><div class="nom tp">UMP-45</div><div><div class="etat" style="color:var(--or)">EN VENTE</div><div class="gris" style="font-size:17px;margin-top:4px">reste 5 h</div></div><div class="prix">4 200 <div class="piece"></div></div><div class="bouton contour">RETIRER</div></div>
+    </div>
+  </div>
+
+  <div class="pied">
+    <div><span class="touche">CLIC</span>Récupérer / retirer</div>
+    <div><span class="touche">ÉCHAP</span>Fermer</div>
+    <div class="droite">Les objets reviennent dans des cases libres de ton inventaire, au spawn seulement</div>
+  </div>
+</div>
+</body></html>
+

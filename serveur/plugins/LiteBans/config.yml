@@ -246,7 +246,9 @@ security:
 
 # If enabled, punishment broadcasts will be silent by default.
 # This can be overridden per-punishment by using the "-p" (public) flag (the opposite of "-s").
-silent: false
+# HeraliZ (28/10) : sanctions plus jamais annoncées à tout le chat ; seuls le staff (permission litebans.notify.silent,
+# donnée par HeraliZ Grades au staff connecté sur AuthMe ; les op l'ont d'office) et le joueur sanctionné les voient.
+silent: true
 
 # If enabled, punishments will be IP-based by default. (All bans will be IP bans, all mutes will be IP mutes, etc.)
 # Please note that this will affect the permissions required - `/ban` will require `litebans.ipban`, and `/mute` will require `litebans.ipmute` instead.

@@ -80,6 +80,8 @@ public class HeralizTactique {
       fr.heraliz.tactique.avie.ObjetsAVie.init();
       // jambe cassée (attelle) : pas de saut
       fr.heraliz.tactique.jambe.JambeCassee.init();
+      // armes de mêlée de geckolib222 (batte, machette, hache…) : dégâts divisés par 2 (attribut de l'objet en main)
+      fr.heraliz.tactique.melee.MeleeGeckolib.init();
       // décharger une arme TaCZ (touche, inventaire, Atelier) : balles rendues à l'inventaire
       fr.heraliz.tactique.decharger.Decharger.init();
       // Registre de l'armurier (op) : recettes de la Table d'armurier modifiées en jeu

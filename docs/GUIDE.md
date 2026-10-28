@@ -37,7 +37,7 @@ spawn ──borne de départ──► carte DayZ ──loot──► sac / inven
 | Clan | `clans` | `fr.heralisz.clans` ; prix de création `serveur/config/heralisz_clans-common.toml` (`cout_creation`) ; niveaux `niveaux.json`, quêtes de clan `quetes.json`, territoires `zones.json`, saison `saison.json` (`serveur/config/heralisz_clans/`) |
 | Base | `bases` | `fr.heraliz.crac` ; coûts `defaultconfigs/crac-building.toml`, règles `crac-server.toml`, /home, délai partagé et tutoriel `crac-bases.toml` |
 | Mort et réapparition | `bases` (choix), `monde` (camp) | écran de mort `crac/client/ui/EcranMort` ; choix revérifié par `crac/bases/Reapparition` ; délai partagé avec /home : `crac/bases/TeleportBase` (`[home] delai_s`, 480 s) |
-| Faim | `noyau` | vitesse : `[survie] faim_facteur` de `defaultconfigs/heraliz_noyau-server.toml` (0,5 = deux fois plus lente) |
+| Faim | `noyau` | vitesse : `[survie] faim_facteur` de `defaultconfigs/heraliz_noyau-server.toml` (0,35 = environ trois fois plus lente) |
 | Chat | `boutique` (Grades) | canaux Proximité (48 blocs) / Global / Clan : `fr.heraliz.grades.serveur.ChatServeur` ; affichage `fr.heraliz.grades.client.chat` |
 | Staff | `boutique` (Grades) | panel (touche P) : `PanelStaff`, droits par grade `heraliz_grades/panel_staff.json`, journal `heraliz_grades/journal_staff.log` (racine du serveur) |
 | Quêtes | `pnj` | `serveur/config/heraliz_quetes/pnj/varga.json` (guide : `serveur/config/heraliz_quetes/LISEZMOI.md`) |

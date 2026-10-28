@@ -106,6 +106,15 @@ public final class Piece {
         return state & ~STATE_SAS;
     }
 
+    /**
+     * {@link #etatVisible(int)} pour une pièce de type {@code kind} (HeraliZ, 28/10) : le bit {@link #STATE_SAS} est le
+     * même que celui des barreaux d'une fenêtre ({@code INSERT_BARS << INSERT_SHIFT}) ; l'effacer sur une fenêtre lui
+     * retirait ses barreaux de la visée et de l'occlusion. Seules les portes ont un état de sas.
+     */
+    public static int etatVisible(PieceKind kind, int state) {
+        return kind.hasDoor() ? state & ~STATE_SAS : state;
+    }
+
     public boolean isSasBloque() {
         return this.kind().hasDoor() && (this.state & STATE_SAS) != 0;
     }

@@ -54,7 +54,8 @@ public final class CorpsConfig {
                 .define("protection_clan", false);
         DISPARITION_MIN = b.comment("Minutes (de jeu, serveur allume) avant qu'un corps disparaisse avec ce qu'il contient")
                 .defineInRange("disparition_minutes", 10, 1, 10080);
-        DISPARITION_VIDE_S = b.comment("Secondes avant qu'un corps vide disparaisse").defineInRange("disparition_vide_secondes", 1, 1, 600);
+        DISPARITION_VIDE_S = b.comment("Secondes avant qu'un corps vide disparaisse (0 = tout de suite, au tick suivant la prise du dernier objet)")
+                .defineInRange("disparition_vide_secondes", 0, 0, 600);
         MAX_PAR_CHUNK = b.comment("Corps au plus par chunk : au-dela, le plus ancien du chunk disparait (filet anti-lag)")
                 .defineInRange("max_par_chunk", 16, 1, 256);
         MAX_PAR_MONDE = b.comment("Corps au plus sur le serveur : au-dela, le plus ancien disparait (filet anti-lag)")

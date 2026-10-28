@@ -13,3 +13,13 @@
 	delai_max_secondes = 360
 	#Conteneur fouillé puis laissé avec des objets : vidé au bout de ce délai (secondes) sans personne dedans, un autre se remplit ensuite. 0 : jamais.
 	restes_secondes = 300
+
+[etoiles]
+	#Montrer les étoiles autour des conteneurs actifs.
+	actives = true
+	#Distance (blocs) jusqu'à laquelle un joueur voit les étoiles.
+	#Range: 4 ~ 64
+	rayon = 24
+	#Étoiles envoyées par seconde et par conteneur (28/10 : étoiles d'une seconde environ, 4 pour garder le même éclat).
+	#Range: 1 ~ 8
+	par_seconde = 4

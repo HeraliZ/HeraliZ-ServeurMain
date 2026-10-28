@@ -55,6 +55,13 @@ final class Presentation {
         camera.setNoGravity(true);
         dist = -1;
         face = 0;
+        if (!Float.isNaN(m.angle())) {
+            // point de la visite du Guide (28/10) : la caméra part du côté où se tenait le staff qui l'a posé
+            face = m.angle();
+            placer(0, true);
+            mc.setCameraEntity(camera);
+            return;
+        }
         net.minecraft.world.entity.LivingEntity pnj = null;
         double mieux = 4;
         for (net.minecraft.world.entity.Entity en : mc.level.getEntities(mc.player,

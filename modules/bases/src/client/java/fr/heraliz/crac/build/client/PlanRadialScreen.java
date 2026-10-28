@@ -14,7 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import static fr.heraliz.crac.client.kit.Dessin.*;
 
 /**
- * Building Plan wheel: the 12 pieces (no roofs since 26/10, a triangle ramp) with their icon and cost (red and dimmed when the player cannot pay it); the hub
+ * Building Plan wheel: the 11 pieces (no roofs since 26/10, no triangle ramp since 28/10) with their icon and cost (red and dimmed when the player cannot pay it); the hub
  * names the piece under the mouse (or the selected one), its cost and how much the player has.
  */
 @OnlyIn(Dist.CLIENT)

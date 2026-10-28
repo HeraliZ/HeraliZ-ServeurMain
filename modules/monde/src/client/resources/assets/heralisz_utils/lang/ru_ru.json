@@ -274,6 +274,7 @@
   "heralisz_utils.suicide.spawn": "Недоступно на спавне: здесь ты в безопасности.",
   "heralisz_utils.suicide.combat": "Невозможно в бою.",
   "heralisz_utils.suicide.terre": "Невозможно в нокауте.",
+  "heralisz_utils.suicide.delai": "Подожди ещё %s, прежде чем снова использовать /suicide.",
   "block.heralisz_utils.voie_pleine": "Твёрдый путь (невидимая коллизия)",
   "heralisz_utils.train.voie.genre.plat": "ровный участок",
   "heralisz_utils.train.voie.genre.remblai": "насыпь",

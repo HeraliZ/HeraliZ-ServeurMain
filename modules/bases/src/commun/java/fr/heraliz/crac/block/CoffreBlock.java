@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -66,8 +67,8 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
     private final SoundEvent sonOuvre, sonFerme;
     private final float hauteurSon;
     private final CoffresDonnees.Mesures mesures;
-    /** Formes poussées contre le mur : [case annexe ou non][sens][décalage]. */
-    private final VoxelShape[][][] formes;
+    /** Formes poussées contre le mur : [case annexe ou non][descendu ou non][sens][décalage]. */
+    private final VoxelShape[][][][] formes;
 
     public CoffreBlock(String nom, boolean large, int colonnes, int lignes, SoundEvent sonOuvre, SoundEvent sonFerme,
                        float hauteurSon, Properties props) {
@@ -81,11 +82,11 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         this.hauteurSon = hauteurSon;
         this.mesures = CoffresDonnees.de(nom);
         double[] boite = this.mesures.boite();
-        this.formes = new VoxelShape[][][]{
-            Adosse.formesDecalees(f -> tournee(this.mesures.formePrincipale(), f), boite),
-            Adosse.formesDecalees(f -> tournee(this.mesures.formeAnnexe(), f), boite)};
+        VoxelShape[][] principale = Adosse.formesDecalees(f -> tournee(this.mesures.formePrincipale(), f), boite);
+        VoxelShape[][] annexe = Adosse.formesDecalees(f -> tournee(this.mesures.formeAnnexe(), f), boite);
+        this.formes = new VoxelShape[][][][]{{principale, Adosse.descendre(principale)}, {annexe, Adosse.descendre(annexe)}};
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false)
-            .setValue(ANNEXE, false).setValue(Adosse.ADOSSE, Adosse.AUCUN));
+            .setValue(ANNEXE, false).setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false));
     }
 
     public String nom() {
@@ -133,7 +134,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> b) {
-        b.add(FACING, OPEN, ANNEXE, Adosse.ADOSSE);
+        b.add(FACING, OPEN, ANNEXE, Adosse.ADOSSE, Adosse.BAS);
     }
 
     // ---------------------------------------------------------------- les deux cases
@@ -176,20 +177,34 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         return (state.getValue(ANNEXE) ? this.mesures.formeAnnexe() : this.mesures.formePrincipale())[4];
     }
 
+    /** Descendu sur un plancher à mi-bloc ({@link Adosse#BAS}) : un demi-bloc sous sa case. */
+    @Override
+    public double dessous(BlockState state) {
+        return Adosse.bas(state) ? Adosse.DEMI : 0;
+    }
+
     // ---------------------------------------------------------------- pose
 
-    /** Face avant vers le joueur ; l'autre case doit être libre. */
+    /**
+     * Face avant vers le joueur, tournée des quarts de tour choisis avec R ({@link OrientationObjet}) ; l'autre case doit
+     * être libre. Sur un plancher à mi-bloc, le coffre descend d'un demi-bloc ({@link Adosse#BAS}) : ses deux cases doivent
+     * alors être au-dessus d'un tel plancher (un coffre large à cheval sur deux hauteurs est refusé).
+     */
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        Direction f = ctx.getHorizontalDirection().getOpposite();
+        Direction f = OrientationObjet.face(ctx);
         BlockPos pos = ctx.getClickedPos();
         BlockPos autre = this.annexeDe(pos, f);
         Level level = ctx.getLevel();
         if (autre.getY() >= level.getMaxBuildHeight() || !level.getBlockState(autre).canBeReplaced(ctx)) {
             return null;
         }
-        BlockState s = this.defaultBlockState().setValue(FACING, f);
+        boolean bas = Adosse.doitDescendre(level, pos);
+        if (this.large && bas != Adosse.doitDescendre(level, autre)) {
+            return null;
+        }
+        BlockState s = this.defaultBlockState().setValue(FACING, f).setValue(Adosse.BAS, bas);
         return s.setValue(Adosse.ADOSSE, this.choisir(ctx, s, pos, autre));
     }
 
@@ -216,14 +231,18 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
             x = Integer.signum(cible.getX() - ref.getX());
             z = Integer.signum(cible.getZ() - ref.getZ());
         } else {
+            // le clic est rapporté à la case visée (principale ou autre), comme dans Adosse.choisir
             Vec3 clic = ctx.getClickLocation();
-            x = axe(level, cases, Direction.EAST, clic.x - principal.getX() - 0.5);
-            z = axe(level, cases, Direction.SOUTH, clic.z - principal.getZ() - 0.5);
+            BlockPos ref = Mth.floor(clic.x) == annexe.getX() && Mth.floor(clic.z) == annexe.getZ()
+                ? annexe : principal;
+            x = axe(level, cases, Direction.EAST, clic.x - ref.getX() - 0.5);
+            z = axe(level, cases, Direction.SOUTH, clic.z - ref.getZ() - 0.5);
         }
         for (int[] c : new int[][]{{x, z}, {x, 0}, {0, z}}) {
             if (c[0] != 0 || c[1] != 0) {
                 int v = Adosse.code(c[0], c[1]);
-                if (this.tient(level, etat.setValue(Adosse.ADOSSE, v), principal, annexe)) {
+                BlockState essai = etat.setValue(Adosse.ADOSSE, v);
+                if (this.tient(level, essai, principal, annexe) && Adosse.appuye(level, cases, essai)) {
                     return v;
                 }
             }
@@ -231,6 +250,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         return Adosse.AUCUN;
     }
 
+    /** Comme Adosse : poussée seulement vers le mur du côté du quart de case visé, jamais pour un clic au milieu. */
     private static int axe(BlockGetter level, List<BlockPos> cases, Direction plus, double clic) {
         boolean p = false, m = false;
         for (BlockPos c : cases) {
@@ -238,10 +258,13 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
             p |= !cases.contains(a) && Adosse.estStructure(level, a);
             m |= !cases.contains(b) && Adosse.estStructure(level, b);
         }
-        if (p && m) {
-            return clic >= 0 ? 1 : -1;
+        if (clic >= 0.5 - Adosse.BORD_CLIC) {
+            return p ? 1 : 0;
         }
-        return p ? 1 : m ? -1 : 0;
+        if (clic <= -(0.5 - Adosse.BORD_CLIC)) {
+            return m ? -1 : 0;
+        }
+        return 0;
     }
 
     /**
@@ -292,7 +315,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
-        return this.formes[s.getValue(ANNEXE) ? 1 : 0][s.getValue(FACING).get2DDataValue()][s.getValue(Adosse.ADOSSE)];
+        return this.formes[s.getValue(ANNEXE) ? 1 : 0][s.getValue(Adosse.BAS) ? 1 : 0][s.getValue(FACING).get2DDataValue()][s.getValue(Adosse.ADOSSE)];
     }
 
     /** La case du haut d'un coffre de 2 de haut est dessinée par la case du bas (modèle de 2 blocs). */

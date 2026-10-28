@@ -1,0 +1,63 @@
+{
+  "id": "commissaire",
+  "nom": {
+    "fr": "Maître Verlaine",
+    "en": "Master Verlaine",
+    "ru": "Мэтр Верлен"
+  },
+  "skin": "jack",
+  "apparence": {
+    "skin_tone": "light",
+    "eye_shape": "almond",
+    "eye_color": "brown",
+    "brow_style": "straight",
+    "nose_style": "pointed",
+    "mouth_style": "smile",
+    "lip_color": "dark",
+    "hair_style": "buzz",
+    "hair_color": "dark_brown",
+    "facial_hair": "full_beard",
+    "shirt_style": "hoodie",
+    "shirt_color": "black",
+    "shirt_color2": "black",
+    "pants_style": "cargo",
+    "pants_color": "black",
+    "shoes_style": "boots",
+    "shoes_color": "brown",
+    "marks": [],
+    "wear": "dirty",
+    "eye_size": 3
+  },
+  "role": {
+    "fr": "Commissaire-priseur",
+    "en": "Auctioneer",
+    "ru": "Аукционист"
+  },
+  "ambiance": [
+    {
+      "fr": "Adjugé, vendu !",
+      "en": "Going once, going twice… sold!",
+      "ru": "Продано!"
+    }
+  ],
+  "presentation": {
+    "fr": "Tu as quelque chose à vendre ? Laisse-le moi, je le montre à tout le monde. Tu fixes ton prix, en hérals ou en PB. Et si tu cherches une pièce rare, regarde ce que les autres proposent.",
+    "en": "Got something to sell? Leave it with me, I'll show it to everyone. You set your price, in herals or PB. And if you're after a rare piece, see what the others are offering.",
+    "ru": "Есть что продать? Оставь у меня, я покажу всем. Цену ставишь сам, в гералах или PB. А если ищешь редкую вещь — посмотри, что предлагают другие."
+  },
+  "accueil": {
+    "inconnu": {
+      "fr": "Bienvenue à l'hôtel des ventes. Acheter, vendre : tout passe par moi.",
+      "en": "Welcome to the auction house. Buying, selling: it all goes through me.",
+      "ru": "Добро пожаловать на аукцион. Купить, продать — всё через меня."
+    },
+    "connu": {
+      "fr": "Alors, on vend ou on achète aujourd'hui ?",
+      "en": "So, buying or selling today?",
+      "ru": "Ну что, сегодня покупаем или продаём?"
+    }
+  },
+  "marchand": {
+    "type": "hdv"
+  }
+}

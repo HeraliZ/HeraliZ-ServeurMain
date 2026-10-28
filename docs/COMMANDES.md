@@ -21,6 +21,7 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/warp` | Grades | menu des warps du spawn (`set`, `del`… : staff) |
 | `/kit` | Grades | kit du grade |
 | `/boutique`, `/pb`, `/trade` | Grades | boutique en jeu, solde de PB, échange entre joueurs |
+| `/hdv` | Grades | hôtel des ventes (aussi le PNJ commissaire-priseur `commissaire`) : acheter, vendre (hérals sans frais, PB avec 10 % de frais payés par l'acheteur), mes ventes ; au spawn seulement, jamais en combat, à terre, en match ni au tutoriel ; réglages `config/heraliz_grades/hdv.json` (5 ventes, 12 / 24 / 48 h, plafonds PB par rareté), données et journal dans `heraliz_grades/hdv/` à la racine du serveur |
 | `/boutique abonnement` | Grades | grade de la boutique et temps restant |
 | `/avantages` (`nick`, `couleur`) | Grades | avantages des grades de la boutique |
 | `/discord` (`lier`, `delier`) | Grades | lien avec Discord |
@@ -46,10 +47,10 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/redemarrage` | Noyau | `<minutes> [raison]` ou `annuler` : redémarrage doux, les joueurs se reconnectent seuls (op 4, console) |
 | `/matchs` | ClashWar | coffres, parties en cours, arènes |
 | `/territoire` | Clans | zones des clans, drapeaux, difficulté |
-| `/eco` | Clans | régler les hérals d'un joueur (op 2) |
+| `/eco` | Clans | `donner`, `retirer`, `definir <joueur> <montant> [motif]` : op 4 connecté sur AuthMe ou console (28/10), un joueur connecté ou non (compte connu), 1 à 10 000 000 par opération, jamais de solde négatif ni au-dessus du plafond, journal `heralisz_economie/journal_admin.log` ; `journal`, `info` : op 2 |
 | `/grade` (`editeur`, `registre` : op 4 ; `donner`, `retirer`, `acheter` : console) | Grades | éditeur des grades, grades des joueurs |
 | `/bon` | Grades | éditeur des bons (op) |
-| `/staff` (`panel`, `vanish`, `nametag`) | Grades | modération (panel : touche P, actions selon le grade du staff) |
+| `/staff` (`panel`, `vanish`, `nametag`) | Grades | modération (panel : touche P, actions selon le grade du staff) ; onglet « Commandes du Fondateur » (28/10) : le Fondateur donne une commande précise à un grade du staff (`heraliz_grades/commandes_staff.json`, appliqué par le serveur) |
 | `/zonevip` | Grades | zones VIP |
 | `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête |
 | `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur |

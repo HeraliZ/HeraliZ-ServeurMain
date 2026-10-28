@@ -127,6 +127,24 @@ public class Pnj extends PathfinderMob {
         return true;
     }
 
+    /**
+     * Surbrillance chez le joueur seulement (28/10) : le PNJ vers qui il doit aller (guide, puis Varga). Branchée par la
+     * partie client ({@code Guidage}) ; rien côté serveur, les autres joueurs ne voient rien.
+     */
+    public static volatile java.util.function.Predicate<Pnj> SURBRILLANCE_CLIENT;
+
+    @Override
+    public boolean isCurrentlyGlowing() {
+        java.util.function.Predicate<Pnj> s = SURBRILLANCE_CLIENT;
+        return level().isClientSide && s != null && s.test(this) || super.isCurrentlyGlowing();
+    }
+
+    @Override
+    public int getTeamColor() {
+        java.util.function.Predicate<Pnj> s = SURBRILLANCE_CLIENT;
+        return level().isClientSide && s != null && s.test(this) ? 0x5FE08A : super.getTeamColor();
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag t) {
         super.addAdditionalSaveData(t);

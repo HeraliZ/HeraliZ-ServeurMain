@@ -32,7 +32,7 @@ public final class Reseau {
     }
 
     /** 7 (Quêtes 1.11.0) : échanges (troc) et marchands créés en jeu. 9 (1.13.0) : aperçu du recycleur. 10 (1.14.0) : quêtes du jour. */
-    private static final String VERSION = "11";   // 11 (26/10) : état de l'objet dans l'aperçu du recycleur
+    private static final String VERSION = "12";   // 12 (28/10) : angle de la caméra des points de la visite du Guide ; 11 (26/10) : état de l'objet dans l'aperçu du recycleur
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -150,7 +150,11 @@ public final class Reseau {
      * la caméra du joueur fait lentement le tour du point donné (rayon en blocs), pendant {@code ticks} ; seule la radio
      * reste à l'écran. Espace maintenu pour passer.
      */
-    public record Presentation(double x, double y, double z, float rayon, int ticks) {
+    /**
+     * Tour de caméra (présentation d'un PNJ ou d'un point de la visite du Guide). {@code angle} : direction (radians,
+     * atan2(dz, dx) du centre vers la caméra) ; NaN = devant le PNJ le plus proche du centre (comme avant).
+     */
+    public record Presentation(double x, double y, double z, float rayon, int ticks, float angle) {
     }
 
     /** Éditeur des marchands (staff op) : un article vendu, ou une règle de rachat et ses 6 prix (Commun ... Mythique). */
@@ -334,8 +338,9 @@ public final class Reseau {
             b.writeDouble(m.z());
             b.writeFloat(m.rayon());
             b.writeVarInt(m.ticks());
+            b.writeFloat(m.angle());
         }, b -> new Presentation(b.readDouble(), b.readDouble(), b.readDouble(), Math.max(2F, Math.min(20F, b.readFloat())),
-                Math.max(20, Math.min(1200, b.readVarInt()))), PRESENTATION);
+                Math.max(20, Math.min(1200, b.readVarInt())), b.readFloat()), PRESENTATION);
         versJoueur(Edition.class, Reseau::ecrireEdition, Reseau::lireEdition, EDITION);
         versServeur(Modif.class, (m, b) -> {
             b.writeUtf(m.pnj(), MAX_CLE);

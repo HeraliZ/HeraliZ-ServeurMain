@@ -7,7 +7,7 @@ license="${mod_license}"
 # ---- heraliz_grades (ancien projet heraliz-grades, version 2.7.2)
 [[mods]]
 modId="heraliz_grades"
-version="2.7.2"
+version="2.9.0"
 displayName="HeraliZ Grades"
 authors="${mod_authors}"
 description='''Grades HeraliZ (staff, boutique, Survivant), préfixes, commandes /grade (console seulement pour donner et retirer).'''

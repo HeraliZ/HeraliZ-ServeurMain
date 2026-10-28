@@ -124,7 +124,7 @@ public final class StructureService {
         double bestDist = Double.MAX_VALUE;
         Vec3 local = hit.subtract(pos.getX(), pos.getY(), pos.getZ());
         for (Piece p : occ) {
-            for (AABB box : PieceShapes.shape(p.key(), Piece.etatVisible(p.state), p.variant, pos).toAabbs()) {
+            for (AABB box : PieceShapes.shape(p.key(), Piece.etatVisible(p.kind(), p.state), p.variant, pos).toAabbs()) {
                 double d = box.inflate(1e-3).contains(local) ? 0 : box.distanceToSqr(local);
                 if (d < bestDist) {
                     bestDist = d;
@@ -677,7 +677,9 @@ public final class StructureService {
             BlockPos pos = below.above();
             if (!level.isLoaded(pos)) continue;
             BlockState s = level.getBlockState(pos);
-            if (!PlacableSet.canPlace(level, s.getBlock()) || PlacableSupport.holdsWhatStandsOn(level, below)) continue;
+            // (28/10) un coffre descendu sur un plancher à mi-bloc (Adosse.BAS) reste tant que ce plancher le porte
+            if (!PlacableSet.canPlace(level, s.getBlock()) || PlacableSupport.holdsWhatStandsOn(level, below)
+                && !fr.heraliz.crac.block.Adosse.bas(s) || fr.heraliz.crac.block.Adosse.bas(s) && PlacableSupport.isSupported(level, pos, s)) continue;
             // a damaged placable keeps its HP in the item it drops, the Claim Block drops nothing
             PlacableChutes.fall(level, pos, s);
             PlacableChutes.dropUnsupportedAbove(level, pos);

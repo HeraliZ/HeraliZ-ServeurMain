@@ -19,6 +19,10 @@ public final class ClientGrades implements Partie {
       // Points Boutique : /boutique et /trade
       fr.heraliz.grades.reseau.ReseauBoutique.RECEPTION_BOUTIQUE.brancher(EcranBoutique::recevoir);
       fr.heraliz.grades.reseau.ReseauBoutique.RECEPTION_ECHANGE.brancher(EcranEchange::recevoir);
+      // hôtel des ventes (2.9.0)
+      fr.heraliz.grades.reseau.ReseauHdv.RECEPTION_ETAT.brancher(EcranHdv::recevoir);
+      fr.heraliz.grades.reseau.ReseauHdv.RECEPTION_PAGE.brancher(EcranHdv::recevoirPage);
+      fr.heraliz.grades.reseau.ReseauHdv.RECEPTION_MES.brancher(EcranHdv::recevoirMes);
       MinecraftForge.EVENT_BUS.addListener(TabHeraliz::avantOverlay);
       // bons (2.5.0) : éditeur des op, effet « Bonus de loot » de l'inventaire (avant l'enregistrement de l'effet)
       fr.heraliz.grades.bon.EffetBonusLoot.AFFICHAGE = new AffichageBonusLoot();

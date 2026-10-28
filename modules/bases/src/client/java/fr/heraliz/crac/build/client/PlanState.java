@@ -25,6 +25,9 @@ public final class PlanState {
     }
 
     public static void select(PieceKind kind) {
+        if (kind == null || kind.isRetired()) {
+            return;   // pièces retirées (toits, rampe triangle) : jamais choisies, le serveur les refuse aussi
+        }
         if (kind != selected) {
             selected = kind;
             rotation = 0;

@@ -44,6 +44,7 @@ public final class ClientQuetes implements Partie {
             e.registerAboveAll("radio", RadioVarga::rendu);
         });
         MinecraftForge.EVENT_BUS.addListener(ClientQuetes::tick);
+        Guidage.brancher();   // 28/10 : traînée verte et surbrillance vers le Guide, puis Varga
         MinecraftForge.EVENT_BUS.addListener(Reperes::rendu);
         MinecraftForge.EVENT_BUS.addListener(RadioVarga::cacherChat);
         MinecraftForge.EVENT_BUS.addListener(Presentation::tick);
@@ -56,6 +57,7 @@ public final class ClientQuetes implements Partie {
             RadioVarga.vider();
             Presentation.vider();
             Lueurs.vider();
+            Guidage.vider();
             PnjRendu.vider();
         });
 
@@ -86,5 +88,6 @@ public final class ClientQuetes implements Partie {
             if (mc.screen == null) Reseau.CANAL.sendToServer(new Reseau.JourAction(0, ""));
         }
         Lueurs.tick(mc);
+        Guidage.tick(mc);
     }
 }

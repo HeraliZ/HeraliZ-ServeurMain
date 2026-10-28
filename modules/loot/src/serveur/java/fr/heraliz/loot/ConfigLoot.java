@@ -53,7 +53,8 @@ public final class ConfigLoot {
         b.comment("Étoiles blanches qui scintillent autour des conteneurs actifs.").push("etoiles");
         ETOILES = b.comment("Montrer les étoiles autour des conteneurs actifs.").define("actives", true);
         RAYON_ETOILES = b.comment("Distance (blocs) jusqu'à laquelle un joueur voit les étoiles.").defineInRange("rayon", 24, 4, 64);
-        ETOILES_PAR_SECONDE = b.comment("Étoiles envoyées par seconde et par conteneur.").defineInRange("par_seconde", 2, 1, 8);
+        ETOILES_PAR_SECONDE = b.comment("Étoiles envoyées par seconde et par conteneur (28/10 : étoiles d'une seconde environ, 4 pour garder le même éclat).")
+                .defineInRange("par_seconde", 4, 1, 8);
         b.pop();
         b.comment("Bonus de loot (zone tenue par son clan...) : au premier tirage d'un conteneur, chaque objet a ce pourcentage",
                 "de chances d'être tiré une seconde fois (le plus rare des deux est gardé) et les quantités montent d'autant.").push("bonus");
@@ -191,6 +192,6 @@ public final class ConfigLoot {
     }
 
     static int etoilesParSeconde() {
-        return SPEC.isLoaded() ? ETOILES_PAR_SECONDE.get() : 2;
+        return SPEC.isLoaded() ? ETOILES_PAR_SECONDE.get() : 4;
     }
 }

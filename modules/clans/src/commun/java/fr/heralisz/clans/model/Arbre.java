@@ -15,8 +15,28 @@ public final class Arbre {
     private Arbre() {
     }
 
-    /** Herals du palier n : n x PRIX_PALIER. */
+    /** Herals de base du palier n : n x PRIX_PALIER (multiplies par le facteur de prix, {@link #facteurPrixPct()}). */
     public static final long PRIX_PALIER = 5_000L;
+
+    /**
+     * Facteur des herals de l'arbre, en pourcents (28/10 : x2 par defaut, « progression beaucoup trop facile »). Lu par le
+     * serveur dans niveaux.json ({@code facteur_prix_arbre}, {@link Niveaux#charger}) et envoye aux joueurs avec l'etat du
+     * clan ({@link ClanSnapshot}) : le prix affiche est celui que le serveur demande.
+     */
+    private static volatile int facteurPrixPct = (int) Math.round(Niveaux.FACTEUR_PRIX_ARBRE_DEFAUT * 100);
+
+    public static int facteurPrixPct() {
+        return facteurPrixPct;
+    }
+
+    /** Borne 10 % a 10 000 %. */
+    public static void facteurPrixPct(int pct) {
+        facteurPrixPct = Math.max(10, Math.min(10_000, pct));
+    }
+
+    private static long appliquer(long base) {
+        return base * facteurPrixPct / 100L;
+    }
 
     public enum Branche {
         /**
@@ -71,12 +91,12 @@ public final class Arbre {
     }
 
     public static long coutHerals(int palier) {
-        return palier * PRIX_PALIER;
+        return appliquer(palier * PRIX_PALIER);
     }
 
-    /** Herals du palier p d'une branche (Membres : {@link #HERALS_MEMBRES}). */
+    /** Herals du palier p d'une branche (Membres : {@link #HERALS_MEMBRES}), facteur de prix compris. */
     public static long coutHerals(Branche b, int palier) {
-        if (b == Branche.MEMBRES) return HERALS_MEMBRES[Math.max(0, Math.min(HERALS_MEMBRES.length - 1, palier - 1))];
+        if (b == Branche.MEMBRES) return appliquer(HERALS_MEMBRES[Math.max(0, Math.min(HERALS_MEMBRES.length - 1, palier - 1))]);
         return coutHerals(palier);
     }
 

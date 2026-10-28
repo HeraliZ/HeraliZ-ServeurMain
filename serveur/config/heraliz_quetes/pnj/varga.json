@@ -101,6 +101,92 @@
       }
     ]
   },
+  "faq": [
+    {
+      "question": {
+        "fr": "Comment construire ma base ?",
+        "en": "How do I build my base?",
+        "ru": "Как построить базу?"
+      },
+      "reponse": {
+        "fr": "Pour construire ta base, tu dois d'abord créer un clan (/clan, ça coûte des hérals). Une fois ton clan créé, reviens au spawn : je te guiderai à la radio pour bâtir ton premier abri sur un terrain d'entraînement, puis le matériel de ta première base t'attendra dans le coffre du clan (/clan coffre). Tu la poseras sur la carte, loin des villes et du loot.",
+        "en": "To build your base, you first need to create a clan (/clan, it costs herals). Once your clan is created, come back to spawn: I'll guide you over the radio to build your first shelter on a training ground, then the materials for your first base will be waiting in the clan chest (/clan coffre). You'll set it up on the map, away from towns and loot.",
+        "ru": "Чтобы построить базу, сначала создай клан (/clan, это стоит гералов). Когда клан будет создан, возвращайся на спавн: я по рации помогу тебе построить первое укрытие на учебной площадке, а потом материалы для первой базы будут ждать тебя в сундуке клана (/clan coffre). Ставь её на карте, подальше от городов и лута."
+      }
+    },
+    {
+      "question": {
+        "fr": "Comment je reviens au spawn ?",
+        "en": "How do I get back to spawn?",
+        "ru": "Как вернуться на спавн?"
+      },
+      "reponse": {
+        "fr": "Par une zone d'extraction. Sur la carte, plusieurs zones sont ouvertes en même temps et changent toutes les heures : tape /extractions ou ouvre ta carte (M) pour les voir. Tiens la zone jusqu'au bout et tu reviens au spawn avec tout ce que tu portes.",
+        "en": "Through an extraction zone. On the map, several zones are open at the same time and they all change every hour: type /extractions or open your map (M) to see them. Hold the zone until the end and you come back to spawn with everything you carry.",
+        "ru": "Через зону эвакуации. На карте открыто сразу несколько зон, и каждый час они меняются: набери /extractions или открой карту (M), чтобы их увидеть. Удержи зону до конца — и вернёшься на спавн со всем, что при тебе."
+      }
+    },
+    {
+      "question": {
+        "fr": "Comment marche le loot ?",
+        "en": "How does loot work?",
+        "ru": "Как устроен лут?"
+      },
+      "reponse": {
+        "fr": "Fouille les conteneurs de la carte : chaque lieu a son niveau, de T1 à T7, et plus il est haut, meilleur est le butin. La couleur d'un objet donne sa rareté : gris Commun, vert Peu commun, bleu Rare, violet Épique, or Légendaire, rouge Unique. Les conteneurs se remplissent à nouveau avec le temps.",
+        "en": "Search the containers on the map: every place has its tier, from T1 to T7, and the higher it is, the better the loot. An item's colour shows its rarity: grey Common, green Uncommon, blue Rare, purple Epic, gold Legendary, red Unique. Containers fill up again over time.",
+        "ru": "Обыскивай контейнеры на карте: у каждого места свой уровень, от T1 до T7, и чем он выше, тем лучше добыча. Цвет предмета показывает редкость: серый — обычный, зелёный — необычный, синий — редкий, фиолетовый — эпический, золотой — легендарный, красный — уникальный. Контейнеры со временем снова наполняются."
+      }
+    },
+    {
+      "question": {
+        "fr": "À quoi servent les hérals, les capsules et les PB ?",
+        "en": "What are herals, caps and PB for?",
+        "ru": "Зачем нужны гералы, крышки и PB?"
+      },
+      "reponse": {
+        "fr": "Les hérals sont la monnaie du camp : les marchands les acceptent, Mila et le recycleur t'en donnent, mes missions aussi, et il en faut pour fonder un clan. Les capsules se trouvent en explorant le monde : le casino les échange contre des récompenses. Les PB servent à la boutique du serveur (/boutique).",
+        "en": "Herals are the camp's currency: merchants take them, Mila and the recycler pay you in them, so do my missions, and you need them to found a clan. Caps are found while exploring the world: the casino trades them for rewards. PB are for the server shop (/boutique).",
+        "ru": "Гералы — валюта лагеря: их принимают торговцы, ими платят Мила, переработчик и мои задания, и они нужны, чтобы основать клан. Крышки находят, исследуя мир: казино обменивает их на награды. PB нужны для магазина сервера (/boutique)."
+      }
+    },
+    {
+      "question": {
+        "fr": "Que se passe-t-il quand je meurs ?",
+        "en": "What happens when I die?",
+        "ru": "Что будет, если я умру?"
+      },
+      "reponse": {
+        "fr": "Tout ce que tu portes reste sur ton cadavre : armes, sac, équipement. Il disparaît au bout de 10 minutes, et n'importe qui peut le fouiller avant toi. Seuls les objets à vie, comme les couteaux, te suivent. Ne pars jamais avec ce que tu ne veux pas perdre.",
+        "en": "Everything you carry stays on your body: weapons, backpack, gear. It disappears after 10 minutes, and anyone can loot it before you. Only lifetime items, like knives, stay with you. Never head out with anything you can't afford to lose.",
+        "ru": "Всё, что при тебе, остаётся на трупе: оружие, рюкзак, снаряжение. Через 10 минут он исчезает, и любой может обыскать его раньше тебя. С тобой остаются только вечные предметы, например ножи. Не бери с собой то, что боишься потерять."
+      }
+    },
+    {
+      "question": {
+        "fr": "Les clans et la saison, c'est quoi ?",
+        "en": "What are clans and the season?",
+        "ru": "Что такое кланы и сезон?"
+      },
+      "reponse": {
+        "fr": "Un clan, c'est une base, un coffre commun et une place au classement. Chaque saison dure un mois : les clans marquent des points en PVE, en PVP et pendant les événements. Pour compter, ton clan doit poser son cœur de clan dans sa base ; pendant la Purge, des ennemis peuvent venir le prendre et voler vos points. Tape /saison pour voir le classement.",
+        "en": "A clan means a base, a shared chest and a place in the ranking. Each season lasts a month: clans score points in PVE, in PVP and during events. To count, your clan must place its clan heart in its base; during the Purge, enemies can come and take it to steal your points. Type /saison to see the ranking.",
+        "ru": "Клан — это база, общий сундук и место в рейтинге. Каждый сезон длится месяц: кланы зарабатывают очки в PVE, PVP и на событиях. Чтобы они засчитывались, клан должен поставить сердце клана на своей базе; во время Чистки враги могут прийти, захватить его и украсть ваши очки. Набери /saison, чтобы увидеть рейтинг."
+      }
+    },
+    {
+      "question": {
+        "fr": "Jambe cassée, saignement : je fais quoi ?",
+        "en": "Broken leg, bleeding: what do I do?",
+        "ru": "Сломана нога, кровотечение: что делать?"
+      },
+      "reponse": {
+        "fr": "Un saignement te vide peu à peu : un Bandage l'arrête. Une jambe cassée t'empêche de courir et de prendre de l'élan en sautant : une Attelle la remet. « Attelle et bandage » fait les deux. Jacqueline vend tous les soins ici, au spawn : n'en pars jamais sans.",
+        "en": "Bleeding drains you little by little: a Bandage stops it. A broken leg stops you from sprinting and from building momentum when you jump: a Splint sets it. \"Splint and bandage\" does both. Jacqueline sells every medical supply here at spawn: never leave without some.",
+        "ru": "Кровотечение понемногу тебя убивает: его останавливает бинт. Со сломанной ногой нельзя бегать и разгоняться в прыжке: её вправляет шина. «Шина и бинт» лечит и то, и другое. Жаклин продаёт все медикаменты здесь, на спавне: без них не уходи."
+      }
+    }
+  ],
   "suite": [
     {
       "id": "c1_tir",

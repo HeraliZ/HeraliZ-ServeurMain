@@ -90,6 +90,8 @@ final class PanelStaff {
         ReseauStaff.RECEPTION_DEMANDE_FICHE.brancher(r -> fiche(r.joueur(), r.message().joueur()));
         ReseauStaff.RECEPTION_AGIR.brancher(r -> agir(r.joueur(), r.message()));
         ReseauStaff.RECEPTION_PERMISSION.brancher(r -> permission(r.joueur(), r.message()));
+        ReseauStaff.RECEPTION_PERMISSION_COMMANDE.brancher(r -> permissionCommande(r.joueur(), r.message()));
+        CommandesDonnees.brancher();
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> CONNEXION.put(e.getEntity().getUUID(), System.currentTimeMillis()));
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
             UUID u = e.getEntity().getUUID();
@@ -100,6 +102,7 @@ final class PanelStaff {
 
     static void demarrer(Path dossier) {
         PermsStaff.demarrer(dossier);
+        CommandesDonnees.demarrer(dossier);
         JournalStaff.demarrer(dossier);
         DERNIERE.clear();
         GRADES_DONNES.clear();
@@ -109,6 +112,7 @@ final class PanelStaff {
 
     static void arreter() {
         PermsStaff.arreter();
+        CommandesDonnees.arreter();
         JournalStaff.arreter();
         CONNEXION.clear();
     }
@@ -179,7 +183,7 @@ final class PanelStaff {
         long maintenant = System.currentTimeMillis();
         MUETS.values().removeIf(fin -> fin < maintenant);
         ReseauStaff.Etat e = new ReseauStaff.Etat(ouvrir, rang, gradeAffiche(p, rang), permises, fonda ? PermsStaff.tous() : Map.of(), grades,
-                JournalStaff.recentes(60), new ArrayList<>(MUETS.keySet()), message, ok);
+                JournalStaff.recentes(60), new ArrayList<>(MUETS.keySet()), message, ok, fonda ? CommandesDonnees.tous() : Map.of());
         ReseauStaff.CANAL.send(PacketDistributor.PLAYER.with(() -> p), e);
     }
 
@@ -225,6 +229,38 @@ final class PanelStaff {
         LienDiscord.evenement("🛡️ Panel staff : **" + p.getGameProfile().getName() + "** (Fondateur) a " + (m.permis() ? "donné" : "retiré")
                 + " « " + a.id + " » au grade " + PermsStaff.nomRang(m.rang()) + ".");
         repondre(p, true, "permission");
+    }
+
+    /**
+     * Une case de l'onglet « Commandes du Fondateur » (28/10) : le vrai Fondateur (grade Fondateur, op 4, /login) donne ou
+     * retire UNE commande à UN grade du staff (Guide à Admin). Commandes interdites refusées par le serveur.
+     */
+    private static void permissionCommande(ServerPlayer p, ReseauStaff.PermissionCommande m) {
+        if (!fondateur(p)) {
+            repondre(p, false, "fondateur");
+            return;
+        }
+        String racine = fr.heraliz.grades.staff.CommandesStaff.racine(m.racine());
+        if (!fr.heraliz.grades.staff.CommandesStaff.donnable(racine) || m.rang() < 1 || m.rang() >= ActionStaff.RANG_MAX) {
+            repondre(p, false, "commande_interdite");
+            return;
+        }
+        long maintenant = System.currentTimeMillis();
+        Long der = DERNIERE.get(p.getUUID());
+        if (der != null && maintenant - der < 150) {
+            repondre(p, false, "trop_vite");
+            return;
+        }
+        DERNIERE.put(p.getUUID(), maintenant);
+        if (!CommandesDonnees.changer(p.server, racine, m.rang(), m.permis())) {
+            repondre(p, false, "erreur");
+            return;
+        }
+        String grade = PermsStaff.nomRang(m.rang());
+        JournalStaff.noterId(p.getGameProfile().getName(), Grade.FONDATEUR.id, "perm_commande", grade, racine, m.permis() ? "+" : "-");
+        LienDiscord.evenement("🛡️ Panel staff : **" + p.getGameProfile().getName() + "** (Fondateur) a " + (m.permis() ? "donné" : "retiré")
+                + " la commande « /" + racine + " » au grade " + grade + ".");
+        repondre(p, true, "permission_commande", racine);
     }
 
     // ------------------------------------------------------------------ actions

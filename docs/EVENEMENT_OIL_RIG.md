@@ -45,7 +45,7 @@ gauche, saison des clans (`SaisonApi.event`), anti-duplication de Spartan, signa
 | Cartes | verte, bleue, rouge (`heralisz_bunker:keycard_green|blue|red`), une par lecteur de sa couleur | `modules/bunker/.../keycard/KeycardRegistry.java`, `AccessLevel.java` |
 | Usure | chaque passage réussi use la carte : verte 10, bleue 8, **rouge 6 passages**, puis elle casse (compteur `Uses` dans l'objet) | `KeycardItem.java`, `serveur/config/heralisz_bunker-common.toml` |
 | Fragments | 4 fragments numérotés par carte (`keycard_fragment_red_1` à `_4`), raretés : vert Rare, bleu Épique, **rouge Légendaire** | `KeycardRegistry.java`, `outils/loot_armes.py` (`RARETE_FRAGMENTS`) |
-| Assemblage | recette sans forme (grille 2 × 2) **ou** clic droit avec un fragment quand les 4 numéros sont dans l'inventaire : le **serveur** retire un de chaque puis donne la carte ; pas de place = refusé, rien retiré | `data/heralisz_bunker/recipes/keycard_red_fragments.json`, `serveur/fragments/AssemblageFragments.java` |
+| Assemblage | seulement à la Table d'armurier, onglet Divers (les 4 numéros) ; ni grille 2 × 2 (26/10) ni clic droit (28/10) | `serveur/tacz/heraliz_crafts/data/heraliz_crafts/recipes/divers/3_carte_rouge.json` (`outils/crafts.py`) |
 | Fréquence | fragments rouges pour 100 conteneurs ouverts : T5 0,15 · T6 0,2 · T7 1,2 ; « environ 4 500 conteneurs ouverts pour une carte rouge complète » (8,3 fragments en moyenne pour avoir les 4 numéros) | `outils/loot_armes.py` (`FRAGMENTS_POUR_100`) |
 | Salles à carte | une salle rouge recharge son loot 4 h après la sortie du dernier joueur ; elle rapporte **40 points** de saison à chaque recharge | `heralisz_bunker-common.toml`, `serveur/config/heralisz_clans/saison.json` |
 
@@ -201,7 +201,7 @@ jamais vendu par un PNJ, jamais dans une caisse de la boutique.
 
 ### 3.2 Recette de la carte stratégique (étape 3)
 
-**Assemblage par clic droit, décidé par le serveur** (même méthode que `AssemblageFragments`) : clic droit avec le plan en
+**Assemblage par clic droit, décidé par le serveur** (même méthode que l'ancien `AssemblageFragments` des cartes d'accès, retiré le 28/10) : clic droit avec le plan en
 main ; si l'inventaire contient **une carte rouge neuve, un Circuit imprimé IV et une Batterie IV**, le serveur retire un
 exemplaire de chaque, puis donne la carte stratégique. Sinon : « Il te manque : … ». Pas de place : refusé, rien retiré.
 
