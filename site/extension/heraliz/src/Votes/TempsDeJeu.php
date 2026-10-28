@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\DB;
 /**
  * Temps passé sur le serveur de jeu par compte du site. AzLink envoie au site, environ une fois par minute, la liste des
  * joueurs en ligne (POST /api/azlink) ; le site y répond avec les comptes reconnus (Middleware\SuiviAzLink). Le temps
- * écoulé depuis le relevé précédent est ajouté à chacun d'eux. Sert au vote : rien pour un compte qui n'a jamais joué.
+ * écoulé depuis le relevé précédent est ajouté à chacun d'eux. Ne bloque plus le vote depuis le 28/10 (demande du
+ * propriétaire : un compte qui n'a jamais joué vote aussi) ; gardé pour le staff.
  */
 final class TempsDeJeu
 {
-    /** Temps de jeu minimal pour qu'un vote soit récompensé. */
+    /** Ancien temps de jeu minimal pour voter (plus exigé depuis le 28/10). */
     public const MINUTES_MIN = 10;
 
     /** Écart compté au plus entre deux relevés (serveur redémarré, AzLink coupé un moment). */

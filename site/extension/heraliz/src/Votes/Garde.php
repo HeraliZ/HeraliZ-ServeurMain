@@ -21,7 +21,8 @@ use Throwable;
  * Règles des votes contre les bots et les fermes de comptes (27/10, demande du propriétaire). Chaque vote donne une clé,
  * des hérals et des PB : un vote ne rapporte que
  *  - à un compte connecté au site (réglage « vote.auth-required » de l'extension Vote, remis par reglages.php) ;
- *  - dont le Discord est lié, membre et validé comme pour jouer (Discord\Comptes), et qui a déjà joué (TempsDeJeu) ;
+ *  - dont le Discord est lié, membre et validé comme pour jouer (Discord\Comptes) ; plus besoin d'avoir joué (28/10,
+ *    demande du propriétaire : un compte qui n'a jamais joué vote aussi ; TempsDeJeu compte toujours, sans rien bloquer) ;
  *  - si le site de vote a vu le vote quand sa vérification est branchée (jeton Top-Serveurs : VerificationStricte) ;
  *    sinon, seulement après un clic sur « Voter » de notre page, anti-robot passé, il y a au moins 20 s (Clic) ;
  *  - une fois par connexion internet et par site sur la durée du vote, tous comptes confondus.
@@ -53,13 +54,6 @@ final class Garde
                     'lien' => null, 'bouton' => null],
                 default => ['message' => Comptes::message($statut), 'lien' => null, 'bouton' => null],
             };
-        }
-
-        if (! TempsDeJeu::suffisant($user)) {
-            $minutes = TempsDeJeu::minutes($user);
-
-            return ['message' => 'Joue au moins '.TempsDeJeu::MINUTES_MIN.' minutes sur HeraliZ avant de voter (pour l’instant : '
-                .$minutes.' min). Les votes récompensent les joueurs, pas les comptes vides.', 'lien' => null, 'bouton' => null];
         }
 
         return null;

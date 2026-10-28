@@ -75,7 +75,7 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         $this->router->pushMiddlewareToGroup('api', IpsBannies::class);
         $this->router->pushMiddlewareToGroup('web', IpsBannies::class);
 
-        // votes protégés contre les bots et les fermes de comptes (Votes\Garde : compte validé qui a joué, vote vu par
+        // votes protégés contre les bots et les fermes de comptes (Votes\Garde : compte validé, vote vu par
         // Top-Serveurs, une récompense par connexion) ; temps de jeu compté sur les relevés d'AzLink (Votes\TempsDeJeu)
         $this->router->pushMiddlewareToGroup('web', VotesProteges::class);
         $this->router->pushMiddlewareToGroup('api', SuiviAzLink::class);
