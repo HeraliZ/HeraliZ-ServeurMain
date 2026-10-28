@@ -1,0 +1,36 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:planches"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:clou"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:corde"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ferraille_ii"
+      },
+      "count": 3
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "crac:malle_chantier"
+    },
+    "group": "heraliz_crafts:rangement"
+  }
+}

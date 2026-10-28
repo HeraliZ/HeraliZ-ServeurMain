@@ -1,6 +1,6 @@
 # Commandes du serveur (tri du 25/10)
 
-**68 commandes de premier niveau** depuis le tri du 25/10 (environ 90 avant). Une commande = un système : les
+**69 commandes de premier niveau** (`/coffres` ajoutée le 27/10) depuis le tri du 25/10 (environ 90 avant). Une commande = un système : les
 variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventaire complet lu dans les sources :
 `python outils/commandes.py` (écrit `docs/COMMANDES_INVENTAIRE.md`).
 
@@ -54,6 +54,7 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête |
 | `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur |
 | `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection des nouvelles bases, carrières |
+| `/coffres` (`voir`, `recharger`) | CRac | coffres de la base où l'on se tient et leurs limites ; relit `config/crac/coffres.json` (op) |
 | `/depart`, `/carte`, `/train`, `/cinematique` | Utils | borne de départ, lieux de la carte, train, cinématique |
 | `/corps`, `/usure`, `/vehicules`, `/inspecter` | Utils | cadavres, usure des armes, véhicules, inventaire d'un joueur |
 | `/vitres`, `/camos`, `/armurier` | Tactique | vitres cassables, camos à vie, recettes de la Table d'armurier |

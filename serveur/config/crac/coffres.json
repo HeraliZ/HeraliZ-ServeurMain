@@ -1,0 +1,10 @@
+{
+  "_aide": "Coffres de base par rareté : nombre au plus par base (zone de l'armoire). Les coffres déjà posés comptent ; au-delà, la pose est refusée. Relu en jeu par /coffres recharger (op).",
+  "limites_par_base": {
+    "commune": 14,
+    "peu_commune": 12,
+    "rare": 10,
+    "epique": 8,
+    "legendaire": 5
+  }
+}

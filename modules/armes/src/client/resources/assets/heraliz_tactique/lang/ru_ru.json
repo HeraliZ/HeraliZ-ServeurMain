@@ -92,6 +92,8 @@
   "overlay.heraliz_tactique.secondes": "%s с",
   "gui.heraliz_tactique.armurier.onglet.divers": "Разное",
   "heraliz_crafts.onglet.divers": "Разное",
+  "gui.heraliz_tactique.armurier.onglet.rangement": "Хранение",
+  "heraliz_crafts.onglet.rangement": "Хранение",
   "hud.heraliz_tactique.tir.auto": "Авто",
   "hud.heraliz_tactique.tir.semi": "Одиноч.",
   "hud.heraliz_tactique.tir.burst": "Очередь"

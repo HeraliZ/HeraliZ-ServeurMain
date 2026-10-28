@@ -1,0 +1,6 @@
+{
+  "credit": "HeraliZ, modules/bases/outils/coffres_modeles.py",
+  "textures": {
+    "particle": "crac:block/coffre_fort"
+  }
+}

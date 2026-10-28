@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "crac:casier_metallique"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "crac:casier_metallique",
+          "properties": {
+            "annexe": "false"
+          }
+        }
+      ]
+    }
+  ]
+}

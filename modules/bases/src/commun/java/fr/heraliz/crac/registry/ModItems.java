@@ -1,5 +1,6 @@
 package fr.heraliz.crac.registry;
 
+import fr.heraliz.crac.block.ObjetCoffre;
 import fr.heraliz.crac.item.BuildingHammerItem;
 import fr.heraliz.crac.item.BuildingPlanItem;
 import fr.heraliz.crac.item.C4Item;
@@ -26,7 +27,20 @@ public final class ModItems {
     public static final RegistryObject<GlassWindowItem> GLASS_WINDOW = ITEMS.register("glass_window", GlassWindowItem::new);
     public static final RegistryObject<GlassWindowItem> METAL_WINDOW = ITEMS.register("metal_window", GlassWindowItem::new);
     public static final RegistryObject<BlockItem> METAL_CRATE = ITEMS.register(
-        "metal_crate", () -> new fr.heraliz.crac.block.ObjetAdossable(ModBlocks.METAL_CRATE.get(), new Properties(), 1)
+        "metal_crate", () -> new ObjetCoffre(ModBlocks.METAL_CRATE.get(), new Properties(), 1, 18, "1")
+    );
+    /** Coffres par rareté (27/10) ; un 2 de haut se pose dans une case libre avec la case du dessus libre. */
+    public static final RegistryObject<BlockItem> MALLE_CHANTIER = ITEMS.register(
+        "malle_chantier", () -> new ObjetCoffre(ModBlocks.MALLE_CHANTIER.get(), new Properties().stacksTo(16), 1, 45, "large")
+    );
+    public static final RegistryObject<BlockItem> CASIER_METALLIQUE = ITEMS.register(
+        "casier_metallique", () -> new ObjetCoffre(ModBlocks.CASIER_METALLIQUE.get(), new Properties().stacksTo(16), 2, 54, "haut")
+    );
+    public static final RegistryObject<BlockItem> CAISSE_ARMES = ITEMS.register(
+        "caisse_armes", () -> new ObjetCoffre(ModBlocks.CAISSE_ARMES.get(), new Properties().stacksTo(16), 1, 66, "large")
+    );
+    public static final RegistryObject<BlockItem> COFFRE_FORT = ITEMS.register(
+        "coffre_fort", () -> new ObjetCoffre(ModBlocks.COFFRE_FORT.get(), new Properties().stacksTo(16), 2, 78, "haut")
     );
     public static final RegistryObject<ClaimBlockItem> CLAIM_BLOCK = ITEMS.register(
         "claim_block", () -> new ClaimBlockItem(ModBlocks.CLAIM_BLOCK.get(), new Properties().stacksTo(16))

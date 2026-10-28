@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Two-block placables (beds and sleeping bags, doors, tall plants). Both halves share one HP entry and one
+ * Two-block placables (beds and sleeping bags, doors, tall plants, the storage chests of CoffreBlock). Both halves share one HP entry and one
  * position entry, keyed by the {@link #canonical} half, and are always removed together.
  */
 public final class MultiBlocks {
@@ -25,6 +25,9 @@ public final class MultiBlocks {
     /** Where the other half of a two-block placable would be, or null for a single block. */
     @Nullable
     public static BlockPos partner(BlockState state, BlockPos pos) {
+        if (state.getBlock() instanceof fr.heraliz.crac.block.CoffreBlock c) {   // coffres par rareté (2 cases)
+            return c.partenaire(state, pos);
+        }
         if (state.getBlock() instanceof BedBlock && state.hasProperty(BedBlock.PART) && state.hasProperty(BedBlock.FACING)) {
             Direction facing = state.getValue(BedBlock.FACING);
             return state.getValue(BedBlock.PART) == BedPart.FOOT ? pos.relative(facing) : pos.relative(facing.getOpposite());
@@ -44,6 +47,9 @@ public final class MultiBlocks {
 
     /** The half that keys a two-block placable's data: the foot of a bed, the lower half of a door; else pos. */
     public static BlockPos canonical(BlockState state, BlockPos pos) {
+        if (state.getBlock() instanceof fr.heraliz.crac.block.CoffreBlock c) {   // la case qui garde l'inventaire
+            return c.principal(state, pos);
+        }
         if (state.getBlock() instanceof BedBlock && state.hasProperty(BedBlock.PART) && state.hasProperty(BedBlock.FACING)) {
             return state.getValue(BedBlock.PART) == BedPart.HEAD ? pos.relative(state.getValue(BedBlock.FACING).getOpposite()) : pos.immutable();
         }

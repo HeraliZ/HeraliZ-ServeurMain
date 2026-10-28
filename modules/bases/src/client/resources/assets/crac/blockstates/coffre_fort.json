@@ -1,0 +1,544 @@
+{
+  "variants": {
+    "adosse=0,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_0"
+    },
+    "adosse=0,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_0"
+    },
+    "adosse=0,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=0,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=1,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_1"
+    },
+    "adosse=1,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_1"
+    },
+    "adosse=1,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=1,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=2,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_2"
+    },
+    "adosse=2,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_2"
+    },
+    "adosse=2,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=2,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=3,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_3"
+    },
+    "adosse=3,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_3"
+    },
+    "adosse=3,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=3,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=4,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme"
+    },
+    "adosse=4,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert"
+    },
+    "adosse=4,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=4,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=5,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_5"
+    },
+    "adosse=5,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_5"
+    },
+    "adosse=5,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=5,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=6,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_6"
+    },
+    "adosse=6,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_6"
+    },
+    "adosse=6,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=6,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=7,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_7"
+    },
+    "adosse=7,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_7"
+    },
+    "adosse=7,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=7,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=8,facing=north,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_8"
+    },
+    "adosse=8,facing=north,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_8"
+    },
+    "adosse=8,facing=north,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=8,facing=north,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut"
+    },
+    "adosse=0,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_2",
+      "y": 90
+    },
+    "adosse=0,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_2",
+      "y": 90
+    },
+    "adosse=0,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=0,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=1,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_5",
+      "y": 90
+    },
+    "adosse=1,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_5",
+      "y": 90
+    },
+    "adosse=1,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=1,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=2,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_8",
+      "y": 90
+    },
+    "adosse=2,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_8",
+      "y": 90
+    },
+    "adosse=2,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=2,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=3,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_1",
+      "y": 90
+    },
+    "adosse=3,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_1",
+      "y": 90
+    },
+    "adosse=3,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=3,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=4,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme",
+      "y": 90
+    },
+    "adosse=4,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert",
+      "y": 90
+    },
+    "adosse=4,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=4,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=5,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_7",
+      "y": 90
+    },
+    "adosse=5,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_7",
+      "y": 90
+    },
+    "adosse=5,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=5,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=6,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_0",
+      "y": 90
+    },
+    "adosse=6,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_0",
+      "y": 90
+    },
+    "adosse=6,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=6,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=7,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_3",
+      "y": 90
+    },
+    "adosse=7,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_3",
+      "y": 90
+    },
+    "adosse=7,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=7,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=8,facing=east,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_6",
+      "y": 90
+    },
+    "adosse=8,facing=east,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_6",
+      "y": 90
+    },
+    "adosse=8,facing=east,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=8,facing=east,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 90
+    },
+    "adosse=0,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_8",
+      "y": 180
+    },
+    "adosse=0,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_8",
+      "y": 180
+    },
+    "adosse=0,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=0,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=1,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_7",
+      "y": 180
+    },
+    "adosse=1,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_7",
+      "y": 180
+    },
+    "adosse=1,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=1,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=2,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_6",
+      "y": 180
+    },
+    "adosse=2,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_6",
+      "y": 180
+    },
+    "adosse=2,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=2,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=3,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_5",
+      "y": 180
+    },
+    "adosse=3,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_5",
+      "y": 180
+    },
+    "adosse=3,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=3,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=4,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme",
+      "y": 180
+    },
+    "adosse=4,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert",
+      "y": 180
+    },
+    "adosse=4,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=4,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=5,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_3",
+      "y": 180
+    },
+    "adosse=5,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_3",
+      "y": 180
+    },
+    "adosse=5,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=5,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=6,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_2",
+      "y": 180
+    },
+    "adosse=6,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_2",
+      "y": 180
+    },
+    "adosse=6,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=6,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=7,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_1",
+      "y": 180
+    },
+    "adosse=7,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_1",
+      "y": 180
+    },
+    "adosse=7,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=7,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=8,facing=south,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_0",
+      "y": 180
+    },
+    "adosse=8,facing=south,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_0",
+      "y": 180
+    },
+    "adosse=8,facing=south,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=8,facing=south,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 180
+    },
+    "adosse=0,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_6",
+      "y": 270
+    },
+    "adosse=0,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_6",
+      "y": 270
+    },
+    "adosse=0,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=0,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=1,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_3",
+      "y": 270
+    },
+    "adosse=1,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_3",
+      "y": 270
+    },
+    "adosse=1,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=1,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=2,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_0",
+      "y": 270
+    },
+    "adosse=2,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_0",
+      "y": 270
+    },
+    "adosse=2,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=2,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=3,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_7",
+      "y": 270
+    },
+    "adosse=3,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_7",
+      "y": 270
+    },
+    "adosse=3,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=3,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=4,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme",
+      "y": 270
+    },
+    "adosse=4,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert",
+      "y": 270
+    },
+    "adosse=4,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=4,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=5,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_1",
+      "y": 270
+    },
+    "adosse=5,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_1",
+      "y": 270
+    },
+    "adosse=5,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=5,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=6,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_8",
+      "y": 270
+    },
+    "adosse=6,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_8",
+      "y": 270
+    },
+    "adosse=6,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=6,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=7,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_5",
+      "y": 270
+    },
+    "adosse=7,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_5",
+      "y": 270
+    },
+    "adosse=7,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=7,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=8,facing=west,annexe=false,open=false": {
+      "model": "crac:block/coffre_fort_ferme_adosse_2",
+      "y": 270
+    },
+    "adosse=8,facing=west,annexe=false,open=true": {
+      "model": "crac:block/coffre_fort_ouvert_adosse_2",
+      "y": 270
+    },
+    "adosse=8,facing=west,annexe=true,open=false": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    },
+    "adosse=8,facing=west,annexe=true,open=true": {
+      "model": "crac:block/coffre_fort_haut",
+      "y": 270
+    }
+  }
+}
