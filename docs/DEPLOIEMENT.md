@@ -42,8 +42,8 @@ joueurs.
   gunpacks qui ne sont plus dans le dépôt (sinon carrés roses chez les joueurs).
   **26/10 : dossiers renommés.** Supprimer du Ptero les dossiers entiers `arkaniaz_pack_0_converted` à
   `arkaniaz_pack_5_converted`, `arkaniaz_custom_converted` et `Cislumen_Armory` (fin de `serveur/tacz_retires.txt`) :
-  sinon chaque objet existe deux fois. Chez les joueurs, le launcher les retire lui-même à partir de la version qui
-  contient `retirerAnciensGunpacks` (monter la version, puis « publier »).
+  sinon chaque objet existe deux fois. Chez les joueurs, le launcher les retire lui-même (depuis la 1.15.3, tout fichier
+  du dossier `tacz` ou `modstore` qui n'est plus dans le pack, `retirerAnciennesVersions`).
 - `plugins/` : les jars de `livraison/plugins/`.
 - `server.properties` : celui du dépôt dit maintenant `level-name=dayz_map` (comme le Ptero) et `sync-chunk-writes=false`.
   Sur le Ptero, changer au moins `sync-chunk-writes=false` (gel de 6 s à une sauvegarde pendant l'ouverture du 24/10 ;

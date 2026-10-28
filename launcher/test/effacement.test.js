@@ -3,7 +3,7 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
-const { cheminSur, effacerDonneesJeu, retirerAnciensGunpacks } = require('../app/assets/js/effacement')
+const { cheminSur, effacerDonneesJeu, retirerAnciennesVersions } = require('../app/assets/js/effacement')
 
 function dossierEssai() {
     const base = fs.mkdtempSync(path.join(os.tmpdir(), 'heraliz-effacement-'))
@@ -114,22 +114,70 @@ test('effacerDonneesJeu ne touche à rien si le dossier du jeu est hors du dossi
     } finally { fs.rmSync(base, { recursive: true, force: true }) }
 })
 
-test('retirerAnciensGunpacks ne retire que les anciens dossiers nommés, dans tacz du serveur', () => {
+function ecrire(chemin, texte = 'x') {
+    fs.mkdirSync(path.dirname(chemin), { recursive: true })
+    fs.writeFileSync(chemin, texte)
+}
+
+test('retirerAnciennesVersions ne garde dans modstore et tacz que les fichiers du pack actuel', () => {
     const { base, racine, dehors } = dossierEssai()
     try {
-        const tacz = path.join(racine, 'instances', 'heraliz-1.20.1', 'tacz')
-        fs.mkdirSync(path.join(tacz, 'arkaniaz_pack_0_converted', 'assets'), { recursive: true })
-        fs.writeFileSync(path.join(tacz, 'arkaniaz_pack_0_converted', 'assets', 'a.json'), '{}')
-        fs.mkdirSync(path.join(tacz, 'heraliz_1_base_tacz'), { recursive: true })
-        fs.writeFileSync(path.join(tacz, 'tacz-pre.toml'), 'x')
+        const commun = path.join(racine, 'game', 'common')
+        const instances = path.join(racine, 'game', 'instances')
+        const instance = path.join(instances, 'heraliz-1.20.1')
+        const store = path.join(commun, 'modstore', 'fr', 'heraliz', 'spartan')
+        const tacz = path.join(instance, 'tacz')
+        const actuels = [
+            path.join(store, '2.9.3', 'spartan-2.9.3-client.jar'),
+            path.join(tacz, 'heraliz_1_base_tacz', 'assets', 'tacz', 'textures', 'gun', 'slot', 'ak47.png'),
+            path.join(tacz, 'tacz-pre.toml')
+        ]
+        actuels.forEach(f => ecrire(f))
+        ecrire(path.join(store, '2.9.2', 'spartan-2.9.2-client.jar'))
+        ecrire(path.join(store, '2.9.1', 'spartan-2.9.1-client.jar'))
+        ecrire(path.join(commun, 'modstore', 'fr', 'heraliz', 'ancien_mod', '1.0.0', 'ancien_mod-1.0.0.jar'))
+        ecrire(path.join(tacz, 'arkaniaz_pack_0_converted', 'assets', 'a.json'), '{}')
+        ecrire(path.join(tacz, 'heraliz_1_base_tacz', 'data', 'tacz', 'index', 'guns', 'ak47.json'), '{}')
+        ecrire(path.join(tacz, 'heraliz_1_base_tacz', 'assets', 'tacz', 'textures', 'gun', 'slot', 'arme_retiree.png'))
         lien(dehors, path.join(tacz, 'Cislumen_Armory'))
-        const r = retirerAnciensGunpacks({ dossierInstances: path.join(racine, 'instances'), serveur: 'heraliz-1.20.1' })
+        // hors des deux dossiers du pack : jamais touchés
+        ecrire(path.join(instance, 'options.txt'))
+        ecrire(path.join(commun, 'libraries', 'net', 'minecraftforge', 'forge.jar'))
+        const r = retirerAnciennesVersions({ dossierCommun: commun, dossierInstances: instances, serveur: 'heraliz-1.20.1', fichiers: actuels })
+        actuels.forEach(f => assert.ok(fs.existsSync(f), f))
+        assert.equal(fs.existsSync(path.join(store, '2.9.2')), false)
+        assert.equal(fs.existsSync(path.join(store, '2.9.1')), false)
+        assert.equal(fs.existsSync(path.join(commun, 'modstore', 'fr', 'heraliz', 'ancien_mod')), false)
         assert.equal(fs.existsSync(path.join(tacz, 'arkaniaz_pack_0_converted')), false)
-        assert.ok(fs.existsSync(path.join(tacz, 'heraliz_1_base_tacz')))
-        assert.ok(fs.existsSync(path.join(tacz, 'tacz-pre.toml')))
-        // un lien n'est jamais suivi : ce qu'il vise reste intact
+        assert.equal(fs.existsSync(path.join(tacz, 'heraliz_1_base_tacz', 'data')), false)
+        assert.equal(fs.existsSync(path.join(tacz, 'heraliz_1_base_tacz', 'assets', 'tacz', 'textures', 'gun', 'slot', 'arme_retiree.png')), false)
+        // un lien est retiré lui-même, jamais suivi : ce qu'il vise reste intact
+        assert.equal(fs.existsSync(path.join(tacz, 'Cislumen_Armory')), false)
         assert.ok(fs.existsSync(path.join(dehors, 'perso.txt')))
-        assert.equal(r.effaces.length, 1)
-        assert.deepEqual(retirerAnciensGunpacks({ dossierInstances: path.join(racine, 'instances'), serveur: '../x' }).effaces, [])
+        assert.ok(fs.existsSync(path.join(instance, 'options.txt')))
+        assert.ok(fs.existsSync(path.join(commun, 'libraries', 'net', 'minecraftforge', 'forge.jar')))
+        assert.deepEqual(r.erreurs, [])
+    } finally { fs.rmSync(base, { recursive: true, force: true }) }
+})
+
+test('retirerAnciennesVersions ne touche à rien sans fichier du pack dans le dossier', () => {
+    const { base, racine } = dossierEssai()
+    try {
+        const commun = path.join(racine, 'common')
+        const instances = path.join(racine, 'instances')
+        const jar = path.join(commun, 'modstore', 'fr', 'heraliz', 'spartan', '2.9.3', 'spartan-2.9.3-client.jar')
+        const gunpack = path.join(instances, 'heraliz-1.20.1', 'tacz', 'heraliz_1_base_tacz', 'pack.json')
+        ecrire(jar)
+        ecrire(gunpack)
+        // distribution vide ou illisible : rien n'est effacé
+        for (const fichiers of [[], undefined, ['relatif/a.jar']]) {
+            assert.deepEqual(retirerAnciennesVersions({ dossierCommun: commun, dossierInstances: instances, serveur: 'heraliz-1.20.1', fichiers }).effaces, [])
+        }
+        // pack sans fichier dans tacz : tacz laissé tel quel ; nom de serveur qui sortirait des instances : ignoré
+        const r = retirerAnciennesVersions({ dossierCommun: commun, dossierInstances: instances, serveur: '../x', fichiers: [jar, gunpack] })
+        assert.deepEqual(r.effaces, [])
+        retirerAnciennesVersions({ dossierCommun: commun, dossierInstances: instances, serveur: 'heraliz-1.20.1', fichiers: [jar] })
+        assert.ok(fs.existsSync(jar))
+        assert.ok(fs.existsSync(gunpack))
     } finally { fs.rmSync(base, { recursive: true, force: true }) }
 })

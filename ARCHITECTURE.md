@@ -453,7 +453,14 @@ Rien de tout cela n'a été testé en jeu (fabriqué et vérifié : `verifier.py
 - **Gunpacks** : dossiers renommés `heraliz_1_base_tacz` … `heraliz_7_vector_custom` (identifiants des objets inchangés),
   `Cislumen_Armory` (RPG-7 jamais obtenable) et `maxstuff:m82a2` (refusée par TaCZ) retirés ; anciens dossiers listés
   dans `serveur/tacz_retires.txt` (à effacer du Ptero, `docs/DEPLOIEMENT.md`) et retirés chez les joueurs par le
-  launcher (`effacement.js` `retirerAnciensGunpacks`, à publier).
+  launcher.
+- **Anciennes versions chez les joueurs** (launcher 1.15.3, 28/10, demande du propriétaire : un joueur voyait toutes nos
+  anciennes versions de Spartan, nom et jar, dans le dossier du launcher) : Helios range chaque version d'un mod dans
+  son propre dossier (`common/modstore`, chemin Maven) et ne retirait jamais un fichier sorti du pack. Après chaque
+  préparation réussie, tout ce qui n'est pas un fichier du pack actuel sort de `common/modstore` et de
+  `instances/<serveur>/tacz` (anciens jars, anciens gunpacks, fichiers d'armes retirés, anciens dossiers `data/`)
+  (`effacement.js` `retirerAnciennesVersions`, remplace `retirerAnciensGunpacks`). Rien d'autre n'est touché ; pack vide
+  ou illisible : rien n'est effacé. La version en cours reste forcément sur le PC (le jeu en a besoin).
 - **Soins** : animations propres du Bandage et de l'Attelle (`modules/armes/outils/animations_soins.py`).
 - **Finishers** (`survie`) : seul le coup de grâce (et les exécutions des armes) est libre ; objet `reanimation:finisher`
   (`{Execution:"<id>"}`), clic droit = ajouté à la collection (menu =) ; 22 finishers en deux groupes partagés entre

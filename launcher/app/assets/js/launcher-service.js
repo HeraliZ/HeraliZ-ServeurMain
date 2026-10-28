@@ -18,7 +18,7 @@ const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
 const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
-const { effacerDonneesJeu, retirerAnciensGunpacks, cheminSur, effacerSansSuivre } = require('./effacement')
+const { effacerDonneesJeu, retirerAnciennesVersions, cheminSur, effacerSansSuivre } = require('./effacement')
 const { ecarterJarsEnTrop, controlerJava, oublierJava } = require('./integrite')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
@@ -69,6 +69,15 @@ const estJava = nom => /^javaw?(\.exe)?$/i.test(nom || '')
 function fichierBan() {
     return path.join(app.getPath('userData'), 'compte-banni.json')
 }
+// Chemins sur ce PC de tous les fichiers du pack (modules et sous-modules de la distribution).
+function fichiersDuPack(modules, chemins = []) {
+    for (const module of modules || []) {
+        try { chemins.push(module.getPath()) } catch { /* module sans chemin */ }
+        fichiersDuPack(module.subModules, chemins)
+    }
+    return chemins
+}
+
 function lireBan() {
     try {
         const lu = JSON.parse(fs.readFileSync(fichierBan(), 'utf8'))
@@ -615,12 +624,16 @@ class LauncherService {
             Config.setMaxRAM(this.config.serverId, `${settings.ramGB}G`)
             Config.save()
             const { version, loader } = await this.repair(distro, server)
-            // anciens dossiers de gunpacks (noms d'ArkaniaZ, 26/10) : retirés du dossier du jeu, jamais bloquant
+            // anciennes versions des mods et fichiers des gunpacks qui ont quitté le pack : effacés, jamais bloquant
             try {
-                const r = retirerAnciensGunpacks({ dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId })
-                if (r.erreurs.length) console.warn('[HeraliZ/gunpacks] anciens dossiers pas tous retirés', r.erreurs.map(e => e.code))
+                const r = retirerAnciennesVersions({
+                    dossierCommun: Config.getCommonDirectory(), dossierInstances: Config.getInstanceDirectory(),
+                    serveur: this.config.serverId, fichiers: fichiersDuPack(server.modules)
+                })
+                if (r.effaces.length) console.info('[HeraliZ/pack] anciennes versions retirées :', r.effaces.length)
+                if (r.erreurs.length) console.warn('[HeraliZ/pack] anciennes versions pas toutes retirées', r.erreurs.map(e => e.code))
             } catch (erreur) {
-                console.warn('[HeraliZ/gunpacks]', erreur?.message)
+                console.warn('[HeraliZ/pack]', erreur?.message)
             }
             // dossier mods du jeu : le pack n'y met rien (ses mods sont dans le dossier du launcher) ; un jar posé là serait
             // chargé par Forge : mis de côté (integrite.js), jamais bloquant
