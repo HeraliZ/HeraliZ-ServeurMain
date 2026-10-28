@@ -99,30 +99,68 @@ function effacerDonneesJeu(options) {
     return resultat
 }
 
-// Anciens dossiers de gunpacks (noms hérités d'ArkaniaZ, renommés le 26/10 ; Cislumen_Armory retiré) : le pack ne les
-// contient plus, mais le launcher ne retire jamais seul un fichier tacz qui a quitté le pack. Liste fixe, jamais un
-// dossier inconnu : seul ce qui est nommé ici, dans <instance>/tacz, est effacé (même contrôle que effacerDonneesJeu).
-const ANCIENS_GUNPACKS = ['arkaniaz_pack_0_converted', 'arkaniaz_pack_1_converted', 'arkaniaz_pack_2_converted',
-    'arkaniaz_pack_3_converted', 'arkaniaz_pack_4_converted', 'arkaniaz_pack_5_converted', 'arkaniaz_custom_converted',
-    'Cislumen_Armory']
+// Anciennes versions : chaque version d'un mod a son propre dossier dans <commun>/modstore (chemin Maven), et Helios
+// ne retire jamais un fichier qui a quitté le pack. Après chaque préparation réussie, tout ce qui n'est pas un fichier du
+// pack actuel sort de <commun>/modstore (anciens jars des mods) et de <instance>/tacz (anciens gunpacks, fichiers
+// d'armes retirés, anciens dossiers data/ que le serveur envoie maintenant lui-même). Ces deux dossiers sont remplis
+// par le pack seul : rien d'autre n'y est jamais touché. Un dossier où le pack n'a aucun fichier n'est pas touché
+// (distribution vide ou illisible : rien n'est effacé). Même contrôle que effacerDonneesJeu : rien hors du dossier,
+// aucun lien suivi (un lien est retiré lui-même).
+function racinesPack({ dossierCommun, dossierInstances, serveur }) {
+    const racines = []
+    if (typeof dossierCommun === 'string') racines.push(path.join(dossierCommun, 'modstore'))
+    if (typeof dossierInstances === 'string' && typeof serveur === 'string' && /^[\w.-]+$/.test(serveur)) {
+        racines.push(path.join(dossierInstances, serveur, 'tacz'))
+    }
+    return racines
+}
 
-// { effaces: [chemins], erreurs: [{ chemin, code }] } ; rien hors de <dossierInstances>/<serveur>/tacz.
-function retirerAnciensGunpacks({ dossierInstances, serveur }) {
+// fichiers : chemins absolus des fichiers du pack actuel. { effaces: [chemins], erreurs: [{ chemin, code }] }
+function retirerAnciennesVersions({ dossierCommun, dossierInstances, serveur, fichiers }) {
     const resultat = { effaces: [], erreurs: [] }
-    if (typeof serveur !== 'string' || !/^[\w.-]+$/.test(serveur) || typeof dossierInstances !== 'string') return resultat
-    const tacz = path.join(dossierInstances, serveur, 'tacz')
-    for (const nom of ANCIENS_GUNPACKS) {
-        const sur = cheminSur(tacz, path.join(tacz, nom))
-        if (!sur) continue
-        const avant = resultat.erreurs.length
-        effacerSansSuivre(sur, resultat.erreurs)
-        if (resultat.erreurs.length === avant) resultat.effaces.push(sur)
+    const garder = new Set()
+    const parents = new Set()
+    for (const fichier of Array.isArray(fichiers) ? fichiers : []) {
+        if (typeof fichier !== 'string' || !path.isAbsolute(fichier)) continue
+        let f = path.resolve(fichier)
+        garder.add(comparable(f))
+        for (let p = path.dirname(f); p !== f; f = p, p = path.dirname(p)) parents.add(comparable(p))
+    }
+    for (const racine of racinesPack({ dossierCommun, dossierInstances, serveur })) {
+        if (!path.isAbsolute(racine) || !parents.has(comparable(path.resolve(racine)))) continue
+        let infos
+        try { infos = fs.lstatSync(racine) } catch { continue }
+        if (infos.isSymbolicLink() || !infos.isDirectory()) continue
+        balayer(path.resolve(racine), garder, parents, resultat)
     }
     return resultat
+}
+
+function balayer(dossier, garder, parents, resultat) {
+    let noms
+    try { noms = fs.readdirSync(dossier) } catch (erreur) {
+        resultat.erreurs.push({ chemin: dossier, code: erreur?.code || 'ERREUR' })
+        return
+    }
+    for (const nom of noms) {
+        const chemin = path.join(dossier, nom)
+        const cle = comparable(chemin)
+        let infos
+        try { infos = fs.lstatSync(chemin) } catch { continue }
+        if (!infos.isSymbolicLink() && infos.isDirectory() && parents.has(cle)) {
+            balayer(chemin, garder, parents, resultat)
+            // dossier vidé par le balayage : retiré aussi
+            try { if (fs.readdirSync(chemin).length === 0) fs.rmdirSync(chemin) } catch { /* gardé */ }
+        } else if (infos.isSymbolicLink() || infos.isDirectory() || !garder.has(cle)) {
+            const avant = resultat.erreurs.length
+            effacerSansSuivre(chemin, resultat.erreurs)
+            if (resultat.erreurs.length === avant) resultat.effaces.push(chemin)
+        }
+    }
 }
 
 function estLien(chemin) {
     try { return fs.lstatSync(chemin).isSymbolicLink() } catch { return false }
 }
 
-module.exports = { cheminSur, effacerSansSuivre, effacerDonneesJeu, ciblesJeu, retirerAnciensGunpacks, ANCIENS_GUNPACKS, GARDER_INSTANCE }
+module.exports = { cheminSur, effacerSansSuivre, effacerDonneesJeu, ciblesJeu, retirerAnciennesVersions, GARDER_INSTANCE }
