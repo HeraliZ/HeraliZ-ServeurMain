@@ -1,7 +1,7 @@
 # À tester en jeu — correctifs du 27/10 (bases, combat, frappe aérienne, réanimation)
 
 Rien de cette liste n'a été testé en jeu par Claude. Fabriqué et vérifié hors du jeu (`construire.py`, `verifier.py`).
-CRac 1.26.0-beta. Canal réseau CRac version 27 : joueurs et serveur doivent avoir les jars de la **même** fabrication.
+CRac 1.26.1-beta. Canal réseau CRac version 27 : joueurs et serveur doivent avoir les jars de la **même** fabrication.
 
 ## Combat
 - [ ] Deux joueurs de part et d'autre d'une porte fermée (ou d'un mur), collés : ni balle ni coup de mêlée (poing,
@@ -40,8 +40,15 @@ CRac 1.26.0-beta. Canal réseau CRac version 27 : joueurs et serveur doivent avo
       entretien ; la zone verte disparaît ; la reposer ailleurs (règles d'une pose normale). Après 15 min : « Trop tard ».
       Pendant un raid, au tutoriel, ou sans le droit de gérer la base : refusé. Armoire posée avant cette version : refusé.
 - [ ] Montées : sauter d'un demi-mur sur un plancher posé dessus, puis sur le plancher du niveau suivant, en courant :
-      l'aide au saut arrive à temps (elle est donnée plus tôt). À noter : un plancher posé sur un demi-mur laisse 1,3 bloc
-      dessous et dessus ; Minecraft demande 1,5 bloc pour passer accroupi : on n'y passe qu'allongé (touche « Ramper »).
+      l'aide au saut arrive à temps (elle est donnée plus tôt).
+- [ ] Montée sous un plafond (28/10) : demi-mur + plancher dessus, avec un plancher au-dessus de la tête. Accroupi (Maj)
+      + saut au pied du plancher du demi-mur : on monte dessus et on y avance accroupi (avant : bloqué entre les deux).
+      Le joueur accroupi fait 1,25 bloc au lieu de 1,5 et a les yeux un peu plus bas : vérifier qu'on ne voit pas à travers
+      le plancher du dessus, que les tirs sur un joueur accroupi touchent comme avant, et l'anticheat (alertes de
+      mouvement en sautant accroupi).
+- [ ] Objet (caisse, coffre, armoire, four…) visé sur le dessus d'un plancher posé sur des demi-murs : refusé avec « son
+      dessus est à mi-bloc » ; plus d'objet qui flotte ni qui part dans une case voisine. Sur une fondation ou un plancher
+      normal : comme avant ; caisse visée contre un mur : toujours poussée contre le mur.
 
 ## Frappe aérienne, réanimation, armes
 - [ ] Recharger les jumelles plusieurs fois, aussi quand le serveur rame : animation fluide, jamais en arrière.

@@ -247,6 +247,16 @@ public class BuildEventHandler {
                     }
 
                     Item item = event.getItemStack().getItem();
+                    if (placesSomething(item) && item instanceof BlockItem && event.getFace() == Direction.UP
+                        && StructureBlock.standIssue(sl, event.getPos()) == StructureBlock.StandIssue.HALF_LEVEL) {
+                        // HeraliZ (28/10) : un plancher posé sur des demi-murs a son dessus à mi-bloc ; avec un plancher
+                        // au-dessus, il n'y a même aucune case libre entre les deux : rien ne s'y pose
+                        event.setUseItem(Result.DENY);
+                        player.displayClientMessage(Txt.red(item instanceof fr.heraliz.crac.item.ClaimBlockItem
+                            ? "crac.claim.half_level" : "crac.placable.half_level"), true);
+                        PlacementSync.revert(player, sl, event.getPos(), event.getFace());
+                        return;
+                    }
                     if (placesSomething(item)) {
                         if (!(item instanceof BlockItem bi && isSystemBlock(bi.getBlock().defaultBlockState()))) {
                             BlockPos placePos = event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace());

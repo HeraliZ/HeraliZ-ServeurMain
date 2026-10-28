@@ -6,7 +6,8 @@
   "refmap": "crac-commun.refmap.json",
   "mixins": [
     "FireBlockMixin",
-    "FlowingFluidMixin"
+    "FlowingFluidMixin",
+    "PlayerAccroupiMixin"
   ],
   "injectors": {
     "defaultRequire": 0

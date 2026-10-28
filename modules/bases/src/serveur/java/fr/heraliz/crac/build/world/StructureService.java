@@ -1081,6 +1081,11 @@ public final class StructureService {
     public static String claimProblem(ServerLevel level, BlockPos claimPos, int tier) {
         StructureStore store = store(level);
         Piece under = seatUnder(level, claimPos);
+        // HeraliZ (28/10) : un plancher posé sur des demi-murs porte bien l'armoire (seatUnder), mais son dessus est à
+        // mi-bloc : posée, elle flottait d'un demi-bloc
+        if (under != null && StructureBlock.standIssue(level, claimPos.below()) == StructureBlock.StandIssue.HALF_LEVEL) {
+            return "crac.claim.half_level";
+        }
         if (under == null) {
             StructureBlock.StandIssue issue = StructureBlock.standIssue(level, claimPos.below());
             if (issue == StructureBlock.StandIssue.HALF_LEVEL) {

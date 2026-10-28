@@ -525,6 +525,12 @@ Rien de tout cela n'a été testé en jeu.
   `StructureService.retirerInsert`) ; clic droit sur l'armoire pendant les `claimMoveMinutes` (15) minutes après sa pose :
   elle revient dans l'inventaire avec son stock d'entretien et le palier payé à la pose (`DeplacerArmoire`, heure de pose
   dans `ClaimBlockEntity`, `PoseeLe`) ; gérer la base, hors raid, hors tutoriel ; une armoire posée avant ne se déplace pas.
+- **Plancher sur demi-mur** (28/10, CRac 1.26.1-beta ; le propriétaire refuse des murs plus hauts) : joueur accroupi de
+  1,25 bloc (yeux 1,1) au lieu de 1,5 (`mixin/PlayerAccroupiMixin`, commun) : comme dans Rust, on saute accroupi sur ce
+  plancher sous un plafond (21 px libres). Son dessus est à mi-bloc et, avec un plancher au-dessus, il n'y a aucune case
+  libre entre les deux : tout objet visé dessus est refusé avec le message (`BuildEventHandler`), l'armoire aussi quand
+  une pièce la porte (`claimProblem`), un objet adossé ne part plus dans une case voisine qui ne le porte pas
+  (`Adosse.caseLibre`).
 - **Frappe aérienne** : animation de recharge sur une horloge régulière (`HorlogeJumelles`) ; explosion sans le calcul
   des blocs (27 000 à 55 000 lectures par bombe pour rien), créatures attirées lancées 3 par tick, mesures dans le journal.
 - **Réanimation** : compte à rebours visible jusqu'à la réponse du serveur, recalé tous les 5 ticks.
