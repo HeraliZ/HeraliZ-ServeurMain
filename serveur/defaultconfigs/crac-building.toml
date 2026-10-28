@@ -20,9 +20,13 @@
 	#Seconds after placement / upgrade during which the owner can demolish a piece. -1 = always.
 	#Range: -1 ~ 1000000
 	demolishWindowSeconds = 600
-	#Max distance between the player's eyes and a piece to build, upgrade or repair it.
+	#Max distance between the player's eyes and a piece to build or repair it.
 	#Range: 2.0 ~ 32.0
 	reach = 8.0
+	#HeraliZ (27/10): max distance (blocks) between the player's eyes and the nearest point of a piece to
+	#upgrade it with the hammer (closer than the building reach: the player walks up to the piece).
+	#Range: 1.5 ~ 32.0
+	upgradeReach = 4.0
 	#Building data saved by an older version of the mod (v2 grid) cannot be used: by default the
 	#buildings of such a world are left untouched (not usable, nothing saved) and an error is logged. true = copy the old
 	#file aside (crac_buildings.dat.v2-<time>) and start with no buildings. The old structure blocks then clean themselves up.

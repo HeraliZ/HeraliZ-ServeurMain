@@ -182,7 +182,7 @@ final class Accueil {
             if (fin.secondes() > 1) {
                 FIN.put(p.getUUID(), new Suite(fin.rang(), fin.secondes() - 1));
             } else {
-                radio(p, 0, FINS[fin.rang()]);
+                radio(p, 0, fin.rang() == 0 && Ponts.tutoJours() <= 0 ? FINS[0] + "_np" : FINS[fin.rang()]);
                 if (fin.rang() + 1 < FINS.length) {
                     FIN.put(p.getUUID(), new Suite(fin.rang() + 1, FIN_ECART));
                 } else {
@@ -226,7 +226,9 @@ final class Accueil {
         } else if (tuto == 3 && avant != null && avant.tuto() == 2) {
             // le premier mot de la fin pendant que la caméra fait le tour de la base (CRac), le second après
             String premier = Ponts.tutoSas(p) ? "heraliz_quetes.tuto.radio.fin" : "heraliz_quetes.tuto.radio.fin_sans_sas";
-            radio(p, 0, premier, Texte.brut(Ponts.tutoJours()));
+            // 27/10 : plus de protection des nouvelles bases (CRac, [protection] automatique) : Varga n'en parle plus
+            int jours = Ponts.tutoJours();
+            radio(p, 0, jours > 0 ? premier : premier + "_np", Texte.brut(jours));
             FIN.put(p.getUUID(), new Suite(0, FIN_ECART));
         } else if (tuto != 2 && avant != null && avant.tuto() == 2) {
             // tutoriel arrêté autrement (staff : /tuto finir, rejouer) : la radio se range

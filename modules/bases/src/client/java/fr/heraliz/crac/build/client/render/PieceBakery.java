@@ -225,6 +225,41 @@ public final class PieceBakery {
         return q == null ? EMPTY : q;
     }
 
+    /**
+     * Les quads de {@code q} décalés de (dx, dy, dz) blocs, tous sans face cachée par un voisin (ils sortent de leur case :
+     * la face voisine n'est pas la bonne). Pour dessiner depuis une case un morceau de pièce qui appartient à la case d'à
+     * côté (StructureModel : moitié de mur laissée à un objet adossé).
+     */
+    public static BlockQuads deplacees(BlockQuads q, int dx, int dy, int dz) {
+        if (q.lists.length == 0) {
+            return q;
+        }
+        int layers = q.lists.length / SIDES;
+        @SuppressWarnings("unchecked")
+        List<BakedQuad>[] lists = new List[q.lists.length];
+        for (int l = 0; l < layers; l++) {
+            List<BakedQuad> tous = null;
+            for (int s = 0; s < SIDES; s++) {
+                List<BakedQuad> src = q.lists[l * SIDES + s];
+                if (src == null) continue;
+                if (tous == null) {
+                    tous = new ArrayList<>();
+                }
+                for (BakedQuad b : src) {
+                    int[] v = b.getVertices().clone();
+                    for (int i = 0; i + 2 < v.length; i += 8) {
+                        v[i] = Float.floatToRawIntBits(Float.intBitsToFloat(v[i]) + dx);
+                        v[i + 1] = Float.floatToRawIntBits(Float.intBitsToFloat(v[i + 1]) + dy);
+                        v[i + 2] = Float.floatToRawIntBits(Float.intBitsToFloat(v[i + 2]) + dz);
+                    }
+                    tous.add(new BakedQuad(v, b.getTintIndex(), b.getDirection(), b.getSprite(), b.isShade(), b.hasAmbientOcclusion()));
+                }
+            }
+            lists[l * SIDES + NO_SIDE] = tous;
+        }
+        return new BlockQuads(lists, q.layerMask);
+    }
+
     /** Mesh of a bake in px relative to the anchor block of its canonical key. */
     static List<MeshFace> bakeMesh(BakeKey k) {
         PieceKey key = canonical(k);

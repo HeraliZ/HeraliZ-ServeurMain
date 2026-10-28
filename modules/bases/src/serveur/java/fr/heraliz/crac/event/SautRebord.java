@@ -19,12 +19,16 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
  * 1,75 bloc au-dessus de ses pieds, le joueur reçoit un court Saut amélioré I invisible (1,8 bloc) : les pièces gardent
  * leur hauteur, et c'est un effet de Minecraft que l'anticheat connaît. Depuis le 26/10, le dessus d'un demi-mur compte
  * aussi (sauter sur un demi-mur, puis sur le plancher posé à côté : les montées façon Rust).
+ * <p>27/10 (montées encore bloquées) : l'effet arrivait parfois après le saut. Il n'était cherché que tous les 4 ticks,
+ * à 1 bloc du rebord, pour 8 ticks : un joueur qui arrive en courant (0,28 bloc par tick) sautait avant que son jeu l'ait
+ * reçu (un tick et le ping plus tard) et retombait. Maintenant tous les 2 ticks, à 1,6 bloc, pour 16 ticks : l'effet est
+ * déjà chez lui quand il atteint le rebord. Toujours un Saut amélioré I (1,8 bloc), toujours au sol seulement.
  */
 @EventBusSubscriber(modid = "crac")
 public final class SautRebord {
-    private static final double BAS = 1.15, HAUT = 1.75, PORTEE = 1.0;
+    private static final double BAS = 1.15, HAUT = 1.75, PORTEE = 1.6;
     /** Durée de l'effet (ticks), renouvelé tant que le joueur reste au pied du rebord. */
-    private static final int DUREE = 8;
+    private static final int DUREE = 16;
 
     private SautRebord() {
     }
@@ -32,11 +36,11 @@ public final class SautRebord {
     @SubscribeEvent
     public static void tick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || !(e.player instanceof ServerPlayer p) || !(p.level() instanceof ServerLevel level)
-            || p.tickCount % 4 != 0 || !p.onGround() || p.isSpectator()) {
+            || p.tickCount % 2 != 0 || !p.onGround() || p.isSpectator()) {
             return;
         }
         MobEffectInstance deja = p.getEffect(MobEffects.JUMP);
-        if (deja != null && (deja.getAmplifier() > 0 || deja.getDuration() > 4)) {
+        if (deja != null && (deja.getAmplifier() > 0 || deja.getDuration() > 8)) {
             return;   // un saut plus fort, ou le nôtre encore là
         }
         double pieds = p.getY();

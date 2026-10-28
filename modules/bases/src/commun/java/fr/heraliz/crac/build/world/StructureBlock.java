@@ -301,13 +301,29 @@ public class StructureBlock extends BaseEntityBlock {
         return standIssue(be.occupants(), pos) == null && flushFloorArea(be.occupants(), pos) >= 256.0 - 1e-6;
     }
 
-    /** The block under a foundation column changed (mined, exploded, picked up): its ground is checked next tick. */
+    /**
+     * The block under a foundation column changed (mined, exploded, picked up): its ground is checked next tick. HeraliZ
+     * (27/10) : un bloc à côté (même hauteur) devenu libre peut être la moitié d'un mur laissée à un bloc posé avant le mur
+     * (terrain, bloc posé par le staff) : le mur la reprend (StructureService.reboucher, comme pour une armoire ou une caisse
+     * en métal qui part) ; avant, le trou restait.
+     */
     @Override
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean moving) {
         super.neighborChanged(state, level, pos, block, fromPos, moving);
-        if (!level.isClientSide() && fromPos.equals(pos.below())) {
-            Serveur.Moteur m = Serveur.MOTEUR;
-            if (m != null) m.structureSol(level, pos);
+        if (level.isClientSide()) {
+            return;
+        }
+        Serveur.Moteur m = Serveur.MOTEUR;
+        if (m == null) {
+            return;
+        }
+        if (fromPos.equals(pos.below())) {
+            m.structureSol(level, pos);
+        } else if (fromPos.getY() == pos.getY() && level instanceof net.minecraft.server.level.ServerLevel sl) {
+            BlockState voisin = level.getBlockState(fromPos);
+            if (!(voisin.getBlock() instanceof StructureBlock) && (voisin.isAir() || voisin.canBeReplaced())) {
+                m.objetAdosseRetire(sl, fromPos);
+            }
         }
     }
 

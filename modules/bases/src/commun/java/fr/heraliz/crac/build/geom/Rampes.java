@@ -9,7 +9,9 @@ import fr.heraliz.crac.build.model.PieceKind;
 
 /**
  * Rampes ouvertes façon Rust (HeraliZ, 26/10) : rampe carrée et rampe triangle, une dalle inclinée de {@link #T} px
- * d'épaisseur posée sur deux poteaux au bout haut, vide dessous (on passe sous la partie haute). Tout est calculé dans le
+ * d'épaisseur, vide dessous (on passe sous la partie haute). Depuis le 27/10 (choix du propriétaire), plus de poteaux sous
+ * le bout haut, ni dessinés ni dans la collision : la rampe tient par ce qui la porte (sol, haut des murs, voir
+ * {@link fr.heraliz.crac.build.logic.Supports}). Tout est calculé dans le
  * repère local de la pièce ({@link Placement}), à partir du côté haut (la sortie vers le plancher suivant) :
  * <ul>
  * <li>rampe carrée : côté haut = côté {@code (2 + quart de tour) mod 4}, côtés latéraux les deux voisins ;</li>
@@ -28,7 +30,10 @@ public final class Rampes {
     public static final double T = 3.0;
     /** Tranches de collision le long de la montée (2 px de profondeur pour la rampe carrée, comme avant). */
     public static final int TRANCHES = 24;
-    /** Côté des poteaux du bout haut, px. */
+    /**
+     * Côté des anciens poteaux du bout haut, px. Ils ne sont plus ni dessinés ni solides (27/10) ; leur volume reste dans
+     * l'enveloppe ({@link #reservePoteaux}) pour que les cases réservées d'une rampe ne changent pas (rampes déjà posées).
+     */
     public static final double POTEAU = 2.0;
     /** Bits de raccord utiles : un par côté du contour (4 pour le carré, 3 pour le triangle). */
     public static final long MASQUE_CARRE = 0b1111;
@@ -147,7 +152,7 @@ public final class Rampes {
         return poly;
     }
 
-    /** Collision locale : la dalle en tranches parallèles au côté haut, puis les poteaux du bout haut. */
+    /** Collision locale : la dalle en tranches parallèles au côté haut (plus de poteaux depuis le 27/10). */
     public static List<Prism> collision(PieceKey key, long variant) {
         List<Prism> out = new ArrayList<>();
         PieceKind.Shape shape = key.kind().shape;
@@ -164,9 +169,19 @@ public final class Rampes {
             if (p == null || Poly.area(p) <= PieceSolids.TOUCH) continue;
             out.add(new Prism(p, Math.max(0, h * i / TRANCHES - T), h * (i + 1) / TRANCHES));
         }
-        double piedHaut = h * (TRANCHES - 1) / TRANCHES - T;
-        if (piedHaut > 0.5) {
-            for (double[][] p : poteaux(key, variant, base)) {
+        return out;
+    }
+
+    /**
+     * Le volume des anciens poteaux (rampe sans raccord), seulement pour l'enveloppe des cases réservées
+     * ({@link PieceSolids#envelope}) : il n'est ni solide ni dessiné.
+     */
+    public static List<Prism> reservePoteaux(PieceKey key) {
+        List<Prism> out = new ArrayList<>(2);
+        double[][] base = contour(key, 0L, 0, 0);
+        double piedHaut = hauteur(key) * (TRANCHES - 1) / TRANCHES - T;
+        if (base != null && piedHaut > 0.5) {
+            for (double[][] p : poteaux(key, 0L, base)) {
                 out.add(new Prism(p, 0, piedHaut));
             }
         }

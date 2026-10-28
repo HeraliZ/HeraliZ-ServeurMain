@@ -54,6 +54,8 @@ public final class DownedManagerServeur {
    public static final ResourceKey<DamageType> EXECUTION = DownedManager.EXECUTION;
    private static final String SAVE_KEY = "reanimation";
    private static final double KNEEL_DISTANCE = 0.7;
+   /** Pendant une réanimation, son avancée est renvoyée au réanimateur et au joueur à terre tous les N ticks (0,25 s). */
+   private static final int RECALAGE_REANIMATION = 5;
 
    private DownedManagerServeur() {
    }
@@ -309,6 +311,10 @@ public final class DownedManagerServeur {
             if (s.reviveTicks >= s.reviveMax) {
                completeRevive(s);
                return;
+            }
+
+            if (s.reviveTicks % RECALAGE_REANIMATION == 0) {
+               recalerReanimation(s);
             }
          }
       }
@@ -647,6 +653,22 @@ public final class DownedManagerServeur {
             sync(actor, 0);
             sync(target, 0);
          }
+      }
+   }
+
+   /**
+    * HeraliZ (27/10) : avancée de la réanimation renvoyée au réanimateur et au joueur à terre, chacun pour lui. Avant,
+    * le réanimateur ne recevait que le début : son jeu comptait seul à 20 ticks par seconde et finissait son compte à
+    * rebours avant le serveur dès que celui-ci ralentissait (la fin réelle est celle d'ici). Même paquet qu'avant (aucun
+    * changement de format) ; le jeu du joueur se recale sans reculer (ClientDowned). La durée ne change pas.
+    */
+   private static void recalerReanimation(DownedState s) {
+      if (s.entity instanceof ServerPlayer victime) {
+         Network.sendTo(victime, packet(victime, 0));
+      }
+
+      if (s.reviver instanceof ServerPlayer reanimateur) {
+         Network.sendTo(reanimateur, packet(reanimateur, 0));
       }
    }
 

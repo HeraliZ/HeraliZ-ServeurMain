@@ -633,5 +633,22 @@
   "crac.purge.hud": "Purge",
   "piece.crac.triangle_ramp": "Rampe triangle",
   "crac.rot.low_corner_facing": "coin bas face à toi",
-  "crac.build.retired": "Cette pièce ne se construit plus."
+  "crac.build.retired": "Cette pièce ne se construit plus.",
+  "crac.claim.objet_etranger": "Dans une base, seuls les pièces et objets de construction se posent.",
+  "crac.hammer.trop_loin": "Approche-toi pour améliorer (%s blocs au plus).",
+  "crac.zone.interdite_plan": "Zone en rouge : on ne construit pas ici (ville, loot, rails, zone dangereuse ou enneigée).",
+  "crac.rot.high_side_facing": "côté haut face à toi",
+  "crac.armoire.deplacement_coupe": "Le déplacement de l’armoire est coupé sur ce serveur.",
+  "crac.armoire.tuto": "Pas pendant le tutoriel.",
+  "crac.armoire.trop_tard": "Trop tard : l’armoire ne se déplace que dans les %s minutes après sa pose.",
+  "crac.armoire.ramassee": "Armoire ramassée avec son entretien. Repose-la vite : sans elle, ta base n’est plus protégée.",
+  "crac.hammer.sans_vitre": "Cette fenêtre n’a ni vitre ni barreaux.",
+  "crac.hammer.retirer_vitre": "Retirer la vitre",
+  "crac.hammer.retirer_barreaux": "Retirer les barreaux",
+  "crac.hammer.retirer_rendu": "Retour dans ton inventaire",
+  "crac.hud.armoire": "Armoire à outils",
+  "crac.hud.vide_seulement": "Seulement s’il est vide",
+  "crac.hud.armoire_delai": "Dans les %s min après la pose",
+  "crac.hud.ramasser_hint": "Ramasser",
+  "crac.hud.deplacer_hint": "Déplacer"
 }

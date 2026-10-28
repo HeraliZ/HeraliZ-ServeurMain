@@ -488,14 +488,7 @@ public final class PieceMeshes {
                     ez / len, -ex / len, 16, 16, 48, false, 1f, Double.NaN);
             }
         }
-        // posts under the free high corners, a hair inside the slab's outline (never in the plane of its side faces)
-        double piedHaut = h * (Rampes.TRANCHES - 1) / Rampes.TRANCHES - t;
-        double[][] inner = Rampes.contour(key, variant, RAMP_CLEAR + 0.1, RAMP_CLEAR + 0.1);
-        if (piedHaut > 0.5 && inner != null) {
-            for (double[][] post : Rampes.poteaux(key, variant, inner)) {
-                r.prism(post, 0, piedHaut, Mat.BEAM, Mat.BEAM, Mat.BEAM, 16, 16, 48, 16, false, false, 0.95f, 0);
-            }
-        }
+        // 27/10 (choix du propriétaire) : plus de poteaux sous le bout haut (ni dessinés, ni solides, Rampes.collision)
         for (MeshFace face : r.faces) {
             b.faces.add(face.translate(0, -SETTLE_DROP, 0));
         }

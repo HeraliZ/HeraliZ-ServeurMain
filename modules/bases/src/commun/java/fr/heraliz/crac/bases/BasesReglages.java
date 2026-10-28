@@ -43,6 +43,7 @@ public final class BasesReglages {
     public static final IntValue MEMBRES_MAX;
     public static final BooleanValue PAUSE_USURE;
     public static final BooleanValue PANNEAU;
+    public static final BooleanValue PROTECTION_AUTO;
     // [carrieres]
     public static final IntValue REPOUSSE_MIN;
     public static final IntValue RAYON_MAX;
@@ -108,6 +109,9 @@ public final class BasesReglages {
         b.pop();
 
         b.comment("Protection de la base d'un nouveau joueur, une fois posee (pas de raid).").push("protection");
+        PROTECTION_AUTO = b.comment("Faux (HeraliZ, 27/10, choix du proprietaire) : plus aucune protection donnee toute seule a la base",
+                "d'un nouveau joueur ; celles deja donnees sont retirees une fois. /protection donner (staff) marche toujours.")
+            .define("automatique", false);
         PROTECTION_JOURS = b.comment("Jours (temps reel) de protection de la base.").defineInRange("jours", 4.0, 0.0, 365.0);
         MEMBRES_MAX = b.comment("La protection tombe si le groupe de la base compte plus de membres que ca (anti-abus).")
             .defineInRange("membres_max", 2, 1, 64);

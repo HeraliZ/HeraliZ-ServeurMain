@@ -231,8 +231,8 @@ public final class DesignatorHold {
                                           PoseStack ps, MultiBufferSource buffers, int light, float partial, float equip,
                                           float swing) {
         float r = raise(player, hand, partial);
-        double now = mc.level.getGameTime() + partial;
-        float p = DesignatorItem.reloadProgress(stack, now);
+        // horloge régulière du joueur, pas le temps du monde que le serveur recale chaque seconde (HorlogeJumelles)
+        float p = HorlogeJumelles.recharge(stack);
         float w = DesignatorRenderer.presentation(p);
         Hold d = FP_REST.mirror(side).lerp(FP_AIM, r).lerp(FP_RELOAD.mirror(side), w);
         // B: item space (blocks) to the frame of the hands given by the event
@@ -335,8 +335,7 @@ public final class DesignatorHold {
         ItemStack stack = entity.getItemInHand(hand);
         Minecraft mc = Minecraft.getInstance();
         float partial = mc.getFrameTime();
-        double now = entity.level().getGameTime() + partial;
-        float p = DesignatorItem.reloadProgress(stack, now);
+        float p = HorlogeJumelles.recharge(stack);
         boolean crouch = model.crouching;
         // head and body as setupAnim leaves them (it moves them for crouching after the arm poses)
         Matrix4f head = new Matrix4f().translation(0f, (crouch ? 4.2f : 0f) / 16f, 0f)

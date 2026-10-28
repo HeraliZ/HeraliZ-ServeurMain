@@ -80,7 +80,44 @@ public final class StructureModel implements IDynamicBakedModel {
             return data;
         }
         BlockPos at = data.get(StructureBlockEntity.POS);
-        return data.derive().with(RESOLVED, resolve(occ, at != null ? at : pos)).build();
+        BlockPos p = at != null ? at : pos;
+        return data.derive().with(RESOLVED, avecMoitiesLaissees(level, occ, p, resolve(occ, p))).build();
+    }
+
+    /**
+     * Trou dans un mur posé après une armoire ou une caisse en métal (HeraliZ, 27/10, capture du propriétaire) : le mur
+     * laisse à l'objet la moitié de case où il se tient (règle d'enfouissement de PlacementRules : la case reste celle de
+     * l'objet, le mur la reprend quand il part). Personne ne dessinait cette moitié : au-dessus et autour de l'objet, le mur
+     * était creux. La case du mur voisine la dessine maintenant, décalée d'un bloc vers l'objet ; refait à chaque
+     * reconstruction du tronçon (objet posé ou retiré). Seulement les murs, seulement contre un objet adossé.
+     */
+    private static PieceBakery.BlockQuads[] avecMoitiesLaissees(BlockAndTintGetter level, List<Occupant> occ, BlockPos pos,
+                                                                  PieceBakery.BlockQuads[] base) {
+        List<PieceBakery.BlockQuads> plus = null;
+        for (Occupant o : occ) {
+            if (!o.kind().isWall()) continue;
+            List<BlockPos> blocs = null;
+            for (Direction d : Direction.Plane.HORIZONTAL) {
+                BlockPos n = pos.relative(d);
+                if (!(level.getBlockState(n).getBlock() instanceof fr.heraliz.crac.block.Adosse.Adossable)) continue;
+                if (blocs == null) {
+                    blocs = fr.heraliz.crac.build.geom.PieceSolids.collisionBlocks(o.key());
+                }
+                if (!blocs.contains(n)) continue;
+                if (plus == null) {
+                    plus = new ArrayList<>();
+                }
+                plus.add(PieceBakery.deplacees(PieceBakery.quads(o, n), d.getStepX(), 0, d.getStepZ()));
+            }
+        }
+        if (plus == null) {
+            return base;
+        }
+        PieceBakery.BlockQuads[] out = java.util.Arrays.copyOf(base, base.length + plus.size());
+        for (int i = 0; i < plus.size(); i++) {
+            out[base.length + i] = plus.get(i);
+        }
+        return out;
     }
 
     private static int layerOf(@Nullable RenderType type) {

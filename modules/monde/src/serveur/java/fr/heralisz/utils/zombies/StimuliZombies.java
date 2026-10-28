@@ -82,9 +82,21 @@ public final class StimuliZombies {
         BLESSES.remove(e.getEntity().getUUID());
     }
 
+    /**
+     * 27/10 (blocage de 111 ms quand une bombe de frappe aérienne a touché un joueur) : un zombie qui marche déjà vers un
+     * point à moins de tant de blocs du bruit n'est pas relancé. Une frappe envoie elle-même les infectés vers ses impacts
+     * (Airstrike, {@code StrikeEffects.attractMonsters}) ; l'explosion de la même bombe, puis le sang du joueur touché,
+     * recalculaient aussitôt un chemin (A*, la part chère d'un bruit) vers presque le même point pour ces mêmes zombies.
+     */
+    private static final double DEJA_EN_ROUTE = 8.0;
+    /** Mesure (27/10) : un bruit plus long que ça (chemins compris) est écrit au journal, une ligne toutes les 5 s au plus. */
+    private static final long SEUIL_MESURE_NS = 10_000_000L;
+    private static long prochaineMesureMs;
+
     /** Les zombies sans cible dans le rayon vont voir (au plus {@code max_zombies}). */
     static void bruit(ServerLevel sl, Vec3 ou, int rayon) {
         if (rayon <= 0) return;
+        long debut = System.nanoTime();
         bruits++;
         long t = sl.getGameTime();
         double r2 = (double) rayon * rayon;
@@ -97,6 +109,7 @@ public final class StimuliZombies {
             if (d2 > r2) continue;
             Long parti = PARTIS.get(z);
             if (parti != null && t - parti < DELAI_ZOMBIE) continue;
+            if (dejaEnRoute(z, ou)) continue;
             // plus près, plus sûr : chance 1 au contact, 0,2 au bord du rayon
             double chance = 1.0 - 0.8 * Math.sqrt(d2 / r2);
             if (z.getRandom().nextDouble() >= chance) continue;
@@ -106,6 +119,22 @@ public final class StimuliZombies {
             }
         }
         attires += n;
+        long ns = System.nanoTime() - debut;
+        if (ns >= SEUIL_MESURE_NS) {
+            long ms = System.currentTimeMillis();
+            if (ms >= prochaineMesureMs) {
+                prochaineMesureMs = ms + 5000L;
+                HeraliszUtils.LOG.warn("[zombies] bruit : {} zombie(s) envoye(s) sur {} trouve(s) dans un rayon de {} blocs en {} ms (chemins compris)",
+                        n, l.size(), rayon, String.format(java.util.Locale.ROOT, "%.1f", ns / 1_000_000.0));
+            }
+        }
+    }
+
+    /** Le zombie marche déjà (chemin en cours) vers un point à moins de {@value #DEJA_EN_ROUTE} blocs du bruit. */
+    private static boolean dejaEnRoute(ZombieSurvie z, Vec3 ou) {
+        if (z.getNavigation().isDone()) return false;
+        net.minecraft.core.BlockPos vise = z.getNavigation().getTargetPos();
+        return vise != null && vise.distToCenterSqr(ou) <= DEJA_EN_ROUTE * DEJA_EN_ROUTE;
     }
 
     /** Silencieux monté (propriété « silence » des accessoires TaCZ, déjà calculée pour l'arme en main). */

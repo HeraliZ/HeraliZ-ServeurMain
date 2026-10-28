@@ -22,12 +22,24 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /** Server side consequences of every impact. */
 public final class StrikeEffects {
@@ -53,13 +65,42 @@ public final class StrikeEffects {
      */
     private static void explode(ServerLevel level, @Nullable ServerPlayer caller, Vec3 p, float power, boolean fire, boolean blocks) {
         if (power <= 0) return;
+        long t0 = System.nanoTime();
         AbriFrappes.enCours = true;
         try {
-            level.explode(null, damage(level, BOMB_DAMAGE, caller), null, p.x, p.y + 0.2, p.z, power, false, Level.ExplosionInteraction.NONE);
+            level.explode(null, damage(level, BOMB_DAMAGE, caller), SANS_BLOCS, p.x, p.y + 0.2, p.z, power, false, Level.ExplosionInteraction.NONE);
         } finally {
             AbriFrappes.enCours = false;
+            mesureExplosionNs += System.nanoTime() - t0;
         }
     }
+
+    /** Résistance qui arrête un rayon d'explosion dès son premier pas (voir {@link #SANS_BLOCS}). */
+    private static final Optional<Float> RESISTANCE_TOTALE = Optional.of(Float.MAX_VALUE);
+
+    /**
+     * 27/10 (blocage de 111 ms quand une bombe a touché un joueur) : une frappe ne touche aucun bloc ({@link AbriFrappes}
+     * vide la liste), mais Minecraft lançait quand même ses 1 352 rayons pas à pas (0,3 bloc) jusqu'à épuiser la puissance
+     * pour remplir cette liste : une vingtaine de pas pour une bombe de 3,5, une quarantaine pour la bombe guidée, soit 27 000
+     * à 55 000 lectures de bloc et de fluide par bombe, pour rien. Avec cette résistance, chaque rayon s'arrête à son premier
+     * pas (au centre). Dégâts et recul des créatures et des joueurs inchangés : Minecraft les calcule à part (distance et
+     * part visible du corps, {@code Explosion.getSeenPercent}), sans ce calcul des blocs.
+     */
+    private static final ExplosionDamageCalculator SANS_BLOCS = new ExplosionDamageCalculator() {
+        @Override
+        public Optional<Float> getBlockExplosionResistance(Explosion explosion, BlockGetter monde, BlockPos pos, BlockState bloc,
+                                                           FluidState fluide) {
+            return RESISTANCE_TOTALE;
+        }
+
+        @Override
+        public boolean shouldBlockExplode(Explosion explosion, BlockGetter monde, BlockPos pos, BlockState bloc, float force) {
+            return false;
+        }
+    };
+
+    /** Temps passé (ns) dans les explosions et à choisir les créatures attirées, depuis la dernière lecture (mesure). */
+    static long mesureExplosionNs, mesureAttiresNs;
 
     public static void release(ServerLevel level, Strike strike, Drop drop) {
         if (drop.kind == OrdnanceKind.CRATE) {
@@ -74,21 +115,67 @@ public final class StrikeEffects {
 
     /** Infectés attirés au plus par impact (25/10, banc de charge : chaque attiré calcule un chemin tout de suite). */
     private static final int ATTIRES_MAX = 12;
+    /**
+     * 27/10 (blocage de 111 ms quand une bombe a touché un joueur) : chaque créature attirée calcule son chemin (A*, jusqu'à
+     * plusieurs centaines de cases pour un bruit à 48 blocs) ; les 12 d'un impact le faisaient dans le tick même de
+     * l'impact, en plus de l'explosion et du bruit de l'explosion pour les zombies HeraliZ (StimuliZombies, qui relançait
+     * ces mêmes zombies une seconde fois). Elles attendent maintenant leur tour : {@value #ATTIRES_PAR_TICK} par tick au plus
+     * (les 12 d'un impact en 0,2 s). Mêmes créatures choisies, même destination ; une créature qui a entre-temps une cible
+     * ou un chemin (un autre bruit l'a déjà envoyée) n'est pas relancée.
+     */
+    private static final int ATTIRES_PAR_TICK = 3;
+    /** Créatures en attente au plus par monde (une frappe n'en attire pas plus tant que la file est pleine). */
+    private static final int ATTIRES_FILE_MAX = 96;
+    /** Créatures attirées en attente de leur chemin, par monde, dans l'ordre d'arrivée, avec leur destination. */
+    private static final Map<ResourceKey<Level>, LinkedHashMap<Mob, Vec3>> ATTIRES = new HashMap<>();
 
     /** DayZ style: the noise draws the infected towards the impact. */
     private static void attractMonsters(ServerLevel level, Vec3 p) {
         int r = AirstrikeConfig.NOISE_ATTRACTS_MONSTERS.get();
         if (r <= 0) return;
+        long t0 = System.nanoTime();
+        LinkedHashMap<Mob, Vec3> file = ATTIRES.computeIfAbsent(level.dimension(), k -> new LinkedHashMap<>());
         AABB box = new AABB(p.x - r, p.y - 24, p.z - r, p.x + r, p.y + 24, p.z + r);
         int n = 0;
         // 25/10 : jusqu'à 330 ms de gel mesurés quand une frappe attirait d'un coup tous les monstres du secteur ; ceux qui
         // marchent déjà vers quelque chose (impact précédent compris) gardent leur chemin
-        for (net.minecraft.world.entity.Mob mob : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, box,
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, box,
                 m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.getTarget() == null && m.isAlive())) {
-            if (mob.distanceToSqr(p) > (double) r * r || !mob.getNavigation().isDone()) continue;
-            mob.getNavigation().moveTo(p.x + (level.random.nextDouble() - 0.5) * 6, p.y, p.z + (level.random.nextDouble() - 0.5) * 6, 1.15);
+            if (mob.distanceToSqr(p) > (double) r * r || !mob.getNavigation().isDone() || file.containsKey(mob)) continue;
+            if (file.size() >= ATTIRES_FILE_MAX) break;
+            file.put(mob, new Vec3(p.x + (level.random.nextDouble() - 0.5) * 6, p.y, p.z + (level.random.nextDouble() - 0.5) * 6));
             if (++n >= ATTIRES_MAX) break;
         }
+        mesureAttiresNs += System.nanoTime() - t0;
+    }
+
+    /**
+     * À chaque tick du monde ({@link StrikeManager#tick}) : les créatures attirées en attente partent,
+     * {@value #ATTIRES_PAR_TICK} au plus. Rien à faire (file vide) : sort tout de suite.
+     */
+    static void lancerAttires(ServerLevel level) {
+        LinkedHashMap<Mob, Vec3> file = ATTIRES.get(level.dimension());
+        if (file == null || file.isEmpty()) return;
+        int lances = 0;
+        Iterator<Map.Entry<Mob, Vec3>> it = file.entrySet().iterator();
+        while (it.hasNext() && lances < ATTIRES_PAR_TICK) {
+            Map.Entry<Mob, Vec3> e = it.next();
+            Mob mob = e.getKey();
+            Vec3 v = e.getValue();
+            it.remove();
+            // entre-temps : morte, partie, ou déjà en route (une cible, ou un autre bruit l'a envoyée)
+            if (!mob.isAlive() || mob.isRemoved() || mob.level() != level || mob.getTarget() != null
+                    || !mob.getNavigation().isDone()) {
+                continue;
+            }
+            mob.getNavigation().moveTo(v.x, v.y, v.z, 1.15);
+            lances++;
+        }
+    }
+
+    /** Arrêt du serveur ({@link StrikeManager#clear}) : plus aucune créature en attente. */
+    static void oublierAttires() {
+        ATTIRES.clear();
     }
 
     public static void impact(ServerLevel level, Strike strike, Drop d) {

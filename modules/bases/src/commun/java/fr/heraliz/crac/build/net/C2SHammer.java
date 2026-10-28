@@ -23,6 +23,8 @@ public record C2SHammer(int action, BlockPos pos, long pieceId, int tier) {
     public static final int UPGRADE = 0;
     public static final int REPAIR = 1;
     public static final int DEMOLISH = 2;
+    /** HeraliZ (28/10) : retirer la vitre ou les barreaux d'une fenêtre (rendus au joueur). */
+    public static final int RETIRER_INSERT = 3;
 
 
 

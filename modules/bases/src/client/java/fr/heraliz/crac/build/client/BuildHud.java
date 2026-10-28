@@ -226,6 +226,8 @@ public final class BuildHud {
             caps0(g, font, Component.translatable("crac.hud.wheel_hint").getString(), kx, y + 46.67F, kcol);
             kx = ix + touche(g, font, keyName(Minecraft.getInstance().options.keyAttack, "crac.hud.lmb"), ix, y + 55.33F, 7, 0.3F, 6.67F, px) + 2.67F;
             caps0(g, font, Component.translatable("crac.hud.repair_hint").getString(), kx, y + 55.33F, kcol);
+        } else if (HammerController.objetEtat() != null) {
+            objet(g, font, HammerController.objetEtat(), cx, cy, w, px);
         }
         float progress = HammerController.progress();
         if (progress > 0) {
@@ -244,6 +246,24 @@ public final class BuildHud {
             texte(g, font, m, cx - mw / 2 + 0.5F, cy - 26 + 0.7F, a(0, 150));
             texte(g, font, m, cx - mw / 2, cy - 26, a(ROSE, 255));
         }
+    }
+
+    /** HeraliZ (28/10) : objet posé visé au marteau (caisse, armoire...) : son nom, la condition, « clic droit : ramasser ». */
+    private static void objet(GuiGraphics g, Font font, net.minecraft.world.level.block.state.BlockState st, float cx, float cy, int w, float px) {
+        boolean armoire = st.getBlock() instanceof fr.heraliz.crac.block.ClaimBlock;
+        float cw = 126.67F, ch = 39.33F;
+        float x = Math.min(cx + 16.67F, w - cw - 4);
+        float y = cy - 13.33F;
+        card(g, x, y, cw, ch, px);
+        float ix = x + 6, inner = cw - 12;
+        String nom = (armoire ? Component.translatable("crac.hud.armoire") : st.getBlock().getName()).getString();
+        caps(g, font, nom, MOYEN_GRAS, ix, y + 7 - 2.68F, 0.68F, a(BLANC, 255));
+        Component sous = armoire ? Component.translatable("crac.hud.armoire_delai", fr.heraliz.crac.Config.claimMoveMinutes.get())
+            : Component.translatable("crac.hud.vide_seulement");
+        texte(g, font, sous.copy().withStyle(s -> s.withFont(MINI)), ix, y + 16.33F - 4.21F, a(0xC8C8C8, 255));
+        rect(g, ix, y + 23.33F, ix + inner, y + 23.33F + px, a(BLANC, 23));
+        float kx = ix + touche(g, font, keyName(Minecraft.getInstance().options.keyUse, "crac.hud.rmb"), ix, y + 30.67F, 7, 0.3F, 6.67F, px) + 2.67F;
+        caps0(g, font, Component.translatable(armoire ? "crac.hud.deplacer_hint" : "crac.hud.ramasser_hint").getString(), kx, y + 30.67F, a(TEXTE, 184));
     }
 
     // ------------------------------------------------------------------ helpers

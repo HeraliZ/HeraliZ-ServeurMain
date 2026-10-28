@@ -4,6 +4,7 @@ import fr.heraliz.airstrike.AirstrikeMod;
 import fr.heraliz.airstrike.client.fx.Deafen;
 import fr.heraliz.airstrike.client.fx.FxQuality;
 import fr.heraliz.airstrike.client.render.DesignatorHold;
+import fr.heraliz.airstrike.client.render.HorlogeJumelles;
 import fr.heraliz.airstrike.client.render.StrikeRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -41,7 +42,11 @@ public final class ClientEvents {
 
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) DesignatorClient.onRenderTickStart();
+        if (event.phase == TickEvent.Phase.START) {
+            // une seule heure par image pour l'animation des jumelles (recharge régulière, voir HorlogeJumelles)
+            HorlogeJumelles.image();
+            DesignatorClient.onRenderTickStart();
+        }
     }
 
     @SubscribeEvent

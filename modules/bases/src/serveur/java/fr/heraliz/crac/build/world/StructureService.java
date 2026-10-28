@@ -263,6 +263,21 @@ public final class StructureService {
     }
 
     /**
+     * Amélioration au marteau (HeraliZ, 27/10) : yeux à {@code upgradeReach} blocs au plus du point le plus proche de la
+     * pièce (avant : la portée de pose, 8 blocs, plus 1,5 bloc de marge). Petite marge pour le retard du réseau.
+     */
+    public static boolean inUpgradeReach(Player player, Piece p) {
+        return player.getAbilities().instabuild
+            || PlacementRules.distanceYeux(player.getEyePosition(), p.key(), PieceIndex.blocksOf(p)) <= BuildConfig.upgradeReach.get() + 0.3;
+    }
+
+    /** {@code upgradeReach} lisible (« 4 », « 4.5 ») pour les messages. */
+    public static String upgradeReachText() {
+        double r = BuildConfig.upgradeReach.get();
+        return r == Math.rint(r) ? String.valueOf((long) r) : String.valueOf(r);
+    }
+
+    /**
      * Vanilla protections that the placement packet skips (it is not a vanilla block use): build height, spawn
      * protection and the world border, for every block of the piece. Null when allowed.
      */
@@ -800,7 +815,9 @@ public final class StructureService {
     public static Outcome upgrade(ServerLevel level, ServerPlayer player, Piece p, Tier target) {
         Component combat = Heraliz.combatProblem(player);
         if (combat != null) return Outcome.fail(combat);
-        if (!inReach(player, p)) return Outcome.fail("crac.build.too_far");
+        if (!inUpgradeReach(player, p)) {
+            return Outcome.fail(Component.translatable("crac.hammer.trop_loin", upgradeReachText()));
+        }
         if (!hasPrivilege(level, player, p)) return Outcome.fail("crac.build.not_yours");
         // also once the claim is gone: destroying the Claim Block or disbanding must not lift the raid block
         Claim c = claimOf(level, buildingOf(level, p));
@@ -865,6 +882,36 @@ public final class StructureService {
         if (tuto) {
             fr.heraliz.crac.bases.Tutoriel.rembourser(player, p);
         }
+        return Outcome.ok(p);
+    }
+
+    /**
+     * HeraliZ (28/10, demande du propriétaire) : le marteau retire la vitre ou les barreaux posés dans une fenêtre et les
+     * rend au joueur ; mêmes droits que pour les poser.
+     */
+    public static Outcome retirerInsert(ServerLevel level, ServerPlayer player, Piece p) {
+        int insert = p.insert();
+        if (p.kind() != PieceKind.WINDOW || insert == Piece.INSERT_NONE) {
+            return Outcome.fail("crac.hammer.sans_vitre");
+        }
+        boolean creative = player.getAbilities().instabuild;
+        if (!creative) {
+            Component combat = Heraliz.combatProblem(player);
+            if (combat != null) return Outcome.fail(combat);
+            if (!inReach(player, p)) return Outcome.fail("crac.build.too_far");
+        }
+        if (!hasPrivilege(level, player, p)) return Outcome.fail("crac.build.not_yours");
+        p.setInsert(Piece.INSERT_NONE);
+        store(level).setDirty();
+        refresh(level, p);
+        if (!creative) {
+            ItemStack rendu = new ItemStack(insert == Piece.INSERT_BARS ? ModItems.METAL_WINDOW.get() : ModItems.GLASS_WINDOW.get());
+            if (!player.getInventory().add(rendu)) {
+                player.drop(rendu, false);
+            }
+        }
+        level.playSound(null, BlockPos.containing(centre(p)), insert == Piece.INSERT_BARS ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.GLASS_BREAK,
+            SoundSource.BLOCKS, 0.7F, 1.2F);
         return Outcome.ok(p);
     }
 
@@ -1034,6 +1081,11 @@ public final class StructureService {
     public static String claimProblem(ServerLevel level, BlockPos claimPos, int tier) {
         StructureStore store = store(level);
         Piece under = seatUnder(level, claimPos);
+        // HeraliZ (28/10) : un plancher posé sur des demi-murs porte bien l'armoire (seatUnder), mais son dessus est à
+        // mi-bloc : posée, elle flottait d'un demi-bloc
+        if (under != null && StructureBlock.standIssue(level, claimPos.below()) == StructureBlock.StandIssue.HALF_LEVEL) {
+            return "crac.claim.half_level";
+        }
         if (under == null) {
             StructureBlock.StandIssue issue = StructureBlock.standIssue(level, claimPos.below());
             if (issue == StructureBlock.StandIssue.HALF_LEVEL) {

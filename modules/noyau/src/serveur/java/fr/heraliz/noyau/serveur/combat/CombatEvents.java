@@ -48,6 +48,7 @@ public final class CombatEvents {
       // LOWEST : notre refus est le dernier mot (aucun autre mod ne peut le repasser à ALLOW après nous)
       MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, CombatEvents::effet);
       CombatService.enregistrer();
+      CoupsAuTravers.enregistrer();
    }
 
    /** Auteur réel (propriétaire du projectile ou de l'explosif) si c'est une entité vivante. */

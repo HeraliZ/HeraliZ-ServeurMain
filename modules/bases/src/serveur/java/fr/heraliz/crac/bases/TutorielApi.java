@@ -43,6 +43,10 @@ public final class TutorielApi {
 
     /** Jours de protection de la première base contre les raids ({@code [protection] jours}, 4 aujourd'hui), arrondis. */
     public static int joursProtection() {
+        // HeraliZ (27/10) : plus de protection donnée toute seule, Varga n'en parle plus
+        if (!BasesReglages.b(BasesReglages.PROTECTION_AUTO, false)) {
+            return 0;
+        }
         return (int) Math.round(BasesReglages.d(BasesReglages.PROTECTION_JOURS, 4.0));
     }
 

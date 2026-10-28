@@ -114,6 +114,8 @@ public final class PartieClient implements Partie {
             fr.heraliz.crac.client.ui.EcranMort.recevoir(p);
         } else if (paquet instanceof fr.heraliz.crac.network.S2CPurge p) {
             fr.heraliz.crac.client.PurgeHud.recevoir(p);
+        } else if (paquet instanceof fr.heraliz.crac.network.S2CZonesInterdites p) {
+            fr.heraliz.crac.client.ZonesInterdites.recevoir(p);
         } else if (paquet instanceof fr.heraliz.crac.network.S2CFicheBase p) {
             // fiche technique des bases, /base info (1.13.0)
             net.minecraft.client.Minecraft.getInstance().setScreen(new fr.heraliz.crac.client.ui.EcranFicheBase(p));

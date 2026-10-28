@@ -4,6 +4,7 @@ import com.tacz.guns.config.common.OtherConfig;
 import com.tacz.guns.entity.EntityKineticBullet;
 import com.tacz.guns.util.EntityUtil;
 import com.tacz.guns.util.HitboxHelper;
+import com.tacz.guns.util.block.BlockRayTrace;
 import fr.heraliz.tactique.hitbox.HitboxCorps;
 import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +13,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -41,6 +45,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *    ping en sautant. Le rayon de recherche suit maintenant ce recul ; le test précis (boîte de TaCZ, puis morceaux) ne
  *    change pas : aucun joueur ne peut être touché ailleurs que sur sa place corrigée.</li>
  * </ul>
+ * 27/10 (tirs à travers une porte ou un mur) : un morceau peut dépasser du corps de plus d'épaisseur qu'une porte ou un mur
+ * de base (bras tendus avec une arme : 0,7 bloc devant le joueur ; allongé : tête et pieds à 0,9 bloc ; une porte ne fait
+ * que 0,125 bloc). Le tireur de l'autre côté touchait ce morceau sans traverser la porte, et blessait le joueur caché
+ * derrière. Un morceau n'est plus touché si un bloc solide (même calcul que la balle : BlockRayTrace) est entre le point
+ * touché et le corps (milieu de la place du joueur, à la hauteur du point) : seul ce qui est du même côté que le corps
+ * compte. Un bras qui dépasse d'une ouverture (porte ouverte, fenêtre, coin de mur) reste touché.
+ * <p>
  * Cible : EntityUtil de TaCZ 1.1.8 (getHitResult : null = manqué ; findEntityOnPath / findEntitiesOnPath : recherche des
  * entités). Seul le serveur décide. Noms de TaCZ : remap = false. require = 0 : si TaCZ change ces fonctions, son calcul
  * revient, rien ne plante.
@@ -143,12 +154,31 @@ public abstract class TaczHitboxCorpsMixin {
          double k = essais == 1 ? 0.5D : i * 0.5D;
          Vec3 pieds = new Vec3(Mth.lerp(k, x0, x1), Mth.lerp(k, y0, y1), Mth.lerp(k, z0, z1));
          HitboxCorps.Touche t = HitboxCorps.toucher(HitboxCorps.morceaux(joueur, pieds, 1.0F), de, a);
+         if (t != null && heraliz$derriereUnMur(balle, joueur, pieds, de.add(a.subtract(de).scale(t.t())))) {
+            t = null;   // morceau qui dépasse d'une porte ou d'un mur, corps de l'autre côté
+         }
          if (t != null && (meilleure == null || t.t() < meilleure.t())) {
             meilleure = t;
          }
       }
       cir.setReturnValue(meilleure == null ? null
          : new EntityKineticBullet.EntityResult(cible, de.add(a.subtract(de).scale(meilleure.t())), meilleure.morceau().tete()));
+   }
+
+   /**
+    * Un bloc solide pour une balle est-il entre le point touché et le corps du joueur (milieu de sa place {@code pieds}, à la
+    * hauteur du point, ramenée dans sa taille) ? Un seul rayon, seulement quand un morceau est touché.
+    */
+   @Unique
+   private static boolean heraliz$derriereUnMur(Projectile balle, Player joueur, Vec3 pieds, Vec3 point) {
+      double haut = joueur.getBbHeight();
+      Vec3 corps = new Vec3(pieds.x, Mth.clamp(point.y, pieds.y + 0.1D, pieds.y + Math.max(0.2D, haut - 0.1D)), pieds.z);
+      double d2 = corps.distanceToSqr(point);
+      if (d2 < 1.0E-4D) {
+         return false;
+      }
+      BlockHitResult r = BlockRayTrace.rayTraceBlocks(joueur.level(), new ClipContext(point, corps, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, balle));
+      return r.getType() != HitResult.Type.MISS && r.getLocation().distanceToSqr(point) < d2 - 1.0E-6D;
    }
 
    /** Sens du mouvement que TaCZ a utilisé pour étirer la boîte (même calcul que HitboxHelper.getFixedBoundingBox). */

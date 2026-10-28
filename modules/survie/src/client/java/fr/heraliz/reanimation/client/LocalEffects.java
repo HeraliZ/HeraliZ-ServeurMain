@@ -183,7 +183,7 @@ public final class LocalEffects {
 
                if (info.has(4) && info.reviveMax > 0) {
                   float p = (float)info.revive / info.reviveMax;
-                  if (p > 0.1F && p < 0.86F && info.revive % 12 == 0) {
+                  if (p > 0.1F && p < 0.86F && info.reviveAvance && info.revive % 12 == 0) {
                      level.playLocalSound(e.getX(), e.getY(), e.getZ(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 0.45F, 1.45F, false);
                      // plus de cœurs de Minecraft pendant la réanimation (23/10, demande du propriétaire)
                   }

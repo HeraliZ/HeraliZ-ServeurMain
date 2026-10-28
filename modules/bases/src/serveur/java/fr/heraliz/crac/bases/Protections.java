@@ -189,6 +189,13 @@ public final class Protections {
     static void seconde(MinecraftServer server) {
         BasesDonnees d = BasesDonnees.get(server);
         compteur++;
+        // HeraliZ (27/10) : protection des bases des nouveaux joueurs coupée ([protection] automatique = false)
+        boolean auto = BasesReglages.b(BasesReglages.PROTECTION_AUTO, false);
+        if (!auto && !d.autoRetirees()) {
+            retirerAutomatiques(server, d);
+        } else if (auto && d.autoRetirees()) {
+            d.autoRetirees(false);
+        }
         Set<UUID> nouveaux = new HashSet<>();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             BasesDonnees.Joueur j = d.siConnu(p.getUUID());
@@ -199,7 +206,10 @@ public final class Protections {
             if (j.etape == BasesDonnees.Etape.PHASE && MondeBases.estTuto(p.level())) {
                 nouveaux.add(p.getUUID());
             }
-            if (j.protectionDue && basePosee(p)) {
+            if (j.protectionDue && !auto) {
+                j.protectionDue = false;   // plus de protection donnée toute seule
+                d.marquer();
+            } else if (j.protectionDue && basePosee(p)) {
                 accorder(p, d, j);
             }
         }
@@ -255,6 +265,34 @@ public final class Protections {
             nb), ChatFormatting.GREEN);
         Crac.LOGGER.info("[CRac] base du groupe {} ({}) protégée {} jours", g.name(), p.getGameProfile().getName(), nb);
         majTextes(p.server);
+    }
+
+    /**
+     * Passage à {@code automatique = false} : les protections déjà données (toutes données toutes seules jusque-là) sont
+     * retirées une fois, membres connectés prévenus, textes flottants retirés. Le staff peut en redonner une
+     * ({@code /protection donner}), elle reste.
+     */
+    private static void retirerAutomatiques(MinecraftServer server, BasesDonnees d) {
+        List<UUID> groupes = new ArrayList<>(d.protections().keySet());
+        for (UUID g : groupes) {
+            d.retirerProtection(g);
+            Group grp = GroupData.get(server).getById(g);
+            if (grp != null) {
+                for (UUID m : grp.members()) {
+                    ServerPlayer sp = server.getPlayerList().getPlayer(m);
+                    if (sp != null) {
+                        T.chat(sp, T.t("crac.protection.finie", "La protection de ta base est terminée : elle peut être raidée."), ChatFormatting.GOLD);
+                    }
+                }
+            }
+        }
+        for (BasesDonnees.Joueur j : d.joueursConnus()) {
+            j.protectionDue = false;
+        }
+        d.autoRetirees(true);
+        d.marquer();
+        Crac.LOGGER.info("[CRac] protection automatique des bases coupée : {} protection(s) retirée(s)", groupes.size());
+        majTextes(server);
     }
 
     /** Une fois par minute : protections finies retirées (membres prévenus), textes flottants mis à jour. */

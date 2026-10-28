@@ -247,6 +247,16 @@ public class BuildEventHandler {
                     }
 
                     Item item = event.getItemStack().getItem();
+                    if (placesSomething(item) && item instanceof BlockItem && event.getFace() == Direction.UP
+                        && StructureBlock.standIssue(sl, event.getPos()) == StructureBlock.StandIssue.HALF_LEVEL) {
+                        // HeraliZ (28/10) : un plancher posé sur des demi-murs a son dessus à mi-bloc ; avec un plancher
+                        // au-dessus, il n'y a même aucune case libre entre les deux : rien ne s'y pose
+                        event.setUseItem(Result.DENY);
+                        player.displayClientMessage(Txt.red(item instanceof fr.heraliz.crac.item.ClaimBlockItem
+                            ? "crac.claim.half_level" : "crac.placable.half_level"), true);
+                        PlacementSync.revert(player, sl, event.getPos(), event.getFace());
+                        return;
+                    }
                     if (placesSomething(item)) {
                         if (!(item instanceof BlockItem bi && isSystemBlock(bi.getBlock().defaultBlockState()))) {
                             BlockPos placePos = event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace());
@@ -262,10 +272,53 @@ public class BuildEventHandler {
                                 PlacementSync.revert(player, sl, event.getPos(), event.getFace());
                             }
                         }
+                    } else if (!player.isSpectator() && objetEtranger(item)) {
+                        // HeraliZ (27/10) : un objet qui agit sur le bloc visé (barricade de Bunker, mannequin, laisse...)
+                        // ne pose rien dans une base ; le bloc visé, lui, reste utilisable (portes, caisses, armoire)
+                        BlockPos placePos = event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace());
+                        if (ClaimManager.getAt(sl, event.getPos()) != null || ClaimManager.getAt(sl, placePos) != null) {
+                            event.setUseItem(Result.DENY);
+                            player.displayClientMessage(Txt.red("crac.claim.objet_etranger"), true);
+                        }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Objets qui agissent sur le bloc visé ({@code useOn} ou {@code onItemUseFirst} redéfinis), hors blocs (règle des
+     * placables), hors CRac et hors {@code allowedItemsInClaims} : ceux qui ne posent rien (nourriture, soins, armes de
+     * TaCZ) ne sont pas touchés. Gardé par classe (le registre ne change pas en jeu).
+     */
+    private static final java.util.Map<Class<?>, Boolean> AGIT_SUR_BLOC = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static boolean objetEtranger(Item item) {
+        if (item instanceof BlockItem || item == net.minecraft.world.item.Items.AIR) {
+            return false;
+        }
+        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(item);
+        if (id == null || "crac".equals(id.getNamespace()) || Config.allowedItemsInClaims.get().contains(id.toString())) {
+            return false;
+        }
+        return AGIT_SUR_BLOC.computeIfAbsent(item.getClass(), BuildEventHandler::agitSurBloc);
+    }
+
+    /** La classe (ou une classe mère, avant {@code Item}) redéfinit-elle l'usage sur un bloc ? */
+    private static boolean agitSurBloc(Class<?> c) {
+        // Item.useOn : nom SRG en jeu, nom lisible dans l'environnement de développement
+        Class<?> ctx = net.minecraft.world.item.context.UseOnContext.class;
+        String useOn = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findMethod(Item.class, "m_6225_", ctx).getName();
+        for (Class<?> k = c; k != null && k != Item.class; k = k.getSuperclass()) {
+            for (java.lang.reflect.Method m : k.getDeclaredMethods()) {
+                Class<?>[] p = m.getParameterTypes();
+                if (p.length == 1 && p[0] == ctx && m.getName().equals(useOn)
+                    || p.length == 2 && p[1] == ctx && m.getName().equals("onItemUseFirst")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

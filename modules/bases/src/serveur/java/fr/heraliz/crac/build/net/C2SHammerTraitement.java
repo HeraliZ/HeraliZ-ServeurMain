@@ -33,7 +33,7 @@ public final class C2SHammerTraitement {
         if (!PacketGuard.canAct(player) || !(player.getMainHandItem().getItem() instanceof BuildingHammerItem)) {
             return;
         }
-        if (msg.action() < C2SHammer.UPGRADE || msg.action() > C2SHammer.DEMOLISH) {
+        if (msg.action() < C2SHammer.UPGRADE || msg.action() > C2SHammer.RETIRER_INSERT) {
             return;
         }
         if (msg.action() == C2SHammer.UPGRADE && (msg.tier() <= Tier.TWIG.ordinal() || msg.tier() >= Tier.values().length)) {
@@ -61,7 +61,8 @@ public final class C2SHammerTraitement {
         StructureService.Outcome out = switch (msg.action()) {
             case C2SHammer.UPGRADE -> StructureService.upgrade(level, player, p, Tier.byOrdinal(msg.tier()));
             case C2SHammer.REPAIR -> StructureService.repair(level, player, p);
-            default -> StructureService.demolish(level, player, p);
+            case C2SHammer.DEMOLISH -> StructureService.demolish(level, player, p);
+            default -> StructureService.retirerInsert(level, player, p);
         };
         if (!out.ok()) {
             player.displayClientMessage(out.message().copy().withStyle(ChatFormatting.RED), true);

@@ -115,6 +115,10 @@ public final class ClaimBlockHandler {
         }
         Costs.take(player, cost);
         ClaimManager.addClaim(level, pos, g.id(), tier);
+        if (level.getBlockEntity(pos) instanceof ClaimBlockEntity be) {
+            // HeraliZ (28/10) : déplaçable au marteau peu après la pose (DeplacerArmoire), le palier payé rendu
+            be.setPose(System.currentTimeMillis(), player.getAbilities().instabuild ? 1 : tier);
+        }
         fr.heraliz.crac.bases.AccesBase.get(level.getServer()).armoirePosee(player.getUUID(), level, pos);
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() instanceof ClaimBlock && state.getValue(ClaimBlock.TIER) != tier) {

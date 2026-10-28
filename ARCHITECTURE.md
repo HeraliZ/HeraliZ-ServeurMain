@@ -544,4 +544,34 @@ Rien de tout cela n'a été testé en jeu.
   `outils/caisses.py`). Une commande de la caisse qui rend 0 (émote au hasard alors qu'il les a toutes, grade déjà à vie)
   est remboursée ; `emote debloquer` rend le nombre de joueurs qui ont vraiment reçu une emote.
 
+**Correctifs du 27/10 (soir) : bases, combat, frappe aérienne, réanimation** (essais à faire :
+`docs/TESTS_EN_JEU_27OCT_CORRECTIFS.md` ; CRac 1.25.0-beta, canal 26)
+- **Coups et tirs à travers portes et murs** : coup de mêlée direct sur un joueur annulé si aucun point de son corps
+  n'est visible des yeux de l'attaquant (`noyau`, `CoupsAuTravers`) ; balle TaCZ sur un morceau du corps qui dépasse d'une
+  porte ou d'un mur (bras tendus, allongé) refusée si un bloc solide est entre le point touché et le corps
+  (`TaczHitboxCorpsMixin`). Chez le joueur, la balle s'arrête à l'écran sur le premier bloc touché (`TaczBalleArretMixin`).
+- **Bases** : plus de protection donnée toute seule aux nouvelles bases (`[protection] automatique = false`, anciennes
+  retirées une fois) ; dans une base, un objet qui agit sur un bloc (barricade, mannequin…) est refusé hors CRac
+  (`allowedItemsInClaims`) ; rampes sans poteaux (cases réservées inchangées) ; amélioration au marteau à 4 blocs
+  (`upgradeReach`) ; moitié de mur laissée à une armoire ou une caisse posée avant le mur dessinée par la case voisine,
+  et reprise quand un bloc posé avant le mur part ; zones interdites en rouge plan en main (`S2CZonesInterdites`) ;
+  aide au saut des montées donnée plus tôt (`SautRebord`) ; rampe triangle posée à l'inverse (28/10, choix du
+  propriétaire : côté haut vers le joueur, coin bas au fond, `Sockets.volumeRot` ; CRac 1.25.1-beta).
+- **Marteau** (28/10, demande du propriétaire, CRac 1.26.0-beta, canal 27) : clic droit sur un objet posé (caisse, coffre,
+  four…) = le ramasser s'il est vide (même paquet et mêmes règles que accroupi + clic droit, `C2SPickup`) ; roue sur une
+  fenêtre garnie : « Retirer la vitre / les barreaux », rendus au joueur (`C2SHammer.RETIRER_INSERT`,
+  `StructureService.retirerInsert`) ; clic droit sur l'armoire pendant les `claimMoveMinutes` (15) minutes après sa pose :
+  elle revient dans l'inventaire avec son stock d'entretien et le palier payé à la pose (`DeplacerArmoire`, heure de pose
+  dans `ClaimBlockEntity`, `PoseeLe`) ; gérer la base, hors raid, hors tutoriel ; une armoire posée avant ne se déplace pas.
+- **Plancher sur demi-mur** (28/10, CRac 1.26.1-beta ; le propriétaire refuse des murs plus hauts) : joueur accroupi de
+  1,25 bloc (yeux 1,1) au lieu de 1,5 (`mixin/PlayerAccroupiMixin`, commun) : comme dans Rust, on saute accroupi sur ce
+  plancher sous un plafond (21 px libres). Son dessus est à mi-bloc et, avec un plancher au-dessus, il n'y a aucune case
+  libre entre les deux : tout objet visé dessus est refusé avec le message (`BuildEventHandler`), l'armoire aussi quand
+  une pièce la porte (`claimProblem`), un objet adossé ne part plus dans une case voisine qui ne le porte pas
+  (`Adosse.caseLibre`).
+- **Frappe aérienne** : animation de recharge sur une horloge régulière (`HorlogeJumelles`) ; explosion sans le calcul
+  des blocs (27 000 à 55 000 lectures par bombe pour rien), créatures attirées lancées 3 par tick, mesures dans le journal.
+- **Réanimation** : compte à rebours visible jusqu'à la réponse du serveur, recalé tous les 5 ticks.
+- **Armes du mode Zombies** : gunpack `heraliz_wonder` resté sur le Ptero, ajouté à `serveur/tacz_retires.txt`.
+
 Rien de tout cela n'a été testé en jeu.

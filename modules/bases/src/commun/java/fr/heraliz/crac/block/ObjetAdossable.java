@@ -22,7 +22,7 @@ public class ObjetAdossable extends BlockItem {
     public InteractionResult place(BlockPlaceContext ctx) {
         if (!ctx.canPlace()) {
             BlockPos cible = ctx.getClickedPos();
-            BlockPos ici = Adosse.caseLibre(ctx, cible, this.hauteur);
+            BlockPos ici = Adosse.caseLibre(ctx, cible, this.hauteur, this.getBlock().defaultBlockState());
             if (ici != null) {
                 Adosse.CIBLE.set(cible);
                 try {

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import fr.heraliz.crac.build.model.Piece;
+import fr.heraliz.crac.build.model.PieceKind;
 import fr.heraliz.crac.build.model.Tier;
 import fr.heraliz.crac.build.net.C2SHammer;
 import fr.heraliz.crac.build.net.S2CPieceInfo;
@@ -27,6 +28,8 @@ import static fr.heraliz.crac.client.kit.Dessin.*;
 public class HammerRadialScreen extends RadialMenuScreen {
     private static final int REPAIR = -1;
     private static final int DEMOLISH = -2;
+    /** HeraliZ (28/10) : retirer la vitre ou les barreaux d'une fenêtre. */
+    private static final int RETIRER = -3;
 
     private final Piece target;
     /** Tier ordinal per entry, or REPAIR / DEMOLISH. */
@@ -41,6 +44,9 @@ public class HammerRadialScreen extends RadialMenuScreen {
             }
         }
         this.entries.add(REPAIR);
+        if (target.kind() == PieceKind.WINDOW && target.insert() != Piece.INSERT_NONE) {
+            this.entries.add(RETIRER);
+        }
         PieceInfoCache.Entry info = PieceInfoCache.get(target.id);
         if (info != null && info.canDemolish()) {
             this.entries.add(DEMOLISH);
@@ -112,6 +118,9 @@ public class HammerRadialScreen extends RadialMenuScreen {
         if (entry == REPAIR) {
             return info == null ? "crac.hammer.waiting" : HammerController.repairProblem(player, info);
         }
+        if (entry == RETIRER) {
+            return info != null && !info.privileged() ? "crac.build.not_yours" : null;
+        }
         Tier tier = Tier.byOrdinal(entry);
         if (info != null && !info.privileged()) {
             return "crac.build.not_yours";
@@ -122,7 +131,17 @@ public class HammerRadialScreen extends RadialMenuScreen {
         if (!BuildClient.has(player, this.cost(entry))) {
             return "crac.hammer.not_enough";
         }
+        // HeraliZ (27/10) : on améliore de près (upgradeReach), le serveur le vérifie aussi
+        double r = BuildClient.upgradeReach();
+        if (!player.getAbilities().instabuild && fr.heraliz.crac.build.logic.PlacementRules.distanceYeux(player.getEyePosition(),
+            this.target.key(), fr.heraliz.crac.build.geom.PieceSolids.collisionBlocks(this.target.key())) > r + 0.3) {
+            return Txt.k("crac.hammer.trop_loin", r == Math.rint(r) ? String.valueOf((long) r) : String.valueOf(r));
+        }
         return null;
+    }
+
+    private String retirerCle() {
+        return this.target.insert() == Piece.INSERT_BARS ? "crac.hammer.retirer_barreaux" : "crac.hammer.retirer_vitre";
     }
 
     private boolean affordable(int entry) {
@@ -162,6 +181,15 @@ public class HammerRadialScreen extends RadialMenuScreen {
             List<BuildCost> cost = this.cost(entry);
             String name = Component.translatable("crac.hammer.repair").getString();
             this.label(g, cost.isEmpty() ? name : name + " · " + cost.get(0).count(), x, labelY, this.affordable(entry) ? text : a(ROUGE_PALE, 255 * alpha));
+        } else if (entry == RETIRER) {
+            net.minecraft.world.item.ItemStack icone = new net.minecraft.world.item.ItemStack(this.target.insert() == Piece.INSERT_BARS
+                ? fr.heraliz.crac.registry.ModItems.METAL_WINDOW.get() : fr.heraliz.crac.registry.ModItems.GLASS_WINDOW.get());
+            g.pose().pushPose();
+            g.pose().translate(x - size / 2, top, 0);
+            g.pose().scale(size / 16.0F, size / 16.0F, 1);
+            g.renderItem(icone, 0, 0);
+            g.pose().popPose();
+            this.label(g, Component.translatable(this.retirerCle()).getString(), x, labelY, text);
         } else {
             croix(g, x, top + size / 2, size * 0.22F, size * 0.09F, a(ROUGE_PALE, 255 * alpha));
             String name = Component.translatable("crac.hammer.demolish").getString();
@@ -186,7 +214,7 @@ public class HammerRadialScreen extends RadialMenuScreen {
         }
         int entry = this.entries.get(this.hovered);
         String title = (entry >= 0 ? Component.translatable("crac.hammer.upgrade_to", BuildClient.tierName(Tier.byOrdinal(entry)))
-            : Component.translatable(entry == REPAIR ? "crac.hammer.repair" : "crac.hammer.demolish")).getString();
+            : Component.translatable(entry == REPAIR ? "crac.hammer.repair" : entry == RETIRER ? this.retirerCle() : "crac.hammer.demolish")).getString();
         lines.add(title(title));
         String problem = this.problem(this.hovered);
         if (entry == DEMOLISH) {
@@ -194,6 +222,8 @@ public class HammerRadialScreen extends RadialMenuScreen {
         } else if (problem != null && !"crac.hammer.not_enough".equals(problem)) {
             // not about materials: say why
             lines.add(line(Txt.c(problem), a(ROUGE_PALE, 255)));
+        } else if (entry == RETIRER) {
+            lines.add(line(Component.translatable("crac.hammer.retirer_rendu"), a(ATTENUE, 255)));
         } else {
             lines.addAll(PlanRadialScreen.costLines(this.minecraft == null ? null : this.minecraft.player, this.cost(entry)));
         }
@@ -207,6 +237,8 @@ public class HammerRadialScreen extends RadialMenuScreen {
             HammerController.startAutoRepair();
         } else if (entry == DEMOLISH) {
             HammerController.send(C2SHammer.DEMOLISH, Tier.TWIG);
+        } else if (entry == RETIRER) {
+            HammerController.send(C2SHammer.RETIRER_INSERT, Tier.TWIG);
         } else {
             HammerController.send(C2SHammer.UPGRADE, Tier.byOrdinal(entry));
         }

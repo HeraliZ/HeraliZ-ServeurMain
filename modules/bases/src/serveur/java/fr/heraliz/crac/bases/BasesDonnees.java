@@ -137,6 +137,11 @@ public final class BasesDonnees extends SafeSavedData {
 
     private final Map<UUID, Joueur> joueurs = new HashMap<>();
     private final Map<UUID, Long> protections = new HashMap<>();
+    /**
+     * Les protections données toutes seules ont été retirées une fois, après le passage à {@code [protection] automatique
+     * = false} (HeraliZ, 27/10) : celles que le staff donne ensuite restent.
+     */
+    private boolean autoRetirees;
 
     public static BasesDonnees get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(BasesDonnees::load,
@@ -169,6 +174,11 @@ public final class BasesDonnees extends SafeSavedData {
         return this.joueurs.get(id);
     }
 
+    /** Tous les joueurs connus (lecture et petites mises à jour sur le fil serveur). */
+    public java.util.Collection<Joueur> joueursConnus() {
+        return this.joueurs.values();
+    }
+
     /** Fin (ms) de la protection de base du groupe, 0 sans protection. */
     public long finProtection(@Nullable UUID groupe) {
         Long f = groupe == null ? null : this.protections.get(groupe);
@@ -196,6 +206,17 @@ public final class BasesDonnees extends SafeSavedData {
         this.setDirty();
     }
 
+    public boolean autoRetirees() {
+        return this.autoRetirees;
+    }
+
+    public void autoRetirees(boolean v) {
+        if (this.autoRetirees != v) {
+            this.autoRetirees = v;
+            this.setDirty();
+        }
+    }
+
     public static BasesDonnees load(CompoundTag tag) {
         BasesDonnees d = new BasesDonnees();
         ListTag js = tag.getList("Joueurs", Tag.TAG_COMPOUND);
@@ -207,6 +228,7 @@ public final class BasesDonnees extends SafeSavedData {
                 Crac.LOGGER.warn("[CRac] bases : joueur illisible ignoré ({})", e.toString());
             }
         }
+        d.autoRetirees = tag.getBoolean("AutoRetirees");
         ListTag ps = tag.getList("Protections", Tag.TAG_COMPOUND);
         for (int i = 0; i < ps.size(); i++) {
             CompoundTag t = ps.getCompound(i);
@@ -236,6 +258,7 @@ public final class BasesDonnees extends SafeSavedData {
             ps.add(t);
         });
         tag.put("Protections", ps);
+        tag.putBoolean("AutoRetirees", this.autoRetirees);
         return tag;
     }
 }

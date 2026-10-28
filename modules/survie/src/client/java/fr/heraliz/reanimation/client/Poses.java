@@ -86,7 +86,7 @@ public final class Poses {
       }
 
       if (info.has(16)) {
-         revive(m, info.revive + partial, info.reviveProgress(partial));
+         revive(m, info.reviveTicks(partial), info.reviveProgress(partial));
          return true;
       }
 
@@ -231,7 +231,7 @@ public final class Poses {
             if (info.has(4)) {
                float p = info.reviveProgress(partialTick);
                if (!(p <= 0.1F) && !(p >= 0.86F)) {
-                  float push = pump(info.revive + partialTick);
+                  float push = pump(info.reviveTicks(partialTick));
                   poseStack.pushPose();
                   pushed = true;
                   poseStack.translate(0.0, -0.035 * push, 0.0);

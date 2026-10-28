@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -110,8 +111,19 @@ public final class StrikeManager {
     }
 
     public static void tick(ServerLevel level) {
+        long debut = System.nanoTime();
+        // créatures attirées par les impacts précédents : quelques chemins par tick (StrikeEffects.lancerAttires)
+        StrikeEffects.lancerAttires(level);
+        long cheminsNs = System.nanoTime() - debut;
         List<Active> list = ACTIVE.get(level.dimension());
-        if (list == null || list.isEmpty()) return;
+        if (list == null || list.isEmpty()) {
+            mesurer(cheminsNs, cheminsNs, 0, null);
+            return;
+        }
+        StrikeEffects.mesureExplosionNs = 0;
+        StrikeEffects.mesureAttiresNs = 0;
+        int impacts = 0;
+        Vec3 ou = null;
         long now = level.getGameTime();
         Iterator<Active> it = list.iterator();
         while (it.hasNext()) {
@@ -123,6 +135,8 @@ public final class StrikeManager {
                     if (e.release) {
                         StrikeEffects.release(level, a.strike, e.drop);
                     } else {
+                        impacts++;
+                        ou = e.drop.impact();
                         StrikeEffects.impact(level, a.strike, e.drop);
                     }
                 } catch (Exception ex) {
@@ -137,6 +151,33 @@ public final class StrikeManager {
                 it.remove();
             }
         }
+        mesurer(System.nanoTime() - debut, cheminsNs, impacts, ou);
+    }
+
+    /**
+     * Mesure légère (27/10, blocage de 111 ms relevé quand une bombe a touché un joueur, sans preuve de sa cause : le
+     * diagnostic du serveur ne relève la pile qu'après 100 ms, au moment où le tick était déjà ailleurs) : quand les frappes
+     * prennent plus de {@code SEUIL_MESURE_NS} dans un tick du monde, une ligne au journal dit où (explosions, événements
+     * d'explosion et blessures compris ; choix des créatures attirées ; leurs chemins). Deux horloges lues par tick, une
+     * ligne toutes les 2 s au plus.
+     */
+    private static final long SEUIL_MESURE_NS = 15_000_000L;
+    private static long prochaineMesureMs;
+
+    private static void mesurer(long totalNs, long cheminsNs, int impacts, @Nullable Vec3 ou) {
+        if (totalNs < SEUIL_MESURE_NS) return;
+        long ms = System.currentTimeMillis();
+        if (ms < prochaineMesureMs) return;
+        prochaineMesureMs = ms + 2000L;
+        fr.heraliz.airstrike.AirstrikeMod.LOGGER.warn(
+                "[frappes] {} ms dans un tick : {} impact(s){} (explosions et leurs événements {} ms, choix des créatures attirées {} ms), chemins des créatures attirées {} ms",
+                ms(totalNs), impacts, ou == null ? "" : String.format(Locale.ROOT, " vers %.0f %.0f %.0f", ou.x, ou.y, ou.z),
+                impacts == 0 ? "0" : ms(StrikeEffects.mesureExplosionNs), impacts == 0 ? "0" : ms(StrikeEffects.mesureAttiresNs),
+                ms(cheminsNs));
+    }
+
+    private static String ms(long ns) {
+        return String.format(Locale.ROOT, "%.1f", ns / 1_000_000.0);
     }
 
     private static void announceRelease(ServerLevel level, Strike strike) {
@@ -165,6 +206,7 @@ public final class StrikeManager {
     public static int clear() {
         int n = countActive(null);
         ACTIVE.clear();
+        StrikeEffects.oublierAttires();
         return n;
     }
 }

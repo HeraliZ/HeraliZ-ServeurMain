@@ -323,8 +323,8 @@ public final class Adosse {
      * libre (et la case du dessus pour {@code hauteur} 2), la plus proche du joueur.
      */
     @Nullable
-    static BlockPos caseLibre(BlockPlaceContext ctx, BlockPos cible, int hauteur) {
-        BlockGetter level = ctx.getLevel();
+    static BlockPos caseLibre(BlockPlaceContext ctx, BlockPos cible, int hauteur, BlockState etat) {
+        net.minecraft.world.level.Level level = ctx.getLevel();
         if (!estStructure(level, cible)) {
             return null;
         }
@@ -341,6 +341,9 @@ public final class Adosse {
                 for (int h = 0; h < hauteur && libre; h++) {
                     libre = level.getBlockState(c.above(h)).canBeReplaced();
                 }
+                // HeraliZ (28/10) : seulement une case qui le porte (fondation, plancher plein) ; avant, un objet visé
+                // sur un plancher de demi-mur sous un autre plancher partait dans une case voisine, parfois en l'air
+                libre = libre && fr.heraliz.crac.placable.PlacableSupport.isSupported(level, c, etat);
                 double d = Vec3.atCenterOf(c).distanceToSqr(oeil);
                 if (libre && d < bestD) {
                     bestD = d;

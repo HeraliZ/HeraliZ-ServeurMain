@@ -77,6 +77,21 @@ public class DesignatorItem extends Item {
         return reloadProgress(stack, gameTime) < 1f;
     }
 
+    /**
+     * Heure (temps du monde du serveur) où la dernière recharge a commencé, ou {@link Long#MIN_VALUE} : repère de
+     * l'horloge de l'animation chez le joueur ({@code client.render.HorlogeJumelles}).
+     */
+    public static long reloadStart(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null || !tag.contains(TAG_RELOAD) ? Long.MIN_VALUE : tag.getLong(TAG_RELOAD);
+    }
+
+    /** Heure (temps du monde du serveur) de la dernière reprogrammation, ou {@link Long#MIN_VALUE}. */
+    public static long reprogramStart(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null || !tag.contains(TAG_REPROGRAM) ? Long.MIN_VALUE : tag.getLong(TAG_REPROGRAM);
+    }
+
     /** Frappes qui restent à la cartouche de la baie (0 : vide). */
     public static int coups(ItemStack stack) {
         CompoundTag tag = stack.getTag();

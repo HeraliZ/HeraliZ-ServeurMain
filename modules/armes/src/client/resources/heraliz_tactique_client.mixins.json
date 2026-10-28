@@ -18,7 +18,8 @@
     "LocalPlayerInspectMixin",
     "SonsArmeJoueurMixin",
     "SoundBufferAccessor",
-    "SonsMonoMixin"
+    "SonsMonoMixin",
+    "TaczBalleArretMixin"
   ],
   "injectors": {
     "defaultRequire": 1

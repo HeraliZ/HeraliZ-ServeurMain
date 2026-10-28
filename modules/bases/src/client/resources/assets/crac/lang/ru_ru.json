@@ -633,5 +633,22 @@
   "crac.purge.hud": "Чистка",
   "piece.crac.triangle_ramp": "Треугольный пандус",
   "crac.rot.low_corner_facing": "нижний угол к тебе",
-  "crac.build.retired": "Эту деталь больше нельзя построить."
+  "crac.build.retired": "Эту деталь больше нельзя построить.",
+  "crac.claim.objet_etranger": "В базе можно ставить только элементы и предметы строительства.",
+  "crac.hammer.trop_loin": "Подойди ближе, чтобы улучшить (не дальше %s бл.).",
+  "crac.zone.interdite_plan": "Красная зона: здесь строить нельзя (город, лут, рельсы, опасная или снежная зона).",
+  "crac.rot.high_side_facing": "верхняя сторона к тебе",
+  "crac.armoire.deplacement_coupe": "Перенос шкафа отключён на этом сервере.",
+  "crac.armoire.tuto": "Не во время обучения.",
+  "crac.armoire.trop_tard": "Слишком поздно: шкаф можно перенести только в течение %s мин. после установки.",
+  "crac.armoire.ramassee": "Шкаф подобран вместе с запасом. Поставь его поскорее: без него база не защищена.",
+  "crac.hammer.sans_vitre": "В этом окне нет ни стекла, ни решётки.",
+  "crac.hammer.retirer_vitre": "Снять стекло",
+  "crac.hammer.retirer_barreaux": "Снять решётку",
+  "crac.hammer.retirer_rendu": "Вернётся в инвентарь",
+  "crac.hud.armoire": "Шкаф с инструментами",
+  "crac.hud.vide_seulement": "Только если пусто",
+  "crac.hud.armoire_delai": "В течение %s мин. после установки",
+  "crac.hud.ramasser_hint": "Подобрать",
+  "crac.hud.deplacer_hint": "Перенести"
 }

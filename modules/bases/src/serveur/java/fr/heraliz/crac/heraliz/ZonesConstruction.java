@@ -58,6 +58,40 @@ public final class ZonesConstruction {
         return i >= 0 && j >= 0 && i < largeur && j < hauteur && masque[j * largeur + i];
     }
 
+    /**
+     * Morceau du masque autour du bloc (x, z) pour le jeu d'un joueur qui tient le plan (HeraliZ, 27/10) : {@code rayon}
+     * cases de chaque côté de la case du centre, elle-même arrondie à un multiple de {@code arrondi} cases (on ne renvoie
+     * pas à chaque pas). Fenêtre vide sans masque.
+     */
+    public static synchronized fr.heraliz.crac.network.S2CZonesInterdites fenetre(int x, int z, int rayon, int arrondi) {
+        charger();
+        if (masque == null) {
+            return fr.heraliz.crac.network.S2CZonesInterdites.vide();
+        }
+        int ci = Math.floorDiv(Math.floorDiv(x - x0, pas), arrondi) * arrondi + arrondi / 2;
+        int cj = Math.floorDiv(Math.floorDiv(z - z0, pas), arrondi) * arrondi + arrondi / 2;
+        int cote = 2 * rayon + 1;
+        long[] bits = new long[(cote * cote + 63) / 64];
+        for (int j = 0; j < cote; j++) {
+            int mj = cj - rayon + j;
+            if (mj < 0 || mj >= hauteur) continue;
+            for (int i = 0; i < cote; i++) {
+                int mi = ci - rayon + i;
+                if (mi >= 0 && mi < largeur && masque[mj * largeur + mi]) {
+                    int n = j * cote + i;
+                    bits[n >> 6] |= 1L << (n & 63);
+                }
+            }
+        }
+        return new fr.heraliz.crac.network.S2CZonesInterdites(x0 + (ci - rayon) * pas, z0 + (cj - rayon) * pas, pas, cote, cote, bits);
+    }
+
+    /** Version du masque (date du fichier lu) : une fenêtre déjà envoyée est renvoyée quand elle change. */
+    public static synchronized long version() {
+        charger();
+        return lu;
+    }
+
     private static void charger() {
         long t;
         try {

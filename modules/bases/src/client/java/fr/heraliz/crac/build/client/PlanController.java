@@ -282,6 +282,10 @@ public final class PlanController {
         if (tuto != null) {
             return Status.error(tuto);
         }
+        // HeraliZ (27/10) : zone où l'on ne construit pas (masque envoyé par le serveur, dessiné en rouge)
+        if (!player.getAbilities().instabuild && fr.heraliz.crac.client.ZonesInterdites.touche(key, plan.blocks())) {
+            return Status.error("crac.zone.interdite_plan");
+        }
         if (!player.getAbilities().instabuild) {
             if (!inReach(player.getEyePosition(), key, plan.blocks())) {
                 return Status.error("crac.build.too_far");

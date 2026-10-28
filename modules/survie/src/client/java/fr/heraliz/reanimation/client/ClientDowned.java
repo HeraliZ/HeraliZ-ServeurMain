@@ -1,5 +1,6 @@
 package fr.heraliz.reanimation.client;
 
+import fr.heraliz.reanimation.core.Downed;
 import fr.heraliz.reanimation.network.SyncPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -62,11 +63,21 @@ public final class ClientDowned {
             info.downTicks = 0;
          }
 
+         // la même réanimation, déjà en cours chez le joueur (avancée renvoyée par le serveur en cours de route) : le
+         // compteur est recalé sur celui du serveur sans jamais reculer ; sinon (début, fin, exécution) il est repris tel quel
+         boolean memeReanimation = old != null && reanimation(oldFlags) && reanimation(p.flags) && old.partner == p.partnerId
+            && old.reviveMax == p.reviveMax && p.revive > 0;
          info.flags = p.flags;
          info.partner = p.partnerId;
          info.bleed = p.bleed;
          info.bleedMax = p.bleedMax;
-         info.revive = p.revive;
+         if (memeReanimation) {
+            recaler(info, p.revive);
+         } else {
+            info.revive = p.revive;
+            info.reviveRetenue = 0;
+         }
+
          info.reviveMax = p.reviveMax;
          info.style = p.style;
          INFOS.put(p.entityId, info);
@@ -88,6 +99,26 @@ public final class ClientDowned {
       }
    }
 
+   /** Réanimation en cours (réanimé ou réanimateur), hors exécution. */
+   private static boolean reanimation(int flags) {
+      return (flags & (Downed.REVIVED | Downed.REVIVING)) != 0 && (flags & (Downed.EXECUTING | Downed.EXECUTED)) == 0;
+   }
+
+   /**
+    * Recale le compteur de la réanimation sur la valeur du serveur : en retard, il la rattrape tout de suite ; en avance
+    * (serveur plus lent que les 20 ticks par seconde du jeu), il s'arrête le nombre de ticks d'écart au lieu de reculer.
+    * Le compte à rebours suit ainsi le serveur jusqu'à la fin réelle de la réanimation.
+    */
+   private static void recaler(ClientDowned.Info info, int serveur) {
+      int ecart = serveur - info.revive;
+      if (ecart >= 0) {
+         info.revive = serveur;
+         info.reviveRetenue = 0;
+      } else {
+         info.reviveRetenue = -ecart;
+      }
+   }
+
    public static void tick() {
       Minecraft mc = Minecraft.getInstance();
       ObjectIterator var1 = INFOS.values().iterator();
@@ -103,8 +134,15 @@ public final class ClientDowned {
          }
 
          boolean clocked = info.has(4) || info.has(16) || info.has(128) || info.has(256);
+         info.reviveAvance = false;
          if (clocked && info.revive < info.reviveMax) {
-            info.revive++;
+            if (info.reviveRetenue > 0) {
+               // en avance sur le serveur : on l'attend
+               info.reviveRetenue--;
+            } else {
+               info.revive++;
+               info.reviveAvance = true;
+            }
          }
       }
 
@@ -141,6 +179,10 @@ public final class ClientDowned {
       public int bleedMax;
       public int revive;
       public int reviveMax;
+      /** Ticks pendant lesquels {@link #revive} n'avance plus : le jeu était en avance sur le serveur (voir recaler). */
+      public int reviveRetenue;
+      /** Vrai si {@link #revive} a avancé au dernier tick. */
+      public boolean reviveAvance;
       public int style;
       /** Ticks passés à terre depuis la chute (corps couché par Poses si la pose « nage » manque). */
       public int downTicks;
@@ -153,8 +195,16 @@ public final class ClientDowned {
          return this.bleedMax <= 0 ? 0.0F : Mth.clamp((float)this.bleed / this.bleedMax, 0.0F, 1.0F);
       }
 
+      /**
+       * Ticks de réanimation, interpolés entre deux ticks. La fraction de tick n'est pas ajoutée pendant que le compteur
+       * attend le serveur, ni une fois au bout : l'anneau, le compte à rebours et les gestes ne reculent jamais.
+       */
+      public float reviveTicks(float partialTick) {
+         return this.reviveRetenue > 0 || this.revive >= this.reviveMax ? this.revive : this.revive + partialTick;
+      }
+
       public float reviveProgress(float partialTick) {
-         return this.reviveMax <= 0 ? 0.0F : Mth.clamp((this.revive + partialTick) / this.reviveMax, 0.0F, 1.0F);
+         return this.reviveMax <= 0 ? 0.0F : Mth.clamp(this.reviveTicks(partialTick) / this.reviveMax, 0.0F, 1.0F);
       }
 
       /** Chute du corps, de 0 (debout) à 1 (à plat) : même vitesse que le swimAmount de Minecraft (+0,09 par tick). */

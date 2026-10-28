@@ -1464,3 +1464,7 @@ heraliz_6_armes_maxstuff/assets/maxstuff/textures/gun/slot/m82a2.png
 heraliz_6_armes_maxstuff/assets/maxstuff/textures/gun/uv/m82a2.png
 heraliz_6_armes_maxstuff/assets/maxstuff/geo_models/gun/m82a2_geo.json
 heraliz_6_armes_maxstuff/assets/maxstuff/display/guns/m82a2_display.json
+
+# 27/10 : gunpack des Wonder Weapons de l'ancien mode Zombies (Blundergat, Ray Gun, Thundergun...), mod retiré le 26/10
+# mais dossier resté sur le Ptero : ses armes apparaissaient encore (fusils à pompe : Blundergat)
+heraliz_wonder/
