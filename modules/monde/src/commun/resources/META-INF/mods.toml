@@ -4,7 +4,7 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
-# ---- heralisz_utils (ancien projet heralisz-utils, version 2.26.0)
+# ---- heralisz_utils (ancien projet heralisz-utils, version 2.26.1)
 [[mods]]
 modId="heralisz_utils"
 version="2.26.1"
@@ -52,7 +52,7 @@ description='''Pings du serveur HeraliZ (remplace Ping Wheel) : appui bref pour 
 [[dependencies.heraliz_ping]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.0]"
+    versionRange="[2.26.1]"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_ping]]
@@ -90,7 +90,7 @@ description='''Corps des joueurs morts (remplace le mod corpse) : tout l'inventa
 [[dependencies.heraliz_corps]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.0]"
+    versionRange="[2.26.1]"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_corps]]
@@ -146,7 +146,7 @@ description='''Usure des armes TaCZ du serveur HeraliZ (remplace Gun Durability)
 [[dependencies.heraliz_usure]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.0]"
+    versionRange="[2.26.1]"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_usure]]
@@ -185,7 +185,7 @@ description='''Vehicules du serveur HeraliZ (repris de Fuse) : buggy MRZR4, moto
 [[dependencies.heraliz_vehicules]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.0]"
+    versionRange="[2.26.1]"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_vehicules]]
@@ -217,7 +217,7 @@ description='''Carte du monde du serveur HeraliZ (touche M) : vue satellite ou r
 [[dependencies.heraliz_carte]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.0]"
+    versionRange="[2.26.1]"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_carte]]
