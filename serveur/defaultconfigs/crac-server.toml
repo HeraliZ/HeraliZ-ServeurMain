@@ -14,6 +14,10 @@
 	#HeraliZ: inside a claim, an item used on a block (barricade, armor stand, lead, firework...) is refused unless it
 	#belongs to CRac (plan, hammer, explosives) or is listed here (item ids). Blocks keep their own rule (placables only).
 	allowedItemsInClaims = []
+	#HeraliZ: minutes after its placement during which a Claim Block can be picked up with the hammer (right click) to
+	#be set again somewhere else, with its upkeep stock handed back. 0 = never.
+	#Range: 0 ~ 1440
+	claimMoveMinutes = 15
 	#Claim horizontal radius (XZ) for a tier 1 Claim Block.
 	#Range: 1 ~ 512
 	radiusL1 = 20

@@ -60,6 +60,10 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
     /** Group whose claim this block holds; kept so that a claim lost in a crash can be restored. */
     @Nullable
     private UUID ownerGroup;
+    /** HeraliZ (28/10) : heure de la pose (ms), 0 pour une armoire posée avant ; le marteau la déplace peu après. */
+    private long poseeLe;
+    /** HeraliZ (28/10) : palier du claim payé à la pose, rendu si l'armoire est déplacée. */
+    private int tierPaye;
     private LazyOptional<IItemHandler> input = LazyOptional.of(() -> new UpkeepInput(this));
     /** Écran de l'armoire (saison des clans, 22/10) : dernier état envoyé aux joueurs (serveur) ou reçu (joueur). */
     private CompoundTag ecran = new CompoundTag();
@@ -318,6 +322,21 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
         this.setChanged();
     }
 
+    public long poseeLe() {
+        return this.poseeLe;
+    }
+
+    public int tierPaye() {
+        return this.tierPaye;
+    }
+
+    /** HeraliZ : armoire posée par un joueur à {@code quand} (ms), son claim payé jusqu'au palier {@code tierPaye}. */
+    public void setPose(long quand, int tierPaye) {
+        this.poseeLe = quand;
+        this.tierPaye = tierPaye;
+        this.setChanged();
+    }
+
     // ------------------------------------------------------------------ menu
 
     /** The menu stays open for members of the claim's group within reach; a kicked member loses it at once. */
@@ -446,6 +465,10 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
         if (this.ownerGroup != null) {
             tag.putUUID("Group", this.ownerGroup);
         }
+        if (this.poseeLe > 0) {
+            tag.putLong("PoseeLe", this.poseeLe);
+            tag.putInt("TierPaye", this.tierPaye);
+        }
         tag.putIntArray("Stored", this.stored.clone());
         ListTag itemIds = new ListTag();
         for (int i = 0; i < SLOTS; i++) {
@@ -469,6 +492,8 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
             this.color = tag.getInt("Color");
         }
         this.ownerGroup = tag.hasUUID("Group") ? tag.getUUID("Group") : null;
+        this.poseeLe = tag.getLong("PoseeLe");
+        this.tierPaye = tag.getInt("TierPaye");
         int[] s = tag.getIntArray("Stored");
         boolean hasItems = tag.contains("Items", Tag.TAG_LIST);
         ListTag itemIds = tag.getList("Items", Tag.TAG_STRING);

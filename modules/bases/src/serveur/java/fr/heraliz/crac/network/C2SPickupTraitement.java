@@ -68,6 +68,16 @@ public final class C2SPickupTraitement {
         }
         BlockState target = level.getBlockState(pos);
         Block block = target.getBlock();
+        // HeraliZ (28/10) : l'armoire se ramasse au marteau dans les minutes qui suivent sa pose
+        if (block instanceof fr.heraliz.crac.block.ClaimBlockHaut) {
+            pos = pos.below();
+            target = level.getBlockState(pos);
+            block = target.getBlock();
+        }
+        if (block instanceof fr.heraliz.crac.block.ClaimBlock) {
+            fr.heraliz.crac.heraliz.DeplacerArmoire.ramasser(level, player, pos, target);
+            return;
+        }
         if (!PlacableSet.contains(level, block) || block instanceof StructureBlock || block.asItem() == Items.AIR) {
             return;
         }

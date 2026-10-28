@@ -45,6 +45,11 @@ public class Config {
             "belongs to CRac (plan, hammer, explosives) or is listed here (item ids). Blocks keep their own rule (placables only)."
         )
         .defineList("allowedItemsInClaims", List.of(), o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
+    /** HeraliZ (28/10, demande du propriétaire) : l'armoire se ramasse au marteau pour être reposée ailleurs, pendant ce délai. */
+    public static final IntValue claimMoveMinutes = BUILDER.comment(
+            "HeraliZ: minutes after its placement during which a Claim Block can be picked up with the hammer (right click) to",
+            "be set again somewhere else, with its upkeep stock handed back. 0 = never.")
+        .defineInRange("claimMoveMinutes", 15, 0, 1440);
     public static final IntValue claimRadiusL1 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 1 Claim Block.")
         .defineInRange("radiusL1", 20, 1, 512);
     public static final IntValue claimRadiusL2 = BUILDER.comment("Claim horizontal radius (XZ) for a tier 2 Claim Block.")

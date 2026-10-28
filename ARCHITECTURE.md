@@ -519,6 +519,12 @@ Rien de tout cela n'a été testé en jeu.
   et reprise quand un bloc posé avant le mur part ; zones interdites en rouge plan en main (`S2CZonesInterdites`) ;
   aide au saut des montées donnée plus tôt (`SautRebord`) ; rampe triangle posée à l'inverse (28/10, choix du
   propriétaire : côté haut vers le joueur, coin bas au fond, `Sockets.volumeRot` ; CRac 1.25.1-beta).
+- **Marteau** (28/10, demande du propriétaire, CRac 1.26.0-beta, canal 27) : clic droit sur un objet posé (caisse, coffre,
+  four…) = le ramasser s'il est vide (même paquet et mêmes règles que accroupi + clic droit, `C2SPickup`) ; roue sur une
+  fenêtre garnie : « Retirer la vitre / les barreaux », rendus au joueur (`C2SHammer.RETIRER_INSERT`,
+  `StructureService.retirerInsert`) ; clic droit sur l'armoire pendant les `claimMoveMinutes` (15) minutes après sa pose :
+  elle revient dans l'inventaire avec son stock d'entretien et le palier payé à la pose (`DeplacerArmoire`, heure de pose
+  dans `ClaimBlockEntity`, `PoseeLe`) ; gérer la base, hors raid, hors tutoriel ; une armoire posée avant ne se déplace pas.
 - **Frappe aérienne** : animation de recharge sur une horloge régulière (`HorlogeJumelles`) ; explosion sans le calcul
   des blocs (27 000 à 55 000 lectures par bombe pour rien), créatures attirées lancées 3 par tick, mesures dans le journal.
 - **Réanimation** : compte à rebours visible jusqu'à la réponse du serveur, recalé tous les 5 ticks.

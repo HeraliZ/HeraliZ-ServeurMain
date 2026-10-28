@@ -885,6 +885,36 @@ public final class StructureService {
         return Outcome.ok(p);
     }
 
+    /**
+     * HeraliZ (28/10, demande du propriétaire) : le marteau retire la vitre ou les barreaux posés dans une fenêtre et les
+     * rend au joueur ; mêmes droits que pour les poser.
+     */
+    public static Outcome retirerInsert(ServerLevel level, ServerPlayer player, Piece p) {
+        int insert = p.insert();
+        if (p.kind() != PieceKind.WINDOW || insert == Piece.INSERT_NONE) {
+            return Outcome.fail("crac.hammer.sans_vitre");
+        }
+        boolean creative = player.getAbilities().instabuild;
+        if (!creative) {
+            Component combat = Heraliz.combatProblem(player);
+            if (combat != null) return Outcome.fail(combat);
+            if (!inReach(player, p)) return Outcome.fail("crac.build.too_far");
+        }
+        if (!hasPrivilege(level, player, p)) return Outcome.fail("crac.build.not_yours");
+        p.setInsert(Piece.INSERT_NONE);
+        store(level).setDirty();
+        refresh(level, p);
+        if (!creative) {
+            ItemStack rendu = new ItemStack(insert == Piece.INSERT_BARS ? ModItems.METAL_WINDOW.get() : ModItems.GLASS_WINDOW.get());
+            if (!player.getInventory().add(rendu)) {
+                player.drop(rendu, false);
+            }
+        }
+        level.playSound(null, BlockPos.containing(centre(p)), insert == Piece.INSERT_BARS ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.GLASS_BREAK,
+            SoundSource.BLOCKS, 0.7F, 1.2F);
+        return Outcome.ok(p);
+    }
+
     /** Melee hit on a twig piece (Rust: twigs break by hand). */
     public static void meleeHit(ServerLevel level, ServerPlayer player, BlockPos pos, Vec3 hit, float strength) {
         // HeraliZ: only C4 damage pieces, twigs do not break by hand either

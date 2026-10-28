@@ -637,5 +637,18 @@
   "crac.claim.objet_etranger": "Inside a base, only building pieces and building objects can be placed.",
   "crac.hammer.trop_loin": "Get closer to upgrade (%s blocks at most).",
   "crac.zone.interdite_plan": "Red area: you can't build here (town, loot, rails, hazardous or snowy area).",
-  "crac.rot.high_side_facing": "high side facing you"
+  "crac.rot.high_side_facing": "high side facing you",
+  "crac.armoire.deplacement_coupe": "Moving the tool cupboard is turned off on this server.",
+  "crac.armoire.tuto": "Not during the tutorial.",
+  "crac.armoire.trop_tard": "Too late: the tool cupboard can only be moved within %s minutes of being placed.",
+  "crac.armoire.ramassee": "Tool cupboard picked up with its upkeep. Place it again quickly: without it, your base is unprotected.",
+  "crac.hammer.sans_vitre": "This window has neither glass nor bars.",
+  "crac.hammer.retirer_vitre": "Remove the glass",
+  "crac.hammer.retirer_barreaux": "Remove the bars",
+  "crac.hammer.retirer_rendu": "Back to your inventory",
+  "crac.hud.armoire": "Tool cupboard",
+  "crac.hud.vide_seulement": "Only when empty",
+  "crac.hud.armoire_delai": "Within %s min of placing it",
+  "crac.hud.ramasser_hint": "Pick up",
+  "crac.hud.deplacer_hint": "Move"
 }

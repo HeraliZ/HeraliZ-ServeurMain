@@ -1,7 +1,7 @@
 # À tester en jeu — correctifs du 27/10 (bases, combat, frappe aérienne, réanimation)
 
 Rien de cette liste n'a été testé en jeu par Claude. Fabriqué et vérifié hors du jeu (`construire.py`, `verifier.py`).
-CRac 1.25.1-beta. Canal réseau CRac version 26 : joueurs et serveur doivent avoir les jars de la **même** fabrication.
+CRac 1.26.0-beta. Canal réseau CRac version 27 : joueurs et serveur doivent avoir les jars de la **même** fabrication.
 
 ## Combat
 - [ ] Deux joueurs de part et d'autre d'une porte fermée (ou d'un mur), collés : ni balle ni coup de mêlée (poing,
@@ -31,6 +31,14 @@ CRac 1.25.1-beta. Canal réseau CRac version 26 : joueurs et serveur doivent avo
 - [ ] Bloc posé (staff) au bord d'une fondation, mur posé, puis bloc cassé : le mur se rebouche.
 - [ ] Plan en main sur la carte, près d'une ville ou des rails : cases interdites teintées de rouge au sol, bord rouge ;
       le fantôme devient rouge (« Zone en rouge : on ne construit pas ici… »). Plan rangé : plus rien. Aucun ralentissement.
+- [ ] Marteau sur un objet posé dans sa base (caisse en métal, coffre, four…) : petite carte « Clic droit · Ramasser » ;
+      vide, il revient dans l'inventaire ; plein : « Il contient encore des objets. », rien ne bouge. Caisse adossée à un mur : c'est elle
+      qui est visée, pas le mur. Accroupi + clic droit : comme avant.
+- [ ] Marteau sur une fenêtre avec une vitre (ou des barreaux) : la roue a « Retirer la vitre » ; la vitre revient dans
+      l'inventaire et la fenêtre est vide (on peut en remettre une). Fenêtre d'un autre clan : refusé.
+- [ ] Armoire posée il y a moins de 15 min, marteau en main, clic droit : elle revient dans l'inventaire avec tout son
+      entretien ; la zone verte disparaît ; la reposer ailleurs (règles d'une pose normale). Après 15 min : « Trop tard ».
+      Pendant un raid, au tutoriel, ou sans le droit de gérer la base : refusé. Armoire posée avant cette version : refusé.
 - [ ] Montées : sauter d'un demi-mur sur un plancher posé dessus, puis sur le plancher du niveau suivant, en courant :
       l'aide au saut arrive à temps (elle est donnée plus tôt). À noter : un plancher posé sur un demi-mur laisse 1,3 bloc
       dessous et dessus ; Minecraft demande 1,5 bloc pour passer accroupi : on n'y passe qu'allongé (touche « Ramper »).
