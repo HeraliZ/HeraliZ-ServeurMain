@@ -69,32 +69,32 @@
       {
         "objet": "geckolib:food_mre",
         "nbt": "{FoodState:0}",
-        "prix": 110
+        "prix": 15
       },
       {
         "objet": "geckolib:food_spaggety",
         "nbt": "{FoodState:0}",
-        "prix": 100
+        "prix": 10
       },
       {
         "objet": "geckolib:food_soup",
         "nbt": "{FoodState:0}",
-        "prix": 85
-      },
-      {
-        "objet": "geckolib:food_tuna",
-        "nbt": "{FoodState:0}",
-        "prix": 70
+        "prix": 8
       },
       {
         "objet": "geckolib:food_sardines",
         "nbt": "{FoodState:0}",
-        "prix": 65
+        "prix": 10
+      },
+      {
+        "objet": "geckolib:food_tuna",
+        "nbt": "{FoodState:0}",
+        "prix": 10
       },
       {
         "objet": "geckolib:food_deez",
         "nbt": "{FoodState:0}",
-        "prix": 40
+        "prix": 6
       }
     ]
   }

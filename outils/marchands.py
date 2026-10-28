@@ -28,13 +28,15 @@ PNJ = RACINE / "serveur" / "config" / "heraliz_quetes" / "pnj"
 RARETES = json.loads((RACINE / "serveur" / "config" / "heraliz_loot" / "raretes.json").read_text(encoding="utf-8"))
 
 PRIX_SOINS = {"commun": 30, "peu_commun": 80, "rare": 180, "epique": 400}
+# 28/10 (demande du propriétaire) : prix et ordre réglés en jeu au Registre du marchand le 24/10, repris comme base
+# (avant 110 / 100 / 85 / 70 / 65 / 40)
 NOURRITURE = [  # (objet, points de faim, prix)
-    ("geckolib:food_mre", 8, 110),
-    ("geckolib:food_spaggety", 8, 100),
-    ("geckolib:food_soup", 7, 85),
-    ("geckolib:food_tuna", 6, 70),
-    ("geckolib:food_sardines", 6, 65),
-    ("geckolib:food_deez", 4, 40),
+    ("geckolib:food_mre", 8, 15),
+    ("geckolib:food_spaggety", 8, 10),
+    ("geckolib:food_soup", 7, 8),
+    ("geckolib:food_sardines", 6, 10),
+    ("geckolib:food_tuna", 6, 10),
+    ("geckolib:food_deez", 4, 6),
 ]
 # 28/10 (demande du propriétaire) : prix de vente de Jack multipliés par 4 (avant 60 / 150 / 350)
 PRIX_ACCESSOIRES = {"commun": 240, "peu_commun": 600, "rare": 1400}
@@ -49,7 +51,7 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
     # 24/10 (revue de la boucle de jeu) : sans eux, une armoire perdue (raid, mort du chef) ne se remplaçait jamais, aucune
     # base ne pouvait ranger quoi que ce soit, et le cœur de clan (points de saison) n'existait qu'en créatif.
     # CRac garde ses règles : une armoire par joueur, un cœur par clan, posés seulement dans sa base.
-    ("crac:claim_block", 500),
+    ("crac:claim_block", 250),    # 28/10 : prix réglé en jeu le 24/10, repris comme base (avant 500)
     ("crac:metal_crate", 300),
     ("crac:coeur_clan", 1000),
 ]
