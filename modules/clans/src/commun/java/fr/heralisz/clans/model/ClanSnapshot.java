@@ -224,6 +224,16 @@ public record ClanSnapshot(UUID id, String tag, String nom, String description, 
         }
         // ajout du 28/10 : facteur de prix de l'arbre (pourcents), pour que le joueur voie le prix demandé par le serveur
         b.writeVarInt(Arbre.facteurPrixPct());
+        // ajout du 31/10 : branche Membres (niveaux.json, section « membres ») : membres au départ, puis niveau du clan et
+        // hérals de chaque palier, pour que l'onglet Niveau montre ce que le serveur demande
+        b.writeVarInt(Arbre.membresDepart());
+        int[] nv = Arbre.niveauxMembres();
+        long[] hm = Arbre.heralsMembres();
+        b.writeVarInt(nv.length);
+        for (int i = 0; i < nv.length; i++) {
+            b.writeVarInt(nv[i]);
+            b.writeVarLong(i < hm.length ? hm[i] : 0L);
+        }
     }
 
     public static ClanSnapshot read(FriendlyByteBuf b) {
@@ -272,6 +282,17 @@ public record ClanSnapshot(UUID id, String tag, String nom, String description, 
             }
         }
         if (b.isReadable()) Arbre.facteurPrixPct(b.readVarInt());
+        if (b.isReadable()) {
+            int depart = b.readVarInt();
+            int np = Math.min(8, b.readVarInt());
+            int[] nv = new int[np];
+            long[] hm = new long[np];
+            for (int i = 0; i < np; i++) {
+                nv[i] = b.readVarInt();
+                hm[i] = b.readVarLong();
+            }
+            Arbre.reglerMembres(depart, nv, hm);
+        }
         return new ClanSnapshot(id, tag, nom, desc, ban, chef, creeLe, banque, niveau, xp, xpSuivant, membresMax, territoiresMax,
                 membres, perms, moi, monGrade, monSolde, symbole, cdNom, cdTag, cdDesc, cdBan, jb, qj, qs, rj, rs, terr, journal, maintenant,
                 reglages);

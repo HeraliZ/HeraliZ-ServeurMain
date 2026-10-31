@@ -30,6 +30,10 @@ import java.nio.file.Path;
  * Deux facteurs restent possibles dans niveaux.json, appliques par-dessus la table : {@code facteur_xp} (XP demandee par
  * niveau, 1 depuis le 31/10 : la table est deja la bonne) et {@code facteur_prix_arbre} (herals des paliers de l'arbre, 2
  * par defaut, envoye aux joueurs avec l'etat du clan).
+ * <p>
+ * Section {@code membres} (31/10, decision du proprietaire) : membres au depart (4) et, pour chaque palier de la branche
+ * Membres de l'arbre, le niveau du clan demande (2, 5, 10, 15 : 5 membres au niveau 2, 6 au niveau 5, 7 au niveau 10, 8
+ * au niveau 15) et ses herals avant le facteur de prix ({@link Arbre#reglerMembres}). Ajoutee au fichier si elle manque.
  */
 public final class Niveaux {
     private static final Logger LOG = LogUtils.getLogger();
@@ -87,12 +91,54 @@ public final class Niveaux {
         for (int i = 0; i < MAX; i++) ax.add(xp[i]);
         o.addProperty("_aide", "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore),"
                 + " multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ;"
-                + " membres et territoires : arbre d'ameliorations du clan ; plafonds_jour et dons : lus par le serveur"
-                + " (XpClan), relus par /clan admin recharger");
+                + " membres et territoires : arbre d'ameliorations du clan (membres : section membres) ; plafonds_jour et"
+                + " dons : lus par le serveur (XpClan), relus par /clan admin recharger");
         o.addProperty("facteur_xp", facteurXp);
         o.addProperty("facteur_prix_arbre", Arbre.facteurPrixPct() / 100.0);
         o.add("xp_suivant", ax);
+        o.add("membres", membresJson());
         return o;
+    }
+
+    /** Section « membres » : reglages en cours de la branche Membres de l'arbre. */
+    public static JsonObject membresJson() {
+        JsonObject m = new JsonObject();
+        m.addProperty("_aide", "Membres au plus d'un clan : depart, puis +1 par palier de l'amelioration Membres (arbre, onglet"
+                + " Niveau), achete par le chef avec des points et des herals ; niveaux_paliers = niveau du clan demande par"
+                + " palier (31/10 : 5 membres au niveau 2, 6 au 5, 7 au 10, 8 au 15) ; herals_paliers = prix avant"
+                + " facteur_prix_arbre. 4 paliers, 8 membres au plus avec le depart a 4. Un clan deja au-dessus de son"
+                + " maximum garde ses membres mais n'invite plus personne.");
+        m.addProperty("depart", Arbre.membresDepart());
+        JsonArray nv = new JsonArray();
+        for (int v : Arbre.niveauxMembres()) nv.add(v);
+        m.add("niveaux_paliers", nv);
+        JsonArray hm = new JsonArray();
+        for (long v : Arbre.heralsMembres()) hm.add(v);
+        m.add("herals_paliers", hm);
+        return m;
+    }
+
+    /** Lit la section « membres » (absente ou illisible : valeurs par defaut) ; vrai si elle etait absente. */
+    private static boolean lireMembres(JsonObject o) {
+        if (!o.has("membres") || !o.get("membres").isJsonObject()) {
+            Arbre.reglerMembres(Arbre.MEMBRES_DEPART, Arbre.NIVEAUX_MEMBRES, Arbre.HERALS_MEMBRES);
+            return true;
+        }
+        try {
+            JsonObject m = o.getAsJsonObject("membres");
+            int depart = Json.integer(m, "depart", Arbre.MEMBRES_DEPART);
+            JsonArray a = Json.arr(m, "niveaux_paliers");
+            int[] nv = new int[a.size()];
+            for (int i = 0; i < nv.length; i++) nv[i] = a.get(i).getAsInt();
+            JsonArray h = Json.arr(m, "herals_paliers");
+            long[] hm = new long[h.size()];
+            for (int i = 0; i < hm.length; i++) hm[i] = h.get(i).getAsLong();
+            Arbre.reglerMembres(depart, nv.length == 0 ? null : nv, hm.length == 0 ? null : hm);
+        } catch (RuntimeException ex) {
+            LOG.error("[clans] niveaux.json : section « membres » illisible, paliers par defaut", ex);
+            Arbre.reglerMembres(Arbre.MEMBRES_DEPART, Arbre.NIVEAUX_MEMBRES, Arbre.HERALS_MEMBRES);
+        }
+        return false;
     }
 
     /** Facteur lu dans le fichier, borne (0,1 a 100) ; absent ou illisible : valeur par defaut. */
@@ -116,6 +162,7 @@ public final class Niveaux {
                 xp = defautXp();
                 facteurXp = FACTEUR_XP_DEFAUT;
                 Arbre.facteurPrixPct((int) Math.round(FACTEUR_PRIX_ARBRE_DEFAUT * 100));
+                Arbre.reglerMembres(Arbre.MEMBRES_DEPART, Arbre.NIVEAUX_MEMBRES, Arbre.HERALS_MEMBRES);
                 Files.createDirectories(dossierConfig);
                 Files.writeString(f, GSON.toJson(toJson()), StandardCharsets.UTF_8);
                 LOG.info("[clans] niveaux.json ecrit avec les valeurs par defaut");
@@ -125,12 +172,24 @@ public final class Niveaux {
             xp = lireLongs(o, "xp_suivant", defautXp());
             facteurXp = facteur(o, "facteur_xp", FACTEUR_XP_DEFAUT);
             Arbre.facteurPrixPct((int) Math.round(facteur(o, "facteur_prix_arbre", FACTEUR_PRIX_ARBRE_DEFAUT) * 100));
-            LOG.info("[clans] niveaux.json charge (XP x{}, prix de l'arbre x{})", facteurXp, Arbre.facteurPrixPct() / 100.0);
+            if (lireMembres(o)) {
+                // fichier d'avant le 31/10 : la section est ajoutee avec les valeurs par defaut, le reste n'est pas touche
+                o.add("membres", membresJson());
+                try {
+                    Files.writeString(f, GSON.toJson(o), StandardCharsets.UTF_8);
+                    LOG.info("[clans] niveaux.json : section « membres » ajoutee (valeurs par defaut)");
+                } catch (IOException ex) {
+                    LOG.warn("[clans] niveaux.json : ajout de la section « membres » impossible ({})", ex.toString());
+                }
+            }
+            LOG.info("[clans] niveaux.json charge (XP x{}, prix de l'arbre x{}, membres {} puis paliers aux niveaux {})", facteurXp,
+                    Arbre.facteurPrixPct() / 100.0, Arbre.membresDepart(), java.util.Arrays.toString(Arbre.niveauxMembres()));
         } catch (IOException | RuntimeException ex) {
             LOG.error("[clans] niveaux.json illisible, valeurs par defaut gardees", ex);
             xp = defautXp();
             facteurXp = FACTEUR_XP_DEFAUT;
             Arbre.facteurPrixPct((int) Math.round(FACTEUR_PRIX_ARBRE_DEFAUT * 100));
+            Arbre.reglerMembres(Arbre.MEMBRES_DEPART, Arbre.NIVEAUX_MEMBRES, Arbre.HERALS_MEMBRES);
         }
     }
 

@@ -147,14 +147,17 @@ public final class ClanService {
     }
 
     /**
-     * Clan plein : le message dit d'acheter des places dans l'arbre, sauf quand la branche Membres est deja au maximum
-     * (8 membres : il n'y a plus rien a debloquer).
+     * Clan plein : le message dit d'acheter des places dans l'arbre et a partir de quel niveau du clan (31/10 : paliers aux
+     * niveaux 2, 5, 10, 15), sauf quand la branche Membres est deja au maximum (8 membres : plus rien a debloquer). Un clan
+     * deja au-dessus de son maximum (membres forces par le staff, anciennes regles) garde tout le monde : il n'invite plus.
      */
     private static void clanPlein(ServerPlayer p, Clan c, int max) {
-        if (c.palier(fr.heralisz.clans.model.Arbre.Branche.MEMBRES) >= fr.heralisz.clans.model.Arbre.Branche.MEMBRES.max) {
+        fr.heralisz.clans.model.Arbre.Branche b = fr.heralisz.clans.model.Arbre.Branche.MEMBRES;
+        int palier = c.palier(b);
+        if (palier >= b.max) {
             erreur(p, "msg.clan_plein_max", max);
         } else {
-            erreur(p, "msg.clan_plein", max, c.niveau);
+            erreur(p, "msg.clan_plein", max, fr.heralisz.clans.model.Arbre.niveauRequis(b, palier + 1));
         }
     }
 

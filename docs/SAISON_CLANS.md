@@ -162,7 +162,7 @@ nouveau système à faire (PNJ armés).
 
 | Branche | Paliers | Points | Hérals |
 |---|---|---|---|
-| Membres : 4 → 5 → 6 → 7 → 8 (25/10 ; paliers réservés aux niveaux 10, 20, 30, 40 du clan) | 1 + 2 + 3 + 4 | 10 | 455 000 (25 000, 60 000, 120 000, 250 000) |
+| Membres : 4 → 5 → 6 → 7 → 8 (paliers réservés aux niveaux 2, 5, 10, 15 du clan depuis le 31/10 ; avant : 10, 20, 30, 40) | 1 + 2 + 3 + 4 | 10 | 455 000 (25 000, 60 000, 120 000, 250 000) |
 | Taille de la base : rayon 20 → 23 → 26 → 29 blocs | 1 + 2 + 3 | 6 | 30 000 |
 | TP vers la base (/home et réapparition à la base, délai partagé) : 8 → 7 → 6 → 5 min (25/10) | 1 + 2 + 3 | 6 | 30 000 |
 | Revenu des territoires : +10 / +20 / +30 % | 1 + 2 + 3 | 6 | 30 000 |
@@ -181,7 +181,8 @@ nouveau système à faire (PNJ armés).
 
 - **25/10 (demande du propriétaire)** : un clan commence à **4 membres** et monte à **8 au plus** par 4 améliorations ;
   chacune demande un niveau du clan (10, 20, 30, 40) et beaucoup de hérals (455 000 en tout, trois fois le reste de
-  l'arbre) : 8 membres est un objectif de fin de saison. Les clans déjà plus nombreux gardent leurs membres (aucun n'est
+  l'arbre) : 8 membres est un objectif de fin de saison (31/10 : paliers aux niveaux 2, 5, 10, 15, voir §6 bis). Les
+  clans déjà plus nombreux gardent leurs membres (aucun n'est
   exclu), mais n'en invitent plus tant qu'ils sont au-dessus de leur maximum. **Aucune alliance** entre clans : il n'en
   existe aucune dans le code (le mot « alliés » de la carte désigne les membres de son propre clan) ; bases, coffres,
   pings, voix des matchs, captures et anti-ESP de Spartan ne voient que son propre clan.
@@ -234,8 +235,17 @@ réglages du PC du joueur).
 | 20 | 108 300 | ~55 jours | ~26 jours |
 | 45 | 379 800 | ~6 mois | ~3 mois |
 
-En une saison d'un mois : niveau ~12 pour un petit clan normal, ~22 pour le meilleur clan. **Conséquence à valider** :
-les paliers Membres (niveaux 10, 20, 30, 40) deviennent bien plus lointains (8 membres ne s'atteint plus en une saison).
+En une saison d'un mois : niveau ~12 pour un petit clan normal, ~22 pour le meilleur clan. ~~Conséquence à valider :
+les paliers Membres (niveaux 10, 20, 30, 40) deviennent bien plus lointains~~ : réglé le 31/10 (décision du propriétaire,
+Clans 3.10.0) : **4 membres au départ, 5 au niveau 2, 6 au niveau 5, 7 au niveau 10, 8 au niveau 15** du clan (8 reste
+le maximum). Ce sont toujours des paliers de l'amélioration « Membres » de l'arbre, achetés par le chef (1 à 4 points
+et 25 000 / 60 000 / 120 000 / 250 000 hérals × `facteur_prix_arbre`, soit 50 000 à 500 000 aujourd'hui) : le niveau
+ouvre l'achat, il ne donne pas la place tout seul. Niveaux, hérals et membres au départ : section `membres` de
+`niveaux.json` (relue par `/clan admin recharger`, ajoutée au fichier du serveur s'il ne l'a pas, envoyée aux joueurs
+avec l'état du clan, canal des clans version 7). L'onglet Niveau montre « 5e membre (amélioration) » dans « Prochain
+niveau » aux niveaux 2, 5, 10, 15, et l'arbre « Niv. 2 · 1 pt · 50 000 hérals ». Un clan déjà au-dessus de son
+maximum garde tous ses membres et n'invite plus personne tant qu'il est au-dessus (règle du 25/10, inchangée) ; le
+message « clan plein » donne le niveau de la place suivante.
 
 **Clans d'avant le 31/10** : leur XP totale (comptée sur l'ancienne courbe) est gardée et leur niveau recalculé une fois
 au démarrage sur la nouvelle (ancien niveau 10 → 2, 15 → 5, 20 → 9, 30 → 20, 45 → 40) ; **toutes les améliorations
