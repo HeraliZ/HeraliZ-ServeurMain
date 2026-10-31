@@ -68,8 +68,9 @@ Beaucoup d'actions donnent les deux.
 - Annonces 1 h et 10 min avant, au début et à la fin ; petit indicateur « PURGE » à l'écran pendant qu'elle dure.
 - À la fin de la Purge : les explosifs ne font plus rien ; **une prise de cœur déjà commencée va jusqu'au bout**
   (décision), tant que les attaquants la tiennent.
-- Protection des nouvelles bases **[à valider]** : une base dont l'armoire a été posée moins de 48 h avant le début d'une
-  Purge n'est pas raidable pendant cette Purge (remplace la protection de 4 jours).
+- Protection des nouvelles bases : **aucune** (décision du 31/10, CRac 1.29.0-beta). Une base posée juste avant ou
+  pendant une Purge se raide comme les autres ; plus de protection de 4 jours (coupée le 27/10) ni de 48 h avant la Purge
+  (`protection_nouvelle_base_heures` = 0 dans `purge.json` ; un nombre d'heures la remettrait).
 
 ---
 
@@ -354,7 +355,7 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 
 1. Prix et craft du cœur (après le modèle).
 2. Points de l'oil rig.
-3. Protection des nouvelles bases : 48 h avant une Purge, ou autre chose ?
+3. ~~Protection des nouvelles bases~~ : aucune (décidé le 31/10).
 4. Les montants exacts du barème (à régler pendant la bêta).
 
 ---
@@ -380,7 +381,7 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 - **Purge** : `serveur/config/crac/purge.json` (créneaux, heure de Paris), `/purge`, staff `/purge forcer <min>`,
   `/purge arreter`, `/purge recharger` ; hors Purge, explosifs sans effet sur les bases des clans ; base dont l'armoire a
   été vue moins de 48 h avant le début d'une Purge : pas raidable pendant celle-ci (casser et reposer son armoire ne
-  remet pas ce compteur à zéro) ;
+  remet pas ce compteur à zéro ; **retiré le 31/10, CRac 1.29.0-beta** : 0 h par défaut) ;
 - **prise du cœur** (clic droit, 90 s, 3 blocs, au moins un membre du clan attaquant vivant et pas à terre, barre
   visible des deux clans, pas à travers un mur) ; **`/coeur deplacer`** (chef ou droit de gérer la base, à côté du
   cœur, 50 000 hérals de la banque, 10 min pour le reposer, sinon tous les points perdus ; l'objet ne se jette pas) ;

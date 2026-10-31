@@ -54,7 +54,7 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/zonevip` | Grades | zones VIP |
 | `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête |
 | `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur |
-| `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection des nouvelles bases, carrières |
+| `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection d'une base donnée à la main par le staff (plus aucune protection automatique depuis le 27/10 et le 31/10), carrières |
 | `/coffres` (`voir`, `recharger`) | CRac | coffres de la base où l'on se tient et leurs limites ; relit `config/crac/coffres.json` (op) |
 | `/depart`, `/carte`, `/train`, `/cinematique` | Utils | borne de départ, lieux de la carte, train, cinématique |
 | `/corps`, `/usure`, `/vehicules`, `/inspecter` | Utils | cadavres, usure des armes, véhicules, inventaire d'un joueur |

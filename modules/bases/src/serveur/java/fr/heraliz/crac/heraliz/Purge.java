@@ -56,8 +56,10 @@ import org.jetbrains.annotations.Nullable;
  * La Purge (saison des clans, docs/SAISON_CLANS.md §3) : les bases des clans ne se raident que pendant ses créneaux.
  * Hors Purge, les explosifs ne font rien aux constructions, aux objets posés ni aux blocs d'une base (contrôlé dans
  * {@code StructureService.damage}, {@code PlacableHpManager}, {@code RaidBlocks.breakable}) et le cœur de clan est
- * intouchable. Une base dont l'armoire a été vue moins de 48 h avant le début d'une Purge n'est pas raidable pendant
- * cette Purge.
+ * intouchable. HeraliZ (31/10, choix du propriétaire) : plus aucune protection des nouvelles bases, une base posée juste
+ * avant ou pendant une Purge se raide comme les autres ; {@code protection_nouvelle_base_heures} (0 par défaut) la
+ * remettrait (une base dont l'armoire a été vue moins de ce temps avant le début d'une Purge n'est pas raidable pendant
+ * cette Purge).
  * <p>
  * Horaires : {@code config/crac/purge.json} (heure de Paris ; fichier du dépôt qui fait foi, écrit s'il manque).
  * Annonces 1 h et 10 min avant, au début et à la fin ; petite icône « PURGE » et temps restant en haut à gauche pendant
@@ -85,8 +87,11 @@ public final class Purge {
     static boolean actif = true;
     static ZoneId zone = ZoneId.of("Europe/Paris");
     static final List<Creneau> CRENEAUX = new ArrayList<>();
-    /** Base dont l'armoire est plus récente que ça au début d'une Purge : pas raidable pendant celle-ci. */
-    static long protectionMs = 48 * 3_600_000L;
+    /**
+     * Base dont l'armoire est plus récente que ça au début d'une Purge : pas raidable pendant celle-ci. 0 (31/10, choix du
+     * propriétaire) : aucune protection, une nouvelle base se raide dès la première Purge.
+     */
+    static long protectionMs = 0L;
     static int priseSecondes = 90;
     static double priseDistance = 3.0;
     static long deplacementPrix = 50_000L;
@@ -207,8 +212,15 @@ public final class Purge {
         p.displayClientMessage(msg.withStyle(ChatFormatting.RED), false);
     }
 
-    /** L'armoire du groupe a été vue moins de {@link #protectionMs} avant le début de la Purge. */
+    /**
+     * L'armoire du groupe a été vue moins de {@link #protectionMs} avant le début de la Purge. Toujours faux avec
+     * {@code protectionMs} à 0 (31/10) : avant, une armoire encore jamais vue (posée pendant la Purge) comptait comme
+     * récente, même sans délai.
+     */
     public static boolean baseRecente(MinecraftServer server, UUID groupe, Fenetre f) {
+        if (protectionMs <= 0L) {
+            return false;
+        }
         long vue = Donnees.get(server).vues.getOrDefault(groupe, 0L);
         return vue == 0L || vue > f.debut() - protectionMs;
     }
@@ -289,7 +301,7 @@ public final class Purge {
                     }
                 }
             }
-            protectionMs = (long) (nombre(o, "protection_nouvelle_base_heures", 48) * 3_600_000L);
+            protectionMs = (long) (Math.max(0, nombre(o, "protection_nouvelle_base_heures", 0)) * 3_600_000L);
             priseSecondes = (int) Math.max(5, nombre(o, "prise_secondes", 90));
             priseDistance = Math.max(1.5, nombre(o, "prise_distance", 3));
             deplacementPrix = (long) Math.max(0, nombre(o, "deplacement_prix", 50_000));
@@ -313,7 +325,7 @@ public final class Purge {
         CRENEAUX.add(new Creneau(DayOfWeek.FRIDAY, LocalTime.of(18, 0), LocalTime.of(21, 0)));
         CRENEAUX.add(new Creneau(DayOfWeek.SATURDAY, LocalTime.of(15, 0), LocalTime.of(22, 0)));
         CRENEAUX.add(new Creneau(DayOfWeek.SUNDAY, LocalTime.of(15, 0), LocalTime.of(22, 0)));
-        protectionMs = 48 * 3_600_000L;
+        protectionMs = 0L;
         priseSecondes = 90;
         priseDistance = 3.0;
         deplacementPrix = 50_000L;
@@ -336,7 +348,8 @@ public final class Purge {
     static JsonObject json() {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", "La Purge (saison des clans) : les bases ne se raident que pendant ces créneaux (heure de Paris)."
-            + " Fin avant le début = passe minuit. actif false = raids à tout moment, comme avant.");
+            + " Fin avant le début = passe minuit. actif false = raids à tout moment, comme avant."
+            + " protection_nouvelle_base_heures : 0 = une base neuve se raide dès la première Purge.");
         o.addProperty("actif", actif);
         o.addProperty("fuseau", zone.getId());
         JsonArray a = new JsonArray();
@@ -527,7 +540,10 @@ public final class Purge {
     }
 
     // ---------------------------------------------------------------------------------------------- données
-    /** Première vue de l'armoire de chaque groupe (protection des nouvelles bases), gardée avec le monde principal. */
+    /**
+     * Première vue de l'armoire de chaque groupe (protection des nouvelles bases, coupée par défaut depuis le 31/10), gardée
+     * avec le monde principal.
+     */
     public static final class Donnees extends SafeSavedData {
         public static final String ID = "crac_purge";
         final Map<UUID, Long> vues = new HashMap<>();

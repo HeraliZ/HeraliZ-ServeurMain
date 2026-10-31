@@ -1283,7 +1283,8 @@ public final class Tutoriel {
             Reply.fail(src, T.t("crac.tuto.monde_absent", "Le monde du tutoriel n'existe pas sur ce serveur (crac:tuto)."));
             return 0;
         }
-        boolean base = aUneBase(p);
+        // la phrase « pas de nouvelle protection de base » n'a de sens qu'avec la protection automatique (coupée, 27/10)
+        boolean base = aUneBase(p) && BasesReglages.b(BasesReglages.PROTECTION_AUTO, false);
         lancer(p);
         Reply.ok(src, (base
             ? T.t("crac.tuto.lance_base", "Tutoriel lancé pour %s : kit, puis envoi dans le monde du tutoriel. Il a déjà une base : pas de nouvelle protection de base.",
