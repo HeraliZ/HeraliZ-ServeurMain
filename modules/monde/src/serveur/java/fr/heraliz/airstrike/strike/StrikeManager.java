@@ -40,6 +40,8 @@ public final class StrikeManager {
         final List<Event> events = new ArrayList<>();
         int cursor;
         boolean releaseAnnounced;
+        /** Joueurs à qui la frappe a été envoyée (31/10 : ceux qui arrivent à portée en cours de route la reçoivent aussi). */
+        final java.util.Set<UUID> recue = new java.util.HashSet<>();
 
         Active(Strike strike) {
             this.strike = strike;
@@ -97,7 +99,10 @@ public final class StrikeManager {
         StrikePacket packet = new StrikePacket(strike);
         double r2 = Network.VISUAL_RANGE * Network.VISUAL_RANGE;
         for (ServerPlayer p : level.players()) {
-            if (p.distanceToSqr(target) < r2 || p == caller) Network.sendTo(p, packet);
+            if (p.distanceToSqr(target) < r2 || p == caller) {
+                Network.sendTo(p, packet);
+                active.recue.add(p.getUUID());
+            }
         }
 
         if (AirstrikeConfig.ANNOUNCE_NEARBY.get()) {
@@ -149,6 +154,8 @@ public final class StrikeManager {
             }
             if (a.cursor >= a.events.size() && t > a.strike.endTime() + 5) {
                 it.remove();
+            } else if (now % 20 == 0 && t < a.strike.endTime()) {
+                envoyerAuxArrivants(level, a);
             }
         }
         mesurer(System.nanoTime() - debut, cheminsNs, impacts, ou);
@@ -199,7 +206,25 @@ public final class StrikeManager {
         for (Active a : ACTIVE.getOrDefault(level.dimension(), List.of())) {
             if (player.distanceToSqr(a.strike.target) < Network.VISUAL_RANGE * Network.VISUAL_RANGE) {
                 Network.sendTo(player, new StrikePacket(a.strike));
+                a.recue.add(player.getUUID());
             }
+        }
+    }
+
+    /**
+     * Une fois par seconde, seulement pendant une frappe (31/10, « même chose pour tous les joueurs ») : un joueur qui
+     * arrive à portée en cours de route (il approche, se téléporte, réapparaît près de la cible) reçoit la frappe et voit
+     * l'avion, les bombes et la caisse comme les autres ; avant, seuls les joueurs à portée au départ (et ceux qui se
+     * connectaient ou changeaient de monde) la recevaient.
+     */
+    private static void envoyerAuxArrivants(ServerLevel level, Active a) {
+        double r2 = Network.VISUAL_RANGE * Network.VISUAL_RANGE;
+        StrikePacket packet = null;
+        for (ServerPlayer p : level.players()) {
+            if (a.recue.contains(p.getUUID()) || p.distanceToSqr(a.strike.target) >= r2) continue;
+            if (packet == null) packet = new StrikePacket(a.strike);
+            Network.sendTo(p, packet);
+            a.recue.add(p.getUUID());
         }
     }
 
