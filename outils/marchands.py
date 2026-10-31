@@ -209,19 +209,29 @@ def controle(marchands):
                 erreurs.append(f"{objet}{nbt} : vendu {prix}, {pid} le rachèterait {brut} (plus de 50 %)")
     if RECYCLAGE.exists():
         rec = json.loads(RECYCLAGE.read_text(encoding="utf-8"))
-        for (objet, nbt), prix in sorted(ventes.items()):
-            r = regle_recyclage(rec, objet, nbt)
-            if r is None:
-                continue
-            g = max(0, rang(objet, nbt))
-            rend = r.get("rend") or r["rend_rarete"][min(len(r["rend_rarete"]) - 1, g)]
-            somme = sum(rachat(c, "") for c in rend)
-            rien = rec["herals_si_rien"][min(5, g)]
-            esperance = rec["chance"] * somme + (1 - rec["chance"]) ** len(rend) * rien
-            cout = prix * r.get("par", 1)
-            if esperance * 2 > cout:
-                texte = f"{objet}{nbt} : vendu {prix}, recyclé rapporte {esperance:.1f} en moyenne (borne : {cout / 2:.0f})"
-                (notes if recy_plafond else erreurs).append(texte + (" -> refusé par le recycleur" if recy_plafond else ""))
+        # 31/10 : chaque profil du recycleur (spawn, et « carte » : même règles, chance relative en plus)
+        profils = [("spawn", rec["chance"])] + [(nom, p.get("chance", rec["chance"])) for nom, p in rec.get("profils", {}).items()]
+        for nom_profil, chance in profils:
+            recyclables, pire = 0, (0.0, "")
+            for (objet, nbt), prix in sorted(ventes.items()):
+                r = regle_recyclage(rec, objet, nbt)
+                if r is None:
+                    continue
+                g = max(0, rang(objet, nbt))
+                rend = r.get("rend") or r["rend_rarete"][min(len(r["rend_rarete"]) - 1, g)]
+                somme = sum(rachat(c, "") for c in rend)
+                rien = rec["herals_si_rien"][min(5, g)]
+                esperance = chance * somme + (1 - chance) ** len(rend) * rien
+                cout = prix * r.get("par", 1)
+                recyclables += 1
+                if cout > 0 and esperance * 2 / cout > pire[0]:
+                    pire = (esperance * 2 / cout, f"{objet}{nbt}")
+                if esperance * 2 > cout:
+                    texte = (f"recycleur {nom_profil} : {objet}{nbt} : vendu {prix}, recyclé rapporte {esperance:.1f} en moyenne"
+                             f" (borne : {cout / 2:.0f})")
+                    (notes if recy_plafond else erreurs).append(texte + (" -> refusé par le recycleur" if recy_plafond else ""))
+            print(f"[marchands] recycleur {nom_profil} (chance {chance * 100:g} %) : {recyclables} articles vendus recyclables, "
+                  f"le plus proche de la borne rapporte {pire[0] * 50:.1f} % de son prix ({pire[1] or '-'})")
     for n in notes:
         print("plafonné par le serveur : " + n)
     for e in erreurs:

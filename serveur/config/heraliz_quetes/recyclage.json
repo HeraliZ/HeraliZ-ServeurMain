@@ -11,6 +11,11 @@
   3,
   4
  ],
+ "profils": {
+  "carte": {
+   "chance": 0.11
+  }
+ },
  "jamais": [
   "heraliz_composants:alcool",
   "heraliz_composants:alcool_ii",

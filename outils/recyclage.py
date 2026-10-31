@@ -11,6 +11,11 @@ accepte aussi un paquet incomplet de n objets (1 à N) : le tirage d'un paquet c
 rien, et le temps est x n / N ; même espérance par objet (plafond MAX_PIECES et hérals compris). Rien à changer ici quand N dépasse la taille d'une pile (roquettes empilées par 6, règle « par 15 ») : chaque case
 se recycle au prorata. N reste donc celui de la recette (le refus « trop rentable » se juge sur un paquet complet).
 
+Profil « carte » (décision du propriétaire du 31/10) : le recycleur posé sur la carte (bloc heraliz_quetes:recycleur_carte,
+partagé comme un coffre) suit les mêmes règles avec BONUS_CARTE (10 %) de chance en plus, relatif : une pièce à 10 % au
+spawn a 11 % sur la carte. Seule la chance change (clé « profils » -> « carte ») ; le refus « trop rentable » du serveur
+se juge avec la chance du profil, et outils/marchands.py --controle vérifie les deux profils.
+
 Règles, de la plus précise à la plus large :
   1. l'objet a une recette à la Table d'armurier (gunpack heraliz_crafts) : ses composants, unité par unité ;
   2. sinon une règle de famille (armures, sacs, soins, nourriture, mêlée, kits, outils...) : composants du niveau de la
@@ -35,6 +40,8 @@ SORTIE = RACINE / "serveur/config/heraliz_quetes/recyclage.json"
 CHANCE = 0.10
 MAX_PIECES = 2
 SECONDES_PAR_OBJET = 3.0
+# 31/10 : recycleur de la carte, chance relative en plus (10 % -> 11 %)
+BONUS_CARTE = 0.10
 # hérals donnés pour un objet qui n'a rien rendu, par rang de rareté (Commun ... Unique) ; très bas exprès
 HERALS_SI_RIEN = [1, 1, 1, 2, 3, 4]
 
@@ -168,6 +175,8 @@ def construire():
         "max_pieces": MAX_PIECES,
         "secondes_par_objet": SECONDES_PAR_OBJET,
         "herals_si_rien": HERALS_SI_RIEN,
+        # 31/10 : recycleur de la carte (mêmes règles, chance relative en plus)
+        "profils": {"carte": {"chance": round(CHANCE * (1 + BONUS_CARTE), 6)}},
         # 26/10 : jumelles et munitions de frappe (fabrication seulement, Légendaires) jamais recyclées
         "jamais": composants_jamais() + ["heralizcasino:*", "heralisz_bunker:keycard*", "heralizcrates:*",
                                          "heraliz_grades:*", "airstrike:*"],
