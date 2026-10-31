@@ -34,8 +34,9 @@ COUTEAU = 'arkaniaz:knife_data'
 # et ces armes n'ont pas de crosse sur leur image d'origine (celle de l'auteur du gunpack) ni dans la main du joueur
 # (le loot et la Table d'armurier les donnent sans accessoire). Avant (31/10), leur icône montrait une crosse. Les autres
 # armes gardent ces pièces : l'image d'origine de l'AK-47, de la M4A1, de l'AKS-74U... montre la crosse OEM que la
-# recette de l'auteur pose. Nom = nom du fichier index de l'arme.
-SANS_ADAPTATEURS = {'glock_18c', 'tec9', '9a91', 'vector9'}
+# recette de l'auteur pose. Nom = nom du fichier index de l'arme. Scorpion EVO 3 (evo3) et PP-19 Bizon (pp19) ajoutés
+# le 31/10 (même défaut, planche maquettes/icones_armes/sans_crosse_evo3_pp19_31oct.png).
+SANS_ADAPTATEURS = {'glock_18c', 'tec9', '9a91', 'vector9', 'evo3', 'pp19'}
 
 
 def lire_json(chemin):
