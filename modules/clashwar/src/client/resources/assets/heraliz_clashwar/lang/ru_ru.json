@@ -246,7 +246,7 @@
   "subtitles.heraliz_clashwar.cw_sacre": "Победитель ClashWar",
   "subtitles.heraliz_clashwar.cw_choix": "Класс выбран",
   "clashwar.inscription.puce": "К%s",
-  "clashwar.cmd.simulation": "Симуляция: %s команд в формате %s, сетка на %s мест. /clashwar banc avancer — разыграть встречи.",
+  "clashwar.cmd.simulation": "Симуляция: %s команд в формате %s, сетка на %s мест (видна в /clashwar tableau).",
   "clashwar.cmd.avance": "Разыграно встреч: %s.",
   "clashwar.cmd.avance_fini": "Разыграно встреч: %s. Сетка завершена.",
   "clashwar.cmd.direct": "Следующая встреча выведена в эфир на таблице.",

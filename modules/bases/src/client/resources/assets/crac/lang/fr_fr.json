@@ -451,7 +451,7 @@
   "crac.tuto.etape3": "[Tuto] 3. Puis 5 murs, 1 porte (pièce « Porte » du plan, la porte est comprise) et 2 planchers par-dessus pour le toit.",
   "crac.tuto.etape4": "[Tuto] 4. Pose le Claim Block sur une fondation, à l'intérieur : ta base est à toi, et protégée des raids.",
   "crac.tuto.etape5": "[Tuto] 5. Marteau en main : passe tes pièces en bois, et mets des planches dans le Claim Block (entretien).",
-  "crac.tuto.etape6": "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (toutes les 3 min). Depuis ta base, /spawn ramène au spawn ; du spawn, /rtp mène à un coin au hasard de la zone de construction.",
+  "crac.tuto.etape6": "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (une fois toutes les 8 min, moins avec l'arbre du clan ou un grade). Depuis ta base, /spawn ramène au spawn ; du spawn, /rtp mène à un coin au hasard de la zone de construction.",
   "crac.tuto.ramene": "[Tuto] Retour à ta cabane : le tutoriel n'est pas fini.",
   "crac.tuto.refus.pas_encore": "Pas encore : attends les consignes de Varga.",
   "crac.tuto.refus.cabane": "Construis contre ta cabane, pas ailleurs.",

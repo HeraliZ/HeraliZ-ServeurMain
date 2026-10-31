@@ -46,7 +46,7 @@ public final class PingConfig {
         MAX_PAR_JOUEUR = b.comment("Pings actifs au plus par joueur (le plus ancien s'efface)").defineInRange("max_par_joueur", 3, 1, 10);
         SPECTATEURS_VOIENT = b.comment("Les spectateurs (mode spectateur, elimines en match) voient les pings de leur equipe ou clan")
                 .define("spectateurs_voient", false);
-        GROUPE_HORS_MATCH = b.comment("Hors match, un joueur sans clan envoie ses pings a son groupe (/groupe) s'il en a un")
+        GROUPE_HORS_MATCH = b.comment("Hors match, un joueur sans clan envoie ses pings a son groupe s'il en a un (plus de groupes depuis le 24/10 : sans effet)")
                 .define("groupe_hors_match", true);
         CARTE = b.comment("Marquer un point depuis la carte du monde (clic droit), sans portee ni ligne de vue, dans le monde du joueur")
                 .define("carte", true);

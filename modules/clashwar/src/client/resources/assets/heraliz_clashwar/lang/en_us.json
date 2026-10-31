@@ -246,7 +246,7 @@
   "subtitles.heraliz_clashwar.cw_sacre": "ClashWar winner",
   "subtitles.heraliz_clashwar.cw_choix": "Class chosen",
   "clashwar.inscription.puce": "T%s",
-  "clashwar.cmd.simulation": "Simulation: %s teams in %s, %s-slot bracket. /clashwar banc avancer to settle the matches.",
+  "clashwar.cmd.simulation": "Simulation: %s teams in %s, %s-slot bracket (shown in /clashwar tableau).",
   "clashwar.cmd.avance": "%s match(es) settled.",
   "clashwar.cmd.avance_fini": "%s match(es) settled: the bracket is complete.",
   "clashwar.cmd.direct": "Next match set live on the board.",

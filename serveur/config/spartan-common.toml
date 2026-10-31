@@ -169,7 +169,7 @@
 	#après N jours sans connexion. Les joueurs bannis sont conservés tant que le ban est actif.
 	#Range: 7 ~ 3650
 	playerDataRetentionDays = 180
-	#Durée max (heures) du ban d'IP qui accompagne un /sban. 0 = ne jamais bannir l'IP.
+	#Durée max (heures) du ban d'IP qui accompagne un /banpc. 0 = ne jamais bannir l'IP.
 	#Une IP est souvent partagée (4G, box familiale, lycée) : un ban d'IP long bannit des innocents.
 	#Le ban de compte et le ban matériel, eux, gardent la durée demandée.
 	#Range: 0 ~ 87600

@@ -246,7 +246,7 @@
   "subtitles.heraliz_clashwar.cw_sacre": "Vainqueur du ClashWar",
   "subtitles.heraliz_clashwar.cw_choix": "Classe choisie",
   "clashwar.inscription.puce": "É%s",
-  "clashwar.cmd.simulation": "Simulation : %s équipes en %s, tableau de %s places. /clashwar banc avancer pour trancher les rencontres.",
+  "clashwar.cmd.simulation": "Simulation : %s équipes en %s, tableau de %s places (affiché dans /clashwar tableau).",
   "clashwar.cmd.avance": "%s rencontre(s) tranchée(s).",
   "clashwar.cmd.avance_fini": "%s rencontre(s) tranchée(s) : le tableau est terminé.",
   "clashwar.cmd.direct": "Prochaine rencontre mise en direct sur le tableau.",

@@ -14,7 +14,7 @@
 	#Range: 1 ~ 2305843009213693951
 	max_solde = 10000000
 
-#Paiements entre joueurs (/payer)
+#Paiements entre joueurs (/herals payer)
 [paiements]
 	#Montant minimal d'un paiement
 	#Range: 1 ~ 2305843009213693951
