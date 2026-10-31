@@ -9,10 +9,11 @@ Planche : `maquettes/icones_armes/sans_crosse_evo3_pp19_31oct.png`.
 - [ ] Les autres armes n'ont pas changé (seules ces deux images ont été refaites).
 - [ ] Le launcher a bien pris le nouveau dossier `tacz` (sinon l'ancienne icône reste chez le joueur).
 
-**À valider par le propriétaire (non installé)** : le fusil à canon scié (`db_short`) et sa version tactique
-(`db_short_tactical`) ont sans doute le même défaut (icône avec une crosse longue, image d'origine de l'auteur sans
-crosse) : ligne du bas de la planche. Si oui, les ajouter à `SANS_ADAPTATEURS` de `outils/icones_armes.py` et relancer
-`python outils/icones_armes.py --installer --armes db_short,db_short_tactical`. Les autres armes qui ont des pièces sous
+Ensuite (décision du propriétaire, 31/10) : le fusil à canon scié (`db_short`) et sa version tactique
+(`db_short_tactical`) aussi, planche `maquettes/icones_armes/sans_crosse_canon_scie_31oct.png`.
+- [ ] Inventaire : les deux fusils à canon scié n'ont plus la longue crosse en bois sur leur icône.
+
+Les autres armes qui ont des pièces sous
 `attachment_adapter` (AK, M4, SCAR, RPK…) montrent leur crosse sur l'image d'origine : gardées telles quelles.
 
 ## 2. Crâne de cristal, sceptre et calice dans les coffres T7 (Loot 0.14.3)
@@ -54,6 +55,6 @@ source « release » (téléchargement de l'archive).
 
 ## Questions pour le propriétaire
 
-1. Fusil à canon scié (`db_short`, `db_short_tactical`) : enlever aussi la crosse de leur icône ?
+1. (Réglé le 31/10 : crosse enlevée des icônes des deux fusils à canon scié.)
 2. Uniques : 1 coffre T7 sur 50 vous va, ou plus rare / plus fréquent ?
 3. Nouvelle carte : la mettre dans `/carte_nouvelle/` du Ptero (conseillé) ou dans une Release GitHub ?
