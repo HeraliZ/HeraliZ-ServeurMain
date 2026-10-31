@@ -90,6 +90,9 @@ public final class StructureModel implements IDynamicBakedModel {
      * l'objet, le mur la reprend quand il part). Personne ne dessinait cette moitié : au-dessus et autour de l'objet, le mur
      * était creux. La case du mur voisine la dessine maintenant, décalée d'un bloc vers l'objet ; refait à chaque
      * reconstruction du tronçon (objet posé ou retiré). Seulement les murs, seulement contre un objet adossé.
+     * <p>HeraliZ (31/10) : une seule case la dessine ({@link #dessine}). Avant, chaque case voisine qui tenait ce mur la
+     * dessinait : jusqu'à trois fois les mêmes faces (la case de l'autre côté du mur et les deux le long du mur, pour une
+     * caisse posée au milieu d'un mur), éclairées chacune depuis sa case : des faces confondues qui pouvaient scintiller.
      */
     private static PieceBakery.BlockQuads[] avecMoitiesLaissees(BlockAndTintGetter level, List<Occupant> occ, BlockPos pos,
                                                                   PieceBakery.BlockQuads[] base) {
@@ -103,7 +106,7 @@ public final class StructureModel implements IDynamicBakedModel {
                 if (blocs == null) {
                     blocs = fr.heraliz.crac.build.geom.PieceSolids.collisionBlocks(o.key());
                 }
-                if (!blocs.contains(n)) continue;
+                if (!blocs.contains(n) || !dessine(level, n, o, pos)) continue;
                 if (plus == null) {
                     plus = new ArrayList<>();
                 }
@@ -118,6 +121,34 @@ public final class StructureModel implements IDynamicBakedModel {
             out[base.length + i] = plus.get(i);
         }
         return out;
+    }
+
+    /** Les voisines d'une case dans l'ordre où l'une d'elles dessine la moitié laissée d'un mur le long de x (z constant). */
+    private static final Direction[] ORDRE_MUR_X = {Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
+    /** Même chose pour un mur le long de z (x constant). */
+    private static final Direction[] ORDRE_MUR_Z = {Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
+
+    /**
+     * La case {@code ici} est celle qui dessine la moitié du mur {@code o} laissée à l'objet de la case {@code n} : la
+     * première voisine de {@code n} qui tient ce mur, d'abord de l'autre côté du mur (sa moitié extérieure, toujours là sauf
+     * enterrée), puis le long du mur. La même réponse depuis chaque voisine : une seule la dessine.
+     */
+    private static boolean dessine(BlockAndTintGetter level, BlockPos n, Occupant o, BlockPos ici) {
+        Direction[] ordre = o.key().orient() % 6 == 3 ? ORDRE_MUR_Z : ORDRE_MUR_X;
+        for (Direction d : ordre) {
+            BlockPos m = n.relative(d);
+            if (m.equals(ici)) {
+                return true;
+            }
+            if (level.getBlockEntity(m) instanceof StructureBlockEntity be) {
+                for (Occupant x : be.occupants()) {
+                    if (x.pieceId() == o.pieceId()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static int layerOf(@Nullable RenderType type) {

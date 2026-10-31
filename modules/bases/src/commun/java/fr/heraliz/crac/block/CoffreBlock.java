@@ -54,6 +54,9 @@ import org.jetbrains.annotations.Nullable;
  * <p>Collés aux murs comme la caisse en métal ({@link Adosse}) : les deux cases sont poussées du même décalage. Modèles cuits
  * (rien n'est dessiné à chaque image tant que le coffre est fermé), écrits avec leurs mesures ({@link CoffresDonnees}) par
  * {@code modules/bases/outils/coffres_modeles.py --installer}.
+ * <p>HeraliZ (31/10) : comme la caisse en métal, un coffre se pose aussi dans la rangée des murs ({@link Adosse#DANS_MUR},
+ * {@link #dansMur}) : ses deux cases y sont, le mur leur laisse sa moitié intérieure. Ils sont faits pour (13,5 px de
+ * profondeur au plus, {@link Adosse#PLACE_DANS_MUR}).
  */
 public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -69,6 +72,8 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
     private final CoffresDonnees.Mesures mesures;
     /** Formes poussées contre le mur : [case annexe ou non][descendu ou non][sens][décalage]. */
     private final VoxelShape[][][][] formes;
+    /** Formes dans la case d'un mur ({@link Adosse#DANS_MUR}) : [case annexe ou non][sens][côté du mur]. */
+    private final VoxelShape[][][] formesDansMur;
 
     public CoffreBlock(String nom, boolean large, int colonnes, int lignes, SoundEvent sonOuvre, SoundEvent sonFerme,
                        float hauteurSon, Properties props) {
@@ -85,8 +90,11 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         VoxelShape[][] principale = Adosse.formesDecalees(f -> tournee(this.mesures.formePrincipale(), f), boite);
         VoxelShape[][] annexe = Adosse.formesDecalees(f -> tournee(this.mesures.formeAnnexe(), f), boite);
         this.formes = new VoxelShape[][][][]{{principale, Adosse.descendre(principale)}, {annexe, Adosse.descendre(annexe)}};
+        this.formesDansMur = new VoxelShape[][][]{Adosse.formesDansMur(f -> tournee(this.mesures.formePrincipale(), f), boite),
+            Adosse.formesDansMur(f -> tournee(this.mesures.formeAnnexe(), f), boite)};
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false)
-            .setValue(ANNEXE, false).setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false));
+            .setValue(ANNEXE, false).setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false)
+            .setValue(Adosse.DANS_MUR, Adosse.AUCUN));
     }
 
     public String nom() {
@@ -134,7 +142,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> b) {
-        b.add(FACING, OPEN, ANNEXE, Adosse.ADOSSE, Adosse.BAS);
+        b.add(FACING, OPEN, ANNEXE, Adosse.ADOSSE, Adosse.BAS, Adosse.DANS_MUR);
     }
 
     // ---------------------------------------------------------------- les deux cases
@@ -194,6 +202,12 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         Direction f = OrientationObjet.face(ctx);
+        // dans la rangée du mur (31/10) : décidé et vérifié par ObjetAdossable (dansMur) ; ses deux cases sont laissées par le
+        // mur juste avant la pose (avant, pour le fantôme et le choix de l'état, elles sont encore des cases du mur)
+        Integer mur = Adosse.dansMurPose();
+        if (mur != null) {
+            return this.defaultBlockState().setValue(FACING, f).setValue(Adosse.DANS_MUR, mur);
+        }
         BlockPos pos = ctx.getClickedPos();
         BlockPos autre = this.annexeDe(pos, f);
         Level level = ctx.getLevel();
@@ -214,6 +228,25 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         if (!level.isClientSide && !state.getValue(ANNEXE)) {
             level.setBlock(this.annexeDe(pos, state.getValue(FACING)), state.setValue(ANNEXE, true), Block.UPDATE_ALL);
         }
+    }
+
+    /**
+     * Le coffre (sens de {@code etat}) peut-il se poser dans la rangée du mur, sa case principale en {@code principal} ?
+     * Rend la valeur de {@link Adosse#DANS_MUR}, ou -1. Ses deux cases doivent l'accepter avec le même décalage
+     * ({@link Adosse#dansMur}) : 2 de large, deux cases du même mur (l'une peut être l'angle) ; 2 de haut, la case du bas
+     * au pied du mur et celle du dessus, dans le mur aussi (ou libre si le mur est plus bas que le coffre).
+     */
+    public int dansMur(BlockGetter level, BlockPos principal, BlockState etat) {
+        BlockState s = this.defaultBlockState().setValue(FACING, etat.getValue(FACING));
+        int w = Adosse.dansMur(level, principal, s);
+        if (w < 0) {
+            return -1;
+        }
+        BlockPos autre = this.annexeDe(principal, s.getValue(FACING));
+        if (level.getBlockState(autre).getBlock() instanceof StructureBlock) {
+            return Adosse.dansMur(level, autre, s.setValue(ANNEXE, true), this.large) == w ? w : -1;
+        }
+        return !this.large && level.getBlockState(autre).canBeReplaced() && !level.isOutsideBuildHeight(autre) ? w : -1;
     }
 
     /**
@@ -315,6 +348,10 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
+        int mur = Adosse.dansMur(s);
+        if (mur != Adosse.AUCUN) {
+            return this.formesDansMur[s.getValue(ANNEXE) ? 1 : 0][s.getValue(FACING).get2DDataValue()][mur];
+        }
         return this.formes[s.getValue(ANNEXE) ? 1 : 0][s.getValue(Adosse.BAS) ? 1 : 0][s.getValue(FACING).get2DDataValue()][s.getValue(Adosse.ADOSSE)];
     }
 

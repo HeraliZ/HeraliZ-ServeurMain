@@ -49,10 +49,11 @@ public final class Adosse {
      * seule caisse au milieu d'une fondation fermée par 4 murs. Maintenant la caisse peut prendre la case du mur elle-même :
      * le mur lui laisse la moitié intérieure de cette case, exactement comme pour une caisse posée avant le mur (règle
      * d'enfouissement de {@code PlacementRules}, {@code StructureService.ceder}), et la reprend quand elle part
-     * ({@code StructureService.reboucher}). Valeur : {@code (sx + 1) * 3 + (sz + 1)}, le côté de la case où est le mur ; la
-     * boîte est poussée contre la face du mur dans sa propre case, au même jeu que {@link #ADOSSE} ({@link #DANS_HAUT},
-     * {@link #DANS_BAS}). {@link #AUCUN} : pas dans un mur. Modèle : celui de l'objet non poussé, décalé
-     * ({@code client/render/ModeleDansMur}).
+     * ({@code StructureService.reboucher}). Valeur : {@code (sx + 1) * 3 + (sz + 1)}, le côté de la case vers lequel la boîte
+     * est poussée contre la face du mur, dans sa propre case, au même jeu que {@link #ADOSSE} ({@link #DANS_HAUT},
+     * {@link #DANS_BAS}) ; dans un angle, seulement le côté du mur contre lequel l'objet est poussé (HeraliZ, 31/10 : l'autre
+     * mur de l'angle lui laisse aussi sa moitié, voir {@link #dansMur(BlockGetter, BlockPos, BlockState, boolean)}).
+     * {@link #AUCUN} : pas dans un mur. Modèle : celui de l'objet non poussé, décalé ({@code client/render/ModeleDansMur}).
      */
     public static final IntegerProperty DANS_MUR = IntegerProperty.create("dans_mur", 0, 8);
     /** Descente d'un objet {@link #BAS} : un demi-bloc (px), la hauteur du dessus d'un plancher posé sur des demi-murs. */
@@ -69,6 +70,12 @@ public final class Adosse {
      */
     static final double DANS_HAUT = 16.0 - fr.heraliz.crac.build.geom.PieceSolids.WALL_HALF - JEU,
         DANS_BAS = fr.heraliz.crac.build.geom.PieceSolids.WALL_HALF + JEU;
+    /**
+     * Épaisseur la plus grande (px) d'un objet poussé contre le mur dans la case de ce mur : de la face du mur (plus le jeu)
+     * au bord opposé de la case, 13,75 px. La caisse en métal (13 px) y tient ; les coffres par rareté sont faits assez
+     * minces pour y tenir aussi (13,5 px, {@code modules/bases/outils/coffres_modeles.py}).
+     */
+    public static final double PLACE_DANS_MUR = 16.0 - DANS_BAS;
     /** Case visée par le joueur quand l'objet a été posé à côté (objet tenu : {@link ObjetAdossable}). */
     static final ThreadLocal<BlockPos> CIBLE = new ThreadLocal<>();
     /** Pose dans la case d'un mur décidée par {@link ObjetAdossable} : la valeur de {@link #DANS_MUR} à donner à l'objet. */
@@ -516,18 +523,35 @@ public final class Adosse {
      *   <li>dessous, une fondation ou un plancher dont le dessus est à ras de la case et la couvre toute (pas de plancher à
      *   mi-bloc) ;</li>
      *   <li>la boîte de l'objet, poussée contre la face du mur ({@link #DANS_BAS}, {@link #DANS_HAUT}), reste dans sa case (la
-     *   caisse en métal : 13 px vers le mur, donc posée face au mur ou dos au mur ; jamais dans un angle, où ses 16 px de
-     *   large toucheraient l'autre mur) et ne touche aucun objet adossé voisin.</li>
+     *   caisse en métal : 13 px vers le mur, donc posée face au mur ou dos au mur, jamais de côté) et ne touche aucun objet
+     *   adossé voisin ;</li>
+     *   <li>dans un angle (deux murs, HeraliZ, 31/10 : 9 caisses dans une fondation fermée au lieu de 5) : l'objet est
+     *   poussé contre le mur vers lequel il a son épaisseur ({@link #PLACE_DANS_MUR} au plus) et garde sa place dans la case
+     *   le long de l'autre : il rentre dans la moitié intérieure de cet autre mur (2 px au plus pour la caisse en métal, de
+     *   16 px de large : sa face est sur le plan du milieu du mur, jamais au-delà ; la face extérieure du mur est 2 px plus
+     *   loin). Ce mur lui laisse aussi sa moitié (même règle) et la dessine toujours (la case voisine du mur la dessine,
+     *   {@code StructureModel}) : le mur paraît plein, la caisse entre dedans. 48 px de fondation, moins 2 × 2 px de mur,
+     *   moins 2 × 0,25 px de jeu : 43,5 px pour trois caisses de 16 px, c'est le seul moyen d'en mettre trois le long d'un
+     *   mur.</li>
      * </ul>
+     * Rend la valeur de {@link #DANS_MUR} (côtés où l'objet est poussé), ou -1.
      */
     public static int dansMur(BlockGetter level, BlockPos cell, BlockState etat) {
+        return dansMur(level, cell, etat, true);
+    }
+
+    /**
+     * {@link #dansMur(BlockGetter, BlockPos, BlockState)} ; {@code surSol} faux : la case du haut d'un coffre de 2 de haut
+     * (rien à vérifier sous elle : c'est la case du bas du même coffre).
+     */
+    public static int dansMur(BlockGetter level, BlockPos cell, BlockState etat, boolean surSol) {
         if (!etat.hasProperty(DANS_MUR) || !(etat.getBlock() instanceof Adossable a)
             || !(level.getBlockState(cell).getBlock() instanceof StructureBlock)
             || !(level.getBlockEntity(cell) instanceof fr.heraliz.crac.build.world.StructureBlockEntity be)) {
             return -1;
         }
         List<fr.heraliz.crac.build.world.Occupant> occ = be.occupants();
-        if (occ.isEmpty() || doitDescendre(level, cell) || !StructureBlock.holdsBlockOnTop(level, cell.below())) {
+        if (occ.isEmpty() || surSol && (doitDescendre(level, cell) || !StructureBlock.holdsBlockOnTop(level, cell.below()))) {
             return -1;
         }
         double cx = cell.getX() * 16.0, cz = cell.getZ() * 16.0;
@@ -556,8 +580,15 @@ public final class Adosse {
                 return -1;
             }
         }
-        int w = code(x, z);
         double[] b = tourner(a.boiteNord(), etat.getValue(ClaimBlock.FACING));
+        // poussé contre chaque mur vers lequel il a son épaisseur ; un mur le long duquel il garde sa place (trop large pour
+        // être poussé contre lui) : seulement dans un angle, s'il est poussé contre l'autre mur
+        int px = x != 0 && b[2] - b[0] <= PLACE_DANS_MUR + 1.0E-6 ? x : 0;
+        int pz = z != 0 && b[3] - b[1] <= PLACE_DANS_MUR + 1.0E-6 ? z : 0;
+        if (px == 0 && pz == 0) {
+            return -1;
+        }
+        int w = code(px, pz);
         double[] d = decalageDansMur(b, w);
         double x0 = b[0] + d[0], z0 = b[1] + d[1], x1 = b[2] + d[0], z1 = b[3] + d[1];
         if (x0 < -1.0E-6 || z0 < -1.0E-6 || x1 > 16.0 + 1.0E-6 || z1 > 16.0 + 1.0E-6) {

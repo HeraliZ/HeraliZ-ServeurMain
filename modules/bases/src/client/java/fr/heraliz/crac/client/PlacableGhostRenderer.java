@@ -117,7 +117,8 @@ public final class PlacableGhostRenderer {
                             if (second != null && secondPart != null) {
                                 cells.add(second);
                                 parts.add(secondPart);
-                                if (!mc.level.getBlockState(second).canBeReplaced()) {
+                                // dans la rangée du mur (31/10) : l'autre case d'un coffre est une case du mur, laissée à la pose
+                                if (place.dansMur() == null && !mc.level.getBlockState(second).canBeReplaced()) {
                                     blocked = true;
                                 }
                             }

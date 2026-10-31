@@ -60,7 +60,8 @@ public class CoffreRendu implements BlockEntityRenderer<CoffreBlockEntity> {
         }
         float p = be.progression(partial);
         Direction f = s.getValue(CoffreBlock.FACING);
-        double[] d = Adosse.decalage(Adosse.tourner(c.boiteNord(), f), s.getValue(Adosse.ADOSSE));
+        // poussé vers un mur voisin, ou dans la case d'un mur (31/10, Adosse.DANS_MUR) : le même décalage que le modèle du bloc
+        double[] d = Adosse.decalage(Adosse.tourner(c.boiteNord(), f), s);
         Minecraft mc = Minecraft.getInstance();
         VertexConsumer vc = buffers.getBuffer(RenderType.cutout());
         CoffresDonnees.Mobile[] mobiles = c.mesures().mobiles();

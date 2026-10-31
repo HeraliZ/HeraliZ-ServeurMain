@@ -27,12 +27,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Modèle de la caisse en métal posée dans la case d'un mur ({@link Adosse#DANS_MUR}, HeraliZ, 31/10) : le modèle du même
+ * Modèle de la caisse en métal (et, HeraliZ 31/10, des coffres par rareté) posée dans la case d'un mur ({@link Adosse#DANS_MUR}, HeraliZ, 31/10) : le modèle du même
  * état sans poussée (mêmes fichiers, écrits par les outils), décalé contre la face du mur exactement comme sa forme
  * ({@link Adosse#decalageDansMur}, moins d'un pixel). Aucun nouveau fichier de modèle ni d'état : les fichiers d'états ne
  * nomment pas {@code dans_mur}, chaque état reçoit d'abord le modèle sans décalage, remplacé ici. Faces jamais cachées par
  * une case voisine (elles ne sont plus au bord de leur case). Calculé une fois par couche de rendu, rien à chaque image.
- * Même principe que {@link ModeleDescendu}.
+ * Même principe que {@link ModeleDescendu}. Coffres par rareté : chaque case (principale, l'autre case d'un coffre de 2 de
+ * large) a son modèle, décalé de la même façon ; la case du haut d'un coffre de 2 de haut n'est pas dessinée.
  */
 @Mod.EventBusSubscriber(modid = "crac", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ModeleDansMur extends BakedModelWrapper<BakedModel> {
@@ -52,10 +53,15 @@ public final class ModeleDansMur extends BakedModelWrapper<BakedModel> {
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
         Map<ResourceLocation, BakedModel> modeles = event.getModels();
-        Block b = ModBlocks.METAL_CRATE.get();
-        if (!(b instanceof Adosse.Adossable a)) {
-            return;
+        for (Block b : new Block[]{ModBlocks.METAL_CRATE.get(), ModBlocks.MALLE_CHANTIER.get(), ModBlocks.CASIER_METALLIQUE.get(),
+            ModBlocks.CAISSE_ARMES.get(), ModBlocks.COFFRE_FORT.get()}) {
+            if (b instanceof Adosse.Adossable a && b.defaultBlockState().hasProperty(Adosse.DANS_MUR)) {
+                remplacer(modeles, b, a);
+            }
         }
+    }
+
+    private static void remplacer(Map<ResourceLocation, BakedModel> modeles, Block b, Adosse.Adossable a) {
         for (BlockState s : b.getStateDefinition().getPossibleStates()) {
             int mur = s.getValue(Adosse.DANS_MUR);
             // jamais descendue ni poussée vers une case voisine en même temps (Adosse.dansMur) : ces états ne servent pas

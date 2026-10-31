@@ -33,7 +33,8 @@ public final class NetworkHandler {
     public static final fr.heraliz.crac.pont.Crochet<Object> RECEPTION_CLIENT = new fr.heraliz.crac.pont.Crochet<>();
 
     // 29 (31/10) : nouvel état de la caisse en métal (dans_mur) : joueurs et serveur doivent avoir la même fabrication
-    private static final String PROTOCOL = "29";
+    // 30 (31/10) : coffres par rareté dans la rangée des murs (état dans_mur des coffres) : même fabrication des deux côtés
+    private static final String PROTOCOL = "30";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation("crac", "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     private NetworkHandler() {

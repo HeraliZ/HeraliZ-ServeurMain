@@ -85,9 +85,9 @@ public final class IntegrityGameTests {
 
     /**
      * HeraliZ (31/10): a metal crate takes the block of a straight wall (Adosse.dansMur, StructureService.ceder). A foundation
-     * closed by 4 walls holds 5 crates (the middle and the middle block of each wall, turned so that their 13 px face the
-     * wall), never one in a corner nor one turned sideways; the wall keeps its outer half and takes its block back when
-     * the crate goes (StructureService.reboucher).
+     * closed by 4 walls holds 9 crates: the middle, the middle block of each wall (turned so that their 13 px face the wall,
+     * never sideways) and each corner (in any direction: pushed against the wall its 13 px face, 2 px into the other one's
+     * inner half); the wall keeps its outer half and takes its block back when the crate goes (StructureService.reboucher).
      */
     @GameTest(template = EMPTY)
     public static void aCrateTakesTheInnerHalfOfAStraightWall(GameTestHelper h) {
@@ -112,8 +112,11 @@ public final class IntegrityGameTests {
                 "a crate turned sideways fits the " + cote + " wall block (its 16 px would enter the wall)");
         }
         for (BlockPos coin : new BlockPos[]{centre.north().west(), centre.north().east(), centre.south().west(), centre.south().east()}) {
+            int sx = Integer.signum(coin.getX() - centre.getX()), sz = Integer.signum(coin.getZ() - centre.getZ());
             for (Direction f : Direction.Plane.HORIZONTAL) {
-                check(Adosse.dansMur(level, coin, caisse.setValue(MetalCrateBlock.FACING, f)) < 0, "a crate fits the corner " + coin.toShortString());
+                int w = Adosse.dansMur(level, coin, caisse.setValue(MetalCrateBlock.FACING, f));
+                int attendu = f.getAxis() == Direction.Axis.X ? Adosse.code(sx, 0) : Adosse.code(0, sz);
+                check(w == attendu, "the crate facing " + f + " does not fit the corner " + coin.toShortString() + ": " + w);
             }
         }
         BlockPos cell = centre.north();
