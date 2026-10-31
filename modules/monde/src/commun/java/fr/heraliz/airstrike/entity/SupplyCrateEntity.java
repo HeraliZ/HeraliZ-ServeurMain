@@ -112,9 +112,59 @@ public class SupplyCrateEntity extends Entity implements Container, MenuProvider
 
     // ------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Client (31/10, « la caisse du largage tombe par à-coups ») : écart entre la dernière position reçue du serveur et la
+     * position de la caisse chez le joueur, rattrapé peu à peu ({@link #RATTRAPAGE} par tick).
+     * <p>
+     * La caisse tombe chez chaque joueur avec la même physique que sur le serveur (même code, mêmes vitesses), mais le
+     * serveur envoie aussi sa position tous les 2 ticks, et Minecraft (1.20.1) pose une entité ordinaire d'un coup sur la
+     * position reçue ({@code Entity.lerpTo} = {@code setPos}, sans interpolation). Cette position date du tick où le
+     * serveur l'a envoyée : avec un réseau qui hésite ou un serveur à moins de 20 ticks par seconde, elle n'est jamais tout à
+     * fait là où la chute du joueur en est, et la caisse sautait en avant ou en arrière 10 fois par seconde. Maintenant la
+     * chute du joueur continue sans saut et se rapproche doucement de celle du serveur ; un grand écart (caisse vue pour la
+     * première fois de loin, téléportation) est repris d'un coup.
+     */
+    private double ecartX, ecartY, ecartZ;
+    /** Part de l'écart rattrapée à chaque tick (un écart d'un demi-bloc disparaît en moins d'une demi-seconde). */
+    private static final double RATTRAPAGE = 0.25;
+    /** Écart (blocs) repris d'un coup. */
+    private static final double SAUT = 8.0;
+
+    @Override
+    public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport) {
+        if (!level().isClientSide) {
+            super.lerpTo(x, y, z, yRot, xRot, steps, teleport);
+            return;
+        }
+        setRot(yRot, xRot);
+        // un paquet de rotation seule redonne la position affichée : l'écart en cours reste à rattraper
+        if (x == getX() && y == getY() && z == getZ()) return;
+        double dx = x - getX(), dy = y - getY(), dz = z - getZ();
+        if (dx * dx + dy * dy + dz * dz > SAUT * SAUT) {
+            setPos(x, y, z);
+            ecartX = ecartY = ecartZ = 0;
+            return;
+        }
+        ecartX = dx;
+        ecartY = dy;
+        ecartZ = dz;
+    }
+
+    /** Client, au début de chaque tick : une part de l'écart avec le serveur (avant la chute du tick et ses collisions). */
+    private void rattraper() {
+        if (ecartX == 0 && ecartY == 0 && ecartZ == 0) return;
+        double kx = ecartX * RATTRAPAGE, ky = ecartY * RATTRAPAGE, kz = ecartZ * RATTRAPAGE;
+        setPos(getX() + kx, getY() + ky, getZ() + kz);
+        ecartX -= kx;
+        ecartY -= ky;
+        ecartZ -= kz;
+        if (ecartX * ecartX + ecartY * ecartY + ecartZ * ecartZ < 1.0E-6) ecartX = ecartY = ecartZ = 0;
+    }
+
     @Override
     public void tick() {
         super.tick();
+        if (level().isClientSide) rattraper();
         if (isLanded()) {
             landedTick();
             return;
