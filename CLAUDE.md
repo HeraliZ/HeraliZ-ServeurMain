@@ -80,7 +80,12 @@ Ce que tout le serveur partage :
 - **`fr.heraliz.noyau.api.CombatTag`** : tag de combat de 15 s en PvP ; clé `heralisz:combat_jusqua` du joueur ;
 - **`Matchs`** : en match, partie, équipe, spectateur (branché par ClashWar) ; clé `heralisz:en_match` ;
 - **`ATerre`** : joueur à terre (Réanimation) ;
-- **`EtatClient`** : état côté joueur (combat, en match).
+- **`EtatClient`** : état côté joueur (combat, en match) ;
+- **`Portes`** : portes qui s'ouvrent au clic droit (Minecraft, plus celles déclarées par CRac et le bunker), ouvertes
+  avec une arme en main (Tactique, `PortesEnMain`).
+
+Côté serveur, un objet de mod sans effet sur les blocs est jugé par WorldGuard comme une main vide
+(`serveur/interactions/ClicObjetBukkit`) : sans ça, portes, nourriture et soins étaient refusés en visant un bloc.
 
 Le noyau porte aussi les règles du combat : déconnexion en combat = mort, commandes refusées en combat, à terre et sur
 la carte (`serveur/defaultconfigs/heraliz_noyau-server.toml`), pas de tir à terre, et le kit d'interface « style
