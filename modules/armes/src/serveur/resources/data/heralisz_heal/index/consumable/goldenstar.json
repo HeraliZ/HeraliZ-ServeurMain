@@ -3,13 +3,13 @@
   "tooltip": "item.heralisz_heal.goldenstar.desc",
   "base_item": "heralisz_tactical:consumable",
   "data": {
-    "use_duration": 112,
+    "use_duration": 30,
     "cooldown": 60,
     "cooldown_category": "heralisz_tactical:medical",
     "stack_size": 1,
     "max_durability": 8,
     "durability_damage": 1,
-    "draw_time": 19,
+    "draw_time": 10,
     "put_away_time": 17,
     "heal": 1.0,
     "effects": [

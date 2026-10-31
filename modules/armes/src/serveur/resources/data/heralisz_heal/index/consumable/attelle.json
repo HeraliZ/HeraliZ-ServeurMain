@@ -8,7 +8,7 @@
     "cooldown_category": "heralisz_tactical:medical",
     "stack_size": 3,
     "max_durability": 0,
-    "draw_time": 12,
+    "draw_time": 10,
     "put_away_time": 6,
     "heal": 0.0,
     "remove_effects": [
