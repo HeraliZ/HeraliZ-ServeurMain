@@ -87,7 +87,7 @@ ce qui est dur rapporte beaucoup, ce qui est facile presque rien.
 | Brute | 0,5 | mêmes conditions |
 | Boss tué | 60 | apparu sur la carte ou dans un event (jamais invoqué par le staff) ; partagé selon les dégâts faits ; par clan et par jour : 1er kill de ce boss 100 %, 2e 20 %, ensuite 0 (25/10 : avant, 150 à chaque réapparition, toutes les heures) |
 | Salle à carte verte / bleue / rouge | 5 / 15 / 40 | une fois par recharge de la salle |
-| Capture d'un drapeau (zone libre) | 3 × valeur de la ville (1 à 7) × difficulté des vagues (0,8 / 1 / 1,25) | 25/10 ; même zone pour le même clan : une fois par 12 h ; 40 points de capture par clan et par jour au plus (avec les prises ci-dessous) ; section `capture` de `saison.json` |
+| Capture d'un drapeau (zone libre) | 3 × valeur de la ville (1 à 7) × difficulté des vagues (0,8 / 1 / 1,25) | 25/10 ; même zone pour le même clan : une fois par 12 h ; 40 points de capture par clan et par jour au plus (avec les prises ci-dessous) ; section `capture` de `saison.json` ; 31/10 : clan de niveau 5 au moins, avec l'amélioration Territoires, 2 zones au plus (§6 bis) |
 | Conteneur de loot T1 → T6 | 0,05 / 0,1 / 0,2 / 0,4 / 0,8 / 1,5 | première ouverture après qu'il a été rempli |
 | Coffre d'événement T7 | 5 | première ouverture |
 | Vente aux PNJ | 1 point pour 1 000 hérals | seulement les objets trouvés, jamais ceux achetés à un PNJ |
@@ -155,9 +155,9 @@ nouveau système à faire (PNJ armés).
 - Une amélioration coûte **des points + des hérals** ; les points ne sont **jamais remboursés** (décision).
 - **Palier n d'une branche = n points et n × 5 000 hérals** (décision).
 - **Niveau maximum = le niveau qui permet de tout prendre** : **45**.
-- **Chaque niveau est plus dur que le précédent** (décision) : premiers niveaux en quelques heures, derniers en environ
-  une journée. Un clan nombreux et très actif doit pouvoir tout prendre en **2 à 3 semaines** (décision). Les chiffres
-  d'XP restent un réglage (`niveaux.json`), réglé pendant la bêta sur ce que gagnent les meilleurs clans.
+- **Chaque niveau est plus dur que le précédent** (décision). ~~Premiers niveaux en quelques heures, tout prendre en 2 à
+  3 semaines~~ : remplacé le 31/10 (demande du propriétaire : « beaucoup trop facile, dès le début ») par la courbe
+  ci-dessous (§6 bis). Les chiffres d'XP restent un réglage (`niveaux.json`), réglé pendant la bêta.
 
 | Branche | Paliers | Points | Hérals |
 |---|---|---|---|
@@ -167,7 +167,7 @@ nouveau système à faire (PNJ armés).
 | Revenu des territoires : +10 / +20 / +30 % | 1 + 2 + 3 | 6 | 30 000 |
 | Ravitaillement plus rapide : −15 / −30 / −45 % | 1 + 2 + 3 | 6 | 30 000 |
 | Loot dans ses territoires : +2 / +4 % | 1 + 2 | 3 | 15 000 |
-| Territoires tenus en même temps : 1 → 2 → 3 | 1 + 2 | 3 | 15 000 |
+| Territoires tenus en même temps : 0 → 1 → 2 (31/10 ; paliers réservés aux niveaux 5 et 10 du clan ; avant : 1 → 2 → 3) | 1 + 2 | 3 | 15 000 |
 | **Total** | | **40** | **605 000** |
 
 - **La déco reste automatique** avec le niveau (décision) : fonds de bannière, tag en couleur, formes rares, tag doré
@@ -191,6 +191,81 @@ nouveau système à faire (PNJ armés).
 Territoires tenus (déjà en place), kills, boss, zombies, ravitaillement, quêtes de clan (déjà en place), events gagnés,
 et **dons d'objets au clan** (décision) : un objet Légendaire ou Unique donné au clan disparaît et rapporte de l'XP, au
 lieu d'être vendu.
+
+### 6 bis. Niveaux plus durs, plafonds par jour, captures au niveau 5 (31/10, demande du propriétaire)
+
+**Sources d'XP relevées dans le code** (gains par action : `heralisz_clans-common.toml` [xp] et `xp_heure_valeur` ;
+quêtes : `quetes.json`). Les points de saison, les événements de la carte et ClashWar ne donnent **aucune** XP de clan.
+
+| Source | XP par action | Plafond par clan et par jour (31/10) |
+|---|---|---|
+| Quête de clan du jour (3 tirées par jour) | 200 à 600 (moyenne ~330) | aucun (déjà limitées par le tirage) |
+| Quête de clan de la semaine (2 tirées par semaine) | 1 200 à 2 500 | aucun |
+| Capture d'une zone | 150 | 450 (3 captures) |
+| Zone tenue | 10 par heure et par point de valeur de la zone (2 à 5 sur la carte) | 600 |
+| Signal de ravitaillement | 100 | 300 |
+| Joueur tué (anti-boost des clans) | 5 | 150 |
+| Zombie tué | 1 | 400 (avant : aucun plafond) |
+| Boss tué (boss mis de côté) | 50 | 150 |
+| Don d'un objet (`/clan don`) | Épique 150, Légendaire 1 000, Unique 2 500 | 3 000 en entier, puis 25 % |
+| Staff (`/clan admin xp`) | – | jamais plafonné |
+
+Plafonds et dons : `serveur/config/heralisz_clans/niveaux.json` (`plafonds_jour`, `dons`), relus par
+`/clan admin recharger`. Jour = heure de Paris ; compteurs gardés dans le clan (un redémarrage ne les remet pas à zéro) ;
+le clan est prévenu dans le chat quand une source atteint son plafond ; l'onglet Niveau (K) montre au survol de chaque
+ligne le plafond et ce que le clan a déjà reçu aujourd'hui (valeurs envoyées par le serveur ; avant, l'onglet lisait les
+réglages du PC du joueur).
+
+**Ce que gagne un clan par jour** (estimation avec ces plafonds) :
+- petit clan normal (3 joueurs, 2 à 3 h chacun) : ~1 500 XP avant le niveau 5 (quêtes ~1 100, zombies ~300, un peu de
+  PVP et de dons), ~2 100 ensuite (une ou deux captures, une zone tenue, un ravitaillement) ;
+- gros clan très actif (8 joueurs, 5 h chacun) : ~2 900 avant le niveau 5, ~4 600 ensuite (tous les plafonds atteints).
+
+**Courbe** (`xp_suivant` de `niveaux.json`, `facteur_xp` = 1) : `3 600 × (1 + 0,065 × (n − 1))` arrondi à 100, soit
+3 600 XP pour le niveau 2, puis 3 800, 4 100, 4 300, 4 500… jusqu'à 13 700 pour le niveau 45 ; ~380 000 XP en tout
+(avant : 20 × n^1,5 × 3, soit **60 XP** pour le niveau 2 et ~317 000 en tout : facile au début, dur à la fin).
+
+| Niveau atteint | XP totale | Petit clan normal | Gros clan très actif |
+|---|---|---|---|
+| 2 | 3 600 | ~3 jours | ~2 jours |
+| 5 (captures) | 15 800 | ~11 jours | ~6 jours |
+| 10 | 40 800 | ~23 jours | ~12 jours |
+| 20 | 108 300 | ~55 jours | ~26 jours |
+| 45 | 379 800 | ~6 mois | ~3 mois |
+
+En une saison d'un mois : niveau ~12 pour un petit clan normal, ~22 pour le meilleur clan. **Conséquence à valider** :
+les paliers Membres (niveaux 10, 20, 30, 40) deviennent bien plus lointains (8 membres ne s'atteint plus en une saison).
+
+**Clans d'avant le 31/10** : leur XP totale (comptée sur l'ancienne courbe) est gardée et leur niveau recalculé une fois
+au démarrage sur la nouvelle (ancien niveau 10 → 2, 15 → 5, 20 → 9, 30 → 20, 45 → 40) ; **toutes les améliorations
+déjà achetées restent** (et leurs effets) : un clan qui a dépensé plus de points que son nouveau niveau n'en donne n'a
+simplement plus de point libre tant que ses niveaux suivants n'ont pas comblé l'écart. Ses membres sont prévenus à leur
+première connexion, une ligne est ajoutée au journal du clan, l'ancien niveau est gardé dans `clans.json`
+(`niveauAvantCourbe`) et dans le journal du serveur (`MigrationNiveaux`).
+
+**Dons (`/clan don`)** : seulement les objets de valeur à revendre (tag `heraliz_composants:vente`), Épiques et plus ;
+environ 3 à 5 XP par héral de leur prix chez Mila (Épique 50, Légendaire 200, Unique 500). Rare et moins : refusés
+(4 % des zombies lâchent un objet Rare : ce serait une source sans fin). Contre l'XP créée à l'infini :
+- aucun marchand ne vend ces objets, aucune recette ne les fabrique, le recycleur n'en rend que des Communs et Peu communs
+  (vérifié le 31/10) ; seules autres sources : loot, butin des zombies, largages, et le lingot d'or d'une récompense de
+  quête du jour de Varga (5 %, une fois par joueur et par jour) ;
+- refusé en créatif et en spectateur (copie au bouton du milieu) ;
+- les objets Légendaires et Uniques (non empilables) sont numérotés par l'anti-duplication de Spartan
+  (`trackedItems` de `spartan-common.toml`) ; un objet dont le numéro a déjà été donné est refusé (copie), le staff le
+  voit dans le journal ; le fichier des clans est écrit tout de suite après chaque don ;
+- au-delà du plafond du jour (3 000 XP), le joueur doit confirmer (`/clan don confirmer`, 30 s) : il ne perd pas un
+  objet rare sans le savoir.
+Les objets Uniques à revendre (crâne de cristal, sceptre, calice) ne tombent nulle part aujourd'hui (jamais dans le loot,
+`RARETE_COMPOSANT` de `outils/loot_armes.py`) : seul le staff peut en donner.
+
+**Captures** (`Territoires.peutPrendre`, vérifié à chaque cycle de capture) : un clan peut prendre une zone seulement à
+partir du **niveau 5** et avec l'amélioration Territoires (palier 1 : 1 zone, niveau 5 ; palier 2 : 2 zones, niveau 10),
+et **jamais plus de 2 zones en même temps**. Un clan qui ne peut pas prendre de zone ne capture pas et ne **conteste pas
+non plus** (il ne bloque pas les autres clans au drapeau) ; ses membres au drapeau voient « Capture verrouillée » ou
+« Limite de territoires » au HUD et la raison dans le chat (une fois toutes les 5 min). `/territoire capturer` du staff
+refuse une 3e zone. Les quêtes de territoire (capturer, tenir, ravitailler) ne sont plus tirées pour un clan qui ne peut
+pas tenir de zone. Zones déjà tenues par un clan au-dessus de la nouvelle limite : il les garde jusqu'à la fin de leur
+tenue (2 h au plus, `tenue_min`), puis elles redeviennent libres ; il ne peut pas en prendre d'autre entre-temps.
 
 ---
 
@@ -297,7 +372,8 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
   boss (pas ceux invoqués, partagés selon les dégâts) ; quêtes de clan ; plafond 50 points par joueur et par jour pour
   les petites actions ; verrou des 7 derniers jours (ni création ni entrée dans un clan) ;
 - arbre d'améliorations (onglet NIVEAU du menu K, `/clan ameliorer <branche>`) et niveaux jusqu'à 45
-  (`serveur/config/heralisz_clans/niveaux.json`) ; `/clan don` (objet de récupération Légendaire ou Unique en main → XP) ;
+  (`serveur/config/heralisz_clans/niveaux.json`) ; `/clan don` (objet de récupération Légendaire ou Unique en main → XP ;
+  31/10 : Épique aussi, barème et plafonds dans `niveaux.json`, §6 bis) ;
 - `fr.heralisz.clans.saison.SaisonApi` : API par réflexion pour les autres mods (ne jamais la renommer).
 
 **CRac 1.19.0-beta** :
