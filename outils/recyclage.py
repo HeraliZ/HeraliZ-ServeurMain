@@ -124,15 +124,36 @@ def regle_recette(f):
     return None
 
 
+def valeur_unite(regle):
+    """Valeur des composants rendus par objet, 1 bocal d'un niveau valant 10 du niveau d'en dessous (comme à la table)."""
+    v = 0
+    for c in regle["rend"]:
+        niveau = next((i for i, s in ((3, "_iv"), (2, "_iii"), (1, "_ii")) if c.endswith(s)), 0)
+        v += 10 ** niveau
+    return v / regle.get("par", 1)
+
+
 def construire():
     regles = []
+    vues = {}
     for dossier in sorted(RECETTES.iterdir()):
         if dossier.name == "composants":  # montées de niveau des composants : jamais recyclées
             continue
         for f in sorted(dossier.glob("*.json")):
             r = regle_recette(f)
-            if r:
-                regles.append(r)
+            if not r:
+                continue
+            # 31/10 : plusieurs recettes pour un même objet (munitions faites avec un bocal de poudre d'un niveau plus
+            # haut) : seule compte la moins chère par objet, la recette normale ; sinon recycler 60 balles faites avec des
+            # bocaux I pourrait rendre un bocal IV (le serveur garde la première règle exacte d'un objet)
+            k = (r["objet"], r.get("cle"), r.get("valeur"))
+            if k in vues:
+                i = vues[k]
+                if valeur_unite(r) < valeur_unite(regles[i]):
+                    regles[i] = r
+                continue
+            vues[k] = len(regles)
+            regles.append(r)
     for objet, cle, base in FAMILLES:
         regle = {"objet": objet, "rend_rarete": [[composant(b, rang) for b in base] for rang in range(6)]}
         if cle:

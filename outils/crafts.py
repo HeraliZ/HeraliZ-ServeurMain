@@ -14,7 +14,7 @@ Munitions : bocal de poudre I (munitions Commun et Peu commun) ou II (Rare et É
 ferraille de niveau I.
 Raretés lues dans serveur/config/heraliz_loot/raretes.json (écrites par equilibrage_armes.py).
 """
-import glob, json, os, re, shutil
+import glob, json, math, os, re, shutil, sys
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -71,6 +71,19 @@ FERRAILLE = {"commun": 4, "peu_commun": 6, "rare": 8, "epique": 12}
 # demandaient de la poudre I ou II prennent de la poudre I, celles qui demandaient III ou IV prennent de la poudre II
 # (mêmes quantités). Rareté de la munition -> suffixe du bocal.
 POUDRE = {"commun": "", "peu_commun": "", "rare": "_ii", "epique": "_ii"}
+# 31/10 (demande du propriétaire : « 1 poudre IV + 10 ferrailles -> un stack entier », pour les munitions de base du
+# PvP) : recettes EN PLUS de la recette normale (jamais à la place), pour qui n'a qu'un bocal de poudre d'un niveau plus
+# haut que celui de la munition : UN seul bocal de ce niveau, plus de balles. Par niveau au-dessus du niveau normal :
+# FACTEUR_POUDRE fois plus de balles par bocal (9 mm : 7,5 par bocal I -> 20 avec un II, 45 avec un III, une pile
+# entière de 60 avec un IV), arrondi à 5 et au plus une pile entière (stack_size de l'index des munitions de TaCZ).
+# Ferraille I : FERRAILLE_POUDRE de celle de la recette normale, par balle (9 mm avec un IV : 10 pour 60 balles).
+# Jamais une source de profit : 1 bocal d'un niveau vaut 10 du niveau d'en dessous à la table (PAR_NIVEAU), et il ne
+# donne que ~2,4 fois plus de balles ; monter ses bocaux pour faire des munitions rapporte donc toujours moins que la
+# recette normale (rien ne redescend d'un niveau). Le recycleur et le marchand ne s'en servent pas : outils/recyclage.py
+# garde pour chaque munition la recette la moins chère (la normale), Mila ne rachète pas les munitions.
+FACTEUR_POUDRE = 2.4
+FERRAILLE_POUDRE = 0.625
+NIVEAUX_POUDRE = ["", "_ii", "_iii", "_iv"]
 
 # soins : Commun = 1 tissu ; au-dessus, 1 tissu + 1 alcool, au niveau de la rareté
 SOIN_COMMUN = {"tissu": 1}
@@ -176,6 +189,28 @@ def materiaux(compo, rarete):
     return m
 
 
+def par5(x):
+    """Arrondi au multiple de 5 le plus proche (au moins 5)."""
+    return max(5, int(math.floor(x / 5 + 0.5)) * 5)
+
+
+def munitions_poudre(rarete, pile):
+    """Recettes en plus d'une munition de cette rareté : [(suffixe du bocal, balles, ferraille I)], du niveau juste
+    au-dessus du normal jusqu'au IV (FACTEUR_POUDRE, FERRAILLE_POUDRE). Une pile entière au plus ; deux niveaux qui
+    toucheraient la même pile : celui d'en dessous en donne moins (cartes toujours différentes à la table)."""
+    normal = NIVEAUX_POUDRE.index(POUDRE[rarete])
+    par_bocal = PAQUET / BOCAUX[rarete]
+    niveaux = NIVEAUX_POUDRE[normal + 1:]
+    balles = [min(pile, par5(par_bocal * FACTEUR_POUDRE ** (k + 1))) for k in range(len(niveaux))]
+    for k in range(len(balles) - 2, -1, -1):
+        if balles[k] >= balles[k + 1]:
+            balles[k] = par5(((balles[k - 1] if k else PAQUET) + balles[k + 1]) / 2)
+    if len(set(balles + [PAQUET])) != len(balles) + 1 or balles != sorted(balles) and len(balles) > 1:
+        sys.exit(f"[crafts] barème des munitions {rarete} incohérent : {balles} (normale {PAQUET})")
+    fer_par_balle = FERRAILLE[rarete] / PAQUET * FERRAILLE_POUDRE
+    return [(niv, b, max(1, int(math.floor(fer_par_balle * b + 0.5)))) for niv, b in zip(niveaux, balles)]
+
+
 def recette(materials, result):
     return {"type": "tacz:gun_smith_table_crafting", "materials": materials, "result": result}
 
@@ -191,12 +226,21 @@ def main():
         onglet, compo = ARMES[i["type"]]
         recettes[f"armes/{gid.replace(':', '_')}"] = recette(
             materiaux(compo, r), {"type": "gun", "id": gid, "group": f"{NS}:{onglet}"})
+    piles = {k: int(v.get("stack_size", 64)) for k, v in index("ammo").items()}
+    bareme = []
     for aid, r in sorted(ra["munitions"].items()):
         if r not in NIVEAU:
             continue
-        recettes[f"munitions/{aid.replace(':', '_')}"] = recette(
+        nom = f"munitions/{aid.replace(':', '_')}"
+        recettes[nom] = recette(
             materiaux({"bocal_poudre" + POUDRE[r]: BOCAUX[r], "ferraille": FERRAILLE[r]}, "commun"),
             {"type": "ammo", "id": aid, "count": PAQUET, "group": f"{NS}:munitions"})
+        # même nom + suffixe du bocal : la table range les cartes d'une munition côte à côte, la normale d'abord
+        for niv, balles, fer in munitions_poudre(r, piles.get(aid, 64)):
+            recettes[f"{nom}_poudre{niv}"] = recette(
+                materiaux({"bocal_poudre" + niv: 1, "ferraille": fer}, "commun"),
+                {"type": "ammo", "id": aid, "count": balles, "group": f"{NS}:munitions"})
+            bareme.append(f"{aid} 1 bocal{niv} + {fer} ferraille -> {balles}")
     for sid, r in sorted(ra["soins"].items()):
         if r not in NIVEAU:
             continue
@@ -261,6 +305,8 @@ def main():
         g = r["result"]["group"].split(":")[1]
         compte[g] = compte.get(g, 0) + 1
     print(f"[crafts] {len(recettes)} recettes : " + ", ".join(f"{compte.get(o, 0)} {o}" for o, _, _ in ONGLETS))
+    if "--bareme" in sys.argv:
+        print("\n".join("  " + b for b in bareme))
 
 
 if __name__ == "__main__":
