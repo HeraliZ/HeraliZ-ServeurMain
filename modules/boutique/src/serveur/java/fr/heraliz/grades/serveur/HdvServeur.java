@@ -49,18 +49,27 @@ import java.util.UUID;
 
 /**
  * Hôtel des ventes (Grades 2.9.0, maquettes validées le 28/10 : {@code maquettes/hotel_ventes/}) : les joueurs mettent
- * en vente un objet de leur inventaire en hérals (sans frais) ou en Points Boutique (10 % de frais payés par l'acheteur,
- * brûlés ; prix plafonné selon la rareté de l'objet), pour 12, 24 ou 48 h ; 5 ventes en même temps par joueur. Ouvert au
- * spawn seulement ({@code /hdv} ou le PNJ commissaire-priseur), jamais en combat, à terre, en match, au tutoriel.
+ * en vente un objet de leur inventaire en hérals (sans frais), avec en plus, s'ils le veulent, un prix en Points Boutique
+ * (10 % de frais payés par l'acheteur, brûlés ; prix plafonné selon la rareté de l'objet). Depuis la 2.10.0 (31/10), une
+ * annonce a TOUJOURS un prix en hérals, jamais seulement un prix en PB ; l'acheteur choisit sa monnaie. Pour 12, 24 ou
+ * 48 h ; 5 ventes en même temps par joueur. Ouvert au spawn seulement ({@code /hdv} ou le PNJ commissaire-priseur),
+ * jamais en combat, à terre, en match, au tutoriel.
+ * <p>
+ * <b>Taxe de mise en vente</b> (2.10.0) : 12,5 % du prix en hérals ({@link RegleHdv#taxe}, réglage
+ * {@code taxe_mise_en_vente_pourcent}), payée en hérals à la publication, brûlée, jamais rendue (ni à l'expiration, ni au
+ * retrait). Prélevée dans le même traitement que la mise en dépôt de l'objet (voir « Mise en vente » ci-dessous).
  * <p>
  * <b>Contre la duplication et l'argent perdu</b> (même méthode que {@code /trade}) :
  * <ul>
  * <li>Tout l'état tient dans UN fichier hors du monde ({@code heraliz_grades/hdv/hdv.json}), réécrit en une fois
  * (fichier temporaire puis remplacement) : une conclusion (offre vendue, objet de l'acheteur, argent du vendeur) est
  * écrite d'un seul coup ou pas du tout.</li>
- * <li>Mise en vente : l'offre est notée « en préparation », l'objet quitte l'inventaire et le joueur est sauvegardé avec
- * une marque (données persistantes {@code heraliz_hdv_marques}), puis l'offre passe « en vente ». Après un plantage, la
- * marque dit, à la connexion du vendeur, si l'objet avait quitté sa sauvegarde (offre gardée) ou non (offre oubliée).</li>
+ * <li>Mise en vente : l'offre est notée « en préparation » (taxe « à prélever »), la taxe est retirée (motif
+ * {@code hdv:taxe:<offre>}) et le compte écrit sur le disque, puis l'objet quitte l'inventaire et le joueur est
+ * sauvegardé avec une marque (données persistantes {@code heraliz_hdv_marques}), puis l'offre passe « en vente ». Après
+ * un plantage, la marque dit, à la connexion du vendeur, si l'objet avait quitté sa sauvegarde (offre gardée, taxe due)
+ * ou non (offre oubliée ; une taxe déjà prélevée, d'après le journal du compte, l'attend dans « Mes ventes » : il n'a
+ * rien mis en vente).</li>
  * <li>Remise d'objets (achat, vente expirée, retirée) : même marque, dans des cases vides, au spawn seulement : jamais
  * deux fois, jamais par terre.</li>
  * <li>Achat : l'offre est réservée (personne d'autre ne peut l'acheter, le vendeur ne peut plus la retirer), puis le
@@ -94,15 +103,22 @@ public final class HdvServeur {
     /** Plafond des prix en PB : index 0 sans rareté, puis Commun … Unique. */
     private static List<Long> plafondsPb = List.of(30L, 30L, 75L, 200L, 500L, 1200L, 2500L);
     private static long prixHeralsMax = 10_000_000L;
+    /** Taxe de mise en vente, pour dix mille du prix (1 250 = 12,5 %). */
+    private static int taxePdm = 1250;
     private static Path fichierReglages;
     private static long dateReglages = -1;
 
     // ------------------------------------------------------------------ état (heraliz_grades/hdv/hdv.json)
-    /** Une offre : « prepare » (objet en train de quitter l'inventaire), « vente » ; acheteur non nul = réservée. */
+    /**
+     * Une offre : « prepare » (objet en train de quitter l'inventaire), « vente » ; acheteur non nul = réservée. Depuis la
+     * 2.10.0 : devise toujours hérals, prix = prix en hérals, prixPb = prix en PB en plus (0 : aucun). Une offre d'avant
+     * (devise PB, prix en PB, sans prix en hérals) reste achetable en PB jusqu'à sa fin. Taxe : montant prélevé à la mise
+     * en vente ; taxeEtat « debit » (prélèvement en cours, tranché par le journal du compte), « payee », « aucune ».
+     */
     static final class Offre {
-        String id, vendeur, vendeurNom, objet, objetId, cles, etat;
+        String id, vendeur, vendeurNom, objet, objetId, cles, etat, taxeEtat;
         int devise, categorie;
-        long prix, creeA, expireA;
+        long prix, prixPb, taxe, creeA, expireA;
         String acheteur;
         /** Vendeur remis à zéro (/wipe) pendant un achat : l'objet n'est pas rendu si l'achat échoue. */
         boolean efface;
@@ -112,8 +128,9 @@ public final class HdvServeur {
     /** Un achat en cours : « prepare » (hérals), « envoye » / « verifier » (PB), « passe » / « refuse » (conclusion à écrire). */
     static final class Achat {
         String ref, offre, acheteur, acheteurNom, etat;
+        /** Monnaie choisie par l'acheteur ; prix = ce que reçoit le vendeur dans cette monnaie (0 : achat d'avant la 2.10.0). */
         int devise;
-        long total, envoyeA;
+        long total, prix, envoyeA;
         boolean efface;
     }
 
@@ -253,6 +270,8 @@ public final class HdvServeur {
                 if (h >= 1 && h <= 24 * 14 && du.size() < 4) du.add(h);
             }
             long phm = o.has("prix_herals_max") ? o.get("prix_herals_max").getAsLong() : 10_000_000L;
+            double tx = o.has("taxe_mise_en_vente_pourcent") ? o.get("taxe_mise_en_vente_pourcent").getAsDouble() : 12.5;
+            if (Double.isNaN(tx)) tx = 12.5;
             List<Long> pl = new ArrayList<>(plafondsPb);
             if (o.has("plafond_pb")) {
                 JsonObject p = o.getAsJsonObject("plafond_pb");
@@ -264,7 +283,9 @@ public final class HdvServeur {
             if (!du.isEmpty()) durees = List.copyOf(du);
             prixHeralsMax = Math.max(1, phm);
             plafondsPb = List.copyOf(pl);
-            LOG.info("[grades] hôtel des ventes : {} ventes au plus, durées {} h, frais PB {} %, plafonds PB {}", ventesMax, durees, fraisPct, plafondsPb);
+            taxePdm = (int) Math.round(Math.max(0, Math.min(50, tx)) * 100);
+            LOG.info("[grades] hôtel des ventes : {} ventes au plus, durées {} h, frais PB {} %, taxe de mise en vente {} %, plafonds PB {}", ventesMax,
+                    durees, fraisPct, taxePdm / 100.0, plafondsPb);
         } catch (Exception ex) {
             LOG.error("[grades] {} illisible ({}) : réglages de l'hôtel des ventes inchangés", fichierReglages, ex.toString());
         }
@@ -310,6 +331,25 @@ public final class HdvServeur {
     private static ItemStack objet(Vente v) {
         if (v.cache == null) v.cache = v.objet == null ? ItemStack.EMPTY : objet(v.objet);
         return v.cache;
+    }
+
+    /** Prix de l'offre en hérals (0 : aucun, ancienne offre en PB seulement). */
+    static long prixHerals(Offre o) {
+        return o.devise == RegleHdv.HERALS ? o.prix : 0;
+    }
+
+    /** Prix de l'offre en PB (0 : pas achetable en PB). */
+    static long prixPb(Offre o) {
+        return o.devise == RegleHdv.PB ? o.prix : Math.max(0, o.prixPb);
+    }
+
+    static long prixEn(Offre o, int devise) {
+        return devise == RegleHdv.PB ? prixPb(o) : prixHerals(o);
+    }
+
+    private static String prixTexte(Offre o) {
+        long h = prixHerals(o), b = prixPb(o);
+        return (h > 0 ? h + " hérals" : "") + (h > 0 && b > 0 ? " ou " : "") + (b > 0 ? b + " PB" : "");
     }
 
     private static String resume(ItemStack st) {
@@ -409,15 +449,29 @@ public final class HdvServeur {
         ListTag l = marques(p);
         boolean change = false;
         List<String> journalLignes = new ArrayList<>();
+        List<Recup> taxesRendues = new ArrayList<>();
         for (Iterator<Offre> it = OFFRES.values().iterator(); it.hasNext(); ) {
             Offre o = it.next();
             if (!u.equals(o.vendeur) || !"prepare".equals(o.etat)) continue;
             if (marque(l, o.id)) {
+                // l'objet n'a quitté l'inventaire qu'une fois la taxe écrite sur le disque : elle est due
                 o.etat = "vente";
+                if ("debit".equals(o.taxeEtat)) o.taxeEtat = "payee";
                 journalLignes.add("reprise : offre " + o.id + " de " + o.vendeurNom + " mise en vente (objet sorti de l'inventaire avant l'arrêt)");
             } else {
+                if ("debit".equals(o.taxeEtat)) {
+                    // tranché par le journal du compte (au démarrage : reprendreHerals) ; économie pas encore prête : plus tard
+                    if (!repris || !EconomieApi.disponible()) continue;
+                    o.taxeEtat = taxeDebitee(o) ? "payee" : "aucune";
+                }
                 it.remove();
-                journalLignes.add("reprise : offre " + o.id + " de " + o.vendeurNom + " oubliée (objet resté dans l'inventaire)");
+                Recup t = "payee".equals(o.taxeEtat) && o.taxe > 0 ? taxeARendre(o) : null;
+                if (t != null) {
+                    taxesRendues.add(t);
+                    RECUPS.add(t);
+                }
+                journalLignes.add("reprise : offre " + o.id + " de " + o.vendeurNom + " oubliée (objet resté dans l'inventaire)"
+                        + (t != null ? ", taxe de " + o.taxe + " hérals déjà prélevée : rendue par « Mes ventes » (" + t.id + ")" : ""));
             }
             change = true;
         }
@@ -432,7 +486,10 @@ public final class HdvServeur {
             }
             change = true;
         }
-        if (change && !sauver()) return;   // rien de tranché sur le disque : on recommencera
+        if (change && !sauver()) {
+            RECUPS.removeAll(taxesRendues);   // rien de tranché sur le disque : on recommencera
+            return;
+        }
         for (String j : journalLignes) journal(j);
         // marques effacées seulement quand le disque est à jour (sinon elles trancheront après un arrêt)
         if (!l.isEmpty() && !enRetard) {
@@ -440,6 +497,39 @@ public final class HdvServeur {
             for (int i = 0; i < l.size(); i++) tous.add(l.getString(i));
             marquer(p, tous, false);
         }
+    }
+
+    /**
+     * Taxe d'une mise en vente interrompue par un plantage AVANT que l'objet quitte l'inventaire : rien n'a été mis en
+     * vente, la taxe est rendue comme des hérals de vente (ligne de « Mes ventes », versée une seule fois, motif
+     * {@code hdv:recup:<id>}).
+     */
+    private static Recup taxeARendre(Offre o) {
+        Recup t = new Recup();
+        t.id = nouvelId("hdvr");
+        t.uuid = o.vendeur;
+        t.genre = "herals";
+        t.motif = "taxe";
+        t.objet = o.objet;
+        t.autre = "";
+        t.devise = RegleHdv.HERALS;
+        t.prix = o.taxe;
+        t.montant = o.taxe;
+        t.quand = System.currentTimeMillis();
+        return t;
+    }
+
+    /** Le journal du compte du vendeur dit si la taxe de cette offre a été prélevée (et pas rendue tout de suite après). */
+    private static boolean taxeDebitee(Offre o) {
+        boolean debite = false, rendue = false;
+        try {
+            for (Transaction t : EconomieApi.journal(UUID.fromString(o.vendeur), 50)) {
+                if (t.motif().equals("hdv:taxe:" + o.id) && t.delta() < 0) debite = true;
+                if (t.motif().equals("hdv:taxe:rembourse:" + o.id)) rendue = true;
+            }
+        } catch (IllegalArgumentException ignore) {
+        }
+        return debite && !rendue;
     }
 
     // ------------------------------------------------------------------ refus communs
@@ -516,7 +606,7 @@ public final class HdvServeur {
         long pb = SOLDES_PB.getOrDefault(p.getUUID(), -1L);
         long hmax = EconomieApi.disponible() ? Math.min(prixHeralsMax, EconomieApi.maxSolde()) : prixHeralsMax;
         ReseauHdv.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauHdv.Etat(ouvrir, herals, pb, offresVisibles(), mesEnVente(u), ventesMax,
-                aRecuperer(u), fraisPct, durees, plafondsPb, hmax, Pb.actif(), message, ok));
+                aRecuperer(u), fraisPct, durees, plafondsPb, hmax, Pb.actif(), taxePdm, message, ok));
     }
 
     // ------------------------------------------------------------------ liste
@@ -532,15 +622,17 @@ public final class HdvServeur {
         List<Offre> choisies = new ArrayList<>();
         for (Offre o : OFFRES.values()) {
             if (!"vente".equals(o.etat) || o.acheteur != null || o.expireA <= now) continue;
-            if (devise == 1 && o.devise != RegleHdv.HERALS || devise == 2 && o.devise != RegleHdv.PB) continue;
+            if (devise == 1 && prixHerals(o) <= 0 || devise == 2 && prixPb(o) <= 0) continue;
             if (!q.isEmpty() && (o.cles == null || !o.cles.contains(q)) && !ids.contains(o.objetId)) continue;
             parCat[0]++;
             if (o.categorie > 0 && o.categorie < parCat.length) parCat[o.categorie]++;
             if (cat == 0 || o.categorie == cat) choisies.add(o);
         }
+        // tri sur le prix en PB quand on ne regarde que le PB, sinon sur le prix en hérals (ancienne offre en PB seulement : son prix)
+        java.util.function.ToLongFunction<Offre> cle = devise == 2 ? HdvServeur::prixPb : o -> prixHerals(o) > 0 ? prixHerals(o) : prixPb(o);
         Comparator<Offre> c = switch (tri) {
-            case 1 -> Comparator.comparingLong((Offre o) -> o.prix).thenComparingLong(o -> -o.creeA);
-            case 2 -> Comparator.comparingLong((Offre o) -> -o.prix).thenComparingLong(o -> -o.creeA);
+            case 1 -> Comparator.comparingLong(cle).thenComparingLong(o -> -o.creeA);
+            case 2 -> Comparator.comparingLong((Offre o) -> -cle.applyAsLong(o)).thenComparingLong(o -> -o.creeA);
             default -> Comparator.comparingLong((Offre o) -> -o.creeA);
         };
         choisies.sort(c);
@@ -549,8 +641,9 @@ public final class HdvServeur {
         List<ReseauHdv.LigneOffre> lignes = new ArrayList<>();
         for (int i = page * ReseauHdv.PAR_PAGE; i < Math.min(choisies.size(), (page + 1) * ReseauHdv.PAR_PAGE); i++) {
             Offre o = choisies.get(i);
-            lignes.add(new ReseauHdv.LigneOffre(o.id, objet(o).copy(), o.vendeurNom, o.expireA - now, o.devise, o.prix,
-                    RegleHdv.total(o.devise, o.prix, fraisPct), false, u.equals(o.vendeur)));
+            long pb = prixPb(o);
+            lignes.add(new ReseauHdv.LigneOffre(o.id, objet(o).copy(), o.vendeurNom, o.expireA - now, prixHerals(o), pb,
+                    pb > 0 ? RegleHdv.total(RegleHdv.PB, pb, fraisPct) : 0, false, u.equals(o.vendeur)));
         }
         List<Integer> cats = new ArrayList<>();
         for (int x : parCat) cats.add(x);
@@ -579,7 +672,7 @@ public final class HdvServeur {
         resoudre(p);
         switch (a.type()) {
             case ReseauHdv.ACHETER -> acheter(p, a.id(), a.devise(), a.prix());
-            case ReseauHdv.VENDRE -> vendre(p, a.slot(), a.devise(), a.prix(), a.duree(), a.nombre(), a.id());
+            case ReseauHdv.VENDRE -> vendre(p, a.slot(), a.devise(), a.prix(), a.prixPb(), a.taxe(), a.duree(), a.nombre(), a.id());
             case ReseauHdv.RETIRER -> retirer(p, a.id());
             case ReseauHdv.RECUPERER -> recuperer(p, a.id());
             default -> {
@@ -595,7 +688,11 @@ public final class HdvServeur {
     }
 
     // ------------------------------------------------------------------ vendre
-    private static void vendre(ServerPlayer p, int slot, int devise, long prix, int duree, int nombre, String attendu) {
+    /**
+     * Mise en vente demandée : prix en hérals toujours (15.1 : jamais une annonce seulement en PB), prix en PB en plus si
+     * devise = PB ; taxeVue = la taxe que l'écran a montrée (refus si elle a changé entre-temps).
+     */
+    private static void vendre(ServerPlayer p, int slot, int devise, long prix, long prixPb, long taxeVue, int duree, int nombre, String attendu) {
         String u = p.getUUID().toString();
         if (slot < 0 || slot >= CASES || (devise != RegleHdv.HERALS && devise != RegleHdv.PB) || duree < 0 || duree >= durees.size()) return;
         ItemStack st = p.getInventory().getItem(slot);
@@ -621,27 +718,41 @@ public final class HdvServeur {
             repondre(p, "lent", false);
             return;
         }
+        // toujours un prix en hérals, même quand l'annonce a aussi un prix en PB
         if (prix < 1) {
+            repondre(p, devise == RegleHdv.PB ? "herals_requis" : "prix_bas", false);
+            return;
+        }
+        if (devise == RegleHdv.PB ? prixPb < 1 : prixPb != 0) {
             repondre(p, "prix_bas", false);
             return;
         }
-        if (devise == RegleHdv.HERALS) {
-            long hmax = EconomieApi.disponible() ? Math.min(prixHeralsMax, EconomieApi.maxSolde()) : prixHeralsMax;
-            if (!EconomieApi.disponible()) {
-                repondre(p, "economie", false);
-                return;
-            }
-            if (prix > hmax) {
-                repondre(p, "prix_haut", false);
-                return;
-            }
-            mettreEnVente(p, slot, st.copy(), devise, prix, duree);
+        if (!EconomieApi.disponible()) {
+            repondre(p, "economie", false);
             return;
         }
-        // PB : plafond selon la rareté (contre les PB passés d'un compte à l'autre avec un objet sans valeur)
+        if (prix > Math.min(prixHeralsMax, EconomieApi.maxSolde())) {
+            repondre(p, "prix_haut", false);
+            return;
+        }
+        // taxe de mise en vente : celle que l'écran a montrée, et de quoi la payer
+        long taxe = RegleHdv.taxe(prix, prixPb, taxePdm);
+        if (taxe != taxeVue) {
+            repondre(p, "taxe_changee", false);
+            return;
+        }
+        if (EconomieApi.solde(p.getUUID()) < taxe) {
+            repondre(p, "taxe_solde", false);
+            return;
+        }
+        if (devise == RegleHdv.HERALS) {
+            mettreEnVente(p, slot, st.copy(), prix, 0, taxe, duree);
+            return;
+        }
+        // PB en plus : plafond selon la rareté (contre les PB passés d'un compte à l'autre avec un objet sans valeur)
         int rar = RegleHdv.rarete(st);
         long plafond = plafondsPb.get(Math.max(0, Math.min(plafondsPb.size() - 1, rar + 1)));
-        if (prix > plafond || RegleHdv.total(devise, prix, fraisPct) > PB_MAX) {
+        if (prixPb > plafond || RegleHdv.total(RegleHdv.PB, prixPb, fraisPct) > PB_MAX) {
             repondre(p, "prix_haut", false);
             return;
         }
@@ -668,15 +779,22 @@ public final class HdvServeur {
                 repondre(j, "case_changee", false);
                 return;
             }
-            mettreEnVente(j, slot, modele, devise, prix, duree);
+            mettreEnVente(j, slot, modele, prix, prixPb, taxe, duree);
         });
     }
 
     /**
-     * L'objet de la case quitte l'inventaire et devient une offre : offre notée « en préparation », objet retiré et joueur
-     * sauvegardé avec la marque, puis offre « en vente ». Une arme TaCZ est déchargée d'abord (balles rendues).
+     * L'objet de la case quitte l'inventaire et devient une offre, la taxe est prélevée, dans le même traitement : offre
+     * notée « en préparation » (taxe « à prélever ») sur le disque ; taxe retirée (motif {@code hdv:taxe:<offre>}) et
+     * compte écrit sur le disque ; objet retiré et joueur sauvegardé avec la marque ; puis offre « en vente ». Un plantage
+     * entre deux étapes est tranché par {@link #resoudre} : l'objet n'est jamais en vente sans la taxe, la taxe n'est jamais
+     * gardée sans l'objet en vente, rien n'est copié. Une arme TaCZ est déchargée d'abord (balles rendues).
      */
-    private static void mettreEnVente(ServerPlayer p, int slot, ItemStack modele, int devise, long prix, int duree) {
+    private static void mettreEnVente(ServerPlayer p, int slot, ItemStack modele, long prix, long prixPb, long taxe, int duree) {
+        if (taxe > 0 && (!EconomieApi.disponible() || EconomieApi.solde(p.getUUID()) < taxe)) {
+            repondre(p, EconomieApi.disponible() ? "taxe_solde" : "economie", false);
+            return;
+        }
         int dech = HdvTacz.decharger(p, slot);
         if (dech == HdvTacz.REFUS_RECHARGE) {
             repondre(p, "recharge", false);
@@ -699,8 +817,11 @@ public final class HdvServeur {
         o.objetId = rid == null ? "" : rid.toString();
         o.cles = RegleHdv.cles(copie);
         o.categorie = RegleHdv.categorie(copie);
-        o.devise = devise;
+        o.devise = RegleHdv.HERALS;
         o.prix = prix;
+        o.prixPb = prixPb;
+        o.taxe = taxe;
+        o.taxeEtat = taxe > 0 ? "debit" : "aucune";
         o.creeA = now;
         o.expireA = now + durees.get(duree) * 3600_000L;
         o.etat = "prepare";
@@ -709,6 +830,23 @@ public final class HdvServeur {
             OFFRES.remove(o.id);
             repondre(p, "erreur", false);
             return;
+        }
+        if (taxe > 0) {
+            if (!EconomieApi.retirer(p.getUUID(), taxe, "hdv:taxe:" + o.id)) {
+                OFFRES.remove(o.id);
+                sauver();
+                repondre(p, "taxe_solde", false);
+                return;
+            }
+            // la taxe sur le disque AVANT que l'objet quitte l'inventaire : un plantage ne met jamais en vente sans la taxe
+            if (!EconomieApi.sauvegarderMaintenant()) {
+                EconomieApi.deposer(p.getUUID(), taxe, "hdv:taxe:rembourse:" + o.id);
+                OFFRES.remove(o.id);
+                sauver();
+                repondre(p, "erreur", false);
+                return;
+            }
+            o.taxeEtat = "payee";
         }
         // l'objet quitte l'inventaire ; la sauvegarde du joueur porte la marque : un plantage ici ne copie rien
         p.getInventory().setItem(slot, ItemStack.EMPTY);
@@ -720,8 +858,12 @@ public final class HdvServeur {
         // si l'écriture a échoué, l'offre reste « en vente » en mémoire et la marque tranchera après un arrêt
         p.inventoryMenu.broadcastChanges();
         VENTES_RECENTES.computeIfAbsent(p.getUUID(), k -> new ArrayList<>()).add(now);
-        journal("vente " + o.id + " : " + o.vendeurNom + " met en vente " + resume(copie) + " pour " + prix + (devise == RegleHdv.PB ? " PB" : " hérals")
-                + ", " + durees.get(duree) + " h" + (dech == HdvTacz.DECHARGEE ? " (arme déchargée)" : ""));
+        journal("vente " + o.id + " : " + o.vendeurNom + " met en vente " + resume(copie) + " pour " + prixTexte(o) + ", " + durees.get(duree) + " h"
+                + ", taxe " + taxe + " hérals payée" + (dech == HdvTacz.DECHARGEE ? " (arme déchargée)" : ""));
+        if (taxe > 0) {
+            p.sendSystemMessage(msg("taxe_payee", "Hôtel des ventes : taxe de mise en vente payée, %s hérals (jamais rendue).", EconomieApi.nombre(taxe))
+                    .withStyle(ChatFormatting.GRAY));
+        }
         repondre(p, dech == HdvTacz.DECHARGEE ? "en_vente_decharge" : "en_vente", true);
     }
 
@@ -737,7 +879,7 @@ public final class HdvServeur {
             repondre(p, "en_achat", false);
             return;
         }
-        Recup r = recupObjet(o, u, "retire", "", 0);
+        Recup r = recupObjet(o, u, "retire", "", o.devise, o.prix);
         OFFRES.remove(o.id);
         RECUPS.add(r);
         if (!sauver()) {
@@ -751,7 +893,8 @@ public final class HdvServeur {
         repondre(p, "retire", true);
     }
 
-    private static Recup recupObjet(Offre o, String uuid, String motif, String autre, int deviseVue) {
+    /** Objet d'une offre qui attend un joueur ; devise et prix : ceux à afficher dans « Mes ventes ». */
+    private static Recup recupObjet(Offre o, String uuid, String motif, String autre, int devise, long prix) {
         Recup r = new Recup();
         r.id = nouvelId("hdvr");
         r.uuid = uuid;
@@ -759,8 +902,8 @@ public final class HdvServeur {
         r.motif = motif;
         r.objet = o.objet;
         r.autre = autre;
-        r.devise = o.devise;
-        r.prix = o.prix;
+        r.devise = devise;
+        r.prix = prix;
         r.quand = System.currentTimeMillis();
         return r;
     }
@@ -778,7 +921,9 @@ public final class HdvServeur {
             repondre(p, "la_tienne", false);
             return;
         }
-        if (o.devise != devise || o.prix != prixAttendu) {
+        // la monnaie choisie par l'acheteur : l'offre doit avoir un prix dans cette monnaie, celui qu'il a vu
+        long prixO = devise == RegleHdv.HERALS || devise == RegleHdv.PB ? prixEn(o, devise) : 0;
+        if (prixO <= 0 || prixO != prixAttendu) {
             repondre(p, "prix_change", false);
             return;
         }
@@ -788,14 +933,15 @@ public final class HdvServeur {
                 return;
             }
         }
-        long total = RegleHdv.total(o.devise, o.prix, fraisPct);
+        long total = RegleHdv.total(devise, prixO, fraisPct);
         Achat a = new Achat();
         a.offre = o.id;
         a.acheteur = u;
         a.acheteurNom = p.getGameProfile().getName();
-        a.devise = o.devise;
+        a.devise = devise;
+        a.prix = prixO;
         a.total = total;
-        if (o.devise == RegleHdv.HERALS) {
+        if (devise == RegleHdv.HERALS) {
             if (!EconomieApi.disponible()) {
                 repondre(p, "economie", false);
                 return;
@@ -925,15 +1071,17 @@ public final class HdvServeur {
             return;
         }
         long now = System.currentTimeMillis();
+        // ce que reçoit le vendeur : son prix dans la monnaie choisie par l'acheteur
+        long prixVendeur = a.prix > 0 ? a.prix : prixEn(o, a.devise);
         List<Recup> nouvelles = new ArrayList<>();
         Recup pourAcheteur = null;
         if (!a.efface) {
-            pourAcheteur = recupObjet(o, a.acheteur, "achete", o.vendeurNom, 0);
+            pourAcheteur = recupObjet(o, a.acheteur, "achete", o.vendeurNom, a.devise, prixVendeur);
             nouvelles.add(pourAcheteur);
         }
         Versement v = null;
         Vente vente = null;
-        if (o.devise == RegleHdv.HERALS) {
+        if (a.devise == RegleHdv.HERALS) {
             if (!o.efface) {
                 Recup h = new Recup();
                 h.id = nouvelId("hdvr");
@@ -943,8 +1091,8 @@ public final class HdvServeur {
                 h.objet = o.objet;
                 h.autre = a.acheteurNom;
                 h.devise = RegleHdv.HERALS;
-                h.prix = o.prix;
-                h.montant = o.prix;
+                h.prix = prixVendeur;
+                h.montant = prixVendeur;
                 h.quand = now;
                 nouvelles.add(h);
             }
@@ -953,14 +1101,14 @@ public final class HdvServeur {
             v.ref = a.ref + "-v";
             v.vendeur = o.vendeur;
             v.vendeurNom = o.vendeurNom;
-            v.montant = o.prix;
+            v.montant = prixVendeur;
             v.etat = "a_faire";
             vente = new Vente();
             vente.ref = v.ref;
             vente.vendeur = o.vendeur;
             vente.objet = o.objet;
             vente.acheteurNom = a.acheteurNom;
-            vente.prix = o.prix;
+            vente.prix = prixVendeur;
             vente.quand = now;
         }
         OFFRES.remove(o.id);
@@ -980,7 +1128,7 @@ public final class HdvServeur {
             return;
         }
         journal("achat " + a.ref + " conclu : " + a.acheteurNom + " a payé " + a.total + (a.devise == RegleHdv.PB ? " PB" : " hérals") + " pour "
-                + resume(objet(o)) + " (offre " + o.id + ") ; " + o.vendeurNom + " reçoit " + o.prix + (o.devise == RegleHdv.PB ? " PB" : " hérals")
+                + resume(objet(o)) + " (offre " + o.id + ") ; " + o.vendeurNom + " reçoit " + prixVendeur + (a.devise == RegleHdv.PB ? " PB" : " hérals")
                 + (a.efface ? " ; acheteur remis à zéro : objet non remis" : "") + (o.efface ? " ; vendeur remis à zéro : hérals non versés" : ""));
         ServerPlayer acheteur = joueur(a.acheteur);
         if (acheteur != null) {
@@ -1164,24 +1312,25 @@ public final class HdvServeur {
         List<ReseauHdv.LigneMv> l = new ArrayList<>();
         for (Recup r : RECUPS) {
             if (!u.equals(r.uuid)) continue;
-            int genre = "herals".equals(r.genre) ? ReseauHdv.VENDU_HERALS : switch (r.motif == null ? "" : r.motif) {
+            int genre = "herals".equals(r.genre) ? ("taxe".equals(r.motif) ? ReseauHdv.TAXE_RENDUE : ReseauHdv.VENDU_HERALS) : switch (r.motif == null ? "" : r.motif) {
                 case "expire" -> ReseauHdv.EXPIRE;
                 case "achete" -> ReseauHdv.ACHETE;
                 default -> ReseauHdv.RETIRE;
             };
             ItemStack vu = objet(r);
             l.add(new ReseauHdv.LigneMv(genre, r.id, vu.copy(), r.autre == null ? "" : r.autre, now - r.quand, r.devise,
-                    "herals".equals(r.genre) ? r.montant : r.prix, !r.remise && !r.paiement));
+                    "herals".equals(r.genre) ? r.montant : r.prix, 0, !r.remise && !r.paiement));
         }
         for (Offre o : OFFRES.values()) {
             if (!u.equals(o.vendeur) || !"vente".equals(o.etat)) continue;
             boolean res = o.acheteur != null;
-            l.add(new ReseauHdv.LigneMv(res ? ReseauHdv.RESERVEE : ReseauHdv.EN_VENTE, o.id, objet(o).copy(), "", o.expireA - now, o.devise, o.prix, !res));
+            l.add(new ReseauHdv.LigneMv(res ? ReseauHdv.RESERVEE : ReseauHdv.EN_VENTE, o.id, objet(o).copy(), "", o.expireA - now, o.devise, o.prix,
+                    o.devise == RegleHdv.HERALS ? Math.max(0, o.prixPb) : 0, !res));
         }
         for (Vente v : VENTES) {
             if (!u.equals(v.vendeur)) continue;
             l.add(new ReseauHdv.LigneMv(v.verse ? ReseauHdv.VENDU_PB_VERSE : ReseauHdv.VENDU_PB_ATTENTE, v.ref, objet(v).copy(),
-                    v.acheteurNom == null ? "" : v.acheteurNom, now - v.quand, RegleHdv.PB, v.prix, false));
+                    v.acheteurNom == null ? "" : v.acheteurNom, now - v.quand, RegleHdv.PB, v.prix, 0, false));
         }
         if (l.size() > ReseauHdv.MES_MAX) l = new ArrayList<>(l.subList(0, ReseauHdv.MES_MAX));
         ReseauHdv.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauHdv.MesVentes(l));
@@ -1219,7 +1368,7 @@ public final class HdvServeur {
         List<Recup> nouvelles = new ArrayList<>();
         for (Offre o : finies) {
             OFFRES.remove(o.id);
-            if (!o.efface) nouvelles.add(recupObjet(o, o.vendeur, "expire", "", 0));
+            if (!o.efface) nouvelles.add(recupObjet(o, o.vendeur, "expire", "", o.devise, o.prix));
         }
         RECUPS.addAll(nouvelles);
         if (!sauver()) {
@@ -1289,6 +1438,13 @@ public final class HdvServeur {
             conclure(a, debite && !rembourse, debite && !rembourse ? "" : "erreur");
         }
         boolean change = false;
+        // mises en vente interrompues pendant le prélèvement de la taxe : le journal du compte dit s'il a eu lieu
+        for (Offre o : OFFRES.values()) {
+            if (!"prepare".equals(o.etat) || !"debit".equals(o.taxeEtat)) continue;
+            o.taxeEtat = taxeDebitee(o) ? "payee" : "aucune";
+            journal("reprise : taxe de l'offre " + o.id + " de " + o.vendeurNom + ("payee".equals(o.taxeEtat) ? " prélevée avant l'arrêt" : " pas prélevée"));
+            change = true;
+        }
         for (Iterator<Recup> it = RECUPS.iterator(); it.hasNext(); ) {
             Recup r = it.next();
             if (!r.paiement) continue;

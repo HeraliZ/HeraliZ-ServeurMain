@@ -14,16 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Canal de l'hôtel des ventes ({@code /hdv}, PNJ commissaire-priseur), protocole 1 (Grades 2.9.0). Le joueur ne fait
- * que DEMANDER : une page de la liste (filtres), acheter une offre par son identifiant, mettre en vente une case de son
- * inventaire avec une monnaie, un prix et une durée, retirer, récupérer. Le serveur relit tout (objet, règles, prix,
- * soldes) ; les PB sont débités et versés par le site.
+ * Canal de l'hôtel des ventes ({@code /hdv}, PNJ commissaire-priseur), protocole 2 (Grades 2.10.0 : une annonce a
+ * toujours un prix en hérals, et en plus un prix en PB si le vendeur le veut ; taxe de mise en vente). Le joueur ne fait
+ * que DEMANDER : une page de la liste (filtres), acheter une offre par son identifiant dans une monnaie, mettre en vente
+ * une case de son inventaire avec ses prix, la taxe qu'il a vue et une durée, retirer, récupérer. Le serveur relit tout
+ * (objet, règles, prix, taxe, soldes) ; les PB sont débités et versés par le site.
  */
 public final class ReseauHdv {
     private ReseauHdv() {
     }
 
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "hdv"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -46,27 +47,42 @@ public final class ReseauHdv {
     public static final int ACHETER = 1, VENDRE = 2, RETIRER = 3, RECUPERER = 4, MES_VENTES = 5, FERMER = 6;
 
     /**
-     * Une action : acheter (id de l'offre, devise et prix attendus), vendre (case de l'inventaire, objet et nombre
-     * attendus, devise, prix, durée = rang dans la liste des durées), retirer (id de l'offre), récupérer (id de la ligne,
-     * vide : tout), demander « Mes ventes », fermer l'écran.
+     * Une action : acheter (id de l'offre, monnaie choisie et prix attendu dans cette monnaie), vendre (case de
+     * l'inventaire, objet et nombre attendus, devise : hérals seuls ou hérals + PB, prix en hérals toujours, prix en PB
+     * (0 : aucun), taxe de mise en vente affichée, durée = rang dans la liste des durées), retirer (id de l'offre),
+     * récupérer (id de la ligne, vide : tout), demander « Mes ventes », fermer l'écran.
      */
-    public record Action(int type, String id, int slot, int devise, long prix, int duree, int nombre) {
+    public record Action(int type, String id, int slot, int devise, long prix, long prixPb, long taxe, int duree, int nombre) {
     }
 
     // ------------------------------------------------------------------ serveur -> joueur
     /**
      * État général : ouvrir l'écran ; soldes (hérals, PB : -1 inconnu) ; offres en cours sur tout l'hôtel ; ventes du
      * joueur en cours, maximum, lignes à récupérer ; frais des ventes en PB (%) ; durées (h) ; plafond des prix en PB
-     * par rareté (index 0 : sans rareté, puis Commun … Unique) ; prix maximal en hérals ; PB reliés au site ; message de
-     * la dernière action (clé de langue sans préfixe, vide sinon) et réussite.
+     * par rareté (index 0 : sans rareté, puis Commun … Unique) ; prix maximal en hérals ; PB reliés au site ; taxe de mise
+     * en vente (pour dix mille du prix, {@link fr.heraliz.grades.hdv.RegleHdv#taxe}) ; message de la dernière action (clé
+     * de langue sans préfixe, vide sinon) et réussite.
      */
     public record Etat(boolean ouvrir, long herals, long pb, int offres, int mesEnVente, int ventesMax, int aRecuperer, int fraisPct,
-                       List<Integer> durees, List<Long> plafondsPb, long prixHeralsMax, boolean pbActif, String message, boolean ok) {
+                       List<Integer> durees, List<Long> plafondsPb, long prixHeralsMax, boolean pbActif, int taxePourDixMille, String message,
+                       boolean ok) {
     }
 
-    /** Une offre de la liste : reste en ms ; devise 0 hérals / 1 PB ; total = ce que paie l'acheteur ; mienne : vendue par lui. */
-    public record LigneOffre(String id, ItemStack objet, String vendeur, long resteMs, int devise, long prix, long total, boolean reservee,
+    /**
+     * Une offre de la liste : reste en ms ; prix en hérals (0 : aucun, seulement une ancienne offre en PB d'avant la 2.10.0),
+     * prix en PB (0 : aucun) et ce que paie l'acheteur en PB (frais compris) ; mienne : vendue par lui.
+     */
+    public record LigneOffre(String id, ItemStack objet, String vendeur, long resteMs, long prixHerals, long prixPb, long totalPb, boolean reservee,
                              boolean mienne) {
+        /** Prix dans cette monnaie (0 : pas vendable dans cette monnaie). */
+        public long prix(int devise) {
+            return devise == fr.heraliz.grades.hdv.RegleHdv.PB ? prixPb : prixHerals;
+        }
+
+        /** Ce que paie l'acheteur dans cette monnaie. */
+        public long total(int devise) {
+            return devise == fr.heraliz.grades.hdv.RegleHdv.PB ? totalPb : prixHerals;
+        }
     }
 
     /** Une page de la liste et le nombre d'offres de chaque catégorie (avec la recherche et la monnaie choisies). */
@@ -75,13 +91,14 @@ public final class ReseauHdv {
 
     /** Genres d'une ligne de « Mes ventes ». */
     public static final int EN_VENTE = 0, RESERVEE = 1, VENDU_HERALS = 2, VENDU_PB_VERSE = 3, VENDU_PB_ATTENTE = 4, EXPIRE = 5, RETIRE = 6,
-            ACHETE = 7, HERALS_ATTENTE = 8;
+            ACHETE = 7, HERALS_ATTENTE = 8, TAXE_RENDUE = 9;
 
     /**
      * Une ligne de « Mes ventes » : genre, id (offre ou ligne à récupérer), objet, l'autre joueur (acheteur), temps (reste
-     * pour une vente en cours, ancienneté sinon, ms), devise, prix, bouton (retirer ou récupérer) actif.
+     * pour une vente en cours, ancienneté sinon, ms), devise, prix, prix en PB en plus (vente en cours en hérals et PB,
+     * 0 sinon), bouton (retirer ou récupérer) actif.
      */
-    public record LigneMv(int genre, String id, ItemStack objet, String autre, long tempsMs, int devise, long prix, boolean action) {
+    public record LigneMv(int genre, String id, ItemStack objet, String autre, long tempsMs, int devise, long prix, long prixPb, boolean action) {
     }
 
     public record MesVentes(List<LigneMv> lignes) {
@@ -115,10 +132,13 @@ public final class ReseauHdv {
                     b.writeVarInt(m.slot());
                     b.writeVarInt(m.devise());
                     b.writeVarLong(m.prix());
+                    b.writeVarLong(m.prixPb());
+                    b.writeVarLong(m.taxe());
                     b.writeVarInt(m.duree());
                     b.writeVarInt(m.nombre());
                 })
-                .decoder(b -> new Action(b.readVarInt(), b.readUtf(MAX_ID), b.readVarInt(), b.readVarInt(), b.readVarLong(), b.readVarInt(), b.readVarInt()))
+                .decoder(b -> new Action(b.readVarInt(), b.readUtf(MAX_ID), b.readVarInt(), b.readVarInt(), b.readVarLong(), b.readVarLong(),
+                        b.readVarLong(), b.readVarInt(), b.readVarInt()))
                 .consumerMainThread((m, ctx) -> {
                     ServerPlayer p = ctx.get().getSender();
                     if (p != null) RECEPTION_ACTION.accept(new ActionRecue(p, m));
@@ -180,6 +200,7 @@ public final class ReseauHdv {
         for (int i = 0; i < Math.min(8, m.plafondsPb().size()); i++) b.writeVarLong(m.plafondsPb().get(i));
         b.writeVarLong(m.prixHeralsMax());
         b.writeBoolean(m.pbActif());
+        b.writeVarInt(m.taxePourDixMille());
         b.writeUtf(m.message(), MAX_TEXTE);
         b.writeBoolean(m.ok());
     }
@@ -194,8 +215,10 @@ public final class ReseauHdv {
         int np = Math.min(8, b.readVarInt());
         List<Long> plafonds = new ArrayList<>();
         for (int i = 0; i < np; i++) plafonds.add(b.readVarLong());
-        return new Etat(ouvrir, herals, pb, offres, mes, max, recup, frais, durees, plafonds, b.readVarLong(), b.readBoolean(), b.readUtf(MAX_TEXTE),
-                b.readBoolean());
+        long hmax = b.readVarLong();
+        boolean pbActif = b.readBoolean();
+        int taxe = b.readVarInt();
+        return new Etat(ouvrir, herals, pb, offres, mes, max, recup, frais, durees, plafonds, hmax, pbActif, taxe, b.readUtf(MAX_TEXTE), b.readBoolean());
     }
 
     private static void ecrirePage(Page m, FriendlyByteBuf b) {
@@ -211,9 +234,9 @@ public final class ReseauHdv {
             b.writeItem(o.objet());
             b.writeUtf(o.vendeur(), MAX_NOM);
             b.writeVarLong(o.resteMs());
-            b.writeVarInt(o.devise());
-            b.writeVarLong(o.prix());
-            b.writeVarLong(o.total());
+            b.writeVarLong(o.prixHerals());
+            b.writeVarLong(o.prixPb());
+            b.writeVarLong(o.totalPb());
             b.writeBoolean(o.reservee());
             b.writeBoolean(o.mienne());
         }
@@ -227,7 +250,7 @@ public final class ReseauHdv {
         int n = Math.min(PAR_PAGE, b.readVarInt());
         List<LigneOffre> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            l.add(new LigneOffre(b.readUtf(MAX_ID), b.readItem(), b.readUtf(MAX_NOM), b.readVarLong(), b.readVarInt(), b.readVarLong(), b.readVarLong(),
+            l.add(new LigneOffre(b.readUtf(MAX_ID), b.readItem(), b.readUtf(MAX_NOM), b.readVarLong(), b.readVarLong(), b.readVarLong(), b.readVarLong(),
                     b.readBoolean(), b.readBoolean()));
         }
         return new Page(page, pages, cats, l);
@@ -245,6 +268,7 @@ public final class ReseauHdv {
             b.writeVarLong(Math.max(0, l.tempsMs()));
             b.writeVarInt(l.devise());
             b.writeVarLong(l.prix());
+            b.writeVarLong(l.prixPb());
             b.writeBoolean(l.action());
         }
     }
@@ -254,7 +278,7 @@ public final class ReseauHdv {
         List<LigneMv> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             l.add(new LigneMv(b.readVarInt(), b.readUtf(MAX_ID), b.readItem(), b.readUtf(MAX_NOM), b.readVarLong(), b.readVarInt(), b.readVarLong(),
-                    b.readBoolean()));
+                    b.readVarLong(), b.readBoolean()));
         }
         return new MesVentes(l);
     }

@@ -31,7 +31,9 @@ import static fr.heraliz.grades.client.boutique.Trace.a;
 /**
  * Hôtel des ventes (Grades 2.9.0), d'après les maquettes validées le 28/10 ({@code maquettes/hotel_ventes/}, 1920 x 1080 :
  * toutes les mesures divisées par 3 sur le canevas 640 x 360 forcé par {@link Echelle}). Onglets Acheter (filtres, liste
- * paginée par le serveur, détail de l'offre, achat en deux clics), Vendre (case de l'inventaire, monnaie, prix, durée),
+ * paginée par le serveur, détail de l'offre, achat en deux clics dans la monnaie choisie), Vendre (case de l'inventaire,
+ * prix en hérals toujours et prix en PB en plus si on veut, durée, taxe de mise en vente montrée puis confirmée par un
+ * second clic),
  * Mes ventes (en cours, vendues, expirées, à récupérer). Textes DM Sans à leur vraie taille ({@link Trace}, une police par
  * taille), posés sur un point de l'écran. L'écran ne décide rien : il envoie des identifiants et un prix, le serveur relit.
  */
@@ -64,9 +66,15 @@ public final class EcranHdv extends Screen {
     private long armeeA;
     private boolean attente;
     // vendre
+    /** deviseVente : hérals seuls ({@link RegleHdv#HERALS}) ou hérals + PB ({@link RegleHdv#PB}). */
     private int slot = -1, deviseVente = RegleHdv.HERALS, duree = -1;
-    private String prix = "";
-    private int focus;   // 0 rien, 1 recherche, 2 prix
+    private String prix = "", prixPb = "";
+    private int focus;   // 0 rien, 1 recherche, 2 prix en hérals, 3 prix en PB
+    /** Mise en vente armée par un premier clic (taxe montrée sur le bouton) : case, prix, durée ; second clic dans les 5 s. */
+    private String venteArmee;
+    private long venteArmeeA;
+    /** Monnaie choisie pour payer l'offre choisie (si elle a les deux prix). */
+    private int devisePaie = RegleHdv.HERALS;
     private int defile;
     // message de la dernière action
     private String message = "";
@@ -99,9 +107,11 @@ public final class EcranHdv extends Screen {
                 h.armee = null;
                 if (e.ok()) SonsUi.ouvrir(0.7F);
                 if (h.onglet == 0) h.demanderPage();
+                h.venteArmee = null;
                 if (e.ok() && (e.message().startsWith("en_vente"))) {
                     h.slot = -1;
                     h.prix = "";
+                    h.prixPb = "";
                 }
             }
         } else if (e.ouvrir()) {
@@ -136,11 +146,12 @@ public final class EcranHdv extends Screen {
 
     private void demanderMes() {
         derniereMes = System.currentTimeMillis();
-        ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(ReseauHdv.MES_VENTES, "", 0, 0, 0, 0, 0));
+        action(ReseauHdv.MES_VENTES, "");
     }
 
-    private static void action(int type, String id, int slot, int devise, long prix, int duree, int nombre) {
-        ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(type, id, slot, devise, prix, duree, nombre));
+    /** Action sans prix (mes ventes, fermer, retirer, récupérer). */
+    private static void action(int type, String id) {
+        ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(type, id, 0, 0, 0, 0, 0, 0, 0));
     }
 
     /** Objets dont le nom, dans la langue du joueur, contient la recherche (le serveur ne connaît pas les traductions). */
@@ -212,7 +223,7 @@ public final class EcranHdv extends Screen {
     @Override
     public void removed() {
         Echelle.restaurer();
-        action(ReseauHdv.FERMER, "", 0, 0, 0, 0, 0);
+        action(ReseauHdv.FERMER, "");
         super.removed();
     }
 
@@ -287,6 +298,10 @@ public final class EcranHdv extends Screen {
             prix = prix.equals("0") ? String.valueOf(c) : prix + c;
             return true;
         }
+        if (focus == 3 && c >= '0' && c <= '9' && prixPb.length() < 9) {
+            prixPb = prixPb.equals("0") ? String.valueOf(c) : prixPb + c;
+            return true;
+        }
         return super.charTyped(c, mods);
     }
 
@@ -301,6 +316,14 @@ public final class EcranHdv extends Screen {
         }
         if (key == GLFW.GLFW_KEY_BACKSPACE && focus == 2) {
             if (!prix.isEmpty()) prix = prix.substring(0, prix.length() - 1);
+            return true;
+        }
+        if (key == GLFW.GLFW_KEY_BACKSPACE && focus == 3) {
+            if (!prixPb.isEmpty()) prixPb = prixPb.substring(0, prixPb.length() - 1);
+            return true;
+        }
+        if (key == GLFW.GLFW_KEY_TAB && onglet == 1 && deviseVente == RegleHdv.PB && (focus == 2 || focus == 3)) {
+            focus = focus == 2 ? 3 : 2;
             return true;
         }
         if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
@@ -319,9 +342,16 @@ public final class EcranHdv extends Screen {
         return null;
     }
 
+    /** Monnaie de l'achat : celle choisie si l'offre a un prix dans cette monnaie, sinon la seule qu'elle a. */
+    private int devisePaie(ReseauHdv.LigneOffre o) {
+        if (o.prix(devisePaie) > 0) return devisePaie;
+        return o.prixHerals() > 0 ? RegleHdv.HERALS : RegleHdv.PB;
+    }
+
     private boolean peutPayer(ReseauHdv.LigneOffre o) {
-        if (o.devise() == RegleHdv.PB) return etat.pbActif() && (etat.pb() < 0 || etat.pb() >= o.total());
-        return etat.herals() >= o.total();
+        int d = devisePaie(o);
+        if (d == RegleHdv.PB) return etat.pbActif() && (etat.pb() < 0 || etat.pb() >= o.total(d));
+        return etat.herals() >= o.total(d);
     }
 
     private boolean armee(ReseauHdv.LigneOffre o) {
@@ -336,7 +366,8 @@ public final class EcranHdv extends Screen {
             attente = true;
             armee = null;
             SonsUi.clic(0.8F);
-            action(ReseauHdv.ACHETER, o.id(), 0, o.devise(), o.prix(), 0, 0);
+            int d = devisePaie(o);
+            ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(ReseauHdv.ACHETER, o.id(), 0, d, o.prix(d), 0, 0, 0, 0));
         } else {
             armee = o.id();
             armeeA = System.currentTimeMillis();
@@ -349,19 +380,50 @@ public final class EcranHdv extends Screen {
         return Minecraft.getInstance().player.getInventory().getItem(slot);
     }
 
-    private long plafond(ItemStack st) {
-        if (deviseVente == RegleHdv.HERALS) return etat.prixHeralsMax();
+    /** Prix maximal en PB pour la rareté de cet objet. */
+    private long plafondPb(ItemStack st) {
         int r = RegleHdv.rarete(st) + 1;
         List<Long> pl = etat.plafondsPb();
         return pl.isEmpty() ? 0 : pl.get(Math.max(0, Math.min(pl.size() - 1, r)));
     }
 
-    private long prixVente() {
+    private static long nombreTape(String s) {
         try {
-            return prix.isEmpty() ? 0 : Long.parseLong(prix);
+            return s.isEmpty() ? 0 : Long.parseLong(s);
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    /** Prix en hérals (toujours demandé). */
+    private long prixVente() {
+        return nombreTape(prix);
+    }
+
+    /** Prix en PB (0 si « Hérals seuls »). */
+    private long prixPbVente() {
+        return deviseVente == RegleHdv.PB ? nombreTape(prixPb) : 0;
+    }
+
+    /** Taxe de mise en vente de l'annonce en cours de saisie (même calcul que le serveur). */
+    private long taxeVente() {
+        return RegleHdv.taxe(prixVente(), prixPbVente(), etat.taxePourDixMille());
+    }
+
+    /** Taux de la taxe, « 12,5 » (« 12.5 » en anglais). */
+    private String taux() {
+        int pdm = etat.taxePourDixMille();
+        String s = pdm % 100 == 0 ? String.valueOf(pdm / 100) : pdm % 10 == 0 ? String.format(Locale.ROOT, "%.1f", pdm / 100.0)
+                : String.format(Locale.ROOT, "%.2f", pdm / 100.0);
+        return fr.heraliz.grades.client.kit.Ui.french() ? s.replace('.', ',') : s;
+    }
+
+    private String cleVente() {
+        return slot + ":" + prix + ":" + (deviseVente == RegleHdv.PB ? prixPb : "-") + ":" + dureeChoisie();
+    }
+
+    private boolean venteArmee() {
+        return cleVente().equals(venteArmee) && System.currentTimeMillis() - venteArmeeA < 5000;
     }
 
     private int dureeChoisie() {
@@ -371,9 +433,13 @@ public final class EcranHdv extends Screen {
     private boolean venteValide() {
         ItemStack st = objetVente();
         long p = prixVente();
-        if (st.isEmpty() || RegleHdv.refus(st) != RegleHdv.OK || p < 1 || p > plafond(st) || attente) return false;
+        // toujours un prix en hérals ; le prix en PB n'est qu'en plus
+        if (st.isEmpty() || RegleHdv.refus(st) != RegleHdv.OK || p < 1 || p > etat.prixHeralsMax() || attente) return false;
         if (etat.mesEnVente() >= etat.ventesMax()) return false;
-        return deviseVente != RegleHdv.PB || etat.pbActif();
+        if (etat.herals() < taxeVente()) return false;
+        if (deviseVente != RegleHdv.PB) return true;
+        long pb = prixPbVente();
+        return etat.pbActif() && pb >= 1 && pb <= plafondPb(st);
     }
 
     private void mettreEnVente() {
@@ -381,9 +447,19 @@ public final class EcranHdv extends Screen {
         ItemStack st = objetVente();
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(st.getItem());
         if (id == null) return;
+        long taxe = taxeVente();
+        // premier clic : le bouton montre la taxe à payer ; second clic (5 s) : la demande part (sans taxe : un seul clic)
+        if (taxe > 0 && !venteArmee()) {
+            venteArmee = cleVente();
+            venteArmeeA = System.currentTimeMillis();
+            SonsUi.clic(0.6F);
+            return;
+        }
+        venteArmee = null;
         attente = true;
         SonsUi.clic(0.8F);
-        action(ReseauHdv.VENDRE, id.toString(), slot, deviseVente, prixVente(), dureeChoisie(), st.getCount());
+        ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(ReseauHdv.VENDRE, id.toString(), slot, deviseVente, prixVente(), prixPbVente(), taxe,
+                dureeChoisie(), st.getCount()));
     }
 
     // ------------------------------------------------------------------ dessin
@@ -490,9 +566,13 @@ public final class EcranHdv extends Screen {
 
     /** Prix aligné à droite sur xd : nombre gras puis icône ; rend la largeur. */
     private static float prix(GuiGraphics g, Font f, long v, int devise, float xd, float cy, int couleur) {
+        return prix(g, f, v, devise, xd, cy, couleur, GRAS);
+    }
+
+    private static float prix(GuiGraphics g, Font f, long v, int devise, float xd, float cy, int couleur, P p) {
         float iw = devise == RegleHdv.PB ? 7.33F : 6.67F;
         icone(g, f, devise, xd - iw, cy);
-        float w = Trace.d(g, f, nombre(v), xd - iw - 3.33F, cy, GRAS, a(couleur, 255), 0);
+        float w = Trace.d(g, f, nombre(v), xd - iw - 3.33F, cy, p, a(couleur, 255), 0);
         return w + iw + 3.33F;
     }
 
@@ -613,6 +693,8 @@ public final class EcranHdv extends Screen {
         label(g, f, t("payer_en"), 56, 251.67F, GRIS, 100);
         choix(g, f, 56, 258.67F, 100, 14, new String[]{t("tout"), t("herals_maj"), "PB"}, devise, PETIT, k -> {
             devise = k;
+            if (k > 0) devisePaie = k == 2 ? RegleHdv.PB : RegleHdv.HERALS;
+            armee = null;
             numPage = 0;
             demanderPage();
         });
@@ -650,7 +732,11 @@ public final class EcranHdv extends Screen {
                 } else if (hv) Trace.rect(g, x0, y, x1, y + 22, a(0xFFFFFF, 6));
                 Trace.rect(g, x0, y + 22 - 1 / 3F, x1, y + 22, a(0xFFFFFF, 8));
                 caseObjet(g, o.objet(), 173.33F, y + 2, 18, false);
-                float pw = prix(g, f, o.prix(), o.devise(), 422.67F, y + 11, TEXTE);
+                // prix dans la monnaie regardée (PB si le filtre est « PB »), l'autre prix en petit dessous
+                int d = devise == 2 ? RegleHdv.PB : o.prixHerals() > 0 ? RegleHdv.HERALS : RegleHdv.PB;
+                boolean deux = o.prixHerals() > 0 && o.prixPb() > 0;
+                float pw = prix(g, f, o.prix(d), d, 422.67F, deux ? y + 7.67F : y + 11, TEXTE);
+                if (deux) pw = Math.max(pw, prix(g, f, o.prix(1 - d), 1 - d, 422.67F, y + 15.33F, GRIS, PETIT));
                 String q = o.objet().getCount() > 1 ? "×" + o.objet().getCount() : "";
                 float qw = q.isEmpty() ? 0 : Trace.largeur(f, q, TXT) + 2.67F;
                 float nw = Trace.m(g, f, nom(o.objet()), 197.33F, y + 11, GRAS, a(c, 255), 286.67F - 197.33F - 4 - qw);
@@ -689,31 +775,39 @@ public final class EcranHdv extends Screen {
         Trace.m(g, f, nom(st) + q, 492.67F, 130.33F, NOM_GRAND, a(c, 255), xd - 492.67F);
         if (r >= 0) Trace.m(g, f, t("rarete." + r).toUpperCase(Locale.ROOT), 492.67F, 143, RARE, a(c, 255), xd - 492.67F);
         Trace.m(g, f, o.mienne() ? t("ta_vente") : t("vendu_par", o.vendeur()), 492.67F, 152.33F, PETIT, a(GRIS, 255), xd - 492.67F);
-        // caractéristiques
+        // caractéristiques (deux lignes seulement quand il faut choisir la monnaie)
+        boolean deux = o.prixHerals() > 0 && o.prixPb() > 0;
         float y = 173;
         for (String[] kv : caracteristiques(st)) {
             float lw = Trace.m(g, f, kv[0], ix, y, TXT, a(GRIS, 255), 50);
             Trace.d(g, f, kv[1], xd, y, TXT, a(TEXTE, 255), xd - ix - lw - 6);
             y += 14.67F;
-            if (y > 205) break;
+            if (y > (deux ? 190 : 205)) break;
         }
-        long apres;
-        boolean pb = o.devise() == RegleHdv.PB;
-        String u = devise(o.devise());
+        if (deux) {
+            choix(g, f, ix, 198.67F, xd - ix, 13.33F, new String[]{t("payer_herals"), t("payer_pb")}, devisePaie(o), PETIT, k -> {
+                devisePaie = k;
+                armee = null;
+            });
+        }
+        int d = devisePaie(o);
+        long apres, prixO = o.prix(d), total = o.total(d);
+        boolean pb = d == RegleHdv.PB;
+        String u = devise(d);
         if (pb) {
-            kv(g, f, t("prix_vendeur"), nombre(o.prix()) + " PB", ix, xd, 223.67F, TXT, TEXTE);
-            kv(g, f, t("frais", etat.fraisPct()), "+ " + nombre(o.total() - o.prix()) + " PB", ix, xd, 238.33F, TXT, TEXTE);
+            kv(g, f, t("prix_vendeur"), nombre(prixO) + " PB", ix, xd, 223.67F, TXT, TEXTE);
+            kv(g, f, t("frais", etat.fraisPct()), "+ " + nombre(total - prixO) + " PB", ix, xd, 238.33F, TXT, TEXTE);
         } else {
-            kv(g, f, t("prix_vendeur"), nombre(o.prix()) + " " + u, ix, xd, 223.67F, TXT, TEXTE);
+            kv(g, f, t("prix_vendeur"), nombre(prixO) + " " + u, ix, xd, 223.67F, TXT, TEXTE);
             kv(g, f, t("sans_frais"), "0", ix, xd, 238.33F, TXT, GRIS);
         }
-        kv(g, f, t("tu_paies"), nombre(o.total()) + " " + u, ix, xd, 254.33F, PAIE, pb ? PB_C : OR);
+        kv(g, f, t("tu_paies"), nombre(total) + " " + u, ix, xd, 254.33F, PAIE, pb ? PB_C : OR);
         long solde = pb ? etat.pb() : etat.herals();
-        apres = solde - o.total();
+        apres = solde - total;
         kv(g, f, t("solde_apres"), solde < 0 ? "—" : nombre(apres) + " " + u, ix, xd, 269.33F, TXT, apres < 0 && solde >= 0 ? ROUGE : TEXTE);
         boolean peut = !o.mienne() && peutPayer(o) && !attente;
         String lib = attente ? t("attente") : o.mienne() ? t("ta_vente_bouton") : !peutPayer(o) ? t("solde_bas")
-                : t(armee(o) ? "confirmer" : "acheter", nombre(o.total()) + " " + (pb ? "PB" : u));
+                : t(armee(o) ? "confirmer" : "acheter", nombre(total) + " " + (pb ? "PB" : u));
         bouton(g, f, ix, 277.67F, xd - ix, 19.67F, lib, peut, true, BOUTON, this::acheter);
         Trace.c(g, f, t("deux_clics"), (ix + xd) / 2, 305.33F, PETIT, a(GRIS, 255), xd - ix);
     }
@@ -783,6 +877,8 @@ public final class EcranHdv extends Screen {
                         if (slot != sl) {
                             slot = sl;
                             prix = "";
+                            prixPb = "";
+                            venteArmee = null;
                             focus = 2;
                             SonsUi.clic(0.5F);
                         }
@@ -825,33 +921,62 @@ public final class EcranHdv extends Screen {
         Trace.m(g, f, String.join(" · ", car.subList(0, Math.min(2, car.size()))), 426, 136.67F, PETIT, a(GRIS, 255), xd - 426);
         CompoundTag tg = st.getTag();
         if (tg != null && tg.contains("GunId", Tag.TAG_STRING)) Trace.m(g, f, t("dechargee_vente"), 426, 145.33F, PETIT, a(GRIS, 255), xd - 426);
+        // monnaie : toujours un prix en hérals ; « Hérals + PB » ajoute un prix en PB (l'acheteur choisit)
         label(g, f, t("monnaie"), ix, 156.33F, GRIS, 100);
-        choix(g, f, ix, 163, xd - ix, 14.33F, new String[]{t("herals_maj"), "PB"}, deviseVente, PETIT, k -> deviseVente = k);
-        label(g, f, t("prix"), ix, 184.67F, GRIS, 100);
-        boolean fp = focus == 2;
-        long plafond = plafond(st), p = prixVente();
-        boolean trop = p > plafond;
-        Trace.rect(g, ix, 191.67F, xd, 208.67F, a(0, 77));
-        Trace.bord(g, ix, 191.67F, xd - ix, 17, 1 / 3F, a(trop ? ROUGE : fp ? OR : 0x4A4F59, 255));
-        float w = prix.isEmpty() && !fp ? 0 : Trace.m(g, f, prix, ix + 6, 200.17F, NOM_GRAND, a(TEXTE, 255), 140);
-        if (prix.isEmpty() && !fp) Trace.m(g, f, "0", ix + 6, 200.17F, NOM_GRAND, a(0x5A5F69, 255), 0);
-        if (fp && (System.currentTimeMillis() / 500) % 2 == 0) Trace.rect(g, ix + 6 + w + 1.5F, 195.5F, ix + 6 + w + 2.17F, 204.83F, a(OR, 255));
-        icone(g, f, deviseVente, xd - 6 - (deviseVente == RegleHdv.PB ? 7.33F : 6.67F), 200.17F);
-        zone(ix, 191.67F, xd - ix, 17, () -> focus = 2);
+        choix(g, f, ix, 163, xd - ix, 14.33F, new String[]{t("herals_seuls"), t("herals_et_pb")}, deviseVente, PETIT, k -> {
+            deviseVente = k;
+            venteArmee = null;
+            if (k == RegleHdv.PB) focus = prix.isEmpty() ? 2 : 3;
+            else if (focus == 3) focus = 2;
+        });
+        boolean avecPb = deviseVente == RegleHdv.PB;
+        long hmax = etat.prixHeralsMax(), plafondPb = plafondPb(st), p = prixVente(), pb = prixPbVente();
+        boolean tropH = p > hmax, tropPb = avecPb && pb > plafondPb;
+        float mid = (ix + xd) / 2;
+        if (avecPb) {
+            label(g, f, t("prix_herals"), ix, 184.67F, GRIS, mid - 3 - ix);
+            label(g, f, t("prix_pb"), mid + 3, 184.67F, GRIS, xd - mid - 3);
+            champPrix(g, f, ix, mid - 3, prix, 2, RegleHdv.HERALS, tropH);
+            champPrix(g, f, mid + 3, xd, prixPb, 3, RegleHdv.PB, tropPb);
+        } else {
+            label(g, f, t("prix_herals"), ix, 184.67F, GRIS, xd - ix);
+            champPrix(g, f, ix, xd, prix, 2, RegleHdv.HERALS, tropH);
+        }
         label(g, f, t("duree"), ix, 216, GRIS, 100);
         String[] ds = new String[etat.durees().size()];
         for (int i = 0; i < ds.length; i++) ds[i] = t("heures", etat.durees().get(i));
-        choix(g, f, ix, 223, xd - ix, 14.67F, ds, dureeChoisie(), PETIT, k -> duree = k);
-        String max = deviseVente == RegleHdv.PB ? t("plafond_pb", nombre(plafond)) : t("plafond_herals", nombre(plafond));
-        if (deviseVente == RegleHdv.PB && !etat.pbActif()) max = t("msg.pb_ferme");
-        Trace.m(g, f, max, ix, 246, PETIT, a(trop ? ROUGE : GRIS, 255), xd - ix);
+        choix(g, f, ix, 223, xd - ix, 14.67F, ds, dureeChoisie(), PETIT, k -> {
+            duree = k;
+            venteArmee = null;
+        });
+        String max = !avecPb ? t("plafond_herals", nombre(hmax)) : !etat.pbActif() ? t("msg.pb_ferme")
+                : p < 1 && pb >= 1 ? t("herals_requis") : tropH ? t("plafond_herals", nombre(hmax)) : t("plafond_pb", nombre(plafondPb));
+        Trace.m(g, f, max, ix, 246, PETIT, a(tropH || tropPb || avecPb && (!etat.pbActif() || p < 1 && pb >= 1) ? ROUGE : GRIS, 255), xd - ix);
         Trace.rect(g, ix, 252, xd, 252 + 1 / 3F, a(LIGNE, 255));
-        long total = RegleHdv.total(deviseVente, Math.max(0, p), etat.fraisPct());
-        String u = deviseVente == RegleHdv.PB ? "PB" : t("herals");
-        kv(g, f, t("acheteur_paie"), nombre(total) + " " + u, ix, xd, 259.33F, TXT, TEXTE);
-        kv(g, f, t("tu_recois"), nombre(Math.max(0, p)) + " " + u, ix, xd, 279.33F, PAIE, deviseVente == RegleHdv.PB ? PB_C : OR);
+        // taxe de mise en vente : payée maintenant, jamais rendue
+        long taxe = taxeVente();
+        boolean taxeTrop = etat.herals() < taxe;
+        kv(g, f, t("taxe", taux()), nombre(taxe) + " " + t("herals"), ix, xd, 258.67F, TXT, taxeTrop ? ROUGE : TEXTE);
+        String paie = nombre(Math.max(0, p)) + " " + t("herals") + (avecPb ? " · " + nombre(RegleHdv.total(RegleHdv.PB, Math.max(0, pb), etat.fraisPct())) + " PB" : "");
+        kv(g, f, t("acheteur_paie"), paie, ix, xd, 269.33F, TXT, TEXTE);
+        String recois = nombre(Math.max(0, p)) + " " + t("herals") + (avecPb ? " " + t("ou") + " " + nombre(Math.max(0, pb)) + " PB" : "");
+        kv(g, f, t("tu_recois"), recois, ix, xd, 281, PAIE, OR);
         boolean ok = venteValide();
-        bouton(g, f, ix, 291.33F, xd - ix, 20.67F, attente ? t("attente") : t("mettre"), ok, true, BOUTON, this::mettreEnVente);
+        String lib = attente ? t("attente") : venteArmee() ? t("confirmer_vente", nombre(taxe)) : taxeTrop && p >= 1 ? t("taxe_solde_bas") : t("mettre");
+        bouton(g, f, ix, 291.33F, xd - ix, 20.67F, lib, ok, true, BOUTON, this::mettreEnVente);
+    }
+
+    /** Champ de saisie d'un prix (focus = son numéro), icône de la monnaie à droite, bord rouge au-dessus du plafond. */
+    private void champPrix(GuiGraphics g, Font f, float x0, float x1, String valeur, int numero, int devise, boolean trop) {
+        boolean fp = focus == numero;
+        Trace.rect(g, x0, 191.67F, x1, 208.67F, a(0, 77));
+        Trace.bord(g, x0, 191.67F, x1 - x0, 17, 1 / 3F, a(trop ? ROUGE : fp ? OR : 0x4A4F59, 255));
+        float iw = devise == RegleHdv.PB ? 7.33F : 6.67F;
+        float w = valeur.isEmpty() && !fp ? 0 : Trace.m(g, f, valeur, x0 + 6, 200.17F, NOM_GRAND, a(TEXTE, 255), x1 - x0 - 12 - iw - 3);
+        if (valeur.isEmpty() && !fp) Trace.m(g, f, "0", x0 + 6, 200.17F, NOM_GRAND, a(0x5A5F69, 255), 0);
+        if (fp && (System.currentTimeMillis() / 500) % 2 == 0) Trace.rect(g, x0 + 6 + w + 1.5F, 195.5F, x0 + 6 + w + 2.17F, 204.83F, a(OR, 255));
+        icone(g, f, devise, x1 - 6 - iw, 200.17F);
+        zone(x0, 191.67F, x1 - x0, 17, () -> focus = numero);
     }
 
     // ------------------------------------------------------------------ 3. Mes ventes
@@ -861,7 +986,7 @@ public final class EcranHdv extends Screen {
         bouton(g, f, 470.33F, 99.67F, 113.67F, 17.33F, t("tout_recuperer"), recup > 0 && !attente, true, BOUTON_PETIT, () -> {
             attente = true;
             SonsUi.clic(0.8F);
-            action(ReseauHdv.RECUPERER, "", 0, 0, 0, 0, 0);
+            action(ReseauHdv.RECUPERER, "");
         });
         float x0 = 56, x1 = 584, y0 = 124, y1 = 314;
         Trace.rect(g, x0, y0, x1, y1, a(0xFFFFFF, 5));
@@ -899,25 +1024,32 @@ public final class EcranHdv extends Screen {
                 case ReseauHdv.VENDU_PB_ATTENTE -> t("pb_en_route");
                 case ReseauHdv.EXPIRE -> t("personne");
                 case ReseauHdv.ACHETE -> t("achete_a", l.autre());
+                case ReseauHdv.TAXE_RENDUE -> t("taxe_rendue");
                 default -> t("retiree");
             };
             Trace.m(g, f, sous, 346, y + 18, PETIT, a(GRIS, 255), 140);
             boolean grisPrix = l.genre() == ReseauHdv.EXPIRE || l.genre() == ReseauHdv.RETIRE;
-            prix(g, f, l.prix(), l.devise(), 491.33F, y + 14, grisPrix ? GRIS : TEXTE);
+            if (l.prixPb() > 0) {
+                // vente en hérals avec un prix en PB en plus : les deux prix
+                prix(g, f, l.prix(), l.devise(), 491.33F, y + 10.67F, TEXTE);
+                prix(g, f, l.prixPb(), RegleHdv.PB, 491.33F, y + 18.67F, GRIS, PETIT);
+            } else {
+                prix(g, f, l.prix(), l.devise(), 491.33F, y + 14, grisPrix ? GRIS : TEXTE);
+            }
             float bx = 499.33F, bw = 76.67F, by = y + 6, bh = 16;
             String id = l.id();
             switch (l.genre()) {
                 case ReseauHdv.EN_VENTE -> bouton(g, f, bx, by, bw, bh, t("retirer"), !attente, false, BOUTON_PETIT, () -> {
                     attente = true;
                     SonsUi.clic(0.7F);
-                    action(ReseauHdv.RETIRER, id, 0, 0, 0, 0, 0);
+                    action(ReseauHdv.RETIRER, id);
                 });
                 case ReseauHdv.VENDU_PB_VERSE -> Trace.c(g, f, t("deja_verse"), bx + bw / 2, y + 14, PETIT, a(GRIS, 255), bw);
                 case ReseauHdv.VENDU_PB_ATTENTE, ReseauHdv.RESERVEE -> Trace.c(g, f, t("patiente"), bx + bw / 2, y + 14, PETIT, a(GRIS, 255), bw);
                 default -> bouton(g, f, bx, by, bw, bh, t("recuperer"), l.action() && !attente, true, BOUTON_PETIT, () -> {
                     attente = true;
                     SonsUi.clic(0.7F);
-                    action(ReseauHdv.RECUPERER, id, 0, 0, 0, 0, 0);
+                    action(ReseauHdv.RECUPERER, id);
                 });
             }
         }

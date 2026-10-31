@@ -13,7 +13,8 @@ import java.util.Locale;
 
 /**
  * Règles de l'hôtel des ventes lues des deux côtés : ce qui ne se vend pas (le serveur décide, l'écran ne fait que griser
- * les cases), la rareté (HeraliZ Loot, par réflexion), la catégorie d'une offre et les frais des ventes en PB. Mêmes refus
+ * les cases), la rareté (HeraliZ Loot, par réflexion), la catégorie d'une offre, les frais des ventes en PB et la taxe de
+ * mise en vente. Mêmes refus
  * que les échanges des marchands ({@code Echanges.interdit} de HeraliZ Quêtes) et que {@code /trade} : objets à vie,
  * prêtés par un match, à camo à vie, de quête, sacs pleins, clés de caisse, registres du staff.
  */
@@ -107,6 +108,21 @@ public final class RegleHdv {
         if (ns.equals("heraliz_composants")) return CAT_COMPOSANTS;
         // cartes d'accès, fragments, munitions, objets à revendre… : « Cartes et divers »
         return CAT_DIVERS;
+    }
+
+    /**
+     * Taxe de mise en vente (31/10), en hérals : payée par le vendeur au moment où il publie l'annonce, jamais rendue (même
+     * si l'objet ne se vend pas ou si l'annonce est retirée). {@code pourDixMille} : 1 250 pour 12,5 % (réglage
+     * {@code taxe_mise_en_vente_pourcent} de {@code hdv.json}) ; arrondie au hérals supérieur (prix 10 000 : 1 250).
+     * <p>
+     * <b>Base de calcul : le prix en hérals</b>, toujours présent sur une annonce (une annonce en PB a aussi un prix en
+     * hérals). Choix provisoire, le propriétaire n'a pas encore tranché : pour changer de base, il suffit de changer CETTE
+     * méthode (l'écran et le serveur l'appellent tous les deux, le serveur refuse une taxe différente de celle affichée).
+     */
+    public static long taxe(long prixHerals, long prixPb, int pourDixMille) {
+        long base = prixHerals;
+        if (base <= 0 || pourDixMille <= 0) return 0;
+        return (Math.min(base, 1_000_000_000_000L) * pourDixMille + 9_999) / 10_000;
     }
 
     /** Ce que paie l'acheteur : le prix du vendeur, plus les frais (pour cent, arrondis au supérieur) des ventes en PB. */
