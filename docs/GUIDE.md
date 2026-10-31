@@ -383,3 +383,16 @@ Code : `fr.heraliz.quetes.serveur.Journalieres` (module `pnj`), écran `client/E
   compte). Grade changé pendant une recharge : la recharge en cours garde sa durée, la suivante prend la nouvelle.
 - Recharge gardée hors du monde (`heraliz_grades/recharges_tp.json` pour `/tpa`, données de la base pour `/home`) :
   ni une déconnexion ni un redémarrage ne la remettent à zéro. Aucune autre commande n'est touchée.
+
+## 18. Bases : coffres dans la rangée des murs (31/10)
+
+- Les murs de CRac prennent la rangée de cases du bord d'une fondation (4 px centrés sur le bord). La caisse en métal et
+  les coffres par rareté se posent dans la case d'un mur droit (`Adosse.dansMur`) : le mur leur laisse sa moitié
+  intérieure et la reprend quand ils partent. Dans un angle, l'objet est poussé contre un mur et entre de 2 px au plus
+  dans l'autre (jamais jusqu'à sa face extérieure). Places des caisses : fondation fermée 9, trois murs 9, deux
+  fondations en une pièce 18, en deux pièces 15, étage fermé 9 (la limite de caisses par base compte toujours).
+- Coffres par rareté : 13,5 px de profondeur au plus pour tenir dans la rangée (`modules/bases/outils/coffres_modeles.py`,
+  `amincir`).
+- **Fondations triangles** : comme dans Rust, un carré posé contre un des deux côtés en biais d'un triangle est tourné
+  (30° ou 60°) ; seul le côté qui suit la grille donne un carré droit. Les caisses, blocs de Minecraft toujours droits,
+  n'y ont que les cases entièrement couvertes (une fondation triangle fermée : 1 caisse).
