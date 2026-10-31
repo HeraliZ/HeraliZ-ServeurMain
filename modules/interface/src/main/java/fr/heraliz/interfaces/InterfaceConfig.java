@@ -41,7 +41,7 @@ public final class InterfaceConfig {
                 .define("discord_lien", DISCORD_DEFAUT, InterfaceConfig::lienValide);
         DISCORD_LIBELLE = b.comment("Libelle du bouton Discord (vide = traduction : « Discord »)")
                 .define("discord_libelle", "");
-        BOUTIQUE_LIEN = b.comment("Lien de la boutique (vide = bouton affiche mais grise avec « Bientot »)")
+        BOUTIQUE_LIEN = b.comment("Lien de la boutique, seulement sur un serveur sans /boutique : sinon le bouton ouvre /boutique (vide = bouton grise avec « Bientot »)")
                 .define("boutique_lien", "", InterfaceConfig::lienValide);
         BOUTIQUE_LIBELLE = b.comment("Libelle du bouton Boutique (vide = traduction : « Boutique »)")
                 .define("boutique_libelle", "");

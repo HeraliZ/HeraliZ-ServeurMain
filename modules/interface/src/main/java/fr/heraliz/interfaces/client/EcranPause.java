@@ -27,6 +27,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
@@ -41,7 +42,8 @@ import java.util.Locale;
 /**
  * Menu Echap HeraliZ (remplace {@link net.minecraft.client.gui.screens.PauseScreen}, voir {@link InterfaceClient}),
  * d'apres la maquette validee : a gauche le logo, la phrase d'accroche et le menu (REPRENDRE en accent, INFORMATIONS,
- * DISCORD, BOUTIQUE, OPTIONS, lignes sans cadre au repos), les petits boutons JOUEURS et LANGUE (ni Mods, ni Succes,
+ * DISCORD, BOUTIQUE, OPTIONS, lignes sans cadre au repos ; BOUTIQUE ouvre l'ecran de {@code /boutique}, voir
+ * {@link #ouvrirBoutique}), les petits boutons JOUEURS et LANGUE (ni Mods, ni Succes,
  * ni Statistiques, ni LAN : choix du proprietaire), dessous le reglage SPRINT EN UN APPUI ({@link Sprint}, interrupteur
  * avec l'etat ecrit, explication au survol), la QUALITE GRAPHIQUE ({@link Qualite} : Performance, Equilibre, Qualite,
  * meme dessin, barres de niveau, explication au survol) et SE DECONNECTER en rouge. A droite, la carte du joueur : tete,
@@ -85,6 +87,9 @@ public class EcranPause extends Screen {
     private List<ProfilJoueur.Extraction> extractions = List.of();
     private int enLigne = -1, ping = -1;
 
+    /** Commande de la boutique du serveur (HeraliZ Grades), envoyee telle quelle par le bouton BOUTIQUE. */
+    private static final String COMMANDE_BOUTIQUE = "boutique";
+
     public EcranPause() {
         super(Component.translatable("menu.game"));
     }
@@ -122,6 +127,7 @@ public class EcranPause extends Screen {
         Minecraft mc = minecraft;
         int accent = Ui.accent();
         String discord = InterfaceConfig.discord(), boutique = lien(InterfaceConfig.BOUTIQUE_LIEN);
+        boolean boutiqueEnJeu = commandeDuServeur(COMMANDE_BOUTIQUE);
 
         // ---- petits boutons : Joueurs, puis le choix de langue (serveur multi : ni Succès, ni Statistiques, ni LAN),
         // dessous le sprint en un appui et la qualite graphique, chacun sur toute la largeur
@@ -176,9 +182,11 @@ public class EcranPause extends Screen {
         }
         MenuLigne bout = new MenuLigne(x, y, colW, lh, Icons.BOUTIQUE, libelle(InterfaceConfig.BOUTIQUE_LIBELLE, "pause.boutique"), accent,
                 () -> {
-                    if (boutique != null) ouvrirLien(boutique);
+                    if (boutiqueEnJeu) ouvrirBoutique();
+                    else if (boutique != null) ouvrirLien(boutique);
                 }).sobre();
-        if (boutique == null) bout.actif(false).pastille(t("pause.bientot"));
+        if (boutiqueEnJeu) bout.iconeDroite(Icons.CHEVRON);
+        else if (boutique == null) bout.actif(false).pastille(t("pause.bientot"));
         else bout.indiceTexte(court(boutique)).iconeDroite(Icons.EXTERNE);
         lignes.add(bout);
         y += lh;
@@ -242,6 +250,25 @@ public class EcranPause extends Screen {
         majPied();
         majCarte();
         carteX = width - marge - carteW;
+    }
+
+    /**
+     * Boutique du serveur (31/10, demande du proprietaire) : exactement {@code /boutique}. Le menu Echap se ferme d'abord
+     * (jamais deux ecrans l'un sur l'autre), puis la commande part au serveur, qui fait ses verifications habituelles
+     * (connexion AuthMe, combat, joueur a terre, regles de la carte...) et, s'il accepte, envoie l'ecran de la boutique.
+     * Un refus s'affiche comme pour la commande tapee.
+     */
+    private void ouvrirBoutique() {
+        Minecraft mc = minecraft;
+        ClientPacketListener co = mc.getConnection();
+        mc.setScreen(null);
+        if (co != null) co.sendCommand(COMMANDE_BOUTIQUE);
+    }
+
+    /** Le serveur a cette commande et le joueur peut la lancer (arbre des commandes recu du serveur). */
+    private static boolean commandeDuServeur(String racine) {
+        ClientPacketListener co = Minecraft.getInstance().getConnection();
+        return co != null && co.getCommands().getRoot().getChild(racine) != null;
     }
 
     private void ouvrirLien(String url) {
