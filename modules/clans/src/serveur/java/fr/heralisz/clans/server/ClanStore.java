@@ -89,6 +89,8 @@ public final class ClanStore {
         XpClan.charger(FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
         // 31/10 : clans d'avant la nouvelle courbe des niveaux recalcules une fois (XP totale et arbre gardes)
         MigrationNiveaux.migrer(instance);
+        // 31/10 : amelioration Membres retiree de l'arbre (places donnees par le niveau) : paliers achetes rembourses une fois
+        MigrationMembres.migrer(instance);
         Economie.init(instance);
         HeraliszClans.LOG.info("[clans] {} clan(s), {} joueur(s) charges depuis {}", instance.clans.size(), instance.liens.size(), racine);
     }

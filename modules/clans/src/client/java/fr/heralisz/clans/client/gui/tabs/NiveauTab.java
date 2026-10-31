@@ -192,14 +192,13 @@ public final class NiveauTab extends Tab {
     }
 
     /**
-     * Ce que le niveau n apporte : un point de competence, le palier suivant de l'amelioration Membres aux niveaux qui le
-     * debloquent (31/10 : 2, 5, 10, 15, chiffres envoyes par le serveur) et la deco a certains paliers.
+     * Ce que le niveau n apporte : un point de competence, une place de membre aux niveaux qui la donnent (31/10 : 2, 5,
+     * 10, 15, chiffres envoyes par le serveur ; donnee toute seule, rien a acheter) et la deco a certains paliers.
      */
     private List<String> gains(int n) {
         List<String> l = new ArrayList<>();
         l.add(tr("gui.niveau.gain.point"));
-        int pm = Arbre.palierMembresDuNiveau(n);
-        if (pm > 0) l.add(tr("gui.niveau.gain.membres", Arbre.membresMax(pm)));
+        if (Arbre.niveauDonneMembre(n)) l.add(tr("gui.niveau.gain.membres", Arbre.membresMax(n)));
         for (int p : Avantages.PALIERS) if (p == n) l.add(tr("gui.niveau.court." + p));
         return l;
     }

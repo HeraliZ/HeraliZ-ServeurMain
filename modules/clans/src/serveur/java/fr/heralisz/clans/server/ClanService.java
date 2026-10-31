@@ -147,17 +147,16 @@ public final class ClanService {
     }
 
     /**
-     * Clan plein : le message dit d'acheter des places dans l'arbre et a partir de quel niveau du clan (31/10 : paliers aux
-     * niveaux 2, 5, 10, 15), sauf quand la branche Membres est deja au maximum (8 membres : plus rien a debloquer). Un clan
-     * deja au-dessus de son maximum (membres forces par le staff, anciennes regles) garde tout le monde : il n'invite plus.
+     * Clan plein : le message dit a quel niveau du clan vient la place suivante (31/10 : places donnees par le niveau, 5 au
+     * niveau 2, 6 au 5, 7 au 10, 8 au 15), sauf quand il n'y en a plus (8 membres). Un clan deja au-dessus de son maximum
+     * (membres forces par le staff, anciennes regles) garde tout le monde : il n'invite plus.
      */
     private static void clanPlein(ServerPlayer p, Clan c, int max) {
-        fr.heralisz.clans.model.Arbre.Branche b = fr.heralisz.clans.model.Arbre.Branche.MEMBRES;
-        int palier = c.palier(b);
-        if (palier >= b.max) {
+        int prochain = fr.heralisz.clans.model.Arbre.prochainNiveauMembres(c.niveau);
+        if (prochain <= 0) {
             erreur(p, "msg.clan_plein_max", max);
         } else {
-            erreur(p, "msg.clan_plein", max, fr.heralisz.clans.model.Arbre.niveauRequis(b, palier + 1));
+            erreur(p, "msg.clan_plein", max, prochain);
         }
     }
 
@@ -1293,6 +1292,11 @@ public final class ClanService {
                         "Niveau %s : votre clan peut maintenant débloquer la capture des zones (amélioration Territoires, touche K, onglet Niveau).",
                         c.niveau)));
             }
+            if (fr.heralisz.clans.model.Arbre.niveauDonneMembre(c.niveau)) {
+                // 31/10 : une place de plus, donnee par le niveau (rien a acheter)
+                diffuserChat(c, prefixe(c).append(Component.translatableWithFallback("msg.niveau.membres",
+                        "Niveau %s : votre clan peut maintenant avoir %s membres.", c.niveau, c.membresMax())));
+            }
         }
         if (st != null) st.marquerDirty();
         if (monte) {
@@ -1309,7 +1313,7 @@ public final class ClanService {
     // ------------------------------------------------------------------ arbre d'ameliorations
     /**
      * Achete le palier suivant d'une branche de l'arbre (chef seulement) : n points de competence et n x 5 000 herals
-     * pris dans la banque du clan (Membres : niveau du clan et prix a part, {@link fr.heralisz.clans.model.Arbre#coutHerals}) ;
+     * pris dans la banque du clan (Territoires : niveau du clan demande, {@link fr.heralisz.clans.model.Arbre#niveauRequis}) ;
      * jamais rembourse. Renvoie vrai si le palier est achete.
      */
     public static boolean ameliorer(ServerPlayer p, fr.heralisz.clans.model.Arbre.Branche b) {

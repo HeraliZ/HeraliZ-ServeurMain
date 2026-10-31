@@ -6,9 +6,10 @@ import java.util.Locale;
 /**
  * Arbre d'ameliorations d'un clan (saison des clans, decision du 22/10, docs/SAISON_CLANS.md §6) : chaque niveau du clan
  * donne un point de competence ; le palier n d'une branche coute n points et n x 5 000 herals (banque du clan) ; jamais
- * rembourse. Branche Membres (25/10) : 4 a 8 membres, bien plus chers ({@link #HERALS_MEMBRES}) ; depuis le 31/10
- * (decision du proprietaire, avec les niveaux beaucoup plus durs) paliers reserves aux niveaux 2, 5, 10, 15 du clan
- * (avant : 10, 20, 30, 40), reglables dans niveaux.json (section « membres »). Branche Territoires (31/10, demande du proprietaire) : aucune zone au depart, capture
+ * rembourse. Membres (31/10, decision du proprietaire) : plus dans l'arbre, donnes tout seuls par le niveau du clan
+ * ({@link #membresMax(int)} : 4, puis 5 au niveau 2, 6 au 5, 7 au 10, 8 au 15, niveaux.json section « membres ») ; la
+ * branche Membres achetee avant (25/10 au 31/10) est remboursee une fois au demarrage (MigrationMembres du serveur).
+ * Branche Territoires (31/10, demande du proprietaire) : aucune zone au depart, capture
  * ouverte au niveau {@link #NIVEAU_CAPTURE} du clan, 1 puis 2 zones tenues en meme temps au plus
  * ({@link #TERRITOIRES_PLAFOND}). Tout ce qui touche au jeu passe par ici (membres, territoires, revenu, ravitaillement, loot, taille de la
  * base, delai du TP vers la base) ; la deco (banniere, tag) reste donnee par le niveau ({@link Avantages}).
@@ -42,12 +43,8 @@ public final class Arbre {
     }
 
     public enum Branche {
-        /**
-         * Membres (25/10, demande du propriétaire) : 4, puis 5 a 8 ; chaque palier demande un niveau de clan (31/10 : 2, 5,
-         * 10, 15 ; avant : 10, 20, 30, 40) et beaucoup de herals ({@link #HERALS_MEMBRES}). 8 reste le maximum (le nombre
-         * de paliers ne change pas) ; niveaux, herals et membres au depart : niveaux.json, section « membres ».
-         */
-        MEMBRES(4),
+        // Membres : branche retiree le 31/10 (places donnees par le niveau du clan, membresMax(niveau)) ; l'ancienne cle
+        // « membres » des clans enregistres est lue a part (Clan.membresARembourser) pour le remboursement.
         /** Rayon de construction autour de l'armoire : 20, puis 23, 26, 29 blocs (CRac). */
         BASE(3),
         /**
@@ -84,54 +81,67 @@ public final class Arbre {
     }
 
     /**
-     * Herals par defaut des paliers de la branche Membres (5e, 6e, 7e, 8e membre) : 455 000 en tout (le reste de l'arbre :
-     * 150 000), avant le facteur de prix.
+     * Herals de base (sans facteur de prix) des anciens paliers Membres de l'arbre (5e, 6e, 7e, 8e membre, 25/10 au 31/10) :
+     * le moins qu'un clan ait pu les payer (avant le facteur de prix du 28/10). Sert seulement au remboursement, quand
+     * le journal de la banque n'a plus le prix vraiment paye.
      */
     public static final long[] HERALS_MEMBRES = {25_000L, 60_000L, 120_000L, 250_000L};
-    /** Niveau du clan demande par defaut pour chaque palier de la branche Membres (31/10 ; avant : 10, 20, 30, 40). */
+    /** Paliers de l'ancienne branche Membres (points d'un palier p : p). */
+    public static final int PALIERS_MEMBRES = 4;
+    /** Niveaux du clan qui donnent une place de plus, par defaut (31/10) : 5 membres au 2, 6 au 5, 7 au 10, 8 au 15. */
     public static final int[] NIVEAUX_MEMBRES = {2, 5, 10, 15};
-    /** Membres d'un clan sans amelioration, par defaut. */
+    /** Membres d'un clan au niveau 1, par defaut. */
     public static final int MEMBRES_DEPART = 4;
 
     /**
-     * Reglages de la branche Membres en cours : lus par le serveur dans niveaux.json (section « membres »,
-     * {@link Niveaux#charger}) et envoyes aux joueurs avec l'etat du clan ({@link ClanSnapshot}) : l'onglet Niveau montre
-     * les memes niveaux et les memes prix que ceux que le serveur demande. Tableaux remplaces d'un bloc, jamais modifies.
+     * Membres en cours : lus par le serveur dans niveaux.json (section « membres », {@link Niveaux#charger}) et envoyes aux
+     * joueurs avec l'etat du clan ({@link ClanSnapshot}) : l'onglet Niveau montre les memes niveaux que le serveur.
+     * Tableau remplace d'un bloc, jamais modifie.
      */
     private static volatile int membresDepart = MEMBRES_DEPART;
     private static volatile int[] niveauxMembres = NIVEAUX_MEMBRES.clone();
-    private static volatile long[] heralsMembres = HERALS_MEMBRES.clone();
 
     public static int membresDepart() {
         return membresDepart;
     }
 
-    /** Copie des niveaux du clan demandes par les paliers Membres (un par palier). */
+    /** Copie des niveaux du clan qui donnent chacun une place de plus. */
     public static int[] niveauxMembres() {
         return niveauxMembres.clone();
     }
 
-    /** Copie des herals (avant le facteur de prix) des paliers Membres (un par palier). */
-    public static long[] heralsMembres() {
-        return heralsMembres.clone();
-    }
-
     /**
-     * Regle la branche Membres. Bornes : 1 a 20 membres au depart ; niveaux de 1 a {@link Niveaux#MAX}, jamais plus bas que
-     * celui du palier d'avant ; herals positifs. Une valeur manquante (tableau trop court ou null) garde celle par defaut.
+     * Regle les membres. Bornes : 1 a 20 membres au depart ; {@link #PALIERS_MEMBRES} niveaux au plus (8 membres avec le
+     * depart a 4), de 1 a {@link Niveaux#MAX}, jamais plus bas que celui d'avant. Tableau null ou vide : niveaux par defaut.
      */
-    public static void reglerMembres(int depart, int[] niveaux, long[] herals) {
-        int n = Branche.MEMBRES.max;
-        int[] nv = NIVEAUX_MEMBRES.clone();
-        long[] hm = HERALS_MEMBRES.clone();
-        for (int i = 0; i < n; i++) {
-            if (niveaux != null && i < niveaux.length) nv[i] = Math.max(1, Math.min(Niveaux.MAX, niveaux[i]));
+    public static void reglerMembres(int depart, int[] niveaux) {
+        int[] src = niveaux == null || niveaux.length == 0 ? NIVEAUX_MEMBRES : niveaux;
+        int[] nv = new int[Math.min(PALIERS_MEMBRES, src.length)];
+        for (int i = 0; i < nv.length; i++) {
+            nv[i] = Math.max(1, Math.min(Niveaux.MAX, src[i]));
             if (i > 0) nv[i] = Math.max(nv[i], nv[i - 1]);
-            if (herals != null && i < herals.length) hm[i] = Math.max(0L, herals[i]);
         }
         membresDepart = Math.max(1, Math.min(20, depart));
         niveauxMembres = nv;
-        heralsMembres = hm;
+    }
+
+    /** Membres au plus d'un clan de ce niveau : membres au depart, +1 par niveau de la section « membres » atteint. */
+    public static int membresMax(int niveau) {
+        int n = membresDepart;
+        for (int v : niveauxMembres) if (niveau >= v) n++;
+        return n;
+    }
+
+    /** Prochain niveau du clan qui donne une place de plus, ou 0 s'il n'y en a plus. */
+    public static int prochainNiveauMembres(int niveau) {
+        for (int v : niveauxMembres) if (v > niveau) return v;
+        return 0;
+    }
+
+    /** Vrai si atteindre ce niveau donne une place de plus. */
+    public static boolean niveauDonneMembre(int niveau) {
+        for (int v : niveauxMembres) if (v == niveau) return true;
+        return false;
     }
     /**
      * Niveau du clan a partir duquel il peut capturer des zones (31/10) : verifie par le serveur a chaque cycle de capture
@@ -157,24 +167,13 @@ public final class Arbre {
         return appliquer(palier * PRIX_PALIER);
     }
 
-    /** Herals du palier p d'une branche (Membres : section « membres » de niveaux.json), facteur de prix compris. */
+    /** Herals du palier p d'une branche, facteur de prix compris. */
     public static long coutHerals(Branche b, int palier) {
-        if (b == Branche.MEMBRES) {
-            long[] hm = heralsMembres;
-            return appliquer(hm[Math.max(0, Math.min(hm.length - 1, palier - 1))]);
-        }
         return coutHerals(palier);
     }
 
-    /**
-     * Niveau du clan demande pour acheter le palier p (Membres : 2, 5, 10, 15 par defaut, niveaux.json ; Territoires :
-     * 5, 10 ; les autres branches : aucun).
-     */
+    /** Niveau du clan demande pour acheter le palier p (Territoires : 5, 10 ; les autres branches : aucun). */
     public static int niveauRequis(Branche b, int palier) {
-        if (b == Branche.MEMBRES) {
-            int[] nv = niveauxMembres;
-            return nv[Math.max(0, Math.min(nv.length - 1, palier - 1))];
-        }
         if (b == Branche.TERRITOIRES) return NIVEAUX_TERRITOIRES[Math.max(0, Math.min(NIVEAUX_TERRITOIRES.length - 1, palier - 1))];
         return 0;
     }
@@ -186,7 +185,7 @@ public final class Arbre {
         return t;
     }
 
-    /** Points pour tout acheter : le niveau maximum du clan ({@link Niveaux#MAX}). */
+    /** Points pour tout acheter (30 depuis le retrait de la branche Membres ; le niveau maximum reste {@link Niveaux#MAX}). */
     public static int pointsTotaux() {
         int t = 0;
         for (Branche b : Branche.values()) for (int p = 1; p <= b.max; p++) t += coutPoints(p);
@@ -204,17 +203,6 @@ public final class Arbre {
     }
 
     // ------------------------------------------------------------------ effets (palier -> valeur)
-    /** Membres au plus avec p paliers de la branche Membres : membres au depart (4) + p. */
-    public static int membresMax(int palier) {
-        return membresDepart + Math.max(0, Math.min(Branche.MEMBRES.max, palier));
-    }
-
-    /** Palier de la branche Membres debloque en atteignant ce niveau du clan (1 a 4), ou 0. */
-    public static int palierMembresDuNiveau(int niveau) {
-        int[] nv = niveauxMembres;
-        for (int i = 0; i < nv.length; i++) if (nv[i] == niveau) return i + 1;
-        return 0;
-    }
 
     /** Zones tenues en meme temps au palier p de la branche Territoires : 0, 1, 2 (31/10 ; avant : 1, 2, 3). */
     public static int territoiresMax(int palier) {
@@ -244,7 +232,6 @@ public final class Arbre {
     /** Valeur de l'effet d'une branche au palier p (affichage : membres, %, blocs, minutes). */
     public static int effet(Branche b, int palier) {
         return switch (b) {
-            case MEMBRES -> membresMax(palier);
             case BASE -> rayonBase(palier);
             case TP -> delaiTpMinutes(palier);
             case REVENU -> revenuPct(palier);

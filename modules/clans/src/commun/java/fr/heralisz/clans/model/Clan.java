@@ -63,6 +63,12 @@ public final class Clan {
     /** Arbre d'ameliorations (saison des clans) : palier achete par branche ({@link Arbre}). */
     public final EnumMap<Arbre.Branche, Integer> arbre = new EnumMap<>(Arbre.Branche.class);
     /**
+     * Paliers de l'ancienne branche Membres achetes avant le 31/10 (0 a 4), pas encore rembourses (serveur :
+     * MigrationMembres, au demarrage). Garde sous la meme cle « membres » de « arbre » jusqu'au remboursement, puis 0 : le
+     * remboursement ne se fait qu'une fois. Ne compte plus dans les points depenses ni dans les membres.
+     */
+    public int membresARembourser;
+    /**
      * Courbe des niveaux sur laquelle niveau et xp sont comptes (31/10) : 1 = ancienne (20 x n^1,5 x 3, tous les clans
      * d'avant), {@link #COURBE_ACTUELLE} = celle de {@link Niveaux}. Un clan sur l'ancienne est recalcule une fois au
      * demarrage du serveur (meme XP totale), son niveau d'avant garde dans {@link #niveauAvantCourbe}.
@@ -223,8 +229,9 @@ public final class Clan {
         return Arbre.palier(arbre, b);
     }
 
+    /** Membres au plus : donnes par le niveau du clan seul (31/10 : 4, puis 5 au niveau 2, 6 au 5, 7 au 10, 8 au 15). */
     public int membresMax() {
-        return Arbre.membresMax(palier(Arbre.Branche.MEMBRES));
+        return Arbre.membresMax(niveau);
     }
 
     /**
@@ -328,6 +335,7 @@ public final class Clan {
         o.add("statsZones", sz);
         JsonObject ar = new JsonObject();
         for (Map.Entry<Arbre.Branche, Integer> e : arbre.entrySet()) ar.addProperty(e.getKey().id(), e.getValue());
+        if (membresARembourser > 0) ar.addProperty("membres", membresARembourser);
         o.add("arbre", ar);
         o.addProperty("courbe", courbe);
         if (niveauAvantCourbe > 0) {
@@ -419,6 +427,10 @@ public final class Clan {
         }
         JsonObject ar = Json.obj(o, "arbre");
         for (Map.Entry<String, JsonElement> e : ar.entrySet()) {
+            if ("membres".equals(e.getKey()) && e.getValue().isJsonPrimitive()) {
+                c.membresARembourser = Math.max(0, Math.min(Arbre.PALIERS_MEMBRES, e.getValue().getAsInt()));
+                continue;
+            }
             Arbre.Branche b = Arbre.Branche.parId(e.getKey());
             if (b != null && e.getValue().isJsonPrimitive()) c.arbre.put(b, Math.max(0, Math.min(b.max, e.getValue().getAsInt())));
         }
