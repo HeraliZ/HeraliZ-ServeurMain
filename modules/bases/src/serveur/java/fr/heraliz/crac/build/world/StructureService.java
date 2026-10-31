@@ -948,7 +948,7 @@ public final class StructureService {
         }
         if (p.kind().hasDoor()) {
             // HeraliZ : une porte s'ouvre ou se ferme en visant la porte elle-même, pas son encadrement
-            if (!viseBattant(p, hit.getLocation())) {
+            if (!fr.heraliz.crac.build.geom.PieceSolids.viseBattant(p.key(), p.isOpen(), hit.getLocation())) {
                 return InteractionResult.PASS;
             }
             if (!canUseDoor(sl, player, p)) {
@@ -1021,21 +1021,6 @@ public final class StructureService {
                 refresh(level, d);
             }
         }
-    }
-
-    /** Le point visé est sur un battant de la porte (fermé ou ouvert selon son état), à 2 px près. */
-    private static boolean viseBattant(Piece door, Vec3 hit) {
-        BlockPos o = door.key().origin();
-        double x = (hit.x - o.getX()) * 16.0, y = (hit.y - o.getY()) * 16.0, z = (hit.z - o.getZ()) * 16.0;
-        double marge = 2.0;
-        for (fr.heraliz.crac.build.geom.Prism pr : fr.heraliz.crac.build.geom.PieceSolids.battants(door.key(), door.isOpen())) {
-            double[] b = fr.heraliz.crac.build.geom.Poly.bounds(pr.poly());
-            if (x >= b[0] - marge && x <= b[2] + marge && z >= b[1] - marge && z <= b[3] + marge
-                && y >= pr.y0() - marge && y <= pr.y1() + marge) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** {@code door} and the doors that share a triangle foundation or floor with it (an airlock). */

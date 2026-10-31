@@ -15,7 +15,8 @@ import net.minecraftforge.fml.ModList;
  * allongé sans arme à plat comme avec une arme (Player Animator) ; tirs silencieux lointains ; coups des couteaux TaCZ
  * (touches, animation, bruit) ; « Jeter cet objet ? » des objets à vie (EcranJeter) ;
  * hitbox « en morceaux » des joueurs avec F3+B (HitboxCorpsRendu) ; touche « Décharger l'arme » (DechargerClient) ;
- * anneau des soins et des grenades autour du réticule (HudSoins, refonte des HUD du 25/10).
+ * anneau des soins et des grenades autour du réticule (HudSoins, refonte des HUD du 25/10) ; portes ouvertes et fermées
+ * avec une arme en main (PortesEnMain, 31/10).
  */
 public final class ClientTactique implements Partie {
    @Override
@@ -35,5 +36,7 @@ public final class ClientTactique implements Partie {
       fr.heraliz.tactique.client.soins.HudSoins.brancher(busMod);
       // munitions de l'arme en main (26/10) : remplace l'interface d'arme de TaCZ
       fr.heraliz.tactique.client.hud.HudMunitions.brancher(busMod);
+      // clic droit sur une porte avec une arme : la porte avant la visée ou le coup (31/10)
+      fr.heraliz.tactique.client.portes.PortesEnMain.brancher();
    }
 }

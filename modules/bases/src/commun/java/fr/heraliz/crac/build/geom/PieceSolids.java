@@ -190,6 +190,25 @@ public final class PieceSolids {
         return transform(key, local);
     }
 
+    /**
+     * Le point visé (coordonnées du monde) est sur un battant de la porte {@code key}, ouverte ou fermée, à 2 px près
+     * (HeraliZ) : une porte s'ouvre ou se ferme en visant la porte elle-même, pas son encadrement. Partagé par le serveur
+     * (StructureService) et le jeu du joueur (portes visées avec une arme en main).
+     */
+    public static boolean viseBattant(PieceKey key, boolean ouvert, net.minecraft.world.phys.Vec3 hit) {
+        net.minecraft.core.BlockPos o = key.origin();
+        double x = (hit.x - o.getX()) * 16.0, y = (hit.y - o.getY()) * 16.0, z = (hit.z - o.getZ()) * 16.0;
+        double marge = 2.0;
+        for (Prism pr : battants(key, ouvert)) {
+            double[] b = Poly.bounds(pr.poly());
+            if (x >= b[0] - marge && x <= b[2] + marge && z >= b[1] - marge && z <= b[3] + marge
+                && y >= pr.y0() - marge && y <= pr.y1() + marge) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ---------------------------------------------------------------- local definitions
 
     /** Solids in the local frame (u, y, v), without skirt. */

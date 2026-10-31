@@ -34,6 +34,8 @@ public final class PartieClient implements Partie {
         NetworkHandler.RECEPTION_CLIENT.brancher(PartieClient::recevoir);
         // écran de mort : réapparition au camp ou à la base (25/10)
         fr.heraliz.crac.client.ui.EcranMort.brancher();
+        // portes des bases ouvertes avec une arme en main (31/10, noyau : api/Portes)
+        PortesCrac.declarer();
     }
 
     /** Une instance par objet, comme avant (Forge appelle initializeClient une fois par objet). */

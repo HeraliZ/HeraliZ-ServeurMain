@@ -57,5 +57,7 @@ public final class PartieClient implements Partie {
       // salles à carte : contours envoyés par le serveur au staff (baguette, /salle voir)
       ContoursPacket.RECEPTION_CLIENT.brancher(ContoursSalle::recevoir);
       MinecraftForge.EVENT_BUS.addListener(ContoursSalle::rendu);
+      // portes qui s'ouvrent à la main : ouvertes avec une arme en main (HeraliZ, 31/10, noyau : api/Portes)
+      PortesBunker.declarer();
    }
 }
