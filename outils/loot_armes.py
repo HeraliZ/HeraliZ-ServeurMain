@@ -132,7 +132,10 @@ RETIRES = ("heralisz_armor:", "simplefarming:")  # retirés des tables (mod reti
 RARETE_COMPOSANT = {"COMMON": "commun", "UNCOMMON": "peu_commun", "RARE": "rare", "EPIC": "epique",
                     "LEGENDARY": "legendaire"}  # MYTHIC : jamais dans le loot
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd",  # jamais dans le loot (choix du propriétaire)
-                 "maxstuff:m82a2"}  # 25/10 : TaCZ refuse de charger cette arme (« rpm » à 0 dans le gunpack) ; elle tombait cassée
+                 "maxstuff:m82a2",  # 25/10 : TaCZ refuse de charger cette arme (« rpm » à 0 dans le gunpack) ; elle tombait cassée
+                 # 31/10 (demande du propriétaire) : Vector Red Moon et Vector Enigma plus dans le loot (conteneurs T1 à T7,
+                 # coffres d'armes T7 de l'hélicoptère, zombies) ; elles restent dans le jeu (staff, boutique)
+                 "arkaniaz_custom:vectorhy", "arkaniaz_custom:vector_firmax"}
 ARMURES_EXCLUES = {"heraliz_armory:plongee_suit"}  # jamais dans le loot (23/10 : tenue de plongée pas lootable pour l'instant)
 # couteaux (skins heralisz_skins) : seulement ceux de 1, 2 ou 3 étoiles dans le loot, jamais les 4 étoiles (choix du
 # propriétaire, 23/10) ; rangs lus dans ETOILES de modules/armes/outils/skins_couteaux.py (non cité = 4)
