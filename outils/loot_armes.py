@@ -16,7 +16,8 @@ Réécrit les tables modules/loot/src/serveur/resources/data/heraliz_loot/coffre
 - T7 (coffres d'événement : crash, boss…) : un peu de tout. Ses « autres » objets sont ceux du T6
   (nourriture, munitions, soins, grenades, sacs…) ; plus d'objets de Minecraft d'essai.
 - fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids ;
-- objets rares en plus (EXTRAS : fusée d'extraction Épique en T5 à T7), de la même façon.
+- objets rares en plus (EXTRAS : fusée d'extraction Épique en T5 à T7 ; objets Uniques à revendre, crâne de cristal,
+  sceptre et calice, en T7 seulement : UNIQUES_T7), de la même façon.
 Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
 changement des raretés, des gunpacks, de l'Armurerie ou des composants.
 `--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
@@ -253,6 +254,17 @@ RARETES_IMPOSEES.update({f"{FRAGMENT}{c}_{n}": r for c, r in RARETE_FRAGMENTS.it
 EXTRAS = {
     "heraliz_extraction:extraction_terminal": ("epique", {5: 0.4, 6: 0.7, 7: 3.0}),
 }
+# objets Uniques à revendre de HeraliZ Composants (Mythiques dans ComponentDefs.java, jamais dans les familles ci-dessus)
+# 31/10 (décision du propriétaire) : seulement dans les coffres T7 (coffres d'événement : hélicoptère abattu, points T7
+# du staff...), très rares. UNIQUES_T7_POUR_100 objets pour 100 coffres T7 ouverts, partagés à parts égales : 2, soit
+# environ 1 coffre T7 sur 50 qui en contient un (la demande : 1 sur 40 à 60). Pourquoi 2 : c'est la chance d'une arme
+# Unique (couteau) dans un T7 (0,02 par coffre, docs/EVENEMENT_OIL_RIG.md §1.4) ; un Unique vaut 500 hérals chez Mila et
+# 2 500 XP de clan en don (presque le plafond du jour des dons, 3 000) : +10 hérals en moyenne par coffre T7 (qui en vaut
+# environ 280) ; moins souvent que la fusée d'extraction (3 pour 100). Jamais vendus, fabriqués ni recyclés (recycleur :
+# liste « jamais ») ; suivis par l'anti-duplication de Spartan (trackedItems de serveur/config/spartan-common.toml).
+UNIQUES_T7 = ("crane_cristal", "sceptre", "calice")
+UNIQUES_T7_POUR_100 = 2.0
+EXTRAS.update({COMPOSANT + i: ("unique", {7: UNIQUES_T7_POUR_100 / len(UNIQUES_T7)}) for i in UNIQUES_T7})
 RARETES_IMPOSEES.update({i: r for i, (r, _) in EXTRAS.items()})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)
@@ -462,6 +474,13 @@ def mult_autre(e, t):
     return next((m for mot, m in AUTRES if mot in cat), 1.0)
 
 
+def ecrire_texte(f, texte):
+    """Écrit texte (lignes en \\n) en gardant les fins de ligne du fichier déjà là : les tables du dépôt sont en CRLF
+    (31/10 : l'outil les réécrivait en LF, chaque ligne paraissait changée)."""
+    crlf = f.exists() and b"\r\n" in f.read_bytes()[:4096]
+    f.write_bytes((texte.replace("\n", "\r\n") if crlf else texte).encode("utf-8"))
+
+
 def ecrire_table(f, data):
     lignes = ["{"]
     for k, v in data.items():
@@ -471,11 +490,11 @@ def ecrire_table(f, data):
     lignes.append(",\n".join("  " + json.dumps(e, ensure_ascii=False) for e in data["objets"]))
     lignes.append(" ]")
     lignes.append("}")
-    f.write_text("\n".join(lignes) + "\n", encoding="utf-8")
+    ecrire_texte(f, "\n".join(lignes) + "\n")
     # copie dans la config du serveur (24/10) : celle-là compte en jeu et se relit sans redémarrer (/heralizloot tables) ;
     # celle du jar sert seulement si la config manque
     CONFIG_COFFRES.mkdir(parents=True, exist_ok=True)
-    (CONFIG_COFFRES / f.name).write_text("\n".join(lignes) + "\n", encoding="utf-8")
+    ecrire_texte(CONFIG_COFFRES / f.name, "\n".join(lignes) + "\n")
 
 
 MELEE = RACINE / "modules/armes/src/serveur/resources/data/heralisz_melee/index/melee"
@@ -569,14 +588,14 @@ def ecrire_facteurs(avant):
     s = f.read_text(encoding="utf-8")
     nouveau = re.sub(r"(// facteurs_actifs \(outils/loot_armes\.py\)\n\s*List\.of\()[^)]*(\))", lambda m: m.group(1) + vals + m.group(2), s)
     if nouveau != s:
-        f.write_text(nouveau, encoding="utf-8")
+        ecrire_texte(f, nouveau)
     f = racine / "serveur/defaultconfigs/heraliz_loot-server.toml"
     s = f.read_text(encoding="utf-8")
     nouveau = re.sub(r"(?m)^(\s*facteurs_actifs = \[)[^\]]*(\])", lambda m: m.group(1) + vals + m.group(2), s)
     if nouveau == s and "facteurs_actifs" not in s:
         raise SystemExit(f"{f} : ligne facteurs_actifs introuvable")
     if nouveau != s:
-        f.write_text(nouveau, encoding="utf-8")
+        ecrire_texte(f, nouveau)
 
 
 def ajouter_fragments(objets, t):

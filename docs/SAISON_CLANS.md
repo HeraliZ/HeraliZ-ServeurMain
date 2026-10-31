@@ -266,8 +266,11 @@ environ 3 à 5 XP par héral de leur prix chez Mila (Épique 50, Légendaire 200
   voit dans le journal ; le fichier des clans est écrit tout de suite après chaque don ;
 - au-delà du plafond du jour (3 000 XP), le joueur doit confirmer (`/clan don confirmer`, 30 s) : il ne perd pas un
   objet rare sans le savoir.
-Les objets Uniques à revendre (crâne de cristal, sceptre, calice) ne tombent nulle part aujourd'hui (jamais dans le loot,
-`RARETE_COMPOSANT` de `outils/loot_armes.py`) : seul le staff peut en donner.
+Les objets Uniques à revendre (`heraliz_composants:crane_cristal`, `sceptre`, `calice`) tombent depuis le 31/10
+**seulement dans les coffres T7** (coffres d'événement : hélicoptère abattu, points T7 du staff…) : 2 pour 100 coffres
+T7, soit environ **1 coffre T7 sur 50** (`UNIQUES_T7` de `outils/loot_armes.py` ; même chance qu'une arme Unique dans
+un T7). Jamais dans les conteneurs T1 à T6, les zombies, le largage public ni les caisses ; jamais vendus, fabriqués ni
+recyclés ; suivis par Spartan.
 
 **Captures** (`Territoires.peutPrendre`, vérifié à chaque cycle de capture) : un clan peut prendre une zone seulement à
 partir du **niveau 5** et avec l'amélioration Territoires (palier 1 : 1 zone, niveau 5 ; palier 2 : 2 zones, niveau 10),
