@@ -111,3 +111,6 @@ dans `saison/SaisonVue.bareme()` pour l'onglet Saison, annonces, loot, objet d'�
 - Rien ne tourne pour rien : un système sans travail sort tout de suite de son tick (exemple : ClashWar hors tournoi).
 - Pas d'allocation par tick dans les boucles chaudes ; pas de parcours de tous les joueurs ou entités à chaque tick.
 - Ce qui peut être une donnée (loot, prix, zones, réglages) va dans un fichier rechargeable plutôt que dans le code.
+- Conteneurs de loot allégés : `modules/loot/src/client/resources/assets/heraliz_loot/lod/conteneurs_lod.txt` est écrit par
+  `python modules/loot/outils/lod_props.py --installer`, jamais à la main ; à relancer après tout changement d'un modèle
+  de conteneur (`python outils/verifier.py loot` le signale ; sinon le jeu garde ce modèle moins allégé).

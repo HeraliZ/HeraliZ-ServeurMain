@@ -12,6 +12,8 @@ Contrôles :
   - verif_reobf      : noms de Minecraft réobfusqués (sinon plantage au chargement) ;
   - mention          : LICENCE-HeraliZ.txt dans chaque jar de nos mods (propriété HeraliZ) ;
   - livraison        : chaque jar de livraison/ est bien la copie du jar contrôlé (rien de copié en cours de fabrication) ;
+  - lod              : conteneurs allégés à jour avec leurs modèles (module loot, JDK présent ;
+                       modules/loot/outils/lod_props.py --controle) ;
   - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
@@ -26,6 +28,7 @@ Code de sortie 1 au moindre problème.
 """
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -176,6 +179,15 @@ def main():
                     print("[livraison]   %s/%s différent du jar fabriqué : relancer outils/construire.py --sans-build"
                           % (c.parent.name, j.name))
                     erreurs += 1
+    # conteneurs allégés (loot) : les données écrites par lod_props.py doivent suivre les modèles, sinon le jeu garde
+    # les modèles changés moins allégés (pas d'erreur visible, seulement moins d'images par seconde)
+    if any(p.name == "loot" for p in choisis) and shutil.which("javac"):
+        code, out = lancer([str(chemins.MODS / "loot" / "outils" / "lod_props.py"), "--controle"])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[lod]"):
+                    print(l.strip())
+            erreurs += 1
     # caisses : aucun objet de Minecraft ni objet disparu (outils/caisses.py)
     code, out = lancer([str(O / "caisses.py"), "--verifier"])
     if code != 0:

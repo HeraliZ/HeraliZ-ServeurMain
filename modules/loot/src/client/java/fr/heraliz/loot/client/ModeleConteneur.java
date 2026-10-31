@@ -1,6 +1,7 @@
 package fr.heraliz.loot.client;
 
 import fr.heraliz.loot.HeralizLoot;
+import fr.heraliz.loot.client.rendu.conteneurs.Allegement;
 import fr.heraliz.loot.client.rendu.conteneurs.AtlasConteneurs;
 import fr.heraliz.loot.client.rendu.conteneurs.Conteneurs;
 import fr.heraliz.loot.client.rendu.mesh.Mesh;
@@ -33,6 +34,8 @@ import org.joml.Vector3f;
  * bloc ordinaires, une fois pour toutes (coût nul par image, comme un modèle Blockbench). L'occlusion ambiante et
  * l'ombrage selon l'orientation sont cuits dans la couleur des sommets ; voyants et écrans en pleine lumière ; le verre
  * va dans la passe translucide. Remplace le modèle de blocs d'origine (dont on garde les vues d'objet et la particule).
+ * Posé dans le monde, le maillage opaque est la version allégée de {@link Allegement} (31/10 ; réglage du joueur
+ * {@code conteneurs_alleges} de {@code heraliz_loot-client.toml}, modèle complet si les données manquent).
  */
 public final class ModeleConteneur implements BakedModel {
     private static final ChunkRenderTypeSet OPAQUE = ChunkRenderTypeSet.of(RenderType.cutoutMipped());
@@ -77,7 +80,17 @@ public final class ModeleConteneur implements BakedModel {
                 opaques = l;
                 verres = List.of();
             } else {
-                opaques = cuire(m[0], pages, opaquesCote);
+                // posé dans le monde : version allégée (faces cachées retirées, maillage simplifié, Allegement), sauf
+                // réglage du joueur ou données absentes / périmées ; vue d'objet : toujours le modèle complet
+                Allegement.Version v = objet || !ConfigLootClient.alleges() ? null : Allegement.de(nom, m[0]);
+                if (v == null) {
+                    opaques = cuire(m[0], pages, opaquesCote);
+                } else {
+                    opaques = cuire(v.garde(), pages, opaquesCote);
+                    // vues seulement par-dessous : avec les faces du côté bas, cachées par Minecraft si le bloc
+                    // d'en dessous est plein
+                    opaquesCote[Direction.DOWN.get3DDataValue()].addAll(cuire(v.dessous(), pages, opaquesCote));
+                }
                 verres = cuire(m[1], pages, verresCote);
             }
             List<BakedQuad> t = new ArrayList<>(opaques);

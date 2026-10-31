@@ -14,6 +14,9 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieClient implements Partie {
     @Override
     public void init(IEventBus busMod) {
+        // conteneurs allégés (31/10) : interrupteur du joueur, heraliz_loot-client.toml
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
+                ConfigLootClient.SPEC, "heraliz_loot-client.toml");
         CoffreBlockEntity.TICK_CLIENT = EffetsCoffre::tick;
         // étoiles des conteneurs remplis (28/10) : vie courte, montrées même avec « Particules : minimales »
         busMod.addListener((net.minecraftforge.client.event.RegisterParticleProvidersEvent e) -> {
