@@ -30,6 +30,7 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        HorlogeFrappes.tick();          // avant les frappes : leur heure de ce tick (avion et bombes sans à-coups)
         ClientStrikes.tick();
         HelicoClient.tick();
         DesignatorClient.tick();
@@ -110,6 +111,7 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientStrikes.clear();
+        HorlogeFrappes.vider();
         HelicoClient.vider();
         HelicoCarte.vider();
         CloudFog.reset();

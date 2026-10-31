@@ -36,6 +36,8 @@ public final class ClientStrikes {
 
     public static final class ClientStrike {
         public final Strike strike;
+        /** Monde du joueur à la réception (31/10) : la frappe n'existe que là, elle ne le suit plus dans un autre monde. */
+        final net.minecraft.client.multiplayer.ClientLevel niveau = Minecraft.getInstance().level;
         public final boolean[] whistled;
         public final double fireStart, fireEnd;
         /** Cannon bursts {start, end} in strike time (a gun run makes two passes). */
@@ -91,11 +93,16 @@ public final class ClientStrikes {
             }
         }
 
+        /**
+         * Heure de la frappe (ticks depuis le début du vol) pour l'image en cours : horloge régulière du joueur
+         * ({@link HorlogeFrappes}), jamais le temps du monde que le serveur recale chaque seconde (31/10 : l'avion et
+         * les bombes reculaient ou sautaient de plusieurs blocs une fois par seconde).
+         */
         public double time(float partialTick) {
             if (frozenTime != null) return frozenTime;
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.level == null) return -1e9;
-            return mc.level.getGameTime() + partialTick - strike.startTick;
+            double now = HorlogeFrappes.temps(partialTick);
+            if (Double.isNaN(now)) return -1e9;
+            return now - strike.startTick;
         }
 
         public boolean finished() {
@@ -156,7 +163,7 @@ public final class ClientStrikes {
         Iterator<ClientStrike> it = STRIKES.iterator();
         while (it.hasNext()) {
             ClientStrike cs = it.next();
-            if (cs.finished()) {
+            if (cs.finished() || cs.niveau != mc.level) {
                 it.remove();
                 continue;
             }
