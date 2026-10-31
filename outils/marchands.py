@@ -4,7 +4,8 @@ serveur/config/heraliz_quetes/pnj/). On modifie les tableaux ci-dessous, puis :
     python outils/marchands.py
 
 Le reste du fichier du PNJ (nom, apparence, phrases) n'est pas touché. Prix en hérals, à l'unité.
-- soins : tous ceux du jeu, prix selon leur rareté (serveur/config/heraliz_loot/raretes.json, section « soins ») ;
+- soins : tous ceux du jeu, prix selon leur rareté (serveur/config/heraliz_loot/raretes.json, section « soins »), sauf
+  ceux de PRIX_SOINS_A_PART ;
 - nourriture : quelques aliments du mod de nourriture (geckolib222), toujours en bon état (FoodState 0), prix selon ce
   qu'ils nourrissent ;
 - accessoires TaCZ : ceux de rareté Commun à Rare (section « accessoires »), sans les munitions spéciales ;
@@ -28,6 +29,11 @@ PNJ = RACINE / "serveur" / "config" / "heraliz_quetes" / "pnj"
 RARETES = json.loads((RACINE / "serveur" / "config" / "heraliz_loot" / "raretes.json").read_text(encoding="utf-8"))
 
 PRIX_SOINS = {"commun": 30, "peu_commun": 80, "rare": 180, "epique": 400}
+# 31/10 (décision du propriétaire) : soins vendus à un prix à part, au lieu de celui de leur rareté (avant : 30, Commun)
+PRIX_SOINS_A_PART = {
+    "heralisz_heal:condensed_milk": 90,  # lait concentré
+    "heralisz_heal:vaseline": 90,
+}
 # 28/10 (demande du propriétaire) : prix et ordre réglés en jeu au Registre du marchand le 24/10, repris comme base
 # (avant 110 / 100 / 85 / 70 / 65 / 40)
 NOURRITURE = [  # (objet, points de faim, prix)
@@ -70,7 +76,8 @@ ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
 
 def soins():
     l = sorted(RARETES["soins"].items(), key=lambda kv: (ORDRE.index(kv[1]), kv[0]))
-    return [{"objet": "heralisz_tactical:consumable", "nbt": '{ConsumableId:"%s"}' % k, "prix": PRIX_SOINS[r]}
+    return [{"objet": "heralisz_tactical:consumable", "nbt": '{ConsumableId:"%s"}' % k,
+             "prix": PRIX_SOINS_A_PART.get(k, PRIX_SOINS[r])}
             for k, r in l if r in PRIX_SOINS]
 
 

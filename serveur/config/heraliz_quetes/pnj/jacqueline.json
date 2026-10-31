@@ -75,7 +75,7 @@
       {
         "objet": "heralisz_tactical:consumable",
         "nbt": "{ConsumableId:\"heralisz_heal:condensed_milk\"}",
-        "prix": 30
+        "prix": 90
       },
       {
         "objet": "heralisz_tactical:consumable",
@@ -85,7 +85,7 @@
       {
         "objet": "heralisz_tactical:consumable",
         "nbt": "{ConsumableId:\"heralisz_heal:vaseline\"}",
-        "prix": 30
+        "prix": 90
       },
       {
         "objet": "heralisz_tactical:consumable",
