@@ -66,7 +66,9 @@ final class Ponts {
     /**
      * Sauvegarde tout de suite le joueur ({@code PlayerList.save}, protégée : par réflexion, nom SRG {@code m_6765_}),
      * après un échange d'objets contre des hérals (vente, quête payée) : un arrêt brutal du serveur ne peut plus rendre
-     * les objets ET garder l'argent (les joueurs ne sont sinon écrits que toutes les 5 min).
+     * les objets ET garder l'argent (les joueurs ne sont sinon écrits que toutes les 5 min). Sert aussi au recycleur de la
+     * carte (31/10) : un objet déposé quitte la sauvegarde du joueur AVANT d'entrer dans celle de la machine. Si la
+     * réflexion échoue, tous les joueurs sont sauvegardés.
      */
     static void sauverJoueur(ServerPlayer p) {
         if (p.getServer() == null) return;
@@ -77,7 +79,8 @@ final class Ponts {
             }
             sauverJoueur.invoke(p.getServer().getPlayerList(), p);
         } catch (Exception e) {
-            LOG.error("[heraliz_quetes] sauvegarde de {} impossible", p.getGameProfile().getName(), e);
+            LOG.error("[heraliz_quetes] sauvegarde de {} impossible, sauvegarde de tous les joueurs", p.getGameProfile().getName(), e);
+            p.getServer().getPlayerList().saveAll();
         }
     }
     static final List<String> RARETES = List.of("commun", "peu_commun", "rare", "epique", "legendaire", "unique");
@@ -124,26 +127,6 @@ final class Ponts {
         } catch (Throwable t) {
             LOG.error("[heraliz_quetes] versement de {} hérals à {} : {}", montant, joueur, t.toString());
             return false;
-        }
-    }
-
-    private static Method sauverJoueur;
-
-    /**
-     * Sauvegarde tout de suite ce joueur sur le disque ({@code PlayerList.save}, protégée : par réflexion SRG, comme
-     * l'hôtel des ventes et /trade ; sinon tous les joueurs). Recycleur de la carte (31/10) : un objet déposé quitte la
-     * sauvegarde du joueur AVANT d'entrer dans celle de la machine.
-     */
-    static void sauverJoueur(ServerPlayer p) {
-        try {
-            if (sauverJoueur == null) {
-                sauverJoueur = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findMethod(net.minecraft.server.players.PlayerList.class,
-                        "m_6765_", ServerPlayer.class);
-            }
-            sauverJoueur.invoke(p.server.getPlayerList(), p);
-        } catch (Exception e) {
-            LOG.warn("[heraliz_quetes] sauvegarde du joueur impossible ({}), sauvegarde de tous", e.toString());
-            p.server.getPlayerList().saveAll();
         }
     }
 
