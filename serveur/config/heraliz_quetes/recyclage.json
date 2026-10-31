@@ -3846,6 +3846,17 @@
   {
    "objet": "heralisz_tactical:consumable",
    "rend": [
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
     "heraliz_composants:tissu"
    ],
    "cle": "ConsumableId",
@@ -3880,6 +3891,17 @@
   {
    "objet": "heralisz_tactical:consumable",
    "rend": [
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
+    "heraliz_composants:tissu",
     "heraliz_composants:tissu"
    ],
    "cle": "ConsumableId",

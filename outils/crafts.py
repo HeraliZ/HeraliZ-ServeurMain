@@ -88,6 +88,9 @@ NIVEAUX_POUDRE = ["", "_ii", "_iii", "_iv"]
 # soins : Commun = 1 tissu ; au-dessus, 1 tissu + 1 alcool, au niveau de la rareté
 SOIN_COMMUN = {"tissu": 1}
 SOIN = {"tissu": 1, "alcool": 1}
+# 31/10 (demande du propriétaire) : lait concentré et vaseline à 12 tissus (même recette qu'avant, que du tissu, de
+# niveau I comme tout soin Commun ; avant : 1 tissu)
+SOINS_A_PART = {"heralisz_heal:condensed_milk": {"tissu": 12}, "heralisz_heal:vaseline": {"tissu": 12}}
 
 # accessoires et viseurs : même règle que les armes et les soins (26/10, demande du propriétaire : « ils ont tous le même
 # prix, quelle que soit leur rareté ») : le niveau du composant suit la rareté de l'accessoire (Commun I, Peu commun II,
@@ -245,7 +248,7 @@ def main():
         if r not in NIVEAU:
             continue
         recettes[f"soins/{sid.replace(':', '_')}"] = recette(
-            materiaux(SOIN_COMMUN if r == "commun" else SOIN, r),
+            materiaux(SOINS_A_PART.get(sid) or (SOIN_COMMUN if r == "commun" else SOIN), r),
             {"type": "custom", "item": {"item": "heralisz_tactical:consumable", "nbt": f'{{ConsumableId:"{sid}"}}'},
              "group": f"{NS}:soins"})
     acc = index("attachments")
