@@ -599,3 +599,14 @@ Rien de tout cela n'a été testé en jeu.
   (`StructureBlock.use` : un refus d'ouvrir comptait seulement s'il annulait tout le clic).
 
 Rien de tout cela n'a été testé en jeu.
+
+**Réglages du propriétaire du 31/10** (Bases 1.29.3-beta, Clans 3.10.0, Noyau 1.0.7 ; essais : `docs/TESTS_EN_JEU_31OCT_reglages.md`) :
+- Table d'armurier posée dans une base : une seule par base (`tables_armurier_par_base` de `serveur/config/crac/coffres.json`,
+  `heraliz/CoffresLimites`) ; une table déjà en trop reste, seules les nouvelles sont refusées.
+- Jacqueline : lait concentré et vaseline à 90 hérals (`PRIX_SOINS_A_PART` de `outils/marchands.py`).
+- Clans : places de membres (paliers de l'arbre) aux niveaux 2, 5, 10, 15 du clan au lieu de 10, 20, 30, 40 ; 8 au plus ;
+  section `membres` de `niveaux.json`, envoyée aux joueurs (canal des clans version 7) ; voir `docs/SAISON_CLANS.md` §6 bis.
+- Commande refusée sur la carte (dont le bouton « Boutique » du menu Échap) : « /boutique : seulement au spawn, pas sur la
+  carte. » au lieu de « seul /tpa marche ici ».
+
+Rien de tout cela n'a été testé en jeu.
