@@ -4,8 +4,9 @@ Prépare une arme TaCZ (modèle Bedrock + texture) pour l'aperçu WebGL des camo
 (BedrockModel / BedrockCubeBox / BedrockCubePerFace) et la carte de positions du mod (PosMap) : position 3D normalisée de
 chaque sommet dans le repère de l'arme, partie (corps / chargeur / canon / jamais camouflé).
 
-usage : python3 prep.py modele_geo.json texture.png dossier nom
+usage : python3 prep.py modele_geo.json texture.png dossier nom [--sans-adaptateurs]
   -> dossier/nom.json (géométrie) et dossier/nom.png (copie de la texture)
+  --sans-adaptateurs : rien de ce qui est sous « attachment_adapter » n'est dessiné (outils/icones_armes.py, SANS_ADAPTATEURS)
 exemple (gunpack du serveur) :
   python3 prep.py serveur/tacz/heraliz_6_armes_maxstuff/assets/maxstuff/geo_models/gun/xm177_geo.json \
                   serveur/tacz/heraliz_6_armes_maxstuff/assets/maxstuff/textures/gun/uv/xm177.png /tmp/armes xm177
@@ -152,6 +153,9 @@ def classe(cls, name):
 
 def main():
     geo_path, tex_path, dossier, nom = sys.argv[1:5]
+    # TaCZ (BedrockGunModel.attachmentAdapterNodeRender) ne montre un enfant d'« attachment_adapter » (crosses OEM
+    # oem_stock_light / tactical / heavy, ar_stock_adapter...) que si un accessoire posé le demande
+    sans_adaptateurs = '--sans-adaptateurs' in sys.argv[5:]
     os.makedirs(dossier, exist_ok=True)
     out_path = os.path.join(dossier, nom + '.json')
     shutil.copyfile(tex_path, os.path.join(dossier, nom + '.png'))
@@ -185,7 +189,7 @@ def main():
             cls = NONE
         else:
             cls = classe(cls, name)
-        hidden = hidden or bool(HIDDEN.search(name))
+        hidden = hidden or bool(HIDDEN.search(name)) or (sans_adaptateurs and name.lower() == 'attachment_adapter')
         role = role_de(role, name)
         if 'muzzle' in name.lower():
             muzzles.append(apply(m, [0, 0, 0]))

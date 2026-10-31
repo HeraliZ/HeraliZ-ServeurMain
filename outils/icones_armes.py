@@ -29,6 +29,13 @@ SUR = 4               # rendu 4 fois plus grand, puis moyenne : bords lisses
 ROULIS = -34.0        # comme l'icône validée (IconesArmes.ROULIS, vue « icone » de apercu.html)
 MARGE = 0.04
 COUTEAU = 'arkaniaz:knife_data'
+# Armes dessinées sans rien de ce qui est sous l'os « attachment_adapter » (prep.py --sans-adaptateurs). TaCZ n'en montre
+# un enfant que si un accessoire posé le demande (crosses OEM oem_stock_light / tactical / heavy, tube ar_stock_adapter),
+# et ces armes n'ont pas de crosse sur leur image d'origine (celle de l'auteur du gunpack) ni dans la main du joueur
+# (le loot et la Table d'armurier les donnent sans accessoire). Avant (31/10), leur icône montrait une crosse. Les autres
+# armes gardent ces pièces : l'image d'origine de l'AK-47, de la M4A1, de l'AKS-74U... montre la crosse OEM que la
+# recette de l'auteur pose. Nom = nom du fichier index de l'arme.
+SANS_ADAPTATEURS = {'glock_18c', 'tec9', '9a91', 'vector9'}
 
 
 def lire_json(chemin):
@@ -187,7 +194,8 @@ def rendre(d, tex, taille=TAILLE, sur=SUR):
 
 
 def icone(nom, modele, texture, travail):
-    subprocess.run([sys.executable, PREP, modele, texture, travail, nom], check=True, stdout=subprocess.DEVNULL)
+    options = ['--sans-adaptateurs'] if nom in SANS_ADAPTATEURS else []
+    subprocess.run([sys.executable, PREP, modele, texture, travail, nom] + options, check=True, stdout=subprocess.DEVNULL)
     d = json.load(open(os.path.join(travail, nom + '.json')))
     tex = np.asarray(Image.open(texture).convert('RGBA'), dtype=np.float64) / 255.0
     return rendre(d, tex)
