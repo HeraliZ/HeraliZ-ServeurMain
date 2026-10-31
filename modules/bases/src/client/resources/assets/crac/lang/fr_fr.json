@@ -292,6 +292,7 @@
   "crac.rule.obstructed": "Bloquée par le terrain ou un autre bloc.",
   "crac.rule.occupied": "Il y a déjà quelque chose de construit ici.",
   "crac.rule.off_grid": "Pas alignée sur la grille du bâtiment.",
+  "crac.rule.square_off_grid": "Une pièce carrée se pose toujours droite, sur la grille de la base : de ce côté du triangle, pose un triangle.",
   "crac.rule.ok": "Prêt à construire.",
   "crac.rule.other_building": "Empiète sur un autre bâtiment.",
   "crac.rule.sharp_angle": "L'angle entre ces murs est trop fermé.",

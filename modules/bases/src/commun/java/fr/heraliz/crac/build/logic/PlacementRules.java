@@ -46,7 +46,9 @@ public final class PlacementRules {
         OBSTRUCTED("crac.rule.obstructed"),
         NO_GROUND("crac.rule.no_ground"),
         ENTITY("crac.rule.entity"),
-        OTHER_BUILDING("crac.rule.other_building");
+        OTHER_BUILDING("crac.rule.other_building"),
+        /** HeraliZ (31/10) : carré (fondation, plancher, toit, escalier, rampe) de biais ou hors de la grille. */
+        SQUARE_OFF_GRID("crac.rule.square_off_grid");
 
         /** Translation key of the verdict (assets/crac/lang), shown through {@link fr.heraliz.crac.heraliz.Txt#c}. */
         public final String message;
@@ -64,6 +66,20 @@ public final class PlacementRules {
      */
     public static int[] newBuildingOrients(PieceKind kind) {
         return (kind.shape == PieceKind.Shape.TRIANGLE ? TRIANGLE_FREE_ORIENTS : SQUARE_FREE_ORIENTS).clone();
+    }
+
+    /**
+     * HeraliZ (31/10, demande du propriétaire) : une pièce carrée se pose toujours droite, sur la grille de 3 blocs du
+     * bâtiment (coin à un multiple de 48 px de l'origine, sans part en racine de 3). Sinon, contre un côté en biais d'un
+     * triangle, elle était tournée de 30° ou 60° (ou décalée d'une fraction de bloc après deux triangles) : seules 2 de
+     * ses 9 cases étaient pleines et ce qu'on posait dessus restait droit, donc de travers sur elle. Les triangles, eux,
+     * se posent toujours de tous les côtés. Les carrés déjà posés de biais ne sont pas touchés. Appliquée aux poses des
+     * joueurs seulement (StructureService.place, fantôme de PlanController) : les outils du staff et les tests gardent
+     * l'ancienne liberté.
+     */
+    public static boolean squareOnGrid(PieceKey key) {
+        LPoint a = key.anchor();
+        return key.orient() == 0 && a.xb() == 0 && a.zb() == 0 && Math.floorMod(a.xa(), 4) == 0 && Math.floorMod(a.za(), 4) == 0;
     }
 
     /** Whether a new building may start with a foundation of {@code kind} turned to {@code orient}. */

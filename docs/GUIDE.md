@@ -393,6 +393,11 @@ Code : `fr.heraliz.quetes.serveur.Journalieres` (module `pnj`), écran `client/E
   fondations en une pièce 18, en deux pièces 15, étage fermé 9 (la limite de caisses par base compte toujours).
 - Coffres par rareté : 13,5 px de profondeur au plus pour tenir dans la rangée (`modules/bases/outils/coffres_modeles.py`,
   `amincir`).
-- **Fondations triangles** : comme dans Rust, un carré posé contre un des deux côtés en biais d'un triangle est tourné
-  (30° ou 60°) ; seul le côté qui suit la grille donne un carré droit. Les caisses, blocs de Minecraft toujours droits,
-  n'y ont que les cases entièrement couvertes (une fondation triangle fermée : 1 caisse).
+- **Fondations triangles** (31/10, demande du propriétaire) : une pièce carrée (fondation, plancher, toit, escalier,
+  rampe) se pose toujours droite, sur la grille de 3 blocs de la base (`PlacementRules.squareOnGrid`, refus
+  `crac.rule.square_off_grid` côté serveur et sur le fantôme) : contre un des deux côtés en biais d'un triangle, seul un
+  autre triangle se pose. Avant, le carré y était tourné de 30° ou 60° : seules 2 de ses 9 cases étaient pleines et les
+  caisses (blocs de Minecraft, toujours droits) étaient de travers dessus. Les carrés déjà posés de biais restent tels
+  quels ; les outils du staff (`placeAdmin`) et les tests gardent l'ancienne liberté. Une fondation triangle fermée : 1
+  caisse. Les côtés en biais montrent des « marches » avec F3+B : la collision de Minecraft n'est faite que de boîtes
+  droites, elle suit la pente par petits pas (normal, rien à corriger).

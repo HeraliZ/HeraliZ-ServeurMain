@@ -292,6 +292,7 @@
   "crac.rule.obstructed": "Blocked by terrain or another block.",
   "crac.rule.occupied": "Something is already built there.",
   "crac.rule.off_grid": "Not aligned with the building grid.",
+  "crac.rule.square_off_grid": "A square piece is always placed straight, on the base grid: on this side of the triangle, place a triangle.",
   "crac.rule.ok": "Ready to build.",
   "crac.rule.other_building": "Overlaps another building.",
   "crac.rule.sharp_angle": "The angle between these walls is too sharp.",
