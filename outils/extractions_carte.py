@@ -49,8 +49,8 @@ CELLULE = 8            # blocs par case pour la couverture et la recherche de po
 IMAGE_MAX = 1400       # côté des images (pixels)
 VIDE = (16, 19, 23)    # hors des chunks lus, sur le fond de carte_monde.py
 
-# réglages de la rotation par défaut (mod 1.5.0) si le fichier du serveur ne les a pas
-REGLAGES_DEFAUT = {"enabled": True, "openAtOnce": 4, "openAtOnceMax": 4, "minMinutes": 60, "maxMinutes": 60,
+# réglages de la rotation par défaut (Monde 1.0.4 : 6 zones, vagues de 30 min) si le fichier du serveur ne les a pas
+REGLAGES_DEFAUT = {"enabled": True, "openAtOnce": 6, "openAtOnceMax": 6, "minMinutes": 30, "maxMinutes": 30,
                    "waves": True, "minDistance": 800, "spread": True}
 COULEURS_MODE = {"rotation": (229, 72, 77), "permanent": (70, 200, 120), "closed": (150, 150, 150)}
 JAUNE = (255, 205, 60)
@@ -296,7 +296,10 @@ NOMS_QUARTS = ["nord-ouest", "nord-est", "sud-ouest", "sud-est"]
 
 
 def choisir(pool, ouvertes, candidates, eviter, n, distance_min, repartir, rnd, fermee=None):
-    """Même tirage que com.heraliz.extraction.serveur.Repartition (1.5.0) : (zones, distance, quarts, évitées)."""
+    """Même tirage que com.heraliz.extraction.serveur.Repartition (Monde 1.0.4) : (zones, distance, quarts, évitées).
+
+    En évitant les zones de la vague précédente, la distance ne descend pas sous la moitié de distance_min
+    (PART_GARDEE_EN_EVITANT) : en dessous, on reprend plutôt une zone de la vague précédente."""
     c = centre(pool)
     par_quart = max(1, (len(ouvertes) + n + 3) // 4)
     sans = [z for z in candidates if z["nom"] not in eviter]
@@ -305,11 +308,14 @@ def choisir(pool, ouvertes, candidates, eviter, n, distance_min, repartir, rnd, 
         distances.append(d)
         d = d * 85 // 100
     distances.append(0)
+    gardee = max(0, distance_min) * 50 // 100
     meilleur = None
     for evite in ([True, False] if len(sans) < len(candidates) else [False]):
         liste = sans if evite else candidates
         tenu_evite = evite or len(sans) == len(candidates)
         for d in distances:
+            if evite and d < gardee:
+                break
             for q in ([True, False] if repartir else [False]):
                 t = essayer(liste, ouvertes, n, d, q, par_quart, c, rnd, fermee or {})
                 if len(t) >= n:
@@ -779,7 +785,7 @@ def main():
         reglages["minMinutes"], reglages["maxMinutes"], "par vagues" if reglages["waves"] else "chaque zone à son tour",
         reglages["minDistance"], "une par quart de la carte" if reglages["spread"] else "sans quarts")
     L.append("- Réglages de la rotation : %s%s." % (regl, ("" if not o["config"] or not Path(o["config"]).is_file() else
-                                                     (" (absents du fichier du serveur, valeurs du mod 1.5.0 : %s)" % ", ".join(absents)) if absents else " (fichier du serveur)")))
+                                                     (" (absents du fichier du serveur, valeurs par défaut du mod : %s)" % ", ".join(absents)) if absents else " (fichier du serveur)")))
     if maintenant is not None:
         L.append("- Zones ouvertes à la dernière sauvegarde du monde : %s." % (", ".join(sorted(ouvertes_noms)) or "aucune"))
     if vague:
@@ -834,7 +840,7 @@ def main():
     if sim:
         nv = o["simulations"]
         ds = sim["distances"]
-        L.append("%d vagues de %s zones tirées comme le fait le serveur (HeraliZ Extraction 1.5.0, `Repartition`) avec "
+        L.append("%d vagues de %s zones tirées comme le fait le serveur (HeraliZ Extraction, `Repartition` de Monde 1.0.4) avec "
                  "les zones en rotation d'aujourd'hui :" % (nv, n_ouv))
         L.append("")
         L.append("- distance minimale de %d blocs tenue : %.0f %% des vagues ; distance tenue en médiane %d blocs, au "

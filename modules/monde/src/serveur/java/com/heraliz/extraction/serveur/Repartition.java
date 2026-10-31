@@ -17,7 +17,10 @@ import java.util.function.ToLongFunction;
  * Tirage des zones à ouvrir : au hasard, mais assez loin les unes des autres (distance minimale à plat entre deux zones
  * ouvertes en même temps, réglage rotation.minDistance) et réparties sur la carte (au plus une par quart, réglage
  * rotation.spread), en évitant les zones à ne pas reprendre (vague précédente). Si c'est impossible, les règles sont
- * relâchées dans cet ordre : les quarts, puis la distance (baissée peu à peu), et seulement à la fin les zones évitées.
+ * relâchées dans cet ordre : les quarts, puis la distance (baissée peu à peu, jusqu'à la moitié de minDistance), puis
+ * les zones évitées (une zone de la vague précédente peut revenir, à nouveau loin des autres), et seulement à la fin la
+ * distance jusqu'à 0. Avant (31/10), la distance tombait à 0 avant de reprendre une seule zone évitée : avec une carte qui
+ * n'a guère plus de zones que deux vagues (12 pour 6 ouvertes), deux extractions pouvaient ouvrir côte à côte.
  * Pour que toutes les zones tournent, celles qui attendent depuis le plus longtemps passent un peu devant (sinon une
  * zone isolée, compatible avec toutes les autres, sortirait bien plus souvent que ses voisines serrées). Le résultat
  * dit ce qui a été tenu, pour le journal.
@@ -27,6 +30,11 @@ final class Repartition {
     private static final int ESSAIS = 64;
     /** En dessous, la distance passe directement à 0. */
     private static final int DISTANCE_PLANCHER = 50;
+    /**
+     * Part de minDistance gardée au moins tant qu'on évite les zones de la vague précédente (31/10) : en dessous, on
+     * préfère reprendre une zone de la vague précédente qu'ouvrir deux zones trop proches.
+     */
+    private static final int PART_GARDEE_EN_EVITANT = 50;
 
     /**
      * @param zones           zones tirées (moins que demandé si les candidates manquent)
@@ -74,12 +82,17 @@ final class Repartition {
         }
         distances.add(0);
 
+        int gardee = Math.max(0, distanceMin) * PART_GARDEE_EN_EVITANT / 100;
+
         List<ExtractionZones.Zone> meilleur = List.of();
         Choix meilleurChoix = null;
         boolean[] avecEvitement = sansEvitees.size() < candidates.size() ? new boolean[]{true, false} : new boolean[]{false};
         for (boolean evite : avecEvitement) {
             List<ExtractionZones.Zone> liste = evite ? sansEvitees : candidates;
             for (int d : distances) {
+                if (evite && d < gardee) {
+                    break; // trop près : plutôt reprendre une zone de la vague précédente (passe suivante)
+                }
                 for (boolean q : repartir ? new boolean[]{true, false} : new boolean[]{false}) {
                     List<ExtractionZones.Zone> tirees = essayer(liste, ouvertes, n, d, q, parQuart, centres, fermeeA, random);
                     if (tirees.size() >= n) {
