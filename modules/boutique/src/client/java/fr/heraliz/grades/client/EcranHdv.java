@@ -367,7 +367,8 @@ public final class EcranHdv extends Screen {
             armee = null;
             SonsUi.clic(0.8F);
             int d = devisePaie(o);
-            ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(ReseauHdv.ACHETER, o.id(), 0, d, o.prix(d), 0, 0, 0, 0));
+            // le total montré sur le bouton (taxe PB comprise) : le serveur refuse d'en débiter un autre
+            ReseauHdv.CANAL.sendToServer(new ReseauHdv.Action(ReseauHdv.ACHETER, o.id(), 0, d, o.prix(d), 0, o.total(d), 0, 0));
         } else {
             armee = o.id();
             armeeA = System.currentTimeMillis();

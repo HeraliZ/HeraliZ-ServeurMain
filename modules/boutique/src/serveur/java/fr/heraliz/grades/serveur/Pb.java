@@ -100,7 +100,18 @@ public final class Pb {
     }
 
     public static void debiter(String ref, String joueur, long montant, String motif, Consumer<Reponse> suite) {
-        appeler("debiter", mouvement(ref, joueur, montant, motif), suite);
+        debiter(ref, joueur, montant, 0, motif, suite);
+    }
+
+    /**
+     * Débit dont une part ({@code brule}, comprise dans {@code montant}) n'est versée à personne : la taxe des achats en
+     * PB de l'hôtel des ventes. Le site la note comme la taxe de /trade (« PB détruits par la taxe ») ; un site d'avant
+     * l'extension 1.3.2 l'ignore, le débit est le même.
+     */
+    public static void debiter(String ref, String joueur, long montant, long brule, String motif, Consumer<Reponse> suite) {
+        JsonObject o = mouvement(ref, joueur, montant, motif);
+        if (brule > 0 && brule < montant) o.addProperty("taxe", brule);
+        appeler("debiter", o, suite);
     }
 
     public static void crediter(String ref, String joueur, long montant, String motif, Consumer<Reponse> suite) {

@@ -14,8 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Canal de l'hôtel des ventes ({@code /hdv}, PNJ commissaire-priseur), protocole 2 (Grades 2.10.0 : une annonce a
- * toujours un prix en hérals, et en plus un prix en PB si le vendeur le veut ; taxe de mise en vente). Le joueur ne fait
+ * Canal de l'hôtel des ventes ({@code /hdv}, PNJ commissaire-priseur), protocole 3 (Grades 2.10.0 : une annonce a
+ * toujours un prix en hérals, et en plus un prix en PB si le vendeur le veut ; taxe de mise en vente. 2.10.1 : l'achat
+ * porte le total vu, taxe des achats en PB comprise). Le joueur ne fait
  * que DEMANDER : une page de la liste (filtres), acheter une offre par son identifiant dans une monnaie, mettre en vente
  * une case de son inventaire avec ses prix, la taxe qu'il a vue et une durée, retirer, récupérer. Le serveur relit tout
  * (objet, règles, prix, taxe, soldes) ; les PB sont débités et versés par le site.
@@ -24,7 +25,7 @@ public final class ReseauHdv {
     private ReseauHdv() {
     }
 
-    private static final String VERSION = "2";
+    private static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "hdv"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -47,7 +48,8 @@ public final class ReseauHdv {
     public static final int ACHETER = 1, VENDRE = 2, RETIRER = 3, RECUPERER = 4, MES_VENTES = 5, FERMER = 6;
 
     /**
-     * Une action : acheter (id de l'offre, monnaie choisie et prix attendu dans cette monnaie), vendre (case de
+     * Une action : acheter (id de l'offre, monnaie choisie, prix attendu dans cette monnaie et, dans {@code taxe}, le
+     * total que l'écran a montré : prix + taxe des achats en PB ; prix seul en hérals), vendre (case de
      * l'inventaire, objet et nombre attendus, devise : hérals seuls ou hérals + PB, prix en hérals toujours, prix en PB
      * (0 : aucun), taxe de mise en vente affichée, durée = rang dans la liste des durées), retirer (id de l'offre),
      * récupérer (id de la ligne, vide : tout), demander « Mes ventes », fermer l'écran.

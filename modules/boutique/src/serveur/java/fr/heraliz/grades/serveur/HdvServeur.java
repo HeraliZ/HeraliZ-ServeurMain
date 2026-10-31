@@ -49,8 +49,8 @@ import java.util.UUID;
 
 /**
  * Hôtel des ventes (Grades 2.9.0, maquettes validées le 28/10 : {@code maquettes/hotel_ventes/}) : les joueurs mettent
- * en vente un objet de leur inventaire en hérals (sans frais), avec en plus, s'ils le veulent, un prix en Points Boutique
- * (10 % de frais payés par l'acheteur, brûlés ; prix plafonné selon la rareté de l'objet). Depuis la 2.10.0 (31/10), une
+ * en vente un objet de leur inventaire en hérals, avec en plus, s'ils le veulent, un prix en Points Boutique (prix
+ * plafonné selon la rareté de l'objet). Depuis la 2.10.0 (31/10), une
  * annonce a TOUJOURS un prix en hérals, jamais seulement un prix en PB ; l'acheteur choisit sa monnaie. Pour 12, 24 ou
  * 48 h ; 5 ventes en même temps par joueur. Ouvert au spawn seulement ({@code /hdv} ou le PNJ commissaire-priseur),
  * jamais en combat, à terre, en match, au tutoriel.
@@ -58,6 +58,13 @@ import java.util.UUID;
  * <b>Taxe de mise en vente</b> (2.10.0) : 12,5 % du prix en hérals ({@link RegleHdv#taxe}, réglage
  * {@code taxe_mise_en_vente_pourcent}), payée en hérals à la publication, brûlée, jamais rendue (ni à l'expiration, ni au
  * retrait). Prélevée dans le même traitement que la mise en dépôt de l'objet (voir « Mise en vente » ci-dessous).
+ * <p>
+ * <b>Taxe des achats en PB</b> (règle du 31/10, 2.10.1) : l'acheteur paie le prix en PB + 10 % ({@link RegleHdv#total},
+ * arrondi au PB supérieur, réglage {@code frais_pb_pourcent} : 100 -> 110), le vendeur reçoit le prix affiché (100), la
+ * différence est brûlée (débitée par le site, versée à personne, notée « taxe » dans son journal comme celle de
+ * {@code /trade}). L'écran montre le total avant le second clic ; le serveur refuse un total différent de celui affiché.
+ * Achat en hérals : le prix affiché, sans supplément. C'est la seule taxe d'une vente en PB (le vendeur n'en paie aucune
+ * en PB : il est crédité du prix entier).
  * <p>
  * <b>Contre la duplication et l'argent perdu</b> (même méthode que {@code /trade}) :
  * <ul>
@@ -671,7 +678,7 @@ public final class HdvServeur {
         }
         resoudre(p);
         switch (a.type()) {
-            case ReseauHdv.ACHETER -> acheter(p, a.id(), a.devise(), a.prix());
+            case ReseauHdv.ACHETER -> acheter(p, a.id(), a.devise(), a.prix(), a.taxe());
             case ReseauHdv.VENDRE -> vendre(p, a.slot(), a.devise(), a.prix(), a.prixPb(), a.taxe(), a.duree(), a.nombre(), a.id());
             case ReseauHdv.RETIRER -> retirer(p, a.id());
             case ReseauHdv.RECUPERER -> recuperer(p, a.id());
@@ -909,7 +916,8 @@ public final class HdvServeur {
     }
 
     // ------------------------------------------------------------------ acheter
-    private static void acheter(ServerPlayer p, String id, int devise, long prixAttendu) {
+    /** Achat demandé : monnaie choisie, prix du vendeur et total (taxe PB comprise) que l'écran a montrés. */
+    private static void acheter(ServerPlayer p, String id, int devise, long prixAttendu, long totalAttendu) {
         Offre o = OFFRES.get(id);
         String u = p.getUUID().toString();
         long now = System.currentTimeMillis();
@@ -934,6 +942,11 @@ public final class HdvServeur {
             }
         }
         long total = RegleHdv.total(devise, prixO, fraisPct);
+        // la taxe des achats en PB a changé (hdv.json relu) depuis l'affichage : l'acheteur ne paie que ce qu'il a vu
+        if (total != totalAttendu) {
+            repondre(p, "frais_change", false);
+            return;
+        }
         Achat a = new Achat();
         a.offre = o.id;
         a.acheteur = u;
@@ -995,10 +1008,12 @@ public final class HdvServeur {
             repondre(p, "erreur", false);
             return;
         }
-        journal("achat " + a.ref + " : " + a.acheteurNom + " achète l'offre " + o.id + " de " + o.vendeurNom + " pour " + total + " PB (débit demandé)");
+        journal("achat " + a.ref + " : " + a.acheteurNom + " achète l'offre " + o.id + " de " + o.vendeurNom + " pour " + total + " PB dont "
+                + (total - prixO) + " de taxe (débit demandé)");
         repondre(p, "attente_site", true);
         EN_VOL.add(a.ref);
-        Pb.debiter(a.ref, a.acheteurNom, total, "hdv", rep -> {
+        // une seule demande, une seule référence : prix + taxe débités ensemble ; la taxe n'est versée à personne
+        Pb.debiter(a.ref, a.acheteurNom, total, total - prixO, "hdv", rep -> {
             EN_VOL.remove(a.ref);
             reponseDebit(a, rep);
         });

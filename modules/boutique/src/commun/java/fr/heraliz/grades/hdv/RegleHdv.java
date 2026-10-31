@@ -13,7 +13,7 @@ import java.util.Locale;
 
 /**
  * Règles de l'hôtel des ventes lues des deux côtés : ce qui ne se vend pas (le serveur décide, l'écran ne fait que griser
- * les cases), la rareté (HeraliZ Loot, par réflexion), la catégorie d'une offre, les frais des ventes en PB et la taxe de
+ * les cases), la rareté (HeraliZ Loot, par réflexion), la catégorie d'une offre, la taxe des achats en PB et la taxe de
  * mise en vente. Mêmes refus
  * que les échanges des marchands ({@code Echanges.interdit} de HeraliZ Quêtes) et que {@code /trade} : objets à vie,
  * prêtés par un match, à camo à vie, de quête, sacs pleins, clés de caisse, registres du staff.
@@ -125,7 +125,11 @@ public final class RegleHdv {
         return (Math.min(base, 1_000_000_000_000L) * pourDixMille + 9_999) / 10_000;
     }
 
-    /** Ce que paie l'acheteur : le prix du vendeur, plus les frais (pour cent, arrondis au supérieur) des ventes en PB. */
+    /**
+     * Ce que paie l'acheteur : le prix du vendeur, plus, en PB seulement, la taxe des achats en PB (règle du 31/10 :
+     * {@code fraisPct} pour cent, réglage {@code frais_pb_pourcent} de {@code hdv.json}, arrondie au PB supérieur ; prix
+     * 100 -> 110). Le vendeur reçoit le prix, la taxe est brûlée. En hérals : le prix, sans supplément.
+     */
     public static long total(int devise, long prix, int fraisPct) {
         if (devise != PB || fraisPct <= 0) return prix;
         return prix + (prix * fraisPct + 99) / 100;
