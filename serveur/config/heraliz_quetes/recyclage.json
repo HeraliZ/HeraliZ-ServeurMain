@@ -918,17 +918,6 @@
   {
    "objet": "tacz:attachment",
    "cle": "AttachmentId",
-   "valeur": "maxstuff:glaser",
-   "rend": [
-    "heraliz_composants:circuit_imprime",
-    "heraliz_composants:circuit_imprime",
-    "heraliz_composants:batterie",
-    "heraliz_composants:batterie"
-   ]
-  },
-  {
-   "objet": "tacz:attachment",
-   "cle": "AttachmentId",
    "valeur": "maxstuff:hera_cqr_stock",
    "rend": [
     "heraliz_composants:ferraille_iii",
