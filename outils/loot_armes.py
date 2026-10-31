@@ -320,9 +320,11 @@ def index_tacz(genre):
     return out
 
 
-# balles dans le chargeur d'une arme trouvée dans un conteneur : 10 % de sa capacité, au moins 1, rien dans la chambre
-# (26/10, demande du propriétaire ; avant : chargeur plein + une balle dans la chambre)
-CHARGE_ARME = 0.10
+# balles dans le chargeur d'une arme trouvée dans un conteneur : 50 % de sa capacité (« ammo_amount » de sa fiche),
+# arrondi en dessous, au moins 1, rien dans la chambre (31/10, demande du propriétaire ; 26/10 : 10 % ; avant : chargeur
+# plein + une balle dans la chambre). Repris par le largage (outils/caisses.py) et le butin des zombies
+# (outils/loot_zombies.py) ; le coffre T7 de l'hélicoptère est le T7 d'ici.
+CHARGE_ARME = 0.50
 
 
 def armes_du_jeu():
