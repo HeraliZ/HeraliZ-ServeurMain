@@ -1468,3 +1468,14 @@ heraliz_6_armes_maxstuff/assets/maxstuff/display/guns/m82a2_display.json
 # 27/10 : gunpack des Wonder Weapons de l'ancien mode Zombies (Blundergat, Ray Gun, Thundergun...), mod retiré le 26/10
 # mais dossier resté sur le Ptero : ses armes apparaissaient encore (fusils à pompe : Blundergat)
 heraliz_wonder/
+
+# 31/10 : « Glock 54 Integrated Laser Battery » (maxstuff:glaser), retiré à la demande du propriétaire : viseur du
+# Glock 54 mis dans la liste commune des viseurs, il se posait sur toutes les armes. Le Glock 54 lui-même reste.
+heraliz_6_armes_maxstuff/data/maxstuff/index/attachments/glaser.json
+heraliz_6_armes_maxstuff/data/maxstuff/data/attachments/glaser_data.json
+heraliz_6_armes_maxstuff/data/maxstuff/recipes/attachments/glaser.json
+heraliz_6_armes_maxstuff/assets/maxstuff/display/attachments/glaser_display.json
+heraliz_6_armes_maxstuff/assets/maxstuff/geo_models/attachment/glaser_geo.json
+heraliz_6_armes_maxstuff/assets/maxstuff/textures/attachment/slot/glaser.png
+heraliz_6_armes_maxstuff/assets/maxstuff/textures/attachment/uv/glaser.png
+heraliz_crafts/data/heraliz_crafts/recipes/accessoires/maxstuff_glaser.json

@@ -173,11 +173,6 @@
       },
       {
         "objet": "tacz:attachment",
-        "nbt": "{AttachmentId:\"maxstuff:glaser\"}",
-        "prix": 240
-      },
-      {
-        "objet": "tacz:attachment",
         "nbt": "{AttachmentId:\"maxstuff:loudener\"}",
         "prix": 240
       },
