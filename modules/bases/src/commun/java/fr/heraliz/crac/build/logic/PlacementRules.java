@@ -248,6 +248,15 @@ public final class PlacementRules {
 
     /** Wall burial rule for one terrain block, see {@link #check}. */
     static boolean mayBury(PieceKey key, BlockPos pos, LongSet placed) {
+        return mayBury(key, pos, b -> placed.contains(b.asLong()));
+    }
+
+    /**
+     * The same burial rule with the wall's written blocks given by {@code written} (HeraliZ, 31/10) : a metal crate set in
+     * a wall's block after the wall (Adosse.dansMur, StructureService.ceder) takes it only when the wall would have left
+     * it to the crate set there first; both sides read the blocks of the world (the client has no store).
+     */
+    public static boolean mayBury(PieceKey key, BlockPos pos, java.util.function.Predicate<BlockPos> written) {
         BlockPos o = key.origin();
         int bx = pos.getX() - o.getX();
         int by = pos.getY() - o.getY();
@@ -282,7 +291,7 @@ public final class PlacementRules {
         PieceSolids.touchedBlocks(mirrored, need);
         for (long rel : need) {
             BlockPos m = o.offset(BlockPos.getX(rel), BlockPos.getY(rel), BlockPos.getZ(rel));
-            if (m.equals(pos) || !placed.contains(m.asLong())) {
+            if (m.equals(pos) || !written.test(m)) {
                 return false;
             }
         }

@@ -89,7 +89,11 @@ public final class C2SPlacePlacableTraitement {
         try {
             InteractionResult result = ForgeHooks.onPlaceItemIntoWorld(new UseOnContext(player, h, bhr));
             if (result.consumesAction()) {
+                // l'objet a pu se poser ailleurs que devant la face visée (case d'un mur, case libre voisine) : le son est le sien
                 BlockState placed = level.getBlockState(placePos);
+                if (!placed.is(bi.getBlock())) {
+                    placed = bi.getBlock().defaultBlockState();
+                }
                 SoundType st = placed.getSoundType(level, placePos, player);
                 player.playNotifySound(st.getPlaceSound(), SoundSource.BLOCKS, (st.getVolume() + 1.0F) / 2.0F, st.getPitch() * 0.8F);
             }

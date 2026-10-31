@@ -42,13 +42,37 @@ public final class Adosse {
      * caisse en métal seulement ({@link #peutDescendre}).
      */
     public static final BooleanProperty BAS = BooleanProperty.create("bas");
+    /**
+     * Caisse posée dans la case d'un mur (HeraliZ, 31/10, demande du propriétaire : « une fondation de 3 blocs devrait accueillir
+     * plusieurs caisses côte à côte »). Avant, un objet ne se posait que dans une case libre ; contre un mur, il était dessiné
+     * poussé dans la case du mur ({@link #ADOSSE}) mais son bloc gardait la case libre : une case vide à l'œil mais prise, une
+     * seule caisse au milieu d'une fondation fermée par 4 murs. Maintenant la caisse peut prendre la case du mur elle-même :
+     * le mur lui laisse la moitié intérieure de cette case, exactement comme pour une caisse posée avant le mur (règle
+     * d'enfouissement de {@code PlacementRules}, {@code StructureService.ceder}), et la reprend quand elle part
+     * ({@code StructureService.reboucher}). Valeur : {@code (sx + 1) * 3 + (sz + 1)}, le côté de la case où est le mur ; la
+     * boîte est poussée contre la face du mur dans sa propre case, au même jeu que {@link #ADOSSE} ({@link #DANS_HAUT},
+     * {@link #DANS_BAS}). {@link #AUCUN} : pas dans un mur. Modèle : celui de l'objet non poussé, décalé
+     * ({@code client/render/ModeleDansMur}).
+     */
+    public static final IntegerProperty DANS_MUR = IntegerProperty.create("dans_mur", 0, 8);
     /** Descente d'un objet {@link #BAS} : un demi-bloc (px), la hauteur du dessus d'un plancher posé sur des demi-murs. */
     public static final double DEMI = 8.0;
     public static final int AUCUN = 4;
     /** Bord de la boîte poussée (px de la case de l'objet) : face du mur de la case voisine moins 0,25 px. */
     static final double LIMITE_HAUT = 29.75, LIMITE_BAS = -13.75;
+    /** Jeu entre un objet poussé et la face du mur (px) : celui de {@link #LIMITE_HAUT} et {@link #LIMITE_BAS}. */
+    static final double JEU = 0.25;
+    /**
+     * Bord de la boîte d'un objet {@link #DANS_MUR} (px de sa propre case) : face intérieure du mur dans cette case (le mur a
+     * {@code WALL_HALF} px de chaque côté du bord de la case) moins le jeu, comme {@link #LIMITE_HAUT} et {@link #LIMITE_BAS}
+     * le sont pour la case voisine.
+     */
+    static final double DANS_HAUT = 16.0 - fr.heraliz.crac.build.geom.PieceSolids.WALL_HALF - JEU,
+        DANS_BAS = fr.heraliz.crac.build.geom.PieceSolids.WALL_HALF + JEU;
     /** Case visée par le joueur quand l'objet a été posé à côté (objet tenu : {@link ObjetAdossable}). */
     static final ThreadLocal<BlockPos> CIBLE = new ThreadLocal<>();
+    /** Pose dans la case d'un mur décidée par {@link ObjetAdossable} : la valeur de {@link #DANS_MUR} à donner à l'objet. */
+    static final ThreadLocal<Integer> DANS_MUR_POSE = new ThreadLocal<>();
     /**
      * Version des objets adossés, montée à chaque pose, retrait, chargement ou déchargement d'un objet adossé, et quand
      * son sens ou son décalage change. Les cases de mur gardent leur forme avec objets
@@ -78,7 +102,7 @@ public final class Adosse {
             && avant.getValue(ClaimBlock.FACING) == apres.getValue(ClaimBlock.FACING)
             && avant.hasProperty(ADOSSE) && apres.hasProperty(ADOSSE)
             && avant.getValue(ADOSSE).intValue() == apres.getValue(ADOSSE).intValue()
-            && bas(avant) == bas(apres);
+            && bas(avant) == bas(apres) && dansMur(avant) == dansMur(apres);
         if (!meme) {
             changement();
         }
@@ -101,6 +125,17 @@ public final class Adosse {
     /** L'objet de cet état est descendu sur un plancher à mi-bloc ({@link #BAS}). */
     public static boolean bas(BlockState s) {
         return s.hasProperty(BAS) && s.getValue(BAS);
+    }
+
+    /** Le côté du mur d'un objet posé dans la case d'un mur ({@link #DANS_MUR}), {@link #AUCUN} sinon. */
+    public static int dansMur(BlockState s) {
+        return s.hasProperty(DANS_MUR) ? s.getValue(DANS_MUR) : AUCUN;
+    }
+
+    /** La valeur de {@link #DANS_MUR} décidée pour la pose en cours ({@link ObjetAdossable}), ou null. */
+    @Nullable
+    public static Integer dansMurPose() {
+        return DANS_MUR_POSE.get();
     }
 
     /** Ce bloc sait descendre sur un plancher à mi-bloc (coffres, caisse en métal). */
@@ -164,6 +199,39 @@ public final class Adosse {
         return new double[]{dx, dz};
     }
 
+    /** Décalage (px, x et z) de la boîte tournée {@code b} d'un objet {@link #DANS_MUR} {@code w} : contre le mur de sa case. */
+    public static double[] decalageDansMur(double[] b, int w) {
+        int x = sx(w), z = sz(w);
+        double dx = x > 0 ? DANS_HAUT - b[2] : x < 0 ? DANS_BAS - b[0] : 0;
+        double dz = z > 0 ? DANS_HAUT - b[3] : z < 0 ? DANS_BAS - b[1] : 0;
+        return new double[]{dx, dz};
+    }
+
+    /** Décalage (px, x et z) de l'objet de cet état : poussé vers un mur voisin ({@link #ADOSSE}) ou dans sa case ({@link #DANS_MUR}). */
+    public static double[] decalage(double[] b, BlockState s) {
+        double[] d = decalage(b, s.getValue(ADOSSE));
+        int w = dansMur(s);
+        if (w != AUCUN) {
+            double[] m = decalageDansMur(b, w);
+            d[0] += m[0];
+            d[1] += m[1];
+        }
+        return d;
+    }
+
+    /** Les formes de chaque sens poussées contre le mur de leur propre case, par valeur de {@link #DANS_MUR} : [sens][valeur]. */
+    public static VoxelShape[][] formesDansMur(Function<Direction, VoxelShape> formeDuSens, double[] boiteNord) {
+        VoxelShape[][] t = new VoxelShape[4][9];
+        for (Direction f : Direction.Plane.HORIZONTAL) {
+            VoxelShape forme = formeDuSens.apply(f);
+            for (int w = 0; w < 9; w++) {
+                double[] d = decalageDansMur(tourner(boiteNord, f), w);
+                t[f.get2DDataValue()][w] = w == AUCUN ? forme : forme.move(d[0] / 16.0, 0, d[1] / 16.0);
+            }
+        }
+        return t;
+    }
+
     /** Une forme (faite pour le sens {@code facing}, sans décalage) poussée selon {@code v}. */
     public static VoxelShape decaler(VoxelShape forme, double[] boiteNord, Direction facing, int v) {
         if (v == AUCUN) {
@@ -204,9 +272,8 @@ public final class Adosse {
     public static AABB boiteMonde(BlockState s, BlockPos pos) {
         Adossable a = (Adossable) s.getBlock();
         Direction f = s.getValue(ClaimBlock.FACING);
-        int v = s.getValue(ADOSSE);
         double[] b = tourner(a.boiteNord(), f);
-        double[] d = decalage(b, v);
+        double[] d = decalage(b, s);
         return new AABB(pos.getX() + (b[0] + d[0]) / 16.0, pos.getY() - a.dessous(s) / 16.0, pos.getZ() + (b[1] + d[1]) / 16.0,
             pos.getX() + (b[2] + d[0]) / 16.0, pos.getY() + (a.hauteur(s) - a.dessous(s)) / 16.0, pos.getZ() + (b[3] + d[1]) / 16.0);
     }
@@ -300,7 +367,7 @@ public final class Adosse {
     }
 
     /** Côté (1, -1) vers lequel pousser sur un axe : le mur du côté du quart de case visé ({@link #BORD_CLIC}), sinon 0. */
-    private static int axe(BlockGetter level, BlockPos pos, Direction plus, double clic) {
+    static int axe(BlockGetter level, BlockPos pos, Direction plus, double clic) {
         if (clic >= 0.5 - BORD_CLIC) {
             return estStructure(level, pos.relative(plus)) ? 1 : 0;
         }
@@ -369,6 +436,8 @@ public final class Adosse {
                     BlockState s = level.getBlockState(m);
                     // la case du haut de l'armoire est comptée avec sa case du bas (boîte de toute l'armoire)
                     // un objet descendu ({@link #BAS}) dépasse dans la case dessous, même sans être poussé
+                    // un objet dans la case d'un mur ({@link #DANS_MUR}) ne sort pas de sa case : la case de mur voisine n'en
+                    // a rien et aucun objet poussé ne peut entrer dans sa case (tient : seulement des cases de construction)
                     if (s.getBlock() instanceof Adossable && !(s.getBlock() instanceof ClaimBlockHaut)
                         && s.hasProperty(ADOSSE) && (s.getValue(ADOSSE) != AUCUN || bas(s))) {
                         BlockPos p = m.immutable();
@@ -436,8 +505,93 @@ public final class Adosse {
     // ---------------------------------------------------------------- objet tenu
 
     /**
+     * L'objet {@code etat} (son sens compris) peut-il se poser dans la case de mur {@code cell} ({@link #DANS_MUR}) ? Rend la
+     * valeur de {@link #DANS_MUR} (côté du mur), ou -1. Mêmes règles des deux côtés (fantôme de pose du joueur, serveur ; le
+     * serveur revérifie avec ses pièces dans {@code StructureService.ceder}) :
+     * <ul>
+     *   <li>la case ne tient que des murs droits (le long de x ou de z), sans porte (un battant ouvert passerait dans
+     *   l'objet), dont le plan est un bord de la case ;</li>
+     *   <li>chacun peut la laisser à l'objet : règle d'enfouissement de {@code PlacementRules.mayBury} (son autre moitié est
+     *   écrite de l'autre côté du bord et ferme le mur) ; deux murs face à face dans la même case : non ;</li>
+     *   <li>dessous, une fondation ou un plancher dont le dessus est à ras de la case et la couvre toute (pas de plancher à
+     *   mi-bloc) ;</li>
+     *   <li>la boîte de l'objet, poussée contre la face du mur ({@link #DANS_BAS}, {@link #DANS_HAUT}), reste dans sa case (la
+     *   caisse en métal : 13 px vers le mur, donc posée face au mur ou dos au mur ; jamais dans un angle, où ses 16 px de
+     *   large toucheraient l'autre mur) et ne touche aucun objet adossé voisin.</li>
+     * </ul>
+     */
+    public static int dansMur(BlockGetter level, BlockPos cell, BlockState etat) {
+        if (!etat.hasProperty(DANS_MUR) || !(etat.getBlock() instanceof Adossable a)
+            || !(level.getBlockState(cell).getBlock() instanceof StructureBlock)
+            || !(level.getBlockEntity(cell) instanceof fr.heraliz.crac.build.world.StructureBlockEntity be)) {
+            return -1;
+        }
+        List<fr.heraliz.crac.build.world.Occupant> occ = be.occupants();
+        if (occ.isEmpty() || doitDescendre(level, cell) || !StructureBlock.holdsBlockOnTop(level, cell.below())) {
+            return -1;
+        }
+        double cx = cell.getX() * 16.0, cz = cell.getZ() * 16.0;
+        int x = 0, z = 0;
+        for (fr.heraliz.crac.build.world.Occupant o : occ) {
+            fr.heraliz.crac.build.model.PieceKey k = o.key();
+            if (!k.kind().isWall() || k.kind().hasDoor() || k.orient() % 3 != 0) {
+                return -1;
+            }
+            // plan du mur : x constant (bord est-ouest de la case) pour une arête vers +z, z constant sinon
+            fr.heraliz.crac.build.model.LPoint p = k.anchor();
+            boolean versZ = k.orient() == 3;
+            double plan = versZ ? k.origin().getX() * 16.0 + p.toX() : k.origin().getZ() * 16.0 + p.toZ();
+            double bord = versZ ? cx : cz;
+            int s = Math.abs(plan - bord) < 1e-6 ? -1 : Math.abs(plan - bord - 16.0) < 1e-6 ? 1 : 0;
+            if (s == 0 || versZ && x != 0 && x != s || !versZ && z != 0 && z != s) {
+                return -1;
+            }
+            if (versZ) {
+                x = s;
+            } else {
+                z = s;
+            }
+            long id = o.pieceId();
+            if (!fr.heraliz.crac.build.logic.PlacementRules.mayBury(k, cell, m -> tientLaPiece(level, m, id))) {
+                return -1;
+            }
+        }
+        int w = code(x, z);
+        double[] b = tourner(a.boiteNord(), etat.getValue(ClaimBlock.FACING));
+        double[] d = decalageDansMur(b, w);
+        double x0 = b[0] + d[0], z0 = b[1] + d[1], x1 = b[2] + d[0], z1 = b[3] + d[1];
+        if (x0 < -1.0E-6 || z0 < -1.0E-6 || x1 > 16.0 + 1.0E-6 || z1 > 16.0 + 1.0E-6) {
+            return -1;
+        }
+        AABB boite = new AABB(cell.getX() + x0 / 16.0, cell.getY(), cell.getZ() + z0 / 16.0, cell.getX() + x1 / 16.0,
+            cell.getY() + a.hauteur(etat) / 16.0, cell.getZ() + z1 / 16.0).deflate(1.0E-4);
+        for (Voisin o : voisins(level, cell, 2)) {
+            if (o.boite().intersects(boite)) {
+                return -1;
+            }
+        }
+        return w;
+    }
+
+    /** La case {@code pos} est une case de construction écrite pour la pièce {@code id} (le client n'a pas les pièces). */
+    private static boolean tientLaPiece(BlockGetter level, BlockPos pos, long id) {
+        if (!(level.getBlockEntity(pos) instanceof fr.heraliz.crac.build.world.StructureBlockEntity be)) {
+            return false;
+        }
+        for (fr.heraliz.crac.build.world.Occupant o : be.occupants()) {
+            if (o.pieceId() == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Case libre d'où l'objet peut atteindre la case occupée {@code cible} (visée par le joueur) : une des 8 voisines,
-     * libre (et la case du dessus pour {@code hauteur} 2), la plus proche du joueur.
+     * libre (et la case du dessus pour {@code hauteur} 2), la plus proche du point visé (à égalité : du joueur).
+     * <p>HeraliZ (31/10) : avant, la plus proche des yeux du joueur. Visée sur le sol d'une case de mur, c'était presque
+     * toujours la case où il se tenait (l'objet partait sous lui : refusé, « impossible à poser ») ou une case à côté de lui,
+     * parfois en arrière, au lieu de la case devant la case visée.
      */
     @Nullable
     static BlockPos caseLibre(BlockPlaceContext ctx, BlockPos cible, int hauteur, BlockState etat) {
@@ -446,8 +600,10 @@ public final class Adosse {
             return null;
         }
         Vec3 oeil = ctx.getPlayer() == null ? Vec3.atCenterOf(cible) : ctx.getPlayer().getEyePosition();
+        Vec3 vise = ctx.getClickLocation();
         BlockPos best = null;
         double bestD = Double.MAX_VALUE;
+        double bestOeil = Double.MAX_VALUE;
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 if (dx == 0 && dz == 0) {
@@ -463,9 +619,13 @@ public final class Adosse {
                 // (28/10) un coffre ou une caisse descend sur un plancher à mi-bloc (BAS) : la case est jugée comme il s'y poserait
                 BlockState ici = etat.hasProperty(BAS) ? etat.setValue(BAS, doitDescendre(level, c)) : etat;
                 libre = libre && fr.heraliz.crac.placable.PlacableSupport.isSupported(level, c, ici);
-                double d = Vec3.atCenterOf(c).distanceToSqr(oeil);
-                if (libre && d < bestD) {
+                // à plat : la case dont le centre est le plus près du point visé ; à 1e-6 près, la plus proche des yeux
+                double ddx = c.getX() + 0.5 - vise.x, ddz = c.getZ() + 0.5 - vise.z;
+                double d = ddx * ddx + ddz * ddz;
+                double dOeil = Vec3.atCenterOf(c).distanceToSqr(oeil);
+                if (libre && (d < bestD - 1.0E-6 || Math.abs(d - bestD) <= 1.0E-6 && dOeil < bestOeil)) {
                     bestD = d;
+                    bestOeil = dOeil;
                     best = c;
                 }
             }

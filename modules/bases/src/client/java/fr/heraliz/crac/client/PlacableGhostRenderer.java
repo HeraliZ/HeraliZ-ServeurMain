@@ -87,8 +87,8 @@ public final class PlacableGhostRenderer {
                 }
 
                 if (!stack.isEmpty()) {
-                    BlockHitResult hit = raytrace(mc.level, player);
-                    if (hit.getType() == Type.BLOCK) {
+                    BlockHitResult hit = raytrace(mc, player);
+                    if (hit != null && hit.getType() == Type.BLOCK) {
                         UseOnContext useCtx = new UseOnContext(player, activeHand, hit);
                         BlockPlaceContext ctx = new BlockPlaceContext(useCtx);
                         // HeraliZ (28/10) : même place que la pose (objet collé aux murs visé sur une case de mur : case
@@ -96,7 +96,8 @@ public final class PlacableGhostRenderer {
                         fr.heraliz.crac.block.ObjetAdossable.Place place = stack.getItem() instanceof fr.heraliz.crac.block.ObjetAdossable oa
                             ? oa.placeDePose(ctx) : ctx.canPlace() ? new fr.heraliz.crac.block.ObjetAdossable.Place(ctx, null) : null;
                         if (place != null) {
-                            BlockPos placePos = place.ctx().getClickedPos();
+                            // la case de pose : la case libre visée, ou la case du mur où la caisse se met (31/10)
+                            BlockPos placePos = place.pos();
                             BlockItem blockItem = (BlockItem)stack.getItem();
                             BlockState state = place.etat(blockItem.getBlock());
                             boolean blocked = state == null;
@@ -248,6 +249,21 @@ public final class PlacableGhostRenderer {
                 ? pos.above()
                 : null;
         }
+    }
+
+    /**
+     * Ce que le clic droit visera (HeraliZ, 31/10) : en survie (le joueur peut construire), la pose est celle de Minecraft,
+     * faite sur la cible de son viseur ({@code mc.hitResult}, portée du joueur : 4,5 blocs) ; le fantôme suit exactement
+     * cette cible. Avant, il visait toujours à {@code adventureReach} (5 blocs) : entre 4,5 et 5 blocs, un fantôme vert sans
+     * pose au clic, ou sur un autre bloc que celui du clic. En aventure, le serveur vise lui-même à {@code adventureReach}
+     * (C2SPlacePlacable) : même lancer de rayon.
+     */
+    @org.jetbrains.annotations.Nullable
+    private static BlockHitResult raytrace(Minecraft mc, Player player) {
+        if (player.getAbilities().mayBuild) {
+            return mc.hitResult instanceof BlockHitResult b ? b : null;
+        }
+        return raytrace(mc.level, player);
     }
 
     /** Same reach as the server's C2SPlacePlacable (synced server config). */

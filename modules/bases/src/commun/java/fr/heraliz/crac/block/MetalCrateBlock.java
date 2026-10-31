@@ -45,8 +45,15 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
         f -> f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW, BOITE);
     /** Les mêmes, descendues d'un demi-bloc sur un plancher à mi-bloc ({@link Adosse#BAS}). */
     private static final VoxelShape[][] DESCENDUES = Adosse.descendre(DECALEES);
+    /** Posée dans la case d'un mur, contre lui ({@link Adosse#DANS_MUR}, 31/10) : [sens][côté du mur]. */
+    private static final VoxelShape[][] DANS_LE_MUR = Adosse.formesDansMur(
+        f -> f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW, BOITE);
 
     private static VoxelShape shapeFor(BlockState state) {
+        int mur = state.getValue(Adosse.DANS_MUR);
+        if (mur != Adosse.AUCUN) {
+            return DANS_LE_MUR[state.getValue(FACING).get2DDataValue()][mur];
+        }
         return (state.getValue(Adosse.BAS) ? DESCENDUES : DECALEES)[state.getValue(FACING).get2DDataValue()][state.getValue(Adosse.ADOSSE)];
     }
 
@@ -68,16 +75,21 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
     public MetalCrateBlock() {
         super(Properties.of().mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false)
-            .setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false));
+            .setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false).setValue(Adosse.DANS_MUR, Adosse.AUCUN));
     }
 
     @Override
     protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN, Adosse.ADOSSE, Adosse.BAS);
+        builder.add(FACING, OPEN, Adosse.ADOSSE, Adosse.BAS, Adosse.DANS_MUR);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        // dans la case d'un mur, contre lui (31/10) : décidé et vérifié par ObjetAdossable (Adosse.dansMur), sans poussée
+        Integer mur = Adosse.dansMurPose();
+        if (mur != null) {
+            return this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false).setValue(Adosse.DANS_MUR, mur);
+        }
         // face vers le joueur, tournée par R (OrientationObjet) ; descendue sur un plancher à mi-bloc (Adosse.BAS)
         BlockState s = this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false)
             .setValue(Adosse.BAS, Adosse.doitDescendre(ctx.getLevel(), ctx.getClickedPos()));

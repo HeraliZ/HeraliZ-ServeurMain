@@ -3,6 +3,8 @@ package fr.heraliz.crac.build.test;
 import java.util.List;
 import java.util.UUID;
 import fr.heraliz.crac.Crac;
+import fr.heraliz.crac.block.Adosse;
+import fr.heraliz.crac.block.MetalCrateBlock;
 import fr.heraliz.crac.build.model.Piece;
 import fr.heraliz.crac.build.model.PieceKey;
 import fr.heraliz.crac.build.model.PieceKind;
@@ -23,6 +25,7 @@ import fr.heraliz.crac.build.world.StructureStore;
 import fr.heraliz.crac.placable.PlacableSet;
 import fr.heraliz.crac.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -34,6 +37,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -77,6 +81,57 @@ public final class IntegrityGameTests {
         if (!condition) {
             throw new GameTestAssertException(message);
         }
+    }
+
+    /**
+     * HeraliZ (31/10): a metal crate takes the block of a straight wall (Adosse.dansMur, StructureService.ceder). A foundation
+     * closed by 4 walls holds 5 crates (the middle and the middle block of each wall, turned so that their 13 px face the
+     * wall), never one in a corner nor one turned sideways; the wall keeps its outer half and takes its block back when
+     * the crate goes (StructureService.reboucher).
+     */
+    @GameTest(template = EMPTY)
+    public static void aCrateTakesTheInnerHalfOfAStraightWall(GameTestHelper h) {
+        BlockPos o = ground(h);
+        ServerLevel level = h.getLevel();
+        Piece foundation = place(h, GT.surface(level, PieceKind.FOUNDATION, o));
+        Piece north = place(h, GT.wall(level, PieceKind.WALL, o, Dir4.NORTH, 0));
+        place(h, GT.wall(level, PieceKind.WALL, o, Dir4.EAST, 0));
+        place(h, GT.wall(level, PieceKind.WALL, o, Dir4.SOUTH, 0));
+        place(h, GT.wall(level, PieceKind.WALL, o, Dir4.WEST, 0));
+        BlockPos centre = GT.seat(foundation);
+        check(level.getBlockState(centre).isAir(), "test setup: the middle of the foundation is not free");
+        BlockState caisse = ModBlocks.METAL_CRATE.get().defaultBlockState();
+        Direction[] cotes = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        for (Direction cote : cotes) {
+            BlockPos cell = centre.relative(cote);
+            check(level.getBlockState(cell).getBlock() instanceof StructureBlock, "test setup: no wall block at " + cell.toShortString());
+            // face to the room: its 13 px depth towards the wall
+            int w = Adosse.dansMur(level, cell, caisse.setValue(MetalCrateBlock.FACING, cote.getOpposite()));
+            check(w == Adosse.code(cote.getStepX(), cote.getStepZ()), "the crate does not fit the " + cote + " wall block: " + w);
+            check(Adosse.dansMur(level, cell, caisse.setValue(MetalCrateBlock.FACING, cote.getClockWise())) < 0,
+                "a crate turned sideways fits the " + cote + " wall block (its 16 px would enter the wall)");
+        }
+        for (BlockPos coin : new BlockPos[]{centre.north().west(), centre.north().east(), centre.south().west(), centre.south().east()}) {
+            for (Direction f : Direction.Plane.HORIZONTAL) {
+                check(Adosse.dansMur(level, coin, caisse.setValue(MetalCrateBlock.FACING, f)) < 0, "a crate fits the corner " + coin.toShortString());
+            }
+        }
+        BlockPos cell = centre.north();
+        BlockPos outer = cell.north();
+        check(StructureService.ceder(level, cell), "the north wall did not leave its block to the crate");
+        Piece mur = StructureStore.get(level).index.piece(north.id);
+        check(level.getBlockState(cell).isAir(), "the block left to the crate is not free");
+        check(mur != null && !mur.blocks.contains(cell) && mur.blocks.contains(outer), "the wall should keep only its outer half there");
+        level.setBlock(cell, caisse.setValue(MetalCrateBlock.FACING, Direction.SOUTH).setValue(Adosse.DANS_MUR, Adosse.code(0, -1)), Block.UPDATE_ALL);
+        StructureService.tick(level);
+        check(level.getBlockState(cell).getBlock() instanceof MetalCrateBlock, "the wall took its block back under the crate");
+        check(Adosse.dansMur(level, outer, caisse) < 0, "the outer half of the wall can be taken too");
+        level.setBlock(cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        StructureService.tick(level);
+        mur = StructureStore.get(level).index.piece(north.id);
+        check(mur != null && mur.blocks.contains(cell) && level.getBlockState(cell).getBlock() instanceof StructureBlock,
+            "the wall did not take its block back after the crate left");
+        h.succeed();
     }
 
     /** A foundation with a north wall and a floor resting on that wall. */

@@ -149,6 +149,11 @@ public final class PartieServeur implements Partie {
         }
 
         @Override
+        public boolean cederCase(ServerLevel sl, BlockPos pos) {
+            return StructureService.ceder(sl, pos);
+        }
+
+        @Override
         public void structureVerifier(Level level, BlockPos pos) {
             StructureService.queueVerify(level, pos);
         }

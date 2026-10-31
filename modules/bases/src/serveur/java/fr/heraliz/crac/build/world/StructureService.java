@@ -555,6 +555,57 @@ public final class StructureService {
         }
     }
 
+    /**
+     * Une caisse se pose dans la case de mur {@code pos} (HeraliZ, 31/10, {@code Adosse.dansMur}) : l'inverse de
+     * {@link #reboucher}. La case ne doit tenir que des murs droits sans porte qui l'ont écrite ; chacun la laisse si la règle
+     * d'enfouissement de {@link PlacementRules#check} le permet (sa moitié de l'autre côté du bord est écrite et ferme le
+     * mur) : c'est l'état exact d'un mur posé après la caisse. La case est retirée de leurs blocs (gardé avec la pièce),
+     * puis vidée sans compter comme une pièce perdue ({@link #onBlockGone}) ni comme une pose du joueur (pas de cliché de
+     * bloc de Forge : la pose de la caisse, elle, en est un). Le mur la reprend au tick suivant si rien ne s'y est posé
+     * ({@link StructureIntegrity#queueRefill}). Faux si rien n'a changé.
+     */
+    public static boolean ceder(ServerLevel level, BlockPos pos) {
+        if (!level.isLoaded(pos) || !(level.getBlockState(pos).getBlock() instanceof StructureBlock)) {
+            return false;
+        }
+        StructureStore store = store(level);
+        List<Piece> occ = new ArrayList<>(store.index.occupants(pos));
+        if (occ.isEmpty()) {
+            return false;
+        }
+        for (Piece p : occ) {
+            if (!p.kind().isWall() || p.kind().hasDoor() || p.key().orient() % 3 != 0 || !p.blocks.contains(pos)) {
+                return false;
+            }
+            LongSet ecrits = new LongOpenHashSet();
+            for (BlockPos b : p.blocks) {
+                if (!b.equals(pos)) {
+                    ecrits.add(b.asLong());
+                }
+            }
+            if (!PlacementRules.mayBury(p.key(), pos, b -> ecrits.contains(b.asLong()))) {
+                return false;
+            }
+        }
+        for (Piece p : occ) {
+            store.index.removeWithBlocks(p);
+            List<BlockPos> blocks = new ArrayList<>(p.blocks);
+            blocks.remove(pos);
+            p.blocks = List.copyOf(blocks);
+            store.index.addWithBlocks(p);
+        }
+        store.setDirty();
+        boolean cliches = level.captureBlockSnapshots;
+        level.captureBlockSnapshots = false;
+        try {
+            setBlockInternal(level, pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        } finally {
+            level.captureBlockSnapshots = cliches;
+        }
+        StructureIntegrity.queueRefill(level, pos);
+        return true;
+    }
+
     /** Push a piece's new tier / state / variant / damage to the blocks it occupies. */
     public static void refresh(ServerLevel level, Piece p) {
         StructureStore store = store(level);
