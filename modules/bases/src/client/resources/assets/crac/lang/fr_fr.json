@@ -111,6 +111,8 @@
   "crac.coffre.limite": "Cette base a déjà %2$s × « %1$s » : c'est la limite.",
   "crac.coffres.recharge": "coffres.json relu : %s",
   "crac.coffres.voir": "Coffres de cette base : %s",
+  "crac.coffres.tables": "Tables d'armurier de cette base : %s",
+  "crac.table_armurier.limite": "Cette base a déjà sa table d'armurier (%s au plus par base).",
   "crac.coffres.hors_base": "Pas de base ici.",
   "crac.coffres.separateur": " · ",
   "crac.coffres.rarete.commune": "Commune %s",

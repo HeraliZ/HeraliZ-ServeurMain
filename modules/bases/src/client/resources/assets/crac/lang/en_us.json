@@ -111,6 +111,8 @@
   "crac.coffre.limite": "This base already has %2$s × \"%1$s\": that's the limit.",
   "crac.coffres.recharge": "coffres.json reloaded: %s",
   "crac.coffres.voir": "Chests in this base: %s",
+  "crac.coffres.tables": "Gunsmith tables in this base: %s",
+  "crac.table_armurier.limite": "This base already has its gunsmith table (%s per base at most).",
   "crac.coffres.hors_base": "No base here.",
   "crac.coffres.separateur": " · ",
   "crac.coffres.rarete.commune": "Common %s",

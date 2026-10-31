@@ -111,6 +111,8 @@
   "crac.coffre.limite": "В этой базе уже %2$s × «%1$s»: это предел.",
   "crac.coffres.recharge": "coffres.json перечитан: %s",
   "crac.coffres.voir": "Сундуки этой базы: %s",
+  "crac.coffres.tables": "Оружейные столы этой базы: %s",
+  "crac.table_armurier.limite": "В этой базе уже есть оружейный стол (не больше %s на базу).",
   "crac.coffres.hors_base": "Здесь нет базы.",
   "crac.coffres.separateur": " · ",
   "crac.coffres.rarete.commune": "Обычные %s",

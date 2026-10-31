@@ -1,10 +1,11 @@
 {
-  "_aide": "Coffres de base par rareté : nombre au plus par base (zone de l'armoire). Les coffres déjà posés comptent ; au-delà, la pose est refusée. Relu en jeu par /coffres recharger (op).",
+  "_aide": "Coffres de base par rareté : nombre au plus par base (zone de l'armoire). Les coffres déjà posés comptent ; au-delà, la pose est refusée. tables_armurier_par_base : tables d'armurier (TaCZ) posées dans une base, 1 depuis le 31/10 ; une table déjà en trop reste, seules les nouvelles sont refusées. Relu en jeu par /coffres recharger (op) ; /coffres voir montre aussi les tables de la base.",
   "limites_par_base": {
     "commune": 14,
     "peu_commune": 12,
     "rare": 10,
     "epique": 8,
     "legendaire": 5
-  }
+  },
+  "tables_armurier_par_base": 1
 }

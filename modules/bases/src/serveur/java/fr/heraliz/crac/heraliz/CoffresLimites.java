@@ -11,6 +11,7 @@ import fr.heraliz.crac.block.MetalCrateBlock;
 import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.claim.ClaimManager;
 import fr.heraliz.crac.event.PlacementSync;
+import fr.heraliz.crac.placable.MultiBlocks;
 import fr.heraliz.crac.placable.PlacableHpManager;
 import fr.heraliz.crac.registry.ModBlocks;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -25,6 +27,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
@@ -38,6 +41,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -46,6 +50,10 @@ import org.jetbrains.annotations.Nullable;
  * refusée avec un message ; les coffres déjà posés comptent (ceux des tronçons chargés : une base est chargée autour du
  * joueur qui y pose). Libres : créatif, hors d'une base. Limites dans {@code config/crac/coffres.json} (fichier du dépôt qui
  * fait foi, écrit s'il manque), relu par {@code /coffres recharger}.
+ * <p>
+ * Même règle pour la table d'armurier de TaCZ posée dans une base (31/10, décision du propriétaire) : une seule par base
+ * ({@code tables_armurier_par_base}). Une table déjà en trop n'est ni détruite ni retirée : seules les nouvelles poses
+ * sont refusées. Les tables du spawn (hors base) ne comptent pas.
  */
 @EventBusSubscriber(modid = "crac")
 public final class CoffresLimites {
@@ -54,6 +62,11 @@ public final class CoffresLimites {
     private static final String[] RARETES = {"commune", "peu_commune", "rare", "epique", "legendaire"};
     private static final int[] DEFAUT = {14, 12, 10, 8, 5};
     private static final Map<String, Integer> LIMITES = new LinkedHashMap<>();
+    /** Table d'armurier de TaCZ (bloc de deux cases, lue par son nom : CRac ne dépend pas de TaCZ). */
+    private static final ResourceLocation TABLE_ARMURIER = new ResourceLocation("tacz", "gun_smith_table");
+    private static final String CLE_TABLES = "tables_armurier_par_base";
+    private static final int TABLES_DEFAUT = 1;
+    private static int tablesParBase = TABLES_DEFAUT;
 
     private CoffresLimites() {
     }
@@ -92,6 +105,10 @@ public final class CoffresLimites {
             return;
         }
         BlockState s = e.getPlacedBlock();
+        if (estTableArmurier(s)) {
+            poseTable(e, p, sl);
+            return;
+        }
         String r = rarete(s);
         if (r == null) {
             return;
@@ -110,6 +127,61 @@ public final class CoffresLimites {
         for (BlockPos cell : PlacableHpManager.cells(e)) {
             PlacementSync.revert(p, sl, cell);
         }
+    }
+
+    /** Vrai pour les deux cases de la table d'armurier de TaCZ. */
+    public static boolean estTableArmurier(BlockState s) {
+        return TABLE_ARMURIER.equals(ForgeRegistries.BLOCKS.getKey(s.getBlock()));
+    }
+
+    public static int tablesParBase() {
+        return tablesParBase;
+    }
+
+    /** Table d'armurier posée dans une base : refusée si la base en a déjà {@link #tablesParBase()} (31/10). */
+    private static void poseTable(EntityPlaceEvent e, ServerPlayer p, ServerLevel sl) {
+        Claim claim = ClaimManager.getAt(sl, e.getPos());
+        if (claim == null) {
+            return;
+        }
+        List<BlockPos> cases = PlacableHpManager.cells(e);
+        if (compterTables(sl, claim, cases) < tablesParBase) {
+            return;
+        }
+        e.setCanceled(true);
+        p.displayClientMessage(Component.translatableWithFallback("crac.table_armurier.limite",
+            "Cette base a déjà sa table d'armurier (%s au plus par base).", tablesParBase).withStyle(ChatFormatting.RED), true);
+        for (BlockPos cell : cases) {
+            PlacementSync.revert(p, sl, cell);
+        }
+    }
+
+    /**
+     * Tables d'armurier de la base (tronçons chargés de la zone de l'armoire), une par table : seule la case du pied compte
+     * ({@link MultiBlocks#canonical}), sans les cases {@code sauf} (celle qu'on pose). Deux tables déjà posées comptent
+     * pour deux : elles restent, mais aucune autre ne se pose.
+     */
+    static int compterTables(ServerLevel sl, Claim claim, List<BlockPos> sauf) {
+        int n = 0;
+        BlockPos a = claim.anchor();
+        int r = claim.radius();
+        for (int cx = (a.getX() - r) >> 4; cx <= (a.getX() + r) >> 4; cx++) {
+            for (int cz = (a.getZ() - r) >> 4; cz <= (a.getZ() + r) >> 4; cz++) {
+                LevelChunk chunk = sl.getChunkSource().getChunkNow(cx, cz);
+                if (chunk == null) {
+                    continue;
+                }
+                for (BlockEntity be : chunk.getBlockEntities().values()) {
+                    BlockPos q = be.getBlockPos();
+                    BlockState st = be.getBlockState();
+                    if (!estTableArmurier(st) || sauf.contains(q) || !claim.contains(q) || !MultiBlocks.canonical(st, q).equals(q)) {
+                        continue;
+                    }
+                    n++;
+                }
+            }
+        }
+        return n;
     }
 
     private static int indice(String r) {
@@ -166,6 +238,7 @@ public final class CoffresLimites {
         for (int i = 0; i < RARETES.length; i++) {
             LIMITES.put(RARETES[i], DEFAUT[i]);
         }
+        tablesParBase = TABLES_DEFAUT;
         Path f = fichier();
         try {
             if (!Files.exists(f)) {
@@ -173,6 +246,7 @@ public final class CoffresLimites {
                 JsonObject l = new JsonObject();
                 LIMITES.forEach(l::addProperty);
                 o.add("limites_par_base", l);
+                o.addProperty(CLE_TABLES, tablesParBase);
                 Files.createDirectories(f.getParent());
                 Files.writeString(f, GSON.toJson(o), StandardCharsets.UTF_8);
                 Crac.LOGGER.info("[CRac] coffres.json écrit avec les limites par défaut");
@@ -187,7 +261,10 @@ public final class CoffresLimites {
                     }
                 }
             }
-            Crac.LOGGER.info("[CRac] Coffres par base : {}", LIMITES);
+            if (o.has(CLE_TABLES)) {
+                tablesParBase = Math.max(0, o.get(CLE_TABLES).getAsInt());
+            }
+            Crac.LOGGER.info("[CRac] Coffres par base : {} ; tables d'armurier par base : {}", LIMITES, tablesParBase);
         } catch (IOException | RuntimeException ex) {
             Crac.LOGGER.error("[CRac] coffres.json illisible : limites par défaut", ex);
         }
@@ -218,6 +295,9 @@ public final class CoffresLimites {
         }
         src.sendSuccess(() -> Component.translatableWithFallback("crac.coffres.voir", "Coffres de cette base : %s",
             ligne(compter(src.getLevel(), claim, null))), false);
+        int tables = compterTables(src.getLevel(), claim, List.of());
+        src.sendSuccess(() -> Component.translatableWithFallback("crac.coffres.tables", "Tables d'armurier de cette base : %s",
+            tables + "/" + tablesParBase), false);
         return 1;
     }
 
