@@ -37,6 +37,11 @@
       "nombre": 1
     },
     {
+      "item": "heralisz_tactical:consumable",
+      "nombre": 1,
+      "nbt": "{ConsumableId:\"heralisz_heal:attelle\"}"
+    },
+    {
       "item": "geckolib:food_cannedpork",
       "nombre": 2,
       "nbt": "{FoodState:0}"

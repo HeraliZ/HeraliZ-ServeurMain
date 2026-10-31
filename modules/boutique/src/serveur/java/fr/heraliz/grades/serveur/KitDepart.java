@@ -96,7 +96,7 @@ final class KitDepart {
             }
             p.inventoryMenu.broadcastChanges();
             p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.kit_depart.recu",
-                    "Tu as reçu ton kit de départ : tenue, pistolet, munitions, batte et de quoi manger."));
+                    "Tu as reçu ton kit de départ : tenue, pistolet, munitions, batte, attelle et de quoi manger."));
         }
     }
 }

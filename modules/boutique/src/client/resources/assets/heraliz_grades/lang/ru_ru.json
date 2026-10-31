@@ -358,7 +358,7 @@
   "heraliz_grades.tpa.cible_carte": "%s не на карте.",
   "message.heraliz_grades.trade.objet_match": "Предмет, выданный на матч, нельзя обменять.",
   "message.heraliz_grades.pb.attends": "Подожди несколько секунд, прежде чем снова запрашивать баланс.",
-  "heraliz_grades.kit_depart.recu": "Ты получил стартовый набор: одежда, пистолет, патроны, бита и немного еды.",
+  "heraliz_grades.kit_depart.recu": "Ты получил стартовый набор: одежда, пистолет, патроны, бита, шина и немного еды.",
   "item.heraliz_grades.bon": "Купон",
   "item.heraliz_grades.bon.vierge": "Пустой купон: настраивается персоналом.",
   "item.heraliz_grades.bon.utiliser": "ПКМ, чтобы использовать",
