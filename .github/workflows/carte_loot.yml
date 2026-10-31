@@ -1,0 +1,86 @@
+# Remplacer la carte de loot EN GARDANT le spawn (docs/NOUVELLE_CARTE.md). Ne part QUE par « Run workflow » : aucun
+# envoi, aucune heure, aucun autre workflow ne le lance.
+# Par défaut : ESSAI À BLANC. Il lit le Ptero, vérifie que la nouvelle carte est là où on l'attend et écrit dans le
+# résumé ce qui serait remplacé, mis de côté et gardé. Rien n'est changé.
+# Vraie exécution : case « executer » cochée ET phrase « REMPLACER LA CARTE DE LOOT » tapée exactement, depuis main.
+# Joueurs prévenus, serveur arrêté proprement, sauvegarde du Ptero (facultative), puis bascule par renommages seulement
+# (l'ancienne carte va dans <monde>/ancienne_carte_<date>/, jamais supprimée ; un échec remet tout comme avant), puis
+# redémarrage. Jamais touchés : spawn et autres mondes (dimensions/), level.dat, uid.dat, playerdata/, serverconfig/,
+# les données de data/ qui ne dépendent pas de la carte. Programme : outils/carte_loot.py.
+name: Remplacer la carte de loot
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Où est la nouvelle carte : dossier /carte_nouvelle du Ptero (conseillé) ou archive .zip d'une Release GitHub"
+        type: choice
+        options: [dossier_ptero, release]
+        default: dossier_ptero
+      release_tag:
+        description: "Source « release » : tag de la Release qui contient l'archive .zip de la carte"
+        type: string
+        default: "carte-loot"
+      executer:
+        description: "VRAIE exécution (sinon essai à blanc : rien n'est changé). Il faut AUSSI taper la phrase ci-dessous."
+        type: boolean
+        default: false
+      confirmation:
+        description: "Phrase à taper pour la vraie exécution : REMPLACER LA CARTE DE LOOT"
+        type: string
+        default: ""
+      preavis_minutes:
+        description: "Vraie exécution : minutes entre l'annonce aux joueurs et l'arrêt du serveur"
+        type: choice
+        options: ["5", "1", "10", "15"]
+        default: "5"
+      sauvegarde_ptero:
+        description: "Vraie exécution : sauvegarde du Ptero (onglet Backups, verrouillée) serveur arrêté, avant la bascule"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# même file que la mise en ligne : jamais en même temps qu'un envoi au Ptero
+concurrency:
+  group: serveur
+  cancel-in-progress: false
+
+jobs:
+  carte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PTERO_URL: ${{ secrets.PTERO_URL }}
+      PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+      PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Outils SFTP
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      # les choix passent par l'environnement (jamais collés dans le script) ; le programme refuse la vraie exécution
+      # sans la case ET la phrase exacte, ou hors de main
+      - name: Remplacer la carte de loot (essai à blanc par défaut)
+        env:
+          SOURCE: ${{ inputs.source }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          EXECUTER: ${{ inputs.executer }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          PREAVIS: ${{ inputs.preavis_minutes }}
+          SAUVEGARDE: ${{ inputs.sauvegarde_ptero }}
+          GH_TOKEN: ${{ github.token }}
+        run: python outils/carte_loot.py
