@@ -21,6 +21,13 @@ Minecraft : ce qu'on voit est ce que le jeu dessinera. Rien n'est dessiné à la
 
 Rendus validés par le propriétaire le 27/10. Coordonnées en pixels de modèle (16 = 1 bloc), face avant au nord (z petit), comme l'armoire (tc_modele.py).
 Pièces tournées : un seul axe, par pas de 22,5° au plus 45° (règle des modèles de bloc).
+
+Profondeur (HeraliZ, 31/10, choix du propriétaire « fais le plus logique ») : les coffres se posent dans la rangée des murs,
+comme la caisse en métal (fr.heraliz.crac.block.Adosse.PLACE_DANS_MUR : 13,75 px entre la face du mur, plus 0,25 px de
+jeu, et le bord de la case). Ils faisaient 14 à 14,75 px de profondeur : chaque coffre est construit comme avant, puis
+aminci à PROFONDEUR (13,5 px) par amincir() : l'avant et l'arrière (fermoirs, coins, charnières, porte, pieds) gardent leur
+forme et se rapprochent chacun de moitié, seule la partie lisse du milieu (côtés, fond, couvercle) est raccourcie. Même
+dessin, juste moins profond ; les rendus de contrôle comparent avec les modèles d'avant.
 """
 import argparse
 import math
@@ -336,6 +343,61 @@ def angle_cles(cles, t):
     return cles[-1][1]
 
 
+# =============================================================================================== profondeur
+PROFONDEUR = 13.5     # px, de l'avant à l'arrière : tient dans la rangée des murs (Adosse.PLACE_DANS_MUR, 13,75)
+
+
+def amincir(m, zf, zb, profondeur=PROFONDEUR):
+    """Rend le coffre m profond de « profondeur » px au plus (z, de l'avant à l'arrière), sans changer son dessin : tout ce
+    qui est devant zf recule de d/2, tout ce qui est derrière zb avance de d/2, le milieu (zf..zb, parties lisses) est
+    resserré, d = profondeur en trop. Pièces, charnières des pièces qui bougent, images posées et repères de peinture
+    suivent. Une pièce tournée autour de x ou de y doit être tout entière devant zf ou derrière zb (elle ne fait que
+    glisser)."""
+    z0 = min(float(c.a[2]) for c in m.cubes)
+    z1 = max(float(c.b[2]) for c in m.cubes)
+    d = (min(z1, 16.0) - max(z0, 0.0)) - profondeur
+    if d <= 1e-9:
+        return m
+    k = (zb - zf - d) / (zb - zf)
+
+    def f(z):
+        z = float(z)
+        if z <= zf:
+            return z + d / 2
+        if z >= zb:
+            return z - d / 2
+        return zf + d / 2 + (z - zf) * k
+
+    def point(p):
+        return (p[0], p[1], round(f(p[2]), 4))
+
+    for c in m.cubes:
+        if c.rot is not None and (c.rot[0] or c.rot[1]):
+            if not (c.b[2] <= zf + 1e-9 or c.a[2] >= zb - 1e-9):
+                raise SystemExit(f"{m.nom} : pièce tournée dans la partie resserrée : {c.a} {c.b}")
+        c.a = np.array([c.a[0], c.a[1], round(f(c.a[2]), 4)])
+        c.b = np.array([c.b[0], c.b[1], round(f(c.b[2]), 4)])
+        if c.pivot is not None:
+            c.pivot = point(c.pivot)
+        for cle in ("centre", "c"):
+            v = c.prm.get(cle)
+            if v is not None and len(v) == 3:
+                c.prm = dict(c.prm, **{cle: point(v)})
+        for dc in c.decals:
+            fin_a, fin_b = dc.o + dc.a, dc.o + dc.b
+            o = np.array(point(dc.o))
+            dc.a = np.array(point(fin_a)) - o
+            dc.b = np.array(point(fin_b)) - o
+            dc.o = o
+    for os_ in m.os.values():
+        os_.pivot = point(os_.pivot) if os_.pivot is not None else None
+    for nom, (pv, axe, cles) in list(m.cles.items()):
+        pv2 = point(pv)
+        m.cles[nom] = (pv2, axe, cles)
+        m.mouvements[nom] = (lambda p_, a_, c_: (lambda t: (p_, a_, angle_cles(c_, t))))(pv2, axe, cles)
+    return m
+
+
 # =============================================================================================== les coffres
 def malle_chantier():
     """Peu commune : malle de chantier en planches peintes en vert, coins et sangles d'acier, 2 blocs de large."""
@@ -388,7 +450,7 @@ def malle_chantier():
           faces=("north", "east", "west", "down"))
     for x0 in (5.0, 25.0):
         B("couvercle", (x0, 9.4, 15.5), (x0 + 2.4, 10.8, 15.75), "acier_coin", prm={"rivets": False})
-    return m
+    return amincir(m, 4.2, 13.8)   # avant : coins, fermoirs ; arrière : coins, charnières
 
 
 def casier_metallique():
@@ -422,7 +484,7 @@ def casier_metallique():
       decals=(decal_nord(carte, 5.2, 10.8, 11.2, 8.8, 2.2, col(30, 30, 34), 0.92),))
     for y0 in (5.0, 15.0, 25.0):                                                      # charnières (nœuds)
         B("porte", (14.6, y0, 2.3), (15.2, y0 + 2.2, 3.0), "acier_brut")
-    return m
+    return amincir(m, 3.0, 14.75)   # avant : la porte ; arrière : le dos
 
 
 def caisse_armes():
@@ -484,7 +546,7 @@ def caisse_armes():
     B("couvercle", (2.0, 10.0, 3.5), (30.0, 10.4, 14.5), "mousse", faces=("down",), prm={"alveoles": True})
     for x0 in (6.0, 23.6):
         B("couvercle", (x0, 10.0, 15.5), (x0 + 2.4, 11.4, 15.75), "acier_noir")
-    return m
+    return amincir(m, 4.9, 13.1)   # avant : coins, fermoirs, serrure ; arrière : coins, charnières
 
 
 def coffre_fort():
@@ -543,7 +605,7 @@ def coffre_fort():
         else:
             m.B("volant", (px - cote / 2, py - 0.3, 1.05), (px + cote / 2, py + 0.3, 1.85), "plaque_or",
                 rot=(0, 0, tang) if tang else None, pivot=(px, py, 1.05) if tang else None)
-    return m
+    return amincir(m, 4.6, 13.2)   # avant : porte, cadre, pieds ; arrière : dos, pieds
 
 
 COFFRES = [malle_chantier, casier_metallique, caisse_armes, coffre_fort]
