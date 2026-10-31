@@ -121,13 +121,5 @@
     "perdu_pct": 15.0,
     "gagne_pct": 10.0
   },
-  "verrou_jours": 7,
-  "don_xp": [
-    0,
-    0,
-    0,
-    0,
-    60,
-    200
-  ]
+  "verrou_jours": 7
 }

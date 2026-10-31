@@ -685,7 +685,7 @@
   "gui.saison.points": "PVE %s (%s) · PVP %s (%s) · Events %s (%s)",
   "gui.saison.general": "Overall ranking: %s",
   "gui.niveau.gain.point": "+1 upgrade point",
-  "gui.niveau.xp.don": "Rare item donations (/clan don)",
+  "gui.niveau.xp.don": "Valuable item donations (/clan don)",
   "gui.niveau.court.3": "Extra banner backgrounds",
   "gui.niveau.court.15": "Coloured clan tag",
   "gui.niveau.court.25": "Rare banner shapes",
@@ -710,7 +710,7 @@
   "msg.saison.classement.pvp": "PVP ranking",
   "msg.saison.classement.events": "Events ranking",
   "msg.saison.vide": "No ranked clan.",
-  "msg.don.refus": "Only Legendary or Unique salvage items can be given to the clan (in hand).",
+  "msg.don.refus": "Only Epic, Legendary or Unique valuables for resale can be given to the clan (in hand): %s, %s and %s XP each.",
   "msg.don.fait": "%s gave %s × %s to the clan (+%s XP).",
   "msg.coffre.match": "The clan chest is closed during a match.",
   "msg.coffre.a_terre": "You can't open the clan chest while downed.",
@@ -838,5 +838,8 @@
   "msg.xp.plafond": "Daily cap reached for \"%s\" (%s XP): this source gives no more clan XP until midnight.",
   "msg.xp.plafond_reduit": "Daily cap reached for \"%s\" (%s XP): this source only gives %s %% of its XP to the clan until midnight.",
   "msg.courbe_niveaux": "Clan levels are now harder: your clan keeps all its XP, recounted on the new scale (level %s → level %s). Every upgrade already bought is kept; zone captures open at level %s.",
-  "evenement.courbe_niveaux": "New level scale: level %s → %s (XP and upgrades kept)"
+  "evenement.courbe_niveaux": "New level scale: level %s → %s (XP and upgrades kept)",
+  "msg.don.creatif": "No clan donations in creative or spectator mode.",
+  "msg.don.copie": "This item has already been given to a clan: a copy gives nothing. Staff have been notified.",
+  "msg.don.plafond": "Daily donation cap reached (%s XP): this item would only give %s XP instead of %s. Keep it for tomorrow, or type /clan don confirmer within 30 s to give it anyway."
 }

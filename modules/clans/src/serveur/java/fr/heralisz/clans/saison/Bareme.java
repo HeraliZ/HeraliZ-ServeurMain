@@ -72,11 +72,8 @@ public final class Bareme {
 
     /** Prise du coeur pendant la Purge : part perdue par le clan pris, part gagnee par l'attaquant. */
     public double raidPerduPct = 15, raidGagnePct = 10;
-    /**
-     * XP de clan par objet donne au clan (/clan don), par rarete 0..5 : seulement les objets de recuperation a revendre
-     * (tag heraliz_composants:vente), Legendaires et Uniques ; l'objet disparait.
-     */
-    public long[] donXp = {0, 0, 0, 0, 60, 200};
+    // 31/10 : l'XP des dons au clan (/clan don, ancienne cle « don_xp ») est passee dans niveaux.json avec toute l'XP de
+    // clan (XpClan, section « dons ») : ce fichier ne garde que les points de saison
     /** Derniers jours de la saison ou personne ne rejoint un clan. */
     public int verrouJours = 7;
 
@@ -231,8 +228,6 @@ public final class Bareme {
         raidPerduPct = Math.max(0, Math.min(100, Json.dbl(r, "perdu_pct", raidPerduPct)));
         raidGagnePct = Math.max(0, Math.min(raidPerduPct, Json.dbl(r, "gagne_pct", raidGagnePct)));
         verrouJours = Math.max(0, Json.integer(o, "verrou_jours", verrouJours));
-        JsonArray dx = Json.arr(o, "don_xp");
-        for (int i = 0; i < Math.min(6, dx.size()); i++) donXp[i] = Math.max(0, dx.get(i).getAsLong());
     }
 
     JsonObject toJson() {
@@ -303,9 +298,6 @@ public final class Bareme {
         r.addProperty("gagne_pct", raidGagnePct);
         o.add("raid", r);
         o.addProperty("verrou_jours", verrouJours);
-        JsonArray dx = new JsonArray();
-        for (long x : donXp) dx.add(x);
-        o.add("don_xp", dx);
         return o;
     }
 

@@ -82,7 +82,8 @@ public final class SaisonCommandes {
                     Reponses.ok(c.getSource(), Component.literal("Barème de la saison relu (config/heralisz_clans/saison.json)."));
                     return 1;
                 })));
-        d.register(Commands.literal("clan").then(Commands.literal("don").executes(SaisonCommandes::don)));
+        d.register(Commands.literal("clan").then(Commands.literal("don").executes(c -> don(c, false))
+                .then(Commands.literal("confirmer").executes(c -> don(c, true)))));
         d.register(Commands.literal("clan").then(Commands.literal("ameliorer")
                 .then(Commands.argument("branche", StringArgumentType.word())
                         .suggests((c, b) -> {
@@ -147,25 +148,65 @@ public final class SaisonCommandes {
     private static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> VENTE = net.minecraft.tags.TagKey.create(
             net.minecraft.core.registries.Registries.ITEM, new net.minecraft.resources.ResourceLocation("heraliz_composants", "vente"));
 
-    /** Don au clan de l'objet en main (recuperation Legendaire ou Unique) : il disparait, le clan gagne de l'XP. */
-    private static int don(CommandContext<CommandSourceStack> c) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    /** Etiquette anti-copie posee par Spartan sur les objets de valeur suivis (com.Spartan.check.item.AntiDupe.CLE). */
+    private static final String UID_SPARTAN = "spartan_uid";
+    /** Don en attente de confirmation (plafond du jour des dons depasse) : joueur -> fin du delai (ms). */
+    private static final java.util.Map<java.util.UUID, Long> DON_A_CONFIRMER = new java.util.HashMap<>();
+
+    /**
+     * Don au clan de l'objet en main : il disparait, le clan gagne de l'XP (31/10 : bareme par rarete et plafond du jour
+     * dans niveaux.json, {@link fr.heralisz.clans.server.XpClan}). Seuls les objets de valeur a revendre (tag
+     * heraliz_composants:vente) : aucun marchand ne les vend, aucune recette ne les fabrique (rien a acheter ou a fabriquer
+     * pour creer de l'XP). Refuse en creatif (copie au bouton du milieu) et pour une copie d'un objet deja donne (numero
+     * anti-copie de Spartan). Au-dela du plafond du jour, le joueur confirme ({@code /clan don confirmer}, 30 s).
+     */
+    private static int don(CommandContext<CommandSourceStack> c, boolean confirme) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
         ClanStore s = ClanStore.get();
         Clan clan = s == null ? null : s.clanDe(p.getUUID());
         if (clan == null) return Reponses.echec(c.getSource(), Component.translatable("msg.pas_de_clan"));
+        if (p.isCreative() || p.isSpectator()) {
+            return Reponses.echec(c.getSource(), Component.translatableWithFallback("msg.don.creatif",
+                    "Pas de don au clan en mode créatif ou spectateur."));
+        }
         net.minecraft.world.item.ItemStack st = p.getMainHandItem();
         int r = st.isEmpty() || !st.is(VENTE) ? -1 : Ponts.rarete(st);
-        long parObjet = r < 0 ? 0 : Saison.bareme().donXp[r];
+        net.minecraft.resources.ResourceLocation id = st.isEmpty() ? null : net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(st.getItem());
+        long parObjet = r < 0 || id == null ? 0 : fr.heralisz.clans.server.XpClan.donXp(id.toString(), r);
         if (parObjet <= 0) {
             return Reponses.echec(c.getSource(), Component.translatableWithFallback("msg.don.refus",
-                    "Seuls les objets de récupération Légendaires ou Uniques se donnent au clan (en main)."));
+                    "Seuls les objets de valeur à revendre Épiques, Légendaires ou Uniques se donnent au clan (en main) : %s, %s et %s XP chacun.",
+                    fr.heralisz.clans.server.XpClan.donRarete(3), fr.heralisz.clans.server.XpClan.donRarete(4), fr.heralisz.clans.server.XpClan.donRarete(5)));
+        }
+        long uid = st.getTag() != null && st.getTag().contains(UID_SPARTAN, net.minecraft.nbt.Tag.TAG_LONG) ? st.getTag().getLong(UID_SPARTAN) : 0L;
+        if (s.donDejaFait(uid)) {
+            fr.heralisz.clans.HeraliszClans.LOG.warn("[clans] [{}] don refuse : {} tient une copie d'un objet deja donne ({}, numero {})",
+                    clan.tag, p.getGameProfile().getName(), id, uid);
+            return Reponses.echec(c.getSource(), Component.translatableWithFallback("msg.don.copie",
+                    "Cet objet a déjà été donné à un clan : une copie ne rapporte rien. Le staff est prévenu."));
         }
         int n = st.getCount();
+        long propose = parObjet * n;
+        long now = System.currentTimeMillis();
+        long donne = fr.heralisz.clans.server.XpClan.apercu(clan, fr.heralisz.clans.model.SourceXp.DON, propose, now);
+        Long attente = DON_A_CONFIRMER.remove(p.getUUID());
+        if (donne < propose && (!confirme || attente == null || now > attente)) {
+            DON_A_CONFIRMER.put(p.getUUID(), now + 30_000L);
+            return Reponses.echec(c.getSource(), Component.translatableWithFallback("msg.don.plafond",
+                    "Plafond du jour des dons atteint (%s XP) : cet objet ne rapporterait que %s XP au lieu de %s. Gardez-le pour demain, ou tapez /clan don confirmer dans les 30 s pour le donner quand même.",
+                    fr.heralisz.clans.server.XpClan.plafond(fr.heralisz.clans.model.SourceXp.DON), donne, propose));
+        }
         String nom = st.getHoverName().getString();
         p.getInventory().setItem(p.getInventory().selected, net.minecraft.world.item.ItemStack.EMPTY);
-        ClanService.ajouterXp(clan, fr.heralisz.clans.model.SourceXp.DON, parObjet * n, p.getUUID());
-        ClanService.diffuserChat(clan, "msg.don.fait", p.getGameProfile().getName(), n, nom, parObjet * n);
-        fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} par {} (+{} XP)", clan.tag, n, nom, p.getGameProfile().getName(), parObjet * n);
+        s.noterDon(uid);
+        long gagne = ClanService.ajouterXp(clan, fr.heralisz.clans.model.SourceXp.DON, propose, p.getUUID());
+        ClanService.diffuserChat(clan, "msg.don.fait", p.getGameProfile().getName(), n, nom, gagne);
+        fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} ({}, numero {}) par {} (+{} XP sur {})", clan.tag, n, nom, id, uid,
+                p.getGameProfile().getName(), gagne, propose);
+        // l'objet n'existe plus : le fichier des clans est ecrit tout de suite (un plantage ne rend pas l'objet ET l'XP)
+        p.getInventory().setChanged();
+        s.sauvegarderMaintenant();
+        if (DON_A_CONFIRMER.size() > 64) DON_A_CONFIRMER.values().removeIf(t -> t < now);
         return 1;
     }
 

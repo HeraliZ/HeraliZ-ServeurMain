@@ -685,7 +685,7 @@
   "gui.saison.points": "PVE %s (%s) · PVP %s (%s) · Events %s (%s)",
   "gui.saison.general": "Classement général : %s",
   "gui.niveau.gain.point": "+1 point d'amélioration",
-  "gui.niveau.xp.don": "Dons d'objets rares (/clan don)",
+  "gui.niveau.xp.don": "Dons d'objets de valeur (/clan don)",
   "gui.niveau.court.3": "Fonds de bannière en plus",
   "gui.niveau.court.15": "Tag du clan en couleur",
   "gui.niveau.court.25": "Formes de bannière rares",
@@ -710,7 +710,7 @@
   "msg.saison.classement.pvp": "Classement PVP",
   "msg.saison.classement.events": "Classement des events",
   "msg.saison.vide": "Aucun clan classé.",
-  "msg.don.refus": "Seuls les objets de récupération Légendaires ou Uniques se donnent au clan (en main).",
+  "msg.don.refus": "Seuls les objets de valeur à revendre Épiques, Légendaires ou Uniques se donnent au clan (en main) : %s, %s et %s XP chacun.",
   "msg.don.fait": "%s a donné %s × %s au clan (+%s XP).",
   "msg.coffre.match": "Le coffre du clan est fermé pendant un match.",
   "msg.coffre.a_terre": "Impossible d'ouvrir le coffre du clan à terre.",
@@ -838,5 +838,8 @@
   "msg.xp.plafond": "Plafond du jour atteint pour « %s » (%s XP) : cette source ne donne plus d'XP au clan jusqu'à minuit.",
   "msg.xp.plafond_reduit": "Plafond du jour atteint pour « %s » (%s XP) : cette source ne donne plus que %s %% de son XP au clan jusqu'à minuit.",
   "msg.courbe_niveaux": "Les niveaux de clan sont devenus plus durs : votre clan garde toute son XP, recomptée sur la nouvelle échelle (niveau %s → niveau %s). Les améliorations déjà achetées sont toutes gardées ; la capture des zones s'ouvre au niveau %s.",
-  "evenement.courbe_niveaux": "Nouvelle échelle des niveaux : niveau %s → %s (XP et améliorations gardées)"
+  "evenement.courbe_niveaux": "Nouvelle échelle des niveaux : niveau %s → %s (XP et améliorations gardées)",
+  "msg.don.creatif": "Pas de don au clan en mode créatif ou spectateur.",
+  "msg.don.copie": "Cet objet a déjà été donné à un clan : une copie ne rapporte rien. Le staff est prévenu.",
+  "msg.don.plafond": "Plafond du jour des dons atteint (%s XP) : cet objet ne rapporterait que %s XP au lieu de %s. Gardez-le pour demain, ou tapez /clan don confirmer dans les 30 s pour le donner quand même."
 }

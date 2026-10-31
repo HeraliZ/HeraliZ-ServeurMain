@@ -12,7 +12,7 @@
 [antidupe]
 	#Objets suivis (identifiants exacts, ou « mod:* » pour tout un mod). Seuls les objets
 	#NON empilables reçoivent un numéro (un numéro empêcherait d'empiler).
-	trackedItems = ["tacz:*", "backpacked:*", "heraliz_armory:*", "airstrike:designator"]
+	trackedItems = ["tacz:*", "backpacked:*", "heraliz_armory:*", "airstrike:designator", "heraliz_composants:diamant", "heraliz_composants:lingot_or", "heraliz_composants:couronne", "heraliz_composants:idole_doree", "heraliz_composants:oeuf_orne", "heraliz_composants:crane_cristal", "heraliz_composants:sceptre", "heraliz_composants:calice"]
 	#Intervalle entre deux relevés (secondes). Un relevé lit tout en une fois (~1 ms).
 	#Range: 5 ~ 300
 	scanSeconds = 20

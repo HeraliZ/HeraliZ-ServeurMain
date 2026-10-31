@@ -2,6 +2,8 @@ package fr.heralisz.clans.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fr.heralisz.clans.ClansConfig;
@@ -18,12 +20,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Regles de l'XP de clan (31/10, demande du proprietaire : « montee de niveau beaucoup plus difficile » et « empecher de
- * progresser trop vite en repetant une seule activite ») : plafond par clan, par source et par jour (heure de Paris).
- * Tout est dans {@code config/heralisz_clans/niveaux.json} (section {@code plafonds_jour}, ajoutee au fichier si elle
- * manque), relu par {@code /clan admin recharger}.
+ * progresser trop vite en repetant une seule activite ») : plafond par clan, par source et par jour (heure de Paris), et
+ * bareme des dons d'objets (/clan don). Tout est dans {@code config/heralisz_clans/niveaux.json} (sections
+ * {@code plafonds_jour} et {@code dons}, ajoutees au fichier si elles manquent), relu par {@code /clan admin recharger}.
  * Le gain de chaque action reste dans {@code heralisz_clans-common.toml} ([xp] et xp_heure_valeur) ; les quetes dans
  * quetes.json.
  * <p>
@@ -55,8 +59,19 @@ public final class XpClan {
         AU_DELA_DEFAUT[SourceXp.DON.ordinal()] = 25;             // ... puis le quart
     }
 
+    /**
+     * XP par objet donne, par rarete (0 Commun, 1 Peu commun, 2 Rare, 3 Epique, 4 Legendaire, 5 Unique) : environ 3 a 5 XP
+     * par heral de leur prix chez Mila (Epique 50, Legendaire 200, Unique 500) ; 0 = refuse. Rare et moins : refuses (4 %
+     * des zombies lachent un objet Rare : ce serait une source sans fin).
+     */
+    static final long[] DON_DEFAUT = {0, 0, 0, 150, 1000, 2500};
+
     private static final long[] plafond = PLAFOND_DEFAUT.clone();
     private static final int[] auDelaPct = AU_DELA_DEFAUT.clone();
+    private static long[] donRarete = DON_DEFAUT.clone();
+    /** XP d'un objet precis (identifiant), a la place de celle de sa rarete (vide par defaut). */
+    private static final Map<String, Long> donObjets = new HashMap<>();
+
     // ------------------------------------------------------------------ jour (heure de Paris)
     private static long jour = Long.MIN_VALUE, finJourMs;
 
@@ -138,21 +153,36 @@ public final class XpClan {
         };
     }
 
+    // ------------------------------------------------------------------ dons
+    /** XP d'un objet donne au clan : celle de l'objet s'il est cite, sinon celle de sa rarete (0..5, -1 inconnue : 0). */
+    public static long donXp(String idObjet, int rarete) {
+        Long v = donObjets.get(idObjet);
+        if (v != null) return Math.max(0, v);
+        return rarete < 0 || rarete >= donRarete.length ? 0 : donRarete[rarete];
+    }
+
+    /** XP par rarete (0..5) des dons, pour les messages. */
+    public static long donRarete(int rarete) {
+        return rarete < 0 || rarete >= donRarete.length ? 0 : donRarete[rarete];
+    }
+
     // ------------------------------------------------------------------ fichier
     /**
-     * Lit la section {@code plafonds_jour} de niveaux.json (apres {@code Niveaux.charger}, qui ecrit le fichier s'il
-     * manque) ; absente, elle prend les valeurs par defaut et est ajoutee au fichier. Fichier illisible : valeurs par
-     * defaut, fichier laisse tel quel.
+     * Lit les sections {@code plafonds_jour} et {@code dons} de niveaux.json (apres {@code Niveaux.charger}, qui ecrit le
+     * fichier s'il manque) ; une section absente prend les valeurs par defaut et est ajoutee au fichier. Fichier illisible :
+     * valeurs par defaut, fichier laisse tel quel.
      */
     public static void charger(Path dossierConfig) {
         Path f = dossierConfig.resolve("niveaux.json");
         System.arraycopy(PLAFOND_DEFAUT, 0, plafond, 0, N);
         System.arraycopy(AU_DELA_DEFAUT, 0, auDelaPct, 0, N);
+        donRarete = DON_DEFAUT.clone();
+        donObjets.clear();
         JsonObject o;
         try {
             o = Files.exists(f) ? JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject() : new JsonObject();
         } catch (IOException | RuntimeException ex) {
-            HeraliszClans.LOG.error("[clans] niveaux.json illisible : plafonds d'XP par defaut", ex);
+            HeraliszClans.LOG.error("[clans] niveaux.json illisible : plafonds d'XP et dons par defaut", ex);
             return;
         }
         boolean ajoute = false;
@@ -168,11 +198,32 @@ public final class XpClan {
             o.add("plafonds_jour", plafondsJson());
             ajoute = true;
         }
+        if (o.has("dons") && o.get("dons").isJsonObject()) {
+            try {
+                JsonObject d = o.getAsJsonObject("dons");
+                JsonArray a = Json.arr(d, "par_rarete");
+                for (int i = 0; i < Math.min(donRarete.length, a.size()); i++) {
+                    if (a.get(i).isJsonPrimitive()) donRarete[i] = Math.max(0, a.get(i).getAsLong());
+                }
+                JsonObject ob = Json.obj(d, "objets");
+                for (Map.Entry<String, JsonElement> e : ob.entrySet()) {
+                    if (e.getKey().startsWith("_") || !e.getValue().isJsonPrimitive()) continue;
+                    donObjets.put(e.getKey(), Math.max(0, e.getValue().getAsLong()));
+                }
+            } catch (RuntimeException ex) {
+                HeraliszClans.LOG.error("[clans] niveaux.json : section « dons » illisible, bareme des dons par defaut", ex);
+                donRarete = DON_DEFAUT.clone();
+                donObjets.clear();
+            }
+        } else {
+            o.add("dons", donsJson());
+            ajoute = true;
+        }
         if (ajoute) {
             try {
                 Files.createDirectories(dossierConfig);
                 Files.writeString(f, GSON.toJson(o), StandardCharsets.UTF_8);
-                HeraliszClans.LOG.info("[clans] niveaux.json : plafonds d'XP du jour ajoutes (valeurs par defaut)");
+                HeraliszClans.LOG.info("[clans] niveaux.json : plafonds d'XP du jour et bareme des dons ajoutes (valeurs par defaut)");
             } catch (IOException ex) {
                 HeraliszClans.LOG.warn("[clans] niveaux.json : ajout des plafonds impossible ({})", ex.toString());
             }
@@ -183,7 +234,7 @@ public final class XpClan {
             sb.append(' ').append(s.id()).append('=').append(plafond[s.ordinal()] <= 0 ? "libre" : String.valueOf(plafond[s.ordinal()]));
             if (auDelaPct[s.ordinal()] > 0) sb.append("(+").append(auDelaPct[s.ordinal()]).append("%)");
         }
-        HeraliszClans.LOG.info("[clans] XP de clan, plafonds du jour :{}", sb);
+        HeraliszClans.LOG.info("[clans] XP de clan, plafonds du jour :{} ; dons par rarete {}", sb, Arrays.toString(donRarete));
     }
 
     static JsonObject plafondsJson() {
@@ -199,5 +250,17 @@ public final class XpClan {
             pj.add(s.id(), r);
         }
         return pj;
+    }
+
+    static JsonObject donsJson() {
+        JsonObject d = new JsonObject();
+        d.addProperty("_aide", "/clan don : XP par objet de valeur a revendre (tag heraliz_composants:vente) donne au clan, par rarete"
+                + " (Commun, Peu commun, Rare, Epique, Legendaire, Unique ; 0 = refuse) ; objets : XP d'un objet precis a la place"
+                + " de celle de sa rarete. Le plafond du jour des dons est dans plafonds_jour.don.");
+        JsonArray a = new JsonArray();
+        for (long v : DON_DEFAUT) a.add(v);
+        d.add("par_rarete", a);
+        d.add("objets", new JsonObject());
+        return d;
     }
 }

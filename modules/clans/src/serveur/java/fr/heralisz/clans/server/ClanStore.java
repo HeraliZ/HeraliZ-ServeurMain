@@ -55,6 +55,12 @@ public final class ClanStore {
     private final Map<String, Clan> parTag = new HashMap<>();
     private final Map<String, Clan> parNom = new HashMap<>();
     private final Map<UUID, LienJoueur> liens = new HashMap<>();
+    /**
+     * Numeros anti-copie (Spartan, etiquette {@code spartan_uid}) des objets deja donnes a un clan (/clan don, 31/10) : une
+     * copie du meme objet est refusee. Gardes dans clans.json, les {@link #DONS_UID_MAX} derniers.
+     */
+    private final java.util.LinkedHashSet<Long> donsUid = new java.util.LinkedHashSet<>();
+    private static final int DONS_UID_MAX = 50_000;
     private boolean dirtyClans, dirtyJoueurs;
     private int ticks;
 
@@ -235,6 +241,22 @@ public final class ClanStore {
         return parNom(nom) == null;
     }
 
+    /** Vrai si un objet portant ce numero anti-copie a deja ete donne a un clan. */
+    public boolean donDejaFait(long uid) {
+        return uid != 0 && donsUid.contains(uid);
+    }
+
+    /** Note le numero anti-copie d'un objet donne a un clan (0 : objet sans numero, rien a noter). */
+    public void noterDon(long uid) {
+        if (uid == 0 || !donsUid.add(uid)) return;
+        if (donsUid.size() > DONS_UID_MAX) {
+            java.util.Iterator<Long> it = donsUid.iterator();
+            it.next();
+            it.remove();
+        }
+        dirtyClans = true;
+    }
+
     /** Signale une modification des clans (sauvegardee au prochain autosave). */
     public void marquerDirty() {
         dirtyClans = true;
@@ -283,6 +305,7 @@ public final class ClanStore {
         parTag.clear();
         parNom.clear();
         liens.clear();
+        donsUid.clear();
         lectureIncomplete = false;
         // les deux fichiers sont lus a part, entree par entree : une entree abimee ne fait plus perdre les autres
         if (Files.exists(fClans())) {
@@ -306,6 +329,11 @@ public final class ClanStore {
                     }
                     clans.put(c.id, c);
                     indexer(c);
+                }
+                if (root.has("donsUid") && root.get("donsUid").isJsonArray()) {
+                    for (JsonElement e : root.getAsJsonArray("donsUid")) {
+                        if (e.isJsonPrimitive() && e.getAsLong() != 0) donsUid.add(e.getAsLong());
+                    }
                 }
             } catch (IOException | RuntimeException ex) {
                 HeraliszClans.LOG.error("[clans] lecture de {} impossible", fClans(), ex);
@@ -362,6 +390,9 @@ public final class ClanStore {
             JsonArray a = new JsonArray();
             for (Clan c : clans.values()) a.add(c.toJson());
             root.add("clans", a);
+            JsonArray dons = new JsonArray();
+            for (long uid : donsUid) dons.add(uid);
+            root.add("donsUid", dons);
             Path f = fClans();
             dirtyClans = false;
             EcrituresFond.ecrire(f, () -> ecrireAtomique(f, root), () -> echecClans.set(true));

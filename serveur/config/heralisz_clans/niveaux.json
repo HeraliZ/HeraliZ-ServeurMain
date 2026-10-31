@@ -1,5 +1,5 @@
 {
-  "_aide": "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore), multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ; membres et territoires : arbre d'ameliorations du clan ; plafonds_jour : lu par le serveur (XpClan), relus par /clan admin recharger. 31/10 : nouvelle courbe 3 600 x (1 + 0,065 (n - 1)), arrondie a 100 (3 600 XP pour le niveau 2, 13 700 pour le dernier, ~380 000 en tout) ; 28/10 : ancienne courbe 20 x n^1,5 x 3.",
+  "_aide": "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore), multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ; membres et territoires : arbre d'ameliorations du clan ; plafonds_jour et dons : lus par le serveur (XpClan), relus par /clan admin recharger. 31/10 : nouvelle courbe 3 600 x (1 + 0,065 (n - 1)), arrondie a 100 (3 600 XP pour le niveau 2, 13 700 pour le dernier, ~380 000 en tout) ; 28/10 : ancienne courbe 20 x n^1,5 x 3.",
   "facteur_xp": 1.0,
   "facteur_prix_arbre": 2.0,
   "xp_suivant": [
@@ -83,5 +83,17 @@
       "plafond": 3000,
       "au_dela_pct": 25
     }
+  },
+  "dons": {
+    "_aide": "/clan don : XP par objet de valeur a revendre (tag heraliz_composants:vente) donne au clan, par rarete (Commun, Peu commun, Rare, Epique, Legendaire, Unique ; 0 = refuse) ; objets : XP d'un objet precis a la place de celle de sa rarete. Le plafond du jour des dons est dans plafonds_jour.don.",
+    "par_rarete": [
+      0,
+      0,
+      0,
+      150,
+      1000,
+      2500
+    ],
+    "objets": {}
   }
 }
