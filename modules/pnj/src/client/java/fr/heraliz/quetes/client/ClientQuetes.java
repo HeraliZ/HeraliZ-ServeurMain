@@ -37,8 +37,11 @@ public final class ClientQuetes implements Partie {
             e.register(JOURNALIERES);
         });
         // écran du recycleur (25/10) : menu avec cases, barre de progression et aperçu
-        busMod.addListener((net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() ->
-                net.minecraft.client.gui.screens.MenuScreens.register(HeralizQuetes.RECYCLEUR_MENU.get(), EcranRecycleur::new)));
+        busMod.addListener((net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
+            net.minecraft.client.gui.screens.MenuScreens.register(HeralizQuetes.RECYCLEUR_MENU.get(), EcranRecycleur::new);
+            // recycleur de la carte (31/10) : même écran, textes de la machine partagée
+            net.minecraft.client.gui.screens.MenuScreens.register(HeralizQuetes.RECYCLEUR_CARTE_MENU.get(), EcranRecycleur::new);
+        }));
         busMod.addListener((RegisterGuiOverlaysEvent e) -> {
             e.registerAboveAll("quetes", HudQuetes::rendu);
             e.registerAboveAll("radio", RadioVarga::rendu);

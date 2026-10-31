@@ -127,6 +127,26 @@ final class Ponts {
         }
     }
 
+    private static Method sauverJoueur;
+
+    /**
+     * Sauvegarde tout de suite ce joueur sur le disque ({@code PlayerList.save}, protégée : par réflexion SRG, comme
+     * l'hôtel des ventes et /trade ; sinon tous les joueurs). Recycleur de la carte (31/10) : un objet déposé quitte la
+     * sauvegarde du joueur AVANT d'entrer dans celle de la machine.
+     */
+    static void sauverJoueur(ServerPlayer p) {
+        try {
+            if (sauverJoueur == null) {
+                sauverJoueur = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findMethod(net.minecraft.server.players.PlayerList.class,
+                        "m_6765_", ServerPlayer.class);
+            }
+            sauverJoueur.invoke(p.server.getPlayerList(), p);
+        } catch (Exception e) {
+            LOG.warn("[heraliz_quetes] sauvegarde du joueur impossible ({}), sauvegarde de tous", e.toString());
+            p.server.getPlayerList().saveAll();
+        }
+    }
+
     static long solde(UUID joueur) {
         Class<?> c = eco();
         if (c == null) return 0;

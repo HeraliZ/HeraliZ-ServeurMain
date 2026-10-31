@@ -53,6 +53,10 @@ import java.util.Map;
  * est rendu, ou tombe aux pieds d'un joueur mort ou déconnecté. Objets à vie, prêtés par un match, à camo à vie, de
  * quête : jamais recyclés ({@link Echanges#interdit}) ; objets achetés chez un marchand, refusés s'ils rapporteraient
  * plus de la moitié de leur prix ({@link #tropRentable}).
+ *
+ * <p>Recycleur de la carte (31/10, bloc {@code recycleur_carte}, {@link RecycleurCarteEntiteServeur}) : mêmes règles, avec
+ * la chance du profil « carte » ({@code profils.carte.chance} : 10 % de plus, relatif) ; le refus « trop rentable » est
+ * jugé avec cette chance. Pas de point de saison.
  */
 final class Recyclage {
     private static final Logger LOG = LogUtils.getLogger();
@@ -75,14 +79,19 @@ final class Recyclage {
         }
     }
 
-    private record Etat(double chance, int maxPieces, int ticksParObjet, long[] herals, List<String> jamais, Map<String, String> cles,
-                        Map<String, Regle> exactes, List<Regle> larges) {
+    private record Etat(double chance, double chanceCarte, int maxPieces, int ticksParObjet, long[] herals, List<String> jamais,
+                        Map<String, String> cles, Map<String, Regle> exactes, List<Regle> larges) {
+        double chance(boolean carte) {
+            return carte ? chanceCarte : chance;
+        }
     }
 
     private static volatile Etat etat = vide();
+    /** Change à chaque lecture des règles : les recycleurs de la carte (qui durent) refont alors leurs verdicts. */
+    static volatile int version;
 
     private static Etat vide() {
-        return new Etat(0, 0, 60, new long[6], List.of(), Map.of(), Map.of(), List.of());
+        return new Etat(0, 0, 0, 60, new long[6], List.of(), Map.of(), Map.of(), List.of());
     }
 
     static Path fichier() {
@@ -92,6 +101,7 @@ final class Recyclage {
     /** Relu avec les PNJ (démarrage, /quete recharger) ; un fichier absent ou illisible = recycleur fermé. */
     static void charger(List<String> erreurs) {
         Path f = fichier();
+        version++;
         if (!Files.exists(f)) {
             etat = vide();
             return;
@@ -99,6 +109,14 @@ final class Recyclage {
         try {
             JsonObject o = JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject();
             double chance = Math.max(0, Math.min(1, o.has("chance") ? o.get("chance").getAsDouble() : 0.1));
+            // 31/10 : profil du recycleur de la carte ; absent = même chance que le spawn (jamais plus généreux par défaut)
+            double chanceCarte = chance;
+            if (o.has("profils") && o.getAsJsonObject("profils").has("carte")) {
+                JsonObject c = o.getAsJsonObject("profils").getAsJsonObject("carte");
+                if (c.has("chance")) chanceCarte = Math.max(0, Math.min(1, c.get("chance").getAsDouble()));
+            } else {
+                LOG.warn("[heraliz_quetes] recyclage.json sans profil « carte » : le recycleur de la carte garde la chance du spawn");
+            }
             int maxPieces = Math.max(1, o.has("max_pieces") ? o.get("max_pieces").getAsInt() : 2);
             double secondes = Math.max(0.5, Math.min(30, o.has("secondes_par_objet") ? o.get("secondes_par_objet").getAsDouble() : 3));
             long[] herals = new long[6];
@@ -134,10 +152,10 @@ final class Recyclage {
                     larges.add(regle);
                 }
             }
-            etat = new Etat(chance, maxPieces, (int) Math.round(secondes * 20), herals, List.copyOf(jamais), Map.copyOf(cles),
+            etat = new Etat(chance, chanceCarte, maxPieces, (int) Math.round(secondes * 20), herals, List.copyOf(jamais), Map.copyOf(cles),
                     Map.copyOf(exactes), List.copyOf(larges));
-            LOG.info("[heraliz_quetes] recycleur : {} règles, {} % par composant, {} pièce(s) au plus, {} s par objet",
-                    exactes.size() + larges.size(), Math.round(chance * 100), maxPieces, secondes);
+            LOG.info("[heraliz_quetes] recycleur : {} règles, {} % par composant ({} % sur la carte), {} pièce(s) au plus, {} s par objet",
+                    exactes.size() + larges.size(), Math.round(chance * 1000) / 10.0, Math.round(chanceCarte * 1000) / 10.0, maxPieces, secondes);
         } catch (Exception ex) {
             erreurs.add("recyclage.json : " + ex.getMessage());
         }
@@ -150,7 +168,17 @@ final class Recyclage {
     }
 
     static float chance() {
-        return (float) etat.chance;
+        return chance(false);
+    }
+
+    /** Chance par composant : spawn, ou recycleur de la carte (profil « carte »). */
+    static float chance(boolean carte) {
+        return (float) etat.chance(carte);
+    }
+
+    /** Des règles sont chargées (sinon le recycleur est fermé). */
+    static boolean ouvert() {
+        return !etat.exactes.isEmpty() || !etat.larges.isEmpty();
     }
 
     static int maxPieces() {
@@ -215,6 +243,11 @@ final class Recyclage {
 
     /** {@code ventes} : {@link SaisonQuetes#ventes()} lu une fois pour plusieurs objets ; {@code valeurs} : cache partagé. */
     static Verdict verdict(ItemStack s, Map<String, Long> ventes, Map<String, Long> valeurs) {
+        return verdict(s, ventes, valeurs, false);
+    }
+
+    /** Verdict pour le recycleur du spawn ou celui de la carte ({@code carte} : refus « trop rentable » à sa chance). */
+    static Verdict verdict(ItemStack s, Map<String, Long> ventes, Map<String, Long> valeurs, boolean carte) {
         Etat e = etat;
         int rang = Math.max(0, Ponts.rarete(s));
         long herals = e.herals[Math.min(5, rang)];
@@ -226,7 +259,9 @@ final class Recyclage {
         List<String> rend = r.rendPour(rang);
         long achat = SaisonQuetes.prixVente(ventes, s);
         // refus « trop rentable » jugé sur un paquet complet : un paquet incomplet a la même espérance par objet (tirer)
-        if (achat >= 0 && tropRentable(e, rend, rang, achat * r.par(), ventes, valeurs)) return new Verdict(REFUSE, rang, r.par(), rend, herals, f, u);
+        if (achat >= 0 && tropRentable(e, e.chance(carte), rend, rang, achat * r.par(), ventes, valeurs)) {
+            return new Verdict(REFUSE, rang, r.par(), rend, herals, f, u);
+        }
         // 27/10 : plus d'état MANQUE, un paquet incomplet se recycle au prorata (tirer)
         return new Verdict(OK, rang, r.par(), rend, herals, f, u);
     }
@@ -254,10 +289,15 @@ final class Recyclage {
      * l'espérance par objet (pièces, plafond et hérals « rien » compris) est celle d'un paquet complet.
      */
     static Tirage tirer(Verdict v, int n) {
+        return tirer(v, n, false);
+    }
+
+    /** Tirage du recycleur du spawn ou de celui de la carte (chance du profil « carte », 31/10). */
+    static Tirage tirer(Verdict v, int n, boolean carte) {
         Etat e = etat;
         if (n < v.par() && Moteur.RANDOM.nextDouble() >= v.part(n)) return RIEN;
         List<String> sortis = new ArrayList<>();
-        double chance = e.chance * v.facteur();   // objet abîmé : moins de chances (26/10)
+        double chance = e.chance(carte) * v.facteur();   // objet abîmé : moins de chances (26/10)
         for (String c : v.rend()) if (Moteur.RANDOM.nextDouble() < chance) sortis.add(c);
         // plafond : au plus max_pieces pièces, choisies au hasard parmi celles qui sont sorties
         while (sortis.size() > e.maxPieces) sortis.remove(Moteur.RANDOM.nextInt(sortis.size()));
@@ -292,6 +332,40 @@ final class Recyclage {
         ouvrir(p, pl -> pl.level().getBlockState(pos).is(fr.heraliz.quetes.HeralizQuetes.RECYCLEUR.get()) && pl.distanceToSqr(centre) < 64);
     }
 
+    /**
+     * Ce qui empêche ce joueur d'ouvrir le recycleur de la carte, ou null (31/10, décision du propriétaire) : en match, à
+     * terre, pendant le tutoriel des bases, comme les autres écrans ; permis en combat et sur la carte. Créatif : jamais.
+     */
+    static Texte empechementCarte(ServerPlayer p) {
+        if (p.isCreative()) return null;
+        if (p.getPersistentData().getBoolean("heralisz:en_match") || p.level().dimension().location().getNamespace().equals("heraliz_clashwar")) {
+            return Texte.cle("heraliz_quetes.marchand.regle.match");
+        }
+        if (Ponts.aTerre(p)) return Texte.cle("heraliz_quetes.marchand.regle.a_terre");
+        String monde = p.level().dimension().location().toString();
+        if (monde.equals("crac:bases") || monde.equals("crac:tuto")) return Texte.cle("heraliz_quetes.marchand.regle.tutoriel");
+        return null;
+    }
+
+    /** Clic droit sur le recycleur de la carte : son écran, sur le contenu partagé de la machine. */
+    static void ouvrirCarte(ServerPlayer p, net.minecraft.core.BlockPos pos) {
+        Texte refus = empechementCarte(p);
+        if (refus != null) {
+            Moteur.notif(p, refus, 0xFF6B6B);
+            return;
+        }
+        if (!ouvert()) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.ferme"), 0xFF6B6B);
+            return;
+        }
+        if (!(p.level().getBlockEntity(pos) instanceof RecycleurCarteEntiteServeur m) || !m.utilisable()) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur_carte.indisponible"), 0xFF6B6B);
+            return;
+        }
+        p.openMenu(new SimpleMenuProvider((id, inv, pl) -> new MenuRecycleurCarteServeur(id, inv, m),
+                Component.translatableWithFallback("heraliz_quetes.recycleur_carte.titre", "Recycleur de terrain")));
+    }
+
     private static void ouvrir(ServerPlayer p, java.util.function.Predicate<Player> valide) {
         if (etat.exactes.isEmpty() && etat.larges.isEmpty()) {
             Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.ferme"), 0xFF6B6B);
@@ -310,7 +384,8 @@ final class Recyclage {
      * chance sur des centaines de milliers. Même calcul dans {@code outils/marchands.py} (sans le plafond de pièces, qui ne
      * fait que baisser l'espérance : le refus reste du côté prudent).
      */
-    private static boolean tropRentable(Etat e, List<String> rend, int rang, long cout, Map<String, Long> ventes, Map<String, Long> valeurs) {
+    private static boolean tropRentable(Etat e, double chance, List<String> rend, int rang, long cout, Map<String, Long> ventes,
+                                        Map<String, Long> valeurs) {
         long somme = 0;
         for (String c : rend) {
             somme += valeurs.computeIfAbsent(c, k -> {
@@ -320,7 +395,7 @@ final class Recyclage {
             });
         }
         long rien = e.herals[Math.min(5, rang)];
-        double esperance = e.chance * somme + Math.pow(1 - e.chance, rend.size()) * rien;
+        double esperance = chance * somme + Math.pow(1 - chance, rend.size()) * rien;
         return esperance * 2 > cout;
     }
 

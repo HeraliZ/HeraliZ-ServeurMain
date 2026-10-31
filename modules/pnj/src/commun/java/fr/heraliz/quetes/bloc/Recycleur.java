@@ -50,6 +50,16 @@ public class Recycleur extends HorizontalDirectionalBlock {
         b.add(FACING);
     }
 
+    /** Bloc invisible de la case de droite (le recycleur de la carte a le sien, 31/10). */
+    protected Block blocPartie() {
+        return HeralizQuetes.RECYCLEUR_PARTIE.get();
+    }
+
+    /** Clic droit côté serveur : écran du recycleur du spawn ({@link #OUVRIR}). */
+    protected void ouvrir(ServerPlayer joueur, BlockPos pos) {
+        OUVRIR.accept(new Ouverture(joueur, pos));
+    }
+
     /** Case de droite (vue de face) : le modèle, tourné vers le nord, s'étend vers l'est. */
     public static BlockPos partie(BlockPos pos, Direction face) {
         return pos.relative(face.getClockWise());
@@ -66,7 +76,7 @@ public class Recycleur extends HorizontalDirectionalBlock {
     @Override
     public void setPlacedBy(Level l, BlockPos pos, BlockState s, net.minecraft.world.entity.LivingEntity qui, net.minecraft.world.item.ItemStack objet) {
         Direction face = s.getValue(FACING);
-        l.setBlock(partie(pos, face), HeralizQuetes.RECYCLEUR_PARTIE.get().defaultBlockState().setValue(FACING, face), 3);
+        l.setBlock(partie(pos, face), blocPartie().defaultBlockState().setValue(FACING, face), 3);
     }
 
     @Override
@@ -78,7 +88,7 @@ public class Recycleur extends HorizontalDirectionalBlock {
     public void onRemove(BlockState s, Level l, BlockPos pos, BlockState nouveau, boolean deplace) {
         if (!s.is(nouveau.getBlock())) {
             BlockPos p = partie(pos, s.getValue(FACING));
-            if (l.getBlockState(p).is(HeralizQuetes.RECYCLEUR_PARTIE.get())) l.removeBlock(p, false);
+            if (l.getBlockState(p).is(blocPartie())) l.removeBlock(p, false);
         }
         super.onRemove(s, l, pos, nouveau, deplace);
     }
@@ -86,7 +96,7 @@ public class Recycleur extends HorizontalDirectionalBlock {
     @Override
     public InteractionResult use(BlockState s, Level l, BlockPos pos, Player p, InteractionHand main, BlockHitResult hit) {
         if (l.isClientSide) return InteractionResult.SUCCESS;
-        if (p instanceof ServerPlayer sp) OUVRIR.accept(new Ouverture(sp, pos));
+        if (p instanceof ServerPlayer sp) ouvrir(sp, pos);
         return InteractionResult.CONSUME;
     }
 

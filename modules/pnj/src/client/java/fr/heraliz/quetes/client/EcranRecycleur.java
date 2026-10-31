@@ -30,6 +30,10 @@ import java.util.Locale;
  * moyenne, hérals si rien ne sort, ou pourquoi il est refusé). Le serveur décide de tout ({@code MenuRecycleurServeur}) :
  * l'écran lit l'état synchronisé du menu et l'aperçu envoyé par le serveur. Panneau 560 x 324 au style des écrans du clan,
  * polices à leur vraie taille.
+ * <p>
+ * Recycleur de la carte (31/10, {@link MenuRecycleur#carte()}) : même écran ; titre, sous-titre (machine partagée),
+ * pastille « +10 % de chances », aide d'Échap (le contenu reste dans la machine) et note (seuls les objets qui se
+ * recyclent entrent) à lui. L'aperçu montre déjà ses chances (envoyées par le serveur).
  */
 public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur> {
     private static final int L = 560, H = 324, ENTETE = 44, M = 16, GAUCHE = 360, CASE = MenuRecycleur.CASE;
@@ -53,6 +57,11 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
 
     private static String t(String cle, Object... args) {
         return TexteClient.tr("gui.heraliz_quetes.recycleur." + cle, args);
+    }
+
+    /** Textes propres au recycleur de la carte. */
+    private static String tc(String cle, Object... args) {
+        return TexteClient.tr("gui.heraliz_quetes.recycleur_carte." + cle, args);
     }
 
     @Override
@@ -103,11 +112,18 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
     private void entete(GuiGraphics g, Font f, int x, int y, int mx, int my) {
         icone(g, x + M, y + 10, Ui.OR);
         float tx = x + M + 34;
-        Net.texte(g, f, TexteClient.tr("heraliz_quetes.recycleur.titre"), TITRE, tx, y + 9 + Net.cap(TITRE) / 2, Ui.TEXT);
-        Net.texte(g, f, Net.couper(f, t("sous_titre"), Ui.SMALL, 300), Ui.SMALL, tx, y + 27 + Net.cap(Ui.SMALL) / 2, Ui.MUTED);
+        boolean carte = menu.carte();
+        String titre = TexteClient.tr(carte ? "heraliz_quetes.recycleur_carte.titre" : "heraliz_quetes.recycleur.titre");
+        Net.texte(g, f, Net.couper(f, titre, TITRE, 300), TITRE, tx, y + 9 + Net.cap(TITRE) / 2, Ui.TEXT);
+        Net.texte(g, f, Net.couper(f, carte ? tc("sous_titre") : t("sous_titre"), Ui.SMALL, 300), Ui.SMALL, tx, y + 27 + Net.cap(Ui.SMALL) / 2, Ui.MUTED);
         float xd = x + L - 34;
         String par = t("par_objet", dixiemes(menu.donnee(MenuRecycleur.D_DIXIEMES)));
-        puce(g, f, par, xd - Net.capsLargeur(f, par, MICRO, 0.8f) - 10, y + 16, Ui.MUTED, false);
+        float xp = xd - Net.capsLargeur(f, par, MICRO, 0.8f) - 10;
+        puce(g, f, par, xp, y + 16, Ui.MUTED, false);
+        if (carte) {
+            String bonus = tc("bonus");
+            puce(g, f, bonus, xp - Net.capsLargeur(f, bonus, MICRO, 0.8f) - 16, y + 16, Ui.OK, false);
+        }
         float fx = x + L - 18, fy = y + 16;
         boolean survol = mx >= fx - 8 && mx < fx + 8 && my >= fy - 8 && my < fy + 8;
         Net.centre(g, f, "×", Ui.BOLD, fx, fy, survol ? Ui.TEXT : Ui.MUTED);
@@ -209,7 +225,9 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         int x0 = x + M;
         libelle(g, f, t("inventaire"), x0, y0, 9 * (CASE + 2) - 2);
         float ax = x0 + 9 * (CASE + 2) + 10, aw = x + M + GAUCHE - ax;
-        String[][] aides = {{t("touche.maj"), t("aide.maj")}, {t("touche.survol"), t("aide.survol")}, {t("touche.echap"), t("aide.echap")}};
+        boolean carte = menu.carte();
+        String[][] aides = {{t("touche.maj"), t("aide.maj")}, {t("touche.survol"), t("aide.survol")},
+                {t("touche.echap"), carte ? tc("aide.echap") : t("aide.echap")}};
         float yy = y0 + 18;
         for (String[] a : aides) {
             touche(g, f, a[0], ax, yy);
@@ -217,7 +235,8 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
             for (int i = 0; i < Math.min(2, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, ax, yy + 7 + Net.cap(Ui.SMALL) / 2 + i * 9, Ui.MUTED);
             yy += 30;
         }
-        Net.texte(g, f, Net.couper(f, t("note_achetes"), Ui.SMALL, aw), Ui.SMALL, ax, y0 + 12 + 4 * (CASE + 2) - 4 + Net.cap(Ui.SMALL) / 2, Ui.FAINT);
+        Net.texte(g, f, Net.couper(f, carte ? tc("note") : t("note_achetes"), Ui.SMALL, aw), Ui.SMALL, ax,
+                y0 + 12 + 4 * (CASE + 2) - 4 + Net.cap(Ui.SMALL) / 2, Ui.FAINT);
     }
 
     private float touche(GuiGraphics g, Font f, String txt, float x, float cy) {

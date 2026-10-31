@@ -44,6 +44,8 @@ public class HeralizQuetes {
     public static final DeferredRegister<CreativeModeTab> ONGLETS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<net.minecraft.world.level.block.Block> BLOCS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
     public static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MODID);
+    public static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> ENTITES_BLOC =
+            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
 
     /** Recycleur du spawn (25/10) : 2 blocs de large, incassable en survie, posé par le staff. */
     private static net.minecraft.world.level.block.state.BlockBehaviour.Properties proprietesRecycleur() {
@@ -59,6 +61,31 @@ public class HeralizQuetes {
     /** Écran du recycleur (25/10) : cases d'entrée et de sortie, barre de progression, aperçu de ce qu'un objet peut donner. */
     public static final RegistryObject<net.minecraft.world.inventory.MenuType<fr.heraliz.quetes.bloc.MenuRecycleur>> RECYCLEUR_MENU =
             MENUS.register("recycleur", () -> net.minecraftforge.common.extensions.IForgeMenuType.create(fr.heraliz.quetes.bloc.MenuRecycleur::new));
+
+    /**
+     * Recycleur de la carte (31/10, identifiants figés : {@code heraliz_quetes:recycleur_carte}, bloc et objet, et sa case
+     * invisible {@code recycleur_carte_partie}) : même machine en version de terrain, contenu partagé gardé hors du monde.
+     * Incassable en survie, posé et retiré par le staff ; un peu de lumière en marche.
+     */
+    private static net.minecraft.world.level.block.state.BlockBehaviour.Properties proprietesRecycleurCarte() {
+        return proprietesRecycleur().mapColor(net.minecraft.world.level.material.MapColor.SAND)
+                .lightLevel(fr.heraliz.quetes.bloc.RecycleurCarte::lumiere);
+    }
+
+    public static final RegistryObject<fr.heraliz.quetes.bloc.RecycleurCarte> RECYCLEUR_CARTE = BLOCS.register("recycleur_carte",
+            () -> new fr.heraliz.quetes.bloc.RecycleurCarte(proprietesRecycleurCarte()));
+    public static final RegistryObject<fr.heraliz.quetes.bloc.RecycleurPartie> RECYCLEUR_CARTE_PARTIE = BLOCS.register("recycleur_carte_partie",
+            () -> new fr.heraliz.quetes.bloc.RecycleurPartie(proprietesRecycleur().mapColor(net.minecraft.world.level.material.MapColor.SAND),
+                    () -> HeralizQuetes.RECYCLEUR_CARTE.get(), () -> HeralizQuetes.RECYCLEUR_CARTE_OBJET.get()));
+    /** Usine de l'entité de bloc (version serveur branchée par la partie serveur : docs/METHODE_CLIENT_SERVEUR.md). */
+    public static final fr.heraliz.quetes.pont.UsineBlocEntite<fr.heraliz.quetes.bloc.RecycleurCarteEntite> RECYCLEUR_CARTE_USINE =
+            new fr.heraliz.quetes.pont.UsineBlocEntite<>(fr.heraliz.quetes.bloc.RecycleurCarteEntite::new);
+    public static final RegistryObject<net.minecraft.world.level.block.entity.BlockEntityType<fr.heraliz.quetes.bloc.RecycleurCarteEntite>> RECYCLEUR_CARTE_ENTITE =
+            ENTITES_BLOC.register("recycleur_carte", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder
+                    .of(RECYCLEUR_CARTE_USINE, HeralizQuetes.RECYCLEUR_CARTE.get()).build(null));
+    /** Même écran que celui du spawn, autre type de menu : l'écran sait qu'il montre la machine partagée. */
+    public static final RegistryObject<net.minecraft.world.inventory.MenuType<fr.heraliz.quetes.bloc.MenuRecycleurCarte>> RECYCLEUR_CARTE_MENU =
+            MENUS.register("recycleur_carte", () -> net.minecraftforge.common.extensions.IForgeMenuType.create(fr.heraliz.quetes.bloc.MenuRecycleurCarte::new));
 
     public static final UsineEntite<Pnj> PNJ_USINE = new UsineEntite<>(Pnj::new);
     public static final RegistryObject<EntityType<Pnj>> PNJ = ENTITES.register("pnj",
@@ -78,6 +105,8 @@ public class HeralizQuetes {
     public static final RegistryObject<Item> REGISTRE = OBJETS.register("registre_marchand", () -> new RegistreMarchand(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> RECYCLEUR_OBJET = OBJETS.register("recycleur",
             () -> new net.minecraft.world.item.BlockItem(RECYCLEUR.get(), new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> RECYCLEUR_CARTE_OBJET = OBJETS.register("recycleur_carte",
+            () -> new net.minecraft.world.item.BlockItem(RECYCLEUR_CARTE.get(), new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<CreativeModeTab> ONGLET = ONGLETS.register("onglet", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.heraliz_quetes"))
@@ -86,6 +115,7 @@ public class HeralizQuetes {
                 out.accept(BAGUETTE.get());
                 out.accept(REGISTRE.get());
                 out.accept(RECYCLEUR_OBJET.get());
+                out.accept(RECYCLEUR_CARTE_OBJET.get());
                 for (RegistryObject<Item> o : OBJETS_QUETE.values()) out.accept(o.get());
             })
             .build());
@@ -94,6 +124,7 @@ public class HeralizQuetes {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         BLOCS.register(bus);
         MENUS.register(bus);
+        ENTITES_BLOC.register(bus);
         ENTITES.register(bus);
         OBJETS.register(bus);
         ONGLETS.register(bus);

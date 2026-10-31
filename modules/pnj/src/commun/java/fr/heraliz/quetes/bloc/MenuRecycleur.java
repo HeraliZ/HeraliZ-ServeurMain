@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +19,10 @@ import net.minecraft.world.item.ItemStack;
  * décision (quoi recycler, tirage, hérals) est dans la partie serveur ({@code serveur/MenuRecycleurServeur}) ; ici,
  * seulement la disposition des cases (mêmes mesures que l'écran : panneau 560 x 324, cases de 20 points, objet à +2) et
  * les déplacements Maj + clic.
+ * <p>
+ * Deux types de menu, même disposition et même écran : {@code heraliz_quetes:recycleur} (spawn : cases à soi, rendues à
+ * la fermeture) et {@code heraliz_quetes:recycleur_carte} (31/10 : cases de la machine, partagées comme un coffre ;
+ * {@link MenuRecycleurCarte}, {@link #carte()}).
  */
 public class MenuRecycleur extends AbstractContainerMenu {
     public static final int ENTREES = 6, SORTIES = 6;
@@ -40,12 +45,21 @@ public class MenuRecycleur extends AbstractContainerMenu {
     }
 
     protected MenuRecycleur(int id, Inventory inv, Container entree, Container sortie, ContainerData donnees) {
-        super(HeralizQuetes.RECYCLEUR_MENU.get(), id);
+        this(HeralizQuetes.RECYCLEUR_MENU.get(), id, inv, entree, sortie, donnees);
+    }
+
+    protected MenuRecycleur(MenuType<?> type, int id, Inventory inv, Container entree, Container sortie, ContainerData donnees) {
+        super(type, id);
         this.entree = entree;
         this.sortie = sortie;
         this.donnees = donnees;
         for (int i = 0; i < ENTREES; i++) {
-            addSlot(new Slot(entree, i, ENTREE_X + (i % 3) * (CASE + 2) + 2, MACHINE_Y + (i / 3) * (CASE + 2) + 2));
+            addSlot(new Slot(entree, i, ENTREE_X + (i % 3) * (CASE + 2) + 2, MACHINE_Y + (i / 3) * (CASE + 2) + 2) {
+                @Override
+                public boolean mayPlace(ItemStack s) {
+                    return accepte(s);
+                }
+            });
         }
         for (int i = 0; i < SORTIES; i++) {
             addSlot(new Slot(sortie, i, SORTIE_X + (i % 3) * (CASE + 2) + 2, MACHINE_Y + (i / 3) * (CASE + 2) + 2) {
@@ -68,6 +82,16 @@ public class MenuRecycleur extends AbstractContainerMenu {
 
     public int donnee(int i) {
         return donnees.get(i);
+    }
+
+    /** Recycleur de la carte (contenu partagé, 31/10) ? */
+    public boolean carte() {
+        return this instanceof MenuRecycleurCarte;
+    }
+
+    /** Une case « à recycler » accepte-t-elle cet objet ? Oui ici ; le recycleur de la carte trie (partie serveur). */
+    protected boolean accepte(ItemStack s) {
+        return true;
     }
 
     /** Index des cases du menu : entrée 0-5, sortie 6-11, inventaire 12-38, barre 39-47. */

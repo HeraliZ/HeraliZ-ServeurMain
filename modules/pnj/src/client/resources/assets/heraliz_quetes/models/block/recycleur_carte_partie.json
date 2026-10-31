@@ -1,0 +1,6 @@
+{
+  "credit": "HeraliZ, modules/pnj/outils/recycleur_carte_modele.py",
+  "textures": {
+    "particle": "heraliz_quetes:block/recycleur_carte"
+  }
+}

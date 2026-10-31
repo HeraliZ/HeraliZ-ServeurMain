@@ -58,7 +58,7 @@ Les modules (dossier → mods qu'il contient) :
 | `events` | heraliz_boss : les 5 boss — **mis de côté pour l'ouverture** (fabriqué, livré nulle part : `MODULES_DE_COTE` de `outils/construire.py`) |
 | `clashwar` | heraliz_clashwar : tournoi des clans |
 | `evenements` | heraliz_evenements : Directeur d'événements (planning, annonces, journal), événements de la carte (largage public toutes les 3 h 30…) et objets d'événement à revendre à Mila (identifiants figés `heraliz_evenements:dossier_classe`, `mallette_scellee`, `disque_dur_militaire`) ; contrat : `docs/EVENEMENTS.md` |
-| `pnj` | heraliz_quetes : Varga, quêtes, marchands, recycleur (écran à barre de progression et aperçu ; règles écrites par `outils/recyclage.py`) |
+| `pnj` | heraliz_quetes : Varga, quêtes, marchands, recycleur (écran à barre de progression et aperçu ; règles écrites par `outils/recyclage.py`) ; recycleur de la carte (`heraliz_quetes:recycleur_carte`, figé) : contenu partagé comme un coffre, gardé hors du monde (`heraliz_quetes/recycleurs/`), profil « carte » (+10 %) |
 | `boutique` | heraliz_grades, heralizcasino, heralizcrates |
 | `emotes` | heraliz_emote (+ Emotecraft, Player Animator) |
 | `voix` | caracrea : créateur de personnage, voix de proximité |

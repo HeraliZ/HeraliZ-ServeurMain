@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,marche=false": {
+      "model": "heraliz_quetes:block/recycleur_carte"
+    },
+    "facing=north,marche=true": {
+      "model": "heraliz_quetes:block/recycleur_carte_marche"
+    },
+    "facing=east,marche=false": {
+      "model": "heraliz_quetes:block/recycleur_carte",
+      "y": 90
+    },
+    "facing=east,marche=true": {
+      "model": "heraliz_quetes:block/recycleur_carte_marche",
+      "y": 90
+    },
+    "facing=south,marche=false": {
+      "model": "heraliz_quetes:block/recycleur_carte",
+      "y": 180
+    },
+    "facing=south,marche=true": {
+      "model": "heraliz_quetes:block/recycleur_carte_marche",
+      "y": 180
+    },
+    "facing=west,marche=false": {
+      "model": "heraliz_quetes:block/recycleur_carte",
+      "y": 270
+    },
+    "facing=west,marche=true": {
+      "model": "heraliz_quetes:block/recycleur_carte_marche",
+      "y": 270
+    }
+  }
+}

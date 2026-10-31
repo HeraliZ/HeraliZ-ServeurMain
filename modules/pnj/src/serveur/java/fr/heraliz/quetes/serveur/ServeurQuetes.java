@@ -46,6 +46,9 @@ public final class ServeurQuetes implements Partie {
         Reseau.CHOIX.brancher(r -> Dialogues.choix(r.joueur(), r.message()));
         // bloc recycleur du spawn (25/10)
         fr.heraliz.quetes.bloc.Recycleur.OUVRIR.brancher(o -> Recyclage.ouvrirBloc(o.joueur(), o.pos()));
+        // recycleur de la carte (31/10) : contenu partagé, gardé hors du monde par sa version serveur
+        HeralizQuetes.RECYCLEUR_CARTE_USINE.serveur(RecycleurCarteEntiteServeur::new);
+        fr.heraliz.quetes.bloc.RecycleurCarte.OUVRIR_CARTE.brancher(o -> Recyclage.ouvrirCarte(o.joueur(), o.pos()));
         Reseau.DEMANDE_JOURNAL.brancher(r -> Moteur.envoyerJournal(r.joueur(), r.message().ouvrir()));
         Reseau.ACTION.brancher(r -> action(r.joueur(), r.message()));
         Reseau.ACHAT.brancher(r -> Marchands.achat(r.joueur(), r.message()));

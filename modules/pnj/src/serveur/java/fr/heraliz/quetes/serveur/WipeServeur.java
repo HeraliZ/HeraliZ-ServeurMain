@@ -50,6 +50,7 @@ import java.util.stream.Stream;
  * <li>tous les clans dissous (banque et coffre perdus), hérals de tous les comptes à 0, saison et classement du
  * ClashWar effacés ;</li>
  * <li>objets au sol et cadavres des zones chargées ;</li>
+ * <li>contenu des recycleurs de la carte (31/10 : leurs fichiers hors du monde, machines chargées vidées) ;</li>
  * <li>chaque joueur (en ligne : tout de suite ; sinon à sa prochaine connexion) : inventaire, coffre de l'Ender, Curios,
  * planque et coffre VIP, quêtes, personnage, cinématique, guide et tutoriel, comme {@code /wipe <joueur>}, puis
  * expulsé.</li>
@@ -194,6 +195,7 @@ final class WipeServeur {
         fusionner(rendus, appel("fr.heralisz.clans.server.ClanService", "wipeServeur", new Class<?>[]{Predicate.class}, aVie));
         appel("fr.heraliz.clashwar.tournoi.CwClassement", "toutEffacer", new Class<?>[]{MinecraftServer.class}, srv);
         int sol = nettoyerSol(srv);
+        int recycleurs = RecycleurCarteEntiteServeur.toutVider(srv);
         Etat e = Etat.lire(srv);
         if (e.illisible) e = new Etat();   // l'ancien fichier est mis de côté, jamais écrasé
         e.numero++;
@@ -206,7 +208,8 @@ final class WipeServeur {
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) FILE.put(p.getUUID(), ticks + 20);
         int n = e.joueurs.size();
         LOG.warn("[Quêtes] remise à zéro du serveur n°{} : {} joueurs à remettre à zéro, {} objets au sol ou cadavres retirés, "
-                + "objets à vie à rendre pour {} joueurs", e.numero, n, sol, rendus.size());
+                + "{} objets retirés des recycleurs de la carte chargés, objets à vie à rendre pour {} joueurs", e.numero, n, sol, recycleurs,
+                rendus.size());
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.fait",
                 "Serveur remis à zéro : %s joueurs le seront à leur connexion. Une nouvelle saison a commencé (date de fin : /saison fin).",
                 n).withStyle(ChatFormatting.GREEN), true);
