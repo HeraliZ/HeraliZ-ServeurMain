@@ -258,7 +258,7 @@
   "gui.creation.couleur_a": "Couleur A · fond",
   "gui.creation.couleur_b": "Couleur B · dégradé",
   "gui.creation.corriger": "Corrigez les champs en rouge.",
-  "gui.drapeau.libre_info": "Restez dans la zone avec votre clan pour la capturer.",
+  "gui.drapeau.libre_info": "Restez au drapeau avec votre clan pour la capturer (clan niveau 5 et amélioration Territoires, 2 zones au plus).",
   "gui.drapeau.libre_ravito": "Aucun ravitaillement sur une zone libre.",
   "gui.drapeau.reserve": "Réservé au clan propriétaire.",
   "gui.drapeau.sans_permission": "Votre grade ne peut pas lancer le signal.",
@@ -674,7 +674,7 @@
   "arbre.effet.revenu": "+%s %%",
   "arbre.effet.ravitaillement": "délai −%s %%",
   "arbre.effet.loot": "+%s %%",
-  "arbre.effet.territoires": "%s en même temps",
+  "arbre.effet.territoires": "%s zone(s) à la fois",
   "gui.arbre.titre": "AMÉLIORATIONS DU CLAN",
   "gui.arbre.points": "%s POINT(S) LIBRE(S)",
   "gui.arbre.ameliorer": "Améliorer",
@@ -819,5 +819,14 @@
   "gui.saison.l.objet_disque_dur_militaire": "Disque dur militaire vendu",
   "gui.saison.c.objet_disque_dur_militaire_plafond": "vendu à Mila au spawn, %s par clan et par jour au plus",
   "gui.saison.l.objet_boite_noire_helico": "Boîte noire d'hélicoptère vendue",
-  "gui.saison.c.objet_boite_noire_helico_plafond": "vendu à Mila au spawn, %s par clan et par jour au plus"
+  "gui.saison.c.objet_boite_noire_helico_plafond": "vendu à Mila au spawn, %s par clan et par jour au plus",
+  "msg.niveau.capture": "Niveau %s : votre clan peut maintenant débloquer la capture des zones (amélioration Territoires, touche K, onglet Niveau).",
+  "zone.etat.verrouillee": "Capture verrouillée",
+  "gui.hud.verrouillee": "Capture verrouillée",
+  "gui.tuile.territoires_niveau": "Niv. %s",
+  "msg.capture.niveau": "Votre clan est niveau %s : la capture des zones s'ouvre au niveau %s, avec l'amélioration Territoires (touche K, onglet Niveau).",
+  "msg.capture.amelioration": "Votre clan doit d'abord acheter l'amélioration Territoires pour capturer des zones (touche K, onglet Niveau).",
+  "msg.capture.limite": "Votre clan tient déjà %s zone(s) sur %s : il ne peut pas en prendre une autre tant qu'il les tient.",
+  "zone.cmd.plafond": "[%s] tient déjà %s zones : jamais plus de %s en même temps.",
+  "zone.cmd.hors_regle": "Attention : [%s] n'aurait pas pu la prendre lui-même (niveau %s, %s zone(s) au plus)."
 }

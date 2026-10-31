@@ -43,7 +43,11 @@ public final class ApercuTab extends Tab {
         Ui.tile(g, font, tx, y, tw, th, s.membres().size() + " / " + s.membresMax(), tr("gui.tuile.membres"));
         Ui.tile(g, font, tx + tw + 8, y, tw, th, Ui.nombre(t.kills), tr("gui.tuile.kills"));
         Ui.tile(g, font, tx + 2 * (tw + 8), y, tw, th, Ui.ratio(t.kd()), tr("gui.tuile.kd"));
-        Ui.tile(g, font, tx, y + th + 8, tw, th, s.territoires().size() + " / " + s.territoiresMax(), tr("gui.tuile.territoires"));
+        // 31/10 : capture des zones a partir du niveau 5 du clan (puis amelioration Territoires) : « Niv. 5 » avant
+        String zones = s.niveau() < fr.heralisz.clans.model.Arbre.NIVEAU_CAPTURE && s.territoires().isEmpty()
+                ? tr("gui.tuile.territoires_niveau", fr.heralisz.clans.model.Arbre.NIVEAU_CAPTURE)
+                : s.territoires().size() + " / " + s.territoiresMax();
+        Ui.tile(g, font, tx, y + th + 8, tw, th, zones, tr("gui.tuile.territoires"));
         // montant et glyphe « héral » dans la police des tuiles, a sa vraie taille
         Ui.tile(g, font, tx + tw + 8, y + th + 8, tw, th, Ui.jetonsGlyphe(s.banque(), Ui.GROS), tr("gui.tuile.banque"));
         Ui.tile(g, font, tx + 2 * (tw + 8), y + th + 8, tw, th, anciennete, tr("gui.tuile.anciennete"));

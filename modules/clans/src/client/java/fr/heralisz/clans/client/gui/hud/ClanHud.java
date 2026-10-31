@@ -289,6 +289,11 @@ public final class ClanHud {
                 couleur = Ui.DANGER;
                 etat = Component.translatable("gui.hud.limite").getString();
             }
+            case VERROUILLEE -> {
+                // 31/10 : clan avant le niveau 5 ou sans l'amelioration Territoires (le chat dit lequel)
+                couleur = Ui.AMBRE;
+                etat = Component.translatable("gui.hud.verrouillee").getString();
+            }
             default -> {
             }
         }

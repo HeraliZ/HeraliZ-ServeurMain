@@ -56,13 +56,15 @@ import java.util.UUID;
  *
  * <p>Machine d'etat d'une zone (toutes les 10 ticks ; O = proprietaire, C = clans presents hors O, eligibles =
  * survie/aventure, vivants, dans un clan, perm CAPTURER, et a moins de rayon_capture du drapeau : une zone sans drapeau
- * ne se capture pas) :
+ * ne se capture pas ; 31/10 : et le clan peut prendre une zone de plus, {@link #peutPrendre} : niveau 5, amelioration
+ * Territoires, 2 zones au plus) :
  * <ul>
+ * <li>un clan present qui ne peut pas prendre de zone n'est pas un C : il ne capture ni ne conteste ; ses membres au
+ * drapeau voient VERROUILLEE (niveau ou amelioration manquants) ou LIMITE (deja a son maximum), avec un mot dans le chat ;</li>
  * <li>aucun C : la progression decroit de 1 %/s vers 0 ; etat NEUTRE (libre) ou TENUE ; un membre de O voit DEFENSE
  * (1 - progression) tant qu'elle n'est pas revenue a 0 ;</li>
  * <li>un seul C mais des membres de O presents, ou >= 2 C : CONTESTE, rien ne bouge ;</li>
  * <li>un seul C, zone protegee (toute la tenue apres une capture, voir plus bas) : PROTEGEE, rien ne bouge ;</li>
- * <li>un seul C qui a atteint la limite de territoires de son niveau : LIMITE, rien ne bouge ;</li>
  * <li>un seul C : CAPTURE, progression += 0,5 s / duree (120 s si libre, 180 s sinon) x min(1,5, 1 + 0,125 (n - 1)) ;
  * a 100 % : capture (proprietaire = C, protection, prochain ravitaillement dans 1 h 30, evenements Perdu + Capture).</li>
  * </ul>
@@ -410,6 +412,42 @@ public final class Territoires {
         return p.isAlive() && (g == GameType.SURVIVAL || g == GameType.ADVENTURE);
     }
 
+    /**
+     * Le clan peut prendre une zone de plus (31/10, regle du proprietaire) : niveau 5 au moins et amelioration Territoires
+     * achetee ({@link Clan#territoiresMax()} : 0 avant), moins de zones tenues que son maximum (2 au plus). Verifie a chaque
+     * cycle, au debut comme pendant la capture : un clan qui atteint son maximum ailleurs s'arrete ici.
+     */
+    public static boolean peutPrendre(Clan c) {
+        int max = c.territoiresMax();
+        return max > 0 && compterTenus(c.id) < max;
+    }
+
+    /** Dernier avis « capture impossible » envoye a chaque joueur (un toutes les 5 min au plus). */
+    private final Map<UUID, Long> avisBloque = new HashMap<>();
+    private static final long AVIS_BLOQUE_MS = 5 * 60_000L;
+
+    /** Dit au joueur, dans le chat, pourquoi son clan ne capture pas ce drapeau (au plus une fois toutes les 5 min). */
+    private void avertirBloque(ServerPlayer p, Clan c, long now) {
+        Long dernier = avisBloque.get(p.getUUID());
+        if (dernier != null && now - dernier < AVIS_BLOQUE_MS) return;
+        if (avisBloque.size() > 256) avisBloque.values().removeIf(t -> now - t >= AVIS_BLOQUE_MS);
+        avisBloque.put(p.getUUID(), now);
+        net.minecraft.network.chat.MutableComponent m;
+        if (c.niveau < fr.heralisz.clans.model.Arbre.NIVEAU_CAPTURE) {
+            m = Component.translatableWithFallback("msg.capture.niveau",
+                    "Votre clan est niveau %s : la capture des zones s'ouvre au niveau %s, avec l'amélioration Territoires (touche K, onglet Niveau).",
+                    c.niveau, fr.heralisz.clans.model.Arbre.NIVEAU_CAPTURE);
+        } else if (c.territoiresMax() <= 0) {
+            m = Component.translatableWithFallback("msg.capture.amelioration",
+                    "Votre clan doit d'abord acheter l'amélioration Territoires pour capturer des zones (touche K, onglet Niveau).");
+        } else {
+            m = Component.translatableWithFallback("msg.capture.limite",
+                    "Votre clan tient déjà %s zone(s) sur %s : il ne peut pas en prendre une autre tant qu'il les tient.",
+                    compterTenus(c.id), c.territoiresMax());
+        }
+        p.sendSystemMessage(m.withStyle(s -> s.withColor(0xFFB347)));
+    }
+
     /** Clan proprietaire valide (un clan disparu libere la zone). */
     @Nullable
     private Clan clanProprio(ClanStore store, EtatTerritoire e) {
@@ -463,6 +501,7 @@ public final class Territoires {
         Clan C = null;
         boolean plusieurs = false;
         List<UUID> capteurs = null;
+        java.util.Set<UUID> bloques = null;
         for (ServerPlayer p : joueurs) {
             Clan c = store.clanDe(p.getUUID());
             boolean membreO = c != null && O != null && c.id.equals(O.id);
@@ -472,6 +511,13 @@ public final class Territoires {
             if (c == null || !eligible(p) || !c.peut(p.getUUID(), Perm.CAPTURER) || !zone.auDrapeau(p.getX(), p.getY(), p.getZ())) continue;
             if (membreO) {
                 nO++;
+            } else if (!peutPrendre(c)) {
+                // 31/10 (regle du proprietaire) : un clan qui ne peut pas prendre de zone (avant le niveau 5, sans
+                // l'amelioration Territoires, ou deja a son maximum : 2 au plus) ne capture pas et ne conteste pas non plus
+                // (il ne bloque pas les autres) ; ses membres le voient au HUD et dans le chat
+                if (bloques == null) bloques = new java.util.HashSet<>(4);
+                bloques.add(c.id);
+                avertirBloque(p, c, now);
             } else if (C == null) {
                 C = c;
                 nC = 1;
@@ -497,8 +543,6 @@ public final class Territoires {
             etat = EtatZone.CONTESTE;
         } else if (e.protegeeJusque > now) {
             etat = EtatZone.PROTEGEE;
-        } else if (compterTenus(C.id) >= C.territoiresMax()) {
-            etat = EtatZone.LIMITE;
         } else {
             if (!C.id.equals(e.capteur)) {
                 e.capteur = C.id;
@@ -543,8 +587,10 @@ public final class Territoires {
                     ev = EtatZone.DEFENSE;
                     prog = 1 - e.progression;
                 }
-            } else if (etat == EtatZone.LIMITE && (mien == null || C == null || !mien.id.equals(C.id))) {
-                ev = O == null ? EtatZone.NEUTRE : EtatZone.TENUE;
+            } else if (mien != null && bloques != null && bloques.contains(mien.id) && (etat == EtatZone.NEUTRE || etat == EtatZone.TENUE)
+                    && zone.auDrapeau(p.getX(), p.getY(), p.getZ())) {
+                // 31/10 : au pied du drapeau, un clan qui ne peut pas prendre la zone voit pourquoi
+                ev = mien.territoiresMax() <= 0 ? EtatZone.VERROUILLEE : EtatZone.LIMITE;
             }
             int drapeau = zone.drapeau == null ? -2 : zone.auDrapeau(p.getX(), p.getY(), p.getZ()) ? -1
                     : (int) (Math.round(zone.distanceDrapeau(p.getX(), p.getZ()) / 5.0) * 5);

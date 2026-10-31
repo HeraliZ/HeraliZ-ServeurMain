@@ -258,7 +258,7 @@
   "gui.creation.couleur_a": "Цвет A · фон",
   "gui.creation.couleur_b": "Цвет B · градиент",
   "gui.creation.corriger": "Исправьте поля, выделенные красным.",
-  "gui.drapeau.libre_info": "Оставайтесь в зоне с кланом, чтобы захватить её.",
+  "gui.drapeau.libre_info": "Оставайтесь у флага с кланом, чтобы захватить зону (клан 5 уровня и улучшение «Территории», не больше 2 зон).",
   "gui.drapeau.libre_ravito": "В свободной зоне сброса припасов нет.",
   "gui.drapeau.reserve": "Только для клана-владельца.",
   "gui.drapeau.sans_permission": "Ваш ранг не может подать сигнал.",
@@ -674,7 +674,7 @@
   "arbre.effet.revenu": "+%s %%",
   "arbre.effet.ravitaillement": "задержка −%s %%",
   "arbre.effet.loot": "+%s %%",
-  "arbre.effet.territoires": "%s одновременно",
+  "arbre.effet.territoires": "зон одновременно: %s",
   "gui.arbre.titre": "УЛУЧШЕНИЯ КЛАНА",
   "gui.arbre.points": "СВОБОДНЫХ ОЧКОВ: %s",
   "gui.arbre.ameliorer": "Улучшить",
@@ -819,5 +819,14 @@
   "gui.saison.l.objet_disque_dur_militaire": "Продан военный жёсткий диск",
   "gui.saison.c.objet_disque_dur_militaire_plafond": "продажа Миле на спавне, не больше %s на клан в день",
   "gui.saison.l.objet_boite_noire_helico": "Продан бортовой самописец вертолёта",
-  "gui.saison.c.objet_boite_noire_helico_plafond": "продажа Миле на спавне, не больше %s на клан в день"
+  "gui.saison.c.objet_boite_noire_helico_plafond": "продажа Миле на спавне, не больше %s на клан в день",
+  "msg.niveau.capture": "Уровень %s: теперь клан может открыть захват зон (улучшение «Территории», клавиша K, вкладка «Уровень»).",
+  "zone.etat.verrouillee": "Захват закрыт",
+  "gui.hud.verrouillee": "Захват закрыт",
+  "gui.tuile.territoires_niveau": "Ур. %s",
+  "msg.capture.niveau": "Ваш клан %s уровня: захват зон открывается с уровня %s, с улучшением «Территории» (клавиша K, вкладка «Уровень»).",
+  "msg.capture.amelioration": "Сначала клан должен купить улучшение «Территории», чтобы захватывать зоны (клавиша K, вкладка «Уровень»).",
+  "msg.capture.limite": "Клан уже удерживает зон: %s из %s; другую взять нельзя, пока он их удерживает.",
+  "zone.cmd.plafond": "[%s] уже удерживает зон: %s; одновременно не больше %s.",
+  "zone.cmd.hors_regle": "Внимание: [%s] не смог бы взять её сам (уровень %s, зон не больше %s)."
 }

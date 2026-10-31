@@ -1263,6 +1263,12 @@ public final class ClanService {
             diffuserChat(c, "msg.niveau_sup", c.niveau);
             diffuser(c, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.NIVEAU, List.of(String.valueOf(c.niveau)), "niveau_sup", null));
             HeraliszClans.LOG.info("[clans] [{}] passe au niveau {}", c.tag, c.niveau);
+            if (c.niveau == fr.heralisz.clans.model.Arbre.NIVEAU_CAPTURE) {
+                // 31/10 : la capture des zones s'ouvre a ce niveau, par l'arbre du clan
+                diffuserChat(c, prefixe(c).append(Component.translatableWithFallback("msg.niveau.capture",
+                        "Niveau %s : votre clan peut maintenant débloquer la capture des zones (amélioration Territoires, touche K, onglet Niveau).",
+                        c.niveau)));
+            }
         }
         ClanStore s = store();
         if (s != null) s.marquerDirty();

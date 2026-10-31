@@ -548,9 +548,19 @@ public final class TerritoireCommands {
         ClanStore store = ClanStore.get();
         Clan c = store == null ? null : store.parTag(tag);
         if (c == null) return echec(src, tr("msg.clan_introuvable", tag));
+        // 31/10 (regle du proprietaire) : jamais plus de 2 zones tenues en meme temps, meme par le staff
+        int tenues = Territoires.compterTenus(c.id);
+        if (tenues >= fr.heralisz.clans.model.Arbre.TERRITOIRES_PLAFOND && !c.id.equals(Territoires.proprietaire(z.id))) {
+            return echec(src, tr("zone.cmd.plafond", c.tag, tenues, fr.heralisz.clans.model.Arbre.TERRITOIRES_PLAFOND));
+        }
+        boolean horsRegle = !Territoires.peutPrendre(c);
         if (!t.capturerAdmin(z, c)) return echec(src, tr("zone.cmd.deja_tenue", z.nom, c.tag));
         EtatTerritoire e = t.etat(z);
         ok(src, tr("zone.cmd.capturee", z.nom, c.tag, Territoires.duree(e.protegeeJusque - System.currentTimeMillis())));
+        if (horsRegle) {
+            src.sendSystemMessage(tr("zone.cmd.hors_regle", c.tag, c.niveau, c.territoiresMax()).copy()
+                    .withStyle(net.minecraft.ChatFormatting.GOLD));
+        }
         return 1;
     }
 

@@ -7,7 +7,9 @@ import java.util.Locale;
  * Arbre d'ameliorations d'un clan (saison des clans, decision du 22/10, docs/SAISON_CLANS.md §6) : chaque niveau du clan
  * donne un point de competence ; le palier n d'une branche coute n points et n x 5 000 herals (banque du clan) ; jamais
  * rembourse. Branche Membres (25/10) : 4 a 8 membres, paliers reserves aux niveaux 10, 20, 30, 40 du clan et bien plus
- * chers ({@link #HERALS_MEMBRES}). Tout ce qui touche au jeu passe par ici (membres, territoires, revenu, ravitaillement, loot, taille de la
+ * chers ({@link #HERALS_MEMBRES}). Branche Territoires (31/10, demande du proprietaire) : aucune zone au depart, capture
+ * ouverte au niveau {@link #NIVEAU_CAPTURE} du clan, 1 puis 2 zones tenues en meme temps au plus
+ * ({@link #TERRITOIRES_PLAFOND}). Tout ce qui touche au jeu passe par ici (membres, territoires, revenu, ravitaillement, loot, taille de la
  * base, delai du TP vers la base) ; la deco (banniere, tag) reste donnee par le niveau ({@link Avantages}).
  * Lu des deux cotes (serveur : regles ; joueur : onglet Niveau) : memes chiffres partout.
  */
@@ -57,7 +59,10 @@ public final class Arbre {
         RAVITAILLEMENT(3),
         /** Bonus de loot dans ses territoires : +2 / +4 %. */
         LOOT(2),
-        /** Territoires tenus en meme temps : 1, puis 2, 3. */
+        /**
+         * Territoires tenus en meme temps (31/10, demande du proprietaire) : 0 au depart (aucune capture), 1 au palier 1
+         * (niveau 5 du clan), 2 au palier 2 (niveau 10) ; jamais plus de 2. Avant : 1, puis 2, 3.
+         */
         TERRITOIRES(2);
 
         public final int max;
@@ -80,6 +85,16 @@ public final class Arbre {
     public static final long[] HERALS_MEMBRES = {25_000L, 60_000L, 120_000L, 250_000L};
     /** Niveau du clan demande par palier de la branche Membres. */
     public static final int NIVEAU_PAR_PALIER_MEMBRES = 10;
+    /**
+     * Niveau du clan a partir duquel il peut capturer des zones (31/10) : verifie par le serveur a chaque cycle de capture
+     * ({@link Clan#territoiresMax()} vaut 0 avant), et c'est le niveau demande par le premier palier de la branche
+     * Territoires.
+     */
+    public static final int NIVEAU_CAPTURE = 5;
+    /** Niveau du clan demande par palier de la branche Territoires : 5 (1 zone), 10 (2 zones). */
+    public static final int[] NIVEAUX_TERRITOIRES = {NIVEAU_CAPTURE, 10};
+    /** Zones tenues en meme temps, au plus, quel que soit l'arbre (31/10). */
+    public static final int TERRITOIRES_PLAFOND = 2;
 
     /** Points du palier p (1..max) d'une branche. */
     public static int coutPoints(int palier) {
@@ -100,9 +115,14 @@ public final class Arbre {
         return coutHerals(palier);
     }
 
-    /** Niveau du clan demande pour acheter le palier p (Membres : 10, 20, 30, 40 ; les autres branches : aucun). */
+    /**
+     * Niveau du clan demande pour acheter le palier p (Membres : 10, 20, 30, 40 ; Territoires : 5, 10 ; les autres
+     * branches : aucun).
+     */
     public static int niveauRequis(Branche b, int palier) {
-        return b == Branche.MEMBRES ? NIVEAU_PAR_PALIER_MEMBRES * palier : 0;
+        if (b == Branche.MEMBRES) return NIVEAU_PAR_PALIER_MEMBRES * palier;
+        if (b == Branche.TERRITOIRES) return NIVEAUX_TERRITOIRES[Math.max(0, Math.min(NIVEAUX_TERRITOIRES.length - 1, palier - 1))];
+        return 0;
     }
 
     /** Points que coutent tous les paliers achetes. */
@@ -134,8 +154,9 @@ public final class Arbre {
         return 4 + Math.max(0, Math.min(Branche.MEMBRES.max, palier));
     }
 
+    /** Zones tenues en meme temps au palier p de la branche Territoires : 0, 1, 2 (31/10 ; avant : 1, 2, 3). */
     public static int territoiresMax(int palier) {
-        return 1 + palier;
+        return Math.max(0, Math.min(TERRITOIRES_PLAFOND, palier));
     }
 
     public static int rayonBase(int palier) {

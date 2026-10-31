@@ -230,9 +230,19 @@ public final class Quetes {
     }
 
     // ------------------------------------------------------------------ tirage
+    /**
+     * La quete peut etre faite par ce clan (31/10) : les quetes de territoire (capturer, tenir une zone, lancer un
+     * ravitaillement) seulement pour un clan qui peut tenir une zone (niveau 5 et amelioration Territoires).
+     */
+    static boolean pourLeClan(Clan c, QueteEtat.Type t) {
+        boolean territoire = t == QueteEtat.Type.CAPTURES || t == QueteEtat.Type.TENIR_ZONE_MIN || t == QueteEtat.Type.RAVITAILLEMENTS;
+        return !territoire || c.territoiresMax() > 0;
+    }
+
     /** Tire n quetes du catalogue, types differents autant que possible, en evitant les ids du tirage precedent. */
-    private static List<QueteEtat> tirer(List<QueteEtat> catalogue, int n, List<QueteEtat> precedentes) {
+    private static List<QueteEtat> tirer(Clan c, List<QueteEtat> catalogue, int n, List<QueteEtat> precedentes) {
         List<QueteEtat> pool = new ArrayList<>(catalogue);
+        pool.removeIf(q -> !pourLeClan(c, q.type));
         Collections.shuffle(pool, ALEA);
         List<QueteEtat> out = new ArrayList<>(n);
         EnumSet<QueteEtat.Type> types = EnumSet.noneOf(QueteEtat.Type.class);
@@ -258,9 +268,9 @@ public final class Quetes {
     public static void initialiser(Clan c, long now) {
         if (!chargee) charger();
         c.quetesJour.clear();
-        c.quetesJour.addAll(tirer(JOUR, ClansConfig.QUETES_PAR_JOUR.get(), List.of()));
+        c.quetesJour.addAll(tirer(c, JOUR, ClansConfig.QUETES_PAR_JOUR.get(), List.of()));
         c.quetesSemaine.clear();
-        c.quetesSemaine.addAll(tirer(SEMAINE, ClansConfig.QUETES_PAR_SEMAINE.get(), List.of()));
+        c.quetesSemaine.addAll(tirer(c, SEMAINE, ClansConfig.QUETES_PAR_SEMAINE.get(), List.of()));
         c.prochainResetJour = prochainJour(now);
         c.prochainResetSemaine = prochaineSemaine(now);
         c.depotNetJour = 0;
@@ -277,7 +287,7 @@ public final class Quetes {
         if (now >= c.prochainResetJour || (c.quetesJour.isEmpty() && !JOUR.isEmpty())) {
             List<QueteEtat> prec = new ArrayList<>(c.quetesJour);
             c.quetesJour.clear();
-            c.quetesJour.addAll(tirer(JOUR, ClansConfig.QUETES_PAR_JOUR.get(), prec));
+            c.quetesJour.addAll(tirer(c, JOUR, ClansConfig.QUETES_PAR_JOUR.get(), prec));
             c.prochainResetJour = prochainJour(now);
             c.depotNetJour = 0;
             change = true;
@@ -285,7 +295,7 @@ public final class Quetes {
         if (now >= c.prochainResetSemaine || (c.quetesSemaine.isEmpty() && !SEMAINE.isEmpty())) {
             List<QueteEtat> prec = new ArrayList<>(c.quetesSemaine);
             c.quetesSemaine.clear();
-            c.quetesSemaine.addAll(tirer(SEMAINE, ClansConfig.QUETES_PAR_SEMAINE.get(), prec));
+            c.quetesSemaine.addAll(tirer(c, SEMAINE, ClansConfig.QUETES_PAR_SEMAINE.get(), prec));
             c.prochainResetSemaine = prochaineSemaine(now);
             c.depotNetSemaine = 0;
             change = true;
@@ -294,22 +304,23 @@ public final class Quetes {
     }
 
     /**
-     * Quete en cours devenue impossible (boss retires du serveur) : remplacee par une autre du catalogue, d'un type et d'un
-     * id que le clan n'a pas deja ; la progression des autres quetes est gardee.
+     * Quete en cours devenue impossible (boss retires du serveur ; 31/10 : quete de territoire pour un clan qui ne peut pas
+     * encore tenir de zone) : remplacee par une autre du catalogue, d'un type et d'un id que le clan n'a pas deja ; la
+     * progression des autres quetes est gardee.
      */
     private static boolean remplacerIndisponibles(Clan c) {
-        if (bossPresents) return false;
         boolean change = false;
         for (int i = 0; i < 2; i++) {
             List<QueteEtat> liste = i == 0 ? c.quetesJour : c.quetesSemaine;
             for (int k = 0; k < liste.size(); k++) {
                 QueteEtat q = liste.get(k);
-                if (q.terminee || disponible(q.type)) continue;
+                if (q.terminee || (disponible(q.type) && pourLeClan(c, q.type))) continue;
                 List<QueteEtat> pool = new ArrayList<>(i == 0 ? JOUR : SEMAINE);
                 Collections.shuffle(pool, ALEA);
                 QueteEtat choisie = null;
                 for (int passe = 0; passe < 2 && choisie == null; passe++) {
                     for (QueteEtat r : pool) {
+                        if (!pourLeClan(c, r.type)) continue;
                         boolean pris = false;
                         for (QueteEtat x : liste) pris |= x.id.equals(r.id) || (passe == 0 && x.type == r.type);
                         if (!pris) {
@@ -321,7 +332,8 @@ public final class Quetes {
                 if (choisie == null) continue;
                 liste.set(k, choisie.copie());
                 change = true;
-                HeraliszClans.LOG.info("[clans] [{}] quete « {} » remplacee par « {} » (boss absents)", c.tag, q.id, choisie.id);
+                HeraliszClans.LOG.info("[clans] [{}] quete « {} » remplacee par « {} » ({})", c.tag, q.id, choisie.id,
+                        disponible(q.type) ? "clan sans zone possible" : "boss absents");
             }
         }
         return change;

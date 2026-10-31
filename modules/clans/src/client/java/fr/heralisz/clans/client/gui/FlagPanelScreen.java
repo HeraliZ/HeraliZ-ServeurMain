@@ -113,6 +113,7 @@ public class FlagPanelScreen extends Screen {
             case DEFENSE -> Component.translatable("gui.hud.defense_court").getString();
             case PROTEGEE -> Component.translatable("gui.hud.protegee_court").getString();
             case LIMITE -> Component.translatable("gui.hud.limite").getString();
+            case VERROUILLEE -> Component.translatable("gui.hud.verrouillee").getString();
             default -> "";
         };
     }

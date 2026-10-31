@@ -258,7 +258,7 @@
   "gui.creation.couleur_a": "Color A · base",
   "gui.creation.couleur_b": "Color B · gradient",
   "gui.creation.corriger": "Fix the fields in red.",
-  "gui.drapeau.libre_info": "Stay in the zone with your clan to capture it.",
+  "gui.drapeau.libre_info": "Stay at the flag with your clan to capture it (clan level 5 and the Territories upgrade, 2 zones at most).",
   "gui.drapeau.libre_ravito": "No supply drop on a free zone.",
   "gui.drapeau.reserve": "Reserved for the owning clan.",
   "gui.drapeau.sans_permission": "Your rank cannot launch the signal.",
@@ -674,7 +674,7 @@
   "arbre.effet.revenu": "+%s %%",
   "arbre.effet.ravitaillement": "delay −%s %%",
   "arbre.effet.loot": "+%s %%",
-  "arbre.effet.territoires": "%s at once",
+  "arbre.effet.territoires": "%s zone(s) at once",
   "gui.arbre.titre": "CLAN UPGRADES",
   "gui.arbre.points": "%s FREE POINT(S)",
   "gui.arbre.ameliorer": "Upgrade",
@@ -819,5 +819,14 @@
   "gui.saison.l.objet_disque_dur_militaire": "Military hard drive sold",
   "gui.saison.c.objet_disque_dur_militaire_plafond": "sold to Mila at spawn, %s per clan per day at most",
   "gui.saison.l.objet_boite_noire_helico": "Helicopter black box sold",
-  "gui.saison.c.objet_boite_noire_helico_plafond": "sold to Mila at spawn, %s per clan per day at most"
+  "gui.saison.c.objet_boite_noire_helico_plafond": "sold to Mila at spawn, %s per clan per day at most",
+  "msg.niveau.capture": "Level %s: your clan can now unlock zone captures (Territories upgrade, K key, Level tab).",
+  "zone.etat.verrouillee": "Capture locked",
+  "gui.hud.verrouillee": "Capture locked",
+  "gui.tuile.territoires_niveau": "Lv. %s",
+  "msg.capture.niveau": "Your clan is level %s: zone captures open at level %s, with the Territories upgrade (K key, Level tab).",
+  "msg.capture.amelioration": "Your clan must first buy the Territories upgrade to capture zones (K key, Level tab).",
+  "msg.capture.limite": "Your clan already holds %s of %s zone(s): it cannot take another one while it holds them.",
+  "zone.cmd.plafond": "[%s] already holds %s zones: never more than %s at once.",
+  "zone.cmd.hors_regle": "Warning: [%s] could not have taken it by itself (level %s, %s zone(s) at most)."
 }

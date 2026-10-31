@@ -208,8 +208,12 @@ public final class Clan {
         return Arbre.membresMax(palier(Arbre.Branche.MEMBRES));
     }
 
+    /**
+     * Zones que le clan peut tenir en meme temps (31/10) : 0 avant le niveau {@link Arbre#NIVEAU_CAPTURE} (meme avec des
+     * paliers deja achetes), puis le palier de la branche Territoires (0, 1, 2 ; 2 au plus).
+     */
     public int territoiresMax() {
-        return Arbre.territoiresMax(palier(Arbre.Branche.TERRITOIRES));
+        return niveau < Arbre.NIVEAU_CAPTURE ? 0 : Arbre.territoiresMax(palier(Arbre.Branche.TERRITOIRES));
     }
 
     /** Points de competence pas encore depenses. */
