@@ -87,15 +87,14 @@ def vente(r):
 
 def armes(raretes):
     """Armes à feu de ces raretés (section « armes » de raretes.json) présentes dans les gunpacks, sans couteaux ; chargeur
-    vide (le zombie ne donne pas de balles avec)."""
-    import re
+    rempli comme une arme trouvée dans un conteneur (CHARGE_ARME de loot_armes.py : 50 % depuis le 31/10, demande du
+    propriétaire ; avant : chargeur vide)."""
     import loot_armes as LA
     jeu = LA.armes_du_jeu()
     out = []
     for g in sorted(jeu):
         if RARETES["armes"].get(g) in raretes and "knife" not in g and "skins" not in g:
-            nbt = re.sub(r"GunCurrentAmmoCount:\d+", "GunCurrentAmmoCount:0", jeu[g]).replace(",HasBulletInBarrel:1b", "")
-            out.append(("tacz:modern_kinetic_gun", nbt, [1, 1], 1.0))
+            out.append(("tacz:modern_kinetic_gun", jeu[g], [1, 1], 1.0))
     return out
 
 

@@ -23,7 +23,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -34,7 +34,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -45,7 +45,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -56,7 +56,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -67,7 +67,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -100,7 +100,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -111,7 +111,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -122,7 +122,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -155,7 +155,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -166,7 +166,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -177,7 +177,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:882\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:882\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:50,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -188,7 +188,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:9a91\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:9a91\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -199,7 +199,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -210,7 +210,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:an94\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:an94\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -232,7 +232,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:evo3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:evo3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -243,7 +243,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:g18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:g18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -254,7 +254,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:gew98\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:gew98\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -276,7 +276,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:luger1906\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:luger1906\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -287,7 +287,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:python\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:python\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -298,7 +298,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -309,7 +309,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -320,7 +320,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:16,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -331,7 +331,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ak74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ak74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -342,7 +342,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -353,7 +353,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:arp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:arp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -386,7 +386,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:g36\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:g36\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -397,7 +397,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:glock_18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:glock_18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -408,7 +408,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:glock_54\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:glock_54\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:9,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -419,7 +419,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -430,7 +430,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -441,7 +441,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -452,7 +452,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:xm177\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:xm177\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -463,7 +463,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -474,7 +474,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:b93r\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:b93r\",GunFireMode:\"BURST\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -485,7 +485,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m16a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m16a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -496,7 +496,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m4a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m4a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -507,7 +507,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -518,7 +518,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -540,7 +540,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:type_81\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:type_81\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -551,7 +551,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -562,7 +562,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:galilace\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:galilace\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:17,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -573,7 +573,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -584,7 +584,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:mg3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:mg3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -595,7 +595,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:mod2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:mod2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -606,7 +606,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:negev\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:negev\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -617,7 +617,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:pkp\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:pkp\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:60,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -628,7 +628,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:ssg_08\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:ssg_08\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -639,7 +639,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:type20\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:type20\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -650,7 +650,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:m14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:m14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -661,7 +661,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:stakeout\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:stakeout\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -672,7 +672,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:adar2\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:adar2\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -683,7 +683,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ak12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ak12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -694,7 +694,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -705,7 +705,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ar762\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ar762\",GunFireMode:\"BURST\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -716,7 +716,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:aug_a2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:aug_a2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -727,7 +727,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:aug_hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:aug_hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -738,7 +738,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -749,7 +749,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -760,7 +760,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk417\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk417\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -771,7 +771,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk_g33\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk_g33\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -782,7 +782,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:honey_badger\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:honey_badger\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -793,7 +793,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:mk18_burst\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:mk18_burst\",GunFireMode:\"BURST\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -804,7 +804,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:mk47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:mk47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -815,7 +815,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:quatro15\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:quatro15\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:26,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -826,7 +826,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:rpk16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:rpk16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -837,7 +837,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:rpk_74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:rpk_74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -848,7 +848,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:rpk_74m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:rpk_74m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -859,7 +859,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:scar_hamr\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:scar_hamr\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -870,7 +870,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:scar_pdw\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:scar_pdw\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -881,7 +881,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:scar_sbr\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:scar_sbr\",GunFireMode:\"BURST\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -892,7 +892,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -903,7 +903,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -914,7 +914,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:vector9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:vector9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -925,7 +925,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:z15_a\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:z15_a\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -936,7 +936,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -947,7 +947,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:aug\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:aug\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -958,7 +958,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -969,7 +969,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:g36k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:g36k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -980,7 +980,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:hk416d\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:hk416d\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -991,7 +991,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:hk_g3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:hk_g3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1002,7 +1002,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:37,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1013,7 +1013,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1024,7 +1024,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:rpk\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:rpk\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1035,7 +1035,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:scar_h\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:scar_h\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1046,7 +1046,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1057,7 +1057,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:spr15hb\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:spr15hb\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1068,7 +1068,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:9,HasBulletInBarrel:0b}"
       }
      ]
     }
@@ -1095,7 +1095,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1106,7 +1106,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1117,7 +1117,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1128,7 +1128,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1139,7 +1139,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1172,7 +1172,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1183,7 +1183,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1194,7 +1194,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1227,7 +1227,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1238,7 +1238,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1249,7 +1249,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:882\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:882\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:50,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1260,7 +1260,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:9a91\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:9a91\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1271,7 +1271,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1282,7 +1282,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:an94\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:an94\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1304,7 +1304,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:evo3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:evo3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1315,7 +1315,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:g18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:g18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1326,7 +1326,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:gew98\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:gew98\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1348,7 +1348,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:luger1906\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:luger1906\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1359,7 +1359,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:python\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:python\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1370,7 +1370,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:ump9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1381,7 +1381,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:mp7r\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1392,7 +1392,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:ro635v3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:16,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1403,7 +1403,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ak74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ak74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1414,7 +1414,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:aks74u\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1425,7 +1425,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:arp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:arp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1458,7 +1458,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:g36\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:g36\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1469,7 +1469,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:glock_18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:glock_18c\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1480,7 +1480,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:glock_54\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:glock_54\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:9,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1491,7 +1491,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk_mp5sd\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1502,7 +1502,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:m870t\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1513,7 +1513,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1524,7 +1524,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:xm177\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:xm177\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1535,7 +1535,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:ak47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1546,7 +1546,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:b93r\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:b93r\",GunFireMode:\"BURST\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1557,7 +1557,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m16a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m16a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1568,7 +1568,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m4a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m4a1\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1579,7 +1579,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1590,7 +1590,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1612,7 +1612,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:type_81\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:type_81\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1623,7 +1623,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1634,7 +1634,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:galilace\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:galilace\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:17,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1645,7 +1645,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1656,7 +1656,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:mg3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:mg3\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1667,7 +1667,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:mod2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:mod2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1678,7 +1678,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:negev\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:negev\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1689,7 +1689,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:pkp\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:pkp\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:60,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1700,7 +1700,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:ssg_08\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:ssg_08\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1711,7 +1711,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"arkaniaz:type20\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"arkaniaz:type20\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1722,7 +1722,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:m14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:m14\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1733,7 +1733,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"heraliz_fuse:stakeout\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"heraliz_fuse:stakeout\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1744,7 +1744,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:adar2\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:adar2\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1755,7 +1755,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ak12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ak12\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1766,7 +1766,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ar57\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1777,7 +1777,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:ar762\",GunFireMode:\"BURST\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:ar762\",GunFireMode:\"BURST\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1788,7 +1788,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:aug_a2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:aug_a2\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1799,7 +1799,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:aug_hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:aug_hbar\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1810,7 +1810,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1821,7 +1821,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1832,7 +1832,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk417\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk417\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1843,7 +1843,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:hk_g33\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:hk_g33\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1854,7 +1854,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:honey_badger\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:honey_badger\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1865,7 +1865,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:mk18_burst\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:mk18_burst\",GunFireMode:\"BURST\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1876,7 +1876,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:mk47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:mk47\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1887,7 +1887,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:quatro15\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:quatro15\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:26,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1898,7 +1898,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:rpk16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:rpk16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1909,7 +1909,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:rpk_74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:rpk_74\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1920,7 +1920,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:rpk_74m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:rpk_74m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1931,7 +1931,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:scar_hamr\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:scar_hamr\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1942,7 +1942,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:scar_pdw\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:scar_pdw\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1953,7 +1953,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:scar_sbr\",GunFireMode:\"BURST\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:scar_sbr\",GunFireMode:\"BURST\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1964,7 +1964,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1975,7 +1975,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1986,7 +1986,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:vector9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:vector9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:12,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1997,7 +1997,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:z15_a\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"maxstuff:z15_a\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2008,7 +2008,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:aiawp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2019,7 +2019,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:aug\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:aug\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2030,7 +2030,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:deagle\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2041,7 +2041,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:g36k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:g36k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2052,7 +2052,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:hk416d\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:hk416d\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2063,7 +2063,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:hk_g3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:hk_g3\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2074,7 +2074,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:m249\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:37,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2085,7 +2085,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:p90\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:25,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2096,7 +2096,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:rpk\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:4,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:rpk\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:20,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2107,7 +2107,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:scar_h\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:2,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:scar_h\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2118,7 +2118,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:scar_l\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2129,7 +2129,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:spr15hb\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:spr15hb\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -2140,7 +2140,7 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}"
+       "tag": "{GunId:\"tacz:vector45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:9,HasBulletInBarrel:0b}"
       }
      ]
     }

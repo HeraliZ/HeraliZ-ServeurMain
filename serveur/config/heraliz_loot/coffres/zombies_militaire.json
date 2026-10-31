@@ -651,7 +651,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -661,7 +661,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"arkaniaz:p250\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"arkaniaz:p250\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -671,7 +671,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:32,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -681,7 +681,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -691,7 +691,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:7,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -701,7 +701,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"arkaniaz:usp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"arkaniaz:usp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -711,7 +711,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -721,7 +721,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -731,7 +731,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"heraliz_fuse:olympia\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"heraliz_fuse:olympia\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -741,7 +741,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"maxstuff:db_50\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"maxstuff:db_50\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -751,7 +751,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -761,7 +761,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -771,7 +771,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"maxstuff:m17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"maxstuff:m17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -781,7 +781,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -791,7 +791,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:db_long\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:db_long\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -801,7 +801,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:db_short\",GunFireMode:\"BURST\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:db_short\",GunFireMode:\"BURST\",GunCurrentAmmoCount:1,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -811,7 +811,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:8,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -821,7 +821,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -831,7 +831,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:6,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   },
   {
@@ -841,7 +841,7 @@
     1
    ],
    "poids": 195,
-   "nbt": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0,HasBulletInBarrel:0b}",
+   "nbt": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:10,HasBulletInBarrel:0b}",
    "_pour_100": 0.0195
   }
  ]
