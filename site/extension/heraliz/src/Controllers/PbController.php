@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Schema;
  * storage/app/heraliz/pb.cle (créée par site/vm/theme.sh, lue par la mise en ligne du serveur : jamais dans le dépôt).
  * Toute opération porte une référence unique (ref) : rejouée, elle rend le même résultat sans rien refaire ; le serveur
  * de jeu peut donc la renvoyer sans risque après une coupure ou un plantage, et demander ce qu'elle est devenue (statut).
+ * Un débit peut dire quelle part de son montant est brûlée (« taxe », hôtel des ventes) : seulement notée pour les stats.
  */
 class PbController extends Controller
 {
@@ -136,7 +137,8 @@ class PbController extends Controller
             }
             $user->money = $type === 'debit' ? $solde - $montant : $solde + $montant;
             $user->save();
-            self::noter($ref, $type, $type === 'debit' ? $user->name : null, $type === 'credit' ? $user->name : null, $montant, 0, $d['motif'] ?? '');
+            self::noter($ref, $type, $type === 'debit' ? $user->name : null, $type === 'credit' ? $user->name : null, $montant,
+                $type === 'debit' ? self::partBrulee($d, $montant) : 0, $d['motif'] ?? '');
 
             return response()->json(['ok' => true, 'ref' => $ref, 'solde' => self::entier($user->money)]);
         });
@@ -226,6 +228,19 @@ class PbController extends Controller
         $m = $d['montant'] ?? null;
 
         return is_int($m) && $m > 0 && $m <= 100000000 ? $m : null;
+    }
+
+    /**
+     * Part d'un débit qui n'est versée à personne : la taxe des achats en PB de l'hôtel des ventes (le serveur de jeu
+     * débite l'acheteur du prix + 10 % et ne verse que le prix au vendeur). Notée dans la colonne taxe pour que « PB
+     * détruits par la taxe » (stats) la compte, comme la taxe de /trade ; elle ne change rien au solde. Absente ou
+     * invalide : 0 (le débit passe quand même).
+     */
+    private static function partBrulee(array $d, int $montant): int
+    {
+        $t = $d['taxe'] ?? 0;
+
+        return is_int($t) && $t > 0 && $t < $montant ? $t : 0;
     }
 
     private static function entier($valeur): int
