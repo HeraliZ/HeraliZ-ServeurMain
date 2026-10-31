@@ -7,7 +7,7 @@
 
 Sur le serveur, un tir s'entend jusqu'à DefaultGunFireSoundDistance blocs (serveur/config/tacz-common.toml : 256).
 Un tir silencieux s'entend en deux temps (choix du propriétaire, 12/10) :
-- jusqu'à sa PORTÉE NETTE (PORTEE_NETTE, 16 blocs, la même pour tous) : son du silencieux de l'arme, à sa vraie place (on sait
+- jusqu'à sa PORTÉE NETTE (PORTEE_NETTE, 10 blocs, la même pour tous) : son du silencieux de l'arme, à sa vraie place (on sait
   d'où il vient), qui baisse avec la distance et s'éteint au double de la portée nette ;
 - au-delà, jusqu'à la portée d'un tir normal : le même son, plus grave et étouffé, venu d'un endroit flou autour du
   tireur (on l'entend, on devine la direction, pas l'endroit exact). Ce son est décidé et envoyé par le mod tactique
@@ -35,7 +35,10 @@ CONFIG_TACZ = DEPOT / "serveur" / "config" / "tacz-common.toml"
 # Portée nette en blocs : on entend le tir net et à sa vraie place jusque-là. Choix du propriétaire (12/10) : la même
 # pour tous les silencieux (« une portée précise, à chaque fois la même »), entre les 10 et 20 blocs voulus. Au-delà : son
 # lointain étouffé et flou, jusqu'à 256 blocs (tacz-common.toml).
-PORTEE_NETTE = 16
+# 31/10 (« on repère encore trop facilement la position exacte d'un tireur silencieux ») : 10 au lieu de 16, le bas de
+# la fourchette voulue. Le son à sa vraie place s'éteint donc à 20 blocs au lieu de 32 (entre la portée nette et son
+# double, il baisse pendant que le son flou monte).
+PORTEE_NETTE = 10
 
 # Tous les silencieux des gunpacks (identifiants des accessoires) : --verifier signale ceux qui manquent.
 PORTEES = {ident: PORTEE_NETTE for ident in (

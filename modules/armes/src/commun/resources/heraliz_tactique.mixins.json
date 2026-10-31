@@ -8,6 +8,7 @@
     "LivingEntityCrawlMixin",
     "ShooterDataHolderMixin",
     "TaczHitboxCorpsMixin",
+    "TaczSilencieuxSansTraceuseMixin",
     "TaczTirsRefusesMixin",
     "TaczVerreBalleMixin"
   ],

@@ -39,6 +39,7 @@ public class ServerConfig {
    public static BooleanValue SON_LOINTAIN;
    public static DoubleValue SON_LOINTAIN_VOLUME;
    public static DoubleValue SON_LOINTAIN_FLOU;
+   public static BooleanValue TRACEUSES_SILENCIEUX;
    /** HeraliZ : couteaux TaCZ frappés comme les armes de mêlée de LR (fr.heraliz.tactique.couteaux.CoupsCouteau). */
    public static BooleanValue COUTEAUX;
    public static DoubleValue COUTEAUX_DEGATS;
@@ -158,6 +159,10 @@ public class ServerConfig {
             "d'un point jusqu'à 50 blocs à côté du tireur ; au plus 96 blocs). Le point reste le même 30 s pour un même",
             "tireur et un même joueur. 0 : vraie place (déconseillé : elle serait envoyée au jeu du joueur).")
          .defineInRange("flou_lointain", SonLointain.DEFAUT_FLOU, 0.0, 1.0);
+      TRACEUSES_SILENCIEUX = builder.comment(
+            "Balles traçantes d'une arme à silencieux. false : aucune (le trait lumineux, vu par tous à 80 blocs, montrait",
+            "d'où partait le tir silencieux ; mixin TaczSilencieuxSansTraceuseMixin). true : comme sans silencieux.")
+         .define("traceuses", false);
       builder.pop();
       // HeraliZ : couteaux TaCZ (envoyé aux joueurs à la connexion : ils lisent la même cadence que le serveur)
       builder.push("couteaux");
