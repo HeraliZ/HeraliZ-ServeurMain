@@ -38,3 +38,16 @@ toutes les 10 s).
 
 **Non-régression** : achats en hérals et en PB, « Tout récupérer », objets grisés, plafonds PB par rareté, 5 ventes au plus,
 `/wipe`, refus hors du spawn, en combat, à terre, en match.
+
+## Recycleur du spawn : règles remises à jour
+
+`recyclage.json` relancé par `outils/recyclage.py` (il n'avait pas suivi les recettes du 27 et du 28/10). Relu par
+`/quete recharger`, sans nouveau jar.
+- [ ] Une caisse de stockage de CRac vide (caisse d'armes, casier, coffre-fort, malle de chantier, caisse en métal) se
+      recycle (avant : « ne se recycle pas »).
+- [ ] Munitions 12g, .308, .338, .50 AE, 5,56, 7,62x39 : l'aperçu montre les composants de leur nouvelle recette.
+
+## Recycleur de la carte : rien en jeu
+
+Seulement des rendus à valider (hors du dépôt), écrits par `python modules/pnj/outils/recycleur_carte_modele.py --apercu
+DOSSIER`. Aucun bloc, aucun objet, aucun code : rien à essayer en jeu tant que les rendus ne sont pas validés.
