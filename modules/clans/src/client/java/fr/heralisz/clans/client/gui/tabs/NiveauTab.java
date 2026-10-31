@@ -1,12 +1,12 @@
 package fr.heralisz.clans.client.gui.tabs;
 
-import fr.heralisz.clans.ClansConfig;
 import fr.heralisz.clans.client.ClientClans;
 import fr.heralisz.clans.client.gui.kit.HzButton;
 import fr.heralisz.clans.client.gui.kit.Ui;
 import fr.heralisz.clans.model.Arbre;
 import fr.heralisz.clans.model.Avantages;
 import fr.heralisz.clans.model.Niveaux;
+import fr.heralisz.clans.model.SourceXp;
 import fr.heralisz.clans.network.Packets;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -86,24 +86,46 @@ public final class NiveauTab extends Tab {
         int y2 = y + hCarte + 6, h2 = h - hCarte - 6;
         carte(g, x, y2, GAUCHE, h2);
         Ui.spaced(g, font, tr("gui.niveau.gagner"), Ui.SMALL, x + 10, y2 + 9, Ui.argb(Ui.MUTED, 255), 1.0f);
-        String[][] xp = {
-                {"gui.niveau.xp.capture", Ui.nombre(ClansConfig.XP_CAPTURE.get())},
-                {"gui.niveau.xp.tenir", Ui.nombre(ClansConfig.XP_HEURE_VALEUR.get())},
-                {"gui.niveau.xp.ravitaillement", Ui.nombre(ClansConfig.XP_RAVITAILLEMENT.get())},
-                {"gui.niveau.xp.quetes", null},
-                {"gui.niveau.xp.don", null},
-                {"gui.niveau.xp.boss", Ui.nombre(ClansConfig.XP_BOSS.get())},
-                {"gui.niveau.xp.joueur", Ui.nombre(ClansConfig.XP_KILL_JOUEUR.get())},
-                {"gui.niveau.xp.zombie", Ui.nombre(ClansConfig.XP_KILL_ZOMBIE.get())}};
+        // 31/10 : les gains et les plafonds du jour viennent du serveur (avant : reglages du PC du joueur) ; au survol d'une
+        // ligne, le plafond du jour et ce que le clan a deja recu aujourd'hui
+        Packets.ArbreSaisonS2C a = ClientClans.arbre();
         int ly = y2 + 22;
-        for (String[] l : xp) {
+        for (SourceXp src : ORDRE_XP) {
             if (ly > y2 + h2 - 10) break;
-            g.drawString(font, Ui.lit(Ui.ellipsis(font, tr(l[0]), Ui.SMALL, GAUCHE - 60), Ui.SMALL), x + 10, ly, Ui.argb(Ui.TEXT, 230), false);
-            String v = l[1] == null ? tr("gui.niveau.xp.variable") : tr("gui.niveau.xp.valeur", l[1]);
-            Ui.right(g, font, Ui.lit(v, Ui.BOLD), x + GAUCHE - 10, ly, Ui.argb(Ui.OR, 255));
+            int i = src.ordinal();
+            long gain = a == null ? 0 : Packets.ArbreSaisonS2C.de(a.xpGain(), i);
+            long plafond = a == null ? 0 : Packets.ArbreSaisonS2C.de(a.xpPlafond(), i);
+            long recu = a == null ? 0 : Packets.ArbreSaisonS2C.de(a.xpAujourdhui(), i);
+            boolean plein = plafond > 0 && recu >= plafond;
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, tr(src.libelle()), Ui.SMALL, GAUCHE - 60), Ui.SMALL), x + 10, ly,
+                    Ui.argb(plein ? Ui.FAINT : Ui.TEXT, 230), false);
+            String v = gain <= 0 ? tr("gui.niveau.xp.variable") : tr("gui.niveau.xp.valeur", Ui.nombre(gain));
+            Ui.right(g, font, Ui.lit(v, Ui.BOLD), x + GAUCHE - 10, ly, Ui.argb(plein ? Ui.FAINT : Ui.OR, 255));
+            if (a != null && dans(mouseX, mouseY, x + 6, ly - 2, GAUCHE - 12, LIGNE)) ecran.infobulle(infobulleXp(a, src));
             ly += LIGNE;
         }
         arbre(g);
+    }
+
+    /** Lignes de l'onglet « Gagner de l'XP », dans l'ordre d'affichage. */
+    private static final SourceXp[] ORDRE_XP = {SourceXp.QUETE, SourceXp.CAPTURE, SourceXp.TENUE, SourceXp.RAVITAILLEMENT, SourceXp.DON,
+            SourceXp.JOUEUR, SourceXp.ZOMBIE, SourceXp.BOSS};
+
+    /** Infobulle d'une source : plafond du jour, part au-dela, XP deja recue aujourd'hui (31/10). */
+    private static List<Component> infobulleXp(Packets.ArbreSaisonS2C a, SourceXp src) {
+        int i = src.ordinal();
+        long plafond = Packets.ArbreSaisonS2C.de(a.xpPlafond(), i), recu = Packets.ArbreSaisonS2C.de(a.xpAujourdhui(), i);
+        int pct = i < a.xpAuDelaPct().length ? a.xpAuDelaPct()[i] : 0;
+        List<Component> l = new ArrayList<>(3);
+        l.add(Component.translatable(src.libelle()));
+        if (plafond <= 0) {
+            l.add(Component.translatable("gui.niveau.xp.sans_plafond"));
+        } else {
+            l.add(Component.translatable("gui.niveau.xp.plafond", Ui.nombre(plafond)));
+            l.add(Component.translatable("gui.niveau.xp.aujourdhui", Ui.nombre(Math.min(recu, plafond)), Ui.nombre(plafond)));
+            l.add(pct > 0 ? Component.translatable("gui.niveau.xp.au_dela", pct) : Component.translatable("gui.niveau.xp.au_dela_rien"));
+        }
+        return l;
     }
 
     /** Carte de droite : l'arbre, puis la saison. */

@@ -62,6 +62,25 @@ public final class Clan {
     public final Map<String, StatZone> statsZones = new LinkedHashMap<>();
     /** Arbre d'ameliorations (saison des clans) : palier achete par branche ({@link Arbre}). */
     public final EnumMap<Arbre.Branche, Integer> arbre = new EnumMap<>(Arbre.Branche.class);
+    /**
+     * Courbe des niveaux sur laquelle niveau et xp sont comptes (31/10) : 1 = ancienne (20 x n^1,5 x 3, tous les clans
+     * d'avant), {@link #COURBE_ACTUELLE} = celle de {@link Niveaux}. Un clan sur l'ancienne est recalcule une fois au
+     * demarrage du serveur (meme XP totale), son niveau d'avant garde dans {@link #niveauAvantCourbe}.
+     */
+    public int courbe = COURBE_ACTUELLE;
+    public static final int COURBE_ACTUELLE = 2;
+    /** Niveau et XP du clan avant le recalcul de la courbe (0 : jamais recalcule) : pour le staff, en cas de reclamation. */
+    public int niveauAvantCourbe;
+    public long xpAvantCourbe;
+    /** Moment du recalcul (ms) : les membres qui se connectent ensuite pour la premiere fois en sont prevenus. */
+    public long courbeLe;
+    /**
+     * XP proposee aujourd'hui par source ({@link SourceXp}, index = ordinal), avant les plafonds du jour (31/10) ; remise a
+     * 0 quand le jour (heure de Paris, {@link #xpJourNumero} = jours depuis 1970) change. Lue par le serveur et envoyee a
+     * l'onglet Niveau.
+     */
+    public long xpJourNumero;
+    public final long[] xpJour = new long[SourceXp.values().length];
 
     /** Captures et minutes tenues d'une zone par le clan. */
     public static final class StatZone {
@@ -310,6 +329,16 @@ public final class Clan {
         JsonObject ar = new JsonObject();
         for (Map.Entry<Arbre.Branche, Integer> e : arbre.entrySet()) ar.addProperty(e.getKey().id(), e.getValue());
         o.add("arbre", ar);
+        o.addProperty("courbe", courbe);
+        if (niveauAvantCourbe > 0) {
+            o.addProperty("niveauAvantCourbe", niveauAvantCourbe);
+            o.addProperty("xpAvantCourbe", xpAvantCourbe);
+            o.addProperty("courbeLe", courbeLe);
+        }
+        JsonObject xj = new JsonObject();
+        xj.addProperty("jour", xpJourNumero);
+        for (SourceXp src : SourceXp.values()) if (xpJour[src.ordinal()] > 0) xj.addProperty(src.id(), xpJour[src.ordinal()]);
+        o.add("xpJour", xj);
         return o;
     }
 
@@ -393,6 +422,14 @@ public final class Clan {
             Arbre.Branche b = Arbre.Branche.parId(e.getKey());
             if (b != null && e.getValue().isJsonPrimitive()) c.arbre.put(b, Math.max(0, Math.min(b.max, e.getValue().getAsInt())));
         }
+        // 31/10 : un clan ecrit sans « courbe » est d'avant la nouvelle courbe des niveaux (recalcule au demarrage)
+        c.courbe = Json.integer(o, "courbe", 1);
+        c.niveauAvantCourbe = Math.max(0, Json.integer(o, "niveauAvantCourbe", 0));
+        c.xpAvantCourbe = Math.max(0, Json.lng(o, "xpAvantCourbe", 0));
+        c.courbeLe = Math.max(0, Json.lng(o, "courbeLe", 0));
+        JsonObject xj = Json.obj(o, "xpJour");
+        c.xpJourNumero = Json.lng(xj, "jour", 0);
+        for (SourceXp src : SourceXp.values()) c.xpJour[src.ordinal()] = Math.max(0, Json.lng(xj, src.id(), 0));
         // le chef est toujours membre avec le grade CHEF (et n'a pas de reglages individuels : il a tout)
         Membre chefM = c.membres.get(chef);
         if (chefM != null) {

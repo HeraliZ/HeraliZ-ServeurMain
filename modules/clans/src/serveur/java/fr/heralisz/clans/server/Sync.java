@@ -190,11 +190,22 @@ public final class Sync {
         int[] paliers = new int[br.length];
         for (int i = 0; i < br.length; i++) paliers[i] = c.palier(br[i]);
         double[] sc = fr.heralisz.clans.saison.Saison.scores(c.id);
+        // 31/10 : XP par source telle que le serveur la donne (gain, plafond du jour, part au-dela, deja recu aujourd'hui)
+        fr.heralisz.clans.model.SourceXp[] sx = fr.heralisz.clans.model.SourceXp.values();
+        long[] gain = new long[sx.length], plafond = new long[sx.length], jour = new long[sx.length];
+        int[] auDela = new int[sx.length];
+        long now = System.currentTimeMillis();
+        for (fr.heralisz.clans.model.SourceXp s : sx) {
+            gain[s.ordinal()] = XpClan.gain(s);
+            plafond[s.ordinal()] = XpClan.plafond(s);
+            auDela[s.ordinal()] = XpClan.auDelaPct(s);
+            jour[s.ordinal()] = XpClan.aujourdhui(c, s, now);
+        }
         ClansNet.toPlayer(p, new Packets.ArbreSaisonS2C(paliers, c.pointsLibres(), c.estChef(p.getUUID()),
                 fr.heralisz.clans.saison.Saison.active(), fr.heralisz.clans.saison.Saison.fin(),
                 fr.heralisz.clans.saison.SaisonApi.aUnCoeur(c.id), fr.heralisz.clans.saison.Saison.entiers(sc[0]),
                 fr.heralisz.clans.saison.Saison.entiers(sc[1]), fr.heralisz.clans.saison.Saison.entiers(sc[2]),
-                fr.heralisz.clans.saison.Saison.rangs(c.id)));
+                fr.heralisz.clans.saison.Saison.rangs(c.id), gain, plafond, auDela, jour));
     }
 
     /** Les invitations en attente du joueur (expirees purgees). */

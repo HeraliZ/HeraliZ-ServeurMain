@@ -828,5 +828,15 @@
   "msg.capture.amelioration": "Votre clan doit d'abord acheter l'amélioration Territoires pour capturer des zones (touche K, onglet Niveau).",
   "msg.capture.limite": "Votre clan tient déjà %s zone(s) sur %s : il ne peut pas en prendre une autre tant qu'il les tient.",
   "zone.cmd.plafond": "[%s] tient déjà %s zones : jamais plus de %s en même temps.",
-  "zone.cmd.hors_regle": "Attention : [%s] n'aurait pas pu la prendre lui-même (niveau %s, %s zone(s) au plus)."
+  "zone.cmd.hors_regle": "Attention : [%s] n'aurait pas pu la prendre lui-même (niveau %s, %s zone(s) au plus).",
+  "gui.niveau.xp.sans_plafond": "Pas de plafond par jour",
+  "gui.niveau.xp.plafond": "Plafond : %s XP par jour pour le clan",
+  "gui.niveau.xp.aujourdhui": "Aujourd'hui : %s / %s XP",
+  "gui.niveau.xp.au_dela": "Au-delà : %s %% de l'XP jusqu'à minuit",
+  "gui.niveau.xp.au_dela_rien": "Au-delà : plus d'XP jusqu'à minuit",
+  "gui.niveau.xp.admin": "Staff",
+  "msg.xp.plafond": "Plafond du jour atteint pour « %s » (%s XP) : cette source ne donne plus d'XP au clan jusqu'à minuit.",
+  "msg.xp.plafond_reduit": "Plafond du jour atteint pour « %s » (%s XP) : cette source ne donne plus que %s %% de son XP au clan jusqu'à minuit.",
+  "msg.courbe_niveaux": "Les niveaux de clan sont devenus plus durs : votre clan garde toute son XP, recomptée sur la nouvelle échelle (niveau %s → niveau %s). Les améliorations déjà achetées sont toutes gardées ; la capture des zones s'ouvre au niveau %s.",
+  "evenement.courbe_niveaux": "Nouvelle échelle des niveaux : niveau %s → %s (XP et améliorations gardées)"
 }

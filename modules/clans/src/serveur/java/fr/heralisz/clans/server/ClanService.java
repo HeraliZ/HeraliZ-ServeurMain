@@ -1242,11 +1242,32 @@ public final class ClanService {
 
     // ------------------------------------------------------------------ XP et niveaux
     /**
-     * Ajoute de l'XP au clan (comptee dans les stats de l'auteur s'il est donne) ; monte les niveaux tant que l'XP
-     * suffit, le surplus est reporte ; au niveau max l'XP continue de s'accumuler (classement).
+     * Ajoute de l'XP au clan pour une source (comptee dans les stats de l'auteur s'il est donne) ; monte les niveaux tant
+     * que l'XP suffit, le surplus est reporte ; au niveau max l'XP continue de s'accumuler (classement). 31/10 : le plafond
+     * du jour de la source s'applique d'abord ({@link XpClan}) ; le clan est prevenu une fois quand une source atteint son
+     * plafond. Renvoie l'XP vraiment donnee.
      */
-    public static void ajouterXp(Clan c, long xp, @Nullable UUID auteur) {
-        if (c == null || xp <= 0) return;
+    public static long ajouterXp(Clan c, fr.heralisz.clans.model.SourceXp source, long propose, @Nullable UUID auteur) {
+        if (c == null || propose <= 0) return 0;
+        long xp = XpClan.accorder(c, source, propose, now());
+        if (XpClan.vientDePasser(c, source, propose)) {
+            int pct = XpClan.auDelaPct(source);
+            Component nom = Component.translatable(source.libelle());
+            diffuserChat(c, prefixe(c).append(pct > 0
+                    ? Component.translatableWithFallback("msg.xp.plafond_reduit",
+                    "Plafond du jour atteint pour « %s » (%s XP) : cette source ne donne plus que %s %% de son XP au clan jusqu'à minuit.",
+                    nom, XpClan.plafond(source), pct)
+                    : Component.translatableWithFallback("msg.xp.plafond",
+                    "Plafond du jour atteint pour « %s » (%s XP) : cette source ne donne plus d'XP au clan jusqu'à minuit.",
+                    nom, XpClan.plafond(source))));
+            HeraliszClans.LOG.info("[clans] [{}] plafond d'XP du jour atteint : {} ({} XP)", c.tag, source.id(), XpClan.plafond(source));
+        }
+        ClanStore st = store();
+        if (xp <= 0) {
+            if (st != null) st.marquerDirty();   // compteur du jour change
+            Sync.marquerLent(c);
+            return 0;
+        }
         c.xp += xp;
         if (auteur != null) {
             Membre m = c.membre(auteur);
@@ -1270,8 +1291,7 @@ public final class ClanService {
                         c.niveau)));
             }
         }
-        ClanStore s = store();
-        if (s != null) s.marquerDirty();
+        if (st != null) st.marquerDirty();
         if (monte) {
             Sync.marquer(c);
             // 25/10 : le tag de la liste Tab change de couleur avec le niveau (gris, couleur du clan, or) ; avant, il
@@ -1280,6 +1300,7 @@ public final class ClanService {
         } else {
             Sync.marquerLent(c);
         }
+        return xp;
     }
 
     // ------------------------------------------------------------------ arbre d'ameliorations

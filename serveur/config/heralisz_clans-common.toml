@@ -51,7 +51,7 @@
 	#true : seule l'equipe qui a lance le signal ouvre la caisse larguee
 	caisse_verrouillee_clan = false
 
-#Sources d'XP (les quetes sont dans config/heralisz_clans/quetes.json, les paliers dans niveaux.json)
+#Sources d'XP (les quetes sont dans config/heralisz_clans/quetes.json ; les paliers, les plafonds par jour et les dons dans niveaux.json)
 [xp]
 	#Range: 0 ~ 100000
 	capture = 150

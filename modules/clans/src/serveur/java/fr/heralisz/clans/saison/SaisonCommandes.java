@@ -163,7 +163,7 @@ public final class SaisonCommandes {
         int n = st.getCount();
         String nom = st.getHoverName().getString();
         p.getInventory().setItem(p.getInventory().selected, net.minecraft.world.item.ItemStack.EMPTY);
-        ClanService.ajouterXp(clan, parObjet * n, p.getUUID());
+        ClanService.ajouterXp(clan, fr.heralisz.clans.model.SourceXp.DON, parObjet * n, p.getUUID());
         ClanService.diffuserChat(clan, "msg.don.fait", p.getGameProfile().getName(), n, nom, parObjet * n);
         fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} par {} (+{} XP)", clan.tag, n, nom, p.getGameProfile().getName(), parObjet * n);
         return 1;

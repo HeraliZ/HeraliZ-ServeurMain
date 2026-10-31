@@ -17,22 +17,30 @@ import java.nio.file.Path;
 /**
  * Table des niveaux : XP necessaire pour passer du niveau n au suivant. Depuis la saison des clans (22/10), le niveau
  * maximum est celui qui permet de tout prendre dans l'arbre ({@link Arbre#pointsTotaux()} = 45) et chaque niveau est
- * plus dur que le precedent : 20 x n^1,5 (arrondi a 10 : 20 XP pour le 1er, ~5 800 pour le dernier, ~106 000 en tout,
- * soit 2 a 3 semaines pour un clan tres actif d'apres les gains actuels ; a regler pendant la beta). Membres et
- * territoires ne viennent plus du niveau mais de l'arbre ({@link Arbre}). Valeurs surchargees par
- * config/heralisz_clans/niveaux.json (ecrit s'il manque).
+ * plus dur que le precedent. Membres et territoires ne viennent pas du niveau mais de l'arbre ({@link Arbre}). Valeurs
+ * surchargees par config/heralisz_clans/niveaux.json (ecrit s'il manque, relu par /clan admin recharger).
  * <p>
- * 28/10 (demande du proprietaire : « beaucoup trop facile ») : deux facteurs dans niveaux.json, appliques par-dessus la
- * table : {@code facteur_xp} (XP demandee par niveau, 3 par defaut) et {@code facteur_prix_arbre} (herals des paliers de
- * l'arbre, 2 par defaut, envoye aux joueurs avec l'etat du clan). Le serveur seul les lit dans le fichier.
+ * 31/10 (demande du proprietaire : « beaucoup trop facile des le debut », et pas 250 XP pour le niveau 2, moins qu'une
+ * seule quete du jour) : nouvelle courbe {@code arrondi100(3 600 x (1 + 0,065 (n - 1)))} : 3 600 XP pour le niveau 2
+ * (2 a 3 jours d'un petit clan normal, environ 1 500 XP par jour avant les captures), puis chaque niveau un peu plus cher
+ * jusqu'a 13 700 XP pour le dernier (~380 000 XP en tout). Ancienne courbe : 20 x n^1,5 x 3 (60 XP pour le niveau 2). Les
+ * clans d'avant gardent leur XP totale (recalcul une fois au demarrage : {@code MigrationNiveaux} du serveur). Les
+ * plafonds par source et par jour et le bareme des dons sont dans le meme fichier, lus par le serveur seul.
+ * <p>
+ * Deux facteurs restent possibles dans niveaux.json, appliques par-dessus la table : {@code facteur_xp} (XP demandee par
+ * niveau, 1 depuis le 31/10 : la table est deja la bonne) et {@code facteur_prix_arbre} (herals des paliers de l'arbre, 2
+ * par defaut, envoye aux joueurs avec l'etat du clan).
  */
 public final class Niveaux {
     private static final Logger LOG = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static final int MAX = 45;
-    /** Facteurs par defaut (28/10) : XP x3, prix de l'arbre x2. */
-    public static final double FACTEUR_XP_DEFAUT = 3.0, FACTEUR_PRIX_ARBRE_DEFAUT = 2.0;
+    /** Facteurs par defaut : XP x1 (31/10, la table est deja la bonne ; 28/10 : x3), prix de l'arbre x2 (28/10). */
+    public static final double FACTEUR_XP_DEFAUT = 1.0, FACTEUR_PRIX_ARBRE_DEFAUT = 2.0;
+    /** Courbe par defaut (31/10) : XP du premier niveau, hausse de chaque niveau suivant (part du premier). */
+    public static final long XP_NIVEAU_2 = 3_600L;
+    public static final double HAUSSE_PAR_NIVEAU = 0.065;
 
     private static long[] xp = defautXp();
     private static double facteurXp = FACTEUR_XP_DEFAUT;
@@ -62,12 +70,12 @@ public final class Niveaux {
         return Math.max(1, Math.min(MAX, niveau));
     }
 
-    /** arrondi10(20 * n^1.5). */
-    static long[] defautXp() {
+    /** arrondi100(3 600 x (1 + 0,065 (n - 1))) : 3 600, 3 800, 4 100 ... 13 700 (31/10). */
+    public static long[] defautXp() {
         long[] t = new long[MAX];
         for (int n = 1; n <= MAX; n++) {
-            double v = 20 * Math.pow(n, 1.5);
-            t[n - 1] = Math.round(v / 10.0) * 10;
+            double v = XP_NIVEAU_2 * (1 + HAUSSE_PAR_NIVEAU * (n - 1));
+            t[n - 1] = Math.round(v / 100.0) * 100;
         }
         return t;
     }
@@ -79,7 +87,8 @@ public final class Niveaux {
         for (int i = 0; i < MAX; i++) ax.add(xp[i]);
         o.addProperty("_aide", "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore),"
                 + " multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ;"
-                + " membres et territoires : arbre d'ameliorations du clan");
+                + " membres et territoires : arbre d'ameliorations du clan ; plafonds_jour et dons : lus par le serveur"
+                + " (XpClan), relus par /clan admin recharger");
         o.addProperty("facteur_xp", facteurXp);
         o.addProperty("facteur_prix_arbre", Arbre.facteurPrixPct() / 100.0);
         o.add("xp_suivant", ax);

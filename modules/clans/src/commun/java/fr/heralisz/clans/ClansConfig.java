@@ -78,7 +78,7 @@ public final class ClansConfig {
         CAISSE_VERROUILLEE_CLAN = b.comment("true : seule l'equipe qui a lance le signal ouvre la caisse larguee").define("caisse_verrouillee_clan", false);
         b.pop();
 
-        b.comment("Sources d'XP (les quetes sont dans config/heralisz_clans/quetes.json, les paliers dans niveaux.json)").push("xp");
+        b.comment("Sources d'XP (les quetes sont dans config/heralisz_clans/quetes.json ; les paliers, les plafonds par jour et les dons dans niveaux.json)").push("xp");
         XP_CAPTURE = b.defineInRange("capture", 150, 0, 100000);
         XP_RAVITAILLEMENT = b.defineInRange("ravitaillement", 100, 0, 100000);
         XP_KILL_JOUEUR = b.defineInRange("kill_joueur", 5, 0, 100000);

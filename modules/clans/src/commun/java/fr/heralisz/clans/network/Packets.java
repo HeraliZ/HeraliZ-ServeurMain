@@ -486,10 +486,15 @@ public final class Packets {
     /**
      * Arbre du clan et saison (envoye avec chaque snapshot) : paliers par branche (ordre de {@code Arbre.Branche}),
      * points libres, chef ou non ; saison en cours, fin (ms), coeur pose, points PVE / PVP / events, places {pve, pvp,
-     * events, general} (0 = pas classe).
+     * events, general} (0 = pas classe). 31/10 (canal 6) : XP de clan par source ({@code SourceXp}, index = ordinal) telle
+     * que le serveur la donne : gain d'une action (0 = variable), plafond du jour (0 = aucun), part donnee au-dela du
+     * plafond (%) et XP deja proposee aujourd'hui (avant plafond) ; avant, l'onglet lisait les reglages du PC du joueur.
      */
     public record ArbreSaisonS2C(int[] paliers, int pointsLibres, boolean chef, boolean saison, long fin, boolean coeur,
-                                 long pve, long pvp, long events, int[] rangs) {
+                                 long pve, long pvp, long events, int[] rangs,
+                                 long[] xpGain, long[] xpPlafond, int[] xpAuDelaPct, long[] xpAujourdhui) {
+        private static final int SOURCES_MAX = 32;
+
         void write(FriendlyByteBuf b) {
             b.writeVarIntArray(paliers);
             b.writeVarInt(pointsLibres);
@@ -501,11 +506,34 @@ public final class Packets {
             b.writeVarLong(pvp);
             b.writeVarLong(events);
             b.writeVarIntArray(rangs);
+            longs(b, xpGain);
+            longs(b, xpPlafond);
+            b.writeVarIntArray(xpAuDelaPct);
+            longs(b, xpAujourdhui);
         }
 
         static ArbreSaisonS2C read(FriendlyByteBuf b) {
             return new ArbreSaisonS2C(b.readVarIntArray(16), b.readVarInt(), b.readBoolean(), b.readBoolean(), b.readLong(), b.readBoolean(),
-                    b.readVarLong(), b.readVarLong(), b.readVarLong(), b.readVarIntArray(8));
+                    b.readVarLong(), b.readVarLong(), b.readVarLong(), b.readVarIntArray(8),
+                    longs(b), longs(b), b.readVarIntArray(SOURCES_MAX), longs(b));
+        }
+
+        private static void longs(FriendlyByteBuf b, long[] t) {
+            b.writeVarInt(t.length);
+            for (long v : t) b.writeVarLong(v);
+        }
+
+        private static long[] longs(FriendlyByteBuf b) {
+            int n = b.readVarInt();
+            if (n < 0 || n > SOURCES_MAX) throw new IllegalArgumentException("ArbreSaisonS2C : " + n + " sources d'XP");
+            long[] t = new long[n];
+            for (int i = 0; i < n; i++) t[i] = b.readVarLong();
+            return t;
+        }
+
+        /** Valeur de l'index i d'un tableau recu (0 hors du tableau : serveur plus ancien ou plus recent). */
+        public static long de(long[] t, int i) {
+            return t != null && i >= 0 && i < t.length ? t[i] : 0;
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

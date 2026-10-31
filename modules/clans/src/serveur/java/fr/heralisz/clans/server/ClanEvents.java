@@ -8,6 +8,7 @@ import fr.heralisz.clans.model.Evenement;
 import fr.heralisz.clans.model.LienJoueur;
 import fr.heralisz.clans.model.Membre;
 import fr.heralisz.clans.model.QueteEtat;
+import fr.heralisz.clans.model.SourceXp;
 import fr.heralisz.clans.network.ClansNet;
 import fr.heralisz.clans.network.Packets;
 import fr.heralisz.clans.territory.api.TerritoireEvents;
@@ -142,9 +143,12 @@ public final class ClanEvents {
             store.marquerDirtyJoueurs();
         }
         Clan c = store.clanDe(p.getUUID());
+        boolean avisCourbe = false;
         if (c != null) {
             Membre m = c.membre(p.getUUID());
             if (m != null) {
+                // 31/10 : premiere connexion depuis le passage du clan sur la nouvelle courbe des niveaux : il le sait
+                avisCourbe = c.niveauAvantCourbe > 1 && c.courbeLe > 0 && m.vuLe < c.courbeLe;
                 m.dernierNom = nom;
                 m.vuLe = now;
                 store.marquerDirty();
@@ -154,6 +158,11 @@ public final class ClanEvents {
         Sync.envoyerEtat(p);
         if (c != null) Sync.diffuserTags(c, null);
         else ClansNet.toPlayer(p, new Packets.TagsS2C(Sync.tableTags(null)));
+        if (avisCourbe) {
+            p.sendSystemMessage(ClanService.prefixe(c).append(Component.translatableWithFallback("msg.courbe_niveaux",
+                    "Les niveaux de clan sont devenus plus durs : votre clan garde toute son XP, recomptée sur la nouvelle échelle (niveau %s → niveau %s). Les améliorations déjà achetées sont toutes gardées ; la capture des zones s'ouvre au niveau %s.",
+                    c.niveauAvantCourbe, c.niveau, fr.heralisz.clans.model.Arbre.NIVEAU_CAPTURE)));
+        }
         // 25/10 : exclu ou clan dissous pendant son absence, il le sait des son arrivee
         if (!l.absence.isEmpty()) {
             int i = l.absence.indexOf(':');
@@ -301,15 +310,15 @@ public final class ClanEvents {
             if (joueur.getTags().contains("heraliz_bot")) return;   // bots de charge (/bots) : ni XP ni quête
             if (!killJoueurValide(c, tueur, joueur, System.currentTimeMillis())) return;
             m.stats.kills++;
-            ClanService.ajouterXp(c, ClansConfig.XP_KILL_JOUEUR.get(), tueur.getUUID());
+            ClanService.ajouterXp(c, SourceXp.JOUEUR, ClansConfig.XP_KILL_JOUEUR.get(), tueur.getUUID());
             Quetes.progresser(c, QueteEtat.Type.KILL_JOUEURS, 1);
         } else if (estBoss(victime)) {
             m.stats.boss++;
-            ClanService.ajouterXp(c, ClansConfig.XP_BOSS.get(), tueur.getUUID());
+            ClanService.ajouterXp(c, SourceXp.BOSS, ClansConfig.XP_BOSS.get(), tueur.getUUID());
             Quetes.progresser(c, QueteEtat.Type.KILL_BOSS, 1);
         } else if (victime.getType().getCategory() == MobCategory.MONSTER) {
             m.stats.zombies++;
-            ClanService.ajouterXp(c, ClansConfig.XP_KILL_ZOMBIE.get(), tueur.getUUID());
+            ClanService.ajouterXp(c, SourceXp.ZOMBIE, ClansConfig.XP_KILL_ZOMBIE.get(), tueur.getUUID());
             Quetes.progresser(c, QueteEtat.Type.KILL_ZOMBIES, 1);
         } else {
             return;
@@ -568,7 +577,6 @@ public final class ClanEvents {
         Clan c = store == null ? null : store.get(e.clanId);
         if (c == null) return;
         long now = System.currentTimeMillis();
-        int xp = ClansConfig.XP_CAPTURE.get();
         int n = 0;
         for (UUID u : e.capteurs) {
             Membre m = c.membre(u);
@@ -577,15 +585,15 @@ public final class ClanEvents {
                 n++;
             }
         }
-        // l'XP va au clan une fois ; la part de chaque capteur est comptee dans ses stats
-        if (n > 0) {
+        // l'XP va au clan une fois (plafond du jour des captures compris) ; la part de chaque capteur est comptee dans ses stats
+        long xp = ClanService.ajouterXp(c, SourceXp.CAPTURE, ClansConfig.XP_CAPTURE.get(), null);
+        if (n > 0 && xp > 0) {
             long part = xp / n;
             for (UUID u : e.capteurs) {
                 Membre m = c.membre(u);
                 if (m != null) m.stats.xpApporte += part;
             }
         }
-        ClanService.ajouterXp(c, xp, null);
         Quetes.progresser(c, QueteEtat.Type.CAPTURES, 1);
         c.statZone(e.zoneId).captures++;
         c.ajouterEvenement(new Evenement(now, Evenement.Genre.CAPTURE, e.nomZone));
@@ -630,7 +638,7 @@ public final class ClanEvents {
         if (c == null) return;
         Membre m = c.membre(e.joueur);
         if (m != null) m.stats.ravitaillements++;
-        ClanService.ajouterXp(c, ClansConfig.XP_RAVITAILLEMENT.get(), e.joueur);
+        ClanService.ajouterXp(c, SourceXp.RAVITAILLEMENT, ClansConfig.XP_RAVITAILLEMENT.get(), e.joueur);
         Quetes.progresser(c, QueteEtat.Type.RAVITAILLEMENTS, 1);
         c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.RAVITAILLEMENT, e.nomZone));
         store.marquerDirty();
@@ -674,7 +682,7 @@ public final class ClanEvents {
         if (heuresValeur > 0) {
             c.minutesValeurAConvertir -= heuresValeur * 60;
             long xp = heuresValeur * ClansConfig.XP_HEURE_VALEUR.get();
-            if (xp > 0) ClanService.ajouterXp(c, xp, null);
+            if (xp > 0) ClanService.ajouterXp(c, SourceXp.TENUE, xp, null);
         }
     }
 

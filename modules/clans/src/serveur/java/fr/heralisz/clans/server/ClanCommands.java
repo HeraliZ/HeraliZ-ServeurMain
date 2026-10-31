@@ -366,7 +366,7 @@ public final class ClanCommands {
         Clan c = clanParTag(ctx, StringArgumentType.getString(ctx, "tag"));
         if (c == null) return 0;
         long n = LongArgumentType.getLong(ctx, "n");
-        ClanService.ajouterXp(c, n, null);
+        ClanService.ajouterXp(c, fr.heralisz.clans.model.SourceXp.ADMIN, n, null);
         Sync.marquer(c);
         Reponses.ok(ctx.getSource(), Component.translatable("msg.admin.xp", n, c.tag, c.niveau, c.xp));
         return 1;
@@ -448,6 +448,7 @@ public final class ClanCommands {
 
     private static int adminRecharger(CommandContext<CommandSourceStack> ctx) {
         Niveaux.charger(net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
+        XpClan.charger(net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
         Quetes.recharger();
         ClanStore s = ClanStore.get();
         if (s != null) for (Clan c : s.tous()) Sync.marquer(c);

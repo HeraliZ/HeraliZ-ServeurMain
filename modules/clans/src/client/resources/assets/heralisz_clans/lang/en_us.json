@@ -828,5 +828,15 @@
   "msg.capture.amelioration": "Your clan must first buy the Territories upgrade to capture zones (K key, Level tab).",
   "msg.capture.limite": "Your clan already holds %s of %s zone(s): it cannot take another one while it holds them.",
   "zone.cmd.plafond": "[%s] already holds %s zones: never more than %s at once.",
-  "zone.cmd.hors_regle": "Warning: [%s] could not have taken it by itself (level %s, %s zone(s) at most)."
+  "zone.cmd.hors_regle": "Warning: [%s] could not have taken it by itself (level %s, %s zone(s) at most).",
+  "gui.niveau.xp.sans_plafond": "No daily cap",
+  "gui.niveau.xp.plafond": "Cap: %s XP per day for the clan",
+  "gui.niveau.xp.aujourdhui": "Today: %s / %s XP",
+  "gui.niveau.xp.au_dela": "Beyond: %s %% of the XP until midnight",
+  "gui.niveau.xp.au_dela_rien": "Beyond: no more XP until midnight",
+  "gui.niveau.xp.admin": "Staff",
+  "msg.xp.plafond": "Daily cap reached for \"%s\" (%s XP): this source gives no more clan XP until midnight.",
+  "msg.xp.plafond_reduit": "Daily cap reached for \"%s\" (%s XP): this source only gives %s %% of its XP to the clan until midnight.",
+  "msg.courbe_niveaux": "Clan levels are now harder: your clan keeps all its XP, recounted on the new scale (level %s → level %s). Every upgrade already bought is kept; zone captures open at level %s.",
+  "evenement.courbe_niveaux": "New level scale: level %s → %s (XP and upgrades kept)"
 }
