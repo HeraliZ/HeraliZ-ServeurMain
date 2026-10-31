@@ -9,8 +9,9 @@ Accessoires : plus la rareté est basse, moins l'accessoire apporte (rareté don
 
 Les gunpacks des autres auteurs ne sont PAS modifiés : les dégâts contre les joueurs sont réglés par le mod Tactique
 (serveur, `fr.heraliz.tactique.serveur.DegatsArmes`) d'après le fichier écrit ici :
-  serveur/config/heraliz_tactique/armes.json : pour chaque arme, « degats » = dégâts d'une balle (d'un plomb pour un
-  fusil à pompe) à courte distance contre un joueur, « tete » = multiplicateur d'un tir à la tête, « rarete ». La baisse
+  serveur/config/heraliz_tactique/armes.json : pour chaque arme, « degats » = dégâts d'une balle à courte distance contre
+  un joueur (arme à plombs : d'une décharge entière, que TaCZ partage entre les plombs, comme le « damage » des
+  gunpacks), « tete » = multiplicateur d'un tir à la tête, « rarete », « plafond » (armes à plombs). La baisse
   avec la distance et les accessoires de l'arme gardent leur effet (même proportion qu'avant). Arme absente du fichier
   (lance-grenades, couteaux, Wonder Weapons) : dégâts de TaCZ inchangés. Contre les créatures (zombies...) : inchangé.
 Et la section « armes », « accessoires », « munitions » de serveur/config/heraliz_loot/raretes.json (couleur des cases).
@@ -52,14 +53,21 @@ FAMILLES = {
     "precision_338": (20.0, 2.0), "precision_50": (22.0, 2.0),
     # 24/10 (choix du propriétaire) : SSG 08 comme les autres snipers (20,8 en Épique), Dragunov 10 en Épique,
     # .50 (M82A3, M95, M82A2) un peu moins forts : 23,76 en Légendaire au lieu de 25,92
-    # fusils à pompe : dégâts d'une décharge entière (répartis sur les plombs). 24/10 (choix du propriétaire : « le
-    # shotgun ne fait aucun dégât, 1 cœur par plomb ; pas de gros one tap mais utilisable ») : décharge 36 (4 par plomb
-    # pour 9 plombs : 4 plombs qui touchent suffisent pour le plafond), plafonnée par tir (PLAFOND_TIR)
+    # fusils à pompe : dégâts d'une décharge entière, que TaCZ partage lui-même entre les plombs. 24/10 (choix du
+    # propriétaire : « le shotgun ne fait aucun dégât, 1 cœur par plomb ; pas de gros one tap mais utilisable ») :
+    # décharge 36 (4 par plomb pour 9 plombs), plafonnée par tir (PLAFOND_TIR).
+    # 31/10 : jusqu'ici ce script divisait encore la décharge par le nombre de plombs, alors que TaCZ 1.1.8 la divise
+    # déjà (EntityKineticBullet.applyShotgunDamageSpread) : chaque plomb faisait 36 / 9 / 9 = 0,44 au lieu de 4, et une
+    # décharge entière 4 dégâts (2 cœurs) au lieu de 36 (d'où « presque aucun dégât »). La décharge est maintenant
+    # écrite telle quelle.
     "pompe": (36.0, 1.25), "pompe_balle": (15.0, 1.5), "pistolet_pompe": (28.0, 1.25), "pistolet_50bmg": (14.0, 1.6),
 }
 # Dégâts au plus d'UN tir sur un même joueur (tous plombs, tête comprise, avant l'armure ; DegatsArmes du mod
-# tactique) : jamais tué d'un coup sans armure (20 PV), deux tirs bien placés suffisent
-PLAFOND_TIR = {"pompe": 17.0, "pompe_balle": 17.0, "pistolet_pompe": 15.0}
+# tactique). Objectif du propriétaire (24/10) : jamais tué d'un tir sans armure (20 PV), deux tirs bien placés
+# suffisent sans armure, trois avec une armure moyenne (Rare : 32 % au corps). 31/10 : 13 (au lieu de 17, qui tuait en
+# deux tirs même en Rare : 2 x 17 x 0,68 = 23,1) : sans armure 2 x 13 = 26, en Rare 2 x 8,84 = 17,7 (3 tirs : 26,5).
+# Pistolet à plombs : 12 (sans armure 24 en deux tirs, en Rare 16,3).
+PLAFOND_TIR = {"pompe": 13.0, "pompe_balle": 13.0, "pistolet_pompe": 12.0}
 
 # Famille imposée (sinon : type de l'arme + munition)
 FAMILLE_ARME = {
@@ -192,9 +200,7 @@ def regler():
         if fam is None:
             continue
         base, tete = FAMILLES[fam]
-        degats = base * BONUS_RARETE[r]
-        if fam.startswith("pompe") or fam == "pistolet_pompe":
-            degats /= max(1, a["plombs"])
+        degats = base * BONUS_RARETE[r]  # arme à plombs : la décharge entière (TaCZ la partage entre les plombs)
         reglage[gid] = OrderedDict([("famille", fam), ("rarete", r), ("degats", round(degats, 2)), ("tete", tete)])
         if fam in PLAFOND_TIR:
             reglage[gid]["plafond"] = PLAFOND_TIR[fam]
@@ -309,8 +315,9 @@ def rarete_accessoire(aid, a):
 def ecrire(reglage, raretes_armes, raretes_acc):
     os.makedirs(os.path.dirname(SORTIE_ARMES), exist_ok=True)
     doc = OrderedDict()
-    doc["_aide"] = ("Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle (un plomb pour "
-                    "un fusil à pompe) à courte distance ; la baisse avec la distance et les accessoires gardent leur effet. "
+    doc["_aide"] = ("Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle à courte "
+                    "distance (fusil à pompe : la décharge entière, que TaCZ partage entre les plombs) ; la baisse avec la "
+                    "distance et les accessoires gardent leur effet. "
                     "« tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par "
                     "outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur.")
     doc["actif"] = True

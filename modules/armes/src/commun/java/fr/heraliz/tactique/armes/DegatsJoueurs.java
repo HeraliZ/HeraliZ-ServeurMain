@@ -9,7 +9,10 @@ import net.minecraft.resources.ResourceLocation;
  * pour afficher les vrais chiffres (infobulle de l'arme, Atelier d'arme). Vide : chiffres de TaCZ.
  */
 public final class DegatsJoueurs {
-   /** Dégâts d'une balle (d'un plomb) à courte distance et multiplicateur de la tête. */
+   /**
+    * Dégâts d'une balle à courte distance (arme à plombs : la décharge entière, que TaCZ partage entre les plombs) et
+    * multiplicateur de la tête.
+    */
    public record Reglage(float degats, float tete) {
    }
 
