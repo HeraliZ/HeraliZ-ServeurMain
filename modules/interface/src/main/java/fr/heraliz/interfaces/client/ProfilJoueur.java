@@ -20,8 +20,11 @@ final class ProfilJoueur {
     record Clan(String tag, String nom, int accent, String grade, List<String> zones) {
     }
 
-    /** Une extraction ouverte : nom affiche et secondes avant fermeture (-1 : toujours ouverte). */
-    record Extraction(String nom, int secondes) {
+    /**
+     * Une extraction ouverte : nom affiche, secondes avant fermeture (-1 : toujours ouverte) et distance a plat au carre
+     * depuis le joueur ({@link Double#MAX_VALUE} : dans un autre monde ou inconnue), pour montrer les plus proches.
+     */
+    record Extraction(String nom, int secondes, double distance2) {
     }
 
     private static Method soldeConnu, solde, snapshot, ouvertes;
@@ -84,8 +87,17 @@ final class ProfilJoueur {
         }
     }
 
-    /** Extractions ouvertes (liste vide si aucune ou si le mod est absent). */
+    /**
+     * Extractions ouvertes (liste vide si aucune ou si le mod est absent), les plus proches du joueur d'abord (31/10 : 6
+     * ouvertes a la fois, la carte n'en montre que 3).
+     */
     static List<Extraction> extractions(long heureDeJeu) {
+        List<Extraction> out = new ArrayList<>(lireExtractions(heureDeJeu));
+        out.sort(java.util.Comparator.comparingDouble(Extraction::distance2));
+        return out;
+    }
+
+    private static List<Extraction> lireExtractions(long heureDeJeu) {
         if (!extractionCherchee) {
             extractionCherchee = true;
             try {
@@ -104,12 +116,26 @@ final class ProfilJoueur {
                     Class<?> c = e.getClass();
                     String nom = String.valueOf(c.getMethod("libelle").invoke(e));
                     int s = ((Number) c.getMethod("secondesRestantes", long.class).invoke(e, heureDeJeu)).intValue();
-                    out.add(new Extraction(nom, s));
+                    out.add(new Extraction(nom, s, distance2(e, c)));
                 }
             }
             return out;
         } catch (ReflectiveOperationException | RuntimeException e) {
             return List.of();
+        }
+    }
+
+    /** Distance a plat au carre du joueur a l'extraction (record ExtractionApi.Extraction : dimension, x, z). */
+    private static double distance2(Object e, Class<?> c) {
+        try {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.player == null || mc.level == null) return Double.MAX_VALUE;
+            if (!mc.level.dimension().location().equals(c.getMethod("dimension").invoke(e))) return Double.MAX_VALUE;
+            double dx = ((Number) c.getMethod("x").invoke(e)).doubleValue() - mc.player.getX();
+            double dz = ((Number) c.getMethod("z").invoke(e)).doubleValue() - mc.player.getZ();
+            return dx * dx + dz * dz;
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return Double.MAX_VALUE;
         }
     }
 }

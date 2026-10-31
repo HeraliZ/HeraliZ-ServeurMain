@@ -48,6 +48,7 @@
   "gui.heraliz_interface.pause.carte.en_ligne": "Online",
   "gui.heraliz_interface.pause.carte.ping": "Ping",
   "gui.heraliz_interface.pause.carte.extractions": "Open extractions",
+  "gui.heraliz_interface.pause.carte.extractions_nombre": "Open extractions · %s",
   "gui.heraliz_interface.pause.carte.aucune_extraction": "None right now",
   "gui.heraliz_interface.pause.carte.ferme_dans": "closes in %s",
   "gui.heraliz_interface.pause.carte.permanente": "always open",

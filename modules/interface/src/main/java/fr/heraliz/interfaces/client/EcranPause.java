@@ -454,7 +454,9 @@ public class EcranPause extends Screen {
 
         // extractions ouvertes
         int sy = y + 96;
-        Ui.section(g, font, t("pause.carte.extractions"), px, sy, iw, a);
+        // 31/10 : 6 extractions ouvertes à la fois, la carte montre les 3 plus proches et le nombre total dans le titre
+        Ui.section(g, font, extractions.size() > 3 ? t("pause.carte.extractions_nombre", extractions.size())
+                : t("pause.carte.extractions"), px, sy, iw, a);
         int ry = sy + 12;
         if (extractions.isEmpty()) {
             Ui.at(g, font, Ui.lit(t("pause.carte.aucune_extraction"), Ui.FONT), px, ry + 3, Ui.argb(Ui.MUTED, a));

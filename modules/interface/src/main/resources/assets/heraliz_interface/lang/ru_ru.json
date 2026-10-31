@@ -48,6 +48,7 @@
   "gui.heraliz_interface.pause.carte.en_ligne": "В сети",
   "gui.heraliz_interface.pause.carte.ping": "Пинг",
   "gui.heraliz_interface.pause.carte.extractions": "Открытые эвакуации",
+  "gui.heraliz_interface.pause.carte.extractions_nombre": "Открытые эвакуации · %s",
   "gui.heraliz_interface.pause.carte.aucune_extraction": "Пока нет",
   "gui.heraliz_interface.pause.carte.ferme_dans": "закроется через %s",
   "gui.heraliz_interface.pause.carte.permanente": "открыта всегда",
