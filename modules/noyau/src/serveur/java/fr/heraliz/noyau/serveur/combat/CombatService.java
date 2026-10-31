@@ -303,7 +303,9 @@ public final class CombatService {
 
     /**
      * Sur la carte (overworld), en survie ou aventure, hors staff (niveau 2) : toute commande hors de la liste permise est
-     * refusee (choix du proprietaire : sur la carte, seul /tpa ; on en sort par l'extraction).
+     * refusee (choix du proprietaire : sur la carte, seul /tpa ; on en sort par l'extraction). 31/10 : le message nomme la
+     * commande et dit qu'elle marche au spawn (avant : « seul /tpa marche ici », faux depuis que la liste s'est allongee) ;
+     * c'est aussi ce que voit le joueur qui clique sur « Boutique » dans le menu Echap sur la carte (/boutique).
      */
     private static void refusCarte(ServerPlayer p, String racine, CommandEvent e) {
         if (!NoyauConfig.vrai(NoyauConfig.CARTE_ACTIF, true)) return;
@@ -312,7 +314,7 @@ public final class CombatService {
         if (commandesCarte.contains(racine)) return;
         e.setCanceled(true);
         p.displayClientMessage(Component.translatableWithFallback("noyau.carte.commande_refusee",
-                "Impossible sur la carte : seul /tpa marche ici.").withStyle(s -> s.withColor(0xFF8A8A)), true);
+                "/%s : seulement au spawn, pas sur la carte.", racine).withStyle(s -> s.withColor(0xFF8A8A)), true);
     }
 
     /** Racine d'une commande en minuscules, sans « / » ni espace de noms ({@code essentials:spawn} -> {@code spawn}). */

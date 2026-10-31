@@ -2,7 +2,7 @@
   "noyau.hud.combat_titre": "В БОЮ",
   "noyau.hud.secondes": "%s с",
   "noyau.combat.commande_refusee": "Невозможно в бою · %s с",
-  "noyau.carte.commande_refusee": "Невозможно на карте: здесь работает только /tpa.",
+  "noyau.carte.commande_refusee": "/%s: только на спавне, не на карте.",
   "noyau.combat.puni": "Вы вышли из игры посреди боя: ваш персонаж погиб, а тело осталось на месте.",
   "noyau.combat.puni_a_terre": "Вы вышли из игры в нокауте: ваш персонаж погиб, а тело осталось на месте.",
   "noyau.combat.commande_refusee_a_terre": "Невозможно в нокауте.",

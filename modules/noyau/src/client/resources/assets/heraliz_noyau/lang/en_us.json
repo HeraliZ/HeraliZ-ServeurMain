@@ -2,7 +2,7 @@
   "noyau.hud.combat_titre": "IN COMBAT",
   "noyau.hud.secondes": "%s s",
   "noyau.combat.commande_refusee": "Not possible in combat · %s s",
-  "noyau.carte.commande_refusee": "Not possible on the map: only /tpa works here.",
+  "noyau.carte.commande_refusee": "/%s: only at spawn, not on the map.",
   "noyau.combat.puni": "You logged out during a fight: your character died and its body stayed where you were.",
   "noyau.combat.puni_a_terre": "You logged out while downed: your character died and its body stayed where you were.",
   "noyau.combat.commande_refusee_a_terre": "Not possible while downed.",

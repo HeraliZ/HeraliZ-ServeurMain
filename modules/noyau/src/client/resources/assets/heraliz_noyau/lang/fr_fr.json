@@ -2,7 +2,7 @@
   "noyau.hud.combat_titre": "EN COMBAT",
   "noyau.hud.secondes": "%s s",
   "noyau.combat.commande_refusee": "Impossible en combat · %s s",
-  "noyau.carte.commande_refusee": "Impossible sur la carte : seul /tpa marche ici.",
+  "noyau.carte.commande_refusee": "/%s : seulement au spawn, pas sur la carte.",
   "noyau.combat.puni": "Vous vous êtes déconnecté en plein combat : votre personnage est mort et son corps est resté sur place.",
   "noyau.combat.puni_a_terre": "Vous vous êtes déconnecté à terre : votre personnage est mort et son corps est resté sur place.",
   "noyau.combat.commande_refusee_a_terre": "Impossible à terre.",
