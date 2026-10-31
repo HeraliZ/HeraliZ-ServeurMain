@@ -2,6 +2,7 @@ package fr.heraliz.crac.placable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -9,11 +10,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Two-block placables (beds and sleeping bags, doors, tall plants, the storage chests of CoffreBlock). Both halves share one HP entry and one
- * position entry, keyed by the {@link #canonical} half, and are always removed together.
+ * Two-block placables (beds and sleeping bags, doors, tall plants, the storage chests of CoffreBlock, the TaCZ gun smith
+ * table). Both halves share one HP entry and one position entry, keyed by the {@link #canonical} half, and are always
+ * removed together.
  */
 public final class MultiBlocks {
     /** Set a half to air without the neighbour shape pass, so the other half is not broken (with drops) by it. */
@@ -35,7 +38,33 @@ public final class MultiBlocks {
         if (state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
             return state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER ? pos.above() : pos.below();
         }
+        BedPart part = partieTacz(state);
+        if (part != null) {
+            Direction facing = (Direction) state.getValue(state.getBlock().getStateDefinition().getProperty("facing"));
+            return part == BedPart.FOOT ? pos.relative(facing) : pos.relative(facing.getOpposite());
+        }
         return null;
+    }
+
+    /**
+     * HeraliZ (31/10) : la table d'armurier de TaCZ ({@code tacz:gun_smith_table}, à poser dans sa base) tient deux cases
+     * comme un lit, sans en être un : propriétés « part » (pied, là où on l'a posée, ou tête) et « facing » (la tête est
+     * du côté de facing), mêmes règles que le lit (GunSmithTableBlockB de TaCZ). Lues par leur nom (CRac ne dépend pas de
+     * TaCZ). Partie de la case, ou null pour tout autre bloc.
+     */
+    @Nullable
+    private static BedPart partieTacz(BlockState state) {
+        Block b = state.getBlock();
+        net.minecraft.world.level.block.state.properties.Property<?> part = b.getStateDefinition().getProperty("part");
+        net.minecraft.world.level.block.state.properties.Property<?> facing = b.getStateDefinition().getProperty("facing");
+        if (part == null || facing == null || part.getValueClass() != BedPart.class || facing.getValueClass() != Direction.class) {
+            return null;
+        }
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(b);
+        if (id == null || !"tacz".equals(id.getNamespace())) {
+            return null;
+        }
+        return (BedPart) state.getValue(part);
     }
 
     /** The other half if it is really there (same block), else null. */
@@ -55,6 +84,10 @@ public final class MultiBlocks {
         }
         if (state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF) && state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) {
             return pos.below();
+        }
+        if (partieTacz(state) == BedPart.HEAD) {   // table d'armurier de TaCZ : le pied, comme un lit
+            BlockPos pied = partner(state, pos);
+            return pied == null ? pos.immutable() : pied;
         }
         return pos.immutable();
     }

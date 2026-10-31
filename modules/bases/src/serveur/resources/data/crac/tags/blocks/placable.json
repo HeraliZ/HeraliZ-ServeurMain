@@ -6,6 +6,7 @@
     "crac:casier_metallique",
     "crac:caisse_armes",
     "crac:coffre_fort",
+    {"id": "tacz:gun_smith_table", "required": false},
     "minecraft:lectern",
     "minecraft:crafting_table",
     "minecraft:furnace",

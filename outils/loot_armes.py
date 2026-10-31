@@ -226,6 +226,8 @@ RARETES_IMPOSEES = {
     # coffres de base par rareté (27/10) : fabrication seulement (Table d'armurier, onglet Rangement), jamais dans le loot
     "crac:metal_crate": "commun", "crac:malle_chantier": "peu_commun", "crac:casier_metallique": "rare",
     "crac:caisse_armes": "epique", "crac:coffre_fort": "legendaire",
+    # Table d'armurier de TaCZ à poser dans sa base (31/10) : fabrication seulement (Table d'armurier, onglet Divers)
+    "tacz:gun_smith_table": "legendaire",
     # cartes d'accès entières (26/10) : même rareté que leurs fragments
     "heralisz_bunker:keycard_green": "rare", "heralisz_bunker:keycard_blue": "epique", "heralisz_bunker:keycard_red": "legendaire",
 }

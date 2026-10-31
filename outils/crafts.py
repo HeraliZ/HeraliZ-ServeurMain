@@ -137,6 +137,12 @@ DIVERS = [
                                                             C + "batterie_iii": 2, C + "ferraille_iii": 4, C + "metal_renforce": 1}),
     # barricade en bois (26/10, demande du propriétaire ; avant : seulement dans les caisses) : planches, clous, corde
     ("8_barricade", "heralisz_bunker:wooden_barricade", {C + "planche": 6, C + "clou": 6, C + "corde": 1}),
+    # Table d'armurier de TaCZ, à poser dans sa base (31/10, demande du propriétaire : « très chère », grosse étape de la
+    # progression) : plus que le coffre-fort, en matériaux légendaires des bases (métal renforcé, fil à souder) et pièces
+    # d'arme de niveau IV. Légendaire (RARETES_IMPOSEES de outils/loot_armes.py), jamais dans le loot. Objet posé de CRac
+    # (tag crac:placable, PV dans serveur/defaultconfigs/crac-placable-hp.txt) : seulement dans une base de son clan.
+    ("9_table_armurier", "tacz:gun_smith_table", {C + "metal_renforce": 16, C + "fil_souder": 8, C + "equerres_acier": 12,
+                                                  C + "kit_pieces_iv": 4, C + "canon_iv": 2, C + "ressort_iv": 2}),
 ]
 
 # coffres de base par rareté (27/10, validés par le propriétaire) : comme le reste, le niveau des composants suit la

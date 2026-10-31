@@ -1,0 +1,48 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:metal_renforce"
+      },
+      "count": 16
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:fil_souder"
+      },
+      "count": 8
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:equerres_acier"
+      },
+      "count": 12
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:kit_pieces_iv"
+      },
+      "count": 4
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:canon_iv"
+      },
+      "count": 2
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:ressort_iv"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "tacz:gun_smith_table"
+    },
+    "group": "heraliz_crafts:divers"
+  }
+}

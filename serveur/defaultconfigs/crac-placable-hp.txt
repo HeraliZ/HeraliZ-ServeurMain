@@ -9,6 +9,7 @@ crac:malle_chantier = 200
 crac:casier_metallique = 300
 crac:caisse_armes = 450
 crac:coffre_fort = 600
+tacz:gun_smith_table = 600
 minecraft:lectern = 100
 minecraft:crafting_table = 100
 minecraft:furnace = 100
