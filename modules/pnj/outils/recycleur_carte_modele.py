@@ -1,32 +1,30 @@
 #!/usr/bin/env python3
 """
-Modèle du recycleur de la carte (demande du propriétaire du 31/10, point 8) : un second recycleur, posé par le staff dans
-les zones de loot, nettement différent de celui du spawn (recycleur_modele.py, vert et jaune, propre). Celui-ci est une
-machine de terrain bricolée, façon Rust : caisson en tôle rouillée rapiécée (plaques soudées, tôle galvanisée de
-travers, porte de visite arrachée qui pend), fût bleu coupé en guise de trémie (cerclages, deux barres de protection,
-broyeur au fond), vieux moteur rouge sur un bâti soudé avec volant d'inertie à l'avant et pot d'échappement qui traverse
-un auvent en tôle ondulée, baladeuse pendue sous l'auvent, batterie de voiture et câbles, jerrican, caisse en bois de
-sortie remplie de ferraille, le tout sur une palette. Pictogramme de recyclage à la bombe, jaune.
+Modèle du recycleur de la carte (décision du propriétaire du 31/10, après refus de la version rouillée façon Rust) :
+la MÊME machine que le recycleur du spawn (recycleur_modele.py : mêmes pièces, même silhouette, 2 x 1 bloc), en
+« version de terrain » pour qu'on les distingue d'un coup d'oeil, propre et belle quand même :
+  - peinture sable délavée par le soleil (au lieu du vert), coulures de rouille légères sous les rivets et les arêtes,
+    arêtes un peu frottées ; rebords orange sécurité passé (au lieu du jaune) ;
+  - bandes d'avertissement rouges et blanches (au lieu de jaunes et noires), pictogramme peint au pochoir sombre ;
+  - en plus : gyrophare orange sur le moteur, antenne fouet, jerrican sanglé à l'arrière, anneaux de levage aux coins
+    du couvercle, plaque de terrain « R-02 ».
+Deux états (propriété « marche » du bloc) : à l'arrêt (voyants et gyrophare éteints) et en marche (voyants vert et
+ambre et gyrophare allumés). Une seule texture pour les deux modèles (atlas commun).
 
-Deux états : arrêté (baladeuse et voyants éteints) et en marche (baladeuse et voyant vert allumés, braise au bout du pot
-d'échappement ; fumée et étincelles dessinées sur les rendus : en jeu, ce seront des particules, pas le modèle).
+Rien n'est dessiné à la main : on modifie ce script. Moteur et matières de recycleur_modele.py (explosifs.py,
+coeur_tc_rendus.py) ; écriture du modèle de bloc comme tc_modele.py (faces cachées retirées, pièces lumineuses).
 
-RENDUS À VALIDER PAR LE PROPRIÉTAIRE AVANT TOUTE INSTALLATION (règle du dépôt) : ce script n'écrit rien dans le mod.
-Réutilise le moteur de modules/bases/outils/explosifs.py et les matières de récupération de coeur_tc_rendus.py, et
-celles du recycleur du spawn (recycleur_modele.py) pour la comparaison. Rien n'est dessiné à la main : on modifie ce
-script.
-
-    python modules/pnj/outils/recycleur_carte_modele.py --apercu DOSSIER
-        recycleur_carte_vues.png         4 vues, arrêté
-        recycleur_carte_arret_marche.png arrêté / en marche, trois quarts (même cadrage)
-        recycleur_carte_arret_marche_face.png   la même chose, de face
-        recycleur_carte_echelle.png      à côté d'un joueur (1,8 bloc), sol quadrillé d'un bloc
-        comparaison_spawn_carte.png      les deux recycleurs côte à côte, joueur au milieu
-        recycleur_carte_trois_quarts.png grand rendu, en marche
+    python modules/pnj/outils/recycleur_carte_modele.py --apercu DOSSIER   rendus de contrôle (rien n'est écrit dans le mod)
+        recycleur_carte_vues.png             4 vues, à l'arrêt
+        recycleur_carte_arret_marche.png     à l'arrêt / en marche, trois quarts et face
+        recycleur_carte_echelle.png          à côté d'un joueur (1,8 bloc), sol quadrillé d'un bloc
+        comparaison_spawn_carte.png          spawn · joueur · carte, côte à côte (trois quarts et face)
+        recycleur_carte_densite_jeu.png      rendu avec la texture installée (densité du jeu), arrêt et marche
+    python modules/pnj/outils/recycleur_carte_modele.py --installer        modèles, texture, états et objet dans le mod
 
 Coordonnées en pixels de modèle (16 = 1 bloc) : x de 0 à 32 (2 blocs, ouest -> est), z de 0 à 16, face avant au nord
-(z petit), hauteur 29 au plus (moins de 2 blocs). Pièces tournées : un seul axe, par pas de 22,5°, 45° au plus (règle
-des modèles de Minecraft) ; les limites -16 à 32 sont contrôlées.
+(z petit). Pièces tournées : un seul axe, par pas de 22,5°, 45° au plus (règle des modèles de Minecraft) ; les limites
+-16 à 32 sont contrôlées.
 """
 import argparse
 import math
@@ -34,15 +32,23 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageFilter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import recycleur_modele as rm  # noqa: E402  (recycleur du spawn : matières, cylindres, modèle pour la comparaison)
+import recycleur_modele as rm  # noqa: E402  (le recycleur du spawn : pièces, matières, cylindres)
 import explosifs as ex  # noqa: E402  (chemin ajouté par recycleur_modele)
+import tc_modele as tc  # noqa: E402
 from explosifs import Cube, Decal, Os, bruit, col, fbm, melange  # noqa: E402
 
-# en marche : pièces qui brillent (forge_data du modèle de bloc, comme le recycleur du spawn)
-LUMINEUX = {"ampoule_on", "voyant_vert", "braise", "etincelle"}
+TEXTURE = "heraliz_quetes:block/recycleur_carte"
+DENSITE, LARGEUR = rm.DENSITE, rm.LARGEUR
+# pièces qui brillent (forge_data du modèle) : seulement dans le modèle « en marche »
+LUMINEUX = {"lampe_verte", "lampe_ambre", "gyro_on"}
+
+# matières du spawn -> matières de terrain (mêmes pièces)
+TERRAIN = {"peint_vert": "sable", "peint_vert_fonce": "sable_fonce", "peint_jaune": "orange", "danger": "danger_rouge",
+           "grille": "grille_sable"}
+# voyants du spawn : éteints à l'arrêt, allumés en marche
+VOYANTS = {"lampe_verte": "verre_vert", "lampe_ambre": "verre_ambre"}
 
 
 # ================================================================================================ matières
@@ -51,68 +57,63 @@ def peindre(mat, p, n, fu, fv, w, h, prm):
     a = np.ones(sh)
     g = np.zeros(sh + (3,))
     e = ex.bords(fu, fv, w, h)
-    arete = np.exp(-e / 0.12)
+    arete = np.exp(-e / 0.10)
     gr = prm.get("graine", 0)
-    rouille = melange(col(112, 58, 28), col(72, 38, 20), fbm(p, 0.5, 4, 140 + gr))
-    if mat in ("fut_bleu", "fut_cercle"):                               # vieux fût bleu, peinture passée, rouille qui perce
-        base = col(44, 78, 122) if mat == "fut_bleu" else col(34, 60, 96)
-        r = melange(base, base * 0.78, fbm(p, 0.4, 3, 141 + gr) * 0.9)
-        perce = np.clip((fbm(p, 0.9, 4, 142 + gr) - 0.56) * 5, 0, 1)
-        r = melange(r, rouille, perce)
-        coulures = np.clip(bruit(p * np.array([3.0, 0.12, 3.0]), 1.0, 143 + gr) - 0.5, 0, 1) * 2
-        r = melange(r, col(70, 40, 22), coulures * 0.5)
-        r = melange(r, col(150, 156, 160), arete * 0.25)
-    elif mat == "tole_galva":                                           # tôle galvanisée : fleurs de zinc, oxyde blanc
-        fleurs = bruit(p, 2.2, 144 + gr)
-        r = melange(col(118, 124, 126), col(156, 162, 164), fleurs)
-        r = melange(r, col(196, 198, 194), np.clip((fbm(p, 0.8, 3, 145 + gr) - 0.6) * 4, 0, 1) * 0.6)
-        r = melange(r, rouille, np.clip((fbm(p, 1.2, 3, 146 + gr) - 0.7) * 4, 0, 1) * arete.clip(0.3, 1))
-        r = melange(r, col(70, 72, 72), arete * 0.4)
-    elif mat == "peint_rouge":                                          # moteur peint en rouge, très passé
-        r = melange(col(138, 40, 30), col(104, 32, 26), fbm(p, 0.6, 3, 147 + gr))
-        r = melange(r, col(160, 110, 96), np.clip(p[..., 1] / 30.0, 0, 1) * 0.25)   # décoloré par le soleil en haut
-        eclats = np.clip((fbm(p, 1.3, 4, 148 + gr) - 0.6) * 5, 0, 1)
-        r = melange(r, rouille, np.maximum(eclats, arete * 0.7))
-        r = melange(r, col(30, 26, 24), np.clip((fbm(p, 0.5, 3, 149 + gr) - 0.62) * 4, 0, 1) * 0.7)  # cambouis
-    elif mat == "jerrican":                                             # jerrican rouge, croix embouties
-        r = melange(col(150, 34, 26), col(118, 26, 20), bruit(p, 3, 150))
-        croix = np.minimum(np.abs(fu - fv), np.abs(fu + fv - 1)) < 0.06
-        if abs(n[2]) > 0.5:
-            r = np.where(croix[..., None], r * 0.72, r)
-        r = melange(r, col(70, 40, 30), arete * 0.5)
-    elif mat == "beton":
-        r = melange(col(116, 114, 108), col(140, 138, 132), bruit(p, 5, 151))
-        r = r * (0.88 + 0.16 * bruit(p, 14, 152))[..., None]
-    elif mat == "circuit":                                              # carte électronique (ferraille de la caisse)
-        pistes = (np.sin(p[..., 0] * 4.0) * np.sin(p[..., 2] * 3.0 + p[..., 1] * 3.0)) > 0.55
-        r = np.where(pistes[..., None], col(190, 160, 70), col(36, 96, 52))
-    elif mat in ("ampoule", "ampoule_on"):                              # baladeuse : verre éteint ou allumé
-        c = np.exp(-((fu - 0.5) ** 2 + (fv - 0.45) ** 2) / 0.10)
-        if mat == "ampoule":
-            r = melange(col(150, 148, 136), col(214, 212, 200), c * 0.6)
+    bas = np.clip(1 - p[..., 1] / 6.0, 0, 1)                         # poussière qui remonte du sol
+    rouille = melange(col(128, 72, 36), col(92, 50, 26), fbm(p, 0.6, 3, 210 + gr))
+    if mat in ("sable", "sable_fonce", "orange"):
+        base, ombre = {"sable": (col(186, 166, 122), col(160, 140, 100)),
+                       "sable_fonce": (col(146, 128, 92), col(124, 108, 76)),
+                       "orange": (col(214, 112, 38), col(186, 92, 30))}[mat]
+        r = melange(base, ombre, fbm(p, 0.25, 3, 200 + gr) * 0.8)
+        r = melange(r, r * 1.10 + 0.04, np.clip(p[..., 1] / 24.0, 0, 1) * 0.5)   # délavé par le soleil vers le haut
+        r = r * (0.97 + 0.05 * bruit(p, 7.0, 201 + gr))[..., None]                 # grain de la peinture
+        # coulures de rouille : traînées verticales, rares, plus marquées sous les arêtes hautes
+        coulures = np.clip(bruit(p * np.array([3.2, 0.14, 3.2]), 1.0, 202 + gr) - 0.56, 0, 1) * 2.8
+        coulures *= np.clip(fbm(p, 0.35, 3, 203 + gr) - 0.30, 0, 1) * 2.4
+        r = melange(r, rouille, np.clip(coulures, 0, 1) * (0.55 if mat != "orange" else 0.35))
+        # arêtes frottées : sous-couche grise, rouille par endroits
+        eclats = np.clip((fbm(p, 1.4, 3, 204 + gr) - 0.62) * 6, 0, 1) * arete
+        r = melange(r, col(120, 120, 116), eclats)
+        r = melange(r, rouille, eclats * np.clip((fbm(p, 2.0, 2, 205 + gr) - 0.5) * 4, 0, 1))
+        r = melange(r, col(110, 96, 72), bas * 0.35 * np.clip(fbm(p, 0.6, 3, 206 + gr) + 0.3, 0, 1))
+        r = melange(r, r * 1.15, arete * 0.3)
+    elif mat == "danger_rouge":                                         # bandes rouges et blanches, un peu passées
+        bande = ((p[..., 0] + p[..., 1] + p[..., 2]) % 2.4) < 1.2
+        r = np.where(bande[..., None], col(188, 40, 34), col(226, 222, 212))
+        r = melange(r, col(150, 144, 136), np.clip((fbm(p, 1.4, 3, 207) - 0.66) * 6, 0, 1) * arete)
+        r = r * (0.95 + 0.06 * bruit(p, 6.0, 208))[..., None]
+    elif mat == "grille_sable":                                         # ouïes d'aération, cadre sable
+        fente = (np.sin(p[..., 1] * 5.0) * 0.5 + 0.5) > 0.45
+        r = np.where(fente[..., None], col(16, 15, 14), col(150, 132, 96))
+    elif mat in ("verre_vert", "verre_ambre"):                          # voyant éteint : verre teinté, reflet
+        teinte = col(30, 72, 40) if mat == "verre_vert" else col(96, 60, 20)
+        c = np.exp(-((fu - 0.35) ** 2 + (fv - 0.3) ** 2) / 0.04)
+        r = melange(teinte, teinte * 1.8 + 0.08, c * 0.6)
+    elif mat in ("gyro_off", "gyro_on"):                                # dôme du gyrophare (verre orange strié)
+        stries = (np.sin((p[..., 0] + p[..., 2]) * 5.0) * 0.5 + 0.5) * 0.25
+        if mat == "gyro_off":
+            r = melange(col(150, 72, 18), col(196, 112, 44), stries + np.clip(p[..., 1] - 22.4, 0, 1) * 0.3)
         else:
-            r = melange(col(255, 196, 96), col(255, 246, 214), c)
-            g = r * 0.98
-    elif mat in ("voyant_vert", "voyant_vert_off", "voyant_rouge_off"):
-        c = np.exp(-((fu - 0.5) ** 2 + (fv - 0.45) ** 2) / 0.12)
-        if mat == "voyant_vert":
-            r = melange(col(40, 210, 80), col(200, 255, 210), c)
+            c = np.exp(-((fv - 0.45) ** 2) / 0.10)
+            r = melange(col(255, 136, 30), col(255, 228, 150), c * 0.8 + stries)
             g = r * 0.95
-        else:
-            teinte = col(26, 70, 36) if mat == "voyant_vert_off" else col(82, 22, 20)
-            r = melange(teinte, teinte * 1.6, c * 0.5)
-    elif mat == "braise":                                               # bout du pot d'échappement, chaud
-        r = melange(col(200, 70, 20), col(255, 190, 90), fbm(p, 1.2, 3, 153))
-        g = r * 0.9
-    elif mat == "etincelle":
-        r = np.broadcast_to(col(255, 214, 120), sh + (3,)).copy()
-        g = r
-    elif mat == "fumee":
-        r = melange(col(92, 92, 94), col(150, 150, 152), fbm(p, 0.7, 3, 154 + gr))
-    elif mat == "vide":                                                 # invisible (cadrage des rendus seulement)
+    elif mat == "jerrican_kaki":                                        # jerrican militaire, croix embouties
+        r = melange(col(96, 98, 64), col(78, 80, 52), bruit(p, 3, 209))
+        croix = np.minimum(np.abs(fu - fv), np.abs(fu + fv - 1)) < 0.06
+        if abs(n[0]) > 0.5:
+            r = np.where(croix[..., None], r * 0.75, r)
+        r = melange(r, col(140, 136, 110), arete * 0.35)
+    elif mat == "sangle":
+        tissage = (np.sin(p[..., 1] * 9.0 + p[..., 0] * 9.0) * 0.5 + 0.5) * 0.25
+        r = melange(col(44, 46, 38), col(70, 72, 60), tissage + bruit(p, 6, 211) * 0.2)
+    elif mat == "plaque_terrain":                                       # plaque rivetée, numéro au pochoir
+        r = melange(col(196, 190, 172), col(214, 208, 190), bruit(p, 4, 212))
+        r = melange(r, col(110, 104, 92), arete * 0.7)
+    elif mat == "vide":                                                 # cadrage des rendus seulement
         r = np.zeros(sh + (3,))
         a = np.zeros(sh)
-    # ---- joueur (échelle) et sol
+    # ---- joueur (échelle) et sol : rendus seulement
     elif mat == "peau":
         r = melange(col(196, 150, 118), col(176, 130, 100), bruit(p, 4, 155))
     elif mat == "cheveux":
@@ -129,7 +130,7 @@ def peindre(mat, p, n, fu, fv, w, h, prm):
         r = melange(r, col(46, 38, 28), arete * 0.6)
     elif mat == "yeux":
         r = np.broadcast_to(col(30, 34, 44), sh + (3,)).copy()
-    elif mat == "sol":                                                  # sol quadrillé d'un bloc (échelle)
+    elif mat == "sol":                                                  # dalles d'un bloc (échelle)
         r = melange(col(86, 84, 76), col(104, 102, 92), fbm(p, 0.4, 3, 161))
         r = r * (0.9 + 0.14 * bruit(p, 6, 162))[..., None]
         r = melange(r, col(44, 44, 40), np.exp(-e / 0.25) * 0.8)
@@ -138,42 +139,164 @@ def peindre(mat, p, n, fu, fv, w, h, prm):
     return np.clip(r, 0, 1), a, np.clip(g, 0, 1)
 
 
-def masque_bombe(taille=256):
-    """Pictogramme de recyclage du spawn, repris « à la bombe » : bords flous, grain, petites coulures."""
-    m = rm.masque_recyclage(taille)
-    im = Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(taille / 90))
-    m = np.asarray(im, float) / 255
-    rng = np.random.default_rng(31)
-    grain = rng.random(m.shape)
-    m = np.clip(m * (0.75 + 0.35 * grain), 0, 1)
-    coul = np.zeros_like(m)
-    for x in rng.integers(int(taille * 0.2), int(taille * 0.8), 6):
-        peint = np.nonzero(m[:, x] > 0.5)[0]
-        if len(peint):                                                  # coulure sous le bas de la peinture
-            bas = int(peint.max())
-            coul[bas:min(taille, bas + int(taille * rng.uniform(0.06, 0.16))), max(0, x - 1):x + 2] = 0.8
-    return np.maximum(m, coul)
+# ================================================================================================ modèle
+def _copie(c, mat=None, prm=None, decals=None):
+    return Cube(c.os, c.a, c.b, mat or c.mat, faces=c.faces, rot=c.rot, pivot=c.pivot,
+                prm=c.prm if prm is None else prm, decals=c.decals if decals is None else decals)
 
 
-# ================================================================================================ outils de modélisation
-def anneau_y(B, cx, cz, ray, y0, y1, ep, mat, prm=None):
-    """Paroi d'un fût (axe y) ouverte en haut : 16 panneaux tangents (un seul axe de rotation, pas de 22,5°)."""
-    demi = ray * math.tan(math.radians(180 / 16)) + 0.05
-    for k in range(16):
-        theta = k * 22.5
-        base = int(round(theta / 90.0)) * 90                           # côté le plus proche : 0, 90, 180, 270 (360)
-        phi = theta - base                                               # -45 à 45
-        base %= 360
-        # panneau posé sur le côté « base » puis tourné de phi autour de l'axe y passant par le centre
-        if base == 0:        # côté sud (+z)
-            a, b = (cx - demi, y0, cz + ray - ep), (cx + demi, y1, cz + ray)
-        elif base == 180:    # côté nord (-z)
-            a, b = (cx - demi, y0, cz - ray), (cx + demi, y1, cz - ray + ep)
-        elif base == 90:     # côté est (+x)
-            a, b = (cx + ray - ep, y0, cz - demi), (cx + ray, y1, cz + demi)
-        else:                # côté ouest (-x)
-            a, b = (cx - ray, y0, cz - demi), (cx - ray + ep, y1, cz + demi)
-        B(a, b, mat, rot=(0, phi, 0) if phi else None, pivot=(cx, y0, cz), prm=dict(prm or {}, graine=k))
+def cubes_carte():
+    """Toutes les pièces, les deux états compris : prm « etat » = « arret » ou « marche » pour les pièces d'un seul état
+    (voyants, gyrophare), absent pour les autres. Le modèle de chaque état garde les pièces de son état."""
+    _, spawn = rm.cubes_recycleur()
+    cubes = []
+
+    def B(a, b, mat, etat=None, **k):
+        prm = dict(k.pop("prm", None) or {})
+        if etat:
+            prm["etat"] = etat
+        cubes.append(Cube("r", a, b, mat, prm=prm, **k))
+
+    # ---- la machine du spawn, repeinte (mêmes pièces, mêmes places)
+    for c in spawn:
+        if c.mat in VOYANTS:
+            cubes.append(_copie(c, VOYANTS[c.mat], prm=dict(c.prm, etat="arret")))
+            cubes.append(_copie(c, c.mat, prm=dict(c.prm, etat="marche")))
+            continue
+        decals = c.decals
+        if decals:                                                      # pictogramme : pochoir sombre au lieu de blanc
+            decals = tuple(Decal(d.m, d.o, d.a, d.b, col(52, 46, 36), 0.92, d.lueur, d.n) for d in decals)
+        cubes.append(_copie(c, TERRAIN.get(c.mat, c.mat), decals=decals))
+
+    # ---- gyrophare sur le carter du moteur (avant gauche ; le pot d'échappement est à l'arrière droite)
+    gx, gz = 20.4, 7.4
+    rm.cylindre_y(B, gx, gz, 1.5, 21.0, 21.7, "acier_sombre")
+    for etat, mat in (("arret", "gyro_off"), ("marche", "gyro_on")):
+        rm.cylindre_y(lambda a, b, m, **k: B(a, b, m, etat=etat, **k), gx, gz, 1.1, 21.7, 23.6, mat)
+    B((gx - 0.6, 23.6, gz - 0.6), (gx + 0.6, 23.9, gz + 0.6), "acier_sombre")
+    for dx, dz in ((-1.35, -0.15), (1.15, -0.15), (-0.15, -1.35), (-0.15, 1.15)):     # cage de protection
+        B((gx + dx, 21.7, gz + dz), (gx + dx + 0.3, 23.7, gz + dz + 0.3), "acier")
+    # ---- antenne fouet à l'arrière gauche du carter, embase et ressort
+    B((17.6, 21.0, 11.4), (18.8, 21.6, 12.6), "acier_sombre")
+    B((17.95, 21.6, 11.75), (18.45, 22.6, 12.25), "caoutchouc")
+    B((18.1, 22.6, 11.9), (18.3, 29.0, 12.1), "acier_sombre")
+    B((18.0, 29.0, 11.8), (18.4, 29.4, 12.2), "caoutchouc")
+    # ---- anneaux de levage aux quatre coins du couvercle
+    for x0 in (1.4, 29.2):
+        for z0 in (2.6, 12.6):
+            B((x0, 15.6, z0 + 0.3), (x0 + 1.4, 16.8, z0 + 0.7), "acier")
+            B((x0 + 0.4, 16.0, z0 + 0.3), (x0 + 1.0, 16.4, z0 + 0.7), "interieur")
+    # ---- jerrican sanglé à l'arrière (face sud), à droite vu de dos
+    jx0, jx1, jy0, jy1, jz0, jz1 = 3.4, 10.2, 1.6, 11.6, 14.2, 16.0
+    B((jx0, jy0, jz0), (jx1, jy1, jz1), "jerrican_kaki")
+    B((jx0 + 1.6, jy1, jz0 + 0.5), (jx0 + 2.2, jy1 + 1.0, jz1 - 0.5), "jerrican_kaki", prm={"graine": 1})   # poignées
+    B((jx0 + 3.4, jy1, jz0 + 0.5), (jx0 + 4.0, jy1 + 1.0, jz1 - 0.5), "jerrican_kaki", prm={"graine": 2})
+    B((jx0 + 1.6, jy1 + 1.0, jz0 + 0.5), (jx0 + 4.0, jy1 + 1.4, jz1 - 0.5), "jerrican_kaki", prm={"graine": 3})
+    B((jx1 - 1.6, jy1, jz0 + 0.6), (jx1 - 0.4, jy1 + 0.8, jz0 + 1.6), "acier_sombre")                    # bouchon
+    for y in (3.4, 8.6):                                                # sangles autour du jerrican
+        B((jx0 - 0.2, y, jz0), (jx1 + 0.2, y + 0.8, jz1 + 0.15), "sangle")
+    # ---- plaque de terrain rivetée sur le flanc ouest (pochoir « R-02 »)
+    texte = ex.masque_texte(["R-02"], haut=64)
+    B((0.2, 9.0, 3.6), (0.4, 12.2, 9.2), "plaque_terrain", faces=("west", "north", "south", "up", "down"),
+      decals=(Decal(texte, (0.2, 11.8, 3.8), (0, 0, 5.2), (0, -2.4, 0), col(40, 36, 30), 1.0, normale=(-1, 0, 0)),))
+    return cubes
+
+
+def etat(cubes, nom):
+    """Pièces du modèle d'un état (« arret » ou « marche »)."""
+    return [c for c in cubes if c.prm.get("etat", nom) == nom]
+
+
+def controler(cubes):
+    for c in cubes:
+        if c.mat == "vide":
+            continue
+        for v in list(c.a) + list(c.b):
+            if v < -16 or v > 32:
+                raise SystemExit(f"pièce hors des limites de Minecraft : {c.a} {c.b} ({c.mat})")
+        if c.rot:
+            axes = [k for k, a in enumerate(c.rot) if a]
+            if len(axes) != 1 or abs(c.rot[axes[0]]) % 22.5 or abs(c.rot[axes[0]]) > 45:
+                raise SystemExit(f"rotation impossible dans un modèle de bloc : {c.rot}")
+
+
+# ================================================================================================ installation
+ASSETS = rm.ASSETS
+
+
+def atlas(cubes):
+    """Atlas commun aux deux états (densité du jeu) : UV posées sur chaque pièce, image carrée."""
+    ex.D, ex.LARGEUR, ex.MARGE = DENSITE, LARGEUR, 1
+    tex, lueur, tw, th = ex.construire([Os("r")], cubes)
+    if tex.shape[0] < tex.shape[1]:
+        pad = np.zeros((tex.shape[1] - tex.shape[0], tex.shape[1], 4))
+        tex = np.concatenate([tex, pad])
+        lueur = np.concatenate([lueur, np.zeros((pad.shape[0], lueur.shape[1], 4))])
+        th = tw
+    return tex, lueur, tw, th
+
+
+def elements(sous, tw, th):
+    """Éléments d'un modèle de bloc pour ces pièces (même écriture que tc_modele.modele_minecraft, UV de l'atlas commun)."""
+    tc.LUMINEUX = LUMINEUX
+    cachees = tc.faces_cachees(sous)
+    out = []
+    for i, c in enumerate(sous):
+        faces = {}
+        for f in c.faces:
+            if (i, f) in cachees:
+                continue
+            u0, v0, w, h = c.uv[f]
+            U0, V0 = u0 * 16 / tw, v0 * 16 / th
+            U1, V1 = (u0 + w) * 16 / tw, (v0 + h) * 16 / th
+            uv = [U0, V1, U1, V0] if f in ("up", "down") else [U1, V0, U0, V1]
+            faces[f] = {"uv": [round(x, 4) for x in uv], "texture": "#0"}
+        if not faces:
+            continue
+        el = {"from": [round(x, 4) for x in c.a], "to": [round(x, 4) for x in c.b], "faces": faces}
+        if c.rot:
+            k = next(k for k, a in enumerate(c.rot) if a)
+            el["rotation"] = {"origin": [round(x, 4) for x in c.pivot], "axis": "xyz"[k], "angle": c.rot[k]}
+        if c.mat in LUMINEUX:
+            el["forge_data"] = {"block_light": 15, "sky_light": 15}
+            el["shade"] = False
+        out.append(el)
+    return out
+
+
+def installer(cubes):
+    """Deux modèles de bloc (arrêt, marche) sur une seule texture, états (4 orientations x marche ; la case de droite
+    est un bloc invisible, RecycleurPartie) et objet (modèle à l'arrêt)."""
+    from PIL import Image
+    tex, _, tw, th = atlas(cubes)
+    credit = "HeraliZ, modules/pnj/outils/recycleur_carte_modele.py"
+    for nom, sous in (("recycleur_carte", etat(cubes, "arret")), ("recycleur_carte_marche", etat(cubes, "marche"))):
+        modele = {"credit": credit, "textures": {"0": TEXTURE, "particle": TEXTURE}, "elements": elements(sous, tw, th),
+                  "display": rm.AFFICHAGE}
+        rm.ecrire(ASSETS / f"models/block/{nom}.json", modele)
+        print(f"[recycleur carte] {nom} : {len(modele['elements'])} éléments")
+    (ASSETS / "textures/block").mkdir(parents=True, exist_ok=True)
+    Image.fromarray((np.clip(tex, 0, 1) * 255).astype(np.uint8), "RGBA").save(ASSETS / "textures/block/recycleur_carte.png",
+                                                                             optimize=True)
+    rm.ecrire(ASSETS / "models/block/recycleur_carte_partie.json", {"credit": credit, "textures": {"particle": TEXTURE}})
+    rm.ecrire(ASSETS / "models/item/recycleur_carte.json", {"parent": "heraliz_quetes:block/recycleur_carte"})
+    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
+
+    def variante(modele, r):
+        return {"model": modele, "y": r} if r else {"model": modele}
+
+    variantes = {}
+    for f, r in rot.items():
+        variantes[f"facing={f},marche=false"] = variante("heraliz_quetes:block/recycleur_carte", r)
+        variantes[f"facing={f},marche=true"] = variante("heraliz_quetes:block/recycleur_carte_marche", r)
+    rm.ecrire(ASSETS / "blockstates/recycleur_carte.json", {"variants": variantes})
+    rm.ecrire(ASSETS / "blockstates/recycleur_carte_partie.json",
+              {"variants": {f"facing={f}": variante("heraliz_quetes:block/recycleur_carte_partie", r) for f, r in rot.items()}})
+    print(f"[recycleur carte] texture {tex.shape[1]} x {tex.shape[0]}, installé dans {ASSETS}")
+
+
+# ================================================================================================ rendus
+VUES = dict(rm.VUES, dos=(math.radians(25), math.radians(24)))
 
 
 def joueur(B, px, pz):
@@ -203,132 +326,6 @@ def sol(B, x0, x1, z0, z1):
             B((x, -0.6, z), (x + 16, 0, z + 16), "sol", faces=("up",))
 
 
-# ================================================================================================ modèle
-def cubes_recycleur_carte(marche=False, cadre=False):
-    cubes = []
-
-    def B(a, b, mat, **k):
-        cubes.append(Cube("r", a, b, mat, **k))
-
-    # ---- palette en bois (une latte cassée)
-    for z0 in (1.0, 7.0, 13.0):
-        B((0.4, 0, z0), (31.6, 1.4, z0 + 2.0), "bois", prm={"graine": int(z0)})
-    for k in range(9):
-        x0 = 0.6 + k * 3.45
-        z1 = 9.2 if k == 7 else 15.4
-        B((x0, 1.4, 0.6), (x0 + 2.6, 2.2, z1), "bois", prm={"graine": 20 + k})
-    B((0.6 + 7 * 3.45, 1.4, 10.4), (0.6 + 7 * 3.45 + 2.6, 1.9, 15.4), "bois", rot=(0, 22.5, 0),
-      pivot=(0.6 + 7 * 3.45, 1.4, 12.0), prm={"graine": 29})          # morceau de latte détaché, de travers
-
-    # ---- caisson de broyage : tôle rouillée, cornières, couvercle en plaque soudée
-    X0, X1, Z0, Z1, Y0, Y1 = 1.6, 20.4, 5.0, 14.2, 2.2, 14.2
-    B((X0, Y0, Z0), (X1, Y1, Z1), "tole_rouille", prm={"graine": 1})
-    for x0 in (X0 - 0.4, X1 - 0.6):
-        for z0 in (Z0 - 0.4, Z1 - 0.6):
-            B((x0, Y0, z0), (x0 + 1.0, Y1 + 0.4, z0 + 1.0), "acier_brut", prm={"graine": int(x0 + z0)})
-    B((X0 - 0.4, Y1, Z0 - 0.4), (X1 + 0.4, Y1 + 0.8, Z1 + 0.4), "plaque_soudee", prm={"graine": 2})
-    # façade : porte en tôle peinte (vieille peinture verte), pictogramme à la bombe, rustines
-    porte = Decal(masque_bombe(), (9.6, 13.0, Z0 - 0.3), (-6.4, 0, 0), (0, -6.4, 0), col(232, 196, 46), 0.95,
-                  normale=(0, 0, -1))
-    B((2.4, 3.4, Z0 - 0.3), (10.4, 13.4, Z0), "tole_peinte", prm={"graine": 3}, decals=(porte,))
-    B((10.9, 9.8, Z0 - 0.3), (19.6, 13.6, Z0), "plaque_soudee", prm={"graine": 4})
-    B((3.0, 10.8, Z0 - 0.6), (6.6, 13.8, Z0 - 0.3), "tole_galva", rot=(0, 0, 22.5), pivot=(4.8, 12.3, Z0 - 0.45),
-      prm={"graine": 5})                                                # rustine de travers
-    for (x, y) in ((3.0, 4.0), (9.8, 4.0), (9.8, 12.8), (11.5, 13.0), (19.0, 13.0), (19.0, 10.4)):
-        B((x - 0.3, y - 0.3, Z0 - 0.55), (x + 0.3, y + 0.3, Z0 - 0.3), "acier_brut")
-    B((9.0, 7.0, Z0 - 1.1), (9.5, 9.4, Z0 - 0.3), "acier_brut")       # poignée en fer à béton
-    # fente de sortie, goulotte en tôle galvanisée qui descend vers la caisse
-    B((11.4, 6.0, Z0 - 0.4), (19.2, 9.6, Z0), "acier_brut", prm={"graine": 6})
-    B((12.0, 6.6, Z0 - 0.45), (18.6, 9.0, Z0 - 0.4), "interieur")
-    B((12.2, 5.6, Z0 - 4.2), (18.4, 6.2, Z0), "tole_galva", rot=(-22.5, 0, 0), pivot=(12.2, 6.2, Z0), prm={"graine": 7})
-    # flanc ouest : porte de visite arrachée qui pend, trou noir derrière
-    B((X0 - 0.05, 4.4, 7.4), (X0, 11.0, 12.2), "interieur", faces=("west",))
-    B((X0 - 0.5, 3.8, 7.2), (X0 - 0.1, 11.6, 12.4), "tole_galva", rot=(0, 0, -22.5), pivot=(X0 - 0.1, 11.6, 9.8),
-      prm={"graine": 8})
-    B((X0 - 0.6, 11.0, 7.6), (X0 - 0.1, 11.8, 8.4), "acier_brut")      # charnière restante
-
-    # ---- trémie : fût bleu coupé, cerclages, barres de protection, broyeur au fond
-    cx, cz, R = 7.6, 9.6, 4.5
-    anneau_y(B, cx, cz, R, Y1 + 0.8, 23.8, 0.5, "fut_bleu")
-    anneau_y(B, cx, cz, R - 0.5, Y1 + 0.8, 23.6, 0.3, "interieur", prm={"degrade": True})
-    for y in (17.4, 21.0):
-        anneau_y(B, cx, cz, R + 0.25, y, y + 0.7, 0.3, "fut_cercle")
-    B((cx - 3.2, Y1 + 0.8, cz - 3.2), (cx + 3.2, Y1 + 1.3, cz + 3.2), "lames", faces=("up",))
-    for dz in (-1.8, 1.8):
-        B((cx - R - 0.6, 23.8, cz + dz - 0.3), (cx + R + 0.6, 24.4, cz + dz + 0.3), "acier_brut")
-
-    # ---- jerrican sur le couvercle, tuyau vers le moteur
-    B((13.6, Y1 + 0.8, 11.0), (19.2, 22.4, 13.6), "jerrican")
-    for x in (14.6, 16.0, 17.4):
-        B((x, 22.4, 11.9), (x + 0.6, 23.4, 12.7), "jerrican")
-    B((14.4, 23.0, 11.9), (18.6, 23.6, 12.7), "jerrican")
-    B((18.4, 22.4, 11.2), (19.4, 23.8, 12.2), "acier_brut")            # bec
-    B((19.4, 16.0, 11.6), (22.6, 16.5, 12.1), "cable")                  # tuyau d'essence
-
-    # ---- bâti du moteur (soudé), moteur rouge, volant d'inertie à l'avant, arbre vers le caisson
-    for x0 in (21.2, 30.2):
-        for z0 in (3.0, 12.6):
-            B((x0, Y0, z0), (x0 + 0.8, 7.4, z0 + 0.8), "acier_brut", prm={"graine": int(x0 + z0)})
-    B((21.0, 7.4, 2.8), (31.2, 8.2, 13.6), "plaque_soudee", prm={"graine": 9})
-    B((22.0, 8.2, 4.4), (29.6, 14.6, 12.4), "peint_rouge", prm={"graine": 1})
-    B((22.6, 14.6, 5.4), (29.0, 16.2, 11.4), "acier_brut", prm={"graine": 10})
-    for k in range(5):                                                   # ailettes de refroidissement
-        x0 = 23.0 + k * 1.2
-        B((x0, 16.2, 5.8), (x0 + 0.5, 17.4, 11.0), "acier_brut", prm={"graine": 11 + k})
-    rm.cylindre_z(B, 25.8, 11.2, 4.4, 3.1, 3.4, 4.4, "acier_brut", prm={"graine": 12})     # volant
-    rm.cylindre_z(B, 25.8, 11.2, 3.4, 1.0, 2.8, 3.4, "acier")
-    B((25.5, 11.0, 2.7), (26.1, 13.9, 3.4), "peint_jaune")              # repère du volant
-    rm.cylindre_x(B, 0, 11.0, 8.4, 0.8, X1, 22.0, "acier_brut")         # arbre moteur -> broyeur
-    B((20.8, 10.0, 7.4), (21.6, 12.0, 9.4), "acier")                     # accouplement
-    # pot d'échappement qui traverse l'auvent
-    rm.cylindre_y(B, 28.4, 11.0, 0.9, 16.2, 28.0, "acier_brut")
-    rm.cylindre_y(B, 28.4, 11.0, 1.1, 27.4, 28.6, "braise" if marche else "suie")
-    rm.cylindre_x(B, 0, 18.6, 11.0, 1.5, 24.6, 28.6, "acier_brut", prm={"graine": 13})    # silencieux
-    # boîte à interrupteur sur le pied avant du bâti, voyants
-    B((22.2, 3.0, 2.2), (25.6, 6.8, 3.0), "acier_brut", prm={"graine": 14})
-    B((22.8, 4.0, 1.8), (23.6, 6.0, 2.2), "acier")                      # interrupteur
-    B((24.0, 5.2, 2.0), (24.9, 6.1, 2.2), "voyant_vert" if marche else "voyant_vert_off")
-    B((24.0, 3.8, 2.0), (24.9, 4.7, 2.2), "voyant_rouge_off")
-    # auvent : deux montants en fer à béton, tôle ondulée penchée vers l'est
-    for z0 in (3.0, 12.6):
-        B((30.4, 8.2, z0), (31.2, 23.0, z0 + 0.8), "acier_brut", prm={"graine": 15})
-    B((21.2, Y1 + 0.8, 13.2), (22.0, 26.6, 14.0), "acier_brut", prm={"graine": 16})
-    B((20.6, 26.6, 1.6), (32.0, 27.2, 15.2), "tole_ondulee", rot=(0, 0, -22.5), pivot=(20.6, 27.2, 8.4),
-      prm={"graine": 17})
-    # baladeuse pendue sous l'auvent
-    B((24.1, 21.0, 4.1), (24.4, 24.6, 4.4), "cable")
-    B((23.5, 19.4, 3.5), (25.0, 21.0, 5.0), "ampoule_on" if marche else "ampoule")
-    B((23.4, 20.8, 3.4), (25.1, 21.2, 5.1), "acier_brut")
-    # batterie de voiture devant la porte, câbles vers la boîte à interrupteur (derrière la caisse)
-    B((3.0, Y0, 1.4), (7.6, 6.2, 4.4), "plastique")
-    B((3.6, 6.2, 2.2), (4.6, 6.8, 3.2), "borne_rouge")
-    B((6.0, 6.2, 2.2), (7.0, 6.8, 3.2), "acier")
-    B((6.4, 6.8, 2.5), (7.0, 7.2, 4.6), "cable")
-    B((7.0, Y0, 4.4), (22.2, 2.7, 4.8), "cable")
-    B((21.8, Y0, 2.6), (22.2, 4.2, 4.8), "cable")
-    # caisse de sortie en bois, ferraille dedans
-    C0, C1, D0, D1 = 11.6, 20.2, -1.6, 4.4
-    B((C0, Y0, D0), (C1, Y0 + 0.6, D1), "bois", prm={"graine": 40})
-    for (y0, y1) in ((Y0 + 0.6, 4.6), (4.8, 6.8)):
-        B((C0, y0, D0), (C1, y1, D0 + 0.6), "bois", prm={"graine": 41 + int(y0)})
-        B((C0, y0, D1 - 0.6), (C1, y1, D1), "bois", prm={"graine": 43 + int(y0)})
-        B((C0, y0, D0 + 0.6), (C0 + 0.6, y1, D1 - 0.6), "bois", prm={"graine": 45 + int(y0)})
-        B((C1 - 0.6, y0, D0 + 0.6), (C1, y1, D1 - 0.6), "bois", prm={"graine": 47 + int(y0)})
-    B((13.0, Y0 + 0.6, 0.0), (15.8, 6.4, 2.6), "acier_brut", rot=(0, 22.5, 0), pivot=(14.4, Y0 + 0.6, 1.3))
-    B((15.6, Y0 + 0.6, -0.6), (19.0, 5.9, 0.0), "circuit", rot=(22.5, 0, 0), pivot=(15.6, Y0 + 0.6, -0.6))
-    B((16.4, Y0 + 0.6, 1.0), (19.0, 6.0, 3.4), "tole_galva", prm={"graine": 18})
-
-    if marche or cadre:
-        # fumée et étincelles : des particules en jeu, dessinées ici pour montrer la machine en marche ; arrêté avec
-        # « cadre » : mêmes pièces invisibles, pour que les deux rendus aient exactement le même cadrage
-        for k, (dx, y, t) in enumerate(((0.2, 29.4, 1.2), (0.9, 31.0, 1.6), (0.3, 32.8, 2.0), (1.4, 34.8, 2.5))):
-            B((28.4 + dx - t, y, 11.0 - t), (28.4 + dx + t, y + 2 * t * 0.8, 11.0 + t), "fumee" if marche else "vide",
-              prm={"graine": k})
-        for (x, y, z) in ((6.0, 24.8, 8.4), (8.8, 25.6, 10.6), (7.2, 26.4, 11.4), (9.6, 24.6, 7.8), (5.4, 25.9, 10.2)):
-            B((x, y, z), (x + 0.35, y + 0.35, z + 0.35), "etincelle" if marche else "vide")
-    return [Os("r")], cubes
-
-
 def decale(cubes, dx, dz):
     """Copie déplacée (scènes de comparaison) ; les décalcomanies suivent."""
     out = []
@@ -338,48 +335,6 @@ def decale(cubes, dx, dz):
         out.append(Cube(c.os, c.a + o, c.b + o, c.mat, faces=c.faces, rot=c.rot,
                         pivot=None if c.pivot is None else tuple(np.array(c.pivot, float) + o), prm=c.prm, decals=d))
     return out
-
-
-def controler(cubes):
-    """Mêmes limites que les modèles de bloc de Minecraft (le modèle ne sera installé qu'après validation)."""
-    for c in cubes:
-        if c.mat in ("fumee", "etincelle", "vide"):
-            continue
-        for v in list(c.a) + list(c.b):
-            if v < -16 or v > 32:
-                raise SystemExit(f"pièce hors des limites de Minecraft : {c.a} {c.b} ({c.mat})")
-        if c.rot:
-            axes = [k for k, a in enumerate(c.rot) if a]
-            if len(axes) != 1 or abs(c.rot[axes[0]]) % 22.5 or abs(c.rot[axes[0]]) > 45:
-                raise SystemExit(f"rotation impossible dans un modèle de bloc : {c.rot}")
-
-
-# ================================================================================================ rendus
-VUES = {"trois quarts": (math.radians(215), math.radians(24)), "face": (math.radians(180), math.radians(8)),
-        "autre côté": (math.radians(145), math.radians(24)), "plongée": (math.radians(200), math.radians(55))}
-
-
-def rendre(cubes, vue, taille=1000):
-    os_ = [Os("r")]
-    tex, lueur, _, _ = ex.construire(os_, cubes)
-    return ex.rendu(os_, cubes, tex, lueur, set(), vue, taille=taille)
-
-
-def planche_recadree(images, titres, fichier, marge=14):
-    """Planche de rendus recadrés sur ce qui est dessiné : même cadre pour toutes les images (la plus grande boîte), donc
-    même échelle d'une image à l'autre."""
-    fond = np.array([28, 31, 33])
-    boites = []
-    for im in images:
-        a = np.asarray(im.convert("RGB"), int)
-        plein = np.abs(a - fond).sum(-1) > 12
-        ys, xs = np.nonzero(plein)
-        boites.append((xs.min(), ys.min(), xs.max(), ys.max()))
-    x0 = max(0, min(b[0] for b in boites) - marge)
-    y0 = max(0, min(b[1] for b in boites) - marge)
-    x1 = min(images[0].size[0], max(b[2] for b in boites) + marge)
-    y1 = min(images[0].size[1], max(b[3] for b in boites) + marge)
-    ex.planche([im.crop((x0, y0, x1, y1)) for im in images], titres, fichier)
 
 
 def scene(*groupes):
@@ -393,44 +348,71 @@ def scene(*groupes):
     return out
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--apercu", type=Path, required=True, help="dossier des rendus (hors du dépôt)")
-    args = ap.parse_args()
-    ex.peindre = peindre
+def rendre(cubes, vue, taille=1000):
     ex.D, ex.LARGEUR, ex.MARGE = 16, 2048, 2
-    _, arret = cubes_recycleur_carte(False)
-    _, arret_cadre = cubes_recycleur_carte(False, cadre=True)
-    _, marche = cubes_recycleur_carte(True)
-    controler(arret)
-    controler(marche)
-    out = args.apercu
+    os_ = [Os("r")]
+    tex, lueur, _, _ = ex.construire(os_, cubes)
+    return ex.rendu(os_, cubes, tex, lueur, set(), vue, taille=taille)
+
+
+def planche_recadree(images, titres, fichier, marge=14):
+    """Planche de rendus recadrés sur ce qui est dessiné : même cadre pour toutes les images, donc même échelle."""
+    fond = np.array([28, 31, 33])
+    boites = []
+    for im in images:
+        a = np.asarray(im.convert("RGB"), int)
+        ys, xs = np.nonzero(np.abs(a - fond).sum(-1) > 12)
+        boites.append((xs.min(), ys.min(), xs.max(), ys.max()))
+    x0 = max(0, min(b[0] for b in boites) - marge)
+    y0 = max(0, min(b[1] for b in boites) - marge)
+    x1 = min(images[0].size[0], max(b[2] for b in boites) + marge)
+    y1 = min(images[0].size[1], max(b[3] for b in boites) + marge)
+    ex.planche([im.crop((x0, y0, x1, y1)) for im in images], titres, fichier)
+
+
+def apercu(cubes, out):
     out.mkdir(parents=True, exist_ok=True)
-
-    ims = [rendre(arret, v) for v in VUES.values()]
-    ex.planche(ims, ["arrêté · " + t for t in VUES], out / "recycleur_carte_vues.png")
-
+    arret, marche = etat(cubes, "arret"), etat(cubes, "marche")
     tq, face = VUES["trois quarts"], VUES["face"]
-    planche_recadree([rendre(arret_cadre, tq), rendre(marche, tq)],
-                     ["arrêté", "en marche"], out / "recycleur_carte_arret_marche.png")
-    planche_recadree([rendre(arret_cadre, face), rendre(marche, face)], ["arrêté · face", "en marche · face"],
-                     out / "recycleur_carte_arret_marche_face.png")
-    rendre(marche, tq, taille=1600).save(out / "recycleur_carte_trois_quarts.png")
 
-    # échelle : joueur de 1,8 bloc à côté, sol quadrillé d'un bloc
+    vues = {k: VUES[k] for k in ("trois quarts", "face", "autre côté", "dos")}
+    ims = [rendre(arret, v) for v in vues.values()]
+    ex.planche(ims, ["à l'arrêt · " + t for t in vues], out / "recycleur_carte_vues.png")
+
+    planche_recadree([rendre(arret, tq), rendre(marche, tq), rendre(arret, face), rendre(marche, face)],
+                     ["à l'arrêt", "en marche", "à l'arrêt · face", "en marche · face"], out / "recycleur_carte_arret_marche.png")
+
     sc = scene(arret, lambda B: joueur(B, -16.0, 4.0), lambda B: sol(B, -32, 48, -16, 32))
-    planche_recadree([rendre(sc, tq, 1400), rendre(sc, face, 1400), rendre(sc, VUES["autre côté"], 1400)],
-                     ["échelle · trois quarts", "échelle · face (1 dalle = 1 bloc)", "échelle · autre côté"],
+    planche_recadree([rendre(sc, tq, 1400), rendre(sc, face, 1400), rendre(sc, VUES["dos"], 1400)],
+                     ["à côté d'un joueur · trois quarts", "face (1 dalle = 1 bloc)", "dos (jerrican sanglé)"],
                      out / "recycleur_carte_echelle.png")
 
-    # comparaison avec le recycleur du spawn (même taille au sol : 2 x 1 bloc). Vu de face, l'est (+x) est à gauche :
-    # le recycleur du spawn (+x) est à gauche, celui de la carte à droite.
+    # vu de face, l'est (+x) est à gauche : le spawn (+x) à gauche, la carte à droite, le joueur au milieu
     _, spawn = rm.cubes_recycleur()
     sc = scene(decale(spawn, 12.0, 0), decale(marche, -44.0, 0), lambda B: joueur(B, 0.0, 4.0), lambda B: sol(B, -48, 48, -16, 32))
     planche_recadree([rendre(sc, tq, 1600), rendre(sc, face, 1600)],
-                     ["spawn (propre) · joueur · carte (rouillé, en marche)", "face : spawn · joueur · carte"],
-                     out / "comparaison_spawn_carte.png")
-    print(f"[recycleur carte] {len(arret)} pièces (arrêté), {len(marche)} (en marche, particules comprises) -> {out}")
+                     ["spawn · joueur · carte (en marche)", "face : spawn · joueur · carte"], out / "comparaison_spawn_carte.png")
+
+    # avec la texture du jeu (densité installée) : ce que verra le joueur
+    tex, lueur, _, _ = atlas(cubes)
+    ims = [ex.rendu([Os("r")], sous, tex, lueur, set(), tq, taille=1000) for sous in (arret, marche)]
+    planche_recadree(ims, ["densité du jeu · à l'arrêt", "densité du jeu · en marche"], out / "recycleur_carte_densite_jeu.png")
+    print(f"[recycleur carte] {len(arret)} pièces à l'arrêt, {len(marche)} en marche -> {out}")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--apercu", type=Path, help="dossier des rendus (hors du dépôt)")
+    g.add_argument("--installer", action="store_true", help="écrit le bloc dans le mod")
+    args = ap.parse_args()
+    ex.peindre = peindre
+    cubes = cubes_carte()
+    controler(cubes)
+    if args.installer:
+        installer(cubes)
+    else:
+        apercu(cubes, args.apercu)
 
 
 if __name__ == "__main__":
