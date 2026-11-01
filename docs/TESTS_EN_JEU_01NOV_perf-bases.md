@@ -1,4 +1,4 @@
-# À tester en jeu — perf-bases (01/11 : CRac 1.29.12-beta, Clans 3.10.3, Quêtes 1.16.2, Loot 0.14.5, Bunker 0.13.4)
+# À tester en jeu — perf-bases (01/11 : CRac 1.29.16-beta, Clans 3.10.3, Quêtes 1.16.2, Loot 0.14.5, Bunker 0.13.4)
 
 Demande du propriétaire : « optimiser le serveur le plus possible », en gardant tout ; il cite « le monde des bases, quand
 on lance les tutos, quand on fait des commandes ». Périmètre de ce chantier : bases (CRac), clans (et l'économie), PNJ et
@@ -18,8 +18,11 @@ quelques ticks une fois les tronçons chargés (commit `d77a3ad9`).
 |---|---|---|---|
 | Quêtes : progression des joueurs (`pnj` `Donnees`) | toutes les 30 s, écriture + renommage de chaque fichier changé sur le fil du serveur (des dizaines dans le même tick à 150 joueurs : ~10 à 30 ms, bien plus si le disque est occupé) ; pareil à chaque déconnexion | texte fait sur le fil du serveur (~50 µs par joueur), écriture sur un fil à part | rien |
 | Zones interdites à la construction (`ZonesConstruction`) | 2 accès au disque à **chaque** lecture : chaque case d'une pièce posée, chaque essai de /rtp (jusqu'à 48), 4 fois par seconde par joueur plan en main | date relevée à part toutes les 5 s, aucun accès au disque | un changement du fichier des zones est vu en 5 s au plus |
-| `/home`, réapparition « À la base » | tronçons de l'armoire chargés sur le fil du serveur au départ : 100 à 300 ms de gel quand personne n'est près de la base | lus en tâche de fond pendant les 3 s du compte à rebours / l'écran de mort | rien (staff sans compte à rebours : comme avant) |
-| `/rtp` | jusqu'à 6 tronçons (et leurs voisins) chargés d'un coup au départ | points tirés à la commande, leurs tronçons lus pendant le compte à rebours ; sinon, le tirage d'avant | rien |
+| `/home`, réapparition « À la base » | tronçons de l'armoire chargés sur le fil du serveur au départ : 100 à 300 ms de gel quand personne n'est près de la base | lus en tâche de fond pendant les 3 s du compte à rebours / l'écran de mort ; /home attend en plus qu'ils soient prêts (3 s au plus) | rarement : « Préparation de l'arrivée… » jusqu'à 3 s après le compte à rebours |
+| `/rtp` | jusqu'à 6 tronçons (et leurs voisins) chargés d'un coup au départ | 6 points tirés à la commande (et quelques places voisines de chacun), lus pendant le compte à rebours ; départ quand l'un convient, 3 s de plus au plus ; sinon un point parmi les endroits déjà chargés, sinon « réessaie » (délai pas compté). **Jamais** d'arrivée dans un endroit pas chargé | rarement : « Préparation de l'arrivée… » ; le staff part dès que l'arrivée est prête |
+| Tutoriel (avec ou sans Varga), retour à la cabane | parcelle chargée (ou créée) sur le fil du serveur à l'arrivée si elle n'était pas prête (2 s seulement avec Varga) | parcelle demandée dès le début de la séquence, envoi seulement quand elle est chargée ; retour à la cabane de même | rarement : « [Tuto] Préparation de ta parcelle… » au spawn, 10 s au plus |
+| Sauvegarde des bases (`StructureStore`, `Piece`) | toutes les pièces de toutes les bases refaites en NBT sur le fil du serveur à chaque sauvegarde du monde (10 à 50 ms pour 10 000 à 50 000 pièces) | seules les pièces changées depuis la dernière sauvegarde sont refaites (chaque champ écrit est comparé) ; même fichier | rien (mémoire du serveur : ~1 Ko par pièce, 10 à 50 Mo) |
+| Entretien des bases chaque minute (`ClaimMaintenanceManager`) | toutes les bases dans le même tick (1 à 3 ms pour 30 000 pièces) | étalé : ~2 000 pièces ou objets par tick (0,1 à 0,2 ms), mêmes règles, même ordre | rien (l'usure / la réparation d'une base peut arriver une fraction de seconde plus tard) |
 | Aide au saut des montées (`SautRebord`) | chaque joueur au sol, tous les 2 ticks : ~50 lectures + 4 objets (~0,1 ms par tick à 150 joueurs) | 1 à 4 lectures de l'index quand aucune base n'est autour | rien |
 | « Dans quel claim est ce bloc ? » (`ClaimData.getAt`) | toutes les bases parcourues à chaque appel : chaque bloc d'une explosion (2 fois), chaque écoulement d'eau ou de lave, chaque feu, chaque apparition de zombie, chaque coup sur une vitre… (coût × nombre de bases) | 1 à 4 cases de 64 blocs lues | rien (même claim trouvé) |
 | Économie : sauvegarde de `comptes.json` | arbre JSON de **tous** les comptes et de leurs 50 transactions sur le fil du serveur, chaque minute, toutes les 1,5 s pendant les gros paiements, à chaque achat à l'hôtel des ventes (dizaines de ms avec quelques milliers de comptes) | le fil du serveur copie seulement solde, nom et journal (~0,3 ms pour 3 000 comptes) ; JSON fait sur le fil d'écriture | rien (même fichier) |
@@ -46,7 +49,14 @@ quelques ticks une fois les tronçons chargés (commit `d77a3ad9`).
 - [ ] Mourir avec « À la base » proposé, attendre quelques secondes sur l'écran de mort, choisir « À la base » : arrivée
       normale, pas d'alerte. Pareil en choisissant « Au camp » (rien ne change).
 - [ ] `/rtp` depuis le spawn : arrivée sur un sol plat, loin des bases, hors des zones interdites, pas d'alerte au départ.
-      Le refaire plusieurs fois (staff : sans délai) : jamais dans l'eau ni dans un bloc.
+      Le refaire plusieurs fois (staff : sans délai) : jamais dans l'eau ni dans un bloc. Si « Préparation de
+      l'arrivée… » s'affiche : bouger pendant ce temps annule toujours le départ ; arrivée au plus 3 s après.
+- [ ] `/rtp` refusé « Aucune place sûre trouvée » (rare) : le délai de /rtp n'est pas compté, on peut réessayer tout de
+      suite.
+- [ ] Tutoriel avec Varga, compte qui n'a jamais eu de parcelle, serveur chargé : arrivée dans la parcelle sans alerte ;
+      si « [Tuto] Préparation de ta parcelle… » s'affiche, l'arrivée suit (10 s au plus). Pareil sans Varga.
+- [ ] Mourir pendant le tutoriel (ou être mis au spawn par le staff) : retour à la cabane une à deux secondes plus tard,
+      sans alerte.
 
 ### Bases
 - [ ] Poser des pièces dans une zone permise, puis essayer dans une zone interdite (ville, rails) : refus comme avant ;
@@ -58,6 +68,12 @@ quelques ticks une fois les tronçons chargés (commit `d77a3ad9`).
 - [ ] Zombies : toujours aucune apparition dans une base.
 - [ ] `/base info` (et la fiche ouverte depuis le tutoriel) : la fiche s'ouvre, avec les prix des marchands.
 - [ ] S'approcher en volant d'une grande base pas chargée : elle apparaît entière, pas d'alerte.
+- [ ] **Sauvegarde des bases** : abîmer des pièces, en améliorer, ouvrir / fermer des portes, poser une vitre, en
+      démolir ; `/save-all`, arrêter et redémarrer : tout est comme avant l'arrêt (vie, palier, portes, vitres, pièces
+      démolies absentes). Refaire une 2e fois sans rien toucher entre les deux sauvegardes : rien ne change.
+- [ ] **Entretien** : armoire sans bois → la base s'use (message « entretien »), armoire payée → elle se répare ; le stock
+      de l'armoire baisse comme avant (une fois par minute). Casser une armoire pendant la minute : pas de message d'erreur
+      dans le journal.
 
 ### Économie
 - [ ] Gagner / dépenser des hérals, acheter à l'hôtel des ventes, déposer à la banque du clan, puis arrêter et
@@ -75,15 +91,16 @@ quelques ticks une fois les tronçons chargés (commit `d77a3ad9`).
 
 ## Pas changé (à savoir, propositions)
 
-- Sauvegarde des bases (`crac_structures`, toutes les pièces) et des clans (`clans.json`) : l'arbre NBT / JSON complet est
-  encore relevé sur le fil du serveur (estimé 10 à 50 ms pour 10 000 à 50 000 pièces à chaque sauvegarde du monde,
-  ~5 à 10 ms par minute pour les clans) ; l'écrire en fond est déjà fait. Le réduire demande un cache par pièce / par clan
-  avec beaucoup d'endroits qui les modifient : à faire à part, avec des essais.
+- Sauvegarde des clans (`clans.json`) : toujours refaite en entier sur le fil du serveur (~550 valeurs par clan : 5 à
+  10 ms par minute pour 100 clans), écrite en fond. Une copie par clan tenue à jour n'est **pas sûre** : un clan a une
+  quarantaine de champs et une dizaine de listes (membres et statistiques, quêtes, journaux de la banque et des
+  événements, bannière, droits, zones, arbre), modifiés directement depuis une centaine d'endroits dans 11 fichiers, et la
+  seule marque de changement est commune à tous les clans ; la moindre modification oubliée ne serait jamais enregistrée
+  (perdue au redémarrage). À faire seulement après avoir fait passer toutes les modifications par le clan lui-même.
 - Coffre du clan : encore écrit sur le fil du serveur quand il a changé (au plus une fois par minute), exprès dans le
-  même ordre que la sauvegarde des joueurs (jamais d'objet en double après un plantage) : laissé tel quel.
-- Entretien des bases (chaque minute) : toutes les pièces passées en revue dans le même tick (~1 à 3 ms pour 30 000
-  pièces) : pas étalé.
-- Tutoriel avec Varga : la parcelle n'a que 2 s pour se charger avant l'arrivée ; une parcelle jamais créée (beaucoup de
-  tutoriels en même temps) peut encore geler un court instant à l'arrivée.
+  même ordre que la sauvegarde des joueurs (jamais d'objet en double après un plantage) : laissé tel quel (décision du
+  propriétaire).
+- Réapparition « À la base » choisie seulement quand le délai finit sur l'écran de mort : l'armoire n'a pas eu le temps
+  d'être chargée, elle l'est à la réapparition comme avant (rare).
 - PNJ : IA de Minecraft (regarder les joueurs), une quinzaine au spawn, environ 0,1 ms par tick en tout : laissée.
 - Aucun réglage de Minecraft / Mohist proposé par ce chantier.
