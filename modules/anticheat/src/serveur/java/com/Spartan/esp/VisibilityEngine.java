@@ -100,6 +100,17 @@ public final class VisibilityEngine {
     private static boolean active;
     private static long tick;
 
+    /**
+     * Réglages lus une fois par tick (et à chaque première vue) au lieu d'une fois par paire (2.9.5, perf) : le tri des
+     * paires en lisait jusqu'à quatre pour chacune des ~22 000 paires d'un monde à 150 joueurs. Mêmes valeurs.
+     */
+    private static double minDistance;
+    private static boolean revealAllies;
+    private static double peek;
+    private static int hideDelay;
+    /** Instantanés des joueurs d'un monde, dans l'ordre de sa liste (réutilisé, vidé après chaque monde). */
+    private static Snap[] snapsMonde = new Snap[0];
+
     private VisibilityEngine() {
     }
 
@@ -194,6 +205,7 @@ public final class VisibilityEngine {
 
     /** Paire jamais vue (entrée dans la portée, connexion, téléportation) : décision immédiate. */
     private static Pair firstLook(ServerPlayer observer, ServerPlayer target) {
+        lireReglages();
         Snap o = SNAPS.get(observer.getId());
         if (o == null || o.p != observer) {
             o = snap(observer, false);
@@ -232,6 +244,7 @@ public final class VisibilityEngine {
         }
         active = true;
         long start = System.nanoTime();
+        lireReglages();
         long rays0 = MAIN_RAYS.rays();
         long steps0 = MAIN_RAYS.steps();
         Occluders.refresh();
@@ -267,13 +280,24 @@ public final class VisibilityEngine {
             List<ServerPlayer> players = level.players();
             LongArrayList changes = CHANGES.get(level);
             int n = players.size();
+            if (n < 2) {
+                continue; // aucune paire
+            }
+            // 2.9.5 : instantané de chaque joueur cherché une fois (avant : deux recherches par paire, n × n)
+            Snap[] snaps = snapsMonde.length >= n ? snapsMonde : (snapsMonde = new Snap[Math.max(n, snapsMonde.length * 2)]);
+            for (int i = 0; i < n; i++) {
+                snaps[i] = SNAPS.get(players.get(i).getId());
+            }
             for (int i = 0; i < n; i++) {
                 // bots de charge (/bots) : pas observateurs (aucun écran), seulement cibles
                 if (players.get(i).getTags().contains("heraliz_bot")) continue;
-                Snap o = SNAPS.get(players.get(i).getId());
+                Snap o = snaps[i];
+                if (o == null) {
+                    continue;
+                }
                 for (int j = 0; j < n; j++) {
-                    Snap t = SNAPS.get(players.get(j).getId());
-                    if (i == j || o == null || t == null) {
+                    Snap t = snaps[j];
+                    if (i == j || t == null) {
                         continue;
                     }
                     double dx = o.fx - t.fx;
@@ -303,6 +327,7 @@ public final class VisibilityEngine {
                     }
                 }
             }
+            Arrays.fill(snaps, 0, n, null); // ne garde aucun joueur d'un tick à l'autre
         }
         CHANGES.clear();
         changesOverflow = false;
@@ -331,7 +356,6 @@ public final class VisibilityEngine {
         }
 
         // 5. Décisions, puis application immédiate de celles qui changent.
-        int hideDelay = SpartanConfig.ESP_HIDE_DELAY_TICKS.get();
         int failOpen = SpartanConfig.ESP_FAIL_OPEN_TICKS.get();
         CHANGED.clear();
         int hidden = 0;
@@ -502,7 +526,7 @@ public final class VisibilityEngine {
         if (seen) {
             pr.lastSeen = Math.max(pr.lastSeen, at);
         }
-        boolean shown = tick - pr.lastSeen <= SpartanConfig.ESP_HIDE_DELAY_TICKS.get();
+        boolean shown = tick - pr.lastSeen <= hideDelay;
         pr.nextCheck = tick + (shown ? VISIBLE_INTERVAL : hiddenInterval(pr.dist));
     }
 
@@ -512,7 +536,7 @@ public final class VisibilityEngine {
         if (pr.lastResult) {
             pr.lastSeen = tick;
         }
-        boolean shown = tick - pr.lastSeen <= SpartanConfig.ESP_HIDE_DELAY_TICKS.get();
+        boolean shown = tick - pr.lastSeen <= hideDelay;
         pr.nextCheck = tick + (shown ? VISIBLE_INTERVAL : hiddenInterval(pr.dist));
         STATS.reused++;
     }
@@ -533,7 +557,7 @@ public final class VisibilityEngine {
         if (changes == null || changes.isEmpty()) {
             return true;
         }
-        double m = SpartanConfig.ESP_PEEK.get() + 2.0;
+        double m = peek + 2.0;
         double minX = Math.min(o.eye.x(), t.body.minX()) - m;
         double minY = Math.min(o.eye.y(), t.body.minY()) - m;
         double minZ = Math.min(o.eye.z(), t.body.minZ()) - m;
@@ -590,13 +614,13 @@ public final class VisibilityEngine {
 
     /** Cas où la cible est toujours envoyée, sans calcul de ligne de vue. */
     private static boolean alwaysVisible(Snap o, Snap t, Pair pr) {
-        if (o.seesAll || t.glowing || pr.dist < SpartanConfig.ESP_MIN_DISTANCE.get()) {
+        if (o.seesAll || t.glowing || pr.dist < minDistance) {
             return true;
         }
         if (o.root == t.root && o.root != o.p) {
             return true; // même véhicule
         }
-        if (SpartanConfig.ESP_ALLIES.get()) {
+        if (revealAllies) {
             if (tick - pr.alliedAt >= ALLY_REFRESH) {
                 pr.alliedAt = tick;
                 pr.allied = Allies.allied(o.p, t.p);
@@ -612,6 +636,13 @@ public final class VisibilityEngine {
         if (o != null && t != null) {
             TrackerAccess.refresh(o.p, t.p);
         }
+    }
+
+    private static void lireReglages() {
+        minDistance = SpartanConfig.ESP_MIN_DISTANCE.get();
+        revealAllies = SpartanConfig.ESP_ALLIES.get();
+        peek = SpartanConfig.ESP_PEEK.get();
+        hideDelay = SpartanConfig.ESP_HIDE_DELAY_TICKS.get();
     }
 
     private static double distance(Snap o, Snap t) {
