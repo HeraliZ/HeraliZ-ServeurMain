@@ -2,12 +2,12 @@ package fr.heralisz.utils.zombies;
 
 import fr.heralisz.utils.HeraliszUtils;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.world.entity.ai.goal.RemoveBlockGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
@@ -15,7 +15,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -32,8 +35,11 @@ import java.util.WeakHashMap;
  *     les {@code ia_rythme} ticks et chemins plus courts ; loin, objectifs tous les 20 ticks et chemins quatre fois plus
  *     courts. Au-delà de 24 blocs, Spigot ne les fait presque plus bouger, et {@link Peuplement} les retire au-delà de
  *     96 blocs.</li>
- *     <li>Recherches de chemin limitées par tick et partagées entre voisins : {@link CheminsZombies}.</li>
+ *     <li>Recherches de chemin limitées par tick et partagées entre voisins : {@link CheminsZombies} ; chemin gardé vers
+ *     une cible loin ou hors d'atteinte : {@link NavigationZombie}.</li>
  * </ul>
+ * 01/11 : le « rythme » des objectifs ({@code setNewGoalRate}) n'est plus lu par Minecraft 1.20.1 (les objectifs sont revus
+ * un tick sur deux pour tous) : seul compte vraiment ici la taille des recherches de chemin selon le niveau.
  */
 @Mod.EventBusSubscriber(modid = HeraliszUtils.MODID)
 public final class IaZombies {
@@ -85,10 +91,12 @@ public final class IaZombies {
             System.arraycopy(COMPTE, 0, NIVEAUX, 0, 4);
             java.util.Arrays.fill(COMPTE, 0);
         }
+        // 01/11 : positions des joueurs relevées une fois par passage et par monde (avant : tous les joueurs passés en revue
+        // pour chaque zombie, avec un test par joueur ; même joueur le plus proche, spectateurs exclus comme Minecraft)
+        IdentityHashMap<ServerLevel, double[]> positions = new IdentityHashMap<>(4);
         for (ZombieSurvie z : SUIVIS.toArray(new ZombieSurvie[0])) {
             if ((z.getId() & 3) != quart || z.isRemoved() || !(z.level() instanceof ServerLevel lv)) continue;
-            Player p = lv.getNearestPlayer(z, -1.0);
-            double d = p == null ? Double.MAX_VALUE : p.distanceToSqr(z);
+            double d = plusProche(positions.computeIfAbsent(lv, IaZombies::positions), z.getX(), z.getY(), z.getZ());
             if (d <= proche) {
                 niveau(z, 3, 1.0F);
                 COMPTE[0]++;
@@ -104,6 +112,30 @@ public final class IaZombies {
                 COMPTE[3]++;
             }
         }
+    }
+
+    /** Pieds des joueurs du monde (x, y, z à la suite), sauf les spectateurs. */
+    private static double[] positions(ServerLevel lv) {
+        List<ServerPlayer> joueurs = lv.players();
+        double[] a = new double[joueurs.size() * 3];
+        int n = 0;
+        for (ServerPlayer p : joueurs) {
+            if (p.isSpectator()) continue;
+            a[n++] = p.getX();
+            a[n++] = p.getY();
+            a[n++] = p.getZ();
+        }
+        return n == a.length ? a : Arrays.copyOf(a, n);
+    }
+
+    /** Carré de la distance au joueur le plus proche ; Double.MAX_VALUE sans joueur. */
+    private static double plusProche(double[] a, double x, double y, double z) {
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i < a.length; i += 3) {
+            double dx = a[i] - x, dy = a[i + 1] - y, dz = a[i + 2] - z, d = dx * dx + dy * dy + dz * dz;
+            if (d < best) best = d;
+        }
+        return best;
     }
 
     /** Zombies suivis par niveau d'IA (proche, moyen, loin, endormi), relevé de la dernière seconde complète. */

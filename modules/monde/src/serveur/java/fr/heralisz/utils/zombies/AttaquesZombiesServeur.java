@@ -83,7 +83,14 @@ public final class AttaquesZombiesServeur {
         if (!(e.getEntity() instanceof Mob m) || m.level().isClientSide() || !m.isAlive()) return;
         Genre g = AttaquesZombies.genre(m);
         if (g == null) return;
-        Etat s = ETATS.computeIfAbsent(m, k -> new Etat());
+        // 01/11 : l'état d'un zombie naît à sa première frappe (onAttaque) ; seul le Crawler en a besoin à chaque tick (bond).
+        // Avant : un état créé et cherché dans la table faible à chaque tick pour chaque zombie, même sans geste.
+        Etat s = ETATS.get(m);
+        if (s == null) {
+            if (g != Genre.CRAWLER) return;
+            s = new Etat();
+            ETATS.put(m, s);
+        }
         if (s.debutFrappe >= 0) frappe(m, g, s);
         if (g == Genre.CRAWLER) bond(m, s);
     }

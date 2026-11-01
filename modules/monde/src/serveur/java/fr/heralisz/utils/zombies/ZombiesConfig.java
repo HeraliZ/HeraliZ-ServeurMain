@@ -79,7 +79,9 @@ public final class ZombiesConfig {
         IA_ALLEGEE = b.comment("IA allegee des zombies HeraliZ (24/10) : ils ne cherchent plus de village la nuit, ne cherchent plus",
                         "d'oeufs de tortue a casser, ne visent plus villageois, golems ni tortues (seulement les joueurs, et ce qui les frappe).",
                         "false : IA du zombie de Minecraft complete.").define("ia_allegee", true);
-        IA_RYTHME = b.comment("Tous les combien de ticks un zombie reconsidere ses objectifs (cible, errance). Minecraft : 3.")
+        IA_RYTHME = b.comment("Tous les combien de ticks un zombie reconsidere ses objectifs (cible, errance). Minecraft : 3.",
+                        "01/11 : sans effet sur ce serveur (Minecraft 1.20.1 revoit les objectifs un tick sur deux et ne lit plus ce",
+                        "rythme) ; garde pour ne rien casser. Ce qui allege vraiment : ia_chemins, les attentes et les budgets ci-dessous.")
                 .defineInRange("ia_rythme", 6, 1, 20);
         IA_CHEMINS = b.comment("Taille maximale d'une recherche de chemin, par rapport a Minecraft (1.0). Plus petit : chemins",
                         "longs et compliques abandonnes plus tot, beaucoup moins de calcul quand un joueur est loin ou cache.")

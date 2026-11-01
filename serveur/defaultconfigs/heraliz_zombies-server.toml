@@ -31,6 +31,7 @@
 	#IA allegee des zombies HeraliZ : seulement les joueurs comme cibles, pas de village ni d'oeufs de tortue.
 	ia_allegee = true
 	#Tous les combien de ticks un zombie reconsidere ses objectifs (cible, errance), niveau moyen. Minecraft : 3.
+	#01/11 : sans effet sur ce serveur (Minecraft 1.20.1 revoit les objectifs un tick sur deux et ne lit plus ce rythme).
 	#Range: 1 ~ 20
 	ia_rythme = 6
 	#Taille maximale d'une recherche de chemin, par rapport a Minecraft (1.0), niveau moyen.
