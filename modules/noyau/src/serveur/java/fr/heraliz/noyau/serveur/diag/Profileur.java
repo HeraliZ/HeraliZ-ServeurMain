@@ -83,7 +83,14 @@ public final class Profileur {
         prochainResume = debutMs + 10_000;
         gcDebut = Diag.tempsGc();
         cpuDebut = cpuFil();
-        Systemes.demarrer(srv);
+        try {
+            Systemes.demarrer(srv);
+        } catch (RuntimeException | LinkageError e) {
+            // une mesure qui ne se branche pas (Mohist différent ?) : on retire ce qui l'a été, rien ne reste allumé, et le
+            // profil des piles se fait quand même (le rapport le dit : « rien mesuré »)
+            Systemes.arretUrgent();
+            com.mojang.logging.LogUtils.getLogger().warn("[diag] temps par système non branché pour ce profil : {}", e.toString());
+        }
         releves = new Releves(MAX_NOEUDS);
         actif = true;
         return true;
