@@ -45,6 +45,30 @@ public final class ReseauLoot {
     /** Branché par la partie serveur ; sans elle, la demande est ignorée. */
     public static final Crochet<Demande> FOUILLER_SERVEUR = new Crochet<>();
 
+    /** Dernière table mise en octets et ses octets (01/11, voir {@link #octets}). */
+    private static RaretesObjets.Table tableCodee;
+    private static byte[] tableOctets;
+
+    /**
+     * La table des raretés mise en octets une fois par table (01/11) : elle était refaite pour chaque joueur à sa connexion,
+     * sur le fil du serveur (jusqu'à 115 ms d'un tick, rapport du 29/10 à 01:38). Même contenu envoyé.
+     */
+    private static synchronized byte[] octets(RaretesObjets.Table t) {
+        if (t != tableCodee || tableOctets == null) {
+            io.netty.buffer.ByteBuf brut = io.netty.buffer.Unpooled.buffer();
+            try {
+                t.ecrire(new net.minecraft.network.FriendlyByteBuf(brut));
+                byte[] o = new byte[brut.readableBytes()];
+                brut.readBytes(o);
+                tableOctets = o;
+                tableCodee = t;
+            } finally {
+                brut.release();
+            }
+        }
+        return tableOctets;
+    }
+
     static void enregistrer() {
         CANAL.messageBuilder(Fouiller.class, 1, NetworkDirection.PLAY_TO_SERVER)
                 .encoder((m, b) -> {
@@ -63,7 +87,7 @@ public final class ReseauLoot {
                 })
                 .add();
         CANAL.messageBuilder(Raretes.class, 0, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder((m, b) -> m.table().ecrire(b))
+                .encoder((m, b) -> b.writeBytes(octets(m.table())))
                 .decoder(b -> new Raretes(RaretesObjets.Table.lire(b)))
                 .consumerMainThread((m, ctx) -> {
                     // aucune classe client ici : la table est commune, le dessin la lit (client/RaretesClient)
