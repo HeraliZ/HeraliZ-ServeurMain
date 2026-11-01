@@ -27,7 +27,8 @@
     "TronconsAcces",
     "ActifsCarteMixin",
     "ActifsTronconMixin",
-    "ActifsCacheMixin"
+    "ActifsCacheMixin",
+    "MenuSyncMixin"
   ],
   "injectors": {
     "defaultRequire": 0

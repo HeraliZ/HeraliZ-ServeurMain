@@ -80,6 +80,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue TRONCONS_ACTIFS_LISTE;
    /** tickChunks parcourt la liste des tronçons qui peuvent tourner au lieu de tous les tronçons chargés. */
    public static volatile boolean tronconsActifsListe = true;
+   public static final ForgeConfigSpec.BooleanValue MENUS_UNE_COMPARAISON;
+   /** broadcastChanges : la 2e comparaison d'une case est sautée quand elle repose la même question que la 1re. */
+   public static volatile boolean menusUneComparaison = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -188,6 +191,10 @@ public final class NoyauConfig {
             "tronçons, Minecraft les mélange ensuite au hasard comme avant ; comparée à Minecraft toutes les 60 s). false : comme",
             "Minecraft.")
             .define("troncons_actifs_liste", true);
+      MENUS_UNE_COMPARAISON = b.comment("Minecraft allégé, étape 2 (01/11) : à chaque tick, Minecraft compare deux fois chaque case du menu ouvert de",
+            "chaque joueur à ses copies (NBT complet des armes, sacs, armures). true = quand les deux copies sont le même objet et",
+            "que la 1re comparaison a dit « pareil », la 2e (la même question) est sautée. false : comme Minecraft.")
+            .define("menus_une_comparaison", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -225,6 +232,7 @@ public final class NoyauConfig {
       suiviVoirRapide = SUIVI_VOIR_RAPIDE.get();
       tronconsSansTicket = TRONCONS_SANS_TICKET.get();
       tronconsActifsListe = TRONCONS_ACTIFS_LISTE.get();
+      menusUneComparaison = MENUS_UNE_COMPARAISON.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }

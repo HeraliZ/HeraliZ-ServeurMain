@@ -61,6 +61,8 @@ public final class Allege {
    /** Listes refaites et contrôlées. */
    public static long tronconsActifsRefaits;
    public static long tronconsActifsControles;
+   /** Deuxièmes comparaisons de cases de menu évitées. */
+   public static long menusComparaisonsEvitees;
 
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
@@ -105,6 +107,7 @@ public final class Allege {
       s.append(String.format(Locale.ROOT, " ; tronçons qui tournent par liste %d ticks (%.0f par tick, %d refaites, %d contrôles, %s)",
             tronconsActifsTicks, tronconsActifsTicks == 0 ? 0.0 : (double) tronconsActifsParcourus / tronconsActifsTicks,
             tronconsActifsRefaits, tronconsActifsControles, TronconsActifs.etat()));
+      s.append(String.format(Locale.ROOT, " ; comparaisons de menu évitées %d", menusComparaisonsEvitees));
       ligne.accept(s.append(String.format("%n")).toString());
    }
 }
