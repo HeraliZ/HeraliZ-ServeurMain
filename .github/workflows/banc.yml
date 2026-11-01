@@ -1,0 +1,183 @@
+# Banc de charge : un VRAI serveur HeraliZ (Mohist de la Release « base-serveur » + nos mods de la branche) monté sur une
+# machine de GitHub, avec des bots qui jouent (module banc : /bots), mesuré par /bots mesure et le diagnostic du noyau
+# (/diag). Rien n'est envoyé au Ptero ni au site : AUCUN secret, monde généré sur place puis jeté.
+# Résultat : résumé de la tâche (TPS, ms par tick, mémoire, entités, zombies, tronçons, erreurs, rapports du diagnostic),
+# journal de la tâche, artefact « banc-rapport » (journal complet du serveur, rapports diag/, ramasse-miettes).
+# Lancement : « Run workflow » (onglet Actions, choisir la branche) ; ou un envoi sur une branche de travail (jamais main)
+# qui change CE fichier : réglages par défaut du formulaire (section env du job « banc »). Mode d'emploi : docs/GUIDE.md §12.
+name: Banc de charge
+
+on:
+  workflow_dispatch:
+    inputs:
+      bots:
+        description: "Nombre de bots (1 à 150 ; 10 % dans le tutoriel des bases, le reste par groupes de 5 sur la carte)"
+        type: number
+        default: 100
+      minutes:
+        description: "Minutes de mesure (1 à 20)"
+        type: number
+        default: 5
+      chauffe:
+        description: "Minutes de chauffe au moins avant la mesure (1 à 10 ; prolongée tant que du terrain se crée, 2 fois au plus)"
+        type: number
+        default: 4
+      diag:
+        description: "Diagnostic pendant la mesure : commandes séparées par ; ({s} = secondes de la mesure, {s300} = les mêmes, 300 au plus)"
+        type: string
+        default: "diag start {s}; diag mesure {s300}"
+      monde:
+        description: "Monde généré (la vraie carte n'est pas dans le dépôt)"
+        type: choice
+        options: [normal, plat]
+        default: normal
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/banc.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: banc-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Fabrication à part, sans aucun secret (comme « Serveur HeraliZ ») : seuls les mods changés sont refaits (caches de la
+  # mise en ligne et des branches). Les jars passent au job « banc » par le cache jars-<commit>.
+  fabriquer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('settings.gradle', 'build.gradle', 'gradle.properties', 'gradle/*.gradle', 'modules/*/build.gradle') }}
+          restore-keys: gradle-
+
+      - uses: actions/cache@v4
+        with:
+          path: modules/*/build/libs
+          key: jars-${{ github.sha }}
+          restore-keys: jars-
+
+      - name: Fabriquer les mods modifiés (banc compris)
+        run: python outils/sans_secrets.py python outils/construire.py --si-change
+
+  banc:
+    needs: fabriquer
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONIOENCODING: utf-8
+      BANC: ${{ github.workspace }}/_banc
+      # formulaire (Run workflow), sinon réglages par défaut (envoi sur une branche)
+      BOTS: ${{ inputs.bots || 100 }}
+      MINUTES: ${{ inputs.minutes || 5 }}
+      CHAUFFE: ${{ inputs.chauffe || 4 }}
+      DIAG: ${{ inputs.diag || 'diag start {s}; diag mesure {s300}' }}
+      MONDE: ${{ inputs.monde || 'normal' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Réglages du banc
+        run: |
+          B=$(printf '%s' "$BOTS" | tr -cd '0-9'); B=${B:-100}; [ "$B" -lt 1 ] && B=1; [ "$B" -gt 150 ] && B=150
+          M=$(printf '%s' "$MINUTES" | tr -cd '0-9'); M=${M:-5}; [ "$M" -lt 1 ] && M=1; [ "$M" -gt 20 ] && M=20
+          C=$(printf '%s' "$CHAUFFE" | tr -cd '0-9'); C=${C:-4}; [ "$C" -lt 1 ] && C=1; [ "$C" -gt 10 ] && C=10
+          # une seule ligne de console par commande (les ; séparent les commandes)
+          D=$(printf '%s' "$DIAG" | tr -d '\r\n')
+          P=""; [ "$MONDE" = "plat" ] && P="--plat"
+          { echo "NB=$B"; echo "DUREE=$M"; echo "CH=$C"; echo "PLAT=$P"; echo "DIAG_CMD=$D"; } >> "$GITHUB_ENV"
+          echo "$B bots, $C min de chauffe au moins, $M min de mesure, monde $MONDE, diagnostic : $D"
+          echo "Machine : $(nproc) cœurs, $(free -m | awk '/^Mem:/{print $2}') Mo de mémoire"
+
+      # jars fabriqués par le job « fabriquer », rangés dans livraison/ sans rien recompiler
+      - uses: actions/cache/restore@v4
+        with:
+          path: modules/*/build/libs
+          key: jars-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Ranger les jars fabriqués
+        run: python outils/construire.py --sans-build
+
+      # Mohist télécharge ses bibliothèques (Minecraft, Forge…) au premier démarrage : gardées d'un banc à l'autre
+      - name: Bibliothèques de Mohist (cache)
+        id: libs
+        uses: actions/cache/restore@v4
+        with:
+          path: _banc/libraries
+          key: mohist-libs-${{ hashFiles('serveur/mohist.sha256') }}
+
+      - name: Mohist (Release « base-serveur »)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$BANC"
+          JAR=$(cut -d' ' -f3 serveur/mohist.sha256)
+          gh release download base-serveur --pattern "$JAR" --dir "$BANC" --clobber
+          (cd "$BANC" && sha256sum -c "$GITHUB_WORKSPACE/serveur/mohist.sha256")
+
+      - name: Serveur d'essai (réglages d'essai dans _banc seulement)
+        run: python outils/banc_charge.py preparer "$BANC" $PLAT
+
+      # le serveur fait tourner du code d'autres auteurs (mods, plugins) : aucun jeton dans son environnement
+      - name: Banc (démarrage, bots, chauffe, mesure, arrêt)
+        timeout-minutes: 55
+        run: |
+          python outils/sans_secrets.py python outils/banc_charge.py lancer "$BANC" --bots "$NB" --chauffe "$CH" \
+            --minutes "$DUREE" --diag "$DIAG_CMD" --rapport "$RUNNER_TEMP/banc-rapport" --duree-max 50
+
+      - name: Bibliothèques de Mohist prêtes ?
+        id: libs_pretes
+        if: always() && steps.libs.outputs.cache-hit != 'true'
+        run: |
+          if [ -n "$(find "$BANC/libraries" -name '*.jar' -print -quit 2>/dev/null)" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Garder les bibliothèques de Mohist
+        if: always() && steps.libs_pretes.outputs.ok == 'true'
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: _banc/libraries
+          key: mohist-libs-${{ hashFiles('serveur/mohist.sha256') }}
+
+      # un quota d'artefacts plein ne doit pas faire échouer le banc : tout est aussi dans le résumé et le journal
+      - name: Garder les rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: banc-rapport
+          path: ${{ runner.temp }}/banc-rapport
+          retention-days: 7
+          if-no-files-found: ignore

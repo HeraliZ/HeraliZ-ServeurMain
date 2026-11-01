@@ -1,0 +1,32 @@
+# Commandes tapées par les bots pendant le banc de charge (outils/banc_charge.py les copie dans
+# config/heraliz_banc/commandes.txt du serveur d'essai ; lu par /bots commandes <secondes>, module banc).
+# Une commande par ligne, sans « / » ; une ligne répétée sort plus souvent ; # = commentaire.
+# Jouées avec les droits du bot (un joueur normal) : celles qui sont refusées sur la carte, en combat ou à terre le sont
+# aussi pour lui (c'est aussi un chemin à mesurer).
+
+# permises sur la carte (section [carte] de heraliz_noyau-server.toml)
+clan
+clan info
+clan info
+clan top
+saison
+saison
+saison classement
+saison classement pvp
+extractions
+extractions
+event
+quetes
+journalieres
+home
+home
+base info
+purge
+ping canal
+
+# refusées sur la carte, jouées au spawn ou ailleurs
+spawn
+herals
+herals classement
+kit
+warp
