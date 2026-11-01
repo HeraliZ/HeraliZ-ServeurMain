@@ -69,6 +69,9 @@ public final class Homes {
             T.chat(p, TeleportBase.texte(p, r), ChatFormatting.RED);
             return 0;
         }
+        // 01/11 : l'armoire et ses alentours chargés en tâche de fond pendant le compte à rebours (avant : au départ, sur le
+        // fil du serveur, d'où un gel du serveur quand personne n'était près de la base)
+        TeleportBase.precharger(p, 2);
         Deplacements.attendre(p, "home", () -> partir(p));
         return 1;
     }

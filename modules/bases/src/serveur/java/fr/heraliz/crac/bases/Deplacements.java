@@ -148,16 +148,21 @@ public final class Deplacements {
             T.chat(p, T.t("crac.zone.attendre", "Prochain /rtp dans %s.", T.duree(reste + 999)), ChatFormatting.RED);
             return 0;
         }
-        attendre(p, "zone", () -> partirZone(p));
+        // 01/11 : points d'arrivée tirés dès maintenant, leurs tronçons lus en tâche de fond pendant le compte à rebours
+        long[] points = Points.preparer(p.server.getLevel(MondeBases.BASES));
+        attendre(p, "zone", () -> partirZone(p, points));
         return 1;
     }
 
-    private static void partirZone(ServerPlayer p) {
+    private static void partirZone(ServerPlayer p, long[] points) {
         ServerLevel bases = p.server.getLevel(MondeBases.BASES);
         if (bases == null) {
             return;
         }
-        Vec3 dest = Points.auHasard(bases, p);
+        Vec3 dest = Points.parmi(bases, p, points);
+        if (dest == null) {
+            dest = Points.auHasard(bases, p);   // aucun n'est prêt ou ne convient : le tirage d'avant
+        }
         if (dest == null) {
             T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée : réessaie dans un instant."),
                 ChatFormatting.RED);

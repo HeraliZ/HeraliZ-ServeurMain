@@ -38,7 +38,13 @@ public final class Reapparition {
             return;
         }
         CHOIX.remove(p.getUUID());
-        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new S2CReapparition(TeleportBase.raison(p), TeleportBase.resteMs(p)));
+        int raison = TeleportBase.raison(p);
+        if (raison == TeleportBase.OK) {
+            // 01/11 : « À la base » proposé : les tronçons de l'armoire chargés en tâche de fond pendant l'écran de mort
+            // (avant : à la réapparition, sur le fil du serveur)
+            TeleportBase.precharger(p, 1);
+        }
+        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new S2CReapparition(raison, TeleportBase.resteMs(p)));
     }
 
     public static void traiter(C2SReapparition m, Supplier<Context> ctx) {
@@ -47,6 +53,9 @@ public final class Reapparition {
             // le choix ne compte que pour un joueur mort, juste avant sa demande de réapparition
             if (p != null && !p.isAlive()) {
                 CHOIX.put(p.getUUID(), m.base());
+                if (m.base()) {
+                    TeleportBase.precharger(p, 1);   // ticket de 30 s rafraîchi (long arrêt sur l'écran de mort)
+                }
             }
         });
         ctx.get().setPacketHandled(true);

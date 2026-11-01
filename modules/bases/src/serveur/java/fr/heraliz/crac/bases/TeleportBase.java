@@ -82,6 +82,20 @@ public final class TeleportBase {
         return Deplacements.baseDe(p);
     }
 
+    /**
+     * Les tronçons autour de l'armoire de sa base demandés à Minecraft, qui les lit en tâche de fond ({@link Prechargement},
+     * ticket de 30 s) : {@link #arrivee} les chargeait sur le fil du serveur au moment du départ (/home, réapparition à la
+     * base), 100 à 300 ms de gel quand personne n'était près de la base (01/11). Appelé au début du compte à rebours de
+     * /home et à la mort (« À la base » proposé) ; {@code rayon} en tronçons autour de celui de l'armoire. Rien sans base.
+     */
+    static void precharger(ServerPlayer p, int rayon) {
+        ServerLevel l = p.server.getLevel(MondeBases.BASES);
+        Claim c = l == null ? null : base(p);
+        if (c != null) {
+            Prechargement.precharger(l, new net.minecraft.world.level.ChunkPos(c.anchor()), rayon);
+        }
+    }
+
     /** Raison qui empêche la téléportation maintenant ({@link #OK} si elle est possible). */
     public static int raison(ServerPlayer p) {
         if (p.getPersistentData().getBoolean(Deplacements.EN_MATCH)) {

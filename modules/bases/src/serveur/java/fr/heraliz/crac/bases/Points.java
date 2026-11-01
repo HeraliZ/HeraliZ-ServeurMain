@@ -105,6 +105,78 @@ final class Points {
         return null;
     }
 
+    /** Points tirés d'avance par {@link #preparer} (au plus), et tronçons demandés pour eux en tâche de fond (au plus). */
+    private static final int CANDIDATS = 16, TICKETS_MAX = 4;
+
+    /**
+     * /rtp, 01/11 : des points tirés au hasard avec les règles de {@link #auHasard} (bordure, écart aux bases, zones
+     * interdites, jamais de terrain neuf), dès la commande ; les tronçons de ceux qui ne sont pas chargés (au plus
+     * {@value #TICKETS_MAX}) sont demandés à Minecraft, qui les lit en tâche de fond pendant le compte à rebours. Avant, le
+     * départ en chargeait jusqu'à 6, plus leurs voisins, sur le fil du serveur. Rien n'est chargé ici.
+     */
+    static long[] preparer(ServerLevel level) {
+        RandomSource rnd = level.getRandom();
+        WorldBorder b = level.getWorldBorder();
+        double demi = Math.max(32.0, b.getSize() / 2.0 - 100.0);
+        double rayon = Math.min(BasesReglages.i(BasesReglages.RAYON_DEPART, 1150), demi);
+        int ecart = BasesReglages.i(BasesReglages.ECART_BASES, 120);
+        long[] out = new long[CANDIDATS];
+        int n = 0, tickets = 0;
+        for (int i = 0; i < ESSAIS && n < CANDIDATS; i++) {
+            int x = (int) Math.floor(b.getCenterX() + (rnd.nextDouble() * 2 - 1) * rayon);
+            int z = (int) Math.floor(b.getCenterZ() + (rnd.nextDouble() * 2 - 1) * rayon);
+            if (presDUneBase(level, x, z, ecart) || MondeBases.estBases(level) && fr.heraliz.crac.heraliz.ZonesConstruction.interdit(x, z)) {
+                continue;
+            }
+            if (!level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
+                if (tickets >= TICKETS_MAX || level.dimension() == net.minecraft.world.level.Level.OVERWORLD && !regionPresente(level, x, z)) {
+                    continue;
+                }
+                tickets++;
+                // le tronçon du point et ses voisins (plat() lit à 2 blocs autour), ticket de 30 s
+                Prechargement.precharger(level, new net.minecraft.world.level.ChunkPos(x >> 4, z >> 4), 1);
+            }
+            out[n++] = BlockPos.asLong(x, 0, z);
+        }
+        return java.util.Arrays.copyOf(out, n);
+    }
+
+    /**
+     * Le premier des points tirés par {@link #preparer} où le joueur peut arriver, avec les tests de {@link #auHasard}
+     * (sol plat, place libre, toujours loin des bases), en ne lisant que des tronçons déjà chargés ; null si aucun.
+     */
+    @Nullable
+    static Vec3 parmi(ServerLevel level, ServerPlayer p, long[] points) {
+        int ecart = BasesReglages.i(BasesReglages.ECART_BASES, 120);
+        for (long k : points) {
+            int x = BlockPos.getX(k), z = BlockPos.getZ(k);
+            if (!charges(level, x, z) || presDUneBase(level, x, z, ecart)) {
+                continue;   // pas encore lu, ou une base posée depuis la commande
+            }
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            if (!plat(level, x, y, z)) {
+                continue;
+            }
+            BlockPos pieds = new BlockPos(x, y, z);
+            if (libre(level, p, pieds)) {
+                return Vec3.atBottomCenterOf(pieds);
+            }
+        }
+        return null;
+    }
+
+    /** Les tronçons que {@link #plat} et {@link #libre} lisent autour de (x, z) sont tous chargés (aucun chargement). */
+    private static boolean charges(ServerLevel level, int x, int z) {
+        for (int cx = (x - 2) >> 4; cx <= (x + 2) >> 4; cx++) {
+            for (int cz = (z - 2) >> 4; cz <= (z + 2) >> 4; cz++) {
+                if (level.getChunkSource().getChunkNow(cx, cz) == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /** Le fichier de région du point existe (partie de la carte déjà construite) : rien ne sera généré. */
     private static boolean regionPresente(ServerLevel level, int x, int z) {
         java.nio.file.Path dossier = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(level.dimension(),
