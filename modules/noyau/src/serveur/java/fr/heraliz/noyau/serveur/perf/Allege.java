@@ -52,6 +52,8 @@ public final class Allege {
    public static long suiviControles;
    /** Tests de Bukkit (canSee) répondus par le champ de l'entité. */
    public static long voirRaccourcis;
+   /** Tronçons complets rendus sans ticket UNKNOWN. */
+   public static long tronconsSansTicket;
 
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
@@ -88,6 +90,7 @@ public final class Allege {
                   + " %d changements de section, %d contrôles de paires, %d contrôles complets, %d index refaits (%s) ; canSee lu sur l'entité %d",
             suiviMouvements, suiviCandidats, suiviMouvements == 0 ? 0.0 : (double) suiviCandidats / suiviMouvements, suiviListes,
             suiviSections, suiviEssais, suiviControles, suiviIndexRefaits, SuiviParTroncon.etat(), voirRaccourcis));
+      s.append(String.format(Locale.ROOT, " ; tronçons sans ticket %d", tronconsSansTicket));
       ligne.accept(s.append(String.format("%n")).toString());
    }
 }

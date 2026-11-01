@@ -90,6 +90,11 @@
 	#est lue directement sur l'entité (même réponse ; le vrai test sinon, et une fois sur 4 096 pour comparer). false : le
 	#vrai test de Bukkit à chaque fois.
 	suivi_voir_rapide = true
+	#Minecraft allégé, étape 2 (01/11) : un tronçon déjà complet demandé sur le fil du serveur (getChunk) est rendu
+	#tel quel, sans le ticket « unknown » d'un tick que Minecraft pose à chaque fois (comme Paper ; même tronçon rendu).
+	#Seule différence : un tronçon que plus rien ne tient (aucun joueur, aucun autre ticket) redescend 1 à 2 ticks plus
+	#tôt. false : comme Minecraft.
+	troncons_sans_ticket = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée

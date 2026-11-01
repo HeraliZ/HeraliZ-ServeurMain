@@ -74,6 +74,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue SUIVI_VOIR_RAPIDE;
    /** Test de Bukkit (canSee) du suivi lu directement quand le joueur n'a aucune visibilité inversée. */
    public static volatile boolean suiviVoirRapide = true;
+   public static final ForgeConfigSpec.BooleanValue TRONCONS_SANS_TICKET;
+   /** Tronçon déjà complet rendu par getChunk sans ticket UNKNOWN (comme Paper). */
+   public static volatile boolean tronconsSansTicket = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -172,6 +175,11 @@ public final class NoyauConfig {
             "est lue directement sur l'entité (même réponse ; le vrai test sinon, et une fois sur 4 096 pour comparer). false : le",
             "vrai test de Bukkit à chaque fois.")
             .define("suivi_voir_rapide", true);
+      TRONCONS_SANS_TICKET = b.comment("Minecraft allégé, étape 2 (01/11) : un tronçon déjà complet demandé sur le fil du serveur (getChunk) est rendu",
+            "tel quel, sans le ticket « unknown » d'un tick que Minecraft pose à chaque fois (comme Paper ; même tronçon rendu).",
+            "Seule différence : un tronçon que plus rien ne tient (aucun joueur, aucun autre ticket) redescend 1 à 2 ticks plus",
+            "tôt. false : comme Minecraft.")
+            .define("troncons_sans_ticket", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -207,6 +215,7 @@ public final class NoyauConfig {
       paquetsTronconsPartages = PAQUETS_TRONCONS_PARTAGES.get();
       suiviParTroncon = SUIVI_PAR_TRONCON.get();
       suiviVoirRapide = SUIVI_VOIR_RAPIDE.get();
+      tronconsSansTicket = TRONCONS_SANS_TICKET.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
