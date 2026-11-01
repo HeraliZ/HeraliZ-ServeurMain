@@ -115,9 +115,9 @@ final class BoutiqueServeur {
     // ------------------------------------------------------------------ articles
     static void relireSiChange() {
         try {
-            if (fichierArticles == null || !Files.exists(fichierArticles)) return;
-            long d = Files.getLastModifiedTime(fichierArticles).toMillis();
-            if (d == dateArticles) return;
+            if (fichierArticles == null) return;
+            long d = DatesFichiers.date(fichierArticles);   // relevée à part (01/11), 0 : fichier absent
+            if (d == 0 || d == dateArticles) return;
             dateArticles = d;
             List<Article> l = new ArrayList<>();
             JsonObject o = JsonParser.parseString(Files.readString(fichierArticles, StandardCharsets.UTF_8)).getAsJsonObject();

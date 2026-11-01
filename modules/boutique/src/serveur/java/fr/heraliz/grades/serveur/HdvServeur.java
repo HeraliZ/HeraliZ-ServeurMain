@@ -264,9 +264,9 @@ public final class HdvServeur {
 
     private static void relireReglages() {
         try {
-            if (fichierReglages == null || !Files.exists(fichierReglages)) return;
-            long d = Files.getLastModifiedTime(fichierReglages).toMillis();
-            if (d == dateReglages) return;
+            if (fichierReglages == null) return;
+            long d = DatesFichiers.date(fichierReglages);   // relevée à part (01/11), 0 : fichier absent
+            if (d == 0 || d == dateReglages) return;
             dateReglages = d;
             JsonObject o = JsonParser.parseString(Files.readString(fichierReglages, StandardCharsets.UTF_8)).getAsJsonObject();
             int vm = o.has("ventes_max") ? o.get("ventes_max").getAsInt() : 5;
