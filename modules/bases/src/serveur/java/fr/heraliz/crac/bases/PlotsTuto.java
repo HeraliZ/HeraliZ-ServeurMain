@@ -194,7 +194,27 @@ public final class PlotsTuto extends SafeSavedData {
      * attribuée, tronçons demandés à Minecraft et murs mis en chantier, pour que tout soit prêt à son arrivée (01/11).
      */
     static void preparer(MinecraftServer server, UUID u) {
-        attribuer(server, u);
+        prete(server, u);
+    }
+
+    /**
+     * La parcelle du joueur (attribuée au besoin) est chargée autour de son point d'arrivée (3 × 3 tronçons) : l'envoi et le
+     * retour à la cabane n'ont plus rien à charger sur le fil du serveur (01/11). Sinon, ses tronçons (5 × 5, toute la
+     * parcelle) sont demandés à Minecraft, qui les lit ou les crée en tâche de fond, et c'est faux. Vrai aussi sans
+     * parcelle possible (monde absent ou plein : l'envoi le dit au joueur).
+     */
+    static boolean prete(MinecraftServer server, UUID u) {
+        int n = attribuer(server, u);
+        ServerLevel l = server.getLevel(MondeBases.TUTO);
+        if (n < 0 || l == null) {
+            return true;
+        }
+        ChunkPos centre = new ChunkPos(centreX(n) >> 4, centreZ(n) >> 4);
+        if (Prechargement.pret(l, centre, 1)) {
+            return true;
+        }
+        Prechargement.precharger(l, centre, 2);
+        return false;
     }
 
     /** Rayon (en tronçons) autour du centre qui couvre la parcelle et son anneau de murs. */

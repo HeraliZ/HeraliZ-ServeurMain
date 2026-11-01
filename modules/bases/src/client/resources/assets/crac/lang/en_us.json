@@ -631,6 +631,7 @@
   "crac.tuto.monde_absent": "The tutorial world does not exist on this server (crac:tuto).",
   "crac.tuto.nouveau_monde": "[Tutorial] The tutorial now has its own world: it starts over, on your own plot.",
   "crac.tuto.pas_de_parcelle": "No free plot in the tutorial world: try again in a moment.",
+  "crac.tuto.preparation": "[Tutorial] Preparing your plot…",
   "crac.home.arrive": "Welcome home: you are in front of your base’s cupboard.",
   "crac.home.obstrue_tc": "The spot in front of your base’s cupboard is blocked: clear it (or tell your clan).",
   "crac.tpbase.sans_base": "Your clan has no base (tool cupboard placed on the map).",

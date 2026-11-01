@@ -501,7 +501,20 @@ public final class Tutoriel {
             }
         }
         if (dest == null) {
+            // 01/11 : sa parcelle d'abord chargée en tâche de fond (nouvel essai à la seconde suivante), jamais sur le fil du
+            // serveur
+            if (!PlotsTuto.prete(p.server, p.getUUID())) {
+                avertir(p, T.t("crac.tuto.preparation", "[Tuto] Préparation de ta parcelle…"));
+                return;
+            }
             dest = PlotsTuto.arrivee(p);   // sa parcelle (28/10 ; avant : un point au hasard du monde)
+        } else {
+            net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(net.minecraft.core.BlockPos.containing(dest));
+            if (!Prechargement.pret(bases, c, 1)) {
+                Prechargement.precharger(bases, c, 1);   // sa cabane lue en tâche de fond, retour à la seconde suivante
+                avertir(p, T.t("crac.tuto.preparation", "[Tuto] Préparation de ta parcelle…"));
+                return;
+            }
         }
         if (dest == null) {
             return;
@@ -586,6 +599,10 @@ public final class Tutoriel {
                     // parcelle, tronçons et murs préparés pendant que Varga parle (01/11 : 1,3 s de gel à l'arrivée)
                     actions.add(() -> PlotsTuto.preparer(p.server, p.getUUID()));
                 } else if (t >= T_ENVOI_VARGA) {
+                    if (attendreParcelle(p)) {
+                        e.setValue(t + 1);
+                        continue;
+                    }
                     it.remove();
                     actions.add(() -> envoyer(p, force));
                     continue;
@@ -598,6 +615,10 @@ public final class Tutoriel {
             } else if (t == T_TITRE_3) {
                 actions.add(() -> titre3(p));
             } else if (t >= T_ENVOI) {
+                if (attendreParcelle(p)) {
+                    e.setValue(t + 1);
+                    continue;
+                }
                 it.remove();
                 actions.add(() -> envoyer(p, force));
                 continue;
@@ -613,7 +634,34 @@ public final class Tutoriel {
         }
     }
 
+    /** Ticks déjà attendus pour la parcelle avant l'envoi (01/11). */
+    private static final Map<UUID, Integer> PARCELLE = new HashMap<>();
+    /** Attente de la parcelle avant l'envoi, au plus (ticks) : 10 s ; ensuite l'envoi se fait comme avant. */
+    private static final int ATTENTE_PARCELLE = 200;
+
+    /**
+     * Avant l'envoi au tutoriel (01/11, demande du propriétaire : plus de gel) : tant que sa parcelle n'est pas chargée en
+     * tâche de fond ({@link PlotsTuto#prete}), le joueur attend au spawn, « [Tuto] Préparation de ta parcelle… », 10 s au
+     * plus. Vrai : on attend encore.
+     */
+    private static boolean attendreParcelle(ServerPlayer p) {
+        if (PlotsTuto.prete(p.server, p.getUUID())) {
+            PARCELLE.remove(p.getUUID());
+            return false;
+        }
+        int n = PARCELLE.merge(p.getUUID(), 1, Integer::sum);
+        if (n > ATTENTE_PARCELLE) {
+            PARCELLE.remove(p.getUUID());
+            return false;
+        }
+        if (n == 1) {
+            T.barre(p, T.t("crac.tuto.preparation", "[Tuto] Préparation de ta parcelle…"), ChatFormatting.YELLOW);
+        }
+        return true;
+    }
+
     static void oublier(UUID joueur) {
+        PARCELLE.remove(joueur);
         AVERTI.remove(joueur);
         GUIDES.remove(joueur);
         ATTENTES.remove(joueur);

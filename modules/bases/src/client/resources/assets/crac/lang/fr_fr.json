@@ -631,6 +631,7 @@
   "crac.tuto.monde_absent": "Le monde du tutoriel n'existe pas sur ce serveur (crac:tuto).",
   "crac.tuto.nouveau_monde": "[Tuto] Le tutoriel a maintenant son propre monde : il repart du début, sur ta parcelle.",
   "crac.tuto.pas_de_parcelle": "Aucune parcelle libre dans le monde du tutoriel : réessaie dans un instant.",
+  "crac.tuto.preparation": "[Tuto] Préparation de ta parcelle…",
   "crac.home.arrive": "Bienvenue chez toi : te voici devant l’armoire de ta base.",
   "crac.home.obstrue_tc": "La place devant l’armoire de ta base est bouchée : dégage-la (ou préviens ton clan).",
   "crac.tpbase.sans_base": "Ton clan n’a pas de base (armoire à outils posée sur la carte).",
