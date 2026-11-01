@@ -214,7 +214,9 @@ public final class StructureIntegrity {
     }
 
     private static boolean sameOccupants(List<Occupant> a, List<Occupant> b) {
-        return a.size() == b.size() && new HashSet<>(a).equals(new HashSet<>(b));
+        // HeraliZ (01/11, perf) : même comparaison (comme deux ensembles) sans deux HashSet neufs par bloc de base chargé ;
+        // un bloc porte une à quatre pièces
+        return a.size() == b.size() && a.containsAll(b) && b.containsAll(a);
     }
 
     /**
