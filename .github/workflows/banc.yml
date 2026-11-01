@@ -1,8 +1,9 @@
 # Banc de charge : un VRAI serveur HeraliZ (Mohist de la Release « base-serveur » + nos mods de la branche) monté sur une
 # machine de GitHub, avec des bots qui jouent (module banc : /bots), mesuré par /bots mesure et le diagnostic du noyau
 # (/diag). Rien n'est envoyé au Ptero ni au site : AUCUN secret, monde généré sur place puis jeté.
-# Résultat : résumé de la tâche (TPS, ms par tick, mémoire, entités, zombies, tronçons, erreurs, rapports du diagnostic),
-# journal de la tâche, artefact « banc-rapport » (journal complet du serveur, rapports diag/, ramasse-miettes).
+# Résultat : résumé de la tâche (TPS, ms par tick, ms par tick hors banc, machine Java réelle, mémoire, rythmes, tronçons et
+# ce qui les tient, temps par mod, pics, A/B, erreurs, rapports du diagnostic), journal de la tâche, artefact
+# « banc-rapport » (journal complet du serveur, rapports diag/, ramasse-miettes).
 # Lancement : « Run workflow » (onglet Actions, choisir la branche) ; ou un envoi sur une branche de travail (jamais main)
 # qui change CE fichier : réglages par défaut du formulaire (section env du job « banc »). Mode d'emploi : docs/GUIDE.md §12.
 name: Banc de charge
@@ -31,6 +32,27 @@ on:
         type: choice
         options: [normal, plat]
         default: normal
+      scenario:
+        description: "Scénario : normal ; connexions (coût d'une connexion, une toutes les 10 s) ; teleportations (pics : extraction de groupe, 10 /spawn, groupe à la borne)"
+        type: choice
+        options: [normal, connexions, teleportations]
+        default: normal
+      regles:
+        description: "Essai A/B : règles de jeu changées dans TOUS les mondes, séparées par ; (ex. randomTickSpeed 0). Vide : aucune"
+        type: string
+        default: ""
+      ab:
+        description: "Avec des règles : une mesure SANS puis une mesure AVEC (deux fois la durée de mesure)"
+        type: boolean
+        default: false
+      distances:
+        description: "Distances vue/simulation du serveur (Ptero du 01/11 : 6/4)"
+        type: string
+        default: "6/4"
+      rythmes:
+        description: "Pour 150 joueurs : morts/connexions/voyages par minute, puis % du temps en combat (off : comme avant)"
+        type: string
+        default: "5/2/4/25"
   push:
     branches-ignore: [main]
     paths: [".github/workflows/banc.yml"]
@@ -84,7 +106,7 @@ jobs:
   banc:
     needs: fabriquer
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 95
     env:
       PYTHONIOENCODING: utf-8
       BANC: ${{ github.workspace }}/_banc
@@ -94,6 +116,11 @@ jobs:
       CHAUFFE: ${{ inputs.chauffe || 4 }}
       DIAG: ${{ inputs.diag || 'diag start {s}; diag mesure {s300}' }}
       MONDE: ${{ inputs.monde || 'normal' }}
+      SCENARIO: ${{ inputs.scenario || 'normal' }}
+      REGLES: ${{ inputs.regles || '' }}
+      AB: ${{ inputs.ab && 'oui' || 'non' }}
+      DISTANCES: ${{ inputs.distances || '6/4' }}
+      RYTHMES: ${{ inputs.rythmes || '5/2/4/25' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -116,8 +143,19 @@ jobs:
           # une seule ligne de console par commande (les ; séparent les commandes)
           D=$(printf '%s' "$DIAG" | tr -d '\r\n')
           P=""; [ "$MONDE" = "plat" ] && P="--plat"
-          { echo "NB=$B"; echo "DUREE=$M"; echo "CH=$C"; echo "PLAT=$P"; echo "DIAG_CMD=$D"; } >> "$GITHUB_ENV"
-          echo "$B bots, $C min de chauffe au moins, $M min de mesure, monde $MONDE, diagnostic : $D"
+          case "$SCENARIO" in normal|connexions|teleportations) S="$SCENARIO" ;; *) S=normal ;; esac
+          # règles de jeu : lettres, chiffres, espaces, ; . _ - seulement ; A/B seulement s'il y en a
+          R=$(printf '%s' "$REGLES" | tr -cd 'A-Za-z0-9_ ;.-')
+          A=""; [ "$AB" = "oui" ] && [ -n "$(printf '%s' "$R" | tr -d ' ;')" ] && A="--ab"
+          V=$(printf '%s' "$DISTANCES" | cut -d/ -f1 | tr -cd '0-9'); V=${V:-6}; [ "$V" -lt 2 ] && V=2; [ "$V" -gt 32 ] && V=32
+          SIM=$(printf '%s' "$DISTANCES" | cut -s -d/ -f2 | tr -cd '0-9'); SIM=${SIM:-4}; [ "$SIM" -lt 2 ] && SIM=2; [ "$SIM" -gt 32 ] && SIM=32
+          RY=$(printf '%s' "$RYTHMES" | tr -cd 'A-Za-z0-9./'); RY=${RY:-5/2/4/25}
+          # durée au plus : 60 min, plus une mesure de plus en A/B
+          DM=60; [ -n "$A" ] && DM=$((60 + M + 3))
+          { echo "NB=$B"; echo "DUREE=$M"; echo "CH=$C"; echo "PLAT=$P"; echo "DIAG_CMD=$D"; echo "SCEN=$S"; echo "REGLES_CMD=$R";
+            echo "AB_OPT=$A"; echo "VUE=$V"; echo "SIMU=$SIM"; echo "RYTHMES_CMD=$RY"; echo "DUREE_MAX=$DM"; } >> "$GITHUB_ENV"
+          echo "$B bots, $C min de chauffe au moins, $M min de mesure, monde $MONDE, distances $V/$SIM, scénario $S, rythmes $RY"
+          echo "Règles de jeu : ${R:-aucune} ${A:+(A/B : sans puis avec)} ; diagnostic : $D"
           echo "Machine : $(nproc) cœurs, $(free -m | awk '/^Mem:/{print $2}') Mo de mémoire"
 
       # jars fabriqués par le job « fabriquer », rangés dans livraison/ sans rien recompiler
@@ -148,14 +186,15 @@ jobs:
           (cd "$BANC" && sha256sum -c "$GITHUB_WORKSPACE/serveur/mohist.sha256")
 
       - name: Serveur d'essai (réglages d'essai dans _banc seulement)
-        run: python outils/banc_charge.py preparer "$BANC" $PLAT
+        run: python outils/banc_charge.py preparer "$BANC" $PLAT --vue "$VUE" --simulation "$SIMU"
 
       # le serveur fait tourner du code d'autres auteurs (mods, plugins) : aucun jeton dans son environnement
-      - name: Banc (démarrage, bots, chauffe, mesure, arrêt)
-        timeout-minutes: 55
+      - name: Banc (démarrage, terrain, bots, chauffe, mesure, arrêt)
+        timeout-minutes: 85
         run: |
           python outils/sans_secrets.py python outils/banc_charge.py lancer "$BANC" --bots "$NB" --chauffe "$CH" \
-            --minutes "$DUREE" --diag "$DIAG_CMD" --rapport "$RUNNER_TEMP/banc-rapport" --duree-max 50
+            --minutes "$DUREE" --diag "$DIAG_CMD" --scenario "$SCEN" --rythmes "$RYTHMES_CMD" --regles "$REGLES_CMD" $AB_OPT \
+            --rapport "$RUNNER_TEMP/banc-rapport" --duree-max "$DUREE_MAX"
 
       - name: Bibliothèques de Mohist prêtes ?
         id: libs_pretes
