@@ -45,7 +45,13 @@ import java.util.stream.Stream;
  *     <li><b>Blocages (toujours actif, {@code [diag] auto})</b> : la durée de chaque tick est mesurée (deux lectures
  *     d'horloge, rien d'autre). Un fil « veilleur » regarde toutes les 20 ms si le tick en cours dure plus que le seuil ;
  *     seulement alors, il relève la pile du fil serveur toutes les 5 ms jusqu'à la fin du tick. Rapport écrit dans
- *     {@code diag/} à la racine du serveur (mod, catégorie, lignes, piles, GC, mémoire, entités), opérateurs prévenus.</li>
+ *     {@code diag/} à la racine du serveur (mod, catégorie, lignes, piles, GC, mémoire, entités, dernières commandes),
+ *     opérateurs prévenus.</li>
+ *     <li><b>Blocages entre deux ticks (01/11)</b> : les commandes et les paquets des joueurs ne passent pas DANS le tick,
+ *     mais juste après, dans le temps laissé libre jusqu'au tick suivant : une commande qui gelait le serveur 2 s n'était
+ *     vue ni ici, ni par le temps par tick de spark. Le veilleur regarde aussi ce temps-là : plus de 50 ms + le seuil
+ *     après la fin d'un tick sans que le suivant ait commencé, il relève la pile de la même façon, et le rapport part au
+ *     début du tick suivant (même dossier, même alerte, « entre deux ticks »).</li>
  *     <li><b>Enregistrement ({@code /diag start})</b> : relevé de la pile toutes les 10 ms pendant les ticks, résumé dans le
  *     chat toutes les 10 s à celui qui l'a lancé, rapport complet à la fin.</li>
  * </ul>
@@ -65,6 +71,11 @@ public final class Diag {
     private static volatile long debutTick;
     private static volatile boolean dansTick;
     private static volatile long gcDebutTick;
+    /** Fin du dernier tick (System.nanoTime), 0 avant le premier ; temps du GC à ce moment. */
+    private static volatile long finTick;
+    private static volatile long gcFinTick;
+    /** Après la fin d'un tick, Minecraft peut faire ses tâches 50 ms (commandes, paquets) sans retarder le jeu. */
+    private static final long LIBRE_APRES_TICK = 50_000_000L;
     private static Thread veilleur;
     private static final ExecutorService ECRIVAIN = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "HeraliZ diag (rapports)");
@@ -79,6 +90,8 @@ public final class Diag {
     // blocage en cours (rempli par le veilleur, lu par le fil serveur à la fin du tick)
     private static final Object VERROU = new Object();
     private static Profil blocage;
+    /** blocage entre deux ticks en cours (rempli par le veilleur, lu au début du tick suivant) */
+    private static Profil blocageEntre;
     private static long dernierRapportBlocage, derniereAnnonce;
 
     // enregistrement demandé
@@ -92,8 +105,9 @@ public final class Diag {
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent e) -> demarrer(e.getServer()));
         MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> arreter());
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, (TickEvent.ServerTickEvent e) -> {
-            if (e.phase == TickEvent.Phase.START) debut();
+            if (e.phase == TickEvent.Phase.START) debut(e.getServer());
         });
+        DernieresCommandes.enregistrer();
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (TickEvent.ServerTickEvent e) -> {
             if (e.phase == TickEvent.Phase.END) fin(e.getServer());
         });
@@ -115,20 +129,38 @@ public final class Diag {
         synchronized (VERROU) {
             session = null;
             blocage = null;
+            blocageEntre = null;
         }
         serveur = null;
+        finTick = 0;
     }
 
-    private static void debut() {
+    private static void debut(MinecraftServer srv) {
         if (filServeur == null) filServeur = Thread.currentThread();
-        gcDebutTick = tempsGc();
-        debutTick = System.nanoTime();
+        long maintenant = System.nanoTime(), gc = tempsGc();
+        long fin = finTick;
+        Profil entre;
+        synchronized (VERROU) {
+            entre = blocageEntre;
+            blocageEntre = null;
+        }
+        gcDebutTick = gc;
+        debutTick = maintenant;
         dansTick = true;
+        // travail fait depuis la fin du tick précédent, au-delà du temps libre normal (au moins autant)
+        if (entre != null && entre.releves > 0 && fin != 0) {
+            rapportBlocage(srv, entre, (maintenant - fin - LIBRE_APRES_TICK) / 1_000_000.0, gc - gcFinTick, true, fin);
+        }
     }
 
     private static void fin(MinecraftServer srv) {
+        long maintenant = System.nanoTime(), gc = tempsGc();
+        // fin du tick notée AVANT dansTick = false : le veilleur ne prend jamais la fin d'un long tick (rapport compris)
+        // pour du travail « entre deux ticks »
+        finTick = maintenant;
+        gcFinTick = gc;
         dansTick = false;
-        double ms = (System.nanoTime() - debutTick) / 1_000_000.0;
+        double ms = (maintenant - debutTick) / 1_000_000.0;
         TICKS[ticksPos] = ms;
         ticksPos = (ticksPos + 1) % TICKS_GARDES;
         if (ticksNb < TICKS_GARDES) ticksNb++;
@@ -143,7 +175,7 @@ public final class Diag {
                 sessionMsMax = Math.max(sessionMsMax, ms);
             }
         }
-        if (b != null && b.releves > 0) rapportBlocage(srv, b, ms, tempsGc() - gcDebutTick);
+        if (b != null && b.releves > 0) rapportBlocage(srv, b, ms, gc - gcDebutTick, false, debutTick);
         suivreSession(srv);
     }
 
@@ -157,17 +189,28 @@ public final class Diag {
                     enSession = session != null;
                 }
                 long seuil = NoyauConfig.DIAG_SEUIL_MS.get() * 1_000_000L;
-                boolean bloque = t != null && dansTick && NoyauConfig.DIAG_AUTO.get() && System.nanoTime() - debutTick > seuil;
-                if (t != null && dansTick && (bloque || enSession)) {
+                boolean auto = NoyauConfig.DIAG_AUTO.get(), dans = dansTick;
+                long maintenant = System.nanoTime(), fin = finTick, debut = debutTick;
+                boolean bloque = t != null && dans && auto && maintenant - debut > seuil;
+                // entre deux ticks : commandes, paquets des joueurs, tâches (01/11)
+                boolean bloqueEntre = t != null && !dans && auto && fin != 0 && maintenant - fin > LIBRE_APRES_TICK + seuil;
+                if (t != null && (bloque || bloqueEntre || (dans && enSession))) {
                     StackTraceElement[] pile = t.getStackTrace();
                     synchronized (VERROU) {
-                        if (bloque) {
+                        // 01/11 : pile relevée pendant le MÊME tick (sinon un tick fini entre-temps laissait un relevé au
+                        // tick suivant : faux rapports « blocage de 2 ms » des 29 et 31/10)
+                        if (bloque && dansTick && debutTick == debut) {
                             if (blocage == null) blocage = new Profil();
                             if (blocage.releves < 4000) blocage.ajouter(pile);
                         }
-                        if (session != null) session.ajouter(pile);
+                        // pile relevée pendant le même temps entre deux ticks (pas déjà dans le tick suivant)
+                        if (bloqueEntre && !dansTick && finTick == fin) {
+                            if (blocageEntre == null) blocageEntre = new Profil();
+                            if (blocageEntre.releves < 4000) blocageEntre.ajouter(pile);
+                        }
+                        if (session != null && dans) session.ajouter(pile);
                     }
-                    Thread.sleep(bloque ? 5 : 10);
+                    Thread.sleep(bloque || bloqueEntre ? 5 : 10);
                 } else {
                     Thread.sleep(20);
                 }
@@ -185,26 +228,41 @@ public final class Diag {
     }
 
     // ------------------------------------------------------------------ blocages
-    private static void rapportBlocage(MinecraftServer srv, Profil b, double ms, long gcMs) {
+    /**
+     * {@code entreTicks} : travail fait après la fin d'un tick (commandes, paquets), {@code ms} au-delà du temps libre
+     * normal. {@code debutNanos} : début du tick, ou fin du tick précédent (la commande jouée jusqu'à 2 s avant est nommée).
+     */
+    private static void rapportBlocage(MinecraftServer srv, Profil b, double ms, long gcMs, boolean entreTicks, long debutNanos) {
         long maintenant = System.currentTimeMillis();
         String resume = b.resume();
-        LOG.warn("[diag] blocage de {} ms : {}", Math.round(ms), resume);
+        String commande = DernieresCommandes.depuis(debutNanos - 2_000_000_000L);
+        LOG.warn("[diag] blocage de {} ms{} : {}{}", Math.round(ms), entreTicks ? " entre deux ticks" : "", resume,
+                commande == null ? "" : " — dernière commande : " + commande);
         if (maintenant - dernierRapportBlocage < 10_000) return;   // au plus un fichier toutes les 10 s
         dernierRapportBlocage = maintenant;
         StringBuilder t = new StringBuilder();
-        t.append("HeraliZ — rapport de blocage\n");
+        t.append("HeraliZ — rapport de blocage").append(entreTicks ? " entre deux ticks (commandes, paquets des joueurs, tâches)" : "").append('\n');
         t.append("Date : ").append(LocalDateTime.now()).append('\n');
-        t.append(String.format(Locale.ROOT, "Durée du tick : %.0f ms (seuil %d ms)%n", ms, NoyauConfig.DIAG_SEUIL_MS.get()));
-        t.append("Ramasse-miettes (GC) pendant le tick : ").append(gcMs).append(" ms").append(gcMs > ms / 2 ? "  <- la mémoire est en cause" : "").append('\n');
+        if (entreTicks) {
+            t.append(String.format(Locale.ROOT, "Travail entre deux ticks : %.0f ms au moins, au-delà des 50 ms laissés après chaque tick (seuil %d ms)%n",
+                    ms, NoyauConfig.DIAG_SEUIL_MS.get()));
+        } else {
+            t.append(String.format(Locale.ROOT, "Durée du tick : %.0f ms (seuil %d ms)%n", ms, NoyauConfig.DIAG_SEUIL_MS.get()));
+        }
+        t.append("Ramasse-miettes (GC) pendant ce temps : ").append(gcMs).append(" ms").append(gcMs > ms / 2 ? "  <- la mémoire est en cause" : "").append('\n');
         etatServeur(srv, t::append);
         t.append('\n');
+        DernieresCommandes.ecrire(t, System.nanoTime());
         b.ecrire(t);
         String nom = "blocage-" + LocalDateTime.now().format(NOM) + ".txt";
         ecrire(srv, nom, t.toString());
         if (NoyauConfig.DIAG_ANNONCER.get() && maintenant - derniereAnnonce >= 30_000) {
             derniereAnnonce = maintenant;
-            Component c = Component.translatableWithFallback("noyau.diag.blocage", "[Diag] Blocage de %s ms (%s) — rapport diag/%s",
-                    String.valueOf(Math.round(ms)), resume, nom).withStyle(s -> s.withColor(0xFFB060));
+            Component c = (entreTicks
+                    ? Component.translatableWithFallback("noyau.diag.blocage_entre", "[Diag] Blocage de %s ms entre deux ticks (%s) — rapport diag/%s",
+                    String.valueOf(Math.round(ms)), resume, nom)
+                    : Component.translatableWithFallback("noyau.diag.blocage", "[Diag] Blocage de %s ms (%s) — rapport diag/%s",
+                    String.valueOf(Math.round(ms)), resume, nom)).withStyle(s -> s.withColor(0xFFB060));
             for (ServerPlayer p : srv.getPlayerList().getPlayers()) if (p.hasPermissions(4)) p.sendSystemMessage(c);
         }
     }

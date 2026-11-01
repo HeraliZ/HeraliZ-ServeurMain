@@ -23,6 +23,7 @@
   "noyau.bots.pseudo_reserve": "This name is reserved by the server.",
   "noyau.reponse.personne": "Nobody to reply to.",
   "noyau.diag.blocage": "[Diag] Lag spike of %s ms (%s) — report diag/%s",
+  "noyau.diag.blocage_entre": "[Diag] Lag spike of %s ms between two ticks (%s) — report diag/%s",
   "noyau.diag.direct": "[Diag] %s ms/tick (max %s), %s TPS — %s",
   "noyau.diag.fin": "[Diag] Done: report diag/%s",
   "noyau.diag.auto": "[Diag] Automatic reports: %s (threshold %s ms), in diag/",

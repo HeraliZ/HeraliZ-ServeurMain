@@ -23,6 +23,7 @@
   "noyau.bots.pseudo_reserve": "Ce pseudo est réservé au serveur.",
   "noyau.reponse.personne": "Personne à qui répondre.",
   "noyau.diag.blocage": "[Diag] Blocage de %s ms (%s) — rapport diag/%s",
+  "noyau.diag.blocage_entre": "[Diag] Blocage de %s ms entre deux ticks (%s) — rapport diag/%s",
   "noyau.diag.direct": "[Diag] %s ms/tick (max %s), %s TPS — %s",
   "noyau.diag.fin": "[Diag] Terminé : rapport diag/%s",
   "noyau.diag.auto": "[Diag] Rapports automatiques : %s (seuil %s ms), dans diag/",

@@ -23,6 +23,7 @@
   "noyau.bots.pseudo_reserve": "Этот ник зарезервирован сервером.",
   "noyau.reponse.personne": "Некому ответить.",
   "noyau.diag.blocage": "[Diag] Зависание на %s мс (%s) — отчёт diag/%s",
+  "noyau.diag.blocage_entre": "[Diag] Зависание на %s мс между двумя тиками (%s) — отчёт diag/%s",
   "noyau.diag.direct": "[Diag] %s мс/тик (макс. %s), %s TPS — %s",
   "noyau.diag.fin": "[Diag] Готово: отчёт diag/%s",
   "noyau.diag.auto": "[Diag] Автоотчёты: %s (порог %s мс), в diag/",

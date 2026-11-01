@@ -228,16 +228,27 @@ public final class Moniteur {
         }
     }
 
-    /** 20 relevés (minutes) qui ne redescendent jamais de plus de 2 %, et au moins +50 % (et un minimum selon la liste). */
+    /**
+     * 20 relevés (minutes) qui ne redescendent jamais de plus de 2 %, et au moins +50 % (et un minimum selon la liste).
+     * 01/11 (fausses alertes, 15 rapports « fuite » du 27 au 29/10) : pour les tronçons, la hausse doit venir petit à petit
+     * (au moins 10 relevés sur 20 en hausse) : un joueur qui arrive dans un monde y fait charger d'un coup ~2 000 tronçons
+     * (sa vue et leur bordure), puis le nombre reste plat ; ce n'est pas une fuite. Pour la mémoire, pas avant 40 minutes
+     * de relevés : elle monte toujours après un démarrage.
+     */
     private static boolean fuit(String nom, Deque<Long> s) {
         if (s.size() < FENETRE + 1) return false;
+        if (nom.startsWith("mémoire") && s.size() < 2 * FENETRE) return false;
         List<Long> l = new ArrayList<>(s);
         List<Long> f = l.subList(l.size() - FENETRE - 1, l.size());
         long debut = f.get(0), fin = f.get(f.size() - 1);
         long minimum = nom.startsWith("mémoire") ? 400 : nom.startsWith("tronçons") ? 500 : 200;
         if (fin < debut * 3 / 2 || fin - debut < minimum) return false;
-        for (int i = 1; i < f.size(); i++) if (f.get(i) < f.get(i - 1) * 0.98) return false;
-        return true;
+        int hausses = 0;
+        for (int i = 1; i < f.size(); i++) {
+            if (f.get(i) < f.get(i - 1) * 0.98) return false;
+            if (f.get(i) > f.get(i - 1)) hausses++;
+        }
+        return !nom.startsWith("tronçons") || hausses >= FENETRE / 2;
     }
 
     private static void alerter(MinecraftServer srv, String nom, Deque<Long> s) {
