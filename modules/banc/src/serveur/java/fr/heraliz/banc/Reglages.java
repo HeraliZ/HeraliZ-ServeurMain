@@ -38,13 +38,33 @@ final class Reglages {
         constructionMax = d.constructionMax;
     }
 
-    /** Statistiques depuis le dernier {@code /bots etat} (remises à zéro à chaque lecture). */
+    /**
+     * Statistiques depuis le dernier {@code /bots etat} (remises à zéro à chaque lecture). Les comptes remis à zéro sont
+     * gardés à part : {@link #totaux} donne tout depuis le démarrage ({@link Mesure}, 01/11).
+     */
     static final class Stats {
+        /** Noms des actions, dans l'ordre de {@link #totaux}. */
+        static final String[] NOMS = {"tirs", "lancers", "soins", "fouilles", "frappes", "largages", "morts", "constructions"};
+
         long tirs, lancers, soins, fouilles, frappes, largages, morts, constructions, depuis = System.currentTimeMillis();
+        private final long[] avant = new long[NOMS.length];
 
         void zero() {
+            long[] a = actuels();
+            for (int i = 0; i < a.length; i++) avant[i] += a[i];
             tirs = lancers = soins = fouilles = frappes = largages = morts = constructions = 0;
             depuis = System.currentTimeMillis();
+        }
+
+        private long[] actuels() {
+            return new long[]{tirs, lancers, soins, fouilles, frappes, largages, morts, constructions};
+        }
+
+        /** Actions depuis le démarrage du serveur (remises à zéro comprises), dans l'ordre de {@link #NOMS}. */
+        long[] totaux() {
+            long[] a = actuels();
+            for (int i = 0; i < a.length; i++) a[i] += avant[i];
+            return a;
         }
     }
 }

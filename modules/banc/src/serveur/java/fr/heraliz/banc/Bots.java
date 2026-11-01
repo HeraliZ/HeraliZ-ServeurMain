@@ -35,6 +35,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 
 import javax.annotation.Nullable;
@@ -64,6 +65,10 @@ import java.util.UUID;
  * Connexion AuthMe faite pour eux (inscription à un mot de passe au hasard, puis connexion forcée). Noms {@code HzBot001}
  * à {@code HzBot200} ; leurs sauvegardes (joueur, statistiques, progrès) sont effacées à leur départ. Rien n'est gardé
  * d'un redémarrage à l'autre : tous partent à l'arrêt du serveur.
+ * <p>01/11 (banc de charge de GitHub, {@code outils/banc_charge.py}) : {@code commandes <secondes>} (les bots tapent des
+ * commandes de joueur, {@link Commandes}), {@code mesure <secondes>|stop} (ticks, mémoire, entités, tronçons :
+ * {@link Mesure}). Un bot envoyé dans un autre monde (tutoriel par {@code /tuto lancer}, extraction…) y vit autour de
+ * son point d'arrivée ; mort, il repart à son lieu de départ.
  */
 public final class Bots {
     private Bots() {
@@ -80,6 +85,8 @@ public final class Bots {
 
     private static final Map<String, BotJoueur> BOTS = new LinkedHashMap<>();
     private static final Map<UUID, Place> PLACES = new LinkedHashMap<>();
+    /** Lieu de départ de chaque bot (celui de {@code lancer}) : il y revient en reparaissant après une mort. */
+    private static final Map<UUID, Place> ORIGINES = new LinkedHashMap<>();
     /** Bots morts : nom -> tick du serveur où il repart. */
     private static final Map<String, Integer> A_RELANCER = new LinkedHashMap<>();
     /** Bots à préparer (connexion AuthMe faite, puis kit et départ) : uuid -> ticks restants. */
@@ -91,7 +98,9 @@ public final class Bots {
         MinecraftForge.EVENT_BUS.addListener(Bots::tick);
         MinecraftForge.EVENT_BUS.addListener(Bots::mort);
         MinecraftForge.EVENT_BUS.addListener(Bots::arret);
+        MinecraftForge.EVENT_BUS.addListener(Bots::changementMonde);
         Scenario.init();
+        Mesure.init();
         // seul un vrai bot garde l'étiquette : le noyau la retire aux autres (connexion et chaque seconde)
         fr.heraliz.noyau.api.Bots.brancher(p -> p instanceof BotJoueur);
     }
@@ -133,6 +142,20 @@ public final class Bots {
                                         .then(Commands.argument("rayon", IntegerArgumentType.integer(16, 2000))
                                                 .executes(x -> Scenario.lancer(x.getSource(), IntegerArgumentType.getInteger(x, "nombre"),
                                                         IntegerArgumentType.getInteger(x, "minutes"), IntegerArgumentType.getInteger(x, "rayon")))))))
+                .then(Commands.literal("mesure")
+                        .then(Commands.literal("stop").executes(x -> Mesure.arreter(x.getSource())))
+                        .then(Commands.argument("secondes", IntegerArgumentType.integer(10, 3600)).executes(x -> {
+                            int sec = IntegerArgumentType.getInteger(x, "secondes");
+                            Mesure.lancer(x.getSource(), sec);
+                            ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", "mesure", sec + " s");
+                            return 1;
+                        })))
+                .then(Commands.literal("commandes").then(Commands.argument("secondes", IntegerArgumentType.integer(0, 3600)).executes(x -> {
+                    int sec = IntegerArgumentType.getInteger(x, "secondes");
+                    int n = Commandes.regler(sec);
+                    ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", "commandes", sec == 0 ? "0" : sec + " s (" + n + ")");
+                    return 1;
+                })))
                 .then(Commands.literal("reseau").then(Commands.argument("oui", BoolArgumentType.bool()).executes(x -> {
                     Reseau.actif = BoolArgumentType.getBool(x, "oui");
                     ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", "reseau", String.valueOf(Reseau.actif));
@@ -263,7 +286,7 @@ public final class Bots {
         if (t % 20 == 0) {
             for (BotJoueur b : new ArrayList<>(BOTS.values())) {
                 if (!b.isAlive() && !A_RELANCER.containsKey(b.getGameProfile().getName())) {
-                    Place p = PLACES.get(b.getUUID());
+                    Place p = ORIGINES.getOrDefault(b.getUUID(), PLACES.get(b.getUUID()));
                     String nom = b.getGameProfile().getName();
                     retirer(b, false);
                     if (reglages.reapparition && p != null) {
@@ -397,6 +420,17 @@ public final class Bots {
         }
     }
 
+    /**
+     * Bot passé dans un autre monde (tutoriel des bases par {@code /tuto lancer}, extraction, {@code /spawn}…) : il vit
+     * autour de son point d'arrivée (24 blocs) ; revenu dans son monde de départ, il reprend son lieu de départ.
+     */
+    private static void changementMonde(PlayerEvent.PlayerChangedDimensionEvent e) {
+        if (!(e.getEntity() instanceof BotJoueur b) || BOTS.get(b.getGameProfile().getName()) != b) return;
+        Place origine = ORIGINES.get(b.getUUID());
+        ServerLevel lv = b.serverLevel();
+        PLACES.put(b.getUUID(), origine != null && origine.niveau() == lv ? origine : new Place(lv, b.position(), 24));
+    }
+
     static Vec3 centre(BotJoueur b) {
         Place p = PLACES.get(b.getUUID());
         return p == null ? b.position() : p.centre();
@@ -448,6 +482,7 @@ public final class Bots {
                 }
             }
             PLACES.put(id, place);
+            ORIGINES.put(id, place);
             BOTS.put(nom, b);
             s.getPlayerList().placeNewPlayer(c, b);
             b.addTag(TAG);   // une sauvegarde chargée remplace les étiquettes
@@ -467,6 +502,7 @@ public final class Bots {
         A_PREPARER.remove(b.getUUID());
         if (oublier) {
             PLACES.remove(b.getUUID());
+            ORIGINES.remove(b.getUUID());
             A_RELANCER.remove(nom);
             RELANCE_PLACE.remove(nom);
         }

@@ -47,6 +47,8 @@ final class Cerveau {
     private int lancer, lancerCase = -1, soin, fouille;
     private int prochGrenade, prochFumi, prochSoin, prochFouille, prochFrappe, prochLargage, prochRecharge, prochConstruction;
     private int constructions;
+    /** Commandes tapées comme un joueur ({@link Commandes}) : délai avant la prochaine, réglage vu en dernier. */
+    private int prochCommande, versionCommandes = -1;
     private boolean dessine;
     private int aTerreTicks;
 
@@ -86,6 +88,7 @@ final class Cerveau {
     void tick() {
         tick++;
         decompter();
+        commandes();
         ServerLevel lv = bot.serverLevel();
         bot.setShiftKeyDown(false);
         bot.zza = 0;
@@ -170,6 +173,24 @@ final class Cerveau {
         prochLargage--;
         prochRecharge--;
         prochConstruction--;
+        prochCommande--;
+    }
+
+    /**
+     * Une commande tapée de temps en temps, comme un joueur (même à terre ou en combat : les refus du noyau comptent
+     * aussi). À chaque nouveau réglage, le premier délai est tiré au hasard : les bots ne tapent pas tous au même tick.
+     */
+    private void commandes() {
+        int p = Commandes.periode;
+        if (p <= 0) return;
+        if (versionCommandes != Commandes.version) {
+            versionCommandes = Commandes.version;
+            prochCommande = 1 + r.nextInt(p);
+            return;
+        }
+        if (prochCommande > 0) return;
+        prochCommande = p / 2 + r.nextInt(p);
+        Commandes.jouer(bot, r);
     }
 
     // ------------------------------------------------------------------ cible
