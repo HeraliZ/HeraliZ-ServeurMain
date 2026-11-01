@@ -583,6 +583,8 @@ public final class Tutoriel {
                 // avec Varga : ni titres au milieu de l'écran ni attente, le kit puis l'envoi (Varga parle à la radio)
                 if (t == 0) {
                     actions.add(() -> kit(p));
+                    // parcelle, tronçons et murs préparés pendant que Varga parle (01/11 : 1,3 s de gel à l'arrivée)
+                    actions.add(() -> PlotsTuto.preparer(p.server, p.getUUID()));
                 } else if (t >= T_ENVOI_VARGA) {
                     it.remove();
                     actions.add(() -> envoyer(p, force));
@@ -590,6 +592,7 @@ public final class Tutoriel {
                 }
             } else if (t == 0) {
                 actions.add(() -> titre1(p));
+                actions.add(() -> PlotsTuto.preparer(p.server, p.getUUID()));   // prêts pour l'envoi (01/11)
             } else if (t == T_TITRE_2) {
                 actions.add(() -> kit(p));
             } else if (t == T_TITRE_3) {

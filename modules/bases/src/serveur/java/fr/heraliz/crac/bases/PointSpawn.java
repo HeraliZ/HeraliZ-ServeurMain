@@ -86,7 +86,38 @@ final class PointSpawn {
             return false;
         }
         point = p;
+        garderCharge(server);
         return true;
+    }
+
+    /** Point gardé chargé en ce moment (pour retirer son ticket quand il change). */
+    @Nullable
+    private static Point garde;
+
+    /**
+     * Les tronçons du point /spawn gardés chargés (01/11) : chaque retour d'extraction et chaque /spawn y faisait charger
+     * ses tronçons par le fil du serveur (130 ms à 1,5 s de gel, rapports du 28 et du 29/10). 5 × 5 tronçons. Au démarrage
+     * du serveur et à chaque changement du point.
+     */
+    static void garderCharge(MinecraftServer server) {
+        if (garde != null) {
+            ServerLevel avant = niveau(server, garde);
+            if (avant != null) {
+                Prechargement.lacher(avant, garde.x(), garde.z());
+            }
+            garde = null;
+        }
+        Point p = get(server);
+        ServerLevel l = p == null ? null : niveau(server, p);
+        if (l != null) {
+            Prechargement.garder(l, p.x(), p.z());
+            garde = p;
+        }
+    }
+
+    /** Arrêt du serveur : les tickets partent avec les mondes. */
+    static void oublier() {
+        garde = null;
     }
 
     @Nullable

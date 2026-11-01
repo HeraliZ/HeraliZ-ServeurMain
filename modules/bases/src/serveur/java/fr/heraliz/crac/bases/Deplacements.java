@@ -353,8 +353,22 @@ public final class Deplacements {
         T.barre(p, T.t("crac.depart.ne_bouge_pas", "Ne bouge pas : départ dans %s s.", String.valueOf(s)), ChatFormatting.YELLOW);
     }
 
+    /** Point /spawn gardé chargé dès le démarrage (01/11, {@link PointSpawn#garderCharge}). */
+    @SubscribeEvent
+    public static void demarrage(net.minecraftforge.event.server.ServerStartedEvent e) {
+        PointSpawn.garderCharge(e.getServer());
+    }
+
+    @SubscribeEvent
+    public static void arret(net.minecraftforge.event.server.ServerStoppedEvent e) {
+        PointSpawn.oublier();
+        Prechargement.vider();
+        PlotsTuto.vider();
+    }
+
     /** Chaque tick (MondeBasesServeur). */
     static void tick(MinecraftServer server) {
+        Prechargement.tick();
         if (!MESSAGES.isEmpty()) {
             List<Message> encore = new ArrayList<>();
             List<Message> prets = new ArrayList<>();

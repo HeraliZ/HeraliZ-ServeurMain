@@ -14,6 +14,7 @@ import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -188,29 +189,98 @@ public final class PlotsTuto extends SafeSavedData {
         return new Vec3(x + 0.5, y, z + 0.5);
     }
 
-    /** L'anneau de blocs barrière autour de la parcelle (une seule fois par parcelle). */
+    /**
+     * Prépare la parcelle du joueur dès le début de sa séquence (titres ou radio de Varga, avant l'envoi) : parcelle
+     * attribuée, tronçons demandés à Minecraft et murs mis en chantier, pour que tout soit prêt à son arrivée (01/11).
+     */
+    static void preparer(MinecraftServer server, UUID u) {
+        attribuer(server, u);
+    }
+
+    /** Rayon (en tronçons) autour du centre qui couvre la parcelle et son anneau de murs. */
+    private static final int RAYON_TRONCONS = 3;
+    /** Blocs barrière posés au plus par tick (17 000 en tout pour une parcelle). */
+    private static final int BLOCS_PAR_TICK = 3000;
+    /** Murs en cours de pose : parcelle -> avancement. */
+    private static final Map<Integer, Chantier> CHANTIERS = new HashMap<>();
+
+    /** Avancement des murs d'une parcelle : couche {@code y}, case {@code i} de l'anneau. */
+    private static final class Chantier {
+        int sol = Integer.MIN_VALUE, haut, y, i, attente;
+    }
+
+    /**
+     * L'anneau de blocs barrière autour de la parcelle (une seule fois par parcelle). 01/11 : posé en quelques ticks une fois
+     * les tronçons chargés en tâche de fond, au lieu d'un seul coup (17 000 blocs dans des tronçons à charger ou à créer :
+     * jusqu'à 1,3 s de gel du serveur à chaque nouvelle parcelle, rapports du 28/10). Le retour dans la parcelle par
+     * téléportation ({@link #tickJoueur}) tient le joueur dedans en attendant.
+     */
     private void poserMurs(ServerLevel l, int n) {
-        if (this.murs.get(n)) {
+        if (this.murs.get(n) || CHANTIERS.containsKey(n)) {
             return;
         }
-        int x0 = minX(n) - 1, z0 = minZ(n) - 1, x1 = minX(n) + TAILLE, z1 = minZ(n) + TAILLE;
-        l.getChunk(centreX(n) >> 4, centreZ(n) >> 4);
-        int sol = l.getHeight(Heightmap.Types.MOTION_BLOCKING, centreX(n), centreZ(n));
-        int haut = Math.min(l.getMaxBuildHeight() - 1, sol + HAUT_MURS);
+        CHANTIERS.put(n, new Chantier());
+        Prechargement.precharger(l, new ChunkPos(centreX(n) >> 4, centreZ(n) >> 4), RAYON_TRONCONS);
+    }
+
+    /** Arrêt du serveur : les murs pas finis seront repris à la prochaine attribution (bit {@link #murs} pas posé). */
+    static void vider() {
+        CHANTIERS.clear();
+    }
+
+    /** Chaque tick : avance les murs en cours (rien sans chantier). */
+    private static void chantiers(MinecraftServer server) {
+        ServerLevel l = server.getLevel(MondeBases.TUTO);
+        PlotsTuto d = l == null ? null : get(server);
+        if (d == null) {
+            CHANTIERS.clear();
+            return;
+        }
+        int budget = BLOCS_PAR_TICK;
         BlockState barriere = Blocks.BARRIER.defaultBlockState();
         BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-        for (int y = sol; y <= haut; y++) {
-            for (int x = x0; x <= x1; x++) {
-                l.setBlock(m.set(x, y, z0), barriere, Block.UPDATE_CLIENTS);
-                l.setBlock(m.set(x, y, z1), barriere, Block.UPDATE_CLIENTS);
+        for (var it = CHANTIERS.entrySet().iterator(); it.hasNext() && budget > 0; ) {
+            var e = it.next();
+            int n = e.getKey();
+            Chantier c = e.getValue();
+            ChunkPos centre = new ChunkPos(centreX(n) >> 4, centreZ(n) >> 4);
+            if (c.sol == Integer.MIN_VALUE) {
+                if (!Prechargement.pret(l, centre, RAYON_TRONCONS)) {
+                    if (++c.attente % 200 == 0) {
+                        Prechargement.precharger(l, centre, RAYON_TRONCONS);   // ticket rafraîchi tant qu'on attend
+                    }
+                    continue;
+                }
+                c.sol = l.getHeight(Heightmap.Types.MOTION_BLOCKING, centreX(n), centreZ(n));
+                c.haut = Math.min(l.getMaxBuildHeight() - 1, c.sol + HAUT_MURS);
+                c.y = c.sol;
             }
-            for (int z = z0 + 1; z < z1; z++) {
-                l.setBlock(m.set(x0, y, z), barriere, Block.UPDATE_CLIENTS);
-                l.setBlock(m.set(x1, y, z), barriere, Block.UPDATE_CLIENTS);
+            int x0 = minX(n) - 1, z0 = minZ(n) - 1, x1 = minX(n) + TAILLE, z1 = minZ(n) + TAILLE;
+            int cote = x1 - x0 + 1, anneau = 2 * cote + 2 * (z1 - z0 - 1);
+            while (budget > 0 && c.y <= c.haut) {
+                int i = c.i;
+                if (i < cote) {
+                    m.set(x0 + i, c.y, z0);
+                } else if (i < 2 * cote) {
+                    m.set(x0 + i - cote, c.y, z1);
+                } else if (i < 2 * cote + (z1 - z0 - 1)) {
+                    m.set(x0, c.y, z0 + 1 + i - 2 * cote);
+                } else {
+                    m.set(x1, c.y, z0 + 1 + i - 2 * cote - (z1 - z0 - 1));
+                }
+                l.setBlock(m, barriere, Block.UPDATE_CLIENTS);
+                budget--;
+                if (++c.i >= anneau) {
+                    c.i = 0;
+                    c.y++;
+                }
+            }
+            if (c.y > c.haut) {
+                it.remove();
+                d.murs.set(n);
+                d.setDirty();
             }
         }
-        this.murs.set(n);
-        this.setDirty();
     }
 
     // ---------------------------------------------------------------------------------------------- murs invisibles
@@ -249,7 +319,13 @@ public final class PlotsTuto extends SafeSavedData {
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || e.getServer() == null || ++ticks % 20 != 0) {
+        if (e.phase != TickEvent.Phase.END || e.getServer() == null) {
+            return;
+        }
+        if (!CHANTIERS.isEmpty()) {
+            chantiers(e.getServer());
+        }
+        if (++ticks % 20 != 0) {
             return;
         }
         ServerLevel l = e.getServer().getLevel(MondeBases.TUTO);
