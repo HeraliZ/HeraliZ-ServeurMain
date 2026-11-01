@@ -236,16 +236,30 @@ public final class VanishServeur {
         for (Set<UUID> s : MASQUES.values()) s.remove(joueur);
     }
 
-    /** Remet chaque voyant dans le bon état (appelé toutes les 2 s, au changement et à la connexion). */
+    /**
+     * Remet chaque voyant dans le bon état (appelé toutes les 2 s, au changement et à la connexion).
+     * 1.3.4 (perf) : les joueurs cachés connectés sont cherchés une fois (avant : tous les joueurs pour chaque joueur,
+     * 22 500 essais à 150 joueurs) ; sans joueur caché connecté, un voyant à qui rien n'est caché est passé sans rien
+     * calculer (ni AuthMe, ni grade). Même résultat.
+     */
     static void appliquer(MinecraftServer srv) {
         List<ServerPlayer> joueurs = srv.getPlayerList().getPlayers();
         retirerAnciensStaff(joueurs);
+        List<ServerPlayer> caches = new ArrayList<>();
+        if (!CACHES.isEmpty()) {
+            for (ServerPlayer c : joueurs) if (CACHES.contains(c.getUUID())) caches.add(c);
+        }
         for (ServerPlayer voyant : joueurs) {
+            Set<UUID> actuel = MASQUES.get(voyant.getUUID());
+            if (caches.isEmpty() && (actuel == null || actuel.isEmpty())) continue; // rien à cacher ni à remontrer
             Set<UUID> voulu = new HashSet<>();
             if (!voitLesCaches(voyant)) {
-                for (ServerPlayer c : joueurs) if (c != voyant && CACHES.contains(c.getUUID())) voulu.add(c.getUUID());
+                for (ServerPlayer c : caches) if (c != voyant) voulu.add(c.getUUID());
             }
-            Set<UUID> actuel = MASQUES.computeIfAbsent(voyant.getUUID(), k -> new HashSet<>());
+            if (actuel == null) {
+                actuel = new HashSet<>();
+                MASQUES.put(voyant.getUUID(), actuel);
+            }
             for (UUID u : new ArrayList<>(actuel)) {
                 if (voulu.contains(u)) continue;
                 ServerPlayer c = srv.getPlayerList().getPlayer(u);
