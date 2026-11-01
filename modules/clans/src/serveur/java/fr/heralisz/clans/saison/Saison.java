@@ -601,23 +601,36 @@ public final class Saison {
         });
     }
 
-    /** Les {@code n} dernieres lignes du journal qui parlent du clan (tag), les plus recentes a la fin. */
-    public static List<String> journalDe(String tag, int n) {
-        List<String> l = new ArrayList<>();
-        if (dossier == null) return l;
-        ecrireJournal();
-        // le journal s'écrit en fond : on attend que les lignes en file soient sur le disque avant de le lire
-        fr.heralisz.clans.server.EcrituresFond.attendre();
-        Path f = dossier.resolve("saison_journal.log");
-        if (!Files.exists(f)) return l;
-        try {
-            List<String> tout = Files.readAllLines(f, StandardCharsets.UTF_8);
-            String cle = "| [" + tag + "] |";
-            for (int i = tout.size() - 1; i >= 0 && l.size() < n; i--) if (tout.get(i).contains(cle)) l.add(0, tout.get(i));
-        } catch (IOException e) {
-            l.add("journal illisible : " + e);
+    /**
+     * Les {@code n} dernieres lignes du journal qui parlent du clan (tag), les plus recentes a la fin, rendues a
+     * {@code suite} sur le fil du serveur. 01/11 : lu sur le fil d'ecriture des clans, apres les lignes en file, et non plus
+     * sur le fil du serveur, qui attendait le disque puis relisait tout le journal (il grossit toute la saison).
+     */
+    public static void journalDe(String tag, int n, java.util.function.Consumer<List<String>> suite) {
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (dossier == null || server == null) {
+            suite.accept(new ArrayList<>());
+            return;
         }
-        return l;
+        ecrireJournal();
+        Path f = dossier.resolve("saison_journal.log");
+        String cle = "| [" + tag + "] |";
+        fr.heralisz.clans.server.EcrituresFond.puis(() -> {
+            java.util.ArrayDeque<String> l = new java.util.ArrayDeque<>();
+            if (Files.exists(f)) {
+                try (java.util.stream.Stream<String> lignes = Files.lines(f, StandardCharsets.UTF_8)) {
+                    lignes.filter(x -> x.contains(cle)).forEach(x -> {
+                        l.addLast(x);
+                        if (l.size() > n) l.removeFirst();
+                    });
+                } catch (IOException | java.io.UncheckedIOException e) {
+                    l.clear();
+                    l.add("journal illisible : " + e);
+                }
+            }
+            List<String> r = new ArrayList<>(l);
+            server.execute(() -> suite.accept(r));
+        });
     }
 
     private static void annoncer(Component c) {

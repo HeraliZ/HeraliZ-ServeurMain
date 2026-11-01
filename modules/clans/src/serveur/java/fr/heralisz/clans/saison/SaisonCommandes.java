@@ -72,9 +72,11 @@ public final class SaisonCommandes {
                 .then(Commands.literal("journal").requires(s -> s.hasPermission(4))
                         .then(Commands.argument("tag", StringArgumentType.word()).executes(c -> {
                             String tag = StringArgumentType.getString(c, "tag").toUpperCase(Locale.ROOT);
-                            List<String> l = Saison.journalDe(tag, 15);
-                            Reponses.ok(c.getSource(), Component.literal("Journal de [" + tag + "] (" + l.size() + " dernières lignes) :"));
-                            for (String x : l) Reponses.ligne(c.getSource(), Component.literal(x));
+                            var src = c.getSource();
+                            Saison.journalDe(tag, 15, l -> {
+                                Reponses.ok(src, Component.literal("Journal de [" + tag + "] (" + l.size() + " dernières lignes) :"));
+                                for (String x : l) Reponses.ligne(src, Component.literal(x));
+                            });
                             return 1;
                         })))
                 .then(Commands.literal("recharger").requires(s -> s.hasPermission(4)).executes(c -> {

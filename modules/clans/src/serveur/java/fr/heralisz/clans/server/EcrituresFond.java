@@ -80,6 +80,19 @@ public final class EcrituresFond {
         if (arret) attendre();
     }
 
+    /**
+     * Fait {@code lecture} sur le fil d'écriture, après les écritures déjà en file (01/11 : lire un fichier juste écrit
+     * sans faire attendre le fil du serveur). Ne touche à aucun objet du jeu ; la suite revient au serveur par
+     * {@code server.execute}.
+     */
+    public static void puis(Runnable lecture) {
+        try {
+            FIL.execute(lecture);
+        } catch (RejectedExecutionException ex) {
+            lecture.run();
+        }
+    }
+
     private static void faire(Path f) {
         Tache t = EN_ATTENTE.remove(f);
         if (t != null) lancer(f, t.ecriture(), t.siEchec());
