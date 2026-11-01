@@ -4,6 +4,7 @@
   "package": "fr.heraliz.noyau.serveur.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ChronoForgeMixin",
     "InstantaneRegistresMixin",
     "MatmosServeurMixin"
   ],

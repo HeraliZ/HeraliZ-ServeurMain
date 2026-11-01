@@ -3,6 +3,7 @@ package fr.heraliz.noyau.serveur.diag;
 import com.mojang.logging.LogUtils;
 import fr.heraliz.noyau.NoyauConfig;
 import fr.heraliz.noyau.diag.Profil;
+import fr.heraliz.noyau.serveur.diag.profil.NomsSrg;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -52,11 +53,13 @@ import java.util.stream.Stream;
  *     vue ni ici, ni par le temps par tick de spark. Le veilleur regarde aussi ce temps-là : plus de 50 ms + le seuil
  *     après la fin d'un tick sans que le suivant ait commencé, il relève la pile de la même façon, et le rapport part au
  *     début du tick suivant (même dossier, même alerte, « entre deux ticks »).</li>
- *     <li><b>Enregistrement ({@code /diag start})</b> : relevé de la pile toutes les 10 ms pendant les ticks, résumé dans le
- *     chat toutes les 10 s à celui qui l'a lancé, rapport complet à la fin.</li>
+ *     <li><b>Profil ({@code /diag profil}, aussi {@code /diag start})</b> : relevé de la pile toutes les 4 à 10 ms, pendant
+ *     ET entre les ticks, rapport façon spark (mod, fichier:ligne, arbre des appels, temps par système) : voir
+ *     {@link Profileur}.</li>
  * </ul>
- * Le relevé d'une pile d'un autre fil arrête brièvement la machine Java : le veilleur ne le fait que pendant un blocage
- * ou un enregistrement demandé. Fichiers gardés : les 60 derniers.
+ * Le relevé d'une pile d'un autre fil arrête brièvement ce fil : le veilleur ne le fait que pendant un blocage ou un profil
+ * demandé. Fichiers gardés : les 60 derniers. Les noms SRG de Minecraft y sont traduits quand la table est trouvée
+ * ({@link NomsSrg}).
  */
 public final class Diag {
     private Diag() {
@@ -94,13 +97,6 @@ public final class Diag {
     private static Profil blocageEntre;
     private static long dernierRapportBlocage, derniereAnnonce;
 
-    // enregistrement demandé
-    private static Profil session;
-    private static long finSession, prochainResume;
-    private static UUID demandeur;
-    private static double sessionMsTotal, sessionMsMax;
-    private static int sessionTicks;
-
     public static void enregistrer() {
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent e) -> demarrer(e.getServer()));
         MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> arreter());
@@ -126,8 +122,8 @@ public final class Diag {
         Thread v = veilleur;
         veilleur = null;
         if (v != null) v.interrupt();
+        Profileur.arretUrgent();
         synchronized (VERROU) {
-            session = null;
             blocage = null;
             blocageEntre = null;
         }
@@ -146,6 +142,7 @@ public final class Diag {
         }
         gcDebutTick = gc;
         debutTick = maintenant;
+        Profileur.debutTick();
         dansTick = true;
         // travail fait depuis la fin du tick précédent, au-delà du temps libre normal (au moins autant)
         if (entre != null && entre.releves > 0 && fin != 0) {
@@ -169,14 +166,9 @@ public final class Diag {
         synchronized (VERROU) {
             b = blocage;
             blocage = null;
-            if (session != null) {
-                sessionTicks++;
-                sessionMsTotal += ms;
-                sessionMsMax = Math.max(sessionMsMax, ms);
-            }
         }
         if (b != null && b.releves > 0) rapportBlocage(srv, b, ms, gc - gcDebutTick, false, debutTick);
-        suivreSession(srv);
+        Profileur.finTick(srv, ms);
     }
 
     // ------------------------------------------------------------------ fil veilleur
@@ -184,18 +176,20 @@ public final class Diag {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Thread t = filServeur;
-                boolean enSession;
-                synchronized (VERROU) {
-                    enSession = session != null;
-                }
+                boolean profil = Profileur.actif;
                 long seuil = NoyauConfig.DIAG_SEUIL_MS.get() * 1_000_000L;
                 boolean auto = NoyauConfig.DIAG_AUTO.get(), dans = dansTick;
                 long maintenant = System.nanoTime(), fin = finTick, debut = debutTick;
                 boolean bloque = t != null && dans && auto && maintenant - debut > seuil;
                 // entre deux ticks : commandes, paquets des joueurs, tâches (01/11)
                 boolean bloqueEntre = t != null && !dans && auto && fin != 0 && maintenant - fin > LIBRE_APRES_TICK + seuil;
-                if (t != null && (bloque || bloqueEntre || (dans && enSession))) {
+                if (t != null && (bloque || bloqueEntre || profil)) {
+                    int tick = Profileur.tickNo;
+                    long avant = System.nanoTime();
                     StackTraceElement[] pile = t.getStackTrace();
+                    long cout = System.nanoTime() - avant;
+                    // profil : pendant ET entre les ticks ; un relevé à cheval sur le début ou la fin d'un tick est écarté
+                    if (profil) Profileur.ranger(pile, dans, tick, dans == dansTick && tick == Profileur.tickNo, cout);
                     synchronized (VERROU) {
                         // 01/11 : pile relevée pendant le MÊME tick (sinon un tick fini entre-temps laissait un relevé au
                         // tick suivant : faux rapports « blocage de 2 ms » des 29 et 31/10)
@@ -208,9 +202,8 @@ public final class Diag {
                             if (blocageEntre == null) blocageEntre = new Profil();
                             if (blocageEntre.releves < 4000) blocageEntre.ajouter(pile);
                         }
-                        if (session != null && dans) session.ajouter(pile);
                     }
-                    Thread.sleep(bloque || bloqueEntre ? 5 : 10);
+                    Thread.sleep(profil ? Profileur.intervalleMs : 5);
                 } else {
                     Thread.sleep(20);
                 }
@@ -267,79 +260,20 @@ public final class Diag {
         }
     }
 
-    // ------------------------------------------------------------------ enregistrement demandé
+    // ------------------------------------------------------------------ profil (voir Profileur)
+    /** Profil de {@code secondes} s, relevé toutes les 5 ms (banc de charge, /diag start) ; faux si un profil tourne déjà. */
     public static boolean lancer(int secondes, UUID qui) {
-        synchronized (VERROU) {
-            if (session != null) return false;
-            session = new Profil();
-            finSession = System.currentTimeMillis() + secondes * 1000L;
-            prochainResume = System.currentTimeMillis() + 10_000;
-            demandeur = qui;
-            sessionMsTotal = 0;
-            sessionMsMax = 0;
-            sessionTicks = 0;
-        }
-        return true;
+        MinecraftServer srv = serveur;
+        return srv != null && Profileur.lancer(srv, secondes, 5, qui);
     }
 
-    /** Arrête l'enregistrement et écrit le rapport ; nom du fichier, ou null s'il n'y en avait pas. */
+    /** Arrête le profil ; nom du rapport (écrit juste après, sur le fil des rapports), ou null s'il n'y en avait pas. */
     public static String arreterSession(MinecraftServer srv) {
-        Profil p;
-        double moy, max;
-        int ticks;
-        synchronized (VERROU) {
-            p = session;
-            session = null;
-            moy = sessionTicks == 0 ? 0 : sessionMsTotal / sessionTicks;
-            max = sessionMsMax;
-            ticks = sessionTicks;
-        }
-        if (p == null) return null;
-        StringBuilder t = new StringBuilder();
-        t.append("HeraliZ — enregistrement /diag\n");
-        t.append("Date : ").append(LocalDateTime.now()).append('\n');
-        t.append(String.format(Locale.ROOT, "Ticks : %d, %.1f ms en moyenne, %.0f ms au plus (50 ms = limite des 20 TPS)%n", ticks, moy, max));
-        etatServeur(srv, t::append);
-        t.append('\n');
-        p.ecrire(t);
-        String nom = "profil-" + LocalDateTime.now().format(NOM) + ".txt";
-        ecrire(srv, nom, t.toString());
-        return nom;
+        return Profileur.arreter(srv);
     }
 
-    private static void suivreSession(MinecraftServer srv) {
-        long maintenant = System.currentTimeMillis();
-        String resume = null;
-        boolean finie = false;
-        UUID qui;
-        double moy, max;
-        synchronized (VERROU) {
-            if (session == null) return;
-            qui = demandeur;
-            moy = sessionTicks == 0 ? 0 : sessionMsTotal / sessionTicks;
-            max = sessionMsMax;
-            if (maintenant >= finSession) finie = true;
-            else if (maintenant >= prochainResume) {
-                prochainResume = maintenant + 10_000;
-                resume = session.resume();
-            }
-        }
-        Consumer<Component> dire = c -> {
-            if (qui == null) srv.sendSystemMessage(c);
-            else {
-                ServerPlayer p = srv.getPlayerList().getPlayer(qui);
-                if (p != null) p.sendSystemMessage(c);
-            }
-        };
-        if (finie) {
-            String nom = arreterSession(srv);
-            if (nom != null) dire.accept(Component.translatableWithFallback("noyau.diag.fin", "[Diag] Terminé : rapport diag/%s", nom)
-                    .withStyle(s -> s.withColor(0x8FD3FF)));
-        } else if (resume != null) {
-            dire.accept(Component.translatableWithFallback("noyau.diag.direct", "[Diag] %s ms/tick (max %s), %s TPS — %s",
-                    String.format(Locale.ROOT, "%.1f", moy), String.valueOf(Math.round(max)), tps(), resume)
-                    .withStyle(s -> s.withColor(0x8FD3FF)));
-        }
+    static Thread filServeur() {
+        return filServeur;
     }
 
     // ------------------------------------------------------------------ état du serveur
@@ -403,7 +337,7 @@ public final class Diag {
         ligne.accept(b.append('\n').toString());
     }
 
-    private static long tempsGc() {
+    static long tempsGc() {
         long t = 0;
         for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) t += Math.max(0, gc.getCollectionTime());
         return t;
@@ -415,20 +349,39 @@ public final class Diag {
     }
 
     public static void ecrire(MinecraftServer srv, String nom, String texte) {
-        Path d = dossier(srv);
+        Path racine = srv.getServerDirectory().toPath();
+        ECRIVAIN.execute(() -> ecrireMaintenant(racine, nom, texte));
+    }
+
+    /** Travail lourd d'un rapport (analyse d'un profil…), sur le fil des rapports, jamais sur le fil serveur. */
+    static void surLeFilDesRapports(Runnable r) {
         ECRIVAIN.execute(() -> {
             try {
-                Files.createDirectories(d);
-                Files.writeString(d.resolve(nom), texte, StandardCharsets.UTF_8);
-                List<Path> tous;
-                try (Stream<Path> s = Files.list(d)) {
-                    tous = s.filter(f -> f.getFileName().toString().endsWith(".txt"))
-                            .sorted(Comparator.comparing(f -> f.getFileName().toString())).toList();
-                }
-                for (int i = 0; i < tous.size() - GARDES; i++) Files.deleteIfExists(tous.get(i));
-            } catch (Exception e) {
-                LOG.warn("[diag] rapport {} non écrit : {}", nom, e.toString());
+                r.run();
+            } catch (Throwable t) {
+                LOG.warn("[diag] rapport non fait : {}", t.toString(), t);
             }
         });
+    }
+
+    /**
+     * Écrit un rapport dans {@code diag/} (fil des rapports seulement) : noms SRG de Minecraft traduits si la table est
+     * trouvée sur le serveur, puis seuls les 60 derniers rapports sont gardés.
+     */
+    static void ecrireMaintenant(Path racine, String nom, String texte) {
+        Path d = racine.resolve("diag");
+        try {
+            String t = NomsSrg.preparer(racine) ? NomsSrg.traduire(texte) : texte;
+            Files.createDirectories(d);
+            Files.writeString(d.resolve(nom), t, StandardCharsets.UTF_8);
+            List<Path> tous;
+            try (Stream<Path> s = Files.list(d)) {
+                tous = s.filter(f -> f.getFileName().toString().endsWith(".txt"))
+                        .sorted(Comparator.comparing(f -> f.getFileName().toString())).toList();
+            }
+            for (int i = 0; i < tous.size() - GARDES; i++) Files.deleteIfExists(tous.get(i));
+        } catch (Exception e) {
+            LOG.warn("[diag] rapport {} non écrit : {}", nom, e.toString());
+        }
     }
 }

@@ -57,6 +57,7 @@ public final class Moniteur {
     private static final int FENETRE = 20;
 
     private static long finMesure;
+    private static int dureeMesure;
     /** Mesure demandée par /diag mesure : rapport écrit à la fin, prévenir qui l'a lancée (null : la console). */
     private static boolean rapportAttendu;
     private static java.util.UUID demandeur;
@@ -84,6 +85,12 @@ public final class Moniteur {
         TimeTracker.ENTITY_UPDATE.enable(secondes);
         TimeTracker.BLOCK_ENTITY_UPDATE.enable(secondes);
         finMesure = System.currentTimeMillis() + secondes * 1000L;
+        dureeMesure = secondes;
+    }
+
+    /** Durée demandée de la dernière mesure (s), pour rendre au chronomètre de Forge sa durée après un profil. */
+    static int dureeMesure() {
+        return Math.max(1, dureeMesure);
     }
 
     /** /diag mesure : mesure puis rapport {@code diag/mesure-<date>.txt}, résumé à {@code qui}. */

@@ -13,9 +13,10 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.UUID;
 
 /**
- * {@code /diag} (opérateurs niveau 4 et console) : {@code etat}, {@code start [secondes]}, {@code stop},
- * {@code mesure [secondes]} (temps par entité et entité de bloc, {@link Moniteur}), {@code fuites}, {@code client <joueur>
- * [secondes]} (analyse du jeu du joueur, {@link DiagClients}), {@code auto on|off}, {@code seuil <ms>}. Voir {@link Diag}.
+ * {@code /diag} (opérateurs niveau 4 et console) : {@code etat}, {@code profil [secondes] [intervalle]} (profil façon spark,
+ * {@link Profileur} ; {@code start [secondes]} en est l'ancien nom), {@code stop}, {@code mesure [secondes]} (temps par entité et entité de bloc, {@link Moniteur}), {@code fuites},
+ * {@code client <joueur> [secondes]} (analyse du jeu du joueur, {@link DiagClients}), {@code auto on|off},
+ * {@code seuil <ms>}. Voir {@link Diag}.
  */
 public final class CommandeDiag {
     private CommandeDiag() {
@@ -27,9 +28,16 @@ public final class CommandeDiag {
         d.register(Commands.literal("diag").requires(s -> s.hasPermission(4))
                 .executes(CommandeDiag::etat)
                 .then(Commands.literal("etat").executes(CommandeDiag::etat))
-                .then(Commands.literal("start").executes(c -> lancer(c, 60))
+                .then(Commands.literal("start").executes(c -> profil(c, 60, 5))
                         .then(Commands.argument("secondes", IntegerArgumentType.integer(10, 1800))
-                                .executes(c -> lancer(c, IntegerArgumentType.getInteger(c, "secondes")))))
+                                .executes(c -> profil(c, IntegerArgumentType.getInteger(c, "secondes"), 5))))
+                .then(Commands.literal("profil").executes(c -> profil(c, 60, 5))
+                        .then(Commands.literal("stop").executes(CommandeDiag::stop))
+                        .then(Commands.argument("secondes", IntegerArgumentType.integer(10, 1800))
+                                .executes(c -> profil(c, IntegerArgumentType.getInteger(c, "secondes"), 5))
+                                .then(Commands.argument("intervalle", IntegerArgumentType.integer(4, 10))
+                                        .executes(c -> profil(c, IntegerArgumentType.getInteger(c, "secondes"),
+                                                IntegerArgumentType.getInteger(c, "intervalle"))))))
                 .then(Commands.literal("stop").executes(CommandeDiag::stop))
                 .then(Commands.literal("mesure").executes(c -> mesure(c, 15))
                         .then(Commands.argument("secondes", IntegerArgumentType.integer(5, 300))
@@ -54,17 +62,22 @@ public final class CommandeDiag {
         Diag.etatServeur(c.getSource().getServer(), l -> dire(c, Component.literal(l.stripTrailing()), BLEU));
         dire(c, Component.translatableWithFallback("noyau.diag.auto", "[Diag] Rapports automatiques : %s (seuil %s ms), dans diag/",
                 NoyauConfig.DIAG_AUTO.get() ? "on" : "off", String.valueOf(NoyauConfig.DIAG_SEUIL_MS.get())), BLEU);
+        if (Profileur.enCours()) {
+            dire(c, Component.translatableWithFallback("noyau.diag.profil_en_cours", "[Diag] Profil en cours : %s s sur %s, relevé toutes les %s ms (/diag stop pour l'arrêter).",
+                    String.valueOf(Profileur.secondesFaites()), String.valueOf(Profileur.secondesDemandees()), String.valueOf(Profileur.intervalleMs)), BLEU);
+        }
         return 1;
     }
 
-    private static int lancer(CommandContext<CommandSourceStack> c, int secondes) {
+    private static int profil(CommandContext<CommandSourceStack> c, int secondes, int intervalle) {
         UUID qui = c.getSource().getEntity() instanceof ServerPlayer p ? p.getUUID() : null;
-        if (!Diag.lancer(secondes, qui)) {
+        if (!Profileur.lancer(c.getSource().getServer(), secondes, intervalle, qui)) {
             dire(c, Component.translatableWithFallback("noyau.diag.deja", "[Diag] Un enregistrement est déjà en cours (/diag stop)."), ROUGE);
             return 0;
         }
-        dire(c, Component.translatableWithFallback("noyau.diag.debut", "[Diag] Enregistrement lancé pour %s s : résumé ici toutes les 10 s, rapport complet à la fin.",
-                String.valueOf(secondes)), BLEU);
+        dire(c, Component.translatableWithFallback("noyau.diag.profil_debut",
+                "[Diag] Profil du serveur lancé pour %s s (pile relevée toutes les %s ms, pendant et entre les ticks) : résumé ici toutes les 10 s, rapport complet à la fin.",
+                String.valueOf(secondes), String.valueOf(intervalle)), BLEU);
         return 1;
     }
 
@@ -74,7 +87,8 @@ public final class CommandeDiag {
             dire(c, Component.translatableWithFallback("noyau.diag.rien", "[Diag] Aucun enregistrement en cours."), ROUGE);
             return 0;
         }
-        dire(c, Component.translatableWithFallback("noyau.diag.fin", "[Diag] Terminé : rapport diag/%s", nom), BLEU);
+        dire(c, Component.translatableWithFallback("noyau.diag.profil_arret", "[Diag] Profil arrêté : rapport en cours d'écriture dans diag/%s (résumé ici dès qu'il est prêt).",
+                nom), BLEU);
         return 1;
     }
 
