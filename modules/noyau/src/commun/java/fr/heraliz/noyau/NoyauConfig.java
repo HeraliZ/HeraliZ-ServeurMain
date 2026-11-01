@@ -52,6 +52,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue JOUEURS_PROCHES_GRILLE;
    /** Joueurs proches des tronçons (apparitions, tics aléatoires) cherchés dans une grille faite une fois par tick. */
    public static volatile boolean joueursProchesGrille = true;
+   public static final ForgeConfigSpec.BooleanValue PORTEE_SUIVI_RAPIDE;
+   /** Portée de suivi d'une entité sans passager calculée sans parcourir ses passagers (aucun objet créé). */
+   public static volatile boolean porteeSuiviRapide = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -119,6 +122,11 @@ public final class NoyauConfig {
             "par tick dans une grille de 128 blocs et seuls les voisins sont regardés (même réponse, même règle que Minecraft et",
             "Mohist, mob-spawn-range de spigot.yml compris). false : comme Minecraft.")
             .define("joueurs_proches_grille", true);
+      PORTEE_SUIVI_RAPIDE = b.comment("Minecraft allégé (01/11) : la portée de suivi d'une entité (à quelle distance les joueurs la voient) était",
+            "calculée pour chaque entité, chaque joueur qui bouge et chaque tick en parcourant ses passagers par un flux Java",
+            "(une dizaine d'objets créés à chaque fois). true = sans passager, la boucle ne parcourt rien et ne crée rien (même",
+            "portée). false : comme Minecraft.")
+            .define("portee_suivi_rapide", true);
       b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
@@ -141,6 +149,7 @@ public final class NoyauConfig {
       succesActifs = SUCCES_ACTIFS.get();
       levelDatEnFond = LEVEL_DAT_FOND.get();
       joueursProchesGrille = JOUEURS_PROCHES_GRILLE.get();
+      porteeSuiviRapide = PORTEE_SUIVI_RAPIDE.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 

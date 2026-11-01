@@ -18,10 +18,13 @@ public final class Allege {
    public static long prochesGrille;
    /** Point 1 : dont ceux sans joueur dans la grille (Minecraft aurait parcouru tous les joueurs du monde pour rien). */
    public static long prochesSansJoueur;
+   /** Point 2 : portées de suivi lues sans parcourir les passagers (aucun objet créé). */
+   public static long porteeRapide;
 
    /** Une ligne pour {@code /diag etat} et les rapports. */
    public static void etat(Consumer<String> ligne) {
-      ligne.accept(String.format(Locale.ROOT, "Minecraft allégé (depuis le démarrage) : joueurs proches par grille %d tronçons (%d sans joueur)%n",
-            prochesGrille, prochesSansJoueur));
+      ligne.accept(String.format(Locale.ROOT, "Minecraft allégé (depuis le démarrage) : joueurs proches par grille %d tronçons (%d sans joueur) ;"
+                  + " portées de suivi sans flux %d%n",
+            prochesGrille, prochesSansJoueur, porteeRapide));
    }
 }

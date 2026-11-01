@@ -6,7 +6,8 @@
   "refmap": "heraliz_noyau-serveur.refmap.json",
   "mixins": [
     "ChunkMapAcces",
-    "JoueursProchesMixin"
+    "JoueursProchesMixin",
+    "PorteeSuiviMixin"
   ],
   "injectors": {
     "defaultRequire": 0
