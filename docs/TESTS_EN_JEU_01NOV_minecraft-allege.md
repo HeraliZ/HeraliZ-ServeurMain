@@ -181,7 +181,7 @@ Mohist (les numéros de ligne du profil collent : `CraftPlayer.java:1575` = `can
 | 3. Parcours de tous les tronçons | `ServerChunkCache.tickChunks` (l. 371, `Iterators$1.hasNext` 4,34 ms) → `allege/ActifsCacheMixin.java:21`, `allege/ActifsTronconMixin.java:20`, `perf/TronconsActifs.java:68`, `:87` | **~5 ms** (~29 700 tronçons parcourus par tick) | **~0,4 ms** (seulement ceux qui peuvent tourner, ~1/8) | rien : mêmes tronçons, que Minecraft mélange ensuite au hasard comme avant |
 | 4. Menus : double comparaison | `AbstractContainerMenu.broadcastChanges` (l. 236/238 : `triggerSlotListeners` puis `synchronizeSlotToRemote`, `CompoundTag.equals`) → `allege/MenuSyncMixin.java:32`, `:47` | 1,9 ms | ~1 ms | rien |
 | 4 bis. Reste du tick des joueurs (`doTick`) | `Player.tick` : collisions 5,1 ms, eau 1,7 ms, TaCZ 1,5 ms, écouteurs 2,7 ms | 14 ms | **pas fait** (rien d'exact de sûr ; plus bas) | — |
-| 5. Monde du tutoriel | `crac:tuto` : 4,23 ms pour 13 à 14 joueurs, ~11 700 tronçons | — | **proposé seulement** (vue 4 : ~−50 % de tronçons, ~1,5 à 2 ms) | visible : voir plus bas |
+| 5. Monde du tutoriel | `crac:tuto` : 4,23 ms pour 13 à 14 joueurs, ~11 700 tronçons | — | **fait (Monde 1.0.9, choix du propriétaire : vue 4)** : ~−50 % de tronçons, ~1,5 à 2 ms | visible : dans le tutoriel seulement, on voit 64 blocs autour de soi au lieu de 128 |
 
 Ordre de grandeur : **~80 ms par tick en moins à 150 joueurs** (surtout le point 1), soit, depuis les 135 ms du banc,
 **~55 ms**. Ce n'est pas encore « nettement sous 50 » : voir « Ce qui reste » et les propositions (balles figées, portée des
@@ -343,3 +343,10 @@ Pour couper une optimisation : son réglage de `[perf]` à `false` dans `heraliz
    des minutes après) ? C'est le plus gros gain restant en combat.
 2. **Portée des balles** : la baisser de 64 à 32 ou 48 blocs (traçantes vues de moins loin) ?
 3. **Tutoriel** : vue de 5 (la parcelle reste entière à l'écran) ou de 4 dans ce monde seulement ?
+
+### Vue du tutoriel (01/11, choix du propriétaire : 4)
+
+Monde 1.0.9 : `vues_par_monde = ["crac:tuto=4"]` dans `heraliz_distances-server.toml`, posée après la vue générale (8)
+au démarrage et à l'arrivée d'un monde chargé plus tard. À vérifier en jeu : ligne `[utils] distance de vue de crac:tuto
+: 4 tronçons` au démarrage ; dans le tutoriel, la parcelle entière reste visible, le terrain s'arrête à ~64 blocs ;
+revenu sur la carte ou au spawn, la vue est de nouveau 128 blocs. Liste vide : la vue générale partout.

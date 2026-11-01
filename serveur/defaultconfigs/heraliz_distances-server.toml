@@ -5,3 +5,6 @@
 	vue = 8
 	# Distance de simulation, en tronçons (server.properties : 5).
 	simulation = 0
+	# Vue plus courte pour certains mondes seulement, « monde=tronçons ». 01/11 (choix du propriétaire) : 4 dans le
+	# tutoriel des bases (chaque joueur y est seul sur sa parcelle). Liste vide : la vue générale partout.
+	vues_par_monde = ["crac:tuto=4"]
