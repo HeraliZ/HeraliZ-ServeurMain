@@ -50,8 +50,10 @@ jobs:
           # effaçait le journal en cours du Ptero, corrigé une première fois le 24/10 dans l'ancien dépôt)
           l "lcd j; get /logs/latest.log" || true
           # journaux tournés : les plus récents par le nom daté (l'heure des fichiers du Ptero trompe)
-          for f in $(l "cls -1 /logs/" 2>/dev/null | grep '\.log\.gz$' | sort -V -r | head -3); do l "lcd j; get /logs/$f" || true; done
-          for f in $(l "cls -1 /crash-reports/" 2>/dev/null | sort -r | head -4); do l "lcd c; get /crash-reports/$f" || true; done
+          # (« cls -1 » rend des chemins complets : on ne garde que le nom ; le Ptero tourne ses journaux en .log.zip)
+          noms() { l "cls -1 $1" 2>/dev/null | sed 's#.*/##' | tr -d '\r'; }
+          for f in $(noms /logs/ | grep -E '^20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]+\.log\.(gz|zip)$' | sort -V -r | head -3); do l "lcd j; get /logs/$f" || true; done
+          for f in $(noms /crash-reports/ | grep -E '^crash-' | sort -r | head -4); do l "lcd c; get /crash-reports/$f" || true; done
           masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g'; }
           {
             echo "## Rapports de plantage récents"
@@ -60,10 +62,12 @@ jobs:
               grep -m1 -A40 -E '^Description:' "$f" | masque | head -60
               echo '```'
             done
+            # après le démarrage seulement (« Done (...) ») ; un journal tourné à minuit, sans démarrage, est gardé en entier
+            apres_demarrage() { if printf '%s\n' "$txt" | grep -q '\]: Done ('; then printf '%s\n' "$txt" | awk 'f; /\]: Done \(/{f=1}'; else printf '%s\n' "$txt"; fi; }
             for f in j/*; do [ -f "$f" ] || continue
-              case "$f" in *.gz) txt=$(zcat "$f");; *) txt=$(cat "$f");; esac
+              case "$f" in *.gz) txt=$(zcat "$f");; *.zip) txt=$(unzip -p "$f");; *) txt=$(cat "$f");; esac
               # seulement après le démarrage (« Done (... ) ») : les avertissements du chargement des mods noient le reste
-              txt=$(printf '%s\n' "$txt" | awk 'f; /\]: Done \(/{f=1}')
+              txt=$(apres_demarrage)
               echo "## Erreurs Java dans $(basename "$f")"; echo '```'
               printf '%s\n' "$txt" | grep -E -B2 -A25 'Exception|Error:|\bat fr\.|\bat com\.(heraliz|Spartan|caracrea)' \
                 | grep -v -E 'password|login|register' | masque | grep -v -E '^\s+at (java\.|jdk\.|net\.minecraftforge\.eventbus|cpw\.)' | head -500
