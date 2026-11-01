@@ -35,7 +35,7 @@ dans le jar de la Release « base-serveur » (empreinte contrôlée).
 ### Lancer
 
 - Normal : Actions → « Banc de charge » → « Run workflow » (réglages par défaut : 100 bots, distances 6/4, rythmes
-  5/2/4/25, scénario normal).
+  8/0.85/4/25, scénario normal).
 - **Essai A/B** (exemple `randomTickSpeed 0`) : champ « regles » = `randomTickSpeed 0` (plusieurs : `randomTickSpeed 0;
   doFireTick false`), case « ab » cochée : une mesure SANS puis une mesure AVEC, dans le même serveur ; tableau « Essai
   A/B » en tête du résumé. Case « ab » décochée : les règles sont posées avant la mesure (à comparer avec un autre banc
@@ -87,6 +87,7 @@ connexions, moins de tirs (combat 25 % du temps), terrain déjà créé, mais pa
 
 ## Questions pour le propriétaire
 
-- Les rythmes (5 morts, 2 connexions, 4 voyages par minute pour 150 joueurs, combat 25 % du temps) sont des estimations :
-  si les journaux du Ptero donnent les vrais chiffres (morts et connexions par heure aux heures pleines), je les recale.
+- Rythmes recalés (réponse du propriétaire, 01/11) : 250 à 500 morts et 35 à 50 connexions par heure, serveur plein. Par
+  défaut, le haut de la fourchette : 8 morts et 0,85 connexion par minute ; voyages (4 par minute) et combat (25 % du
+  temps) restent estimés. Le premier banc 1.2.0 a tourné avec l'ancienne estimation 5/2/4/25.
 - `max-players=50` sur le Ptero : à monter avant d'accueillir 150 joueurs (le banc garde 250 pour ses bots).

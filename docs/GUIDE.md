@@ -386,7 +386,8 @@ neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
   `connexions` : coût d'une connexion ; `teleportations` : pics d'extraction de groupe, de 10 `/spawn` et de départ de
   la borne), règles de jeu pour un **essai A/B** (`randomTickSpeed 0`, plusieurs séparées par `;`, case « ab » : une
   mesure sans puis une avec), distances vue/simulation (`6/4`, comme le Ptero le 01/11), rythmes pour 150 joueurs
-  (`5/2/4/25` : morts, connexions, voyages par minute, % du temps en combat ; `off` : comme avant).
+  (`8/0.85/4/25` : morts, connexions, voyages par minute, % du temps en combat ; `off` : comme avant ; morts et
+  connexions d'après le propriétaire : 250 à 500 morts et 35 à 50 connexions par heure, serveur plein).
 - **Déroulé** (`outils/banc_charge.py`, utilisable aussi sur un PC : `preparer <dossier>` puis `lancer <dossier>`) :
   0. machine Java : Mohist installe Forge à son premier démarrage puis se relance dans une autre machine Java sans
      aucun réglage (premier banc : 3 996 Mo au lieu de 11 Go) ; l'installation est donc faite à part, puis la mesure tourne

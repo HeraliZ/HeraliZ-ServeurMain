@@ -4,7 +4,7 @@ une mesure, un rapport. Rien ne touche au Ptero ni au site. Sert au workflow « 
 
     python outils/banc_charge.py preparer <dossier> [--plat] [--graine N] [--vue 6] [--simulation 4]
     python outils/banc_charge.py lancer <dossier> [--bots 100] [--chauffe 4] [--minutes 5] [--diag "..."]
-                                        [--scenario normal|connexions|teleportations] [--rythmes 5/2/4/25|off]
+                                        [--scenario normal|connexions|teleportations] [--rythmes 8/0.85/4/25|off]
                                         [--regles "randomTickSpeed 0; ..."] [--ab] [--memoire auto|<Mo>]
                                         [--java <java 17>] [--rapport <dossier>] [--duree-max 50]
 
@@ -65,7 +65,7 @@ GRAINE_DEFAUT = 20261101
 VUE_PTERO, SIMULATION_PTERO, MAX_JOUEURS_PTERO = 6, 4, 50
 # cibles par minute POUR 150 JOUEURS : morts / connexions / voyages (/home, /tpa) ; part du temps en combat (%)
 # (estimations à recaler sur les journaux du Ptero : morts et connexions par heure aux heures pleines)
-RYTHMES_DEFAUT = "5/2/4/25"
+RYTHMES_DEFAUT = "8/0.85/4/25"   # propriétaire, 01/11 : 250 à 500 morts et 35 à 50 connexions par heure, serveur plein (haut de fourchette)
 # Aikar (docs/DEPLOIEMENT.md), -Xms = -Xmx
 AIKAR = ["-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-XX:MaxGCPauseMillis=200", "-XX:+UnlockExperimentalVMOptions",
          "-XX:+DisableExplicitGC", "-XX:+AlwaysPreTouch", "-XX:G1NewSizePercent=30", "-XX:G1MaxNewSizePercent=40",
@@ -1098,8 +1098,8 @@ def finir(a, d, rapport, res, serveur, gc_log):
           "(le camp est une dalle sous le point de réveil).",
           "- Bots sans vrai jeu : le réseau est simulé (paquets mis en forme et compressés, pas envoyés) ; leurs « paquets » "
           "(déplacements, gestes, clic de réapparition) sont joués dans le tick ; leurs mouvements sont calculés par le serveur.",
-          "- Les rythmes (morts, connexions, voyages, part du temps en combat) sont des estimations pour 150 joueurs, à recaler "
-          "sur les journaux du Ptero.",
+          "- Les rythmes : morts et connexions d'après le propriétaire (250 à 500 morts et 35 à 50 connexions par heure, serveur "
+          "plein ; haut de fourchette par défaut) ; voyages et part du temps en combat estimés.",
           "- La machine de GitHub n'est pas celle du Ptero : comparer des bancs entre eux (même nombre de bots, même durée), pas avec le Ptero.",
           "- Le profil du diagnostic (/diag start = /diag profil) relève la pile toutes les 5 ms, pendant et entre les ticks : environ 1 % du serveur pendant la mesure (coût mesuré en tête du rapport profil-<date>).", ""]
     texte = "\n".join(o)

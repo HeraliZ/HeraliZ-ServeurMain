@@ -50,9 +50,9 @@ on:
         type: string
         default: "6/4"
       rythmes:
-        description: "Pour 150 joueurs : morts/connexions/voyages par minute, puis % du temps en combat (off : comme avant)"
+        description: "Pour 150 joueurs : morts/connexions/voyages par minute, puis % du temps en combat (off : comme avant ; défaut : chiffres du propriétaire, haut de fourchette)"
         type: string
-        default: "5/2/4/25"
+        default: "8/0.85/4/25"
   push:
     branches-ignore: [main]
     paths: [".github/workflows/banc.yml"]
@@ -120,7 +120,7 @@ jobs:
       REGLES: ${{ inputs.regles || '' }}
       AB: ${{ inputs.ab && 'oui' || 'non' }}
       DISTANCES: ${{ inputs.distances || '6/4' }}
-      RYTHMES: ${{ inputs.rythmes || '5/2/4/25' }}
+      RYTHMES: ${{ inputs.rythmes || '8/0.85/4/25' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -149,7 +149,7 @@ jobs:
           A=""; [ "$AB" = "oui" ] && [ -n "$(printf '%s' "$R" | tr -d ' ;')" ] && A="--ab"
           V=$(printf '%s' "$DISTANCES" | cut -d/ -f1 | tr -cd '0-9'); V=${V:-6}; [ "$V" -lt 2 ] && V=2; [ "$V" -gt 32 ] && V=32
           SIM=$(printf '%s' "$DISTANCES" | cut -s -d/ -f2 | tr -cd '0-9'); SIM=${SIM:-4}; [ "$SIM" -lt 2 ] && SIM=2; [ "$SIM" -gt 32 ] && SIM=32
-          RY=$(printf '%s' "$RYTHMES" | tr -cd 'A-Za-z0-9./'); RY=${RY:-5/2/4/25}
+          RY=$(printf '%s' "$RYTHMES" | tr -cd 'A-Za-z0-9./'); RY=${RY:-8/0.85/4/25}
           # durée au plus : 60 min, plus une mesure de plus en A/B
           DM=60; [ -n "$A" ] && DM=$((60 + M + 3))
           { echo "NB=$B"; echo "DUREE=$M"; echo "CH=$C"; echo "PLAT=$P"; echo "DIAG_CMD=$D"; echo "SCEN=$S"; echo "REGLES_CMD=$R";
