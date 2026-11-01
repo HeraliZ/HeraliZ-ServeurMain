@@ -6,7 +6,7 @@ Ici : des mixins **serveur** du noyau (jar de Minecraft, de Forge et de Mohist i
 que Minecraft**, chacun coupé par un réglage de `[perf]` dans `heraliz_noyau-server.toml`. Plus, à la demande du
 propriétaire, les **tics aléatoires coupés** (réglage `[monde] tics_aleatoires`).
 
-Version : **Noyau 1.0.11** (rien d'autre). Côté serveur seulement ; le numéro change, les joueurs reçoivent le nouveau jar
+Version : **Noyau 1.0.11** (rien d'autre). Suite : **étape 2, Noyau 1.0.12**, en fin de fiche. Côté serveur seulement ; le numéro change, les joueurs reçoivent le nouveau jar
 par le launcher comme à chaque mise en ligne.
 
 **Rien de ceci n'a été essayé en jeu, ni compilé avec Gradle** (dépôt de Forge bloqué ici). Seules les classes changées
@@ -148,3 +148,198 @@ Pour couper une optimisation (si un des points 3 à 6 montre un souci) : passer 
 4. **Mouvements des joueurs** (point 2, ~10 ms par tick restants à 150 joueurs) : lancer le gros chantier « index par
    tronçon » avec banc avant et après ?
 5. **Envoi étalé des tronçons** (point 4b) : le garder pour plus tard, coupé par défaut et essayé en jeu ?
+
+---
+
+# Étape 2 (Noyau 1.0.12) — suivi des entités, tickets, tronçons qui tournent, menus
+
+Demande : le banc réaliste du 01/11 (100 bots, vue 8, simulation 4 comme le vrai serveur) donne **39,8 ms par tick** (95 % à
+49,5) ; à **150 bots : 135 ms par tick, 7 TPS**. Le plus gros : `ChunkMap.move` (paquets de mouvement des joueurs) **14,6 ms à
+100 joueurs, 77,4 ms à 150** (joueurs × entités, dont **2 300 à 3 150 balles de TaCZ**). Mêmes règles qu'à l'étape 1 : mixins
+facultatifs (`heraliz_noyau_allege.mixins.json`, `require 0`), un réglage `[perf]` par optimisation, jamais utilisée tant que
+ses crochets de sécurité n'ont pas été vus en marche, même résultat que Minecraft (sauf mention).
+
+**Rien de ceci n'a été essayé en jeu, ni compilé avec Gradle** (dépôt de Forge bloqué ici). Les classes changées ont été
+compilées (javac, Java 17) contre des « bouchons » (signatures de Minecraft, Forge, Mixin) ; la logique des points 1 et 3 a
+été essayée hors du jeu (plus bas). Les mixins n'ont jamais été appliqués pour de vrai.
+
+Lu pour vérifier : Minecraft 1.20.1 décompilé, patchs de Mohist 1.20.1 (ChunkMap, ChunkHolder, ServerChunkCache,
+DistanceManager, AbstractContainerMenu, ServerEntity), `CraftPlayer`, `CraftEntity`, `TrackingRange` et `ActivationRange` de
+Mohist (les numéros de ligne du profil collent : `CraftPlayer.java:1575` = `canSee`, `CraftEntity.java:853` =
+`isVisibleByDefault`), Mixin 0.8.5, les mixins de ModernFix qui touchent les mêmes classes, l'anti-ESP de Spartan
+(`com/Spartan/esp`), le vanish du staff (`VanishServeur`, `PontBukkit`).
+
+## Tableau (150 joueurs, vue 8 ; « avant » = banc à 150 bots du 01/11)
+
+| Point | Endroit (Minecraft/Mohist → notre fichier) | Avant | Après (estimé) | Pour le joueur |
+|---|---|---|---|---|
+| 1. Suivi des entités à chaque paquet de mouvement | `ChunkMap.move` (l. 1111, boucle sur toutes les entités) → `TrackedEntity.updatePlayer` (l. 1448-1463) → `allege/SuiviCarteMixin.java:54`, `perf/SuiviParTroncon.java:463` (`bouger`), `:499` (`candidats`), `:675` (`juger`) | **77,4 ms** (~4 000 entités × 150 paquets = ~600 000 paires) | **~3 à 5 ms** (~140 entités jugées par paquet au lieu de ~3 650) | rien : mêmes entités vues aux mêmes moments, mêmes paquets ; seul l'ordre des paquets entre deux entités différentes change (Minecraft les envoie déjà dans un ordre quelconque) |
+| 1 a. Test de Bukkit (`canSee`, vanish) | patch de Mohist l. 1455 → `perf/VoirBukkit.java:113` | `isVisibleByDefault` 18,5 ms + `getUniqueId` 2,1 ms | compris dans le point 1 (champ de l'entité lu directement) | rien (même réponse ; vrai test pour un joueur à qui un staff est caché, et une fois sur 4 096 pour comparer) |
+| 1 b. `seenBy.remove` des entités lointaines | `Collections$SetFromMap.remove` (l. 1463) | 13 ms | ~0 (entités lointaines plus jugées ; les proches lues dans le miroir) | rien |
+| 1 c. Entité ou joueur qui change de section | `ChunkMap.tick` (l. 1268/1274 : `updatePlayers` sur tous les joueurs, puis toutes les entités pour chaque joueur qui a changé de section) → `allege/SuiviMixin.java:29`, `allege/SuiviCarteMixin.java:83`, `perf/SuiviParTroncon.java:593`, `:643` | ~2,1 ms | ~0,2 ms | rien |
+| 2. Ticket `UNKNOWN` de `getChunk` | `ServerChunkCache.getChunk` → `getChunkFutureMainThread` (l. 248 : ticket d'un tick même pour un tronçon complet) → `allege/TronconSansTicketMixin.java:35`, `perf/TronconsSansTicket.java:32` | 735 + 230 + 19 tickets à un instant (carte, tutoriel, spawn), leur part de `purgeStaleTickets` (1,55 ms en tout) et de `runAllUpdates` (1,26 ms) : **~0,5 à 1 ms** | ~0 | presque rien : un tronçon que plus RIEN ne tient (aucun joueur, aucun autre ticket) redescend 1 à 2 ticks (0,1 s) plus tôt |
+| 3. Parcours de tous les tronçons | `ServerChunkCache.tickChunks` (l. 371, `Iterators$1.hasNext` 4,34 ms) → `allege/ActifsCacheMixin.java:21`, `allege/ActifsTronconMixin.java:20`, `perf/TronconsActifs.java:68`, `:87` | **~5 ms** (~29 700 tronçons parcourus par tick) | **~0,4 ms** (seulement ceux qui peuvent tourner, ~1/8) | rien : mêmes tronçons, que Minecraft mélange ensuite au hasard comme avant |
+| 4. Menus : double comparaison | `AbstractContainerMenu.broadcastChanges` (l. 236/238 : `triggerSlotListeners` puis `synchronizeSlotToRemote`, `CompoundTag.equals`) → `allege/MenuSyncMixin.java:32`, `:47` | 1,9 ms | ~1 ms | rien |
+| 4 bis. Reste du tick des joueurs (`doTick`) | `Player.tick` : collisions 5,1 ms, eau 1,7 ms, TaCZ 1,5 ms, écouteurs 2,7 ms | 14 ms | **pas fait** (rien d'exact de sûr ; plus bas) | — |
+| 5. Monde du tutoriel | `crac:tuto` : 4,23 ms pour 13 à 14 joueurs, ~11 700 tronçons | — | **proposé seulement** (vue 4 : ~−50 % de tronçons, ~1,5 à 2 ms) | visible : voir plus bas |
+
+Ordre de grandeur : **~80 ms par tick en moins à 150 joueurs** (surtout le point 1), soit, depuis les 135 ms du banc,
+**~55 ms**. Ce n'est pas encore « nettement sous 50 » : voir « Ce qui reste » et les propositions (balles figées, portée des
+balles, vue du tutoriel), qui en retireraient encore ~5 à 10.
+
+`/diag etat` a une 2e ligne « Minecraft allégé, étape 2 : … » : mouvements faits par l'index (et entités jugées par paquet),
+listes de joueurs, changements de section, contrôles, index refaits, `canSee` lus sur l'entité, tronçons sans ticket, ticks
+par liste des tronçons qui tournent, comparaisons de menu évitées. Un compteur à 0 après une soirée avec du monde = mixin pas
+appliqué (chercher `heraliz_noyau_allege` dans le journal) ; « COUPÉ » = une sécurité a coupé l'optimisation (le journal dit
+pourquoi).
+
+## Point 1 : comment c'est exact
+
+Pour une paire (entité, joueur), Minecraft ne fait **rien** si l'entité est à plus de `vue × 16` blocs (sa portée ne dépasse
+jamais ça) et que le joueur ne la voit pas déjà : elle reste non vue, aucun paquet. Il suffit donc de juger :
+- les entités des cases de 32 blocs à portée du joueur (index « case → entités » tenu à jour : entité suivie ou plus,
+  changement de tronçon) ;
+- celles qu'il voit déjà, où qu'elles soient (téléportation de l'un ou de l'autre) : chaque liste `seenBy` de Minecraft est
+  remplacée, à la création de l'entrée, par la même liste (même ordre, mêmes réponses) qui note chaque ajout et chaque retrait
+  dans un « miroir » posé sur la connexion du joueur — quel que soit le code qui la change.
+
+Chaque paire retenue est jugée avec la décision de Mohist refaite à l'identique : même distance, même portée
+(`getEffectiveRange`, passagers compris, calculée seulement si l'entité n'est pas déjà trop loin), `broadcastToPlayer` (où se
+branche l'anti-ESP de Spartan) puis le test `canSee` de Bukkit dans le même ordre, mêmes ajouts et retraits, mêmes paquets
+(`addPairing` / `removePairing`, donc mêmes événements `StartTracking` / `StopTracking` de Forge).
+
+Ce qui est gardé :
+- **vanish du staff** (`/staff vanish`, `hidePlayer` de Bukkit) : Bukkit retire le joueur de la liste (noté dans le miroir) et
+  `canSee` dit non tant qu'il est caché (le vrai test est posé pour tout joueur à qui une entité est cachée) ;
+- **anti-ESP de Spartan** : sa décision passe par `broadcastToPlayer`, appelé pour les mêmes paires qu'avant (seules les
+  paires hors de portée, pour lesquelles Minecraft ne l'appelait déjà pas, sont sautées) ; ses mises à jour directes
+  (`TrackerAccess.refresh` → `updatePlayer`) passent par la liste, donc par le miroir ;
+- **véhicules avec passagers** (portée du plus loin des passagers) ; **spectateurs** (`broadcastToPlayer` de Minecraft) ;
+- un appel imbriqué (un écouteur appelé pendant un jugement) est fait par Minecraft.
+
+Sécurités : rien n'est utilisé tant que les 4 crochets (listes, entité suivie, entité plus suivie, changement de tronçon)
+n'ont pas été vus en marche, ni si le nombre d'entrées de l'index n'est pas celui de Minecraft (index refait à la fin du
+tick), ni pour un joueur dont la connexion n'a pas de miroir. Une paire sur 8 192 est rejugée par Minecraft lui-même (rien ne
+doit changer) ; toutes les 60 s, l'index et les miroirs sont comparés en entier à Minecraft. Un écart, ou une liste changée
+depuis un autre fil que celui du serveur : coupé jusqu'au redémarrage, ligne `[noyau] suivi des entités par tronçon coupé…`.
+
+Essai hors du jeu : deux mondes identiques, l'un avec les boucles de Minecraft, l'autre avec celles-ci (joueurs qui bougent,
+tournent la tête, se téléportent, se connectent, partent, changent de section ; entités lentes et rapides, téléportées, qui
+apparaissent, disparaissent, prennent un passager ; vanish ; décisions de `broadcastToPlayer` qui changent ; vue de 2 à 10) :
+**69 064 états comparés, 470 746 paquets de mouvement faits par l'index, 0 différence** (qui voit quoi, paquets envoyés). Avec
+une erreur volontaire, les différences sont vues et la sécurité coupe tout. Ordre de grandeur hors du jeu (150 joueurs en 25
+groupes, 2 500 balles dont 2 200 figées autour de 10 groupes en combat, 1 000 créatures) : ~3 650 → ~140 entités jugées par
+paquet, 15 ms → 1,4 ms pour les 150 paquets d'un tick (objets plus légers que dans le jeu).
+
+La piste « presque exacte » (rien si le joueur n'a pas bougé d'un demi-bloc) n'a pas été prise : un joueur qui marche bouge de
+0,2 à 0,3 bloc par tick, la passe complète aurait encore eu lieu tous les 2 à 3 ticks (~30 ms à 150 joueurs), et elle changeait
+le moment où une entité apparaît.
+
+## Point 2 : ticket UNKNOWN
+
+À chaque `getChunk(x, z, FULL, true)` sur le fil du serveur qui rate le petit cache de 4 tronçons (chaque `getBlockState`
+d'une créature, d'une balle, d'un mod…), Minecraft pose un ticket `UNKNOWN` (niveau 33, un tick) avant de rendre le tronçon,
+même déjà complet ; le gestionnaire des distances l'ajoute, recalcule les niveaux, puis le retire au tick suivant. Paper rend
+directement un tronçon complet. Ici, seulement si Minecraft lui-même trouverait le tronçon présent (même test `chunkAbsent`,
+celui de Mohist) et que son avenir FULL est déjà terminé : **le même objet**, rangé dans le même petit cache, après le
+court-circuit « en cours de chargement » de Forge (ModernFix ajoute le même au même endroit : sans conflit). Tout le reste
+(tronçon absent, en cours, en échec, autre statut, autre fil) : Minecraft.
+
+Sûr sous Forge et Mohist : le tronçon rendu reste en mémoire tant que le code qui l'a demandé s'en sert (Minecraft ne
+décharge qu'à la fin de son tick des tronçons) ; un tronçon près d'un joueur est tenu par le ticket du joueur. **Seule
+différence** : un tronçon que plus rien ne tient (le dernier joueur vient de partir) redescend 1 à 2 ticks plus tôt.
+
+## Point 3 : tronçons qui tournent
+
+Chaque carte tient la liste de ses supports de tronçon dont le niveau permet de tourner, mise à jour à la fin de
+`ChunkHolder.updateFutures` (seul endroit où Minecraft crée ou retire leur avenir « qui tourne », avec le même test). La boucle
+de `tickChunks` parcourt cette liste (seulement ses supports qui sont aussi ceux des tronçons visibles de Minecraft) et garde
+son test `getTickingChunk()`. Comparée en entier à Minecraft toutes les 60 s (refaite si écart, coupée après 5 écarts).
+Essai hors du jeu : 20 000 ticks (niveaux qui changent, avenirs prêts en retard, supports qui partent de la carte avec du
+retard et n'y sont visibles qu'au tick suivant) : 0 différence ; avec une erreur volontaire, vue et coupée.
+
+## Point 4 : tick des joueurs (`doTick`, 14 ms à 150)
+
+Fait : dans `broadcastChanges` (menu ouvert de chaque joueur, à chaque tick), Minecraft comparait chaque case deux fois à ses
+copies, chaque fois en entier (NBT des armes de TaCZ, sacs, armures, capacités de Forge). Quand les deux copies sont le même
+objet et que la 1re a dit « pareil », la 2e (la même question) est sautée.
+
+Pas fait (rien d'exact de sûr sans essai) :
+- **collisions** (`Player.aiStep` → `Entity.move` → `BlockCollisions`, 5,1 ms) : les bots du banc sont déplacés par le serveur
+  lui-même ; un vrai joueur est déplacé par son jeu (le serveur ne fait qu'un petit pas de gravité) : à mesurer avec de vrais
+  joueurs avant de chercher plus ;
+- eau et lave (`updateInWaterStateAndDoFluidPushing`, 1,7 ms), tick de TaCZ (1,5 ms), écouteurs des mods (Curios, TaCZ, LR
+  Tactical, nos mods : ~2,7 ms) : à revoir mod par mod (chantier à part).
+
+## Point 5 : monde du tutoriel (proposé, pas fait)
+
+Chaque joueur du tutoriel est seul sur sa parcelle de 64 × 64 blocs (parcelles à 256 blocs l'une de l'autre, monde plat et
+vide autour) et tient ~850 tronçons (banc : 11 700 pour 13 à 14 joueurs, 4,23 ms par tick).
+
+| vue du tutoriel | tronçons par joueur (mesuré pour 8, estimé ensuite) | gain pour 15 joueurs du tutoriel |
+|---|---|---|
+| 8 (aujourd'hui) | ~850 | — |
+| 6 | ~625 (−26 %) | ~1 ms par tick |
+| 5 | ~530 (−38 %) | ~1,5 ms |
+| 4 | ~440 (−48 %) | ~2 ms, et ~5 000 tronçons de moins en mémoire |
+
+Visible : depuis la parcelle, le monde plat autour n'est plus dessiné au-delà de 64 blocs (vue 4) ; la parcelle elle-même
+(64 × 64) reste entière à l'écran depuis n'importe quel point avec une vue de 5 ; à 4, son coin opposé (à ~90 blocs) peut être
+coupé. **Comment** : Mohist a une vue par monde (`world-settings` de `spigot.yml`), mais notre `heraliz_distances-server.toml`
+(module `monde`, `DistanceVue`) impose la même vue à tous les mondes au démarrage (`PlayerList.setViewDistance`) : il faudrait
+un réglage à nous (« vue par monde », appliquée après), et un essai en jeu (le jeu du joueur garde sa vue de 8, il reçoit
+simplement moins de tronçons dans ce monde).
+
+## Balles de TaCZ (proposé, pas fait)
+
+- **Portée de suivi** : TaCZ déclare 80 blocs (`clientTrackingRange(5)`), mais Mohist la remplace par la portée « other » de
+  `spigot.yml` (les balles ne sont ni des objets ni de l'expérience, pas « misc ») : **64 blocs**. La baisser seulement pour
+  `tacz:bullet` (mixin, jar de TaCZ intact ; changer « other » toucherait aussi véhicules, caisses de largage, grenades,
+  corps…) : à 32, un joueur ne verrait plus les traçantes (et leurs impacts) que des balles passées à moins de 32 blocs de lui
+  (aujourd'hui 64) ; le bruit des tirs ne dépend pas de la balle. Gain après le point 1 : moins de paires « à portée » jugées
+  en entier et moins de paquets d'apparition (réseau) : ~1 ms par tick à 150 joueurs.
+- **Balles figées** (constaté au banc à 150 : 2 300 à 3 150 balles présentes, **40 seulement tournent par tick**) : une balle
+  qui sort de la zone simulée (simulation 4) s'arrête net côté serveur, sans vieillir, et reste suivie tant que le tronçon est
+  chargé (le groupe qui a tiré est à côté). Le jeu du tireur l'a déjà fait voler et disparaître de lui-même. Aujourd'hui elle
+  coûte à chaque paquet de mouvement des joueurs proches, et deux bizarreries : un joueur qui arrive près d'elle voit une
+  traçante partir de nulle part ; un joueur qui entre dans la zone simulée la « réveille » et elle peut le toucher, des
+  minutes après le tir. **Proposition** : retirer une balle de TaCZ dès qu'elle cesse de tourner (mixin). Gain : ~60 % des
+  entités du serveur en combat, et chaque coût par entité (suivi, `ChunkMap.tick`, mémoire) d'autant.
+
+## Ce qui reste (après l'étape 2, banc à 150)
+
+`doTick` 14 ms (voir point 4), entités ~9 ms (balles 1,9 ; **orbes d'expérience 1,8** : 123 orbes qui tournent, 14 µs
+chacune ; joueurs 1,9 ; zombies 1,1), `ServerEntity.sendChanges` 2,9 ms (paquets de mouvement des entités, nécessaires),
+TaCZ 4,6 ms, Spartan 2,8 ms, joueurs proches des tronçons (étape 1) 2,7 ms, `LevelTicks.sortContainersToTick` 1,9 ms,
+sauvegarde des tronçons (`ChunkMap.save`, 1,9 + 1,4 ms à 100 joueurs : parcours des tronçons visibles pour en sauver 20 par
+tick). Et le banc lui-même (cerveau des bots, réseau simulé : `Reseau.recevoir` 2 ms).
+
+## À vérifier en jeu (étape 2)
+
+1. **Démarrage** : pas d'erreur de mixin avec `heraliz_noyau_allege` (surtout `SuiviMixin`, `SuiviCarteMixin`,
+   `SuiviEntiteMixin`, `VusConnexionMixin`, `TronconSansTicketMixin`, `ActifsCacheMixin`, `MenuSyncMixin`).
+2. **`/diag etat` après une soirée** : ligne « étape 2 » : mouvements par l'index au-dessus de 0 avec ~100 à 200 entités
+   jugées par mouvement, pas de « COUPÉ » ; tronçons sans ticket, ticks par liste, comparaisons évitées au-dessus de 0 ; dans
+   le journal, aucune ligne `suivi des entités par tronçon coupé`, `écart(s) avec Minecraft`, `tronçons qui tournent : liste en
+   écart`.
+3. **Ce qu'on voit** : joueurs, zombies, animaux, véhicules (avec et sans passager), objets au sol, balles et traçantes
+   apparaissent et disparaissent aux mêmes distances qu'avant ; après une téléportation (`/spawn`, `/home`, extraction,
+   tutoriel, mort), plus rien de l'endroit quitté ne reste affiché (aucun joueur ou zombie « fantôme » immobile).
+4. **Vanish** : `/staff vanish` cache toujours le staff (entité et tab) aux joueurs, le staff se voit entre lui ; en sortant du
+   vanish, il réapparaît tout de suite pour les joueurs proches.
+5. **Anti-ESP de Spartan** : un joueur derrière un mur reste caché, réapparaît dès qu'il est visible.
+6. **Inventaires** : armes de TaCZ (munitions, accessoires, camos), sacs, armures, Curios : tout changement dans l'inventaire
+   se voit tout de suite chez le joueur (déplacer, recharger, tirer, ramasser) ; l'écran d'un coffre ou d'un sac aussi.
+7. **Créatures et pousse** : les zombies et les animaux apparaissent comme avant ; les blocs qui « tournent » (feu, eau) aussi.
+8. **Banc de charge** à 100 et 150 bots : `ChunkMap.move`, `CraftEntity.isVisibleByDefault`, `Collections$SetFromMap.remove`,
+   `Iterators$1.hasNext`, `purgeStaleTickets` doivent baisser nettement ; me renvoyer les deux résumés.
+
+Pour couper une optimisation : son réglage de `[perf]` à `false` dans `heraliz_noyau-server.toml` (relu en marche) :
+`suivi_par_troncon`, `suivi_voir_rapide`, `troncons_sans_ticket`, `troncons_actifs_liste`, `menus_une_comparaison`.
+
+## Questions pour le propriétaire (étape 2)
+
+1. **Balles figées de TaCZ** : les retirer dès qu'elles cessent de tourner (plus de traçante « fantôme » ni de balle qui touche
+   des minutes après) ? C'est le plus gros gain restant en combat.
+2. **Portée des balles** : la baisser de 64 à 32 ou 48 blocs (traçantes vues de moins loin) ?
+3. **Tutoriel** : vue de 5 (la parcelle reste entière à l'écran) ou de 4 dans ce monde seulement ?
