@@ -23,7 +23,8 @@ import org.jetbrains.annotations.Nullable;
  * des rails, autour de la plateforme pétrolière. Masque calculé par {@code outils/zones_construction.py} et déposé avec
  * les configs du serveur : {@code config/crac/zones_construction.json} (coin nord-ouest, taille d'une case en blocs) et
  * {@code config/crac/zones_construction_masque.png} (blanc = interdit). Relu tout seul quand le fichier change. Ni
- * l'armoire ni une pièce ne s'y posent, en survie ; le créatif passe. Sans fichier : aucune zone (avertissement).
+ * l'armoire ni une pièce ne s'y posent, en survie ; le créatif passe. Sans fichier : aucune zone (avertissement). Un
+ * changement du fichier est vu en 5 s au plus ({@link DatesFichiers}).
  */
 public final class ZonesConstruction {
     private static final Path DOSSIER = FMLPaths.CONFIGDIR.get().resolve("crac");
@@ -93,12 +94,9 @@ public final class ZonesConstruction {
     }
 
     private static void charger() {
-        long t;
-        try {
-            t = Files.exists(JSON) ? Files.getLastModifiedTime(JSON).toMillis() : -1L;
-        } catch (Exception e) {
-            t = -1L;
-        }
+        // 01/11 : date relevée sur un fil à part (DatesFichiers) ; avant, deux accès au disque à chaque appel, sur le fil
+        // du serveur (chaque case d'une pièce posée, chaque essai de /rtp, deux fois par seconde par joueur plan en main)
+        long t = DatesFichiers.date(JSON);
         if (t == lu) {
             return;
         }
