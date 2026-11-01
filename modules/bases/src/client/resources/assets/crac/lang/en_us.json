@@ -418,6 +418,7 @@
   "crac.depart.annule": "Departure cancelled: you moved.",
   "crac.depart.blesse": "Departure cancelled: you were hurt.",
   "crac.depart.ne_bouge_pas": "Don't move: leaving in %s s.",
+  "crac.depart.preparation": "Preparing the arrival…",
   "crac.duree.hm": "%s h %s min",
   "crac.duree.jh": "%s d %s h",
   "crac.duree.m": "%s min",

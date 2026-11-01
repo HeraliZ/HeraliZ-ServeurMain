@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import fr.heraliz.crac.Crac;
 import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.claim.ClaimManager;
@@ -52,8 +53,17 @@ import org.jetbrains.annotations.Nullable;
  */
 @EventBusSubscriber(modid = "crac")
 public final class Deplacements {
-    private record Attente(String genre, Vec3 depart, int ticks, Runnable action) {
+    /**
+     * Un départ en attente : {@code ticks} du compte à rebours ; {@code pret} (null : toujours) dit si l'arrivée est chargée,
+     * {@code enPlus} compte les ticks attendus pour elle après le compte à rebours (01/11) ; {@code immobile} : le joueur ne
+     * doit ni bouger ni être blessé (faux pour le staff, qui n'a pas de compte à rebours).
+     */
+    private record Attente(String genre, Vec3 depart, int ticks, Runnable action, @Nullable BooleanSupplier pret, int enPlus,
+                           boolean immobile) {
     }
+
+    /** Attente de l'arrivée après le compte à rebours, au plus (ticks) : 3 s. */
+    private static final int ATTENTE_ARRIVEE = 60;
 
     private record Message(UUID joueur, int ticks, Component texte) {
     }
@@ -148,9 +158,11 @@ public final class Deplacements {
             T.chat(p, T.t("crac.zone.attendre", "Prochain /rtp dans %s.", T.duree(reste + 999)), ChatFormatting.RED);
             return 0;
         }
-        // 01/11 : points d'arrivée tirés dès maintenant, leurs tronçons lus en tâche de fond pendant le compte à rebours
-        long[] points = Points.preparer(p.server.getLevel(MondeBases.BASES));
-        attendre(p, "zone", () -> partirZone(p, points));
+        // 01/11 : points d'arrivée tirés dès maintenant, leurs tronçons lus en tâche de fond pendant le compte à rebours ;
+        // départ quand l'un d'eux convient (ou qu'ils sont tous lus), 3 s de plus au plus
+        ServerLevel niveau = p.server.getLevel(MondeBases.BASES);
+        long[] points = Points.preparer(niveau);
+        attendre(p, "zone", () -> partirZone(p, points), () -> Points.parmi(niveau, p, points) != null || Points.tousCharges(niveau, points));
         return 1;
     }
 
@@ -161,7 +173,9 @@ public final class Deplacements {
         }
         Vec3 dest = Points.parmi(bases, p, points);
         if (dest == null) {
-            dest = Points.auHasard(bases, p);   // aucun n'est prêt ou ne convient : le tirage d'avant
+            // aucun ne convient : le tirage d'avant, mais seulement dans des tronçons déjà chargés (01/11 : jamais d'arrivée
+            // dans un endroit pas chargé, jamais de chargement sur le fil du serveur) ; rien : « réessaie », délai pas compté
+            dest = Points.auHasardCharge(bases, p);
         }
         if (dest == null) {
             T.chat(p, T.t("crac.home.pas_de_place", "Aucune place sûre trouvée : réessaie dans un instant."),
@@ -347,13 +361,26 @@ public final class Deplacements {
     // ---------------------------------------------------------------------------------------------- départ immobile
 
     static void attendre(ServerPlayer p, String genre, Runnable action) {
+        attendre(p, genre, action, null);
+    }
+
+    /**
+     * Départ après {@code [home] immobile_s} secondes sans bouger ni être blessé ; avec {@code pret} (01/11), le départ
+     * attend en plus que l'arrivée soit chargée en tâche de fond, {@value #ATTENTE_ARRIVEE} ticks au plus (« Préparation de
+     * l'arrivée… ») : plus de chargement de la carte sur le fil du serveur au départ. Le staff part dès qu'elle est prête.
+     */
+    static void attendre(ServerPlayer p, String genre, Runnable action, @Nullable BooleanSupplier pret) {
         int s = staff(p) ? 0 : BasesReglages.i(BasesReglages.IMMOBILE_S, 3);
         if (s <= 0) {
             ATTENTES.remove(p.getUUID());
-            action.run();
+            if (pret == null || pret.getAsBoolean()) {
+                action.run();
+            } else {
+                ATTENTES.put(p.getUUID(), new Attente(genre, p.position(), 0, action, pret, 0, false));
+            }
             return;
         }
-        ATTENTES.put(p.getUUID(), new Attente(genre, p.position(), s * 20, action));
+        ATTENTES.put(p.getUUID(), new Attente(genre, p.position(), s * 20, action, pret, 0, true));
         T.chat(p, T.t("crac.depart.ne_bouge_pas", "Ne bouge pas : départ dans %s s.", String.valueOf(s)), ChatFormatting.YELLOW);
         T.barre(p, T.t("crac.depart.ne_bouge_pas", "Ne bouge pas : départ dans %s s.", String.valueOf(s)), ChatFormatting.YELLOW);
     }
@@ -407,23 +434,31 @@ public final class Deplacements {
             if (p == null || !p.isAlive()) {
                 continue;
             }
-            if (p.position().distanceToSqr(a.depart()) > 0.36) {
+            if (a.immobile() && p.position().distanceToSqr(a.depart()) > 0.36) {
                 // poussé par un autre corps ou repoussé par un coup (1.21.1) : le départ suit le joueur
                 if (!pousse(p)) {
                     T.chat(p, T.t("crac.depart.annule", "Départ annulé : tu as bougé."), ChatFormatting.RED);
                     continue;
                 }
-                a = new Attente(a.genre(), p.position(), a.ticks(), a.action());
+                a = new Attente(a.genre(), p.position(), a.ticks(), a.action(), a.pret(), a.enPlus(), a.immobile());
             }
             int t = a.ticks() - 1;
             if (t <= 0) {
-                departs.add(a.action());
+                if (a.pret() == null || a.enPlus() >= ATTENTE_ARRIVEE || a.pret().getAsBoolean()) {
+                    departs.add(a.action());
+                    continue;
+                }
+                // 01/11 : compte à rebours fini, arrivée pas encore chargée : on attend (toujours immobile), sans geler le serveur
+                if (a.enPlus() == 0) {
+                    T.barre(p, T.t("crac.depart.preparation", "Préparation de l'arrivée…"), ChatFormatting.YELLOW);
+                }
+                suite.put(e.getKey(), new Attente(a.genre(), a.depart(), 0, a.action(), a.pret(), a.enPlus() + 1, a.immobile()));
                 continue;
             }
             if (t % 20 == 0) {
                 T.barre(p, T.t("crac.depart.ne_bouge_pas", "Ne bouge pas : départ dans %s s.", String.valueOf(t / 20)), ChatFormatting.YELLOW);
             }
-            suite.put(e.getKey(), new Attente(a.genre(), a.depart(), t, a.action()));
+            suite.put(e.getKey(), new Attente(a.genre(), a.depart(), t, a.action(), a.pret(), a.enPlus(), a.immobile()));
         }
         ATTENTES.putAll(suite);
         // les téléportations après le parcours (une action peut relancer une attente)
@@ -452,7 +487,9 @@ public final class Deplacements {
     /** Blessé pendant l'attente : départ annulé. */
     @SubscribeEvent
     public static void blesse(LivingHurtEvent e) {
-        if (e.getEntity() instanceof ServerPlayer p && ATTENTES.remove(p.getUUID()) != null) {
+        // le staff (sans compte à rebours) qui attend son arrivée n'est pas arrêté par un coup (01/11)
+        Attente a = e.getEntity() instanceof ServerPlayer sp ? ATTENTES.get(sp.getUUID()) : null;
+        if (a != null && a.immobile() && e.getEntity() instanceof ServerPlayer p && ATTENTES.remove(p.getUUID()) != null) {
             T.chat(p, T.t("crac.depart.blesse", "Départ annulé : tu as été blessé."), ChatFormatting.RED);
         }
     }

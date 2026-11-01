@@ -418,6 +418,7 @@
   "crac.depart.annule": "Отправка отменена: ты сдвинулся.",
   "crac.depart.blesse": "Отправка отменена: тебя ранили.",
   "crac.depart.ne_bouge_pas": "Не двигайся: отправка через %s с.",
+  "crac.depart.preparation": "Подготовка места прибытия…",
   "crac.duree.hm": "%s ч %s мин",
   "crac.duree.jh": "%s д %s ч",
   "crac.duree.m": "%s мин",

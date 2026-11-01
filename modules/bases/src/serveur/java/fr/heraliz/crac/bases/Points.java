@@ -16,8 +16,6 @@ import org.jetbrains.annotations.Nullable;
 /** Points d'arrivée dans le monde des bases : près de sa base, ou au hasard sur un sol plat loin des autres bases. */
 final class Points {
     private static final int ESSAIS = 48;
-    /** Tronçons pas encore chargés qu'un seul appel peut charger (le reste des essais se fait sur des tronçons chargés). */
-    private static final int CHARGES_MAX = 6;
 
     private Points() {
     }
@@ -65,17 +63,17 @@ final class Points {
 
     /**
      * Un point au hasard dans le monde des bases : sol naturel plat (5 × 5 à un bloc près), pas d'eau, dans la bordure,
-     * à {@code [bases] ecart_bases} blocs au moins de tout Claim Block. Génère au plus quelques tronçons. Null si rien
-     * n'a été trouvé en {@value #ESSAIS} essais.
+     * à {@code [bases] ecart_bases} blocs au moins de tout Claim Block, hors des zones interdites. 01/11 : seulement dans
+     * des tronçons déjà chargés (avant : jusqu'à 6 tronçons chargés sur le fil du serveur) ; secours de /rtp quand aucun des
+     * points préparés ({@link #preparer}) ne convient. Null si rien n'a été trouvé en {@value #ESSAIS} essais.
      */
     @Nullable
-    static Vec3 auHasard(ServerLevel level, ServerPlayer p) {
+    static Vec3 auHasardCharge(ServerLevel level, ServerPlayer p) {
         RandomSource rnd = level.getRandom();
         WorldBorder b = level.getWorldBorder();
         double demi = Math.max(32.0, b.getSize() / 2.0 - 100.0);
         double rayon = Math.min(BasesReglages.i(BasesReglages.RAYON_DEPART, 1150), demi);
         int ecart = BasesReglages.i(BasesReglages.ECART_BASES, 120);
-        int charges = 0;
         for (int i = 0; i < ESSAIS; i++) {
             int x = (int) Math.floor(b.getCenterX() + (rnd.nextDouble() * 2 - 1) * rayon);
             int z = (int) Math.floor(b.getCenterZ() + (rnd.nextDouble() * 2 - 1) * rayon);
@@ -83,16 +81,10 @@ final class Points {
             if (presDUneBase(level, x, z, ecart) || MondeBases.estBases(level) && fr.heraliz.crac.heraliz.ZonesConstruction.interdit(x, z)) {
                 continue;
             }
-            // 24/10 : jamais de terrain neuf sur la carte (fichier de région absent = partie jamais construite), et au plus
-            // CHARGES_MAX tronçons chargés d'un coup sur le fil du serveur (avant : jusqu'à 48, gros à-coup)
-            boolean charge = level.getChunkSource().hasChunk(x >> 4, z >> 4);
-            if (!charge) {
-                if (charges >= CHARGES_MAX || level.dimension() == net.minecraft.world.level.Level.OVERWORLD && !regionPresente(level, x, z)) {
-                    continue;
-                }
-                charges++;
+            // jamais de chargement ici (ni terrain neuf) : seulement des tronçons déjà là, voisins lus par plat() compris
+            if (!charges(level, x, z)) {
+                continue;
             }
-            level.getChunk(x >> 4, z >> 4);
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             if (!plat(level, x, y, z)) {
                 continue;
@@ -106,10 +98,15 @@ final class Points {
     }
 
     /** Points tirés d'avance par {@link #preparer} (au plus), et tronçons demandés pour eux en tâche de fond (au plus). */
-    private static final int CANDIDATS = 16, TICKETS_MAX = 4;
+    private static final int CANDIDATS = 16, TICKETS_MAX = 6;
+    /**
+     * Autour d'un point tiré dont le sol n'est pas plat, quelques places voisines essayées aussi, toujours les mêmes (le test
+     * « prêt » du départ et le départ trouvent la même place), dans les tronçons déjà demandés.
+     */
+    private static final int[][] VOISINS = {{0, 0}, {6, 0}, {-6, 0}, {0, 6}, {0, -6}, {6, 6}, {-6, -6}, {6, -6}, {-6, 6}};
 
     /**
-     * /rtp, 01/11 : des points tirés au hasard avec les règles de {@link #auHasard} (bordure, écart aux bases, zones
+     * /rtp, 01/11 : des points tirés au hasard avec les règles de {@link #auHasardCharge} (bordure, écart aux bases, zones
      * interdites, jamais de terrain neuf), dès la commande ; les tronçons de ceux qui ne sont pas chargés (au plus
      * {@value #TICKETS_MAX}) sont demandés à Minecraft, qui les lit en tâche de fond pendant le compte à rebours. Avant, le
      * départ en chargeait jusqu'à 6, plus leurs voisins, sur le fil du serveur. Rien n'est chargé ici.
@@ -128,13 +125,14 @@ final class Points {
             if (presDUneBase(level, x, z, ecart) || MondeBases.estBases(level) && fr.heraliz.crac.heraliz.ZonesConstruction.interdit(x, z)) {
                 continue;
             }
-            if (!level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
+            net.minecraft.world.level.ChunkPos cp = new net.minecraft.world.level.ChunkPos(x >> 4, z >> 4);
+            if (!Prechargement.pret(level, cp, 1)) {
                 if (tickets >= TICKETS_MAX || level.dimension() == net.minecraft.world.level.Level.OVERWORLD && !regionPresente(level, x, z)) {
                     continue;
                 }
                 tickets++;
-                // le tronçon du point et ses voisins (plat() lit à 2 blocs autour), ticket de 30 s
-                Prechargement.precharger(level, new net.minecraft.world.level.ChunkPos(x >> 4, z >> 4), 1);
+                // le tronçon du point et ses voisins (plat() et les places voisines lisent jusqu'à 8 blocs autour), 30 s
+                Prechargement.precharger(level, cp, 1);
             }
             out[n++] = BlockPos.asLong(x, 0, z);
         }
@@ -142,27 +140,43 @@ final class Points {
     }
 
     /**
-     * Le premier des points tirés par {@link #preparer} où le joueur peut arriver, avec les tests de {@link #auHasard}
-     * (sol plat, place libre, toujours loin des bases), en ne lisant que des tronçons déjà chargés ; null si aucun.
+     * Le premier des points tirés par {@link #preparer} (ou une place voisine, {@link #VOISINS}) où le joueur peut arriver,
+     * avec les tests de {@link #auHasardCharge} (sol plat, place libre, loin des bases, hors des zones interdites), en ne
+     * lisant que des tronçons déjà chargés ; null si aucun.
      */
     @Nullable
     static Vec3 parmi(ServerLevel level, ServerPlayer p, long[] points) {
         int ecart = BasesReglages.i(BasesReglages.ECART_BASES, 120);
         for (long k : points) {
-            int x = BlockPos.getX(k), z = BlockPos.getZ(k);
-            if (!charges(level, x, z) || presDUneBase(level, x, z, ecart)) {
-                continue;   // pas encore lu, ou une base posée depuis la commande
-            }
-            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-            if (!plat(level, x, y, z)) {
-                continue;
-            }
-            BlockPos pieds = new BlockPos(x, y, z);
-            if (libre(level, p, pieds)) {
-                return Vec3.atBottomCenterOf(pieds);
+            for (int[] d : VOISINS) {
+                int x = BlockPos.getX(k) + d[0], z = BlockPos.getZ(k) + d[1];
+                if (!charges(level, x, z) || presDUneBase(level, x, z, ecart)
+                    || d != VOISINS[0] && MondeBases.estBases(level) && fr.heraliz.crac.heraliz.ZonesConstruction.interdit(x, z)) {
+                    continue;   // pas encore lu, une base posée depuis la commande, ou une place voisine interdite
+                }
+                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                if (!plat(level, x, y, z)) {
+                    continue;
+                }
+                BlockPos pieds = new BlockPos(x, y, z);
+                if (libre(level, p, pieds)) {
+                    return Vec3.atBottomCenterOf(pieds);
+                }
             }
         }
         return null;
+    }
+
+    /** Tous les points tirés et leurs places voisines sont lus (rien de plus à attendre pour eux). */
+    static boolean tousCharges(ServerLevel level, long[] points) {
+        for (long k : points) {
+            for (int[] d : VOISINS) {
+                if (!charges(level, BlockPos.getX(k) + d[0], BlockPos.getZ(k) + d[1])) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /** Les tronçons que {@link #plat} et {@link #libre} lisent autour de (x, z) sont tous chargés (aucun chargement). */

@@ -96,6 +96,16 @@ public final class TeleportBase {
         }
     }
 
+    /**
+     * Les tronçons que {@link #arrivee} lit (l'armoire et 4 blocs autour : au plus 3 × 3 tronçons) sont chargés, ou il n'y a
+     * plus de base (le départ refusera) : le départ de /home attend ce moment (01/11).
+     */
+    static boolean arriveeChargee(ServerPlayer p) {
+        ServerLevel l = p.server.getLevel(MondeBases.BASES);
+        Claim c = l == null ? null : base(p);
+        return c == null || Prechargement.pret(l, new net.minecraft.world.level.ChunkPos(c.anchor()), 1);
+    }
+
     /** Raison qui empêche la téléportation maintenant ({@link #OK} si elle est possible). */
     public static int raison(ServerPlayer p) {
         if (p.getPersistentData().getBoolean(Deplacements.EN_MATCH)) {

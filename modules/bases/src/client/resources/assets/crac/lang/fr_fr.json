@@ -418,6 +418,7 @@
   "crac.depart.annule": "Départ annulé : tu as bougé.",
   "crac.depart.blesse": "Départ annulé : tu as été blessé.",
   "crac.depart.ne_bouge_pas": "Ne bouge pas : départ dans %s s.",
+  "crac.depart.preparation": "Préparation de l'arrivée…",
   "crac.duree.hm": "%s h %s min",
   "crac.duree.jh": "%s j %s h",
   "crac.duree.m": "%s min",
