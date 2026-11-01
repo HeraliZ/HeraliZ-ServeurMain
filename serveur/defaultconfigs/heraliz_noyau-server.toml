@@ -70,6 +70,14 @@
 	#Minecraft.
 	entites_par_troncon = true
 
+[monde]
+	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée
+	#au chargement du monde (mondes créés plus tard compris), après le démarrage et quand ce fichier change, par l'API du jeu
+	#comme /gamerule. 0 : plus aucun tic aléatoire (herbe, feuilles, neige, glace, cultures, lave… ne changent plus seuls) ;
+	#3 : valeur de Minecraft ; -1 : ne pas toucher (la valeur déjà enregistrée dans le monde reste).
+	#Range: -1 ~ 4096
+	tics_aleatoires = 0
+
 [redemarrage]
 	#/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait
 	#redémarrer le serveur par le panel si son redémarrage après plantage est activé). Sinon : tâche « restart » du panel.

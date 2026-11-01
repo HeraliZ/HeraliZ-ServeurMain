@@ -27,7 +27,10 @@ public final class NoyauServeur implements Partie {
    public void init(IEventBus busMod) {
       CombatTag.APRES_MARQUAGE.brancher(CombatService::apresMarquage);
       CombatTag.APRES_EFFACEMENT.brancher(CombatService::apresEffacement);
-      NoyauConfig.APPLIQUES.brancher(v -> CombatService.commandesPermises(NoyauConfig.COMMANDES_COMBAT.get(), NoyauConfig.COMMANDES_CARTE.get()));
+      NoyauConfig.APPLIQUES.brancher(v -> {
+         CombatService.commandesPermises(NoyauConfig.COMMANDES_COMBAT.get(), NoyauConfig.COMMANDES_CARTE.get());
+         fr.heraliz.noyau.serveur.perf.TicsAleatoires.reglagesRelus();
+      });
       CombatEvents.enregistrer();
       EtiquetteBots.enregistrer();
       Reponse.enregistrer();
@@ -38,6 +41,7 @@ public final class NoyauServeur implements Partie {
       fr.heraliz.noyau.serveur.perf.LevelDatFond.enregistrer();
       fr.heraliz.noyau.serveur.perf.MondesSansSpawn.enregistrer();
       fr.heraliz.noyau.serveur.perf.Allege.enregistrer();
+      fr.heraliz.noyau.serveur.perf.TicsAleatoires.enregistrer();
       fr.heraliz.noyau.serveur.interactions.ClicObjetBukkit.enregistrer();
       MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
          if (e.phase == TickEvent.Phase.END) CombatService.tick(e.getServer());

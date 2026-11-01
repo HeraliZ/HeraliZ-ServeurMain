@@ -37,6 +37,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue DIAG_ANNONCER;
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> RECHARGER_COMMANDES;
    public static final ForgeConfigSpec.IntValue REDEMARRAGE_CODE;
+   public static final ForgeConfigSpec.IntValue TICS_ALEATOIRES;
+   /** Gamerule randomTickSpeed de chaque monde (-1 : ne pas toucher), relue avec les réglages (TicsAleatoires du serveur). */
+   public static volatile int ticsAleatoires = 0;
    public static final ForgeConfigSpec.DoubleValue FAIM_FACTEUR;
    /** Vitesse de la faim, relue avec les réglages (FaimMixin de la partie serveur). */
    public static volatile float faimFacteur = 0.35F;
@@ -136,6 +139,13 @@ public final class NoyauConfig {
             "Minecraft.")
             .define("entites_par_troncon", true);
       b.pop();
+      b.push("monde");
+      TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
+            "au chargement du monde (mondes créés plus tard compris), après le démarrage et quand ce fichier change, par l'API du jeu",
+            "comme /gamerule. 0 : plus aucun tic aléatoire (herbe, feuilles, neige, glace, cultures, lave… ne changent plus seuls) ;",
+            "3 : valeur de Minecraft ; -1 : ne pas toucher (la valeur déjà enregistrée dans le monde reste).")
+            .defineInRange("tics_aleatoires", 0, -1, 4096);
+      b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
             "redémarrer le serveur par le panel si son redémarrage après plantage est activé). Sinon : tâche « restart » du panel.")
@@ -159,6 +169,7 @@ public final class NoyauConfig {
       joueursProchesGrille = JOUEURS_PROCHES_GRILLE.get();
       porteeSuiviRapide = PORTEE_SUIVI_RAPIDE.get();
       entitesParTroncon = ENTITES_PAR_TRONCON.get();
+      ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 
