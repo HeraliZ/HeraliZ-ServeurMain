@@ -1,0 +1,86 @@
+# Lenteurs du serveur : LECTURE SEULE. Rapatrie dans le journal de cette tâche ce qu'il faut pour trouver les montées de
+# ms : les rapports du diagnostic du noyau (dossier diag/ à la racine du serveur : un rapport par blocage, avec le mod et
+# les lignes en cause), les lignes « Can't keep up » et ce qui les précède dans les journaux, les rapports de plantage,
+# l'historique de spark et quelques réglages qui jouent sur les perfs. Adresses IP masquées, rien n'est écrit, renommé
+# ni supprimé sur le Ptero (jamais « get -E », qui efface le fichier lu). Part d'une branche de travail quand ce fichier
+# change, ou par « Run workflow ».
+name: Lenteurs du serveur
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/lenteurs.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  lenteurs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
+      PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
+      PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
+      PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+    steps:
+      - name: Accès au Ptero
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
+          echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+
+      - name: Rapatrier (lecture seule)
+        run: |
+          R="set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
+          mkdir -p diag j c spark conf
+          # rapports du diagnostic du noyau (les 60 derniers au plus)
+          for f in $(l "cls -1 /diag/" 2>/dev/null | grep '\.txt$' | sort -r | head -60); do l "lcd diag; get /diag/$f" || true; done
+          # journaux : le courant et les 6 derniers (noms datés, les plus récents par le nom)
+          l "lcd j; get /logs/latest.log" || true
+          for f in $(l "cls -1 /logs/" 2>/dev/null | grep '\.log\.gz$' | sort -V -r | head -6); do l "lcd j; get /logs/$f" || true; done
+          for f in $(l "cls -1 /crash-reports/" 2>/dev/null | sort -r | head -4); do l "lcd c; get /crash-reports/$f" || true; done
+          l "lcd spark; get /plugins/spark/activity.json" || true
+          l "lcd spark; get /plugins/spark/config.json" || true
+          for f in server.properties spigot.yml bukkit.yml; do l "lcd conf; get /$f" || true; done
+          l "cls -l /diag/" > liste_diag.txt 2>/dev/null || true
+          l "cls -l /logs/" > liste_logs.txt 2>/dev/null || true
+          ls -la diag j c spark conf
+
+      - name: Contenu (journal de la tâche)
+        run: |
+          masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g; s/(password|passwd|secret|token|key)([=: ]+)[^ ]+/\1\2***/Ig'; }
+          echo "===== LISTE diag/ ====="; masque < liste_diag.txt | tail -80
+          echo "===== LISTE logs/ ====="; masque < liste_logs.txt | tail -30
+          echo "===== REGLAGES ====="
+          grep -E '^(view-distance|simulation-distance|max-players|sync-chunk-writes|network-compression-threshold|entity-broadcast-range-percentage|max-tick-time|level-name)=' conf/server.properties 2>/dev/null
+          grep -A12 -E '^\s*(entity-activation-range|entity-tracking-range):' conf/spigot.yml 2>/dev/null | head -40
+          grep -A12 -E '^(spawn-limits|ticks-per):' conf/bukkit.yml 2>/dev/null | head -30
+          echo "===== SPARK activity.json ====="; masque < spark/activity.json 2>/dev/null | head -c 20000; echo
+          for f in diag/*.txt; do [ -f "$f" ] || continue
+            echo "===== DIAG $(basename "$f") ====="; masque < "$f" | head -400
+          done
+          for f in j/*; do [ -f "$f" ] || continue
+            case "$f" in *.gz) txt=$(zcat "$f");; *) txt=$(cat "$f");; esac
+            echo "===== JOURNAL $(basename "$f") : Can't keep up ====="
+            printf '%s\n' "$txt" | grep -F "Can't keep up" | masque | tail -80
+            echo "===== JOURNAL $(basename "$f") : diag / moniteur / spark ====="
+            printf '%s\n' "$txt" | grep -E '\[(diag|moniteur)\]|spark|Tick #|lasted' | grep -v -E 'password|login|register' | masque | tail -120
+            echo "===== JOURNAL $(basename "$f") : 30 lignes avant chaque retard de 2 s et plus ====="
+            printf '%s\n' "$txt" | grep -E -B30 "Can't keep up.*Running ([2-9][0-9]{3}|[0-9]{5,})ms" | grep -v -E 'password|login|register' | masque | tail -400
+            echo "===== JOURNAL $(basename "$f") : erreurs ====="
+            printf '%s\n' "$txt" | awk 'f; /\]: Done \(/{f=1}' | grep -E -B1 -A12 'Exception|Error:|\bat fr\.heral|\bat com\.(heraliz|Spartan|caracrea)' \
+              | grep -v -E 'password|login|register' | masque | grep -v -E '^\s+at (java\.|jdk\.|net\.minecraftforge\.eventbus|cpw\.)' | head -400
+          done
+          for f in c/*; do [ -f "$f" ] || continue
+            echo "===== PLANTAGE $(basename "$f") ====="; grep -m1 -A40 -E '^Description:' "$f" | masque | head -60
+          done
+          echo "Rien n'a été modifié sur le Ptero."
