@@ -69,6 +69,10 @@
 	#tronçon, refait dès qu'une entité change de tronçon, apparaît ou disparaît (mêmes entités, même ordre). false : comme
 	#Minecraft.
 	entites_par_troncon = true
+	#Minecraft allégé (01/11) : quand plusieurs joueurs reçoivent le même tronçon dans le même tick (groupe
+	#extrait ou téléporté ensemble), son paquet n'est fabriqué qu'une fois (mêmes octets ; oublié dès qu'un bloc, une entité
+	#de bloc, la lumière ou les biomes du tronçon changent). false : un paquet par joueur, comme Minecraft.
+	paquets_troncons_partages = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée

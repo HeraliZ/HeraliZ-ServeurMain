@@ -61,6 +61,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue ENTITES_PAR_TRONCON;
    /** Entités d'un tronçon envoyé à un joueur cherchées dans un index par tronçon au lieu de toutes les entités du monde. */
    public static volatile boolean entitesParTroncon = true;
+   public static final ForgeConfigSpec.BooleanValue PAQUETS_TRONCONS_PARTAGES;
+   /** Paquet d'un tronçon fabriqué une fois par tick et redonné aux joueurs qui le reçoivent dans ce tick. */
+   public static volatile boolean paquetsTronconsPartages = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -138,6 +141,10 @@ public final class NoyauConfig {
             "tronçon, refait dès qu'une entité change de tronçon, apparaît ou disparaît (mêmes entités, même ordre). false : comme",
             "Minecraft.")
             .define("entites_par_troncon", true);
+      PAQUETS_TRONCONS_PARTAGES = b.comment("Minecraft allégé (01/11) : quand plusieurs joueurs reçoivent le même tronçon dans le même tick (groupe",
+            "extrait ou téléporté ensemble), son paquet n'est fabriqué qu'une fois (mêmes octets ; oublié dès qu'un bloc, une entité",
+            "de bloc, la lumière ou les biomes du tronçon changent). false : un paquet par joueur, comme Minecraft.")
+            .define("paquets_troncons_partages", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -169,6 +176,7 @@ public final class NoyauConfig {
       joueursProchesGrille = JOUEURS_PROCHES_GRILLE.get();
       porteeSuiviRapide = PORTEE_SUIVI_RAPIDE.get();
       entitesParTroncon = ENTITES_PAR_TRONCON.get();
+      paquetsTronconsPartages = PAQUETS_TRONCONS_PARTAGES.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }

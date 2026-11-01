@@ -28,21 +28,27 @@ public final class Allege {
    public static long entitesParIndex;
    /** Point 4 : index « tronçon → entités » faits. */
    public static long indexFaits;
+   /** Point 4 : paquets de tronçon redonnés au lieu d'être refabriqués (même tronçon, même tick). */
+   public static long paquetsPartages;
 
    /** Une fois, par la partie serveur : fin de tick et arrêt du serveur. */
    public static void enregistrer() {
       MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
          if (e.phase == TickEvent.Phase.END) {
             EntitesParTroncon.finDuTick();
+            PaquetsTroncons.finDuTick();
          }
       });
-      MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> EntitesParTroncon.vider());
+      MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
+         EntitesParTroncon.vider();
+         PaquetsTroncons.finDuTick();
+      });
    }
 
    /** Une ligne pour {@code /diag etat} et les rapports. */
    public static void etat(Consumer<String> ligne) {
       ligne.accept(String.format(Locale.ROOT, "Minecraft allégé (depuis le démarrage) : joueurs proches par grille %d tronçons (%d sans joueur) ;"
-                  + " portées de suivi sans flux %d ; tronçons envoyés par index d'entités %d (%d index)%n",
-            prochesGrille, prochesSansJoueur, porteeRapide, entitesParIndex, indexFaits));
+                  + " portées de suivi sans flux %d ; tronçons envoyés par index d'entités %d (%d index) ; paquets de tronçon redonnés %d%n",
+            prochesGrille, prochesSansJoueur, porteeRapide, entitesParIndex, indexFaits, paquetsPartages));
    }
 }

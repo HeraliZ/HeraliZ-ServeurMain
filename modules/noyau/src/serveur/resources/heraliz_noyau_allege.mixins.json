@@ -10,7 +10,11 @@
     "PorteeSuiviMixin",
     "SuiviAcces",
     "EntitesTronconMixin",
-    "EntiteTronconMixin"
+    "EntiteTronconMixin",
+    "PaquetsTronconsMixin",
+    "PaquetsChangementsMixin",
+    "PaquetsBlocsMixin",
+    "PaquetsEntitesBlocMixin"
   ],
   "injectors": {
     "defaultRequire": 0
