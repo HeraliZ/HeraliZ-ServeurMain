@@ -301,6 +301,7 @@ final class WipeServeur {
     private static Set<UUID> joueursConnus(MinecraftServer srv) {
         Set<UUID> s = new LinkedHashSet<>();
         lireUuids(srv.getWorldPath(LevelResource.PLAYER_DATA_DIR), ".dat", s);
+        EcrituresFond.attendre();   // progressions écrites en fond (01/11) : un nouveau fichier est bien là
         lireUuids(srv.getServerDirectory().toPath().resolve("heraliz_quetes").resolve("joueurs"), ".json", s);
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) s.add(p.getUUID());
         return s;

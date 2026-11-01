@@ -23,6 +23,8 @@ import java.util.UUID;
  * Progression des joueurs, gardée HORS du monde ({@code heraliz_quetes/joueurs/<uuid>.json} à la racine du serveur) :
  * elle survit aux changements de carte, comme les clans et les hérals. Écrite à la déconnexion, toutes les 30 s si elle a
  * changé, et à l'arrêt du serveur. Un fichier illisible n'est jamais écrasé (il est mis de côté en .illisible).
+ * <p>01/11 (perf) : le texte est fait sur le fil du serveur, l'écriture sur le fil des quêtes ({@link EcrituresFond}) ;
+ * une quête payée attend que son fichier soit écrit, une relecture attend la dernière écriture du fichier.
  */
 final class Donnees {
     private static final Logger LOG = LogUtils.getLogger();
@@ -116,6 +118,7 @@ final class Donnees {
     /** Écrit tout de suite la progression (après une quête payée : jamais payée deux fois après un arrêt brutal). */
     static void ecrireMaintenant(UUID u) {
         ecrire(u);
+        EcrituresFond.attendre();   // sur le disque avant de continuer, comme avant
     }
 
     /** Écrit et oublie (déconnexion). */
@@ -135,6 +138,7 @@ final class Donnees {
     private static DJoueur lire(UUID u) {
         if (dossier == null) return new DJoueur();
         Path f = fichier(u);
+        if (EcrituresFond.occupe(f)) EcrituresFond.attendre();   // reconnexion juste après la déconnexion : la dernière version
         if (!Files.exists(f)) return new DJoueur();
         try {
             DJoueur j = GSON.fromJson(Files.readString(f, StandardCharsets.UTF_8), DJoueur.class);
@@ -166,20 +170,24 @@ final class Donnees {
         }
     }
 
+    /** Texte relevé ici (fil du serveur), écrit sur le fil des quêtes (01/11) : même fichier, même contenu qu'avant. */
     private static void ecrire(UUID u) {
         SALES.remove(u);
         DJoueur j = CACHE.get(u);
         if (j == null || dossier == null) return;
         Path f = fichier(u), tmp = dossier.resolve(u + ".json.tmp");
-        try {
-            Files.writeString(tmp, GSON.toJson(j), StandardCharsets.UTF_8);
-            Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException ex) {
+        String texte = GSON.toJson(j);
+        EcrituresFond.ecrire(f, () -> {
             try {
-                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ex2) {
-                LOG.error("[heraliz_quetes] écriture de {} : {}", f, ex2.getMessage());
+                Files.writeString(tmp, texte, StandardCharsets.UTF_8);
+                Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException ex) {
+                try {
+                    Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException ex2) {
+                    LOG.error("[heraliz_quetes] écriture de {} : {}", f, ex2.getMessage());
+                }
             }
-        }
+        });
     }
 }

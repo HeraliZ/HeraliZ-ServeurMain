@@ -63,6 +63,8 @@ public final class ServeurQuetes implements Partie {
             else Journalieres.action(r.joueur(), r.message());
         });
 
+        // progressions des joueurs écrites sur un fil à part (01/11), attendues à l'arrêt du serveur
+        EcrituresFond.init();
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::demarrage);
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::arret);
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> Commandes.enregistrer(e.getDispatcher()));
