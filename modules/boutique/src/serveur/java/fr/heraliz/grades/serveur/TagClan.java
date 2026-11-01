@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 import java.util.UUID;
 
 /**
@@ -60,9 +61,12 @@ final class TagClan {
         return c == null ? "" : c.getString() + "#" + (c.getStyle().getColor() == null ? "" : c.getStyle().getColor().serialize());
     }
 
+    /** Crochets du début et de la fin du tag (expression gardée : avant, recompilée à chaque appel, tab compris). */
+    private static final Pattern CROCHETS = Pattern.compile("^\\[|\\]$");
+
     /** Le tag seul, sans crochets ni espace (« ZK »). */
     static String tag(MutableComponent c) {
-        return c == null ? "" : c.getString().trim().replaceAll("^\\[|\\]$", "").replace('§', ' ');
+        return c == null ? "" : CROCHETS.matcher(c.getString().trim()).replaceAll("").replace('§', ' ');
     }
 
     private static int couleur(MutableComponent c) {
