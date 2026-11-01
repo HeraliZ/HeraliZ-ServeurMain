@@ -216,8 +216,11 @@ racine du serveur (les 60 derniers sont gardés).
   - mod ou plugin responsable ;
   - catégorie (entités, chemins, tronçons, sauvegarde…) ;
   - lignes de code et piles ;
-  - temps du ramasse-miettes, mémoire, entités les plus nombreuses.
+  - temps du ramasse-miettes, mémoire, entités les plus nombreuses ;
+  - dernières commandes jouées (01/11 : seulement leurs mots, ni pseudo, ni arguments), aussi dans le journal.
   Les opérateurs connectés sont prévenus. Tant que tout va bien, il ne coûte rien.
+- **Blocages entre deux ticks** (01/11) : les commandes et les paquets des joueurs passent juste après le tick. Quand ce
+  temps dépasse 50 ms + le seuil, même relevé, même alerte (« entre deux ticks ») et même dossier.
 - `/diag start [secondes]` : profil en direct, résumé dans le chat toutes les 10 s, `profil-<date>.txt` à la fin.
 - `/diag mesure [secondes]` : allume le chronomètre de Forge (`TimeTracker`), puis `mesure-<date>.txt` donne le temps de
   chaque tick par type d'entité et d'entité de bloc, et par mod.
