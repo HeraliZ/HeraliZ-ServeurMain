@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.build.BuildConfig;
 import fr.heraliz.crac.build.model.PieceKind;
@@ -24,7 +25,9 @@ import fr.heraliz.crac.claim.UpkeepResource;
 import fr.heraliz.crac.network.NetworkHandler;
 import fr.heraliz.crac.network.S2CFicheBase;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.Util;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,6 +40,8 @@ import net.minecraftforge.registries.ForgeRegistries;
  * pour tous les joueurs. Tout est lu à chaque fois dans les réglages du serveur ({@code crac-building.toml},
  * {@code crac-server.toml}) : un prix changé se voit aussitôt. Les prix en hérals sont ceux des marchands de HeraliZ
  * Quêtes (fichiers {@code config/heraliz_quetes/pnj/*.json}, type « achat », lus sans dépendance : sans eux, pas de prix).
+ * 01/11 (perf) : ces fichiers sont lus à côté du fil du serveur (fil de lecture de Minecraft) ; la fiche part dès qu'ils
+ * sont lus, toujours à jour.
  */
 final class FicheBase {
     private static final Tier[] PALIERS = {Tier.TWIG, Tier.WOOD, Tier.STONE, Tier.METAL, Tier.ARMORED};
@@ -80,10 +85,21 @@ final class FicheBase {
             paliers.add(new S2CFicheBase.Palier(t.id, mur, meme, pv, couts(Costs.repair(t)), entretien,
                 combien(pv, Config.c4Damage.get()), combien(pv, Config.explosiveChargeDamage.get())));
         }
-        S2CFicheBase m = new S2CFicheBase(poses, paliers, prix(), BuildConfig.repairPercent.get(),
-            BuildConfig.repairSeconds.get().floatValue(), Config.upkeepHours.get().floatValue(), Config.c4Damage.get(),
-            Config.explosiveChargeDamage.get());
-        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), m);
+        int reparation = BuildConfig.repairPercent.get();
+        float secondes = BuildConfig.repairSeconds.get().floatValue();
+        float heures = Config.upkeepHours.get().floatValue();
+        int c4 = Config.c4Damage.get();
+        int charge = Config.explosiveChargeDamage.get();
+        // les prix des marchands (un fichier par PNJ) lus à côté : avant, sur le fil du serveur à chaque ouverture de la fiche
+        MinecraftServer server = p.server;
+        CompletableFuture.supplyAsync(FicheBase::prix, Util.ioPool()).whenComplete((prix, ex) -> server.execute(() -> {
+            if (p.hasDisconnected()) {
+                return;
+            }
+            S2CFicheBase m = new S2CFicheBase(poses, paliers, prix == null ? new LinkedHashMap<>() : prix, reparation, secondes, heures, c4,
+                charge);
+            NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), m);
+        }));
     }
 
     private static int combien(int pv, int degats) {

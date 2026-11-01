@@ -1,0 +1,11 @@
+-proc:none
+-implicit:none
+-cp
+/root/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.9.1/2cc2131b98ebfb04e2b2c7dfb84431f4045096b/gson-2.9.1.jar
+-sourcepath
+serveur/java:commun/java:/home/user/HeraliZ-ServeurMain/.claude/worktrees/agent-a08e39c9dec83e5c1/modules/noyau/src/commun/java:/home/user/HeraliZ-ServeurMain/.claude/worktrees/agent-a08e39c9dec83e5c1/modules/noyau/src/serveur/java
+-d
+/tmp/claude-0/-home-user-HeraliZ-ServeurMain/17fb6a25-fa62-5289-ae73-5657d6f9f60f/scratchpad/javac_out
+-Xmaxerrs
+100000
+serveur/java/fr/heraliz/crac/bases/FicheBase.java
