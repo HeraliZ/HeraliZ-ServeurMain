@@ -63,7 +63,7 @@ jobs:
               echo '```'
             done
             # après le démarrage seulement (« Done (...) ») ; un journal tourné à minuit, sans démarrage, est gardé en entier
-            apres_demarrage() { if printf '%s\n' "$txt" | grep -q '\]: Done ('; then printf '%s\n' "$txt" | awk 'f; /\]: Done \(/{f=1}'; else printf '%s\n' "$txt"; fi; }
+            apres_demarrage() { if printf '%s\n' "$txt" 2>/dev/null | grep -q '\]: Done ('; then printf '%s\n' "$txt" | awk 'f; /\]: Done \(/{f=1}'; else printf '%s\n' "$txt"; fi; }
             for f in j/*; do [ -f "$f" ] || continue
               case "$f" in *.gz) txt=$(zcat "$f");; *.zip) txt=$(unzip -p "$f");; *) txt=$(cat "$f");; esac
               # seulement après le démarrage (« Done (... ) ») : les avertissements du chargement des mods noient le reste
