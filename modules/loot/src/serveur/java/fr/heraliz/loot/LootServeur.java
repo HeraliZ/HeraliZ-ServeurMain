@@ -72,11 +72,15 @@ public final class LootServeur {
         ButinZombies.brancher();
         // raretés des objets : config/heraliz_loot/raretes.json, envoyées aux joueurs
         RaretesServeur.brancher();
-        // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions, étoiles)
+        // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions) ; chaque tick : les étoiles
+        // d'un joueur sur 20 (01/11 : avant, celles de tous les joueurs dans le même tick)
         MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent e) -> {
-            if (e.phase == TickEvent.Phase.END && e.level instanceof ServerLevel sl && sl.getGameTime() % 20 == 0) {
-                PointsT7.get(sl).tick(sl);
-                RotationLoot.tick(sl);
+            if (e.phase == TickEvent.Phase.END && e.level instanceof ServerLevel sl) {
+                if (sl.getGameTime() % 20 == 0) {
+                    PointsT7.get(sl).tick(sl);
+                    RotationLoot.tick(sl);
+                }
+                RotationLoot.etoilesTick(sl);
             }
         });
         // toutes les secondes, par joueur : nourriture ArkaniaZ venue d'ailleurs que du loot (état fixé, EtatNourriture)

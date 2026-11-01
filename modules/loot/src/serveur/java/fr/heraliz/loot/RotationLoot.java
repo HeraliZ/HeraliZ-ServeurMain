@@ -867,17 +867,36 @@ public final class RotationLoot extends SavedData {
             }
             for (long k : vides) e.vider(k);
         }
-        if (ConfigLoot.etoiles() && !e.actifs.isEmpty() && !l.players().isEmpty()) e.etoiles(l);
+        // étoiles : chaque tick, pour un joueur sur 20 (etoilesTick)
     }
 
     // ------------------------------------------------------------------------------------------ étoiles
-    private void etoiles(ServerLevel l) {
+    /**
+     * Chaque tick (01/11, perf) : les étoiles des joueurs dont c'est le tour, chacun une fois par seconde comme avant. Avant,
+     * celles de tous les joueurs partaient dans le même tick, une fois par seconde (secteurs, conteneurs proches et paquets
+     * de chaque joueur d'un coup) ; le travail est maintenant étalé sur les 20 ticks de la seconde.
+     */
+    static void etoilesTick(ServerLevel l) {
+        if (l.players().isEmpty() || !ConfigLoot.etoiles()) return;
+        RotationLoot e = get(l);
+        if (e.actifs.isEmpty()) return;
+        e.aJour(l);
+        e.etoiles(l, (int) (l.getGameTime() % 20));
+    }
+
+    /** Les étoiles des joueurs dont c'est le tour ({@code phase} : tick dans la seconde, selon le numéro de l'entité). */
+    private void etoiles(ServerLevel l, int phase) {
         int rayon = ConfigLoot.rayonEtoiles(), nb = ConfigLoot.etoilesParSeconde();
         double r2 = (double) rayon * rayon;
         int rs = SectionPos.blockToSectionCoord(rayon) + 1;
-        Map<Long, BlockState> fautifs = new HashMap<>();
-        List<net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener>> lot = new ArrayList<>();
+        Map<Long, BlockState> fautifs = null;
+        List<net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener>> lot = null;
         for (ServerPlayer p : l.players()) {
+            if (Math.floorMod(p.getId(), 20) != phase) continue;
+            if (lot == null) {
+                fautifs = new HashMap<>();
+                lot = new ArrayList<>();
+            }
             lot.clear();
             int sx = SectionPos.blockToSectionCoord(p.getBlockX()), sz = SectionPos.blockToSectionCoord(p.getBlockZ());
             for (int dx = -rs; dx <= rs; dx++) {
@@ -903,6 +922,7 @@ public final class RotationLoot extends SavedData {
             }
             envoyerLot(p, lot);
         }
+        if (fautifs == null) return;
         fautifs.forEach((k, st) -> {                                    // autre conteneur en place : il prend la relève
             if (st.getBlock() instanceof ConteneurBlock cb && avecLoot(cb)) adopter(l, k, cb.nom);
             else invalider(l, k, BuiltInRegistries.BLOCK.getKey(st.getBlock()).toString(), false);
