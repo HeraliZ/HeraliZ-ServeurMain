@@ -164,6 +164,13 @@
 	sang = 14
 	#Range: 1 ~ 200
 	max_zombies = 16
+	#01/11 : zombies lances vers un bruit au plus par tick (les autres aux ticks suivants, 2 s au plus).
+	#Range: 1 ~ 200
+	par_tick = 4
+	#Taille de la recherche de chemin vers un bruit (Minecraft : 1.0) ; un bruit plus loin que la portee de suivi du
+	#zombie est vise a cette portee, dans sa direction.
+	#Range: 0.05 ~ 1.0
+	recherche = 0.25
 
 #Combat juste (25/10).
 [attaques]

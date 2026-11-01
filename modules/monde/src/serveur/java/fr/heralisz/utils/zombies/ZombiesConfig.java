@@ -37,7 +37,9 @@ public final class ZombiesConfig {
             REGEN_NATURE, REGEN_VILLE, EXTRACTION_FACTEUR;
     // bruit et sang (voir StimuliZombies)
     public static final ForgeConfigSpec.BooleanValue STIMULI;
-    public static final ForgeConfigSpec.IntValue STIMULUS_TIR, STIMULUS_TIR_SILENCIEUX, STIMULUS_EXPLOSION, STIMULUS_SANG, STIMULUS_MAX;
+    public static final ForgeConfigSpec.IntValue STIMULUS_TIR, STIMULUS_TIR_SILENCIEUX, STIMULUS_EXPLOSION, STIMULUS_SANG, STIMULUS_MAX,
+            STIMULUS_PAR_TICK;
+    public static final ForgeConfigSpec.DoubleValue STIMULUS_RECHERCHE;
     // combat juste (voir JetonsAttaque et AttaquesZombiesServeur)
     public static final ForgeConfigSpec.IntValue JETONS, JETONS_FENETRE;
     public static final ForgeConfigSpec.BooleanValue ESQUIVE_SURVIE;
@@ -180,6 +182,12 @@ public final class ZombiesConfig {
         STIMULUS_SANG = b.comment("Rayon de l'odeur du sang d'un joueur blesse (toutes les 3 s au plus par joueur).")
                 .defineInRange("sang", 14, 0, 64);
         STIMULUS_MAX = b.comment("Zombies au plus attires par un meme bruit.").defineInRange("max_zombies", 16, 1, 200);
+        STIMULUS_PAR_TICK = b.comment("01/11 : zombies lances vers un bruit au plus par tick (les autres partent aux ticks suivants, 2 s au plus ;",
+                        "avant : jusqu'a max_zombies calculs de chemin dans le meme tick, plus de 10 ms par tir vu dans le journal).")
+                .defineInRange("par_tick", 4, 1, 200);
+        STIMULUS_RECHERCHE = b.comment("Taille de la recherche de chemin vers un bruit, par rapport a Minecraft (1.0) ; un bruit plus loin que la",
+                        "portee de suivi du zombie est vise a cette portee, dans sa direction (Minecraft n'allait de toute facon pas plus loin).")
+                .defineInRange("recherche", 0.25, 0.05, 1.0);
         b.pop();
         b.comment("Combat juste (25/10) : jamais une mort en une seconde sous dix coups a la fois.").push("attaques");
         JETONS = b.comment("Zombies differents au plus qui peuvent toucher un meme joueur dans la fenetre ci-dessous ; les autres",

@@ -89,6 +89,11 @@ public final class CheminsZombies {
         }
     }
 
+    /** Reste-t-il de quoi calculer un chemin ce tick (nombre et temps) ? */
+    static boolean peutCalculer() {
+        return restant > 0 && nsTick < budgetNs;
+    }
+
     /** Un zombie a gardé son chemin vers sa cible au lieu d'en calculer un ({@link NavigationZombie}). */
     static void garde() {
         gardes++;

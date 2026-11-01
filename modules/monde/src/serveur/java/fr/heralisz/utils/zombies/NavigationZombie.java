@@ -35,6 +35,8 @@ final class NavigationZombie extends GroundPathNavigation {
     private int cible = Integer.MIN_VALUE;
     private int dernierCalcul;
     private double cx, cy, cz;
+    /** Taille de recherche voulue par le niveau d'IA ({@link IaZombies}), rétablie après un chemin vers un bruit. */
+    private float multiplicateur = 1.0F;
 
     NavigationZombie(Mob mob, Level level) {
         super(mob, level);
@@ -74,5 +76,25 @@ final class NavigationZombie extends GroundPathNavigation {
         // hors d'atteinte et la cible n'a presque pas bougé : un nouveau calcul retomberait sur le même mur
         if (!p.canReach() && e.distanceToSqr(cx, cy, cz) < IMMOBILE2) attente = Math.max(attente, ZombiesConfig.ATTENTE_BLOQUE.get());
         return depuis < attente;
+    }
+
+    @Override
+    public void setMaxVisitedNodesMultiplier(float m) {
+        multiplicateur = m;
+        super.setMaxVisitedNodesMultiplier(m);
+    }
+
+    /**
+     * Va voir un point (bruit, {@link StimuliZombies}) avec une recherche de chemin bornée à {@code facteur} fois celle de
+     * Minecraft (et jamais plus grande que celle de son niveau d'IA), puis rétablit la taille de son niveau d'IA.
+     */
+    boolean allerVoir(double x, double y, double z, double vitesse, float facteur) {
+        float avant = multiplicateur;
+        super.setMaxVisitedNodesMultiplier(Math.min(avant, facteur));
+        try {
+            return moveTo(x, y, z, vitesse);
+        } finally {
+            super.setMaxVisitedNodesMultiplier(avant);
+        }
     }
 }
