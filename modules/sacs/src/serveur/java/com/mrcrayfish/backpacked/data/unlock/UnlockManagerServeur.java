@@ -5,13 +5,11 @@ import com.mrcrayfish.backpacked.network.Network;
 import com.mrcrayfish.backpacked.network.message.MessageSyncUnlockTracker;
 import com.mrcrayfish.framework.api.event.PlayerEvents;
 import com.mrcrayfish.framework.api.event.TickEvents;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
 
 /**
  * Partie serveur de l'UnlockManager (deblocage des sacs) : envoi du suivi au joueur (connexion, reapparition,
@@ -25,17 +23,8 @@ public final class UnlockManagerServeur {
       PlayerEvents.RESPAWN.register(UnlockManagerServeur::onPlayerRespawn);
       PlayerEvents.CHANGE_DIMENSION.register(UnlockManagerServeur::onPlayerChangedDimension);
       TickEvents.END_SERVER.register(UnlockManagerServeur::onServerTick);
-      TickEvents.END_PLAYER.register(UnlockManagerServeur::onPlayerTick);
-   }
-
-
-
-   private static void onPlayerTick(Player player) {
-      if (!player.level().isClientSide() && player.tickCount % 20 == 0) {
-         Level world = player.level();
-         BlockPos playerPosition = player.blockPosition();
-         Biome biome = (Biome)world.getBiome(playerPosition).value();
-      }
+      // HeraliZ (perf, 01/11) : plus d'écouteur du tick de chaque joueur ; celui d'origine lisait le biome du joueur toutes
+      // les secondes sans s'en servir (reste d'un défi « biome » de l'auteur, rien ne lisait ce résultat)
    }
 
    private static void onPlayerLoggedIn(Player player) {
@@ -62,8 +51,10 @@ public final class UnlockManagerServeur {
    private static void onServerTick(MinecraftServer server) {
       if (!UnlockManager.instance().testForCompletion.isEmpty()) {
          for (ServerPlayer player : UnlockManager.instance().testForCompletion) {
+            // HeraliZ (perf, 01/11) : « fini ? » (un nombre comparé) avant « déjà débloqué ? » (une recherche) ; ce test est
+            // fait pour chaque défi (99) de chaque joueur qui a avancé un défi pendant le tick (marcher suffit). Même résultat
             UnlockManager.getTracker(player).ifPresent(unlockTracker -> unlockTracker.getProgressTrackerMap().forEach((location, progressTracker) -> {
-               if (!unlockTracker.getUnlockedBackpacks().contains(location) && progressTracker.isComplete()) {
+               if (progressTracker.isComplete() && !unlockTracker.getUnlockedBackpacks().contains(location)) {
                   BackpackManager.instance().unlockBackpack(player, location);
                }
             }));
