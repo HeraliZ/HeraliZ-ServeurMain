@@ -41,6 +41,13 @@ public class CustomExplosion extends Explosion {
    private double screenShakeTime = 20.0;
    private double screenShakeAmplitude = 50.0;
    private float destroyMultiplier = 1.0F;
+   /**
+    * Fusion (heraliz_tactique, perf du 01/11) : l'explosion peut-elle casser des blocs ? Sinon (KEEP : toutes les grenades
+    * du serveur, destroy_blocks à false) les 1 352 rayons de destruction (jusqu'à ~19 000 lectures de blocs par grenade) ne
+    * sont plus calculés : leur liste de blocs n'était utilisée que pour casser des blocs (finalizeExplosion ne la lit
+    * qu'avec DESTROY, et sans feu). Dégâts, souffle, secousse de l'écran et particules : inchangés.
+    */
+   private final boolean casseBlocs;
 
    public CustomExplosion(
       Level pLevel,
@@ -64,6 +71,7 @@ public class CustomExplosion extends Explosion {
       this.y = pToBlowY;
       this.z = pToBlowZ;
       this.damage = damage;
+      this.casseBlocs = pBlockInteraction != BlockInteraction.KEEP;
    }
 
    public CustomExplosion(Level pLevel, @NotNull Entity pSource, double damage, float pRadius, BlockInteraction pBlockInteraction) {
@@ -105,7 +113,7 @@ public class CustomExplosion extends Explosion {
       this.level.gameEvent(this.source, GameEvent.EXPLODE, new Vec3(this.x, this.y, this.z));
       Set<BlockPos> set = Sets.newHashSet();
 
-      for (int j = 0; j < 16; j++) {
+      for (int j = 0; this.casseBlocs && j < 16; j++) {
          for (int k = 0; k < 16; k++) {
             for (int l = 0; l < 16; l++) {
                if (j == 0 || j == 15 || k == 0 || k == 15 || l == 0 || l == 15) {
