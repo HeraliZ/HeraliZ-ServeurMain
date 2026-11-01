@@ -55,6 +55,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue PORTEE_SUIVI_RAPIDE;
    /** Portée de suivi d'une entité sans passager calculée sans parcourir ses passagers (aucun objet créé). */
    public static volatile boolean porteeSuiviRapide = true;
+   public static final ForgeConfigSpec.BooleanValue ENTITES_PAR_TRONCON;
+   /** Entités d'un tronçon envoyé à un joueur cherchées dans un index par tronçon au lieu de toutes les entités du monde. */
+   public static volatile boolean entitesParTroncon = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -127,6 +130,11 @@ public final class NoyauConfig {
             "(une dizaine d'objets créés à chaque fois). true = sans passager, la boucle ne parcourt rien et ne crée rien (même",
             "portée). false : comme Minecraft.")
             .define("portee_suivi_rapide", true);
+      ENTITES_PAR_TRONCON = b.comment("Minecraft allégé (01/11) : pour chaque tronçon envoyé à un joueur, Minecraft parcourait TOUTES les entités",
+            "suivies du monde pour trouver celles du tronçon (~170 tronçons x 4 000 entités à chaque arrivée). true = un index par",
+            "tronçon, refait dès qu'une entité change de tronçon, apparaît ou disparaît (mêmes entités, même ordre). false : comme",
+            "Minecraft.")
+            .define("entites_par_troncon", true);
       b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
@@ -150,6 +158,7 @@ public final class NoyauConfig {
       levelDatEnFond = LEVEL_DAT_FOND.get();
       joueursProchesGrille = JOUEURS_PROCHES_GRILLE.get();
       porteeSuiviRapide = PORTEE_SUIVI_RAPIDE.get();
+      entitesParTroncon = ENTITES_PAR_TRONCON.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 

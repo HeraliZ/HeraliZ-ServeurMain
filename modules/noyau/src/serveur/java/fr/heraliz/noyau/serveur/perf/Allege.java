@@ -1,5 +1,9 @@
 package fr.heraliz.noyau.serveur.perf;
 
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+
 import java.util.Locale;
 import java.util.function.Consumer;
 
@@ -20,11 +24,25 @@ public final class Allege {
    public static long prochesSansJoueur;
    /** Point 2 : portées de suivi lues sans parcourir les passagers (aucun objet créé). */
    public static long porteeRapide;
+   /** Point 4 : tronçons envoyés dont les entités ont été prises dans l'index (au lieu de toutes les entités du monde). */
+   public static long entitesParIndex;
+   /** Point 4 : index « tronçon → entités » faits. */
+   public static long indexFaits;
+
+   /** Une fois, par la partie serveur : fin de tick et arrêt du serveur. */
+   public static void enregistrer() {
+      MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
+         if (e.phase == TickEvent.Phase.END) {
+            EntitesParTroncon.finDuTick();
+         }
+      });
+      MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> EntitesParTroncon.vider());
+   }
 
    /** Une ligne pour {@code /diag etat} et les rapports. */
    public static void etat(Consumer<String> ligne) {
       ligne.accept(String.format(Locale.ROOT, "Minecraft allégé (depuis le démarrage) : joueurs proches par grille %d tronçons (%d sans joueur) ;"
-                  + " portées de suivi sans flux %d%n",
-            prochesGrille, prochesSansJoueur, porteeRapide));
+                  + " portées de suivi sans flux %d ; tronçons envoyés par index d'entités %d (%d index)%n",
+            prochesGrille, prochesSansJoueur, porteeRapide, entitesParIndex, indexFaits));
    }
 }
