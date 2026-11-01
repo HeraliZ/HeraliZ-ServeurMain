@@ -365,6 +365,13 @@ bots, rapport `diag/banc-<date>.txt` ; `/bots commandes <secondes>` (0 = arrêt)
 de temps en temps (avec ses droits de joueur, entre deux ticks), prise dans `config/heraliz_banc/commandes.txt`. Un bot
 envoyé dans un autre monde (`/tuto lancer <bot>`, extraction) y vit autour de son point d'arrivée.
 
+Banc réaliste (01/11, `banc` 1.2.0) : un bot mort reste sur l'écran de mort 4 à 12 s, réapparaît par le même clic qu'un
+vrai joueur, passe au camp puis reprend la vraie borne de départ ; ses départs attendent que leur tronçon soit chargé (tâche
+de fond). Autres commandes : `/bots camp` (dalle sous le point de réveil du spawn), `/bots zone <rayon> <arrivée>` (zone de
+groupe : lieu de vie, arrivée de la borne), `/bots pregenerer <rayon>|stop` (terrain créé d'avance), `/bots rythmes <morts>
+<connexions> <voyages> <combat %>|off` (par minute pour 150 joueurs), `/bots gamerule <règle> <valeur>` (tous les mondes),
+`/bots pic <extraction|spawn|borne|connexion> <nombre>`, `/bots troncons` (tickets par sorte), `/bots jvm`.
+
 ### Banc de charge sur une machine de GitHub (01/11)
 
 Workflow « Banc de charge » (`.github/workflows/banc.yml`), **sans le Ptero ni aucun secret** : un serveur Mohist complet
@@ -375,20 +382,31 @@ neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
   fois le fichier sur `main`). Avant cela, ou sans formulaire : envoyer sur une branche de travail un changement de
   `banc.yml` (réglages par défaut). Jamais lancé par un envoi sur `main`.
 - **Réglages** : bots (100, jusqu'à 150), minutes de mesure (5), minutes de chauffe (4), commandes du diagnostic
-  (`diag start {s}; diag mesure {s300}`, à changer ici si `/diag` change), monde normal ou plat.
+  (`diag start {s}; diag mesure {s300}`, à changer ici si `/diag` change), monde normal ou plat, scénario (`normal`,
+  `connexions` : coût d'une connexion ; `teleportations` : pics d'extraction de groupe, de 10 `/spawn` et de départ de
+  la borne), règles de jeu pour un **essai A/B** (`randomTickSpeed 0`, plusieurs séparées par `;`, case « ab » : une
+  mesure sans puis une avec), distances vue/simulation (`6/4`, comme le Ptero le 01/11), rythmes pour 150 joueurs
+  (`5/2/4/25` : morts, connexions, voyages par minute, % du temps en combat ; `off` : comme avant).
 - **Déroulé** (`outils/banc_charge.py`, utilisable aussi sur un PC : `preparer <dossier>` puis `lancer <dossier>`) :
+  0. machine Java : Mohist installe Forge à son premier démarrage puis se relance dans une autre machine Java sans
+     aucun réglage (premier banc : 3 996 Mo au lieu de 11 Go) ; l'installation est donc faite à part, puis la mesure tourne
+     dans une seule machine Java, réglages passés aussi par `JDK_JAVA_OPTIONS` ; le rapport écrit ses vrais arguments ;
   1. fabrication des mods changés (caches de la mise en ligne), serveur d'essai par `outils/serveur_local.py --banc`,
      Mohist de la Release « base-serveur » (empreinte contrôlée), réglages d'essai dans ce dossier seulement
      (`server-ip=127.0.0.1`, AuthMe en mode essai, Spartan sans jeton du launcher, LiteBans en base locale, « Can't keep
      up » affichés, zombies du peuplement aussi autour des bots) ;
-  2. 10 % des bots dans le tutoriel des bases (`/tuto lancer`), les autres par groupes de 5 sur une grille de la carte
-     (320 blocs entre deux groupes) ; zones d'extraction ouvertes près d'un groupe sur quatre ; `doMobSpawning false`
+  2. spawn du banc et zones de groupe, terrain des zones créé d'avance (avant les bots) ; 10 % des bots dans le tutoriel
+     des bases (`/tuto lancer`), les autres par groupes de 5 sur une grille de la carte (320 blocs entre deux groupes),
+     rythmes de 150 joueurs ; zones d'extraction ouvertes près d'un groupe sur quatre ; `doMobSpawning false`
      comme sur le Ptero (zombies du peuplement seulement) ; commandes de joueur tapées par les bots
      (`outils/banc/commandes.txt`) ;
   3. chauffe (au moins 4 min, plus tant que du terrain se crée ou que les arènes du ClashWar se posent), puis
      `/bots mesure` et le diagnostic pendant la mesure ;
-  4. arrêt propre, puis **résumé de la tâche** : TPS et ms par tick (moyenne, 95 %, pire), mémoire et ramasse-miettes,
-     entités, zombies, tronçons, commandes les plus lentes, « Can't keep up », erreurs Java, rapports du diagnostic.
+  4. arrêt propre, puis **résumé de la tâche** : TPS et ms par tick (moyenne, 95 %, pire), **ms par tick hors banc**
+     (coût du banc lui-même mis à part), machine Java réelle, réglages comparés au Ptero, mémoire et ramasse-miettes,
+     temps par mod du profil, rythmes (par minute et pour 150 joueurs), entités, zombies, tronçons par monde et ce qui
+     les tient chargés, pics, essai A/B, commandes les plus lentes, « Can't keep up », erreurs Java, rapports du
+     diagnostic. Détail des essais : `docs/TESTS_EN_JEU_01NOV_banc.md`.
      Artefact `banc-rapport` (7 jours) : journal complet, `diag/`, `gc.log`, `erreurs.txt`.
 - **Lire le résultat** : comparer des bancs entre eux (même nombre de bots, même durée), pas avec le Ptero (autre machine,
   pas la vraie carte, pas de vrais joueurs : voir « Ce que ce banc ne mesure pas » en bas du résumé).
