@@ -12,7 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * tournent aussi sur le serveur, à chaque tick de chaque joueur, parcourent les blocs autour de lui et ENVOIENT ces sons
  * aux joueurs voisins (sons d'eau, de cascade, du Nether, de l'inventaire des autres, en double et sans direction) ;
  * jusqu'à 110 ms mesurés sur un tick. Le jeu de chaque joueur les joue déjà pour lui-même : sur le serveur, ces procédures
- * ne font plus rien. La détection de l'environnement (variables du joueur) n'est pas touchée.
+ * ne font plus rien.
+ * <p>01/11 (perf, 150 joueurs) : les deux dernières aussi. La détection de l'environnement ({@code EnvironmentDetector} :
+ * une vingtaine de lectures du biome et des blocs autour du joueur, à chaque tick) n'écrit que des marques dans les données
+ * du joueur sur le serveur, que seules les procédures d'ambiance du serveur lisaient ; le minuteur d'ambiance
+ * ({@code AmbiantTimer}) ne faisait sur le serveur que renvoyer en double aux joueurs proches les sons de grotte, d'orage,
+ * de Nether et de vent que leur jeu joue déjà. Le jeu de chaque joueur fait toujours tout pour lui-même (même code de
+ * MAtmos, côté joueur) : ce qu'il entend de sa propre ambiance ne change pas.
  */
 @Pseudo
 @Mixin(targets = {
@@ -21,7 +27,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
         "net.tct.matmos.procedures.FallWaterProcedure",
         "net.tct.matmos.procedures.UnderWaterProcedure",
         "net.tct.matmos.procedures.InventorySoundProcedure",
-        "net.tct.matmos.procedures.NetherloopProcedure"
+        "net.tct.matmos.procedures.NetherloopProcedure",
+        "net.tct.matmos.procedures.EnvironmentDetectorProcedure",
+        "net.tct.matmos.procedures.AmbiantTimerProcedure"
 }, remap = false)
 public abstract class MatmosServeurMixin {
     @Inject(method = "onPlayerTick", at = @At("HEAD"), cancellable = true, require = 0)
