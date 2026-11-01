@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Set;
 
 /**
- * Recherches de chemin des zombies HeraliZ : budget par tick et chemin repris d'un voisin ({@link CheminsZombies}).
- * Serveur seulement ; les autres créatures ne sont pas touchées.
+ * Recherches de chemin des zombies HeraliZ : budget par tick (nombre et temps) et chemin repris d'un voisin
+ * ({@link CheminsZombies}). Serveur seulement ; les autres créatures ne sont pas touchées.
  */
 @Mixin(PathNavigation.class)
 public abstract class CheminsZombiesMixin {
@@ -38,7 +38,9 @@ public abstract class CheminsZombiesMixin {
         // Minecraft reprend lui-même le chemin en cours s'il vise toujours la même case : rien à compter
         if (this.path != null && !this.path.isDone() && cibles.contains(this.targetPos)) return;
         Path p = CheminsZombies.avant(this.mob, cibles);
-        if (p == CheminsZombies.REFUS) cir.setReturnValue(null);
+        // pas de calcul ce tick : le zombie garde le chemin qu'il suit (01/11 ; avant : null, il s'arrêtait net jusqu'au
+        // prochain essai de son objectif)
+        if (p == CheminsZombies.REFUS) cir.setReturnValue(this.path != null && !this.path.isDone() ? this.path : null);
         else if (p != null) cir.setReturnValue(p);
     }
 

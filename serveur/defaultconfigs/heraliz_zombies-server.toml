@@ -48,6 +48,23 @@
 	lod_moyen = 40
 	#Range: 16 ~ 512
 	lod_sommeil = 64
+	#01/11 : temps de calcul des chemins des zombies au plus par tick (ms, tout le serveur) ; au-dela, un zombie garde
+	#son chemin en cours (il ne s'arrete plus) et reessaie au tick suivant. 0 : pas de limite de temps.
+	#Range: 0.0 ~ 50.0
+	chemins_budget_ms = 4.0
+	#01/11 : chemin vers sa cible garde un moment au lieu d'etre recalcule (Minecraft : toutes les 4 a 10 ticks, meme de
+	#loin et meme quand la cible est hors d'atteinte). Sous chemin_pres blocs : comme Minecraft.
+	#Range: 0 ~ 128
+	chemin_pres = 16
+	#De chemin_pres a 24 blocs : ticks au moins entre deux calculs vers la meme cible (Minecraft : 9 a 15).
+	#Range: 0 ~ 200
+	attente_moyen = 12
+	#Au-dela de 24 blocs (Minecraft : 9 a 20).
+	#Range: 0 ~ 400
+	attente_loin = 20
+	#Cible hors d'atteinte (toit, mur, cloture) restee au meme endroit : ticks au moins entre deux calculs (Minecraft : 4 a 10).
+	#Range: 0 ~ 400
+	attente_bloque = 20
 
 #Varietes des zombies HeraliZ, tirees a leur premiere arrivee. Le reste des zombies est marcheur.
 [varietes]

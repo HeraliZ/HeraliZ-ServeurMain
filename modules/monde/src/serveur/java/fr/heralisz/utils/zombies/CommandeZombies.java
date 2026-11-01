@@ -100,6 +100,8 @@ public final class CommandeZombies {
                 Peuplement.suivis(), PlafondZombies.total(), ReservesZombies.entames()));
         ok(s, t("stats.chemins", "Chemins depuis le demarrage : %s calcules, %s partages, %s refuses (budget)", ch[0], ch[1], ch[2]));
         ok(s, t("stats.directs", "Poursuites en ligne droite (sans calcul de chemin) : %s", ch[3]));
+        ok(s, t("stats.chemins_temps", "Chemins gardes (cible loin ou hors d'atteinte) : %s ; refuses faute de temps : %s ; pire tick : %s ms de calcul",
+                ch[5], ch[4], String.format(Locale.ROOT, "%.2f", ch[6] / 1_000_000.0)));
         ok(s, t("stats.bruit", "Bruits : %s, zombies attires : %s ; coups retenus (3 attaquants au plus) : %s",
                 st[0], st[1], JetonsAttaque.refuses()));
         ok(s, t("stats.tick", "Tick moyen : %s ms", String.format(Locale.ROOT, "%.1f", srv.getAverageTickTime())));

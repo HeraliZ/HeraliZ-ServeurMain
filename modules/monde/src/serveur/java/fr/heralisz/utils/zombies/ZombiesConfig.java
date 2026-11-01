@@ -21,6 +21,9 @@ public final class ZombiesConfig {
     // budget et partage des chemins (voir CheminsZombies), niveaux d'IA selon la distance (IaZombies)
     public static final ForgeConfigSpec.IntValue CHEMINS_BUDGET, LOD_PROCHE, LOD_MOYEN, LOD_SOMMEIL;
     public static final ForgeConfigSpec.BooleanValue CHEMINS_PARTAGE;
+    public static final ForgeConfigSpec.DoubleValue CHEMINS_BUDGET_MS;
+    // chemin gardé vers une cible loin ou hors d'atteinte (voir NavigationZombie)
+    public static final ForgeConfigSpec.IntValue CHEMIN_PRES, ATTENTE_MOYEN, ATTENTE_LOIN, ATTENTE_BLOQUE;
     // variétés (voir VarietesZombies)
     public static final ForgeConfigSpec.BooleanValue VARIETES;
     public static final ForgeConfigSpec.DoubleValue PART_COUREURS, PART_COSTAUDS, VIE_MARCHEUR, VIE_COUREUR, VIE_COSTAUD,
@@ -90,6 +93,20 @@ public final class ZombiesConfig {
                         "(entity-activation-range de spigot.yml).").defineInRange("lod_proche", 16, 4, 128);
         LOD_MOYEN = b.defineInRange("lod_moyen", 40, 8, 256);
         LOD_SOMMEIL = b.defineInRange("lod_sommeil", 64, 16, 512);
+        CHEMINS_BUDGET_MS = b.comment("01/11 : temps de calcul des chemins des zombies HeraliZ au plus par tick (millisecondes, tout le serveur).",
+                        "Au-dela, un zombie qui en demande un garde son chemin en cours (il ne s'arrete plus) et reessaie au tick suivant.",
+                        "0 : pas de limite de temps (seulement chemins_budget).")
+                .defineInRange("chemins_budget_ms", 4.0, 0.0, 50.0);
+        CHEMIN_PRES = b.comment("01/11 : chemin vers sa cible garde un moment au lieu d'etre recalcule (Minecraft le refait toutes les 4 a 10",
+                        "ticks des que la cible a bouge d'un bloc, meme de loin, et meme quand elle est hors d'atteinte : sur un toit,",
+                        "derriere un mur ou une cloture, chaque calcul parcourait toutes les cases permises pour rien).",
+                        "Sous chemin_pres blocs de sa cible : comme Minecraft.").defineInRange("chemin_pres", 16, 0, 128);
+        ATTENTE_MOYEN = b.comment("De chemin_pres a 24 blocs : ticks au moins entre deux calculs vers la meme cible (Minecraft : 9 a 15).")
+                .defineInRange("attente_moyen", 12, 0, 200);
+        ATTENTE_LOIN = b.comment("Au-dela de 24 blocs : ticks au moins entre deux calculs vers la meme cible (Minecraft : 9 a 20).")
+                .defineInRange("attente_loin", 20, 0, 400);
+        ATTENTE_BLOQUE = b.comment("Cible hors d'atteinte (le dernier chemin n'y arrivait pas) et toujours au meme endroit (1,5 bloc) :",
+                        "ticks au moins entre deux calculs, a toute distance (Minecraft : 4 a 10).").defineInRange("attente_bloque", 20, 0, 400);
         b.pop();
         b.comment("Variétés des zombies HeraliZ (24/10, « des coureurs, des costauds, une belle variété, assez résistants ») :",
                 "tirées à leur première arrivée, gardées ensuite. Le reste des zombies est marcheur. Les rampants restent ceux de",

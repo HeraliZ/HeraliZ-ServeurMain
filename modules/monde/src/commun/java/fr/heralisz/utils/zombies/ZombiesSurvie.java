@@ -1,6 +1,7 @@
 package fr.heralisz.utils.zombies;
 
 import fr.heralisz.utils.HeraliszUtils;
+import fr.heralisz.utils.pont.UsineEntite;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Zombie;
@@ -34,8 +35,11 @@ public final class ZombiesSurvie {
     }
 
     public static final DeferredRegister<EntityType<?>> ENTITES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, HeraliszUtils.MODID);
+    /** Usine (01/11) : version serveur ({@code ZombieSurvieServeur}, sa navigation) dans les mondes du serveur, branchée
+     *  par la partie serveur ; {@link ZombieSurvie} dans le monde du joueur. */
+    public static final UsineEntite<ZombieSurvie> ZOMBIE_USINE = new UsineEntite<>(ZombieSurvie::new);
     public static final RegistryObject<EntityType<ZombieSurvie>> ZOMBIE = ENTITES.register("zombie_survie",
-            () -> EntityType.Builder.<ZombieSurvie>of(ZombieSurvie::new, MobCategory.MONSTER).sized(0.6f, 1.95f)
+            () -> EntityType.Builder.<ZombieSurvie>of(ZOMBIE_USINE, MobCategory.MONSTER).sized(0.6f, 1.95f)
                     .clientTrackingRange(8).build("zombie_survie"));
 
     public static void init(IEventBus modBus) {
