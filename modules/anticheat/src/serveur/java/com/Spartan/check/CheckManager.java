@@ -107,14 +107,22 @@ public class CheckManager {
             if (grace) {
                 c.onGrace(uuid);
             } else {
-                safely(c, () -> c.check(player));
+                try {
+                    c.check(player);
+                } catch (Exception e) {
+                    erreur(c, e);
+                }
             }
         }
         for (CombatCheck c : COMBAT) {
             if (player.hasDisconnected()) {
                 return;
             }
-            safely(c, () -> c.tick(player));
+            try {
+                c.tick(player);
+            } catch (Exception e) {
+                erreur(c, e);
+            }
         }
     }
 
@@ -125,7 +133,11 @@ public class CheckManager {
             if (player.hasDisconnected()) {
                 break;
             }
-            safely(c, () -> c.onSample(player, sample));
+            try {
+                c.onSample(player, sample);
+            } catch (Exception e) {
+                erreur(c, e);
+            }
         }
         return currentViolation;
     }
@@ -136,7 +148,11 @@ public class CheckManager {
             if (player.hasDisconnected()) {
                 return;
             }
-            safely(c, () -> c.onMovePacket(player, packet));
+            try {
+                c.onMovePacket(player, packet);
+            } catch (Exception e) {
+                erreur(c, e);
+            }
         }
     }
 
@@ -146,7 +162,11 @@ public class CheckManager {
             if (player.hasDisconnected()) {
                 return;
             }
-            safely(c, () -> c.onPong(player, sentNanos, nanos));
+            try {
+                c.onPong(player, sentNanos, nanos);
+            } catch (Exception e) {
+                erreur(c, e);
+            }
         }
     }
 
@@ -220,8 +240,16 @@ public class CheckManager {
         try {
             r.run();
         } catch (Exception e) {
-            Spartan.LOGGER.error("[Spartan] Erreur dans la détection " + c.getName(), e);
+            erreur(c, e);
         }
+    }
+
+    /**
+     * Même chose que {@link #safely}, écrit directement dans les boucles de chaque tick et de chaque paquet de mouvement
+     * (2.9.5, perf) : sans fonction anonyme créée pour chaque détection (une dizaine par joueur, par tick et par paquet).
+     */
+    private static void erreur(Check c, Exception e) {
+        Spartan.LOGGER.error("[Spartan] Erreur dans la détection " + c.getName(), e);
     }
 
     public static void flag(Check check, ServerPlayer player, String details) {

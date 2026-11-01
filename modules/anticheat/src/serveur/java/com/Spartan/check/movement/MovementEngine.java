@@ -261,7 +261,9 @@ public final class MovementEngine {
         s.lightness.observe(-p.getAttributeValue(ForgeMod.ENTITY_GRAVITY.get()), s.tx, now, margin);
         updateSpeedAndUse(p, s, now, margin);
         s.useChanged = false;
-        s.impulses.removeIf(i -> i.closed || now - i.sentNanos > HOLD_CAP_NANOS + margin);
+        if (!s.impulses.isEmpty()) { // 2.9.5 : sans fonction anonyme créée pour rien à chaque tick de chaque joueur
+            s.impulses.removeIf(i -> i.closed || now - i.sentNanos > HOLD_CAP_NANOS + margin);
+        }
         if (inbox.takeOverflow()) {
             s.flooded = true;
             s.reseedNext = true;
