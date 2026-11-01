@@ -250,7 +250,9 @@ public final class StructureStore extends SafeSavedData {
         tag.put("Buildings", buildings);
         ListTag pieces = new ListTag();
         for (Piece p : this.index.allPieces()) {
-            pieces.add(p.save());
+            // HeraliZ (01/11, perf) : la forme d'une pièce qui n'a pas changé depuis la dernière sauvegarde est reprise telle
+            // quelle (Piece#saveForStore : chaque champ écrit est comparé) ; même contenu, même fichier
+            pieces.add(p.saveForStore());
         }
         pieces.addAll(this.keptPieces);
         tag.put("Pieces", pieces);

@@ -59,6 +59,16 @@ public final class Piece {
     private volatile AABB bounds;
     private volatile BlockPos centre;
 
+    /**
+     * HeraliZ (01/11, perf) : la dernière forme enregistrée ({@link #saveForStore}) et les valeurs des champs qu'elle
+     * reflète. Serveur, fil du serveur seulement.
+     */
+    private transient CompoundTag savedTag;
+    private transient long savedBuilding, savedPlacedAt, savedModifiedAt;
+    private transient Tier savedTier;
+    private transient int savedHp, savedMaxHp, savedState, savedBlocksHash;
+    private transient List<BlockPos> savedBlocks;
+
     public Piece(long id, PieceKey key, long buildingId, Tier tier, int maxHp, UUID owner, long now, @Nullable byte[] skirt) {
         this.id = id;
         this.key = key;
@@ -169,6 +179,37 @@ public final class Piece {
             packed[i] = packOffset(anchor, this.blocks.get(i));
         }
         t.putLongArray("Blocks", packed);
+        return t;
+    }
+
+    /**
+     * HeraliZ (01/11, perf) : ce que {@link #save} écrit, sans le refaire quand aucun champ écrit n'a changé depuis le
+     * dernier appel. Chaque champ écrit qui peut changer est comparé à chaque appel (bâtiment, palier, vie, vie max, dates,
+     * état, blocs : même liste et même contenu) ; l'identifiant, la clé, le propriétaire et la jupe ne changent jamais. La
+     * sauvegarde du monde refaisait sinon chaque pièce de chaque base (une vingtaine d'objets NBT chacune, des dizaines de
+     * millisecondes pour toutes les bases) sur le fil du serveur. Même contenu, donc même fichier. Le résultat est partagé
+     * entre les sauvegardes (l'écriture se fait en fond) : il ne doit jamais être modifié.
+     */
+    public CompoundTag saveForStore() {
+        CompoundTag t = this.savedTag;
+        List<BlockPos> b = this.blocks;
+        int hash = b.hashCode();
+        if (t != null && this.savedBuilding == this.buildingId && this.savedTier == this.tier && this.savedHp == this.hp
+            && this.savedMaxHp == this.maxHp && this.savedPlacedAt == this.placedAt && this.savedModifiedAt == this.modifiedAt
+            && this.savedState == this.state && this.savedBlocks == b && this.savedBlocksHash == hash) {
+            return t;
+        }
+        t = this.save();
+        this.savedTag = t;
+        this.savedBuilding = this.buildingId;
+        this.savedTier = this.tier;
+        this.savedHp = this.hp;
+        this.savedMaxHp = this.maxHp;
+        this.savedPlacedAt = this.placedAt;
+        this.savedModifiedAt = this.modifiedAt;
+        this.savedState = this.state;
+        this.savedBlocks = b;
+        this.savedBlocksHash = hash;
         return t;
     }
 
