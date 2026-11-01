@@ -179,7 +179,9 @@ final class TpaServeur {
         if (p.level().dimension() != Level.OVERWORLD) return false;
         Path f = FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
         try {
-            long d = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            // date relevée sur un fil à part (1.3.4, comme boutique.json et hdv.json) : un /tpa ne touche plus le disque
+            // que si le fichier a changé (0 : absent)
+            long d = DatesFichiers.date(f);
             if (d != dateVilles) {
                 dateVilles = d;
                 List<Ville> l = new ArrayList<>();
