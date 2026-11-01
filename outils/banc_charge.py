@@ -646,7 +646,7 @@ def finir(a, d, rapport, res, serveur, debut_mesure, gc_log):
           "- Ce n'est pas la vraie carte : monde généré (graine fixe), sans conteneurs de loot, villes, décors ni spawn construit.",
           "- Bots sans vrai jeu : le réseau est simulé (paquets mis en forme et compressés, pas envoyés), aucun paquet des joueurs vers le serveur.",
           "- La machine de GitHub n'est pas celle du Ptero : comparer des bancs entre eux (même nombre de bots, même durée), pas avec le Ptero.",
-          "- Le profil du diagnostic (/diag start) relève la pile toutes les 10 ms : il coûte un peu pendant la mesure.", ""]
+          "- Le profil du diagnostic (/diag start = /diag profil) relève la pile toutes les 5 ms, pendant et entre les ticks : environ 1 % du serveur pendant la mesure (coût mesuré en tête du rapport profil-<date>).", ""]
     texte = "\n".join(o)
     (rapport / "resume.md").write_text(texte, encoding="utf-8")
     (rapport / "resultat.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")

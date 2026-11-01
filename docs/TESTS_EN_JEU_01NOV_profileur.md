@@ -21,7 +21,7 @@ les problèmes simplement ».
 - Tâche GitHub « Lenteurs du serveur » : case « profil » (jamais cochée par défaut), noms de Minecraft et chemins de nos
   fichiers rendus lisibles, dernier profil en entier dans le journal et son résumé en tête de la page.
 - spark : profileur de fond coupé (pris au prochain redémarrage), plugin gardé.
-- Noyau 1.0.9.
+- Noyau 1.0.10 (la branche était déjà en 1.0.9 pour le chantier « perf-noyau »).
 
 ## À vérifier en jeu (serveur redémarré avec le nouveau noyau)
 
