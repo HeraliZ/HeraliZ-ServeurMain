@@ -157,14 +157,24 @@ public class CasinoStats extends SavedData {
             BOARD_BETTORS = fr.heraliz.casino.block.entity.LeaderboardBlockEntity.BOARD_BETTORS;
 
     public List<Row> board(MinecraftServer server, int kind, int n) {
-        List<Map.Entry<UUID, long[]>> list = new ArrayList<>(players.entrySet());
         java.util.function.ToLongFunction<long[]> key = switch (kind) {
             case BOARD_LOSERS -> v -> v[0] - v[1];
             case BOARD_BETTORS -> v -> v[0];
             default -> v -> v.length > 2 ? v[2] : 0;
         };
-        list.removeIf(e -> key.applyAsLong(e.getValue()) <= 0);
-        list.sort((x, y) -> Long.compare(key.applyAsLong(y.getValue()), key.applyAsLong(x.getValue())));
+        // 1.3.4 (perf) : seuls les n premiers sont gardés pendant le parcours. Avant : copie et tri de TOUS les joueurs
+        // passés au casino (jamais oubliés), toutes les 2 s pour chaque tableau. Même résultat, égalités comprises : à
+        // valeur égale, le premier rencontré reste devant, comme avec le tri d'avant (tri stable).
+        List<Map.Entry<UUID, long[]>> list = new ArrayList<>(Math.max(0, n) + 1);
+        for (Map.Entry<UUID, long[]> e : n <= 0 ? java.util.Set.<Map.Entry<UUID, long[]>>of() : players.entrySet()) {
+            long k = key.applyAsLong(e.getValue());
+            if (k <= 0) continue;
+            int pos = list.size();
+            while (pos > 0 && key.applyAsLong(list.get(pos - 1).getValue()) < k) pos--;
+            if (pos >= n) continue;
+            list.add(pos, e);
+            if (list.size() > n) list.remove(n);
+        }
         List<Row> out = new ArrayList<>();
         for (int i = 0; i < Math.min(n, list.size()); i++) {
             Map.Entry<UUID, long[]> e = list.get(i);
