@@ -77,6 +77,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue TRONCONS_SANS_TICKET;
    /** Tronçon déjà complet rendu par getChunk sans ticket UNKNOWN (comme Paper). */
    public static volatile boolean tronconsSansTicket = true;
+   public static final ForgeConfigSpec.BooleanValue TRONCONS_ACTIFS_LISTE;
+   /** tickChunks parcourt la liste des tronçons qui peuvent tourner au lieu de tous les tronçons chargés. */
+   public static volatile boolean tronconsActifsListe = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -180,6 +183,11 @@ public final class NoyauConfig {
             "Seule différence : un tronçon que plus rien ne tient (aucun joueur, aucun autre ticket) redescend 1 à 2 ticks plus",
             "tôt. false : comme Minecraft.")
             .define("troncons_sans_ticket", true);
+      TRONCONS_ACTIFS_LISTE = b.comment("Minecraft allégé, étape 2 (01/11) : à chaque tick, Minecraft parcourt TOUS les tronçons chargés (~23 000) pour",
+            "trouver ceux qui tournent. true = liste des tronçons qui peuvent tourner, tenue à jour quand leur niveau change (mêmes",
+            "tronçons, Minecraft les mélange ensuite au hasard comme avant ; comparée à Minecraft toutes les 60 s). false : comme",
+            "Minecraft.")
+            .define("troncons_actifs_liste", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -216,6 +224,7 @@ public final class NoyauConfig {
       suiviParTroncon = SUIVI_PAR_TRONCON.get();
       suiviVoirRapide = SUIVI_VOIR_RAPIDE.get();
       tronconsSansTicket = TRONCONS_SANS_TICKET.get();
+      tronconsActifsListe = TRONCONS_ACTIFS_LISTE.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }

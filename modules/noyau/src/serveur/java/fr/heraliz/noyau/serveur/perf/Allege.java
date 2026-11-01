@@ -54,11 +54,19 @@ public final class Allege {
    public static long voirRaccourcis;
    /** Tronçons complets rendus sans ticket UNKNOWN. */
    public static long tronconsSansTicket;
+   /** Ticks où {@code tickChunks} a parcouru la liste des tronçons qui peuvent tourner. */
+   public static long tronconsActifsTicks;
+   /** Tronçons de ces listes (somme). */
+   public static long tronconsActifsParcourus;
+   /** Listes refaites et contrôlées. */
+   public static long tronconsActifsRefaits;
+   public static long tronconsActifsControles;
 
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
       MinecraftForge.EVENT_BUS.addListener((ServerAboutToStartEvent e) -> {
          SuiviParTroncon.fil(Thread.currentThread());
+         TronconsActifs.fil(Thread.currentThread());
       });
       MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
          if (e.phase == TickEvent.Phase.END) {
@@ -66,17 +74,20 @@ public final class Allege {
             PaquetsTroncons.finDuTick();
             int tick = e.getServer().getTickCount();
             SuiviParTroncon.finDuTick(tick);
+            TronconsActifs.finDuTick(tick);
          }
       });
       MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
          if (e.getLevel() instanceof ServerLevel niveau) {
             SuiviParTroncon.oublierCarte(niveau.getChunkSource().chunkMap);
+            TronconsActifs.oublierCarte(niveau.getChunkSource().chunkMap);
          }
       });
       MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
          EntitesParTroncon.vider();
          PaquetsTroncons.finDuTick();
          SuiviParTroncon.vider();
+         TronconsActifs.vider();
       });
    }
 
@@ -91,6 +102,9 @@ public final class Allege {
             suiviMouvements, suiviCandidats, suiviMouvements == 0 ? 0.0 : (double) suiviCandidats / suiviMouvements, suiviListes,
             suiviSections, suiviEssais, suiviControles, suiviIndexRefaits, SuiviParTroncon.etat(), voirRaccourcis));
       s.append(String.format(Locale.ROOT, " ; tronçons sans ticket %d", tronconsSansTicket));
+      s.append(String.format(Locale.ROOT, " ; tronçons qui tournent par liste %d ticks (%.0f par tick, %d refaites, %d contrôles, %s)",
+            tronconsActifsTicks, tronconsActifsTicks == 0 ? 0.0 : (double) tronconsActifsParcourus / tronconsActifsTicks,
+            tronconsActifsRefaits, tronconsActifsControles, TronconsActifs.etat()));
       ligne.accept(s.append(String.format("%n")).toString());
    }
 }

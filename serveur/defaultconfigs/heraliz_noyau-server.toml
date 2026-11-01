@@ -95,6 +95,11 @@
 	#Seule différence : un tronçon que plus rien ne tient (aucun joueur, aucun autre ticket) redescend 1 à 2 ticks plus
 	#tôt. false : comme Minecraft.
 	troncons_sans_ticket = true
+	#Minecraft allégé, étape 2 (01/11) : à chaque tick, Minecraft parcourt TOUS les tronçons chargés (~23 000) pour
+	#trouver ceux qui tournent. true = liste des tronçons qui peuvent tourner, tenue à jour quand leur niveau change (mêmes
+	#tronçons, Minecraft les mélange ensuite au hasard comme avant ; comparée à Minecraft toutes les 60 s). false : comme
+	#Minecraft.
+	troncons_actifs_liste = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée

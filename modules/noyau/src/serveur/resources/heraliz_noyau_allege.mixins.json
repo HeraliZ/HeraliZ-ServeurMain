@@ -23,7 +23,11 @@
     "SuiviCarteMixin",
     "SuiviEntiteMixin",
     "VusConnexionMixin",
-    "TronconSansTicketMixin"
+    "TronconSansTicketMixin",
+    "TronconsAcces",
+    "ActifsCarteMixin",
+    "ActifsTronconMixin",
+    "ActifsCacheMixin"
   ],
   "injectors": {
     "defaultRequire": 0
