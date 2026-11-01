@@ -1,0 +1,27 @@
+package fr.heraliz.noyau.serveur.perf;
+
+import java.util.Locale;
+import java.util.function.Consumer;
+
+/**
+ * « Minecraft allégé » (01/11, banc de charge à 80 joueurs : le gros du tick venait de Minecraft lui-même, pas de nos mods).
+ * Mixins facultatifs de {@code heraliz_noyau_allege.mixins.json} (jar de Minecraft et de Mohist intacts), chacun coupé par
+ * un réglage de {@code [perf]} dans {@code heraliz_noyau-server.toml}, chacun avec le même résultat que Minecraft. Ici :
+ * les compteurs, pour voir dans {@code /diag etat} (et chaque rapport du diagnostic) que chaque optimisation tourne
+ * vraiment sur ce serveur (un mixin qui ne trouve pas sa cible ne fait rien, sans erreur). Fil serveur seulement.
+ */
+public final class Allege {
+   private Allege() {
+   }
+
+   /** Point 1 : tronçons jugés par la grille des joueurs proches. */
+   public static long prochesGrille;
+   /** Point 1 : dont ceux sans joueur dans la grille (Minecraft aurait parcouru tous les joueurs du monde pour rien). */
+   public static long prochesSansJoueur;
+
+   /** Une ligne pour {@code /diag etat} et les rapports. */
+   public static void etat(Consumer<String> ligne) {
+      ligne.accept(String.format(Locale.ROOT, "Minecraft allégé (depuis le démarrage) : joueurs proches par grille %d tronçons (%d sans joueur)%n",
+            prochesGrille, prochesSansJoueur));
+   }
+}

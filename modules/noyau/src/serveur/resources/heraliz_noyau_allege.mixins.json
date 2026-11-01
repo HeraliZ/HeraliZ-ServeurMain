@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.noyau.serveur.allege",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_noyau-serveur.refmap.json",
+  "mixins": [
+    "ChunkMapAcces",
+    "JoueursProchesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

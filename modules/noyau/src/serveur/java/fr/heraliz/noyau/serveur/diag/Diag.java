@@ -336,6 +336,7 @@ public final class Diag {
             b.append(i > 0 ? ", " : "").append(id == null ? "?" : id.toString()).append(' ').append(l.get(i).getValue());
         }
         ligne.accept(b.append('\n').toString());
+        fr.heraliz.noyau.serveur.perf.Allege.etat(ligne);
     }
 
     static long tempsGc() {

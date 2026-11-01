@@ -48,6 +48,10 @@ public final class NoyauConfig {
    public static volatile boolean levelDatEnFond = true;
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MONDES_SANS_SPAWN;
    public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:bases", "crac:tuto", "heraliz_clashwar:arenes");
+   // « Minecraft allégé » (01/11) : chaque réglage coupe une optimisation des mixins serveur (heraliz_noyau_allege.mixins.json)
+   public static final ForgeConfigSpec.BooleanValue JOUEURS_PROCHES_GRILLE;
+   /** Joueurs proches des tronçons (apparitions, tics aléatoires) cherchés dans une grille faite une fois par tick. */
+   public static volatile boolean joueursProchesGrille = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -110,6 +114,11 @@ public final class NoyauConfig {
       MONDES_SANS_SPAWN = b.comment("Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est",
             "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.")
             .defineListAllowEmpty(List.of("mondes_sans_spawn"), () -> MONDES_SANS_SPAWN_DEFAUT, o -> o instanceof String);
+      JOUEURS_PROCHES_GRILLE = b.comment("Minecraft allégé (01/11) : à chaque tick, Minecraft cherche pour chaque tronçon actif s'il y a un joueur",
+            "(non spectateur) à moins de 128 blocs, en parcourant TOUS les joueurs du monde. true = les joueurs sont rangés une fois",
+            "par tick dans une grille de 128 blocs et seuls les voisins sont regardés (même réponse, même règle que Minecraft et",
+            "Mohist, mob-spawn-range de spigot.yml compris). false : comme Minecraft.")
+            .define("joueurs_proches_grille", true);
       b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
@@ -131,6 +140,7 @@ public final class NoyauConfig {
       faimFacteur = (float) (double) FAIM_FACTEUR.get();
       succesActifs = SUCCES_ACTIFS.get();
       levelDatEnFond = LEVEL_DAT_FOND.get();
+      joueursProchesGrille = JOUEURS_PROCHES_GRILLE.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 
