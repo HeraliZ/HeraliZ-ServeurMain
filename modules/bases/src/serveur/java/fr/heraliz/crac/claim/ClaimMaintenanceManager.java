@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +45,10 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Once a minute: upkeep payment, decay of unpaid / inactive / unclaimed buildings and auto-repair of the others.
  * Only loaded chunks are touched; nothing is ever loaded for this.
+ * <p>HeraliZ (01/11, perf) : la passe de chaque minute est étalée sur quelques ticks ({@link #BUDGET} unités de travail
+ * par tick, une unité par claim, par pièce ou par objet posé) au lieu de passer toutes les bases dans le même tick. Chaque
+ * claim paie une fois par passe, chaque pièce et chaque objet posé est vu une fois, dans le même ordre et avec les mêmes
+ * règles qu'avant ; une passe pas finie à la minute suivante (ou à l'arrêt du serveur) est finie d'un coup d'abord.
  */
 @EventBusSubscriber(
     modid = "crac"
@@ -53,6 +58,11 @@ public final class ClaimMaintenanceManager {
     /** Game ticks in a real day: inactivity is measured in server uptime. */
     private static final long TICKS_PER_DAY = 24L * 60L * 60L * 20L;
     private static long nextRunTick = -1L;
+    /** Unités de travail de la passe par tick (environ 0,1 à 0,2 ms). */
+    private static final int BUDGET = 2000;
+    /** La passe en cours (null entre deux passes). */
+    @Nullable
+    private static Passe passe;
     /** Groups whose upkeep had run out at the last pass, to warn their members once when it starts and stops. */
     private static final Set<UUID> UNPAID = new HashSet<>();
     /** Levels whose untrusted stores were reported this session (once each). */
@@ -92,6 +102,7 @@ public final class ClaimMaintenanceManager {
     public static void onServerStarting(ServerStartingEvent event) {
         // an integrated server keeps these statics from the previous world
         nextRunTick = -1L;
+        passe = null;
         UNPAID.clear();
         DISTRUSTED.clear();
         KEPT.clear();
@@ -108,12 +119,36 @@ public final class ClaimMaintenanceManager {
             // first tick after start, or a world whose clock is behind the cursor: the first pass is one interval away,
             // which also leaves members time to log in after a restart
             nextRunTick = tick + INTERVAL_TICKS;
+            passe = null;
             return;
         }
-        if (tick < nextRunTick) {
-            return;
+        if (tick >= nextRunTick) {
+            nextRunTick = tick + INTERVAL_TICKS;
+            if (passe != null) {
+                avancer(server, Integer.MAX_VALUE);   // la passe d'avant n'a pas fini en une minute : finie d'abord
+            }
+            commencer(server, tick);
         }
-        nextRunTick = tick + INTERVAL_TICKS;
+        if (passe != null) {
+            avancer(server, BUDGET);
+        }
+    }
+
+    /** Arrêt du serveur : une passe commencée est finie (comme avant, quand elle se faisait d'un coup). */
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        if (passe != null) {
+            try {
+                avancer(event.getServer(), Integer.MAX_VALUE);
+            } catch (RuntimeException ex) {
+                Crac.LOGGER.error("[CRac claims] upkeep pass at server stop failed", ex);
+                passe = null;
+            }
+        }
+    }
+
+    /** Début d'une passe : activité des groupes (comme avant), puis les mondes un par un ({@link #avancer}). */
+    private static void commencer(MinecraftServer server, long tick) {
         GroupData gd = GroupData.get(server);
         boolean dirty = false;
         for (Group g : gd.all()) {
@@ -133,11 +168,180 @@ public final class ClaimMaintenanceManager {
         if (dirty) {
             gd.markDirty();
         }
+        List<ServerLevel> mondes = new ArrayList<>();
         for (ServerLevel level : server.getAllLevels()) {
-            maintainLevel(server, level);
+            mondes.add(level);
         }
-        // a group whose claim is gone starts afresh: its next claim warns again
-        UNPAID.removeIf(id -> ClaimManager.getByGroupAnywhere(server, id) == null);
+        passe = new Passe(mondes);
+    }
+
+    /** Ce qu'il reste à faire de la passe d'une minute, monde par monde : claims, puis bâtiments, puis objets posés. */
+    private static final class Passe {
+        final List<ServerLevel> mondes;
+        int monde = -1;
+        @Nullable
+        Monde courant;
+
+        Passe(List<ServerLevel> mondes) {
+            this.mondes = mondes;
+        }
+    }
+
+    /** Un monde de la passe : les réglages et les relevés de son début (comme la passe d'avant, faite d'un coup), et où on en est. */
+    private static final class Monde {
+        final ServerLevel level;
+        final int decayHp = Config.decayHpPerMinute.get();
+        final int repairHp = Config.repairHpPerMinute.get();
+        final boolean repairOn = Config.autoRepairEnabled.get();
+        final boolean decayOn = Config.decayEnabled.get();
+        final long graceTicks = Config.decayGraceMinutes.get() * 1200L;
+        final long now;
+        final ClaimData cd;
+        final StructureStore store;
+        final boolean unclaimedDecays;
+        final Map<Long, Building> claimed;
+        final List<Claim> claims;
+        final Map<UUID, Boolean> decaying = new HashMap<>();
+        int claim;
+        @Nullable
+        List<Building> buildings;
+        int building;
+        @Nullable
+        long[] placables;
+        int placable;
+
+        Monde(ServerLevel level) {
+            this.level = level;
+            this.now = level.getGameTime();
+            this.cd = ClaimData.get(level);
+            this.store = StructureStore.get(level);
+            String distrust = distrust(this.store, this.cd);
+            if (distrust != null && DISTRUSTED.add(level.dimension())) {
+                Crac.LOGGER.warn("[CRac claims] {} in {}: Claim Blocks, claims and building links are left as they are{} until the file is"
+                    + " restored (with the server stopped) or repaired", distrust, level.dimension().location(),
+                    this.cd.isTrusted() ? "" : ", and nothing decays for lack of a claim");
+            }
+            // what lacks a claim may only lack an unreadable one
+            this.unclaimedDecays = Config.decayUnclaimed.get() && this.decayOn && this.cd.isTrusted();
+            // claimed buildings by Claim Block position, built once per pass
+            this.claimed = claimedBuildings(level);
+            this.claims = new ArrayList<>(this.cd.all());
+        }
+    }
+
+    /** Fait au plus {@code budget} unités de la passe en cours (une par claim, par pièce, par objet posé). */
+    private static void avancer(MinecraftServer server, int budget) {
+        Passe p = passe;
+        while (p != null && budget > 0) {
+            Monde m = p.courant;
+            if (m == null) {
+                if (++p.monde >= p.mondes.size()) {
+                    passe = null;
+                    // a group whose claim is gone starts afresh: its next claim warns again
+                    UNPAID.removeIf(id -> ClaimManager.getByGroupAnywhere(server, id) == null);
+                    return;
+                }
+                m = new Monde(p.mondes.get(p.monde));
+                p.courant = m;
+                budget -= 1 + m.claimed.size();
+            } else if (m.claim < m.claims.size()) {
+                budget -= claim(server, m, m.claims.get(m.claim++));
+            } else if (m.buildings == null) {
+                m.buildings = new ArrayList<>(m.store.index.allBuildings());
+                budget -= 1 + m.buildings.size() / 16;
+            } else if (m.building < m.buildings.size()) {
+                budget -= building(m, m.buildings.get(m.building++));
+            } else if (m.placables == null) {
+                m.placables = Config.decayPlacables.get() ? PlacablePositionData.get(m.level).snapshot() : new long[0];
+                budget -= 1 + m.placables.length / 16;
+            } else if (m.placable < m.placables.length) {
+                placable(m, m.placables[m.placable++]);
+                budget--;
+            } else {
+                p.courant = null;
+            }
+        }
+    }
+
+    /** Un claim : vérifié contre le monde, entretien payé, écran de l'armoire, groupe qui s'use ou non. Rend son coût. */
+    private static int claim(MinecraftServer server, Monde m, Claim claim) {
+        ServerLevel level = m.level;
+        BlockPos anchor = claim.anchor();
+        if (m.cd.getByAnchor(anchor) != claim) {
+            return 1;   // retiré (ou remplacé) depuis le début de la passe : plus rien à payer pour lui
+        }
+        boolean unpaid = false;
+        int cout = 1;
+        if (level.isLoaded(anchor)) {
+            Building b = m.claimed.get(anchor.asLong());
+            ClaimBlockEntity be = reconcile(level, claim, b);
+            if (be == null) {
+                return cout;
+            }
+            if (b == null) {
+                // linked again by reconcile, or still unknown (costs nothing)
+                b = StructureService.buildingOfClaim(level, anchor);
+            }
+            cout += b == null ? 0 : b.pieces.size();
+            unpaid = ClaimUpkeep.consumeAndCheck(level, claim, be, b) && m.decayOn;
+            be.majEcran();   // écran de l'armoire : entretien demandé et temps restant
+            warnUpkeep(server, claim.groupId(), unpaid);
+        }
+        m.decaying.put(claim.groupId(), m.decayOn && (unpaid || isInactive(server, claim.groupId())));
+        return cout;
+    }
+
+    /** Un bâtiment : ses pièces s'usent (entretien pas payé, groupe inactif, sans claim) ou se réparent. Rend son coût. */
+    private static int building(Monde m, Building b) {
+        ServerLevel level = m.level;
+        Claim claim = StructureService.claimOf(level, b);
+        boolean decay;
+        if (claim == null) {
+            if (!m.unclaimedDecays) return 1;
+            decay = true;
+        } else if (m.decaying.getOrDefault(claim.groupId(), false)) {
+            decay = true;
+        } else if (m.repairOn && !RaidBlockManager.isRaidBlocked(level, claim.groupId())) {
+            decay = false;
+        } else {
+            return 1;
+        }
+        List<Piece> pieces = m.store.piecesOf(b);
+        for (Piece p : pieces) {
+            boolean skip = decay ? m.now - p.modifiedAt < m.graceTicks : p.hp >= p.maxHp;
+            if (skip || !StructureService.isLoaded(level, p)) continue;
+            if (decay) {
+                StructureService.damage(level, p, m.decayHp, false, StructureService.Cause.DECAY);
+            } else {
+                StructureService.heal(level, p, m.repairHp);
+            }
+        }
+        return 1 + pieces.size();
+    }
+
+    /** Un objet posé (lit, porte, caisse…) : il s'use avec le claim qui l'entoure, ou sans claim s'il en a eu un. */
+    private static void placable(Monde m, long l) {
+        ServerLevel level = m.level;
+        PlacablePositionData ppd = PlacablePositionData.get(level);
+        BlockPos pos = BlockPos.of(l);
+        if (!level.isLoaded(pos)) return;
+        BlockState state = level.getBlockState(pos);
+        if (!PlacableHpManager.isTracked(state)) {
+            ppd.remove(pos);
+            return;
+        }
+        if (!decaysAsPlacable(state)) return;
+        Claim claim = m.cd.getAt(level, pos);
+        boolean decays;
+        if (claim != null) {
+            ppd.markClaimed(pos);
+            decays = m.decaying.getOrDefault(claim.groupId(), false);
+        } else {
+            decays = m.unclaimedDecays && ppd.wasClaimed(pos);
+        }
+        if (decays) {
+            PlacableHpManager.decayDamage(level, pos, m.decayHp);
+        }
     }
 
     /**
@@ -253,95 +457,5 @@ public final class ClaimMaintenanceManager {
             }
         }
         return claimed;
-    }
-
-    private static void maintainLevel(MinecraftServer server, ServerLevel level) {
-        int decayHp = Config.decayHpPerMinute.get();
-        int repairHp = Config.repairHpPerMinute.get();
-        boolean repairOn = Config.autoRepairEnabled.get();
-        boolean decayOn = Config.decayEnabled.get();
-        long graceTicks = Config.decayGraceMinutes.get() * 1200L;
-        long now = level.getGameTime();
-        ClaimData cd = ClaimData.get(level);
-        StructureStore store = StructureStore.get(level);
-        String distrust = distrust(store, cd);
-        if (distrust != null && DISTRUSTED.add(level.dimension())) {
-            Crac.LOGGER.warn("[CRac claims] {} in {}: Claim Blocks, claims and building links are left as they are{} until the file is"
-                + " restored (with the server stopped) or repaired", distrust, level.dimension().location(),
-                cd.isTrusted() ? "" : ", and nothing decays for lack of a claim");
-        }
-        // what lacks a claim may only lack an unreadable one
-        boolean unclaimedDecays = Config.decayUnclaimed.get() && decayOn && cd.isTrusted();
-
-        // claimed buildings by Claim Block position, built once per pass
-        Map<Long, Building> claimed = claimedBuildings(level);
-
-        Map<UUID, Boolean> decaying = new HashMap<>();
-        for (Claim claim : new ArrayList<>(cd.all())) {
-            BlockPos anchor = claim.anchor();
-            boolean unpaid = false;
-            if (level.isLoaded(anchor)) {
-                Building b = claimed.get(anchor.asLong());
-                ClaimBlockEntity be = reconcile(level, claim, b);
-                if (be == null) continue;
-                if (b == null) {
-                    // linked again by reconcile, or still unknown (costs nothing)
-                    b = StructureService.buildingOfClaim(level, anchor);
-                }
-                unpaid = ClaimUpkeep.consumeAndCheck(level, claim, be, b) && decayOn;
-                be.majEcran();   // écran de l'armoire : entretien demandé et temps restant
-                warnUpkeep(server, claim.groupId(), unpaid);
-            }
-            decaying.put(claim.groupId(), decayOn && (unpaid || isInactive(server, claim.groupId())));
-        }
-
-        for (Building b : new ArrayList<>(store.index.allBuildings())) {
-            Claim claim = StructureService.claimOf(level, b);
-            boolean decay;
-            if (claim == null) {
-                if (!unclaimedDecays) continue;
-                decay = true;
-            } else if (decaying.getOrDefault(claim.groupId(), false)) {
-                decay = true;
-            } else if (repairOn && !RaidBlockManager.isRaidBlocked(level, claim.groupId())) {
-                decay = false;
-            } else {
-                continue;
-            }
-            for (Piece p : store.piecesOf(b)) {
-                boolean skip = decay ? now - p.modifiedAt < graceTicks : p.hp >= p.maxHp;
-                if (skip || !StructureService.isLoaded(level, p)) continue;
-                if (decay) {
-                    StructureService.damage(level, p, decayHp, false, StructureService.Cause.DECAY);
-                } else {
-                    StructureService.heal(level, p, repairHp);
-                }
-            }
-        }
-
-        if (Config.decayPlacables.get()) {
-            PlacablePositionData ppd = PlacablePositionData.get(level);
-            for (long l : ppd.snapshot()) {
-                BlockPos pos = BlockPos.of(l);
-                if (!level.isLoaded(pos)) continue;
-                BlockState state = level.getBlockState(pos);
-                if (!PlacableHpManager.isTracked(state)) {
-                    ppd.remove(pos);
-                    continue;
-                }
-                if (!decaysAsPlacable(state)) continue;
-                Claim claim = cd.getAt(level, pos);
-                boolean decays;
-                if (claim != null) {
-                    ppd.markClaimed(pos);
-                    decays = decaying.getOrDefault(claim.groupId(), false);
-                } else {
-                    decays = unclaimedDecays && ppd.wasClaimed(pos);
-                }
-                if (decays) {
-                    PlacableHpManager.decayDamage(level, pos, decayHp);
-                }
-            }
-        }
     }
 }
