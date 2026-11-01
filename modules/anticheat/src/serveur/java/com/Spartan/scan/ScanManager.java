@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -161,6 +164,28 @@ public final class ScanManager {
         }
     }
 
+    /**
+     * Date de officiel.json relevée sur un fil à part toutes les 2 s (2.9.5, perf) ; {@code Long.MIN_VALUE} : absent ou
+     * illisible. Le fil du serveur demandait lui-même la date au disque toutes les 10 s : un disque occupé (sauvegarde du
+     * monde) peut geler le tick (même cas que la boutique le 28/10 : 117 ms). Le fichier n'est lu par le fil du serveur que
+     * quand sa date a vraiment changé, comme avant.
+     */
+    private static volatile long dateVue = Long.MIN_VALUE;
+    private static boolean releveLance;
+
+    private static void lancerReleveDate() {
+        if (releveLance) {
+            return;
+        }
+        releveLance = true;
+        ScheduledExecutorService fil = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "Spartan-officiel-date");
+            t.setDaemon(true);
+            return t;
+        });
+        fil.scheduleWithFixedDelay(() -> dateVue = dateFichierOfficiel(), 0L, 2L, TimeUnit.SECONDS);
+    }
+
     /** Toutes les 10 s au plus : relit officiel.json s'il a changé (mise en ligne sans redémarrage). Fil serveur. */
     private static void surveillerOfficiel() {
         long now = Util.getMillis();
@@ -168,7 +193,8 @@ public final class ScanManager {
             return;
         }
         prochaineSurveillance = now + 10_000L;
-        long d = dateFichierOfficiel();
+        lancerReleveDate();
+        long d = dateVue;
         if (d == Long.MIN_VALUE || d == dateOfficiel) {
             return;
         }
