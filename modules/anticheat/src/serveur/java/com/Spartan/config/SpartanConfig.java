@@ -1,8 +1,11 @@
 package com.Spartan.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
@@ -679,63 +682,101 @@ public class SpartanConfig {
     }
 
     public static List<String> getScanProcessPatterns() {
-        return lowerList(SCAN_PROCESS_PATTERNS.get());
+        return lowerList(SCAN_PROCESS_PATTERNS);
     }
 
     public static List<String> getScanNativePatterns() {
-        return lowerList(SCAN_NATIVE_PATTERNS.get());
+        return lowerList(SCAN_NATIVE_PATTERNS);
     }
 
     public static List<String> getBlacklistedMods() {
-        return lowerList(BLACKLISTED_MODS.get());
+        return lowerList(BLACKLISTED_MODS);
     }
 
     public static List<String> getAllowedResourcePacks() {
-        return lowerList(ALLOWED_RESOURCE_PACKS.get());
+        return lowerList(ALLOWED_RESOURCE_PACKS);
     }
 
     public static List<String> getAllowedShaderpacks() {
-        return lowerList(ALLOWED_SHADERPACKS.get());
+        return lowerList(ALLOWED_SHADERPACKS);
     }
 
     public static List<String> getNoSlowIgnoredItems() {
-        return lowerList(NOSLOW_IGNORED_ITEMS.get());
+        return lowerList(NOSLOW_IGNORED_ITEMS);
     }
 
     public static List<String> getAntidupeItems() {
-        return lowerList(ANTIDUPE_ITEMS.get());
+        return lowerList(ANTIDUPE_ITEMS);
     }
 
     public static List<String> getFlyHoverItems() {
-        return lowerList(FLY_HOVER_ITEMS.get());
+        return lowerList(FLY_HOVER_ITEMS);
     }
 
     public static List<String> getFlyExemptKeywords() {
-        return lowerList(FLY_EXEMPT_KEYWORDS.get());
+        return lowerList(FLY_EXEMPT_KEYWORDS);
     }
 
     public static List<String> getIgnoredEffects() {
-        return lowerList(IGNORED_EFFECTS.get());
+        return lowerList(IGNORED_EFFECTS);
     }
 
     public static List<String> getAllowedModsHashes() {
-        return lowerList(ALLOWED_MODS_HASHES.get());
+        return lowerList(ALLOWED_MODS_HASHES);
     }
 
     public static List<String> getGardienIgnoredTools() {
-        return lowerList(GARDIEN_IGNORED_TOOLS.get());
+        return lowerList(GARDIEN_IGNORED_TOOLS);
     }
 
     public static List<String> getAllowedJavaAgents() {
-        return lowerList(ALLOWED_JAVA_AGENTS.get());
+        return lowerList(ALLOWED_JAVA_AGENTS);
     }
 
-    private static List<String> lowerList(List<? extends String> in) {
-        List<String> out = new ArrayList<>();
+    /**
+     * Liste du réglage en minuscules. 2.9.5 (perf) : refaite seulement quand le réglage change. Avant, une liste neuve était
+     * construite à chaque appel, dont deux fois par paquet de mouvement de chaque joueur (équipement de vol, FlightGear) :
+     * environ 6 000 listes par seconde à 150 joueurs. Liste rendue en lecture seule (aucun appelant ne la modifie).
+     */
+    private static List<String> lowerList(ForgeConfigSpec.ConfigValue<List<? extends String>> reglage) {
+        List<? extends String> in = reglage.get();
+        Minuscules m = MINUSCULES.get(reglage);
+        if (m != null && m.pour(in)) {
+            return m.liste;
+        }
+        List<String> out = new ArrayList<>(in.size());
         for (Object o : in) {
             out.add(String.valueOf(o).toLowerCase(Locale.ROOT));
         }
-        return out;
+        m = new Minuscules(in.toArray(), Collections.unmodifiableList(out));
+        MINUSCULES.put(reglage, m);
+        return m.liste;
+    }
+
+    private static final Map<ForgeConfigSpec.ConfigValue<?>, Minuscules> MINUSCULES = new ConcurrentHashMap<>();
+
+    /** Une liste lue (ses éléments tels quels) et sa version en minuscules ; immuable, lisible de tout fil. */
+    private static final class Minuscules {
+        private final Object[] lus;
+        final List<String> liste;
+
+        Minuscules(Object[] lus, List<String> liste) {
+            this.lus = lus;
+            this.liste = liste;
+        }
+
+        /** Mêmes éléments (les mêmes objets, dans le même ordre) que la liste du réglage : rien n'a changé. */
+        boolean pour(List<?> in) {
+            if (in.size() != lus.length) {
+                return false;
+            }
+            for (int i = 0; i < lus.length; i++) {
+                if (in.get(i) != lus[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     /**
