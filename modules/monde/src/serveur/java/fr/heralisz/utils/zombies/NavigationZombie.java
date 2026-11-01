@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  * <li>de {@code chemin_pres} à {@value #LOIN} blocs : un calcul au plus toutes les {@code attente_moyen} ticks ;</li>
  * <li>au-delà : toutes les {@code attente_loin} ticks ;</li>
  * <li>cible hors d'atteinte (le dernier chemin n'y arrivait pas) restée au même endroit : toutes les {@code attente_bloque}
- * ticks, à toute distance.</li>
+ * ticks, à toute distance, même quand le zombie est déjà au bout de ce chemin (au pied du mur).</li>
  * </ul>
  * Entre deux calculs, le zombie suit son chemin (vers l'endroit où était sa cible) et l'attaque de Minecraft le croit en
  * route. Nouvelle cible, chemin fini, rompu ou remplacé (promenade, bruit, Zombie Awareness) : calcul tout de suite, comme
@@ -45,7 +45,7 @@ final class NavigationZombie extends GroundPathNavigation {
     @Override
     public boolean moveTo(Entity e, double vitesse) {
         Path p = getPath();
-        if (e.getId() == cible && p != null && !isDone() && garder(e, p)) {
+        if (e.getId() == cible && p != null && garder(e, p, isDone())) {
             setSpeedModifier(vitesse);
             CheminsZombies.garde();
             return true;
@@ -66,15 +66,21 @@ final class NavigationZombie extends GroundPathNavigation {
         return super.moveTo(chemin, vitesse);
     }
 
-    /** Garder le chemin en cours plutôt que d'en calculer un nouveau ? */
-    private boolean garder(Entity e, Path p) {
+    /**
+     * Garder le chemin en cours plutôt que d'en calculer un nouveau ? {@code fini} : le zombie est déjà au bout de son
+     * chemin ; seulement s'il était incomplet (cible hors d'atteinte, restée au même endroit) : le zombie reste au pied du
+     * mur comme avec Minecraft, qui refaisait pourtant le même calcul complet toutes les 4 à 10 ticks.
+     */
+    private boolean garder(Entity e, Path p, boolean fini) {
         if (!ZombiesConfig.IA_ALLEGEE.get()) return false;
         int depuis = mob.tickCount - dernierCalcul;
+        // hors d'atteinte et la cible n'a presque pas bougé : un nouveau calcul retomberait sur le même mur
+        boolean bloque = !p.canReach() && e.distanceToSqr(cx, cy, cz) < IMMOBILE2;
+        if (fini) return bloque && depuis < ZombiesConfig.ATTENTE_BLOQUE.get();
         double d2 = mob.distanceToSqr(e);
         int pres = ZombiesConfig.CHEMIN_PRES.get();
         int attente = d2 > LOIN * LOIN ? ZombiesConfig.ATTENTE_LOIN.get() : d2 > (double) pres * pres ? ZombiesConfig.ATTENTE_MOYEN.get() : 0;
-        // hors d'atteinte et la cible n'a presque pas bougé : un nouveau calcul retomberait sur le même mur
-        if (!p.canReach() && e.distanceToSqr(cx, cy, cz) < IMMOBILE2) attente = Math.max(attente, ZombiesConfig.ATTENTE_BLOQUE.get());
+        if (bloque) attente = Math.max(attente, ZombiesConfig.ATTENTE_BLOQUE.get());
         return depuis < attente;
     }
 
