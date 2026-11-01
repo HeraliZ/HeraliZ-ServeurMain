@@ -78,6 +78,12 @@ final class BallesEnVol {
    /** {@code Entity.activatedTick} de Mohist (public long), null sans Mohist ou s'il est devenu inaccessible. */
    @Nullable
    private static Field activation = champActivation();
+   /**
+    * Portée d'activation de Spigot présente (Mohist) ? Alors une balle ne peut être retirée parce qu'elle n'avance plus que si
+    * elle est rendue toujours active : sinon une balle à plus de 16 blocs de tout joueur, seulement mise en pause par Spigot,
+    * serait prise pour une balle figée et retirée en plein vol (tir à distance perdu).
+    */
+   private static final boolean SPIGOT = classe("org.spigotmc.ActivationRange");
    private static int horloge;
    private static long retirees;
    private static long retireesAuBilan;
@@ -101,8 +107,22 @@ final class BallesEnVol {
       if (toujoursActives) {
          toujoursActive(balle);
       }
-      if (retirerFigees) {
+      if (retirerFigees && retraitSur()) {
          suivre(balle);
+      }
+   }
+
+   /** Retirer les balles qui n'avancent plus est sûr : pas de Spigot, ou balles rendues toujours actives. */
+   private static boolean retraitSur() {
+      return !SPIGOT || (toujoursActives && activation != null);
+   }
+
+   private static boolean classe(String nom) {
+      try {
+         Class.forName(nom, false, BallesEnVol.class.getClassLoader());
+         return true;
+      } catch (ClassNotFoundException | LinkageError absente) {
+         return false;
       }
    }
 
@@ -116,6 +136,10 @@ final class BallesEnVol {
       }
       if (horloge % BILAN == 0) {
          bilan();
+      }
+      if (nb > 0 && !retraitSur()) {
+         vider();   // activation de Spigot laissée à Spigot : plus aucun retrait (comme avant)
+         return;
       }
       // à l'envers : la dernière case, déjà vue, vient boucher le trou d'une balle oubliée
       for (int i = nb - 1; i >= 0; i--) {
@@ -197,8 +221,9 @@ final class BallesEnVol {
    private static void demarre(ServerStartedEvent e) {
       relire();
       LOG.info("[tactique] Balles de TaCZ : toujours actives = {} ({}), figées retirées = {}", toujoursActives,
-         activation != null ? "portée d'activation de Spigot (Mohist) ignorée pour elles" : "pas de portée d'activation sur ce serveur",
-         retirerFigees);
+         activation != null ? "portée d'activation de Spigot (Mohist) ignorée pour elles"
+            : SPIGOT ? "portée d'activation de Spigot présente mais pas modifiable" : "pas de portée d'activation sur ce serveur",
+         retirerFigees && retraitSur());
    }
 
    private static void bilan() {
