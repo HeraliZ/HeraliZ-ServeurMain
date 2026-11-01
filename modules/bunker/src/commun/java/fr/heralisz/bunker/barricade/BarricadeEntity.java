@@ -97,10 +97,22 @@ public class BarricadeEntity extends Entity {
       }
    }
 
+   /** Position et angle pour lesquels les segments sont placés (NaN : jamais placés). */
+   private double partsX = Double.NaN, partsY, partsZ;
+   private float partsYaw;
+
    @Override
    public void tick() {
       super.tick();
-      this.placeParts();
+      // 01/11 (perf) : une barricade ne bouge pas ; ses 9 segments ne sont replacés que si elle a bougé ou tourné (avant :
+      // à chaque tick, 18 vecteurs et 9 boîtes neufs par barricade chargée, côté serveur comme côté joueur)
+      if (this.getX() != this.partsX || this.getY() != this.partsY || this.getZ() != this.partsZ || this.getYRot() != this.partsYaw) {
+         this.placeParts();
+         this.partsX = this.getX();
+         this.partsY = this.getY();
+         this.partsZ = this.getZ();
+         this.partsYaw = this.getYRot();
+      }
    }
 
    @Override

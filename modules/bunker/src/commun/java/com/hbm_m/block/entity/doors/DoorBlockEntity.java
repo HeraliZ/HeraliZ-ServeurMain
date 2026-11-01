@@ -385,6 +385,10 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
    }
 
    public static void serverTick(Level level, BlockPos pos, BlockState state, DoorBlockEntity be) {
+      // HeraliZ (01/11, perf) : porte fermée ou ouverte, à l'arrêt : rien à faire (avant : sa déclaration relue à chaque tick)
+      if (be.state != 2 && be.state != 3) {
+         return;
+      }
       int openTime = be.getServerOpenTime();
       boolean shouldSync = false;
       if (be.state == 3) {
