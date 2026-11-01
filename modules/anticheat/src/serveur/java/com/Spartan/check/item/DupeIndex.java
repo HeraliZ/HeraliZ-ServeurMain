@@ -59,7 +59,8 @@ public final class DupeIndex {
     /** Un identifiant d'objet correspond-il à la liste suivie (« mod:objet » exact ou « mod:* ») ? */
     public static boolean suivi(String id, List<String> motifs) {
         for (String m : motifs) {
-            if (m.endsWith(":*") ? id.startsWith(m.substring(0, m.length() - 1)) : id.equals(m)) {
+            // « mod:* » : id commence par « mod: » (comparé sur place, sans recopier le début du motif)
+            if (m.endsWith(":*") ? id.regionMatches(0, m, 0, m.length() - 1) : id.equals(m)) {
                 return true;
             }
         }
