@@ -82,14 +82,14 @@ dans `heralisz_utils_serveur.mixins.json` (Zombie Awareness, non obligatoire).
 - Gardes déjà notées ailleurs : `/gamerule doMobSpawning false` sur la carte ; `plugins/spark/config.json`
   `"backgroundProfiler": false`.
 
-## Questions pour le propriétaire
+## Questions pour le propriétaire (réponses du 01/11)
 
-1. Minecraft laisse une partie des zombies **ramasser les objets au sol** (arme ou armure d'un joueur mort). Le couper ?
-   Petit gain (une recherche d'objets par tick pour chacun d'eux) et plus de zombie qui porte l'arme d'un joueur.
-2. Les zombies à plus de ~24 blocs de tout joueur bougent à peine (réglage Spigot ci-dessus). Garder 24 (le plus léger),
-   ou monter à 32-40 pour que les tirs fassent venir des zombies de plus loin (plus vivant, plus cher) ?
-3. Borne de départ : l'anneau de particules envoie 8 paquets par tick à chaque joueur à 32 blocs, pendant tout le compte
-   à rebours. Un tick sur deux (presque invisible) ?
+1. Zombies qui **ramassent les objets au sol** : **coupé** (Monde 1.0.8, `ramassage = false` dans `[zombies]` de
+   `heraliz_zombies-server.toml`, tous les monstres, aussi ceux relus du disque). À vérifier : jeter une arme près d'un
+   zombie, il ne la prend plus ; un zombie qui en portait déjà une la garde et la lâche à sa mort.
+2. Portée d'activation des zombies : **24 blocs gardés** (le plus léger).
+3. Anneau de particules de la borne : **un tick sur deux** (choix logique, presque invisible) : 4 paquets par tick en
+   moyenne au lieu de 8 pour chaque joueur à 32 blocs. À vérifier : l'anneau a le même air pendant le compte à rebours.
 
 ## Pas fait (à savoir)
 

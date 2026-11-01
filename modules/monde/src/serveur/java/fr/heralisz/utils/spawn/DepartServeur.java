@@ -350,14 +350,20 @@ public final class DepartServeur {
     private static final DustParticleOptions BLEU = new DustParticleOptions(new Vector3f(0.30f, 0.85f, 1.0f), 1.1f);
     private static final DustParticleOptions BLEU_PALE = new DustParticleOptions(new Vector3f(0.70f, 0.95f, 1.0f), 0.8f);
 
-    /** Pendant le délai : un anneau de lumière bleue tourne autour du joueur et monte des pieds à la tête. */
+    /**
+     * Pendant le délai : un anneau de lumière bleue tourne autour du joueur et monte des pieds à la tête. 01/11 : un tick
+     * sur deux : 4 paquets par tick en moyenne au lieu de 8, pour chaque joueur à 32 blocs ; la poussière bleue reste à
+     * l'écran 8 à 40 ticks, l'anneau a le même air.
+     */
     private static void anneau(ServerLevel ici, ServerPlayer sp, int maintenant, EnCours d) {
         double duree = Math.max(1, d.fin - d.debut);
         double p = Mth.clamp((maintenant - d.debut) / duree, 0.0, 1.0);
         double h = 0.1 + p * 1.9, rayon = 0.95 - 0.25 * p, tour = maintenant * 0.32;
-        for (int i = 0; i < 8; i++) {
-            double a = tour + i * (Math.PI * 2 / 8);
-            ici.sendParticles(BLEU, sp.getX() + Math.cos(a) * rayon, sp.getY() + h, sp.getZ() + Math.sin(a) * rayon, 1, 0, 0, 0, 0);
+        if ((maintenant & 1) == 0) {
+            for (int i = 0; i < 8; i++) {
+                double a = tour + i * (Math.PI * 2 / 8);
+                ici.sendParticles(BLEU, sp.getX() + Math.cos(a) * rayon, sp.getY() + h, sp.getZ() + Math.sin(a) * rayon, 1, 0, 0, 0, 0);
+            }
         }
         if (maintenant % 4 == 0) {                                 // étincelles qui montent vers l'anneau
             ici.sendParticles(BLEU_PALE, sp.getX(), sp.getY() + 0.1, sp.getZ(), 3, 0.5, 0.05, 0.5, 0);

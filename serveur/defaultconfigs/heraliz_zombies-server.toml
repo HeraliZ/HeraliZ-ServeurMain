@@ -69,6 +69,10 @@
 	#01/11 : Zombie Awareness cherche ses sons et odeurs seulement quand son tirage le demande, parmi ses seules entites
 	#de sens (meme resultat). false : recherche du mod.
 	awareness_rapide = true
+	#01/11 (choix du proprietaire) : false = aucun monstre ne ramasse plus les objets au sol (arme ou armure
+	#d'un joueur mort ; une recherche d'objets en moins a chaque tick pour chacun). true : comme Minecraft (une partie
+	#des zombies ramasse).
+	ramassage = false
 
 #Varietes des zombies HeraliZ, tirees a leur premiere arrivee. Le reste des zombies est marcheur.
 [varietes]

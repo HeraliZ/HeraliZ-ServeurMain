@@ -25,6 +25,8 @@ public final class ZombiesConfig {
     // chemin gardé vers une cible loin ou hors d'atteinte (voir NavigationZombie), Zombie Awareness (SensAwareness)
     public static final ForgeConfigSpec.IntValue CHEMIN_PRES, ATTENTE_MOYEN, ATTENTE_LOIN, ATTENTE_BLOQUE;
     public static final ForgeConfigSpec.BooleanValue AWARENESS_RAPIDE;
+    // ramassage des objets au sol par les monstres (voir IaZombies.ramassage)
+    public static final ForgeConfigSpec.BooleanValue RAMASSAGE;
     // variétés (voir VarietesZombies)
     public static final ForgeConfigSpec.BooleanValue VARIETES;
     public static final ForgeConfigSpec.DoubleValue PART_COUREURS, PART_COSTAUDS, VIE_MARCHEUR, VIE_COUREUR, VIE_COSTAUD,
@@ -115,6 +117,9 @@ public final class ZombiesConfig {
         AWARENESS_RAPIDE = b.comment("01/11 : Zombie Awareness (jar intact) cherche les sons et les odeurs seulement quand son tirage le demande",
                         "(une fois sur 10) et parmi ses seules entites de sens, au lieu de lister toutes les entites a 64 blocs a chaque fois.",
                         "Meme resultat. false : recherche du mod.").define("awareness_rapide", true);
+        RAMASSAGE = b.comment("01/11 (choix du proprietaire) : false = aucun monstre ne ramasse plus les objets au sol (arme ou armure",
+                        "d'un joueur mort ; une recherche d'objets en moins a chaque tick pour chacun). true : comme Minecraft (une partie",
+                        "des zombies ramasse).").define("ramassage", false);
         b.pop();
         b.comment("Variétés des zombies HeraliZ (24/10, « des coureurs, des costauds, une belle variété, assez résistants ») :",
                 "tirées à leur première arrivée, gardées ensuite. Le reste des zombies est marcheur. Les rampants restent ceux de",

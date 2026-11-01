@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.world.entity.ai.goal.RemoveBlockGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
@@ -67,6 +68,18 @@ public final class IaZombies {
         z.targetSelector.getAvailableGoals().removeIf(w -> !w.isRunning()
                 && w.getGoal().getClass() == NearestAttackableTargetGoal.class && w.getPriority() != 2);
         niveau(z, ZombiesConfig.IA_RYTHME.get(), ZombiesConfig.IA_CHEMINS.get().floatValue());
+    }
+
+    /**
+     * 01/11 (choix du propriétaire) : aucun monstre ne ramasse plus les objets au sol (arme ou armure d'un joueur mort).
+     * Minecraft tire ce droit à l'apparition d'une partie des zombies (et le garde dans les données de l'entité) ; ceux qui
+     * l'ont cherchent les objets autour d'eux à chaque tick. Tous les monstres (zombies HeraliZ, Mutants & Zombies, ceux
+     * de Minecraft), à chaque arrivée, y compris ceux relus du disque. Réglage {@code ramassage} (true : comme Minecraft).
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void ramassage(EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof Monster m) || !m.canPickUpLoot()) return;
+        if (!ZombiesConfig.RAMASSAGE.get()) m.setCanPickUpLoot(false);
     }
 
     @SubscribeEvent
