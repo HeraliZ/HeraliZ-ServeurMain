@@ -48,6 +48,9 @@ public class ServerConfig {
    public static IntValue COUTEAUX_CADENCE_LOURD;
    public static DoubleValue COUTEAUX_ANGLE_RAPIDE;
    public static DoubleValue COUTEAUX_ANGLE_LOURD;
+   /** HeraliZ : balles de TaCZ qui volent jusqu'au bout et ne restent jamais figées (fr.heraliz.tactique.serveur.BallesEnVol). */
+   public static BooleanValue BALLES_TOUJOURS_ACTIVES;
+   public static BooleanValue BALLES_RETIRER_FIGEES;
 
    public static ForgeConfigSpec init() {
       Builder builder = new Builder();
@@ -193,6 +196,23 @@ public class ServerConfig {
          .defineInRange("angle_rapide", CoupsCouteau.DEFAUT_ANGLE_RAPIDE, 5.0, 180.0);
       COUTEAUX_ANGLE_LOURD = builder.comment("Ouverture (en degrés) du cône du coup puissant (75, comme la Dague tactique).")
          .defineInRange("angle_lourd", CoupsCouteau.DEFAUT_ANGLE_LOURD, 5.0, 180.0);
+      builder.pop();
+      // HeraliZ : balles de TaCZ (lu par le serveur seulement, relu en marche ; fr.heraliz.tactique.serveur.BallesEnVol)
+      builder.push("balles");
+      BALLES_TOUJOURS_ACTIVES = builder.comment(
+            "Les balles des armes TaCZ avancent à chaque tick tant qu'elles sont dans la zone simulée, comme TaCZ le veut.",
+            "Sans ça, Mohist leur applique la portée d'activation de Spigot (entity-activation-range, misc = 16 dans",
+            "spigot.yml) : dès qu'un tick dépasse 50 ms, une balle à plus de 16 blocs de tout joueur pouvait s'arrêter près",
+            "d'une seconde et mourir en chemin (vie de 0,5 à 1 s) : tir à distance en retard ou perdu. Aucun effet sans Mohist.",
+            "false : comme avant.")
+         .define("toujours_actives", true);
+      BALLES_RETIRER_FIGEES = builder.comment(
+            "Une balle que le serveur ne fait plus avancer (sortie de la zone simulée, simulation-distance de",
+            "server.properties : à plus de 64 blocs de tout joueur) est retirée à la fin du tick suivant. Avant, elle restait",
+            "figée là tant que le tronçon était chargé : des milliers en combat, une traçante qui partait de nulle part quand",
+            "un joueur approchait, une balle qui se réveillait et touchait des minutes après le tir. Une balle qui avance",
+            "n'est jamais retirée. false : comme avant.")
+         .define("retirer_figees", true);
       builder.pop();
       return builder.build();
    }

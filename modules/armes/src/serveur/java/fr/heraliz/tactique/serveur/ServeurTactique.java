@@ -8,7 +8,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * qui repoussent (VitresServeur, diagnostic du staff {@code /vitres pourquoi} : CommandeVitres), les tirs silencieux
  * entendus de loin (SonLointainServeur), les coups des couteaux TaCZ (CouteauxServeur) et les dégâts des armes TaCZ
  * contre les joueurs (DegatsArmes, config heraliz_tactique/armes.json), le tir automatique par défaut (TirAutoServeur), plus de deuxième main
- * (SansMainGauche), la jambe cassée sans perte des coups (JambeCasseeServeur).
+ * (SansMainGauche), la jambe cassée sans perte des coups (JambeCasseeServeur), les balles de TaCZ qui volent jusqu'au
+ * bout sans jamais rester figées (BallesEnVol).
  */
 public final class ServeurTactique implements Partie {
    @Override
@@ -27,5 +28,7 @@ public final class ServeurTactique implements Partie {
       AnciensSoins.brancher();
       // jambe cassée de geckolib222 : plus de Faiblesse II cachée qui empêchait de frapper (28/10)
       JambeCasseeServeur.brancher();
+      // balles de TaCZ : toujours actives pour Spigot, retirées dès qu'elles ne tournent plus (01/11)
+      BallesEnVol.brancher();
    }
 }

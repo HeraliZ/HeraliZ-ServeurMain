@@ -136,3 +136,17 @@
 	#Ouverture (en degrés) du cône du coup puissant (75, comme la Dague tactique).
 	#Range: 5.0 ~ 180.0
 	angle_lourd = 75.0
+
+[balles]
+	#Les balles des armes TaCZ avancent à chaque tick tant qu'elles sont dans la zone simulée, comme TaCZ le veut.
+	#Sans ça, Mohist leur applique la portée d'activation de Spigot (entity-activation-range, misc = 16 dans
+	#spigot.yml) : dès qu'un tick dépasse 50 ms, une balle à plus de 16 blocs de tout joueur pouvait s'arrêter près
+	#d'une seconde et mourir en chemin (vie de 0,5 à 1 s) : tir à distance en retard ou perdu. Aucun effet sans Mohist.
+	#false : comme avant.
+	toujours_actives = true
+	#Une balle que le serveur ne fait plus avancer (sortie de la zone simulée, simulation-distance de
+	#server.properties : à plus de 64 blocs de tout joueur) est retirée à la fin du tick suivant. Avant, elle restait
+	#figée là tant que le tronçon était chargé : des milliers en combat, une traçante qui partait de nulle part quand
+	#un joueur approchait, une balle qui se réveillait et touchait des minutes après le tir. Une balle qui avance
+	#n'est jamais retirée. false : comme avant.
+	retirer_figees = true
