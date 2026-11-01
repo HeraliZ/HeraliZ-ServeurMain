@@ -5,9 +5,10 @@ Demande du propriétaire : « le serveur le plus léger possible avec 150 joueur
 
 **Rien de ceci n'a été essayé en jeu, ni compilé avec Gradle** (le dépôt de Forge est bloqué ici) : seule la syntaxe Java
 a été vérifiée (Java 17), plus deux petits essais hors du jeu (liste suivie de l'anti-duplication : 209 cas identiques ;
-classement du casino : 45 000 cas identiques). La fabrication complète se fait par le contrôle de branche de GitHub.
+classement du casino : 45 000 cas identiques ; contrôle d'intégrité de Spartan 2.9.6 : voir plus bas). La fabrication
+complète se fait par le contrôle de branche de GitHub.
 
-Versions : Noyau 1.0.9, Spartan 2.9.5, Tactique 2.41.1, Boutique 1.3.4, Sacs 3.0.1-beta.4-heralisz22. Changements côté
+Versions : Noyau 1.0.9, Spartan 2.9.6, Tactique 2.41.1, Boutique 1.3.4, Sacs 3.0.1-beta.4-heralisz22. Changements côté
 serveur seulement, mais les numéros de version changent : les joueurs reçoivent les nouveaux jars par le launcher, comme à
 chaque mise en ligne (Spartan : jar joueur et jar serveur de la même fabrication, comme toujours).
 
@@ -22,6 +23,7 @@ chaque mise en ligne (Spartan : jar joueur et jar serveur de la même fabricatio
 | `anticheat/.../AntiDupe.java:77` (relevé toutes les 20 s) | un tick de **plusieurs dizaines de ms** : ~6 000 objets des sacs recréés (avec l'événement des capacités de Forge), ~15 000 textes | seuls les objets suivis (armes, sacs, armures, objets de valeur) sont recréés ; plus de texte pour une case vide | rien (mêmes numéros, mêmes alertes au staff) |
 | `anticheat/.../ScanManager.java:190` | date de `officiel.json` demandée au disque par le fil du serveur toutes les 10 s (un disque occupé = tick gelé, cf. 117 ms le 28/10) | relevée sur un fil à part | rien (relu tout seul ≤ 12 s après une mise en ligne au lieu de ≤ 10 s) |
 | `anticheat/.../MovementEngine.java:264` | 1 objet par joueur et par tick pour rien | 0 | rien |
+| `anticheat/.../ScanManager.java` (contrôle d'intégrité, Spartan 2.9.6) | chaque rapport décompressé, décodé et analysé sur le fil du serveur : **~2 à 3 ms par rapport, environ un par seconde** à 150 joueurs ; bien plus pour un suspect (preuve complète écrite en JSON) | sur le fil « Spartan-controle » ; seul l'effet (alertes, staff, refus, validation) reste sur le fil du serveur | rien (mêmes verdicts, mêmes alertes, même ordre ; appliqué une fraction de seconde après la réception au lieu de tout de suite) |
 | `armes/.../CustomExplosion.java:116` (grenades) | 1 352 rayons de destruction par explosion (~19 000 lectures de blocs, **~1 à 2 ms par grenade**) pour une grenade qui ne casse aucun bloc (toutes celles du serveur) | 0 | rien (dégâts, souffle, secousse, particules identiques) |
 | `boutique/.../VanishServeur.java:245` (toutes les 2 s) | 22 500 essais + contrôle AuthMe et grade de chaque joueur | les joueurs cachés cherchés une fois ; sans staff caché, plus rien | rien |
 | `boutique/.../TagClan.java:68` (tab, toutes les 2 s) | 150 expressions recompilées | 0 | rien (même tag) |
@@ -30,7 +32,26 @@ chaque mise en ligne (Spartan : jar joueur et jar serveur de la même fabricatio
 | `sacs/.../UnlockManagerServeur.java:57` (défis des sacs) | 99 défis testés avec une recherche chacun, pour chaque joueur qui marche, à chaque tick ; biome de chaque joueur lu chaque seconde pour rien | recherche seulement pour un défi fini ; plus de biome | rien (mêmes déblocages) |
 
 Ordre de grandeur du gain total : **~2,5 à 6 ms par tick à 150 joueurs** (surtout MAtmos), plus des pics en moins (relevé
-de l'anti-duplication, grenades, coups d'œil au disque).
+de l'anti-duplication, contrôles d'intégrité, grenades, coups d'œil au disque).
+
+### Spartan 2.9.6 : contrôle d'intégrité analysé à part (demande du 01/11)
+
+- Sur le fil « Spartan-controle » : décompression et décodage du rapport, analyse, écarts au jeu officiel, et le fichier
+  de preuve en JSON quand il y a un indice. Sur le fil du serveur, comme avant : alertes (Discord, staff, `alerts.log`),
+  demandes du staff, refus de connexion du mode strict, « Jeu validé », `/spartan report`.
+- Mêmes résultats : l'analyse lit exactement ce qu'elle lisait (client de référence, modpack officiel, inventaire du
+  premier contrôle, réglages), pris sur le fil du serveur. Ces profils ne sont plus modifiés une fois publiés :
+  l'apprentissage (`/spartan reference learn`) et le nouveau modpack officiel travaillent sur des copies.
+- Même ordre : un seul rapport analysé à la fois, dans l'ordre d'arrivée. Une déconnexion, une demande du staff
+  (`/spartan scan`), `/spartan report` et la liste des suspects appliquent d'abord les rapports encore en analyse ; la
+  validation du jeu attend un rapport en cours (une fraction de seconde). Si le fil d'analyse ne répondait plus (jamais vu),
+  le fil du serveur refait l'analyse lui-même après 10 s.
+- Essai hors du jeu : l'ancien et le nouveau code ont fait la même suite de contrôles (joueur propre, tricheur avec refus,
+  rapport illisible, apprentissage remplacé puis complété, config Mixin apparue en cours de partie, déconnexion juste après
+  la réception, nouveau modpack avec l'ancien accepté) : mêmes alertes, mêmes preuves, mêmes refus, mêmes validations, mêmes
+  messages au staff, même référence ; aucune action faite hors du fil du serveur. Seule différence : quand une NOUVELLE
+  demande part pour un autre joueur pendant l'analyse d'un rapport, elle peut partir quelques millisecondes avant
+  l'alerte du rapport précédent (deux choses indépendantes).
 
 ## Regardé, rien à changer
 
@@ -45,10 +66,7 @@ de l'anti-duplication, grenades, coups d'œil au disque).
 
 ## Repéré, pas fait (à décider)
 
-1. **Spartan, contrôle d'intégrité** : le rapport de chaque contrôle (à la connexion puis toutes les 1,5 à 4 min) est
-   décompressé et analysé sur le fil du serveur : ~2 à 3 ms, environ une fois par seconde à 150 joueurs. Le passer sur un
-   fil à part est possible sans rien changer aux décisions, mais touche au cœur de la sécurité : à faire dans un chantier
-   Spartan dédié, avec essais.
+1. ~~Spartan, contrôle d'intégrité sur un fil à part~~ : fait (Spartan 2.9.6, voir plus haut).
 2. **Spartan, « transactions »** (`[checks] transactions = true`) : un petit paquet « ping » par joueur et par tick
    (3 000 par seconde, ~0,3 à 0,7 ms par tick sur le fil du serveur). Le couper allégerait le serveur mais **affaiblirait**
    l'anti-recul, le Timer et le suivi des états du joueur : **déconseillé**, pas changé.
@@ -87,3 +105,13 @@ de l'anti-duplication, grenades, coups d'œil au disque).
 10. **Casino** : les tableaux des meilleurs joueurs (gagnants, perdants, parieurs) montrent le même classement.
 11. **Sacs** : un défi de sac (ex. marcher 7 000 blocs) se débloque toujours à la fin ; la personnalisation montre la
     progression.
+12. **Spartan 2.9.6, contrôle d'intégrité** (jeu officiel, jeu avec un jar en plus, compte de staff) :
+    - à la connexion d'un jeu officiel : « ✅ Jeu validé » dans le fil Discord du joueur, comme avant ;
+    - jeu avec un jar en plus (mode strict) : connexion refusée en quelques secondes, alerte et preuve sur Discord ;
+    - `/spartan scan <joueur>` : le résultat arrive au staff ; `/spartan report <joueur>` montre le dernier contrôle ;
+    - `/spartan reference learn <pseudo>` depuis un jeu propre : « Référence apprise », puis les contrôles suivants des
+      autres joueurs propres ne sont plus orange ;
+    - se déconnecter puis se reconnecter (jeu officiel) : un « Jeu validé » par connexion, jamais « Validation jamais
+      reçue » ;
+    - dans le journal du serveur : aucune erreur « [Spartan] Contrôle d'intégrité de … » ni « Analyse du contrôle … sans
+      réponse ».
