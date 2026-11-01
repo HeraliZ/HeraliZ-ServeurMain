@@ -1,16 +1,33 @@
 # Lenteurs du serveur : LECTURE SEULE. Rapatrie dans le journal de cette tâche ce qu'il faut pour trouver les montées de
-# ms : les rapports du diagnostic du noyau (dossier diag/ à la racine du serveur : un rapport par blocage, avec le mod et
-# les lignes en cause), les lignes « Can't keep up » et ce qui les précède dans les journaux, les rapports de plantage,
-# l'historique de spark et quelques réglages qui jouent sur les perfs. Adresses IP masquées, rien n'est écrit, renommé
-# ni supprimé sur le Ptero (jamais « get -E », qui efface le fichier lu). Part d'une branche de travail quand ce fichier
-# change, ou par « Run workflow ».
+# ms : les rapports du diagnostic du noyau (dossier diag/ à la racine du serveur : profils façon spark, un rapport par
+# blocage, avec le mod, le fichier et la ligne en cause), les lignes « Can't keep up » et ce qui les précède dans les
+# journaux, les rapports de plantage, l'historique de spark et quelques réglages qui jouent sur les perfs. Noms des
+# méthodes de Minecraft et chemins de nos fichiers rendus lisibles (outils/diag_noms.py). Adresses IP masquées, rien n'est
+# écrit, renommé ni supprimé sur le Ptero (jamais « get -E », qui efface le fichier lu).
+# Case « profil » (jamais cochée par défaut) : AVANT de lire, lance « diag profil <secondes> <intervalle> » par la console
+# du panel (API client Pterodactyl, comme le redémarrage de serveur.yml), attend la fin du profil et son rapport ; c'est la
+# seule action possible sur le serveur, et seulement quand on la demande. Part d'une branche de travail quand ce fichier
+# ou l'outil change (sans profil), ou par « Run workflow ».
 name: Lenteurs du serveur
 
 on:
   workflow_dispatch:
+    inputs:
+      profil:
+        description: "Lancer d'abord un profil du serveur (/diag profil, par la console du panel ; serveur démarré)"
+        type: boolean
+        default: false
+      secondes:
+        description: "Durée du profil en secondes (10 à 600)"
+        type: number
+        default: 60
+      intervalle:
+        description: "Relevé de la pile toutes les … ms (4 à 10 ; 5 conseillé)"
+        type: number
+        default: 5
   push:
     branches-ignore: [main]
-    paths: [".github/workflows/lenteurs.yml"]
+    paths: [".github/workflows/lenteurs.yml", "outils/diag_noms.py"]
 
 permissions:
   contents: read
@@ -18,13 +35,25 @@ permissions:
 jobs:
   lenteurs:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
       PTERO_SFTP_PORT: ${{ secrets.PTERO_SFTP_PORT }}
       PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
       PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
+      PYTHONIOENCODING: utf-8
     steps:
+      # seulement l'outil des noms et nos sources Java (pour donner le vrai chemin de chaque fichier dans les rapports)
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            outils/diag_noms.py
+            outils/chemins.py
+            outils/sans_secrets.py
+            modules/*/src/*/java/
+          sparse-checkout-cone-mode: false
+
       - name: Accès au Ptero
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
@@ -36,6 +65,57 @@ jobs:
           echo "::add-mask::$HOTE"
           echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
           echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
+
+      # Profil : seulement si la case est cochée (« Run workflow »), jamais à l'envoi d'une branche
+      - name: Profil du serveur (console du panel)
+        if: github.event_name == 'workflow_dispatch' && inputs.profil
+        env:
+          PTERO_URL: ${{ secrets.PTERO_URL }}
+          PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+          PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+          SECONDES: ${{ inputs.secondes }}
+          INTERVALLE: ${{ inputs.intervalle }}
+        run: |
+          if [ -z "$PTERO_URL" ] || [ -z "$PTERO_SERVER_ID" ] || [ -z "$PTERO_API_KEY" ]; then
+            echo "::warning::Secrets de l'API du panel absents : pas de profil, seulement les rapports déjà là."
+            exit 0
+          fi
+          S=$(printf '%s' "$SECONDES" | tr -cd '0-9'); S=${S:-60}; [ "$S" -lt 10 ] && S=10; [ "$S" -gt 600 ] && S=600
+          I=$(printf '%s' "$INTERVALLE" | tr -cd '0-9'); I=${I:-5}; [ "$I" -lt 4 ] && I=4; [ "$I" -gt 10 ] && I=10
+          API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
+          ptero() { curl -sS --retry 3 --retry-all-errors -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \
+            -H "Accept: Application/vnd.pterodactyl.v1+json" "$@"; }
+          ETAT=$(ptero "$API/resources" | python3 -c 'import json,sys; print(json.load(sys.stdin)["attributes"]["current_state"])' 2>/dev/null || echo inconnu)
+          echo "État du serveur : $ETAT"
+          if [ "$ETAT" != "running" ]; then
+            echo "::warning::Serveur non démarré (état : $ETAT) : pas de profil, seulement les rapports déjà là."
+            exit 0
+          fi
+          R="set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye" < /dev/null; }
+          profils() { l "cls -1 /diag/" 2>/dev/null | sed 's#.*/##' | tr -d '\r' | grep '^profil-' | sort || true; }
+          profils > avant.txt
+          CODE=$(ptero -o /dev/null -w '%{http_code}' -X POST "$API/command" -d "{\"command\":\"diag profil $S $I\"}" || echo erreur)
+          echo "> diag profil $S $I (réponse du panel : $CODE)"
+          if [ "$CODE" != "204" ] && [ "$CODE" != "200" ]; then
+            echo "::warning::Commande refusée par le panel ($CODE) : pas de profil."
+            exit 0
+          fi
+          sleep $((S + 10))
+          # le rapport est fait sur un fil à part du serveur, puis écrit : on l'attend jusqu'à 3 min
+          NOUVEAU=""
+          for _ in $(seq 36); do
+            profils > apres.txt
+            NOUVEAU=$(comm -13 avant.txt apres.txt | tail -1)
+            [ -n "$NOUVEAU" ] && break
+            sleep 5
+          done
+          if [ -n "$NOUVEAU" ]; then
+            echo "Rapport du profil : diag/$NOUVEAU"
+            echo "PROFIL_NOUVEAU=$NOUVEAU" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Pas de nouveau rapport de profil après 3 min (voir la console du panel)."
+          fi
 
       - name: Rapatrier (lecture seule)
         run: |
@@ -56,21 +136,44 @@ jobs:
           for f in server.properties spigot.yml bukkit.yml; do l "lcd conf; get /$f" || true; done
           l "cls -l /diag/" > liste_diag.txt 2>/dev/null || true
           l "cls -l /logs/" > liste_logs.txt 2>/dev/null || true
+          # correspondances des noms de Minecraft que le serveur peut lire lui-même (installation de Forge ou de Mohist)
+          l "find /libraries/net/minecraft/server/; find /libraries/de/oceanlabs/mcp/" > liste_noms.txt 2>/dev/null || true
           ls -la diag j c spark conf
+
+      - name: Noms lisibles (méthodes de Minecraft, fichiers du dépôt)
+        run: |
+          ls diag/*.txt > /dev/null 2>&1 || { echo "aucun rapport"; exit 0; }
+          # sans les secrets du Ptero dans son environnement (il télécharge les correspondances de Mojang et de Forge)
+          python3 outils/sans_secrets.py python3 outils/diag_noms.py diag/*.txt --cache "$RUNNER_TEMP/noms" || true
 
       - name: Contenu (journal de la tâche)
         run: |
           masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g; s/(password|passwd|secret|token|key)([=: ]+)[^ ]+/\1\2***/Ig'; }
           echo "===== LISTE diag/ ====="; masque < liste_diag.txt | tail -80
           echo "===== LISTE logs/ ====="; masque < liste_logs.txt | tail -40
+          echo "===== CORRESPONDANCES DES NOMS (libraries/ du serveur) ====="; grep -E 'mappings|mcp_config.*\.zip|\.tsrg' liste_noms.txt 2>/dev/null | head -20 || echo "aucune"
           echo "===== REGLAGES ====="
           grep -E '^(view-distance|simulation-distance|max-players|sync-chunk-writes|network-compression-threshold|entity-broadcast-range-percentage|max-tick-time|level-name)=' conf/server.properties 2>/dev/null
           grep -A12 -E '^\s*(entity-activation-range|entity-tracking-range):' conf/spigot.yml 2>/dev/null | head -40
           grep -A12 -E '^(spawn-limits|ticks-per):' conf/bukkit.yml 2>/dev/null | head -30
           echo "===== SPARK activity.json ====="; masque < spark/activity.json 2>/dev/null | head -c 20000; echo
-          # blocages d'abord (un rapport par montée de ms), puis profils, fuites et bancs de charge (plus courts)
+          # le dernier profil en entier (le nouveau si la case « profil » était cochée), puis les blocages (un rapport par
+          # montée de ms), puis le reste : autres profils, fuites, mesures, bancs de charge (plus courts)
+          DERNIER="${PROFIL_NOUVEAU:+diag/$PROFIL_NOUVEAU}"
+          [ -f "$DERNIER" ] || DERNIER=$(ls diag/profil-*.txt 2>/dev/null | sort | tail -1)
+          if [ -n "$DERNIER" ] && [ -f "$DERNIER" ]; then
+            echo "===== DERNIER PROFIL $(basename "$DERNIER") ====="; masque < "$DERNIER" | head -4000
+            {
+              echo "## Dernier profil du serveur : $(basename "$DERNIER")"
+              echo '```'
+              masque < "$DERNIER" | sed -n '1,/^== 2 bis\./p' | head -150
+              echo '```'
+              echo "Rapport complet (arbre des appels, temps par système, pires ticks) : journal de l'étape « Contenu »."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
           for f in $(ls diag/blocage-*.txt 2>/dev/null) $(ls diag/*.txt 2>/dev/null | grep -v '/blocage-'); do [ -f "$f" ] || continue
-            case "$(basename "$f")" in blocage-*) n=400;; *) n=120;; esac
+            [ "$f" = "$DERNIER" ] && continue
+            case "$(basename "$f")" in blocage-*) n=400;; profil-*) n=150;; *) n=120;; esac
             echo "===== DIAG $(basename "$f") ====="; masque < "$f" | head -$n
           done
           # après le démarrage seulement (« Done (...) ») ; un journal tourné à minuit, sans démarrage, est gardé en entier
