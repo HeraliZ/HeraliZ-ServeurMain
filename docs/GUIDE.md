@@ -206,10 +206,83 @@ C'est un tri pour qui est plein, pas une source de richesse. Changer les chances
 Même règle que les marchands : seulement au spawn, ni en combat, ni à terre, ni en match. Joueur mort ou déconnecté
 pendant que le coffre est ouvert : rien n'est recyclé, les objets tombent à ses pieds.
 
-## 10. Diagnostic `/diag` et moniteur
+## 10. Diagnostic `/diag` : profileur et moniteur
 
 Dans le noyau (`fr.heraliz.noyau.serveur.diag`), opérateurs niveau 4 et console. Tous les rapports vont dans `diag/` à la
 racine du serveur (les 60 derniers sont gardés).
+
+### Profil du serveur (notre « spark », 01/11)
+
+Il dit quel mod, quel fichier et quelle ligne font lagger, pendant les ticks ET entre les ticks.
+
+- **Lancer** : `/diag profil [secondes] [intervalle]`
+  - 60 s et 5 ms par défaut ; de 10 à 1800 s ; un relevé toutes les 4 à 10 ms ;
+  - `/diag start [secondes]` fait la même chose (ancien nom) ;
+  - `/diag stop` (ou `/diag profil stop`) arrête avant la fin et écrit le rapport ;
+  - `/diag etat` dit si un profil tourne.
+- **Depuis GitHub** : Actions → « Lenteurs du serveur » → Run workflow → cocher « profil » (durée, intervalle).
+  - La commande part par la console du panel, avec les secrets déjà utilisés pour redémarrer.
+  - La tâche attend le rapport, le rapatrie, rend les noms lisibles et le met dans son journal.
+  - Le début du rapport (résumé, mods, points chauds) est aussi en tête de la page de la tâche.
+  - Case jamais cochée par défaut : sans elle, la tâche ne fait que lire.
+- **Pendant le profil** : toutes les 10 s, celui qui l'a lancé (ou la console) reçoit les ms par tick, le TPS et les 3
+  mods les plus lourds ; à la fin, le résumé et le nom du rapport `diag/profil-<date>.txt`.
+
+**Le rapport**, section par section :
+
+| Section | Ce qu'on y lit |
+|---|---|
+| Résumé | ms par tick (moyenne, médiane, 95 %, 99 %, pire), TPS, ticks de plus de 50 ms ; part du fil serveur dans les ticks, entre les ticks, à attendre ; ramasse-miettes ; les mods les plus lourds ; le point le plus chaud |
+| 1 et 1 bis | temps par mod ou plugin (ms par tick et %), pendant puis entre les ticks |
+| 2, 2 bis, 2 ter | **points chauds** : la ligne de code responsable (`fichier:ligne`), puis les 10 premiers de chaque mod |
+| 3 | méthodes les plus chères en temps propre (là où le serveur était vraiment), avec qui les appelait |
+| 4 | écouteurs d'événements de Forge : temps compris, événement, qui l'a lancé |
+| 5 | catégories : chemins des créatures, IA, tronçons, entités de bloc, paquets, commandes… |
+| 6 | **temps par système, mesuré exactement** : par monde ; entités et entités de bloc par type (combien par tick, µs chacune) et par mod ; écouteurs de tous les mods par événement ; tronçons chargés, lus et écrits sur le disque ; entités arrivées par type ; paquets reçus et envoyés par type (nombre, Ko/s) ; commandes jouées (durée) |
+| 7 | pires ticks (plus de 50 ms) et pires moments entre deux ticks, avec ce qui tournait |
+| 8 et 9 | arbres des appels, comme spark (% et ms par tick) |
+
+**À qui va le temps** : chaque relevé compte pour le code du mod ou du plugin le plus haut dans la pile, à la ligne de son
+appel, ce qu'il appelle dans Minecraft compris. Sans mod ni plugin : Mohist ou Forge, sinon Minecraft. Les méthodes
+ajoutées par un mixin sont rendues au mod du mixin. Nos fichiers sont donnés par leur chemin (`fr/…/Fichier.java:212`).
+
+**Exemple** (essai sur de fausses piles) :
+
+```
+Ticks : 1200 ; 22.6 ms en moyenne, médiane 22.1, 95 % 31.8, 99 % 36.1, pire 202 ms ; 19.8 TPS
+Fil serveur : 44.7 % dans les ticks, 3.7 % entre les ticks (commandes, paquets des joueurs, tâches), 51.5 % à attendre
+Point le plus chaud : IaZombies.cibler (fr/heralisz/utils/zombies/IaZombies.java:212)  [monde · heralisz_utils] — 5.63 ms par tick
+== 2. Points chauds pendant les ticks ==
+     5.63   24.9 %  IaZombies.cibler (fr/heralisz/utils/zombies/IaZombies.java:212)  [monde · heralisz_utils]
+     3.40   15.0 %  EntityKineticBullet.tick (com/tacz/guns/entity/EntityKineticBullet.java:300)  [TaCZ]
+     3.19   14.1 %  PathNavigation.handler$zza000$heraliz$limiter (mixin …CheminsZombiesMixin, ligne 45)  [monde · heralisz_utils]
+== 7. Pires ticks ==
+-- tick 151 à 07:33:27.500 : 201 ms (40 relevés) --
+   80.0 %  bases · crac — PointSpawn.garder (fr/heraliz/crac/spawn/PointSpawn.java:50)
+```
+
+**Noms de Minecraft** : dans le serveur, ses méthodes portent un nom SRG (`m_5705_`).
+- Le serveur les traduit lui-même s'il trouve les correspondances de Mojang et de MCPConfig dans son `libraries/` (laissées
+  par l'installation de Forge ou de Mohist), ou dans `diag/noms/`. L'en-tête du rapport dit ce qu'il en est.
+- Sinon : `python outils/diag_noms.py diag/profil-<date>.txt` (télécharge une fois les correspondances, ou lit le
+  `libraries/` du serveur local). Il donne aussi le vrai chemin de nos fichiers (`modules/<module>/src/…`). La tâche
+  « Lenteurs du serveur » le fait seule.
+
+**Coût** :
+- hors profil : rien (une lecture de deux variables par tick, deux lectures d'horloge par commande) ;
+- pendant un profil : le serveur est arrêté le temps de lire sa pile, environ 60 µs par relevé (mesuré à chaque profil et
+  écrit dans l'en-tête), soit environ 1,2 % à 5 ms, 1,5 % à 4 ms et 0,6 % à 10 ms ;
+- chronomètre des entités : de l'ordre de 0,1 µs par entité et par tick ; paquets comptés sur les fils réseau, pas sur
+  le fil serveur ;
+- le rapport est fait sur un fil à part (1 à 2 s), jamais sur le fil serveur.
+
+**Ce qu'il ne mesure pas exactement** : le temps de chaque écouteur d'événement. Le bus d'événements de Forge est chargé
+avant les mods, hors de portée des mixins, et chronométrer chacun de nos écouteurs toucherait tous les modules. Le rapport
+donne donc :
+- le temps de chaque écouteur d'après les relevés (précision écrite dans la section 4) ;
+- le total exact, du premier au dernier écouteur, des événements chauds (section 6).
+
+### Blocages et autres outils
 
 - **Blocages, toujours actif** : un fil surveille la durée de chaque tick. Au-delà du seuil (250 ms par défaut), il relève
   la pile du serveur toutes les 5 ms jusqu'à la fin du tick, puis écrit `blocage-<date>.txt` :
@@ -221,7 +294,8 @@ racine du serveur (les 60 derniers sont gardés).
   Les opérateurs connectés sont prévenus. Tant que tout va bien, il ne coûte rien.
 - **Blocages entre deux ticks** (01/11) : les commandes et les paquets des joueurs passent juste après le tick. Quand ce
   temps dépasse 50 ms + le seuil, même relevé, même alerte (« entre deux ticks ») et même dossier.
-- `/diag start [secondes]` : profil en direct, résumé dans le chat toutes les 10 s, `profil-<date>.txt` à la fin.
+- `/diag commandes` : les commandes les plus lentes depuis le démarrage (mots de la commande seulement, nombre, moyenne,
+  pire). Chaque rapport de blocage donne aussi la durée des dernières commandes.
 - `/diag mesure [secondes]` : allume le chronomètre de Forge (`TimeTracker`), puis `mesure-<date>.txt` donne le temps de
   chaque tick par type d'entité et d'entité de bloc, et par mod.
 - `/diag fuites` : listes surveillées une fois par minute :
@@ -241,7 +315,9 @@ racine du serveur (les 60 derniers sont gardés).
 - `/diag auto on|off`, `/diag seuil <ms>` : réglages pour la session. Au démarrage, c'est la section `[diag]` de
   `heraliz_noyau-server.toml` qui fait foi.
 
-spark reste installé pour aller plus loin.
+**spark mis de côté** (01/11) : son profileur de fond est coupé (`serveur/plugins/spark/config.json`,
+`backgroundProfiler: false`, pris au prochain redémarrage). Le plugin reste installé, ses commandes `/spark` marchent à la
+demande. On le retirera quand `/diag profil` aura fait ses preuves en jeu.
 
 ## 11. Mettre à jour sans couper
 
