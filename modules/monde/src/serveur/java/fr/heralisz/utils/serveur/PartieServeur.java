@@ -35,6 +35,7 @@ public final class PartieServeur implements Partie {
         // logique serveur (à l'origine : CineReseau.init puis Train.init, dans le constructeur @Mod)
         CineReseauServeur.init();
         fr.heralisz.utils.spawn.DepartServeur.init();               // borne de départ, monde du spawn, /depart
+        fr.heralisz.utils.spawn.Prechargement.init();               // tronçons d'arrivée chargés avant les téléportations
         TrainServeur.init(busMod);
         Suicide.init();
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.SERVER,

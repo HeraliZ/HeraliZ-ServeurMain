@@ -44,6 +44,8 @@ public final class CineReseauServeur {
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::pointDeReapparition);
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::tick);
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::commandes);
+        // point de réveil gardé chargé (01/11 : chaque arrivée gelait le serveur le temps d'en charger les tronçons)
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStartedEvent e) -> CineDecorServeur.garderReveil(e.getServer()));
         CineReseau.FIN_SERVEUR.brancher(CineReseauServeur::fin);
     }
 

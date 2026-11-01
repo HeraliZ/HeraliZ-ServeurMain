@@ -108,6 +108,8 @@ public final class CineDecorServeur extends SavedData {
     // ---------------------------------------------------------------------------------------------- réglages
     /** Nouveau point de réveil ; s'il change de monde, l'épave de l'ancien monde est retirée (barrières comprises). */
     void reveil(ServerLevel l, Vec3 pos, float cap) {
+        Vec3 avant = etat().reveil();
+        fr.heralisz.utils.spawn.Prechargement.lacher(niveau(l.getServer()), avant.x, avant.z);
         ResourceLocation m = l.dimension().location();
         if (!m.equals(etat().monde())) {
             retirerBarrieres(niveau(l.getServer()));
@@ -116,6 +118,23 @@ public final class CineDecorServeur extends SavedData {
             etat = new CineDecor.Etat(pos, Mth.wrapDegrees(cap), etat().epave(), m);
         }
         setDirty();
+        garderReveil(l.getServer());
+    }
+
+    /**
+     * Le point de réveil (première connexion, retour d'extraction sans point /spawn, réapparition sans lit) gardé chargé
+     * (01/11) : chaque arrivée y faisait charger ses tronçons par le fil du serveur, 120 à 260 ms de gel (rapports du 28 et
+     * du 29/10). 5 × 5 tronçons, rien de plus ; pas avant que le monde du spawn soit déposé (rien n'y serait généré).
+     */
+    static void garderReveil(MinecraftServer server) {
+        CineDecorServeur d = get(server);
+        ServerLevel l = d.niveau(server);
+        Vec3 r = d.etat().reveil();
+        if (l.dimension().location().equals(CineDecor.SPAWN)
+                && !fr.heralisz.utils.spawn.DepartServeur.regionPresente(l, Mth.floor(r.x), Mth.floor(r.z))) {
+            return;
+        }
+        fr.heralisz.utils.spawn.Prechargement.garder(l, r.x, r.z);
     }
 
     /** Remplace l'épave (retire les barrières de l'ancienne, pose celles de la nouvelle) ; renvoie le nombre de barrières. */

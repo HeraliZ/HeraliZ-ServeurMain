@@ -197,7 +197,8 @@ public final class DepartServeur {
             if (a == null) {
                 echec(sp);
             } else {
-                partir(sp, carte, a);
+                // tronçons d'arrivée chargés en tâche de fond d'abord (01/11 : 220 à 330 ms de gel à chaque départ)
+                Prechargement.puis(sp, carte, a.x(), a.z(), () -> partir(sp, carte, a));
             }
             return;
         }
@@ -245,6 +246,10 @@ public final class DepartServeur {
             if (d.trouvee == null && d.essais > 0) {               // un essai par tick
                 d.essais--;
                 d.trouvee = essai(carte, sp, sp.getRandom());
+                if (d.trouvee != null) {
+                    // pendant le compte à rebours, Minecraft charge les tronçons d'arrivée en tâche de fond (01/11)
+                    Prechargement.precharger(carte, d.trouvee.x(), d.trouvee.z());
+                }
             }
             int reste = d.fin - maintenant;
             ServerLevel ici = sp.serverLevel();
@@ -259,7 +264,7 @@ public final class DepartServeur {
             if (d.trouvee != null) {
                 it.remove();
                 Arrivee a = d.trouvee;
-                apres.add(() -> partir(sp, carte, a));
+                apres.add(() -> Prechargement.puis(sp, carte, a.x(), a.z(), () -> partir(sp, carte, a)));
             } else if (d.essais <= 0) {
                 it.remove();
                 echec(sp);
