@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -30,12 +31,18 @@ import java.util.List;
  * droit d'un joueur), un fumigène quand il est blessé, se soigner, ouvrir les conteneurs de loot proches, appeler des
  * frappes aériennes et des largages (comme le désignateur d'un joueur). Chaque action peut être coupée par
  * {@code /bots action}. Fil serveur.
+ * <p>01/11 (banc réaliste) : le cerveau suit son {@link Pilote} (le joueur change à chaque réapparition, le cerveau et ses
+ * délais restent) ; les autres bots ne sont des cibles que pendant les combats de sa zone ({@link Zones}) ; les gestes
+ * (ce qu'un vrai joueur demanderait au serveur par ses paquets) sont comptés à part du reste du cerveau ({@link Couts}) :
+ * chercher une cible, regarder si elle est en vue, choisir où marcher, c'est le jeu d'un vrai joueur qui le fait.
  */
 final class Cerveau {
     // cases de la barre d'objets du kit (Kit)
     static final int CASE_ARME = 0, CASE_GRENADE = 1, CASE_FLASH = 2, CASE_FUMI = 3, CASE_SOIN = 4, CASE_VIDE = 7;
 
-    private final BotJoueur bot;
+    private final Pilote pilote;
+    /** Le joueur de ce tick (celui du pilote). */
+    private ServerPlayer bot;
     private final RandomSource r;
     @Nullable
     private LivingEntity cible;
@@ -51,6 +58,8 @@ final class Cerveau {
     private int prochCommande, versionCommandes = -1;
     private boolean dessine;
     private int aTerreTicks;
+    /** Sa zone se bat en ce moment : les autres bots sont des cibles. */
+    private boolean agressif;
 
     private static boolean reaCherche;
     @Nullable
@@ -73,8 +82,8 @@ final class Cerveau {
         }
     }
 
-    Cerveau(BotJoueur bot) {
-        this.bot = bot;
+    Cerveau(Pilote pilote) {
+        this.pilote = pilote;
         this.r = RandomSource.create();
         // délais de départ décalés : les bots ne font pas tous la même chose au même tick
         prochGrenade = 200 + r.nextInt(600);
@@ -85,10 +94,41 @@ final class Cerveau {
         prochConstruction = Bots.reglages.constructionMin + r.nextInt(Math.max(1, Bots.reglages.constructionMax - Bots.reglages.constructionMin));
     }
 
+    /** Nouveau joueur (réapparition, reconnexion) : ce qui était en cours est oublié, les délais restent. */
+    void renaitre() {
+        cible = null;
+        but = null;
+        lancer = soin = fouille = 0;
+        lancerCase = -1;
+        dessine = false;
+        aTerreTicks = 0;
+        immobile = 0;
+        dernierePos = Vec3.ZERO;
+    }
+
+    /** Au camp : va vers {@code point} si {@code marcher}, sinon ne bouge plus (la borne annule un départ si on bouge). */
+    void camp(@Nullable Vec3 point, boolean marcher) {
+        bot = pilote.joueur;
+        if (bot == null) return;
+        bot.setShiftKeyDown(false);
+        bot.xxa = 0;
+        bot.zza = 0;
+        bot.setJumping(false);
+        bot.setSprinting(false);
+        if (!marcher || point == null || bot.position().distanceToSqr(point.x, bot.getY(), point.z) < 2.25) return;
+        double dx = point.x - bot.getX(), dz = point.z - bot.getZ();
+        float lacet = Mth.wrapDegrees((float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90f);
+        orienter(Mth.approachDegrees(bot.getYRot(), lacet, 15f), 0f);
+        bot.zza = 0.8f;
+    }
+
     void tick() {
+        bot = pilote.joueur;
+        if (bot == null) return;
         tick++;
         decompter();
         commandes();
+        agressif = Zones.enCombat(pilote.zone.zone());
         ServerLevel lv = bot.serverLevel();
         bot.setShiftKeyDown(false);
         bot.zza = 0;
@@ -98,7 +138,11 @@ final class Cerveau {
         if (aTerre()) {
             bot.setSprinting(false);
             if (aTerreTicks == 0) bot.getInventory().clearContent();   // rien à prendre en le fouillant à terre
-            if (++aTerreTicks > 600) bot.hurt(bot.damageSources().genericKill(), Float.MAX_VALUE);
+            if (++aTerreTicks > 600) {
+                long t = System.nanoTime();
+                bot.hurt(bot.damageSources().genericKill(), Float.MAX_VALUE);
+                Couts.ajouter(Couts.GESTES, t);
+            }
             return;
         }
         aTerreTicks = 0;
@@ -119,14 +163,17 @@ final class Cerveau {
         }
         if (fouille > 0) {
             if (--fouille == 0) {
+                long t = System.nanoTime();
                 bot.closeContainer();
+                Couts.ajouter(Couts.GESTES, t);
                 tenir(CASE_ARME);
             }
             return;
         }
 
         if (tick % 10 == 0) choisirCible(lv);
-        if (cible != null && (!cible.isAlive() || cible.isRemoved() || cible.distanceToSqr(bot) > 56 * 56)) cible = null;
+        if (cible != null && (!cible.isAlive() || cible.isRemoved() || cible.distanceToSqr(bot) > 56 * 56
+                || (!agressif && Bots.estBot(cible)))) cible = null;
 
         Reglages rg = Bots.reglages;
         if (rg.soins && prochSoin <= 0 && bot.getHealth() < bot.getMaxHealth() * 0.45f && commencerSoin()) return;
@@ -149,17 +196,25 @@ final class Cerveau {
             }
             if (rg.construction && prochConstruction <= 0 && constructions < rg.constructionsParBot) {
                 prochConstruction = rg.constructionMin + r.nextInt(Math.max(1, rg.constructionMax - rg.constructionMin));
+                long t = System.nanoTime();
                 if (Bots.construire(bot, r.nextLong())) constructions++;
+                Couts.ajouter(Couts.GESTES, t);
             }
         }
-        if (rg.frappes && prochFrappe <= 0) {
+        // frappes et largages : pendant les combats de sa zone seulement (comme un joueur qui appelle une frappe sur
+        // un ennemi) ; hors rythmes, toujours (avant)
+        if (rg.frappes && prochFrappe <= 0 && (agressif || !Rythmes.actif)) {
             prochFrappe = rg.frappeMin + r.nextInt(Math.max(1, rg.frappeMax - rg.frappeMin));
             Vec3 c = cible != null ? cible.position() : bot.position().add(bot.getLookAngle().scale(40 + r.nextInt(30)));
+            long t = System.nanoTime();
             Bots.appelerFrappe(bot, c, false);
+            Couts.ajouter(Couts.GESTES, t);
         }
         if (rg.largages && prochLargage <= 0) {
             prochLargage = rg.largageMin + r.nextInt(Math.max(1, rg.largageMax - rg.largageMin));
+            long t = System.nanoTime();
             Bots.appelerFrappe(bot, bot.position().add(r.nextInt(30) - 15, 0, r.nextInt(30) - 15), true);
+            Couts.ajouter(Couts.GESTES, t);
         }
         debloquer();
     }
@@ -197,9 +252,9 @@ final class Cerveau {
 
     private void choisirCible(ServerLevel lv) {
         if (cible != null && cible.isAlive() && bot.hasLineOfSight(cible) && r.nextFloat() < 0.8f) return;
-        boolean joueurs = Bots.reglages.joueurs;
+        boolean joueurs = Bots.reglages.joueurs, bots = agressif;
         List<LivingEntity> l = lv.getEntitiesOfClass(LivingEntity.class, new AABB(bot.blockPosition()).inflate(48),
-                e -> e != bot && e.isAlive() && !e.isSpectator() && valide(e, joueurs));
+                e -> e != bot && e.isAlive() && !e.isSpectator() && valide(e, joueurs, bots));
         // la plus proche en vue : rangées par distance, la vue (un lancer de rayon) n'est testée que jusqu'à la première
         // visible (avant : un rayon par créature plus proche que la meilleure, dans l'ordre de la liste)
         LivingEntity mieux = null;
@@ -215,8 +270,8 @@ final class Cerveau {
         cible = mieux;
     }
 
-    private static boolean valide(LivingEntity e, boolean joueurs) {
-        if (e.getTags().contains(Bots.TAG)) return true;
+    private static boolean valide(LivingEntity e, boolean joueurs, boolean bots) {
+        if (e.getTags().contains(Bots.TAG)) return bots;
         if (e instanceof Player p) return joueurs && !p.isCreative();
         return e instanceof Enemy;
     }
@@ -237,9 +292,10 @@ final class Cerveau {
         bot.zza = d > 25 ? 0.6f : d < 6 ? -0.5f : 0;
         if (bot.horizontalCollision && bot.onGround()) bot.setJumping(true);
         if (!Bots.reglages.tir) return;
-        IGunOperator op = IGunOperator.fromLivingEntity(bot);
         if (bot.getInventory().selected != CASE_ARME) tenir(CASE_ARME);
         float[] a = angles(c, d);
+        long t = System.nanoTime();
+        IGunOperator op = IGunOperator.fromLivingEntity(bot);
         ShootResult res = op.shoot(() -> a[1], () -> a[0]);
         if (res == ShootResult.SUCCESS) {
             Bots.stats.tirs++;
@@ -251,6 +307,7 @@ final class Cerveau {
         } else if (res == ShootResult.NEED_BOLT) {
             op.bolt();
         }
+        Couts.ajouter(Couts.GESTES, t);
     }
 
     /** Lacet et tangage vers la cible, avec une erreur de visée comme un joueur (plus grande de loin et en bougeant). */
@@ -286,7 +343,9 @@ final class Cerveau {
         tenir(caseObjet);
         regarderCible();
         bot.setXRot(Mth.clamp(bot.getXRot() - (float) (8 + d * 0.9), -60, 89));
+        long t = System.nanoTime();
         bot.gameMode.useItem(bot, bot.serverLevel(), bot.getMainHandItem(), InteractionHand.MAIN_HAND);
+        Couts.ajouter(Couts.GESTES, t);
         if (!bot.isUsingItem()) {
             tenir(CASE_ARME);
             return false;
@@ -299,7 +358,9 @@ final class Cerveau {
     private void finirLancer() {
         if (bot.isUsingItem()) {
             bot.setXRot(Mth.clamp(bot.getXRot(), -60, 89));
+            long t = System.nanoTime();
             bot.releaseUsingItem();
+            Couts.ajouter(Couts.GESTES, t);
             Bots.stats.lancers++;
         }
         lancerCase = -1;
@@ -310,7 +371,9 @@ final class Cerveau {
         prochSoin = 200 + r.nextInt(200);
         if (bot.getInventory().getItem(CASE_SOIN).isEmpty()) return false;
         tenir(CASE_SOIN);
+        long t = System.nanoTime();
         bot.gameMode.useItem(bot, bot.serverLevel(), bot.getMainHandItem(), InteractionHand.MAIN_HAND);
+        Couts.ajouter(Couts.GESTES, t);
         if (!bot.isUsingItem()) {
             tenir(CASE_ARME);
             return false;
@@ -321,7 +384,9 @@ final class Cerveau {
     }
 
     private void finirSoin() {
+        long t = System.nanoTime();
         if (bot.isUsingItem()) bot.stopUsingItem();
+        Couts.ajouter(Couts.GESTES, t);
         soin = 0;
         tenir(CASE_ARME);
     }
@@ -329,7 +394,11 @@ final class Cerveau {
     /** Change d'objet en main (comme la molette) ; l'arme est « sortie » par TaCZ. */
     private void tenir(int caseBarre) {
         if (bot.getInventory().selected != caseBarre) bot.getInventory().selected = caseBarre;
-        if (caseBarre == CASE_ARME) IGunOperator.fromLivingEntity(bot).draw(bot::getMainHandItem);
+        if (caseBarre == CASE_ARME) {
+            long t = System.nanoTime();
+            IGunOperator.fromLivingEntity(bot).draw(bot::getMainHandItem);
+            Couts.ajouter(Couts.GESTES, t);
+        }
     }
 
     // ------------------------------------------------------------------ déplacement
@@ -351,8 +420,9 @@ final class Cerveau {
 
     @Nullable
     private Vec3 nouveauBut(ServerLevel lv) {
-        Vec3 centre = Bots.centre(bot);
-        int rayon = Bots.rayon(bot);
+        Place p = pilote.zone;
+        Vec3 centre = p.niveau() == lv ? p.centre() : bot.position();
+        int rayon = p.rayon();
         for (int i = 0; i < 6; i++) {
             double a = r.nextDouble() * Math.PI * 2, rr = 8 + r.nextDouble() * rayon;
             int x = Mth.floor(centre.x + Math.cos(a) * rr), z = Mth.floor(centre.z + Math.sin(a) * rr);
@@ -393,8 +463,10 @@ final class Cerveau {
             double dx = centre.x - bot.getX(), dy = centre.y - bot.getEyeY(), dz = centre.z - bot.getZ();
             orienter(Mth.wrapDegrees((float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90f),
                     (float) -(Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * Mth.RAD_TO_DEG));
+            long t = System.nanoTime();
             bot.gameMode.useItemOn(bot, lv, bot.getMainHandItem(), InteractionHand.MAIN_HAND,
                     new BlockHitResult(centre, Direction.UP, pos, false));
+            Couts.ajouter(Couts.GESTES, t);
             fouille = 40;
             Bots.stats.fouilles++;
             return true;

@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * ligne est relevée toutes les 5 s (bots, ms par tick, mémoire, entités, pièces de CRac, actions). À la fin : bots retirés,
  * leurs bases effacées, objets au sol, projectiles, caisses de largage et cadavres des bots retirés dans la zone, puis
  * rapport {@code diag/charge-<date>.txt} (avec les objectifs : moyenne 30 ms, 95 % 40 ms, 99 % 50 ms).
- * Ce sont des bots sans réseau : ils chargent le serveur, pas la connexion (voir {@link BotJoueur}).
+ * Ce sont des bots sans réseau : ils chargent le serveur, pas la connexion (voir {@link Bots}).
  */
 final class Scenario {
     private Scenario() {
@@ -185,7 +185,7 @@ final class Scenario {
 
     private static void terminer(MinecraftServer srv, boolean rapport) {
         actif = false;
-        Bots.toutRetirer();
+        Bots.toutRetirer(srv);
         int nettoyes = nettoyer();
         Bots.reglages.normal();
         profil = Diag.arreterSession(srv);

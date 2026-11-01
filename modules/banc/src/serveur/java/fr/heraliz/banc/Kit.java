@@ -6,6 +6,7 @@ import com.tacz.guns.api.item.builder.GunItemBuilder;
 import fr.heraliz.banc.HeralizBanc;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -36,7 +37,7 @@ final class Kit {
             "maxstuff:ak74", "arkaniaz:pp19", "arkaniaz:sr_2m");
     private static List<ResourceLocation> armes;
 
-    static void donner(BotJoueur b, RandomSource r) {
+    static void donner(ServerPlayer b, RandomSource r) {
         Inventory inv = b.getInventory();
         inv.clearContent();
         inv.setItem(Cerveau.CASE_ARME, arme(r));

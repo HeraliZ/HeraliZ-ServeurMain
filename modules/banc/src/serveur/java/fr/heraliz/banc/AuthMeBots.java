@@ -2,6 +2,7 @@ package fr.heraliz.banc;
 
 import fr.heraliz.banc.HeralizBanc;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
@@ -22,7 +23,7 @@ final class AuthMeBots {
     private static Object api, plugin;
     private static Method getPlayer, estInscrit, forcerConnexion, forcerInscription;
 
-    static void connecter(BotJoueur b) {
+    static void connecter(ServerPlayer b) {
         MinecraftServer srv = b.server;
         if (!srv.isDedicatedServer() || srv.usesAuthentication()) return;
         if (!cherche) brancher();

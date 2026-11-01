@@ -55,6 +55,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * </ul>
  * À la fin : rapport {@code diag/banc-<date>.txt} et UNE ligne {@code [banc] MESURE {json}} dans le journal, lue par
  * {@code outils/banc_charge.py}. Coût hors mesure : un test de booléen par tick.
+ * <p>01/11 (banc réaliste) : la mesure dit aussi la machine Java qui tourne vraiment ({@link Jvm} : arguments réels,
+ * mémoire maximale, distances), ce que coûte le banc lui-même à part de ce que coûteraient de vrais joueurs
+ * ({@link Couts} : « ms par tick hors banc »), et les rythmes vrais pendant la mesure (morts, réapparitions, connexions,
+ * téléportations, tirs : par minute et ramenés à 150 joueurs, {@link Rythmes}).
  */
 final class Mesure {
     private Mesure() {
@@ -79,6 +83,7 @@ final class Mesure {
     private static int cpuReleves;
     private static long gcNbDebut, gcMsDebut;
     private static long[] actionsDebut = new long[0];
+    private static long[] coutsDebut = new long[0], rythmesDebut = new long[0];
     private static final AtomicLong CHARGES = new AtomicLong(), NEUFS = new AtomicLong();
 
     @Nullable
@@ -129,6 +134,9 @@ final class Mesure {
         gcNbDebut = gc[0];
         gcMsDebut = gc[1];
         actionsDebut = Bots.stats.totaux();
+        coutsDebut = Couts.releve();
+        rythmesDebut = Rythmes.COMPTES.clone();
+        Rythmes.facteurMoyen();
         Commandes.zero();
         debutMs = System.currentTimeMillis();
         finMs = debutMs + sec * 1000L;
@@ -156,7 +164,9 @@ final class Mesure {
         long maintenant = System.currentTimeMillis();
         if (maintenant >= prochainReleve) {
             prochainReleve += 5000;
+            long t0 = System.nanoTime();
             releve(srv, maintenant);
+            Couts.banc += System.nanoTime() - t0;
         }
         if (maintenant >= finMs) terminer(srv);
     }
@@ -325,6 +335,62 @@ final class Mesure {
         }
         cmd.add("par_commande", racines);
         j.add("commandes", cmd);
+
+        // ---- machine Java, coût du banc à part, rythmes (01/11)
+        JsonObject jvm = Jvm.infos(srv);
+        j.add("jvm", jvm);
+        long[] couts = Couts.releve();
+        double parTick = nbTicks == 0 ? 0 : 1.0 / nbTicks / 1_000_000.0;
+        double bancMs = (couts[0] - (coutsDebut.length > 0 ? coutsDebut[0] : 0)) * parTick;
+        JsonObject co = new JsonObject();
+        co.addProperty("banc_ms_tick", Math.round(bancMs * 100) / 100.0);
+        co.addProperty("hors_banc_ms_tick", arrondi(Math.max(0, moy - bancMs)));
+        JsonObject jo = new JsonObject();
+        double joueursMs = 0;
+        StringBuilder detail = new StringBuilder();
+        for (int i = 0; i < Couts.CLES.length; i++) {
+            double ms = (couts[i + 1] - (i + 1 < coutsDebut.length ? coutsDebut[i + 1] : 0)) * parTick;
+            joueursMs += ms;
+            jo.addProperty(Couts.CLES[i], Math.round(ms * 100) / 100.0);
+            detail.append(String.format(Locale.ROOT, "  %7.2f ms  %s%n", ms, Couts.NOMS[i]));
+        }
+        co.add("joueurs_ms_tick", jo);
+        co.addProperty("joueurs_total_ms_tick", Math.round(joueursMs * 100) / 100.0);
+        j.add("couts", co);
+        double minutes = Math.max(1e-3, duree / 60.0);
+        double vers150 = 150.0 / Math.max(1, Bots.total());
+        JsonObject ry = new JsonObject();
+        ry.addProperty("actif", Rythmes.actif);
+        ry.addProperty("bots", Bots.total());
+        ry.addProperty("minutes", Math.round(minutes * 100) / 100.0);
+        JsonObject comptes = new JsonObject(), parMin = new JsonObject(), pour150 = new JsonObject();
+        long tele = 0;
+        for (int i = 0; i < Rythmes.NOMS.length; i++) {
+            long n = Rythmes.COMPTES[i] - (i < rythmesDebut.length ? rythmesDebut[i] : 0);
+            comptes.addProperty(Rythmes.NOMS[i], n);
+            parMin.addProperty(Rythmes.NOMS[i], Math.round(n / minutes * 100) / 100.0);
+            pour150.addProperty(Rythmes.NOMS[i], Math.round(n / minutes * vers150 * 100) / 100.0);
+        }
+        for (int i : Rythmes.TELEPORTATIONS) tele += Rythmes.COMPTES[i] - (i < rythmesDebut.length ? rythmesDebut[i] : 0);
+        long tirs = actions.length > 0 ? actions[0] - (actionsDebut.length > 0 ? actionsDebut[0] : 0) : 0;
+        comptes.addProperty("teleportations", tele);
+        parMin.addProperty("teleportations", Math.round(tele / minutes * 100) / 100.0);
+        pour150.addProperty("teleportations", Math.round(tele / minutes * vers150 * 100) / 100.0);
+        comptes.addProperty("tirs", tirs);
+        parMin.addProperty("tirs", Math.round(tirs / minutes));
+        pour150.addProperty("tirs", Math.round(tirs / minutes * vers150));
+        ry.add("comptes", comptes);
+        ry.add("par_minute", parMin);
+        ry.add("pour_150", pour150);
+        JsonObject cibles = new JsonObject();
+        cibles.addProperty("morts", Rythmes.morts);
+        cibles.addProperty("connexions", Rythmes.connexions);
+        cibles.addProperty("voyages", Rythmes.voyages);
+        cibles.addProperty("combat_pct", Rythmes.combat);
+        ry.add("cibles_150", cibles);
+        double facteur = Rythmes.facteurMoyen();
+        ry.addProperty("facteur_degats", Math.round(facteur * 1000) / 1000.0);
+        j.add("rythmes", ry);
         j.addProperty("rapport", "diag/" + nom);
 
         StringBuilder t = new StringBuilder("HeraliZ — mesure du banc de charge (/bots mesure)\n");
@@ -343,6 +409,22 @@ final class Mesure {
         t.append(String.format(Locale.ROOT, "Ramasse-miettes : %d passages, %d ms en tout%n", gcNb, gcMs));
         t.append(cpuReleves == 0 ? "Processeur : pas mesuré\n" : String.format(Locale.ROOT, "Processeur (tout Java, %d cœurs = 100 %%) : %.0f %% en moyenne, %.0f %% au plus%n%n",
                 coeurs, cpuSomme / cpuReleves * 100, cpuMax * 100));
+        t.append("== Machine Java du serveur ==\n");
+        t.append(String.format(Locale.ROOT, "Processus %s (lancé par %s), mémoire max %s Mo, %s ; distances : vue %s, simulation %s%n",
+                jvm.get("pid"), jvm.has("parent_programme") ? jvm.get("parent_programme").getAsString() : "?", jvm.get("memoire_max_mo"),
+                jvm.get("java").getAsString(), jvm.has("vue") ? jvm.get("vue") : "?", jvm.has("simulation") ? jvm.get("simulation") : "?"));
+        t.append("Arguments : ").append(jvm.get("arguments")).append("\n\n");
+        t.append("== Coût du banc à part ==\n");
+        t.append(String.format(Locale.ROOT, "Banc lui-même (cerveau des bots, préparation, rythmes, relevés) : %.2f ms par tick ; ms par tick hors banc : %.1f%n",
+                bancMs, Math.max(0, moy - bancMs)));
+        t.append(String.format(Locale.ROOT, "Ce que ferait aussi la connexion de vrais joueurs (compté dans « hors banc ») : %.2f ms par tick%n", joueursMs));
+        t.append(detail).append('\n');
+        t.append("== Rythmes pendant la mesure (par minute ; pour 150 joueurs) ==\n");
+        for (String k : comptes.keySet()) {
+            t.append(String.format(Locale.ROOT, "  %-14s %8s  %8s / min  %8s / min pour 150%n", k, comptes.get(k), parMin.get(k), pour150.get(k)));
+        }
+        t.append(String.format(Locale.ROOT, "Cibles pour 150 joueurs : %.1f morts, %.1f connexions, %.1f voyages par minute, combat %d %% du temps%s ; facteur des dégâts entre bots %.3f%n%n",
+                Rythmes.morts, Rythmes.connexions, Rythmes.voyages, Rythmes.combat, Rythmes.actif ? "" : " (rythmes coupés)", facteur));
         t.append("== Monde ==\n");
         t.append(String.format(Locale.ROOT, "Au plus : %d entités, %d monstres, %d zombies HeraliZ, %d objets au sol, %d tronçons chargés, %d joueurs%n",
                 entitesMax, monstresMax, zombiesMax, objetsMax, tronconsMax, joueursMax));

@@ -2,6 +2,7 @@ package fr.heraliz.banc;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraftforge.fml.loading.FMLPaths;
 
@@ -70,7 +71,7 @@ final class Commandes {
     }
 
     /** Le bot « tape » une commande au hasard : elle part dans la file des tâches du serveur, jouée après le tick. */
-    static void jouer(BotJoueur b, RandomSource r) {
+    static void jouer(ServerPlayer b, RandomSource r) {
         List<String> l = liste;
         if (l.isEmpty()) return;
         String cmd = l.get(r.nextInt(l.size()));
@@ -78,7 +79,7 @@ final class Commandes {
         srv.tell(new TickTask(srv.getTickCount(), () -> executer(b, cmd)));
     }
 
-    private static void executer(BotJoueur b, String cmd) {
+    private static void executer(ServerPlayer b, String cmd) {
         if (!b.isAlive() || b.hasDisconnected()) return;
         long t0 = System.nanoTime();
         int res;
