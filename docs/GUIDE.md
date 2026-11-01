@@ -284,6 +284,40 @@ spark reste installé pour aller plus loin.
 
 Ce sont des bots sans réseau : ils chargent le serveur, pas la connexion. `/bots scenario stop` arrête avant la fin.
 
+Autres commandes du banc (01/11) : `/bots mesure <secondes>` (ou `stop`) mesure sans rien lancer : chaque tick (moyenne,
+médiane, 95 %, 99 %, pire, vrai TPS), mémoire, processeur, entités, zombies, tronçons par monde, actions et commandes des
+bots, rapport `diag/banc-<date>.txt` ; `/bots commandes <secondes>` (0 = arrêt) : chaque bot tape une commande de joueur
+de temps en temps (avec ses droits de joueur, entre deux ticks), prise dans `config/heraliz_banc/commandes.txt`. Un bot
+envoyé dans un autre monde (`/tuto lancer <bot>`, extraction) y vit autour de son point d'arrivée.
+
+### Banc de charge sur une machine de GitHub (01/11)
+
+Workflow « Banc de charge » (`.github/workflows/banc.yml`), **sans le Ptero ni aucun secret** : un serveur Mohist complet
+(nos mods de la branche, plugins, réglages du dépôt) est monté sur la machine de GitHub (4 cœurs, 16 Go), avec un monde
+neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
+
+- **Lancer** : onglet Actions → « Banc de charge » → « Run workflow » (choisir la branche ; le bouton n'apparaît qu'une
+  fois le fichier sur `main`). Avant cela, ou sans formulaire : envoyer sur une branche de travail un changement de
+  `banc.yml` (réglages par défaut). Jamais lancé par un envoi sur `main`.
+- **Réglages** : bots (100, jusqu'à 150), minutes de mesure (5), minutes de chauffe (4), commandes du diagnostic
+  (`diag start {s}; diag mesure {s300}`, à changer ici si `/diag` change), monde normal ou plat.
+- **Déroulé** (`outils/banc_charge.py`, utilisable aussi sur un PC : `preparer <dossier>` puis `lancer <dossier>`) :
+  1. fabrication des mods changés (caches de la mise en ligne), serveur d'essai par `outils/serveur_local.py --banc`,
+     Mohist de la Release « base-serveur » (empreinte contrôlée), réglages d'essai dans ce dossier seulement
+     (`server-ip=127.0.0.1`, AuthMe en mode essai, Spartan sans jeton du launcher, LiteBans en base locale, « Can't keep
+     up » affichés, zombies du peuplement aussi autour des bots) ;
+  2. 10 % des bots dans le tutoriel des bases (`/tuto lancer`), les autres par groupes de 5 sur une grille de la carte
+     (320 blocs entre deux groupes) ; zones d'extraction ouvertes près d'un groupe sur quatre ; `doMobSpawning false`
+     comme sur le Ptero (zombies du peuplement seulement) ; commandes de joueur tapées par les bots
+     (`outils/banc/commandes.txt`) ;
+  3. chauffe (au moins 4 min, plus tant que du terrain se crée ou que les arènes du ClashWar se posent), puis
+     `/bots mesure` et le diagnostic pendant la mesure ;
+  4. arrêt propre, puis **résumé de la tâche** : TPS et ms par tick (moyenne, 95 %, pire), mémoire et ramasse-miettes,
+     entités, zombies, tronçons, commandes les plus lentes, « Can't keep up », erreurs Java, rapports du diagnostic.
+     Artefact `banc-rapport` (7 jours) : journal complet, `diag/`, `gc.log`, `erreurs.txt`.
+- **Lire le résultat** : comparer des bancs entre eux (même nombre de bots, même durée), pas avec le Ptero (autre machine,
+  pas la vraie carte, pas de vrais joueurs : voir « Ce que ce banc ne mesure pas » en bas du résumé).
+
 ## 13. Zombies HeraliZ
 
 Code dans `fr.heralisz.utils.zombies` (module `monde`), réglages dans `heraliz_zombies-server.toml` (serverconfig du

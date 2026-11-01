@@ -71,10 +71,12 @@ pour les votes du site (section 6).
 | `mods_tiers.yml` | ajouter un mod d'un autre auteur depuis Modrinth |
 | `enquete.yml` | enquête Spartan sur un joueur (lecture seule) |
 | `journaux.yml` | lire les journaux du serveur (lecture seule) |
+| `banc.yml` « Banc de charge » | « Run workflow » (ou envoi sur une branche de travail qui change ce fichier) : vrai serveur avec nos mods monté sur la machine de GitHub, monde neuf, 100 bots (jusqu'à 150) qui jouent, mesure et diagnostic, résumé et rapports ; **sans le Ptero ni aucun secret** (01/11, `docs/GUIDE.md` §12) |
 | `carte_loot.yml` « Remplacer la carte de loot » | **seulement par « Run workflow »** : remplacer la carte de loot en gardant le spawn (31/10). Par défaut, essai à blanc qui ne change rien et liste ce qui serait remplacé ou gardé ; vraie exécution seulement avec la case « executer » ET la phrase `REMPLACER LA CARTE DE LOOT`, depuis `main`. Nouvelle carte dans `/carte_nouvelle/` du Ptero (ou archive d'une Release). Mode d'emploi : `docs/NOUVELLE_CARTE.md` §8 |
 
 Retirés (outils de l'ancienne carte qui ne sont plus dans le projet) : props de la carte, inventaire de la carte, monde
-du spawn, grotte, schematic, extractions, gunpacks, diagnostic CRac, test de charge. Ils restent dans l'historique Git.
+du spawn, grotte, schematic, extractions, gunpacks, diagnostic CRac, ancien test de charge (sur le Ptero ; remplacé le 01/11 par
+`banc.yml`, sur une machine de GitHub). Ils restent dans l'historique Git.
 
 ## 6. Votes du site protégés contre les bots (27/10)
 
