@@ -1,13 +1,16 @@
 package fr.heraliz.crac.event;
 
+import fr.heraliz.crac.build.logic.PieceIndex;
 import fr.heraliz.crac.build.model.Piece;
 import fr.heraliz.crac.build.model.PieceKey;
 import fr.heraliz.crac.build.model.PieceKind;
 import fr.heraliz.crac.build.world.StructureService;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -39,12 +42,16 @@ public final class SautRebord {
             || p.tickCount % 2 != 0 || !p.onGround() || p.isSpectator()) {
             return;
         }
+        AABB corps = p.getBoundingBox();
+        if (aucunePieceAutour(level, corps)) {
+            return;   // 01/11 : loin de toute base (presque toujours sur la carte), rien à chercher
+        }
         MobEffectInstance deja = p.getEffect(MobEffects.JUMP);
         if (deja != null && (deja.getAmplifier() > 0 || deja.getDuration() > 8)) {
             return;   // un saut plus fort, ou le nôtre encore là
         }
         double pieds = p.getY();
-        AABB zone = p.getBoundingBox().inflate(PORTEE, 0, PORTEE).setMinY(pieds + BAS - 0.5).setMaxY(pieds + HAUT + 0.1);
+        AABB zone = corps.inflate(PORTEE, 0, PORTEE).setMinY(pieds + BAS - 0.5).setMaxY(pieds + HAUT + 0.1);
         for (Piece s : StructureService.piecesIn(level, zone)) {
             double dessus;
             if (s.kind().family == PieceKind.Family.SURFACE && !s.kind().isRoof()) {
@@ -61,5 +68,25 @@ public final class SautRebord {
                 return;
             }
         }
+    }
+
+    /**
+     * Aucune pièce dans les tronçons que couvre la zone cherchée (01/11, perf) : ce test se faisait pour chaque joueur au sol
+     * tous les 2 ticks, avec une cinquantaine de lectures de blocs et quatre objets neufs, même au milieu de la carte. Ici,
+     * une à quatre lectures de l'index des tronçons ; même résultat (une pièce de la zone a forcément un bloc dans l'un
+     * d'eux).
+     */
+    private static boolean aucunePieceAutour(ServerLevel level, AABB corps) {
+        PieceIndex index = StructureService.store(level).index;
+        int cx0 = Mth.floor(corps.minX - PORTEE) >> 4, cx1 = Mth.floor(corps.maxX + PORTEE) >> 4;
+        int cz0 = Mth.floor(corps.minZ - PORTEE) >> 4, cz1 = Mth.floor(corps.maxZ + PORTEE) >> 4;
+        for (int cx = cx0; cx <= cx1; cx++) {
+            for (int cz = cz0; cz <= cz1; cz++) {
+                if (!index.piecesInChunk(ChunkPos.asLong(cx, cz)).isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
