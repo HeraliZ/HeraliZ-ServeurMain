@@ -22,8 +22,9 @@ public final class ZombiesConfig {
     public static final ForgeConfigSpec.IntValue CHEMINS_BUDGET, LOD_PROCHE, LOD_MOYEN, LOD_SOMMEIL;
     public static final ForgeConfigSpec.BooleanValue CHEMINS_PARTAGE;
     public static final ForgeConfigSpec.DoubleValue CHEMINS_BUDGET_MS;
-    // chemin gardé vers une cible loin ou hors d'atteinte (voir NavigationZombie)
+    // chemin gardé vers une cible loin ou hors d'atteinte (voir NavigationZombie), Zombie Awareness (SensAwareness)
     public static final ForgeConfigSpec.IntValue CHEMIN_PRES, ATTENTE_MOYEN, ATTENTE_LOIN, ATTENTE_BLOQUE;
+    public static final ForgeConfigSpec.BooleanValue AWARENESS_RAPIDE;
     // variétés (voir VarietesZombies)
     public static final ForgeConfigSpec.BooleanValue VARIETES;
     public static final ForgeConfigSpec.DoubleValue PART_COUREURS, PART_COSTAUDS, VIE_MARCHEUR, VIE_COUREUR, VIE_COSTAUD,
@@ -109,6 +110,9 @@ public final class ZombiesConfig {
                 .defineInRange("attente_loin", 20, 0, 400);
         ATTENTE_BLOQUE = b.comment("Cible hors d'atteinte (le dernier chemin n'y arrivait pas) et toujours au meme endroit (1,5 bloc) :",
                         "ticks au moins entre deux calculs, a toute distance (Minecraft : 4 a 10).").defineInRange("attente_bloque", 20, 0, 400);
+        AWARENESS_RAPIDE = b.comment("01/11 : Zombie Awareness (jar intact) cherche les sons et les odeurs seulement quand son tirage le demande",
+                        "(une fois sur 10) et parmi ses seules entites de sens, au lieu de lister toutes les entites a 64 blocs a chaque fois.",
+                        "Meme resultat. false : recherche du mod.").define("awareness_rapide", true);
         b.pop();
         b.comment("Variétés des zombies HeraliZ (24/10, « des coureurs, des costauds, une belle variété, assez résistants ») :",
                 "tirées à leur première arrivée, gardées ensuite. Le reste des zombies est marcheur. Les rampants restent ceux de",

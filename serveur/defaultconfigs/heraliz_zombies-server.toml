@@ -65,6 +65,9 @@
 	#Cible hors d'atteinte (toit, mur, cloture) restee au meme endroit : ticks au moins entre deux calculs (Minecraft : 4 a 10).
 	#Range: 0 ~ 400
 	attente_bloque = 20
+	#01/11 : Zombie Awareness cherche ses sons et odeurs seulement quand son tirage le demande, parmi ses seules entites
+	#de sens (meme resultat). false : recherche du mod.
+	awareness_rapide = true
 
 #Varietes des zombies HeraliZ, tirees a leur premiere arrivee. Le reste des zombies est marcheur.
 [varietes]
