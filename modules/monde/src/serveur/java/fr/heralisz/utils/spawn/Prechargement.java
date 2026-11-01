@@ -63,6 +63,15 @@ public final class Prechargement {
         l.getChunkSource().addRegionTicket(TICKET, cp, RAYON, cp);
     }
 
+    /**
+     * Demande à Minecraft UN tronçon (point d'arrivée tiré, encore à contrôler : 01/11), en tâche de fond ; rend tout de
+     * suite. Ticket de 30 s, comme {@link #precharger}.
+     */
+    public static void demanderTroncon(ServerLevel l, int cx, int cz) {
+        ChunkPos cp = new ChunkPos(cx, cz);
+        l.getChunkSource().addRegionTicket(TICKET, cp, 0, cp);
+    }
+
     /** Les 3 × 3 tronçons autour de (x, z) sont-ils chargés (sans rien charger) ? */
     public static boolean pret(ServerLevel l, double x, double z) {
         return pret(l, troncon(x, z));

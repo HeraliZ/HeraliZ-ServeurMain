@@ -77,9 +77,10 @@ import org.joml.Vector3f;
  * Borne de départ et monde du spawn, côté serveur.
  * <ul>
  * <li>Départ : clic sur la borne (au spawn), délai réglable (le joueur doit rester là : s'il s'éloigne, est blessé ou
- * change de monde, c'est annulé) pendant lequel un point d'arrivée sûr est cherché, un essai par tick (un tronçon chargé
- * au plus par tick : pas de saccade) ; puis vraie téléportation (teleportTo : suivie par Spartan), fondu au noir et
- * protection de quelques secondes à l'arrivée.</li>
+ * change de monde, c'est annulé) pendant lequel un point d'arrivée sûr est cherché : un point tiré à la fois, contrôlé
+ * une fois son tronçon chargé par Minecraft en tâche de fond (01/11 ; avant, ce tronçon était lu sur le disque par le fil
+ * du serveur, un par tick : une saccade à chaque essai) ; puis vraie téléportation (teleportTo : suivie par Spartan),
+ * fondu au noir et protection de quelques secondes à l'arrivée.</li>
  * <li>Points d'arrivée : points exacts et zones (disques) posés par le staff (/depart point, /depart zone), tirés au
  * hasard ; dans une zone (ou dans toute la bordure de la carte si rien n'est posé), un sol de la liste « sols » avec le
  * ciel au-dessus (jamais un toit, l'eau, l'intérieur d'un bâtiment ni sous un arbre), hors des zones dangereuses de
@@ -105,6 +106,9 @@ public final class DepartServeur {
         final int debut, fin;
         int essais;
         Arrivee trouvee;
+        /** Point tiré dont le tronçon se charge en tâche de fond, et le tick où on le contrôle quoi qu'il arrive. */
+        Tirage tirage;
+        int tirageLimite;
 
         EnCours(ResourceKey<Level> monde, Vec3 depart, int debut, int fin, int essais) {
             this.monde = monde;
@@ -119,6 +123,15 @@ public final class DepartServeur {
     /** Point d'arrivée retenu : pieds du joueur et regard. */
     public record Arrivee(double x, double y, double z, float lacet, String origine) {}
 
+    /**
+     * Point tiré, pas encore contrôlé (01/11) : un point exact posé par le staff ({@code point}, avec sa hauteur et son
+     * regard) ou une colonne d'une zone ou de la carte ; (cx, cz) : son tronçon.
+     */
+    private record Tirage(boolean point, double x, double y, double z, float lacet, String origine, int cx, int cz) {}
+
+    /** Au plus tant de ticks d'attente du tronçon d'un point tiré ; passé ce délai, il est contrôlé comme avant. */
+    private static final int ATTENTE_TIRAGE = 40;
+
     private static final Map<UUID, EnCours> EN_COURS = new HashMap<>();
     private static final Map<UUID, Integer> DERNIER = new HashMap<>();
     private static final Map<UUID, Integer> PROTEGES = new HashMap<>();
@@ -128,6 +141,7 @@ public final class DepartServeur {
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::commandes);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::blesse);
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> REGIONS.clear());
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, DepartServeur::attaque);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, DepartServeur::arrivee);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::changementMonde);
@@ -154,12 +168,27 @@ public final class DepartServeur {
 
     /**
      * Le fichier de régions qui contient (x, z) existe-t-il dans ce monde ? Avant de charger un tronçon : jamais de
-     * terrain généré (carte construite à la main, monde du spawn déposé tel quel).
+     * terrain généré (carte construite à la main, monde du spawn déposé tel quel). 01/11 : une région présente est gardée
+     * en mémoire (un fichier de régions ne disparaît pas en jeu) : plus de coup d'œil au disque pour elle par le fil du
+     * serveur ; une région absente est revue à chaque fois, comme avant.
      */
     public static boolean regionPresente(ServerLevel l, int x, int z) {
+        long cle = net.minecraft.world.level.ChunkPos.asLong(x >> 9, z >> 9);
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet connues = REGIONS.computeIfAbsent(l.dimension(),
+                k -> new it.unimi.dsi.fastutil.longs.LongOpenHashSet());
+        if (connues.contains(cle)) {
+            return true;
+        }
         Path dossier = DimensionType.getStorageFolder(l.dimension(), l.getServer().getWorldPath(LevelResource.ROOT));
-        return Files.isRegularFile(dossier.resolve("region").resolve("r." + (x >> 9) + "." + (z >> 9) + ".mca"));
+        boolean la = Files.isRegularFile(dossier.resolve("region").resolve("r." + (x >> 9) + "." + (z >> 9) + ".mca"));
+        if (la) {
+            connues.add(cle);
+        }
+        return la;
     }
+
+    /** Régions vues présentes, par monde (fil serveur). */
+    private static final Map<ResourceKey<Level>, it.unimi.dsi.fastutil.longs.LongOpenHashSet> REGIONS = new HashMap<>();
 
     // ---------------------------------------------------------------------------------------------- départ
     /** Clic sur la borne (BorneDepartServeur). */
@@ -243,9 +272,24 @@ public final class DepartServeur {
                 sp.displayClientMessage(t("annule", "Départ annulé : tu as bougé."), true);
                 continue;
             }
-            if (d.trouvee == null && d.essais > 0) {               // un essai par tick
+            if (d.trouvee == null && d.essais > 0 && d.tirage == null) {   // un point tiré à la fois
                 d.essais--;
-                d.trouvee = essai(carte, sp, sp.getRandom());
+                d.tirage = tirer(carte, sp.getRandom());
+                d.tirageLimite = maintenant + ATTENTE_TIRAGE;
+                // son tronçon chargé par Minecraft en tâche de fond (01/11 : avant, lu sur le disque par le fil du serveur) ;
+                // hors de la carte construite (pas de fichier de régions) : refusé tout de suite, jamais de terrain généré
+                if (d.tirage != null && !charge(carte, d.tirage)) {
+                    if (regionPresente(carte, Mth.floor(d.tirage.x()), Mth.floor(d.tirage.z()))) {
+                        Prechargement.demanderTroncon(carte, d.tirage.cx(), d.tirage.cz());
+                    } else {
+                        d.tirage = null;
+                    }
+                }
+            }
+            if (d.tirage != null && (charge(carte, d.tirage) || maintenant >= d.tirageLimite)) {
+                Tirage t = d.tirage;
+                d.tirage = null;
+                d.trouvee = controler(carte, sp, t, sp.getRandom());
                 if (d.trouvee != null) {
                     // pendant le compte à rebours, Minecraft charge les tronçons d'arrivée en tâche de fond (01/11)
                     Prechargement.precharger(carte, d.trouvee.x(), d.trouvee.z());
@@ -265,7 +309,7 @@ public final class DepartServeur {
                 it.remove();
                 Arrivee a = d.trouvee;
                 apres.add(() -> Prechargement.puis(sp, carte, a.x(), a.z(), () -> partir(sp, carte, a)));
-            } else if (d.essais <= 0) {
+            } else if (d.essais <= 0 && d.tirage == null) {
                 it.remove();
                 echec(sp);
             } else if (maintenant % 20 == 0) {
@@ -360,6 +404,25 @@ public final class DepartServeur {
 
     /** Un essai : un point ou une zone tirés au hasard, contrôlés ; null si refusé (on réessaiera). */
     static Arrivee essai(ServerLevel carte, ServerPlayer pour, RandomSource r) {
+        Tirage t = tirer(carte, r);
+        return t == null ? null : controler(carte, pour, t, r);
+    }
+
+    /** Le tronçon du point tiré est-il chargé (sans rien charger) ? */
+    private static boolean charge(ServerLevel carte, Tirage t) {
+        return carte.getChunkSource().getChunkNow(t.cx(), t.cz()) != null;
+    }
+
+    /** Contrôle d'un point tiré (charge son tronçon s'il ne l'est pas encore) ; null si refusé. */
+    private static Arrivee controler(ServerLevel carte, ServerPlayer pour, Tirage t, RandomSource r) {
+        if (t.point()) {
+            return pointLibre(carte, pour, t.x(), t.y(), t.z()) ? new Arrivee(t.x(), t.y(), t.z(), t.lacet(), t.origine()) : null;
+        }
+        return sol(carte, pour, Mth.floor(t.x()), Mth.floor(t.z()), r, t.origine());
+    }
+
+    /** Un point exact ou une colonne tirés au hasard, sans rien charger ni contrôler ; null si aucun tirage possible. */
+    private static Tirage tirer(ServerLevel carte, RandomSource r) {
         PointsDepart pd = PointsDepart.get(carte);
         int np = pd.points.size(), nz = pd.zones.size();
         WorldBorder b = carte.getWorldBorder();
@@ -369,7 +432,7 @@ public final class DepartServeur {
             if (k < np) {
                 String nom = new ArrayList<>(pd.points.keySet()).get(k);
                 PointsDepart.Point p = pd.points.get(nom);
-                return pointLibre(carte, pour, p.x(), p.y(), p.z()) ? new Arrivee(p.x(), p.y(), p.z(), p.lacet(), "point " + nom) : null;
+                return new Tirage(true, p.x(), p.y(), p.z(), p.lacet(), "point " + nom, Mth.floor(p.x()) >> 4, Mth.floor(p.z()) >> 4);
             }
             String nom = new ArrayList<>(pd.zones.keySet()).get(k - np);
             PointsDepart.Zone z = pd.zones.get(nom);
@@ -377,7 +440,7 @@ public final class DepartServeur {
                 double a = r.nextDouble() * Math.PI * 2, d = Math.sqrt(r.nextDouble()) * z.rayon();
                 int x = Mth.floor(z.x() + 0.5 + Math.cos(a) * d), zz = Mth.floor(z.z() + 0.5 + Math.sin(a) * d);
                 if (loinDesVilles(carte, x + 0.5, zz + 0.5)) {
-                    return sol(carte, pour, x, zz, r, "zone " + nom);
+                    return new Tirage(false, x, 0, zz, 0f, "zone " + nom, x >> 4, zz >> 4);
                 }
             }
             return null;
@@ -392,7 +455,7 @@ public final class DepartServeur {
         for (int i = 0; i < TIRAGES_VILLES; i++) {
             int x = Mth.floor(Mth.lerp(r.nextDouble(), x0, x1)), z = Mth.floor(Mth.lerp(r.nextDouble(), z0, z1));
             if (loinDesVilles(carte, x + 0.5, z + 0.5)) {
-                return sol(carte, pour, x, z, r, "carte");
+                return new Tirage(false, x, 0, z, 0f, "carte", x >> 4, z >> 4);
             }
         }
         return null;
