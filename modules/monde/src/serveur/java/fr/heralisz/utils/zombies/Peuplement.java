@@ -379,7 +379,7 @@ public final class Peuplement {
     private static void lireVip(MinecraftServer srv) {
         Path f = srv.getServerDirectory().toPath().resolve("heraliz_grades").resolve("zones_vip.json");
         try {
-            long d = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            long d = fr.heralisz.utils.serveur.DatesFichiers.date(f);   // relevée à part (01/11)
             if (d == dateVip) return;
             dateVip = d;
             List<int[]> l = new ArrayList<>();

@@ -413,7 +413,7 @@ public final class DepartServeur {
         }
         Path f = FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
         try {
-            long date = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            long date = fr.heralisz.utils.serveur.DatesFichiers.date(f);   // relevée à part (01/11) : plus de disque ici
             if (date != villesDate) {
                 villesDate = date;
                 List<double[]> l = new ArrayList<>();
@@ -542,7 +542,7 @@ public final class DepartServeur {
         }
         Path f = carte.getServer().getWorldPath(LevelResource.ROOT).resolve("data").resolve("heraliz_zones.json");
         try {
-            long date = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            long date = fr.heralisz.utils.serveur.DatesFichiers.date(f);   // relevée à part (01/11)
             if (date != zonesDate) {
                 zonesDate = date;
                 List<double[][]> l = new ArrayList<>();

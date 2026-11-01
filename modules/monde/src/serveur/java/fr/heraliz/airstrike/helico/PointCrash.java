@@ -209,7 +209,7 @@ public final class PointCrash {
         vipProchain = now + 30_000L;
         Path f = srv.getServerDirectory().toPath().resolve("heraliz_grades").resolve("zones_vip.json");
         try {
-            long d = Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0;
+            long d = fr.heralisz.utils.serveur.DatesFichiers.date(f);   // relevée à part (01/11)
             if (vipLues && d == dateVip) return;
             List<int[]> l = new ArrayList<>();
             if (d != 0) {

@@ -203,7 +203,7 @@ public final class SpawnZombiesServeur {
         Path fv = FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
         Path fz = srv.getWorldPath(LevelResource.ROOT).resolve("data").resolve("heraliz_zones.json");
         try {
-            long d = Files.exists(fv) ? Files.getLastModifiedTime(fv).toMillis() : 0;
+            long d = fr.heralisz.utils.serveur.DatesFichiers.date(fv);   // relevée à part (01/11)
             if (d != dateVilles) {
                 dateVilles = d;
                 List<Cercle> l = new ArrayList<>();
@@ -233,7 +233,7 @@ public final class SpawnZombiesServeur {
             HeraliszUtils.LOG.warn("Zombies de la survie : villes illisibles ({})", fv, ex);
         }
         try {
-            long d = Files.exists(fz) ? Files.getLastModifiedTime(fz).toMillis() : 0;
+            long d = fr.heralisz.utils.serveur.DatesFichiers.date(fz);
             if (d != dateZones) {
                 dateZones = d;
                 List<Poly> l = new ArrayList<>();
