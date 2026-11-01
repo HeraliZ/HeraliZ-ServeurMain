@@ -902,7 +902,6 @@
   "heraliz_grades.staff.cmd.logout": "Log out of the server account (AuthMe).",
   "heraliz_grades.staff.cmd.captcha": "Anti-bot code requested by AuthMe.",
   "heraliz_grades.staff.cmd.totp": "Two-factor authentication of the account (AuthMe).",
-  "heraliz_grades.staff.cmd.spark": "spark profiler: server measures, TPS, memory.",
   "heraliz_grades.staff.cmd.rg": "WorldGuard regions (spawn protection).",
   "heraliz_grades.staff.cmd.region": "WorldGuard regions (spawn protection).",
   "heraliz_grades.staff.cmd.regions": "WorldGuard regions (spawn protection).",

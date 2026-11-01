@@ -1,7 +1,7 @@
 # Lenteurs du serveur : LECTURE SEULE. Rapatrie dans le journal de cette tâche ce qu'il faut pour trouver les montées de
 # ms : les rapports du diagnostic du noyau (dossier diag/ à la racine du serveur : profils façon spark, un rapport par
 # blocage, avec le mod, le fichier et la ligne en cause), les lignes « Can't keep up » et ce qui les précède dans les
-# journaux, les rapports de plantage, l'historique de spark et quelques réglages qui jouent sur les perfs. Noms des
+# journaux, les rapports de plantage et quelques réglages qui jouent sur les perfs. Noms des
 # méthodes de Minecraft et chemins de nos fichiers rendus lisibles (outils/diag_noms.py). Adresses IP masquées, rien n'est
 # écrit, renommé ni supprimé sur le Ptero (jamais « get -E », qui efface le fichier lu).
 # Case « profil » (jamais cochée par défaut) : AVANT de lire, lance « diag profil <secondes> <intervalle> » par la console
@@ -123,7 +123,7 @@ jobs:
           l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
           # « cls -1 /dossier/ » rend des chemins complets (/diag/x.txt) : on ne garde que le nom (sinon « get /diag//diag/x »)
           noms() { l "cls -1 $1" 2>/dev/null | sed 's#.*/##' | tr -d '\r'; }
-          mkdir -p diag j c spark conf
+          mkdir -p diag j c conf
           # rapports du diagnostic du noyau (le serveur en garde 60 au plus) : une seule connexion
           l "lcd diag; mget /diag/*.txt" || true
           # journaux : le courant, le journal détaillé (debug.log, tout depuis le dernier démarrage) et les 6 derniers
@@ -131,14 +131,12 @@ jobs:
           l "lcd j; get /logs/latest.log; get /logs/debug.log" || true
           for f in $(noms /logs/ | grep -E '^20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]+\.log\.(gz|zip)$' | sort -V -r | head -6); do l "lcd j; get /logs/$f" || true; done
           for f in $(noms /crash-reports/ | grep -E '^crash-' | sort -r | head -4); do l "lcd c; get /crash-reports/$f" || true; done
-          l "lcd spark; get /plugins/spark/activity.json" || true
-          l "lcd spark; get /plugins/spark/config.json" || true
           for f in server.properties spigot.yml bukkit.yml; do l "lcd conf; get /$f" || true; done
           l "cls -l /diag/" > liste_diag.txt 2>/dev/null || true
           l "cls -l /logs/" > liste_logs.txt 2>/dev/null || true
           # correspondances des noms de Minecraft que le serveur peut lire lui-même (installation de Forge ou de Mohist)
           l "find /libraries/net/minecraft/server/; find /libraries/de/oceanlabs/mcp/" > liste_noms.txt 2>/dev/null || true
-          ls -la diag j c spark conf
+          ls -la diag j c conf
 
       - name: Noms lisibles (méthodes de Minecraft, fichiers du dépôt)
         run: |
@@ -156,7 +154,6 @@ jobs:
           grep -E '^(view-distance|simulation-distance|max-players|sync-chunk-writes|network-compression-threshold|entity-broadcast-range-percentage|max-tick-time|level-name)=' conf/server.properties 2>/dev/null
           grep -A12 -E '^\s*(entity-activation-range|entity-tracking-range):' conf/spigot.yml 2>/dev/null | head -40
           grep -A12 -E '^(spawn-limits|ticks-per):' conf/bukkit.yml 2>/dev/null | head -30
-          echo "===== SPARK activity.json ====="; masque < spark/activity.json 2>/dev/null | head -c 20000; echo
           # le dernier profil en entier (le nouveau si la case « profil » était cochée), puis les blocages (un rapport par
           # montée de ms), puis le reste : autres profils, fuites, mesures, bancs de charge (plus courts)
           DERNIER="${PROFIL_NOUVEAU:+diag/$PROFIL_NOUVEAU}"
@@ -183,8 +180,8 @@ jobs:
             echo "===== JOURNAL $(basename "$f") : $(printf '%s\n' "$txt" | wc -l) lignes, du $(printf '%s\n' "$txt" | head -1 | cut -c1-40) au $(printf '%s\n' "$txt" | tail -1 | cut -c1-40) ====="
             echo "===== JOURNAL $(basename "$f") : Can't keep up ====="
             printf '%s\n' "$txt" | grep -F "Can't keep up" | masque | tail -150
-            echo "===== JOURNAL $(basename "$f") : diag / moniteur / spark ====="
-            printf '%s\n' "$txt" | grep -E '\[(diag|moniteur)\]|spark|Tick #|lasted' | grep -v -E 'password|login|register' | masque | tail -200
+            echo "===== JOURNAL $(basename "$f") : diag / moniteur ====="
+            printf '%s\n' "$txt" | grep -E '\[(diag|moniteur)\]|Tick #|lasted' | grep -v -E 'password|login|register' | masque | tail -200
             echo "===== JOURNAL $(basename "$f") : commandes jouées (heure et nom, les 300 dernières) ====="
             # seulement l'heure et le mot de la commande (ni pseudo, ni arguments : pas de mot de passe ni de message privé)
             printf '%s\n' "$txt" | grep -E 'issued server command' | sed -E 's/^\[([^]]*)\].*issued server command: *(\/[^ ]*).*/\1 \2/' | grep -E ' /[^ ]*$' | tail -300

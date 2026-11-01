@@ -61,8 +61,8 @@ def qui(perm):
 
 def tableau(cmds):
     lignes = ["# Inventaire des commandes (écrit par outils/commandes.py)", "",
-              "Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard, "
-              "spark — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la "
+              "Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — "
+              "et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la "
               "commande (une sous-commande ou le code peut en demander une).", "",
               f"**{len(cmds)} commandes de premier niveau, "
               f"{sum(len(c['sous']) for c in cmds.values())} sous-commandes repérées.**", "",

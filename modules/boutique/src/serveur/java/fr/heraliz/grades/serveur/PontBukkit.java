@@ -207,7 +207,7 @@ final class PontBukkit {
     private static Object porteur() throws ReflectiveOperationException {
         if (bukkit() == null) return null;
         Object pm = bukkit.getMethod("getPluginManager").invoke(null);
-        for (String nom : new String[]{"spark", "LuckPerms", "AuthMe", "WorldGuard"}) {
+        for (String nom : new String[]{"LuckPerms", "AuthMe", "WorldGuard"}) {
             Object p = pm.getClass().getMethod("getPlugin", String.class).invoke(pm, nom);
             if (p != null && Boolean.TRUE.equals(p.getClass().getMethod("isEnabled").invoke(p))) return p;
         }

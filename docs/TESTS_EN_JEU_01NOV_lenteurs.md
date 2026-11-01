@@ -63,5 +63,5 @@ voyait pas. Il les voit maintenant (voir plus bas).
 - Journal : avertissements « Invalid statistic … heralisz_n07 / heralisz_mammoth / heralisz_mere / heralisz_plague /
   heralisz_matchs » à chaque connexion (statistiques des joueurs qui citent les objets des boss mis de côté et de l'ancien
   Matchs) : sans effet. 13 refus de connexion « Channels [...] » : jeux avec des mods pas à jour.
-- Réglage proposé, pas changé : `plugins/spark/config.json` `"backgroundProfiler": false` (le diagnostic du noyau fait le
-  même travail ; spark garde `/spark profiler` à la demande).
+- spark : profileur de fond coupé, puis plugin retiré le 01/11 (choix du propriétaire) : `/diag profil` du noyau fait le
+  même travail.

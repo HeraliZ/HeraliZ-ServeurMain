@@ -139,7 +139,7 @@ d'écrire du code qui tourne en boucle, vérifier :
 7. **Plafonds partout** : nombre de zombies, d'objets, de calculs de chemin par tick ; budget en millisecondes pour les
    travaux longs (pose d'arène, calcul de chemins).
 8. **Rien qui touche le disque dans un tick** : sauvegarde différée ou groupée (une écriture par seconde au plus).
-9. **Mesurer avant et après** : spark (`/spark profiler`), puis le moniteur HeraliZ (à venir, étape 3).
+9. **Mesurer avant et après** : `/diag profil` (section 10), et le banc de charge pour 150 joueurs (`docs/TESTS_EN_JEU_01NOV_banc.md`).
 
 ---
 
@@ -315,9 +315,8 @@ donne donc :
 - `/diag auto on|off`, `/diag seuil <ms>` : réglages pour la session. Au démarrage, c'est la section `[diag]` de
   `heraliz_noyau-server.toml` qui fait foi.
 
-**spark mis de côté** (01/11) : son profileur de fond est coupé (`serveur/plugins/spark/config.json`,
-`backgroundProfiler: false`, pris au prochain redémarrage). Le plugin reste installé, ses commandes `/spark` marchent à la
-demande. On le retirera quand `/diag profil` aura fait ses preuves en jeu.
+**spark retiré** (01/11, choix du propriétaire) : `/diag profil` le remplace. Son jar n'est plus dans `serveur/plugins/` :
+la mise en ligne l'efface du Ptero (son dossier de données y reste, sans effet).
 
 ## 11. Mettre à jour sans couper
 

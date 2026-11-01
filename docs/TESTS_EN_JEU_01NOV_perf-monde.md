@@ -68,19 +68,18 @@ dans `heralisz_utils_serveur.mixins.json` (Zombie Awareness, non obligatoire).
    1 à 2 s. `/depart` du staff : inchangé. Pas d'alerte `[Diag] Blocage` au départ.
 9. **Fichiers relus** : modifier `config/heralisz_clans/zones.json` (une ville) ou `heraliz_grades/zones_vip.json` : pris
    en compte en 15 s au plus (tenues des zombies, peuplement, points de départ, crash de l'hélicoptère).
-10. **Mesure** : `/spark profiler` 5 min un soir chargé, avant et après : la part de `TargetingConditions.test`,
+10. **Mesure** : `/diag profil 300` un soir chargé, avant et après : la part de `TargetingConditions.test`,
     `PathFinder.findPath` et `ZAUtil.getSenseNearEntity` doit baisser nettement.
 
 ## Réglages proposés (pas changés)
 
 - `spigot.yml`, `entity-activation-range.monsters: 24` : au-delà de 24 blocs de tout joueur, un monstre sans cible ne
-  fait plus qu'un tick sur 20 (probable aussi pour les entités de mods sous Mohist, à confirmer avec spark). C'est le plus
+  fait plus qu'un tick sur 20 (probable aussi pour les entités de mods sous Mohist, à confirmer avec `/diag profil`). C'est le plus
   gros allègement des zombies : le garder. Conséquence : un tir attire jusqu'à 80 blocs, mais au-delà de ~24 blocs les
   zombies n'avancent presque pas (voir question 2).
 - `config/zombieawareness/General.toml`, `tickRateAILoop = 5` → `10` : le travail de Zombie Awareness par zombie divisé
   par deux ; les zombies réagiraient aux odeurs et lumières en 0,5 s au lieu de 0,25 s (à peine visible).
-- Gardes déjà notées ailleurs : `/gamerule doMobSpawning false` sur la carte ; `plugins/spark/config.json`
-  `"backgroundProfiler": false`.
+- Gardes déjà notées ailleurs : `/gamerule doMobSpawning false` sur la carte ; spark retiré le 01/11 (`/diag profil`).
 
 ## Questions pour le propriétaire (réponses du 01/11)
 

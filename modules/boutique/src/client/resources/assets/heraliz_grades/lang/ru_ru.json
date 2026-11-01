@@ -902,7 +902,6 @@
   "heraliz_grades.staff.cmd.logout": "Выход из аккаунта сервера (AuthMe).",
   "heraliz_grades.staff.cmd.captcha": "Антибот-код, запрошенный AuthMe.",
   "heraliz_grades.staff.cmd.totp": "Двухфакторная аутентификация аккаунта (AuthMe).",
-  "heraliz_grades.staff.cmd.spark": "Профайлер spark: замеры сервера, TPS, память.",
   "heraliz_grades.staff.cmd.rg": "Регионы WorldGuard (защита спавна).",
   "heraliz_grades.staff.cmd.region": "Регионы WorldGuard (защита спавна).",
   "heraliz_grades.staff.cmd.regions": "Регионы WorldGuard (защита спавна).",

@@ -83,7 +83,7 @@ Ce que tout le serveur partage :
 - **`EtatClient`** : état côté joueur (combat, en match) ;
 - **`Portes`** : portes qui s'ouvrent au clic droit (Minecraft, plus celles déclarées par CRac et le bunker), ouvertes
   avec une arme en main (Tactique, `PortesEnMain`).
-- **Diagnostic** (`serveur/diag`) : `/diag profil` remplace spark (mod, fichier:ligne, arbre des appels, temps par système,
+- **Diagnostic** (`serveur/diag`) : `/diag profil` remplace spark, retiré (mod, fichier:ligne, arbre des appels, temps par système,
   pendant et entre les ticks ; `diag/profil-<date>.txt`, noms lisibles par `outils/diag_noms.py` et le workflow « Lenteurs
   du serveur », qui peut aussi le lancer), rapports de blocage automatiques ; guide : `docs/GUIDE.md` section 10.
 

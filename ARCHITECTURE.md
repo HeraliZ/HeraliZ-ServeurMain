@@ -123,9 +123,9 @@ Ce qu'on peut faire, et ce qu'on ne peut pas faire :
   le budget.
 - On garde les tenues, les attaques esquivables et le peuplement déjà faits.
 
-**Moniteur** (noyau, en plus de spark) :
+**Moniteur** (noyau ; spark retiré le 01/11, remplacé par `/diag profil`) :
 - chaque système de nos mods mesure son temps par tick : `/hz perf` montre le top, mod par mod ;
-- un tick trop long déclenche **un profil spark tout seul**, avec un résumé pour le staff (Discord) ;
+- un tick trop long déclenche **un rapport de blocage tout seul** (`diag/blocage-*.txt` : mod, fichier et ligne en cause) ;
 - les **fuites** sont surveillées : taille des listes internes, entités et blocs animés par tronçon, mémoire. Ce
   qui grossit sans jamais redescendre est signalé.
 

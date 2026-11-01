@@ -1,8 +1,8 @@
 # Inventaire des commandes (écrit par outils/commandes.py)
 
-Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard, spark — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une).
+Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une).
 
-**75 commandes de premier niveau, 344 sous-commandes repérées.**
+**76 commandes de premier niveau, 354 sous-commandes repérées.**
 
 | Commande | Module | Entrée | Sous-commandes (niveau si différent) |
 |---|---|---|---|
@@ -13,15 +13,16 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/base` | bases | op 4 | effacer, info |
 | `/bon` | boutique | tous | editeur |
 | `/boss` | events | staff (op 2) | arene, decors, eveil, labo, mammouth, mere, n07, peste, reset, salle, station, sylvorn, vitrine |
-| `/bots` | banc | op 4 | action, etat, frappes, joueurs, lancer, reseau, retirer, scenario, stop |
+| `/bots` | banc | op 4 | action, commandes, etat, frappes, joueurs, lancer, mesure, reseau, retirer, scenario, stop |
 | `/boutique` | boutique | tous | abonnement |
 | `/brume` | monde | staff (op 2) | auto, info |
 | `/camos` | armes | staff (op 2) | ajouter, recharge, retirer, voir |
+| `/capsules` | boutique | tous | compte (staff (op 2)), deposer, donner (op 4), retirer (op 4), voir |
 | `/carriere` | bases | staff (op 2) | creer, liste, regenerer, retirer, tp |
 | `/carte` | monde | staff (op 2) | ajouter, lieu, liste, nom, retirer |
 | `/casino` | boutique | staff (op 2) | clochard, defaut, donner, jackpot, jetons, lumiere, machine, reload, reset, retirer, rtp, salle, solde, stats, vip, voir |
 | `/cinematique` | monde | staff (op 2) | decaler, devant, epave, info, joueur, poser, retirer, reveil, tourner |
-| `/clan` | clans | tous | ameliorer, don |
+| `/clan` | clans | tous | ameliorer, confirmer, don |
 | `/clashwar` | clashwar | tous | annuler (staff (op 2)), classement, cloturer (staff (op 2)), lancer (staff (op 2)), mur (staff (op 2)), quitter, recharger (staff (op 2)), regarder, retirer, salle, tableau |
 | `/coeur` | bases | tous | deplacer |
 | `/coffres` | bases | op 4 | recharger, voir |
@@ -29,7 +30,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/corps` | monde | staff (op 2) | liste, supprimer, tp, vider |
 | `/cycle` | monde | staff (op 2) | heure, info, jour, nuit, pause, reprendre |
 | `/depart` | monde | staff (op 2) | ajouter, borne, essai, info, joueur, liste, point, retirer, tp, zone |
-| `/diag` | noyau | op 4 | auto, client, etat, fuites, mesure, off, on, seuil, start, stop |
+| `/diag` | noyau | op 4 | auto, client, commandes, etat, fuites, mesure, off, on, profil, seuil, start, stop |
 | `/diagclient` | noyau (joueur) | tous |  |
 | `/discord` | boutique | tous | delier, lier |
 | `/eco` | clans | staff (op 2) | definir (op 4), donner (op 4), info, journal, recharger, retirer (op 4), sauvegarder |

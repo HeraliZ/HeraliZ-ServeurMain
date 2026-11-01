@@ -1,5 +1,0 @@
-{
-  "_header": "spark configuration file - https://spark.lucko.me/docs/Configuration",
-  "_heraliz": "Profileur de fond coupé le 01/11 : le profileur du noyau (/diag profil) le remplace, voir docs/GUIDE.md section 10. spark reste installé (commandes /spark à la demande) jusqu'à ce que /diag profil ait fait ses preuves en jeu.",
-  "backgroundProfiler": false
-}

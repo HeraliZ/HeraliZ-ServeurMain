@@ -20,7 +20,7 @@ les problèmes simplement ».
 - Chaque commande jouée est chronométrée (deux lectures d'horloge) : durée dans les rapports de blocage et le profil.
 - Tâche GitHub « Lenteurs du serveur » : case « profil » (jamais cochée par défaut), noms de Minecraft et chemins de nos
   fichiers rendus lisibles, dernier profil en entier dans le journal et son résumé en tête de la page.
-- spark : profileur de fond coupé (pris au prochain redémarrage), plugin gardé.
+- spark : retiré (choix du propriétaire du 01/11) : la mise en ligne efface son jar du Ptero.
 - Noyau 1.0.10 (la branche était déjà en 1.0.9 pour le chantier « perf-noyau »).
 
 ## À vérifier en jeu (serveur redémarré avec le nouveau noyau)
@@ -52,10 +52,10 @@ les problèmes simplement ».
    arguments ni le pseudo).
 9. **Banc de charge** (`/bots scenario`, monde `crac:bases`) : le rapport `charge-<date>.txt` cite toujours son profil
    (`diag/profil-…`), qui est maintenant le nouveau rapport complet.
-10. **spark** : après le redémarrage, `/spark` répond toujours ; plus de « Starting background profiler » dans le journal.
+10. **spark** : après la mise en ligne, plus de jar `spark-*.jar` dans `plugins/` du Ptero ; `/spark` répond « commande inconnue ».
 
 ## Questions pour le propriétaire
 
 - Le profil par défaut dure 60 s avec un relevé toutes les 5 ms (environ 1 % du serveur pendant ce temps). Plus long ou
   plus fin si besoin : `/diag profil 300 4`.
-- Quand `/diag profil` aura fait ses preuves, on retire spark (une ligne : supprimer son jar de `serveur/plugins/`).
+- spark : retiré tout de suite (réponse du propriétaire, 01/11).

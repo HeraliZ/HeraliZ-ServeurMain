@@ -902,7 +902,6 @@
   "heraliz_grades.staff.cmd.logout": "Déconnexion du compte du serveur (AuthMe).",
   "heraliz_grades.staff.cmd.captcha": "Code anti-robot demandé par AuthMe.",
   "heraliz_grades.staff.cmd.totp": "Double authentification du compte (AuthMe).",
-  "heraliz_grades.staff.cmd.spark": "Profileur spark : mesure du serveur, TPS, mémoire.",
   "heraliz_grades.staff.cmd.rg": "Régions WorldGuard (protection du spawn).",
   "heraliz_grades.staff.cmd.region": "Régions WorldGuard (protection du spawn).",
   "heraliz_grades.staff.cmd.regions": "Régions WorldGuard (protection du spawn).",
