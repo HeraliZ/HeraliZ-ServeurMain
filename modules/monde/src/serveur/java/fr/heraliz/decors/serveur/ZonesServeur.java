@@ -58,6 +58,9 @@ public final class ZonesServeur {
     private ZonesServeur() {}
 
     private static List<Zone> zones = new ArrayList<>();
+    /** Boîte de chaque zone (même ordre), bordure comprise : {minX, maxX, minZ, maxZ}. Un joueur dehors n'y est pas du tout
+     *  (01/11 : avant, chaque seconde, chaque joueur était mesuré contre chaque côté de chaque zone de la carte). */
+    private static float[][] boites = new float[0][];
     private static final Map<UUID, float[]> EXPO = new HashMap<>();          // gaz, radiation, froid (secondes)
     private static final Map<UUID, int[]> USURE = new HashMap<>();           // gaz, radiation, froid (secondes portées)
     /** Dernière exposition envoyée à chaque joueur : on n'envoie plus rien tant qu'elle ne change pas (24/10). */
@@ -87,7 +90,10 @@ public final class ZonesServeur {
                 HeralizDecors.LOG.error("Zones dangereuses illisibles ({})", f, ex);
             }
         }
+        float[][] b = new float[l.size()][];
+        for (int i = 0; i < b.length; i++) b[i] = boite(l.get(i));
         zones = l;
+        boites = b;
         HeralizDecors.LOG.info("Zones dangereuses : {}", zones.size());
         Ambiance.CANAL.send(PacketDistributor.ALL.noArg(), new Ambiance.Zones(zones));
     }
@@ -132,8 +138,14 @@ public final class ZonesServeur {
                 continue;
             }
             float g = 0, ra = 0, fr = 0;
-            for (Zone z : zones) {
-                float n = z.niveau(p.getX(), p.getY(), p.getZ());
+            List<Zone> zs = zones;
+            float[][] bs = boites;
+            double px = p.getX(), pz = p.getZ();
+            for (int i = 0; i < zs.size(); i++) {
+                float[] bo = bs[i];
+                if (px < bo[0] || px > bo[1] || pz < bo[2] || pz > bo[3]) continue;   // loin de la zone : niveau 0
+                Zone z = zs.get(i);
+                float n = z.niveau(px, p.getY(), pz);
                 if (n <= 0) continue;
                 switch (z.genre()) {
                     case "gaz" -> g = Math.max(g, n);
@@ -168,6 +180,22 @@ public final class ZonesServeur {
             envoyer(p, new Ambiance.Exposition(
                     Math.min(1f, ex[0] / 60f), Math.min(1f, ex[1] / 60f), Math.min(1f, ex[2] / 60f), pg && g > 0, pr && ra > 0, pf && fr > 0));
         }
+    }
+
+    /**
+     * Boîte de la zone, bordure comprise : hors d'elle, {@link Zone#niveau} rend 0 (dehors et à plus de {@code bord} blocs
+     * du polygone, puisque plus loin que {@code bord} de la boîte du polygone dans un des deux sens).
+     */
+    private static float[] boite(Zone z) {
+        float minX = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, minZ = Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+        for (int i = 0; i < z.xs().length; i++) {
+            minX = Math.min(minX, z.xs()[i]);
+            maxX = Math.max(maxX, z.xs()[i]);
+            minZ = Math.min(minZ, z.zs()[i]);
+            maxZ = Math.max(maxZ, z.zs()[i]);
+        }
+        float m = Math.max(0f, z.bord()) + 1f;   // un bloc de marge (arrondis des flottants)
+        return new float[]{minX - m, maxX + m, minZ - m, maxZ + m};
     }
 
     /** Une seconde de plus : l'exposition monte selon l'intensité (jusqu'à 120 s), redescend deux fois plus vite dehors. */
