@@ -62,6 +62,7 @@ public final class CommandeDiag {
 
     private static int etat(CommandContext<CommandSourceStack> c) {
         Diag.etatServeur(c.getSource().getServer(), l -> dire(c, Component.literal(l.stripTrailing()), BLEU));
+        fr.heraliz.noyau.serveur.perf.MondesSansSpawn.tickets(c.getSource().getServer(), l -> dire(c, Component.literal(l.stripTrailing()), BLEU));
         dire(c, Component.translatableWithFallback("noyau.diag.auto", "[Diag] Rapports automatiques : %s (seuil %s ms), dans diag/",
                 NoyauConfig.DIAG_AUTO.get() ? "on" : "off", String.valueOf(NoyauConfig.DIAG_SEUIL_MS.get())), BLEU);
         if (Profileur.enCours()) {

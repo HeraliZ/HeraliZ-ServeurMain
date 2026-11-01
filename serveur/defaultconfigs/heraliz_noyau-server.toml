@@ -54,6 +54,11 @@
 	#Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est
 	#libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.
 	mondes_sans_spawn = ["crac:bases", "crac:tuto", "heraliz_clashwar:arenes"]
+	#Mondes de mondes_sans_spawn (01/11) : true = leur zone de départ n'est même plus préparée au démarrage
+	#(Mohist chargeait encore 441 tronçons par monde, voire les générait, avant de les libérer) ni remise par /setworldspawn.
+	#false : libérée seulement après le démarrage, comme avant. La carte et le monde du spawn gardent la leur (réapparitions
+	#sans lit, arrivées au spawn).
+	spawn_jamais_prepare = true
 	#Minecraft allégé (01/11) : à chaque tick, Minecraft cherche pour chaque tronçon actif s'il y a un joueur
 	#(non spectateur) à moins de 128 blocs, en parcourant TOUS les joueurs du monde. true = les joueurs sont rangés une fois
 	#par tick dans une grille de 128 blocs et seuls les voisins sont regardés (même réponse, même règle que Minecraft et

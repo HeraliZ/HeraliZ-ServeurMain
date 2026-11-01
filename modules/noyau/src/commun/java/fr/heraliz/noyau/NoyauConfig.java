@@ -51,6 +51,9 @@ public final class NoyauConfig {
    public static volatile boolean levelDatEnFond = true;
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MONDES_SANS_SPAWN;
    public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:bases", "crac:tuto", "heraliz_clashwar:arenes");
+   public static final ForgeConfigSpec.BooleanValue SPAWN_JAMAIS_PREPARE;
+   /** Zone de départ des mondes de mondes_sans_spawn jamais préparée (ni au démarrage, ni par /setworldspawn). */
+   public static volatile boolean spawnJamaisPrepare = true;
    // « Minecraft allégé » (01/11) : chaque réglage coupe une optimisation des mixins serveur (heraliz_noyau_allege.mixins.json)
    public static final ForgeConfigSpec.BooleanValue JOUEURS_PROCHES_GRILLE;
    /** Joueurs proches des tronçons (apparitions, tics aléatoires) cherchés dans une grille faite une fois par tick. */
@@ -126,6 +129,11 @@ public final class NoyauConfig {
       MONDES_SANS_SPAWN = b.comment("Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est",
             "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.")
             .defineListAllowEmpty(List.of("mondes_sans_spawn"), () -> MONDES_SANS_SPAWN_DEFAUT, o -> o instanceof String);
+      SPAWN_JAMAIS_PREPARE = b.comment("Mondes de mondes_sans_spawn (01/11) : true = leur zone de départ n'est même plus préparée au démarrage",
+            "(Mohist chargeait encore 441 tronçons par monde, voire les générait, avant de les libérer) ni remise par /setworldspawn.",
+            "false : libérée seulement après le démarrage, comme avant. La carte et le monde du spawn gardent la leur (réapparitions",
+            "sans lit, arrivées au spawn).")
+            .define("spawn_jamais_prepare", true);
       JOUEURS_PROCHES_GRILLE = b.comment("Minecraft allégé (01/11) : à chaque tick, Minecraft cherche pour chaque tronçon actif s'il y a un joueur",
             "(non spectateur) à moins de 128 blocs, en parcourant TOUS les joueurs du monde. true = les joueurs sont rangés une fois",
             "par tick dans une grille de 128 blocs et seuls les voisins sont regardés (même réponse, même règle que Minecraft et",
@@ -173,6 +181,7 @@ public final class NoyauConfig {
       faimFacteur = (float) (double) FAIM_FACTEUR.get();
       succesActifs = SUCCES_ACTIFS.get();
       levelDatEnFond = LEVEL_DAT_FOND.get();
+      spawnJamaisPrepare = SPAWN_JAMAIS_PREPARE.get();
       joueursProchesGrille = JOUEURS_PROCHES_GRILLE.get();
       porteeSuiviRapide = PORTEE_SUIVI_RAPIDE.get();
       entitesParTroncon = ENTITES_PAR_TRONCON.get();

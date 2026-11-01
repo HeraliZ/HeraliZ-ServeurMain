@@ -14,7 +14,9 @@
     "PaquetsTronconsMixin",
     "PaquetsChangementsMixin",
     "PaquetsBlocsMixin",
-    "PaquetsEntitesBlocMixin"
+    "PaquetsEntitesBlocMixin",
+    "DistanceManagerAcces",
+    "SpawnSansTicketMixin"
   ],
   "injectors": {
     "defaultRequire": 0
