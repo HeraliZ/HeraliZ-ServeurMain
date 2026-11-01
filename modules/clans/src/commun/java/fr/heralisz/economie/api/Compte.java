@@ -74,6 +74,14 @@ public final class Compte {
 
     // ------------------------------------------------------------------ json
     public JsonObject toJson() {
+        return toJson(solde, dernierNom, journal);
+    }
+
+    /**
+     * La forme JSON d'un compte, depuis un releve (01/11 : le fichier des comptes est mis en JSON sur le fil d'ecriture, a
+     * partir d'un releve pris sur le fil serveur ; les transactions ne changent jamais une fois creees).
+     */
+    public static JsonObject toJson(long solde, String dernierNom, Iterable<Transaction> journal) {
         JsonObject o = new JsonObject();
         o.addProperty("solde", solde);
         o.addProperty("dernierNom", dernierNom);

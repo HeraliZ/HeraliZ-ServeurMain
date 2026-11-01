@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import fr.heralisz.economie.EconomieConfig;
 import fr.heralisz.economie.HeraliszEconomie;
 import fr.heralisz.economie.api.Compte;
+import fr.heralisz.economie.api.Transaction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -49,9 +50,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Stockage des comptes : {@code <dossier serveur>/heralisz_economie/comptes.json}, global au serveur (independant du
  * monde : survit a un wipe de map). Toujours mute depuis le fil serveur ({@link #verifierFil()}).
  *
- * <p><b>Sauvegardes.</b> L'instantane JSON est construit sur le fil serveur, l'ecriture (JSON compact, fichier
- * temporaire puis renommage atomique) se fait sur un fil IO unique : les ecritures sont sequentielles, la derniere
- * gagne. Autosave toutes les 60 s si quelque chose a change ; une transaction d'un montant >= sauvegarde_immediate
+ * <p><b>Sauvegardes.</b> L'instantane (solde, nom et copie du journal de chaque compte) est releve sur le fil serveur ;
+ * la mise en JSON (depuis le 01/11 : avant, l'arbre JSON de tous les comptes et de leurs 50 transactions etait construit
+ * sur le fil serveur, des dizaines de millisecondes avec quelques milliers de comptes) et l'ecriture (JSON compact,
+ * fichier temporaire puis renommage atomique) se font sur un fil IO unique : les ecritures sont sequentielles, la
+ * derniere gagne. Autosave toutes les 60 s si quelque chose a change ; une transaction d'un montant >= sauvegarde_immediate
  * demande une sauvegarde groupee (au plus une ecriture par 1,5 s) ; a l'arret et via
  * {@link #sauvegarderMaintenant()} l'ecriture est synchrone. A chaque sauvegarde reussie, l'ancien fichier est
  * conserve en copie tournante comptes.json.1 … .5.
@@ -442,25 +445,37 @@ public final class ComptesStore {
         return true;
     }
 
-    /** Instantane JSON des comptes (fil serveur) ; le store n'est plus marque modifie. */
-    private JsonObject instantane() {
+    /** Ce que le fichier garde d'un compte, releve sur le fil serveur (le journal est une copie ; ses transactions sont fixes). */
+    private record Releve(UUID uuid, long solde, String nom, List<Transaction> journal) {
+    }
+
+    /** Instantane des comptes (fil serveur, sans JSON) ; le store n'est plus marque modifie. */
+    private Releve[] instantane() {
+        Releve[] r = new Releve[comptes.size()];
+        int i = 0;
+        for (Compte c : comptes.values()) r[i++] = new Releve(c.uuid(), c.solde(), c.dernierNom(), c.journal());
+        dirty = false;
+        echeanceDebounce = 0;
+        return r;
+    }
+
+    /** Fil IO : le JSON du fichier, meme forme qu'avant (comptes dans l'ordre du store). */
+    private static JsonObject json(Releve[] releves) {
         JsonObject root = new JsonObject();
         root.addProperty("version", 1);
         JsonObject cs = new JsonObject();
-        for (Compte c : comptes.values()) cs.add(c.uuid().toString(), c.toJson());
+        for (Releve r : releves) cs.add(r.uuid().toString(), Compte.toJson(r.solde(), r.nom(), r.journal()));
         root.add("comptes", cs);
-        dirty = false;
-        echeanceDebounce = 0;
         return root;
     }
 
     /** Confie l'ecriture au fil IO (ou l'ecrit sur place si l'executeur est ferme) ; attend le resultat si demande. */
-    private boolean soumettre(JsonObject root, boolean attendre) {
+    private boolean soumettre(Releve[] releves, boolean attendre) {
         Future<Boolean> f;
         try {
-            f = io.submit(() -> ecrire(root));
+            f = io.submit(() -> ecrire(json(releves)));
         } catch (RejectedExecutionException ex) {
-            return ecrire(root);
+            return ecrire(json(releves));
         }
         if (!attendre) return true;
         try {
