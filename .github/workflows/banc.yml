@@ -46,9 +46,9 @@ on:
         type: boolean
         default: false
       distances:
-        description: "Distances vue/simulation du serveur (Ptero du 01/11 : 6/4)"
+        description: "Distances vue/simulation du serveur (Ptero du 01/11 : 8/4 ; la vue 8 vient de heraliz_distances-server.toml)"
         type: string
-        default: "6/4"
+        default: "8/4"
       rythmes:
         description: "Pour 150 joueurs : morts/connexions/voyages par minute, puis % du temps en combat (off : comme avant ; défaut : chiffres du propriétaire, haut de fourchette)"
         type: string
@@ -119,7 +119,7 @@ jobs:
       SCENARIO: ${{ inputs.scenario || 'normal' }}
       REGLES: ${{ inputs.regles || '' }}
       AB: ${{ inputs.ab && 'oui' || 'non' }}
-      DISTANCES: ${{ inputs.distances || '6/4' }}
+      DISTANCES: ${{ inputs.distances || '8/4' }}
       RYTHMES: ${{ inputs.rythmes || '8/0.85/4/25' }}
     steps:
       - uses: actions/checkout@v4
@@ -147,7 +147,7 @@ jobs:
           # règles de jeu : lettres, chiffres, espaces, ; . _ - seulement ; A/B seulement s'il y en a
           R=$(printf '%s' "$REGLES" | tr -cd 'A-Za-z0-9_ ;.-')
           A=""; [ "$AB" = "oui" ] && [ -n "$(printf '%s' "$R" | tr -d ' ;')" ] && A="--ab"
-          V=$(printf '%s' "$DISTANCES" | cut -d/ -f1 | tr -cd '0-9'); V=${V:-6}; [ "$V" -lt 2 ] && V=2; [ "$V" -gt 32 ] && V=32
+          V=$(printf '%s' "$DISTANCES" | cut -d/ -f1 | tr -cd '0-9'); V=${V:-8}; [ "$V" -lt 2 ] && V=2; [ "$V" -gt 32 ] && V=32
           SIM=$(printf '%s' "$DISTANCES" | cut -s -d/ -f2 | tr -cd '0-9'); SIM=${SIM:-4}; [ "$SIM" -lt 2 ] && SIM=2; [ "$SIM" -gt 32 ] && SIM=32
           RY=$(printf '%s' "$RYTHMES" | tr -cd 'A-Za-z0-9./'); RY=${RY:-8/0.85/4/25}
           # durée au plus : 60 min, plus une mesure de plus en A/B

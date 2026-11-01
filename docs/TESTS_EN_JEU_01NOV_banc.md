@@ -34,7 +34,7 @@ dans le jar de la Release « base-serveur » (empreinte contrôlée).
 
 ### Lancer
 
-- Normal : Actions → « Banc de charge » → « Run workflow » (réglages par défaut : 100 bots, distances 6/4, rythmes
+- Normal : Actions → « Banc de charge » → « Run workflow » (réglages par défaut : 100 bots, distances 8/4, rythmes
   8/0.85/4/25, scénario normal).
 - **Essai A/B** (exemple `randomTickSpeed 0`) : champ « regles » = `randomTickSpeed 0` (plusieurs : `randomTickSpeed 0;
   doFireTick false`), case « ab » cochée : une mesure SANS puis une mesure AVEC, dans le même serveur ; tableau « Essai
@@ -43,7 +43,8 @@ dans le jar de la Release « base-serveur » (empreinte contrôlée).
 - Scénario `connexions` : une connexion toutes les 10 s environ, coût de chacune (tableau « Pics »).
 - Scénario `teleportations` : pics répétés : 6 bots d'un groupe extraits ensemble, 10 `/spawn` de partout, un groupe de 6
   qui part de la borne ; pire tick de chaque cas.
-- Distances (`6/4`) et rythmes (`morts/connexions/voyages/combat`, ou `off` = comme avant) sont des champs du formulaire.
+- Distances (`8/4` : la vue 8 du Ptero vient de `heraliz_distances-server.toml`, qui passe devant le
+  `view-distance=6` de son server.properties ; le banc l'écrit aussi là) et rythmes (`morts/connexions/voyages/combat`, ou `off` = comme avant) sont des champs du formulaire.
 
 ### À vérifier au premier banc réaliste (résumé de la tâche)
 

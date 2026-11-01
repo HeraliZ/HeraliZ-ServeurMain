@@ -62,7 +62,9 @@ COMMANDES_BOTS = RACINE / "outils" / "banc" / "commandes.txt"
 DIAG_DEFAUT = "diag start {s}; diag mesure {s300}"
 GRAINE_DEFAUT = 20261101
 # relevés sur le Ptero le 01/11 (server.properties du Ptero ; celui du dépôt n'est envoyé qu'en installation complète)
-VUE_PTERO, SIMULATION_PTERO, MAX_JOUEURS_PTERO = 6, 4, 50
+# vue : le server.properties du Ptero dit 6, mais heraliz_distances-server.toml (monde, vue = 8, choix du propriétaire du
+# 24/10) impose 8 au démarrage : c'est 8 qui tourne (relevé du banc du 01/11, « distances : vue 8 »)
+VUE_PTERO, SIMULATION_PTERO, MAX_JOUEURS_PTERO = 8, 4, 50
 # cibles par minute POUR 150 JOUEURS : morts / connexions / voyages (/home, /tpa) ; part du temps en combat (%)
 # (estimations à recaler sur les journaux du Ptero : morts et connexions par heure aux heures pleines)
 RYTHMES_DEFAUT = "8/0.85/4/25"   # propriétaire, 01/11 : 250 à 500 morts et 35 à 50 connexions par heure, serveur plein (haut de fourchette)
@@ -163,6 +165,10 @@ def preparer(a):
     # réglages du monde : ceux du dépôt, zombies du peuplement aussi autour des bots
     zomb = [(r"^(\s*bots\s*=\s*)\S+", r"\g<1>true")]
     remplacer(d / "defaultconfigs" / "heraliz_zombies-server.toml", zomb)
+    # distances : celles du mod monde (heraliz_distances-server.toml) passent devant le server.properties au démarrage,
+    # comme sur le Ptero ; le banc y met donc aussi les siennes (sinon --vue ne change rien)
+    remplacer(d / "defaultconfigs" / "heraliz_distances-server.toml",
+              [(r"^(\s*vue\s*=\s*)\S+", r"\g<1>%d" % vue), (r"^(\s*simulation\s*=\s*)\S+", r"\g<1>%d" % sim)])
     sc = d / monde / "serverconfig"
     sc.mkdir(parents=True, exist_ok=True)
     for f in (d / "defaultconfigs").glob("*"):
@@ -1131,7 +1137,7 @@ def main():
     pr.add_argument("dossier")
     pr.add_argument("--plat", action="store_true", help="monde plat (création du terrain presque gratuite)")
     pr.add_argument("--graine", type=int, default=GRAINE_DEFAUT)
-    pr.add_argument("--vue", type=int, default=VUE_PTERO, help="view-distance (Ptero du 01/11 : 6)")
+    pr.add_argument("--vue", type=int, default=VUE_PTERO, help="distance de vue (Ptero du 01/11 : 8, imposée par heraliz_distances-server.toml)")
     pr.add_argument("--simulation", type=int, default=SIMULATION_PTERO, help="simulation-distance (Ptero du 01/11 : 4)")
     la = s.add_parser("lancer")
     la.add_argument("dossier")

@@ -385,7 +385,8 @@ neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
   (`diag start {s}; diag mesure {s300}`, à changer ici si `/diag` change), monde normal ou plat, scénario (`normal`,
   `connexions` : coût d'une connexion ; `teleportations` : pics d'extraction de groupe, de 10 `/spawn` et de départ de
   la borne), règles de jeu pour un **essai A/B** (`randomTickSpeed 0`, plusieurs séparées par `;`, case « ab » : une
-  mesure sans puis une avec), distances vue/simulation (`6/4`, comme le Ptero le 01/11), rythmes pour 150 joueurs
+  mesure sans puis une avec), distances vue/simulation (`8/4`, comme le Ptero le 01/11 : vue 8 imposée par
+  `heraliz_distances-server.toml`), rythmes pour 150 joueurs
   (`8/0.85/4/25` : morts, connexions, voyages par minute, % du temps en combat ; `off` : comme avant ; morts et
   connexions d'après le propriétaire : 250 à 500 morts et 35 à 50 connexions par heure, serveur plein).
 - **Déroulé** (`outils/banc_charge.py`, utilisable aussi sur un PC : `preparer <dossier>` puis `lancer <dossier>`) :
