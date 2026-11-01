@@ -67,6 +67,13 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue PAQUETS_TRONCONS_PARTAGES;
    /** Paquet d'un tronçon fabriqué une fois par tick et redonné aux joueurs qui le reçoivent dans ce tick. */
    public static volatile boolean paquetsTronconsPartages = true;
+   // « Minecraft allégé », étape 2 (01/11)
+   public static final ForgeConfigSpec.BooleanValue SUIVI_PAR_TRONCON;
+   /** Suivi des entités par les joueurs : seules les entités proches (index par case) ou déjà vues sont jugées. */
+   public static volatile boolean suiviParTroncon = true;
+   public static final ForgeConfigSpec.BooleanValue SUIVI_VOIR_RAPIDE;
+   /** Test de Bukkit (canSee) du suivi lu directement quand le joueur n'a aucune visibilité inversée. */
+   public static volatile boolean suiviVoirRapide = true;
 
    public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
@@ -153,6 +160,18 @@ public final class NoyauConfig {
             "extrait ou téléporté ensemble), son paquet n'est fabriqué qu'une fois (mêmes octets ; oublié dès qu'un bloc, une entité",
             "de bloc, la lumière ou les biomes du tronçon changent). false : un paquet par joueur, comme Minecraft.")
             .define("paquets_troncons_partages", true);
+      SUIVI_PAR_TRONCON = b.comment("Minecraft allégé, étape 2 (01/11) : à chaque paquet de mouvement d'un joueur, Minecraft juge TOUTES les entités",
+            "suivies du monde pour lui (77 ms par tick au banc à 150 joueurs, surtout les balles de TaCZ). true = seules celles des",
+            "cases de 32 blocs à portée et celles qu'il voit déjà sont jugées, avec la décision de Minecraft refaite à l'identique",
+            "(vanish, anti-ESP de Spartan, passagers, spectateurs compris) ; pareil pour une entité ou un joueur qui change de",
+            "section. Une paire sur 8 192 est rejugée par Minecraft, et tout est comparé à Minecraft toutes les 60 s : un écart",
+            "coupe jusqu'au redémarrage. false : comme Minecraft.")
+            .define("suivi_par_troncon", true);
+      SUIVI_VOIR_RAPIDE = b.comment("Minecraft allégé, étape 2 (01/11) : test de Bukkit « ce joueur peut-il voir cette entité ? » (vanish), posé par",
+            "Mohist pour chaque entité à portée. true = pour un joueur à qui aucun plugin ne cache ni ne montre d'entité, la réponse",
+            "est lue directement sur l'entité (même réponse ; le vrai test sinon, et une fois sur 4 096 pour comparer). false : le",
+            "vrai test de Bukkit à chaque fois.")
+            .define("suivi_voir_rapide", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -186,6 +205,8 @@ public final class NoyauConfig {
       porteeSuiviRapide = PORTEE_SUIVI_RAPIDE.get();
       entitesParTroncon = ENTITES_PAR_TRONCON.get();
       paquetsTronconsPartages = PAQUETS_TRONCONS_PARTAGES.get();
+      suiviParTroncon = SUIVI_PAR_TRONCON.get();
+      suiviVoirRapide = SUIVI_VOIR_RAPIDE.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }

@@ -1,7 +1,10 @@
 package fr.heraliz.noyau.serveur.perf;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 
 import java.util.Locale;
@@ -12,7 +15,8 @@ import java.util.function.Consumer;
  * Mixins facultatifs de {@code heraliz_noyau_allege.mixins.json} (jar de Minecraft et de Mohist intacts), chacun coupé par
  * un réglage de {@code [perf]} dans {@code heraliz_noyau-server.toml}, chacun avec le même résultat que Minecraft. Ici :
  * les compteurs, pour voir dans {@code /diag etat} (et chaque rapport du diagnostic) que chaque optimisation tourne
- * vraiment sur ce serveur (un mixin qui ne trouve pas sa cible ne fait rien, sans erreur). Fil serveur seulement.
+ * vraiment sur ce serveur (un mixin qui ne trouve pas sa cible ne fait rien, sans erreur), et la fin de tick des index.
+ * Fil serveur seulement.
  */
 public final class Allege {
    private Allege() {
@@ -31,17 +35,46 @@ public final class Allege {
    /** Point 4 : paquets de tronçon redonnés au lieu d'être refabriqués (même tronçon, même tick). */
    public static long paquetsPartages;
 
-   /** Une fois, par la partie serveur : fin de tick et arrêt du serveur. */
+   // étape 2
+   /** Paquets de mouvement dont le suivi des entités a été fait par l'index (au lieu de toutes les entités du monde). */
+   public static long suiviMouvements;
+   /** Entités jugées pour ces paquets (proches ou déjà vues). */
+   public static long suiviCandidats;
+   /** {@code updatePlayers(liste)} faits sur les seuls joueurs à portée ou qui voient l'entité. */
+   public static long suiviListes;
+   /** Joueurs qui ont changé de section, jugés par leurs seules entités. */
+   public static long suiviSections;
+   /** Paires rejugées par Minecraft pour contrôle (même décision attendue). */
+   public static long suiviEssais;
+   /** Index du suivi refaits (écart de nombre, changement hors du fil serveur, contrôle). */
+   public static long suiviIndexRefaits;
+   /** Contrôles complets du suivi (toutes les 60 s). */
+   public static long suiviControles;
+   /** Tests de Bukkit (canSee) répondus par le champ de l'entité. */
+   public static long voirRaccourcis;
+
+   /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
+      MinecraftForge.EVENT_BUS.addListener((ServerAboutToStartEvent e) -> {
+         SuiviParTroncon.fil(Thread.currentThread());
+      });
       MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
          if (e.phase == TickEvent.Phase.END) {
             EntitesParTroncon.finDuTick();
             PaquetsTroncons.finDuTick();
+            int tick = e.getServer().getTickCount();
+            SuiviParTroncon.finDuTick(tick);
+         }
+      });
+      MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
+         if (e.getLevel() instanceof ServerLevel niveau) {
+            SuiviParTroncon.oublierCarte(niveau.getChunkSource().chunkMap);
          }
       });
       MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
          EntitesParTroncon.vider();
          PaquetsTroncons.finDuTick();
+         SuiviParTroncon.vider();
       });
    }
 
@@ -50,5 +83,11 @@ public final class Allege {
       ligne.accept(String.format(Locale.ROOT, "Minecraft allégé (depuis le démarrage) : joueurs proches par grille %d tronçons (%d sans joueur) ;"
                   + " portées de suivi sans flux %d ; tronçons envoyés par index d'entités %d (%d index) ; paquets de tronçon redonnés %d%n",
             prochesGrille, prochesSansJoueur, porteeRapide, entitesParIndex, indexFaits, paquetsPartages));
+      StringBuilder s = new StringBuilder("Minecraft allégé, étape 2 :");
+      s.append(String.format(Locale.ROOT, " suivi par tronçon %d mouvements (%d entités jugées, %.1f par mouvement), %d listes de joueurs,"
+                  + " %d changements de section, %d contrôles de paires, %d contrôles complets, %d index refaits (%s) ; canSee lu sur l'entité %d",
+            suiviMouvements, suiviCandidats, suiviMouvements == 0 ? 0.0 : (double) suiviCandidats / suiviMouvements, suiviListes,
+            suiviSections, suiviEssais, suiviControles, suiviIndexRefaits, SuiviParTroncon.etat(), voirRaccourcis));
+      ligne.accept(s.append(String.format("%n")).toString());
    }
 }

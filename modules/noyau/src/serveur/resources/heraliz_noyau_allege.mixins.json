@@ -16,7 +16,13 @@
     "PaquetsBlocsMixin",
     "PaquetsEntitesBlocMixin",
     "DistanceManagerAcces",
-    "SpawnSansTicketMixin"
+    "SpawnSansTicketMixin",
+    "SuiviEntreeAcces",
+    "CarteAcces",
+    "SuiviMixin",
+    "SuiviCarteMixin",
+    "SuiviEntiteMixin",
+    "VusConnexionMixin"
   ],
   "injectors": {
     "defaultRequire": 0

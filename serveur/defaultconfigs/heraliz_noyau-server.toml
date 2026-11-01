@@ -78,6 +78,18 @@
 	#extrait ou téléporté ensemble), son paquet n'est fabriqué qu'une fois (mêmes octets ; oublié dès qu'un bloc, une entité
 	#de bloc, la lumière ou les biomes du tronçon changent). false : un paquet par joueur, comme Minecraft.
 	paquets_troncons_partages = true
+	#Minecraft allégé, étape 2 (01/11) : à chaque paquet de mouvement d'un joueur, Minecraft juge TOUTES les entités
+	#suivies du monde pour lui (77 ms par tick au banc à 150 joueurs, surtout les balles de TaCZ). true = seules celles des
+	#cases de 32 blocs à portée et celles qu'il voit déjà sont jugées, avec la décision de Minecraft refaite à l'identique
+	#(vanish, anti-ESP de Spartan, passagers, spectateurs compris) ; pareil pour une entité ou un joueur qui change de
+	#section. Une paire sur 8 192 est rejugée par Minecraft, et tout est comparé à Minecraft toutes les 60 s : un écart
+	#coupe jusqu'au redémarrage. false : comme Minecraft.
+	suivi_par_troncon = true
+	#Minecraft allégé, étape 2 (01/11) : test de Bukkit « ce joueur peut-il voir cette entité ? » (vanish), posé par
+	#Mohist pour chaque entité à portée. true = pour un joueur à qui aucun plugin ne cache ni ne montre d'entité, la réponse
+	#est lue directement sur l'entité (même réponse ; le vrai test sinon, et une fois sur 4 096 pour comparer). false : le
+	#vrai test de Bukkit à chaque fois.
+	suivi_voir_rapide = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée
