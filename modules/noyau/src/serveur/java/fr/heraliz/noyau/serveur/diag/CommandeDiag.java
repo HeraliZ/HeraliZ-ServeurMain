@@ -14,7 +14,8 @@ import java.util.UUID;
 
 /**
  * {@code /diag} (opérateurs niveau 4 et console) : {@code etat}, {@code profil [secondes] [intervalle]} (profil façon spark,
- * {@link Profileur} ; {@code start [secondes]} en est l'ancien nom), {@code stop}, {@code mesure [secondes]} (temps par entité et entité de bloc, {@link Moniteur}), {@code fuites},
+ * {@link Profileur} ; {@code start [secondes]} en est l'ancien nom), {@code stop}, {@code commandes} (les plus lentes depuis
+ * le démarrage), {@code mesure [secondes]} (temps par entité et entité de bloc, {@link Moniteur}), {@code fuites},
  * {@code client <joueur> [secondes]} (analyse du jeu du joueur, {@link DiagClients}), {@code auto on|off},
  * {@code seuil <ms>}. Voir {@link Diag}.
  */
@@ -39,6 +40,7 @@ public final class CommandeDiag {
                                         .executes(c -> profil(c, IntegerArgumentType.getInteger(c, "secondes"),
                                                 IntegerArgumentType.getInteger(c, "intervalle"))))))
                 .then(Commands.literal("stop").executes(CommandeDiag::stop))
+                .then(Commands.literal("commandes").executes(CommandeDiag::commandes))
                 .then(Commands.literal("mesure").executes(c -> mesure(c, 15))
                         .then(Commands.argument("secondes", IntegerArgumentType.integer(5, 300))
                                 .executes(c -> mesure(c, IntegerArgumentType.getInteger(c, "secondes")))))
@@ -89,6 +91,16 @@ public final class CommandeDiag {
         }
         dire(c, Component.translatableWithFallback("noyau.diag.profil_arret", "[Diag] Profil arrêté : rapport en cours d'écriture dans diag/%s (résumé ici dès qu'il est prêt).",
                 nom), BLEU);
+        return 1;
+    }
+
+    private static int commandes(CommandContext<CommandSourceStack> c) {
+        if (DernieresCommandes.rienMesure()) {
+            dire(c, Component.translatableWithFallback("noyau.diag.commandes_rien", "[Diag] Aucune commande mesurée depuis le démarrage."), BLEU);
+            return 0;
+        }
+        dire(c, Component.translatableWithFallback("noyau.diag.commandes", "[Diag] Commandes les plus lentes depuis le démarrage (mots de la commande seulement) :"), BLEU);
+        DernieresCommandes.plusLentes(15, l -> dire(c, Component.literal("  " + l), BLEU));
         return 1;
     }
 

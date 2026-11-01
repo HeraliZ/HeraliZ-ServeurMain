@@ -43,6 +43,8 @@
   "noyau.diag.profil_fin": "[Diag] Profile finished: %s — report diag/%s",
   "noyau.diag.profil_arret": "[Diag] Profile stopped: report being written to diag/%s (summary here as soon as it is ready).",
   "noyau.diag.profil_en_cours": "[Diag] Profile running: %s s of %s, sampled every %s ms (/diag stop to stop it).",
+  "noyau.diag.commandes": "[Diag] Slowest commands since startup (command words only):",
+  "noyau.diag.commandes_rien": "[Diag] No command measured since startup.",
   "noyau.recharger.fait": "[Reload] %s reload(s) done, no restart.",
   "noyau.recharger.rates": "[Reload] No effect or refused (see above): %s",
   "noyau.redemarrage.annule": "The server restart is cancelled.",

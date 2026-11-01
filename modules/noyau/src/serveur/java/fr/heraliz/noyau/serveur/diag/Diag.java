@@ -143,6 +143,7 @@ public final class Diag {
         gcDebutTick = gc;
         debutTick = maintenant;
         Profileur.debutTick();
+        DernieresCommandes.nouveauTick();
         dansTick = true;
         // travail fait depuis la fin du tick précédent, au-delà du temps libre normal (au moins autant)
         if (entre != null && entre.releves > 0 && fin != 0) {

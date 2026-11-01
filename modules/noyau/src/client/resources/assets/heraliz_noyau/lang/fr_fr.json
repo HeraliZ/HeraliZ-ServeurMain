@@ -43,6 +43,8 @@
   "noyau.diag.profil_fin": "[Diag] Profil terminé : %s — rapport diag/%s",
   "noyau.diag.profil_arret": "[Diag] Profil arrêté : rapport en cours d'écriture dans diag/%s (résumé ici dès qu'il est prêt).",
   "noyau.diag.profil_en_cours": "[Diag] Profil en cours : %s s sur %s, relevé toutes les %s ms (/diag stop pour l'arrêter).",
+  "noyau.diag.commandes": "[Diag] Commandes les plus lentes depuis le démarrage (mots de la commande seulement) :",
+  "noyau.diag.commandes_rien": "[Diag] Aucune commande mesurée depuis le démarrage.",
   "noyau.recharger.fait": "[Recharger] %s rechargement(s) faits, sans redémarrer.",
   "noyau.recharger.rates": "[Recharger] Sans effet ou refusés (voir au-dessus) : %s",
   "noyau.redemarrage.annule": "Le redémarrage du serveur est annulé.",
