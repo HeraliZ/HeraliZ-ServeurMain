@@ -123,6 +123,9 @@ public final class ValidationJeu {
         if ((p.server.getTickCount() + p.getId()) % 10 != 0) {
             return; // deux fois par seconde suffit
         }
+        if (com.Spartan.scan.ScanManager.analyseEnAttente(p.getUUID())) {
+            return; // 2.9.6 : rapport de contrôle reçu, encore en analyse (fraction de seconde) : décidé au passage suivant
+        }
         if (!SpartanConfig.VALIDATION_ENABLED.get()) {
             return;
         }

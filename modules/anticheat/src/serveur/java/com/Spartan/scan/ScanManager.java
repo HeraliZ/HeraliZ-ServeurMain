@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -32,9 +33,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -116,6 +121,9 @@ public final class ScanManager {
 
     /** Démarrage du serveur : charge le modpack officiel et le client de référence. */
     public static void load() {
+        // nouveau démarrage (jeu solo relancé) : rien ne reste d'une session précédente
+        FILE.clear();
+        enCours = null;
         dateOfficiel = dateFichierOfficiel();
         official = loadOfficial();
         Path f = referenceFile();
@@ -148,9 +156,10 @@ public final class ScanManager {
             return;
         }
         OfficialProfile ancien = official;
-        ancien.precedent = null;
         if (!ancien.isEmpty() && !ancien.genere.equals(nouveau.genere)) {
-            nouveau.precedent = ancien;
+            // 2.9.6 : copie de l'ancien sans son propre précédent (avant : son précédent était effacé sur place) ; un profil
+            // publié n'est plus jamais modifié, une analyse en cours sur le fil « Spartan-controle » peut le lire
+            nouveau.precedent = ancien.seul();
         }
         official = nouveau;
         setReference(reference);
@@ -281,6 +290,7 @@ public final class ScanManager {
 
     /** Contrôle immédiat demandé par le staff (le résultat lui est envoyé). */
     public static void request(ServerPlayer p, Consumer<Component> requester, boolean learn, boolean merge) {
+        appliquerAvant(p.getUUID()); // 2.9.6 : un rapport de lui encore en analyse est appliqué d'abord, comme avant
         State s = STATES.computeIfAbsent(p.getUUID(), k -> new State(p.getName().getString()));
         if (requester != null) {
             s.requesters.add(requester);
@@ -341,83 +351,365 @@ public final class ScanManager {
         if (s == null || s.pendingId == 0 || scanId != s.pendingId) {
             return; // non sollicité ou périmé
         }
-        ScanReport report;
+        byte[] packed;
         try {
             if (s.assembly == null) {
                 s.assembly = new ScanTransfer.Assembly(scanId, total);
             }
-            byte[] packed = s.assembly.accept(scanId, index, total, data);
+            packed = s.assembly.accept(scanId, index, total, data);
             if (packed == null) {
                 return; // il en manque encore
             }
-            report = ScanTransfer.unpack(packed);
-            if (report.scanId != scanId) {
-                throw new IllegalStateException("identifiant de contrôle différent");
-            }
         } catch (RuntimeException e) {
+            appliquerAvant(p.getUUID()); // un rapport de ce joueur encore en analyse passe d'abord, comme avant
             String trigger = s.pendingTrigger;
             reschedule(s);
-            Finding f = new Finding(Severity.SUSPECT, "badreport",
-                    "rapport de contrôle invalide (" + Text.oneLine(e.getMessage()) + ") : client modifié ?");
-            alert(p, s, List.of(f), null, trigger, null);
+            alert(p, s, List.of(rapportInvalide(e)), null, trigger, null);
             return;
         }
-        complete(p, s, report);
+        // 2.9.6 : la suite (décompression, décodage, analyse) se fait sur le fil « Spartan-controle » ; le résultat est
+        // appliqué sur le fil du serveur. Ce qui se faisait ici à la réception est fait tout de suite, comme avant :
+        // prochain contrôle planifié, demande d'apprentissage et demandeurs du staff pris pour ce rapport.
+        Analyse a = new Analyse(p, s, packed, scanId, s.pendingTrigger, s.learn, new ArrayList<>(s.requesters));
+        reschedule(s);
+        s.learn = Learn.NONE;
+        s.requesters.clear();
+        FILE.add(a);
+        lancerSuivante();
     }
 
-    private static void complete(ServerPlayer p, State s, ScanReport r) {
-        String trigger = s.pendingTrigger;
-        Learn learn = s.learn;
-        s.learn = Learn.NONE;
+    private static Finding rapportInvalide(RuntimeException e) {
+        return new Finding(Severity.SUSPECT, "badreport",
+                "rapport de contrôle invalide (" + Text.oneLine(e.getMessage()) + ") : client modifié ?");
+    }
+
+    // ------------------------------------------------------------------ analyse sur un fil à part (2.9.6)
+    //
+    // Perf (150 joueurs) : décompression et décodage du rapport, analyse, écarts au jeu officiel et fichier de preuve
+    // (seulement s'il y a un indice) sur le fil « Spartan-controle ». Avant : 2 à 3 ms sur le fil du serveur par rapport
+    // (environ un par seconde à 150 joueurs), bien plus pour un joueur suspect (rapport complet écrit en JSON).
+    // Ce qui touche les joueurs et l'état du contrôle (alertes, staff, refus de connexion, validation du jeu) reste sur le
+    // fil du serveur. Mêmes résultats :
+    //  - l'analyse lit ce qu'elle lisait avant (client de référence, modpack officiel, inventaire du premier contrôle,
+    //    réglages), pris sur le fil du serveur au lancement ; ces profils ne sont plus jamais modifiés une fois publiés
+    //    (apprentissage et nouveau modpack : copies) ;
+    //  - même ordre : un seul rapport analysé à la fois, dans l'ordre d'arrivée ; le suivant part quand le précédent est
+    //    appliqué (un apprentissage ou un premier contrôle compte pour les rapports qui suivent, comme avant) ;
+    //  - une déconnexion applique d'abord les rapports reçus avant (avant : appliqués dès la réception) ; la validation
+    //    du jeu attend un rapport en cours d'analyse (une fraction de seconde).
+
+    /** Un rapport recomposé et ce qui a été pris pour lui à sa réception (fil du serveur). */
+    private static final class Analyse {
+        final MinecraftServer serveur;
+        final ServerPlayer recu;
+        final UUID joueur;
+        final State s;
+        final byte[] paquet;
+        final int scanId;
+        final String trigger;
+        final Learn learn;
+        final List<Consumer<Component>> demandeurs;
+        // au lancement (fil du serveur)
+        Entrees entrees;
+        Future<Resultat> tache;
+        long lanceA;
+        boolean applique;
+
+        Analyse(ServerPlayer p, State s, byte[] paquet, int scanId, String trigger, Learn learn,
+                List<Consumer<Component>> demandeurs) {
+            this.serveur = p.server;
+            this.recu = p;
+            this.joueur = p.getUUID();
+            this.s = s;
+            this.paquet = paquet;
+            this.scanId = scanId;
+            this.trigger = trigger;
+            this.learn = learn;
+            this.demandeurs = demandeurs;
+        }
+    }
+
+    /** Ce que l'analyse lit, pris sur le fil du serveur au lancement ; rien n'y est modifié ensuite. */
+    private record Entrees(ReferenceProfile ref, OfficialProfile off, Set<String> baseline, ScanAnalyzer.Settings reglages,
+                           List<String> agents, List<String> interdits) {
+    }
+
+    /** Ce que rend le fil d'analyse (rendu au fil du serveur par la file de tâches du serveur ou par l'attente). */
+    private static final class Resultat {
+        ScanReport rapport;
+        /** Rapport illisible : même alerte qu'avant (« rapport de contrôle invalide »). */
+        RuntimeException invalide;
+        /** Erreur grave à la lecture (avant : remontait de la réception). */
+        Throwable erreurLecture;
+        Set<String> inventaire;
+        List<Finding> findings;
+        Severity verdict;
+        /** Erreur dans l'analyse (avant : remontait au même endroit, rien d'autre n'était fait). */
+        Throwable erreurAnalyse;
+        List<String> ecarts;
+        Throwable erreurEcarts;
+        /** Fichier de preuve déjà écrit en JSON (joueur suspect) ; null : refait sur le fil du serveur s'il le faut. */
+        String preuve;
+    }
+
+    /** Rapports reçus pas encore lancés, dans l'ordre d'arrivée (fil du serveur). */
+    private static final ArrayDeque<Analyse> FILE = new ArrayDeque<>();
+    /** Rapport en cours d'analyse sur le fil à part (fil du serveur). */
+    private static Analyse enCours;
+    private static ExecutorService filAnalyse;
+    /** Au-delà, une analyse est reprise par le fil du serveur (fil d'analyse bloqué : jamais vu, par prudence). */
+    private static final long ANALYSE_MAX_MS = 10_000L;
+
+    private static ExecutorService filAnalyse() {
+        if (filAnalyse == null) {
+            filAnalyse = Executors.newSingleThreadExecutor(r -> {
+                Thread t = new Thread(r, "Spartan-controle");
+                t.setDaemon(true);
+                return t;
+            });
+        }
+        return filAnalyse;
+    }
+
+    /** Lance le rapport suivant de la file s'il n'y en a pas déjà un en cours (fil du serveur). */
+    private static void lancerSuivante() {
+        if (enCours != null) {
+            return;
+        }
+        Analyse a = FILE.poll();
+        if (a == null) {
+            return;
+        }
+        enCours = a;
+        a.entrees = new Entrees(reference, official, a.s.baseline, settings(), SpartanConfig.getAllowedJavaAgents(),
+                SpartanConfig.getBlacklistedMods());
+        a.lanceA = Util.getMillis();
+        try {
+            a.tache = filAnalyse().submit(() -> {
+                Resultat res = analyser(a, a.entrees);
+                a.serveur.execute(() -> appliquer(a, res));
+                return res;
+            });
+        } catch (RuntimeException refus) {
+            appliquer(a, analyser(a, a.entrees)); // fil indisponible : sur le fil du serveur, comme avant
+        }
+    }
+
+    /** Le travail du fil d'analyse : ne lit que le rapport et les entrées prises au lancement. */
+    private static Resultat analyser(Analyse a, Entrees e) {
+        Resultat res = new Resultat();
+        ScanReport r;
+        try {
+            r = ScanTransfer.unpack(a.paquet);
+            if (r.scanId != a.scanId) {
+                throw new IllegalStateException("identifiant de contrôle différent");
+            }
+        } catch (RuntimeException ex) {
+            res.invalide = ex;
+            return res;
+        } catch (Throwable t) {
+            res.erreurLecture = t;
+            return res;
+        }
+        res.rapport = r;
+        try {
+            if (a.learn != Learn.NONE) {
+                res.inventaire = ScanAnalyzer.inventory(r);
+                return res;
+            }
+            res.findings = ScanAnalyzer.analyze(r, e.ref(), e.off(), e.baseline(), e.reglages());
+            if (e.baseline() == null) {
+                res.inventaire = ScanAnalyzer.inventory(r);
+            }
+            res.verdict = ScanAnalyzer.verdict(res.findings);
+        } catch (Throwable t) {
+            res.erreurAnalyse = t;
+            return res;
+        }
+        if (res.verdict == Severity.SUSPECT || res.verdict == Severity.STRONG) {
+            try {
+                res.preuve = GSON.toJson(evidence(a.joueur, a.s.name, res.findings, r, a.trigger, res.verdict, e.ref()));
+            } catch (Throwable t) {
+                res.preuve = null; // refaite sur le fil du serveur si l'alerte part, comme avant
+            }
+        }
+        try {
+            res.ecarts = com.Spartan.integrity.ConformiteStricte.ecarts(r, e.off(), e.agents(), e.interdits());
+        } catch (Throwable t) {
+            res.erreurEcarts = t;
+        }
+        return res;
+    }
+
+    /** Applique un résultat une seule fois, puis lance le rapport suivant (fil du serveur). */
+    private static void appliquer(Analyse a, Resultat res) {
+        // jamais ailleurs que sur le fil du serveur (serveur arrêté : execute lancerait la tâche sur le fil d'analyse)
+        if (a.applique || !a.serveur.isSameThread()) {
+            return;
+        }
+        a.applique = true;
+        if (enCours == a) {
+            enCours = null;
+        }
+        try {
+            terminer(a, res);
+        } catch (RuntimeException e) {
+            Spartan.LOGGER.error("[Spartan] Contrôle d'intégrité de {} : résultat non appliqué", a.s.name, e);
+        } finally {
+            lancerSuivante();
+        }
+    }
+
+    /** Résultat d'un rapport en cours, attendu (fil du serveur) ; refait ici si le fil d'analyse ne répond pas. */
+    private static Resultat attendre(Analyse a) {
+        try {
+            return a.tache.get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException | TimeoutException | RuntimeException e) {
+            Spartan.LOGGER.warn("[Spartan] Analyse du contrôle de {} sans réponse ({}) : refaite sur le fil du serveur",
+                    a.s.name, e.toString());
+        }
+        return analyser(a, a.entrees);
+    }
+
+    /** Un rapport de ce joueur est-il reçu mais pas encore appliqué ? (fil du serveur) */
+    public static boolean analyseEnAttente(UUID joueur) {
+        if (enCours != null && enCours.joueur.equals(joueur)) {
+            return true;
+        }
+        for (Analyse a : FILE) {
+            if (a.joueur.equals(joueur)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Applique tout de suite, dans l'ordre d'arrivée, les rapports reçus jusqu'au dernier de ce joueur (fil du serveur) :
+     * à sa déconnexion (avant que les autres parties l'oublient), ou avant d'en traiter un autre de lui. Avant, tout était
+     * fait à la réception : rien ne peut arriver entre les deux.
+     */
+    public static void appliquerAvant(UUID joueur) {
+        int garde = 0;
+        while (analyseEnAttente(joueur) && garde++ < 256) {
+            Analyse a = enCours;
+            if (a == null) {
+                lancerSuivante();
+                continue;
+            }
+            appliquer(a, attendre(a));
+        }
+    }
+
+    /** Applique tout de suite tous les rapports reçus (fil du serveur, commandes du staff). */
+    private static void appliquerTout() {
+        int garde = 0;
+        while ((enCours != null || !FILE.isEmpty()) && garde++ < 256) {
+            Analyse a = enCours;
+            if (a == null) {
+                lancerSuivante();
+                continue;
+            }
+            appliquer(a, attendre(a));
+        }
+    }
+
+    /** Chaque tick du serveur : presque rien ; reprend une analyse restée sans réponse (fil d'analyse bloqué). */
+    public static void tickAnalyses() {
+        Analyse a = enCours;
+        if (a != null && !a.applique && Util.getMillis() - a.lanceA > ANALYSE_MAX_MS) {
+            appliquer(a, attendre(a));
+        }
+    }
+
+    /** Le résultat d'un rapport, sur le fil du serveur. */
+    private static void terminer(Analyse a, Resultat res) {
+        State s = a.s;
+        ServerPlayer p = a.serveur.getPlayerList().getPlayer(a.joueur);
+        if (p == null) {
+            p = a.recu;
+        }
+        if (res.erreurLecture != null) {
+            Spartan.LOGGER.error("[Spartan] Contrôle d'intégrité de {} : rapport illisible", s.name, res.erreurLecture);
+            return;
+        }
+        if (res.invalide != null) {
+            // comme avant : un rapport invalide ne consomme ni la demande d'apprentissage ni les demandeurs du staff
+            if (s.learn == Learn.NONE) {
+                s.learn = a.learn;
+            }
+            s.requesters.addAll(0, a.demandeurs);
+            alert(p, s, List.of(rapportInvalide(res.invalide)), null, a.trigger, null);
+            return;
+        }
+        complete(p, s, a, res);
+    }
+
+    private static void complete(ServerPlayer p, State s, Analyse a, Resultat res) {
+        String trigger = a.trigger;
+        Learn learn = a.learn;
+        ScanReport r = res.rapport;
         s.misses = 0;
         s.scans++;
-        reschedule(s);
 
         if (learn != Learn.NONE) {
-            reference.learn(r, s.name, learn == Learn.REPLACE, System.currentTimeMillis());
-            setReference(reference);
+            // copie : le profil publié n'est jamais modifié (une analyse en cours peut le lire)
+            ReferenceProfile apprise = reference.copie();
+            apprise.learn(r, s.name, learn == Learn.REPLACE, System.currentTimeMillis());
+            setReference(apprise);
             JsonFiles.writeAsync(referenceFile(), reference.toJson());
             Spartan.LOGGER.info("[Spartan] Client de référence appris depuis {} : {}", s.name, reference.summary());
-            notifyRequesters(s, Component.literal("[Spartan] Référence " + (learn == Learn.REPLACE ? "apprise" : "complétée")
+            notifier(a.demandeurs, Component.literal("[Spartan] Référence " + (learn == Learn.REPLACE ? "apprise" : "complétée")
                     + " depuis " + s.name + " : " + reference.summary()).withStyle(ChatFormatting.GREEN));
-            s.baseline = ScanAnalyzer.inventory(r);
+            s.baseline = res.inventaire != null ? res.inventaire : ScanAnalyzer.inventory(r);
             s.lastFindings = List.of();
             s.lastVerdict = null;
             s.lastAt = System.currentTimeMillis();
             return;
         }
-        if (reference.isEmpty() && !warnedNoReference) {
+        ReferenceProfile ref = a.entrees.ref();
+        if (ref.isEmpty() && !warnedNoReference) {
             warnedNoReference = true;
-            Spartan.LOGGER.warn(official.isEmpty()
+            Spartan.LOGGER.warn(a.entrees.off().isEmpty()
                     ? "[Spartan] Ni modpack officiel (config/spartan/officiel.json) ni client de référence : seuls les indices universels sont relevés."
                     : "[Spartan] Client de référence non appris : le code d'origine inconnue reste « suspect » (orange) au premier contrôle. "
                     + "Depuis un jeu propre : /spartan reference learn <pseudo>.");
         }
-
-        List<Finding> findings = ScanAnalyzer.analyze(r, reference, official, s.baseline, settings());
-        if (s.baseline == null) {
-            s.baseline = ScanAnalyzer.inventory(r);
+        if (res.erreurAnalyse != null) {
+            Spartan.LOGGER.error("[Spartan] Contrôle d'intégrité de {} : erreur dans l'analyse", s.name, res.erreurAnalyse);
+            return;
         }
-        Severity verdict = ScanAnalyzer.verdict(findings);
+
+        List<Finding> findings = res.findings;
+        if (s.baseline == null) {
+            s.baseline = res.inventaire != null ? res.inventaire : ScanAnalyzer.inventory(r);
+        }
+        Severity verdict = res.verdict;
         s.lastFindings = findings;
         s.lastVerdict = verdict;
         s.lastAt = System.currentTimeMillis();
 
-        boolean asked = !s.requesters.isEmpty();
+        boolean asked = !a.demandeurs.isEmpty();
         // nouvel indice, ou indice déjà signalé en orange qui passe au rouge (code injecté apparu en cours de partie…)
         boolean fresh = findings.stream().anyMatch(f -> f.severity() != Severity.INFO && !s.alerted.contains(alertKey(f)));
         String evidence = null;
         if (fresh || asked) {
-            evidence = alert(p, s, findings, r, trigger, verdict);
+            evidence = alert(p, s, findings, r, trigger, verdict, ref, res.preuve);
         }
         if (asked) {
-            notifyRequesters(s, summaryLine(s.name, verdict, findings, evidence));
+            notifier(a.demandeurs, summaryLine(s.name, verdict, findings, evidence));
+        }
+        if (res.erreurEcarts != null) {
+            Spartan.LOGGER.error("[Spartan] Contrôle d'intégrité de {} : erreur dans les écarts au jeu officiel", s.name,
+                    res.erreurEcarts);
+            return;
         }
         // Jeu identique au jeu officiel, sinon refusé (règle d'accès) : seulement les écarts certains, après l'alerte
         // (le staff a le rapport complet avec la preuve). Calculés aussi sans le mode strict : la validation du jeu dit
         // « identique au jeu officiel » seulement sans aucun écart.
-        List<String> ecarts = com.Spartan.integrity.ConformiteStricte.ecarts(r, official,
-                SpartanConfig.getAllowedJavaAgents(), SpartanConfig.getBlacklistedMods());
+        List<String> ecarts = res.ecarts;
         if (com.Spartan.integrity.ConformiteStricte.actif() && !ecarts.isEmpty()) {
             com.Spartan.integrity.ConformiteStricte.refuser(p, String.join(" ; ", ecarts.subList(0, Math.min(4, ecarts.size())))
                     + (ecarts.size() > 4 ? " (+" + (ecarts.size() - 4) + " autre(s))" : "") + " [" + trigger + "]");
@@ -437,6 +729,15 @@ public final class ScanManager {
      * N'alerte que si un indice au moins est suspect ou fort. @return le fichier de preuve, ou null
      */
     private static String alert(ServerPlayer p, State s, List<Finding> findings, ScanReport r, String trigger, Severity verdict) {
+        return alert(p, s, findings, r, trigger, verdict, reference, null);
+    }
+
+    /**
+     * @param ref    client de référence de l'analyse de ce rapport (textes de la preuve et du rappel)
+     * @param preuve preuve déjà écrite en JSON par le fil d'analyse, ou null
+     */
+    private static String alert(ServerPlayer p, State s, List<Finding> findings, ScanReport r, String trigger, Severity verdict,
+                                ReferenceProfile ref, String preuve) {
         Severity v = verdict != null ? verdict : ScanAnalyzer.verdict(findings);
         if (v == null || v == Severity.INFO) {
             return null;
@@ -447,7 +748,7 @@ public final class ScanManager {
         }
         CheckManager.recordSilent("ClientScan", p.getUUID());
 
-        String json = GSON.toJson(evidence(p, s, findings, r, trigger, v));
+        String json = preuve != null ? preuve : GSON.toJson(evidence(p.getUUID(), s.name, findings, r, trigger, v, ref));
         String file = EvidenceRecorder.writeJson(s.name, "controle", json);
         s.lastEvidence = file;
 
@@ -479,7 +780,7 @@ public final class ScanManager {
         }
         fields.add(new String[] {"Preuve", "Rapport complet joint · sur le serveur : config/spartan/evidence/" + Text.discord(file)});
         DiscordWebhook.sendReport(p.getUUID().toString(), Text.oneLine(s.name), title, v == Severity.STRONG ? COLOR_STRONG : COLOR_SUSPECT,
-                "Aucune action automatique : surveillez-le en spectateur, puis `/banpc` si c'est confirmé." + referenceHint(),
+                "Aucune action automatique : surveillez-le en spectateur, puis `/banpc` si c'est confirmé." + referenceHint(ref),
                 fields, file, json.getBytes(StandardCharsets.UTF_8));
 
         Component msg = Component.literal("[Spartan] ").withStyle(ChatFormatting.DARK_RED)
@@ -507,8 +808,8 @@ public final class ScanManager {
     }
 
     /** Rappel quand le client de référence n'est pas appris : le code d'origine inconnue reste orange sans lui. */
-    private static String referenceHint() {
-        return reference.isEmpty()
+    private static String referenceHint(ReferenceProfile ref) {
+        return ref.isEmpty()
                 ? "\n⚠️ Client de référence non appris : le code inconnu reste en orange au premier contrôle. Depuis un jeu PROPRE : `/spartan reference learn <pseudo>`."
                 : "";
     }
@@ -517,16 +818,18 @@ public final class ScanManager {
         return findings.isEmpty() ? "" : findings.get(0).text();
     }
 
-    private static JsonObject evidence(ServerPlayer p, State s, List<Finding> findings, ScanReport r, String trigger, Severity v) {
+    /** Preuve d'un contrôle (fil du serveur ou fil d'analyse : ne lit que ses paramètres). */
+    private static JsonObject evidence(UUID uuid, String name, List<Finding> findings, ScanReport r, String trigger, Severity v,
+                                       ReferenceProfile ref) {
         JsonObject root = new JsonObject();
         root.addProperty("type", "controle-integrite");
-        root.addProperty("player", s.name);
-        root.addProperty("uuid", p.getUUID().toString());
+        root.addProperty("player", name);
+        root.addProperty("uuid", uuid.toString());
         root.addProperty("trigger", trigger);
         root.addProperty("capturedAt", System.currentTimeMillis());
         root.addProperty("date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         root.addProperty("verdict", v.name());
-        root.addProperty("reference", reference.summary());
+        root.addProperty("reference", ref.summary());
         JsonArray arr = new JsonArray();
         for (Finding f : findings) {
             JsonObject o = new JsonObject();
@@ -554,14 +857,19 @@ public final class ScanManager {
     }
 
     private static void notifyRequesters(State s, Component msg) {
-        for (Consumer<Component> r : s.requesters) {
+        notifier(s.requesters, msg);
+    }
+
+    /** Prévient ces demandeurs du staff, puis les oublie. */
+    private static void notifier(List<Consumer<Component>> demandeurs, Component msg) {
+        for (Consumer<Component> r : demandeurs) {
             try {
                 r.accept(msg);
             } catch (RuntimeException ignored) {
                 // demandeur déconnecté
             }
         }
-        s.requesters.clear();
+        demandeurs.clear();
     }
 
     private static void appendLog(String line) {
@@ -581,6 +889,7 @@ public final class ScanManager {
 
     /** Lignes de /spartan report. */
     public static List<Component> describe(UUID uuid, String name) {
+        appliquerAvant(uuid); // 2.9.6 : le dernier rapport reçu compte, même s'il était encore en analyse
         List<Component> out = new ArrayList<>();
         State s = STATES.get(uuid);
         if (s == null || s.lastAt == 0) {
@@ -609,6 +918,7 @@ public final class ScanManager {
 
     /** Joueurs en ligne dont le dernier contrôle est suspect. */
     public static List<String> suspects(MinecraftServer server) {
+        appliquerTout(); // 2.9.6 : les derniers rapports reçus comptent, même ceux encore en analyse
         List<String> out = new ArrayList<>();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             State s = STATES.get(p.getUUID());

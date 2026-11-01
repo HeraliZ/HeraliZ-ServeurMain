@@ -97,6 +97,14 @@ public final class ReferenceProfile {
         return GSON.toJson(this);
     }
 
+    /**
+     * Copie complète (2.9.6) : l'apprentissage se fait sur une copie, publiée ensuite ; un profil publié n'est plus jamais
+     * modifié (une analyse peut le lire sur le fil « Spartan-controle »).
+     */
+    public ReferenceProfile copie() {
+        return fromJson(toJson());
+    }
+
     /** @throws JsonParseException si le fichier est illisible */
     public static ReferenceProfile fromJson(String json) {
         ReferenceProfile p = GSON.fromJson(json, ReferenceProfile.class);

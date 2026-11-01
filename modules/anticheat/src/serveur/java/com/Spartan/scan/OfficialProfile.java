@@ -47,6 +47,20 @@ public final class OfficialProfile {
         return mods == null || mods.isEmpty();
     }
 
+    /**
+     * Le même modpack sans son précédent (2.9.6) : devient le précédent du nouveau modpack. Avant, le précédent de l'ancien
+     * était effacé sur place ; un profil publié n'est plus jamais modifié (une analyse peut le lire sur le fil
+     * « Spartan-controle »). Listes partagées : jamais modifiées après la lecture du fichier.
+     */
+    OfficialProfile seul() {
+        OfficialProfile c = new OfficialProfile();
+        c.genere = genere;
+        c.empreinteDossier = empreinteDossier;
+        c.mods = mods;
+        c.mixins = mixins;
+        return c;
+    }
+
     public boolean knowsFile(String sha256) {
         return index().hashes.contains(sha256) || (precedent != null && precedent.index().hashes.contains(sha256));
     }

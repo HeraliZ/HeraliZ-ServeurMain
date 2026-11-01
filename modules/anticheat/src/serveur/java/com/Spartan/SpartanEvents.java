@@ -230,6 +230,8 @@ public class SpartanEvents {
         VisibilityEngine.tick(event.getServer());
         // Anti-duplication : un relevé de temps en temps (même numéro à deux endroits au même instant).
         AntiDupe.tick(event.getServer());
+        // Contrôle d'intégrité (2.9.6) : reprend une analyse restée sans réponse (presque toujours : rien à faire)
+        ScanManager.tickAnalyses();
         // Une fois par heure : écrit le registre si besoin, applique la rétention RGPD.
         if (++serverTicks % 72000 == 0) {
             int days = SpartanConfig.DATA_RETENTION_DAYS.get();
@@ -269,6 +271,9 @@ public class SpartanEvents {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            // 2.9.6 : ses rapports de contrôle reçus (analysés à part) sont appliqués avant tout le reste, comme quand ils
+            // l'étaient dès la réception
+            ScanManager.appliquerAvant(player.getUUID());
             // d'abord : lit l'état des autres parties (jeton, défis, contrôle) avant qu'elles oublient le joueur
             com.Spartan.integrity.ValidationJeu.deconnexion(player);
             EvidenceRecorder.clear(player.getUUID());
