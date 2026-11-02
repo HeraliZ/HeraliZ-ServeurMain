@@ -1,8 +1,15 @@
-# Commandes du serveur (tri du 25/10)
+# Commandes du serveur (tri du 25/10, allégé le 02/11)
 
-**69 commandes de premier niveau** (`/coffres` ajoutée le 27/10) depuis le tri du 25/10 (environ 90 avant). Une commande = un système : les
-variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventaire complet lu dans les sources :
-`python outils/commandes.py` (écrit `docs/COMMANDES_INVENTAIRE.md`).
+**Nos mods : 76 commandes de premier niveau sur le serveur** (02/11 ; plus `/diagclient` côté joueur et `/cracghost`, outil
+de développement jamais en production). Une commande = un système : les variantes sont des sous-commandes
+(`/tpa accepter`, `/herals payer`…). Inventaire complet lu dans les sources : `python outils/commandes.py` (écrit
+`docs/COMMANDES_INVENTAIRE.md`).
+
+**Liste complète vue par le Fondateur** (panneau P, onglet « Commandes du Fondateur », et complétion du chat) : environ 280
+noms depuis le 02/11 (environ 500 avant, et le double dans le chat avec les préfixes `minecraft:`…). Ce qui l'allège,
+sans toucher au code des autres (section 6) : `send-namespaced: false` (`serveur/spigot.yml`), la liste `[commandes]
+retirees` du noyau (mods et Minecraft, retirées pour de bon) et `[commandes] cachees` (autres noms des plugins, cachés
+mais toujours utilisables si on les tape), `serveur/commands.yml`.
 
 ## 1. Joueurs — survie DayZ (à garder)
 
@@ -29,9 +36,8 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/diagclient` | Noyau (côté joueur) | analyse les performances de son propre jeu |
 | `/extractions` | Extraction | extractions ouvertes |
 | `/suicide` | Utils | mort normale (refusée en combat et au spawn) |
-| `/ping` | Utils | aide des pings (`admin` : staff) |
-| `/ping canal` (`<nom>`, `clan`) | Utils | canal des pings : ton clan par défaut ; `/ping canal <nom>` (2 à 16 lettres ou chiffres) rejoint un canal à part, partagé avec tous ceux qui tapent le même nom (16 connectés au plus) ; `/ping canal` montre le tien et qui y est ; `/ping canal clan` ramène à ton clan. Un ping ne va qu'aux joueurs du même canal et du même monde (en match : ton équipe). Les membres du canal sont prévenus des arrivées et des départs. Gardé après déconnexion et redémarrage (`heraliz_ping/canaux.json` à la racine du serveur). Pas sur la carte tant que `ping` n'est pas dans `commandes_permises` du noyau |
-| `/perso` | CaraCrea | créateur de personnage (au spawn seulement) |
+| `/canal` (`<nom>`, `clan`, `aide` ; `admin` : staff) | Utils | canal des pings (02/11 : ancien `/ping canal`, caché par le `/ping` de Mohist) : ton clan par défaut ; `/canal <nom>` (2 à 16 lettres ou chiffres) rejoint un canal à part, partagé avec tous ceux qui tapent le même nom (16 connectés au plus) ; `/canal` montre le tien et qui y est ; `/canal clan` ramène à ton clan ; `/canal aide` : l'aide des pings. Un ping ne va qu'aux joueurs du même canal et du même monde (en match : ton équipe). Les membres du canal sont prévenus des arrivées et des départs. Gardé après déconnexion et redémarrage (`heraliz_ping/canaux.json` à la racine du serveur). Permis sur la carte (`canal` dans `commandes_permises` du noyau) |
+| `/perso` | CaraCrea | créateur de personnage (au spawn seulement) ; staff : `open`, `random`, `reset <joueurs>` (ancien `/caracrea`) |
 | `/quetes` | Quêtes | journal des quêtes (touche J) |
 | `/journalieres` | Quêtes | quêtes du jour (aussi le bouton « Quêtes du jour » du journal, touche libre dans les options) : choisir une difficulté par jour, une quête parmi trois, puis un tirage de récompense par réussite (26/10) |
 | `/clashwar` | ClashWar | inscription, tableau, regarder un match, revenir en salle |
@@ -42,34 +48,36 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | Commande | Module | À quoi elle sert |
 |---|---|---|
 | `/combat` | Noyau | voir, poser ou retirer le tag de combat d'un joueur |
-| `/diag` | Noyau | diagnostic façon spark : `etat`, `start [s]`, `stop`, `mesure [s]`, `fuites`, `client <joueur> [s]`, `auto on\|off`, `seuil <ms>` (op 4, console) |
-| `/recharger` | Noyau | relit les données de tous les modules sans redémarrer (op 4, console) |
+| `/diag` | Noyau | diagnostic façon spark : `etat`, `profil [s] [intervalle]`, `stop`, `commandes`, `mesure [s]`, `fuites`, `client <joueur> [s]` (op 4, console) ; réglages des rapports automatiques : section `[diag]` du noyau |
+| `/recharger [module]` | Noyau | relit les données de tous les modules (ou d'un seul) sans redémarrer (op 4, console) : `quetes`, `caisses`, `casino`, `raretes`, `loot`, `saison`, `territoires`, `clans`, `herals`, `purge`, `coffres`, `zones`, `clashwar`, `evenements`, `armes`, `anticheat` (02/11 : les sous-commandes « recharger » de chaque module n'existent plus) |
 | `/redemarrage` | Noyau | `<minutes> [raison]` ou `annuler` : redémarrage doux, les joueurs se reconnectent seuls (op 4, console) |
 | `/clashwar coffre\|parties\|arenes` | ClashWar | coffres des matchs (`etat`, `rendre <joueur>`), parties en cours, arènes (op 2) ; anciennement `/matchs`, fondue dans `/clashwar` le 02/11 |
 | `/territoire` | Clans | zones des clans, drapeaux, difficulté |
 | `/eco` | Clans | `donner`, `retirer`, `definir <joueur> <montant> [motif]` : op 4 connecté sur AuthMe ou console (28/10), un joueur connecté ou non (compte connu), 1 à 10 000 000 par opération, jamais de solde négatif ni au-dessus du plafond, journal `heralisz_economie/journal_admin.log` ; `journal`, `info` : op 2 |
 | `/grade` (`editeur`, `registre` : op 4 ; `donner`, `retirer`, `acheter` : console) | Grades | éditeur des grades, grades des joueurs |
 | `/bon` | Grades | éditeur des bons (op) |
-| `/staff` (`panel`, `vanish`, `nametag`) | Grades | modération (panel : touche P, actions selon le grade du staff) ; onglet « Commandes du Fondateur » (28/10) : le Fondateur donne une commande précise à un grade du staff (`heraliz_grades/commandes_staff.json`, appliqué par le serveur) |
+| `/staff panel` | Grades | modération (panel : touche P, actions selon le grade du staff ; « Se cacher » et « Cacher son nom » y sont des boutons, ex-`/staff vanish` et `/staff nametag`) ; onglet « Commandes du Fondateur » (28/10) : le Fondateur donne une commande précise à un grade du staff (`heraliz_grades/commandes_staff.json`, appliqué par le serveur) |
 | `/zonevip` | Grades | zones VIP |
-| `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête |
+| `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête ; `/quete finir` : op 4 ; `/quete donner` : seulement avec le banc d'essai |
 | `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur |
 | `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection d'une base donnée à la main par le staff (plus aucune protection automatique depuis le 27/10 et le 31/10), carrières |
-| `/coffres` (`voir`, `recharger`) | CRac | coffres de la base où l'on se tient et leurs limites ; relit `config/crac/coffres.json` (op) |
+| `/cracbuild` | CRac | outils de construction (`showcase`, `essai`, `clear`, `tier`, `damage`, `doors`) : op 4 (02/11, `clear` efface des bases) |
+| `/coffres voir` | CRac | coffres de la base où l'on se tient et leurs limites (op 4) ; `config/crac/coffres.json` : `/recharger coffres` |
 | `/depart`, `/carte`, `/train`, `/cinematique` | Utils | borne de départ, lieux de la carte, train, cinématique |
-| `/corps`, `/usure`, `/vehicules`, `/inspecter` | Utils | cadavres, usure des armes, véhicules, inventaire d'un joueur |
-| `/vitres`, `/camos`, `/armurier` | Tactique | vitres cassables, camos à vie, recettes de la Table d'armurier |
-| `/heralizloot`, `/rarete` | Loot | conteneurs, zones de loot, raretés ; `/heralizloot zombies stats` (butin des zombies : kills, objets, fragments, cases chaudes), `zombies simuler <n> [militaire]` (tire n fois la table, rien n'est donné), `zombies joueur <joueur>` (ses kills de l'heure, sa chance de butin, ses fragments du jour) (26/10) |
-| `/journalieres voir <joueur>`, `remettre <joueur>` (op 2) ; `essai <joueur> forcer\|avancer\|minuit` (op 4, serveur d'essai) | Quêtes | état des quêtes du jour d'un joueur, remise d'une récompense restée en attente ; essais : quête forcée, progression ajoutée, minuit simulé (noté au journal `heraliz_quetes/journalieres.log`) |
+| `/corps`, `/usure`, `/vehicules` (op 2 depuis le 02/11), `/inspecter` | Utils | cadavres, usure des armes, véhicules, inventaire d'un joueur |
+| `/zombies` (`stats`, `reserves`, `zone`) | Utils | zombies HeraliZ (02/11 : `banc` retiré) |
+| `/vitres` (op 4), `/camos`, `/armurier` | Tactique | vitres cassables (diagnostic), camos à vie, recettes de la Table d'armurier |
+| `/heralizloot`, `/rarete` | Loot | conteneurs, zones de loot, raretés ; `/heralizloot zombies stats` (butin des zombies : kills, objets, fragments, cases chaudes), `zombies joueur <joueur>` (ses kills de l'heure, sa chance de butin, ses fragments du jour) (26/10) ; `zombies simuler <n> [militaire]` (tire n fois la table) : seulement avec le banc d'essai (02/11) |
+| `/journalieres voir <joueur>`, `remettre <joueur>` (op 2) ; `essai <joueur> forcer\|avancer\|minuit` (op 4, seulement avec le banc d'essai) | Quêtes | état des quêtes du jour d'un joueur, remise d'une récompense restée en attente ; essais : quête forcée, progression ajoutée, minuit simulé (noté au journal `heraliz_quetes/journalieres.log`) |
 | `/salle` | Bunker | salles à carte |
 | `/brume`, `/zones` | Décors | brouillard, zones gaz / radiation / froid |
 | `/extraction` | Extraction | poser et régler les zones d'extraction |
 | `/airstrike` | Airstrike | frappes et largages |
-| `/voix`, `/caracrea` | CaraCrea | voix de proximité, personnages |
+| `/voix` | CaraCrea | voix de proximité : réglages ; staff : `mute <joueurs> [durée] [raison]` (sans durée : sans fin), `unmute`, `mutes`, `info`, `stats` |
 | `/emote` | Emote | débloquer ou retirer une emote |
-| `/casino` | Casino | zones du casino, capsules, `compte voir\|donner\|retirer` (compte de capsules d'un joueur) |
+| `/casino` | Casino | zones du casino, capsules, `compte voir\|donner\|retirer` (compte de capsules d'un joueur), `stats` (chiffres réels puis redistribution prévue : ex-`/casino rtp`) |
 | `/capsules` | Casino (joueurs) | compte de capsules : solde, `deposer [nombre]`, `retirer <nombre>` à côté d'un distributeur de capsules (ATM) ou d'une caisse du casino (au distributeur : clic droit, son écran) |
-| `/boss <mammouth\|mere\|n07\|peste\|sylvorn> …` | Boss | arènes et réveil des boss (events) |
+| `/boss <mammouth\|mere\|n07\|peste\|sylvorn> …` | Boss | arènes et réveil des boss (events) : module mis de côté, pas sur le serveur |
 | `/spartan`, `/banpc` (`info` : ancien `/sbaninfo`), `/unbanpc` | Spartan | anticheat, ban compte + IP + PC (les autres sanctions : LiteBans) |
 
 ## 3. Retirées (validé le 24/10)
@@ -101,6 +109,51 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/mammouth`, `/mere`, `/n07`, `/peste`, `/sylvorn` | `/boss mammouth` … |
 | `/sban`, `/sunban`, `/unbanplayer` | `/banpc`, `/unbanpc` |
 | `/untempban` | `/unban` de LiteBans (il lève aussi les bans temporaires) |
-| `/pings` | `/ping` |
+| `/pings` | `/ping` (devenu `/canal` le 02/11) |
 | `/clashwar banc`, `/casino roll`, `/casino bot` | retirées (outils d'essai) |
 | `/cc` (chat de clan) | canal « Clan » du chat (Tab dans le chat) |
+
+## 5. Allégées le 02/11 (audit des commandes, `docs/audit_02nov/commandes.md`)
+
+| Avant | Maintenant |
+|---|---|
+| `/ping canal …`, `/ping admin …`, `/ping` | `/canal …`, `/canal admin …`, `/canal aide` (`/ping` est celui de Mohist : latence) |
+| `/caracrea [open\|random\|reset]`, `/caracrea mute\|unmute` | `/perso [open\|random\|reset]`, `/voix mute\|unmute` |
+| `/staff vanish`, `/staff nametag` | boutons « Se cacher » et « Cacher son nom » du panneau du staff |
+| `/heraliz loot add\|list\|remove` | éditeur de butin `/heraliz edit <caisse>` (`/heraliz loot fichier` reste) |
+| `/casino rtp` | `/casino stats` (donne les deux) |
+| `/quete recharger`, `/heraliz reload`, `/casino reload`, `/rarete recharger`, `/heralizloot tables`, `/saison recharger`, `/territoire recharger`, `/clan admin recharger`, `/eco recharger`, `/purge recharger`, `/coffres recharger`, `/zones recharger`, `/clashwar recharger`, `/event recharger`, `/armurier recharger`, `/spartan officiel` | `/recharger [module]` |
+| `/diag start`, `/diag profil stop`, `/diag auto`, `/diag seuil` | `/diag profil`, `/diag stop`, section `[diag]` du noyau |
+| `/zombies banc`, `/heralizloot ouvrir`, `/unlockbackpack` | retirées (outils d'essai, aucun usage) |
+| `/journalieres essai`, `/quete donner`, `/heralizloot zombies simuler` | seulement sur un serveur d'essai qui a le banc (`outils/serveur_local.py --banc`) |
+| `/quete finir`, `/vitres`, `/cracbuild` | op 4 (avant : op 2) |
+| `/vehicules liste` (tous) | `/vehicules` : staff (op 2) |
+| `/matchs` (autre chantier) | `/clashwar coffre\|parties\|arenes` |
+| `/sbaninfo`, `/spartan esp bench\|selfscan\|discordtest` (autre chantier) | `/banpc info` ; retirées |
+| `/clan admin argent` (autre chantier) | `/eco` |
+
+## 6. Commandes des autres (mods, Minecraft, plugins) : réglages, sans toucher à leur code
+
+- **Préfixes** : `send-namespaced: false` (`serveur/spigot.yml`) : `/minecraft:tp`, `/worldedit://set`, `/litebans:ban`… ne sont
+  plus envoyés au jeu (ils marchent toujours si on les tape).
+- **Retirées pour de bon** (`[commandes] retirees` de `heraliz_noyau-server.toml`, 35 noms, console comprise ; une commande de
+  plugin n'y est jamais touchée) : `/tacz`, `/kiwi` (dont `/kiwi dev_env_rules`, qui tuait toutes les entités chargées),
+  `/coro`, `/modernfix`, `/mfsrc`, `/ywzj_vehicle`, `/matmossettings`, `/tctcoresettings` ; Minecraft : `debug`, `jfr`, `perf`,
+  `datapack`, `function`, `schedule`, `trigger`, `return`, `bossbar`, `team`, `teammsg`, `tm`, `advancement`, `recipe`,
+  `fillbiome`, `place`, `forceload`, `spreadplayers`, `ride`, `loot`, `seed`, `defaultgamemode`, `setidletimeout`,
+  `experience`, `xp`, `enchant`, `attribute`. Gardées (nos outils, le banc, les scripts de capture et le site s'en servent) :
+  `tp`, `gamemode`, `time`, `kill`, `give`, `clear`, `effect`, `summon`, `gamerule`, `weather`, `difficulty`, `execute`, `fill`,
+  `setblock`, `item`, `damage`, `stop`, `msg`, `tell`, `w`, `me`, `say`, `forge`, `config`…
+- **Cachées mais utilisables** (`[commandes] cachees`, 178 noms, serveur Bukkit seulement) : les 62 autres noms de WorldEdit
+  (`/br`, `//re`, `//rep`, `/;`, `/!`, `//calc`…) et `snapshot`, `restore`, `cs`, `.s` ; les 73 autres noms de LiteBans (`lban`,
+  `tban`, `hist`, `namehist`…) et ses commandes sans usage (`ipmute`, `lockdown`, `geoip`…) ; AuthMe (`log`, `2fa`,
+  `changepass`, `cp`, `email`, `verification`, `unregister`, `unreg`, `logout`) ; WorldGuard (`regions`, `;`, `stoplag`,
+  `haltactivity`, `slay`, `stack`) ; LuckPerms (`perm`, `perms`, `permission`, `permissions`) ; KauriVPN (`kaurivpn`, `kvpn`,
+  `vpn`, `avpn`) ; `/csf` ; Bukkit (`about`, `ver`, `pl`, `timings`) ; `/curios` (`/wipe` tape `curios clear`).
+- **`serveur/commands.yml`** : `/reload`, `/rl` (recharge les plugins, risqué sur Forge + Bukkit) et `/restart` retirés ;
+  l'alias `icanhasbukkit` vidé.
+- **Filtre « combat, à terre, carte »** : les commandes des plugins (AuthMe `/logout`, LiteBans, WorldGuard…) y passent aussi
+  depuis le 02/11 (événement Bukkit, `CommandesBukkit` du noyau), avec les mêmes listes `commandes_permises_combat` et
+  `commandes_permises`.
+- **À régler dans LuckPerms** (base du serveur, pas dans le dépôt) : `bukkit.command.plugins` et `bukkit.command.version` à
+  faux pour le groupe `default` (sinon tout joueur lit la liste des plugins et leurs versions).
