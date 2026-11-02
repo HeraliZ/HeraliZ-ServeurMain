@@ -8,16 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.build.client.BuildClient;
+import fr.heraliz.crac.placable.MultiBlocks;
 import fr.heraliz.crac.placable.PlacableSet;
 import fr.heraliz.crac.placable.PlacableSupport;
+import fr.heraliz.crac.placable.TableArmurier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -30,8 +36,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext.Block;
 import net.minecraft.world.level.ClipContext.Fluid;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -91,19 +99,28 @@ public final class PlacableGhostRenderer {
                     if (hit != null && hit.getType() == Type.BLOCK) {
                         UseOnContext useCtx = new UseOnContext(player, activeHand, hit);
                         BlockPlaceContext ctx = new BlockPlaceContext(useCtx);
+                        BlockItem blockItem = (BlockItem)stack.getItem();
+                        // HeraliZ (03/11) : table d'armurier visée contre un mur de base : posée dans la rangée du mur,
+                        // comme au serveur (placable/TablePose) ; sinon la pose habituelle
+                        boolean table = TableArmurier.estTable(blockItem.getBlock());
+                        TableArmurier.DansMur contreMur = table ? TableArmurier.dansMur(mc.level, player, hit) : null;
                         // HeraliZ (28/10) : même place que la pose (objet collé aux murs visé sur une case de mur : case
                         // libre voisine, poussé vers elle ; descente sur un plancher à mi-bloc ; sens choisi avec R)
-                        fr.heraliz.crac.block.ObjetAdossable.Place place = stack.getItem() instanceof fr.heraliz.crac.block.ObjetAdossable oa
+                        fr.heraliz.crac.block.ObjetAdossable.Place place = contreMur != null ? null
+                            : stack.getItem() instanceof fr.heraliz.crac.block.ObjetAdossable oa
                             ? oa.placeDePose(ctx) : ctx.canPlace() ? new fr.heraliz.crac.block.ObjetAdossable.Place(ctx, null) : null;
-                        if (place != null) {
+                        if (place != null || contreMur != null) {
                             // la case de pose : la case libre visée, ou la case du mur où la caisse se met (31/10)
-                            BlockPos placePos = place.pos();
-                            BlockItem blockItem = (BlockItem)stack.getItem();
-                            BlockState state = place.etat(blockItem.getBlock());
+                            BlockPos placePos = contreMur != null ? contreMur.pied() : place.pos();
+                            BlockState state = contreMur != null ? TableArmurier.etat(blockItem.getBlock(), contreMur.facing())
+                                : place.etat(blockItem.getBlock());
                             boolean blocked = state == null;
                             if (state == null) {
                                 state = blockItem.getBlock().defaultBlockState();
-                                if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
+                                if (table) {
+                                    // la table de TaCZ se met de côté : sa tête à droite du joueur (GunSmithTableBlockB)
+                                    state = TableArmurier.etat(blockItem.getBlock(), TableArmurier.facing(player));
+                                } else if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
                                     state = state.setValue(HorizontalDirectionalBlock.FACING, player.getDirection().getOpposite());
                                 }
                             }
@@ -118,7 +135,8 @@ public final class PlacableGhostRenderer {
                                 cells.add(second);
                                 parts.add(secondPart);
                                 // dans la rangée du mur (31/10) : l'autre case d'un coffre est une case du mur, laissée à la pose
-                                if (place.dansMur() == null && !mc.level.getBlockState(second).canBeReplaced()) {
+                                // (03/11 : de même pour la table d'armurier posée contre un mur)
+                                if (contreMur == null && place.dansMur() == null && !mc.level.getBlockState(second).canBeReplaced()) {
                                     blocked = true;
                                 }
                             }
@@ -166,8 +184,12 @@ public final class PlacableGhostRenderer {
                                         BlockPos cellx = cells.get(i);
                                         pose.pushPose();
                                         pose.translate(cellx.getX() - cam.x, cellx.getY() - cam.y, cellx.getZ() - cam.z);
-                                        applyFacing(pose, parts.get(i));
-                                        dispatcher.renderSingleBlock(parts.get(i), pose, free, 15728880, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
+                                        // HeraliZ (03/11) : dessiné par le rendu du bloc posé (table d'armurier : même sens et même
+                                        // place qu'une fois posée) ; sinon son rendu d'objet tourné comme le bloc
+                                        if (!rendreCommePose(mc, parts.get(i), cellx, stack, pose, free, e.getPartialTick())) {
+                                            applyFacing(pose, parts.get(i));
+                                            dispatcher.renderSingleBlock(parts.get(i), pose, free, 15728880, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
+                                        }
                                         pose.popPose();
                                     }
 
@@ -225,6 +247,62 @@ public final class PlacableGhostRenderer {
             e.getWindow().getGuiScaledHeight() / 2 + 12, 0xFF6060);
     }
 
+    /** Entité de bloc factice du fantôme (rendu du bloc posé), gardée tant que l'état et l'objet tenu ne changent pas. */
+    @Nullable
+    private static BlockEntity factice;
+    @Nullable
+    private static BlockState facticeEtat;
+    private static String facticeId = "";
+
+    /**
+     * Dessine l'état comme le jeu le dessinera une fois posé, par le rendu de son entité de bloc (HeraliZ, 03/11). Pour un
+     * bloc dessiné par une entité de bloc ({@link RenderShape#ENTITYBLOCK_ANIMATED} : la table d'armurier de TaCZ), le
+     * fantôme prenait le rendu de l'objet en main, tourné selon {@code facing} : ni le sens (un quart de tour de travers),
+     * ni la place (la table s'étendait du mauvais côté) de la table posée. Faux si l'état n'a pas un tel rendu (rendu
+     * d'objet, comme avant). Les modèles de TaCZ prennent eux-mêmes leur tampon de dessin : la table garde ses couleurs,
+     * le cadre des cases (bleu ou rouge) et la raison sous le viseur disent si la pose est possible, comme avant.
+     */
+    private static boolean rendreCommePose(Minecraft mc, BlockState state, BlockPos pos, ItemStack stack, PoseStack pose,
+                                           MultiBufferSource buffers, float partial) {
+        if (state.getRenderShape() != RenderShape.ENTITYBLOCK_ANIMATED || !(state.getBlock() instanceof EntityBlock eb)) {
+            return false;
+        }
+        // modèle choisi par l'objet (TaCZ : « BlockId » de l'objet, gardé par l'entité de bloc à la pose)
+        CompoundTag tag = stack.getTag();
+        String id = tag != null && tag.contains("BlockId", Tag.TAG_STRING) ? tag.getString("BlockId") : "";
+        if (factice == null || facticeEtat != state || !facticeId.equals(id) || factice.getLevel() != mc.level) {
+            factice = null;
+            BlockEntity be = eb.newBlockEntity(pos, state);
+            if (be == null) {
+                return false;
+            }
+            be.setLevel(mc.level);
+            CompoundTag donnees = new CompoundTag();
+            if (!id.isEmpty()) {
+                donnees.putString("BlockId", id);
+            }
+            try {
+                be.load(donnees);
+            } catch (RuntimeException ex) {
+                return false;
+            }
+            factice = be;
+            facticeEtat = state;
+            facticeId = id;
+        }
+        BlockEntityRenderer<BlockEntity> r = mc.getBlockEntityRenderDispatcher().getRenderer(factice);
+        if (r == null) {
+            return false;
+        }
+        try {
+            r.render(factice, partial, pose, buffers, 15728880, OverlayTexture.NO_OVERLAY);
+            return true;
+        } catch (RuntimeException ex) {
+            factice = null;
+            return false;
+        }
+    }
+
     private static void applyFacing(PoseStack pose, BlockState state) {
         if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
             float yRot = state.getValue(HorizontalDirectionalBlock.FACING).toYRot();
@@ -250,6 +328,10 @@ public final class PlacableGhostRenderer {
     }
 
     private static BlockState secondPartOf(BlockState state) {
+        BlockState teteTable = MultiBlocks.teteTacz(state);
+        if (teteTable != null) {
+            return teteTable;   // table d'armurier de TaCZ (03/11) : sa tête, à droite du joueur
+        }
         if (state.getBlock() instanceof fr.heraliz.crac.block.CoffreBlock c) {
             // coffre large : sa case de droite a son propre modèle ; coffre haut : la case du bas dessine tout
             return c.large() ? state.setValue(fr.heraliz.crac.block.CoffreBlock.ANNEXE, true) : null;
@@ -264,6 +346,9 @@ public final class PlacableGhostRenderer {
     }
 
     private static BlockPos secondCellOf(BlockState state, BlockPos pos) {
+        if (MultiBlocks.estTableTacz(state.getBlock())) {
+            return MultiBlocks.partner(state, pos);
+        }
         if (state.getBlock() instanceof fr.heraliz.crac.block.CoffreBlock c) {
             return c.annexeDe(pos, state.getValue(fr.heraliz.crac.block.CoffreBlock.FACING));
         }

@@ -87,6 +87,10 @@ public final class C2SPlacePlacableTraitement {
         PlacableHpManager.notePlacingHand(player, h);
 
         try {
+            // table d'armurier visée contre un mur : posée dans la rangée du mur (03/11, son propre son), sinon comme avant
+            if (fr.heraliz.crac.placable.TablePose.poser(player, h, bhr) != null) {
+                return;
+            }
             InteractionResult result = ForgeHooks.onPlaceItemIntoWorld(new UseOnContext(player, h, bhr));
             if (result.consumesAction()) {
                 // l'objet a pu se poser ailleurs que devant la face visée (case d'un mur, case libre voisine) : le son est le sien

@@ -55,16 +55,30 @@ public final class MultiBlocks {
     @Nullable
     private static BedPart partieTacz(BlockState state) {
         Block b = state.getBlock();
+        return estTableTacz(b) ? (BedPart) state.getValue(b.getStateDefinition().getProperty("part")) : null;
+    }
+
+    /** Le bloc est une table de TaCZ de deux cases (propriétés « part » et « facing », lues par leur nom). */
+    public static boolean estTableTacz(Block b) {
         net.minecraft.world.level.block.state.properties.Property<?> part = b.getStateDefinition().getProperty("part");
         net.minecraft.world.level.block.state.properties.Property<?> facing = b.getStateDefinition().getProperty("facing");
         if (part == null || facing == null || part.getValueClass() != BedPart.class || facing.getValueClass() != Direction.class) {
-            return null;
+            return false;
         }
         ResourceLocation id = ForgeRegistries.BLOCKS.getKey(b);
-        if (id == null || !"tacz".equals(id.getNamespace())) {
+        return id != null && "tacz".equals(id.getNamespace());
+    }
+
+    /** La tête d'une table de TaCZ dont {@code pied} est l'état du pied (pour le fantôme de pose), sinon null. */
+    @Nullable
+    public static BlockState teteTacz(BlockState pied) {
+        if (!estTableTacz(pied.getBlock())) {
             return null;
         }
-        return (BedPart) state.getValue(part);
+        @SuppressWarnings("unchecked")
+        net.minecraft.world.level.block.state.properties.Property<BedPart> part =
+            (net.minecraft.world.level.block.state.properties.Property<BedPart>) pied.getBlock().getStateDefinition().getProperty("part");
+        return pied.setValue(part, BedPart.HEAD);
     }
 
     /** The other half if it is really there (same block), else null. */
