@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\DB;
  * Temps passé sur le serveur de jeu par compte du site. AzLink envoie au site, environ une fois par minute, la liste des
  * joueurs en ligne (POST /api/azlink) ; le site y répond avec les comptes reconnus (Middleware\SuiviAzLink). Le temps
  * écoulé depuis le relevé précédent est ajouté à chacun d'eux. Ne bloque plus le vote depuis le 28/10 (demande du
- * propriétaire : un compte qui n'a jamais joué vote aussi) ; gardé pour le staff.
+ * propriétaire : un compte qui n'a jamais joué vote aussi) ; gardé pour le staff, qui le voit dans l'alerte « une même
+ * connexion vote pour plusieurs comptes » (Garde) ; effacé un an après la dernière partie (Purge).
  */
 final class TempsDeJeu
 {

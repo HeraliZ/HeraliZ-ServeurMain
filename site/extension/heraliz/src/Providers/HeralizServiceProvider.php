@@ -5,6 +5,7 @@ namespace Azuriom\Plugin\Heraliz\Providers;
 use Azuriom\Extensions\Plugin\BasePluginServiceProvider;
 use Azuriom\Plugin\Heraliz\Adresse;
 use Azuriom\Plugin\Heraliz\Console;
+use Azuriom\Plugin\Heraliz\Purge;
 use Azuriom\Plugin\Heraliz\Discord\Comptes;
 use Azuriom\Plugin\Heraliz\Middleware\IpsBannies;
 use Azuriom\Plugin\Heraliz\Middleware\LimiteConnexion;
@@ -104,12 +105,17 @@ class HeralizServiceProvider extends BasePluginServiceProvider
 
         // toutes les 5 minutes (tâches planifiées d'Azuriom, /etc/cron.d/azuriom) : bans Discord, demandes au staff,
         // commandes du serveur de jeu (Discord\Comptes::balayer)
+        // une fois par jour : adresses IP et temps de jeu de plus d'un an effacés (page Confidentialité, Purge)
         $this->app->booted(function () {
-            $this->app->make(Schedule::class)
-                ->call(fn () => Comptes::balayer())
+            $planning = $this->app->make(Schedule::class);
+            $planning->call(fn () => Comptes::balayer())
                 ->everyFiveMinutes()
                 ->name('heraliz-discord')
                 ->withoutOverlapping(10);
+            $planning->call(fn () => Purge::balayer())
+                ->dailyAt('04:17')
+                ->name('heraliz-purge')
+                ->withoutOverlapping(60);
         });
     }
 

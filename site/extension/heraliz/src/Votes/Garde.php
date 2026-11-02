@@ -167,7 +167,11 @@ final class Garde
             return;
         }
 
-        $noms = User::whereIn('id', $comptes->take(10))->pluck('name')->map(fn ($n) => '`'.str_replace('`', 'ˋ', (string) $n).'`')->all();
+        // temps passé en jeu par chaque compte (relevés d'AzLink, TempsDeJeu) : un compte qui ne joue jamais et vote
+        // tous les jours ressemble à une ferme de votes
+        $secondes = DB::table(Stockage::JEU)->whereIn('user_id', $comptes->take(10))->pluck('secondes', 'user_id');
+        $noms = User::whereIn('id', $comptes->take(10))->get(['id', 'name'])
+            ->map(fn ($u) => '`'.str_replace('`', 'ˋ', (string) $u->name).'` ('.self::duree((int) ($secondes[$u->id] ?? 0)).' de jeu)')->all();
         $recompenses = $lignes->where('recompense', true)->count();
         $texte = '🗳️ Votes : une même connexion internet (`'.self::lisible($ip).'`) a voté pour **'.$comptes->count().' comptes** en 24 h : '
             .implode(', ', $noms).($comptes->count() > 10 ? '…' : '').'. Votes récompensés : '.$recompenses
@@ -176,6 +180,14 @@ final class Garde
 
         Log::notice('HeraliZ votes : connexion '.$ip.' vue sur '.$comptes->count().' comptes en 24 h');
         self::prevenirStaff($texte);
+    }
+
+    /** « 3 h 20 », « 12 min » : temps de jeu lisible. */
+    private static function duree(int $secondes): string
+    {
+        $minutes = intdiv($secondes, 60);
+
+        return $minutes >= 60 ? intdiv($minutes, 60).' h '.str_pad((string) ($minutes % 60), 2, '0', STR_PAD_LEFT) : $minutes.' min';
     }
 
     /** Bloc IPv6 noté par Adresse (« 20010db800010002::/64 ») écrit comme d'habitude (« 2001:db8:1:2::/64 »). */

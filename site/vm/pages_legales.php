@@ -11,12 +11,12 @@
  * de 10 % détruite.
  */
 
-const VERSION_PAGES = '2026-10-24a';
+const VERSION_PAGES = '2026-11-02a';
 const REPERE_PAGES = '<!-- heraliz-pages:';
 
 function pagesLegales(): array
 {
-    $maj = REPERE_PAGES.VERSION_PAGES.' --><p><em>Dernière mise à jour : 24 octobre 2026.</em></p>';
+    $maj = REPERE_PAGES.VERSION_PAGES.' --><p><em>Dernière mise à jour : 2 novembre 2026.</em></p>';
     $editeur = 'la société HeraliZ (personne morale en cours de création)';
     // adresse postale et e-mail : secrets GitHub SITE_ADRESSE_LEGALE et SITE_MAIL_CONTACT, posés à l'envoi (jamais dans le dépôt)
     $adresse = '__ADRESSE_LEGALE__';
@@ -60,7 +60,9 @@ function pagesLegales(): array
         .'<h2>1. Responsable du traitement</h2><p>'.$editeur.', contact : '.$mail.'.</p>'
         .'<h2>2. Données collectées</h2><ul>'
         .'<li><strong>Compte</strong> : pseudo, adresse e-mail, mot de passe (chiffré, jamais lisible), double authentification si activée, date d’inscription.</li>'
-        .'<li><strong>Connexion</strong> : adresse IP, dates de connexion au Site, au Launcher et au Serveur, version du Launcher.</li>'
+        .'<li><strong>Connexion</strong> : adresse IP (pour une adresse IPv6, seulement son bloc /64), dates de connexion au Site, au Launcher et au Serveur, version du Launcher, temps passé sur le Serveur.</li>'
+        .'<li><strong>Anti-robot</strong> : à l’inscription sur le Site, à la création d’un compte depuis le Launcher et sur le bouton « Voter », le service Turnstile de Cloudflare vérifie qu’il ne s’agit pas d’un robot ; il reçoit pour cela l’adresse IP et des informations techniques du navigateur.</li>'
+        .'<li><strong>Votes</strong> : pour vérifier un vote, l’adresse IP de la connexion est envoyée au site de vote concerné (par exemple Top-Serveurs ou Serveurs-Minecraft.org) et, pour relier les adresses IPv4 et IPv6 d’une même connexion, au service ipv6-adapter.com ; les votes récompensés sont gardés avec cette adresse (une récompense par connexion).</li>'
         .'<li><strong>Jeu</strong> : pseudo et identifiant de joueur, inventaires, progression, messages du chat et commandes (modération), sanctions.</li>'
         .'<li><strong>Boutique</strong> : historique des achats, PB reçus, dépensés et échangés ; les données bancaires sont traitées par le prestataire de paiement, jamais par HeraliZ.</li>'
         .'<li><strong>Discord</strong> : pour jouer pendant la bêta, chaque compte doit être lié à un compte Discord membre du serveur Discord HeraliZ ; sont gardés l’identifiant et le pseudo Discord, la date de création du compte Discord, l’appartenance au serveur Discord et un éventuel bannissement (vérifiés régulièrement par le bot HeraliZ). Le lien en jeu (/lier) utilise le même identifiant.</li>'
@@ -72,8 +74,8 @@ function pagesLegales(): array
                 .'<li>des <strong>captures d’écran de la fenêtre du jeu seulement</strong>, si et seulement si le joueur l’a accepté dans le Launcher (refus = pas de partie) : lors des contrôles de l’anticheat ou à la demande du staff ; rien n’est enregistré sur l’ordinateur du joueur. Les captures sont conservées 3 jours, puis supprimées définitivement ; seuls les fondateurs et les administrateurs du serveur y ont accès. Le joueur peut à tout moment demander à un fondateur l’accès aux captures disponibles le concernant.</li></ul>'
         .'<p>Aucun autre fichier personnel, aucun mot de passe, aucun historique de navigation n’est lu. Les alertes et preuves sont visibles du seul staff (salon privé Discord).</p>'
         .'<h2>4. Finalités et bases légales</h2><p>Gestion du compte et des achats (exécution du contrat) ; sécurité, anticheat, modération et lutte contre les doubles comptes (intérêt légitime) ; captures d’écran (consentement, retirable en ne jouant plus) ; comptabilité (obligation légale).</p>'
-        .'<h2>5. Durées de conservation</h2><p>Compte : jusqu’à sa suppression, puis 1 an. Journaux de connexion : 1 an. Sanctions, données et captures de l’anticheat : jusqu’à 3 ans (5 ans pour un bannissement définitif). Achats et factures : 10 ans.</p>'
-        .'<h2>6. Destinataires</h2><p>Le staff d’HeraliZ selon ses fonctions, les hébergeurs du Site et du Serveur, le prestataire de paiement, Discord (alertes du staff) et, le cas échéant, le service d’envoi d’e-mails. Certains prestataires peuvent être hors de l’Union européenne, avec des garanties appropriées. Aucune donnée n’est vendue.</p>'
+        .'<h2>5. Durées de conservation</h2><p>Compte : jusqu’à sa suppression, puis 1 an. Journaux de connexion, adresses IP, votes et temps de jeu : 1 an (effacés automatiquement chaque jour au-delà). Sanctions (dont les adresses IP bloquées), données et captures de l’anticheat : jusqu’à 3 ans (5 ans pour un bannissement définitif). Achats et factures : 10 ans.</p>'
+        .'<h2>6. Destinataires</h2><p>Le staff d’HeraliZ selon ses fonctions, les hébergeurs du Site et du Serveur, le prestataire de paiement, Discord (alertes du staff), Cloudflare (anti-robot Turnstile), les sites de vote et ipv6-adapter.com (adresse IP, pour vérifier un vote) et, le cas échéant, le service d’envoi d’e-mails. Certains prestataires peuvent être hors de l’Union européenne, avec des garanties appropriées. Aucune donnée n’est vendue.</p>'
         .'<h2>7. Sécurité</h2><p>Mots de passe chiffrés, connexion HTTPS, accès limités, limitation des tentatives de connexion, double authentification proposée.</p>'
         .'<h2>8. Vos droits</h2><p>Accès, rectification, effacement, opposition, limitation, portabilité et retrait du consentement : écrire à '.$mail.' (une preuve d’identité peut être demandée). Réclamation possible auprès de la CNIL (cnil.fr).</p>';
 
