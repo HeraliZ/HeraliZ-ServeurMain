@@ -135,8 +135,11 @@ DIVERS = [
                                                         C + "ferraille_ii": 6}),
     ("7_munition_speciale", "airstrike:cartridge_special", {C + "bocal_poudre_iv": 2, C + "circuit_imprime_iii": 2,
                                                             C + "batterie_iii": 2, C + "ferraille_iii": 4, C + "metal_renforce": 1}),
-    # barricade en bois (26/10, demande du propriétaire ; avant : seulement dans les caisses) : planches, clous, corde
-    ("8_barricade", "heralisz_bunker:wooden_barricade", {C + "planche": 6, C + "clou": 6, C + "corde": 1}),
+    # barricade en bois (26/10, demande du propriétaire ; avant : seulement dans les caisses) : planches, clous, corde.
+    # 03/11 (demande du propriétaire : « plus coûteuse en ressources ») : coût x 3 (avant : 6 planches, 6 clous, 1 corde).
+    # x 3 plutôt que x 2 : ces trois objets sont Communs et tombent dans tous les paliers du loot, un seul passage en
+    # ramenait de quoi en faire plusieurs ; la barricade se pose n'importe où (piles de 3) et bloque un passage.
+    ("8_barricade", "heralisz_bunker:wooden_barricade", {C + "planche": 18, C + "clou": 18, C + "corde": 3}),
     # Table d'armurier de TaCZ, à poser dans sa base (31/10, demande du propriétaire : « très chère », grosse étape de la
     # progression) : plus que le coffre-fort, en matériaux légendaires des bases (métal renforcé, fil à souder) et pièces
     # d'arme de niveau IV. Légendaire (RARETES_IMPOSEES de outils/loot_armes.py), jamais dans le loot. Objet posé de CRac
