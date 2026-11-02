@@ -217,7 +217,9 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
   3 h 30 comme s'il avait eu lieu, et il part à ce moment-là si les conditions sont remplies ; journal : « pas lance (…),
   prochain essai a HH:MM (intervalle normal) » ; l'ancienne clé `reessai_apres` est ignorée).
 - **Déroulement** : un point est **tiré au hasard sur la carte** (dans la bordure du monde moins 150 blocs ; sol à ciel
-  ouvert, ni eau ni feuillage, terrain à peu près plat, à 48 blocs au moins des bases ; réglages dans
+  ouvert, ni eau ni feuillage, terrain à peu près plat, à 48 blocs au moins des bases, jamais dans une zone VIP ni hors
+  de la carte construite : 02/11, tirage en tâche de fond, sans gel ni terrain généré, annonce quelques secondes après le
+  lancement ; réglages dans
   `serveur/config/heraliz_evenements/largage.json`, `"lieux": "poses"` ou `"les_deux"` pour utiliser aussi les lieux du
   staff). **Annonce à tous, dans le chat ET en notification, avec les coordonnées 6 minutes avant** (« Largage militaire
   dans 6 min · X …, Z … (secteur C4) »), **rappel 3 minutes avant** ; puis l'avion cargo passe et la caisse descend en

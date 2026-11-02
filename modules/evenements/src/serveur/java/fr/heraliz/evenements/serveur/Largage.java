@@ -6,16 +6,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fr.heraliz.airstrike.AirstrikeConfig;
+import fr.heraliz.airstrike.helico.PointCrash;
 import fr.heraliz.airstrike.strike.Strike;
 import fr.heraliz.airstrike.strike.StrikeManager;
 import fr.heraliz.airstrike.strike.StrikeType;
 import fr.heraliz.evenements.HeralizEvenements;
+import fr.heralisz.utils.spawn.DepartServeur;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -30,9 +36,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Largage militaire disputé (docs/EVENEMENTS.md §4.1) : toutes les 3 h 30 (planning, 25/10, demande du propriétaire), un
@@ -42,8 +54,14 @@ import java.util.Random;
  * {@code events.par_jour.largage} par clan et par jour). Réglages : {@code config/heraliz_evenements/largage.json}
  * (relu par {@code /event recharger}) ; lieux posés par le staff ({@code /event point ajouter largage <nom>}) si le réglage
  * {@code lieux} le demande. Réutilise tel quel le largage des frappes aériennes (avion, parachute, caisse, butin,
- * disparition). Coût : une comparaison d'heure par seconde ; le tirage du point charge au plus {@code essais} tronçons, une
- * fois toutes les 3 h 30.
+ * disparition). Coût : une comparaison d'heure par seconde.
+ * <p>
+ * Tirage du point (02/11, audit n° 16 ; même méthode que la borne de départ du 01/11) : rien n'est lu sur le disque par
+ * le fil du serveur. Un point candidat n'est gardé que si les fichiers de régions de la carte existent autour de lui
+ * (jamais de terrain neuf dans {@code dayz_map}), hors des zones VIP (HeraliZ Grades, comme l'hélicoptère et les frappes)
+ * et loin des bases ; son tronçon est lu en tâche de fond (il doit être sur le disque, complet), puis chargé par
+ * Minecraft en tâche de fond (ticket) et contrôlé à la seconde suivante. L'annonce part dès qu'un point passe (quelques
+ * secondes après le lancement) ; {@code essais} tronçons lus au plus, 4 à la fois.
  */
 final class Largage implements Evenement {
     static final String ID = "largage";
@@ -63,6 +81,47 @@ final class Largage implements Evenement {
     /** Rectangle x1 z1 x2 z2 où tirer le point (dans la bordure du monde), null : toute la bordure. */
     @Nullable
     private static int[] zone;
+
+    // ------------------------------------------------------------------ recherche du point (tâche de fond, audit n° 16)
+    /** Tronçon d'un point candidat demandé à Minecraft (chargé en tâche de fond), 30 s au plus. */
+    private static final TicketType<ChunkPos> TICKET = TicketType.create("heraliz_largage", Comparator.comparingLong(ChunkPos::toLong), 20 * 30);
+    /** Candidats contrôlés en même temps. */
+    private static final int EN_PARALLELE = 4;
+    /** Tirages sans rien lire par essai (régions absentes, zone VIP, base : refusés sans coût). */
+    private static final int TIRAGES = 64;
+    /**
+     * Autour du point, les fichiers de régions doivent exister jusqu'à cette distance : Minecraft charge aussi, en partie,
+     * les tronçons voisins d'un tronçon chargé (11 tronçons de rayon) ; hors de la carte construite, il les générerait.
+     */
+    private static final int RAYON_REGIONS = 11 * 16;
+    /** Attente maximale d'un candidat (lecture du disque, puis chargement), en ms ; passé ce délai, il est refusé. */
+    private static final long ATTENTE_MS = 20_000L;
+
+    /** Un point candidat : son tronçon est lu sur le disque ({@code lecture}), puis chargé ({@code ticket}). */
+    private static final class Candidat {
+        final int x, z;
+        final ChunkPos cp;
+        @Nullable
+        CompletableFuture<Optional<CompoundTag>> lecture;
+        boolean ticket;
+        long limiteMs;
+
+        Candidat(int x, int z, long limiteMs) {
+            this.x = x;
+            this.z = z;
+            this.cp = new ChunkPos(x >> 4, z >> 4);
+            this.limiteMs = limiteMs;
+        }
+    }
+
+    private final List<Candidat> candidats = new ArrayList<>();
+    /** Régions vues absentes pendant cette recherche (plus de coup d'œil au disque pour elles). */
+    private final Set<Long> regionsAbsentes = new HashSet<>();
+    private boolean recherche, rechercheAvecPoints, posesEssayes;
+    private String recherchePar = "";
+    private int essaisRestants;
+    private int rx1, rz1, rx2, rz2;
+    private int refusRegion, refusVip, refusBase, refusDisque, refusSol;
 
     // ------------------------------------------------------------------ état
     @Nullable
@@ -90,9 +149,47 @@ final class Largage implements Evenement {
     @Override
     public boolean demarrer(MinecraftServer server, int numero, boolean points, String par) {
         ServerLevel level = server.overworld();
-        BlockPos p = choisir(level);
-        if (p == null) return false;
         String id = ID + "#" + numero;
+        boolean poses = lieux.equals("poses") || lieux.equals("les_deux") && ALEA.nextBoolean();
+        if (poses) {
+            BlockPos p = lieuPose(level);
+            if (p != null) {
+                lancerSur(server, id, p, points, par);
+                return idCourant != null;
+            }
+            if (!lieux.equals("les_deux")) {
+                Outils.journal("largage : aucun lieu pose valide (" + lieux + ")");
+                return false;
+            }
+        }
+        // point au hasard : cherché en tâche de fond, l'annonce part dès qu'il est trouvé
+        if (!rectangle(level)) {
+            BlockPos p = !poses && lieux.equals("les_deux") ? lieuPose(level) : null;
+            if (p == null) {
+                Outils.journal("largage : aucun point valide (" + lieux + ")");
+                return false;
+            }
+            lancerSur(server, id, p, points, par);
+            return idCourant != null;
+        }
+        idCourant = id;
+        recherche = true;
+        rechercheAvecPoints = points;
+        recherchePar = par;
+        posesEssayes = poses;
+        essaisRestants = essais;
+        candidats.clear();
+        regionsAbsentes.clear();
+        refusRegion = refusVip = refusBase = refusDisque = refusSol = 0;
+        Outils.journal(id + " lance par " + par + " : recherche du point en tache de fond (" + essais + " essais au plus)");
+        chercher(server);
+        return idCourant != null;   // déjà raté (aucun tirage possible) : refusé, comme avant
+    }
+
+    /** Le point est choisi : annonce, suivi, départ de l'avion à l'heure. */
+    private void lancerSur(MinecraftServer server, String id, BlockPos p, boolean points, String par) {
+        ServerLevel level = server.overworld();
+        recherche = false;
         idCourant = id;
         cible = p;
         secteur = Outils.secteur(level, p.getX(), p.getZ());
@@ -114,7 +211,6 @@ final class Largage implements Evenement {
                     x, z, secteur).withStyle(ChatFormatting.GOLD), true);
         }
         if (lancementMs <= maintenant) decoller(server);
-        return idCourant != null;
     }
 
     @Override
@@ -125,6 +221,10 @@ final class Largage implements Evenement {
     @Override
     public void seconde(MinecraftServer server) {
         if (idCourant == null) return;
+        if (recherche) {
+            chercher(server);
+            return;
+        }
         long maintenant = System.currentTimeMillis();
         if (!enVol) {
             if (!rappelFait && maintenant >= rappelMs) {
@@ -163,6 +263,14 @@ final class Largage implements Evenement {
     @Override
     public void annuler(MinecraftServer server, String motif) {
         if (idCourant == null) return;
+        if (recherche) {
+            // rien n'a été annoncé ni noté ouvert : on lâche seulement les tronçons demandés
+            lacherCandidats(server.overworld());
+            recherche = false;
+            Outils.journal(idCourant + " : recherche du point arretee (" + motif + ")");
+            idCourant = null;
+            return;
+        }
         // pas encore parti : aucune caisse ne viendra. Parti : la caisse déjà en vol ou au sol reste (butin normal) et
         // garde son numéro : ouverte après un redémarrage, elle donne encore ses points (Etat la garde ouverte)
         if (!enVol) Etat.fermer(idCourant);
@@ -193,30 +301,22 @@ final class Largage implements Evenement {
 
     // ------------------------------------------------------------------ choix du point
     @Nullable
-    private static BlockPos choisir(ServerLevel level) {
-        boolean poses = lieux.equals("poses") || lieux.equals("les_deux") && ALEA.nextBoolean();
-        BlockPos p = poses ? lieuPose(level) : pointAuHasard(level);
-        if (p == null && lieux.equals("les_deux")) p = poses ? pointAuHasard(level) : lieuPose(level);
-        if (p == null) Outils.journal("largage : aucun point valide (" + lieux + ")");
-        return p;
-    }
-
-    @Nullable
     private static BlockPos lieuPose(ServerLevel level) {
+        PointCrash.lireVip(level.getServer());
         List<Lieux.Lieu> l = new ArrayList<>(Lieux.liste(ID));
         Collections.shuffle(l, ALEA);
         for (Lieux.Lieu x : l) {
-            if (!procheDUneBase(level, x.pos()) && level.getWorldBorder().isWithinBounds(x.pos())) return x.pos();
+            if (!procheDUneBase(level, x.pos()) && level.getWorldBorder().isWithinBounds(x.pos())
+                    && !PointCrash.dansZoneVip(x.pos().getX() + 0.5, x.pos().getZ() + 0.5)) return x.pos();
         }
         return null;
     }
 
     /**
-     * Un point au hasard dans la bordure du monde (moins {@code marge_bordure}) : sol à ciel ouvert, ni eau, ni lave, ni
-     * feuillage, terrain à peu près plat sur 3 blocs autour (pas un bord de toit ni une falaise), loin des bases des clans.
+     * Rectangle du tirage : la bordure du monde (moins {@code marge_bordure}), limitée par {@code zone}. Faux s'il est
+     * trop petit ou trop grand (noté au journal).
      */
-    @Nullable
-    private static BlockPos pointAuHasard(ServerLevel level) {
+    private boolean rectangle(ServerLevel level) {
         WorldBorder b = level.getWorldBorder();
         double x1 = b.getMinX() + margeBordure, x2 = b.getMaxX() - margeBordure;
         double z1 = b.getMinZ() + margeBordure, z2 = b.getMaxZ() - margeBordure;
@@ -226,23 +326,155 @@ final class Largage implements Evenement {
             x2 = Math.min(x2, zone[2]);
             z2 = Math.min(z2, zone[3]);
         }
-        if (x2 - x1 < 64 || z2 - z1 < 64) return null;
+        if (x2 - x1 < 64 || z2 - z1 < 64) return false;
         if (x2 - x1 > 20_000 || z2 - z1 > 20_000) {
             Outils.journal("largage : bordure du monde trop grande pour tirer un point (" + Math.round(x2 - x1) + " blocs) : regler \"zone\" dans largage.json");
-            return null;
+            return false;
         }
-        for (int i = 0; i < essais; i++) {
-            int x = (int) Math.floor(x1 + ALEA.nextDouble() * (x2 - x1));
-            int z = (int) Math.floor(z1 + ALEA.nextDouble() * (z2 - z1));
-            BlockPos haut = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
-            if (haut.getY() <= level.getMinBuildHeight() + 2) continue;
-            BlockState sol = level.getBlockState(haut.below());
-            if (!sol.getFluidState().isEmpty() || sol.is(BlockTags.LEAVES) || sol.isAir()) continue;
-            if (!plat(level, haut)) continue;
-            if (procheDUneBase(level, haut)) continue;
-            return haut;
+        rx1 = Mth.ceil(x1);
+        rz1 = Mth.ceil(z1);
+        rx2 = Mth.floor(x2);
+        rz2 = Mth.floor(z2);
+        return true;
+    }
+
+    /**
+     * Un pas de la recherche (au lancement, puis chaque seconde) : avance les candidats en cours (lecture du disque faite ?
+     * tronçon chargé ?), contrôle ceux qui sont prêts, en tire de nouveaux. Rien n'est lu sur le disque par ce fil.
+     */
+    private void chercher(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        long maintenant = System.currentTimeMillis();
+        for (Iterator<Candidat> it = candidats.iterator(); it.hasNext(); ) {
+            Candidat c = it.next();
+            boolean fini = false;
+            BlockPos p = null;
+            if (!c.ticket && c.lecture != null) {
+                if (c.lecture.isDone()) {
+                    if (completSurDisque(c.lecture)) {
+                        level.getChunkSource().addRegionTicket(TICKET, c.cp, 0, c.cp);
+                        c.ticket = true;
+                        c.limiteMs = maintenant + ATTENTE_MS;
+                    } else {
+                        refusDisque++;
+                        fini = true;
+                    }
+                } else if (maintenant > c.limiteMs) {
+                    refusDisque++;
+                    fini = true;
+                }
+            }
+            if (!fini && (c.ticket || c.lecture == null)) {
+                if (level.getChunkSource().getChunkNow(c.cp.x, c.cp.z) != null) {
+                    fini = true;
+                    p = controler(level, c.x, c.z);
+                    if (p == null) refusSol++;
+                } else if (maintenant > c.limiteMs) {
+                    refusDisque++;
+                    fini = true;
+                }
+            }
+            if (!fini) continue;
+            it.remove();
+            if (c.ticket) level.getChunkSource().removeRegionTicket(TICKET, c.cp, 0, c.cp);
+            if (p != null) {
+                lacherCandidats(level);
+                String id = idCourant;
+                if (id != null) lancerSur(server, id, p, rechercheAvecPoints, recherchePar);
+                return;
+            }
+        }
+        if (candidats.size() < EN_PARALLELE && essaisRestants > 0) PointCrash.lireVip(server);
+        while (candidats.size() < EN_PARALLELE && essaisRestants > 0) {
+            essaisRestants--;
+            Candidat c = tirer(level, maintenant);
+            if (c != null) candidats.add(c);
+        }
+        if (candidats.isEmpty() && essaisRestants <= 0) echecRecherche(server);
+    }
+
+    /**
+     * Un candidat tiré sans rien lire : dans le rectangle, à l'intérieur de son tronçon (les relevés à 3 blocs autour
+     * restent dans ce tronçon), régions de la carte présentes autour, hors zone VIP, loin des bases ; null si
+     * {@link #TIRAGES} tirages sont refusés. Son tronçon est demandé au disque en tâche de fond (déjà chargé : rien à lire).
+     */
+    @Nullable
+    private Candidat tirer(ServerLevel level, long maintenant) {
+        for (int i = 0; i < TIRAGES; i++) {
+            int x = ((rx1 + ALEA.nextInt(rx2 - rx1 + 1)) & ~15) + 3 + ALEA.nextInt(10);
+            int z = ((rz1 + ALEA.nextInt(rz2 - rz1 + 1)) & ~15) + 3 + ALEA.nextInt(10);
+            if (x < rx1 || x > rx2 || z < rz1 || z > rz2) continue;
+            if (!regionsPresentes(level, x, z)) {
+                refusRegion++;
+                continue;
+            }
+            if (PointCrash.dansZoneVip(x + 0.5, z + 0.5)) {
+                refusVip++;
+                continue;
+            }
+            if (procheDUneBase(level, new BlockPos(x, level.getSeaLevel(), z))) {
+                refusBase++;
+                continue;
+            }
+            Candidat c = new Candidat(x, z, maintenant + ATTENTE_MS);
+            if (level.getChunkSource().getChunkNow(c.cp.x, c.cp.z) == null) {
+                try {
+                    c.lecture = level.getChunkSource().chunkMap.read(c.cp);
+                } catch (RuntimeException e) {
+                    refusDisque++;
+                    continue;
+                }
+            }
+            return c;
         }
         return null;
+    }
+
+    /** Les fichiers de régions du point et de son voisinage ({@link #RAYON_REGIONS}) existent (régions absentes gardées). */
+    private boolean regionsPresentes(ServerLevel level, int x, int z) {
+        return region(level, x, z) && region(level, x - RAYON_REGIONS, z - RAYON_REGIONS) && region(level, x + RAYON_REGIONS, z - RAYON_REGIONS)
+                && region(level, x - RAYON_REGIONS, z + RAYON_REGIONS) && region(level, x + RAYON_REGIONS, z + RAYON_REGIONS);
+    }
+
+    private boolean region(ServerLevel level, int x, int z) {
+        long cle = ChunkPos.asLong(x >> 9, z >> 9);
+        if (regionsAbsentes.contains(cle)) return false;
+        if (DepartServeur.regionPresente(level, x, z)) return true;
+        regionsAbsentes.add(cle);
+        return false;
+    }
+
+    /** Le tronçon lu est sur le disque et complet (jamais un tronçon à générer ou à finir de générer). */
+    private static boolean completSurDisque(CompletableFuture<Optional<CompoundTag>> lecture) {
+        try {
+            Optional<CompoundTag> o = lecture.getNow(Optional.empty());
+            if (o.isEmpty()) return false;
+            CompoundTag t = o.get();
+            if (t.contains("Level", 10)) t = t.getCompound("Level");          // écrit par une ancienne version, pas encore réécrit
+            if (!t.contains("Status", 8)) return t.getBoolean("TerrainPopulated");   // avant 1.13
+            String statut = t.getString("Status");
+            int i = statut.indexOf(':');
+            if (i >= 0) statut = statut.substring(i + 1);
+            return statut.equals("full") || statut.equals("postprocessed") || statut.equals("fullchunk");
+        } catch (RuntimeException e) {
+            return false;   // lecture en erreur
+        }
+    }
+
+    /**
+     * Contrôle d'un point dont le tronçon est chargé (rien d'autre n'est chargé : tous les relevés sont dans ce tronçon) :
+     * sol à ciel ouvert, ni eau, ni lave, ni feuillage, terrain à peu près plat sur 3 blocs autour (pas un bord de toit ni
+     * une falaise), loin des bases des clans. Null s'il ne passe pas.
+     */
+    @Nullable
+    private static BlockPos controler(ServerLevel level, int x, int z) {
+        BlockPos haut = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
+        if (haut.getY() <= level.getMinBuildHeight() + 2) return null;
+        BlockState sol = level.getBlockState(haut.below());
+        if (!sol.getFluidState().isEmpty() || sol.is(BlockTags.LEAVES) || sol.isAir()) return null;
+        if (!plat(level, haut)) return null;
+        if (procheDUneBase(level, haut)) return null;
+        return haut;
     }
 
     private static boolean plat(ServerLevel level, BlockPos haut) {
@@ -252,6 +484,30 @@ final class Largage implements Evenement {
             if (Math.abs(y - haut.getY()) > 2) return false;
         }
         return true;
+    }
+
+    /** Lâche les tronçons demandés par les candidats en cours (une lecture du disque en cours se finit seule, sans suite). */
+    private void lacherCandidats(ServerLevel level) {
+        for (Candidat c : candidats) {
+            if (c.ticket) level.getChunkSource().removeRegionTicket(TICKET, c.cp, 0, c.cp);
+        }
+        candidats.clear();
+    }
+
+    /** Aucun point au hasard : lieux du staff si le réglage le permet, sinon le largage n'a pas lieu (noté au journal). */
+    private void echecRecherche(MinecraftServer server) {
+        String id = idCourant;
+        recherche = false;
+        Outils.journal(id + " : aucun point valide en " + essais + " essais (refus : " + refusRegion + " hors de la carte construite, "
+                + refusVip + " zone VIP, " + refusBase + " pres d'une base, " + refusDisque + " troncon absent ou incomplet, " + refusSol
+                + " sol)" + (refusVip > 0 && refusRegion + refusBase + refusDisque + refusSol == 0 ? " : zones VIP illisibles ?" : ""));
+        BlockPos p = lieux.equals("les_deux") && !posesEssayes ? lieuPose(server.overworld()) : null;
+        if (p != null && id != null) {
+            lancerSur(server, id, p, rechercheAvecPoints, recherchePar);
+            return;
+        }
+        HeralizEvenements.LOG.warn("[evenements] {} : aucun point de largage valide, pas de largage (journal heraliz_evenements)", id);
+        idCourant = null;
     }
 
     // ------------------------------------------------------------------ réglages
@@ -296,7 +552,8 @@ final class Largage implements Evenement {
                 + " largage <nom>), les_deux. annonce_minutes : annonce avec les coordonnees avant l'arrivee ; rappel_minutes : second message ;"
                 + " avance_secondes : l'avion part ce temps avant la fin de l'annonce (passage et chute) ; marge_bordure : blocs a eviter"
                 + " pres de la bordure du monde ; loin_des_bases : blocs autour des bases des clans ; zone : [x1, z1, x2, z2] pour limiter"
-                + " le tirage (absent : toute la bordure). Relu par /event recharger.");
+                + " le tirage (absent : toute la bordure) ; essais : points lus en tache de fond au plus (jamais hors de la carte construite,"
+                + " jamais dans une zone VIP). Relu par /event recharger.");
         o.addProperty("lieux", "hasard");
         o.addProperty("annonce_minutes", 6);
         o.addProperty("rappel_minutes", 3);
