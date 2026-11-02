@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * {@code /vehicules liste} : les véhicules et les objets du mod. {@code /vehicules donner <joueurs> <véhicule>} (op 2) :
+ * {@code /vehicules liste} (op 2) : les véhicules et les objets du mod. {@code /vehicules donner <joueurs> <véhicule>} (op 2) :
  * donne l'objet qui pose le véhicule (noms courts buggy / moto / camion / fourgon, ou l'id Limitless Vehicle), par
  * exemple pour remplir une caisse (éditeur de butin {@code /heraliz edit <caisse>}, objet ajouté depuis l'inventaire).
  * Réponses en {@code sendSystemMessage} : {@code sendCommandFeedback} est coupé sur le serveur.
@@ -35,9 +35,11 @@ public final class Commandes {
     private static void register(CommandDispatcher<CommandSourceStack> d) {
         List<String> choix = new ArrayList<>(Contenu.NOMS);
         Contenu.VEHICULES.forEach(v -> choix.add(v.substring(v.indexOf(':') + 1)));
-        d.register(Commands.literal("vehicules")
+        // 02/11 (audit point 36, §10) : /vehicules liste était ouverte à tous, sans intérêt pour un joueur : toute la commande
+        // passe au niveau 2 (staff), elle sort de la liste des commandes des joueurs
+        d.register(Commands.literal("vehicules").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("liste").executes(Commandes::liste))
-                .then(Commands.literal("donner").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("donner")
                         .then(Commands.argument("joueurs", EntityArgument.players())
                                 .then(Commands.argument("vehicule", StringArgumentType.word())
                                         .suggests((c, b) -> SharedSuggestionProvider.suggest(choix, b))
