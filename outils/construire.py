@@ -206,6 +206,14 @@ ALLEGES = {
             "dans toutes leurs classes) ; nos zombies ont leur propre rendu et leurs propres textures.",
             "OptiFine-only resources: only OptiFine reads assets/minecraft/optifine, and OptiFine is not part of the pack.",
         ),
+        # crédits de l'auteur remis (02/11, règle « jamais notre nom sur le code des autres ») : la copie d'avant affichait
+        # « ArkaniaZ Props » par « HeraliZ » sur le code de MrCrayfish (com/mrcrayfish) ; licence laissée telle quelle
+        "credits": (
+            ('displayName="ArkaniaZ Props"', 'displayName="MrCrayfish\'s Furniture Mod"'),
+            ('displayURL="https://arkaniaz.fr/"', 'displayURL=""'),
+            ('credits=""', 'credits="Mod d\'origine : MrCrayfish\'s Furniture Mod, par MrCrayfish. Copie allégée pour le serveur HeraliZ."'),
+            ('authors="HeraliZ"', 'authors="MrCrayfish"'),
+        ),
     },
 }
 ALLEGE_NOTE = "CONTENU-RETIRE.txt"
@@ -229,13 +237,22 @@ def alleger(src, dst, regle):
             info.compress_type = zipfile.ZIP_STORED if i.is_dir() else zipfile.ZIP_DEFLATED
             info.external_attr = i.external_attr
             info.create_system = i.create_system
-            zo.writestr(info, zi.read(i.filename))
+            donnees = zi.read(i.filename)
+            if i.filename == "META-INF/mods.toml" and regle.get("credits"):
+                t = donnees.decode("utf-8")
+                for avant, apres in regle["credits"]:
+                    if avant not in t:
+                        raise SystemExit("[construire] %s : « %s » absent de mods.toml (jar changé ?) : revoir ALLEGES" % (src.name, avant))
+                    t = t.replace(avant, apres)
+                donnees = t.encode("utf-8")
+            zo.writestr(info, donnees)
         if n == 0:
             raise SystemExit("[construire] %s : rien à retirer sous %s (jar changé ?) : revoir ALLEGES" % (src.name, retirer))
         texte = "\n".join([
             "Copie allégée de %s, faite pour le serveur HeraliZ le %02d/%02d/%d (modifiée : des fichiers ont été retirés,"
             % (src.name, ALLEGE_DATE[2], ALLEGE_DATE[1], ALLEGE_DATE[0]),
-            "aucun n'a été changé ni ajouté, sauf ce fichier). Lighter copy made for the HeraliZ server: files removed only.",
+            "aucun n'a été changé ni ajouté, sauf ce fichier%s). Lighter copy made for the HeraliZ server: files removed only."
+            % (" et les crédits de l'auteur remis dans META-INF/mods.toml" if regle.get("credits") else ""),
             "",
             "Jar d'origine / original jar : %s (sha256 %s)" % (src.name, _sha256(src.read_bytes())),
             "Retiré / removed : %s (%d fichiers, %.1f Mo non compressés)" % (", ".join(retirer), n, octets / 1048576),
@@ -243,8 +260,8 @@ def alleger(src, dst, regle):
             "Pourquoi / why :",
         ] + ["  " + l for l in regle["pourquoi"]] + [
             "",
-            "Licence et crédits inchangés : voir META-INF/mods.toml (auteurs, licence) et les fichiers de l'auteur, copiés tels",
-            "quels. License and credits unchanged: see META-INF/mods.toml and the author's files, copied as is.",
+            "Licence inchangée ; crédits de l'auteur dans META-INF/mods.toml ; fichiers de l'auteur copiés tels quels.",
+            "License unchanged; author credits in META-INF/mods.toml; the author's files are copied as is.",
             "",
         ])
         note = zipfile.ZipInfo(ALLEGE_NOTE, date_time=ALLEGE_DATE)
