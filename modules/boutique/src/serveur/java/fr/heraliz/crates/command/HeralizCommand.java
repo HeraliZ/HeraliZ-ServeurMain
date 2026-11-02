@@ -9,10 +9,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import fr.heraliz.crates.cles.ComptesCles;
 import fr.heraliz.crates.crate.CrateType;
-import fr.heraliz.crates.loot.CrateLoot;
-import fr.heraliz.crates.loot.LootEntry;
 import fr.heraliz.crates.loot.LootManager;
-import fr.heraliz.crates.loot.LootRarity;
 import fr.heraliz.crates.menu.PreviewMenu;
 import fr.heraliz.crates.opening.CaseOpening;
 import fr.heraliz.crates.opening.LootEditing;
@@ -26,11 +23,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
 /**
  * /heraliz ...
@@ -41,10 +36,10 @@ import java.util.Locale;
  *   cles retirer <joueurs> <coffre> <nombre>  (op) correction du staff
  *   givecrate <joueurs> <coffre> [nombre]     (op)
  *   reload                                    (op)
- *   loot add <coffre> <poids> [rarete]        (op) ajoute l'objet tenu en main
- *   loot list <coffre>                        (op)
- *   loot remove <coffre> <index>              (op)
- *   edit <coffre>                             (op) editeur de butin (objets, raretes, chances)
+ *   loot fichier <coffre>                     (op) efface le butin change en jeu (retour au fichier du serveur)
+ *   edit <coffre>                             (op) editeur de butin (objets, raretes, chances : ajouter depuis
+ *                                             l'inventaire, retirer, lister)
+ * 02/11 (audit point 36) : loot add|list|remove (doublons de l'editeur /heraliz edit) sont retires.
  *   editor                                    (op) donne l'outil d'edition des caisses
  *   interface <joueurs> <coffre>              (op) ouvre l'interface d'ouverture sans caisse (PNJ, menus...)
  */
@@ -57,9 +52,6 @@ public final class HeralizCommand {
 
     private static final SuggestionProvider<CommandSourceStack> CRATES = (ctx, builder) ->
             SharedSuggestionProvider.suggest(Arrays.stream(CrateType.values()).map(t -> t.id), builder);
-
-    private static final SuggestionProvider<CommandSourceStack> RARITIES = (ctx, builder) ->
-            SharedSuggestionProvider.suggest(Arrays.stream(LootRarity.values()).map(r -> r.id), builder);
 
     public static void register(CommandDispatcher<CommandSourceStack> d) {
         d.register(Commands.literal("heraliz")
@@ -122,19 +114,6 @@ public final class HeralizCommand {
                                             return players.size();
                                         }))))
                 .then(Commands.literal("loot").requires(s -> s.hasPermission(2))
-                        .then(Commands.literal("add")
-                                .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
-                                        .then(Commands.argument("weight", IntegerArgumentType.integer(1, 100000))
-                                                .executes(c -> lootAdd(c, "common"))
-                                                .then(Commands.argument("rarity", StringArgumentType.word()).suggests(RARITIES)
-                                                        .executes(c -> lootAdd(c, StringArgumentType.getString(c, "rarity")))))))
-                        .then(Commands.literal("list")
-                                .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
-                                        .executes(HeralizCommand::lootList)))
-                        .then(Commands.literal("remove")
-                                .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
-                                        .then(Commands.argument("index", IntegerArgumentType.integer(1))
-                                                .executes(HeralizCommand::lootRemove))))
                         // butin changé en jeu effacé : la caisse reprend le fichier de config/ (celui du dépôt)
                         .then(Commands.literal("fichier")
                                 .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
@@ -245,61 +224,6 @@ public final class HeralizCommand {
         } else {
             c.getSource().sendFailure(Component.translatable("command.heralizcrates.reload_errors", errors));
         }
-        return 1;
-    }
-
-    private static int lootAdd(CommandContext<CommandSourceStack> c, String rarityId) throws CommandSyntaxException {
-        CrateType type = crate(c);
-        ServerPlayer player = c.getSource().getPlayerOrException();
-        ItemStack held = player.getMainHandItem();
-        if (held.isEmpty()) {
-            c.getSource().sendFailure(Component.translatable("command.heralizcrates.hold_item"));
-            return 0;
-        }
-        LootEntry e = new LootEntry(String.valueOf(ForgeRegistries.ITEMS.getKey(held.getItem())), held.getCount(),
-                IntegerArgumentType.getInteger(c, "weight"), LootRarity.byId(rarityId));
-        if (held.hasTag()) {
-            e.nbt = held.getTag().toString();
-        }
-        CrateLoot loot = LootManager.get(type);
-        loot.entries.add(e);
-        LootManager.save(type);
-        Component name = held.getDisplayName();
-        c.getSource().sendSuccess(() -> Component.translatable("command.heralizcrates.loot_added", name, type.crateName(),
-                String.format(Locale.ROOT, "%.2f%%", loot.chance(e))), true);
-        return 1;
-    }
-
-    private static int lootList(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-        CrateType type = crate(c);
-        CrateLoot loot = LootManager.get(type);
-        c.getSource().sendSuccess(() -> Component.translatable("command.heralizcrates.loot_header", type.crateName(), loot.entries.size()), false);
-        int i = 1;
-        for (LootEntry e : loot.entries) {
-            final int idx = i++;
-            ItemStack s = e.displayStack();
-            Component name = s.isEmpty() ? Component.literal(e.item).withStyle(ChatFormatting.RED) : s.getDisplayName();
-            c.getSource().sendSuccess(() -> Component.literal(" " + idx + ". ").withStyle(ChatFormatting.DARK_GRAY)
-                    .append(name).append(Component.literal(" x" + e.count + "  ").withStyle(ChatFormatting.WHITE))
-                    .append(e.rarity.displayName())
-                    .append(Component.literal("  ").append(Component.translatableWithFallback("heralizcrates.commande.poids", "(poids %s, %s)",
-                                    String.valueOf(e.weight), String.format(Locale.ROOT, "%.2f%%", loot.chance(e))))
-                            .withStyle(ChatFormatting.GRAY)), false);
-        }
-        return loot.entries.size();
-    }
-
-    private static int lootRemove(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-        CrateType type = crate(c);
-        int index = IntegerArgumentType.getInteger(c, "index");
-        CrateLoot loot = LootManager.get(type);
-        if (index < 1 || index > loot.entries.size()) {
-            c.getSource().sendFailure(Component.translatable("command.heralizcrates.bad_index", loot.entries.size()));
-            return 0;
-        }
-        LootEntry removed = loot.entries.remove(index - 1);
-        LootManager.save(type);
-        c.getSource().sendSuccess(() -> Component.translatable("command.heralizcrates.loot_removed", removed.item, type.crateName()), true);
         return 1;
     }
 }

@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * {@code /vehicules liste} : les véhicules et les objets du mod. {@code /vehicules donner <joueurs> <véhicule>} (op 2) :
  * donne l'objet qui pose le véhicule (noms courts buggy / moto / camion / fourgon, ou l'id Limitless Vehicle), par
- * exemple pour remplir une caisse ({@code /heraliz loot add <caisse> <poids> <rareté>} avec l'objet en main).
+ * exemple pour remplir une caisse (éditeur de butin {@code /heraliz edit <caisse>}, objet ajouté depuis l'inventaire).
  * Réponses en {@code sendSystemMessage} : {@code sendCommandFeedback} est coupé sur le serveur.
  */
 public final class Commandes {

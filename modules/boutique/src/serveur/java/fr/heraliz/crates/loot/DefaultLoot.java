@@ -14,7 +14,7 @@ import static fr.heraliz.crates.loot.LootRarity.UNCOMMON;
 
 /**
  * Butin par defaut (objets vanilla) ecrit au premier lancement.
- * A modifier ensuite dans config/heralizcrates/<caisse>.json ou avec /heraliz loot add.
+ * A modifier ensuite dans config/heralizcrates/<caisse>.json ou avec l'editeur de butin (/heraliz edit <caisse>).
  */
 final class DefaultLoot {
     private DefaultLoot() {

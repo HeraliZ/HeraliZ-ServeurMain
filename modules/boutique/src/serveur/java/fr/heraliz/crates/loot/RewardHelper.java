@@ -49,7 +49,7 @@ public final class RewardHelper {
             }
             if (!full.isEmpty()) {
                 // 25/10 (audit) : le numéro de l'anti-duplication de Spartan, copié dans le butin avec l'objet tenu par
-                // l'admin (/heraliz loot add, éditeur de butin), n'est jamais redonné : tous les gagnants auraient le même
+                // l'admin (éditeur de butin), n'est jamais redonné : tous les gagnants auraient le même
                 // (fausses alertes de copie au staff)
                 if (full.getTag() != null) {
                     full.getTag().remove("spartan_uid");

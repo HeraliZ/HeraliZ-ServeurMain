@@ -42,7 +42,7 @@ public final class LootManager {
     }
 
     /**
-     * Butin changé EN JEU (éditeur de butin, /heraliz loot ...) : gardé à la racine du serveur, hors de config/, que la
+     * Butin changé EN JEU (éditeur de butin) : gardé à la racine du serveur, hors de config/, que la
      * mise en ligne réécrit à chaque envoi (avant le 23/10, un changement fait en jeu était perdu au prochain envoi). Un
      * fichier ici passe devant celui de config/ ; /heraliz loot fichier &lt;caisse&gt; l'efface (retour au fichier du dépôt).
      */
@@ -249,7 +249,7 @@ public final class LootManager {
         root.addProperty("_aide", "Chaque recompense : item (id), count (quantite), weight (poids du tirage), rarity (common/uncommon/rare/epic/legendary/mythic), "
                 + "nbt (optionnel, ex: {Enchantments:[{id:\"minecraft:sharpness\",lvl:5s}]}), name (optionnel, codes couleur &), "
                 + "commands (optionnel, {player} = pseudo), give_item (false = ne donne que les commandes). "
-                + "Astuce : tiens un objet en main et fais /heraliz loot add " + type.id + " <poids> <rarete>. Puis /heraliz reload.");
+                + "Astuce : /heraliz edit " + type.id + " ouvre l'editeur de butin (objets ajoutes depuis l'inventaire). Fichier modifie a la main : /recharger.");
         JsonArray arr = new JsonArray();
         for (LootEntry e : loot.entries) arr.add(e.toJson());
         root.add("rewards", arr);
