@@ -91,6 +91,8 @@ public final class VoiceServer {
         final byte[] key;
         final boolean simulated;
         final TokenBucket tcpLimit = new TokenBucket(60, 20);
+        /** Actions de groupe (créer, rejoindre, quitter) : 4 par seconde, 8 d'un coup au plus (audit du 02/11, point 29). */
+        final TokenBucket groupLimit = new TokenBucket(4, 8);
         volatile ServerPlayer player;
         volatile UdpVoiceServer.Peer peer;
         /** The client says its UDP works (otherwise voices go through the game connection). */
@@ -165,6 +167,14 @@ public final class VoiceServer {
     private static String udpSettings = "";
     private static int nextGroup = 1;
     private static boolean rosterDirty;
+    /**
+     * Liste vocale envoyée à tous au plus une fois toutes les {@link #ROSTER_TICKS} ticks (2 fois par seconde ; audit du
+     * 02/11, point 29) : avant, chaque changement d'état ou de groupe la renvoyait au tick suivant, et un jeu modifié qui en
+     * envoyait 20 par seconde la faisait partir 20 fois par seconde à tous les joueurs (tous les joueurs et tous les
+     * groupes dans chaque envoi). Un changement après un moment calme part toujours au tick suivant.
+     */
+    private static final int ROSTER_TICKS = 10;
+    private static int lastRosterTick = Integer.MIN_VALUE / 2;
     private static boolean warnedSvc;
     private static long tickNanos;
     private static long ticks;
@@ -408,7 +418,8 @@ public final class VoiceServer {
         long now = System.nanoTime();
         snapshot(s, now);
         events(now);
-        if (rosterDirty) {
+        if (rosterDirty && s.getTickCount() - lastRosterTick >= ROSTER_TICKS) {
+            lastRosterTick = s.getTickCount();
             sendRoster(s);
         }
         long spent = System.nanoTime() - start;
@@ -574,6 +585,11 @@ public final class VoiceServer {
             return;
         }
         UUID uuid = player.getUUID();
+        Member self = MEMBERS.get(uuid);
+        if (self != null && !self.groupLimit.take()) {
+            // trop d'actions de groupe d'un coup (jeu modifié) : ignorées
+            return;
+        }
         switch (action.action()) {
             case GroupAction.CREATE -> {
                 if (!CaraCreaConfig.SERVER.allowGroups.get()) {
