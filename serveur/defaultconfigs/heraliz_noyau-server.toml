@@ -52,6 +52,26 @@
 	#Range: 0.1 ~ 2.0
 	faim_facteur = 0.35
 
+[pas]
+	#Bruits de pas (03/11, retour du propriétaire : « on n'entend pas assez les pas des ennemis »). Le pas d'un joueur
+	#est joué par son propre jeu pour lui-même (jamais touché ici) et envoyé par le serveur aux AUTRES joueurs ; celui d'un
+	#zombie est envoyé par le serveur à tous. true = réglages ci-dessous ; false : comme Minecraft (pas d'un autre joueur
+	#entendu à 16 blocs au plus).
+	actif = true
+	#Distance (blocs) jusqu'à laquelle on entend le pas d'un autre joueur, de moins en moins fort avec la
+	#distance (Minecraft : 16). Un joueur accroupi reste silencieux, comme dans Minecraft. Vanish du staff respecté.
+	#Range: 8 ~ 64
+	portee_joueurs = 32
+	#Volume du pas d'un autre joueur tout près, par rapport à Minecraft (1 : comme Minecraft ; 2 : deux fois
+	#plus fort). Ses propres pas ne changent pas.
+	#Range: 0.25 ~ 4.0
+	volume_joueurs = 2.0
+	#Volume du pas des zombies et des autres monstres, par rapport à avant (1 : comme avant, soit la moitié
+	#de Minecraft, réglée le 24/10 dans le pack de ressources des joueurs ; 2 : comme Minecraft). Leur distance ne change
+	#pas : 11 blocs pour les zombies.
+	#Range: 0.25 ~ 4.0
+	volume_monstres = 2.0
+
 [succes]
 	#Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à
 	#chaque changement d'inventaire (chaque tir de TaCZ), environ 1 % du serveur à 90 joueurs, et ne servent pas ici (quêtes,

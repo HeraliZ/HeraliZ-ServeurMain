@@ -105,6 +105,20 @@ public final class VoirBukkit {
       return CASSE;
    }
 
+   /** Le test de Bukkit peut être refait ici (ou il n'existe pas : Forge seul). Pour les sons ({@code PasEntendus}). */
+   public static boolean pret() {
+      return !CASSE;
+   }
+
+   /**
+    * Le joueur reçoit-il un son joué par {@code source} ? Même règle que l'envoi des sons sous Mohist
+    * ({@code PlayerList.broadcast} : le destinataire doit « voir » la source, vanish du staff compris) : toujours vrai sans
+    * Bukkit ; faux si Bukkit la lui cache, et aussi si le test échoue (un staff caché n'est jamais trahi). Fil serveur.
+    */
+   public static boolean entend(ServerPlayer joueur, Entity source) {
+      return voit(joueur, source) == 1;
+   }
+
    /**
     * Le test de Bukkit posé par Mohist pour la paire (joueur, entité), quand l'entité est à portée et que
     * {@code broadcastToPlayer} a dit oui : 1 visible, 0 cachée, -1 si le test n'a pas pu être fait (l'appelant refait

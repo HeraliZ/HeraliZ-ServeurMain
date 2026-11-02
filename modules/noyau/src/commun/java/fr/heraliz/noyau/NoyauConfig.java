@@ -48,6 +48,19 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.DoubleValue FAIM_FACTEUR;
    /** Vitesse de la faim, relue avec les réglages (FaimMixin de la partie serveur). */
    public static volatile float faimFacteur = 0.35F;
+   // Bruits de pas (03/11) : lus par la partie serveur seulement (PasEntendus) ; ce fichier n'est jamais envoyé aux joueurs
+   public static final ForgeConfigSpec.BooleanValue PAS_ACTIF;
+   public static final ForgeConfigSpec.IntValue PAS_PORTEE;
+   public static final ForgeConfigSpec.DoubleValue PAS_VOLUME_JOUEURS;
+   public static final ForgeConfigSpec.DoubleValue PAS_VOLUME_MONSTRES;
+   /** Pas des autres joueurs et des monstres réglés par le serveur, relu avec les réglages. */
+   public static volatile boolean pasActif = true;
+   /** Distance (blocs) jusqu'à laquelle on entend le pas d'un autre joueur. */
+   public static volatile int pasPortee = 32;
+   /** Volume du pas d'un autre joueur, tout près, par rapport à Minecraft. */
+   public static volatile float pasVolumeJoueurs = 2.0F;
+   /** Volume du pas d'un monstre par rapport à avant (sa distance ne change pas). */
+   public static volatile float pasVolumeMonstres = 2.0F;
    public static final ForgeConfigSpec.BooleanValue SUCCES_ACTIFS;
    /** Succès de Minecraft suivis, relu avec les réglages (SuccesMixin de la partie serveur). */
    public static volatile boolean succesActifs = false;
@@ -204,6 +217,23 @@ public final class NoyauConfig {
             "multipliée par ce nombre. 1 : comme Minecraft ; 0,35 (28/10) : la barre de faim dure environ trois fois plus longtemps.")
             .defineInRange("faim_facteur", 0.35, 0.1, 2.0);
       b.pop();
+      b.push("pas");
+      PAS_ACTIF = b.comment("Bruits de pas (03/11, retour du propriétaire : « on n'entend pas assez les pas des ennemis »). Le pas d'un joueur",
+            "est joué par son propre jeu pour lui-même (jamais touché ici) et envoyé par le serveur aux AUTRES joueurs ; celui d'un",
+            "zombie est envoyé par le serveur à tous. true = réglages ci-dessous ; false : comme Minecraft (pas d'un autre joueur",
+            "entendu à 16 blocs au plus).")
+            .define("actif", true);
+      PAS_PORTEE = b.comment("Distance (blocs) jusqu'à laquelle on entend le pas d'un autre joueur, de moins en moins fort avec la",
+            "distance (Minecraft : 16). Un joueur accroupi reste silencieux, comme dans Minecraft. Vanish du staff respecté.")
+            .defineInRange("portee_joueurs", 32, 8, 64);
+      PAS_VOLUME_JOUEURS = b.comment("Volume du pas d'un autre joueur tout près, par rapport à Minecraft (1 : comme Minecraft ; 2 : deux fois",
+            "plus fort). Ses propres pas ne changent pas.")
+            .defineInRange("volume_joueurs", 2.0, 0.25, 4.0);
+      PAS_VOLUME_MONSTRES = b.comment("Volume du pas des zombies et des autres monstres, par rapport à avant (1 : comme avant, soit la moitié",
+            "de Minecraft, réglée le 24/10 dans le pack de ressources des joueurs ; 2 : comme Minecraft). Leur distance ne change",
+            "pas : 11 blocs pour les zombies.")
+            .defineInRange("volume_monstres", 2.0, 0.25, 4.0);
+      b.pop();
       b.push("succes");
       SUCCES_ACTIFS = b.comment("Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à",
             "chaque changement d'inventaire (chaque tir de TaCZ), environ 1 % du serveur à 90 joueurs, et ne servent pas ici (quêtes,",
@@ -300,6 +330,10 @@ public final class NoyauConfig {
       if (c.getSpec() != SPEC) return;
       CombatTag.dureeMs(TAG_COMBAT_S.get() * 1000L);
       faimFacteur = (float) (double) FAIM_FACTEUR.get();
+      pasActif = PAS_ACTIF.get();
+      pasPortee = PAS_PORTEE.get();
+      pasVolumeJoueurs = (float) (double) PAS_VOLUME_JOUEURS.get();
+      pasVolumeMonstres = (float) (double) PAS_VOLUME_MONSTRES.get();
       succesActifs = SUCCES_ACTIFS.get();
       levelDatEnFond = LEVEL_DAT_FOND.get();
       spawnJamaisPrepare = SPAWN_JAMAIS_PREPARE.get();

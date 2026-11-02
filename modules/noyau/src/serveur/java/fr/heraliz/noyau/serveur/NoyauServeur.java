@@ -21,7 +21,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * des bots de charge réservée aux vrais bots, {@code /r} (répondre au dernier message privé), {@code /diag} (blocages et
  * profil du serveur, façon spark), clic droit avec un objet de mod jugé par WorldGuard comme une main vide
  * ({@link fr.heraliz.noyau.serveur.interactions.ClicObjetBukkit}), commandes retirées ou cachées de la liste
- * ({@link fr.heraliz.noyau.serveur.commandes.CommandesRetirees}, {@link fr.heraliz.noyau.serveur.commandes.CommandesBukkit}).
+ * ({@link fr.heraliz.noyau.serveur.commandes.CommandesRetirees}, {@link fr.heraliz.noyau.serveur.commandes.CommandesBukkit}),
+ * bruits de pas des autres joueurs et des monstres ({@link fr.heraliz.noyau.serveur.sons.PasEntendus}).
  */
 public final class NoyauServeur implements Partie {
    @Override
@@ -46,6 +47,7 @@ public final class NoyauServeur implements Partie {
       fr.heraliz.noyau.serveur.perf.Allege.enregistrer();
       fr.heraliz.noyau.serveur.perf.TicsAleatoires.enregistrer();
       fr.heraliz.noyau.serveur.interactions.ClicObjetBukkit.enregistrer();
+      fr.heraliz.noyau.serveur.sons.PasEntendus.enregistrer();   // pas des autres joueurs et des monstres (03/11)
       ReglagesGardes.enregistrer();   // réglages SERVER gardés au serveur (audit du 02/11, point 11)
       fr.heraliz.noyau.serveur.commandes.CommandesRetirees.enregistrer();
       fr.heraliz.noyau.serveur.commandes.CommandesBukkit.enregistrer();
