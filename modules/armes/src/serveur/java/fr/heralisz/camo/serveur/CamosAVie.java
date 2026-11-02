@@ -44,13 +44,23 @@ import javax.annotation.Nullable;
  *    pose : le poser ailleurs l'enlève de l'ancienne arme) et seulement entre les mains de son propriétaire : une arme qui
  *    passe à un autre joueur (ramassée, volée, donnée) le perd dans la seconde.</li>
  *    <li>Mort avec l'arme (mort définitive, pas la mise à terre ni un match) : le camo quitte l'arme avant qu'elle tombe
- *    sur le corps, et le joueur doit attendre {@link #RECHARGE_MS} avant de pouvoir le remettre.</li>
+ *    sur le corps, et le joueur doit attendre {@link #rechargeMs()} avant de pouvoir le remettre.</li>
  * </ul>
  * Un camo posé depuis un objet reste définitif sur l'arme (ReceptionServeur), comme avant.
  */
 public final class CamosAVie {
-   /** Délai après une mort avec l'arme avant de pouvoir remettre le camo (choix du propriétaire : 15 min). */
-   static final long RECHARGE_MS = 15 * 60_000L;
+   /**
+    * Délai après une mort avec l'arme avant de pouvoir remettre le camo (choix du propriétaire : 15 min) : réglage [camos]
+    * recharge_minutes de heralisz_tactical-server.toml (audit du 02/11, mineur 20).
+    */
+   static long rechargeMs() {
+      try {
+         return fr.heralisz.tactical.config.ServerConfig.CAMO_RECHARGE_MINUTES != null
+            ? fr.heralisz.tactical.config.ServerConfig.CAMO_RECHARGE_MINUTES.get() * 60_000L : 15 * 60_000L;
+      } catch (IllegalStateException pasEncoreLu) {
+         return 15 * 60_000L;
+      }
+   }
    /** Vérification des armes des joueurs (ticks). */
    private static final int VERIFICATION_TICKS = 20;
    /** Profondeur de la recherche dans les objets qui en contiennent d'autres (sacs, boîtes). */
@@ -188,7 +198,7 @@ public final class CamosAVie {
    /**
     * Mort définitive d'un joueur (LivingDropsEvent, HIGH : après les objets de Curios, avant les corps et les sacs) : ses
     * camos à vie quittent les armes qui tombent (y compris dans un sac porté) et ne peuvent pas être remis avant
-    * {@link #RECHARGE_MS}. La mise à terre (Réanimation) annule la mort : rien ne se passe. Pas en match (armes prêtées).
+    * {@link #rechargeMs()}. La mise à terre (Réanimation) annule la mort : rien ne se passe. Pas en match (armes prêtées).
     */
    static void chute(LivingDropsEvent e) {
       if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof FakePlayer) return;
@@ -203,7 +213,8 @@ public final class CamosAVie {
       Container grille = p.inventoryMenu.getCraftSlots();
       for (int i = 0; i < grille.getContainerSize(); i++) depouiller(grille.getItem(i), p.getUUID(), j, perdus);
       if (perdus.isEmpty() || j == null) return;
-      long fin = System.currentTimeMillis() + RECHARGE_MS;
+      long attente = rechargeMs();
+      long fin = System.currentTimeMillis() + attente;
       MutableComponent noms = Component.empty();
       boolean premier = true;
       for (Camo c : perdus) {
@@ -215,7 +226,7 @@ public final class CamosAVie {
       }
       CollectionCamos.changer();
       envoyer(p);
-      p.sendSystemMessage(Component.translatable("msg.heralisz_camo.lost", noms, RECHARGE_MS / 60_000L).withStyle(ChatFormatting.GRAY));
+      p.sendSystemMessage(Component.translatable("msg.heralisz_camo.lost", noms, attente / 60_000L).withStyle(ChatFormatting.GRAY));
    }
 
    /**

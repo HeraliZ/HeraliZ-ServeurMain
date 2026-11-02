@@ -24,6 +24,11 @@
 	#joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.
 	#Range: 1.0 ~ 6.0
 	portee_max = 3.0
+	#Demi-angle (en degrés) autour du regard du joueur dans lequel le serveur accepte une cible des armes de mêlée :
+	#le cône du coup plus la marge du regard en retard (réseau). Plus petit : moins de coups acceptés sur le côté ou
+	#dans le dos, mais des coups refusés aux joueurs qui ont du décalage. 100 : réglage d'origine.
+	#Range: 30.0 ~ 180.0
+	demi_angle_serveur = 100.0
 
 [allonge]
 	#Délai (en secondes) avant de pouvoir se rallonger, compté à partir du moment où le joueur s'est relevé
@@ -150,3 +155,9 @@
 	#un joueur approchait, une balle qui se réveillait et touchait des minutes après le tir. Une balle qui avance
 	#n'est jamais retirée. false : comme avant.
 	retirer_figees = true
+
+[camos]
+	#Camos à vie : attente (en minutes) après une mort avec l'arme qui le portait, avant de pouvoir remettre le camo
+	#(choix du propriétaire : 15). 0 : aucune attente.
+	#Range: 0 ~ 1440
+	recharge_minutes = 15

@@ -1,9 +1,13 @@
 
 [protection]
 	#Multiplicateur des protections des pieces (balles, corps a corps, morsure, radiation) :
-	#1.0 = valeurs du catalogue (meme echelle que HeralisZ Armor, plafond 75 %), 0 = desactive
+	#1.0 = valeurs du catalogue (plafond commun : plafond ci-dessous, radiation 100 %), 0 = desactive
 	#Range: 0.0 ~ 2.0
 	multiplier = 1.0
+	#Plafond commun des protections (en %) : la somme des pieces portees ne le depasse jamais (radiation : 100 %,
+	#Hazmat seulement). 60 : une tenue Unique complete (60 % au corps, 50 % a la tete) ne peut pas etre depassee.
+	#Range: 0.0 ~ 100.0
+	plafond = 60.0
 	#Types de degats traites comme des balles, en plus des projectiles et des balles TaCZ (tag tacz:bullets)
 	bullet_damage_types = []
 	#Multiplicateur de la protection contre les explosions (0 = desactive)

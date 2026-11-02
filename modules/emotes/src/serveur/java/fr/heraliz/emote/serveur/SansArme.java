@@ -43,10 +43,10 @@ public final class SansArme {
         long now = System.currentTimeMillis();
         UUID id = p.getUUID();
         if (enEmote(id)) {
-            JUSQUA.put(id, now + EmoteRules.SANS_ARME_MS);
+            JUSQUA.put(id, now + ReglagesEmotes.sansArmeMs());
             EN_EMOTE.add(id);
         } else if (EN_EMOTE.remove(id)) {
-            envoyer(p, EmoteRules.SANS_ARME_MS);
+            envoyer(p, ReglagesEmotes.sansArmeMs());
         }
         Long fin = JUSQUA.get(id);
         if (fin == null) return;
@@ -66,7 +66,7 @@ public final class SansArme {
     public static long restant(ServerPlayer p) {
         if (Deblocages.tout(p)) return 0;
         UUID id = p.getUUID();
-        if (enEmote(id)) return EmoteRules.SANS_ARME_MS;
+        if (enEmote(id)) return ReglagesEmotes.sansArmeMs();
         Long fin = JUSQUA.get(id);
         return fin == null ? 0 : Math.max(0, fin - System.currentTimeMillis());
     }
@@ -87,7 +87,7 @@ public final class SansArme {
         data.remove(EmoteRules.SANS_ARME_JUSQUA);
         if (reste <= 0) return;
         // jamais plus que le délai normal (horloge du serveur changée entre-temps)
-        reste = Math.min(reste, EmoteRules.SANS_ARME_MS);
+        reste = Math.min(reste, ReglagesEmotes.sansArmeMs());
         JUSQUA.put(p.getUUID(), System.currentTimeMillis() + reste);
         envoyer(p, reste);
     }
@@ -96,7 +96,7 @@ public final class SansArme {
     public static void deconnexion(ServerPlayer p) {
         UUID id = p.getUUID();
         long now = System.currentTimeMillis();
-        long fin = enEmote(id) ? now + EmoteRules.SANS_ARME_MS : JUSQUA.getOrDefault(id, 0L);
+        long fin = enEmote(id) ? now + ReglagesEmotes.sansArmeMs() : JUSQUA.getOrDefault(id, 0L);
         if (fin > now) p.getPersistentData().putLong(EmoteRules.SANS_ARME_JUSQUA, fin);
         JUSQUA.remove(id);
         DERNIER_MESSAGE.remove(id);
@@ -105,7 +105,7 @@ public final class SansArme {
 
     private static void envoyer(ServerPlayer p, long restantMs) {
         try {
-            ReseauEmotes.envoyer(p, new ReseauEmotes.SansArme((int) Math.min(restantMs, EmoteRules.SANS_ARME_MS)));
+            ReseauEmotes.envoyer(p, new ReseauEmotes.SansArme((int) Math.min(restantMs, ReglagesEmotes.sansArmeMs())));
         } catch (RuntimeException ignored) {
             // joueur sans le canal (jeu sans HeraliZ Emote) : le serveur décide seul
         }

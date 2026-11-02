@@ -10,6 +10,8 @@ public final class ArmorConfig {
 
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.DoubleValue PROTECTION_MULTIPLIER;
+    /** Plafond commun des protections (%), audit du 02/11 (mineur 20) : avant, ecrit dans le code (Protection.CAP). */
+    public static final ForgeConfigSpec.DoubleValue PLAFOND;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BULLET_DAMAGE_TYPES;
     public static final ForgeConfigSpec.DoubleValue EXPLOSION_MULTIPLIER;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GAS_EFFECTS;
@@ -24,8 +26,11 @@ public final class ArmorConfig {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.push("protection");
         PROTECTION_MULTIPLIER = b.comment("Multiplicateur des protections des pieces (balles, corps a corps, morsure, radiation) :",
-                        "1.0 = valeurs du catalogue (plafond commun 75 %, radiation 100 %), 0 = desactive")
+                        "1.0 = valeurs du catalogue (plafond commun : plafond ci-dessous, radiation 100 %), 0 = desactive")
                 .defineInRange("multiplier", 1.0, 0.0, 2.0);
+        PLAFOND = b.comment("Plafond commun des protections (en %) : la somme des pieces portees ne le depasse jamais (radiation : 100 %,",
+                        "Hazmat seulement). 60 : une tenue Unique complete (60 % au corps, 50 % a la tete) ne peut pas etre depassee.")
+                .defineInRange("plafond", 60.0, 0.0, 100.0);
         BULLET_DAMAGE_TYPES = b.comment("Types de degats traites comme des balles, en plus des projectiles et des balles TaCZ (tag tacz:bullets)")
                 .defineListAllowEmpty("bullet_damage_types", List.of(), o -> o instanceof String);
         EXPLOSION_MULTIPLIER = b.comment("Multiplicateur de la protection contre les explosions (0 = desactive)")

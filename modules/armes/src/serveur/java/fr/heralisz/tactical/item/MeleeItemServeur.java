@@ -89,10 +89,20 @@ public class MeleeItemServeur extends MeleeItem {
       });
    }
 
-   /** Demi-angle permis autour du regard du serveur : le cône du coup plus la marge du regard en retard (réseau). */
-   private static final double DEMI_ANGLE_SERVEUR = 100.0;
+   /**
+    * Demi-angle permis autour du regard du serveur : le cône du coup plus la marge du regard en retard (réseau) ; réglage
+    * [melee] demi_angle_serveur de heralisz_tactical-server.toml (100 si le réglage n'est pas encore lu).
+    */
+   private static double demiAngleServeur() {
+      try {
+         return fr.heralisz.tactical.config.ServerConfig.MELEE_DEMI_ANGLE != null
+            ? fr.heralisz.tactical.config.ServerConfig.MELEE_DEMI_ANGLE.get() : 100.0;
+      } catch (IllegalStateException pasEncoreLu) {
+         return 100.0;
+      }
+   }
 
    private static boolean devant(Player attacker, Entity cible, double portee) {
-      return fr.heralisz.tactical.util.VectorUtil.isInAngle(attacker.getEyePosition(), attacker.getLookAngle(), cible, DEMI_ANGLE_SERVEUR, portee + 1.0);
+      return fr.heralisz.tactical.util.VectorUtil.isInAngle(attacker.getEyePosition(), attacker.getLookAngle(), cible, demiAngleServeur(), portee + 1.0);
    }
 }

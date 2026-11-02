@@ -42,7 +42,10 @@ public final class EmoteRules {
     public static final String EN_MATCH = "heralisz:en_match";
     public static final String COMBAT_JUSQUA = "heralisz:combat_jusqua";
 
-    /** Weapons stay out of the hands this long after the end of an emote (ms). */
+    /**
+     * Weapons stay out of the hands this long after the end of an emote (ms) : réglage d'origine ; le serveur lit
+     * [armes] secondes_sans_arme de heraliz_emote-serveur.toml (serveur.ReglagesEmotes) et l'envoie au joueur.
+     */
     public static final long SANS_ARME_MS = 10_000;
     /** Extra weapons (data tag), besides swords, axes, bows, tridents, TaCZ guns and knives, melee and grenades. */
     public static final TagKey<Item> ARMES = TagKey.create(Registries.ITEM, new ResourceLocation(HeralizEmote.MODID, "armes"));

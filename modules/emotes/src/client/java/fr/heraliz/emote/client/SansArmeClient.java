@@ -23,8 +23,9 @@ public final class SansArmeClient {
         jusqua = Math.max(jusqua, System.currentTimeMillis() + EmoteRules.SANS_ARME_MS);
     }
 
+    /** Le serveur décide : sa valeur remplace la prévision faite à la fin de l'emote (son délai peut être réglé plus court). */
     static void recevoir(ReseauEmotes.SansArme m) {
-        jusqua = Math.max(jusqua, System.currentTimeMillis() + m.restantMs());
+        jusqua = System.currentTimeMillis() + m.restantMs();
     }
 
     /** Fin de partie : le prochain serveur renverra le sien. */

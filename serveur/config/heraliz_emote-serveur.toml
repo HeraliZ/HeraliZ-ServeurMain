@@ -1,0 +1,8 @@
+
+[armes]
+	#Secondes sans arme en main après la fin d'une emote (une emote montre le joueur de dos, ce qui
+	#ne doit pas aider dans un combat). 10 : réglage d'origine ; 0 : aucune attente après l'emote (jamais d'arme
+	#pendant l'emote).
+	#Range: 0 ~ 60
+	secondes_sans_arme = 10
+

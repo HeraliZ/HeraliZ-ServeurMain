@@ -12,14 +12,23 @@ import java.util.List;
 /**
  * Calcul des protections (0.15.0, choix du proprietaire du 14/10) : une seule protection par objet, la meme contre les
  * balles, les explosions, le corps a corps et les morsures (valeurs ecrites par outils/equilibrage_armures.py). Les %
- * des objets portes s'additionnent, plafonnes a {@link #CAP} (radiation : 100 %, Hazmat seulement). Tir a la tete : seuls
+ * des objets portes s'additionnent, plafonnes a {@link #cap()} (radiation : 100 %, Hazmat seulement). Tir a la tete : seuls
  * le casque et le visage comptent ; autres coups : seules les pieces du corps. Une combinaison compte en entier partout.
  */
 public final class Protection {
     private Protection() {}
 
-    /** Plafond : une tenue Unique complete (60 % au corps, 50 % a la tete) ne peut pas etre depassee. */
-    public static final float CAP = 60.0F;
+    /** Plafond par defaut : une tenue Unique complete (60 % au corps, 50 % a la tete) ne peut pas etre depassee. */
+    public static final float CAP_DEFAUT = 60.0F;
+
+    /** Plafond commun des protections (%) : [protection] plafond de heraliz_armory-common.toml (audit du 02/11). */
+    public static float cap() {
+        try {
+            return ArmorConfig.PLAFOND.get().floatValue();
+        } catch (IllegalStateException pasEncoreLu) {
+            return CAP_DEFAUT;
+        }
+    }
     /** Part des pieces de tete sur un coup au corps (0.15.0 : aucune, chaque tenue atteint son total avec le corps seul). */
     public static final float HEAD_SHARE = 0.0F;
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
@@ -82,7 +91,8 @@ public final class Protection {
             b += p.bullet() * share(p, false);
             h += p.bullet() * share(p, true);
         }
-        return new float[]{Math.min(CAP, b), Math.min(CAP, h)};
+        float cap = cap();
+        return new float[]{Math.min(cap, b), Math.min(cap, h)};
     }
 
     /**

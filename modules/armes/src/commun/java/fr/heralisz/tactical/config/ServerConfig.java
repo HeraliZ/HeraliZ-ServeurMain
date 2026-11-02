@@ -20,6 +20,10 @@ public class ServerConfig {
    public static IntValue MELEE_MAX_TARGET_PER_PACKET;
    /** HeraliZ : portée maximale de toutes les armes de corps à corps de Tactique (fr.heraliz.tactique.melee.PorteeMelee). */
    public static DoubleValue MELEE_PORTEE_MAX;
+   /** HeraliZ (audit du 02/11, mineur 20) : demi-angle accepté par le serveur autour du regard (MeleeItemServeur). */
+   public static DoubleValue MELEE_DEMI_ANGLE;
+   /** HeraliZ (audit du 02/11, mineur 20) : attente des camos à vie après une mort avec l'arme (CamosAVie). */
+   public static IntValue CAMO_RECHARGE_MINUTES;
    /** HeraliZ : s'allonger avec la touche « Ramper » de TaCZ (fr.heraliz.tactique.allonge.Allonge). */
    public static DoubleValue DELAI_RALLONGER;
    public static DoubleValue SANS_TIR_EN_SE_COUCHANT;
@@ -74,6 +78,11 @@ public class ServerConfig {
             "Au-delà d'environ 3,6, l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du",
             "joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.")
          .defineInRange("portee_max", PorteeMelee.DEFAUT, 1.0, 6.0);
+      MELEE_DEMI_ANGLE = builder.comment(
+            "Demi-angle (en degrés) autour du regard du joueur dans lequel le serveur accepte une cible des armes de mêlée :",
+            "le cône du coup plus la marge du regard en retard (réseau). Plus petit : moins de coups acceptés sur le côté ou",
+            "dans le dos, mais des coups refusés aux joueurs qui ont du décalage. 100 : réglage d'origine.")
+         .defineInRange("demi_angle_serveur", 100.0, 30.0, 180.0);
       builder.pop();
       // HeraliZ : config serveur envoyée par Forge aux joueurs à la connexion (le joueur et le serveur lisent les mêmes valeurs)
       builder.push("allonge");
@@ -213,6 +222,12 @@ public class ServerConfig {
             "un joueur approchait, une balle qui se réveillait et touchait des minutes après le tir. Une balle qui avance",
             "n'est jamais retirée. false : comme avant.")
          .define("retirer_figees", true);
+      builder.pop();
+      builder.push("camos");
+      CAMO_RECHARGE_MINUTES = builder.comment(
+            "Camos à vie : attente (en minutes) après une mort avec l'arme qui le portait, avant de pouvoir remettre le camo",
+            "(choix du propriétaire : 15). 0 : aucune attente.")
+         .defineInRange("recharge_minutes", 15, 0, 1440);
       builder.pop();
       return builder.build();
    }

@@ -14,6 +14,7 @@ public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
         EmoteRules.DEBLOQUEE = Deblocages::a;
+        ReglagesEmotes.enregistrer();
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> CommandeEmote.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) {

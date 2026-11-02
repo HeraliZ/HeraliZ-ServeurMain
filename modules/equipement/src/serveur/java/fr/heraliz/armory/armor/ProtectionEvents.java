@@ -34,7 +34,7 @@ import java.util.List;
  *   (morsure) ; irradiation (degats magiques sous l'effet geckolib:irradiated) ;</li>
  *   <li>une seule protection par objet, la meme pour tous ces degats (0.15.0) ; tir a la tete (TaCZ) : seules les pieces
  *   de tete comptent ; autres coups : seules les pieces du corps ; une combinaison compte partout ;</li>
- *   <li>les % s'additionnent, un seul plafond commun : {@link Protection#CAP} (radiation 100 %, Hazmat seulement) ;</li>
+ *   <li>les % s'additionnent, un seul plafond commun : {@link Protection#cap()} (radiation 100 %, Hazmat seulement) ;</li>
  *   <li>les objets Curios s'usent d'un point quand ils protegent (les pieces d'armure s'usent comme en vanilla).</li>
  * </ul>
  * Bonus (repris de HeralisZ Armor, appliques toutes les 10 ticks aux joueurs) : filtre (masques a gaz, Hazmat) = effets
@@ -72,7 +72,7 @@ public final class ProtectionEvents {
         }
         total *= (float) mult;
         if (total <= 0) return;
-        float cap = kind == Protection.Kind.RADIATION ? 100.0F : Protection.CAP;
+        float cap = kind == Protection.Kind.RADIATION ? 100.0F : Protection.cap();
         event.setAmount(event.getAmount() * Math.max(0.0F, 1.0F - Math.min(cap, total) / 100.0F));
     }
 
