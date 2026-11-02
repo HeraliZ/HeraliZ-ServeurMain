@@ -160,7 +160,9 @@ public final class SaisonCommandes {
      * dans niveaux.json, {@link fr.heralisz.clans.server.XpClan}). Seuls les objets de valeur a revendre (tag
      * heraliz_composants:vente) : aucun marchand ne les vend, aucune recette ne les fabrique (rien a acheter ou a fabriquer
      * pour creer de l'XP). Refuse en creatif (copie au bouton du milieu) et pour une copie d'un objet deja donne (numero
-     * anti-copie de Spartan). Au-dela du plafond du jour, le joueur confirme ({@code /clan don confirmer}, 30 s).
+     * anti-copie de Spartan). Au-dela du plafond du jour, le joueur confirme ({@code /clan don confirmer}, 30 s). Seulement
+     * hors de la carte, comme le coffre du clan (02/11, audit point 22 : avant, un objet Legendaire trouve sur la carte
+     * etait mis a l'abri sans extraction) ; pas en match.
      */
     private static int don(CommandContext<CommandSourceStack> c, boolean confirme) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
@@ -170,6 +172,10 @@ public final class SaisonCommandes {
         if (p.isCreative() || p.isSpectator()) {
             return Reponses.echec(c.getSource(), Component.translatableWithFallback("msg.don.creatif",
                     "Pas de don au clan en mode créatif ou spectateur."));
+        }
+        if (fr.heralisz.clans.server.EtatJoueur.surCarte(p) || fr.heralisz.clans.server.EtatJoueur.enMatch(p)) {
+            return Reponses.echec(c.getSource(), Component.translatableWithFallback("msg.don.carte",
+                    "Le don au clan se fait au spawn : rapporte d'abord l'objet (extraction)."));
         }
         net.minecraft.world.item.ItemStack st = p.getMainHandItem();
         int r = st.isEmpty() || !st.is(VENTE) ? -1 : Ponts.rarete(st);

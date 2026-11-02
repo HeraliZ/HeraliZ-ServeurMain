@@ -844,6 +844,7 @@
   "evenement.courbe_niveaux": "New level scale: level %s → %s (XP and upgrades kept)",
   "evenement.membres_rembourses": "Member slots now come from the level: Members upgrade refunded (%s point(s), %s herals)",
   "msg.don.creatif": "No clan donations in creative or spectator mode.",
+  "msg.don.carte": "Clan donations are made at spawn: bring the item back first (extraction).",
   "msg.don.copie": "This item has already been given to a clan: a copy gives nothing. Staff have been notified.",
   "msg.don.plafond": "Daily donation cap reached (%s XP): this item would only give %s XP instead of %s. Keep it for tomorrow, or type /clan don confirmer within 30 s to give it anyway."
 }

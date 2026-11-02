@@ -844,6 +844,7 @@
   "evenement.courbe_niveaux": "Nouvelle échelle des niveaux : niveau %s → %s (XP et améliorations gardées)",
   "evenement.membres_rembourses": "Places de membres données par le niveau : amélioration Membres remboursée (%s point(s), %s hérals)",
   "msg.don.creatif": "Pas de don au clan en mode créatif ou spectateur.",
+  "msg.don.carte": "Le don au clan se fait au spawn : rapporte d'abord l'objet (extraction).",
   "msg.don.copie": "Cet objet a déjà été donné à un clan : une copie ne rapporte rien. Le staff est prévenu.",
   "msg.don.plafond": "Plafond du jour des dons atteint (%s XP) : cet objet ne rapporterait que %s XP au lieu de %s. Gardez-le pour demain, ou tapez /clan don confirmer dans les 30 s pour le donner quand même."
 }

@@ -13,9 +13,10 @@ import java.util.UUID;
 /**
  * État d'un joueur lu dans les autres mods, par réflexion (chaque mod absent = « non ») : en combat (Matchs,
  * {@code CombatTag}), à terre (Réanimation), en match (Matchs), sur la carte (overworld), objet prêté par un match ou
- * objet à vie (Tactique). Sert au coffre du clan et à la création d'un clan (23/10, demande du propriétaire).
+ * objet à vie (Tactique). Sert au coffre du clan, à la création d'un clan (23/10, demande du propriétaire) et au don au
+ * clan (02/11).
  */
-final class EtatJoueur {
+public final class EtatJoueur {
     /** Clé NBT des objets prêtés en match ({@code MatchApi.NBT_PRET}). */
     static final String NBT_PRET = "HeraliszMatch";
 
@@ -54,14 +55,14 @@ final class EtatJoueur {
         return Boolean.TRUE.equals(appel(A_TERRE, p));
     }
 
-    static boolean enMatch(ServerPlayer p) {
+    public static boolean enMatch(ServerPlayer p) {
         if (Boolean.TRUE.equals(appel(MATCH, p.getUUID()))) return true;
         if (p.getPersistentData().getBoolean("heralisz:en_match")) return true;
         ResourceLocation monde = p.level().dimension().location();
         return "heraliz_clashwar".equals(monde.getNamespace());
     }
 
-    static boolean surCarte(ServerPlayer p) {
+    public static boolean surCarte(ServerPlayer p) {
         return p.level().dimension() == Level.OVERWORLD;
     }
 
