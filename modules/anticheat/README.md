@@ -40,8 +40,9 @@ Tests : `ConformiteStricteTest`. Essayé le 27/10 sur un serveur de test avec un
 réussi, contrôle propre), jeu avec un jar en plus refusé en 3 s.
 
 **Alertes Discord (2.9.0)** : file d'envoi de 300 messages (sanctions et bans d'abord), 1 message par seconde et par
-webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur ;
-`/spartan discordtest` (op 3 ou console) envoie un message d'essai sur chaque webhook et donne la réponse de Discord.
+webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur.
+L'état des webhooks (actif / absent) est écrit au démarrage dans le journal, `alerts.log` et le fil « Informations du
+staff » (`/spartan discordtest`, outil d'essai, retiré le 02/11).
 
 **Jeu validé à chaque connexion (2.9.3, 27/10, demande du propriétaire, section `[validation]`)** : une fois le joueur
 vérifié (jeton + `/login`), quand le jeton du launcher est accepté (dossier mods officiel), le défi d'intégrité réussi
@@ -212,12 +213,9 @@ ne jamais la publier (ni sur Discord, ni dans un dépôt Git).
 
 | Commande | Niveau op | Effet |
 |---|---|---|
-| `/sban <joueur> <durée> [raison]` | 3 | Bannit le **compte + ses IP + ses PC**. Durée : `30m`, `12h`, `7d`, `2w` ou `def`. Marche aussi si le joueur est hors ligne (il doit s'être connecté au moins une fois). |
-| `/sunban <joueur>` | 3 | Lève **tous** ses bans actifs (compte, IP, PC). Marche hors ligne. |
-| `/unbanplayer <joueur>` | 3 | Alias de `/sunban` (l'ancienne commande, réparée). |
-| `/banpc …`, `/unbanpc <joueur>` | 3 | Mêmes commandes que `/sban` et `/sunban`, avec les noms alignés sur ceux de LiteBans. |
-| `/untempban <joueur> [raison]` | LiteBans | Transmis à `/unban` de LiteBans (qui lève aussi les bans temporaires), avec les droits de celui qui la tape. |
-| `/sbaninfo <joueur>` | 2 | Nombre d'IP/PC connus, **comptes liés** (même IP ou même PC), historique des bans. |
+| `/banpc <joueur> <durée> [raison]` | 3 | Bannit le **compte + ses IP + ses PC**. Durée : `30m`, `12h`, `7d`, `2w` ou `def`. Marche aussi si le joueur est hors ligne (il doit s'être connecté au moins une fois). Un compte nommé « info » : par son UUID. |
+| `/banpc info <joueur>` | 2 | Nombre d'IP/PC connus, **comptes liés** (même IP ou même PC), historique des bans (ancien `/sbaninfo`). |
+| `/unbanpc <joueur>` | 3 | Lève **tous** ses bans actifs (compte, IP, PC). Marche hors ligne. Les autres sanctions (`/ban`, `/mute`, `/unban`…) : LiteBans. |
 | `/spartan checks` | 2 | Liste des détections actives. |
 | `/spartan vl <joueur>` | 2 | Niveaux de violation actuels du joueur. |
 | `/spartan status <joueur>` | 2 | Intégrité (build, défis, jeton du launcher) et suivi du mouvement (positions analysées, téléportations confirmées). |
@@ -228,7 +226,6 @@ ne jamais la publier (ni sur Discord, ni dans un dépôt Git).
 | `/spartan reference learn <joueur>` | 3 | Apprend le **client de référence** depuis le jeu de ce joueur (modpack officiel PROPRE uniquement). |
 | `/spartan reference add <joueur>` | 3 | Complète la référence avec un 2e PC propre (autre version de Java, autre Windows…). |
 | `/spartan reference info` / `clear` | 2 / 3 | Résumé / effacement de la référence. |
-| `/spartan selfscan` | 3 | Contrôle du serveur lui-même (diagnostic : voir ce que le scanner relève). |
 | `/spartan esp [joueur]` | 2 | Anti-ESP : coût et activité, ou ce que ce joueur reçoit (voir section 6). |
 | `/spartan esp bench [n] [rayon]` | 3 | Coût de l'anti-ESP sur votre carte avec *n* joueurs fictifs. |
 
@@ -490,7 +487,7 @@ Le test est appelé sur le thread serveur ; il doit être rapide (résultat gard
 Sources coupées en trois (le compilateur interdit les liens interdits) :
 - `src/commun` : `Spartan` (@Mod : canal réseau + chargement des parties), `pont/` (Parties, Partie, Crochet),
   `Networks/` (lecture / écriture des paquets ; leur traitement est branché par les parties), `scan/ScanReport`,
-  `ScanTransfer`, `CollecteLocale`, `integrity/Fingerprint` (empreinte, forme vivante / forme du fichier), `LaunchToken` ;
+  `ScanTransfer`, `integrity/Fingerprint` (empreinte, forme vivante / forme du fichier), `LaunchToken` ;
 - `src/client` : `Client/` (PartieClient, ClientEvents, ClientScanService…), `scan/collect/` (collecteurs, dont
   `InjectionCollector`), `integrity/ModsHasher`, `Utils/` ;
 - `src/serveur` : tout le reste — `serveur/` (PartieServeur, ReceptionServeur, `compat/HeralizCompat`), détections,
@@ -546,14 +543,13 @@ com.Spartan
 │   ├── Occluders, ChunkTable, LevelVoxels   Blocs qui cachent, lecture des chunks hors du thread serveur
 │   ├── TrackerAccess         Application immédiate d'une décision au suivi des entités vanilla
 │   ├── Allies, Noise         Coéquipiers (IMC + HeraliZ) ; tirs TaCZ et voix de CaraCrea
-│   ├── EspBenchmark          /spartan esp bench
 ├── mixin/                    ServerPlayer.broadcastToPlayer, ServerLevel.sendBlockUpdated,
 │                             ServerPlayer.doCheckFallDamage (NoFall), SoundManager de TaCZ (si
 │                             présent) — refmap écrite à la main (noms SRG)
 ├── ban/
 │   ├── BanManager            Bans compte (vanilla) + IP (vanilla) + PC, historique
 │   ├── PlayerRegistry        IP / PC connus par joueur, comptes liés, purge RGPD
-│   ├── BanCommands           /sban /sunban /sbaninfo /unbanplayer (+ AliasSanctions : /banpc /unbanpc /untempban)
+│   ├── BanCommands           /banpc, /banpc info, /unbanpc
 │   └── Durations             30m, 12h, 7d, 2w, def
 ├── Client/ClientEvents       Côté joueur : handshake + intégrité (agents, threads)
 ├── Client/ClientScanService  Côté joueur : exécute les contrôles demandés, hors du thread du jeu

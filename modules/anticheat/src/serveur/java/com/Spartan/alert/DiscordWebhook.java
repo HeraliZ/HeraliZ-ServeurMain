@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -60,10 +59,6 @@ public class DiscordWebhook {
     /** Pièce jointe plus grosse : compressée (gzip), sinon coupée (Discord refuse plus de 10 Mio). */
     private static final int JOINT_MAX = 8 * 1024 * 1024;
 
-    /** Résultats de {@link #tester} quand rien n'a été posté (sinon : le code HTTP de Discord). */
-    public static final int NON_CONFIGURE = 0;
-    public static final int DESACTIVE = -1;
-    public static final int ECHEC = -2;
 
     private static final ArrayDeque<Message> PRIORITAIRES = new ArrayDeque<>();
     private static final ArrayDeque<Message> ORDINAIRES = new ArrayDeque<>();
@@ -589,39 +584,6 @@ public class DiscordWebhook {
             post(url, payload, null, null, true, null);
         } catch (Exception e) {
             Spartan.LOGGER.warn("[Spartan] Webhook Discord des sanctions invalide : {}", e.getMessage());
-        }
-    }
-
-    /**
-     * /spartan discordtest : un message d'essai par le webhook des alertes (fil « Informations du staff ») et un par
-     * celui des sanctions. Chaque résultat arrive plus tard, hors du thread du serveur : code HTTP de Discord, ou
-     * {@link #NON_CONFIGURE}, {@link #DESACTIVE}, {@link #ECHEC}.
-     */
-    public static void tester(IntConsumer alertes, IntConsumer sanctions) {
-        essai(SpartanConfig.DISCORD_WEBHOOK, "Essai de l'anticheat",
-                "Message d'essai (/spartan discordtest) : les alertes du staff arrivent bien ici.",
-                FilsDiscord.INFOS, FilsDiscord.NOM_INFOS, alertes);
-        essai(SpartanConfig.DISCORD_SANCTIONS_WEBHOOK, "Essai",
-                "Message d'essai de l'anticheat : les sanctions seront annoncées dans ce salon.", null, null, sanctions);
-    }
-
-    private static void essai(ForgeConfigSpec.ConfigValue<String> reglage, String titre, String texte, String cle,
-                              String nomFil, IntConsumer resultat) {
-        if (!SpartanConfig.DISCORD_ENABLED.get()) {
-            resultat.accept(DESACTIVE);
-            return;
-        }
-        String url = SpartanConfig.secret(reglage);
-        if (url == null || url.isBlank()) {
-            resultat.accept(NON_CONFIGURE);
-            return;
-        }
-        try {
-            post(url, embedSimple(titre, texte, AlertManager.COLOR_INFO), cle, nomFil, true,
-                    r -> resultat.accept(r == null ? ECHEC : r.statusCode()));
-        } catch (Exception e) {
-            Spartan.LOGGER.warn("[Spartan] Webhook Discord invalide : {}", e.getMessage());
-            resultat.accept(ECHEC);
         }
     }
 

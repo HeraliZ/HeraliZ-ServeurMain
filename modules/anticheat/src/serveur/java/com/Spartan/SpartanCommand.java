@@ -1,17 +1,14 @@
 package com.Spartan;
 
-import com.Spartan.alert.DiscordWebhook;
 import com.Spartan.check.Check;
 import com.Spartan.check.CheckManager;
 import com.Spartan.check.Mitigation;
 import com.Spartan.check.movement.MovementEngine;
-import com.Spartan.esp.EspBenchmark;
 import com.Spartan.esp.VisibilityEngine;
 import com.Spartan.integrity.ChallengeManager;
 import com.Spartan.integrity.LauncherGate;
 import com.Spartan.scan.ScanManager;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +17,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -35,10 +31,9 @@ import net.minecraft.server.level.ServerPlayer;
  *   /spartan suspects        joueurs en ligne dont le dernier contrôle est suspect
  *   /spartan reference learn|add <joueur> | info | clear   client de référence (op 3)
  *   /spartan officiel        relit config/spartan/officiel.json (modpack officiel, op 3)
- *   /spartan selfscan        contrôle du serveur lui-même (diagnostic, op 3)
- *   /spartan discordtest     un message d'essai par webhook Discord, code HTTP de chacun (op 3, console aussi)
  *   /spartan esp [joueur]    anti-ESP : coût et activité, ou ce que ce joueur reçoit des autres
- *   /spartan esp bench [n] [rayon]  coût de l'anti-ESP sur la carte avec n joueurs fictifs (op 3)
+ * Outils d'essai retirés du serveur en jeu (audit du 02/11, point 36) : esp bench, selfscan, discordtest. L'état des
+ * webhooks Discord est écrit au démarrage (journal, alerts.log et fil « Informations du staff »).
  */
 public class SpartanCommand {
     private SpartanCommand() {
@@ -152,14 +147,6 @@ public class SpartanCommand {
                             return 1;
                         })))
                 .then(Commands.literal("esp")
-                        .then(Commands.literal("bench").requires(src -> src.hasPermission(3))
-                                .executes(ctx -> bench(ctx.getSource(), 70, 150))
-                                .then(Commands.argument("count", IntegerArgumentType.integer(2, 300))
-                                        .executes(ctx -> bench(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "count"), 150))
-                                        .then(Commands.argument("radius", IntegerArgumentType.integer(8, 512))
-                                                .executes(ctx -> bench(ctx.getSource(),
-                                                        IntegerArgumentType.getInteger(ctx, "count"),
-                                                        IntegerArgumentType.getInteger(ctx, "radius"))))))
                         .executes(ctx -> {
                             ctx.getSource().sendSuccess(() -> Component.literal(VisibilityEngine.describe())
                                     .withStyle(ChatFormatting.AQUA), false);
@@ -173,64 +160,7 @@ public class SpartanCommand {
                                                 .withStyle(ChatFormatting.AQUA), false);
                                     }
                                     return 1;
-                                })))
-                .then(Commands.literal("selfscan").requires(src -> src.hasPermission(3)).executes(ctx -> {
-                    CommandSourceStack src = ctx.getSource();
-                    ScanManager.selfScan(src.getServer(), src::sendSystemMessage);
-                    src.sendSuccess(() -> Component.literal("Autocontrôle du serveur lancé…").withStyle(ChatFormatting.AQUA), false);
-                    return 1;
-                }))
-                .then(Commands.literal("discordtest").requires(src -> src.hasPermission(3))
-                        .executes(ctx -> discordTest(ctx.getSource()))));
-    }
-
-    /** Un message d'essai par webhook Discord ; chaque résultat revient au demandeur dès que Discord a répondu. */
-    private static int discordTest(CommandSourceStack src) {
-        MinecraftServer server = src.getServer();
-        src.sendSuccess(() -> Component.translatableWithFallback("spartan.discordtest.envoi",
-                "Messages d'essai envoyés à Discord : réponse dans quelques secondes.").withStyle(ChatFormatting.AQUA), false);
-        DiscordWebhook.tester(
-                code -> server.execute(() -> src.sendSuccess(() -> Component.translatableWithFallback(
-                        "spartan.discordtest.alertes", "Webhook des alertes (fil « Informations du staff ») : %s",
-                        resultatDiscord(code)).withStyle(couleurDiscord(code)), false)),
-                code -> server.execute(() -> src.sendSuccess(() -> Component.translatableWithFallback(
-                        "spartan.discordtest.sanctions", "Webhook des sanctions publiques : %s",
-                        resultatDiscord(code)).withStyle(couleurDiscord(code)), false)));
-        return 1;
-    }
-
-    private static Component resultatDiscord(int code) {
-        if (code == DiscordWebhook.NON_CONFIGURE) {
-            return Component.translatableWithFallback("spartan.discordtest.non_configure", "non configuré");
-        }
-        if (code == DiscordWebhook.DESACTIVE) {
-            return Component.translatableWithFallback("spartan.discordtest.desactive",
-                    "désactivé (discordEnabled = false)");
-        }
-        if (code == DiscordWebhook.ECHEC) {
-            return Component.translatableWithFallback("spartan.discordtest.echec",
-                    "pas de réponse de Discord (voir le journal du serveur)");
-        }
-        if (code < 300) {
-            return Component.translatableWithFallback("spartan.discordtest.ok", "HTTP %s, message reçu par Discord",
-                    String.valueOf(code));
-        }
-        return Component.translatableWithFallback("spartan.discordtest.refus",
-                "HTTP %s, refusé par Discord (voir le journal du serveur)", String.valueOf(code));
-    }
-
-    private static ChatFormatting couleurDiscord(int code) {
-        if (code == DiscordWebhook.NON_CONFIGURE || code == DiscordWebhook.DESACTIVE) {
-            return ChatFormatting.YELLOW;
-        }
-        return code > 0 && code < 300 ? ChatFormatting.GREEN : ChatFormatting.RED;
-    }
-
-    private static int bench(CommandSourceStack src, int count, int radius) {
-        for (String line : EspBenchmark.run(src.getLevel(), src.getPosition(), count, radius)) {
-            src.sendSuccess(() -> Component.literal(line).withStyle(ChatFormatting.AQUA), false);
-        }
-        return 1;
+                                }))));
     }
 
     /** Apprend (ou complète) le client de référence depuis le jeu d'un joueur DE CONFIANCE. */

@@ -70,7 +70,7 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/casino` | Casino | zones du casino, capsules, `compte voir\|donner\|retirer` (compte de capsules d'un joueur) |
 | `/capsules` | Casino (joueurs) | compte de capsules : solde, `deposer [nombre]`, `retirer <nombre>` à côté d'un distributeur de capsules (ATM) ou d'une caisse du casino (au distributeur : clic droit, son écran) |
 | `/boss <mammouth\|mere\|n07\|peste\|sylvorn> …` | Boss | arènes et réveil des boss (events) |
-| `/spartan`, `/banpc`, `/unbanpc`, `/sbaninfo` | Spartan | anticheat, ban compte + IP + PC (les autres sanctions : LiteBans) |
+| `/spartan`, `/banpc` (`info` : ancien `/sbaninfo`), `/unbanpc` | Spartan | anticheat, ban compte + IP + PC (les autres sanctions : LiteBans) |
 
 ## 3. Retirées (validé le 24/10)
 

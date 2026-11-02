@@ -929,41 +929,6 @@ public final class ScanManager {
         return out;
     }
 
-    /**
-     * Contrôle du JVM du serveur lui-même (diagnostic : voir ce que le scanner relève
-     * dans un environnement connu). Le résultat est écrit dans un fichier de preuve.
-     */
-    public static void selfScan(MinecraftServer server, Consumer<Component> reply) {
-        CollecteLocale.Collecteur collecteur = CollecteLocale.COLLECTEUR;
-        if (collecteur == null) {
-            reply.accept(Component.literal("[Spartan] Autocontrôle indisponible ici : le code de contrôle n'est que dans le "
-                    + "jar des joueurs (serveur dédié = jar -serveur). Utiliser /spartan scan <joueur>.").withStyle(ChatFormatting.GRAY));
-            return;
-        }
-        Thread serverThread = Thread.currentThread();
-        Thread worker = new Thread(() -> {
-            ScanReport r = collecteur.collecter(FMLPaths.MODSDIR.get(), FMLPaths.GAMEDIR.get(), serverThread,
-                    SpartanConfig.getScanMixinWatch(), SpartanConfig.getScanClassProbes(),
-                    SpartanConfig.getScanProcessPatterns(), SpartanConfig.getScanNativePatterns());
-            server.execute(() -> {
-                List<Finding> findings = ScanAnalyzer.analyze(r, reference, official, null, settings());
-                JsonObject root = new JsonObject();
-                root.addProperty("type", "autocontrole-serveur");
-                JsonArray arr = new JsonArray();
-                findings.forEach(f -> arr.add(f.severity() + " " + f.text()));
-                root.add("findings", arr);
-                root.add("report", GSON.toJsonTree(r));
-                String file = EvidenceRecorder.writeJson("serveur", "autocontrole", GSON.toJson(root));
-                reply.accept(Component.literal("[Spartan] Autocontrôle : " + r.files.size() + " fichiers, " + r.modules.size()
-                        + " modules, " + r.mixins.size() + " configs Mixin, " + r.threadCount + " threads, "
-                        + r.origins.size() + " origine(s) de code hors module, " + findings.size() + " indice(s) en "
-                        + r.durationMs + " ms → evidence/" + file).withStyle(ChatFormatting.AQUA));
-            });
-        }, "Spartan-SelfScan");
-        worker.setDaemon(true);
-        worker.start();
-    }
-
     private static long randomMs(int minSeconds, int maxSeconds) {
         int lo = Math.min(minSeconds, maxSeconds);
         int hi = Math.max(minSeconds, maxSeconds);

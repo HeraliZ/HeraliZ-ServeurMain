@@ -8,9 +8,6 @@ import com.Spartan.Networks.ModMessages;
 import com.Spartan.Networks.ScanRequestPacket;
 import com.Spartan.integrity.Fingerprint;
 import com.Spartan.pont.Partie;
-import com.Spartan.scan.CollecteLocale;
-import com.Spartan.scan.collect.ScanCollector;
-import java.util.Set;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
@@ -22,9 +19,6 @@ public final class PartieClient implements Partie {
     public void init(IEventBus busMod) {
         SecretsEnvironnement.effacer();
         ModMessages.RECEPTION_CLIENT.brancher(PartieClient::recevoir);
-        // /spartan selfscan en solo (jar -complet) : le contrôle tourne dans ce jeu
-        CollecteLocale.COLLECTEUR = (mods, jeu, thread, watch, probes, process, natives) -> ScanCollector.collect(
-                new ScanCollector.Context(0, mods, jeu, null, thread, 10, false, Set.of(), watch, probes, process, natives));
     }
 
     private static void recevoir(Object paquet) {

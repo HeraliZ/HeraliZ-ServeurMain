@@ -43,3 +43,14 @@ les transmet sans pouvoir les changer ; le serveur les vérifie.
 
 Ce qui n'est pas couvert (limite de fond) : un programme qui imite tout le launcher avec le compte du joueur peut signer
 ses propres rapports (le site ne sait pas reconnaître le vrai launcher). Le Gardien relève la marche, il ne la ferme pas.
+
+## Point 36 (partie anticheat) — commandes
+
+- [ ] `/banpc info <joueur>` (op 2) : IP / PC connus, comptes liés, historique (ce que donnait `/sbaninfo`).
+- [ ] `/banpc <joueur> 1d test` (op 3) puis `/unbanpc <joueur>` : comme avant ; le panneau P (bouton « Ban PC ») aussi.
+- [ ] Un modérateur op 2 voit `/banpc` dans la complétion mais ne peut taper que `info`.
+- [ ] `/sbaninfo`, `/spartan selfscan`, `/spartan discordtest`, `/spartan esp bench` : n'existent plus. L'état des webhooks
+      Discord reste écrit au démarrage (« Alertes Discord : actif ; sanctions publiques : … » dans le journal et le fil
+      « Informations du staff »).
+- Pour le chantier « boutique » : la clé `heraliz_grades.staff.cmd.sbaninfo` du panneau ne sert plus (commande retirée).
+- `docs/COMMANDES_INVENTAIRE.md` est écrit par `outils/commandes.py` : à relancer une fois tous les chantiers fusionnés.

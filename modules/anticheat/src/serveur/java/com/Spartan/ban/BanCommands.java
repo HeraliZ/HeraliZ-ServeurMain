@@ -6,7 +6,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -19,12 +18,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * Commandes de ban :
- *   /banpc <joueur> <durée> [raison]   compte + IP + PC (durée : 30m, 12h, 7d, 2w, def)
- *   /unbanpc <joueur|uuid|serial>      lève tous les bans actifs (hors ligne OK)
- *   /sbaninfo <joueur|uuid|serial>    identifiants connus, comptes liés, historique
- *   /unbanpc <joueur>             alias de /unbanpc (ancienne commande, réparée)
- *   /banpc, /unbanpc, /unban      noms alignés sur ceux de LiteBans (voir {@link AliasSanctions})
+ * Commandes de ban (les autres sanctions : LiteBans) :
+ *   /banpc <joueur> <durée> [raison]   compte + IP + PC (durée : 30m, 12h, 7d, 2w, def), op 3
+ *   /banpc info <joueur|uuid|serial>   identifiants connus, comptes liés, historique, op 2 (ancien /sbaninfo, audit du
+ *                                      02/11 : un seul nom pour le ban PC)
+ *   /unbanpc <joueur|uuid|serial>      lève tous les bans actifs (hors ligne OK), op 3
  *
  * Pseudos avec caractères spéciaux : entre guillemets ("Mon.Pseudo!").
  * Sur un serveur crack, « Steve » et « steve » sont deux comptes différents :
@@ -38,9 +36,16 @@ public final class BanCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralCommandNode<CommandSourceStack> sban = dispatcher.register(Commands.literal("banpc")
-                .requires(src -> src.hasPermission(3))
+        // racine ouverte aux op 2 pour « info » ; le ban lui-même reste op 3. Un compte nommé « info » se bannit par son
+        // UUID (« /banpc <uuid> <durée> »).
+        dispatcher.register(Commands.literal("banpc")
+                .requires(src -> src.hasPermission(2))
+                .then(Commands.literal("info")
+                        .then(Commands.argument("player", StringArgumentType.string())
+                                .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ctx.getSource().getServer().getPlayerNames(), b))
+                                .executes(BanCommands::info)))
                 .then(Commands.argument("player", StringArgumentType.string())
+                        .requires(src -> src.hasPermission(3))
                         .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ctx.getSource().getServer().getPlayerNames(), b))
                         .then(Commands.argument("duration", StringArgumentType.word())
                                 .suggests((ctx, b) -> SharedSuggestionProvider.suggest(List.of("30m", "12h", "1d", "7d", "30d", "def"), b))
@@ -48,18 +53,10 @@ public final class BanCommands {
                                 .then(Commands.argument("reason", StringArgumentType.greedyString())
                                         .executes(ctx -> ban(ctx, StringArgumentType.getString(ctx, "reason")))))));
 
-        LiteralCommandNode<CommandSourceStack> unban = dispatcher.register(Commands.literal("unbanpc")
+        dispatcher.register(Commands.literal("unbanpc")
                 .requires(src -> src.hasPermission(3))
                 .then(Commands.argument("player", StringArgumentType.string())
                         .executes(BanCommands::unban)));
-        // 25/10 (tri des commandes) : /banpc, /unbanpc et /unbanpc retirés (doublons) : /banpc et /unbanpc seulement
-        AliasSanctions.register(dispatcher, sban, unban);
-
-        dispatcher.register(Commands.literal("sbaninfo")
-                .requires(src -> src.hasPermission(2))
-                .then(Commands.argument("player", StringArgumentType.string())
-                        .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ctx.getSource().getServer().getPlayerNames(), b))
-                        .executes(BanCommands::info)));
     }
 
     /** Résout pseudo ou UUID vers un compte connu ; envoie l'erreur et renvoie null sinon. */
