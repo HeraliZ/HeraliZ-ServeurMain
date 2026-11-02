@@ -12,13 +12,16 @@ import net.minecraftforge.event.RegisterCommandsEvent;
  * Les arènes de ClashWar bloquent déjà la commande. Refusé dans le monde du spawn protégé
  * (ProtectionSpawn), sauf pour le staff. Refusé en combat (tag de combat de Matchs, clé {@code heralisz:combat_jusqua}
  * des données du joueur) et à terre (Réanimation, par réflexion) : pas de mort instantanée pour échapper à la fouille.
- * Délai de 5 min entre deux /suicide (28/10, demande du propriétaire ; staff niveau 2 exempté, comme au spawn) : en
+ * Délai de 5 min entre deux /suicide (28/10, demande du propriétaire ; réglable depuis le 02/11 : [suicide] de
+ * heralisz_utils-server.toml ; staff niveau 2 exempté, comme au spawn) : en
  * temps réel, gardé par UUID en mémoire ET dans les données gardées du joueur ({@code PlayerPersisted}, qui suivent la
  * mort et sont écrites dans sa sauvegarde) : ni une déconnexion, ni une mort, ni un redémarrage ne le remettent à zéro.
  */
 public final class Suicide {
-    /** Délai entre deux /suicide d'un même joueur, en millisecondes (temps réel). */
-    private static final long DELAI_MS = 5L * 60L * 1000L;
+    /** Délai entre deux /suicide d'un même joueur, en millisecondes (temps réel) : [suicide] de heralisz_utils-server.toml. */
+    private static long delaiMs() {
+        return fr.heralisz.utils.BonusLootConfig.suicideMinutes() * 60_000L;
+    }
     /** Clé de la fin du délai (heure en ms) dans les données gardées du joueur. */
     private static final String CLE = "heraliz_suicide_jusqua";
     /** Fin du délai par joueur, en mémoire (survit à une déconnexion, même si sa sauvegarde n'est pas relue). */
@@ -95,7 +98,7 @@ public final class Suicide {
                             "Tu dois attendre encore %s avant de refaire /suicide.", duree(reste)));
                     return 0;
                 }
-                long fin = maintenant + DELAI_MS;
+                long fin = maintenant + delaiMs();
                 PROCHAIN.put(p.getUUID(), fin);
                 garde(p).putLong(CLE, fin);
             }

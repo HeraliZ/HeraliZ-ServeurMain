@@ -75,6 +75,8 @@ final class Largage implements Evenement {
     private static int rappelMin = 3;
     /** L'avion part ce temps avant la fin de l'annonce : passage au-dessus du point et chute de la caisse. */
     private static int avanceS = 40;
+    /** L'avion part à cette distance du point (blocs ; 02/11, audit mods-2 §21 : avant écrite dans le code). */
+    private static int distanceAvion = 400;
     private static int margeBordure = 150;
     private static int loinDesBases = 48;
     private static int essais = 40;
@@ -244,12 +246,12 @@ final class Largage implements Evenement {
         }
     }
 
-    /** L'avion part d'un point à 400 blocs du lieu, dans une direction au hasard. */
+    /** L'avion part d'un point à {@code distance_avion} blocs du lieu (400 par défaut), dans une direction au hasard. */
     private void decoller(MinecraftServer server) {
         ServerLevel level = server.overworld();
         Vec3 c = new Vec3(cible.getX() + 0.5, cible.getY(), cible.getZ() + 0.5);
         double angle = ALEA.nextDouble() * Math.PI * 2;
-        Strike s = StrikeManager.launch(level, StrikeType.SUPPLY, c, c.add(Math.cos(angle) * 400, 0, Math.sin(angle) * 400), null);
+        Strike s = StrikeManager.launch(level, StrikeType.SUPPLY, c, c.add(Math.cos(angle) * distanceAvion, 0, Math.sin(angle) * distanceAvion), null);
         if (s == null) {
             Outils.journal(idCourant + " : avion impossible a lancer (frappes aeriennes) : annule");
             Etat.fermer(idCourant);
@@ -527,6 +529,7 @@ final class Largage implements Evenement {
             annonceMin = borne(o, "annonce_minutes", 6, 0, 30);
             rappelMin = borne(o, "rappel_minutes", 3, 0, 30);
             avanceS = borne(o, "avance_secondes", 40, 0, 300);
+            distanceAvion = borne(o, "distance_avion", 400, 100, 2000);
             margeBordure = borne(o, "marge_bordure", 150, 0, 2000);
             loinDesBases = borne(o, "loin_des_bases", 48, 0, 500);
             essais = borne(o, "essais", 40, 1, 200);
@@ -552,7 +555,8 @@ final class Largage implements Evenement {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", "Largage militaire. lieux : hasard (point tire sur la carte), poses (lieux du staff, /event point ajouter"
                 + " largage <nom>), les_deux. annonce_minutes : annonce avec les coordonnees avant l'arrivee ; rappel_minutes : second message ;"
-                + " avance_secondes : l'avion part ce temps avant la fin de l'annonce (passage et chute) ; marge_bordure : blocs a eviter"
+                + " avance_secondes : l'avion part ce temps avant la fin de l'annonce (passage et chute) ; distance_avion : blocs entre le"
+                + " depart de l'avion et le point (100 a 2000) ; marge_bordure : blocs a eviter"
                 + " pres de la bordure du monde ; loin_des_bases : blocs autour des bases des clans ; zone : [x1, z1, x2, z2] pour limiter"
                 + " le tirage (absent : toute la bordure) ; essais : points lus en tache de fond au plus (jamais hors de la carte construite,"
                 + " jamais dans une zone VIP). Relu par /event recharger.");
@@ -560,6 +564,7 @@ final class Largage implements Evenement {
         o.addProperty("annonce_minutes", 6);
         o.addProperty("rappel_minutes", 3);
         o.addProperty("avance_secondes", 40);
+        o.addProperty("distance_avion", 400);
         o.addProperty("marge_bordure", 150);
         o.addProperty("loin_des_bases", 48);
         o.addProperty("essais", 40);

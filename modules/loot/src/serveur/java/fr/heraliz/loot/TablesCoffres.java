@@ -245,8 +245,13 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         return st;
     }
 
-    /** Balles au plus par case, bonus de loot compris (22/10 : 15 ; 26/10, demande du propriétaire : plus de munitions). */
-    static final int MAX_BALLES = 40;
+    /**
+     * Balles au plus par case, bonus de loot compris (22/10 : 15 ; 26/10, demande du propriétaire : plus de munitions, 40) :
+     * réglage balles_max de [quantites], heraliz_loot-server.toml (02/11, audit mods-2 §21 ; avant écrit ici).
+     */
+    static int maxBalles() {
+        return ConfigLoot.ballesMax();
+    }
 
     /**
      * Comme {@link #tirerUnique}, mais jamais une case vide (« minecraft:air » des tables) : sert à la première case
@@ -317,7 +322,7 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
             n = (int) x;
             if (r.nextDouble() < x - n) n++;
         }
-        if (munition(e.item())) n = Math.min(n, MAX_BALLES);
+        if (munition(e.item())) n = Math.min(n, maxBalles());
         ItemStack st = new ItemStack(e.item(), n);
         if (e.nbt() != null) {
             try {

@@ -14,7 +14,7 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.DoubleValue PROPORTION;
     /** Facteur de la part d'actifs par niveau de zone (T1 à T7), écrit par outils/loot_armes.py. */
     public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> FACTEURS;
-    public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RESTES, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX;
+    public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RESTES, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX, BALLES_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
     /** Conteneurs de Minecraft scellés (src/serveur : ConteneursVanilla). */
     public static final ForgeConfigSpec.BooleanValue VANILLA_ACTIF, VANILLA_AUTO, VANILLA_ENTITES, VANILLA_CLAIMS;
@@ -59,6 +59,10 @@ public final class ConfigLoot {
         b.comment("Bonus de loot (zone tenue par son clan...) : au premier tirage d'un conteneur, chaque objet a ce pourcentage",
                 "de chances d'être tiré une seconde fois (le plus rare des deux est gardé) et les quantités montent d'autant.").push("bonus");
         BONUS_MAX = b.comment("Bonus maximal (%) quand plusieurs bonus s'additionnent.").defineInRange("max", 25, 0, 100);
+        b.pop();
+        b.comment("Quantités des conteneurs (02/11 : avant écrites dans le code).").push("quantites");
+        BALLES_MAX = b.comment("Balles (munitions TaCZ) au plus par case, bonus de loot compris (22/10 : 15 ; 26/10 : 40).")
+                .defineInRange("balles_max", 40, 1, 999);
         b.pop();
         b.comment("Conteneurs de Minecraft (coffre, baril, four, alambic, entonnoir...) : un joueur en survie ou en aventure ne",
                 "peut pas les ouvrir (« Ce conteneur est vide et scellé. »). Créatif, spectateur et staff (permission 2) : libres.",
@@ -189,6 +193,10 @@ public final class ConfigLoot {
 
     static int bonusMax() {
         return SPEC.isLoaded() ? BONUS_MAX.get() : 25;
+    }
+
+    static int ballesMax() {
+        return SPEC.isLoaded() ? BALLES_MAX.get() : 40;
     }
 
     static int etoilesParSeconde() {

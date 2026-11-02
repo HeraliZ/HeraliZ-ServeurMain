@@ -1,5 +1,6 @@
 package fr.heraliz.decors.ambiance;
 
+import java.util.List;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
@@ -14,6 +15,8 @@ public final class ConfigZones {
     public static final ForgeConfigSpec.IntValue SECONDES_GAZ;
     public static final ForgeConfigSpec.IntValue SECONDES_RADIATION;
     public static final ForgeConfigSpec.IntValue SECONDES_FROID;
+    /** Objets qui protègent de chaque zone (02/11, audit mods-2 §21 : avant écrits dans ZonesServeur). */
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PROTECTION_GAZ, PROTECTION_RADIATION, PROTECTION_FROID;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -29,6 +32,17 @@ public final class ConfigZones {
                 .defineInRange("secondes_radiation", 5, 1, 3600);
         SECONDES_FROID = b.comment("Zone de froid : secondes par point (combinaison contre le froid 300 / 450 points : 25 / 37 min).")
                 .defineInRange("secondes_froid", 5, 1, 3600);
+        b.pop();
+        b.comment("Objets qui protègent de chaque zone : identifiants, * = n'importe quelle suite de lettres. Portés en armure, en",
+                "main gauche ou dans un emplacement Curios. Une nouvelle tenue de l'Armurerie s'ajoute ici, sans nouveau jar ;",
+                "relu tout seul quand le fichier change.").push("protections");
+        PROTECTION_GAZ = b.comment("Zone de gaz.").defineListAllowEmpty("gaz", List.of("heraliz_armory:gas_mask_*",
+                "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit", "heraliz_armory:*respirator*",
+                "heraliz_armory:*gasmask*"), o -> o instanceof String);
+        PROTECTION_RADIATION = b.comment("Zone de radiation.").defineListAllowEmpty("radiation",
+                List.of("heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"), o -> o instanceof String);
+        PROTECTION_FROID = b.comment("Zone de froid.").defineListAllowEmpty("froid",
+                List.of("heraliz_armory:arctique_suit", "heraliz_armory:arctique_renforcee_suit"), o -> o instanceof String);
         b.pop();
         SPEC = b.build();
     }

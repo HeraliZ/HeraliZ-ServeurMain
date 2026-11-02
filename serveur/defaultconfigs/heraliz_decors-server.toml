@@ -14,3 +14,14 @@
 	#Zone de froid : secondes par point (combinaison contre le froid 300 / 450 points : 25 / 37 min).
 	#Range: 1 ~ 3600
 	secondes_froid = 5
+
+#Objets qui protègent de chaque zone : identifiants, * = n'importe quelle suite de lettres. Portés en armure, en
+#main gauche ou dans un emplacement Curios. Une nouvelle tenue de l'Armurerie s'ajoute ici, sans nouveau jar ;
+#relu tout seul quand le fichier change.
+[protections]
+	#Zone de gaz.
+	gaz = ["heraliz_armory:gas_mask_*", "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit", "heraliz_armory:*respirator*", "heraliz_armory:*gasmask*"]
+	#Zone de radiation.
+	radiation = ["heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"]
+	#Zone de froid.
+	froid = ["heraliz_armory:arctique_suit", "heraliz_armory:arctique_renforcee_suit"]

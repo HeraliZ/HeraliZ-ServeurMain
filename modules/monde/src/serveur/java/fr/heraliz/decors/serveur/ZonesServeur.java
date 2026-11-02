@@ -67,11 +67,8 @@ public final class ZonesServeur {
     private static final Map<UUID, Ambiance.Exposition> ENVOYEE = new HashMap<>();
     private static final Ambiance.Exposition AUCUNE = new Ambiance.Exposition(0f, 0f, 0f, false, false, false);
 
-    // protections (identifiants, * = n'importe quelle fin)
-    private static final String[] P_GAZ = {"heraliz_armory:gas_mask_*", "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit",
-            "heraliz_armory:*respirator*", "heraliz_armory:*gasmask*"};
-    private static final String[] P_RAD = {"heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"};
-    private static final String[] P_FROID = {"heraliz_armory:arctique_suit", "heraliz_armory:arctique_renforcee_suit"};
+    // protections (identifiants, * = n'importe quelle fin) : section [protections] de heraliz_decors-server.toml (02/11,
+    // audit mods-2 §21 ; avant écrites ici : une nouvelle tenue de l'Armurerie demandait un nouveau jar)
 
     @SubscribeEvent
     public static void demarrage(ServerStartedEvent e) {
@@ -155,9 +152,9 @@ public final class ZonesServeur {
                 }
             }
             boolean[] us = new boolean[3];
-            ItemStack sg = g > 0 ? protection(p, P_GAZ, us, 0) : ItemStack.EMPTY;
-            ItemStack sr = ra > 0 ? protection(p, P_RAD, us, 1) : ItemStack.EMPTY;
-            ItemStack sf = fr > 0 ? protection(p, P_FROID, us, 2) : ItemStack.EMPTY;
+            ItemStack sg = g > 0 ? protection(p, ConfigZones.PROTECTION_GAZ.get(), us, 0) : ItemStack.EMPTY;
+            ItemStack sr = ra > 0 ? protection(p, ConfigZones.PROTECTION_RADIATION.get(), us, 1) : ItemStack.EMPTY;
+            ItemStack sf = fr > 0 ? protection(p, ConfigZones.PROTECTION_FROID.get(), us, 2) : ItemStack.EMPTY;
             boolean pg = !sg.isEmpty(), pr = !sr.isEmpty(), pf = !sf.isEmpty();   // hors d'une zone : sans effet
             if (ConfigZones.USURE.get() && (g > 0 || ra > 0 || fr > 0)) {
                 int[] t = USURE.computeIfAbsent(p.getUUID(), k -> new int[3]);
@@ -239,7 +236,7 @@ public final class ZonesServeur {
             EquipmentSlot.OFFHAND};
 
     /** Vrai si une pièce portée (pas usée) protège de ce genre de zone. */
-    static boolean protege(ServerPlayer p, String[] ids) {
+    static boolean protege(ServerPlayer p, List<? extends String> ids) {
         return !protection(p, ids, new boolean[3], 0).isEmpty();
     }
 
@@ -247,7 +244,7 @@ public final class ZonesServeur {
      * Pièce portée qui protège de ce genre de zone et n'est pas usée (la vraie pile, modifiable), sinon EMPTY ;
      * usee[i] passe à vrai si une pièce de ce genre est portée mais usée.
      */
-    static ItemStack protection(ServerPlayer p, String[] ids, boolean[] usee, int i) {
+    static ItemStack protection(ServerPlayer p, List<? extends String> ids, boolean[] usee, int i) {
         for (EquipmentSlot s : PORTES) {
             ItemStack st = p.getItemBySlot(s);
             if (!correspond(st, ids)) continue;
@@ -283,7 +280,7 @@ public final class ZonesServeur {
         }
     }
 
-    private static boolean correspond(ItemStack st, String[] ids) {
+    private static boolean correspond(ItemStack st, List<? extends String> ids) {
         if (st == null || st.isEmpty()) return false;
         ResourceLocation k = ForgeRegistries.ITEMS.getKey(st.getItem());
         if (k == null) return false;
