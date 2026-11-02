@@ -18,6 +18,7 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) {
                 Deblocages.envoyer(p);
+                Deblocages.prevenirStaff(p);
                 SansArme.connexion(p);
             }
         });

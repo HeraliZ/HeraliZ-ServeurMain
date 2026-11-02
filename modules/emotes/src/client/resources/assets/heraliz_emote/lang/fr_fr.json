@@ -76,5 +76,6 @@
   "heraliz_emote.cmd.pas": "%s n'a pas l'emote « %s »",
   "heraliz_emote.cmd.voir": "%s : %s / %s emotes : %s",
   "heraliz_emote.cmd.inconnue": "Emote inconnue : %s",
-  "item.heraliz_emote.icone": "Emote"
+  "item.heraliz_emote.icone": "Emote",
+  "heraliz_emote.fichier_illisible": "[Emotes] Le fichier des emotes débloquées (%s) était illisible : il n'est pas réécrit. Voir le journal du serveur."
 }

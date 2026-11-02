@@ -408,5 +408,6 @@
   "gui.heralisz_camo.atelier.decharger": "Разрядить",
   "gui.heralisz_camo.atelier.decharger_aide": "Извлечь патроны из оружия: они вернутся в инвентарь, магазин останется пустым.",
   "gui.heralisz_camo.table.dispo": "С моими компонентами",
-  "gui.heralisz_camo.table.autres": "+ ещё материалов: %s"
+  "gui.heralisz_camo.table.autres": "+ ещё материалов: %s",
+  "msg.heralisz_camo.fichier_illisible": "[Камуфляжи] Файл вечных камуфляжей (%s) не удалось прочитать при запуске: он не перезаписывается, с оружия ничего не снимается. Смотри журнал сервера."
 }

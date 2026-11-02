@@ -28,8 +28,13 @@ import java.util.UUID;
 
 /**
  * Les emotes débloquées par chaque joueur (caisse des emotes, staff). Gardées hors du monde, à la racine du serveur
- * ({@code heraliz_emote/debloquees.json}) : elles survivent aux changements de carte, comme les camos à vie. Un fichier
- * illisible n'est jamais écrasé (copie {@code .illisible}, puis on repart de zéro). Thread du serveur seulement.
+ * ({@code heraliz_emote/debloquees.json}) : elles survivent aux changements de carte, comme les camos à vie. Thread du
+ * serveur seulement.
+ * <p>Fichier illisible (audit du 02/11, point 30) : il n'est JAMAIS réécrit tant que le serveur tourne (avant, la
+ * première emote débloquée écrivait une liste presque vide à sa place, malgré la copie {@code .illisible}). Copie datée à
+ * côté ({@code debloquees.json.illisible-<date>}), les déblocages de la session vont dans
+ * {@code debloquees.json.secours-<date>} (à reprendre à la main), et le staff connecté est prévenu (journal et message
+ * aux op).</p>
  */
 public final class Deblocages {
     private static final Path FICHIER = Path.of("heraliz_emote", "debloquees.json");
@@ -37,6 +42,9 @@ public final class Deblocages {
     private static final Random HASARD = new Random();
     private static final Map<UUID, Set<UUID>> PAR_JOUEUR = new HashMap<>();
     private static boolean lu;
+    /** Fichier illisible : les changements de cette session sont écrits ici, jamais dans le fichier principal. */
+    @Nullable
+    private static Path secours;
 
     private Deblocages() {
     }
@@ -131,10 +139,13 @@ public final class Deblocages {
                 PAR_JOUEUR.put(UUID.fromString(e.getKey()), s);
             }
         } catch (Exception ex) {
-            HeralizEmote.LOGGER.error("[emote] {} illisible : gardé en .illisible, on repart de zéro", FICHIER, ex);
+            String date = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            secours = FICHIER.resolveSibling("debloquees.json.secours-" + date);
+            HeralizEmote.LOGGER.error("[emote] {} ILLISIBLE : il ne sera pas réécrit ; copie datée gardée à côté, déblocages de"
+                    + " cette session dans {} (à reprendre à la main). Réparer le fichier puis redémarrer", FICHIER, secours.getFileName(), ex);
             PAR_JOUEUR.clear();
             try {
-                Files.copy(FICHIER, FICHIER.resolveSibling("debloquees.json.illisible"), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(FICHIER, FICHIER.resolveSibling("debloquees.json.illisible-" + date), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException io) {
                 HeralizEmote.LOGGER.error("[emote] copie de {} impossible", FICHIER, io);
             }
@@ -149,13 +160,24 @@ public final class Deblocages {
             for (UUID u : e.getValue()) a.add(u.toString());
             racine.add(e.getKey().toString(), a);
         }
+        // fichier illisible au démarrage : jamais réécrit, la session va dans le fichier de secours
+        Path cible = secours != null ? secours : FICHIER;
         try {
-            Files.createDirectories(FICHIER.getParent());
-            Path tmp = FICHIER.resolveSibling("debloquees.json.tmp");
+            Files.createDirectories(cible.getParent());
+            Path tmp = cible.resolveSibling(cible.getFileName() + ".tmp");
             Files.writeString(tmp, GSON.toJson(racine), StandardCharsets.UTF_8);
-            Files.move(tmp, FICHIER, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
-            HeralizEmote.LOGGER.error("[emote] écriture de {} impossible", FICHIER, ex);
+            HeralizEmote.LOGGER.error("[emote] écriture de {} impossible", cible, ex);
         }
+    }
+
+    /** Un op (niveau 2) qui se connecte alors que le fichier était illisible est prévenu. */
+    public static void prevenirStaff(ServerPlayer p) {
+        lire();
+        if (secours == null || !p.hasPermissions(2)) return;
+        p.sendSystemMessage(net.minecraft.network.chat.Component.translatableWithFallback("heraliz_emote.fichier_illisible",
+                "[Emotes] Le fichier des emotes débloquées (%s) était illisible : il n'est pas réécrit. Voir le journal du serveur.",
+                FICHIER.toString()).withStyle(net.minecraft.ChatFormatting.RED));
     }
 }

@@ -459,5 +459,6 @@
   "caracrea.voice.duration.minutes": "%s min",
   "caracrea.voice.duration.seconds": "%s s",
   "caracrea.message.spawn_only": "Tu ne peux changer d'apparence qu'au spawn.",
-  "caracrea.message.combat": "Pas en combat : attends la fin du combat pour changer d'apparence."
+  "caracrea.message.combat": "Pas en combat : attends la fin du combat pour changer d'apparence.",
+  "caracrea.voice.mutes_unreadable": "[Voix] Le fichier des sourdines (%s) était illisible au démarrage : il n'est pas réécrit. Voir le journal du serveur."
 }

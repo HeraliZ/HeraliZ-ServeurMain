@@ -35,6 +35,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * through deaths, reconnections and restarts, and work for offline players. A muted player still hears; their voice is
  * dropped by the server. The 1.0.1 flag ({@code caracrea:voice_muted} in the player's data) becomes a mute without end
  * at the next connection.
+ * <p>Fichier illisible au démarrage (audit du 02/11, point 30) : il n'est JAMAIS réécrit tant que le serveur tourne (avant,
+ * la première sourdine posée ou levée écrivait une liste presque vide à sa place, sans copie de secours). Copie datée à
+ * côté ({@code voix_sourdines.json.illisible-<date>}), les changements de la session vont dans
+ * {@code voix_sourdines.json.secours-<date>} (à reprendre à la main), et le staff connecté est prévenu (journal et
+ * message aux op).</p>
  */
 public final class VoiceMutes {
     /** One mute: {@code until} in epoch milliseconds, 0 for no end. */
@@ -49,6 +54,9 @@ public final class VoiceMutes {
     private static final Map<UUID, Mute> MUTES = new ConcurrentHashMap<>();
     private static volatile MinecraftServer server;
     private static long nextCheck;
+    /** Fichier illisible : les changements de cette session sont écrits ici, jamais dans le fichier principal. */
+    @Nullable
+    private static volatile Path secours;
 
     private VoiceMutes() {
     }
@@ -61,6 +69,7 @@ public final class VoiceMutes {
     static void load(MinecraftServer started) {
         server = started;
         MUTES.clear();
+        secours = null;
         Path file = file(started);
         if (!Files.exists(file)) {
             return;
@@ -78,7 +87,16 @@ public final class VoiceMutes {
             }
             CaraCrea.LOGGER.info("Voice chat: {} mute(s) loaded", MUTES.size());
         } catch (IOException | RuntimeException e) {
-            CaraCrea.LOGGER.warn("Voice chat: could not read {}", file, e);
+            MUTES.clear();
+            String date = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            secours = file.resolveSibling("voix_sourdines.json.secours-" + date);
+            CaraCrea.LOGGER.error("[voix] {} ILLISIBLE : il ne sera pas réécrit ; copie datée gardée à côté, sourdines de cette"
+                    + " session dans {} (à reprendre à la main). Réparer le fichier puis redémarrer", file, secours.getFileName(), e);
+            try {
+                Files.copy(file, file.resolveSibling("voix_sourdines.json.illisible-" + date), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                CaraCrea.LOGGER.error("[voix] copie de {} impossible : {}", file, ex.toString());
+            }
         }
     }
 
@@ -109,12 +127,17 @@ public final class VoiceMutes {
         }
         JsonObject root = new JsonObject();
         root.add("sourdines", list);
-        Path file = file(current);
+        // fichier illisible au démarrage : jamais réécrit, la session va dans le fichier de secours
+        Path file = secours != null ? secours : file(current);
         try {
             Files.createDirectories(file.getParent());
-            Path temp = file.resolveSibling("voix_sourdines.json.tmp");
+            Path temp = file.resolveSibling(file.getFileName() + ".tmp");
             Files.writeString(temp, GSON.toJson(root), StandardCharsets.UTF_8);
-            Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException atomique) {
+                Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             CaraCrea.LOGGER.warn("Voice chat: could not save {}", file, e);
         }
@@ -190,6 +213,17 @@ public final class VoiceMutes {
                 CaraCrea.LOGGER.info("Voice chat: mute of {} ended", mute.name());
             }
         }
+    }
+
+    /** Un op (niveau 2) qui se connecte alors que le fichier des sourdines était illisible est prévenu. */
+    static void prevenirStaff(ServerPlayer player) {
+        MinecraftServer current = server;
+        if (secours == null || current == null || !player.hasPermissions(2)) {
+            return;
+        }
+        player.sendSystemMessage(Component.translatableWithFallback("caracrea.voice.mutes_unreadable",
+                "[Voix] Le fichier des sourdines (%s) était illisible au démarrage : il n'est pas réécrit. Voir le journal du serveur.",
+                file(current).toString()).withStyle(ChatFormatting.RED));
     }
 
     /** At connection: the 1.0.1 flag becomes a mute without end. */

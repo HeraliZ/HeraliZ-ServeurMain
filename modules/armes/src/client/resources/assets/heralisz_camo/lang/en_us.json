@@ -408,5 +408,6 @@
   "gui.heralisz_camo.atelier.decharger": "Unload",
   "gui.heralisz_camo.atelier.decharger_aide": "Take the rounds out of the gun: they go back to your inventory, the magazine stays empty.",
   "gui.heralisz_camo.table.dispo": "With my components",
-  "gui.heralisz_camo.table.autres": "+ %s more materials"
+  "gui.heralisz_camo.table.autres": "+ %s more materials",
+  "msg.heralisz_camo.fichier_illisible": "[Camos] The lifetime camos file (%s) could not be read at startup: it is not rewritten and nothing is removed from weapons. See the server log."
 }

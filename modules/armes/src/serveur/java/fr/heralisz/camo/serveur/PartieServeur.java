@@ -42,6 +42,7 @@ public final class PartieServeur implements Partie {
          if (e.getEntity() instanceof ServerPlayer p) {
             CamosAVie.verifier(p);
             CamosAVie.envoyer(p);
+            CollectionCamos.prevenirStaff(p);
          }
       });
       // après Curios (HIGHEST, ajoute ses objets), avant les corps (LOWEST) et les sacs (NORMAL, peut annuler la chute)

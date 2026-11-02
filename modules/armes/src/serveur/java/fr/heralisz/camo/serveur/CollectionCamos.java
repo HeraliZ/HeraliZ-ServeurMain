@@ -30,6 +30,12 @@ import java.util.UUID;
  * survivent au changement de carte). uuid → {camos: [ids], recharges: {id: fin du délai (ms)}, jetons: {id: jeton de
  * pose}}. Un id inconnu (camo retiré du catalogue) est gardé tel quel dans le fichier : rien de payé n'est jamais effacé.
  * Écriture atomique (fichier temporaire puis renommage), une seconde après chaque changement et à l'arrêt. Fil serveur.
+ * <p>Fichier illisible au démarrage (audit du 02/11, point 30) : il n'est JAMAIS réécrit tant que le serveur tourne
+ * (avant : le premier camo ajouté écrivait une liste presque vide à sa place, et au redémarrage suivant, le fichier
+ * redevenu « lisible », tous les camos à vie posés étaient retirés des armes). Copie datée à côté
+ * ({@code collections.json.illisible-<date>}), les changements de la session vont dans
+ * {@code collections.json.secours-<date>} (à reprendre à la main), aucune arme n'est dépouillée, et le staff connecté
+ * est prévenu (journal et message aux op).</p>
  */
 final class CollectionCamos {
    private static final Logger LOG = LogUtils.getLogger();
@@ -55,6 +61,9 @@ final class CollectionCamos {
    private static int ticksAvantSauvegarde = -1;
    /** Faux si le fichier était illisible au démarrage : les armes des propriétaires ne sont alors jamais dépouillées. */
    private static boolean fiable = true;
+   /** Fichier illisible : les changements de cette session sont écrits ici, jamais dans le fichier principal. */
+   @Nullable
+   private static Path secours;
 
    private CollectionCamos() {
    }
@@ -67,6 +76,7 @@ final class CollectionCamos {
       modifie = false;
       ticksAvantSauvegarde = -1;
       fiable = true;
+      secours = null;
       try {
          Files.createDirectories(dossier);
          if (Files.exists(fichier)) {
@@ -86,12 +96,16 @@ final class CollectionCamos {
          }
          LOG.info("[Camos] {} collection(s) de camos à vie chargée(s) depuis {}", JOUEURS.size(), fichier);
       } catch (Exception e) {
-         LOG.error("[Camos] {} illisible : on repart vide, l'ancien fichier est gardé en .bad ; les camos à vie déjà posés"
-            + " restent sur les armes jusqu'au prochain redémarrage avec un fichier lisible", fichier, e);
+         String date = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+         secours = fichier.resolveSibling("collections.json.secours-" + date);
+         LOG.error("[Camos] {} ILLISIBLE : il ne sera pas réécrit ; copie datée gardée à côté, changements de cette session"
+            + " dans {} (à reprendre à la main), aucun camo à vie n'est retiré des armes. Réparer le fichier puis redémarrer",
+            fichier, secours.getFileName(), e);
          fiable = false;
          try {
-            Files.copy(fichier, fichier.resolveSibling("collections.json.bad"), StandardCopyOption.REPLACE_EXISTING);
-         } catch (IOException ignored) {
+            Files.copy(fichier, fichier.resolveSibling("collections.json.illisible-" + date), StandardCopyOption.REPLACE_EXISTING);
+         } catch (IOException ex) {
+            LOG.error("[Camos] copie de {} impossible : {}", fichier, ex.toString());
          }
          JOUEURS.clear();
       }
@@ -143,6 +157,9 @@ final class CollectionCamos {
 
    private static void sauvegarder() {
       if (fichier == null) return;
+      // fichier illisible au démarrage : jamais réécrit, la session va dans le fichier de secours
+      Path cible = fiable ? fichier : secours;
+      if (cible == null) return;
       long now = System.currentTimeMillis();
       JsonObject racine = new JsonObject();
       racine.addProperty("version", 1);
@@ -169,24 +186,32 @@ final class CollectionCamos {
          joueurs.add(e.getKey().toString(), o);
       }
       racine.add("joueurs", joueurs);
-      Path tmp = fichier.resolveSibling("collections.json.tmp");
+      Path tmp = cible.resolveSibling(cible.getFileName() + ".tmp");
       try {
-         Files.createDirectories(fichier.getParent());
+         Files.createDirectories(cible.getParent());
          Files.writeString(tmp, GSON.toJson(racine), StandardCharsets.UTF_8);
          try {
-            Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
          } catch (IOException atomique) {
-            Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING);
          }
          modifie = false;
       } catch (IOException e) {
-         LOG.error("[Camos] sauvegarde impossible : {}", fichier, e);
+         LOG.error("[Camos] sauvegarde impossible : {}", cible, e);
       }
    }
 
    /** Vrai si les collections ont été lues correctement (sinon : aucune arme n'est dépouillée de son camo à vie). */
    static boolean fiable() {
       return fiable;
+   }
+
+   /** Un op (niveau 2) qui se connecte alors que le fichier était illisible au démarrage est prévenu. */
+   static void prevenirStaff(net.minecraft.server.level.ServerPlayer p) {
+      if (fiable || fichier == null || !p.hasPermissions(2)) return;
+      p.sendSystemMessage(net.minecraft.network.chat.Component.translatableWithFallback("msg.heralisz_camo.fichier_illisible",
+         "[Camos] Le fichier des camos à vie (%s) était illisible au démarrage : il n'est pas réécrit, rien n'est retiré des armes. Voir le journal du serveur.",
+         fichier.toString()).withStyle(net.minecraft.ChatFormatting.RED));
    }
 
    // ------------------------------------------------------------------ accès

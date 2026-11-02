@@ -459,5 +459,6 @@
   "caracrea.voice.duration.minutes": "%s мин",
   "caracrea.voice.duration.seconds": "%s с",
   "caracrea.message.spawn_only": "Менять внешность можно только на спавне.",
-  "caracrea.message.combat": "Не в бою: дождись конца боя, чтобы сменить внешность."
+  "caracrea.message.combat": "Не в бою: дождись конца боя, чтобы сменить внешность.",
+  "caracrea.voice.mutes_unreadable": "[Голос] Файл заглушек голоса (%s) не удалось прочитать при запуске: он не перезаписывается. Смотри журнал сервера."
 }

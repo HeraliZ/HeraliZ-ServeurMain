@@ -459,5 +459,6 @@
   "caracrea.voice.duration.minutes": "%s min",
   "caracrea.voice.duration.seconds": "%s s",
   "caracrea.message.spawn_only": "You can only change your look at the spawn.",
-  "caracrea.message.combat": "Not in combat: wait until the fight is over to change your look."
+  "caracrea.message.combat": "Not in combat: wait until the fight is over to change your look.",
+  "caracrea.voice.mutes_unreadable": "[Voice] The voice mutes file (%s) could not be read at startup: it is not rewritten. See the server log."
 }

@@ -408,5 +408,6 @@
   "gui.heralisz_camo.atelier.decharger": "Décharger",
   "gui.heralisz_camo.atelier.decharger_aide": "Retirer les balles de l'arme : elles reviennent dans ton inventaire, le chargeur reste vide.",
   "gui.heralisz_camo.table.dispo": "Avec mes composants",
-  "gui.heralisz_camo.table.autres": "+ %s autres matériaux"
+  "gui.heralisz_camo.table.autres": "+ %s autres matériaux",
+  "msg.heralisz_camo.fichier_illisible": "[Camos] Le fichier des camos à vie (%s) était illisible au démarrage : il n'est pas réécrit, rien n'est retiré des armes. Voir le journal du serveur."
 }

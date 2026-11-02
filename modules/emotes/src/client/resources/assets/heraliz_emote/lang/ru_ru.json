@@ -76,5 +76,6 @@
   "heraliz_emote.cmd.pas": "У %s нет эмоции «%s»",
   "heraliz_emote.cmd.voir": "%s: %s / %s эмоций: %s",
   "heraliz_emote.cmd.inconnue": "Неизвестная эмоция: %s",
-  "item.heraliz_emote.icone": "Эмоция"
+  "item.heraliz_emote.icone": "Эмоция",
+  "heraliz_emote.fichier_illisible": "[Эмоции] Файл открытых эмоций (%s) не удалось прочитать: он не перезаписывается. Смотри журнал сервера."
 }

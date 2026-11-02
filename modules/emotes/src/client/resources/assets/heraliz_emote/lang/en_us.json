@@ -76,5 +76,6 @@
   "heraliz_emote.cmd.pas": "%s does not have the emote \"%s\"",
   "heraliz_emote.cmd.voir": "%s: %s / %s emotes: %s",
   "heraliz_emote.cmd.inconnue": "Unknown emote: %s",
-  "item.heraliz_emote.icone": "Emote"
+  "item.heraliz_emote.icone": "Emote",
+  "heraliz_emote.fichier_illisible": "[Emotes] The unlocked emotes file (%s) could not be read: it is not rewritten. See the server log."
 }

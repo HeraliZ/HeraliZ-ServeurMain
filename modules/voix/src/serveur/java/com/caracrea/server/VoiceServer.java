@@ -235,6 +235,7 @@ public final class VoiceServer {
 
     public static void onLogin(ServerPlayer player) {
         VoiceMutes.migrate(player);
+        VoiceMutes.prevenirStaff(player);
         if (!active) {
             CaraCreaNetwork.sendTo(player, CaraCreaNetwork.VoiceConfig.off());
             return;
