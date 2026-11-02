@@ -16,7 +16,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.ItemHandlerHelper;
 import java.util.List;
 
 /**
@@ -82,6 +81,21 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
             } else {
                 if (!e.vente) return;
                 long chips = count * e.jetons;
+                // 02/11 (audit point 23) : pas assez de place pour tout l'achat = refusé avant de payer (avant, le reste
+                // tombait au sol) ; une clé va sur le compte de clés, elle ne prend pas de place
+                List<ItemStack> piles = new java.util.ArrayList<>();
+                if (!(item instanceof fr.heraliz.crates.item.CrateKeyItem)) {
+                    for (long left = count; left > 0; ) {
+                        int k = (int) Math.min(left, ref.getMaxStackSize());
+                        piles.add(ref.copyWithCount(k));
+                        left -= k;
+                    }
+                    if (!CompteCapsules.tiennent(p.getInventory(), piles)) {
+                        msg(p, Component.translatableWithFallback("message.heralizcasino.cashier.place",
+                                "Pas assez de place dans ton inventaire pour %s × %s.", count, ref.getHoverName()).withStyle(ChatFormatting.RED));
+                        return;
+                    }
+                }
                 // 27/10 : ce qui manque dans l'inventaire est pris sur le compte de capsules (CompteCapsules)
                 CompteCapsules.Paiement pay = CompteCapsules.payer(p, chips, "caisse " + objet(e));
                 if (pay == null) {
@@ -104,12 +118,8 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                     tx(1, chips);
                     return;
                 }
-                long left = count;
-                while (left > 0) {
-                    int k = (int) Math.min(left, ref.getMaxStackSize());
-                    ItemHandlerHelper.giveItemToPlayer(p, ref.copyWithCount(k));
-                    left -= k;
-                }
+                // place vérifiée avant le paiement ; par sécurité, un reste attendrait de la place (jamais au sol)
+                for (ItemStack pile : piles) fr.heraliz.crates.loot.PendingRewards.donner(p, pile);
                 msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, ref.getHoverName())
                         .withStyle(ChatFormatting.GREEN));
                 surCompte(p, pay);

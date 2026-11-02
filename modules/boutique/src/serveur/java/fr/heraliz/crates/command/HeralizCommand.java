@@ -26,7 +26,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
@@ -234,7 +233,7 @@ public final class HeralizCommand {
             int k = Math.min(max, amount);
             ItemStack s = proto.copy();
             s.setCount(k);
-            ItemHandlerHelper.giveItemToPlayer(p, s);
+            fr.heraliz.crates.loot.PendingRewards.donner(p, s); // 02/11 : jamais au sol
             amount -= k;
         }
     }

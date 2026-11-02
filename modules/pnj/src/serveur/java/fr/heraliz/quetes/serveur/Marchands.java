@@ -146,15 +146,24 @@ final class Marchands {
         ItemStack modele = objet(art, 1);
         if (modele.isEmpty()) return;
         long total = art.prix() * q;
+        // 02/11 (audit point 23) : sans la place pour tout le lot, l'achat est refusé avant de payer (avant, le reste
+        // tombait au sol)
+        List<ItemStack> lot = new ArrayList<>(q);
+        for (int i = 0; i < q; i++) {
+            ItemStack s = modele.copy();
+            Ponts.exemplaire(s, "marchand " + def.id);
+            lot.add(s);
+        }
+        if (!ObjetsARendre.tiennent(p.getInventory(), lot)) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.notif.place_achat", Texte.brut(q), Texte.cle(modele.getDescriptionId())), 0xFF6B6B);
+            return;
+        }
         if (!Ponts.retirer(p.getUUID(), total, "Achat : " + art.objet() + " x" + q)) {
             Moteur.notif(p, Texte.cle("heraliz_quetes.notif.pas_assez", Texte.brut(Ponts.nombre(total))), 0xFF6B6B);
             return;
         }
-        for (int i = 0; i < q; i++) {
-            ItemStack s = modele.copy();
-            Ponts.exemplaire(s, "marchand " + def.id);
-            if (!p.getInventory().add(s)) p.drop(s, false);
-        }
+        // place vérifiée avant le paiement ; par sécurité, un reste attendrait de la place (jamais au sol)
+        for (ItemStack s : lot) ObjetsARendre.donner(p, s);
         p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7F, 1.0F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.achete", Texte.brut(q), Texte.cle(modele.getDescriptionId()),
                 Texte.brut(Ponts.nombre(total))), 0xE8C36A);

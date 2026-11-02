@@ -14,7 +14,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 
 /**
@@ -32,7 +31,10 @@ public final class RewardHelper {
         announce(player, e, type);
     }
 
-    /** Objets (decoupes en piles pleines, au sol si l'inventaire est plein) et commandes de la recompense. */
+    /**
+     * Objets (decoupes en piles pleines ; ce qui ne tient pas dans l'inventaire attend de la place dans
+     * {@link PendingRewards}, jamais au sol : 02/11) et commandes de la recompense.
+     */
     public static void deliver(ServerPlayer player, LootEntry e, CrateType type) {
         MinecraftServer server = player.getServer();
         if (server == null) return;
@@ -61,7 +63,7 @@ public final class RewardHelper {
                     part.setCount(n);
                     // un bon du butin est un modèle : chaque gagnant reçoit un exemplaire neuf (identifiant et signature)
                     fr.heraliz.grades.bon.Bon.exemplaire(part, "caisse " + type.id);
-                    ItemHandlerHelper.giveItemToPlayer(player, part);
+                    PendingRewards.donner(player, part);
                     remaining -= n;
                 }
             }

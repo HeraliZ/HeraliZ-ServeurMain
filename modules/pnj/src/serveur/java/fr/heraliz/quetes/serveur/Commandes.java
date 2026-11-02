@@ -274,7 +274,7 @@ final class Commandes {
         ItemStack s = new ItemStack(HeralizQuetes.BAGUETTE.get());
         s.getOrCreateTag().putString(Baguette.GROUPE, groupe.toLowerCase(Locale.ROOT));
         s.setHoverName(Component.translatableWithFallback("item.heraliz_quetes.baguette.nom", "Baguette de quête : %s", groupe.toLowerCase(Locale.ROOT)));
-        if (!moi.getInventory().add(s)) moi.drop(s, false);
+        ObjetsARendre.donner(moi, s); // 02/11 : jamais au sol
         dire(c, "heraliz_quetes.cmd.baguette", "Baguette du groupe « %s » : clic droit sur un bloc = un point ; accroupi + clic droit = retirer.", groupe);
         return 1;
     }

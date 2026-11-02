@@ -295,7 +295,7 @@ final class Moteur {
             return;
         }
         notif(p, Texte.cle("heraliz_quetes.notif.objet_recu", Texte.cle(s.getDescriptionId())), 0xE8C36A);
-        if (!p.getInventory().add(s)) p.drop(s, false);
+        ObjetsARendre.donner(p, s); // 02/11 : ce qui ne tient pas attend de la place, jamais au sol
     }
 
     static int indexSuite(Defs.Pnj def, String id) {
@@ -355,7 +355,7 @@ final class Moteur {
     // ------------------------------------------------------------------ objets de quête
     static void donnerObjet(ServerPlayer p, String modele, String quete, String ref, Texte nom, Texte desc) {
         ItemStack s = ObjetQuete.marquer(new ItemStack(HeralizQuetes.modele(modele)), p.getUUID(), quete, ref, nom, desc);
-        if (!p.getInventory().add(s)) p.drop(s, false);
+        ObjetsARendre.donner(p, s); // 02/11 : jamais au sol
     }
 
     static boolean possede(ServerPlayer p, String quete, String ref) {

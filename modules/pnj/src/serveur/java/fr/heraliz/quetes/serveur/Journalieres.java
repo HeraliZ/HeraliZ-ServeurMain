@@ -580,9 +580,8 @@ final class Journalieres {
                 Moteur.notif(p, Texte.cle("heraliz_quetes.jour.notif.place"), 0xFF6B6B);
                 return;
             }
-            // une case libre suffit (une seule pile) ; un reste éventuel tombe aux pieds, jamais perdu
-            p.getInventory().add(st);
-            if (!st.isEmpty()) p.drop(st, false);
+            // une case libre suffit (une seule pile) ; un reste éventuel attend de la place (02/11 : jamais au sol)
+            ObjetsARendre.donner(p, st);
         }
         t.remove("remise");
         Ponts.sauverJoueur(p);

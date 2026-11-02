@@ -52,7 +52,9 @@ public final class ServerEvents {
     /** Interface d'ouverture : objets donnes a la fin de l'animation. */
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) CaseOpening.tick(event.getServer());
+        if (event.phase != TickEvent.Phase.END) return;
+        CaseOpening.tick(event.getServer());
+        PendingRewards.tick(event.getServer());
     }
 
     @SubscribeEvent
@@ -78,5 +80,7 @@ public final class ServerEvents {
             CrateType type = CrateType.byId(tag.getString("crate"));
             RewardHelper.give(player, tag, type == null ? CrateType.VOTE : type);
         }
+        // objets qui attendaient de la place (02/11)
+        PendingRewards.rendre(player);
     }
 }

@@ -236,7 +236,7 @@ final class BonServeur {
         String id = UUID.randomUUID().toString();
         ItemStack st = new ItemStack(ObjetBon.BON.get());
         Bon.ecrire(st, d, id, signer(id, d));
-        if (!p.getInventory().add(st)) p.drop(st, false);
+        fr.heraliz.crates.loot.PendingRewards.donner(p, st); // 02/11 : jamais au sol
         String resume = resume(d);
         RegistreGrades r = ServeurGrades.registre;
         if (r != null) r.journaliser(p.getGameProfile().getName() + " (bons) | créé | " + id + " | " + d.nom() + " | " + resume);
@@ -349,7 +349,7 @@ final class BonServeur {
             appliquerRate(p, id, d);
             return;
         }
-        if (!p.getInventory().add(copie)) p.drop(copie, false);
+        fr.heraliz.crates.loot.PendingRewards.donner(p, copie); // 02/11 : jamais au sol
         p.sendSystemMessage(msg("rendu_rien", "Rien n'a pu être donné pour le moment : ton bon t'est rendu, réessaie plus tard.").withStyle(ChatFormatting.GOLD));
         RegistreGrades r = ServeurGrades.registre;
         if (r != null) r.journaliser(p.getGameProfile().getName() + " (bons) | rien donné, rendu | " + id + " | " + d.nom());
@@ -518,7 +518,7 @@ final class BonServeur {
                     EN_COURS.put(c.id, c);
                     continue;
                 }
-                if (!p.getInventory().add(st)) p.drop(st, false);
+                fr.heraliz.crates.loot.PendingRewards.donner(p, st); // 02/11 : jamais au sol
                 p.sendSystemMessage(msg("rendu", "Les Points Boutique n'ont pas pu être versés : ton bon t'est rendu.").withStyle(ChatFormatting.GOLD));
             }
         }

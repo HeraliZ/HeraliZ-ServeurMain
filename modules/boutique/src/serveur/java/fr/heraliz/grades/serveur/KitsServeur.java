@@ -240,7 +240,7 @@ final class KitsServeur {
         }
         for (ItemStack modele : k.objets()) {
             ItemStack s = exemplaire(modele, "kit " + idVue(k));
-            if (!p.getInventory().add(s) && !s.isEmpty()) p.drop(s, false);
+            fr.heraliz.crates.loot.PendingRewards.donner(p, s); // 02/11 : ce qui ne tient pas attend de la place, jamais au sol
         }
         p.containerMenu.broadcastChanges();
         ServeurGrades.registre.journaliser("kit | " + p.getGameProfile().getName() + " (" + p.getUUID() + ") | " + idVue(k));

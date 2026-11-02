@@ -202,5 +202,7 @@
   "command.heralizcrates.cles.aucune": "%s n'a aucune clé.",
   "command.heralizcrates.cles.titre": "Clés de %s :",
   "command.heralizcrates.cles.retirees": "%s × %s retirée(s) à %s.",
-  "command.heralizcrates.cles.rien": "%s n'a pas de %s à retirer."
+  "command.heralizcrates.cles.rien": "%s n'a pas de %s à retirer.",
+  "message.heralizcrates.attente": "Inventaire plein : %s t'attend ; il te sera donné dès qu'il y aura de la place.",
+  "message.heralizcrates.attente_rendue": "Objets qui t'attendaient remis dans ton inventaire : %s."
 }

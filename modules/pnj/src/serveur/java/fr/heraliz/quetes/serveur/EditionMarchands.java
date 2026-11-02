@@ -581,7 +581,7 @@ final class EditionMarchands {
         ServerPlayer p = op(c);
         if (p == null) return 0;
         ItemStack s = new ItemStack(HeralizQuetes.REGISTRE.get());
-        if (!p.getInventory().add(s)) p.drop(s, false);
+        ObjetsARendre.donner(p, s); // 02/11 : jamais au sol
         c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.marchand.registre_donne",
                 "Registre du marchand : clic droit sur un marchand pour ouvrir son éditeur."), false);
         c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.marchand.registre_nouveau",

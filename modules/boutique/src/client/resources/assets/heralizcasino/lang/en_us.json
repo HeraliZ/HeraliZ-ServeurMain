@@ -1057,6 +1057,7 @@
   "message.heralizcasino.compte.solde": "Caps account: %s · on you: %s",
   "message.heralizcasino.compte.aide": "At the casino caps dispenser (ATM), or next to it or the cashier: /capsules deposer [amount] (none = all), /capsules retirer <amount>. The cashier takes what you lack from your account.",
   "message.heralizcasino.compte.paye": "Including %s caps taken from your account (left: %s).",
+  "message.heralizcasino.cashier.place": "Not enough room in your inventory for %s × %s.",
   "message.heralizcasino.compte.inventaire": "Caps account closed: %s caps put in your inventory.",
   "message.heralizcasino.compte.attente": "%s caps set aside for you (caps account closed, full or locked): you will get them at your next login.",
   "message.heralizcasino.compte.surplus": "Inventory full: %s caps paid into your caps account.",

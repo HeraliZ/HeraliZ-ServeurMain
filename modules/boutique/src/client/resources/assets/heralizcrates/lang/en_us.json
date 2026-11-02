@@ -202,5 +202,7 @@
   "command.heralizcrates.cles.aucune": "%s has no keys.",
   "command.heralizcrates.cles.titre": "Keys of %s:",
   "command.heralizcrates.cles.retirees": "%s × %s removed from %s.",
-  "command.heralizcrates.cles.rien": "%s has no %s to remove."
+  "command.heralizcrates.cles.rien": "%s has no %s to remove.",
+  "message.heralizcrates.attente": "Inventory full: %s is waiting for you; you will get it as soon as there is room.",
+  "message.heralizcrates.attente_rendue": "Items that were waiting for you put in your inventory: %s."
 }

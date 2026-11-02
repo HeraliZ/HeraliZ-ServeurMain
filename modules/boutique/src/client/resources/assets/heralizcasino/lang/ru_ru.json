@@ -1057,6 +1057,7 @@
   "message.heralizcasino.compte.solde": "Счёт крышек: %s · с собой: %s",
   "message.heralizcasino.compte.aide": "У банкомата крышек (ATM) казино, рядом с ним или с кассой: /capsules deposer [число] (без числа = все), /capsules retirer <число>. Касса берёт со счёта то, чего не хватает с собой.",
   "message.heralizcasino.compte.paye": "Из них %s крышек снято со счёта (осталось: %s).",
+  "message.heralizcasino.cashier.place": "Недостаточно места в инвентаре для %s × %s.",
   "message.heralizcasino.compte.inventaire": "Счёт крышек закрыт: %s крышек положено в инвентарь.",
   "message.heralizcasino.compte.attente": "%s крышек отложено для тебя (счёт крышек закрыт, полон или заблокирован): получишь их при следующем входе.",
   "message.heralizcasino.compte.surplus": "Инвентарь полон: %s крышек зачислено на счёт крышек.",

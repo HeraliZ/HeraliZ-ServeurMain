@@ -1057,6 +1057,7 @@
   "message.heralizcasino.compte.solde": "Compte de capsules : %s · sur toi : %s",
   "message.heralizcasino.compte.aide": "Au distributeur de capsules (ATM) du casino, ou à côté de lui ou de la caisse : /capsules deposer [nombre] (rien = tout), /capsules retirer <nombre>. La caisse prend sur ton compte ce qui manque sur toi.",
   "message.heralizcasino.compte.paye": "Dont %s capsules prises sur ton compte (reste : %s).",
+  "message.heralizcasino.cashier.place": "Pas assez de place dans ton inventaire pour %s × %s.",
   "message.heralizcasino.compte.inventaire": "Compte de capsules fermé : %s capsules mises dans ton inventaire.",
   "message.heralizcasino.compte.attente": "%s capsules mises de côté pour toi (compte de capsules fermé, plein ou bloqué) : elles te seront versées à ta prochaine connexion.",
   "message.heralizcasino.compte.surplus": "Inventaire plein : %s capsules versées sur ton compte de capsules.",

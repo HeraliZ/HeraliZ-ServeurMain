@@ -568,7 +568,7 @@ public final class CompteCapsules {
      * Les piles tiennent toutes dans l'inventaire, comme {@link Inventory#add} les y mettrait : d'abord sur les piles
      * pareilles (36 cases et main gauche), puis dans les cases vides des 36 cases.
      */
-    static boolean tiennent(Inventory inv, List<ItemStack> piles) {
+    public static boolean tiennent(Inventory inv, List<ItemStack> piles) {
         int vides = 0;
         for (int i = 0; i < inv.items.size(); i++) if (inv.items.get(i).isEmpty()) vides++;
         Map<net.minecraft.world.item.Item, Long> besoin = new HashMap<>();

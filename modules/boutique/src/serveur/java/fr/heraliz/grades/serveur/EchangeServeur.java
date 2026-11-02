@@ -738,7 +738,7 @@ public final class EchangeServeur {
 
     private static void donner(ServerPlayer p, List<ItemStack> l) {
         for (ItemStack st : l) {
-            if (!p.getInventory().add(st) && !st.isEmpty()) p.drop(st, false);
+            fr.heraliz.crates.loot.PendingRewards.donner(p, st); // 02/11 : ce qui ne tient pas attend de la place, jamais au sol
         }
         p.inventoryMenu.broadcastChanges();
     }

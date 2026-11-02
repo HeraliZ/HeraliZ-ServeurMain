@@ -76,7 +76,9 @@ public final class ServeurQuetes implements Partie {
             if (e.getEntity() instanceof ServerPlayer p) MenuRecycleurServeur.deconnexion(p);
         });
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer p) GardeRecycleur.rendre(p);
+            if (!(e.getEntity() instanceof ServerPlayer p)) return;
+            GardeRecycleur.rendre(p);
+            ObjetsARendre.rendre(p);
         });
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::changementMonde);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ServeurQuetes::mortATerre);
@@ -105,6 +107,7 @@ public final class ServeurQuetes implements Partie {
         Marchands.vider();
         Moteur.arreter();
         Journalieres.arreter();
+        ObjetsARendre.vider();
         LUEURS.clear();
     }
 
@@ -117,6 +120,7 @@ public final class ServeurQuetes implements Partie {
         WipeServeur.connexion(p);
         Journalieres.connexion(p);
         GardeRecycleur.rendre(p);
+        ObjetsARendre.rendre(p);
     }
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
@@ -129,6 +133,7 @@ public final class ServeurQuetes implements Partie {
         Accueil.oublier(e.getEntity().getUUID());
         SaisonQuetes.oublier(e.getEntity().getUUID());
         Journalieres.deconnexion(e.getEntity().getUUID());
+        ObjetsARendre.oublier(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 
@@ -205,6 +210,7 @@ public final class ServeurQuetes implements Partie {
         if (e.phase != TickEvent.Phase.END || Moteur.serveur == null) return;
         Moteur.envoyerSuivisEnAttente();
         WipeServeur.tick(e.getServer());
+        ObjetsARendre.tick(e.getServer());
         if (ticks % 20 == 11) Journalieres.tick(e.getServer());
         if (++ticks % 600 == 0) Donnees.toutEcrire();
     }

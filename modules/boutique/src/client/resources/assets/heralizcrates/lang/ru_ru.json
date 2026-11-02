@@ -202,5 +202,7 @@
   "command.heralizcrates.cles.aucune": "У игрока %s нет ключей.",
   "command.heralizcrates.cles.titre": "Ключи игрока %s:",
   "command.heralizcrates.cles.retirees": "%s × %s снято у игрока %s.",
-  "command.heralizcrates.cles.rien": "У игрока %s нет ключа «%s» для снятия."
+  "command.heralizcrates.cles.rien": "У игрока %s нет ключа «%s» для снятия.",
+  "message.heralizcrates.attente": "Инвентарь полон: %s ждёт тебя; получишь, как только освободится место.",
+  "message.heralizcrates.attente_rendue": "Ожидавшие тебя предметы положены в инвентарь: %s."
 }

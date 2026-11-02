@@ -92,7 +92,7 @@ final class KitDepart {
             d.putBoolean(MARQUE, true);
             for (ItemStack s : objets) {
                 ItemStack c = KitsServeur.exemplaire(s, "kit de départ");
-                if (!p.getInventory().add(c) && !c.isEmpty()) p.drop(c, false);
+                fr.heraliz.crates.loot.PendingRewards.donner(p, c); // 02/11 : jamais au sol
             }
             p.inventoryMenu.broadcastChanges();
             p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.kit_depart.recu",
