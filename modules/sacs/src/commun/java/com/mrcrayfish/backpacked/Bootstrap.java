@@ -20,7 +20,7 @@ import com.mrcrayfish.framework.api.FrameworkAPI;
 public class Bootstrap {
    /**
     * Initialisation serveur (FMLCommonSetupEvent), branchee par la partie serveur : ecouteurs de l'UnlockManager,
-    * BackpackEvents, RepairmanEnchantmentServeur, WanderingTraderEvents, ModCommands. Neutre sans partie serveur.
+    * BackpackEvents, RepairmanEnchantmentServeur, WanderingTraderEvents. Neutre sans partie serveur.
     */
    public static volatile Runnable INIT_SERVEUR = () -> {
    };

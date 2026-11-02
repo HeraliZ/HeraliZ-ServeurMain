@@ -4,7 +4,6 @@ import com.mrcrayfish.backpacked.Bootstrap;
 import com.mrcrayfish.backpacked.common.BackpackEvents;
 import com.mrcrayfish.backpacked.common.WanderingTraderEvents;
 import com.mrcrayfish.backpacked.common.backpack.loader.BackpackLoader;
-import com.mrcrayfish.backpacked.core.ModCommands;
 import com.mrcrayfish.backpacked.data.unlock.UnlockManagerServeur;
 import com.mrcrayfish.backpacked.datagen.BlockTagGen;
 import com.mrcrayfish.backpacked.datagen.LootTableGen;
@@ -54,7 +53,8 @@ public final class PartieServeur implements Partie {
          BackpackEvents.init();
          RepairmanEnchantmentServeur.init();
          WanderingTraderEvents.init();
-         ModCommands.init();
+         // 02/11 (audit HeraliZ, point 36) : ModCommands (/unlockbackpack, débloquer un modèle de sac, op 2) n'est plus branché ni
+         // livré : aucune utilisation sur HeraliZ, aucun outil ne la tape
       };
    }
 
