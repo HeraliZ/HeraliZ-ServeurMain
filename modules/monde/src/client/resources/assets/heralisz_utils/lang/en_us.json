@@ -422,8 +422,6 @@
   "heralisz_utils.zombies.cmd.stats.tick": "Average tick: %s ms",
   "heralisz_utils.zombies.cmd.reserves": "Free places / capacity of the 9 sectors around (row by row, north to south): %s",
   "heralisz_utils.zombies.cmd.reserves.zone": "Zone here: %s",
-  "heralisz_utils.zombies.cmd.banc.debut": "Bench: %s zombies will be placed around you (radius %s, %s per tick). Use /zombies stats and /diag mesure to measure.",
-  "heralisz_utils.zombies.cmd.banc.retires": "Bench: %s zombies removed.",
   "heralisz_utils.zombies.cmd.zone.aucune": "No zombie zones.",
   "heralisz_utils.zombies.cmd.zone.ligne": "%s: %s, center %s %s, radius %s",
   "heralisz_utils.zombies.cmd.zone.type": "Unknown type: police, militaire, danger, village or calme.",

@@ -422,8 +422,6 @@
   "heralisz_utils.zombies.cmd.stats.tick": "Tick moyen : %s ms",
   "heralisz_utils.zombies.cmd.reserves": "Places disponibles / capacite des 9 secteurs autour (ligne par ligne, du nord au sud) : %s",
   "heralisz_utils.zombies.cmd.reserves.zone": "Zone ici : %s",
-  "heralisz_utils.zombies.cmd.banc.debut": "Banc : %s zombies vont etre poses autour de vous (rayon %s, %s par tick). /zombies stats et /diag mesure pour mesurer.",
-  "heralisz_utils.zombies.cmd.banc.retires": "Banc : %s zombies retires.",
   "heralisz_utils.zombies.cmd.zone.aucune": "Aucune zone de zombies.",
   "heralisz_utils.zombies.cmd.zone.ligne": "%s : %s, centre %s %s, rayon %s",
   "heralisz_utils.zombies.cmd.zone.type": "Type inconnu : police, militaire, danger, village ou calme.",

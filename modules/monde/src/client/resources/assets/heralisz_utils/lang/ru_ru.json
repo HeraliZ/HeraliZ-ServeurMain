@@ -422,8 +422,6 @@
   "heralisz_utils.zombies.cmd.stats.tick": "Средний тик: %s мс",
   "heralisz_utils.zombies.cmd.reserves": "Свободно / вместимость 9 секторов вокруг (по рядам, с севера на юг): %s",
   "heralisz_utils.zombies.cmd.reserves.zone": "Зона здесь: %s",
-  "heralisz_utils.zombies.cmd.banc.debut": "Стенд: вокруг вас появится %s зомби (радиус %s, по %s за тик). Для замеров: /zombies stats и /diag mesure.",
-  "heralisz_utils.zombies.cmd.banc.retires": "Стенд: удалено зомби: %s.",
   "heralisz_utils.zombies.cmd.zone.aucune": "Зон зомби нет.",
   "heralisz_utils.zombies.cmd.zone.ligne": "%s: %s, центр %s %s, радиус %s",
   "heralisz_utils.zombies.cmd.zone.type": "Неизвестный тип: police, militaire, danger, village или calme.",

@@ -8,52 +8,33 @@ import fr.heralisz.utils.HeraliszUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.Locale;
 
 /**
- * {@code /zombies} (staff, permission 2) : état du système de zombies, banc de charge, zones de population.
+ * {@code /zombies} (staff, permission 2) : état du système de zombies, zones de population.
  * <ul>
  *     <li>{@code stats} : zombies HeraliZ suivis et par niveau d'IA, zombies du peuplement, monstres de la carte, chemins
  *     calculés / partagés / refusés, bruits et zombies attirés, coups retenus par les jetons, secteurs entamés, ms par tick ;</li>
- *     <li>{@code banc <nombre> [rayon]} : pose ce nombre de zombies HeraliZ autour de soi (50 par tick, seulement dans les
- *     tronçons actifs, étiquette {@value #TAG_BANC}, ni peuplement ni retrait) pour mesurer ; {@code banc retirer} les
- *     retire tous ; à faire sur un serveur de test, jamais en production avec des joueurs ;</li>
  *     <li>{@code zone ajouter <id> <police|militaire|danger|village|calme> <rayon>} à l'endroit où on se tient,
  *     {@code zone retirer <id>}, {@code zone liste} ({@link ZonesZombies}) ;</li>
  *     <li>{@code reserves} : capacité et places disponibles des secteurs autour de soi ({@link ReservesZombies}).</li>
  * </ul>
+ * 02/11 (audit point 36) : {@code banc <nombre> [rayon]} et {@code banc retirer} sont retirés (jusqu'à 3 000 zombies
+ * jamais retirés d'eux-mêmes, « jamais en production » ; le banc de charge de GitHub a ses bots). Des zombies déjà posés
+ * par lui portent l'étiquette {@code heraliz_banc_zombie} : {@code /kill @e[tag=heraliz_banc_zombie]} les retire.
  */
 @Mod.EventBusSubscriber(modid = HeraliszUtils.MODID)
 public final class CommandeZombies {
     private CommandeZombies() {
     }
-
-    /** Étiquette des zombies posés par le banc. */
-    public static final String TAG_BANC = "heraliz_banc_zombie";
-    private static final int PAR_TICK = 50;
-
-    private static int resteBanc;
-    private static ServerLevel niveauBanc;
-    private static Vec3 centreBanc = Vec3.ZERO;
-    private static int rayonBanc, essaisBanc;
-    /** Raisons des essais ratés du banc : tronçon inactif, pas de sol, refusé à l'arrivée. */
-    private static int ratesTroncon, ratesSol, ratesRefus;
 
     @SubscribeEvent
     public static void enregistrer(RegisterCommandsEvent e) {
@@ -61,12 +42,6 @@ public final class CommandeZombies {
         d.register(Commands.literal("zombies").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("stats").executes(CommandeZombies::stats))
                 .then(Commands.literal("reserves").executes(CommandeZombies::reserves))
-                .then(Commands.literal("banc")
-                        .then(Commands.literal("retirer").executes(CommandeZombies::retirerBanc))
-                        .then(Commands.argument("nombre", IntegerArgumentType.integer(1, 3000))
-                                .executes(c -> banc(c, 96))
-                                .then(Commands.argument("rayon", IntegerArgumentType.integer(16, 256))
-                                        .executes(c -> banc(c, IntegerArgumentType.getInteger(c, "rayon"))))))
                 .then(Commands.literal("zone")
                         .then(Commands.literal("liste").executes(CommandeZombies::zones))
                         .then(Commands.literal("retirer").then(Commands.argument("id", StringArgumentType.word())
@@ -125,79 +100,6 @@ public final class CommandeZombies {
         ok(s, t("reserves", "Places disponibles / capacite des 9 secteurs autour (ligne par ligne, du nord au sud) : %s", sb.toString()));
         ok(s, t("reserves.zone", "Zone ici : %s", z == null ? "-" : z.id() + " (" + z.type().nom + ")"));
         return 1;
-    }
-
-    private static int banc(CommandContext<CommandSourceStack> c, int rayon) {
-        CommandSourceStack s = c.getSource();
-        niveauBanc = s.getLevel();
-        centreBanc = s.getPosition();
-        rayonBanc = rayon;
-        resteBanc = IntegerArgumentType.getInteger(c, "nombre");
-        essaisBanc = resteBanc * 20;
-        ok(s, t("banc.debut", "Banc : %s zombies vont etre poses autour de vous (rayon %s, %s par tick). /zombies stats et /diag mesure pour mesurer.",
-                resteBanc, rayon, PAR_TICK));
-        HeraliszUtils.LOG.info("[zombies] banc : {} zombies demandes autour de {} (rayon {})", resteBanc, centreBanc, rayon);
-        return 1;
-    }
-
-    @SubscribeEvent
-    public static void tick(TickEvent.ServerTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || resteBanc <= 0 || niveauBanc == null) return;
-        ServerLevel sl = niveauBanc;
-        RandomSource rnd = sl.getRandom();
-        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-        int poses = 0;
-        while (poses < PAR_TICK && resteBanc > 0 && essaisBanc-- > 0) {
-            double a = rnd.nextDouble() * Math.PI * 2, d = Math.sqrt(rnd.nextDouble()) * rayonBanc;
-            int x = Mth.floor(centreBanc.x + Math.cos(a) * d), z = Mth.floor(centreBanc.z + Math.sin(a) * d);
-            m.set(x, Mth.floor(centreBanc.y), z);
-            if (!sl.isPositionEntityTicking(m)) {
-                ratesTroncon++;
-                continue;
-            }
-            int y = sl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-            Vec3 place = Peuplement.debout(sl, m, x, y, z);
-            if (place == null) {
-                ratesSol++;
-                continue;
-            }
-            ZombieSurvie zb = ZombiesSurvie.ZOMBIE.get().create(sl);
-            if (zb == null) break;
-            zb.tenue(SpawnZombiesServeur.tenueIci(place.x, place.z, rnd));
-            zb.moveTo(place.x, place.y, place.z, rnd.nextFloat() * 360f, 0f);
-            zb.finalizeSpawn(sl, sl.getCurrentDifficultyAt(BlockPos.containing(place)), MobSpawnType.COMMAND, null, null);
-            zb.setPersistenceRequired();
-            zb.addTag(TAG_BANC);
-            if (sl.addFreshEntity(zb)) {
-                resteBanc--;
-                poses++;
-            } else {
-                ratesRefus++;
-            }
-        }
-        if (resteBanc <= 0 || essaisBanc <= 0) {
-            HeraliszUtils.LOG.info("[zombies] banc : pose terminee ({} non poses ; essais rates : {} troncon inactif, {} sans sol, {} refuses a l'arrivee)",
-                    Math.max(0, resteBanc), ratesTroncon, ratesSol, ratesRefus);
-            ratesTroncon = ratesSol = ratesRefus = 0;
-            resteBanc = 0;
-            niveauBanc = null;
-        }
-    }
-
-    private static int retirerBanc(CommandContext<CommandSourceStack> c) {
-        int n = 0;
-        resteBanc = 0;
-        for (ServerLevel sl : c.getSource().getServer().getAllLevels()) {
-            for (Entity en : sl.getAllEntities()) {
-                if (en instanceof ZombieSurvie && en.getTags().contains(TAG_BANC)) {
-                    en.discard();
-                    n++;
-                }
-            }
-        }
-        final int total = n;
-        ok(c.getSource(), t("banc.retires", "Banc : %s zombies retires.", total));
-        return n;
     }
 
     private static int zones(CommandContext<CommandSourceStack> c) {
