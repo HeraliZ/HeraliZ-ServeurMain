@@ -377,7 +377,7 @@ public final class AtmScreen extends Screen {
     private String libelle(ComptePacket.Mouvement m) {
         String d = m.detail();
         return switch (m.genre()) {
-            case "depot", "retrait", "entree", "staff", "wipe" -> t("genre." + m.genre());
+            case "depot", "retrait", "entree", "staff", "wipe", "gain", "mise", "plein" -> t("genre." + m.genre());
             case "caisse" -> d.isEmpty() ? t("genre.caisse_seul") : t("genre.caisse", nomObjet(d));
             case "rendu" -> d.isEmpty() ? t("genre.rendu_seul") : t("genre.rendu", nomObjet(d));
             default -> t("genre.autre");

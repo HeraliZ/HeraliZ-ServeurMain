@@ -54,8 +54,8 @@ public class BlackjackBlockEntityServeur extends BlackjackBlockEntity {
             case ACTION_DOUBLE -> {
                 if (!table.canDouble(now)) return;
                 long extra = table.bets[table.active];
-                if (!ChipsServeur.take(p, extra)) {
-                    msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(extra), Chips.format(Chips.count(p))).withStyle(ChatFormatting.RED));
+                if (!ChipsServeur.miser(p, extra)) {
+                    msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(extra), Chips.format(ChipsServeur.disponible(p))).withStyle(ChatFormatting.RED));
                     return;
                 }
                 fr.heraliz.casino.data.CasinoStats.get(((ServerLevel) level).getServer()).wager(type, p.getUUID(), extra);
@@ -64,8 +64,8 @@ public class BlackjackBlockEntityServeur extends BlackjackBlockEntity {
             case ACTION_SPLIT -> {
                 if (!table.canSplit(now)) return;
                 long extra = table.bets[0];
-                if (!ChipsServeur.take(p, extra)) {
-                    msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(extra), Chips.format(Chips.count(p))).withStyle(ChatFormatting.RED));
+                if (!ChipsServeur.miser(p, extra)) {
+                    msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(extra), Chips.format(ChipsServeur.disponible(p))).withStyle(ChatFormatting.RED));
                     return;
                 }
                 fr.heraliz.casino.data.CasinoStats.get(((ServerLevel) level).getServer()).wager(type, p.getUUID(), extra);

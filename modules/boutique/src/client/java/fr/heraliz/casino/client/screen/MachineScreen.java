@@ -745,8 +745,14 @@ public abstract class MachineScreen<T extends MachineBlockEntity> extends Screen
         return CasinoConfig.get().limits(be.type)[1];
     }
 
+    /**
+     * Capsules utilisables : celles de l'inventaire, plus le compte de capsules s'il paie la caisse et les mises (27/10 pour
+     * la caisse, 02/11 pour les machines : les gains vont sur le compte ; solde envoye par le serveur, qui reverifie tout).
+     */
     protected long balance() {
-        return minecraft != null && minecraft.player != null ? Chips.count(minecraft.player) : 0;
+        long inv = minecraft != null && minecraft.player != null ? Chips.count(minecraft.player) : 0;
+        boolean compte = fr.heraliz.casino.net.ComptePacket.clientActif && fr.heraliz.casino.net.ComptePacket.clientPaiement;
+        return inv + (compte ? fr.heraliz.casino.net.ComptePacket.clientSolde : 0);
     }
 
     protected void setBet(long v) {

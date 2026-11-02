@@ -11,6 +11,7 @@ import fr.heraliz.casino.block.entity.AtmBlockEntity;
 import fr.heraliz.casino.block.entity.CashierBlockEntity;
 import fr.heraliz.casino.config.CasinoConfig;
 import fr.heraliz.casino.data.EcrituresFond;
+import fr.heraliz.casino.data.PendingPayouts;
 import fr.heraliz.casino.item.ChipItem;
 import fr.heraliz.casino.net.CasinoNet;
 import fr.heraliz.casino.net.ComptePacket;
@@ -63,13 +64,17 @@ import java.util.UUID;
  * repare. Jamais de solde negatif ni au-dessus du plafond ; les capsules sont deplacees, jamais copiees : depot = objets
  * retires de l'inventaire, retrait refuse sans la place pour toutes les capsules, joueur sauvegarde apres chaque mouvement.
  * <p>Depot et retrait : au distributeur de capsules (bloc {@link AtmBlockEntity}, resultat ecrit dans son ecran), ou par
- * {@code /capsules} a cote d'un distributeur ou de la caisse (resultat dans le chat). Les {@value #HISTORIQUE} derniers
+ * {@code /capsules} a cote d'un distributeur ou de la caisse (resultat dans le chat). Gains et remboursements des
+ * machines : verses sur le compte ({@link #verser}, 02/11), jamais dans l'inventaire ; capsules qui ne tiennent pas dans
+ * l'inventaire (monnaie, caisse...) : sur le compte ({@link #surplus}), jamais au sol. Les {@value #HISTORIQUE} derniers
  * mouvements sont gardes avec le compte, pour l'ecran du distributeur (un historique illisible est oublie, jamais le solde).
  */
 public final class CompteCapsules {
     private CompteCapsules() {
     }
 
+    /** Sources des mouvements des machines du casino (genres « gain », « mise », « plein » de l'ecran du distributeur). */
+    public static final String SOURCE_GAIN = "gain casino", SOURCE_MISE = "mise casino", SOURCE_SURPLUS = "inventaire plein";
     /** Une operation, au plus (aucun debordement possible). */
     private static final long MAX_OPERATION = 1_000_000_000_000L;
     /** Mouvements gardes avec le compte. */
@@ -236,6 +241,9 @@ public final class CompteCapsules {
         if (s.startsWith("caisse ")) return new String[]{"caisse", s.substring(7)};
         if (s.startsWith("staff")) return new String[]{"staff", ""};
         if (s.equals("wipe")) return new String[]{"wipe", ""};
+        if (s.equals(SOURCE_GAIN)) return new String[]{"gain", ""};
+        if (s.equals(SOURCE_MISE)) return new String[]{"mise", ""};
+        if (s.equals(SOURCE_SURPLUS)) return new String[]{"plein", ""};
         return new String[]{"autre", ""};
     }
 
@@ -305,7 +313,7 @@ public final class CompteCapsules {
         return true;
     }
 
-    /** Capsules utilisables a la caisse : inventaire, plus le compte si le paiement par le compte est ouvert. */
+    /** Capsules utilisables a la caisse et aux machines : inventaire, plus le compte si le paiement par le compte est ouvert. */
     public static long disponible(ServerPlayer p) {
         long inv = Chips.count(p);
         return paiementOuvert() && ouvert(p.getUUID()) ? inv + solde(p.getUUID()) : inv;
@@ -331,13 +339,13 @@ public final class CompteCapsules {
             crediter(p.getUUID(), p.getGameProfile().getName(), manque, source + " (annule)");
             return null;
         }
-        sauverJoueur(p);
+        if (inv > 0) sauverJoueur(p);
         return new Paiement(inv, manque);
     }
 
     /**
      * Rend {@code montant} capsules d'un paiement (achat qui n'a rien donne) : d'abord sur le compte, a hauteur de ce qui y
-     * a ete pris, le reste en capsules dans l'inventaire (au sol s'il est plein, comme les gains).
+     * a ete pris, le reste en capsules dans l'inventaire (ce qui n'y tient pas : sur le compte, {@link ChipsServeur#give}).
      */
     public static void rendre(ServerPlayer p, Paiement pay, long montant, String source) {
         long r = Math.max(0, Math.min(montant, pay.total()));
@@ -345,6 +353,63 @@ public final class CompteCapsules {
         if (surCompte > 0 && !crediter(p.getUUID(), p.getGameProfile().getName(), surCompte, source)) surCompte = 0;
         if (r - surCompte > 0) ChipsServeur.give(p, r - surCompte);
         if (surCompte > 0) sauverJoueur(p);
+    }
+
+    // ------------------------------------------------------------------ gains du casino (02/11, audit point 5)
+    /**
+     * Gain ou remboursement d'une machine du casino : verse sur le compte de capsules, joueur en ligne ou non, jamais dans
+     * l'inventaire (avant, un gros gain jetait des centaines de piles au sol, au milieu du casino). Ce que le compte ne
+     * peut pas prendre (bloque, plein, ecriture ratee) est mis de cote ({@link PendingPayouts}, verse a la prochaine
+     * connexion par {@link #versersEnAttente}) et le joueur est prevenu. Compte de capsules ferme par le reglage
+     * {@code compte.actif} : dans l'inventaire ce qui y tient, le reste de cote. Rend le nombre verse sur le compte.
+     */
+    public static long verser(MinecraftServer srv, UUID u, @Nullable String nom, long n, String source) {
+        if (n <= 0) return 0;
+        ServerPlayer p = srv.getPlayerList().getPlayer(u);
+        long surCompte = 0;
+        if (actif()) {
+            Compte c = compte(u);
+            long place = c.ferme ? 0 : Math.max(0, reglages().max - c.solde);
+            long part = Math.min(n, place);
+            if (part > 0 && crediter(u, nom, part, source)) surCompte = part;
+        } else if (p != null) {
+            long reste = ChipsServeur.mettre(p, n);
+            if (reste < n) dire(p, msg("inventaire", "Compte de capsules fermé : %s capsules mises dans ton inventaire.", Chips.format(n - reste))
+                    .withStyle(ChatFormatting.GOLD));
+            n = reste;
+            if (n <= 0) return 0;
+            PendingPayouts.get(srv).add(u, n);
+            dire(p, msg("attente", "%s capsules mises de côté pour toi (compte de capsules fermé, plein ou bloqué) : elles te seront versées à ta prochaine connexion.",
+                    Chips.format(n)).withStyle(ChatFormatting.YELLOW));
+            return 0;
+        }
+        long reste = n - surCompte;
+        if (reste > 0) {
+            PendingPayouts.get(srv).add(u, reste);
+            HeralizCasino.LOGGER.warn("[HeralizCasino] {} capsules de {} mises de côté ({}) : compte de capsules fermé, plein ou bloqué", reste, u, source);
+            if (p != null) dire(p, msg("attente", "%s capsules mises de côté pour toi (compte de capsules fermé, plein ou bloqué) : elles te seront versées à ta prochaine connexion.",
+                    Chips.format(reste)).withStyle(ChatFormatting.YELLOW));
+        }
+        return surCompte;
+    }
+
+    /** A la connexion : verse les gains mis de cote (sur le compte, comme {@link #verser}). */
+    public static void versersEnAttente(ServerPlayer p) {
+        long n = PendingPayouts.get(p.server).take(p.getUUID());
+        if (n <= 0) return;
+        long surCompte = verser(p.server, p.getUUID(), p.getGameProfile().getName(), n, SOURCE_GAIN);
+        if (surCompte > 0) p.sendSystemMessage(Component.translatable("message.heralizcasino.pending", Chips.format(surCompte)).withStyle(ChatFormatting.GOLD));
+    }
+
+    /**
+     * Capsules qui ne tiennent pas dans l'inventaire (monnaie d'un paiement, caisse, commande du staff) : sur le compte,
+     * sinon mises de cote jusqu'a la prochaine connexion ; jamais au sol (02/11).
+     */
+    public static void surplus(ServerPlayer p, long n) {
+        if (n <= 0) return;
+        long surCompte = verser(p.server, p.getUUID(), p.getGameProfile().getName(), n, SOURCE_SURPLUS);
+        if (surCompte > 0) dire(p, msg("surplus", "Inventaire plein : %s capsules versées sur ton compte de capsules.", Chips.format(surCompte))
+                .withStyle(ChatFormatting.GOLD));
     }
 
     // ------------------------------------------------------------------ depot et retrait (distributeur, /capsules)

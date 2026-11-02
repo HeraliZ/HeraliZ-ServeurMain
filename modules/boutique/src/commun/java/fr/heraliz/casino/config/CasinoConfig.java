@@ -279,7 +279,7 @@ public final class CasinoConfig {
         public String aide = AIDE;
         /** false : compte ferme (ni depot, ni retrait, ni paiement) ; les soldes restent dans leurs fichiers. */
         public boolean actif = true;
-        /** La caisse et l'entree du casino prennent sur le compte ce qui manque en capsules dans l'inventaire. */
+        /** La caisse, l'entree du casino et les mises des machines prennent sur le compte ce qui manque en capsules dans l'inventaire. */
         public boolean payerCaisse = true;
         /** /capsules : depots et retraits a moins de ce nombre de blocs d'un distributeur ou d'une caisse (0 = partout hors de la carte). */
         public double distance = 6;
@@ -289,7 +289,7 @@ public final class CasinoConfig {
         static final String AIDE = "Compte de capsules : distributeur de capsules (ATM) du casino, ou /capsules (solde), /capsules deposer "
                 + "[nombre] (rien = tout), /capsules retirer <nombre>, a moins de \"distance\" blocs d'un distributeur ou d'une caisse "
                 + "(0 = partout hors de la carte). "
-                + "payer_caisse : la caisse et l'entree prennent sur le compte ce qui manque dans l'inventaire. max : plafond d'un compte.";
+                + "payer_caisse : la caisse, l'entree et les mises des machines prennent sur le compte ce qui manque dans l'inventaire (les gains des machines vont toujours sur le compte). max : plafond d'un compte.";
 
         Compte sanitized() {
             aide = AIDE;

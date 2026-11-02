@@ -78,8 +78,8 @@ public class SlotBlockEntityServeur extends SlotBlockEntity {
                     msg(player, Component.translatable("message.heralizcasino.bet_limits", Chips.format(minBet()), Chips.format(maxBet())).withStyle(ChatFormatting.RED));
                     return;
                 }
-                if (!ChipsServeur.take(player, total)) {
-                    msg(player, Component.translatable("message.heralizcasino.not_enough", Chips.format(total), Chips.format(Chips.count(player)))
+                if (!ChipsServeur.miser(player, total)) {
+                    msg(player, Component.translatable("message.heralizcasino.not_enough", Chips.format(total), Chips.format(ChipsServeur.disponible(player)))
                             .withStyle(ChatFormatting.RED));
                     return;
                 }

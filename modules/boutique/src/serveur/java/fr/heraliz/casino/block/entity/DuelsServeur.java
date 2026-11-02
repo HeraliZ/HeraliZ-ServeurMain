@@ -160,8 +160,8 @@ public final class DuelsServeur {
             }
             case ACTION_JOIN -> {
                 if (be.phase != OPEN || p.getUUID().equals(be.playerA)) return;
-                if (!ChipsServeur.take(p, be.stake)) {
-                    MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(be.stake), Chips.format(Chips.count(p)))
+                if (!ChipsServeur.miser(p, be.stake)) {
+                    MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(be.stake), Chips.format(ChipsServeur.disponible(p)))
                             .withStyle(ChatFormatting.RED));
                     return;
                 }

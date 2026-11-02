@@ -2,9 +2,9 @@ package fr.heraliz.casino.block;
 
 import fr.heraliz.casino.config.CasinoConfig;
 import fr.heraliz.casino.data.CasinoStats;
-import fr.heraliz.casino.data.PendingPayouts;
 import fr.heraliz.casino.economy.Chips;
 import fr.heraliz.casino.economy.ChipsServeur;
+import fr.heraliz.casino.economy.CompteCapsules;
 import fr.heraliz.casino.net.CasinoNet;
 import fr.heraliz.casino.net.WinPacket;
 import net.minecraft.ChatFormatting;
@@ -85,7 +85,8 @@ public final class MachinesServeur {
 
     // =================================================================== mises et gains
     /**
-     * Prend une mise : limites de la machine, jetons suffisants. Envoie le message d'erreur au joueur.
+     * Prend une mise : limites de la machine, jetons suffisants (inventaire, puis compte de capsules :
+     * {@link ChipsServeur#miser}). Envoie le message d'erreur au joueur.
      * @return true si la mise est encaissee
      */
     public static boolean takeBet(MachineBlockEntity be, ServerPlayer p, long amount) {
@@ -94,8 +95,8 @@ public final class MachinesServeur {
             MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.bet_limits", Chips.format(min), Chips.format(max)).withStyle(ChatFormatting.RED));
             return false;
         }
-        if (!ChipsServeur.take(p, amount)) {
-            MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(amount), Chips.format(Chips.count(p)))
+        if (!ChipsServeur.miser(p, amount)) {
+            MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.not_enough", Chips.format(amount), Chips.format(ChipsServeur.disponible(p)))
                     .withStyle(ChatFormatting.RED));
             return false;
         }
@@ -103,21 +104,24 @@ public final class MachinesServeur {
         return true;
     }
 
-    /** Rembourse une mise (partie annulee) : ne compte pas comme un gain. */
+    /**
+     * Rembourse une mise (partie annulee) : ne compte pas comme un gain. Sur le compte de capsules, joueur en ligne ou non
+     * (02/11, {@link CompteCapsules#verser}).
+     */
     public static void refund(MachineBlockEntity be, ServerLevel level, UUID player, long amount) {
         if (amount <= 0) return;
         CasinoStats.get(level.getServer()).cancel(be.type, player, amount);
         ServerPlayer p = level.getServer().getPlayerList().getPlayer(player);
-        if (p != null) {
-            ChipsServeur.give(p, amount);
-            MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.refund", Chips.format(amount)).withStyle(ChatFormatting.YELLOW));
-        } else {
-            PendingPayouts.get(level.getServer()).add(player, amount);
+        long surCompte = CompteCapsules.verser(level.getServer(), player, p == null ? null : p.getGameProfile().getName(), amount,
+                CompteCapsules.SOURCE_MISE + " (annule)");
+        if (p != null && surCompte > 0) {
+            MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.refund", Chips.format(surCompte)).withStyle(ChatFormatting.YELLOW));
         }
     }
 
     /**
-     * Verse un gain (en jetons ; au prochain login si le joueur est deconnecte) avec messages, bandeau et annonce.
+     * Verse un gain sur le compte de capsules (02/11 : jamais dans l'inventaire, joueur en ligne ou non ;
+     * {@link CompteCapsules#verser}) avec messages, bandeau et annonce.
      * @param wager mise correspondante (pour le multiplicateur affiche)
      */
     public static void payout(MachineBlockEntity be, ServerLevel level, UUID player, String name, long amount, long wager) {
@@ -126,8 +130,8 @@ public final class MachinesServeur {
         float mult = wager > 0 ? (float) amount / wager : 0f;
         boolean quiet = be.quietResults();
         if (amount > 0) {
+            CompteCapsules.verser(level.getServer(), player, name, amount, CompteCapsules.SOURCE_GAIN);
             if (p != null) {
-                ChipsServeur.give(p, amount);
                 if (quiet) {
                     // l'ecran de la machine a deja tout montre (ni bandeau de gain, ni message)
                 } else if (amount > wager) {
@@ -139,8 +143,6 @@ public final class MachinesServeur {
                     MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.partial", Chips.format(amount), MachineBlockEntity.mult(mult), Chips.format(wager))
                             .withStyle(ChatFormatting.GRAY));
                 }
-            } else {
-                PendingPayouts.get(level.getServer()).add(player, amount);
             }
             CasinoConfig.Settings cfg = CasinoConfig.get();
             if (amount - wager >= cfg.general.announceMinProfit && mult >= cfg.general.announceMinMultiplier) {

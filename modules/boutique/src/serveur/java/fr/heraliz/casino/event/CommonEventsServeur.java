@@ -4,14 +4,10 @@ import fr.heraliz.casino.HeralizCasino;
 import fr.heraliz.casino.command.CasinoCommand;
 import fr.heraliz.casino.config.CasinoConfig;
 import fr.heraliz.casino.data.Jackpot;
-import fr.heraliz.casino.data.PendingPayouts;
-import fr.heraliz.casino.economy.Chips;
 import fr.heraliz.casino.economy.ChipsServeur;
 import fr.heraliz.casino.net.CasinoNet;
 import fr.heraliz.casino.net.ConfigSyncPacket;
 import fr.heraliz.casino.net.JackpotPacket;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -48,11 +44,8 @@ public final class CommonEventsServeur {
         ChipsServeur.convertirAnciennes(player);
         CasinoNet.sendTo(player, new JackpotPacket(Jackpot.get(player.getServer()).value()));
         fr.heraliz.casino.economy.CompteCapsules.envoyer(player);
-        long pending = PendingPayouts.get(player.getServer()).take(player.getUUID());
-        if (pending > 0) {
-            ChipsServeur.give(player, pending);
-            player.sendSystemMessage(Component.translatable("message.heralizcasino.pending", Chips.format(pending)).withStyle(ChatFormatting.GOLD));
-        }
+        // gains mis de cote (anciens gains d'un joueur deconnecte, compte plein ou bloque) : sur le compte (02/11)
+        fr.heraliz.casino.economy.CompteCapsules.versersEnAttente(player);
     }
 
     public static void sendConfig(ServerPlayer player) {

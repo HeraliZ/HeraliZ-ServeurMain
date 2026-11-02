@@ -9,11 +9,27 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 /**
- * Partie serveur des jetons du casino : mises prises dans l'inventaire (monnaie rendue), gains verses en jetons. Les
- * valeurs, le comptage et l'affichage restent dans {@link Chips} (commun).
+ * Partie serveur des jetons du casino : mises prises dans l'inventaire (monnaie rendue) puis, s'il en manque, sur le
+ * compte de capsules ({@link #miser}) ; capsules donnees dans l'inventaire, jamais au sol (le reste va sur le compte,
+ * {@link #give}). Les gains des machines vont sur le compte ({@link CompteCapsules#verser}). Les valeurs, le comptage et
+ * l'affichage restent dans {@link Chips} (commun).
  */
 public final class ChipsServeur {
     private ChipsServeur() {
+    }
+
+    /**
+     * Mise d'une machine du casino (02/11) : les capsules de l'inventaire d'abord, puis le compte de capsules pour ce qui
+     * manque (comme la caisse, reglage {@code compte.payer_caisse}) : les gains vont sur le compte, on rejoue sans passer
+     * par le distributeur. Faux : rien n'a ete pris.
+     */
+    public static boolean miser(ServerPlayer p, long amount) {
+        return CompteCapsules.payer(p, amount, CompteCapsules.SOURCE_MISE) != null;
+    }
+
+    /** Capsules utilisables pour une mise (inventaire, plus le compte s'il paie les mises). */
+    public static long disponible(ServerPlayer p) {
+        return CompteCapsules.disponible(p);
     }
 
     /**
@@ -102,17 +118,39 @@ public final class ChipsServeur {
         }
     }
 
-    /** Donne des jetons (au sol si l'inventaire est plein). */
+    /**
+     * Donne des jetons dans l'inventaire ; ce qui n'y tient pas va sur le compte de capsules (sinon mis de cote jusqu'a la
+     * prochaine connexion), jamais au sol (02/11 ; avant, le reste tombait aux pieds du joueur).
+     */
     public static void give(Player p, long amount) {
+        if (amount <= 0) return;
+        if (!(p instanceof ServerPlayer sp)) {
+            for (ItemStack s : stacks(amount)) ItemHandlerHelper.giveItemToPlayer(p, s);
+            return;
+        }
+        long reste = mettre(sp, amount);
+        if (reste > 0) CompteCapsules.surplus(sp, reste);
+    }
+
+    /** Met des jetons dans l'inventaire, autant qu'il en tient ; rend la valeur de ce qui n'a pas tenu (rien n'est jete). */
+    public static long mettre(ServerPlayer p, long amount) {
+        if (amount <= 0) return 0;
+        Inventory inv = p.getInventory();
+        long reste = 0;
         for (int k = Chips.VALUES.length - 1; k >= 0 && amount > 0; k--) {
             long n = amount / Chips.VALUES[k];
             amount -= n * Chips.VALUES[k];
             while (n > 0) {
                 int stack = (int) Math.min(64, n);
                 n -= stack;
-                ItemHandlerHelper.giveItemToPlayer(p, new ItemStack(ModRegistry.chip(k), stack));
+                ItemStack s = new ItemStack(ModRegistry.chip(k), stack);
+                inv.add(s);
+                if (!s.isEmpty()) reste += (long) s.getCount() * Chips.VALUES[k];
             }
         }
+        reste += amount; // jamais (1 est la plus petite capsule) : par securite
+        inv.setChanged();
+        return reste;
     }
 
     /** Jetons sous forme d'objets (pour les recompenses des commandes, les caisses...). */

@@ -89,8 +89,8 @@ public final class RoundsServeur {
                     .withStyle(ChatFormatting.RED));
             return false;
         }
-        if (!ChipsServeur.take(player, amount)) {
-            MachineBlockEntity.msg(player, Component.translatable("message.heralizcasino.not_enough", Chips.format(amount), Chips.format(Chips.count(player)))
+        if (!ChipsServeur.miser(player, amount)) {
+            MachineBlockEntity.msg(player, Component.translatable("message.heralizcasino.not_enough", Chips.format(amount), Chips.format(ChipsServeur.disponible(player)))
                     .withStyle(ChatFormatting.RED));
             return false;
         }

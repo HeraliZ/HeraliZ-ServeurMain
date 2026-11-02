@@ -47,8 +47,8 @@ public class PlinkoBlockEntityServeur extends PlinkoBlockEntity {
             return;
         }
         long total = bet * count;
-        if (!ChipsServeur.take(player, total)) {
-            msg(player, Component.translatable("message.heralizcasino.not_enough", Chips.format(total), Chips.format(Chips.count(player)))
+        if (!ChipsServeur.miser(player, total)) {
+            msg(player, Component.translatable("message.heralizcasino.not_enough", Chips.format(total), Chips.format(ChipsServeur.disponible(player)))
                     .withStyle(ChatFormatting.RED));
             return;
         }
