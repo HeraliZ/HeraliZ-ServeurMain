@@ -1,297 +1,35 @@
 package fr.heraliz.crac.admin;
 
-import com.mojang.authlib.GameProfile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.Map.Entry;
-import fr.heraliz.crac.Crac;
 import fr.heraliz.crac.build.logic.PieceIndex;
-import fr.heraliz.crac.build.model.Building;
 import fr.heraliz.crac.build.model.Piece;
 import fr.heraliz.crac.build.world.StructureService;
 import fr.heraliz.crac.build.world.StructureStore;
-import fr.heraliz.crac.claim.Claim;
-import fr.heraliz.crac.claim.ClaimData;
-import fr.heraliz.crac.claim.ClaimManager;
-import fr.heraliz.crac.group.Group;
-import fr.heraliz.crac.group.GroupData;
-import fr.heraliz.crac.network.C2SRequestNearbyClaims;
-import fr.heraliz.crac.network.C2SRequestNearbyClaimsTraitement;
-import fr.heraliz.crac.network.NetworkHandler;
-import fr.heraliz.crac.network.S2CAdminData;
 import fr.heraliz.crac.placable.PlacableHpManager;
 import fr.heraliz.crac.placable.PlacablePositionData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
-import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.network.PacketDistributor;
 
-@EventBusSubscriber(
-    modid = "crac"
-)
+/**
+ * Outils du staff pour vider une zone d'une base : pièces de construction et objets posés ({@code /base effacer},
+ * fin du tutoriel, {@code /wipe}). La console admin de CRac (touche à choisir, mot de passe de {@code crac-admin.toml}), jamais
+ * activée sur HeraliZ, est retirée depuis le 02/11 : le staff garde ses commandes ({@code /base effacer},
+ * {@code /protection}, {@code /coffres}, {@code /clan admin}…) et ses droits d'opérateur.
+ */
 public final class AdminManager {
-    private static final TagKey<Block> PLACABLE = BlockTags.create(new ResourceLocation("crac", "placable"));
-    /** Server-thread only (every admin packet is handled through enqueueWork). */
-    private static final AdminAuth AUTH = new AdminAuth();
     /** Largest zone (in blocks) whose pieces are looked up block by block; beyond it the level's pieces are walked. */
     private static final long BLOCK_LOOKUP_LIMIT = 1_000_000L;
 
     private AdminManager() {
-    }
-
-    private static boolean permitted(ServerPlayer p) {
-        return p.hasPermissions(AdminConfig.permissionLevel.get());
-    }
-
-    /**
-     * Whether the player holds a valid admin session: logged in with the current password and still operator. Called by
-     * every admin packet. A session that just ended closes the client's panel; a player who never had one gets no
-     * answer, so spamming admin packets without a session costs nothing.
-     */
-    public static boolean isAuthed(ServerPlayer p) {
-        boolean had = AUTH.hasSession(p.getUUID());
-        boolean ok = AUTH.isAuthed(p.getUUID(), permitted(p), AdminConfig.consolePassword.get());
-        if (!ok && had) {
-            log(p, "admin session ended (password changed, console disabled or operator level lost)");
-            p.displayClientMessage(Component.translatableWithFallback("crac.admin.session_ended", "§c[Admin] Ta session admin est terminée."), false);
-            denyLogin(p);
-        }
-        return ok;
-    }
-
-    /** Handles a console login: operator level first, then lockout, then the password. Every attempt is logged. */
-    public static void login(ServerPlayer p, String password) {
-        long now = System.currentTimeMillis();
-        long lockoutMs = AdminConfig.lockoutSeconds.get() * 1000L;
-        AdminAuth.Result result = AUTH.login(
-            p.getUUID(), permitted(p), AdminConfig.consolePassword.get(), password, now, AdminConfig.maxFailedLogins.get(), lockoutMs
-        );
-        Component reason = switch (result) {
-            case OK -> null;
-            case DISABLED -> Component.translatableWithFallback("crac.admin.disabled", "§c[Admin] La console admin est désactivée sur ce serveur.");
-            case NO_PERMISSION -> Component.translatableWithFallback("crac.admin.no_permission",
-                "§c[Admin] Il faut le niveau d'opérateur %s pour utiliser la console admin.", String.valueOf(AdminConfig.permissionLevel.get()))
-                .withStyle(ChatFormatting.RED);
-            case LOCKED -> Component.translatableWithFallback("crac.admin.locked", "§c[Admin] Trop de mots de passe faux. Réessaie dans %s s.",
-                String.valueOf((AUTH.lockoutLeft(p.getUUID(), now) + 999L) / 1000L)).withStyle(ChatFormatting.RED);
-            case WRONG_PASSWORD -> Component.translatableWithFallback("crac.admin.wrong_password", "§c[Admin] Mot de passe faux.");
-        };
-        if (reason == null) {
-            log(p, "logged in to the admin console");
-            sendSnapshot(p);
-        } else {
-            if (result == AdminAuth.Result.WRONG_PASSWORD || result == AdminAuth.Result.LOCKED) {
-                Crac.LOGGER.warn("[CRac admin] Refused console login for {} ({}): {}", p.getGameProfile().getName(), p.getUUID(), result);
-            } else {
-                Crac.LOGGER.info("[CRac admin] Refused console login for {} ({}): {}", p.getGameProfile().getName(), p.getUUID(), result);
-            }
-            p.displayClientMessage(reason, false);
-            denyLogin(p);
-        }
-    }
-
-    /** Audit line for an admin action. */
-    public static void log(ServerPlayer admin, String what) {
-        Crac.LOGGER.info("[CRac admin] {} ({}) {}", admin.getGameProfile().getName(), admin.getUUID(), what);
-    }
-
-    /** A group as audit lines name it: {@code Name [TAG] (uuid)}. */
-    public static String groupLabel(MinecraftServer server, UUID id) {
-        Group g = GroupData.get(server).getById(id);
-        return g == null ? "unknown group (" + id + ")" : g.name() + " [" + g.tag() + "] (" + id + ")";
-    }
-
-    /** A player as audit lines name it: {@code name (uuid)}. */
-    public static String playerLabel(MinecraftServer server, UUID id) {
-        return nameFor(server, id) + " (" + id + ")";
-    }
-
-    public static void sendSnapshot(ServerPlayer admin) {
-        MinecraftServer server = admin.getServer();
-        if (server != null) {
-            GroupData gd = GroupData.get(server);
-            List<S2CAdminData.GroupInfo> groups = new ArrayList<>();
-
-            for (Group g : gd.all()) {
-                List<S2CAdminData.MemberInfo> members = new ArrayList<>();
-
-                for (UUID m : g.members()) {
-                    ServerPlayer online = server.getPlayerList().getPlayer(m);
-                    String name = online != null ? online.getGameProfile().getName() : nameFor(server, m);
-                    members.add(new S2CAdminData.MemberInfo(m, name, online != null, g.isOwner(m)));
-                }
-
-                // the claim may be in any dimension, not only the admin's
-                Claim gc = ClaimManager.getByGroupAnywhere(server, g.id());
-                groups.add(new S2CAdminData.GroupInfo(g.id(), g.name(), g.tag(), gc != null ? gc.tier() : -1, members));
-            }
-
-            List<S2CAdminData.ClaimInfo> claims = new ArrayList<>();
-
-            for (ServerLevel level : server.getAllLevels()) {
-                String dimension = level.dimension().location().toString();
-                for (Claim c : ClaimData.get(level).all()) {
-                    Group g = gd.getById(c.groupId());
-                    Building b = StructureService.buildingOfClaim(level, c.anchor());
-                    int pieces = b == null ? 0 : b.pieces.size();
-                    claims.add(new S2CAdminData.ClaimInfo(
-                        c.groupId(), g != null ? g.name() : "?", c.tier(), c.center().getX(), c.center().getZ(), c.radius(), pieces, dimension
-                    ));
-                }
-            }
-
-            List<S2CAdminData.PlayerInfo> players = new ArrayList<>();
-
-            for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-                Group g = gd.getByMember(p.getUUID());
-                players.add(
-                    new S2CAdminData.PlayerInfo(
-                        p.getUUID(),
-                        p.getGameProfile().getName(),
-                        g != null ? g.name() : "",
-                        p.getBlockX(),
-                        p.getBlockY(),
-                        p.getBlockZ(),
-                        p.level().dimension().location().toString()
-                    )
-                );
-            }
-
-            List<S2CAdminData.ConfigInfo> config = new ArrayList<>();
-
-            for (Entry<String, ConfigValue<?>> e : AdminConfigAccess.values().entrySet()) {
-                String value = AdminConfigAccess.asString(e.getValue());
-                if (value.length() > S2CAdminData.MAX_VALUE_CHARS) {
-                    Crac.LOGGER.warn("[CRac admin] {} is too long to show in the admin panel; edit it in the config file", e.getKey());
-                    continue;
-                }
-                config.add(new S2CAdminData.ConfigInfo(e.getKey(), AdminConfigAccess.typeOf(e.getValue()), value));
-            }
-
-            List<S2CAdminData.PlacableInfo> placables = new ArrayList<>();
-
-            for (Entry<ResourceLocation, PlacableHpManager.Entry> e : PlacableHpManager.entries().entrySet()) {
-                placables.add(new S2CAdminData.PlacableInfo(e.getKey().toString(), e.getValue().hp(), e.getValue().enabled()));
-            }
-
-            NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> admin), new S2CAdminData(true, groups, claims, players, config, placables));
-        }
-    }
-
-    public static void denyLogin(ServerPlayer p) {
-        NetworkHandler.CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new S2CAdminData(false, List.of(), List.of(), List.of(), List.of(), List.of()));
-    }
-
-    private static String nameFor(MinecraftServer server, UUID id) {
-        GameProfile profile = server.getProfileCache() != null ? server.getProfileCache().get(id).orElse(null) : null;
-        return profile != null ? profile.getName() : id.toString().substring(0, 8);
-    }
-
-    public static void kickMember(ServerPlayer admin, UUID groupId, UUID member) {
-        MinecraftServer server = admin.getServer();
-        if (server != null) {
-            GroupData gd = GroupData.get(server);
-            Group g = gd.getById(groupId);
-            if (g != null && !g.isOwner(member) && gd.removeMember(g, member)) {
-                // only the kicked player's view of the claims changes
-                C2SRequestNearbyClaimsTraitement.pushTo(server, List.of(member));
-            }
-        }
-    }
-
-    /** Hands a group over to one of its members (an owner who left for good no longer freezes the group). */
-    public static boolean setOwner(ServerPlayer admin, UUID groupId, UUID member) {
-        MinecraftServer server = admin.getServer();
-        if (server == null) {
-            return false;
-        }
-        GroupData gd = GroupData.get(server);
-        Group g = gd.getById(groupId);
-        return g != null && gd.transferOwnership(g, member);
-    }
-
-    public static void disbandGroup(ServerPlayer admin, UUID groupId) {
-        MinecraftServer server = admin.getServer();
-        if (server != null) {
-            GroupData gd = GroupData.get(server);
-            Group g = gd.getById(groupId);
-            if (g != null) {
-                releaseClaim(server, groupId);
-                gd.disband(g);
-            }
-        }
-    }
-
-    public static void unclaim(ServerPlayer admin, UUID groupId) {
-        MinecraftServer server = admin.getServer();
-        if (server != null) {
-            releaseClaim(server, groupId);
-        }
-    }
-
-    /** Releases the group's claim in whichever level it is, and refreshes the claim view of that level's players. */
-    private static void releaseClaim(MinecraftServer server, UUID groupId) {
-        for (ServerLevel level : server.getAllLevels()) {
-            if (ClaimManager.releaseClaim(level, groupId)) {
-                C2SRequestNearbyClaimsTraitement.pushAll(level);
-            }
-        }
-    }
-
-    /** Removes the building pieces and placable blocks of the group's claim, in whichever level it is. */
-    public static int wipeClaim(ServerPlayer admin, UUID groupId) {
-        for (ServerLevel level : admin.server.getAllLevels()) {
-            Claim claim = ClaimManager.getByGroup(level, groupId);
-            if (claim != null) {
-                return wipe(level, claim);
-            }
-        }
-        return 0;
-    }
-
-    private static int wipe(ServerLevel level, Claim claim) {
-        int removed = 0;
-        int r = claim.radius();
-        int yr = claim.yRadius();
-        BlockPos c = claim.anchor();
-        Set<Piece> pieces = new LinkedHashSet<>();
-        Building claimed = StructureService.buildingOfClaim(level, c);
-        if (claimed != null) {
-            pieces.addAll(StructureStore.get(level).piecesOf(claimed));
-        }
-        BlockPos min = new BlockPos(c.getX() - r, Math.max(level.getMinBuildHeight(), c.getY() - yr), c.getZ() - r);
-        BlockPos max = new BlockPos(c.getX() + r, Math.min(level.getMaxBuildHeight() - 1, c.getY() + yr), c.getZ() + r);
-        pieces.addAll(piecesIn(level, min, max));
-        for (Piece p : pieces) {
-            if (StructureStore.get(level).index.piece(p.id) != null) {
-                StructureService.remove(level, p, StructureService.Cause.ADMIN);
-                removed++;
-            }
-        }
-        return removed + removePlacables(level, min, max);
     }
 
     /**
@@ -381,39 +119,5 @@ public final class AdminManager {
                 }
             }
         }
-    }
-
-    public static void teleportTo(ServerPlayer admin, UUID target) {
-        MinecraftServer server = admin.getServer();
-        if (server != null) {
-            ServerPlayer t = server.getPlayerList().getPlayer(target);
-            if (t != null) {
-                admin.teleportTo(t.serverLevel(), t.getX(), t.getY(), t.getZ(), t.getYRot(), t.getXRot());
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLogout(PlayerLoggedOutEvent event) {
-        AUTH.logout(event.getEntity().getUUID());
-    }
-
-    /** The password moved out of crac-server.toml (which every client receives): say where it is now. */
-    @SubscribeEvent
-    public static void onServerStarted(ServerStartedEvent event) {
-        if (!AdminConfig.SPEC.isLoaded()) {
-            return;
-        }
-        if (AdminConfig.consolePassword.get().isBlank()) {
-            Crac.LOGGER.info("[CRac admin] Admin console disabled: set admin.consolePassword in config/crac-admin.toml to enable it");
-        } else {
-            Crac.LOGGER.info("[CRac admin] Admin console enabled for operator level {} and above", AdminConfig.permissionLevel.get());
-        }
-    }
-
-    /** An integrated server can be restarted in the same JVM: sessions and lockouts never carry over. */
-    @SubscribeEvent
-    public static void onServerStopped(ServerStoppedEvent event) {
-        AUTH.clear();
     }
 }

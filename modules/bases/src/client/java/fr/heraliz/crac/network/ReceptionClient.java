@@ -8,7 +8,6 @@ import fr.heraliz.crac.Crac;
 import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.client.ClientClaimCache;
 import fr.heraliz.crac.client.RaidBlockOverlay;
-import fr.heraliz.crac.client.admin.AdminClientState;
 import fr.heraliz.crac.client.group.AddMemberScreen;
 import fr.heraliz.crac.client.group.GroupCreateScreen;
 import fr.heraliz.crac.client.group.GroupManageScreen;
@@ -28,11 +27,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class ReceptionClient {
     private ReceptionClient() {
-    }
-
-    /** Corps d'origine de S2CAdminData.handleClient (réception côté client). */
-    public static void s2CAdminData(S2CAdminData msg) {
-        AdminClientState.onData(msg);
     }
 
     /** Corps d'origine de S2CConfigResync.handleClient (réception côté client). */

@@ -7,7 +7,6 @@ import fr.heraliz.crac.client.ui.CoffreScreen;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.RegistryObject;
-import fr.heraliz.crac.client.admin.AdminKeyHandler;
 import fr.heraliz.crac.client.render.C4Renderer;
 import fr.heraliz.crac.client.render.CoeurClanRendu;
 import fr.heraliz.crac.client.render.EcranArmoireRendu;
@@ -24,7 +23,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent.Block;
@@ -44,7 +42,6 @@ public class ClientInit {
     public static void init() {
         // PlacableGhostRenderer subscribes itself (@EventBusSubscriber)
         MinecraftForge.EVENT_BUS.register(RaidBlockOverlay.class);
-        MinecraftForge.EVENT_BUS.register(AdminKeyHandler.class);
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.METAL_CRATE.get(), RenderType.cutoutMipped());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.CLAIM_BLOCK.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.COEUR_CLAN.get(), RenderType.cutout());
@@ -72,11 +69,6 @@ public class ClientInit {
     @SubscribeEvent
     public static void onRegisterItemColors(Item event) {
         event.register((stack, tintIndex) -> 16777215, ModBlocks.CLAIM_BLOCK.get());
-    }
-
-    @SubscribeEvent
-    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(AdminKeyHandler.KEY_CONSOLE);
     }
 
     @SubscribeEvent

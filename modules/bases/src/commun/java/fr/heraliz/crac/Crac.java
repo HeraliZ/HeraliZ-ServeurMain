@@ -43,10 +43,8 @@ public class Crac {
         ModLoadingContext.get().registerConfig(Type.SERVER, fr.heraliz.crac.build.BuildConfig.SPEC, "crac-building.toml");
         // monde des bases, /home, tutoriel, protection des nouveaux joueurs, carrières
         ModLoadingContext.get().registerConfig(Type.SERVER, fr.heraliz.crac.bases.BasesReglages.SPEC, "crac-bases.toml");
-        // Not SERVER: Forge syncs SERVER config files to clients, and this one holds the admin console password.
-        ModLoadingContext.get().registerConfig(Type.COMMON, fr.heraliz.crac.admin.AdminConfig.SPEC, "crac-admin.toml");
         // parties coupées (docs/METHODE_CLIENT_SERVEUR.md) : règles de construction, claims, raids, protections,
-        // administration (serveur) ; aperçus, rendus, écrans, HUD (client)
+        // (serveur) ; aperçus, rendus, écrans, HUD (client)
         Parties.serveur(MODID, "fr.heraliz.crac.serveur.PartieServeur", modBus);
         Parties.client(MODID, "fr.heraliz.crac.client.PartieClient", modBus);
     }

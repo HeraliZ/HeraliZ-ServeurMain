@@ -34,7 +34,8 @@ public final class NetworkHandler {
 
     // 29 (31/10) : nouvel état de la caisse en métal (dans_mur) : joueurs et serveur doivent avoir la même fabrication
     // 30 (31/10) : coffres par rareté dans la rangée des murs (état dans_mur des coffres) : même fabrication des deux côtés
-    private static final String PROTOCOL = "30";
+    // 31 (02/11) : console admin retirée (5 paquets en moins, numéros décalés) : même fabrication des deux côtés
+    private static final String PROTOCOL = "31";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation("crac", "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     private NetworkHandler() {
@@ -58,11 +59,6 @@ public final class NetworkHandler {
         toClient(id++, S2CRaidBlock.class, S2CRaidBlock::encode, S2CRaidBlock::decode, S2CRaidBlock::handle);
         toServer(id++, C2SPickup.class, C2SPickup::encode, C2SPickup::decode, C2SPickup::handle);
         toServer(id++, C2SPlacePlacable.class, C2SPlacePlacable::encode, C2SPlacePlacable::decode, C2SPlacePlacable::handle);
-        toServer(id++, C2SAdminLogin.class, C2SAdminLogin::encode, C2SAdminLogin::decode, C2SAdminLogin::handle);
-        toServer(id++, C2SAdminAction.class, C2SAdminAction::encode, C2SAdminAction::decode, C2SAdminAction::handle);
-        toClient(id++, S2CAdminData.class, S2CAdminData::encode, S2CAdminData::decode, S2CAdminData::handle);
-        toServer(id++, C2SAdminConfig.class, C2SAdminConfig::encode, C2SAdminConfig::decode, C2SAdminConfig::handle);
-        toServer(id++, C2SAdminPlacable.class, C2SAdminPlacable::encode, C2SAdminPlacable::decode, C2SAdminPlacable::handle);
         toClient(id++, S2CPlacableSet.class, S2CPlacableSet::encode, S2CPlacableSet::decode, S2CPlacableSet::handle);
         id = BuildPackets.register(CHANNEL, id);
         toClient(id++, S2CConfigResync.class, S2CConfigResync::encode, S2CConfigResync::decode, S2CConfigResync::handle);

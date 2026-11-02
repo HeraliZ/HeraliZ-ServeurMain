@@ -87,8 +87,6 @@ public final class PartieClient implements Partie {
             ReceptionClient.s2CRaidBlock(p);
         } else if (paquet instanceof S2CNearbyClaims p) {
             ReceptionClient.s2CNearbyClaims(p);
-        } else if (paquet instanceof S2CAdminData p) {
-            ReceptionClient.s2CAdminData(p);
         } else if (paquet instanceof S2CConfigResync p) {
             ReceptionClient.s2CConfigResync(p);
         } else if (paquet instanceof S2COnlinePlayers p) {

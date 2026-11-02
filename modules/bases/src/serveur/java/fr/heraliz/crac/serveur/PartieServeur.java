@@ -13,14 +13,6 @@ import fr.heraliz.crac.group.Group;
 import fr.heraliz.crac.group.GroupData;
 import fr.heraliz.crac.heraliz.ClanAccess;
 import fr.heraliz.crac.network.NetworkHandler;
-import fr.heraliz.crac.network.C2SAdminAction;
-import fr.heraliz.crac.network.C2SAdminActionTraitement;
-import fr.heraliz.crac.network.C2SAdminConfig;
-import fr.heraliz.crac.network.C2SAdminConfigTraitement;
-import fr.heraliz.crac.network.C2SAdminLogin;
-import fr.heraliz.crac.network.C2SAdminLoginTraitement;
-import fr.heraliz.crac.network.C2SAdminPlacable;
-import fr.heraliz.crac.network.C2SAdminPlacableTraitement;
 import fr.heraliz.crac.network.C2SCreateGroup;
 import fr.heraliz.crac.network.C2SCreateGroupTraitement;
 import fr.heraliz.crac.network.C2SGroupAction;
@@ -59,7 +51,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Partie serveur de CRac (docs/METHODE_CLIENT_SERVEUR.md §4) : règles de construction et intégrité des structures,
- * claims et entretien, raids et explosifs, protections, groupes, administration, sièges de zombies, commandes.
+ * claims et entretien, raids et explosifs, protections, groupes, sièges de zombies, commandes.
  * Les écouteurs serveur (@EventBusSubscriber de src/serveur) s'inscrivent seuls.
  */
 public final class PartieServeur implements Partie {
@@ -74,15 +66,7 @@ public final class PartieServeur implements Partie {
     /** Traitement d'origine des paquets client -> serveur. */
     private static void recevoir(NetworkHandler.Recu recu) {
         Object paquet = recu.paquet();
-        if (paquet instanceof C2SAdminAction p) {
-            C2SAdminActionTraitement.traiter(p, recu.ctx());
-        } else if (paquet instanceof C2SAdminConfig p) {
-            C2SAdminConfigTraitement.traiter(p, recu.ctx());
-        } else if (paquet instanceof C2SAdminLogin p) {
-            C2SAdminLoginTraitement.traiter(p, recu.ctx());
-        } else if (paquet instanceof C2SAdminPlacable p) {
-            C2SAdminPlacableTraitement.traiter(p, recu.ctx());
-        } else if (paquet instanceof C2SCreateGroup p) {
+        if (paquet instanceof C2SCreateGroup p) {
             C2SCreateGroupTraitement.traiter(p, recu.ctx());
         } else if (paquet instanceof C2SGroupAction p) {
             C2SGroupActionTraitement.traiter(p, recu.ctx());

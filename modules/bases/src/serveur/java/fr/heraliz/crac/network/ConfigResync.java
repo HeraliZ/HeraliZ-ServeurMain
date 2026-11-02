@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Sends CRac's SERVER config files to the connected clients again when they change. Forge syncs them only at login,
  * so without this the client side (ghost reach, repair time, upkeep screen...) keeps stale values until a relog.
- * These files must never hold a secret: the admin password is in the COMMON {@code crac-admin.toml}.
+ * These files must never hold a secret.
  */
 public final class ConfigResync {
     /** Last content pushed per file name; server thread only. Skips the duplicate push of a save followed by its reload. */

@@ -349,7 +349,7 @@ public class Config {
             .define("autoRepair", true);
         repairHpPerMinute = BUILDER.comment("HP regenerated per minute by each damaged piece.").defineInRange("repairHpPerMinute", 15, 1, 100000);
         BUILDER.pop();
-        // The admin console password lives in config/crac-admin.toml (AdminConfig): this file is sent to every client.
+        // Forge sends this file to every client at login: never put a secret in it.
         BUILDER.comment("HeraliZ: where CRac works, combat tag, the HeraliZ C4 (heralisz_tactical) and the clans.").push("heraliz");
         blockedDimensions = BUILDER.comment(
                 "Dimensions where nothing of CRac can be placed (building pieces, Claim Block, sleeping bags) and where CRac",
