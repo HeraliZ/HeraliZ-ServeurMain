@@ -1,0 +1,8 @@
+# AzLink (plugin d'Azuriom qui relie la boutique et les votes du site au serveur de jeu) : version FIGÉE et empreinte
+# SHA-256 du jar officiel (Release « AzLink-<version>.jar » de github.com/Azuriom/AzLink). La mise en ligne
+# (.github/workflows/serveur.yml) ne l'envoie sur le Ptero que si le jar téléchargé a exactement cette empreinte ;
+# sinon la version déjà sur le Ptero est gardée (la boutique continue de livrer) et le résumé dit pourquoi.
+# Changer de version : mettre la nouvelle version, vider sha256, lancer une mise en ligne : son résumé donne
+# l'empreinte du jar téléchargé, à recopier ici (le jar n'est envoyé qu'une fois l'empreinte recopiée).
+version=1.3.13
+sha256=
