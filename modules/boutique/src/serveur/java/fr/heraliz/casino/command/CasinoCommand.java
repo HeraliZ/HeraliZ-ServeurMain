@@ -113,7 +113,6 @@ public final class CasinoCommand {
                 .then(Commands.literal("stats").requires(s -> s.hasPermission(2))
                         .executes(CasinoCommand::stats)
                         .then(Commands.literal("reset").executes(CasinoCommand::resetStats)))
-                .then(Commands.literal("rtp").requires(s -> s.hasPermission(2)).executes(CasinoCommand::rtp))
                 .then(Commands.literal("jackpot")
                         .executes(CasinoCommand::jackpot)
                         .then(Commands.argument("montant", LongArgumentType.longArg(0, 1_000_000_000L)).requires(s -> s.hasPermission(2))
@@ -245,7 +244,8 @@ public final class CasinoCommand {
         final long b = totalBet, p = totalPaid;
         Reponses.ok(src, Component.translatable("command.heralizcasino.stats.total", Chips.format(b), Chips.format(p),
                 String.format(Locale.ROOT, "%.1f", b > 0 ? 100.0 * p / b : 0), Chips.format(b - p)).withStyle(ChatFormatting.GOLD));
-        return 1;
+        // 02/11 (audit point 36) : « /casino rtp » (redistribution prévue par les réglages) fondue ici, à la suite des chiffres réels
+        return rtp(c);
     }
 
     private static int resetStats(CommandContext<CommandSourceStack> c) {

@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 /**
  * Simulations en arriere-plan, gardees en memoire par reglages (redistribution affichee par la Tablette du Directeur,
- * page "Probabilites", commande /casino rtp). Une simulation avance par tranches sur son propre fil : son rapport
+ * page "Probabilites", commande /casino stats). Une simulation avance par tranches sur son propre fil : son rapport
  * s'affine a chaque tranche, et elle s'arrete d'elle-meme quand plus personne ne la demande (les reglages ont change)
  * pour reprendre la ou elle en etait si on la redemande.
  */
