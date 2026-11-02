@@ -1,6 +1,6 @@
 package fr.heraliz.armory.suit;
 
-import fr.heraliz.armory.armor.ArmorConfig;
+import fr.heraliz.armory.armor.ReglagesArmurerie;
 import fr.heraliz.armory.item.SuitItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -53,7 +53,7 @@ public final class SuitRules {
 
     /** Slot Curios de vetements (bloque par une combinaison). */
     public static boolean blockedCurio(String id) {
-        return ArmorConfig.SUIT_BLOCKED_SLOTS.get().contains(id);
+        return ReglagesArmurerie.slotBloque(id);
     }
 
     /** L'entite porte autre chose qu'une combinaison : slots d'armure ou slots Curios de vetements (normaux ou cosmetiques). */

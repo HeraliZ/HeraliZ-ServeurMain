@@ -2,7 +2,7 @@ package fr.heraliz.armory.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import fr.heraliz.armory.armor.ArmorConfig;
+import fr.heraliz.armory.armor.ReglagesArmurerie;
 import fr.heraliz.armory.armor.PieceDef;
 import fr.heraliz.armory.suit.SuitRules;
 import net.minecraft.ChatFormatting;
@@ -59,7 +59,7 @@ public class SuitItem extends SetArmorItem {
         if (slot != EquipmentSlot.CHEST || !def().diving()) return base;
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
         b.putAll(base);
-        b.put(ForgeMod.SWIM_SPEED.get(), new AttributeModifier(FINS_UUID, "Palmes", ArmorConfig.SWIM_BOOST.get(), AttributeModifier.Operation.MULTIPLY_BASE));
+        b.put(ForgeMod.SWIM_SPEED.get(), new AttributeModifier(FINS_UUID, "Palmes", ReglagesArmurerie.nage(), AttributeModifier.Operation.MULTIPLY_BASE));
         return b.build();
     }
 
@@ -77,8 +77,8 @@ public class SuitItem extends SetArmorItem {
         if (def.cold()) tooltip.add(Component.translatable("tooltip.heraliz_armory.cold").withStyle(ChatFormatting.AQUA));
         if (def.gas() || def.radiation() > 0 || def.cold()) GearItem.appendUsure(stack, tooltip);
         if (def.diving()) {
-            tooltip.add(Component.translatable("tooltip.heraliz_armory.tank", ArmorConfig.TANK_SECONDS.get()).withStyle(ChatFormatting.AQUA));
-            tooltip.add(Component.translatable("tooltip.heraliz_armory.fins", Math.round(ArmorConfig.SWIM_BOOST.get() * 100.0))
+            tooltip.add(Component.translatable("tooltip.heraliz_armory.tank", ReglagesArmurerie.bouteilleSecondes()).withStyle(ChatFormatting.AQUA));
+            tooltip.add(Component.translatable("tooltip.heraliz_armory.fins", Math.round(ReglagesArmurerie.nage() * 100.0))
                     .withStyle(ChatFormatting.BLUE));
         }
     }

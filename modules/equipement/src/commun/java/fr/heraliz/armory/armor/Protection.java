@@ -21,13 +21,12 @@ public final class Protection {
     /** Plafond par defaut : une tenue Unique complete (60 % au corps, 50 % a la tete) ne peut pas etre depassee. */
     public static final float CAP_DEFAUT = 60.0F;
 
-    /** Plafond commun des protections (%) : [protection] plafond de heraliz_armory-common.toml (audit du 02/11). */
+    /**
+     * Plafond commun des protections (%) : [protection] plafond de heraliz_armory-common.toml (audit du 02/11), recopié par
+     * le serveur dans ReglagesArmurerie ({@link #CAP_DEFAUT} tant que le fichier n'est pas lu).
+     */
     public static float cap() {
-        try {
-            return ArmorConfig.PLAFOND.get().floatValue();
-        } catch (IllegalStateException pasEncoreLu) {
-            return CAP_DEFAUT;
-        }
+        return ReglagesArmurerie.plafond();
     }
     /** Part des pieces de tete sur un coup au corps (0.15.0 : aucune, chaque tenue atteint son total avec le corps seul). */
     public static final float HEAD_SHARE = 0.0F;

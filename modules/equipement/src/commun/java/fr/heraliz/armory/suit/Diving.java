@@ -1,7 +1,7 @@
 package fr.heraliz.armory.suit;
 
 import fr.heraliz.armory.HeralizArmory;
-import fr.heraliz.armory.armor.ArmorConfig;
+import fr.heraliz.armory.armor.ReglagesArmurerie;
 import fr.heraliz.armory.item.SuitItem;
 import fr.heraliz.armory.pont.Crochet;
 import net.minecraft.nbt.CompoundTag;
@@ -40,7 +40,7 @@ public final class Diving {
     }
 
     public static int maxTicks() {
-        return ArmorConfig.TANK_SECONDS.get() * 20;
+        return ReglagesArmurerie.bouteilleSecondes() * 20;
     }
 
     /** Reserve de la bouteille en ticks (pleine si jamais utilisee). */

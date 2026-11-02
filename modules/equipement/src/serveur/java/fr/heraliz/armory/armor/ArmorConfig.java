@@ -4,7 +4,11 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
 
-/** Configuration serveur (config/heraliz_armory-common.toml). */
+/**
+ * Configuration serveur (config/heraliz_armory-common.toml). Audit du 02/11 (point 11) : réglage du serveur seulement,
+ * déclaré par la partie serveur (ReglagesArmurerieServeur) avec le même nom de fichier ; plus jamais écrit sur le PC des
+ * joueurs. Ce que lit le code commun est recopié dans {@link ReglagesArmurerie} (et en partie envoyé aux joueurs).
+ */
 public final class ArmorConfig {
     private ArmorConfig() {}
 

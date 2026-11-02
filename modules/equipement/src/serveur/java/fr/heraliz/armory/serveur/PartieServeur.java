@@ -24,6 +24,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
+        // heraliz_armory-common.toml : réglage du serveur seulement (audit du 02/11, point 11)
+        ReglagesArmurerieServeur.brancher(busMod);
         // usines : mannequin (casse, objets Curios, menu), tenue complete (enfiler), mannequin pose
         ModEntities.MANNEQUIN_USINE.serveur(MannequinServeur::new);
         ModItems.KIT_USINE.serveur(SetKitItemServeur::new);

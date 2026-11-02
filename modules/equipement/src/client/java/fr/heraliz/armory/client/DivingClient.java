@@ -1,7 +1,7 @@
 package fr.heraliz.armory.client;
 
 import fr.heraliz.armory.HeralizArmory;
-import fr.heraliz.armory.armor.ArmorConfig;
+import fr.heraliz.armory.armor.ReglagesArmurerie;
 import fr.heraliz.armory.client.gui.Ui;
 import fr.heraliz.armory.suit.Diving;
 import java.util.Locale;
@@ -79,8 +79,8 @@ public final class DivingClient {
         if (sousLEau && f <= 0.1F) {
             aide = Component.translatable("hud.heraliz_armory.remonte").getString();
         } else {
-            // recharge : la bouteille entière en refill_seconds, au prorata de ce qui manque
-            int refill = Math.max(0, ArmorConfig.REFILL_SECONDS.get());
+            // recharge : la bouteille entière en refill_seconds (réglage envoyé par le serveur), au prorata de ce qui manque
+            int refill = ReglagesArmurerie.rechargeSecondes();
             int restant = Math.max(1, (int) Math.ceil(refill * (1.0F - f)));
             aide = Component.translatable(sousLEau ? "hud.heraliz_armory.pleine_air" : "hud.heraliz_armory.recharge", restant).getString();
         }

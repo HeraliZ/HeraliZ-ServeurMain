@@ -1,7 +1,6 @@
 package fr.heraliz.armory;
 
 import com.mojang.logging.LogUtils;
-import fr.heraliz.armory.armor.ArmorConfig;
 import fr.heraliz.armory.armor.GearCatalog;
 import fr.heraliz.armory.armor.GearDef;
 import fr.heraliz.armory.item.ProtectiveItem;
@@ -13,9 +12,7 @@ import fr.heraliz.armory.registry.ModSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -49,7 +46,7 @@ public class HeralizArmory {
         ModEntities.register(bus);
         ModSounds.register(bus);
         ArmoryNetwork.register();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ArmorConfig.SPEC);
+        // heraliz_armory-common.toml : déclaré par la partie serveur seulement (audit du 02/11, point 11)
         bus.addListener(HeralizArmory::commonSetup);
         bus.addListener(HeralizArmory::aliases);
         // Parties séparées (docs/METHODE_CLIENT_SERVEUR.md §4), chargées si elles sont dans le jar :
