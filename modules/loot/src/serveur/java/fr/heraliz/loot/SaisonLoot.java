@@ -38,12 +38,25 @@ final class SaisonLoot {
         if (palier >= 1 && palier <= 7) pve(p, "conteneur_t" + palier);
     }
 
-    /** Couleur d'une salle à carte d'après son libellé (« … (rouge) ») : salle_verte, salle_bleue, salle_rouge ou null. */
-    static String salle(String libelle) {
+    /** Couleur d'une salle à carte donnée par Bunker : « verte », « bleue », « rouge » (autre chose : null). */
+    @javax.annotation.Nullable
+    static String couleur(@javax.annotation.Nullable String c) {
+        if (c == null) return null;
+        String l = c.trim().toLowerCase(Locale.ROOT);
+        return l.equals("verte") || l.equals("bleue") || l.equals("rouge") ? l : null;
+    }
+
+    /**
+     * Couleur d'une salle déclarée avant le 02/11, lue dans son nom affiché (« … (rouge) ») : verte, bleue, rouge ou null.
+     * Seulement pour les anciennes données et un Bunker plus ancien : depuis, Bunker donne la couleur à part (audit
+     * mods-2 §18 : changer ce texte coupait en silence les points de saison des salles et les quêtes du jour « salle »).
+     */
+    @javax.annotation.Nullable
+    static String couleurDuLibelle(String libelle) {
         String l = libelle.toLowerCase(Locale.ROOT);
-        if (l.endsWith("(rouge)")) return "salle_rouge";
-        if (l.endsWith("(bleue)")) return "salle_bleue";
-        if (l.endsWith("(verte)")) return "salle_verte";
+        if (l.endsWith("(rouge)")) return "rouge";
+        if (l.endsWith("(bleue)")) return "bleue";
+        if (l.endsWith("(verte)")) return "verte";
         return null;
     }
 }

@@ -103,8 +103,11 @@ public final class RotationLoot extends SavedData {
         return zone.startsWith(PREFIXE_SALLE);
     }
 
-    /** Une salle à carte : son nom affiché et sa boîte (blocs min et max compris). */
-    record Salle(String nom, long min, long max) {
+    /**
+     * Une salle à carte : son nom affiché, sa boîte (blocs min et max compris) et sa couleur (« verte », « bleue »,
+     * « rouge », ou null), donnée à part par Bunker depuis le 02/11 (avant : devinée dans le nom affiché, en français).
+     */
+    record Salle(String nom, long min, long max, @Nullable String couleur) {
         boolean contient(long k) {
             int x = BlockPos.getX(k), y = BlockPos.getY(k), z = BlockPos.getZ(k);
             return x >= BlockPos.getX(min) && x <= BlockPos.getX(max) && y >= BlockPos.getY(min) && y <= BlockPos.getY(max)
@@ -211,7 +214,10 @@ public final class RotationLoot extends SavedData {
         }
         for (Tag x : t.getList("Salles", Tag.TAG_COMPOUND)) {
             CompoundTag c = (CompoundTag) x;
-            r.salles.put(c.getString("Id"), new Salle(c.getString("Nom"), c.getLong("Min"), c.getLong("Max")));
+            String nom = c.getString("Nom");
+            // salle déclarée avant le 02/11 : couleur lue dans son nom affiché, une fois
+            String couleur = c.contains("Couleur") ? SaisonLoot.couleur(c.getString("Couleur")) : SaisonLoot.couleurDuLibelle(nom);
+            r.salles.put(c.getString("Id"), new Salle(nom, c.getLong("Min"), c.getLong("Max"), couleur));
         }
         for (Tag x : t.getList("SallesOuvertes", Tag.TAG_STRING)) r.sallesOuvertes.add(x.getAsString());
         return r;
@@ -282,6 +288,7 @@ public final class RotationLoot extends SavedData {
             CompoundTag c = new CompoundTag();
             c.putString("Id", id);
             c.putString("Nom", s.nom());
+            if (s.couleur() != null) c.putString("Couleur", s.couleur());
             c.putLong("Min", s.min());
             c.putLong("Max", s.max());
             ls.add(c);
@@ -510,17 +517,21 @@ public final class RotationLoot extends SavedData {
      * dans un secteur chargé) quittent leur zone pour celle de la salle, vides jusqu'à la prochaine recharge. Même boîte
      * qu'avant : rien ne change. -> nombre de conteneurs de la salle.
      */
-    int declarerSalle(ServerLevel l, String id, String nom, BlockPos a, BlockPos b) {
+    int declarerSalle(ServerLevel l, String id, String nom, @Nullable String couleur, BlockPos a, BlockPos b) {
         aJour(l);
         long min = BlockPos.asLong(Math.min(a.getX(), b.getX()), Math.min(a.getY(), b.getY()), Math.min(a.getZ(), b.getZ()));
         long max = BlockPos.asLong(Math.max(a.getX(), b.getX()), Math.max(a.getY(), b.getY()), Math.max(a.getZ(), b.getZ()));
         Salle avant = salles.get(id);
         if (avant != null && avant.min() == min && avant.max() == max) {
+            if (!nom.equals(avant.nom()) || !java.util.Objects.equals(couleur, avant.couleur())) {
+                salles.put(id, new Salle(nom, min, max, couleur));      // même boîte : nom ou couleur mis à jour seulement
+                setDirty();
+            }
             ZonesLoot.Zone z = ZonesLoot.zone(l.dimension(), PREFIXE_SALLE + id);
             return z == null ? 0 : z.taille();
         }
         if (avant != null) retirerSalle(l, id);
-        Salle s = new Salle(nom, min, max);
+        Salle s = new Salle(nom, min, max, couleur);
         salles.put(id, s);
         setDirty();
         ResourceKey<Level> dim = l.dimension();
@@ -1041,7 +1052,7 @@ public final class RotationLoot extends SavedData {
                     if (x != a && x.contenu != null && a.zone.equals(x.zone)) { premiere = false; break; }
                 }
                 Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
-                if (premiere && s != null) salle = SaisonLoot.salle(s.nom());
+                if (premiere && s != null && s.couleur() != null) salle = "salle_" + s.couleur();
                 e.sallesOuvertes.add(a.zone);
             }
             // contenu tiré à la première ouverture : avec le bonus de loot de celui qui ouvre
@@ -1056,8 +1067,7 @@ public final class RotationLoot extends SavedData {
             String couleur = "";
             if (a.zone.startsWith(PREFIXE_SALLE)) {
                 Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
-                String c = s == null ? null : SaisonLoot.salle(s.nom());
-                if (c != null) couleur = c.substring("salle_".length());
+                if (s != null && s.couleur() != null) couleur = s.couleur();
             }
             EvenementsLoot.fouille(p, l, pos, ConteneurBlock.palier(cb.nom), couleur);
         }

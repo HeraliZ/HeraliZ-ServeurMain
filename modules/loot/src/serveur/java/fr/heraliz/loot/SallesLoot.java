@@ -19,7 +19,17 @@ public final class SallesLoot {
      * vides jusqu'à la prochaine recharge. Même boîte qu'avant : rien ne change. -> nombre de conteneurs de la salle.
      */
     public static int declarer(ServerLevel l, String id, String nom, BlockPos min, BlockPos max) {
-        return RotationLoot.get(l).declarerSalle(l, id, nom, min, max);
+        // Bunker d'avant le 02/11 : la couleur est lue dans le nom affiché, comme avant
+        return RotationLoot.get(l).declarerSalle(l, id, nom, SaisonLoot.couleurDuLibelle(nom), min, max);
+    }
+
+    /**
+     * Comme {@link #declarer(ServerLevel, String, String, BlockPos, BlockPos)}, avec la couleur de la salle donnée à part
+     * (« verte », « bleue », « rouge » ; 02/11, audit mods-2 §18) : points de saison des salles et quêtes du jour « salle »
+     * ne dépendent plus du texte du nom affiché.
+     */
+    public static int declarer(ServerLevel l, String id, String nom, String couleur, BlockPos min, BlockPos max) {
+        return RotationLoot.get(l).declarerSalle(l, id, nom, SaisonLoot.couleur(couleur), min, max);
     }
 
     /** Retire la salle id : ses conteneurs retournent dans la rotation habituelle. -> faux si elle était inconnue. */

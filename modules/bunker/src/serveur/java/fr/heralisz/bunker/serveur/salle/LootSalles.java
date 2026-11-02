@@ -20,6 +20,9 @@ final class LootSalles {
    private static boolean charge;
    @Nullable
    private static Method declarer, retirer, recharger, etat;
+   /** Déclaration avec la couleur à part (Loot du 02/11) ; null avec un Loot plus ancien (couleur lue dans le libellé). */
+   @Nullable
+   private static Method declarerCouleur;
 
    private LootSalles() {}
 
@@ -29,6 +32,11 @@ final class LootSalles {
       try {
          Class<?> c = Class.forName(API);
          declarer = c.getMethod("declarer", ServerLevel.class, String.class, String.class, BlockPos.class, BlockPos.class);
+         try {
+            declarerCouleur = c.getMethod("declarer", ServerLevel.class, String.class, String.class, String.class, BlockPos.class, BlockPos.class);
+         } catch (NoSuchMethodException ancien) {
+            declarerCouleur = null;
+         }
          retirer = c.getMethod("retirer", ServerLevel.class, String.class);
          recharger = c.getMethod("recharger", ServerLevel.class, String.class);
          etat = c.getMethod("etat", ServerLevel.class, String.class);
@@ -37,7 +45,7 @@ final class LootSalles {
          LOG.info("[salles] HeraliZ Loot absent : le loot des salles à carte n'est pas géré");
       } catch (ReflectiveOperationException | LinkageError ex) {
          LOG.warn("[salles] API des salles de HeraliZ Loot illisible ({}) : loot des salles non géré", API, ex);
-         declarer = retirer = recharger = etat = null;
+         declarer = retirer = recharger = etat = declarerCouleur = null;
       }
    }
 
@@ -59,19 +67,28 @@ final class LootSalles {
       return null;
    }
 
-   /** Nom de la zone de loot de la salle, vu par le staff dans /heralizloot zones. */
-   private static String libelle(SallesMonde.Salle s) {
-      String c = switch (s.niveau) {
+   /** Couleur de la salle pour Loot (points de saison, quêtes du jour) : « verte », « bleue » ou « rouge ». */
+   private static String couleur(SallesMonde.Salle s) {
+      return switch (s.niveau) {
          case GREEN -> "verte";
          case BLUE -> "bleue";
          case RED -> "rouge";
       };
-      return "Salle à carte « " + s.nom + " » (" + c + ")";
    }
 
-   /** Déclare la salle à Loot (ses conteneurs quittent la rotation habituelle). -> conteneurs, -1 sans Loot. */
+   /** Nom de la zone de loot de la salle, vu par le staff dans /heralizloot zones (texte libre : la couleur part à part). */
+   private static String libelle(SallesMonde.Salle s) {
+      return "Salle à carte « " + s.nom + " » (" + couleur(s) + ")";
+   }
+
+   /**
+    * Déclare la salle à Loot (ses conteneurs quittent la rotation habituelle). -> conteneurs, -1 sans Loot. 02/11 (audit
+    * mods-2 §18) : la couleur est donnée à part, Loot ne la devine plus dans le libellé.
+    */
    static int declarer(ServerLevel l, SallesMonde.Salle s) {
-      return appeler(declarer, l, s.nom, libelle(s), s.min, s.max) instanceof Integer n ? n : -1;
+      Object r = declarerCouleur != null ? appeler(declarerCouleur, l, s.nom, libelle(s), couleur(s), s.min, s.max)
+            : appeler(declarer, l, s.nom, libelle(s), s.min, s.max);
+      return r instanceof Integer n ? n : -1;
    }
 
    static boolean retirer(ServerLevel l, String nom) {
