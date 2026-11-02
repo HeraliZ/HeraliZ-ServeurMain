@@ -26,6 +26,10 @@ concurrency:
 jobs:
   enquete:
     runs-on: ubuntu-latest
+    # Depuis main : environnement « production » ; depuis une branche de travail : environnement « lecture », qui
+    # n'a qu'un accès en lecture au Ptero (sous-utilisateur sans écriture ni console ; docs/MISE_EN_LIGNE_GITHUB.md,
+    # section 7). Sans environnement réglé, GitHub les crée vides et les secrets du dépôt servent comme avant.
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'lecture' }}
     timeout-minutes: 20
     env:
       PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}
@@ -65,6 +69,10 @@ jobs:
 
       - name: Contrôle immédiat (console du serveur)
         run: |
+          if [ -z "$PTERO_URL" ] || [ -z "$PTERO_SERVER_ID" ] || [ -z "$PTERO_API_KEY" ]; then
+            echo "::notice::Pas d'accès à la console du panel (lancé depuis une branche : environnement « lecture ») : seuls les rapports déjà sur le serveur sont lus. Pour un contrôle immédiat : Run workflow depuis main."
+            exit 0
+          fi
           API="${PTERO_URL%/}/api/client/servers/$PTERO_SERVER_ID"
           CODE=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$API/command" \
             -H "Authorization: Bearer $PTERO_API_KEY" -H "Content-Type: application/json" \

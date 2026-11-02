@@ -35,6 +35,10 @@ permissions:
 jobs:
   lenteurs:
     runs-on: ubuntu-latest
+    # Depuis main : environnement « production » ; depuis une branche de travail : environnement « lecture », qui
+    # n'a qu'un accès en lecture au Ptero (sous-utilisateur sans écriture ni console ; docs/MISE_EN_LIGNE_GITHUB.md,
+    # section 7). Sans environnement réglé, GitHub les crée vides et les secrets du dépôt servent comme avant.
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'lecture' }}
     timeout-minutes: 40
     env:
       PTERO_SFTP_HOST: ${{ secrets.PTERO_SFTP_HOST }}

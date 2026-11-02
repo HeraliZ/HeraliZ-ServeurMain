@@ -208,6 +208,9 @@ jobs:
     needs: windows
     if: github.event_name == 'workflow_dispatch' && inputs.publier
     runs-on: ubuntu-latest
+    # Secrets de mise en ligne : environnement GitHub « production », réservé à main (audit du 02/11, point 15 ;
+    # réglage du propriétaire : docs/MISE_EN_LIGNE_GITHUB.md, section 7)
+    environment: production
     timeout-minutes: 20
     defaults:
       run:
@@ -270,6 +273,9 @@ jobs:
     needs: linux
     if: github.event_name == 'workflow_dispatch' && inputs.publier
     runs-on: ubuntu-latest
+    # Secrets de mise en ligne : environnement GitHub « production », réservé à main (audit du 02/11, point 15 ;
+    # réglage du propriétaire : docs/MISE_EN_LIGNE_GITHUB.md, section 7)
+    environment: production
     timeout-minutes: 20
     defaults:
       run:
@@ -333,6 +339,9 @@ jobs:
     needs: mac
     if: github.event_name == 'workflow_dispatch' && inputs.publier
     runs-on: ubuntu-latest
+    # Secrets de mise en ligne : environnement GitHub « production », réservé à main (audit du 02/11, point 15 ;
+    # réglage du propriétaire : docs/MISE_EN_LIGNE_GITHUB.md, section 7)
+    environment: production
     timeout-minutes: 20
     defaults:
       run:

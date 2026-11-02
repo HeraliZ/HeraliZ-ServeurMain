@@ -41,6 +41,9 @@ concurrency:
 jobs:
   site:
     runs-on: ubuntu-latest
+    # Secrets de mise en ligne : environnement GitHub « production », réservé à main (audit du 02/11, point 15 ;
+    # réglage du propriétaire : docs/MISE_EN_LIGNE_GITHUB.md, section 7)
+    environment: production
     timeout-minutes: 45
     env:
       SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}

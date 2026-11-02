@@ -107,3 +107,41 @@ bloqués.
 - Facultatif, si le compte Top-Serveurs est un jour retrouvé : secret GitHub **`TOPSERVEURS_TOKEN`** = le jeton du
   serveur dans le panel Top-Serveurs. Il passe par `site.yml` → `theme.sh` (environnement) → `reglages.php`, jamais
   dans un fichier du dépôt ; chaque vote est alors vérifié auprès de Top-Serveurs.
+
+## 7. Secrets réservés à `main` : environnements GitHub (02/11, audit point 15)
+
+Avant : les secrets étaient ceux du dépôt entier. Toute personne ou tout outil qui peut envoyer une **branche** pouvait
+y glisser un workflow qui les lit (clé de signature du launcher, mots de passe du Ptero et du site). Les workflows
+demandent maintenant un **environnement** GitHub :
+
+| Environnement | Qui s'en sert | Branches permises |
+|---|---|---|
+| `production` | « Serveur HeraliZ » (mise à jour du Ptero, pack du launcher), « Site HeraliZ », publication du launcher, « Remplacer la carte de loot », et les outils de lecture lancés depuis `main` | `main` seulement |
+| `lecture` | « Journaux », « Lenteurs », « Enquête Spartan » lancés depuis une branche de travail | toutes |
+
+Tant que le propriétaire n'a rien réglé, GitHub crée ces environnements vides et tout marche comme avant (secrets du
+dépôt). Le réglage, à faire une fois (Settings du dépôt, compte propriétaire) :
+
+1. **Settings → Environments → `production`** (le créer s'il n'existe pas) :
+   - « Deployment branches and tags » → **Selected branches and tags** → **Add deployment branch or tag rule** → `main` ;
+   - ne PAS cocher « Required reviewers » (sinon chaque envoi sur `main` attendrait un clic) ;
+   - **Environment secrets → Add secret** : recréer ici, avec les mêmes noms et valeurs, `PTERO_SFTP_HOST`,
+     `PTERO_SFTP_PORT`, `PTERO_SFTP_USER`, `PTERO_SFTP_PASSWORD`, `PTERO_URL`, `PTERO_SERVER_ID`, `PTERO_API_KEY`,
+     `SITE_SSH_HOTE`, `SITE_SSH_PORT`, `SITE_SSH_UTILISATEUR`, `SITE_SSH_MDP`, `SITE_BDD_MDP`, `LAUNCHER_SIGN_KEY`,
+     `SPARTAN_DISCORD_ALERTES`, `SPARTAN_DISCORD_SANCTIONS`, `LITEBANS_DB_USER`, `LITEBANS_DB_PASSWORD`,
+     `HERALIBOT_LIEN_URL`, `HERALIBOT_LIEN_CLE`, les `DISCORD_*`, `TOPSERVEURS_TOKEN`, `SITE_ADRESSE_LEGALE`,
+     `SITE_MAIL_CONTACT` (ceux qui existent).
+2. **Settings → Environments → `lecture`** : « Deployment branches » laissé à **No restriction**. Secrets :
+   `PTERO_SFTP_HOST` et `PTERO_SFTP_PORT` (mêmes valeurs), et `PTERO_SFTP_USER` / `PTERO_SFTP_PASSWORD` d'un
+   **sous-utilisateur du Ptero en lecture seule** (panel → serveur → Users → New user, cocher seulement
+   « file.sftp », « file.read » et « file.read-content »). Pas de `PTERO_API_KEY` ici : depuis une branche,
+   « Enquête Spartan » lit les rapports déjà là sans lancer de contrôle, et « Lenteurs » ne lance pas de profil.
+3. **Settings → Secrets and variables → Actions → Repository secrets** : **supprimer** les secrets recopiés aux étapes
+   1 et 2 (sinon ils restent lisibles depuis n'importe quelle branche). **Garder** au niveau du dépôt seulement
+   `NOMS_INTERDITS` (contrôle des branches de travail).
+4. Vérifier : envoyer quelque chose sur `main` → « Serveur HeraliZ » vert ; « Site HeraliZ » → Run workflow →
+   `verifier` → vert.
+
+À garder en tête : un envoi sur `main` lui-même peut toujours lire ces secrets. Seuls les propriétaires doivent pouvoir
+écrire sur `main` (Settings → Collaborators : rôle « Write » seulement pour qui en a besoin ; double authentification
+GitHub sur ces comptes).
