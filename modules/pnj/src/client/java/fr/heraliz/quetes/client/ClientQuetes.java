@@ -13,6 +13,7 @@ import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,7 +50,9 @@ public final class ClientQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener(ClientQuetes::tick);
         Guidage.brancher();   // 28/10 : traînée verte et surbrillance vers le Guide, puis Varga
         MinecraftForge.EVENT_BUS.addListener(Reperes::rendu);
-        MinecraftForge.EVENT_BUS.addListener(RadioVarga::cacherChat);
+        // 03/11 : chat caché pendant la visite du Guide et le tutoriel de Varga (avant le chat de HeraliZ Grades : HIGHEST)
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ChatTutoriel::overlay);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ChatTutoriel::ouverture);
         MinecraftForge.EVENT_BUS.addListener(Presentation::tick);
         MinecraftForge.EVENT_BUS.addListener(Presentation::regard);
         MinecraftForge.EVENT_BUS.addListener(Presentation::main);
@@ -58,6 +61,7 @@ public final class ClientQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             HudQuetes.vider();
             RadioVarga.vider();
+            ChatTutoriel.vider();
             Presentation.vider();
             Lueurs.vider();
             Guidage.vider();
@@ -75,6 +79,7 @@ public final class ClientQuetes implements Partie {
         Reseau.EDITION.brancher(EcranEditionMarchand::recevoir);
         Reseau.RADIO.brancher(RadioVarga::recevoir);
         Reseau.PRESENTATION.brancher(Presentation::lancer);
+        Reseau.CHAT_CACHE.brancher(ChatTutoriel::recevoir);
         Reseau.APERCU_RECYCLAGE.brancher(EcranRecycleur::recevoir);
         Reseau.JOUR.brancher(EcranJournalieres::recevoir);
         Reseau.JOUR_TIRAGE.brancher(EcranJournalieres::recevoirTirage);

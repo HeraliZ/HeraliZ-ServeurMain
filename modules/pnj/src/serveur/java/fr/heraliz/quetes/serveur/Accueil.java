@@ -10,8 +10,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -98,6 +100,8 @@ final class Accueil {
     }
 
     private static final Map<UUID, Visite> VISITES = new HashMap<>();
+    /** Joueurs à qui le chat est caché en ce moment ({@link #chat}). */
+    private static final Set<UUID> CHAT_CACHE = new HashSet<>();
 
     private Accueil() {
     }
@@ -110,6 +114,24 @@ final class Accueil {
         RAPPEL.remove(u);
         ARRIVEE.remove(u);
         VISITES.remove(u);
+        // déconnexion : le joueur remet son chat de lui-même (ChatTutoriel.vider) ; reconnecté en plein tutoriel, il est
+        // recaché après son /login
+        CHAT_CACHE.remove(u);
+    }
+
+    /**
+     * Chat caché chez le joueur (03/11, retour du propriétaire : « dans le tuto de Varga, désactiver le chat, il ne faut plus
+     * le voir ») : ni affiché ni ouvrable pendant la visite du Guide et pendant le tutoriel des bases avec Varga (kit, cabane,
+     * puis ses mots de la fin) ; il revient à la fin, quand la visite est passée (Espace) et à la déconnexion. Jamais en
+     * créatif ni en spectateur (le staff qui teste garde ses commandes), jamais avant le /login d'AuthMe (un joueur
+     * reconnecté en plein tutoriel doit pouvoir le taper). Envoyé seulement quand ça change ; les messages reçus pendant ce
+     * temps restent dans le chat du joueur.
+     */
+    private static void chat(ServerPlayer p, int tuto) {
+        UUID u = p.getUUID();
+        boolean cache = !p.isCreative() && !p.isSpectator()
+                && (VISITES.containsKey(u) || tuto == 1 || tuto == 2 || FIN.containsKey(u)) && Ponts.authentifie(p);
+        if (cache ? CHAT_CACHE.add(u) : CHAT_CACHE.remove(u)) Reseau.envoyer(p, new Reseau.ChatCache(cache));
     }
 
     /** La visite du guide reste à faire (seulement si le guide existe dans les fichiers des PNJ). */
@@ -120,6 +142,7 @@ final class Accueil {
     /** Bouton « Fais-moi visiter » du guide : la caméra passe d'un PNJ à l'autre pendant que le guide les présente. */
     static void visite(ServerPlayer p) {
         VISITES.put(p.getUUID(), new Visite(-1, VISITE_ECART - 1));
+        chat(p, Ponts.tutoEtat(p));   // chat caché tout de suite (sinon à la seconde suivante)
         Moteur.suiviBientot(p);
     }
 
@@ -127,6 +150,7 @@ final class Accueil {
     static void passerVisite(ServerPlayer p) {
         if (VISITES.remove(p.getUUID()) == null) return;
         persiste(p).putBoolean(VISITE_FAITE, true);
+        chat(p, Ponts.tutoEtat(p));   // le chat revient tout de suite
         radio(p, GUIDE, 0, "heraliz_quetes.guide.fin");
         Moteur.suiviBientot(p);
     }
@@ -198,9 +222,17 @@ final class Accueil {
         }
     }
 
-    /** Chaque seconde (ServeurQuetes) : suivi à jour pendant l'arrivée et le tutoriel, radio quand l'étape change. */
+    /**
+     * Chaque seconde (ServeurQuetes) : suivi à jour pendant l'arrivée et le tutoriel, radio quand l'étape change, puis chat
+     * caché ou rendu (03/11).
+     */
     static void seconde(ServerPlayer p) {
         int tuto = Ponts.tutoEtat(p);
+        secondeTuto(p, tuto);
+        chat(p, tuto);
+    }
+
+    private static void secondeTuto(ServerPlayer p, int tuto) {
         int etapes = Ponts.tutoEtapes();
         Suite fin = FIN.get(p.getUUID());
         if (fin != null) {

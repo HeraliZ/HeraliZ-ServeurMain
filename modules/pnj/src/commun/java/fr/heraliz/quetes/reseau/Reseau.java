@@ -32,7 +32,7 @@ public final class Reseau {
     }
 
     /** 7 (Quêtes 1.11.0) : échanges (troc) et marchands créés en jeu. 9 (1.13.0) : aperçu du recycleur. 10 (1.14.0) : quêtes du jour. */
-    private static final String VERSION = "12";   // 12 (28/10) : angle de la caméra des points de la visite du Guide ; 11 (26/10) : état de l'objet dans l'aperçu du recycleur
+    private static final String VERSION = "13";   // 13 (03/11) : chat caché pendant la visite et le tutoriel ; 12 (28/10) : angle de la caméra des points de la visite du Guide ; 11 (26/10) : état de l'objet dans l'aperçu du recycleur
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -157,6 +157,14 @@ public final class Reseau {
     public record Presentation(double x, double y, double z, float rayon, int ticks, float angle) {
     }
 
+    /**
+     * Chat caché (03/11, retour du propriétaire : « dans le tuto de Varga, il ne faut plus voir le chat ») : pendant la
+     * visite du Guide et le tutoriel des bases avec Varga (mots de la fin compris), le chat n'est ni affiché ni ouvrable
+     * chez le joueur. Envoyé à chaque changement (serveur -> joueur) ; les messages reçus pendant ce temps restent gardés.
+     */
+    public record ChatCache(boolean cache) {
+    }
+
     /** Éditeur des marchands (staff op) : un article vendu, ou une règle de rachat et ses 6 prix (Commun ... Mythique). */
     public record EArticle(ItemStack objet, long prix, int rarete) {
     }
@@ -252,6 +260,7 @@ public final class Reseau {
     public static final Crochet<ApercuRecyclage> APERCU_RECYCLAGE = new Crochet<>();
     public static final Crochet<Jour> JOUR = new Crochet<>();
     public static final Crochet<JourTirage> JOUR_TIRAGE = new Crochet<>();
+    public static final Crochet<ChatCache> CHAT_CACHE = new Crochet<>();
 
     public static final Crochet<Recu<Choix>> CHOIX = new Crochet<>();
     public static final Crochet<Recu<DemandeJournal>> DEMANDE_JOURNAL = new Crochet<>();
@@ -421,6 +430,8 @@ public final class Reseau {
             b.writeVarInt(m.type());
             b.writeUtf(m.cle(), MAX_CLE);
         }, b -> new JourAction(b.readVarInt(), b.readUtf(MAX_CLE)), JOUR_ACTION);
+        // chat caché pendant la visite du Guide et le tutoriel des bases (03/11) : ajouté à la fin, version 13
+        versJoueur(ChatCache.class, (m, b) -> b.writeBoolean(m.cache()), b -> new ChatCache(b.readBoolean()), CHAT_CACHE);
     }
 
     private static void ecrireJour(Jour m, FriendlyByteBuf b) {

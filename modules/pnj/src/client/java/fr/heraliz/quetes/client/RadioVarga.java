@@ -13,9 +13,7 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.fml.ModList;
 import org.joml.Matrix4f;
 
@@ -64,17 +62,8 @@ public final class RadioVarga {
         SonsUi.ouvrir(0.35F);
     }
 
-    /**
-     * Pendant le tutoriel (une consigne à l'écran), le chat est caché : ses messages couvraient la radio. Il revient
-     * dès qu'on l'ouvre (touche T) et à la fin du tutoriel.
-     */
-    static void cacherChat(RenderGuiOverlayEvent.Pre e) {
-        Reseau.Radio r = radio;
-        if (r != null && r.etape() > 0 && e.getOverlay() == VanillaGuiOverlay.CHAT_PANEL.type()
-                && !(Minecraft.getInstance().screen instanceof ChatScreen)) {
-            e.setCanceled(true);
-        }
-    }
+    // 03/11 : plus de « cacherChat » ici (chat de Minecraft caché pendant une consigne) : le chat de HeraliZ Grades, dessiné
+    // avant, restait visible ; tout le chat est maintenant caché pendant le tutoriel par ChatTutoriel, sur ordre du serveur
 
     static void vider() {
         radio = null;

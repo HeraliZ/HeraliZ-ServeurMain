@@ -36,7 +36,8 @@ import java.util.UUID;
  *    <li>frappes aériennes en cours d'un joueur : {@code fr.heraliz.airstrike.strike.StrikeManager.countActive(UUID)} ;</li>
  *    <li>joueur à terre : {@code fr.heraliz.reanimation.core.Downed.isDowned(Entity)} (Réanimation) ;</li>
  *    <li>tutoriel des bases : {@code fr.heraliz.crac.bases.TutorielApi} (CRac : état, étape de la cabane, lancement) ;</li>
- *    <li>cinématique d'arrivée finie : donnée persistante {@code heraliz_cinematique_finie} de HeraliZ Utils.</li>
+ *    <li>cinématique d'arrivée finie : donnée persistante {@code heraliz_cinematique_finie} de HeraliZ Utils ;</li>
+ *    <li>joueur connecté sur AuthMe : {@code fr.heraliz.grades.serveur.GradesApi.authentifie} (HeraliZ Grades).</li>
  * </ul>
  */
 final class Ponts {
@@ -565,5 +566,31 @@ final class Ponts {
         if (!net.minecraftforge.fml.ModList.get().isLoaded("heralisz_utils")) return true;
         CompoundTag root = p.getPersistentData();
         return root.getCompound(Player.PERSISTED_NBT_TAG).getBoolean("heraliz_cinematique_finie");
+    }
+
+    private static Method authentifie;
+    private static boolean authentifieCherche;
+
+    /**
+     * Joueur connecté sur AuthMe (/login fait), d'après HeraliZ Grades
+     * ({@code fr.heraliz.grades.serveur.GradesApi.authentifie}). Faux si Grades manque ou ne répond pas : le chat n'est
+     * caché (03/11) qu'à un joueur qui n'a plus à taper /login.
+     */
+    static boolean authentifie(ServerPlayer p) {
+        if (!authentifieCherche) {
+            authentifieCherche = true;
+            try {
+                authentifie = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("authentifie", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                authentifie = null;
+                LOG.warn("[heraliz_quetes] HeraliZ Grades absent ({}) : le chat n'est jamais caché pendant le tutoriel", e.toString());
+            }
+        }
+        if (authentifie == null) return false;
+        try {
+            return Boolean.TRUE.equals(authentifie.invoke(null, p));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
     }
 }
