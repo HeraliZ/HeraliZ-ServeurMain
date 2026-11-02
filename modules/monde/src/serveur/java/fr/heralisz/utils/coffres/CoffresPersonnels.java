@@ -306,6 +306,13 @@ public final class CoffresPersonnels {
     /** Un coffre personnel : 54 cases gardées (6 lignes), sans sac à dos ; chaque changement est enregistré avec le monde. */
     public static final class Coffre extends SimpleContainer {
         private final Donnees donnees;
+        /**
+         * Copie NBT du contenu, gardée tant que le coffre ne change pas (02/11, audit n° 25) : à chaque fermeture d'une
+         * planque, seul le coffre qui a changé est recopié (avant : les coffres de TOUS les joueurs inscrits, objet par
+         * objet, sur le fil du serveur). Jamais modifiée une fois faite (le fil d'écriture la lit) : un changement en fait
+         * une neuve.
+         */
+        private ListTag copie;
 
         Coffre(Donnees donnees) {
             super(CASES_MAX);
@@ -321,7 +328,18 @@ public final class CoffresPersonnels {
         @Override
         public void setChanged() {
             super.setChanged();
+            this.copie = null;
             this.donnees.setDirty();
+        }
+
+        /** Le contenu en NBT : la copie gardée, refaite seulement après un changement. Fil serveur. */
+        ListTag copie() {
+            ListTag c = this.copie;
+            if (c == null) {
+                c = ecrire();
+                this.copie = c;
+            }
+            return c;
         }
 
         ListTag ecrire() {
@@ -404,8 +422,9 @@ public final class CoffresPersonnels {
                 CompoundTag j = new CompoundTag();
                 for (Sorte s : Sorte.values()) {
                     Coffre c = t[s.ordinal()];
-                    if (c != null && !c.isEmpty()) {
-                        j.put(s.cle, c.ecrire());
+                    ListTag l = c == null ? null : c.copie();      // copie gardée : rien n'est recopié s'il n'a pas changé
+                    if (l != null && !l.isEmpty()) {
+                        j.put(s.cle, l);
                     }
                 }
                 if (!j.isEmpty()) {
