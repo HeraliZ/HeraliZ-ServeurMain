@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 public final class ClicObjetBukkit {
    private static final Logger LOG = LogUtils.getLogger();
    /** Plugins qui peuvent porter les écouteurs, dans l'ordre de préférence. */
-   private static final String[] PORTEURS = {"WorldGuard", "spark", "LuckPerms", "AuthMe"};
+   private static final String[] PORTEURS = {"WorldGuard", "LuckPerms", "AuthMe"};
    /** Objets cachés aux plugins pendant l'événement en cours (fil serveur), rendus en MONITOR. */
    private static final Map<Object, Object> CACHES = Collections.synchronizedMap(new IdentityHashMap<>());
 

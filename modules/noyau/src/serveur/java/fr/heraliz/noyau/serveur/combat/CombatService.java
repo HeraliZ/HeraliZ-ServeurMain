@@ -208,7 +208,7 @@ public final class CombatService {
      * Tue le joueur pour deconnexion en combat. Deja a terre (Reanimation) : acheve par Reanimation avec notre type de
      * degats (kill credite a celui qui l'a mis a terre, etat a terre efface : Reanimation ne le retue pas ensuite). Sinon
      * degats {@code heraliz_noyau:deconnexion_combat} (ignorent armure, effets et invulnerabilite : Reanimation ne le met
-     * pas a terre) ; mis a terre quand meme (PlayerRevive) -> achevement ; degats refuses (zone protegee, autre mod) -> mort
+     * pas a terre) ; mis a terre quand meme -> achevement ; degats refuses (zone protegee, autre mod) -> mort
      * directe. Le mod corpse laisse le corps et son contenu sur place (une seule mort, donc un seul corps).
      */
     public static void tuer(ServerPlayer p) {
@@ -255,7 +255,7 @@ public final class CombatService {
 
     // ------------------------------------------------------------------ mort reelle
     /**
-     * Mort reelle (non annulee : ni mise a terre Reanimation/PlayerRevive, ni match) : fin du tag. Execution Reanimation :
+     * Mort reelle (non annulee : ni mise a terre Reanimation, ni match) : fin du tag. Execution Reanimation :
      * le bourreau est tague (hors match, ni creatif ni spectateur). Deconnexion a terre tuee par Reanimation : message a la
      * reconnexion (cle posee avant la sauvegarde du joueur, faite apres l'evenement de deconnexion).
      */

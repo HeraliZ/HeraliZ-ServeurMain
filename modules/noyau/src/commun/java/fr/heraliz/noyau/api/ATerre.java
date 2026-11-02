@@ -27,9 +27,10 @@ import java.lang.reflect.Method;
  *     (sans auteur) et {@code reanimation:execution} (auteur = le bourreau), tous dans {@code bypasses_invulnerability}.
  *     Reanimation met a terre sur {@code LivingDeathEvent} priorite HIGH (evenements deja annules ignores) : le filet du
  *     mod des matchs passe avant, il n'y a donc jamais de mise a terre en match.</li>
- *     <li><b>PlayerRevive</b> (ancien, garde pour la periode de transition) : {@code PlayerReviveServer.isBleeding(Player)}
- *     et {@code kill(Player)}.</li>
  * </ul>
+ * 02/11 (audit, mods-1 §16) : la lecture de l'ancien PlayerRevive (retire le 02/10) est enlevee. Sans le mod, elle lisait
+ * encore sa marque {@code playerrevive:bleeding} dans les donnees du joueur : un joueur qui l'aurait gardee aurait ete vu
+ * « a terre » pour toujours (planque, coffre VIP, helicoptere, ClashWar).
  * Fil serveur, sauf {@link #enregistrer()} (les deux cotes).
  */
 public final class ATerre {
@@ -41,14 +42,10 @@ public final class ATerre {
     private static final String R_DOWNED = "fr.heraliz.reanimation.core.Downed";
     private static final String R_MANAGER = "fr.heraliz.reanimation.core.DownedManager";
     private static final String R_ETAT = "fr.heraliz.reanimation.core.DownedState";
-    private static final String PR = "team.creative.playerrevive.server.PlayerReviveServer";
 
     private static boolean pretR;
     @Nullable
     private static Method rATerre, rEtat, rKill, rRelever;
-    private static boolean pretPR, pretPRKill;
-    @Nullable
-    private static Method saigne, achever;
 
     // ------------------------------------------------------------------ Reanimation
     private static void resoudreReanimation() {
@@ -99,37 +96,17 @@ public final class ATerre {
         }
     }
 
-    // ------------------------------------------------------------------ PlayerRevive (ancien)
-    /** Vrai si le joueur saigne au sens de PlayerRevive (ancien mod ; faux s'il est absent). */
-    public static boolean aTerrePlayerRevive(Player p) {
-        if (!pretPR) {
-            pretPR = true;
-            try {
-                saigne = Class.forName(PR).getMethod("isBleeding", Player.class);
-            } catch (ReflectiveOperationException | LinkageError e) {
-                saigne = null;
-            }
-        }
-        if (saigne == null) return p.getPersistentData().getBoolean("playerrevive:bleeding");
-        try {
-            return (Boolean) saigne.invoke(null, p);
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            return false;
-        }
-    }
-
     // ------------------------------------------------------------------ facade
-    /** Vrai si le joueur est a terre (Reanimation, ou PlayerRevive s'il est encore installe). */
+    /** Vrai si le joueur est a terre (Reanimation). */
     public static boolean aTerre(Player p) {
         if (p == null) return false;
-        return aTerreReanimation(p) || aTerrePlayerRevive(p);
+        return aTerreReanimation(p);
     }
 
     /**
      * Acheve un joueur a terre : vraie mort, corps compris, une seule fois. Reanimation : {@code DownedManager.kill} avec le
      * type {@code type} s'il est enregistre (sinon {@code reanimation:disconnect}) ; le kill revient a celui qui l'a mis a
-     * terre. PlayerRevive : {@code PlayerReviveServer.kill}. Rend faux si personne ne l'a acheve (pas a terre, mod absent,
-     * erreur).
+     * terre. Rend faux si personne ne l'a acheve (pas a terre, mod absent, erreur).
      */
     public static boolean achever(Player p, @Nullable ResourceKey<DamageType> type) {
         Object etat = etatReanimation(p);
@@ -144,23 +121,7 @@ public final class ATerre {
                 HeralizNoyau.LOG.error("[noyau] Reanimation : achevement de {} impossible", p.getGameProfile().getName(), e);
             }
         }
-        if (!aTerrePlayerRevive(p)) return false;
-        if (!pretPRKill) {
-            pretPRKill = true;
-            try {
-                achever = Class.forName(PR).getMethod("kill", Player.class);
-            } catch (ReflectiveOperationException | LinkageError e) {
-                achever = null;
-            }
-        }
-        if (achever == null) return false;
-        try {
-            achever.invoke(null, p);
-            return true;
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            HeralizNoyau.LOG.error("[noyau] PlayerRevive : achevement de {} impossible", p.getGameProfile().getName(), e);
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -182,7 +143,7 @@ public final class ATerre {
     /**
      * Branche (les deux cotes, a la construction du mod) le refus des tirs et des coups de crosse TaCZ d'un joueur a terre
      * de Reanimation ({@code GunShootEvent} / {@code GunMeleeEvent}, annulables, emis cote client ET serveur). Remplace
-     * {@code playerrevive_compat} (qui le faisait pour PlayerRevive). Sans TaCZ ou sans Reanimation : rien.
+     * l'ancien {@code playerrevive_compat}. Sans TaCZ ou sans Reanimation : rien.
      */
     public static void enregistrer() {
         ModList ml = ModList.get();

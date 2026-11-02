@@ -1,6 +1,5 @@
 package fr.heraliz.noyau.serveur.combat;
 
-import fr.heraliz.noyau.api.ATerre;
 import fr.heraliz.noyau.api.CombatTag;
 import fr.heraliz.noyau.api.Matchs;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +9,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -23,7 +21,6 @@ import java.util.Set;
  * Détection du combat entre joueurs (hors match) :
  * <ul>
  *    <li>{@code LivingDamageEvent} LOWEST (dégâts réellement appliqués) : tag des deux joueurs, voir {@link CombatService} ;</li>
- *    <li>{@code LivingHurtEvent} LOWEST, annulés compris : achèvement d'un joueur à terre avec l'ancien PlayerRevive ;</li>
  *    <li>{@code MobEffectEvent.Applicable} LOWEST : ancien tag d'ArkaniaZ {@code geckolib:combat_log} refusé partout, malus
  *    d'ArkaniaZ refusés aux joueurs en match.</li>
  * </ul>
@@ -44,7 +41,6 @@ public final class CombatEvents {
 
    public static void enregistrer() {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, CombatEvents::tag);
-      MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, CombatEvents::achevement);
       // LOWEST : notre refus est le dernier mot (aucun autre mod ne peut le repasser à ALLOW après nous)
       MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, CombatEvents::effet);
       CombatService.enregistrer();
@@ -74,18 +70,6 @@ public final class CombatEvents {
 
    private static boolean horsJeu(ServerPlayer p) {
       return p.isCreative() || p.isSpectator();
-   }
-
-   /**
-    * Achèvement d'un joueur à terre avec l'ancien PlayerRevive (il annule le coup et exécute la victime) : l'attaquant est
-    * tagué comme pour un vrai coup. Avec Réanimation, le coup n'est pas annulé (il passe par {@link #tag}) et l'exécution
-    * tague le bourreau à la mort ({@link CombatService}).
-    */
-   private static void achevement(LivingHurtEvent e) {
-      if (!e.isCanceled() || !(e.getEntity() instanceof ServerPlayer victime)) return;
-      if (!(auteur(e.getSource()) instanceof ServerPlayer attaquant) || attaquant == victime) return;
-      if (Matchs.enMatch(victime) || Matchs.enMatch(attaquant) || horsJeu(attaquant) || !ATerre.aTerrePlayerRevive(victime)) return;
-      CombatTag.marquer(attaquant);
    }
 
    private static void effet(MobEffectEvent.Applicable e) {
