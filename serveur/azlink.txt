@@ -5,4 +5,4 @@
 # Changer de version : mettre la nouvelle version, vider sha256, lancer une mise en ligne : son résumé donne
 # l'empreinte du jar téléchargé, à recopier ici (le jar n'est envoyé qu'une fois l'empreinte recopiée).
 version=1.3.13
-sha256=
+sha256=4d51f7fbcfaa0b9e61c2caf8ee2be193cb93c80fb1f4b4a01052b4841f3381de
