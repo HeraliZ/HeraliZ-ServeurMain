@@ -237,6 +237,17 @@ jobs:
       - name: Client SFTP
         run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
 
+      # Le launcher 1.16.0 et plus n'accepte que le pack signé en v2 (empreintes SHA-256 et date, audit du 02/11) : sans
+      # elle en ligne, il refuserait le pack et personne ne pourrait jouer. Le site dit s'il la sert (pack_v2).
+      - name: Pack signé en v2 sur le site
+        run: |
+          etat=$(curl -fsS --max-time 30 https://heraliz.fr/api/heraliz/etat || true)
+          case "$etat" in
+            *'"pack_v2":true'*) echo "Pack du site signé en v2 (SHA-256) : ce launcher l'acceptera." ;;
+            *) echo "::error::Le site ne sert pas encore le pack signé en v2 (empreintes SHA-256) : ce launcher le refuserait. Attendre que « Serveur HeraliZ » (pack du launcher) et « Site HeraliZ » aient fini sur main, puis relancer la publication."
+               exit 1 ;;
+          esac
+
       - name: Mise en ligne sur heraliz.fr/telecharger
         env:
           SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
@@ -290,6 +301,17 @@ jobs:
       - name: Client SFTP
         run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
 
+      # Le launcher 1.16.0 et plus n'accepte que le pack signé en v2 (empreintes SHA-256 et date, audit du 02/11) : sans
+      # elle en ligne, il refuserait le pack et personne ne pourrait jouer. Le site dit s'il la sert (pack_v2).
+      - name: Pack signé en v2 sur le site
+        run: |
+          etat=$(curl -fsS --max-time 30 https://heraliz.fr/api/heraliz/etat || true)
+          case "$etat" in
+            *'"pack_v2":true'*) echo "Pack du site signé en v2 (SHA-256) : ce launcher l'acceptera." ;;
+            *) echo "::error::Le site ne sert pas encore le pack signé en v2 (empreintes SHA-256) : ce launcher le refuserait. Attendre que « Serveur HeraliZ » (pack du launcher) et « Site HeraliZ » aient fini sur main, puis relancer la publication."
+               exit 1 ;;
+          esac
+
       - name: Mise en ligne sur heraliz.fr/telecharger
         env:
           SITE_SSH_HOTE: ${{ secrets.SITE_SSH_HOTE }}
@@ -341,6 +363,17 @@ jobs:
       # paquet installé AVANT l'étape qui a les secrets (version figée)
       - name: Client SFTP
         run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+
+      # Le launcher 1.16.0 et plus n'accepte que le pack signé en v2 (empreintes SHA-256 et date, audit du 02/11) : sans
+      # elle en ligne, il refuserait le pack et personne ne pourrait jouer. Le site dit s'il la sert (pack_v2).
+      - name: Pack signé en v2 sur le site
+        run: |
+          etat=$(curl -fsS --max-time 30 https://heraliz.fr/api/heraliz/etat || true)
+          case "$etat" in
+            *'"pack_v2":true'*) echo "Pack du site signé en v2 (SHA-256) : ce launcher l'acceptera." ;;
+            *) echo "::error::Le site ne sert pas encore le pack signé en v2 (empreintes SHA-256) : ce launcher le refuserait. Attendre que « Serveur HeraliZ » (pack du launcher) et « Site HeraliZ » aient fini sur main, puis relancer la publication."
+               exit 1 ;;
+          esac
 
       - name: Mise en ligne sur heraliz.fr/telecharger
         env:

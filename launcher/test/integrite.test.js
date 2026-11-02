@@ -3,11 +3,28 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
-const { ecarterJarsEnTrop, controlerJava, oublierJava } = require('../app/assets/js/integrite')
+const crypto = require('node:crypto')
+const { ecarterJarsEnTrop, controlerJava, oublierJava, controlerEmpreintes } = require('../app/assets/js/integrite')
 
 function dossierEssai() {
     return fs.mkdtempSync(path.join(os.tmpdir(), 'heraliz-integrite-'))
 }
+
+test('empreintes SHA-256 du pack : fichier identique accepté, changé ou absent signalé', async () => {
+    const dossier = dossierEssai()
+    const bon = path.join(dossier, 'bon.jar')
+    const change = path.join(dossier, 'change.jar')
+    const absent = path.join(dossier, 'absent.jar')
+    fs.writeFileSync(bon, 'contenu officiel')
+    fs.writeFileSync(change, 'contenu modifié')
+    const sha = texte => crypto.createHash('sha256').update(texte).digest('hex')
+    const ecarts = await controlerEmpreintes([
+        { chemin: bon, sha256: sha('contenu officiel').toUpperCase() },
+        { chemin: change, sha256: sha('contenu officiel') },
+        { chemin: absent, sha256: sha('x') }
+    ])
+    assert.deepEqual(ecarts, [change, absent])
+})
 
 function lien(cible, chemin) {
     fs.symlinkSync(cible, chemin, process.platform === 'win32' ? 'junction' : 'dir')

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict'
 
-// Signature Ed25519 des fichiers que le launcher vérifie (mises à jour : latest*.yml ; plus tard : pack de jeu).
+// Signature Ed25519 des fichiers que le launcher vérifie (mises à jour : latest*.yml ; pack de jeu : distribution.json).
 // Le cœur de vérification est launcher/app/assets/js/signature.js. Guide : launcher/docs/HERALIZ-SIGNATURE.md.
 //
 //   node launcher/ci/signer.mjs --generer
@@ -50,9 +50,11 @@ function signer(fichiers) {
     }
 }
 
-// --pack <distribution.json> [<clé publique attendue>] : signe le texte du pack (textePack de signature.js, le même que
-// celui que le launcher recalcule) et écrit distribution.sig à côté. Si une clé publique est donnée, la signature est
-// revérifiée avec elle (une clé privée qui ne va pas avec la clé du launcher est refusée tout de suite).
+// --pack <distribution.json> [<clé publique attendue>] : signe le texte du pack (textePack et textePackV2 de
+// signature.js, les mêmes que le launcher recalcule) et écrit à côté distribution.sig (v1, pour les launchers 1.10 à
+// 1.15 déjà installés) et distribution.sig2 (v2 : empreintes SHA-256 et date de la signature, « <date>:<signature> »,
+// exigée par les launchers 1.16.0 et plus). Si une clé publique est donnée, les deux signatures sont revérifiées avec
+// elle (une clé privée qui ne va pas avec la clé du launcher est refusée tout de suite, rien n'est écrit).
 function signerPack(fichier, clePubliqueAttendue) {
     const cle = clePrivee()
     if (!cle) {
@@ -60,15 +62,23 @@ function signerPack(fichier, clePubliqueAttendue) {
         return
     }
     const require = createRequire(import.meta.url)
-    const { textePack, chargerClePublique, verifier } = require('../app/assets/js/signature.js')
-    const texte = Buffer.from(textePack(JSON.parse(fs.readFileSync(fichier, 'utf8'))), 'utf8')
-    const signature = crypto.sign(null, texte, cle).toString('base64')
-    if (clePubliqueAttendue && !verifier(texte, signature, chargerClePublique(clePubliqueAttendue))) {
-        throw new Error('LAUNCHER_SIGN_KEY ne correspond pas à la clé publique du launcher (distributionPublicKey).')
+    const { textePack, textePackV2, chargerClePublique, verifier } = require('../app/assets/js/signature.js')
+    const pack = JSON.parse(fs.readFileSync(fichier, 'utf8'))
+    const date = Math.floor(Date.now() / 1000)
+    const texte1 = Buffer.from(textePack(pack), 'utf8')
+    const texte2 = Buffer.from(textePackV2(pack, date), 'utf8')
+    const signature1 = crypto.sign(null, texte1, cle).toString('base64')
+    const signature2 = crypto.sign(null, texte2, cle).toString('base64')
+    if (clePubliqueAttendue) {
+        const publique = chargerClePublique(clePubliqueAttendue)
+        if (!verifier(texte1, signature1, publique) || !verifier(texte2, signature2, publique)) {
+            throw new Error('LAUNCHER_SIGN_KEY ne correspond pas à la clé publique du launcher (distributionPublicKey).')
+        }
     }
-    const sortie = path.join(path.dirname(fichier), 'distribution.sig')
-    fs.writeFileSync(sortie, signature + '\n')
-    process.stdout.write('pack signé : ' + sortie + '\n')
+    const dossier = path.dirname(fichier)
+    fs.writeFileSync(path.join(dossier, 'distribution.sig'), signature1 + '\n')
+    fs.writeFileSync(path.join(dossier, 'distribution.sig2'), date + ':' + signature2 + '\n')
+    process.stdout.write('pack signé : ' + path.join(dossier, 'distribution.sig') + ' et distribution.sig2 (SHA-256, date ' + date + ')\n')
 }
 
 const args = process.argv.slice(2)

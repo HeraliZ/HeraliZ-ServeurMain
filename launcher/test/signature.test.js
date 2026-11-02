@@ -5,7 +5,7 @@ const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 const { execFileSync } = require('node:child_process')
-const { verifierPack, textePack } = require('../app/assets/js/signature')
+const { verifierPack, textePack, textePackV2, lireSignatureV2, verifier, chargerClePublique } = require('../app/assets/js/signature')
 
 const SIGNER = path.join(__dirname, '..', 'ci', 'signer.mjs')
 
@@ -19,7 +19,7 @@ function cles() {
 
 // Distribution comme Nebula la fabrique (forme réduite), liens vers le dossier du pack sur le site.
 function distribution() {
-    const art = (nom, md5, size) => ({ size, MD5: md5, url: `https://heraliz.fr/launcher/${nom}` })
+    const art = (nom, md5, size) => ({ size, MD5: md5, SHA256: md5.slice(0, 1).repeat(64).toLowerCase(), url: `https://heraliz.fr/launcher/${nom}` })
     return {
         version: '1.0.0',
         servers: [{
@@ -35,13 +35,14 @@ function distribution() {
 }
 
 // Signe comme la mise en ligne (ci/signer.mjs --pack), puis sert comme le site (PackController) : liens réécrits
-// (?e=…&s=…), signature jointe, aller-retour JSON.
+// (?e=…&s=…), signatures jointes (v1 pour les anciens launchers, v2 pour les nouveaux), aller-retour JSON.
 function signerEtServir(distro, priv, pub) {
     const dossier = fs.mkdtempSync(path.join(os.tmpdir(), 'pack-'))
     const fichier = path.join(dossier, 'distribution.json')
     fs.writeFileSync(fichier, JSON.stringify(distro, null, 2))
     execFileSync('node', [SIGNER, '--pack', fichier, pub], { env: { ...process.env, LAUNCHER_SIGN_KEY: priv } })
     const signature = fs.readFileSync(path.join(dossier, 'distribution.sig'), 'utf8').trim()
+    const signature2 = fs.readFileSync(path.join(dossier, 'distribution.sig2'), 'utf8').trim()
     const servi = JSON.parse(fs.readFileSync(fichier, 'utf8'))
     const reecrire = mods => mods.forEach(m => {
         m.artifact.url += '?e=1700000000&s=AbC-_x'
@@ -49,14 +50,56 @@ function signerEtServir(distro, priv, pub) {
     })
     reecrire(servi.servers[0].modules)
     servi.heralizSignature = signature
+    servi.heralizSignature2 = signature2
     return JSON.parse(JSON.stringify(servi))
 }
 
-test('pack signé, liens réécrits par le site : accepté, et le champ de la signature est retiré', () => {
+test('pack signé, liens réécrits par le site : accepté, les champs des signatures sont retirés, la date est rendue', () => {
     const { pub, priv } = cles()
     const servi = signerEtServir(distribution(), priv, pub)
-    verifierPack(servi, servi.heralizSignature, { distributionPublicKey: pub })
+    const date = verifierPack(servi, servi.heralizSignature2, { distributionPublicKey: pub })
     assert.equal(servi.heralizSignature, undefined)
+    assert.equal(servi.heralizSignature2, undefined)
+    assert.ok(Math.abs(date - Date.now() / 1000) < 60)
+})
+
+test('les launchers déjà installés (1.10 à 1.15) vérifient toujours la signature v1 du même pack', () => {
+    const { pub, priv } = cles()
+    const servi = signerEtServir(distribution(), priv, pub)
+    const v1 = servi.heralizSignature
+    assert.ok(verifier(Buffer.from(textePack(servi), 'utf8'), v1, chargerClePublique(pub)))
+})
+
+test('empreinte SHA-256 changée, retirée, ou signature v2 absente (seulement la v1) => refusé', () => {
+    const { pub, priv } = cles()
+    const config = { distributionPublicKey: pub }
+    const change = signerEtServir(distribution(), priv, pub)
+    change.servers[0].modules[1].artifact.SHA256 = '0'.repeat(64)
+    assert.throws(() => verifierPack(change, change.heralizSignature2, config), /pas signé/)
+    const retire = signerEtServir(distribution(), priv, pub)
+    delete retire.servers[0].modules[1].artifact.SHA256
+    assert.throws(() => verifierPack(retire, retire.heralizSignature2, config), /pas signé/)
+    const v1seule = signerEtServir(distribution(), priv, pub)
+    assert.throws(() => verifierPack(v1seule, v1seule.heralizSignature, config), /pas signé/)
+    const dateChangee = signerEtServir(distribution(), priv, pub)
+    const lue = lireSignatureV2(dateChangee.heralizSignature2)
+    assert.throws(() => verifierPack(dateChangee, `${lue.date + 1}:${lue.signature}`, config), /pas signé/)
+})
+
+test('pack plus ancien que le dernier accepté sur ce PC => refusé ; le même ou plus récent => accepté', () => {
+    const { pub, priv } = cles()
+    const config = { distributionPublicKey: pub }
+    const servi = signerEtServir(distribution(), priv, pub)
+    const date = lireSignatureV2(servi.heralizSignature2).date
+    assert.throws(() => verifierPack(structuredClone(servi), servi.heralizSignature2, config, { dateMin: date + 1 }), /plus ancien/)
+    assert.equal(verifierPack(structuredClone(servi), servi.heralizSignature2, config, { dateMin: date }), date)
+})
+
+test('texte v2 : date en tête, empreinte SHA-256 de chaque module', () => {
+    const texte = textePackV2(distribution(), 1700000000)
+    assert.ok(texte.startsWith('heraliz-pack-v2\n["D",1700000000]\n'))
+    assert.ok(texte.includes('"' + 'c'.repeat(64) + '"'))
+    assert.equal(lireSignatureV2('12:abc'), null)
 })
 
 test('pack falsifié : mod remplacé, ajouté ou retiré => refusé', () => {
@@ -65,19 +108,19 @@ test('pack falsifié : mod remplacé, ajouté ou retiré => refusé', () => {
 
     const remplace = signerEtServir(distribution(), priv, pub)
     remplace.servers[0].modules[2].artifact.MD5 = 'e'.repeat(32)
-    assert.throws(() => verifierPack(remplace, remplace.heralizSignature, config), /pas signé par HeraliZ/)
+    assert.throws(() => verifierPack(remplace, remplace.heralizSignature2, config), /pas signé par HeraliZ/)
 
     const ajoute = signerEtServir(distribution(), priv, pub)
     ajoute.servers[0].modules.push({ id: 'pirate:cheat:1@jar', type: 'ForgeMod', artifact: { size: 5, MD5: 'f'.repeat(32), url: 'https://heraliz.fr/launcher/x.jar' } })
-    assert.throws(() => verifierPack(ajoute, ajoute.heralizSignature, config), /pas signé/)
+    assert.throws(() => verifierPack(ajoute, ajoute.heralizSignature2, config), /pas signé/)
 
     const retire = signerEtServir(distribution(), priv, pub)
     retire.servers[0].modules.pop()
-    assert.throws(() => verifierPack(retire, retire.heralizSignature, config), /pas signé/)
+    assert.throws(() => verifierPack(retire, retire.heralizSignature2, config), /pas signé/)
 
     const adresse = signerEtServir(distribution(), priv, pub)
     adresse.servers[0].address = 'pirate.example'
-    assert.throws(() => verifierPack(adresse, adresse.heralizSignature, config), /pas signé/)
+    assert.throws(() => verifierPack(adresse, adresse.heralizSignature2, config), /pas signé/)
 })
 
 test('pack sans signature, ou signé par une autre clé => refusé', () => {
@@ -86,14 +129,14 @@ test('pack sans signature, ou signé par une autre clé => refusé', () => {
     const sans = JSON.parse(JSON.stringify(distribution()))
     assert.throws(() => verifierPack(sans, undefined, { distributionPublicKey: pub }), /pas signé/)
     const servi = signerEtServir(distribution(), autre.priv, autre.pub)
-    assert.throws(() => verifierPack(servi, servi.heralizSignature, { distributionPublicKey: pub }), /pas signé/)
+    assert.throws(() => verifierPack(servi, servi.heralizSignature2, { distributionPublicKey: pub }), /pas signé/)
     void priv
 })
 
 test('sans clé publique réglée : pack accepté comme avant', () => {
     const brut = distribution()
-    verifierPack(brut, undefined, { distributionPublicKey: '' })
-    verifierPack(brut, undefined, {})
+    assert.equal(verifierPack(brut, undefined, { distributionPublicKey: '' }), null)
+    assert.equal(verifierPack(brut, undefined, {}), null)
 })
 
 test('texte du pack : l’ordre des modules et la casse du MD5 ne comptent pas, les liens non plus', () => {
@@ -112,4 +155,5 @@ test('signer.mjs --pack refuse une clé privée qui ne va pas avec la clé publi
     fs.writeFileSync(fichier, JSON.stringify(distribution()))
     assert.throws(() => execFileSync('node', [SIGNER, '--pack', fichier, autre.pub], { env: { ...process.env, LAUNCHER_SIGN_KEY: priv }, stdio: 'pipe' }))
     assert.equal(fs.existsSync(path.join(dossier, 'distribution.sig')), false)
+    assert.equal(fs.existsSync(path.join(dossier, 'distribution.sig2')), false)
 })

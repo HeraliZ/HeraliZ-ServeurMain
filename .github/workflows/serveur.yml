@@ -740,13 +740,15 @@ jobs:
             echo "::error::La VM du site n'est pas prête pour le pack (rsync ou dossier $DOSSIER) : lancer le workflow « Site HeraliZ » avec « installer », puis relancer cette mise en ligne."
             exit 1
           fi
-          # 1. fichiers nouveaux ou changés, mis en place tous ensemble à la fin ; 2. distribution.json et sa signature
-          # (distribution.sig), ensemble ; 3. retrait des anciens fichiers : un joueur qui lance le launcher pendant
-          # l'envoi ne tombe jamais sur un fichier manquant
+          # 1. fichiers nouveaux ou changés, mis en place tous ensemble à la fin ; 2. distribution.json et ses signatures
+          # (distribution.sig pour les launchers 1.10 à 1.15, distribution.sig2 avec les empreintes SHA-256 pour les
+          # 1.16.0 et plus), ensemble ; 3. retrait des anciens fichiers : un joueur qui lance le launcher pendant l'envoi ne
+          # tombe jamais sur un fichier manquant
           RS=(rsync -r --perms --checksum --chmod=D755 --chmod=F644 -e "sshpass -e ${SSH[*]}")
-          "${RS[@]}" --delay-updates --exclude=/distribution.json --exclude=/distribution.sig pack/envoi/ "$VM:$DOSSIER/"
+          "${RS[@]}" --delay-updates --exclude=/distribution.json --exclude=/distribution.sig --exclude=/distribution.sig2 pack/envoi/ "$VM:$DOSSIER/"
           DISTRO=(pack/envoi/distribution.json)
           [ -f pack/envoi/distribution.sig ] && DISTRO+=(pack/envoi/distribution.sig)
+          [ -f pack/envoi/distribution.sig2 ] && DISTRO+=(pack/envoi/distribution.sig2)
           "${RS[@]}" --delay-updates "${DISTRO[@]}" "$VM:$DOSSIER/"
           "${RS[@]}" --delete pack/envoi/ "$VM:$DOSSIER/"
 
@@ -805,11 +807,14 @@ jobs:
               echec(f"{r['distribution']} illisible ({e}) : lancer le workflow « Site HeraliZ » avec « installer » (accès /launcher/ du site).")
           if servie != envoi:
               echec(f"{r['distribution']} ne donne pas le pack envoyé.")
-          # signature du pack : celle envoyée doit être en ligne à côté (le site la joint au pack de chaque compte)
-          sig_locale = pathlib.Path("pack/envoi/distribution.sig")
-          signe = sig_locale.is_file()
-          if signe:
-              url_sig = base + "distribution.sig"
+          # signatures du pack : celles envoyées doivent être en ligne à côté (le site les joint au pack de chaque compte)
+          signe = pathlib.Path("pack/envoi/distribution.sig").is_file()
+          signe_v2 = pathlib.Path("pack/envoi/distribution.sig2").is_file()
+          for nom in ("distribution.sig", "distribution.sig2"):
+              sig_locale = pathlib.Path("pack/envoi", nom)
+              if not sig_locale.is_file():
+                  continue
+              url_sig = base + nom
               try:
                   with ouvrir(signer(url_sig)) as rep:
                       sig_servie = rep.read().decode().strip()
@@ -838,6 +843,8 @@ jobs:
                       f"- {r['mods']} mods joueurs, {r['fichiers']} fichiers, {r['octets'] / 1048576:.0f} Mo (version {r['version']})\n"
                       f"- en ligne : {r['distribution']}, {acces}\n"
                       + ("- ✅ pack **signé** (distribution.sig) : un mod ajouté ou remplacé sur le site serait refusé par le launcher\n" if signe
-                         else "- ⚠️ pack **NON signé** (secret `LAUNCHER_SIGN_KEY` absent)\n"))
+                         else "- ⚠️ pack **NON signé** (secret `LAUNCHER_SIGN_KEY` absent)\n")
+                      + ("- ✅ signature v2 (distribution.sig2 : empreintes SHA-256 et date) : le launcher 1.16.0 peut être publié\n" if signe_v2
+                         else "- ⚠️ pas de signature v2 (distribution.sig2) : NE PAS publier le launcher 1.16.0 ou plus, il refuserait ce pack\n"))
           EOF
           rm -f "$RUNNER_TEMP/pack.cle"

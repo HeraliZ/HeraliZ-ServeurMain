@@ -9,8 +9,9 @@ du dépôt.
 
 Résultat dans <sortie>/envoi : distribution.json et les seuls fichiers qu'il cite, prêts à être déposés tels quels
 dans le dossier de « distributionUrl » du launcher (launcher/app/heraliz.json : https://heraliz.fr/launcher/, dossier
-/var/www/launcher de la VM du site). Chaque fichier est contrôlé (taille, MD5) et la distribution passe le contrôle du
-launcher lui-même (launcher/app/assets/js/security.js). Résumé (nombre de mods et de fichiers, taille) dans
+/var/www/launcher de la VM du site). Chaque fichier est contrôlé (taille, MD5) et reçoit son empreinte SHA-256 (champ
+SHA256 de l'artefact, signée avec le pack et contrôlée par le launcher 1.16.0 et plus avant chaque partie) ; la
+distribution passe le contrôle du launcher lui-même (launcher/app/assets/js/security.js). Résumé (nombre de mods et de fichiers, taille) dans
 <sortie>/resume.json. Nebula a besoin de Node.js 22 et de Java (pour l'installeur de Forge).
 """
 import argparse
@@ -38,12 +39,14 @@ def nebula(dossier, *args):
     subprocess.run(["node", "dist/index.js", *args], cwd=dossier, check=True, env=env_propre())
 
 
-def md5(fichier):
-    h = hashlib.md5()
+def empreintes(fichier):
+    """(MD5, SHA-256) du fichier, en une lecture."""
+    h5, h256 = hashlib.md5(), hashlib.sha256()
     with open(fichier, "rb") as f:
         for bloc in iter(lambda: f.read(1 << 20), b""):
-            h.update(bloc)
-    return h.hexdigest()
+            h5.update(bloc)
+            h256.update(bloc)
+    return h5.hexdigest(), h256.hexdigest()
 
 
 def modules(liste):
@@ -53,15 +56,17 @@ def modules(liste):
 
 
 def signer_pack(envoi, config):
-    """Signe envoi/distribution.json (distribution.sig) avec le secret LAUNCHER_SIGN_KEY (launcher/ci/signer.mjs, node
-    seul, sans paquet npm). Sans le secret alors que le launcher porte une clé publique : arrêt (pack refusé partout)."""
+    """Signe envoi/distribution.json avec le secret LAUNCHER_SIGN_KEY (launcher/ci/signer.mjs, node seul, sans paquet
+    npm) : distribution.sig (v1, launchers 1.10 à 1.15) et distribution.sig2 (v2 : SHA-256 et date, launcher 1.16.0 et
+    plus). Sans le secret alors que le launcher porte une clé publique : arrêt (pack refusé partout)."""
     cle_publique = str(config.get("distributionPublicKey") or "").strip()
     if os.environ.get("LAUNCHER_SIGN_KEY", "").strip():
         subprocess.run(["node", str(RACINE_DEPOT / "launcher" / "ci" / "signer.mjs"), "--pack",
                         str(envoi / "distribution.json")] + ([cle_publique] if cle_publique else []), check=True)
-        if not (envoi / "distribution.sig").is_file():
-            sys.exit("[pack] signature du pack absente après signer.mjs --pack.")
-        print("[pack] pack signé (distribution.sig)")
+        for nom in ("distribution.sig", "distribution.sig2"):
+            if not (envoi / nom).is_file():
+                sys.exit(f"[pack] signature du pack absente après signer.mjs --pack : {nom}.")
+        print("[pack] pack signé (distribution.sig, et distribution.sig2 avec les empreintes SHA-256)")
     elif cle_publique:
         sys.exit("[pack] le launcher attend un pack signé (distributionPublicKey de launcher/app/heraliz.json) mais le "
                  "secret LAUNCHER_SIGN_KEY n'est pas réglé : pack NON envoyé (il serait refusé par tous les launchers).")
@@ -169,7 +174,7 @@ def main():
         sys.exit("[pack] distribution.json dépasse 32 Mo : le launcher la refuserait.")
     distro = json.loads(distro_p.read_text(encoding="utf-8"))
 
-    # seuls les fichiers cités par la distribution partent, contrôlés un par un
+    # seuls les fichiers cités par la distribution partent, contrôlés un par un ; chacun reçoit son empreinte SHA-256
     total, n = 0, 0
     for m in modules(s for srv in distro["servers"] for s in srv["modules"]):
         art = m["artifact"]
@@ -180,14 +185,17 @@ def main():
         src = racine / rel
         if not src.is_file():
             sys.exit(f"[pack] fichier cité absent : {rel}")
-        if src.stat().st_size != art["size"] or md5(src) != art["MD5"].lower():
+        somme_md5, somme_sha256 = empreintes(src)
+        if src.stat().st_size != art["size"] or somme_md5 != art["MD5"].lower():
             sys.exit(f"[pack] taille ou MD5 faux : {rel}")
+        art["SHA256"] = somme_sha256
         dst = envoi / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
         total += art["size"]
         n += 1
-    shutil.copy2(distro_p, envoi / "distribution.json")
+    # distribution avec les empreintes SHA-256 (même mise en forme que Nebula)
+    (envoi / "distribution.json").write_text(json.dumps(distro, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # le launcher doit accepter cette distribution (même contrôle que chez les joueurs)
     controle = (
@@ -197,11 +205,11 @@ def main():
         "console.log('[pack] distribution acceptée par le launcher');"
     )
     subprocess.run(["node", "-e", controle, str(RACINE_DEPOT / "launcher" / "app" / "assets" / "js" / "security.js"),
-                    str(distro_p), str(RACINE_DEPOT / "launcher" / "app" / "heraliz.json")], check=True)
+                    str(envoi / "distribution.json"), str(RACINE_DEPOT / "launcher" / "app" / "heraliz.json")], check=True)
 
-    # Signature Ed25519 du pack (liste des mods et empreintes, launcher/docs/HERALIZ-SIGNATURE.md) : distribution.sig à
-    # côté de distribution.json. Un launcher qui porte une clé publique REFUSE un pack non signé : dans ce cas, pas de
-    # mise en ligne sans le secret LAUNCHER_SIGN_KEY (sinon plus personne ne pourrait jouer).
+    # Signature Ed25519 du pack (liste des mods et empreintes, launcher/docs/HERALIZ-SIGNATURE.md) : distribution.sig et
+    # distribution.sig2 à côté de distribution.json. Un launcher qui porte une clé publique REFUSE un pack non signé :
+    # dans ce cas, pas de mise en ligne sans le secret LAUNCHER_SIGN_KEY (sinon plus personne ne pourrait jouer).
     if args.sans_signature:
         print("[pack] signature à part (python outils/pack_launcher.py --signer-seulement), dans un job qui a la clé")
     else:
@@ -211,7 +219,7 @@ def main():
         types[m["type"]] = types.get(m["type"], 0) + 1
     print(f"[pack] modules : {types}")
     print(f"[pack] {n} fichiers à déposer, {total / 1048576:.0f} Mo (dans {envoi}) ; "
-          f"distribution.json : {distro_p.stat().st_size / 1048576:.1f} Mo")
+          f"distribution.json : {(envoi / 'distribution.json').stat().st_size / 1048576:.1f} Mo")
     (sortie / "resume.json").write_text(json.dumps({
         "version": args.version, "mods": len(jars), "fichiers": n, "octets": total,
         "distribution": config["distributionUrl"],

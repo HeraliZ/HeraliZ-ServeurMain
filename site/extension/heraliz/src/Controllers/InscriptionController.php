@@ -46,6 +46,9 @@ class InscriptionController extends Controller
             'jeton' => JetonController::cle() !== null,
             // pack de jeu donné aux comptes connectés, avec des liens signés (PackController)
             'pack' => PackController::cle() !== null,
+            // pack signé avec ses empreintes SHA-256 (signature v2) : exigé par le launcher 1.16.0 et plus ; lu par la
+            // publication du launcher avant de le mettre en ligne (.github/workflows/launcher.yml)
+            'pack_v2' => PackController::signatureV2() !== null,
             // Discord obligatoire pour jouer (bêta) : le launcher appelle /api/heraliz/compte/etat après la connexion
             'discord' => Reglages::actif(),
             'validation_manuelle' => Reglages::actif() && Reglages::validationManuelle(),

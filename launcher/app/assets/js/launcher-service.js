@@ -19,7 +19,7 @@ const { chargerClePublique, verifierPack } = require('./signature')
 const { CompteSite, erreurDiscord } = require('./compte-site')
 const Spartan = require('./spartan')
 const { effacerDonneesJeu, retirerAnciennesVersions, cheminSur, effacerSansSuivre } = require('./effacement')
-const { ecarterJarsEnTrop, controlerJava, oublierJava } = require('./integrite')
+const { ecarterJarsEnTrop, controlerJava, oublierJava, controlerEmpreintes } = require('./integrite')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
 // Linux : GNOME Keyring ou KWallet). Sans vrai chiffrement disponible, il n'est pas gardé : il faudra se reconnecter
@@ -69,6 +69,33 @@ const estJava = nom => /^javaw?(\.exe)?$/i.test(nom || '')
 function fichierBan() {
     return path.join(app.getPath('userData'), 'compte-banni.json')
 }
+// Date de la signature du dernier pack accepté sur ce PC (signature.js, v2) : un pack signé avant est refusé.
+function fichierPackSigne() {
+    return path.join(app.getPath('userData'), 'pack-signe.json')
+}
+function lireDatePack() {
+    try {
+        const date = JSON.parse(fs.readFileSync(fichierPackSigne(), 'utf8'))?.date
+        return Number.isSafeInteger(date) && date > 0 ? date : 0
+    } catch { return 0 }
+}
+function noterDatePack(date) {
+    if (!Number.isSafeInteger(date) || date <= lireDatePack()) return
+    try { fs.writeFileSync(fichierPackSigne(), JSON.stringify({ date })) } catch { /* sans mémoire : seulement moins de contrôle */ }
+}
+
+// Fichiers du pack dont l'empreinte SHA-256 est signée avec le pack : [{ chemin, sha256 }].
+function empreintesDuPack(modules, liste = []) {
+    for (const module of modules || []) {
+        const sha256 = module.rawModule?.artifact?.SHA256
+        if (typeof sha256 === 'string' && /^[a-f0-9]{64}$/i.test(sha256)) {
+            try { liste.push({ chemin: module.getPath(), sha256 }) } catch { /* module sans chemin */ }
+        }
+        empreintesDuPack(module.subModules, liste)
+    }
+    return liste
+}
+
 // Chemins sur ce PC de tous les fichiers du pack (modules et sous-modules de la distribution).
 function fichiersDuPack(modules, chemins = []) {
     for (const module of modules || []) {
@@ -475,7 +502,7 @@ class LauncherService {
         // (sans compte, le site refuse les fichiers du pack).
         if (this.compteSite) {
             const brut = await this.compteSite.pack(this.jetonActuel())
-            verifierPack(brut, brut?.heralizSignature, this.config)
+            noterDatePack(verifierPack(brut, brut?.heralizSignature2, this.config, { dateMin: lireDatePack() }))
             const raw = validateDistribution(brut, this.config)
             return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
         }
@@ -493,14 +520,14 @@ class LauncherService {
             chunks.push(chunk)
         }
         const brut = JSON.parse(Buffer.concat(chunks).toString('utf8'))
-        // sans compte du site (essais) : la signature est le fichier distribution.sig à côté de la distribution
+        // sans compte du site (essais) : la signature est le fichier distribution.sig2 à côté de la distribution
         let signature = null
         if (chargerClePublique(this.config.distributionPublicKey)) {
             try {
-                signature = (await got(url.href.replace(/distribution\.json$/, 'distribution.sig'), { timeout: { request: 15000 }, retry: { limit: 1 } }).text()).trim()
+                signature = (await got(url.href.replace(/distribution\.json$/, 'distribution.sig2'), { timeout: { request: 15000 }, retry: { limit: 1 } }).text()).trim()
             } catch { /* absente : refusée ci-dessous */ }
         }
-        verifierPack(brut, signature, this.config)
+        noterDatePack(verifierPack(brut, signature, this.config, { dateMin: lireDatePack() }))
         const raw = validateDistribution(brut, this.config)
         return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
     }
@@ -581,6 +608,16 @@ class LauncherService {
                     await fs.remove(asset.path)
                     throw new Error('Un téléchargement est corrompu. Relance la préparation pour le réparer.')
                 }
+            }
+        }
+        // empreintes SHA-256 signées avec le pack (en plus du MD5 de Helios), avant de rien lancer (installeur de Forge
+        // compris) : un fichier qui ne correspond pas est retiré, la préparation suivante le retélécharge
+        const empreintes = empreintesDuPack(server.modules)
+        if (empreintes.length) {
+            const ecarts = await controlerEmpreintes(empreintes)
+            if (ecarts.length) {
+                for (const chemin of ecarts) await fs.remove(chemin).catch(() => {})
+                throw new Error('Un fichier du jeu ne correspond pas au pack HeraliZ : il a été retiré. Relance la préparation pour le retélécharger.')
             }
         }
         this.emit('install', 'Préparation de Forge 1.20.1…')

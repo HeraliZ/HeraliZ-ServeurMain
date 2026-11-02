@@ -77,14 +77,23 @@ remplace-le).
 ## Le pack de jeu est signé aussi (même clé)
 
 Le **pack de jeu** (mods, gunpacks : `distribution.json`) est signé avec la même clé : à chaque mise en ligne,
-`outils/pack_launcher.py` signe la **liste des mods et leurs empreintes** (`ci/signer.mjs --pack`, fichier
-`distribution.sig` déposé à côté). Le site réécrit les liens des fichiers pour chaque compte : on ne signe donc pas les
-liens, seulement ce qui décide du contenu installé (type, identifiant, chemin, taille, MD5 de chaque fichier, adresse du
-serveur). Le site joint la signature au pack (`heralizSignature`, `PackController`) et le launcher la vérifie avant tout
-téléchargement (`verifierPack` de `signature.js`) : un mod ajouté, retiré ou remplacé sur le site = pack refusé.
+`outils/pack_launcher.py` ajoute à chaque fichier du pack son empreinte **SHA-256** (champ `SHA256`) et signe la **liste
+des mods et leurs empreintes** (`ci/signer.mjs --pack`). Le site réécrit les liens des fichiers pour chaque compte : on
+ne signe donc pas les liens, seulement ce qui décide du contenu installé (type, identifiant, chemin, taille, MD5 et
+SHA-256 de chaque fichier, adresse du serveur). Deux signatures sont déposées à côté :
+
+- `distribution.sig` (v1, MD5 seulement) : pour les launchers 1.10 à 1.15 déjà installés ;
+- `distribution.sig2` (v2, depuis le 02/11) : MD5, **SHA-256** et **date de la signature**, « `<date>:<signature>` ».
+
+Le site joint les deux au pack (`heralizSignature`, `heralizSignature2`, `PackController`). Le launcher 1.16.0 et plus
+exige la v2 (`verifierPack` de `signature.js`) : un mod ajouté, retiré ou remplacé sur le site = pack refusé ; un pack
+signé **avant** le dernier pack accepté sur ce PC (un vieux pack resservi par un site piraté) = refusé aussi. Avant
+chaque partie, il recalcule le SHA-256 de chaque fichier du pack (en plus du MD5 de Helios) : un fichier qui ne
+correspond pas est retiré et retéléchargé.
 
 La mise en ligne **refuse d'envoyer un pack non signé** si le launcher porte une clé publique (sinon plus personne ne
-pourrait jouer). Le résumé de la mise en ligne dit « pack **signé** » ✅.
+pourrait jouer). Le résumé de la mise en ligne dit « pack **signé** » ✅ et « signature v2 » ✅. La publication du
+launcher (case « publier ») vérifie d'abord que le site sert bien la v2 (`pack_v2` de `/api/heraliz/etat`).
 
 ## Ordre de mise en service (important)
 

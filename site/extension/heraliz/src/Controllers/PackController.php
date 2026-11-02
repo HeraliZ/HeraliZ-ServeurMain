@@ -26,6 +26,12 @@ class PackController extends Controller
     /** Signature du pack, déposée à côté par la mise en ligne (ci/signer.mjs --pack), 64 octets en base64. */
     private const SIGNATURE = '/var/www/launcher/distribution.sig';
 
+    /**
+     * Signature v2 du pack (empreintes SHA-256 et date, launcher 1.16.0 et plus), déposée à côté :
+     * « <date en secondes>:<signature base64> ».
+     */
+    private const SIGNATURE_V2 = '/var/www/launcher/distribution.sig2';
+
     /** Début du chemin des fichiers du pack dans les adresses (location /launcher/ de nginx). */
     private const PREFIXE = '/launcher/';
 
@@ -59,9 +65,15 @@ class PackController extends Controller
         // Signature Ed25519 du pack (faite par la mise en ligne avec une clé qui n'est JAMAIS sur cette VM, déposée à côté :
         // distribution.sig). Elle porte sur la liste des mods et leurs empreintes, pas sur les liens réécrits ci-dessous :
         // le launcher la vérifie et refuse un pack modifié (launcher/docs/HERALIZ-SIGNATURE.md).
+        // Deux formes, jointes toutes les deux : v1 pour les launchers 1.10 à 1.15 déjà installés, v2 (empreintes SHA-256
+        // et date de la signature) exigée par les launchers 1.16.0 et plus.
         $signature = trim((string) @file_get_contents(self::SIGNATURE));
         if (preg_match('#^[A-Za-z0-9+/]{86}==$#', $signature) === 1) {
             $distribution->heralizSignature = $signature;
+        }
+        $signature2 = self::signatureV2();
+        if ($signature2 !== null) {
+            $distribution->heralizSignature2 = $signature2;
         }
 
         $cle = self::cle();
@@ -98,6 +110,14 @@ class PackController extends Controller
         $empreinte = md5($expire.rawurldecode($chemin).' '.$cle, true);
 
         return $url.'?e='.$expire.'&s='.rtrim(strtr(base64_encode($empreinte), '+/', '-_'), '=');
+    }
+
+    /** La signature v2 du pack déposée par la mise en ligne, ou null si elle manque (pack d'avant le launcher 1.16.0). */
+    public static function signatureV2(): ?string
+    {
+        $signature = trim((string) @file_get_contents(self::SIGNATURE_V2));
+
+        return preg_match('#^\d{9,11}:[A-Za-z0-9+/]{86}==$#', $signature) === 1 ? $signature : null;
     }
 
     /**

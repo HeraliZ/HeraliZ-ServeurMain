@@ -116,6 +116,24 @@ async function controlerJava(racine, fichierReleve, { reprendre = false } = {}) 
     return { etat: ecarts.length ? 'change' : 'ok', ecarts: ecarts.slice(0, 10) }
 }
 
+/**
+ * Empreintes SHA-256 des fichiers du pack (champ SHA256 des artefacts, signé avec le pack : signature.js, v2), contrôlées
+ * avant chaque partie en plus du MD5 que Helios vérifie. Rend les chemins dont le contenu ne correspond pas (fichier
+ * absent compris), au plus 10. Lus un par un : pas de pic de mémoire, même pour des centaines de mégaoctets.
+ */
+async function controlerEmpreintes(entrees) {
+    const ecarts = []
+    for (const { chemin, sha256: attendu } of entrees) {
+        let lu = null
+        try { lu = await sha256(chemin) } catch { /* absent ou illisible : écart */ }
+        if (lu !== String(attendu).toLowerCase()) {
+            ecarts.push(chemin)
+            if (ecarts.length >= 10) break
+        }
+    }
+    return ecarts
+}
+
 /** Oublie le relevé d'un dossier Java (avant de le remplacer). */
 function oublierJava(racine, fichierReleve) {
     const tous = lireJson(fichierReleve)
@@ -127,4 +145,4 @@ function oublierJava(racine, fichierReleve) {
     } catch { /* relevé laissé : sera repris au prochain contrôle */ }
 }
 
-module.exports = { ecarterJarsEnTrop, controlerJava, oublierJava, empreintesJava, dans }
+module.exports = { ecarterJarsEnTrop, controlerJava, oublierJava, empreintesJava, controlerEmpreintes, dans }
