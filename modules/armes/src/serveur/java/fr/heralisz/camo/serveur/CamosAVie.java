@@ -39,8 +39,7 @@ import javax.annotation.Nullable;
 /**
  * Règles des camos à vie (côté serveur).
  * <ul>
- *    <li>Clic droit avec un objet camo : le camo entre dans la collection du joueur, pour toujours (l'objet est consommé).
- *    Les camos du Pack-a-Punch restent réservés au mode zombies.</li>
+ *    <li>Clic droit avec un objet camo : le camo entre dans la collection du joueur, pour toujours (l'objet est consommé).</li>
  *    <li>Onglet Skin : un camo de la collection se pose sur l'arme tenue. Il ne vaut que sur UNE arme à la fois (jeton de
  *    pose : le poser ailleurs l'enlève de l'ancienne arme) et seulement entre les mains de son propriétaire : une arme qui
  *    passe à un autre joueur (ramassée, volée, donnée) le perd dans la seconde.</li>
@@ -65,10 +64,6 @@ public final class CamosAVie {
    // ------------------------------------------------------------------ collection
    /** Clic droit avec un objet camo ({@code CamoItem.AJOUTER_COLLECTION}) ; vrai si le camo vient d'entrer dans la collection. */
    static boolean ajouter(ServerPlayer p, Camo camo) {
-      if (camo.isPackAPunch()) {
-         p.displayClientMessage(Component.translatable("msg.heralisz_camo.pap_only").withStyle(ChatFormatting.RED), true);
-         return false;
-      }
       CollectionCamos.Joueur j = CollectionCamos.get(p.getUUID());
       if (!j.camos.add(camo)) {
          p.displayClientMessage(Component.translatable("msg.heralisz_camo.already", nom(camo)).withStyle(ChatFormatting.GRAY), true);
@@ -113,7 +108,7 @@ public final class CamosAVie {
       if (refuse(p)) return;
       ItemStack gun = p.getMainHandItem();
       IGun iGun = IGun.getIGunOrNull(gun);
-      if (iGun == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun) || camo.isPackAPunch()) return;
+      if (iGun == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun)) return;
       UUID u = p.getUUID();
       CollectionCamos.Joueur j = CollectionCamos.trouver(u);
       if (j == null || !j.camos.contains(camo)) return; // pas dans sa collection (client en retard ou trafiqué)

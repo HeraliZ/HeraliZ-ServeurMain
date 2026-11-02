@@ -57,11 +57,8 @@ public enum Camo {
    STORM("storm", 70, Tier.LEGENDARY, Camo.ALL),
    DARK_MATTER("dark_matter", 6, Tier.LEGENDARY, Camo.ALL),
    // (72 Dark Matter Origine, le Dark Matter à piquots visqueux, retiré en 0.9.12 : son id est lu comme DARK_MATTER, voir byId)
-   // collection Pack-a-Punch, façon COD Zombies : les 3 niveaux de l'arme améliorée du mode zombies (HeraliZ Matchs pose
-   // pap_1, pap_2 puis pap_3 sur l'arme). Ces ids sont le contrat avec heralisz_matchs : ne jamais les changer.
-   PAP_1("pap_1", 73, Tier.LEGENDARY, Camo.ALL),
-   PAP_2("pap_2", 74, Tier.LEGENDARY, Camo.ALL),
-   PAP_3("pap_3", 75, Tier.LEGENDARY, Camo.ALL),
+   // (73 à 75 Pack-a-Punch I à III, camos du mode Zombies retiré, supprimés le 02/11 : plus rien ne les donnait ; une arme
+   // qui porte encore « pap_1 » à « pap_3 » s'affiche sans camo, voir byId)
    // skins X : camo vivant + effet 3D, onglet « HeralisZ - skinX » (un skin peut être réservé à une arme : Camo.gun)
    SERAPHIN("seraphin", 208, Tier.MYTHIC, Camo.ALL),
    CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL),
@@ -101,11 +98,6 @@ public enum Camo {
    /** Skin X : camo vivant avec effet 3D (onglet dédié). */
    public boolean isSkinX() {
       return this.tier == Tier.MYTHIC;
-   }
-
-   /** Camo du Pack-a-Punch (réservé au mode zombies : jamais dans la collection à vie). */
-   public boolean isPackAPunch() {
-      return this.id.startsWith("pap_");
    }
 
    public String nameKey() {

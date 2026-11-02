@@ -72,9 +72,7 @@ public class CamoItem extends Item {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.a_vie").withStyle(ChatFormatting.GOLD));
          return;
       }
-      if (!this.camo.isPackAPunch()) {
-         tooltip.add(Component.translatable("item.heralisz_camo.camo.collect").withStyle(ChatFormatting.YELLOW));
-      }
+      tooltip.add(Component.translatable("item.heralisz_camo.camo.collect").withStyle(ChatFormatting.YELLOW));
       tooltip.add(Component.translatable("item.heralisz_camo.camo.howto").withStyle(ChatFormatting.DARK_GRAY));
       if (this.camo.gun == null && fr.heralisz.camo.BagSupport.PRESENT) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.howto_bag").withStyle(ChatFormatting.DARK_GRAY));

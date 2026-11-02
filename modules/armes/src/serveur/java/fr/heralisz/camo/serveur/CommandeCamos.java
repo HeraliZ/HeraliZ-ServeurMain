@@ -32,7 +32,7 @@ final class CommandeCamos {
       List<String> ids = new ArrayList<>();
       ids.add("tous");
       for (Camo camo : Camo.values()) {
-         if (!camo.isPackAPunch()) ids.add(camo.id);
+         ids.add(camo.id);
       }
       return SharedSuggestionProvider.suggest(ids, b);
    };
@@ -82,12 +82,12 @@ final class CommandeCamos {
       int nouveaux = 0;
       if (id.equals("tous")) {
          for (Camo camo : Camo.values()) {
-            if (!camo.isPackAPunch() && j.camos.add(camo)) nouveaux++;
+            if (j.camos.add(camo)) nouveaux++;
          }
       } else {
          Camo camo = Camo.byId(id);
-         if (camo == null || camo.isPackAPunch()) {
-            c.getSource().sendFailure(Component.translatableWithFallback("heralisz_camo.commande.inconnu", "Camo inconnu (ou réservé au mode zombies) : %s", id));
+         if (camo == null) {
+            c.getSource().sendFailure(Component.translatableWithFallback("heralisz_camo.commande.inconnu", "Camo inconnu : %s", id));
             return 0;
          }
          if (j.camos.add(camo)) nouveaux++;

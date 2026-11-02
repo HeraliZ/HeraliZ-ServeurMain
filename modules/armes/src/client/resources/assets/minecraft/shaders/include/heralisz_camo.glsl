@@ -979,72 +979,6 @@ vec3 storm(vec3 p, out vec3 em) {
     return col;
 }
 
-// ================================================================== Pack-a-Punch I / II / III (73, 74, 75) : façon COD Zombies
-// Les 3 niveaux de l'arme améliorée (HeraliZ Matchs, mode zombies). Une seule recette réglée par niveau : métal sombre verni
-// parcouru d'énergie liquide qui tourbillonne vers le canon, veines lumineuses, onde de charge qui court de la crosse au canon,
-// liseré lumineux sur les bords. I : bleu profond -> violet électrique, lent, veines fines ; II : violet -> magenta / rose,
-// plus rapide, failles de lumière ; III : cramoisi -> orange en fusion / or, pulsation forte, lueur maximale, paillettes.
-// Ni nébuleuse ni étoiles (Dark Matter, Nexus), ni fumée (Dark Aether), ni trou noir (Singularité) : de loin on lit la
-// couleur du niveau et l'intensité qui monte.
-#if CAMO_ID >= 73 && CAMO_ID <= 75
-vec3 packAPunch(vec3 p, int lvl, out vec3 em) {
-    float k = float(lvl - 1);                                   // 0, 1, 2
-    float t = CamoTime * (1.0 + 0.6 * k);                       // de plus en plus rapide
-    float u = p.x + 0.5;                                        // 0 = crosse, 1 = bout du canon
-    vec3 dk, md, br, hi, vn;                                    // fond, teinte, énergie, cœur chaud, veines
-    if (lvl == 1) { dk = hexc(0x01020c); md = hexc(0x0a1868); br = hexc(0x7a3cff); hi = hexc(0xd6c8ff); vn = hexc(0x4f86ff); }
-    else if (lvl == 2) { dk = hexc(0x0a0114); md = hexc(0x52108f); br = hexc(0xff2aa6); hi = hexc(0xffd2f0); vn = hexc(0xff5ad0); }
-    else { dk = hexc(0x0e0001); md = hexc(0x8c030c); br = hexc(0xff4a0e); hi = hexc(0xffe48c); vn = hexc(0xffa81c); }
-    vec3 q = p * vec3(6.0, 11.0, 11.0);
-    // tourbillons : champ déformé qui dérive vers le canon (plus fort à chaque niveau)
-    vec3 fl = vec3(-t * 0.10, t * 0.03, t * 0.06);
-    vec3 w = vec3(fbm(q * 0.55 + fl, 3), fbm(q * 0.55 + vec3(5.2, 1.3, 2.8) - fl, 3), 0.0);
-    float e = fbm(q * 0.9 + (2.4 + 0.5 * k) * w + vec3(-t * 0.16, 0.0, t * 0.05), 4);
-    float g = clamp((e - 0.30) * 2.4, 0.0, 1.0);
-    vec3 col = mix(dk, md, smoothstep(0.0, 0.55, g));
-    col = mix(col, br, smoothstep(0.55, 1.0, g) * (0.25 + 0.05 * k));
-    // voiles d'énergie : lueur douce qui épouse le bord des tourbillons (éthéré)
-    float wisp = pow(1.0 - abs(2.0 * e - 1.0), 12.0 - 2.0 * k);
-    // veines lumineuses (crêtes du bruit) : fines en I, plus épaisses ensuite
-    float r = 1.0 - abs(2.0 * fbm(q * 1.7 + 1.6 * w + vec3(-t * 0.22, 0.0, t * 0.04), 4) - 1.0);
-    float vein = pow(r, 34.0 - 9.0 * k);
-    float halo = pow(r, 10.0 - 1.0 * k);
-    // onde de charge : un front lumineux part de la crosse et file jusqu'au canon (plus souvent à chaque niveau)
-    float ph = fract(t * 0.11);
-    float wave = exp(-pow((u - (ph * 1.5 - 0.25) - 0.25 * (e - 0.5)) / (0.045 + 0.015 * k), 2.0));
-    // battement : I respire doucement, III bat fort (double pulsation)
-    float beat = lvl == 3 ? 0.6 + 0.4 * (pow(max(0.0, sin(t * 2.2)), 12.0) + 0.6 * pow(max(0.0, sin(t * 2.2 - 0.6)), 12.0))
-                          : 0.78 + 0.22 * sin(t * (0.9 + 0.5 * k) + e * 6.0);
-    vec3 vc = mix(vn, hi, smoothstep(0.35, 1.0, vein));
-    em = vc * vein * (0.8 + 0.5 * k) * beat + vn * halo * (0.05 + 0.05 * k) * beat + br * wisp * (0.10 + 0.05 * k);
-    em += mix(br, hi, 0.5) * wave * (0.15 + 0.6 * vein + 0.4 * halo + 0.5 * wisp) * (0.8 + 0.3 * k);
-    col += vn * halo * 0.08 + vc * vein * 0.2 + br * wisp * 0.08;
-#if CAMO_ID >= 74
-    // arcs (II, III) : éclairs fins et nerveux qui claquent par à-coups le long des veines
-    float an = fbm(q * vec3(1.3, 2.2, 2.2) + 0.8 * w + vec3(-t * 0.5, t * 0.2, -t * 0.3), 4);
-    float zone = smoothstep(0.62 - 0.1 * k, 0.78 - 0.1 * k, vnoise(q * 0.35 + vec3(-t * 0.6, 0.0, t * 0.3)));   // les arcs claquent par endroits
-    float arc = pow(1.0 - abs(2.0 * an - 1.0), 60.0) * zone;
-    float flick = 0.35 + 0.65 * step(0.35, hash(vec3(floor(t * 8.0), 3.0, k)));
-    em += mix(vn, hi, 0.7) * arc * flick * (1.2 + 0.6 * k) + vn * pow(1.0 - abs(2.0 * an - 1.0), 14.0) * zone * flick * 0.15;
-    col = mix(col, hi, arc * flick * 0.4);
-#endif
-#if CAMO_ID == 75
-    // III : cœurs chauffés à blanc là où l'énergie déborde, paillettes d'or qui scintillent
-    float molten = smoothstep(0.7, 0.86, e);
-    col = mix(col, mix(br, hi, 0.4), molten * 0.45);
-    em += mix(br, hi, molten) * molten * 0.5 * beat;
-    vec3 sq = floor(p * 520.0);
-    float sp = step(0.985, hash(sq)) * pow(max(0.0, sin(t * 3.5 + hash(sq + 3.0) * 40.0)), 8.0);
-    em += sp * hexc(0xfff2c0) * 1.8;
-#endif
-    // liseré : les bords de l'arme s'illuminent de la couleur du niveau (lisible de loin)
-    float fres = pow(1.0 - clamp(abs(normalize(viewNormal).z), 0.0, 1.0), 2.0);
-    em += br * fres * (0.10 + 0.12 * k);
-    // en jeu l'arme est plus éclairée que dans l'aperçu : fond assombri pour que l'énergie (em) ressorte
-    return lacquer(col * 0.7, 0.4);
-}
-#endif
-
 // Genesis (arme) : même émeraude profonde que les couteaux ultimes
 vec3 gemDoppler(vec3 p, vec3 deep, vec3 mid, vec3 bright, vec3 hi, float glow, vec3 seed, out vec3 em);
 vec3 genesis(vec3 p, out vec3 em) {
@@ -3837,12 +3771,6 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
     return amethystGem(p, em);
 #elif CAMO_ID == 70
     return storm(p, em);
-#elif CAMO_ID == 73
-    return packAPunch(p, 1, em);
-#elif CAMO_ID == 74
-    return packAPunch(p, 2, em);
-#elif CAMO_ID == 75
-    return packAPunch(p, 3, em);
 #elif CAMO_ID >= 200
     return skinSurface(p, em);
 #elif (CAMO_ID >= 50 && CAMO_ID < 70) || (CAMO_ID >= 100 && CAMO_ID < 200)

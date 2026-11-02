@@ -87,7 +87,7 @@ final class OngletCamo implements AtelierArme.Partie {
       this.autre = this.courant != null && owner != null && !this.aMoi;
       List<Camo> v = new ArrayList<>();
       for (Camo c : CollectionVue.possedes()) {
-         if (!c.isPackAPunch() && c.fits(gunId)) v.add(c);
+         if (c.fits(gunId)) v.add(c);
       }
       this.vie = v;
       List<Integer> o = new ArrayList<>();

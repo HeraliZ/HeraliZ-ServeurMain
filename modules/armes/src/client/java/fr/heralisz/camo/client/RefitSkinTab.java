@@ -147,7 +147,7 @@ public final class RefitSkinTab {
       // collection à vie
       List<Camo> collection = new ArrayList<>();
       for (Camo c : CollectionVue.possedes()) {
-         if (!c.isPackAPunch() && c.fits(gunId)) collection.add(c);
+         if (c.fits(gunId)) collection.add(c);
       }
       y += 6;
       add.accept(new Label(gridX - 120, y, right, Component.translatable("gui.heralisz_camo.section_collection", collection.size()).withStyle(s -> s.withColor(OR_TEXTE))));
