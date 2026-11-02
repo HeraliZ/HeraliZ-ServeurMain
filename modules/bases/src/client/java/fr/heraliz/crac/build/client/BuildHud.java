@@ -241,10 +241,20 @@ public final class BuildHud {
         }
         Component msg = HammerController.message();
         if (msg != null) {
-            Component m = Ui.in(msg, MOYEN);
-            float mw = font.width(m);
-            texte(g, font, m, cx - mw / 2 + 0.5F, cy - 26 + 0.7F, a(0, 150));
-            texte(g, font, m, cx - mw / 2, cy - 26, a(ROSE, 255));
+            // HeraliZ (03/11) : coupé en lignes (les refus du serveur passent ici, certains sont longs), la dernière à sa
+            // place d'avant, les autres au-dessus
+            List<FormattedCharSequence> lignes = font.split(Ui.in(msg, MOYEN), Math.min(220, w - 40));
+            float ly = cy - 26 - (lignes.size() - 1) * 8;
+            for (FormattedCharSequence l : lignes) {
+                float mw = font.width(l);
+                g.pose().pushPose();
+                g.pose().translate(cx - mw / 2 + 0.5F, ly + 0.7F, 0);
+                g.drawString(font, l, 0, 0, a(0, 150), false);
+                g.pose().translate(-0.5F, -0.7F, 0);
+                g.drawString(font, l, 0, 0, a(ROSE, 255), false);
+                g.pose().popPose();
+                ly += 8;
+            }
         }
     }
 

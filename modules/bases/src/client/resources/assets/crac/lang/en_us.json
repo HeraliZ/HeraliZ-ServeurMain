@@ -43,6 +43,8 @@
   "crac.build.cannot_here": "You cannot build here.",
   "crac.build.claim_first": "Place a Claim Block on this foundation before building more.",
   "crac.build.demolish_late": "Too late to demolish (only %s min after building or upgrading).",
+  "crac.build.coupe_base": "Cannot demolish: part of your base would be cut off from the cupboard. Demolish from the end of the building.",
+  "crac.build.coupe_armoire": "Cannot demolish: your base’s cupboard stands on this piece. Remove the cupboard first, or demolish the rest from the end.",
   "crac.build.foreign_claim": "Inside another group's claim.",
   "crac.build.partie_coupee": "This part is no longer connected to your cupboard’s building: it decays on its own. Build from your main base.",
   "crac.build.height": "Outside of the build height.",

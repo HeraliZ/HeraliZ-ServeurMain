@@ -941,12 +941,78 @@ public final class StructureService {
             if (window >= 0 && !tuto && level.getGameTime() - p.modifiedAt > window * 20L) {
                 return Outcome.fail(Txt.k("crac.build.demolish_late", window / 60));
             }
+            String coupe = coupure(store(level), buildingOf(level, p), p);
+            if (coupe != null) {
+                return Outcome.fail(coupe);
+            }
         }
         remove(level, p, Cause.DEMOLISH);
         if (tuto) {
             fr.heraliz.crac.bases.Tutoriel.rembourser(player, p);
         }
         return Outcome.ok(p);
+    }
+
+    /**
+     * HeraliZ (03/11, demande du propriétaire) : pourquoi démolir {@code p} couperait une partie de la base du bâtiment qui
+     * porte l'armoire (clé du message), ou null. On démolit une base depuis ses bouts : sur une ligne de fondations, la
+     * dernière part, pas celle du milieu. Même découpage que {@link #split} (supports et fondations bord à bord), fait
+     * sans {@code p} et seulement au moment d'une démolition : la partie qui garde le siège de l'armoire reste, et toute
+     * autre partie qui garde une fondation tiendrait debout, coupée de l'armoire (sans fondation, une partie tombe avec la
+     * pièce démolie : permis). La pièce sous l'armoire (son siège) ne part que s'il ne reste aucune autre fondation. Rien
+     * pour un bâtiment sans armoire (un bout déjà coupé se démolit librement). Le staff en créatif n'est pas concerné.
+     */
+    @Nullable
+    static String coupure(StructureStore store, @Nullable Building b, Piece p) {
+        if (b == null || b.claimAnchor == null) {
+            return null;
+        }
+        Piece siege = b.claimSeat != Building.NO_SEAT ? store.index.piece(b.claimSeat) : null;
+        if (siege == null || siege.buildingId != b.id) {
+            return null;   // siège inconnu (bâtiment d'avant le siège) : on ne sait pas où est la base principale
+        }
+        List<Piece> pieces = store.piecesOf(b);
+        if (siege.id == p.id) {
+            for (Piece q : pieces) {
+                if (q.id != p.id && q.kind().isFoundation()) {
+                    return "crac.build.coupe_armoire";
+                }
+            }
+            return null;
+        }
+        Long2ObjectOpenHashMap<List<Piece>> adj = new Long2ObjectOpenHashMap<>();
+        for (Piece q : pieces) {
+            if (q.id == p.id) continue;
+            for (Supports.Support s : Supports.of(store.index, q.key())) {
+                Piece n = s.piece();
+                if (n.buildingId != b.id || n.id == p.id) continue;
+                adj.computeIfAbsent(q.id, k -> new ArrayList<>()).add(n);
+                adj.computeIfAbsent(n.id, k -> new ArrayList<>()).add(q);
+            }
+            if (q.kind().isFoundation()) {
+                for (Piece n : Topology.foundationsSharingEdge(store.index, q.key())) {
+                    if (n.buildingId != b.id || n.id == p.id) continue;
+                    adj.computeIfAbsent(q.id, k -> new ArrayList<>()).add(n);
+                }
+            }
+        }
+        LongSet atteintes = new LongOpenHashSet();
+        ArrayDeque<Piece> file = new ArrayDeque<>();
+        file.add(siege);
+        atteintes.add(siege.id);
+        while (!file.isEmpty()) {
+            for (Piece n : adj.getOrDefault(file.poll().id, List.of())) {
+                if (atteintes.add(n.id)) {
+                    file.add(n);
+                }
+            }
+        }
+        for (Piece q : pieces) {
+            if (q.id != p.id && q.kind().isFoundation() && !atteintes.contains(q.id)) {
+                return "crac.build.coupe_base";
+            }
+        }
+        return null;
     }
 
     /**

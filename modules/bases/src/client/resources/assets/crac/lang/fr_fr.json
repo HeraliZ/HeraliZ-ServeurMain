@@ -43,6 +43,8 @@
   "crac.build.cannot_here": "Tu ne peux pas construire ici.",
   "crac.build.claim_first": "Pose un Claim Block sur cette fondation avant de construire plus.",
   "crac.build.demolish_late": "Trop tard pour démolir (seulement %s min après la pose ou l'amélioration).",
+  "crac.build.coupe_base": "Démolition impossible : une partie de ta base serait coupée de l’armoire. Démolis depuis le bout de la construction.",
+  "crac.build.coupe_armoire": "Démolition impossible : l’armoire de ta base est posée sur cette pièce. Retire d’abord l’armoire, ou démolis le reste depuis le bout.",
   "crac.build.foreign_claim": "Dans le claim d'un autre groupe.",
   "crac.build.partie_coupee": "Cette partie n’est plus reliée au bâtiment de ton armoire : elle s’use toute seule. Construis depuis ta base principale.",
   "crac.build.height": "Hors de la hauteur de construction.",
