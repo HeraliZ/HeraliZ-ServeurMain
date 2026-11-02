@@ -30,6 +30,8 @@ RACINE = Path(__file__).resolve().parent.parent
 COFFRES = RACINE / "modules/loot/src/serveur/resources/data/heraliz_loot/coffres"
 CONFIG_COFFRES = RACINE / "serveur/config/heraliz_loot/coffres"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
+# soins retirés du jeu (outils/donnees/objets_retires.json, identifiants figés) : jamais dans les conteneurs de soins
+SOINS_RETIRES = set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["soins"])
 TACZ = RACINE / "serveur/tacz"
 ARMES_JSON = RACINE / "serveur/config/heraliz_tactique/armes.json"
 COMPOSANTS_DEFS = RACINE / "modules/equipement/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
@@ -755,7 +757,7 @@ def ecrire_soins():
     base = []
     for e in data["objets"]:
         m = re.search(r'ConsumableId:"([^"]+)"', e.get("nbt", ""))
-        if e["item"].startswith(RETIRES) or not m or ra.get(m.group(1)) not in PARTS_SOINS[1]:
+        if e["item"].startswith(RETIRES) or not m or ra.get(m.group(1)) not in PARTS_SOINS[1] or m.group(1) in SOINS_RETIRES:
             continue
         e = dict(e)
         e.setdefault("_base", e["poids"])

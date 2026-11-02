@@ -1483,3 +1483,6 @@ heraliz_crafts/data/heraliz_crafts/recipes/accessoires/maxstuff_glaser.json
 # 02/11 (audit, point 35) : état de l'export des packs intégrés aux jars (TaCZ, anciens MaxStuff et endlessammo) ;
 # l'export est coupé (DefaultPackDebug = true) et le pack intégré à TaCZ n'est plus livré
 .export-state.json
+
+# 03/11 : « Attelle et bandage » plus fabriqué (outils/crafts.py, outils/donnees/objets_retires.json) ; l'objet reste valable
+heraliz_crafts/data/heraliz_crafts/recipes/soins/heralisz_heal_attelle_bandage.json

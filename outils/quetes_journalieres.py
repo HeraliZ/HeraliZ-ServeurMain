@@ -38,6 +38,8 @@ import loot_zombies as LZ  # noqa: E402
 
 RACINE = Path(__file__).resolve().parent.parent
 SORTIE = RACINE / "serveur/config/heraliz_quetes/journalieres.json"
+# soins retirés du jeu (outils/donnees/objets_retires.json, identifiants figés) : jamais en récompense
+SOINS_RETIRES = set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["soins"])
 C = "heraliz_composants:"
 F = "heralisz_bunker:keycard_fragment_"
 
@@ -186,6 +188,8 @@ def controle():
             m = re.search(r'ConsumableId:"([^"]+)"', nbt or "")
             if m and m.group(1) not in r["soins"]:
                 sys.exit(f"{d} : soin inconnu {m.group(1)}")
+            if m and m.group(1) in SOINS_RETIRES:
+                sys.exit(f"{d} : soin retiré du jeu {m.group(1)}")
             if o.startswith(C) and o not in r["objets"]:
                 sys.exit(f"{d} : composant inconnu {o}")
     for d, l in QUETES.items():

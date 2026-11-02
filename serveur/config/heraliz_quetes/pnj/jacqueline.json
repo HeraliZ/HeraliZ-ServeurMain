@@ -109,11 +109,6 @@
       },
       {
         "objet": "heralisz_tactical:consumable",
-        "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
-        "prix": 180
-      },
-      {
-        "objet": "heralisz_tactical:consumable",
         "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}",
         "prix": 180
       },

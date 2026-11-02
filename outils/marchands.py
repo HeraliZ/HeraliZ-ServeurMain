@@ -34,6 +34,9 @@ PRIX_SOINS_A_PART = {
     "heralisz_heal:condensed_milk": 90,  # lait concentré
     "heralisz_heal:vaseline": 90,
 }
+# soins retirés du jeu (outils/donnees/objets_retires.json, identifiants figés) : plus vendus (03/11 : Attelle et bandage,
+# remplacé par le Bandage et l'Attelle, toujours en vente)
+SOINS_RETIRES = set(json.loads((RACINE / "outils" / "donnees" / "objets_retires.json").read_text(encoding="utf-8"))["soins"])
 # 28/10 (demande du propriétaire) : prix et ordre réglés en jeu au Registre du marchand le 24/10, repris comme base
 # (avant 110 / 100 / 85 / 70 / 65 / 40)
 NOURRITURE = [  # (objet, points de faim, prix)
@@ -82,7 +85,7 @@ def soins():
     l = sorted(RARETES["soins"].items(), key=lambda kv: (ORDRE.index(kv[1]), kv[0]))
     return [{"objet": "heralisz_tactical:consumable", "nbt": '{ConsumableId:"%s"}' % k,
              "prix": PRIX_SOINS_A_PART.get(k, PRIX_SOINS[r])}
-            for k, r in l if r in PRIX_SOINS]
+            for k, r in l if r in PRIX_SOINS and k not in SOINS_RETIRES]
 
 
 def nourriture():

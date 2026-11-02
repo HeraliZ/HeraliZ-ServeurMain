@@ -1,0 +1,6 @@
+{
+  "_aide": "Objets retirés du jeu. Leur identifiant est figé (CLAUDE.md, règle 8) : ils restent enregistrés et marchent pour les joueurs qui en ont, mais ne sont plus jamais fabriqués (outils/crafts.py), vendus par un marchand (outils/marchands.py), donnés par une caisse ou un largage (outils/caisses.py), mis dans le loot (outils/loot_armes.py) ni en récompense d'une quête du jour (outils/quetes_journalieres.py). Ils peuvent toujours être revendus, recyclés ou rapportés à Varga. Après un changement ici : relancer ces outils. L'onglet « HeraliZ · Tactique » les cache aussi (HeraliszHeal.RETIRES, module armes).",
+  "soins": {
+    "heralisz_heal:attelle_bandage": "03/11, choix du propriétaire : remplacé par le Bandage et l'Attelle séparés"
+  }
+}

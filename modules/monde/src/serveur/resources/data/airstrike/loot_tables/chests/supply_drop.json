@@ -3481,39 +3481,6 @@
     {
      "type": "minecraft:item",
      "name": "heralisz_tactical:consumable",
-     "weight": 67,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
-       "tag": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "heralisz_tactical:consumable",
-     "weight": 67,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
-       "tag": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "heralisz_tactical:consumable",
-     "weight": 67,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
-       "tag": "{ConsumableId:\"heralisz_heal:carfak\"}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "heralisz_tactical:consumable",
      "weight": 100,
      "functions": [
       {
@@ -3584,6 +3551,28 @@
         "min": 1,
         "max": 3
        }
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
+      }
+     ]
+    },
+    {
+     "type": "minecraft:item",
+     "name": "heralisz_tactical:consumable",
+     "weight": 100,
+     "functions": [
+      {
+       "function": "minecraft:set_nbt",
+       "tag": "{ConsumableId:\"heralisz_heal:carfak\"}"
       }
      ]
     },

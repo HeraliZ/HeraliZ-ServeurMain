@@ -183,21 +183,14 @@
     {
       "item": "heralisz_tactical:consumable",
       "count": 1,
-      "weight": 1333,
-      "rarity": "rare",
-      "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}"
-    },
-    {
-      "item": "heralisz_tactical:consumable",
-      "count": 1,
-      "weight": 1333,
+      "weight": 2000,
       "rarity": "rare",
       "nbt": "{ConsumableId:\"heralisz_heal:blood_pack\"}"
     },
     {
       "item": "heralisz_tactical:consumable",
       "count": 1,
-      "weight": 1333,
+      "weight": 2000,
       "rarity": "rare",
       "nbt": "{ConsumableId:\"heralisz_heal:carfak\"}"
     },

@@ -258,10 +258,15 @@ NOM_CLE = {"camo": "Camo", "spectacle": "Émotes", "gemme": "Gemme", "quete": "Q
 
 # ---------------------------------------------------------------- réparations des autres caisses
 RETIRES =("minecraft:", "dyairdrop:", "heraliz_wonder:", "heralisz_matchs:", "heralisz_armor:")
+# soins retirés du jeu (outils/donnees/objets_retires.json, identifiants figés) : plus donnés par une caisse ni par le
+# largage (03/11 : Attelle et bandage ; le Bandage et l'Attelle séparés restent dans leurs groupes Commun et Peu commun)
+SOINS_RETIRES = set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["soins"])
 
 
 def raretes_soins():
-    return {k.split(":", 1)[1]: v for k, v in json.loads(RARETES.read_text(encoding="utf-8"))["soins"].items()}
+    """Soins encore donnés (sans les soins retirés) : identifiant sans « heralisz_heal: » -> rareté."""
+    return {k.split(":", 1)[1]: v for k, v in json.loads(RARETES.read_text(encoding="utf-8"))["soins"].items()
+            if k not in SOINS_RETIRES}
 
 
 def composants():
@@ -334,6 +339,9 @@ def reparer(r):
         r = dict(r, item="heralisz_tactical:throwable", nbt='{ThrowableId:"%s"}' % it)
     elif it.startswith(RETIRES) and not (r.get("commands") and r.get("give_item") is False):
         return None
+    soin_id = re.search(r'ConsumableId:"([^"]+)"', r.get("nbt") or "")
+    if soin_id and soin_id.group(1) in SOINS_RETIRES:
+        return None
     return r
 
 
@@ -367,6 +375,10 @@ def verifier():
                 continue
             if not existe(r["item"], jars):
                 print("[caisses] %s : objet de Minecraft ou inconnu : %s" % (f.name, r["item"]))
+                problemes += 1
+            soin_id = re.search(r'ConsumableId:"([^"]+)"', r.get("nbt") or "")
+            if soin_id and soin_id.group(1) in SOINS_RETIRES:
+                print("[caisses] %s : soin retiré du jeu : %s" % (f.name, soin_id.group(1)))
                 problemes += 1
     for pool in json.loads(LARGAGE.read_text(encoding="utf-8")).get("pools", []):
         for e in pool.get("entries", []):
@@ -458,7 +470,7 @@ def largage_aerien():
                  if a in r["munitions"]]
     soins_par = {}
     for k, rar in sorted(r["soins"].items()):
-        if rar in LARGAGE_SOINS:
+        if rar in LARGAGE_SOINS and k not in SOINS_RETIRES:
             soins_par.setdefault(rar, []).append(k.split(":")[-1])
     soins = [_entree("heralisz_tactical:consumable", _poids(LARGAGE_SOINS[rar][0] / len(l)),
                      '{ConsumableId:"heralisz_heal:%s"}' % i, LARGAGE_SOINS[rar][1], LARGAGE_SOINS[rar][2])
