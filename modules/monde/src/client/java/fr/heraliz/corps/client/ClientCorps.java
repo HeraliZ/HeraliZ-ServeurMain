@@ -35,8 +35,6 @@ public final class ClientCorps {
     public static void init(IEventBus bus) {
         bus.addListener((EntityRenderersEvent.RegisterRenderers e) -> {
             e.registerEntityRenderer(Registres.CORPS.get(), CorpsRenderer::new);
-            // anciens corps : jamais envoyes aux clients, rendu vide par securite
-            if (Registres.convertisseur) e.registerEntityRenderer(Registres.ANCIEN.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         });
         bus.addListener((FMLClientSetupEvent e) -> e.enqueueWork(() -> MenuScreens.register(Registres.MENU.get(), CorpsEcran::new)));
         bus.addListener((RegisterGuiOverlaysEvent e) -> e.registerAbove(VanillaGuiOverlay.CROSSHAIR.id(), "corps", HudCorps::rendre));

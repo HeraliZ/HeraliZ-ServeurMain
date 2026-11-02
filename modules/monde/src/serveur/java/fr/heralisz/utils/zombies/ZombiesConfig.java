@@ -16,7 +16,6 @@ public final class ZombiesConfig {
     public static final ForgeConfigSpec.IntValue PLAFOND_CARTE, PLAFOND_LOCAL;
     // IA allégée (voir IaZombies)
     public static final ForgeConfigSpec.BooleanValue IA_ALLEGEE;
-    public static final ForgeConfigSpec.IntValue IA_RYTHME;
     public static final ForgeConfigSpec.DoubleValue IA_CHEMINS;
     // budget et partage des chemins (voir CheminsZombies), niveaux d'IA selon la distance (IaZombies)
     public static final ForgeConfigSpec.IntValue CHEMINS_BUDGET, LOD_PROCHE, LOD_MOYEN, LOD_SOMMEIL;
@@ -81,10 +80,6 @@ public final class ZombiesConfig {
         IA_ALLEGEE = b.comment("IA allegee des zombies HeraliZ (24/10) : ils ne cherchent plus de village la nuit, ne cherchent plus",
                         "d'oeufs de tortue a casser, ne visent plus villageois, golems ni tortues (seulement les joueurs, et ce qui les frappe).",
                         "false : IA du zombie de Minecraft complete.").define("ia_allegee", true);
-        IA_RYTHME = b.comment("Tous les combien de ticks un zombie reconsidere ses objectifs (cible, errance). Minecraft : 3.",
-                        "01/11 : sans effet sur ce serveur (Minecraft 1.20.1 revoit les objectifs un tick sur deux et ne lit plus ce",
-                        "rythme) ; garde pour ne rien casser. Ce qui allege vraiment : ia_chemins, les attentes et les budgets ci-dessous.")
-                .defineInRange("ia_rythme", 6, 1, 20);
         IA_CHEMINS = b.comment("Taille maximale d'une recherche de chemin, par rapport a Minecraft (1.0). Plus petit : chemins",
                         "longs et compliques abandonnes plus tot, beaucoup moins de calcul quand un joueur est loin ou cache.")
                 .defineInRange("ia_chemins", 0.5, 0.1, 1.0);
@@ -94,7 +89,7 @@ public final class ZombiesConfig {
         CHEMINS_PARTAGE = b.comment("Un zombie qui vise la même case qu'un autre, à 4 blocs de lui, dans la seconde, reprend son chemin au lieu",
                 "d'en recalculer un (une horde qui suit un joueur ne calcule qu'un chemin).").define("chemins_partage", true);
         LOD_PROCHE = b.comment("Niveaux d'IA selon le joueur le plus proche : jusqu'à lod_proche blocs, IA complète (objectifs revus tous les",
-                        "3 ticks comme Minecraft, chemins complets) ; jusqu'à lod_moyen, ia_rythme et ia_chemins ; jusqu'à lod_sommeil,",
+                        "3 ticks comme Minecraft, chemins complets) ; jusqu'à lod_moyen, ia_chemins ; jusqu'à lod_sommeil,",
                         "objectifs tous les 20 ticks et chemins quatre fois plus courts ; au-delà, endormi (objectifs toutes les 2 s, plus de",
                         "chemin sans cible). Sous Mohist, Spigot ne fait presque plus bouger les monstres au-delà de 24 blocs",
                         "(entity-activation-range de spigot.yml).").defineInRange("lod_proche", 16, 4, 128);

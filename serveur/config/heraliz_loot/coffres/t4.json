@@ -1,5 +1,5 @@
 {
- "_note": "T4 épique (militaire léger, caisses olive, sacs, cadavres de soldats) : PhatLoots military. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
+ "_note": "T4 épique (militaire léger, caisses olive, sacs, cadavres de soldats) : PhatLoots military. Écrit par outils/loot_armes.py (ne pas modifier à la main : changer l'outil et le relancer).",
  "emplacements": [2, 7],
  "cases_poids": {"2": 20, "3": 35, "4": 28, "5": 12, "6": 4, "7": 1},
  "objets": [

@@ -651,6 +651,12 @@ def ecrire():
     autres[7] = [dict(e) for e in autres[6]]
     tables[7]["_note"] = ("Coffres d'événement T7 (crash, boss...) : un peu de tout. "
                           "Écrit par outils/loot_armes.py (ne pas modifier à la main).")
+    # 02/11 (audit mods-2 §20) : les notes de T1 à T6 citaient un outil disparu (tools/gen_tables_rotation.py) et un ancien
+    # profil d'essai ; on garde leur description (lieux du palier) et on dit qui les écrit vraiment
+    for t in range(1, 7):
+        description = re.split(r" (?:Généré|Écrit) par ", tables[t].get("_note", ""))[0].strip()
+        tables[t]["_note"] = (description + " " if description else "") + \
+            "Écrit par outils/loot_armes.py (ne pas modifier à la main : changer l'outil et le relancer)."
     for t, parts in PARTS.items():
         data = tables[t]
         data["emplacements"] = [min(CASES_POIDS[t]), max(CASES_POIDS[t])]

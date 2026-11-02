@@ -6,7 +6,7 @@
     actif = true
     # Les armes s'usent aussi en mode creatif.
     usure_creatif = false
-    # Aucune usure pendant un match (duels, ClashWar, zombies : armes pretees).
+    # Aucune usure pendant un match du ClashWar (armes pretees).
     sans_usure_en_match = true
     # Petit affichage de l'etat de l'arme en main, en bas a droite (chaque joueur peut aussi le couper).
     hud_autorise = true

@@ -693,7 +693,6 @@ public final class RotationLoot extends SavedData {
         if (parts.keySet().removeIf(id -> ZonesLoot.zone(dim, id) == null)) setDirty();
         parts.forEach((id, p) -> ZonesLoot.zone(dim, id).partForcee = p);
         if (places.isEmpty()) return;
-        LongArrayList perdus = new LongArrayList();
         Map<Long, Place> deplaces = new HashMap<>();
         for (Long2ObjectMap.Entry<Place> e : places.long2ObjectEntrySet()) {
             long k = e.getLongKey();
@@ -706,9 +705,8 @@ public final class RotationLoot extends SavedData {
             }
             ZonesLoot.placer(z, k, p.nom());
         }
-        for (long k : perdus) places.remove(k);
         deplaces.forEach((k, p) -> places.put((long) k, p));
-        if (!perdus.isEmpty() || !deplaces.isEmpty()) setDirty();
+        if (!deplaces.isEmpty()) setDirty();
     }
 
     /** Quelqu'un regarde-t-il dans cet inventaire ? (autre que sauf) */

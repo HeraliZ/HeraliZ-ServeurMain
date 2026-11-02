@@ -130,7 +130,7 @@ public final class UsureConfig {
         e.val("general.actif", r.actif, "false = aucune usure nulle part.");
         e.val("general.usure_creatif", r.usureCreatif, "Les armes s'usent aussi en mode creatif.");
         e.val("general.sans_usure_en_match", r.sansUsureEnMatch,
-                "Aucune usure pendant un match (duels, ClashWar, zombies : armes pretees).");
+                "Aucune usure pendant un match du ClashWar (armes pretees).");
         e.val("general.hud_autorise", r.hudAutorise, "Petit affichage de l'etat de l'arme en main, en bas a droite (chaque joueur peut aussi le couper).");
         e.val("general.dimensions_sans_usure", new ArrayList<>(r.dimensionsSansUsure), "Dimensions ou les armes ne s'usent pas.");
         e.val("general.munitions_corps_a_corps", new ArrayList<>(r.munitionsMelee),

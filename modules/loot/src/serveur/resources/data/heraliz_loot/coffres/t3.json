@@ -1,5 +1,5 @@
 {
- "_note": "T3 rare (police, pompiers, secours, chasse, prison) : PhatLoots police, hunting (part civile), medical. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
+ "_note": "T3 rare (police, pompiers, secours, chasse, prison) : PhatLoots police, hunting (part civile), medical. Écrit par outils/loot_armes.py (ne pas modifier à la main : changer l'outil et le relancer).",
  "emplacements": [1, 5],
  "cases_poids": {"1": 15, "2": 35, "3": 33, "4": 13, "5": 4},
  "objets": [

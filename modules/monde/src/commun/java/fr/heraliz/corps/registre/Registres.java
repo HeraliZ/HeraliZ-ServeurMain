@@ -1,7 +1,6 @@
 package fr.heraliz.corps.registre;
 
 import fr.heraliz.corps.HeralizCorps;
-import fr.heraliz.corps.entite.AncienCorps;
 import fr.heraliz.corps.entite.CorpsEntity;
 import fr.heraliz.corps.menu.CorpsMenu;
 import fr.heralisz.utils.pont.UsineEntite;
@@ -22,11 +21,10 @@ public final class Registres {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, HeralizCorps.MODID);
 
     /**
-     * Usines des entites coupees en deux (docs/METHODE_CLIENT_SERVEUR.md §4) : version neutre ici, version serveur
-     * (CorpsEntityServeur, AncienCorpsServeur) branchee par serveur.PartieServeur.
+     * Usine de l'entite coupee en deux (docs/METHODE_CLIENT_SERVEUR.md §4) : version neutre ici, version serveur
+     * (CorpsEntityServeur) branchee par serveur.PartieServeur.
      */
     public static final UsineEntite<CorpsEntity> CORPS_USINE = new UsineEntite<>(CorpsEntity::new);
-    public static final UsineEntite<AncienCorps> ANCIEN_USINE = new UsineEntite<>(AncienCorps::new);
 
     /**
      * {@code heraliz_corps:corpse}. Boite qui suit le corps allonge (1 x 1,9 x 0,45, tournee comme lui : voir
@@ -47,25 +45,12 @@ public final class Registres {
                     .build(HeralizCorps.MODID + ":corpse"));
 
     /**
-     * Ancien corps du mod « corpse » ({@code corpse:corpse}), converti en corps HeraliZ a son chargement. Enregistre
-     * seulement si l'ancien mod n'est plus la (voir {@link #enregistrer}).
+     * 02/11 (audit mods-2 §20) : le convertisseur des corps de l'ancien mod « corpse » ({@code corpse:corpse}, enregistre
+     * chez tous les joueurs) est retire : la carte {@code dayz_map} est neuve, il n'y a plus d'ancien corps a convertir.
      */
-    public static final DeferredRegister<EntityType<?>> ANCIENS = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, "corpse");
-    public static final RegistryObject<EntityType<AncienCorps>> ANCIEN = ANCIENS.register("corpse",
-            () -> EntityType.Builder.<AncienCorps>of(ANCIEN_USINE, MobCategory.MISC)
-                    .sized(2.0F, 0.5F)
-                    .clientTrackingRange(0)
-                    .noSummon()
-                    .build("corpse:corpse"));
-
-    /** Vrai si le convertisseur des anciens corps est actif (ancien mod absent). */
-    public static boolean convertisseur;
-
     public static void enregistrer(net.minecraftforge.eventbus.api.IEventBus bus) {
         ENTITES.register(bus);
         MENUS.register(bus);
-        convertisseur = !net.minecraftforge.fml.ModList.get().isLoaded("corpse");
-        if (convertisseur) ANCIENS.register(bus);
     }
 
     public static final RegistryObject<MenuType<CorpsMenu>> MENU = MENUS.register("fouille", () -> IForgeMenuType.create(CorpsMenu::client));

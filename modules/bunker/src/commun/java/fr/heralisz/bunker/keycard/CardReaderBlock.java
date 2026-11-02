@@ -165,7 +165,7 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
 
       @Override
       public String getSerializedName() {
-         return this.name().toLowerCase();
+         return this.name().toLowerCase(java.util.Locale.ROOT);   // état de bloc : jamais selon la langue du PC (turc...)
       }
    }
 }

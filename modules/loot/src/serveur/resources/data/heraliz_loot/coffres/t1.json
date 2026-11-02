@@ -1,5 +1,5 @@
 {
- "_note": "T1 commun (rue, déchets, commerces, logements, cadavres de zombies, voitures civiles, casiers) : civil pauvre. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
+ "_note": "T1 commun (rue, déchets, commerces, logements, cadavres de zombies, voitures civiles, casiers) : civil pauvre. Écrit par outils/loot_armes.py (ne pas modifier à la main : changer l'outil et le relancer).",
  "emplacements": [1, 4],
  "cases_poids": {"1": 45, "2": 50, "3": 4, "4": 1},
  "objets": [

@@ -33,7 +33,7 @@ import java.util.WeakHashMap;
  *     ce qui le frappe et les objectifs d'autres mods comme Zombie Awareness) ; variété tirée une fois
  *     ({@link #variete}).</li>
  *     <li>Chaque seconde, niveau d'IA selon le joueur le plus proche : proche, IA complète ; moyen, objectifs revus tous
- *     les {@code ia_rythme} ticks et chemins plus courts ; loin, objectifs tous les 20 ticks et chemins quatre fois plus
+ *     les {@link #RYTHME_MOYEN} ticks et chemins plus courts ; loin, objectifs tous les 20 ticks et chemins quatre fois plus
  *     courts. Au-delà de 24 blocs, Spigot ne les fait presque plus bouger, et {@link Peuplement} les retire au-delà de
  *     96 blocs.</li>
  *     <li>Recherches de chemin limitées par tick et partagées entre voisins : {@link CheminsZombies} ; chemin gardé vers
@@ -56,6 +56,12 @@ public final class IaZombies {
     /** Zombies par niveau d'IA au dernier passage : proche, moyen, loin, endormi (pour /zombies stats). */
     private static final int[] NIVEAUX = new int[4], COMPTE = new int[4];
 
+    /**
+     * Rythme des objectifs au niveau moyen (avant : réglage {@code ia_rythme}, retiré le 02/11, audit mods-2 §20 : sans effet
+     * sous Minecraft 1.20.1, qui revoit les objectifs un tick sur deux ; même valeur qu'avant, rien ne change).
+     */
+    private static final int RYTHME_MOYEN = 6;
+
     /** Priorité basse : après les autres mods qui ajoutent leurs objectifs à l'arrivée. */
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void arrivee(EntityJoinLevelEvent e) {
@@ -67,7 +73,7 @@ public final class IaZombies {
                 && (w.getGoal() instanceof MoveThroughVillageGoal || w.getGoal() instanceof RemoveBlockGoal));
         z.targetSelector.getAvailableGoals().removeIf(w -> !w.isRunning()
                 && w.getGoal().getClass() == NearestAttackableTargetGoal.class && w.getPriority() != 2);
-        niveau(z, ZombiesConfig.IA_RYTHME.get(), ZombiesConfig.IA_CHEMINS.get().floatValue());
+        niveau(z, RYTHME_MOYEN, ZombiesConfig.IA_CHEMINS.get().floatValue());
     }
 
     /**
@@ -98,7 +104,7 @@ public final class IaZombies {
         if (e.phase != TickEvent.Phase.END || t % 5 != 2 || !ZombiesConfig.IA_ALLEGEE.get()) return;
         int quart = (t / 5) & 3;
         double proche = sq(ZombiesConfig.LOD_PROCHE.get()), moyen = sq(ZombiesConfig.LOD_MOYEN.get()), sommeil = sq(ZombiesConfig.LOD_SOMMEIL.get());
-        int rythme = ZombiesConfig.IA_RYTHME.get();
+        int rythme = RYTHME_MOYEN;
         float chemins = ZombiesConfig.IA_CHEMINS.get().floatValue();
         if (quart == 0) {
             System.arraycopy(COMPTE, 0, NIVEAUX, 0, 4);

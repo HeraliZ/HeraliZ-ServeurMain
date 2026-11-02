@@ -1,5 +1,5 @@
 {
- "_note": "T2 peu commun (maison de campagne, ferme, cave, atelier, jardin) : PhatLoots campagne. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
+ "_note": "T2 peu commun (maison de campagne, ferme, cave, atelier, jardin) : PhatLoots campagne. Écrit par outils/loot_armes.py (ne pas modifier à la main : changer l'outil et le relancer).",
  "emplacements": [1, 5],
  "cases_poids": {"1": 30, "2": 45, "3": 20, "4": 4, "5": 1},
  "objets": [

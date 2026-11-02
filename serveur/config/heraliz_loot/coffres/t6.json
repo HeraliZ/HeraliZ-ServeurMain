@@ -1,5 +1,5 @@
 {
- "_note": "T6 mythique (haute sécurité, labo, banque, casiers rouges, caisses de crash) : PhatLoots crash / airdrop. Généré par tools/gen_tables_rotation.py (ne pas modifier à la main : changer le script et le relancer). Objets vérifiés dans le registre du profil RLZ Test (monde New World (4), 05/10/2026) et dans les packs TaCZ / HeralisZ du profil.",
+ "_note": "T6 mythique (haute sécurité, labo, banque, casiers rouges, caisses de crash) : PhatLoots crash / airdrop. Écrit par outils/loot_armes.py (ne pas modifier à la main : changer l'outil et le relancer).",
  "emplacements": [4, 12],
  "cases_poids": {"4": 6, "5": 12, "6": 16, "7": 17, "8": 15, "9": 12, "10": 10, "11": 7, "12": 5},
  "objets": [

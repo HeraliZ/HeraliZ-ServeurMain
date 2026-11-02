@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -1406,10 +1405,6 @@ public abstract class DoorDecl {
 
    public double getRenderRadius() {
       return 8.0;
-   }
-
-   public Component getLockedMessage() {
-      return Component.translatable("door.locked");
    }
 
    public void doOffsetTransform(IDoorAnimator animator) {
