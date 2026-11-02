@@ -20,4 +20,15 @@ public class ZombieSurvieServeur extends ZombieSurvie {
     protected PathNavigation createNavigation(Level level) {
         return new NavigationZombie(this, level);
     }
+
+    /**
+     * Un zombie du peuplement ({@link Peuplement#TAG}) n'est jamais écrit dans le monde (02/11, audit mods-2 §11) : quand son
+     * tronçon se décharge (joueur téléporté, mort, extraction, déconnexion), il disparaît et sa place revient tout de suite
+     * à son secteur ({@link Peuplement}) ; avant, il était gardé sur le disque et revenait au retour d'un joueur, en plus
+     * des nouveaux. Les autres zombies sont gardés comme avant.
+     */
+    @Override
+    public boolean shouldBeSaved() {
+        return !getTags().contains(Peuplement.TAG) && super.shouldBeSaved();
+    }
 }

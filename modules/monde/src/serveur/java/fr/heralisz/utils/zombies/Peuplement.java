@@ -100,6 +100,17 @@ public final class Peuplement {
         lireVip(e.getServer());
     }
 
+    /**
+     * Zombie du peuplement relu du disque : écrit avant le 02/11 (ils ne le sont plus, {@code ZombieSurvieServeur}) ; il
+     * n'entre pas (sa place est déjà revenue à son secteur) : plus d'anciens zombies en plus des nouveaux.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void ancien(EntityJoinLevelEvent e) {
+        if (e.loadedFromDisk() && !e.getLevel().isClientSide() && e.getEntity() instanceof ZombieSurvie z && z.getTags().contains(TAG)) {
+            e.setCanceled(true);
+        }
+    }
+
     /** Un zombie du peuplement arrive (posé ici, ou rechargé avec son tronçon) : suivi. LOWEST : jamais un refusé. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void arrivee(EntityJoinLevelEvent e) {
@@ -225,6 +236,12 @@ public final class Peuplement {
             ZombieSurvie z = it.next();
             if (z.isRemoved() || !z.isAlive() || z.level() != sl) {
                 it.remove();
+                // tronçon déchargé (02/11) : le zombie n'est pas écrit dans le monde, sa place revient tout de suite
+                if (z.getRemovalReason() == net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK
+                        && z.getPersistentData().contains(SECTEUR)) {
+                    long cle = z.getPersistentData().getLong(SECTEUR);
+                    ReservesZombies.rendre(ReservesZombies.centreX(cle), ReservesZombies.centreZ(cle), now);
+                }
                 continue;
             }
             if (!proche(z.getX(), z.getZ(), tous, d2)) {
