@@ -144,7 +144,7 @@ détectés : en cas de doute, **redémarrer le serveur**.
     handshake = true
     handshakeTimeoutSeconds = 90  # un client à 100 mods peut rester figé après la connexion
     clientIntegrity = true
-    allowedJavaAgents = ["authlib-injector"]   # agents légitimes (launchers crack)
+    allowedJavaAgents = []        # vide : le launcher HeraliZ ne charge aucun agent Java (tout agent = écart)
     buildCheck = true             # même build que le serveur, sinon « relancez le launcher »
     challenge = true              # défi tournant
     challengeMinSeconds = 60      # intervalle aléatoire entre deux défis
@@ -347,7 +347,7 @@ ne sent rien et ne voit rien.
 | Config **Mixin** inconnue qui modifie le rendu, le mouvement, la souris, le réseau, TaCZ… | 🔴 | C'est ainsi que fonctionnent les mods ESP, X-ray, fly, NoSlow, aimbot. Le rapport dit quelle classe est modifiée et ce que ça permet |
 | Module / composant de lancement inconnu (transformateur, coremod) | 🔴 / 🟠 | Code chargé par une autre voie que le dossier mods |
 | Mod chargé hors du dossier `mods/` (options `--fml.*`) | 🔴 | Contourne la vérification du launcher |
-| Agent Java au lancement, agent natif, débogueur, `-Xbootclasspath`… | 🔴 | Méthodes d'injection au démarrage (un faux « authlib-injector » est repéré par son empreinte) |
+| Agent Java au lancement, agent natif, débogueur, `-Xbootclasspath`… | 🔴 | Méthodes d'injection au démarrage (`allowedJavaAgents` vide : aucun agent n'est permis, le launcher n'en utilise pas) |
 | Programme **attaché au jeu en cours de partie** | 🔴 | Signature d'un injecteur |
 | **Code d'origine inconnue** en cours d'exécution (piles de threads + thread de rendu échantillonné) | 🔴 | Un client injecté exécute des classes hors de tout module chargé normalement ; un ESP tourne à chaque image |
 | Anticheat modifié en mémoire (Mixin appliqué à Spartan) | 🔴 | Le cheat neutralise l'anticheat |

@@ -34,7 +34,7 @@ public final class ReferenceProfile {
     public Set<String> origins = new TreeSet<>();
     public Set<String> loaders = new TreeSet<>();
     public Set<String> providers = new TreeSet<>();
-    /** « nom:empreinte » des agents Java autorisés (authlib-injector du launcher…). */
+    /** « nom:empreinte » des agents Java vus sur le client de référence (aucun avec le launcher HeraliZ). */
     public Set<String> agents = new TreeSet<>();
 
     public boolean isEmpty() {

@@ -220,8 +220,10 @@
 	#Un client honnête envoie toujours ses infos (mods, identifiant) juste après la connexion.
 	#S'il ne le fait pas dans le délai, son client a probablement été modifié.
 	handshake = true
-	#Agents Java autorisés (fragment du chemin). Ex : authlib-injector utilisé par certains launchers.
-	allowedJavaAgents = ["authlib-injector"]
+	#Agents Java autorisés (fragment du nom du fichier). VIDE sur HeraliZ (audit du 02/11) : le launcher HeraliZ
+	#n'en charge aucun, donc tout agent Java est un écart (refus en mode strict, alerte sinon). Un nom ici
+	#laissait passer en silence tout agent qui le portait (un outil d'injection renommé, par exemple).
+	allowedJavaAgents = []
 	#Exige que le jeu soit lancé avec les protections anti-injection
 	#(-XX:+DisableAttachMechanism). Le launcher officiel les ajoute : n'activer qu'une
 	#fois le launcher distribué, sinon tous les joueurs seraient signalés. Voir docs/LAUNCHER.md.

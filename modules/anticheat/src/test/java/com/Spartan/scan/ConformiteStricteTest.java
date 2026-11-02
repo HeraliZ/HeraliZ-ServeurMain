@@ -152,6 +152,15 @@ class ConformiteStricteTest {
     }
 
     @Test
+    void reglageParDefautAucunAgentPermis() {
+        // audit du 02/11 : allowedJavaAgents vide (le launcher HeraliZ n'en charge aucun) ; un agent au nom d'un outil
+        // autrefois permis n'est plus ignoré
+        ScanReport r = ScanTestData.clean();
+        List<String> e = ConformiteStricte.ecarts(r, official(), List.of(), INTERDITS);
+        assertTrue(e.stream().anyMatch(s -> s.contains("agent Java") && s.contains("authlib-injector")), e.toString());
+    }
+
+    @Test
     void sansProtectionsDuLauncherRefuse() {
         ScanReport r = ScanTestData.clean();
         r.attachDisabled = false;

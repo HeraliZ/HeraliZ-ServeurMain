@@ -355,8 +355,10 @@ public class SpartanConfig {
                 "Best-effort : un client modifié peut ne rien signaler.")
                 .define("clientIntegrity", true);
         ALLOWED_JAVA_AGENTS = b.comment(
-                "Agents Java autorisés (fragment du chemin). Ex : authlib-injector utilisé par certains launchers.")
-                .defineList("allowedJavaAgents", List.of("authlib-injector"), o -> o instanceof String);
+                "Agents Java autorisés (fragment du nom du fichier). VIDE sur HeraliZ (audit du 02/11) : le launcher HeraliZ",
+                "n'en charge aucun, donc tout agent Java est un écart (refus en mode strict, alerte sinon). Un nom ici",
+                "laissait passer en silence tout agent qui le portait (un outil d'injection renommé, par exemple).")
+                .defineList("allowedJavaAgents", List.of(), o -> o instanceof String);
         REQUIRE_HARDENED_JVM = b.comment(
                 "Exige que le jeu soit lancé avec les protections anti-injection",
                 "(-XX:+DisableAttachMechanism). Le launcher officiel les ajoute : n'activer qu'une",

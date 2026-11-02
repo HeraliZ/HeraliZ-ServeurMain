@@ -14,8 +14,8 @@ import net.minecraftforge.network.NetworkEvent;
  *              pas le chemin complet qui contiendrait le nom d'utilisateur Windows) ;
  * - "thread" : des threads sans nom tournent dans le jeu.
  *
- * C'est le serveur qui décide : les agents autorisés (ex. authlib-injector des
- * launchers crack) sont ignorés, le reste part en alerte au staff.
+ * C'est le serveur qui décide (aucun agent autorisé par défaut : le launcher
+ * HeraliZ n'en charge aucun), alerte au staff.
  * Best-effort : un client modifié peut ne rien signaler.
  */
 public class ClientReportPacket {
