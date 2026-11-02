@@ -309,6 +309,7 @@
   "heralisz_utils.depart.attente": "Подожди ещё %s с до новой отправки.",
   "heralisz_utils.depart.pas_de_carte": "Карты (%s) нет на этом сервере: сообщи администрации.",
   "heralisz_utils.depart.compte": "Отправка через %s с: не двигайся.",
+  "heralisz_utils.depart.imminent": "Отправка сейчас: не двигайся.",
   "heralisz_utils.depart.annule": "Отправка отменена: ты сдвинулся.",
   "heralisz_utils.depart.recherche": "Поиск безопасной точки прибытия…",
   "heralisz_utils.depart.echec": "Сейчас нет безопасной точки прибытия: попробуй чуть позже (или сообщи администрации).",

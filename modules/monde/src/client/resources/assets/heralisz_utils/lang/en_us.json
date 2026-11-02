@@ -309,6 +309,7 @@
   "heralisz_utils.depart.attente": "Wait %s more s before another departure.",
   "heralisz_utils.depart.pas_de_carte": "The map (%s) doesn't exist on this server: tell the staff.",
   "heralisz_utils.depart.compte": "Departing in %s s: don't move.",
+  "heralisz_utils.depart.imminent": "Departing now: don't move.",
   "heralisz_utils.depart.annule": "Departure cancelled: you moved.",
   "heralisz_utils.depart.recherche": "Looking for a safe arrival point…",
   "heralisz_utils.depart.echec": "No safe arrival point right now: try again in a moment (or tell the staff).",

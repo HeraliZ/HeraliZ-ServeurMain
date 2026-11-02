@@ -309,6 +309,7 @@
   "heralisz_utils.depart.attente": "Attends encore %s s avant un nouveau départ.",
   "heralisz_utils.depart.pas_de_carte": "La carte (%s) n'existe pas sur ce serveur : préviens le staff.",
   "heralisz_utils.depart.compte": "Départ dans %s s : ne bouge pas.",
+  "heralisz_utils.depart.imminent": "Départ imminent : ne bouge pas.",
   "heralisz_utils.depart.annule": "Départ annulé : tu as bougé.",
   "heralisz_utils.depart.recherche": "Recherche d'un point d'arrivée sûr…",
   "heralisz_utils.depart.echec": "Aucun point d'arrivée sûr pour l'instant : réessaie dans un moment (ou préviens le staff).",

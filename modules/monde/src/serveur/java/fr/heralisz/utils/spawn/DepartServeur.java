@@ -109,6 +109,8 @@ public final class DepartServeur {
         /** Point tiré dont le tronçon se charge en tâche de fond, et le tick où on le contrôle quoi qu'il arrive. */
         Tirage tirage;
         int tirageLimite;
+        /** Tick où le point d'arrivée a été trouvé (attente de ses tronçons comptée à partir de là ou de la fin). */
+        int trouveeA;
 
         EnCours(ResourceKey<Level> monde, Vec3 depart, int debut, int fin, int essais) {
             this.monde = monde;
@@ -131,6 +133,11 @@ public final class DepartServeur {
 
     /** Au plus tant de ticks d'attente du tronçon d'un point tiré ; passé ce délai, il est contrôlé comme avant. */
     private static final int ATTENTE_TIRAGE = 40;
+    /**
+     * Après le compte à rebours, au plus tant de ticks d'attente des tronçons d'arrivée (3 s, comme {@code Prechargement}) ;
+     * le joueur reste surveillé pendant ce temps (02/11, audit mods-2 §15).
+     */
+    private static final int ATTENTE_ARRIVEE = 60;
 
     private static final Map<UUID, EnCours> EN_COURS = new HashMap<>();
     private static final Map<UUID, Integer> DERNIER = new HashMap<>();
@@ -290,6 +297,7 @@ public final class DepartServeur {
                 Tirage t = d.tirage;
                 d.tirage = null;
                 d.trouvee = controler(carte, sp, t, sp.getRandom());
+                d.trouveeA = maintenant;
                 if (d.trouvee != null) {
                     // pendant le compte à rebours, Minecraft charge les tronçons d'arrivée en tâche de fond (01/11)
                     Prechargement.precharger(carte, d.trouvee.x(), d.trouvee.z());
@@ -306,9 +314,17 @@ public final class DepartServeur {
                 continue;
             }
             if (d.trouvee != null) {
-                it.remove();
+                // 02/11 (audit mods-2 §15) : tronçons d'arrivée pas encore prêts : le joueur attend (3 s au plus) TOUJOURS
+                // dans la liste surveillée (bouger, mourir, changer de monde annule) ; avant, il sortait de la liste et
+                // pouvait marcher ou prendre un autre téléporteur, puis partait quand même
                 Arrivee a = d.trouvee;
-                apres.add(() -> Prechargement.puis(sp, carte, a.x(), a.z(), () -> partir(sp, carte, a)));
+                int attendu = maintenant - Math.max(d.fin, d.trouveeA);
+                if (Prechargement.pret(carte, a.x(), a.z()) || attendu >= ATTENTE_ARRIVEE) {
+                    it.remove();
+                    apres.add(() -> partir(sp, carte, a));
+                } else if (attendu % 20 == 0) {
+                    sp.displayClientMessage(t("imminent", "Départ imminent : ne bouge pas."), true);
+                }
             } else if (d.essais <= 0 && d.tirage == null) {
                 it.remove();
                 echec(sp);
@@ -326,6 +342,8 @@ public final class DepartServeur {
 
     /** Vraie téléportation vers la carte (suivie par Spartan), effets d'arrivée. */
     public static void partir(ServerPlayer sp, ServerLevel carte, Arrivee a) {
+        // 02/11 (audit mods-2 §15) : aucun écran du spawn (planque, coffre VIP, marchand...) ne reste ouvert sur la carte
+        if (sp.containerMenu != sp.inventoryMenu) sp.closeContainer();
         ServerLevel ici = sp.serverLevel();
         envol(ici, sp.getX(), sp.getY(), sp.getZ());
         ici.playSound(null, sp.getX(), sp.getY(), sp.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.6f, 0.8f);
