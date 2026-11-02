@@ -271,34 +271,59 @@ public final class CombatService {
     }
 
     // ------------------------------------------------------------------ commandes
+    /**
+     * Refus d'une commande : message au joueur, dans la barre au-dessus des objets ({@code barre}) ou dans le chat (joueur
+     * a terre : Reanimation masque sa barre d'action, il ne garde que le chat et les titres).
+     */
+    public record Refus(Component message, boolean barre) {
+        public void prevenir(ServerPlayer p) {
+            if (barre) p.displayClientMessage(message, true);
+            else p.sendSystemMessage(message);
+        }
+    }
+
+    /**
+     * Commande des mods et de Minecraft (evenement de Forge). Les commandes des plugins Bukkit (AuthMe {@code /logout},
+     * LiteBans, WorldGuard...) ne passent pas par cet evenement sous Mohist : elles sont jugees par les memes regles dans
+     * {@code CommandesBukkit} (02/11, audit point 32), avant de partir ; une commande refusee la-bas n'arrive jamais ici.
+     */
     private static void commande(CommandEvent e) {
         var ctx = e.getParseResults().getContext();
         if (!(ctx.getSource().getEntity() instanceof ServerPlayer p)) return;
-        String racine = racine(e.getParseResults().getReader().getString());
-        if (racine.isEmpty()) return;
-        if (refusCombat(p, racine, e)) return;
-        refusCarte(p, racine, e);
+        Refus r = refus(p, racine(e.getParseResults().getReader().getString()));
+        if (r == null) return;
+        e.setCanceled(true);
+        r.prevenir(p);
     }
 
-    /** Combat ou a terre : toute commande hors de la liste permise est refusee. Rend vrai si la commande est refusee. */
-    private static boolean refusCombat(ServerPlayer p, String racine, CommandEvent e) {
-        if (!NoyauConfig.vrai(NoyauConfig.REFUS_COMMANDES, true)) return false;
+    /**
+     * Pourquoi cette commande (racine deja normalisee par {@link #racine}) est refusee a ce joueur : en combat ou a terre
+     * hors de {@code commandes_permises_combat}, sur la carte hors de {@code commandes_permises} ; null si elle passe.
+     * Memes regles pour les commandes des mods (Forge) et celles des plugins (Bukkit). Fil serveur.
+     */
+    @javax.annotation.Nullable
+    public static Refus refus(ServerPlayer p, String racine) {
+        if (p == null || racine == null || racine.isEmpty()) return null;
+        Refus r = refusCombat(p, racine);
+        return r != null ? r : refusCarte(p, racine);
+    }
+
+    /** Combat ou a terre : toute commande hors de la liste permise est refusee. */
+    @javax.annotation.Nullable
+    private static Refus refusCombat(ServerPlayer p, String racine) {
+        if (!NoyauConfig.vrai(NoyauConfig.REFUS_COMMANDES, true)) return null;
         long reste = CombatTag.restantMs(p);
         // a terre (Reanimation) : pas de fuite ni de rangement pendant qu'on peut l'achever, le fouiller ou le relever
         boolean aTerre = reste <= 0 && ATerre.aTerreReanimation(p);
-        if (reste <= 0 && !aTerre) return false;
-        if (NoyauConfig.vrai(NoyauConfig.OPS_EXEMPTES, false) && p.hasPermissions(2)) return false;
-        if (commandes.contains(racine)) return false;
-        e.setCanceled(true);
+        if (reste <= 0 && !aTerre) return null;
+        if (NoyauConfig.vrai(NoyauConfig.OPS_EXEMPTES, false) && p.hasPermissions(2)) return null;
+        if (commandes.contains(racine)) return null;
         if (aTerre) {
-            // Reanimation masque la barre d'action d'un joueur a terre (il ne garde que le chat et les titres)
-            p.sendSystemMessage(Component.translatableWithFallback("noyau.combat.commande_refusee_a_terre",
-                    "Impossible à terre.").withStyle(s -> s.withColor(0xFF8A8A)));
-            return true;
+            return new Refus(Component.translatableWithFallback("noyau.combat.commande_refusee_a_terre",
+                    "Impossible à terre.").withStyle(s -> s.withColor(0xFF8A8A)), false);
         }
-        p.displayClientMessage(Component.translatableWithFallback("noyau.combat.commande_refusee", "Impossible en combat · %s s",
+        return new Refus(Component.translatableWithFallback("noyau.combat.commande_refusee", "Impossible en combat · %s s",
                 (reste + 999) / 1000).withStyle(s -> s.withColor(0xFF8A8A)), true);
-        return true;
     }
 
     /**
@@ -307,13 +332,13 @@ public final class CombatService {
      * commande et dit qu'elle marche au spawn (avant : « seul /tpa marche ici », faux depuis que la liste s'est allongee) ;
      * c'est aussi ce que voit le joueur qui clique sur « Boutique » dans le menu Echap sur la carte (/boutique).
      */
-    private static void refusCarte(ServerPlayer p, String racine, CommandEvent e) {
-        if (!NoyauConfig.vrai(NoyauConfig.CARTE_ACTIF, true)) return;
-        if (p.level().dimension() != net.minecraft.world.level.Level.OVERWORLD) return;
-        if (p.isCreative() || p.isSpectator() || p.hasPermissions(2)) return;
-        if (commandesCarte.contains(racine)) return;
-        e.setCanceled(true);
-        p.displayClientMessage(Component.translatableWithFallback("noyau.carte.commande_refusee",
+    @javax.annotation.Nullable
+    private static Refus refusCarte(ServerPlayer p, String racine) {
+        if (!NoyauConfig.vrai(NoyauConfig.CARTE_ACTIF, true)) return null;
+        if (p.level().dimension() != net.minecraft.world.level.Level.OVERWORLD) return null;
+        if (p.isCreative() || p.isSpectator() || p.hasPermissions(2)) return null;
+        if (commandesCarte.contains(racine)) return null;
+        return new Refus(Component.translatableWithFallback("noyau.carte.commande_refusee",
                 "/%s : seulement au spawn, pas sur la carte.", racine).withStyle(s -> s.withColor(0xFF8A8A)), true);
     }
 

@@ -2,6 +2,7 @@ package fr.heraliz.noyau.serveur.commandes;
 
 import com.mojang.logging.LogUtils;
 import fr.heraliz.noyau.NoyauConfig;
+import fr.heraliz.noyau.serveur.combat.CombatService;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Côté Bukkit des commandes (02/11, audit point 36), sur le serveur hybride (Mohist) : la liste des commandes envoyée à
@@ -24,6 +26,12 @@ import java.util.Set;
  * ~62, LiteBans 73...) et commandes de plugins sans usage. Rien n'est retiré : un nom caché marche toujours si on le tape
  * (le staff tapait {@code /namehist}). Événement Bukkit {@code PlayerCommandSendEvent} (fait pour ça), à chaque envoi de
  * la liste (connexion, changement de droits).
+ * <p>Commandes des plugins jugées comme les autres (02/11, audit point 32, A279) : sous Mohist, une commande de plugin
+ * (AuthMe {@code /logout}, LiteBans, WorldGuard...) ne passe pas par l'événement de commande de Forge, donc pas par le
+ * filtre « combat, à terre, sur la carte » du noyau ({@code /logout} en combat ou à terre : AuthMe figeait et protégeait
+ * le joueur jusqu'à la fin de son tag). Toute commande tapée par un joueur passe d'abord par l'événement Bukkit
+ * {@code PlayerCommandPreprocessEvent} : les mêmes règles ({@link CombatService#refus}) y sont appliquées, avec le même
+ * message. Une commande refusée là n'arrive jamais à Forge ; une commande permise l'est aussi par Forge (mêmes règles).</p>
  * <p>Écouteurs Bukkit créés par réflexion (aucune dépendance de compilation), rattachés à un plugin déjà chargé, comme
  * {@code ClicObjetBukkit}. Sans Bukkit (Forge seul) : rien.</p>
  */
@@ -33,7 +41,8 @@ public final class CommandesBukkit {
     private static final String[] PORTEURS = {"WorldGuard", "LuckPerms", "AuthMe"};
 
     private static boolean fini;
-    private static Method envoiCommandes;
+    private static MinecraftServer serveur;
+    private static Method envoiCommandes, message, joueur, annuler, uuid;
 
     private CommandesBukkit() {
     }
@@ -63,10 +72,16 @@ public final class CommandesBukkit {
             Class<?> priorite = Class.forName("org.bukkit.event.EventPriority", false, cl);
             Class<?> plugin = Class.forName("org.bukkit.plugin.Plugin", false, cl);
             Class<?> envoi = Class.forName("org.bukkit.event.player.PlayerCommandSendEvent", false, cl);
+            Class<?> tapee = Class.forName("org.bukkit.event.player.PlayerCommandPreprocessEvent", false, cl);
             Object pm = bukkit.getMethod("getPluginManager").invoke(null);
             Object proprio = porteur(pm);
             if (proprio == null) return false;   // nouvel essai plus tard
             envoiCommandes = envoi.getMethod("getCommands");
+            message = tapee.getMethod("getMessage");
+            joueur = tapee.getMethod("getPlayer");
+            annuler = tapee.getMethod("setCancelled", boolean.class);
+            uuid = Class.forName("org.bukkit.entity.Entity", false, cl).getMethod("getUniqueId");
+            serveur = srv;
             Object e = Proxy.newProxyInstance(cl, new Class<?>[]{ecouteur}, (px, m, a) -> objet(px, m, a));
             Object cacher = Proxy.newProxyInstance(cl, new Class<?>[]{executeur}, (px, m, a) -> {
                 if (m.getName().equals("execute") && a != null && a.length == 2 && envoi.isInstance(a[1])) {
@@ -75,13 +90,25 @@ public final class CommandesBukkit {
                 }
                 return objet(px, m, a);
             });
+            Object filtrer = Proxy.newProxyInstance(cl, new Class<?>[]{executeur}, (px, m, a) -> {
+                if (m.getName().equals("execute") && a != null && a.length == 2 && tapee.isInstance(a[1])) {
+                    filtrer(a[1]);
+                    return null;
+                }
+                return objet(px, m, a);
+            });
             Method enregistrer = pm.getClass().getMethod("registerEvent", Class.class, ecouteur, priorite, executeur, plugin, boolean.class);
             @SuppressWarnings({"unchecked", "rawtypes"})
             Object haute = Enum.valueOf((Class) priorite, "HIGHEST");
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Object basse = Enum.valueOf((Class) priorite, "LOWEST");
             // HIGHEST : après les plugins qui ajoutent ou retirent des noms
             enregistrer.invoke(pm, envoi, e, haute, cacher, proprio, false);
+            // LOWEST, commandes déjà annulées ignorées (AuthMe avant la connexion) : jugée avant tout plugin
+            enregistrer.invoke(pm, tapee, e, basse, filtrer, proprio, true);
             fini = true;
-            LOG.info("[noyau] liste des commandes : {} nom(s) caché(s) aux joueurs ([commandes] cachees)", cachees().size());
+            LOG.info("[noyau] liste des commandes : {} nom(s) caché(s) aux joueurs ([commandes] cachees) ; commandes des plugins"
+                    + " soumises aux règles du combat, à terre et de la carte", cachees().size());
             return true;
         } catch (Throwable ex) {
             fini = true;
@@ -120,6 +147,22 @@ public final class CommandesBukkit {
             });
         } catch (Throwable ex) {
             LOG.warn("[noyau] liste des commandes : noms cachés non appliqués ({})", ex.toString());
+        }
+    }
+
+    /** Commande tapée par un joueur (plugins compris) : refusée en combat, à terre ou sur la carte comme celles des mods. */
+    private static void filtrer(Object ev) {
+        try {
+            if (!(message.invoke(ev) instanceof String texte)) return;
+            Object bp = joueur.invoke(ev);
+            if (bp == null || serveur == null || !(uuid.invoke(bp) instanceof UUID u)) return;
+            ServerPlayer p = serveur.getPlayerList().getPlayer(u);
+            CombatService.Refus r = CombatService.refus(p, CombatService.racine(texte));
+            if (r == null) return;
+            annuler.invoke(ev, true);
+            r.prevenir(p);
+        } catch (Throwable ex) {
+            LOG.warn("[noyau] commande d'un plugin non jugée par les règles du combat ({})", ex.toString());
         }
     }
 
