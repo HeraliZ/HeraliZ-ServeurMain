@@ -282,17 +282,27 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
                 entityData.set(OPEN_AT, level().getGameTime());
                 opener = player.getUUID();
                 level().playSound(null, getX(), getY() + 1.2, getZ(), ModSounds.CRATE_REVEAL.get(), SoundSource.BLOCKS, 1.4f, 1.0f);
-                if (evenement != null) {
-                    String ev = evenement;
-                    evenement = null;   // une seule fois, même si la caisse est rechargée
-                    FINS_EVENEMENT.remove(ev);
-                    prevenirEvenement(player, ev);
-                }
+                prevenirSiJoueur(player);
             } else if (level().getGameTime() - at >= REVEAL_TICKS) {
+                prevenirSiJoueur(player);
                 ouvrirContenu(player);
             }
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    /**
+     * Première ouverture par un joueur en survie : l'événement est prévenu (points, objet d'événement), une seule fois. Un
+     * membre du staff en créatif ou spectateur ouvre la caisse sans prendre les points (02/11, audit mods-2 §14 ; avant,
+     * les points allaient à son clan et le largage était noté récompensé) : le premier joueur en survie qui l'ouvre ensuite
+     * les prend.
+     */
+    private void prevenirSiJoueur(Player player) {
+        if (evenement == null || player.isCreative() || player.isSpectator()) return;
+        String ev = evenement;
+        evenement = null;   // une seule fois, même si la caisse est rechargée
+        FINS_EVENEMENT.remove(ev);
+        prevenirEvenement(player, ev);
     }
 
     private static java.lang.reflect.Method revelation;
@@ -328,7 +338,35 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         unpackLoot(player);
-        return ChestMenu.threeRows(id, inventory, this);
+        return new MenuCaisse(id, inventory, this);
+    }
+
+    /**
+     * Caisse ouverte comme un coffre ordinaire (sans la découverte de HeraliZ Loot) : on prend, on ne dépose rien (02/11,
+     * audit n° 8 : la caisse disparaît avec ce qu'elle contient ; un objet rangé dedans, objets à vie compris, était
+     * perdu). Comme la découverte des coffres T7, qui refuse déjà tout dépôt.
+     */
+    private static final class MenuCaisse extends ChestMenu {
+        MenuCaisse(int id, Inventory inv, net.minecraft.world.Container c) {
+            super(net.minecraft.world.inventory.MenuType.GENERIC_9x3, id, inv, c, 3);
+            for (int i = 0; i < SLOTS; i++) {
+                net.minecraft.world.inventory.Slot ancien = slots.get(i);
+                net.minecraft.world.inventory.Slot nouveau = new net.minecraft.world.inventory.Slot(c, i, ancien.x, ancien.y) {
+                    @Override
+                    public boolean mayPlace(ItemStack s) {
+                        return false;
+                    }
+                };
+                nouveau.index = ancien.index;
+                slots.set(i, nouveau);
+            }
+        }
+
+        /** Maj + clic : de la caisse vers l'inventaire seulement (Minecraft complète les piles sans demander aux cases). */
+        @Override
+        public ItemStack quickMoveStack(Player p, int index) {
+            return index >= SLOTS ? ItemStack.EMPTY : super.quickMoveStack(p, index);
+        }
     }
 
     @Override
