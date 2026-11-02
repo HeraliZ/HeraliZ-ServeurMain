@@ -9,7 +9,7 @@ import fr.heraliz.clashwar.moteur.api.Carte;
 import fr.heraliz.clashwar.moteur.api.ChoixClasse;
 import fr.heraliz.clashwar.moteur.api.Equipe;
 import fr.heraliz.clashwar.moteur.api.Equipement;
-import fr.heraliz.clashwar.moteur.api.Hud;
+import fr.heraliz.clashwar.moteur.api.HudPartie;
 import fr.heraliz.clashwar.moteur.api.Instance;
 import fr.heraliz.clashwar.moteur.api.KillFeed;
 import fr.heraliz.clashwar.moteur.api.Kit;
@@ -767,7 +767,7 @@ public final class MatchCw extends Partie {
      * est envoyé aussi (le joueur le masque quand celui du ClashWar est actif). {@code secondes} = -1 : pas de temps.
      */
     private void bandeau(int secondes, boolean nouvelleManche) {
-        Hud.envoyer(this, Component.translatable("clashwar.hud.manche", nomTour, Math.max(1, manche)), secondes,
+        HudPartie.envoyer(this, Component.translatable("clashwar.hud.manche", nomTour, Math.max(1, manche)), secondes,
                 Component.translatable("clashwar.hud.contre", ta.libelle(), tb.libelle()));
         String tour = nomTour.getString();
         int gagnantes = CwConfig.get().manchesGagnantes;
