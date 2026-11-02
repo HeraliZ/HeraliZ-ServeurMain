@@ -8,8 +8,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
 /**
- * Jackpot progressif commun a toutes les machines a sous : une petite part de chaque mise l'alimente,
- * il est gagne avec 3 couronnes (Fruits d'Or) ou 3 etoiles (Diamant Royal).
+ * Jackpot progressif commun a toutes les machines a sous : une petite part de chaque mise l'alimente
+ * ({@code general.jackpot_part_mises}, 1 % depuis le 02/11 ; avant, rien ne l'alimentait depuis le retrait des machines
+ * Fruits d'Or et Diamant Royal), il est gagne par la partie qui atteint le gain maximal de sa machine
+ * (SlotBlockEntityServeur), et montre par l'afficheur du jackpot et la tele (chaine 2).
  */
 public class Jackpot extends SavedData {
     private static final String NAME = "heralizcasino_jackpot";

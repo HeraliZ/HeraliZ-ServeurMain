@@ -68,6 +68,7 @@
   "message.heralizcasino.push": "Push: %s caps returned to your caps account.",
   "message.heralizcasino.partial": "You get back %s caps (%s) out of %s bet, into your caps account.",
   "message.heralizcasino.announce": "★ %1$s wins %2$s caps! (%3$s, %4$s)",
+  "message.heralizcasino.jackpot_gagne": "★ %1$s wins the JACKPOT: %2$s caps! (%3$s)",
   "message.heralizcasino.lose": "Lost: %s caps.",
   "message.heralizcasino.occupied": "Machine occupied by %s.",
   "message.heralizcasino.busy": "The machine is already playing, wait a moment.",

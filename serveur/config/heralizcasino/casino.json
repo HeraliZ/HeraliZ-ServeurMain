@@ -4,7 +4,8 @@
     "announce_min_profit": 5000,
     "announce_min_multiplier": 10.0,
     "jackpot_seed": 5000,
-    "jackpot_full_bet": 100
+    "jackpot_full_bet": 100,
+    "jackpot_part_mises": 0.01
   },
   "caisse": {
     "economie": {

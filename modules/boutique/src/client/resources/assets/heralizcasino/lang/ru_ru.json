@@ -68,6 +68,7 @@
   "message.heralizcasino.push": "Ничья: на счёт крышек возвращено %s.",
   "message.heralizcasino.partial": "Ты возвращаешь %s крышек (%s) из %s поставленных, на счёт крышек.",
   "message.heralizcasino.announce": "★ %1$s выигрывает %2$s крышек! (%3$s, %4$s)",
+  "message.heralizcasino.jackpot_gagne": "★ %1$s выигрывает ДЖЕКПОТ: %2$s крышек! (%3$s)",
   "message.heralizcasino.lose": "Проигрыш: %s крышек.",
   "message.heralizcasino.occupied": "Автомат занят игроком %s.",
   "message.heralizcasino.busy": "Автомат уже играет, подожди немного.",

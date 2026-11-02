@@ -68,6 +68,7 @@
   "message.heralizcasino.push": "Égalité : %s capsules rendues sur ton compte de capsules.",
   "message.heralizcasino.partial": "Tu récupères %s capsules (%s) sur %s misées, sur ton compte de capsules.",
   "message.heralizcasino.announce": "★ %1$s remporte %2$s capsules ! (%3$s, %4$s)",
+  "message.heralizcasino.jackpot_gagne": "★ %1$s remporte le JACKPOT : %2$s capsules ! (%3$s)",
   "message.heralizcasino.lose": "Perdu : %s capsules.",
   "message.heralizcasino.occupied": "Machine occupée par %s.",
   "message.heralizcasino.busy": "La machine est déjà en train de jouer, patiente un instant.",

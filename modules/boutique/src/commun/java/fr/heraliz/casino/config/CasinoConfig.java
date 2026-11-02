@@ -132,6 +132,7 @@ public final class CasinoConfig {
             pierreFeuilleCiseaux = (pierreFeuilleCiseaux == null ? rps() : pierreFeuilleCiseaux).sanitized();
             batailleNavale = (batailleNavale == null ? new DuelRules() : batailleNavale).sanitized();
             general.jackpotSeed = Math.max(0, general.jackpotSeed);
+            general.jackpotPartMises = Double.isFinite(general.jackpotPartMises) ? Math.max(0, Math.min(0.5, general.jackpotPartMises)) : 0;
             lumieres = sanitizedLights(lumieres);
             version = VERSION;
             return this;
@@ -179,6 +180,12 @@ public final class CasinoConfig {
         public long jackpotSeed = 5000;
         /** Mise a partir de laquelle un jackpot est gagne en entier (en dessous : au prorata de la mise). */
         public long jackpotFullBet = 100;
+        /**
+         * Part de chaque mise des machines a sous (Rotten, Olympe, Loup, La Niche) versee au jackpot progressif (02/11,
+         * choix du proprietaire : 0,01 = 1 %). Le jackpot est gagne par la partie qui atteint le gain maximal de sa
+         * machine (le plus gros tirage possible), en plus de ce gain. 0 : jackpot ni nourri ni gagne (comme avant).
+         */
+        public double jackpotPartMises = 0.01;
     }
 
     /**
