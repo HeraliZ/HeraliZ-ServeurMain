@@ -29,13 +29,15 @@ import java.util.List;
 /**
  * Les véhicules et les systèmes du serveur.
  * <ul>
- *   <li><b>Matchs et bunkers</b> ({@link VehiculesConfig#DIMENSIONS_INTERDITES}) : impossible d'y poser un véhicule ; un
+ *   <li><b>Spawn et tutoriel des bases</b> ({@link VehiculesConfig#DIMENSIONS_SANS_POSE}, 02/11, audit mods-2 §12) :
+ *   impossible d'y poser un véhicule, aucun véhicule n'y voyage ; ceux qui y sont déjà (décor du staff) restent.</li>
+ *   <li><b>Arènes du ClashWar</b> ({@link VehiculesConfig#DIMENSIONS_INTERDITES}) : impossible d'y poser un véhicule ; un
  *   véhicule qui y arriverait (commande, vieux monde) est retiré et rendu en objet à sa place, avec le contenu de son
  *   coffre ; aucun véhicule ne peut y changer de dimension.</li>
- *   <li><b>Tag de combat</b> (clé {@code heralisz:combat_jusqua} de HeraliZ Matchs, epoch ms) : pas de véhicule sorti de la
+ *   <li><b>Tag de combat</b> (clé {@code heralisz:combat_jusqua} du noyau, epoch ms) : pas de véhicule sorti de la
  *   poche en plein combat. Les dégâts d'un véhicule conduit comptent déjà comme venant du conducteur (source de Limitless
  *   Vehicle : entité causale = conducteur), donc ils taguent normalement.</li>
- *   <li><b>Téléportations</b> : nos téléportations (bases, Coffre des matchs, train) font descendre le joueur par
+ *   <li><b>Téléportations</b> : nos téléportations (bases, Coffre du ClashWar, train) font descendre le joueur par
  *   {@code stopRiding}, que Limitless Vehicle accepte (il ne bloque que la touche « s'accroupir ») ; le moteur fait aussi
  *   descendre à chaque {@code EntityTeleportEvent} et la téléportation vanilla vers une autre dimension descend d'elle-même.
  *   Filet en plus ici : descente avant tout changement de dimension d'un passager.</li>
@@ -47,7 +49,7 @@ public final class Regles {
     private Regles() {
     }
 
-    /** Clé du tag de combat (contrat de HeraliZ Matchs, sans en dépendre). */
+    /** Clé du tag de combat (contrat du noyau, {@code CombatTag}). */
     public static final String CLE_COMBAT = "heralisz:combat_jusqua";
 
     static void enregistrer(IEventBus bus) {
@@ -63,6 +65,18 @@ public final class Regles {
             l = VehiculesConfig.DIMENSIONS_INTERDITES.get();
         } catch (IllegalStateException pasEncoreCharge) {
             l = VehiculesConfig.DIMENSIONS_INTERDITES.getDefault();
+        }
+        return l.contains(dim.location().toString());
+    }
+
+    /** Pas de pose ni de voyage de véhicule (spawn, tutoriel) : ce réglage ou une dimension interdite. */
+    public static boolean poseInterdite(ResourceKey<Level> dim) {
+        if (dimensionInterdite(dim)) return true;
+        List<? extends String> l;
+        try {
+            l = VehiculesConfig.DIMENSIONS_SANS_POSE.get();
+        } catch (IllegalStateException pasEncoreCharge) {
+            l = VehiculesConfig.DIMENSIONS_SANS_POSE.getDefault();
         }
         return l.contains(dim.location().toString());
     }
@@ -83,7 +97,7 @@ public final class Regles {
     private static void onPose(PlayerInteractEvent.RightClickBlock e) {
         if (!(e.getItemStack().getItem() instanceof VehicleSpawnItem) || !(e.getEntity() instanceof ServerPlayer p)) return;
         String refus = null;
-        if (dimensionInterdite(p.level().dimension())) refus = "heraliz_vehicules.refus.dimension";
+        if (poseInterdite(p.level().dimension())) refus = "heraliz_vehicules.refus.dimension";
         else if (refusEnCombat() && enCombat(p)) refus = "heraliz_vehicules.refus.combat";
         else if (ContenuRetire.estRetire(e.getItemStack())) refus = "heraliz_vehicules.refus.retire";
         if (refus != null) {
@@ -120,7 +134,7 @@ public final class Regles {
 
     /** Changement de dimension : un véhicule ne va pas dans une dimension interdite ; un passager descend d'abord. */
     private static void onVoyage(EntityTravelToDimensionEvent e) {
-        if (e.getEntity() instanceof AbstractVehicle && dimensionInterdite(e.getDimension())) {
+        if (e.getEntity() instanceof AbstractVehicle && poseInterdite(e.getDimension())) {
             e.setCanceled(true);
             return;
         }

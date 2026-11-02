@@ -1,5 +1,5 @@
 {
-  "heraliz_vehicules.refus.dimension": "Vehicles are not allowed here (matches, Zombies mode, bunkers).",
+  "heraliz_vehicules.refus.dimension": "Vehicles are not allowed here: only on the map.",
   "heraliz_vehicules.refus.combat": "You can't take out a vehicle during combat.",
   "heraliz_vehicules.refus.retire": "This vehicle does not exist on HeraliZ.",
   "heraliz_vehicules.cmd.liste": "HeraliZ vehicles (fuel: jerrycan, right-click the vehicle):",
