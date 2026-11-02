@@ -63,7 +63,8 @@
 	level_dat_en_fond = true
 	#Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est
 	#libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.
-	mondes_sans_spawn = ["crac:bases", "crac:tuto", "heraliz_clashwar:arenes"]
+	#02/11 : crac:bases retiré (ancien monde des bases fermé, plus créé) ; à remettre ici s'il est rouvert.
+	mondes_sans_spawn = ["crac:tuto", "heraliz_clashwar:arenes"]
 	#Mondes de mondes_sans_spawn (01/11) : true = leur zone de départ n'est même plus préparée au démarrage
 	#(Mohist chargeait encore 441 tronçons par monde, voire les générait, avant de les libérer) ni remise par /setworldspawn.
 	#false : libérée seulement après le démarrage, comme avant. La carte et le monde du spawn gardent la leur (réapparitions

@@ -50,7 +50,7 @@ public final class NoyauConfig {
    /** level.dat compressé et écrit à côté du fil serveur, relu avec les réglages (LevelDatFond de la partie serveur). */
    public static volatile boolean levelDatEnFond = true;
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MONDES_SANS_SPAWN;
-   public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:bases", "crac:tuto", "heraliz_clashwar:arenes");
+   public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:tuto", "heraliz_clashwar:arenes");
    public static final ForgeConfigSpec.BooleanValue SPAWN_JAMAIS_PREPARE;
    /** Zone de départ des mondes de mondes_sans_spawn jamais préparée (ni au démarrage, ni par /setworldspawn). */
    public static volatile boolean spawnJamaisPrepare = true;
@@ -206,7 +206,8 @@ public final class NoyauConfig {
             "contenu est toujours relevé par Minecraft) ; à l'arrêt du serveur, écrit tout de suite. false : comme Minecraft.")
             .define("level_dat_en_fond", true);
       MONDES_SANS_SPAWN = b.comment("Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est",
-            "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.")
+            "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.",
+            "02/11 : crac:bases retiré (ancien monde des bases fermé, plus créé) ; à remettre ici s'il est rouvert.")
             .defineListAllowEmpty(List.of("mondes_sans_spawn"), () -> MONDES_SANS_SPAWN_DEFAUT, o -> o instanceof String);
       SPAWN_JAMAIS_PREPARE = b.comment("Mondes de mondes_sans_spawn (01/11) : true = leur zone de départ n'est même plus préparée au démarrage",
             "(Mohist chargeait encore 441 tronçons par monde, voire les générait, avant de les libérer) ni remise par /setworldspawn.",
