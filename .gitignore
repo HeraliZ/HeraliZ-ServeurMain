@@ -47,8 +47,6 @@ Thumbs.db
 *.key
 serveur/config/heraliz_grades/boutique_site.json
 
-# ProGuard téléchargé par outils/brouiller.py (hors Git)
-outils/brouillage/.proguard/
 /build/
 /construire.log
 /construire.verrou

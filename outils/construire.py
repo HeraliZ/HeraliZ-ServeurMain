@@ -62,10 +62,20 @@ def jars(p):
     return {"seul": libs / nom}
 
 
+# fabrication commune à tous les modules : un changement ici (options du compilateur, versions…) doit refaire chaque jar
+# (02/11, audit point 12 : sinon --si-change gardait les jars déjà fabriqués avec les anciennes options)
+FABRICATION_COMMUNE = ("build.gradle", "settings.gradle", "gradle.properties", "gradle/module-coupe.gradle")
+
+
 def empreinte(p):
-    """Empreinte des sources et fichiers de fabrication du projet (pas de build/ ni run/)."""
+    """Empreinte des sources et fichiers de fabrication du projet (pas de build/ ni run/), et de la fabrication commune."""
     import hashlib
     h = hashlib.sha256()
+    for nom in FABRICATION_COMMUNE:
+        f = chemins.DEPOT / nom
+        if f.is_file():
+            h.update(nom.encode())
+            h.update(f.read_bytes())
     for f in sorted(p.rglob("*")):
         rel = f.relative_to(p)
         if f.is_file() and rel.parts[0] not in ("build", "run", ".gradle", "out"):

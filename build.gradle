@@ -6,6 +6,16 @@ plugins {
 }
 
 subprojects { p ->
+    // Audit du 02/11 (point 12) : nos classes sont compilées SANS les noms des variables locales (-g:source,lines) ; le
+    // fichier source et les numéros de ligne restent, pour les rapports de plantage et de /diag (fichier:ligne). Rien
+    // n'est renommé (classes lues par réflexion, mixins). Pas pour « sacs » : tout son code est celui de Backpacked
+    // (MrCrayfish, LGPL), rien de nous à protéger.
+    if (p.name != 'sacs') {
+        p.tasks.withType(JavaCompile).configureEach {
+            options.debug = true
+            options.debugOptions.debugLevel = 'source,lines'
+        }
+    }
     // « devComplet » : tout le code d'un module (commun + client + serveur) en noms de développement, pour qu'un autre
     // module compile contre lui : compileOnly project(path: ':<module>', configuration: 'devComplet').
     // Jamais embarqué, jamais livré.
