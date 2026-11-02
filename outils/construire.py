@@ -14,7 +14,7 @@ Résultat (dossier livraison/, jamais dans Git) :
     livraison/plugins/        -> plugins/ du Ptero
     livraison/banc/           -> bots de charge, posés sur le serveur seulement le temps d'un test
 Les modules de MODULES_DE_COTE (aujourd'hui : events, les boss) sont fabriqués mais livrés nulle part.
-Les jars d'autres auteurs de ALLEGES (TaCZ…) sont livrés en copie allégée (dossiers que rien ne lit retirés, licence et
+Les jars d'autres auteurs de ALLEGES (TaCZ, meubles cfm) sont livrés en copie allégée (dossiers que rien ne lit retirés, licence et
 crédits gardés, CONTENU-RETIRE.txt dit quoi et pourquoi) ; l'original reste intact dans le dépôt.
 Un mod « coupé » (tâches clientJar / serveurJar dans son build.gradle) donne 3 jars ; un mod client seulement
 (interface) donne un jar, mis côté client et solo.
@@ -175,7 +175,7 @@ def marquer(src, dst):
     shutil.copystat(src, dst)
 
 
-# Copies allégées de jars d'autres auteurs (audit du 02/11, point 35) : la livraison (serveur, joueurs, solo) reçoit
+# Copies allégées de jars d'autres auteurs (audit du 02/11, points 35 et 37) : la livraison (serveur, joueurs, solo) reçoit
 # une copie du jar SANS des dossiers que rien ne lit, vérifié dans leur code ; tout le reste est copié tel quel (code,
 # mods.toml avec la licence et les crédits, autres fichiers), et la copie dit ce qui a été retiré et pourquoi
 # (CONTENU-RETIRE.txt à sa racine, comme le demande la GPL pour une version modifiée). Le jar d'origine reste intact dans
@@ -194,6 +194,16 @@ ALLEGES = {
             "triée de ce pack à part (gunpack heraliz_1_base_tacz).",
             "Default gun pack bundled in the jar: TaCZ 1.1.8 only copies it into the game's « tacz » folder at startup, and",
             "that copy is disabled by DefaultPackDebug = true. Gun packs are only read from the « tacz » folder.",
+        ),
+    },
+    "cfm-forge-1.20.1-7.0.0-pre36PATCH.jar": {
+        "retirer": ("assets/minecraft/optifine/",),
+        "pourquoi": (
+            "Ressources pour OptiFine (textures « random entities » de zombies et de joueurs, modèles CEM, emissive.properties) :",
+            "seul OptiFine lit le dossier assets/minecraft/optifine. OptiFine n'est pas dans le pack HeraliZ (un mod en plus",
+            "est signalé par l'anticheat) ; ni Minecraft, ni Forge, ni aucun autre mod du pack ne lit ce dossier (vérifié",
+            "dans toutes leurs classes) ; nos zombies ont leur propre rendu et leurs propres textures.",
+            "OptiFine-only resources: only OptiFine reads assets/minecraft/optifine, and OptiFine is not part of the pack.",
         ),
     },
 }
