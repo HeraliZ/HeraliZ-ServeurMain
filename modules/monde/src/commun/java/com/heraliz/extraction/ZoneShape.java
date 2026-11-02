@@ -1,12 +1,15 @@
 package com.heraliz.extraction;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -19,6 +22,14 @@ import java.util.Arrays;
  * <p>
  * Le contour affiché est un cercle lisse, raccourci seulement dans les directions où la zone
  * est bloquée (rayons lancés depuis le centre).
+ * <p>
+ * 03/11 (retour du propriétaire : « le cercle est bloqué par des props, il fait des trucs bizarres, il y a des
+ * coupures ») : un objet posé dans la zone (caisse, lampadaire, tronc...) n'est pas une case de la zone ; le rayon
+ * s'arrêtait sur lui et le contour rentrait vers le centre (encoche), même si la zone continuait derrière. Le rayon va
+ * maintenant jusqu'à la dernière case de la zone dans sa direction ; s'il touche le cercle, le contour est le cercle
+ * lui-même (avant, il suivait les marches des cases et ondulait). Et la hauteur du contour est celle du vrai sol sous
+ * cette case (une case où l'on tient debout sur une caisse remontait le mur d'un bloc) : {@link #solSous}. Même dessin ;
+ * la zone elle-même (qui peut s'extraire, où) ne change pas.
  */
 public final class ZoneShape {
     /** Nombre de points du contour affiché. */
@@ -29,6 +40,11 @@ public final class ZoneShape {
     private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
     /** Pas des rayons qui tracent le contour (blocs). */
     private static final double OUTLINE_STEP = 0.2D;
+    /**
+     * Une case de la zone touche le cercle si le rayon y passe à moins de cette distance du bord (une case du bord a son
+     * centre dans le cercle ; le rayon la quitte entre rayon - 0,7 et rayon + 0,7 bloc selon la direction).
+     */
+    private static final double BORD_CERCLE = 0.75D;
 
     private final double centerX;
     private final double centerZ;
@@ -85,31 +101,76 @@ public final class ZoneShape {
                 queue.add(new int[]{nx, y, nz});
             }
         }
-        shape.computeOutline(start.getY());
+        shape.computeOutline(level, start.getY());
         return shape;
     }
 
-    /** Pour chaque direction, avance depuis le centre tant qu'on reste dans la zone. */
-    private void computeOutline(int centerY) {
+    /**
+     * Pour chaque direction, la dernière case de la zone sur le rayon lancé depuis le centre (03/11 : avant, la première
+     * case hors zone arrêtait le rayon, même un objet posé au milieu), posée sur le vrai sol de cette case.
+     */
+    private void computeOutline(Level level, int centerY) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int i = 0; i < OUTLINE_SEGMENTS; i++) {
             double angle = Mth.TWO_PI * i / OUTLINE_SEGMENTS;
             double dx = Math.cos(angle);
             double dz = Math.sin(angle);
             double reached = 0.0D;
             int ground = centerY;
+            int gx = Mth.floor(this.centerX), gz = Mth.floor(this.centerZ);
             for (double s = OUTLINE_STEP; s <= this.radius + 1.0E-4D; s += OUTLINE_STEP) {
                 int cx = Mth.floor(this.centerX + dx * s);
                 int cz = Mth.floor(this.centerZ + dz * s);
                 int g = get(cx, cz);
                 if (g == NONE) {
-                    break;
+                    continue;   // hors zone ici (objet posé, mur...) : la zone peut reprendre plus loin
                 }
                 reached = s;
                 ground = g;
+                gx = cx;
+                gz = cz;
             }
-            this.outlineDistance[i] = (float) Math.min(this.radius, reached + OUTLINE_STEP * 0.5D);
-            this.outlineGround[i] = ground;
+            // zone non bloquée dans cette direction (sa dernière case touche le cercle) : le contour est le cercle lui-même ;
+            // avant, il suivait les marches des cases du bord et le cercle ondulait d'un demi-bloc
+            this.outlineDistance[i] = reached >= this.radius - BORD_CERCLE ? this.radius
+                    : (float) Math.min(this.radius, reached + OUTLINE_STEP * 0.5D);
+            this.outlineGround[i] = solSous(level, pos, gx, ground, gz);
         }
+    }
+
+    /**
+     * Vrai sol sous les pieds d'un joueur debout en (x, feetY, z) : on descend (4 blocs au plus) tant que ce qui le porte
+     * n'est pas du terrain (caisse, conteneur, meuble, tronc, feuilles...). Un bloc plein et opaque, la glace, l'eau, ou un
+     * bloc bas qui couvre toute la case (chemin, dalle du bas) est du terrain.
+     */
+    private static int solSous(Level level, BlockPos.MutableBlockPos pos, int x, int feetY, int z) {
+        for (int y = feetY; y > feetY - MAX_HEIGHT_DIFF; y--) {
+            pos.set(x, y - 1, z);
+            BlockState state = level.getBlockState(pos);
+            if (terrain(level, pos, state)) {
+                return y;
+            }
+        }
+        return feetY;
+    }
+
+    private static boolean terrain(Level level, BlockPos pos, BlockState state) {
+        if (!state.getFluidState().isEmpty()) {
+            return true;
+        }
+        if (state.isAir() || state.is(BlockTags.LEAVES) || state.is(BlockTags.LOGS)) {
+            return false;
+        }
+        if (state.is(BlockTags.ICE) || state.isSolidRender(level, pos)) {
+            return true;
+        }
+        VoxelShape shape = state.getCollisionShape(level, pos);
+        if (shape.isEmpty()) {
+            return false;
+        }
+        AABB b = shape.bounds();
+        return b.minX <= 0.01D && b.minZ <= 0.01D && b.maxX >= 0.99D && b.maxZ >= 0.99D && b.minY <= 0.01D
+                && b.maxY >= 0.25D && b.maxY < 0.99D;
     }
 
     /** Hauteur où un joueur peut se tenir en venant de {@code fromY} (même niveau, +1, -1, -2), ou NONE. */

@@ -67,8 +67,9 @@ public class TerminalEntityRenderer extends EntityRenderer<ExtractionTerminalEnt
     }
 
     /**
-     * Mur translucide sur chaque bord de la zone. La zone suit le relief et s'arrête sur les murs,
-     * donc le mur dessine exactement où le joueur a le droit d'être.
+     * Mur translucide sur chaque bord de la zone. La zone suit le relief et s'arrête sur les murs ;
+     * le mur suit son bord extérieur, posé sur le vrai sol (03/11 : un objet posé dans la zone ne fait
+     * plus d'encoche, voir {@link ZoneShape}).
      */
     private static void renderZone(ExtractionTerminalEntity entity, PoseStack pose, MultiBufferSource buffers,
                                    float time, float[] rgb, float strength) {

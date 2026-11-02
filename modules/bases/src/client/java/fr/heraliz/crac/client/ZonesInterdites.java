@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -30,6 +29,9 @@ import org.joml.Matrix4f;
  * un liseré rouge au ras du sol avec un petit voile, dans le style de la zone des armoires ({@link ZoneArmoire}). Autour
  * du joueur (24 blocs) et de l'endroit visé (12 blocs) ; la case visée, si elle est interdite, est plus marquée. Rien
  * plan rangé, en créatif, ou hors de la carte. Hauteurs du sol gardées 10 ticks (cartes des hauteurs du monde du joueur).
+ * <p>03/11 (retour du propriétaire) : teinte et bord posés sur le vrai sol, sous les arbres et les objets posés
+ * ({@link SolZones}) ; avant, la carte des hauteurs les faisait monter sur les feuilles et les props. La hauteur de chaque
+ * colonne teintée est gardée 10 ticks comme celle des bords (avant : relue à chaque image). Même dessin.
  */
 @Mod.EventBusSubscriber(modid = "crac", value = Dist.CLIENT)
 public final class ZonesInterdites {
@@ -43,6 +45,10 @@ public final class ZonesInterdites {
     private static WeakReference<Level> monde = new WeakReference<>(null);
 
     private static final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap SOLS = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    /** Sol de chaque colonne teintée, gardé comme {@link #SOLS}. */
+    private static final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap COLONNES = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    /** Position de travail de {@link SolZones} (fil du rendu seulement). */
+    private static final BlockPos.MutableBlockPos CURSEUR = new BlockPos.MutableBlockPos();
     private static long solsTick = Long.MIN_VALUE;
     private static WeakReference<Level> solsMonde = new WeakReference<>(null);
 
@@ -99,6 +105,7 @@ public final class ZonesInterdites {
         long t = lvl.getGameTime();
         if (solsMonde.get() != lvl || t - solsTick >= 10 || t < solsTick) {
             SOLS.clear();
+            COLONNES.clear();
             solsTick = t;
             solsMonde = new WeakReference<>(lvl);
         }
@@ -199,15 +206,20 @@ public final class ZonesInterdites {
         }
     }
 
-    /** Haut du sol de la colonne (x, z) ; NaN hors du terrain chargé. */
+    /** Haut du vrai sol de la colonne (x, z) (gardé 10 ticks) ; NaN hors du terrain chargé. */
     private static double colonne(Level lvl, int x, int z) {
-        if (!lvl.hasChunk(x >> 4, z >> 4)) {
-            return Double.NaN;
+        long cle = (long) x << 32 | (z & 0xFFFFFFFFL);
+        int y;
+        if (COLONNES.containsKey(cle)) {
+            y = COLONNES.get(cle);
+        } else {
+            y = SolZones.dessus(lvl, x, z, CURSEUR);
+            COLONNES.put(cle, y);
         }
-        return lvl.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        return y == SolZones.INCONNU ? Double.NaN : y;
     }
 
-    /** Point (x, z) de la grille : sol le plus haut des 4 colonnes qui le touchent (gardé 10 ticks) ; NaN hors terrain. */
+    /** Point (x, z) de la grille : vrai sol le plus haut des 4 colonnes qui le touchent (gardé 10 ticks) ; NaN hors terrain. */
     private static double point(Level lvl, int xb, int zb) {
         long cle = (long) xb << 32 | (zb & 0xFFFFFFFFL);
         int best;
@@ -217,8 +229,9 @@ public final class ZonesInterdites {
             best = Integer.MIN_VALUE;
             for (int x = xb - 1; x <= xb; x++) {
                 for (int z = zb - 1; z <= zb; z++) {
-                    if (lvl.hasChunk(x >> 4, z >> 4)) {
-                        best = Math.max(best, lvl.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z));
+                    double c = colonne(lvl, x, z);
+                    if (!Double.isNaN(c)) {
+                        best = Math.max(best, (int) c);
                     }
                 }
             }

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -28,6 +27,9 @@ import org.joml.Matrix4f;
  * l'autre ; petits poteaux aux quatre coins. Hauteur lue dans la carte des hauteurs MOTION_BLOCKING du monde du joueur
  * (avec WORLD_SURFACE, la seule que le serveur lui envoie : MOTION_BLOCKING_NO_LEAVES y reste vide et la zone tombait sous
  * terre, CRac 1.15.3), bornée à la hauteur de la zone ; rien là où le terrain n'est pas chargé.
+ * <p>03/11 (retour du propriétaire : « la délimitation monte au-dessus des arbres et redescend ensuite ») : cette carte des
+ * hauteurs compte les feuilles, les troncs et les objets posés ; le bord se pose maintenant sur le vrai sol, sous les
+ * arbres et les objets ({@link SolZones}). Même dessin.
  */
 @Mod.EventBusSubscriber(modid = "crac", value = Dist.CLIENT)
 public final class ZoneArmoire {
@@ -45,6 +47,8 @@ public final class ZoneArmoire {
     private static final int SOLS_TICKS = 10;
     private static long solsTick = Long.MIN_VALUE;
     private static java.lang.ref.WeakReference<Level> solsMonde = new java.lang.ref.WeakReference<>(null);
+    /** Position de travail de {@link SolZones} (fil du rendu seulement). */
+    private static final BlockPos.MutableBlockPos CURSEUR = new BlockPos.MutableBlockPos();
 
     private ZoneArmoire() {
     }
@@ -136,8 +140,8 @@ public final class ZoneArmoire {
     }
 
     /**
-     * Sol le plus haut des 4 colonnes [x-1..x] x [z-1..z] qui touchent le point (x, z) de la grille, borné à la zone ; NaN
-     * si le terrain n'est pas chargé.
+     * Sol le plus haut des 4 colonnes [x-1..x] x [z-1..z] qui touchent le point (x, z) de la grille (vrai sol, sans arbres ni
+     * objets posés : {@link SolZones}), borné à la zone ; NaN si le terrain n'est pas chargé.
      */
     private static double sol(Level lvl, int xb, int zb, int ymin, int ymax) {
         long cle = (long) xb << 32 | (zb & 0xFFFFFFFFL);
@@ -148,10 +152,7 @@ public final class ZoneArmoire {
             best = Integer.MIN_VALUE;
             for (int x = xb - 1; x <= xb; x++) {
                 for (int z = zb - 1; z <= zb; z++) {
-                    if (!lvl.hasChunk(x >> 4, z >> 4)) {
-                        continue;
-                    }
-                    best = Math.max(best, lvl.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z));
+                    best = Math.max(best, SolZones.dessus(lvl, x, z, CURSEUR));
                 }
             }
             SOLS.put(cle, best);
