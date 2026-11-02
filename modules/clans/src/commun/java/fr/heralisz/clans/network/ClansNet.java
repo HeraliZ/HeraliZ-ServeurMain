@@ -26,7 +26,8 @@ public final class ClansNet {
     /** 6 (31/10) : XP de clan par source et plafonds du jour (ArbreSaisonS2C), etat VERROUILLEE des zones (capture au niveau 5). */
     /** 7 (31/10) : reglages de la branche Membres (depart, niveau et herals de chaque palier) a la fin de l'etat du clan. */
     /** 8 (31/10) : branche Membres retiree de l'arbre (paliers de ArbreSaisonS2C), membres donnes par le niveau (depart, niveaux). */
-    private static final String VERSION = "8";
+    /** 9 (02/11) : prix de creation d'un clan a la fin de ClanSnapshotS2C (reglage du serveur, plus lu chez le joueur). */
+    private static final String VERSION = "9";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 

@@ -31,6 +31,8 @@ public final class ClientSolde {
         nomPluriel = m.nomPluriel();
         symbole = m.symbole();
         hudPermanent = m.hudPermanent();
+        // l'API (format des montants) prend aussi les noms du serveur ; le plafond n'est pas envoye (serveur seulement)
+        EconomieApi.reglages(m.nomSingulier(), m.nomPluriel(), m.symbole(), EconomieApi.maxSolde());
     }
 
     public static void recevoir(Packets.SoldeS2C m) {

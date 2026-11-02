@@ -15,6 +15,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
+        fr.heralisz.economie.EconomieConfig.enregistrer(busMod);   // serveur seulement (audit du 02/11, point 11)
         EconomieApiServeur.installer();
         MinecraftForge.EVENT_BUS.register(ComptesStore.class);
         MinecraftForge.EVENT_BUS.register(ServerEvents.class);

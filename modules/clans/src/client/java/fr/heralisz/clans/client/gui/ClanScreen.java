@@ -326,12 +326,9 @@ public class ClanScreen extends Screen implements Hote {
         g.drawString(font, Ui.in(cout, Ui.SMALL), px + Ui.MARGE + 118, py + ph - 27, Ui.argb(Ui.FAINT, 255), false);
     }
 
+    /** Prix de creation d'un clan regle par le serveur (recu avec l'etat du clan ; 1 750 tant que rien n'est recu). */
     private static long coutCreation() {
-        try {
-            return fr.heralisz.clans.ClansConfig.COUT_CREATION.get();
-        } catch (Exception ex) {
-            return 1750;
-        }
+        return fr.heralisz.clans.ReglagesClans.coutCreation();
     }
 
     /**

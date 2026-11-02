@@ -53,15 +53,25 @@ public final class Packets {
     }
 
     // =================================================================== serveur -> client
-    /** Mon clan complet (null = je n'ai pas de clan). */
-    public record ClanSnapshotS2C(@Nullable ClanSnapshot snapshot) {
+    /**
+     * Mon clan complet (null = je n'ai pas de clan), et le prix de creation d'un clan regle par le serveur (02/11, audit
+     * point 11 : avant, les ecrans le lisaient dans la copie du fichier du joueur).
+     */
+    public record ClanSnapshotS2C(@Nullable ClanSnapshot snapshot, long coutCreation) {
+        /** Cote serveur : prix de creation du fichier du serveur (ReglagesClans). */
+        public ClanSnapshotS2C(@Nullable ClanSnapshot snapshot) {
+            this(snapshot, fr.heralisz.clans.ReglagesClans.coutCreation());
+        }
+
         void write(FriendlyByteBuf b) {
             b.writeBoolean(snapshot != null);
             if (snapshot != null) snapshot.write(b);
+            b.writeVarLong(Math.max(0L, coutCreation));
         }
 
         static ClanSnapshotS2C read(FriendlyByteBuf b) {
-            return new ClanSnapshotS2C(b.readBoolean() ? ClanSnapshot.read(b) : null);
+            ClanSnapshot s = b.readBoolean() ? ClanSnapshot.read(b) : null;
+            return new ClanSnapshotS2C(s, b.readVarLong());
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

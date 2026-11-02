@@ -4,7 +4,9 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * Reglages communs (config/heralisz_clans-common.toml). Tout ce qui est lu cote serveur pour appliquer les regles ;
- * le client n'en a pas besoin (le snapshot lui donne les valeurs utiles).
+ * le client n'en a pas besoin (le snapshot lui donne les valeurs utiles). Audit du 02/11 (point 11) : reglage du serveur
+ * seulement, declare par la partie serveur (ReglagesClansServeur) avec le meme nom de fichier ; plus jamais ecrit sur le
+ * PC des joueurs (la regle anti-boost y etait lisible). Ce que lit le code commun est recopie dans ReglagesClans.
  */
 public final class ClansConfig {
     private ClansConfig() {

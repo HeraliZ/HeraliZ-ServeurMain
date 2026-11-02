@@ -30,7 +30,7 @@ public class DrapeauBlockEntity extends BlockEntity {
     public Banniere banniere;
     public EtatZone etat = EtatZone.NEUTRE;
     /**
-     * Cercle de capture (ClansConfig.RAYON_CAPTURE / HAUTEUR_CAPTURE, config COMMON non envoyee aux joueurs) : recopie
+     * Cercle de capture (ClansConfig.RAYON_CAPTURE / HAUTEUR_CAPTURE, reglage du serveur seulement) : recopie
      * par le serveur dans le NBT synchronise pour que le rendu dessine la zone de capture ; 10 / 6 par defaut.
      */
     public int rayonCapture = RAYON_DEFAUT, hauteurCapture = HAUTEUR_DEFAUT;
@@ -67,16 +67,12 @@ public class DrapeauBlockEntity extends BlockEntity {
         return true;
     }
 
-    /** Cote serveur : relit le cercle de capture dans la config ; vrai s'il a change. */
+    /** Cote serveur : relit le cercle de capture dans la config (recopie dans ReglagesClans) ; vrai s'il a change. */
     private boolean lireCercle() {
         if (level == null || level.isClientSide) return false;
-        int r, h;
-        try {
-            r = fr.heralisz.clans.ClansConfig.RAYON_CAPTURE.get();
-            h = fr.heralisz.clans.ClansConfig.HAUTEUR_CAPTURE.get();
-        } catch (RuntimeException e) {
-            return false; // config pas encore chargee : on garde les valeurs actuelles
-        }
+        if (!fr.heralisz.clans.ReglagesClans.cercleLu()) return false; // config pas encore chargee : on garde les valeurs actuelles
+        int r = fr.heralisz.clans.ReglagesClans.rayonCapture();
+        int h = fr.heralisz.clans.ReglagesClans.hauteurCapture();
         if (r == rayonCapture && h == hauteurCapture) return false;
         rayonCapture = r;
         hauteurCapture = h;

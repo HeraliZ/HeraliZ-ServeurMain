@@ -9,9 +9,7 @@ import fr.heralisz.clans.registry.Sons;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
@@ -29,7 +27,7 @@ public class HeraliszClans {
         ClansRegistry.register(modBus);
         Sons.SONS.register(modBus);
         ClansNet.register();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ClansConfig.SPEC);
+        // heralisz_clans-common.toml : declare par la partie serveur seulement (audit du 02/11, point 11)
         // onglet creatif commun « HeraliZ · Clans et bases » : drapeau de territoire et caisse de ravitaillement
         HeralizClansetbases.ONGLET.ajouter("clans", "onglet.heraliz_clansetbases.clans", () -> new ItemStack(ClansRegistry.DRAPEAU_ITEM.get()), out -> {
             out.accept(ClansRegistry.DRAPEAU_ITEM.get());

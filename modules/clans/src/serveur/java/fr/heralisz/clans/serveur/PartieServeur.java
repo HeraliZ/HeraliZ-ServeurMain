@@ -21,6 +21,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieServeur implements Partie {
     @Override
     public void init(IEventBus busMod) {
+        ReglagesClansServeur.brancher(busMod);   // heralisz_clans-common.toml : serveur seulement (audit du 02/11, point 11)
         ClansApiServeur.installer();
         // fil d'ecriture des fichiers des clans et de la saison (attendu a l'arret du serveur)
         fr.heralisz.clans.server.EcrituresFond.init();

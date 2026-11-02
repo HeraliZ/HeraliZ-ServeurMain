@@ -1,6 +1,6 @@
 package fr.heralisz.clans.client.gui;
 
-import fr.heralisz.clans.ClansConfig;
+import fr.heralisz.clans.ReglagesClans;
 import fr.heralisz.clans.HeraliszClans;
 import fr.heralisz.clans.client.ClientClans;
 import fr.heralisz.clans.client.gui.atelier.Modeles;
@@ -213,12 +213,9 @@ public class ClanCreateScreen extends Screen {
         erreurDepuis = Util.getMillis();
     }
 
+    /** Prix de creation d'un clan regle par le serveur (recu avec l'etat du clan ; 1 750 tant que rien n'est recu). */
     private long cout() {
-        try {
-            return ClansConfig.COUT_CREATION.get();
-        } catch (Exception ex) {
-            return 1750;
-        }
+        return ReglagesClans.coutCreation();
     }
 
     /** Solde personnel si on le connait (snapshot, ou mod economie par reflexion), -1 sinon. */

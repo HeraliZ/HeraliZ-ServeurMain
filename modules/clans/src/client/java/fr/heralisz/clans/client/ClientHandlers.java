@@ -24,6 +24,7 @@ public final class ClientHandlers {
 
     /** Snapshot : etat a jour ; si l'ecran de fondation est ouvert et que le clan existe maintenant, on passe a l'ecran du clan. */
     public static void snapshot(Packets.ClanSnapshotS2C m) {
+        fr.heralisz.clans.ReglagesClans.definirCoutCreation(m.coutCreation());   // prix de creation regle par le serveur
         boolean avait = ClientClans.aUnClan();
         ClientClans.setSnapshot(m.snapshot());
         Minecraft mc = Minecraft.getInstance();

@@ -1,6 +1,5 @@
 package fr.heralisz.economie.api;
 
-import fr.heralisz.economie.EconomieConfig;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
@@ -79,9 +78,31 @@ public final class EconomieApi {
         return m != null && m.disponible();
     }
 
+    // ------------------------------------------------------------------ reglages
+    /** Nom de la monnaie a l'origine (D-04x) : les « hérals », du nom de HeraliZ. */
+    public static final String NOM_DEFAUT_SINGULIER = "héral", NOM_DEFAUT_PLURIEL = "hérals";
+    /** Plafond d'un compte a l'origine. */
+    public static final long MAX_SOLDE_DEFAUT = 10_000_000L;
+
+    /**
+     * Reglages lus par l'API (audit du 02/11, point 11) : heralisz_economie-common.toml est un reglage du serveur seulement
+     * (EconomieConfig, cote serveur), jamais ecrit sur le PC des joueurs. Le serveur les recopie ici a chaque chargement du
+     * fichier ; chez le joueur, les noms et le symbole recus a la connexion (ReglagesS2C). Valeurs d'origine sinon.
+     */
+    private static volatile String nomSingulier = NOM_DEFAUT_SINGULIER, nomPluriel = NOM_DEFAUT_PLURIEL, symbole = "";
+    private static volatile long maxSolde = MAX_SOLDE_DEFAUT;
+
+    /** Reserve au fichier de reglages du serveur et au paquet des reglages recu par le joueur. */
+    public static void reglages(String singulier, String pluriel, String sym, long max) {
+        nomSingulier = singulier == null ? NOM_DEFAUT_SINGULIER : singulier;
+        nomPluriel = pluriel == null ? NOM_DEFAUT_PLURIEL : pluriel;
+        symbole = sym == null ? "" : sym;
+        maxSolde = Math.max(1L, max);
+    }
+
     /** Plafond d'un compte (config max_solde). */
     public static long maxSolde() {
-        return EconomieConfig.MAX_SOLDE.get();
+        return maxSolde;
     }
 
     // ------------------------------------------------------------------ lecture
@@ -156,12 +177,12 @@ public final class EconomieApi {
     // ------------------------------------------------------------------ formats (utilisables partout, sans serveur)
     /** Nom de l'unite (config nom_singulier / nom_pluriel). */
     public static String nom(boolean pluriel) {
-        return pluriel ? EconomieConfig.NOM_PLURIEL.get() : EconomieConfig.NOM_SINGULIER.get();
+        return pluriel ? nomPluriel : nomSingulier;
     }
 
     /** Symbole (config, vide = le mot est utilise). */
     public static String symbole() {
-        return EconomieConfig.SYMBOLE.get();
+        return symbole;
     }
 
     /** « 1 250 hérals », « 1 héral », « 0 héral » (espace fine insecable comme separateur de milliers ; symbole a la place du mot s'il est defini). */

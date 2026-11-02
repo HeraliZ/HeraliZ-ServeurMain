@@ -1,10 +1,17 @@
 package fr.heralisz.economie;
 
+import fr.heralisz.economie.api.EconomieApi;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 /**
  * Reglages communs (config/heralisz_economie-common.toml). Lus cote serveur ; le client recoit ce qui lui est utile
- * (noms, symbole, HUD permanent) par le paquet ReglagesS2C a la connexion.
+ * (noms, symbole, HUD permanent) par le paquet ReglagesS2C a la connexion. Audit du 02/11 (point 11) : reglage du serveur
+ * seulement, declare par la partie serveur ({@link #enregistrer}) avec le meme nom de fichier ; plus jamais ecrit sur le PC
+ * des joueurs. Noms, symbole et plafond sont recopies dans EconomieApi a chaque chargement du fichier.
  */
 public final class EconomieConfig {
     private EconomieConfig() {
@@ -13,7 +20,7 @@ public final class EconomieConfig {
     public static final ForgeConfigSpec SPEC;
 
     /** Nom de la monnaie (D-04x) : les « hérals », du nom de HeraliZ. Ancien nom « jeton(s) » converti au chargement. */
-    public static final String DEFAUT_SINGULIER = "héral", DEFAUT_PLURIEL = "hérals";
+    public static final String DEFAUT_SINGULIER = EconomieApi.NOM_DEFAUT_SINGULIER, DEFAUT_PLURIEL = EconomieApi.NOM_DEFAUT_PLURIEL;
 
     public static final ForgeConfigSpec.ConfigValue<String> NOM_SINGULIER;
     public static final ForgeConfigSpec.ConfigValue<String> NOM_PLURIEL;
@@ -33,7 +40,7 @@ public final class EconomieConfig {
         NOM_PLURIEL = b.comment("Nom de l'unite au pluriel, a partir de 2 (« 250 hérals »), 32 caracteres max").define("nom_pluriel", DEFAUT_PLURIEL, o -> texte(o, 32));
         SYMBOLE = b.comment("Symbole affiche apres les montants (8 caracteres max) ; vide = le mot (héral/hérals)").define("symbole", "", o -> texte(o, 8));
         SOLDE_DEPART = b.comment("Solde d'un nouveau compte").defineInRange("solde_depart", 0L, 0L, Long.MAX_VALUE / 4);
-        MAX_SOLDE = b.comment("Plafond d'un compte (les depots au-dela sont tronques)").defineInRange("max_solde", 10_000_000L, 1L, Long.MAX_VALUE / 4);
+        MAX_SOLDE = b.comment("Plafond d'un compte (les depots au-dela sont tronques)").defineInRange("max_solde", EconomieApi.MAX_SOLDE_DEFAUT, 1L, Long.MAX_VALUE / 4);
         b.pop();
 
         b.comment("Paiements entre joueurs (/herals payer)").push("paiements");
@@ -51,6 +58,26 @@ public final class EconomieConfig {
                 .defineInRange("sauvegarde_immediate", 1000L, 0L, Long.MAX_VALUE / 4);
         b.pop();
         SPEC = b.build();
+    }
+
+    /**
+     * Declare le fichier, cote serveur seulement (audit du 02/11, point 11) : COMMON, meme nom de fichier qu'avant
+     * (config/heralisz_economie-common.toml du serveur, valeurs gardees). A chaque chargement : ancien nom converti, puis
+     * noms, symbole et plafond recopies dans EconomieApi.
+     */
+    public static void enregistrer(IEventBus mod) {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SPEC, "heralisz_economie-common.toml");
+        mod.addListener((ModConfigEvent.Loading e) -> {
+            if (e.getConfig().getSpec() == SPEC) appliquer();
+        });
+        mod.addListener((ModConfigEvent.Reloading e) -> {
+            if (e.getConfig().getSpec() == SPEC) appliquer();
+        });
+    }
+
+    private static void appliquer() {
+        convertirAncienNom();
+        EconomieApi.reglages(NOM_SINGULIER.get(), NOM_PLURIEL.get(), SYMBOLE.get(), MAX_SOLDE.get());
     }
 
     /**
