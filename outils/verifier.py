@@ -14,6 +14,8 @@ Contrôles :
   - livraison        : chaque jar de livraison/ est bien la copie du jar contrôlé (rien de copié en cours de fabrication) ;
   - lod              : conteneurs allégés à jour avec leurs modèles (module loot, JDK présent ;
                        modules/loot/outils/lod_props.py --controle) ;
+  - structures       : structures du ClashWar sans bloc de meuble absent du jar cfm (module clashwar ;
+                       modules/clashwar/outils/nettoyer_structures.py --verifier) ;
   - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
@@ -188,6 +190,15 @@ def main():
         if code != 0:
             for l in out.splitlines():
                 if l.startswith("[lod]"):
+                    print(l.strip())
+            erreurs += 1
+    # structures du ClashWar : aucun bloc de meuble absent de notre jar cfm (sinon posé en air et un avertissement
+    # « bloc(s) inconnu(s) » à chaque démarrage du serveur)
+    if any(p.name == "clashwar" for p in choisis):
+        code, out = lancer([str(chemins.MODS / "clashwar" / "outils" / "nettoyer_structures.py"), "--verifier"])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[structures]") and ("nettoyer" in l or "ERREUR" in l):
                     print(l.strip())
             erreurs += 1
     # caisses : aucun objet de Minecraft ni objet disparu (outils/caisses.py)
