@@ -574,6 +574,7 @@
   "crac.tuto.monde_absent": "Le monde du tutoriel n'existe pas sur ce serveur (crac:tuto).",
   "crac.avie.rendu": "%s objet(s) à vie de ta base (coffre détruit ou base effacée) rendu(s) dans ton inventaire.",
   "crac.avie.attente": "%s objet(s) à vie de ta base t'attendent : fais de la place dans ton inventaire.",
+  "crac.avie.pilleur": "Objet à vie : seuls les membres de cette base peuvent le prendre.",
   "crac.bases.ancien_ferme": "Le monde où tu étais (l'ancien monde des bases) est fermé : te voilà au spawn, avec ton inventaire.",
   "crac.tuto.nouveau_monde": "[Tuto] Le tutoriel a maintenant son propre monde : il repart du début, sur ta parcelle.",
   "crac.tuto.pas_de_parcelle": "Aucune parcelle libre dans le monde du tutoriel : réessaie dans un instant.",

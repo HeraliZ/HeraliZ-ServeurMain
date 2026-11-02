@@ -108,6 +108,41 @@ public final class ObjetsAVieBases extends SafeSavedData {
         }
     }
 
+    /** Dernier refus montré à chaque joueur (ms), pour ne pas répéter le message à chaque clic. */
+    private static final Map<UUID, Long> REFUS_MONTRE = new java.util.HashMap<>();
+
+    /**
+     * Un joueur peut-il sortir cet objet de ce conteneur (02/11, choix du propriétaire) ? Un objet à vie rangé dans un
+     * conteneur d'une base (bloc dans un claim) ne sort qu'avec ceux qui peuvent ouvrir les coffres de cette base (son clan
+     * avec le droit « Ouvrir les coffres », accès donnés dans l'armoire) : un pilleur le voit mais ne peut pas le prendre,
+     * il reste dans le conteneur. Libres : créatif, spectateur, staff (comme {@link Protections#coffres}), conteneur hors
+     * claim, claim sans groupe. Réglage {@code lifetimeItemsOwnerOnly} de crac-server.toml. Appelé par le mixin serveur
+     * de {@code Slot.mayPickup} (seulement au clic) ; vrai pour tout le reste.
+     */
+    public static boolean peutPrendre(ServerPlayer p, net.minecraft.world.level.block.entity.BlockEntity be, ItemStack s) {
+        if (s.isEmpty() || p.isCreative() || p.isSpectator() || p.hasPermissions(2) || !(be.getLevel() instanceof ServerLevel level)
+            || !fr.heraliz.crac.Config.SPEC.isLoaded() || !fr.heraliz.crac.Config.lifetimeItemsOwnerOnly.get() || !estAVie(s)) {
+            return true;
+        }
+        Claim c = ClaimManager.getAt(level, be.getBlockPos());
+        Group g = c == null ? null : GroupData.get(level.getServer()).getById(c.groupId());
+        if (g == null || fr.heraliz.crac.heraliz.ClanAccess.allows(g, p.getUUID(), fr.heraliz.crac.heraliz.ClanAccess.Action.CHESTS)) {
+            return true;
+        }
+        long maintenant = System.currentTimeMillis();
+        Long avant = REFUS_MONTRE.get(p.getUUID());
+        if (avant == null || maintenant - avant > 2000) {
+            REFUS_MONTRE.put(p.getUUID(), maintenant);
+            T.barre(p, T.t("crac.avie.pilleur", "Objet à vie : seuls les membres de cette base peuvent le prendre."), ChatFormatting.YELLOW);
+        }
+        return false;
+    }
+
+    @SubscribeEvent
+    public static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
+        REFUS_MONTRE.remove(e.getEntity().getUUID());
+    }
+
     /** Garde un objet à vie pour {@code joueur} (null : sans propriétaire connu) et le lui rend s'il est connecté. */
     public static void garder(MinecraftServer server, @Nullable UUID joueur, ItemStack s, String pourquoi) {
         if (s.isEmpty()) {

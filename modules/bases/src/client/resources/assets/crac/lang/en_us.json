@@ -574,6 +574,7 @@
   "crac.tuto.monde_absent": "The tutorial world does not exist on this server (crac:tuto).",
   "crac.avie.rendu": "%s lifetime item(s) from your base (destroyed chest or erased base) returned to your inventory.",
   "crac.avie.attente": "%s lifetime item(s) from your base are waiting for you: make room in your inventory.",
+  "crac.avie.pilleur": "Lifetime item: only the members of this base can take it.",
   "crac.bases.ancien_ferme": "The world you were in (the old bases world) is closed: you are back at spawn, with your inventory.",
   "crac.tuto.nouveau_monde": "[Tutorial] The tutorial now has its own world: it starts over, on your own plot.",
   "crac.tuto.pas_de_parcelle": "No free plot in the tutorial world: try again in a moment.",

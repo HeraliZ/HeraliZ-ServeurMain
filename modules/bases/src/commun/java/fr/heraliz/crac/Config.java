@@ -176,6 +176,7 @@ public class Config {
     public static final BooleanValue cracRulesOutsideClaims;
     public static final BooleanValue onlyC4Damages;
     public static final ConfigValue<List<? extends String>> protectedDimensions;
+    public static final BooleanValue lifetimeItemsOwnerOnly;
 
     public static int claimRadius(int tier) {
         return switch (Math.max(1, Math.min(4, tier))) {
@@ -393,6 +394,13 @@ public class Config {
                 "and mobs, and C4 still damage CRac pieces. Empty = off."
             )
             .defineList("protectedDimensions", List.of(), o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
+        lifetimeItemsOwnerOnly = BUILDER.comment(
+                "HeraliZ (02/11, owner's choice): if true, a lifetime item (HeraliZ Tactique: knives, lifetime skins) in a container",
+                "of a base can only be taken out by those who may open the base's chests (its clan with the chests right, access",
+                "given in the Claim Block): a raider sees it but cannot take it, it stays in the container. False = anyone who",
+                "opens the container takes it (before)."
+            )
+            .define("lifetimeItemsOwnerOnly", true);
         BUILDER.pop();
         SPEC = BUILDER.build();
     }
