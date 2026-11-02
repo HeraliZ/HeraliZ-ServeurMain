@@ -793,6 +793,7 @@
   "gui.saison.c.salle": "each time the room reloads",
   "gui.saison.c.premiere_ouverture": "first opening",
   "gui.saison.c.une_fois": "once each",
+  "gui.saison.c.une_fois_plafond": "once each; shared cap of %s points per day",
   "gui.saison.c.quetes_clan": "%s per day, %s per week",
   "gui.saison.c.capture": "town level (1 to 7); %s points per day at most",
   "gui.saison.c.boss": "per boss and per day: 2nd kill at %s %%, then 0",

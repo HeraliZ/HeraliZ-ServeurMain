@@ -793,6 +793,7 @@
   "gui.saison.c.salle": "à chaque recharge de la salle",
   "gui.saison.c.premiere_ouverture": "première ouverture",
   "gui.saison.c.une_fois": "une fois chacune",
+  "gui.saison.c.une_fois_plafond": "une fois chacune ; plafond commun de %s points par jour",
   "gui.saison.c.quetes_clan": "%s par jour, %s par semaine",
   "gui.saison.c.capture": "niveau de la ville (1 à 7) ; %s points par jour au plus",
   "gui.saison.c.boss": "par boss et par jour : 2e kill à %s %%, ensuite 0",

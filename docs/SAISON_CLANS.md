@@ -93,11 +93,12 @@ ce qui est dur rapporte beaucoup, ce qui est facile presque rien.
 | Coffre d'événement T7 | 5 | première ouverture |
 | Vente aux PNJ | 1 point pour 1 000 hérals | seulement les objets trouvés, jamais ceux achetés à un PNJ |
 | Arme fabriquée | Commun 1, Peu commun 2, Rare 4, Épique 8 | **[à valider]** quand le craft sera refait |
-| Quête de Varga finie | 5 à 20 selon le chapitre | une fois chacune |
+| Quête de Varga finie | 10 | une fois chacune ; 02/11 (choix du propriétaire) : comptée dans les petites actions plafonnées par joueur et par jour (`plafonnees` de `saison.json`) |
 | Quête de clan finie | 5 | limite par jour ; « Jouer N min » : seulement les minutes sur la carte, en survie, où le joueur a marché au moins 10 m ou agi (dégâts, cache fouillée) ; « Parcourir N km » : seulement à pied (ni véhicule, ni train, ni nage) (25/10) |
 
-**Plafond par joueur et par jour** pour les petites actions (zombies, conteneurs, ventes) : 50 points **[à valider]**.
-Salles à carte et quêtes ne sont pas plafonnées ; les boss ont leur rendement décroissant par clan et par jour
+**Plafond par joueur et par jour** pour les petites actions (zombies, conteneurs, ventes, fabrication et, depuis le
+02/11, quêtes de Varga) : 50 points.
+Salles à carte et quêtes de clan ne sont pas plafonnées ; les boss ont leur rendement décroissant par clan et par jour
 (`boss_coefficients` de `saison.json`).
 
 ### PVP

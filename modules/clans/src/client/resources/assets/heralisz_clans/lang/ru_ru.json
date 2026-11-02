@@ -793,6 +793,7 @@
   "gui.saison.c.salle": "при каждой перезарядке комнаты",
   "gui.saison.c.premiere_ouverture": "первое открытие",
   "gui.saison.c.une_fois": "по одному разу",
+  "gui.saison.c.une_fois_plafond": "по одному разу; общий лимит %s очков в день",
   "gui.saison.c.quetes_clan": "%s в день, %s в неделю",
   "gui.saison.c.capture": "уровень города (1–7); не больше %s очков в день",
   "gui.saison.c.boss": "за босса в день: 2-е убийство — %s %%, затем 0",

@@ -131,6 +131,8 @@ public final class Bareme {
         b.pve.put("quete_principale", 10.0);
         b.pve.put("quete_clan", 5.0);
         for (String s : new String[]{"zombie", "zombie_mutant", "brute", "vente_1000"}) b.plafonnees.add(s);
+        // 02/11 (choix du proprietaire, A316) : les quetes de Varga comptent dans les petites actions plafonnees par joueur
+        b.plafonnees.add("quete_principale");
         for (int i = 1; i <= 6; i++) b.plafonnees.add("conteneur_t" + i);
         for (String r : rar) b.plafonnees.add("craft_" + r);
         b.entites.put("heralisz_utils:zombie_survie", "zombie");

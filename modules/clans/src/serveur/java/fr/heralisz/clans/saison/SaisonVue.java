@@ -57,7 +57,10 @@ public final class SaisonVue {
         l.add(ligne(pve, "salle_rouge", "un", new double[]{b.pointsPve("salle_rouge")}, "salle"));
         l.add(ligne(pve, "salles", "paire", new double[]{b.pointsPve("salle_bleue"), b.pointsPve("salle_verte")}, "salle"));
         l.add(ligne(pve, "conteneur_t7", "un", new double[]{b.pointsPve("conteneur_t7")}, "premiere_ouverture"));
-        l.add(ligne(pve, "quete_principale", "un", new double[]{b.pointsPve("quete_principale")}, "une_fois"));
+        l.add(b.plafonnees.contains("quete_principale")
+                ? new LigneBareme(pve, "quete_principale", "un", new double[]{b.pointsPve("quete_principale")}, "une_fois_plafond",
+                        new String[]{entier(b.plafondJour)})
+                : ligne(pve, "quete_principale", "un", new double[]{b.pointsPve("quete_principale")}, "une_fois"));
         l.add(new LigneBareme(pve, "quete_clan", "un", new double[]{b.pointsPve("quete_clan")}, "quetes_clan",
                 new String[]{String.valueOf(ClansConfig.QUETES_PAR_JOUR.get()), String.valueOf(ClansConfig.QUETES_PAR_SEMAINE.get())}));
         l.add(new LigneBareme(pve, "capture_libre", "par_niveau", new double[]{b.captureParValeur}, "capture",
