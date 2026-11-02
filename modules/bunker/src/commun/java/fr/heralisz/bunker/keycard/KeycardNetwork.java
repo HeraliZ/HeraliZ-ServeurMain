@@ -23,7 +23,8 @@ public final class KeycardNetwork {
    /** Réception du passage de carte côté client (KeycardClientHooks.onSwipe) : branchée par la partie client. */
    public static final Crochet<SwipePacket> RECEPTION_CLIENT = new Crochet<>();
 
-   private static final String VERSION = "3";   // 3 : contours des salles à carte (ContoursPacket)
+   // 3 : contours des salles à carte (ContoursPacket) ; 4 (02/11) : passages des cartes envoyés par le serveur (ReglagesPacket)
+   private static final String VERSION = "4";
    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeraliszBunker.MODID, "keycard"), () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -32,6 +33,36 @@ public final class KeycardNetwork {
          java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT));   // serveur -> joueurs seulement
       CHANNEL.registerMessage(1, ContoursPacket.class, ContoursPacket::encode, ContoursPacket::decode, ContoursPacket::handle,
          java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT));   // serveur -> joueurs seulement
+      CHANNEL.registerMessage(2, ReglagesPacket.class, ReglagesPacket::encode, ReglagesPacket::decode, ReglagesPacket::handle,
+         java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT));   // serveur -> joueurs seulement
+   }
+
+   /** Envoie les passages des cartes (réglage du serveur) à ce joueur, ou à tous si joueur est nul. Fil serveur. */
+   public static void envoyerReglages(@Nullable ServerPlayer joueur) {
+      ReglagesPacket p = new ReglagesPacket(ReglagesCartes.passages(AccessLevel.GREEN), ReglagesCartes.passages(AccessLevel.BLUE),
+         ReglagesCartes.passages(AccessLevel.RED));
+      CHANNEL.send(joueur == null ? PacketDistributor.ALL.noArg() : PacketDistributor.PLAYER.with(() -> joueur), p);
+   }
+
+   /**
+    * Passages des cartes avant qu'elles cassent (0 = illimitée), réglés par le serveur : pour l'infobulle et la barre
+    * d'usure chez le joueur (audit du 02/11, point 11 : avant, son jeu lisait sa propre copie du fichier).
+    */
+   public record ReglagesPacket(int vert, int bleu, int rouge) {
+      static void encode(ReglagesPacket p, FriendlyByteBuf buf) {
+         buf.writeVarInt(p.vert);
+         buf.writeVarInt(p.bleu);
+         buf.writeVarInt(p.rouge);
+      }
+
+      static ReglagesPacket decode(FriendlyByteBuf buf) {
+         return new ReglagesPacket(buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
+      }
+
+      static void handle(ReglagesPacket p, Supplier<NetworkEvent.Context> ctx) {
+         ctx.get().enqueueWork(() -> ReglagesCartes.definirPassages(p.vert, p.bleu, p.rouge));
+         ctx.get().setPacketHandled(true);
+      }
    }
 
    /** Rayon dans lequel tous les joueurs voient la cinématique. */

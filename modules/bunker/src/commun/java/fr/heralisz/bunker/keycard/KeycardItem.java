@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * Carte d'accès. Clic droit sur un lecteur = on glisse la carte (cinématique) ; le lecteur décide. Les passages réussis
- * usent la carte (compteur NBT « Uses », limite réglable dans la config) ; elle casse au dernier passage.
+ * usent la carte (compteur NBT « Uses », limite réglée par le serveur : ReglagesCartes) ; elle casse au dernier passage.
  */
 public class KeycardItem extends Item {
    private static final String USES = "Uses";
@@ -59,7 +59,7 @@ public class KeycardItem extends Item {
 
    /** Un passage réussi : +1 usage, la carte casse à la limite (0 = illimitée). */
    public void consumeUse(ItemStack stack, Player player) {
-      int max = KeycardConfig.uses(this.level);
+      int max = ReglagesCartes.passages(this.level);
       if (max <= 0 || player.getAbilities().instabuild) {
          return;
       }
@@ -74,24 +74,24 @@ public class KeycardItem extends Item {
    }
 
    private int remaining(ItemStack stack) {
-      int max = KeycardConfig.uses(this.level);
+      int max = ReglagesCartes.passages(this.level);
       return max <= 0 ? -1 : max - (stack.hasTag() ? stack.getTag().getInt(USES) : 0);
    }
 
    @Override
    public boolean isBarVisible(ItemStack stack) {
-      return stack.hasTag() && stack.getTag().getInt(USES) > 0 && KeycardConfig.uses(this.level) > 0;
+      return stack.hasTag() && stack.getTag().getInt(USES) > 0 && ReglagesCartes.passages(this.level) > 0;
    }
 
    @Override
    public int getBarWidth(ItemStack stack) {
-      int max = KeycardConfig.uses(this.level);
+      int max = ReglagesCartes.passages(this.level);
       return max <= 0 ? 13 : Math.round(13.0F * this.remaining(stack) / max);
    }
 
    @Override
    public int getBarColor(ItemStack stack) {
-      int max = KeycardConfig.uses(this.level);
+      int max = ReglagesCartes.passages(this.level);
       float f = max <= 0 ? 1.0F : Math.max(0.0F, (float) this.remaining(stack) / max);
       return Mth.hsvToRgb(f / 3.0F, 1.0F, 1.0F);
    }

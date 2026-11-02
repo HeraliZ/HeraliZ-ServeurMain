@@ -2,7 +2,11 @@ package fr.heralisz.bunker.keycard;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-/** Réglages serveur des cartes d'accès (config/heralisz_bunker-common.toml). */
+/**
+ * Réglages serveur des cartes d'accès (config/heralisz_bunker-common.toml). Audit du 02/11 (point 11) : réglage du serveur
+ * seulement, déclaré par la partie serveur (ReglagesCartesServeur) avec le même nom de fichier ; plus jamais écrit sur le PC
+ * des joueurs. Ce que lit le code commun (passages, durée du signal) est recopié dans {@link ReglagesCartes}.
+ */
 public final class KeycardConfig {
    public static final ForgeConfigSpec SPEC;
    public static final ForgeConfigSpec.IntValue USES_GREEN, USES_BLUE, USES_RED, PULSE_TICKS;
@@ -27,14 +31,6 @@ public final class KeycardConfig {
       RECHARGE_RED = b.comment("Minutes avant que le loot d'une salle rouge réapparaisse").defineInRange("rechargeRougeMinutes", 240, 1, 10080);
       b.pop();
       SPEC = b.build();
-   }
-
-   public static int uses(AccessLevel level) {
-      return switch (level) {
-         case GREEN -> USES_GREEN.get();
-         case BLUE -> USES_BLUE.get();
-         case RED -> USES_RED.get();
-      };
    }
 
    /** Délai de recharge du loot d'une salle de cette couleur (ticks de jeu, 20 = 1 s). */

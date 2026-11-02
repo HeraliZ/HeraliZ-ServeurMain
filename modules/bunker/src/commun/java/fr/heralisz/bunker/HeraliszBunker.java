@@ -11,13 +11,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import fr.heralisz.bunker.barricade.BarricadeRegistry;
-import fr.heralisz.bunker.keycard.KeycardConfig;
 import fr.heralisz.bunker.keycard.KeycardNetwork;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import fr.heralisz.bunker.keycard.KeycardRegistry;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -49,7 +46,7 @@ public final class HeraliszBunker {
       ModSounds.SOUND_EVENTS.register(bus);
       KeycardRegistry.register(bus);
       BarricadeRegistry.register(bus);
-      ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, KeycardConfig.SPEC);
+      // réglages des cartes (heralisz_bunker-common.toml) : déclarés par la partie serveur seulement (audit du 02/11, point 11)
       bus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(KeycardNetwork::init));
       TABS.register(bus);
       // partie serveur : salles à carte (porte tenue ouverte, loot de la salle, commande /salle et baguette)

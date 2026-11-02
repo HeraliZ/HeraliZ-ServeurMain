@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 
 /**
  * Lecteur de carte mural façon Rust. Carte de la bonne couleur -> lecture (le temps du glissement), accès accordé :
- * signal redstone pendant {@link KeycardConfig#PULSE_TICKS}, puis retour en attente. Mauvaise carte -> refus.
+ * signal redstone pendant {@link ReglagesCartes#impulsionTicks()} (réglage du serveur), puis retour en attente. Mauvaise carte -> refus.
  * Le signal est émis dans toutes les directions et renforcé dans le bloc support (porte derrière le mur).
  * Incassable en survie : ce sont les admins qui les posent aux entrées des zones.
  */
@@ -112,7 +112,7 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
                KeycardDoors.notifyDoors(level, pos, this.level);
                // le signal dure au moins le temps d'ouverture de la porte (sinon elle resterait ouverte)
                int openTime = KeycardDoors.doorsNear(level, pos, this.level).stream().mapToInt(d -> d.getDoorDecl().getOpenTime()).max().orElse(0);
-               level.scheduleTick(pos, this, Math.max(KeycardConfig.PULSE_TICKS.get(), openTime + 60));
+               level.scheduleTick(pos, this, Math.max(ReglagesCartes.impulsionTicks(), openTime + 60));
             } else {
                level.setBlock(pos, state.setValue(STATUS, Status.IDLE).setValue(POWERED, false), Block.UPDATE_ALL);
                this.updateSupport(level, pos, state);

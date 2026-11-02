@@ -12,6 +12,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieServeur implements Partie {
    @Override
    public void init(IEventBus busMod) {
+      ReglagesCartesServeur.brancher(busMod);   // heralisz_bunker-common.toml : serveur seulement (audit du 02/11, point 11)
       SallesBranchement.brancher();
    }
 }
