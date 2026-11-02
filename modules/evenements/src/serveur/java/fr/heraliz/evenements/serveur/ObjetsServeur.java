@@ -122,7 +122,7 @@ final class ObjetsServeur {
         prix.addProperty("dossier_classe", 120);
         prix.addProperty("mallette_scellee", 300);
         prix.addProperty("disque_dur_militaire", 700);
-        prix.addProperty("boite_noire_helico", 900);
+        prix.addProperty("boite_noire_helico", 400);   // choix du propriétaire (docs/EVENEMENTS.md) ; avant 900 ici, 400 dans le fichier
         o.add("prix", prix);
         JsonObject t = new JsonObject();
         JsonObject def = new JsonObject();
