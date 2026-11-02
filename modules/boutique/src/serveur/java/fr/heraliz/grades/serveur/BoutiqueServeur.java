@@ -232,8 +232,13 @@ final class BoutiqueServeur {
         }
         Pb.debiter(c.ref, c.joueur, c.prix, "boutique:" + a.id(), r -> {
             ServerPlayer j = serveur == null ? null : serveur.getPlayerList().getPlayer(u);
-            if (r == null) {
-                // site injoignable : on ne sait pas si le débit a eu lieu ; repris plus tard (remboursé s'il a eu lieu)
+            if (r == null || r.code() != 200) {
+                // site injoignable ou en erreur (500, 503… : 02/11, audit point 21 ; avant, une erreur du site était prise
+                // pour un refus et l'achat oublié, sans trace ni remboursement) : on ne sait pas si le débit a eu lieu ;
+                // l'achat reste noté et repris plus tard (statut demandé au site, remboursé s'il a eu lieu). Seul un refus
+                // clair du site (200 et ok faux) l'annule, comme pour /trade et l'hôtel des ventes.
+                if (r != null) journal("ERREUR DU SITE " + r.code() + " " + c.joueur + " " + a.id() + " " + a.prix() + " PB (" + c.ref
+                        + ") : achat gardé, statut redemandé au site");
                 OCCUPES.remove(u);
                 if (j != null) envoyer(j, false, -1, "injoignable", false);
                 return;
