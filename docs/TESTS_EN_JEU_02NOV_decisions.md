@@ -16,7 +16,7 @@ Modules touchés, tous déjà montés depuis `main` (65e64fad) par les chantiers
 
 | N° | Choix | Réglage (fichier) | Pour le joueur |
 |---|---|---|---|
-| 1 | Points PvP de saison : 40 par clan et par jour | `pvp.plafond_jour_clan` = 40 (`serveur/config/heralisz_clans/saison.json`, `/saison recharger`) | au-delà de 40 points de kills dans la journée, un kill ne rapporte plus rien au clan du tueur (la victime perd toujours) ; onglet Saison : « 40 points par jour au plus » |
+| 1 | Points PvP de saison : 40 par clan et par jour | `pvp.plafond_jour_clan` = 40 (`serveur/config/heralisz_clans/saison.json`, `/recharger saison`) | au-delà de 40 points de kills dans la journée, un kill ne rapporte plus rien au clan du tueur (la victime perd toujours) ; onglet Saison : « 40 points par jour au plus » |
 | 2 | Quêtes de Varga dans les petites actions | `quete_principale` ajoutée à `plafonnees` (même fichier) | les 10 points d'une quête de Varga comptent dans les 50 points par joueur et par jour (avec zombies, conteneurs, ventes, fabrication) ; onglet Saison : « plafond commun de 50 points par jour » |
 | 3 | Mila rachète une arme selon son état | `"selon_etat_min": 10` sur la règle des armes de `serveur/config/heraliz_quetes/pnj/mila.json` (écrit par `outils/marchands.py`, `RACHAT_ARMES_ETAT_MIN`) | une arme à 50 % se revend moitié prix, à 0 % 10 % du prix ; le prix montré dans l'écran de Mila suit |
 | 4 | Cœur de clan à 5 000 hérals | `outils/marchands.py` (`MATERIAUX`) → `batisseur.json` | le Bâtisseur vend le cœur 5 000 au lieu de 1 000 ; le casino garde 20 000 capsules (fichier écrit à la main, voir les questions) |
@@ -42,7 +42,7 @@ Modules touchés, tous déjà montés depuis `main` (65e64fad) par les chantiers
 ## Essais à faire (serveur d'essai, puis Ptero)
 
 ### 1. Plafond des kills (saison)
-- [ ] Pour aller vite : `pvp.plafond_jour_clan` à 2 dans `saison.json`, `/saison recharger`. Un joueur d'un clan avec
+- [ ] Pour aller vite : `pvp.plafond_jour_clan` à 2 dans `saison.json`, `/recharger saison`. Un joueur d'un clan avec
       cœur tue 3 joueurs armés de clans différents (comptes différents, IP différentes) : +1, +1, puis 0 ;
       `/saison journal <tag>` montre « plafond du jour atteint ». Les clans des victimes perdent 1 point chacun.
 - [ ] Remettre 40 : onglet Saison (K) › « Gagner des points » : « Tuer un joueur · victime armée ou en armure ;
@@ -63,7 +63,7 @@ Modules touchés, tous déjà montés depuis `main` (65e64fad) par les chantiers
       `mila.json` sur le serveur.
 
 ### 4. Cœur de clan
-- [ ] `/quete recharger` (ou redémarrage) : le Bâtisseur vend le cœur de clan 5 000 hérals.
+- [ ] `/recharger quetes` (ou redémarrage) : le Bâtisseur vend le cœur de clan 5 000 hérals.
 
 ### 5. Jackpot du casino
 - [ ] Jouer aux machines à sous : `/casino jackpot` monte de 1 % des mises (100 capsules misées = +1) ; l'afficheur du
