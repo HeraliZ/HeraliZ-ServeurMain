@@ -461,15 +461,14 @@ label.bloc-reglage { cursor: pointer; }
     .nav .onglet { padding: 0 10px; letter-spacing: .12em; }
 }
 
-/* onglet Boutique (02/11) : un seul bouton, au centre, qui ouvre la boutique du site ; tient sur toutes les tailles */
+/* onglet Boutique (02/11) : un seul bouton, au centre, qui ouvre la boutique du site ; tient de la plus petite fenêtre (940 px) au plein écran */
 .boutique-simple { width: min(440px, calc(100% - 32px)); padding: 34px 28px 26px; }
 .boutique-simple h2 { font-size: 22px; }
 .boutique-simple .note { max-width: 340px; margin-left: auto; margin-right: auto; }
-.btn-boutique { margin-top: 24px; min-height: 54px; padding: 0 36px; font-size: 14px; letter-spacing: .12em; border-radius: 6px;
+.btn-or.btn-boutique { margin-top: 24px; min-height: 54px; padding: 0 36px; font-size: 14px; letter-spacing: .12em; border-radius: 6px;
     box-shadow: 0 10px 30px rgba(201, 162, 74, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
-.btn-boutique .i { width: 20px; height: 20px; }
+.btn-or.btn-boutique .i { width: 20px; height: 20px; }
 .boutique-simple .note.petite { font-size: 11px; margin-top: 14px; opacity: .8; max-width: none; }
-@media (max-width: 520px) { .boutique-simple { padding: 26px 18px 20px; } .btn-boutique { width: 100%; justify-content: center; padding: 0 18px; } }
 .btn-or, .btn-sec { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 20px; border: 0; border-radius: 4px; font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: filter .15s; }
 .btn-or { background: linear-gradient(180deg, #F2D48A, #C9A24A); color: #1a1300; } .btn-or:hover { filter: brightness(1.1); }
 .btn-sec { background: rgba(255,255,255,0.06); color: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); } .btn-sec:hover { background: rgba(255,255,255,0.1); }
