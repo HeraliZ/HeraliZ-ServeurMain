@@ -144,7 +144,7 @@ jobs:
           l "lcd j; get /logs/latest.log; get /logs/debug.log" || true
           for f in $(noms /logs/ | grep -E '^20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]+\.log\.(gz|zip)$' | sort -V -r | head -6); do l "lcd j; get /logs/$f" || true; done
           for f in $(noms /crash-reports/ | grep -E '^crash-' | sort -r | head -4); do l "lcd c; get /crash-reports/$f" || true; done
-          for f in server.properties spigot.yml bukkit.yml; do l "lcd conf; get /$f" || true; done
+          for f in server.properties spigot.yml bukkit.yml commands.yml; do l "lcd conf; get /$f" || true; done
           l "cls -l /diag/" > liste_diag.txt 2>/dev/null || true
           l "cls -l /logs/" > liste_logs.txt 2>/dev/null || true
           # correspondances des noms de Minecraft que le serveur peut lire lui-même (installation de Forge ou de Mohist)
@@ -163,6 +163,11 @@ jobs:
           echo "===== LISTE diag/ ====="; masque < liste_diag.txt | tail -80
           echo "===== LISTE logs/ ====="; masque < liste_logs.txt | tail -40
           echo "===== CORRESPONDANCES DES NOMS (libraries/ du serveur) ====="; grep -E 'mappings|mcp_config.*\.zip|\.tsrg' liste_noms.txt 2>/dev/null | head -20 || echo "aucune"
+          # fichiers de la racine en entier (02/11) : pour aligner ceux du dépôt avant une « installation complète », qui les
+          # remplace ; mots de passe, clés et adresses masqués
+          for f in server.properties spigot.yml bukkit.yml commands.yml; do
+            echo "===== FICHIER $f ====="; [ -f "conf/$f" ] && masque < "conf/$f" | grep -v -E '^\s*#' | head -400
+          done
           echo "===== REGLAGES ====="
           grep -E '^(view-distance|simulation-distance|max-players|sync-chunk-writes|network-compression-threshold|entity-broadcast-range-percentage|max-tick-time|level-name)=' conf/server.properties 2>/dev/null
           grep -A12 -E '^\s*(entity-activation-range|entity-tracking-range):' conf/spigot.yml 2>/dev/null | head -40
