@@ -70,6 +70,14 @@ public final class ServeurQuetes implements Partie {
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> Commandes.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::connexion);
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::deconnexion);
+        // 02/11 : recycleur du spawn ouvert à la déconnexion : son contenu revient dans l'inventaire AVANT que le joueur
+        // soit enregistré (en premier : avant le bilan des quêtes du jour) ; objets gardés rendus à la réapparition
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, (PlayerEvent.PlayerLoggedOutEvent e) -> {
+            if (e.getEntity() instanceof ServerPlayer p) MenuRecycleurServeur.deconnexion(p);
+        });
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent e) -> {
+            if (e.getEntity() instanceof ServerPlayer p) GardeRecycleur.rendre(p);
+        });
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::changementMonde);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ServeurQuetes::mortATerre);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurQuetes::mort);
@@ -108,6 +116,7 @@ public final class ServeurQuetes implements Partie {
         Moteur.envoyerSuivi(p);
         WipeServeur.connexion(p);
         Journalieres.connexion(p);
+        GardeRecycleur.rendre(p);
     }
 
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {

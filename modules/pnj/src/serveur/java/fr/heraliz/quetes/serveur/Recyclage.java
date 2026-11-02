@@ -49,8 +49,9 @@ import java.util.Map;
  * aussi x n / N (0,5 s au moins). Une munition qui s'empile par moins de N (roquettes par 6) se recycle donc case par
  * case. Plus jamais d'état « il en manque » ({@link #MANQUE} gardé pour l'écran, plus donné).
  *
- * <p>Sécurité : tout se décide sur le fil serveur, objet par objet ; à la fermeture, ce qui reste (à recycler ou récupéré)
- * est rendu, ou tombe aux pieds d'un joueur mort ou déconnecté. Objets à vie, prêtés par un match, à camo à vie, de
+ * <p>Sécurité : tout se décide sur le fil serveur, objet par objet ; à la fermeture et à la déconnexion, ce qui reste (à
+ * recycler ou récupéré) est rendu, ce qui ne tient pas dans l'inventaire est gardé avec le joueur (02/11,
+ * {@link GardeRecycleur} : jamais au sol). Objets à vie, prêtés par un match, à camo à vie, de
  * quête : jamais recyclés ({@link Echanges#interdit}) ; objets achetés chez un marchand, refusés s'ils rapporteraient
  * plus de la moitié de leur prix ({@link #tropRentable}).
  *

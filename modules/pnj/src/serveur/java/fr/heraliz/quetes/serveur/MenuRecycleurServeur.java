@@ -5,6 +5,7 @@ import fr.heraliz.quetes.reseau.Reseau;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -25,7 +26,10 @@ import java.util.function.Predicate;
  * complet, ou ce qui reste de la case, avec des chances et un temps au prorata), le tirage ({@link Recyclage#tirer}) va dans
  * les cases « récupéré », les hérals sur le compte. Rien ne démarre si la sortie
  * n'a pas assez de cases libres pour le pire tirage (rien ne se perd). L'aperçu de chaque case est renvoyé à l'écran quand
- * le contenu change. Fermeture : tout ce qui reste est rendu (ou tombe au sol si le joueur est mort ou parti).
+ * le contenu change. Fermeture et déconnexion : tout ce qui reste est rendu ; ce qui ne tient pas dans l'inventaire, et le
+ * contenu d'un joueur mort ou d'un serveur planté, est gardé avec le joueur ({@link GardeRecycleur}), jamais au sol (02/11).
+ * Les objets que le recycleur ne prend jamais (à vie, de quête, prêtés par un match, sac plein : {@link Echanges#interdit})
+ * sont refusés dans les cases « à recycler » (02/11, comme le recycleur de la carte).
  */
 final class MenuRecycleurServeur extends MenuRecycleur {
     private final ServerPlayer joueur;
@@ -42,6 +46,29 @@ final class MenuRecycleurServeur extends MenuRecycleur {
         this.joueur = (ServerPlayer) inv.player;
         this.valide = valide;
         donnees.set(D_CASE, -1);
+        // objets gardés d'une fois précédente (inventaire plein, mort, plantage) : remis dans leurs cases
+        if (GardeRecycleur.present(joueur)) {
+            List<ItemStack>[] g = GardeRecycleur.lire(joueur);
+            for (int k = 0; k < 2; k++) {
+                Container c = k == 0 ? entree : sortie;
+                int i = 0;
+                for (ItemStack s : g[k]) {
+                    while (i < c.getContainerSize() && !c.getItem(i).isEmpty()) i++;
+                    if (i < c.getContainerSize()) c.setItem(i, s);
+                    else joueur.getInventory().placeItemBackInInventory(s); // jamais (6 cases au plus de chaque côté)
+                }
+            }
+        }
+        // copie du contenu dans les données du joueur à chaque changement (déconnexion, plantage : rien ne se perd)
+        ((SimpleContainer) entree).addListener(c -> GardeRecycleur.ecrire(joueur, entree, sortie));
+        ((SimpleContainer) sortie).addListener(c -> GardeRecycleur.ecrire(joueur, entree, sortie));
+        GardeRecycleur.ecrire(joueur, entree, sortie);
+    }
+
+    /** Objets que le recycleur ne prend jamais : refusés dans les cases « à recycler » (le reste est montré avec son état). */
+    @Override
+    protected boolean accepte(ItemStack s) {
+        return !Echanges.interdit(s);
     }
 
     @Override
@@ -199,13 +226,56 @@ final class MenuRecycleurServeur extends MenuRecycleur {
         super.removed(p);
         if (fini) return;
         fini = true;
-        if (!(p instanceof ServerPlayer sp) || !sp.isAlive() || sp.hasDisconnected()) {
-            clearContainer(p, entree);
-            clearContainer(p, sortie);
-        } else {
-            for (int i = 0; i < ENTREES; i++) sp.getInventory().placeItemBackInInventory(entree.removeItemNoUpdate(i));
-            for (int i = 0; i < SORTIES; i++) sp.getInventory().placeItemBackInInventory(sortie.removeItemNoUpdate(i));
-            Recyclage.bilan(sp, recycles, composants, herals);
+        if (!joueur.isAlive() || joueur.hasDisconnected()) {
+            // mort, ou déconnecté sans être passé par {@link #deconnexion} : le contenu reste gardé avec le joueur (sa
+            // copie est à jour), rendu à la réapparition ou à la connexion ; rien au sol
+            GardeRecycleur.ecrire(joueur, entree, sortie);
+            return;
         }
+        rendre();
+    }
+
+    /** Tout ce qui reste revient dans l'inventaire ; ce qui n'y tient pas reste gardé avec le joueur (jamais au sol). */
+    private void rendre() {
+        List<ItemStack> resteEntree = new ArrayList<>(), resteSortie = new ArrayList<>();
+        for (int k = 0; k < 2; k++) {
+            Container c = k == 0 ? entree : sortie;
+            for (int i = 0; i < c.getContainerSize(); i++) {
+                ItemStack s = c.removeItemNoUpdate(i);
+                if (s.isEmpty()) continue;
+                joueur.getInventory().add(s);
+                if (!s.isEmpty()) (k == 0 ? resteEntree : resteSortie).add(s);
+            }
+        }
+        joueur.getInventory().setChanged();
+        GardeRecycleur.ecrire(joueur, resteEntree, resteSortie);
+        Recyclage.bilan(joueur, recycles, composants, herals);
+        GardeRecycleur.prevenir(joueur);
+    }
+
+    /**
+     * Déconnexion (évènement de Forge, AVANT l'enregistrement du joueur ; Minecraft ne ferme l'écran qu'après) : tout
+     * revient dans l'inventaire comme à la fermeture, et c'est bien enregistré.
+     */
+    static void deconnexion(ServerPlayer p) {
+        if (!(p.containerMenu instanceof MenuRecycleurServeur m) || m.fini) return;
+        m.fini = true;
+        // l'objet tenu au curseur (Minecraft le jetterait au sol) : dans l'inventaire, sinon avec le reste du recycleur
+        ItemStack porte = m.getCarried();
+        if (!porte.isEmpty()) {
+            p.getInventory().add(porte);
+            for (int k = 0; k < 2 && !porte.isEmpty(); k++) {
+                Container c = k == 0 ? m.sortie : m.entree;
+                for (int i = 0; i < c.getContainerSize() && !porte.isEmpty(); i++) {
+                    if (c.getItem(i).isEmpty()) {
+                        c.setItem(i, porte.copy());
+                        porte.setCount(0);
+                    }
+                }
+            }
+            m.setCarried(porte.isEmpty() ? ItemStack.EMPTY : porte);
+        }
+        if (p.isAlive()) m.rendre();
+        else GardeRecycleur.ecrire(p, m.entree, m.sortie);
     }
 }

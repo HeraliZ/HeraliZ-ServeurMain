@@ -37,6 +37,8 @@
   "heraliz_quetes.recycleur.titre": "Recycleur",
   "heraliz_quetes.recycleur.ferme": "Le recycleur est fermé pour l'instant.",
   "heraliz_quetes.recycleur.resultat": "Recyclé : %s objet(s) → %s composant(s) et %s hérals",
+  "heraliz_quetes.recycleur.rendus": "Objets du recycleur rendus dans ton inventaire : %s.",
+  "heraliz_quetes.recycleur.garde": "%s objet(s) du recycleur ne tenaient pas dans ton inventaire : ils t'attendent dans le recycleur du spawn (rouvre-le).",
   "gui.heraliz_quetes.recycleur.sous_titre": "Dépose des objets : ils sont recyclés un par un, sous tes yeux.",
   "gui.heraliz_quetes.recycleur.par_objet": "%s s par objet",
   "gui.heraliz_quetes.recycleur.entree": "À recycler",

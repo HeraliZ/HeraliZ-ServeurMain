@@ -37,6 +37,8 @@
   "heraliz_quetes.recycleur.titre": "Recycler",
   "heraliz_quetes.recycleur.ferme": "The recycler is closed for now.",
   "heraliz_quetes.recycleur.resultat": "Recycled: %s item(s) → %s component(s) and %s herals",
+  "heraliz_quetes.recycleur.rendus": "Recycler items returned to your inventory: %s.",
+  "heraliz_quetes.recycleur.garde": "%s recycler item(s) did not fit in your inventory: they are waiting for you in the spawn recycler (open it again).",
   "gui.heraliz_quetes.recycleur.sous_titre": "Drop items in: they're recycled one by one, right before your eyes.",
   "gui.heraliz_quetes.recycleur.par_objet": "%s s per item",
   "gui.heraliz_quetes.recycleur.entree": "To recycle",

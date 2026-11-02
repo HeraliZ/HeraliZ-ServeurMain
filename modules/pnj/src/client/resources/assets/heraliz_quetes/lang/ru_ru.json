@@ -37,6 +37,8 @@
   "heraliz_quetes.recycleur.titre": "Переработчик",
   "heraliz_quetes.recycleur.ferme": "Переработка пока закрыта.",
   "heraliz_quetes.recycleur.resultat": "Переработано: %s предм. → %s компон. и %s гералов",
+  "heraliz_quetes.recycleur.rendus": "Предметы из переработки возвращены в инвентарь: %s.",
+  "heraliz_quetes.recycleur.garde": "Предметов из переработки не поместилось в инвентарь: %s. Они ждут тебя в переработке на спавне (открой её снова).",
   "gui.heraliz_quetes.recycleur.sous_titre": "Положи предметы: они перерабатываются по одному, у тебя на глазах.",
   "gui.heraliz_quetes.recycleur.par_objet": "%s с на предмет",
   "gui.heraliz_quetes.recycleur.entree": "На переработку",
