@@ -4,6 +4,7 @@ namespace Azuriom\Plugin\Heraliz\Middleware;
 
 use Azuriom\Models\User;
 use Azuriom\Plugin\Heraliz\Adresse;
+use Azuriom\Plugin\Heraliz\Alerte;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,10 @@ use Symfony\Component\HttpFoundation\Response;
  *   d'attente ; une réussite n'efface rien (sinon un compte valide permettrait d'essayer sans fin ceux des autres) ;
  * - 10 codes de double authentification faux pour un même compte, puis 15 minutes d'attente, quelle que soit
  *   l'adresse IP (il faut déjà le bon mot de passe pour en arriver là : personne ne peut bloquer le compte d'un autre) ;
+ * - 10 mots de passe faux pour un compte qui a accès à l'administration (il commande la boutique, les votes et donc la
+ *   console du serveur de jeu), puis 15 minutes d'attente, quelle que soit l'adresse IP, et le staff est prévenu (audit
+ *   du 02/11, point 15). Les comptes des joueurs n'ont pas cette limite : personne ne peut bloquer le compte d'un
+ *   joueur en se trompant exprès ;
  * - les espaces sont retirés des codes : Azuriom 1.2.13 accepte « ABCD EFGH… » sans consommer le code de secours, qui
  *   resterait alors valable.
  * Azuriom seul permet 60 essais par minute sur l'API, et 5 par minute pour chaque compte sur le site.
@@ -31,6 +36,10 @@ class LimiteConnexion
     private const CODES_FAUX_MAX = 10;
 
     private const ATTENTE_CODES_SECONDES = 900;
+
+    private const ERREURS_ADMIN_MAX = 10;
+
+    private const ATTENTE_ADMIN_SECONDES = 900;
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -47,9 +56,11 @@ class LimiteConnexion
 
         $cle = 'heraliz-connexion:'.Adresse::de($request);
         $compte = $this->compteDuCode($request);
+        $admin = $this->compteAdmin($request);
 
         if (RateLimiter::tooManyAttempts($cle, self::ERREURS_MAX)
-            || ($compte !== null && RateLimiter::tooManyAttempts($this->cleCompte($compte), self::CODES_FAUX_MAX))) {
+            || ($compte !== null && RateLimiter::tooManyAttempts($this->cleCompte($compte), self::CODES_FAUX_MAX))
+            || ($admin !== null && RateLimiter::tooManyAttempts($this->cleAdmin($admin), self::ERREURS_ADMIN_MAX))) {
             return $this->refus($request, $api);
         }
 
@@ -71,6 +82,12 @@ class LimiteConnexion
         }
         if ($codeFaux && $compte !== null) {
             RateLimiter::hit($this->cleCompte($compte), self::ATTENTE_CODES_SECONDES);
+        }
+        if ($erreur && ! $codeFaux && $admin !== null
+            && RateLimiter::hit($this->cleAdmin($admin), self::ATTENTE_ADMIN_SECONDES) === self::ERREURS_ADMIN_MAX) {
+            Alerte::staff('Administration du site : '.self::ERREURS_ADMIN_MAX.' mots de passe faux pour le compte admin n° '.$admin
+                .' (dernier essai depuis `'.Adresse::de($request).'`) : connexion bloquée 15 minutes. Si ce n’est pas toi, '
+                .'change son mot de passe et active la double authentification.', 'admin-essais:'.$admin, 900);
         }
 
         return $reponse;
@@ -98,6 +115,26 @@ class LimiteConnexion
     private function cleCompte(mixed $compte): string
     {
         return 'heraliz-a2f-compte:'.$compte;
+    }
+
+    /**
+     * Compte visé par une connexion par mot de passe (launcher ou site), s'il a accès à l'administration : son numéro,
+     * sinon null.
+     */
+    private function compteAdmin(Request $request): ?int
+    {
+        $identifiant = $request->input('email');
+        if ($request->is('user/2fa') || ! is_string($identifiant) || $identifiant === '' || strlen($identifiant) > 190) {
+            return null;
+        }
+        $user = User::where(Str::contains($identifiant, '@') ? 'email' : 'name', $identifiant)->first();
+
+        return $user !== null && method_exists($user, 'hasAdminAccess') && $user->hasAdminAccess() ? (int) $user->id : null;
+    }
+
+    private function cleAdmin(int $compte): string
+    {
+        return 'heraliz-connexion-admin:'.$compte;
     }
 
     private function refus(Request $request, bool $api): Response

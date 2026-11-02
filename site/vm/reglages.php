@@ -147,6 +147,45 @@ dire('Comptes du site dans le launcher : '.(setting('auth_api', false) ? 'connex
 dire('Extensions actives : '.(implode(', ', array_keys(plugins()->plugins())) ?: 'aucune'));
 dire('Boutique : '.(plugins()->isEnabled('shop') ? \Azuriom\Plugin\Shop\Models\Package::count().' article(s)' : 'extension absente'));
 dire('Votes : '.(plugins()->isEnabled('vote') ? \Azuriom\Plugin\Vote\Models\Site::count().' site(s) de vote' : 'extension absente'));
+securiteAdmin();
+
+/**
+ * Comptes qui ont accès à l'administration (audit du 02/11, point 15) : ils règlent la boutique et les votes, donc ce
+ * que joue la console du serveur de jeu. Le résumé dit combien ils sont, combien n'ont pas la double authentification
+ * et si l'administration l'exige ; il signale aussi les articles et récompenses dont une commande serait refusée par
+ * l'extension HeraliZ (Console : seules quelques commandes passent).
+ */
+function securiteAdmin(): void
+{
+    $roles = Role::all()->filter(fn (Role $r) => $r->is_admin || (method_exists($r, 'hasPermission') && $r->hasPermission('admin.access')));
+    $admins = User::whereIn('role_id', $roles->pluck('id'))->get();
+    $sansA2f = $admins->filter(fn (User $u) => method_exists($u, 'hasTwoFactorAuth') && ! $u->hasTwoFactorAuth())->count();
+    dire('Administration du site : '.$admins->count().' compte(s) avec accès, dont '.$sansA2f.' sans double authentification');
+    if (! setting('admin.force_2fa', false)) {
+        dire('::warning::Administration du site : la double authentification n’est PAS exigée pour y entrer (administration → '
+            .'Paramètres → Authentification → « Exiger la double authentification pour l’administration », à cocher depuis un '
+            .'compte admin qui l’a déjà activée dans son profil)');
+    } elseif ($sansA2f > 0) {
+        dire('Administration du site : double authentification exigée ; '.$sansA2f.' compte(s) admin devront l’activer avant d’y entrer');
+    }
+    $Console = \Azuriom\Plugin\Heraliz\Console::class;
+    if (! class_exists($Console)) {
+        return;
+    }
+    $modeles = ['Boutique : article' => \Azuriom\Plugin\Shop\Models\Package::class, 'Votes : récompense' => \Azuriom\Plugin\Vote\Models\Reward::class];
+    foreach ($modeles as $quoi => $modele) {
+        if (! class_exists($modele)) {
+            continue;
+        }
+        foreach ($modele::all() as $m) {
+            $refusees = $Console::refusees($m->commands);
+            if ($refusees !== []) {
+                dire('::warning::'.$quoi.' « '.$m->name.' » : commande refusée par HeraliZ, elle ne partira pas vers le serveur : « '
+                    .$refusees[0].' » (liste des commandes permises : site/extension/heraliz/src/Console.php)');
+            }
+        }
+    }
+}
 
 function reglagesDeDepart(string $contenu): void
 {

@@ -4,6 +4,7 @@ namespace Azuriom\Plugin\Heraliz\Providers;
 
 use Azuriom\Extensions\Plugin\BasePluginServiceProvider;
 use Azuriom\Plugin\Heraliz\Adresse;
+use Azuriom\Plugin\Heraliz\Console;
 use Azuriom\Plugin\Heraliz\Discord\Comptes;
 use Azuriom\Plugin\Heraliz\Middleware\IpsBannies;
 use Azuriom\Plugin\Heraliz\Middleware\LimiteConnexion;
@@ -65,8 +66,13 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // Points Boutique du serveur de jeu (PbController, requêtes signées) : 600 par minute
         RateLimiter::for('heraliz-pb', fn (Request $request) => Limit::perMinute(600)->by(Adresse::de($request)));
 
+        // Commandes jouées par la console du serveur de jeu (AzLink) : seulement celles de la liste de Console, pour le
+        // joueur concerné ; un compte admin du site piraté ne commande plus le serveur (audit du 02/11, point 15)
+        Console::brancher();
+
         // Connexion aux comptes, par le launcher (API d'Azuriom) comme par le site : 10 erreurs par adresse IP, puis
-        // 10 minutes d'attente ; 10 codes de double authentification faux par compte, puis 15 minutes (LimiteConnexion)
+        // 10 minutes d'attente ; 10 codes de double authentification faux par compte, puis 15 minutes ; pour un compte
+        // qui a accès à l'administration, 10 mots de passe faux, puis 15 minutes (LimiteConnexion)
         $this->router->pushMiddlewareToGroup('api', LimiteConnexion::class);
         $this->router->pushMiddlewareToGroup('web', LimiteConnexion::class);
 
