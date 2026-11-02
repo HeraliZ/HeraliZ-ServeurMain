@@ -172,6 +172,11 @@ public final class ServeurGrades implements Partie {
         EchangeServeur.deconnexion(e.getEntity().getUUID());
         HdvServeur.deconnexion(e.getEntity().getUUID());
         VanishServeur.deconnexion(e.getEntity().getUUID());
+        // 02/11 (audit mods-3 §13) : comptes de clés et de capsules gardés en mémoire seulement pour les joueurs connectés
+        // (relus sur leur fichier, toujours à jour, à la prochaine opération)
+        CommandesPb.oublier(e.getEntity().getUUID());
+        fr.heraliz.crates.cles.ComptesCles.oublier(e.getEntity().getUUID());
+        fr.heraliz.casino.economy.CompteCapsules.oublier(e.getEntity().getUUID());
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {

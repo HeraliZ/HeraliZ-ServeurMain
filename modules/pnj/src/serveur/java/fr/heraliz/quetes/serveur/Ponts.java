@@ -107,22 +107,43 @@ final class Ponts {
         return eco;
     }
 
-    static boolean economie() {
+    /**
+     * Méthodes de l'économie, cherchées une seule fois (02/11, audit mods-3 §13 : avant, recherchées à chaque appel).
+     * Null tant qu'elles ne sont pas trouvées (économie absente).
+     */
+    private static java.lang.reflect.Method mDisponible, mDeposer, mSolde, mRetirer;
+
+    private static boolean methodes() {
+        if (mRetirer != null) return true;
         Class<?> c = eco();
         if (c == null) return false;
         try {
-            return (boolean) c.getMethod("disponible").invoke(null);
+            mDisponible = c.getMethod("disponible");
+            mDeposer = c.getMethod("deposer", UUID.class, long.class, String.class);
+            mSolde = c.getMethod("solde", UUID.class);
+            mRetirer = c.getMethod("retirer", UUID.class, long.class, String.class);
+            return true;
+        } catch (Throwable t) {
+            LOG.warn("[heraliz_quetes] HeraliZ Économie : méthodes introuvables ({})", t.toString());
+            mRetirer = null;
+            return false;
+        }
+    }
+
+    static boolean economie() {
+        if (!methodes()) return false;
+        try {
+            return (boolean) mDisponible.invoke(null);
         } catch (Throwable t) {
             return false;
         }
     }
 
     static boolean deposer(UUID joueur, long montant, String motif) {
-        Class<?> c = eco();
-        if (c == null || montant <= 0) return false;
+        if (montant <= 0 || !methodes()) return false;
         try {
-            if (!(boolean) c.getMethod("disponible").invoke(null)) return false;
-            c.getMethod("deposer", UUID.class, long.class, String.class).invoke(null, joueur, montant, motif);
+            if (!(boolean) mDisponible.invoke(null)) return false;
+            mDeposer.invoke(null, joueur, montant, motif);
             return true;
         } catch (Throwable t) {
             LOG.error("[heraliz_quetes] versement de {} hérals à {} : {}", montant, joueur, t.toString());
@@ -149,21 +170,19 @@ final class Ponts {
     }
 
     static long solde(UUID joueur) {
-        Class<?> c = eco();
-        if (c == null) return 0;
+        if (!methodes()) return 0;
         try {
-            return (long) c.getMethod("solde", UUID.class).invoke(null, joueur);
+            return (long) mSolde.invoke(null, joueur);
         } catch (Throwable t) {
             return 0;
         }
     }
 
     static boolean retirer(UUID joueur, long montant, String motif) {
-        Class<?> c = eco();
-        if (c == null || montant <= 0) return false;
+        if (montant <= 0 || !methodes()) return false;
         try {
-            if (!(boolean) c.getMethod("disponible").invoke(null)) return false;
-            return (boolean) c.getMethod("retirer", UUID.class, long.class, String.class).invoke(null, joueur, montant, motif);
+            if (!(boolean) mDisponible.invoke(null)) return false;
+            return (boolean) mRetirer.invoke(null, joueur, montant, motif);
         } catch (Throwable t) {
             return false;
         }

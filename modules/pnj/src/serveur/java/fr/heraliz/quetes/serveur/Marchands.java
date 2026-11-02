@@ -281,6 +281,7 @@ final class Marchands {
 
     static void oublierCache() {
         CACHE.clear();
+        SaisonQuetes.oublierVentes();
     }
 
     /** L'objet d'un article (vide si l'identifiant est inconnu). */

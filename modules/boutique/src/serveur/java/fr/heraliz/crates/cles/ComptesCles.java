@@ -91,6 +91,15 @@ public final class ComptesCles {
         CACHE.clear();
     }
 
+    /**
+     * Déconnexion (02/11, audit mods-3 §13) : le compte n'est plus gardé en mémoire (son fichier est écrit à chaque
+     * changement) ; un compte fermé (fichier illisible) reste gardé, pour ne pas recopier le fichier à chaque lecture.
+     */
+    public static void oublier(UUID u) {
+        Compte c = CACHE.get(u);
+        if (c != null && !c.ferme) CACHE.remove(u);
+    }
+
     /** Le compte (lu sur le disque la première fois). Fil serveur. */
     static Compte compte(UUID u) {
         Compte c = CACHE.get(u);

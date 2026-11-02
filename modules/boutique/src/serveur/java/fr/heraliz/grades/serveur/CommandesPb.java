@@ -20,6 +20,11 @@ import java.util.function.Consumer;
  */
 final class CommandesPb {
     private static final java.util.Map<java.util.UUID, Long> DERNIER_PB = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Déconnexion (02/11, audit mods-3 §13 : la table gardait tous les joueurs venus depuis le démarrage). */
+    static void oublier(java.util.UUID u) {
+        DERNIER_PB.remove(u);
+    }
     private CommandesPb() {
     }
 

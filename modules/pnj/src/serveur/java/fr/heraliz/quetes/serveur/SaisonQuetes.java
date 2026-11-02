@@ -54,9 +54,29 @@ final class SaisonQuetes {
      * avant, l'identifiant seul ; Jack vendant quelques accessoires, plus AUCUN accessoire n'était racheté, même trouvé
      * sur la carte) -> plus petit prix à l'unité chez tous les vendeurs (fichiers et changements en jeu au Registre). Un
      * objet reçu par un échange (1.11.0) vaut 0 : il ne se rachète ni ne se recycle jamais (on l'a eu sans payer de
-     * hérals, échanger puis revendre ferait de l'argent). Refait à chaque appel : les marchands changent en jeu.
+     * hérals, échanger puis revendre ferait de l'argent). Les marchands changent en jeu : table refaite au plus une fois
+     * par seconde (02/11, audit mods-3 §13 : avant, à chaque appel, soit à chaque tick par écran du recycleur de la carte
+     * ouvert) ; lecture seule.
      */
     static Map<String, Long> ventes() {
+        long t = System.currentTimeMillis();
+        Map<String, Long> c = cacheVentes;
+        if (c != null && t - cacheVentesQuand >= 0 && t - cacheVentesQuand < 1000) return c;
+        c = java.util.Collections.unmodifiableMap(calculerVentes());
+        cacheVentes = c;
+        cacheVentesQuand = t;
+        return c;
+    }
+
+    private static Map<String, Long> cacheVentes;
+    private static long cacheVentesQuand;
+
+    /** Les marchands viennent de changer (édition en jeu, rechargement) : la table est refaite au prochain appel. */
+    static void oublierVentes() {
+        cacheVentes = null;
+    }
+
+    private static Map<String, Long> calculerVentes() {
         Map<String, Long> v = new HashMap<>();
         for (Defs.Pnj d : Catalogue.tous()) {
             if (d.marchand == null) continue;

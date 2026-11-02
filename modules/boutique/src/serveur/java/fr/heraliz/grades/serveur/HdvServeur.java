@@ -1496,6 +1496,15 @@ public final class HdvServeur {
         DERNIERE_LISTE.remove(u);
         DERNIER_SOLDE.remove(u);
         SOLDES_PB.remove(u);
+        // 02/11 (audit mods-3 §13) : la limite de 15 mises en vente par 10 min doit survivre à une reconnexion ; seules les
+        // listes dont toutes les ventes ont plus de 10 min sont oubliées (avant : jamais, une liste par vendeur venu)
+        List<Long> rec = VENTES_RECENTES.get(u);
+        if (rec != null) {
+            long now = System.currentTimeMillis();
+            rec.removeIf(t -> now - t > 600_000L);
+            if (rec.isEmpty()) VENTES_RECENTES.remove(u);
+        }
+        VENTES_RECENTES.values().removeIf(l -> l.isEmpty() || System.currentTimeMillis() - l.get(l.size() - 1) > 600_000L);
     }
 
     // ------------------------------------------------------------------ remise à zéro (/wipe de HeraliZ Quêtes)
