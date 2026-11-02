@@ -152,20 +152,8 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Oswald', sa
 .notifications-dropdown .dropdown-item { white-space: normal; font-size: 13px; }
 .notifications-dropdown .text-bg-info, .notifications-dropdown .text-bg-success, .notifications-dropdown .text-bg-warning, .notifications-dropdown .text-bg-danger { color: #0b0c09 !important; }
 
-/* carte tactique (fond des pages) */
-.carte-tac { position: absolute; left: 0; right: 0; top: 0; overflow: hidden; z-index: 0; pointer-events: none; }
-.carte-tac canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.carte-tac .teinte { position: absolute; inset: 0; background: #4b5232; mix-blend-mode: color; opacity: .55; }
-.carte-tac .voile { position: absolute; inset: 0; background:
-  linear-gradient(90deg, rgba(10,11,9,0.97) 0%, rgba(10,11,9,0.78) 34%, rgba(10,11,9,0.15) 62%, rgba(10,11,9,0.25) 100%),
-  linear-gradient(0deg, rgba(10,11,9,1) 0%, rgba(10,11,9,0) 30%), linear-gradient(180deg, rgba(10,11,9,0.6) 0%, rgba(10,11,9,0) 18%); }
-.carte-tac.page .voile { background: linear-gradient(0deg, rgba(10,11,9,1) 0%, rgba(10,11,9,0.55) 55%, rgba(10,11,9,0.72) 100%), linear-gradient(90deg, rgba(10,11,9,0.6), rgba(10,11,9,0.2)); }
-.carte-tac svg.notes { position: absolute; inset: 0; width: 100%; height: 100%; }
-.carte-tac .lbl { font: 700 11px 'DM Sans', sans-serif; letter-spacing: .2em; }
-
 /* accueil */
 .hero { position: relative; min-height: 760px; display: flex; align-items: center; }
-.hero > .carte-tac { height: 100%; }
 .hero .wrap { padding-top: 70px; padding-bottom: 110px; }
 .hero .logo { display: block; width: min(540px, 100%); height: auto; margin: 18px 0 0 -12px; filter: drop-shadow(0 12px 30px rgba(0,0,0,0.8)); }
 .hero h1 { font-size: clamp(36px, 5.2vw, 58px); margin-top: 10px; }
@@ -232,8 +220,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Oswald', sa
 .pas p { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; max-width: 300px; }
 .pas a { text-decoration: underline; text-underline-offset: 3px; }
 .appel { position: relative; margin-top: 70px; min-height: 300px; display: flex; overflow: hidden; border-top: 1px solid var(--trait); border-bottom: 1px solid var(--trait); }
-.appel > .carte-tac { height: 100%; }
-.appel .carte-tac .voile { background: linear-gradient(90deg, rgba(10,11,9,0.96) 20%, rgba(10,11,9,0.55)); }
 .appel .wrap { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding-top: 60px; padding-bottom: 60px; }
 .appel h2 { font-size: clamp(38px, 5vw, 54px); margin-top: 12px; }
 .appel h2 span { color: var(--sang2); }
@@ -257,7 +243,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Oswald', sa
 
 /* pages intérieures */
 .page-interieure { position: relative; }
-.page-interieure > .carte-tac { height: 620px; }
 .contenu { position: relative; padding-top: 56px; }
 .bandeau { position: relative; padding: 8px 0 34px; }
 .bandeau h1, .contenu > h1:first-of-type, .contenu > .alerts + h1 { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; line-height: 1.02;
@@ -355,11 +340,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Oswald', sa
 .grade .prix .v small { font: 500 12px 'DM Sans', sans-serif; color: var(--muted); }
 .grade .prix .bientot { font: 700 11px 'DM Sans', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--laiton); }
 .grade .tampon { position: absolute; top: 18px; right: 18px; z-index: 3; }
-.boutique-cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 30px; }
-.boutique-cote .card-header { font: 600 14px 'Oswald', sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-.bande-info { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 30px; margin-top: 26px; padding: 18px 22px; font-size: 13px; color: rgba(230,225,211,0.8); }
-.bande-info > div { display: flex; align-items: center; gap: 10px; }
-.bande-info svg.i { color: var(--vert); }
 
 /* votes */
 .votes { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 24px; align-items: start; }
@@ -521,7 +501,6 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
   .droite .btn { flex: 1 1 auto; }
   .hero { min-height: 0; }
   .hero .wrap { padding-top: 54px; padding-bottom: 70px; }
-  .carte-tac svg.notes { opacity: .4; }
   .chiffres .wrap { grid-template-columns: repeat(2, 1fr); }
   .chiffre { padding: 22px 18px; }
   .chiffre:nth-child(odd) { border-left: 1px solid var(--trait); }
@@ -559,7 +538,6 @@ code { background: rgba(230,225,211,0.06); padding: 2px 5px; }
   .tete-section .aside { text-align: left; }
   .rapports, .rapports.n2, .rapports.uniforme { grid-template-columns: 1fr; }
   .rapport .photo { height: 200px; }
-  .carte-tac svg.notes { display: none; }
   .noms-grades > div { flex-direction: column; gap: 4px; }
   .noms-grades span { width: auto; }
   .noms-grades b { font-size: 30px; }

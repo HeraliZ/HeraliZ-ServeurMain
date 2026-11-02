@@ -1,8 +1,8 @@
 {
     "id": "heraliz",
     "name": "HeraliZ",
-    "description": "Thème du site HeraliZ : carte tactique, panneaux à coins, polices Oswald et DM Sans (maquettes validées).",
-    "version": "1.0.0",
+    "description": "Thème du site HeraliZ : panneaux à coins, polices Oswald et DM Sans (maquettes validées).",
+    "version": "1.1.0",
     "url": "https://heraliz.fr",
     "authors": [
         "HeraliZ"

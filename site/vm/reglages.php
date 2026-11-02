@@ -6,9 +6,9 @@
  * À chaque envoi : le thème « heraliz » devient le thème du site.
  * Une seule fois (repère « heraliz.api_launcher ») : l'API de connexion des comptes est activée, pour le launcher
  * (connexion, création de compte et double authentification avec le compte du site).
- * Une seule fois (repère « heraliz.reglages » dans les réglages) : nom et description du site, crédits, boutique en
- * crédits et en euros, menu, page Règlement, grades de la saison, trois premières actualités, serveur de jeu à
- * surveiller. Chaque élément n'est créé que s'il manque : rien de ce que l'administration a déjà changé n'est écrasé.
+ * Une seule fois (repère « heraliz.reglages » dans les réglages) : nom et description du site, monnaie du site (PB),
+ * menu, page Règlement, grades de la saison, trois premières actualités, serveur de jeu à surveiller. Chaque élément
+ * n'est créé que s'il manque : rien de ce que l'administration a déjà changé n'est écrasé.
  */
 
 use Azuriom\Extensions\Theme\ThemeManager;
@@ -36,9 +36,6 @@ chdir($dossier);
 require $dossier.'/vendor/autoload.php';
 $app = require $dossier.'/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
-
-/** Caisse dont les clés sont vendues sur la boutique (« clés cosmétiques »), identifiant de HeraliZ Caisses. */
-const CAISSE_COSMETIQUE = 'spectacle';
 
 require __DIR__.'/pages_legales.php';
 
@@ -123,14 +120,10 @@ if (plugins()->isEnabled('vote')) {
     }
 }
 
-// boutique en Points Boutique (22/10) : le site ne vend plus que des PB (100 PB = 1 €, payés en euros), tout le reste
-// s'achète en jeu (/boutique). Une seule fois (repère « heraliz.boutique_pb ») : anciens articles, catégories et offres
-// de crédits retirés (aucun achat fait), lots de PB créés ; mis en vente seulement quand PB_EN_VENTE est vrai (la
-// commande « pb donner » doit exister sur le serveur), à chaque envoi tant que l'administration ne les a pas touchés.
-const PB_EN_VENTE = false;
+// boutique en Points Boutique (22/10) : le site ne vend que des PB (100 PB = 1 €, payés en euros), monnaie du compte
+// du site ; tout le reste s'achète en jeu (/boutique). Lots de PB : euros payés, PB reçus (bonus compris).
 const LOTS_PB = [[5, 500], [10, 1000], [20, 2150], [50, 5550], [100, 11500]];
 if (plugins()->isEnabled('shop')) {
-    boutiquePB();
     pbMonnaieDuSite();
 }
 
@@ -189,7 +182,7 @@ function securiteAdmin(): void
 
 function reglagesDeDepart(string $contenu): void
 {
-    // site : nom, description, nom de la monnaie du site (crédits ; les hérals sont la monnaie du jeu)
+    // site : nom, description, nom de la monnaie du site (les PB ; les hérals sont la monnaie du jeu)
     $reglages = [];
     if (in_array(setting('name'), [null, '', 'Azuriom'], true)) {
         $reglages['name'] = 'HeraliZ';
@@ -198,9 +191,9 @@ function reglagesDeDepart(string $contenu): void
         $reglages['description'] = 'HeraliZ, serveur Minecraft de survie : loot, zombies, clans, bases et raids.';
     }
     if (in_array(setting('money'), [null, 'points', 'point|points'], true)) {
-        $reglages['money'] = 'crédit|crédits';
+        $reglages['money'] = 'PB|PB';
     }
-    // boutique : articles payés en crédits du site, crédits achetés en euros (maquettes validées)
+    // boutique : payée en monnaie du site (les PB), PB achetés en euros (pbMonnaieDuSite)
     if (setting('shop.use_site_money') === null) {
         $reglages['shop.use_site_money'] = true;
     }
@@ -327,49 +320,6 @@ function boutiqueDeDepart(): void
     dire('Boutique et pages légales : faites');
 }
 
-/** Chaque vote : 1 clé de la caisse « vote » et 10 hérals en jeu (joués par AzLink, joueur connecté). */
-function boutiquePB(): void
-{
-    $Categorie = \Azuriom\Plugin\Shop\Models\Category::class;
-    $Article = \Azuriom\Plugin\Shop\Models\Package::class;
-    if (setting('heraliz.boutique_pb') === null) {
-        foreach ($Article::all() as $a) {
-            $a->delete();
-        }
-        foreach ($Categorie::all() as $c) {
-            $c->delete();
-        }
-        $Offre = \Azuriom\Plugin\Shop\Models\Offer::class;
-        if (class_exists($Offre)) {
-            foreach ($Offre::all() as $o) {
-                $o->delete();
-            }
-        }
-        // payé directement en euros : plus de crédits du site
-        Setting::updateSettings('shop.use_site_money', false);
-        $serveur = Server::find(setting('servers.default')) ?? Server::first();
-        $c = $Categorie::create(colonnes('shop_categories', ['name' => 'Points Boutique', 'slug' => 'points-boutique',
-            'description' => '<p>Les <strong>Points Boutique (PB)</strong> se dépensent en jeu : tape <strong>/boutique</strong> pour acheter grades, clés et cosmétiques. Ils s’échangent aussi entre joueurs au spawn (/trade, taxe de 10 %). Aucun avantage en combat, aucun abonnement.</p>',
-            'position' => 1, 'is_enabled' => true]));
-        foreach (LOTS_PB as $i => [$euros, $pb]) {
-            $bonus = $pb - $euros * 100;
-            $Article::create(colonnes('shop_packages', [
-                'category_id' => $c->id, 'name' => number_format($pb, 0, ',', ' ').' PB',
-                'short_description' => $bonus > 0 ? '+'.number_format($bonus, 0, ',', ' ').' PB offerts' : 'Livrés en jeu tout de suite.',
-                'description' => '<p>'.number_format($pb, 0, ',', ' ').' Points Boutique crédités en jeu sur ton compte (sois connecté au serveur). À dépenser dans <strong>/boutique</strong>.</p><p>Contenu numérique livré immédiatement : <strong>aucun remboursement</strong> (voir les Conditions de vente).</p>',
-                'price' => $euros, 'position' => $i + 1,
-                'commands' => [['command' => 'pb donner {player} '.$pb.' achat', 'trigger' => 'purchase', 'require_online' => true, 'server' => $serveur?->id]],
-                'need_online' => true, 'is_enabled' => PB_EN_VENTE,
-            ]));
-        }
-        Setting::updateSettings('heraliz.boutique_pb', now()->toDateString());
-        dire('Boutique : passée aux Points Boutique ('.count(LOTS_PB).' lots, payés en euros ; anciens articles et crédits retirés)');
-    }
-    if (PB_EN_VENTE) {
-        $Article::where('is_enabled', false)->where('name', 'like', '% PB')->update(['is_enabled' => true]);
-    }
-}
-
 function siteV4(): void
 {
     $reglement = '<p><strong>Échelle des sanctions :</strong> avertissement, mute, ban temporaire, ban définitif. Triche et doubles comptes : ban définitif direct. Aucun remboursement en cas de sanction.</p><h2>1. Comptes</h2><p>Un compte = une personne. Prêt, partage, vente ou achat de compte interdits. Double compte pour contourner une sanction : ban de tous les comptes.</p><p><em>Sanction : Ban définitif</em></p><h2>2. Triche</h2><p>Client modifié, x-ray, aimbot, macros, autoclick, logiciels tiers, duplication, exploitation de bug : interdit. Un bug se signale au staff sur Discord, il ne s’exploite pas.</p><p><em>Sanction : Ban compte + IP + PC</em></p><h2>3. Respect</h2><p>Pas d’insultes graves, de harcèlement, de propos racistes, sexistes, homophobes ou à caractère sexuel, ni de menaces hors jeu (doxx, DDoS).</p><p><em>Sanction : Mute puis ban</em></p><h2>4. Chat et vocal</h2><p>Pas de spam, de flood, de majuscules en boucle ni de publicité pour d’autres serveurs. En vocal : pas de musique ni de bruits pour gêner.</p><p><em>Sanction : Mute</em></p><h2>5. PvP et raids</h2><p>Le PvP, le pillage et les raids font partie du jeu. Interdit : tuer en boucle un joueur qui réapparaît, bloquer le spawn, piéger les zones de départ.</p><p><em>Sanction : Avertissement puis ban temporaire</em></p><h2>6. Bases et constructions</h2><p>Pas de constructions offensantes, de bases qui bloquent une route, une extraction ou un lieu de loot, ni de lag volontaire (machines, entités en masse).</p><p><em>Sanction : Base effacée</em></p><h2>7. Clans et alliances</h2><p>Un clan peut s’allier, trahir et piller : c’est le jeu. Une arnaque prouvée hors des règles du /trade est sanctionnée.</p><p><em>Sanction : Selon le cas</em></p><h2>8. Échanges et argent réel</h2><p>Échanges uniquement par /trade au spawn. Vendre ou acheter objets, PB, hérals ou comptes contre de l’argent réel : interdit.</p><p><em>Sanction : Ban et retrait</em></p><h2>9. Staff</h2><p>Les décisions du staff s’appliquent. Une contestation se fait calmement par ticket sur Discord, pas dans le chat. Se faire passer pour le staff : ban.</p><p><em>Sanction : —</em></p><h2>10. Anticheat</h2><p>Le jeu se lance uniquement depuis le launcher HeraliZ, qui contrôle les fichiers du jeu et peut prendre des captures du jeu avec ton accord. Le contourner = triche.</p><p><em>Sanction : Ban compte + IP + PC</em></p><p>Dernière mise à jour : 22 octobre 2026. Une question ? Discord, salon #support.</p>';
@@ -415,9 +365,10 @@ function siteV4(): void
 }
 
 // PB = monnaie du compte du site (22/10, demande du propriétaire) : un seul porte-monnaie pour le site, le launcher et le
-// jeu (/boutique et /trade le liront par l'extension HeraliZ). Une seule fois (repère « heraliz.pb_monnaie ») : monnaie
-// « PB », boutique payée en monnaie du site, anciens lots (articles) retirés, offres de recharge créées. À chaque envoi :
-// chaque offre est proposée par chaque moyen de paiement actif (ajoutés plus tard dans l'administration).
+// jeu (/boutique et /trade le lisent par l'extension HeraliZ). Une seule fois (repère « heraliz.pb_monnaie ») : monnaie
+// « PB », boutique payée en monnaie du site, anciens lots en articles retirés, offres de recharge créées. À chaque envoi :
+// chaque offre est proposée par chaque moyen de paiement actif (ajoutés plus tard dans l'administration). (L'étape
+// d'avant, qui créait des lots en articles aussitôt retirés ici, a été enlevée le 02/11 : audit, point 41.)
 function pbMonnaieDuSite(): void
 {
     $Offre = \Azuriom\Plugin\Shop\Models\Offer::class;
