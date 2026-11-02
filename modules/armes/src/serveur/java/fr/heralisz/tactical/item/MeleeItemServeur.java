@@ -7,6 +7,7 @@ import fr.heralisz.tactical.api.melee.AttackResult;
 import fr.heralisz.tactical.api.melee.MeleeAction;
 import fr.heralisz.tactical.config.CommonConfig;
 import fr.heralisz.tactical.item.melee.CombatData;
+import fr.heraliz.tactique.avie.ObjetsAVie;
 import fr.heraliz.tactique.melee.PorteeMelee;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -64,7 +65,9 @@ public class MeleeItemServeur extends MeleeItem {
                   }
 
                   if (hit) {
-                     if ((Boolean)CommonConfig.MELEE_ITEM_CONSUME_DURABILITY.get()) {
+                     // HeraliZ (audit du 02/11, point 7) : une arme à vie (toutes les armes de mêlée, ObjetsAVie) ne s'use
+                     // pas, donc ne casse jamais et ne disparaît jamais
+                     if ((Boolean)CommonConfig.MELEE_ITEM_CONSUME_DURABILITY.get() && !ObjetsAVie.estAVie(stack)) {
                         stack.hurtAndBreak(attackInfo.getDurabilityDamage(), attacker, player -> player.broadcastBreakEvent(EquipmentSlot.MAINHAND));
                      }
 

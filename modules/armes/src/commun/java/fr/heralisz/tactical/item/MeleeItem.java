@@ -94,6 +94,15 @@ public class MeleeItem extends Item implements IAnimationItem, IMeleeWeapon {
       return this.getMaxDamage(stack) > 0;
    }
 
+   /**
+    * HeraliZ (audit du 02/11, point 7) : une arme à vie ne s'use plus (MeleeItemServeur) ; sa barre d'usure n'est plus
+    * montrée, même pour une usure prise avant.
+    */
+   @Override
+   public boolean isBarVisible(ItemStack stack) {
+      return !fr.heraliz.tactique.avie.ObjetsAVie.estAVie(stack) && super.isBarVisible(stack);
+   }
+
    @Override
    public int getDrawTime(ItemStack stack) {
       return this.getMeleeIndex(stack).map(index -> index.getData().getDrawTime()).orElse(0);
