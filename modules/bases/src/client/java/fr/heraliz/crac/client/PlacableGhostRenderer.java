@@ -188,17 +188,41 @@ public final class PlacableGhostRenderer {
         return reason;
     }
 
+    /** HeraliZ (03/11) : dernier refus du serveur pour un objet posé ({@code RefusServeur}), montré sous le viseur 2 s. */
+    @Nullable
+    private static net.minecraft.network.chat.Component refus;
+    private static long refusA;
+    private static final long REFUS_MS = 2000L;
+
+    /** HeraliZ (03/11) : le joueur tient un objet que CRac pose (caisse, coffre, armoire...) dans une main. */
+    public static boolean objetEnMain(Player player) {
+        for (InteractionHand hand : InteractionHand.values()) {
+            if (player.getItemInHand(hand).getItem() instanceof BlockItem bi && PlacableSet.canPlaceClient(bi.getBlock())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** HeraliZ (03/11) : refus de pose renvoyé par le serveur, dit sous le viseur à la place du message de Minecraft. */
+    public static void refusServeur(net.minecraft.network.chat.Component message) {
+        refus = net.minecraft.network.chat.Component.literal(message.getString());
+        refusA = net.minecraft.Util.getMillis();
+    }
+
     @SubscribeEvent
     public static void onRenderGui(RenderGuiOverlayEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
         String why = reason;
+        net.minecraft.network.chat.Component serveur = refus != null && net.minecraft.Util.getMillis() - refusA < REFUS_MS ? refus : null;
         // the Building Plan draws its own verdict at the same place
-        if (why == null || !e.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id()) || mc.player == null || mc.options.hideGui
-            || BuildClient.holdingPlan(mc.player)) {
+        if (why == null && serveur == null || !e.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id()) || mc.player == null
+            || mc.options.hideGui || BuildClient.holdingPlan(mc.player)) {
             return;
         }
         GuiGraphics g = e.getGuiGraphics();
-        g.drawCenteredString(mc.font, Txt.c(why), e.getWindow().getGuiScaledWidth() / 2, e.getWindow().getGuiScaledHeight() / 2 + 12, 0xFF6060);
+        g.drawCenteredString(mc.font, serveur != null ? serveur : Txt.c(why), e.getWindow().getGuiScaledWidth() / 2,
+            e.getWindow().getGuiScaledHeight() / 2 + 12, 0xFF6060);
     }
 
     private static void applyFacing(PoseStack pose, BlockState state) {

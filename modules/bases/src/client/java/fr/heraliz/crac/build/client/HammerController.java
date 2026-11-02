@@ -127,6 +127,12 @@ public final class HammerController {
         messageAt = Util.getMillis();
     }
 
+    /** HeraliZ (03/11) : refus du serveur (amélioration, démolition...), montré au-dessus du viseur ({@link RefusServeur}). */
+    static void refusServeur(Component msg) {
+        message = Component.literal(msg.getString());
+        messageAt = Util.getMillis();
+    }
+
     @SubscribeEvent
     public static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
         LocalPlayer p = Minecraft.getInstance().player;

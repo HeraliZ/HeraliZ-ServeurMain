@@ -330,7 +330,14 @@ public final class StructureService {
             return null;
         }
         if (!claims.isEmpty() && !creative) {
-            return "crac.build.foreign_claim";
+            // HeraliZ (03/11, demande du propriétaire) : un bâtiment sans claim dans les claims de son propre clan est une
+            // partie de sa base coupée de l'armoire (C4, fondation détruite), pas « le claim d'un autre groupe »
+            for (Claim c : claims.values()) {
+                if (!isMember(level, player, c, ClanAccess.Action.BUILD)) {
+                    return "crac.build.foreign_claim";
+                }
+            }
+            return "crac.build.partie_coupee";
         }
         // protectOutsideClaims: outside a claim only the first foundation (the Claim Block's seat) may be placed
         boolean limited = Config.protectOutsideClaims.get() || b != null && b.pieces.size() >= BuildConfig.maxPiecesWithoutClaim.get();

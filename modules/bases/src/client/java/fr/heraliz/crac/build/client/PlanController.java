@@ -24,7 +24,6 @@ import fr.heraliz.crac.client.ClientClaimCache;
 import fr.heraliz.crac.client.RaidBlockOverlay;
 import fr.heraliz.crac.network.NetworkHandler;
 import fr.heraliz.crac.network.S2CNearbyClaims;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -86,6 +85,11 @@ public final class PlanController {
     private static long checkedBuilding;
     private static long lastPlace;
     private static PlanState.Note rotationNote = PlanState.Note.NONE;
+    /** HeraliZ (03/11) : dernier refus du serveur ({@link RefusServeur}), montré à la place du verdict pendant {@link #REFUS_MS}. */
+    @Nullable
+    private static Status refus;
+    private static long refusA;
+    private static final long REFUS_MS = 2000L;
 
     private PlanController() {
     }
@@ -96,10 +100,23 @@ public final class PlanController {
         return ghost;
     }
 
-    /** Placement verdict for the ghost (or a hint when there is none); null when not holding the plan. */
+    /**
+     * Placement verdict for the ghost (or a hint when there is none); null when not holding the plan. HeraliZ (03/11) :
+     * pendant 2 s après un refus du serveur, ce refus (le verdict du joueur peut être faux : stabilité, claims pas encore
+     * reçus...).
+     */
     @Nullable
     public static Status status() {
+        if (status != null && refus != null && Util.getMillis() - refusA < REFUS_MS) {
+            return refus;
+        }
         return status;
+    }
+
+    /** HeraliZ (03/11) : refus de pose renvoyé par le serveur, montré dans la carte du verdict ({@link RefusServeur}). */
+    static void refusServeur(Component message) {
+        refus = new Status(Severity.ERROR, Component.literal(message.getString()), false);
+        refusA = Util.getMillis();
     }
 
     /** What the ghost does with the rotation counter beyond {@link PlanState#rotationText}, for the HUD. */
@@ -175,7 +192,8 @@ public final class PlanController {
             return;
         }
         if (!status.sendable()) {
-            mc.player.displayClientMessage(status.message().copy().withStyle(ChatFormatting.RED), true);
+            // HeraliZ (03/11, demande du propriétaire) : plus de message de Minecraft au-dessus de la barre d'objets, en
+            // double de la carte du verdict sous le viseur, qui dit déjà pourquoi
             return;
         }
         lastPlace = now;
@@ -361,8 +379,11 @@ public final class PlanController {
             return null;
         }
         for (BlockPos pos : blocks) {
-            if (S2CNearbyClaims.claimAt(claims, pos) != null) {
-                return "crac.build.foreign_claim";
+            S2CNearbyClaims.ClaimEntry here = S2CNearbyClaims.claimAt(claims, pos);
+            if (here != null) {
+                // HeraliZ (03/11) : un bout de sa propre base coupé de l'armoire (C4, fondation détruite) n'est pas « le
+                // claim d'un autre groupe » (même règle que le serveur, StructureService.privilegeProblem)
+                return here.ownedByMe() ? "crac.build.partie_coupee" : "crac.build.foreign_claim";
             }
         }
         // HeraliZ : la cabane du tutoriel des bases se bâtit avant son Claim Block (le serveur le vérifie)

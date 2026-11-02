@@ -44,6 +44,7 @@
   "crac.build.claim_first": "Place a Claim Block on this foundation before building more.",
   "crac.build.demolish_late": "Too late to demolish (only %s min after building or upgrading).",
   "crac.build.foreign_claim": "Inside another group's claim.",
+  "crac.build.partie_coupee": "This part is no longer connected to your cupboard’s building: it decays on its own. Build from your main base.",
   "crac.build.height": "Outside of the build height.",
   "crac.build.need": "Not enough materials, need %s.",
   "crac.build.no_new_in_claim": "You cannot start a new building inside a claim. Extend your base instead.",
