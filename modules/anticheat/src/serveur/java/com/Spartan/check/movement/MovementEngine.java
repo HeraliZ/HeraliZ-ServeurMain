@@ -624,7 +624,7 @@ public final class MovementEngine {
         double attr = p.getAttributeValue(Attributes.MOVEMENT_SPEED);
         double sprint = (p.isSprinting() ? attr / 1.3 : attr) * 1.3; // sprint toujours supposé possible
         s.speed.observe(sprint, s.tx, now, margin);
-        int rtt = (int) Math.ceil(Math.max(0, p.latency) / 50.0);
+        int rtt = (int) Math.ceil(LatenceCheck.effective(p) / 50.0);
         s.stableUse = p.isUsingItem() && !p.isPassenger()
                 && p.getTicksUsingItem() >= 3 + rtt
                 && p.getUseItemRemainingTicks() >= 3 + (rtt + 1) / 2
@@ -687,9 +687,11 @@ public final class MovementEngine {
     /**
      * Le client applique les changements d'état avec un aller-retour réseau de
      * retard : on prolonge les exemptions d'autant (300 ms + 1,5 × ping, max 3 s).
+     * Ping : celui de Minecraft, jamais plus que celui mesuré par les transactions + 100 ms (02/11, point 14 : un
+     * « faux lag » qui gonfle le premier n'élargit plus ces exemptions ; pour un joueur honnête, rien ne change).
      */
     private static long latencyMargin(ServerPlayer p) {
-        long ms = 300 + Math.min(2700, (long) (Math.max(0, p.latency) * 1.5));
+        long ms = 300 + Math.min(2700, (long) (LatenceCheck.effective(p) * 1.5));
         return ms * 1_000_000L;
     }
 }

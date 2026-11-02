@@ -88,14 +88,23 @@ public class AlertManager {
 
     /** Ligne de plus dans alerts.log (si alertLogFile), sans console ni Discord : captures d'écran… */
     public static void journal(String line) {
+        journal("alerts.log", line);
+    }
+
+    /** Ligne de plus dans un journal de config/spartan/ (tirs.log…), si alertLogFile ; même rotation à 10 Mo. */
+    public static void journal(String fichier, String line) {
         if (SpartanConfig.ALERT_LOGFILE.get()) {
-            writeLog(line);
+            writeLog(fichier, line);
         }
     }
 
     private static final long MAX_LOG_BYTES = 10L * 1024 * 1024; // 10 Mo, puis rotation
 
     private static void writeLog(String line) {
+        writeLog("alerts.log", line);
+    }
+
+    private static void writeLog(String fichier, String line) {
         // Horodatage pris sur le thread serveur, écriture sur le thread I/O.
         String stamped = TS.format(new Date()) + " " + line.replace('\n', ' ').replace('\r', ' ')
                 + System.lineSeparator();
@@ -103,9 +112,9 @@ public class AlertManager {
             try {
                 File dir = new File(FMLPaths.CONFIGDIR.get().toFile(), "spartan");
                 dir.mkdirs();
-                File log = new File(dir, "alerts.log");
+                File log = new File(dir, fichier);
                 if (log.length() > MAX_LOG_BYTES) {
-                    File old = new File(dir, "alerts.log.1");
+                    File old = new File(dir, fichier + ".1");
                     old.delete();
                     log.renameTo(old);
                 }
@@ -113,7 +122,7 @@ public class AlertManager {
                     w.write(stamped);
                 }
             } catch (IOException e) {
-                Spartan.LOGGER.warn("[Spartan] Impossible d'écrire alerts.log : {}", e.getMessage());
+                Spartan.LOGGER.warn("[Spartan] Impossible d'écrire {} : {}", fichier, e.getMessage());
             }
         });
     }

@@ -10,9 +10,11 @@ import com.Spartan.check.block.NukerCheck;
 import com.Spartan.check.combat.AutoClickerCheck;
 import com.Spartan.check.combat.KillAuraCheck;
 import com.Spartan.check.combat.ReachCheck;
+import com.Spartan.check.combat.TirsTacz;
 import com.Spartan.check.movement.BadPacketsCheck;
 import com.Spartan.check.movement.FlyCheck;
 import com.Spartan.check.movement.IllegalEffectCheck;
+import com.Spartan.check.movement.LatenceCheck;
 import com.Spartan.check.movement.NoFallCheck;
 import com.Spartan.check.movement.NoSlowCheck;
 import com.Spartan.check.movement.SpeedCheck;
@@ -59,6 +61,9 @@ public final class PartieServeur implements Partie {
         CheckManager.register(new NukerCheck());
         CheckManager.register(new FastBreakCheck());
         CheckManager.register(new IllegalEffectCheck());
+        // audit du 02/11 (point 14) : latence trafiquée, tirs TaCZ (alertes seulement)
+        CheckManager.register(new LatenceCheck());
+        CheckManager.register(new TirsTacz());
 
         ModMessages.RECEPTION_SERVEUR.brancher(ReceptionServeur::recevoir);
         busMod.addListener(PartieServeur::imc);

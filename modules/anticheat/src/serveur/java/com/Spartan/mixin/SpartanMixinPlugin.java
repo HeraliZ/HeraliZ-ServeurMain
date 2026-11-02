@@ -36,6 +36,7 @@ public class SpartanMixinPlugin implements IMixinConfigPlugin {
         List<String> extra = new ArrayList<>();
         if (isLoaded("tacz")) {
             extra.add("TaczSoundMixin");
+            extra.add("TaczTirMixin"); // tirs refusés par TaCZ (audit du 02/11, point 14)
         }
         return extra;
     }

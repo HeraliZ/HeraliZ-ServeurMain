@@ -76,3 +76,32 @@ compte du joueur obtient un jeton du site ; le jeu calcule lui-même l'empreinte
 et de Minecraft (couches de lancement) ne sont toujours comparées qu'au client de référence (`/spartan reference
 learn`), pas au jeu officiel : il faudrait que `outils/pack_launcher.py` écrive leurs empreintes dans `officiel.json`
 (hors de ce chantier). Les vraies défenses sont côté serveur (point 14) et le Gardien prouvé (point 2).
+
+## Point 14 — tirs et déplacements jugés par le serveur (alertes seulement)
+
+Ce qui change pour le joueur : rien (aucune sanction, aucun coup annulé, aucun renvoi en arrière de plus :
+`movementSetback` reste coupé). Le staff reçoit de nouvelles alertes, avec les chiffres :
+
+| Alerte | Quand | Réglage |
+|---|---|---|
+| « Speed » vitesse soutenue | +12 % au-dessus du maximum physique sur 5 s de marche suivie | `speedSustained…` |
+| « Latence » | latence keepalive retenue (faux lag, pour remonter le temps avec TaCZ) | `fakeLag…` |
+| « Tirs » têtes | ≥ 75 % de tirs à la tête sur 25 touches de joueurs à plus de 10 blocs | `[tirs] headshot…` |
+| « Tirs » coups secs | 8 tirs à la tête juste après un mouvement de visée de plus de 35° en moins de 100 ms | `[tirs] snap…` |
+| « Tirs » refus | 15 tirs refusés par TaCZ (cadence) ou 40 (horloge) en 10 s | `[tirs] …Refusals` |
+
+Les marges de Spartan (exemptions après un changement d'état) ne suivent plus une latence keepalive gonflée : pour un
+joueur honnête, rien ne change.
+
+- [ ] Sprint à pied 2 min sur la carte (routes, herbe, escaliers, toits, bords de blocs, glace) : aucune alerte Speed.
+- [ ] Monter / descendre d'un véhicule ywzj, rouler, en sortir en roulant ; prendre le train : aucune alerte.
+- [ ] S'allonger (TaCZ), ramper, être à terre puis réanimé : aucune alerte.
+- [ ] Téléportations (`/spawn`, `/home`, `/tpa`, extraction, mort et réapparition) : aucune alerte.
+- [ ] Jouer avec un mauvais réseau (Wi-Fi chargé) et avec un gel du jeu (chargement d'un monde) : aucune alerte
+      « Latence ».
+- [ ] Tir automatique, rafale, fusil à pompe, sniper sur des joueurs (serveur d'essai, deux comptes) : aucune alerte
+      « Tirs » pour un tireur normal ; `config/spartan/tirs.log` contient une ligne par session (tirs, touches, têtes, refus).
+- [ ] Régler les seuils après une semaine de `tirs.log` et d'alertes (commencer haut, baisser ensuite).
+
+À décider (chantier « armes », pas fait ici) : `ServerHitboxLatencyMaxSaveMs` de `serveur/config/tacz-common.toml` est à
+1000 ms (TaCZ remonte le temps des hitbox d'autant) ; 350 ms suffirait à un joueur français et réduirait le « backtrack ».

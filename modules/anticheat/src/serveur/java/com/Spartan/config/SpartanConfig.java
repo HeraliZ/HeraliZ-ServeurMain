@@ -62,6 +62,14 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue CHECK_SPEED;
     public static final ForgeConfigSpec.DoubleValue SPEED_TOLERANCE;
     public static final ForgeConfigSpec.DoubleValue SPEED_MARGIN_PER_TICK;
+    public static final ForgeConfigSpec.BooleanValue CHECK_SPEED_SOUTENUE;
+    public static final ForgeConfigSpec.DoubleValue SPEED_SOUTENUE_RATIO;
+    public static final ForgeConfigSpec.IntValue SPEED_SOUTENUE_SECONDES;
+    public static final ForgeConfigSpec.DoubleValue SPEED_SOUTENUE_DISTANCE_MIN;
+    public static final ForgeConfigSpec.BooleanValue CHECK_FAKE_LAG;
+    public static final ForgeConfigSpec.IntValue FAKE_LAG_MARGIN_MS;
+    public static final ForgeConfigSpec.IntValue FAKE_LAG_MIN_MS;
+    public static final ForgeConfigSpec.IntValue FAKE_LAG_SAMPLES;
     public static final ForgeConfigSpec.BooleanValue CHECK_REACH;
     public static final ForgeConfigSpec.DoubleValue REACH_DISTANCE;
     public static final ForgeConfigSpec.BooleanValue CHECK_KILLAURA;
@@ -143,6 +151,19 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GARDIEN_IGNORED_TOOLS;
     public static final ForgeConfigSpec.ConfigValue<String> GARDIEN_ANCIEN_LAUNCHER;
     public static final ForgeConfigSpec.IntValue GARDIEN_DEFI_SECONDS;
+
+    // --- tirs TaCZ (audit du 02/11, point 14) ---
+    public static final ForgeConfigSpec.BooleanValue TIRS_ENABLED;
+    public static final ForgeConfigSpec.IntValue TIRS_HISTORIQUE;
+    public static final ForgeConfigSpec.IntValue TIRS_TOUCHES_MIN;
+    public static final ForgeConfigSpec.DoubleValue TIRS_RATIO_TETE;
+    public static final ForgeConfigSpec.DoubleValue TIRS_DISTANCE_MIN;
+    public static final ForgeConfigSpec.DoubleValue TIRS_COUP_SEC_DEGRES;
+    public static final ForgeConfigSpec.IntValue TIRS_COUPS_SECS_MAX;
+    public static final ForgeConfigSpec.IntValue TIRS_REFUS_CADENCE;
+    public static final ForgeConfigSpec.IntValue TIRS_REFUS_HORLOGE;
+    public static final ForgeConfigSpec.IntValue TIRS_REFUS_SECONDES;
+    public static final ForgeConfigSpec.BooleanValue TIRS_JOURNAL;
 
     // --- validation du jeu à la connexion ---
     public static final ForgeConfigSpec.BooleanValue VALIDATION_ENABLED;
@@ -293,6 +314,32 @@ public class SpartanConfig {
                 "Speed : marge par tick (blocs) ajoutée au maximum physique avant de compter un dépassement",
                 "(0,06 : un pas de 0,35 passe là où le maximum est 0,29).")
                 .defineInRange("speedMarginPerTick", 0.06, 0.0, 0.5);
+        CHECK_SPEED_SOUTENUE = b.comment(
+                "Vitesse soutenue (02/11) : sur speedSustainedSeconds de déplacement à pied entièrement suivi (aucun véhicule,",
+                "train, eau, échelle, téléportation, recul…), distance parcourue contre le maximum physique SANS la marge par",
+                "tick. Un speed hack réglé sous speedMarginPerTick (+10 à +20 %) y dépasse ; un sprint parfait non. Alerte",
+                "« Speed » (renvoi seulement si movementSetback).")
+                .define("speedSustained", true);
+        SPEED_SOUTENUE_RATIO = b.comment("Vitesse soutenue : dépassement toléré du maximum physique (0,12 = +12 %).")
+                .defineInRange("speedSustainedRatio", 0.12, 0.03, 1.0);
+        SPEED_SOUTENUE_SECONDES = b.comment("Vitesse soutenue : durée comparée (secondes de déplacement suivi sans interruption).")
+                .defineInRange("speedSustainedSeconds", 5, 2, 30);
+        SPEED_SOUTENUE_DISTANCE_MIN = b.comment("Vitesse soutenue : distance minimale parcourue sur cette durée pour juger (blocs).")
+                .defineInRange("speedSustainedMinBlocks", 12.0, 2.0, 200.0);
+        CHECK_FAKE_LAG = b.comment(
+                "Latence trafiquée (02/11, « faux lag ») : la latence keepalive de Minecraft (dont TaCZ se sert pour remonter le",
+                "temps des hitbox, jusqu'à 1 s) comparée aux réponses aux transactions. Chez un joueur honnête la première est",
+                "toujours plus petite (lag et gels compris) ; un faux lag retient les réponses keepalive. Alerte « Latence »",
+                "seulement. Quel que soit ce réglage, les marges de Spartan ne suivent plus une latence gonflée. Nécessite",
+                "transactions.")
+                .define("fakeLag", true);
+        FAKE_LAG_MARGIN_MS = b.comment("Faux lag : écart toléré (ms) entre une mesure keepalive et la plus grande réponse aux",
+                "transactions des 30 dernières secondes.")
+                .defineInRange("fakeLagMarginMs", 300, 100, 5000);
+        FAKE_LAG_MIN_MS = b.comment("Faux lag : mesure keepalive en dessous de laquelle rien n'est suspect (ms).")
+                .defineInRange("fakeLagMinMs", 350, 100, 5000);
+        FAKE_LAG_SAMPLES = b.comment("Faux lag : mesures keepalive suspectes de suite avant l'alerte (une toutes les 15 s).")
+                .defineInRange("fakeLagSamples", 3, 2, 20);
         SPEED_TOLERANCE = b.comment(
                 "La vitesse maximale est recalculée à chaque tick avec la physique de vanilla : vitesse du",
                 "joueur (effets, objets et armures de mods compris), sprint, sauts, glace, plafond bas, reculs et",
@@ -463,6 +510,34 @@ public class SpartanConfig {
                 "l'avant-dernier défi. Plus bas = rejeu plus court, mais garder au moins 3 fois l'écart entre deux rapports",
                 "du launcher (10 à 20 s).")
                 .defineInRange("defiSeconds", 60, 45, 600);
+        b.pop();
+
+        b.comment("Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent",
+                "(ni zombies, ni PNJ, ni bots). Toujours des ALERTES « Tirs » au staff avec les chiffres, jamais de coup annulé ni",
+                "de sanction. Un résumé de chaque session (tirs, touches, têtes, refus) est écrit dans config/spartan/tirs.log",
+                "pour régler les seuils : commencer haut, baisser en regardant le journal.")
+                .push("tirs");
+        TIRS_ENABLED = b.comment("Active l'analyse des tirs TaCZ.").define("enabled", true);
+        TIRS_HISTORIQUE = b.comment("Touches de joueurs gardées par tireur (les plus récentes).")
+                .defineInRange("historyHits", 40, 10, 500);
+        TIRS_TOUCHES_MIN = b.comment("Tirs à la tête : touches à distance (distanceMin) nécessaires avant de juger.")
+                .defineInRange("headshotMinHits", 25, 5, 500);
+        TIRS_RATIO_TETE = b.comment("Tirs à la tête : part des touches à distance qui touchent la tête, au-delà = alerte.")
+                .defineInRange("headshotRatio", 0.75, 0.3, 1.0);
+        TIRS_DISTANCE_MIN = b.comment("Tirs à la tête : seules les touches à au moins cette distance comptent (blocs).")
+                .defineInRange("distanceMin", 10.0, 0.0, 200.0);
+        TIRS_COUP_SEC_DEGRES = b.comment("« Coup sec » : mouvement de visée (degrés) en moins de 100 ms juste avant le tir.")
+                .defineInRange("snapDegrees", 35.0, 10.0, 180.0);
+        TIRS_COUPS_SECS_MAX = b.comment("« Coups secs » suivis d'un tir à la tête, sur les touches gardées, avant l'alerte.")
+                .defineInRange("snapHeadshots", 8, 2, 500);
+        TIRS_REFUS_CADENCE = b.comment("Tirs refusés par TaCZ pour cadence trop rapide (COOL_DOWN) dans la fenêtre : alerte.")
+                .defineInRange("cooldownRefusals", 15, 3, 1000);
+        TIRS_REFUS_HORLOGE = b.comment("Tirs refusés par TaCZ pour horloge des tirs incohérente (NETWORK_FAIL, aussi en cas",
+                        "de gros lag) dans la fenêtre : alerte.")
+                .defineInRange("networkRefusals", 40, 5, 1000);
+        TIRS_REFUS_SECONDES = b.comment("Fenêtre de comptage des tirs refusés (secondes).")
+                .defineInRange("refusalSeconds", 10, 2, 600);
+        TIRS_JOURNAL = b.comment("Résumé de chaque session de tir dans config/spartan/tirs.log.").define("journal", true);
         b.pop();
 
         b.comment("Validation du jeu à chaque connexion (demande du propriétaire, 27/10). Une fois le joueur vérifié (jeton",

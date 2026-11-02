@@ -126,6 +126,7 @@ public class SpartanEvents {
         ChallengeManager.warmUp();
         ScanManager.load();
         Noise.checkTacz();
+        com.Spartan.check.combat.TirsTacz.brancher();
         com.Spartan.alert.CapturesDiscord.demarrer();
     }
 
