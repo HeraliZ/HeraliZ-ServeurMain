@@ -14,10 +14,12 @@ import java.util.UUID;
 
 /**
  * {@code /diag} (opérateurs niveau 4 et console) : {@code etat}, {@code profil [secondes] [intervalle]} (profil façon spark,
- * {@link Profileur} ; {@code start [secondes]} en est l'ancien nom), {@code stop}, {@code commandes} (les plus lentes depuis
- * le démarrage), {@code mesure [secondes]} (temps par entité et entité de bloc, {@link Moniteur}), {@code fuites},
- * {@code client <joueur> [secondes]} (analyse du jeu du joueur, {@link DiagClients}), {@code auto on|off},
- * {@code seuil <ms>}. Voir {@link Diag}.
+ * {@link Profileur}), {@code stop}, {@code commandes} (les plus lentes depuis le démarrage), {@code mesure [secondes]}
+ * (temps par entité et entité de bloc, {@link Moniteur}), {@code fuites}, {@code client <joueur> [secondes]} (analyse du
+ * jeu du joueur, {@link DiagClients}). Voir {@link Diag}.
+ * <p>02/11 (audit point 36) : {@code start} (ancien nom de {@code profil}), {@code profil stop} (= {@code stop}),
+ * {@code auto on|off} et {@code seuil <ms>} (déjà dans la section {@code [diag]} de {@code heraliz_noyau-server.toml},
+ * relue seule quand le fichier change) sont retirés.</p>
  */
 public final class CommandeDiag {
     private CommandeDiag() {
@@ -29,11 +31,7 @@ public final class CommandeDiag {
         d.register(Commands.literal("diag").requires(s -> s.hasPermission(4))
                 .executes(CommandeDiag::etat)
                 .then(Commands.literal("etat").executes(CommandeDiag::etat))
-                .then(Commands.literal("start").executes(c -> profil(c, 60, 5))
-                        .then(Commands.argument("secondes", IntegerArgumentType.integer(10, 1800))
-                                .executes(c -> profil(c, IntegerArgumentType.getInteger(c, "secondes"), 5))))
                 .then(Commands.literal("profil").executes(c -> profil(c, 60, 5))
-                        .then(Commands.literal("stop").executes(CommandeDiag::stop))
                         .then(Commands.argument("secondes", IntegerArgumentType.integer(10, 1800))
                                 .executes(c -> profil(c, IntegerArgumentType.getInteger(c, "secondes"), 5))
                                 .then(Commands.argument("intervalle", IntegerArgumentType.integer(4, 10))
@@ -48,12 +46,7 @@ public final class CommandeDiag {
                 .then(Commands.literal("client").then(Commands.argument("joueur", EntityArgument.player())
                         .executes(c -> client(c, 20))
                         .then(Commands.argument("secondes", IntegerArgumentType.integer(5, 120))
-                                .executes(c -> client(c, IntegerArgumentType.getInteger(c, "secondes"))))))
-                .then(Commands.literal("auto")
-                        .then(Commands.literal("on").executes(c -> auto(c, true)))
-                        .then(Commands.literal("off").executes(c -> auto(c, false))))
-                .then(Commands.literal("seuil").then(Commands.argument("ms", IntegerArgumentType.integer(60, 60000))
-                        .executes(c -> seuil(c, IntegerArgumentType.getInteger(c, "ms"))))));
+                                .executes(c -> client(c, IntegerArgumentType.getInteger(c, "secondes")))))));
     }
 
     private static void dire(CommandContext<CommandSourceStack> c, Component t, int couleur) {
@@ -130,14 +123,4 @@ public final class CommandeDiag {
         return 1;
     }
 
-    /** Réglage changé pour la session en cours (le fichier du monde garde le sien au prochain démarrage). */
-    private static int auto(CommandContext<CommandSourceStack> c, boolean oui) {
-        NoyauConfig.DIAG_AUTO.set(oui);
-        return etat(c);
-    }
-
-    private static int seuil(CommandContext<CommandSourceStack> c, int ms) {
-        NoyauConfig.DIAG_SEUIL_MS.set(ms);
-        return etat(c);
-    }
 }

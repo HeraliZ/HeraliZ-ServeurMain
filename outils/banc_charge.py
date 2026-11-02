@@ -59,7 +59,7 @@ RACINE = Path(__file__).resolve().parent.parent
 SRV = RACINE / "serveur"
 COMMANDES_BOTS = RACINE / "outils" / "banc" / "commandes.txt"
 
-DIAG_DEFAUT = "diag start {s}; diag mesure {s300}"
+DIAG_DEFAUT = "diag profil {s}; diag mesure {s300}"
 GRAINE_DEFAUT = 20261101
 # relevés sur le Ptero le 01/11 (server.properties du Ptero ; celui du dépôt n'est envoyé qu'en installation complète)
 # vue : le server.properties du Ptero dit 6, mais heraliz_distances-server.toml (monde, vue = 8, choix du propriétaire du
@@ -1107,7 +1107,7 @@ def finir(a, d, rapport, res, serveur, gc_log):
           "- Les rythmes : morts et connexions d'après le propriétaire (250 à 500 morts et 35 à 50 connexions par heure, serveur "
           "plein ; haut de fourchette par défaut) ; voyages et part du temps en combat estimés.",
           "- La machine de GitHub n'est pas celle du Ptero : comparer des bancs entre eux (même nombre de bots, même durée), pas avec le Ptero.",
-          "- Le profil du diagnostic (/diag start = /diag profil) relève la pile toutes les 5 ms, pendant et entre les ticks : environ 1 % du serveur pendant la mesure (coût mesuré en tête du rapport profil-<date>).", ""]
+          "- Le profil du diagnostic (/diag profil) relève la pile toutes les 5 ms, pendant et entre les ticks : environ 1 % du serveur pendant la mesure (coût mesuré en tête du rapport profil-<date>).", ""]
     texte = "\n".join(o)
     (rapport / "resume.md").write_text(texte, encoding="utf-8")
     sortie = {k: v for k, v in res.items() if k != "t0"}

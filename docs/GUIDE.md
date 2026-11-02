@@ -217,8 +217,7 @@ Il dit quel mod, quel fichier et quelle ligne font lagger, pendant les ticks ET 
 
 - **Lancer** : `/diag profil [secondes] [intervalle]`
   - 60 s et 5 ms par défaut ; de 10 à 1800 s ; un relevé toutes les 4 à 10 ms ;
-  - `/diag start [secondes]` fait la même chose (ancien nom) ;
-  - `/diag stop` (ou `/diag profil stop`) arrête avant la fin et écrit le rapport ;
+  - `/diag stop` arrête avant la fin et écrit le rapport ;
   - `/diag etat` dit si un profil tourne.
 - **Depuis GitHub** : Actions → « Lenteurs du serveur » → Run workflow → cocher « profil » (durée, intervalle).
   - La commande part par la console du panel, avec les secrets déjà utilisés pour redémarrer.
@@ -312,8 +311,8 @@ donne donc :
   Le joueur est prévenu. Il peut aussi lancer lui-même `/diagclient [secondes]` (rapport dans `diag/` de son jeu).
 - `/diag` ou `/diag etat` : TPS, ms par tick (médiane, 95 %, 99 %, comparés aux objectifs 30 / 40 / 50 ms), mémoire,
   entités et tronçons par monde.
-- `/diag auto on|off`, `/diag seuil <ms>` : réglages pour la session. Au démarrage, c'est la section `[diag]` de
-  `heraliz_noyau-server.toml` qui fait foi.
+- Rapports automatiques et seuil : section `[diag]` de `heraliz_noyau-server.toml` (`auto`, `seuil_ms`, `annoncer`),
+  relue seule quand le fichier change (`/diag auto` et `/diag seuil` retirés le 02/11).
 
 **spark retiré** (01/11, choix du propriétaire) : `/diag profil` le remplace. Son jar n'est plus dans `serveur/plugins/` :
 la mise en ligne l'efface du Ptero (son dossier de données y reste, sans effet).
@@ -350,7 +349,7 @@ la mise en ligne l'efface du Ptero (son dossier de données y reste, sans effet)
    - frappes aériennes et largages ;
    - fouille des conteneurs ;
    - petites bases de CRac, via `fr.heraliz.crac.api.BancApi` (vraies pièces, mêmes règles de pose).
-2. Pendant ce temps, `/diag start` et le chronomètre de Forge tournent, et une ligne est relevée toutes les 5 s.
+2. Pendant ce temps, `/diag profil` et le chronomètre de Forge tournent, et une ligne est relevée toutes les 5 s.
 3. À la fin :
    - bots retirés et leurs bases effacées ;
    - objets au sol, projectiles et cadavres des bots retirés ;
@@ -382,7 +381,7 @@ neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
   fois le fichier sur `main`). Avant cela, ou sans formulaire : envoyer sur une branche de travail un changement de
   `banc.yml` (réglages par défaut). Jamais lancé par un envoi sur `main`.
 - **Réglages** : bots (100, jusqu'à 150), minutes de mesure (5), minutes de chauffe (4), commandes du diagnostic
-  (`diag start {s}; diag mesure {s300}`, à changer ici si `/diag` change), monde normal ou plat, scénario (`normal`,
+  (`diag profil {s}; diag mesure {s300}`, à changer ici si `/diag` change), monde normal ou plat, scénario (`normal`,
   `connexions` : coût d'une connexion ; `teleportations` : pics d'extraction de groupe, de 10 `/spawn` et de départ de
   la borne), règles de jeu pour un **essai A/B** (`randomTickSpeed 0`, plusieurs séparées par `;`, case « ab » : une
   mesure sans puis une avec), distances vue/simulation (`8/4`, comme le Ptero le 01/11 : vue 8 imposée par

@@ -26,7 +26,7 @@ on:
       diag:
         description: "Diagnostic pendant la mesure : commandes séparées par ; ({s} = secondes de la mesure, {s300} = les mêmes, 300 au plus)"
         type: string
-        default: "diag start {s}; diag mesure {s300}"
+        default: "diag profil {s}; diag mesure {s300}"
       monde:
         description: "Monde généré (la vraie carte n'est pas dans le dépôt)"
         type: choice
@@ -114,7 +114,7 @@ jobs:
       BOTS: ${{ inputs.bots || 100 }}
       MINUTES: ${{ inputs.minutes || 5 }}
       CHAUFFE: ${{ inputs.chauffe || 4 }}
-      DIAG: ${{ inputs.diag || 'diag start {s}; diag mesure {s300}' }}
+      DIAG: ${{ inputs.diag || 'diag profil {s}; diag mesure {s300}' }}
       MONDE: ${{ inputs.monde || 'normal' }}
       SCENARIO: ${{ inputs.scenario || 'normal' }}
       REGLES: ${{ inputs.regles || '' }}

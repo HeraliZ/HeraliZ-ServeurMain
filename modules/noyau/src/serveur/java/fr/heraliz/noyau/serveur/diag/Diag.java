@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  *     vue ni ici, ni par le temps par tick de spark. Le veilleur regarde aussi ce temps-là : plus de 50 ms + le seuil
  *     après la fin d'un tick sans que le suivant ait commencé, il relève la pile de la même façon, et le rapport part au
  *     début du tick suivant (même dossier, même alerte, « entre deux ticks »).</li>
- *     <li><b>Profil ({@code /diag profil}, aussi {@code /diag start})</b> : relevé de la pile toutes les 4 à 10 ms, pendant
+ *     <li><b>Profil ({@code /diag profil})</b> : relevé de la pile toutes les 4 à 10 ms, pendant
  *     ET entre les ticks, rapport façon spark (mod, fichier:ligne, arbre des appels, temps par système) : voir
  *     {@link Profileur}.</li>
  * </ul>
@@ -262,7 +262,7 @@ public final class Diag {
     }
 
     // ------------------------------------------------------------------ profil (voir Profileur)
-    /** Profil de {@code secondes} s, relevé toutes les 5 ms (banc de charge, /diag start) ; faux si un profil tourne déjà. */
+    /** Profil de {@code secondes} s, relevé toutes les 5 ms (banc de charge) ; faux si un profil tourne déjà. */
     public static boolean lancer(int secondes, UUID qui) {
         MinecraftServer srv = serveur;
         return srv != null && Profileur.lancer(srv, secondes, 5, qui);
