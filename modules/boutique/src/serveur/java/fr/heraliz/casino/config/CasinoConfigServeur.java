@@ -65,7 +65,11 @@ public final class CasinoConfigServeur {
     public static synchronized void applySection(MachineType t, String json) throws IOException {
         CasinoConfig.Settings s = CasinoConfig.copy();
         switch (t) {
-            case CAISSE -> s.caisse = CasinoConfig.GSON.fromJson(json, CasinoConfig.Cashier.class);
+            case CAISSE -> {
+                CasinoConfig.Cashier recue = CasinoConfig.GSON.fromJson(json, CasinoConfig.Cashier.class);
+                if (recue != null) garderCommandes(recue, s.caisse);
+                s.caisse = recue;
+            }
             case ROTTEN -> s.rotten = CasinoConfig.GSON.fromJson(json, RottenRules.class);
             case OLYMPE -> s.portesOlympe = CasinoConfig.GSON.fromJson(json, fr.heraliz.casino.game.slot.OlympeRules.class);
             case LOUP -> s.souffleLoup = CasinoConfig.GSON.fromJson(json, fr.heraliz.casino.game.slot.LoupRules.class);
@@ -83,6 +87,72 @@ public final class CasinoConfigServeur {
         }
         CasinoConfig.apply(s.sanitized());
         save();
+    }
+
+    /**
+     * Tablette du Directeur, page de la caisse : la copie des joueurs (operateurs compris) n'a pas les commandes des
+     * encaissements (remplacees par CommandExchange.COMMANDE_CACHEE, audit du 02/11, point 11). Chaque commande cachee
+     * reprend celle du serveur : encaissement du meme nom, sinon a la meme place ; introuvable : vide (desactive).
+     */
+    static void garderCommandes(CasinoConfig.Cashier recue, CasinoConfig.Cashier actuelle) {
+        if (recue.encaissements == null) return;
+        java.util.List<CasinoConfig.CommandExchange> serveur = actuelle == null || actuelle.encaissements == null
+                ? java.util.List.of() : actuelle.encaissements;
+        java.util.Set<CasinoConfig.CommandExchange> prises = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (int i = 0; i < recue.encaissements.size(); i++) {
+            CasinoConfig.CommandExchange e = recue.encaissements.get(i);
+            if (e == null || !CasinoConfig.CommandExchange.COMMANDE_CACHEE.equals(e.commande)) continue;
+            CasinoConfig.CommandExchange trouvee = null;
+            for (CasinoConfig.CommandExchange x : serveur) {
+                if (x != null && !prises.contains(x) && java.util.Objects.equals(x.nom, e.nom)) {
+                    trouvee = x;
+                    break;
+                }
+            }
+            if (trouvee == null && i < serveur.size() && serveur.get(i) != null && !prises.contains(serveur.get(i))) trouvee = serveur.get(i);
+            if (trouvee != null) prises.add(trouvee);
+            e.commande = trouvee == null ? "" : trouvee.commande;
+        }
+    }
+
+    private static String sourceJoueurs, jsonJoueurs;
+
+    /**
+     * Reglages envoyes aux joueurs (audit du 02/11, point 11, §7 de split) : ceux du serveur, sans les commandes jouees par
+     * la console aux encaissements de la caisse (grades, emotes : leur syntaxe n'a pas a sortir du serveur), remplacees par
+     * CommandExchange.COMMANDE_CACHEE. Gardes tant que les reglages ne changent pas.
+     */
+    public static synchronized String jsonJoueurs() {
+        String source = CasinoConfig.json();
+        if (source.equals(sourceJoueurs)) return jsonJoueurs;
+        String sortie = source;
+        try {
+            com.google.gson.JsonObject racine = com.google.gson.JsonParser.parseString(source).getAsJsonObject();
+            com.google.gson.JsonObject caisse = racine.has("caisse") && racine.get("caisse").isJsonObject() ? racine.getAsJsonObject("caisse") : null;
+            if (caisse != null && caisse.has("encaissements") && caisse.get("encaissements").isJsonArray()) {
+                for (com.google.gson.JsonElement el : caisse.getAsJsonArray("encaissements")) {
+                    if (!el.isJsonObject()) continue;
+                    com.google.gson.JsonObject e = el.getAsJsonObject();
+                    com.google.gson.JsonElement c = e.get("commande");
+                    boolean vide = c == null || c.isJsonNull() || c.getAsString().isBlank();
+                    e.addProperty("commande", vide ? "" : CasinoConfig.CommandExchange.COMMANDE_CACHEE);
+                }
+            }
+            sortie = CasinoConfig.GSON.toJson(racine);
+        } catch (RuntimeException ex) {
+            HeralizCasino.LOGGER.warn("[HeralizCasino] Copie des reglages pour les joueurs impossible : encaissements retires", ex);
+            sortie = sansEncaissements(source);
+        }
+        sourceJoueurs = source;
+        jsonJoueurs = sortie;
+        return sortie;
+    }
+
+    /** En dernier recours : la copie des joueurs n'a aucun encaissement (rien du serveur ne sort). */
+    private static String sansEncaissements(String source) {
+        CasinoConfig.Settings s = CasinoConfig.GSON.fromJson(source, CasinoConfig.Settings.class);
+        if (s != null && s.caisse != null) s.caisse.encaissements = new java.util.ArrayList<>();
+        return CasinoConfig.GSON.toJson(s);
     }
 
     /** Remplace la lumiere des machines (JSON {"rotten": 10, ...} envoye par un operateur), puis sauvegarde. */

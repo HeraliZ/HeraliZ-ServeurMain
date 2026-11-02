@@ -3,6 +3,7 @@ package fr.heraliz.casino.event;
 import fr.heraliz.casino.HeralizCasino;
 import fr.heraliz.casino.command.CasinoCommand;
 import fr.heraliz.casino.config.CasinoConfig;
+import fr.heraliz.casino.config.CasinoConfigServeur;
 import fr.heraliz.casino.data.Jackpot;
 import fr.heraliz.casino.economy.ChipsServeur;
 import fr.heraliz.casino.net.CasinoNet;
@@ -49,13 +50,21 @@ public final class CommonEventsServeur {
     }
 
     public static void sendConfig(ServerPlayer player) {
-        CasinoNet.sendTo(player, new ConfigSyncPacket(CasinoConfig.json()));
+        CasinoNet.sendTo(player, new ConfigSyncPacket(jsonPour(player.getServer())));
     }
 
     /** Apres /casino reload : tous les joueurs recoivent les nouveaux reglages. */
     public static void broadcastConfig() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
-        CasinoNet.sendToAll(server, new ConfigSyncPacket(CasinoConfig.json()));
+        CasinoNet.sendToAll(server, new ConfigSyncPacket(jsonPour(server)));
+    }
+
+    /**
+     * Serveur dedie : la copie des joueurs, sans les commandes console de la caisse (audit du 02/11, point 11, §7). Jeu solo
+     * (serveur integre) : le jeu et son serveur partagent les memes reglages en memoire, la copie complete est gardee.
+     */
+    private static String jsonPour(@javax.annotation.Nullable MinecraftServer server) {
+        return server != null && server.isDedicatedServer() ? CasinoConfigServeur.jsonJoueurs() : CasinoConfig.json();
     }
 }

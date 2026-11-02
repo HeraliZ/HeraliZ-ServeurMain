@@ -331,6 +331,11 @@ public final class CasinoConfig {
     }
 
     public static class CommandExchange {
+        /**
+         * Commande remplacee par ce signe dans la copie envoyee aux joueurs (audit du 02/11, point 11, §7 de split) : leur jeu
+         * n'a besoin que du nom, du prix et du montant. Vide = encaissement desactive (pas remplace).
+         */
+        public static final String COMMANDE_CACHEE = "*";
         /** Nom affiche a la caisse. */
         public String nom = "Argent";
         /** Commande executee par la console : {player} = pseudo, {amount} = montant. */
