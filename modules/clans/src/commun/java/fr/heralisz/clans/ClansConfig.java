@@ -35,7 +35,6 @@ public final class ClansConfig {
     public static final ForgeConfigSpec.IntValue QUETES_JOUR_SEMAINE;
     public static final ForgeConfigSpec.IntValue QUETES_PAR_JOUR;
     public static final ForgeConfigSpec.IntValue QUETES_PAR_SEMAINE;
-    public static final ForgeConfigSpec.IntValue LOOT_DELAI_MIN;
     public static final ForgeConfigSpec.IntValue BOOST_COUPLE_MIN;
     public static final ForgeConfigSpec.IntValue BOOST_REAPPARITION_S;
 
@@ -94,8 +93,6 @@ public final class ClansConfig {
         b.pop();
 
         b.comment("Statistiques").push("stats");
-        LOOT_DELAI_MIN = b.comment("Minutes avant qu'un meme bloc de loot (cfm:loot_*) compte a nouveau pour un joueur")
-                .defineInRange("loot_delai_min", 5, 0, 24 * 60);
         BOOST_COUPLE_MIN = b.comment("Anti-boost : minutes avant qu'un kill du meme tueur sur la meme victime compte a nouveau (stats, XP, quetes)")
                 .defineInRange("anti_boost_couple_min", 10, 0, 24 * 60);
         BOOST_REAPPARITION_S = b.comment("Anti-boost : un joueur tue moins de N secondes apres sa reapparition (ou sa connexion) ne compte pas")

@@ -71,7 +71,7 @@
   "quete.type.captures": "Захвачено зон",
   "quete.type.tenir_zone_min": "Минут удержания",
   "quete.type.ravitaillements": "Вызвано сбросов",
-  "quete.type.depots_banque": "Внесённая сумма",
+  "quete.type.depots_banque": "Чистый взнос",
   "quete.type.distance_m": "Пройдено метров",
   "evenement.arrivee": "%s вступил в клан",
   "evenement.depart": "%s покинул клан",

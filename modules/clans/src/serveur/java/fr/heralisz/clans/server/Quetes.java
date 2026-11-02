@@ -39,7 +39,8 @@ import java.util.Random;
  * <p>Fichier : un tableau d'entrees {@code {id, type, objectif, xp, argent, periode: "jour"|"semaine", titre_fr, titre_en}}.
  * Une entree invalide (type inconnu, objectif < 1, id en double) est ignoree avec un avertissement ; un id > 64 ou un
  * titre > 96 caracteres est coupe (limites reseau). DEPOTS_BANQUE suit le net depose de la periode
- * ({@link #mouvementBanque}), pas la somme des depots.
+ * ({@link #mouvementBanque}), pas la somme des depots. LOOT_OUVERTS suit les fouilles de HeraliZ Loot
+ * ({@code ClanEvents.fouille}).
  */
 public final class Quetes {
     private Quetes() {
@@ -55,8 +56,18 @@ public final class Quetes {
      * (25/10 : boss mis de cote pour l'ouverture ; elles reviennent seules avec le jar).
      */
     private static boolean bossPresents = true;
+    /**
+     * HeraliZ Loot est la et ses fouilles sont ecoutees ({@code ClanEvents.brancherFouilles}) : sinon les quetes
+     * LOOT_OUVERTS ne sont ni tirees ni gardees en cours (02/11).
+     */
+    private static boolean fouilles = true;
+
+    static void fouillesPossibles(boolean oui) {
+        fouilles = oui;
+    }
 
     private static boolean disponible(QueteEtat.Type type) {
+        if (type == QueteEtat.Type.LOOT_OUVERTS) return fouilles;
         return type != QueteEtat.Type.KILL_BOSS || bossPresents;
     }
 
@@ -190,7 +201,7 @@ public final class Quetes {
             for (Entree e : defaut()) if (disponible(e.type)) (e.periode == QueteEtat.Periode.JOUR ? JOUR : SEMAINE).add(e.etat());
         }
         chargee = true;
-        if (sansBoss > 0) HeraliszClans.LOG.info("[clans] boss absents du serveur : {} quete(s) « vaincre un boss » ecartee(s)", sansBoss);
+        if (sansBoss > 0) HeraliszClans.LOG.info("[clans] boss ou HeraliZ Loot absents du serveur : {} quete(s) ecartee(s)", sansBoss);
         HeraliszClans.LOG.info("[clans] catalogue de quetes : {} jour, {} semaine", JOUR.size(), SEMAINE.size());
     }
 
@@ -275,6 +286,10 @@ public final class Quetes {
         c.prochainResetSemaine = prochaineSemaine(now);
         c.depotNetJour = 0;
         c.depotNetSemaine = 0;
+        c.depotCumul = 0;
+        c.depotEnBanque = 0;
+        c.depotPayeJour = 0;
+        c.depotPayeSemaine = 0;
     }
 
     /**
@@ -333,7 +348,7 @@ public final class Quetes {
                 liste.set(k, choisie.copie());
                 change = true;
                 HeraliszClans.LOG.info("[clans] [{}] quete « {} » remplacee par « {} » ({})", c.tag, q.id, choisie.id,
-                        disponible(q.type) ? "clan sans zone possible" : "boss absents");
+                        disponible(q.type) ? "clan sans zone possible" : "boss ou HeraliZ Loot absents");
             }
         }
         return change;
@@ -373,34 +388,67 @@ public final class Quetes {
     }
 
     /**
-     * Depot ou retrait en banque : met a jour le net depose de la periode (jamais negatif) et cale la progression des
-     * quetes DEPOTS_BANQUE en cours dessus (elle peut donc reculer apres un retrait). Un cycle depot/retrait ne fait
-     * rien gagner ; une quete deja terminee n'est pas remise en cause.
+     * Depot (delta > 0) ou retrait (delta < 0) en banque par un membre (02/11, audit point 4). Une quete DEPOTS_BANQUE
+     * compte le depot NET de sa periode (depots moins retraits ; affiche, il n'est jamais negatif, mais un retrait fait
+     * bien descendre le compteur sous zero) : retirer puis redeposer ne fait rien gagner (avant, le compteur restait a 0
+     * apres un retrait, et le depot qui suivait comptait). L'argent qui a deja paye une quete DEPOTS_BANQUE de la meme
+     * periode (jour ou semaine) ne compte pas une seconde fois s'il est retire puis redepose (deposer, finir la quete,
+     * retirer, redeposer apres le tirage suivant) : voir {@link #depotCompte}. La progression d'une quete en cours peut
+     * donc reculer apres un retrait ; une quete deja terminee n'est pas remise en cause.
+     *
+     * <p>Appele apres la mise a jour de {@code c.banque}. Un retrait prend d'abord l'argent de la banque qui ne vient pas
+     * des depots (quetes, revenus des zones...) : retirer ce revenu ne penalise pas les depots deja faits.
      */
     public static void mouvementBanque(Clan c, long delta) {
         if (c == null || delta == 0) return;
-        c.depotNetJour = Math.max(0, c.depotNetJour + delta);
-        c.depotNetSemaine = Math.max(0, c.depotNetSemaine + delta);
+        long avant = Math.max(0, c.banque - delta);
+        long deposes = Math.max(0, Math.min(c.depotEnBanque, avant)); // une depense (amelioration, entretien) a pu en prendre
+        if (delta > 0) {
+            c.depotEnBanque = deposes + delta;
+            c.depotCumul += delta;
+        } else {
+            long autre = avant - deposes;
+            long prisSurDepots = Math.max(0, -delta - autre);
+            c.depotEnBanque = Math.max(0, deposes - prisSurDepots);
+            c.depotCumul -= prisSurDepots;
+        }
+        c.depotNetJour += delta;
+        c.depotNetSemaine += delta;
+        ClanStore store = ClanStore.get();
+        if (store != null) store.marquerDirty();
         boolean change = false, finie = false;
         for (int i = 0; i < 2; i++) {
-            long net = i == 0 ? c.depotNetJour : c.depotNetSemaine;
+            QueteEtat.Periode per = i == 0 ? QueteEtat.Periode.JOUR : QueteEtat.Periode.SEMAINE;
             for (QueteEtat q : i == 0 ? c.quetesJour : c.quetesSemaine) {
                 if (q.terminee || q.type != QueteEtat.Type.DEPOTS_BANQUE) continue;
-                long prog = Math.min(q.objectif, net);
+                long prog = Math.min(q.objectif, depotCompte(c, per));
                 if (prog == q.progression) continue;
                 q.progression = prog;
                 change = true;
                 if (q.progression >= q.objectif) {
+                    // cet argent a paye la quete : il ne comptera plus pour une autre quete de cette periode
+                    if (per == QueteEtat.Periode.JOUR) c.depotPayeJour += q.objectif;
+                    else c.depotPayeSemaine += q.objectif;
                     terminer(c, q);
                     finie = true;
                 }
             }
         }
-        ClanStore store = ClanStore.get();
-        if (store != null) store.marquerDirty();
         if (!change) return;
         if (finie) Sync.marquer(c);
         else Sync.marquerLent(c);
+    }
+
+    /**
+     * Ce qui fait avancer une quete DEPOTS_BANQUE de la periode : le net depose depuis le tirage, borne par les depots
+     * nets de la banque (depuis toujours, retraits pris sur les depots deduits) qui n'ont pas deja paye une quete de cette
+     * periode. Jamais negatif.
+     */
+    static long depotCompte(Clan c, QueteEtat.Periode per) {
+        boolean jour = per == QueteEtat.Periode.JOUR;
+        long net = jour ? c.depotNetJour : c.depotNetSemaine;
+        long pasEncorePaye = c.depotCumul - (jour ? c.depotPayeJour : c.depotPayeSemaine);
+        return Math.max(0, Math.min(net, pasEncorePaye));
     }
 
     private static void terminer(Clan c, QueteEtat q) {

@@ -81,9 +81,6 @@
 
 #Statistiques
 [stats]
-	#Minutes avant qu'un meme bloc de loot (cfm:loot_*) compte a nouveau pour un joueur
-	#Range: 0 ~ 1440
-	loot_delai_min = 5
 	#Anti-boost : minutes avant qu'un kill du meme tueur sur la meme victime compte a nouveau (stats, XP, quetes)
 	#Range: 0 ~ 1440
 	anti_boost_couple_min = 10

@@ -43,10 +43,17 @@ public final class Clan {
     public final List<QueteEtat> quetesSemaine = new ArrayList<>();
     public long prochainResetJour, prochainResetSemaine;
     /**
-     * Net depose en banque depuis le dernier tirage (jour / semaine) : depots - retraits, jamais negatif. C'est cette
-     * valeur qui fait avancer les quetes DEPOTS_BANQUE (un cycle depot/retrait ne compte pas).
+     * Net depose en banque depuis le dernier tirage (jour / semaine) : depots - retraits, negatif apres un retrait (02/11 :
+     * avant, borne a 0, retirer puis redeposer faisait avancer la quete). Avec les champs qui suivent, c'est ce qui fait
+     * avancer les quetes DEPOTS_BANQUE (serveur : {@code Quetes.depotCompte}).
      */
     public long depotNetJour, depotNetSemaine;
+    /**
+     * Depots nets de la banque depuis toujours (depots - retraits pris sur les depots), part de la banque qui vient des
+     * depots, et part des depots qui a deja paye une quete DEPOTS_BANQUE « jour » / « semaine » : un meme argent ne paye
+     * pas deux fois une quete de la meme periode.
+     */
+    public long depotCumul, depotEnBanque, depotPayeJour, depotPayeSemaine;
     public final List<Invitation> invitations = new ArrayList<>();
     public final List<Evenement> journal = new ArrayList<>();
     /** ClashWar (HeraliZ Matchs, via ClansApi.ajouterClashWar) : participations et victoires du clan. */
@@ -318,6 +325,10 @@ public final class Clan {
         o.addProperty("prochainResetSemaine", prochainResetSemaine);
         o.addProperty("depotNetJour", depotNetJour);
         o.addProperty("depotNetSemaine", depotNetSemaine);
+        o.addProperty("depotCumul", depotCumul);
+        o.addProperty("depotEnBanque", depotEnBanque);
+        o.addProperty("depotPayeJour", depotPayeJour);
+        o.addProperty("depotPayeSemaine", depotPayeSemaine);
         o.add("invitations", liste(invitations, Invitation::toJson));
         o.add("journal", liste(journal, Evenement::toJson));
         o.addProperty("clashwarJoues", clashwarJoues);
@@ -404,8 +415,22 @@ public final class Clan {
         for (JsonElement e : Json.arr(o, "quetesSemaine")) if (e.isJsonObject()) c.quetesSemaine.add(QueteEtat.fromJson(e.getAsJsonObject()));
         c.prochainResetJour = Json.lng(o, "prochainResetJour", 0);
         c.prochainResetSemaine = Json.lng(o, "prochainResetSemaine", 0);
-        c.depotNetJour = Math.max(0, Json.lng(o, "depotNetJour", 0));
-        c.depotNetSemaine = Math.max(0, Json.lng(o, "depotNetSemaine", 0));
+        c.depotNetJour = Json.lng(o, "depotNetJour", 0);
+        c.depotNetSemaine = Json.lng(o, "depotNetSemaine", 0);
+        if (o.has("depotCumul")) {
+            c.depotCumul = Json.lng(o, "depotCumul", 0);
+            c.depotEnBanque = Math.max(0, Json.lng(o, "depotEnBanque", 0));
+            c.depotPayeJour = Json.lng(o, "depotPayeJour", 0);
+            c.depotPayeSemaine = Json.lng(o, "depotPayeSemaine", 0);
+        } else {
+            // fichier d'avant le 02/11 : les quetes en cours gardent leur progression
+            c.depotNetJour = Math.max(0, c.depotNetJour);
+            c.depotNetSemaine = Math.max(0, c.depotNetSemaine);
+            c.depotCumul = Math.max(c.depotNetJour, c.depotNetSemaine);
+            c.depotEnBanque = Math.min(c.depotCumul, Math.max(0, c.banque));
+            c.depotPayeJour = c.depotCumul - c.depotNetJour;
+            c.depotPayeSemaine = c.depotCumul - c.depotNetSemaine;
+        }
         for (JsonElement e : Json.arr(o, "invitations")) {
             if (!e.isJsonObject()) continue;
             Invitation i = Invitation.fromJson(e.getAsJsonObject());

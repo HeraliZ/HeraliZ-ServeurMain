@@ -71,7 +71,7 @@
   "quete.type.captures": "Zones captured",
   "quete.type.tenir_zone_min": "Minutes held",
   "quete.type.ravitaillements": "Supply drops called",
-  "quete.type.depots_banque": "Amount deposited",
+  "quete.type.depots_banque": "Net deposit",
   "quete.type.distance_m": "Meters traveled",
   "evenement.arrivee": "%s joined the clan",
   "evenement.depart": "%s left the clan",

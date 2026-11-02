@@ -12,23 +12,19 @@ import fr.heralisz.clans.model.SourceXp;
 import fr.heralisz.clans.network.ClansNet;
 import fr.heralisz.clans.network.Packets;
 import fr.heralisz.clans.territory.api.TerritoireEvents;
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -48,10 +44,10 @@ import java.util.UUID;
  * <ul>
  * <li>connexion/deconnexion : dernier nom, vuLe, snapshot + invitations + tags ;</li>
  * <li>stats : kills (joueurs avec anti-boost : pas de camarade, pas de victime fraichement reapparue, pas le meme
- * couple avant 10 min / rodeurs MONSTER hors boss / boss des 8 mods de boss, liste BOSS), morts, degats reels
- * ({@link LivingDamageEvent}, apres armure, bornes aux PV restants), temps de jeu (+20 ticks/s), loot ouvert (clic droit
- * sur un bloc {@code cfm:loot_*}, une fois par bloc et par joueur toutes les 5 min), distance parcourue (quete) ; les
- * quetes de temps et de distance ne comptent que le jeu actif sur la carte (25/10, voir {@link #seconde}) ;</li>
+ * couple avant 10 min, pas la meme adresse IP / rodeurs MONSTER hors boss / boss des 8 mods de boss, liste BOSS), morts,
+ * degats reels ({@link LivingDamageEvent}, apres armure, bornes aux PV restants), temps de jeu (+20 ticks/s), loot ouvert
+ * (premiere fouille d'un conteneur rempli de HeraliZ Loot, {@link #fouille}), distance parcourue (quete) ; les quetes de
+ * temps et de distance ne comptent que le jeu actif sur la carte (25/10, voir {@link #seconde}) ;</li>
  * <li>liste Tab : prefixe « [TAG] » colore ; chat : mode /cc ;</li>
  * <li>tick : synchronisation groupee, horaires des quetes, purge des invitations ;</li>
  * <li>territoires : XP, stats, quetes, journal et annonces pour Capture / Perdu / Ravitaillement / TenueMinute.</li>
@@ -68,7 +64,6 @@ public final class ClanEvents {
     private static final Set<String> BOSS = Set.of(
             "heralisz_knight:burned_king", "heralisz_kraken:kraken", "heralisz_mammoth:mammoth", "heralisz_mere:ruin_mother",
             "heralisz_n07:sujet_n07", "heralisz_plague:plague_bearer", "heralisz_sylvorn:sylvorn", "heralisz_vulkhar:vulkhar");
-    private static final String PREFIXE_LOOT = "cfm:loot_";
     /** Au-dela (m/s), le deplacement est ignore : teleportation, vehicule (a pied, on ne depasse pas ~8 m/s ; avant : 25). */
     private static final double DISTANCE_MAX_PAR_S = 12;
     /** Metres a pied a faire dans une minute de jeu pour qu'elle compte dans les quetes « Jouer N minutes » (sans action). */
@@ -87,8 +82,6 @@ public final class ClanEvents {
 
     private static final Map<UUID, MinuteJeu> MINUTES = new HashMap<>();
 
-    /** Dernier clic compte par joueur : pos.asLong() -> ms. */
-    private static final Map<UUID, Long2LongOpenHashMap> LOOT = new HashMap<>();
     /** Derniere position connue (x, z, dimension) pour la distance. */
     private static final Map<UUID, double[]> POS = new HashMap<>();
     /** Metres accumules par clan, pas encore comptes dans la quete. */
@@ -100,10 +93,13 @@ public final class ClanEvents {
     private static int ticks;
     /** Vrai pendant l'arret : les deconnexions qui suivent ne font plus de synchronisation (le store note juste « vu le »). */
     private static boolean arret;
+    /** L'ecouteur des fouilles de HeraliZ Loot est branche (une seule fois : sa liste vit autant que le jeu). */
+    private static boolean fouillesBranchees;
 
     // ------------------------------------------------------------------ cycle de vie
     @SubscribeEvent
     public static void onServerStart(ServerAboutToStartEvent e) {
+        brancherFouilles();
         Quetes.charger();
         viderTables();
         ticks = 0;
@@ -120,7 +116,6 @@ public final class ClanEvents {
     }
 
     private static void viderTables() {
-        LOOT.clear();
         POS.clear();
         DISTANCE_RESTE.clear();
         KILLS_RECENTS.clear();
@@ -197,7 +192,6 @@ public final class ClanEvents {
         ServerHandlers.oublier(u);
         ClanService.oublier(u);
         Sync.ecranFerme(u);
-        LOOT.remove(u);
         POS.remove(u);
         KILLS_RECENTS.remove(u);
         REAPPARU.remove(u);
@@ -246,12 +240,14 @@ public final class ClanEvents {
     }
 
     /**
-     * Anti-boost d'un kill joueur : pas de camarade de clan, pas de victime reapparue (ou connectee) il y a moins de
+     * Anti-boost d'un kill joueur : pas de camarade de clan, pas la meme adresse IP que le tueur (02/11 : comptes
+     * secondaires, comme la quete du jour de Varga), pas de victime reapparue (ou connectee) il y a moins de
      * {@code anti_boost_reapparition_s}, pas le meme couple tueur/victime avant {@code anti_boost_couple_min}. Un kill
      * accepte est memorise. S'applique aux stats, a l'XP et aux quetes KILL_JOUEURS.
      */
     private static boolean killJoueurValide(Clan c, ServerPlayer tueur, Player victime, long now) {
         if (c.estMembre(victime.getUUID())) return false;
+        if (victime instanceof ServerPlayer v && memeAdresse(tueur, v)) return false;
         Long reapparu = REAPPARU.get(victime.getUUID());
         if (reapparu != null && now - reapparu < ClansConfig.BOOST_REAPPARITION_S.get() * 1000L) return false;
         long delai = ClansConfig.BOOST_COUPLE_MIN.get() * 60_000L;
@@ -261,6 +257,21 @@ public final class ClanEvents {
         if (table.size() > 256) table.values().removeIf(t -> now - t >= delai);
         table.put(victime.getUUID(), now);
         return true;
+    }
+
+    /** Les deux joueurs jouent depuis la meme adresse IP (adresse inconnue : non). */
+    static boolean memeAdresse(ServerPlayer a, ServerPlayer b) {
+        String ia = adresse(a), ib = adresse(b);
+        return !ia.isEmpty() && ia.equals(ib);
+    }
+
+    private static String adresse(ServerPlayer p) {
+        try {
+            String s = p.connection == null ? null : p.getIpAddress();
+            return s == null ? "" : s;
+        } catch (RuntimeException e) {
+            return "";
+        }
     }
 
     /**
@@ -431,27 +442,38 @@ public final class ClanEvents {
         Sync.marquerLent(c);
     }
 
-    /** Loot ouvert : clic droit (main principale) sur un bloc cfm:loot_* ; une fois par bloc et par joueur toutes les 5 min. */
-    @SubscribeEvent
-    public static void onRightClick(PlayerInteractEvent.RightClickBlock e) {
-        if (e.getLevel().isClientSide() || e.getHand() != InteractionHand.MAIN_HAND) return;
-        if (!(e.getEntity() instanceof ServerPlayer p) || ClansApi.enMatch(p)) return;
+    /**
+     * HeraliZ Loot appelle {@link #fouille} a la premiere ouverture d'un conteneur rempli (rotation, familles, salles a
+     * carte, coffres T7), par reflexion comme les quetes du jour de HeraliZ Quetes. Sans Loot, les quetes « Fouiller N
+     * caches » ne sont pas tirees (02/11 ; avant, elles comptaient un clic sur des blocs {@code cfm:loot_*} disparus et
+     * ne pouvaient jamais avancer).
+     */
+    @SuppressWarnings("unchecked")
+    private static void brancherFouilles() {
+        if (!fouillesBranchees) {
+            try {
+                Class.forName("fr.heraliz.loot.EvenementsLoot").getMethod("ecouterFouille", java.util.function.BiConsumer.class)
+                        .invoke(null, (java.util.function.BiConsumer<ServerPlayer, net.minecraft.nbt.CompoundTag>) ClanEvents::fouille);
+                fouillesBranchees = true;
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                HeraliszClans.LOG.warn("[clans] HeraliZ Loot absent : quetes « Fouiller N caches » ecartees ({})", ex.toString());
+            }
+        }
+        Quetes.fouillesPossibles(fouillesBranchees);
+    }
+
+    /**
+     * Cache fouillee : premiere ouverture d'un conteneur de loot rempli (HeraliZ Loot ne rappelle pas pour une
+     * reouverture, ni pour un createur ou un spectateur). Compte pour les stats, la minute de jeu active et les quetes
+     * LOOT_OUVERTS.
+     */
+    static void fouille(ServerPlayer p, net.minecraft.nbt.CompoundTag infos) {
+        if (ClansApi.enMatch(p)) return;
         ClanStore store = ClanStore.get();
         if (store == null) return;
-        BlockState etat = e.getLevel().getBlockState(e.getPos());
-        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(etat.getBlock());
-        if (id == null || !id.toString().startsWith(PREFIXE_LOOT)) return;
         Clan c = store.clanDe(p.getUUID());
         Membre m = c == null ? null : c.membre(p.getUUID());
         if (m == null) return;
-        long now = System.currentTimeMillis();
-        long delai = ClansConfig.LOOT_DELAI_MIN.get() * 60_000L;
-        Long2LongOpenHashMap table = LOOT.computeIfAbsent(p.getUUID(), k -> new Long2LongOpenHashMap());
-        long cle = e.getPos().asLong();
-        long dernier = table.getOrDefault(cle, 0L);
-        if (dernier > 0 && now - dernier < delai) return;
-        if (table.size() > 1024) table.values().removeIf(t -> now - t >= delai);
-        table.put(cle, now);
         action(p);
         m.stats.lootOuverts++;
         store.marquerDirty();
@@ -684,10 +706,5 @@ public final class ClanEvents {
             long xp = heuresValeur * ClansConfig.XP_HEURE_VALEUR.get();
             if (xp > 0) ClanService.ajouterXp(c, SourceXp.TENUE, xp, null);
         }
-    }
-
-    /** /clan admin : vide la table des loots d'un joueur (re-tester un bloc). */
-    static void oublierLoot(UUID joueur) {
-        LOOT.remove(joueur);
     }
 }

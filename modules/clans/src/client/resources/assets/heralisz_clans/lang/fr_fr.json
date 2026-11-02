@@ -71,7 +71,7 @@
   "quete.type.captures": "Zones capturées",
   "quete.type.tenir_zone_min": "Minutes de possession",
   "quete.type.ravitaillements": "Ravitaillements lancés",
-  "quete.type.depots_banque": "Montant déposé",
+  "quete.type.depots_banque": "Dépôt net",
   "quete.type.distance_m": "Mètres parcourus",
   "evenement.arrivee": "%s a rejoint le clan",
   "evenement.depart": "%s a quitté le clan",
