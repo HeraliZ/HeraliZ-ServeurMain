@@ -23,8 +23,7 @@
     "craft_legendaire": 8.0,
     "craft_unique": 8.0,
     "quete_principale": 10.0,
-    "quete_clan": 5.0,
-    "oil_rig": 60.0
+    "quete_clan": 5.0
   },
   "plafonnees": [
     "brute",

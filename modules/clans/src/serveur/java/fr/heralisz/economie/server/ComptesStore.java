@@ -79,7 +79,7 @@ import java.util.stream.Stream;
  * connectes sont prevenus a la connexion et toutes les 5 min.
  *
  * <p><b>Lecture depuis d'autres fils.</b> {@link #soldeMiroir(UUID)} et {@link #resoudre(String)} s'appuient sur des
- * tables concurrentes tenues a jour a chaque mutation (pont Vault appele en asynchrone par des plugins).
+ * tables concurrentes tenues a jour a chaque mutation (lectures depuis un autre fil).
  *
  * <pre>
  * {
@@ -117,7 +117,7 @@ public final class ComptesStore {
     private final MinecraftServer server;
     private final Path fichier;
     private final Map<UUID, Compte> comptes = new LinkedHashMap<>();
-    /** Miroir uuid -> solde lisible depuis n'importe quel fil (pont Vault asynchrone). */
+    /** Miroir uuid -> solde lisible depuis n'importe quel fil. */
     private final ConcurrentHashMap<UUID, Long> miroirSoldes = new ConcurrentHashMap<>();
     /** Index dernier nom (minuscules) -> compte, tenu a jour au fil de l'eau (resolution par nom sans lookup reseau). */
     private final ConcurrentHashMap<String, Compte> indexNoms = new ConcurrentHashMap<>();

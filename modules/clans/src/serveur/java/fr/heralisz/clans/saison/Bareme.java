@@ -125,7 +125,6 @@ public final class Bareme {
         for (int i = 0; i < rar.length; i++) b.pve.put("craft_" + rar[i], craft[i]);
         b.pve.put("quete_principale", 10.0);
         b.pve.put("quete_clan", 5.0);
-        b.pve.put("oil_rig", 60.0);
         for (String s : new String[]{"zombie", "zombie_mutant", "brute", "vente_1000"}) b.plafonnees.add(s);
         for (int i = 1; i <= 6; i++) b.plafonnees.add("conteneur_t" + i);
         for (String r : rar) b.plafonnees.add("craft_" + r);

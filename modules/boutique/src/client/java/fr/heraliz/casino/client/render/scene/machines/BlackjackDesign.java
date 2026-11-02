@@ -52,11 +52,11 @@ public final class BlackjackDesign extends MachineDesign<BlackjackView> {
     /** Futs du pietement : rayon, et hauteur couverte par leur tuile (le marquage tombe entre les cerclages). */
     public static final float DRUM_R = 4.3f, DRUM_WORLD = 12.1f;
 
-    private static final Mat FELT = FruitsDesign.fit(R_FELT), WOOD = FruitsDesign.tri(R_WOOD, 24), RUBBER = FruitsDesign.tri(R_RUBBER, 16);
-    private static final Mat RUST = FruitsDesign.tri(R_RUST, 12), DRUM = FruitsDesign.tri(R_DRUM, DRUM_WORLD), GLOVE = FruitsDesign.tri(R_GLOVE, 8);
-    private static final Mat SHOE = FruitsDesign.tri(R_SHOE, 8), DARK = FruitsDesign.tri(R_DARK, 4), SIGN = FruitsDesign.fit(R_SIGN);
-    private static final Mat WHITE = FruitsDesign.fit(R_CHIP_WHITE), BULB = FruitsDesign.fit(R_BULB), TIN = FruitsDesign.tri(R_TIN, 6);
-    private static final Mat CABLE = FruitsDesign.tri(R_CABLE, 6), CRATE = FruitsDesign.tri(R_CRATE, 12);
+    private static final Mat FELT = Mats.fit(R_FELT), WOOD = Mats.tri(R_WOOD, 24), RUBBER = Mats.tri(R_RUBBER, 16);
+    private static final Mat RUST = Mats.tri(R_RUST, 12), DRUM = Mats.tri(R_DRUM, DRUM_WORLD), GLOVE = Mats.tri(R_GLOVE, 8);
+    private static final Mat SHOE = Mats.tri(R_SHOE, 8), DARK = Mats.tri(R_DARK, 4), SIGN = Mats.fit(R_SIGN);
+    private static final Mat WHITE = Mats.fit(R_CHIP_WHITE), BULB = Mats.fit(R_BULB), TIN = Mats.tri(R_TIN, 6);
+    private static final Mat CABLE = Mats.tri(R_CABLE, 6), CRATE = Mats.tri(R_CRATE, 12);
 
     static final float TOP = 13.4f, BACK = -12.5f, TCX = 8f, RX = 22f, RZ = 26f;
     static final float CARD_W = 2.5f, CARD_H = 3.5f;
@@ -178,7 +178,7 @@ public final class BlackjackDesign extends MachineDesign<BlackjackView> {
         bu.pop();
         bulb = bu.build();
 
-        cards = new CardMeshes(R_CARDS, FruitsDesign.fit(R_CARD_BACK), WHITE, CARD_W, CARD_H);
+        cards = new CardMeshes(R_CARDS, Mats.fit(R_CARD_BACK), WHITE, CARD_W, CARD_H);
         chips = new ChipStacks(0.95f, 0.26f, seg(14));
         glove = glove(false);
         gloveL = glove(true);

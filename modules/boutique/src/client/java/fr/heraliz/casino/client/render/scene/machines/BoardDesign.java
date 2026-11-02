@@ -39,10 +39,10 @@ public final class BoardDesign extends MachineDesign<BoardView> {
     public static final int[] R_STICKER = {768, 448, 256, 64};
     public static final int[] R_DARK = {0, 512, 128, 64};
 
-    static final Mat CASE = FruitsDesign.tri(R_CASE, 16), RUST = FruitsDesign.tri(R_RUST, 12), SCREEN = FruitsDesign.fit(R_SCREEN);
-    static final Mat NOISE = FruitsDesign.fit(R_NOISE), BEZEL = FruitsDesign.tri(R_BEZEL, 8), TAPE = FruitsDesign.fit(R_TAPE);
-    static final Mat BATTERY = FruitsDesign.tri(R_BATTERY, 8), LED = FruitsDesign.fit(R_LED), CABLE = FruitsDesign.tri(R_CABLE, 6);
-    static final Mat GLASS = FruitsDesign.fit(R_GLASS), STICKER = FruitsDesign.fit(R_STICKER), DARK = FruitsDesign.tri(R_DARK, 6);
+    static final Mat CASE = Mats.tri(R_CASE, 16), RUST = Mats.tri(R_RUST, 12), SCREEN = Mats.fit(R_SCREEN);
+    static final Mat NOISE = Mats.fit(R_NOISE), BEZEL = Mats.tri(R_BEZEL, 8), TAPE = Mats.fit(R_TAPE);
+    static final Mat BATTERY = Mats.tri(R_BATTERY, 8), LED = Mats.fit(R_LED), CABLE = Mats.tri(R_CABLE, 6);
+    static final Mat GLASS = Mats.fit(R_GLASS), STICKER = Mats.fit(R_STICKER), DARK = Mats.tri(R_DARK, 6);
 
     /** Ecran (px) : zone utile et profondeur. */
     static final float SX0 = -5.6f, SX1 = 21.6f, SY0 = 16.8f, SY1 = 35.2f, SZ = 12.1f, FZ = 12.6f;

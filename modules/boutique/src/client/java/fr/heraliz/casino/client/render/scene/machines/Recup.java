@@ -66,15 +66,15 @@ public final class Recup {
     /** Rayon, hauteur des futs et hauteur couverte par leur tuile (le marquage tombe entre les cerclages). */
     public static final float DRUM_R = 3.0f, DRUM_H = 9.3f, DRUM_WORLD = 9.9f;
 
-    static final Mat DRUM_TOXIC = FruitsDesign.tri(R_DRUM_TOXIC, DRUM_WORLD), DRUM_BLUE = FruitsDesign.tri(R_DRUM_BLUE, DRUM_WORLD);
-    static final Mat DRUM_OLIVE = FruitsDesign.tri(R_DRUM_OLIVE, DRUM_WORLD), DRUM_RED = FruitsDesign.tri(R_DRUM_RED, DRUM_WORLD);
-    static final Mat AMMO = FruitsDesign.fit(R_AMMO), CROQ = FruitsDesign.fit(R_CROQ), APPLE = FruitsDesign.fit(R_APPLE), BATTERY = FruitsDesign.fit(R_BATTERY);
-    static final Mat RUST = FruitsDesign.tri(R_RUST, 8), WOOD = FruitsDesign.tri(R_WOOD, 10), PALLET = FruitsDesign.tri(R_PALLET, 10);
-    static final Mat CONCRETE = FruitsDesign.tri(R_CONCRETE, 8), RUBBER = FruitsDesign.tri(R_RUBBER, 6), PLASTIC = FruitsDesign.tri(R_PLASTIC, 10);
-    static final Mat STEEL = FruitsDesign.tri(R_STEEL, 6), DARK = FruitsDesign.tri(R_DARK, 4), TAPE = FruitsDesign.tri(R_TAPE, 3);
-    static final Mat CABLE = FruitsDesign.tri(R_CABLE, 4), LED = FruitsDesign.fit(R_LED), CORRUGATED = FruitsDesign.tri(R_CORRUGATED, 8);
-    static final Mat OLIVE = FruitsDesign.tri(R_OLIVE, 8), BURLAP = FruitsDesign.tri(R_BURLAP, 6), VINYL = FruitsDesign.tri(R_VINYL, 6);
-    static final Mat HAZARD = FruitsDesign.tri(R_HAZARD, 6), WIRE = FruitsDesign.tri(R_WIRE, 4), SPEAKER = FruitsDesign.fit(R_SPEAKER);
-    static final Mat LABEL = FruitsDesign.fit(R_LABEL), RED = FruitsDesign.tri(R_RED, 4), BRASS = FruitsDesign.tri(R_BRASS, 3);
-    static final Mat BULB = FruitsDesign.fit(R_BULB), GOLD = FruitsDesign.tri(R_GOLD, 3);
+    static final Mat DRUM_TOXIC = Mats.tri(R_DRUM_TOXIC, DRUM_WORLD), DRUM_BLUE = Mats.tri(R_DRUM_BLUE, DRUM_WORLD);
+    static final Mat DRUM_OLIVE = Mats.tri(R_DRUM_OLIVE, DRUM_WORLD), DRUM_RED = Mats.tri(R_DRUM_RED, DRUM_WORLD);
+    static final Mat AMMO = Mats.fit(R_AMMO), CROQ = Mats.fit(R_CROQ), APPLE = Mats.fit(R_APPLE), BATTERY = Mats.fit(R_BATTERY);
+    static final Mat RUST = Mats.tri(R_RUST, 8), WOOD = Mats.tri(R_WOOD, 10), PALLET = Mats.tri(R_PALLET, 10);
+    static final Mat CONCRETE = Mats.tri(R_CONCRETE, 8), RUBBER = Mats.tri(R_RUBBER, 6), PLASTIC = Mats.tri(R_PLASTIC, 10);
+    static final Mat STEEL = Mats.tri(R_STEEL, 6), DARK = Mats.tri(R_DARK, 4), TAPE = Mats.tri(R_TAPE, 3);
+    static final Mat CABLE = Mats.tri(R_CABLE, 4), LED = Mats.fit(R_LED), CORRUGATED = Mats.tri(R_CORRUGATED, 8);
+    static final Mat OLIVE = Mats.tri(R_OLIVE, 8), BURLAP = Mats.tri(R_BURLAP, 6), VINYL = Mats.tri(R_VINYL, 6);
+    static final Mat HAZARD = Mats.tri(R_HAZARD, 6), WIRE = Mats.tri(R_WIRE, 4), SPEAKER = Mats.fit(R_SPEAKER);
+    static final Mat LABEL = Mats.fit(R_LABEL), RED = Mats.tri(R_RED, 4), BRASS = Mats.tri(R_BRASS, 3);
+    static final Mat BULB = Mats.fit(R_BULB), GOLD = Mats.tri(R_GOLD, 3);
 }

@@ -5,13 +5,12 @@ import fr.heralisz.economie.api.EconomieApiServeur;
 import fr.heralisz.economie.server.ComptesStore;
 import fr.heralisz.economie.server.EconomieCommands;
 import fr.heralisz.economie.server.ServerEvents;
-import fr.heralisz.economie.vault.VaultPont;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Partie serveur de HeraliZ Economie : les comptes derriere l'API, puis les ecouteurs du bus Forge dans l'ordre
- * d'origine (store, evenements de connexion, commandes /eco /herals payer /herals, pont Vault).
+ * d'origine (store, evenements de connexion, commandes /eco /herals payer /herals ; pont Vault retire le 02/11 : aucun plugin ne s'en sert).
  */
 public final class PartieServeur implements Partie {
     @Override
@@ -20,6 +19,5 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.register(ComptesStore.class);
         MinecraftForge.EVENT_BUS.register(ServerEvents.class);
         MinecraftForge.EVENT_BUS.register(EconomieCommands.class);
-        MinecraftForge.EVENT_BUS.register(VaultPont.class);
     }
 }

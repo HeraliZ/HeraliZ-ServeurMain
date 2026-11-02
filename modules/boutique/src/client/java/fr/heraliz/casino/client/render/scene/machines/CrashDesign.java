@@ -49,13 +49,13 @@ public final class CrashDesign extends MachineDesign<CrashView> {
     public static final int[] R_BEZEL = {512, 896, 128, 128};
     public static final int[] R_CABLE = {640, 896, 128, 64};
 
-    private static final Mat SCREEN = FruitsDesign.fit(R_SCREEN), METAL = FruitsDesign.tri(R_METAL, 24), CONCRETE = FruitsDesign.tri(R_CONCRETE, 24);
-    private static final Mat HAZARD = FruitsDesign.tri(R_HAZARD, 8), TANK = FruitsDesign.tri(R_TANK, 6), CONE = FruitsDesign.tri(R_CONE, 6);
-    private static final Mat RUST = FruitsDesign.tri(R_RUST, 8), DARK = FruitsDesign.tri(R_DARK, 8), LED = FruitsDesign.fit(R_LED);
-    private static final Mat BULB = FruitsDesign.fit(R_BULB), WHITE = FruitsDesign.tri(R_WHITE, 4), FLAME = FruitsDesign.fit(R_FLAME);
-    private static final Mat FIN = FruitsDesign.tri(R_FIN, 5), SIGN = FruitsDesign.fit(R_SIGN), PANEL = FruitsDesign.fit(R_PANEL);
-    private static final Mat TIRE = FruitsDesign.tri(R_TIRE, 10), GLASS = FruitsDesign.fit(R_GLASS), BEZEL = FruitsDesign.tri(R_BEZEL, 8);
-    private static final Mat CABLE = FruitsDesign.tri(R_CABLE, 6);
+    private static final Mat SCREEN = Mats.fit(R_SCREEN), METAL = Mats.tri(R_METAL, 24), CONCRETE = Mats.tri(R_CONCRETE, 24);
+    private static final Mat HAZARD = Mats.tri(R_HAZARD, 8), TANK = Mats.tri(R_TANK, 6), CONE = Mats.tri(R_CONE, 6);
+    private static final Mat RUST = Mats.tri(R_RUST, 8), DARK = Mats.tri(R_DARK, 8), LED = Mats.fit(R_LED);
+    private static final Mat BULB = Mats.fit(R_BULB), WHITE = Mats.tri(R_WHITE, 4), FLAME = Mats.fit(R_FLAME);
+    private static final Mat FIN = Mats.tri(R_FIN, 5), SIGN = Mats.fit(R_SIGN), PANEL = Mats.fit(R_PANEL);
+    private static final Mat TIRE = Mats.tri(R_TIRE, 10), GLASS = Mats.fit(R_GLASS), BEZEL = Mats.tri(R_BEZEL, 8);
+    private static final Mat CABLE = Mats.tri(R_CABLE, 6);
 
     /** Ecran : rectangle (monde) et zone du graphe. */
     static final float SX0 = -13.2f, SX1 = 29.2f, SY0 = 7.2f, SY1 = 43.2f, SZ = -8.9f;

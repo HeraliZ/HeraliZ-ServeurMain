@@ -12,7 +12,6 @@ import fr.heralisz.economie.EconomieConfig;
 import fr.heralisz.economie.api.Compte;
 import fr.heralisz.economie.api.EconomieApi;
 import fr.heralisz.economie.api.Transaction;
-import fr.heralisz.economie.vault.VaultPont;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -377,7 +376,7 @@ public final class EconomieCommands {
         for (Compte c : s.tous()) total += c.solde();
         long t = total;
         repondre(ctx.getSource(), () -> msg("admin.info", s.tous().size(), montant(t), EconomieApi.nom(false), EconomieApi.nom(true),
-                Component.literal(s.fichier().toString()).withStyle(ATTENUE), Component.translatable("economie.msg.admin.vault_" + VaultPont.etat())), false);
+                Component.literal(s.fichier().toString()).withStyle(ATTENUE)), false);
         if (s.chargementEchoue()) repondre(ctx.getSource(), () -> msg("admin.info_bloque").withStyle(ChatFormatting.RED), false);
         return 1;
     }

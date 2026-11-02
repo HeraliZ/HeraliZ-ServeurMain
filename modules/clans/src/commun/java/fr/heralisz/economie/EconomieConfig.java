@@ -23,7 +23,6 @@ public final class EconomieConfig {
     public static final ForgeConfigSpec.BooleanValue HUD_PERMANENT;
     public static final ForgeConfigSpec.LongValue PAYER_MIN;
     public static final ForgeConfigSpec.IntValue PAYER_CADENCE_S;
-    public static final ForgeConfigSpec.BooleanValue PONT_VAULT;
     public static final ForgeConfigSpec.LongValue SAUVEGARDE_IMMEDIATE;
 
     static {
@@ -50,8 +49,6 @@ public final class EconomieConfig {
         b.comment("Stockage et integration").push("systeme");
         SAUVEGARDE_IMMEDIATE = b.comment("Toute transaction d'un montant superieur ou egal declenche une sauvegarde immediate (sinon autosave 60 s)")
                 .defineInRange("sauvegarde_immediate", 1000L, 0L, Long.MAX_VALUE / 4);
-        PONT_VAULT = b.comment("true : sur Mohist, enregistre cette economie comme fournisseur Vault pour les plugins")
-                .define("pont_vault", true);
         b.pop();
         SPEC = b.build();
     }

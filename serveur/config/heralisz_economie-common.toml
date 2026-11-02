@@ -33,6 +33,4 @@
 	#Toute transaction d'un montant superieur ou egal declenche une sauvegarde immediate (sinon autosave 60 s)
 	#Range: 0 ~ 2305843009213693951
 	sauvegarde_immediate = 1000
-	#true : sur Mohist, enregistre cette economie comme fournisseur Vault pour les plugins
-	pont_vault = true
 

@@ -55,13 +55,13 @@ public final class RaceDesign extends MachineDesign<RaceView> {
     public static final int[] R_CAN = {896, 768, 128, 128};
     public static final int[] R_CRATE = {0, 896, 256, 128};
 
-    private static final Mat TURF = FruitsDesign.fit(R_TURF), WOOD = FruitsDesign.tri(R_WOOD, 20), WHITE = FruitsDesign.tri(R_WHITE, 8);
-    private static final Mat HORSE = FruitsDesign.tri(R_HORSE, 6), MANE = FruitsDesign.tri(R_MANE, 4), SILK = FruitsDesign.tri(R_SILK, 4);
-    private static final Mat CHECK = FruitsDesign.tri(R_CHECK, 2), DARK = FruitsDesign.tri(R_DARK, 8), RUST = FruitsDesign.tri(R_RUST, 12);
-    private static final Mat SIGN = FruitsDesign.fit(R_SIGN), DIRT = FruitsDesign.tri(R_DIRT, 16), LEDGE = FruitsDesign.fit(R_LEDGE);
-    private static final Mat BLOCK = FruitsDesign.tri(R_BLOCK, 8), CABLE = FruitsDesign.tri(R_CABLE, 6), SCREEN = FruitsDesign.fit(R_SCREEN);
-    private static final Mat TIRE = FruitsDesign.tri(R_TIRE, 10), BATT = FruitsDesign.fit(R_BATT), CAN = FruitsDesign.tri(R_CAN, 8);
-    private static final Mat CRATE = FruitsDesign.tri(R_CRATE, 12), BULB = FruitsDesign.fit(R_BULB);
+    private static final Mat TURF = Mats.fit(R_TURF), WOOD = Mats.tri(R_WOOD, 20), WHITE = Mats.tri(R_WHITE, 8);
+    private static final Mat HORSE = Mats.tri(R_HORSE, 6), MANE = Mats.tri(R_MANE, 4), SILK = Mats.tri(R_SILK, 4);
+    private static final Mat CHECK = Mats.tri(R_CHECK, 2), DARK = Mats.tri(R_DARK, 8), RUST = Mats.tri(R_RUST, 12);
+    private static final Mat SIGN = Mats.fit(R_SIGN), DIRT = Mats.tri(R_DIRT, 16), LEDGE = Mats.fit(R_LEDGE);
+    private static final Mat BLOCK = Mats.tri(R_BLOCK, 8), CABLE = Mats.tri(R_CABLE, 6), SCREEN = Mats.fit(R_SCREEN);
+    private static final Mat TIRE = Mats.tri(R_TIRE, 10), BATT = Mats.fit(R_BATT), CAN = Mats.tri(R_CAN, 8);
+    private static final Mat CRATE = Mats.tri(R_CRATE, 12), BULB = Mats.fit(R_BULB);
 
     public static final float TOP = 12f, START_X = -9.5f, FINISH_X = 26f, LANE0_Z = -6.2f, LANE = 3.6f;
     /** Piste de gazon (px) et planche de mise : reperes partages avec le peintre de textures. */

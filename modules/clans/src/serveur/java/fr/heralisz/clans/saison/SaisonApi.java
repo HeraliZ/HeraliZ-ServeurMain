@@ -26,7 +26,7 @@ public final class SaisonApi {
 
     /**
      * Points PVE pour le clan du joueur : {@code source} = cle du bareme (« conteneur_t3 », « salle_rouge »,
-     * « vente_1000 », « craft_rare », « quete_principale », « oil_rig »...), {@code quantite} = unites (1 le plus souvent ;
+     * « vente_1000 », « craft_rare », « quete_principale »...), {@code quantite} = unites (1 le plus souvent ;
      * herals / 1 000 pour une vente). Sans clan, sans coeur ou hors saison : rien.
      */
     public static void pve(ServerPlayer joueur, String source, double quantite) {

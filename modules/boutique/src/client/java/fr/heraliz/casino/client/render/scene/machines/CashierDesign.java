@@ -49,12 +49,12 @@ public final class CashierDesign extends MachineDesign<CashierView> {
     public static final int[] R_CHIP_WHITE = {704, 448, 64, 64};
     public static final int[] R_CHIP_TOP = {768, 448, 64, 64};
 
-    private static final Mat TOLE = FruitsDesign.tri(R_TOLE, 14), PLY = FruitsDesign.tri(R_PLY, 16), SIGN = FruitsDesign.fit(R_SIGN);
-    private static final Mat STENCIL = FruitsDesign.fit(R_STENCIL), PLEXI = FruitsDesign.fit(R_PLEXI), MESH = FruitsDesign.tri(R_MESH, 5);
-    private static final Mat RUST = FruitsDesign.tri(R_RUST, 10), STEEL = FruitsDesign.tri(R_STEEL, 10), SAND = FruitsDesign.tri(R_SAND, 8);
-    private static final Mat HAZARD = FruitsDesign.tri(R_HAZARD, 6), CASHBOX = FruitsDesign.tri(R_CASHBOX, 8), CRATE = FruitsDesign.tri(R_CRATE, 12);
-    private static final Mat SLATE = FruitsDesign.fit(R_SLATE), TAPE = FruitsDesign.fit(R_TAPE), DARK = FruitsDesign.tri(R_DARK, 6);
-    private static final Mat BULB = FruitsDesign.fit(R_BULB), CABLE = FruitsDesign.tri(R_CABLE, 6), BRASS = FruitsDesign.tri(R_BRASS, 6);
+    private static final Mat TOLE = Mats.tri(R_TOLE, 14), PLY = Mats.tri(R_PLY, 16), SIGN = Mats.fit(R_SIGN);
+    private static final Mat STENCIL = Mats.fit(R_STENCIL), PLEXI = Mats.fit(R_PLEXI), MESH = Mats.tri(R_MESH, 5);
+    private static final Mat RUST = Mats.tri(R_RUST, 10), STEEL = Mats.tri(R_STEEL, 10), SAND = Mats.tri(R_SAND, 8);
+    private static final Mat HAZARD = Mats.tri(R_HAZARD, 6), CASHBOX = Mats.tri(R_CASHBOX, 8), CRATE = Mats.tri(R_CRATE, 12);
+    private static final Mat SLATE = Mats.fit(R_SLATE), TAPE = Mats.fit(R_TAPE), DARK = Mats.tri(R_DARK, 6);
+    private static final Mat BULB = Mats.fit(R_BULB), CABLE = Mats.tri(R_CABLE, 6), BRASS = Mats.tri(R_BRASS, 6);
 
     /** Plateau du comptoir, facade, plan de la cloison. */
     static final float TOP = 14f, FRONT = 14.85f, PZ = 9.6f;

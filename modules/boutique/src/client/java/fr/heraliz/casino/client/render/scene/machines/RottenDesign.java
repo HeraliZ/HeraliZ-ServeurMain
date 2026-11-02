@@ -53,13 +53,13 @@ public final class RottenDesign extends MachineDesign<RottenView> {
     public static final int[] R_ZOMBIE_B = {768, 384, 128, 128};
     public static final int[] R_HAND = {896, 384, 128, 128};
 
-    static final Mat CAB = FruitsDesign.tri(R_CAB, 16), RUST = FruitsDesign.tri(R_RUST, 12), TOPPER = FruitsDesign.fit(R_TOPPER);
-    static final Mat SCREEN = FruitsDesign.fit(R_SCREEN), PANEL = FruitsDesign.fit(R_PANEL), STEEL = FruitsDesign.tri(R_STEEL, 6);
-    static final Mat BTN_RED = FruitsDesign.fit(R_BTN_RED), BTN_YEL = FruitsDesign.fit(R_BTN_YEL), SEAT = FruitsDesign.tri(R_SEAT, 6);
-    static final Mat DARK = FruitsDesign.tri(R_DARK, 6), LED = FruitsDesign.fit(R_LED), GLASS = FruitsDesign.fit(R_GLASS);
-    static final Mat BEZEL = FruitsDesign.tri(R_BEZEL, 6), WIRE = FruitsDesign.tri(R_WIRE, 4), FLASH = FruitsDesign.fit(R_FLASH);
-    static final Mat BAR = FruitsDesign.fit(R_BAR);
-    static final Mat ZOMBIE_A = FruitsDesign.fit(R_ZOMBIE_A), ZOMBIE_B = FruitsDesign.fit(R_ZOMBIE_B), HAND = FruitsDesign.fit(R_HAND);
+    static final Mat CAB = Mats.tri(R_CAB, 16), RUST = Mats.tri(R_RUST, 12), TOPPER = Mats.fit(R_TOPPER);
+    static final Mat SCREEN = Mats.fit(R_SCREEN), PANEL = Mats.fit(R_PANEL), STEEL = Mats.tri(R_STEEL, 6);
+    static final Mat BTN_RED = Mats.fit(R_BTN_RED), BTN_YEL = Mats.fit(R_BTN_YEL), SEAT = Mats.tri(R_SEAT, 6);
+    static final Mat DARK = Mats.tri(R_DARK, 6), LED = Mats.fit(R_LED), GLASS = Mats.fit(R_GLASS);
+    static final Mat BEZEL = Mats.tri(R_BEZEL, 6), WIRE = Mats.tri(R_WIRE, 4), FLASH = Mats.fit(R_FLASH);
+    static final Mat BAR = Mats.fit(R_BAR);
+    static final Mat ZOMBIE_A = Mats.fit(R_ZOMBIE_A), ZOMBIE_B = Mats.fit(R_ZOMBIE_B), HAND = Mats.fit(R_HAND);
 
     /** Symbole (net ou flou) dans l'atlas. */
     static Mat symbol(int s, boolean blur) {

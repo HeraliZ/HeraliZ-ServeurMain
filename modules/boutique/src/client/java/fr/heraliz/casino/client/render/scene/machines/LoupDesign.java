@@ -80,16 +80,16 @@ public final class LoupDesign extends MachineDesign<LoupView> {
     public static final int[] C_SUPER = {0, 768, 512, 128};
     public static final int[] C_EXT = {512, 768, 512, 256};
 
-    static final Mat WOOD = FruitsDesign.tri(R_WOOD, 16), STRAW = FruitsDesign.tri(R_STRAW, 8), BRICK = FruitsDesign.tri(R_BRICK, 8);
-    static final Mat TRIM = FruitsDesign.tri(R_TRIM, 4), STEEL = FruitsDesign.tri(R_STEEL, 6), DARK = FruitsDesign.tri(R_DARK, 6);
-    static final Mat TOPPER = FruitsDesign.fit(R_TOPPER), PANEL = FruitsDesign.fit(R_PANEL), BAR = FruitsDesign.fit(R_BAR);
-    static final Mat SCREEN = FruitsDesign.fit(R_SCREEN), GLASS = FruitsDesign.fit(R_GLASS), LED = FruitsDesign.fit(R_LED);
-    static final Mat BTN_RED = FruitsDesign.fit(R_BTN_RED), BTN_YEL = FruitsDesign.fit(R_BTN_YEL), SEAT = FruitsDesign.fit(R_SEAT);
-    static final Mat WIND = FruitsDesign.fit(R_WIND), PLATE = FruitsDesign.fit(R_PLATE), FLASH = FruitsDesign.fit(R_FLASH);
-    static final Mat EMPTY_M = FruitsDesign.fit(R_EMPTY), WOLF_A = FruitsDesign.fit(R_WOLF_A), WOLF_B = FruitsDesign.fit(R_WOLF_B);
-    static final Mat HAT_SPRITE = FruitsDesign.fit(R_HAT_SPRITE);
-    static final Mat SAW_M = FruitsDesign.fit(C_SAW), GOLD_SAW_M = FruitsDesign.fit(C_GOLD_SAW), MEGA_M = FruitsDesign.fit(C_MEGA);
-    static final Mat SUPER_M = FruitsDesign.fit(C_SUPER), EXT_M = FruitsDesign.fit(C_EXT);
+    static final Mat WOOD = Mats.tri(R_WOOD, 16), STRAW = Mats.tri(R_STRAW, 8), BRICK = Mats.tri(R_BRICK, 8);
+    static final Mat TRIM = Mats.tri(R_TRIM, 4), STEEL = Mats.tri(R_STEEL, 6), DARK = Mats.tri(R_DARK, 6);
+    static final Mat TOPPER = Mats.fit(R_TOPPER), PANEL = Mats.fit(R_PANEL), BAR = Mats.fit(R_BAR);
+    static final Mat SCREEN = Mats.fit(R_SCREEN), GLASS = Mats.fit(R_GLASS), LED = Mats.fit(R_LED);
+    static final Mat BTN_RED = Mats.fit(R_BTN_RED), BTN_YEL = Mats.fit(R_BTN_YEL), SEAT = Mats.fit(R_SEAT);
+    static final Mat WIND = Mats.fit(R_WIND), PLATE = Mats.fit(R_PLATE), FLASH = Mats.fit(R_FLASH);
+    static final Mat EMPTY_M = Mats.fit(R_EMPTY), WOLF_A = Mats.fit(R_WOLF_A), WOLF_B = Mats.fit(R_WOLF_B);
+    static final Mat HAT_SPRITE = Mats.fit(R_HAT_SPRITE);
+    static final Mat SAW_M = Mats.fit(C_SAW), GOLD_SAW_M = Mats.fit(C_GOLD_SAW), MEGA_M = Mats.fit(C_MEGA);
+    static final Mat SUPER_M = Mats.fit(C_SUPER), EXT_M = Mats.fit(C_EXT);
 
     /**
      * La roue a sa propre feuille de texture (souffle_loup_roue.png, 2048 x 1024) : la roue a gauche, la super roue a
@@ -103,10 +103,10 @@ public final class LoupDesign extends MachineDesign<LoupView> {
     static Mat symbol(int s, boolean blur) {
         if (s <= Loup.WOLF && blur) return Mat.fit((s % 8) * 128, BLUR_Y + (s / 8) * 128, 128, 128);
         if (s < 8) return Mat.fit(s * 128, 0, 128, 128);
-        if (s == Loup.WOLF) return FruitsDesign.fit(R_WOLF);
-        if (s == Loup.HAT) return FruitsDesign.fit(R_HAT);
-        if (s == Loup.SAW) return FruitsDesign.fit(R_SAW);
-        if (s == Loup.GOLD) return FruitsDesign.fit(R_GOLD);
+        if (s == Loup.WOLF) return Mats.fit(R_WOLF);
+        if (s == Loup.HAT) return Mats.fit(R_HAT);
+        if (s == Loup.SAW) return Mats.fit(R_SAW);
+        if (s == Loup.GOLD) return Mats.fit(R_GOLD);
         return EMPTY_M;
     }
 

@@ -73,15 +73,15 @@ public final class NicheDesign extends MachineDesign<NicheView> {
     public static final int[] R_SCREEN = {896, 896, 128, 128};
     public static final float LOCK_SPLIT = 0.42f;
 
-    static final Mat PLANKS = FruitsDesign.tri(R_PLANKS, 16), SHINGLES = FruitsDesign.tri(R_SHINGLES, 8), BLOCK = FruitsDesign.tri(R_BLOCK, 8);
-    static final Mat TRIM = FruitsDesign.tri(R_TRIM, 4), STEEL = FruitsDesign.tri(R_STEEL, 6), DARK = FruitsDesign.tri(R_DARK, 6);
-    static final Mat RUBBER = FruitsDesign.tri(R_RUBBER, 6), PLAID = FruitsDesign.tri(R_PLAID, 6);
-    static final Mat TOPPER = FruitsDesign.fit(R_TOPPER), PANEL = FruitsDesign.fit(R_PANEL), BAR = FruitsDesign.fit(R_BAR), SIGN = FruitsDesign.fit(R_SIGN);
-    static final Mat SCREEN = FruitsDesign.fit(R_SCREEN), GLASS = FruitsDesign.fit(R_GLASS), LED = FruitsDesign.fit(R_LED);
-    static final Mat BTN_RED = FruitsDesign.fit(R_BTN_RED), BTN_YEL = FruitsDesign.fit(R_BTN_YEL);
-    static final Mat FLASH = FruitsDesign.fit(R_FLASH), STICKY = FruitsDesign.fit(R_STICKY), EMPTY_M = FruitsDesign.fit(R_EMPTY), FENCE = FruitsDesign.fit(R_FENCE);
-    static final Mat LOCK = FruitsDesign.fit(R_LOCK), PAW = FruitsDesign.fit(R_PAW), DOG_A = FruitsDesign.fit(R_DOG_A), DOG_B = FruitsDesign.fit(R_DOG_B);
-    static final Mat WILD2 = FruitsDesign.fit(R_WILD2), WILD3 = FruitsDesign.fit(R_WILD3), BONUS_M = FruitsDesign.fit(R_BONUS);
+    static final Mat PLANKS = Mats.tri(R_PLANKS, 16), SHINGLES = Mats.tri(R_SHINGLES, 8), BLOCK = Mats.tri(R_BLOCK, 8);
+    static final Mat TRIM = Mats.tri(R_TRIM, 4), STEEL = Mats.tri(R_STEEL, 6), DARK = Mats.tri(R_DARK, 6);
+    static final Mat RUBBER = Mats.tri(R_RUBBER, 6), PLAID = Mats.tri(R_PLAID, 6);
+    static final Mat TOPPER = Mats.fit(R_TOPPER), PANEL = Mats.fit(R_PANEL), BAR = Mats.fit(R_BAR), SIGN = Mats.fit(R_SIGN);
+    static final Mat SCREEN = Mats.fit(R_SCREEN), GLASS = Mats.fit(R_GLASS), LED = Mats.fit(R_LED);
+    static final Mat BTN_RED = Mats.fit(R_BTN_RED), BTN_YEL = Mats.fit(R_BTN_YEL);
+    static final Mat FLASH = Mats.fit(R_FLASH), STICKY = Mats.fit(R_STICKY), EMPTY_M = Mats.fit(R_EMPTY), FENCE = Mats.fit(R_FENCE);
+    static final Mat LOCK = Mats.fit(R_LOCK), PAW = Mats.fit(R_PAW), DOG_A = Mats.fit(R_DOG_A), DOG_B = Mats.fit(R_DOG_B);
+    static final Mat WILD2 = Mats.fit(R_WILD2), WILD3 = Mats.fit(R_WILD3), BONUS_M = Mats.fit(R_BONUS);
     static final Mat LOCK_TOP = LOCK.sub(0, 0, 1, LOCK_SPLIT), LOCK_BODY = LOCK.sub(0, LOCK_SPLIT, 1, 1);
     private static final Mat[] SYM = new Mat[Niche.PAY_SYMBOLS], BLUR = new Mat[Niche.PAY_SYMBOLS];
 

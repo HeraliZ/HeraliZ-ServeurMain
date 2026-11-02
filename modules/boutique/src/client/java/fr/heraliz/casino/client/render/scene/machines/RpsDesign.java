@@ -47,12 +47,12 @@ public final class RpsDesign extends MachineDesign<RpsView> {
     public static final int[] R_FLAME = {768, 768, 128, 128};
     public static final int[] R_BRASS = {896, 768, 128, 128};
 
-    static final Mat WOOD = FruitsDesign.tri(R_WOOD, 20), RUST = FruitsDesign.tri(R_RUST, 10), METAL = FruitsDesign.tri(R_METAL, 10);
-    static final Mat TOP = FruitsDesign.fit(R_TOP), STONE = FruitsDesign.tri(R_STONE, 3), MAT_A = FruitsDesign.fit(R_MAT_A);
-    static final Mat MAT_B = FruitsDesign.fit(R_MAT_B), PAPER = FruitsDesign.fit(R_PAPER), STEEL = FruitsDesign.tri(R_STEEL, 4);
-    static final Mat HANDLE = FruitsDesign.tri(R_HANDLE, 4), LED = FruitsDesign.fit(R_LED), DARK = FruitsDesign.tri(R_DARK, 6);
-    static final Mat GLASS = FruitsDesign.fit(R_GLASS), BOARD = FruitsDesign.fit(R_BOARD), CABLE = FruitsDesign.tri(R_CABLE, 6);
-    static final Mat CAN = FruitsDesign.fit(R_CAN), FLAME = FruitsDesign.fit(R_FLAME), BRASS = FruitsDesign.tri(R_BRASS, 6);
+    static final Mat WOOD = Mats.tri(R_WOOD, 20), RUST = Mats.tri(R_RUST, 10), METAL = Mats.tri(R_METAL, 10);
+    static final Mat TOP = Mats.fit(R_TOP), STONE = Mats.tri(R_STONE, 3), MAT_A = Mats.fit(R_MAT_A);
+    static final Mat MAT_B = Mats.fit(R_MAT_B), PAPER = Mats.fit(R_PAPER), STEEL = Mats.tri(R_STEEL, 4);
+    static final Mat HANDLE = Mats.tri(R_HANDLE, 4), LED = Mats.fit(R_LED), DARK = Mats.tri(R_DARK, 6);
+    static final Mat GLASS = Mats.fit(R_GLASS), BOARD = Mats.fit(R_BOARD), CABLE = Mats.tri(R_CABLE, 6);
+    static final Mat CAN = Mats.fit(R_CAN), FLAME = Mats.fit(R_FLAME), BRASS = Mats.tri(R_BRASS, 6);
 
     /** Plateau du touret, rayon et hauteur. */
     static final float CX = 8, CZ = 8, TOP_Y = 12, TOP_R = 7.2f;

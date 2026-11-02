@@ -58,14 +58,14 @@ public final class OlympeDesign extends MachineDesign<OlympeView> {
     public static final int[] R_GLASS = {256, 960, 256, 64};
     public static final int[] R_CLOUD = {512, 896, 256, 128};
 
-    static final Mat MARBLE = FruitsDesign.tri(R_MARBLE, 14), FLUTED = FruitsDesign.tri(R_FLUTED, 4.3f), GOLD_M = FruitsDesign.tri(R_GOLD, 8);
-    static final Mat TOPPER = FruitsDesign.fit(R_TOPPER), PEDIMENT = FruitsDesign.fit(R_PEDIMENT), PANEL = FruitsDesign.fit(R_PANEL);
-    static final Mat SCREEN = FruitsDesign.fit(R_SCREEN), GRID = FruitsDesign.fit(R_GRID), BAR = FruitsDesign.fit(R_BAR);
-    static final Mat BTN_RED = FruitsDesign.fit(R_BTN_RED), BTN_YEL = FruitsDesign.fit(R_BTN_YEL), SEAT = FruitsDesign.tri(R_SEAT, 6);
-    static final Mat STEEL = FruitsDesign.tri(R_STEEL, 6), DARK = FruitsDesign.tri(R_DARK, 6), LED = FruitsDesign.fit(R_LED);
-    static final Mat BEZEL = FruitsDesign.tri(R_BEZEL, 4), GLASS = FruitsDesign.fit(R_GLASS), CLOUD = FruitsDesign.fit(R_CLOUD);
-    static final Mat BOLT = FruitsDesign.fit(R_BOLT), FLASH = FruitsDesign.fit(R_FLASH);
-    static final Mat ZEUS_A = FruitsDesign.fit(R_ZEUS_A), ZEUS_B = FruitsDesign.fit(R_ZEUS_B);
+    static final Mat MARBLE = Mats.tri(R_MARBLE, 14), FLUTED = Mats.tri(R_FLUTED, 4.3f), GOLD_M = Mats.tri(R_GOLD, 8);
+    static final Mat TOPPER = Mats.fit(R_TOPPER), PEDIMENT = Mats.fit(R_PEDIMENT), PANEL = Mats.fit(R_PANEL);
+    static final Mat SCREEN = Mats.fit(R_SCREEN), GRID = Mats.fit(R_GRID), BAR = Mats.fit(R_BAR);
+    static final Mat BTN_RED = Mats.fit(R_BTN_RED), BTN_YEL = Mats.fit(R_BTN_YEL), SEAT = Mats.tri(R_SEAT, 6);
+    static final Mat STEEL = Mats.tri(R_STEEL, 6), DARK = Mats.tri(R_DARK, 6), LED = Mats.fit(R_LED);
+    static final Mat BEZEL = Mats.tri(R_BEZEL, 4), GLASS = Mats.fit(R_GLASS), CLOUD = Mats.fit(R_CLOUD);
+    static final Mat BOLT = Mats.fit(R_BOLT), FLASH = Mats.fit(R_FLASH);
+    static final Mat ZEUS_A = Mats.fit(R_ZEUS_A), ZEUS_B = Mats.fit(R_ZEUS_B);
 
     /** Symbole dans l'atlas (les orbes selon leur valeur). */
     static Mat symbol(int s) {

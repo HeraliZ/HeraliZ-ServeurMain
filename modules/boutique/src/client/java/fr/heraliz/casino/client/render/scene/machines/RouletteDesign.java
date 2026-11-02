@@ -53,15 +53,15 @@ public final class RouletteDesign extends MachineDesign<RouletteView> {
     public static final int[] R_CABLE = {960, 896, 64, 64};
     public static final int[] R_CRATE = {896, 960, 128, 64};
 
-    private static final Mat LAYOUT = FruitsDesign.fit(R_LAYOUT), PLANK = FruitsDesign.tri(R_PLANK, 30), WOOD = FruitsDesign.tri(R_WOOD, 20);
-    private static final Mat RUBBER = FruitsDesign.tri(R_RUBBER, 16), RUST = FruitsDesign.tri(R_RUST, 10), POCKET = FruitsDesign.tri(R_POCKET, 8);
-    private static final Mat DARK = FruitsDesign.tri(R_DARK, 4), BALL = FruitsDesign.tri(R_BALL, 2), STEEL = FruitsDesign.tri(R_STEEL, 10);
-    private static final Mat SIGN = FruitsDesign.fit(R_SIGN), SHELL = FruitsDesign.tri(R_SHELL, 4), WHITE = FruitsDesign.fit(R_CHIP_WHITE);
+    private static final Mat LAYOUT = Mats.fit(R_LAYOUT), PLANK = Mats.tri(R_PLANK, 30), WOOD = Mats.tri(R_WOOD, 20);
+    private static final Mat RUBBER = Mats.tri(R_RUBBER, 16), RUST = Mats.tri(R_RUST, 10), POCKET = Mats.tri(R_POCKET, 8);
+    private static final Mat DARK = Mats.tri(R_DARK, 4), BALL = Mats.tri(R_BALL, 2), STEEL = Mats.tri(R_STEEL, 10);
+    private static final Mat SIGN = Mats.fit(R_SIGN), SHELL = Mats.tri(R_SHELL, 4), WHITE = Mats.fit(R_CHIP_WHITE);
     /** Hauteur de fut couverte par sa tuile (le marquage au pochoir tombe a mi-hauteur). */
     public static final float DRUM_WORLD = 10.4f, DRUM_R = 5.1f;
-    private static final Mat BRASS = FruitsDesign.tri(R_BRASS, 4), DRUM = FruitsDesign.tri(R_DRUM, DRUM_WORLD), TIRE = FruitsDesign.tri(R_TIRE, 10);
-    private static final Mat VALVE = FruitsDesign.tri(R_VALVE, 6), BULB = FruitsDesign.fit(R_BULB), CABLE = FruitsDesign.tri(R_CABLE, 6);
-    private static final Mat CRATE = FruitsDesign.tri(R_CRATE, 12);
+    private static final Mat BRASS = Mats.tri(R_BRASS, 4), DRUM = Mats.tri(R_DRUM, DRUM_WORLD), TIRE = Mats.tri(R_TIRE, 10);
+    private static final Mat VALVE = Mats.tri(R_VALVE, 6), BULB = Mats.fit(R_BULB), CABLE = Mats.tri(R_CABLE, 6);
+    private static final Mat CRATE = Mats.tri(R_CRATE, 12);
 
     /** Plateau : assez large pour que le bourrelet fasse tout le tour sans toucher le pneu de la roue. */
     static final float TOP = 12f, X0 = -30.2f, X1 = 30.2f, Z0 = -13.3f, Z1 = 13.9f;

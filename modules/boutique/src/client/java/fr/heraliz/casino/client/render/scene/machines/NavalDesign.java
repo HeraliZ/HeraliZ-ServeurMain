@@ -47,12 +47,12 @@ public final class NavalDesign extends MachineDesign<NavalView> {
     public static final int[] R_TRAY = {0, 768, 256, 128};
     public static final int[] R_CABLE = {256, 768, 256, 128};
 
-    static final Mat WOOD = FruitsDesign.tri(R_WOOD, 24), RUST = FruitsDesign.tri(R_RUST, 12), DRUM = FruitsDesign.tri(R_DRUM, 22);
-    static final Mat PLY = FruitsDesign.tri(R_PLY, 20), GRID = FruitsDesign.fit(R_GRID), BOARD = FruitsDesign.fit(R_BOARD);
-    static final Mat HULL = FruitsDesign.tri(R_HULL, 4), DECK = FruitsDesign.tri(R_DECK, 4), PEG_W = FruitsDesign.tri(R_PEG_W, 2);
-    static final Mat PEG_R = FruitsDesign.tri(R_PEG_R, 2), LAMP = FruitsDesign.fit(R_LAMP), CRATE = FruitsDesign.tri(R_CRATE, 16);
-    static final Mat METAL = FruitsDesign.tri(R_METAL, 10), DARK = FruitsDesign.tri(R_DARK, 6), TRAY = FruitsDesign.tri(R_TRAY, 8);
-    static final Mat CABLE = FruitsDesign.tri(R_CABLE, 6);
+    static final Mat WOOD = Mats.tri(R_WOOD, 24), RUST = Mats.tri(R_RUST, 12), DRUM = Mats.tri(R_DRUM, 22);
+    static final Mat PLY = Mats.tri(R_PLY, 20), GRID = Mats.fit(R_GRID), BOARD = Mats.fit(R_BOARD);
+    static final Mat HULL = Mats.tri(R_HULL, 4), DECK = Mats.tri(R_DECK, 4), PEG_W = Mats.tri(R_PEG_W, 2);
+    static final Mat PEG_R = Mats.tri(R_PEG_R, 2), LAMP = Mats.fit(R_LAMP), CRATE = Mats.tri(R_CRATE, 16);
+    static final Mat METAL = Mats.tri(R_METAL, 10), DARK = Mats.tri(R_DARK, 6), TRAY = Mats.tri(R_TRAY, 8);
+    static final Mat CABLE = Mats.tri(R_CABLE, 6);
 
     static final int N = NavalBoard.SIZE;
     /** Table, paravent, plateaux (px). */

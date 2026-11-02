@@ -53,14 +53,14 @@ public final class MinesDesign extends MachineDesign<MinesView> {
     public static final int[] R_CABLE = {640, 768, 128, 64};
     public static final int[] R_WOOD = {0, 896, 256, 128};
 
-    private static final Mat CRATE = FruitsDesign.tri(R_CRATE, 24), PLATE = FruitsDesign.tri(R_PLATE, 12), TILE = FruitsDesign.fit(R_TILE);
-    private static final Mat OPEN = FruitsDesign.fit(R_OPEN), RUST = FruitsDesign.tri(R_RUST, 8), SAND = FruitsDesign.tri(R_SAND, 8);
-    private static final Mat GEM = FruitsDesign.tri(R_GEM, 4), MINE = FruitsDesign.tri(R_MINE, 4), SIGN = FruitsDesign.fit(R_SIGN);
-    private static final Mat HAZARD = FruitsDesign.tri(R_HAZARD, 6), CASE = FruitsDesign.tri(R_CASE, 6), SCREEN = FruitsDesign.fit(R_SCREEN);
-    private static final Mat LED = FruitsDesign.fit(R_LED), DARK = FruitsDesign.tri(R_DARK, 8), BULB = FruitsDesign.fit(R_BULB);
-    private static final Mat FLAG = FruitsDesign.tri(R_FLAG, 4), CONCRETE = FruitsDesign.tri(R_CONCRETE, 8), AMMO = FruitsDesign.tri(R_AMMO, 6);
-    private static final Mat STENCIL = FruitsDesign.fit(R_STENCIL), GLASS = FruitsDesign.fit(R_GLASS), CABLE = FruitsDesign.tri(R_CABLE, 6);
-    private static final Mat WOOD = FruitsDesign.tri(R_WOOD, 12);
+    private static final Mat CRATE = Mats.tri(R_CRATE, 24), PLATE = Mats.tri(R_PLATE, 12), TILE = Mats.fit(R_TILE);
+    private static final Mat OPEN = Mats.fit(R_OPEN), RUST = Mats.tri(R_RUST, 8), SAND = Mats.tri(R_SAND, 8);
+    private static final Mat GEM = Mats.tri(R_GEM, 4), MINE = Mats.tri(R_MINE, 4), SIGN = Mats.fit(R_SIGN);
+    private static final Mat HAZARD = Mats.tri(R_HAZARD, 6), CASE = Mats.tri(R_CASE, 6), SCREEN = Mats.fit(R_SCREEN);
+    private static final Mat LED = Mats.fit(R_LED), DARK = Mats.tri(R_DARK, 8), BULB = Mats.fit(R_BULB);
+    private static final Mat FLAG = Mats.tri(R_FLAG, 4), CONCRETE = Mats.tri(R_CONCRETE, 8), AMMO = Mats.tri(R_AMMO, 6);
+    private static final Mat STENCIL = Mats.fit(R_STENCIL), GLASS = Mats.fit(R_GLASS), CABLE = Mats.tri(R_CABLE, 6);
+    private static final Mat WOOD = Mats.tri(R_WOOD, 12);
 
     static final float TOP = 12.6f, GCX = 8f, GCZ = 3.6f, STEP = 4.25f, TILE_S = 3.8f;
     /** Demi-cote du bac a sable. */

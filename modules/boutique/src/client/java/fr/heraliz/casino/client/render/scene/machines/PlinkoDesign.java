@@ -46,14 +46,14 @@ public final class PlinkoDesign extends MachineDesign<PlinkoView> {
     public static final int[] R_CABLE = {320, 896, 64, 64};
     public static final int[] R_TAPE = {384, 896, 128, 64};
 
-    private static final Mat PLY = FruitsDesign.tri(R_PLY, 24), BOARD = FruitsDesign.fit(R_BOARD), RUST = FruitsDesign.tri(R_RUST, 12);
-    private static final Mat NEON = FruitsDesign.fit(R_NEON), BALL = FruitsDesign.tri(R_BALL, 4), CAN = FruitsDesign.tri(R_CAN, 5);
-    private static final Mat SIGN = FruitsDesign.fit(R_SIGN), PANEL = FruitsDesign.fit(R_PANEL), GLASS = FruitsDesign.fit(R_GLASS);
-    private static final Mat DARK = FruitsDesign.tri(R_DARK, 8), PEG = FruitsDesign.tri(R_PEG, 4), WOOD = FruitsDesign.tri(R_WOOD, 10);
+    private static final Mat PLY = Mats.tri(R_PLY, 24), BOARD = Mats.fit(R_BOARD), RUST = Mats.tri(R_RUST, 12);
+    private static final Mat NEON = Mats.fit(R_NEON), BALL = Mats.tri(R_BALL, 4), CAN = Mats.tri(R_CAN, 5);
+    private static final Mat SIGN = Mats.fit(R_SIGN), PANEL = Mats.fit(R_PANEL), GLASS = Mats.fit(R_GLASS);
+    private static final Mat DARK = Mats.tri(R_DARK, 8), PEG = Mats.tri(R_PEG, 4), WOOD = Mats.tri(R_WOOD, 10);
     /** Futs du support : rayon, et hauteur couverte par leur tuile (le marquage tombe entre les cerclages). */
     public static final float DRUM_R = 4.5f, DRUM_WORLD = 12.1f;
-    private static final Mat DRUM = FruitsDesign.tri(R_DRUM, DRUM_WORLD), BULB = FruitsDesign.fit(R_BULB), CABLE = FruitsDesign.tri(R_CABLE, 6);
-    private static final Mat TAPE = FruitsDesign.fit(R_TAPE);
+    private static final Mat DRUM = Mats.tri(R_DRUM, DRUM_WORLD), BULB = Mats.fit(R_BULB), CABLE = Mats.tri(R_CABLE, 6);
+    private static final Mat TAPE = Mats.fit(R_TAPE);
 
     static final int ROWS = PlinkoGame.ROWS;
     static final float CX = 8f, DX = 2.8f, DY = 2.7f, ROW0_Y = 51.6f;

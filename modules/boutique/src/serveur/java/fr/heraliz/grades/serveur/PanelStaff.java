@@ -147,6 +147,9 @@ final class PanelStaff {
     }
 
     private static boolean permis(ServerPlayer p, ActionStaff a, int rang) {
+        // 02/11 (audit mods-3 §10 f) : boss mis de côté pour l'ouverture : leurs boutons ne sont montrés (et permis) que si
+        // le jar des boss est sur le serveur ; ils reviennent seuls avec lui
+        if ((a == ActionStaff.BOSS_EVEIL || a == ActionStaff.BOSS_RESET) && !net.minecraftforge.fml.ModList.get().isLoaded("heraliz_boss")) return false;
         if (a.verrou) return fondateur(p);
         return PermsStaff.permis(a, rang);
     }
