@@ -125,12 +125,36 @@ final class MenuRecycleurCarteServeur extends MenuRecycleurCarte {
             ItemStack barre = bouton == 40 ? p.getOffhandItem() : (bouton >= 0 && bouton < 9 ? p.getInventory().getItem(bouton) : ItemStack.EMPTY);
             if (!barre.isEmpty()) return;
         }
+        // 02/11 (audit point 20) : au plus 4 clics qui changent la machine par seconde et par joueur (chacun sauvegarde le
+        // joueur et la machine sur le fil serveur : Maj + clic en boucle faisait monter le tick) ; au-delà, le clic est
+        // refusé et l'écran du joueur revient à l'état réel
+        long t = System.currentTimeMillis();
+        if (t - fenetre >= 1000 || t < fenetre) {
+            fenetre = t;
+            clics = 0;
+        }
+        if (clics >= CLICS_PAR_SECONDE && toucheMachine(index, type)) {
+            sendAllDataToRemote();
+            return;
+        }
         machine.avantClic();
+        boolean change = false;
         try {
             super.clicked(index, bouton, type, p);
         } finally {
-            machine.apresClic(joueur);
+            change = machine.apresClic(joueur);
         }
+        if (change) clics++;
+    }
+
+    private static final int CLICS_PAR_SECONDE = 4;
+    private long fenetre;
+    private int clics;
+
+    /** Ce clic peut changer le contenu de la machine (case de la machine, Maj + clic, double clic, glisser). */
+    private static boolean toucheMachine(int index, ClickType type) {
+        if (index >= 0 && index < ENTREES + SORTIES) return true;
+        return type == ClickType.QUICK_MOVE || type == ClickType.PICKUP_ALL || type == ClickType.QUICK_CRAFT;
     }
 
     @Override

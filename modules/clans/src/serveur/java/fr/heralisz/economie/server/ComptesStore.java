@@ -45,6 +45,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 /**
  * Stockage des comptes : {@code <dossier serveur>/heralisz_economie/comptes.json}, global au serveur (independant du
@@ -55,9 +57,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * sur le fil serveur, des dizaines de millisecondes avec quelques milliers de comptes) et l'ecriture (JSON compact,
  * fichier temporaire puis renommage atomique) se font sur un fil IO unique : les ecritures sont sequentielles, la
  * derniere gagne. Autosave toutes les 60 s si quelque chose a change ; une transaction d'un montant >= sauvegarde_immediate
- * demande une sauvegarde groupee (au plus une ecriture par 1,5 s) ; a l'arret et via
- * {@link #sauvegarderMaintenant()} l'ecriture est synchrone. A chaque sauvegarde reussie, l'ancien fichier est
- * conserve en copie tournante comptes.json.1 … .5.
+ * demande une sauvegarde groupee (au plus une ecriture par 1,5 s) ; a l'arret, l'ecriture est synchrone. Copies de
+ * secours tournantes comptes.json.1 … .5 : au plus une par heure (et a l'arret).
+ *
+ * <p><b>Operations d'argent qui doivent etre sur le disque tout de suite</b> ({@link #sauvegarderMaintenant()} : banque
+ * du clan, hotel des ventes, creation de clan...). Depuis le 02/11 (audit point 20), le fil serveur n'attend plus la
+ * reecriture de TOUS les comptes : il ajoute seulement, a la fin d'un petit journal d'ecriture
+ * ({@code comptes.json.wal.<n>}), l'etat des comptes changes depuis (quelques lignes) ; le fichier complet suit sur le fil
+ * IO. Au demarrage (et a {@code /eco recharger}), les lignes du journal plus recentes que le fichier complet sont
+ * rejouees ; un morceau de journal est efface des que le fichier complet qui le contient est ecrit. Meme garantie
+ * qu'avant : quand l'appel rend vrai, le solde est sur le disque.
+ *
+ * <p><b>Taille du fichier</b> (02/11) : un compte sans transaction depuis {@value #INACTIF_JOURS} jours perd son journal
+ * (le solde et le nom restent) ; un compte a 0 sans journal d'un joueur hors ligne n'est plus ecrit (solde de depart a 0 :
+ * il est recree tel quel a son retour). Aucun heral n'est jamais retire.
  *
  * <p><b>Protection des soldes.</b> Si le fichier existe mais ne peut pas etre lu (verrou, JSON casse), le store
  * demarre vide et <i>toute ecriture est bloquee</i> (autosave, transactions, arret) tant qu'une relecture
@@ -92,6 +105,11 @@ public final class ComptesStore {
     /** Le classement n'est retrie qu'au plus une fois par seconde. */
     private static final long CLASSEMENT_CACHE_MS = 1000;
     private static final DateTimeFormatter HORODATAGE = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+    /** Un compte sans transaction depuis ce nombre de jours perd son journal dans le fichier (le solde reste). */
+    static final int INACTIF_JOURS = 30;
+    /** Une copie de secours au plus par heure (avant : a chaque ecriture, soit une recopie de tout le fichier). */
+    private static final long COPIES_MS = 3_600_000L;
+    private static final String WAL = ".wal.";
 
     @Nullable
     private static ComptesStore instance;
@@ -117,6 +135,16 @@ public final class ComptesStore {
     private long version;
     private List<Compte> cacheClassement = List.of();
     private long cacheVersion = -1, cacheQuand;
+    /** Numero de chaque changement d'un compte (02/11, journal d'ecriture). */
+    private long mutation;
+    /** Comptes changes et pas encore ajoutes au journal d'ecriture : uuid -> numero de leur dernier changement. */
+    private final Map<UUID, Long> aJournaliser = new HashMap<>();
+    /** Numero du dernier changement contenu dans un fichier complet ecrit (pose par le fil IO). */
+    private final AtomicLong ecritJusqua = new AtomicLong();
+    /** Morceau courant du journal d'ecriture (un nouveau a chaque releve complet ; numeros a partir de 1). */
+    private long morceau = 1;
+    /** Fil IO : heure de la derniere copie de secours. */
+    private long derniereCopie;
 
     private ComptesStore(MinecraftServer server, Path fichier) {
         this.server = server;
@@ -168,7 +196,7 @@ public final class ComptesStore {
     public static void onServerStop(ServerStoppingEvent e) {
         ComptesStore s = instance;
         if (s == null) return;
-        s.sauvegarderMaintenant();
+        s.sauvegarderTout();
         s.fermer();
         instance = null;
     }
@@ -220,12 +248,12 @@ public final class ComptesStore {
             comptes.put(uuid, c);
             miroirSoldes.put(uuid, c.solde());
             indexer(c, null);
-            changer();
+            changer(c);
         } else if (nom != null && !nom.isEmpty() && !nom.equals(c.dernierNom())) {
             String ancien = c.dernierNom();
             c.setDernierNom(nom);
             indexer(c, ancien);
-            changer();
+            changer(c);
         }
         return c;
     }
@@ -299,7 +327,7 @@ public final class ComptesStore {
     public void appliquer(Compte c, long delta, String motif, @Nullable UUID autre) {
         c.appliquer(delta, motif, autre);
         miroirSoldes.put(c.uuid(), c.solde());
-        changer();
+        changer(c);
     }
 
     /** Signale un changement ; demande une sauvegarde groupee si le montant atteint sauvegarde_immediate. */
@@ -311,6 +339,13 @@ public final class ComptesStore {
     private void changer() {
         dirty = true;
         version++;
+    }
+
+    /** Un compte a change : il sera ajoute au journal d'ecriture a la prochaine {@link #sauvegarderMaintenant()}. */
+    private void changer(Compte c) {
+        changer();
+        mutation++;
+        aJournaliser.put(c.uuid(), mutation);
     }
 
     private void indexer(Compte c, @Nullable String ancienNom) {
@@ -325,9 +360,11 @@ public final class ComptesStore {
      */
     private boolean charger() {
         Map<UUID, Compte> lus = new LinkedHashMap<>();
+        long couvert = 0;
         if (Files.exists(fichier)) {
             try {
                 JsonObject root = JsonParser.parseString(Files.readString(fichier, StandardCharsets.UTF_8)).getAsJsonObject();
+                if (root.has("mutation")) couvert = root.get("mutation").getAsLong();
                 JsonObject cs = root.has("comptes") && root.get("comptes").isJsonObject() ? root.getAsJsonObject("comptes") : new JsonObject();
                 for (Map.Entry<String, JsonElement> e : cs.entrySet()) {
                     if (!e.getValue().isJsonObject()) continue;
@@ -350,6 +387,42 @@ public final class ComptesStore {
                 return false;
             }
         }
+        // journal d'ecriture (02/11) : les etats de comptes plus recents que le fichier complet
+        long dernier = couvert;
+        int rejoues = 0;
+        long dernierMorceau = 0;
+        for (Path m : morceaux()) {
+            dernierMorceau = Math.max(dernierMorceau, numeroMorceau(m));
+            List<String> lignes;
+            try {
+                lignes = Files.readAllLines(m, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                chargementEchoue = true;
+                ticksAlerte = 0;
+                HeraliszEconomie.LOG.error("[economie] lecture du journal d'ecriture {} impossible : SAUVEGARDE BLOQUEE pour proteger les soldes", m, ex);
+                return false;
+            }
+            for (String l : lignes) {
+                if (l.isBlank()) continue;
+                try {
+                    JsonObject r = JsonParser.parseString(l).getAsJsonObject();
+                    long q = r.get("m").getAsLong();
+                    dernier = Math.max(dernier, q);
+                    if (q <= couvert) continue;
+                    UUID u = UUID.fromString(r.get("u").getAsString());
+                    Compte c = Compte.fromJson(u, r.getAsJsonObject("c"));
+                    if (c != null) {
+                        lus.remove(u);
+                        lus.put(u, c);
+                        rejoues++;
+                    }
+                } catch (RuntimeException ex) {
+                    // derniere ligne coupee par un arret brutal : la suite de ce morceau est ignoree
+                    HeraliszEconomie.LOG.warn("[economie] {} : ligne illisible ignoree (arret brutal ?)", m.getFileName());
+                    break;
+                }
+            }
+        }
         comptes.clear();
         comptes.putAll(lus);
         miroirSoldes.clear();
@@ -359,11 +432,45 @@ public final class ComptesStore {
             indexer(c, null);
         }
         chargementEchoue = false;
-        dirty = false;
+        dirty = rejoues > 0;
         echeanceDebounce = 0;
         version++;
         cacheVersion = -1;
+        mutation = dernier;
+        ecritJusqua.set(couvert);
+        aJournaliser.clear();
+        morceau = dernierMorceau + 1;
+        if (rejoues > 0) HeraliszEconomie.LOG.info("[economie] journal d'ecriture : {} etat(s) de compte rejoue(s) apres le fichier complet", rejoues);
         return true;
+    }
+
+    /** Morceaux du journal d'ecriture presents a cote du fichier, dans l'ordre. */
+    private List<Path> morceaux() {
+        Path dossier = fichier.toAbsolutePath().getParent();
+        String prefixe = fichier.getFileName() + WAL;
+        List<Path> l = new ArrayList<>();
+        if (dossier == null || !Files.isDirectory(dossier)) return l;
+        try (Stream<Path> s = Files.list(dossier)) {
+            s.filter(p -> p.getFileName().toString().startsWith(prefixe) && numeroMorceau(p) > 0).forEach(l::add);
+        } catch (IOException ex) {
+            HeraliszEconomie.LOG.warn("[economie] liste du journal d'ecriture impossible : {}", ex.toString());
+        }
+        l.sort((a, b) -> Long.compare(numeroMorceau(a), numeroMorceau(b)));
+        return l;
+    }
+
+    private long numeroMorceau(Path p) {
+        String n = p.getFileName().toString();
+        int i = n.lastIndexOf(WAL);
+        try {
+            return i < 0 ? -1 : Long.parseLong(n.substring(i + WAL.length()));
+        } catch (NumberFormatException ex) {
+            return -1;
+        }
+    }
+
+    private Path cheminMorceau(long n) {
+        return fichier.resolveSibling(fichier.getFileName() + WAL + n);
     }
 
     /**
@@ -387,6 +494,12 @@ public final class ComptesStore {
             copie = fichier.resolveSibling(fichier.getFileName() + ".corrompu-" + HORODATAGE.format(LocalDateTime.now()));
             Files.move(fichier, copie);
             HeraliszEconomie.LOG.warn("[economie] blocage leve par un operateur : fichier illisible conserve en {}", copie);
+        }
+        // le journal d'ecriture allait avec le fichier illisible : mis de cote lui aussi (jamais efface)
+        String date = HORODATAGE.format(LocalDateTime.now());
+        for (Path m : morceaux()) {
+            Files.move(m, m.resolveSibling(m.getFileName() + ".corrompu-" + date));
+            HeraliszEconomie.LOG.warn("[economie] blocage leve : journal d'ecriture {} mis de cote", m.getFileName());
         }
         chargementEchoue = false;
         ticksAlerte = 0;
@@ -429,11 +542,41 @@ public final class ComptesStore {
     }
 
     /**
-     * Sauvegarde synchrone (operations critiques des autres mods, arret du serveur) : attend la fin de l'ecriture,
-     * derriere les ecritures asynchrones deja en file. Vrai si le fichier a ete ecrit. Refusee tant que le
-     * chargement a echoue.
+     * Operation d'argent a garder tout de suite (banque du clan, hotel des ventes, creation de clan...) : les comptes
+     * changes depuis leur dernier passage sur le disque sont ajoutes a la fin du journal d'ecriture, sur le fil serveur
+     * (quelques lignes : le fil serveur n'attend plus la reecriture de tous les comptes, 02/11) ; le fichier complet suit
+     * sur le fil IO. Vrai quand c'est sur le disque. Refusee tant que le chargement a echoue.
      */
     public boolean sauvegarderMaintenant() {
+        if (refuserSiBloque()) return false;
+        long couvert = ecritJusqua.get();
+        aJournaliser.values().removeIf(m -> m <= couvert);
+        if (aJournaliser.isEmpty()) return true;
+        StringBuilder b = new StringBuilder();
+        for (UUID u : aJournaliser.keySet()) {
+            Compte c = comptes.get(u);
+            if (c == null) continue;
+            JsonObject r = new JsonObject();
+            r.addProperty("m", mutation);
+            r.addProperty("u", u.toString());
+            r.add("c", c.toJson());
+            b.append(GSON.toJson(r)).append('\n');
+        }
+        try {
+            Files.createDirectories(fichier.toAbsolutePath().getParent());
+            Files.writeString(cheminMorceau(morceau), b, StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.APPEND);
+        } catch (IOException ex) {
+            HeraliszEconomie.LOG.error("[economie] journal d'ecriture impossible ({}) : operation refusee", cheminMorceau(morceau), ex);
+            return false;
+        }
+        aJournaliser.clear();
+        sauvegarderBientot();
+        return true;
+    }
+
+    /** Ecriture complete synchrone (arret du serveur, /eco sauvegarder) : attend le fil IO. Vrai si le fichier est ecrit. */
+    public boolean sauvegarderTout() {
         if (refuserSiBloque()) return false;
         return soumettre(instantane(), true);
     }
@@ -449,33 +592,71 @@ public final class ComptesStore {
     private record Releve(UUID uuid, long solde, String nom, List<Transaction> journal) {
     }
 
-    /** Instantane des comptes (fil serveur, sans JSON) ; le store n'est plus marque modifie. */
-    private Releve[] instantane() {
+    /** Releve complet : comptes, numero du dernier changement qu'il contient, morceau du journal d'ecriture qu'il ferme. */
+    private record Instantane(Releve[] releves, long mutation, long morceauFerme) {
+    }
+
+    /**
+     * Instantane des comptes (fil serveur, sans JSON) ; le store n'est plus marque modifie. Compacte au passage (02/11) :
+     * journal oublie apres {@value #INACTIF_JOURS} jours sans transaction ; compte a 0 sans journal d'un joueur hors ligne
+     * retire (seulement si le solde de depart est 0 : recree tel quel a son retour). Un nouveau morceau du journal
+     * d'ecriture commence : les precedents seront effaces une fois ce releve ecrit.
+     */
+    private Instantane instantane() {
+        compacter();
         Releve[] r = new Releve[comptes.size()];
         int i = 0;
         for (Compte c : comptes.values()) r[i++] = new Releve(c.uuid(), c.solde(), c.dernierNom(), c.journal());
         dirty = false;
         echeanceDebounce = 0;
-        return r;
+        long ferme = morceau;
+        morceau++;
+        return new Instantane(r, mutation, ferme);
     }
 
-    /** Fil IO : le JSON du fichier, meme forme qu'avant (comptes dans l'ordre du store). */
-    private static JsonObject json(Releve[] releves) {
+    private void compacter() {
+        long limite = System.currentTimeMillis() - INACTIF_JOURS * 86_400_000L;
+        boolean departNul = EconomieConfig.SOLDE_DEPART.get() == 0;
+        int oublies = 0, retires = 0;
+        java.util.Iterator<Compte> it = comptes.values().iterator();
+        while (it.hasNext()) {
+            Compte c = it.next();
+            if (!c.journalVide() && c.derniereTransaction() < limite) {
+                c.oublierJournal();
+                oublies++;
+            }
+            if (departNul && c.solde() == 0 && c.journalVide() && server.getPlayerList().getPlayer(c.uuid()) == null) {
+                it.remove();
+                miroirSoldes.remove(c.uuid());
+                if (!c.dernierNom().isEmpty()) indexNoms.remove(c.dernierNom().toLowerCase(Locale.ROOT), c);
+                retires++;
+            }
+        }
+        if (oublies > 0 || retires > 0) {
+            version++;
+            HeraliszEconomie.LOG.info("[economie] comptes compactes : {} journal(aux) de plus de {} jours oublie(s), {} compte(s) vide(s) retire(s)",
+                    oublies, INACTIF_JOURS, retires);
+        }
+    }
+
+    /** Fil IO : le JSON du fichier, meme forme qu'avant (comptes dans l'ordre du store), plus le numero du dernier changement. */
+    private static JsonObject json(Instantane in) {
         JsonObject root = new JsonObject();
         root.addProperty("version", 1);
+        root.addProperty("mutation", in.mutation());
         JsonObject cs = new JsonObject();
-        for (Releve r : releves) cs.add(r.uuid().toString(), Compte.toJson(r.solde(), r.nom(), r.journal()));
+        for (Releve r : in.releves()) cs.add(r.uuid().toString(), Compte.toJson(r.solde(), r.nom(), r.journal()));
         root.add("comptes", cs);
         return root;
     }
 
     /** Confie l'ecriture au fil IO (ou l'ecrit sur place si l'executeur est ferme) ; attend le resultat si demande. */
-    private boolean soumettre(Releve[] releves, boolean attendre) {
+    private boolean soumettre(Instantane in, boolean attendre) {
         Future<Boolean> f;
         try {
-            f = io.submit(() -> ecrire(json(releves)));
+            f = io.submit(() -> ecrire(in, attendre));
         } catch (RejectedExecutionException ex) {
-            return ecrire(json(releves));
+            return ecrire(in, true);
         }
         if (!attendre) return true;
         try {
@@ -492,26 +673,43 @@ public final class ComptesStore {
         }
     }
 
-    /** Fil IO : JSON compact dans un fichier temporaire, rotation des copies, renommage atomique. */
-    private boolean ecrire(JsonObject root) {
+    /**
+     * Fil IO : JSON compact dans un fichier temporaire, copie de secours (au plus une par heure, et a l'arret), renommage
+     * atomique ; puis les morceaux du journal d'ecriture que ce fichier contient sont effaces.
+     */
+    private boolean ecrire(Instantane in, boolean copieForcee) {
         try {
+            JsonObject root = json(in);
             Files.createDirectories(fichier.getParent());
             Path tmp = fichier.resolveSibling(fichier.getFileName() + ".tmp");
             try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
                 GSON.toJson(root, w);
             }
-            tourner();
+            long now = System.currentTimeMillis();
+            if (copieForcee || now - derniereCopie >= COPIES_MS) {
+                tourner();
+                derniereCopie = now;
+            }
             try {
                 Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } catch (IOException ex) {
                 Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING);
             }
-            return true;
         } catch (IOException ex) {
             HeraliszEconomie.LOG.error("[economie] sauvegarde impossible dans {} (nouvel essai a la prochaine sauvegarde)", fichier, ex);
             reessayer.set(true);
             return false;
         }
+        ecritJusqua.accumulateAndGet(in.mutation(), Math::max);
+        for (Path m : morceaux()) {
+            if (numeroMorceau(m) > in.morceauFerme()) continue;
+            try {
+                Files.deleteIfExists(m);
+            } catch (IOException ex) {
+                HeraliszEconomie.LOG.warn("[economie] morceau du journal d'ecriture {} impossible a effacer : {}", m.getFileName(), ex.toString());
+            }
+        }
+        return true;
     }
 
     /** Fil IO : comptes.json.4 -> .5 … .1 -> .2, puis copie du fichier courant en .1. Un echec n'empeche pas la sauvegarde. */

@@ -14,8 +14,9 @@ import java.util.UUID;
  * (« clan:banque », « quete:zombies », « admin », « paiement », « ravitaillement »…), coupees a 64 caracteres.
  * Apres chaque changement : journal du compte, {@link SoldeChangeEvent} sur le bus Forge, paquet SoldeS2C au joueur
  * s'il est en ligne, sauvegarde (groupee sous 1,5 s si le montant atteint {@code sauvegarde_immediate}, sinon
- * autosave 60 s). Les ecritures se font sur un fil IO du mod ; {@link #sauvegarderMaintenant()} attend l'ecriture et
- * {@link #sauvegarderBientot()} la demande sans attendre.
+ * autosave 60 s). Les ecritures se font sur un fil IO du mod ; {@link #sauvegarderMaintenant()} met les comptes changes
+ * sur le disque tout de suite (quelques lignes d'un journal d'ecriture, 02/11) et {@link #sauvegarderBientot()} demande
+ * le fichier complet sans attendre.
  */
 public final class EconomieApi {
     private EconomieApi() {
@@ -132,8 +133,9 @@ public final class EconomieApi {
 
     // ------------------------------------------------------------------ persistance
     /**
-     * Ecrit comptes.json tout de suite et attend la fin de l'ecriture (de quelques ms a quelques centaines de ms
-     * selon le nombre de comptes) : pour les operations critiques des autres mods (banque de clan, gros achats) qui
+     * Met tout de suite sur le disque les comptes changes (02/11 : quelques lignes ajoutees au journal d'ecriture de
+     * comptes.json, plus la reecriture de tous les comptes ; le fichier complet suit sur le fil IO) : pour les operations
+     * critiques des autres mods (banque de clan, gros achats) qui
      * veulent le solde sur le disque avant de continuer. Fil serveur uniquement. Faux si rien n'a ete ecrit :
      * sauvegarde bloquee parce que le fichier etait illisible au demarrage, ou erreur disque (le journal du serveur
      * dit pourquoi) ; les soldes en memoire restent corrects dans tous les cas.

@@ -168,6 +168,7 @@
   "gui.hud.limite": "Limite de territoires",
   "msg.pas_implemente": "Pas encore implémenté.",
   "msg.trop_rapide": "Doucement : une action toutes les 200 ms.",
+  "msg.banque_trop_rapide": "Doucement : une opération de banque par seconde.",
   "msg.pas_de_clan": "Vous n'avez pas de clan.",
   "msg.deja_clan": "Vous êtes déjà dans un clan.",
   "msg.deja_dans_clan": "%s est déjà dans un clan.",

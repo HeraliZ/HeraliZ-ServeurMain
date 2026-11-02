@@ -72,6 +72,22 @@ public final class Compte {
         if (nom != null && !nom.isEmpty()) dernierNom = nom;
     }
 
+    /** Aucune transaction gardee. */
+    public boolean journalVide() {
+        return journal.isEmpty();
+    }
+
+    /** Heure (ms) de la transaction la plus recente, 0 sans journal. */
+    public long derniereTransaction() {
+        Transaction t = journal.peekFirst();
+        return t == null ? 0 : t.quand();
+    }
+
+    /** Oublie l'historique (compte inactif, 02/11 : le fichier des comptes ne grossit plus sans fin) ; le solde reste. */
+    public void oublierJournal() {
+        journal.clear();
+    }
+
     // ------------------------------------------------------------------ json
     public JsonObject toJson() {
         return toJson(solde, dernierNom, journal);

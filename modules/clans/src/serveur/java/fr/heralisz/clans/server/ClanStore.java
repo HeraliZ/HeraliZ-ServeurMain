@@ -423,6 +423,16 @@ public final class ClanStore {
         EcrituresFond.attendre();
     }
 
+    /**
+     * Comme {@link #sauvegarderMaintenant()}, pour une operation qui ne change que les clans (banque, 02/11) : joueurs.json
+     * (tous les joueurs venus) n'est reecrit que s'il avait change.
+     */
+    public void sauvegarderClansMaintenant() {
+        dirtyClans = true;
+        sauvegarder(false);
+        EcrituresFond.attendre();
+    }
+
     /** Fil d'ecriture : texte JSON, fichier temporaire puis renommage. */
     private static void ecrireAtomique(Path f, JsonObject o) throws IOException {
         Files.createDirectories(f.getParent());

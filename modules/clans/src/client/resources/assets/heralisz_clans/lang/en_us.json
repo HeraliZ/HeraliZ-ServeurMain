@@ -168,6 +168,7 @@
   "gui.hud.limite": "Territory limit",
   "msg.pas_implemente": "Not implemented yet.",
   "msg.trop_rapide": "Slow down: one action every 200 ms.",
+  "msg.banque_trop_rapide": "Slow down: one bank operation per second.",
   "msg.pas_de_clan": "You have no clan.",
   "msg.deja_clan": "You are already in a clan.",
   "msg.deja_dans_clan": "%s is already in a clan.",

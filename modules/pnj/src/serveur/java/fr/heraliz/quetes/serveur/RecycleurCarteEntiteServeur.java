@@ -241,10 +241,10 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
 
     /**
      * Juste après : ce qui est entré dans la machine (déposé) ou en est sorti (repris), puis la sauvegarde dans l'ordre sûr
-     * (voir la description de la classe). Un clic qui ne change rien ne coûte rien.
+     * (voir la description de la classe). Un clic qui ne change rien ne coûte rien. Vrai si la machine a changé.
      */
-    void apresClic(ServerPlayer p) {
-        if (!instantane) return;
+    boolean apresClic(ServerPlayer p) {
+        if (!instantane) return false;
         instantane = false;
         boolean entre = false, sort = false;
         for (int i = 0; i < ENTREES + SORTIES; i++) {
@@ -259,11 +259,12 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
             }
             if (a.isEmpty() && i < ENTREES) deposants[i] = null;
         }
-        if (!entre && !sort) return;
+        if (!entre && !sort) return false;
         // déposé : le joueur sur le disque SANS l'objet avant la machine AVEC (un plantage entre les deux perd, ne copie pas)
         if (entre) Ponts.sauverJoueur(p);
         ecrire();
         reprendre();
+        return true;
     }
 
     // ------------------------------------------------------------------ recyclage

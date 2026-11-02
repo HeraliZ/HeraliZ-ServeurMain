@@ -81,6 +81,7 @@ public final class ClanService {
 
     /** A l'arret du serveur. */
     static void vider() {
+        DERNIERE_BANQUE.clear();
         INVITATIONS_EMISES.clear();
         REFUS.clear();
         DERNIER_CHAT.clear();
@@ -90,6 +91,7 @@ public final class ClanService {
 
     /** A la deconnexion d'un joueur. */
     static void oublier(UUID joueur) {
+        DERNIERE_BANQUE.remove(joueur);
         DERNIER_CHAT.remove(joueur);
         DISSOLUTION_A_CONFIRMER.remove(joueur);
     }
@@ -835,11 +837,25 @@ public final class ClanService {
     }
 
     // ------------------------------------------------------------------ banque
+    /**
+     * Une operation de banque par seconde et par joueur (02/11, audit point 20 : chacune met les comptes et le fichier des
+     * clans sur le disque ; avant, 5 par seconde en alternant « deposer 1 / retirer 1 »).
+     */
+    private static final long BANQUE_ECART_MS = 1000;
+    private static final Map<UUID, Long> DERNIERE_BANQUE = new HashMap<>();
+
     /** Depot (perm BANQUE_DEPOSER, solde du joueur) ou retrait (perm BANQUE_RETIRER, solde de la banque, plafond du joueur). */
     public static boolean banque(ServerPlayer p, boolean depot, long montant) {
         ClanStore s = store();
         Clan c = monClan(p);
         if (c == null || s == null) return false;
+        long t = System.currentTimeMillis();
+        Long avant = DERNIERE_BANQUE.get(p.getUUID());
+        if (avant != null && t - avant >= 0 && t - avant < BANQUE_ECART_MS) {
+            erreur(p, "msg.banque_trop_rapide");
+            return false;
+        }
+        DERNIERE_BANQUE.put(p.getUUID(), t);
         if (montant <= 0 || montant > BANQUE_MAX) {
             erreur(p, "msg.montant_invalide");
             return false;
@@ -885,12 +901,12 @@ public final class ClanService {
         ClansNet.toPlayer(p, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO,
                 ServerHandlers.cleEtArgs(depot ? "msg.depot" : "msg.retrait", eco.format(montant)), "banque", null));
         changement(c);
-        // les deux cotes sont ecrits tout de suite, le cote debite en premier
+        // les deux cotes sont ecrits tout de suite, le cote debite en premier (clans.json seul : joueurs.json n'a pas change)
         if (depot) {
             persisterEconomie();
-            s.sauvegarderMaintenant();
+            s.sauvegarderClansMaintenant();
         } else {
-            s.sauvegarderMaintenant();
+            s.sauvegarderClansMaintenant();
             persisterEconomie();
         }
         return true;

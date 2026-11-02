@@ -410,7 +410,7 @@ public final class EconomieCommands {
                 return echec(ctx, "admin.sauvegarde_mise_de_cote_echec", ex.toString());
             }
         }
-        if (!s.sauvegarderMaintenant()) return echec(ctx, "admin.sauvegarde_echec");
+        if (!s.sauvegarderTout()) return echec(ctx, "admin.sauvegarde_echec");
         if (copie != null) {
             String n = copie.getFileName().toString();
             repondre(ctx.getSource(), () -> msg("admin.sauvegarde_forcee", n), true);
