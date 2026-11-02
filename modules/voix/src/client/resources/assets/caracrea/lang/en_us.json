@@ -346,8 +346,6 @@
   "caracrea.message.busy": "Not now: finish your match first (or wait to be revived).",
   "caracrea.message.closed_busy": "Character creator closed: it will open again once you are free.",
   "caracrea.command.later": "(%s will get it as soon as they are free: in a match or downed)",
-  "caracrea.command.muted": "Microphone muted (without end) for %s player(s).",
-  "caracrea.command.unmuted": "Microphone given back to %s player(s).",
   "caracrea.voice.admin_muted": "An operator muted your microphone: the others no longer hear you.",
   "caracrea.voice.admin_unmuted": "An operator gave you your microphone back.",
   "caracrea.voice.tab.general": "General",

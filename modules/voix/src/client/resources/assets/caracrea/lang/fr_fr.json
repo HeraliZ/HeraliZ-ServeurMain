@@ -346,8 +346,6 @@
   "caracrea.message.busy": "Pas maintenant : termine d'abord ton match (ou attends d'être relevé).",
   "caracrea.message.closed_busy": "Créateur de personnage fermé : il rouvrira quand tu seras libre.",
   "caracrea.command.later": "(%s l'auront dès qu'ils seront libres : en match ou à terre)",
-  "caracrea.command.muted": "Micro coupé (sans fin) pour %s joueur(s).",
-  "caracrea.command.unmuted": "Micro rendu à %s joueur(s).",
   "caracrea.voice.admin_muted": "Un opérateur a coupé ton micro : les autres ne t'entendent plus.",
   "caracrea.voice.admin_unmuted": "Un opérateur t'a rendu le micro.",
   "caracrea.voice.tab.general": "Général",

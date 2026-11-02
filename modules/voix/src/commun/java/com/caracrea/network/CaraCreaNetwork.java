@@ -187,7 +187,7 @@ public final class CaraCreaNetwork {
 
     /**
      * Client to server: the player pressed the key to open the creator. Plus envoyé par le jeu des joueurs depuis la
-     * 1.5 (touche retirée : {@code /caracrea} ou {@code /perso}) ; le serveur l'accepte toujours.
+     * 1.5 (touche retirée : {@code /perso}) ; le serveur l'accepte toujours.
      */
     public record RequestCreator() {
         void encode(FriendlyByteBuf buf) {

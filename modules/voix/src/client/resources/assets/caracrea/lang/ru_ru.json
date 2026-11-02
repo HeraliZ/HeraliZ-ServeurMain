@@ -346,8 +346,6 @@
   "caracrea.message.busy": "Не сейчас: сначала закончи матч (или дождись, пока тебя поднимут).",
   "caracrea.message.closed_busy": "Редактор персонажа закрыт: он откроется снова, когда ты освободишься.",
   "caracrea.command.later": "(ещё %s получат его, как только освободятся: в матче или в нокауте)",
-  "caracrea.command.muted": "Микрофон выключен (бессрочно) для игроков: %s.",
-  "caracrea.command.unmuted": "Микрофон возвращён игрокам: %s.",
   "caracrea.voice.admin_muted": "Оператор выключил твой микрофон: другие тебя больше не слышат.",
   "caracrea.voice.admin_unmuted": "Оператор вернул тебе микрофон.",
   "caracrea.voice.tab.general": "Общее",

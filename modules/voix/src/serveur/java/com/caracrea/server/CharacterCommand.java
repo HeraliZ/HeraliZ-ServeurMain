@@ -16,8 +16,12 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.Collection;
 
 /**
- * {@code /caracrea} (or {@code /perso}) opens your own creator; operators can open, randomize or reset other
- * players' characters, and mute or unmute them in the voice chat (without end; {@code /voix mute} sets a duration).
+ * {@code /perso} opens your own creator; operators can open, randomize or reset other players' characters
+ * ({@code /perso open|random|reset <players>}).
+ *
+ * <p>02/11 (audit, point 36): {@code /caracrea} was the same command under another name ({@code /perso} only redirected
+ * to it) and is gone; its {@code mute|unmute} (without end) are {@code /voix mute <players>} (no duration: without end)
+ * and {@code /voix unmute <players>}.
  *
  * <p>Replies go straight to the player with {@code sendSystemMessage}: on HeraliZ the world has
  * {@code sendCommandFeedback=false}, which silences {@code sendSuccess} / {@code sendFailure} for players.
@@ -27,7 +31,7 @@ public final class CharacterCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("caracrea")
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("perso")
                 .executes(context -> openOwn(context.getSource()))
                 .then(Commands.literal("open")
                         .requires(source -> source.hasPermission(2))
@@ -46,25 +50,8 @@ public final class CharacterCommand {
                                 .executes(context -> forEach(context, player -> {
                                     CharacterService.reset(player);
                                     return !CharacterService.busy(player);
-                                }, "caracrea.command.reset"))))
-                .then(Commands.literal("mute")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.argument("players", EntityArgument.players())
-                                .executes(context -> forEach(context, player -> {
-                                    VoiceMutes.mute(player.getUUID(), player.getGameProfile().getName(), null, null,
-                                            context.getSource().getTextName());
-                                    return true;
-                                }, "caracrea.command.muted"))))
-                .then(Commands.literal("unmute")
-                        .requires(source -> source.hasPermission(2))
-                        .then(Commands.argument("players", EntityArgument.players())
-                                .executes(context -> forEach(context, player -> {
-                                    VoiceMutes.unmute(player.getUUID());
-                                    return true;
-                                }, "caracrea.command.unmuted"))));
+                                }, "caracrea.command.reset"))));
         dispatcher.register(root);
-        dispatcher.register(Commands.literal("perso").redirect(dispatcher.getRoot().getChild("caracrea"))
-                .executes(context -> openOwn(context.getSource())));
     }
 
     private static int openOwn(CommandSourceStack source) throws CommandSyntaxException {
@@ -104,7 +91,7 @@ public final class CharacterCommand {
             reply.append(" ").append(Component.translatable("caracrea.command.later", later).withStyle(ChatFormatting.GRAY));
         }
         reply(context.getSource(), reply);
-        CaraCrea.LOGGER.info("{}: /caracrea {} on {} player(s)", context.getSource().getTextName(), message, players.size());
+        CaraCrea.LOGGER.info("{}: /perso {} on {} player(s)", context.getSource().getTextName(), message, players.size());
         return players.size();
     }
 

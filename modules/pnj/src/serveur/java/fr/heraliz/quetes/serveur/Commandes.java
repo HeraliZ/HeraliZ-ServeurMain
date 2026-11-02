@@ -476,7 +476,7 @@ final class Commandes {
         appel("fr.heralisz.economie.api.EconomieApi", "definir", new Class<?>[]{UUID.class, long.class, String.class},
                 p.getUUID(), 0L, "wipe");
         CommandSourceStack console = srv.createCommandSourceStack().withSuppressedOutput();
-        for (String cmd : new String[]{"tuto rejouer " + nom, "caracrea reset " + nom, "curios clear " + nom}) {
+        for (String cmd : new String[]{"tuto rejouer " + nom, "perso reset " + nom, "curios clear " + nom}) {
             try {
                 srv.getCommands().performPrefixedCommand(console, cmd);
             } catch (Exception ignore) {

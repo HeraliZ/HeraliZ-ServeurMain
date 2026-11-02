@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 /**
- * Où un joueur peut changer lui-même d'apparence (/perso, /caracrea, touche du créateur) : seulement au spawn
+ * Où un joueur peut changer lui-même d'apparence (/perso, touche du créateur) : seulement au spawn
  * ({@code heralisz:spawn}) et jamais en combat (tag de combat de HeraliZ Matchs, lu par réflexion). Demande du propriétaire
  * (23/10) : on ne se déguise pas en pleine poursuite sur la carte. Le créateur imposé (première arrivée, /wipe, staff)
  * n'est pas concerné ; le staff (permission 2) non plus. Fil du serveur.

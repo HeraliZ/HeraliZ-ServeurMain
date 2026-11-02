@@ -144,7 +144,7 @@ public final class CharacterService {
         open(player, firstTime, true);
     }
 
-    /** The player opens their own creator (/caracrea): the edit cooldown applies to the save. */
+    /** The player opens their own creator (/perso): the edit cooldown applies to the save. */
     public static void openSelf(ServerPlayer player) {
         open(player, false, false);
     }
@@ -155,7 +155,7 @@ public final class CharacterService {
         CaraCreaNetwork.sendTo(player, new OpenCreator(firstTime));
     }
 
-    /** The player asked to open the creator (key or /caracrea). Returns false (with a message) when refused. */
+    /** The player asked to open the creator (key or /perso). Returns false (with a message) when refused. */
     public static boolean requestOpen(ServerPlayer player) {
         long now = System.currentTimeMillis();
         Long last = LAST_REQUEST.put(player.getUUID(), now);
@@ -232,14 +232,14 @@ public final class CharacterService {
         CaraCrea.LOGGER.debug("{} now looks like {}", player.getGameProfile().getName(), appearance);
     }
 
-    /** A new random character for a player (operators' /caracrea random and reset). */
+    /** A new random character for a player (operators' /perso random and reset). */
     public static Appearance randomize(ServerPlayer player) {
         Appearance appearance = AppearanceRandomizer.random(RANDOM);
         apply(player, appearance);
         return appearance;
     }
 
-    /** Operators' /caracrea reset: random look, and the first-time creator (now, or once the player is free). */
+    /** Operators' /perso reset: random look, and the first-time creator (now, or once the player is free). */
     public static void reset(ServerPlayer player) {
         randomize(player);
         AppearanceStore.setChosen(player, false);

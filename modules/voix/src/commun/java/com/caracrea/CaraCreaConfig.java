@@ -57,8 +57,8 @@ public final class CaraCreaConfig {
         Server(ForgeConfigSpec.Builder builder) {
             builder.comment("Character creator rules").push("creator");
             freeEdit = builder
-                    .comment("Players may reopen the creator themselves (/caracrea or /perso) and change their look whenever they want.",
-                            "When false, only operators can open it for them (/caracrea open <player>) and the first-join creator.")
+                    .comment("Players may reopen the creator themselves (/perso) and change their look whenever they want.",
+                            "When false, only operators can open it for them (/perso open <player>) and the first-join creator.")
                     .define("freeEdit", true);
             openOnFirstJoin = builder
                     .comment("Open the creator automatically the first time a player joins.")

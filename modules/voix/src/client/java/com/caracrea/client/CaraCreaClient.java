@@ -18,7 +18,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Client wiring: the 3D body, the voice keys, per-tick animation, cleanup on disconnect. Plus de touche pour le
- * créateur de personnage : il s'ouvre par {@code /caracrea} ou {@code /perso} (et tout seul à la première connexion).
+ * créateur de personnage : il s'ouvre par {@code /perso} (et tout seul à la première connexion).
  */
 public final class CaraCreaClient {
     private CaraCreaClient() {
