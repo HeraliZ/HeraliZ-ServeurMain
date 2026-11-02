@@ -1486,3 +1486,8 @@ heraliz_crafts/data/heraliz_crafts/recipes/accessoires/maxstuff_glaser.json
 
 # 03/11 : « Attelle et bandage » plus fabriqué (outils/crafts.py, outils/donnees/objets_retires.json) ; l'objet reste valable
 heraliz_crafts/data/heraliz_crafts/recipes/soins/heralisz_heal_attelle_bandage.json
+
+# 03/11 : Deagle .12g et Thunderbird Short plus fabriqués ni dans le loot (outils/donnees/objets_retires.json) ; les armes
+# restent valables pour ceux qui les ont (fichiers du gunpack heraliz_6_armes_maxstuff gardés)
+heraliz_crafts/data/heraliz_crafts/recipes/armes/maxstuff_deagle_12g.json
+heraliz_crafts/data/heraliz_crafts/recipes/armes/maxstuff_thunderbird_short.json

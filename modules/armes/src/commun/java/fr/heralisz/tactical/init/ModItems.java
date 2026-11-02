@@ -103,7 +103,7 @@ public class ModItems {
    public static void fillConsumables(ItemDisplayParameters pParameters, Output pOutput) {
       for (ConsumableIndex index : HeraliszTacticalAPI.getConsumableIndexes()) {
          // HeraliZ (03/11) : soin retiré du jeu, plus proposé (il reste utilisable par ceux qui l'ont)
-         if (fr.heralisz.heal.HeraliszHeal.RETIRES.contains(index.getId())) {
+         if (fr.heraliz.tactique.onglets.Retires.SOINS.contains(index.getId())) {
             continue;
          }
          ItemStack stack = index.createItemStack();

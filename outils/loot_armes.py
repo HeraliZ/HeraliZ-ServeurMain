@@ -144,6 +144,9 @@ ARMES_EXCLUES = {"cis:at_rpg_7_lvd",  # jamais dans le loot (choix du propriéta
                  # 31/10 (demande du propriétaire) : Vector Red Moon et Vector Enigma plus dans le loot (conteneurs T1 à T7,
                  # coffres d'armes T7 de l'hélicoptère, zombies) ; elles restent dans le jeu (staff, boutique)
                  "arkaniaz_custom:vectorhy", "arkaniaz_custom:vector_firmax"}
+# armes retirées du jeu (outils/donnees/objets_retires.json, identifiants figés) : plus dans aucun loot (conteneurs,
+# hélicoptère, zombies, largage), 03/11 : Deagle .12g et Thunderbird Short
+ARMES_EXCLUES |= set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["armes"])
 ARMURES_EXCLUES = {"heraliz_armory:plongee_suit"}  # jamais dans le loot (23/10 : tenue de plongée pas lootable pour l'instant)
 # couteaux (skins heralisz_skins) : seulement ceux de 1, 2 ou 3 étoiles dans le loot, jamais les 4 étoiles (choix du
 # propriétaire, 23/10) ; rangs lus dans ETOILES de modules/armes/outils/skins_couteaux.py (non cité = 4)

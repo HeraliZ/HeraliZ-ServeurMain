@@ -738,17 +738,6 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "tacz:modern_kinetic_gun",
-     "weight": 3,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
        "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
@@ -893,17 +882,6 @@
       {
        "function": "minecraft:set_nbt",
        "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "tacz:modern_kinetic_gun",
-     "weight": 3,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },
@@ -1810,17 +1788,6 @@
      "functions": [
       {
        "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:deagle_12g\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "tacz:modern_kinetic_gun",
-     "weight": 3,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
        "tag": "{GunId:\"maxstuff:dragonuv_svd\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:5,HasBulletInBarrel:0b}"
       }
      ]
@@ -1965,17 +1932,6 @@
       {
        "function": "minecraft:set_nbt",
        "tag": "{GunId:\"maxstuff:sr16\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:15,HasBulletInBarrel:0b}"
-      }
-     ]
-    },
-    {
-     "type": "minecraft:item",
-     "name": "tacz:modern_kinetic_gun",
-     "weight": 3,
-     "functions": [
-      {
-       "function": "minecraft:set_nbt",
-       "tag": "{GunId:\"maxstuff:thunderbird_short\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:3,HasBulletInBarrel:0b}"
       }
      ]
     },

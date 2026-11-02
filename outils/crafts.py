@@ -58,6 +58,9 @@ ARMES = {
     "shotgun": ("pompes", {"canon": 2, "ressort": 1, "kit_pieces": 1, "ferraille": 3}),
 }
 ARMES_EXCLUES = {"cis:at_rpg_7_lvd"}
+# armes retirées du jeu (outils/donnees/objets_retires.json, identifiants figés) : plus fabriquées (03/11 : Deagle .12g,
+# Thunderbird Short)
+ARMES_EXCLUES |= set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["armes"])
 
 # munitions : un paquet de PAQUET balles = BOCAUX bocaux de poudre du niveau de la rareté de la munition (I Commun,
 # II Peu commun, III Rare, IV Épique) + FERRAILLE ferraille de niveau I. 24/10 (choix du propriétaire : « trop peu

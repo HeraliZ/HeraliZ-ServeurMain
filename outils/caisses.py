@@ -260,7 +260,19 @@ NOM_CLE = {"camo": "Camo", "spectacle": "Émotes", "gemme": "Gemme", "quete": "Q
 RETIRES =("minecraft:", "dyairdrop:", "heraliz_wonder:", "heralisz_matchs:", "heralisz_armor:")
 # soins retirés du jeu (outils/donnees/objets_retires.json, identifiants figés) : plus donnés par une caisse ni par le
 # largage (03/11 : Attelle et bandage ; le Bandage et l'Attelle séparés restent dans leurs groupes Commun et Peu commun)
-SOINS_RETIRES = set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["soins"])
+OBJETS_RETIRES = json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))
+SOINS_RETIRES = set(OBJETS_RETIRES["soins"])
+# armes retirées du jeu (même fichier) : plus dans aucune caisse ni dans le largage (03/11 : Deagle .12g, Thunderbird Short)
+ARMES_RETIREES = set(OBJETS_RETIRES["armes"])
+
+
+def retire(nbt):
+    """Identifiant du soin ou de l'arme retirés du jeu que porte ce NBT, sinon None."""
+    for cle, liste in (("ConsumableId", SOINS_RETIRES), ("GunId", ARMES_RETIREES)):
+        m = re.search(cle + r':"([^"]+)"', nbt or "")
+        if m and m.group(1) in liste:
+            return m.group(1)
+    return None
 
 
 def raretes_soins():
@@ -339,8 +351,7 @@ def reparer(r):
         r = dict(r, item="heralisz_tactical:throwable", nbt='{ThrowableId:"%s"}' % it)
     elif it.startswith(RETIRES) and not (r.get("commands") and r.get("give_item") is False):
         return None
-    soin_id = re.search(r'ConsumableId:"([^"]+)"', r.get("nbt") or "")
-    if soin_id and soin_id.group(1) in SOINS_RETIRES:
+    if retire(r.get("nbt")):
         return None
     return r
 
@@ -376,14 +387,17 @@ def verifier():
             if not existe(r["item"], jars):
                 print("[caisses] %s : objet de Minecraft ou inconnu : %s" % (f.name, r["item"]))
                 problemes += 1
-            soin_id = re.search(r'ConsumableId:"([^"]+)"', r.get("nbt") or "")
-            if soin_id and soin_id.group(1) in SOINS_RETIRES:
-                print("[caisses] %s : soin retiré du jeu : %s" % (f.name, soin_id.group(1)))
+            if retire(r.get("nbt")):
+                print("[caisses] %s : objet retiré du jeu : %s" % (f.name, retire(r.get("nbt"))))
                 problemes += 1
     for pool in json.loads(LARGAGE.read_text(encoding="utf-8")).get("pools", []):
         for e in pool.get("entries", []):
             if not existe(e["name"], jars):
                 print("[caisses] largage aérien : objet de Minecraft ou inconnu : %s" % e["name"])
+                problemes += 1
+            nbt = " ".join(f.get("tag", "") for f in e.get("functions", []))
+            if retire(nbt):
+                print("[caisses] largage aérien : objet retiré du jeu : %s" % retire(nbt))
                 problemes += 1
     print("[caisses] %d problème(s)" % problemes)
     return problemes
@@ -450,7 +464,7 @@ def largage_aerien():
             continue
         m = re.search(r'GunId:"([^"]+)"', o.get("nbt", ""))
         rar = r["armes"].get(m.group(1)) if m else None
-        if rar in LARGAGE_ARMES:
+        if rar in LARGAGE_ARMES and m.group(1) not in ARMES_RETIREES:
             par_rarete.setdefault(rar, []).append(o["nbt"])
     armes = [_entree("tacz:modern_kinetic_gun", _poids(LARGAGE_ARMES[rar] / len(l)), nbt)
              for rar, l in par_rarete.items() for nbt in l]
