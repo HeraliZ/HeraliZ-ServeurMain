@@ -74,17 +74,22 @@ public final class AncienMondeBases {
         return new WorldDimensions(sans.freeze());
     }
 
-    /** Sauvegarde du joueur lue (avant sa mise en place) : était-il dans l'ancien monde ? Lecture seule du fichier. */
+    /**
+     * Sauvegarde du joueur lue (avant sa mise en place) : était-il dans l'ancien monde ? Lecture seule de son fichier
+     * {@code <uuid>.dat}. Forge refuse {@code getPlayerFile("dat")} (suffixe réservé : exception qui empêchait TOUTE
+     * connexion, vue au banc du 02/11) : le chemin est donc fait à la main. Rien ici ne doit jamais empêcher une
+     * connexion : toute erreur est seulement notée.
+     */
     @SubscribeEvent
     public static void lecture(PlayerEvent.LoadFromFile e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || p.server.getLevel(MondeBases.ANCIEN_CLE) != null) {
-            return;
-        }
-        File f = e.getPlayerFile("dat");
-        if (!f.isFile()) {
-            return;
-        }
         try {
+            if (!(e.getEntity() instanceof ServerPlayer p) || p.server.getLevel(MondeBases.ANCIEN_CLE) != null) {
+                return;
+            }
+            File f = new File(e.getPlayerDirectory(), e.getPlayerUUID() + ".dat");
+            if (!f.isFile()) {
+                return;
+            }
             CompoundTag t = NbtIo.readCompressed(f);
             if (MondeBases.ANCIEN.toString().equals(t.getString("Dimension"))) {
                 REVENANTS.add(e.getEntity().getUUID());
