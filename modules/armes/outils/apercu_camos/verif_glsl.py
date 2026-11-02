@@ -27,8 +27,17 @@ vec4 minecraft_mix_light(vec3 l0, vec3 l1, vec3 n, vec4 c) { return vec4(c.rgb *
 }
 
 
+# code commun des camos (outils/generer_camos.py) : vrai fichier, inclus comme le fait Minecraft
+INCLUS = Path(__file__).resolve().parents[2] / "src" / "client" / "resources" / "assets" / "minecraft" / "shaders" / "include"
+
+
 def pretraiter(src):
-    return re.sub(r"#moj_import <([a-z_]+\.glsl)>", lambda m: IMPORTS[m.group(1)], src)
+    def remplacer(m):
+        nom = m.group(1)
+        if nom in IMPORTS:
+            return IMPORTS[nom]
+        return pretraiter((INCLUS / nom).read_text(encoding="utf-8"))
+    return re.sub(r"#moj_import <([a-z_]+\.glsl)>", remplacer, src)
 
 
 def main():

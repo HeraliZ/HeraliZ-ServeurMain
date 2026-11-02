@@ -258,10 +258,112 @@ public final class DecorRender {
     * <li>chaque sommet porte l'UV de la texture de l'arme dessous : le shader ne dessine pas là où l'arme est transparente
     * (cubes invisibles, découpes) — plus de sticker qui flotte dans le vide.</li>
     * </ul>
+    * Audit du 02/11 (mineur 11) : la géométrie du décalque (pièces proches, faces cachées, découpe, dépliage) était refaite
+    * à chaque image pour chaque arme visible. Elle est maintenant gardée par modèle d'arme et par sticker (pose, dessin,
+    * finition), dans le repère de chaque pièce ; chaque image ne fait plus que vérifier que les pièces n'ont pas bougé les
+    * unes par rapport aux autres (sinon, pendant une animation de culasse ou de chargeur, elle est refaite comme avant) et
+    * renvoyer les sommets. Même dessin.
     */
    private static void sticker(VertexConsumer vc, int cell, int finish, DecorData.Placement at) {
       Bone bone = BONES.get(at.bone());
       if (bone == null) return;
+      int n = PIECES.size();
+      float[] rel = relatifs(bone, n);
+      Map<CleSticker, Decal> parModele = DECALS.computeIfAbsent(gunModel, k -> new HashMap<>());
+      CleSticker cle = new CleSticker(at, cell, finish);
+      Decal d = parModele.get(cle);
+      if (d == null || !d.valable(rel, n)) {
+         d = new Decal(rel, n, finish);
+         calculer(d, bone, cell, at);
+         if (parModele.size() >= DECALS_PAR_MODELE) parModele.clear();
+         parModele.put(cle, d);
+      }
+      d.emettre(vc);
+   }
+
+   /** Repère os -> pièce de chaque pièce de l'image (16 nombres chacune), dans un tableau réutilisé. */
+   private static float[] relatifs(Bone bone, int n) {
+      if (REL.length < n * 16) REL = new float[Math.max(n * 16, REL.length * 2)];
+      for (int i = 0; i < n; i++) {
+         SCRATCH.set(PIECES.get(i).pose).invert().mul(bone.pose).get(REL, i * 16);
+      }
+      return REL;
+   }
+
+   private static float[] REL = new float[64 * 16];
+   private static final Matrix4f SCRATCH = new Matrix4f();
+   /** Écart toléré entre deux images pour une pièce « qui n'a pas bougé » (bruit des calculs ; 1/1000 de bloc). */
+   private static final float EPS_RELATIF = 1e-3F;
+   private static final int DECALS_PAR_MODELE = 64;
+   /** Géométrie gardée : modèle d'arme -> sticker -> décalque (oubliée avec le modèle). */
+   private static final Map<Object, Map<CleSticker, Decal>> DECALS = new WeakHashMap<>();
+
+   private record CleSticker(DecorData.Placement at, int cell, int finish) {
+   }
+
+   /** Décalque d'un sticker dans le repère de chaque pièce : 10 nombres par sommet (x y z, u v, recouvrement, normale). */
+   private static final class Decal {
+      final int nbPieces;
+      final float[] relatifs;
+      final Object[] pieces;
+      final float rouge;
+      int[] piece = new int[48];
+      float[] sommets = new float[48 * 10];
+      int nb;
+
+      Decal(float[] rel, int n, int finish) {
+         this.nbPieces = n;
+         this.relatifs = java.util.Arrays.copyOf(rel, n * 16);
+         this.pieces = new Object[n];
+         for (int i = 0; i < n; i++) this.pieces[i] = PIECES.get(i).faces();
+         this.rouge = finish / 255F + 0.5F / 255F;
+      }
+
+      /** Mêmes pièces (mêmes faces, même ordre) et aucune n'a bougé par rapport à l'os du sticker. */
+      boolean valable(float[] rel, int n) {
+         if (n != nbPieces) return false;
+         for (int i = 0; i < n; i++) if (pieces[i] != PIECES.get(i).faces()) return false;
+         for (int i = 0; i < n * 16; i++) if (Math.abs(rel[i] - relatifs[i]) > EPS_RELATIF) return false;
+         return true;
+      }
+
+      void ajouter(int indexPiece, float x, float y, float z, float u, float v, float ou, float ov, float nx, float ny, float nz) {
+         if (nb == piece.length) {
+            piece = java.util.Arrays.copyOf(piece, nb * 2);
+            sommets = java.util.Arrays.copyOf(sommets, nb * 2 * 10);
+         }
+         piece[nb] = indexPiece;
+         int o = nb * 10;
+         sommets[o] = x;
+         sommets[o + 1] = y;
+         sommets[o + 2] = z;
+         sommets[o + 3] = u;
+         sommets[o + 4] = v;
+         sommets[o + 5] = ou;
+         sommets[o + 6] = ov;
+         sommets[o + 7] = nx;
+         sommets[o + 8] = ny;
+         sommets[o + 9] = nz;
+         nb++;
+      }
+
+      void emettre(VertexConsumer vc) {
+         Vector3f nn = NORMALE;
+         for (int k = 0; k < nb; k++) {
+            Piece p = PIECES.get(piece[k]);
+            int o = k * 10;
+            nn.set(sommets[o + 7], sommets[o + 8], sommets[o + 9]);
+            p.normal().transform(nn);
+            vc.vertex(p.pose(), sommets[o], sommets[o + 1], sommets[o + 2]).color(rouge, 0, 0, 1).uv(sommets[o + 3], sommets[o + 4])
+               .overlayCoords(Math.round(sommets[o + 5]), Math.round(sommets[o + 6])).uv2(light).normal(nn.x, nn.y, nn.z).endVertex();
+         }
+      }
+   }
+
+   private static final Vector3f NORMALE = new Vector3f();
+
+   /** Calcul du décalque (le dessin d'avant, mot pour mot, mais rangé dans {@code d} au lieu d'être envoyé). */
+   private static void calculer(Decal d, Bone bone, int cell, DecorData.Placement at) {
       Vector3f[] bb = basis(at, bone.pose.determinant());
       float size = stickerPx(gunLength()) * at.scale();
       float u0 = (cell % COLS) / (float) COLS, v0 = (cell / COLS) / (float) ROWS;
@@ -270,9 +372,11 @@ public final class DecorRender {
       float reach = size * 0.75F + 1F;
       // pièces proches : repères os -> pièce et pièce -> os
       List<Piece> near = new ArrayList<>();
+      List<Integer> nearIndex = new ArrayList<>();
       List<Matrix4f> toNear = new ArrayList<>(), fromNear = new ArrayList<>();
-      for (Piece piece : PIECES) {
-         Matrix4f toPiece = new Matrix4f(piece.pose).invert().mul(bone.pose);
+      for (int pi = 0; pi < PIECES.size(); pi++) {
+         Piece piece = PIECES.get(pi);
+         Matrix4f toPiece = new Matrix4f().set(d.relatifs, pi * 16);
          Vector3f P = toPiece.transformPosition(tmp.set(bb[0]).div(16F), new Vector3f()).mul(16F);
          boolean isNear = false;
          for (float[] c : piece.cubes) {
@@ -285,6 +389,7 @@ public final class DecorRender {
          }
          if (!isNear) continue;
          near.add(piece);
+         nearIndex.add(pi);
          toNear.add(toPiece);
          fromNear.add(new Matrix4f(toPiece).invert());
       }
@@ -297,7 +402,7 @@ public final class DecorRender {
          Vector3f R = toPiece.transformDirection(new Vector3f(bb[3])).normalize();
          for (float[] f : piece.faces) {
             if (covered(f, i, near, toNear, fromNear)) continue;
-            decal(vc, piece, f, P, N, V, R, size, u0, v0, du, dv, finish);
+            decal(d, nearIndex.get(i), f, P, N, V, R, size, u0, v0, du, dv);
          }
       }
    }
@@ -317,8 +422,8 @@ public final class DecorRender {
       return false;
    }
 
-   private static void decal(VertexConsumer vc, Piece piece, float[] f, Vector3f P, Vector3f N, Vector3f V, Vector3f R, float size,
-                             float u0, float v0, float du, float dv, int finish) {
+   private static void decal(Decal d, int indexPiece, float[] f, Vector3f P, Vector3f N, Vector3f V, Vector3f R, float size,
+                             float u0, float v0, float du, float dv) {
       float fnx = f[20], fny = f[21], fnz = f[22];
       float facing = fnx * N.x + fny * N.y + fnz * N.z;
       if (facing <= -0.1F) return;                      // face tournée à l'opposé
@@ -350,16 +455,14 @@ public final class DecorRender {
       if (minDepth > (wrap ? 0.25F : 0.45F) * size + 0.6F) return;
       poly = clip(poly);
       if (poly.size() < 3) return;
-      Vector3f nn = new Vector3f(fnx, fny, fnz);
-      piece.normal.transform(nn);
       float off = 0.03F;
       for (int i = 1; i + 1 < poly.size(); i++) {
          int[] tri = {0, i, i + 1, i + 1};
          for (int k : tri) {
             float[] q = poly.get(k);
-            vc.vertex(piece.pose, (q[2] + fnx * off) / 16F, (q[3] + fny * off) / 16F, (q[4] + fnz * off) / 16F)
-               .color(finish / 255F + 0.5F / 255F, 0, 0, 1).uv(u0 + (q[0] + 0.5F) * du, v0 + (0.5F - q[1]) * dv)
-               .overlayCoords(Math.round(q[5] * 32767F), Math.round(q[6] * 32767F)).uv2(light).normal(nn.x, nn.y, nn.z).endVertex();
+            // normale gardée dans le repère de la pièce, tournée à l'envoi (Decal.emettre) comme avant
+            d.ajouter(indexPiece, (q[2] + fnx * off) / 16F, (q[3] + fny * off) / 16F, (q[4] + fnz * off) / 16F,
+               u0 + (q[0] + 0.5F) * du, v0 + (0.5F - q[1]) * dv, q[5] * 32767F, q[6] * 32767F, fnx, fny, fnz);
          }
       }
    }
