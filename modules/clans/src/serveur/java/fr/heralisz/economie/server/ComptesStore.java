@@ -64,7 +64,7 @@ import java.util.stream.Stream;
  * du clan, hotel des ventes, creation de clan...). Depuis le 02/11 (audit point 20), le fil serveur n'attend plus la
  * reecriture de TOUS les comptes : il ajoute seulement, a la fin d'un petit journal d'ecriture
  * ({@code comptes.json.wal.<n>}), l'etat des comptes changes depuis (quelques lignes) ; le fichier complet suit sur le fil
- * IO. Au demarrage (et a {@code /eco recharger}), les lignes du journal plus recentes que le fichier complet sont
+ * IO. Au demarrage (et a {@code /recharger herals}), les lignes du journal plus recentes que le fichier complet sont
  * rejouees ; un morceau de journal est efface des que le fichier complet qui le contient est ecrit. Meme garantie
  * qu'avant : quand l'appel rend vrai, le solde est sur le disque.
  *
@@ -74,7 +74,7 @@ import java.util.stream.Stream;
  *
  * <p><b>Protection des soldes.</b> Si le fichier existe mais ne peut pas etre lu (verrou, JSON casse), le store
  * demarre vide et <i>toute ecriture est bloquee</i> (autosave, transactions, arret) tant qu'une relecture
- * ({@code /eco recharger}) n'a pas reussi ou qu'un operateur n'a pas leve le blocage ({@code /eco sauvegarder
+ * ({@code /recharger herals}) n'a pas reussi ou qu'un operateur n'a pas leve le blocage ({@code /eco sauvegarder
  * --forcer}, qui met d'abord le fichier illisible de cote en comptes.json.corrompu-&lt;date&gt;). Les operateurs
  * connectes sont prevenus a la connexion et toutes les 5 min.
  *
@@ -382,7 +382,7 @@ public final class ComptesStore {
                 chargementEchoue = true;
                 ticksAlerte = 0;
                 HeraliszEconomie.LOG.error("[economie] lecture de {} impossible : SAUVEGARDE BLOQUEE pour proteger les soldes. "
-                        + "Corrigez le fichier puis /eco recharger, ou /eco sauvegarder --forcer pour repartir des comptes en memoire "
+                        + "Corrigez le fichier puis /recharger herals, ou /eco sauvegarder --forcer pour repartir des comptes en memoire "
                         + "(le fichier illisible sera conserve en comptes.json.corrompu-<date>)", fichier, ex);
                 return false;
             }
@@ -583,7 +583,7 @@ public final class ComptesStore {
 
     private boolean refuserSiBloque() {
         if (!chargementEchoue) return false;
-        HeraliszEconomie.LOG.error("[economie] sauvegarde refusee : {} n'a pas pu etre lu ; corrigez le fichier puis /eco recharger, ou /eco sauvegarder --forcer",
+        HeraliszEconomie.LOG.error("[economie] sauvegarde refusee : {} n'a pas pu etre lu ; corrigez le fichier puis /recharger herals, ou /eco sauvegarder --forcer",
                 fichier);
         return true;
     }

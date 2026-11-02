@@ -49,7 +49,7 @@ import org.jetbrains.annotations.Nullable;
  * (Peu commune), casier métallique (Rare), caisse d'armes renforcée (Épique), coffre-fort (Légendaire). Au-delà, la pose est
  * refusée avec un message ; les coffres déjà posés comptent (ceux des tronçons chargés : une base est chargée autour du
  * joueur qui y pose). Libres : créatif, hors d'une base. Limites dans {@code config/crac/coffres.json} (fichier du dépôt qui
- * fait foi, écrit s'il manque), relu par {@code /coffres recharger}.
+ * fait foi, écrit s'il manque), relu par {@code /recharger coffres}.
  * <p>
  * Même règle pour la table d'armurier de TaCZ posée dans une base (31/10, décision du propriétaire) : une seule par base
  * ({@code tables_armurier_par_base}). Une table déjà en trop n'est ni détruite ni retirée : seules les nouvelles poses
@@ -276,13 +276,14 @@ public final class CoffresLimites {
     public static void commandes(RegisterCommandsEvent e) {
         CommandDispatcher<CommandSourceStack> d = e.getDispatcher();
         d.register(Commands.literal("coffres").requires(s -> s.hasPermission(4))
-            .then(Commands.literal("voir").executes(c -> voir(c.getSource())))
-            .then(Commands.literal("recharger").executes(c -> {
-                charger();
-                c.getSource().sendSuccess(() -> Component.translatableWithFallback("crac.coffres.recharge",
-                    "coffres.json relu : %s", ligne(null)), false);
-                return 1;
-            })));
+            .then(Commands.literal("voir").executes(c -> voir(c.getSource()))));
+        // 02/11 (audit point 36) : plus de « /coffres recharger » ; /recharger (noyau) relit coffres.json (/recharger coffres ;
+        // avant, /recharger l'oubliait)
+        RechargementsNoyau.inscrire("coffres", s -> {
+            charger();
+            s.sendSuccess(() -> Component.translatableWithFallback("crac.coffres.recharge", "coffres.json relu : %s", ligne(null)), false);
+            return 1;
+        });
     }
 
     /** Coffres de la base où se tient le staff, et ses limites. */

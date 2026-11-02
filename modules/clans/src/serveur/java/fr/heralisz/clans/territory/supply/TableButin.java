@@ -36,7 +36,7 @@ import java.util.Set;
  * <pre>{"tirages": [10, 14], "entrees": [{"item": "tacz:ammo", "nbt": "{AmmoId:\"tacz:762x39\"}", "min": 30, "max": 60, "poids": 80}, ...]}</pre>
  * Source : {@code config/heralisz_clans/ravitaillement.json} (ecrit au premier demarrage a partir de la ressource
  * {@code data/heralisz_clans/butin/ravitaillement.json} du jar, puis editable par l'admin) ; rechargee par
- * {@code /territoire recharger}. Un objet inconnu est ignore (journal une fois par id) ; les poids sont plafonnes a
+ * {@code /recharger territoires}. Un objet inconnu est ignore (journal une fois par id) ; les poids sont plafonnes a
  * 1 000 000 et les quantites a 64 pour qu'une edition absurde ne casse jamais le tirage.
  */
 public final class TableButin {
@@ -58,7 +58,7 @@ public final class TableButin {
     private static int tiragesMin = 10, tiragesMax = 14, poidsTotal;
     private static boolean chargee;
 
-    /** A relire au prochain remplissage (demarrage du serveur, /territoire recharger). */
+    /** A relire au prochain remplissage (demarrage du serveur, /recharger territoires). */
     public static synchronized void recharger() {
         chargee = false;
     }

@@ -35,11 +35,11 @@ import java.util.Collection;
  *   cles voir <joueur>                        (op) clés du compte
  *   cles retirer <joueurs> <coffre> <nombre>  (op) correction du staff
  *   givecrate <joueurs> <coffre> [nombre]     (op)
- *   reload                                    (op)
  *   loot fichier <coffre>                     (op) efface le butin change en jeu (retour au fichier du serveur)
  *   edit <coffre>                             (op) editeur de butin (objets, raretes, chances : ajouter depuis
  *                                             l'inventaire, retirer, lister)
- * 02/11 (audit point 36) : loot add|list|remove (doublons de l'editeur /heraliz edit) sont retires.
+ * 02/11 (audit point 36) : loot add|list|remove (doublons de l'editeur /heraliz edit) sont retires ; reload aussi : le
+ * butin des caisses se relit par /recharger du noyau (/recharger caisses pour lui seul).
  *   editor                                    (op) donne l'outil d'edition des caisses
  *   interface <joueurs> <coffre>              (op) ouvre l'interface d'ouverture sans caisse (PNJ, menus...)
  */
@@ -54,6 +54,7 @@ public final class HeralizCommand {
             SharedSuggestionProvider.suggest(Arrays.stream(CrateType.values()).map(t -> t.id), builder);
 
     public static void register(CommandDispatcher<CommandSourceStack> d) {
+        inscrireRechargement("caisses", HeralizCommand::reload);
         d.register(Commands.literal("heraliz")
                 .then(Commands.literal("preview")
                         .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
@@ -91,8 +92,6 @@ public final class HeralizCommand {
                                         .then(Commands.argument("amount", IntegerArgumentType.integer(1, 64))
                                                 .executes(c -> giveCrates(c, EntityArgument.getPlayers(c, "targets"),
                                                         IntegerArgumentType.getInteger(c, "amount")))))))
-                .then(Commands.literal("reload").requires(s -> s.hasPermission(2))
-                        .executes(HeralizCommand::reload))
                 .then(Commands.literal("edit").requires(s -> s.hasPermission(2))
                         .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                 .executes(c -> {
@@ -217,13 +216,24 @@ public final class HeralizCommand {
         }
     }
 
-    private static int reload(CommandContext<CommandSourceStack> c) {
+    /** Butin des caisses relu (joué par /recharger du noyau). */
+    private static int reload(CommandSourceStack s) {
         int errors = LootManager.reload();
         if (errors == 0) {
-            c.getSource().sendSuccess(() -> Component.translatable("command.heralizcrates.reload_ok").withStyle(ChatFormatting.GREEN), true);
+            s.sendSuccess(() -> Component.translatable("command.heralizcrates.reload_ok").withStyle(ChatFormatting.GREEN), true);
         } else {
-            c.getSource().sendFailure(Component.translatable("command.heralizcrates.reload_errors", errors));
+            s.sendFailure(Component.translatable("command.heralizcrates.reload_errors", errors));
         }
         return 1;
+    }
+
+    /** Inscrit un rechargement dans /recharger du noyau (fr.heraliz.noyau.api.Rechargements), par réflexion (aucune dépendance). */
+    private static void inscrireRechargement(String nom, java.util.function.ToIntFunction<CommandSourceStack> action) {
+        try {
+            Class.forName("fr.heraliz.noyau.api.Rechargements").getMethod("ajouter", String.class, java.util.function.ToIntFunction.class)
+                    .invoke(null, nom, action);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[caisses] /recharger du noyau introuvable : « {} » ne se relit qu'au redémarrage ({})", nom, e.toString());
+        }
     }
 }

@@ -29,7 +29,7 @@ import net.minecraftforge.network.PacketDistributor;
  * jamais (il la crée seulement si elle manque) ;</li>
  * <li>{@code raretes_jeu.json} : les choix faits en jeu par le staff (/rarete, {@link CommandesRarete}), qui passent
  * avant la base ; jamais dans le dépôt, donc jamais écrasés par la mise en ligne.</li></ul>
- * Lus au démarrage et par /rarete recharger ; la table fusionnée est envoyée à chaque joueur à la connexion et à tous
+ * Lus au démarrage et par /recharger raretes ; la table fusionnée est envoyée à chaque joueur à la connexion et à tous
  * après un changement. Un fichier illisible n'est jamais écrasé : il est gardé en {@code .bad} et ignoré.
  */
 public final class RaretesServeur {

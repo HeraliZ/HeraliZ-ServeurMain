@@ -84,9 +84,12 @@ public final class NoyauConfig {
    /** broadcastChanges : la 2e comparaison d'une case est sautée quand elle repose la même question que la 1re. */
    public static volatile boolean menusUneComparaison = true;
 
-   public static final List<String> RECHARGER_DEFAUT = List.of("quete recharger", "heraliz reload", "casino reload",
-         "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
-         "zones recharger", "clashwar recharger", "event recharger", "spartan officiel");
+   /**
+    * Commandes en plus jouées par /recharger : vide (02/11, audit point 36). Les modules HeraliZ inscrivent eux-mêmes leur
+    * relecture ({@link fr.heraliz.noyau.api.Rechargements}) : leurs anciennes sous-commandes (quete recharger, heraliz
+    * reload, casino reload, armurier recharger...) n'existent plus, armurier recharger comprise.
+    */
+   public static final List<String> RECHARGER_DEFAUT = List.of();
 
    // 02/11 (audit, points 34 et 36) : liste des commandes allégée (~500 noms dans le panneau du Fondateur, ~1 000 dans le chat)
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> COMMANDES_RETIREES;
@@ -174,10 +177,11 @@ public final class NoyauConfig {
             .define("annoncer", true);
       b.pop();
       b.push("recharger");
-      RECHARGER_COMMANDES = b.comment("/recharger (24/10) : commandes de rechargement des modules jouées l'une après l'autre, sans",
-            "redémarrer ni déconnecter personne (quêtes, marchands, recycleur, caisses, casino, raretés, tables de loot,",
-            "saison, territoires, Purge, zones dangereuses, ClashWar, modpack officiel de l'anticheat). Les réglages en .toml",
-            "se relisent seuls quand leur fichier change.")
+      RECHARGER_COMMANDES = b.comment("/recharger [module] relit les données de tous les modules (ou d'un seul), sans redémarrer ni déconnecter",
+            "personne : quêtes, marchands, recycleur, caisses, casino, raretés, tables de loot, saison, territoires, clans, hérals,",
+            "Purge, coffres des bases, zones dangereuses, ClashWar, événements, dégâts des armes, modpack officiel de l'anticheat",
+            "(02/11 : chaque module s'inscrit lui-même ; leurs sous-commandes « recharger » n'existent plus). Ici : commandes EN PLUS",
+            "jouées ensuite (vide par défaut). Les réglages en .toml se relisent seuls quand leur fichier change.")
             .defineListAllowEmpty(List.of("commandes"), () -> RECHARGER_DEFAUT, o -> o instanceof String);
       b.pop();
       b.push("commandes");

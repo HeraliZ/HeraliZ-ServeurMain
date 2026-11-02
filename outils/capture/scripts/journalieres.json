@@ -18,7 +18,7 @@
       "commande": "clear @s"
     },
     {
-      "commande": "heralizloot tables"
+      "commande": "recharger loot"
     },
     {
       "commande": "heralizloot zombies simuler 100000"

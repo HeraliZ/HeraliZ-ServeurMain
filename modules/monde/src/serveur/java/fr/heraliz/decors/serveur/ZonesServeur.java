@@ -51,7 +51,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * durabilité toutes les N secondes (heraliz_decors-server.toml, section [usure]) ; à 1 point de la casse (barre vide),
  * elle est « usée » : elle ne protège plus de la zone (le joueur subit ses effets) tant qu'elle n'est pas réparée.
  * Elle n'est jamais détruite par cette usure. L'Armurerie lit la même règle (Protection.usee) pour ses filtres.
- * Commandes (op) : /zones info, /zones recharger.
+ * Commandes (op) : /zones info ; relues par /recharger du noyau (/recharger zones).
  */
 @Mod.EventBusSubscriber(modid = HeralizDecors.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ZonesServeur {
@@ -324,12 +324,13 @@ public final class ZonesServeur {
                             String.valueOf(zones.size())).append(b.toString());
                     c.getSource().sendSuccess(() -> t, false);
                     return 1;
-                }))
-                .then(Commands.literal("recharger").executes(c -> {
-                    charger(c.getSource().getServer());
-                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_decors.zones.rechargees", "Zones rechargées : %s",
-                            String.valueOf(zones.size())), true);
-                    return 1;
                 })));
+        // 02/11 (audit point 36) : plus de « /zones recharger » ; /recharger (noyau) relit les zones (/recharger zones)
+        fr.heraliz.noyau.api.Rechargements.ajouter("zones", s -> {
+            charger(s.getServer());
+            s.sendSuccess(() -> Component.translatableWithFallback("heraliz_decors.zones.rechargees", "Zones rechargées : %s",
+                    String.valueOf(zones.size())), true);
+            return 1;
+        });
     }
 }

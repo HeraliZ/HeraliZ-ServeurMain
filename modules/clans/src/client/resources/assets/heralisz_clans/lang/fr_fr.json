@@ -351,7 +351,7 @@
   "msg.chat_muet": "Vous êtes muet : le chat de clan vous est fermé.",
   "msg.admin.supprimer_perdus": "Attention : %s n'ont pu être versés à aucun membre (comptes pleins ou économie indisponible).",
   "zone.cmd.nom_invalide": "Nom de zone invalide : 1 à %s caractères",
-  "zone.cmd.recharge_echec": "zones.json est illisible : les zones actuelles sont gardées et le fichier ne sera pas réécrit. Corrigez-le puis relancez /territoire recharger",
+  "zone.cmd.recharge_echec": "zones.json est illisible : les zones actuelles sont gardées et le fichier ne sera pas réécrit. Corrigez-le puis relancez /recharger territoires",
   "zone.cmd.drapeau_retire": "Le drapeau de %s a été retiré en %s %s %s : reposez-le avec /territoire drapeau %s",
   "zone.erreur.trop_loin": "Approchez-vous du drapeau de %s pour lancer le signal",
   "zone.erreur.mode_jeu": "Le signal de ravitaillement se lance en jeu (survie ou aventure), vivant",

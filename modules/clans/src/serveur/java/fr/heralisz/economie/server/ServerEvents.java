@@ -33,7 +33,7 @@ public final class ServerEvents {
         EconomieCommands.oublierCadence(e.getEntity().getUUID());
     }
 
-    /** Reglages + solde (sans variation) : connexion, /eco recharger. */
+    /** Reglages + solde (sans variation) : connexion, /recharger herals. */
     public static void envoyerTout(ServerPlayer p, long solde) {
         EconomieNet.toPlayer(p, new Packets.ReglagesS2C(EconomieConfig.NOM_SINGULIER.get(), EconomieConfig.NOM_PLURIEL.get(),
                 EconomieConfig.SYMBOLE.get(), EconomieConfig.HUD_PERMANENT.get()));

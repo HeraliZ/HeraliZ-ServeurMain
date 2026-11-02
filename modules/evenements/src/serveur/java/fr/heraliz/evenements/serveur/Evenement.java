@@ -40,7 +40,7 @@ public interface Evenement {
     default void minute(MinecraftServer server) {
     }
 
-    /** Relit ses réglages (démarrage du serveur et {@code /event recharger}). */
+    /** Relit ses réglages (démarrage du serveur et {@code /recharger evenements}). */
     default void recharger() {
     }
 

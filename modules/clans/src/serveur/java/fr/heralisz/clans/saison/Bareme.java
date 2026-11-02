@@ -21,7 +21,7 @@ import java.util.Set;
 
 /**
  * Bareme de la saison des clans (docs/SAISON_CLANS.md §4) : config/heralisz_clans/saison.json (fichier du depot qui fait
- * foi, ecrit avec les valeurs par defaut s'il manque, relu par /saison recharger). Tous les chiffres des points sont
+ * foi, ecrit avec les valeurs par defaut s'il manque, relu par /recharger saison). Tous les chiffres des points sont
  * ici : les autres mods n'envoient qu'une source et une quantite ({@link SaisonApi#pve}).
  */
 public final class Bareme {
@@ -237,7 +237,7 @@ public final class Bareme {
                 + " capture d'un drapeau = valeur de la ville x par_valeur x difficulte des vagues (1, 2, 3), x prise_coef (points PVP) si la"
                 + " zone etait tenue par un autre clan depuis tenue_min_minutes ; rien pour la meme zone et le meme clan avant meme_zone_heures,"
                 + " ni pour la meme zone entre les deux memes clans avant meme_paire_heures ; au plus plafond_jour_clan par clan et par jour ;"
-                + " relu par /saison recharger.");
+                + " relu par /recharger saison.");
         JsonObject p = new JsonObject();
         for (Map.Entry<String, Double> e : pve.entrySet()) p.addProperty(e.getKey(), e.getValue());
         o.add("pve", p);

@@ -37,15 +37,15 @@ final class Commandes {
             java.util.stream.StreamSupport.stream(PointsT7.get(c.getSource().getLevel()).tous().spliterator(), false).map(p -> p.nom), b);
 
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
+        // 02/11 (audit point 36) : plus de « /heralizloot tables » ; /recharger (noyau) relit les tables de loot (/recharger loot)
+        inscrireRechargement("loot", s -> {
+            // 24/10 : tables relues (config/heraliz_loot/coffres/ par-dessus celles du jar), sans redémarrer
+            int n = TablesCoffres.charger();
+            s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.tables", "%s tables de loot relues.", String.valueOf(n)), true);
+            return n;
+        });
         d.register(CommandesRotation.ajouter(Commands.literal("heralizloot").requires(s -> s.hasPermission(2)))
                 .then(ButinZombies.commandes())
-                .then(Commands.literal("tables").executes(c -> {
-                    // 24/10 : tables relues (config/heraliz_loot/coffres/ par-dessus celles du jar), sans redémarrer
-                    int n = TablesCoffres.charger();
-                    c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.tables",
-                            "%s tables de loot relues.", String.valueOf(n)), true);
-                    return n;
-                }))
                 .then(Commands.literal("reinitialiser").executes(c -> reinit(c.getSource(), 24))
                         .then(Commands.argument("rayon", IntegerArgumentType.integer(1, 128))
                                 .executes(c -> reinit(c.getSource(), IntegerArgumentType.getInteger(c, "rayon")))))
@@ -75,6 +75,16 @@ final class Commandes {
                                     return 1;
                                 })))
                         .then(Commands.literal("liste").executes(c -> liste(c.getSource())))));
+    }
+
+    /** Inscrit un rechargement dans /recharger du noyau (fr.heraliz.noyau.api.Rechargements), par réflexion (aucune dépendance). */
+    static void inscrireRechargement(String nom, java.util.function.ToIntFunction<CommandSourceStack> action) {
+        try {
+            Class.forName("fr.heraliz.noyau.api.Rechargements").getMethod("ajouter", String.class, java.util.function.ToIntFunction.class)
+                    .invoke(null, nom, action);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[loot] /recharger du noyau introuvable : « {} » ne se relit qu'au redémarrage ({})", nom, e.toString());
+        }
     }
 
     /** Argument de mode : présence, délais (secondes) facultatifs. */

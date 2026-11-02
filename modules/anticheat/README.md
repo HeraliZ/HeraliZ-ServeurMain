@@ -375,7 +375,7 @@ aggravé : c'est la signature d'une injection après le lancement.
   Mixin (mod ESP / X-ray / fly, client injecté qui passe par Mixin) est inconnue, et le rapport dit ce qu'elle modifie ;
 - l'empreinte du dossier mods officiel, comparée dès la connexion (mod ajouté, retiré ou modifié).
 
-La mise en ligne la dépose dans `config/spartan/officiel.json` ; `/spartan officiel` la relit sans redémarrer.
+La mise en ligne la dépose dans `config/spartan/officiel.json` ; `/recharger anticheat` la relit sans redémarrer.
 
 **Client de référence (facultatif, en plus)** : `/spartan reference learn <ton pseudo>` depuis un jeu PROPRE apprend
 aussi ce qui ne se voit qu'en jeu (modules et composants de lancement, chargeurs de classes, origines du code,

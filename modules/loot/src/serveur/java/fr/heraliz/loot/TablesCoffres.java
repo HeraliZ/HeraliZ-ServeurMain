@@ -76,7 +76,7 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
         charger();
     }
 
-    /** Relit les tables du dossier de config par-dessus celles du jar ({@code /heralizloot tables}) ; nombre de tables. */
+    /** Relit les tables du dossier de config par-dessus celles du jar ({@code /recharger loot}) ; nombre de tables. */
     static int charger() {
         Map<ResourceLocation, JsonElement> fichiers = new HashMap<>(DU_JAR);
         int remplacees = 0;

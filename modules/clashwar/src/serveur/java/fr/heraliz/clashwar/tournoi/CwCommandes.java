@@ -95,12 +95,6 @@ public final class CwCommandes {
                     t.annuler("admin");
                     return 1;
                 }))
-                .then(Commands.literal("recharger").requires(s -> s.hasPermission(2)).executes(c -> {
-                    CwConfig.charger(c.getSource().getServer());
-                    Tournois.marquerVue();
-                    Annonces.retour(c.getSource(), Component.translatable("clashwar.cmd.recharge"));
-                    return 1;
-                }))
                 .then(Commands.literal("mur").requires(s -> s.hasPermission(2))
                         .then(Commands.argument("largeur", IntegerArgumentType.integer(2, MurTableau.LARGEUR_MAX))
                                 .executes(c -> mur(c, fr.heraliz.clashwar.tournoi.bloc.TableauBlocEntite.CONTENU_TABLEAU))
@@ -109,6 +103,13 @@ public final class CwCommandes {
         // 02/11 (audit) : l'ancienne commande /matchs (coffre, parties, arènes) fondue dans /clashwar, toujours niveau 2
         CommandesMoteur.ajouter(racine);
         d.register(racine);
+        // 02/11 (audit point 36) : plus de « /clashwar recharger » ; /recharger (noyau) relit clashwar.json (/recharger clashwar)
+        fr.heraliz.noyau.api.Rechargements.ajouter("clashwar", s -> {
+            CwConfig.charger(s.getServer());
+            Tournois.marquerVue();
+            Annonces.retour(s, Component.translatable("clashwar.cmd.recharge"));
+            return 1;
+        });
     }
 
     /** Classement ClashWar des clans : les 10 meilleurs, et le rang du clan du joueur s'il est plus bas. */

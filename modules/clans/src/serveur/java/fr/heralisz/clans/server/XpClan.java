@@ -27,7 +27,7 @@ import java.util.Map;
  * Regles de l'XP de clan (31/10, demande du proprietaire : « montee de niveau beaucoup plus difficile » et « empecher de
  * progresser trop vite en repetant une seule activite ») : plafond par clan, par source et par jour (heure de Paris), et
  * bareme des dons d'objets (/clan don). Tout est dans {@code config/heralisz_clans/niveaux.json} (sections
- * {@code plafonds_jour} et {@code dons}, ajoutees au fichier si elles manquent), relu par {@code /clan admin recharger}.
+ * {@code plafonds_jour} et {@code dons}, ajoutees au fichier si elles manquent), relu par {@code /recharger clans}.
  * Le gain de chaque action reste dans {@code heralisz_clans-common.toml} ([xp] et xp_heure_valeur) ; les quetes dans
  * quetes.json.
  * <p>

@@ -35,7 +35,7 @@ import java.util.Set;
 
 /**
  * Le Directeur d'événements (docs/EVENEMENTS.md §1) : lance tout seul les événements de la carte d'après le planning
- * ({@code config/heraliz_evenements/planning.json}, fichier du dépôt qui fait foi, relu par {@code /event recharger}),
+ * ({@code config/heraliz_evenements/planning.json}, fichier du dépôt qui fait foi, relu par {@code /recharger evenements}),
  * vérifie les conditions communes (assez de joueurs sur la carte, pas de ClashWar, un seul exemplaire actif par type),
  * tient le journal. Hors événement, il ne fait qu'un contrôle par minute (le changement de minute est vu en une
  * comparaison par seconde) ; pendant un événement, il l'appelle une fois par seconde.
@@ -221,7 +221,7 @@ public final class Directeur {
                 + " prevu, 0:30 par defaut). probabilite : chance qu'il parte (1 = toujours) ; joueurs_min : joueurs en survie sur la"
                 + " carte au moins. Jamais pendant un ClashWar. Depart refuse (pas assez de joueurs, ClashWar, aucun lieu...) : pas de"
                 + " nouvel essai rapproche, l'attente repart pour un intervalle entier (toutes_les), comme s'il avait eu lieu ; a heures"
-                + " fixes, il attend le creneau suivant. Relu par /event recharger.");
+                + " fixes, il attend le creneau suivant. Relu par /recharger evenements.");
         o.addProperty("actif", true);
         JsonArray a = new JsonArray();
         JsonObject c = new JsonObject();

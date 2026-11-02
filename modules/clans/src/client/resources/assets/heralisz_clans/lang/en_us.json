@@ -351,7 +351,7 @@
   "msg.chat_muet": "You are muted: clan chat is closed to you.",
   "msg.admin.supprimer_perdus": "Warning: %s could not be paid to any member (accounts full or economy unavailable).",
   "zone.cmd.nom_invalide": "Invalid zone name: 1 to %s characters",
-  "zone.cmd.recharge_echec": "zones.json is unreadable: current zones are kept and the file will not be rewritten. Fix it, then run /territoire recharger again",
+  "zone.cmd.recharge_echec": "zones.json is unreadable: current zones are kept and the file will not be rewritten. Fix it, then run /recharger territoires again",
   "zone.cmd.drapeau_retire": "The flag of %s was removed at %s %s %s: place it again with /territoire drapeau %s",
   "zone.erreur.trop_loin": "Get closer to the flag of %s to launch the signal",
   "zone.erreur.mode_jeu": "The supply signal is launched in game (survival or adventure), alive",

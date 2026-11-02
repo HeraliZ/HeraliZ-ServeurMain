@@ -29,11 +29,12 @@
 	annoncer = true
 
 [recharger]
-	#/recharger (24/10) : commandes de rechargement des modules jouées l'une après l'autre, sans
-	#redémarrer ni déconnecter personne (quêtes, marchands, recycleur, caisses, casino, raretés, tables de loot,
-	#saison, territoires, Purge, zones dangereuses, ClashWar, dégâts des armes, modpack officiel de l'anticheat). Les réglages en .toml
-	#se relisent seuls quand leur fichier change.
-	commandes = ["quete recharger", "heraliz reload", "casino reload", "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger", "zones recharger", "clashwar recharger", "event recharger", "armurier recharger", "spartan officiel"]
+	#/recharger [module] relit les données de tous les modules (ou d'un seul), sans redémarrer ni déconnecter
+	#personne : quêtes, marchands, recycleur, caisses, casino, raretés, tables de loot, saison, territoires, clans, hérals,
+	#Purge, coffres des bases, zones dangereuses, ClashWar, événements, dégâts des armes, modpack officiel de l'anticheat
+	#(02/11 : chaque module s'inscrit lui-même ; leurs sous-commandes « recharger » n'existent plus). Ici : commandes EN PLUS
+	#jouées ensuite (vide par défaut). Les réglages en .toml se relisent seuls quand leur fichier change.
+	commandes = []
 
 [commandes]
 	#Commandes retirées pour de bon (02/11) : Minecraft et mods, console comprise (racine en minuscules, sans /

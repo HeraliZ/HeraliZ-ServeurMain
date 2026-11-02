@@ -38,7 +38,7 @@ import java.util.UUID;
  * du serveur (clé {@code <serveur>/heraliz_evenements/objets.cle}, créée au premier démarrage, jamais dans le dépôt).
  * Revendu à un marchand racheteur : son numéro est écrit dans {@code objets_vendus.txt} AVANT le paiement, et un numéro
  * déjà vendu (copie) ou une signature fausse (objet fait à la main) n'est jamais racheté. Prix et chances :
- * {@code config/heraliz_evenements/objets.json} (relu par {@code /event recharger}) ; points de saison : barème des clans,
+ * {@code config/heraliz_evenements/objets.json} (relu par {@code /recharger evenements}) ; points de saison : barème des clans,
  * {@code events.points.objet_<id>}.
  */
 final class ObjetsServeur {
@@ -117,7 +117,7 @@ final class ObjetsServeur {
                 + " boite noire d'helicoptere Legendaire, seulement pour l'helicoptere)."
                 + " prix : herals verses par le marchand racheteur (Mila). tirages : par type d'evenement, chance de chaque objet (poids) ;"
                 + " un evenement absent de la liste tire avec \"defaut\". Points de saison : events.points.objet_<id> de"
-                + " heralisz_clans/saison.json. Relu par /event recharger.");
+                + " heralisz_clans/saison.json. Relu par /recharger evenements.");
         JsonObject prix = new JsonObject();
         prix.addProperty("dossier_classe", 120);
         prix.addProperty("mallette_scellee", 300);

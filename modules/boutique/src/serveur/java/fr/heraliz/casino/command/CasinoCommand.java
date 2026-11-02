@@ -92,6 +92,7 @@ public final class CasinoCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> d) {
         CommandeCapsules.register(d);
+        inscrireRechargement("casino", CasinoCommand::reload);
         d.register(Commands.literal("casino")
                 .then(ZoneCommand.build())
                 .then(CommandeCapsules.staff())
@@ -117,7 +118,6 @@ public final class CasinoCommand {
                         .executes(CasinoCommand::jackpot)
                         .then(Commands.argument("montant", LongArgumentType.longArg(0, 1_000_000_000L)).requires(s -> s.hasPermission(2))
                                 .executes(c -> setJackpot(c, LongArgumentType.getLong(c, "montant")))))
-                .then(Commands.literal("reload").requires(s -> s.hasPermission(2)).executes(CasinoCommand::reload))
                 .then(Commands.literal("lumiere").requires(s -> s.hasPermission(2))
                         .executes(CasinoCommand::lights)
                         .then(Commands.argument("machine", StringArgumentType.word()).suggests(LIGHT_TARGETS)
@@ -407,14 +407,25 @@ public final class CasinoCommand {
         return 1;
     }
 
-    private static int reload(CommandContext<CommandSourceStack> c) {
+    /** Réglages du casino relus et renvoyés aux joueurs (joué par /recharger du noyau : plus de « /casino reload », 02/11). */
+    private static int reload(CommandSourceStack s) {
         String err = fr.heraliz.casino.config.CasinoConfigServeur.load();
         CommonEventsServeur.broadcastConfig();
         if (err != null) {
-            Reponses.erreur(c.getSource(), Component.translatable("command.heralizcasino.reload_error", err));
+            Reponses.erreur(s, Component.translatable("command.heralizcasino.reload_error", err));
             return 0;
         }
-        Reponses.ok(c.getSource(), Component.translatable("command.heralizcasino.reloaded").withStyle(ChatFormatting.GREEN), true);
+        Reponses.ok(s, Component.translatable("command.heralizcasino.reloaded").withStyle(ChatFormatting.GREEN), true);
         return 1;
+    }
+
+    /** Inscrit un rechargement dans /recharger du noyau (fr.heraliz.noyau.api.Rechargements), par réflexion (aucune dépendance). */
+    static void inscrireRechargement(String nom, java.util.function.ToIntFunction<CommandSourceStack> action) {
+        try {
+            Class.forName("fr.heraliz.noyau.api.Rechargements").getMethod("ajouter", String.class, java.util.function.ToIntFunction.class)
+                    .invoke(null, nom, action);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[casino] /recharger du noyau introuvable : « {} » ne se relit qu'au redémarrage ({})", nom, e.toString());
+        }
     }
 }

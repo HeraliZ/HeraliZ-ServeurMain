@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * Ce que montre l'onglet Saison de l'ecran du clan (25/10, maquette validee) : le classement de la saison et
- * « Gagner des points », construit depuis le bareme reel (relu par /saison recharger) : les joueurs voient toujours les
+ * « Gagner des points », construit depuis le bareme reel (relu par /recharger saison) : les joueurs voient toujours les
  * vrais chiffres. Une nouvelle source de points (evenement…) ajoute ici sa ligne, avec son libelle et sa condition dans
  * les trois langues du mod (docs/EVENEMENTS.md, liste de branchement).
  */

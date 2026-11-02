@@ -1,5 +1,5 @@
 {
-  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; boss_coefficients : part des points du boss pour le 1er kill de ce boss par le clan dans la journee, le 2e, puis tous les suivants ; relu par /saison recharger.",
+  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; boss_coefficients : part des points du boss pour le 1er kill de ce boss par le clan dans la journee, le 2e, puis tous les suivants ; relu par /recharger saison.",
   "pve": {
     "zombie": 0.01,
     "zombie_mutant": 0.02,

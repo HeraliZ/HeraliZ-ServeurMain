@@ -821,7 +821,7 @@
   "heraliz_grades.staff.cmd.heraliz": "Caisses : aperçu ; clés données, vues ou retirées (staff).",
   "heraliz_grades.staff.cmd.combat": "Voir, poser ou retirer le tag de combat d'un joueur.",
   "heraliz_grades.staff.cmd.diag": "Diagnostic du serveur (mesures, fuites, client d'un joueur).",
-  "heraliz_grades.staff.cmd.recharger": "Relit les données de tous les modules sans redémarrer.",
+  "heraliz_grades.staff.cmd.recharger": "Relit les données de tous les modules sans redémarrer (/recharger <module> pour un seul : quetes, caisses, casino, loot…).",
   "heraliz_grades.staff.cmd.redemarrage": "Redémarrage doux dans N minutes, ou annuler.",
   "heraliz_grades.staff.cmd.territoire": "Zones des clans : drapeaux, déplacer, valeur, difficulté.",
   "heraliz_grades.staff.cmd.eco": "Hérals d'un joueur : donner, retirer, fixer (op 4), journal, infos.",

@@ -96,8 +96,9 @@ public final class TerritoireCommands {
                         .then(Commands.argument("tag", StringArgumentType.word()).suggests(TAGS).executes(TerritoireCommands::capturer))))
                 .then(lit("ravitailler").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(TerritoireCommands::ravitailler)))
                 .then(lit("valeur").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES)
-                        .then(Commands.argument("valeur", IntegerArgumentType.integer(Zone.VALEUR_MIN, Zone.VALEUR_MAX)).executes(TerritoireCommands::valeur))))
-                .then(lit("recharger").executes(TerritoireCommands::recharger)));
+                        .then(Commands.argument("valeur", IntegerArgumentType.integer(Zone.VALEUR_MIN, Zone.VALEUR_MAX)).executes(TerritoireCommands::valeur)))));
+        // 02/11 (audit point 36) : plus de « /territoire recharger » ; /recharger (noyau) relit les zones (/recharger territoires)
+        fr.heralisz.clans.server.RechargementsNoyau.inscrire("territoires", TerritoireCommands::recharger);
     }
 
     // ------------------------------------------------------------------ reponses
@@ -578,10 +579,10 @@ public final class TerritoireCommands {
         return 1;
     }
 
-    private static int recharger(CommandContext<CommandSourceStack> ctx) {
-        CommandSourceStack src = ctx.getSource();
-        Territoires t = moteur(ctx);
-        if (t == null) return 0;
+    /** Zones relues (joué par /recharger du noyau). */
+    private static int recharger(CommandSourceStack src) {
+        Territoires t = Territoires.get();
+        if (t == null) return echec(src, tr("zone.cmd.indisponible"));
         int n = t.recharger();
         if (n < 0) return echec(src, tr("zone.cmd.recharge_echec"));
         ok(src, tr("zone.cmd.rechargee", n));

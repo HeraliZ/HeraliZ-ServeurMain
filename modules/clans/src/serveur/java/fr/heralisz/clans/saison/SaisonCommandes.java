@@ -29,7 +29,7 @@ import java.util.Locale;
  * /saison (tous) : la saison, les points et les places de son clan ; /saison classement [pve|pvp|events|general].
  * Staff (permission 4) : /saison reset (puis confirmer : tous les clans a 0, nouvelle saison tout de suite), /saison fin
  * [jj/mm/aaaa hh:mm | annuler] (date de fin, heure de Paris), /saison points &lt;tag&gt;
- * &lt;pve|pvp|events&gt; &lt;+/-n&gt; &lt;motif&gt;, /saison journal &lt;tag&gt;, /saison recharger. Et /clan ameliorer
+ * &lt;pve|pvp|events&gt; &lt;+/-n&gt; &lt;motif&gt;, /saison journal &lt;tag&gt;, /recharger saison. Et /clan ameliorer
  * &lt;branche&gt; (arbre du clan, chef).
  */
 public final class SaisonCommandes {
@@ -78,12 +78,13 @@ public final class SaisonCommandes {
                                 for (String x : l) Reponses.ligne(src, Component.literal(x));
                             });
                             return 1;
-                        })))
-                .then(Commands.literal("recharger").requires(s -> s.hasPermission(4)).executes(c -> {
-                    Saison.recharger();
-                    Reponses.ok(c.getSource(), Component.literal("Barème de la saison relu (config/heralisz_clans/saison.json)."));
-                    return 1;
-                })));
+                        }))));
+        // 02/11 (audit point 36) : plus de « /saison recharger » ; /recharger (noyau) relit le barème (/recharger saison)
+        fr.heralisz.clans.server.RechargementsNoyau.inscrire("saison", s -> {
+            Saison.recharger();
+            Reponses.ok(s, Component.literal("Barème de la saison relu (config/heralisz_clans/saison.json)."));
+            return 1;
+        });
         d.register(Commands.literal("clan").then(Commands.literal("don").executes(c -> don(c, false))
                 .then(Commands.literal("confirmer").executes(c -> don(c, true)))));
         d.register(Commands.literal("clan").then(Commands.literal("ameliorer")

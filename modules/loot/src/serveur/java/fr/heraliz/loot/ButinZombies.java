@@ -141,7 +141,7 @@ public final class ButinZombies {
     private static final java.util.concurrent.atomic.AtomicBoolean ECHEC = new java.util.concurrent.atomic.AtomicBoolean();
 
     // ------------------------------------------------------------------ règles
-    /** Relit config/heraliz_loot/zombies.json (avec les tables, /heralizloot tables) ; un fichier illisible garde les anciennes. */
+    /** Relit config/heraliz_loot/zombies.json (avec les tables, /recharger loot) ; un fichier illisible garde les anciennes. */
     static void charger() {
         Path f = TablesCoffres.dossierConfig().getParent().resolve("zombies.json");
         JsonObject o = new JsonObject();

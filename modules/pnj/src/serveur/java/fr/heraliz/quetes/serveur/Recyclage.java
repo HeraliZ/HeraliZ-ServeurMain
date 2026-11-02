@@ -99,7 +99,7 @@ final class Recyclage {
         return FMLPaths.CONFIGDIR.get().resolve("heraliz_quetes").resolve("recyclage.json");
     }
 
-    /** Relu avec les PNJ (démarrage, /quete recharger) ; un fichier absent ou illisible = recycleur fermé. */
+    /** Relu avec les PNJ (démarrage, /recharger quetes) ; un fichier absent ou illisible = recycleur fermé. */
     static void charger(List<String> erreurs) {
         Path f = fichier();
         version++;

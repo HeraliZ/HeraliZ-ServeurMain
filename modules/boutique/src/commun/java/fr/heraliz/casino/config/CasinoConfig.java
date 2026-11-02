@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * Configuration du casino (config/heralizcasino/casino.json) : limites de mise, tables de gains et reglages de
- * chaque machine, taux de change de la caisse. Lue au demarrage du serveur et par /casino reload, puis envoyee
+ * chaque machine, taux de change de la caisse. Lue au demarrage du serveur et par /recharger casino, puis envoyee
  * aux joueurs (affichage des gains, des cases de la roue...).
  */
 public final class CasinoConfig {
@@ -35,7 +35,7 @@ public final class CasinoConfig {
     // =================================================================== contenu
     public static class Settings {
         public String aide = "Voir le README de Heraliz Casino. Gains = somme rendue (mise comprise) sauf mention contraire. "
-                + "Apres modification : /casino reload";
+                + "Apres modification : /recharger casino";
         public General general = new General();
         public Cashier caisse = new Cashier();
         /** Compte de capsules des joueurs (27/10) : dépôts, retraits, paiement à la caisse et à l'entrée. */

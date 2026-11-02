@@ -30,7 +30,7 @@ import net.minecraft.server.level.ServerPlayer;
  *   /spartan report <joueur> indices du dernier contrôle d'intégrité
  *   /spartan suspects        joueurs en ligne dont le dernier contrôle est suspect
  *   /spartan reference learn|add <joueur> | info | clear   client de référence (op 3)
- *   /spartan officiel        relit config/spartan/officiel.json (modpack officiel, op 3)
+ *   /recharger anticheat        relit config/spartan/officiel.json (modpack officiel, op 3)
  *   /spartan esp [joueur]    anti-ESP : coût et activité, ou ce que ce joueur reçoit des autres
  * Outils d'essai retirés du serveur en jeu (audit du 02/11, point 36) : esp bench, selfscan, discordtest. L'état des
  * webhooks Discord est écrit au démarrage (journal, alerts.log et fil « Informations du staff »).
@@ -40,6 +40,18 @@ public class SpartanCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // 02/11 (audit point 36) : plus de « /spartan officiel » ; /recharger (noyau) relit config/spartan/officiel.json
+        // (/recharger anticheat). Par réflexion : Spartan ne dépend pas du noyau.
+        try {
+            Class.forName("fr.heraliz.noyau.api.Rechargements").getMethod("ajouter", String.class, java.util.function.ToIntFunction.class)
+                    .invoke(null, "anticheat", (java.util.function.ToIntFunction<CommandSourceStack>) src -> {
+                        String resume = ScanManager.reloadOfficial();
+                        src.sendSuccess(() -> Component.literal("Modpack officiel relu : " + resume).withStyle(ChatFormatting.AQUA), true);
+                        return 1;
+                    });
+        } catch (ReflectiveOperationException | LinkageError e) {
+            // sans le noyau : officiel.json ne se relit qu'au redémarrage
+        }
         dispatcher.register(Commands.literal("spartan")
                 .requires(src -> src.hasPermission(2))
                 .then(Commands.literal("checks").executes(ctx -> {
@@ -121,12 +133,6 @@ public class SpartanCommand {
                     ctx.getSource().sendSuccess(() -> Component.literal(text)
                             .withStyle(list.isEmpty() ? ChatFormatting.GREEN : ChatFormatting.GOLD), false);
                     return list.size();
-                }))
-                .then(Commands.literal("officiel").requires(src -> src.hasPermission(3)).executes(ctx -> {
-                    String resume = ScanManager.reloadOfficial();
-                    ctx.getSource().sendSuccess(() -> Component.literal("Modpack officiel relu : " + resume)
-                            .withStyle(ChatFormatting.AQUA), true);
-                    return 1;
                 }))
                 .then(Commands.literal("reference")
                         .then(Commands.literal("info").executes(ctx -> {

@@ -20,7 +20,7 @@ import java.util.List;
  * {@code /event} (tous) : événements en cours et prochains événements des 24 h. Staff (permission 4) :
  * {@code /event lancer <type> [avec_points]} (sans points par défaut : docs/EVENEMENTS.md), {@code /event annuler <type>},
  * {@code /event point ajouter|retirer <type> <nom>} (à l'endroit où l'on se tient, sur la carte), {@code /event point liste
- * <type>}, {@code /event recharger} (planning et réglages), {@code /event objet <type>} (25/10 : un objet d'événement
+ * <type>}, {@code /recharger evenements} (planning et réglages), {@code /event objet <type>} (25/10 : un objet d'événement
  * signé dans son inventaire, pour essayer la revente ; il donne des hérals, jamais de points de saison),
  * {@code /event helico info|prochain <minutes>|lancer [ici] [avec_points]} (hélicoptère, voir {@link Helico}).
  */
@@ -55,12 +55,24 @@ public final class Commandes {
                                 .suggests((c, b) -> SharedSuggestionProvider.suggest(fr.heraliz.evenements.objets.ObjetsEvenement.IDS, b))
                                 .executes(Commandes::objet)))
                 // hélicoptère (25/10) : info, prochain, lancer [ici] [avec_points] (Helico.commande)
-                .then(Helico.commande())
-                .then(Commands.literal("recharger").requires(s -> s.hasPermission(4)).executes(c -> {
-                    int n = Directeur.charger();
-                    ok(c.getSource(), Component.literal("planning.json et réglages des événements relus : " + n + " créneau(x)."));
-                    return 1;
-                })));
+                .then(Helico.commande()));
+        // 02/11 (audit point 36) : plus de « /event recharger » ; /recharger (noyau) relit le planning et les réglages
+        // (/recharger evenements)
+        inscrireRechargement("evenements", s -> {
+            int n = Directeur.charger();
+            ok(s, Component.literal("planning.json et réglages des événements relus : " + n + " créneau(x)."));
+            return 1;
+        });
+    }
+
+    /** Inscrit un rechargement dans /recharger du noyau (fr.heraliz.noyau.api.Rechargements), par réflexion (aucune dépendance). */
+    private static void inscrireRechargement(String nom, java.util.function.ToIntFunction<CommandSourceStack> action) {
+        try {
+            Class.forName("fr.heraliz.noyau.api.Rechargements").getMethod("ajouter", String.class, java.util.function.ToIntFunction.class)
+                    .invoke(null, nom, action);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            fr.heraliz.evenements.HeralizEvenements.LOG.warn("[evenements] /recharger du noyau introuvable : « {} » ne se relit qu'au redémarrage ({})", nom, e.toString());
+        }
     }
 
     private static void ok(CommandSourceStack s, Component c) {

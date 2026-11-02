@@ -43,7 +43,7 @@ import java.util.UUID;
  * Commandes : /herals [joueur], /herals payer &lt;joueur&gt; &lt;montant&gt;, /herals classement, et pour les operateurs
  * /eco donner|retirer|definir &lt;joueur&gt; &lt;montant&gt; [motif] (op 4 + AuthMe ou console, connecté ou non, 28/10),
  * /eco journal &lt;joueur&gt; [n], /eco info,
- * /eco recharger, /eco sauvegarder [--forcer]. Tous les textes passent par les cles economie.msg.* (francais d'abord).
+ * /recharger herals, /eco sauvegarder [--forcer]. Tous les textes passent par les cles economie.msg.* (francais d'abord).
  */
 public final class EconomieCommands {
     private EconomieCommands() {
@@ -64,6 +64,8 @@ public final class EconomieCommands {
     @SubscribeEvent
     public static void onRegister(RegisterCommandsEvent e) {
         register(e.getDispatcher());
+        // 02/11 (audit point 36) : plus de « /eco recharger » ; /recharger (noyau) relit les comptes (/recharger herals)
+        fr.heralisz.clans.server.RechargementsNoyau.inscrire("herals", EconomieCommands::recharger);
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> lit(String s) {
@@ -117,7 +119,6 @@ public final class EconomieCommands {
                         .then(Commands.argument("n", IntegerArgumentType.integer(1, Compte.JOURNAL_MAX))
                                 .executes(ctx -> journal(ctx, IntegerArgumentType.getInteger(ctx, "n"))))))
                 .then(lit("info").executes(EconomieCommands::info))
-                .then(lit("recharger").executes(EconomieCommands::recharger))
                 .then(lit("sauvegarder").executes(ctx -> sauvegarder(ctx, false))
                         .then(lit("--forcer").executes(ctx -> sauvegarder(ctx, true)))));
     }
@@ -381,15 +382,16 @@ public final class EconomieCommands {
         return 1;
     }
 
-    private static int recharger(CommandContext<CommandSourceStack> ctx) {
-        ComptesStore s = store(ctx);
-        if (s == null) return 0;
-        if (!s.recharger()) return echec(ctx, "admin.recharge_echec");
+    /** Comptes des hérals relus et renvoyés aux joueurs connectés (joué par /recharger du noyau). */
+    private static int recharger(CommandSourceStack src) {
+        ComptesStore s = ComptesStore.get();
+        if (s == null) return echec(src, "indisponible");
+        if (!s.recharger()) return echec(src, "admin.recharge_echec");
         for (ServerPlayer p : s.server().getPlayerList().getPlayers()) {
             Compte c = s.compte(p.getUUID(), p.getGameProfile().getName());
             ServerEvents.envoyerTout(p, c.solde());
         }
-        repondre(ctx.getSource(), () -> msg("admin.recharge", s.tous().size()), true);
+        repondre(src, () -> msg("admin.recharge", s.tous().size()), true);
         return 1;
     }
 

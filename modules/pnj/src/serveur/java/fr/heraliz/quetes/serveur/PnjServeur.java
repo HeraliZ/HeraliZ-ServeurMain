@@ -44,7 +44,7 @@ public class PnjServeur extends Pnj {
             return;
         }
         if (!def.nom.vide() && !def.nom.toString().equals(entityData.get(NOM))) definirNom(def.nom);
-        // apparence du fichier suivie (après /quete recharger), sauf si le staff a donné la sienne au PNJ
+        // apparence du fichier suivie (après /recharger quetes), sauf si le staff a donné la sienne au PNJ
         if (!apparencePerso() && def.apparence != null && !def.apparence.equals(apparence())) definirApparence(def.apparence, false);
     }
 }

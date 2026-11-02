@@ -1,5 +1,5 @@
 {
-  "_aide": "Table de butin de la caisse de ravitaillement HeraliZ. tirages = [min, max] objets par caisse ; chaque entree : item, nbt (optionnel, format /give), min/max (quantite), poids (relatif). Les armes TaCZ passent par le NBT GunId, les soins et grenades HeraliZ par heralisz_tactical:consumable / throwable + ConsumableId / ThrowableId (les anciens ids heralisz_heal:x / heralisz_grenade:x sont convertis au chargement). Un objet d'un mod absent est ignore. Copie editable : config/heralisz_clans/ravitaillement.json (relue par /territoire recharger).",
+  "_aide": "Table de butin de la caisse de ravitaillement HeraliZ. tirages = [min, max] objets par caisse ; chaque entree : item, nbt (optionnel, format /give), min/max (quantite), poids (relatif). Les armes TaCZ passent par le NBT GunId, les soins et grenades HeraliZ par heralisz_tactical:consumable / throwable + ConsumableId / ThrowableId (les anciens ids heralisz_heal:x / heralisz_grenade:x sont convertis au chargement). Un objet d'un mod absent est ignore. Copie editable : config/heralisz_clans/ravitaillement.json (relue par /recharger territoires).",
   "tirages": [10, 14],
   "entrees": [
     {"item": "tacz:ammo", "nbt": "{AmmoId:\"tacz:762x39\"}", "min": 30, "max": 60, "poids": 80},

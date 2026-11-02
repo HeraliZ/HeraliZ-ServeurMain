@@ -821,7 +821,7 @@
   "heraliz_grades.staff.cmd.heraliz": "Ящики: просмотр; выдача, просмотр, снятие ключей (персонал).",
   "heraliz_grades.staff.cmd.combat": "Посмотреть, поставить или снять боевой тег игрока.",
   "heraliz_grades.staff.cmd.diag": "Диагностика сервера (замеры, утечки, клиент игрока).",
-  "heraliz_grades.staff.cmd.recharger": "Перечитывает данные всех модулей без перезапуска.",
+  "heraliz_grades.staff.cmd.recharger": "Перечитывает данные всех модулей без перезапуска (/recharger <модуль> для одного: quetes, caisses, casino, loot…).",
   "heraliz_grades.staff.cmd.redemarrage": "Мягкий перезапуск через N минут или отмена.",
   "heraliz_grades.staff.cmd.territoire": "Зоны кланов: флаги, перемещение, ценность, сложность.",
   "heraliz_grades.staff.cmd.eco": "Гералы игрока: выдать, снять, задать (оп 4), журнал, инфо.",

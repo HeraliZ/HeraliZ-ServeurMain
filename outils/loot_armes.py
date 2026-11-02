@@ -496,7 +496,7 @@ def ecrire_table(f, data):
     lignes.append(" ]")
     lignes.append("}")
     ecrire_texte(f, "\n".join(lignes) + "\n")
-    # copie dans la config du serveur (24/10) : celle-là compte en jeu et se relit sans redémarrer (/heralizloot tables) ;
+    # copie dans la config du serveur (24/10) : celle-là compte en jeu et se relit sans redémarrer (/recharger loot) ;
     # celle du jar sert seulement si la config manque
     CONFIG_COFFRES.mkdir(parents=True, exist_ok=True)
     ecrire_texte(CONFIG_COFFRES / f.name, "\n".join(lignes) + "\n")

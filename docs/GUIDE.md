@@ -69,7 +69,7 @@ Règles :
 
 | Dossier | Type Forge | Qui fait foi | Recharge |
 |---|---|---|---|
-| `serveur/config/` | COMMON / CLIENT, et fichiers JSON des mods | le dépôt **complète** le serveur ; un fichier changé en jeu à part (ex. `butin_jeu/`, `marchands_jeu.json`) n'est jamais écrasé | selon le mod (`/territoire recharger`, `/rarete recharger`…) |
+| `serveur/config/` | COMMON / CLIENT, et fichiers JSON des mods | le dépôt **complète** le serveur ; un fichier changé en jeu à part (ex. `butin_jeu/`, `marchands_jeu.json`) n'est jamais écrasé | selon le mod (`/recharger territoires`, `/recharger raretes`…) |
 | `serveur/defaultconfigs/` | SERVER (copiés dans `<monde>/serverconfig/`) | **le dépôt fait foi** : réécrit à chaque mise en ligne | redémarrage, ou relu par Forge à chaud pour certains |
 
 Données des joueurs **hors du monde** (survivent à un changement de carte), à la racine du serveur :
@@ -90,8 +90,8 @@ bases CRac, lieux de la carte, extractions…).
 | changer une recette de craft | tableaux de `outils/crafts.py` | relancer l'outil (gunpack `heraliz_crafts`) |
 | changer les dégâts d'une arme | tableaux de `outils/equilibrage_armes.py` | relancer l'outil |
 | changer une protection d'armure | `modules/equipement/outils/equilibrage_armures.py` | relancer, fabriquer `equipement` |
-| ajouter / changer une quête | `serveur/config/heraliz_quetes/pnj/varga.json` | `/quete recharger` ou redémarrage |
-| changer le butin d'une caisse | `serveur/config/heralizcrates/<caisse>.json` | `/heraliz reload` |
+| ajouter / changer une quête | `serveur/config/heraliz_quetes/pnj/varga.json` | `/recharger quetes` ou redémarrage |
+| changer le butin d'une caisse | `serveur/config/heralizcrates/<caisse>.json` | `/recharger caisses` |
 | changer un coût de base | `serveur/defaultconfigs/crac-building.toml` | mise en ligne + redémarrage |
 | changer la taille ou le prix des améliorations de clan | `modules/clans/src/commun/java/fr/heralisz/clans/model/Arbre.java` (`HERALS_MEMBRES`, niveaux requis) | fabriquer `clans` (les deux jars : chiffres affichés chez les joueurs) |
 | changer ce qu'un grade du staff peut faire | en jeu : panel du staff, onglet Permissions (Fondateur, op 4) | rien à fabriquer (gardé dans `heraliz_grades/panel_staff.json`) |
@@ -202,7 +202,7 @@ la fermeture, le serveur recycle tout ce qui a été déposé :
   fragments de cartes, clés, bons, objets à vie, prêtés par un match ou de quête.
 
 C'est un tri pour qui est plein, pas une source de richesse. Changer les chances ou les familles : tableaux en tête de
-`outils/recyclage.py`, puis `python outils/recyclage.py` (relu au démarrage et par `/quete recharger`).
+`outils/recyclage.py`, puis `python outils/recyclage.py` (relu au démarrage et par `/recharger quetes`).
 Même règle que les marchands : seulement au spawn, ni en combat, ni à terre, ni en match. Joueur mort ou déconnecté
 pendant que le coffre est ouvert : rien n'est recyclé, les objets tombent à ses pieds.
 
@@ -329,7 +329,7 @@ la mise en ligne l'efface du Ptero (son dossier de données y reste, sans effet)
   La liste des commandes jouées est la section `[recharger]` de `heraliz_noyau-server.toml`. Les réglages `.toml` se
   relisent seuls quand leur fichier change.
 - **Tables de loot** : celles de `serveur/config/heraliz_loot/coffres/` passent devant celles du jar et se relisent par
-  `/heralizloot tables`. `outils/loot_armes.py` écrit les deux copies.
+  `/recharger loot`. `outils/loot_armes.py` écrit les deux copies.
 - **Code Java** : Forge oblige à redémarrer. `/redemarrage <minutes> [raison]` (ou `annuler`) :
   1. compte à rebours annoncé à tous ;
   2. sauvegarde complète ;
@@ -440,7 +440,7 @@ monde).
 Code : `fr.heraliz.loot.ButinZombies` (module `loot`, serveur seulement). Tables et règles **écrites** par
 `python outils/loot_zombies.py` (jamais à la main) : `coffres/zombies.json` et `coffres/zombies_militaire.json` (même
 moteur que les conteneurs, un tirage par zombie, « rien » = `minecraft:air`), règles dans
-`serveur/config/heraliz_loot/zombies.json` (relues par `/heralizloot tables`). `--simuler` donne les valeurs moyennes.
+`serveur/config/heraliz_loot/zombies.json` (relues par `/recharger loot`). `--simuler` donne les valeurs moyennes.
 
 - **Ce qui sort** : objets de récupération à revendre, composants de fabrication I à III (jamais IV), petits matériaux
   (clous, corde, ciment), munitions, bandages, nourriture, plaques d'identité, rarement une capsule ou un kit de
@@ -466,7 +466,7 @@ moteur que les conteneurs, un tirage par zombie, « rien » = `minecraft:air`), 
 
 Code : `fr.heraliz.quetes.serveur.Journalieres` (module `pnj`), écran `client/EcranJournalieres` (maquettes validées :
 `maquettes/journalieres/`). Réglages **écrits** par `python outils/quetes_journalieres.py` dans
-`serveur/config/heraliz_quetes/journalieres.json` (relu par `/quete recharger`).
+`serveur/config/heraliz_quetes/journalieres.json` (relu par `/recharger quetes`).
 
 - Ouverture : `/journalieres`, bouton « Quêtes du jour » du journal (touche J), ou une touche libre à choisir dans les
   options. Une journée = de minuit à minuit, heure de Paris.

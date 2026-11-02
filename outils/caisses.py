@@ -18,7 +18,7 @@ erreurs connues y sont réparées : soins écrits « heralisz_heal:<id> » (obje
 « heralisz_tactical:throwable » + ThrowableId, objets de mods retirés enlevés.
 Le largage des frappes aériennes (table de butin airstrike:chests/supply_drop, module monde) est écrit ici aussi depuis
 le 24/10 : une arme Rare ou Épique, des munitions et du matériel militaire (avant : pommes d'or, diamants, perles…).
-Après une modification : /heraliz reload (ou redémarrage). Un butin changé en jeu (heraliz_crates/butin_jeu/) passe
+Après une modification : /recharger caisses (ou redémarrage). Un butin changé en jeu (heraliz_crates/butin_jeu/) passe
 devant ce fichier : `/heraliz loot fichier <caisse>` y revient.
 """
 import glob

@@ -19,8 +19,9 @@ import net.minecraft.world.item.ItemStack;
  * <li>/rarete aucune — pas de rareté propre (celle par défaut s'applique) ;</li>
  * <li>/rarete effacer — oublie le choix fait en jeu pour cet objet (celui de raretes.json revient) ;</li>
  * <li>/rarete voir (ou /rarete) — montre sa rareté ;</li>
- * <li>/rarete defaut &lt;niveau|aucune&gt; — rareté des objets qui n'en ont pas ;</li>
- * <li>/rarete recharger — relit config/heraliz_loot/raretes.json et raretes_jeu.json.</li></ul>
+ * <li>/rarete defaut &lt;niveau|aucune&gt; — rareté des objets qui n'en ont pas.</li></ul>
+ * config/heraliz_loot/raretes.json et raretes_jeu.json se relisent par /recharger du noyau (/recharger raretes ; 02/11 :
+ * plus de « /rarete recharger »).
  * Les choix faits en jeu vont dans raretes_jeu.json (jamais écrasé par la mise en ligne) et sont envoyés aussitôt à tous
  * les joueurs ({@link RaretesServeur}). Réponses en message direct.
  */
@@ -28,19 +29,22 @@ final class CommandesRarete {
     private CommandesRarete() {
     }
 
+    /** Raretés relues et renvoyées à tous les joueurs (joué par /recharger du noyau). */
+    private static int recharger(CommandSourceStack s) {
+        boolean ok = RaretesServeur.charger();
+        RaretesServeur.envoyerATous();
+        if (ok) s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.rarete.relues",
+                "Raretés relues et envoyées aux joueurs."), false);
+        else s.sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.illisible",
+                "Un fichier des raretés est illisible : gardé en .bad et ignoré (voir la console)."));
+        return ok ? 1 : 0;
+    }
+
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
+        Commandes.inscrireRechargement("raretes", CommandesRarete::recharger);
         LiteralArgumentBuilder<CommandSourceStack> racine = Commands.literal("rarete").requires(s -> s.hasPermission(2))
                 .executes(c -> voir(c.getSource()))
                 .then(Commands.literal("voir").executes(c -> voir(c.getSource())))
-                .then(Commands.literal("recharger").executes(c -> {
-                    boolean ok = RaretesServeur.charger();
-                    RaretesServeur.envoyerATous();
-                    if (ok) c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.rarete.relues",
-                            "Raretés relues et envoyées aux joueurs."), false);
-                    else c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.rarete.illisible",
-                            "Un fichier des raretés est illisible : gardé en .bad et ignoré (voir la console)."));
-                    return ok ? 1 : 0;
-                }))
                 .then(Commands.literal("aucune").executes(c -> definir(c.getSource(), null)))
                 .then(Commands.literal("effacer").executes(c -> effacer(c.getSource())));
         LiteralArgumentBuilder<CommandSourceStack> defaut = Commands.literal("defaut");

@@ -1,5 +1,5 @@
 """Quêtes journalières (26/10, demande du propriétaire) : la grande liste des quêtes et les tables de récompenses par
-difficulté. Écrit serveur/config/heraliz_quetes/journalieres.json (lu par HeraliZ Quêtes, relu par /quete recharger et
+difficulté. Écrit serveur/config/heraliz_quetes/journalieres.json (lu par HeraliZ Quêtes, relu par /recharger quetes et
 /recharger), jamais à la main.
 
     python outils/quetes_journalieres.py              écrit le fichier (après contrôle : chances = 100 %, objets connus)

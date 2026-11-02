@@ -50,6 +50,9 @@ public final class ClanCommands {
     @SubscribeEvent
     public static void onRegister(RegisterCommandsEvent e) {
         register(e.getDispatcher());
+        // 02/11 (audit point 36) : plus de « /clan admin recharger » ; /recharger (noyau) relit niveaux, XP et quêtes de clan
+        // (/recharger clans)
+        RechargementsNoyau.inscrire("clans", ClanCommands::adminRecharger);
     }
 
     // ------------------------------------------------------------------ aides
@@ -331,8 +334,7 @@ public final class ClanCommands {
                 .then(lit("quetes").then(mot("tag", SUGG_TAGS).executes(ClanCommands::adminQuetes)))
                 .then(lit("banniere").then(mot("tag", SUGG_TAGS).then(lit("reset").executes(ClanCommands::adminBanniereReset))))
                 .then(lit("perm").then(mot("tag", SUGG_TAGS).then(Commands.argument("joueur", StringArgumentType.word())
-                        .then(mot("perm", SUGG_PERMS).then(mot("etat", SUGG_ETATS).executes(ClanCommands::adminPerm))))))
-                .then(lit("recharger").executes(ClanCommands::adminRecharger));
+                        .then(mot("perm", SUGG_PERMS).then(mot("etat", SUGG_ETATS).executes(ClanCommands::adminPerm))))));
     }
 
     private static int adminInfo(CommandContext<CommandSourceStack> ctx) {
@@ -433,13 +435,14 @@ public final class ClanCommands {
         return 1;
     }
 
-    private static int adminRecharger(CommandContext<CommandSourceStack> ctx) {
+    /** Niveaux, XP et quêtes des clans relus (joué par /recharger du noyau). */
+    private static int adminRecharger(CommandSourceStack src) {
         Niveaux.charger(net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
         XpClan.charger(net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
         Quetes.recharger();
         ClanStore s = ClanStore.get();
         if (s != null) for (Clan c : s.tous()) Sync.marquer(c);
-        Reponses.ok(ctx.getSource(), Component.translatable("msg.admin.recharge", Quetes.tailleJour(), Quetes.tailleSemaine()));
+        Reponses.ok(src, Component.translatable("msg.admin.recharge", Quetes.tailleJour(), Quetes.tailleSemaine()));
         return 1;
     }
 

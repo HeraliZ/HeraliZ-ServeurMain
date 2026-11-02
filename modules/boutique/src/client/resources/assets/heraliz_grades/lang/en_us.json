@@ -821,7 +821,7 @@
   "heraliz_grades.staff.cmd.heraliz": "Crates: preview; keys given, viewed or removed (staff).",
   "heraliz_grades.staff.cmd.combat": "View, set or clear a player's combat tag.",
   "heraliz_grades.staff.cmd.diag": "Server diagnostics (measures, leaks, a player's client).",
-  "heraliz_grades.staff.cmd.recharger": "Reloads all modules' data without a restart.",
+  "heraliz_grades.staff.cmd.recharger": "Reloads all modules' data without a restart (/recharger <module> for one only: quetes, caisses, casino, loot…).",
   "heraliz_grades.staff.cmd.redemarrage": "Soft restart in N minutes, or cancel.",
   "heraliz_grades.staff.cmd.territoire": "Clan zones: flags, move, value, difficulty.",
   "heraliz_grades.staff.cmd.eco": "A player's herals: give, remove, set (op 4), log, info.",

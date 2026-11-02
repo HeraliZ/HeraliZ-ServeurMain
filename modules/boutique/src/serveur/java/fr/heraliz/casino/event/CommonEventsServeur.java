@@ -53,7 +53,7 @@ public final class CommonEventsServeur {
         CasinoNet.sendTo(player, new ConfigSyncPacket(jsonPour(player.getServer())));
     }
 
-    /** Apres /casino reload : tous les joueurs recoivent les nouveaux reglages. */
+    /** Apres /recharger casino : tous les joueurs recoivent les nouveaux reglages. */
     public static void broadcastConfig() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;

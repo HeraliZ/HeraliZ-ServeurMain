@@ -54,7 +54,7 @@ public final class LootEditing {
         return st;
     }
 
-    /** Empreinte du butin : refuse une sauvegarde faite sur une version perimee (autre admin, /heraliz reload...). */
+    /** Empreinte du butin : refuse une sauvegarde faite sur une version perimee (autre admin, /recharger caisses...). */
     private static int version(CrateLoot loot) {
         StringBuilder b = new StringBuilder();
         for (LootEntry e : loot.entries) b.append(e.toJson()).append('\n');

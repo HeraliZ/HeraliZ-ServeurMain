@@ -48,7 +48,7 @@ import java.util.UUID;
  * apparaissent autour des capteurs (a 0 %, 33 % et 66 % de la barre par defaut) et les attaquent, pour les pousser
  * hors de la zone. L'assaut s'arrete quand la barre retombe a 0 ou que la zone est prise : les zombies restants
  * disparaissent quelques secondes apres. Rien n'est sauvegarde : un zombie d'assaut retrouve apres un redemarrage est
- * retire. Reglages dans {@code config/heralisz_clans/assaut.json} (ecrit s'il manque, relu par /territoire recharger).
+ * retire. Reglages dans {@code config/heralisz_clans/assaut.json} (ecrit s'il manque, relu par /recharger territoires).
  */
 @Mod.EventBusSubscriber(modid = HeraliszClans.MODID)
 public final class Assauts {

@@ -1,7 +1,7 @@
 # HeraliZ Quêtes : guide du staff
 
 Ce dossier est copié sur le Ptero par la mise en ligne (`config/heraliz_quetes/`). **Le dépôt fait foi** : une
-modification faite à la main sur le serveur est écrasée au prochain envoi. Après un changement : `/quete recharger` en
+modification faite à la main sur le serveur est écrasée au prochain envoi. Après un changement : `/recharger quetes` en
 jeu (pas besoin de redémarrer).
 
 - `pnj/<id>.json` : un fichier par PNJ (son nom, ses phrases, sa suite de quêtes). Depuis le 18/10, un seul PNJ :
@@ -114,7 +114,7 @@ Un point non posé : le Guide dit sa phrase sans caméra. Gardés à la racine d
 ### Questions fréquentes (bouton « Questions »)
 
 Clé `faq` du fichier d'un PNJ (aujourd'hui Varga) : `[{"question": {"fr", "en", "ru"}, "reponse": {"fr", "en", "ru"}}]`.
-Le bouton apparaît dès qu'il y a une question ; 7 questions par page. Relu par `/quete recharger`.
+Le bouton apparaît dès qu'il y a une question ; 7 questions par page. Relu par `/recharger quetes`.
 
 ### Apparence des PNJ : le créateur de personnage (CaraCrea)
 
@@ -123,7 +123,7 @@ fichier, clé `"apparence"` : `{"skin_tone": "tan", "hair_style": "buzz", "facia
 "tank_top", "shirt_color": "olive", "marks": ["scar_brow"], "wear": "dirty"...}`. Les noms des choix sont ceux du
 créateur (teint, yeux, sourcils, nez, bouche, cheveux, barbe, haut, bas, chaussures et leurs couleurs, marques, usure ;
 liste complète : `mods/caracrea/src/commun/java/com/caracrea/character/Catalog.java`). Le PNJ suit son fichier tout
-seul (après `/quete recharger`).
+seul (après `/recharger quetes`).
 
 | Commande | Effet |
 |---|---|
@@ -244,7 +244,7 @@ Une quête dont la dernière étape ne se fait pas chez le PNJ se termine en rev
 ## Recycleur
 
 PNJ `recycleur` (`pnj/recycleur.json`, marchand `"type": "recyclage"`) : à poser une fois au spawn, `/pnj creer recycleur`.
-Ses règles sont dans `recyclage.json`, **écrit par `outils/recyclage.py`** (jamais à la main) ; relu par `/quete recharger`.
+Ses règles sont dans `recyclage.json`, **écrit par `outils/recyclage.py`** (jamais à la main) ; relu par `/recharger quetes`.
 
 PNJ `commissaire` (`pnj/commissaire.json`, marchand `"type": "hdv"`, 28/10) : le commissaire-priseur ; son bouton ouvre
 l'hôtel des ventes de HeraliZ Grades (`/hdv`, mêmes règles : au spawn seulement). À poser une fois : `/pnj creer commissaire`.

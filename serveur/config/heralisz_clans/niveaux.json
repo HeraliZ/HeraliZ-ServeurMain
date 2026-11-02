@@ -1,9 +1,9 @@
 {
-  "_aide": "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore), multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ; membres et territoires : arbre d'ameliorations du clan ; membres : section membres (niveau du clan) ; plafonds_jour et dons : lus par le serveur (XpClan), relus par /clan admin recharger. 31/10 : nouvelle courbe 3 600 x (1 + 0,065 (n - 1)), arrondie a 100 (3 600 XP pour le niveau 2, 13 700 pour le dernier, ~380 000 en tout) ; 28/10 : ancienne courbe 20 x n^1,5 x 3.",
+  "_aide": "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore), multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ; membres et territoires : arbre d'ameliorations du clan ; membres : section membres (niveau du clan) ; plafonds_jour et dons : lus par le serveur (XpClan), relus par /recharger clans. 31/10 : nouvelle courbe 3 600 x (1 + 0,065 (n - 1)), arrondie a 100 (3 600 XP pour le niveau 2, 13 700 pour le dernier, ~380 000 en tout) ; 28/10 : ancienne courbe 20 x n^1,5 x 3.",
   "facteur_xp": 1.0,
   "facteur_prix_arbre": 2.0,
   "membres": {
-    "_aide": "Membres au plus d'un clan, donnes tout seuls par son niveau (rien a acheter) : depart, puis +1 a chaque niveau de niveaux_paliers atteint (31/10 : 5 membres au niveau 2, 6 au 5, 7 au 10, 8 au 15) ; 4 niveaux au plus (8 membres avec le depart a 4). Un clan deja au-dessus de son maximum garde ses membres mais n'invite plus personne. Relu par /clan admin recharger.",
+    "_aide": "Membres au plus d'un clan, donnes tout seuls par son niveau (rien a acheter) : depart, puis +1 a chaque niveau de niveaux_paliers atteint (31/10 : 5 membres au niveau 2, 6 au 5, 7 au 10, 8 au 15) ; 4 niveaux au plus (8 membres avec le depart a 4). Un clan deja au-dessus de son maximum garde ses membres mais n'invite plus personne. Relu par /recharger clans.",
     "depart": 4,
     "niveaux_paliers": [
       2,

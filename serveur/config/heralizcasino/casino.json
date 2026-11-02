@@ -1,5 +1,5 @@
 {
-  "aide": "Voir le README de Heraliz Casino. Gains = somme rendue (mise comprise) sauf mention contraire. Apres modification : /casino reload",
+  "aide": "Voir le README de Heraliz Casino. Gains = somme rendue (mise comprise) sauf mention contraire. Apres modification : /recharger casino",
   "general": {
     "announce_min_profit": 5000,
     "announce_min_multiplier": 10.0,

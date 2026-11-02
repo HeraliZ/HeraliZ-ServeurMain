@@ -44,7 +44,7 @@ import org.slf4j.Logger;
  * une décharge entière faisait 4 au lieu de 36) ; une arme dont TaCZ donne 0 dégât (quelques fusils anti-matériel des gunpacks) prend
  * « degats » tel quel. Arme absente du fichier, créatures, fichier absent ou « actif » à false : rien ne change. Fichier
  * relu à chaque démarrage du serveur, et envoyé à chaque joueur qui se connecte (chiffres affichés chez lui).
- * <p>Relu en marche (audit du 02/11, mineur 12) par {@code /armurier recharger} (op 4, joué aussi par {@code /recharger}) :
+ * <p>Relu en marche (audit du 02/11, mineur 12) par {@code /recharger armes} (op 4 ; aussi par {@code /recharger} seul, avec tous les modules) :
  * réglages renvoyés aux joueurs connectés ; un fichier illisible à ce moment ne change rien (les anciens réglages restent,
  * l'erreur va au staff).</p>
  * <p>« plafond » (fusils à pompe, 24/10, choix du propriétaire : « pas de gros one tap mais utilisable ») : dégâts au plus
@@ -89,7 +89,7 @@ public final class DegatsArmes {
    }
 
    /**
-    * {@code /armurier recharger} : armes.json relu et renvoyé aux joueurs connectés. Fichier illisible : les anciens réglages
+    * {@code /recharger armes} : armes.json relu et renvoyé aux joueurs connectés. Fichier illisible : les anciens réglages
     * restent. Renvoie le nombre d'armes réglées, ou -1 si le fichier est illisible.
     */
    public static int recharger(MinecraftServer serveur) {

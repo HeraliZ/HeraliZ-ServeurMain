@@ -47,6 +47,9 @@ final class Commandes {
             SharedSuggestionProvider.suggest(Moteur.points().tous().stream().map(Points.Point::groupe).distinct(), b);
 
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
+        // 02/11 (audit point 36) : plus de « /quete recharger » ; /recharger (noyau) relit les PNJ, les quêtes, les quêtes du
+        // jour, les marchands et le recycleur (/recharger quetes pour eux seuls)
+        inscrireRechargement("quetes", Commandes::recharger);
         // 20/10 : remise à zéro complète d'un joueur (op seulement), « confirmer » pour éviter un accident
         d.register(Commands.literal("wipe").requires(src -> src.hasPermission(4))
                 .then(WipeServeur.commande())
@@ -133,7 +136,6 @@ final class Commandes {
                 .then(Commands.literal("points").executes(c -> listePoints(c, ""))
                         .then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
                                 .executes(c -> listePoints(c, StringArgumentType.getString(c, "groupe")))))
-                .then(Commands.literal("recharger").executes(Commandes::recharger))
                 .then(Commands.literal("joueur").then(Commands.argument("joueur", EntityArgument.player())
                         .executes(c -> voirJoueur(c, EntityArgument.getPlayer(c, "joueur")))))
                 // 02/11 (audit point 36) : finir (dépannage, donne la récompense) réservé aux op 4
@@ -149,6 +151,19 @@ final class Commandes {
                         .then(Commands.argument("quete", StringArgumentType.word())
                                 .executes(c -> donnerQuete(c, EntityArgument.getPlayer(c, "joueur"),
                                         StringArgumentType.getString(c, "pnj"), StringArgumentType.getString(c, "quete"))))))));
+    }
+
+    /**
+     * Inscrit un rechargement dans /recharger du noyau (fr.heraliz.noyau.api.Rechargements), par réflexion : aucune
+     * dépendance de compilation. Sans le noyau, ces fichiers ne se relisent qu'au redémarrage (dit dans le journal).
+     */
+    static void inscrireRechargement(String nom, java.util.function.ToIntFunction<CommandSourceStack> action) {
+        try {
+            Class.forName("fr.heraliz.noyau.api.Rechargements").getMethod("ajouter", String.class, java.util.function.ToIntFunction.class)
+                    .invoke(null, nom, action);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            com.mojang.logging.LogUtils.getLogger().warn("[Quêtes] /recharger du noyau introuvable : « {} » ne se relit qu'au redémarrage ({})", nom, e.toString());
+        }
     }
 
     /** Outils d'essai (quête donnée, quêtes du jour forcées) : seulement sur un serveur d'essai qui a le banc (heraliz_banc). */
@@ -372,13 +387,15 @@ final class Commandes {
         return ok ? 1 : 0;
     }
 
-    private static int recharger(CommandContext<CommandSourceStack> c) {
+    /** Rechargement des quêtes, joué par /recharger du noyau. */
+    private static int recharger(CommandSourceStack s) {
         List<String> erreurs = new java.util.ArrayList<>(Catalogue.charger());
         if (!Journalieres.charger()) erreurs.add("config/heraliz_quetes/journalieres.json illisible : quêtes du jour inchangées");
         Moteur.oublierContrats();
         Ponts.relireArmes();
-        dire(c, "heraliz_quetes.cmd.recharge", "%s PNJ relus.", Catalogue.tous().size());
-        for (String e : erreurs) c.getSource().sendFailure(Component.literal(e));
+        int n = Catalogue.tous().size();
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.cmd.recharge", "%s PNJ relus.", n), false);
+        for (String e : erreurs) s.sendFailure(Component.literal(e));
         if (Moteur.serveur != null) for (ServerPlayer p : Moteur.serveur.getPlayerList().getPlayers()) Moteur.envoyerSuivi(p);
         return 1;
     }

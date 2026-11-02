@@ -417,7 +417,7 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         return n;
     }
 
-    /** Verdicts refaits seulement pour les cases qui ont changé (ou toutes, après {@code /quete recharger}). */
+    /** Verdicts refaits seulement pour les cases qui ont changé (ou toutes, après {@code /recharger quetes}). */
     private void verdicts() {
         if (versionRegles != Recyclage.version) {
             versionRegles = Recyclage.version;

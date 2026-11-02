@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Les PNJ et leurs quêtes, lus dans {@code config/heraliz_quetes/pnj/*.json} au démarrage et à /quete recharger. Un
+ * Les PNJ et leurs quêtes, lus dans {@code config/heraliz_quetes/pnj/*.json} au démarrage et à /recharger quetes. Un
  * fichier illisible est sauté (avec la raison dans le journal et dans la réponse de la commande) : les autres restent.
  */
 final class Catalogue {

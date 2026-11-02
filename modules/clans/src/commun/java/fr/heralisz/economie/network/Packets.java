@@ -28,7 +28,7 @@ public final class Packets {
     }
 
     /**
-     * Nouveau solde du joueur. delta = variation (0 a la connexion ou apres /eco recharger), motif = chaine du
+     * Nouveau solde du joueur. delta = variation (0 a la connexion ou apres /recharger herals), motif = chaine du
      * serveur (« quete:zombies », « paiement »…, 64 caracteres max) que le client rend lisible.
      */
     public record SoldeS2C(long solde, long delta, String motif) {

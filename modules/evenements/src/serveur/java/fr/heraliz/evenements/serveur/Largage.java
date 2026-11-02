@@ -52,7 +52,7 @@ import java.util.concurrent.CompletableFuture;
  * avant, rappel 3 minutes avant ; puis un avion cargo passe et la caisse descend en parachute avec sa fumée. Le clan du
  * PREMIER joueur qui ouvre la caisse gagne les points {@code events.points.largage} du barème de la saison (plafond
  * {@code events.par_jour.largage} par clan et par jour). Réglages : {@code config/heraliz_evenements/largage.json}
- * (relu par {@code /event recharger}) ; lieux posés par le staff ({@code /event point ajouter largage <nom>}) si le réglage
+ * (relu par {@code /recharger evenements}) ; lieux posés par le staff ({@code /event point ajouter largage <nom>}) si le réglage
  * {@code lieux} le demande. Réutilise tel quel le largage des frappes aériennes (avion, parachute, caisse, butin,
  * disparition). Coût : une comparaison d'heure par seconde.
  * <p>
@@ -559,7 +559,7 @@ final class Largage implements Evenement {
                 + " depart de l'avion et le point (100 a 2000) ; marge_bordure : blocs a eviter"
                 + " pres de la bordure du monde ; loin_des_bases : blocs autour des bases des clans ; zone : [x1, z1, x2, z2] pour limiter"
                 + " le tirage (absent : toute la bordure) ; essais : points lus en tache de fond au plus (jamais hors de la carte construite,"
-                + " jamais dans une zone VIP). Relu par /event recharger.");
+                + " jamais dans une zone VIP). Relu par /recharger evenements.");
         o.addProperty("lieux", "hasard");
         o.addProperty("annonce_minutes", 6);
         o.addProperty("rappel_minutes", 3);

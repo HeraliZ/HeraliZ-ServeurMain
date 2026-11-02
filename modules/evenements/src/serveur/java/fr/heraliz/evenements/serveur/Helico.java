@@ -81,7 +81,7 @@ import java.util.UUID;
  * monde, {@code Abattu.sol}), sinon rien (journal). Tronçon pas chargé : un ticket le demande, l'objet est posé dès qu'il
  * est là ({@link #objetsEnAttente}).</li>
  * </ul>
- * Réglages : {@code config/heraliz_evenements/helico.json} (relu par {@code /event recharger}). Hors événement : une
+ * Réglages : {@code config/heraliz_evenements/helico.json} (relu par {@code /recharger evenements}). Hors événement : une
  * comparaison d'heure par minute ({@link #minute}).
  */
 final class Helico implements Evenement {
@@ -705,7 +705,7 @@ final class Helico implements Evenement {
                 + " vol_max_minutes. Sans coup recu depuis regen_apres_s secondes, il regagne regen_pct_par_s % de ses PV par seconde."
                 + " Points de saison : aucun a la destruction ; seulement la boite noire, revendue a Mila"
                 + " (events.points.objet_boite_noire_helico). Butin : coffre_t7 (HeraliZ Loot) pendant coffre_t7_minutes a la fin du"
-                + " feu de l'epave. Relu par /event recharger.");
+                + " feu de l'epave. Relu par /recharger evenements.");
         o.addProperty("joueurs_min", 10);
         o.addProperty("pause_minutes", 240);
         o.addProperty("fenetre_minutes", 120);

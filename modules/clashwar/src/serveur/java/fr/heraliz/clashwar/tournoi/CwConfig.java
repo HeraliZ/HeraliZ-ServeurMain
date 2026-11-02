@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Reglages du ClashWar (MATCHS_SPEC §2.1, §2.6) : fichier {@code <serveur>/heraliz_clashwar/clashwar.json}, cree avec les
  * valeurs par defaut au premier demarrage (ecriture atomique .tmp + ATOMIC_MOVE), relu au demarrage et par
- * {@code /clashwar recharger}. Les champs absents ou invalides gardent leur defaut (lecture tolerante).
+ * {@code /recharger clashwar}. Les champs absents ou invalides gardent leur defaut (lecture tolerante).
  * <p>Fil serveur. Valeurs publiques en lecture seule par convention.
  */
 public final class CwConfig {
@@ -192,7 +192,7 @@ public final class CwConfig {
     private JsonObject toJson() {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", "ClashWar HeraliZ : jours (MONDAY..SUNDAY ou lundi..dimanche), heure HH:MM de depart, "
-                + "rotation des formats (1v1, 2v2, 3v3, 4v4), format_fixe vide = rotation ; /clashwar recharger pour relire.");
+                + "rotation des formats (1v1, 2v2, 3v3, 4v4), format_fixe vide = rotation ; /recharger clashwar pour relire.");
         JsonArray j = new JsonArray();
         for (DayOfWeek d : jours) j.add(d.name());
         o.add("jours", j);

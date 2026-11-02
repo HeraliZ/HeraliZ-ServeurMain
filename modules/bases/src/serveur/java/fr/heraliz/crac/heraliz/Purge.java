@@ -505,12 +505,13 @@ public final class Purge {
                 Reply.ok(c.getSource(), Component.literal("Purge arrêtée (jusqu'au prochain créneau)."));
                 Crac.LOGGER.info("[CRac] Purge {} arrêtée par {}", f.id(), c.getSource().getTextName());
                 return 1;
-            }))
-            .then(Commands.literal("recharger").requires(s -> s.hasPermission(4)).executes(c -> {
-                charger();
-                Reply.ok(c.getSource(), Component.literal("purge.json relu : " + CRENEAUX.size() + " créneau(x)."));
-                return 1;
             })));
+        // 02/11 (audit point 36) : plus de « /purge recharger » ; /recharger (noyau) relit purge.json (/recharger purge)
+        RechargementsNoyau.inscrire("purge", s -> {
+            charger();
+            Reply.ok(s, Component.literal("purge.json relu : " + CRENEAUX.size() + " créneau(x)."));
+            return 1;
+        });
     }
 
     private static int info(CommandSourceStack src) {

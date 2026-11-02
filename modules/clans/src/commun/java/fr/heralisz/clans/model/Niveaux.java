@@ -18,7 +18,7 @@ import java.nio.file.Path;
  * Table des niveaux : XP necessaire pour passer du niveau n au suivant. Depuis la saison des clans (22/10), le niveau
  * maximum est celui qui permet de tout prendre dans l'arbre ({@link Arbre#pointsTotaux()} = 45) et chaque niveau est
  * plus dur que le precedent. Les territoires viennent de l'arbre ({@link Arbre}) ; les membres, du niveau seul (31/10). Valeurs
- * surchargees par config/heralisz_clans/niveaux.json (ecrit s'il manque, relu par /clan admin recharger).
+ * surchargees par config/heralisz_clans/niveaux.json (ecrit s'il manque, relu par /recharger clans).
  * <p>
  * 31/10 (demande du proprietaire : « beaucoup trop facile des le debut », et pas 250 XP pour le niveau 2, moins qu'une
  * seule quete du jour) : nouvelle courbe {@code arrondi100(3 600 x (1 + 0,065 (n - 1)))} : 3 600 XP pour le niveau 2
@@ -93,7 +93,7 @@ public final class Niveaux {
         o.addProperty("_aide", "index = niveau - 1 ; xp_suivant = XP de base pour passer au niveau suivant (le dernier est ignore),"
                 + " multipliee par facteur_xp ; facteur_prix_arbre multiplie les herals des paliers de l'arbre du clan ;"
                 + " territoires : arbre d'ameliorations du clan ; membres : section membres (niveau du clan) ; plafonds_jour et"
-                + " dons : lus par le serveur (XpClan), relus par /clan admin recharger");
+                + " dons : lus par le serveur (XpClan), relus par /recharger clans");
         o.addProperty("facteur_xp", facteurXp);
         o.addProperty("facteur_prix_arbre", Arbre.facteurPrixPct() / 100.0);
         o.add("xp_suivant", ax);
@@ -115,7 +115,7 @@ public final class Niveaux {
     private static final String AIDE_MEMBRES = "Membres au plus d'un clan, donnes tout seuls par son niveau (rien a acheter) :"
             + " depart, puis +1 a chaque niveau de niveaux_paliers atteint (31/10 : 5 membres au niveau 2, 6 au 5, 7 au 10, 8"
             + " au 15) ; 4 niveaux au plus (8 membres avec le depart a 4). Un clan deja au-dessus de son maximum garde ses"
-            + " membres mais n'invite plus personne. Relu par /clan admin recharger.";
+            + " membres mais n'invite plus personne. Relu par /recharger clans.";
 
     /** Lit la section « membres » (absente ou illisible : valeurs par defaut) ; vrai si elle etait absente. */
     private static boolean lireMembres(JsonObject o) {

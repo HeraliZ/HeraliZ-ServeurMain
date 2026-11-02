@@ -6,9 +6,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import fr.heraliz.noyau.NoyauConfig;
+import fr.heraliz.noyau.api.Rechargements;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
@@ -22,13 +24,17 @@ import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.ToIntFunction;
 
 /**
  * Mises à jour sans tout couper (24/10, ARCHITECTURE.md §3). Opérateurs niveau 4 et console.
  * <ul>
- *     <li>{@code /recharger} : relit les données de tous les modules sans redémarrer ni déconnecter personne, en jouant
- *     leurs commandes de rechargement (liste {@code [recharger] commandes} de {@code heraliz_noyau-server.toml}). Les
- *     réglages en .toml se relisent seuls quand leur fichier change.</li>
+ *     <li>{@code /recharger [module]} : relit les données de tous les modules (ou d'un seul) sans redémarrer ni déconnecter
+ *     personne. 02/11 (audit point 36) : chaque module inscrit sa relecture dans {@link Rechargements} (quêtes, caisses,
+ *     casino, raretés, tables de loot, saison, territoires, clans, hérals, Purge, coffres des bases, zones, ClashWar,
+ *     événements, dégâts des armes, modpack officiel de l'anticheat) au lieu d'avoir sa propre sous-commande
+ *     « recharger » ; puis les commandes en plus de {@code [recharger] commandes} de {@code heraliz_noyau-server.toml}
+ *     (vide par défaut). Les réglages en .toml se relisent seuls quand leur fichier change.</li>
  *     <li>{@code /redemarrage <minutes> [raison]} (ou {@code annuler}) : pour du code Java, Forge oblige à redémarrer.
  *     Compte à rebours annoncé à tous (titre et chat à 5, 3, 2 et 1 min, 30 s puis chaque seconde des 10 dernières),
  *     sauvegarde complète, joueurs déconnectés avec le message {@value #CLE_DECONNEXION} (leur jeu se reconnecte tout seul
@@ -71,7 +77,10 @@ public final class Maintenance {
     }
 
     public static void commandes(CommandDispatcher<CommandSourceStack> d) {
-        d.register(Commands.literal("recharger").requires(s -> s.hasPermission(4)).executes(Maintenance::recharger));
+        d.register(Commands.literal("recharger").requires(s -> s.hasPermission(4)).executes(c -> recharger(c, null))
+                .then(Commands.argument("module", StringArgumentType.word())
+                        .suggests((c, b) -> SharedSuggestionProvider.suggest(Rechargements.noms(), b))
+                        .executes(c -> recharger(c, StringArgumentType.getString(c, "module")))));
         d.register(Commands.literal("redemarrage").requires(s -> s.hasPermission(4))
                 .then(Commands.literal("annuler").executes(Maintenance::annuler))
                 .then(Commands.argument("minutes", IntegerArgumentType.integer(0, 60))
@@ -81,15 +90,36 @@ public final class Maintenance {
     }
 
     // ------------------------------------------------------------------ /recharger
-    private static int recharger(CommandContext<CommandSourceStack> c) {
+    /** {@code module} null : tous les modules inscrits, puis les commandes en plus du réglage ; sinon ce module seulement. */
+    private static int recharger(CommandContext<CommandSourceStack> c, String module) {
         CommandSourceStack s = c.getSource();
         List<String> rates = new ArrayList<>();
         int faites = 0;
-        for (String cmd : NoyauConfig.RECHARGER_COMMANDES.get()) {
-            String commande = cmd.startsWith("/") ? cmd.substring(1) : cmd;
-            int r = s.getServer().getCommands().performPrefixedCommand(s, commande);
+        List<String> noms = module == null ? Rechargements.noms() : List.of(module);
+        for (String nom : noms) {
+            ToIntFunction<CommandSourceStack> action = Rechargements.action(nom);
+            if (action == null) {
+                rates.add(nom);
+                continue;
+            }
+            int r;
+            try {
+                r = action.applyAsInt(s);
+            } catch (RuntimeException ex) {
+                // un module en erreur n'empêche pas les autres
+                LOG.error("[recharger] {} : erreur", nom, ex);
+                r = 0;
+            }
             if (r > 0) faites++;
-            else rates.add(commande);
+            else rates.add(nom);
+        }
+        if (module == null) {
+            for (String cmd : NoyauConfig.RECHARGER_COMMANDES.get()) {
+                String commande = cmd.startsWith("/") ? cmd.substring(1) : cmd;
+                int r = s.getServer().getCommands().performPrefixedCommand(s, commande);
+                if (r > 0) faites++;
+                else rates.add(commande);
+            }
         }
         int n = faites;
         s.sendSuccess(() -> Component.translatableWithFallback("noyau.recharger.fait", "[Recharger] %s rechargement(s) faits, sans redémarrer.",

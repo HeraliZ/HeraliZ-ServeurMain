@@ -107,7 +107,7 @@ public final class Territoires {
         List<Zone> lues = Zones.charger(fichierZones);
         if (lues == null) {
             zonesIllisibles = true;
-            HeraliszClans.LOG.error("[clans] zones.json illisible : territoires en lecture seule, corrigez le fichier puis /territoire recharger");
+            HeraliszClans.LOG.error("[clans] zones.json illisible : territoires en lecture seule, corrigez le fichier puis /recharger territoires");
         } else {
             for (Zone z : lues) zones.put(z.id, z);
         }
@@ -794,7 +794,7 @@ public final class Territoires {
     // ------------------------------------------------------------------ administration (/territoire)
     public void sauvegarderZones() {
         if (zonesIllisibles) {
-            HeraliszClans.LOG.error("[clans] zones.json non reecrit : le fichier etait illisible au chargement (corrigez-le puis /territoire recharger)");
+            HeraliszClans.LOG.error("[clans] zones.json non reecrit : le fichier etait illisible au chargement (corrigez-le puis /recharger territoires)");
             return;
         }
         Zones.ecrire(fichierZones, zones.values());

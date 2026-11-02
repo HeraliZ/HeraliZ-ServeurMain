@@ -5,7 +5,7 @@
   serveur/config/heraliz_loot/coffres/) : même format et même moteur que les conteneurs (TablesCoffres de HeraliZ Loot) ;
   UN tirage par zombie (la case « rien » est l'entrée minecraft:air) ;
 - serveur/config/heraliz_loot/zombies.json : règles lues par le serveur (fr.heraliz.loot.ButinZombies) : quels zombies,
-  quelle table, chances des fragments de cartes d'accès, anti-farm. Relu par /heralizloot tables (et /recharger).
+  quelle table, chances des fragments de cartes d'accès, anti-farm. Relu par /recharger loot (ou /recharger, avec tous les modules).
 
     python outils/loot_zombies.py              écrit les tables et les règles
     python outils/loot_zombies.py --simuler    valeurs moyennes : conteneur, zombie, heure de jeu ; fragments
