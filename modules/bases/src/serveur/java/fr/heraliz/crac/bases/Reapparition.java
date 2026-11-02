@@ -70,10 +70,16 @@ public final class Reapparition {
         if (base == null || !base) {
             return;
         }
+        fr.heraliz.crac.claim.Claim c = TeleportBase.base(p);
         int r = TeleportBase.teleporter(p);
         if (r == TeleportBase.OK) {
             Deplacements.apres(p, T.t("crac.reapparition.base", "Te voici à ta base. Prochaine téléportation vers ta base (/home compris) dans %s.",
                 T.duree(TeleportBase.resteMs(p) + 999)).withStyle(ChatFormatting.GREEN));
+        } else if (r < 0 && c != null && c.home() != null) {
+            // HeraliZ (03/11) : home posé de la base bouché ou plus sûr
+            Deplacements.apres(p, T.t("crac.reapparition.obstrue_home",
+                "Réapparition à la base impossible : le home « %s » est bouché ou n'est plus sûr. Te voici au camp.", c.homeNom())
+                .withStyle(ChatFormatting.RED));
         } else if (r < 0) {
             Deplacements.apres(p, T.t("crac.reapparition.obstrue",
                 "Réapparition à la base impossible : la place devant l'armoire est bouchée. Te voici au camp.").withStyle(ChatFormatting.RED));

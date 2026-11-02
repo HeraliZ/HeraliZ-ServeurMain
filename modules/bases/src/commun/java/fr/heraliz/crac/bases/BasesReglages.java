@@ -71,7 +71,7 @@ public final class BasesReglages {
             .defineInRange("ecart_bases", 120, 0, 4096);
         b.pop();
 
-        b.comment("/home (du spawn vers l'armoire de la base de son clan), /rtp (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).").push("home");
+        b.comment("/home (du spawn vers le home de la base de son clan, pose avec /sethome ; devant l'armoire pour une base d'avant le 03/11), /rtp (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).").push("home");
         HOME_DELAI_S = b.comment("Secondes entre deux teleportations vers la base, /home ET reapparition a la base partagees (25/10 : 480 = 8 min ;",
                 "l'arbre du clan retire 1 min par palier de la branche « tp »). Gardees au redemarrage, jamais remises a zero par la mort.")
             .defineInRange("delai_s", 480, 0, 86_400);
@@ -79,9 +79,9 @@ public final class BasesReglages {
             .defineInRange("immobile_s", 3, 0, 60);
         ZONE_DELAI_S = b.comment("Secondes entre deux /rtp (alias /rtp) d'un meme joueur (gardees au redemarrage).")
             .defineInRange("zone_delai_s", 300, 0, 86_400);
-        HOMES_BASE = b.comment("Plus lu depuis le 25/10 (/home va toujours devant l'armoire de la base du clan).")
+        HOMES_BASE = b.comment("Plus lu depuis le 25/10 (un seul home par base, pose avec /sethome depuis le 03/11).")
             .defineInRange("homes_base", 1, 0, 100);
-        HOMES_PAR_GRADE = b.comment("Plus lu depuis le 25/10 (/home va toujours devant l'armoire de la base du clan).")
+        HOMES_PAR_GRADE = b.comment("Plus lu depuis le 25/10 (un seul home par base, pose avec /sethome depuis le 03/11).")
             .defineInRange("homes_par_grade", 1, 0, 100);
         SPAWN_RAYON = b.comment("Blocs autour du point /spawn defini par le staff (/spawn definir) qui comptent comme « au spawn »",
                 "pour /home et /rtp (le monde du spawn heralisz:spawn compte toujours en entier).")

@@ -18,7 +18,8 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/clan` | Clans | créer, inviter, banque, coffre, dons, améliorations, quitter |
 | `/saison` | Clans | points et classement de la saison des clans |
 | `/herals` (`payer <joueur> <montant>`, `classement`) | Clans | son argent, payer un joueur, les plus riches |
-| `/home` | CRac | du spawn, devant l'armoire de la base de son clan (droit de clan, délai de 8 min partagé avec la réapparition à la base) |
+| `/home` | CRac | du spawn, vers le home de la base de son clan (droit de clan, délai de 8 min partagé avec la réapparition à la base) ; base posée avant le 03/11 sans home posé : devant l'armoire |
+| `/sethome [nom]` | CRac | (03/11) poser le home de la base de son clan, là où l'on est : dans la zone de l'armoire, à un endroit sûr, droit « Gérer la base » ; un seul par base, le nouveau remplace l'ancien (nom de la commande : `Homes.COMMANDE_POSER`) |
 | `/rtp` | CRac | aller du spawn vers un point libre pour sa base |
 | `/spawn` | CRac | retour au spawn depuis sa base (`definir`, `effacer`, `voir` : staff) |
 | `/base info` | CRac | fiche des bases (coûts, raids) ; `/base effacer` : op |
@@ -97,7 +98,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 
 | Avant | Maintenant |
 |---|---|
-| `/sethome`, `/delhome`, `/homes`, `/home poser` | `/home` seul : le point est toujours devant l'armoire de la base du clan |
+| `/sethome`, `/delhome`, `/homes`, `/home poser` | `/home` seul : le point est toujours devant l'armoire de la base du clan (03/11 : `/sethome [nom]` revient, un home par base posé par le joueur, plus aucun home créé tout seul) |
 | `/zone base` | `/rtp` (c'était le même) |
 | `/tpaccept`, `/tpdeny` | `/tpa accepter`, `/tpa refuser` (boutons cliquables dans le chat) |
 | `/lier`, `/delier` | `/discord lier`, `/discord delier` |

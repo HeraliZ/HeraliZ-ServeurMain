@@ -126,8 +126,8 @@ public final class ClaimBlockHandler {
         }
         C2SRequestNearbyClaimsTraitement.pushAll(level);
         player.displayClientMessage(Txt.green("crac.claim.created", g.name(), tier, Config.claimRadius(tier)), false);
-        // monde des bases : home « base » du joueur s'il n'en a aucun (/home du spawn)
-        fr.heraliz.crac.bases.Homes.premiereBase(player, level, pos);
+        // HeraliZ (03/11, demande du propriétaire) : plus de home créé tout seul ; le joueur pose le home de sa base lui-même
+        fr.heraliz.crac.bases.Homes.armoirePosee(player, level);
         // tutoriel : l'armoire tournée vers la pièce et poussée dans l'angle (1.11.0)
         fr.heraliz.crac.bases.Tutoriel.armoirePosee(player, level, pos);
         return null;

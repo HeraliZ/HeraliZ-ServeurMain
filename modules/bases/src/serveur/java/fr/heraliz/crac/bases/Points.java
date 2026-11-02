@@ -47,6 +47,23 @@ final class Points {
         return null;
     }
 
+    /**
+     * HeraliZ (03/11) : un home sûr aux pieds {@code pieds} (position exacte : un plancher à mi-bloc compte) : le corps du
+     * joueur debout n'entre dans aucun bloc ni liquide, et un sol le porte juste dessous (jamais au-dessus du vide).
+     */
+    static boolean homeSur(ServerLevel level, ServerPlayer p, Vec3 pieds) {
+        BlockPos b = BlockPos.containing(pieds);
+        if (!level.isLoaded(b) || !level.getWorldBorder().isWithinBounds(b)) {
+            return false;
+        }
+        AABB corps = p.getDimensions(net.minecraft.world.entity.Pose.STANDING).makeBoundingBox(pieds);
+        if (!level.noCollision(p, corps) || level.containsAnyLiquid(corps)) {
+            return false;
+        }
+        AABB dessous = new AABB(corps.minX, corps.minY - 0.25, corps.minZ, corps.maxX, corps.minY, corps.maxZ);
+        return level.getBlockCollisions(p, dessous).iterator().hasNext() && !level.containsAnyLiquid(dessous);
+    }
+
     /** Pieds libres (corps du joueur sans collision ni liquide), un sol dessous. */
     static boolean libre(ServerLevel level, ServerPlayer p, BlockPos pieds) {
         if (!level.isLoaded(pieds) || !level.getWorldBorder().isWithinBounds(pieds)) {

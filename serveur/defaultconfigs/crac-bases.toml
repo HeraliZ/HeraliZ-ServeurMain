@@ -21,7 +21,7 @@
 	#Range: 0 ~ 4096
 	ecart_bases = 120
 
-#/home (du spawn vers un de ses homes), /rtp (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).
+#/home (du spawn vers le home de la base de son clan, pose avec /sethome ; devant l'armoire pour une base d'avant le 03/11), /rtp (du spawn vers un point au hasard du monde des bases) et /spawn (de sa base vers le spawn).
 [home]
 	#Secondes entre deux teleportations vers la base, /home ET reapparition a la base partagees (25/10 : 480 = 8 min ;
 	#l'arbre du clan retire 1 min par palier de la branche « tp »). Gardees au redemarrage, jamais remises a zero par la mort.
@@ -33,10 +33,10 @@
 	#Secondes entre deux /rtp (alias /rtp) d'un meme joueur (gardees au redemarrage).
 	#Range: 0 ~ 86400
 	zone_delai_s = 300
-	#Plus lu depuis le 25/10 (/home va toujours devant l'armoire de la base du clan).
+	#Plus lu depuis le 25/10 (un seul home par base, pose avec /sethome depuis le 03/11).
 	#Range: 0 ~ 100
 	homes_base = 1
-	#Plus lu depuis le 25/10 (/home va toujours devant l'armoire de la base du clan).
+	#Plus lu depuis le 25/10 (un seul home par base, pose avec /sethome depuis le 03/11).
 	#Range: 0 ~ 100
 	homes_par_grade = 1
 	#Blocs autour du point /spawn defini par le staff (/spawn definir) qui comptent comme « au spawn »

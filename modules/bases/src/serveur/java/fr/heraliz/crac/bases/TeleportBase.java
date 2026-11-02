@@ -24,17 +24,22 @@ import org.jetbrains.annotations.Nullable;
  *   7, 6, 5 min) et le grade ne s'ajoutent pas : le plus court des deux. Durée fixée au départ et gardée avec le monde
  *   ({@code BasesDonnees}, {@code finHome} / {@code dureeHome}) : ni la mort, ni une déconnexion, ni un redémarrage, ni un
  *   changement de grade en cours de recharge ne la changent ; indépendante de la recharge du /tpa ;</li>
- *   <li><b>point d'arrivée</b> : juste devant l'armoire à outils de la base (côté de sa porte), sinon la place libre la
- *   plus proche autour d'elle ; jamais dans un bloc ni sur du vide ({@link Points}). Le joueur n'a rien à régler : la
- *   base change, l'armoire est déplacée, le point suit ;</li>
+ *   <li><b>point d'arrivée</b> : HeraliZ (03/11, demande du propriétaire) le home de la base, posé dedans par un membre
+ *   qui la gère ({@link Homes#COMMANDE_POSER}) ; refusé s'il est bouché ou plus sûr (jamais une autre place, qui pourrait
+ *   être dehors). Plus aucun home créé tout seul : une base posée depuis n'a pas de home tant qu'on ne l'a pas posé. Une
+ *   base d'avant garde le home créé tout seul : juste devant l'armoire à outils (côté de sa porte), sinon la place libre
+ *   la plus proche autour d'elle ; jamais dans un bloc ni sur du vide ({@link Points}) ;</li>
  *   <li><b>droits</b> : membre du clan avec le droit « Se téléporter à la base » (HeraliZ Clans, réglable par grade et
  *   membre par membre ; le chef l'a toujours).</li>
  * </ul>
  * Tout est vérifié ici, côté serveur, à chaque demande et encore au départ. Le staff (permission 2) n'a pas de délai.
  */
 public final class TeleportBase {
-    /** Raisons d'un refus (envoyées au joueur pour l'écran de réapparition). */
-    public static final int OK = 0, SANS_BASE = 1, SANS_DROIT = 2, MATCH = 3, ATTENTE = 4, CARTE = 5, TUTO = 6;
+    /**
+     * Raisons d'un refus (envoyées au joueur pour l'écran de réapparition). HeraliZ (03/11) : {@link #SANS_HOME}, base
+     * posée depuis le 03/11 dont personne n'a encore posé le home ({@link Homes#COMMANDE_POSER}).
+     */
+    public static final int OK = 0, SANS_BASE = 1, SANS_DROIT = 2, MATCH = 3, ATTENTE = 4, CARTE = 5, TUTO = 6, SANS_HOME = 7;
 
     private TeleportBase() {
     }
@@ -92,18 +97,23 @@ public final class TeleportBase {
         ServerLevel l = p.server.getLevel(MondeBases.BASES);
         Claim c = l == null ? null : base(p);
         if (c != null) {
-            Prechargement.precharger(l, new net.minecraft.world.level.ChunkPos(c.anchor()), rayon);
+            Prechargement.precharger(l, new net.minecraft.world.level.ChunkPos(point(c)), rayon);
         }
     }
 
     /**
-     * Les tronçons que {@link #arrivee} lit (l'armoire et 4 blocs autour : au plus 3 × 3 tronçons) sont chargés, ou il n'y a
-     * plus de base (le départ refusera) : le départ de /home attend ce moment (01/11).
+     * Les tronçons que {@link #arrivee} lit (le home, ou l'armoire et 4 blocs autour : au plus 3 × 3 tronçons) sont chargés,
+     * ou il n'y a plus de base (le départ refusera) : le départ de /home attend ce moment (01/11).
      */
     static boolean arriveeChargee(ServerPlayer p) {
         ServerLevel l = p.server.getLevel(MondeBases.BASES);
         Claim c = l == null ? null : base(p);
-        return c == null || Prechargement.pret(l, new net.minecraft.world.level.ChunkPos(c.anchor()), 1);
+        return c == null || Prechargement.pret(l, new net.minecraft.world.level.ChunkPos(point(c)), 1);
+    }
+
+    /** HeraliZ (03/11) : le bloc d'arrivée de la base : celui de son home posé, sinon son armoire. */
+    private static BlockPos point(Claim c) {
+        return c.home() != null ? BlockPos.containing(c.home()) : c.anchor();
     }
 
     /** Raison qui empêche la téléportation maintenant ({@link #OK} si elle est possible). */
@@ -128,6 +138,10 @@ public final class TeleportBase {
         if (!Deplacements.staff(p) && (g == null || !ClanAccess.allows(g, p.getUUID(), ClanAccess.Action.TELEPORT))) {
             return SANS_DROIT;
         }
+        // HeraliZ (03/11) : plus de home créé tout seul ; une base posée depuis attend son home (gardé : bases d'avant)
+        if (!c.aUnHome()) {
+            return SANS_HOME;
+        }
         return resteMs(p) > 0 ? ATTENTE : OK;
     }
 
@@ -139,15 +153,32 @@ public final class TeleportBase {
             case CARTE -> T.t("crac.bases.absent", "La carte n'est pas chargée sur ce serveur : préviens le staff.");
             case SANS_BASE -> T.t("crac.tpbase.sans_base", "Ton clan n'a pas de base (armoire à outils posée sur la carte).");
             case SANS_DROIT -> T.t("crac.tpbase.sans_droit", "Ton clan ne t'a pas donné le droit « Se téléporter à la base ».");
+            case SANS_HOME -> T.t("crac.tpbase.sans_home",
+                "Ta base n'a pas encore de home : un membre qui gère la base doit le poser dedans, à un endroit sûr, avec %s <nom>.",
+                Homes.commande());
             case ATTENTE -> T.t("crac.tpbase.attendre", "Prochaine téléportation vers ta base dans %s (/home et réapparition partagent ce délai).",
                 T.duree(resteMs(p) + 999));
             default -> T.t("crac.tpbase.impossible", "Téléportation vers ta base impossible.");
         };
     }
 
-    /** Point d'arrivée devant l'armoire de la base (place sûre), et le regard tourné vers elle ; null si rien n'est libre. */
+    /**
+     * Point d'arrivée : HeraliZ (03/11) le home posé de la base, s'il est toujours dans sa zone et sûr (sinon null : jamais
+     * une autre place, qui pourrait être dehors) ; pour une base d'avant le 03/11 sans home posé, devant l'armoire (place
+     * sûre), et le regard tourné vers elle ; null si rien n'est libre.
+     */
     @Nullable
     private static Arrivee arrivee(ServerPlayer p, ServerLevel l, Claim c) {
+        Vec3 home = c.home();
+        if (home != null) {
+            BlockPos h = BlockPos.containing(home);
+            for (int cx = (h.getX() - 1) >> 4; cx <= (h.getX() + 1) >> 4; cx++) {
+                for (int cz = (h.getZ() - 1) >> 4; cz <= (h.getZ() + 1) >> 4; cz++) {
+                    l.getChunk(cx, cz);
+                }
+            }
+            return c.contains(h) && Points.homeSur(l, p, home) ? new Arrivee(home, c.homeLacet()) : null;
+        }
         BlockPos tc = c.anchor();
         // tronçons de l'armoire ET de sa place devant / autour (4 blocs) : une armoire au bord d'un tronçon avait sa
         // place devant dans un tronçon pas chargé, refusée comme « bouchée » ou remplacée par une place derrière le mur

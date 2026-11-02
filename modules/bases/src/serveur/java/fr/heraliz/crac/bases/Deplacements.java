@@ -35,8 +35,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Les commandes de déplacement des joueurs (le staff, permission 2, n'a ni délai ni règle de lieu) :
  * <ul>
- *   <li>{@code /home} ({@link Homes}) : du spawn vers l'armoire de la base de son clan (délai partagé avec la réapparition à
- *   la base, {@link TeleportBase}).</li>
+ *   <li>{@code /home} ({@link Homes}) : du spawn vers le home de la base de son clan, posé par un membre avec
+ *   {@code /sethome} (03/11 ; devant l'armoire pour une base d'avant), délai partagé avec la réapparition à la base
+ *   ({@link TeleportBase}).</li>
  *   <li>{@code /rtp} (alias {@code /rtp}) : seulement depuis le spawn, vers un point plat tiré au hasard dans le
  *   monde des bases, loin des bases des autres (même tirage que le tutoriel) ; une fois toutes les
  *   {@code [home] zone_delai_s} secondes (5 min, gardé au redémarrage).</li>
@@ -190,8 +191,8 @@ public final class Deplacements {
         d.marquer();
         apres(p, T.t("crac.zone.arrive", "Te voici sur la carte, en PvP : trouve un coin où ton clan peut bâtir sa base.")
             .withStyle(ChatFormatting.GREEN));
-        apres(p, T.t("crac.zone.astuce", "Pose l'armoire à outils de ton clan : du spawn, /home te ramène juste devant elle.")
-            .withStyle(ChatFormatting.GRAY));
+        apres(p, T.t("crac.zone.astuce", "Pose l'armoire à outils de ton clan, puis le home de ta base avec %s <nom> : du spawn, /home t'y ramène.",
+            Homes.commande()).withStyle(ChatFormatting.GRAY));
     }
 
     /** Le claim de la base du joueur dans le monde des bases (son groupe), ou null. */
