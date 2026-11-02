@@ -52,13 +52,23 @@ public final class Reseau {
         CANAL.send(PacketDistributor.ALL.noArg(), message);
     }
 
+    /** Le texte coupé à {@code max} caractères (jamais au milieu d'une paire de caractères). */
+    static String couper(String s, int max) {
+        if (s == null) return "";
+        if (s.length() <= max) return s;
+        int fin = Character.isHighSurrogate(s.charAt(max - 1)) ? max - 1 : max;
+        return s.substring(0, fin);
+    }
+
     /** Les extractions ouvertes (remplace la liste du joueur). */
     public record SyncExtractions(List<ExtractionApi.Extraction> zones) {
         static void ecrire(SyncExtractions m, FriendlyByteBuf b) {
             b.writeVarInt(m.zones.size());
             for (ExtractionApi.Extraction z : m.zones) {
-                b.writeUtf(z.nom(), 64);
-                b.writeUtf(z.libelle(), 128);
+                // coupés à la longueur du paquet (02/11, audit n° 19) : une zone au nom trop long (fichier d'avant la limite
+                // de la commande) faisait lever une erreur à chaque envoi, dans le tick du serveur (plantage, joueurs expulsés)
+                b.writeUtf(couper(z.nom(), 64), 64);
+                b.writeUtf(couper(z.libelle(), 128), 128);
                 b.writeResourceLocation(z.dimension());
                 b.writeDouble(z.x());
                 b.writeDouble(z.y());

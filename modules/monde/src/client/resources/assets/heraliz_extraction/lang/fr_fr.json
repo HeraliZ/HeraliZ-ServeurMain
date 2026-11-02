@@ -26,6 +26,7 @@
   "heraliz_extraction.duree.minutes": "%s min",
   "heraliz_extraction.duree.heures": "%s h %s",
   "heraliz_extraction.commande.nom_pris": "Une zone porte déjà ce nom.",
+  "heraliz_extraction.commande.nom_trop_long": "Nom trop long : 32 caractères au plus.",
   "heraliz_extraction.commande.zone_inconnue": "Aucune zone avec ce nom.",
   "heraliz_extraction.commande.mode_inconnu": "Mode inconnu : rotation, permanent ou closed.",
   "heraliz_extraction.commande.pas_de_dimension": "La dimension de cette zone n'existe pas sur ce serveur.",

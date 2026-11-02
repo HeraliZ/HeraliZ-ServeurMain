@@ -26,6 +26,7 @@
   "heraliz_extraction.duree.minutes": "%s мин",
   "heraliz_extraction.duree.heures": "%s ч %s",
   "heraliz_extraction.commande.nom_pris": "Зона с таким именем уже есть.",
+  "heraliz_extraction.commande.nom_trop_long": "Слишком длинное имя: не больше 32 символов.",
   "heraliz_extraction.commande.zone_inconnue": "Нет зоны с таким именем.",
   "heraliz_extraction.commande.mode_inconnu": "Неизвестный режим: rotation, permanent или closed.",
   "heraliz_extraction.commande.pas_de_dimension": "Измерения этой зоны нет на этом сервере.",

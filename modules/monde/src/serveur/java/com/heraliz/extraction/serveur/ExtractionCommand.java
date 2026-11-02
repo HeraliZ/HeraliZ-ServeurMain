@@ -51,6 +51,11 @@ public final class ExtractionCommand {
     private static final SimpleCommandExceptionType NAME_TAKEN =
             new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.nom_pris",
                     "Une zone porte déjà ce nom."));
+    /** Nom d'une zone : 32 caractères au plus (02/11, audit n° 19 : un nom de plus de 64 faisait planter l'envoi aux joueurs). */
+    static final int NOM_MAX = 32;
+    private static final SimpleCommandExceptionType NAME_TOO_LONG =
+            new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.nom_trop_long",
+                    "Nom trop long : 32 caractères au plus."));
     private static final SimpleCommandExceptionType UNKNOWN_ZONE =
             new SimpleCommandExceptionType(Component.translatableWithFallback("heraliz_extraction.commande.zone_inconnue",
                     "Aucune zone avec ce nom."));
@@ -129,6 +134,9 @@ public final class ExtractionCommand {
     private static int create(CommandContext<CommandSourceStack> ctx, float radius, int seconds) throws CommandSyntaxException {
         CommandSourceStack source = ctx.getSource();
         String name = StringArgumentType.getString(ctx, "nom");
+        if (name.length() > NOM_MAX) {
+            throw NAME_TOO_LONG.create();
+        }
         ExtractionZones zones = ExtractionZones.get(source.getServer());
         if (zones.contains(name)) {
             throw NAME_TAKEN.create();
