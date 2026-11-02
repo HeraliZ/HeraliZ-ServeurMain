@@ -387,7 +387,7 @@
   "heralisz_utils.bots.etat3": "En %s s : %s tirs, %s lancers, %s soins, %s fouilles, %s frappes, %s largages, %s morts",
   "heralisz_utils.bots.scenario_deja": "Un scénario est déjà en cours (/bots scenario stop).",
   "heralisz_utils.bots.scenario_lance": "Scénario : %s bots pendant %s min (rayon %s, monde %s). Analyse en cours, rapport à la fin.",
-  "heralisz_utils.bots.scenario_carte": "Attention : c'est la carte. Les bases des bots seront effacées à la fin, mais fais plutôt le test dans crac:bases.",
+  "heralisz_utils.bots.scenario_carte": "Attention : c'est la carte. Les bases des bots seront effacées à la fin, mais fais plutôt le test dans le monde du tutoriel (crac:tuto).",
   "heralisz_utils.bots.scenario_aucun": "Aucun scénario en cours.",
   "heralisz_utils.bots.scenario_fin": "Scénario terminé : %s — rapport diag/%s",
   "heralisz_utils.coffre.refus_combat": "Pas maintenant : ni en combat, ni à terre, ni en match.",

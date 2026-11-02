@@ -387,7 +387,7 @@
   "heralisz_utils.bots.etat3": "За %s с: выстрелов %s, бросков %s, лечений %s, обысков %s, авиаударов %s, сбросов %s, смертей %s",
   "heralisz_utils.bots.scenario_deja": "Сценарий уже идёт (/bots scenario stop).",
   "heralisz_utils.bots.scenario_lance": "Сценарий: %s ботов на %s мин (радиус %s, мир %s). Анализ идёт, отчёт в конце.",
-  "heralisz_utils.bots.scenario_carte": "Внимание: это карта. Базы ботов удалятся в конце, но лучше тестировать в crac:bases.",
+  "heralisz_utils.bots.scenario_carte": "Внимание: это карта. Базы ботов удалятся в конце, но лучше тестировать в мире обучения (crac:tuto).",
   "heralisz_utils.bots.scenario_aucun": "Сценарий не идёт.",
   "heralisz_utils.bots.scenario_fin": "Сценарий завершён: %s — отчёт diag/%s",
   "heralisz_utils.coffre.refus_combat": "Не сейчас: ни в бою, ни в нокауте, ни в матче.",

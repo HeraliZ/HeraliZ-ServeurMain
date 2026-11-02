@@ -387,7 +387,7 @@
   "heralisz_utils.bots.etat3": "In %s s: %s shots, %s throws, %s heals, %s searches, %s strikes, %s supply drops, %s deaths",
   "heralisz_utils.bots.scenario_deja": "A scenario is already running (/bots scenario stop).",
   "heralisz_utils.bots.scenario_lance": "Scenario: %s bots for %s min (radius %s, world %s). Analysis running, report at the end.",
-  "heralisz_utils.bots.scenario_carte": "Warning: this is the map. Bot bases will be erased at the end, but better run the test in crac:bases.",
+  "heralisz_utils.bots.scenario_carte": "Warning: this is the map. Bot bases will be erased at the end, but better run the test in the tutorial world (crac:tuto).",
   "heralisz_utils.bots.scenario_aucun": "No scenario running.",
   "heralisz_utils.bots.scenario_fin": "Scenario finished: %s — report diag/%s",
   "heralisz_utils.coffre.refus_combat": "Not now: not in combat, downed or in a match.",

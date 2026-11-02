@@ -36,7 +36,7 @@ import java.util.stream.Stream;
  * construisent des bases, envoient des fumigènes et des frappes ; pendant ce temps notre spark analyse tout ; à la fin
  * tous les bots partent et tout est effacé »).
  * <p>{@code /bots scenario <nombre> [minutes] [rayon]} (3 min et 96 blocs par défaut) autour de l'endroit d'où on la tape
- * (à faire dans le monde du tutoriel {@code crac:bases}, jamais sur la carte) ; {@code /bots scenario stop} pour arrêter
+ * (à faire dans le monde du tutoriel {@code crac:tuto}, jamais sur la carte) ; {@code /bots scenario stop} pour arrêter
  * avant. Pendant le scénario : les bots arrivent d'un coup, au rythme « intense » ({@link Reglages#intense}), le relevé
  * des piles de {@link Diag} tourne, le chronomètre de Forge mesure entités et entités de bloc ({@link Moniteur}), et une
  * ligne est relevée toutes les 5 s (bots, ms par tick, mémoire, entités, pièces de CRac, actions). À la fin : bots retirés,
@@ -117,7 +117,7 @@ final class Scenario {
                 nombre, min, r, monde), false);
         if (monde.equals("minecraft:overworld")) {
             s.sendSuccess(() -> Component.translatableWithFallback("heralisz_utils.bots.scenario_carte",
-                    "Attention : c'est la carte. Les bases des bots seront effacées à la fin, mais fais plutôt le test dans crac:bases."), false);
+                    "Attention : c'est la carte. Les bases des bots seront effacées à la fin, mais fais plutôt le test dans le monde du tutoriel (crac:tuto)."), false);
         }
         HeralizBanc.LOG.info("[bots] scénario : {} bots, {} min, rayon {}, {}", nombre, min, r, monde);
         return nombre;
