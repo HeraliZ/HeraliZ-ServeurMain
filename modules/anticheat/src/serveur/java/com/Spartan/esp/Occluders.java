@@ -21,7 +21,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Ce que chaque état de bloc cache, calculé une fois pour tous les états du jeu
- * (mods compris) sur le thread serveur, puis publié en table immuable lisible par
+ * (mods compris) sur un fil à part, puis publié en table immuable lisible par
  * les threads de l'anti-ESP :
  * - bloc opaque plein (pierre, bois, béton, blocs pleins de mods) : cache tout ;
  * - bloc opaque partiel (dalle, escalier, couche de neige…) : sa forme d'occlusion ;
@@ -32,6 +32,11 @@ import net.minecraftforge.registries.ForgeRegistries;
  * Exception : la case de construction de CRac ({@code crac:structure}) dont la forme est dans son
  * entité de bloc ; la table n'en garde que la lecture de secours (drapeaux de l'état), la vraie forme
  * est lue à sa position par {@link StructuresCrac} (2.9.4).
+ * <p>Fil à part (2.10.2) : le calcul prenait ~1 s sur le thread serveur au démarrage (rapport de
+ * blocage). Tant que la table demandée n'est pas publiée ({@link #prete()} faux : démarrage, réglage
+ * antiEsp.opaqueBlocks ou tags de blocs changés), l'anti-ESP ne cache personne
+ * ({@link VisibilityEngine#tick}). Les formes sont lues sur un monde vide (EmptyBlockGetter), comme
+ * le font déjà les fils de génération et de lumière de Minecraft : même table qu'avant.
  */
 final class Occluders {
     private static final int MAX_BOXES = 16;
@@ -39,7 +44,17 @@ final class Occluders {
     private static List<? extends String> configured;
     /** Bloc dont la forme se lit à la position (case de construction de CRac), null si absent. */
     private static volatile Block parPosition;
-    private static boolean stale = true;
+    /** Écrit par l'évènement des tags (thread serveur, ou fil principal au chargement des données). */
+    private static volatile boolean stale = true;
+    /** Numéro de la dernière table demandée (thread serveur). */
+    private static int demandee;
+    /** Numéro de la table publiée (écrit par le fil de calcul après la table, lu par le thread serveur). */
+    private static volatile int publiee = -1;
+    /** Fil du calcul en cours, null si aucun (thread serveur). */
+    private static Thread enCours;
+    /** Calculs lancés pour la table demandée (thread serveur) : un échec est réessayé une fois, puis abandonné. */
+    private static int essais;
+    private static final int ESSAIS_MAX = 2;
 
     private Occluders() {
     }
@@ -59,17 +74,52 @@ final class Occluders {
         stale = true;
     }
 
-    /** Thread serveur, chaque tick : reconstruit la table si la config ou les tags ont changé. */
+    /** Thread serveur : vrai si la table publiée suit la config et les tags actuels (sinon : personne n'est caché). */
+    static boolean prete() {
+        return publiee == demandee;
+    }
+
+    /**
+     * Thread serveur, chaque tick : si la config ou les tags ont changé, demande une nouvelle table, calculée sur un fil
+     * à part (un seul à la fois ; une table demandée entre-temps est calculée à la suite). Jamais de calcul sur le
+     * thread serveur : un échec est réessayé une fois, puis l'anti-ESP reste sans table (personne n'est caché) jusqu'au
+     * prochain changement des réglages ou des tags.
+     */
     static void refresh() {
         List<? extends String> now = SpartanConfig.ESP_OPAQUE_BLOCKS.get();
-        if (!stale && now.equals(configured)) {
+        if (stale || !now.equals(configured)) {
+            stale = false;
+            configured = List.copyOf(now);
+            demandee++;
+            essais = 0;
+        }
+        if (publiee == demandee || essais >= ESSAIS_MAX || enCours != null && enCours.isAlive()) {
             return;
         }
-        stale = false;
-        configured = List.copyOf(now);
+        int numero = demandee;
+        int essai = ++essais;
+        List<? extends String> config = configured;
+        Thread t = new Thread(() -> {
+            try {
+                construire(config, numero);
+            } catch (Throwable e) {
+                Spartan.LOGGER.error(essai < ESSAIS_MAX
+                        ? "[Spartan] Anti-ESP : calcul de la table des blocs qui cachent la vue échoué, nouvel essai."
+                        : "[Spartan] Anti-ESP : table des blocs qui cachent la vue impossible à calculer ; personne n'est "
+                        + "caché jusqu'au prochain changement des réglages ou des tags.", e);
+            }
+        }, "Spartan-AntiESP-table");
+        t.setDaemon(true);
+        t.setPriority(Thread.NORM_PRIORITY - 1);
+        enCours = t;
+        t.start();
+    }
+
+    /** Fil de calcul : calcule puis publie la table numéro {@code numero}. */
+    private static void construire(List<? extends String> config, int numero) {
         List<TagKey<Block>> tags = new ArrayList<>();
         Set<ResourceLocation> ids = new HashSet<>();
-        for (String raw : configured) {
+        for (String raw : config) {
             String s = raw.trim().toLowerCase(Locale.ROOT);
             ResourceLocation id = ResourceLocation.tryParse(s.startsWith("#") ? s.substring(1) : s);
             if (id == null) {
@@ -90,7 +140,6 @@ final class Occluders {
                 dyn = b;
             }
         }
-        parPosition = dyn;
         for (BlockState s : Block.BLOCK_STATE_REGISTRY) {
             states++;
             double[] occ = compute(s, tags, ids);
@@ -99,8 +148,11 @@ final class Occluders {
             }
         }
         t.trim();
+        // publication : la table et le bloc lu à sa position d'abord, le numéro en dernier (volatiles)
+        parPosition = dyn;
         table = t;
-        Spartan.LOGGER.info("[Spartan] Anti-ESP : {} états de bloc, {} cachent la vue ({} ms).",
+        publiee = numero;
+        Spartan.LOGGER.info("[Spartan] Anti-ESP : {} états de bloc, {} cachent la vue ({} ms, fil à part).",
                 states, t.size(), (System.nanoTime() - start) / 1_000_000);
     }
 

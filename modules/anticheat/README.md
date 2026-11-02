@@ -442,6 +442,11 @@ réelle contre l'ESP, et elle est entièrement côté serveur.
   l'entendent.
 - Serveur saturé : une paire cachée qui n'a pas pu être revérifiée à temps est
   **montrée** (comportement vanilla), jamais l'inverse.
+- **Démarrage (2.10.2)** : la table des blocs qui cachent la vue (~55 000 états de
+  bloc, environ 1 s) est calculée sur un fil à part (`Spartan-AntiESP-table`), plus
+  sur le fil du serveur (c'était un blocage d'1 s au démarrage). Tant qu'elle n'est pas
+  prête (quelques secondes, ou après un changement de `opaqueBlocks` ou des tags de
+  blocs), l'anti-ESP ne cache **personne** ; `/spartan esp` dit « en préparation ».
 
 ### Performances (50-70 joueurs)
 Les lignes de vue sont calculées **sur d'autres cœurs du processeur**, en parallèle

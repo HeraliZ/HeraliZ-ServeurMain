@@ -42,7 +42,9 @@ import net.minecraft.world.phys.Vec3;
  * - bruit : un joueur qui tire (TaCZ) ou parle (Simple Voice Chat) est envoyé aux
  *   joueurs à portée d'oreille, sinon son tir / sa voix ne serait pas joué chez eux ;
  * - une paire cachée qui n'a pas pu être revérifiée à temps (serveur saturé) est
- *   montrée (comportement vanilla), jamais l'inverse.
+ *   montrée (comportement vanilla), jamais l'inverse ;
+ * - table des blocs qui cachent la vue pas encore calculée (quelques secondes après le
+ *   démarrage, ou après un changement de réglage ou de tags) : personne n'est caché.
  *
  * Performances (50-70 joueurs) : les lignes de vue sont calculées sur d'autres
  * cœurs (EspWorkers) pendant le tick suivant ; le thread serveur ne fait que lister
@@ -242,12 +244,20 @@ public final class VisibilityEngine {
             }
             return;
         }
+        // table des blocs qui cachent la vue : calculée sur un fil à part (démarrage, réglage ou tags changés, 2.10.2) ;
+        // tant qu'elle n'est pas prête, l'anti-ESP est comme désactivé : personne n'est caché, rien n'est calculé
+        Occluders.refresh();
+        if (!Occluders.prete()) {
+            if (active) {
+                shutdown(); // tout ce qui était caché est renvoyé
+            }
+            return;
+        }
         active = true;
         long start = System.nanoTime();
         lireReglages();
         long rays0 = MAIN_RAYS.rays();
         long steps0 = MAIN_RAYS.steps();
-        Occluders.refresh();
         // cases de construction de CRac demandées par les threads au tick d'avant (avant le tri des paires)
         StructuresCrac.resoudre(VisibilityEngine::marquer);
         MAIN_VOXELS.reset();
@@ -860,6 +870,9 @@ public final class VisibilityEngine {
     /** /spartan esp : coût et activité (fenêtre des 5 dernières secondes). */
     public static String describe() {
         if (!active) {
+            if (SpartanConfig.ENABLED.get() && SpartanConfig.ESP_ENABLED.get() && !Occluders.prete()) {
+                return "Anti-ESP en préparation (table des blocs qui cachent la vue en calcul) : personne n'est caché.";
+            }
             return "Anti-ESP inactif (antiEsp.enabled=false).";
         }
         return "Anti-ESP actif : " + STATS.last;
