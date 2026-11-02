@@ -165,20 +165,28 @@ public final class Outils {
     }
 
     @Nullable
-    private static Method clashwar, clashwarActif;
+    private static Method clashwar, clashwarActif, clashwarEnCours;
     @Nullable
     private static java.lang.reflect.Field clashwarSimulation;
     private static boolean clashwarCherche;
 
     /**
      * Un vrai tournoi ClashWar est ouvert (inscriptions ou matchs) : aucun événement ne part. Lu par réflexion dans le
-     * module ClashWar : {@code Tournois.courant()} garde l'édition finie jusqu'au redémarrage (audit du 02/11, n° 3 :
-     * après le premier ClashWar, plus aucun largage ni hélicoptère), donc on demande aussi {@code actif()} (ni terminée
-     * ni annulée) ; une simulation du banc (champ {@code simulation}) ne bloque rien, comme pour ClashWar lui-même.
+     * module ClashWar, d'abord {@code Tournois.enCours()} (ClashWar 1.1.0, 02/11 : vrai seulement pendant un vrai tournoi,
+     * ni fini, ni annulé, ni simulation du banc). Ancien ClashWar sans elle : {@code Tournois.courant()} garde l'édition
+     * finie jusqu'au redémarrage (audit du 02/11, n° 3 : après le premier ClashWar, plus aucun largage ni hélicoptère),
+     * donc on demande aussi {@code actif()} (ni terminée ni annulée) ; une simulation du banc (champ {@code simulation})
+     * ne bloque rien, comme pour ClashWar lui-même.
      */
     public static boolean clashwarEnCours() {
         if (!clashwarCherche) {
             clashwarCherche = true;
+            try {
+                Method m = Class.forName("fr.heraliz.clashwar.tournoi.Tournois").getMethod("enCours");
+                clashwarEnCours = m.getReturnType() == boolean.class && java.lang.reflect.Modifier.isStatic(m.getModifiers()) ? m : null;
+            } catch (ReflectiveOperationException | LinkageError e) {
+                clashwarEnCours = null;   // ancien ClashWar : ancien chemin ci-dessous
+            }
             try {
                 clashwar = Class.forName("fr.heraliz.clashwar.tournoi.Tournois").getMethod("courant");
                 Class<?> tournoi = Class.forName("fr.heraliz.clashwar.tournoi.Tournoi");
@@ -194,6 +202,13 @@ public final class Outils {
             } catch (ReflectiveOperationException | LinkageError e) {
                 clashwar = null;
                 clashwarActif = null;
+            }
+        }
+        if (clashwarEnCours != null) {
+            try {
+                return Boolean.TRUE.equals(clashwarEnCours.invoke(null));
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // erreur inattendue : ancien chemin
             }
         }
         if (clashwar == null || clashwarActif == null) return false;
