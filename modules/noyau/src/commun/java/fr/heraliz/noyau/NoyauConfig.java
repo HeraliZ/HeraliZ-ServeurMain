@@ -88,6 +88,59 @@ public final class NoyauConfig {
          "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger",
          "zones recharger", "clashwar recharger", "event recharger", "spartan officiel");
 
+   // 02/11 (audit, points 34 et 36) : liste des commandes allégée (~500 noms dans le panneau du Fondateur, ~1 000 dans le chat)
+   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> COMMANDES_RETIREES;
+   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> COMMANDES_CACHEES;
+   /**
+    * Commandes des mods des autres auteurs et de Minecraft qui ne servent pas ici, retirées pour de bon (console comprise).
+    * Gardées (nos outils, le banc, les scripts de capture et le site s'en servent) : tp, gamemode, time, kill, give, clear,
+    * effect, summon, gamerule, weather, difficulty, execute, fill, setblock, item, damage, stop, msg, tell, w, me, say,
+    * forge, config... ; /curios est seulement cachée (/wipe tape « curios clear »).
+    */
+   public static final List<String> RETIREES_DEFAUT = List.of(
+         // mods des autres auteurs : /kiwi dev_env_rules tue toutes les entités chargées et met keepInventory (audit point 34)
+         "tacz", "kiwi", "coro", "modernfix", "mfsrc", "ywzj_vehicle", "matmossettings", "tctcoresettings",
+         // Minecraft
+         "debug", "jfr", "perf", "datapack", "function", "schedule", "trigger", "return", "bossbar", "team", "teammsg", "tm",
+         "advancement", "recipe", "fillbiome", "place", "forceload", "spreadplayers", "ride", "loot", "seed",
+         "defaultgamemode", "setidletimeout", "experience", "xp", "enchant", "attribute");
+   /**
+    * Noms cachés de la liste des commandes (complétion du chat, panneau du staff) mais toujours utilisables si on les tape :
+    * autres noms d'une même commande (WorldEdit, LiteBans, AuthMe, WorldGuard, LuckPerms, KauriVPN, Bukkit) et commandes
+    * de plugins sans usage ici. Lu dans les jars des plugins le 02/11 (plugin.yml, annotations de WorldEdit et WorldGuard).
+    */
+   public static final List<String> CACHEES_DEFAUT = List.of(
+         // mods : /curios reste pour /wipe (curios clear), doublon de /inspecter pour le staff
+         "curios",
+         // Bukkit, Spigot
+         "about", "ver", "pl", "timings",
+         // AuthMe : autres noms ; email (aucun serveur de mail), verification, unregister, logout (audit point 32)
+         "log", "2fa", "changepass", "cp", "email", "verification", "unregister", "unreg", "logout",
+         // LuckPerms, KauriVPN (antivpn), ConsoleSpamFix (console seulement)
+         "perm", "perms", "permission", "permissions", "kaurivpn", "kvpn", "vpn", "avpn", "csf",
+         // WorldGuard
+         "regions", ";", "stoplag", "haltactivity", "slay", "stack",
+         // LiteBans : autres noms (le staff peut toujours taper /namehist...)
+         "lban", "lmute", "lwarn", "lkick", "lipban", "banip", "ban-ip", "tempipban", "tempbanip", "iptempban", "lipmute",
+         "muteip", "tempipmute", "tempmuteip", "iptempmute", "lunban", "unbanip", "ipunban", "tempunban", "pardon", "pardonip",
+         "pardon-ip", "lunmute", "tempunmute", "unmuteip", "ipunmute", "lunwarn", "removewarnings", "rmwarnings", "rmwarn",
+         "ltempban", "tban", "tmpban", "ltempmute", "lcheckban", "chkban", "lcheckmute", "chkmute", "lcheckwarn", "chkwarn",
+         "lbanlist", "listbans", "lmutelist", "listmutes", "lwarnlist", "listwarns", "lhistory", "hist", "lwarnings",
+         "checkwarn", "warnlist", "listwarn", "warninglist", "listwarnings", "lprunehistory", "lstaffhistory", "lshistory",
+         "staffhist", "shist", "shistory", "lstaffrollback", "liphistory", "iphist", "lnamehistory", "namehist", "luuid",
+         "lgeoip", "geo", "ldupeip", "alts", "checkalts", "listalts", "lipreport", "llockdown", "lbans",
+         // LiteBans : commandes sans usage ici
+         "ipmute", "checkmute", "mutelist", "prunehistory", "staffrollback", "lockdown", "geoip", "lastuuid", "ipreport",
+         // WorldEdit : autres noms (« /re » = //re...)
+         "biomels", "/gmask", "/toggleplace", "/searchitem", "/l", "/search", "/gen", "/g", "/genbiome", "/gb", "/undo",
+         "/redo", "/clearhistory", "!", "asc", "desc", "j", "/re", "/rep", "/middle", "/outline", "/desel", "/deselect",
+         "/restore", "unbind", "/selwand", "/navwand", "flood", "/lrbuild", ",", "/material", "/fixlava", "/fixwater",
+         "/removeabove", "/removebelow", "/removenear", "/replacenear", "/snow", "/thaw", "/green", "/ex", "/ext",
+         "/extinguish", "ex", "ext", "rem", "rement", "/calc", "/eval", "/evaluate", "/solve", "schem", "/schematic",
+         "/schem", "snap", "pickaxe", "sp", "br", "/brush", "/br", "we",
+         // WorldEdit : sauvegardes (aucun dossier réglé) et scripts (rien d'installé)
+         "snapshot", "restore", "cs", ".s");
+
    /** Réglages relus : la partie serveur met à jour ses listes de commandes. */
    public static final Crochet<Void> APPLIQUES = new Crochet<>();
 
@@ -126,6 +179,16 @@ public final class NoyauConfig {
             "saison, territoires, Purge, zones dangereuses, ClashWar, modpack officiel de l'anticheat). Les réglages en .toml",
             "se relisent seuls quand leur fichier change.")
             .defineListAllowEmpty(List.of("commandes"), () -> RECHARGER_DEFAUT, o -> o instanceof String);
+      b.pop();
+      b.push("commandes");
+      COMMANDES_RETIREES = b.comment("Commandes retirées pour de bon (02/11) : Minecraft et mods, console comprise (racine en minuscules, sans /",
+            "ni espace de noms). Appliqué au démarrage et quand ce fichier change ; une commande enlevée de la liste ne revient",
+            "qu'au redémarrage. Jamais une commande de plugin (Bukkit) : celles-là, voir cachees.")
+            .defineListAllowEmpty(List.of("retirees"), () -> RETIREES_DEFAUT, o -> o instanceof String);
+      COMMANDES_CACHEES = b.comment("Noms cachés de la liste des commandes (complétion du chat, panneau du staff), toujours utilisables si on les",
+            "tape (02/11) : autres noms des plugins (WorldEdit, LiteBans...) et commandes sans usage. Serveur Bukkit (Mohist)",
+            "seulement ; relu à chaque envoi de la liste (connexion, changement de droits).")
+            .defineListAllowEmpty(List.of("cachees"), () -> CACHEES_DEFAUT, o -> o instanceof String);
       b.pop();
       b.push("survie");
       FAIM_FACTEUR = b.comment("Vitesse de la faim (25/10) : la fatigue de Minecraft (course, sauts, coups, vie qui remonte) est",

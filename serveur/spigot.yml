@@ -34,7 +34,7 @@ settings:
   log-named-deaths: false
 messages:
   whitelist: Maintenance pour optimisation & update
-  unknown-command: Unknown command. Type "/help" for help.
+  unknown-command: Commande inconnue.
   server-full: The server is full!
   outdated-client: Outdated client! Please use {0}
   outdated-server: Outdated server! I'm still on {0}
@@ -46,7 +46,7 @@ commands:
   - testforblock
   - tellraw
   tab-complete: 0
-  send-namespaced: true
+  send-namespaced: false
   spam-exclusions:
   - /skill
   silent-commandblock-console: false
