@@ -42,8 +42,9 @@ import org.lwjgl.glfw.GLFW;
  * chargement), après les autres mods : {@code InterfaceClient.touches}, priorité la plus basse, donc après le
  * rangement des touches des véhicules de HeraliZ Utils ({@code ClientVehicules}) fait au même tick.
  * <p>
- * Ne changent pas (choix du propriétaire) : Réanimation (Retour arrière, I, =), emotes (0, ²), TaCZ, voix (Verr. Maj,
- * « ) »), roue de ping (souris 5), clan K, base N, sac B, lunettes (flèche haut).
+ * Ne changent pas (choix du propriétaire) : Réanimation (Retour arrière, I, =), emote (0 ; la roue des emotes est sur Y,
+ * plus jamais sur ², voir plus bas), TaCZ, voix (Verr. Maj, « ) »), roue de ping (souris 5), clan K, base N, sac B, lunettes
+ * (flèche haut).
  * <p>
  * Selon le clavier ({@link #selonClavier}) : la carte du monde (HeraliZ Utils) sur la touche MARQUÉE « M » du clavier du
  * joueur (les codes de touche suivent les places d'un clavier QWERTY : sur AZERTY, le « M » est la touche du « ; »).
