@@ -4,8 +4,8 @@
 
 Contenu : Forge 1.20.1-<FORGE> (installeur de Forge lancé sans fenêtre, repris par Nebula), les jars joueurs de
 livraison/mods client (exactement ceux de la même fabrication que le serveur : Spartan compare leurs empreintes) et le
-dossier tacz des gunpacks (modèles, sons, icônes des armes). --essai : sans fabrication, avec seulement les mods tiers
-du dépôt.
+dossier tacz des gunpacks (modèles, sons, icônes des armes ; sans data/ ni doublons : outils/gunpacks_doublons.py).
+--essai : sans fabrication, avec seulement les mods tiers du dépôt (copies allégées comme la fabrication).
 
 Résultat dans <sortie>/envoi : distribution.json et les seuls fichiers qu'il cite, prêts à être déposés tels quels
 dans le dossier de « distributionUrl » du launcher (launcher/app/heraliz.json : https://heraliz.fr/launcher/, dossier
@@ -140,6 +140,12 @@ def main():
         d = Path(dossier)
         return ["data"] if d.parent == RACINE_DEPOT / "serveur" / "tacz" and "data" in noms else []
     shutil.copytree(RACINE_DEPOT / "serveur" / "tacz", serveur / "files" / "tacz", ignore=sans_data)
+    # doublons des gunpacks retirés de CETTE copie seulement (02/11, audit point 37 : outils/gunpacks_doublons.py) ;
+    # serveur/tacz du dépôt et du Ptero ne changent pas
+    import gunpacks_doublons
+    n, octets, reecrits, refus = gunpacks_doublons.alleger(serveur / "files" / "tacz")
+    print(f"[pack] gunpacks : {n} doublons retirés ({octets / 1048576:.1f} Mo), {reecrits} JSON réécrits"
+          + (f", gardés : {dict(refus)}" if refus else ""), flush=True)
 
     # fiche du serveur : adresse de jeu (doit être celle du launcher), connexion directe, serveur principal
     fiche_p = serveur / "servermeta.json"
