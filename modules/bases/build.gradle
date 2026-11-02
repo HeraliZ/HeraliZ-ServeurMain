@@ -9,3 +9,16 @@ apply from: rootProject.file('gradle/module-coupe.gradle')
 dependencies {
     compileOnly project(path: ':clans', configuration: 'devComplet')
 }
+
+// Essais automatiques de CRac (GameTests de Minecraft, 4 739 lignes) et leurs structures (data/crac/structures) :
+// src/essais, compilés à chaque fabrication (ils suivent le code qu'ils essaient) mais JAMAIS livrés : aucun des trois
+// jars ne prend cet ensemble de sources (02/11, audit : ils partaient dans le jar du serveur).
+sourceSets {
+    essais {
+        java.srcDirs = ['src/essais/java']
+        resources.srcDirs = ['src/essais/resources']
+        compileClasspath += main.output + serveur.output + main.compileClasspath
+    }
+}
+
+tasks.named('check').configure { dependsOn 'compileEssaisJava' }
