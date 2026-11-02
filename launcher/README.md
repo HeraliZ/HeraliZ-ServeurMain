@@ -76,6 +76,7 @@ Le jeu est lancé à part du launcher (« détaché ») : le joueur peut fermer 
 - `launcher-service.js` : profil, état serveur, Java, téléchargements et cycle de vie de Minecraft.
 - `processbuilder.js` : arguments Minecraft/Forge, conservés depuis Helios et adaptés aux profils locaux ; lancement détaché du jeu.
 - `mise-a-jour.js` : mise à jour du launcher lui-même (automatique ou annoncée selon le système). Créée dans `index.js` avant tout le reste et sans lui.
+- `robot.js` : anti-robot du site avant une création de compte (Turnstile, réglé dans l’administration du site) : petite fenêtre isolée sur `heraliz.fr/heraliz/robot`, sans aucun accès au launcher ; la réponse est jointe à la création du compte.
 - `secours.js` : démarrage raté (fichier manquant ou cassé) : petite fenêtre « le launcher se répare », recherche d’une version plus récente, installée seule sous Windows et en AppImage ; sinon message « retélécharge-le sur heraliz.fr/telecharger ». La fenêtre du launcher ne s’ouvre jamais avant que toutes ses commandes soient branchées (sinon « No handler registered for 'heraliz:state' »).
 - `ci/publier.py` : mise en ligne sur heraliz.fr/telecharger (workflow « Launcher HeraliZ »).
 - `topo.js` : fond « carte » dessiné une fois par taille de fenêtre (rien d’animé).

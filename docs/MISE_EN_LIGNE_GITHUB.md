@@ -102,7 +102,8 @@ bloqués.
 À régler par le propriétaire :
 - **Turnstile** (gratuit) : compte Cloudflare → Turnstile → ajouter le site `heraliz.fr` (mode « Managed ») → copier la
   clé du site et la clé secrète dans l'administration du site → Paramètres → Sécurité → captcha « Turnstile ». Il
-  protège aussi l'inscription sur le site ; la connexion du launcher n'est pas touchée.
+  protège aussi l'inscription sur le site et, depuis le launcher 1.16.0, la création de compte dans le launcher (petite
+  fenêtre « Vérification anti-robot ») ; la connexion du launcher n'est pas touchée.
 - Facultatif, si le compte Top-Serveurs est un jour retrouvé : secret GitHub **`TOPSERVEURS_TOKEN`** = le jeton du
   serveur dans le panel Top-Serveurs. Il passe par `site.yml` → `theme.sh` (environnement) → `reglages.php`, jamais
   dans un fichier du dépôt ; chaque vote est alors vérifié auprès de Top-Serveurs.

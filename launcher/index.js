@@ -132,6 +132,7 @@ function demarrerLauncher() {
     securite = require('./app/assets/js/security')
     const { httpsUrl } = securite
     const LauncherService = require('./app/assets/js/launcher-service')
+    const { verifierHumain } = require('./app/assets/js/robot')
     service = new LauncherService(config, progress => {
         // fenêtre fermée pendant la partie : le launcher restait pour le Gardien ; partie finie, il se ferme
         if (pret && !win && !service?.gardienActif() && progress.phase !== 'running') { app.quit(); return }
@@ -139,6 +140,9 @@ function demarrerLauncher() {
             win.webContents.send('heraliz:progress', progress)
             win.setProgressBar(progress.busy && progress.phase !== 'running' ? (progress.percent == null ? 2 : progress.percent / 100) : -1)
         }
+    }, {
+        // anti-robot du site avant une création de compte : petite fenêtre isolée sur la page du site (robot.js)
+        verifierHumain: () => verifierHumain({ BrowserWindow, parent: win && !win.isDestroyed() ? win : null, siteUrl: config.siteUrl })
     })
     // compte banni vu sur ce PC : fichiers du jeu encore à retirer la dernière fois (jeu ouvert, fichier verrouillé)
     service.reprendreEffacement()

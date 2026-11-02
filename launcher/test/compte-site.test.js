@@ -70,11 +70,13 @@ test('vérification du jeton : profil, jeton refusé (null), site en panne (erre
 test('ce que permet le site : création de compte, mot de passe, conditions (adresses du site seulement)', async () => {
     const etat = async reponse => new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/etat': reponse }).requete).etat()
     const site = fauxSite({ 'heraliz/etat': { status: 200, body: { connexion: true, inscription: true, mot_de_passe_min: 12, conditions: 'https://heraliz.fr/user/register' } } })
-    assert.deepEqual(await new CompteSite('https://heraliz.fr', site.requete).etat(), { inscription: true, motDePasseMin: 12, conditions: 'https://heraliz.fr/user/register' })
+    assert.deepEqual(await new CompteSite('https://heraliz.fr', site.requete).etat(), { inscription: true, motDePasseMin: 12, conditions: 'https://heraliz.fr/user/register', robot: null })
     assert.deepEqual(site.appels[0], { url: 'https://heraliz.fr/api/heraliz/etat', donnees: null, methode: 'GET' })
     // extension absente (404) ou réponse bizarre : pas de création de compte, réglages par défaut
-    assert.deepEqual(await etat({ status: 404, body: '<html>' }), { inscription: false, motDePasseMin: 12, conditions: null })
-    assert.deepEqual(await etat({ status: 200, body: { inscription: 'oui', mot_de_passe_min: 3, conditions: 'javascript:alert(1)' } }), { inscription: false, motDePasseMin: 12, conditions: null })
+    assert.deepEqual(await etat({ status: 404, body: '<html>' }), { inscription: false, motDePasseMin: 12, conditions: null, robot: null })
+    assert.deepEqual(await etat({ status: 200, body: { inscription: 'oui', mot_de_passe_min: 3, conditions: 'javascript:alert(1)' } }), { inscription: false, motDePasseMin: 12, conditions: null, robot: null })
+    assert.equal((await etat({ status: 200, body: { inscription: true, robot: 'turnstile' } })).robot, 'turnstile')
+    assert.equal((await etat({ status: 200, body: { inscription: true, robot: 'autre' } })).robot, null)
     assert.equal((await etat({ status: 200, body: { inscription: true, conditions: 'http://exemple.fr/cgu' } })).conditions, null)
     await assert.rejects(etat(new Error('ECONNRESET')), /ne répond pas/)
 })
@@ -232,7 +234,7 @@ function fauxCompte() {
         deconnexion: async jeton => { f.deconnexions.push(jeton) },
         etat: async () => {
             if (f.etatPanne) throw new Error('Le site HeraliZ ne répond pas.')
-            return { inscription: true, motDePasseMin: 12, conditions: null }
+            return { inscription: true, motDePasseMin: 12, conditions: null, robot: f.robot || null }
         },
         inscription: async (valeur, min) => {
             f.inscrit = { valeur, min }
@@ -299,7 +301,7 @@ test('création de compte depuis le launcher : connecté tout de suite, puis dou
     compte.etatPanne = true
     assert.equal((await service.etatComptes()).injoignable, true)
     compte.etatPanne = false
-    assert.deepEqual(await service.etatComptes(), { inscription: true, motDePasseMin: 12, conditions: null })
+    assert.deepEqual(await service.etatComptes(), { inscription: true, motDePasseMin: 12, conditions: null, robot: null })
     await assert.rejects(service.inscription({ pseudo: 'Nouveau_42', email: 'n@exemple.fr', password: 'un-mot-de-passe', confirmation: 'un-mot-de-passe', acceptedRules: false }), /règlement/)
     const state = await service.inscription({ pseudo: 'Nouveau_42', email: 'n@exemple.fr', password: 'un-mot-de-passe', confirmation: 'un-mot-de-passe', acceptedRules: true })
     assert.equal(state.nouveauCompte, true)
@@ -487,4 +489,19 @@ test('connexion bloquée (IP) : message du site, jamais un ban ; jeton refusé p
 
     const sature = new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/jeton-jeu': { status: 429, body: null } }).requete)
     await assert.rejects(sature.jetonJeu('jeton', 'a'.repeat(64)), /Trop de demandes/)
+})
+
+test('anti-robot du site : demandé seulement une fois le formulaire juste, et joint à la création du compte', async () => {
+    const compte = fauxCompte()
+    compte.robot = 'turnstile'
+    let demandes = 0
+    const service = new LauncherService(config, () => {}, { compteSite: compte, verifierHumain: async () => { demandes++; return 'reponse-turnstile-0123456789' } })
+    const faux = await service.inscription({ pseudo: 'Nouveau_42', email: 'n@exemple.fr', password: 'court', confirmation: 'court', acceptedRules: true }).catch(e => e)
+    assert.ok(faux.champs?.motDePasse)
+    assert.equal(demandes, 0, 'pas d’anti-robot pour un formulaire faux')
+    await service.inscription({ pseudo: 'Nouveau_42', email: 'n@exemple.fr', password: 'un-mot-de-passe', confirmation: 'un-mot-de-passe', acceptedRules: true })
+    assert.equal(demandes, 1)
+    assert.equal(compte.inscrit.valeur.robot, 'reponse-turnstile-0123456789')
+    const sansFenetre = new LauncherService(config, () => {}, { compteSite: compte })
+    await assert.rejects(sansFenetre.inscription({ pseudo: 'Autre_42', email: 'a@exemple.fr', password: 'un-mot-de-passe', confirmation: 'un-mot-de-passe', acceptedRules: true }), /heraliz\.fr/)
 })

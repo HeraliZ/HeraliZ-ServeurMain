@@ -3,11 +3,10 @@
 namespace Azuriom\Plugin\Heraliz\Votes;
 
 use Azuriom\Models\User;
+use Azuriom\Plugin\Heraliz\Turnstile;
 use Azuriom\Plugin\Vote\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Throwable;
 
 /**
  * Passage par la page de vote, pour un site de vote dont le site ne peut pas vérifier les votes (Top-Serveurs sans son
@@ -48,34 +47,13 @@ final class Clic
     /** Clé publique Turnstile si l'anti-robot de Cloudflare est réglé dans l'administration (null sinon). */
     public static function turnstile(): ?string
     {
-        $cle = trim((string) setting('captcha.site_key'));
-
-        return setting('captcha.type') === 'turnstile' && $cle !== '' && trim((string) setting('captcha.secret_key')) !== ''
-            ? $cle : null;
+        return Turnstile::cle();
     }
 
     /** Réponse de Turnstile envoyée avec le clic vérifiée auprès de Cloudflare (vrai si Turnstile n'est pas réglé). */
     public static function humain(Request $request): bool
     {
-        if (self::turnstile() === null) {
-            return true;
-        }
-        $reponse = $request->input('cf-turnstile-response');
-        if (! is_string($reponse) || $reponse === '' || strlen($reponse) > 4096) {
-            return false;
-        }
-
-        try {
-            $r = Http::asForm()->timeout(4)->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                'secret' => (string) setting('captcha.secret_key'),
-                'response' => $reponse,
-                'remoteip' => (string) $request->ip(),
-            ]);
-        } catch (Throwable) {
-            return false;
-        }
-
-        return $r->successful() && $r->json('success') === true;
+        return Turnstile::cle() === null || Turnstile::valide($request->input('cf-turnstile-response'), (string) $request->ip());
     }
 
     private static function cle(User $user, Site $site): string

@@ -199,28 +199,33 @@ class CompteSite {
         await this.appeler('auth/logout', { access_token: jeton }).catch(() => {})
     }
 
-    // Ce que permet le site : { inscription, motDePasseMin, conditions } ; inscription fermée si l'extension manque.
+    // Ce que permet le site : { inscription, motDePasseMin, conditions, robot } ; inscription fermée si l'extension
+    // manque ; robot : 'turnstile' si le site demande son anti-robot avant de créer un compte (robot.js), sinon null.
     async etat() {
         const reponse = await this.appeler('heraliz/etat', null, 'GET')
         const body = reponse.status === 200 && reponse.body && typeof reponse.body === 'object' ? reponse.body : null
-        if (!body) return { inscription: false, motDePasseMin: 12, conditions: null }
+        if (!body) return { inscription: false, motDePasseMin: 12, conditions: null, robot: null }
         let conditions = null
         try { conditions = typeof body.conditions === 'string' ? httpsUrl(body.conditions).href : null } catch { /* adresse refusée */ }
         return {
             inscription: body.inscription === true,
             motDePasseMin: Number.isInteger(body.mot_de_passe_min) && body.mot_de_passe_min >= 8 && body.mot_de_passe_min <= 64 ? body.mot_de_passe_min : 12,
-            conditions
+            conditions,
+            robot: body.robot === 'turnstile' ? 'turnstile' : null
         }
     }
 
     // Création d'un compte du site : { etat: 'ok', compte } (déjà connecté) ; erreur avec .champs pour le formulaire.
+    // valeur.robot : réponse de l'anti-robot du site (robot.js), si le site la demande.
     async inscription(valeur, motDePasseMin = 12) {
         const champs = verifierInscription(valeur, motDePasseMin)
         if (Object.keys(champs).length > 0) throw Object.assign(new Error(Object.values(champs)[0]), { champs })
-        const reponse = await this.appeler('heraliz/inscription', {
+        const donnees = {
             name: valeur.pseudo, email: valeur.email.trim(), password: valeur.motDePasse,
             password_confirmation: valeur.confirmation, conditions: valeur.conditions === true
-        })
+        }
+        if (typeof valeur.robot === 'string' && valeur.robot) donnees.robot = valeur.robot
+        const reponse = await this.appeler('heraliz/inscription', donnees)
         if (reponse.status >= 200 && reponse.status < 300) {
             const compte = profil(reponse.body)
             if (!compte.jeton) throw new Error('Réponse du site HeraliZ illisible.')

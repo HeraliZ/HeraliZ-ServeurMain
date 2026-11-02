@@ -16,7 +16,7 @@ const { Gardien, versionPreuve } = require('./gardien')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
-const { CompteSite, erreurDiscord } = require('./compte-site')
+const { CompteSite, erreurDiscord, verifierInscription } = require('./compte-site')
 const Spartan = require('./spartan')
 const { effacerDonneesJeu, retirerAnciennesVersions, cheminSur, effacerSansSuivre } = require('./effacement')
 const { ecarterJarsEnTrop, controlerJava, oublierJava, controlerEmpreintes } = require('./integrite')
@@ -157,9 +157,11 @@ function detailTelechargement(octets, total, debut) {
 }
 
 class LauncherService {
-    constructor(config, notify, { compteSite, nomProcessus: nomDuProcessus = nomProcessus } = {}) {
+    constructor(config, notify, { compteSite, nomProcessus: nomDuProcessus = nomProcessus, verifierHumain = null } = {}) {
         this.config = config
         this.notify = notify
+        // anti-robot du site avant une création de compte (robot.js, fenêtre ouverte par index.js) ; null : aucun
+        this.verifierHumain = verifierHumain
         this.busy = false
         this.game = null
         this.nomProcessus = nomDuProcessus
@@ -274,9 +276,17 @@ class LauncherService {
         if (this.busy) throw new Error('Attends la fin de la préparation ou de la partie pour changer de compte.')
         if (!this.compteSite) throw new Error('Les comptes HeraliZ ne sont pas encore ouverts.')
         if (!value || value.acceptedRules !== true) throw new Error('Tu dois accepter le règlement pour continuer.')
-        const resultat = await this.compteSite.inscription({
-            pseudo: value.pseudo, email: value.email, motDePasse: value.password, confirmation: value.confirmation, conditions: true
-        }, this.etatSite?.motDePasseMin ?? 12)
+        const valeur = { pseudo: value.pseudo, email: value.email, motDePasse: value.password, confirmation: value.confirmation, conditions: true }
+        if (!this.etatSite) await this.etatComptes()
+        const motDePasseMin = this.etatSite?.motDePasseMin ?? 12
+        // anti-robot du site (Turnstile) : seulement une fois le formulaire juste, pour ne pas le refaire à chaque faute
+        if (this.etatSite?.robot === 'turnstile') {
+            const champs = verifierInscription(valeur, motDePasseMin)
+            if (Object.keys(champs).length > 0) throw Object.assign(new Error(Object.values(champs)[0]), { champs })
+            if (typeof this.verifierHumain !== 'function') throw new Error('Crée ton compte sur heraliz.fr, puis connecte-toi ici.')
+            valeur.robot = await this.verifierHumain()
+        }
+        const resultat = await this.compteSite.inscription(valeur, motDePasseMin)
         this.enregistrerCompte(resultat.compte, true)
         return { ...this.getState(), nouveauCompte: true }
     }
