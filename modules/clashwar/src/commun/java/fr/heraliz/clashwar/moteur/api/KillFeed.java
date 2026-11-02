@@ -44,9 +44,4 @@ public final class KillFeed {
     public static void ajouter(Collection<ServerPlayer> joueurs, Ligne ligne) {
         MatchsNet.versJoueurs(joueurs, new PaquetsMoteur.KillFeedS2C(ligne));
     }
-
-    /** Ajoute la ligne chez tous les joueurs connectes de la partie. */
-    public static void ajouter(Partie partie, Ligne ligne) {
-        ajouter(partie.joueursEnLigne(), ligne);
-    }
 }

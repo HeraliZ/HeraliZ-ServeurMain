@@ -1,6 +1,10 @@
 /**
  * Contrat du moteur commun (MATCHS_SPEC §1.10) entre les agents : signatures stables, seulement etendues (jamais
  * renommees ni retirees sans accord). Tout est a appeler sur le fil serveur, sauf mention contraire.
+ * <p>02/11 (audit) : seuls {@code Hud}, {@code Annonces}, {@code KillFeed} et {@code Kit} (ce que le HUD et l'ecran de
+ * choix de classe affichent, et leurs paquets) restent dans le jar des joueurs ; le reste du paquet (parties, arenes,
+ * cartes, kits, coffre, equipes, spectateurs) est dans src/serveur, memes noms (lus par reflexion par d'autres mods :
+ * {@code Coffre.aUnDepot}, HeraliZ Utils).
  * <ul>
  *     <li>{@link fr.heraliz.clashwar.moteur.api.MatchApi} : parties actives, joueurs en match, drapeau {@code heralisz:en_match} ;</li>
  *     <li>{@link fr.heraliz.clashwar.moteur.api.Partie} (abstraite), {@link fr.heraliz.clashwar.moteur.api.Equipe} ;</li>

@@ -76,18 +76,6 @@ public final class Hud {
         MatchsNet.versJoueurs(joueurs, new PaquetsMoteur.HudS2C(bandeau));
     }
 
-    /** Bandeau standard d'une partie (pastilles de ses equipes) envoye a ses joueurs connectes. */
-    public static void envoyer(Partie partie, Component titre, int secondes, Component score) {
-        envoyer(partie.joueursEnLigne(), bandeau(partie, titre, secondes, score));
-    }
-
-    /** Construit le bandeau standard d'une partie. */
-    public static Bandeau bandeau(Partie partie, Component titre, int secondes, Component score) {
-        List<Pastille> l = new ArrayList<>(partie.equipes().size());
-        for (Equipe e : partie.equipes()) l.add(new Pastille(e.nom(), e.couleur(), e.nbVivants(), e.taille()));
-        return new Bandeau(titre, secondes, l, score);
-    }
-
     /** Retire le bandeau (fin de match, retour au Coffre). */
     public static void effacer(ServerPlayer joueur) {
         MatchsNet.versJoueur(joueur, new PaquetsMoteur.HudS2C(null));

@@ -514,7 +514,7 @@ public final class MatchCw extends Partie {
             }
         }
         compter(u, 1);
-        KillFeed.ajouter(this, new KillFeed.Ligne(nomTueur, couleurTueur, victime.getGameProfile().getName(), e.couleur(), arme, false));
+        KillFeed.ajouter(joueursEnLigne(), new KillFeed.Ligne(nomTueur, couleurTueur, victime.getGameProfile().getName(), e.couleur(), arme, false));
         e.eliminer(u);
         victime.removeAllEffects();
         victime.playNotifySound(CwSons.ELIMINATION.get(), SoundSource.MASTER, 1f, 1f);
@@ -553,7 +553,7 @@ public final class MatchCw extends Partie {
         }
         if (phase() == Phase.FIN || phase() == Phase.TERMINEE) return;
         if (e.estVivant(u)) {
-            KillFeed.ajouter(this, new KillFeed.Ligne("", 0xFFFFFF, joueur.getGameProfile().getName(), e.couleur(), "", false));
+            KillFeed.ajouter(joueursEnLigne(), new KillFeed.Ligne("", 0xFFFFFF, joueur.getGameProfile().getName(), e.couleur(), "", false));
             e.eliminer(u);
         }
         // une équipe sans plus aucun joueur connecté perd le match par forfait
