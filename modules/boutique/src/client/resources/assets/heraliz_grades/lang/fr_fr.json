@@ -787,6 +787,7 @@
   "gui.heraliz_grades.staff.cmd_inconnue": "Commande d'un plugin ou d'un mod : tape-la seule pour voir son aide.",
   "gui.heraliz_grades.staff.cmd_worldedit": "Commande de WorldEdit (outil de construction du staff).",
   "heraliz_grades.staff.msg.commande_interdite": "Cette commande ne peut pas être donnée à un grade.",
+  "heraliz_grades.staff.msg.sous_commande_admin": "/%s est réservée à l'admin : elle n'est pas donnée avec la commande /%s.",
   "heraliz_grades.staff.msg.permission_commande": "Commande /%s enregistrée.",
   "heraliz_grades.staff.histo.commande": "A utilisé une commande donnée",
   "heraliz_grades.staff.histo.perm_commande": "A changé une commande d'un grade",

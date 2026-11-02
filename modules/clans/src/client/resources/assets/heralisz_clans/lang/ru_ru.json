@@ -225,7 +225,6 @@
   "msg.chat_inactif": "Чат клана выключен.",
   "msg.modifie": "%s: изменено.",
   "msg.admin.info": "Кланов: %s · экономика: %s (%s)",
-  "msg.admin.argent": "Баланс %s: %s %s",
   "gui.jeton": "герал",
   "gui.jetons": "гералов",
   "gui.vous_avez": "у вас %s",

@@ -225,7 +225,6 @@
   "msg.chat_inactif": "Chat de clan désactivé.",
   "msg.modifie": "%s modifié.",
   "msg.admin.info": "%s clan(s) · économie : %s (%s)",
-  "msg.admin.argent": "Solde de %s : %s %s",
   "gui.jeton": "héral",
   "gui.jetons": "hérals",
   "gui.vous_avez": "vous avez %s",

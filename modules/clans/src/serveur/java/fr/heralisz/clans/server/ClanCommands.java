@@ -326,7 +326,7 @@ public final class ClanCommands {
                 .then(lit("supprimer").then(mot("tag", SUGG_TAGS).executes(ClanCommands::adminSupprimer)))
                 .then(lit("forcer").then(mot("joueur", SUGG_EN_LIGNE)
                         .then(mot("tag", SUGG_TAGS).executes(ClanCommands::adminForcer))))
-                .then(lit("argent").then(mot("joueur", SUGG_EN_LIGNE)
+                .then(lit("argent").requires(s -> s.hasPermission(4)).then(mot("joueur", SUGG_EN_LIGNE)
                         .then(Commands.argument("montant", LongArgumentType.longArg()).executes(ClanCommands::argent))))
                 .then(lit("quetes").then(mot("tag", SUGG_TAGS).executes(ClanCommands::adminQuetes)))
                 .then(lit("banniere").then(mot("tag", SUGG_TAGS).then(lit("reset").executes(ClanCommands::adminBanniereReset))))
@@ -402,26 +402,13 @@ public final class ClanCommands {
         return 1;
     }
 
-    /** /clan admin argent <joueur> <±n> : economie (tests). */
+    /**
+     * /clan admin argent <joueur> <±n> : fondu dans /eco (02/11, audit point 10) : meme operation que /eco donner|retirer,
+     * memes garde-fous (op 4, connecte sur AuthMe, 10 millions au plus, plafond, journal_admin.log).
+     */
     private static int argent(CommandContext<CommandSourceStack> ctx) {
-        String nom = StringArgumentType.getString(ctx, "joueur");
-        long montant = LongArgumentType.getLong(ctx, "montant");
-        GameProfile gp = profil(ctx.getSource().getServer(), nom);
-        if (gp == null) return Reponses.echec(ctx.getSource(), Component.translatable("msg.joueur_introuvable", nom));
-        Economie eco = Economie.active();
-        if (!eco.disponible()) return Reponses.echec(ctx.getSource(), Component.translatable("msg.economie_indisponible"));
-        boolean ok;
-        if (montant >= 0) {
-            eco.deposer(gp.getId(), montant, "clan:admin");
-            ok = true;
-        } else {
-            ok = eco.retirer(gp.getId(), -montant, "clan:admin");
-        }
-        if (!ok) return Reponses.echec(ctx.getSource(), Component.translatable("msg.argent_insuffisant"));
-        EconomieApi.sauvegarderMaintenant(); // operation d'argent : ecrite tout de suite
-        String solde = eco.format(eco.solde(gp.getId()));
-        Reponses.ok(ctx.getSource(), Component.translatable("msg.admin.argent", nom, solde, ""));
-        return 1;
+        return fr.heralisz.economie.server.EconomieCommands.argentClan(ctx.getSource(), StringArgumentType.getString(ctx, "joueur"),
+                LongArgumentType.getLong(ctx, "montant"));
     }
 
     private static int adminQuetes(CommandContext<CommandSourceStack> ctx) {

@@ -141,7 +141,11 @@ public final class EconomieCommands {
     }
 
     private static int echec(CommandContext<CommandSourceStack> ctx, String cle, Object... args) {
-        ctx.getSource().sendFailure(msg(cle, args));
+        return echec(ctx.getSource(), cle, args);
+    }
+
+    private static int echec(CommandSourceStack src, String cle, Object... args) {
+        src.sendFailure(msg(cle, args));
         return 0;
     }
 
@@ -248,19 +252,41 @@ public final class EconomieCommands {
     }
 
     private static int admin(CommandContext<CommandSourceStack> ctx, Op op, @Nullable String motif) {
-        ComptesStore s = store(ctx);
-        if (s == null) return 0;
-        CommandSourceStack src = ctx.getSource();
-        if (!authentifie(src)) return echec(ctx, "admin.login");
-        String saisi = StringArgumentType.getString(ctx, "joueur");
-        long montant = LongArgumentType.getLong(ctx, "montant");
+        return operation(ctx.getSource(), op, StringArgumentType.getString(ctx, "joueur"), LongArgumentType.getLong(ctx, "montant"), motif);
+    }
+
+    /**
+     * {@code /clan admin argent <joueur> <±n>} (02/11, audit point 10) : fondu dans {@code /eco} : la même opération que
+     * {@code /eco donner} (montant positif) ou {@code /eco retirer} (négatif), avec les mêmes garde-fous (op 4, connecté sur
+     * AuthMe, 10 millions au plus par opération, plafond du solde, journal_admin.log). Avant : op 2, sans plafond, sans
+     * contrôle ni journal.
+     */
+    public static int argentClan(CommandSourceStack src, String joueur, long montant) {
+        if (!src.hasPermission(4)) {
+            src.sendFailure(Component.translatable("commands.help.failed"));
+            return 0;
+        }
+        if (montant == 0 || Math.abs(montant) > MAX_OPERATION) {
+            src.sendFailure(msg("admin.definir_echec", montant(MAX_OPERATION)));
+            return 0;
+        }
+        return operation(src, montant > 0 ? Op.DONNER : Op.RETIRER, joueur, Math.abs(montant), "/clan admin argent");
+    }
+
+    private static int operation(CommandSourceStack src, Op op, String saisi, long montant, @Nullable String motif) {
+        ComptesStore s = ComptesStore.get();
+        if (s == null) {
+            src.sendFailure(msg("indisponible"));
+            return 0;
+        }
+        if (!authentifie(src)) return echec(src, "admin.login");
         // joueur connecté (pseudo exact) d'abord, sinon un compte connu (dernier pseudo vu)
         ServerPlayer enLigne = null;
         for (ServerPlayer p : s.server().getPlayerList().getPlayers()) {
             if (p.getGameProfile().getName().equalsIgnoreCase(saisi)) enLigne = p;
         }
         UUID u = enLigne != null ? enLigne.getUUID() : s.resoudre(saisi);
-        if (u == null) return echec(ctx, "joueur_introuvable", saisi);
+        if (u == null) return echec(src, "joueur_introuvable", saisi);
         String n = enLigne != null ? enLigne.getGameProfile().getName() : s.nomDe(u);
         if (enLigne != null) s.compte(u, n);
         String auteur = src.getEntity() instanceof ServerPlayer p ? p.getGameProfile().getName() : "console";
@@ -271,17 +297,17 @@ public final class EconomieCommands {
         boolean fait;
         switch (op) {
             case DONNER -> {
-                if (avant + montant > max) return echec(ctx, "admin.plafond", nom(n), montant(max));
+                if (avant + montant > max) return echec(src, "admin.plafond", nom(n), montant(max));
                 EconomieApi.deposer(u, montant, m);
                 fait = true;
             }
             case RETIRER -> {
                 // jamais de solde négatif : refusé s'il n'a pas assez (rien ne change)
-                if (!EconomieApi.retirer(u, montant, m)) return echec(ctx, "admin.retirer_echec", nom(n), montant(avant));
+                if (!EconomieApi.retirer(u, montant, m)) return echec(src, "admin.retirer_echec", nom(n), montant(avant));
                 fait = true;
             }
             default -> {
-                if (!EconomieApi.definir(u, montant, m)) return echec(ctx, "admin.definir_echec", montant(max));
+                if (!EconomieApi.definir(u, montant, m)) return echec(src, "admin.definir_echec", montant(max));
                 fait = true;
             }
         }

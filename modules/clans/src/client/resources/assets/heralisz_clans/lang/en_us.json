@@ -225,7 +225,6 @@
   "msg.chat_inactif": "Clan chat disabled.",
   "msg.modifie": "%s updated.",
   "msg.admin.info": "%s clan(s) · economy: %s (%s)",
-  "msg.admin.argent": "Balance of %s: %s %s",
   "gui.jeton": "heral",
   "gui.jetons": "herals",
   "gui.vous_avez": "you have %s",

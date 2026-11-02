@@ -35,6 +35,29 @@ public final class CommandesStaff {
             "staff", "grade", "grades", "wipe", "spartan", "recharger", "redemarrage", "diag", "litebans");
 
     /**
+     * Parties réservées à l'admin (02/11, audit point 10, décision : une commande donnée à un grade ne donne PAS ses
+     * sous-commandes d'admin) : jamais données avec leur commande, même si elles demandent le même niveau qu'elle. Ce sont
+     * celles qui créent de l'argent, des clés, des objets ou des récompenses, ou qui effacent un clan. Le serveur relit
+     * aussi la commande donnée au niveau 2 (ou au niveau de sa racine s'il est plus haut) : les sous-commandes d'un niveau
+     * supérieur (op 4 : {@code /eco donner}...) restent fermées. Mots séparés par une espace, racine d'abord.
+     */
+    public static final Set<String> SOUS_COMMANDES_ADMIN = Set.of(
+            "clan admin", "eco donner", "eco retirer", "eco definir", "heraliz givekey", "heraliz keyall", "heraliz cles",
+            "heraliz givecrate", "casino jetons", "casino compte", "casino jackpot", "quete donner", "quete finir",
+            "saison points", "emote debloquer");
+
+    /** La première des {@link #SOUS_COMMANDES_ADMIN} par laquelle commence ce chemin de mots (racine d'abord), ou null. */
+    public static String sousCommandeAdmin(java.util.List<String> mots) {
+        StringBuilder b = new StringBuilder();
+        for (String m : mots) {
+            if (b.length() > 0) b.append(' ');
+            b.append(racine(m).isEmpty() ? m.toLowerCase(Locale.ROOT) : racine(m));
+            if (SOUS_COMMANDES_ADMIN.contains(b.toString())) return b.toString();
+        }
+        return null;
+    }
+
+    /**
      * Racine normalisée d'un nom de l'arbre des commandes ou d'une commande lue par le serveur (SANS le « / » du chat) :
      * premier mot, minuscules, sans espace de noms ({@code minecraft:tp} -> {@code tp}) ; chaîne vide si invalide.
      */

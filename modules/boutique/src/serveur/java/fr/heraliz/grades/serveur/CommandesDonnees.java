@@ -6,7 +6,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.context.ParsedCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.logging.LogUtils;
 import fr.heraliz.grades.Grade;
 import fr.heraliz.grades.staff.ActionStaff;
@@ -42,8 +47,11 @@ import java.util.UUID;
  * Le SERVEUR applique la permission, à deux étages :
  * <ul>
  *     <li>commandes de Minecraft et des mods (Brigadier) : à chaque commande d'un membre du staff qui n'est pas op 4,
- *     connecté sur AuthMe, dont le grade a reçu cette racine, la commande est relue avec la permission 4
- *     ({@link CommandEvent}) ; sinon rien ne change (refusée comme avant s'il n'en a pas le droit) ;</li>
+ *     connecté sur AuthMe, dont le grade a reçu cette racine, la commande est relue avec la permission 2, ou celle de sa
+ *     racine si elle demande plus ({@link CommandEvent}) ; sinon rien ne change (refusée comme avant s'il n'en a pas le
+ *     droit). 02/11 (audit point 10) : la commande donnée ne donne PAS ses sous-commandes d'admin : celles d'un niveau
+ *     plus haut que sa racine restent fermées (avant, tout était relu en op 4 : cocher /eco donnait /eco donner), et
+ *     celles de {@link CommandesStaff#SOUS_COMMANDES_ADMIN} ne sont jamais données ;</li>
  *     <li>commandes des plugins (LiteBans…) et enveloppe Bukkit de Mohist : permissions Bukkit de la commande posées sur le
  *     joueur par une pièce jointe ({@link PontBukkit#accorder}), refaites toutes les 5 s et à chaque changement (grade
  *     retiré, /login pas fait, case décochée : retirées).</li>
@@ -193,9 +201,44 @@ final class CommandesDonnees {
         if (racine.isEmpty() || !MASQUES.containsKey(racine) || !CommandesStaff.donnable(racine)) return;
         int rang = PanelStaff.rang(p);
         if (!permis(racine, rang)) return;
-        e.setParseResults(p.server.getCommands().getDispatcher().parse(brut, src.withPermission(4)));
+        CommandDispatcher<CommandSourceStack> d = p.server.getCommands().getDispatcher();
+        ParseResults<CommandSourceStack> relue = d.parse(brut, src.withPermission(niveau(d, brut, src)));
         String texte = brut.length() > 150 ? brut.substring(0, 150) + "…" : brut;
+        String reservee = CommandesStaff.sousCommandeAdmin(mots(relue));
+        if (reservee != null) {
+            // la commande reste lue avec ses propres droits (refusée comme avant) ; le membre du staff sait pourquoi
+            p.sendSystemMessage(net.minecraft.network.chat.Component.translatableWithFallback("heraliz_grades.staff.msg.sous_commande_admin",
+                    "/%s est réservée à l'admin : elle n'est pas donnée avec la commande /%s.", reservee, racine)
+                    .withStyle(net.minecraft.ChatFormatting.RED));
+            JournalStaff.noterId(p.getGameProfile().getName(), PermsStaff.nomRang(rang), "commande", "", racine, "refusée : /" + texte);
+            return;
+        }
+        e.setParseResults(relue);
         JournalStaff.noterId(p.getGameProfile().getName(), PermsStaff.nomRang(rang), "commande", "", racine, "/" + texte);
+    }
+
+    /**
+     * Niveau de permission avec lequel une commande donnée est relue : 2, ou le plus bas qui ouvre sa racine s'il est plus
+     * haut (3 ou 4). Ses sous-commandes d'un niveau supérieur restent fermées.
+     */
+    private static int niveau(CommandDispatcher<CommandSourceStack> d, String brut, CommandSourceStack src) {
+        String b = brut.strip();
+        int sp = b.indexOf(' ');
+        CommandNode<CommandSourceStack> n = d.getRoot().getChild(sp < 0 ? b : b.substring(0, sp));
+        if (n == null) return 2;
+        for (int l = 2; l <= 4; l++) if (n.canUse(src.withPermission(l))) return l;
+        return 4;
+    }
+
+    /** Mots fixes du chemin de la commande lue (racine d'abord), redirections comprises. */
+    private static java.util.List<String> mots(ParseResults<CommandSourceStack> pr) {
+        java.util.List<String> l = new java.util.ArrayList<>();
+        for (CommandContextBuilder<CommandSourceStack> c = pr.getContext(); c != null; c = c.getChild()) {
+            for (ParsedCommandNode<CommandSourceStack> n : c.getNodes()) {
+                if (n.getNode() instanceof LiteralCommandNode<CommandSourceStack> lit) l.add(lit.getLiteral());
+            }
+        }
+        return l;
     }
 
     // ------------------------------------------------------------------ application : permissions Bukkit (plugins)

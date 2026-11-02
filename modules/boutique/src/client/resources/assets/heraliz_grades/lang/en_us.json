@@ -787,6 +787,7 @@
   "gui.heraliz_grades.staff.cmd_inconnue": "Command from a plugin or mod: type it alone to see its help.",
   "gui.heraliz_grades.staff.cmd_worldedit": "WorldEdit command (staff building tool).",
   "heraliz_grades.staff.msg.commande_interdite": "This command cannot be given to a rank.",
+  "heraliz_grades.staff.msg.sous_commande_admin": "/%s is reserved for admins: it is not given with the /%s command.",
   "heraliz_grades.staff.msg.permission_commande": "Command /%s saved.",
   "heraliz_grades.staff.histo.commande": "Used a granted command",
   "heraliz_grades.staff.histo.perm_commande": "Changed a rank's command",

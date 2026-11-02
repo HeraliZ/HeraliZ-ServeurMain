@@ -787,6 +787,7 @@
   "gui.heraliz_grades.staff.cmd_inconnue": "Команда плагина или мода: введи её без аргументов для справки.",
   "gui.heraliz_grades.staff.cmd_worldedit": "Команда WorldEdit (инструмент постройки персонала).",
   "heraliz_grades.staff.msg.commande_interdite": "Эту команду нельзя выдать рангу.",
+  "heraliz_grades.staff.msg.sous_commande_admin": "/%s — только для админов: она не выдаётся вместе с командой /%s.",
   "heraliz_grades.staff.msg.permission_commande": "Команда /%s сохранена.",
   "heraliz_grades.staff.histo.commande": "Использовал выданную команду",
   "heraliz_grades.staff.histo.perm_commande": "Изменил команду ранга",
