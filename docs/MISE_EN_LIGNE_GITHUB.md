@@ -145,3 +145,20 @@ dépôt). Le réglage, à faire une fois (Settings du dépôt, compte propriéta
 À garder en tête : un envoi sur `main` lui-même peut toujours lire ces secrets. Seuls les propriétaires doivent pouvoir
 écrire sur `main` (Settings → Collaborators : rôle « Write » seulement pour qui en a besoin ; double authentification
 GitHub sur ces comptes).
+
+## 8. Machines distantes reconnues à leur empreinte (02/11, audit point 41)
+
+La mise en ligne envoie le mot de passe de la VM du site (SSH) et celui du Ptero (SFTP). Elle vérifie maintenant que
+la machine qui répond est bien la bonne, par sa **clé d'hôte** (publique, rien de secret), avant d'envoyer le mot de
+passe (`outils/hote_connu.sh`, et `launcher/ci/publier.py` pour la publication du launcher). Tant que les empreintes ne
+sont pas réglées, tout marche comme avant et le résumé de la tâche affiche les clés à recopier.
+
+À faire une fois : lancer « Site HeraliZ » → `verifier`, et une mise en ligne « Serveur HeraliZ » ; dans leur résumé,
+la partie « Machine distante non vérifiée » donne les lignes à recopier dans **Settings → Secrets and variables →
+Actions → onglet Variables → New repository variable** :
+- `SITE_SSH_EMPREINTE` : les lignes de la VM du site ;
+- `PTERO_SFTP_EMPREINTE` : les lignes du SFTP du Ptero.
+
+Pour être sûr de recopier les bonnes : comparer avec ce que montre la machine elle-même (VM : `ssh-keygen -lf
+/etc/ssh/ssh_host_ed25519_key.pub` dans la console de l'hébergeur). Si la machine change (nouvelle VM, Ptero
+déménagé), la mise en ligne s'arrête avec une erreur de clé d'hôte : remplacer la variable par les nouvelles lignes.

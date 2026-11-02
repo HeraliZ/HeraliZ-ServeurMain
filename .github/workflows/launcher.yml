@@ -258,6 +258,7 @@ jobs:
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
           LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
+          SITE_SSH_EMPREINTE: ${{ vars.SITE_SSH_EMPREINTE || secrets.SITE_SSH_EMPREINTE }}
           PYTHONUTF8: "1"
         run: |
           shopt -s nullglob
@@ -325,6 +326,7 @@ jobs:
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
           LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
+          SITE_SSH_EMPREINTE: ${{ vars.SITE_SSH_EMPREINTE || secrets.SITE_SSH_EMPREINTE }}
           PYTHONUTF8: "1"
         run: |
           python ci/publier.py latest-linux.yml \
@@ -391,6 +393,7 @@ jobs:
           SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
           SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
           LAUNCHER_SIGN_KEY: ${{ secrets.LAUNCHER_SIGN_KEY }}
+          SITE_SSH_EMPREINTE: ${{ vars.SITE_SSH_EMPREINTE || secrets.SITE_SSH_EMPREINTE }}
           PYTHONUTF8: "1"
         run: |
           # zip d'abord (fichier principal de latest-mac.yml, comme electron-builder), puis l'image disque à installer

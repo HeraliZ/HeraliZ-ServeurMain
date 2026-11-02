@@ -62,6 +62,7 @@ jobs:
       PTERO_URL: ${{ secrets.PTERO_URL }}
       PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
       PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
+      PTERO_SFTP_EMPREINTE: ${{ vars.PTERO_SFTP_EMPREINTE || secrets.PTERO_SFTP_EMPREINTE }}
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +74,21 @@ jobs:
           python-version: "3.12"
 
       - name: Outils SFTP
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          HOTE="${PTERO_SFTP_HOST#sftp://}"
+          HOTE="${HOTE%%/*}"
+          PORT="${PTERO_SFTP_PORT:-}"
+          case "$HOTE" in *:*) [ -z "$PORT" ] && PORT="${HOTE##*:}"; HOTE="${HOTE%%:*}";; esac
+          PORT="${PORT:-2022}"
+          echo "::add-mask::$HOTE"
+          if bash outils/hote_connu.sh "$HOTE" "$PORT" "$RUNNER_TEMP/hotes_ptero" PTERO_SFTP_EMPREINTE <<< "${PTERO_SFTP_EMPREINTE:-}"; then
+            echo "LFTP_SSH=set sftp:connect-program \"ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$RUNNER_TEMP/hotes_ptero\";" >> "$GITHUB_ENV"
+            echo "SFTP du Ptero : machine vérifiée par son empreinte."
+          else
+            echo "LFTP_SSH=set sftp:auto-confirm yes;" >> "$GITHUB_ENV"
+            echo "::warning::SFTP du Ptero : machine non vérifiée (variable PTERO_SFTP_EMPREINTE absente : voir le résumé)."
+          fi
 
       # les choix passent par l'environnement (jamais collés dans le script) ; le programme refuse la vraie exécution
       # sans la case ET la phrase exacte, ou hors de main

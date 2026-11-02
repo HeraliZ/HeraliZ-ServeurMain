@@ -50,6 +50,8 @@ jobs:
       SITE_SSH_PORT: ${{ secrets.SITE_SSH_PORT }}
       SITE_SSH_UTILISATEUR: ${{ secrets.SITE_SSH_UTILISATEUR }}
       SITE_SSH_MDP: ${{ secrets.SITE_SSH_MDP }}
+      # empreinte de la VM (clés publiques : variable du dépôt ; outils/hote_connu.sh)
+      SITE_SSH_EMPREINTE: ${{ vars.SITE_SSH_EMPREINTE || secrets.SITE_SSH_EMPREINTE }}
       # seulement pour « mot_de_passe » : le nouveau mot de passe SSH de la VM
       SITE_SSH_MDP_NOUVEAU: ${{ secrets.SITE_SSH_MDP_NOUVEAU }}
       SITE_BDD_MDP: ${{ secrets.SITE_BDD_MDP }}
@@ -103,6 +105,18 @@ jobs:
             echo "Nouveau mot de passe : $n caractères, accepté"
           fi
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass dnsutils > /dev/null
+
+      # La VM est reconnue à son empreinte (variable SITE_SSH_EMPREINTE) avant d'y envoyer le mot de passe ; sans elle,
+      # comme avant, et le résumé donne les clés à recopier.
+      - name: Machine du site (empreinte)
+        run: |
+          if bash outils/hote_connu.sh "$SITE_SSH_HOTE" "$SSH_PORT" "$RUNNER_TEMP/hotes_site" SITE_SSH_EMPREINTE <<< "${SITE_SSH_EMPREINTE:-}"; then
+            echo "SSH_VERIF=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$RUNNER_TEMP/hotes_site" >> "$GITHUB_ENV"
+            echo "VM du site : machine vérifiée par son empreinte."
+          else
+            echo "SSH_VERIF=-o StrictHostKeyChecking=accept-new" >> "$GITHUB_ENV"
+            echo "::warning::VM du site : machine non vérifiée (variable SITE_SSH_EMPREINTE absente : voir le résumé)."
+          fi
 
       # adresses vues d'internet : quels noms mènent à la VM (HTTPS seulement pour ceux-là) ; aucune IP affichée
       - name: Adresses heraliz.fr
@@ -405,7 +419,7 @@ jobs:
       - name: Connexion à la VM
         run: |
           export SSHPASS="$SITE_SSH_MDP"
-          if ! sshpass -e ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o PubkeyAuthentication=no \
+          if ! sshpass -e ssh $SSH_VERIF -o ConnectTimeout=20 -o PubkeyAuthentication=no \
               -p "$SSH_PORT" "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE" true < /dev/null; then
             echo "::error::Connexion à la VM impossible : vérifier SITE_SSH_HOTE, SITE_SSH_UTILISATEUR, SITE_SSH_MDP (et SITE_SSH_PORT), et que la VM accepte la connexion par mot de passe."
             exit 1
@@ -469,7 +483,7 @@ jobs:
           echo "Archive du thème : $(du -h theme.tgz | cut -f1), $(find envoi -type f | wc -l) fichiers"
           export SSHPASS="$SITE_SSH_MDP"
           ARCHIVE="/tmp/heraliz_theme_$GITHUB_RUN_ID.tgz"
-          sshpass -e scp -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o PubkeyAuthentication=no -P "$SSH_PORT" \
+          sshpass -e scp $SSH_VERIF -o ConnectTimeout=20 -o PubkeyAuthentication=no -P "$SSH_PORT" \
             theme.tgz "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE:$ARCHIVE" < /dev/null
           echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
 
@@ -498,7 +512,7 @@ jobs:
             if [ "$ACTION" = installer ]; then cat site/vm/securite.sh; fi
           } > script_vm.sh
           export SSHPASS="$SITE_SSH_MDP"
-          OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no)
+          OPTS=($SSH_VERIF -o ConnectTimeout=20 -o ServerAliveInterval=15 -o PubkeyAuthentication=no)
           DISTANT="/tmp/heraliz_site_$GITHUB_RUN_ID.sh"
           sshpass -e scp "${OPTS[@]}" -P "$SSH_PORT" script_vm.sh "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE:$DISTANT" < /dev/null
           rm -f script_vm.sh
@@ -516,7 +530,7 @@ jobs:
         if: env.ACTION == 'mot_de_passe'
         run: |
           export SSHPASS="$SITE_SSH_MDP_NOUVEAU"
-          if ! sshpass -e ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o PubkeyAuthentication=no \
+          if ! sshpass -e ssh $SSH_VERIF -o ConnectTimeout=20 -o PubkeyAuthentication=no \
               -p "$SSH_PORT" "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE" true < /dev/null; then
             echo "::error::Le nouveau mot de passe n'ouvre pas la VM. Essaie l'ancien (SITE_SSH_MDP) depuis le panneau de l'hébergeur ; rien d'autre n'a été touché."
             exit 1

@@ -101,7 +101,8 @@ def hote_port():
 
 
 HOTE, PORT = hote_port()
-REGLAGES = "set sftp:auto-confirm yes; set net:max-retries 3; set net:timeout 30; set net:reconnect-interval-base 5; " \
+# machine du Ptero vérifiée par son empreinte quand le workflow la donne (LFTP_SSH, outils/hote_connu.sh)
+REGLAGES = (os.environ.get("LFTP_SSH") or "set sftp:auto-confirm yes;") + " set net:max-retries 3; set net:timeout 30; set net:reconnect-interval-base 5; " \
            "set cmd:fail-exit yes; set xfer:clobber on;"
 
 

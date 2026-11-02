@@ -11,7 +11,8 @@ renommé d'un coup : jamais un fichier à moitié envoyé. Le fichier de version
 chaque fichier, lu par les launchers installés pour se mettre à jour) part en dernier : il ne désigne jamais un fichier
 absent. Le premier fichier est le principal (« path » du fichier de version). Accès : variables d'environnement
 SITE_SSH_HOTE, SITE_SSH_PORT, SITE_SSH_UTILISATEUR, SITE_SSH_MDP (secrets GitHub), jamais affichées ni passées en
-ligne de commande.
+ligne de commande. La VM est reconnue à son empreinte (SITE_SSH_EMPREINTE : ses clés publiques, « type clé » par ligne,
+comme pour outils/hote_connu.sh) avant que le mot de passe parte ; sans elle, comme avant (avertissement).
 """
 
 import base64
@@ -46,6 +47,20 @@ def empreinte(chemin):
         for bloc in iter(lambda: f.read(1 << 20), b""):
             h.update(bloc)
     return base64.b64encode(h.digest()).decode()
+
+
+def hotes_connus(hote, port, empreinte):
+    """Lignes known_hosts de la VM tirées de SITE_SSH_EMPREINTE (« type clé », avec ou sans nom devant), ou []."""
+    nom = hote if port == 22 else f"[{hote}]:{port}"
+    lignes = []
+    for ligne in (empreinte or "").replace("\r", "").splitlines():
+        champs = ligne.split()
+        for i in range(len(champs) - 1):
+            if re.fullmatch(r"ssh-(ed25519|rsa)|ecdsa-sha2-nistp(256|384|521)", champs[i]) \
+                    and re.fullmatch(r"[A-Za-z0-9+/]+=*", champs[i + 1]):
+                lignes.append(f"{nom} {champs[i]} {champs[i + 1]}")
+                break
+    return lignes
 
 
 def curl(*arguments):
@@ -125,10 +140,21 @@ def main(arguments):
         if not signe:
             erreur("LAUNCHER_SIGN_KEY réglé mais aucune signature produite (clé invalide ?).")
 
+    port = int(os.environ.get("SITE_SSH_PORT") or 22)
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    connues = hotes_connus(hote, port, os.environ.get("SITE_SSH_EMPREINTE"))
+    if connues:
+        # VM reconnue à son empreinte : une autre machine est refusée avant que le mot de passe parte
+        fichier = os.path.join(os.environ.get("RUNNER_TEMP") or ".", "hotes_site_publier")
+        with open(fichier, "w", encoding="utf-8") as f:
+            f.write("\n".join(connues) + "\n")
+        client.load_host_keys(fichier)
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
+    else:
+        print("::warning::VM du site : machine non vérifiée (variable SITE_SSH_EMPREINTE absente, voir docs/MISE_EN_LIGNE_GITHUB.md).")
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        client.connect(hote, port=int(os.environ.get("SITE_SSH_PORT") or 22), username=utilisateur, password=mdp,
+        client.connect(hote, port=port, username=utilisateur, password=mdp,
                        timeout=20, banner_timeout=30, auth_timeout=30, allow_agent=False, look_for_keys=False)
     except Exception as e:
         erreur(f"Connexion à la VM du site impossible : {type(e).__name__}")
