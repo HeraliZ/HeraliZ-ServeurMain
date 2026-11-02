@@ -4,6 +4,7 @@ import com.Spartan.Networks.BuildPacket;
 import com.Spartan.Networks.CaptureChunkPacket;
 import com.Spartan.Networks.ChallengeResponsePacket;
 import com.Spartan.Networks.ClientReportPacket;
+import com.Spartan.Networks.GardienPacket;
 import com.Spartan.Networks.LaunchTokenPacket;
 import com.Spartan.Networks.ModMessages;
 import com.Spartan.Networks.ModsPacket;
@@ -62,11 +63,11 @@ public final class ReceptionServeur {
             // paquets d'arrivée (envoyés une seule fois, avant le /login) : traités après la vérification ; les appuis de
             // touches d'avant ne comptent pas
             if (p instanceof TestPacket || p instanceof ModsPacket || p instanceof ResourcePackPacket || p instanceof BuildPacket
-                    || (p instanceof ClientReportPacket c1 && !c1.type().equals("touche"))) {
+                    || p instanceof GardienPacket || (p instanceof ClientReportPacket c1 && !c1.type().equals("touche"))) {
                 java.util.List<Object> l = ATTENTE.computeIfAbsent(player.getUUID(), u -> new java.util.ArrayList<>());
                 // rapport du Gardien : toutes les 15 s, seul le dernier compte (sinon il remplissait la file en 4 min)
-                if (p instanceof ClientReportPacket c2 && c2.type().equals("gardien")) {
-                    l.removeIf(o -> o instanceof ClientReportPacket c3 && c3.type().equals("gardien"));
+                if (p instanceof GardienPacket) {
+                    l.removeIf(o -> o instanceof GardienPacket);
                 }
                 if (l.size() < 16) l.add(p);
             }
@@ -86,9 +87,11 @@ public final class ReceptionServeur {
             ChallengeManager.onResponse(player, c.nonce(), c.answer());
         } else if (p instanceof ClientReportPacket c) {
             signalement(player, c);
+        } else if (p instanceof GardienPacket g) {
+            GardienServeur.recevoir(player, g);
         } else if (p instanceof LaunchTokenPacket l) {
             if (PacketGuard.firstTime(player.getUUID(), "launch")) {
-                LauncherGate.onToken(player, l.token(), l.modsHash());
+                LauncherGate.onToken(player, l.token(), l.modsHash(), l.gardien());
             }
         } else if (p instanceof ModsPacket m) {
             mods(player, m);
@@ -175,10 +178,6 @@ public final class ReceptionServeur {
         String detail = c.detail();
         if (type.equals("capture")) {
             CaptureManager.accord(player, detail.equals("oui"));
-            return;
-        }
-        if (type.equals("gardien")) {
-            GardienServeur.recevoir(player, detail);
             return;
         }
         if (!SpartanConfig.CHECK_CLIENT_INTEGRITY.get()) {

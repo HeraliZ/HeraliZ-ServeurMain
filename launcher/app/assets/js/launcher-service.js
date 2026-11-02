@@ -12,7 +12,7 @@ const { validateSelectedJvm, ensureJavaDirIsRoot, javaExecFromRoot, discoverBest
 const { getServerStatus } = require('helios-core/mojang')
 const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
-const { Gardien } = require('./gardien')
+const { Gardien, versionPreuve } = require('./gardien')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
@@ -266,10 +266,14 @@ class LauncherService {
     }
 
     // Jeton de lancement signé par le site pour ce compte (Spartan, mode B), lié au dossier mods du jeu ; null sans site.
-    async jetonSpartan() {
+    // Clés du Gardien en version 2 (gardien.js) : le site signe engagement(empreinte des mods, clé publique), ce qui lie
+    // la clé publique du Gardien à ce jeton (le serveur refait le calcul) ; le site ne voit qu'une empreinte de plus.
+    async jetonSpartan(clesGardien = null) {
         if (!this.compteSite) return null
         const dossierMods = path.join(Config.getInstanceDirectory(), this.config.serverId, 'mods')
-        const jeton = await this.compteSite.jetonJeu(this.jetonActuel(), Spartan.empreinteMods(dossierMods))
+        const empreinte = Spartan.empreinteMods(dossierMods)
+        const jeton = await this.compteSite.jetonJeu(this.jetonActuel(),
+            clesGardien?.version === 2 ? Gardien.engagement(empreinte, clesGardien.publique) : empreinte)
         // launcher de production (clé de signature réglée) : le serveur refuse toute connexion sans jeton, inutile de
         // lancer Minecraft pour rien (site saturé, clé pas encore créée, site en panne) ; le joueur réessaie
         if (!jeton && chargerClePublique(this.config.distributionPublicKey)) {
@@ -645,11 +649,12 @@ class LauncherService {
                 console.warn('[HeraliZ/integrite]', erreur?.message)
             }
             this.emit('launch', 'Démarrage de Minecraft…')
-            const jetonSpartan = await this.jetonSpartan()
+            // Gardien (gardien.js) : clés de ce lancement. Pack avec Spartan 2.10.0 ou plus récent : paire Ed25519, clé
+            // privée gardée ici, clé publique liée au jeton et donnée au jeu ; sinon ancien mode (clé HMAC donnée au jeu)
+            const clesGardien = Gardien.nouvellesCles(versionPreuve(server?.modules))
+            const jetonSpartan = await this.jetonSpartan(clesGardien)
             const pb = new ProcessBuilder(server, version, loader, profile, app.getVersion(), jetonSpartan)
-            // Gardien (gardien.js) : clé de ce lancement, donnée au jeu par son environnement
-            const cleGardien = Gardien.nouvelleCle()
-            pb.cleGardien = cleGardien
+            pb.cleGardien = clesGardien.jeu
             const jeu = pb.build()
             this.game = jeu
             jeu.once('spawn', () => {
@@ -657,7 +662,7 @@ class LauncherService {
                 this.arreterGardien()
                 try {
                     this.gardien = new Gardien({
-                        dossierJeu: pb.gameDir, pid: jeu.pid, cle: cleGardien,
+                        dossierJeu: pb.gameDir, pid: jeu.pid, cles: clesGardien,
                         dossiersJars: [path.join(pb.gameDir, 'mods'), path.join(Config.getCommonDirectory(), 'modstore')]
                     }).demarrer()
                 } catch (erreur) {

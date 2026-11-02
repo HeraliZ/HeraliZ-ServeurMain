@@ -3,6 +3,7 @@ package com.Spartan.Client;
 import com.Spartan.Networks.CaptureRequestPacket;
 import com.Spartan.Networks.ChallengePacket;
 import com.Spartan.Networks.ChallengeResponsePacket;
+import com.Spartan.Networks.GardienDefiPacket;
 import com.Spartan.Networks.ModMessages;
 import com.Spartan.Networks.ScanRequestPacket;
 import com.Spartan.integrity.Fingerprint;
@@ -34,6 +35,8 @@ public final class PartieClient implements Partie {
             ClientScanService.onRequest(s);
         } else if (paquet instanceof CaptureRequestPacket c) {
             CaptureEcran.prendre(c.captureId());
+        } else if (paquet instanceof GardienDefiPacket d) {
+            Gardien.defi(d.defi());
         }
     }
 }

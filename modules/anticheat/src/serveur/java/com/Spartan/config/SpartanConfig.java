@@ -138,6 +138,8 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.IntValue GARDIEN_SILENCE_SECONDS;
     public static final ForgeConfigSpec.BooleanValue GARDIEN_CAPTURE;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GARDIEN_IGNORED_TOOLS;
+    public static final ForgeConfigSpec.ConfigValue<String> GARDIEN_ANCIEN_LAUNCHER;
+    public static final ForgeConfigSpec.IntValue GARDIEN_DEFI_SECONDS;
 
     // --- validation du jeu à la connexion ---
     public static final ForgeConfigSpec.BooleanValue VALIDATION_ENABLED;
@@ -412,11 +414,14 @@ public class SpartanConfig {
                 .defineList("allowedModsHashes", List.of(), o -> o instanceof String);
         b.pop();
 
-        b.comment("Gardien : l'anticheat du launcher HeraliZ (1.14.0 ou plus récent). Pendant la partie, le launcher reste",
-                "en arrière-plan et regarde depuis l'extérieur du jeu les programmes de triche connus (Cheat Engine,",
-                "injecteurs, débogueurs, décompilateurs) et les jars du jeu ; le jeu relit ses rapports signés et les",
-                "envoie ici. Seuls les noms de la liste du launcher trouvés arrivent, jamais la liste des programmes.",
-                "Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required.")
+        b.comment("Gardien : l'anticheat du launcher HeraliZ. Pendant la partie, le launcher reste en arrière-plan et regarde",
+                "depuis l'extérieur du jeu les programmes de triche connus (Cheat Engine, injecteurs, débogueurs,",
+                "décompilateurs) et les jars du jeu. Seuls les noms de la liste du launcher trouvés arrivent, jamais la liste",
+                "des programmes. Depuis Spartan 2.10.0 et le launcher 1.16.0 (audit du 02/11), le SERVEUR vérifie lui-même",
+                "chaque rapport : signé par le launcher avec une clé liée au jeton du site, numéroté, avec le défi tiré par le",
+                "serveur pour la connexion. Le jeu ne fait que le transmettre : il ne peut plus inventer un rapport « propre ».",
+                "Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required et",
+                "ancienLauncher = \"refuser\".")
                 .push("gardien");
         GARDIEN_ENABLED = b.comment("Active le Gardien.").define("enabled", true);
         GARDIEN_REQUIRED = b.comment(
@@ -430,6 +435,18 @@ public class SpartanConfig {
                 "autorisée).").define("captureOnTool", true);
         GARDIEN_IGNORED_TOOLS = b.comment("Noms de la liste du launcher à ne plus signaler (fausses alertes), ex. \"injector\".")
                 .defineList("ignoredTools", List.of(), o -> o instanceof String);
+        GARDIEN_ANCIEN_LAUNCHER = b.comment(
+                "Launcher 1.15.x ou plus ancien (jeton sans clé du Gardien) : ses rapports ne peuvent pas être prouvés, un jeu",
+                "modifié peut les inventer. \"noter\" : écrit seulement dans « Jeu validé » ; \"alerte\" : une alerte",
+                "« Gardien » par connexion ; \"refuser\" : connexion refusée (« lancez le jeu depuis le launcher à jour »).",
+                "Dans tous les cas, un joueur déjà venu avec un Gardien prouvé (30 derniers jours) qui revient avec un ancien",
+                "launcher donne une alerte.")
+                .defineInList("ancienLauncher", "alerte", List.of("noter", "alerte", "refuser"));
+        GARDIEN_DEFI_SECONDS = b.comment(
+                "Défi du Gardien renouvelé toutes les N secondes : un rapport n'est « frais » que s'il porte le dernier ou",
+                "l'avant-dernier défi. Plus bas = rejeu plus court, mais garder au moins 3 fois l'écart entre deux rapports",
+                "du launcher (10 à 20 s).")
+                .defineInRange("defiSeconds", 60, 45, 600);
         b.pop();
 
         b.comment("Validation du jeu à chaque connexion (demande du propriétaire, 27/10). Une fois le joueur vérifié (jeton",

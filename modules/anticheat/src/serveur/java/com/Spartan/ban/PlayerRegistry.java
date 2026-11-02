@@ -59,6 +59,8 @@ public final class PlayerRegistry {
         public LinkedHashSet<String> serials = new LinkedHashSet<>();
         public long firstSeen;
         public long lastSeen;
+        /** Dernière connexion avec un Gardien prouvé (launcher 1.16.0 ou plus récent), 0 si jamais (audit du 02/11). */
+        public long gardienPreuve;
 
         /** IP la plus récente (les ensembles sont tenus dans l'ordre d'utilisation). */
         public String lastIp() {
@@ -78,6 +80,7 @@ public final class PlayerRegistry {
             c.serials = serials == null ? null : new LinkedHashSet<>(serials);
             c.firstSeen = firstSeen;
             c.lastSeen = lastSeen;
+            c.gardienPreuve = gardienPreuve;
             return c;
         }
     }
@@ -215,6 +218,22 @@ public final class PlayerRegistry {
         if (addBounded(r.serials, serial, MAX_SERIALS)) {
             dirty = true;
         }
+    }
+
+    /** Connexion avec un Gardien prouvé (au plus une écriture par jour et par joueur). */
+    public static synchronized void notePreuveGardien(UUID uuid, String name) {
+        long now = System.currentTimeMillis();
+        Record r = getOrCreate(uuid, name, now);
+        if (now - r.gardienPreuve > DAY_MS) {
+            r.gardienPreuve = now;
+            dirty = true;
+        }
+    }
+
+    /** Dernière connexion avec un Gardien prouvé (0 : jamais vue). */
+    public static synchronized long preuveGardien(UUID uuid) {
+        Record r = BY_UUID.get(uuid.toString());
+        return r == null ? 0 : r.gardienPreuve;
     }
 
     /** Tous les comptes dont le pseudo correspond, sans tenir compte de la casse. */

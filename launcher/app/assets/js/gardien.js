@@ -1,7 +1,8 @@
 'use strict'
 
 /**
- * Gardien : l'anticheat du launcher, relié à Spartan (mods/spartan, client/Gardien.java et serveur/GardienServeur.java).
+ * Gardien : l'anticheat du launcher, relié à Spartan (modules/anticheat : client/Gardien.java,
+ * serveur/GardienServeur.java et integrity/GardienPreuve.java).
  *
  * Tant que le jeu lancé par ce launcher est ouvert, le launcher reste en arrière-plan (fenêtre fermée ou non) et, toutes
  * les 10 à 20 s, regarde depuis l'extérieur du jeu ce qu'un jeu modifié ne pourrait pas cacher :
@@ -11,12 +12,21 @@
  *  - un jar du jeu changé pendant la partie (dossier mods, bibliothèques des mods du launcher) : taille et date de chaque
  *    fichier, empreinte recalculée seulement si l'une change ;
  *  - le jeu lui-même toujours là (même numéro de processus).
- * Le résultat est écrit dans <dossier du jeu>/spartan/gardien.txt, signé (HMAC-SHA256) avec une clé tirée au hasard à
- * chaque lancement et donnée au seul jeu (variable SPARTAN_GARDIEN_CLE, jamais sur le disque ni sur la ligne de
- * commande). Le jeu relit le fichier, vérifie la signature, le numéro de processus et l'heure, et l'envoie au serveur :
- * c'est le serveur qui juge (alerte au staff). Un launcher fermé de force arrête les rapports : « Gardien muet ».
- * Ce n'est pas un coffre : un tricheur décidé peut lire la clé dans la mémoire du jeu. Le but : ce que l'on cache au
- * jeu, le launcher le voit, et l'inverse.
+ * Le résultat est écrit dans <dossier du jeu>/spartan/gardien.txt (une ligne, puis sa signature) ; le jeu le transmet tel
+ * quel au serveur, qui le vérifie et juge (alerte au staff). Un launcher fermé de force arrête les rapports : « Gardien
+ * muet ».
+ *
+ * Preuve (launcher 1.16.0, audit du 02/11 ; quand le pack contient Spartan 2.10.0 ou plus récent, versionPreuve) :
+ *  - à chaque lancement, une paire de clés Ed25519 ; la clé PRIVÉE reste dans la mémoire du launcher (jamais sur le
+ *    disque, jamais donnée au jeu) ; la clé publique part au jeu (SPARTAN_GARDIEN_PUB) ;
+ *  - la clé publique est liée au jeton de lancement : le launcher demande au site un jeton pour engagement(empreinte des
+ *    mods, clé publique) au lieu de l'empreinte seule ; le serveur, qui sait vérifier le jeton, refait le calcul ;
+ *  - chaque ligne porte le dernier défi tiré par le serveur pour la connexion (le jeu l'écrit dans
+ *    spartan/gardien-defi.txt) : un vieux rapport rejoué n'est pas frais.
+ * Un jeu modifié ne peut donc plus envoyer un rapport « propre » de son invention : il peut seulement se taire (alerte).
+ * Ancien mode (pack avec un Spartan plus ancien) : clé HMAC donnée au jeu (SPARTAN_GARDIEN_CLE), lignes v1 ; le serveur ne
+ * peut pas les prouver. Limite qui reste : un programme qui imite tout le launcher avec le compte du joueur peut signer ses
+ * propres rapports (le site ne sait pas reconnaître le vrai launcher).
  */
 
 const crypto = require('crypto')
@@ -42,8 +52,14 @@ const TITRES = ['cheat engine', 'process hacker', 'system informer', 'x64dbg', '
 const SANS_TITRE = /^(chrome|msedge|firefox|opera|brave|vivaldi|discord|explorer|vlc|spotify|notepad|winword|excel)(\.exe)?$/i
 const TITRES_RE = TITRES.map(t => new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])'))
 
-const VERSION = 1
 const FICHIER = 'gardien.txt'
+// défi du serveur pour la connexion en cours, écrit par le jeu (client/Gardien.java), lu à chaque rapport
+const FICHIER_DEFI = 'gardien-defi.txt'
+const DEFI = /^[0-9a-f]{32}$/
+// liste des outils trouvés dans une ligne : bornée (le serveur lit au plus 300 caractères)
+const OUTILS_MAX = 200
+// Spartan à partir duquel le serveur vérifie lui-même les rapports (lignes v2, clé liée au jeton)
+const SPARTAN_PREUVE = [2, 10, 0]
 const INTERVALLE_MIN_MS = 10_000
 const INTERVALLE_MAX_MS = 20_000
 const COMMANDE_MS = 12_000
@@ -125,19 +141,47 @@ function jars(dossier, max = 5000) {
     return out
 }
 
+/** Version de Spartan du pack (« fr.heraliz:spartan:2.10.0:client@jar »), ou null si le pack n'en cite aucune. */
+function versionSpartan(modules, profondeur = 0) {
+    if (!Array.isArray(modules) || profondeur > 20) return null
+    for (const m of modules) {
+        const id = String(m?.rawModule?.id ?? m?.id ?? '')
+        const v = /^[^:]+:spartan:(\d+(?:\.\d+)*)(?:[:@].*)?$/i.exec(id)
+        if (v) return v[1].split('.').map(Number)
+        const dessous = versionSpartan(m?.subModules, profondeur + 1)
+        if (dessous) return dessous
+    }
+    return null
+}
+
+/**
+ * 2 : Spartan du pack assez récent pour vérifier lui-même les rapports (preuve) ; 1 : ancien mode. Dans le doute (pack
+ * sans Spartan reconnu) : 1, qui marche avec tous les serveurs (un serveur plus ancien refuserait le jeton v2).
+ */
+function versionPreuve(modules) {
+    const v = versionSpartan(modules)
+    if (!v) return 1
+    for (let i = 0; i < SPARTAN_PREUVE.length; i++) {
+        const a = v[i] ?? 0
+        if (a !== SPARTAN_PREUVE[i]) return a > SPARTAN_PREUVE[i] ? 2 : 1
+    }
+    return 2
+}
+
 class Gardien {
     /**
      * @param {object} o
-     * @param {string} o.dossierJeu dossier du jeu (instance) : le fichier va dans <dossierJeu>/spartan/
+     * @param {string} o.dossierJeu dossier du jeu (instance) : les fichiers vont dans <dossierJeu>/spartan/
      * @param {string[]} o.dossiersJars dossiers dont les jars ne doivent pas changer pendant la partie
      * @param {number} o.pid numéro du processus du jeu
-     * @param {string} o.cle clé de signature (hexadécimal), la même que celle donnée au jeu
+     * @param {object} [o.cles] clés du lancement (nouvellesCles) ; sinon o.cle, clé HMAC hexadécimale (ancien mode)
      */
-    constructor({ dossierJeu, dossiersJars = [], pid, cle, lister = programmes, maintenant = Date.now }) {
+    constructor({ dossierJeu, dossiersJars = [], pid, cles = null, cle = null, lister = programmes, maintenant = Date.now }) {
         this.dossierJeu = dossierJeu
         this.dossiersJars = dossiersJars
         this.pid = pid
-        this.cle = Buffer.from(cle, 'hex')
+        this.cles = cles || { version: 1, cle }
+        this.cle = this.cles.version === 2 ? null : Buffer.from(this.cles.cle, 'hex')
         this.lister = lister
         this.maintenant = maintenant
         this.n = 0
@@ -147,13 +191,49 @@ class Gardien {
         this.arrete = false
     }
 
-    /** Clé neuve pour un lancement : 32 octets en hexadécimal. */
+    /** Clé neuve pour un lancement en ancien mode : 32 octets en hexadécimal. */
     static nouvelleCle() {
         return crypto.randomBytes(32).toString('hex')
     }
 
+    /**
+     * Clés d'un lancement. Version 2 : paire Ed25519 ({ privee, publique }) ; la clé publique (base64url, 43 caractères)
+     * part au jeu et dans l'engagement du jeton. Version 1 : clé HMAC donnée au jeu. « jeu » : ce que reçoit le jeu.
+     */
+    static nouvellesCles(version = 2) {
+        if (version !== 2) {
+            const cle = Gardien.nouvelleCle()
+            return { version: 1, cle, jeu: cle }
+        }
+        const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519')
+        const publique = publicKey.export({ format: 'der', type: 'spki' }).subarray(-32).toString('base64url')
+        return { version: 2, privee: privateKey, publique, jeu: publique }
+    }
+
+    /**
+     * Empreinte demandée au site (à la place de celle des mods) : lie la clé publique du Gardien au jeton de lancement.
+     * Même calcul que GardienPreuve.engagement de Spartan : SHA-256 de « gardien-v2|<empreinte des mods>|<clé publique> ».
+     */
+    static engagement(empreinteMods, publique) {
+        return crypto.createHash('sha256').update('gardien-v2|' + empreinteMods + '|' + publique, 'utf8').digest('hex')
+    }
+
     get fichier() {
         return path.join(this.dossierJeu, 'spartan', FICHIER)
+    }
+
+    get fichierDefi() {
+        return path.join(this.dossierJeu, 'spartan', FICHIER_DEFI)
+    }
+
+    /** Dernier défi du serveur écrit par le jeu, ou « - » (pas encore connecté, fichier absent ou abîmé). */
+    lireDefi() {
+        try {
+            const d = fs.readFileSync(this.fichierDefi, 'utf8').trim()
+            return DEFI.test(d) ? d : '-'
+        } catch {
+            return '-'
+        }
     }
 
     /** Relevé de départ des jars (avant le premier rapport), puis premier rapport et suivants. */
@@ -168,6 +248,7 @@ class Gardien {
         if (this.minuteur) clearTimeout(this.minuteur)
         this.minuteur = null
         try { fs.rmSync(this.fichier, { force: true }) } catch { /* jeu encore en train de le lire : sans importance */ }
+        try { fs.rmSync(this.fichierDefi, { force: true }) } catch { /* sans importance */ }
     }
 
     async tour() {
@@ -215,15 +296,24 @@ class Gardien {
         const liste = await this.lister()
         const outils = liste ? outilsTrouves(liste.noms, liste.titres) : []
         this.releverJars(false)
-        const ligne = Gardien.ligne({
+        const valeurs = {
             n: ++this.n,
             t: this.maintenant(),
             pid: this.pid,
             lecture: liste ? 'ok' : 'impossible',
             outils,
             modifies: this.modifies.size
-        })
-        const contenu = ligne + '\n' + crypto.createHmac('sha256', this.cle).update(ligne).digest('hex') + '\n'
+        }
+        let ligne, signature
+        if (this.cles.version === 2) {
+            // défi lu au dernier moment (après la liste des programmes, qui peut prendre quelques secondes)
+            ligne = Gardien.ligneV2({ ...valeurs, defi: this.lireDefi() })
+            signature = crypto.sign(null, Buffer.from(ligne, 'utf8'), this.cles.privee).toString('base64url')
+        } else {
+            ligne = Gardien.ligne(valeurs)
+            signature = crypto.createHmac('sha256', this.cle).update(ligne).digest('hex')
+        }
+        const contenu = ligne + '\n' + signature + '\n'
         fs.mkdirSync(path.dirname(this.fichier), { recursive: true })
         // écrit à côté puis renommé : le jeu ne lit jamais un fichier à moitié écrit
         const tmp = this.fichier + '.tmp'
@@ -232,14 +322,31 @@ class Gardien {
         return ligne
     }
 
+    /** Outils trouvés, en texte : noms sûrs seulement, liste bornée. */
+    static outilsTexte(outils) {
+        let o = ''
+        for (const x of outils || []) {
+            if (!NOM_SUR.test(x) || o.length + x.length + 1 > OUTILS_MAX) continue
+            o = o ? o + ',' + x : x
+        }
+        return o
+    }
+
     /**
-     * Ligne signée, lue par client/Gardien.java (même format, à changer des deux côtés) :
+     * Ligne v1 (ancien mode, signée HMAC avec la clé donnée au jeu) :
      * v1|n|t|pid|lecture|outil,outil|nombre de jars changés
      */
     static ligne({ n, t, pid, lecture, outils, modifies }) {
-        const o = (outils || []).filter(x => NOM_SUR.test(x)).join(',')
-        return ['v' + VERSION, n, t, pid, lecture, o, modifies].join('|')
+        return ['v1', n, t, pid, lecture, Gardien.outilsTexte(outils), modifies].join('|')
+    }
+
+    /**
+     * Ligne v2 (signée Ed25519, vérifiée par le serveur : GardienPreuve.java, même format, à changer des deux côtés) :
+     * v2|n|t|pid|défi du serveur (ou -)|lecture|outil,outil|nombre de jars changés
+     */
+    static ligneV2({ n, t, pid, defi, lecture, outils, modifies }) {
+        return ['v2', n, t, pid, DEFI.test(String(defi)) ? defi : '-', lecture, Gardien.outilsTexte(outils), modifies].join('|')
     }
 }
 
-module.exports = { Gardien, outilsTrouves, champsCsv, OUTILS, TITRES }
+module.exports = { Gardien, outilsTrouves, champsCsv, versionPreuve, OUTILS, TITRES }

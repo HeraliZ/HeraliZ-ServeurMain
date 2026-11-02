@@ -5,6 +5,7 @@ import com.Spartan.alert.AlertManager;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
 import com.Spartan.scan.ScanManager;
+import com.Spartan.serveur.GardienServeur;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,6 +23,10 @@ import net.minecraft.server.level.ServerPlayer;
  * - launcherSecret vide : pas de vérification du jeton (allowedModsHashes reste
  *   appliqué sur l'empreinte déclarée par le client).
  * - tokenRequired=false : simple alerte (phase de mise en place) ; true : expulsion.
+ *
+ * Clé du Gardien (audit du 02/11, point 2) : un launcher 1.16.0 ou plus récent fait signer par le site, à la place de
+ * l'empreinte des mods, {@link GardienPreuve#engagement} (empreinte des mods + clé publique du Gardien). Le jeton est
+ * accepté sous ses deux formes ; la seconde PROUVE la clé publique annoncée par le jeu (GardienServeur.lier).
  */
 public final class LauncherGate {
     private static final Pattern HEX64 = Pattern.compile("^[0-9a-f]{64}$");
@@ -54,7 +59,7 @@ public final class LauncherGate {
         CONFORMES.remove(uuid);
     }
 
-    public static void onToken(ServerPlayer p, String token, String clientModsHash) {
+    public static void onToken(ServerPlayer p, String token, String clientModsHash, String cleGardien) {
         String name = p.getName().getString();
         String raw = clientModsHash == null ? "" : clientModsHash.toLowerCase(Locale.ROOT);
         boolean hashError = raw.equals("error");
@@ -67,7 +72,7 @@ public final class LauncherGate {
         String hashProblem = checkHash(raw, hash, hashError);
         // Jeton du launcher absent ou invalide : règle d'ACCÈS au serveur. Avec tokenRequired, refus de connexion,
         // même en détection silencieuse (on ne joue que depuis le launcher HeraliZ).
-        String tokenProblem = checkToken(p, token, name, hash);
+        String tokenProblem = checkToken(p, token, name, hash, cleGardien == null ? "" : cleGardien.trim());
         if (tokenProblem == null) {
             PorteJoueurs.jetonAccepte(p.getUUID());
         }
@@ -121,11 +126,14 @@ public final class LauncherGate {
         return null;
     }
 
-    /** Jeton du launcher (si un secret est configuré). */
-    private static String checkToken(ServerPlayer p, String token, String name, String hash) {
+    /** Jeton du launcher (si un secret est configuré), et clé du Gardien qu'il engage. */
+    private static String checkToken(ServerPlayer p, String token, String name, String hash, String cleGardien) {
         String secret = SpartanConfig.secret(SpartanConfig.LAUNCHER_SECRET);
+        boolean cleLisible = GardienPreuve.cle(cleGardien) != null;
         if (secret == null || secret.isBlank()) {
             STATUS.put(p.getUUID(), "jeton non vérifié (launcherSecret vide)");
+            // serveur d'essai : la clé annoncée par le jeu est crue sans preuve
+            GardienServeur.lier(p, cleLisible ? GardienJuge.Lien.NON_VERIFIE : GardienJuge.Lien.SANS_JETON, cleGardien);
             if (SpartanConfig.LAUNCHER_TOKEN_REQUIRED.get()) {
                 // Fermé par défaut (audit A324) : un secret effacé par une mise en ligne à la main ne doit pas laisser
                 // entrer n'importe quel lanceur. Pour un serveur d'essai sans site : tokenRequired = false.
@@ -140,12 +148,20 @@ public final class LauncherGate {
         }
         LaunchToken.Result r = LaunchToken.verify(secret, token, name, System.currentTimeMillis() / 1000L);
         if (!r.valid()) {
+            GardienServeur.lier(p, GardienJuge.Lien.SANS_JETON, "");
             return "jeton du launcher refusé : " + r.reason();
         }
-        if (!r.modsHash().equalsIgnoreCase(hash)) {
+        // empreinte signée par le site : celle des mods (launcher 1.15.x ou plus ancien), ou l'engagement des mods ET de
+        // la clé du Gardien (1.16.0 ou plus récent). Dans les deux cas, les mods chargés doivent être ceux du lancement.
+        boolean ancien = !hash.isEmpty() && r.modsHash().equalsIgnoreCase(hash);
+        boolean prouve = !hash.isEmpty() && cleLisible && r.modsHash().equalsIgnoreCase(GardienPreuve.engagement(hash, cleGardien));
+        if (!ancien && !prouve) {
+            GardienServeur.lier(p, GardienJuge.Lien.SANS_JETON, "");
             return "les mods chargés ne sont pas ceux vérifiés par le launcher (mod ajouté ou modifié après le lancement)";
         }
-        STATUS.put(p.getUUID(), "jeton valide, mods conformes");
+        GardienServeur.lier(p, prouve ? GardienJuge.Lien.PROUVE : GardienJuge.Lien.ANCIEN, cleGardien);
+        STATUS.put(p.getUUID(), prouve ? "jeton valide, mods conformes, Gardien lié au jeton"
+                : "jeton valide, mods conformes (ancien launcher : Gardien non prouvé)");
         return null;
     }
 }

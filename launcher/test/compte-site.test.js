@@ -320,6 +320,14 @@ test('à chaque partie, le jeton de lancement est demandé au site pour le compt
     assert.equal(compte.demandeJeton.jeton, 'jeton-secret')
     // dossier mods du jeu absent ou vide : empreinte de « rien », comme le calcule le mod
     assert.equal(compte.demandeJeton.empreinte, require('node:crypto').createHash('sha256').update('').digest('hex'))
+    // Gardien en version 2 : le site signe l'engagement (empreinte des mods + clé publique du Gardien)
+    const { Gardien } = require('../app/assets/js/gardien')
+    const vide = require('node:crypto').createHash('sha256').update('').digest('hex')
+    const cles = Gardien.nouvellesCles(2)
+    await service.jetonSpartan(cles)
+    assert.equal(compte.demandeJeton.empreinte, Gardien.engagement(vide, cles.publique))
+    await service.jetonSpartan(Gardien.nouvellesCles(1))
+    assert.equal(compte.demandeJeton.empreinte, vide)
 })
 
 test('avec les comptes du site, le pack de jeu vient du site pour le compte connecté', async () => {

@@ -13,7 +13,8 @@ import com.sun.jna.platform.win32.Kernel32;
  * (la copie de départ du système reste lisible par /proc sous Linux). Jamais d'erreur : sans JNA, rien n'est fait.
  */
 public final class SecretsEnvironnement {
-    private static final String[] NOMS = {"SPARTAN_GARDIEN_CLE", "SPARTAN_LAUNCH_TOKEN", "SPARTAN_CAPTURE_CONSENT"};
+    private static final String[] NOMS = {"SPARTAN_GARDIEN_CLE", "SPARTAN_GARDIEN_PUB", "SPARTAN_LAUNCH_TOKEN",
+            "SPARTAN_CAPTURE_CONSENT"};
 
     private SecretsEnvironnement() {
     }

@@ -16,9 +16,10 @@ public class ModMessages {
     // "4" = build + défi d'intégrité (+ jeton launcher) ; "5" = contrôle d'intégrité (scan) ;
     // "6" = le défi couvre toutes les classes (plus de 16 indices) ;
     // "7" = HeraliZ 2.0 : jar coupé client / serveur, défi lié au code réellement chargé, contrôle natif ;
-    // "8" = captures d'écran (avec l'accord du joueur donné dans le launcher).
+    // "8" = captures d'écran (avec l'accord du joueur donné dans le launcher) ;
+    // "9" = Gardien prouvé (2.10.0) : rapports transmis tels quels, défi du serveur, clé du Gardien avec le jeton.
     // Client et serveur doivent partager la même version, sinon la connexion est refusée.
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "9";
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(Spartan.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -62,6 +63,17 @@ public class ModMessages {
         // Capture d'écran : demande (serveur -> client) et image en morceaux (client -> serveur).
         INSTANCE.registerMessage(id++, CaptureRequestPacket.class, CaptureRequestPacket::encode, CaptureRequestPacket::decode, CaptureRequestPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         INSTANCE.registerMessage(id++, CaptureChunkPacket.class, CaptureChunkPacket::encode, CaptureChunkPacket::decode, CaptureChunkPacket::handle, toServer);
+        // Gardien du launcher : rapport transmis tel quel (client -> serveur) et défi de la connexion (serveur -> client).
+        INSTANCE.registerMessage(id++, GardienPacket.class, GardienPacket::encode, GardienPacket::decode, GardienPacket::handle, toServer);
+        INSTANCE.registerMessage(id++, GardienDefiPacket.class, GardienDefiPacket::encode, GardienDefiPacket::decode, GardienDefiPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+    }
+
+    public static void sendToPlayer(GardienDefiPacket packet, ServerPlayer player) {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), packet);
+    }
+
+    public static void sendToServer(GardienPacket packet) {
+        INSTANCE.sendToServer(packet);
     }
 
     public static void sendToPlayer(CaptureRequestPacket packet, ServerPlayer player) {

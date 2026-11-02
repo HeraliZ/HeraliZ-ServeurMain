@@ -13,7 +13,9 @@
  *    valable 6 h, lié au pseudo du compte et à l'empreinte du dossier mods (empreinteMods), passé au jeu par la variable
  *    d'environnement SPARTAN_LAUNCH_TOKEN (environnementJeu), jamais sur la ligne de commande, que d'autres programmes
  *    et les antivirus lisent. Le launcher ne contient aucune clé : il ne peut pas fabriquer de jeton lui-même.
- * 3. Gardien (gardien.js) : clé de signature de ses rapports, donnée au seul jeu par SPARTAN_GARDIEN_CLE.
+ * 3. Gardien (gardien.js) : clé PUBLIQUE de ce lancement donnée au jeu par SPARTAN_GARDIEN_PUB (la clé privée reste
+ *    dans le launcher ; le serveur vérifie lui-même les rapports) ; ancien mode (pack avec un Spartan plus ancien que
+ *    2.10.0) : clé HMAC par SPARTAN_GARDIEN_CLE.
  * 4. environnementJeu() retire aussi les variables que Java lit au démarrage (JAVA_TOOL_OPTIONS…) : un programme de
  *    triche pourrait y glisser un -javaagent sans toucher aux options du launcher. Même chose sur Linux et Mac pour les
  *    variables qui font charger une bibliothèque native dans tout programme lancé (LD_PRELOAD, LD_AUDIT,
@@ -58,15 +60,18 @@ const ARG_JETON = '-Dspartan.launchToken='
 const VAR_JETON = 'SPARTAN_LAUNCH_TOKEN'
 // accord du joueur pour les captures d'écran (fenêtre avant de jouer, accordCapture.js) : posé seulement par le launcher
 const VAR_CAPTURE = 'SPARTAN_CAPTURE_CONSENT'
-// clé du Gardien (gardien.js) pour ce lancement : 32 octets en hexadécimal, posée seulement par le launcher
+// clé du Gardien (gardien.js) pour ce lancement, posée seulement par le launcher : clé publique Ed25519 (base64url,
+// 43 caractères, Spartan 2.10.0 ou plus récent) ou, en ancien mode, clé HMAC (32 octets en hexadécimal)
 const VAR_GARDIEN = 'SPARTAN_GARDIEN_CLE'
 const CLE_GARDIEN = /^[0-9a-f]{64}$/
+const VAR_GARDIEN_PUB = 'SPARTAN_GARDIEN_PUB'
+const PUB_GARDIEN = /^[A-Za-z0-9_-]{43}$/
 // jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre
 const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 // variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), bibliothèques natives imposées
 // à tout programme lancé (Linux, Mac), et tout jeton hérité
 const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'LD_PRELOAD', 'LD_AUDIT',
-    'DYLD_INSERT_LIBRARIES', VAR_JETON, VAR_CAPTURE, VAR_GARDIEN]
+    'DYLD_INSERT_LIBRARIES', VAR_JETON, VAR_CAPTURE, VAR_GARDIEN, VAR_GARDIEN_PUB]
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {
@@ -142,6 +147,7 @@ function environnementJeu(jeton, base = process.env, accordCapture = false, cleG
     if (typeof jeton === 'string' && JETON.test(jeton)) env[VAR_JETON] = jeton
     if (accordCapture === true) env[VAR_CAPTURE] = '1'
     if (typeof cleGardien === 'string' && CLE_GARDIEN.test(cleGardien)) env[VAR_GARDIEN] = cleGardien
+    else if (typeof cleGardien === 'string' && PUB_GARDIEN.test(cleGardien)) env[VAR_GARDIEN_PUB] = cleGardien
     return env
 }
 

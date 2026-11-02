@@ -84,7 +84,7 @@ public class ClientEvents {
             String modsHash = ModsHasher.getIfReady();
             if (modsHash != null) {
                 launchSent = true;
-                ModMessages.sendToServer(new LaunchTokenPacket(launchToken(), modsHash));
+                ModMessages.sendToServer(new LaunchTokenPacket(launchToken(), modsHash, Gardien.CLE));
             }
         }
 

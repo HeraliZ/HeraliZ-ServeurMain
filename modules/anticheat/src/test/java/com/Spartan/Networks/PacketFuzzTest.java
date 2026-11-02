@@ -103,6 +103,16 @@ class PacketFuzzTest {
     }
 
     @Test
+    void gardienPacket() {
+        fuzz("GardienPacket", GardienPacket::decode);
+    }
+
+    @Test
+    void gardienDefiPacket() {
+        fuzz("GardienDefiPacket", GardienDefiPacket::decode);
+    }
+
+    @Test
     void buildPacket() {
         fuzz("BuildPacket", BuildPacket::decode);
     }
