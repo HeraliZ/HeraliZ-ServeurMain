@@ -827,7 +827,7 @@
   "heraliz_grades.staff.cmd.eco": "Hérals d'un joueur : donner, retirer, fixer (op 4), journal, infos.",
   "heraliz_grades.staff.cmd.grade": "Éditeur et registre des grades ; donner / retirer un grade (console).",
   "heraliz_grades.staff.cmd.bon": "Éditeur des bons (op).",
-  "heraliz_grades.staff.cmd.staff": "Panel du staff, mode caché, nom caché.",
+  "heraliz_grades.staff.cmd.staff": "Panneau du staff (/staff panel ; « Se cacher » et « Cacher son nom » y sont des boutons).",
   "heraliz_grades.staff.cmd.zonevip": "Zones VIP : baguette, coins, créer, retirer, voir.",
   "heraliz_grades.staff.cmd.marchand": "Marchands : registre, éditeur, créer, renommer, supprimer.",
   "heraliz_grades.staff.cmd.pnj": "PNJ : créer, apparence, déplacer, retirer.",

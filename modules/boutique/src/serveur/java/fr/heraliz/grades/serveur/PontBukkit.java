@@ -15,7 +15,7 @@ import java.util.UUID;
  *    <li>AuthMe : un joueur n'a ses droits de grade qu'une fois connecté par mot de passe (en mode cracké, n'importe qui
  *    peut arriver avec le pseudo d'un Fondateur ; tant qu'il n'a pas fait /login, il n'est personne) ;</li>
  *    <li>nom affiché Bukkit (le chat des serveurs hybrides l'utilise) : on y met le préfixe du grade ;</li>
- *    <li>/staff vanish du staff (2.7.0) : {@code Player.hidePlayer(Plugin, Player)} de Bukkit (liste Tab, entité, suivi), et
+ *    <li>vanish du staff du staff (2.7.0) : {@code Player.hidePlayer(Plugin, Player)} de Bukkit (liste Tab, entité, suivi), et
  *    messages d'arrivée et de départ retirés pour un joueur caché.</li>
  * </ul>
  * Règle de sécurité : sur un serveur dédié en mode cracké, si AuthMe ne peut pas être interrogé, le joueur est considéré
@@ -214,7 +214,7 @@ final class PontBukkit {
         return null;
     }
 
-    // ------------------------------------------------------------------ /staff vanish
+    // ------------------------------------------------------------------ vanish du staff
     private static Method hidePlayer, showPlayer;
     private static Object porteurCache;
     private static boolean alerteCache;
@@ -245,7 +245,7 @@ final class PontBukkit {
             porteurCache = null;
             if (!alerteCache) {
                 alerteCache = true;
-                LOG.warn("[grades] /staff vanish par Bukkit impossible, paquets de Minecraft à la place : {}", ex.toString());
+                LOG.warn("[grades] vanish du staff par Bukkit impossible, paquets de Minecraft à la place : {}", ex.toString());
             }
             return false;
         }
@@ -254,7 +254,7 @@ final class PontBukkit {
     private static boolean connexionsBranchees;
 
     /**
-     * Messages « X a rejoint / quitté la partie » de Bukkit (Mohist) retirés pour un joueur caché par /staff vanish : écouteur
+     * Messages « X a rejoint / quitté la partie » de Bukkit (Mohist) retirés pour un joueur caché par vanish du staff : écouteur
      * de PlayerJoinEvent et PlayerQuitEvent en priorité HIGHEST, rattaché à un plugin déjà chargé. Sans Bukkit, rien.
      */
     static void brancherConnexions(java.util.function.Predicate<UUID> cache) {
@@ -296,7 +296,7 @@ final class PontBukkit {
             Method enregistrer = pm.getClass().getMethod("registerEvent", Class.class, ecouteur, priorite, executeur, plugin, boolean.class);
             enregistrer.invoke(pm, arrivee, e, haute, x, proprio, false);
             enregistrer.invoke(pm, depart, e, haute, x, proprio, false);
-            LOG.info("[grades] messages d'arrivée et de départ des joueurs cachés (/staff vanish) branchés");
+            LOG.info("[grades] messages d'arrivée et de départ des joueurs cachés (vanish du staff) branchés");
         } catch (Throwable ex) {
             LOG.warn("[grades] messages d'arrivée et de départ des joueurs cachés impossibles à couper : {}", ex.toString());
         }

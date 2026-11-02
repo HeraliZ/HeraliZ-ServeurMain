@@ -6,11 +6,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
@@ -46,14 +44,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Outils de modération du staff (2.7.0) : {@code /staff vanish} et {@code /staff nametag}, réservés aux op de niveau 4 connectés sur
- * AuthMe (même règle que l'éditeur des grades).
+ * Outils de modération du staff (2.7.0) : « Se cacher » et « Cacher son nom », boutons du panneau du staff (touche P,
+ * {@link PanelStaff}). 02/11 (audit point 36) : les commandes {@code /staff vanish} et {@code /staff nametag} (op 4
+ * connectés sur AuthMe), qui faisaient la même chose que ces boutons, sont retirées ; {@code /staff panel} reste.
  * <ul>
- *    <li>/staff vanish : le joueur disparaît pour tous ceux qui ne sont pas du staff (liste Tab, entité, nom au-dessus de la
+ *    <li>se cacher : le joueur disparaît pour tous ceux qui ne sont pas du staff (liste Tab, entité, nom au-dessus de la
  *    tête), sans message d'arrivée ni de départ ; il ne pousse plus personne et les créatures ne le prennent plus pour
  *    cible. Le staff (op 4 connecté) le voit toujours, marqué « (caché) » dans le tab. Par Bukkit ({@code hidePlayer}) sur
  *    Mohist, sinon par les paquets de Minecraft (liste et entité retirées chez chaque joueur, à chaque nouveau suivi).</li>
- *    <li>/staff nametag : son nom au-dessus de la tête caché (ou remontré) pour tout le monde (équipe du tableau des scores
+ *    <li>cacher son nom : son nom au-dessus de la tête caché (ou remontré) pour tout le monde (équipe du tableau des scores
  *    {@code hz_sansnom}, nom jamais affiché).</li>
  * </ul>
  * Les deux états sont gardés dans {@code heraliz_grades/staff vanish.json} à la racine du serveur (hors du monde) : ils restent
@@ -75,14 +74,13 @@ public final class VanishServeur {
     }
 
     static void brancher() {
-        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(VanishServeur::suivi);
         MinecraftForge.EVENT_BUS.addListener(VanishServeur::cible);
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStartedEvent e) -> PontBukkit.brancherConnexions(VanishServeur::cache));
     }
 
     // ------------------------------------------------------------------ état
-    /** Vrai si ce joueur est caché par /staff vanish. Lu aussi par d'autres mods ({@link GradesApi#cache}). */
+    /** Vrai si ce joueur est caché par le vanish du staff (« Se cacher » du panneau). Lu aussi par d'autres mods ({@link GradesApi#cache}). */
     static boolean cache(UUID joueur) {
         return joueur != null && CACHES.contains(joueur);
     }
@@ -178,27 +176,7 @@ public final class VanishServeur {
         return Component.translatableWithFallback("message.heraliz_grades.moderation." + cle, fr, args);
     }
 
-    private static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
-        // 25/10 (tri des commandes) : /vanish et /nametag deviennent /staff vanish et /staff nametag
-        d.register(Commands.literal("staff").requires(VanishServeur::racineStaff).then(Commands.literal("vanish")
-                .requires(s -> s.getEntity() instanceof ServerPlayer p && droit(p))
-                .executes(c -> {
-                    ServerPlayer p = c.getSource().getPlayerOrException();
-                    if (!droit(p)) return 0;
-                    basculerCache(p, !CACHES.contains(p.getUUID()));
-                    return 1;
-                })));
-        d.register(Commands.literal("staff").requires(VanishServeur::racineStaff).then(Commands.literal("nametag")
-                .requires(s -> s.getEntity() instanceof ServerPlayer p && droit(p))
-                .executes(c -> {
-                    ServerPlayer p = c.getSource().getPlayerOrException();
-                    if (!droit(p)) return 0;
-                    basculerNom(p, !SANS_NOM.contains(p.getUUID()));
-                    return 1;
-                })));
-    }
-
-    /** Cache (ou montre) ce joueur à tous ceux qui ne sont pas du staff ; appelé par /staff vanish et le panel du staff. */
+    /** Cache (ou montre) ce joueur à tous ceux qui ne sont pas du staff ; appelé par le panel du staff (« Se cacher »). */
     static void basculerCache(ServerPlayer p, boolean cache) {
         if (cache) CACHES.add(p.getUUID());
         else CACHES.remove(p.getUUID());
@@ -211,7 +189,7 @@ public final class VanishServeur {
                 : msg("vanish_off", "Tu es de nouveau visible de tous.").copy().withStyle(ChatFormatting.GRAY));
     }
 
-    /** Cache (ou remet) le nom au-dessus de la tête ; appelé par /staff nametag et le panel du staff. */
+    /** Cache (ou remet) le nom au-dessus de la tête ; appelé par le panel du staff (« Cacher son nom »). */
     static void basculerNom(ServerPlayer p, boolean cache) {
         if (cache) SANS_NOM.add(p.getUUID());
         else SANS_NOM.remove(p.getUUID());
@@ -278,7 +256,7 @@ public final class VanishServeur {
 
     /**
      * Un joueur caché (ou au nom caché) qui n'est plus du staff (grade du staff retiré, op retiré) redevient visible :
-     * sinon il resterait invisible à vie, sans pouvoir se remontrer (ni /staff vanish ni le panel ne lui sont ouverts).
+     * sinon il resterait invisible à vie, sans pouvoir se remontrer (le panneau du staff ne lui est plus ouvert).
      * Contrôle sur le grade et l'op seulement, pas sur AuthMe (un staff qui se reconnecte reste caché avant son /login).
      */
     private static void retirerAnciensStaff(List<ServerPlayer> joueurs) {

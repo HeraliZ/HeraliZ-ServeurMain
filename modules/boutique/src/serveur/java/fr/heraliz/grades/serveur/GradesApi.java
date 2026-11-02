@@ -46,7 +46,7 @@ public final class GradesApi {
     }
 
     /**
-     * Vrai si le joueur est caché par /staff vanish (2.7.0) : à ne pas montrer aux joueurs qui ne sont pas du staff (listes,
+     * Vrai si le joueur est caché par vanish du staff (2.7.0) : à ne pas montrer aux joueurs qui ne sont pas du staff (listes,
      * comptes de joueurs en ligne). Lisible par réflexion par nos autres mods.
      */
     public static boolean cache(UUID joueur) {

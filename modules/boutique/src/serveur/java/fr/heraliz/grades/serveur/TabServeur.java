@@ -16,7 +16,7 @@ import java.util.UUID;
 /**
  * Infos du nouveau tab : grade affiché et tag de clan de chaque joueur connecté, envoyés quand ils changent (vérifié
  * toutes les 2 s) et au joueur qui arrive. Le pseudo et le ping viennent de la liste de Minecraft. Un joueur caché par
- * /staff vanish ({@link VanishServeur}) n'est envoyé qu'à ceux qui le voient (staff), marqué « caché ».
+ * vanish du staff ({@link VanishServeur}) n'est envoyé qu'à ceux qui le voient (staff), marqué « caché ».
  */
 final class TabServeur {
     private static List<ReseauGrades.LigneTab> dernier = List.of();

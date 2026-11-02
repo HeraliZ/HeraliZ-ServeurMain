@@ -827,7 +827,7 @@
   "heraliz_grades.staff.cmd.eco": "Гералы игрока: выдать, снять, задать (оп 4), журнал, инфо.",
   "heraliz_grades.staff.cmd.grade": "Редактор и реестр рангов; выдать / снять ранг (консоль).",
   "heraliz_grades.staff.cmd.bon": "Редактор купонов (оп).",
-  "heraliz_grades.staff.cmd.staff": "Панель персонала, невидимость, скрытый ник.",
+  "heraliz_grades.staff.cmd.staff": "Панель персонала (/staff panel; «Скрыться» и «Скрыть ник» — кнопки в ней).",
   "heraliz_grades.staff.cmd.zonevip": "VIP-зоны: жезл, углы, создать, удалить, показать.",
   "heraliz_grades.staff.cmd.marchand": "Торговцы: реестр, редактор, создать, переименовать, удалить.",
   "heraliz_grades.staff.cmd.pnj": "НИП: создать, внешность, переместить, удалить.",

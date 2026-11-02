@@ -827,7 +827,7 @@
   "heraliz_grades.staff.cmd.eco": "A player's herals: give, remove, set (op 4), log, info.",
   "heraliz_grades.staff.cmd.grade": "Rank editor and register; give / remove a rank (console).",
   "heraliz_grades.staff.cmd.bon": "Voucher editor (op).",
-  "heraliz_grades.staff.cmd.staff": "Staff panel, vanish, hidden name.",
+  "heraliz_grades.staff.cmd.staff": "Staff panel (/staff panel; \"Vanish\" and \"Hide name tag\" are buttons in it).",
   "heraliz_grades.staff.cmd.zonevip": "VIP zones: wand, corners, create, remove, view.",
   "heraliz_grades.staff.cmd.marchand": "Merchants: register, editor, create, rename, delete.",
   "heraliz_grades.staff.cmd.pnj": "NPCs: create, appearance, move, remove.",

@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur : registre des grades, commandes /grade, /kit, /discord lier, /discord delier, /avantages nick, /avantages couleur, /boutique abonnement, /staff vanish,
- * /staff nametag et /staff panel (panel du staff, touche P : {@link PanelStaff}), préfixe du grade devant le pseudo (liste Tab, chat).
+ * Partie serveur : registre des grades, commandes /grade, /kit, /discord lier, /discord delier, /avantages nick, /avantages couleur, /boutique abonnement
+ * et /staff panel (panel du staff, avec « Se cacher » et « Cacher son nom », touche P : {@link PanelStaff}), préfixe du grade devant le pseudo (liste Tab, chat).
  * <p>
  * Nom affiché : « [CLAN] [Traqueur] Pseudo » (tag de clan lu dans heraliz-clansetbases, puis grade), mis par NameFormat (chat,
  * liste Tab : on remplace le nom de liste posé par les clans, qui doublerait le tag) et dans le nom affiché Bukkit.
@@ -71,7 +71,7 @@ public final class ServeurGrades implements Partie {
         // bons réglés par les op (/bon editeur) : hérals, PB, grade, bonus de loot, commande au clic droit
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> BonServeur.enregistrer(e.getDispatcher()));
         BonServeur.brancher();
-        // modération du staff (2.7.0) : /staff vanish, /staff nametag ; /boutique abonnement et /staff panel (panneau admin des op)
+        // modération du staff (2.7.0) : vanish et nom caché (boutons du panneau) ; /boutique abonnement et /staff panel (panneau admin des op)
         VanishServeur.brancher();
         // panel du staff (touche P, 25/10) : actions selon le grade du staff, permissions du Fondateur, journal
         PanelStaff.brancher();
@@ -151,7 +151,7 @@ public final class ServeurGrades implements Partie {
         PontBukkit.brancherChat();
         registre.noterNom(p.getUUID(), p.getGameProfile().getName());
         EditeurServeur.envoyerDefinitions(p);
-        // joueurs cachés (/staff vanish) : retirés tout de suite chez celui qui arrive, et lui caché s'il l'est
+        // joueurs cachés (vanish du staff) : retirés tout de suite chez celui qui arrive, et lui caché s'il l'est
         VanishServeur.connexion(p);
         rafraichir(p);
         TabServeur.maj(p.server, true);
