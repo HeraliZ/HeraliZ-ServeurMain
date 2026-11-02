@@ -272,16 +272,6 @@ final class Cabane {
         return true;
     }
 
-    /** Le joueur a un home dans sa base (posé avec /home poser). */
-    private static boolean homeDans(ServerLevel level, ServerPlayer p, BasesDonnees.Joueur j) {
-        for (BasesDonnees.Home h : j.homes.values()) {
-            if (MondeBases.ANCIEN.equals(h.monde()) && Deplacements.baseEn(level, BlockPos.containing(h.x(), h.y(), h.z()), p.getUUID())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /** Le fond de la cabane : la direction de la première fondation (porte) vers la deuxième. */
     private static Direction fond(Piece f, Piece s) {
         Vec3 fc = f.key().centreWorld(), sc = s.key().centreWorld();

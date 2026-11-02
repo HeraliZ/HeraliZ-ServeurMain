@@ -182,11 +182,7 @@ public final class Tutoriel {
         if (tuto != null) {
             EffacerBase.effacerDans(p.server, p.getUUID(), tuto, recup);
         }
-        // 28/10 : fin d'un tutoriel commencé dans l'ancien monde (crac:bases, avant le monde à part) : sa cabane y est effacée
-        ServerLevel ancien = MondeBases.estAncien(p.level()) ? p.server.getLevel(MondeBases.ANCIEN_CLE) : null;
-        if (ancien != null) {
-            EffacerBase.effacerDans(p.server, p.getUUID(), ancien, recup);
-        }
+        // (un tutoriel commencé dans l'ancien monde des bases, fermé le 02/11, repart du début : AncienMondeBases)
         // sa parcelle du monde du tutoriel redevient libre (cabane effacée juste avant)
         PlotsTuto.liberer(p.server, p.getUUID());
         // ce qu'il avait rangé dans la caisse de la cabane revient dans son inventaire (le kit marqué est repris juste après)
@@ -197,7 +193,7 @@ public final class Tutoriel {
             }
         }
         reprendreKit(p);
-        if (MondeBases.estTuto(p.level()) || ancien != null) {
+        if (MondeBases.estTuto(p.level())) {
             if (!Deplacements.allerAuSpawn(p)) {
                 ServerLevel o = p.server.overworld();
                 net.minecraft.core.BlockPos s = o.getSharedSpawnPos();
@@ -444,23 +440,12 @@ public final class Tutoriel {
 
     /**
      * Étape PHASE, chaque seconde : ramené au spawn (mort, staff), le joueur repart à sa cabane ; la cabane finie, le
-     * tutoriel l'est aussi. Le monde des bases et le spawn mis à part, rien (seul le staff peut l'y avoir mis).
+     * tutoriel l'est aussi. Le monde du tutoriel et le spawn mis à part, rien (seul le staff peut l'y avoir mis ; qui
+     * revient de l'ancien monde des bases, fermé le 02/11, est repris à sa connexion par {@link AncienMondeBases}).
      */
     private static void suivre(ServerPlayer p, BasesDonnees d, BasesDonnees.Joueur j) {
         if (MondeBases.estSpawn(p.level())) {
             ramener(p, j);
-            return;
-        }
-        if (MondeBases.estAncien(p.level())) {
-            // 28/10 : tutoriel commencé dans l'ancien monde (crac:bases) avant le monde à part : cabane d'essai effacée,
-            // kit repris, et le tutoriel repart du début sur une parcelle du nouveau monde (crac:tuto)
-            ServerLevel ancien = p.server.getLevel(MondeBases.ANCIEN_CLE);
-            if (ancien != null) {
-                EffacerBase.effacerDans(p.server, p.getUUID(), ancien);
-            }
-            lancer(p);
-            T.chat(p, T.t("crac.tuto.nouveau_monde", "[Tuto] Le tutoriel a maintenant son propre monde : il repart du début, sur ta parcelle."),
-                ChatFormatting.YELLOW);
             return;
         }
         if (!MondeBases.estTuto(p.level())) {

@@ -15,7 +15,6 @@ public final class BasesReglages {
     public static final ForgeConfigSpec SPEC;
 
     // [bases]
-    public static final IntValue BORDURE;
     public static final BooleanValue CONSTRUCTION_ICI_SEULEMENT;
     public static final BooleanValue CREATURES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CREATURES_PERMISES;
@@ -50,20 +49,19 @@ public final class BasesReglages {
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
-        b.comment("Monde des bases (dimension crac:bases) : reliefs et grands endroits plats, ou les joueurs construisent.").push("bases");
-        BORDURE = b.comment("Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.")
-            .defineInRange("bordure", 2500, 0, 60_000_000);
+        b.comment("Bases des clans (sur la carte depuis le 21/10) et monde du tutoriel (crac:tuto). L'ancien monde des bases",
+                "(crac:bases) est ferme depuis le 02/11 : sa bordure n'est plus reglee ici.").push("bases");
         CONSTRUCTION_ICI_SEULEMENT = b.comment(
                 "Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases",
-                "(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.")
+                "(la carte depuis le 21/10 ; spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.")
             .define("construction_ici_seulement", true);
-        CREATURES = b.comment("Faux : aucune creature dans le monde des bases (toute entite « Mob » : animaux, monstres, villageois,",
+        CREATURES = b.comment("Faux : aucune creature dans le monde du tutoriel (toute entite « Mob » : animaux, monstres, villageois,",
                 "marchands, golems, PNJ et zombies des mods ; apparitions, oeufs, cages, mods) ; celles deja la sont retirees.",
                 "Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).")
             .define("creatures", false);
-        CREATURES_PERMISES = b.comment("Creatures gardees malgre tout dans le monde des bases (identifiants, ex. \"minecraft:villager\").")
+        CREATURES_PERMISES = b.comment("Creatures gardees malgre tout dans le monde du tutoriel (identifiants, ex. \"minecraft:villager\").")
             .defineListAllowEmpty(List.of("creatures_permises"), () -> List.<String>of(), o -> o instanceof String);
-        SEAUX = b.comment("Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.",
+        SEAUX = b.comment("Faux : dans le monde du tutoriel, aucun seau ne se vide (eau, lave, poissons), meme dans une cabane.",
                 "Le staff en creatif n'est pas concerne.")
             .define("seaux", false);
         RAYON_DEPART = b.comment("Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;",

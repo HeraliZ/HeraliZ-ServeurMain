@@ -1,6 +1,12 @@
 """Monde des bases de CRac (dimension crac:bases) : écrit ses fichiers de génération, jamais retouchés à la main.
 
+Ancien monde des bases, fermé le 02/11 (audit) : plus créé au démarrage. Ses fichiers de génération (type de dimension,
+bruits, relief, biomes) restent livrés, pour que le level.dat du monde reste lisible et pour le rouvrir ; seule sa
+déclaration (data/crac/dimension/bases.json) n'est plus écrite. --remettre l'écrit de nouveau : CRac refabriqué, le
+monde revient tel qu'il était (ses fichiers, dimensions/crac/bases du monde principal, n'ont jamais été touchés).
+
     python modules/bases/outils/monde_bases.py                         écrit src/serveur/resources/data/crac/...
+    python modules/bases/outils/monde_bases.py --remettre              idem, avec la déclaration du monde (le rouvrir)
     python modules/bases/outils/monde_bases.py --vanilla DOSSIER       lit les fichiers de Minecraft 1.20.1 dans DOSSIER
     python modules/bases/outils/monde_bases.py --apercu DOSSIER        aperçus du terrain (numpy + Pillow), voir plus bas
     python modules/bases/outils/monde_bases.py --apercu DOSSIER --graine 3   autre tirage du bruit pour l'aperçu
@@ -184,7 +190,7 @@ def routeur():
     }
 
 
-def generer(vanilla):
+def generer(vanilla, remettre=False):
     dossier_df = os.path.join(DATA, "worldgen", "density_function", "bases")
     for x in ANCIENS:
         p = os.path.join(dossier_df, x + ".json")
@@ -237,6 +243,13 @@ def generer(vanilla):
             "temperature": temp, "humidity": hum, "continentalness": [-1.0, 1.0], "erosion": ero,
             "weirdness": [-1.0, 1.0], "depth": 0.0, "offset": 0.0}})
 
+    declaration = os.path.join(DATA, "dimension", "bases.json")
+    if not remettre:
+        # monde fermé (02/11) : pas de déclaration, Minecraft ne le crée plus (voir le haut du fichier)
+        if os.path.exists(declaration):
+            os.remove(declaration)
+            print("retiré", os.path.relpath(declaration, os.path.join(ICI, "..")))
+        return
     ecrire("dimension/bases.json", {
         "type": "crac:bases",
         "generator": {"type": "minecraft:noise", "settings": "crac:bases",
@@ -571,11 +584,12 @@ def main():
     ap.add_argument("--vanilla", help="dossier des fichiers de Minecraft 1.20.1 (noms : chemin avec des _)")
     ap.add_argument("--apercu", help="écrit seulement les aperçus du terrain dans ce dossier")
     ap.add_argument("--graine", type=int, default=1, help="tirage du bruit de l'aperçu")
+    ap.add_argument("--remettre", action="store_true", help="écrit aussi la déclaration du monde (le rouvrir)")
     a = ap.parse_args()
     if a.apercu:
         apercu(a.apercu, a.graine)
         return
-    generer(a.vanilla)
+    generer(a.vanilla, a.remettre)
 
 
 if __name__ == "__main__":

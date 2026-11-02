@@ -1,18 +1,16 @@
-#Monde des bases (dimension crac:bases) : reliefs et grands endroits plats, ou les joueurs construisent.
+#Bases des clans (sur la carte depuis le 21/10) et monde du tutoriel (crac:tuto). L'ancien monde des bases
+#(crac:bases) est ferme depuis le 02/11 : sa bordure n'est plus reglee ici.
 [bases]
-	#Taille de la bordure du monde des bases (blocs de cote, centree sur 0 0). 0 = laisser celle du jeu.
-	#Range: 0 ~ 60000000
-	bordure = 2500
 	#Vrai : en survie, les pieces de construction et le Claim Block ne se posent QUE dans le monde des bases
-	#(carte DayZ, spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.
+	#(la carte depuis le 21/10 ; spawn et autres mondes refuses). Le staff (creatif) n'est pas concerne.
 	construction_ici_seulement = true
-	#Faux : aucune creature dans le monde des bases (toute entite « Mob » : animaux, monstres, villageois,
+	#Faux : aucune creature dans le monde du tutoriel (toute entite « Mob » : animaux, monstres, villageois,
 	#marchands, golems, PNJ et zombies des mods ; apparitions, oeufs, cages, mods) ; celles deja la sont retirees.
 	#Les autres entites restent (textes flottants, objets poses, vehicules, cadavres, porte-armures).
 	creatures = false
-	#Creatures gardees malgre tout dans le monde des bases (identifiants, ex. "minecraft:villager").
+	#Creatures gardees malgre tout dans le monde du tutoriel (identifiants, ex. "minecraft:villager").
 	creatures_permises = ["heralizcasino:videur", "heraliz_quetes:pnj"]
-	#Faux : dans le monde des bases, aucun seau ne se vide (eau, lave, poissons), meme dans une base.
+	#Faux : dans le monde du tutoriel, aucun seau ne se vide (eau, lave, poissons), meme dans une cabane.
 	#Le staff en creatif n'est pas concerne.
 	seaux = false
 	#Rayon (blocs, autour de 0 0) ou l'on tire le point d'arrivee d'un joueur sans base ;

@@ -1,11 +1,9 @@
 package fr.heraliz.crac.bases;
 
 import fr.heraliz.crac.Crac;
-import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.border.WorldBorder;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -14,11 +12,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 /**
- * Le monde des bases au serveur : horloge (chaque tick : départs de /home, /rtp et /spawn, messages, tutoriel ; chaque seconde :
- * tutoriel, protections, carrières, bordure), sa propre bordure (en Forge 1.20.1, chaque dimension reçoit celle de la
- * carte : elle est remise chaque seconde, comme pour les arènes de HeraliZ Matchs), commandes. Créatures et seaux :
- * {@link NatureBases}.
- * Le monde lui-même est créé par Minecraft au démarrage (data/crac/dimension/bases.json) : rien à déposer.
+ * Les bases au serveur (sur la carte depuis le 21/10) : horloge (chaque tick : départs de /home, /rtp et /spawn,
+ * messages, tutoriel ; chaque seconde : tutoriel, protections, carrières, bases des clans), commandes. Créatures et seaux
+ * du monde du tutoriel : {@link NatureBases}. L'ancien monde des bases (crac:bases), fermé le 02/11 :
+ * {@link AncienMondeBases}.
  */
 @EventBusSubscriber(modid = "crac")
 public final class MondeBasesServeur {
@@ -42,10 +39,6 @@ public final class MondeBasesServeur {
     public static void demarre(ServerStartedEvent e) {
         ServerLevel l = e.getServer().getLevel(MondeBases.BASES);
         Crac.LOGGER.info("[CRac] bases des clans sur {}", l == null ? "?" : l.dimension().location());
-        ServerLevel ancien = e.getServer().getLevel(MondeBases.ANCIEN_CLE);
-        if (ancien != null) {
-            bordure(ancien);
-        }
     }
 
     @SubscribeEvent
@@ -63,11 +56,6 @@ public final class MondeBasesServeur {
         etape(s, "protections", () -> Protections.seconde(s));
         etape(s, "carrières", () -> CarrieresServeur.seconde(s));
         etape(s, "bases des clans", () -> fr.heraliz.crac.heraliz.BasesClans.seconde(s));
-        // bordure propre seulement pour l'ancien monde des bases (la carte principale garde la sienne)
-        ServerLevel l = s.getLevel(MondeBases.ANCIEN_CLE);
-        if (l != null) {
-            bordure(l);
-        }
     }
 
     private static void etape(MinecraftServer s, String nom, Runnable r) {
@@ -78,31 +66,7 @@ public final class MondeBasesServeur {
         }
     }
 
-    // ---------------------------------------------------------------------------------------------- bordure
-
-    /** Bordure propre du monde des bases : centre 0 0, taille {@code [bases] bordure} (0 = celle du jeu). */
-    static void bordure(ServerLevel l) {
-        int taille = BasesReglages.i(BasesReglages.BORDURE, 2500);
-        if (taille <= 0) {
-            return;
-        }
-        WorldBorder b = l.getWorldBorder();
-        if (b.getCenterX() == 0.0 && b.getCenterZ() == 0.0 && Math.abs(b.getSize() - taille) < 0.5) {
-            return;
-        }
-        b.setCenter(0.0, 0.0);
-        b.setSize(taille);
-        ClientboundInitializeBorderPacket p = new ClientboundInitializeBorderPacket(b);
-        for (ServerPlayer sp : l.players()) {
-            sp.connection.send(p);
-        }
-    }
-
     private static void entree(ServerPlayer p) {
-        if (MondeBases.estAncien(p.level())) {
-            bordure(p.serverLevel());
-            p.connection.send(new ClientboundInitializeBorderPacket(p.serverLevel().getWorldBorder()));
-        }
         CarrieresServeur.envoyer(p);
     }
 

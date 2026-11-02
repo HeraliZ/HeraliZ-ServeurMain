@@ -22,8 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Carrières du monde des bases et blocs cassés qui doivent repousser, gardés AVEC le monde des bases
- * ({@code dimensions/crac/bases/data/crac_carrieres.dat}) : ils suivent ce monde s'il est copié ou remplacé.
+ * Carrières du monde des bases (la carte depuis le 21/10) et blocs cassés qui doivent repousser, gardés AVEC ce monde
+ * ({@code data/crac_carrieres.dat} du monde principal) : ils le suivent s'il est copié ou remplacé.
  */
 public final class CarrieresDonnees extends SafeSavedData {
     public static final String ID = "crac_carrieres";

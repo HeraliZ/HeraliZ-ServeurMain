@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.crac.serveur.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "crac-serveur.refmap.json",
+  "mixins": [
+    "AncienMondeBasesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

@@ -572,6 +572,7 @@
   "crac.clan.kit_plein": "Le coffre du clan est plein : une partie du matériel de la première base attend une place. Libère des cases (/clan coffre) : il y sera rangé tout seul.",
   "crac.base.effacer.membre": "%s n'est pas le chef de son clan : c'est la base du clan [%s]. Pour l'effacer, vise son chef.",
   "crac.tuto.monde_absent": "Le monde du tutoriel n'existe pas sur ce serveur (crac:tuto).",
+  "crac.bases.ancien_ferme": "Le monde où tu étais (l'ancien monde des bases) est fermé : te voilà au spawn, avec ton inventaire.",
   "crac.tuto.nouveau_monde": "[Tuto] Le tutoriel a maintenant son propre monde : il repart du début, sur ta parcelle.",
   "crac.tuto.pas_de_parcelle": "Aucune parcelle libre dans le monde du tutoriel : réessaie dans un instant.",
   "crac.tuto.preparation": "[Tuto] Préparation de ta parcelle…",

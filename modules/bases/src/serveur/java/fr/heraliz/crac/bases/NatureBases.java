@@ -27,17 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * L'ANCIEN monde des bases ({@code crac:bases}) et le monde du tutoriel ({@code crac:tuto}, 28/10) sont vides de vie et d'eau (demande du propriétaire, CRac 1.6.0) ; depuis
- * CRac 1.16.0, les bases sont sur la carte principale, où rien de tout cela ne s'applique (zombies et seaux comme ailleurs) :
+ * Le monde du tutoriel ({@code crac:tuto}, 28/10 ; avant, l'ancien monde des bases, fermé le 02/11) est vide de vie et
+ * d'eau (demande du propriétaire, CRac 1.6.0) ; depuis CRac 1.16.0, les bases sont sur la carte principale, où rien de
+ * tout cela ne s'applique (zombies et seaux comme ailleurs) :
  * <ul>
  *   <li>aucune créature : toute entité {@link Mob} (animaux, monstres, villageois, marchands ambulants, golems, PNJ et
  *   zombies des mods qui les font apparaître autour des joueurs) est refusée à l'entrée dans le monde (apparition, œuf,
  *   cage, commande, chargement d'un tronçon), sauf {@code [bases] creatures_permises} ; celles qui y sont quand même
  *   sont retirées chaque seconde. Les autres entités restent (textes flottants, objets posés, véhicules, cadavres,
- *   porte-armures). Le terrain lui-même n'en fait naître aucune (biomes sans liste d'apparition, voir
- *   outils/monde_bases.py) ;</li>
- *   <li>aucun seau ne se vide dans le monde des bases, même dans une base ({@code [bases] seaux}) : le terrain n'a pas
- *   d'eau, les joueurs n'en ajoutent pas. Hors des bases, HeraliZ Loot refuse déjà les seaux.</li>
+ *   porte-armures). Le terrain lui-même n'en fait naître aucune (biome sans liste d'apparition) ;</li>
+ *   <li>aucun seau ne se vide dans le monde du tutoriel, même dans une cabane ({@code [bases] seaux}) : le terrain n'a
+ *   pas d'eau, les joueurs n'en ajoutent pas. Ailleurs, HeraliZ Loot refuse déjà les seaux.</li>
  * </ul>
  * Libres : créatif et spectateur (staff) pour les seaux. Réglage {@code [bases] creatures = true} : comme avant.
  */
@@ -62,10 +62,10 @@ public final class NatureBases {
         return id == null || !permises.contains(id.toString());
     }
 
-    /** Aucune créature n'entre dans le monde des bases. */
+    /** Aucune créature n'entre dans le monde du tutoriel. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void arrivee(EntityJoinLevelEvent e) {
-        if (!e.getLevel().isClientSide() && (MondeBases.estAncien(e.getLevel()) || MondeBases.estTuto(e.getLevel())) && creatureInterdite(e.getEntity())) {
+        if (!e.getLevel().isClientSide() && MondeBases.estTuto(e.getLevel()) && creatureInterdite(e.getEntity())) {
             e.setCanceled(true);
         }
     }
@@ -73,7 +73,7 @@ public final class NatureBases {
     /** Apparitions naturelles, cages, œufs, renforts, patrouilles : refusées avant même de préparer la créature. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void apparition(MobSpawnEvent.FinalizeSpawn e) {
-        if ((MondeBases.estAncien(e.getLevel().getLevel()) || MondeBases.estTuto(e.getLevel().getLevel())) && creatureInterdite(e.getEntity())) {
+        if (MondeBases.estTuto(e.getLevel().getLevel()) && creatureInterdite(e.getEntity())) {
             e.setSpawnCancelled(true);
         }
     }
@@ -83,14 +83,13 @@ public final class NatureBases {
         if (e.phase != TickEvent.Phase.END || e.getServer() == null || ++ticks % 20 != 0) {
             return;
         }
-        // l'ancien monde des bases et, depuis le 28/10, le monde du tutoriel (crac:tuto)
-        for (ServerLevel l : new ServerLevel[]{e.getServer().getLevel(MondeBases.ANCIEN_CLE), e.getServer().getLevel(MondeBases.TUTO)}) {
-            if (l != null) {
-                try {
-                    retirer(l);
-                } catch (RuntimeException ex) {
-                    Crac.LOGGER.error("[CRac] monde des bases : retrait des créatures en erreur", ex);
-                }
+        // le monde du tutoriel (crac:tuto, 28/10)
+        ServerLevel l = e.getServer().getLevel(MondeBases.TUTO);
+        if (l != null) {
+            try {
+                retirer(l);
+            } catch (RuntimeException ex) {
+                Crac.LOGGER.error("[CRac] monde du tutoriel : retrait des créatures en erreur", ex);
             }
         }
     }
@@ -109,16 +108,16 @@ public final class NatureBases {
             for (Entity e : a) {
                 e.discard();
             }
-            Crac.LOGGER.info("[CRac] {} créature(s) retirée(s) du monde des bases", a.size());
+            Crac.LOGGER.info("[CRac] {} créature(s) retirée(s) du monde du tutoriel", a.size());
         }
     }
 
     // ---------------------------------------------------------------------------------------------- seaux
 
-    /** Seau plein vidé (eau, lave, poisson) dans le monde des bases : refusé, même dans une base. */
+    /** Seau plein vidé (eau, lave, poisson) dans le monde du tutoriel : refusé, même dans une cabane. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void seau(FillBucketEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer sp) || !MondeBases.estAncien(e.getLevel()) && !MondeBases.estTuto(e.getLevel())
+        if (!(e.getEntity() instanceof ServerPlayer sp) || !MondeBases.estTuto(e.getLevel())
             || BasesReglages.b(BasesReglages.SEAUX, false) || sp.isCreative() || sp.isSpectator()) {
             return;
         }
