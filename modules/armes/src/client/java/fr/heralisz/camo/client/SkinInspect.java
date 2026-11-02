@@ -50,7 +50,6 @@ public final class SkinInspect {
    private static final Logger LOG = LogUtils.getLogger();
    public static final String PREFIX = "heralisz_inspect_";
    /** Banc d'essai (CamoHarness) : trace des animations lancées par TaCZ. */
-   private static final boolean DEBUG = System.getProperty("heralisz.camo.harness") != null;
 
    /** Scène chargée : l'animation et ses sons. */
    private record Scene(ObjectAnimation anim, List<Cue> cues) {
@@ -91,7 +90,6 @@ public final class SkinInspect {
     * remplacée par celle du skin.
     */
    public static String redirect(AnimationController ctl, String name) {
-      if (DEBUG) LOG.info("[camo-inspect] runAnimation {} (tick {})", name, Minecraft.getInstance().level != null ? Minecraft.getInstance().level.getGameTime() : -1);
       if (name == null || !name.startsWith("inspect")) return name;
       Minecraft mc = Minecraft.getInstance();
       if (mc.player == null) return name;
@@ -188,7 +186,6 @@ public final class SkinInspect {
          return;
       }
       if (t < lastT - 0.05F) cueStep = 0;   // relancée
-      if (DEBUG && (int) (t * 20) / 10 != (int) (lastT * 20) / 10) LOG.info("[camo-inspect] {} t={}", playing, t);
       lastT = t;
       List<Cue> cues = scene.cues();
       Minecraft mc = Minecraft.getInstance();

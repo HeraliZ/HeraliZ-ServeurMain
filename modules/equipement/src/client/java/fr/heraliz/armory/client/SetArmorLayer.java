@@ -98,8 +98,7 @@ public class SetArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> e
 
     private void renderFitted(PieceDef def, ItemStack stack, T entity, PoseStack pose, MultiBufferSource buffers, int light,
                               ArmorModels.Variants v, HumanoidModel<LivingEntity> model) {
-        fr.heraliz.armory.client.devtools.CinemaClient.Pose cp = def.nvg() ? fr.heraliz.armory.client.devtools.CinemaClient.pose(entity) : null;
-        float down = !def.nvg() ? 0.0F : cp != null && cp.nvg() >= 0.0F ? cp.nvg() : NvgClient.progress(entity, stack);
+        float down = !def.nvg() ? 0.0F : NvgClient.progress(entity, stack);
         if (def.nvg()) ArmorModels.applyGroups(model, "nvg", down);
         VertexConsumer vc = ItemRenderer.getArmorFoilBuffer(buffers, v.renderType(), false, stack.hasFoil());
         model.renderToBuffer(pose, vc, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
@@ -107,9 +106,7 @@ public class SetArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> e
         if (down > 0.95F && model instanceof MeshArmorModel mesh && mesh.hasGlow()) {
             float k = glowFade(entity) * (down - 0.95F) / 0.05F;
             if (k > 0.01F) {
-                RenderType rt = fr.heraliz.armory.client.devtools.CinemaClient.ACTIVE
-                        ? fr.heraliz.armory.client.devtools.CinemaClient.glowType(v.texture()) : RenderType.eyes(v.texture());
-                mesh.renderGlow(pose, buffers.getBuffer(rt), k);
+                mesh.renderGlow(pose, buffers.getBuffer(RenderType.eyes(v.texture())), k);
             }
         }
     }

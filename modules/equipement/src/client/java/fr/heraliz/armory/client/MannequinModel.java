@@ -42,11 +42,6 @@ public class MannequinModel extends HumanoidModel<Mannequin> {
         riding = false;
         swimAmount = 0.0F;
         attackTime = 0.0F;
-        fr.heraliz.armory.client.devtools.CinemaClient.Pose cp = fr.heraliz.armory.client.devtools.CinemaClient.pose(e);
-        if (cp != null) {
-            cinema(cp);
-            return;
-        }
         pose(head, 0.0F, -1.0F, e.getHeadPose().getX(), e.getHeadPose().getY(), e.getHeadPose().getZ());
         pose(body, 0.0F, -1.0F, e.getBodyPose().getX(), e.getBodyPose().getY(), e.getBodyPose().getZ());
         pose(rightArm, -5.0F, 1.0F, e.getRightArmPose().getX(), e.getRightArmPose().getY(), e.getRightArmPose().getZ());
@@ -55,21 +50,6 @@ public class MannequinModel extends HumanoidModel<Mannequin> {
         pose(leftLeg, 1.9F, 11.0F, e.getLeftLegPose().getX(), e.getLeftLegPose().getY(), e.getLeftLegPose().getZ());
         hat.copyFrom(head);
         base.visible = !e.isNoBasePlate();
-    }
-
-    /** Tournage video (outils de dev) : pose du scenario ; accroupi decale les parties comme l'accroupissement vanilla. */
-    private void cinema(fr.heraliz.armory.client.devtools.CinemaClient.Pose cp) {
-        float c = cp.crouch();
-        float[] r = cp.parts();
-        pose(head, 0.0F, -1.0F + 4.2F * c, r[0], r[1], r[2]);
-        pose(body, 0.0F, -1.0F + 3.2F * c, r[3], r[4], r[5]);
-        pose(rightArm, -5.0F, 1.0F + 3.2F * c, r[6], r[7], r[8]);
-        pose(leftArm, 5.0F, 1.0F + 3.2F * c, r[9], r[10], r[11]);
-        pose(rightLeg, -1.9F, 11.0F + 0.2F * c, r[12], r[13], r[14]);
-        pose(leftLeg, 1.9F, 11.0F + 0.2F * c, r[15], r[16], r[17]);
-        rightLeg.z = leftLeg.z = 4.0F * c;
-        hat.copyFrom(head);
-        base.visible = false;
     }
 
     private static void pose(ModelPart p, float x, float y, float rx, float ry, float rz) {
