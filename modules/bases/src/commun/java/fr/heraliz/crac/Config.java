@@ -353,12 +353,12 @@ public class Config {
         BUILDER.comment("HeraliZ: where CRac works, combat tag, the HeraliZ C4 (heralisz_tactical) and the clans.").push("heraliz");
         blockedDimensions = BUILDER.comment(
                 "Dimensions where nothing of CRac can be placed (building pieces, Claim Block, sleeping bags) and where CRac",
-                "leaves explosions alone: the match maps and the clan bunkers of heralisz_bases."
+                "leaves explosions alone: the ClashWar arenas (02/11: the clan bunkers of heralisz_bases, removed, left the list)."
             )
-            .defineList("blockedDimensions", List.of("heraliz_clashwar:arenes", "heralisz_bases:bunkers"),
+            .defineList("blockedDimensions", List.of("heraliz_clashwar:arenes"),
                 o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
         combatBlocksBuilding = BUILDER.comment(
-                "If true, a combat-tagged player (persistentData long heralisz:combat_jusqua, set by HeraliZ Matchs) cannot place,",
+                "If true, a combat-tagged player (persistentData long heralisz:combat_jusqua, set by the noyau) cannot place,",
                 "upgrade, repair or demolish pieces, place a Claim Block or pick up a placable until the tag ends."
             )
             .define("combatBlocksBuilding", true);

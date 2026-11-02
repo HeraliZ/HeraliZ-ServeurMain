@@ -146,13 +146,14 @@ public final class Tutoriel {
     /** Étapes de la cabane ({@link Cabane}) ; {@link #progression} rend FINIE quand tout est fait. */
     static final int ETAPES = Cabane.ETAPES;
     static final int FINIE = Cabane.FINIE;
-    /** Commandes refusées pendant le tutoriel (elles feraient quitter le monde des bases ou mourir). */
-    private static final Set<String> COMMANDES_BLOQUEES = Set.of("spawn", "home", "zone", "rtp", "suicide", "duel", "clashwar",
+    /**
+     * Commandes refusées pendant le tutoriel (elles feraient quitter le monde du tutoriel ou mourir). 02/11 : {@code zone}
+     * et {@code duel} retirées de la liste, ces commandes n'existent plus (25/10, matchs).
+     */
+    private static final Set<String> COMMANDES_BLOQUEES = Set.of("spawn", "home", "rtp", "suicide", "clashwar",
         "zombies", "casino", "depart", "extractions", "tpa", "warp");
     /** Dernier avertissement (heure en ms) par joueur, pour ne pas inonder sa barre d'action. */
     private static final Map<UUID, Long> AVERTI = new HashMap<>();
-    /** Joueurs à qui Varga vient de poser le sas (pour ce qu'il leur dit à la radio, HeraliZ Quêtes). */
-    static final Set<UUID> SAS = new HashSet<>();
     /** Fin du tutoriel en attente (après le tour de caméra) : joueur -> heure de jeu de l'effacement. */
     private static final Map<UUID, Long> FINS = new HashMap<>();
     /**
