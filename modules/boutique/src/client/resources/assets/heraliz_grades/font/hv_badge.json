@@ -2,7 +2,7 @@
   "providers": [
     {
       "type": "ttf",
-      "file": "heraliz_grades:dmsans_bold.ttf",
+      "file": "heraliz_noyau:dmsans_bold.ttf",
       "size": 4.774,
       "oversample": 8.0,
       "shift": [
@@ -12,7 +12,7 @@
     },
     {
       "type": "ttf",
-      "file": "heraliz_grades:cyrillique_bold.ttf",
+      "file": "heraliz_noyau:cyrillique_bold.ttf",
       "size": 4.774,
       "oversample": 8.0,
       "shift": [

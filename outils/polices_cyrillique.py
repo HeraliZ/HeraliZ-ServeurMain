@@ -38,8 +38,11 @@ def traiter(fichier):
         nouveau.append(ajout)
         noms.add(cyr)
         change = True
-        # la police va à côté de DM Sans (assets/<ns>/font/), avec sa licence
+        # la police va à côté de DM Sans (assets/<ns>/font/), avec sa licence ; DM Sans prise dans un autre espace (le
+        # noyau, polices partagées : outils/polices_partagees.py) : Onest y est déjà, rien n'est recopié ici
         dossier = fichier.parent
+        if ns != dossier.parent.name:
+            continue
         for f in (POIDS[nom], "onest_ofl.txt"):
             cible = dossier / f
             if not cible.exists() or cible.read_bytes() != (SOURCES / f).read_bytes():

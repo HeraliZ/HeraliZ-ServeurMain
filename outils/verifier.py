@@ -20,6 +20,8 @@ Contrôles :
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
   - verif_accessoires : chaque accessoire TaCZ bien placé sur chaque arme qui l'accepte, ni flottant, ni traversant,
                        ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
+  - polices          : une seule copie des polices DM Sans, Onest et Oswald, dans le noyau ; les polices des modules la
+                       citent (outils/polices_partagees.py --verifier) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
@@ -236,6 +238,15 @@ def main():
                     print(l.strip())
             print("[verif_accessoires] détail et images : python outils/verif_accessoires.py --rapport --images")
             erreurs += 1
+    # polices partagées (audit du 02/11, point 37) : un module qui recopie DM Sans (ancien kit, nouvelle police) la
+    # renverrait dans le jar des joueurs autant de fois
+    code, out = lancer([str(O / "polices_partagees.py"), "--verifier"])
+    if code != 0:
+        for l in out.splitlines():
+            if "PROBLÈME" in l:
+                print(l.strip())
+        print("[polices] relancer : python outils/polices_partagees.py")
+        erreurs += 1
     # trois langues : paramètres (%s...) et codes couleur identiques, sinon le joueur voit un texte cassé
     code, out = lancer([str(O / "verifier_langues.py")] + [p.name for p in choisis])
     for l in out.splitlines():

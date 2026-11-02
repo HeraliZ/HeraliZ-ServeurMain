@@ -9,7 +9,7 @@
     },
     {
       "type": "ttf",
-      "file": "heraliz_boss:dmsans_bold.ttf",
+      "file": "heraliz_noyau:dmsans_bold.ttf",
       "size": 6.5,
       "oversample": 8.0,
       "shift": [
@@ -25,7 +25,7 @@
         0.0,
         1.0
       ],
-      "file": "heraliz_boss:cyrillique_bold.ttf"
+      "file": "heraliz_noyau:cyrillique_bold.ttf"
     },
     {
       "type": "reference",

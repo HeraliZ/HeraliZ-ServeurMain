@@ -1,5 +1,7 @@
 """Copie le kit d'interface « style clan » (celui du noyau, modules/noyau) dans un autre mod,
 sans dépendance de compilation : polices DM Sans (assets/<modid>/font), Ui, Echelle, HzButton, HzField, HzScroll, SonsUi.
+Les polices (.json) du module citent les fichiers .ttf du noyau (heraliz_noyau:…, une seule copie pour tous les mods,
+audit du 02/11 : outils/polices_partagees.py) : aucun .ttf n'est recopié.
 
     python outils/copier_kit_ui.py <dossier projet> <paquet java cible> <modid>
     ex. python outils/copier_kit_ui.py modules/emotes fr.heraliz.emote.client.gui.kit heraliz_emote
@@ -82,10 +84,9 @@ def main():
     fdest.mkdir(parents=True, exist_ok=True)
     for f in SRC_FONT.iterdir():
         if f.suffix == ".json":
-            (fdest / f.name).write_text(f.read_text(encoding="utf-8").replace("heraliz_noyau:", f"{modid}:"), encoding="utf-8")
-        else:
+            # fichiers .ttf pris dans le noyau (heraliz_noyau:…) : les polices du mod ne changent que de nom
             shutil.copy2(f, fdest / f.name)
-        print(f"[kit] {fdest / f.name}")
+            print(f"[kit] {fdest / f.name}")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
     },
     {
       "type": "ttf",
-      "file": "heralizcrates:dmsans_medium.ttf",
+      "file": "heraliz_noyau:dmsans_medium.ttf",
       "size": 11.0,
       "oversample": 8.0,
       "shift": [
@@ -25,7 +25,7 @@
         0.0,
         1.0
       ],
-      "file": "heralizcrates:cyrillique_medium.ttf"
+      "file": "heraliz_noyau:cyrillique_medium.ttf"
     },
     {
       "type": "reference",
