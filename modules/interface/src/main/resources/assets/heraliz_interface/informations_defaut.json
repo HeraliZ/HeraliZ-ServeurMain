@@ -1,5 +1,5 @@
 {
-  "_aide": "Texte de l'ecran Informations du menu Echap (HeraliZ Interface). Modifiable librement : chaque texte existe en francais (fr), en anglais (en) et en russe (ru) ; une langue absente prend l'anglais, puis le francais. Le fichier est relu a chaque ouverture de l'ecran (pas besoin de relancer le jeu). Supprimer ce fichier le recree avec le texte d'origine.",
+  "_aide": "Texte de l'ecran Informations du menu Echap (HeraliZ Interface). Modifiable librement : chaque texte existe en francais (fr), en anglais (en) et en russe (ru) ; une langue absente prend l'anglais, puis le francais. Le fichier est relu a chaque ouverture de l'ecran (pas besoin de relancer le jeu). Supprimer ce fichier le recree avec le texte d'origine. Quand une nouvelle version d'HeraliZ Interface change ce texte, le fichier est remplace (l'ancien est garde en informations.json.ancien).",
   "chiffres": [
     {
       "valeur": "1950",

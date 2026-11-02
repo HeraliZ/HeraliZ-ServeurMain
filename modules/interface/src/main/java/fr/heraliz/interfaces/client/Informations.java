@@ -22,6 +22,10 @@ import java.util.List;
  * en « fr », « en » et « ru » ; la langue du jeu choisit, l'anglais puis le francais servent de secours. Un fichier
  * cree avant le russe (aucun texte « ru ») laisse la place au texte d'origine du jar pour un joueur en russe. Un fichier
  * illisible ne bloque rien : le texte d'origine du jar est affiche et l'erreur va au journal.
+ * <p>Copie toujours a jour (audit du 02/11, point 26) : la copie note l'empreinte du texte du jar d'ou elle vient
+ * (« _origine ») ; quand le texte du jar change (nouvelle version d'HeraliZ Interface), la copie est remplacee, l'ancienne
+ * gardee a cote (informations.json.ancien). Avant : copiee une fois puis lue pour toujours, les joueurs arrives avant le
+ * 26/10 voyaient encore /duel, /zombies, /groupe... et pas /rtp, /extractions, /kit.</p>
  */
 public final class Informations {
     private Informations() {
@@ -58,12 +62,11 @@ public final class Informations {
         String langue = langue();
         Path f = fichier();
         try {
-            if (!Files.exists(f)) {
-                Files.createDirectories(f.getParent());
-                try (InputStream in = Informations.class.getResourceAsStream(DEFAUT)) {
-                    if (in != null) Files.write(f, in.readAllBytes());
-                }
+            byte[] origine;
+            try (InputStream in = Informations.class.getResourceAsStream(DEFAUT)) {
+                origine = in != null ? in.readAllBytes() : null;
             }
+            if (origine != null) aJour(f, origine);
             if (Files.exists(f)) {
                 JsonObject o = JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject();
                 // fichier d'avant le russe : le texte d'origine du jar (qui l'a) pour un joueur en russe
@@ -78,6 +81,46 @@ public final class Informations {
             HeralizInterface.LOG.warn("[interface] texte d'origine illisible", ex);
         }
         return new Contenu(List.of(), List.of(), List.of(), List.of(), List.of(), "");
+    }
+
+    /**
+     * Copie du texte du jar sur le PC, remplacee quand le texte du jar a change depuis la copie (empreinte « _origine »),
+     * l'ancienne gardee en informations.json.ancien ; une copie modifiee a la main reste tant que le jar ne change pas.
+     */
+    private static void aJour(Path f, byte[] origine) throws java.io.IOException {
+        String empreinte = empreinte(origine);
+        if (Files.exists(f)) {
+            String copie = null;
+            try {
+                JsonObject o = JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject();
+                if (o.has("_origine") && o.get("_origine").isJsonPrimitive()) copie = o.get("_origine").getAsString();
+            } catch (Exception illisible) {
+                copie = null;
+            }
+            if (empreinte.equals(copie)) return;
+            Files.copy(f, f.resolveSibling("informations.json.ancien"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            HeralizInterface.LOG.info("[interface] {} remplace par le texte de cette version (ancien garde en .ancien)", f);
+        }
+        Files.createDirectories(f.getParent());
+        JsonObject texte = JsonParser.parseString(new String(origine, StandardCharsets.UTF_8)).getAsJsonObject();
+        JsonObject copie = new JsonObject();
+        copie.addProperty("_origine", empreinte);
+        for (java.util.Map.Entry<String, JsonElement> e : texte.entrySet()) {
+            if (!"_origine".equals(e.getKey())) copie.add(e.getKey(), e.getValue());
+        }
+        Files.writeString(f, new com.google.gson.GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(copie),
+                StandardCharsets.UTF_8);
+    }
+
+    private static String empreinte(byte[] octets) {
+        try {
+            byte[] h = java.security.MessageDigest.getInstance("SHA-1").digest(octets);
+            StringBuilder b = new StringBuilder(40);
+            for (byte x : h) b.append(String.format(java.util.Locale.ROOT, "%02x", x));
+            return b.toString();
+        } catch (java.security.NoSuchAlgorithmException ex) {
+            return Integer.toHexString(java.util.Arrays.hashCode(octets)) + "-" + octets.length;
+        }
     }
 
     private static Contenu lire(JsonObject o, String langue) {
