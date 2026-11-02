@@ -28,7 +28,8 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * Operator tools for the building system: {@code /cracbuild showcase <pos>} builds one demo house per tier with every
  * piece kind (and reports any piece the rules refused), {@code essai <pos>} the test course of the 26/10 fixes (see
- * {@link #essai}), {@code clear}, {@code tier}, {@code damage}, {@code doors}.
+ * {@link #essai}), {@code clear}, {@code tier}, {@code damage}, {@code doors}. Op 4 (02/11, audit : {@code clear} peut effacer
+ * des bases ; avant : op 2).
  */
 @Mod.EventBusSubscriber(modid = "crac", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class BuildDebugCommand {
@@ -43,7 +44,7 @@ public final class BuildDebugCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> d) {
-        d.register(Commands.literal("cracbuild").requires(s -> s.hasPermission(2))
+        d.register(Commands.literal("cracbuild").requires(s -> s.hasPermission(4))
             .then(Commands.literal("showcase")
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                     .executes(c -> showcase(c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), null))
