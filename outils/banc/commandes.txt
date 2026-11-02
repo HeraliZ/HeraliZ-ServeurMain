@@ -22,7 +22,7 @@ home
 home
 base info
 purge
-ping canal
+canal
 
 # refusées sur la carte, jouées au spawn ou ailleurs
 spawn

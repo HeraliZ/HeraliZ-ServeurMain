@@ -3,7 +3,7 @@ package fr.heraliz.ping;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
- * Reglages. SERVEUR (par monde : serverconfig/heraliz_ping-server.toml, modifiables en jeu par /ping admin) : regles
+ * Reglages. SERVEUR (par monde : serverconfig/heraliz_ping-server.toml, modifiables en jeu par /canal admin) : regles
  * des pings, toutes verifiees par le serveur. CLIENT (config/heraliz_ping-client.toml, ecran Reglages) : affichage et
  * son, propres a chaque joueur.
  */
@@ -36,7 +36,7 @@ public final class PingConfig {
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
-        b.comment("HeraliZ Ping : regles du serveur (modifiables en jeu : /ping admin)").push("pings");
+        b.comment("HeraliZ Ping : regles du serveur (modifiables en jeu : /canal admin)").push("pings");
         ACTIF = b.comment("Interrupteur general des pings").define("actif", true);
         DUREE_S = b.comment("Duree d'un ping a l'ecran, en secondes").defineInRange("duree_s", 10, 3, 60);
         PORTEE = b.comment("Portee maximale d'un ping depuis les yeux, en blocs").defineInRange("portee", 300, 16, 1024);

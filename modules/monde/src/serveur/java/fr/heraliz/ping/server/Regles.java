@@ -10,7 +10,7 @@ public final class Regles {
     private Regles() {
     }
 
-    /** D'ou vient le cercle d'un auteur : equipe (en match), canal libre (/ping canal), clan, groupe, ou lui seul. */
+    /** D'ou vient le cercle d'un auteur : equipe (en match), canal libre (/canal), clan, groupe, ou lui seul. */
     public enum Origine { EQUIPE, CANAL, CLAN, GROUPE, SEUL }
 
     /**

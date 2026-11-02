@@ -1,5 +1,5 @@
 
-#HeraliZ Ping : regles du serveur (modifiables en jeu : /ping admin)
+#HeraliZ Ping : regles du serveur (modifiables en jeu : /canal admin)
 [pings]
 	#Interrupteur general des pings
 	actif = true

@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * {@code /ping} : rappel de l'utilisation (tout le monde). {@code /ping canal [nom|clan]} : canal des pings du joueur
- * ({@link Canaux}). {@code /ping admin} (permission 2) : regles et compteurs ;
- * {@code /ping admin <reglage> <valeur>} : change une regle du serveur, sauvegardee tout de suite et renvoyee aux
+ * {@code /canal [nom|clan]} : canal des pings du joueur ({@link Canaux}) ; {@code /canal aide} : rappel de l'utilisation
+ * (tout le monde). {@code /canal admin} (permission 2) : regles et compteurs ;
+ * {@code /canal admin <reglage> <valeur>} : change une regle du serveur, sauvegardee tout de suite et renvoyee aux
  * clients. Le monde a {@code sendCommandFeedback=false} : les reponses vont directement au joueur
  * ({@link ServerPlayer#sendSystemMessage}), jamais par sendSuccess.
  */
@@ -47,13 +47,18 @@ public final class PingCommandes {
                 .then(booleen("groupe", PingConfig.GROUPE_HORS_MATCH))
                 .then(booleen("carte", PingConfig.CARTE))
                 .then(booleen("actif", PingConfig.ACTIF));
-        // 25/10 (tri des commandes) : plus d'alias /pings (aucun plugin n'a /ping sur HeraliZ)
-        // 25/10 : canaux de pings (Canaux) ; joueurs seulement, sans permission
-        LiteralArgumentBuilder<CommandSourceStack> canal = Commands.literal("canal").requires(CommandSourceStack::isPlayer)
+        // 02/11 (audit point 33) : « /ping canal » devient /canal. Mohist a son propre /ping (latence, réservé à ceux qui en ont
+        // la permission) qui passe devant celui d'un mod du même nom : notre « /ping canal » n'arrivait jamais (« commande
+        // inconnue » au banc), et le noyau le refusait aussi sur la carte. On ne garde pas /ping : il resterait caché par
+        // celui de Mohist. Canaux de pings (Canaux) : joueurs seulement, sans permission ; « clan », « aide » et « admin »
+        // sont des mots de la commande, jamais des noms de canal.
+        d.register(Commands.literal("canal")
                 .executes(PingCommandes::voirCanal)
-                .then(Commands.literal(Canaux.CLAN).executes(ctx -> changerCanal(ctx, null)))
-                .then(Commands.argument("nom", StringArgumentType.word()).executes(ctx -> changerCanal(ctx, StringArgumentType.getString(ctx, "nom"))));
-        d.register(Commands.literal("ping").executes(PingCommandes::aide).then(canal).then(admin));
+                .then(Commands.literal("aide").executes(PingCommandes::aide))
+                .then(admin)
+                .then(Commands.literal(Canaux.CLAN).requires(CommandSourceStack::isPlayer).executes(ctx -> changerCanal(ctx, null)))
+                .then(Commands.argument("nom", StringArgumentType.word()).requires(CommandSourceStack::isPlayer)
+                        .executes(ctx -> changerCanal(ctx, StringArgumentType.getString(ctx, "nom")))));
     }
 
     /** Joueur -> ms du dernier changement de canal (anti-spam des annonces d'arrivee et de depart). */
@@ -62,7 +67,7 @@ public final class PingCommandes {
     /** Liste reutilisee pour lire les membres connectes d'un canal (fil serveur). */
     private static final ArrayList<ServerPlayer> MEMBRES = new ArrayList<>();
 
-    /** {@code /ping canal} : le canal du joueur et qui y est connecte. */
+    /** {@code /canal} : le canal du joueur et qui y est connecte. */
     private static int voirCanal(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer p = ctx.getSource().getPlayer();
         if (p == null) return 0;
@@ -76,23 +81,23 @@ public final class PingCommandes {
             int n = MEMBRES.size();
             MEMBRES.clear();
             p.sendSystemMessage(Component.translatableWithFallback("heraliz_ping.canal.voir.canal",
-                    "Ton canal de pings : « %s » (%s en ligne : %s). /ping canal clan pour revenir à ton clan.", canal,
+                    "Ton canal de pings : « %s » (%s en ligne : %s). /canal clan pour revenir à ton clan.", canal,
                     String.valueOf(n), noms.toString()).withStyle(ChatFormatting.GRAY));
             return 1;
         }
         String tag = Compat.clans() ? ClansCompat.tag(p) : null;
         if (tag != null) {
             p.sendSystemMessage(Component.translatableWithFallback("heraliz_ping.canal.voir.clan",
-                    "Ton canal de pings : ton clan %s. /ping canal <nom> pour un canal à part.", tag).withStyle(ChatFormatting.GRAY));
+                    "Ton canal de pings : ton clan %s. /canal <nom> pour un canal à part.", tag).withStyle(ChatFormatting.GRAY));
         } else {
             p.sendSystemMessage(Component.translatableWithFallback("heraliz_ping.canal.voir.seul",
-                    "Ton canal de pings : aucun (sans clan, tes pings ne sont vus que par toi). /ping canal <nom> pour rejoindre un canal.")
+                    "Ton canal de pings : aucun (sans clan, tes pings ne sont vus que par toi). /canal <nom> pour rejoindre un canal.")
                     .withStyle(ChatFormatting.GRAY));
         }
         return 1;
     }
 
-    /** {@code /ping canal <nom>} ; nom null : {@code /ping canal clan}, retour au canal du clan. */
+    /** {@code /canal <nom>} ; nom null : {@code /canal clan}, retour au canal du clan. */
     private static int changerCanal(CommandContext<CommandSourceStack> ctx, @Nullable String saisi) {
         ServerPlayer p = ctx.getSource().getPlayer();
         if (p == null) return 0;
@@ -101,7 +106,7 @@ public final class PingCommandes {
             canal = Canaux.nettoyer(saisi);
             if (canal == null) {
                 p.sendSystemMessage(Component.translatableWithFallback("heraliz_ping.canal.nom",
-                        "Nom de canal invalide : 2 à 16 lettres ou chiffres, sans espace (« clan » est réservé).").withStyle(ChatFormatting.RED));
+                        "Nom de canal invalide : 2 à 16 lettres ou chiffres, sans espace (« clan », « aide » et « admin » sont réservés).").withStyle(ChatFormatting.RED));
                 return 0;
             }
         }

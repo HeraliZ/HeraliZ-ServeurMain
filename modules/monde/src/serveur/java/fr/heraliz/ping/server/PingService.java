@@ -75,7 +75,7 @@ public final class PingService {
     private static final Set<UUID> PRESENCE_FORCEE = new HashSet<>();
     private static int prochainId = 1;
 
-    /** Compteurs (affiches par /ping admin). */
+    /** Compteurs (affiches par /canal admin). */
     public static long recus, relayes, paquets, refusCadence, refusPortee, refusVue, refusCible, refusSpectateur, refusInactif;
     /** Temps passe a traiter les pings acceptes (ns), pour la moyenne. */
     public static long nanosAcceptes;
@@ -350,7 +350,7 @@ public final class PingService {
         SEAUX.remove(p.getUUID());
     }
 
-    /** Regles a jour envoyees a tous les clients (apres /ping admin). */
+    /** Regles a jour envoyees a tous les clients (apres /canal admin). */
     public static void diffuserReglages(MinecraftServer serveur) {
         ReglagesS2C r = reglages();
         for (ServerPlayer p : serveur.getPlayerList().getPlayers()) if (PingNet.present(p)) PingNet.versJoueur(p, r);

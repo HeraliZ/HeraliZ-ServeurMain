@@ -22,7 +22,7 @@ public final class NoyauConfig {
    // 25/10 (tri des commandes) : /home remplace /sethome, /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny
    public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "reg",
          "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home",
-         "base", "purge", "coeur", "ping");
+         "base", "purge", "coeur", "canal");
 
    public static final ForgeConfigSpec SPEC;
    public static final ForgeConfigSpec.IntValue TAG_COMBAT_S;

@@ -31,8 +31,8 @@ import java.util.regex.Pattern;
 
 /**
  * Canaux de pings (25/10, demande des propriétaires) : par défaut, le canal d'un joueur est son clan (comme avant) ;
- * {@code /ping canal <nom>} le met sur un canal libre, partagé par tous ceux qui ont tapé le même nom (joueurs solos qui
- * s'entendent hors clan), {@code /ping canal clan} le ramène à son clan. Un joueur sur un canal ne reçoit plus les pings
+ * {@code /canal <nom>} le met sur un canal libre, partagé par tous ceux qui ont tapé le même nom (joueurs solos qui
+ * s'entendent hors clan), {@code /canal clan} le ramène à son clan. Un joueur sur un canal ne reçoit plus les pings
  * de son clan et son clan ne reçoit plus les siens : un ping ne va qu'aux joueurs du même canal (et du même monde, voir
  * {@link Cercles}). En match, l'équipe passe toujours avant.
  * <p>Gardé en mémoire (joueur -> canal, et l'index inverse canal -> joueurs) et sur le disque hors du monde

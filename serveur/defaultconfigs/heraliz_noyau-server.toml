@@ -16,7 +16,7 @@
 	#Sur la carte (minecraft:overworld), en survie ou aventure, hors staff (niveau 2) : refuser toute commande absente de commandes_permises
 	actif = true
 	#Seules commandes permises sur la carte (racine en minuscules, sans / ni espace de noms)
-	commandes_permises = ["tpa", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home", "base", "purge", "coeur", "ping"]
+	commandes_permises = ["tpa", "login", "register", "l", "reg", "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home", "base", "purge", "coeur", "canal"]
 
 [diag]
 	#Rapport automatique à chaque blocage du serveur (/diag, 24/10). Ne coûte rien tant que tout va bien :

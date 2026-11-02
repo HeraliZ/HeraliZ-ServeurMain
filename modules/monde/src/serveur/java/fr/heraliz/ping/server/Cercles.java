@@ -11,7 +11,7 @@ import java.util.List;
  * <ol>
  *     <li>En match (ClashWar) : son equipe, et elle seule. Un spectateur de la partie ne pingue pas ; les
  *     spectateurs ne recoivent rien sauf si {@code spectateurs_voient}.</li>
- *     <li>Hors match, sur un canal libre ({@link Canaux}, {@code /ping canal <nom>}) : les membres connectes du canal.</li>
+ *     <li>Hors match, sur un canal libre ({@link Canaux}, {@code /canal <nom>}) : les membres connectes du canal.</li>
  *     <li>Hors match, sinon : les membres connectes de son clan (HeraliZ Clans) restes sur le canal du clan, couleur =
  *     accent du clan.</li>
  *     <li>Sinon : lui seul.</li>
@@ -45,7 +45,7 @@ public final class Cercles {
                 return r == MatchsCompat.REFUS ? REFUS : r;
             }
         }
-        // 25/10 : canal libre (/ping canal <nom>) avant le clan ; sur le canal du clan, les membres partis sur un canal
+        // 25/10 : canal libre (/canal <nom>) avant le clan ; sur le canal du clan, les membres partis sur un canal
         // libre ne recoivent plus rien (un ping ne va qu'aux joueurs du meme canal)
         String canal = Canaux.de(auteur.getUUID());
         int couleur;
