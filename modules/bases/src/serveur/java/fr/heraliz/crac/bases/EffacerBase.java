@@ -136,7 +136,7 @@ final class EffacerBase {
             if (b != null) {
                 tout.addAll(StructureStore.get(level).piecesOf(b));
             }
-            vider(level, min, max, recup);
+            vider(level, min, max, recup, joueur);
             pieces += retirer(level, tout);
             AdminManager.removePlacables(level, min, max);
             // l'armoire sans la faire tomber (et sa case du haut, 1.21.0), puis le claim
@@ -147,7 +147,7 @@ final class EffacerBase {
             ClaimManager.releaseClaim(level, c.groupId());
             AccesBase.get(server).effacer(c.groupId());   // accès donnés dans l'armoire
             C2SRequestNearbyClaimsTraitement.pushAll(level);
-            ramasser(level, min, max);
+            ramasser(level, min, max, joueur);
             claims++;
         }
         // ses bâtiments sans claim (cabane du tutoriel pas finie, essais)
@@ -178,10 +178,10 @@ final class EffacerBase {
                 if (zone != null) {
                     BlockPos min = BlockPos.containing(zone.minX, zone.minY, zone.minZ);
                     BlockPos max = BlockPos.containing(zone.maxX, zone.maxY + 3, zone.maxZ);
-                    vider(level, min, max, recup);
+                    vider(level, min, max, recup, joueur);
                     pieces += retirer(level, ps);
                     AdminManager.removePlacables(level, min, max);
-                    ramasser(level, min, max);
+                    ramasser(level, min, max, joueur);
                 }
             }
         }
@@ -208,22 +208,27 @@ final class EffacerBase {
 
     /**
      * Tous les conteneurs de la zone vidés avant d'être retirés : leur contenu disparaît au lieu de tomber, ou va dans
-     * {@code recup} s'il n'est pas null.
+     * {@code recup} s'il n'est pas null. Sans {@code recup}, les objets à vie ne disparaissent jamais : gardés pour
+     * {@code joueur} ({@link ObjetsAVieBases}, 02/11, audit point 8).
      */
     private static void vider(ServerLevel level, BlockPos min, BlockPos max,
-                              @org.jetbrains.annotations.Nullable List<net.minecraft.world.item.ItemStack> recup) {
+                              @org.jetbrains.annotations.Nullable List<net.minecraft.world.item.ItemStack> recup,
+                              @org.jetbrains.annotations.Nullable UUID joueur) {
         for (int cx = min.getX() >> 4; cx <= max.getX() >> 4; cx++) {
             for (int cz = min.getZ() >> 4; cz <= max.getZ() >> 4; cz++) {
                 for (BlockEntity be : level.getChunk(cx, cz).getBlockEntities().values()) {
                     BlockPos q = be.getBlockPos();
                     if (be instanceof Container c && q.getX() >= min.getX() && q.getX() <= max.getX() && q.getY() >= min.getY()
                         && q.getY() <= max.getY() && q.getZ() >= min.getZ() && q.getZ() <= max.getZ()) {
-                        if (recup != null) {
-                            for (int i = 0; i < c.getContainerSize(); i++) {
-                                net.minecraft.world.item.ItemStack s = c.getItem(i);
-                                if (!s.isEmpty()) {
-                                    recup.add(s.copy());
-                                }
+                        for (int i = 0; i < c.getContainerSize(); i++) {
+                            net.minecraft.world.item.ItemStack s = c.getItem(i);
+                            if (s.isEmpty()) {
+                                continue;
+                            }
+                            if (recup != null) {
+                                recup.add(s.copy());
+                            } else if (ObjetsAVieBases.estAVie(s)) {
+                                ObjetsAVieBases.garder(level.getServer(), joueur, s, "base effacée");
                             }
                         }
                         c.clearContent();
@@ -236,8 +241,19 @@ final class EffacerBase {
 
     /** Ce qui serait quand même tombé (objets posés sur une pièce retirée) est retiré aussi. */
     static void ramasser(ServerLevel level, BlockPos min, BlockPos max) {
+        ramasser(level, min, max, null);
+    }
+
+    /**
+     * Même chose ; les objets à vie au sol ne disparaissent jamais : gardés pour {@code joueur} ({@link ObjetsAVieBases},
+     * null : sans propriétaire connu, rendus par le staff ; 02/11, audit point 8).
+     */
+    static void ramasser(ServerLevel level, BlockPos min, BlockPos max, @org.jetbrains.annotations.Nullable UUID joueur) {
         AABB zone = new AABB(min, max.offset(1, 1, 1)).inflate(2);
         for (ItemEntity it : level.getEntitiesOfClass(ItemEntity.class, zone)) {
+            if (ObjetsAVieBases.estAVie(it.getItem())) {
+                ObjetsAVieBases.garder(level.getServer(), joueur, it.getItem(), "au sol d'une base effacée");
+            }
             it.discard();
         }
     }

@@ -572,6 +572,8 @@
   "crac.clan.kit_plein": "The clan chest is full: part of the first base materials is waiting for room. Free some slots (/clan coffre): it will be stored there automatically.",
   "crac.base.effacer.membre": "%s is not the leader of their clan: this is the base of clan [%s]. To erase it, target its leader.",
   "crac.tuto.monde_absent": "The tutorial world does not exist on this server (crac:tuto).",
+  "crac.avie.rendu": "%s lifetime item(s) from your base (destroyed chest or erased base) returned to your inventory.",
+  "crac.avie.attente": "%s lifetime item(s) from your base are waiting for you: make room in your inventory.",
   "crac.bases.ancien_ferme": "The world you were in (the old bases world) is closed: you are back at spawn, with your inventory.",
   "crac.tuto.nouveau_monde": "[Tutorial] The tutorial now has its own world: it starts over, on your own plot.",
   "crac.tuto.pas_de_parcelle": "No free plot in the tutorial world: try again in a moment.",

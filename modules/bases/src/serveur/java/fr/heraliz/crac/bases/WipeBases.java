@@ -73,7 +73,7 @@ public final class WipeBases {
                 level.removeBlock(a.above(), false);
                 level.removeBlock(a, false);
                 ClaimManager.releaseClaim(level, c.groupId());
-                EffacerBase.ramasser(level, min, max);
+                EffacerBase.ramasser(level, min, max, proprio);
                 claims++;
             }
             // 2. les bâtiments restés sans claim (bases libérées, cabanes du tutoriel, essais)
@@ -96,7 +96,7 @@ public final class WipeBases {
                     vider(level, min, max, ps.get(0).owner, garder, rendus);
                     pieces += EffacerBase.retirer(level, ps);
                     poses += AdminManager.removePlacables(level, min, max);
-                    EffacerBase.ramasser(level, min, max);
+                    EffacerBase.ramasser(level, min, max, ps.get(0).owner);
                 } else {
                     pieces += EffacerBase.retirer(level, ps);
                 }

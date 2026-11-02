@@ -158,6 +158,11 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
             Adosse.changement();   // les cases de mur voisines refont leur forme (sans la caisse)
         }
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof MetalCrateBlockEntity be) {
+            // 02/11 (audit point 8) : ses objets à vie ne tombent pas, ils sont gardés pour le chef de la base
+            fr.heraliz.crac.pont.Serveur.Moteur ms = fr.heraliz.crac.pont.Serveur.MOTEUR;
+            if (level instanceof net.minecraft.server.level.ServerLevel sla && ms != null) {
+                ms.objetsAVieAvantChute(sla, pos, be);
+            }
             Containers.dropContents(level, pos, be);
         }
         fr.heraliz.crac.pont.Serveur.Moteur m = fr.heraliz.crac.pont.Serveur.MOTEUR;

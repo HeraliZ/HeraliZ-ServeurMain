@@ -133,6 +133,11 @@ public final class PartieServeur implements Partie {
         }
 
         @Override
+        public void objetsAVieAvantChute(ServerLevel sl, BlockPos pos, net.minecraft.world.Container conteneur) {
+            fr.heraliz.crac.bases.ObjetsAVieBases.avantChute(sl, pos, conteneur);
+        }
+
+        @Override
         public boolean cederCase(ServerLevel sl, BlockPos pos) {
             return StructureService.ceder(sl, pos);
         }

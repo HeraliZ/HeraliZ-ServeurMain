@@ -67,6 +67,13 @@ public final class Serveur {
         }
 
         /**
+         * Un conteneur de CRac va être retiré et son contenu tomber (raid, chute, usure, démolition) : ses objets à vie en
+         * sont sortis avant et gardés pour le chef de la base, jamais au sol (HeraliZ, 02/11, audit point 8).
+         */
+        default void objetsAVieAvantChute(ServerLevel sl, BlockPos pos, net.minecraft.world.Container conteneur) {
+        }
+
+        /**
          * Une caisse va se poser dans la case de mur {@code pos} (HeraliZ, 31/10) : chaque mur de la case lui laisse sa moitié
          * intérieure, comme à une caisse posée avant lui, et la case devient libre. Faux (rien n'a changé) si les pièces du
          * serveur ne le permettent pas. Le mur la reprend au tick suivant si rien ne s'y pose.
