@@ -176,7 +176,8 @@ public final class ObjetsAVieServeur {
             ItemStack s = inv.getItem(i);
             if (!s.isEmpty() && s.hasTag() && s.getTag().contains(MARQUE_SAC)) s.removeTagKey(MARQUE_SAC);
          }
-         if (p.isAlive() && !SORTIS.contains(p.getUUID()) && !enMatch(p) && persiste(p).contains(CLE)) rendreGardes(p);
+         if (p.isAlive() && !SORTIS.contains(p.getUUID()) && !enMatch(p)
+            && p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).contains(CLE)) rendreGardes(p);
       }
       AbstractContainerMenu menu = p.containerMenu;
       if (menu == p.inventoryMenu || EN_ATTENTE.containsKey(p.getUUID()) || !MENU_SAC.equals(menu.getClass().getName())) return;
