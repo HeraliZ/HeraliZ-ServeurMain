@@ -128,6 +128,8 @@
 	#Classes de clients de triche connus, cherchées dans le jeu du joueur. Cette liste n'est
 	#jamais dans le jar : les développeurs de cheats ne la voient pas. À compléter avec les
 	#classes trouvées dans les preuves des tricheurs attrapés.
+	#Depuis le 02/11 : seule l'empreinte salée de leur PAQUET part au jeu (cherché dans les modules et les
+	#chargeurs de classes) ; les paquets de Minecraft, Forge, Java et Spartan ne sont jamais cherchés.
 	classProbes = ["baritone.api.BaritoneAPI", "net.wurstclient.WurstClient", "meteordevelopment.meteorclient.MeteorClient", "meteordevelopment.orbit.EventBus", "net.ccbluex.liquidbounce.LiquidBounce", "pro.mikey.xray.XRay"]
 	#Premier contrôle après la connexion : délai maximum (secondes).
 	#Range: 3 ~ 600
@@ -137,6 +139,7 @@
 	intervalMaxSeconds = 240
 	#Programmes de triche / d'injection : signalés s'ils tournent sur le PC du joueur (morceau du
 	#nom de l'exécutable, minuscules). Seuls les programmes correspondants sont envoyés au serveur.
+	#Depuis le 02/11 : envoyés au jeu en empreintes salées (seules les longueurs se voient).
 	processPatterns = ["cheatengine", "processhacker", "systeminformer", "x64dbg", "x32dbg", "ollydbg", "injector", "xenos", "recaf", "jd-gui", "bytecode-viewer"]
 	#Échantillons de la pile du thread de rendu par contrôle (~50 ms chacun) : un ESP injecté
 	#s'exécute à chaque image et finit par y apparaître. 0 = désactivé.
@@ -144,7 +147,12 @@
 	renderSamples = 40
 	#Morceaux de noms de DLL suspectes chargées dans le jeu (une DLL chargée depuis le dossier
 	#temporaire, Téléchargements ou le Bureau est signalée dans tous les cas).
+	#Depuis le 02/11 : jugés sur le serveur, jamais envoyés au jeu.
 	nativePatterns = ["inject", "cheat", "hack", "aimbot", "xray", "vape"]
+	#Overlays connus qui se branchent sur l'affichage ou se chargent dans le jeu (morceaux de noms de DLL) :
+	#ignorés, sauf s'ils viennent du dossier temporaire, des Téléchargements, du Bureau ou du dossier du jeu
+	#(où un vrai overlay n'est jamais). Jugé sur le serveur : la liste n'est plus dans le jar du joueur (02/11).
+	overlays = ["discord", "gameoverlayrenderer", "graphics-hook", "obs-", "nvspcap", "nvinject", "nvd3dum", "nvoglv", "rtsshooks", "rtss", "medal", "overwolf", "owclient", "rivatuner", "action_x64", "bdcam", "fraps", "xsplit", "amdhook", "atidxx", "steam", "epicgames", "uplay", "galaxy", "radeon", "igdumd", "igo64", "eosovh"]
 	#Active le contrôle d'intégrité du client.
 	enabled = true
 
@@ -239,6 +247,18 @@
 	#Défi d'intégrité tournant : à intervalle aléatoire, le client doit prouver que son mod
 	#n'a pas été modifié. Chaque défi est différent (nombre, variante et classes aléatoires).
 	challenge = true
+	#Touches des menus de triche surveillées (codes GLFW), envoyées au jeu à la connexion (la liste n'est plus
+	#dans le jar du joueur). Un appui en jeu sur l'une d'elles, sans action du jeu attachée : alerte TricheMenu
+	#et capture. 96 = ², 344 = Maj droite (aucune action ne peut les prendre) ; autres possibles : 345 = Ctrl
+	#droit, 346 = Alt droit, 260 = Inser, 261 = Suppr, 268 = Origine, 269 = Fin, 266/267 = Page préc./suiv.,
+	#290 à 301 = F1 à F12. Ajouter une touche qu'un joueur peut prendre pour une action ne gêne pas (appui
+	#ignoré si une action y est attachée), mais une touche libre pressée par erreur donne une alerte.
+	touchesSurveillees = [96, 344]
+	#Mode strict : contrôles d'intégrité restés sans réponse, de suite, EN COURS DE PARTIE, avant de refuser le
+	#jeu (un jeu honnête répond toujours : le contrôle tourne à part du jeu). 0 = jamais (alerte seulement). Un jeu
+	#qui n'a jamais répondu depuis la connexion est refusé dès la 2e absence, comme avant.
+	#Range: 0 ~ 20
+	strictMissedScans = 3
 	#Délai de réponse à un défi (secondes).
 	#Range: 5 ~ 120
 	challengeTimeoutSeconds = 20

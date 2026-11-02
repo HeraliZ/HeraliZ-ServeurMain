@@ -90,6 +90,8 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.IntValue CHALLENGE_MIN_SECONDS;
     public static final ForgeConfigSpec.IntValue CHALLENGE_MAX_SECONDS;
     public static final ForgeConfigSpec.IntValue CHALLENGE_TIMEOUT_SECONDS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends Integer>> TOUCHES_SURVEILLEES;
+    public static final ForgeConfigSpec.IntValue STRICT_SANS_REPONSE;
 
     // --- launcher officiel ---
     public static final ForgeConfigSpec.BooleanValue LAUNCHER_TOKEN_REQUIRED;
@@ -131,6 +133,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SCAN_CLASS_PROBES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SCAN_PROCESS_PATTERNS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SCAN_NATIVE_PATTERNS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SCAN_OVERLAYS;
 
     // --- Gardien du launcher ---
     public static final ForgeConfigSpec.BooleanValue GARDIEN_ENABLED;
@@ -389,6 +392,19 @@ public class SpartanConfig {
                 .defineInRange("challengeMaxSeconds", 240, 10, 7200);
         CHALLENGE_TIMEOUT_SECONDS = b.comment("Délai de réponse à un défi (secondes).")
                 .defineInRange("challengeTimeoutSeconds", 20, 5, 120);
+        TOUCHES_SURVEILLEES = b.comment(
+                "Touches des menus de triche surveillées (codes GLFW), envoyées au jeu à la connexion (la liste n'est plus",
+                "dans le jar du joueur). Un appui en jeu sur l'une d'elles, sans action du jeu attachée : alerte TricheMenu",
+                "et capture. 96 = ², 344 = Maj droite (aucune action ne peut les prendre) ; autres possibles : 345 = Ctrl",
+                "droit, 346 = Alt droit, 260 = Inser, 261 = Suppr, 268 = Origine, 269 = Fin, 266/267 = Page préc./suiv.,",
+                "290 à 301 = F1 à F12. Ajouter une touche qu'un joueur peut prendre pour une action ne gêne pas (appui",
+                "ignoré si une action y est attachée), mais une touche libre pressée par erreur donne une alerte.")
+                .defineList("touchesSurveillees", List.of(96, 344), o -> o instanceof Integer i && i > 0 && i < 400);
+        STRICT_SANS_REPONSE = b.comment(
+                "Mode strict : contrôles d'intégrité restés sans réponse, de suite, EN COURS DE PARTIE, avant de refuser le",
+                "jeu (un jeu honnête répond toujours : le contrôle tourne à part du jeu). 0 = jamais (alerte seulement). Un jeu",
+                "qui n'a jamais répondu depuis la connexion est refusé dès la 2e absence, comme avant.")
+                .defineInRange("strictMissedScans", 3, 0, 20);
         b.pop();
 
         b.comment("Launcher officiel : jeton de lancement signé + empreinte du dossier mods.",
@@ -581,7 +597,9 @@ public class SpartanConfig {
         SCAN_CLASS_PROBES = b.comment(
                 "Classes de clients de triche connus, cherchées dans le jeu du joueur. Cette liste n'est",
                 "jamais dans le jar : les développeurs de cheats ne la voient pas. À compléter avec les",
-                "classes trouvées dans les preuves des tricheurs attrapés.")
+                "classes trouvées dans les preuves des tricheurs attrapés.",
+                "Depuis le 02/11 : seule l'empreinte salée de leur PAQUET part au jeu (cherché dans les modules et les",
+                "chargeurs de classes) ; les paquets de Minecraft, Forge, Java et Spartan ne sont jamais cherchés.")
                 .defineList("classProbes", List.of(
                         "baritone.api.BaritoneAPI",
                         "net.wurstclient.WurstClient",
@@ -591,15 +609,25 @@ public class SpartanConfig {
                         "pro.mikey.xray.XRay"), o -> o instanceof String);
         SCAN_PROCESS_PATTERNS = b.comment(
                 "Programmes de triche / d'injection : signalés s'ils tournent sur le PC du joueur (morceau du",
-                "nom de l'exécutable, minuscules). Seuls les programmes correspondants sont envoyés au serveur.")
+                "nom de l'exécutable, minuscules). Seuls les programmes correspondants sont envoyés au serveur.",
+                "Depuis le 02/11 : envoyés au jeu en empreintes salées (seules les longueurs se voient).")
                 .defineList("processPatterns", List.of(
                         "cheatengine", "processhacker", "systeminformer", "x64dbg", "x32dbg", "ollydbg",
                         "injector", "xenos", "recaf", "jd-gui", "bytecode-viewer"), o -> o instanceof String);
         SCAN_NATIVE_PATTERNS = b.comment(
                 "Morceaux de noms de DLL suspectes chargées dans le jeu (une DLL chargée depuis le dossier",
-                "temporaire, Téléchargements ou le Bureau est signalée dans tous les cas).")
+                "temporaire, Téléchargements ou le Bureau est signalée dans tous les cas).",
+                "Depuis le 02/11 : jugés sur le serveur, jamais envoyés au jeu.")
                 .defineList("nativePatterns", List.of("inject", "cheat", "hack", "aimbot", "xray", "vape"),
                         o -> o instanceof String);
+        SCAN_OVERLAYS = b.comment(
+                "Overlays connus qui se branchent sur l'affichage ou se chargent dans le jeu (morceaux de noms de DLL) :",
+                "ignorés, sauf s'ils viennent du dossier temporaire, des Téléchargements, du Bureau ou du dossier du jeu",
+                "(où un vrai overlay n'est jamais). Jugé sur le serveur : la liste n'est plus dans le jar du joueur (02/11).")
+                .defineList("overlays", List.of("discord", "gameoverlayrenderer", "graphics-hook", "obs-", "nvspcap",
+                        "nvinject", "nvd3dum", "nvoglv", "rtsshooks", "rtss", "medal", "overwolf", "owclient", "rivatuner",
+                        "action_x64", "bdcam", "fraps", "xsplit", "amdhook", "atidxx", "steam", "epicgames", "uplay",
+                        "galaxy", "radeon", "igdumd", "igo64", "eosovh"), o -> o instanceof String);
         b.pop();
 
         b.comment("Anti-ESP / anti-wallhack : le serveur n'envoie plus un joueur à un autre tant qu'aucune ligne",
@@ -706,6 +734,16 @@ public class SpartanConfig {
 
     public static List<String> getScanNativePatterns() {
         return lowerList(SCAN_NATIVE_PATTERNS);
+    }
+
+    public static List<String> getScanOverlays() {
+        return lowerList(SCAN_OVERLAYS);
+    }
+
+    /** Touches surveillées (codes GLFW valides seulement). */
+    public static int[] getTouchesSurveillees() {
+        return TOUCHES_SURVEILLEES.get().stream().filter(o -> o != null && o > 0 && o < 400).mapToInt(Integer::intValue)
+                .distinct().limit(32).toArray();
     }
 
     public static List<String> getBlacklistedMods() {

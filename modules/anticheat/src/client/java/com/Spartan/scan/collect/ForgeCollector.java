@@ -48,7 +48,7 @@ import org.spongepowered.asm.mixin.transformer.Config;
 public final class ForgeCollector {
     /** Jars déjà hachés (chemin + taille + date) : les contrôles suivants ne relisent rien. */
     private static final Map<String, String> HASH_CACHE = new ConcurrentHashMap<>();
-    private static final long MAX_HASHED_FILE = 256L << 20;
+    private static final long MAX_HASHED_FILE = ScanReport.MAX_FICHIER_HACHE;
     private static final long MAX_HASHED_TOTAL = 1L << 30;
 
     private ForgeCollector() {
@@ -147,10 +147,12 @@ public final class ForgeCollector {
      * Jars de mods chargés par Forge HORS du dossier mods (launcher Helios : fournisseur « maven libs » et options
      * --fml.mavenRoots / --fml.modLists ; ou tout autre moyen) : hachés et jugés un par un comme ceux du dossier mods
      * (origine « modlist »). Un jar de triche glissé dans le dossier du launcher est donc vu comme les autres.
+     * Depuis le 02/11 (point 13) : pas de budget total (une fois haché, un jar reste en cache) et un jar non haché (trop
+     * gros, illisible) est envoyé SANS empreinte au lieu de disparaître du rapport : le serveur le juge.
      */
     public static void modsHorsDossier(ScanReport r, Path modsDir) {
         Path mods = modsDir.toAbsolutePath().normalize();
-        long[] budget = {MAX_HASHED_TOTAL};
+        long[] budget = {Long.MAX_VALUE};
         Set<Path> vus = new HashSet<>();
         ModList.get().getModFiles().forEach(info -> {
             IModFile f = info.getFile();
@@ -167,9 +169,7 @@ public final class ForgeCollector {
                 return;
             }
             String sha = hash(p, budget);
-            if (sha != null) {
-                r.files.add(new ScanReport.FileEntry("modlist", JvmCollector.fileName(p.toString()), size(p), sha));
-            }
+            r.files.add(new ScanReport.FileEntry("modlist", JvmCollector.fileName(p.toString()), size(p), sha == null ? "" : sha));
         });
     }
 

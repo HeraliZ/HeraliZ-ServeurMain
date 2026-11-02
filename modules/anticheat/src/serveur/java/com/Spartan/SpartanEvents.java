@@ -152,6 +152,8 @@ public class SpartanEvents {
 
         com.Spartan.integrity.PorteJoueurs.rattacher(player);
         CheckManager.grantGrace(player.getUUID(), GRACE_MS);
+        // touches des menus de triche à surveiller (02/11 : la liste n'est plus dans le jar du joueur)
+        com.Spartan.Networks.ModMessages.sendToPlayer(new com.Spartan.Networks.TouchesPacket(SpartanConfig.getTouchesSurveillees()), player);
         MovementEngine.onLogin(player);
         HandshakeMonitor.onLogin(player.getUUID());
         ScanManager.onLogin(player);

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.Spartan.scan.Sondes;
 import io.netty.buffer.Unpooled;
 import java.util.List;
 import net.minecraft.network.FriendlyByteBuf;
@@ -15,8 +16,8 @@ class ScanPacketsTest {
     @Test
     void scanRequestRoundTrip() {
         ScanRequestPacket p = new ScanRequestPacket(123, 40, true, new long[] {1L, -2L},
-                List.of("net.minecraft.client.renderer.LevelRenderer"), List.of("baritone.api.BaritoneAPI"),
-                List.of("cheatengine"), List.of("inject"));
+                List.of("net.minecraft.client.renderer.LevelRenderer"),
+                Sondes.preparer(99L, List.of("cheatengine"), List.of("baritone.api.BaritoneAPI")));
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         p.encode(buf);
         ScanRequestPacket back = ScanRequestPacket.decode(buf);
@@ -26,9 +27,12 @@ class ScanPacketsTest {
         assertTrue(back.referenceKnown());
         assertArrayEquals(new long[] {1L, -2L}, back.knownMixins());
         assertEquals(List.of("net.minecraft.client.renderer.LevelRenderer"), back.watchClasses());
-        assertEquals(List.of("baritone.api.BaritoneAPI"), back.classProbes());
-        assertEquals(List.of("cheatengine"), back.processPatterns());
-        assertEquals(List.of("inject"), back.nativePatterns());
+        assertEquals(99L, back.sondes().sel);
+        assertArrayEquals(p.sondes().programmes, back.sondes().programmes);
+        assertArrayEquals(p.sondes().longueurs, back.sondes().longueurs);
+        assertArrayEquals(p.sondes().paquets, back.sondes().paquets);
+        assertTrue(back.sondes().programmeCherche("cheatengine-x86_64.exe"));
+        assertTrue(back.sondes().paquetCherche("baritone.api") != null);
     }
 
     @Test

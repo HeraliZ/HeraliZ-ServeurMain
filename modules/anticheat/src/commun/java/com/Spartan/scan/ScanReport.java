@@ -39,6 +39,8 @@ public final class ScanReport {
     public static final int MAX_HITS = 256;
     public static final int MAX_ERRORS = 32;
     public static final int MAX_INJECTION = 32;
+    /** Au-delà, le jeu ne hache pas un jar (envoyé sans empreinte) ; aucun jar officiel n'en approche (02/11). */
+    public static final long MAX_FICHIER_HACHE = 256L << 20;
 
     private static final Pattern SHA256 = Pattern.compile("^([0-9a-f]{64})?$");
 
@@ -86,9 +88,13 @@ public final class ScanReport {
     public final List<String> tamper = new ArrayList<>();
     public final List<NativeEntry> natives = new ArrayList<>();
     public final List<String> processHits = new ArrayList<>();
+    /** Classes de triche trouvées : « #empreinte » du paquet (Sondes), traduite en noms par le serveur avant l'analyse. */
     public final List<String> classHits = new ArrayList<>();
     public final List<String> errors = new ArrayList<>();
-    /** Traces de code natif injecté : « thread|0x… » (thread démarré hors de tout module), « hook|fonction|0x…|module ». */
+    /**
+     * Traces de code natif injecté : « thread|0x… » (thread démarré hors de tout module), « hook|fonction|0x…|module|dossier »
+     * (dossier anonymisé, depuis 2.10.0).
+     */
     public final List<String> injection = new ArrayList<>();
 
     /**

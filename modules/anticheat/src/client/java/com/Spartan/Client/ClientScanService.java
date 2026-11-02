@@ -39,7 +39,7 @@ public final class ClientScanService {
         }
         ScanCollector.Context ctx = new ScanCollector.Context(req.scanId(), FMLPaths.MODSDIR.get(), FMLPaths.GAMEDIR.get(),
                 ModsHasher.inventoryIfReady(), render, req.samples(), req.referenceKnown(), known, req.watchClasses(),
-                req.classProbes(), req.processPatterns(), req.nativePatterns());
+                req.sondes());
         EXEC.submit(() -> {
             List<byte[]> chunks;
             try {

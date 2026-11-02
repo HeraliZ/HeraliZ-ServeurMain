@@ -108,6 +108,11 @@ class PacketFuzzTest {
     }
 
     @Test
+    void touchesPacket() {
+        fuzz("TouchesPacket", TouchesPacket::decode);
+    }
+
+    @Test
     void gardienDefiPacket() {
         fuzz("GardienDefiPacket", GardienDefiPacket::decode);
     }

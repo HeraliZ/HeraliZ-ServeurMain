@@ -6,6 +6,7 @@ import com.Spartan.Networks.ChallengeResponsePacket;
 import com.Spartan.Networks.GardienDefiPacket;
 import com.Spartan.Networks.ModMessages;
 import com.Spartan.Networks.ScanRequestPacket;
+import com.Spartan.Networks.TouchesPacket;
 import com.Spartan.integrity.Fingerprint;
 import com.Spartan.pont.Partie;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -31,6 +32,8 @@ public final class PartieClient implements Partie {
             CaptureEcran.prendre(c.captureId());
         } else if (paquet instanceof GardienDefiPacket d) {
             Gardien.defi(d.defi());
+        } else if (paquet instanceof TouchesPacket t) {
+            TouchesSuspectes.surveiller(t);
         }
     }
 }

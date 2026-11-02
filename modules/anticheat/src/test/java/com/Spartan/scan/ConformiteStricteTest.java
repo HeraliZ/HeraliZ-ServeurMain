@@ -152,6 +152,27 @@ class ConformiteStricteTest {
     }
 
     @Test
+    void jarChargeMaisNonHache() {
+        // audit du 02/11 (point 13) : avant, un jar non haché (trop gros, illisible) n'était même pas envoyé
+        ScanReport r = ScanTestData.clean();
+        r.files.add(new ScanReport.FileEntry("modlist", "triche.jar", 300L << 20, ""));
+        assertTrue(ecarts(r).stream().anyMatch(s -> s.contains("impossible à vérifier") && s.contains("triche.jar")),
+                ecarts(r).toString());
+        // jar officiel verrouillé par un antivirus : jamais refusé
+        r = ScanTestData.clean();
+        r.files.add(new ScanReport.FileEntry("modlist", "create-1.20.1.jar", 15_000_000, ""));
+        assertEquals(List.of(), ecarts(r));
+        // jar officiel gonflé au-delà de ce que le jeu sait vérifier : refusé
+        r = ScanTestData.clean();
+        r.files.add(new ScanReport.FileEntry("modlist", "create-1.20.1.jar", ScanReport.MAX_FICHIER_HACHE + 1, ""));
+        assertTrue(ecarts(r).stream().anyMatch(s -> s.contains("trop gros")), ecarts(r).toString());
+        // empreinte de classe non traduite (pas une sonde de ce contrôle) : rien
+        r = ScanTestData.clean();
+        r.classHits.add("#0123456789abcdef");
+        assertEquals(List.of(), ecarts(r));
+    }
+
+    @Test
     void reglageParDefautAucunAgentPermis() {
         // audit du 02/11 : allowedJavaAgents vide (le launcher HeraliZ n'en charge aucun) ; un agent au nom d'un outil
         // autrefois permis n'est plus ignoré

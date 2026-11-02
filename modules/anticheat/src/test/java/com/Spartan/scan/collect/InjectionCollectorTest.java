@@ -39,7 +39,7 @@ class InjectionCollectorTest {
         assertTrue(starts.size() >= 5, "threads lus : " + starts.size());
         assertTrue(modules.size() >= 10, "modules lus : " + modules.size());
         ScanReport r = new ScanReport();
-        InjectionCollector.collect(r);
+        InjectionCollector.collect(r, null);
         assertEquals(List.of(), r.injection, "traces sur une JVM propre");
         t.interrupt();
     }
@@ -73,7 +73,7 @@ class InjectionCollectorTest {
         assertTrue(h != null);
         try {
             ScanReport r = new ScanReport();
-            InjectionCollector.collect(r);
+            InjectionCollector.collect(r, null);
             String attendu = "thread|" + InjectionCollector.hex(Pointer.nativeValue(code));
             assertTrue(r.injection.contains(attendu), "thread injecté non repéré : " + r.injection + " (attendu " + attendu + ")");
         } finally {
@@ -113,13 +113,5 @@ class InjectionCollectorTest {
         code.setByte(1, (byte) 0x25);
         code.setInt(2, 0x7FFFFFF0);
         assertEquals(0, InjectionCollector.jumpTarget(code, base, owner));
-    }
-
-    @Test
-    void knownOverlaysAreNotSuspect() {
-        assertTrue(InjectionCollector.isOverlay(new InjectionCollector.Module(0, 1, "DiscordHook64.dll", "")));
-        assertTrue(InjectionCollector.isOverlay(new InjectionCollector.Module(0, 1, "GameOverlayRenderer64.dll", "")));
-        assertTrue(InjectionCollector.isOverlay(new InjectionCollector.Module(0, 1, "graphics-hook64.dll", "")));
-        assertFalse(InjectionCollector.isOverlay(new InjectionCollector.Module(0, 1, "cheat.dll", "")));
     }
 }

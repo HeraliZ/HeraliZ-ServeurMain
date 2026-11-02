@@ -14,6 +14,33 @@ import org.junit.jupiter.api.Test;
  * charger une triche (jar, agent, injection, Mixin, DLL…) doit être relevée.
  */
 class ScanAnalyzerTest {
+    @Test
+    void lesNomsSuspectsEtLesOverlaysSontJugesParLeServeur() {
+        // audit du 02/11 (point 13) : le jeu n'envoie plus que le nom et le dossier ; les listes restent au serveur
+        ScanReport r = ScanTestData.clean();
+        r.natives.add(new ScanReport.NativeEntry("fastinject64.dll", "%PROGRAMFILES%/tools", ""));
+        assertTrue(ScanAnalyzer.analyze(r, null, null, ScanTestData.settings()).stream()
+                .anyMatch(f -> f.text().contains("fastinject64.dll") && f.text().contains("nom:inject")));
+        // overlay connu à sa place : rien ; même nom dans Temp : signalé ; RenderDoc n'est plus un overlay
+        ScanReport h = ScanTestData.clean();
+        h.injection.add("hook|opengl32!wglSwapBuffers|0x7FF1000|GameOverlayRenderer64.dll|%PROGRAMFILES%/steam");
+        assertTrue(ScanAnalyzer.analyze(h, null, null, ScanTestData.settings()).stream()
+                .noneMatch(f -> f.key().startsWith("inject:")));
+        ScanReport t = ScanTestData.clean();
+        t.injection.add("hook|opengl32!wglSwapBuffers|0x7FF1000|steam_api64.dll|%TEMP%/a1");
+        assertTrue(ScanAnalyzer.analyze(t, null, null, ScanTestData.settings()).stream()
+                .anyMatch(f -> f.key().startsWith("inject:hook") && f.text().contains("dossier")));
+        ScanReport d = ScanTestData.clean();
+        d.injection.add("hook|opengl32!wglSwapBuffers|0x7FF1000|renderdoc.dll|%PROGRAMFILES%/renderdoc");
+        assertTrue(ScanAnalyzer.analyze(d, null, null, ScanTestData.settings()).stream()
+                .anyMatch(f -> f.key().startsWith("inject:hook")));
+        // ancien format (sans dossier) : lu comme avant
+        ScanReport v = ScanTestData.clean();
+        v.injection.add("hook|opengl32!wglSwapBuffers|0x7FF1000|DiscordHook64.dll");
+        assertTrue(ScanAnalyzer.analyze(v, null, null, ScanTestData.settings()).stream()
+                .noneMatch(f -> f.key().startsWith("inject:")));
+    }
+
     private static List<Finding> analyze(ScanReport r) {
         return ScanAnalyzer.analyze(r, ScanTestData.reference(), null, ScanTestData.settings());
     }

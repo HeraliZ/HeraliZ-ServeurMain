@@ -93,6 +93,8 @@ public final class ScanManager {
         Set<String> baseline;
         final Set<String> alerted = new HashSet<>();
         int misses;
+        /** Sondes du contrôle en cours : marque renvoyée par le jeu (« #… ») → classes de triche de ce paquet. */
+        Map<String, String> sondesNoms = Map.of();
         // dernier résultat
         List<Finding> lastFindings = List.of();
         Severity lastVerdict;
@@ -313,11 +315,17 @@ public final class ScanManager {
         s.pendingTick = p.server.getTickCount();
         s.pendingTrigger = trigger;
         s.assembly = null;
+        // audit du 02/11 (point 13) : programmes et classes cherchés en empreintes salées (sel neuf à chaque contrôle)
+        long sel = RNG.nextLong();
+        List<String> classes = SpartanConfig.getScanClassProbes();
+        Sondes sondes = Sondes.preparer(sel, SpartanConfig.getScanProcessPatterns(), classes);
+        s.sondesNoms = Sondes.noms(sel, classes);
         ModMessages.sendToPlayer(new ScanRequestPacket(id, SpartanConfig.SCAN_RENDER_SAMPLES.get(),
                 !reference.isEmpty() || !official.isEmpty(),
-                knownMixins, SpartanConfig.getScanMixinWatch(), SpartanConfig.getScanClassProbes(),
-                SpartanConfig.getScanProcessPatterns(), SpartanConfig.getScanNativePatterns()), p);
+                knownMixins, SpartanConfig.getScanMixinWatch(), sondes), p);
     }
+
+
 
     private static void reschedule(State s) {
         s.pendingId = 0;
@@ -338,6 +346,13 @@ public final class ScanManager {
                 com.Spartan.integrity.ConformiteStricte.refuser(p, "aucune réponse aux contrôles d'intégrité depuis la connexion ("
                         + s.misses + " demandes) : scanner bloqué ou retiré");
             }
+        }
+        // audit du 02/11 (point 13) : un jeu qui cesse de répondre EN COURS DE PARTIE n'était signalé qu'une fois, jamais
+        // refusé (il suffisait de couper le scanner après le premier contrôle)
+        int seuil = SpartanConfig.STRICT_SANS_REPONSE.get();
+        if (s.scans > 0 && seuil > 0 && s.misses == seuil) {
+            com.Spartan.integrity.ConformiteStricte.refuser(p, "plus aucune réponse aux contrôles d'intégrité en cours de partie ("
+                    + s.misses + " demandes de suite) : scanner bloqué ou retiré après le premier contrôle");
         }
         s.learn = Learn.NONE;
         reschedule(s);
@@ -409,6 +424,8 @@ public final class ScanManager {
         final String trigger;
         final Learn learn;
         final List<Consumer<Component>> demandeurs;
+        /** Sondes de ce contrôle (empreinte → classes), prises à la réception. */
+        final Map<String, String> sondesNoms;
         // au lancement (fil du serveur)
         Entrees entrees;
         Future<Resultat> tache;
@@ -426,6 +443,7 @@ public final class ScanManager {
             this.trigger = trigger;
             this.learn = learn;
             this.demandeurs = demandeurs;
+            this.sondesNoms = s.sondesNoms;
         }
     }
 
@@ -511,6 +529,7 @@ public final class ScanManager {
             res.erreurLecture = t;
             return res;
         }
+        Sondes.traduire(r.classHits, a.sondesNoms); // empreintes du jeu → classes cherchées (02/11)
         res.rapport = r;
         try {
             if (a.learn != Learn.NONE) {
@@ -721,7 +740,8 @@ public final class ScanManager {
     // ------------------------------------------------------------------ alertes
 
     private static ScanAnalyzer.Settings settings() {
-        return new ScanAnalyzer.Settings(SpartanConfig.getAllowedJavaAgents(), SpartanConfig.getBlacklistedMods());
+        return new ScanAnalyzer.Settings(SpartanConfig.getAllowedJavaAgents(), SpartanConfig.getBlacklistedMods(),
+                SpartanConfig.getScanOverlays(), SpartanConfig.getScanNativePatterns());
     }
 
     /**

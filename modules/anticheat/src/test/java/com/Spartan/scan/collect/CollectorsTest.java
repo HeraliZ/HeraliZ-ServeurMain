@@ -148,11 +148,11 @@ class CollectorsTest {
     @Test
     void suspiciousNativeReasons() {
         NativeCollector.Place temp = win("C:\\Users\\Jean\\AppData\\Local\\Temp\\x7.dll");
-        assertEquals("dossier:temp", NativeCollector.reason("x7.dll", temp, List.of()));
-        assertEquals("", NativeCollector.reason("lwjgl_opengl.dll", temp, List.of()), "LWJGL extrait dans Temp : normal");
+        assertEquals("dossier:temp", NativeCollector.reason("x7.dll", temp));
+        assertEquals("", NativeCollector.reason("lwjgl_opengl.dll", temp), "LWJGL extrait dans Temp : normal");
+        // les noms suspects sont jugés par le serveur (ScanAnalyzerTest) : le jeu ne connaît plus la liste
         NativeCollector.Place prog = win("C:\\Program Files\\Tools\\fastinject64.dll");
-        assertEquals("nom:inject", NativeCollector.reason("fastinject64.dll", prog, List.of("inject")));
-        assertEquals("", NativeCollector.reason("nvoglv64.dll", prog, List.of("inject")));
+        assertEquals("", NativeCollector.reason("fastinject64.dll", prog));
     }
 
     @Test

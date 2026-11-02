@@ -1,6 +1,7 @@
 package com.Spartan.scan.collect;
 
 import com.Spartan.scan.ScanReport;
+import com.Spartan.scan.Sondes;
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Kernel32Util;
@@ -26,9 +27,11 @@ import java.util.function.Function;
  * Un client injecté passe en général par une DLL injectée dans javaw.exe, qui
  * définit ses classes par JNI. On liste les DLL du jeu hors des dossiers
  * système, avec un emplacement anonymisé (%USERPROFILE%… au lieu du nom
- * d'utilisateur). Pour les programmes, seuls ceux qui correspondent à la
- * liste envoyée par le serveur sont signalés : la liste complète ne quitte
- * jamais le PC du joueur.
+ * d'utilisateur). Le serveur juge les noms lui-même (audit du 02/11, point 13 :
+ * plus aucune liste de noms de DLL dans le jeu). Pour les programmes, seuls ceux
+ * qui correspondent aux empreintes salées envoyées par le serveur ({@link Sondes})
+ * sont signalés : la liste des programmes du joueur ne quitte jamais son PC, et le
+ * jeu ne sait pas quels noms sont cherchés.
  */
 public final class NativeCollector {
     /** Bibliothèques normales du jeu, parfois extraites dans le dossier temporaire. */
@@ -43,7 +46,7 @@ public final class NativeCollector {
     public record Place(String category, String shown) {
     }
 
-    public static void collect(ScanReport r, List<String> nativePatterns, List<String> processPatterns, Path gameDir) {
+    public static void collect(ScanReport r, Sondes sondes, Path gameDir) {
         Function<String, String> env = System::getenv;
         String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
         String javaHome = System.getProperty("java.home", "");
@@ -60,31 +63,23 @@ public final class NativeCollector {
             // Java du jeu (souvent celui du launcher, dans un dossier où l'utilisateur écrit) : envoyé aussi, le serveur
             // compare les noms aux bibliothèques d'un Java normal (une DLL glissée dans son dossier serait chargée par le jeu)
             String name = JvmCollector.fileName(lib);
-            r.natives.add(new ScanReport.NativeEntry(name, place.shown(), reason(name, place, nativePatterns)));
+            r.natives.add(new ScanReport.NativeEntry(name, place.shown(), reason(name, place)));
         }
-        if (!processPatterns.isEmpty()) {
+        if (sondes != null && sondes.programmes.length > 0) {
             for (String p : os.contains("win") ? windowsProcesses() : javaProcesses()) {
-                String lower = p.toLowerCase(Locale.ROOT);
-                for (String pattern : processPatterns) {
-                    if (!pattern.isBlank() && lower.contains(pattern.toLowerCase(Locale.ROOT))) {
-                        if (!r.processHits.contains(p) && r.processHits.size() < ScanReport.MAX_HITS) {
-                            r.processHits.add(ScanReport.cut(p, 100));
-                        }
-                        break;
-                    }
+                if (sondes.programmeCherche(p) && !r.processHits.contains(p) && r.processHits.size() < ScanReport.MAX_HITS) {
+                    r.processHits.add(ScanReport.cut(p, 100));
                 }
             }
         }
     }
 
-    /** Pourquoi une bibliothèque est suspecte (vide = simple information). */
-    static String reason(String name, Place place, List<String> patterns) {
+    /**
+     * Pourquoi une bibliothèque est suspecte d'après son seul emplacement (vide = simple information). Les noms suspects
+     * sont jugés par le serveur (ScanAnalyzer, {@code scan.nativePatterns}).
+     */
+    static String reason(String name, Place place) {
         String lower = name.toLowerCase(Locale.ROOT);
-        for (String p : patterns) {
-            if (!p.isBlank() && lower.contains(p.toLowerCase(Locale.ROOT))) {
-                return "nom:" + p;
-            }
-        }
         boolean gameNative = GAME_NATIVES.stream().anyMatch(lower::startsWith);
         if (!gameNative && (place.category().equals("temp") || place.category().equals("downloads")
                 || place.category().equals("desktop"))) {

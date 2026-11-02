@@ -3,8 +3,11 @@ package com.Spartan.scan.collect;
 import com.Spartan.integrity.Fingerprint;
 import com.Spartan.integrity.LaunchToken;
 import com.Spartan.scan.ScanReport;
+import com.Spartan.scan.Sondes;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,8 +28,7 @@ public final class ScanCollector {
      */
     public record Context(int scanId, Path modsDir, Path gameDir, List<LaunchToken.ModFile> modsInventory,
                           Thread watchedThread, int samples, boolean referenceKnown, Set<Long> knownMixins,
-                          List<String> watchClasses, List<String> classProbes, List<String> processPatterns,
-                          List<String> nativePatterns) {
+                          List<String> watchClasses, Sondes sondes) {
     }
 
     public static ScanReport collect(Context c) {
@@ -67,9 +69,9 @@ public final class ScanCollector {
 
         ThreadCollector.Origins origins = new ThreadCollector.Origins(known);
         step(r, "threads", () -> ThreadCollector.collect(r, Thread.getAllStackTraces(), origins));
-        step(r, "natives", () -> NativeCollector.collect(r, c.nativePatterns(), c.processPatterns(), c.gameDir()));
-        step(r, "injection", () -> InjectionCollector.collect(r));
-        step(r, "classes", () -> probe(r, c.classProbes(), c.watchedThread()));
+        step(r, "natives", () -> NativeCollector.collect(r, c.sondes(), c.gameDir()));
+        step(r, "injection", () -> InjectionCollector.collect(r, c.gameDir()));
+        step(r, "classes", () -> probe(r, c.sondes(), c.watchedThread(), layers));
         step(r, "render", () -> ThreadCollector.sample(c.watchedThread(), c.samples(), origins));
         origins.into(r);
 
@@ -77,26 +79,50 @@ public final class ScanCollector {
         return r;
     }
 
-    /** Classes de triche connues (liste envoyée par le serveur, jamais écrite dans le jar). */
-    static void probe(ScanReport r, List<String> names, Thread game) {
-        ClassLoader[] loaders = {
-                game != null ? game.getContextClassLoader() : null,
-                ScanCollector.class.getClassLoader(),
-                ClassLoader.getSystemClassLoader()};
-        for (String name : names) {
-            for (ClassLoader l : loaders) {
-                if (l == null) {
-                    continue;
-                }
-                try {
-                    Class.forName(name, false, l);
-                    r.classHits.add(ScanReport.cut(name, 200));
-                    break;
-                } catch (Throwable notFound) {
-                    // absente de ce chargeur
+    /**
+     * Clients de triche connus (audit du 02/11, point 13) : le serveur n'envoie que l'empreinte salée du PAQUET de leurs
+     * classes ({@link Sondes}) ; on hache les paquets que le jeu connaît (modules de chaque couche, paquets définis par
+     * les chargeurs de classes du jeu, de Spartan, du système et de chaque thread : un client injecté a souvent son propre
+     * chargeur) et on renvoie seulement les empreintes trouvées. Le serveur les traduit en noms.
+     */
+    static void probe(ScanReport r, Sondes sondes, Thread game, Map<ModuleLayer, String> layers) {
+        if (sondes == null || sondes.paquets.length == 0) {
+            return;
+        }
+        Set<String> vus = new HashSet<>();
+        List<String> trouves = new ArrayList<>();
+        java.util.function.Consumer<String> voir = p -> {
+            if (p != null && vus.add(p)) {
+                String m = sondes.paquetCherche(p);
+                if (m != null && !trouves.contains(m) && trouves.size() < ScanReport.MAX_HITS) {
+                    trouves.add(m);
                 }
             }
+        };
+        for (ModuleLayer layer : layers.keySet()) {
+            for (Module m : layer.modules()) {
+                m.getPackages().forEach(voir);
+            }
         }
+        Set<ClassLoader> chargeurs = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        List<ClassLoader> todo = new ArrayList<>();
+        todo.add(game != null ? game.getContextClassLoader() : null);
+        todo.add(ScanCollector.class.getClassLoader());
+        todo.add(ClassLoader.getSystemClassLoader());
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            todo.add(t.getContextClassLoader());
+        }
+        for (int i = 0; i < todo.size() && chargeurs.size() < 256; i++) {
+            ClassLoader l = todo.get(i);
+            if (l == null || !chargeurs.add(l)) {
+                continue;
+            }
+            for (Package p : l.getDefinedPackages()) {
+                voir.accept(p.getName());
+            }
+            todo.add(l.getParent());
+        }
+        r.classHits.addAll(trouves);
     }
 
     interface Step {

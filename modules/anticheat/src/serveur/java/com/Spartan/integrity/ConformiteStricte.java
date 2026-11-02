@@ -117,7 +117,9 @@ public final class ConformiteStricte {
             out.add("anticheat modifié en mémoire : " + t);
         }
         for (String c : r.classHits) {
-            out.add("classe d'un cheat connu présente : " + c);
+            if (!c.startsWith("#")) {
+                out.add("classe d'un cheat connu présente : " + c);
+            }
         }
         // Code aux noms de classes impossibles en Java compilé (caractères de contrôle) : chargé en mémoire sans fichier,
         // trace laissée par le client de triche Doomsday le 11/10. Aucun mod honnête n'en a.
@@ -155,11 +157,19 @@ public final class ConformiteStricte {
                 continue; // bibliothèques de Minecraft / Forge, agents : jugés ailleurs
             }
             nomsCharges.add(f.name().toLowerCase(Locale.ROOT));
-            if (f.sha256().isEmpty()) {
-                continue; // dossier, jar trop gros ou verrouillé par un antivirus : rien de certain
-            }
             if (dossierMods && !f.name().toLowerCase(Locale.ROOT).endsWith(".jar")) {
-                continue; // Forge ne charge que les .jar (fichiers .DS_Store, .disabled… sans effet)
+                continue; // Forge ne charge que les .jar (fichiers .DS_Store, .disabled… sans effet), dossiers « x/ »
+            }
+            if (f.sha256().isEmpty()) {
+                // jar chargé mais pas haché (audit du 02/11, point 13) : un jar officiel verrouillé par un antivirus passe ;
+                // un jar inconnu, ou plus gros que ce que le jeu sait vérifier, est un écart (avant : jamais jugé)
+                if (!off.knowsName(f.name())) {
+                    out.add("jar en plus du jeu officiel, impossible à vérifier : " + f.name()
+                            + (dossierMods ? " (dossier mods)" : " (dossier du launcher)"));
+                } else if (f.size() > ScanReport.MAX_FICHIER_HACHE) {
+                    out.add("jar officiel trop gros pour être vérifié (" + f.size() / (1024 * 1024) + " Mo) : " + f.name());
+                }
+                continue;
             }
             empreintes.add(f.sha256());
             if (!off.knowsFile(f.sha256())) {

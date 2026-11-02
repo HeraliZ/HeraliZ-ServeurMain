@@ -15,6 +15,7 @@ import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,22 +31,18 @@ import java.util.Locale;
  *    à AUCUN module est du code posé en mémoire par un injecteur ;</li>
  *    <li><b>crochets sur l'affichage</b> : un ESP / menu de triche natif se branche sur la fonction qui affiche chaque
  *    image (wglSwapBuffers / SwapBuffers) en remplaçant son début par un saut. On lit ce début : un saut vers une
- *    mémoire sans module est un crochet de code injecté ; un saut vers un module inconnu est relevé avec son nom.
- *    Les overlays connus (Discord, Steam, OBS, NVIDIA, RivaTuner…) sont reconnus et ignorés.</li>
+ *    mémoire sans module est un crochet de code injecté ; un saut vers un autre module est relevé avec son nom et son
+ *    dossier (anonymisé). Le SERVEUR reconnaît les overlays (Discord, Steam, OBS, RivaTuner…, réglage
+ *    {@code scan.overlays}) d'après le nom ET le dossier : depuis l'audit du 02/11 (point 13), le jeu n'a plus de liste
+ *    de noms ignorés (nommer sa DLL « steam_… » suffisait à passer).</li>
  * </ol>
- * Entrées produites dans {@link ScanReport#injection} : {@code thread|0x…} et {@code hook|fonction|0x…|module}.
+ * Entrées produites dans {@link ScanReport#injection} : {@code thread|0x…} et {@code hook|fonction|0x…|module|dossier}.
  * Rien d'autre n'est lu : ni la mémoire du jeu, ni les autres programmes.
  */
 public final class InjectionCollector {
     private static final int THREAD_QUERY_INFORMATION = 0x0040;
     private static final int THREAD_QUERY_SET_WIN32_START_ADDRESS = 9;
     private static final int MAX_ENTREES = 32;
-
-    /** Overlays et outils légitimes qui se branchent sur l'affichage (nom de module, en minuscules). */
-    private static final List<String> OVERLAYS = List.of("discord", "gameoverlayrenderer", "graphics-hook", "obs-",
-            "nvspcap", "nvinject", "nvd3dum", "nvoglv", "rtsshooks", "rtss", "medal", "overwolf", "owclient", "rivatuner",
-            "action_x64", "bdcam", "fraps", "xsplit", "amdhook", "atidxx", "renderdoc", "steam", "epicgames", "uplay",
-            "galaxy", "radeon", "igdumd", "igo64", "eosovh");
 
     private InjectionCollector() {
     }
@@ -57,7 +54,7 @@ public final class InjectionCollector {
         }
     }
 
-    public static void collect(ScanReport r) {
+    public static void collect(ScanReport r, Path gameDir) {
         String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
         if (!os.contains("win") || Native.POINTER_SIZE != 8) {
             return;
@@ -75,9 +72,10 @@ public final class InjectionCollector {
                 }
             }
         }
-        hook(r, modules, "opengl32", "wglSwapBuffers");
-        hook(r, modules, "gdi32", "SwapBuffers");
-        hook(r, modules, "gdi32full", "SwapBuffers");
+        String jeu = gameDir == null ? "" : gameDir.toAbsolutePath().toString();
+        hook(r, modules, "opengl32", "wglSwapBuffers", jeu);
+        hook(r, modules, "gdi32", "SwapBuffers", jeu);
+        hook(r, modules, "gdi32full", "SwapBuffers", jeu);
     }
 
     // ------------------------------------------------------------------ threads
@@ -169,7 +167,7 @@ public final class InjectionCollector {
     }
 
     // ------------------------------------------------------------------ crochets
-    private static void hook(ScanReport r, List<Module> modules, String library, String function) {
+    private static void hook(ScanReport r, List<Module> modules, String library, String function, String jeu) {
         Module owner = null;
         for (Module m : modules) {
             if (m.name().equalsIgnoreCase(library + ".dll")) {
@@ -195,11 +193,14 @@ public final class InjectionCollector {
             return; // pas de saut, ou saut interne
         }
         Module dest = module(modules, target);
-        if (dest != null && (isSystem(dest) || isOverlay(dest))) {
+        if (dest != null && isSystem(dest)) {
             return;
         }
         if (r.injection.size() < MAX_ENTREES) {
-            r.injection.add("hook|" + library + "!" + function + "|" + hex(target) + "|" + (dest == null ? "" : dest.name()));
+            String dossier = dest == null ? "" : NativeCollector.classify(dest.path(), System::getenv,
+                    System.getProperty("java.home", ""), jeu, System.getProperty("user.home", ""), true).shown();
+            r.injection.add("hook|" + library + "!" + function + "|" + hex(target) + "|" + (dest == null ? "" : dest.name())
+                    + "|" + dossier.replace('|', '/'));
         }
     }
 
@@ -248,11 +249,6 @@ public final class InjectionCollector {
         String p = m.path().toLowerCase(Locale.ROOT).replace('/', '\\');
         String root = System.getenv("SystemRoot");
         return root != null && p.startsWith(root.toLowerCase(Locale.ROOT) + "\\");
-    }
-
-    static boolean isOverlay(Module m) {
-        String n = m.name().toLowerCase(Locale.ROOT);
-        return OVERLAYS.stream().anyMatch(n::contains);
     }
 
     static String hex(long a) {

@@ -255,15 +255,25 @@ public final class ReceptionServeur {
         TOUCHES.remove(id);
     }
 
-    /** Touche d'ouverture des menus de triche (² ou Maj droite). */
+    /** Touche d'ouverture des menus de triche (code GLFW, parmi {@code integrity.touchesSurveillees}). */
     private static void toucheSuspecte(ServerPlayer player, String detail) {
         if (!SpartanConfig.CHECK_CLIENT_INTEGRITY.get()) {
             return;
         }
-        String nom = detail.equals("²") ? "²" : detail.equals("Maj droite") ? "Maj droite" : null;
-        if (nom == null) {
+        int code;
+        try {
+            code = Integer.parseInt(detail.trim());
+        } catch (NumberFormatException e) {
             return;
         }
+        boolean surveillee = false;
+        for (int c : SpartanConfig.getTouchesSurveillees()) {
+            surveillee |= c == code;
+        }
+        if (!surveillee) {
+            return; // touche que le serveur n'a pas demandée : jeu modifié ou liste changée, rien de sûr
+        }
+        String nom = nomTouche(code);
         long now = System.currentTimeMillis();
         Touches t = TOUCHES.computeIfAbsent(player.getUUID(), u -> new Touches());
         if (now - t.dernier < TOUCHE_ECART_MS) {
@@ -278,8 +288,8 @@ public final class ReceptionServeur {
             t.caches++;
             if (now - t.dernierResume >= TOUCHE_RESUME_MS) {
                 t.dernierResume = now;
-                CheckManager.flagEachTime("TricheMenu", player, t.caches + " appui(s) de plus sur ² ou Maj droite"
-                        + " (alertes regroupées : plus de " + TOUCHE_MAX_FENETRE + " en 10 min)");
+                CheckManager.flagEachTime("TricheMenu", player, t.caches + " appui(s) de plus sur les touches des menus de"
+                        + " triche (alertes regroupées : plus de " + TOUCHE_MAX_FENETRE + " en 10 min)");
                 t.caches = 0;
             }
             return;
@@ -289,6 +299,25 @@ public final class ReceptionServeur {
                 + " n'y est attachée : touche d'ouverture des menus de clients de triche (indice)");
         // Capture de l'écran au moment de l'appui (seulement si le joueur l'a autorisée dans le launcher).
         CaptureManager.demander(player, "touche « " + nom + " » pressée");
+    }
+
+    /** Nom d'une touche GLFW pour le staff. */
+    static String nomTouche(int code) {
+        return switch (code) {
+            case 96 -> "²";
+            case 344 -> "Maj droite";
+            case 345 -> "Ctrl droit";
+            case 346 -> "Alt droit";
+            case 260 -> "Inser";
+            case 261 -> "Suppr";
+            case 268 -> "Origine";
+            case 269 -> "Fin";
+            case 266 -> "Page préc.";
+            case 267 -> "Page suiv.";
+            case 284 -> "Pause";
+            case 281 -> "Arrêt défil.";
+            default -> code >= 290 && code <= 301 ? "F" + (code - 289) : "touche " + code;
+        };
     }
 
     /** Liste des mods du client, comparée à la liste noire (une seule fois par connexion). */

@@ -17,7 +17,8 @@ public class ModMessages {
     // "6" = le défi couvre toutes les classes (plus de 16 indices) ;
     // "7" = HeraliZ 2.0 : jar coupé client / serveur, défi lié au code réellement chargé, contrôle natif ;
     // "8" = captures d'écran (avec l'accord du joueur donné dans le launcher) ;
-    // "9" = Gardien prouvé (2.10.0) : rapports transmis tels quels, défi du serveur, clé du Gardien avec le jeton.
+    // "9" = Gardien prouvé (2.10.0) : rapports transmis tels quels, défi du serveur, clé du Gardien avec le jeton ;
+    //       sondes du contrôle en empreintes salées, touches surveillées envoyées par le serveur.
     // Client et serveur doivent partager la même version, sinon la connexion est refusée.
     private static final String PROTOCOL_VERSION = "9";
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
@@ -66,6 +67,12 @@ public class ModMessages {
         // Gardien du launcher : rapport transmis tel quel (client -> serveur) et défi de la connexion (serveur -> client).
         INSTANCE.registerMessage(id++, GardienPacket.class, GardienPacket::encode, GardienPacket::decode, GardienPacket::handle, toServer);
         INSTANCE.registerMessage(id++, GardienDefiPacket.class, GardienDefiPacket::encode, GardienDefiPacket::decode, GardienDefiPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        // Touches des menus de triche surveillées (serveur -> client).
+        INSTANCE.registerMessage(id++, TouchesPacket.class, TouchesPacket::encode, TouchesPacket::decode, TouchesPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+    }
+
+    public static void sendToPlayer(TouchesPacket packet, ServerPlayer player) {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
 
     public static void sendToPlayer(GardienDefiPacket packet, ServerPlayer player) {

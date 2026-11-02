@@ -85,8 +85,35 @@ public final class ScanAnalyzer {
         return place.equals("%JAVA%") || place.startsWith("%JAVA%/");
     }
 
-    /** Réglages venant de la config du serveur. */
-    public record Settings(List<String> allowedAgents, List<String> blacklistedMods) {
+    /**
+     * Réglages venant de la config du serveur. {@code overlays} : morceaux de noms des DLL d'overlays connus (Discord,
+     * Steam…) ; {@code nativePatterns} : morceaux de noms de DLL suspectes. Les deux ne sont plus dans le jar du joueur
+     * (audit du 02/11, point 13) : le serveur juge sur le nom et le dossier envoyés par le jeu.
+     */
+    public record Settings(List<String> allowedAgents, List<String> blacklistedMods, List<String> overlays,
+                           List<String> nativePatterns) {
+        public Settings(List<String> allowedAgents, List<String> blacklistedMods) {
+            this(allowedAgents, blacklistedMods, OVERLAYS, List.of("inject", "cheat", "hack", "aimbot", "xray", "vape"));
+        }
+    }
+
+    /** Dossiers d'où un overlay connu ne se charge jamais : un « steam_….dll » posé là est suspect. */
+    private static final List<String> DOSSIERS_DOUTEUX = List.of("%TEMP%", "%USERPROFILE%/Downloads",
+            "%USERPROFILE%/Desktop", "%JEU%");
+
+    static boolean dossierDouteux(String place) {
+        return DOSSIERS_DOUTEUX.stream().anyMatch(d -> place.equals(d) || place.startsWith(d + "/"));
+    }
+
+    /** Raison de signaler une bibliothèque native : nom suspect (réglage du serveur), sinon celle du jeu (dossier). */
+    static String raisonNative(ScanReport.NativeEntry n, List<String> motifs) {
+        String lower = n.name().toLowerCase(Locale.ROOT);
+        for (String p : motifs) {
+            if (!p.isBlank() && lower.contains(p.toLowerCase(Locale.ROOT))) {
+                return "nom:" + p;
+            }
+        }
+        return n.reason();
     }
 
     private ScanAnalyzer() {
@@ -118,6 +145,9 @@ public final class ScanAnalyzer {
             out.add(new Finding(Severity.STRONG, "tamper:" + t, "anticheat modifié en mémoire : " + t));
         }
         for (String c : r.classHits) {
+            if (c.startsWith("#")) {
+                continue; // empreinte qui n'est pas une sonde de ce contrôle (traduite avant l'analyse par ScanManager)
+            }
             out.add(new Finding(Severity.STRONG, "class:" + c, "classe de triche connue présente : " + c));
         }
         for (String p : r.processHits) {
@@ -125,16 +155,17 @@ public final class ScanAnalyzer {
                     "programme de triche / d'injection ouvert sur le PC : " + p));
         }
         for (ScanReport.NativeEntry n : r.natives) {
-            if (!n.reason().isEmpty()) {
+            String raison = raisonNative(n, s.nativePatterns());
+            if (!raison.isEmpty()) {
                 out.add(new Finding(Severity.SUSPECT, "dll:" + n.name().toLowerCase(Locale.ROOT),
-                        "bibliothèque native chargée dans le jeu : " + n.name() + " (" + n.place() + ", " + n.reason() + ")"));
+                        "bibliothèque native chargée dans le jeu : " + n.name() + " (" + n.place() + ", " + raison + ")"));
             } else if (dansJavaDuJeu(n.place()) && !JDK_NATIF.matcher(n.name().toLowerCase(Locale.ROOT)).matches()) {
                 // une DLL glissée dans le dossier du Java du jeu (souvent celui du launcher) est chargée à la place de la vraie
                 out.add(new Finding(Severity.SUSPECT, "dll:jdk:" + n.name().toLowerCase(Locale.ROOT),
                         "bibliothèque inconnue dans le Java du jeu : " + n.name() + " (" + n.place() + ") : DLL ajoutée au Java ?"));
             }
         }
-        injection(r, out);
+        injection(r, s, out);
         if (r.unnamedThreads > 0) {
             // des threads sans nom qui exécutent du code inconnu : ce sont ceux du client injecté (Doomsday, 11/10)
             boolean actifs = r.origins.stream().anyMatch(o -> !(hasRef && ref.origins.contains(o.key()))
@@ -150,7 +181,7 @@ public final class ScanAnalyzer {
         mixins(r, ref, hasRef, official, out);
         code(r, ref, hasRef, out);
         if (baseline != null) {
-            sessionChanges(r, baseline, out);
+            sessionChanges(r, baseline, s, out);
         }
         for (String e : r.errors) {
             out.add(new Finding(Severity.INFO, "error:" + e, "étape du contrôle en échec : " + e));
@@ -159,8 +190,12 @@ public final class ScanAnalyzer {
         return out;
     }
 
-    /** Code natif injecté (relevé sous Windows par le jeu du joueur, voir InjectionCollector). */
-    private static void injection(ScanReport r, List<Finding> out) {
+    /**
+     * Code natif injecté (relevé sous Windows par le jeu du joueur, voir InjectionCollector). Overlays connus (réglage
+     * {@code scan.overlays}) ignorés, sauf chargés depuis un dossier où ils ne sont jamais (Temp, Téléchargements, Bureau,
+     * dossier du jeu) : nommer sa DLL « steam_… » ne suffit plus.
+     */
+    private static void injection(ScanReport r, Settings s, List<Finding> out) {
         for (String e : r.injection) {
             String[] p = e.split("\\|", -1);
             if (p[0].equals("thread") && p.length >= 2) {
@@ -168,9 +203,15 @@ public final class ScanAnalyzer {
                         "thread démarré hors de tout module (" + p[1] + ") : code natif injecté en mémoire (DLL cachée)"));
             } else if (p[0].equals("hook") && p.length >= 4) {
                 boolean cache = p[3].isEmpty();
+                String dossier = p.length >= 5 ? p[4] : "";
+                if (!cache && overlay(p[3], s) && !dossierDouteux(dossier)) {
+                    continue; // overlay connu à sa place (Discord, Steam, OBS…)
+                }
+                String ou = dossier.isEmpty() ? "" : " (" + dossier + ")";
                 out.add(new Finding(cache ? Severity.STRONG : Severity.SUSPECT, "inject:hook:" + p[1] + ":" + p[3],
                         "affichage détourné : " + p[1] + " saute vers " + (cache ? "du code injecté sans module (" + p[2] + ")"
-                                : "le module " + p[3] + " (overlay inconnu ou ESP)")));
+                                : "le module " + p[3] + ou + (overlay(p[3], s) ? " (nom d'overlay connu, mais dans un dossier"
+                                + " où les overlays ne sont jamais)" : " (overlay inconnu ou ESP)"))));
             }
         }
     }
@@ -269,6 +310,12 @@ public final class ScanAnalyzer {
             return;
         }
         for (ScanReport.FileEntry f : r.files) {
+            if (f.sha256().isEmpty() && f.origin().equals("modlist") && off != null && !off.knowsName(f.name())) {
+                // chargé par Forge mais pas haché (illisible ou trop gros) et inconnu du jeu officiel (02/11)
+                out.add(new Finding(Severity.STRONG, "file:nohash:" + f.name().toLowerCase(Locale.ROOT),
+                        "jar inconnu chargé par le launcher, impossible à vérifier : " + f.name() + " (" + human(f.size()) + ")"));
+                continue;
+            }
             if (f.origin().equals("agent") || f.sha256().isEmpty()
                     || (hasRef && ref.fileHashes.contains(f.sha256())) || (off != null && off.knowsFile(f.sha256()))) {
                 continue;
@@ -423,7 +470,7 @@ public final class ScanAnalyzer {
     }
 
     /** Ce qui n'était pas là au premier contrôle de la session. */
-    private static void sessionChanges(ScanReport r, Set<String> baseline, List<Finding> out) {
+    private static void sessionChanges(ScanReport r, Set<String> baseline, Settings s, List<Finding> out) {
         Set<String> now = inventory(r);
         Set<String> appeared = new TreeSet<>(now);
         appeared.removeAll(baseline);
@@ -467,7 +514,8 @@ public final class ScanAnalyzer {
                 }
                 // Programmes installés et dossier du jeu : un pilote ou un outil peut se charger tard (soupçon). Ailleurs
                 // (profil, Temp, Téléchargements, dossier quelconque), hors overlay connu : c'est la trace d'une injection.
-                boolean sure = javaDuJeu || place.startsWith("%PROGRAMFILES%") || place.startsWith("%JEU%") || overlay(what);
+                boolean sure = javaDuJeu || place.startsWith("%PROGRAMFILES%") || place.startsWith("%JEU%")
+                        || (overlay(what, s) && !dossierDouteux(place));
                 out.add(new Finding(sure ? Severity.SUSPECT : Severity.STRONG, "late:" + item,
                         "bibliothèque native chargée en cours de partie : " + what + (place.isEmpty() ? "" : " (" + place + ")")
                                 + (sure ? "" : " — injection probable")));
@@ -546,14 +594,18 @@ public final class ScanAnalyzer {
         return sb.toString();
     }
 
-    /** Overlays et outils légitimes qui se chargent dans les jeux (noms de DLL, en minuscules). */
-    private static final List<String> OVERLAYS = List.of("discord", "gameoverlayrenderer", "graphics-hook", "obs-",
-            "nvspcap", "nvinject", "rtss", "medal", "overwolf", "owclient", "rivatuner", "action_x64", "bdcam", "fraps",
-            "xsplit", "amdhook", "steam", "epicgames", "uplay", "galaxy", "radeon", "igo64", "eosovh");
+    /**
+     * Overlays et outils légitimes qui se chargent dans les jeux (noms de DLL, en minuscules), par défaut (le réglage
+     * {@code scan.overlays} les remplace). RenderDoc retiré le 02/11 : outil de capture graphique, pas un overlay de jeu.
+     */
+    static final List<String> OVERLAYS = List.of("discord", "gameoverlayrenderer", "graphics-hook", "obs-",
+            "nvspcap", "nvinject", "nvd3dum", "nvoglv", "rtsshooks", "rtss", "medal", "overwolf", "owclient", "rivatuner",
+            "action_x64", "bdcam", "fraps", "xsplit", "amdhook", "atidxx", "steam", "epicgames", "uplay", "galaxy",
+            "radeon", "igdumd", "igo64", "eosovh");
 
-    static boolean overlay(String dll) {
+    static boolean overlay(String dll, Settings s) {
         String n = dll.toLowerCase(Locale.ROOT);
-        return OVERLAYS.stream().anyMatch(n::contains);
+        return s.overlays().stream().anyMatch(o -> !o.isBlank() && n.contains(o));
     }
 
     static String sensitive(String target) {
