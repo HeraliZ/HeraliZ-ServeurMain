@@ -25,7 +25,11 @@ public class DoorChunkInvalidationHelper {
       }
    }
 
+   /** HeraliZ (02/11) : appelé à chaque tick du jeu par fr.heralisz.bunker.client.PartieClient, comme dans HBM. */
    public static void processPendingInvalidations() {
+      if (PENDING_INVALIDATIONS.isEmpty()) {
+         return;
+      }
       Minecraft mc = Minecraft.getInstance();
       if (mc.level != null && mc.levelRenderer != null) {
          BlockPos pos;
@@ -41,5 +45,11 @@ public class DoorChunkInvalidationHelper {
             }
          }
       }
+   }
+
+   /** HeraliZ (02/11) : tout oublier quand le monde du joueur change ou qu'il quitte le serveur. */
+   public static void vider() {
+      PENDING_INVALIDATIONS.clear();
+      PENDING_POSITIONS.clear();
    }
 }
