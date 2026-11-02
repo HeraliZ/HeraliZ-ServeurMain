@@ -33,6 +33,10 @@ import java.util.List;
  * du noyau), le joueur voit un écran d'attente au lieu de l'écran de déconnexion de Minecraft ; son jeu essaie de revenir
  * sur le même serveur 40 s après, puis toutes les 20 s, pendant 10 minutes (un échec pendant ce temps ramène à l'attente).
  * Bouton « Annuler » : écran titre.
+ * <p>Audit du 02/11, point 28 : seul un échec « serveur injoignable » (connexion refusée ou délai dépassé, serveur encore
+ * en train de démarrer ou de s'arrêter) ramène à l'attente. Toute autre raison (serveur plein, banni, VPN refusé, jeu pas à
+ * jour après une mise à jour...) arrête les essais et Minecraft la montre telle quelle ; avant, elle était cachée par
+ * « Reconnexion automatique dans … s » pendant 10 minutes.</p>
  */
 @Mod.EventBusSubscriber(modid = HeralizInterface.MODID, value = Dist.CLIENT)
 public final class Reconnexion {
@@ -68,11 +72,27 @@ public final class Reconnexion {
             prochainEssai = maintenant + PREMIER_ESSAI;
         } else if (jusqua == 0 || maintenant > jusqua) {
             return;
+        } else if (!injoignable(raison)) {
+            // vraie raison d'un refus : plus d'essai, Minecraft la montre
+            jusqua = 0;
+            return;
         } else {
             // essai raté pendant le redémarrage (serveur pas encore revenu) : on attend encore
             prochainEssai = maintenant + ENTRE_ESSAIS;
         }
         e.setNewScreen(new Ecran());
+    }
+
+    /** Raisons d'un échec qui veulent dire « le serveur n'est pas (encore) là » : connexion refusée, délai, fermeture. */
+    private static final java.util.Set<String> INJOIGNABLE = java.util.Set.of("disconnect.genericReason", "disconnect.timeout",
+            "disconnect.endOfStream", "disconnect.closed", "disconnect.lost", "multiplayer.disconnect.server_shutdown", "connect.failed");
+
+    /** Vrai si l'échec vient d'un serveur pas encore revenu (on réessaie) ; faux pour un vrai refus (on le montre). */
+    static boolean injoignable(Component raison) {
+        if (raison == null) return true;
+        if (raison.getContents() instanceof TranslatableContents tc) return INJOIGNABLE.contains(tc.getKey()) || CLE.equals(tc.getKey());
+        // Forge refuse les connexions tant que le serveur démarre : « Server is still starting! Please wait before reconnecting. »
+        return raison.getString().toLowerCase(java.util.Locale.ROOT).contains("still starting");
     }
 
     private static String cible() {
