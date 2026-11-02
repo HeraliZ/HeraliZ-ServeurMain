@@ -24,6 +24,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -38,7 +40,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,8 +52,12 @@ import java.util.UUID;
  * version, raison, date (ms), uuid, nom,
  * inventaire (Inventory.save), selection, curios (saveInventory(false), absent sans Curios),
  * sante, absorption, faim (FoodData), xpNiveau, xpProgres, xpTotal, effets (MobEffectInstance.save), mode (GameType),
- * dim, x, y, z, yaw, pitch, soif (IThirst.serializeNBT, absent sans le mod), brut (saveWithoutId, pour enquete)
+ * dim, x, y, z, yaw, pitch, soif (IThirst.serializeNBT, absent sans le mod), brut (saveWithoutId, pour enquete),
+ * a_cote (02/11 : objets tenus au curseur ou dans la grille 2 x 2 de l'inventaire au depot, absent s'il n'y en a pas)
  * </pre>
+ * Objets a vie (02/11, audit point 8) : rien ne tombe au sol au depot (curseur et grille gardes dans le depot), et un
+ * objet a vie qui n'est pas un pret du match retrouve dans l'inventaire du match au retour (rendu par HeraliZ Tactique
+ * apres une question « Jeter cet objet ? » restee ouverte, par exemple) est rendu avec le reste, jamais efface.
  * Ecriture : octets prepares en memoire, ecrits dans {@code <uuid>.dat.tmp}, synchronises sur le disque (fsync), relus
  * et compares, puis deplaces par ATOMIC_MOVE. Un depot illisible ou une restauration incomplete deplace le fichier dans
  * {@code coffres/enquete/} (jamais supprime). Fil serveur.
@@ -91,16 +99,26 @@ public final class Coffres {
             HeralizClashWar.LOG.info("[matchs] coffre refuse pour {} ({}) : {}", p.getGameProfile().getName(), raison, Coffre.Refus.VEHICULE);
             return false;
         }
-        // 1. fermer le conteneur ouvert (le contenu du menu revient dans l'inventaire ou tombe)
+        // 1. objets tenus au curseur et dans la grille 2 x 2 de l'inventaire : pris a part et gardes DANS le depot (02/11,
+        //    audit point 8 : la fermeture de l'ecran les rendait a l'inventaire, ou les jetait au sol s'il etait plein ;
+        //    un objet a vie etait alors mis de cote par Tactique, rendu dans l'inventaire du match et efface a la fin)
+        List<ItemStack> aCote = horsInventaire(p);
+        // puis fermer le conteneur ouvert (le contenu du menu revient dans l'inventaire ou tombe)
         p.closeContainer();
         // 2. forcer l'ecriture du sac (mixin addAdditionalSaveData de backpacked) : la copie brute sert aussi d'enquete
         CompoundTag brut = p.saveWithoutId(new CompoundTag());
         // 3. instantane
         CompoundTag t = instantane(p, raison, brut);
+        if (!aCote.isEmpty()) {
+            ListTag l = new ListTag();
+            for (ItemStack s : aCote) l.add(s.save(new CompoundTag()));
+            t.put("a_cote", l);
+        }
         // 4. disque (atomique, verifie) AVANT toute modification du joueur
         Path f = Coffre.fichier(p.getUUID());
         if (f == null || !ecrire(f, t)) {
             HeralizClashWar.LOG.error("[matchs] coffre de {} NON ecrit : joueur laisse intact", p.getGameProfile().getName());
+            rendreACote(p, aCote);
             return false;
         }
         // 5. seulement maintenant : vidage (malus d'ArkaniaZ compris : tous les effets partent)
@@ -180,6 +198,9 @@ public final class Coffres {
             enquete(f, "illisible");
             return false;
         }
+        // objets a vie arrives dans l'inventaire du match sans en etre des prets, et ce qui est au curseur ou dans la
+        // grille 2 x 2 (sauf les prets du match) : pris a part avant le vidage, rendus apres (02/11, audit point 8)
+        List<ItemStack> sauves = sauverAvantVidage(p);
         p.closeContainer();
         Descente.forcer(p);
         detacher(p);
@@ -196,6 +217,10 @@ public final class Coffres {
             ListTag c = t.getList("curios", Tag.TAG_COMPOUND);
             curiosOk = Compat.chargerCurios(p, c) || c.isEmpty();
         }
+        // objets tenus hors de l'inventaire au depot, puis ceux sauves du match
+        ListTag ac = t.getList("a_cote", Tag.TAG_COMPOUND);
+        for (int i = 0; i < ac.size(); i++) sauves.add(ItemStack.of(ac.getCompound(i)));
+        rendreACote(p, sauves);
         GameType mode = GameType.byId(t.getInt("mode"));
         p.setGameMode(mode);
         p.experienceProgress = t.getFloat("xpProgres");
@@ -235,6 +260,78 @@ public final class Coffres {
         }
         HeralizClashWar.LOG.info("[matchs] coffre de {} rendu ({})", p.getGameProfile().getName(), t.getString("raison"));
         return true;
+    }
+
+    /** Curseur et grille 2 x 2 de l'inventaire vides : leurs objets (rendus, a garder dans le depot). */
+    private static List<ItemStack> horsInventaire(ServerPlayer p) {
+        List<ItemStack> l = new ArrayList<>();
+        ItemStack curseur = p.containerMenu.getCarried();
+        if (!curseur.isEmpty()) {
+            l.add(curseur);
+            p.containerMenu.setCarried(ItemStack.EMPTY);
+        }
+        CraftingContainer grille = p.inventoryMenu.getCraftSlots();
+        for (int i = 0; i < grille.getContainerSize(); i++) {
+            ItemStack s = grille.removeItemNoUpdate(i);
+            if (!s.isEmpty()) l.add(s);
+        }
+        return l;
+    }
+
+    /**
+     * Avant le vidage du retour : les objets a vie de l'inventaire qui ne sont pas des prets du match, et tout ce qui est
+     * au curseur ou dans la grille 2 x 2 (les prets du match y sont jetes, comme ceux de l'inventaire). Rendus apres.
+     */
+    private static List<ItemStack> sauverAvantVidage(ServerPlayer p) {
+        List<ItemStack> l = new ArrayList<>();
+        for (ItemStack s : horsInventaire(p)) {
+            if (!Equipement.estPrete(s)) l.add(s);
+        }
+        Inventory inv = p.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (!s.isEmpty() && !Equipement.estPrete(s) && Tactical.estAVie(s)) {
+                l.add(s);
+                inv.setItem(i, ItemStack.EMPTY);
+            }
+        }
+        if (!l.isEmpty()) {
+            HeralizClashWar.LOG.info("[matchs] {} : {} objet(s) pris a part avant le vidage du retour (rendus apres)",
+                    p.getGameProfile().getName(), l.size());
+        }
+        return l;
+    }
+
+    /**
+     * Rend des objets pris a part : dans l'inventaire, sinon une case libre de la grille 2 x 2, sinon au curseur (la ou ils
+     * etaient), et seulement en tout dernier recours a ses pieds (journal).
+     */
+    private static void rendreACote(ServerPlayer p, List<ItemStack> objets) {
+        if (objets.isEmpty()) return;
+        CraftingContainer grille = p.inventoryMenu.getCraftSlots();
+        for (ItemStack s : objets) {
+            if (s.isEmpty()) continue;
+            p.getInventory().add(s);
+            if (s.isEmpty()) continue;
+            boolean pose = false;
+            for (int i = 0; i < grille.getContainerSize() && !pose; i++) {
+                if (grille.getItem(i).isEmpty()) {
+                    grille.setItem(i, s);
+                    pose = true;
+                }
+            }
+            if (!pose && p.containerMenu.getCarried().isEmpty()) {
+                p.containerMenu.setCarried(s);
+                pose = true;
+            }
+            if (!pose) {
+                HeralizClashWar.LOG.warn("[matchs] {} : inventaire, grille et curseur pleins, {} pose a ses pieds",
+                        p.getGameProfile().getName(), s.getHoverName().getString());
+                p.drop(s, false);
+            }
+        }
+        p.inventoryMenu.broadcastChanges();
+        p.containerMenu.broadcastChanges();
     }
 
     /** Retire le joueur de sa partie, du mode spectateur et efface son HUD de match. */

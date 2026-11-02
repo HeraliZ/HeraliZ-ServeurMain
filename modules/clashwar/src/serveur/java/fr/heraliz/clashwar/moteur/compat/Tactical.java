@@ -3,6 +3,7 @@ package fr.heraliz.clashwar.moteur.compat;
 import fr.heraliz.clashwar.HeralizClashWar;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.Capability;
 
 import java.lang.reflect.Method;
@@ -40,6 +41,30 @@ public final class Tactical {
             cap = null;
         }
         return cap != null;
+    }
+
+    private static Method estAVie;
+    private static boolean estAVieCherche;
+
+    /**
+     * Objet « a vie » de HeraliZ Tactique (couteaux, skins a vie : {@code fr.heraliz.tactique.avie.ObjetsAVie.estAVie},
+     * par reflexion, cherchee une seule fois) ; faux sans Tactique.
+     */
+    public static boolean estAVie(ItemStack s) {
+        if (s.isEmpty()) return false;
+        if (!estAVieCherche) {
+            estAVieCherche = true;
+            try {
+                estAVie = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("estAVie", ItemStack.class);
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                estAVie = null;
+            }
+        }
+        try {
+            return estAVie != null && (Boolean) estAVie.invoke(null, s);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
     }
 
     /** Remet a zero tous les temps de recharge des objets tactiques du joueur ; rend leur nombre. */
