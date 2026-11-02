@@ -28,6 +28,10 @@ jeu, et le bord de la case). Ils faisaient 14 à 14,75 px de profondeur : chaque
 aminci à PROFONDEUR (13,5 px) par amincir() : l'avant et l'arrière (fermoirs, coins, charnières, porte, pieds) gardent leur
 forme et se rapprochent chacun de moitié, seule la partie lisse du milieu (côtés, fond, couvercle) est raccourcie. Même
 dessin, juste moins profond ; les rendus de contrôle comparent avec les modèles d'avant.
+
+Faces confondues (03/11, scintillement vu en jeu sur le coffre-fort) : --installer refuse un modèle qui a deux faces dans
+le même plan, du même côté, qui se recouvrent (faces_confondues.py) ; --apercu les signale. Les pavés des prismes à 8 pans
+sont en gradins de ETAGE (0,05 px), les barres des poignées s'arrêtent à leurs pattes.
 """
 import argparse
 import math
@@ -40,7 +44,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import coeur_tc_rendus as cr  # noqa: E402  (matières en plus : bois, acier brut, laiton, or...)
 import explosifs as ex  # noqa: E402
-from explosifs import Cube, Decal, Os, bruit, col, fbm, masque_texte, melange  # noqa: E402
+from explosifs import FACES, Cube, Decal, Os, bruit, col, fbm, masque_texte, melange  # noqa: E402
 
 RACINE = Path(__file__).resolve().parents[1]
 ASSETS = RACINE / "src" / "client" / "resources" / "assets" / "crac"
@@ -291,22 +295,39 @@ class Modele:
         self.cubes.append(Cube(os_, a, b, mat, **k))
 
 
-def octogone_z(m, os_, cx, cy, z0, z1, ray, mat, prm=None):
-    """Prisme à 8 pans d'axe z (cadran, moyeu) : 4 pavés, rotations permises par les modèles de bloc (0, ±45)."""
+# Faces confondues (03/11, scintillement du coffre-fort vu en jeu) : deux faces dans le même plan, tournées du même côté et
+# qui se recouvrent sont départagées au hasard par la carte graphique, d'une image à l'autre et d'un pixel à l'autre. Les
+# quatre pavés d'un prisme à 8 pans avaient leurs bouts dans le même plan (cadran, anneau, moyeu du volant, charnières),
+# et les segments de la couronne du volant se recouvraient aux angles. Chaque pavé suivant a maintenant son bout en
+# retrait de ETAGE sur le précédent : le premier pavé reste devant partout où ils se recouvrent, ce que montraient déjà
+# les rendus validés (le premier pavé dessiné y gagnait). Écart invisible (1/320 de bloc), assez grand pour le tampon de
+# profondeur jusqu'à une cinquantaine de blocs, où la pièce ne fait plus que quelques pixels. Contrôle : faces_confondues.
+ETAGE = 0.05
+
+
+def octogone_z(m, os_, cx, cy, z0, z1, ray, mat, prm=None, sans_dos=False):
+    """Prisme à 8 pans d'axe z (cadran, moyeu) : 4 pavés, rotations permises par les modèles de bloc (0, ±45). Son avant
+    (z0) en gradins de ETAGE ; l'arrière est posé contre une pièce plus grande (porte, anneau). sans_dos : pas de face
+    arrière (cadran : contre l'anneau, dont les gradins laisseraient sinon voir ses faces arrière confondues)."""
     d = ray * math.tan(math.radians(22.5))
-    m.B(os_, (cx - ray, cy - d, z0), (cx + ray, cy + d, z1), mat, prm=prm)
-    m.B(os_, (cx - d, cy - ray, z0), (cx + d, cy + ray, z1), mat, prm=prm)
-    for ang in (45, -45):
-        m.B(os_, (cx - ray, cy - d, z0), (cx + ray, cy + d, z1), mat, rot=(0, 0, ang), pivot=(cx, cy, z0), prm=prm)
+    faces = tuple(f for f in FACES if f != "south") if sans_dos else FACES
+    m.B(os_, (cx - ray, cy - d, z0), (cx + ray, cy + d, z1), mat, prm=prm, faces=faces)
+    m.B(os_, (cx - d, cy - ray, z0 + ETAGE), (cx + d, cy + ray, z1), mat, prm=prm, faces=faces)
+    for k, ang in enumerate((45, -45)):
+        za = z0 + (2 + k) * ETAGE
+        m.B(os_, (cx - ray, cy - d, za), (cx + ray, cy + d, z1), mat, rot=(0, 0, ang), pivot=(cx, cy, za), prm=prm,
+            faces=faces)
 
 
 def octogone_y(m, os_, cx, cz, y0, y1, ray, mat, prm=None):
-    """Prisme à 8 pans d'axe y (charnières)."""
+    """Prisme à 8 pans d'axe y (charnières) : ses deux bouts (dessus, dessous) en gradins de ETAGE."""
     d = ray * math.tan(math.radians(22.5))
     m.B(os_, (cx - ray, y0, cz - d), (cx + ray, y1, cz + d), mat, prm=prm)
-    m.B(os_, (cx - d, y0, cz - ray), (cx + d, y1, cz + ray), mat, prm=prm)
-    for ang in (45, -45):
-        m.B(os_, (cx - ray, y0, cz - d), (cx + ray, y1, cz + d), mat, rot=(0, ang, 0), pivot=(cx, y0, cz), prm=prm)
+    m.B(os_, (cx - d, y0 + ETAGE, cz - ray), (cx + d, y1 - ETAGE, cz + ray), mat, prm=prm)
+    for k, ang in enumerate((45, -45)):
+        e = (2 + k) * ETAGE
+        m.B(os_, (cx - ray, y0 + e, cz - d), (cx + ray, y1 - e, cz + d), mat, rot=(0, ang, 0), pivot=(cx, y0 + e, cz),
+            prm=prm)
 
 
 def pochoir(lignes, haut=90, flou=2.2, ratio=None):
@@ -419,9 +440,9 @@ def malle_chantier():
     # sangles d'acier sur la face avant et les côtés
     for x0 in (7.4, 23.0):
         B("corps", (x0, 1.0, 2.2), (x0 + 1.6, 10.0, 2.5), "acier_coin", faces=("north", "east", "west"))
-    # poignées de toile sur les côtés (avec leurs pattes)
+    # poignées de toile sur les côtés (avec leurs pattes) ; la toile s'arrête aux pattes (03/11 : elle les traversait)
     for x0, x1 in ((0.15, 1.0), (31.0, 31.85)):
-        B("corps", (x0, 6.2, 6.0), (x1, 6.9, 12.0), "toile")
+        B("corps", (x0, 6.2, 6.4), (x1, 6.9, 11.6), "toile")
         for z0 in (5.6, 11.6):
             B("corps", (x0 - 0.05 if x0 < 1 else x0, 5.6, z0), (x1 + 0.05 if x1 > 31 else x1, 7.5, z0 + 0.8),
               "acier_coin", prm={"rivets": False})
@@ -482,8 +503,8 @@ def casier_metallique():
     B("porte", (4.8, 8.6, 2.25), (11.2, 11.4, 2.45), "laiton")                        # porte-étiquette
     B("porte", (5.2, 8.8, 2.2), (10.8, 11.2, 2.25), "papier", faces=("north",),
       decals=(decal_nord(carte, 5.2, 10.8, 11.2, 8.8, 2.2, col(30, 30, 34), 0.92),))
-    for y0 in (5.0, 15.0, 25.0):                                                      # charnières (nœuds)
-        B("porte", (14.6, y0, 2.3), (15.2, y0 + 2.2, 3.0), "acier_brut")
+    for y0 in (5.0, 15.0, 25.0):                                # charnières (nœuds), dos en retrait de la porte (03/11)
+        B("porte", (14.6, y0, 2.3), (15.2, y0 + 2.2, 3.0 - ETAGE), "acier_brut")
     return amincir(m, 3.0, 14.75)   # avant : la porte ; arrière : le dos
 
 
@@ -517,9 +538,9 @@ def caisse_armes():
     for x0 in (3.4, 26.8):
         B("corps", (x0, 7.0, 2.2), (x0 + 1.8, 9.9, 2.5), "acier_noir")
         B("corps", (x0 + 0.25, 7.3, 1.85), (x0 + 1.55, 9.7, 2.2), "violet_anodise")
-    # poignées repliables sur les côtés
+    # poignées repliables sur les côtés ; la barre s'arrête à ses pattes (03/11 : elle les traversait, faces confondues)
     for x0, x1 in ((0.25, 1.0), (31.0, 31.75)):
-        B("corps", (x0, 7.0, 6.2), (x1, 7.7, 11.8), "acier_noir")
+        B("corps", (x0, 7.0, 6.9), (x1, 7.7, 11.1), "acier_noir")
         for z0 in (6.2, 11.1):
             B("corps", (x0, 6.2, z0), (x1, 8.2, z0 + 0.7), "acier_noir")
     for txt, x0, x1 in ((["ARMES"], 18.6, 26.0), (["HZ · 07"], 6.0, 13.4)):
@@ -587,10 +608,10 @@ def coffre_fort():
       decals=(decal_nord(plaque, 3.6, 12.4, 27.15, 24.65, 1.85, col(46, 34, 14), 0.95),))
     # cadran (anneau doré, face graduée)
     octogone_z(m, "porte", 8.0, 19.6, 1.55, 2.0, 2.45, "plaque_or")
-    octogone_z(m, "porte", 8.0, 19.6, 1.35, 1.55, 2.05, "cadran", prm={"c": (8.0, 19.6), "r": 2.05})
+    octogone_z(m, "porte", 8.0, 19.6, 1.35, 1.55, 2.05, "cadran", prm={"c": (8.0, 19.6), "r": 2.05}, sans_dos=True)
     # volant : moyeu, 4 branches et couronne à 8 pans
     cx, cy, R_ = 8.0, 12.6, 3.0
-    octogone_z(m, "volant", cx, cy, 1.0, 2.0, 0.9, "plaque_or")
+    octogone_z(m, "volant", cx, cy, 1.0, 2.0, 0.9, "plaque_or", sans_dos=True)   # moyeu : dos contre la porte
     for ang in (45, -45):
         m.B("volant", (cx - R_, cy - 0.28, 1.3), (cx + R_, cy + 0.28, 1.75), "plaque_or", rot=(0, 0, ang),
             pivot=(cx, cy, 1.3))
@@ -600,11 +621,13 @@ def coffre_fort():
         px, py = cx + R_ * math.cos(a), cy + R_ * math.sin(a)
         tang = (k * 45 + 90) % 180
         tang = tang - 180 if tang > 90 else tang                     # 0, 45, 90 ou -45
+        # segments en biais en retrait de ETAGE devant et derrière : aux angles, le segment droit passe devant (03/11)
+        e = ETAGE if tang not in (0, 90) else 0.0
         if tang == 90:
             m.B("volant", (px - 0.3, py - cote / 2, 1.05), (px + 0.3, py + cote / 2, 1.85), "plaque_or")
         else:
-            m.B("volant", (px - cote / 2, py - 0.3, 1.05), (px + cote / 2, py + 0.3, 1.85), "plaque_or",
-                rot=(0, 0, tang) if tang else None, pivot=(px, py, 1.05) if tang else None)
+            m.B("volant", (px - cote / 2, py - 0.3, 1.05 + e), (px + cote / 2, py + 0.3, 1.85 - e), "plaque_or",
+                rot=(0, 0, tang) if tang else None, pivot=(px, py, 1.05 + e) if tang else None)
     return amincir(m, 4.6, 13.2)   # avant : porte, cadre, pieds ; arrière : dos, pieds
 
 
@@ -1144,9 +1167,26 @@ public final class CoffresDonnees {{
 """
 
 
+def controler(coffres, arreter=True):
+    """Aucune face confondue (scintillement) : coffre fermé, coffre ouvert (sans ses pièces mobiles), pièces mobiles
+    (dessinées ensemble pendant l'ouverture : le volant sur la porte). arreter=False : seulement signalé (rendus)."""
+    import faces_confondues as fc
+    for cf in coffres:
+        corps = cf.groupes["corps"]
+        mobiles = [e for o, els in cf.groupes.items() if o != "corps" for e in els]
+        for nom, els in ((f"{cf.m.nom} fermé", corps + mobiles), (f"{cf.m.nom} ouvert", corps),
+                         (f"{cf.m.nom} pièces mobiles", mobiles)):
+            res = fc.recouvrements(els)
+            if res and arreter:
+                raise SystemExit(fc.texte(nom, els, res))
+            if res:
+                print(fc.texte(nom, els, res))
+
+
 def installer(coffres):
     import json
     import adossement
+    controler(coffres)
     for cf in coffres:
         m = cf.m
         tex = f"crac:block/{m.nom}"
@@ -1270,6 +1310,7 @@ def main():
             continue
         cf = Coffre(fab())
         coffres.append(cf)
+        controler([cf], arreter=False)
         nom, cont = noms[cf.m.nom]
         planche_coffre(cf, dossier, nom, cont)
         if not args.sans_gif:
