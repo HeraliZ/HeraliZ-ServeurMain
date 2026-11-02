@@ -228,7 +228,7 @@ Rien de tout cela n'a été testé en jeu.
   direct ; ticks en médiane, 95 % et 99 % comparés aux objectifs 30 / 40 / 50 ms).
 - Bases : les brindilles ne coûtent plus d'entretien (la première base disparaissait en 30 min), 15 planches dans le
   matériel de la première base, et le Bâtisseur vend l'armoire (250, si elle est perdue), la caisse en métal (300) et le
-  cœur de clan (1 000 ; avant : créatif seulement). CRac garde ses règles (une armoire par joueur, un cœur par clan).
+  cœur de clan (1 000, 5 000 depuis le 02/11 ; avant : créatif seulement). CRac garde ses règles (une armoire par joueur, un cœur par clan).
 - Fabrication : compilation des mixins toujours complète (une compilation partielle avait oublié la table de
   correspondance de `monde`).
 

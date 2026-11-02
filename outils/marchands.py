@@ -59,7 +59,7 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
     # CRac garde ses règles : une armoire par joueur, un cœur par clan, posés seulement dans sa base.
     ("crac:claim_block", 250),    # 28/10 : prix réglé en jeu le 24/10, repris comme base (avant 500)
     ("crac:metal_crate", 300),
-    ("crac:coeur_clan", 1000),
+    ("crac:coeur_clan", 5000),    # 02/11 (choix du propriétaire, A322) : 5 000 au lieu de 1 000, jugé trop bon marché
 ]
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
