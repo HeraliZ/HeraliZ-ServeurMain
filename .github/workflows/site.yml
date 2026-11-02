@@ -8,7 +8,9 @@
 # - securite : fail2ban contre les essais de mots de passe SSH, LLMNR coupé (site/vm/securite.sh, aussi à la fin
 #   d'« installer ») ;
 # - mot_de_passe : change le mot de passe SSH de la VM pour celui du secret SITE_SSH_MDP_NOUVEAU
-#   (site/vm/mot_de_passe.sh), vérifie qu'il marche, puis dit de le recopier dans SITE_SSH_MDP.
+#   (site/vm/mot_de_passe.sh), vérifie qu'il marche, puis dit de le recopier dans SITE_SSH_MDP ;
+# - nouvelle_cle_pb : change la clé des Points Boutique du serveur de jeu (site/vm/nouvelle_cle_pb.sh) si elle a pu
+#   fuiter ; l'ancienne reste acceptée 7 jours au plus, le temps de la mise en ligne et du redémarrage du serveur.
 # Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ
 
@@ -24,9 +26,9 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban) ; mot_de_passe : remplacer le mot de passe SSH de la VM par le secret SITE_SSH_MDP_NOUVEAU"
+        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban) ; mot_de_passe : remplacer le mot de passe SSH de la VM par le secret SITE_SSH_MDP_NOUVEAU ; nouvelle_cle_pb : changer la clé des Points Boutique du serveur de jeu (si elle a pu fuiter)"
         type: choice
-        options: [verifier, installer, theme, securite, mot_de_passe]
+        options: [verifier, installer, theme, securite, mot_de_passe, nouvelle_cle_pb]
         default: verifier
 
 permissions:
@@ -561,6 +563,16 @@ jobs:
             fi
             echo "- anti-robot du bouton « Voter » : le captcha Turnstile de l'administration (Paramètres → Sécurité) ; s'il n'est pas réglé, voir l'avertissement « Votes » de l'étape « Sur la VM »"
             echo "- une même connexion qui vote pour 3 comptes ou plus en 24 h est signalée dans le salon privé des comptes (Discord)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Nouvelle clé des Points Boutique
+        if: success() && env.ACTION == 'nouvelle_cle_pb'
+        run: |
+          {
+            echo "### Clé des Points Boutique changée ✅"
+            echo "- l'ancienne clé reste acceptée par le site **7 jours au plus**, et seulement jusqu'à ce que le serveur de jeu se serve de la nouvelle"
+            echo "- **à faire maintenant** : Actions → « Serveur HeraliZ » → *Run workflow* avec la case **redemarrer** (la mise en ligne écrit la nouvelle clé sur le Ptero, le redémarrage la fait lire au serveur de jeu)"
+            echo "- en attendant, /boutique et /trade marchent avec l'ancienne clé ; après le redémarrage, quelqu'un qui aurait volé l'ancienne ne peut plus rien faire"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Résumé
