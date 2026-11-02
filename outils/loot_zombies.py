@@ -66,6 +66,13 @@ def soin(cid):
     return "heralisz_tactical:consumable", '{ConsumableId:"%s"}' % cid
 
 
+# 02/11 (choix du propriétaire) : la nourriture des zombies suit la même règle d'état que celle des conteneurs : sans
+# état écrit dans la table, le serveur le tire (EtatNourriture de HeraliZ Loot : bonne, pourrie ou périmée, un tiers
+# chacune, donc bonne une fois sur trois). True : toujours en bon état ({FoodState:0}, comme avant le 02/11).
+NOURRITURE_TOUJOURS_BONNE = False
+NOURRITURE_NBT = "{FoodState:0}" if NOURRITURE_TOUJOURS_BONNE else None
+
+
 def lignes(familles):
     """[(objet, nbt, nombre, pour 100)] à partir de {famille: (pour 100, [(objet, nbt, nombre, poids relatif)])}."""
     out = []
@@ -113,8 +120,8 @@ TABLES = {
         "construction": (4.0, [(C + "corde", None, [1, 1], 1), (C + "clou", None, [1, 1], 1.5), (C + "sac_ciment", None, [1, 1], 0.2)]),
         "munitions": (10.0, [munition("tacz:9mm", [3, 8]) + (3,), munition("tacz:45acp", [3, 6]) + (1,), munition("tacz:12g", [2, 4]) + (1,)]),
         "soins": (3.0, [soin("heralisz_heal:bandage") + ([1, 1], 1)]),
-        "nourriture": (5.0, [("geckolib:food_sardines", "{FoodState:0}", [1, 1], 1), ("geckolib:food_tuna", "{FoodState:0}", [1, 1], 1),
-                             ("geckolib:food_deez", "{FoodState:0}", [1, 1], 1)]),
+        "nourriture": (5.0, [("geckolib:food_sardines", NOURRITURE_NBT, [1, 1], 1), ("geckolib:food_tuna", NOURRITURE_NBT, [1, 1], 1),
+                             ("geckolib:food_deez", NOURRITURE_NBT, [1, 1], 1)]),
         "plaques": (0.50, [(C + "plaque_identite", None, [1, 1], 1)]),
         "capsules": (0.50, [("heralizcasino:jeton_1", None, [1, 1], 1)]),
         "kits": (0.60, [("heraliz_usure:kit_fortune", None, [1, 1], 1)]),
@@ -133,7 +140,7 @@ TABLES = {
         "munitions": (14.0, [munition("tacz:9mm", [4, 10]) + (2,), munition("tacz:556x45", [3, 8]) + (2,), munition("tacz:762x39", [3, 6]) + (1,),
                             munition("tacz:12g", [2, 5]) + (1,)]),
         "soins": (4.0, [soin("heralisz_heal:bandage") + ([1, 1], 2), soin("heralisz_heal:attelle") + ([1, 1], 1)]),
-        "nourriture": (4.0, [("geckolib:food_mre", "{FoodState:0}", [1, 1], 1)]),
+        "nourriture": (4.0, [("geckolib:food_mre", NOURRITURE_NBT, [1, 1], 1)]),
         "plaques": (6.0, [(C + "plaque_identite", None, [1, 1], 1)]),
         "grenades": (0.40, [("heralisz_tactical:throwable", '{ThrowableId:"heralisz_grenade:smoke_grenade"}', [1, 1], 1),
                             ("heralisz_tactical:throwable", '{ThrowableId:"heralisz_grenade:flash_grenade"}', [1, 1], 1)]),
