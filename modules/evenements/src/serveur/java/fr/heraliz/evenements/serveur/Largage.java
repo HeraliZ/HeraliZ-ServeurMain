@@ -235,7 +235,9 @@ final class Largage implements Evenement {
             if (maintenant >= lancementMs) decoller(server);
             return;
         }
-        if (maintenant > finMs) {
+        // 02/11 (audit mods-2 §10) : la caisse disparaît maintenant à l'heure, même loin de tout joueur ; l'événement reste
+        // ouvert tant qu'elle est là (une caisse atterrie tard garde ses points jusqu'à sa disparition)
+        if (maintenant > finMs && !fr.heraliz.airstrike.entity.SupplyCrateEntityServeur.caisseEnAttente(server.overworld(), idCourant)) {
             Outils.journal(idCourant + " : caisse pas ouverte a temps (secteur " + secteur + ")");
             Etat.fermer(idCourant);
             idCourant = null;

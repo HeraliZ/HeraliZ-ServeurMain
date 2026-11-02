@@ -237,8 +237,10 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
 - **Lieux posés par le staff** (facultatif depuis le tirage au hasard) : `/event point ajouter largage <nom>` (sol dégagé,
   pas dans l'eau, loin des bases), utilisés seulement avec `"lieux": "poses"` ou `"les_deux"`.
 - **Sans joueur près du lieu** : la zone visée reste chargée 2 min 30 (ticket de `StrikeManager`), la caisse apparaît
-  donc toujours ; ensuite elle attend (au sol, ou figée en l'air si elle tombait encore) qu'un joueur s'approche. Ses
-  20 min avant de disparaître ne comptent que zone chargée. Les points ne sont plus donnés 23 min après le lancement.
+  donc toujours ; ensuite elle attend (au sol, ou figée en l'air si elle tombait encore) qu'un joueur s'approche. Depuis
+  le 02/11, sa fumée et ses 20 min avant de disparaître se comptent à l'heure, que la zone soit chargée ou non, même sans
+  joueur à 16 blocs (avant : figées, elle fumait et restait pour toujours) ; une caisse dans une zone déchargée disparaît
+  dès que la zone se recharge. Les points sont donnés tant que la caisse est là (au moins 23 min après le lancement).
 - **Essai sur le serveur de test (25/10, sans joueur, annonce raccourcie à 2 min)** : point tiré au hasard, annonce et
   rappel avec les coordonnées, départ de l'avion au bon moment, agenda `/event` toutes les 3 h 30, arrêt propre ; la chute,
   l'ouverture de la caisse, l'objet dedans et sa revente restent à voir en jeu.

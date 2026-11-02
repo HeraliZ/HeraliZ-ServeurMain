@@ -54,7 +54,8 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
 
     @Override
     void poseServeur() {
-        if (smokeTicks > 0 && --smokeTicks == 0) entityData.set(SMOKING, false);
+        horloge(level().getGameTime());
+        if (isRemoved()) return;
         if (fillDirty && tickCount % 5 == 0) updateFill();
         long at = getOpenAt();
         if (opener != null && at >= 0 && level().getGameTime() - at >= REVEAL_TICKS) {
@@ -65,15 +66,84 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
                 ouvrirContenu(p);
             }
         }
-        if (despawnTicks > 0 && --despawnTicks == 0) discard();
+    }
+
+    // ---------------------------------------------------------------- fumée et disparition en heure réelle (02/11)
+    /**
+     * Fin de la fumée et disparition de la caisse posée, en temps de jeu du monde (02/11, audit mods-2 §10) : avant, comptées
+     * en ticks de la caisse ; or sous Mohist une caisse posée sans joueur à 16 blocs n'est plus mise à jour : elle fumait et
+     * restait pour toujours, alors que le Directeur fermait l'événement à l'heure. Le serveur les contrôle maintenant chaque
+     * seconde ({@link #chaqueSeconde}), que la caisse soit mise à jour ou non ; une caisse dans un tronçon déchargé disparaît
+     * dès qu'il se recharge. -1 : pas de fin.
+     */
+    private long fumeeJusqua = -1, disparaitA = -1;
+    /** Caisses posées présentes dans un monde chargé. Fil serveur. */
+    private static final java.util.Set<SupplyCrateEntityServeur> POSEES =
+            java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    /** Fin (temps de jeu) des caisses d'un événement pas encore ouvert, même dans un tronçon déchargé (Largage). */
+    private static final java.util.Map<String, Long> FINS_EVENEMENT = new java.util.HashMap<>();
+
+    private void horloge(long maintenant) {
+        if (fumeeJusqua >= 0 && maintenant >= fumeeJusqua) {
+            fumeeJusqua = -1;
+            entityData.set(SMOKING, false);
+        }
+        if (disparaitA >= 0 && maintenant >= disparaitA) {
+            disparaitA = -1;
+            discard();
+        }
+    }
+
+    /** Une fois par seconde (ServerEvents) : fumée et disparition des caisses posées, mises à jour ou non. Rien sans caisse. */
+    public static void chaqueSeconde() {
+        if (POSEES.isEmpty()) return;
+        for (SupplyCrateEntityServeur c : new java.util.ArrayList<>(POSEES)) {
+            if (!c.isRemoved()) c.horloge(c.level().getGameTime());
+        }
+    }
+
+    /** Arrêt du serveur : tout oublier. */
+    public static void oublier() {
+        POSEES.clear();
+        FINS_EVENEMENT.clear();
+    }
+
+    /**
+     * La caisse de cet événement (« largage#12 ») est-elle encore là, pas ouverte, avant sa disparition ? (HeraliZ
+     * Événements : l'événement reste ouvert tant qu'elle existe.)
+     */
+    public static boolean caisseEnAttente(ServerLevel level, String evenement) {
+        Long fin = FINS_EVENEMENT.get(evenement);
+        if (fin == null) return false;
+        if (level.getGameTime() < fin) return true;
+        FINS_EVENEMENT.remove(evenement);
+        return false;
+    }
+
+    private void suivre() {
+        if (level().isClientSide || !isLanded() || isRemoved()) return;
+        POSEES.add(this);
+        if (evenement != null && disparaitA >= 0) FINS_EVENEMENT.put(evenement, disparaitA);
+    }
+
+    @Override
+    public void onAddedToWorld() {
+        super.onAddedToWorld();
+        suivre();
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        super.onRemovedFromWorld();
+        POSEES.remove(this);
+        RemovalReason r = getRemovalReason();
+        if (evenement != null && r != null && r.shouldDestroy()) FINS_EVENEMENT.remove(evenement);
     }
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     @Nullable
     private ResourceLocation lootTable;
     private long lootSeed;
-    private int smokeTicks;
-    private int despawnTicks;
     /** Player who broke the crate open: the inventory opens for him at the end of the animation. */
     @Nullable
     private java.util.UUID opener;
@@ -151,9 +221,12 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
         ResourceLocation rl = ResourceLocation.tryParse(AirstrikeConfig.SUPPLY_LOOT_TABLE.get());
         lootTable = rl;
         lootSeed = random.nextLong();
-        smokeTicks = AirstrikeConfig.SUPPLY_SMOKE_SECONDS.get() * 20;
-        despawnTicks = AirstrikeConfig.SUPPLY_DESPAWN_MINUTES.get() * 1200;
-        entityData.set(SMOKING, smokeTicks > 0);
+        int fumee = AirstrikeConfig.SUPPLY_SMOKE_SECONDS.get() * 20, duree = AirstrikeConfig.SUPPLY_DESPAWN_MINUTES.get() * 1200;
+        long maintenant = server.getGameTime();
+        fumeeJusqua = fumee > 0 ? maintenant + fumee : -1;
+        disparaitA = duree > 0 ? maintenant + duree : -1;
+        entityData.set(SMOKING, fumee > 0);
+        suivre();
         // the crate's own smoke pot takes over from the target marker
         for (EffectCloudEntity marker : server.getEntitiesOfClass(EffectCloudEntity.class, getBoundingBox().inflate(24),
                 e -> e.getKind() == EffectCloudEntity.MARKER)) {
@@ -212,6 +285,7 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
                 if (evenement != null) {
                     String ev = evenement;
                     evenement = null;   // une seule fois, même si la caisse est rechargée
+                    FINS_EVENEMENT.remove(ev);
                     prevenirEvenement(player, ev);
                 }
             } else if (level().getGameTime() - at >= REVEAL_TICKS) {
@@ -322,9 +396,13 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
         ContainerHelper.loadAllItems(tag, items);
         lootTable = tag.contains("LootTable") ? ResourceLocation.tryParse(tag.getString("LootTable")) : null;
         lootSeed = tag.getLong("LootSeed");
-        smokeTicks = tag.getInt("SmokeTicks");
-        despawnTicks = tag.getInt("DespawnTicks");
-        entityData.set(SMOKING, smokeTicks > 0);
+        // fins en temps de jeu (02/11) ; une caisse enregistrée avant gardait des ticks restants : convertis
+        long maintenant = level().getGameTime();
+        fumeeJusqua = tag.contains("FumeeJusqua") ? tag.getLong("FumeeJusqua")
+                : tag.getInt("SmokeTicks") > 0 ? maintenant + tag.getInt("SmokeTicks") : -1;
+        disparaitA = tag.contains("DisparaitA") ? tag.getLong("DisparaitA")
+                : tag.getInt("DespawnTicks") > 0 ? maintenant + tag.getInt("DespawnTicks") : -1;
+        entityData.set(SMOKING, fumeeJusqua >= 0 && maintenant < fumeeJusqua);
         entityData.set(OPEN_AT, tag.contains("OpenAt") ? tag.getLong("OpenAt") : -1L);
         entityData.set(FILL_MAX, tag.getInt("FillMax"));
         evenement = tag.contains("Evenement") ? tag.getString("Evenement") : null;
@@ -341,8 +419,8 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
             tag.putString("LootTable", lootTable.toString());
             tag.putLong("LootSeed", lootSeed);
         }
-        tag.putInt("SmokeTicks", smokeTicks);
-        tag.putInt("DespawnTicks", despawnTicks);
+        tag.putLong("FumeeJusqua", fumeeJusqua);
+        tag.putLong("DisparaitA", disparaitA);
         if (getOpenAt() >= 0) tag.putLong("OpenAt", getOpenAt());
         tag.putInt("FillMax", entityData.get(FILL_MAX));
         if (evenement != null) tag.putString("Evenement", evenement);

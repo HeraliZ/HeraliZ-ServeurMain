@@ -22,6 +22,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  */
 public final class ServerEvents {
 
+        private static int ticksServeur;
+
+        /** Une fois par seconde : fumée et disparition des caisses de largage posées, en heure réelle (02/11). */
+        @SubscribeEvent
+        public static void onServerTick(TickEvent.ServerTickEvent event) {
+            if (event.phase == TickEvent.Phase.END && ++ticksServeur % 20 == 0) {
+                fr.heraliz.airstrike.entity.SupplyCrateEntityServeur.chaqueSeconde();
+            }
+        }
+
         @SubscribeEvent
         public static void onLevelTick(TickEvent.LevelTickEvent event) {
             if (event.phase == TickEvent.Phase.END && event.level instanceof ServerLevel level) {
@@ -75,5 +85,6 @@ public final class ServerEvents {
         @SubscribeEvent
         public static void onStopped(ServerStoppedEvent event) {
             StrikeManager.clear();
+            fr.heraliz.airstrike.entity.SupplyCrateEntityServeur.oublier();
         }
     }
