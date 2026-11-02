@@ -30,15 +30,22 @@ public final class Txt {
         return sb.toString();
     }
 
-    /** The component of an encoded message (see {@link #k}); any other text is shown as it is. */
+    /**
+     * The component of an encoded message (see {@link #k}); any other text is shown as it is.
+     * <p>HeraliZ (03/11) : seule la clé (avant le premier {@link #SEP}) doit être un mot sans espace ; avant, un argument
+     * avec une espace (« 16 brindilles », « Sheet Metal », le nom d'une carrière) faisait montrer le message brut au
+     * joueur, séparateur compris (dessiné « US ») : « crac.build.needUS16 brindilles ».
+     */
     public static MutableComponent c(@Nullable String msg) {
         if (msg == null || msg.isEmpty()) {
             return Component.empty();
         }
-        if (!msg.startsWith("crac.") || msg.indexOf(' ') >= 0) {
-            return Component.literal(msg);
-        }
         int sep = msg.indexOf(SEP);
+        String key = sep < 0 ? msg : msg.substring(0, sep);
+        if (!key.startsWith("crac.") || key.indexOf(' ') >= 0) {
+            // jamais le séparateur à l'écran (Minecraft le dessine comme un petit « US »)
+            return Component.literal(sep < 0 ? msg : msg.replace(SEP, ' '));
+        }
         if (sep < 0) {
             return Component.translatable(msg);
         }
