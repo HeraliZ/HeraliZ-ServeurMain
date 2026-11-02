@@ -272,9 +272,21 @@ final class Marchands {
             String nom = rang < 0 ? "commun" : rang == 5 ? "mythique" : Ponts.RARETES.get(rang);
             Long v = r.prix().get(nom);
             if (v == null && rang == 5) v = r.prix().get("unique");
-            return v == null ? 0 : Math.max(0, v);
+            long prix = v == null ? 0 : Math.max(0, v);
+            return r.selonEtatMin() >= 0 ? selonEtat(prix, Recyclage.etatPct(s), r.selonEtatMin()) : prix;
         }
         return 0;
+    }
+
+    /**
+     * Prix d'un objet selon son état (02/11, choix du propriétaire : Mila rachetait une arme ruinée au prix d'une neuve) :
+     * prix x état (usure d'une arme TaCZ, durabilité, 100 % sinon), jamais moins de {@code minPct} % du prix, 1 héral au
+     * moins. Une arme à 50 % se revend moitié prix ; à 0 %, 10 % du prix avec {@code minPct} = 10.
+     */
+    static long selonEtat(long prix, int etatPct, int minPct) {
+        if (prix <= 0) return 0;
+        int pct = Math.max(minPct, Math.min(100, etatPct));
+        return Math.max(1, Math.round(prix * pct / 100.0));
     }
 
     private static final Map<Defs.ArticleDef, ItemStack> CACHE = new HashMap<>();

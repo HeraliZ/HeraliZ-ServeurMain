@@ -65,7 +65,9 @@ Règles décidées par le serveur (pour éviter la triche) :
   marchands le vendent), et le recycleur refuse de le recycler si, en moyenne, ça rapporterait plus que cette moitié ;
   un objet **reçu par un échange** n'est jamais racheté ni recyclé, et ne peut pas être donné dans un autre échange (pas
   de chaînes ni de boucles : l'éditeur refuse l'échange et dit pourquoi). Contrôle des fichiers :
-  `python outils/marchands.py --controle`.
+  `python outils/marchands.py --controle` ;
+- une règle de rachat peut suivre l'état de l'objet (02/11, armes de Mila) : `"selon_etat_min": 10` = prix × état de
+  l'objet (usure d'une arme, durabilité), jamais moins de 10 % du prix ; sans cette clé, prix plein quel que soit l'état.
 
 ## 1. Poser un PNJ
 

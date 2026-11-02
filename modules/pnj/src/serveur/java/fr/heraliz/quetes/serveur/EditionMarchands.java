@@ -135,6 +135,7 @@ final class EditionMarchands {
                 JsonObject prix = new JsonObject();
                 r.prix().forEach(prix::addProperty);
                 j.add("prix", prix);
+                if (r.selonEtatMin() >= 0) j.addProperty("selon_etat_min", r.selonEtatMin());
                 l.add(j);
             }
             o.add("rachat", l);
@@ -282,7 +283,7 @@ final class EditionMarchands {
                 Map<String, Long> prix = new LinkedHashMap<>(g.prix());
                 prix.remove("unique");
                 prix.put(RARETES.get(r.rarete()), r.prix());
-                m.regles.set(r.index(), new Defs.Regle(g.tag(), prix));
+                m.regles.set(r.index(), new Defs.Regle(g.tag(), prix, g.selonEtatMin()));
                 quoi = g.tag() + " " + RARETES.get(r.rarete()) + " -> " + r.prix();
             }
             case Reseau.Modif.AJOUTER_REGLE -> {

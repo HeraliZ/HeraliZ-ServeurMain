@@ -67,6 +67,10 @@ RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
 # carte, à petits prix : toujours moins que les composants qu'il faut pour les fabriquer à la Table d'armurier (pas
 # d'argent en boucle), et jamais un objet qu'un marchand vend (exclu par le serveur).
 RACHAT_ARMES = {"commun": 15, "peu_commun": 30, "rare": 60, "epique": 120, "legendaire": 250, "mythique": 500}
+# 02/11 (choix du propriétaire) : une arme est rachetée selon son état (usure) : prix x état, jamais moins de ce
+# pourcentage du prix (clé « selon_etat_min » de la règle, Marchands.selonEtat de HeraliZ Quêtes). Avant : une arme à 0 %
+# se vendait au prix d'une neuve. Le contrôle des 50 % ci-dessous compte le prix plein (arme neuve), la borne haute.
+RACHAT_ARMES_ETAT_MIN = 10
 RACHAT_ARMURES = {"commun": 5, "peu_commun": 12, "rare": 25, "epique": 60, "legendaire": 120, "mythique": 250}
 RACHAT_SACS = {"commun": 8, "peu_commun": 15, "rare": 30, "epique": 60, "legendaire": 120, "mythique": 250}
 RACHAT_GRENADES = {"commun": 5, "peu_commun": 10, "rare": 20, "epique": 40, "legendaire": 80, "mythique": 160}
@@ -94,7 +98,8 @@ def accessoires():
 MARCHANDS = {
     "mila": {"type": "rachat", "rachat": [{"tag": "heraliz_composants:vente", "prix": RACHAT_VALEUR},
                                           {"tag": "heraliz_composants:tous", "prix": RACHAT_COMPOSANTS},
-                                          {"objet": "tacz:modern_kinetic_gun", "prix": RACHAT_ARMES},
+                                          {"objet": "tacz:modern_kinetic_gun", "prix": RACHAT_ARMES,
+                                           "selon_etat_min": RACHAT_ARMES_ETAT_MIN},
                                           {"tag": "heraliz_quetes:rachat_armures", "prix": RACHAT_ARMURES},
                                           {"tag": "heraliz_quetes:rachat_sacs", "prix": RACHAT_SACS},
                                           {"objet": "heralisz_tactical:throwable", "prix": RACHAT_GRENADES},

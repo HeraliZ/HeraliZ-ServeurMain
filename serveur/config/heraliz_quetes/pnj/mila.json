@@ -98,7 +98,8 @@
           "epique": 120,
           "legendaire": 250,
           "mythique": 500
-        }
+        },
+        "selon_etat_min": 10
       },
       {
         "tag": "heraliz_quetes:rachat_armures",

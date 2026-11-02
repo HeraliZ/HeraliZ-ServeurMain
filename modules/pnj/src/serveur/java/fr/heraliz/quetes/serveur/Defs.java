@@ -152,8 +152,13 @@ final class Defs {
     /**
      * Ce qu'un racheteur prend : les objets du tag, payés selon leur rareté (« commun » ... « mythique »). Un tag qui
      * commence par « = » vise UN objet ({@code "=minecraft:diamond"} ; clé « objet » du fichier, règle ajoutée en jeu).
+     * {@code selonEtatMin} (clé « selon_etat_min » du fichier, 02/11, choix du propriétaire pour les armes de Mila) : prix
+     * x état de l'objet (usure d'une arme, durabilité), jamais moins de ce pourcentage du prix ; -1 (absente) : prix plein.
      */
-    record Regle(String tag, Map<String, Long> prix) {
+    record Regle(String tag, Map<String, Long> prix, int selonEtatMin) {
+        Regle(String tag, Map<String, Long> prix) {
+            this(tag, prix, -1);
+        }
     }
 
     /** Un échange (troc, Quêtes 1.11.0) : {@code nDonne} objets donnés par le joueur contre {@code nRecu} objets reçus. */
@@ -207,7 +212,8 @@ final class Defs {
                     for (Map.Entry<String, JsonElement> p : r.getAsJsonObject("prix").entrySet()) prix.put(p.getKey().toLowerCase(Locale.ROOT), nombre(p.getValue()));
                 }
                 String objet = chaine(r, "objet", "");
-                m.regles.add(new Regle(objet.isEmpty() ? chaine(r, "tag", "") : "=" + objet, prix));
+                int etat = r.has("selon_etat_min") ? (int) Math.max(0, Math.min(100, nombre(r.get("selon_etat_min")))) : -1;
+                m.regles.add(new Regle(objet.isEmpty() ? chaine(r, "tag", "") : "=" + objet, prix, etat));
             }
         }
         if (o.has("echanges") && o.get("echanges").isJsonArray()) {
