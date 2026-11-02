@@ -51,5 +51,5 @@
 	ServerHitboxLatencyFix = true
 	#The maximum latency (in milliseconds) for the server hitbox latency fix saved
 	#Range: 250.0 ~ 1.7976931348623157E308
-	ServerHitboxLatencyMaxSaveMs = 1000.0
+	ServerHitboxLatencyMaxSaveMs = 350.0
 
