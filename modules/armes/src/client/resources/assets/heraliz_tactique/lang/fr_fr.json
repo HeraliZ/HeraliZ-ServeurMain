@@ -82,6 +82,8 @@
   "heraliz_tactique.armurier.refusee": "Recette refusée par TaCZ : %s",
   "heraliz_tactique.armurier.enregistree": "Recette enregistrée et envoyée à tous les joueurs.",
   "heraliz_tactique.armurier.donne": "Registre de l'armurier : clic droit pour modifier les recettes de la Table d'armurier.",
+  "heraliz_tactique.armurier.degats_relus": "Dégâts des armes relus : %s arme(s) réglée(s), renvoyés aux joueurs connectés.",
+  "heraliz_tactique.armurier.degats_illisible": "armes.json illisible : les réglages d'avant restent (voir le journal du serveur).",
   "key.categories.heraliz_tactique": "HeraliZ · Tactique",
   "key.heraliz_tactique.decharger": "Décharger l'arme",
   "heraliz_tactique.decharger.ok": "Arme déchargée : %s balles récupérées.",

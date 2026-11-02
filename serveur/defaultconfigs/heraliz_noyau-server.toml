@@ -31,9 +31,9 @@
 [recharger]
 	#/recharger (24/10) : commandes de rechargement des modules jouées l'une après l'autre, sans
 	#redémarrer ni déconnecter personne (quêtes, marchands, recycleur, caisses, casino, raretés, tables de loot,
-	#saison, territoires, Purge, zones dangereuses, ClashWar, modpack officiel de l'anticheat). Les réglages en .toml
+	#saison, territoires, Purge, zones dangereuses, ClashWar, dégâts des armes, modpack officiel de l'anticheat). Les réglages en .toml
 	#se relisent seuls quand leur fichier change.
-	commandes = ["quete recharger", "heraliz reload", "casino reload", "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger", "zones recharger", "clashwar recharger", "event recharger", "spartan officiel"]
+	commandes = ["quete recharger", "heraliz reload", "casino reload", "rarete recharger", "heralizloot tables", "saison recharger", "territoire recharger", "purge recharger", "zones recharger", "clashwar recharger", "event recharger", "armurier recharger", "spartan officiel"]
 
 [survie]
 	#Vitesse de la faim (25/10) : la fatigue de Minecraft (course, sauts, coups, vie qui remonte) est

@@ -82,6 +82,8 @@
   "heraliz_tactique.armurier.refusee": "Recipe refused by TaCZ: %s",
   "heraliz_tactique.armurier.enregistree": "Recipe saved and sent to every player.",
   "heraliz_tactique.armurier.donne": "Armorer's Ledger: right click to edit the Gunsmith Table recipes.",
+  "heraliz_tactique.armurier.degats_relus": "Weapon damage reloaded: %s weapon(s) set, sent to online players.",
+  "heraliz_tactique.armurier.degats_illisible": "armes.json is unreadable: the previous settings stay (see the server log).",
   "key.categories.heraliz_tactique": "HeraliZ · Tactical",
   "key.heraliz_tactique.decharger": "Unload weapon",
   "heraliz_tactique.decharger.ok": "Weapon unloaded: %s rounds recovered.",

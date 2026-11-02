@@ -386,6 +386,18 @@ public final class ArmurierServeur {
          .then(Commands.literal("editer").executes(c -> {
             ouvrir(c.getSource().getPlayerOrException());
             return 1;
+         }))
+         // dégâts des armes contre les joueurs (config/heraliz_tactique/armes.json) relus sans redémarrer (audit du 02/11)
+         .then(Commands.literal("recharger").executes(c -> {
+            int n = fr.heraliz.tactique.serveur.DegatsArmes.recharger(c.getSource().getServer());
+            if (n < 0) {
+               c.getSource().sendFailure(Component.translatableWithFallback("heraliz_tactique.armurier.degats_illisible",
+                  "armes.json illisible : les réglages d'avant restent (voir le journal du serveur)."));
+               return 0;
+            }
+            c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_tactique.armurier.degats_relus",
+               "Dégâts des armes relus : %s arme(s) réglée(s), renvoyés aux joueurs connectés.", String.valueOf(n)), true);
+            return 1;
          })));
    }
 }

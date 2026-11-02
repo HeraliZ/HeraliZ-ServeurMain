@@ -2,18 +2,18 @@
 
 Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une).
 
-**76 commandes de premier niveau, 354 sous-commandes repérées.**
+**76 commandes de premier niveau, 364 sous-commandes repérées.**
 
 | Commande | Module | Entrée | Sous-commandes (niveau si différent) |
 |---|---|---|---|
 | `/airstrike` | monde | staff (op 2) | call, clear |
-| `/armurier` | armes | op 4 | editer, registre |
+| `/armurier` | armes | op 4 | editer, recharger, registre |
 | `/avantages` | boutique | tous | couleur, nick, qui, reset |
 | `/banpc` | anticheat | op 3 |  |
 | `/base` | bases | op 4 | effacer, info |
 | `/bon` | boutique | tous | editeur |
 | `/boss` | events | staff (op 2) | arene, decors, eveil, labo, mammouth, mere, n07, peste, reset, salle, station, sylvorn, vitrine |
-| `/bots` | banc | op 4 | action, commandes, etat, frappes, joueurs, lancer, mesure, reseau, retirer, scenario, stop |
+| `/bots` | banc | op 4 | action, camp, commandes, etat, frappes, gamerule, joueurs, jvm, lancer, mesure, off, pic, pregenerer, reseau, retirer, rythmes, scenario, stop, troncons, zone |
 | `/boutique` | boutique | tous | abonnement |
 | `/brume` | monde | staff (op 2) | auto, info |
 | `/camos` | armes | staff (op 2) | ajouter, recharge, retirer, voir |

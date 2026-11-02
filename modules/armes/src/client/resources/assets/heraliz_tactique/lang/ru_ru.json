@@ -82,6 +82,8 @@
   "heraliz_tactique.armurier.refusee": "TaCZ отклонил рецепт: %s",
   "heraliz_tactique.armurier.enregistree": "Рецепт сохранён и отправлен всем игрокам.",
   "heraliz_tactique.armurier.donne": "Журнал оружейника: ПКМ, чтобы изменить рецепты оружейного стола.",
+  "heraliz_tactique.armurier.degats_relus": "Урон оружия перечитан: настроено оружия — %s, отправлено игрокам в сети.",
+  "heraliz_tactique.armurier.degats_illisible": "armes.json не читается: прежние настройки остаются (смотри журнал сервера).",
   "key.categories.heraliz_tactique": "HeraliZ · Тактика",
   "key.heraliz_tactique.decharger": "Разрядить оружие",
   "heraliz_tactique.decharger.ok": "Оружие разряжено: получено патронов: %s.",

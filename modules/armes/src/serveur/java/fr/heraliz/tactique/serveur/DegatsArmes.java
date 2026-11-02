@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -43,12 +44,15 @@ import org.slf4j.Logger;
  * une décharge entière faisait 4 au lieu de 36) ; une arme dont TaCZ donne 0 dégât (quelques fusils anti-matériel des gunpacks) prend
  * « degats » tel quel. Arme absente du fichier, créatures, fichier absent ou « actif » à false : rien ne change. Fichier
  * relu à chaque démarrage du serveur, et envoyé à chaque joueur qui se connecte (chiffres affichés chez lui).
+ * <p>Relu en marche (audit du 02/11, mineur 12) par {@code /armurier recharger} (op 4, joué aussi par {@code /recharger}) :
+ * réglages renvoyés aux joueurs connectés ; un fichier illisible à ce moment ne change rien (les anciens réglages restent,
+ * l'erreur va au staff).</p>
  * <p>« plafond » (fusils à pompe, 24/10, choix du propriétaire : « pas de gros one tap mais utilisable ») : dégâts au plus
  * d'UN tir sur un même joueur, tous plombs additionnés, tête comprise, avant l'armure. Les plombs d'un même tir partent
  * dans le même tick : au-delà du plafond, les plombs suivants ne font rien (événement annulé). Réglage du serveur
  * seulement (pas envoyé aux joueurs).</p>
  */
-final class DegatsArmes {
+public final class DegatsArmes {
    private static final Logger LOG = LogUtils.getLogger();
    private static final String FICHIER = "heraliz_tactique/armes.json";
    /** Tir oublié s'il n'a rien touché depuis 2 s (nettoyage de {@link #TIRS}). */
@@ -81,22 +85,41 @@ final class DegatsArmes {
    }
 
    static void charger() {
+      lire(false);
+   }
+
+   /**
+    * {@code /armurier recharger} : armes.json relu et renvoyé aux joueurs connectés. Fichier illisible : les anciens réglages
+    * restent. Renvoie le nombre d'armes réglées, ou -1 si le fichier est illisible.
+    */
+   public static int recharger(MinecraftServer serveur) {
+      if (!lire(true)) return -1;
+      synchronized (TIRS) {
+         TIRS.clear();
+      }
+      PaquetDegatsArmes paquet = new PaquetDegatsArmes(DegatsJoueurs.tous());
+      for (ServerPlayer joueur : serveur.getPlayerList().getPlayers()) ReseauArmes.envoyer(joueur, paquet);
+      return DegatsJoueurs.tous().size();
+   }
+
+   /** Lit le fichier ; {@code garderSiErreur} : un fichier illisible laisse les réglages en place (faux renvoyé). */
+   private static boolean lire(boolean garderSiErreur) {
       Path p = FMLPaths.CONFIGDIR.get().resolve(FICHIER);
       if (!Files.isRegularFile(p)) {
          DegatsJoueurs.remplacer(Map.of());
          plafonds = Map.of();
          LOG.info("[armes] {} absent : dégâts de TaCZ contre les joueurs inchangés", FICHIER);
-         return;
+         return true;
       }
       Map<ResourceLocation, DegatsJoueurs.Reglage> lus = new HashMap<>();
       Map<ResourceLocation, Float> plafondsLus = new HashMap<>();
-      plafonds = Map.of();
       try (Reader r = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
          JsonObject racine = JsonParser.parseReader(r).getAsJsonObject();
          if (racine.has("actif") && !racine.get("actif").getAsBoolean()) {
             DegatsJoueurs.remplacer(Map.of());
+            plafonds = Map.of();
             LOG.info("[armes] {} : « actif » à false, dégâts de TaCZ contre les joueurs inchangés", FICHIER);
-            return;
+            return true;
          }
          for (Map.Entry<String, JsonElement> e : racine.getAsJsonObject("armes").entrySet()) {
             ResourceLocation id = ResourceLocation.tryParse(e.getKey());
@@ -110,9 +133,16 @@ final class DegatsArmes {
          DegatsJoueurs.remplacer(lus);
          plafonds = Map.copyOf(plafondsLus);
          LOG.info("[armes] {} armes réglées contre les joueurs, {} avec un plafond par tir ({})", lus.size(), plafondsLus.size(), FICHIER);
+         return true;
       } catch (Exception ex) {
+         if (garderSiErreur) {
+            LOG.error("[armes] {} illisible : réglages d'avant gardés", FICHIER, ex);
+            return false;
+         }
          DegatsJoueurs.remplacer(Map.of());
+         plafonds = Map.of();
          LOG.error("[armes] {} illisible : dégâts de TaCZ contre les joueurs inchangés", FICHIER, ex);
+         return false;
       }
    }
 
