@@ -63,8 +63,26 @@ public final class ClaimMaintenanceManager {
     /** La passe en cours (null entre deux passes). */
     @Nullable
     private static Passe passe;
-    /** Groups whose upkeep had run out at the last pass, to warn their members once when it starts and stops. */
-    private static final Set<UUID> UNPAID = new HashSet<>();
+    /**
+     * Groups whose upkeep had run out at the last pass, to warn their members once when it starts and stops: HeraliZ
+     * (03/11) {@link #VIDE} (a resource is empty, its delay runs) or {@link #USURE} (pieces decay); absent = paid.
+     */
+    private static final Map<UUID, Integer> UNPAID = new HashMap<>();
+    private static final int PAYE = 0, VIDE = 1, USURE = 2;
+    /**
+     * HeraliZ (03/11) : bits des pièces qui s'usent ou ne sont pas entretenues : une ressource d'entretien par bit
+     * ({@code 1 << slot}, comme {@link ClaimUpkeep#consume}), et les brindilles ({@link #BRINDILLES}, sans entretien : elles
+     * ne s'usent que dans une base inactive ou sans armoire). {@link #TOUT} : toutes les pièces.
+     */
+    private static final int BRINDILLES = 1 << ClaimBlockEntity.SLOTS, TOUT = (1 << (ClaimBlockEntity.SLOTS + 1)) - 1;
+    /**
+     * HeraliZ (03/11) : horloge de l'usure ({@link PenteUsure}) : heures réelles des passes faites depuis le démarrage, et
+     * l'heure (ms) de la dernière passe. Une passe compte le temps réel depuis la précédente, 2 min au plus (serveur arrêté
+     * ou très en retard : pas de rattrapage d'un coup).
+     */
+    private static double horlogeH;
+    private static long dernierePasseMs;
+    private static final long PASSE_MAX_MS = 120_000L;
     /** Levels whose untrusted stores were reported this session (once each). */
     private static final Set<ResourceKey<Level>> DISTRUSTED = new HashSet<>();
     /** Claim Blocks kept on structure blocks the store does not know, reported this session (once each). */
@@ -104,6 +122,8 @@ public final class ClaimMaintenanceManager {
         nextRunTick = -1L;
         passe = null;
         UNPAID.clear();
+        horlogeH = 0.0;
+        dernierePasseMs = 0L;
         DISTRUSTED.clear();
         KEPT.clear();
     }
@@ -172,18 +192,30 @@ public final class ClaimMaintenanceManager {
         for (ServerLevel level : server.getAllLevels()) {
             mondes.add(level);
         }
-        passe = new Passe(mondes);
+        // horloge de l'usure : le temps réel depuis la passe d'avant (une minute à la première)
+        long maintenant = System.currentTimeMillis();
+        long ecart = dernierePasseMs <= 0L ? INTERVAL_TICKS * 50L : Math.max(0L, Math.min(PASSE_MAX_MS, maintenant - dernierePasseMs));
+        dernierePasseMs = maintenant;
+        double avant = horlogeH;
+        horlogeH += ecart / 3_600_000.0;
+        passe = new Passe(mondes, ecart, avant, horlogeH);
     }
 
     /** Ce qu'il reste à faire de la passe d'une minute, monde par monde : claims, puis bâtiments, puis objets posés. */
     private static final class Passe {
         final List<ServerLevel> mondes;
+        /** HeraliZ (03/11) : temps réel compté par cette passe (ms), et l'horloge de l'usure avant et après elle (heures). */
+        final long ecartMs;
+        final double horlogeAvant, horlogeApres;
         int monde = -1;
         @Nullable
         Monde courant;
 
-        Passe(List<ServerLevel> mondes) {
+        Passe(List<ServerLevel> mondes, long ecartMs, double horlogeAvant, double horlogeApres) {
             this.mondes = mondes;
+            this.ecartMs = ecartMs;
+            this.horlogeAvant = horlogeAvant;
+            this.horlogeApres = horlogeApres;
         }
     }
 
@@ -201,7 +233,18 @@ public final class ClaimMaintenanceManager {
         final boolean unclaimedDecays;
         final Map<Long, Building> claimed;
         final List<Claim> claims;
-        final Map<UUID, Boolean> decaying = new HashMap<>();
+        /**
+         * HeraliZ (03/11) : par groupe, les pièces qui s'usent (ressource sans entretien depuis le délai, groupe inactif) et
+         * celles qui ne sont pas entretenues (pas de réparation toute seule), en bits ({@link #TOUT}...).
+         */
+        final Map<UUID, Integer> usure = new HashMap<>();
+        final Map<UUID, Integer> impaye = new HashMap<>();
+        /** HeraliZ (03/11) : pente de l'usure, délai avant l'usure (ms), temps de la passe et horloge de l'usure. */
+        final PenteUsure pente = new PenteUsure(Config.decayHighPercentPerHour.get(), Config.decayThresholdPercent.get(),
+            Config.decayLowPercentPerHour.get());
+        final long delaiMs = Math.round(Config.decayDelayHours.get() * 3_600_000.0);
+        final long ecartMs;
+        final double horlogeAvant, horlogeApres;
         int claim;
         @Nullable
         List<Building> buildings;
@@ -210,8 +253,11 @@ public final class ClaimMaintenanceManager {
         long[] placables;
         int placable;
 
-        Monde(ServerLevel level) {
+        Monde(ServerLevel level, Passe passe) {
             this.level = level;
+            this.ecartMs = passe.ecartMs;
+            this.horlogeAvant = passe.horlogeAvant;
+            this.horlogeApres = passe.horlogeApres;
             this.now = level.getGameTime();
             this.cd = ClaimData.get(level);
             this.store = StructureStore.get(level);
@@ -238,10 +284,10 @@ public final class ClaimMaintenanceManager {
                 if (++p.monde >= p.mondes.size()) {
                     passe = null;
                     // a group whose claim is gone starts afresh: its next claim warns again
-                    UNPAID.removeIf(id -> ClaimManager.getByGroupAnywhere(server, id) == null);
+                    UNPAID.keySet().removeIf(id -> ClaimManager.getByGroupAnywhere(server, id) == null);
                     return;
                 }
-                m = new Monde(p.mondes.get(p.monde));
+                m = new Monde(p.mondes.get(p.monde), p);
                 p.courant = m;
                 budget -= 1 + m.claimed.size();
             } else if (m.claim < m.claims.size()) {
@@ -270,7 +316,7 @@ public final class ClaimMaintenanceManager {
         if (m.cd.getByAnchor(anchor) != claim) {
             return 1;   // retiré (ou remplacé) depuis le début de la passe : plus rien à payer pour lui
         }
-        boolean unpaid = false;
+        int impayees = 0, usure = 0;
         int cout = 1;
         if (level.isLoaded(anchor)) {
             Building b = m.claimed.get(anchor.asLong());
@@ -283,43 +329,73 @@ public final class ClaimMaintenanceManager {
                 b = StructureService.buildingOfClaim(level, anchor);
             }
             cout += b == null ? 0 : b.pieces.size();
-            unpaid = ClaimUpkeep.consumeAndCheck(level, claim, be, b) && m.decayOn;
-            be.majEcran();   // écran de l'armoire : entretien demandé et temps restant
-            warnUpkeep(server, claim.groupId(), unpaid);
+            // HeraliZ (03/11, demande du propriétaire) : chaque ressource à part ; seules les pièces de celles qui manquent
+            // s'usent, après decay.delayHours (0 : tout de suite)
+            int vides = ClaimUpkeep.consume(level, claim, be, b);   // l'entretien se paie même usure coupée
+            impayees = m.decayOn ? vides : 0;
+            usure = be.majManque(impayees, m.ecartMs, m.delaiMs);
+            be.majEcran();   // écran de l'armoire : entretien demandé et temps restant (délai compris)
+            warnUpkeep(server, claim.groupId(), usure != 0 ? USURE : impayees != 0 ? VIDE : PAYE, be.upkeepMinutes());
         }
-        m.decaying.put(claim.groupId(), m.decayOn && (unpaid || isInactive(server, claim.groupId())));
+        if (m.decayOn && isInactive(server, claim.groupId())) {
+            impayees = TOUT;
+            usure = TOUT;
+        }
+        m.impaye.put(claim.groupId(), impayees);
+        m.usure.put(claim.groupId(), m.decayOn ? usure : 0);
         return cout;
     }
 
-    /** Un bâtiment : ses pièces s'usent (entretien pas payé, groupe inactif, sans claim) ou se réparent. Rend son coût. */
+    /** HeraliZ (03/11) : le bit d'une pièce dans les masques d'usure ({@link #BRINDILLES} ou sa ressource d'entretien). */
+    private static int bit(Piece p) {
+        return p.tier == fr.heraliz.crac.build.model.Tier.TWIG ? BRINDILLES : 1 << UpkeepResource.of(p.tier).slot();
+    }
+
+    /**
+     * Un bâtiment : ses pièces s'usent (entretien de leur ressource pas payé, groupe inactif, sans claim) ou se réparent.
+     * Rend son coût. HeraliZ (03/11, demande du propriétaire) : l'usure suit {@link PenteUsure} (10 % des PV max par heure
+     * jusqu'à 30 %, puis 5 %), aussi pour une partie de base coupée de l'armoire (C4, explosion : un bâtiment sans claim
+     * que tenait un groupe) ; seul un bâtiment qu'aucun clan n'a jamais tenu (fondations laissées dans la nature) garde
+     * l'usure rapide de {@code decay.hpPerMinute}. Une pièce dont la ressource est payée se répare toute seule comme avant.
+     */
     private static int building(Monde m, Building b) {
         ServerLevel level = m.level;
         Claim claim = StructureService.claimOf(level, b);
-        boolean decay;
+        int usure, impaye;
+        boolean rapide = false;
         if (claim == null) {
             if (!m.unclaimedDecays) return 1;
-            decay = true;
-        } else if (m.decaying.getOrDefault(claim.groupId(), false)) {
-            decay = true;
-        } else if (m.repairOn && !RaidBlockManager.isRaidBlocked(level, claim.groupId())) {
-            decay = false;
+            usure = TOUT;
+            impaye = TOUT;
+            rapide = b.ownerGroup == null;
         } else {
+            usure = m.usure.getOrDefault(claim.groupId(), 0);
+            impaye = m.impaye.getOrDefault(claim.groupId(), 0);
+        }
+        boolean repair = claim != null && impaye != TOUT && m.repairOn && !RaidBlockManager.isRaidBlocked(level, claim.groupId());
+        if (usure == 0 && !repair) {
             return 1;
         }
         List<Piece> pieces = m.store.piecesOf(b);
         for (Piece p : pieces) {
-            boolean skip = decay ? m.now - p.modifiedAt < m.graceTicks : p.hp >= p.maxHp;
-            if (skip || !StructureService.isLoaded(level, p)) continue;
-            if (decay) {
-                StructureService.damage(level, p, m.decayHp, false, StructureService.Cause.DECAY);
-            } else {
+            int bit = bit(p);
+            if ((usure & bit) != 0) {
+                if (m.now - p.modifiedAt < m.graceTicks || !StructureService.isLoaded(level, p)) continue;
+                int perte = rapide ? m.decayHp : m.pente.perte(p.hp, p.maxHp, m.horlogeAvant, m.horlogeApres);
+                if (perte > 0) {
+                    StructureService.damage(level, p, perte, false, StructureService.Cause.DECAY);
+                }
+            } else if (repair && (impaye & bit) == 0 && p.hp < p.maxHp && StructureService.isLoaded(level, p)) {
                 StructureService.heal(level, p, m.repairHp);
             }
         }
         return 1 + pieces.size();
     }
 
-    /** Un objet posé (lit, porte, caisse…) : il s'use avec le claim qui l'entoure, ou sans claim s'il en a eu un. */
+    /**
+     * Un objet posé (lit, porte, caisse…) : il s'use avec le claim qui l'entoure, ou sans claim s'il en a eu un. HeraliZ
+     * (03/11) : dès qu'une ressource de la base s'use, à la même pente que les pièces ({@link PenteUsure}).
+     */
     private static void placable(Monde m, long l) {
         ServerLevel level = m.level;
         PlacablePositionData ppd = PlacablePositionData.get(level);
@@ -335,12 +411,16 @@ public final class ClaimMaintenanceManager {
         boolean decays;
         if (claim != null) {
             ppd.markClaimed(pos);
-            decays = m.decaying.getOrDefault(claim.groupId(), false);
+            decays = m.usure.getOrDefault(claim.groupId(), 0) != 0;
         } else {
             decays = m.unclaimedDecays && ppd.wasClaimed(pos);
         }
         if (decays) {
-            PlacableHpManager.decayDamage(level, pos, m.decayHp);
+            int perte = m.pente.perte(PlacableHpManager.currentHp(level, state, pos), PlacableHpManager.maxHpFor(state.getBlock()),
+                m.horlogeAvant, m.horlogeApres);
+            if (perte > 0) {
+                PlacableHpManager.decayDamage(level, pos, perte);
+            }
         }
     }
 
@@ -414,14 +494,24 @@ public final class ClaimMaintenanceManager {
         return be;
     }
 
-    /** Tells the online members when their base starts decaying for lack of upkeep, and when it is paid again. */
-    private static void warnUpkeep(MinecraftServer server, UUID groupId, boolean unpaid) {
-        boolean changed = unpaid ? UNPAID.add(groupId) : UNPAID.remove(groupId);
-        Group g = changed ? GroupData.get(server).getById(groupId) : null;
+    /**
+     * Tells the online members when their base starts decaying for lack of upkeep, and when it is paid again. HeraliZ
+     * (03/11) : with a delay before the decay ({@code decay.delayHours} above 0), also when a resource runs out
+     * ({@code minutes} : until the decay starts).
+     */
+    private static void warnUpkeep(MinecraftServer server, UUID groupId, int etat, int minutes) {
+        Integer avant = etat == PAYE ? UNPAID.remove(groupId) : UNPAID.put(groupId, etat);
+        int a = avant == null ? PAYE : avant;
+        // une ressource de nouveau payée pendant qu'une autre attend encore son délai : rien à dire
+        Group g = a != etat && !(a == USURE && etat == VIDE) ? GroupData.get(server).getById(groupId) : null;
         if (g == null) {
             return;
         }
-        Component msg = unpaid ? Txt.red("crac.upkeep.decaying") : Txt.green("crac.upkeep.paid");
+        Component msg = switch (etat) {
+            case USURE -> Txt.red("crac.upkeep.decaying");
+            case VIDE -> Txt.yellow("crac.upkeep.vide", minutes / 60, minutes % 60);
+            default -> Txt.green("crac.upkeep.paid");
+        };
         for (UUID m : g.members()) {
             ServerPlayer p = server.getPlayerList().getPlayer(m);
             if (p != null) {

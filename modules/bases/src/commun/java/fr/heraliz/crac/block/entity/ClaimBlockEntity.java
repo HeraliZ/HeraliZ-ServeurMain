@@ -56,6 +56,11 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
     private final Item[] items = new Item[SLOTS];
     private final int[] needed = new int[SLOTS];
     private final double[] debt = new double[SLOTS];
+    /**
+     * HeraliZ (03/11) : temps (ms, serveur en marche et base chargée) passé par chaque ressource sans entretien, compté pour
+     * le délai avant l'usure ({@code decay.delayHours}) ; il redescend quand l'entretien est de nouveau payé.
+     */
+    private final long[] manque = new long[SLOTS];
     private int color = 16777215;
     /** Group whose claim this block holds; kept so that a claim lost in a crash can be restored. */
     @Nullable
@@ -236,18 +241,66 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    /** Minutes until a resource runs out, or -1 when nothing needs upkeep. */
+    /**
+     * Minutes until the base starts decaying, or -1 when nothing needs upkeep: until a resource runs out, plus what is left
+     * of the delay before its pieces decay (HeraliZ, 03/11, {@code decay.delayHours} : 0 = dès qu'elle manque) ; 0 while
+     * some resource is decaying. With decay off: minutes until a resource runs out.
+     */
     public int upkeepMinutes() {
         double mins = Double.POSITIVE_INFINITY;
         double perMin = 60.0 * Config.upkeepHours.get();
+        boolean usure = Config.decayEnabled.get();
+        double delai = usure ? Config.decayDelayHours.get() * 60.0 : 0.0;
         for (int i = 0; i < SLOTS; i++) {
             if (this.needed[i] > 0) {
                 double rate = this.needed[i] / perMin;
-                double m = rate <= 0.0 ? Double.POSITIVE_INFINITY : this.stored[i] / rate;
+                double stock = rate <= 0.0 ? Double.POSITIVE_INFINITY : this.stored[i] / rate;
+                double m = stock;
+                if (usure && stock != Double.POSITIVE_INFINITY) {
+                    // tant que l'entretien est payé, le délai revient minute pour minute ; le stock vide, il s'écoule
+                    double manqueMin = this.manque[i] / 60000.0;
+                    m = stock + delai - Math.max(0.0, Math.min(manqueMin, delai) - stock);
+                }
                 mins = Math.min(mins, m);
             }
         }
         return mins == Double.POSITIVE_INFINITY ? -1 : (int) Math.floor(mins);
+    }
+
+    /** HeraliZ (03/11) : temps (ms) passé sans entretien par une ressource, compté pour le délai avant l'usure. */
+    public long manqueMs(int slot) {
+        return this.manque[slot];
+    }
+
+    /**
+     * HeraliZ (03/11) : une passe d'entretien de {@code passeMs} ms : les ressources de {@code impayees} (un bit par case,
+     * {@code 1 << slot}) comptent ce temps sans entretien, les autres le rendent (un délai déjà dépassé est d'abord ramené
+     * au délai : payer arrête l'usure tout de suite). Rend les ressources dont les pièces s'usent maintenant : sans
+     * entretien depuis au moins {@code delaiMs}.
+     */
+    public int majManque(int impayees, long passeMs, long delaiMs) {
+        int usure = 0;
+        boolean change = false;
+        for (int i = 0; i < SLOTS; i++) {
+            long avant = this.manque[i];
+            long apres;
+            if ((impayees & 1 << i) != 0) {
+                apres = avant + Math.max(0L, passeMs);
+                if (apres >= delaiMs) {
+                    usure |= 1 << i;
+                }
+            } else {
+                apres = Math.max(0L, Math.min(avant, delaiMs) - Math.max(0L, passeMs));
+            }
+            if (apres != avant) {
+                this.manque[i] = apres;
+                change = true;
+            }
+        }
+        if (change) {
+            this.setChanged();
+        }
+        return usure;
     }
 
     // ------------------------------------------------------------------ écran (montré à tous)
@@ -483,6 +536,7 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
             d[i] = Double.doubleToLongBits(this.debt[i]);
         }
         tag.putLongArray("Debt", d);
+        tag.putLongArray("Manque", this.manque.clone());
     }
 
     @Override
@@ -518,6 +572,10 @@ public class ClaimBlockEntity extends BlockEntity implements MenuProvider {
         long[] d = tag.getLongArray("Debt");
         for (int i = 0; i < SLOTS; i++) {
             this.debt[i] = i < d.length ? Double.longBitsToDouble(d[i]) : 0.0;
+        }
+        long[] mq = tag.getLongArray("Manque");
+        for (int i = 0; i < SLOTS; i++) {
+            this.manque[i] = i < mq.length ? Math.max(0L, mq[i]) : 0L;
         }
     }
 

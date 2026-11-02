@@ -224,13 +224,32 @@
 	#Counted in server uptime (game time): days the server is down do not count.
 	#Range: 0.01 ~ 365.0
 	days = 3.0
-	#HP lost per minute by each piece of a decaying building.
+	#HP lost per minute by each piece of a decaying building that was never part of a base (no Claim Block ever,
+	#e.g. foundations left out in the wild). HeraliZ (03/11): every other piece follows the slope below.
 	#Range: 1 ~ 100000
 	hpPerMinute = 10
 	#Pieces placed or upgraded less than this many minutes ago do not decay,
 	#so a fresh twig foundation survives until its Claim Block is placed.
 	#Range: 0 ~ 100000
 	graceMinutes = 30
+	#HeraliZ (03/11): real hours an upkeep material (wood, stone, metal, armored) must stay empty in the Claim Block
+	#before the pieces of that material start to decay (counted while the server runs and the base is loaded, like
+	#the upkeep itself). Twig costs no upkeep and never decays this way. Refilling stops the decay at once; the delay
+	#then comes back hour for hour while the upkeep stays paid. 0 (owner's choice, 03/11) = decay as soon as the
+	#material runs out: the first 10 % go within the first hour.
+	#Range: 0.0 ~ 720.0
+	delayHours = 0.0
+	#HeraliZ (03/11): percent of its max HP a decaying piece or placable loses per real hour while it has more than
+	#thresholdPercent of its HP left: pieces whose upkeep ran out (after delayHours), parts of a base cut off from
+	#its Claim Block, bases whose Claim Block is gone, inactive bases. 10, 30 and 5: a full piece lasts 13 h.
+	#Range: 0.0 ~ 100.0
+	highPercentPerHour = 10.0
+	#HeraliZ (03/11): below or at this percent of its max HP, a decaying piece loses lowPercentPerHour.
+	#Range: 0.0 ~ 100.0
+	thresholdPercent = 30.0
+	#HeraliZ (03/11): percent of its max HP a decaying piece loses per real hour at or below thresholdPercent.
+	#Range: 0.0 ~ 100.0
+	lowPercentPerHour = 5.0
 	#If true, damaged pieces slowly self-repair while the claim is active and not raid-blocked.
 	autoRepair = true
 	#HP regenerated per minute by each damaged piece.

@@ -166,6 +166,11 @@ public class Config {
     public static final DoubleValue decayDays;
     public static final IntValue decayHpPerMinute;
     public static final IntValue decayGraceMinutes;
+    /** HeraliZ (03/11) : délai avant l'usure d'un matériau sans entretien, et la pente de l'usure. */
+    public static final DoubleValue decayDelayHours;
+    public static final DoubleValue decayHighPercentPerHour;
+    public static final DoubleValue decayThresholdPercent;
+    public static final DoubleValue decayLowPercentPerHour;
     public static final BooleanValue autoRepairEnabled;
     public static final IntValue repairHpPerMinute;
     /** HeraliZ integration ([heraliz] section). */
@@ -340,12 +345,34 @@ public class Config {
                 "Counted in server uptime (game time): days the server is down do not count."
             )
             .defineInRange("days", 3.0, 0.01, 365.0);
-        decayHpPerMinute = BUILDER.comment("HP lost per minute by each piece of a decaying building.").defineInRange("hpPerMinute", 10, 1, 100000);
+        decayHpPerMinute = BUILDER.comment(
+                "HP lost per minute by each piece of a decaying building that was never part of a base (no Claim Block ever,",
+                "e.g. foundations left out in the wild). HeraliZ (03/11): every other piece follows the slope below."
+            )
+            .defineInRange("hpPerMinute", 10, 1, 100000);
         decayGraceMinutes = BUILDER.comment(
                 "Pieces placed or upgraded less than this many minutes ago do not decay,",
                 "so a fresh twig foundation survives until its Claim Block is placed."
             )
             .defineInRange("graceMinutes", 30, 0, 100000);
+        decayDelayHours = BUILDER.comment(
+                "HeraliZ (03/11): real hours an upkeep material (wood, stone, metal, armored) must stay empty in the Claim Block",
+                "before the pieces of that material start to decay (counted while the server runs and the base is loaded, like",
+                "the upkeep itself). Twig costs no upkeep and never decays this way. Refilling stops the decay at once; the delay",
+                "then comes back hour for hour while the upkeep stays paid. 0 (owner's choice, 03/11) = decay as soon as the",
+                "material runs out: the first 10 % go within the first hour."
+            )
+            .defineInRange("delayHours", 0.0, 0.0, 720.0);
+        decayHighPercentPerHour = BUILDER.comment(
+                "HeraliZ (03/11): percent of its max HP a decaying piece or placable loses per real hour while it has more than",
+                "thresholdPercent of its HP left: pieces whose upkeep ran out (after delayHours), parts of a base cut off from",
+                "its Claim Block, bases whose Claim Block is gone, inactive bases. 10, 30 and 5: a full piece lasts 13 h."
+            )
+            .defineInRange("highPercentPerHour", 10.0, 0.0, 100.0);
+        decayThresholdPercent = BUILDER.comment("HeraliZ (03/11): below or at this percent of its max HP, a decaying piece loses lowPercentPerHour.")
+            .defineInRange("thresholdPercent", 30.0, 0.0, 100.0);
+        decayLowPercentPerHour = BUILDER.comment("HeraliZ (03/11): percent of its max HP a decaying piece loses per real hour at or below thresholdPercent.")
+            .defineInRange("lowPercentPerHour", 5.0, 0.0, 100.0);
         autoRepairEnabled = BUILDER.comment("If true, damaged pieces slowly self-repair while the claim is active and not raid-blocked.")
             .define("autoRepair", true);
         repairHpPerMinute = BUILDER.comment("HP regenerated per minute by each damaged piece.").defineInRange("repairHpPerMinute", 15, 1, 100000);

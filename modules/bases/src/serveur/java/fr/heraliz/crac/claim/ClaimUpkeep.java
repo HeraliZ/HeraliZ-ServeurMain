@@ -54,9 +54,17 @@ public final class ClaimUpkeep {
 
     /** Same, with the claim's building already looked up. */
     public static boolean consumeAndCheck(ServerLevel level, Claim claim, ClaimBlockEntity be, @Nullable Building building) {
+        return consume(level, claim, be, building) != 0;
+    }
+
+    /**
+     * HeraliZ (03/11) : pays one minute of upkeep; returns the resources that ran out, one bit per slot
+     * ({@code 1 << slot}) : the pieces of those resources decay (after {@code decay.delayHours}), the others do not.
+     */
+    public static int consume(ServerLevel level, Claim claim, ClaimBlockEntity be, @Nullable Building building) {
         recompute(level, building, be);
         double perMin = 60.0 * Config.upkeepHours.get();
-        boolean unpaid = false;
+        int unpaid = 0;
         for (int i = 0; i < ClaimBlockEntity.SLOTS; i++) {
             int needed = be.getNeeded(i);
             if (needed <= 0) {
@@ -70,7 +78,7 @@ public final class ClaimUpkeep {
             }
             if (be.getStored(i) <= 0) {
                 debt = 0.0;
-                unpaid = true;
+                unpaid |= 1 << i;
             }
             be.setDebt(i, debt);
         }
