@@ -85,7 +85,7 @@ de travail).
 | `heralisz_train.dat` | état du train | voir §5 (voie du train) |
 | `heralisz_clans_territoires.dat` | état des territoires (propriétaire, captures) | rien (suit `zones.json`, §5) |
 | `heraliz_zones.json` | zones à effets (gaz, radiation, froid) | à reposer sur la nouvelle carte |
-| `chunks.dat` (s'il existe) | tronçons forcés de la carte | `/forceload query` après coup |
+| `chunks.dat` (s'il existe) | tronçons forcés de la carte | retirés au démarrage par le noyau (`retirer_troncons_forces`) |
 | `crac_claims`, `crac_buildings`, `crac_placable_positions`, `crac_placable_hp`, `crac_raidblocks`, `crac_placed_terrain`, `crac_carrieres` (`.dat`) | bases construites sur la carte | parties avec la carte |
 | `crac_bases_clans`, `crac_coeurs_clans`, `crac_coeurs_deplaces`, `crac_acces_bases` (`.dat`) | base et cœur de chaque clan, accès à l'armoire | `/wipe tout` les vide (à faire avant) |
 
@@ -153,7 +153,7 @@ AuthMe, bans, `/spawn definir` (`crac/spawn.json`, il désigne le monde du spawn
 - ClashWar : `/clashwar` (arènes en place), tutoriel des bases (`crac:tuto`).
 - Carte M : nouveau fond, lieux, extractions ouvertes ; menu Échap : extractions ouvertes.
 - Largage public et frappe aérienne : le point tiré tombe dans la nouvelle bordure.
-- `/forceload query` dans chaque monde.
+- Journal du démarrage : `forced x0` dans la ligne des tickets de chaque monde (tronçons forcés retirés par le noyau).
 
 ## 8. Le workflow « Remplacer la carte de loot » (31/10)
 

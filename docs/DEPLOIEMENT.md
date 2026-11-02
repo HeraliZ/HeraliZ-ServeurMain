@@ -60,8 +60,10 @@ joueurs.
   prend plus de place et les pauses du ramasse-miettes durent 85 à 165 ms serveur vide, alors que le serveur n'utilise
   qu'environ 4 Go (4,5 Go au test de 90 bots). Demander 16 Go (31 Go au plus) avec `-XX:MaxTenuringThreshold=1` et la
   suite des réglages Aikar.
-- Vérifier sur le Ptero `/forceload query` dans chaque monde (tronçons forcés par les scripts de pose, chargés à vie) et
-  `/forceload remove all` s'il en reste.
+- Tronçons forcés par les scripts de pose (chargés à vie) : depuis le 02/11, le noyau les retire tout seul au démarrage
+  dans chaque monde (`[monde] retirer_troncons_forces = true` de `heraliz_noyau-server.toml` ; la commande `/forceload`
+  est retirée). Le journal du démarrage dit combien et où, et 30 s après, la ligne des tickets de chaque monde doit dire
+  `forced x0`.
 
 ## 3. Joueurs
 

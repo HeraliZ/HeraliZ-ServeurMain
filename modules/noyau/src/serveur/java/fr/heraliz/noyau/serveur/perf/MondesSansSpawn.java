@@ -160,8 +160,9 @@ public final class MondesSansSpawn {
    /**
     * Tickets qui tiennent les tronçons de chaque monde, par sorte : nombre et rayon (un ticket de rayon r charge en entier
     * (2r+1)² tronçons, et Minecraft en garde encore ~12 de plus tout autour, à moitié chargés). « player » : joueurs ;
-    * « start » : zone de départ ; « forced » : /forceload ; « heraliz_arrivee_fixe » / « crac_arrivee_fixe » : points
-    * d'arrivée gardés (réveil, /spawn). Fil serveur seulement (lit les tables de Minecraft).
+    * « start » : zone de départ ; « forced » : /forceload (toujours écrit, « forced x0 » s'il n'y en a pas : 02/11,
+    * {@link TronconsForces}) ; « heraliz_arrivee_fixe » / « crac_arrivee_fixe » : points d'arrivée gardés (réveil, /spawn).
+    * Fil serveur seulement (lit les tables de Minecraft).
     */
    public static void tickets(MinecraftServer serveur, Consumer<String> ligne) {
       for (ServerLevel niveau : serveur.getAllLevels()) {
@@ -176,12 +177,12 @@ public final class MondesSansSpawn {
                c[1] = Math.min(c[1], t.getTicketLevel());
             }
          }
+         // tronçons forcés toujours dits, même à 0 (retirés au démarrage : TronconsForces)
+         parSorte.putIfAbsent(TicketType.FORCED.toString(), new int[]{0, Integer.MAX_VALUE});
          StringBuilder b = new StringBuilder("tickets de ").append(niveau.dimension().location()).append(" (")
                .append(niveau.getChunkSource().getLoadedChunksCount()).append(" tronçons chargés) :");
-         if (parSorte.isEmpty()) {
-            b.append(" aucun");
-         }
-         parSorte.forEach((sorte, c) -> b.append(String.format(Locale.ROOT, " %s x%d (rayon %d)", sorte, c[0], NIVEAU_PLEIN - c[1])));
+         parSorte.forEach((sorte, c) -> b.append(c[0] == 0 ? String.format(Locale.ROOT, " %s x0", sorte)
+               : String.format(Locale.ROOT, " %s x%d (rayon %d)", sorte, c[0], NIVEAU_PLEIN - c[1])));
          ligne.accept(b.append('\n').toString());
       }
    }

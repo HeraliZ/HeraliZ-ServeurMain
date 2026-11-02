@@ -58,7 +58,8 @@ pour les votes du site (section 6).
 À faire une fois à la main sur le Ptero (pas fait par GitHub) :
 - `server.properties` : `sync-chunk-writes=false`, et changer la description du serveur (`motd`).
 - Réglages Java à demander à l'hébergeur (`-Xms` égal à `-Xmx`, voir `docs/DEPLOIEMENT.md`).
-- En jeu : `/gamerule doMobSpawning false`, `/gamerule keepInventory false`, `/forceload query` dans chaque monde.
+- En jeu : `/gamerule doMobSpawning false`, `/gamerule keepInventory false`. Tronçons forcés : retirés tout seuls au
+  démarrage par le noyau (02/11, `/forceload` est retirée) ; le journal dit `forced x0` 30 s après le démarrage.
 
 ## 5. Les workflows gardés
 

@@ -43,6 +43,8 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.IntValue TICS_ALEATOIRES;
    /** Gamerule randomTickSpeed de chaque monde (-1 : ne pas toucher), relue avec les réglages (TicsAleatoires du serveur). */
    public static volatile int ticsAleatoires = 0;
+   /** Tronçons forcés (/forceload) de chaque monde retirés au démarrage (TronconsForces du serveur, 02/11). */
+   public static final ForgeConfigSpec.BooleanValue RETIRER_TRONCONS_FORCES;
    public static final ForgeConfigSpec.DoubleValue FAIM_FACTEUR;
    /** Vitesse de la faim, relue avec les réglages (FaimMixin de la partie serveur). */
    public static volatile float faimFacteur = 0.35F;
@@ -273,6 +275,12 @@ public final class NoyauConfig {
             "comme /gamerule. 0 : plus aucun tic aléatoire (herbe, feuilles, neige, glace, cultures, lave… ne changent plus seuls) ;",
             "3 : valeur de Minecraft ; -1 : ne pas toucher (la valeur déjà enregistrée dans le monde reste).")
             .defineInRange("tics_aleatoires", 0, -1, 4096);
+      RETIRER_TRONCONS_FORCES = b.comment("Tronçons forcés (02/11) : true = au démarrage, une fois, tous les tronçons forcés de chaque monde sont",
+            "retirés par l'API du jeu, comme « /forceload remove all » (commande retirée, voir [commandes] retirees), et le journal",
+            "dit combien et où. Les 13 laissés sur la carte par les scripts de pose des décors du 24/10 y gardaient chargés à vie",
+            "environ 2 000 tronçons, même serveur vide. Aucun de nos mods n'en pose ; les tickets des autres mods (Forge) et des",
+            "plugins ne sont pas touchés. false : on n'y touche pas.")
+            .define("retirer_troncons_forces", true);
       b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",

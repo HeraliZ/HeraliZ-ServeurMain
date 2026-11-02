@@ -124,6 +124,12 @@
 	#3 : valeur de Minecraft ; -1 : ne pas toucher (la valeur déjà enregistrée dans le monde reste).
 	#Range: -1 ~ 4096
 	tics_aleatoires = 0
+	#Tronçons forcés (02/11) : true = au démarrage, une fois, tous les tronçons forcés de chaque monde sont
+	#retirés par l'API du jeu, comme « /forceload remove all » (commande retirée, voir [commandes] retirees), et le journal
+	#dit combien et où. Les 13 laissés sur la carte par les scripts de pose des décors du 24/10 y gardaient chargés à vie
+	#environ 2 000 tronçons, même serveur vide. Aucun de nos mods n'en pose ; les tickets des autres mods (Forge) et des
+	#plugins ne sont pas touchés. false : on n'y touche pas.
+	retirer_troncons_forces = true
 
 [redemarrage]
 	#/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait

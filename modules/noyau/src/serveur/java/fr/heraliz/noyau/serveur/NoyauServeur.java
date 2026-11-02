@@ -42,6 +42,7 @@ public final class NoyauServeur implements Partie {
       fr.heraliz.noyau.serveur.maintenance.Maintenance.enregistrer();
       fr.heraliz.noyau.serveur.perf.LevelDatFond.enregistrer();
       fr.heraliz.noyau.serveur.perf.MondesSansSpawn.enregistrer();
+      fr.heraliz.noyau.serveur.perf.TronconsForces.enregistrer();
       fr.heraliz.noyau.serveur.perf.Allege.enregistrer();
       fr.heraliz.noyau.serveur.perf.TicsAleatoires.enregistrer();
       fr.heraliz.noyau.serveur.interactions.ClicObjetBukkit.enregistrer();
