@@ -131,7 +131,6 @@ settings:
         hideChat: false
         # Allowed commands for unauthenticated players
         allowCommands: 
-        - /registerserial
         - /login
         - /register
         - /l

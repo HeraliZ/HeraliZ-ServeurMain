@@ -18,10 +18,10 @@ public final class NoyauConfig {
    private NoyauConfig() {}
 
    public static final List<String> COMMANDES_COMBAT_DEFAUT = List.of("login", "register", "l", "reg", "msg", "tell", "w", "r",
-         "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "report");
+         "me", "quetes", "journalieres", "pb", "saison", "extractions", "event");
    // 25/10 (tri des commandes) : /home remplace /sethome, /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny
    public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "reg",
-         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "report", "home",
+         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home",
          "base", "purge", "coeur", "ping");
 
    public static final ForgeConfigSpec SPEC;
