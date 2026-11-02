@@ -125,7 +125,12 @@ def main():
     if not jars:
         sys.exit("[pack] Aucun jar joueur : lancer d'abord outils/construire.py.")
     for j in jars:
-        shutil.copy2(j, requis / j.name)
+        if args.essai:
+            # mêmes copies allégées que la fabrication (TaCZ, meubles : construire.ALLEGES)
+            import construire
+            construire.copier_tiers(j, [requis])
+        else:
+            shutil.copy2(j, requis / j.name)
     print(f"[pack] {len(jars)} mods joueurs", flush=True)
 
     # gunpacks TaCZ : le dossier tacz du jeu (les joueurs en ont besoin pour les modèles, sons et icônes). Sans les

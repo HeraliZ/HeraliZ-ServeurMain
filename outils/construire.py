@@ -14,6 +14,8 @@ Résultat (dossier livraison/, jamais dans Git) :
     livraison/plugins/        -> plugins/ du Ptero
     livraison/banc/           -> bots de charge, posés sur le serveur seulement le temps d'un test
 Les modules de MODULES_DE_COTE (aujourd'hui : events, les boss) sont fabriqués mais livrés nulle part.
+Les jars d'autres auteurs de ALLEGES (TaCZ…) sont livrés en copie allégée (dossiers que rien ne lit retirés, licence et
+crédits gardés, CONTENU-RETIRE.txt dit quoi et pourquoi) ; l'original reste intact dans le dépôt.
 Un mod « coupé » (tâches clientJar / serveurJar dans son build.gradle) donne 3 jars ; un mod client seulement
 (interface) donne un jar, mis côté client et solo.
 Chaque jar de nos mods rangé dans livraison/ reçoit en plus, dans chacun de ses dossiers, la mention courte
@@ -173,6 +175,88 @@ def marquer(src, dst):
     shutil.copystat(src, dst)
 
 
+# Copies allégées de jars d'autres auteurs (audit du 02/11, point 35) : la livraison (serveur, joueurs, solo) reçoit
+# une copie du jar SANS des dossiers que rien ne lit, vérifié dans leur code ; tout le reste est copié tel quel (code,
+# mods.toml avec la licence et les crédits, autres fichiers), et la copie dit ce qui a été retiré et pourquoi
+# (CONTENU-RETIRE.txt à sa racine, comme le demande la GPL pour une version modifiée). Le jar d'origine reste intact dans
+# le dépôt (serveur/mods-tiers). Un jar dont le nom change (mise à jour) n'est plus allégé : revérifier son code avant de
+# changer son nom ici.
+ALLEGES = {
+    "tacz-1.20.1-1.1.8-hotfix.jar": {
+        "retirer": ("assets/tacz/custom/tacz_default_gun/",),
+        "pourquoi": (
+            "Pack d'armes par défaut de TaCZ, intégré au jar. TaCZ 1.1.8 ne s'en sert que pour le recopier",
+            "dans le dossier « tacz » du jeu au démarrage (GunMod.registerDefaultExtraGunPack ->",
+            "ResourceManager.registerExportResource -> GunPackLoader.discoverExtensions), et cette copie est coupée par",
+            "DefaultPackDebug = true (tacz/tacz-pre.toml, livré au serveur et aux joueurs). Les armes ne sont lues que dans le",
+            "dossier « tacz » (GunPackLoader.scanExtensions). Sans ce dossier, la copie demandée ne fait rien",
+            "(GetJarResources.copyModDirectory : getResource nul, rien n'est copié ni écrasé). HeraliZ livre sa propre version",
+            "triée de ce pack à part (gunpack heraliz_1_base_tacz).",
+            "Default gun pack bundled in the jar: TaCZ 1.1.8 only copies it into the game's « tacz » folder at startup, and",
+            "that copy is disabled by DefaultPackDebug = true. Gun packs are only read from the « tacz » folder.",
+        ),
+    },
+}
+ALLEGE_NOTE = "CONTENU-RETIRE.txt"
+ALLEGE_DATE = (2026, 11, 2, 0, 0, 0)   # date de la décision (fixe : même copie, octet pour octet, à chaque fabrication)
+
+
+def alleger(src, dst, regle):
+    """Copie le jar src en dst sans les entrées sous regle["retirer"] ; ajoute ALLEGE_NOTE. Rend (nb retirés, octets)."""
+    retirer = tuple(regle["retirer"])
+    n, octets = 0, 0
+    with zipfile.ZipFile(src) as zi, zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zo:
+        noms = set(zi.namelist())
+        if ALLEGE_NOTE in noms:
+            raise SystemExit("[construire] %s contient déjà %s : copie allégée impossible" % (src.name, ALLEGE_NOTE))
+        for i in zi.infolist():
+            if i.filename.startswith(retirer):
+                n += 1
+                octets += i.file_size
+                continue
+            info = zipfile.ZipInfo(i.filename, date_time=i.date_time)
+            info.compress_type = zipfile.ZIP_STORED if i.is_dir() else zipfile.ZIP_DEFLATED
+            info.external_attr = i.external_attr
+            info.create_system = i.create_system
+            zo.writestr(info, zi.read(i.filename))
+        if n == 0:
+            raise SystemExit("[construire] %s : rien à retirer sous %s (jar changé ?) : revoir ALLEGES" % (src.name, retirer))
+        texte = "\n".join([
+            "Copie allégée de %s, faite pour le serveur HeraliZ le %02d/%02d/%d (modifiée : des fichiers ont été retirés,"
+            % (src.name, ALLEGE_DATE[2], ALLEGE_DATE[1], ALLEGE_DATE[0]),
+            "aucun n'a été changé ni ajouté, sauf ce fichier). Lighter copy made for the HeraliZ server: files removed only.",
+            "",
+            "Jar d'origine / original jar : %s (sha256 %s)" % (src.name, _sha256(src.read_bytes())),
+            "Retiré / removed : %s (%d fichiers, %.1f Mo non compressés)" % (", ".join(retirer), n, octets / 1048576),
+            "",
+            "Pourquoi / why :",
+        ] + ["  " + l for l in regle["pourquoi"]] + [
+            "",
+            "Licence et crédits inchangés : voir META-INF/mods.toml (auteurs, licence) et les fichiers de l'auteur, copiés tels",
+            "quels. License and credits unchanged: see META-INF/mods.toml and the author's files, copied as is.",
+            "",
+        ])
+        note = zipfile.ZipInfo(ALLEGE_NOTE, date_time=ALLEGE_DATE)
+        note.compress_type = zipfile.ZIP_DEFLATED
+        zo.writestr(note, texte)
+    shutil.copystat(src, dst)
+    return n, octets
+
+
+def copier_tiers(j, dossiers):
+    """Copie un jar d'un autre auteur dans chaque dossier : tel quel, ou allégé s'il est dans ALLEGES."""
+    regle = ALLEGES.get(j.name)
+    if regle is None:
+        for d in dossiers:
+            shutil.copy2(j, d / j.name)
+        return
+    n, octets = alleger(j, dossiers[0] / j.name, regle)
+    for d in dossiers[1:]:
+        shutil.copy2(dossiers[0] / j.name, d / j.name)
+    print("[construire] %s allégé : %.1f -> %.1f Mo (%d fichiers retirés : %s)" % (
+        j.name, j.stat().st_size / 1048576, (dossiers[0] / j.name).stat().st_size / 1048576, n, ", ".join(regle["retirer"])))
+
+
 def ranger():
     L = chemins.LIVRAISON
     if L.exists():
@@ -180,12 +264,10 @@ def ranger():
     ms, mc, mo, pl = L / "mods serveur", L / "mods client", L / "mods solo", L / "plugins"
     for d in (ms, mc, mo, pl):
         d.mkdir(parents=True)
-    for j in chemins.MODS_TIERS.glob("*.jar"):
-        for d in (ms, mc, mo):
-            shutil.copy2(j, d / j.name)
-    for j in chemins.MODS_TIERS_CLIENT.glob("*.jar"):
-        for d in (mc, mo):
-            shutil.copy2(j, d / j.name)
+    for j in sorted(chemins.MODS_TIERS.glob("*.jar")):
+        copier_tiers(j, [ms, mc, mo])
+    for j in sorted(chemins.MODS_TIERS_CLIENT.glob("*.jar")):
+        copier_tiers(j, [mc, mo])
     manquants = []
     for p in projets():
         if p.name in MODULES_DE_COTE:

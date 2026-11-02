@@ -1479,3 +1479,7 @@ heraliz_6_armes_maxstuff/assets/maxstuff/geo_models/attachment/glaser_geo.json
 heraliz_6_armes_maxstuff/assets/maxstuff/textures/attachment/slot/glaser.png
 heraliz_6_armes_maxstuff/assets/maxstuff/textures/attachment/uv/glaser.png
 heraliz_crafts/data/heraliz_crafts/recipes/accessoires/maxstuff_glaser.json
+
+# 02/11 (audit, point 35) : état de l'export des packs intégrés aux jars (TaCZ, anciens MaxStuff et endlessammo) ;
+# l'export est coupé (DefaultPackDebug = true) et le pack intégré à TaCZ n'est plus livré
+.export-state.json
