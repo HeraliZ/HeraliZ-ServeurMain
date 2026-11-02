@@ -80,7 +80,7 @@ Sur le serveur local seulement : abîmer `heralisz_camo/collections.json` (ou `h
 - Un soin normal (sans rien toucher) va jusqu'au bout comme avant ; une grenade se lance comme avant.
 
 ## 10. Le reste
-- **Dégâts des armes** : changer un chiffre de `config/heraliz_tactique/armes.json`, taper `/armurier recharger` (ou
+- **Dégâts des armes** : changer un chiffre de `config/heraliz_tactique/armes.json`, taper `/recharger armes` (ou
   `/recharger`) : « Dégâts des armes relus », chiffres de l'infobulle à jour sans redémarrer. Fichier cassé : les anciens
   réglages restent.
 - **Stickers** : une arme avec 5 stickers et un StatTrak, en 1re et 3e personne, pendant un rechargement (culasse,
