@@ -62,7 +62,8 @@ SITE_NGINX=/etc/nginx/sites-available/heraliz
 if [ -f "$SITE_NGINX" ]; then
   cp "$SITE_NGINX" /tmp/heraliz-nginx.avant
   ajoutes=""
-  if ! grep -q "Strict-Transport-Security" "$SITE_NGINX"; then
+  # (site réinstallé depuis le 02/11 : HSTS et les autres en-têtes sont dans /etc/nginx/heraliz-entetes.conf, inclus)
+  if ! grep -q "Strict-Transport-Security\|heraliz-entetes.conf" "$SITE_NGINX"; then
     sed -i '/add_header Referrer-Policy/a\    add_header Strict-Transport-Security "max-age=31536000" always;' "$SITE_NGINX"
     ajoutes="$ajoutes, HSTS"
   fi

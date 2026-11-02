@@ -1,6 +1,7 @@
 <?php
 
 use Azuriom\Plugin\Heraliz\Controllers\A2fController;
+use Azuriom\Plugin\Heraliz\Controllers\CspController;
 use Azuriom\Plugin\Heraliz\Controllers\DiscordController;
 use Azuriom\Plugin\Heraliz\Controllers\InscriptionController;
 use Azuriom\Plugin\Heraliz\Controllers\JetonController;
@@ -27,3 +28,6 @@ Route::prefix('pb')->name('pb.')->middleware('throttle:heraliz-pb')->group(funct
         Route::post('/'.$action, [PbController::class, $action])->name($action);
     }
 });
+
+// Rapports de la politique de contenu du site (en-tête de nginx, mode rapport seulement : CspController)
+Route::post('/csp', [CspController::class, 'rapport'])->middleware('throttle:heraliz-csp')->name('csp');

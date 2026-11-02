@@ -262,6 +262,20 @@ jobs:
                   if manque and "session" in nom.lower():
                       alerte(f"Cookie de session {nom} sans {', '.join(manque)} : la session d'un joueur pourrait être volée")
 
+          # en-têtes aussi sur les fichiers du launcher (avant le 02/11, nginx les perdait dans ces blocs) et politique de
+          # contenu (CSP, d'abord en mode rapport)
+          code, h, _ = lire("/telecharger/latest.yml", "HEAD")
+          if h is not None and code == 200:
+              manquent = [n for n in ("Strict-Transport-Security", "X-Content-Type-Options") if not h.get(n)]
+              print("En-têtes sur le téléchargement du launcher : " + ("tous présents" if not manquent else "absents : " + ", ".join(manquent)))
+              if manquent:
+                  conseils.append("en-têtes de sécurité perdus sur /telecharger/ et /launcher/ : lancer « installer »")
+          code, h, _ = lire("/")
+          csp = (h.get("Content-Security-Policy") or h.get("Content-Security-Policy-Report-Only") or "") if h else ""
+          print("Politique de contenu (CSP) : " + ("bloquante" if h and h.get("Content-Security-Policy") else "en mode rapport" if csp else "absente"))
+          if not csp:
+              conseils.append("pas de politique de contenu (CSP) : lancer « installer » (mode rapport d'abord)")
+
           # 3. Listes de fichiers et pack du launcher
           listes = [c for c in ("/launcher/", "/telecharger/", "/assets/", "/storage/", "/assets/plugins/", "/assets/themes/")
                     if re.search(rb"<title>Index of", lire(c)[2] or b"")]

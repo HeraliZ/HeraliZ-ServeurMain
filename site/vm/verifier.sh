@@ -132,7 +132,13 @@ if [ -f /var/www/azuriom/.env ]; then
 fi
 SITE_NGINX=/etc/nginx/sites-available/heraliz
 if [ -f "$SITE_NGINX" ]; then
-  echo "nginx : HSTS $(grep -q Strict-Transport-Security "$SITE_NGINX" && echo oui || echo 'non (lancer « securite »)'), adresse IP impossible à falsifier $(grep -q 'fastcgi_param HTTP_HOST' "$SITE_NGINX" && echo oui || echo 'non (lancer « securite »)')"
+  echo "nginx : HSTS $(grep -q Strict-Transport-Security "$SITE_NGINX" /etc/nginx/heraliz-entetes.conf 2> /dev/null && echo oui || echo 'non (lancer « securite »)'), adresse IP impossible à falsifier $(grep -q 'fastcgi_param HTTP_HOST' "$SITE_NGINX" && echo oui || echo 'non (lancer « securite »)')"
+  # durcissements du 02/11 (audit, point 41) : posés par « installer »
+  if grep -q "include /etc/nginx/heraliz-entetes.conf" "$SITE_NGINX" && grep -q "location = /index.php" "$SITE_NGINX"; then
+    echo "nginx : en-têtes de sécurité partout (pack et téléchargement compris), politique de contenu en mode rapport, seul index.php exécuté"
+  else
+    echo "::warning::nginx : durcissements du 02/11 pas encore posés (en-têtes perdus sur /launcher/ et /telecharger/, tout .php exécuté) : lancer « installer »"
+  fi
 fi
 CLE=/var/www/azuriom/storage/app/heraliz/jeton-jeu.cle
 if [ -f "$CLE" ]; then

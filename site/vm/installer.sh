@@ -131,6 +131,31 @@ if [ ! -f /etc/nginx/heraliz-pack.conf ]; then
   printf '# Pack du launcher ouvert à tous : réservé aux comptes HeraliZ par site/vm/theme.sh (choix « theme »).\n' \
     > /etc/nginx/heraliz-pack.conf
 fi
+# En-têtes de sécurité (audit du 02/11, point 41) : dans un fichier à part, inclus au niveau du site ET dans chaque
+# bloc qui a ses propres en-têtes (nginx ne reprend pas ceux du site dans un bloc qui en ajoute : /launcher/ et
+# /telecharger/ perdaient HSTS et nosniff). « always » : aussi sur les pages d'erreur. Politique de contenu (CSP) en mode
+# RAPPORT seulement pour commencer : rien n'est bloqué, les écarts sont notés dans le journal du site
+# (/api/heraliz/csp, extension HeraliZ) ; à passer en vrai blocage une fois le journal propre.
+cat > /etc/nginx/heraliz-entetes.conf <<'NGINX'
+# En-têtes de sécurité du site HeraliZ, écrit par site/vm/installer.sh : modifier le dépôt, pas ce fichier.
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(self)" always;
+# HSTS (pris en compte seulement en https) : le navigateur ne repasse plus jamais par http:// pour ce site
+add_header Strict-Transport-Security "max-age=31536000" always;
+add_header Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com; form-action 'self' https:; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; report-uri /api/heraliz/csp" always;
+NGINX
+# PHP : seulement le point d'entrée d'Azuriom (public/index.php) ; tout autre fichier .php du dossier public est refusé
+# (avant : n'importe quel .php déposé là aurait été exécuté). Pendant l'installation (installeur à la racine) : comme
+# avant.
+if [ "$RACINE" = "$DOSSIER/public" ]; then
+  PHP_LIEU='location = /index.php'
+  PHP_AUTRES='location ~ \.php$ { return 404; }'
+else
+  PHP_LIEU='location ~ \.php$'
+  PHP_AUTRES=''
+fi
 cat > /etc/nginx/sites-available/heraliz <<NGINX
 # Site HeraliZ (Azuriom), écrit par site/vm/installer.sh : modifier le dépôt, pas ce fichier.
 server {
@@ -143,11 +168,7 @@ server {
     client_max_body_size 64M;
     server_tokens off;
 
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
-    # HSTS (pris en compte seulement en https) : le navigateur ne repasse plus jamais par http:// pour ce site
-    add_header Strict-Transport-Security "max-age=31536000" always;
+    include /etc/nginx/heraliz-entetes.conf;
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
@@ -158,7 +179,7 @@ server {
 
     error_page 404 /index.php;
 
-    location ~ \.php\$ {
+    $PHP_LIEU {
         fastcgi_pass unix:/run/php/php$V-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         include fastcgi_params;
@@ -172,6 +193,7 @@ server {
         fastcgi_param HTTP_X_FORWARDED_PREFIX "";
         fastcgi_param HTTP_FORWARDED "";
     }
+    $PHP_AUTRES
 
     location ~ /\.(?!well-known).* {
         deny all;
@@ -182,6 +204,7 @@ server {
     location = /launcher/distribution.json {
         alias /var/www/launcher/distribution.json;
         include /etc/nginx/heraliz-pack.conf;
+        include /etc/nginx/heraliz-entetes.conf;
         add_header Cache-Control "no-cache";
         gzip on;
         gzip_types application/json;
@@ -197,6 +220,7 @@ server {
         alias /var/www/telecharger/;
         include /etc/nginx/heraliz-telecharger.conf;
         autoindex off;
+        include /etc/nginx/heraliz-entetes.conf;
         add_header Cache-Control "no-cache";
     }
 }
