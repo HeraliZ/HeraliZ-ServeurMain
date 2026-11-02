@@ -45,9 +45,24 @@ public final class Tournois {
     @Nullable
     private static VueTableau vue;
 
+    /**
+     * La dernière édition ouverte depuis le démarrage, ou null. Elle reste là une fois finie (jusqu'au redémarrage) : pour
+     * savoir si un tournoi se joue, {@link #enCours()} (ou {@code courant().actif()}). Lue par réflexion (HeraliZ
+     * Événements) : ne pas renommer.
+     */
     @Nullable
     public static Tournoi courant() {
         return courant;
+    }
+
+    /**
+     * Vrai seulement pendant un vrai tournoi : édition ouverte et pas finie ni annulée (inscriptions comprises), et pas une
+     * simulation du banc (02/11, audit point 3 : {@code courant() != null} restait vrai jusqu'au redémarrage après le
+     * premier ClashWar). Publique, pour les autres mods (lue par réflexion, sans dépendance).
+     */
+    public static boolean enCours() {
+        Tournoi t = courant;
+        return t != null && t.actif() && !t.simulation;
     }
 
     // ================================================================== cycle de vie du serveur
