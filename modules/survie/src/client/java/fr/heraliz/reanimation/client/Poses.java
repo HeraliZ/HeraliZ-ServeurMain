@@ -281,7 +281,7 @@ public final class Poses {
       }
 
       float yaw = 180.0F - Mth.rotLerp(partialTick, e.yBodyRotO, e.yBodyRot);
-      // rotation que le rendu vanilla (PlayerRenderer, BotRenderer) fera encore après nous
+      // rotation que le rendu vanilla (PlayerRenderer) fera encore après nous
       float vanilla = e.getSwimAmount(partialTick) * (e instanceof Player && e.isInWater() ? -90.0F - e.getXRot() : -90.0F);
       ps.mulPose(Axis.YP.rotationDegrees(yaw));
       ps.mulPose(Axis.XP.rotationDegrees(-90.0F * fall));

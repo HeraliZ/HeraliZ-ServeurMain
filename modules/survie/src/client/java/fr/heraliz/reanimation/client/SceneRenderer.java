@@ -3,7 +3,6 @@ package fr.heraliz.reanimation.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import fr.heraliz.reanimation.entity.BotEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -86,7 +85,7 @@ final class SceneRenderer {
 
    private static void head(Minecraft mc, ExecutionScenes.Scene s, Script.Frame f, PoseStack ps, MultiBufferSource buffers) {
       LivingEntity victim = s.victim;
-      ResourceLocation skin = victim instanceof AbstractClientPlayer p ? p.getSkinTextureLocation() : (victim instanceof BotEntity bot ? BotRenderer.skin(bot) : null);
+      ResourceLocation skin = victim instanceof AbstractClientPlayer p ? p.getSkinTextureLocation() : null;
       if (skin != null) {
          boolean isSlim = victim instanceof AbstractClientPlayer p && "slim".equals(p.getModelName());
          if (wide == null) {

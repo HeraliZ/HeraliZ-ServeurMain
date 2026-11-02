@@ -2,7 +2,6 @@ package fr.heraliz.reanimation.client;
 
 import fr.heraliz.reanimation.ReanimationMod;
 import fr.heraliz.reanimation.core.Downed;
-import fr.heraliz.reanimation.registry.ModEntities;
 import fr.heraliz.reanimation.registry.ModMenus;
 import java.lang.reflect.Field;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -13,13 +12,11 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent.AddLayers;
-import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
@@ -54,11 +51,6 @@ public final class ClientSetup {
    @SubscribeEvent
    public static void onOverlays(RegisterGuiOverlaysEvent event) {
       event.registerAboveAll("downed", DownedHud::render);
-   }
-
-   @SubscribeEvent
-   public static void onRenderers(RegisterRenderers event) {
-      event.registerEntityRenderer((EntityType)ModEntities.BOT.get(), BotRenderer::new);
    }
 
    @SubscribeEvent

@@ -10,7 +10,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import fr.heraliz.reanimation.core.DownedManagerServeur;
 import fr.heraliz.reanimation.execution.ExecutionType;
 import fr.heraliz.reanimation.execution.ExecutionUnlocks;
-import fr.heraliz.reanimation.registry.ModEntities;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

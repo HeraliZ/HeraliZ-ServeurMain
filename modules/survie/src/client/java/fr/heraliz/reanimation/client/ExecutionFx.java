@@ -3,7 +3,6 @@ package fr.heraliz.reanimation.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import fr.heraliz.reanimation.entity.BotEntity;
 import fr.heraliz.reanimation.execution.ExecutionType;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -223,7 +222,7 @@ public final class ExecutionFx {
       if (e instanceof AbstractClientPlayer player) {
          return player.getSkinTextureLocation();
       } else {
-         return e instanceof BotEntity bot ? BotRenderer.skin(bot) : null;
+         return null;
       }
    }
 

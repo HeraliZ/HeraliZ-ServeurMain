@@ -3,8 +3,6 @@ package fr.heraliz.reanimation.core;
 import fr.heraliz.reanimation.ReanimationConfig;
 import fr.heraliz.reanimation.ReanimationMod;
 import fr.heraliz.reanimation.compat.CuriosFouille;
-import fr.heraliz.reanimation.entity.BotEntity;
-import fr.heraliz.reanimation.entity.BotEntityServeur;
 import fr.heraliz.reanimation.execution.Executions;
 import fr.heraliz.reanimation.menu.SearchMenu;
 import fr.heraliz.reanimation.network.Network;
@@ -114,7 +112,7 @@ public final class DownedManagerServeur {
    }
 
    public static boolean canBeDowned(LivingEntity e) {
-      return e instanceof Player || e instanceof BotEntity;
+      return e instanceof Player;
    }
 
    @Nullable
@@ -482,8 +480,7 @@ public final class DownedManagerServeur {
             } else if (inRange(actor, target)) {
                s.searcher = actor;
                // Un joueur fouille de là où il est (à portée : inRange ci-dessus, puis searchValid tant que la fouille
-               // reste ouverte) : il n'est plus téléporté à côté du corps (retour des propriétaires, 12/10). Les bots
-               // gardent leur place à genoux à côté du corps (ils y vont d'eux-mêmes, BotGoals).
+               // reste ouverte) : il n'est plus téléporté à côté du corps (retour des propriétaires, 12/10).
                if (!(actor instanceof ServerPlayer)) {
                   placeBeside(actor, target);
                }
@@ -536,11 +533,7 @@ public final class DownedManagerServeur {
 
    @Nullable
    public static Container inventoryOf(LivingEntity e) {
-      if (e instanceof Player p) {
-         return p.getInventory();
-      } else {
-         return e instanceof BotEntityServeur bot ? bot.inventory() : null;
-      }
+      return e instanceof Player p ? p.getInventory() : null;
    }
 
    public static void searchClosed(LivingEntity target, Player player) {

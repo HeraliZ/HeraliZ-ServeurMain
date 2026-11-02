@@ -105,19 +105,6 @@ public final class ExecutionUnlocks {
       return owned.isEmpty() ? null : owned.iterator().next();
    }
 
-   /** 1.8.1 : chaque couteau joue toujours sa propre execution (l'ancienne commande « execution switch » est retiree). */
-   public static ExecutionType knifeExecution(Player player, ExecutionType knife) {
-      return knife;
-   }
-
-   @Nullable
-   public static ExecutionType switchKnife(Player player) {
-      CompoundTag data = data(player);
-      int v = (data.getInt("Knife") + 1) % (ExecutionType.KNIFE_VARIANTS.length + 1);
-      data.putInt("Knife", v);
-      return v == 0 ? null : ExecutionType.KNIFE_VARIANTS[v - 1];
-   }
-
    public static void select(Player player, ExecutionType type) {
       data(player).putString("Selected", type.id);
    }

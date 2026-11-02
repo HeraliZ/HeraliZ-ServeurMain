@@ -39,6 +39,9 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class ExecutionScreen extends Screen {
+   /** Peaux de Minecraft de l'aperçu (tireur sans peau, victime) : avant celles du bot d'essai, retiré. */
+   private static final ResourceLocation SKIN_STEVE = new ResourceLocation("textures/entity/player/wide/steve.png");
+   private static final ResourceLocation SKIN_KAI = new ResourceLocation("textures/entity/player/wide/kai.png");
    private static final ExecutionType[] TYPES = Arrays.stream(ExecutionType.values()).filter(ExecutionType::selectable).toArray(ExecutionType[]::new);
    private static final int[] ROWS = rows();
    private static final int ROW_H = 24;
@@ -131,8 +134,8 @@ public class ExecutionScreen extends Screen {
       boolean slim = mc.player != null && "slim".equals(mc.player.getModelName());
       this.actorModel = ExecutionFx.playerModel(slim);
       this.victimModel = ExecutionFx.playerModel(false);
-      this.actorSkin = mc.player != null ? mc.player.getSkinTextureLocation() : BotRenderer.skin(4);
-      this.victimSkin = BotRenderer.skin(this.actorSkin.equals(BotRenderer.skin(0)) ? 4 : 0);
+      this.actorSkin = mc.player != null ? mc.player.getSkinTextureLocation() : SKIN_KAI;
+      this.victimSkin = this.actorSkin.equals(SKIN_STEVE) ? SKIN_KAI : SKIN_STEVE;
       this.equip = (HzButton)this.addRenderableWidget(
          new HzButton(this.listX(), this.y0 + this.h - 34, this.listW(), 20, Component.empty(), Ui.accent(), this::equipShown).look(HzButton.Look.PRIMARY)
       );

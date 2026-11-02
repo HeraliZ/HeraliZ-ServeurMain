@@ -3,7 +3,6 @@ package fr.heraliz.reanimation;
 import com.mojang.logging.LogUtils;
 import fr.heraliz.reanimation.network.Network;
 import fr.heraliz.reanimation.pont.Parties;
-import fr.heraliz.reanimation.registry.ModEntities;
 import fr.heraliz.reanimation.registry.ModItems;
 import fr.heraliz.reanimation.registry.ModMenus;
 import fr.heraliz.reanimation.registry.ModSounds;
@@ -25,7 +24,6 @@ public class ReanimationMod {
 
    public ReanimationMod() {
       IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-      ModEntities.ENTITIES.register(modBus);
       ModItems.ITEMS.register(modBus);
       ModMenus.MENUS.register(modBus);
       ModSounds.SOUNDS.register(modBus);

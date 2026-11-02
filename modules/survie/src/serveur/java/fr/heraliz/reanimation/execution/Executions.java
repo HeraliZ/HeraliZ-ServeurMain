@@ -93,10 +93,8 @@ public final class Executions {
       if (!(Boolean)ReanimationConfig.EXECUTIONS_ENABLED.get()) {
          DownedManagerServeur.tell(actor, Component.translatable("message.reanimation.execution_disabled"));
       } else {
+         // chaque couteau joue toujours sa propre exécution (1.8.1)
          ExecutionType type = forWeapon(actor.getMainHandItem());
-         if (type != null && type.knife() && actor instanceof Player p) {
-            type = ExecutionUnlocks.knifeExecution(p, type);
-         }
 
          if (type == null) {
             type = actor instanceof Player p ? ExecutionUnlocks.selected(p) : ExecutionType.COUP_DE_GRACE;
