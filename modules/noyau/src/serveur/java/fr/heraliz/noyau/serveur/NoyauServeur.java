@@ -43,6 +43,7 @@ public final class NoyauServeur implements Partie {
       fr.heraliz.noyau.serveur.perf.Allege.enregistrer();
       fr.heraliz.noyau.serveur.perf.TicsAleatoires.enregistrer();
       fr.heraliz.noyau.serveur.interactions.ClicObjetBukkit.enregistrer();
+      ReglagesGardes.enregistrer();   // réglages SERVER gardés au serveur (audit du 02/11, point 11)
       MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
          if (e.phase == TickEvent.Phase.END) CombatService.tick(e.getServer());
       });
