@@ -261,11 +261,16 @@ public final class CamosAVie {
    }
 
    // ------------------------------------------------------------------ vérification des armes
-   /** Chaque seconde : les armes de chaque joueur ne gardent que les camos à vie qui sont les siens et encore valables. */
+   /**
+    * Chaque seconde : les armes de chaque joueur ne gardent que les camos à vie qui sont les siens et encore valables. Les
+    * joueurs sont étalés sur les {@link #VERIFICATION_TICKS} ticks (audit du 02/11, mineur 22 : avant, toutes les armes de
+    * tous les joueurs étaient relues dans le même tick) ; un joueur qui arrive est vérifié tout de suite (connexion).
+    */
    static void tick(MinecraftServer server) {
-      if (++ticks < VERIFICATION_TICKS) return;
-      ticks = 0;
-      for (ServerPlayer p : server.getPlayerList().getPlayers()) verifier(p);
+      int phase = ticks;
+      ticks = (ticks + 1) % VERIFICATION_TICKS;
+      java.util.List<ServerPlayer> joueurs = server.getPlayerList().getPlayers();
+      for (int i = phase; i < joueurs.size(); i += VERIFICATION_TICKS) verifier(joueurs.get(i));
    }
 
    /** Inventaire (mains, armure comprises) et objet tenu au curseur. */
