@@ -1,7 +1,7 @@
 package fr.heraliz.clashwar.moteur;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import fr.heraliz.clashwar.moteur.api.Annonces;
@@ -14,7 +14,6 @@ import fr.heraliz.clashwar.moteur.api.Partie;
 import fr.heraliz.clashwar.moteur.api.Pose;
 import fr.heraliz.clashwar.moteur.arenes.ArenesService;
 import fr.heraliz.clashwar.moteur.coffre.Coffres;
-import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -22,23 +21,22 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
- * Commandes du moteur :
- * <ul>
- *     <li>{@code /matchs} (operateurs, niveau 2) : {@code coffre etat|rendre <joueur>}, {@code parties}, {@code arenes
- *     liste|reserver <carte>|liberer <instance>|tp <instance>} (retours par {@link Annonces#retour} : visibles meme avec
- *     {@code sendCommandFeedback=false}). Le tag de combat se voit avec {@code /combat} (noyau).</li>
- * </ul>
+ * Outils du staff du moteur, sous-commandes de {@code /clashwar} (operateurs, niveau 2 ; 02/11, audit : l'ancienne
+ * commande {@code /matchs}, nom de l'ancien mod des matchs, est fondue dans {@code /clashwar}, sans rien retirer) :
+ * {@code coffre etat|rendre <joueur>} (depannage du Coffre), {@code parties}, {@code arenes liste|reserver <carte>|liberer
+ * <instance>|tp <instance> [point]} (retours par {@link Annonces#retour} : visibles meme avec
+ * {@code sendCommandFeedback=false}). Le tag de combat se voit avec {@code /combat} (noyau).
  */
 public final class CommandesMoteur {
     private CommandesMoteur() {
     }
 
-    public static void enregistrer(CommandDispatcher<CommandSourceStack> d, CommandBuildContext c) {
-        var matchs = Commands.literal("matchs").requires(s -> s.hasPermission(2))
-                .then(Commands.literal("coffre")
+    /** Ajoute les outils du staff à {@code /clashwar} (appelé par CwCommandes, avant l'enregistrement de la commande). */
+    public static void ajouter(LiteralArgumentBuilder<CommandSourceStack> clashwar) {
+        clashwar
+                .then(Commands.literal("coffre").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("etat").then(Commands.argument("joueur", EntityArgument.player()).executes(CommandesMoteur::etatCoffre)))
                         .then(Commands.literal("rendre").then(Commands.argument("joueur", EntityArgument.player()).executes(x -> {
                             ServerPlayer p = EntityArgument.getPlayer(x, "joueur");
@@ -49,14 +47,14 @@ public final class CommandesMoteur {
                                     p.getGameProfile().getName()));
                             return ok ? 1 : 0;
                         }))))
-                .then(Commands.literal("parties").executes(x -> {
+                .then(Commands.literal("parties").requires(s -> s.hasPermission(2)).executes(x -> {
                     if (MatchApi.parties().isEmpty()) {
                         retour(x, Component.translatableWithFallback("heraliz_clashwar.commande.aucune_partie", "Aucune partie."));
                     }
                     for (Partie p : MatchApi.parties()) retour(x, Component.literal(p.toString()));
                     return MatchApi.parties().size();
                 }))
-                .then(Commands.literal("arenes")
+                .then(Commands.literal("arenes").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("liste").executes(x -> {
                             for (Carte ca : Arenes.cartes()) {
                                 retour(x, Component.translatableWithFallback("heraliz_clashwar.commande.arenes.carte", "carte %s (%s)", ca.id(), ca.type()));
@@ -101,11 +99,10 @@ public final class CommandesMoteur {
                             pose.teleporter(p, i.niveau());
                             return 1;
                         }).then(Commands.argument("point", StringArgumentType.greedyString()).executes(CommandesMoteur::tpPoint)))));
-        d.register(matchs);
     }
 
     /**
-     * {@code /matchs arenes tp <instance> <point>} : sur un point nomme de la carte (premier de la liste, ou
+     * {@code /clashwar arenes tp <instance> <point>} : sur un point nomme de la carte (premier de la liste, ou
      * {@code nom:rang} ; regard de la pose, horizontal), ou {@code aerien} (vue plongeante en diagonale depuis le coin
      * nord-ouest, tournee vers le centre) ou {@code dessus} (a la verticale du centre). Le joueur garde son mode de jeu
      * (passer en spectateur avant une vue aerienne).

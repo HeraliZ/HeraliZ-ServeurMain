@@ -166,13 +166,6 @@ public final class Tournois {
         return true;
     }
 
-    /** Remplace l'edition courante par une simulation (banc d'essai). */
-    static void simulation(Tournoi t) {
-        if (courant != null && courant.actif() && !courant.simulation) return;
-        courant = t;
-        marquerVue();
-    }
-
     // ================================================================== diffusion
     public static void marquerVue() {
         vueSale = true;

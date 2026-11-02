@@ -47,8 +47,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Partie serveur (docs/METHODE_CLIENT_SERVEUR.md) du moteur des matchs (voir {@code Modules}) : commande {@code /matchs},
- * chargement des cartes et des kits, tick des parties, poses d'arenes, choix de classe, spectateurs, bornes, bordure du
+ * Partie serveur (docs/METHODE_CLIENT_SERVEUR.md) du moteur des matchs (voir {@code Modules}) : outils du staff de
+ * {@code /clashwar} ({@link CommandesMoteur}, branchés par la commande du tournoi), chargement des cartes et des kits, tick des parties, poses d'arenes, choix de classe, spectateurs, bornes, bordure du
  * monde des arenes ({@code arenes.BordureArenes}), connexions (reprise du Coffre apres crash), degats en match
  * ({@code combat.CombatEvents}), restrictions en match ({@code combat.RestrictionsMatch}) et remise a zero a l'arret.
  * Le tag de combat, lui, est dans le noyau HeraliZ. Le HUD client est branche par
@@ -114,11 +114,6 @@ public final class MoteurLogique {
                 return Spectateurs.estSpectateur(joueur) || (p != null && p.spectateurs().contains(joueur));
             }
         });
-    }
-
-    /** Appele sur RegisterCommandsEvent. */
-    public static void commandes(CommandDispatcher<CommandSourceStack> d, CommandBuildContext c) {
-        CommandesMoteur.enregistrer(d, c);
     }
 
     private static void rechargement(AddReloadListenerEvent e) {

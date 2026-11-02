@@ -45,7 +45,7 @@ variantes sont des sous-commandes (`/tpa accepter`, `/herals payer`…). Inventa
 | `/diag` | Noyau | diagnostic façon spark : `etat`, `start [s]`, `stop`, `mesure [s]`, `fuites`, `client <joueur> [s]`, `auto on\|off`, `seuil <ms>` (op 4, console) |
 | `/recharger` | Noyau | relit les données de tous les modules sans redémarrer (op 4, console) |
 | `/redemarrage` | Noyau | `<minutes> [raison]` ou `annuler` : redémarrage doux, les joueurs se reconnectent seuls (op 4, console) |
-| `/matchs` | ClashWar | coffres, parties en cours, arènes |
+| `/clashwar coffre\|parties\|arenes` | ClashWar | coffres des matchs (`etat`, `rendre <joueur>`), parties en cours, arènes (op 2) ; anciennement `/matchs`, fondue dans `/clashwar` le 02/11 |
 | `/territoire` | Clans | zones des clans, drapeaux, difficulté |
 | `/eco` | Clans | `donner`, `retirer`, `definir <joueur> <montant> [motif]` : op 4 connecté sur AuthMe ou console (28/10), un joueur connecté ou non (compte connu), 1 à 10 000 000 par opération, jamais de solde négatif ni au-dessus du plafond, journal `heralisz_economie/journal_admin.log` ; `journal`, `info` : op 2 |
 | `/grade` (`editeur`, `registre` : op 4 ; `donner`, `retirer`, `acheter` : console) | Grades | éditeur des grades, grades des joueurs |
