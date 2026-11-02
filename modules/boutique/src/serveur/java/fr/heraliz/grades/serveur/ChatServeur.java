@@ -25,7 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Chat à canaux (25/10, maquettes validées) : chaque joueur écrit sur un canal (Tab dans le chat) :
  * <ul>
- *     <li><b>Proximité</b> : lu par ceux du même monde à {@link #RAYON} blocs au plus ;</li>
+ *     <li><b>Proximité</b> : lu par ceux du même monde à {@link #RAYON} blocs au plus ; celui qui écrit ne sait jamais si
+ *     quelqu'un l'a lu (03/11 : ni message, ni compte) ;</li>
  *     <li><b>Global</b> : lu par tous ;</li>
  *     <li><b>Clan</b> : le chat de clan de HeraliZ Clans ({@code ClanService.chat} : droits du clan, cadence, mutes).</li>
  * </ul>
@@ -106,11 +107,8 @@ final class ChatServeur {
         ReseauChat.Ligne l = new ReseauChat.Ligne(canal, p.getUUID(), p.getDisplayName(), m, couleur);
         for (ServerPlayer x : lecteurs) ReseauChat.CANAL.send(PacketDistributor.PLAYER.with(() -> x), l);
         LOG.info("[chat] [{}] {} : {}", canal == ReseauChat.GLOBAL ? "global" : "proximité", p.getGameProfile().getName(), m);
-        if (canal == ReseauChat.PROXIMITE && lecteurs.size() == 1) {
-            p.sendSystemMessage(Component.translatableWithFallback("message.heraliz_grades.chat.personne",
-                    "Personne à moins de %s blocs ne t'a lu (canal Proximité ; Tab pour changer).", String.valueOf((int) RAYON))
-                    .withStyle(ChatFormatting.GRAY));
-        }
+        // 03/11 (retour du propriétaire) : plus aucun « Personne à moins de 48 blocs ne t'a lu » : le message disait s'il y
+        // avait quelqu'un à portée (trop fort pour repérer les joueurs autour). Le message part, rien d'autre.
     }
 
     /** Canal Clan : le chat de clan de HeraliZ Clans (droits, cadence, mutes, message dans la couleur du clan). */

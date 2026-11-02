@@ -753,7 +753,6 @@
   "gui.heraliz_grades.chat.extractions_ouvertes": "Extractions ouvertes",
   "gui.heraliz_grades.chat.extraction": "Extraction",
   "gui.heraliz_grades.chat.extractions_liste": "Extraction %1$s — pendant %2$s",
-  "message.heraliz_grades.chat.personne": "Personne à moins de %s blocs ne t’a lu (canal Proximité ; Tab pour changer).",
   "message.heraliz_grades.chat.sans_clan": "Tu n’as pas de clan : message non envoyé. Appuie sur Tab dans le chat pour changer de canal.",
   "gui.heraliz_grades.staff.ms": "%s MS",
   "gui.heraliz_grades.staff.duree_min": "%s min",

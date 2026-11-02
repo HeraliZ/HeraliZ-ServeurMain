@@ -753,7 +753,6 @@
   "gui.heraliz_grades.chat.extractions_ouvertes": "Extractions open",
   "gui.heraliz_grades.chat.extraction": "Extraction",
   "gui.heraliz_grades.chat.extractions_liste": "Extraction %1$s — for %2$s",
-  "message.heraliz_grades.chat.personne": "Nobody within %s blocks read you (Nearby channel; Tab to switch).",
   "message.heraliz_grades.chat.sans_clan": "You have no clan: message not sent. Press Tab in the chat to switch channel.",
   "gui.heraliz_grades.staff.ms": "%s MS",
   "gui.heraliz_grades.staff.duree_min": "%s min",
