@@ -63,13 +63,13 @@
 	#contenu est toujours relevé par Minecraft) ; à l'arrêt du serveur, écrit tout de suite. false : comme Minecraft.
 	level_dat_en_fond = true
 	#Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est
-	#libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.
-	#02/11 : crac:bases retiré (ancien monde des bases fermé, plus créé) ; à remettre ici s'il est rouvert.
-	mondes_sans_spawn = ["crac:tuto", "heraliz_clashwar:arenes"]
+	#libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Jamais la carte (réapparitions sans lit).
+	#02/11 : crac:bases retiré (ancien monde des bases fermé, plus créé) ; à remettre ici s'il est rouvert. 02/11 : le monde
+	#du spawn (heralisz:spawn) ajouté ; ses deux points d'arrivée (réveil, /spawn) restent gardés par leurs propres tickets.
+	mondes_sans_spawn = ["crac:tuto", "heraliz_clashwar:arenes", "heralisz:spawn"]
 	#Mondes de mondes_sans_spawn (01/11) : true = leur zone de départ n'est même plus préparée au démarrage
 	#(Mohist chargeait encore 441 tronçons par monde, voire les générait, avant de les libérer) ni remise par /setworldspawn.
-	#false : libérée seulement après le démarrage, comme avant. La carte et le monde du spawn gardent la leur (réapparitions
-	#sans lit, arrivées au spawn).
+	#false : libérée seulement après le démarrage, comme avant. La carte garde la sienne (réapparitions sans lit).
 	spawn_jamais_prepare = true
 	#Minecraft allégé (01/11) : à chaque tick, Minecraft cherche pour chaque tronçon actif s'il y a un joueur
 	#(non spectateur) à moins de 128 blocs, en parcourant TOUS les joueurs du monde. true = les joueurs sont rangés une fois

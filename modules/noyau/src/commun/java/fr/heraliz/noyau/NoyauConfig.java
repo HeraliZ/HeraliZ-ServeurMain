@@ -55,7 +55,7 @@ public final class NoyauConfig {
    /** level.dat compressé et écrit à côté du fil serveur, relu avec les réglages (LevelDatFond de la partie serveur). */
    public static volatile boolean levelDatEnFond = true;
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MONDES_SANS_SPAWN;
-   public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:tuto", "heraliz_clashwar:arenes");
+   public static final List<String> MONDES_SANS_SPAWN_DEFAUT = List.of("crac:tuto", "heraliz_clashwar:arenes", "heralisz:spawn");
    public static final ForgeConfigSpec.BooleanValue SPAWN_JAMAIS_PREPARE;
    /** Zone de départ des mondes de mondes_sans_spawn jamais préparée (ni au démarrage, ni par /setworldspawn). */
    public static volatile boolean spawnJamaisPrepare = true;
@@ -215,13 +215,13 @@ public final class NoyauConfig {
             "contenu est toujours relevé par Minecraft) ; à l'arrêt du serveur, écrit tout de suite. false : comme Minecraft.")
             .define("level_dat_en_fond", true);
       MONDES_SANS_SPAWN = b.comment("Mondes dont la zone de départ (2 209 tronçons gardés chargés par Mohist, même sans personne) est",
-            "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Ne pas y mettre le monde du spawn.",
-            "02/11 : crac:bases retiré (ancien monde des bases fermé, plus créé) ; à remettre ici s'il est rouvert.")
+            "libérée après le démarrage (27/10) : ils se chargent quand un joueur y va. Jamais la carte (réapparitions sans lit).",
+            "02/11 : crac:bases retiré (ancien monde des bases fermé, plus créé) ; à remettre ici s'il est rouvert. 02/11 : le monde",
+            "du spawn (heralisz:spawn) ajouté ; ses deux points d'arrivée (réveil, /spawn) restent gardés par leurs propres tickets.")
             .defineListAllowEmpty(List.of("mondes_sans_spawn"), () -> MONDES_SANS_SPAWN_DEFAUT, o -> o instanceof String);
       SPAWN_JAMAIS_PREPARE = b.comment("Mondes de mondes_sans_spawn (01/11) : true = leur zone de départ n'est même plus préparée au démarrage",
             "(Mohist chargeait encore 441 tronçons par monde, voire les générait, avant de les libérer) ni remise par /setworldspawn.",
-            "false : libérée seulement après le démarrage, comme avant. La carte et le monde du spawn gardent la leur (réapparitions",
-            "sans lit, arrivées au spawn).")
+            "false : libérée seulement après le démarrage, comme avant. La carte garde la sienne (réapparitions sans lit).")
             .define("spawn_jamais_prepare", true);
       JOUEURS_PROCHES_GRILLE = b.comment("Minecraft allégé (01/11) : à chaque tick, Minecraft cherche pour chaque tronçon actif s'il y a un joueur",
             "(non spectateur) à moins de 128 blocs, en parcourant TOUS les joueurs du monde. true = les joueurs sont rangés une fois",

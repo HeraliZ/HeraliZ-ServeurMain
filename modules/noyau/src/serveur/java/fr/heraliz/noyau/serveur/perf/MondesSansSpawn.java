@@ -31,8 +31,8 @@ import java.util.function.Consumer;
  * Zone de départ des mondes peu utilisés plus gardée chargée (27/10, perf) : la partie Bukkit de Mohist garde chargés en
  * permanence 2 209 tronçons autour du point de départ de CHAQUE monde (Minecraft seul : seulement la carte), même sans
  * personne (relevé du 27/10 : 13 000 tronçons chargés serveur vide, parcourus à chaque tick et à chaque sauvegarde).
- * Pour les mondes de {@code [perf] mondes_sans_spawn} de heraliz_noyau-server.toml (par défaut l'ancien monde des bases, le
- * monde du tutoriel et celui des arènes du ClashWar) :
+ * Pour les mondes de {@code [perf] mondes_sans_spawn} de heraliz_noyau-server.toml (par défaut le monde du tutoriel, celui
+ * des arènes du ClashWar et, depuis le 02/11, le monde du spawn) :
  * <ul>
  *    <li>01/11 (« Minecraft allégé ») : avec {@code spawn_jamais_prepare}, la zone n'est même plus préparée au démarrage
  *    (champ {@code keepSpawnInMemory} de Mohist mis à faux au chargement du monde, juste avant que Mohist le lise : avant,
@@ -43,8 +43,12 @@ import java.util.function.Consumer;
  * </ul>
  * Les tronçons se chargent comme ailleurs quand un joueur y va ; les mods qui y posent quelque chose prennent leurs propres
  * tickets. Pas la carte (chaque réapparition sans lit passe d'abord par son point de départ, chargé sur le fil du serveur
- * s'il ne l'était pas) ni le monde du spawn (choix du propriétaire). 30 s après le démarrage, le journal donne les
- * tronçons chargés de chaque monde et les tickets qui les tiennent ({@code /diag etat} aussi).
+ * s'il ne l'était pas). Monde du spawn (02/11, choix du propriétaire ; avant : gardé, 3 191 tronçons chargés pour un monde
+ * de 384 blocs de côté) : ses deux points d'arrivée restent chargés par leurs propres tickets de 5 × 5 tronçons (point de
+ * réveil de la cinématique, {@code heraliz_arrivee_fixe} de Monde ; point {@code /spawn}, {@code crac_arrivee_fixe} de
+ * CRac) ; le reste (PNJ, borne, recycleur, casino…) se charge quand un joueur y va, comme sur la carte. Vérifié le 02/11 :
+ * rien d'autre n'a besoin de sa zone de départ. 30 s après le démarrage, le journal donne les tronçons chargés de chaque
+ * monde et les tickets qui les tiennent ({@code /diag etat} aussi).
  */
 public final class MondesSansSpawn {
    private static final Logger LOG = LogUtils.getLogger();
