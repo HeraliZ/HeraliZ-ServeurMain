@@ -574,6 +574,7 @@
   "heraliz_quetes.jour.notif.reussie": "Задание дня выполнено: награда ждёт (/journalieres)",
   "heraliz_quetes.jour.notif.rien_a_livrer": "В инвентаре нечего сдавать",
   "heraliz_quetes.jour.notif.place": "Освободи ячейку инвентаря для награды",
+  "heraliz_quetes.jour.notif.spawn": "Сдавай задание и получай награду на спавне (не на карте, не в бою и не будучи раненым).",
   "heraliz_quetes.jour.notif.cle_erreur": "Ключ пока нельзя начислить: попробуй позже",
   "heraliz_quetes.jour.notif.remis": "Награда дня: %s",
   "heraliz_quetes.cmd.jour_essai": "Невозможно (неизвестное задание или оно не идёт).",

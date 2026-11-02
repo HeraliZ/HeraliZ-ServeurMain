@@ -574,6 +574,7 @@
   "heraliz_quetes.jour.notif.reussie": "Daily quest complete: your reward awaits (/journalieres)",
   "heraliz_quetes.jour.notif.rien_a_livrer": "Nothing to hand in in your inventory",
   "heraliz_quetes.jour.notif.place": "Free an inventory slot for your reward",
+  "heraliz_quetes.jour.notif.spawn": "Deliver and draw your reward at spawn (not on the map, in combat or downed).",
   "heraliz_quetes.jour.notif.cle_erreur": "Crate key can't be credited right now: try again later",
   "heraliz_quetes.jour.notif.remis": "Daily reward: %s",
   "heraliz_quetes.cmd.jour_essai": "Impossible (unknown quest or none in progress).",

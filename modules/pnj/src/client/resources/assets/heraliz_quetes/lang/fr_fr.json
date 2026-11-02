@@ -574,6 +574,7 @@
   "heraliz_quetes.jour.notif.reussie": "Quête du jour réussie : ta récompense t'attend (/journalieres)",
   "heraliz_quetes.jour.notif.rien_a_livrer": "Rien à rapporter dans ton inventaire",
   "heraliz_quetes.jour.notif.place": "Libère une case de ton inventaire pour ta récompense",
+  "heraliz_quetes.jour.notif.spawn": "Livre et tire ta récompense au spawn (pas sur la carte, ni en combat ou à terre).",
   "heraliz_quetes.jour.notif.cle_erreur": "Clé de caisse impossible à créditer pour l'instant : réessaie plus tard",
   "heraliz_quetes.jour.notif.remis": "Récompense du jour : %s",
   "heraliz_quetes.cmd.jour_essai": "Impossible (quête inconnue ou pas en cours).",

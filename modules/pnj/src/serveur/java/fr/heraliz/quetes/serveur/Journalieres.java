@@ -247,6 +247,14 @@ final class Journalieres {
     // ------------------------------------------------------------------ actions du joueur
     static void action(ServerPlayer p, Reseau.JourAction a) {
         if (serveur == null || DIFFS.isEmpty()) return;
+        // 02/11 (audit mods-3 §14, décision : seulement au spawn) : livrer et tirer la récompense, mêmes règles que les
+        // marchands (ni sur la carte, ni en combat, à terre, en match ou au tutoriel) ; avant, un joueur sur le point d'être
+        // tué livrait ses composants par l'écran et son tueur ne les récupérait pas
+        if ((a.type() == 4 || a.type() == 5) && Marchands.empechement(p) != null) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.jour.notif.spawn"), 0xFF6B6B);
+            envoyer(p, false);
+            return;
+        }
         CompoundTag t = etat(p);
         switch (a.type()) {
             case 0 -> {
