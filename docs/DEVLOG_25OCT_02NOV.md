@@ -1,16 +1,17 @@
 # Devlog et essais — du 25/10 au 02/11/2026
 
 - **Période** : du 25/10 au 02/11/2026, environ 345 changements (nouveau projet propre le 26/10).
-- **En ligne** : `main` au changement `740bccff`, mis en ligne le 02/11 (Noyau 1.0.13, Spartan 2.10.1, ClashWar 1.1.1,
-  Bases 1.30.1-beta, launcher 1.16.0 dans le pack).
-- **Prêt, pas encore en ligne** (branche de travail, à envoyer à la prochaine mise en ligne) :
-  - « démarrage propre » : ClashWar 1.1.2, Spartan 2.10.2, Noyau 1.0.14 (console propre au démarrage, moins de carte
-    chargée pour rien) ;
-  - `server.properties` du dépôt aligné sur celui du Ptero (160 places, vue 6, simulation 4), utile seulement pour une
-    installation complète ; le message de la liste des serveurs et la liste blanche attendent ton choix ;
-  - empreinte du jar AzLink figée (la mise en ligne refusera tout autre jar) ;
-  - tâche GitHub « Lenteurs du serveur » : affiche aussi les fichiers de réglage du Ptero (lecture seule, secrets masqués) ;
-  - launcher 1.16.1 : onglet Boutique simplifié, un seul bouton au centre qui ouvre la boutique du site.
+- **En ligne** depuis le 02/11 au soir (mise en ligne complète et redémarrage vers 22 h 20) : Noyau 1.0.14,
+  Spartan 2.10.2, ClashWar 1.1.2, Bases 1.30.1-beta ; launcher 1.16.1 publié (Windows, Mac, Linux), avec l'onglet
+  Boutique simplifié (un seul bouton au centre qui ouvre la boutique du site).
+  - « démarrage propre » : console propre au démarrage, moins de carte chargée pour rien (vérifié dans la console après
+    le redémarrage : aucune erreur, plus de meubles absents du ClashWar, plus de blocage de Spartan, 13 tronçons forcés
+    retirés) ;
+  - fichiers de base du serveur remis à neuf : message de la liste des serveurs « HeraliZ · Survie DayZ », liste blanche
+    active (seulement les joueurs autorisés), 160 places, réglages des monstres inchangés, restes de PlotSquared et
+    commande `sell` morte retirés ;
+  - empreinte du jar AzLink figée (la mise en ligne refuse tout autre jar) ; connexion de la mise en ligne au Ptero
+    réparée depuis que son empreinte est vérifiée.
 - **Rien n'a été testé en jeu** : la partie 2 est la liste de ce qu'il faut vérifier. Les choses retirées en cours de
   route (mode Zombies, matchs autres que ClashWar, spark, boss, console admin de CRac…) n'y sont pas.
 
@@ -145,7 +146,7 @@
 - Anticheat : seul le jeu officiel entre ; message « Jeu validé » ; le Gardien du launcher est vérifié par le serveur ;
   nouvelles alertes pour le staff (vitesse, faux lag, tirs suspects), sans gêner un joueur honnête.
 - Launcher (1.14 → 1.16) : vérifie le jeu, Java et chaque fichier avant chaque partie, se répare seul, efface les
-  anciennes versions des mods, onglet Anticheat, anti-robot à la création de compte ; à venir : onglet Boutique simplifié.
+  anciennes versions des mods, onglet Anticheat, anti-robot à la création de compte ; onglet Boutique simplifié (1.16.1).
 - Téléchargement plus léger : environ 72 Mo de moins (−15 %).
 - Site : votes protégés contre les robots (compte connecté, Discord lié), plus besoin d'avoir joué pour voter ; adresses
   IP effacées au bout d'un an ; page Confidentialité à jour.
@@ -199,7 +200,7 @@ Serveur et joueurs à jour en même temps (relancer le launcher). Cocher au fur 
       au spawn ».
 - [ ] **Hérals** : dépôt et retrait à la banque du clan, arrêt brutal juste après (serveur d'essai) → soldes justes au
       redémarrage, rien en double.
-- [ ] **Démarrage propre** (prochaine mise en ligne) : plus de lignes « bloc(s) inconnu(s) » des arènes ni de rapport de
+- [ ] **Démarrage propre** (en ligne ; console déjà relue, à revoir en jeu) : plus de lignes « bloc(s) inconnu(s) » des arènes ni de rapport de
       blocage de Spartan ; une fois : « 13 tronçon(s) forcé(s) retiré(s) » ; puis, spawn vide quelques minutes :
       première connexion, « Au camp », extraction et `/spawn` arrivent sans gel ; PNJ, casino et borne se chargent en
       moins d'une seconde, rien en double (un seul Varga, deux videurs par entrée).
@@ -346,7 +347,7 @@ Serveur et joueurs à jour en même temps (relancer le launcher). Cocher au fur 
 - [ ] Sprint, véhicules, train, allongé, à terre, téléportations, mauvais Wi-Fi : aucune alerte de vitesse ni de latence ;
       tir normal : aucune alerte « Tirs ».
 - [ ] Anti-ESP : un joueur derrière un mur reste caché, réapparaît dès qu'il est visible ; juste après le démarrage,
-      `/spartan esp` dit « en préparation » quelques secondes (prochaine mise en ligne).
+      `/spartan esp` dit « en préparation » quelques secondes.
 - [ ] Launcher : un mod remplacé à la main est retiré et retéléchargé ; création de compte : petite fenêtre anti-robot.
 - [ ] Téléchargement : sons des armes, meubles, zombies et joueurs comme avant (fichiers en double et textures OptiFine
       retirés).
@@ -416,10 +417,8 @@ Serveur et joueurs à jour en même temps (relancer le launcher). Cocher au fur 
 ## 4. Pas encore fait / en attente
 
 **Mise en ligne**
-- Envoyer la branche « démarrage propre » (ClashWar 1.1.2, Spartan 2.10.2, Noyau 1.0.14, AzLink) avec un redémarrage ;
-  puis publier le launcher 1.16.1 (le 1.16.0 est déjà publié depuis le 02/11).
-- `server.properties` : choisir le message de la liste des serveurs (aujourd'hui « serveur de test ») et la liste
-  blanche, avant une installation complète.
+- Fait le 02/11 au soir : tout est en ligne (voir l'en-tête). Pour ouvrir à tous plus tard : passer `white-list` à
+  `false` dans `serveur/server.properties`, puis mise en ligne avec « installation complète ».
 
 **À faire par le propriétaire (GitHub, panel, site)**
 - Déjà fait le 02/11 : empreintes du site et du Ptero réglées et vérifiées, environnements GitHub créés, site durci
