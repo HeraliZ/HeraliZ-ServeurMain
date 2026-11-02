@@ -48,8 +48,10 @@
   "noyau.recharger.fait": "[Перезагрузка] Выполнено перезагрузок: %s, без перезапуска.",
   "noyau.recharger.rates": "[Перезагрузка] Без эффекта или отклонено (см. выше): %s",
   "noyau.redemarrage.annule": "Перезапуск сервера отменён.",
-  "noyau.redemarrage.annonce": "Перезапуск сервера через %s%s. Игра переподключится сама.",
+  "noyau.redemarrage.annonce": "Перезапуск сервера через %s%s. Игра переподключится сама; если вышло обновление, перезапусти лаунчер.",
   "noyau.redemarrage.titre": "Перезапуск",
   "noyau.redemarrage.sous_titre": "через %s",
+  "noyau.redemarrage.minutes": "%s мин",
+  "noyau.redemarrage.secondes": "%s с",
   "heraliz.redemarrage.deconnexion": "Сервер перезапускается: игра скоро переподключится сама."
 }

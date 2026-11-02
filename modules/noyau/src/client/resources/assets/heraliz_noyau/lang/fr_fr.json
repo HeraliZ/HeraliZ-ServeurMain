@@ -48,8 +48,10 @@
   "noyau.recharger.fait": "[Recharger] %s rechargement(s) faits, sans redémarrer.",
   "noyau.recharger.rates": "[Recharger] Sans effet ou refusés (voir au-dessus) : %s",
   "noyau.redemarrage.annule": "Le redémarrage du serveur est annulé.",
-  "noyau.redemarrage.annonce": "Redémarrage du serveur dans %s%s. Ton jeu se reconnectera tout seul.",
+  "noyau.redemarrage.annonce": "Redémarrage du serveur dans %s%s. Ton jeu se reconnectera tout seul ; si une mise à jour est sortie, relance le launcher.",
   "noyau.redemarrage.titre": "Redémarrage",
   "noyau.redemarrage.sous_titre": "dans %s",
+  "noyau.redemarrage.minutes": "%s min",
+  "noyau.redemarrage.secondes": "%s s",
   "heraliz.redemarrage.deconnexion": "Redémarrage du serveur : ton jeu se reconnecte tout seul dans un instant."
 }

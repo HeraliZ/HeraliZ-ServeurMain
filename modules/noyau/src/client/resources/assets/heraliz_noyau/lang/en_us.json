@@ -48,8 +48,10 @@
   "noyau.recharger.fait": "[Reload] %s reload(s) done, no restart.",
   "noyau.recharger.rates": "[Reload] No effect or refused (see above): %s",
   "noyau.redemarrage.annule": "The server restart is cancelled.",
-  "noyau.redemarrage.annonce": "Server restart in %s%s. Your game will reconnect by itself.",
+  "noyau.redemarrage.annonce": "Server restart in %s%s. Your game will reconnect by itself; if an update came out, restart the launcher.",
   "noyau.redemarrage.titre": "Restart",
   "noyau.redemarrage.sous_titre": "in %s",
+  "noyau.redemarrage.minutes": "%s min",
+  "noyau.redemarrage.secondes": "%s s",
   "heraliz.redemarrage.deconnexion": "Server restarting: your game will reconnect by itself in a moment."
 }

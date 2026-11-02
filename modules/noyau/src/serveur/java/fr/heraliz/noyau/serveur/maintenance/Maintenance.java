@@ -138,9 +138,14 @@ public final class Maintenance {
     }
 
     private static void annoncer(MinecraftServer srv, int secondes) {
-        String duree = secondes >= 60 ? (secondes / 60) + " min" : secondes + " s";
+        // 02/11 (audit, mods-1 §21) : unités traduites chez chaque joueur (« min » et « s » étaient écrits en français pour tous)
+        Component duree = secondes >= 60
+                ? Component.translatableWithFallback("noyau.redemarrage.minutes", "%s min", String.valueOf(secondes / 60))
+                : Component.translatableWithFallback("noyau.redemarrage.secondes", "%s s", String.valueOf(secondes));
+        // 02/11 : après une mise à jour du code, le jeu ne peut pas se reconnecter seul (mods différents) : le dire
         Component chat = Component.translatableWithFallback("noyau.redemarrage.annonce",
-                        "Redémarrage du serveur dans %s%s. Ton jeu se reconnectera tout seul.", duree, raison.isEmpty() ? "" : " (" + raison + ")")
+                        "Redémarrage du serveur dans %s%s. Ton jeu se reconnectera tout seul ; si une mise à jour est sortie, relance le launcher.",
+                        duree, raison.isEmpty() ? "" : " (" + raison + ")")
                 .withStyle(ChatFormatting.GOLD);
         if (secondes >= 30 || secondes == 10) srv.getPlayerList().broadcastSystemMessage(chat, false);
         Component titre = Component.translatableWithFallback("noyau.redemarrage.titre", "Redémarrage").withStyle(ChatFormatting.GOLD);
