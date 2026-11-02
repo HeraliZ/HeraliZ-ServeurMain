@@ -68,6 +68,7 @@
   "heraliz_extraction.terminal.infobulle.4": "⚠ La fumée est visible de très loin...",
   "heraliz_extraction.terminal.erreur.toit": "toit détecté",
   "heraliz_extraction.terminal.erreur.sol": "pas au sol",
+  "heraliz_extraction.terminal.erreur.carte": "hors de la carte",
   "heraliz_extraction.ecran.relais": "relais: OK",
   "heraliz_extraction.ecran.lancement_1": "Lancement de la",
   "heraliz_extraction.ecran.lancement_2": "fusée en cours...",

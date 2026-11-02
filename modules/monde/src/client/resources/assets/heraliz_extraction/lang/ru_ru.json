@@ -68,6 +68,7 @@
   "heraliz_extraction.terminal.infobulle.4": "⚠ Дым виден очень издалека...",
   "heraliz_extraction.terminal.erreur.toit": "обнаружена крыша",
   "heraliz_extraction.terminal.erreur.sol": "не на земле",
+  "heraliz_extraction.terminal.erreur.carte": "вне карты",
   "heraliz_extraction.ecran.relais": "реле: OK",
   "heraliz_extraction.ecran.lancement_1": "Запуск",
   "heraliz_extraction.ecran.lancement_2": "ракеты...",

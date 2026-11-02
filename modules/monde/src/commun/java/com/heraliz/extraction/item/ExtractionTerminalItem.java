@@ -39,7 +39,9 @@ public class ExtractionTerminalItem extends Item {
     /** Raison d'un échec de lancement, affichée sur l'écran du PC ({@code key} : clé de traduction, lue chez le joueur). */
     public enum LaunchError {
         ROOF("heraliz_extraction.terminal.erreur.toit"),
-        AIR("heraliz_extraction.terminal.erreur.sol");
+        AIR("heraliz_extraction.terminal.erreur.sol"),
+        /** Hors de la carte (spawn, tutoriel des bases, arènes...) : 02/11, audit mods-2 §16, comme les frappes aériennes. */
+        MAP("heraliz_extraction.terminal.erreur.carte");
 
         public final String key;
 
@@ -58,9 +60,12 @@ public class ExtractionTerminalItem extends Item {
         return InteractionResultHolder.consume(player.getItemInHand(hand));
     }
 
-    /** Toit ou pas au sol : calculé pareil côté client (écran) et serveur (pose). */
+    /** Hors de la carte, toit ou pas au sol : calculé pareil côté client (écran) et serveur (pose). */
     @Nullable
     public static LaunchError launchError(Level level, LivingEntity entity) {
+        if (level.dimension() != Level.OVERWORLD) {
+            return LaunchError.MAP;          // la carte est le monde principal (dayz_map) ; la fusée ne se consomme pas
+        }
         if (!ExtractionTerminalEntity.isUnderOpenSky(level, entity.blockPosition())) {
             return LaunchError.ROOF;
         }

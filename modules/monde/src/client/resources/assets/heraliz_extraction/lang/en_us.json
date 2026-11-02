@@ -68,6 +68,7 @@
   "heraliz_extraction.terminal.infobulle.4": "⚠ The smoke can be seen from very far away...",
   "heraliz_extraction.terminal.erreur.toit": "roof detected",
   "heraliz_extraction.terminal.erreur.sol": "not on ground",
+  "heraliz_extraction.terminal.erreur.carte": "off the map",
   "heraliz_extraction.ecran.relais": "relay: OK",
   "heraliz_extraction.ecran.lancement_1": "Launching the",
   "heraliz_extraction.ecran.lancement_2": "flare...",
