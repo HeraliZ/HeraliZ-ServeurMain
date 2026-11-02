@@ -7,8 +7,8 @@ public final class GeneralConfig {
     private GeneralConfig() {
     }
 
-    /** Consommer la cle meme en creatif. */
-    public static boolean consumeKeyInCreative = false;
+    /** Consommer la cle meme en creatif (02/11 : oui par defaut, sinon le staff ouvre des caisses Gemme sans cle). */
+    public static boolean consumeKeyInCreative = true;
     /** Rarete minimale annoncee a tout le serveur. */
     public static LootRarity broadcastMinRarity = LootRarity.LEGENDARY;
     /** Rarete minimale affichee en grand titre au joueur. */
