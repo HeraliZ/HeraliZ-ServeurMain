@@ -23,6 +23,9 @@ Sans à sa vraie taille, texte net, centré, compréhensible).
 - Le serveur de test doit accepter un compte hors ligne sans le launcher (`tokenRequired` et `captureRequired` à false
   dans **son** `spartan-common.toml`). Jamais sur le Ptero.
 - Mémoire : un client (3 Go) + le serveur de test (4 Go) : fermer le jeu et les gros programmes pendant les captures.
+- Outils d'essai (02/11) : `/quete donner`, `/journalieres essai` et `/heralizloot zombies simuler` n'existent que si le
+  banc d'essai (`heraliz_banc`) est sur le serveur de test : le préparer avec `python outils/serveur_local.py <dossier>
+  --banc` pour `journal.json`, `tour_complet.json` et `journalieres.json` (jamais sur le Ptero).
 
 ## Corrigé (25/10, fabriqué et contrôlé ; vu dans le client d'essai)
 

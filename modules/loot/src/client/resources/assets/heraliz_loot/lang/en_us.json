@@ -465,7 +465,6 @@
   "heraliz_loot.filtre.vehicules.info": "Decor vehicles (exact collision)",
   "heraliz_loot.duree.min": "%1$s min %2$s s",
   "heraliz_loot.duree.s": "%s s",
-  "heraliz_loot.cmd.t7.absent": "No T7 crate here",
   "heraliz_loot.cmd.reinitialise": "%s crate(s) reset",
   "heraliz_loot.cmd.type_inconnu": "Unknown type",
   "heraliz_loot.cmd.place_prise": "Spot taken",

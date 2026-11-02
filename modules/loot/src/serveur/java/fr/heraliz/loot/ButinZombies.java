@@ -422,7 +422,7 @@ public final class ButinZombies {
 
     // ------------------------------------------------------------------ commandes (op 2) : /heralizloot zombies ...
     static LiteralArgumentBuilder<CommandSourceStack> commandes() {
-        return Commands.literal("zombies")
+        LiteralArgumentBuilder<CommandSourceStack> zombies = Commands.literal("zombies")
                 .then(Commands.literal("stats").executes(c -> {
                     double h = Math.max(1, System.currentTimeMillis() - debutStats) / 3_600_000.0;
                     c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.zombies.stats",
@@ -431,10 +431,6 @@ public final class ButinZombies {
                             String.valueOf(coupes), String.valueOf(fragments)), false);
                     return (int) kills;
                 }))
-                .then(Commands.literal("simuler").then(Commands.argument("nombre", IntegerArgumentType.integer(1, 1_000_000))
-                        .executes(c -> simuler(c.getSource(), IntegerArgumentType.getInteger(c, "nombre"), "*"))
-                        .then(Commands.literal("militaire")
-                                .executes(c -> simuler(c.getSource(), IntegerArgumentType.getInteger(c, "nombre"), "MILITAIRE")))))
                 .then(Commands.literal("joueur").then(Commands.argument("joueur", EntityArgument.player()).executes(c -> {
                     ServerPlayer p = EntityArgument.getPlayer(c, "joueur");
                     Joueur j = JOUEURS.get(p.getUUID());
@@ -448,6 +444,16 @@ public final class ButinZombies {
                             String.valueOf(j == null ? 0 : j.fragmentsJour)), false);
                     return 1;
                 })));
+        // 02/11 (audit point 36) : simuler (jusqu'à un million de tirages dans la vraie table, pour vérifier les chances) est
+        // un outil d'essai : seulement sur un serveur d'essai qui a le banc (heraliz_banc ; scripts de capture)
+        net.minecraftforge.fml.ModList ml = net.minecraftforge.fml.ModList.get();
+        if (ml != null && ml.isLoaded("heraliz_banc")) {
+            zombies.then(Commands.literal("simuler").then(Commands.argument("nombre", IntegerArgumentType.integer(1, 1_000_000))
+                    .executes(c -> simuler(c.getSource(), IntegerArgumentType.getInteger(c, "nombre"), "*"))
+                    .then(Commands.literal("militaire")
+                            .executes(c -> simuler(c.getSource(), IntegerArgumentType.getInteger(c, "nombre"), "MILITAIRE")))));
+        }
+        return zombies;
     }
 
     /**

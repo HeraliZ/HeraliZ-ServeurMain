@@ -15,18 +15,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Commandes (op) des coffres T7 :
- * <ul><li>/heralizloot ouvrir &lt;x y z&gt; — ouvre le coffre comme un clic droit ;</li>
- * <li>/heralizloot reinitialiser [rayon] — remet à neuf les coffres autour de soi ;</li>
+ * <ul><li>/heralizloot reinitialiser [rayon] — remet à neuf les coffres autour de soi ;</li>
  * <li>/heralizloot apparaitre &lt;type&gt; &lt;x y z&gt; [présence en s] — fait apparaître un coffre temporaire ;</li>
  * <li>/heralizloot point ajouter &lt;nom&gt; &lt;type&gt; &lt;evenement|auto&gt; [présence s] [délai min s] [délai max s]
  * — point d'apparition là où l'on se tient, face avant dans la direction du regard ;</li>
  * <li>/heralizloot point declencher &lt;nom&gt; — le coffre du point apparaît (lecteur de carte, boss, plugin...) ;</li>
  * <li>/heralizloot point retirer &lt;nom&gt;, /heralizloot point liste.</li></ul>
  * Rotation du loot des conteneurs (zones, zone ... info|retirer, proche) : {@link CommandesRotation}.
+ * 02/11 (audit point 36) : {@code /heralizloot ouvrir <x y z>} (outil d'essai : ouvrir un coffre T7 comme un clic droit)
+ * est retiré.
  */
 final class Commandes {
     private Commandes() {}
@@ -38,16 +38,6 @@ final class Commandes {
 
     static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
         d.register(CommandesRotation.ajouter(Commands.literal("heralizloot").requires(s -> s.hasPermission(2)))
-                .then(Commands.literal("ouvrir").then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(c -> {
-                    ServerPlayer p = c.getSource().getPlayerOrException();
-                    BlockPos pos = BlockPosArgument.getLoadedBlockPos(c, "pos");
-                    if (p.level().getBlockEntity(pos) instanceof CoffreBlockEntityServeur be) {
-                        be.ouvrir(p);
-                        return 1;
-                    }
-                    c.getSource().sendFailure(Component.translatableWithFallback("heraliz_loot.cmd.t7.absent", "Pas de coffre T7 ici"));
-                    return 0;
-                })))
                 .then(ButinZombies.commandes())
                 .then(Commands.literal("tables").executes(c -> {
                     // 24/10 : tables relues (config/heraliz_loot/coffres/ par-dessus celles du jar), sans redémarrer

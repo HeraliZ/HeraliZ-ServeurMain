@@ -71,7 +71,10 @@ final class Commandes {
                     Journalieres.remettre(p, Journalieres.etat(p));
                     c.getSource().sendSuccess(() -> Component.literal(p.getGameProfile().getName() + " : " + Journalieres.resume(p)), false);
                     return 1;
-                }))).then(Commands.literal("essai").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
+                }))));
+        // 02/11 (audit point 36) : outil d'essai des quêtes du jour (quête forcée, progression ajoutée, minuit simulé), seulement
+        // sur un serveur d'essai qui a le banc (heraliz_banc, jamais livré avec le serveur normal ; scripts de capture)
+        if (essais()) d.register(Commands.literal("journalieres").then(Commands.literal("essai").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
                 .then(Commands.literal("forcer").then(Commands.argument("difficulte", StringArgumentType.word())
                         .then(Commands.argument("quete", StringArgumentType.word()).executes(c -> essaiJour(c, "forcer",
                                 StringArgumentType.getString(c, "difficulte"), StringArgumentType.getString(c, "quete"), 0)))))
@@ -133,16 +136,25 @@ final class Commandes {
                 .then(Commands.literal("recharger").executes(Commandes::recharger))
                 .then(Commands.literal("joueur").then(Commands.argument("joueur", EntityArgument.player())
                         .executes(c -> voirJoueur(c, EntityArgument.getPlayer(c, "joueur")))))
-                .then(Commands.literal("donner").then(Commands.argument("joueur", EntityArgument.player())
-                        .then(Commands.argument("pnj", StringArgumentType.word()).suggests(PNJ_IDS)
-                                .then(Commands.argument("quete", StringArgumentType.word())
-                                        .executes(c -> donnerQuete(c, EntityArgument.getPlayer(c, "joueur"),
-                                                StringArgumentType.getString(c, "pnj"), StringArgumentType.getString(c, "quete")))))))
-                .then(Commands.literal("finir").then(Commands.argument("joueur", EntityArgument.player())
+                // 02/11 (audit point 36) : finir (dépannage, donne la récompense) réservé aux op 4
+                .then(Commands.literal("finir").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
                         .then(Commands.argument("cle", StringArgumentType.greedyString())
                                 .executes(c -> finir(c, EntityArgument.getPlayer(c, "joueur"), StringArgumentType.getString(c, "cle"))))))
                 .then(Commands.literal("reset").then(Commands.argument("joueur", EntityArgument.player())
                         .executes(c -> reset(c, EntityArgument.getPlayer(c, "joueur"))))));
+        // 02/11 (audit point 36) : donner une quête (que /quete finir termine aussitôt avec sa récompense) est un outil d'essai :
+        // seulement avec le banc (heraliz_banc, serveur d'essai ; scripts de capture). Ajouté au /quete existant.
+        if (essais()) d.register(Commands.literal("quete").then(Commands.literal("donner").then(Commands.argument("joueur", EntityArgument.player())
+                .then(Commands.argument("pnj", StringArgumentType.word()).suggests(PNJ_IDS)
+                        .then(Commands.argument("quete", StringArgumentType.word())
+                                .executes(c -> donnerQuete(c, EntityArgument.getPlayer(c, "joueur"),
+                                        StringArgumentType.getString(c, "pnj"), StringArgumentType.getString(c, "quete"))))))));
+    }
+
+    /** Outils d'essai (quête donnée, quêtes du jour forcées) : seulement sur un serveur d'essai qui a le banc (heraliz_banc). */
+    private static boolean essais() {
+        net.minecraftforge.fml.ModList l = net.minecraftforge.fml.ModList.get();
+        return l != null && l.isLoaded("heraliz_banc");
     }
 
     private static void dire(CommandContext<CommandSourceStack> c, String cle, String fr, Object... args) {

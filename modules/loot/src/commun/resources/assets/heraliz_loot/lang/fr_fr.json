@@ -465,7 +465,6 @@
  "heraliz_loot.filtre.vehicules.info": "Véhicules de décor (collision exacte)",
  "heraliz_loot.duree.min": "%1$s min %2$s s",
  "heraliz_loot.duree.s": "%s s",
- "heraliz_loot.cmd.t7.absent": "Pas de coffre T7 ici",
  "heraliz_loot.cmd.reinitialise": "%s coffre(s) remis à neuf",
  "heraliz_loot.cmd.type_inconnu": "Type inconnu",
  "heraliz_loot.cmd.place_prise": "Place prise",

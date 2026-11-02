@@ -465,7 +465,6 @@
   "heraliz_loot.filtre.vehicules.info": "Декоративный транспорт (точная коллизия)",
   "heraliz_loot.duree.min": "%1$s мин %2$s с",
   "heraliz_loot.duree.s": "%s с",
-  "heraliz_loot.cmd.t7.absent": "Здесь нет ящика T7",
   "heraliz_loot.cmd.reinitialise": "Сброшено ящиков: %s",
   "heraliz_loot.cmd.type_inconnu": "Неизвестный тип",
   "heraliz_loot.cmd.place_prise": "Место занято",
