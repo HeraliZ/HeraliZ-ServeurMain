@@ -6,7 +6,7 @@ import java.util.Optional;
 import fr.heralisz.tactical.api.HeraliszTacticalAPI;
 import fr.heralisz.tactical.api.melee.AttackResult;
 import fr.heralisz.tactical.api.melee.MeleeAction;
-import fr.heralisz.tactical.config.CommonConfig;
+import fr.heralisz.tactical.config.ReglagesMelee;
 import fr.heralisz.tactical.item.index.MeleeWeaponIndex;
 import fr.heralisz.tactical.item.melee.CombatData;
 import fr.heralisz.tactical.network.NetworkHandler;
@@ -154,7 +154,7 @@ public interface IMeleeWeapon extends ICustomItem {
          living.setSecondsOnFire(j * 4);
       }
 
-      if (target.invulnerableTime < (Integer)CommonConfig.MELEE_IGNORE_INVULNERABLE_TICK_THRESHOLD.get()) {
+      if (target.invulnerableTime < ReglagesMelee.seuilInvulnerable) {
          target.invulnerableTime = 0;
       }
 

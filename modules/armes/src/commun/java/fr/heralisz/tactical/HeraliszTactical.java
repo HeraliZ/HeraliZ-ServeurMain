@@ -1,7 +1,6 @@
 package fr.heralisz.tactical;
 
 import fr.heralisz.tactical.config.ClientConfig;
-import fr.heralisz.tactical.config.CommonConfig;
 import fr.heralisz.tactical.config.ServerConfig;
 import fr.heralisz.tactical.init.ModCustomTypes;
 import fr.heralisz.tactical.init.ModEffects;
@@ -27,7 +26,7 @@ public class HeraliszTactical {
 
    public HeraliszTactical() {
       ModLoadingContext.get().registerConfig(Type.CLIENT, ClientConfig.init());
-      ModLoadingContext.get().registerConfig(Type.COMMON, CommonConfig.init());
+      // COMMON (heralisz_tactical-common.toml) : déclaré par la partie serveur seulement (audit du 02/11, point 11)
       ModLoadingContext.get().registerConfig(Type.SERVER, ServerConfig.init());
       IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
       ModItems.ITEMS.register(modEventBus);

@@ -13,8 +13,13 @@ import fr.heralisz.tactical.item.DetonatorItemServeur;
 import fr.heralisz.tactical.item.FlashShieldItemServeur;
 import fr.heralisz.tactical.item.MeleeItemServeur;
 import fr.heralisz.tactical.item.ThrowableItemServeur;
+import fr.heralisz.tactical.config.CommonConfig;
 import fr.heraliz.tactique.pont.Partie;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 /**
  * Partie serveur de heralisz_tactical (docs/METHODE_CLIENT_SERVEUR.md §4) : branche les versions serveur des objets (soins,
@@ -26,6 +31,12 @@ import net.minecraftforge.eventbus.api.IEventBus;
 public final class PartieServeur implements Partie {
    @Override
    public void init(IEventBus busMod) {
+      // Réglages COMMON (grenades qui cassent les blocs, usure et seuil des coups de mêlée) : déclarés ici, côté serveur
+      // seulement (audit du 02/11, point 11), même fichier qu'avant (config/heralisz_tactical-common.toml du serveur).
+      ForgeConfigSpec commun = CommonConfig.init();
+      ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, commun, "heralisz_tactical-common.toml");
+      busMod.addListener((ModConfigEvent.Loading e) -> { if (e.getConfig().getSpec() == commun) CommonConfig.appliquer(); });
+      busMod.addListener((ModConfigEvent.Reloading e) -> { if (e.getConfig().getSpec() == commun) CommonConfig.appliquer(); });
       ModItems.CONSUMABLE_USINE.serveur(a -> new ConsumableItemServeur());
       ModItems.THROWABLE_USINE.serveur(a -> new ThrowableItemServeur());
       ModItems.MELEE_USINE.serveur(a -> new MeleeItemServeur());
