@@ -133,6 +133,8 @@
   "heraliz_usure.reparation.armure_ok": "%s réparée : %s → %s",
   "heraliz_usure.reparation.armure_neuve": "Cette pièce est déjà en parfait état.",
   "heraliz_usure.atelier.titre": "Réparation",
+  "heraliz_usure.atelier.en_attente": "Ton objet de l'atelier de réparation t'attend : fais de la place dans ton inventaire.",
+  "heraliz_usure.atelier.rendu": "Ton objet de l'atelier de réparation est revenu dans ton inventaire.",
   "gui.heraliz_usure.atelier.titre": "Réparation",
   "gui.heraliz_usure.atelier.utilisations": "%s / %s utilisation(s)",
   "gui.heraliz_usure.atelier.objet": "Objet à réparer",

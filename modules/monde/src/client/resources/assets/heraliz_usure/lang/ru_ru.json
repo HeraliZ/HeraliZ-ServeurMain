@@ -133,6 +133,8 @@
   "heraliz_usure.reparation.armure_ok": "%s отремонтировано: %s → %s",
   "heraliz_usure.reparation.armure_neuve": "Этот предмет уже в идеальном состоянии.",
   "heraliz_usure.atelier.titre": "Ремонт",
+  "heraliz_usure.atelier.en_attente": "Твой предмет из ремонтной мастерской ждёт тебя: освободи место в инвентаре.",
+  "heraliz_usure.atelier.rendu": "Твой предмет из ремонтной мастерской вернулся в инвентарь.",
   "gui.heraliz_usure.atelier.titre": "Ремонт",
   "gui.heraliz_usure.atelier.utilisations": "Использований: %s / %s",
   "gui.heraliz_usure.atelier.objet": "Предмет для ремонта",

@@ -133,6 +133,8 @@
   "heraliz_usure.reparation.armure_ok": "%s repaired: %s → %s",
   "heraliz_usure.reparation.armure_neuve": "This piece is already in perfect condition.",
   "heraliz_usure.atelier.titre": "Repair",
+  "heraliz_usure.atelier.en_attente": "Your item from the repair bench is waiting for you: make room in your inventory.",
+  "heraliz_usure.atelier.rendu": "Your item from the repair bench is back in your inventory.",
   "gui.heraliz_usure.atelier.titre": "Repair",
   "gui.heraliz_usure.atelier.utilisations": "%s / %s use(s)",
   "gui.heraliz_usure.atelier.objet": "Item to repair",

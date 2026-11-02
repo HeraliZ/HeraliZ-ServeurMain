@@ -30,6 +30,13 @@ public final class HeralizUsureServeur {
         forge.addListener(HeralizUsureServeur::onConnexion);
         forge.addListener(HeralizUsureServeur::onEquipement);
         forge.addListener(Commandes::onRegister);
+        // atelier de réparation (02/11) : l'objet posé n'est jamais jeté ni perdu (déconnexion, mort, plantage)
+        forge.addListener(net.minecraftforge.eventbus.api.EventPriority.HIGH, MenuReparationServeur::deconnexion);
+        forge.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST, false,
+                net.minecraftforge.event.entity.living.LivingDeathEvent.class, MenuReparationServeur::mort);
+        forge.addListener(MenuReparationServeur::connexion);
+        forge.addListener(MenuReparationServeur::reapparition);
+        forge.addListener(MenuReparationServeur::tickJoueur);
         // ecran d'administration (paquet EnregistrerRegles) : meme traitement qu'a l'origine (droits verifies)
         Reseau.RECEPTION_SERVEUR.brancher(r -> {
             if (r.paquet() instanceof Reseau.EnregistrerRegles m) ReglesServeur.enregistrerDepuisEcran(r.joueur(), m.regles());
