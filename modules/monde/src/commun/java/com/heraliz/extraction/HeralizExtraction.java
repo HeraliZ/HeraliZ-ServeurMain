@@ -5,9 +5,7 @@ import com.heraliz.extraction.reseau.Reseau;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
@@ -23,7 +21,6 @@ public class HeralizExtraction {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModRegistry.register(modBus);
         modBus.addListener(this::addToCreativeTab);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ExtractionConfig.SPEC);
         Reseau.enregistrer();
         // parties coupées (docs/METHODE_CLIENT_SERVEUR.md) : chronos, téléportation, zones fixes, rotation, commandes (serveur) ;
         // rendu du PC et de la zone, écran, poses, particules (client)

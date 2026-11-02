@@ -2,7 +2,10 @@ package com.heraliz.extraction;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-/** Fichier généré : config/heraliz_extraction-common.toml */
+/**
+ * Fichier généré : config/heraliz_extraction-common.toml. Réglage du serveur seulement (audit du 02/11, point 11) : déclaré
+ * par la partie serveur (PartieServeur), il n'est plus écrit sur le PC des joueurs ; leur jeu n'en lit aucune valeur.
+ */
 public final class ExtractionConfig {
     public static final ForgeConfigSpec SPEC;
 
