@@ -149,7 +149,8 @@ PROJETS_SANS_MENTION = ("anticheat", "sacs")
 MODULES_A_PART = ("banc",)
 # modules mis de côté : fabriqués, mais livrés nulle part (ni serveur, ni joueurs, ni solo). 25/10 (choix du
 # propriétaire) : les boss (events) pour l'ouverture : pas posés sur la carte, pas équilibrés (trop de vie, trop de
-# dégâts), coûteux. Les retirer de cette liste pour les remettre (serveur et joueurs de la même fabrication).
+# dégâts), coûteux. Les retirer de cette liste pour les remettre (serveur et joueurs de la même fabrication), et remettre
+# leurs réglages modules/events/defaultconfigs/*.toml dans serveur/defaultconfigs (02/11 : plus recopiés sans eux).
 MODULES_DE_COTE = ("events", "capture")   # capture : outil d'essai des écrans (docs/AUDIT_UI.md), jamais livré
 
 

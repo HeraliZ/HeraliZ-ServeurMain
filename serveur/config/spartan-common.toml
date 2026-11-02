@@ -281,7 +281,7 @@
 	#Identifiants exacts d'items qui permettent de VOLER sur place ou de monter (jetpacks…)
 	#de VOTRE modpack. Porté, tenu en main ou dans un slot Curios : Fly, Vertical et NoFall
 	#ignorent le joueur (Speed aussi tant qu'il est en l'air).
-	flyHoverItems = ["mekanism:jetpack", "mekanism:armored_jetpack"]
+	flyHoverItems = []
 	#Détection de clics trop rapides ou trop réguliers (autoclicker).
 	autoclicker = true
 	#Fly : en l'air, un joueur suit la gravité de vanilla (trajectoire maximale recalculée depuis le
