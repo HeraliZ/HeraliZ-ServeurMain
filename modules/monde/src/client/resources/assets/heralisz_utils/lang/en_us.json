@@ -215,6 +215,8 @@
   "heralisz_utils.bonus_loot.termine": "Your loot bonus has ended.",
   "heralisz_utils.bonus_loot.actif": "Loot bonus +%s%% active: %s of play time left.",
   "heralisz_utils.bonus_loot.active": "Loot bonus +%s%% activated: %s of play time.",
+  "heralisz_utils.bonus_loot.actif_carte": "Loot bonus +%s%% active: %s of play time left on the map.",
+  "heralisz_utils.bonus_loot.active_carte": "Loot bonus +%s%% activated: %s of play time on the map (the timer stops at spawn and while you stand still).",
   "heralisz_utils.duree.min": "%s min",
   "heralisz_utils.duree.h": "%s h",
   "heralisz_utils.duree.h_min": "%s h %s min",

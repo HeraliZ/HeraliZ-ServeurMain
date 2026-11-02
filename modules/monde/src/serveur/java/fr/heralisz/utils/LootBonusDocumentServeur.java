@@ -23,9 +23,12 @@ public class LootBonusDocumentServeur extends LootBonusDocument {
         if (!level.isClientSide && player instanceof ServerPlayer sp) {
             long restant = BonusLootTemps.activer(sp);
             level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
-            sp.sendSystemMessage(Component.translatableWithFallback("heralisz_utils.bonus_loot.active",
-                    "Bonus de loot +%s %% activé : %s de jeu.", String.valueOf(BonusLootConfig.pourcent()),
-                    BonusLootTemps.duree(restant)).withStyle(ChatFormatting.GOLD));
+            // 02/11 : le temps ne s'use que sur la carte et pas AFK (BonusLootConfig) : le message le dit
+            boolean carte = BonusLootConfig.carteSeulement();
+            sp.sendSystemMessage(Component.translatableWithFallback(carte ? "heralisz_utils.bonus_loot.active_carte" : "heralisz_utils.bonus_loot.active",
+                    carte ? "Bonus de loot +%s %% activé : %s de jeu sur la carte (le temps s'arrête au spawn et quand tu ne bouges plus)."
+                            : "Bonus de loot +%s %% activé : %s de jeu.",
+                    String.valueOf(BonusLootConfig.pourcent()), BonusLootTemps.duree(restant)).withStyle(ChatFormatting.GOLD));
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }

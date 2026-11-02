@@ -215,6 +215,8 @@
   "heralisz_utils.bonus_loot.termine": "Твой бонус к луту закончился.",
   "heralisz_utils.bonus_loot.actif": "Бонус к луту +%s %% активен: осталось %s игры.",
   "heralisz_utils.bonus_loot.active": "Бонус к луту +%s %% активирован: %s игры.",
+  "heralisz_utils.bonus_loot.actif_carte": "Бонус к луту +%s %% активен: осталось %s игры на карте.",
+  "heralisz_utils.bonus_loot.active_carte": "Бонус к луту +%s %% активирован: %s игры на карте (время стоит на спавне и пока ты не двигаешься).",
   "heralisz_utils.duree.min": "%s мин",
   "heralisz_utils.duree.h": "%s ч",
   "heralisz_utils.duree.h_min": "%s ч %s мин",
