@@ -251,8 +251,10 @@ final class Moteur {
         p.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5F, 1.3F);
         LOG.info("[heraliz_quetes] {} a fini « {} » ({}) : {} hérals{}, réputation {} {}", p.getGameProfile().getName(),
                 q.titre.francais(), a.cle, r.herals, paye ? "" : " (NON versés : économie absente)", a.pnj, dp.rep);
-        // 23/10 : quête payée = progression et joueur écrits tout de suite (sinon rendue et payée deux fois après un plantage)
+        // 23/10 : quête payée = progression et joueur écrits tout de suite (sinon rendue et payée deux fois après un plantage),
+        // puis les hérals (02/11 : avant, seulement à l'autosave suivante ; un plantage dans ce délai les perdait)
         sauver(p);
+        if (paye && r.herals > 0) Ponts.sauvegarderEconomie();
         envoyerSuivi(p);
     }
 

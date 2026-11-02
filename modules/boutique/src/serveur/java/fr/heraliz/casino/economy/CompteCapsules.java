@@ -505,11 +505,9 @@ public final class CompteCapsules {
             retour(p, borne, msg("plein", "Ton compte est plein (%s capsules au plus).", Chips.format(reglages().max)), false);
             return 0;
         }
-        // le compte d'abord (ecrit sur le disque) ; ecriture ratee : rien n'a bouge
-        if (!crediter(p.getUUID(), p.getGameProfile().getName(), n, "depot")) {
-            retour(p, borne, msg("erreur", "Opération impossible pour le moment, réessaie."), false);
-            return 0;
-        }
+        // 02/11 (audit mods-3 §12 a) : les capsules quittent l'inventaire et le joueur est enregistré SANS elles, PUIS le
+        // compte est crédité (avant : le compte d'abord ; un arrêt brutal entre les deux gardait les capsules dans
+        // l'inventaire ET sur le compte). Un plantage entre les deux perd, il ne copie jamais.
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
             if (s.getItem() instanceof ChipItem c) {
@@ -523,6 +521,14 @@ public final class CompteCapsules {
         }
         inv.setChanged();
         sauverJoueur(p);
+        if (!crediter(p.getUUID(), p.getGameProfile().getName(), n, "depot")) {
+            // écriture du compte ratée : les capsules reviennent dans l'inventaire (elles viennent d'en sortir)
+            long reste = ChipsServeur.mettre(p, n);
+            if (reste > 0) PendingPayouts.get(p.server).add(p.getUUID(), reste);
+            sauverJoueur(p);
+            retour(p, borne, msg("erreur", "Opération impossible pour le moment, réessaie."), false);
+            return 0;
+        }
         long s = solde(p.getUUID());
         if (demande > 0 && n < demande && n < total) {
             retour(p, borne, msg("depose_arrondi", "%s capsules déposées (pas de monnaie pour %s). Compte : %s capsules.",

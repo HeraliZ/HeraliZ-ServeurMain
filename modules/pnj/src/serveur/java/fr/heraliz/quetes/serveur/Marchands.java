@@ -216,8 +216,11 @@ final class Marchands {
             SaisonQuetes.vente(p, horsBoutique);
             Journalieres.vente(p, horsBoutique);
         }
-        // 23/10 : objets partis et hérals versés écrits tout de suite (un arrêt brutal ne rend plus les deux)
+        // 23/10 : objets partis et hérals versés écrits tout de suite (un arrêt brutal ne rend plus les deux) : le joueur
+        // sans les objets d'abord, puis les hérals (02/11 : avant, les hérals n'étaient écrits qu'à l'autosave suivante,
+        // jusqu'à 60 s plus tard ; un plantage dans ce délai perdait les objets ET les hérals)
         Ponts.sauverJoueur(p);
+        Ponts.sauvegarderEconomie();
         p.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.vendu", Texte.brut(nombre), Texte.brut(Ponts.nombre(total))), 0xE8C36A);
         if (pointsEvenement > 0) Moteur.notif(p, Texte.cle("heraliz_quetes.notif.points_evenement", Texte.brut(pointsEvenement)), 0x7BD88F);

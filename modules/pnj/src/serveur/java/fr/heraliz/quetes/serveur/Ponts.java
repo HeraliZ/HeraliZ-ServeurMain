@@ -130,6 +130,24 @@ final class Ponts {
         }
     }
 
+    private static java.lang.reflect.Method sauvegarde;
+
+    /**
+     * Met tout de suite les comptes changés sur le disque (02/11, audit mods-3 §12 b : vente à Mila, quête de Varga
+     * payée). À appeler APRÈS avoir enregistré le joueur (sans les objets vendus, quête finie) : un plantage entre les
+     * deux perd les hérals, il ne copie jamais. Économie absente ou en échec : rien (l'autosave de 60 s suit).
+     */
+    static void sauvegarderEconomie() {
+        Class<?> c = eco();
+        if (c == null) return;
+        try {
+            if (sauvegarde == null) sauvegarde = c.getMethod("sauvegarderMaintenant");
+            sauvegarde.invoke(null);
+        } catch (Throwable t) {
+            LOG.warn("[heraliz_quetes] sauvegarde des hérals impossible : {}", t.toString());
+        }
+    }
+
     static long solde(UUID joueur) {
         Class<?> c = eco();
         if (c == null) return 0;
