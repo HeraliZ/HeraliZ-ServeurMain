@@ -10,7 +10,7 @@ const yaml = require('js-yaml')
 const { minimatch } = require('minimatch')
 
 const RACINE = path.join(__dirname, '..')
-const IGNORES = new Set(['node_modules', 'dist', 'test', 'ci', 'docs', 'build', 'libraries', '.git'])
+const IGNORES = new Set(['node_modules', 'dist', 'test', 'ci', 'docs', 'build', '.git'])
 
 function tousLesFichiers(dossier = RACINE, prefixe = '') {
     const liste = []

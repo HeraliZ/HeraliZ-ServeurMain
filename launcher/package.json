@@ -7,9 +7,6 @@
   "license": "UNLICENSED",
   "homepage": "https://heraliz.fr",
   "desktopName": "heraliz-launcher.desktop",
-  "bugs": {
-    "url": "https://github.com/HeraliZ/HeraliZ-ServeurMain/issues"
-  },
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -37,9 +34,5 @@
     "electron": "44.5.1",
     "electron-builder": "26.15.3",
     "eslint": "^8.57.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HeraliZ/HeraliZ-ServeurMain.git"
   }
 }

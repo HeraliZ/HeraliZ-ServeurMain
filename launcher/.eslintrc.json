@@ -46,20 +46,5 @@
         "no-async-promise-executor": [
             0
         ]
-    },
-    "overrides": [
-        {
-            "files": [
-                "app/assets/js/scripts/*.js"
-            ],
-            "rules": {
-                "no-unused-vars": [
-                    0
-                ],
-                "no-undef": [
-                    0
-                ]
-            }
-        }
-    ]
+    }
 }
