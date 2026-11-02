@@ -165,21 +165,42 @@ public final class Outils {
     }
 
     @Nullable
-    private static Method clashwar;
+    private static Method clashwar, clashwarActif;
+    @Nullable
+    private static java.lang.reflect.Field clashwarSimulation;
     private static boolean clashwarCherche;
 
-    /** Un tournoi ClashWar est ouvert (inscriptions ou matchs) : aucun événement ne part. */
+    /**
+     * Un vrai tournoi ClashWar est ouvert (inscriptions ou matchs) : aucun événement ne part. Lu par réflexion dans le
+     * module ClashWar : {@code Tournois.courant()} garde l'édition finie jusqu'au redémarrage (audit du 02/11, n° 3 :
+     * après le premier ClashWar, plus aucun largage ni hélicoptère), donc on demande aussi {@code actif()} (ni terminée
+     * ni annulée) ; une simulation du banc (champ {@code simulation}) ne bloque rien, comme pour ClashWar lui-même.
+     */
     public static boolean clashwarEnCours() {
         if (!clashwarCherche) {
             clashwarCherche = true;
             try {
                 clashwar = Class.forName("fr.heraliz.clashwar.tournoi.Tournois").getMethod("courant");
+                Class<?> tournoi = Class.forName("fr.heraliz.clashwar.tournoi.Tournoi");
+                clashwarActif = tournoi.getMethod("actif");
+                try {
+                    java.lang.reflect.Field f = tournoi.getDeclaredField("simulation");
+                    f.setAccessible(true);
+                    clashwarSimulation = f;
+                } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                    // sans ce champ, toute édition active compte comme un vrai tournoi (on ne lance rien pendant)
+                    clashwarSimulation = null;
+                }
             } catch (ReflectiveOperationException | LinkageError e) {
                 clashwar = null;
+                clashwarActif = null;
             }
         }
+        if (clashwar == null || clashwarActif == null) return false;
         try {
-            return clashwar != null && clashwar.invoke(null) != null;
+            Object t = clashwar.invoke(null);
+            if (t == null || !Boolean.TRUE.equals(clashwarActif.invoke(t))) return false;
+            return clashwarSimulation == null || !clashwarSimulation.getBoolean(t);
         } catch (ReflectiveOperationException | RuntimeException e) {
             return false;
         }
