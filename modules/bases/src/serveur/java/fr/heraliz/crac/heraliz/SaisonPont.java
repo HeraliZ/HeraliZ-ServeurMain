@@ -94,6 +94,46 @@ public final class SaisonPont {
         return appel(palier, clan, branche) instanceof Integer i ? i : 0;
     }
 
+    private static boolean ecranCherche;
+    @Nullable
+    private static Method ecranOuvert, envoyerEtat, versJoueur;
+    @Nullable
+    private static java.lang.reflect.Constructor<?> ouvrirS2C;
+
+    /**
+     * Écran du clan sur l'onglet Saison chez ce joueur (clic droit d'un membre sur le cœur de son clan, retours du 03/11) :
+     * comme la touche K (état du clan renvoyé, écran compté comme ouvert), puis {@code OuvrirS2C("saison")} de HeraliZ Clans.
+     * Faux si Clans est absent ou trop ancien (le joueur garde alors la ligne d'infos au-dessus de la barre).
+     */
+    public static boolean ouvrirSaison(net.minecraft.server.level.ServerPlayer p) {
+        if (!ecranCherche) {
+            ecranCherche = true;
+            try {
+                Class<?> sync = Class.forName("fr.heralisz.clans.server.Sync");
+                ecranOuvert = sync.getMethod("ecranOuvert", UUID.class);
+                envoyerEtat = sync.getMethod("envoyerEtat", net.minecraft.server.level.ServerPlayer.class);
+                versJoueur = Class.forName("fr.heralisz.clans.network.ClansNet")
+                    .getMethod("toPlayer", net.minecraft.server.level.ServerPlayer.class, Object.class);
+                ouvrirS2C = Class.forName("fr.heralisz.clans.network.Packets$OuvrirS2C").getConstructor(String.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                ecranOuvert = null;
+                Crac.LOGGER.info("[CRac] écran du clan injoignable depuis le cœur : {}", e.toString());
+            }
+        }
+        if (ecranOuvert == null || envoyerEtat == null || versJoueur == null || ouvrirS2C == null) {
+            return false;
+        }
+        try {
+            ecranOuvert.invoke(null, p.getUUID());
+            envoyerEtat.invoke(null, p);
+            versJoueur.invoke(null, p, ouvrirS2C.newInstance("saison"));
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            Crac.LOGGER.warn("[CRac] écran du clan depuis le cœur : {}", e.toString());
+            return false;
+        }
+    }
+
     /** Joueur à terre (Réanimation) ; faux sans Réanimation. */
     public static boolean aTerre(Entity e) {
         if (!downedCherche) {

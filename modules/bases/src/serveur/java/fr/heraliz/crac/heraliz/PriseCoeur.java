@@ -34,7 +34,8 @@ import org.jetbrains.annotations.Nullable;
  * {@link Purge#priseDistance} blocs (3) au plus, vivant, pas à terre, pas en créatif ni spectateur. Personne pour le tenir :
  * la prise repart de zéro. Une barre est montrée aux deux clans. Réussite : {@code SaisonApi.raid} (-15 % pour le clan
  * pris, +10 % pour l'attaquant s'il a son cœur, une fois par clan pris et par Purge). Une prise commencée va jusqu'au bout
- * même si la Purge finit. Toutes les règles sont vérifiées ici, au serveur. Clic droit d'un membre du clan : ses points.
+ * même si la Purge finit. Toutes les règles sont vérifiées ici, au serveur. Clic droit d'un membre du clan : écran du
+ * clan, onglet Saison (points, rangs, cœur ; 03/11), et ses points au-dessus de la barre.
  */
 @EventBusSubscriber(modid = "crac")
 public final class PriseCoeur {
@@ -98,6 +99,9 @@ public final class PriseCoeur {
         }
         UUID monClan = clanDe(p.getUUID());
         if (clanPris.equals(monClan)) {
+            // retours du 03/11 : un membre du clan ouvre l'écran du clan sur l'onglet Saison (points, rangs, cœur) ;
+            // la ligne d'infos reste (Clans trop ancien chez le joueur : seule elle se voit)
+            SaisonPont.ouvrirSaison(p);
             int[] r = SaisonPont.rangs(clanPris);
             barre(p, Purge.t("crac.coeur.infos", "Cœur du clan : %s points · général %s · /saison pour le détail",
                 SaisonPont.points(clanPris), r.length > 3 && r[3] > 0 ? "#" + r[3] : "-"), ChatFormatting.AQUA);

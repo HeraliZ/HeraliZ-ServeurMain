@@ -53,7 +53,8 @@ public final class ClansClient {
      * Ouvre un ecran par nom : "clan" (principal, ou sans clan : invitations / fondation), "creation" (fondation),
      * "banniere" (atelier de banniere depuis Parametres), "atelier" (atelier depuis l'ecran de fondation ouvert, sinon
      * comme "banniere"), "drapeau" (panneau du drapeau, avec {@link ClientClans#panneauDrapeau()}), "permissions" (onglet
-     * Permissions), "permissions_joueurs" / "permissions_base" (editeur par joueur autonome, voir {@link ClansUi}).
+     * Permissions), "saison" (onglet Saison : coeur de clan, CRac), "permissions_joueurs" / "permissions_base" (editeur
+     * par joueur autonome, voir {@link ClansUi}).
      */
     public static void ouvrir(String ecran) {
         Minecraft mc = Minecraft.getInstance();
@@ -91,6 +92,13 @@ public final class ClansClient {
                 // onglet Permissions de l'ecran du clan (reglages par grade et par joueur)
                 Ui.son(Sons.UI_OUVRIR, 0.7f);
                 mc.setScreen(new ClanScreen(ClanScreen.Onglet.PERMISSIONS));
+            }
+            case "saison" -> {
+                // onglet Saison (03/11) : clic droit d'un membre sur le coeur de son clan (CRac, PriseCoeur)
+                if (!(mc.screen instanceof ClanScreen cs && cs.onglet() == ClanScreen.Onglet.SAISON)) {
+                    Ui.son(Sons.UI_OUVRIR, 0.7f);
+                    mc.setScreen(new ClanScreen(ClanScreen.Onglet.SAISON));
+                }
             }
             case "permissions_joueurs", "permissions_base" -> {
                 if (!ClansUi.ouvrirPermissionsJoueurs(ecran.equals("permissions_base"))) {
