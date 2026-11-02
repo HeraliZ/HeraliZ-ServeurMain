@@ -27,6 +27,17 @@ public class ThrowableItem extends Item implements IAnimationItem, IThrowable {
       super(new Properties().stacksTo(1));
    }
 
+   /**
+    * HeraliZ (audit du 02/11, point 31) : tous les objets de ce type sont le même objet de Minecraft, leur fiche est dans
+    * leurs données ; Forge ne comparait que l'objet. Un jeu modifié commençait une grenade et le remplaçait dans la même case
+    * par une autre grenade (ou un autre objet de lancer) : le second prenait le temps et la recharge du premier. L'utilisation s'arrête maintenant dès que la fiche
+    * de l'objet tenu change.
+    */
+   @Override
+   public boolean canContinueUsing(ItemStack oldStack, ItemStack newStack) {
+      return ItemStack.isSameItem(oldStack, newStack) && this.isSame(oldStack, newStack);
+   }
+
    public int getMaxStackSize(ItemStack stack) {
       return this.getThrowableIndex(stack).map(ThrowableIndex::getMaxStackSize).orElse(1);
    }

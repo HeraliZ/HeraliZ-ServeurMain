@@ -32,6 +32,17 @@ public class ConsumableItem extends Item implements IAnimationItem, IConsumable 
       super(new Properties().stacksTo(1));
    }
 
+   /**
+    * HeraliZ (audit du 02/11, point 31) : tous les objets de ce type sont le même objet de Minecraft, leur fiche est dans
+    * leurs données ; Forge ne comparait que l'objet. Un jeu modifié commençait un soin et le remplaçait dans la même case
+    * par un autre soin (soin léger remplacé par un soin lourd) : le second prenait le temps et la recharge du premier. L'utilisation s'arrête maintenant dès que la fiche
+    * de l'objet tenu change.
+    */
+   @Override
+   public boolean canContinueUsing(ItemStack oldStack, ItemStack newStack) {
+      return ItemStack.isSameItem(oldStack, newStack) && this.isSame(oldStack, newStack);
+   }
+
    @Nullable
    public FoodProperties getFoodProperties(ItemStack stack, @Nullable LivingEntity entity) {
       return this.getConsumableIndex(stack).map(ConsumableIndex::getFoodProperties).orElse(null);
