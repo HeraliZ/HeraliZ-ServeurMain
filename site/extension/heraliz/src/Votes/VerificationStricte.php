@@ -14,15 +14,22 @@ use Throwable;
  * open ») : un bot n'aurait qu'à tomber pendant une panne. Ici : vote trouvé = récompense, tout le reste (pas encore
  * trouvé, jeton refusé, panne) = on attend (la page de vote redemande toutes les 5 s).
  *
- * Top-Serveurs ne connaît que l'adresse IP qui a voté : le vote doit venir de la même connexion que la page du site (ou
- * d'une adresse liée par ipv6-adapter.com, comme le fait l'extension Vote, pour les connexions à la fois IPv4 et IPv6).
+ * Les sites de vote ne connaissent que l'adresse IP qui a voté : le vote doit venir de la même connexion que la page du
+ * site (ou d'une adresse liée par ipv6-adapter.com, comme le fait l'extension Vote, pour les connexions à la fois IPv4 et
+ * IPv6).
+ *
+ * Sites vérifiés ici : Top-Serveurs et Top-Games avec le jeton du serveur (« clé de vérification » du site de vote,
+ * administration → Votes → Sites), et, depuis le 02/11 (audit, point 41), Serveurs-Minecraft.org, dont l'API publique
+ * n'a besoin que du numéro du serveur, lu dans l'adresse de vote (…/vote.php?id=<numéro>) : il était vérifié par
+ * l'extension Vote seule, qui récompense quand l'API ne répond pas.
  */
 final class VerificationStricte
 {
-    /** Sites vérifiés ici (jeton du serveur dans « clé de vérification » du site de vote, administration → Votes → Sites). */
+    /** Pour chaque site : adresse de l'API, d'où vient la clé (jeton ou numéro dans l'adresse) et réponse « a voté ». */
     private const API = [
-        'top-serveurs.net' => 'https://api.top-serveurs.net/v1/votes/check-ip?server_token={cle}&ip={ip}',
-        'top-games.net' => 'https://api.top-games.net/v1/votes/check-ip?server_token={cle}&ip={ip}',
+        'top-serveurs.net' => ['https://api.top-serveurs.net/v1/votes/check-ip?server_token={cle}&ip={ip}', 'jeton', 'code', '200'],
+        'top-games.net' => ['https://api.top-games.net/v1/votes/check-ip?server_token={cle}&ip={ip}', 'jeton', 'code', '200'],
+        'serveurs-minecraft.org' => ['https://www.serveurs-minecraft.org/api/is_valid_vote.php?id={cle}&ip={ip}&duration=5&format=json', 'adresse', 'votes', '1'],
     ];
 
     public static function geree(Site $site): bool
@@ -30,23 +37,48 @@ final class VerificationStricte
         return isset(self::API[Garde::hote((string) $site->url) ?? '']);
     }
 
+    /** Le site de vote a besoin d'un jeton (Top-Serveurs, Top-Games), pas seulement de son adresse de vote. */
+    public static function avecJeton(Site $site): bool
+    {
+        return (self::API[Garde::hote((string) $site->url) ?? ''][1] ?? null) === 'jeton';
+    }
+
+    /** La clé de l'API pour ce site : le jeton enregistré, ou le numéro du serveur lu dans l'adresse de vote ; null sinon. */
+    public static function cle(Site $site): ?string
+    {
+        $api = self::API[Garde::hote((string) $site->url) ?? ''] ?? null;
+        if ($api === null) {
+            return null;
+        }
+        if ($api[1] === 'jeton') {
+            $cle = trim((string) $site->verification_key);
+
+            return $cle === '' ? null : $cle;
+        }
+        parse_str((string) parse_url((string) $site->url, PHP_URL_QUERY), $parametres);
+        $numero = $parametres['id'] ?? null;
+
+        return is_string($numero) && preg_match('/^\d{1,10}$/', $numero) === 1 ? $numero : null;
+    }
+
     /** Le site de vote a vu un vote récent depuis cette adresse IP (adresse brute de la requête, pas le bloc /64). */
     public static function aVote(Site $site, string $ip): bool
     {
         $api = self::API[Garde::hote((string) $site->url) ?? ''] ?? null;
-        $cle = trim((string) $site->verification_key);
-        if ($api === null || $cle === '' || $ip === '') {
+        $cle = self::cle($site);
+        if ($api === null || $cle === null || $ip === '') {
             return false;
         }
 
         foreach (self::adresses($ip) as $adresse) {
             try {
                 $reponse = Http::acceptJson()->timeout(5)
-                    ->get(str_replace(['{cle}', '{ip}'], [rawurlencode($cle), rawurlencode($adresse)], $api));
+                    ->get(str_replace(['{cle}', '{ip}'], [rawurlencode($cle), rawurlencode($adresse)], $api[0]));
             } catch (Throwable) {
                 return false;
             }
-            if ((int) $reponse->json('code') === 200) {
+            $valeur = $reponse->successful() ? $reponse->json($api[2]) : null;
+            if (is_scalar($valeur) && (string) $valeur === $api[3]) {
                 return true;
             }
             if ($reponse->json('error') === 'ServerNotFound') {
@@ -76,13 +108,13 @@ final class VerificationStricte
     public static function jetonValide(Site $site): ?bool
     {
         $api = self::API[Garde::hote((string) $site->url) ?? ''] ?? null;
-        $cle = trim((string) $site->verification_key);
-        if ($api === null || $cle === '') {
+        $cle = self::cle($site);
+        if ($api === null || $cle === null) {
             return false;
         }
         try {
             $reponse = Http::acceptJson()->timeout(8)
-                ->get(str_replace(['{cle}', '{ip}'], [rawurlencode($cle), '192.0.2.1'], $api));
+                ->get(str_replace(['{cle}', '{ip}'], [rawurlencode($cle), '192.0.2.1'], $api[0]));
         } catch (Throwable) {
             return null;
         }
@@ -90,7 +122,7 @@ final class VerificationStricte
             return false;
         }
 
-        return is_numeric($reponse->json('code')) ? true : null;
+        return $reponse->successful() && $reponse->json($api[2]) !== null ? true : null;
     }
 
     /** L'adresse de la requête et celles qu'ipv6-adapter.com lui a liées (même réglage que l'extension Vote). */

@@ -517,7 +517,7 @@ function votesProteges(): void
             continue;
         }
         $Stricte = \Azuriom\Plugin\Heraliz\Votes\VerificationStricte::class;
-        $valide = class_exists($Stricte) && $Stricte::geree($site) && trim((string) $site->verification_key) !== ''
+        $valide = class_exists($Stricte) && $Stricte::geree($site) && $Stricte::cle($site) !== null
             ? $Stricte::jetonValide($site) : true;
         if ($valide === false) {
             dire('::warning::Votes : '.$site->name.' REFUSE la clé de vérification enregistrée (« aucun serveur associé ») : '
@@ -525,6 +525,7 @@ function votesProteges(): void
                 .'l’administration → Votes → Sites → '.$site->name);
         } elseif (class_exists($Garde) && $Garde::verifiable($site->fresh())) {
             dire('Votes : '.$site->name.' : chaque vote vérifié auprès du site de vote'
+                .(class_exists($Stricte) && $Stricte::geree($site) ? ', sans récompense si le site de vote ne répond pas' : '')
                 .($valide === null ? ' (site de vote muet pendant le test de la clé : clé pas vérifiée)' : ''));
         } else {
             dire('Votes : '.$site->name.' : vérification impossible'.($hote === 'top-serveurs.net' ? ' (pas de jeton Top-Serveurs)' : '')

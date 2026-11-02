@@ -76,8 +76,9 @@ final class Garde
         if (! $site->has_verification) {
             return false;
         }
+        // vérification stricte (rien ne passe dans le doute) : jeton enregistré, ou numéro du serveur dans l'adresse
         if (VerificationStricte::geree($site)) {
-            return trim((string) $site->verification_key) !== '' && ! VerificationStricte::jetonRefuse($site);
+            return VerificationStricte::cle($site) !== null && ! VerificationStricte::jetonRefuse($site);
         }
 
         try {
