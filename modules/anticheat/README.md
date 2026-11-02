@@ -12,11 +12,11 @@ Anticheat de HeraliZ.
 
 | # | Muraille | Ce qu'elle arrête |
 |---|---|---|
-| 1 | **Launcher officiel** : dossier `mods` vérifié + jeton signé ([docs/LAUNCHER.md](docs/LAUNCHER.md)) | Mods de triche ajoutés, lancement hors du launcher, mod ajouté après le lancement |
+| 1 | **Launcher HeraliZ** : pack signé, jeton signé par le site, Gardien (PC surveillé pendant la partie, rapports vérifiés par le serveur) ([docs/LAUNCHER.md](docs/LAUNCHER.md)) | Mods de triche ajoutés, lancement hors du launcher, mod ajouté après le lancement, programme de triche ouvert |
 | 2 | **Build identique** au serveur, à la connexion | Mod Spartan modifié ou dépassé |
 | 3 | **Défi tournant** à intervalle aléatoire : chaque défi est différent | Mod Spartan modifié, bloqué ou désactivé en cours de partie |
 | 4 | **Contrôle d'intégrité silencieux** (à la connexion puis au hasard) : ce que le jeu a VRAIMENT chargé, + handshake obligatoire | JAR de cheat (même renommé), mods chargés en douce, Mixins qui modifient le rendu / le mouvement, agents Java, injection en cours de partie, code injecté, DLL, logiciels de triche |
-| 5 | **Détections serveur** : Fly, Speed, Reach, KillAura, AutoClicker, Nuker, FastBreak, effets illégaux | Toute triche qui se *voit* dans les actions, injectée ou non |
+| 5 | **Détections serveur** : Fly, Speed (et vitesse soutenue), Reach, KillAura, AutoClicker, Nuker, FastBreak, effets illégaux, latence trafiquée, tirs TaCZ (têtes, coups secs, tirs refusés) | Toute triche qui se *voit* dans les actions, injectée ou non |
 | 6 | **Correction instantanée** : renvoi au sol, coup annulé, bloc non cassé, effet retiré | Le tricheur ne profite pas de sa triche, même une seconde |
 | 7 | **Ressources imposées** : packs de texture et shaders custom bloqués | Textures/shaders qui donnent un avantage (voir à travers les blocs, etc.) |
 | 8 | **JVM durcie** par le launcher (`-XX:+DisableAttachMechanism`) | Injecteurs qui s'attachent au jeu lancé |
@@ -38,6 +38,13 @@ le jeu depuis le launcher » ; le staff reçoit la raison (fil du joueur et « I
 `strictOfficial = false` (relu sans redémarrer). `officiel.json` est relu tout seul quand la mise en ligne le change.
 Tests : `ConformiteStricteTest`. Essayé le 27/10 sur un serveur de test avec un vrai jeu : jeu officiel accepté (défi
 réussi, contrôle propre), jeu avec un jar en plus refusé en 3 s.
+
+**Audit du 02/11 (2.10.0)** : le Gardien du launcher est jugé par le serveur (rapports signés par une clé liée au jeton
+du site, défi de la connexion ; le jeu ne fait que transmettre, voir `docs/LAUNCHER.md`) ; aucun agent Java permis ; le
+jeu ne voit plus ce que Spartan cherche (classes et programmes en empreintes salées, overlays et DLL jugés par le
+serveur, touches surveillées envoyées à la connexion) ; mode strict sans angle mort sur les jars non hachés ni sur un
+scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag analysés (alertes seulement, section
+`[tirs]` et `[checks]`, résumé des tirs dans `tirs.log`) ; outils d'essai retirés, `/sbaninfo` devenu `/banpc info`.
 
 **Alertes Discord (2.9.0)** : file d'envoi de 300 messages (sanctions et bans d'abord), 1 message par seconde et par
 webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur.
@@ -158,7 +165,7 @@ détectés : en cas de doute, **redémarrer le serveur**.
     blockShaders = true               # idéal : ne pas inclure de mod de shaders
     allowedShaderpacks = []
 
-[launcher]                        # voir docs/LAUNCHER.md
+[launcher]                        # jeton signé par le site, voir docs/LAUNCHER.md
     launcherSecret = ""           # secret partagé avec le launcher (vide = désactivé)
     tokenRequired = false         # true = expulse ceux qui ne passent pas par le launcher
     allowedModsHashes = []        # empreintes des modpacks officiels (vide = non vérifié)
@@ -553,7 +560,7 @@ com.Spartan
 │   └── Durations             30m, 12h, 7d, 2w, def
 ├── Client/ClientEvents       Côté joueur : handshake + intégrité (agents, threads)
 ├── Client/ClientScanService  Côté joueur : exécute les contrôles demandés, hors du thread du jeu
-├── Networks/                 Canal "spartan:main", protocole "5"
+├── Networks/                 Canal "spartan:main", protocole "9"
 │   ├── PacketUtil            Lecture bornée (anti-crash)
 │   ├── TestPacket            Identifiant matériel
 │   ├── ModsPacket            Liste des mods
@@ -578,7 +585,7 @@ retardés ou regroupés ; Speed, bunny-hop, planer, vol, saut en l'air, NoSlow
 signalés), horloge par pings (client vanilla simulé image par image avec gels et
 réseau instable : jamais signalé ; jeu accéléré signalé), et injection de données
 aléatoires dans chaque décodeur de paquet Spartan (aucun plantage, aucun blocage).
-Code launcher de référence : `docs/launcher/`.
+Code du launcher : `launcher/` du dépôt (`app/assets/js/spartan.js`, `gardien.js`), voir `docs/LAUNCHER.md`.
 
 **Ajouter une détection :** créer une classe qui étend `MovementCheck`,
 `CombatCheck` ou `BlockCheck`, appeler `flag(joueur, détails)` quand c'est
@@ -587,7 +594,7 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 ## 9. Notes importantes
 
 - **Changer le format d'un paquet impose de monter `PROTOCOL_VERSION`**
-  (`ModMessages.java`, actuellement `"5"`), sinon client et serveur de versions
+  (`ModMessages.java`, actuellement `"9"`), sinon client et serveur de versions
   différentes se déconnectent avec des erreurs peu claires.
 - Les identifiants matériels et les IP sont des **données personnelles** (RGPD) :
   les mentionner dans le règlement du serveur et ne pas les conserver
@@ -595,7 +602,8 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 - Le contrôle d'intégrité collecte des données techniques du **processus du jeu**
   (fichiers et modules chargés, configs Mixin, noms de threads, DLL chargées dans
   le jeu avec un emplacement anonymisé) et le nom des programmes ouverts **qui
-  figurent dans la liste de triche** (jamais la liste complète). Pas d'IP sur
+  correspondent à la liste de triche** (jamais la liste complète ; la liste elle-même
+  n'arrive au jeu qu'en empreintes salées). Pas d'IP sur
   Discord, pas de nom d'utilisateur Windows dans les chemins. À mentionner dans le
   règlement du serveur.
 - Aucun anti-cheat n'est infranchissable : le code client tourne sur une machine

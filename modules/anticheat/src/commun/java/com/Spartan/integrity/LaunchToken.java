@@ -20,9 +20,11 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Jeton de lancement émis par le launcher officiel, et empreinte du dossier mods.
  *
- * Java pur (aucune dépendance Minecraft) : ce fichier peut être copié tel quel
- * dans un launcher Java, et il est testé unitairement. Le format est décrit
- * dans docs/LAUNCHER.md (avec une implémentation JavaScript équivalente).
+ * Java pur (aucune dépendance Minecraft), testé unitairement. Format décrit dans
+ * docs/LAUNCHER.md ; le jeton est signé par le site (JetonController.php), l'empreinte
+ * des mods calculée aussi par le launcher (launcher/app/assets/js/spartan.js,
+ * empreinteMods). Launcher 1.16.0 : l'empreinte signée peut être l'engagement de
+ * l'empreinte ET de la clé du Gardien (GardienPreuve.engagement, côté serveur).
  *
  * Jeton v1 : base64url(payload) + "." + base64url(HMAC-SHA256(secret, payload))
  * payload  : "v1|<base64url(pseudo)>|<expiration epoch secondes>|<empreinte mods>|<aléa>"

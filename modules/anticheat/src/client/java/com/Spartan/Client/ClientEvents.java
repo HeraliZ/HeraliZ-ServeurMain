@@ -96,12 +96,12 @@ public class ClientEvents {
         }
     }
 
-    /** Jeton passé par le launcher officiel : -Dspartan.launchToken=… (ou variable d'environnement). */
+    /**
+     * Jeton passé par le launcher HeraliZ, par la variable d'environnement SPARTAN_LAUNCH_TOKEN seulement (02/11 :
+     * l'ancienne option Java -Dspartan.launchToken, visible de tous les programmes et que le launcher retire, n'est plus lue).
+     */
     private static String launchToken() {
-        String t = System.getProperty("spartan.launchToken");
-        if (t == null || t.isBlank()) {
-            t = System.getenv("SPARTAN_LAUNCH_TOKEN");
-        }
+        String t = System.getenv("SPARTAN_LAUNCH_TOKEN");
         return t == null ? "" : t.trim();
     }
 

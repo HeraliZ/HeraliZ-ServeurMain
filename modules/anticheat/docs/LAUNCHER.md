@@ -1,150 +1,89 @@
-# Intégrer Spartan au launcher officiel
+# Spartan et le launcher HeraliZ
 
-Le launcher est **la première muraille** : il bloque la triche avant même que le
-jeu démarre. Spartan vérifie ensuite côté serveur que le joueur est bien passé
-par lui, et que rien n'a été ajouté entre-temps.
+Le launcher HeraliZ (`launcher/` du dépôt) est **la première muraille** : il prépare un jeu propre, demande au site
+l'autorisation de jouer, puis surveille le PC pendant la partie. Spartan vérifie ensuite, sur le serveur, que le joueur
+est bien passé par lui. Il n'existe plus qu'une seule façon de faire (l'ancien « mode A », où le launcher signait lui-même
+avec un secret embarqué, et le jeton passé en option Java `-Dspartan.launchToken` ont disparu).
 
-Code de référence prêt à copier : [`docs/launcher/spartan-launcher.js`](launcher/spartan-launcher.js)
-(Node.js / Electron, aucune dépendance). Pour un launcher en Java, copier
-directement `src/main/java/com/Spartan/integrity/LaunchToken.java` (Java pur).
-Les deux implémentations ont été vérifiées l'une contre l'autre : mêmes
-empreintes, et un jeton créé en JavaScript est accepté par le serveur.
+Code réel, à lire avant de changer quoi que ce soit (les deux côtés doivent rester d'accord) :
 
-## Ce que fait le launcher, au clic sur « Jouer »
-
-1. **Vérifier le dossier `mods`** avec `verifyModsFolder(modsDir, manifeste)` :
-   le dossier doit contenir **exactement** les mods officiels (aucun en plus,
-   aucun modifié). Sinon : resynchroniser les mods, ou refuser de lancer.
-   → bloque les mods de triche ajoutés à la main (Meteor, Wurst, X-ray…).
-2. **Calculer l'empreinte** du dossier : `modsHash(modsDir)`.
-3. **Obtenir un jeton** signé (voir les deux modes ci-dessous) contenant le
-   pseudo, une expiration (ex. 12 h) et cette empreinte.
-4. **Lancer le jeu** avec l'argument JVM `-Dspartan.launchToken=<jeton>`.
-   Le launcher maîtrise aussi les autres arguments JVM. **Ajouter les protections
-   anti-injection** (voir ci-dessous) et n'ajouter aucun `-javaagent` non prévu
-   (Spartan signale au serveur tout agent non autorisé).
-
-### Protections anti-injection (arguments JVM)
-La plupart des injecteurs « à chaud » (qui s'attachent au jeu déjà lancé)
-utilisent le mécanisme d'attache de la JVM. Le launcher le désactive en ajoutant
-aux arguments de lancement :
-
-```
--XX:+DisableAttachMechanism
--XX:-EnableDynamicAgentLoading   (Java 21+ ; ignoré en Java 17, sans effet négatif)
-```
-
-- `DisableAttachMechanism` empêche tout processus externe de s'attacher à la JVM
-  du jeu : c'est ce qui bloque la classe entière des injecteurs par attache.
-- Le mod vérifie ces protections côté client et le signale au serveur si elles
-  manquent. Avec `requireHardenedJvm = true` (config serveur), un joueur dont le
-  jeu n'a pas été lancé ainsi est refusé — à n'activer qu'une fois le launcher
-  distribué à tous.
-
-Ces protections ne couvrent pas tout (un injecteur plus bas niveau reste
-possible), mais elles éliminent les outils grand public et, combinées au filet
-serveur, rendent l'injection très coûteuse.
-
-En jeu, Spartan recalcule l'empreinte **réelle** du dossier `mods` et l'envoie au
-serveur avec le jeton. Le serveur vérifie :
-- la **signature** du jeton (seul le détenteur du secret peut en fabriquer un) ;
-- le **pseudo** (un jeton ne sert qu'au joueur pour qui il a été émis) ;
-- l'**expiration** ;
-- que les mods **réellement chargés** sont ceux que le launcher a vérifiés
-  (un mod ajouté après le lancement est repéré) ;
-- optionnellement, que l'empreinte fait partie des modpacks officiels
-  (`allowedModsHashes`).
-
-## Deux façons d'émettre le jeton
-
-| | Mode A — le launcher signe | Mode B — le serveur d'authentification signe (**recommandé**) |
+| Côté | Fichier | Rôle |
 |---|---|---|
-| Où est le secret | Dans le launcher | Uniquement sur ton serveur d'auth et sur le serveur Minecraft |
-| Mise en place | Immédiate | Un appel API en plus après le login du launcher |
-| Solidité | Le secret peut être extrait en décompilant le launcher : obfusquer le launcher et **changer le secret à chaque mise à jour** | Le secret ne quitte jamais tes serveurs : impossible de fabriquer un jeton |
+| launcher | `launcher/app/assets/js/spartan.js` | options Java permises, protections, empreinte du dossier mods, environnement du jeu |
+| launcher | `launcher/app/assets/js/gardien.js` | Gardien : surveillance du PC pendant la partie, rapports signés |
+| launcher | `launcher/app/assets/js/launcher-service.js` | ordre des étapes au clic sur « Jouer » |
+| launcher | `launcher/app/assets/js/integrite.js` | jars en trop du dossier mods mis de côté |
+| site | `site/extension/heraliz/src/Controllers/JetonController.php` | jeton de lancement signé pour le compte connecté |
+| jeu | `src/commun/java/com/Spartan/integrity/LaunchToken.java` | format du jeton, empreinte du dossier mods |
+| jeu | `src/client/java/com/Spartan/Client/Gardien.java` | transmet les rapports du Gardien tels quels, recopie le défi |
+| serveur | `src/serveur/java/com/Spartan/integrity/LauncherGate.java` | vérifie le jeton (et la clé du Gardien qu'il engage) |
+| serveur | `src/serveur/java/com/Spartan/integrity/GardienPreuve.java`, `GardienJuge.java`, `serveur/GardienServeur.java` | vérifie et juge les rapports du Gardien |
 
-Comme ton launcher a déjà un login, le **mode B** est le bon choix : après la
-connexion réussie, le launcher envoie `modsHash` à ton API, et l'API répond avec
-`createLaunchToken(SECRET, pseudo, expiration, modsHash)`.
+## Au clic sur « Jouer »
 
-⚠️ L'API doit signer le pseudo de **sa propre session authentifiée** (celui du
-compte qui vient de se connecter), **jamais** un pseudo envoyé par le launcher :
-sinon n'importe qui obtiendrait un jeton au nom d'un autre joueur.
+1. **Pack signé** : le launcher télécharge le pack (mods, gunpacks) depuis le site et refuse un pack qui n'est pas signé
+   par HeraliZ (`signature.js`). Les anciennes versions sont effacées, les jars en trop du dossier `mods` mis de côté.
+2. **Java et options** : Java contrôlé ; les options Java du joueur passent par une liste blanche (mémoire, ramasse-miettes,
+   réglages de Forge) ; `-XX:+DisableAttachMechanism` est toujours ajouté (aucun programme ne peut s'attacher au jeu) ;
+   les variables d'environnement qui injectent du code (`JAVA_TOOL_OPTIONS`, `LD_PRELOAD`…) sont retirées.
+3. **Clés du Gardien** (launcher 1.16.0, quand le pack contient Spartan 2.10.0 ou plus récent) : une paire de clés Ed25519
+   tirée pour ce lancement. La clé privée reste dans la mémoire du launcher ; la clé publique part au jeu.
+4. **Jeton de lancement** : le launcher envoie au site (compte connecté) `SHA-256("gardien-v2|" + empreinte du dossier
+   mods + "|" + clé publique)` ; le site signe ce texte avec la clé des jetons (jamais dans le launcher ni dans le dépôt),
+   pour le pseudo de SON compte, valable 6 h. Ancien mode (pack plus ancien) : l'empreinte des mods seule.
+5. **Lancement** : le jeton passe par la variable `SPARTAN_LAUNCH_TOKEN`, la clé publique par `SPARTAN_GARDIEN_PUB`
+   (ancien mode : clé HMAC `SPARTAN_GARDIEN_CLE`), l'accord des captures par `SPARTAN_CAPTURE_CONSENT`. Jamais sur la
+   ligne de commande. Le jeu les efface de son environnement dès le démarrage.
+6. **Pendant la partie** : le launcher reste en arrière-plan (Gardien, ci-dessous) jusqu'à la fermeture du jeu.
 
-Expiration conseillée : **24 h** (le jeton reste valable tant que le joueur ne
-relance pas le jeu ; au-delà de 30 jours, le serveur le refuse). Un joueur dont
-le jeton a expiré voit « relancez le jeu depuis le launcher ».
+## Ce que vérifie le serveur à la connexion
 
-## Imposer les ressources du serveur (textures / shaders)
+- **Jeton** (`[launcher]`, `tokenRequired = true` sur HeraliZ) : signature du site, pseudo exact (sensible à la casse),
+  expiration (6 h, jamais plus de 30 jours) ; l'empreinte signée doit être celle des mods réellement chargés (calculée
+  par le jeu) — seule, ou avec la clé du Gardien annoncée par le jeu (la clé est alors **prouvée**). Sinon : connexion
+  refusée (« lancez le jeu depuis le launcher HeraliZ »).
+- **Jeu identique au jeu officiel** (`integrity.strictOfficial`) : voir le README (§ Jeu identique), `officiel.json` étant
+  fabriqué avec le serveur par `outils/construire.py` (rien à faire à la main).
+- **Protections** : jeu sans `DisableAttachMechanism`, agent Java (`allowedJavaAgents` vide : aucun n'est permis) : écart.
 
-Pour qu'un joueur ne puisse **rien changer** à l'apparence du jeu :
+## Le Gardien (section `[gardien]`)
 
-1. **Pack de ressources du serveur obligatoire** — dans `server.properties` :
-   ```
-   resource-pack=<URL du pack>
-   resource-pack-sha1=<sha1 du pack>
-   require-resource-pack=true
-   ```
-   Un joueur qui refuse le pack est expulsé (mécanisme vanilla).
-2. **Packs de texture personnalisés interdits** — `blockCustomResourcePacks = true`
-   (défaut) : le mod repère et bloque tout pack ajouté par le joueur.
-3. **Shaders interdits** — le plus sûr est de **ne pas inclure de mod de shaders**
-   (Iris, Oculus, OptiFine) dans le modpack officiel : le launcher empêche alors
-   d'en ajouter un. Si tu inclus Iris pour les performances (avec Sodium), laisse
-   `blockShaders = true` : le mod détecte le shaderpack actif et le bloque
-   (best-effort). Pour autoriser un shaderpack précis, ajoute son nom dans
-   `allowedShaderpacks`.
+Toutes les 10 à 20 s, le launcher regarde depuis l'extérieur du jeu les programmes de triche connus (Cheat Engine,
+débogueurs, injecteurs, décompilateurs : seuls les noms de sa liste trouvés partent, jamais la liste des programmes du
+joueur) et les jars du jeu (changés pendant la partie). Il écrit une ligne dans `spartan/gardien.txt` du dossier du jeu :
 
-## Côté serveur Minecraft (`config/spartan-common.toml`)
-
-```toml
-[launcher]
-    launcherSecret = "…au moins 32 caractères aléatoires, le même que le launcher / l'API…"
-    tokenRequired = false     # phase 1 : alertes seulement, le temps de distribuer le launcher
-    allowedModsHashes = []    # optionnel : empreintes des modpacks officiels
+```
+v2|n|t|pid|défi|lecture|outil,outil|jars changés
+<signature Ed25519 de la ligne, base64url>
 ```
 
-1. Générer un secret : `openssl rand -base64 48` (ne jamais le publier ni le commiter).
-2. Phase 1 : `tokenRequired = false`. Les joueurs sans jeton valide déclenchent
-   une **alerte** (staff + Discord) mais peuvent jouer.
-3. Quand tous les joueurs ont le nouveau launcher : `tokenRequired = true`. Un
-   joueur sans jeton valide est **expulsé** avec le message « lancez le jeu
-   depuis le launcher officiel ».
+Le jeu la transmet **telle quelle** au serveur toutes les 15 s ; il ne vérifie rien et n'a aucune clé secrète. Le serveur
+vérifie : la signature avec la clé prouvée par le jeton, le numéro (jamais en arrière), le numéro de processus du jeu, et
+le **défi** : 16 octets tirés par le serveur pour cette connexion et renouvelés chaque minute (`defiSeconds`), envoyés au
+jeu qui les écrit dans `spartan/gardien-defi.txt`, que le launcher recopie dans sa ligne. Un rapport sans le défi récent
+n'est pas « frais ».
 
-## Manifeste des mods officiels
+Alertes (jamais d'expulsion, sauf `required` et `ancienLauncher = "refuser"`) :
+- « Gardien » : programme de triche ouvert, jar changé pendant la partie, rapport refusé (inventé, retouché, rejoué,
+  d'un autre jeu), jeu lancé sans Gardien, ancien launcher (selon `ancienLauncher`), joueur revenu avec un ancien
+  launcher après avoir eu le nouveau ;
+- « Gardien muet » : plus aucun rapport prouvé et frais depuis `silenceSeconds` (launcher fermé de force, jeu modifié qui
+  ne transmet plus ou renvoie de vieux rapports).
 
-```bash
-node docs/launcher/make-manifest.js /chemin/vers/mods-officiels > manifest.json
-```
+## Mise en ligne d'un changement
 
-- Publier `manifest.json` là où le launcher le télécharge (avec les mods).
-- La sortie affiche aussi l'**empreinte du dossier** : la mettre dans
-  `allowedModsHashes` si on veut que le serveur refuse tout autre modpack.
-- À regénérer à chaque mise à jour du modpack.
-
-## Formats exacts (pour une autre implémentation)
-
-**Empreinte du dossier mods** : pour chaque entrée `.jar` du dossier (non
-récursif, liens suivis), une ligne `nom-en-minuscules:sha256hex` pour un fichier,
-ou `nom-en-minuscules:dir:sha256hex` pour un dossier nommé `.jar` (mod « éclaté » :
-empreinte de ses fichiers, voir le code) ; trier les lignes (ordre des codes
-UTF-16), les joindre par `\n`, puis SHA-256 hexadécimal (minuscules) en UTF-8.
-Utiliser des noms de fichiers ASCII dans le modpack (les noms accentués peuvent
-être lus différemment selon la langue du système).
-
-**Jeton v1** :
-```
-payload = "v1|<base64url(pseudo)>|<expiration en secondes epoch>|<empreinte mods>|<aléa hex>"
-jeton   = base64url(payload) + "." + base64url(HMAC-SHA256(secret, payload))
-```
-base64url sans `=` de remplissage ; secret et pseudo encodés en UTF-8. Le pseudo
-est **sensible à la casse** (en crack, « Steve » et « steve » sont deux comptes).
+1. Changement du format (jeton, ligne du Gardien, empreinte) : changer **les deux côtés** et leurs tests
+   (`launcher/test/gardien.test.js`, `GardienPreuveTest`, `GardienJugeTest`, `LaunchTokenTest`), monter la version du
+   launcher et de Spartan.
+2. Envoyer sur `main` (serveur et pack), puis publier le launcher (workflow « Launcher HeraliZ », case « publier ») : les
+   launchers Windows et AppImage se mettent à jour seuls au démarrage, Mac et `.deb` préviennent le joueur.
+3. Le launcher ne passe à un nouveau format que si le pack contient la version de Spartan qui le comprend : il peut être
+   publié avant ou après le serveur sans casser les connexions.
 
 ## Limites (à connaître)
 
-- Un joueur qui extrait le secret (mode A) peut fabriquer des jetons : d'où le
-  mode B, ou un secret changé à chaque version du launcher.
-- Le launcher et le mod tournent sur le PC du joueur : ce sont des murailles
-  qui découragent et ralentissent, pas des garanties. Le filet final reste les
-  **détections côté serveur** (vol, vitesse, portée, minage…), que le joueur ne
-  peut pas falsifier.
+Tout ce qui tourne sur le PC du joueur peut mentir à un tricheur déterminé : un programme qui imite le launcher avec le
+compte du joueur obtient un jeton du site et peut signer ses propres rapports du Gardien ; un Spartan modifié avec soin
+peut répondre juste au défi d'intégrité ; le jeu calcule lui-même l'empreinte de ses mods. Ces murailles arrêtent les
+outils tout faits et obligent à un vrai travail ; le filet final reste les **détections côté serveur** (mouvement,
+combat, tirs TaCZ, latence, anti-ESP), que le joueur ne peut pas falsifier.
