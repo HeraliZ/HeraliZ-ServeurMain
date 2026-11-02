@@ -52,7 +52,7 @@ public record Kit(String id, String nomFr, String nomEn, String classe, List<Str
                   @Nullable Arme secondaire, @Nullable String melee, List<Objet> soins, List<Objet> grenades,
                   @Nullable String armureKit, List<String> armurePieces, float portee, float cadence, float mobilite) {
     public static final String CLASSE_ASSAUT = "assaut", CLASSE_SMG = "smg", CLASSE_POMPE = "pompe", CLASSE_SNIPER = "sniper",
-            CLASSE_TACTIQUE = "tactique", CLASSE_PERSO = "perso", CLASSE_ZOMBIES = "zombies";
+            CLASSE_TACTIQUE = "tactique", CLASSE_PERSO = "perso";
 
     public Kit {
         modes = List.copyOf(modes);

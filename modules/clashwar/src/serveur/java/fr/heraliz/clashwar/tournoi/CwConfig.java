@@ -59,6 +59,12 @@ public final class CwConfig {
     public String kitDefaut = "clashwar_assaut";
     /** Jetons verses a la banque du clan. */
     public long recompenseVainqueur = 5000, recompenseFinaliste = 2000, recompenseTroisieme = 1000, recompenseDemi = 750;
+    /**
+     * Clans differents au moins pour qu'une edition rapporte des points de saison (pas de tournoi entre deux clans
+     * complices) ; 02/11 (audit) : sorti du code ({@code Recompenses}). L'onglet Saison de HeraliZ Clans en affiche une
+     * copie ({@code SaisonVue}) : changer les deux ensemble.
+     */
+    public int saisonClansMin = 4;
     /** Cle de caisse d'event donnee a chaque joueur de l'equipe gagnante (id d'objet, vide = aucune). */
     public String cleEvent = "heralizcrates:event_key";
     public int clesParJoueur = 1;
@@ -179,6 +185,7 @@ public final class CwConfig {
             cleEvent = chaine(r, "cle_event", cleEvent);
             clesParJoueur = Math.max(0, r.has("cles_par_joueur") ? r.get("cles_par_joueur").getAsInt() : clesParJoueur);
         }
+        saisonClansMin = Math.max(1, entier(o, "saison_clans_min", saisonClansMin));
         salle = chaine(o, "salle", salle);
     }
 
@@ -225,6 +232,7 @@ public final class CwConfig {
         rec.addProperty("cle_event", cleEvent);
         rec.addProperty("cles_par_joueur", clesParJoueur);
         o.add("recompenses", rec);
+        o.addProperty("saison_clans_min", saisonClansMin);
         o.addProperty("salle", salle);
         return o;
     }

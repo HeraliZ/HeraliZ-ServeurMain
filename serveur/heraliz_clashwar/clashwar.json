@@ -48,5 +48,6 @@
     "cle_event": "heralizcrates:event_key",
     "cles_par_joueur": 1
   },
+  "saison_clans_min": 4,
   "salle": "lobby_clashwar"
 }

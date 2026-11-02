@@ -48,7 +48,6 @@ public record Carte(String id, String nomFr, String nomEn, String type, Resource
     /** Grandes cartes de recherche et destruction du ClashWar, pour tous les formats (passent avant celles du format). */
     public static final String TYPE_CLASHWAR_RD = "clashwar_rd";
     public static final String TYPE_DUEL = "duel";
-    public static final String TYPE_ZOMBIES = "zombies";
 
     /** Points relatifs de ce nom (liste vide si absent). */
     public List<Pose> pointsRelatifs(String nom) {

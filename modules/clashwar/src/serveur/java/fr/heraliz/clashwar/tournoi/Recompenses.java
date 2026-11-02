@@ -68,16 +68,15 @@ public final class Recompenses {
         }
     }
 
-    /** Clans differents au moins pour que l'edition compte dans la saison (pas de tournoi entre deux clans complices). */
-    static final int SAISON_CLANS_MIN = 4;
-
     /**
      * Saison des clans (HeraliZ Clans 3.6.0, {@code SaisonApi.event}, par reflexion : la copie de Clans de libs/ ne l'a pas) :
      * podium dans l'ordre, participation pour les autres clans ; bareme (et x2 du ClashWar) chez Clans.
      */
     private static void saison(Tableau tab, int[] podium, Set<UUID> clans) {
-        if (clans.size() < SAISON_CLANS_MIN) {
-            HeralizClashWar.LOG.info("[clashwar] {} clan(s) seulement : pas de points de saison (au moins {})", clans.size(), SAISON_CLANS_MIN);
+        // clans differents au moins pour que l'edition compte (pas de tournoi entre deux clans complices) : clashwar.json
+        int min = CwConfig.get().saisonClansMin;
+        if (clans.size() < min) {
+            HeralizClashWar.LOG.info("[clashwar] {} clan(s) seulement : pas de points de saison (au moins {})", clans.size(), min);
             return;
         }
         java.util.List<UUID> ordre = new java.util.ArrayList<>();
