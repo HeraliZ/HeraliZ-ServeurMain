@@ -522,6 +522,23 @@ MELEE = {
     "cs2_push": "cs2_push_skin",
     "cs2_stiletto": "cs2_stiletto_skin",
 }
+# Vitesse en main des armes de mêlée de LR (part de la vitesse de base, attribut minecraft:generic.movement_speed en
+# « percent ») : 03/11, demande du propriétaire, tous les couteaux à +10 % (avant : +5 % pour toute la mêlée, 19/10) ; la
+# batte n'est pas un couteau et garde +5 %. Écrite dans la fiche de chaque skin, quelle que soit celle de melee_base. Les
+# couteaux TaCZ (M9, Karambit, Butterfly, CT, T) ont le même bonus dans leur fiche commune arkaniaz:knife_data
+# (serveur/tacz/heraliz_5_couteaux_cs2, « movement_speed »).
+VITESSE_COUTEAUX = 0.1
+VITESSE_EN_MAIN = {"baseball_bat": 0.05}
+
+
+def vitesse_en_main(couteau, fiche):
+    """Bonus de vitesse en main de l'arme (VITESSE_EN_MAIN, sinon VITESSE_COUTEAUX) écrit dans la fiche."""
+    attributs = fiche.setdefault("data", OrderedDict()).setdefault("attributes", OrderedDict())
+    attributs["minecraft:generic.movement_speed"] = OrderedDict(
+        [("amount", VITESSE_EN_MAIN.get(couteau, VITESSE_COUTEAUX)), ("operation", "percent")])
+    return fiche
+
+
 # Rang de chaque skin (19/10, liste du propriétaire) : 1 à 4 étoiles allumées sur 4 dans la description ; tout skin qui
 # n'est pas cité ici en a 4. Vaut aussi pour les skins d'avant le catalogue (Doppler, Lore, Fade…).
 ETOILES = {}
@@ -701,7 +718,7 @@ def ecrire_objets():
             fiche["name"] = "item.heralisz_melee.%s" % cle
             fiche = OrderedDict([("name", fiche["name"]), ("tooltip", "item.heralisz_melee.%s.desc" % cle)]
                                 + [(a, b) for a, b in fiche.items() if a not in ("name", "tooltip")])
-            ecrire_json(MELEE_DATA / (cle + ".json"), fiche)
+            ecrire_json(MELEE_DATA / (cle + ".json"), vitesse_en_main(couteau, fiche))
             m = MELEE[couteau]
             geo, tex = m if isinstance(m, tuple) else (m + "_geo", m + "_uv")
             affichage = lire_json(MELEE_ASSETS / "display" / "melee" / (couteau + ".json"))
