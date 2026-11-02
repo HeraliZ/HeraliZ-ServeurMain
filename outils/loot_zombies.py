@@ -151,6 +151,9 @@ ECHELLE = {"zombies": (1.6, 3.8), "zombies_militaire": (1.3, 3.5)}
 
 
 RECUP = {c for liste in VENTE.values() for c in liste if c not in ("plastique", "planche")}
+# composants du niveau III (Épiques) : jamais agrandis, un seul d'un coup (02/11, audit n° 24, A255 ; décision : un
+# composant Épique d'un coup, règle du propriétaire) ; avant, l'ECHELLE les faisait sortir par 1 à 7 (4 en moyenne).
+QUANTITE_NIVEAU = {"_iii": [1, 1]}
 
 
 def mettre_a_l_echelle(lignes_, f_objets, f_quantite):
@@ -158,6 +161,8 @@ def mettre_a_l_echelle(lignes_, f_objets, f_quantite):
     for objet, nbt, nombre, pour100 in lignes_:
         if objet[len(C):] in RECUP:
             nombre = [1, 2]  # objets de récupération (montre, téléphone...) : un ou deux, jamais une poignée
+        elif objet.startswith(C) and any(objet.endswith(s) for s in QUANTITE_NIVEAU):
+            nombre = next(q for s, q in QUANTITE_NIVEAU.items() if objet.endswith(s))  # III : 1
         elif objet.startswith(C) or objet == "tacz:ammo":
             a, b = nombre
             moyenne = (a + b) / 2 * f_quantite

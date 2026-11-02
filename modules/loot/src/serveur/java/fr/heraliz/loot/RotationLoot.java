@@ -790,7 +790,15 @@ public final class RotationLoot extends SavedData {
                     }
                 }
             }
-            while (a + p < cible && activerUn(z, AUCUNE, l.random)) {
+            double chance = z.chanceRemplir(z.taille() - nbInvalides.getInt(z.id));
+            while (a + p < cible) {
+                if (l.random.nextDouble() >= chance) {                  // petite zone : remplie plus tard, peut-être (n° 24)
+                    attentes.add(new Attente(z.id, l.getGameTime() + ConfigLoot.delaiTicks(l.random), AUCUNE));
+                    p++;
+                    setDirty();
+                    continue;
+                }
+                if (!activerUn(z, AUCUNE, l.random)) break;
                 a++;
                 ajoutes++;
             }
@@ -834,7 +842,11 @@ public final class RotationLoot extends SavedData {
             }
             for (Attente a : dues) {
                 ZonesLoot.Zone z = ZonesLoot.zone(l.dimension(), a.zone());
-                if (z != null) e.activerUn(z, a.exclu(), l.random);
+                if (z == null) continue;
+                // petite zone (part voulue sous 1 conteneur) : remplie avec cette part pour chance, sinon nouvelle attente
+                // (02/11, audit n° 24 : un conteneur haut de gamme isolé n'est plus plein à chaque passage)
+                if (l.random.nextDouble() < z.chanceRemplir(z.taille())) e.activerUn(z, a.exclu(), l.random);
+                else e.attentes.add(new Attente(a.zone(), now + ConfigLoot.delaiTicks(l.random), a.exclu()));
             }
             if (!dues.isEmpty()) e.setDirty();
         }

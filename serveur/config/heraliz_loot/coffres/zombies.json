@@ -396,7 +396,7 @@
    "item": "heraliz_composants:canon_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -405,7 +405,7 @@
    "item": "heraliz_composants:ressort_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -414,7 +414,7 @@
    "item": "heraliz_composants:kit_pieces_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -423,7 +423,7 @@
    "item": "heraliz_composants:tissu_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 686,
    "_pour_100": 0.0686
@@ -432,7 +432,7 @@
    "item": "heraliz_composants:alcool_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -441,7 +441,7 @@
    "item": "heraliz_composants:batterie_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -450,7 +450,7 @@
    "item": "heraliz_composants:circuit_imprime_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -459,7 +459,7 @@
    "item": "heraliz_composants:ferraille_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 686,
    "_pour_100": 0.0686
@@ -468,7 +468,7 @@
    "item": "heraliz_composants:bocal_poudre_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 686,
    "_pour_100": 0.0686
@@ -477,7 +477,7 @@
    "item": "heraliz_composants:caoutchouc_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343
@@ -486,7 +486,7 @@
    "item": "heraliz_composants:scotch_iii",
    "nombre": [
     1,
-    7
+    1
    ],
    "poids": 343,
    "_pour_100": 0.0343

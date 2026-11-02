@@ -174,6 +174,18 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
             int n = Math.max(1, (int) Math.round(p * taille()));
             return Math.min(n, disponibles);
         }
+
+        /**
+         * Chance qu'un remplissage de la zone ait vraiment lieu (02/11, audit n° 24, choix : un conteneur haut de gamme
+         * isolé n'est pas plein à chaque passage). 1 en général. Pour une petite zone dont la part voulue (proportion x
+         * conteneurs) est sous 1, la règle « au moins 1 » de {@link #cible} la gardait pleine en permanence (un T6 seul :
+         * vidé, de nouveau plein 4 à 6 min plus tard) ; elle se remplit maintenant avec cette part pour chance (sinon
+         * nouvelle attente) : un T6 seul à 0,11 est plein environ 1 passage sur 9, comme les T6 d'une grande zone.
+         */
+        public double chanceRemplir(int disponibles) {
+            double e = proportion() * Math.max(0, disponibles);
+            return e <= 0 ? 0 : Math.min(1.0, e);
+        }
     }
 
     public ZonesLoot() {

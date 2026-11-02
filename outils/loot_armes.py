@@ -74,6 +74,11 @@ SACS_HORS_LOOT = ("backpack", "backpack_school", "backpack_expand1", "backpack_e
 # mêmes parts dans tous les paliers (choix du propriétaire, 22/10) : seul le nombre de sacs monte avec le palier
 PARTS_SACS = {t: {"commun": 62, "peu_commun": 24, "rare": 10, "epique": 3.5, "legendaire": 0.5} for t in range(1, 8)}  # 23/10
 PARTS_FAMILLE.update({("sacs", t): v for t, v in PARTS_SACS.items()})
+# familles dont les parts sont des chances fixes (02/11, audit n° 24, A258 ; décision : les parts d'origine) : une rareté
+# sans objet dans le loot n'est PAS répartie sur les autres. Sacs : Peu commun 24 %, Rare 10 %, Épique 3,5 %, Légendaire
+# 0,5 % des sacs prévus (POUR_100) ; la part Commun (62 %, le sac d'école, hors loot depuis le 22/10) ne donne pas de sac.
+# Avant : 63 / 26 / 9,2 / 1,3 %, un sac Épique ou Légendaire presque 3 fois plus souvent que décidé.
+PARTS_FIXES = {"sacs"}
 SACS_JAVA = RACINE / "modules/sacs/src/commun/java/com/mrcrayfish/backpacked/core/ArkaniaZModItems.java"
 # jerrican d'essence et chalumeau de réparation des véhicules : un peu plus rares
 OUTILS_VEHICULE = {"ywzj_vehicle:fuel_tank": 0.75, "ywzj_vehicle:repair_tool": 0.75}
@@ -652,6 +657,9 @@ def ecrire():
         data["cases_poids"] = {str(n): w for n, w in sorted(CASES_POIDS[t].items())}
         cases = 1  # nombres « pour 100 » = parts des objets : chaque case tirée est pleine (presque jamais vide)
         p = {f: POUR_100[f][t] / 100 / cases for f in fams}
+        for f in PARTS_FIXES & set(p):  # part des raretés absentes du loot retirée (jamais répartie sur les autres)
+            parts_f = PARTS_FAMILLE.get((f, t), PARTS[t])
+            p[f] *= sum(parts_f.get(r, 0) for r in fams[f]) / sum(parts_f.values())
         base = [e["_base"] * mult_autre(e, t) for e in autres[t]]
         p["capsules"] = CAPSULES_POUR_100[t] / 100 / cases
         p["kits"] = KITS_POUR_100[t] / 100 / cases
