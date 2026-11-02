@@ -68,7 +68,7 @@ jobs:
           echo "PTERO_HOTE=$HOTE" >> "$GITHUB_ENV"
           echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
           if bash outils/hote_connu.sh "$HOTE" "$PORT" "$RUNNER_TEMP/hotes_ptero" PTERO_SFTP_EMPREINTE <<< "${PTERO_SFTP_EMPREINTE:-}"; then
-            echo "LFTP_SSH=set sftp:connect-program \"ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$RUNNER_TEMP/hotes_ptero\";" >> "$GITHUB_ENV"
+            echo "LFTP_SSH=set sftp:connect-program $RUNNER_TEMP/hotes_ptero.ssh;" >> "$GITHUB_ENV"
             echo "SFTP du Ptero : machine vérifiée par son empreinte."
           else
             echo "LFTP_SSH=set sftp:auto-confirm yes;" >> "$GITHUB_ENV"

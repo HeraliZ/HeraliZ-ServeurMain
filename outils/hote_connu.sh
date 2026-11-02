@@ -9,7 +9,8 @@
 # L'empreinte (variable ou secret GitHub, par exemple SITE_SSH_EMPREINTE, PTERO_SFTP_EMPREINTE) arrive sur l'entrée :
 # une ou plusieurs lignes « type clé » (« ssh-ed25519 AAAA… »), avec ou sans le nom de la machine devant (sortie de
 # ssh-keyscan acceptée telle quelle). Rend 0 et écrit le fichier si au moins une clé est lue : l'appelant passe alors
-# StrictHostKeyChecking=yes avec ce fichier (une autre machine est refusée). Sinon rend 1 (comportement d'avant) et, si
+# StrictHostKeyChecking=yes avec ce fichier (une autre machine est refusée) ; pour lftp, le lanceur <fichier>.ssh fait
+# la même chose (set sftp:connect-program <fichier>.ssh). Sinon rend 1 (comportement d'avant) et, si
 # le nom de la variable est donné, écrit dans le résumé de la tâche les clés que GitHub voit, prêtes à recopier. Les
 # clés d'hôte sont publiques : rien de secret n'est affiché (ni le nom de la machine).
 set -u
@@ -25,7 +26,14 @@ tr -d '\r' | awk -v n="$nom" '{
     print n, $i, $(i + 1); break
   }
 }' > "$fichier"
-[ -s "$fichier" ] && exit 0
+if [ -s "$fichier" ]; then
+  # lanceur de ssh sans espace dans son chemin, pour « set sftp:connect-program <fichier>.ssh » de lftp : écrit entre
+  # guillemets dans un « lftp -e » de plusieurs lignes, la commande « ssh -o … » était prise pour un seul nom de
+  # programme (« sh: 1: ssh -a -x …: not found ») et la mise en ligne du 02/11 n'a rien pu envoyer
+  printf '#!/bin/sh\nexec ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile="%s" "$@"\n' "$fichier" > "$fichier.ssh"
+  chmod 700 "$fichier.ssh"
+  exit 0
+fi
 if [ -n "$variable" ] && [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   vu=$(ssh-keyscan -T 15 -p "$port" -t ed25519,ecdsa,rsa "$hote" 2> /dev/null | awk 'NF >= 3 && $1 !~ /^#/ {print $2, $3}')
   {

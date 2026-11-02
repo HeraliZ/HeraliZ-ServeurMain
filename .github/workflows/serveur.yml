@@ -433,7 +433,7 @@ jobs:
           echo "PTERO_PORT=$PORT" >> "$GITHUB_ENV"
           # machine du Ptero vérifiée par son empreinte (variable PTERO_SFTP_EMPREINTE ; sans elle : comme avant)
           if bash outils/hote_connu.sh "$HOTE" "$PORT" "$RUNNER_TEMP/hotes_ptero" PTERO_SFTP_EMPREINTE <<< "${PTERO_SFTP_EMPREINTE:-}"; then
-            CONNEXION="set sftp:connect-program \"ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$RUNNER_TEMP/hotes_ptero\";"
+            CONNEXION="set sftp:connect-program $RUNNER_TEMP/hotes_ptero.ssh;"
             echo "SFTP du Ptero : machine vérifiée par son empreinte."
           else
             CONNEXION="set sftp:auto-confirm yes;"
