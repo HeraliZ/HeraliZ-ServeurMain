@@ -17,10 +17,13 @@ import java.util.List;
 public final class NoyauConfig {
    private NoyauConfig() {}
 
-   public static final List<String> COMMANDES_COMBAT_DEFAUT = List.of("login", "register", "l", "reg", "msg", "tell", "w", "r",
-         "me", "quetes", "journalieres", "pb", "saison", "extractions", "event");
+   // 02/11 (audit point 32) : les commandes d'AuthMe passent maintenant par ces listes (événement Bukkit) : tout ce qu'il faut
+   // pour se connecter y est (login, l, log, register, reg, captcha, totp, 2fa), sinon un joueur resté sur la carte ne
+   // pourrait plus entrer son captcha ou son code de double authentification
+   public static final List<String> COMMANDES_COMBAT_DEFAUT = List.of("login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
+         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event");
    // 25/10 (tri des commandes) : /home remplace /sethome, /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny
-   public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "reg",
+   public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
          "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home",
          "base", "purge", "coeur", "canal");
 
