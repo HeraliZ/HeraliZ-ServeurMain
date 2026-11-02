@@ -801,6 +801,7 @@
   "gui.saison.c.vente": "objets trouvés seulement",
   "gui.saison.c.plafond": "%s points par joueur et par jour au plus",
   "gui.saison.c.kill": "victime armée ou en armure",
+  "gui.saison.c.kill_plafond": "victime armée ou en armure ; %s points par jour au plus",
   "gui.saison.c.mort": "jamais sous 0",
   "gui.saison.c.fenetre": "sur %s h",
   "gui.saison.c.capture_prise": "zone tenue depuis %s min ; %s points par jour au plus",

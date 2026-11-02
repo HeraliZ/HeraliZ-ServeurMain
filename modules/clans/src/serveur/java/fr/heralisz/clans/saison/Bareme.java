@@ -52,6 +52,11 @@ public final class Bareme {
     public double[] captureDifficulte = {0.8, 1, 1.25};
 
     public double pvpKill = 1, pvpMort = 1;
+    /**
+     * Points de kills gagnes par clan et par jour au plus (02/11, choix du proprietaire : comme les captures) ; 0 : sans
+     * plafond. Les points perdus par le clan d'une victime ne sont pas plafonnes.
+     */
+    public double pvpPlafondJour = 40;
     /** Fenetre (heures) et coefficients pour une meme victime : 1er kill, 2e, puis tous les suivants. */
     public double pvpFenetreH = 6;
     public double[] pvpCoefs = {1, 0.5, 0};
@@ -190,6 +195,7 @@ public final class Bareme {
         JsonObject v = Json.obj(o, "pvp");
         pvpKill = Math.max(0, Json.dbl(v, "kill", pvpKill));
         pvpMort = Math.max(0, Json.dbl(v, "mort", pvpMort));
+        pvpPlafondJour = Math.max(0, Json.dbl(v, "plafond_jour_clan", pvpPlafondJour));
         pvpFenetreH = Math.max(0, Json.dbl(v, "fenetre_h", pvpFenetreH));
         JsonArray co = Json.arr(v, "coefficients");
         if (co.size() > 0) {
@@ -237,7 +243,8 @@ public final class Bareme {
                 + " capture d'un drapeau = valeur de la ville x par_valeur x difficulte des vagues (1, 2, 3), x prise_coef (points PVP) si la"
                 + " zone etait tenue par un autre clan depuis tenue_min_minutes ; rien pour la meme zone et le meme clan avant meme_zone_heures,"
                 + " ni pour la meme zone entre les deux memes clans avant meme_paire_heures ; au plus plafond_jour_clan par clan et par jour ;"
-                + " relu par /recharger saison.");
+                + " pvp : plafond_jour_clan = points de kills gagnes par clan et par jour au plus (0 : sans plafond ; les points perdus par"
+                + " le clan de la victime ne sont pas plafonnes) ; relu par /recharger saison.");
         JsonObject p = new JsonObject();
         for (Map.Entry<String, Double> e : pve.entrySet()) p.addProperty(e.getKey(), e.getValue());
         o.add("pve", p);
@@ -268,6 +275,7 @@ public final class Bareme {
         JsonObject v = new JsonObject();
         v.addProperty("kill", pvpKill);
         v.addProperty("mort", pvpMort);
+        v.addProperty("plafond_jour_clan", pvpPlafondJour);
         v.addProperty("fenetre_h", pvpFenetreH);
         JsonArray co = new JsonArray();
         for (double c : pvpCoefs) co.add(c);

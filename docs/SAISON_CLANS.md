@@ -108,6 +108,9 @@ Salles à carte et quêtes ne sont pas plafonnées ; les boss ont leur rendement
 | Mort tuée par un joueur | −1 |
 | Prendre un drapeau à un clan qui le tenait depuis 60 min au moins | 6 × valeur de la ville × difficulté des vagues (25/10) ; les deux mêmes clans sur la même zone : une fois par 48 h (contre les échanges entre clans complices) ; plafond commun de 40 points de capture par clan et par jour |
 
+- **Plafond des kills** (02/11, choix du propriétaire) : 40 points de kills gagnés par clan et par jour au plus, comme
+  les captures (`pvp.plafond_jour_clan` de `saison.json`, 0 : sans plafond) ; les points perdus par le clan de la victime
+  ne sont pas plafonnés.
 - Le total PVP d'un clan ne descend **jamais sous 0** (1 kill et 100 morts = 0) (décision).
 - **Même victime** : 2e kill ×0,5, 3e kill et suivants 0 (décision) ; remise à zéro au bout de 6 h **[à valider]**.
 - **La victime doit être une menace** (décision) : une arme ou une pièce d'armure sur elle. Proposition : à partir de

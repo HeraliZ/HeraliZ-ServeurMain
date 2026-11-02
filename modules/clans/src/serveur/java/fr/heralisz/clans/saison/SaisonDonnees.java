@@ -52,6 +52,8 @@ final class SaisonDonnees {
     final Map<String, Long> captures = new HashMap<>();
     /** « clan|source » -> evenements de la carte recompenses dans la journee (plafond par clan et par jour). */
     final Map<String, Integer> evenementsJour = new HashMap<>();
+    /** Points de kills (PVP) gagnes dans la journee par clan (plafond, 02/11). */
+    final Map<UUID, Double> pvpJour = new HashMap<>();
 
     double[] scores(UUID clan) {
         return scores.computeIfAbsent(clan, k -> new double[3]);
@@ -94,6 +96,8 @@ final class SaisonDonnees {
             for (Map.Entry<String, JsonElement> e : ca.entrySet()) d.captures.put(e.getKey(), e.getValue().getAsLong());
             JsonObject ej = Json.obj(o, "evenements_jour");
             for (Map.Entry<String, JsonElement> e : ej.entrySet()) d.evenementsJour.put(e.getKey(), e.getValue().getAsInt());
+            JsonObject pj = Json.obj(o, "pvp_jour");
+            for (Map.Entry<String, JsonElement> e : pj.entrySet()) d.pvpJour.put(UUID.fromString(e.getKey()), e.getValue().getAsDouble());
         } catch (IOException | RuntimeException ex) {
             // un fichier illisible n'est jamais ecrase : copie a cote, et la saison repart vide (journal du serveur)
             Path copie = f.resolveSibling(f.getFileName() + ".illisible-" + System.currentTimeMillis());
@@ -148,6 +152,9 @@ final class SaisonDonnees {
         JsonObject ej = new JsonObject();
         for (Map.Entry<String, Integer> e : evenementsJour.entrySet()) ej.addProperty(e.getKey(), e.getValue());
         o.add("evenements_jour", ej);
+        JsonObject pj = new JsonObject();
+        for (Map.Entry<UUID, Double> e : pvpJour.entrySet()) pj.addProperty(e.getKey().toString(), e.getValue());
+        o.add("pvp_jour", pj);
         ecrire(f, o, siEchec);
     }
 

@@ -47,7 +47,8 @@ import java.util.UUID;
  * <li>PVE : bareme par source, petites actions plafonnees par joueur et par jour, boss a rendement decroissant par clan et
  * par jour ;</li>
  * <li>PVP : +1 / -1, jamais sous 0 pour un clan ; rien entre membres d'un meme clan, joueurs de la meme adresse IP,
- * victime sans arme ni protection (rarete minimale, objets du /kit exclus) ; meme victime : x1, x0,5 puis 0 sur 6 h ;</li>
+ * victime sans arme ni protection (rarete minimale, objets du /kit exclus) ; meme victime : x1, x0,5 puis 0 sur 6 h ;
+ * au plus {@link Bareme#pvpPlafondJour} points de kills gagnes par clan et par jour (02/11) ;</li>
  * <li>events : grille de places, participation, multiplicateur par event ;</li>
  * <li>prise du coeur pendant la Purge (CRac) : -15 % pour le clan pris, +10 % pour l'attaquant, une fois par Purge ;</li>
  * <li>coeur deplace et pas repose a temps : le clan perd tout ;</li>
@@ -221,6 +222,7 @@ public final class Saison {
         d.bossJour.clear();
         d.capturesJour.clear();
         d.evenementsJour.clear();
+        d.pvpJour.clear();
         sale = true;
     }
 
@@ -332,8 +334,20 @@ public final class Saison {
         if (coef <= 0) return;
         if (ct != null && Ponts.aUnCoeur(ct.id)) {
             double pts = bareme.pvpKill * coef;
-            d.scores(ct.id)[SaisonDonnees.PVP] += pts;
-            noter(ct, tueur.getGameProfile().getName(), "pvp", "kill " + victime.getGameProfile().getName(), pts);
+            // 02/11 (choix du proprietaire) : au plus pvp.plafond_jour_clan points de kills par clan et par jour, comme les captures
+            double dejaJour = 0;
+            if (bareme.pvpPlafondJour > 0) {
+                jourCourant();
+                dejaJour = d.pvpJour.getOrDefault(ct.id, 0.0);
+                pts = Math.min(pts, bareme.pvpPlafondJour - dejaJour);
+            }
+            if (pts > 1e-9) {
+                if (bareme.pvpPlafondJour > 0) d.pvpJour.put(ct.id, dejaJour + pts);
+                d.scores(ct.id)[SaisonDonnees.PVP] += pts;
+                noter(ct, tueur.getGameProfile().getName(), "pvp", "kill " + victime.getGameProfile().getName(), pts);
+            } else {
+                noter(ct, tueur.getGameProfile().getName(), "pvp", "kill " + victime.getGameProfile().getName() + " : plafond du jour atteint", 0);
+            }
         }
         if (cv != null && Ponts.aUnCoeur(cv.id)) {
             double[] sc = d.scores(cv.id);

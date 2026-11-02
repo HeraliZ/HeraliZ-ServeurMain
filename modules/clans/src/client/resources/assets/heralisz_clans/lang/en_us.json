@@ -801,6 +801,7 @@
   "gui.saison.c.vente": "found items only",
   "gui.saison.c.plafond": "%s points per player per day at most",
   "gui.saison.c.kill": "armed or armored victim",
+  "gui.saison.c.kill_plafond": "armed or armored victim; %s points per day at most",
   "gui.saison.c.mort": "never below 0",
   "gui.saison.c.fenetre": "over %s h",
   "gui.saison.c.capture_prise": "zone held for %s min; %s points per day at most",

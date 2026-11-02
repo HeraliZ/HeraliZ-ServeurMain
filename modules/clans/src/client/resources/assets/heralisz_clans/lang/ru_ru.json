@@ -801,6 +801,7 @@
   "gui.saison.c.vente": "только найденные предметы",
   "gui.saison.c.plafond": "не больше %s очков на игрока в день",
   "gui.saison.c.kill": "жертва с оружием или бронёй",
+  "gui.saison.c.kill_plafond": "жертва с оружием или бронёй; не больше %s очков в день",
   "gui.saison.c.mort": "никогда ниже 0",
   "gui.saison.c.fenetre": "за %s ч",
   "gui.saison.c.capture_prise": "зона удерживалась %s мин; не больше %s очков в день",

@@ -72,7 +72,9 @@ public final class SaisonVue {
         l.add(new LigneBareme(pve, "zombies", "plage", new double[]{b.pointsPve("zombie"), b.pointsPve("brute")}, "plafond",
                 new String[]{entier(b.plafondJour)}));
         // PVP
-        l.add(ligne(pvp, "kill", "plus", new double[]{b.pvpKill}, "kill"));
+        l.add(b.pvpPlafondJour > 0
+                ? new LigneBareme(pvp, "kill", "plus", new double[]{b.pvpKill}, "kill_plafond", new String[]{entier(b.pvpPlafondJour)})
+                : ligne(pvp, "kill", "plus", new double[]{b.pvpKill}, "kill"));
         l.add(ligne(pvp, "mort", "moins", new double[]{b.pvpMort}, "mort"));
         double[] co = b.pvpCoefs;
         l.add(new LigneBareme(pvp, "meme_victime", "coefs", new double[]{co[0], co.length > 1 ? co[1] : co[0], co[co.length - 1]}, "fenetre",
