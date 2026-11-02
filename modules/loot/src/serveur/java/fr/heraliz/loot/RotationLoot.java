@@ -53,8 +53,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -861,6 +864,16 @@ public final class RotationLoot extends SavedData {
             for (long k : recycles) {
                 Actif a = e.actifs.get(k);
                 if (a == null || a.contenu == null) continue;
+                // 02/11 (audit n° 8 et 18) : un objet à vie n'est jamais détruit ; rangé là avant que les conteneurs
+                // refusent tout dépôt, il y reste (le conteneur garde ses restes) jusqu'à ce que quelqu'un le prenne
+                if (contientAVie(a.contenu)) {
+                    e.entames.remove(k);
+                    if (GARDES_A_VIE.add(k)) {
+                        HeralizLoot.LOG.warn("Rotation : {} en {} (zone {}) garde ses restes : objet à vie dedans, jamais détruit",
+                                a.nom, BlockPos.of(k).toShortString(), a.zone);
+                    }
+                    continue;
+                }
                 HeralizLoot.LOG.debug("Rotation : {} en {} (zone {}) recyclé avec ses restes", a.nom, BlockPos.of(k).toShortString(), a.zone);
                 a.contenu.clearContent();
                 e.vider(k);
@@ -1038,11 +1051,75 @@ public final class RotationLoot extends SavedData {
         }
         Inventaire inv = a.contenu;
         boolean premier = !e.regarde(inv, p);
-        p.openMenu(new SimpleMenuProvider((id, pi, pl) -> ChestMenu.threeRows(id, pi, inv), titre(cb)));
+        p.openMenu(new SimpleMenuProvider((id, pi, pl) -> new MenuFouille(id, pi, inv), titre(cb)));
         if (premier && p.containerMenu instanceof ChestMenu cm && cm.getContainer() == inv) son(l, pos, st, true);
     }
 
     private static final Set<String> SANS_TABLE = new HashSet<>();
+
+    /**
+     * Écran d'un conteneur de loot (02/11, audit n° 18) : l'écran de coffre de Minecraft de 3 lignes, mais rien ne s'y dépose
+     * (cases « prise seulement », Maj + clic depuis l'inventaire refusé), comme les corps et les coffres T7. Avant, un
+     * objet rangé dedans (objets à vie compris) était détruit avec les restes du conteneur 5 min après la fouille, ou pris
+     * par n'importe qui. Le joueur voit toujours le même écran (le serveur refuse le dépôt et remet l'objet en place).
+     */
+    static final class MenuFouille extends ChestMenu {
+        MenuFouille(int id, Inventory pi, Container c) {
+            super(MenuType.GENERIC_9x3, id, pi, c, 3);
+            for (int i = 0; i < TAILLE; i++) {
+                Slot ancien = slots.get(i);
+                Slot nouveau = new CasePrise(c, i, ancien.x, ancien.y);
+                nouveau.index = ancien.index;
+                slots.set(i, nouveau);
+            }
+        }
+
+        /** Maj + clic : du conteneur vers l'inventaire seulement (Minecraft complète les piles sans demander aux cases). */
+        @Override
+        public ItemStack quickMoveStack(Player p, int index) {
+            if (index >= TAILLE) return ItemStack.EMPTY;
+            return super.quickMoveStack(p, index);
+        }
+    }
+
+    /** Case d'un conteneur de loot : on prend, on ne dépose rien. */
+    private static final class CasePrise extends Slot {
+        CasePrise(Container c, int i, int x, int y) {
+            super(c, i, x, y);
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack s) {
+            return false;
+        }
+    }
+
+    /** Conteneurs gardés à cause d'un objet à vie (une ligne au journal pour chacun). */
+    private static final LongOpenHashSet GARDES_A_VIE = new LongOpenHashSet();
+    @Nullable
+    private static java.lang.reflect.Method estAVie;
+    private static boolean estAVieCherche;
+
+    /** Le conteneur contient-il un objet à vie (HeraliZ Tactique, {@code ObjetsAVie.estAVie}, par réflexion) ? */
+    private static boolean contientAVie(Inventaire inv) {
+        if (!estAVieCherche) {
+            estAVieCherche = true;
+            try {
+                estAVie = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("estAVie", ItemStack.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                estAVie = null;
+            }
+        }
+        if (estAVie == null) return false;
+        try {
+            for (ItemStack s : inv.objets) {
+                if (!s.isEmpty() && Boolean.TRUE.equals(estAVie.invoke(null, s))) return true;
+            }
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return true;   // doute : gardé plutôt que détruit
+        }
+        return false;
+    }
 
     /** Contenu d'un conteneur, tiré dans sa table (bonus de loot en %) : objets placés au hasard dans les 27 cases. */
     private Inventaire remplir(long k, String nom, RandomSource r, int bonus) {
