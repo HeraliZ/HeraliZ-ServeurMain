@@ -24,7 +24,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * {@code /vitres pourquoi [x y z]} (staff, niveau 2) : dit en clair si un bloc casse sous les balles et, sinon, pourquoi.
+ * {@code /vitres pourquoi [x y z]} (op 4, 02/11 ; avant : niveau 2) : dit en clair si un bloc casse sous les balles et, sinon, pourquoi.
  * Sans position : le bloc visé (jusqu'à {@link #PORTEE_VISEE} blocs). Réponse en message direct, dans la langue du staff :
  * <ul>
  *    <li>le bloc : verre pour HeraliZ, bloc de {@code blocs_en_plus} (et ce qu'il devient), ou pas une vitre ;</li>
@@ -46,7 +46,8 @@ final class CommandeVitres {
    }
 
    static void enregistrer(CommandDispatcher<CommandSourceStack> d) {
-      d.register(Commands.literal("vitres").requires(s -> s.hasPermission(2))
+      // 02/11 (audit point 36) : outil de mise au point, réservé aux op 4 (hors de la liste des commandes du staff de niveau 2)
+      d.register(Commands.literal("vitres").requires(s -> s.hasPermission(4))
          .then(Commands.literal("pourquoi")
             .executes(c -> viser(c.getSource()))
             .then(Commands.argument("position", BlockPosArgument.blockPos())

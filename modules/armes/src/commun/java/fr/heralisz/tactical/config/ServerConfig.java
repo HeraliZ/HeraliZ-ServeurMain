@@ -122,7 +122,7 @@ public class ServerConfig {
             "que TaCZ) et les blocs de blocs_en_plus. La balle casse la vitre et s'arrête dessus ; la vitre repousse seule, au",
             "même endroit et dans le même état. Le verre gorgé d'eau ne casse pas (l'eau se répandrait). Le réglage",
             "DestroyGlass de tacz-common.toml doit rester à false : c'est HeraliZ qui casse (TaCZ ne regarde aucune zone",
-            "protégée et dérange les blocs voisins). Pour savoir pourquoi une vitre ne casse pas : /vitres pourquoi (staff).",
+            "protégée et dérange les blocs voisins). Pour savoir pourquoi une vitre ne casse pas : /vitres pourquoi (op 4).",
             "false : comme avant (les blocs de verre laissent passer les balles, les vitres les arrêtent, rien ne casse).")
          .define("casser", true);
       VITRES_DELAI_MINUTES = builder.comment(
