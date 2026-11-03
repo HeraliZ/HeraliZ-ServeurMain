@@ -115,11 +115,12 @@ final class SuiviMurs {
     }
 
     /**
-     * Test rapide (aucun accès au monde) : la paire peut-elle être un suivi à travers les murs ? Ligne de vue calculée il y a
-     * peu et absente, cible ni vue ni entendue récemment, distance dans les bornes.
+     * Test rapide (aucun accès au monde) : la paire peut-elle être un suivi à travers les murs ? Ligne de vue vérifiée il y a
+     * peu (calculée, ou reprise telle quelle quand rien n'a bougé entre eux) et absente, cible ni vue ni entendue
+     * récemment, distance dans les bornes.
      */
     static boolean candidate(VisibilityEngine.Pair pr, long tick) {
-        return !pr.lastResult && tick - pr.lastComputed <= 6 && pr.dist >= distanceMin && pr.dist <= distanceMax
+        return !pr.lastResult && tick - pr.lastCheck <= 6 && pr.dist >= distanceMin && pr.dist <= distanceMax
                 && tick - pr.lastSeen > vuTicks && tick - pr.vuSuivi > vuTicks && tick - pr.revealUntil > entenduTicks;
     }
 
