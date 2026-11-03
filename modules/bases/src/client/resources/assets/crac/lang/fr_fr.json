@@ -524,7 +524,6 @@
   "crac.tuto.inventaire_erreur_retour": "[Tuto] Ton inventaire n'a pas pu être rendu automatiquement : préviens le staff (rien n'est perdu).",
   "crac.tuto.inventaire_attente": "[Tuto] %s objet(s) n'ont pas tenu dans ton inventaire : ils te sont rendus dès qu'une case se libère.",
   "crac.tuto.attente_rendue": "[Tuto] %s objet(s) mis de côté t'ont été rendus.",
-  "crac.tuto.quitte": "[Tuto] Tu as quitté le tutoriel sans le finir : ton inventaire t'est rendu. Tu pourras le refaire plus tard.",
   "crac.tuto.clan": "[Tuto] Ton clan est créé ! Le Commandant Varga va te montrer comment bâtir une base.",
   "crac.clan.kit_coffre": "Le matériel de la première base du clan (plan, marteau, armoire, brindilles) est dans le coffre du clan : /clan coffre ou onglet Banque.",
   "crac.clan.kit_rappel": "Ton clan a son matériel de première base dans le coffre du clan (plan, marteau, armoire, brindilles) : /clan coffre au spawn, ou onglet Banque.",

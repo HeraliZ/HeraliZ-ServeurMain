@@ -98,7 +98,7 @@ import org.jetbrains.annotations.Nullable;
  * <p>
  * 03/11 (retours du propriétaire) : son inventaire est mis de côté sur le disque avant le kit et lui est rendu à toute
  * sortie du tutoriel, kit repris ({@link InventaireTuto}) ; emmené hors du monde du tutoriel et du spawn (commande du
- * staff), il en sort sans l'avoir fini ({@link #quitter}).
+ * staff) ou tutoriel absent du serveur, son tutoriel est validé comme une fin normale ({@link #sortieValidee}).
  * <p>
  * Le tutoriel ne vise que les joueurs en survie ou en aventure, à l'étape AUCUNE (jamais fait) et sans base. Staff
  * (permission 2) :
@@ -245,31 +245,27 @@ public final class Tutoriel {
     }
 
     /**
-     * Sortie du tutoriel sans le finir (03/11, retours du propriétaire : « s'il se téléporte… ») : le joueur n'est plus ni
-     * dans le monde du tutoriel ni au spawn (téléporté ailleurs par une commande du staff, envoi raté). Comme une fin, sans
-     * la valider : cabane d'essai effacée, kit repris, inventaire rendu ; le tutoriel pourra être refait.
+     * Sortie anormale du tutoriel (03/11, décision du propriétaire : « on fait comme s'il l'avait terminé, jamais bloqué
+     * dans un tutoriel à moitié fait ») : le joueur n'est plus ni dans le monde du tutoriel ni au spawn (téléporté ailleurs
+     * par une commande du staff, envoi raté), ou le tutoriel n'existe plus sur le serveur (monde du tutoriel absent,
+     * tutoriel coupé dans les réglages). Le tutoriel est validé comme une fin normale (étape FINI : Varga enchaîne comme
+     * après la cabane finie), puis {@link #terminer} : cabane d'essai effacée, kit repris, inventaire rendu.
      */
-    private static void quitter(ServerPlayer p, BasesDonnees d, BasesDonnees.Joueur j) {
-        j.etape = BasesDonnees.Etape.AUCUNE;
-        j.phaseTicks = 0;
+    private static void sortieValidee(ServerPlayer p, BasesDonnees d, BasesDonnees.Joueur j, String raison) {
+        j.etape = BasesDonnees.Etape.FINI;
         j.batiment = -1L;
         j.arete = -1;
         j.finEnAttente = false;
         d.marquer();
-        FINS.remove(p.getUUID());
         oublier(p.getUUID());
         effacerGuide(p);
-        ServerLevel tuto = p.server.getLevel(MondeBases.TUTO);
-        List<ItemStack> recup = new ArrayList<>();
-        if (tuto != null) {
-            EffacerBase.effacerDans(p.server, p.getUUID(), tuto, recup);
+        Crac.LOGGER.info("[CRac] tutoriel de {} validé à sa sortie ({}, {})", p.getGameProfile().getName(), raison,
+            p.level().dimension().location());
+        if (!parVarga()) {
+            T.chat(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, pose ton home dedans : mets-toi à un endroit sûr et tape /sethome <nom>. Du spawn, /home t'y ramène (une fois toutes les 8 min, moins avec l'arbre du clan ou un grade). Depuis ta base, /spawn ramène au spawn ; du spawn, /rtp mène à un coin au hasard de la zone de construction."),
+                ChatFormatting.GRAY);
         }
-        PlotsTuto.liberer(p.server, p.getUUID());
-        reprendreKit(p);
-        InventaireTuto.rendre(p, horsKit(recup));
-        T.chat(p, T.t("crac.tuto.quitte", "[Tuto] Tu as quitté le tutoriel sans le finir : ton inventaire t'est rendu. Tu pourras le refaire plus tard."),
-            ChatFormatting.YELLOW);
-        Crac.LOGGER.info("[CRac] tutoriel quitté sans le finir par {} ({})", p.getGameProfile().getName(), p.level().dimension().location());
+        terminer(p);
     }
 
     /** Reprend tout ce qui reste du kit du tutoriel (objets marqués), où qu'il soit dans l'inventaire. */
@@ -344,6 +340,15 @@ public final class Tutoriel {
     static void seconde(MinecraftServer server) {
         InventaireTuto.seconde(server);   // objets rendus en attente d'une case libre (03/11)
         if (!actif() || server.getLevel(MondeBases.TUTO) == null) {
+            // 03/11 : plus de tutoriel sur ce serveur (monde absent, réglage coupé) : personne n'y reste bloqué
+            BasesDonnees bd = BasesDonnees.get(server);
+            for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                BasesDonnees.Joueur j = bd.siConnu(p.getUUID());
+                if (j != null && (j.etape == BasesDonnees.Etape.KIT || j.etape == BasesDonnees.Etape.PHASE)
+                    && !SEQUENCES.containsKey(p.getUUID()) && !p.isCreative() && !p.isSpectator()) {
+                    sortieValidee(p, bd, j, "tutoriel absent du serveur");
+                }
+            }
             return;
         }
         BasesDonnees d = BasesDonnees.get(server);
@@ -405,7 +410,7 @@ public final class Tutoriel {
                     if (MondeBases.estSpawn(p.level())) {
                         SEQUENCES.put(id, T_TITRE_3 - 20);
                     } else if (!MondeBases.estTuto(p.level())) {
-                        quitter(p, d, j);   // 03/11 : emmené ailleurs avant l'envoi (staff, envoi raté) : inventaire rendu
+                        sortieValidee(p, d, j, "emmené hors du spawn avant l'envoi");   // 03/11 : validé, inventaire rendu
                     }
                 }
                 case PHASE -> {
@@ -491,8 +496,8 @@ public final class Tutoriel {
             return;
         }
         if (!MondeBases.estTuto(p.level())) {
-            // 03/11 : téléporté hors du tutoriel (commande du staff…) : il en sort, son inventaire lui est rendu
-            quitter(p, d, j);
+            // 03/11 : téléporté hors du tutoriel (commande du staff…) : tutoriel validé, inventaire rendu
+            sortieValidee(p, d, j, "téléporté hors du tutoriel");
             return;
         }
         if (progression(p)[0] >= FINIE) {
