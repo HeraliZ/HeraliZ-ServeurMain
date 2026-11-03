@@ -133,7 +133,7 @@ public final class CiblesServeur {
 
     // ------------------------------------------------------------------ pose
     /** Refus de la pose (message déjà dit au joueur), ou vrai si elle est permise. */
-    static boolean posePermise(ServerPlayer joueur, ServerLevel sl, BlockPos pos) {
+    public static boolean posePermise(ServerPlayer joueur, ServerLevel sl, BlockPos pos) {
         if (joueur.getAbilities().instabuild || joueur.hasPermissions(2)) return true;   // staff, créatif : partout
         if (!ArmorConfig.CIBLE_EN_BASE.get()) {
             dire(joueur, "message.heraliz_armory.cible.staff", "Seul le staff peut poser une cible d'essai.");
