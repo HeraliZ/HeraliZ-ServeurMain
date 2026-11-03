@@ -1,0 +1,11 @@
+-proc:none
+-implicit:none
+-Xmaxerrs
+100000
+-d
+/tmp/claude-0/-home-user-HeraliZ-ServeurMain/17fb6a25-fa62-5289-ae73-5657d6f9f60f/scratchpad/armes-objets/javac_out
+-cp
+libs/tacz-1.20.1-1.1.8-hotfix.jar:libs/curios-forge-5.14.1.jar:libs/geckolib222-4.4.7.jar
+-sourcepath
+modules/armes/src/commun/java:modules/armes/src/serveur/java:modules/armes/src/client/java
+@/tmp/claude-0/-home-user-HeraliZ-ServeurMain/17fb6a25-fa62-5289-ae73-5657d6f9f60f/scratchpad/armes-objets/java_modifies.txt
