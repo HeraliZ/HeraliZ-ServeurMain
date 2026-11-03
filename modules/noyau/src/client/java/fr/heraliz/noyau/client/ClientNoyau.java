@@ -5,11 +5,15 @@ import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.IEventBus;
 
-/** Partie client du noyau : indicateur « EN COMBAT », analyse du jeu ({@code /diagclient}, {@code /diag client}). */
+/**
+ * Partie client du noyau : indicateur « EN COMBAT », analyse du jeu ({@code /diagclient}, {@code /diag client}), dessin
+ * commun des zones de la carte ({@link fr.heraliz.noyau.client.zones.ZoneDessin}).
+ */
 public final class ClientNoyau implements Partie {
    @Override
    public void init(IEventBus busMod) {
       fr.heraliz.noyau.client.diag.DiagClient.init();
+      fr.heraliz.noyau.client.zones.ReglagesZones.enregistrer(busMod);   // dessin commun des zones (03/11)
       busMod.addListener((RegisterGuiOverlaysEvent e) ->
             e.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "combat", (gui, g, partial, w, h) -> HudCombat.dessiner(g, w, h)));
    }
