@@ -738,7 +738,8 @@ public final class StructureService {
             if (!level.isLoaded(pos)) continue;
             BlockState s = level.getBlockState(pos);
             // (28/10) un coffre descendu sur un plancher à mi-bloc (Adosse.BAS) reste tant que ce plancher le porte
-            if (!PlacableSet.canPlace(level, s.getBlock()) || PlacableSupport.holdsWhatStandsOn(level, below)
+            // HeraliZ (03/11) : le sol doit rester sous toute la forme de l'objet (PlacableSupport)
+            if (!PlacableSet.canPlace(level, s.getBlock()) || PlacableSupport.holdsWhatStandsOn(level, below, pos, s)
                 && !fr.heraliz.crac.block.Adosse.bas(s) || fr.heraliz.crac.block.Adosse.bas(s) && PlacableSupport.isSupported(level, pos, s)) continue;
             // a damaged placable keeps its HP in the item it drops, the Claim Block drops nothing
             PlacableChutes.fall(level, pos, s);

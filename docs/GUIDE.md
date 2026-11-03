@@ -530,7 +530,10 @@ Code : `fr.heraliz.quetes.serveur.Journalieres` (module `pnj`), écran `client/E
   pixel (`ShapeRaster`, formes gardées par orientation dans `PieceShapes`) : avec F3+B, de petites « marches » d'un pixel
   le long des côtés en biais (la collision de Minecraft n'est faite que de boîtes droites, normal). Murs, fenêtres, portes,
   planchers et toits posés dessus suivent son orientation (même grille à 30° que les triangles). Caisses, coffres et objets
-  posés, blocs de Minecraft, restent droits : une case porte un objet si les fondations ou planchers à ras de son dessus
-  en couvrent la moitié au moins avec son centre (`StructureBlock.porteObjet` ; avant : la case entière). Un carré tourné
-  porte ainsi 8 caisses (avant : 2), une fondation triangle 4 (avant : 1). L'armoire demande toujours une case
-  entièrement couverte. Essais : `docs/TESTS_EN_JEU_03NOV_bases-regles.md`.
+  posés, blocs de Minecraft, restent droits sur la grille ; Bases 1.33.1 (demande du propriétaire : rien ne dépasse) : un
+  objet ne se pose que si sa vraie forme (sa boîte, à sa taille) est entièrement au-dessus des fondations et planchers à
+  ras de son dessous (carrés droits, tournés et triangles réunis : `StructureBlock.solSousForme`) et ne touche aucune pièce
+  d'un bloc voisin (`PlacableSupport.touchePiece`) ; un bloc touché par un mur en biais est un bloc de construction, rien
+  ne s'y pose. Caisses en métal posables : carré tourné 2 à 5 sans murs, 1 à 4 avec ses murs (le plus souvent 3 et 2) ;
+  triangle 0 à 2 sans murs, 0 ou 1 avec murs ; carré droit fermé : 9 (caisses « dans le mur », inchangé). L'armoire
+  demande toujours une case entièrement couverte. Essais : `docs/TESTS_EN_JEU_03NOV_bases-regles.md`.

@@ -135,15 +135,53 @@ caisse), `3_avant_fantome.png`, `4_apres_fantome.png` (fantôme de pose et carte
 15. Marcher, sauter et courir sur et autour d'un carré tourné : aucun accroc (F3+B : petites marches d'un pixel le long
     des bords en biais, normal). Viser au marteau : la carte de la pièce s'affiche partout sur le carré.
 16. Murs, fenêtre, porte sur les bords d'un carré tourné : ils suivent le bord ; plancher et toit dessus.
-17. Caisses sur un carré tourné : 8 cases acceptent une caisse ; sur une case coupée à moins de la moitié : « Moins de la
-    moitié de cette case est sur une fondation ou un plancher (bord en biais) : pose-le plus vers l'intérieur. » Une
-    caisse de bord dépasse un peu du carré. Fondation triangle seule : 4 caisses. Coffres par rareté : mêmes règles.
+17. Caisses sur un carré tourné ou un triangle : voir la section 1.33.1 plus bas (règle remplacée).
 18. Démolir ou faire sauter le carré tourné : les caisses dessus tombent avec lui (contenu au sol) ; démolition depuis les
     bouts (point 3) respectée ; un carré tourné coupé de l'armoire s'use (points 4 et 5).
 19. Bases existantes : rien ne bouge ; une caisse déjà posée reste.
 
-**Limites connues** : les caisses, coffres, tables et l'armoire sont des blocs de Minecraft : ils restent droits sur un
-carré tourné (ils ne peuvent pas tourner de 30° ; il faudrait des modèles et des collisions à part, que le chantier des
-coffres pourrait étudier). Une caisse de bord dépasse un peu du sol. Une caisse ne se pose pas dans la rangée d'un mur
-en biais (seulement d'un mur droit, comme avant).
+**Limites connues** : voir la section 1.33.1 plus bas.
+
+## Objets droits, rien ne dépasse (retour du propriétaire du 03/11, Bases 1.33.1-beta)
+
+Choix du propriétaire après l'étude des « 9 cases tournées » (impossible proprement : les murs en biais prennent les
+blocs) : le carré reste tourné, les objets restent droits sur la grille de Minecraft, mais **rien ne dépasse**.
+
+**Ce qui change** : la règle « case couverte à moitié avec son centre » de la 1.33.0 est retirée. Un objet posé (caisse
+en métal, coffres par rareté, casier, coffre-fort, table d'armurier, objets de Minecraft…) ne se pose sur une base que si :
+- sa VRAIE forme (sa forme de contour, à sa taille : la caisse en métal 16 × 13 px, le coffre-fort 15,5 × 13,75 px…),
+  vue de dessus, est entièrement au-dessus des fondations et planchers à ras de son dessous (carrés droits, tournés et
+  triangles réunis) : `StructureBlock.solSousForme` ;
+- elle ne touche aucune pièce d'un bloc voisin (mur, porte, fenêtre, poteau, plancher…) : `PlacableSupport.touchePiece`
+  (son propre bloc est forcément libre : un bloc touché par un mur, même en biais, est un bloc de construction).
+Refus : « Cet objet dépasserait du bord du sol : pose-le plus vers l'intérieur de la fondation ou du plancher. » ou
+« Cet objet toucherait un mur, une porte, une fenêtre ou une autre pièce : pose-le ailleurs. » (fr / en / ru), dans le
+fantôme et au serveur. Même règle pour la chute : quand le sol sous la forme part, l'objet tombe. L'armoire demande
+toujours une case entièrement couverte. Calcul seulement à la pose (et au fantôme, et à la chute) : les blocs de
+construction sous la forme (4 au plus par boîte) et les blocs voisins qu'elle atteint (aucun le plus souvent).
+
+**Combien d'objets** (caisses en métal ; mesuré sur 600 positions au hasard de chaque pièce sur la grille de CRac) :
+- carré tourné sans murs : 2 à 5 (3 le plus souvent) ; avec ses 4 murs : 1 à 4 (2 le plus souvent) ;
+- triangle sans murs : 0 à 2 (0 ou 1) ; avec ses 3 murs : 0 ou 1 (0 le plus souvent) ;
+- carré droit fermé : 9 comme aujourd'hui (caisses « dans le mur » le long des murs droits).
+
+**Rendus** (même dossier) : `10_carre_tourne_objets.png` (carré tourné sans murs, puis avec ses 4 murs) et
+`11_triangle_objets.png` (triangle sans murs, avec murs, carré droit fermé pour repère) : objets posés et refusés.
+
+**Essais à faire**
+20. Carré tourné sans murs : seules les cases dont la caisse tient entièrement sur le sol l'acceptent (2 à 5) ; ailleurs,
+    fantôme rouge et « Cet objet dépasserait du bord du sol… ». Avec ses 4 murs : 1 à 4. Rien ne dépasse du bord ni d'un
+    mur (regarder d'en haut et de côté, F3+B).
+21. Triangle sans murs et avec murs : 0 ou 1 caisse (selon sa position sur la grille), jamais de travers sur le bord.
+22. Carré droit : rien ne change (9 caisses dans une pièce fermée, caisses poussées contre les murs, coffres de 2 cases).
+23. Coffre-fort, casier, malle de chantier, caisse d'armes, table d'armurier, four ou lit sur un carré tourné : mêmes
+    règles, avec la taille de chacun.
+24. Caisse sur un carré tourné, puis démolir ou faire sauter le carré : elle tombe (contenu au sol).
+25. Redémarrage : les objets posés restent ; une base d'avant ne perd rien.
+
+**Limites connues** : peu d'objets sur un carré tourné ou un triangle (chiffres ci-dessus), c'est le prix de « rien ne
+dépasse » avec des objets droits ; pas de caisse « dans le mur » le long d'un mur en biais (le mur ne peut pas céder sa
+place sans faire un trou). Un objet poussé dans le bloc voisin (contre un mur droit) est jugé sur toute sa forme : s'il
+dépassait d'un bord, il est maintenant refusé. Les objets posés avant ne sont jamais retirés ; ils ne tombent qu'à la
+destruction du sol sous eux, comme avant.
 

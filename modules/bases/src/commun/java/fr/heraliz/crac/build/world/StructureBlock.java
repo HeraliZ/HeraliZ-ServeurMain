@@ -294,43 +294,79 @@ public class StructureBlock extends BaseEntityBlock {
 
     /**
      * Whether a block may stand on the structure block at {@code pos} (player rule 14): foundations and floors flush
-     * with its top cover the face, and no floor has its top inside it. Roofs (a merged roof's plateau can be flush
+     * with its top cover the whole face, and no floor has its top inside it. Roofs (a merged roof's plateau can be flush
      * with a block top), walls, stairs and ramps never hold one, even where their collision fills the face.
-     * <p>HeraliZ (03/11, demande du propriétaire : un carré tourné contre un triangle « agit réellement comme un carré ») :
-     * la face n'a plus besoin d'être couverte en entier : la moitié au moins, et son centre ({@link #porteObjet}). Avant,
-     * un carré tourné de 30° ou 60° ne portait une caisse que sur 2 de ses cases (les seules entièrement couvertes) ; les
-     * caisses et coffres, blocs de Minecraft, restent droits et peuvent dépasser un peu d'un bord en biais. L'armoire
-     * (siège : {@code Assises}) demande toujours une case entièrement couverte.
+     * <p>HeraliZ (03/11) : la case entière (règle d'avant la 1.33.0, reprise) ; un objet posé, lui, n'a besoin que du sol
+     * sous sa vraie forme ({@link #solSousForme}, {@code PlacableSupport}).
      */
     public static boolean holdsBlockOnTop(BlockGetter level, BlockPos pos) {
         if (!(level.getBlockEntity(pos) instanceof StructureBlockEntity be)) {
             return false;
         }
-        return standIssue(be.occupants(), pos) != StandIssue.HALF_LEVEL && porteObjet(be.occupants(), pos);
+        return standIssue(be.occupants(), pos) == null && flushFloorArea(be.occupants(), pos) >= 256.0 - 1e-6;
     }
 
-    /** Part du dessus d'une case qu'un sol doit couvrir pour porter un objet (avec le centre de la case) : la moitié. */
-    public static final double PART_PORTEUSE = 0.5;
+    /** {@link #solSousForme} : la forme est entièrement au-dessus du sol de la base. */
+    public static final int SOL_OK = 0;
+    /** {@link #solSousForme} : une partie de la forme dépasse du bord du sol (bord en biais, bord de la base). */
+    public static final int SOL_DEPASSE = 1;
+    /** {@link #solSousForme} : aucun sol de base sous la forme (toit, haut de mur, marche, vide). */
+    public static final int SOL_AUCUN = 2;
+    /** {@link #solSousForme} : un plancher sous la forme a son dessus au milieu du bloc (plancher sur demi-murs). */
+    public static final int SOL_MI_BLOC = 3;
 
     /**
-     * HeraliZ (03/11) : les fondations et planchers à ras du dessus de la case {@code pos} la couvrent en entier, ou au
-     * moins à {@link #PART_PORTEUSE} avec son centre : une caisse posée dessus repose sur le sol par son milieu.
+     * HeraliZ (03/11, demande du propriétaire : « rien ne doit dépasser du bord du sol ») : ce qui porte la forme
+     * {@code forme} d'un objet posé en {@code pos} (posé, ou dont on essaie la pose) quand le bloc du dessous est un bloc de
+     * construction. Chaque boîte de la forme, vue de dessus, doit être entièrement couverte par les fondations et planchers
+     * à ras de son dessous (carrés droits, tournés et triangles réunis : les sols d'une base ne se chevauchent jamais, leurs
+     * aires s'ajoutent). Seuls les blocs de construction sous les boîtes sont lus (quatre au plus par boîte), au moment
+     * d'une pose ou d'une chute : rien par tick.
      */
-    public static boolean porteObjet(java.util.List<Occupant> occupants, BlockPos pos) {
-        double top = 16.0 * pos.getY() + 16.0;
-        double covered = 0;
-        boolean centre = false;
-        for (Occupant o : occupants) {
-            PieceKey k = o.key();
-            if (!k.kind().isWalkableSurface() || Math.abs(16.0 * k.origin().getY() + k.baseY() - top) > 1e-6) continue;
-            double x0 = (pos.getX() - k.origin().getX()) * 16.0;
-            double z0 = (pos.getZ() - k.origin().getZ()) * 16.0;
-            double[][] poly = Footprints.solidPolygon(k);
-            double[][] c = Poly.clipRect(poly, x0, z0, x0 + 16, z0 + 16);
-            covered += c == null ? 0 : Poly.area(c);
-            centre |= c != null && Poly.contains(poly, x0 + 8.0, z0 + 8.0);
+    public static int solSousForme(BlockGetter level, BlockPos pos, VoxelShape forme) {
+        double bas = 16.0 * pos.getY();
+        long[] vues = new long[16];
+        boolean un = false;
+        for (net.minecraft.world.phys.AABB b : forme.toAabbs()) {
+            double x0 = 16.0 * (pos.getX() + b.minX), x1 = 16.0 * (pos.getX() + b.maxX);
+            double z0 = 16.0 * (pos.getZ() + b.minZ), z1 = 16.0 * (pos.getZ() + b.maxZ);
+            double aire = (x1 - x0) * (z1 - z0);
+            if (aire <= 1e-6) continue;
+            double couvert = 0;
+            int nVues = 0;
+            for (int bx = (int) Math.floor(x0 / 16.0 + 1e-6); bx <= (int) Math.floor(x1 / 16.0 - 1e-6); bx++) {
+                for (int bz = (int) Math.floor(z0 / 16.0 + 1e-6); bz <= (int) Math.floor(z1 / 16.0 - 1e-6); bz++) {
+                    BlockPos dessous = new BlockPos(bx, pos.getY() - 1, bz);
+                    if (!(level.getBlockEntity(dessous) instanceof StructureBlockEntity be)) continue;
+                    if (standIssue(be.occupants(), dessous) == StandIssue.HALF_LEVEL) {
+                        return SOL_MI_BLOC;
+                    }
+                    for (Occupant o : be.occupants()) {
+                        PieceKey k = o.key();
+                        if (!k.kind().isWalkableSurface() || Math.abs(16.0 * k.origin().getY() + k.baseY() - bas) > 1e-6) continue;
+                        // une pièce couvre souvent plusieurs blocs sous la boîte : comptée une fois
+                        boolean deja = false;
+                        for (int v = 0; v < nVues && !deja; v++) {
+                            deja = vues[v] == o.pieceId();
+                        }
+                        if (deja) continue;
+                        if (nVues == vues.length) vues = java.util.Arrays.copyOf(vues, nVues * 2);
+                        vues[nVues++] = o.pieceId();
+                        double ox = 16.0 * k.origin().getX(), oz = 16.0 * k.origin().getZ();
+                        double[][] c = Poly.clipRect(Footprints.solidPolygon(k), x0 - ox, z0 - oz, x1 - ox, z1 - oz);
+                        couvert += c == null ? 0 : Poly.area(c);
+                    }
+                }
+            }
+            if (couvert <= 1e-6) {
+                return un ? SOL_DEPASSE : SOL_AUCUN;
+            }
+            if (couvert < aire - 1e-3) {
+                return SOL_DEPASSE;
+            }
+            un = true;
         }
-        return covered >= 256.0 - 1e-6 || centre && covered >= 256.0 * PART_PORTEUSE - 1e-6;
+        return SOL_OK;
     }
 
     /**
