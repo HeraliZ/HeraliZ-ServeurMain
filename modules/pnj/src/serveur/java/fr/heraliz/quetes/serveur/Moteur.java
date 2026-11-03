@@ -224,7 +224,8 @@ final class Moteur {
         CONTRATS.remove(a.cle);
         retirerObjets(p, a.cle);
         Defs.Recompense r = q.recompense;
-        boolean paye = r.herals <= 0 || Ponts.deposer(p.getUUID(), r.herals, "quete:" + q.titre.francais());
+        long herals = herals(r);
+        boolean paye = herals <= 0 || Ponts.deposer(p.getUUID(), herals, "quete:" + q.titre.francais());
         dp.rep = Math.max(0, dp.rep + r.reputation);
         r.autres.forEach((pnj, v) -> j.pnj(pnj).rep = Math.max(0, j.pnj(pnj).rep + v));
         if (!r.titre.vide() && !j.titres.contains(r.titre.toString())) j.titres.add(r.titre.toString());
@@ -244,17 +245,17 @@ final class Moteur {
         }
         if (a.cle.equals(j.suivie)) j.suivie = j.actives.isEmpty() ? "" : j.actives.keySet().iterator().next();
         Donnees.sale(p.getUUID());
-        Texte gain = r.herals > 0 ? Texte.cle(paye ? "heraliz_quetes.notif.finie_herals" : "heraliz_quetes.notif.finie_sans_herals",
-                q.titre, Texte.brut(Ponts.nombre(r.herals))) : Texte.cle("heraliz_quetes.notif.finie", q.titre);
+        Texte gain = herals > 0 ? Texte.cle(paye ? "heraliz_quetes.notif.finie_herals" : "heraliz_quetes.notif.finie_sans_herals",
+                q.titre, Texte.brut(Ponts.nombre(herals))) : Texte.cle("heraliz_quetes.notif.finie", q.titre);
         notif(p, gain, 0xE8C36A);
         if (!r.titre.vide()) notif(p, Texte.cle("heraliz_quetes.notif.titre", r.titre), 0xE8C36A);
         p.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5F, 1.3F);
         LOG.info("[heraliz_quetes] {} a fini « {} » ({}) : {} hérals{}, réputation {} {}", p.getGameProfile().getName(),
-                q.titre.francais(), a.cle, r.herals, paye ? "" : " (NON versés : économie absente)", a.pnj, dp.rep);
+                q.titre.francais(), a.cle, herals, paye ? "" : " (NON versés : économie absente)", a.pnj, dp.rep);
         // 23/10 : quête payée = progression et joueur écrits tout de suite (sinon rendue et payée deux fois après un plantage),
         // puis les hérals (02/11 : avant, seulement à l'autosave suivante ; un plantage dans ce délai les perdait)
         sauver(p);
-        if (paye && r.herals > 0) Ponts.sauvegarderEconomie();
+        if (paye && herals > 0) Ponts.sauvegarderEconomie();
         envoyerSuivi(p);
     }
 
@@ -928,9 +929,17 @@ final class Moteur {
         return t;
     }
 
+    /** Hérals d'une récompense de quête, avec l'économie de la bêta (03/11, facteur « quetes ») : affichés = versés. */
+    static long herals(Defs.Recompense r) {
+        if (r.herals <= 0) return r.herals;
+        double f = Ponts.beta("quetes");
+        return f == 1.0 ? r.herals : Math.round(r.herals * f);
+    }
+
     private static Texte recompenseBase(Defs.Recompense r) {
-        if (r.herals > 0 && r.reputation > 0) return Texte.cle("heraliz_quetes.recompense.herals_rep", Texte.brut(Ponts.nombre(r.herals)), Texte.brut(r.reputation));
-        if (r.herals > 0) return Texte.cle("heraliz_quetes.recompense.herals", Texte.brut(Ponts.nombre(r.herals)));
+        long h = herals(r);
+        if (h > 0 && r.reputation > 0) return Texte.cle("heraliz_quetes.recompense.herals_rep", Texte.brut(Ponts.nombre(h)), Texte.brut(r.reputation));
+        if (h > 0) return Texte.cle("heraliz_quetes.recompense.herals", Texte.brut(Ponts.nombre(h)));
         if (r.reputation > 0) return Texte.cle("heraliz_quetes.recompense.rep", Texte.brut(r.reputation));
         return Texte.VIDE;
     }

@@ -38,8 +38,24 @@ public final class Arbre {
         facteurPrixPct = Math.max(10, Math.min(10_000, pct));
     }
 
+    /**
+     * Economie de la beta (03/11, reglage [beta] de HeraliZ Loot, « ameliorations ») en pourcents, donne par le serveur
+     * (ServeurClans) ; 100 par defaut et chez le joueur, qui recoit deja le prix effectif ({@link #prixEffectifPct()}).
+     */
+    private static volatile java.util.function.IntSupplier betaPct = () -> 100;
+
+    public static void betaPct(java.util.function.IntSupplier s) {
+        betaPct = s == null ? () -> 100 : s;
+    }
+
+    /** Facteur de prix vraiment demande, beta comprise (envoye aux joueurs avec l'etat du clan). Borne 10 a 10 000 %. */
+    public static int prixEffectifPct() {
+        int b = Math.max(1, Math.min(100, betaPct.getAsInt()));
+        return Math.max(10, Math.min(10_000, (int) Math.round(facteurPrixPct * b / 100.0)));
+    }
+
     private static long appliquer(long base) {
-        return base * facteurPrixPct / 100L;
+        return base * prixEffectifPct() / 100L;
     }
 
     public enum Branche {

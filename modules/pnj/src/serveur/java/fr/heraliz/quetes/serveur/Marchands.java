@@ -116,7 +116,8 @@ final class Marchands {
             for (int i = 0; i < m.articles.size(); i++) {
                 ItemStack s = objet(m.articles.get(i), 1);
                 if (s.isEmpty()) continue;
-                articles.add(new Reseau.Article(i, s, m.articles.get(i).prix(), Ponts.rarete(s)));
+                // prix affiché = prix payé : avec l'économie de la bêta (03/11, Ponts.prixAchat)
+                articles.add(new Reseau.Article(i, s, Ponts.prixAchat(m.articles.get(i).prix()), Ponts.rarete(s)));
             }
         }
         Reseau.envoyer(p, new Reseau.Boutique(ent.getId(), ouvrir, def.nom.vide() ? ent.nom() : def.nom, def.role,
@@ -145,7 +146,8 @@ final class Marchands {
         int q = Math.max(1, Math.min(LOT_MAX, a.quantite()));
         ItemStack modele = objet(art, 1);
         if (modele.isEmpty()) return;
-        long total = art.prix() * q;
+        // 03/11 : prix de l'économie de la bêta (le même qu'à l'écran)
+        long total = Ponts.prixAchat(art.prix()) * q;
         // 02/11 (audit point 23) : sans la place pour tout le lot, l'achat est refusé avant de payer (avant, le reste
         // tombait au sol)
         List<ItemStack> lot = new ArrayList<>(q);
@@ -242,6 +244,10 @@ final class Marchands {
     static long prixRachat(Defs.Marchand m, ItemStack s, Map<String, Long> ventes) {
         long regle = prixRachat(m, s);
         if (regle <= 0) return 0;
+        // économie de la bêta (03/11) : facteur « rachat » (1 par défaut) ; le plafond des 50 % ci-dessous compte le prix
+        // d'achat réduit (SaisonQuetes.ventes), donc acheter puis revendre fait toujours perdre au moins la moitié
+        double facteur = Ponts.beta("rachat");
+        if (facteur != 1.0) regle = Math.max(1, Math.round(regle * facteur));
         long achat = SaisonQuetes.prixVente(ventes, s);
         return achat < 0 ? regle : Math.min(regle, achat / 2);
     }

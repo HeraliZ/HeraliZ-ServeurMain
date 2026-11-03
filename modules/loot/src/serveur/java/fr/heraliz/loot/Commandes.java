@@ -102,6 +102,11 @@ final class Commandes {
                 "Loot de la bêta : objets x%s (au plus %s par conteneur), Rare / Épique / Légendaire x%s, Peu commun x%s. Uniques, objets à vie et exclus inchangés.",
                 deci(ConfigLoot.betaQuantite()), String.valueOf(ConfigLoot.betaObjetsMax()), deci(ConfigLoot.betaHautes()),
                 deci(ConfigLoot.betaPeuCommun())), false);
+        // économie de la bêta (03/11, suite) : appliquée par HeraliZ Quêtes et HeraliZ Clans (EconomieBeta)
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.beta.economie",
+                "Économie de la bêta : achats chez les marchands x%s, rachat x%s, recycleur x%s, améliorations du clan x%s, hérals des quêtes x%s.",
+                deci(EconomieBeta.facteur("achat")), deci(EconomieBeta.facteur("rachat")), deci(EconomieBeta.facteur("recyclage")),
+                deci(EconomieBeta.facteur("ameliorations")), deci(EconomieBeta.facteur("quetes"))), false);
         int n = 0;
         for (String nom : new String[]{"t1", "t2", "t3", "t4", "t5", "t6", "t7", "zombies", "zombies_militaire"}) {
             TablesCoffres.Table t = TablesCoffres.table(nom);

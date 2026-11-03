@@ -65,6 +65,47 @@ final class Ponts {
         }
     }
 
+    private static Method betaFacteur;
+    private static boolean betaAbsent;
+
+    /**
+     * Économie de la bêta (03/11, réglage [beta] de HeraliZ Loot, {@code fr.heraliz.loot.EconomieBeta.facteur}) : facteur
+     * « achat », « rachat », « recyclage » ou « quetes » en cours ; 1 sans HeraliZ Loot ou bêta coupée. Relu au plus une
+     * fois par seconde et par clé (le recycleur de la carte le demande à chaque tick quand il travaille).
+     */
+    static double beta(String cle) {
+        long t = System.currentTimeMillis();
+        double[] c = BETA.get(cle);
+        if (c != null && t >= (long) c[1] && t - (long) c[1] < 1000) return c[0];
+        double v = lireBeta(cle);
+        BETA.put(cle, new double[]{v, t});
+        return v;
+    }
+
+    private static final Map<String, double[]> BETA = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static double lireBeta(String cle) {
+        if (betaAbsent) return 1.0;
+        try {
+            if (betaFacteur == null) betaFacteur = Class.forName("fr.heraliz.loot.EconomieBeta").getMethod("facteur", String.class);
+            Object v = betaFacteur.invoke(null, cle);
+            return v instanceof Double d && d > 0 ? d : 1.0;
+        } catch (ClassNotFoundException | NoSuchMethodException | LinkageError e) {
+            betaAbsent = true;
+            LOG.info("[heraliz_quetes] économie de la bêta absente (HeraliZ Loot) : prix et recycleur normaux");
+            return 1.0;
+        } catch (Exception e) {
+            return 1.0;
+        }
+    }
+
+    /** Prix d'achat chez un marchand avec l'économie de la bêta : prix x facteur « achat », arrondi, 1 héral au moins. */
+    static long prixAchat(long prix) {
+        if (prix <= 0) return prix;
+        double f = beta("achat");
+        return f == 1.0 ? prix : Math.max(1, Math.round(prix * f));
+    }
+
     /**
      * Sauvegarde tout de suite le joueur ({@code PlayerList.save}, protégée : par réflexion, nom SRG {@code m_6765_}),
      * après un échange d'objets contre des hérals (vente, quête payée) : un arrêt brutal du serveur ne peut plus rendre

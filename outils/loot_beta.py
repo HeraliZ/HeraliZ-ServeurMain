@@ -7,6 +7,9 @@ tables (serveur/config/heraliz_loot/coffres/) et les vraies raretés (serveur/co
     python outils/loot_beta.py                         avec les valeurs du fichier de réglages
     python outils/loot_beta.py --quantite 2 --raretes 2   pour essayer d'autres valeurs (rien n'est écrit)
     python outils/loot_beta.py --markdown              tableau à coller dans une fiche
+    python outils/loot_beta.py --economie              économie de la bêta : prix, recycleur, arbre du clan, quêtes,
+                                                       et contrôle des boucles d'argent (acheter puis revendre / recycler)
+    python outils/loot_beta.py --economie --achat 0.5 --recyclage 1.5   pour essayer d'autres valeurs
 
 Règles (les mêmes que LootBeta.java, à garder ensemble) :
 - quantité : le nombre d'objets d'un conteneur (ou d'un zombie : 1 tirage) est multiplié, arrondi au hasard (1,5 x 3 =
@@ -43,7 +46,8 @@ TAILLE = 27  # cases d'un conteneur
 def reglages():
     """Section [beta] du fichier de réglages (valeurs par défaut de ConfigLoot si absente)."""
     r = {"actif": True, "quantite": 1.5, "chances_raretes_hautes": 1.5, "chances_peu_commun": 1.0, "objets_max": 20,
-         "exclus": ["heralisz_skins:*"]}
+         "exclus": ["heralisz_skins:*"], "prix_achat": 0.75, "prix_rachat": 1.0, "recyclage": 1.25, "ameliorations": 0.75,
+         "quetes_herals": 1.25}
     texte = TOML.read_text(encoding="utf-8")
     m = re.search(r"(?ms)^\[beta\]\s*$(.*?)(?=^\[|\Z)", texte)
     if m:
@@ -233,9 +237,81 @@ def fragments_zombies(r):
     return out
 
 
+def economie(r, md):
+    """Économie de la bêta (03/11, suite) : valeurs principales avant / après, et contrôle des boucles d'argent avec les
+    vrais fichiers des marchands et du recycleur (même calcul que outils/marchands.py --controle et le serveur)."""
+    sys.path.insert(0, str(RACINE / "outils"))
+    import marchands as M
+    actif = r["actif"]
+    fa = r["prix_achat"] if actif else 1.0
+    fr = r["prix_rachat"] if actif else 1.0
+    fy = r["recyclage"] if actif else 1.0
+    fm = r["ameliorations"] if actif else 1.0
+    fq = r["quetes_herals"] if actif else 1.0
+    print(f"Économie : {'active' if actif else 'COUPÉE'} ; achat x{fa:g} ; rachat x{fr:g} ; recycleur x{fy:g} ; "
+          f"améliorations du clan x{fm:g} ; hérals des quêtes x{fq:g}")
+    pnj = {}
+    for f in sorted(M.PNJ.glob("*.json")):
+        m = json.loads(f.read_text(encoding="utf-8")).get("marchand")
+        if m and m.get("type") in ("achat", "rachat"):
+            pnj[f.stem] = m
+
+    def achat(p):
+        return p if fa == 1.0 or p <= 0 else max(1, M.arrondi(p * fa))
+
+    lignes = []
+    for nom, pid in (("Jacqueline (soins)", "jacqueline"), ("Le Doyen (nourriture)", "doyen"), ("Jack (accessoires)", "jack"),
+                     ("Le Bâtisseur", "batisseur")):
+        prix = sorted({a["prix"] for a in pnj.get(pid, {}).get("articles", [])})
+        if prix:
+            lignes.append((nom, " / ".join(str(x) for x in prix), " / ".join(str(achat(x)) for x in prix)))
+    rec = json.loads(M.RECYCLAGE.read_text(encoding="utf-8"))
+    ch = rec["chance"]
+    chc = rec.get("profils", {}).get("carte", {}).get("chance", ch)
+    rien = rec["herals_si_rien"]
+    lignes.append(("Recycleur : chance par composant (spawn / terrain)", f"{ch * 100:g} % / {chc * 100:g} %",
+                   f"{min(1, ch * fy) * 100:g} % / {min(1, chc * fy) * 100:g} %"))
+    lignes.append(("Recycleur : hérals si rien ne sort (Commun → Unique)", " / ".join(map(str, rien)),
+                   " / ".join(str(x if fy == 1.0 or x <= 0 else M.arrondi(x * fy)) for x in rien)))
+    niv = json.loads((RACINE / "serveur/config/heralisz_clans/niveaux.json").read_text(encoding="utf-8"))
+    pct = round(niv.get("facteur_prix_arbre", 2.0) * 100)
+    eff = max(10, min(10000, M.arrondi(pct * max(1, min(100, M.arrondi(fm * 100))) / 100)))
+    lignes.append(("Arbre du clan : palier 1 / 2 / 3", " / ".join(f"{n * 5000 * pct // 100:,}".replace(",", " ") for n in (1, 2, 3)),
+                   " / ".join(f"{n * 5000 * eff // 100:,}".replace(",", " ") for n in (1, 2, 3))))
+    lignes.append(("Quêtes de Varga (hérals)", "100 à 7 000", f"{M.arrondi(100 * fq)} à {M.arrondi(7000 * fq):,}".replace(",", " ")))
+    lignes.append(("Quêtes de clan (hérals, jour / semaine)", "250 à 900 / 1 500 à 3 000",
+                   f"{M.arrondi(250 * fq)} à {M.arrondi(900 * fq)} / {M.arrondi(1500 * fq):,} à {M.arrondi(3000 * fq):,}".replace(",", " ")))
+    lignes.append(("Rachat de Mila (objets de valeur, Commun → Légendaire)", "2 / 8 / 20 / 50 / 200",
+                   " / ".join(str(x if fr == 1.0 else max(1, M.arrondi(x * fr))) for x in (2, 8, 20, 50, 200))))
+    if md:
+        print("| | Avant | Après |\n|---|---|---|")
+        for a, b, c in lignes:
+            print(f"| {a} | {b} | {c} |")
+    else:
+        for a, b, c in lignes:
+            print(f"  {a} : {b} → {c}")
+    # boucles d'argent : acheter puis revendre ou recycler doit toujours faire perdre au moins la moitié du prix payé
+    e0, n0 = M.analyser(pnj)
+    e1, n1 = M.analyser(pnj, fa, fr, fy)
+    nouveaux = [n for n in n1 if n not in n0]
+    print(f"Boucles d'argent : {len(e1)} erreur(s) ; {len(n1)} plafond(s) ou refus du serveur ({len(nouveaux)} nouveaux avec la bêta)")
+    for n in nouveaux:
+        print("  nouveau : " + n)
+    for e in e1:
+        print("  ERREUR : " + e)
+    return 1 if e1 else 0
+
+
 def main():
     r1 = reglages()
     args = sys.argv[1:]
+    if "--economie" in args:
+        for k, cle in (("--achat", "prix_achat"), ("--rachat", "prix_rachat"), ("--recyclage", "recyclage"),
+                       ("--ameliorations", "ameliorations"), ("--quetes", "quetes_herals")):
+            if k in args:
+                r1[cle] = float(args[args.index(k) + 1])
+                r1["actif"] = True
+        raise SystemExit(economie(r1, "--markdown" in args))
     for k, cle in (("--quantite", "quantite"), ("--raretes", "chances_raretes_hautes"), ("--peu-commun", "chances_peu_commun")):
         if k in args:
             r1[cle] = float(args[args.index(k) + 1])

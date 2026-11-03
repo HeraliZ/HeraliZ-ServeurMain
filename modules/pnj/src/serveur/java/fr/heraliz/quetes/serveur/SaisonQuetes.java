@@ -82,7 +82,8 @@ final class SaisonQuetes {
             if (d.marchand == null) continue;
             for (Defs.EchangeDef e : d.marchand.echanges) v.put(cle(e.recu(), e.nbtRecu()), 0L);
             if (d.marchand.rachat) continue;
-            for (Defs.ArticleDef a : d.marchand.articles) v.merge(cle(a.objet(), a.nbt()), Math.max(0, a.prix()), Math::min);
+            // prix payé (économie de la bêta, 03/11) : le plafond des 50 % du rachat et du recycleur part du prix réduit
+            for (Defs.ArticleDef a : d.marchand.articles) v.merge(cle(a.objet(), a.nbt()), Math.max(0, Ponts.prixAchat(a.prix())), Math::min);
         }
         return v;
     }

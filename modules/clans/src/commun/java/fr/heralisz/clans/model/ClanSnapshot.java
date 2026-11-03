@@ -223,7 +223,8 @@ public record ClanSnapshot(UUID id, String tag, String nom, String description, 
             e.getValue().write(b);
         }
         // ajout du 28/10 : facteur de prix de l'arbre (pourcents), pour que le joueur voie le prix demandé par le serveur
-        b.writeVarInt(Arbre.facteurPrixPct());
+        // 03/11 : prix vraiment demandé, économie de la bêta comprise (Arbre.prixEffectifPct ; le joueur garde betaPct = 100)
+        b.writeVarInt(Arbre.prixEffectifPct());
         // ajout du 31/10 : membres (niveaux.json, section « membres ») : membres au départ, puis les niveaux du clan qui
         // donnent chacun une place de plus, pour que l'onglet Niveau montre ce que le serveur applique
         b.writeVarInt(Arbre.membresDepart());

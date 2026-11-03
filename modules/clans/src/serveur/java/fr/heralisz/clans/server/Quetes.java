@@ -271,7 +271,11 @@ public final class Quetes {
             }
         }
         List<QueteEtat> copies = new ArrayList<>(out.size());
-        for (QueteEtat q : out) copies.add(q.copie());
+        // economie de la beta (03/11) : herals x facteur « quetes » fixes au tirage (affiches = verses)
+        for (QueteEtat q : out) {
+            copies.add(new QueteEtat(q.id, q.type, q.periode, q.objectif, q.xp, fr.heralisz.clans.serveur.EconomieBetaClans.quete(q.argent),
+                    q.titreFr, q.titreEn, q.progression, q.terminee, q.termineeLe));
+        }
         return copies;
     }
 

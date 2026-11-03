@@ -181,7 +181,7 @@ final class MenuRecycleurCarteServeur extends MenuRecycleurCarte {
             ItemStack s = slots.get(k).getItem();
             sig = 31 * sig + (s.isEmpty() ? 0 : Objects.hash(ForgeRegistries.ITEMS.getKey(s.getItem()), s.getCount(), s.getTag()));
         }
-        sig = 31 * sig + Recyclage.version;
+        sig = 31 * sig + Long.hashCode(Recyclage.cleVerdicts());   // règles et économie de la bêta (03/11)
         if (sig == signature) return;
         signature = sig;
         Map<String, Long> v = SaisonQuetes.ventes();

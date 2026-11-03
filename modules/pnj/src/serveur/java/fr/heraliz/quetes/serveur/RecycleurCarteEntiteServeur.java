@@ -84,7 +84,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
     /** Verdicts des cases « à recycler », refaits quand une case change ou que les règles sont relues. */
     private final ItemStack[] vus = new ItemStack[ENTREES];
     private final Recyclage.Verdict[] verdicts = new Recyclage.Verdict[ENTREES];
-    private int versionRegles = -1;
+    /** {@link Recyclage#cleVerdicts} des verdicts gardés (règles et économie de la bêta). */
+    private long versionRegles = Long.MIN_VALUE;
     /** Contenu juste avant un clic (pour savoir ce qui est entré ou sorti). */
     private final ItemStack[] avant = new ItemStack[ENTREES + SORTIES];
     private boolean instantane;
@@ -419,8 +420,9 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
 
     /** Verdicts refaits seulement pour les cases qui ont changé (ou toutes, après {@code /recharger quetes}). */
     private void verdicts() {
-        if (versionRegles != Recyclage.version) {
-            versionRegles = Recyclage.version;
+        long cle = Recyclage.cleVerdicts();
+        if (versionRegles != cle) {
+            versionRegles = cle;
             java.util.Arrays.fill(vus, null);
         }
         Map<String, Long> ventes = null, valeurs = null;

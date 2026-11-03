@@ -172,8 +172,15 @@ def ids_tag(nom):
     return set()
 
 
-def prix_regle(marchand, objet, nbt):
-    """Prix de la première règle de rachat qui prend l'objet (0 : aucune), comme Marchands.prixRachat(m, s)."""
+def arrondi(x):
+    """Math.round de Java (moitié vers le haut), pas l'arrondi bancaire de Python."""
+    import math
+    return int(math.floor(x + 0.5))
+
+
+def prix_regle(marchand, objet, nbt, facteur=1.0):
+    """Prix de la première règle de rachat qui prend l'objet (0 : aucune), comme Marchands.prixRachat(m, s) ; facteur
+    « rachat » de l'économie de la bêta (03/11) compris, comme Marchands.prixRachat(m, s, ventes)."""
     for r in marchand.get("rachat", []):
         if not (objet == r["objet"] if "objet" in r else objet in ids_tag(r["tag"])):
             continue
@@ -182,12 +189,26 @@ def prix_regle(marchand, objet, nbt):
         v = r["prix"].get(nom)
         if v is None and g == 5:
             v = r["prix"].get("unique")
-        return max(0, v or 0)
+        v = max(0, v or 0)
+        return max(1, arrondi(v * facteur)) if v > 0 and facteur != 1.0 else v
     return 0
 
 
-def controle(marchands):
+def controle(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0):
     """Revente et recyclage de chaque article vendu : refus (SystemExit) si l'un rapporte plus que la règle des 50 %."""
+    erreurs, notes = analyser(marchands, achat, rachat_f, recyclage, bavard=True)
+    for n in notes:
+        print("plafonné par le serveur : " + n)
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : une revente ou un recyclage rapporterait plus que la règle des 50 % du prix d'achat.")
+
+
+def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
+    """(erreurs, notes) du contrôle des 50 %, avec les facteurs de l'économie de la bêta (03/11, réglage [beta] de
+    heraliz_loot-server.toml, Ponts.prixAchat / Marchands.prixRachat / Recyclage de HeraliZ Quêtes) : prix d'achat x
+    achat (arrondi, 1 au moins), règles de rachat x rachat_f, chance et hérals « rien » du recycleur x recyclage."""
     plafond = "achat / 2" in MARCHANDS_JAVA.read_text(encoding="utf-8")
     recy_plafond = "tropRentable" in RECYCLAGE_JAVA.read_text(encoding="utf-8")
     ventes = {}
@@ -196,19 +217,20 @@ def controle(marchands):
             continue
         for a in m.get("articles", []):
             k = (a["objet"], a.get("nbt", ""))
-            ventes[k] = min(a["prix"], ventes.get(k, a["prix"]))
+            p = a["prix"] if achat == 1.0 or a["prix"] <= 0 else max(1, arrondi(a["prix"] * achat))
+            ventes[k] = min(p, ventes.get(k, p))
     racheteurs = {pid: m for pid, m in marchands.items() if m.get("type") == "rachat"}
 
     def rachat(objet, nbt):
         """Meilleur prix de rachat, plafond des 50 % compris (objet vendu sans données : il vaut pour toutes)."""
-        brut = max([prix_regle(m, objet, nbt) for m in racheteurs.values()] + [0])
+        brut = max([prix_regle(m, objet, nbt, rachat_f) for m in racheteurs.values()] + [0])
         achat = min([p for (o, n), p in ventes.items() if o == objet and (not n or n == nbt)], default=None)
         return brut if achat is None or not plafond else min(brut, achat // 2)
 
     erreurs, notes = [], []
     for (objet, nbt), prix in sorted(ventes.items()):
         for pid, m in racheteurs.items():
-            brut = prix_regle(m, objet, nbt)
+            brut = prix_regle(m, objet, nbt, rachat_f)
             if brut * 2 <= prix:
                 continue
             if plafond:
@@ -219,6 +241,7 @@ def controle(marchands):
         rec = json.loads(RECYCLAGE.read_text(encoding="utf-8"))
         # 31/10 : chaque profil du recycleur (spawn, et « carte » : même règles, chance relative en plus)
         profils = [("spawn", rec["chance"])] + [(nom, p.get("chance", rec["chance"])) for nom, p in rec.get("profils", {}).items()]
+        profils = [(nom, min(1.0, c * recyclage)) for nom, c in profils]
         for nom_profil, chance in profils:
             recyclables, pire = 0, (0.0, "")
             for (objet, nbt), prix in sorted(ventes.items()):
@@ -229,6 +252,7 @@ def controle(marchands):
                 rend = r.get("rend") or r["rend_rarete"][min(len(r["rend_rarete"]) - 1, g)]
                 somme = sum(rachat(c, "") for c in rend)
                 rien = rec["herals_si_rien"][min(5, g)]
+                rien = rien if recyclage == 1.0 or rien <= 0 else arrondi(rien * recyclage)
                 esperance = chance * somme + (1 - chance) ** len(rend) * rien
                 cout = prix * r.get("par", 1)
                 recyclables += 1
@@ -238,15 +262,12 @@ def controle(marchands):
                     texte = (f"recycleur {nom_profil} : {objet}{nbt} : vendu {prix}, recyclé rapporte {esperance:.1f} en moyenne"
                              f" (borne : {cout / 2:.0f})")
                     (notes if recy_plafond else erreurs).append(texte + (" -> refusé par le recycleur" if recy_plafond else ""))
-            print(f"[marchands] recycleur {nom_profil} (chance {chance * 100:g} %) : {recyclables} articles vendus recyclables, "
-                  f"le plus proche de la borne rapporte {pire[0] * 50:.1f} % de son prix ({pire[1] or '-'})")
-    for n in notes:
-        print("plafonné par le serveur : " + n)
-    for e in erreurs:
-        print("ERREUR : " + e)
-    if erreurs:
-        raise SystemExit("Refusé : une revente ou un recyclage rapporterait plus que la règle des 50 % du prix d'achat.")
-    print(f"[marchands] contrôle des 50 % : {len(ventes)} articles vendus, aucune revente ni recyclage trop rentable")
+            if bavard:
+                print(f"[marchands] recycleur {nom_profil} (chance {chance * 100:g} %) : {recyclables} articles vendus recyclables, "
+                      f"le plus proche de la borne rapporte {pire[0] * 50:.1f} % de son prix ({pire[1] or '-'})")
+    if bavard and not erreurs:
+        print(f"[marchands] contrôle des 50 % : {len(ventes)} articles vendus, aucune revente ni recyclage trop rentable")
+    return erreurs, notes
 
 
 def regle_recyclage(rec, objet, nbt):

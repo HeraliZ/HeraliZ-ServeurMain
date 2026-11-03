@@ -82,8 +82,16 @@ final class Recyclage {
 
     private record Etat(double chance, double chanceCarte, int maxPieces, int ticksParObjet, long[] herals, List<String> jamais,
                         Map<String, String> cles, Map<String, Regle> exactes, List<Regle> larges) {
+        /** Chance par composant, rendement de l'économie de la bêta compris (03/11, facteur « recyclage »), 1 au plus. */
         double chance(boolean carte) {
-            return carte ? chanceCarte : chance;
+            return Math.min(1.0, (carte ? chanceCarte : chance) * Ponts.beta("recyclage"));
+        }
+
+        /** Hérals quand rien ne sort, pour ce rang, rendement de l'économie de la bêta compris (03/11). */
+        long herals(int rang) {
+            long h = herals[Math.min(5, Math.max(0, rang))];
+            double f = Ponts.beta("recyclage");
+            return f == 1.0 || h <= 0 ? h : Math.round(h * f);
         }
     }
 
@@ -172,6 +180,14 @@ final class Recyclage {
         return chance(false);
     }
 
+    /**
+     * Clé des verdicts gardés par le recycleur de la carte : change avec les règles ({@link #version}) ET avec l'économie
+     * de la bêta (03/11 : rendement et prix d'achat jouent sur les hérals « rien » et le refus « trop rentable »).
+     */
+    static long cleVerdicts() {
+        return ((long) version << 32) ^ (Double.hashCode(Ponts.beta("recyclage")) * 31L + Double.hashCode(Ponts.beta("achat")));
+    }
+
     /** Chance par composant : spawn, ou recycleur de la carte (profil « carte »). */
     static float chance(boolean carte) {
         return (float) etat.chance(carte);
@@ -251,7 +267,7 @@ final class Recyclage {
     static Verdict verdict(ItemStack s, Map<String, Long> ventes, Map<String, Long> valeurs, boolean carte) {
         Etat e = etat;
         int rang = Math.max(0, Ponts.rarete(s));
-        long herals = e.herals[Math.min(5, rang)];
+        long herals = e.herals(rang);
         int u = etatPct(s);
         float f = facteurUsure(u);
         if (Echanges.interdit(s)) return new Verdict(PROTEGE, rang, 1, List.of(), herals, f, u);
@@ -395,7 +411,7 @@ final class Recyclage {
                 return item == null || item == Items.AIR ? 0L : Marchands.meilleurRachat(new ItemStack(item), ventes);
             });
         }
-        long rien = e.herals[Math.min(5, rang)];
+        long rien = e.herals(rang);
         double esperance = chance * somme + Math.pow(1 - chance, rend.size()) * rien;
         return esperance * 2 > cout;
     }

@@ -528,5 +528,6 @@
   "heraliz_loot.zombies.sans_table": "Table des zombies introuvable.",
   "heraliz_loot.beta.coupe": "Loot de la bêta coupé : loot normal (réglage [beta] de heraliz_loot-server.toml).",
   "heraliz_loot.beta.etat": "Loot de la bêta : objets x%s (au plus %s par conteneur), Rare / Épique / Légendaire x%s, Peu commun x%s. Uniques, objets à vie et exclus inchangés.",
-  "heraliz_loot.beta.table": "%s : Rare %s → %s %%, Épique %s → %s %%, Légendaire %s → %s %%"
+  "heraliz_loot.beta.table": "%s : Rare %s → %s %%, Épique %s → %s %%, Légendaire %s → %s %%",
+  "heraliz_loot.beta.economie": "Économie de la bêta : achats chez les marchands x%s, rachat x%s, recycleur x%s, améliorations du clan x%s, hérals des quêtes x%s."
 }

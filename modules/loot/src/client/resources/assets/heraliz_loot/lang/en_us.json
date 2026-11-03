@@ -528,5 +528,6 @@
   "heraliz_loot.zombies.sans_table": "Zombie loot table not found.",
   "heraliz_loot.beta.coupe": "Beta loot off: normal loot ([beta] setting in heraliz_loot-server.toml).",
   "heraliz_loot.beta.etat": "Beta loot: items x%s (at most %s per container), Rare / Epic / Legendary x%s, Uncommon x%s. Uniques, lifetime items and exclusions unchanged.",
-  "heraliz_loot.beta.table": "%s: Rare %s → %s %%, Epic %s → %s %%, Legendary %s → %s %%"
+  "heraliz_loot.beta.table": "%s: Rare %s → %s %%, Epic %s → %s %%, Legendary %s → %s %%",
+  "heraliz_loot.beta.economie": "Beta economy: merchant purchases x%s, buy-back x%s, recycler x%s, clan upgrades x%s, quest herals x%s."
 }

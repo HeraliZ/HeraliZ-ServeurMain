@@ -33,6 +33,8 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.DoubleValue BETA_QUANTITE, BETA_HAUTES, BETA_PEU_COMMUN;
     public static final ForgeConfigSpec.IntValue BETA_OBJETS_MAX;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BETA_EXCLUS;
+    /** Économie de la bêta (03/11, suite : src/serveur : EconomieBeta, lue par HeraliZ Quêtes et HeraliZ Clans). */
+    public static final ForgeConfigSpec.DoubleValue BETA_ACHAT, BETA_RACHAT, BETA_RECYCLAGE, BETA_AMELIORATIONS, BETA_QUETES;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -87,6 +89,19 @@ public final class ConfigLoot {
                         "d'objet, d'arme, d'accessoire, de munition ou de soin ; « * » à la fin = tout ce qui commence ainsi.",
                         "heralisz_skins:* : les couteaux (coffres T7).")
                 .defineListAllowEmpty(List.of("exclus"), () -> List.of("heralisz_skins:*"), ConfigLoot::idValide);
+        // économie de la bêta (03/11, suite) : appliquée par HeraliZ Quêtes et HeraliZ Clans (EconomieBeta), « actif » compris
+        BETA_ACHAT = b.comment("Prix d'achat chez les marchands (Jack, Jacqueline, le Doyen, le Bâtisseur) multipliés par ce nombre",
+                        "(0.75 = -25 %), affichage compris. Le rachat de Mila reste plafonné à la moitié du prix d'achat réduit.")
+                .defineInRange("prix_achat", 0.75, 0.25, 1.0);
+        BETA_RACHAT = b.comment("Prix de rachat des marchands (Mila) multipliés par ce nombre (1 : inchangés ; jamais plus de la",
+                "moitié du prix d'achat). Objets d'événement : jamais touchés.").defineInRange("prix_rachat", 1.0, 1.0, 2.0);
+        BETA_RECYCLAGE = b.comment("Rendement du recycleur (spawn et terrain) multiplié par ce nombre : chance de chaque composant et",
+                "hérals quand rien ne sort. Un objet acheté qui rapporterait plus que la moitié de son prix reste refusé.")
+                .defineInRange("recyclage", 1.25, 1.0, 3.0);
+        BETA_AMELIORATIONS = b.comment("Prix en hérals des améliorations de l'arbre du clan multipliés par ce nombre (0.75 = -25 %).")
+                .defineInRange("ameliorations", 0.75, 0.25, 1.0);
+        BETA_QUETES = b.comment("Hérals des quêtes multipliés par ce nombre : quêtes des PNJ (Varga) et quêtes de clan (tirées après",
+                "le changement).").defineInRange("quetes_herals", 1.25, 1.0, 3.0);
         b.pop();
         b.comment("Conteneurs de Minecraft (coffre, baril, four, alambic, entonnoir...) : un joueur en survie ou en aventure ne",
                 "peut pas les ouvrir (« Ce conteneur est vide et scellé. »). Créatif, spectateur et staff (permission 2) : libres.",

@@ -324,7 +324,7 @@ final class Dialogues {
             if (q == null) continue;
             int n = i;
             Texte lib = q.recompense.herals > 0
-                    ? Texte.cle("heraliz_quetes.dialogue.offre", q.titre, Texte.brut(etoiles(q.difficulte)), Texte.brut(Ponts.nombre(q.recompense.herals)))
+                    ? Texte.cle("heraliz_quetes.dialogue.offre", q.titre, Texte.brut(etoiles(q.difficulte)), Texte.brut(Ponts.nombre(Moteur.herals(q.recompense))))
                     : Texte.cle("heraliz_quetes.dialogue.offre_sans", q.titre, Texte.brut(etoiles(q.difficulte)));
             reps.add(new Rep(lib, 0, () -> offre(p, ent, def, n)));
         }

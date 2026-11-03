@@ -23,6 +23,8 @@ public final class PartieServeur implements Partie {
     public void init(IEventBus busMod) {
         ReglagesClansServeur.brancher(busMod);   // heralisz_clans-common.toml : serveur seulement (audit du 02/11, point 11)
         ClansApiServeur.installer();
+        // economie de la beta (03/11) : herals de l'arbre du clan x facteur « ameliorations » de HeraliZ Loot
+        fr.heralisz.clans.model.Arbre.betaPct(() -> (int) Math.round(EconomieBetaClans.facteur("ameliorations") * 100));
         // fil d'ecriture des fichiers des clans et de la saison (attendu a l'arret du serveur)
         fr.heralisz.clans.server.EcrituresFond.init();
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.server.ClanStore.class);

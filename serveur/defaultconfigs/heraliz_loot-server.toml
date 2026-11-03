@@ -46,3 +46,19 @@
 	objets_max = 20
 	#Objets qui gardent leurs chances d'aujourd'hui (en plus des Uniques et des objets à vie). heralisz_skins:* : les couteaux.
 	exclus = ["heralisz_skins:*"]
+	# Économie de la bêta (03/11, suite) : coupée aussi par actif = false. Chiffres : python outils/loot_beta.py --economie.
+	#Prix d'achat chez les marchands (Jack, Jacqueline, le Doyen, le Bâtisseur) multipliés par ce nombre (0.75 = -25 %).
+	#Range: 0.25 ~ 1.0
+	prix_achat = 0.75
+	#Prix de rachat des marchands (Mila) multipliés par ce nombre (jamais plus de la moitié du prix d'achat). Objets d'événement : jamais touchés.
+	#Range: 1.0 ~ 2.0
+	prix_rachat = 1.0
+	#Rendement du recycleur (spawn et terrain) multiplié par ce nombre : chance de chaque composant et hérals quand rien ne sort.
+	#Range: 1.0 ~ 3.0
+	recyclage = 1.25
+	#Prix en hérals des améliorations de l'arbre du clan multipliés par ce nombre (0.75 = -25 %).
+	#Range: 0.25 ~ 1.0
+	ameliorations = 0.75
+	#Hérals des quêtes multipliés par ce nombre : quêtes des PNJ (Varga) et quêtes de clan (tirées après le changement).
+	#Range: 1.0 ~ 3.0
+	quetes_herals = 1.25
