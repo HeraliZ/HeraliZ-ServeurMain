@@ -145,6 +145,9 @@ public final class PartieServeur implements Partie {
 
         @Override
         public void c4(ServerLevel level, BlockPos pos, Vec3 hit, @Nullable Direction face) {
+            // échelles de raid d'abord (03/11) : détruites d'un coup, le point d'explosion un peu devant la face collée
+            fr.heraliz.crac.placable.EchelleServeur.souffle(level, face == null ? hit
+                : hit.add(face.getStepX() * 0.05, face.getStepY() * 0.05, face.getStepZ() * 0.05));
             if (!BlastDamage.stuck(level, pos, hit, Config.c4Damage.get()) && face != null) {
                 RaidBlocks.breakAround(level, pos, Config.c4BlockRadius.get());
             }
@@ -158,6 +161,7 @@ public final class PartieServeur implements Partie {
         @Override
         public void charge(ServerLevel level, BlockPos pos, Vec3 hit, Vec3 position, @Nullable Direction face) {
             // pieces first: the sight lines are traced while the blocks the charge breaks still stand
+            fr.heraliz.crac.placable.EchelleServeur.souffle(level, position);   // échelles de raid (03/11)
             BlastDamage.charge(level, pos, hit, position, Config.explosiveChargeDamage.get());
             if (face != null) {
                 RaidBlocks.breakAround(level, pos, Config.explosiveChargeBlockRadius.get());

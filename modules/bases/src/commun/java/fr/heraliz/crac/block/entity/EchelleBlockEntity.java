@@ -8,7 +8,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Points de vie d'une échelle ({@link fr.heraliz.crac.block.EchelleBlock}) : 150 comme la barricade, gardés avec le monde.
+ * Points de vie d'une échelle ({@link fr.heraliz.crac.block.EchelleBlock}) : 150 comme la barricade, gardés avec le monde
+ * par la partie du bas (une seule réserve pour les trois cases).
  * Aucun tick, rien d'envoyé aux joueurs (les coups sont décidés au serveur, {@code placable/EchelleServeur}).
  */
 public class EchelleBlockEntity extends BlockEntity {

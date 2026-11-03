@@ -23,8 +23,7 @@
   "result": {
     "type": "custom",
     "item": {
-      "item": "crac:echelle",
-      "count": 3
+      "item": "crac:echelle"
     },
     "group": "heraliz_crafts:divers"
   }

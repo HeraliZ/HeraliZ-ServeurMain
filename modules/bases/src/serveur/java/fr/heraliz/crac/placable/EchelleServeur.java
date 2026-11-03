@@ -32,9 +32,10 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
  * sous une autre licence) : 150 PV ; un coup à la main ou d'arme de mêlée en retire au moins 15 (plus si l'arme frappe plus
  * fort), selon la recharge du coup (un coup donné trop tôt compte moins, comme contre une créature) ; une balle de TaCZ
  * en retire ses propres dégâts au point touché ({@code AmmoHitBlockEvent}, lu par son nom : CRac ne dépend pas de
- * TaCZ). À 0 : l'échelle part, avec le bruit et les éclats du bois, sans rien lâcher ; celle qu'elle portait au-dessus
- * tombe avec elle (EchelleBlock.canSurvive) et le mur reprend sa case. N'importe qui peut la casser (le défenseur
- * comme le pilleur). Rien par tick : seulement à un coup ou à une balle qui touche une échelle.
+ * TaCZ). Un coup sur n'importe quelle partie compte pour toute l'échelle (PV gardés par la partie du bas). À 0 : l'échelle
+ * part (toute), avec le bruit et les éclats du bois, sans rien lâcher, et le mur reprend ses cases. Le C4 et la charge
+ * explosive la détruisent d'un coup ({@link #souffle}) ; les autres explosions ne lui font rien. N'importe qui peut la
+ * casser (le défenseur comme le pilleur). Rien par tick : seulement à un coup, une balle ou un explosif.
  */
 @EventBusSubscriber(modid = "crac")
 public final class EchelleServeur {
@@ -121,21 +122,71 @@ public final class EchelleServeur {
         DERNIER.remove(e.getEntity().getUUID());
     }
 
-    /** Retire des PV à l'échelle ; à 0, elle part sans rien lâcher. */
+    /** Retire des PV à l'échelle dont une partie est en {@code pos} (gardés par la partie du bas) ; à 0, elle part. */
     static void abimer(ServerLevel level, BlockPos pos, float degats) {
-        if (!(level.getBlockEntity(pos) instanceof EchelleBlockEntity be)) {
+        BlockState s = level.getBlockState(pos);
+        if (!(s.getBlock() instanceof EchelleBlock)) {
             return;
         }
-        float reste = be.abimer(degats);
-        Vec3 c = Vec3.atCenterOf(pos);
-        BlockParticleOption bois = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState());
-        if (reste <= 0F) {
-            level.sendParticles(bois, c.x, c.y, c.z, 30, 0.3, 0.4, 0.3, 0.12);
-            level.playSound(null, pos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0F, 0.8F);
-            level.removeBlock(pos, false);
-        } else {
-            level.sendParticles(bois, c.x, c.y, c.z, 5, 0.25, 0.3, 0.25, 0.05);
-            level.playSound(null, pos, SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.8F, 0.8F + level.getRandom().nextFloat() * 0.3F);
+        BlockPos bas = EchelleBlock.bas(s, pos);
+        if (!(level.getBlockEntity(bas) instanceof EchelleBlockEntity be)) {
+            return;
         }
+        if (be.abimer(degats) <= 0F) {
+            detruire(level, bas);
+            return;
+        }
+        Vec3 c = Vec3.atCenterOf(pos);
+        level.sendParticles(bois(), c.x, c.y, c.z, 5, 0.25, 0.3, 0.25, 0.05);
+        level.playSound(null, pos, SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.8F, 0.8F + level.getRandom().nextFloat() * 0.3F);
+    }
+
+    /** Rayon (blocs, depuis le point d'explosion) dans lequel le C4 et la charge explosive détruisent les échelles. */
+    public static final double RAYON_EXPLOSIF = 2.5;
+
+    /**
+     * C4 ou charge explosive (demande du propriétaire du 03/11) : chaque échelle dont une partie est à moins de
+     * {@link #RAYON_EXPLOSIF} du point d'explosion et que le souffle voit (rien de plein entre les deux : une échelle de
+     * l'autre côté du mur ne bouge pas, comme les pièces, {@code BlastDamage.inSight}) est détruite d'un coup, sans rien
+     * lâcher. Appelé avant les dégâts aux pièces : l'échelle ne protège pas le mur derrière elle. Seulement à l'explosion
+     * (quelques dizaines de cases lues).
+     */
+    public static void souffle(ServerLevel level, Vec3 origine) {
+        int r = (int) Math.ceil(RAYON_EXPLOSIF);
+        double r2 = RAYON_EXPLOSIF * RAYON_EXPLOSIF;
+        BlockPos centre = BlockPos.containing(origine);
+        java.util.Set<BlockPos> echelles = new java.util.LinkedHashSet<>();
+        for (BlockPos p : BlockPos.betweenClosed(centre.offset(-r, -r, -r), centre.offset(r, r, r))) {
+            if (!level.isLoaded(p) || Vec3.atCenterOf(p).distanceToSqr(origine) > r2) {
+                continue;
+            }
+            BlockState s = level.getBlockState(p);
+            if (!(s.getBlock() instanceof EchelleBlock)) {
+                continue;
+            }
+            BlockPos bas = EchelleBlock.bas(s, p);
+            if (!echelles.contains(bas) && fr.heraliz.crac.raid.BlastDamage.inSight(level, origine,
+                new fr.heraliz.crac.raid.BlastDamage.Target(null, p.immutable(), 0.0), java.util.Set.of())) {
+                echelles.add(bas);
+            }
+        }
+        for (BlockPos bas : echelles) {
+            detruire(level, bas);
+        }
+    }
+
+    /** L'échelle (partie du bas en {@code bas}) part toute, avec le bruit et les éclats du bois, sans rien lâcher. */
+    private static void detruire(ServerLevel level, BlockPos bas) {
+        if (!(level.getBlockState(bas).getBlock() instanceof EchelleBlock)) {
+            return;
+        }
+        Vec3 c = Vec3.atCenterOf(bas.above(EchelleBlock.HAUTEUR / 2));
+        level.sendParticles(bois(), c.x, c.y, c.z, 60, 0.3, 1.2, 0.3, 0.12);
+        level.playSound(null, bas.above(), SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0F, 0.8F);
+        level.removeBlock(bas, false);   // les autres parties suivent (EchelleBlock.onRemove)
+    }
+
+    private static BlockParticleOption bois() {
+        return new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState());
     }
 }

@@ -103,27 +103,38 @@ la pièce n'est dessinée à part qu'ouvert et pendant 4 ticks après une fermet
 - [ ] Caisse en métal (pas concernée par ce défaut, elle n'a pas de pièce dessinée à part) : rien ne clignote non plus.
 - [ ] Coffres posés avant la mise à jour : mêmes contrôles.
 
-## Échelle de raid (Bases 1.34.0-beta, demande du propriétaire du 03/11)
+## Échelle de raid (Bases 1.34.1-beta, validée par le propriétaire le 03/11, avec ses changements)
 
-Objet et bloc `crac:echelle` (identifiant figé). Une case par échelle, piles de 9, fabriquées par 3 à la Table d'armurier
-(onglet Divers : 9 planches, 9 clous, 2 cordes). Modèle provisoire (texture de l'échelle de Minecraft) tant que le modèle
-proposé n'est pas validé.
+Objet et bloc `crac:echelle` (identifiant figé). **Une échelle = la hauteur d'un mur** (un étage de base, 3 blocs), posée
+d'un coup ; piles de 9 ; une par recette à la Table d'armurier (onglet Divers : 9 planches, 9 clous, 2 cordes, le prix des
+3 petites échelles d'avant). Modèle des bases (montants en planches, colliers d'acier) ; rendus :
+`5_echelle_v2/echelle.png`. Aucune limite, aucune disparition avec le temps.
 
-- [ ] Fabrication : onglet Divers, 3 échelles par recette ; Peu commune ; jamais dans le loot.
-- [ ] Pose contre la FACE d'un mur droit (bois, pierre, métal, blindé) de sa base, dedans et dehors : collée au mur, le
-      mur paraît toujours plein des deux côtés. Pareil dans la base d'un AUTRE clan (pas besoin d'être membre), pendant et
-      hors Purge.
-- [ ] Pose contre le flanc d'une fondation (case libre devant) ; sur une échelle (visée sur l'échelle) : la suivante se met
-      au-dessus, même sens ; un étage = 3 échelles ; une 4e au-dessus du mur (pour passer sur le toit), pas une 5e.
-- [ ] Refus (« L'échelle se pose contre… ») : terrain hors base, mur en biais (pas prévu), mur avec porte ou fenêtre ouverte
-      d'une porte, case déjà prise d'un côté du mur par un coffre ou une autre échelle, sol, plafond.
+- [ ] Fabrication : onglet Divers, 1 échelle par recette ; Peu commune ; jamais dans le loot.
+- [ ] Pose contre la FACE d'un mur droit (bois, pierre, métal, blindé), en visant n'importe où sur le mur : l'échelle va
+      du pied au sommet de ce mur, collée à lui ; le mur paraît toujours plein des deux côtés. Dehors ; dedans seulement
+      sans plancher au-dessus. Pareil dans la base d'un AUTRE clan (pas besoin d'être membre), pendant et hors Purge.
+- [ ] Deux étages : viser l'échelle posée, la 2e se met au-dessus (même sens) contre le mur de l'étage suivant ; il en
+      faut 2 pour 2 murs.
+- [ ] Haut de l'échelle : on passe sur le toit / à l'étage en montant tout en haut (sans échelle de plus). Point à
+      surveiller : un toit qui déborde au-dessus de l'échelle pourrait gêner le passage.
+- [ ] Mur posé sur un demi-mur (à mi-hauteur) : l'échelle dépasse d'une demi-case en haut ; dire si ça va.
+- [ ] Refus (« L'échelle se pose contre… ») : terrain hors base, flanc d'une fondation (plus prévu : l'échelle fait un
+      mur de haut), mur en biais (pas possible proprement), mur avec porte, une des 3 cases déjà prise (coffre, autre
+      échelle) ou tenue par un plancher, sol, plafond.
+- [ ] Quelqu'un collé au mur à cet endroit (soi-même compris) : « Quelqu'un est dans la place de l'échelle… », rien n'est
+      posé.
 - [ ] Base d'un autre clan encore protégée (nouvelle base) : refusé ; sa propre base sous raid block : refusé.
-- [ ] Grimper : comme une échelle de Minecraft (montée, descente, accroupi pour rester accroché) ; arrivée sur le toit.
-- [ ] Anticheat : aucun signalement en grimpant.
-- [ ] Casse à la main : environ 10 coups de poing (moins avec une arme de mêlée forte), quel que soit le clan ; aux balles :
-      selon l'arme ; explosion et pioche : rien. Rien n'est lâché ; l'échelle du dessus (au-dessus du mur) tombe avec elle ;
-      le mur se rebouche.
-- [ ] Mur détruit (raid) : les échelles posées contre lui tombent, sans rien lâcher.
-- [ ] Créatif : un clic la casse.
-- [ ] Recycleur : une échelle se recycle (règle tirée de la recette).
+- [ ] Grimper : comme une échelle de Minecraft (montée, descente, accroupi pour rester accroché).
+- [ ] Sur l'échelle (accroché, pas au sol) : les armes ne tirent pas (pas d'animation de tir, pas de balle, ligne
+      « Impossible de tirer sur une échelle. ») ; au pied de l'échelle, au sol : on tire. Sur l'échelle, permis : plan de
+      construction, poser une autre échelle, se soigner, manger, coup de crosse.
+- [ ] Anticheat : aucun signalement en grimpant, ni en tirant à vide sur l'échelle.
+- [ ] Casse à la main : environ 10 coups de poing (moins avec une arme de mêlée forte) sur n'importe quelle partie,
+      quel que soit le clan ; aux balles : selon l'arme ; l'échelle part toute ; rien n'est lâché ; le mur se rebouche.
+- [ ] C4 ou charge explosive à côté (moins de 2,5 blocs du point d'explosion, sans mur entre les deux) : l'échelle part
+      d'un coup ; une échelle de l'autre côté du mur ne bouge pas. Grenades, TNT et autres explosions : rien.
+- [ ] Mur détruit (raid) : l'échelle posée contre lui tombe (toute), sans rien lâcher.
+- [ ] Créatif : un clic la casse (toute).
+- [ ] Recycleur : une échelle rend sa recette (9 planches, 9 clous, 2 cordes, avec la part du recycleur).
 - [ ] Redémarrage : les échelles et leurs PV restent.

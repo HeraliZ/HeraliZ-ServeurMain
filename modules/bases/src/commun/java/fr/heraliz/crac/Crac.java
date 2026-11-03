@@ -47,6 +47,8 @@ public class Crac {
         // (serveur) ; aperçus, rendus, écrans, HUD (client)
         Parties.serveur(MODID, "fr.heraliz.crac.serveur.PartieServeur", modBus);
         Parties.client(MODID, "fr.heraliz.crac.client.PartieClient", modBus);
+        // pas de tir des armes de TaCZ sur une échelle de raid (les deux côtés : pas de faux tir chez le joueur)
+        fr.heraliz.crac.block.EchelleTirs.brancher();
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
