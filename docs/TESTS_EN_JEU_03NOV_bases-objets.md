@@ -1,6 +1,6 @@
 # Essais en jeu — chantier « bases-objets » (retours du propriétaire du 03/11)
 
-Bases (CRac) 1.31.0-beta, Clans 3.11.2, Quêtes 1.17.2. Rien de tout cela n'a été testé en jeu ni compilé ici (Forge
+Bases (CRac) 1.32.0-beta (suite du 03/11 : coffres simples, cœur A, sortie validée), Clans 3.11.2, Quêtes 1.17.2. Rien de tout cela n'a été testé en jeu ni compilé ici (Forge
 injoignable depuis la machine de travail : syntaxe seulement vérifiée ; la compilation complète est celle du contrôle de
 branche de GitHub). Jars joueurs ET serveur de la même fabrication.
 
@@ -14,7 +14,7 @@ branche de GitHub). Jars joueurs ET serveur de la même fabrication.
       porte du casier ouvert (charnières).
 - [ ] Le dessin n'a pas changé (comparer avec un coffre posé avant la mise à jour) ; coffres déjà posés intacts.
 
-## 2. Coffres simples (seulement si la proposition est validée et intégrée)
+## 2. Coffres simples (validés par le propriétaire le 03/11, installés)
 
 - [ ] Chaque coffre (malle, casier, caisse d'armes, coffre-fort, caisse en métal) : plus aucun texte dessus ; ouverture
       animée (couvercle, porte ; coffre-fort : la poignée fait un quart de tour puis la porte s'ouvre) ; aucun scintillement.
@@ -23,7 +23,10 @@ branche de GitHub). Jars joueurs ET serveur de la même fabrication.
 
 ## 3. Cœur de clan
 
-- [ ] Le cristal ne tourne plus et ne flotte plus ; plus d'hologramme au-dessus ; les points restent écrits sur la plaque.
+- [ ] Nouveau modèle (option A validée) : socle bas graphite, filet et cristal cyan fixes qui éclairent (même la nuit),
+      points écrits sur la plaque devant ; rien ne tourne, plus d'hologramme ; les cœurs déjà posés prennent ce dessin.
+- [ ] On ne passe pas à travers le socle ni la colonne ; viser et cliquer le cœur marche partout sur le modèle.
+- [ ] En main et dans l'inventaire : l'objet du cœur s'affiche bien (taille, sens).
 - [ ] Membre du clan, clic droit sur le cœur de son clan : l'écran du clan s'ouvre sur l'onglet Saison ; la ligne
       « Cœur du clan : N points · général #N » s'affiche aussi au-dessus de la barre.
 - [ ] Joueur d'un autre clan : hors Purge, message « Le cœur ne se prend que pendant la Purge » ; pendant la Purge, la
@@ -68,8 +71,12 @@ dedans, un objet à vie (couteau), un objet tenu à la souris en lançant le tut
 - [ ] Mourir pendant le tutoriel (/kill par le staff) : rien de son inventaire ne tombe (il est de côté) ; il est renvoyé
       à sa cabane ; à la fin tout est rendu.
 - [ ] /spawn, /home, /rtp, /tpa pendant le tutoriel : toujours refusés.
-- [ ] Staff : /tp du joueur vers la carte pendant le tutoriel : « Tu as quitté le tutoriel sans le finir… », kit repris,
-      inventaire rendu, cabane d'essai effacée ; il peut refaire le tutoriel avec Varga.
+- [ ] Staff : /tp du joueur vers la carte pendant le tutoriel (décision du 03/11) : le tutoriel compte comme TERMINÉ
+      (message de fin, Varga enchaîne comme après une cabane finie), kit repris, inventaire rendu, cabane d'essai effacée ;
+      il ne le refait pas (TutorielApi : état 3).
+- [ ] Même chose pour un joueur qui a reçu le kit au spawn et que le staff emmène ailleurs avant l'envoi.
+- [ ] Monde du tutoriel absent ou tutoriel coupé (réglage) avec un joueur encore au kit ou en cours : validé dans la
+      seconde, inventaire rendu, jamais bloqué.
 - [ ] Staff : /tuto finir, /tuto rejouer, /tuto lancer (tutoriel en cours) : inventaire rendu à chaque fois, jamais deux
       fois ; /tuto lancer remet de côté au kit suivant.
 - [ ] /wipe <joueur> pendant le tutoriel : le dépôt est effacé, seuls les objets à vie sont rendus (comme le reste du wipe).
