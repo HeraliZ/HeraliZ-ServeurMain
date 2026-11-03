@@ -1,6 +1,7 @@
 # Essais en jeu — retours du 03/11, chantier « clans-admin »
 
-Boutique 1.5.0, Quêtes 1.18.0, Clans 3.12.0. Rien de tout cela n'a été testé en jeu ni compilé par Gradle ici (Forge
+Boutique 1.5.1, Quêtes 1.18.1, Clans 3.12.1, Noyau 1.0.16, Tactique 2.44.1, Monde 1.0.13, CRac 1.31.1-beta (suite du
+03/11 : appel au staff, XP qui fait redescendre, noms des objets partout). Rien de tout cela n'a été testé en jeu ni compilé par Gradle ici (Forge
 injoignable) : à faire après la fabrication de GitHub. Canaux changés : panel du staff (3), quêtes (13), clans (10) :
 jars joueurs et serveur de la même fabrication.
 
@@ -20,6 +21,13 @@ Avec un compte neuf, en survie, après /login :
   nouveau caché (le tutoriel reprend).
 - [ ] Staff en créatif (/tuto lancer) : le chat reste là (voulu : il garde ses commandes).
 - [ ] Le chat ouvert au moment où la visite commence se ferme.
+- [ ] (suite du 03/11) Pendant la visite ou le tutoriel, T ou / : la fenêtre « Appeler le staff » s'ouvre à la place
+  du chat ; écrire un message, Entrée : un membre du staff connecté reçoit « [Appel au staff] pseudo (monde x y z) :
+  message », le salon Discord du staff aussi ; le joueur voit « Ton appel est parti ». Second appel dans la minute :
+  refusé avec l'attente. Aucune autre commande ne peut partir de cette fenêtre.
+- [ ] /aide <message> marche aussi hors du tutoriel, en combat et sur la carte (sans staff en jeu : « parti sur le
+  Discord »). Sur le Ptero, si `heraliz_noyau-server.toml` existe déjà dans le monde, y ajouter "aide" aux deux listes
+  de commandes permises (la copie de serveur/defaultconfigs ne sert qu'à la création du fichier).
 
 ## 3. Onglet « Économie » du panneau P (Fondateur : grade Fondateur, op 4, /login fait)
 - [ ] Un Admin ou un Modérateur ne voit pas l'onglet ; le Fondateur voit 9 onglets sur une rangée (fr, en, ru).
@@ -33,8 +41,11 @@ Avec un compte neuf, en survie, après /login :
   ou clé absente : refus clair, rien de fait. (Le site refuse au-delà de 50 000 PB créés en 24 h pour tout le serveur.)
 - [ ] Points de saison : choisir un clan, PVE + 10, puis PVP - 5 ; /saison journal <tag> montre « correction : panel du
   staff : motif » au nom du Fondateur ; retirer plus que le clan n'a : refus.
-- [ ] XP du clan : donner assez pour passer un niveau (annonce au clan) ; retirer : seulement l'XP du niveau en cours
-  (refus au-delà, jamais de niveau perdu).
+- [ ] XP du clan : donner assez pour passer un niveau (annonce au clan). (Suite du 03/11) Retirer assez d'XP pour
+  passer sous le palier : le clan REDESCEND de niveau (message « Correction du staff : le clan redescend au niveau X »),
+  la fiche montre le nouveau niveau ; améliorations gardées ; un clan qui a plus de membres que la nouvelle limite les
+  garde mais ne peut plus inviter ; sous le niveau 5, plus de nouvelle capture de zone ; retirer plus que toute son XP :
+  refus.
 - [ ] Sans motif : refus ; montant vide : refus ; un clic seul ne fait rien (« Clique encore »), le second dans les 5 s.
 - [ ] Chaque opération : ligne dans l'onglet Historique (qui, quoi, combien, motif), message sur le salon Discord du
   staff, et dans `heraliz_grades/journal_staff.log` ; hérals aussi dans `heralisz_economie/journal_admin.log`, clés dans
@@ -52,6 +63,9 @@ Avec un compte neuf, en survie, après /login :
   face de leur ligne ; la saison tient dans la carte.
 
 ## 6. Noms des objets dans les messages
+- [ ] (suite du 03/11) Avec une arme TaCZ : réparer avec un kit (« réparée »), user une arme jusqu'à « ruinée »,
+  /usure voir sur l'arme, objet à vie rendu, protection de zone usée, matériel du tutoriel des bases : vrai nom, jamais
+  « item.tacz.… ».
 - [ ] Caisse qui donne une arme TaCZ : le chat dit le nom de l'arme (pas « item.tacz.modern_kinetic_gun »), titre à
   l'écran aussi ; annonce à tous pour un objet rare.
 - [ ] Acheter une arme à un marchand, l'échanger, inventaire plein (« t'attend ») : vrai nom.
