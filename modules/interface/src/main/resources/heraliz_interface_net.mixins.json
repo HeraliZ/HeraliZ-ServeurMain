@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.interfaces.nettete.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_interface.refmap.json",
+  "client": [
+    "FontSetAccesseur",
+    "TexteDensiteMixin",
+    "TrueTypeAccesseur"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

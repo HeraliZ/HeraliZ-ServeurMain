@@ -26,6 +26,8 @@ repositories {
 mixin {
     add sourceSets.main, "heraliz_interface.refmap.json"
     config "heraliz_interface.mixins.json"
+    // lettres nettes (03/11) : configuration non obligatoire, le jeu démarre même si elle ne s'applique pas
+    config "heraliz_interface_net.mixins.json"
 }
 
 dependencies {

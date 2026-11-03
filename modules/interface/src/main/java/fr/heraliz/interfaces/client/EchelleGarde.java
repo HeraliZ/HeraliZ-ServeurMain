@@ -28,7 +28,7 @@ public final class EchelleGarde {
         if (mc.player == null || (mc.screen != null && !(mc.screen instanceof ChatScreen))) return;
         Window w = mc.getWindow();
         int voulue = w.calculateScale(mc.options.guiScale().get(), mc.isEnforceUnicode());
-        if ((int) w.getGuiScale() != voulue) {
+        if (w.getGuiScale() != voulue) { // comparaison exacte : un écran peut forcer 2,5 (Echelle.forcer(écran, l, h))
             w.setGuiScale(voulue);
             if (mc.screen != null) mc.screen.resize(mc, w.getGuiScaledWidth(), w.getGuiScaledHeight());
         }

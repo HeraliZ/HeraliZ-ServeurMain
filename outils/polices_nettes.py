@@ -5,8 +5,10 @@
 
 Chaque police `mods/*/src/**/assets/<espace>/font/*.json` : tout fournisseur « ttf » dont l'oversample est sous
 OVERSAMPLE y passe (taille inchangée) ; « bitmap », « space », « reference » ne sont pas touchés. Les lettres sont
-ensuite lissées chez le joueur (heraliz_interface, `client/PolicesNettes`) : une planche plus fine, lue en GL_LINEAR,
-donne des lettres nettes à toutes les échelles d'interface.
+ensuite lissées chez le joueur (heraliz_interface, `client/PolicesNettes`). Depuis le 03/11, ce n'est plus que le rendu de
+secours : dans l'interface, chaque lettre est retracée à la finesse exacte de l'écran (`client/PolicesDensite` : une
+planche x8 réduite par la carte graphique rendait les petits textes pixelisés) ; la planche x8 lissée sert encore au texte
+tourné, animé ou dessiné dans le monde.
 
 Gardées telles quelles (EXCLUES) : les polices de la fiche `/base info` de CRac, réglées à la main pour son échelle non
 entière (oversample 3), la référence de netteté.

@@ -28,6 +28,10 @@ import net.minecraft.resources.ResourceLocation;
  * </ul>
  * Minecraft remet GL_NEAREST lui-même à chaque préparation du rendu (TextureStateShard), d'où le réglage à chaque fois.
  * Aucune allocation par appel : un tableau d'entiers lu sans verrou, recopié seulement quand une planche s'ajoute.
+ * <p>
+ * Depuis le 03/11, c'est le rendu de secours : une planche x8 réduite 2,7 ou 4 fois sans mipmaps reste « pixelisée » (traits
+ * inégaux, petites capitales grignotées). Dans l'interface, {@link PolicesDensite} retrace chaque lettre à la finesse de
+ * l'écran, dans ses propres planches (jamais lissées) ; celles d'ici servent au texte tourné, animé ou dans le monde.
  */
 public final class PolicesNettes {
     private PolicesNettes() {
@@ -43,6 +47,11 @@ public final class PolicesNettes {
             "heraliz_extraction", "heraliz_gabarit", "heraliz_grades", "heraliz_interface", "heraliz_loot", "heraliz_ping",
             "heraliz_quetes", "heraliz_tactique", "heraliz_usure", "heralizcasino", "heralizcrates",
             "reanimation");
+
+    /** Vrai pour un espace de noms de nos polices (lu par {@link PolicesDensite}). */
+    public static boolean notre(String espace) {
+        return NOS_ESPACES.contains(espace);
+    }
 
     /** Planche de lettres retenue, par nom (« espace:police/n ») : un rechargement des ressources les réenregistre. */
     private static final Map<ResourceLocation, Integer> PAR_NOM = new HashMap<>();
