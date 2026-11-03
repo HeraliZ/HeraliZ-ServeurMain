@@ -247,8 +247,8 @@ public final class ClanEvents {
      * {@code anti_boost_reapparition_s}, pas le meme couple tueur/victime avant {@code anti_boost_couple_min}. Un kill
      * accepte est memorise. S'applique aux stats, a l'XP et aux quetes KILL_JOUEURS.
      */
-    private static boolean killJoueurValide(Clan c, ServerPlayer tueur, Player victime, long now) {
-        if (c.estMembre(victime.getUUID())) return false;
+    private static boolean killJoueurValide(@javax.annotation.Nullable Clan c, ServerPlayer tueur, Player victime, long now) {
+        if (c != null && c.estMembre(victime.getUUID())) return false;
         if (victime instanceof ServerPlayer v && memeAdresse(tueur, v)) return false;
         Long reapparu = REAPPARU.get(victime.getUUID());
         if (reapparu != null && now - reapparu < ClansConfig.BOOST_REAPPARITION_S.get() * 1000L) return false;
@@ -318,13 +318,19 @@ public final class ClanEvents {
         if (!(src instanceof ServerPlayer tueur) || tueur == victime) return;
         Clan c = store.clanDe(tueur.getUUID());
         Membre m = c == null ? null : c.membre(tueur.getUUID());
-        if (m == null) return;
         if (victime instanceof Player joueur) {
-            if (joueur.getTags().contains("heraliz_bot")) return;   // bots de charge (/bots) : ni XP ni quête
+            // bots de charge (/bots) : ni XP ni quête, ni classement
+            if (joueur.getTags().contains("heraliz_bot") || tueur.getTags().contains("heraliz_bot")) return;
+            // une seule vérification (elle note le couple tueur / victime) : sert au classement des kills de tous les
+            // joueurs, avec ou sans clan (hologramme du spawn, 03/11), puis aux statistiques du clan
             if (!killJoueurValide(c, tueur, joueur, System.currentTimeMillis())) return;
+            fr.heralisz.clans.classement.KillsJoueurs.ajouter(tueur.getUUID(), tueur.getGameProfile().getName());
+            if (m == null) return;
             m.stats.kills++;
             ClanService.ajouterXp(c, SourceXp.JOUEUR, ClansConfig.XP_KILL_JOUEUR.get(), tueur.getUUID());
             Quetes.progresser(c, QueteEtat.Type.KILL_JOUEURS, 1);
+        } else if (m == null) {
+            return;
         } else if (estBoss(victime)) {
             m.stats.boss++;
             ClanService.ajouterXp(c, SourceXp.BOSS, ClansConfig.XP_BOSS.get(), tueur.getUUID());

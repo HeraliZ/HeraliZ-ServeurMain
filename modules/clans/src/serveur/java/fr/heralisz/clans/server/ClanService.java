@@ -1435,6 +1435,8 @@ public final class ClanService {
      * clan. Renvoie faux s'il n'avait pas de clan.
      */
     public static boolean adminRetirer(UUID joueur, String nom) {
+        // 03/11 : seul appel = /wipe <joueur> ; ses kills de l'hologramme « Meilleurs tueurs » repartent de 0 aussi
+        fr.heralisz.clans.classement.KillsJoueurs.effacer(joueur);
         ClanStore s = store();
         if (s == null) return false;
         Clan c = s.clanDe(joueur);
@@ -1511,6 +1513,7 @@ public final class ClanService {
             EconomieApi.sauvegarderMaintenant();
         }
         fr.heralisz.clans.saison.Saison.remiseAZero();
+        fr.heralisz.clans.classement.KillsJoueurs.toutEffacer();   // hologramme « Meilleurs tueurs » (03/11)
         HeraliszClans.LOG.info("[clans] remise a zero du serveur : {} clans dissous, {} comptes remis a 0, saison effacee", clans, comptes);
         return rendus;
     }

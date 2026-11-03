@@ -34,6 +34,10 @@ public final class PartieServeur implements Partie {
         // saison des clans : points, classements, commandes /saison et /clan ameliorer|don
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.saison.Saison.class);
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.saison.SaisonCommandes.class);
+        // hologrammes de classement du spawn (03/11) : argent, kills, clans ; compteur des kills de joueurs ; /classement
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.KillsJoueurs.class);
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.Hologrammes.class);
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.ClassementCommandes.class);
 
         ClansRegistry.CAISSE_USINE.serveur(CaisseRavitaillementBlockServeur::new);
         ClansRegistry.CAISSE_PARACHUTE_USINE.serveur(CaisseParachuteEntityServeur::new);

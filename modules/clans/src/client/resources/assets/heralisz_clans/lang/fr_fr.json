@@ -858,5 +858,22 @@
   "msg.don.creatif": "Pas de don au clan en mode créatif ou spectateur.",
   "msg.don.carte": "Le don au clan se fait au spawn : rapporte d'abord l'objet (extraction).",
   "msg.don.copie": "Cet objet a déjà été donné à un clan : une copie ne rapporte rien. Le staff est prévenu.",
-  "msg.don.plafond": "Plafond du jour des dons atteint (%s XP) : cet objet ne rapporterait que %s XP au lieu de %s. Gardez-le pour demain, ou tapez /clan don confirmer dans les 30 s pour le donner quand même."
+  "msg.don.plafond": "Plafond du jour des dons atteint (%s XP) : cet objet ne rapporterait que %s XP au lieu de %s. Gardez-le pour demain, ou tapez /clan don confirmer dans les 30 s pour le donner quand même.",
+  "heralisz_clans.classement.holo.titre.argent": "Les plus riches",
+  "heralisz_clans.classement.holo.titre.kills": "Meilleurs tueurs",
+  "heralisz_clans.classement.holo.titre.clans": "Saison %s · meilleurs clans",
+  "heralisz_clans.classement.holo.vide": "Personne au classement pour l'instant",
+  "heralisz_clans.classement.holo.maj": "Mis à jour toutes les %s min",
+  "heralisz_clans.classement.holo.regle": "Rang : somme des places PVE, PVP et événements",
+  "heralisz_clans.classement.holo.kills": "%s kills",
+  "heralisz_clans.classement.holo.points": "%s pts",
+  "heralisz_clans.classement.cmd.occupe": "Impossible ici : un hologramme de classement est déjà à cet endroit (ou le monde refuse l'entité).",
+  "heralisz_clans.classement.cmd.pose": "Hologramme « %s » posé. /classement retirer à côté de lui pour l'enlever.",
+  "heralisz_clans.classement.cmd.aucun": "Aucun hologramme de classement à moins de %s blocs.",
+  "heralisz_clans.classement.cmd.retire": "Hologramme retiré.",
+  "heralisz_clans.classement.cmd.maj": "%s hologramme(s) chargé(s) mis à jour.",
+  "heralisz_clans.classement.cmd.liste": "%s hologramme(s) chargé(s) :",
+  "heralisz_clans.classement.genre.argent": "les plus riches",
+  "heralisz_clans.classement.genre.kills": "meilleurs tueurs",
+  "heralisz_clans.classement.genre.clans": "clans de la saison"
 }

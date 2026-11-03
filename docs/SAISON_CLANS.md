@@ -422,5 +422,5 @@ Matchs 0.14.1 (ClashWar : podium et participation, ×2, au moins 4 clans différ
 
 **Reste à faire** : le wipe global de saison (double panneau) et la liste des objets à vie hors du monde (§8) ; le
 contrôle du même PC par Spartan pour les kills ; prix et craft du cœur (aujourd'hui donné par le staff) ; oil rig et
-autres events ; couper le « Bonus de loot » de la boutique pendant la saison (§10) ; staff hors des clans classés ;
-afficher le classement sur un mur du spawn.
+autres events ; couper le « Bonus de loot » de la boutique pendant la saison (§10) ; staff hors des clans classés.
+Classement au spawn : fait le 03/11, en hologramme (`/classement poser clans`, Clans 3.14.0, avec « argent » et « kills »).

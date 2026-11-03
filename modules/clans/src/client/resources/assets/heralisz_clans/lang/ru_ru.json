@@ -858,5 +858,22 @@
   "msg.don.creatif": "Нельзя жертвовать клану в творческом режиме или режиме наблюдателя.",
   "msg.don.carte": "Дар клану делается на спавне: сначала вынеси предмет (эвакуация).",
   "msg.don.copie": "Этот предмет уже был отдан клану: копия ничего не даёт. Персонал предупреждён.",
-  "msg.don.plafond": "Дневной лимит пожертвований достигнут (%s XP): предмет даст только %s XP вместо %s. Оставьте его на завтра или введите /clan don confirmer в течение 30 с, чтобы всё равно отдать."
+  "msg.don.plafond": "Дневной лимит пожертвований достигнут (%s XP): предмет даст только %s XP вместо %s. Оставьте его на завтра или введите /clan don confirmer в течение 30 с, чтобы всё равно отдать.",
+  "heralisz_clans.classement.holo.titre.argent": "Самые богатые",
+  "heralisz_clans.classement.holo.titre.kills": "Лучшие убийцы",
+  "heralisz_clans.classement.holo.titre.clans": "Сезон %s · лучшие кланы",
+  "heralisz_clans.classement.holo.vide": "В рейтинге пока никого нет",
+  "heralisz_clans.classement.holo.maj": "Обновляется каждые %s мин",
+  "heralisz_clans.classement.holo.regle": "Место: сумма мест в PVE, PVP и событиях",
+  "heralisz_clans.classement.holo.kills": "%s убийств",
+  "heralisz_clans.classement.holo.points": "%s очк.",
+  "heralisz_clans.classement.cmd.occupe": "Здесь нельзя: на этом месте уже есть голограмма рейтинга (или мир не принимает сущность).",
+  "heralisz_clans.classement.cmd.pose": "Голограмма «%s» установлена. Чтобы убрать, встаньте рядом и введите /classement retirer.",
+  "heralisz_clans.classement.cmd.aucun": "Нет голограммы рейтинга ближе %s блоков.",
+  "heralisz_clans.classement.cmd.retire": "Голограмма убрана.",
+  "heralisz_clans.classement.cmd.maj": "Обновлено загруженных голограмм: %s.",
+  "heralisz_clans.classement.cmd.liste": "Загруженных голограмм: %s.",
+  "heralisz_clans.classement.genre.argent": "самые богатые",
+  "heralisz_clans.classement.genre.kills": "лучшие убийцы",
+  "heralisz_clans.classement.genre.clans": "кланы сезона"
 }

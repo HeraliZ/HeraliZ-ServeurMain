@@ -88,3 +88,12 @@
 	#Range: 0 ~ 3600
 	anti_boost_reapparition_s = 60
 
+#Hologrammes de classement du spawn (/classement)
+[classements]
+	#Minutes entre deux mises a jour des hologrammes (seulement ceux qui ont un joueur a cote)
+	#Range: 1 ~ 60
+	maj_minutes = 2
+	#Distance (blocs) a laquelle un joueur doit etre d'un hologramme pour qu'il soit mis a jour
+	#Range: 8 ~ 512
+	distance_joueurs = 64
+

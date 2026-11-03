@@ -39,6 +39,8 @@ public final class ClansConfig {
     public static final ForgeConfigSpec.IntValue QUETES_PAR_SEMAINE;
     public static final ForgeConfigSpec.IntValue BOOST_COUPLE_MIN;
     public static final ForgeConfigSpec.IntValue BOOST_REAPPARITION_S;
+    public static final ForgeConfigSpec.IntValue CLASSEMENTS_MINUTES;
+    public static final ForgeConfigSpec.IntValue CLASSEMENTS_DISTANCE;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -99,6 +101,14 @@ public final class ClansConfig {
                 .defineInRange("anti_boost_couple_min", 10, 0, 24 * 60);
         BOOST_REAPPARITION_S = b.comment("Anti-boost : un joueur tue moins de N secondes apres sa reapparition (ou sa connexion) ne compte pas")
                 .defineInRange("anti_boost_reapparition_s", 60, 0, 3600);
+        b.pop();
+
+        // 03/11 : hologrammes de classement du spawn (/classement poser argent|kills|clans)
+        b.comment("Hologrammes de classement du spawn (/classement)").push("classements");
+        CLASSEMENTS_MINUTES = b.comment("Minutes entre deux mises a jour des hologrammes (seulement ceux qui ont un joueur a cote)")
+                .defineInRange("maj_minutes", 2, 1, 60);
+        CLASSEMENTS_DISTANCE = b.comment("Distance (blocs) a laquelle un joueur doit etre d'un hologramme pour qu'il soit mis a jour")
+                .defineInRange("distance_joueurs", 64, 8, 512);
         b.pop();
         SPEC = b.build();
     }

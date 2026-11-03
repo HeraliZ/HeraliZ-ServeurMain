@@ -1,6 +1,6 @@
 # Commandes du serveur (tri du 25/10, allégé le 02/11)
 
-**Nos mods : 76 commandes de premier niveau sur le serveur** (02/11 ; plus `/diagclient` côté joueur et `/cracghost`, outil
+**Nos mods : 77 commandes de premier niveau sur le serveur** (02/11, `/classement` le 03/11 ; plus `/diagclient` côté joueur et `/cracghost`, outil
 de développement jamais en production). Une commande = un système : les variantes sont des sous-commandes
 (`/tpa accepter`, `/herals payer`…). Inventaire complet lu dans les sources : `python outils/commandes.py` (écrit
 `docs/COMMANDES_INVENTAIRE.md`).
@@ -54,6 +54,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/redemarrage` | Noyau | `<minutes> [raison]` ou `annuler` : redémarrage doux, les joueurs se reconnectent seuls (op 4, console) |
 | `/clashwar coffre\|parties\|arenes` | ClashWar | coffres des matchs (`etat`, `rendre <joueur>`), parties en cours, arènes (op 2) ; anciennement `/matchs`, fondue dans `/clashwar` le 02/11 |
 | `/territoire` | Clans | zones des clans, drapeaux, difficulté |
+| `/classement` | Clans | (03/11) hologrammes de classement du spawn (8 premiers) : `poser argent\|kills\|clans` sur le bloc visé (sinon aux pieds), `retirer` (le plus proche, 10 blocs), `maj` (tout de suite), `liste` ; op 2. Mis à jour toutes les 2 min s'il y a un joueur à 64 blocs (`[classements]` de `heralisz_clans-common.toml`) |
 | `/eco` | Clans | `donner`, `retirer`, `definir <joueur> <montant> [motif]` : op 4 connecté sur AuthMe ou console (28/10), un joueur connecté ou non (compte connu), 1 à 10 000 000 par opération, jamais de solde négatif ni au-dessus du plafond, journal `heralisz_economie/journal_admin.log` ; `journal`, `info` : op 2 |
 | `/grade` (`editeur`, `registre` : op 4 ; `donner`, `retirer`, `acheter` : console) | Grades | éditeur des grades, grades des joueurs |
 | `/bon` | Grades | éditeur des bons (op) |

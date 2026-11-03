@@ -858,5 +858,22 @@
   "msg.don.creatif": "No clan donations in creative or spectator mode.",
   "msg.don.carte": "Clan donations are made at spawn: bring the item back first (extraction).",
   "msg.don.copie": "This item has already been given to a clan: a copy gives nothing. Staff have been notified.",
-  "msg.don.plafond": "Daily donation cap reached (%s XP): this item would only give %s XP instead of %s. Keep it for tomorrow, or type /clan don confirmer within 30 s to give it anyway."
+  "msg.don.plafond": "Daily donation cap reached (%s XP): this item would only give %s XP instead of %s. Keep it for tomorrow, or type /clan don confirmer within 30 s to give it anyway.",
+  "heralisz_clans.classement.holo.titre.argent": "Richest players",
+  "heralisz_clans.classement.holo.titre.kills": "Top killers",
+  "heralisz_clans.classement.holo.titre.clans": "Season %s · top clans",
+  "heralisz_clans.classement.holo.vide": "Nobody on the leaderboard yet",
+  "heralisz_clans.classement.holo.maj": "Updated every %s min",
+  "heralisz_clans.classement.holo.regle": "Rank: sum of PVE, PVP and event places",
+  "heralisz_clans.classement.holo.kills": "%s kills",
+  "heralisz_clans.classement.holo.points": "%s pts",
+  "heralisz_clans.classement.cmd.occupe": "Not possible here: a leaderboard hologram is already at this spot (or the world refuses the entity).",
+  "heralisz_clans.classement.cmd.pose": "Hologram “%s” placed. Use /classement retirer next to it to remove it.",
+  "heralisz_clans.classement.cmd.aucun": "No leaderboard hologram within %s blocks.",
+  "heralisz_clans.classement.cmd.retire": "Hologram removed.",
+  "heralisz_clans.classement.cmd.maj": "%s loaded hologram(s) updated.",
+  "heralisz_clans.classement.cmd.liste": "%s loaded hologram(s):",
+  "heralisz_clans.classement.genre.argent": "richest players",
+  "heralisz_clans.classement.genre.kills": "top killers",
+  "heralisz_clans.classement.genre.clans": "season clans"
 }
