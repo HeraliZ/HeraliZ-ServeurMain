@@ -34,6 +34,12 @@ import net.minecraftforge.common.util.FakePlayer;
  * par connexion. Joueur déconnecté sans validation après au moins {@value #DECONNEXION_MIN_MS} ms vérifié : même alerte.
  * Joueur déjà refusé par le mode strict : rien de plus (l'alerte du refus dit tout). Bots de charge et faux joueurs :
  * ignorés. Tout se décide sur le serveur ; le jeu du joueur n'en sait rien.
+ *
+ * <p>03/11 (retour du propriétaire : « la validation n'est jamais reçue ») : un jeu validé APRÈS l'alerte « Validation
+ * jamais reçue » (premier contrôle lent : jeu qui hache ses mods au premier lancement, PC chargé, antivirus) recevait
+ * quand même le silence pour toute la connexion ; il reçoit maintenant « ✅ Jeu validé (en retard) », jusqu'à
+ * {@value #RETARD_MAX_MS} ms après l'alerte. Une erreur du serveur dans l'analyse du contrôle est dite comme telle (avant :
+ * « aucun rapport reçu du jeu », alors que le rapport était arrivé).
  */
 public final class ValidationJeu {
     private static final Map<UUID, Etat> ETATS = new ConcurrentHashMap<>();
@@ -41,6 +47,8 @@ public final class ValidationJeu {
     private static final int COULEUR_MANQUE = 0xE67E22;
     /** Déconnecté sans validation : alerte seulement s'il est resté vérifié au moins ce temps (un jeu honnête : ~15 s). */
     private static final long DECONNEXION_MIN_MS = 30_000L;
+    /** Après l'alerte « Validation jamais reçue », une validation est encore attendue autant de temps. */
+    private static final long RETARD_MAX_MS = 10 * 60_000L;
 
     private ValidationJeu() {
     }
@@ -50,8 +58,10 @@ public final class ValidationJeu {
         /** Heure de la vérification (jeton + /login), 0 avant ; le délai compte à partir d'elle. */
         long verifieA;
         int verifieTick;
-        /** Message parti (validé ou jamais reçu), ou joueur refusé : plus rien pour cette connexion. */
+        /** Message « Jeu validé » parti, ou joueur refusé, ou plus rien à attendre : plus rien pour cette connexion. */
         boolean fini;
+        /** Alerte « Validation jamais reçue » partie (heure, 0 sinon) : une validation tardive reste annoncée. */
+        long alerteA;
         String resultat = "";
         long resultatA;
         // premier contrôle d'intégrité terminé de la connexion
@@ -107,6 +117,19 @@ public final class ValidationJeu {
         e.controle = String.join(" ; ", raisons);
     }
 
+    /**
+     * Le rapport du premier contrôle est arrivé mais le serveur n'a pas pu l'analyser (fil du serveur) : dit comme tel dans
+     * « Ce qui manque ».
+     */
+    public static void erreurServeur(ServerPlayer p, String texte) {
+        Etat e = ETATS.get(p.getUUID());
+        if (e == null || e.fini || e.controleRecu) {
+            return;
+        }
+        e.controleRecu = true;
+        e.controle = texte.length() > 300 ? texte.substring(0, 300) + "…" : texte;
+    }
+
     /** À chaque tick du joueur (fil du serveur) : presque rien tant qu'il n'y a rien à décider. */
     public static void tick(ServerPlayer p) {
         Etat e = ETATS.get(p.getUUID());
@@ -138,6 +161,12 @@ public final class ValidationJeu {
             valide(p, e);
             return;
         }
+        if (e.alerteA != 0) {
+            if (Util.getMillis() - e.alerteA > RETARD_MAX_MS) {
+                e.fini = true; // plus rien à attendre pour cette connexion
+            }
+            return;
+        }
         int delai = SpartanConfig.VALIDATION_TIMEOUT.get();
         // Compté en temps réel ET en ticks du serveur : un serveur figé ne fait accuser personne.
         if (Util.getMillis() - e.verifieA > delai * 1000L && p.server.getTickCount() - e.verifieTick > delai * 20) {
@@ -159,7 +188,7 @@ public final class ValidationJeu {
         List<String> manque = manque(p, e);
         if (manque.isEmpty()) {
             valide(p, e);
-        } else if (resteMs >= DECONNEXION_MIN_MS) {
+        } else if (e.alerteA == 0 && resteMs >= DECONNEXION_MIN_MS) {
             jamaisRecue(p, e, manque, "déconnecté " + resteMs / 1000 + " s après son /login sans avoir été validé");
         }
     }
@@ -191,7 +220,8 @@ public final class ValidationJeu {
     private static void valide(ServerPlayer p, Etat e) {
         e.fini = true;
         long apres = Math.max(0, (Util.getMillis() - e.verifieA) / 1000);
-        e.resultat = "jeu validé " + apres + " s après le /login";
+        boolean retard = e.alerteA != 0;
+        e.resultat = "jeu validé " + apres + " s après le /login" + (retard ? " (en retard, après l'alerte)" : "");
         e.resultatA = Util.getMillis();
         UUID id = p.getUUID();
         String controle = SpartanConfig.SCAN_ENABLED.get() ? e.controle : "désactivé sur le serveur (scan.enabled = false)";
@@ -200,7 +230,8 @@ public final class ValidationJeu {
                 ? "même version que le serveur, défi d'intégrité réussi (" + ChallengeManager.reussis(id) + ")"
                 : SpartanConfig.CHECK_BUILD.get() ? "même version que le serveur (défis désactivés)" : "non vérifié (défis et version désactivés)";
 
-        String ligne = "[Spartan] Jeu validé — " + Text.oneLine(e.nom) + " : contrôle " + controle + ", launcher "
+        String ligne = "[Spartan] Jeu validé" + (retard ? " (en retard)" : "") + " — " + Text.oneLine(e.nom) + " : contrôle "
+                + controle + ", launcher "
                 + LauncherGate.statut(id) + ", " + jeu + ", Spartan " + defi + " (" + apres + " s après le /login)";
         Spartan.LOGGER.info(ligne);
         AlertManager.journal(ligne);
@@ -218,13 +249,20 @@ public final class ValidationJeu {
         if (SpartanConfig.GARDIEN_ENABLED.get()) {
             champs.add(new String[] {"Gardien du launcher", Text.discord(GardienServeur.etat(id))});
         }
-        DiscordWebhook.sendJoueur(id.toString(), Text.oneLine(e.nom), "✅ Jeu validé : " + e.nom, COULEUR_VALIDE,
-                "Contrôles de la connexion réussis : jeu officiel, rien de suspect. Une connexion sans ce message = jeu"
+        DiscordWebhook.sendJoueur(id.toString(), Text.oneLine(e.nom), "✅ Jeu validé" + (retard ? " (en retard)" : "") + " : "
+                + e.nom, COULEUR_VALIDE, retard
+                ? "Contrôles réussis APRÈS l'alerte « Validation jamais reçue » : jeu officiel, rien de suspect, seulement lent"
+                        + " à répondre (premier contrôle après le lancement, PC chargé, antivirus). Rien à faire."
+                : "Contrôles de la connexion réussis : jeu officiel, rien de suspect. Une connexion sans ce message = jeu"
                         + " jamais validé (voir « Validation jamais reçue »).", champs);
+        if (retard) {
+            AlertManager.info(p.server, "Jeu validé (en retard)", Text.oneLine(e.nom) + " : validé " + apres
+                    + " s après son /login, après l'alerte « Validation jamais reçue » (rien à faire)", COULEUR_VALIDE);
+        }
     }
 
     private static void jamaisRecue(ServerPlayer p, Etat e, List<String> manque, String quand) {
-        e.fini = true;
+        e.alerteA = Util.getMillis(); // une validation tardive sera encore annoncée (03/11)
         e.resultat = "validation jamais reçue (" + quand + ")";
         e.resultatA = Util.getMillis();
         UUID id = p.getUUID();
@@ -286,7 +324,7 @@ public final class ValidationJeu {
         if (e == null) {
             return "validation : rien (connexion antérieure ou faux joueur)";
         }
-        if (e.fini && !e.resultat.isEmpty()) {
+        if ((e.fini || e.alerteA != 0) && !e.resultat.isEmpty()) {
             return "validation : " + e.resultat + ", il y a " + (Util.getMillis() - e.resultatA) / 1000 + " s";
         }
         if (e.fini) {

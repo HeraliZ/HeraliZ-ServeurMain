@@ -698,6 +698,9 @@ public final class ScanManager {
         }
         if (res.erreurAnalyse != null) {
             Spartan.LOGGER.error("[Spartan] Contrôle d'intégrité de {} : erreur dans l'analyse", s.name, res.erreurAnalyse);
+            // 03/11 : la validation du jeu le dit (avant : « aucun rapport reçu du jeu », alors que le rapport était arrivé)
+            com.Spartan.integrity.ValidationJeu.erreurServeur(p, "erreur du serveur dans l'analyse du contrôle ("
+                    + res.erreurAnalyse + ") : voir la console");
             return;
         }
 
@@ -723,6 +726,8 @@ public final class ScanManager {
         if (res.erreurEcarts != null) {
             Spartan.LOGGER.error("[Spartan] Contrôle d'intégrité de {} : erreur dans les écarts au jeu officiel", s.name,
                     res.erreurEcarts);
+            com.Spartan.integrity.ValidationJeu.erreurServeur(p, "erreur du serveur dans la comparaison au jeu officiel ("
+                    + res.erreurEcarts + ") : voir la console");
             return;
         }
         // Injection (03/11) : traces certaines d'un code étranger dans le jeu = alerte + expulsion, quel que soit le mode
