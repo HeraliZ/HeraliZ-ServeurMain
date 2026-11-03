@@ -21,11 +21,11 @@ public final class NoyauConfig {
    // pour se connecter y est (login, l, log, register, reg, captcha, totp, 2fa), sinon un joueur resté sur la carte ne
    // pourrait plus entrer son captcha ou son code de double authentification
    public static final List<String> COMMANDES_COMBAT_DEFAUT = List.of("login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
-         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event");
+         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "aide");
    // 25/10 (tri des commandes) : /home remplace /sethome, /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny
    public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
          "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home",
-         "base", "purge", "coeur", "canal");
+         "base", "purge", "coeur", "canal", "aide");
 
    public static final ForgeConfigSpec SPEC;
    public static final ForgeConfigSpec.IntValue TAG_COMBAT_S;

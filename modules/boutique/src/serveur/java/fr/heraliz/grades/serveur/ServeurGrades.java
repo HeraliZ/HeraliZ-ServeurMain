@@ -78,6 +78,9 @@ public final class ServeurGrades implements Partie {
         // chat à canaux (25/10) : Proximité, Global, Clan
         ChatServeur.brancher();
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> AbonnementServeur.enregistrer(e.getDispatcher()));
+        // 03/11 : /aide <message> (appeler le staff ; seule commande permise pendant le tutoriel des bases)
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> AideStaff.enregistrer(e.getDispatcher()));
+        AideStaff.brancher();
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
             if (e.phase != TickEvent.Phase.END) return;
             BoutiqueServeur.tick();

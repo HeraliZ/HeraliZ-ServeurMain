@@ -14,7 +14,8 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
  * <ul>
  *     <li>rien n'est dessiné à la place du chat (lignes, notifications d'extraction), ni le chat de Minecraft ni celui
  *     de HeraliZ Grades : la place est prise avant eux (priorité la plus haute) ;</li>
- *     <li>le chat ne s'ouvre pas (T, /, ni aucun écran de chat) ; s'il était ouvert à ce moment, il se ferme.</li>
+ *     <li>le chat ne s'ouvre pas (T, /, ni aucun écran de chat) : à sa place, « Appeler le staff »
+ *     ({@link EcranAideStaff}, seulement {@code /aide}) ; s'il était ouvert à ce moment, il se ferme.</li>
  * </ul>
  * Les messages reçus pendant ce temps ne sont pas perdus : le chat les garde et les montre dès qu'on le rouvre. Avant
  * (radio de Varga, 18/10), seul le chat de Minecraft était caché pendant une consigne : le chat de HeraliZ Grades (25/10),
@@ -42,8 +43,12 @@ final class ChatTutoriel {
         if (cache && e.getOverlay().id().equals(VanillaGuiOverlay.CHAT_PANEL.id())) e.setCanceled(true);
     }
 
-    /** Le chat ne s'ouvre pas tant qu'il est caché (avant que HeraliZ Grades ne le remplace par le sien). */
+    /**
+     * Le chat ne s'ouvre pas tant qu'il est caché (avant que HeraliZ Grades ne le remplace par le sien) : à sa place, la
+     * petite fenêtre « Appeler le staff » (03/11, réponse du propriétaire : pas de commande pendant le tutoriel, sauf
+     * appeler le staff), qui ne peut envoyer que {@code /aide <message>}.
+     */
     static void ouverture(ScreenEvent.Opening e) {
-        if (cache && e.getNewScreen() instanceof ChatScreen) e.setCanceled(true);
+        if (cache && e.getNewScreen() instanceof ChatScreen) e.setNewScreen(EcranAideStaff.nouveau());
     }
 }
