@@ -16,6 +16,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -28,16 +30,25 @@ import net.minecraftforge.network.simple.SimpleChannel;
  * jamais jetés par la touche de jet, et jetés depuis un inventaire seulement après « Jeter cet objet ? » Oui. Règles
  * décidées par le serveur (ObjetsAVieServeur) ; le joueur n'affiche que la question (EcranJeter). Canal
  * heraliz_tactique:a_vie, même version exigée des deux côtés.
- * <p>Règle du propriétaire (02/11) : un objet à vie n'est JAMAIS perdu, sauf si un admin le supprime. Tout code qui va
- * détruire, effacer ou jeter au sol un objet (conteneur nettoyé, recycleur, caisse, atelier, objet qui ne rentre pas...)
- * appelle d'abord {@link #neJamaisDetruire} (directement, ou par réflexion depuis un autre mod :
- * {@code Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("neJamaisDetruire", UUID.class,
+ * <p>Règle du propriétaire (03/11, remplace celle du 02/11) : un objet à vie est protégé tant qu'il est dans
+ * l'inventaire de celui qui l'a (inventaire, barre, armure, Curios : jamais perdu à la mort, à la déconnexion ni quand
+ * l'inventaire est plein). Le sortir vers N'IMPORTE QUEL contenant (coffre, sac, caisse, atelier...) ou le jeter au sol
+ * demande la même confirmation ; une fois confirmé, il n'est plus à personne : dans un coffre ou un sac, il faut aller
+ * l'y reprendre ; au sol, il disparaît au bout du temps normal, et celui qui le ramasse en devient le propriétaire.
+ * Ce qui le détruirait par erreur reste refusé (lave, recycleur, conteneur de loot ou caisse qui se vide...).</p>
+ * <p>Tout code qui va détruire ou effacer un objet SANS que le joueur l'ait voulu (conteneur nettoyé, recycleur, caisse,
+ * atelier, objet qui ne rentre pas...) appelle d'abord {@link #neJamaisDetruire} (directement, ou par réflexion depuis
+ * un autre mod : {@code Class.forName("fr.heraliz.tactique.avie.ObjetsAVie").getMethod("neJamaisDetruire", UUID.class,
  * ItemStack.class, String.class)}). Ne jamais renommer cette classe ni ces méthodes (lues par réflexion).</p>
  */
 public final class ObjetsAVie {
-   private static final String VERSION = "2";
+   /** 3 (03/11) : la question dit où va l'objet (sol, sac, contenant). */
+   private static final String VERSION = "3";
    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeralizTactique.MODID, "a_vie"), () -> VERSION, VERSION::equals, VERSION::equals);
+
+   /** Où va l'objet de la question : au sol, dans un sac à dos, dans un autre contenant (coffre, caisse, atelier...). */
+   public static final byte OU_SOL = 0, OU_SAC = 1, OU_CONTENANT = 2;
 
    /** Question « Jeter cet objet ? » reçue par le joueur : branchée par la partie client. */
    public static final Crochet<PaquetJeterQuestion> QUESTION_CLIENT = new Crochet<>();
@@ -45,6 +56,34 @@ public final class ObjetsAVie {
    public static final Crochet<PaquetJeterReponse.Recue> REPONSE_SERVEUR = new Crochet<>();
 
    private ObjetsAVie() {
+   }
+
+   // ------------------------------------------------------------------ clics dans un écran (mixin ObjetsAVieClicMixin)
+   /** Clics d'un joueur dans un écran, vus par le serveur (branché par ObjetsAVieServeur ; absent : rien n'est fait). */
+   public interface Clics {
+      void avant(AbstractContainerMenu menu, ServerPlayer joueur);
+
+      void apres(AbstractContainerMenu menu, ServerPlayer joueur);
+   }
+
+   @Nullable
+   private static volatile Clics clics;
+
+   /** Partie serveur seulement. */
+   public static void brancherClics(Clics c) {
+      clics = c;
+   }
+
+   /** Début de {@code AbstractContainerMenu.clicked} (mixin commun) : seulement un joueur du serveur. */
+   public static void avantClic(AbstractContainerMenu menu, Player joueur) {
+      Clics c = clics;
+      if (c != null && joueur instanceof ServerPlayer sp) c.avant(menu, sp);
+   }
+
+   /** Fin de {@code AbstractContainerMenu.clicked} (mixin commun) : seulement un joueur du serveur. */
+   public static void apresClic(AbstractContainerMenu menu, Player joueur) {
+      Clics c = clics;
+      if (c != null && joueur instanceof ServerPlayer sp) c.apres(menu, sp);
    }
 
    /** Enregistre les paquets (constructeur du @Mod porteur). */

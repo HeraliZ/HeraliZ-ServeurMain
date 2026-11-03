@@ -23,41 +23,60 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.allay.Allay;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 /**
- * Objets à vie (voir {@link ObjetsAVie}), côté serveur. Règle du propriétaire (02/11) : un objet à vie n'est JAMAIS
- * perdu, sauf si un admin le supprime. Il est toujours soit dans un inventaire, soit dans les données du joueur (gardées
- * et enregistrées avec lui par Minecraft), soit dans sa boîte aux lettres hors du monde : jamais seulement en mémoire.
+ * Objets à vie (voir {@link ObjetsAVie}), côté serveur. Règle du propriétaire (03/11, remplace celle du 02/11) : un
+ * objet à vie est protégé tant qu'il est dans l'inventaire de celui qui l'a (inventaire, barre, armure, Curios, curseur,
+ * grille 2x2) ; il y est toujours soit dans un inventaire, soit dans les données du joueur (gardées et enregistrées avec
+ * lui par Minecraft), soit dans sa boîte aux lettres hors du monde : jamais seulement en mémoire. Le sortir de
+ * l'inventaire (contenant ou sol) demande une confirmation ; confirmé, il n'est plus à personne et ne revient plus seul.
  * <ul>
  *     <li>mort : ils ne tombent pas (ni au sol ni sur le corps de HeraliZ Utils, qui range les objets tombés plus tard,
- *     en LOWEST), ceux rangés dans un sac porté (ou dans un sac de l'inventaire) non plus : gardés dans les données
- *     persistantes du joueur ({@code PlayerPersisted.HeralizObjetsAVie}, copiées par Forge à la réapparition, donc aussi
- *     après un redémarrage) et rendus à la réapparition ou à la connexion. Pas en match (drapeau
- *     {@code heralisz:en_match} : les kits des matchs sont gérés par le match) ;</li>
+ *     en LOWEST) : gardés dans les données persistantes du joueur ({@code PlayerPersisted.HeralizObjetsAVie}, copiées
+ *     par Forge à la réapparition, donc aussi après un redémarrage) et rendus à la réapparition ou à la connexion. Ceux
+ *     rangés (avec confirmation) dans un sac porté ou dans un sac de l'inventaire suivent le sac (03/11 ; avant : sortis
+ *     du sac et gardés). Pas en match (drapeau {@code heralisz:en_match} : les kits des matchs sont gérés par le match) ;</li>
  *     <li>touche de jet (aucun menu ouvert) : rien n'est jeté, l'objet reste dans la main (petit message) ;</li>
  *     <li>jet depuis un inventaire ouvert : l'objet est mis de côté (dans les données du joueur, {@code
- *     HeralizObjetsAVieQuestion} : il survit à un plantage) et le joueur reçoit « Jeter cet objet ? ». Oui : il tombe.
- *     Non (ou écran fermé) : il revient dans l'inventaire ;</li>
+ *     HeralizObjetsAVieQuestion} : il survit à un plantage) et le joueur reçoit « Jeter cet objet ? ». Oui : il tombe,
+ *     n'est plus à personne et disparaît au bout du temps normal des objets au sol (03/11 ; avant : rendu au bout de
+ *     5 min) ; celui qui le ramasse l'a dans son inventaire, il est donc protégé pour lui. Non (ou écran fermé) : il
+ *     revient dans l'inventaire ;</li>
+ *     <li>rangé dans n'importe quel contenant (03/11 : coffre, sac à dos, caisse, atelier, établi... : tout écran autre
+ *     que l'inventaire du joueur et l'écran de Curios), par n'importe quel clic (clic, glisser, Maj + clic, touches 1 à 9,
+ *     double clic) : {@link #avantClic} / {@link #apresClic} (mixin commun {@code ObjetsAVieClicMixin}) le voient, l'en
+ *     ressortent et le mettent de côté de même, avec « Mettre dans le sac ? » ou « Ranger cet objet ici ? ». Oui : il va
+ *     dans sa case (sinon une case libre du même contenant, sinon rendu), marqué {@code HeralizSacOk} (« sorti avec
+ *     confirmation » : il se déplace ensuite dans le contenant sans nouvelle question ; marque retirée dès qu'il revient
+ *     dans un inventaire). Non : rendu. Caisses qui disparaissent avec leur contenu ({@link #CONTENANTS_TEMPORAIRES}) :
+ *     refusé, rendu ;</li>
+ *     <li>présentoirs (cadre, porte-armure, mannequin, allay) : un objet à vie ne s'y pose pas (pas de question possible) ;</li>
  *     <li>inventaire plein quand un objet revient : il est gardé (comme à la mort) et rendu dès qu'une case se libère
  *     (vérifié chaque seconde), jamais posé au sol ni échangé contre un autre objet ;</li>
  *     <li>déconnexion (02/11) : Minecraft enregistre le joueur PUIS jette ce qu'il tenait au curseur et ce qui était dans
@@ -66,15 +85,12 @@ import net.minecraftforge.server.ServerLifecycleHooks;
  *     2x2 reviennent dans l'inventaire (sinon gardés) ; une question en cours aussi. Ce qui arriverait encore après part
  *     dans la boîte aux lettres ;</li>
  *     <li>pendant la mort ou la déconnexion, un objet à vie jeté par un écran qui se ferme est gardé, jamais posé ;</li>
- *     <li>au sol : invulnérable (feu, lave, explosions, cactus) ; s'il n'est ramassé par personne avant de disparaître
- *     (5 min), il revient à celui qui l'a jeté ; sans lanceur connu, il reste au sol. Un sac au sol qui disparaît rend
- *     de même les objets à vie qu'il contient ;</li>
- *     <li>posé dans un sac à dos (écran du sac de HeraliZ Backpack, clic ou Maj + clic) : mis de côté de même, avec
- *     « Mettre dans le sac ? ». Oui : il va dans le sac, marqué {@code HeralizSacOk} (marque retirée quand il revient
- *     dans l'inventaire, vérifié chaque seconde : la question revient la fois suivante). Non : rendu ;</li>
+ *     <li>au sol : invulnérable (feu, lave, explosions, cactus : jamais détruit par erreur), mais il disparaît au bout du
+ *     temps normal, comme le reste (03/11 ; avant : rendu au bout de 5 min à celui qui l'avait jeté) ; un sac au sol
+ *     aussi, avec ce qu'il contient ;</li>
  *     <li>boîte aux lettres ({@code heraliz_tactique/objets_a_vie/<uuid>.dat}, hors du monde) : objets sauvés pour un
- *     joueur hors ligne ({@link ObjetsAVie#neJamaisDetruire}, objet resté au sol). Lue à la connexion ; la copie lue
- *     n'est effacée qu'après l'enregistrement suivant du joueur (un plantage entre les deux ne perd ni ne double rien).</li>
+ *     joueur hors ligne ({@link ObjetsAVie#neJamaisDetruire}). Lue à la connexion ; la copie lue n'est effacée qu'après
+ *     l'enregistrement suivant du joueur (un plantage entre les deux ne perd ni ne double rien).</li>
  * </ul>
  * Créatif et spectateur : rien ne change (staff). Objets toujours déplacés, jamais copiés.
  */
@@ -86,13 +102,12 @@ public final class ObjetsAVieServeur {
    private static final String CLE = "HeralizObjetsAVie";
    private static final String CLE_QUESTION = "HeralizObjetsAVieQuestion";
    private static final String DRAPEAU_EN_MATCH = "heralisz:en_match";
-   /** Données d'une entité « objet au sol » qui porte un objet à vie : à qui le rendre s'il n'est jamais ramassé. */
-   private static final String PROPRIO_SOL = "HeralizAVieProprio";
-   /** Vie en plus d'un objet à vie au sol sans lanceur connu, à chaque fois qu'il devrait disparaître (5 min). */
-   private static final int VIE_EN_PLUS = 6000;
 
-   /** Objet mis de côté en attendant la réponse du joueur ; {@code menu} non nul : question du sac (case {@code cas}). */
-   private record Attente(ItemStack objet, @Nullable AbstractContainerMenu menu, int cas) {
+   /**
+    * Objet mis de côté en attendant la réponse du joueur. {@code menu} nul : question du jet au sol ; sinon question d'un
+    * contenant (case {@code cas} du menu, conteneur {@code contenant}, {@code ou} : sac ou autre contenant).
+    */
+   private record Attente(ItemStack objet, @Nullable AbstractContainerMenu menu, int cas, @Nullable Container contenant, byte ou) {
    }
 
    private static final Map<UUID, Attente> EN_ATTENTE = new HashMap<>();
@@ -101,9 +116,42 @@ public final class ObjetsAVieServeur {
    /** Boîtes aux lettres lues à la connexion : la copie lue est effacée après le prochain enregistrement du joueur. */
    private static final Set<UUID> BOITES_LUES = new HashSet<>();
    private static final String MENU_SAC = "com.mrcrayfish.backpacked.inventory.container.BackpackContainerMenu";
-   private static final String MARQUE_SAC = "HeralizSacOk";
+   /**
+    * Marque « sorti de l'inventaire avec confirmation » d'un objet à vie rangé dans un contenant (nom d'origine : le sac à
+    * dos, 02/11 ; ignorée par les échanges de HeraliZ Quêtes). Posée sur la confirmation et sur tout objet à vie déjà dans
+    * un contenant quand un joueur y clique ; retirée dès que l'objet est dans un inventaire de joueur (il est à lui).
+    */
+   private static final String MARQUE = "HeralizSacOk";
+   /**
+    * Caisses qui disparaissent avec tout leur contenu au bout d'un temps (03/11) : un objet à vie n'y entre pas (il y
+    * serait détruit) : caisse de ravitaillement des territoires (HeraliZ Clans, 15 min) et caisse de largage posée en bloc
+    * (frappes aériennes de HeraliZ Utils). Les autres contenants qui se vident tout seuls refusent déjà tout dépôt
+    * (conteneurs de loot, corps, caisse du largage public, recycleurs).
+    */
+   static final Set<String> CONTENANTS_TEMPORAIRES = Set.of(
+      "fr.heralisz.clans.territory.CaisseRavitaillementBlockEntity",
+      "fr.heraliz.airstrike.block.SupplyCrateBlockEntity");
+   /** Écrans de Curios : comme l'inventaire, ils ne montrent que les affaires du joueur (jamais de question). */
+   private static final ClassValue<Boolean> ECRAN_CURIOS = new ClassValue<>() {
+      @Override
+      protected Boolean computeValue(Class<?> type) {
+         for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            if (c.getName().startsWith("top.theillusivec4.curios.")) return true;
+            for (Class<?> i : c.getInterfaces()) {
+               if (i.getName().startsWith("top.theillusivec4.curios.")) return true;
+            }
+         }
+         return false;
+      }
+   };
    /** Jet confirmé en cours (le serveur jette lui-même : l'évènement de jet ne doit pas le reprendre). */
    private static boolean jetConfirme;
+   /** Clic en cours (fil du serveur, un clic à la fois) : joueur, écran, objets à vie non marqués de son côté avant. */
+   @Nullable
+   private static ServerPlayer clicJoueur;
+   @Nullable
+   private static AbstractContainerMenu clicMenu;
+   private static int clicAvant;
 
    static void brancher() {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ObjetsAVieServeur::jet);
@@ -116,13 +164,25 @@ public final class ObjetsAVieServeur {
       MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::tick);
       MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::tickServeur);
       MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::arriveeAuSol);
-      MinecraftForge.EVENT_BUS.addListener(ObjetsAVieServeur::finAuSol);
+      MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, ObjetsAVieServeur::presentoir);
+      MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, ObjetsAVieServeur::presentoirPrecis);
       MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> {
          for (ServerPlayer p : e.getServer().getPlayerList().getPlayers()) rendreAttente(p);
          EN_ATTENTE.clear();
       });
       ObjetsAVie.REPONSE_SERVEUR.brancher(ObjetsAVieServeur::reponse);
       ObjetsAVie.brancherSauvetage(ObjetsAVieServeur::sauver);
+      ObjetsAVie.brancherClics(new ObjetsAVie.Clics() {
+         @Override
+         public void avant(AbstractContainerMenu menu, ServerPlayer joueur) {
+            avantClic(menu, joueur);
+         }
+
+         @Override
+         public void apres(AbstractContainerMenu menu, ServerPlayer joueur) {
+            apresClic(menu, joueur);
+         }
+      });
    }
 
    private static boolean concerne(Player p) {
@@ -161,37 +221,21 @@ public final class ObjetsAVieServeur {
          return;
       }
       rendreAttente(p);
-      mettreDeCote(p, new Attente(garde, null, -1));
-      ObjetsAVie.envoyer(p, new PaquetJeterQuestion(garde, false));
+      mettreDeCote(p, new Attente(garde, null, -1, null, ObjetsAVie.OU_SOL));
+      ObjetsAVie.envoyer(p, new PaquetJeterQuestion(garde, ObjetsAVie.OU_SOL));
    }
 
-   // ------------------------------------------------------------------ chaque seconde, sac à dos
+   // ------------------------------------------------------------------ chaque seconde
    private static void tick(TickEvent.PlayerTickEvent e) {
       if (e.phase != TickEvent.Phase.END || !concerne(e.player)) return;
       ServerPlayer p = (ServerPlayer) e.player;
-      // une fois par seconde, étalé sur les joueurs (avant : les 41 cases de chaque joueur à chaque tick)
+      // une fois par seconde, étalé sur les joueurs (avant : les 41 cases de chaque joueur à chaque tick) : un objet à
+      // vie revenu dans l'inventaire (ramassé au sol, repris dans un coffre) est de nouveau à lui (marque retirée)
       if ((p.tickCount + p.getId()) % 20 == 0) {
          Inventory inv = p.getInventory();
-         for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack s = inv.getItem(i);
-            if (!s.isEmpty() && s.hasTag() && s.getTag().contains(MARQUE_SAC)) s.removeTagKey(MARQUE_SAC);
-         }
+         for (int i = 0; i < inv.getContainerSize(); i++) demarquer(inv.getItem(i));
          if (p.isAlive() && !SORTIS.contains(p.getUUID()) && !enMatch(p)
             && p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).contains(CLE)) rendreGardes(p);
-      }
-      AbstractContainerMenu menu = p.containerMenu;
-      if (menu == p.inventoryMenu || EN_ATTENTE.containsKey(p.getUUID()) || !MENU_SAC.equals(menu.getClass().getName())) return;
-      Inventory inv = p.getInventory();
-      for (Slot slot : menu.slots) {
-         if (slot.container == inv) continue;
-         ItemStack s = slot.getItem();
-         if (!ObjetsAVie.estAVie(s) || (s.hasTag() && s.getTag().contains(MARQUE_SAC))) continue;
-         ItemStack garde = s.copy();
-         slot.set(ItemStack.EMPTY);
-         mettreDeCote(p, new Attente(garde, menu, slot.index));
-         menu.broadcastChanges();
-         ObjetsAVie.envoyer(p, new PaquetJeterQuestion(garde, true));
-         return;
       }
    }
 
@@ -199,28 +243,123 @@ public final class ObjetsAVieServeur {
       if (e.phase == TickEvent.Phase.END && !SORTIS.isEmpty()) SORTIS.clear();
    }
 
-   /** « Oui, le ranger » : dans sa case du sac si elle est libre, sinon une autre case libre du sac, sinon rendu. */
-   private static void rangerDansSac(ServerPlayer p, Attente a) {
-      ItemStack objet = a.objet();
-      objet.getOrCreateTag().putBoolean(MARQUE_SAC, true);
-      AbstractContainerMenu menu = p.containerMenu;
-      if (menu == a.menu()) {
-         Slot voulu = a.cas() >= 0 && a.cas() < menu.slots.size() ? menu.slots.get(a.cas()) : null;
-         if (voulu != null && !voulu.hasItem() && voulu.mayPlace(objet)) {
-            voulu.set(objet);
-            menu.broadcastChanges();
-            return;
-         }
-         for (Slot slot : menu.slots) {
-            if (slot.container != p.getInventory() && !slot.hasItem() && slot.mayPlace(objet)) {
-               slot.set(objet);
-               menu.broadcastChanges();
-               return;
-            }
+   private static boolean marque(ItemStack s) {
+      return s.hasTag() && s.getTag().contains(MARQUE);
+   }
+
+   private static void demarquer(ItemStack s) {
+      if (!s.isEmpty() && marque(s)) s.removeTagKey(MARQUE);
+   }
+
+   // ------------------------------------------------------------------ rangé dans un contenant (03/11)
+   /** L'inventaire du joueur ou l'écran de Curios : seulement ses propres affaires, jamais de question. */
+   private static boolean ecranDuJoueur(AbstractContainerMenu menu, ServerPlayer p) {
+      return menu == p.inventoryMenu || ECRAN_CURIOS.get(menu.getClass());
+   }
+
+   /** Objets à vie NON marqués de son côté : son inventaire (41 cases) et son curseur. */
+   private static int aVieDuJoueur(AbstractContainerMenu menu, Inventory inv) {
+      int n = 0;
+      for (int i = 0; i < inv.getContainerSize(); i++) {
+         ItemStack s = inv.getItem(i);
+         if (!s.isEmpty() && !marque(s) && ObjetsAVie.estAVie(s)) n += s.getCount();
+      }
+      ItemStack curseur = menu.getCarried();
+      if (!curseur.isEmpty() && !marque(curseur) && ObjetsAVie.estAVie(curseur)) n += curseur.getCount();
+      return n;
+   }
+
+   /**
+    * Avant un clic dans l'écran d'un contenant (fil du serveur). Ce qui est dans l'inventaire du joueur est à lui (marque
+    * retirée) ; s'il en a, ce qui est déjà dans les cases du contenant est marqué « déjà rangé » : après le clic, un objet
+    * à vie non marqué dans une case du contenant ne peut venir que de son inventaire ou de son curseur. Rien d'autre :
+    * un joueur sans objet à vie ne coûte qu'un tour de ses 41 cases par clic.
+    */
+   static void avantClic(AbstractContainerMenu menu, ServerPlayer p) {
+      clicJoueur = null;
+      clicMenu = null;
+      if (!concerne(p) || ecranDuJoueur(menu, p)) return;
+      Inventory inv = p.getInventory();
+      for (int i = 0; i < inv.getContainerSize(); i++) demarquer(inv.getItem(i));
+      int avant = aVieDuJoueur(menu, inv);
+      if (avant == 0) return;
+      for (Slot slot : menu.slots) {
+         if (slot.container == inv || slot.container instanceof ResultContainer) continue;
+         ItemStack s = slot.getItem();
+         if (!s.isEmpty() && !marque(s) && ObjetsAVie.estAVie(s)) s.getOrCreateTag().putBoolean(MARQUE, true);
+      }
+      clicJoueur = p;
+      clicMenu = menu;
+      clicAvant = avant;
+   }
+
+   /**
+    * Après le clic : si des objets à vie ont quitté son côté (inventaire, curseur) et qu'un objet à vie non marqué est dans
+    * une case du contenant où le joueur peut poser, c'est le sien : il en ressort, mis de côté avec la question (un seul ;
+    * un deuxième, glissé dans la même passe, revient dans l'inventaire). Jet (Q, Ctrl + Q, clic hors de l'écran) : déjà
+    * mis de côté par jet(), rien à faire ici. Cases de résultat (artisanat, enclume...) jamais prises : rien n'y est posé
+    * par le joueur, et un objet fabriqué n'est pas à lui.
+    */
+   static void apresClic(AbstractContainerMenu menu, ServerPlayer p) {
+      if (clicJoueur != p || clicMenu != menu) return;
+      clicJoueur = null;
+      clicMenu = null;
+      Inventory inv = p.getInventory();
+      int partis = clicAvant - aVieDuJoueur(menu, inv);
+      if (partis <= 0) return;
+      boolean question = false;
+      boolean temporaire = false;
+      for (Slot slot : menu.slots) {
+         if (partis <= 0) break;
+         if (slot.container == inv || slot.container instanceof ResultContainer) continue;
+         ItemStack s = slot.getItem();
+         if (s.isEmpty() || marque(s) || !ObjetsAVie.estAVie(s) || !slot.mayPlace(s)) continue;
+         int avant = s.getCount();
+         ItemStack objet = slot.remove(Math.min(partis, avant));
+         ItemStack ici = slot.getItem();
+         int reste = ici.isEmpty() || marque(ici) || !ObjetsAVie.estAVie(ici) ? 0 : ici.getCount();
+         // contenant qui ne rend rien (ou rend une copie) : l'objet y reste, rien n'est copié
+         if (objet.isEmpty() || reste >= avant) continue;
+         partis -= objet.getCount();
+         if (CONTENANTS_TEMPORAIRES.contains(slot.container.getClass().getName())) {
+            rendre(p, objet, false);
+            temporaire = true;
+         } else if (!question) {
+            question = true;
+            byte ou = MENU_SAC.equals(menu.getClass().getName()) ? ObjetsAVie.OU_SAC : ObjetsAVie.OU_CONTENANT;
+            rendreAttente(p);
+            mettreDeCote(p, new Attente(objet, menu, slot.index, slot.container, ou));
+            ObjetsAVie.envoyer(p, new PaquetJeterQuestion(objet.copy(), ou));
+         } else {
+            rendre(p, objet, false);
          }
       }
-      objet.removeTagKey(MARQUE_SAC);
-      rendre(p, objet, true);
+      if (temporaire) {
+         p.displayClientMessage(Component.translatableWithFallback("heraliz_tactique.a_vie.temporaire",
+            "Objet à vie : pas dans cette caisse, elle disparaît avec son contenu."), true);
+      }
+   }
+
+   /**
+    * « Oui, le ranger » : dans sa case si elle est libre (ou tient déjà le même objet rangé), sinon une case libre du même
+    * contenant, sinon rendu. Marqué : il n'est plus à personne et ne revient plus tout seul.
+    */
+   private static void ranger(ServerPlayer p, Attente a) {
+      ItemStack objet = a.objet();
+      objet.getOrCreateTag().putBoolean(MARQUE, true);
+      AbstractContainerMenu menu = p.containerMenu;
+      if (menu == a.menu() && menu.stillValid(p)) {
+         Slot voulu = a.cas() >= 0 && a.cas() < menu.slots.size() ? menu.slots.get(a.cas()) : null;
+         if (voulu != null && voulu.container == a.contenant()) objet = voulu.safeInsert(objet);
+         for (Slot slot : menu.slots) {
+            if (objet.isEmpty()) break;
+            if (slot != voulu && slot.container == a.contenant() && slot.container != p.getInventory() && !slot.hasItem()) {
+               objet = slot.safeInsert(objet);
+            }
+         }
+         menu.broadcastChanges();
+      }
+      if (!objet.isEmpty()) rendre(p, objet, true);
    }
 
    private static void reponse(PaquetJeterReponse.Recue r) {
@@ -229,13 +368,15 @@ public final class ObjetsAVieServeur {
       if (a == null || a.objet().isEmpty()) return;
       ItemStack objet = a.objet();
       if (a.menu() != null && r.jeter() && p.isAlive()) {
-         rangerDansSac(p, a);
+         ranger(p, a);
          return;
       }
       if (!r.jeter() || !p.isAlive()) {
          rendre(p, objet, true);
          return;
       }
+      // au sol, il n'est plus à personne (03/11) : il disparaît au bout du temps normal, celui qui le ramasse le garde
+      demarquer(objet);
       jetConfirme = true;
       try {
          ItemEntity tombe = p.drop(objet, false, true);
@@ -244,6 +385,32 @@ public final class ObjetsAVieServeur {
          jetConfirme = false;
       }
       synchroniser(p);
+   }
+
+   // ------------------------------------------------------------------ présentoirs (03/11)
+   /** Cadre, porte-armure, mannequin de l'Armurerie, allay : un objet à vie ne s'y pose pas (aucune question possible). */
+   private static boolean refusePresentoir(Player joueur, Entity cible, ItemStack enMain) {
+      if (!concerne(joueur) || !ObjetsAVie.estAVie(enMain)) return false;
+      if (cible instanceof ItemFrame cadre) return cadre.getItem().isEmpty();
+      if (cible instanceof Allay) return true;
+      // porte-armure de Minecraft : l'objet s'y pose même accroupi ; mannequin (autre mod) : accroupi, il ouvre son écran
+      if (cible instanceof ArmorStand) return cible.getClass() == ArmorStand.class || !joueur.isSecondaryUseActive();
+      return false;
+   }
+
+   private static void refuserPresentoir(PlayerInteractEvent e) {
+      e.setCanceled(true);
+      e.setCancellationResult(InteractionResult.FAIL);
+      e.getEntity().displayClientMessage(Component.translatableWithFallback("heraliz_tactique.a_vie.presentoir",
+         "Objet à vie : il ne se pose pas sur un présentoir."), true);
+   }
+
+   private static void presentoir(PlayerInteractEvent.EntityInteract e) {
+      if (!e.getLevel().isClientSide() && refusePresentoir(e.getEntity(), e.getTarget(), e.getItemStack())) refuserPresentoir(e);
+   }
+
+   private static void presentoirPrecis(PlayerInteractEvent.EntityInteractSpecific e) {
+      if (!e.getLevel().isClientSide() && refusePresentoir(e.getEntity(), e.getTarget(), e.getItemStack())) refuserPresentoir(e);
    }
 
    /** Met l'objet de côté pendant la question : en mémoire ET dans les données du joueur (un plantage ne le perd pas). */
@@ -269,6 +436,7 @@ public final class ObjetsAVieServeur {
     */
    private static void rendre(ServerPlayer p, ItemStack objet, boolean synchro) {
       if (objet.isEmpty()) return;
+      demarquer(objet); // de nouveau dans son inventaire (ou gardé pour lui) : à lui
       if (!p.isAlive() || SORTIS.contains(p.getUUID())) {
          garder(p, objet, p.isAlive() ? "après la déconnexion" : "mort");
          return;
@@ -312,19 +480,13 @@ public final class ObjetsAVieServeur {
       if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof FakePlayer) return;
       if (enMatch(p)) return;
       ListTag garde = new ListTag();
-      int dansSacs = 0;
+      // inventaire, armure, Curios (déjà dans la liste, Curios en HIGHEST). Un objet à vie rangé dans un sac (porté ou
+      // dans l'inventaire) suit le sac (03/11, règle du propriétaire : rangé avec confirmation, il n'est plus protégé)
       for (Iterator<ItemEntity> it = e.getDrops().iterator(); it.hasNext(); ) {
          ItemEntity ie = it.next();
-         if (ie == null) continue;
-         if (ObjetsAVie.estAVie(ie.getItem())) {
+         if (ie != null && ObjetsAVie.estAVie(ie.getItem())) {
             garde.add(ie.getItem().save(new CompoundTag()));
             it.remove();
-         } else {
-            // sac porté (déjà dans la liste, Curios en HIGHEST) ou sac de l'inventaire : ses objets à vie restent au joueur
-            for (ItemStack s : ObjetsAVie.retirerContenuAVie(ie.getItem())) {
-               garde.add(s.save(new CompoundTag()));
-               dansSacs++;
-            }
          }
       }
       // objet tenu au curseur, grille d'artisanat, objet mis de côté (question en cours) ; les cases de fabrication d'un
@@ -345,7 +507,7 @@ public final class ObjetsAVieServeur {
       ListTag deja = persiste.getList(CLE, Tag.TAG_COMPOUND);
       deja.addAll(garde);
       persiste.put(CLE, deja);
-      LOG.info("[a vie] {} mort : {} objet(s) à vie gardé(s) pour la réapparition (dont {} retiré(s) d'un sac)", nom(p), garde.size(), dansSacs);
+      LOG.info("[a vie] {} mort : {} objet(s) à vie gardé(s) pour la réapparition", nom(p), garde.size());
    }
 
    private static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
@@ -457,30 +619,15 @@ public final class ObjetsAVieServeur {
    }
 
    // ------------------------------------------------------------------ au sol
-   /** Objet à vie (ou sac qui en contient) posé dans le monde : ni feu, ni lave, ni explosion ; on note qui l'a jeté. */
+   /**
+    * Objet à vie (ou sac qui en contient) posé dans le monde : ni feu, ni lave, ni explosion (jamais détruit par erreur).
+    * Il disparaît au bout du temps normal des objets au sol, comme le reste, et n'est plus rendu à personne (03/11, règle
+    * du propriétaire ; avant : rendu au bout de 5 min à celui qui l'avait jeté). Celui qui le ramasse l'a dans son
+    * inventaire : il est à lui, protégé.
+    */
    private static void arriveeAuSol(EntityJoinLevelEvent e) {
       if (e.getLevel().isClientSide() || !(e.getEntity() instanceof ItemEntity ie)) return;
-      if (!ObjetsAVie.contientAVie(ie.getItem())) return;
-      ie.setInvulnerable(true);
-      if (!ie.getPersistentData().hasUUID(PROPRIO_SOL)) {
-         Entity lanceur = ie.getOwner();
-         if (lanceur instanceof Player j) ie.getPersistentData().putUUID(PROPRIO_SOL, j.getUUID());
-      }
-   }
-
-   /** Objet à vie jamais ramassé : rendu à celui qui l'a jeté ; sans lanceur connu, il reste au sol. */
-   private static void finAuSol(ItemExpireEvent e) {
-      ItemEntity ie = e.getEntity();
-      if (ie.level().isClientSide()) return;
-      ItemStack s = ie.getItem();
-      if (!ObjetsAVie.contientAVie(s)) return;
-      UUID proprio = ie.getPersistentData().hasUUID(PROPRIO_SOL) ? ie.getPersistentData().getUUID(PROPRIO_SOL) : null;
-      if (proprio == null) {
-         e.setExtraLife(VIE_EN_PLUS);
-         e.setCanceled(true);
-         return;
-      }
-      sauver(proprio, s, "jamais ramassé au sol");
+      if (ObjetsAVie.contientAVie(ie.getItem())) ie.setInvulnerable(true);
    }
 
    // ------------------------------------------------------------------ « ne jamais détruire » (autres mods)

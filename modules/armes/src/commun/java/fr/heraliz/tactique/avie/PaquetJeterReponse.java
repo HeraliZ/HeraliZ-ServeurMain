@@ -5,7 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
-/** Joueur -> serveur : réponse à « Jeter cet objet ? » (oui : jeté ; non : rendu à l'inventaire). */
+/** Joueur -> serveur : réponse à la question (oui : jeté ou rangé ; non : rendu à l'inventaire). */
 public record PaquetJeterReponse(boolean jeter) {
    /** Réponse reçue par le serveur. */
    public record Recue(ServerPlayer joueur, boolean jeter) {

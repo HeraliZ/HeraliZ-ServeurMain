@@ -6,17 +6,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 
 /**
- * Serveur -> joueur : « Jeter cet objet ? », ou « Mettre cet objet dans le sac ? » si {@code sac} (l'objet est mis de
- * côté par le serveur en attendant la réponse).
+ * Serveur -> joueur : « Jeter cet objet ? » ({@link ObjetsAVie#OU_SOL}), « Mettre dans le sac ? »
+ * ({@link ObjetsAVie#OU_SAC}) ou « Ranger cet objet ici ? » ({@link ObjetsAVie#OU_CONTENANT} : coffre, caisse,
+ * atelier...). L'objet est mis de côté par le serveur en attendant la réponse.
  */
-public record PaquetJeterQuestion(ItemStack objet, boolean sac) {
+public record PaquetJeterQuestion(ItemStack objet, byte ou) {
    public static void encode(PaquetJeterQuestion p, FriendlyByteBuf buf) {
       buf.writeItem(p.objet);
-      buf.writeBoolean(p.sac);
+      buf.writeByte(p.ou);
    }
 
    public static PaquetJeterQuestion decode(FriendlyByteBuf buf) {
-      return new PaquetJeterQuestion(buf.readItem(), buf.readBoolean());
+      return new PaquetJeterQuestion(buf.readItem(), buf.readByte());
    }
 
    public static void handle(PaquetJeterQuestion p, Supplier<NetworkEvent.Context> contexte) {

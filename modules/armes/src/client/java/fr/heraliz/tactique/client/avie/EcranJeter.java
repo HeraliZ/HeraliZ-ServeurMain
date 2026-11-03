@@ -16,27 +16,35 @@ import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * « Jeter cet objet ? » (objets à vie, {@link ObjetsAVie}) : petit panneau de verre par-dessus l'inventaire, l'objet et
- * son nom, « Non, le garder » et « Oui, jeter ». Échap, Entrée ou fermeture = non (on ne jette jamais sans le vouloir).
- * Le serveur a mis l'objet de côté et décide de tout ; l'écran d'avant revient après la réponse.
+ * « Jeter cet objet ? », « Mettre dans le sac ? » ou « Ranger cet objet ici ? » (objets à vie, {@link ObjetsAVie} : même
+ * confirmation pour le sol et pour tout contenant, 03/11) : petit panneau de verre par-dessus l'écran ouvert, l'objet et
+ * son nom, « Non, le garder » et « Oui, jeter » / « Oui, le ranger ». Échap, Entrée ou fermeture = non (on ne sort jamais
+ * un objet à vie de l'inventaire sans le vouloir). Le serveur a mis l'objet de côté et décide de tout ; l'écran d'avant
+ * revient après la réponse.
  */
 public final class EcranJeter extends Screen {
    private static final int W = 220, H = 104, BTN_W = 96, BTN_H = 20, LIGNE = 11;
    @Nullable
    private final Screen avant;
    private final ItemStack objet;
-   /** Vrai : « Mettre cet objet dans le sac ? » au lieu de « Jeter cet objet ? ». */
-   private final boolean sac;
+   /** Où va l'objet : {@link ObjetsAVie#OU_SOL}, {@link ObjetsAVie#OU_SAC} ou {@link ObjetsAVie#OU_CONTENANT}. */
+   private final byte ou;
    private boolean repondu;
    /** Explication coupée à la largeur du panneau (anglais et russe : deux lignes) ; le panneau grandit d'autant. */
    private List<FormattedCharSequence> lignes = List.of();
    private int h = H;
 
-   private EcranJeter(@Nullable Screen avant, ItemStack objet, boolean sac) {
-      super(Component.translatable(sac ? "heraliz_tactique.a_vie.sac_titre" : "heraliz_tactique.a_vie.titre"));
+   private EcranJeter(@Nullable Screen avant, ItemStack objet, byte ou) {
+      super(Component.translatable(cle(ou, "titre")));
       this.avant = avant;
       this.objet = objet;
-      this.sac = sac;
+      this.ou = ou;
+   }
+
+   /** Clé du texte {@code quoi} (titre, texte, oui) selon la destination : jet au sol, sac, autre contenant. */
+   private static String cle(byte ou, String quoi) {
+      String prefixe = ou == ObjetsAVie.OU_SAC ? "sac_" : ou == ObjetsAVie.OU_CONTENANT ? "ranger_" : "";
+      return "heraliz_tactique.a_vie." + prefixe + quoi;
    }
 
    public static void brancher() {
@@ -48,13 +56,13 @@ public final class EcranJeter extends Screen {
       if (mc.player == null) return;
       Screen avant = mc.screen instanceof EcranJeter e ? e.avant : mc.screen;
       if (mc.screen instanceof EcranJeter ancien) ancien.repondu = true; // remplacé : l'ancien objet a déjà été rendu par le serveur
-      mc.setScreen(new EcranJeter(avant, q.objet(), q.sac()));
+      mc.setScreen(new EcranJeter(avant, q.objet(), q.ou()));
       SonsUi.ouvrir(0.6f);
    }
 
    @Override
    protected void init() {
-      this.lignes = this.font.split(Ui.tr(Ui.FONT, this.sac ? "heraliz_tactique.a_vie.sac_texte" : "heraliz_tactique.a_vie.texte"), W - 24);
+      this.lignes = this.font.split(Ui.tr(Ui.FONT, cle(this.ou, "texte")), W - 24);
       this.h = H + Math.max(0, this.lignes.size() - 1) * LIGNE;
    }
 
@@ -103,7 +111,7 @@ public final class EcranJeter extends Screen {
          g.drawString(this.font, l, Math.round(cx - this.font.width(l) / 2f), y + 50 + i * LIGNE, Ui.argb(Ui.MUTED, 255), false);
       }
       bouton(g, nonX(), btnY(), Ui.tr(Ui.BOLD, "heraliz_tactique.a_vie.non"), Ui.OK, sur(mx, my, nonX(), btnY()));
-      bouton(g, ouiX(), btnY(), Ui.tr(Ui.BOLD, this.sac ? "heraliz_tactique.a_vie.sac_oui" : "heraliz_tactique.a_vie.oui"), Ui.DANGER, sur(mx, my, ouiX(), btnY()));
+      bouton(g, ouiX(), btnY(), Ui.tr(Ui.BOLD, cle(this.ou, "oui")), Ui.DANGER, sur(mx, my, ouiX(), btnY()));
       g.pose().popPose();
    }
 
