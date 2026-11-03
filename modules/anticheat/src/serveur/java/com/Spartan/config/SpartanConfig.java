@@ -151,6 +151,8 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GARDIEN_IGNORED_TOOLS;
     public static final ForgeConfigSpec.ConfigValue<String> GARDIEN_ANCIEN_LAUNCHER;
     public static final ForgeConfigSpec.IntValue GARDIEN_DEFI_SECONDS;
+    public static final ForgeConfigSpec.ConfigValue<String> GARDIEN_PREUVE_EXIGEE;
+    public static final ForgeConfigSpec.IntValue GARDIEN_PREUVE_SECONDES;
 
     // --- tirs TaCZ (audit du 02/11, point 14) ---
     public static final ForgeConfigSpec.BooleanValue TIRS_ENABLED;
@@ -505,14 +507,15 @@ public class SpartanConfig {
                 "des programmes. Depuis Spartan 2.10.0 et le launcher 1.16.0 (audit du 02/11), le SERVEUR vérifie lui-même",
                 "chaque rapport : signé par le launcher avec une clé liée au jeton du site, numéroté, avec le défi tiré par le",
                 "serveur pour la connexion. Le jeu ne fait que le transmettre : il ne peut plus inventer un rapport « propre ».",
-                "Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required et",
-                "ancienLauncher = \"refuser\".")
+                "Toujours des ALERTES au staff (« Gardien », « Gardien muet »), jamais d'expulsion, sauf required,",
+                "ancienLauncher = \"refuser\", preuveExigee = \"refuser\" (à la connexion) et les programmes d'injection",
+                "(section [injection]).")
                 .push("gardien");
         GARDIEN_ENABLED = b.comment("Active le Gardien.").define("enabled", true);
         GARDIEN_REQUIRED = b.comment(
                 "true : connexion REFUSÉE si le jeu a été lancé sans le Gardien (launcher plus ancien que 1.14.0,",
-                "autre lanceur). Activer une fois le nouveau launcher distribué à tous les joueurs.")
-                .define("required", false);
+                "autre lanceur), avec le message « ton launcher n'est pas à jour ». Vrai par défaut depuis le 03/11.")
+                .define("required", true);
         GARDIEN_SILENCE_SECONDS = b.comment(
                 "Sans rapport du Gardien depuis ce temps (launcher fermé de force) : alerte « Gardien muet ».")
                 .defineInRange("silenceSeconds", 90, 30, 3600);
@@ -525,13 +528,25 @@ public class SpartanConfig {
                 "modifié peut les inventer. \"noter\" : écrit seulement dans « Jeu validé » ; \"alerte\" : une alerte",
                 "« Gardien » par connexion ; \"refuser\" : connexion refusée (« lancez le jeu depuis le launcher à jour »).",
                 "Dans tous les cas, un joueur déjà venu avec un Gardien prouvé (30 derniers jours) qui revient avec un ancien",
-                "launcher donne une alerte.")
-                .defineInList("ancienLauncher", "alerte", List.of("noter", "alerte", "refuser"));
+                "launcher donne une alerte. Message du refus : « ton launcher n'est pas à jour, ferme-le et rouvre-le » (03/11 :",
+                "\"refuser\" par défaut, le launcher 1.16 étant publié ; un ancien launcher officiel est invité à se mettre à jour).")
+                .defineInList("ancienLauncher", "refuser", List.of("noter", "alerte", "refuser"));
         GARDIEN_DEFI_SECONDS = b.comment(
                 "Défi du Gardien renouvelé toutes les N secondes : un rapport n'est « frais » que s'il porte le dernier ou",
                 "l'avant-dernier défi. Plus bas = rejeu plus court, mais garder au moins 3 fois l'écart entre deux rapports",
                 "du launcher (10 à 20 s).")
                 .defineInRange("defiSeconds", 60, 45, 600);
+        GARDIEN_PREUVE_EXIGEE = b.comment(
+                "Launcher 1.16 ou plus récent (clé du Gardien liée au jeton) : il doit PROUVER qu'il veille dans les",
+                "preuveSecondes qui suivent le /login (un rapport signé avec le défi de la connexion). Un programme qui imite le",
+                "launcher sans son Gardien, ou un jeu qui transmet un rapport qu'il n'a pas reçu du launcher (signature fausse),",
+                "n'y arrive pas. \"refuser\" : connexion refusée avec un message clair (relancer depuis le launcher et le laisser",
+                "ouvert) ; \"alerte\" : alerte « Gardien » seulement. Après cette première preuve, un launcher qui se tait reste",
+                "une alerte « Gardien muet » (jamais d'expulsion en pleine partie : une déconnexion en combat tue).")
+                .defineInList("preuveExigee", "refuser", List.of("alerte", "refuser"));
+        GARDIEN_PREUVE_SECONDES = b.comment("Délai pour la première preuve du Gardien après le /login (secondes). Un launcher",
+                "honnête la donne en 15 à 40 s (un rapport toutes les 10 à 20 s, défi envoyé dès le /login).")
+                .defineInRange("preuveSecondes", 120, 45, 600);
         b.pop();
 
         b.comment("Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent",

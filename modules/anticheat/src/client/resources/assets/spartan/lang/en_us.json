@@ -12,5 +12,7 @@
   "spartan.expulsion.identifiant": "[Spartan] Missing client identifier.",
   "spartan.expulsion.controle": "[Spartan] Kicked: %s",
   "spartan.expulsion.capture": "Connection refused: accept the anti-cheat screenshots in the HeraliZ launcher.\n(Update the launcher, then click « I allow it and play ».)",
-  "spartan.expulsion.gardien": "Launch the game from the up-to-date HeraliZ launcher (launcher anti-cheat required)."
+  "spartan.expulsion.gardien": "Launch the game from the up-to-date HeraliZ launcher (launcher anti-cheat required).",
+  "spartan.expulsion.launcher_ancien": "Your HeraliZ launcher is out of date.\nClose it completely and open it again: it updates itself (otherwise, download it again from heraliz.fr). Then start the game from the launcher.",
+  "spartan.expulsion.launcher_preuve": "Connection refused: the HeraliZ launcher is not responding (its anti-cheat must stay open while you play).\nClose the game, start it again from the up-to-date HeraliZ launcher and keep the launcher open. If it happens again, contact the staff."
 }

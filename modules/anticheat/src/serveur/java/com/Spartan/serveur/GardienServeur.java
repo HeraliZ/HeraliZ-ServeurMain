@@ -34,8 +34,10 @@ import net.minecraftforge.common.util.FakePlayer;
  *   Gardien, ancien launcher) et « Gardien muet » (plus de rapport prouvé et frais : launcher fermé de force, ou jeu
  *   modifié qui ne transmet plus ou transmet de vieux rapports).</li>
  * </ul>
- * Une alerte par fait et par connexion ; jamais d'expulsion, sauf {@code required} (jeu lancé sans Gardien) et
- * {@code ancienLauncher = "refuser"}.
+ * Une alerte par fait et par connexion ; jamais d'expulsion, sauf {@code required} (jeu lancé sans Gardien),
+ * {@code ancienLauncher = "refuser"} et {@code preuveExigee = "refuser"} (03/11 : un launcher 1.16 ou plus récent doit
+ * prouver qu'il veille juste après le /login, sinon c'est un launcher modifié ou imité ; refus de connexion propre, avec
+ * un message clair). Programme d'injection vu par le Gardien : expulsion ({@link com.Spartan.integrity.Injection}).
  */
 public final class GardienServeur {
     private GardienServeur() {
@@ -51,6 +53,8 @@ public final class GardienServeur {
         /** Dernier paquet reçu, dernier rapport prouvé et frais (la preuve que le Gardien veille). */
         long dernier, dernierFrais;
         boolean absent, muet, lectureSignalee, ancienSignale;
+        /** Première preuve du Gardien (03/11) : refus déjà décidé pour cette connexion. */
+        boolean preuveRefusee;
         /** Dernières alertes « Gardien muet » (rapport muet, silence) : redites toutes les 10 min, pas une seule fois. */
         long muetA, silenceA;
         int jars;
@@ -145,8 +149,9 @@ public final class GardienServeur {
                 e.absent = true;
                 if (SpartanConfig.GARDIEN_REQUIRED.get()) {
                     Spartan.LOGGER.info("[Spartan] {} refusé : jeu lancé sans le Gardien du launcher.", nom);
-                    player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.gardien",
-                            "Lancez le jeu depuis le launcher HeraliZ à jour (anticheat du launcher requis)."));
+                    CheckManager.flag("Launcher", player, "connexion refusée : jeu lancé sans le Gardien du launcher"
+                            + " (launcher plus ancien que 1.14 ou launcher imité) ; invité à mettre le launcher à jour");
+                    player.connection.disconnect(launcherAncien());
                     return;
                 }
                 CheckManager.flag("Gardien", player, "jeu lancé sans le Gardien du launcher (launcher plus ancien que 1.14.0"
@@ -162,6 +167,13 @@ public final class GardienServeur {
             }
             case INVALIDE -> {
                 String raison = court(v.raison());
+                // avant toute preuve, un rapport signé avec une autre clé que celle du jeton (ou un « sans Gardien » démenti
+                // par le jeton) : launcher imité ou jeu qui fabrique ses rapports. Refus propre (03/11).
+                if (e.dernierFrais == 0 && (raison.equals("signature") || raison.equals("absent"))
+                        && juge.lien() == GardienJuge.Lien.PROUVE && refuserPreuve(player, e, "rapport du Gardien refusé ("
+                        + raison + ") avant toute preuve : " + explication(raison))) {
+                    return;
+                }
                 if (e.invalides.add(raison)) {
                     CheckManager.flag("Gardien", player, "rapport du launcher refusé par le serveur (" + raison + ") : "
                             + explication(raison));
@@ -240,6 +252,7 @@ public final class GardienServeur {
         long silence = SpartanConfig.GARDIEN_SILENCE_SECONDS.get() * 1000L;
         long dureeDefi = SpartanConfig.GARDIEN_DEFI_SECONDS.get() * 1000L;
         List<ServerPlayer> anciens = null;
+        sansPreuve.clear();
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             if (fictif(p)) {
                 continue;
@@ -250,6 +263,12 @@ public final class GardienServeur {
             }
             Etat e = ETATS.computeIfAbsent(p.getUUID(), u -> new Etat());
             GardienJuge juge = JUGES.get(p.getUUID());
+            // launcher 1.16 ou plus récent : première preuve exigée dans le délai (03/11)
+            if (juge != null && juge.lien() == GardienJuge.Lien.PROUVE && e.dernierFrais == 0 && !e.preuveRefusee
+                    && now - e.arrivee > SpartanConfig.GARDIEN_PREUVE_SECONDES.get() * 1000L) {
+                sansPreuve.add(p); // refusé hors de la boucle (un refus retire le joueur de la liste)
+                e.preuveRefusee = true;
+            }
             if (juge != null) {
                 String defi = juge.defiAEnvoyer(now, dureeDefi);
                 if (defi != null) {
@@ -287,6 +306,58 @@ public final class GardienServeur {
         if (anciens != null) {
             anciens.forEach(GardienServeur::ancienLauncher); // hors de la boucle : un refus peut retirer un joueur
         }
+        for (ServerPlayer p : sansPreuve) {
+            Etat e = ETATS.get(p.getUUID());
+            if (e != null && !p.hasDisconnected()) {
+                e.preuveRefusee = false;
+                refuserPreuve(p, e, "aucun rapport signé du Gardien avec le défi de la connexion "
+                        + SpartanConfig.GARDIEN_PREUVE_SECONDES.get() + " s après le /login (" + detailSilence(e) + ")");
+            }
+        }
+        sansPreuve.clear();
+    }
+
+    /** Joueurs à refuser faute de première preuve (rempli et vidé à chaque passage, fil du serveur). */
+    private static final List<ServerPlayer> sansPreuve = new ArrayList<>();
+
+    private static String detailSilence(Etat e) {
+        if (e.dernier == 0) {
+            return "aucun rapport transmis par le jeu : launcher imité, Gardien arrêté, ou jeu qui ne le transmet pas";
+        }
+        if (e.muet) {
+            return "le jeu ne trouve pas de rapport lisible du launcher";
+        }
+        return "rapports reçus mais jamais frais ni prouvés : vieux rapports rejoués ou défi jamais transmis au launcher";
+    }
+
+    /**
+     * Première preuve du Gardien manquante ou fausse (launcher 1.16 ou plus récent) : refus propre selon
+     * {@code preuveExigee}, sinon alerte. @return vrai si le joueur a été refusé.
+     */
+    private static boolean refuserPreuve(ServerPlayer p, Etat e, String raison) {
+        if (e.preuveRefusee) {
+            return false;
+        }
+        e.preuveRefusee = true;
+        boolean refuser = "refuser".equals(SpartanConfig.GARDIEN_PREUVE_EXIGEE.get());
+        CheckManager.flag("Launcher", p, (refuser ? "connexion refusée : " : "") + "launcher non conforme — " + raison
+                + " (launcher modifié ou imité, ou launcher fermé dès le lancement)");
+        if (!refuser) {
+            return false;
+        }
+        Spartan.LOGGER.info("[Spartan] {} refusé : Gardien du launcher sans preuve ({}).", p.getName().getString(), raison);
+        p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.launcher_preuve",
+                "Connexion refusée : le launcher HeraliZ ne répond pas (son anticheat doit rester ouvert pendant la partie).\n"
+                        + "Ferme le jeu, relance-le depuis le launcher HeraliZ à jour et laisse le launcher ouvert. Si ça"
+                        + " recommence, contacte le staff."));
+        return true;
+    }
+
+    /** Message d'un launcher trop ancien (ou sans Gardien) : se mettre à jour, pas un reproche. */
+    private static Component launcherAncien() {
+        return Component.translatableWithFallback("spartan.expulsion.launcher_ancien",
+                "Ton launcher HeraliZ n'est pas à jour.\nFerme-le complètement puis rouvre-le : il se met à jour tout seul"
+                        + " (sinon, retélécharge-le sur heraliz.fr). Relance ensuite le jeu depuis le launcher.");
     }
 
     /** Jeton sans clé du Gardien (launcher 1.15.x ou plus ancien) : selon {@code ancienLauncher}, et retour en arrière. */
@@ -297,9 +368,8 @@ public final class GardienServeur {
         if ("refuser".equals(regle)) {
             Spartan.LOGGER.info("[Spartan] {} refusé : ancien launcher (Gardien non prouvé).", p.getName().getString());
             CheckManager.flag("Gardien", p, "connexion refusée : ancien launcher, rapports du Gardien non prouvés"
-                    + (retour ? " (avait le launcher à jour)" : ""));
-            p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.gardien",
-                    "Lancez le jeu depuis le launcher HeraliZ à jour (anticheat du launcher requis)."));
+                    + (retour ? " (avait le launcher à jour)" : "") + " ; invité à mettre le launcher à jour");
+            p.connection.disconnect(launcherAncien());
             return;
         }
         if (retour) {

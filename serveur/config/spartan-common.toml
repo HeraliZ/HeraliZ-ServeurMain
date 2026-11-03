@@ -457,8 +457,9 @@
 	#mettent à jour seuls ; un joueur encore sur un ancien launcher donne une alerte « jeu lancé sans Gardien »).
 	enabled = true
 	#true : connexion REFUSÉE si le jeu a été lancé sans le Gardien (launcher plus ancien que 1.14.0,
-	#autre lanceur). Activer une fois le nouveau launcher distribué à tous les joueurs.
-	required = false
+	#autre lanceur), avec le message « ton launcher n'est pas à jour ». Vrai par défaut depuis le 03/11.
+	#HeraliZ (03/11) : true, le launcher 1.16.1 est publié (les launchers se mettent à jour seuls au démarrage).
+	required = true
 	#Sans rapport du Gardien depuis ce temps (launcher fermé de force) : alerte « Gardien muet ».
 	#Range: 30 ~ 3600
 	silenceSeconds = 90
@@ -472,15 +473,30 @@
 	#« Gardien » par connexion ; "refuser" : connexion refusée (« lancez le jeu depuis le launcher à jour »).
 	#Dans tous les cas, un joueur déjà venu avec un Gardien prouvé (30 derniers jours) qui revient avec un ancien
 	#launcher donne une alerte.
-	#HeraliZ (02/11) : "noter" tant que le launcher 1.16.0 n'est pas publié et installé chez les joueurs (sinon une
-	#alerte par connexion) ; à passer à "alerte" une fois le launcher publié (workflow « Launcher HeraliZ », publier).
+	#HeraliZ (03/11) : "refuser" (demande du propriétaire : bloquer un launcher modifié ou imité). Le launcher 1.16.1
+	#est publié ; un ancien launcher officiel lit « ton launcher n'est pas à jour : ferme-le et rouvre-le ». En cas de
+	#souci (beaucoup de joueurs Mac ou .deb pas encore à jour), repasser à "alerte" ici, sans redémarrer.
 	#Allowed Values: noter, alerte, refuser
-	ancienLauncher = "noter"
+	ancienLauncher = "refuser"
 	#Défi du Gardien renouvelé toutes les N secondes : un rapport n'est « frais » que s'il porte le dernier ou
 	#l'avant-dernier défi. Plus bas = rejeu plus court, mais garder au moins 3 fois l'écart entre deux rapports
 	#du launcher (10 à 20 s).
 	#Range: 45 ~ 600
 	defiSeconds = 60
+	#Launcher 1.16 ou plus récent (clé du Gardien liée au jeton) : il doit PROUVER qu'il veille dans les
+	#preuveSecondes qui suivent le /login (un rapport signé avec le défi de la connexion). Un programme qui imite le
+	#launcher sans son Gardien, ou un jeu qui transmet un rapport qu'il n'a pas reçu du launcher (signature fausse),
+	#n'y arrive pas. "refuser" : connexion refusée avec un message clair (relancer depuis le launcher et le laisser
+	#ouvert) ; "alerte" : alerte « Gardien » seulement. Après cette première preuve, un launcher qui se tait reste
+	#une alerte « Gardien muet » (jamais d'expulsion en pleine partie : une déconnexion en combat tue).
+	#HeraliZ (03/11) : en cas de refus à tort (alertes « Launcher … aucun rapport signé » chez des joueurs honnêtes),
+	#repasser à "alerte" ici, sans redémarrer.
+	#Allowed Values: alerte, refuser
+	preuveExigee = "refuser"
+	#Délai pour la première preuve du Gardien après le /login (secondes). Un launcher
+	#honnête la donne en 15 à 40 s (un rapport toutes les 10 à 20 s, défi envoyé dès le /login).
+	#Range: 45 ~ 600
+	preuveSecondes = 120
 
 #Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent
 #(ni zombies, ni PNJ, ni bots). Toujours des ALERTES « Tirs » au staff avec les chiffres, jamais de coup annulé ni
