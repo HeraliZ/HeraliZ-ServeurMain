@@ -24,6 +24,13 @@
 	#joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.
 	#Range: 1.0 ~ 6.0
 	portee_max = 3.0
+	#Portée maximale (en blocs) des couteaux, clic gauche comme clic droit (03/11, choix du propriétaire : 1) : couteaux
+	#TaCZ (M9, Karambit, Butterfly, CT, T) et couteaux de GeckoLib, jamais plus que portee_max. Les couteaux à vie
+	#(armes de mêlée) ont la portée de leur fiche (max_range, 1 depuis le 03/11). Mesurée comme portee_max. Le serveur
+	#refuse tout coup porté avec une arme de corps à corps en main au-delà de sa portée (plus 0,4 pour le décalage du
+	#réseau), même un coup de Minecraft envoyé par un jeu modifié.
+	#Range: 0.5 ~ 6.0
+	portee_couteaux = 1.0
 	#Demi-angle (en degrés) autour du regard du joueur dans lequel le serveur accepte une cible des armes de mêlée :
 	#le cône du coup plus la marge du regard en retard (réseau). Plus petit : moins de coups acceptés sur le côté ou
 	#dans le dos, mais des coups refusés aux joueurs qui ont du décalage. 100 : réglage d'origine.

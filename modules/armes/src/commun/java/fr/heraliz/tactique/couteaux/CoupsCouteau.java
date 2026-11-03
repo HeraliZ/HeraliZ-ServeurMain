@@ -27,8 +27,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    un joueur à terre : rien (Réanimation : réanimer ou fouiller, comme avant) ;</li>
  *    <li>dégâts : (attaque du joueur, 1 à mains nues, + {@code degats}) pour le coup rapide, ×{@code multiplicateur_lourd}
  *    pour le coup puissant, comme les coups de LR (coup critique en tombant, recul, temps d'invincibilité de la cible) ;
- *    cibles : tout être vivant dans un cône devant les yeux (portée : {@code portee_max} de la section {@code [melee]},
- *    commune à toutes les armes de corps à corps, {@link PorteeMelee} ; {@code angle_rapide} / {@code angle_lourd}, vue
+ *    cibles : tout être vivant dans un cône devant les yeux (portée : {@code portee_couteaux} de la section {@code [melee]},
+ *    1 bloc depuis le 03/11, {@link PorteeMelee#couteaux} ; {@code angle_rapide} / {@code angle_lourd}, vue
  *    dégagée), plusieurs à la fois comme avec LR ;</li>
  *    <li>coup rapide : animation « melee_push » du couteau et son bruit (ceux de la touche « Mêlée » de TaCZ, comme
  *    avant la 2.16.0) ; coup puissant (16/10) : animation HeraliZ où le couteau tourne avec le geste du bras. Knife CT
@@ -120,11 +120,12 @@ public final class CoupsCouteau {
    }
 
    /**
-    * Portée en blocs, des yeux au point le plus proche de la cible : celle de toutes les armes de corps à corps
-    * ({@code [melee] portee_max}, 3 : la portée d'un coup de Minecraft, que l'anticheat Spartan tolère).
+    * Portée en blocs, des yeux au point le plus proche de la cible : celle des couteaux ({@code [melee] portee_couteaux},
+    * 1 depuis le 03/11, choix du propriétaire ; avant : {@code portee_max}, 3), coup rapide comme coup puissant. Le serveur
+    * choisit les cibles avec elle.
     */
    public static double portee() {
-      return PorteeMelee.max();
+      return PorteeMelee.couteaux();
    }
 
    /** Ouverture du cône, en degrés (la moitié de chaque côté du regard). */

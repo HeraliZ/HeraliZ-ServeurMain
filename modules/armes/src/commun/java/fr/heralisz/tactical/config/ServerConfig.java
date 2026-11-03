@@ -20,6 +20,8 @@ public class ServerConfig {
    public static IntValue MELEE_MAX_TARGET_PER_PACKET;
    /** HeraliZ : portée maximale de toutes les armes de corps à corps de Tactique (fr.heraliz.tactique.melee.PorteeMelee). */
    public static DoubleValue MELEE_PORTEE_MAX;
+   /** HeraliZ (03/11) : portée des couteaux TaCZ et GeckoLib, vérifiée par le serveur à chaque coup (PorteeMelee.couteaux). */
+   public static DoubleValue MELEE_PORTEE_COUTEAUX;
    /** HeraliZ (audit du 02/11, mineur 20) : demi-angle accepté par le serveur autour du regard (MeleeItemServeur). */
    public static DoubleValue MELEE_DEMI_ANGLE;
    /** HeraliZ (audit du 02/11, mineur 20) : attente des camos à vie après une mort avec l'arme (CamosAVie). */
@@ -78,6 +80,13 @@ public class ServerConfig {
             "Au-delà d'environ 3,6, l'anticheat Spartan (reachDistance 3,3 + marge) annule le coup, bloque les coups du",
             "joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.")
          .defineInRange("portee_max", PorteeMelee.DEFAUT, 1.0, 6.0);
+      MELEE_PORTEE_COUTEAUX = builder.comment(
+            "Portée maximale (en blocs) des couteaux, clic gauche comme clic droit (03/11, choix du propriétaire : 1) : couteaux",
+            "TaCZ (M9, Karambit, Butterfly, CT, T) et couteaux de GeckoLib, jamais plus que portee_max. Les couteaux à vie",
+            "(armes de mêlée) ont la portée de leur fiche (max_range, 1 depuis le 03/11). Mesurée comme portee_max. Le serveur",
+            "refuse tout coup porté avec une arme de corps à corps en main au-delà de sa portée (plus 0,4 pour le décalage du",
+            "réseau), même un coup de Minecraft envoyé par un jeu modifié.")
+         .defineInRange("portee_couteaux", PorteeMelee.DEFAUT_COUTEAUX, 0.5, 6.0);
       MELEE_DEMI_ANGLE = builder.comment(
             "Demi-angle (en degrés) autour du regard du joueur dans lequel le serveur accepte une cible des armes de mêlée :",
             "le cône du coup plus la marge du regard en retard (réseau). Plus petit : moins de coups acceptés sur le côté ou",

@@ -3,8 +3,8 @@
 Couteaux du pack « CS2 Knifes Pack » (gunpack cs2_wt de LR Tactical, 21/10, choix du propriétaire : WT Skeleton, WT Push,
 WT Stiletto) : recopiés dans heralisz_melee sous les noms cs2_skeleton, cs2_push, cs2_stiletto (modèle, texture, icône,
 animations, sons, machine d'états du Skeleton), fiche réglée comme nos armes de mêlée (1,2 s entre deux coups, clic gauche
-comme clic droit ; portée ramenée à 3 blocs par le serveur ; vitesse en main : +10 % depuis le 03/11, écrite dans la
-fiche de chaque skin par skins_couteaux.py, VITESSE_COUTEAUX), affichage en 3e personne et sons de
+comme clic droit ; portée 1 bloc et vitesse en main +10 % depuis le 03/11, écrites dans la
+fiche de chaque skin par skins_couteaux.py, PORTEE_COUTEAUX et VITESSE_COUTEAUX), affichage en 3e personne et sons de
 coup de la Dague TAC. Pas d'arme sans skin dans le jeu : les fiches vont dans outils/melee_base/, les skins (27, rendus
 validés le 21/10) sont écrits par skins_couteaux.py. Usage : python couteaux_cs2.py <dossier dézippé du pack> (relance sans danger).
 """

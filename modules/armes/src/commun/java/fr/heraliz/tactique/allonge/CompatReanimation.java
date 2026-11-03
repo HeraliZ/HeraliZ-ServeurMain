@@ -23,8 +23,29 @@ public final class CompatReanimation {
    private static volatile boolean cherche;
    private static volatile MethodHandle aTerre;
    private static volatile MethodHandle occupe;
+   /** {@code fr.heraliz.reanimation.execution.ExecutionsCommun.probing()} : coup d'essai d'une exécution en cours. */
+   private static volatile MethodHandle essai;
 
    private CompatReanimation() {
+   }
+
+   /**
+    * Vrai pendant le coup d'essai d'une exécution de Réanimation (Executions.canHurt, serveur) : ce n'est pas un vrai coup,
+    * nos refus ne s'y appliquent pas (03/11 : portée des couteaux). Faux si le mod est absent.
+    */
+   public static boolean essaiExecution() {
+      if (!cherche) {
+         chercher();
+      }
+      MethodHandle m = essai;
+      if (m == null) {
+         return false;
+      }
+      try {
+         return (boolean) m.invokeExact();
+      } catch (Throwable e) {
+         return false;
+      }
    }
 
    /** Vrai si ce joueur est à terre (Réanimation) ; faux si le mod est absent. */
@@ -65,6 +86,13 @@ public final class CompatReanimation {
             MethodType type = MethodType.methodType(boolean.class, Entity.class);
             aTerre = MethodHandles.publicLookup().findStatic(api, "isDowned", type);
             occupe = MethodHandles.publicLookup().findStatic(api, "isActing", type);
+            try {
+               essai = MethodHandles.publicLookup().findStatic(Class.forName("fr.heraliz.reanimation.execution.ExecutionsCommun"),
+                  "probing", MethodType.methodType(boolean.class));
+            } catch (ReflectiveOperationException | LinkageError e) {
+               LOG.warn("[heraliz_tactique] Réanimation sans ExecutionsCommun.probing() : la portée des couteaux s'applique aussi"
+                  + " aux coups d'essai des exécutions ({})", e.toString());
+            }
          }
       } catch (ReflectiveOperationException | LinkageError e) {
          LOG.warn("[heraliz_tactique] Réanimation présente mais sans son API Downed : s'allonger ne voit pas les joueurs à terre ({})",

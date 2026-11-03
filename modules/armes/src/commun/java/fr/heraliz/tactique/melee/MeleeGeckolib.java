@@ -3,11 +3,13 @@ package fr.heraliz.tactique.melee;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -28,8 +30,21 @@ public final class MeleeGeckolib {
    private static final String NAMESPACE = "geckolib";
    /** Part des dégâts gardée (total du coup, joueur compris). */
    public static final double FACTEUR = 0.5;
+   /**
+    * Couteaux de geckolib222 (couteau de cuisine, couteaux à éviscérer 1 à 5, baïonnettes) : portée des couteaux
+    * (PorteeMelee.couteaux, 03/11). Ni dans le loot ni en vente aujourd'hui (staff seulement) ; la machette n'est pas un
+    * couteau.
+    */
+   private static final Set<String> COUTEAUX = Set.of("knife", "gut_knife_1", "gut_knife_2", "gut_knife_3", "gut_knife_4",
+      "gut_knife_5", "bayonet_knife", "bayonet_knife_2");
 
    private MeleeGeckolib() {
+   }
+
+   /** L'objet est-il un couteau de geckolib222 ? */
+   public static boolean estCouteau(ItemStack stack) {
+      ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+      return id != null && NAMESPACE.equals(id.getNamespace()) && COUTEAUX.contains(id.getPath());
    }
 
    public static void init() {

@@ -30,5 +30,7 @@ public final class ServeurTactique implements Partie {
       JambeCasseeServeur.brancher();
       // balles de TaCZ : toujours actives pour Spigot, retirées dès qu'elles ne tournent plus (01/11)
       BallesEnVol.brancher();
+      // portée des armes de corps à corps vérifiée à chaque coup porté, couteaux à 1 bloc (03/11)
+      PorteeMeleeServeur.brancher();
    }
 }

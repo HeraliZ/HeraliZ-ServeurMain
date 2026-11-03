@@ -531,11 +531,28 @@ VITESSE_COUTEAUX = 0.1
 VITESSE_EN_MAIN = {"baseball_bat": 0.05}
 
 
-def vitesse_en_main(couteau, fiche):
-    """Bonus de vitesse en main de l'arme (VITESSE_EN_MAIN, sinon VITESSE_COUTEAUX) écrit dans la fiche."""
-    attributs = fiche.setdefault("data", OrderedDict()).setdefault("attributes", OrderedDict())
+# Portée des coups (max_range de la zone de chaque coup, des yeux au point le plus proche de la cible) : 03/11, demande
+# du propriétaire, tous les couteaux à 1 bloc au plus, clic gauche comme clic droit (avant : 4 à 4,5 dans les fiches,
+# ramenés à 3 par [melee] portee_max). La batte (PORTEE_A_PART) garde sa fiche. Le joueur choisit ses cibles avec cette
+# portée et le serveur la revérifie (MeleeItemServeur, PorteeMeleeServeur) ; les couteaux TaCZ ont la même dans
+# [melee] portee_couteaux de heralisz_tactical-server.toml.
+PORTEE_COUTEAUX = 1.0
+PORTEE_A_PART = {"baseball_bat"}
+
+
+def reglages_en_main(couteau, fiche):
+    """Bonus de vitesse en main (VITESSE_EN_MAIN, sinon VITESSE_COUTEAUX) et, pour un couteau, portée de chaque coup
+    (PORTEE_COUTEAUX), écrits dans la fiche."""
+    data = fiche.setdefault("data", OrderedDict())
+    attributs = data.setdefault("attributes", OrderedDict())
     attributs["minecraft:generic.movement_speed"] = OrderedDict(
         [("amount", VITESSE_EN_MAIN.get(couteau, VITESSE_COUTEAUX)), ("operation", "percent")])
+    if couteau not in PORTEE_A_PART:
+        for coups in data.get("attack", {}).values():
+            for coup in (coups if isinstance(coups, list) else [coups]):
+                if "hitbox" not in coup:
+                    sys.exit("[skins_couteaux] %s : coup sans zone (hitbox), portée impossible à régler" % couteau)
+                coup["hitbox"]["max_range"] = PORTEE_COUTEAUX
     return fiche
 
 
@@ -718,7 +735,7 @@ def ecrire_objets():
             fiche["name"] = "item.heralisz_melee.%s" % cle
             fiche = OrderedDict([("name", fiche["name"]), ("tooltip", "item.heralisz_melee.%s.desc" % cle)]
                                 + [(a, b) for a, b in fiche.items() if a not in ("name", "tooltip")])
-            ecrire_json(MELEE_DATA / (cle + ".json"), vitesse_en_main(couteau, fiche))
+            ecrire_json(MELEE_DATA / (cle + ".json"), reglages_en_main(couteau, fiche))
             m = MELEE[couteau]
             geo, tex = m if isinstance(m, tuple) else (m + "_geo", m + "_uv")
             affichage = lire_json(MELEE_ASSETS / "display" / "melee" / (couteau + ".json"))
