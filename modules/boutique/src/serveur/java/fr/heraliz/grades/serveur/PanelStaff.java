@@ -91,6 +91,8 @@ final class PanelStaff {
         ReseauStaff.RECEPTION_AGIR.brancher(r -> agir(r.joueur(), r.message()));
         ReseauStaff.RECEPTION_PERMISSION.brancher(r -> permission(r.joueur(), r.message()));
         ReseauStaff.RECEPTION_PERMISSION_COMMANDE.brancher(r -> permissionCommande(r.joueur(), r.message()));
+        // 03/11 : onglet Économie (Fondateur) : hérals, clés, Points Boutique, points de saison et XP des clans
+        PanelEconomie.brancher();
         CommandesDonnees.brancher();
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> CONNEXION.put(e.getEntity().getUUID(), System.currentTimeMillis()));
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
@@ -108,6 +110,7 @@ final class PanelStaff {
         GRADES_DONNES.clear();
         MUETS.clear();
         AVANT_SPECTATEUR.clear();
+        PanelEconomie.vider();
     }
 
     static void arreter() {
@@ -115,6 +118,7 @@ final class PanelStaff {
         CommandesDonnees.arreter();
         JournalStaff.arreter();
         CONNEXION.clear();
+        PanelEconomie.vider();
     }
 
     // ------------------------------------------------------------------ droits
@@ -186,12 +190,13 @@ final class PanelStaff {
         long maintenant = System.currentTimeMillis();
         MUETS.values().removeIf(fin -> fin < maintenant);
         ReseauStaff.Etat e = new ReseauStaff.Etat(ouvrir, rang, gradeAffiche(p, rang), permises, fonda ? PermsStaff.tous() : Map.of(), grades,
-                JournalStaff.recentes(60), new ArrayList<>(MUETS.keySet()), message, ok, fonda ? CommandesDonnees.tous() : Map.of());
+                JournalStaff.recentes(60), new ArrayList<>(MUETS.keySet()), message, ok, fonda ? CommandesDonnees.tous() : Map.of(),
+                fonda ? PanelEconomie.clans() : List.of());
         ReseauStaff.CANAL.send(PacketDistributor.PLAYER.with(() -> p), e);
     }
 
     /** Réponse à une action : clé de texte {@code heraliz_grades.staff.msg.<cle>} et ses arguments (séparés par « | »). */
-    private static void repondre(ServerPlayer p, boolean ok, String cle, Object... args) {
+    static void repondre(ServerPlayer p, boolean ok, String cle, Object... args) {
         StringBuilder b = new StringBuilder(cle);
         for (Object a : args) b.append('|').append(String.valueOf(a).replace('|', '/'));
         envoyer(p, rang(p), false, b.toString(), ok);

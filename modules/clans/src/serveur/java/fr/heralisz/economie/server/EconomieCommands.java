@@ -280,52 +280,115 @@ public final class EconomieCommands {
             return 0;
         }
         if (!authentifie(src)) return echec(src, "admin.login");
-        // joueur connecté (pseudo exact) d'abord, sinon un compte connu (dernier pseudo vu)
-        ServerPlayer enLigne = null;
-        for (ServerPlayer p : s.server().getPlayerList().getPlayers()) {
-            if (p.getGameProfile().getName().equalsIgnoreCase(saisi)) enLigne = p;
-        }
-        UUID u = enLigne != null ? enLigne.getUUID() : s.resoudre(saisi);
-        if (u == null) return echec(src, "joueur_introuvable", saisi);
-        String n = enLigne != null ? enLigne.getGameProfile().getName() : s.nomDe(u);
-        if (enLigne != null) s.compte(u, n);
         String auteur = src.getEntity() instanceof ServerPlayer p ? p.getGameProfile().getName() : "console";
-        String libre = motif == null ? "" : motif.replace('\n', ' ').replace('\r', ' ').strip();
-        if (libre.length() > 80) libre = libre.substring(0, 80);
-        String m = "admin:" + auteur + (libre.isEmpty() ? "" : ":" + libre);
-        long avant = EconomieApi.solde(u), max = EconomieApi.maxSolde();
-        boolean fait;
-        switch (op) {
-            case DONNER -> {
-                if (avant + montant > max) return echec(src, "admin.plafond", nom(n), montant(max));
-                EconomieApi.deposer(u, montant, m);
-                fait = true;
+        // prévenu seulement d'un geste du staff (pas des récompenses jouées par la console : caisses, votes)
+        ResultatPanel r = faire(s, auteur, op, saisi, montant, motif, src.getEntity() instanceof ServerPlayer);
+        String n = r.nom();
+        switch (r.code()) {
+            case "introuvable" -> {
+                return echec(src, "joueur_introuvable", saisi);
             }
-            case RETIRER -> {
+            case "plafond" -> {
+                return echec(src, "admin.plafond", nom(n), montant(r.plafond()));
+            }
+            case "insuffisant" -> {
                 // jamais de solde négatif : refusé s'il n'a pas assez (rien ne change)
-                if (!EconomieApi.retirer(u, montant, m)) return echec(src, "admin.retirer_echec", nom(n), montant(avant));
-                fait = true;
+                return echec(src, "admin.retirer_echec", nom(n), montant(r.avant()));
+            }
+            case "definir" -> {
+                return echec(src, "admin.definir_echec", montant(r.plafond()));
             }
             default -> {
-                if (!EconomieApi.definir(u, montant, m)) return echec(src, "admin.definir_echec", montant(max));
-                fait = true;
             }
         }
-        long apres = EconomieApi.solde(u);
+        long apres = r.apres();
         switch (op) {
             case DONNER -> repondre(src, () -> msg("admin.donner", nom(n), montant(montant), montant(apres)), true);
             case RETIRER -> repondre(src, () -> msg("admin.retirer", nom(n), montant(montant), montant(apres)), true);
             default -> repondre(src, () -> msg("admin.definir", nom(n), montant(apres)), true);
         }
+        return 1;
+    }
+
+    /**
+     * Résultat d'une opération d'admin sur les hérals, partagé par {@code /eco} et le panel du staff de HeraliZ Grades
+     * (onglet Économie, 03/11) : {@code code} = « ok », « introuvable » (aucun compte à ce pseudo), « plafond » (le solde
+     * dépasserait {@code plafond}), « insuffisant » (pas assez à retirer : {@code avant}), « definir » (solde refusé),
+     * « indisponible » (comptes pas chargés), « refuse » (pas op 4, ou montant hors bornes) ; identifiant (null : aucun
+     * compte) et pseudo du compte, solde avant et après. Le panel s'en sert aussi pour trouver un joueur absent (compte de
+     * clés).
+     */
+    public record ResultatPanel(String code, @Nullable UUID uuid, String nom, long avant, long apres, long plafond) {
+    }
+
+    /**
+     * Cœur de {@code /eco donner|retirer|definir} : joueur connecté (pseudo exact) d'abord, sinon un compte connu (dernier
+     * pseudo vu) ; plafond du solde, jamais de solde négatif ; journal du compte, journal du serveur et journal_admin.log ;
+     * le joueur connecté est prévenu si {@code prevenir}.
+     */
+    private static ResultatPanel faire(ComptesStore s, String auteur, Op op, String saisi, long montant, @Nullable String motif, boolean prevenir) {
+        ServerPlayer enLigne = null;
+        for (ServerPlayer p : s.server().getPlayerList().getPlayers()) {
+            if (p.getGameProfile().getName().equalsIgnoreCase(saisi)) enLigne = p;
+        }
+        UUID u = enLigne != null ? enLigne.getUUID() : s.resoudre(saisi);
+        if (u == null) return new ResultatPanel("introuvable", null, saisi, 0, 0, 0);
+        String n = enLigne != null ? enLigne.getGameProfile().getName() : s.nomDe(u);
+        if (enLigne != null) s.compte(u, n);
+        String libre = motif == null ? "" : motif.replace('\n', ' ').replace('\r', ' ').strip();
+        if (libre.length() > 80) libre = libre.substring(0, 80);
+        String m = "admin:" + auteur + (libre.isEmpty() ? "" : ":" + libre);
+        long avant = EconomieApi.solde(u), max = EconomieApi.maxSolde();
+        switch (op) {
+            case DONNER -> {
+                if (avant + montant > max) return new ResultatPanel("plafond", u, n, avant, avant, max);
+                EconomieApi.deposer(u, montant, m);
+            }
+            case RETIRER -> {
+                if (!EconomieApi.retirer(u, montant, m)) return new ResultatPanel("insuffisant", u, n, avant, avant, max);
+            }
+            default -> {
+                if (!EconomieApi.definir(u, montant, m)) return new ResultatPanel("definir", u, n, avant, avant, max);
+            }
+        }
+        long apres = EconomieApi.solde(u);
         noterAdmin(s, auteur, op, n, u, montant, avant, apres, libre);
-        // prévenu seulement d'un geste du staff (pas des récompenses jouées par la console : caisses, votes)
-        if (enLigne != null && apres != avant && src.getEntity() instanceof ServerPlayer) {
+        if (enLigne != null && apres != avant && prevenir) {
             long delta = apres - avant;
             enLigne.sendSystemMessage(Component.translatableWithFallback(delta > 0 ? "economie.msg.admin.recu" : "economie.msg.admin.perdu",
                     delta > 0 ? "Le staff t'a crédité de %s (solde : %s)." : "Le staff t'a retiré %s (solde : %s).",
                     montant(Math.abs(delta)), montant(apres)));
         }
-        return fait ? 1 : 0;
+        return new ResultatPanel("ok", u, n, avant, apres, max);
+    }
+
+    /**
+     * Panel du staff de HeraliZ Grades (onglet Économie, 03/11) : la même opération que {@code /eco donner|retirer}, au nom
+     * de ce membre du staff (le panel a vérifié le Fondateur connecté sur AuthMe ; l'op 4 et les bornes sont revérifiés
+     * ici) : 1 à {@link #MAX_OPERATION} hérals, plafond du solde, motif, journal_admin.log, joueur prévenu. Appelée
+     * directement par HeraliZ Grades (même fabrication) : ne pas renommer sans changer le panel.
+     */
+    public static ResultatPanel panel(ServerPlayer staff, boolean retirer, String joueur, long montant, String motif) {
+        ComptesStore s = ComptesStore.get();
+        if (s == null) return new ResultatPanel("indisponible", null, joueur, 0, 0, 0);
+        if (staff == null || !staff.hasPermissions(4) || montant < 1 || montant > MAX_OPERATION) {
+            return new ResultatPanel("refuse", null, joueur, 0, 0, MAX_OPERATION);
+        }
+        return faire(s, staff.getGameProfile().getName(), retirer ? Op.RETIRER : Op.DONNER, joueur, montant, "[panel] " + motif, true);
+    }
+
+    /** Solde d'un compte (pseudo d'un joueur connecté ou compte connu) pour le panel du staff, sans rien changer. */
+    public static ResultatPanel soldePanel(String joueur) {
+        ComptesStore s = ComptesStore.get();
+        if (s == null) return new ResultatPanel("indisponible", null, joueur, 0, 0, 0);
+        ServerPlayer enLigne = null;
+        for (ServerPlayer p : s.server().getPlayerList().getPlayers()) {
+            if (p.getGameProfile().getName().equalsIgnoreCase(joueur)) enLigne = p;
+        }
+        UUID u = enLigne != null ? enLigne.getUUID() : s.resoudre(joueur);
+        if (u == null) return new ResultatPanel("introuvable", null, joueur, 0, 0, 0);
+        long v = EconomieApi.solde(u);
+        return new ResultatPanel("ok", u, enLigne != null ? enLigne.getGameProfile().getName() : s.nomDe(u), v, v, EconomieApi.maxSolde());
     }
 
     /** Journal des opérations d'admin : une ligne par opération, à côté de comptes.json, jamais réécrit. */

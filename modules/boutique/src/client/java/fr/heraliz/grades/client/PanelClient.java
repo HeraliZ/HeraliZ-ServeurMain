@@ -31,6 +31,7 @@ public final class PanelClient {
         MinecraftForge.EVENT_BUS.addListener(PanelClient::tick);
         ReseauStaff.RECEPTION_ETAT.brancher(EcranStaff::recevoir);
         ReseauStaff.RECEPTION_FICHE.brancher(EcranStaff::recevoirFiche);
+        ReseauStaff.RECEPTION_SOLDE.brancher(EcranStaff::recevoirSolde);
         ReseauStaff.RECEPTION_VIDER.brancher(m -> Minecraft.getInstance().gui.getChat().clearMessages(false));
     }
 

@@ -55,10 +55,19 @@ public enum ActionStaff {
     ANALYSER("analyser", Onglet.SERVEUR, "performances", false, 4, false, false, null, false),
     NETTOYER_SOL("nettoyer_sol", Onglet.SERVEUR, "nettoyage", false, 3, false, false, null, false),
     NETTOYER_CORPS("nettoyer_corps", Onglet.SERVEUR, "nettoyage", false, 4, true, false, null, false),
-    NETTOYER_ZOMBIES("nettoyer_zombies", Onglet.SERVEUR, "nettoyage", false, 3, false, false, null, false);
+    NETTOYER_ZOMBIES("nettoyer_zombies", Onglet.SERVEUR, "nettoyage", false, 3, false, false, null, false),
+    // ---------- économie (03/11, demande du propriétaire) : Fondateur seulement, jamais réglable ; la cible (pseudo ou tag de
+    // clan), le montant et le sens (donner / retirer) sont choisis dans l'onglet et revérifiés par le serveur
+    // (PanelEconomie) ; ce que fait chaque action : OperationEco. Ajouter une action : ici à la suite, puis OperationEco,
+    // PanelEconomie et les textes.
+    ECO_HERALS("eco_herals", Onglet.ECONOMIE, "joueur", false, 5, true, true, null, true),
+    ECO_CLES("eco_cles", Onglet.ECONOMIE, "joueur", false, 5, true, true, List.of("vote", "quete", "event", "gemme", "camo", "spectacle"), true),
+    ECO_PB("eco_pb", Onglet.ECONOMIE, "joueur", false, 5, true, true, null, true),
+    ECO_SAISON("eco_saison", Onglet.ECONOMIE, "clan", false, 5, true, true, List.of("pve", "pvp", "events"), true),
+    ECO_XP_CLAN("eco_xp_clan", Onglet.ECONOMIE, "clan", false, 5, true, true, null, true);
 
     /** Onglets du panel, dans l'ordre (Historique et Permissions viennent après, sans actions). */
-    public enum Onglet { JOUEURS, MODERATION, MONDE, EVENEMENTS, SERVEUR }
+    public enum Onglet { JOUEURS, MODERATION, MONDE, EVENEMENTS, SERVEUR, ECONOMIE }
 
     /** Rangs du staff : 1 Guide … 5 Fondateur. */
     public static final int RANG_MAX = 5;

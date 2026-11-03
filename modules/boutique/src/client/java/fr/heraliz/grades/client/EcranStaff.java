@@ -8,6 +8,7 @@ import fr.heraliz.grades.client.kit.SonsUi;
 import fr.heraliz.grades.reseau.ReseauGrades;
 import fr.heraliz.grades.reseau.ReseauStaff;
 import fr.heraliz.grades.staff.ActionStaff;
+import fr.heraliz.grades.staff.OperationEco;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,7 +38,9 @@ import static fr.heraliz.grades.client.boutique.Trace.a;
  * Panel du staff (touche P, 25/10), maquettes {@code maquettes/staff_chat/1_} à {@code 3_} validées : canevas de 640 x 360
  * unités au style de la boutique (voile sombre sur le monde, verre, accent rouge). Onglets : Joueurs (liste des joueurs en
  * ligne, fiche du joueur choisi, actions sur lui, raison), Modération, Monde, Événements, Serveur (cartes d'actions en
- * trois colonnes), Historique (journal du staff) et Permissions (Fondateur seulement : ce que chaque grade peut faire).
+ * trois colonnes), Économie (03/11, Fondateur seulement : hérals, clés, Points Boutique d'un joueur, points de saison et XP
+ * d'un clan, donnés ou retirés avec un motif et deux clics), Historique (journal du staff) et Permissions (Fondateur
+ * seulement : ce que chaque grade peut faire).
  * <p>
  * L'écran n'affiche que ce que le serveur envoie (actions permises à ce grade) et ne fait que DEMANDER : droits, cible,
  * durée, raison, tout est revérifié par le serveur ({@code PanelStaff}). Les actions lourdes demandent deux clics.
@@ -105,6 +108,20 @@ public final class EcranStaff extends Screen {
     private int ox, oy, sx, sy;
     private final List<Zone> zones = new ArrayList<>();
 
+    // ------------------------------------------------------------------ onglet Économie (03/11, Fondateur)
+    private ActionStaff ecoAction = ActionStaff.ECO_HERALS;
+    /** Cible choisie : pseudo d'un joueur (connecté ou non) ou tag d'un clan ; vide : aucune. */
+    private String ecoCible = "";
+    private final Saisie montant = new Saisie(8), motif = new Saisie(80);
+    /** Fiche de la cible (réponse du serveur) ; demande voulue et dernière envoyée (action|cible|sorte). */
+    private ReseauStaff.SoldeEco solde;
+    private String soldeVoulu = "", soldeDemande = "";
+    private long soldeChange;
+    /** Bouton armé (OperationEco.DONNER ou RETIRER, 0 : aucun) et depuis quand : le second clic dans les 5 s confirme. */
+    private int ecoArme;
+    private long ecoArmeA;
+    private float defEco;
+
     private EcranStaff(ReseauStaff.Etat e) {
         super(Component.translatable("gui.heraliz_grades.staff.titre"));
         etat = e;
@@ -122,6 +139,15 @@ public final class EcranStaff extends Screen {
 
     static void recevoirFiche(ReseauStaff.Fiche f) {
         if (Minecraft.getInstance().screen instanceof EcranStaff s && f.uuid().equals(s.choisi)) s.fiche = f;
+    }
+
+    /** Ce qu'a la cible de l'onglet Économie : gardé seulement s'il répond à la demande en cours. */
+    static void recevoirSolde(ReseauStaff.SoldeEco m) {
+        if (Minecraft.getInstance().screen instanceof EcranStaff s && cleSolde(m.action(), m.cible(), m.option()).equals(s.soldeVoulu)) s.solde = m;
+    }
+
+    private static String cleSolde(String action, String cible, String option) {
+        return action + "|" + cible.toLowerCase(Locale.ROOT) + "|" + option;
     }
 
     private void recevoirEtat(ReseauStaff.Etat e) {
@@ -168,13 +194,17 @@ public final class EcranStaff extends Screen {
         return g != null ? g.couleur : MUTED;
     }
 
-    /** Réponse du serveur : « clé|arg|arg » -> texte dans la langue du joueur. */
+    /**
+     * Réponse du serveur : « clé|arg|arg » -> texte dans la langue du joueur. Un argument « @clé » (03/11 : unités de
+     * l'onglet Économie) est lui-même traduit.
+     */
     private static String lireMessage(String m) {
         String[] p = m.split("\\|", -1);
         Object[] args = new Object[p.length - 1];
         for (int i = 1; i < p.length; i++) {
             ActionStaff a = ActionStaff.parId(p[i]);
-            args[i - 1] = p[0].equals("fait") && a != null ? nomAction(a) : p[i];
+            args[i - 1] = p[0].equals("fait") && a != null ? nomAction(a)
+                    : p[i].startsWith("@") && p[i].length() > 1 ? Component.translatable(p[i].substring(1)).getString() : p[i];
         }
         return Component.translatable("heraliz_grades.staff.msg." + p[0], args).getString();
     }
@@ -323,6 +353,7 @@ public final class EcranStaff extends Screen {
         double x = mx - ox, y = my - oy;
         float pas = (float) -delta * 15;
         if ("joueurs".equals(onglet) && x >= LX && x < LX + LW && y >= HAUT && y < BAS) defListe = Math.max(0, defListe + pas);
+        else if ("economie".equals(onglet) && x >= LX && x < LX + LW && y >= HAUT && y < BAS) defEco = Math.max(0, defEco + pas);
         else if ("historique".equals(onglet)) defHisto = Math.max(0, defHisto + pas);
         else if ("permissions".equals(onglet)) defPerms = Math.max(0, defPerms + pas);
         else if ("commandes".equals(onglet)) defCmds = Math.max(0, defCmds + pas);
@@ -342,6 +373,7 @@ public final class EcranStaff extends Screen {
         if (focus != null) {
             if (key == GLFW.GLFW_KEY_BACKSPACE) {
                 if (!focus.v.isEmpty()) focus.v = focus.v.substring(0, focus.v.offsetByCodePoints(focus.v.length(), -1));
+                if (focus == montant || focus == motif) ecoArme = 0;
                 return true;
             }
             if (key == GLFW.GLFW_KEY_V && (mods & GLFW.GLFW_MOD_CONTROL) != 0) {
@@ -366,9 +398,12 @@ public final class EcranStaff extends Screen {
         StringBuilder b = new StringBuilder(focus.v);
         for (char c : s.toCharArray()) {
             if (c < 32 || c == '§' || c == '|' || b.length() >= focus.max) continue;
+            // montant de l'onglet Économie : chiffres seulement
+            if (focus == montant && (c < '0' || c > '9')) continue;
             b.append(c);
         }
         focus.v = b.toString();
+        if (focus == montant || focus == motif) ecoArme = 0;
     }
 
     @Override
@@ -395,6 +430,7 @@ public final class EcranStaff extends Screen {
             case "historique" -> historique(g, f);
             case "permissions" -> permissions(g, f);
             case "commandes" -> commandes(g, f);
+            case "economie" -> economie(g, f);
             default -> colonnes(g, f, ActionStaff.Onglet.valueOf(onglet.toUpperCase(Locale.ROOT)));
         }
         pied(g, f);
@@ -427,15 +463,20 @@ public final class EcranStaff extends Screen {
         Trace.bord(g, bx, 16.5F, bw, 11, 1 / 3F, a(c, 200));
         Trace.c(g, f, gr.toUpperCase(Locale.ROOT), bx + bw / 2, 22, PETIT_GRAS, a(c, 255), 0);
         String sous = "permissions".equals(onglet) ? t("sous_permissions")
+                : "economie".equals(onglet) ? t("sous_economie")
                 : "commandes".equals(onglet) ? (survolCmdAvant != null ? "/" + survolCmdAvant + " · " + descriptionCmd(survolCmdAvant) : t("sous_commandes"))
                 : t("sous", etat.permises().size());
         Trace.texte(g, f, Trace.tenir(f, sous, TEXTE, GW - 2 * M), M, 35, TEXTE, a(MUTED, 255));
         float x = M;
-        // 28/10 : marge des onglets réduite si la rangée ne tient pas (Fondateur : 8 onglets ; russe)
+        // 28/10 : marge des onglets réduite si la rangée ne tient pas (Fondateur : 8 onglets ; russe). 03/11 : 9 onglets
+        // avec l'onglet Économie : l'écart entre deux onglets passe de 4 à 2 quand la marge tomberait sous 6 (le français
+        // dépassait de 3 unités)
         List<String> ogs = onglets();
         float texteTotal = 0;
         for (String o : ogs) texteTotal += Trace.largeur(f, t("onglet." + o), ONGLET);
-        float marge = Math.max(6, Math.min(16, (GW - 2 * M - 4 * (ogs.size() - 1) - texteTotal) / ogs.size()));
+        float ecart = 4, place = GW - 2 * M - texteTotal;
+        if ((place - ecart * (ogs.size() - 1)) / ogs.size() < 6) ecart = 2;
+        float marge = Math.max(4, Math.min(16, (place - ecart * (ogs.size() - 1)) / ogs.size()));
         for (String o : ogs) {
             String nom = t("onglet." + o);
             float w = Trace.largeur(f, nom, ONGLET) + marge;
@@ -453,7 +494,7 @@ public final class EcranStaff extends Screen {
                     SonsUi.clic(0.5F);
                 }
             });
-            x += w + 4;
+            x += w + ecart;
         }
         Trace.rect(g, M, 74, GW - M, 74 + 1 / 3F, a(WHITE, 23));
     }
@@ -461,6 +502,7 @@ public final class EcranStaff extends Screen {
     private void pied(GuiGraphics g, Font f) {
         float x = M, cy = 348;
         String[][] touches = "permissions".equals(onglet) || "commandes".equals(onglet) ? new String[][]{{t("t_clic"), t("cocher")}, {t("t_echap"), t("fermer")}}
+                : "economie".equals(onglet) ? new String[][]{{"P", t("panel")}, {t("t_echap"), t("fermer")}, {t("t_clic"), t("eco.deux_clics")}}
                 : new String[][]{{"P", t("panel")}, {t("t_echap"), t("fermer")}, {t("t_entree"), t("valider")}};
         for (String[] k : touches) {
             float kw = Trace.largeur(f, k[0], PETIT_GRAS) + 6;
@@ -775,6 +817,256 @@ public final class EcranStaff extends Screen {
         Trace.m(g, f, s.toString(), x, cy, PETIT, a(LIGHT, 255), x0 + w - x);
     }
 
+
+    // ------------------------------------------------------------------ Économie (Fondateur, 03/11)
+    /** L'opération choisie (la première permise si celle d'avant ne l'est plus). */
+    private OperationEco ecoOp() {
+        if (!permise(ecoAction)) {
+            for (ActionStaff a : permises(ActionStaff.Onglet.ECONOMIE)) {
+                ecoAction = a;
+                break;
+            }
+        }
+        OperationEco op = OperationEco.de(ecoAction);
+        return op != null ? op : OperationEco.HERALS;
+    }
+
+    private void choisirEco(ActionStaff a) {
+        if (a == ecoAction) return;
+        OperationEco avant = ecoOp(), apres = OperationEco.de(a);
+        ecoAction = a;
+        if (apres != null && apres.clan != avant.clan) {
+            // joueur -> clan (ou l'inverse) : la cible et la recherche ne veulent plus rien dire
+            ecoCible = "";
+            recherche.v = "";
+            defEco = 0;
+        }
+        ecoArme = 0;
+        SonsUi.clic(0.5F);
+    }
+
+    private void choisirCible(String c) {
+        if (c.equals(ecoCible)) return;
+        ecoCible = c;
+        ecoArme = 0;
+        SonsUi.clic(0.5F);
+    }
+
+    /** Montant tapé (0 : vide ou illisible). */
+    private long montantEco() {
+        try {
+            return montant.v.isEmpty() ? 0 : Long.parseLong(montant.v);
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    private static String nombre(long v) {
+        return String.format(Locale.ROOT, "%,d", v).replace(',', ' ');
+    }
+
+    private String unite(OperationEco op) {
+        return Component.translatable(op.cleUnite(option(ecoAction))).getString();
+    }
+
+    /**
+     * Fiche de la cible : demandée au serveur quand la cible, l'opération ou la sorte change, 0,4 s après le dernier
+     * changement (pas une demande par lettre tapée) ; jamais plus d'une fois pour la même demande.
+     */
+    private void demanderSolde() {
+        String voulu = ecoCible.isEmpty() ? "" : cleSolde(ecoAction.id, ecoCible, option(ecoAction));
+        long now = System.currentTimeMillis();
+        if (!voulu.equals(soldeVoulu)) {
+            soldeVoulu = voulu;
+            soldeChange = now;
+            solde = null;
+        }
+        if (!voulu.isEmpty() && !voulu.equals(soldeDemande) && now - soldeChange > 400) {
+            soldeDemande = voulu;
+            ReseauStaff.CANAL.sendToServer(new ReseauStaff.Economie(ecoAction.id, ecoCible, option(ecoAction), 0, OperationEco.VOIR, ""));
+        }
+    }
+
+    /** Une ligne de la liste : la cible, le tag en couleur (ou vide), le nom, le texte de droite. */
+    private record LigneEco(String cible, String tag, int couleurTag, String nom, String droite, int couleurDroite) {
+    }
+
+    private List<LigneEco> lignesEco(OperationEco op) {
+        List<LigneEco> l = new ArrayList<>();
+        String q = recherche.v.strip(), ql = q.toLowerCase(Locale.ROOT);
+        boolean exact = false;
+        if (op.clan) {
+            for (ReseauStaff.ClanLigne c : etat.clans()) {
+                if (!ql.isEmpty() && !c.tag().toLowerCase(Locale.ROOT).contains(ql) && !c.nom().toLowerCase(Locale.ROOT).contains(ql)) continue;
+                exact |= c.tag().equalsIgnoreCase(q);
+                l.add(new LigneEco(c.tag(), "[" + c.tag() + "]", BLEU, c.nom(), t("eco.niveau", c.niveau()), MUTED));
+            }
+        } else {
+            for (PlayerInfo p : joueursEnLigne()) {
+                String n = p.getProfile().getName();
+                exact |= n.equalsIgnoreCase(q);
+                ReseauGrades.LigneTab info = TabHeraliz.info(p.getProfile().getId());
+                boolean clan = info != null && !info.clan().isEmpty();
+                l.add(new LigneEco(n, clan ? "[" + info.clan() + "]" : "", clan && info.couleurClan() != 0 ? info.couleurClan() : BLEU, n, "", MUTED));
+            }
+            // un joueur absent : son pseudo tapé dans la recherche (le serveur le cherche dans les comptes connus)
+            if (!exact && q.matches("[A-Za-z0-9_]{1,16}")) l.add(0, new LigneEco(q, "", 0, t("eco.ecrit", q), t("eco.absent"), FAINT));
+        }
+        return l;
+    }
+
+    private void listeEco(GuiGraphics g, Font f, OperationEco op) {
+        List<LigneEco> liste = lignesEco(op);
+        verre(g, LX, HAUT, LW, BAS - HAUT, 199);
+        Trace.texte(g, f, t(op.clan ? "eco.clans" : "en_ligne"), LX + 8, HAUT + 7, MINI, a(MUTED, 255));
+        int total = op.clan ? etat.clans().size() : Minecraft.getInstance().getConnection() == null ? 0
+                : Minecraft.getInstance().getConnection().getListedOnlinePlayers().size();
+        Trace.d(g, f, String.valueOf(total), LX + LW - 8, HAUT + 9.5F, PETIT_GRAS, a(LIGHT, 255), 0);
+        champ(g, f, recherche, LX + 8, HAUT + 18, LW - 16, 14, t(op.clan ? "eco.rechercher_clan" : "eco.rechercher_joueur"));
+        float y0 = HAUT + 38, hLigne = 15, visibles = (BAS - 6 - y0) / hLigne;
+        defEco = Math.min(defEco, Math.max(0, (liste.size() - visibles) * hLigne));
+        decoupe(g, LX + 1, y0, LX + LW - 1, BAS - 4);
+        for (int i = 0; i < liste.size(); i++) {
+            float y = y0 + i * hLigne - defEco;
+            if (y + hLigne < y0 || y > BAS) continue;
+            LigneEco l = liste.get(i);
+            boolean sel = l.cible().equalsIgnoreCase(ecoCible), hv = survol(LX + 4, y, LW - 8, hLigne);
+            if (sel) {
+                Trace.rect(g, LX + 4, y, LX + LW - 4, y + hLigne, a(ACCENT, 50));
+                Trace.rect(g, LX + 4, y, LX + 5, y + hLigne, a(ACCENT, 255));
+            } else if (hv) {
+                Trace.rect(g, LX + 4, y, LX + LW - 4, y + hLigne, a(WHITE, 14));
+            }
+            float x = LX + 10, cy = y + hLigne / 2;
+            if (!l.tag().isEmpty()) x += Trace.m(g, f, l.tag(), x, cy, VALEUR, a(l.couleurTag(), 255), 0) + 3;
+            float droite = LX + LW - 10;
+            if (!l.droite().isEmpty()) droite -= Trace.d(g, f, l.droite(), droite, cy, PETIT_GRAS, a(l.couleurDroite(), 255), 0) + 6;
+            Trace.m(g, f, l.nom(), x, cy, TEXTE, a(sel ? WHITE : l.couleurTag() == 0 ? MUTED : LIGHT, 255), Math.max(14, droite - x));
+            String c = l.cible();
+            if (y >= y0 - 1 && y + hLigne <= BAS - 3) zone(LX + 4, y, LW - 8, hLigne, () -> choisirCible(c));
+        }
+        g.disableScissor();
+        if (liste.isEmpty()) Trace.c(g, f, t(op.clan ? "eco.aucun_clan" : "personne"), LX + LW / 2F, y0 + 20, PETIT, a(FAINT, 255), LW - 16);
+    }
+
+    private void economie(GuiGraphics g, Font f) {
+        OperationEco op = ecoOp();
+        listeEco(g, f, op);
+        demanderSolde();
+        // ---- opérations : cinq par rangée, le nom de la section (Joueur, Clan) au-dessus de la première de chacune
+        List<ActionStaff> eco = permises(ActionStaff.Onglet.ECONOMIE);
+        float cw = (RW - 4 * 5) / 5F, y = HAUT;
+        String sectionVue = null;
+        for (int i = 0; i < eco.size(); i++) {
+            ActionStaff a = eco.get(i);
+            float x = RX + (i % 5) * (cw + 5), yy = y + 8 + (i / 5) * 33;
+            if (!a.section.equals(sectionVue)) {
+                Trace.texte(g, f, t("section." + a.section), x, yy - 8, MINI, a(MUTED, 255));
+                sectionVue = a.section;
+            }
+            carte(g, f, x, yy, cw, 22, a, a == ecoAction, () -> choisirEco(a));
+        }
+        y += 8 + Math.max(1, (eco.size() + 4) / 5) * 33 - 3;
+        // ---- fiche : la cible et ce qu'elle a
+        verre(g, RX, y, RW, 34, 199);
+        Trace.texte(g, f, t("eco.cible"), RX + 10, y + 6, MICRO, a(MUTED, 255));
+        if (ecoCible.isEmpty()) {
+            Trace.m(g, f, t(op.clan ? "eco.choisis_clan" : "eco.choisis"), RX + 10, y + 22, TEXTE, a(MUTED, 255), RW - 20);
+        } else {
+            Trace.m(g, f, op.clan ? "[" + ecoCible + "]" : ecoCible, RX + 10, y + 17, VALEUR, a(WHITE, 255), RW / 2F);
+            String vu = solde == null ? t("eco.solde_attente") : lireMessage(solde.message());
+            int c = solde == null ? FAINT : solde.ok() ? OK : DANGER;
+            Trace.m(g, f, vu, RX + 10, y + 27, PETIT, a(c, 255), RW - 80);
+            // relire (après une opération faite ailleurs, ou un « attends » du site)
+            String relire = t("eco.relire");
+            float rw = Trace.largeur(f, relire, PETIT_GRAS) + 8;
+            boolean hv = survol(RX + RW - 10 - rw, y + 11, rw, 12);
+            Trace.d(g, f, relire, RX + RW - 14, y + 17, PETIT_GRAS, a(hv ? LIGHT : MUTED, 255), 0);
+            zone(RX + RW - 10 - rw, y + 11, rw, 12, () -> {
+                soldeDemande = "";
+                soldeChange = 0;
+                SonsUi.clic(0.4F);
+            });
+        }
+        y += 34 + 8;
+        // ---- sorte (clé, catégorie de points) : place gardée même sans choix (rien ne saute d'une opération à l'autre)
+        if (ecoAction.options != null) {
+            Trace.texte(g, f, t("eco.option." + ecoAction.section), RX, y, MINI, a(MUTED, 255));
+            puces(g, f, RX, y + 13, RX + RW, ecoAction.options, option(ecoAction), EcranStaff::nomOption, c -> BLEU, c -> {
+                options.put(ecoAction, c);
+                ecoArme = 0;
+            });
+        }
+        y += 26;
+        // ---- montant et montants en un clic
+        Trace.texte(g, f, t("eco.montant"), RX, y, MINI, a(MUTED, 255));
+        champ(g, f, montant, RX, y + 7, 110, 14, t("eco.montant_invite"));
+        List<String> rapides = new ArrayList<>();
+        for (long v : op.rapides) rapides.add(String.valueOf(v));
+        puces(g, f, RX + 118, y + 14, RX + RW, rapides, montant.v, c -> nombre(Long.parseLong(c)), c -> BLEU, c -> {
+            montant.v = c;
+            ecoArme = 0;
+        });
+        y += 29;
+        // ---- motif
+        Trace.texte(g, f, t("eco.motif"), RX, y, MINI, a(MUTED, 255));
+        champ(g, f, motif, RX, y + 7, RW, 14, t("eco.motif_invite"));
+        y += 29;
+        // ---- bornes et traces
+        String note = t(op == OperationEco.PB ? "eco.note_pb" : op == OperationEco.XP_CLAN ? "eco.note_xp" : "eco.note", nombre(op.max));
+        List<String> ls = Trace.lignes(f, note, PETIT, RW);
+        for (int i = 0; i < Math.min(3, ls.size()); i++) Trace.m(g, f, ls.get(i), RX, y + 4 + i * 10, PETIT, a(FAINT, 255), RW);
+        // ---- donner / retirer (deux clics)
+        float yb = 304, bh = 22, bw = 104, bxD = RX + RW - bw, bxR = bxD - bw - 6;
+        long n = montantEco();
+        boolean arme = ecoArme != 0 && System.currentTimeMillis() - ecoArmeA < 5000;
+        String cible = op.clan ? "[" + ecoCible + "]" : ecoCible;
+        String resume = ecoCible.isEmpty() || n <= 0 ? t("eco.incomplet")
+                : arme ? t("eco.confirme", t(ecoArme == OperationEco.DONNER ? "eco.resume_donner" : "eco.resume_retirer", nombre(n), unite(op), cible))
+                : t("eco.pret", nombre(n), unite(op), cible);
+        Trace.m(g, f, resume, RX, yb + bh / 2, PETIT, a(arme ? DANGER : MUTED, 255), bxR - RX - 8);
+        boutonEco(g, f, bxR, yb, bw, bh, OperationEco.RETIRER);
+        boutonEco(g, f, bxD, yb, bw, bh, OperationEco.DONNER);
+    }
+
+    private void boutonEco(GuiGraphics g, Font f, float x, float y, float w, float h, int sens) {
+        boolean arme = ecoArme == sens && System.currentTimeMillis() - ecoArmeA < 5000;
+        String libelle = attente ? t("attente") : arme ? t("bouton_confirmer") : t(sens == OperationEco.DONNER ? "eco.bouton_donner" : "eco.bouton_retirer");
+        bouton(g, f, x, y, w, h, libelle, !attente, () -> lancerEco(sens));
+    }
+
+    /** Donner ou retirer : vérifié ici pour l'aide (le serveur revérifie tout), puis le second clic dans les 5 s envoie. */
+    private void lancerEco(int sens) {
+        OperationEco op = ecoOp();
+        if (attente || !permise(ecoAction)) return;
+        if (ecoCible.isEmpty()) {
+            dire(op.clan ? "local|eco.choisis_clan" : "local|eco.choisis", false);
+            return;
+        }
+        long n = montantEco();
+        if (n < 1 || n > op.max) {
+            dire("eco_montant|" + nombre(op.max), false);
+            focus = montant;
+            return;
+        }
+        if (motif.v.isBlank()) {
+            dire("eco_motif", false);
+            focus = motif;
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (ecoArme != sens || now - ecoArmeA >= 5000) {
+            ecoArme = sens;
+            ecoArmeA = now;
+            SonsUi.clic(0.6F);
+            return;
+        }
+        ecoArme = 0;
+        attente = true;
+        SonsUi.clic(0.8F);
+        ReseauStaff.CANAL.sendToServer(new ReseauStaff.Economie(ecoAction.id, ecoCible, option(ecoAction), n, sens, motif.v.strip()));
+    }
+
     // ------------------------------------------------------------------ historique
     private void historique(GuiGraphics g, Font f) {
         verre(g, M, HAUT, GW - 2 * M, BAS - HAUT, 199);
@@ -836,7 +1128,7 @@ public final class EcranStaff extends Screen {
                         Map<String, Integer> m = new HashMap<>(etat.masques());
                         m.put(a.id, apres ? m.getOrDefault(a.id, 0) | 1 << rang : m.getOrDefault(a.id, 0) & ~(1 << rang));
                         etat = new ReseauStaff.Etat(false, etat.rang(), etat.grade(), etat.permises(), m, etat.grades(), etat.historique(), etat.muets(), "",
-                                true, etat.commandes());
+                                true, etat.commandes(), etat.clans());
                         SonsUi.clic(0.5F);
                         ReseauStaff.CANAL.sendToServer(new ReseauStaff.Permission(a.id, rang, apres));
                     });
@@ -939,7 +1231,7 @@ public final class EcranStaff extends Screen {
                         if (nouveau == 0) m.remove(racine);
                         else m.put(racine, nouveau);
                         etat = new ReseauStaff.Etat(false, etat.rang(), etat.grade(), etat.permises(), etat.masques(), etat.grades(), etat.historique(),
-                                etat.muets(), "", true, m);
+                                etat.muets(), "", true, m, etat.clans());
                         SonsUi.clic(0.5F);
                         ReseauStaff.CANAL.sendToServer(new ReseauStaff.PermissionCommande(racine, rang, apres));
                     });

@@ -25,8 +25,11 @@ public final class ReseauStaff {
     private ReseauStaff() {
     }
 
-    /** 2 (28/10) : onglet « Commandes du Fondateur » (masques des commandes dans l'état, case d'une commande). */
-    private static final String VERSION = "2";
+    /**
+     * 2 (28/10) : onglet « Commandes du Fondateur » (masques des commandes dans l'état, case d'une commande). 3 (03/11) :
+     * onglet « Économie » (clans dans l'état, opération et solde).
+     */
+    private static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "staff"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -41,10 +44,31 @@ public final class ReseauStaff {
      * État du panel (serveur -> staff) : rang (1 Guide … 5 Fondateur), grade affiché, actions permises, masques de toutes
      * les actions (Fondateur seulement, sinon vide), grades qu'il peut donner (Fondateur seulement), journal récent,
      * joueurs rendus muets depuis le panel, réponse à la dernière action, et (Fondateur seulement, 28/10) les commandes
-     * données à des grades : racine -> masque des rangs (bit r = rang r).
+     * données à des grades : racine -> masque des rangs (bit r = rang r) et (Fondateur seulement, 03/11) les clans pour
+     * l'onglet Économie.
      */
     public record Etat(boolean ouvrir, int rang, String grade, List<String> permises, Map<String, Integer> masques, List<String> grades,
-                       List<Ligne> historique, List<UUID> muets, String message, boolean ok, Map<String, Integer> commandes) {
+                       List<Ligne> historique, List<UUID> muets, String message, boolean ok, Map<String, Integer> commandes,
+                       List<ClanLigne> clans) {
+    }
+
+    /** Un clan dans la liste de l'onglet Économie (Fondateur seulement) : tag, nom, niveau. */
+    public record ClanLigne(String tag, String nom, int niveau) {
+    }
+
+    /**
+     * Onglet Économie (Fondateur -> serveur, 03/11) : action ({@code eco_*}), cible (pseudo d'un joueur, connecté ou non, ou
+     * tag d'un clan), option (sorte de clé, catégorie de points), montant, sens ({@code OperationEco.VOIR}, {@code DONNER},
+     * {@code RETIRER}) et motif. Le serveur revérifie tout.
+     */
+    public record Economie(String action, String cible, String option, long montant, int sens, String motif) {
+    }
+
+    /**
+     * Ce qu'a la cible (serveur -> Fondateur, 03/11), pour la fiche de l'onglet Économie : la demande à laquelle il répond
+     * (action, cible, option) et le texte à montrer (« clé|arg|arg », textes {@code heraliz_grades.staff.msg.<clé>}).
+     */
+    public record SoldeEco(String action, String cible, String option, boolean ok, String message) {
     }
 
     /** Fiche d'un joueur connecté (serveur -> staff). */
@@ -88,6 +112,8 @@ public final class ReseauStaff {
     public static final Crochet<Recu<Agir>> RECEPTION_AGIR = new Crochet<>();
     public static final Crochet<Recu<Permission>> RECEPTION_PERMISSION = new Crochet<>();
     public static final Crochet<Recu<PermissionCommande>> RECEPTION_PERMISSION_COMMANDE = new Crochet<>();
+    public static final Crochet<Recu<Economie>> RECEPTION_ECONOMIE = new Crochet<>();
+    public static final Crochet<SoldeEco> RECEPTION_SOLDE = new Crochet<>();
 
     public static void enregistrer() {
         CANAL.messageBuilder(Etat.class, 0, NetworkDirection.PLAY_TO_CLIENT)
@@ -163,17 +189,55 @@ public final class ReseauStaff {
                     if (p != null) RECEPTION_PERMISSION_COMMANDE.accept(new Recu<>(p, m));
                     ctx.get().setPacketHandled(true);
                 }).add();
+        // onglet Économie (03/11, version 3)
+        CANAL.messageBuilder(Economie.class, 8, NetworkDirection.PLAY_TO_SERVER)
+                .encoder((m, b) -> {
+                    b.writeUtf(court(m.action(), MAX_ID), MAX_ID);
+                    b.writeUtf(court(m.cible(), MAX_ID), MAX_ID);
+                    b.writeUtf(court(m.option(), MAX_ID), MAX_ID);
+                    b.writeVarLong(Math.max(0, m.montant()));
+                    b.writeVarInt(m.sens());
+                    b.writeUtf(court(m.motif(), MAX_TEXTE), MAX_TEXTE);
+                })
+                .decoder(b -> new Economie(b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readVarLong(), b.readVarInt(), b.readUtf(MAX_TEXTE)))
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) RECEPTION_ECONOMIE.accept(new Recu<>(p, m));
+                    ctx.get().setPacketHandled(true);
+                }).add();
+        CANAL.messageBuilder(SoldeEco.class, 9, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((m, b) -> {
+                    b.writeUtf(court(m.action(), MAX_ID), MAX_ID);
+                    b.writeUtf(court(m.cible(), MAX_ID), MAX_ID);
+                    b.writeUtf(court(m.option(), MAX_ID), MAX_ID);
+                    b.writeBoolean(m.ok());
+                    b.writeUtf(court(m.message(), MAX_TEXTE * 2), MAX_TEXTE * 2);
+                })
+                .decoder(b -> new SoldeEco(b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readBoolean(), b.readUtf(MAX_TEXTE * 2)))
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_SOLDE.accept(m);
+                    ctx.get().setPacketHandled(true);
+                }).add();
     }
 
     // ------------------------------------------------------------------ écriture et lecture
+    /**
+     * Texte coupé à {@code max} caractères (null : vide) : un champ trop long ferait échouer tout le paquet (03/11 : le
+     * détail d'une ligne du journal n'était jamais coupé avant l'envoi).
+     */
+    public static String court(String s, int max) {
+        if (s == null) return "";
+        return s.length() <= max ? s : s.substring(0, max);
+    }
+
     private static void ecrireLigne(FriendlyByteBuf b, Ligne l) {
         b.writeLong(l.ms());
-        b.writeUtf(l.staff(), MAX_ID);
-        b.writeUtf(l.grade(), MAX_ID);
-        b.writeUtf(l.action(), MAX_ID);
-        b.writeUtf(l.cible(), MAX_ID);
-        b.writeUtf(l.detail(), MAX_ID);
-        b.writeUtf(l.raison(), MAX_TEXTE);
+        b.writeUtf(court(l.staff(), MAX_ID), MAX_ID);
+        b.writeUtf(court(l.grade(), MAX_ID), MAX_ID);
+        b.writeUtf(court(l.action(), MAX_ID), MAX_ID);
+        b.writeUtf(court(l.cible(), MAX_ID), MAX_ID);
+        b.writeUtf(court(l.detail(), MAX_ID), MAX_ID);
+        b.writeUtf(court(l.raison(), MAX_TEXTE), MAX_TEXTE);
     }
 
     private static Ligne lireLigne(FriendlyByteBuf b) {
@@ -224,7 +288,7 @@ public final class ReseauStaff {
         int nm = Math.min(m.muets().size(), MAX_JOUEURS);
         b.writeVarInt(nm);
         for (int j = 0; j < nm; j++) b.writeUUID(m.muets().get(j));
-        b.writeUtf(m.message(), MAX_TEXTE * 2);
+        b.writeUtf(court(m.message(), MAX_TEXTE * 2), MAX_TEXTE * 2);
         b.writeBoolean(m.ok());
         int nc = Math.min(m.commandes().size(), MAX_COMMANDES);
         b.writeVarInt(nc);
@@ -233,6 +297,14 @@ public final class ReseauStaff {
             if (k++ >= nc) break;
             b.writeUtf(e.getKey(), MAX_ID);
             b.writeVarInt(e.getValue());
+        }
+        int ncl = Math.min(m.clans().size(), MAX_JOUEURS);
+        b.writeVarInt(ncl);
+        for (int j = 0; j < ncl; j++) {
+            ClanLigne c = m.clans().get(j);
+            b.writeUtf(court(c.tag(), MAX_ID), MAX_ID);
+            b.writeUtf(court(c.nom(), MAX_ID * 2), MAX_ID * 2);
+            b.writeVarInt(c.niveau());
         }
     }
 
@@ -254,7 +326,10 @@ public final class ReseauStaff {
         int nc = Math.min(b.readVarInt(), MAX_COMMANDES);
         Map<String, Integer> commandes = new LinkedHashMap<>();
         for (int i = 0; i < nc; i++) commandes.put(b.readUtf(MAX_ID), b.readVarInt());
-        return new Etat(ouvrir, rang, grade, permises, masques, grades, historique, muets, message, ok, commandes);
+        int ncl = Math.min(b.readVarInt(), MAX_JOUEURS);
+        List<ClanLigne> clans = new ArrayList<>(ncl);
+        for (int j = 0; j < ncl; j++) clans.add(new ClanLigne(b.readUtf(MAX_ID), b.readUtf(MAX_ID * 2), b.readVarInt()));
+        return new Etat(ouvrir, rang, grade, permises, masques, grades, historique, muets, message, ok, commandes, clans);
     }
 
     private static void ecrireFiche(Fiche m, FriendlyByteBuf b) {

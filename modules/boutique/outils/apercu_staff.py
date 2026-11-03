@@ -5,7 +5,8 @@ bouton). Même moteur que les aperçus de la boutique ; refuse tout texte qui d�
 
     python modules/boutique/outils/apercu_staff.py [DOSSIER]      (par défaut : maquettes/staff_panel)
 
-Vues : Fondateur sur l'onglet Joueurs (toutes les actions sur un joueur, la plus chargée), Admin sur l'onglet Serveur.
+Vues : Fondateur sur l'onglet Joueurs (toutes les actions sur un joueur, la plus chargée), Admin sur l'onglet Serveur,
+Fondateur sur l'onglet Économie (03/11 : neuf onglets, clés à donner, confirmation en rouge).
 Les mesures sont celles de EcranStaff.java : à changer des deux côtés.
 """
 import json
@@ -21,6 +22,7 @@ GW, GH, M, HAUT, BAS = 640, 360, 16, 80, 332
 LX, LW, RX, RW = 16, 170, 194, 430
 ACCENT, WHITE, LIGHT, MUTED, FAINT, GOLD, OK = 0xE3201B, 0xFFFFFF, 0xECEEF2, 0x8F95A0, 0x5A5F69, 0xF2C14E, 0x6FD08C
 BLEU, VERT, ROUGE, ORANGE = 0x5B8DEF, 0x4CAF7A, 0xE5484D, 0xFF8A3D
+DANGER_C = 0xFF8A80
 TITRE, ONGLET, BOUTON, CARTE = (True, 13, 1.93), (True, 9, 1.05), (True, 9, 0.85), (True, 9, 0)
 TEXTE, VALEUR, PETIT, PETIT_GRAS, MINI, MICRO, NOM = (False, 7.5, 0), (True, 7.5, 0), (False, 6.5, 0), (True, 6.5, 0), (True, 6.5, 0.56), \
     (True, 5.6, 0.4), (True, 13, 1.4)
@@ -51,7 +53,7 @@ class Vue:
         self.e.rect(x, y, x + w, y + h, 0x0D0F14, 199)
         self.e.border(x, y, w, h, WHITE, 26)
 
-    def entete(self, grade, couleur, n, onglets, actif):
+    def entete(self, grade, couleur, n, onglets, actif, sous=None):
         e = self.e
         tw = e.texte(self.t("titre").upper(), M, 17, TITRE, LIGHT, quoi="titre")
         g = self.T["grade.heraliz_grades." + grade]
@@ -60,18 +62,25 @@ class Vue:
         e.rect(bx, 16.5, bx + bw, 27.5, couleur, 40)
         e.border(bx, 16.5, bw, 11, couleur, 200)
         e.c(g.upper(), bx + bw / 2, 22, PETIT_GRAS, couleur)
-        e.texte(self.t("sous", n), M, 35, TEXTE, MUTED, maxw=GW - 2 * M, quoi="sous-titre")
+        e.texte(self.t(sous) if sous else self.t("sous", n), M, 35, TEXTE, MUTED, maxw=GW - 2 * M, quoi="sous-titre")
         x = M
+        # marge des onglets comme EcranStaff (28/10) : réduite si la rangée ne tient pas ; écart de 2 au lieu de 4 quand la
+        # marge tomberait sous 6 (03/11 : neuf onglets du Fondateur)
+        total = sum(e.largeur(self.t("onglet." + o).upper(), ONGLET) for o in onglets)
+        ecart, place = 4, GW - 2 * M - total
+        if (place - ecart * (len(onglets) - 1)) / len(onglets) < 6:
+            ecart = 2
+        marge = max(4, min(16, (place - ecart * (len(onglets) - 1)) / len(onglets)))
         for o in onglets:
             nom = self.t("onglet." + o).upper()
-            w = e.largeur(nom, ONGLET) + 16
+            w = e.largeur(nom, ONGLET) + marge
             on = o == actif
             e.rect(x, 50, x + w, 70, ACCENT if on else WHITE, 46 if on else 9)
             e.border(x, 50, w, 20, ACCENT if on else WHITE, 160 if on else 30)
             e.c(nom, x + w / 2, 60, ONGLET, WHITE if on else MUTED)
-            x += w + 4
-        if x - 4 > GW - M:
-            DEFAUTS.append(f"[{ab.LANGUE}] onglets : {x - 4:.1f} > {GW - M}")
+            x += w + ecart
+        if x - ecart > GW - M + 0.05:
+            DEFAUTS.append(f"[{ab.LANGUE}] onglets : {x - ecart:.1f} > {GW - M}")
         e.rect(M, 74, GW - M, 74 + 1 / 3, WHITE, 23)
 
     def carte(self, x, y, w, h, a, choisie=False, sec="moderation"):
@@ -176,10 +185,121 @@ class Vue:
         self.verre(M, by, GW - 2 * M, BAS - by)
         e.texte(self.t("dernieres").upper(), M + 10, by + 8, MINI, MUTED, quoi="dernières")
 
-    def pied(self, grade, n):
+    def puces(self, x, cy, maxx, libelles, choisi, couleur, quoi):
+        e = self.e
+        for lib in libelles:
+            w = e.largeur(lib, PETIT_GRAS) + 8
+            if x + w > maxx:
+                DEFAUTS.append(f"[{ab.LANGUE}] {quoi} : « {lib} » ne tient plus ({x + w:.1f} > {maxx})")
+                break
+            sel = lib == choisi
+            e.rect(x, cy - 5.5, x + w, cy + 5.5, couleur if sel else WHITE, 60 if sel else 10)
+            e.border(x, cy - 5.5, w, 11, couleur if sel else WHITE, 220 if sel else 60)
+            e.c(lib, x + w / 2, cy, PETIT_GRAS, WHITE if sel else LIGHT)
+            x += w + 4
+        return x
+
+    def champ(self, x, y, w, h, texte, invite, actif=False):
+        e = self.e
+        e.rect(x, y, x + w, y + h, 0x000000, 150 if actif else 90)
+        e.border(x, y, w, h, ACCENT if actif else WHITE, 200 if actif else 40)
+        if texte:
+            e.m(texte, x + 5, y + h / 2, TEXTE, LIGHT, maxw=w - 10, quoi="champ")
+        else:
+            e.m(invite, x + 5, y + h / 2, TEXTE, FAINT, maxw=w - 10, quoi="invite " + invite)
+
+    def economie(self):
+        """Onglet Économie (EcranStaff.economie, mêmes mesures) : clés de Vote à donner, confirmation armée."""
+        e, T = self.e, self.T
+        nb = lambda v: f"{v:,}".replace(",", " ")
+        # ---- liste : joueurs en ligne, plus le pseudo d'un absent tapé dans la recherche
+        self.verre(LX, HAUT, LW, BAS - HAUT)
+        e.texte(self.t("en_ligne").upper(), LX + 8, HAUT + 7, MINI, MUTED, maxw=LW - 30, quoi="en ligne")
+        e.d("3", LX + LW - 8, HAUT + 9.5, PETIT_GRAS, LIGHT)
+        self.champ(LX + 8, HAUT + 18, LW - 16, 14, "", self.t("eco.rechercher_joueur"))
+        lignes = [("", self.t("eco.ecrit", "Sacha_77"), self.t("eco.absent"), FAINT), ("WOLF", "Kevin_92", "", MUTED),
+                  ("", "NoaPlays", "", MUTED), ("LYNX", "Zed", "", MUTED)]
+        for i, (clan, nom, droite, cd) in enumerate(lignes):
+            y = HAUT + 38 + i * 15
+            if nom == "Kevin_92":
+                e.rect(LX + 4, y, LX + LW - 4, y + 15, ACCENT, 50)
+                e.rect(LX + 4, y, LX + 5, y + 15, ACCENT, 255)
+            x = LX + 10
+            if clan:
+                x += e.m(f"[{clan}]", x, y + 7.5, VALEUR, BLEU) + 3
+            dr = LX + LW - 10
+            if droite:
+                dr -= e.d(droite, dr, y + 7.5, PETIT_GRAS, cd) + 6
+            e.m(nom, x, y + 7.5, TEXTE, LIGHT if clan or nom != lignes[0][1] else MUTED, maxw=max(14, dr - x), quoi="ligne " + nom)
+        # ---- opérations
+        ops = [("eco_herals", "joueur"), ("eco_cles", "joueur"), ("eco_pb", "joueur"), ("eco_saison", "clan"), ("eco_xp_clan", "clan")]
+        cw = (RW - 4 * 5) / 5
+        vue = None
+        for i, (a, sec) in enumerate(ops):
+            x = RX + i * (cw + 5)
+            if sec != vue:
+                e.texte(self.t("section." + sec).upper(), x, HAUT, MINI, MUTED, quoi="section")
+                vue = sec
+            c = ROUGE
+            e.grad(x, HAUT + 8, x + cw, HAUT + 30, c, 70 if a == "eco_cles" else 30, c, 30 if a == "eco_cles" else 10)
+            e.border(x, HAUT + 8, cw, 22, c, 255 if a == "eco_cles" else 110)
+            e.m(self.act(a), x + 8, HAUT + 8 + 11 - 3.5, CARTE, WHITE, maxw=cw - 16, quoi="carte " + a)
+            e.m(self.act(a, True), x + 8, HAUT + 8 + 11 - 3.5 + 8.5, PETIT, MUTED, maxw=cw - 16, quoi="aide " + a)
+        y = HAUT + 8 + 33 - 3
+        # ---- fiche
+        self.verre(RX, y, RW, 34)
+        e.texte(self.t("eco.cible").upper(), RX + 10, y + 6, MICRO, MUTED, quoi="cible")
+        e.m("Kevin_92", RX + 10, y + 17, VALEUR, WHITE)
+        unite = self.t("eco.unite.cles.vote")
+        solde = T["heraliz_grades.staff.msg.eco_solde"].replace("%1$s", "Kevin_92").replace("%2$s", "12").replace("%3$s", unite)
+        e.m(solde, RX + 10, y + 27, PETIT, OK, maxw=RW - 80, quoi="solde")
+        e.d(self.t("eco.relire"), RX + RW - 14, y + 17, PETIT_GRAS, MUTED)
+        y += 34 + 8
+        # ---- sorte de clé
+        e.texte(self.t("eco.option.joueur").upper(), RX, y, MINI, MUTED, quoi="sorte")
+        sortes = [T["heraliz_grades.staff.opt." + o] for o in ("vote", "quete", "event", "gemme", "camo", "spectacle")]
+        self.puces(RX, y + 13, RX + RW, sortes, sortes[0], BLEU, "sortes de clés")
+        y += 26
+        # ---- montant
+        e.texte(self.t("eco.montant").upper(), RX, y, MINI, MUTED, quoi="montant")
+        self.champ(RX, y + 7, 110, 14, "5", self.t("eco.montant_invite"))
+        self.puces(RX + 118, y + 14, RX + RW, [nb(v) for v in (1, 5, 10, 50)], "5", BLEU, "montants rapides")
+        # les montants en un clic des autres opérations (OperationEco) : mesurés, pas dessinés
+        for vals in ([1000, 10000, 100000, 1000000], [100, 1000, 5000, 20000], [10, 50, 100, 500], [1000, 10000, 50000, 100000]):
+            fin = RX + 118 + sum(e.largeur(nb(v), PETIT_GRAS) + 8 + 4 for v in vals) - 4
+            if fin > RX + RW:
+                DEFAUTS.append(f"[{ab.LANGUE}] montants rapides {vals} : {fin:.1f} > {RX + RW}")
+        y += 29
+        # ---- motif
+        e.texte(self.t("eco.motif").upper(), RX, y, MINI, MUTED, quoi="motif")
+        self.champ(RX, y + 7, RW, 14, "", self.t("eco.motif_invite"), actif=True)
+        y += 29
+        # ---- notes (la plus longue de chaque opération : 3 lignes au plus)
+        for cle, mx in (("eco.note_pb", 20000), ("eco.note_xp", 10000000), ("eco.note", 10000000)):
+            ls = e.lignes(self.t(cle, nb(mx)), PETIT, RW)
+            if len(ls) > 3:
+                DEFAUTS.append(f"[{ab.LANGUE}] {cle} : {len(ls)} lignes > 3")
+        for i, l in enumerate(e.lignes(self.t("eco.note", nb(1000)), PETIT, RW)[:3]):
+            e.m(l, RX, y + 4 + i * 10, PETIT, FAINT, maxw=RW)
+        # ---- donner / retirer : Donner armé (second clic)
+        yb, bh, bw = 304, 22, 104
+        bxD, bxR = RX + RW - bw, RX + RW - 2 * bw - 6
+        resume = self.t("eco.confirme", self.t("eco.resume_donner", "5", unite, "Kevin_92"))
+        e.m(resume, RX, yb + bh / 2, PETIT, DANGER_C, maxw=bxR - RX - 8, quoi="résumé")
+        for bx, lib in ((bxR, self.t("eco.bouton_retirer")), (bxD, self.t("bouton_confirmer"))):
+            e.grad(bx, yb, bx + bw, yb + bh, ACCENT, 110, ACCENT, 60)
+            e.border(bx, yb, bw, bh, ACCENT, 200)
+            e.c(lib.upper(), bx + bw / 2, yb + bh / 2, BOUTON, WHITE, maxw=bw - 10, quoi="bouton " + lib)
+        for k in ("eco.resume_retirer",):
+            r = self.t("eco.confirme", self.t(k, nb(100000), self.t("eco.unite.saison.events"), "[WOLF]"))
+            if e.largeur(r, PETIT) > bxR - RX - 8 + 0.05:
+                DEFAUTS.append(f"[{ab.LANGUE}] résumé le plus long : {e.largeur(r, PETIT):.1f} > {bxR - RX - 8}")
+
+    def pied(self, grade, n, economie=False):
         e = self.e
         x, cy = M, 348
-        for k, v in (("P", self.t("panel")), (self.t("t_echap"), self.t("fermer")), (self.t("t_entree"), self.t("valider"))):
+        touches = ((self.t("t_clic"), self.t("eco.deux_clics")),) if economie else ((self.t("t_entree"), self.t("valider")),)
+        for k, v in (("P", self.t("panel")), (self.t("t_echap"), self.t("fermer"))) + touches:
             kw = e.largeur(k, PETIT_GRAS) + 6
             e.border(x, cy - 5, kw, 10, WHITE, 90)
             e.c(k, x + kw / 2, cy, PETIT_GRAS, LIGHT)
@@ -207,6 +327,14 @@ def main():
         v.pied("admin", 31)
         DEFAUTS.extend(v.e.defauts)
         v.e.sauver(dossier / f"panel_{code[:2]}_serveur.png")
+        # 03/11 : onglet Économie du Fondateur (neuf onglets)
+        v = Vue(code)
+        v.entete("fondateur", 0xE5484D, 40, ["joueurs", "moderation", "monde", "evenements", "serveur", "economie", "historique",
+                                              "permissions", "commandes"], "economie", sous="sous_economie")
+        v.economie()
+        v.pied("fondateur", 40, economie=True)
+        DEFAUTS.extend(v.e.defauts)
+        v.e.sauver(dossier / f"panel_{code[:2]}_economie.png")
     if DEFAUTS:
         for d in DEFAUTS:
             print(d)

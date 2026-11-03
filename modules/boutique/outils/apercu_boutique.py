@@ -34,7 +34,9 @@ RACINE = Path(__file__).resolve().parents[3]
 MOD = RACINE / "modules" / "boutique"
 ASSETS = MOD / "src" / "client" / "resources" / "assets" / "heraliz_grades"
 TEX = ASSETS / "textures" / "gui" / "boutique"
-FONTS = ASSETS / "font"
+# 02/11 (audit point 37) : une seule copie des polices, dans le noyau ; celle du mod d'avant si elle existe encore
+FONTS = ASSETS / "font" if (ASSETS / "font" / "dmsans_bold.ttf").exists() else (
+    RACINE / "modules" / "noyau" / "src" / "client" / "resources" / "assets" / "heraliz_noyau" / "font")
 SITE = RACINE / "site" / "theme" / "heraliz" / "assets" / "img"
 CACHE = Path.home() / ".cache" / "heraliz"
 CLES = CACHE / "cles_boutique"
