@@ -441,8 +441,8 @@ final class Commandes {
             "heraliz_batisseur_presente", "heraliz_kit_depart", "heraliz_varga_parle"};
 
     /**
-     * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, échanges /trade en
-     * attente, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
+     * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, inventaire mis de côté
+     * pendant le tutoriel des bases, échanges /trade en attente, tutoriel, personnage CaraCrea, quêtes, inventaire, coffre de l'Ender, Curios,
      * coffres personnels (planque, VIP), clan (retiré ; chef : direction passée au membre suivant, ou clan dissous s'il
      * était seul), hérals et compte de capsules remis à 0, marques de la cinématique et du guide ; puis le joueur est expulsé : à sa
      * reconnexion il refait toute l'arrivée (créateur de personnage, cinématique, guide). Gardés : objets à vie
@@ -485,6 +485,9 @@ final class Commandes {
         garderAVie(aVie, appelObjets("fr.heraliz.grades.serveur.EchangeServeur", "wipe", new Class<?>[]{UUID.class}, p.getUUID()));
         // 28/10 : ses ventes à l'hôtel des ventes et ce qui l'y attendait
         garderAVie(aVie, appelObjets("fr.heraliz.grades.serveur.HdvApi", "wipe", new Class<?>[]{UUID.class}, p.getUUID()));
+        // 03/11 : son inventaire mis de côté pendant le tutoriel des bases (CRac), comme le coffre de match : objets à vie gardés
+        garderAVie(aVie, appelObjets("fr.heraliz.crac.api.WipeApi", "inventaireTutoriel",
+                new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class}, srv, p.getUUID()));
         // 23/10 : seulement sa cabane d'essai du tutoriel, AVANT de le retirer de son clan ; plus jamais « base effacer »
         // (le groupe CRac du clan ne suit le clan que toutes les 5 s : c'était la base de tout le clan qui partait)
         appel("fr.heraliz.crac.api.WipeApi", "cabaneEssai", new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class},

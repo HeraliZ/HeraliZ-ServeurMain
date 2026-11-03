@@ -8,6 +8,8 @@ apply from: rootProject.file('gradle/module-coupe.gradle')
 
 dependencies {
     compileOnly project(path: ':clans', configuration: 'devComplet')
+    // inventaire mis de côté pendant le tutoriel (03/11) : Curios lu seulement s'il est chargé (bases/CuriosTuto)
+    compileOnly fg.deobf("blank:curios-forge:5.14.1")
 }
 
 // Essais automatiques de CRac (GameTests de Minecraft, 4 739 lignes) et leurs structures (data/crac/structures) :

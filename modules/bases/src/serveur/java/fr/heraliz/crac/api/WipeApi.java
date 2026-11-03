@@ -37,4 +37,14 @@ public final class WipeApi {
     public static int cabaneEssai(MinecraftServer server, UUID joueur) {
         return fr.heraliz.crac.bases.Tutoriel.effacerCabaneEssai(server, joueur);
     }
+
+    /**
+     * {@code /wipe <joueur>} (HeraliZ Quêtes, par réflexion ; CRac 1.31.0) : l'inventaire du joueur connecté mis de côté
+     * pendant le tutoriel des bases (et ses objets en attente d'une case libre) est retiré et renvoyé, comme le coffre de
+     * match de ClashWar : Quêtes en garde les objets à vie et efface le reste. Joueur hors ligne : liste vide.
+     */
+    public static List<ItemStack> inventaireTutoriel(MinecraftServer server, UUID joueur) {
+        net.minecraft.server.level.ServerPlayer p = server.getPlayerList().getPlayer(joueur);
+        return p == null ? List.of() : fr.heraliz.crac.bases.InventaireTuto.vider(p);
+    }
 }

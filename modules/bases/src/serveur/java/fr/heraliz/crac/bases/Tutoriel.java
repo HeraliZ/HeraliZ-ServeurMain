@@ -96,6 +96,10 @@ import org.jetbrains.annotations.Nullable;
  * démolie rend ce qu'elle a coûté. Il ne prend aucun dégât dans le monde des bases ({@link Protections}). Déconnecté, il
  * reprend où il en était ; ramené au spawn (mort, staff), il est renvoyé à sa cabane.
  * <p>
+ * 03/11 (retours du propriétaire) : son inventaire est mis de côté sur le disque avant le kit et lui est rendu à toute
+ * sortie du tutoriel, kit repris ({@link InventaireTuto}) ; emmené hors du monde du tutoriel et du spawn (commande du
+ * staff), il en sort sans l'avoir fini ({@link #quitter}).
+ * <p>
  * Le tutoriel ne vise que les joueurs en survie ou en aventure, à l'étape AUCUNE (jamais fait) et sans base. Staff
  * (permission 2) :
  * <ul>
@@ -186,23 +190,16 @@ public final class Tutoriel {
         // (un tutoriel commencé dans l'ancien monde des bases, fermé le 02/11, repart du début : AncienMondeBases)
         // sa parcelle du monde du tutoriel redevient libre (cabane effacée juste avant)
         PlotsTuto.liberer(p.server, p.getUUID());
-        // ce qu'il avait rangé dans la caisse de la cabane revient dans son inventaire (le kit marqué est repris juste après)
-        List<ItemStack> reste = new ArrayList<>();
-        for (ItemStack s : recup) {
-            if (!p.getInventory().add(s) && !s.isEmpty()) {
-                reste.add(s);
-            }
-        }
+        // 03/11 : le kit est repris, puis son inventaire mis de côté au début lui est rendu (InventaireTuto), avec ce qu'il
+        // avait rangé dans la caisse de la cabane hors kit ; ce qui ne rentre pas attend une case libre, jamais au sol
         reprendreKit(p);
+        InventaireTuto.rendre(p, horsKit(recup));
         if (MondeBases.estTuto(p.level())) {
             if (!Deplacements.allerAuSpawn(p)) {
                 ServerLevel o = p.server.overworld();
                 net.minecraft.core.BlockPos s = o.getSharedSpawnPos();
                 p.teleportTo(o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);
             }
-        }
-        for (ItemStack s : reste) {
-            p.drop(s, false);   // inventaire plein : à ses pieds, au spawn
         }
         T.chat(p, T.t("crac.tuto.termine", "[Tuto] Fini ! La cabane d'essai a disparu. Le matériel de ta première base t'attend dans le coffre du clan (/clan coffre) : pose-la sur la carte, loin des villes et du loot."),
             ChatFormatting.GREEN);
@@ -234,6 +231,45 @@ public final class Tutoriel {
         }
         PlotsTuto.liberer(server, u);
         // le kit est repris à sa prochaine connexion (connexion ci-dessous)
+    }
+
+    /** Les objets qui ne sont pas du kit (sortis de la caisse de la cabane d'essai). */
+    private static List<ItemStack> horsKit(List<ItemStack> l) {
+        List<ItemStack> out = new ArrayList<>();
+        for (ItemStack s : l) {
+            if (!s.isEmpty() && !(s.hasTag() && s.getTag().getBoolean(MARQUE_KIT))) {
+                out.add(s);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Sortie du tutoriel sans le finir (03/11, retours du propriétaire : « s'il se téléporte… ») : le joueur n'est plus ni
+     * dans le monde du tutoriel ni au spawn (téléporté ailleurs par une commande du staff, envoi raté). Comme une fin, sans
+     * la valider : cabane d'essai effacée, kit repris, inventaire rendu ; le tutoriel pourra être refait.
+     */
+    private static void quitter(ServerPlayer p, BasesDonnees d, BasesDonnees.Joueur j) {
+        j.etape = BasesDonnees.Etape.AUCUNE;
+        j.phaseTicks = 0;
+        j.batiment = -1L;
+        j.arete = -1;
+        j.finEnAttente = false;
+        d.marquer();
+        FINS.remove(p.getUUID());
+        oublier(p.getUUID());
+        effacerGuide(p);
+        ServerLevel tuto = p.server.getLevel(MondeBases.TUTO);
+        List<ItemStack> recup = new ArrayList<>();
+        if (tuto != null) {
+            EffacerBase.effacerDans(p.server, p.getUUID(), tuto, recup);
+        }
+        PlotsTuto.liberer(p.server, p.getUUID());
+        reprendreKit(p);
+        InventaireTuto.rendre(p, horsKit(recup));
+        T.chat(p, T.t("crac.tuto.quitte", "[Tuto] Tu as quitté le tutoriel sans le finir : ton inventaire t'est rendu. Tu pourras le refaire plus tard."),
+            ChatFormatting.YELLOW);
+        Crac.LOGGER.info("[CRac] tutoriel quitté sans le finir par {} ({})", p.getGameProfile().getName(), p.level().dimension().location());
     }
 
     /** Reprend tout ce qui reste du kit du tutoriel (objets marqués), où qu'il soit dans l'inventaire. */
@@ -274,6 +310,8 @@ public final class Tutoriel {
         }
         if (!occupe(p.server, p.getUUID())) {
             reprendreKit(p);
+            // 03/11 : inventaire mis de côté pas encore rendu (fin pendant son absence, plantage, /wipe tout) : rendu
+            InventaireTuto.rendre(p, List.of());
         }
     }
 
@@ -304,6 +342,7 @@ public final class Tutoriel {
 
     /** Toutes les secondes (MondeBasesServeur). */
     static void seconde(MinecraftServer server) {
+        InventaireTuto.seconde(server);   // objets rendus en attente d'une case libre (03/11)
         if (!actif() || server.getLevel(MondeBases.TUTO) == null) {
             return;
         }
@@ -365,6 +404,8 @@ public final class Tutoriel {
                     // kit déjà reçu (déconnecté avant l'envoi) : de retour au spawn, on repart à l'envoi
                     if (MondeBases.estSpawn(p.level())) {
                         SEQUENCES.put(id, T_TITRE_3 - 20);
+                    } else if (!MondeBases.estTuto(p.level())) {
+                        quitter(p, d, j);   // 03/11 : emmené ailleurs avant l'envoi (staff, envoi raté) : inventaire rendu
                     }
                 }
                 case PHASE -> {
@@ -450,6 +491,8 @@ public final class Tutoriel {
             return;
         }
         if (!MondeBases.estTuto(p.level())) {
+            // 03/11 : téléporté hors du tutoriel (commande du staff…) : il en sort, son inventaire lui est rendu
+            quitter(p, d, j);
             return;
         }
         if (progression(p)[0] >= FINIE) {
@@ -533,6 +576,7 @@ public final class Tutoriel {
             }
         }
         reprendreKit(p);
+        InventaireTuto.rendre(p, List.of());   // 03/11 : tutoriel relancé en cours : son inventaire d'abord, remis de côté au kit
         BasesDonnees d = BasesDonnees.get(p.server);
         BasesDonnees.Joueur j = d.joueur(p.getUUID());
         j.etape = BasesDonnees.Etape.AUCUNE;
@@ -684,6 +728,17 @@ public final class Tutoriel {
                 T.t("crac.tuto.sous2", "Voici de quoi bâtir une cabane 2 × 1 avec une porte."), 80);
         }
         if (j.etape == BasesDonnees.Etape.AUCUNE) {
+            // 03/11 (retours du propriétaire) : son inventaire est mis de côté sur le disque AVANT le kit, il le retrouve à
+            // la fin du tutoriel quelle qu'elle soit (InventaireTuto) ; pas écrit : le tutoriel ne part pas
+            if (!InventaireTuto.mettreDeCote(p)) {
+                SEQUENCES.remove(p.getUUID());
+                FORCES.remove(p.getUUID());
+                T.chat(p, T.t("crac.tuto.inventaire_erreur", "[Tuto] Ton inventaire n'a pas pu être mis de côté : le tutoriel ne part pas. Réessaie dans un instant."),
+                    ChatFormatting.RED);
+                return;
+            }
+            T.chat(p, T.t("crac.tuto.inventaire_garde", "[Tuto] Ton inventaire est mis de côté : tu le retrouves à la fin du tutoriel."),
+                ChatFormatting.YELLOW);
             Group g = groupe(p);
             List<ItemStack> kit = contenuKit();
             for (ItemStack s : kit) {
@@ -1389,6 +1444,7 @@ public final class Tutoriel {
         // 28/10 : cabane d'essai effacée, parcelle libérée, kit repris ; s'il est dans le monde du tutoriel, retour au spawn
         effacerCabaneEssai(src.getServer(), p.getUUID());
         reprendreKit(p);
+        InventaireTuto.rendre(p, List.of());   // 03/11 : son inventaire mis de côté au début du tutoriel
         if (MondeBases.estTuto(p.level()) && !Deplacements.allerAuSpawn(p)) {
             ServerLevel o = p.server.overworld();
             net.minecraft.core.BlockPos s = o.getSharedSpawnPos();

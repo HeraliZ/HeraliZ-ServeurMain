@@ -38,3 +38,11 @@ description='''Construction de base facon Rust (plan, marteau, tiers, Claim Bloc
     versionRange="[0.1.0,)"
     ordering="AFTER"
     side="BOTH"
+
+# Curios : facultatif (03/11 : emplacements Curios, sac porté compris, mis de côté pendant le tutoriel des bases, s'il est là)
+[[dependencies.crac]]
+    modId="curios"
+    mandatory=false
+    versionRange="[5.14,)"
+    ordering="NONE"
+    side="BOTH"
