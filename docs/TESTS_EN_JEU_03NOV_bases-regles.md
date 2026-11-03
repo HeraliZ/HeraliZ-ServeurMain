@@ -1,6 +1,7 @@
 # Essais en jeu — chantier « bases-regles » (retours du propriétaire du 02/11 au soir)
 
-Bases (CRac) **1.31.0-beta**, puis **1.31.1-beta** (suite du 03/11 : home seulement sur une fondation). Rien n'a été testé en jeu ni fabriqué : Gradle est bloqué sur cette machine
+Bases (CRac) **1.31.0-beta**, puis **1.31.1-beta** (suite du 03/11 : home seulement sur une fondation). Puis **1.33.0-beta**
+(nouveau retour du 03/11 : carrés tournés contre les triangles, section en fin de fiche). Rien n'a été testé en jeu ni fabriqué : Gradle est bloqué sur cette machine
 (maven.minecraftforge.net inaccessible). Tous les fichiers Java touchés passent la lecture de javac (syntaxe seulement,
 sans Minecraft) ; la pente de l'usure (`PenteUsure`, Java pur) a été compilée et essayée hors du jeu (13 h pour une pièce
 intacte, 7 h jusqu'à 30 %). La compilation complète et `verif_split` se feront au contrôle de branche de GitHub.
@@ -102,3 +103,47 @@ pas (protocole 31). Fichiers de réglages livrés : `crac-server.toml` (section 
 - Un joueur ne voit pas à l'avance, dans la roue du marteau, qu'une démolition couperait sa base : il l'apprend au clic.
 - `modules/bases/outils/apercu_mort.py` ne se lance plus (polices déplacées dans le noyau le 02/11) : écran de mort non
   revu en image ; les nouveaux textes sont plus courts ou de même longueur que les anciens.
+
+## Carrés contre les côtés en biais des triangles (nouveau retour du 03/11, Bases 1.33.0-beta)
+
+**Ce qui change** : la règle du 31/10 « une pièce carrée se pose toujours droite » est retirée (serveur et fantôme du
+plan, texte `crac.rule.square_off_grid` retiré). Comme dans Rust, un carré (fondation, plancher, toit, escalier, rampe)
+se pose contre chacun des 3 côtés d'une fondation triangle, tourné comme ce côté (30° ou 60°). Les caisses, coffres et
+objets posés (blocs de Minecraft, toujours droits) tiennent sur une case dont le sol couvre la moitié au moins avec son
+centre (avant : la case entière) : un carré tourné porte 8 caisses au lieu de 2, une fondation triangle 4 au lieu de 1.
+L'armoire demande toujours une case entièrement couverte.
+
+**Pourquoi le carré tourné « posait problème »** (relu dans le code, rien à réécrire) :
+- sa collision, sa visée (marteau, plan) et son fantôme sont déjà ceux d'un vrai carré tourné : polygone exact pour le
+  dessin et le fantôme, collision tramée au pixel par bloc (`ShapeRaster`, gardée en cache par orientation dans
+  `PieceShapes` : rien par tick). Avec F3+B, des marches d'un pixel le long des bords en biais : Minecraft ne connaît que
+  des boîtes droites ;
+- murs, fenêtres, portes, planchers et toits posés dessus suivent déjà son orientation (même grille à 30° que les côtés
+  des triangles) ; connexité au bâtiment de l'armoire, PV, usure et démolition ne dépendent pas de l'orientation ;
+- le vrai blocage était la règle des objets posés : seules les cases entièrement couvertes portaient une caisse (2 sur
+  un carré tourné), d'où « les caisses de travers sur 2 cases ». C'est cette règle qui change.
+
+**Rendus avant / après** (à valider ; dessinés hors du jeu avec la géométrie de CRac) :
+`/tmp/claude-0/-home-user-HeraliZ-ServeurMain/17fb6a25-fa62-5289-ae73-5657d6f9f60f/scratchpad/rendus_03nov/bases-regles/`
+`1_avant_plan.png`, `2_apres_plan.png` (vue de dessus : carré contre chaque côté, collision au pixel, cases qui portent une
+caisse), `3_avant_fantome.png`, `4_apres_fantome.png` (fantôme de pose et carte du verdict), `5_petite_base.png`.
+
+**Essais à faire**
+14. Fondation triangle : poser une fondation carrée contre chacun des 3 côtés : fantôme bleu, « Prêt à construire »,
+    pose acceptée ; les deux carrés en biais sont tournés comme leur côté. Même chose avec un plancher posé sur des murs
+    en biais.
+15. Marcher, sauter et courir sur et autour d'un carré tourné : aucun accroc (F3+B : petites marches d'un pixel le long
+    des bords en biais, normal). Viser au marteau : la carte de la pièce s'affiche partout sur le carré.
+16. Murs, fenêtre, porte sur les bords d'un carré tourné : ils suivent le bord ; plancher et toit dessus.
+17. Caisses sur un carré tourné : 8 cases acceptent une caisse ; sur une case coupée à moins de la moitié : « Moins de la
+    moitié de cette case est sur une fondation ou un plancher (bord en biais) : pose-le plus vers l'intérieur. » Une
+    caisse de bord dépasse un peu du carré. Fondation triangle seule : 4 caisses. Coffres par rareté : mêmes règles.
+18. Démolir ou faire sauter le carré tourné : les caisses dessus tombent avec lui (contenu au sol) ; démolition depuis les
+    bouts (point 3) respectée ; un carré tourné coupé de l'armoire s'use (points 4 et 5).
+19. Bases existantes : rien ne bouge ; une caisse déjà posée reste.
+
+**Limites connues** : les caisses, coffres, tables et l'armoire sont des blocs de Minecraft : ils restent droits sur un
+carré tourné (ils ne peuvent pas tourner de 30° ; il faudrait des modèles et des collisions à part, que le chantier des
+coffres pourrait étudier). Une caisse de bord dépasse un peu du sol. Une caisse ne se pose pas dans la rangée d'un mur
+en biais (seulement d'un mur droit, comme avant).
+

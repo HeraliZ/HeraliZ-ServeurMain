@@ -294,14 +294,43 @@ public class StructureBlock extends BaseEntityBlock {
 
     /**
      * Whether a block may stand on the structure block at {@code pos} (player rule 14): foundations and floors flush
-     * with its top cover the whole face, and no floor has its top inside it. Roofs (a merged roof's plateau can be flush
+     * with its top cover the face, and no floor has its top inside it. Roofs (a merged roof's plateau can be flush
      * with a block top), walls, stairs and ramps never hold one, even where their collision fills the face.
+     * <p>HeraliZ (03/11, demande du propriétaire : un carré tourné contre un triangle « agit réellement comme un carré ») :
+     * la face n'a plus besoin d'être couverte en entier : la moitié au moins, et son centre ({@link #porteObjet}). Avant,
+     * un carré tourné de 30° ou 60° ne portait une caisse que sur 2 de ses cases (les seules entièrement couvertes) ; les
+     * caisses et coffres, blocs de Minecraft, restent droits et peuvent dépasser un peu d'un bord en biais. L'armoire
+     * (siège : {@code Assises}) demande toujours une case entièrement couverte.
      */
     public static boolean holdsBlockOnTop(BlockGetter level, BlockPos pos) {
         if (!(level.getBlockEntity(pos) instanceof StructureBlockEntity be)) {
             return false;
         }
-        return standIssue(be.occupants(), pos) == null && flushFloorArea(be.occupants(), pos) >= 256.0 - 1e-6;
+        return standIssue(be.occupants(), pos) != StandIssue.HALF_LEVEL && porteObjet(be.occupants(), pos);
+    }
+
+    /** Part du dessus d'une case qu'un sol doit couvrir pour porter un objet (avec le centre de la case) : la moitié. */
+    public static final double PART_PORTEUSE = 0.5;
+
+    /**
+     * HeraliZ (03/11) : les fondations et planchers à ras du dessus de la case {@code pos} la couvrent en entier, ou au
+     * moins à {@link #PART_PORTEUSE} avec son centre : une caisse posée dessus repose sur le sol par son milieu.
+     */
+    public static boolean porteObjet(java.util.List<Occupant> occupants, BlockPos pos) {
+        double top = 16.0 * pos.getY() + 16.0;
+        double covered = 0;
+        boolean centre = false;
+        for (Occupant o : occupants) {
+            PieceKey k = o.key();
+            if (!k.kind().isWalkableSurface() || Math.abs(16.0 * k.origin().getY() + k.baseY() - top) > 1e-6) continue;
+            double x0 = (pos.getX() - k.origin().getX()) * 16.0;
+            double z0 = (pos.getZ() - k.origin().getZ()) * 16.0;
+            double[][] poly = Footprints.solidPolygon(k);
+            double[][] c = Poly.clipRect(poly, x0, z0, x0 + 16, z0 + 16);
+            covered += c == null ? 0 : Poly.area(c);
+            centre |= c != null && Poly.contains(poly, x0 + 8.0, z0 + 8.0);
+        }
+        return covered >= 256.0 - 1e-6 || centre && covered >= 256.0 * PART_PORTEUSE - 1e-6;
     }
 
     /**

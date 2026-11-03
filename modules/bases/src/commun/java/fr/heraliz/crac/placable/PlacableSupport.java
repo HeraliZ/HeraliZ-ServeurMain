@@ -16,8 +16,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Placables stand on something, like Rust deployables: a full top face below (terrain, a workbench), a block fully
- * covered by a foundation or floor (never a roof, a wall top or a step: rule 14) or another placable. When that support
+ * Placables stand on something, like Rust deployables: a full top face below (terrain, a workbench), a block covered
+ * by a foundation or floor (never a roof, a wall top or a step: rule 14 ; HeraliZ 03/11 : la moitié de la case et son
+ * centre suffisent, {@link StructureBlock#porteObjet}, pour les carrés tournés et les triangles) or another placable. When that support
  * goes they fall with it instead of floating.
  */
 public final class PlacableSupport {

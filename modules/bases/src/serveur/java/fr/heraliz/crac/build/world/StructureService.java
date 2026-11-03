@@ -366,10 +366,8 @@ public final class StructureService {
         if (heraliz != null) {
             return Outcome.fail(heraliz);
         }
-        if (key.kind().shape == PieceKind.Shape.SQUARE && !PlacementRules.squareOnGrid(key)) {
-            // HeraliZ (31/10) : un carré se pose toujours droit, sur la grille de la base
-            return Outcome.fail(PlacementRules.Result.SQUARE_OFF_GRID.message);
-        }
+        // HeraliZ (03/11, demande du propriétaire) : plus de règle « carré toujours droit » (31/10) : comme dans Rust, un
+        // carré se pose contre chacun des 3 côtés d'une fondation triangle, tourné comme ce côté
         PlacementRules.Plan plan = PlacementRules.check(store.index, new LevelEnv(level), key, BuildConfig.stability(), BuildConfig.foundationMaxHeight.get());
         if (!plan.ok()) {
             return Outcome.fail(plan.result().message);

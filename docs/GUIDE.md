@@ -524,11 +524,13 @@ Code : `fr.heraliz.quetes.serveur.Journalieres` (module `pnj`), écran `client/E
   fondations en une pièce 18, en deux pièces 15, étage fermé 9 (la limite de caisses par base compte toujours).
 - Coffres par rareté : 13,5 px de profondeur au plus pour tenir dans la rangée (`modules/bases/outils/coffres_modeles.py`,
   `amincir`).
-- **Fondations triangles** (31/10, demande du propriétaire) : une pièce carrée (fondation, plancher, toit, escalier,
-  rampe) se pose toujours droite, sur la grille de 3 blocs de la base (`PlacementRules.squareOnGrid`, refus
-  `crac.rule.square_off_grid` côté serveur et sur le fantôme) : contre un des deux côtés en biais d'un triangle, seul un
-  autre triangle se pose. Avant, le carré y était tourné de 30° ou 60° : seules 2 de ses 9 cases étaient pleines et les
-  caisses (blocs de Minecraft, toujours droits) étaient de travers dessus. Les carrés déjà posés de biais restent tels
-  quels ; les outils du staff (`placeAdmin`) et les tests gardent l'ancienne liberté. Une fondation triangle fermée : 1
-  caisse. Les côtés en biais montrent des « marches » avec F3+B : la collision de Minecraft n'est faite que de boîtes
-  droites, elle suit la pente par petits pas (normal, rien à corriger).
+- **Fondations triangles** (03/11, demande du propriétaire, Bases 1.33.0 ; remplace la règle du 31/10 « carré toujours
+  droit », retirée) : comme dans Rust, un carré (fondation, plancher, toit, escalier, rampe) se pose contre chacun des 3
+  côtés d'une fondation triangle, tourné comme ce côté (30° ou 60°). Sa collision est un vrai carré tourné, tramée au
+  pixel (`ShapeRaster`, formes gardées par orientation dans `PieceShapes`) : avec F3+B, de petites « marches » d'un pixel
+  le long des côtés en biais (la collision de Minecraft n'est faite que de boîtes droites, normal). Murs, fenêtres, portes,
+  planchers et toits posés dessus suivent son orientation (même grille à 30° que les triangles). Caisses, coffres et objets
+  posés, blocs de Minecraft, restent droits : une case porte un objet si les fondations ou planchers à ras de son dessus
+  en couvrent la moitié au moins avec son centre (`StructureBlock.porteObjet` ; avant : la case entière). Un carré tourné
+  porte ainsi 8 caisses (avant : 2), une fondation triangle 4 (avant : 1). L'armoire demande toujours une case
+  entièrement couverte. Essais : `docs/TESTS_EN_JEU_03NOV_bases-regles.md`.

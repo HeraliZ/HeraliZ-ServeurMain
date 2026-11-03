@@ -284,10 +284,6 @@ public final class PlanController {
         if (player != null && Heraliz.horsMondeBases(player) != null) {
             return Status.error(Heraliz.horsMondeBases(player));
         }
-        if (key.kind().shape == PieceKind.Shape.SQUARE && !PlacementRules.squareOnGrid(key)) {
-            // HeraliZ (31/10) : un carré se pose toujours droit, sur la grille de la base (même règle que le serveur)
-            return Status.error(PlacementRules.Result.SQUARE_OFF_GRID.message);
-        }
         StructureView view = ClientMirror.view();
         MirrorStability.refresh(BuildClient.stability());
         PlacementRules.Plan plan = PlacementRules.check(view, new LevelEnv(mc.level), key, BuildClient.stability(), BuildClient.maxSkirt());
