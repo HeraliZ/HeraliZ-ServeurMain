@@ -21,19 +21,19 @@ public final class CoffresDonnees {
 
     public static Mesures de(String nom) {
         return switch (nom) {
-            case "malle_chantier" -> new Mesures(new double[]{0.0, 2.075, 16.0, 15.575}, new double[]{0.1, 0.0, 2.075, 16.0, 12.05, 15.575},
-                new double[]{0.0, 0.0, 2.075, 15.9, 12.05, 15.575}, 8, new Mobile[]{
-                    new Mobile("couvercle", null, 16.0F, 10.0F, 15.275F, 'x', new float[]{0F, 1F}, new float[]{0F, 82F})});
-            case "casier_metallique" -> new Mesures(new double[]{0.5, 2.0, 15.5, 15.5}, new double[]{0.5, 0.0, 2.0, 15.5, 16.0, 15.5},
-                new double[]{0.5, 0.0, 2.0, 15.5, 15.4, 15.5}, 8, new Mobile[]{
-                    new Mobile("porte", null, 14.95F, 16.0F, 3.25F, 'y', new float[]{0F, 1F}, new float[]{0F, -108F})});
-            case "caisse_armes" -> new Mesures(new double[]{0.0, 1.975, 16.0, 15.475}, new double[]{0.25, 0.0, 1.975, 16.0, 13.45, 15.475},
-                new double[]{0.0, 0.0, 1.975, 15.75, 13.45, 15.475}, 10, new Mobile[]{
-                    new Mobile("couvercle", null, 16.0F, 10.4F, 15.175F, 'x', new float[]{0F, 0.15F, 1F}, new float[]{0F, 4F, 78F})});
-            case "coffre_fort" -> new Mesures(new double[]{0.5, 1.625, 16.0, 15.125}, new double[]{0.5, 0.0, 1.625, 16.0, 16.0, 15.125},
-                new double[]{0.5, 0.0, 1.625, 16.0, 15.5, 15.125}, 18, new Mobile[]{
-                    new Mobile("porte", null, 15.15F, 16.0F, 3.625F, 'y', new float[]{0F, 0.3F, 1F}, new float[]{0F, 0F, -100F}),
-                    new Mobile("volant", "porte", 8.0F, 12.6F, 1.825F, 'z', new float[]{0F, 0.3F, 1F}, new float[]{0F, -180F, -180F})});
+            case "malle_chantier" -> new Mesures(new double[]{0.0, 1.75, 16.0, 15.5}, new double[]{0.5, 0.0, 1.75, 16.0, 11.75, 15.5},
+                new double[]{0.0, 0.0, 1.75, 15.5, 11.75, 15.5}, 8, new Mobile[]{
+                    new Mobile("couvercle", null, 16.0F, 9.5F, 15.5F, 'x', new float[]{0F, 1F}, new float[]{0F, 82F})});
+            case "casier_metallique" -> new Mesures(new double[]{0.5, 1.75, 15.5, 15.5}, new double[]{0.5, 0.0, 1.75, 15.5, 16.0, 15.5},
+                new double[]{0.5, 0.0, 1.75, 15.5, 15.5, 15.5}, 8, new Mobile[]{
+                    new Mobile("porte", null, 15.5F, 16.0F, 2.5F, 'y', new float[]{0F, 1F}, new float[]{0F, -108F})});
+            case "caisse_armes" -> new Mesures(new double[]{0.0, 1.75, 16.0, 15.5}, new double[]{0.5, 0.0, 1.75, 16.0, 13.0, 15.5},
+                new double[]{0.0, 0.0, 1.75, 15.5, 13.0, 15.5}, 10, new Mobile[]{
+                    new Mobile("couvercle", null, 16.0F, 10.0F, 15.5F, 'x', new float[]{0F, 0.15F, 1F}, new float[]{0F, 4F, 78F})});
+            case "coffre_fort" -> new Mesures(new double[]{0.5, 1.75, 16.0, 15.5}, new double[]{0.5, 0.0, 1.75, 16.0, 16.0, 15.5},
+                new double[]{0.5, 0.0, 1.75, 16.0, 15.5, 15.5}, 18, new Mobile[]{
+                    new Mobile("porte", null, 15.5F, 16.0F, 3.25F, 'y', new float[]{0F, 0.3F, 1F}, new float[]{0F, 0F, -100F}),
+                    new Mobile("poignee", "porte", 8.0F, 12.0F, 2.25F, 'z', new float[]{0F, 0.3F, 1F}, new float[]{0F, -90F, -90F})});
             default -> throw new IllegalArgumentException(nom);
         };
     }
