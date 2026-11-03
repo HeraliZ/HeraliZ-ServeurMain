@@ -21,15 +21,18 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Cœur de clan (saison des clans, modèle validé le 22/10, écrit par {@code mods/crac/outils/coeur_modele.py}) : il garde
- * les points de saison du clan. Socle rond et bras (modèle fixe), cristal qui tourne, points et rangs écrits en direct
+ * Cœur de clan (saison des clans) : il garde les points de saison du clan. Modèle fixe depuis le 03/11 (socle, cristal
+ * cyan qui ne tourne pas, écrit par {@code modules/bases/outils/coeur_simple.py}), points écrits en direct sur sa plaque
  * ({@code client/render/CoeurClanRendu}). Incassable en survie ; pose réservée à la base de son clan, un seul par clan
  * (règles côté serveur : {@code heraliz/CoeursClans}).
  */
 public class CoeurClanBlock extends Block implements EntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    /** Socle (jusqu'à 4,2 px) et colonne du cristal : on ne se met pas dans le cristal. */
-    private static final VoxelShape FORME = Shapes.or(Block.box(0.5, 0, 0.5, 15.5, 4.2, 15.5), Block.box(4, 4.2, 4, 12, 15, 12));
+    /**
+     * Socle (jusqu'à 3,4 px) et colonne du cristal : on ne se met pas dans le cristal. Modèle du 03/11 (option A « simple et
+     * fixe », {@code modules/bases/outils/coeur_simple.py}).
+     */
+    private static final VoxelShape FORME = Shapes.or(Block.box(1, 0, 1, 15, 3.4, 15), Block.box(5, 3.4, 5, 11, 14, 11));
 
     public CoeurClanBlock(Properties p) {
         super(p);

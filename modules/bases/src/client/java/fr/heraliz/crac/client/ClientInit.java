@@ -85,11 +85,9 @@ public class ClientInit {
         event.registerBlockEntityRenderer(ModBlockEntities.COFFRE.get(), CoffreRendu::new);
     }
 
-    /** Parties du cœur de clan dessinées à part (filets lumineux, cristal qui tourne). */
+    /** Modèles dessinés à part (03/11 : plus ceux du cœur de clan, devenu un modèle fixe de bloc). */
     @SubscribeEvent
     public static void onRegisterModels(ModelEvent.RegisterAdditional event) {
-        event.register(CoeurClanRendu.LUEUR);
-        event.register(CoeurClanRendu.CRISTAL);
         // pièces mobiles des coffres par rareté (couvercle, porte, volant), dessinées pendant l'ouverture
         for (ResourceLocation rl : CoffreRendu.modeles("malle_chantier", "casier_metallique", "caisse_armes", "coffre_fort")) {
             event.register(rl);
