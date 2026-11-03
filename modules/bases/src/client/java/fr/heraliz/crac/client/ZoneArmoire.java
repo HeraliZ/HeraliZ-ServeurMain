@@ -1,12 +1,15 @@
 package fr.heraliz.crac.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import fr.heraliz.crac.item.BuildingPlanItem;
 import fr.heraliz.crac.network.S2CNearbyClaims;
+import fr.heraliz.noyau.client.zones.ZoneDessin;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -15,40 +18,36 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.joml.Matrix4f;
 
 /**
  * Zone des armoires à outils, plan de construction en main (CRac 1.11.0, demande du propriétaire du 18/10) : le bord de
  * chaque zone proche (celle que l'armoire protège, un carré autour d'elle), verte pour la sienne, rouge pour celle des
  * autres. Les zones viennent du serveur ({@link ClientClaimCache}).
- * <p>CRac 1.15.0 (21/10) : la bordure est posée sur le terrain et ne suit plus la hauteur du joueur (elle montait et
- * descendait avec lui) : un liseré net au ras du sol, et au-dessus un voile de 2,5 blocs qui s'efface vers le haut ; chaque
- * point du bord prend la hauteur du sol des deux colonnes qui le touchent (la plus haute), en pente douce d'un bloc à
- * l'autre ; petits poteaux aux quatre coins. Hauteur lue dans la carte des hauteurs MOTION_BLOCKING du monde du joueur
- * (avec WORLD_SURFACE, la seule que le serveur lui envoie : MOTION_BLOCKING_NO_LEAVES y reste vide et la zone tombait sous
- * terre, CRac 1.15.3), bornée à la hauteur de la zone ; rien là où le terrain n'est pas chargé.
- * <p>03/11 (retour du propriétaire : « la délimitation monte au-dessus des arbres et redescend ensuite ») : cette carte des
- * hauteurs compte les feuilles, les troncs et les objets posés ; le bord se pose maintenant sur le vrai sol, sous les
- * arbres et les objets ({@link SolZones}). Même dessin.
+ * <p>03/11 (choix du propriétaire après les rendus) : dessin commun des zones du noyau ({@link ZoneDessin}) : au bord, une
+ * bande nette et un dégradé au sol vers l'intérieur, un mur bas très léger ; rien à l'intérieur de la base (ni ses sols ni
+ * ses toits ne sont teintés). Visible à travers le décor seulement près du joueur. Posé sur le vrai sol, sans les arbres
+ * ni les objets posés ({@link SolZones}), borné à la hauteur de la zone ; rien là où le terrain n'est pas chargé.
+ * Construit une fois par zone et gardé dans la carte graphique : refait quand la zone change ou toutes les
+ * {@link #REFAIRE_TICKS} (le sol a pu changer), une seule par image ; tout est rendu {@link #OUBLIER_TICKS} après qu'on
+ * a rangé le plan.
  */
 @Mod.EventBusSubscriber(modid = "crac", value = Dist.CLIENT)
 public final class ZoneArmoire {
     private static final int VERT = 0x5FD08A, ROUGE = 0xE86A5A;
-    /** Hauteur du voile au-dessus du sol, hauteur des poteaux d'angle, liseré décollé du sol (pas de scintillement). */
-    private static final double VOILE = 2.5, POTEAU = 3.0, DECOLLE = 0.03;
-    /** Opacité du voile au sol et en haut. */
-    private static final float BAS = 0.26F, HAUT = 0.0F;
-    /**
-     * Sol brut de chaque point de la grille (la plus haute des 4 colonnes qui le touchent, {@link Integer#MIN_VALUE} hors
-     * du terrain chargé), gardé {@link #SOLS_TICKS} ticks : avant, les cartes des hauteurs étaient relues pour chaque point
-     * du bord, deux fois par image (voiles puis lignes), plan en main.
-     */
-    private static final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap SOLS = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
-    private static final int SOLS_TICKS = 10;
-    private static long solsTick = Long.MIN_VALUE;
-    private static java.lang.ref.WeakReference<Level> solsMonde = new java.lang.ref.WeakReference<>(null);
+    /** Zone refaite au plus tard après (ticks) ; zones rendues à la carte graphique après (ticks) sans plan en main. */
+    private static final int REFAIRE_TICKS = 200, OUBLIER_TICKS = 600;
+    /** Distance (blocs) au-delà de laquelle un morceau de bord n'est pas dessiné. */
+    private static final double PORTEE = 64;
     /** Position de travail de {@link SolZones} (fil du rendu seulement). */
     private static final BlockPos.MutableBlockPos CURSEUR = new BlockPos.MutableBlockPos();
+
+    private static final Map<S2CNearbyClaims.ClaimEntry, Entree> ZONES = new HashMap<>();
+    private static final Set<S2CNearbyClaims.ClaimEntry> VUES = new HashSet<>();
+    private static long dernierUsage;
+    private static Level monde;
+
+    private record Entree(ZoneDessin dessin, long faite) {
+    }
 
     private ZoneArmoire() {
     }
@@ -60,82 +59,84 @@ public final class ZoneArmoire {
         }
         Minecraft mc = Minecraft.getInstance();
         Player p = mc.player;
-        if (p == null || mc.level == null || !(p.getMainHandItem().getItem() instanceof BuildingPlanItem)) {
+        Level lvl = mc.level;
+        if (lvl != monde) {
+            oublier();
+            monde = lvl;
+        }
+        if (p == null || lvl == null) {
             return;
         }
-        Vec3 cam = e.getCamera().getPosition();
-        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        PoseStack pose = e.getPoseStack();
-        pose.pushPose();
-        pose.translate(-cam.x, -cam.y, -cam.z);
-        Matrix4f m = pose.last().pose();
-        Level lvl = mc.level;
         long t = lvl.getGameTime();
-        if (solsMonde.get() != lvl || t - solsTick >= SOLS_TICKS || t < solsTick) {
-            SOLS.clear();
-            solsTick = t;
-            solsMonde = new java.lang.ref.WeakReference<>(lvl);
+        if (!(p.getMainHandItem().getItem() instanceof BuildingPlanItem)) {
+            if (!ZONES.isEmpty() && (t - dernierUsage > OUBLIER_TICKS || t < dernierUsage)) {
+                oublier();
+            }
+            return;
         }
-        // deux passes : Minecraft ne remplit qu'un tampon partagé à la fois (voiles puis lignes, jamais mêlés : plantage)
-        VertexConsumer q = buffers.getBuffer(RenderType.debugQuads());
-        dessiner(q, null, pose, m, lvl);
-        buffers.endBatch(RenderType.debugQuads());
-        VertexConsumer l = buffers.getBuffer(RenderType.lines());
-        dessiner(null, l, pose, m, lvl);
-        buffers.endBatch(RenderType.lines());
-        pose.popPose();
-    }
-
-    /** Toutes les zones proches : voiles si q, liseré et poteaux si l. */
-    private static void dessiner(VertexConsumer q, VertexConsumer l, PoseStack pose, Matrix4f m, Level lvl) {
-        for (S2CNearbyClaims.ClaimEntry c : ClientClaimCache.get()) {
-            BlockPos a = c.center();
-            int ymin = a.getY() - c.yRadius(), ymax = a.getY() + c.yRadius() + 1;
-            int x0 = a.getX() - c.radius(), x1 = a.getX() + c.radius() + 1;
-            int z0 = a.getZ() - c.radius(), z1 = a.getZ() + c.radius() + 1;
-            int rgb = c.ownedByMe() ? VERT : ROUGE;
-            float r = (rgb >> 16 & 255) / 255F, g = (rgb >> 8 & 255) / 255F, b = (rgb & 255) / 255F;
-            // les quatre côtés, parcourus dans le même sens ; dx/dz : pas le long du côté
-            cote(q, l, pose, m, lvl, x0, z0, 1, 0, x1 - x0, ymin, ymax, r, g, b);
-            cote(q, l, pose, m, lvl, x1, z0, 0, 1, z1 - z0, ymin, ymax, r, g, b);
-            cote(q, l, pose, m, lvl, x1, z1, -1, 0, x1 - x0, ymin, ymax, r, g, b);
-            cote(q, l, pose, m, lvl, x0, z1, 0, -1, z1 - z0, ymin, ymax, r, g, b);
-            if (l == null) {
+        dernierUsage = t;
+        List<S2CNearbyClaims.ClaimEntry> claims = ClientClaimCache.get();
+        VUES.clear();
+        VUES.addAll(claims);
+        for (Iterator<Map.Entry<S2CNearbyClaims.ClaimEntry, Entree>> it = ZONES.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<S2CNearbyClaims.ClaimEntry, Entree> z = it.next();
+            if (!VUES.contains(z.getKey())) {
+                z.getValue().dessin().close();
+                it.remove();
+            }
+        }
+        boolean refaite = false;
+        Vec3 cam = e.getCamera().getPosition();
+        for (S2CNearbyClaims.ClaimEntry c : claims) {
+            Entree z = ZONES.get(c);
+            if (!refaite && (z == null || t - z.faite() >= REFAIRE_TICKS || t < z.faite())) {
+                if (z != null) {
+                    z.dessin().close();
+                }
+                z = new Entree(construire(lvl, c), t);
+                ZONES.put(c, z);
+                refaite = true;   // une seule par image
+            }
+            if (z == null) {
                 continue;
             }
-            for (int[] coin : new int[][]{{x0, z0}, {x1, z0}, {x1, z1}, {x0, z1}}) {
-                double y = sol(lvl, coin[0], coin[1], ymin, ymax);
-                if (!Double.isNaN(y)) {
-                    ligne(l, pose, coin[0], y, coin[1], coin[0], Math.min(y + POTEAU, ymax), coin[1], r, g, b);
-                }
-            }
+            int rgb = c.ownedByMe() ? VERT : ROUGE;
+            z.dessin().dessiner(e.getPoseStack().last().pose(), e.getProjectionMatrix(), cam,
+                (rgb >> 16 & 255) / 255F, (rgb >> 8 & 255) / 255F, (rgb & 255) / 255F, 1F, PORTEE);
         }
     }
 
-    /**
-     * Un côté de la zone, découpé bloc par bloc. Point de départ (sx, sz) sur l'arête des blocs, n pas de (dx, dz) ; la
-     * hauteur d'un point d'arête est celle du sol le plus haut des colonnes qui l'entourent (dedans et dehors).
-     */
-    private static void cote(VertexConsumer q, VertexConsumer l, PoseStack pose, Matrix4f m, Level lvl, int sx, int sz,
-                             int dx, int dz, int n, int ymin, int ymax, float r, float g, float b) {
-        double yPrec = Double.NaN;
-        int xPrec = 0, zPrec = 0;
-        for (int i = 0; i <= n; i++) {
+    private static void oublier() {
+        for (Entree z : ZONES.values()) {
+            z.dessin().close();
+        }
+        ZONES.clear();
+    }
+
+    /** Les quatre côtés du carré, bloc par bloc, chaque point sur le vrai sol ; pas de teinte à l'intérieur. */
+    private static ZoneDessin construire(Level lvl, S2CNearbyClaims.ClaimEntry c) {
+        BlockPos a = c.center();
+        int ymin = a.getY() - c.yRadius(), ymax = a.getY() + c.yRadius() + 1;
+        int x0 = a.getX() - c.radius(), x1 = a.getX() + c.radius() + 1;
+        int z0 = a.getZ() - c.radius(), z1 = a.getZ() + c.radius() + 1;
+        ZoneDessin.Construction d = ZoneDessin.construction(a.getX(), a.getY(), a.getZ());
+        // côtés parcourus dans le même sens ; (dx, dz) : pas le long du côté ; l'intérieur est à (-dz, dx)
+        cote(d, lvl, x0, z0, 1, 0, x1 - x0, ymin, ymax);
+        cote(d, lvl, x1, z0, 0, 1, z1 - z0, ymin, ymax);
+        cote(d, lvl, x1, z1, -1, 0, x1 - x0, ymin, ymax);
+        cote(d, lvl, x0, z1, 0, -1, z1 - z0, ymin, ymax);
+        return d.finir();
+    }
+
+    private static void cote(ZoneDessin.Construction d, Level lvl, int sx, int sz, int dx, int dz, int n, int ymin, int ymax) {
+        double yPrec = sol(lvl, sx, sz, ymin, ymax);
+        for (int i = 1; i <= n; i++) {
             int x = sx + dx * i, z = sz + dz * i;
-            // les 4 colonnes autour du point de la grille (dedans et dehors)
             double y = sol(lvl, x, z, ymin, ymax);
-            if (i > 0 && !Double.isNaN(y) && !Double.isNaN(yPrec)) {
-                double a0 = yPrec + DECOLLE, a1 = y + DECOLLE;
-                if (q != null) {
-                    mur(q, m, xPrec, zPrec, x, z, a0, Math.min(a0 + VOILE, ymax), a1, Math.min(a1 + VOILE, ymax), r, g, b);
-                }
-                if (l != null) {
-                    ligne(l, pose, xPrec, a0, zPrec, x, a1, z, r, g, b);
-                }
+            if (!Double.isNaN(y) && !Double.isNaN(yPrec)) {
+                d.bord(x - dx, yPrec, z - dz, x, y, z, -dz, dx);
             }
             yPrec = y;
-            xPrec = x;
-            zPrec = z;
         }
     }
 
@@ -144,47 +145,15 @@ public final class ZoneArmoire {
      * objets posés : {@link SolZones}), borné à la zone ; NaN si le terrain n'est pas chargé.
      */
     private static double sol(Level lvl, int xb, int zb, int ymin, int ymax) {
-        long cle = (long) xb << 32 | (zb & 0xFFFFFFFFL);
-        int best;
-        if (SOLS.containsKey(cle)) {
-            best = SOLS.get(cle);
-        } else {
-            best = Integer.MIN_VALUE;
-            for (int x = xb - 1; x <= xb; x++) {
-                for (int z = zb - 1; z <= zb; z++) {
-                    best = Math.max(best, SolZones.dessus(lvl, x, z, CURSEUR));
-                }
+        int best = SolZones.INCONNU;
+        for (int x = xb - 1; x <= xb; x++) {
+            for (int z = zb - 1; z <= zb; z++) {
+                best = Math.max(best, SolZones.dessus(lvl, x, z, CURSEUR));
             }
-            SOLS.put(cle, best);
         }
-        if (best == Integer.MIN_VALUE) {
+        if (best == SolZones.INCONNU) {
             return Double.NaN;
         }
         return Math.max(ymin, Math.min(best, ymax - 1));
-    }
-
-    /** Un pan du voile, vu des deux côtés, plus opaque en bas ; bas et haut peuvent pencher (a : début, b : fin). */
-    private static void mur(VertexConsumer q, Matrix4f m, double xa, double za, double xb, double zb, double ya0, double ya1,
-                            double yb0, double yb1, float r, float g, float b) {
-        q.vertex(m, (float) xa, (float) ya0, (float) za).color(r, g, b, BAS).endVertex();
-        q.vertex(m, (float) xb, (float) yb0, (float) zb).color(r, g, b, BAS).endVertex();
-        q.vertex(m, (float) xb, (float) yb1, (float) zb).color(r, g, b, HAUT).endVertex();
-        q.vertex(m, (float) xa, (float) ya1, (float) za).color(r, g, b, HAUT).endVertex();
-        q.vertex(m, (float) xa, (float) ya1, (float) za).color(r, g, b, HAUT).endVertex();
-        q.vertex(m, (float) xb, (float) yb1, (float) zb).color(r, g, b, HAUT).endVertex();
-        q.vertex(m, (float) xb, (float) yb0, (float) zb).color(r, g, b, BAS).endVertex();
-        q.vertex(m, (float) xa, (float) ya0, (float) za).color(r, g, b, BAS).endVertex();
-    }
-
-    private static void ligne(VertexConsumer l, PoseStack pose, double xa, double ya, double za, double xb, double yb, double zb,
-                              float r, float g, float b) {
-        float nx = (float) (xb - xa), ny = (float) (yb - ya), nz = (float) (zb - za);
-        float n = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (n < 1e-6) {
-            return;
-        }
-        PoseStack.Pose p = pose.last();
-        l.vertex(p.pose(), (float) xa, (float) ya, (float) za).color(r, g, b, 0.85F).normal(p.normal(), nx / n, ny / n, nz / n).endVertex();
-        l.vertex(p.pose(), (float) xb, (float) yb, (float) zb).color(r, g, b, 0.85F).normal(p.normal(), nx / n, ny / n, nz / n).endVertex();
     }
 }
