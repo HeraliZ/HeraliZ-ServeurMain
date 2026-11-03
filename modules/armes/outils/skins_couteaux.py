@@ -524,20 +524,22 @@ MELEE = {
 }
 # Vitesse en main des armes de mêlée de LR (part de la vitesse de base, attribut minecraft:generic.movement_speed en
 # « percent ») : 03/11, demande du propriétaire, tous les couteaux à +10 % (avant : +5 % pour toute la mêlée, 19/10) ; la
-# batte n'est pas un couteau et garde +5 %. Écrite dans la fiche de chaque skin, quelle que soit celle de melee_base. Les
+# batte suit les couteaux (choix du propriétaire, 03/11). Écrite dans la fiche de chaque skin, quelle que soit celle de
+# melee_base (VITESSE_EN_MAIN : une arme qui aurait un autre bonus). Les
 # couteaux TaCZ (M9, Karambit, Butterfly, CT, T) ont le même bonus dans leur fiche commune arkaniaz:knife_data
 # (serveur/tacz/heraliz_5_couteaux_cs2, « movement_speed »).
 VITESSE_COUTEAUX = 0.1
-VITESSE_EN_MAIN = {"baseball_bat": 0.05}
+VITESSE_EN_MAIN = {}
 
 
 # Portée des coups (max_range de la zone de chaque coup, des yeux au point le plus proche de la cible) : 03/11, demande
 # du propriétaire, tous les couteaux à 1 bloc au plus, clic gauche comme clic droit (avant : 4 à 4,5 dans les fiches,
-# ramenés à 3 par [melee] portee_max). La batte (PORTEE_A_PART) garde sa fiche. Le joueur choisit ses cibles avec cette
+# ramenés à 3 par [melee] portee_max). La batte aussi (03/11, choix du propriétaire) ; une arme de PORTEE_A_PART garderait
+# sa fiche. Le joueur choisit ses cibles avec cette
 # portée et le serveur la revérifie (MeleeItemServeur, PorteeMeleeServeur) ; les couteaux TaCZ ont la même dans
 # [melee] portee_couteaux de heralisz_tactical-server.toml.
 PORTEE_COUTEAUX = 1.0
-PORTEE_A_PART = {"baseball_bat"}
+PORTEE_A_PART = set()
 
 
 def reglages_en_main(couteau, fiche):

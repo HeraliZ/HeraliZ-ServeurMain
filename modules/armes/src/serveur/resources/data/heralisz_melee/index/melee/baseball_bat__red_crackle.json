@@ -7,7 +7,7 @@
     "attributes": {
       "generic.attack_damage": 11,
       "minecraft:generic.movement_speed": {
-        "amount": 0.05,
+        "amount": 0.1,
         "operation": "percent"
       }
     },
@@ -23,7 +23,7 @@
         "delay": 7,
         "hitbox": {
           "type": "cone",
-          "max_range": 4,
+          "max_range": 1.0,
           "max_angle": 110,
           "exclude_self": true
         },
@@ -36,7 +36,7 @@
         "delay": 12,
         "hitbox": {
           "type": "cone",
-          "max_range": 4,
+          "max_range": 1.0,
           "max_angle": 60,
           "exclude_self": true
         }

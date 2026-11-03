@@ -66,7 +66,7 @@ public final class PorteeMelee {
    /**
     * Portée de l'arme de corps à corps tenue, -1 si ce n'en est pas une (03/11) : couteau TaCZ ou couteau de GeckoLib :
     * {@link #couteaux()} ; arme de mêlée de LR : la plus longue portée des coups de sa fiche (gauche, droit, combos),
-    * ramenée à {@link #max()} (1 pour les couteaux à vie, 3 pour la batte). Lue par le serveur à chaque coup porté
+    * ramenée à {@link #max()} (1 pour les couteaux à vie et la batte depuis le 03/11). Lue par le serveur à chaque coup porté
     * (PorteeMeleeServeur), jamais à chaque image.
     */
    public static double porteeEnMain(ItemStack main) {

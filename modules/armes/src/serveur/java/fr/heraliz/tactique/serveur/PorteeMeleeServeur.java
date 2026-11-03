@@ -16,7 +16,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
  * (paquet « attaquer »). Ce dernier n'est jamais envoyé par le jeu du joueur avec une arme de mêlée ou un couteau en main
  * (clic gauche bloqué chez lui), mais un jeu modifié pouvait l'envoyer jusqu'à la portée de Minecraft (3 blocs, ce que
  * l'anticheat tolère) avec les dégâts de l'arme. Ici, un coup porté avec une arme de corps à corps en main
- * ({@link PorteeMelee#porteeEnMain} : couteaux 1 bloc, batte 3) sur une cible plus loin que sa portée + {@link
+ * ({@link PorteeMelee#porteeEnMain} : couteaux et batte 1 bloc) sur une cible plus loin que sa portée + {@link
  * PorteeMelee#MARGE_SERVEUR} (décalage du réseau, comme les cibles des armes de LR) est annulé. Mesure : des yeux au point
  * le plus proche de la cible. Pas touchés : créatif et spectateur (staff), coup d'essai d'une exécution de Réanimation
  * (ce n'est pas un coup), objets qui ne sont pas des armes de corps à corps (armes à feu, poing). Rien par tick : seulement
