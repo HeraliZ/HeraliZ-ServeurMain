@@ -51,6 +51,10 @@ const HOTES_DISCORD = ['discord.gg', 'discord.com']
 
 // Erreur « accès au jeu refusé à cause du Discord du compte » : .discord = le statut, pour ouvrir le bon panneau ;
 // .banni en plus pour un compte banni (le launcher retire alors les fichiers du jeu de ce PC, effacement.js).
+// raisons d'un lancement bloqué signalé au staff (même liste que LauncherController::RAISONS du site)
+const RAISONS_REFUS = new Set(['outil_interdit', 'fichier_modifie', 'java_modifie', 'java_modifie_encore', 'jars_ecartes',
+    'pack_refuse'])
+
 function erreurDiscord(statut) {
     if (!Object.hasOwn(MESSAGES_DISCORD, statut)) return new Error('Ton compte n’a pas accès au jeu pour le moment.')
     return Object.assign(new Error(MESSAGES_DISCORD[statut]), { discord: statut }, statut === 'banni' ? { banni: true } : {})
@@ -286,6 +290,21 @@ class CompteSite {
         return null
     }
 
+    // Lancement bloqué (ou fichiers remis en état) par le contrôle d'intégrité du launcher (03/11) : le site le poste dans le
+    // salon privé du staff (site/extension/heraliz, LauncherController). Raison d'une liste fermée, détail court, sans
+    // chemin ni donnée personnelle. Jamais d'erreur : un signalement perdu ne bloque rien.
+    async signalerRefus(jeton, raison, detail = '', version = '') {
+        if (!RAISONS_REFUS.has(raison) || !jeton) return false
+        const propre = v => String(v ?? '').replace(/[\x00-\x1f\x7f]/g, ' ').replace(/\s+/g, ' ').trim()
+        try {
+            const reponse = await this.appeler('heraliz/launcher/refus',
+                { access_token: jeton, raison, detail: propre(detail).slice(0, 300), version: propre(version).slice(0, 20) })
+            return reponse.status >= 200 && reponse.status < 300
+        } catch {
+            return false
+        }
+    }
+
     // Pack de jeu (distribution Helios) donné par le site au compte connecté : ses liens vers les fichiers du pack sont
     // signés pour quelques heures (sans compte, le site refuse ces fichiers). Erreur claire sinon.
     async pack(jeton) {
@@ -326,4 +345,4 @@ class CompteSite {
     }
 }
 
-module.exports = { CompteSite, verifierInscription, requeteParDefaut, erreurDiscord, erreurBanni, HOTES_DISCORD }
+module.exports = { CompteSite, verifierInscription, requeteParDefaut, erreurDiscord, erreurBanni, HOTES_DISCORD, RAISONS_REFUS }

@@ -64,6 +64,9 @@ class HeralizServiceProvider extends BasePluginServiceProvider
         // Pack de jeu signé pour le compte connecté (PackController) : 120 par minute et par adresse IP (un par partie)
         RateLimiter::for('heraliz-pack', fn (Request $request) => Limit::perMinute(120)->by(Adresse::de($request)));
 
+        // Lancements bloqués signalés par le launcher (LauncherController) : 10 par minute et par adresse IP
+        RateLimiter::for('heraliz-launcher', fn (Request $request) => Limit::perMinute(10)->by(Adresse::de($request)));
+
         // Rapports de la politique de contenu (CspController) : 30 par minute et par adresse IP
         RateLimiter::for('heraliz-csp', fn (Request $request) => Limit::perMinute(30)->by(Adresse::de($request)));
 

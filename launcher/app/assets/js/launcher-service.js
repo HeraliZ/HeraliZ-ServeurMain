@@ -12,7 +12,7 @@ const { validateSelectedJvm, ensureJavaDirIsRoot, javaExecFromRoot, discoverBest
 const { getServerStatus } = require('helios-core/mojang')
 const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
-const { Gardien, versionPreuve } = require('./gardien')
+const { Gardien, versionPreuve, outilsInterdits } = require('./gardien')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
@@ -512,7 +512,7 @@ class LauncherService {
         // (sans compte, le site refuse les fichiers du pack).
         if (this.compteSite) {
             const brut = await this.compteSite.pack(this.jetonActuel())
-            noterDatePack(verifierPack(brut, brut?.heralizSignature2, this.config, { dateMin: lireDatePack() }))
+            noterDatePack(this.packVerifie(brut, brut?.heralizSignature2))
             const raw = validateDistribution(brut, this.config)
             return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
         }
@@ -537,9 +537,32 @@ class LauncherService {
                 signature = (await got(url.href.replace(/distribution\.json$/, 'distribution.sig2'), { timeout: { request: 15000 }, retry: { limit: 1 } }).text()).trim()
             } catch { /* absente : refusée ci-dessous */ }
         }
-        noterDatePack(verifierPack(brut, signature, this.config, { dateMin: lireDatePack() }))
+        noterDatePack(this.packVerifie(brut, signature))
         const raw = validateDistribution(brut, this.config)
         return new HeliosDistribution(raw, Config.getCommonDirectory(), Config.getInstanceDirectory())
+    }
+
+    // Pack signé vérifié (signature.js) ; refusé : signalé au staff (signalerIntegrite), puis l'erreur suit son cours
+    packVerifie(brut, signature) {
+        try {
+            return verifierPack(brut, signature, this.config, { dateMin: lireDatePack() })
+        } catch (erreur) {
+            this.signalerIntegrite('pack_refuse', sansChemins(erreur?.message || ''))
+            throw erreur
+        }
+    }
+
+    // Contrôle d'intégrité qui bloque le lancement, ou remet des fichiers en état (03/11, demande du propriétaire : « si
+    // le launcher empêche le lancement, ça ajoute l'info sur Discord ») : signalé par le site dans le salon privé du staff
+    // (compte-site.js, signalerRefus). Sans attendre la réponse, jamais bloquant, rien de personnel (ni chemin du PC, ni
+    // liste des programmes).
+    signalerIntegrite(raison, detail = '') {
+        try {
+            if (!this.compteSite) return
+            const jeton = this.jeton || dechiffrer(Config.getSelectedAccount()?.compte?.jeton)
+            if (!jeton) return
+            this.compteSite.signalerRefus(jeton, raison, detail, app.getVersion()).catch(() => {})
+        } catch { /* jamais bloquant */ }
     }
 
     // forcer : Java du jeu modifié depuis son installation (integrite.js) : jamais repris, un Java propre est téléchargé
@@ -581,6 +604,8 @@ class LauncherService {
         if (controle?.etat === 'change') {
             // jamais repris : un Java propre ou pas de partie (une erreur de téléchargement arrête le lancement)
             console.warn('[HeraliZ/java] Java du jeu modifié depuis son installation :', controle.ecarts)
+            this.signalerIntegrite(forcer ? 'java_modifie_encore' : 'java_modifie', `${controle.ecarts.length} fichier(s) du Java : `
+                + controle.ecarts.slice(0, 3).map(e => path.basename(String(e))).join(', '))
             if (forcer) throw new Error('Le Java téléchargé pour le jeu a été modifié aussitôt : vérifie ton antivirus, puis relance.')
             this.emit('java', 'Java du jeu modifié : réinstallation d’un Java propre…')
             oublierJava(racine, releve)
@@ -626,6 +651,8 @@ class LauncherService {
         if (empreintes.length) {
             const ecarts = await controlerEmpreintes(empreintes)
             if (ecarts.length) {
+                this.signalerIntegrite('fichier_modifie', `${ecarts.length} fichier(s) : `
+                    + ecarts.slice(0, 3).map(c => path.basename(String(c))).join(', '))
                 for (const chemin of ecarts) await fs.remove(chemin).catch(() => {})
                 throw new Error('Un fichier du jeu ne correspond pas au pack HeraliZ : il a été retiré. Relance la préparation pour le retélécharger.')
             }
@@ -653,6 +680,14 @@ class LauncherService {
         this.busy = true
         try {
             if (await this.partieDejaOuverte()) throw new Error('Minecraft est déjà ouvert. Ferme le jeu avant de relancer une partie.')
+            // injecteurs et éditeurs de mémoire ouverts (gardien.js) : pas de partie tant qu'ils le sont (le serveur
+            // expulserait de toute façon, Spartan [injection]) ; signalé au staff
+            const interdits = await outilsInterdits()
+            if (interdits.length) {
+                this.signalerIntegrite('outil_interdit', interdits.join(', '))
+                throw new Error(`Ferme ${interdits.join(', ')} pour jouer : les programmes de triche et d’injection sont interdits`
+                    + ' pendant la partie.')
+            }
             if (this.compteSite) {
                 this.emit('prepare', 'Vérification de ton compte HeraliZ…')
                 const etat = await this.verifierCompte()
@@ -690,7 +725,10 @@ class LauncherService {
             // chargé par Forge : mis de côté (integrite.js), jamais bloquant
             try {
                 const r = ecarterJarsEnTrop({ dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId })
-                if (r.ecartes.length) console.warn('[HeraliZ/integrite] jars mis de côté du dossier mods :', r.ecartes.length)
+                if (r.ecartes.length) {
+                    console.warn('[HeraliZ/integrite] jars mis de côté du dossier mods :', r.ecartes.length)
+                    this.signalerIntegrite('jars_ecartes', `${r.ecartes.length} jar(s) : ` + r.ecartes.slice(0, 3).join(', '))
+                }
                 if (r.erreurs.length) console.warn('[HeraliZ/integrite] jars pas tous mis de côté', r.erreurs)
             } catch (erreur) {
                 console.warn('[HeraliZ/integrite]', erreur?.message)

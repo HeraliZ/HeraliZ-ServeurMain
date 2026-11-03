@@ -5,6 +5,7 @@ use Azuriom\Plugin\Heraliz\Controllers\CspController;
 use Azuriom\Plugin\Heraliz\Controllers\DiscordController;
 use Azuriom\Plugin\Heraliz\Controllers\InscriptionController;
 use Azuriom\Plugin\Heraliz\Controllers\JetonController;
+use Azuriom\Plugin\Heraliz\Controllers\LauncherController;
 use Azuriom\Plugin\Heraliz\Controllers\PackController;
 use Azuriom\Plugin\Heraliz\Controllers\PbController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,8 @@ Route::post('/a2f/preparer', [A2fController::class, 'preparer'])->middleware('th
 Route::post('/a2f/activer', [A2fController::class, 'activer'])->middleware('throttle:heraliz-a2f')->name('a2f.activer');
 Route::post('/jeton-jeu', [JetonController::class, 'creer'])->middleware('throttle:heraliz-jeton')->name('jeton');
 Route::post('/pack', [PackController::class, 'distribution'])->middleware('throttle:heraliz-pack')->name('pack');
+// lancement bloqué par le contrôle d'intégrité du launcher : alerte dans le salon privé du staff (LauncherController)
+Route::post('/launcher/refus', [LauncherController::class, 'refus'])->middleware('throttle:heraliz-launcher')->name('launcher.refus');
 
 // Discord obligatoire (bêta) : état du compte et lien Discord pour le launcher ; boutons du salon privé du staff
 // (appelé par Discord, requêtes signées Ed25519 : DiscordController::interactions)

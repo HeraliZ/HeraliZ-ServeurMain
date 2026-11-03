@@ -505,3 +505,21 @@ test('anti-robot du site : demandé seulement une fois le formulaire juste, et j
     const sansFenetre = new LauncherService(config, () => {}, { compteSite: compte })
     await assert.rejects(sansFenetre.inscription({ pseudo: 'Autre_42', email: 'a@exemple.fr', password: 'un-mot-de-passe', confirmation: 'un-mot-de-passe', acceptedRules: true }), /heraliz\.fr/)
 })
+
+test('lancement bloqué signalé au site : raison de la liste, détail sur une ligne et borné, jamais d’erreur', async () => {
+    const site = fauxSite({ 'heraliz/launcher/refus': { status: 204, body: null } })
+    const compte = new CompteSite('https://heraliz.fr', site.requete)
+    assert.equal(await compte.signalerRefus('jeton', 'outil_interdit', 'Cheat Engine\n\u0007' + 'x'.repeat(400), '1.16.2'), true)
+    assert.equal(site.appels.length, 1)
+    const d = site.appels[0].donnees
+    assert.equal(d.raison, 'outil_interdit')
+    assert.equal(d.access_token, 'jeton')
+    assert.ok(!/[\x00-\x1f]/.test(d.detail) && d.detail.length <= 300 && d.detail.startsWith('Cheat Engine x'))
+    // raison inconnue ou sans compte : rien n'est envoyé
+    assert.equal(await compte.signalerRefus('jeton', 'autre chose'), false)
+    assert.equal(await compte.signalerRefus('', 'outil_interdit'), false)
+    assert.equal(site.appels.length, 1)
+    // site injoignable : pas d'erreur
+    const panne = new CompteSite('https://heraliz.fr', fauxSite({ 'heraliz/launcher/refus': new Error('ECONNRESET') }).requete)
+    assert.equal(await panne.signalerRefus('jeton', 'fichier_modifie', '1 fichier'), false)
+})
