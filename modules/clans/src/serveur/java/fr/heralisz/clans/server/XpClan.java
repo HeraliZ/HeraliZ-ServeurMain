@@ -166,6 +166,14 @@ public final class XpClan {
         return rarete < 0 || rarete >= donRarete.length ? 0 : donRarete[rarete];
     }
 
+    /**
+     * Bareme des dons pour les joueurs (03/11) : l'infobulle des objets de valeur dit ce qu'ils rapportent au clan. Envoye a
+     * la connexion (ClanEvents) et apres /recharger clans (ClanCommands).
+     */
+    public static fr.heralisz.clans.network.Packets.DonsS2C paquetDons() {
+        return new fr.heralisz.clans.network.Packets.DonsS2C(donRarete.clone(), new HashMap<>(donObjets));
+    }
+
     // ------------------------------------------------------------------ fichier
     /**
      * Lit les sections {@code plafonds_jour} et {@code dons} de niveaux.json (apres {@code Niveaux.charger}, qui ecrit le

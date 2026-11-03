@@ -688,6 +688,8 @@
   "gui.niveau.gain.point": "+1 point d'amélioration",
   "gui.niveau.gain.membres": "%s membres au plus",
   "gui.niveau.xp.don": "Dons d'objets de valeur (/clan don)",
+  "infobulle.heralisz_clans.don": "Se donne au clan : +%s XP (/clan don, au spawn)",
+  "infobulle.heralisz_clans.don_chacun": "Se donne au clan : +%s XP chacun (/clan don, au spawn)",
   "gui.niveau.court.3": "Fonds de bannière en plus",
   "gui.niveau.court.15": "Tag du clan en couleur",
   "gui.niveau.court.25": "Formes de bannière rares",

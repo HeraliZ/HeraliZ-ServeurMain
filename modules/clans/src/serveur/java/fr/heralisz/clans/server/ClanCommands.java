@@ -439,6 +439,8 @@ public final class ClanCommands {
     private static int adminRecharger(CommandSourceStack src) {
         Niveaux.charger(net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
         XpClan.charger(net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve("heralisz_clans"));
+        // 03/11 : bareme des dons relu : l'infobulle des joueurs connectes suit
+        fr.heralisz.clans.network.ClansNet.toAll(XpClan.paquetDons());
         Quetes.recharger();
         ClanStore s = ClanStore.get();
         if (s != null) for (Clan c : s.tous()) Sync.marquer(c);

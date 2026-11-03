@@ -27,7 +27,8 @@ public final class ClansNet {
     /** 7 (31/10) : reglages de la branche Membres (depart, niveau et herals de chaque palier) a la fin de l'etat du clan. */
     /** 8 (31/10) : branche Membres retiree de l'arbre (paliers de ArbreSaisonS2C), membres donnes par le niveau (depart, niveaux). */
     /** 9 (02/11) : prix de creation d'un clan a la fin de ClanSnapshotS2C (reglage du serveur, plus lu chez le joueur). */
-    private static final String VERSION = "9";
+    /** 10 (03/11) : bareme de /clan don (DonsS2C) pour l'infobulle des objets qu'on peut donner au clan. */
+    private static final String VERSION = "10";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -70,6 +71,8 @@ public final class ClansNet {
         // saison des clans (3.6.0) : arbre d'ameliorations et points de saison
         msg(Packets.AmeliorerC2S.class, c2s, Packets.AmeliorerC2S::write, Packets.AmeliorerC2S::read, Packets.AmeliorerC2S::handle);
         msg(Packets.ArbreSaisonS2C.class, s2c, Packets.ArbreSaisonS2C::write, Packets.ArbreSaisonS2C::read, Packets.ArbreSaisonS2C::handle);
+        // 03/11 : bareme de /clan don, pour l'infobulle des objets de valeur
+        msg(Packets.DonsS2C.class, s2c, Packets.DonsS2C::write, Packets.DonsS2C::read, Packets.DonsS2C::handle);
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {

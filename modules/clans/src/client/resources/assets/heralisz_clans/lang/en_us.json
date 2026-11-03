@@ -688,6 +688,8 @@
   "gui.niveau.gain.point": "+1 upgrade point",
   "gui.niveau.gain.membres": "Up to %s members",
   "gui.niveau.xp.don": "Valuable item donations (/clan don)",
+  "infobulle.heralisz_clans.don": "Can be given to your clan: +%s XP (/clan don, at spawn)",
+  "infobulle.heralisz_clans.don_chacun": "Can be given to your clan: +%s XP each (/clan don, at spawn)",
   "gui.niveau.court.3": "Extra banner backgrounds",
   "gui.niveau.court.15": "Coloured clan tag",
   "gui.niveau.court.25": "Rare banner shapes",

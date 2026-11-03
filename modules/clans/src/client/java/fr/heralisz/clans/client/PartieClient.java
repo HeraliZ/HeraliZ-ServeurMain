@@ -39,6 +39,7 @@ public final class PartieClient implements Partie {
             else if (m instanceof Packets.PanneauDrapeauS2C p) ClientHandlers.panneauDrapeau(p);
             else if (m instanceof Packets.CarteS2C p) CarteApi.recevoir(p.zones(), p.allies(), p.monClan());
             else if (m instanceof Packets.ArbreSaisonS2C p) ClientClans.setArbre(p);
+            else if (m instanceof Packets.DonsS2C p) InfobulleDon.recevoir(p);
         });
     }
 }

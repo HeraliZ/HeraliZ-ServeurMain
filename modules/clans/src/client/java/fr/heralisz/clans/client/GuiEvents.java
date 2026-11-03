@@ -74,5 +74,6 @@ public final class GuiEvents {
         ClanHud.vider();
         BannerArt.vider();
         fr.heralisz.clans.api.CarteApi.vider();
+        InfobulleDon.vider();
     }
 }

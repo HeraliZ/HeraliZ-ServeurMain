@@ -153,6 +153,8 @@ public final class ClanEvents {
         Sync.envoyerEtat(p);
         if (c != null) Sync.diffuserTags(c, null);
         else ClansNet.toPlayer(p, new Packets.TagsS2C(Sync.tableTags(null)));
+        // 03/11 : bareme de /clan don pour l'infobulle des objets de valeur (avec ou sans clan)
+        ClansNet.toPlayer(p, XpClan.paquetDons());
         if (avisCourbe) {
             p.sendSystemMessage(ClanService.prefixe(c).append(Component.translatableWithFallback("msg.courbe_niveaux",
                     "Les niveaux de clan sont devenus plus durs : votre clan garde toute son XP, recomptée sur la nouvelle échelle (niveau %s → niveau %s). Les améliorations déjà achetées sont toutes gardées ; la capture des zones s'ouvre au niveau %s.",

@@ -735,4 +735,43 @@ public final class Packets {
             RECEPTION_CLIENT.accept(this);
         }
     }
+
+    /**
+     * Barème de {@code /clan don} (03/11, retour du propriétaire : l'infobulle des objets acceptés dit ce qu'ils rapportent) :
+     * XP par rareté (Commun … Unique, 0 = refusé) et XP des objets cités à part (section « dons » de niveaux.json). Envoyé à
+     * chaque joueur à la connexion et après /recharger clans ; le serveur garde les règles (il revérifie tout au don).
+     */
+    public record DonsS2C(long[] parRarete, Map<String, Long> objets) {
+        private static final int RARETES_MAX = 8, OBJETS_MAX = 512;
+
+        void write(FriendlyByteBuf b) {
+            int n = Math.min(parRarete.length, RARETES_MAX);
+            b.writeVarInt(n);
+            for (int i = 0; i < n; i++) b.writeVarLong(Math.max(0, parRarete[i]));
+            int k = Math.min(objets.size(), OBJETS_MAX);
+            b.writeVarInt(k);
+            int i = 0;
+            for (Map.Entry<String, Long> e : objets.entrySet()) {
+                if (i++ >= k) break;
+                Texte.utf(b, e.getKey(), 128);
+                b.writeVarLong(Math.max(0, e.getValue()));
+            }
+        }
+
+        static DonsS2C read(FriendlyByteBuf b) {
+            int n = b.readVarInt();
+            if (n < 0 || n > RARETES_MAX) throw new IllegalArgumentException("DonsS2C : " + n + " raretes");
+            long[] r = new long[n];
+            for (int i = 0; i < n; i++) r[i] = b.readVarLong();
+            int k = b.readVarInt();
+            if (k < 0 || k > OBJETS_MAX) throw new IllegalArgumentException("DonsS2C : " + k + " objets");
+            Map<String, Long> o = new HashMap<>(Math.max(4, k * 2));
+            for (int i = 0; i < k; i++) o.put(b.readUtf(128), b.readVarLong());
+            return new DonsS2C(r, o);
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(this);
+        }
+    }
 }

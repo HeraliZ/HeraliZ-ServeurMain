@@ -688,6 +688,8 @@
   "gui.niveau.gain.point": "+1 очко улучшения",
   "gui.niveau.gain.membres": "До %s участников",
   "gui.niveau.xp.don": "Пожертвования ценных предметов (/clan don)",
+  "infobulle.heralisz_clans.don": "Можно отдать клану: +%s опыта (/clan don, на спавне)",
+  "infobulle.heralisz_clans.don_chacun": "Можно отдать клану: +%s опыта за штуку (/clan don, на спавне)",
   "gui.niveau.court.3": "Дополнительные фоны знамени",
   "gui.niveau.court.15": "Цветной тег клана",
   "gui.niveau.court.25": "Редкие формы знамени",
