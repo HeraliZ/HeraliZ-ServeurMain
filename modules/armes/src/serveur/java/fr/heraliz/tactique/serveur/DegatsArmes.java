@@ -21,9 +21,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
@@ -45,6 +49,7 @@ import org.slf4j.Logger;
  * une décharge entière faisait 4 au lieu de 36) ; une arme dont TaCZ donne 0 dégât (quelques fusils anti-matériel des gunpacks) prend
  * « degats » tel quel. Arme absente du fichier, créatures, fichier absent ou « actif » à false : rien ne change. Fichier
  * relu à chaque démarrage du serveur, et envoyé à chaque joueur qui se connecte (chiffres affichés chez lui).
+ * <p>03/11 : la cible d'essai de l'Armurerie (tag {@link #COMME_UN_JOUEUR}) est réglée exactement comme un joueur.</p>
  * <p>Relu en marche (audit du 02/11, mineur 12) par {@code /recharger armes} (op 4 ; aussi par {@code /recharger} seul, avec tous les modules) :
  * réglages renvoyés aux joueurs connectés ; un fichier illisible à ce moment ne change rien (les anciens réglages restent,
  * l'erreur va au staff).</p>
@@ -159,8 +164,17 @@ public final class DegatsArmes {
       }
    }
 
+   /**
+    * Entités jugées comme un joueur par ces réglages (03/11) : la cible d'essai de l'Armurerie
+    * ({@code heraliz_armory:cible_essai}, ajoutée au tag par les données de son module). Elle doit prendre exactement les
+    * dégâts d'un joueur (armes.json, tête, plafond des fusils à pompe), sinon elle ne sert à rien pour équilibrer. Tag
+    * absent ou vide : seuls les joueurs, comme avant.
+    */
+   public static final TagKey<EntityType<?>> COMME_UN_JOUEUR = TagKey.create(Registries.ENTITY_TYPE,
+      new ResourceLocation("heraliz_tactique", "comme_un_joueur"));
+
    private static void touche(EntityHurtByGunEvent.Pre e) {
-      if (e.getLogicalSide() != LogicalSide.SERVER || !(e.getHurtEntity() instanceof Player)) return;
+      if (e.getLogicalSide() != LogicalSide.SERVER || !commeUnJoueur(e.getHurtEntity())) return;
       ResourceLocation arme = e.getGunId();
       if (arme == null) return;
       DegatsJoueurs.Reglage r = DegatsJoueurs.de(arme);
@@ -174,6 +188,11 @@ public final class DegatsArmes {
       if (e.isHeadShot() && r.tete() > 0) e.setHeadshotMultiplier(r.tete());
       Float plafond = plafonds.get(arme);
       if (plafond != null && e.getAttacker() != null) plafonner(e, plafond);
+   }
+
+   /** Un joueur, ou une entité du tag {@link #COMME_UN_JOUEUR} (cible d'essai). */
+   private static boolean commeUnJoueur(Entity touchee) {
+      return touchee instanceof Player || touchee != null && touchee.getType().is(COMME_UN_JOUEUR);
    }
 
    /**
