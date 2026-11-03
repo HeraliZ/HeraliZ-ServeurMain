@@ -9,7 +9,9 @@ Nouvelle règle du propriétaire (03/11, remplace celle du 02/11 décrite dans `
 > ramasse, il en devient le nouveau propriétaire. »
 
 Jars touchés (joueurs ET serveur, même fabrication des deux côtés : le canal `heraliz_tactique:a_vie` passe en
-version 3) : HeraliZ Tactique 2.44.0 (`armes`), Réanimation 1.16.10 (`survie`).
+version 3) : HeraliZ Tactique 2.44.1 (`armes`), Réanimation 1.16.10 (`survie`), Bases 1.31.1-beta (`bases`, suite du
+03/11 : pilleurs et coffres détruits, §6). Couteaux rangés dans un sac avant la mise à jour : ils suivent la nouvelle
+règle (choix du propriétaire).
 
 **Rien n'a été compilé avec Gradle** (dépôt de Forge bloqué ici) : seulement une relecture et une vérification de la
 syntaxe Java avec `javac`. Le contrôle de branche de GitHub fera la vraie fabrication. Au démarrage du serveur et du
@@ -22,7 +24,8 @@ de l'Enfer), avec un compte SANS droits de staff.
 - [ ] Mourir avec le couteau dans l'inventaire, la barre ou au curseur : rendu à la réapparition.
 - [ ] Alt+F4 avec le couteau au curseur (inventaire, coffre, sac ouvert) : il est dans l'inventaire au retour.
 - [ ] Inventaire plein à la réapparition : « gardé », puis rendu dès qu'une case se libère.
-- [ ] Touche Q en jeu (aucun écran ouvert) : rien n'est jeté, message « il ne se jette pas avec la touche de jet ».
+- [ ] Touche Q (et Ctrl + Q) en jeu, aucun écran ouvert, couteau en main : il ne tombe pas et AUCUN message (Tactique
+      2.44.1, choix du propriétaire). Le seul moyen de le jeter : depuis l'inventaire, avec la confirmation.
 
 ## 2. Confirmation pour TOUT contenant (nouveau)
 Ouvrir un coffre de base, puis refaire avec : un coffre / une caisse du monde, son sac à dos (touche du sac), la planque
@@ -67,12 +70,16 @@ Réponses :
       message « il ne se pose pas sur un présentoir » ; accroupi + clic droit sur le mannequin : son écran s'ouvre.
 - [ ] Hôtel des ventes, Mila : refusés comme avant.
 
-## 6. Coffres des bases (comportement gardé, question au propriétaire)
+## 6. Coffres des bases (réponse du propriétaire du 03/11 : « le pilleur doit pouvoir récupérer les objets à vie »)
+Bases 1.31.1-beta, Tactique 2.44.1. `lifetimeItemsOwnerOnly = false` par défaut et dans `serveur/defaultconfigs/crac-server.toml`
+(recopié dans `dayz_map/serverconfig/` par la mise en ligne : vérifier sur le Ptero que le fichier du monde dit bien `false`).
 - [ ] Le chef range un couteau dans un coffre de sa base (question, Oui) ; un membre avec le droit « Ouvrir les coffres »
       le prend : il est à lui (protégé à sa mort).
-- [ ] Un pilleur voit le couteau mais ne peut pas le prendre (`lifetimeItemsOwnerOnly = true`) ; avec `false`, il le
-      prend et il est à lui.
-- [ ] Coffre détruit au C4 : le couteau va toujours au chef de la base.
+- [ ] Un pilleur qui ouvre ce coffre prend le couteau comme n'importe quel objet (clic, Maj + clic, touches 1 à 9),
+      sans message ; il est à lui (protégé à sa mort, question s'il le range ou le jette).
+- [ ] Coffre (ou caisse en métal) détruit au C4 : tout son contenu tombe au sol, couteau compris (il ne brûle pas) ;
+      il n'est plus envoyé au chef du clan. Celui qui le ramasse le garde ; personne : il disparaît au bout du temps normal.
+- [ ] `/base effacer` : comme avant, les objets à vie de la base vont à son propriétaire (inchangé).
 
 ## 7. Plantage (serveur local)
 - [ ] Question « Ranger cet objet ici ? » à l'écran, sauvegarde, arrêt brutal : au retour, le couteau est dans
