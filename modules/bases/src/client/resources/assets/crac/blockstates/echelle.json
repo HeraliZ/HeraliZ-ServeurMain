@@ -1,33 +1,48 @@
 {
   "variants": {
-    "facing=north,mur=false": {
-      "model": "crac:block/echelle"
+    "facing=north,partie=0": {
+      "model": "crac:block/echelle_bas"
     },
-    "facing=north,mur=true": {
-      "model": "crac:block/echelle_mur"
+    "facing=north,partie=1": {
+      "model": "crac:block/echelle_milieu"
     },
-    "facing=east,mur=false": {
-      "model": "crac:block/echelle",
+    "facing=north,partie=2": {
+      "model": "crac:block/echelle_haut"
+    },
+    "facing=east,partie=0": {
+      "model": "crac:block/echelle_bas",
       "y": 90
     },
-    "facing=east,mur=true": {
-      "model": "crac:block/echelle_mur",
+    "facing=east,partie=1": {
+      "model": "crac:block/echelle_milieu",
       "y": 90
     },
-    "facing=south,mur=false": {
-      "model": "crac:block/echelle",
+    "facing=east,partie=2": {
+      "model": "crac:block/echelle_haut",
+      "y": 90
+    },
+    "facing=south,partie=0": {
+      "model": "crac:block/echelle_bas",
       "y": 180
     },
-    "facing=south,mur=true": {
-      "model": "crac:block/echelle_mur",
+    "facing=south,partie=1": {
+      "model": "crac:block/echelle_milieu",
       "y": 180
     },
-    "facing=west,mur=false": {
-      "model": "crac:block/echelle",
+    "facing=south,partie=2": {
+      "model": "crac:block/echelle_haut",
+      "y": 180
+    },
+    "facing=west,partie=0": {
+      "model": "crac:block/echelle_bas",
       "y": 270
     },
-    "facing=west,mur=true": {
-      "model": "crac:block/echelle_mur",
+    "facing=west,partie=1": {
+      "model": "crac:block/echelle_milieu",
+      "y": 270
+    },
+    "facing=west,partie=2": {
+      "model": "crac:block/echelle_haut",
       "y": 270
     }
   }

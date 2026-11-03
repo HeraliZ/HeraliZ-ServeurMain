@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Échelle de raid de CRac (crac:echelle, 03/11) : modèle dans le style des pièces de base (deux montants en planches, quatre
-barreaux, deux colliers d'acier), texture et rendus. Rien n'est dessiné à la main : on modifie ce script.
+Échelle de raid de CRac (crac:echelle, 03/11) : modèle dans le style des pièces de base (deux montants en planches, des
+barreaux tous les quarts de bloc, des colliers d'acier), texture et rendus. Rien n'est dessiné à la main : on modifie ce
+script.
 
-    python modules/bases/outils/echelle_modele.py --apercu DOSSIER    rendus (contre un mur, empilée sur un étage)
-    python modules/bases/outils/echelle_modele.py --installer         écrit dans le mod : texture, modèles (contre une
-        fondation : echelle ; dans la case d'un mur : echelle_mur, 2 px plus loin du bord), objet
+    python modules/bases/outils/echelle_modele.py --apercu DOSSIER    rendus (un étage contre un mur, deux étages)
+    python modules/bases/outils/echelle_modele.py --installer         écrit dans le mod : texture, modèles des trois
+        cases (echelle_bas, echelle_milieu, echelle_haut), états du bloc, objet
 
-Échelle tournée vers le nord (le mur est au sud) ; 3 px d'épaisseur comme la forme du bloc (EchelleBlock.EPAISSEUR), de z
-13 à 16 contre une fondation, de 11 à 14 dans la case d'un mur (la face du mur y est à 2 px du bord). Contrôle : aucune
-face confondue (faces_confondues.py).
+Une échelle a la hauteur d'un mur de base (un étage, 3 blocs : EchelleBlock.HAUTEUR) ; elle se pose d'un coup, dans les
+trois cases du mur, une case par partie du bloc (EchelleBlock.PARTIE). Tournée vers le nord (le mur est au sud) ; 3 px
+d'épaisseur comme la forme du bloc (EchelleBlock.EPAISSEUR), de z 11 à 14 (la face du mur est à 2 px du bord de sa case).
+Pour l'atlas et le contrôle des faces confondues (faces_confondues.py), les trois parties sont rangées côte à côte (x -16,
+0 et 16) puis remises chacune dans sa case à l'écriture.
 """
 import argparse
 import math
@@ -23,28 +26,46 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import coffres_modeles as cm  # noqa: E402
 
 EPAISSEUR = 3.0
+Z1 = 14.0                       # face du mur (2 px du bord de la case)
+Z0 = Z1 - EPAISSEUR
+PARTIES = ("bas", "milieu", "haut")
+RANGEMENT = (-16.0, 0.0, 16.0)  # x de chaque partie dans l'atlas (limites des modèles : -16..32)
+SENS = {"north": 0, "east": 90, "south": 180, "west": 270}
 
 
 def echelle():
-    m = cm.Modele("echelle", "peu_commune", "1 bloc", "large", 1)
-    B = m.B
-    z0, z1 = 16.0 - EPAISSEUR, 16.0
-    for x0, g in ((1.5, 1), (12.5, 2)):                                                   # montants
-        B("corps", (x0, 0, z0), (x0 + 2.0, 16.0, z1), "bois_brut", prm={"graine": g})
-    for k, y0 in enumerate((1.5, 5.5, 9.5, 13.5)):                                        # barreaux
-        B("corps", (3.5, y0, z0 + 0.6), (12.5, y0 + 1.5, z1 - 0.6), "bois_brut", prm={"graine": 10 + k})
-    for y0 in (0.5, 12.0):                                                                # colliers d'acier (devant)
+    m = cm.Modele("echelle", "peu_commune", "1 étage (3 blocs)", "haut", 1)
+    for k, nom in enumerate(PARTIES):
+        m.os[nom] = cm.Os(nom)
+        dx = RANGEMENT[k]
+        for x0, g in ((1.5, 1), (12.5, 2)):                                               # montants
+            m.B(nom, (dx + x0, 0, Z0), (dx + x0 + 2.0, 16.0, Z1), "bois_brut", prm={"graine": g + 3 * k})
+        for j, y0 in enumerate((1.5, 5.5, 9.5, 13.5)):                                    # barreaux
+            m.B(nom, (dx + 3.5, y0, Z0 + 0.6), (dx + 12.5, y0 + 1.5, Z1 - 0.6), "bois_brut",
+                prm={"graine": 10 + 4 * k + j})
+        y0 = (0.5, 7.25, 12.0)[k]                                                         # colliers d'acier (devant)
         for x0 in (1.25, 12.25):
-            B("corps", (x0, y0, z0 - 0.25), (x0 + 2.5, y0 + 1.25, z0), "acier_coin", prm={"rivets": False},
-              faces=("north", "east", "west", "up", "down"))
+            m.B(nom, (dx + x0, y0, Z0 - 0.25), (dx + x0 + 2.5, y0 + 1.25, Z0), "acier_coin", prm={"rivets": False},
+                faces=("north", "east", "west", "up", "down"))
     return m
 
 
-def modeles(cf):
-    """Éléments contre une fondation, et dans la case d'un mur (2 px vers le nord)."""
-    pres = cf.groupes["corps"]
-    mur = cm.decaler_elements(pres, 0.0, 0.0, -2.0)
-    return pres, mur
+def parties(cf):
+    """Éléments de chaque partie, remis dans sa case (x 0..16, y 0..16)."""
+    return [cm.decaler_elements(cf.groupes[nom], -RANGEMENT[k], 0.0, 0.0) for k, nom in enumerate(PARTIES)]
+
+
+def objet(cf):
+    """L'échelle entière pour l'objet en main : les trois parties l'une sur l'autre, réduites de moitié (un modèle ne
+    dépasse pas 32 px), centrées dans le bloc."""
+    out = []
+    for k, els in enumerate(parties(cf)):
+        for el in els:
+            def p(v):
+                return cm._arrondi([(v[0] - 8.0) * 0.5 + 8.0, (v[1] + 16.0 * k - 24.0) * 0.5 + 8.0,
+                                    (v[2] - (Z0 + Z1) / 2) * 0.5 + 8.0])
+            out.append(dict(el, **{"from": p(el["from"]), "to": p(el["to"])}))
+    return out
 
 
 AFFICHAGE = {
@@ -61,40 +82,80 @@ AFFICHAGE = {
 def installer(cf):
     import adossement
     import faces_confondues as fc
-    pres, mur = modeles(cf)
-    for nom, els in (("echelle", pres), ("echelle_mur", mur)):
-        fc.exiger_aucun(nom, els)
+    els = parties(cf)
+    for nom, e in zip(PARTIES, els):
+        fc.exiger_aucun(f"echelle_{nom}", e)
+    fc.exiger_aucun("echelle (objet)", objet(cf))
     tex = "crac:block/echelle"
     cf.atlas.save(cm.ASSETS / "textures" / "block" / "echelle.png", optimize=True)
-    for nom, els in (("echelle", pres), ("echelle_mur", mur)):
-        adossement.ecrire(cm.ASSETS / "models" / "block" / f"{nom}.json",
+    for nom, e in zip(PARTIES, els):
+        adossement.ecrire(cm.ASSETS / "models" / "block" / f"echelle_{nom}.json",
                           {"credit": "HeraliZ, modules/bases/outils/echelle_modele.py", "textures": {"0": tex, "particle": tex},
-                           "elements": els})
+                           "elements": e})
     adossement.ecrire(cm.ASSETS / "models" / "item" / "echelle.json",
-                      {"parent": "crac:block/echelle", "display": AFFICHAGE})
+                      {"credit": "HeraliZ, modules/bases/outils/echelle_modele.py", "textures": {"0": tex, "particle": tex},
+                       "elements": objet(cf), "display": AFFICHAGE})
+    variantes = {}
+    for sens, y in SENS.items():
+        for k, nom in enumerate(PARTIES):
+            v = {"model": f"crac:block/echelle_{nom}"}
+            if y:
+                v["y"] = y
+            variantes[f"facing={sens},partie={k}"] = v
+    adossement.ecrire(cm.ASSETS / "blockstates" / "echelle.json", {"variants": variantes})
     print(f"[echelle] {cf.nb_elements()} pièces, texture {cf.atlas.size[0]} px")
 
 
+# ------------------------------------------------------------------------------------------------ rendus
+
+def mur(x0, x1, y0, y1, z, graine=11, dessus=True):
+    """Mur de planches (face au nord) de y0 à y1, et le dessus de son étage (plancher) : pour les rendus."""
+    W = int((x1 - x0) * 4)
+    Hm = int((y1 - y0) * 4)
+    yy, xx = np.mgrid[0:Hm, 0:W] / 4.0
+    p = np.stack([xx + x0, y1 - yy, np.full_like(xx, z)], -1)
+    fibres, joint, teinte = cm._planches(p, np.array([0, 0, -1.0]), 3.2, graine)
+    bois = cm.melange(cm.col(78, 60, 42), cm.col(110, 86, 60), fibres * 0.6 + teinte * 0.4) * (1 - 0.6 * joint)[..., None]
+    tex = np.dstack([bois, np.ones((Hm, W))])
+    face = (np.array([[x1, y1, z], [x1, y0, z], [x0, y0, z], [x0, y1, z]], float),
+            np.array([[0, 0], [0, Hm], [W, Hm], [W, 0]], float), tex, True)
+    D = 16
+    plancher = np.dstack([cm.melange(cm.col(70, 54, 38), cm.col(96, 76, 54), np.full((D * 4, W), 0.5)), np.ones((D * 4, W))])
+    toit = (np.array([[x0, y1, z], [x0, y1, z + D], [x1, y1, z + D], [x1, y1, z]], float),
+            np.array([[0, 0], [0, D * 4], [W, D * 4], [W, 0]], float), plancher, True)
+    return [face, toit] if dessus else [face]
+
+
+def echelles(els, tex, etages):
+    """Les échelles d'autant d'étages, l'une sur l'autre (une colonne de cases)."""
+    q = []
+    for e in range(etages):
+        for k, part in enumerate(els):
+            q += cm.quads_elements(part, tex, [("decal", (0.0, 48.0 * e + 16.0 * k, 0))])
+    return q
+
+
 def planche(cf, dossier):
-    pres, mur = modeles(cf)
-    w = 520
-    im = Image.new("RGB", (3 * w, w + 120), (20, 22, 25))
+    els = parties(cf)
+    w = 560
+    im = Image.new("RGB", (3 * w, w + 150), (20, 22, 25))
     d = ImageDraw.Draw(im)
-    d.text((24, 14), "Échelle de raid (proposition, à valider)", font=cm.police(32), fill=(236, 236, 236))
-    d.text((24, 56), "contre la face d'un mur droit : 3 échelles pour un étage, une 4e au-dessus pour passer sur le toit",
-           font=cm.police(19, True), fill=(92, 191, 74))
-    # colonne de 4 échelles dans la rangée du mur (face du mur à z = 14), sur une fondation, mur de 3 blocs
-    quads = cm.sol_et_mur(-24, 40, -32, 14, 14.0)
-    for k in range(4):
-        quads += cm.quads_elements(mur, cf.tex, [("decal", (0, 16.0 * k, 0))])
-    vues = [("trois quarts", (math.radians(180 - 35), math.radians(18)), ((-8, 0, -6), (24, 64, 16))),
-            ("de face", (math.radians(180), math.radians(6)), ((-8, 0, -6), (24, 64, 16))),
-            ("de près", (math.radians(180 - 25), math.radians(15)), ((-1, 0, 8), (17, 18, 16)))]
-    for k, (nom, (yaw, pitch), bornes) in enumerate(vues):
+    d.text((24, 14), "Échelle de raid : une échelle = un mur de haut (un étage, 3 blocs)", font=cm.police(32),
+           fill=(236, 236, 236))
+    d.text((24, 58), "posée d'un coup contre un mur droit ; une 2e se pose au-dessus pour l'étage suivant ; "
+           "le dernier barreau mène sur le toit", font=cm.police(19, True), fill=(92, 191, 74))
+    d.text((24, 88), "mur en biais : pas possible proprement (voir le compte rendu)", font=cm.police(17, True),
+           fill=(200, 160, 90))
+    un = cm.sol_et_mur(-24, 40, -32, 14, 14.0)[:1] + mur(-24, 40, 0, 48, 14.0) + echelles(els, cf.tex, 1)
+    deux = cm.sol_et_mur(-24, 40, -32, 14, 14.0)[:1] + mur(-24, 40, 0, 48, 14.0, dessus=False) + mur(-24, 40, 48, 96, 14.0, 17) \
+        + echelles(els, cf.tex, 2)
+    vues = [("un étage", un, (math.radians(180 - 32), math.radians(16)), ((-14, 0, -10), (30, 56, 18))),
+            ("deux étages", deux, (math.radians(180 - 32), math.radians(14)), ((-14, 0, -10), (30, 104, 18))),
+            ("haut de l'échelle", un, (math.radians(180 - 25), math.radians(22)), ((-2, 30, 6), (18, 52, 20)))]
+    for k, (nom, q, (yaw, pitch), bornes) in enumerate(vues):
         v = cm.Vue(yaw, pitch, bornes, 2 * w)
-        q = quads if k < 2 else cm.sol_et_mur(-8, 24, -8, 14, 14.0) + cm.quads_elements(mur, cf.tex)
-        im.paste(cm.vers_image(cm.rendre(q, v), w), (k * w, 100))
-        d.text((k * w + 12, 106), nom, font=cm.police(18, True), fill=(200, 200, 200))
+        im.paste(cm.vers_image(cm.rendre(q, v), w), (k * w, 130))
+        d.text((k * w + 12, 136), nom, font=cm.police(18, True), fill=(200, 200, 200))
     im.save(dossier / "echelle.png", optimize=True)
 
 
