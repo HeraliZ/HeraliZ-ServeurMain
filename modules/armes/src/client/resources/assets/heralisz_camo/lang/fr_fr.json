@@ -393,8 +393,5 @@
   "gui.heralisz_camo.atelier.decharger_aide": "Retirer les balles de l'arme : elles reviennent dans ton inventaire, le chargeur reste vide.",
   "gui.heralisz_camo.table.dispo": "Avec mes composants",
   "gui.heralisz_camo.table.autres": "+ %s autres matériaux",
-  "msg.heralisz_camo.fichier_illisible": "[Camos] Le fichier des camos à vie (%s) était illisible au démarrage : il n'est pas réécrit, rien n'est retiré des armes. Voir le journal du serveur.",
-  "tooltip.heralisz_camo.bag_howto": "Clic droit dessus avec un camo : le pose sur le sac",
-  "msg.heralisz_camo.sac_pose": "%s posé sur le sac",
-  "msg.heralisz_camo.sac_refuse": "Ce skin ne va pas sur un sac"
+  "msg.heralisz_camo.fichier_illisible": "[Camos] Le fichier des camos à vie (%s) était illisible au démarrage : il n'est pas réécrit, rien n'est retiré des armes. Voir le journal du serveur."
 }
