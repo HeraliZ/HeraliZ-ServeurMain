@@ -81,9 +81,9 @@ public class EcranCible extends Screen {
         Ui.hairline(g, x0 + 4, x0 + L - 4, y0 + 18, 0xFFFFFF, 40, false, true);
         texte(g, f, Component.translatable("gui.heraliz_armory.cible.aide").getString(), Ui.SMALL, 9.0F, x0 + 10, y0 + 27, Ui.MUTED);
         // en-têtes des colonnes
-        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.corps").getString(), MINI_GRAS, x0 + L - 62, y0 + 37,
+        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.corps").getString(), MINI_GRAS, x0 + L - 66, y0 + 37,
                 Ui.argb(Ui.FAINT, 255), 0.8F);
-        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.tete").getString(), MINI_GRAS, x0 + L - 18, y0 + 37,
+        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.tete").getString(), MINI_GRAS, x0 + L - 22, y0 + 37,
                 Ui.argb(Ui.FAINT, 255), 0.8F);
         // liste
         int lx = x0 + 6, ly = y0 + HAUT_LISTE, lw = L - 16, lh = hauteurListe();
