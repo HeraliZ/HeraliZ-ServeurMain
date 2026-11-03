@@ -486,6 +486,17 @@ Le test est appelé sur le thread serveur ; il doit être rapide (résultat gard
 - Sur les serveurs hybrides (Mohist, Arclight…), l'anti-ESP passe par Mixin ; si un
   plugin modifie profondément le suivi des entités, vérifier avec `/spartan esp <joueur>`.
 
+### Suivi à travers les murs (2.11.0, section `[suiviMurs]`)
+L'anti-ESP empêche d'**afficher** un joueur caché ; cette détection repère celui dont la **visée suit** quand même un
+joueur qu'il ne peut pas voir (fuite de l'anti-ESP, radar aux sons, anti-ESP saturé ou coupé). Sur les paires déjà
+calculées par l'anti-ESP, 10 échantillons par seconde : angle entre la visée et la cible, corrélation des mouvements
+de la visée avec ceux de la cible, balayage dû à la cible seule, virages de la cible suivis. Un épisode suspect exige
+tout à la fois (3 s, 85 % du temps sur la cible, 20° de balayage, corrélation 0,85, un virage suivi) ; l'alerte exige
+3 épisodes et 12 s cumulées en 15 min. Jamais suspect : cible vue (4 s), entendue (tir, voix : 4 s ; pas d'un joueur
+qui marche non accroupi à moins de 16 blocs), en véhicule, pseudo visible à travers le mur, vue par un allié (15 s),
+visible à travers vitres, fenêtres, barreaux, feuillages, portes, trappes, blocs invisibles. Alerte + capture d'écran,
+**jamais de sanction automatique** ; chaque épisode suspect est noté dans `config/spartan/suivi.log`.
+
 ## 7. Feuille de route
 
 - **Chest ESP** : ne pas envoyer au client les coffres et le butin qu'il ne peut

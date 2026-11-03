@@ -3,6 +3,7 @@ package com.Spartan.esp;
 import com.Spartan.Spartan;
 import com.Spartan.config.SpartanConfig;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -41,6 +43,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 final class Occluders {
     private static final int MAX_BOXES = 16;
     private static volatile Reference2ObjectOpenHashMap<BlockState, double[]> table = new Reference2ObjectOpenHashMap<>();
+    /**
+     * États de la table qui cachent pour l'anti-ESP mais à travers lesquels un joueur PEUT voir, pour le suivi à travers
+     * les murs (03/11, {@link SuiviMurs}) : blocs de opaqueBlocks (portes, trappes : beaucoup ont des vitres) et blocs
+     * dessinés invisibles (RenderShape.INVISIBLE). L'anti-ESP n'en tient pas compte (il cache comme avant).
+     */
+    private static volatile ReferenceOpenHashSet<BlockState> voirAuTravers = new ReferenceOpenHashSet<>();
     private static List<? extends String> configured;
     /** Bloc dont la forme se lit à la position (case de construction de CRac), null si absent. */
     private static volatile Block parPosition;
@@ -62,6 +70,11 @@ final class Occluders {
     /** Table courante (immuable une fois publiée) : null = transparent. */
     static Reference2ObjectOpenHashMap<BlockState, double[]> table() {
         return table;
+    }
+
+    /** États qui cachent pour l'anti-ESP mais pas pour le suivi à travers les murs (immuable une fois publié). */
+    static ReferenceOpenHashSet<BlockState> voirAuTravers() {
+        return voirAuTravers;
     }
 
     /** Bloc dont l'occultation dépend de la position (lu par LevelVoxels sur tout thread). */
@@ -140,16 +153,22 @@ final class Occluders {
                 dyn = b;
             }
         }
+        ReferenceOpenHashSet<BlockState> vat = new ReferenceOpenHashSet<>();
         for (BlockState s : Block.BLOCK_STATE_REGISTRY) {
             states++;
             double[] occ = compute(s, tags, ids);
             if (occ != null) {
                 t.put(s, occ);
+                if (vueAuTravers(s, tags, ids)) {
+                    vat.add(s);
+                }
             }
         }
         t.trim();
+        vat.trim();
         // publication : la table et le bloc lu à sa position d'abord, le numéro en dernier (volatiles)
         parPosition = dyn;
+        voirAuTravers = vat;
         table = t;
         publiee = numero;
         Spartan.LOGGER.info("[Spartan] Anti-ESP : {} états de bloc, {} cachent la vue ({} ms, fil à part).",
@@ -177,6 +196,15 @@ final class Occluders {
             // Bloc de mod qui exige un vrai monde pour calculer sa forme : transparent.
         }
         return null;
+    }
+
+    /** Suivi à travers les murs : on peut voir à travers ce bloc (porte, trappe, bloc dessiné invisible). Dans le doute : oui. */
+    private static boolean vueAuTravers(BlockState s, List<TagKey<Block>> tags, Set<ResourceLocation> ids) {
+        try {
+            return isExtra(s, tags, ids) || s.getRenderShape() == RenderShape.INVISIBLE;
+        } catch (RuntimeException e) {
+            return true;
+        }
     }
 
     private static boolean isExtra(BlockState s, List<TagKey<Block>> tags, Set<ResourceLocation> ids) {

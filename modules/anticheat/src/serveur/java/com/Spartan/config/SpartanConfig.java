@@ -188,6 +188,27 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue ESP_REVEAL_VOICE;
     public static final ForgeConfigSpec.IntValue ESP_VOICE_REVEAL_TICKS;
 
+    // --- suivi à travers les murs (03/11) ---
+    public static final ForgeConfigSpec.BooleanValue SUIVI_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue SUIVI_CAPTURE;
+    public static final ForgeConfigSpec.IntValue SUIVI_PERIODE;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_DISTANCE_MIN;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_DISTANCE_MAX;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_VU_SECONDES;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_ENTENDU_SECONDES;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_DISTANCE_PAS;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_ALLIE_SECONDES;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_MARGE_DEGRES;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_DUREE_MIN;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_PART_SUR_CIBLE;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_BALAYAGE_MIN;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_CORRELATION_MIN;
+    public static final ForgeConfigSpec.IntValue SUIVI_VIRAGES_MIN;
+    public static final ForgeConfigSpec.IntValue SUIVI_EPISODES_MIN;
+    public static final ForgeConfigSpec.DoubleValue SUIVI_DUREE_TOTALE_MIN;
+    public static final ForgeConfigSpec.IntValue SUIVI_FENETRE_MINUTES;
+    public static final ForgeConfigSpec.IntValue SUIVI_DELAI_ALERTE_MINUTES;
+
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
 
@@ -766,6 +787,57 @@ public class SpartanConfig {
                 .define("revealOnVoice", true);
         ESP_VOICE_REVEAL_TICKS = b.comment("Durée (ticks) pendant laquelle un joueur reste envoyé après avoir parlé.")
                 .defineInRange("voiceRevealTicks", 20, 5, 400);
+        b.pop();
+
+        b.comment("Suivi à travers les murs (03/11) : un joueur dont la visée SUIT un autre joueur qu'il ne peut pas voir (aucune",
+                "ligne de vue), plusieurs secondes et plusieurs fois. Seulement les paires proches déjà calculées par l'anti-ESP,",
+                "échantillonnées. Comptent comme VISIBLES (jamais suspect) : vitres, fenêtres, barreaux, feuillages et tout bloc",
+                "qui ne cache pas la vue, portes et trappes (souvent vitrées), blocs invisibles et barrières, porte ouverte, joueur",
+                "vu récemment, joueur entendu (tir, voix, pas : il marche sans être accroupi à portée des pas), en véhicule,",
+                "pseudo visible à travers le mur (joueur envoyé et pas accroupi), vu récemment par un allié de l'observateur",
+                "(annonces, ping), très proche. ALERTE au staff avec les chiffres et une capture d'écran : JAMAIS de sanction",
+                "automatique, le staff juge. Chaque épisode suspect est noté dans config/spartan/suivi.log (pour régler les",
+                "seuils). Nécessite l'anti-ESP actif et revealOnShot / revealOnVoice (sinon : coupé).")
+                .push("suiviMurs");
+        SUIVI_ENABLED = b.comment("Active la détection.").define("enabled", true);
+        SUIVI_CAPTURE = b.comment("Capture d'écran du joueur avec l'alerte (s'il l'a autorisée dans le launcher).")
+                .define("capture", true);
+        SUIVI_PERIODE = b.comment("Un échantillon toutes les N ticks (2 = 10 par seconde).")
+                .defineInRange("periodeTicks", 2, 1, 10);
+        SUIVI_DISTANCE_MIN = b.comment("Distance minimale (blocs) : plus près, on s'entend et on se devine.")
+                .defineInRange("distanceMin", 4.0, 2.5, 32.0);
+        SUIVI_DISTANCE_MAX = b.comment("Distance maximale (blocs).")
+                .defineInRange("distanceMax", 64.0, 8.0, 256.0);
+        SUIVI_VU_SECONDES = b.comment("Cible vue (ligne de vue) il y a moins de N secondes : visible (on suit où elle est partie).")
+                .defineInRange("vuRecemmentSecondes", 4.0, 1.0, 30.0);
+        SUIVI_ENTENDU_SECONDES = b.comment("Cible entendue (tir, voix) il y a moins de N secondes : visible.")
+                .defineInRange("entenduSecondes", 4.0, 1.0, 30.0);
+        SUIVI_DISTANCE_PAS = b.comment("Bruit de pas : une cible qui marche sans être accroupie à moins de N blocs est entendue.")
+                .defineInRange("distancePas", 16.0, 0.0, 64.0);
+        SUIVI_ALLIE_SECONDES = b.comment("Cible vue par un allié de l'observateur (clan, équipe) il y a moins de N secondes :",
+                "visible (annonces en vocal, ping).").defineInRange("allieSecondes", 15.0, 0.0, 120.0);
+        SUIVI_MARGE_DEGRES = b.comment("Visée « sur la cible » : taille apparente de la cible plus cette marge (degrés).")
+                .defineInRange("margeDegres", 3.0, 0.5, 10.0);
+        SUIVI_DUREE_MIN = b.comment("Durée minimale d'un épisode suspect (secondes de suivi, cible cachée).")
+                .defineInRange("dureeMinSecondes", 3.0, 1.0, 30.0);
+        SUIVI_PART_SUR_CIBLE = b.comment("Part minimale du temps de l'épisode avec la visée sur la cible.")
+                .defineInRange("partSurCible", 0.85, 0.5, 1.0);
+        SUIVI_BALAYAGE_MIN = b.comment("Déplacement minimal de la cible vu de l'observateur pendant l'épisode (degrés cumulés,",
+                "observateur supposé immobile) : tenir un angle sur un ennemi immobile ne compte pas.")
+                .defineInRange("balayageMinDegres", 20.0, 5.0, 360.0);
+        SUIVI_CORRELATION_MIN = b.comment("Corrélation minimale entre les mouvements de la visée et ceux de la cible (1 = identiques).")
+                .defineInRange("correlationMin", 0.85, 0.5, 1.0);
+        SUIVI_VIRAGES_MIN = b.comment("Changements de sens de la cible suivis par la visée, au minimum, dans un épisode",
+                "(prolonger une course en ligne droite se devine ; suivre ses virages, non).")
+                .defineInRange("viragesMin", 1, 0, 10);
+        SUIVI_EPISODES_MIN = b.comment("Épisodes suspects avant l'alerte (dans fenetreMinutes).")
+                .defineInRange("episodesMin", 3, 1, 50);
+        SUIVI_DUREE_TOTALE_MIN = b.comment("Durée cumulée minimale de ces épisodes avant l'alerte (secondes).")
+                .defineInRange("dureeTotaleMinSecondes", 12.0, 1.0, 600.0);
+        SUIVI_FENETRE_MINUTES = b.comment("Fenêtre (minutes) dans laquelle les épisodes s'additionnent.")
+                .defineInRange("fenetreMinutes", 15, 1, 240);
+        SUIVI_DELAI_ALERTE_MINUTES = b.comment("Délai minimal entre deux alertes pour le même joueur (minutes).")
+                .defineInRange("delaiAlerteMinutes", 30, 1, 1440);
         b.pop();
 
         b.comment("Anti-duplication : chaque objet de valeur non empilable reçoit un numéro unique invisible ; si le même",

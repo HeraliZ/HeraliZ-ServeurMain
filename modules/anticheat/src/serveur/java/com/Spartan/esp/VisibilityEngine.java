@@ -54,6 +54,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * La décision est lue par vanilla via ServerPlayer.broadcastToPlayer (Mixin) et
  * appliquée immédiatement quand elle change. État : thread serveur uniquement.
+ *
+ * Suivi à travers les murs (03/11, {@link SuiviMurs}) : les mêmes paires, échantillonnées dans la boucle des décisions,
+ * signalent au staff un joueur dont la visée suit un joueur caché.
  */
 public final class VisibilityEngine {
     /** Paire visible : revérifiée tous les N ticks (pour la cacher à temps). */
@@ -140,6 +143,10 @@ public final class VisibilityEngine {
         double tx;
         double ty;
         double tz;
+        /** Suivi à travers les murs (03/11) : épisode en cours, null presque toujours (SuiviMurs). */
+        SuiviCalcul.Episode suivi;
+        /** Suivi à travers les murs : dernière fois vue à travers une porte, une trappe ou un bloc invisible. */
+        long vuSuivi = NEVER;
 
         Pair(int observer, int target) {
             this.observer = observer;
@@ -161,6 +168,10 @@ public final class VisibilityEngine {
         Entity root;
         int lookahead;
         int range;
+        /** Direction de la visée (vecteur unitaire), pour le tri rapide du suivi à travers les murs. */
+        double lx;
+        double ly;
+        double lz;
     }
 
     /** Statistiques sur une fenêtre de 100 ticks (5 s). */
@@ -369,12 +380,27 @@ public final class VisibilityEngine {
         int failOpen = SpartanConfig.ESP_FAIL_OPEN_TICKS.get();
         CHANGED.clear();
         int hidden = 0;
+        // suivi à travers les murs (03/11) : échantillonné dans cette même boucle, sur les paires déjà calculées
+        boolean suivi = SuiviMurs.debut(tick);
         ObjectIterator<Pair> it = PAIRS.values().iterator();
         while (it.hasNext()) {
             Pair pr = it.next();
             if (tick - pr.listed > STALE_TICKS) {
                 it.remove();
                 continue;
+            }
+            if (suivi) {
+                if (SuiviMurs.candidate(pr, tick)) {
+                    Snap so = SNAPS.get(pr.observer);
+                    Snap st = SNAPS.get(pr.target);
+                    if (so != null && st != null) {
+                        SuiviMurs.echantillon(pr, so, st, tick);
+                    } else {
+                        SuiviMurs.clore(pr);
+                    }
+                } else if (pr.suivi != null) {
+                    SuiviMurs.clore(pr);
+                }
             }
             boolean vis = tick - pr.lastSeen <= hideDelay || tick < pr.revealUntil;
             if (!vis && tick - pr.lastCheck > failOpen) {
@@ -706,9 +732,34 @@ public final class VisibilityEngine {
                 || (SpartanConfig.ESP_BYPASS_CREATIVE.get() && p.isCreative())
                 || (SpartanConfig.ESP_STAFF_SEE_ALL.get() && p.hasPermissions(2));
         s.glowing = p.isCurrentlyGlowing();
+        double yaw = Math.toRadians(p.getYRot());
+        double pitch = Math.toRadians(p.getXRot());
+        s.lx = -Math.sin(yaw) * Math.cos(pitch);
+        s.ly = -Math.sin(pitch);
+        s.lz = Math.cos(yaw) * Math.cos(pitch);
         int range = TrackerAccess.effectiveRange(p);
         s.range = range > 0 ? range : 512;
         return s;
+    }
+
+    /**
+     * Suivi à travers les murs : un allié de l'observateur (hors la cible) a-t-il vu la cible depuis moins de {@code ticks}
+     * (annonces en vocal, ping) ? Appelé rarement (début d'un épisode, puis toutes les 2 s). Thread serveur.
+     */
+    static boolean allieVoit(Snap o, Snap t, int ticks) {
+        if (ticks <= 0) {
+            return false;
+        }
+        for (ServerPlayer q : o.level.players()) {
+            if (q == o.p || q == t.p) {
+                continue;
+            }
+            Pair qp = PAIRS.get(key(q.getId(), t.id));
+            if (qp != null && tick - qp.lastSeen <= ticks && Allies.allied(o.p, q)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ bruits
@@ -819,6 +870,7 @@ public final class VisibilityEngine {
         CHANGES.clear();
         ChunkTable.clear();
         StructuresCrac.vider();
+        SuiviMurs.reset();
     }
 
     /** Chunk chargé (thread serveur) : lisible par les threads de calcul. */
@@ -896,6 +948,7 @@ public final class VisibilityEngine {
         List<String> out = new ArrayList<>();
         out.add(observer.getName().getString() + " — caché(s) : " + (hidden.isEmpty() ? "aucun" : String.join(", ", hidden)));
         out.add("envoyé(s) : " + (shown.isEmpty() ? "aucun" : String.join(", ", shown)));
+        out.add(SuiviMurs.decrire(observer.getUUID()));
         return out;
     }
 }

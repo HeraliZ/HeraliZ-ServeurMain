@@ -1,6 +1,7 @@
 package com.Spartan.esp;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -34,13 +35,24 @@ final class LevelVoxels implements Raycaster.Voxels {
     private Block parPosition;
     /** Thread serveur : une case de construction inconnue est calculée tout de suite. */
     private final boolean main;
+    /**
+     * Suivi à travers les murs (03/11) : portes, trappes et blocs dessinés invisibles ne cachent pas
+     * ({@link Occluders#voirAuTravers}). Faux pour l'anti-ESP.
+     */
+    private final boolean transparentsSuivi;
+    private ReferenceOpenHashSet<BlockState> vat;
 
     LevelVoxels() {
         this(false);
     }
 
     LevelVoxels(boolean main) {
+        this(main, false);
+    }
+
+    LevelVoxels(boolean main, boolean transparentsSuivi) {
         this.main = main;
+        this.transparentsSuivi = transparentsSuivi;
     }
 
     /** Monde des prochains rayons (à appeler avant chaque paire). */
@@ -49,6 +61,7 @@ final class LevelVoxels implements Raycaster.Voxels {
         Reference2ObjectOpenHashMap<BlockState, double[]> t = Occluders.table();
         this.level = level;
         this.parPosition = Occluders.parPosition();
+        this.vat = transparentsSuivi ? Occluders.voirAuTravers() : null;
         if (c != chunks || t != table) {
             chunks = c;
             table = t;
@@ -100,6 +113,9 @@ final class LevelVoxels implements Raycaster.Voxels {
             return lastOcc;
         }
         double[] occ = state.isAir() ? null : table.get(state);
+        if (occ != null && vat != null && vat.contains(state)) {
+            occ = null;
+        }
         lastState = state;
         lastOcc = occ;
         return occ;

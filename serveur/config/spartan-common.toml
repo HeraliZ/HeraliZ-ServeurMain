@@ -538,3 +538,72 @@
 	#Range: 20 ~ 600
 	timeoutSeconds = 60
 
+
+#Suivi à travers les murs (03/11) : un joueur dont la visée SUIT un autre joueur qu'il ne peut pas voir (aucune
+#ligne de vue), plusieurs secondes et plusieurs fois. Seulement les paires proches déjà calculées par l'anti-ESP,
+#échantillonnées. Comptent comme VISIBLES (jamais suspect) : vitres, fenêtres, barreaux, feuillages et tout bloc
+#qui ne cache pas la vue, portes et trappes (souvent vitrées), blocs invisibles et barrières, porte ouverte, joueur
+#vu récemment, joueur entendu (tir, voix, pas : il marche sans être accroupi à portée des pas), en véhicule,
+#pseudo visible à travers le mur (joueur envoyé et pas accroupi), vu récemment par un allié de l'observateur
+#(annonces, ping), très proche. ALERTE au staff avec les chiffres et une capture d'écran : JAMAIS de sanction
+#automatique, le staff juge. Chaque épisode suspect est noté dans config/spartan/suivi.log (pour régler les
+#seuils). Nécessite l'anti-ESP actif et revealOnShot / revealOnVoice (sinon : coupé).
+[suiviMurs]
+	#Active la détection.
+	enabled = true
+	#Capture d'écran du joueur avec l'alerte (s'il l'a autorisée dans le launcher).
+	capture = true
+	#Un échantillon toutes les N ticks (2 = 10 par seconde).
+	#Range: 1 ~ 10
+	periodeTicks = 2
+	#Distance minimale (blocs) : plus près, on s'entend et on se devine.
+	#Range: 2.5 ~ 32.0
+	distanceMin = 4.0
+	#Distance maximale (blocs).
+	#Range: 8.0 ~ 256.0
+	distanceMax = 64.0
+	#Cible vue (ligne de vue) il y a moins de N secondes : visible (on suit où elle est partie).
+	#Range: 1.0 ~ 30.0
+	vuRecemmentSecondes = 4.0
+	#Cible entendue (tir, voix) il y a moins de N secondes : visible.
+	#Range: 1.0 ~ 30.0
+	entenduSecondes = 4.0
+	#Bruit de pas : une cible qui marche sans être accroupie à moins de N blocs est entendue.
+	#Range: 0.0 ~ 64.0
+	distancePas = 16.0
+	#Cible vue par un allié de l'observateur (clan, équipe) il y a moins de N secondes :
+	#visible (annonces en vocal, ping).
+	#Range: 0.0 ~ 120.0
+	allieSecondes = 15.0
+	#Visée « sur la cible » : taille apparente de la cible plus cette marge (degrés).
+	#Range: 0.5 ~ 10.0
+	margeDegres = 3.0
+	#Durée minimale d'un épisode suspect (secondes de suivi, cible cachée).
+	#Range: 1.0 ~ 30.0
+	dureeMinSecondes = 3.0
+	#Part minimale du temps de l'épisode avec la visée sur la cible.
+	#Range: 0.5 ~ 1.0
+	partSurCible = 0.85
+	#Déplacement minimal de la cible vu de l'observateur pendant l'épisode (degrés cumulés,
+	#observateur supposé immobile) : tenir un angle sur un ennemi immobile ne compte pas.
+	#Range: 5.0 ~ 360.0
+	balayageMinDegres = 20.0
+	#Corrélation minimale entre les mouvements de la visée et ceux de la cible (1 = identiques).
+	#Range: 0.5 ~ 1.0
+	correlationMin = 0.85
+	#Changements de sens de la cible suivis par la visée, au minimum, dans un épisode
+	#(prolonger une course en ligne droite se devine ; suivre ses virages, non).
+	#Range: 0 ~ 10
+	viragesMin = 1
+	#Épisodes suspects avant l'alerte (dans fenetreMinutes).
+	#Range: 1 ~ 50
+	episodesMin = 3
+	#Durée cumulée minimale de ces épisodes avant l'alerte (secondes).
+	#Range: 1.0 ~ 600.0
+	dureeTotaleMinSecondes = 12.0
+	#Fenêtre (minutes) dans laquelle les épisodes s'additionnent.
+	#Range: 1 ~ 240
+	fenetreMinutes = 15
+	#Délai minimal entre deux alertes pour le même joueur (minutes).
+	#Range: 1 ~ 1440
+	delaiAlerteMinutes = 30
