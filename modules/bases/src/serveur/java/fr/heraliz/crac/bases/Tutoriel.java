@@ -506,7 +506,7 @@ public final class Tutoriel {
             AVERTI.remove(p.getUUID());
             Crac.LOGGER.info("[CRac] tutoriel fini par {}", p.getGameProfile().getName());
             if (!parVarga()) {
-                T.chat(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, ton home y est créé : du spawn, /home t'y ramène (toutes les 3 min). Depuis ta base, /spawn ramène au spawn ; du spawn, /rtp mène à un coin au hasard de la zone de construction."),
+                T.chat(p, T.t("crac.tuto.etape6", "[Tuto] Ta base posée, pose ton home dedans : mets-toi à un endroit sûr et tape /sethome <nom>. Du spawn, /home t'y ramène (une fois toutes les 8 min, moins avec l'arbre du clan ou un grade). Depuis ta base, /spawn ramène au spawn ; du spawn, /rtp mène à un coin au hasard de la zone de construction."),
                     ChatFormatting.GRAY);
             }
         }

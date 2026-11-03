@@ -401,7 +401,7 @@
   "crac.tuto.etape3": "[Tutorial] 3. Then 5 walls, 1 “Doorway” piece (door included) and 2 floors on top for the roof.",
   "crac.tuto.etape4": "[Tutorial] 4. Place the Claim Block on a foundation, inside: the base is yours, and protected from raids.",
   "crac.tuto.etape5": "[Tutorial] 5. Hammer in hand: upgrade your pieces to wood, and put planks in the Claim Block (upkeep).",
-  "crac.tuto.etape6": "[Tutorial] Once your base is placed, your home is created there: from the spawn, /home takes you back (once every 8 min, less with the clan tree or a rank). From your base, /spawn takes you to the spawn; from the spawn, /rtp takes you to a random spot of the building zone.",
+  "crac.tuto.etape6": "[Tutorial] Once your base is placed, set your home inside it: stand somewhere safe and type /sethome <name>. From the spawn, /home takes you back (once every 8 min, less with the clan tree or a rank). From your base, /spawn takes you to the spawn; from the spawn, /rtp takes you to a random spot of the building zone.",
   "crac.tuto.ramene": "[Tutorial] Back to your cabin: the tutorial is not finished.",
   "crac.tuto.refus.pas_encore": "Not yet: wait for Varga's orders.",
   "crac.tuto.refus.cabane": "Build against your cabin, not elsewhere.",
