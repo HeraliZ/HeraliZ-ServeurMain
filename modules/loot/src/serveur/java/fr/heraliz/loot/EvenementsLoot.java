@@ -20,7 +20,7 @@ public final class EvenementsLoot {
     private static final List<BiConsumer<ServerPlayer, CompoundTag>> FOUILLES = new CopyOnWriteArrayList<>();
 
     /**
-     * Appelé à la PREMIÈRE ouverture d'un conteneur rempli (rotation T1 à T6, familles, salles à carte) ou d'un coffre T7
+     * Appelé à la PREMIÈRE ouverture d'un conteneur rempli et NON VIDE (03/11 : un tirage vide ne compte pas) (rotation T1 à T6, familles, salles à carte) ou d'un coffre T7
      * (pas ceux d'un événement), par celui qui l'ouvre ; rouvrir ne rappelle rien. Données : {@code palier} (1 à 7, 0
      * sans palier), {@code pos} (BlockPos.asLong), {@code monde}, {@code salle} (verte / bleue / rouge, ou « »).
      */

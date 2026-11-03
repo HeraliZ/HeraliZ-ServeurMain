@@ -150,7 +150,7 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
             BonusLoot.annoncer(p, bonus);
             // coffre d'événement T7 : points une fois, au premier qui l'ouvre ; coffre d'un événement du Directeur (épave
             // de l'hélicoptère) : aucun, ses points viennent de l'objet d'événement à revendre (choix du propriétaire)
-            if (evenement.isEmpty()) {
+            if (evenement.isEmpty() && !vide()) {  // tiré vide : ne compte pas (quêtes, saison, 03/11)
                 SaisonLoot.conteneur(p, 7);
                 if (level instanceof net.minecraft.server.level.ServerLevel sl) EvenementsLoot.fouille(p, sl, worldPosition, 7, "");
             } else {

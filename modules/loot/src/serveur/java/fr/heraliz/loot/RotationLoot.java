@@ -1059,7 +1059,9 @@ public final class RotationLoot extends SavedData {
             e.tires.add(k);
             e.setDirty();
             BonusLoot.annoncer(p, bonus);
-            SaisonLoot.conteneur(p, ConteneurBlock.palier(cb.nom));
+            // un conteneur tiré vide ne compte ni pour la saison ni pour les quêtes (« fouiller N conteneurs », 03/11)
+            boolean garni = !a.contenu.isEmpty();
+            if (garni) SaisonLoot.conteneur(p, ConteneurBlock.palier(cb.nom));
             if (salle != null) SaisonLoot.pve(p, salle);
             // quêtes du jour (26/10) : toute première ouverture d'un conteneur rempli, avec la couleur de sa salle à carte
             String couleur = "";
@@ -1067,7 +1069,7 @@ public final class RotationLoot extends SavedData {
                 Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
                 if (s != null && s.couleur() != null) couleur = s.couleur();
             }
-            EvenementsLoot.fouille(p, l, pos, ConteneurBlock.palier(cb.nom), couleur);
+            if (garni) EvenementsLoot.fouille(p, l, pos, ConteneurBlock.palier(cb.nom), couleur);
         }
         Inventaire inv = a.contenu;
         boolean premier = !e.regarde(inv, p);
