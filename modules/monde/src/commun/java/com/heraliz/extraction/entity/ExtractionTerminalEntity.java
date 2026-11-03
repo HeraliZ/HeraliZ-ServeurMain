@@ -3,6 +3,7 @@ package com.heraliz.extraction.entity;
 import com.heraliz.extraction.ModRegistry;
 import com.heraliz.extraction.TerminalGeometry;
 import com.heraliz.extraction.ZoneShape;
+import com.heraliz.extraction.pont.Crochet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -185,7 +186,14 @@ public class ExtractionTerminalEntity extends Entity {
 
     // ------------------------------------------------------------------ effets client
 
+    /**
+     * Chaque tick de la zone chez le joueur (03/11) : la partie client y suit les zones à dessiner (dessin commun des zones,
+     * même quand le PC lui-même n'est pas dessiné : caché derrière un mur, hors de l'écran).
+     */
+    public static final Crochet<ExtractionTerminalEntity> ZONE_CLIENT = new Crochet<>();
+
     private void clientTick() {
+        ZONE_CLIENT.accept(this);
         if (getState() != STATE_ACTIVE) {
             if (this.endTicks == 0) {
                 spawnBurst(false);

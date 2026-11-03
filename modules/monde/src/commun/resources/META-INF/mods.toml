@@ -287,6 +287,13 @@ description='''Fusée d'extraction : tiens la zone pendant 1:30 à ciel ouvert p
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+# Noyau HeraliZ : dessin commun des zones chez le joueur (cercle de la zone d'extraction ; 03/11)
+[[dependencies.heraliz_extraction]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.16,)"
+    ordering="AFTER"
+    side="CLIENT"
 
 # ---- airstrike (ancien projet airstrike, version 1.9.1)
 [[mods]]

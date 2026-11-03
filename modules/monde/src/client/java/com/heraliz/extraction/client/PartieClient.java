@@ -14,5 +14,6 @@ public final class PartieClient implements Partie {
     public void init(IEventBus busMod) {
         ExtractionTerminalItem.RENDU_CLIENT.brancher(c -> c.accept(TerminalClientExtensions.INSTANCE));
         Reseau.PROGRESSION_CLIENT.brancher(HudExtraction::recevoir);
+        com.heraliz.extraction.entity.ExtractionTerminalEntity.ZONE_CLIENT.brancher(ZonesExtraction::suivre);   // 03/11
     }
 }

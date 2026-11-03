@@ -239,6 +239,51 @@ public final class ZoneShape {
         return i < 0 ? NONE : this.groundY[i];
     }
 
+    // ------------------------------------------------------------------ lecture pour le dessin (03/11)
+
+    /** Centre et rayon de la zone. */
+    public double centerX() {
+        return this.centerX;
+    }
+
+    public double centerZ() {
+        return this.centerZ;
+    }
+
+    public float radius() {
+        return this.radius;
+    }
+
+    /** Coin et côté de la grille des cases. */
+    public int originX() {
+        return this.originX;
+    }
+
+    public int originZ() {
+        return this.originZ;
+    }
+
+    public int size() {
+        return this.size;
+    }
+
+    /** Hauteur des pieds d'un joueur debout sur la case (x, z) de la zone, {@link Integer#MIN_VALUE} hors de la zone. */
+    public int groundAt(int x, int z) {
+        return get(x, z);
+    }
+
+    /** Vrai sol sous les pieds d'un joueur debout en (x, feetY, z) (sans caisse, tronc, feuilles), pour le dessin. */
+    public static int solReel(Level level, BlockPos.MutableBlockPos pos, int x, int feetY, int z) {
+        return solSous(level, pos, x, feetY, z);
+    }
+
+    /** Empreinte de la forme : change dès qu'une case, le contour ou sa hauteur change (dessin refait seulement alors). */
+    public int signature() {
+        int h = Arrays.hashCode(this.groundY);
+        h = 31 * h + Arrays.hashCode(this.outlineDistance);
+        return 31 * h + Arrays.hashCode(this.outlineGround);
+    }
+
     /** Le joueur (position des pieds) est-il dans la zone ? Tolère un saut et le bord du cercle. */
     public boolean contains(double x, double y, double z) {
         int ground = get(Mth.floor(x), Mth.floor(z));
