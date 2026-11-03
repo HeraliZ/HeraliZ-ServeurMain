@@ -93,11 +93,62 @@ objet par zombie, fragments ×2). Pour voir d'autres valeurs : `python outils/lo
       mise en ligne) → `/heralizloot beta` dit « coupé » sans redémarrer ; les conteneurs remplis ensuite redeviennent
       comme avant. Remettre `actif = true`.
 - [ ] Changer `quantite = 2` à chaud : `/heralizloot beta` le montre aussitôt.
-- [ ] Prix de Mila, recycleur, couleurs des objets : inchangés.
+- [ ] Couleurs des objets : inchangées (prix et recycleur : voir l'économie de la bêta ci-dessous).
 - [ ] Journal du serveur : aucune erreur « LootBeta » ou « tables de loot » au démarrage et à `/recharger loot`.
+
+## Suite du 03/11 : économie de la bêta (prix, recycleur, arbre du clan, quêtes)
+
+Demande du propriétaire : « les prix des PNJ aussi réduits, le recycleur donne aussi plus… tout ce qui touche à
+l'économie et au loot, et les améliorations pareil ». Même réglage, même fichier, coupé par le même `actif = false`.
+
+Jars à mettre à jour (serveur ET joueurs) : **HeraliZ Loot 0.16.0**, **HeraliZ Quêtes 1.19.0**, **HeraliZ Clans
+3.13.0**. Réglages ajoutés à la section `[beta]` de `serveur/defaultconfigs/heraliz_loot-server.toml` : `prix_achat`
+(0.75), `prix_rachat` (1.0), `recyclage` (1.25), `ameliorations` (0.75), `quetes_herals` (1.25). Pas compilé ici non
+plus (syntaxe Java contrôlée ; `outils/verifier_langues.py` : 0 erreur ; `python outils/marchands.py --controle` : 0
+erreur).
+
+| | Avant | Avec la bêta |
+|---|---|---|
+| Jacqueline (soins) | 30 / 80 / 90 / 180 / 400 | 23 / 60 / 68 / 135 / 300 |
+| Le Doyen (nourriture) | 6 / 8 / 10 / 15 | 5 / 6 / 8 / 11 |
+| Jack (accessoires) | 240 / 600 / 1 400 | 180 / 450 / 1 050 |
+| Le Bâtisseur (brindilles, planches, pierres, fragments de métal, caisse, métal renforcé, cœur de clan) | 2 / 50 / 100 / 250 / 300 / 400 / 5 000 | 2 / 38 / 75 / 188 / 225 / 300 / 3 750 |
+| Recycleur : chance par composant (spawn / terrain) | 10 % / 11 % | 12,5 % / 13,75 % |
+| Recycleur : hérals si rien ne sort (Commun → Unique) | 1 / 1 / 1 / 2 / 3 / 4 | 1 / 1 / 1 / 3 / 4 / 5 |
+| Arbre du clan : palier 1 / 2 / 3 (hérals) | 10 000 / 20 000 / 30 000 | 7 500 / 15 000 / 22 500 |
+| Quêtes de Varga (hérals) | 100 à 7 000 | 125 à 8 750 |
+| Quêtes de clan (hérals, jour / semaine) | 250 à 900 / 1 500 à 3 000 | 313 à 1 125 / 1 875 à 3 750 |
+| Rachat de Mila (objets de valeur) | 2 / 8 / 20 / 50 / 200 | inchangé |
+
+- **Pas d'argent en boucle** : la règle des propriétaires (un objet acheté au prix P n'est jamais racheté ni recyclé
+  pour plus de P / 2) compte maintenant le prix réduit. Seul changement visible : le métal renforcé (vendu 300 au lieu
+  de 400) est racheté 150 au lieu de 200 par Mila. Aucun recyclage d'objet acheté ne devient refusé avec 1,25.
+  Contrôle : `python outils/loot_beta.py --economie` (avec d'autres valeurs : `--achat 0.5 --recyclage 1.5`).
+- **Pas touchés** : boutique (PB), casino, hôtel des ventes, caisses à clés, objets d'événement, points de compétence
+  de l'arbre (un par niveau du clan : on ne peut pas en donner trois quarts), récompenses en objets des quêtes du jour,
+  coûts de fabrication à la Table d'armurier (ce sont des recettes du pack d'armes : les changer à chaud demanderait de
+  modifier le code de TaCZ ; le loot × 1,5 donne déjà plus de composants).
+- Le Registre du staff (édition des marchands en jeu) montre et enregistre les prix de base, sans la bêta.
+
+### À vérifier en jeu (économie)
+
+- [ ] `/heralizloot beta` : une ligne « Économie de la bêta : achats chez les marchands x0.75, rachat x1, recycleur
+      x1.25, améliorations du clan x0.75, hérals des quêtes x1.25 ».
+- [ ] Jacqueline, le Doyen, Jack, le Bâtisseur : prix affichés = tableau ; acheter 1 puis 5 (Maj) : le solde baisse du
+      prix affiché.
+- [ ] Mila : un métal renforcé se revend 150 ; une montre gousset, un composant trouvé : même prix qu'avant.
+- [ ] Recycleur du spawn et de terrain : l'aperçu montre 12,5 % (13,75 % sur le terrain) par composant ; un soin acheté
+      chez Jacqueline n'est pas refusé plus qu'avant.
+- [ ] Onglet Niveau du clan : palier 1 à 7 500 hérals ; l'achat prend 7 500 de la banque.
+- [ ] Varga : une quête affichée 500 hérals en montre 625 et en verse 625. Quêtes de clan tirées après la mise à jour :
+      × 1,25 (celles déjà tirées gardent leur prix).
+- [ ] `actif = false` : prix, recycleur, arbre et quêtes de Varga redeviennent normaux dans la seconde (l'onglet du clan
+      se met à jour au prochain changement du clan).
 
 ## Pas fait (questions pour le propriétaire)
 
 - Largage public, caisse de ravitaillement des territoires, quêtes du jour, caisses : non touchés (récompenses, déjà
   garanties). À dire si eux aussi doivent donner plus pendant la bêta.
 - Les conteneurs actifs par zone (rotation) ne changent pas : il y a autant de conteneurs remplis, chacun plus riche.
+- Économie : on monte aussi les prix de rachat de Mila (aujourd'hui inchangés), le revenu des territoires ou la caisse
+  de ravitaillement ? Le cœur de clan passe à 3 750 hérals pendant la bêta : à garder à 5 000 ?
