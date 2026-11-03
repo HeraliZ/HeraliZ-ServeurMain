@@ -19,6 +19,8 @@ public final class PartieClient implements Partie {
     @Override
     public void init(IEventBus busMod) {
         AvionEntity.SON_CLIENT.brancher(AvionSon::jouer);
+        // cercles de capture : dessin commun des zones (03/11)
+        fr.heralisz.clans.territory.DrapeauBlockEntity.CHARGEMENT_CLIENT.brancher(fr.heralisz.clans.territory.client.ZonesDrapeaux::suivre);
         CarteApi.demande = () -> {
             if (Minecraft.getInstance().getConnection() != null) ClansNet.toServer(new Packets.CarteDemandeC2S());
         };

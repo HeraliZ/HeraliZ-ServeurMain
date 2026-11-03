@@ -8,7 +8,7 @@ sera faite par le contrôle de branche de GitHub. `outils/verifier_langues.py` :
 `outils/verifier.py` ne peut pas tourner ici sans les jars fabriqués.
 
 Jars à mettre à jour ensemble (serveur ET joueurs) : **Monde 1.0.13**, **Noyau 1.0.16**, **Bases (CRac) 1.31.1-beta**,
-**Clans 3.11.2**. Réglage du dépôt changé : `serveur/defaultconfigs/heraliz_noyau-server.toml` (section `[pas]`).
+**Clans 3.12.2**. Réglage du dépôt changé : `serveur/defaultconfigs/heraliz_noyau-server.toml` (section `[pas]`).
 Nouveau réglage chez le joueur : `config/heraliz_noyau-client.toml`, section `[zones]`, `a_travers = 10`.
 
 **Suite du 03/11 (réponses du propriétaire) : à refaire en entier.** Nouveau dessin des zones branché (sections 1 et
@@ -36,6 +36,12 @@ autres). Extraction : sol léger sur les cases où l'on s'extrait, couleur rouge
       baisse par rapport à avant (F3 ou `/diag client`) ; pas d'à-coup en marchant (refait tous les 16 blocs).
 - [ ] Ranger le plan 30 s puis le reprendre : la zone revient tout de suite (refaite une fois).
 - [ ] Avec les shaders / Embeddium des joueurs : pas de zone noire, pas de clignotement.
+- [ ] Drapeaux de territoire (Clans 3.12.2, choix du propriétaire) : le cercle de capture a le même dessin (sol léger,
+      bord net, mur bas) à la place du mur lumineux. Couleur : blanc libre, vert tenu par son clan, rouge par un autre,
+      orange pendant une capture ou une contestation ; elle change aussitôt avec l'état. Visible jusqu'à 48 blocs du
+      cercle, à travers le décor seulement de près ; mât caché derrière un mur : le cercle reste dessiné.
+- [ ] Changer le rayon de capture (`heralisz_clans-common.toml`) : le cercle suit ; poser ou casser des blocs au bord :
+      le cercle suit en 10 s au plus.
 
 ## 1. Zones plan en main et cercle d'extraction posés sur le vrai sol (point 1, défauts corrigés)
 
@@ -57,7 +63,7 @@ Même sol réel pour le nouveau dessin (section 1 bis).
       toit, pas sur une caisse hors d'atteinte), même chrono.
 - [ ] Zone fixe d'admin (`/extraction create`) ouverte : même cercle propre.
 - [ ] Drapeau de territoire dont le cercle de capture passe sous des arbres ou sur des props : le mur du cercle reste au
-      sol (avant : il montait sur les feuilles et les caisses). Hors chantier (module clans), même correctif.
+      sol (avant : il montait sur les feuilles et les caisses).
 
 ## 2. Aucun zombie équipé (point 2)
 

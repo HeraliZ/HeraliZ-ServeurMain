@@ -5,3 +5,8 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    // dessin commun des zones (03/11) : fr.heraliz.noyau.client.zones, côté joueur seulement (cercles de capture)
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
+}

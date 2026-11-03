@@ -38,10 +38,6 @@ public class DrapeauBlockEntity extends BlockEntity {
     /** Cache du rendu client (etiquette) : cle et objet, geres par DrapeauRenderer. */
     public transient String clientCle;
     public transient Object clientCache;
-    /** Cache du rendu client (mur de la zone de capture) : hauteur du sol par segment, gere par DrapeauRenderer. */
-    public transient float[] clientSol;
-    public transient long clientSolTick = Long.MIN_VALUE;
-    public transient int clientSolCle;
 
     /** Chargement cote serveur (Territoires.rafraichirDrapeau) : branche par la partie serveur, neutre sans elle. */
     public static final Crochet<DrapeauBlockEntity> CHARGEMENT_SERVEUR = new Crochet<>();
@@ -84,11 +80,16 @@ public class DrapeauBlockEntity extends BlockEntity {
         return etat == EtatZone.CAPTURE || etat == EtatZone.CONTESTE;
     }
 
+    /** Bloc chargé chez le joueur (03/11) : la partie client y suit le cercle de capture (dessin commun des zones). */
+    public static final Crochet<DrapeauBlockEntity> CHARGEMENT_CLIENT = new Crochet<>();
+
     @Override
     public void onLoad() {
         super.onLoad();
         if (level != null && !level.isClientSide) {
             CHARGEMENT_SERVEUR.accept(this);
+        } else if (level != null) {
+            CHARGEMENT_CLIENT.accept(this);
         }
     }
 
