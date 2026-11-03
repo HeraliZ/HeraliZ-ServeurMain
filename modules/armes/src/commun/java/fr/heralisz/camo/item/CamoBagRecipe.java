@@ -19,7 +19,8 @@ import javax.annotation.Nullable;
  * Camo sur un sac, par le craft : un sac (sans camo) + un camo ou un skin X, n'importe où dans la grille de craft (celle de
  * l'inventaire 2 x 2 ou l'établi) -> le même sac, camouflé. Le sac garde tout son contenu et ses réglages (on copie l'objet),
  * le camo est consommé. Définitif : un sac déjà camouflé ne se recraft pas. Les skins réservés à une arme (skins de boss)
- * ne vont pas sur les sacs. Fichier de recette : data/heralisz_camo/recipes/camo_bag.json.
+ * et les skins à vie ne vont pas sur les sacs. Fichier de recette : data/heralisz_camo/recipes/camo_bag.json. Depuis le
+ * 03/11, plus simple : camo au curseur, clic droit sur le sac (CamoItem.overrideStackedOnOther), même sac porté.
  */
 public class CamoBagRecipe extends CustomRecipe {
    public CamoBagRecipe(ResourceLocation id, CraftingBookCategory category) {
@@ -49,7 +50,8 @@ public class CamoBagRecipe extends CustomRecipe {
          ItemStack s = grid.getItem(i);
          if (s.isEmpty()) continue;
          if (s.getItem() instanceof CamoItem ci) {
-            if (camo != null || ci.camo().gun != null) return null;
+            // 03/11 : ni skin réservé à une arme, ni skin à vie (consommé ici, il était perdu) : CamoItem.vaSurUnSac
+            if (camo != null || !CamoItem.vaSurUnSac(ci.camo())) return null;
             camo = ci.camo();
          } else if (BagSupport.isBag(s)) {
             if (bag != null || CamoData.get(s) != null) return null;

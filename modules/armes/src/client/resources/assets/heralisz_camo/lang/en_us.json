@@ -8,7 +8,7 @@
   "gui.heralisz_camo.none": "No camo in your inventory",
   "gui.heralisz_camo.apply": "Apply %s (permanent)",
   "msg.heralisz_camo.applied": "%s camo applied",
-  "item.heralisz_camo.camo.howto_bag": "Bag: this camo + a bag in a crafting grid = camo bag",
+  "item.heralisz_camo.camo.howto_bag": "Bag: camo on the cursor, right-click the bag (even worn)",
   "tooltip.heralisz_camo.bag_camo": "Camo: %s",
   "msg.heralisz_camo.bag_locked": "This bag already has a camo (permanent)",
   "item.heralisz_camo.camo.collect": "Right click: add it to your lifetime collection",
@@ -399,5 +399,8 @@
   "gui.heralisz_camo.atelier.decharger_aide": "Take the rounds out of the gun: they go back to your inventory, the magazine stays empty.",
   "gui.heralisz_camo.table.dispo": "With my components",
   "gui.heralisz_camo.table.autres": "+ %s more materials",
-  "msg.heralisz_camo.fichier_illisible": "[Camos] The lifetime camos file (%s) could not be read at startup: it is not rewritten and nothing is removed from weapons. See the server log."
+  "msg.heralisz_camo.fichier_illisible": "[Camos] The lifetime camos file (%s) could not be read at startup: it is not rewritten and nothing is removed from weapons. See the server log.",
+  "tooltip.heralisz_camo.bag_howto": "Right-click it with a camo: puts it on the bag",
+  "msg.heralisz_camo.sac_pose": "%s applied to the bag",
+  "msg.heralisz_camo.sac_refuse": "This skin can't go on a bag"
 }

@@ -45,9 +45,14 @@ public final class CamoClient {
          String cle = CamoData.owner(event.getItemStack()) != null ? "tooltip.heralisz_camo.gun_camo_life" : "tooltip.heralisz_camo.gun_camo";
          event.getToolTip().add(1, Component.translatable(cle,
             Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
-      } else if (camo != null && fr.heralisz.camo.BagSupport.isBag(event.getItemStack())) {
-         event.getToolTip().add(1, Component.translatable("tooltip.heralisz_camo.bag_camo",
-            Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
+      } else if (fr.heralisz.camo.BagSupport.isBag(event.getItemStack())) {
+         if (camo != null) {
+            event.getToolTip().add(1, Component.translatable("tooltip.heralisz_camo.bag_camo",
+               Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
+         } else {
+            // 03/11 : comment poser un camo sur un sac (camo au curseur, clic droit sur le sac : CamoItem)
+            event.getToolTip().add(Component.translatable("tooltip.heralisz_camo.bag_howto").withStyle(ChatFormatting.DARK_GRAY));
+         }
       }
    }
 

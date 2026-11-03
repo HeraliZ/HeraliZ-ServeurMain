@@ -8,7 +8,7 @@
   "gui.heralisz_camo.none": "В инвентаре нет камуфляжа",
   "gui.heralisz_camo.apply": "Нанести %s (несъёмный)",
   "msg.heralisz_camo.applied": "Камуфляж %s нанесён",
-  "item.heralisz_camo.camo.howto_bag": "Рюкзак: этот камуфляж + рюкзак в сетке крафта = камуфлированный рюкзак",
+  "item.heralisz_camo.camo.howto_bag": "Рюкзак: камуфляж на курсоре, ПКМ по рюкзаку (даже надетому)",
   "tooltip.heralisz_camo.bag_camo": "Камуфляж: %s",
   "msg.heralisz_camo.bag_locked": "У этого рюкзака уже есть камуфляж (несъёмный)",
   "item.heralisz_camo.camo.collect": "ПКМ: добавить в постоянную коллекцию",
@@ -399,5 +399,8 @@
   "gui.heralisz_camo.atelier.decharger_aide": "Извлечь патроны из оружия: они вернутся в инвентарь, магазин останется пустым.",
   "gui.heralisz_camo.table.dispo": "С моими компонентами",
   "gui.heralisz_camo.table.autres": "+ ещё материалов: %s",
-  "msg.heralisz_camo.fichier_illisible": "[Камуфляжи] Файл вечных камуфляжей (%s) не удалось прочитать при запуске: он не перезаписывается, с оружия ничего не снимается. Смотри журнал сервера."
+  "msg.heralisz_camo.fichier_illisible": "[Камуфляжи] Файл вечных камуфляжей (%s) не удалось прочитать при запуске: он не перезаписывается, с оружия ничего не снимается. Смотри журнал сервера.",
+  "tooltip.heralisz_camo.bag_howto": "ПКМ по рюкзаку с камуфляжем: нанести его на рюкзак",
+  "msg.heralisz_camo.sac_pose": "%s нанесён на рюкзак",
+  "msg.heralisz_camo.sac_refuse": "Этот скин нельзя нанести на рюкзак"
 }

@@ -8,7 +8,7 @@
   "gui.heralisz_camo.none": "Aucun camouflage dans l'inventaire",
   "gui.heralisz_camo.apply": "Appliquer %s (définitif)",
   "msg.heralisz_camo.applied": "Camouflage %s appliqué",
-  "item.heralisz_camo.camo.howto_bag": "Sac : ce camo + un sac dans une grille de craft = sac camouflé",
+  "item.heralisz_camo.camo.howto_bag": "Sac : camo au curseur, clic droit sur le sac (même porté)",
   "tooltip.heralisz_camo.bag_camo": "Camouflage : %s",
   "msg.heralisz_camo.bag_locked": "Ce sac a déjà un camouflage (définitif)",
   "item.heralisz_camo.camo.collect": "Clic droit : l'ajouter à ta collection à vie",
@@ -399,5 +399,8 @@
   "gui.heralisz_camo.atelier.decharger_aide": "Retirer les balles de l'arme : elles reviennent dans ton inventaire, le chargeur reste vide.",
   "gui.heralisz_camo.table.dispo": "Avec mes composants",
   "gui.heralisz_camo.table.autres": "+ %s autres matériaux",
-  "msg.heralisz_camo.fichier_illisible": "[Camos] Le fichier des camos à vie (%s) était illisible au démarrage : il n'est pas réécrit, rien n'est retiré des armes. Voir le journal du serveur."
+  "msg.heralisz_camo.fichier_illisible": "[Camos] Le fichier des camos à vie (%s) était illisible au démarrage : il n'est pas réécrit, rien n'est retiré des armes. Voir le journal du serveur.",
+  "tooltip.heralisz_camo.bag_howto": "Clic droit dessus avec un camo : le pose sur le sac",
+  "msg.heralisz_camo.sac_pose": "%s posé sur le sac",
+  "msg.heralisz_camo.sac_refuse": "Ce skin ne va pas sur un sac"
 }
