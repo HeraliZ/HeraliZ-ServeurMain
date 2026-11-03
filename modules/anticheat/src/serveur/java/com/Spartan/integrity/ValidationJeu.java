@@ -129,8 +129,8 @@ public final class ValidationJeu {
         if (!SpartanConfig.VALIDATION_ENABLED.get()) {
             return;
         }
-        if (ConformiteStricte.estRefuse(p)) {
-            e.fini = true; // refusé par le mode strict : le staff a déjà la raison
+        if (ConformiteStricte.estRefuse(p) || Injection.expulse(p.getUUID())) {
+            e.fini = true; // refusé par le mode strict ou expulsé pour injection : le staff a déjà la raison
             return;
         }
         List<String> manque = manque(p, e);
@@ -152,7 +152,7 @@ public final class ValidationJeu {
     public static void deconnexion(ServerPlayer p) {
         Etat e = ETATS.remove(p.getUUID());
         if (e == null || e.fini || e.verifieA == 0 || fictif(p) || !SpartanConfig.VALIDATION_ENABLED.get()
-                || ConformiteStricte.estRefuse(p)) {
+                || ConformiteStricte.estRefuse(p) || Injection.expulse(p.getUUID())) {
             return;
         }
         long resteMs = Util.getMillis() - e.verifieA;

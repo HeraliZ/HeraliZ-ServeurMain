@@ -725,6 +725,13 @@ public final class ScanManager {
                     res.erreurEcarts);
             return;
         }
+        // Injection (03/11) : traces certaines d'un code étranger dans le jeu = alerte + expulsion, quel que soit le mode
+        com.Spartan.integrity.Injection.Verdict injection = com.Spartan.integrity.Injection.juger(p.getUUID(), findings);
+        if (injection.expulser() != null) {
+            com.Spartan.integrity.Injection.expulser(p, injection.expulser(), "contrôle d'intégrité, " + trigger);
+        } else if (injection.reverifier() && s.pendingId == 0) {
+            s.nextAt = Math.min(s.nextAt, Util.getMillis() + 5_000L); // code natif caché vu une fois : revu tout de suite
+        }
         // Jeu identique au jeu officiel, sinon refusé (règle d'accès) : seulement les écarts certains, après l'alerte
         // (le staff a le rapport complet avec la preuve). Calculés aussi sans le mode strict : la validation du jeu dit
         // « identique au jeu officiel » seulement sans aucun écart.

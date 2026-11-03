@@ -51,8 +51,8 @@ public final class ConformiteStricte {
      * @param consigne message court pour le joueur (null : consigne générale « jeu non identique »)
      */
     public static void refuser(ServerPlayer p, String raison, Component consigne) {
-        if (!actif() || p.hasDisconnected() || !REFUSES.add(p)) {
-            return;
+        if (!actif() || p.hasDisconnected() || Injection.enAttente(p) || !REFUSES.add(p)) {
+            return; // déjà expulsé pour injection (capture en route) : la règle d'injection s'en charge
         }
         String name = p.getName().getString();
         Spartan.LOGGER.warn("[Spartan] {} refusé (jeu non identique au jeu officiel) : {}", name, raison);

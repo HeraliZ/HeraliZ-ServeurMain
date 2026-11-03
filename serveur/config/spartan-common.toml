@@ -498,6 +498,32 @@
 	#Range: 45 ~ 600
 	preuveSecondes = 120
 
+#Injection (03/11, demande du propriétaire) : alerte Discord + EXPULSION directe, même en détection
+#silencieuse et même si strictOfficial est coupé. Seulement les traces CERTAINES d'un code étranger dans le
+#jeu (aucun logiciel honnête n'en laisse). Restent des ALERTES : DLL au nom ou à l'emplacement douteux, overlay
+#inconnu (Discord, Steam, OBS, NVIDIA… connus sont ignorés), threads sans nom, DLL chargée en cours de partie,
+#débogueurs, décompilateurs et gestionnaires de processus ouverts, Gardien muet, jar changé pendant la partie.
+#Une capture d'écran est demandée d'abord (si autorisée), l'expulsion suit 5 s plus tard.
+[injection]
+	#Expulse le joueur (false : alertes seulement, comme avant).
+	expulser = true
+	#Capture d'écran avant l'expulsion (si le joueur l'a autorisée).
+	capture = true
+	#Réponse fausse au défi d'intégrité (Spartan du jeu modifié, fichier ou mémoire) : expulsion.
+	defiFaux = true
+	#Indices FORTS du contrôle d'intégrité qui expulsent (début de leur clé) : attach = programme attaché au jeu en
+	#cours de partie ; tamper: = anticheat modifié en mémoire ; class: = paquet d'un client de triche connu ;
+	#jvm:-javaagent / -agentlib / -agentpath / -xbootclasspath / -djava.system.class.loader /
+	#-djdk.attach.allowattachself = code injecté au lancement (agent, débogueur…) ; inject:thread: = thread
+	#démarré hors de tout module (DLL cachée) ; inject:hook: = affichage détourné vers du code sans module.
+	indices = ["attach", "tamper:", "class:", "jvm:-javaagent", "jvm:-agentlib", "jvm:-agentpath", "jvm:-xbootclasspath", "jvm:-djava.system.class.loader", "jvm:-djdk.attach.allowattachself", "inject:thread:", "inject:hook:"]
+	#Indices de la liste ci-dessus qui doivent être revus au contrôle suivant (demandé aussitôt) avant l'expulsion :
+	#code natif caché, dont une trace passagère d'un seul relevé est concevable.
+	aConfirmer = ["inject:thread:", "inject:hook:"]
+	#Programmes vus par le Gardien du launcher qui expulsent (noms de la liste du launcher) : injecteurs et
+	#éditeurs de mémoire. Les autres (débogueurs, Process Hacker, décompilateurs…) restent des alertes.
+	outils = ["cheatengine", "cheat engine", "extremeinjector", "extreme injector", "xenos", "ghinjector", "gh injector", "dllinjector", "kdmapper", "artmoney", "squalr"]
+
 #Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent
 #(ni zombies, ni PNJ, ni bots). Toujours des ALERTES « Tirs » au staff avec les chiffres, jamais de coup annulé ni
 #de sanction. Un résumé de chaque session (tirs, touches, têtes, refus) est écrit dans config/spartan/tirs.log

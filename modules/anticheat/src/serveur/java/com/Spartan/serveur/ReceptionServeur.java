@@ -204,6 +204,8 @@ public final class ReceptionServeur {
                     return;
                 }
                 CheckManager.flag("ClientIntegrity", player, "agent Java non autorisé : " + safeDetail);
+                // contrôle d'intégrité coupé (sinon c'est lui qui juge les agents) : règle d'injection quand même (03/11)
+                com.Spartan.integrity.Injection.expulser(player, "agent Java non autorisé : " + safeDetail, "jeu");
             }
             case "thread" -> CheckManager.flag("ClientIntegrity", player, "threads anonymes : " + safeDetail);
             case "jvm" -> {

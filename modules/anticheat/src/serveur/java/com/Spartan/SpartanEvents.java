@@ -229,6 +229,8 @@ public class SpartanEvents {
         com.Spartan.serveur.ReceptionServeur.tick(event.getServer());
         // Gardien du launcher : joueurs dont les rapports ont cessé.
         com.Spartan.serveur.GardienServeur.tick(event.getServer());
+        // Injection (03/11) : expulsions qui attendaient leur capture d'écran (rien à faire presque toujours)
+        com.Spartan.integrity.Injection.tick(event.getServer());
         // Anti-ESP : lignes de vue entre joueurs, décisions d'envoi appliquées tout de suite.
         VisibilityEngine.tick(event.getServer());
         // Anti-duplication : un relevé de temps en temps (même numéro à deux endroits au même instant).
@@ -286,6 +288,7 @@ public class SpartanEvents {
             HandshakeMonitor.clear(player.getUUID());
             Mitigation.clear(player.getUUID());
             ChallengeManager.clear(player.getUUID());
+            com.Spartan.integrity.Injection.oublier(player.getUUID());
             LauncherGate.clear(player.getUUID());
             com.Spartan.integrity.PorteJoueurs.oublier(player.getUUID());
             ScanManager.clear(player.getUUID());

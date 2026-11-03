@@ -67,6 +67,12 @@ public final class CaptureManager {
         return ACCORD.containsKey(id);
     }
 
+    /** Une capture de ce joueur est demandée et pas encore arrivée (moins de 30 s). */
+    public static boolean enCours(UUID id) {
+        Etat e = ETATS.get(id);
+        return e != null && e.id != 0 && System.currentTimeMillis() - e.demandee <= DELAI_MS;
+    }
+
     public static boolean autorise(ServerPlayer p) {
         return Boolean.TRUE.equals(ACCORD.get(p.getUUID()));
     }

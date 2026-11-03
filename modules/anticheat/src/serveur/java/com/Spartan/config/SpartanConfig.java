@@ -190,6 +190,14 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue ESP_REVEAL_VOICE;
     public static final ForgeConfigSpec.IntValue ESP_VOICE_REVEAL_TICKS;
 
+    // --- injection (03/11) ---
+    public static final ForgeConfigSpec.BooleanValue INJECTION_EXPULSER;
+    public static final ForgeConfigSpec.BooleanValue INJECTION_CAPTURE;
+    public static final ForgeConfigSpec.BooleanValue INJECTION_DEFI;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_INDICES;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_OUTILS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_A_CONFIRMER;
+
     // --- suivi à travers les murs (03/11) ---
     public static final ForgeConfigSpec.BooleanValue SUIVI_ENABLED;
     public static final ForgeConfigSpec.BooleanValue SUIVI_CAPTURE;
@@ -547,6 +555,39 @@ public class SpartanConfig {
         GARDIEN_PREUVE_SECONDES = b.comment("Délai pour la première preuve du Gardien après le /login (secondes). Un launcher",
                 "honnête la donne en 15 à 40 s (un rapport toutes les 10 à 20 s, défi envoyé dès le /login).")
                 .defineInRange("preuveSecondes", 120, 45, 600);
+        b.pop();
+
+        b.comment("Injection (03/11, demande du propriétaire) : alerte Discord + EXPULSION directe, même en détection",
+                "silencieuse et même si strictOfficial est coupé. Seulement les traces CERTAINES d'un code étranger dans le",
+                "jeu (aucun logiciel honnête n'en laisse). Restent des ALERTES : DLL au nom ou à l'emplacement douteux, overlay",
+                "inconnu (Discord, Steam, OBS, NVIDIA… connus sont ignorés), threads sans nom, DLL chargée en cours de partie,",
+                "débogueurs, décompilateurs et gestionnaires de processus ouverts, Gardien muet, jar changé pendant la partie.",
+                "Une capture d'écran est demandée d'abord (si autorisée), l'expulsion suit 5 s plus tard.")
+                .push("injection");
+        INJECTION_EXPULSER = b.comment("Expulse le joueur (false : alertes seulement, comme avant).")
+                .define("expulser", true);
+        INJECTION_CAPTURE = b.comment("Capture d'écran avant l'expulsion (si le joueur l'a autorisée).")
+                .define("capture", true);
+        INJECTION_DEFI = b.comment("Réponse fausse au défi d'intégrité (Spartan du jeu modifié, fichier ou mémoire) : expulsion.")
+                .define("defiFaux", true);
+        INJECTION_INDICES = b.comment(
+                "Indices FORTS du contrôle d'intégrité qui expulsent (début de leur clé) : attach = programme attaché au jeu en",
+                "cours de partie ; tamper: = anticheat modifié en mémoire ; class: = paquet d'un client de triche connu ;",
+                "jvm:-javaagent / -agentlib / -agentpath / -xbootclasspath / -djava.system.class.loader /",
+                "-djdk.attach.allowattachself = code injecté au lancement (agent, débogueur…) ; inject:thread: = thread",
+                "démarré hors de tout module (DLL cachée) ; inject:hook: = affichage détourné vers du code sans module.")
+                .defineList("indices", List.of("attach", "tamper:", "class:", "jvm:-javaagent", "jvm:-agentlib",
+                        "jvm:-agentpath", "jvm:-xbootclasspath", "jvm:-djava.system.class.loader",
+                        "jvm:-djdk.attach.allowattachself", "inject:thread:", "inject:hook:"), o -> o instanceof String);
+        INJECTION_A_CONFIRMER = b.comment(
+                "Indices de la liste ci-dessus qui doivent être revus au contrôle suivant (demandé aussitôt) avant l'expulsion :",
+                "code natif caché, dont une trace passagère d'un seul relevé est concevable.")
+                .defineList("aConfirmer", List.of("inject:thread:", "inject:hook:"), o -> o instanceof String);
+        INJECTION_OUTILS = b.comment(
+                "Programmes vus par le Gardien du launcher qui expulsent (noms de la liste du launcher) : injecteurs et",
+                "éditeurs de mémoire. Les autres (débogueurs, Process Hacker, décompilateurs…) restent des alertes.")
+                .defineList("outils", List.of("cheatengine", "cheat engine", "extremeinjector", "extreme injector", "xenos",
+                        "ghinjector", "gh injector", "dllinjector", "kdmapper", "artmoney", "squalr"), o -> o instanceof String);
         b.pop();
 
         b.comment("Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent",

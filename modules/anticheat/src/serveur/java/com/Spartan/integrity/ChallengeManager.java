@@ -209,6 +209,9 @@ public final class ChallengeManager {
     private static void fail(ServerPlayer p, State s) {
         s.failed++;
         CheckManager.flag("Integrity", p, "réponse fausse au défi d'intégrité : mod client modifié");
+        if (SpartanConfig.INJECTION_DEFI.get()) {
+            Injection.expulser(p, "réponse fausse au défi d'intégrité : Spartan du jeu modifié (fichier ou mémoire)", "défi");
+        }
         ConformiteStricte.refuser(p, "réponse fausse au défi d'intégrité : Spartan du jeu modifié");
         if (SpartanConfig.mayKickForClientSignal()) {
             p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.non_conforme", "[Spartan] Client non conforme."));
