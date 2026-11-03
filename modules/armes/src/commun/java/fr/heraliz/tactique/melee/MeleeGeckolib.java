@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -37,6 +38,13 @@ public final class MeleeGeckolib {
     */
    private static final Set<String> COUTEAUX = Set.of("knife", "gut_knife_1", "gut_knife_2", "gut_knife_3", "gut_knife_4",
       "gut_knife_5", "bayonet_knife", "bayonet_knife_2");
+   /**
+    * Vitesse en main des couteaux de geckolib222 : +10 % de la vitesse de base, comme tous les couteaux (03/11, demande du
+    * propriétaire ; avant : aucun bonus). Main principale seulement.
+    */
+   private static final AttributeModifier VITESSE_COUTEAU = new AttributeModifier(
+      UUID.fromString("7c6b0bba-47ef-4e97-b0a4-8bcbf42209e1"), "HeraliZ : vitesse des couteaux", 0.1,
+      AttributeModifier.Operation.MULTIPLY_BASE);
 
    private MeleeGeckolib() {
    }
@@ -55,6 +63,9 @@ public final class MeleeGeckolib {
       if (e.getSlotType() != EquipmentSlot.MAINHAND) return;
       ResourceLocation id = ForgeRegistries.ITEMS.getKey(e.getItemStack().getItem());
       if (id == null || !NAMESPACE.equals(id.getNamespace())) return;
+      if (COUTEAUX.contains(id.getPath())) {
+         e.addModifier(Attributes.MOVEMENT_SPEED, VITESSE_COUTEAU);
+      }
       Multimap<Attribute, AttributeModifier> mods = e.getModifiers();
       if (!mods.containsKey(Attributes.ATTACK_DAMAGE)) return;
       // une seule addition au total (normalement il n'y en a qu'une) : le point du joueur n'est compté qu'une fois
