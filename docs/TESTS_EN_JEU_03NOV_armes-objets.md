@@ -2,7 +2,7 @@
 
 Retours du propriétaire après son premier passage en jeu (02/11 au soir), points 1 à 8 de ce chantier.
 
-Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.47.0 (`armes`, suite du 03/11, coups mieux timés et icône « s'allonger » compris), Loot 0.14.8,
+Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.48.0 (`armes`, suite du 03/11, coups mieux timés et icône « s'allonger » avec le plongeon compris), Loot 0.14.8,
 Monde 1.0.12. Données changées (mise en ligne complète puis redémarrage) : gunpacks `heraliz_5_couteaux_cs2` (fiche des
 couteaux TaCZ) et `heraliz_crafts` (3 recettes retirées, listées dans `serveur/tacz_retires.txt`), tables de loot T1 à T7,
 `serveur/config/heraliz_quetes/pnj/jacqueline.json`, `serveur/config/heralizcrates/quete.json`,
@@ -89,14 +89,16 @@ un serveur chargé) :
 - Rien ne change pour la vitesse : toujours 1,2 s entre deux coups, toujours 1 bloc de portée ; cliquer très vite ne
   donne pas plus de coups. Frapper dans le vide : aucun bruit d'impact.
 
-## 9. Icône « s'allonger » en bas à gauche (demande du 03/11) — rendus à valider d'abord
+## 9. Icône « s'allonger » en bas à gauche (demande du 03/11, en ligne) — plongeon à tester
 Rendus (vraie taille, coin bas-gauche d'un écran 1080p, échelles d'interface 3 et 4, et agrandi) :
-`rendus_03nov/armes-objets/allonge_1_echelle3.png`, `allonge_2_echelle4.png`, `allonge_3_zoom.png`. Le code n'est à
-mettre en ligne qu'une fois l'icône validée. Seul le jeu des joueurs change (rien côté serveur, aucun paquet en plus).
+`rendus_03nov/armes-objets/allonge_1_echelle3.png`, `allonge_2_echelle4.png`, `allonge_3_zoom.png`. Seul le jeu des
+joueurs change (rien côté serveur, aucun paquet en plus).
 
 Une fois en jeu, regarder le petit rond en bas à gauche, à la hauteur du milieu de la barre d'objets :
 - **Prêt** (debout, rien n'empêche) : soldat allongé blanc, anneau clair.
-- **Allongé** : soldat et anneau verts.
+- **Allongé** : soldat et anneau verts. **En plongeon** (Tactique 2.48.0, retour du propriétaire : « le plongeon n'est
+  pas pris en compte ») : vert aussi, dès l'élan et pendant tout le vol, puis toujours vert une fois retombé allongé
+  (avant : l'icône restait blanche « prêt » pendant le vol).
 - **Délai** : se relever ; l'icône passe en gris, un anneau ambre se remplit dans le sens des aiguilles d'une montre et
   les secondes restantes s'affichent à droite (« 3 s », « 2 s »…). Quand l'anneau est plein, l'icône redevient blanche
   et la touche « Ramper » marche du premier coup. Appuyer pendant le délai : toujours le message d'attente, comme avant.

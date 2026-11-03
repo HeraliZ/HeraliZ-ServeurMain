@@ -27,7 +27,7 @@ import org.joml.Matrix4f;
  *    dans le sens horaire, secondes restantes à droite ;</li>
  *    <li><b>impossible</b> (à terre, en train de fouiller ou réanimer, en véhicule, dans l'eau) : soldat grisé, trait
  *    rouge ;</li>
- *    <li><b>allongé</b> : soldat et anneau verts.</li>
+ *    <li><b>allongé</b>, ou en plein plongeon (de l'élan à la retombée) : soldat et anneau verts.</li>
  * </ul>
  * L'état est celui que le jeu du joueur applique déjà à la touche (AllongeClient : même délai que le serveur, réglage
  * {@code delai_rallonger} envoyé par Forge, et attente annoncée par un refus du serveur) : aucun paquet de plus, quelques
@@ -66,7 +66,8 @@ public final class HudAllonge {
 
       long restant = AllongeClient.restantMs();
       Etat etat;
-      if (AllongeClient.estAllonge()) {
+      if (AllongeClient.estAllonge() || AllongeClient.plongeonEnCours()) {
+         // en plongeon (accepté par le serveur, corps à plat jusqu'à la retombée allongée) : comme allongé
          etat = Etat.ALLONGE;
       } else if (CompatReanimation.empeche(p) || p.isPassenger() || p.isInWater()) {
          etat = Etat.IMPOSSIBLE;
