@@ -3,6 +3,7 @@ package fr.heraliz.armory.client;
 import fr.heraliz.armory.HeralizArmory;
 import fr.heraliz.armory.armor.ArmorCatalog;
 import fr.heraliz.armory.armor.PieceDef;
+import fr.heraliz.armory.client.cible.CibleRenderer;
 import fr.heraliz.armory.item.GearCurioItem;
 import fr.heraliz.armory.registry.ModEntities;
 import fr.heraliz.armory.registry.ModItems;
@@ -40,6 +41,8 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.MANNEQUIN.get(), MannequinRenderer::new);
+        // cible d'essai (03/11) : modele et texture du mannequin
+        event.registerEntityRenderer(ModEntities.CIBLE.get(), CibleRenderer::new);
     }
 
     /**

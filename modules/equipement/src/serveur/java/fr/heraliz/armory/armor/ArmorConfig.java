@@ -25,6 +25,9 @@ public final class ArmorConfig {
     public static final ForgeConfigSpec.IntValue TANK_SECONDS;
     public static final ForgeConfigSpec.IntValue REFILL_SECONDS;
     public static final ForgeConfigSpec.DoubleValue SWIM_BOOST;
+    /** 03/11 : cible d'essai (cible.CibleEssaiServeur) posee par un joueur dans la base de son clan. */
+    public static final ForgeConfigSpec.BooleanValue CIBLE_EN_BASE;
+    public static final ForgeConfigSpec.IntValue CIBLE_PAR_BASE;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -55,6 +58,13 @@ public final class ArmorConfig {
                 .defineInRange("refill_seconds", 5, 0, 600);
         SWIM_BOOST = b.comment("Bonus de vitesse de nage des palmes (0.8 = +80 %)")
                 .defineInRange("swim_boost", 0.8, 0.0, 3.0);
+        b.pop();
+        b.push("cible");
+        CIBLE_EN_BASE = b.comment("Cible d'essai (heraliz_armory:cible_essai, donnee par le staff avec /give) : un joueur peut la poser dans la",
+                        "base de son clan (zone de l'armoire de CRac ou il a le droit de construire). false : staff et creatif seulement.")
+                .define("poser_en_base", true);
+        CIBLE_PAR_BASE = b.comment("Cibles d'essai au plus dans une meme base (posees par des joueurs ; le staff n'a pas de limite)")
+                .defineInRange("par_base", 2, 0, 16);
         b.pop();
         SPEC = b.build();
     }

@@ -1,6 +1,7 @@
 package fr.heraliz.armory.registry;
 
 import fr.heraliz.armory.HeralizArmory;
+import fr.heraliz.armory.cible.CibleEssai;
 import fr.heraliz.armory.entity.Mannequin;
 import fr.heraliz.armory.menu.MannequinMenu;
 import fr.heraliz.armory.pont.UsineEntite;
@@ -15,7 +16,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-/** Mannequin d'armurerie : type d'entite et menu. */
+/** Mannequin d'armurerie (type d'entite et menu) et cible d'essai (03/11). */
 public final class ModEntities {
     private ModEntities() {}
 
@@ -29,6 +30,16 @@ public final class ModEntities {
             () -> EntityType.Builder.<Mannequin>of(MANNEQUIN_USINE, MobCategory.MISC).sized(0.6F, 2.0F).clientTrackingRange(10)
                     .build(HeralizArmory.id("mannequin").toString()));
 
+    /**
+     * Cible d'essai (03/11) : taille d'un joueur, jamais en feu. Usine : version serveur (CibleEssaiServeur : coups mesures,
+     * tenue, ecran) branchee par la partie serveur.
+     */
+    public static final UsineEntite<CibleEssai> CIBLE_USINE = new UsineEntite<>(CibleEssai::new);
+
+    public static final RegistryObject<EntityType<CibleEssai>> CIBLE = ENTITIES.register("cible_essai",
+            () -> EntityType.Builder.<CibleEssai>of(CIBLE_USINE, MobCategory.MISC).sized(0.6F, 1.8F).fireImmune().clientTrackingRange(10)
+                    .build(HeralizArmory.id("cible_essai").toString()));
+
     public static final RegistryObject<MenuType<MannequinMenu>> MANNEQUIN_MENU = MENUS.register("mannequin",
             () -> IForgeMenuType.create(MannequinMenu::fromNetwork));
 
@@ -40,5 +51,7 @@ public final class ModEntities {
 
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(MANNEQUIN.get(), LivingEntity.createLivingAttributes().build());
+        // memes attributs de base qu'un joueur pour tout ce qui touche aux degats (20 PV, armure 0, robustesse 0)
+        event.put(CIBLE.get(), LivingEntity.createLivingAttributes().build());
     }
 }

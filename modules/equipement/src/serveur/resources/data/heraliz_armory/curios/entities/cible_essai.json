@@ -1,0 +1,13 @@
+{
+  "entities": [
+    "heraliz_armory:cible_essai"
+  ],
+  "slots": [
+    "mask",
+    "belt",
+    "hands",
+    "knees",
+    "body",
+    "bracelet"
+  ]
+}

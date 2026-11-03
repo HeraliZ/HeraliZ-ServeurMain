@@ -1,9 +1,12 @@
 package fr.heraliz.armory.serveur;
 
+import fr.heraliz.armory.cible.CibleEssaiServeur;
+import fr.heraliz.armory.cible.CiblesServeur;
 import fr.heraliz.armory.compat.TaczCompat;
 import fr.heraliz.armory.curios.MajClicCurios;
 import fr.heraliz.armory.curios.MajClicCuriosServeur;
 import fr.heraliz.armory.entity.MannequinServeur;
+import fr.heraliz.armory.item.CibleItemServeur;
 import fr.heraliz.armory.item.MannequinItemServeur;
 import fr.heraliz.armory.item.SetKitItemServeur;
 import fr.heraliz.armory.network.ArmoryNetwork;
@@ -30,6 +33,9 @@ public final class PartieServeur implements Partie {
         ModEntities.MANNEQUIN_USINE.serveur(MannequinServeur::new);
         ModItems.KIT_USINE.serveur(SetKitItemServeur::new);
         ModItems.MANNEQUIN_USINE.serveur(MannequinItemServeur::new);
+        // cible d'essai (03/11) : coups mesures comme sur un joueur, tenue, ecran, pose
+        ModEntities.CIBLE_USINE.serveur(CibleEssaiServeur::new);
+        ModItems.CIBLE_USINE.serveur(CibleItemServeur::new);
         // crochets : touche des lunettes (paquet ToggleNvg), bouteille de plongee (tick du porteur)
         ArmoryNetwork.RECEPTION_SERVEUR.brancher(NightVisionServeur::toggle);
         Diving.BOUTEILLE_SERVEUR.brancher(DivingServeur::bouteille);
@@ -38,5 +44,6 @@ public final class PartieServeur implements Partie {
         // ecouteurs de l'ancien constructeur, dans le meme ordre : remappage heralisz_armor, puis tirs a la tete TaCZ
         MinecraftForge.EVENT_BUS.addListener(AnciensObjets::remapOldItems);
         TaczCompat.register();
+        CiblesServeur.brancher();
     }
 }

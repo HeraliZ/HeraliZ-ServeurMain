@@ -8,6 +8,7 @@ import fr.heraliz.armory.armor.PieceDef;
 import fr.heraliz.armory.armor.SetCatalog;
 import fr.heraliz.armory.armor.SetDef;
 import fr.heraliz.armory.armor.SuitCatalog;
+import fr.heraliz.armory.item.CibleItem;
 import fr.heraliz.armory.item.GearArmorItem;
 import fr.heraliz.armory.item.GearCurioItem;
 import fr.heraliz.armory.item.MannequinItem;
@@ -56,6 +57,8 @@ public final class ModItems {
      */
     public static final Usine<SetDef, Item> KIT_USINE = new Usine<>(SetKitItem::new);
     public static final Usine<Item.Properties, Item> MANNEQUIN_USINE = new Usine<>(MannequinItem::new);
+    /** Cible d'essai (03/11) : pose decidee par la partie serveur (CibleItemServeur). */
+    public static final Usine<Item.Properties, Item> CIBLE_USINE = new Usine<>(CibleItem::new);
 
     static {
         for (PieceDef def : ArmorCatalog.PIECES) {
@@ -75,6 +78,7 @@ public final class ModItems {
     }
 
     public static final RegistryObject<Item> MANNEQUIN = ITEMS.register("mannequin", () -> MANNEQUIN_USINE.apply(new Item.Properties()));
+    public static final RegistryObject<Item> CIBLE = ITEMS.register("cible_essai", () -> CIBLE_USINE.apply(new Item.Properties()));
 
     /**
      * Onglet « HeraliZ Armurerie » : tenues completes NV1..NV23, combinaisons, pieces par niveau, puis la section des
@@ -96,6 +100,7 @@ public final class ModItems {
                         .forEach(def -> out.accept(PIECES.get(def.itemId()).get()));
                 GearCatalog.GEAR.stream().filter(g -> !g.event()).forEach(g -> out.accept(GEAR.get(g.id()).get()));
                 out.accept(MANNEQUIN.get());
+                out.accept(CIBLE.get());
             })
             .build());
 

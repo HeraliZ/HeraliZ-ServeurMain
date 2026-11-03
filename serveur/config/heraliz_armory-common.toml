@@ -16,3 +16,11 @@
 	#Effets bloques par un masque filtrant (piece portee au visage ou sur la tete), ex. "minecraft:poison"
 	gas_effects = ["minecraft:poison"]
 
+
+[cible]
+	#Cible d'essai (heraliz_armory:cible_essai, donnee par le staff avec /give) : un joueur peut la poser dans la
+	#base de son clan (zone de l'armoire de CRac ou il a le droit de construire). false : staff et creatif seulement.
+	poser_en_base = true
+	#Cibles d'essai au plus dans une meme base (posees par des joueurs ; le staff n'a pas de limite)
+	#Range: 0 ~ 16
+	par_base = 2

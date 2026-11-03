@@ -1,10 +1,12 @@
 package fr.heraliz.armory.client;
 
 import fr.heraliz.armory.HeralizArmory;
+import fr.heraliz.armory.client.cible.CibleClient;
 import fr.heraliz.armory.item.GearArmorItem;
 import fr.heraliz.armory.item.GearCurioItem;
 import fr.heraliz.armory.item.SetArmorItem;
 import fr.heraliz.armory.network.ArmoryNetwork;
+import fr.heraliz.armory.network.PaquetsCible;
 import fr.heraliz.armory.pont.Partie;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -29,6 +31,8 @@ public final class PartieClient implements Partie {
         busMod.addListener(PartieClient::hideOldArmorTab);
         // reserve de la bouteille de plongee recue du serveur (HUD)
         ArmoryNetwork.RECEPTION_CLIENT.brancher(m -> DivingClient.sync(m.tank(), m.max()));
+        // cible d'essai (03/11) : ecran du choix de l'armure, coups mesures
+        PaquetsCible.RECEPTION_CLIENT.brancher(CibleClient::recevoir);
         // rendus des objets (Forge appelle initializeClient a la creation des objets, apres les constructeurs @Mod)
         SetArmorItem.RENDU_CLIENT = (item, consumer) -> consumer.accept(ClientArmor.extensions(item));
         GearArmorItem.RENDU_CLIENT = (item, consumer) -> consumer.accept(new IClientItemExtensions() {
