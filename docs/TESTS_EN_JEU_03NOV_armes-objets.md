@@ -2,7 +2,7 @@
 
 Retours du propriétaire après son premier passage en jeu (02/11 au soir), points 1 à 8 de ce chantier.
 
-Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.45.0 (`armes`, suite du 03/11 comprise), Loot 0.14.8,
+Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.46.0 (`armes`, suite du 03/11 et coups mieux timés compris), Loot 0.14.8,
 Monde 1.0.12. Données changées (mise en ligne complète puis redémarrage) : gunpacks `heraliz_5_couteaux_cs2` (fiche des
 couteaux TaCZ) et `heraliz_crafts` (3 recettes retirées, listées dans `serveur/tacz_retires.txt`), tables de loot T1 à T7,
 `serveur/config/heraliz_quetes/pnj/jacqueline.json`, `serveur/config/heralizcrates/quete.json`,
@@ -75,3 +75,16 @@ Sur un zombie ou un joueur ami, avec un couteau TaCZ puis un couteau à vie, cli
 - Un exemplaire déjà possédé reste une arme normale (icône, tir, dégâts, revente à Mila, recyclage).
 - Sur le Ptero après la mise en ligne : les fichiers `heraliz_crafts/.../armes/maxstuff_deagle_12g.json`,
   `maxstuff_thunderbird_short.json` et `soins/heralisz_heal_attelle_bandage.json` ont disparu de `/tacz`.
+
+## 8. Coups des couteaux et de la batte mieux timés (retour du 03/11) — à tester
+Sur un zombie puis un joueur ami collé à soi, d'abord avec un petit ping, puis depuis un PC avec un ping plus fort (ou
+un serveur chargé) :
+- **Couteau TaCZ** (Karambit, M9…), clic gauche puis clic droit : le bruit d'impact « chair » part au moment où la lame
+  passe devant soi, plus avec un temps de retard ; la cible rougit au même moment chez un ami qui regarde. Avec un fort
+  ping, la cible rougit un peu après le bruit (c'est le trajet du réseau), mais jamais avant que la lame passe.
+- **Batte**, clic gauche plusieurs fois de suite : les deux gestes qui alternent frappent chacun quand la batte passe
+  (avant : un sur deux tapait en retard) ; clic droit : coup au moment du choc. Bruit d'impact entendu par le frappeur
+  (avant : il n'entendait rien).
+- **Couteau à vie** (Credo, Push…) : bruit d'impact entendu par le frappeur au moment du coup.
+- Rien ne change pour la vitesse : toujours 1,2 s entre deux coups, toujours 1 bloc de portée ; cliquer très vite ne
+  donne pas plus de coups. Frapper dans le vide : aucun bruit d'impact.
