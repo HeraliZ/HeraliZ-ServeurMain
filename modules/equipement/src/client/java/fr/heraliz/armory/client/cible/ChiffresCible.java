@@ -79,7 +79,7 @@ public final class ChiffresCible {
         Entity cible = mc.level == null ? null : mc.level.getEntity(t.entite());
         if (cible == null) return;
         // un peu de côté au hasard, pour que deux chiffres de suite ne se recouvrent pas
-        double dx = (cible.getRandom().nextDouble() - 0.5D) * 0.4D, dz = (cible.getRandom().nextDouble() - 0.5D) * 0.4D;
+        double dx = (mc.level.random.nextDouble() - 0.5D) * 0.4D, dz = (mc.level.random.nextDouble() - 0.5D) * 0.4D;
         if (CHIFFRES.size() >= MAX) CHIFFRES.remove(0);
         CHIFFRES.add(new Chiffre(cible.getX() + dx, cible.getY() + cible.getBbHeight() + AU_DESSUS, cible.getZ() + dz, t.entite(), t.tir(),
                 t.recu(), maintenant, couleur));
