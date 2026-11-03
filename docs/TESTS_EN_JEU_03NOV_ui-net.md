@@ -25,6 +25,20 @@ gauche des lettres (« Quêtes dujour ») : corrigé.
 - [ ] Fiche `/base info` : comme avant.
 - [ ] Images par seconde : pas de baisse dans un écran plein de texte (quêtes, hôtel des ventes).
 
+## 1c. Gras et ombre propres (Interface 2.0.6) — retour du 03/11 après la mise en ligne
+
+Retour : dans le chat, messages d'événements et grades « plusieurs barres par lettre ». Cause : Minecraft fait le gras en
+redessinant la lettre une unité plus loin et l'ombre une unité en bas à droite (prévu pour sa police en pixels) ; sur
+DM Sans, cela donne deux à quatre copies de la lettre à 2, 3 ou 4 points d'écran l'une de l'autre. Floues avant, ces
+copies sont devenues nettes avec les lettres nettes. Maintenant, pour nos lettres nettes, gras et ombre décalés d'un seul
+point d'écran. Les largeurs ne changent pas (le gras garde son espacement d'une unité).
+
+- [ ] Chat fermé et ouvert : annonce ClashWar (« HeraliZ Matchs Inscriptions du ClashWar #3 ouvertes… »), préfixes de
+      grades, messages d'événements : lettres pleines, plus de traits doublés ni de lettres « creuses », à l'échelle 2, 3,
+      4 et Auto.
+- [ ] /clashwar souligné : trait propre ; texte en italique (s'il y en a) : propre.
+- [ ] Textes en gras ou avec ombre dans les écrans (titres, boutons) : propres, rien ne bouge ni ne déborde.
+
 ## 1b. Petits écrans plus grands (Noyau 1.0.15, Quêtes 1.17.2, Boutique 1.4.2)
 
 Règle commune du kit : un écran « panneau » prend un ou deux demi-crans d'échelle de plus quand il tient dans 90 % de la

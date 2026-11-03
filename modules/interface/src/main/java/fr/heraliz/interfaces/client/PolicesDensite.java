@@ -70,24 +70,57 @@ public final class PolicesDensite {
     /** Lettre laissée au jeu (police qui n'est pas TTF, espace, lettre trop grande). */
     private static final Object JEU = new Object();
     private static final int COUCHES = 3, PLANCHES_MAX = 8, PLANCHE = 256;
+    /** Finesse de la couche servie par {@link #notre} (fil de rendu). */
+    private static float finesse;
     private static boolean actif = !"false".equals(System.getProperty("heraliz.lettresNettes"));
     private static final Map<FontSet, Etat> ETATS = new IdentityHashMap<>();
     private static int compteur;
+    /** Finesse de la dernière lettre rendue par {@link #glyphe} (0 : lettre du jeu), lue par le gras et l'ombre. */
+    private static float derniere;
 
     /**
      * Remplace {@code fontSet.getGlyph(cp)} dans le rendu d'une chaîne ({@code Font$StringRenderOutput.accept}) : la
      * lettre à la finesse de l'écran pour nos polices, celle du jeu sinon.
      */
     public static BakedGlyph glyphe(FontSet set, int cp, Matrix4f pose) {
+        derniere = 0;
         if (actif) {
             try {
                 BakedGlyph g = notre(set, cp, pose);
-                if (g != null) return g;
+                if (g != null) {
+                    derniere = finesse;
+                    return g;
+                }
             } catch (Throwable t) {
                 couper(t);
             }
         }
         return set.getGlyph(cp);
+    }
+
+    /** Lettre brouillée (texte « obfusqué ») : rendue par le jeu, sans gras ni ombre fins. */
+    public static BakedGlyph auHasard(FontSet set, com.mojang.blaze3d.font.GlyphInfo info) {
+        derniere = 0;
+        return set.getRandomGlyph(info);
+    }
+
+    /**
+     * Décalage du gras (03/11, retour du propriétaire : messages du chat en gras « plusieurs barres par lettre »).
+     * Minecraft fait le gras en redessinant la lettre une unité plus loin, et l'ombre une unité en bas à droite : prévu pour
+     * sa police en pixels (une unité = un pixel de la lettre), sur DM Sans cela fait deux ou trois copies de la lettre à 2,
+     * 3 ou 4 points d'écran l'une de l'autre (traits doublés, lettres « creuses »), floues avant le 03/11, nettes et donc
+     * criantes depuis. Pour nos lettres tracées à la finesse de l'écran : un seul point d'écran. L'avance du gras (une
+     * unité, mise en page de Minecraft) ne change pas : aucune largeur ne bouge.
+     */
+    public static float decalageGras(com.mojang.blaze3d.font.GlyphInfo info) {
+        float d = derniere;
+        return d > 0 ? 1f / d : info.getBoldOffset();
+    }
+
+    /** Décalage de l'ombre (voir {@link #decalageGras}) : un point d'écran pour nos lettres. */
+    public static float decalageOmbre(com.mojang.blaze3d.font.GlyphInfo info) {
+        float d = derniere;
+        return d > 0 ? 1f / d : info.getShadowOffset();
     }
 
     private static BakedGlyph notre(FontSet set, int cp, Matrix4f pose) {
@@ -97,6 +130,7 @@ public final class PolicesDensite {
         if (e == null) e = nouvel(set);
         if (!e.nous) return null;
         Couche c = e.couche(cle);
+        finesse = c.finesse;
         Object o = c.glyphes.get(cp);
         if (o == null) {
             o = c.creer(e, cp);
