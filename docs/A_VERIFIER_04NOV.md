@@ -214,8 +214,6 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
 - Staff non caché : le retirer aussi des classements ?
 - Fusils à pompe : 2 décharges tuent maintenant une armure Épique (avant 3) ; d'accord ? +4 % par rang de rareté suffit ?
 - Bêta : rester à ×1,5 ou passer à ×2 (environ 4 fois plus d'objets rares) ?
-- Bêta : cœur de clan à 3 750 ou le garder à 5 000 hérals ?
-- Bêta : largage, caisse de ravitaillement, quêtes du jour et caisses donnent aussi plus ? Rachat de Mila et revenu des territoires ?
 - Échelle sur un mur posé sur un demi-mur : elle dépasse d'une demi-case en haut ; ça va ? Toit qui déborde : gênant ?
 - Pas des joueurs : volume (1,3) et portée (24 blocs) à ajuster après l'essai ?
 - Cœur de clan au casino (20 000 capsules) ; jackpot gagné seulement au gain maximal d'une machine ?
@@ -239,9 +237,3 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
 - Renvoi en arrière de l'anticheat coupé ; seuils du suivi à travers les murs à revoir après une semaine de `suivi.log`.
 - Coffre d'un clan dissous quand le chef est hors ligne : toujours perdu.
 - Sauvegarde des clans et de l'hôtel des ventes d'un seul bloc (sûr, un peu lourd).
-
-## Doutes relevés en écrivant cette liste
-
-- La fiche anticheat dit « launcher 1.16.2 pas publié » : il est compté comme publié (en ligne le 03/11 au soir).
-- Fiche de la cible : « plafond 13 » pour tous les fusils à pompe ; le réglage final dit 13 pour les automatiques, 19 pour les autres.
-
