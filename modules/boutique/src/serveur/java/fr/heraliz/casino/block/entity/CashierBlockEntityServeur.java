@@ -69,13 +69,13 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 int have = countItems(p, item);
                 int n = (int) Math.min(count, have);
                 if (n <= 0) {
-                    msg(p, Component.translatable("message.heralizcasino.cashier.no_items", new ItemStack(item).getHoverName()).withStyle(ChatFormatting.RED));
+                    msg(p, Component.translatable("message.heralizcasino.cashier.no_items", fr.heraliz.grades.serveur.NomsObjets.nom(new ItemStack(item))).withStyle(ChatFormatting.RED));
                     return;
                 }
                 removeItems(p, item, n);
                 long chips = n * e.jetons;
                 ChipsServeur.give(p, chips);
-                msg(p, Component.translatable("message.heralizcasino.cashier.bought", Chips.format(chips), n, new ItemStack(item).getHoverName())
+                msg(p, Component.translatable("message.heralizcasino.cashier.bought", Chips.format(chips), n, fr.heraliz.grades.serveur.NomsObjets.nom(new ItemStack(item)))
                         .withStyle(ChatFormatting.GREEN));
                 tx(0, chips);
             } else {
@@ -92,7 +92,7 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                     }
                     if (!CompteCapsules.tiennent(p.getInventory(), piles)) {
                         msg(p, Component.translatableWithFallback("message.heralizcasino.cashier.place",
-                                "Pas assez de place dans ton inventaire pour %s × %s.", count, ref.getHoverName()).withStyle(ChatFormatting.RED));
+                                "Pas assez de place dans ton inventaire pour %s × %s.", count, fr.heraliz.grades.serveur.NomsObjets.nom(ref)).withStyle(ChatFormatting.RED));
                         return;
                     }
                 }
@@ -112,7 +112,7 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                                 "Clés indisponibles pour le moment : tes capsules sont rendues.").withStyle(ChatFormatting.RED));
                         return;
                     }
-                    msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, ref.getHoverName())
+                    msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, fr.heraliz.grades.serveur.NomsObjets.nom(ref))
                             .withStyle(ChatFormatting.GREEN));
                     surCompte(p, pay);
                     tx(1, chips);
@@ -120,7 +120,7 @@ public class CashierBlockEntityServeur extends CashierBlockEntity {
                 }
                 // place vérifiée avant le paiement ; par sécurité, un reste attendrait de la place (jamais au sol)
                 for (ItemStack pile : piles) fr.heraliz.crates.loot.PendingRewards.donner(p, pile);
-                msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, ref.getHoverName())
+                msg(p, Component.translatable("message.heralizcasino.cashier.sold", Chips.format(chips), count, fr.heraliz.grades.serveur.NomsObjets.nom(ref))
                         .withStyle(ChatFormatting.GREEN));
                 surCompte(p, pay);
                 tx(1, chips);

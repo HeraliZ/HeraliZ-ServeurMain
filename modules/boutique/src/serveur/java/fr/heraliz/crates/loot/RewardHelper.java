@@ -84,7 +84,8 @@ public final class RewardHelper {
     /** Nom de l'objet gagne suivi de sa quantite. */
     public static MutableComponent label(LootEntry e) {
         ItemStack display = e.displayStack();
-        MutableComponent itemName = display.isEmpty() ? Component.literal(e.item) : display.getDisplayName().copy();
+        // 03/11 : vrai nom d'une arme de TaCZ (avant : « [item.tacz.modern_kinetic_gun] » dans le chat), NomsObjets
+        MutableComponent itemName = display.isEmpty() ? Component.literal(e.item) : fr.heraliz.grades.serveur.NomsObjets.nomCrochets(display);
         return itemName.append(Component.literal(e.count > 1 ? " x" + e.count : "").withStyle(ChatFormatting.WHITE));
     }
 
@@ -98,7 +99,7 @@ public final class RewardHelper {
 
         if (e.rarity.atLeast(GeneralConfig.titleMinRarity)) {
             ItemStack display = e.displayStack();
-            MutableComponent itemName = display.isEmpty() ? Component.literal(e.item) : display.getHoverName().copy();
+            MutableComponent itemName = display.isEmpty() ? Component.literal(e.item) : fr.heraliz.grades.serveur.NomsObjets.nom(display).copy();
             player.connection.send(new ClientboundSetTitlesAnimationPacket(5, 50, 15));
             player.connection.send(new ClientboundSetTitleTextPacket(
                     Component.literal("✦ ").append(e.rarity.displayName().withStyle(ChatFormatting.BOLD)).append(" ✦")

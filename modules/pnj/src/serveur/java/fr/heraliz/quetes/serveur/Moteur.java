@@ -293,10 +293,10 @@ final class Moteur {
         // 25/10 : une clé de caisse (Clé de Quêtes...) va sur le compte de clés du joueur (HeraliZ Caisses, ClesApi),
         // jamais en objet ; sans HeraliZ Caisses ou compte indisponible : l'objet, converti plus tard (rien n'est perdu)
         if (crediterCle(p, id, n)) {
-            notif(p, Texte.cle("heraliz_quetes.notif.cle_recue", Texte.cle(s.getDescriptionId())), 0xE8C36A);
+            notif(p, Texte.cle("heraliz_quetes.notif.cle_recue", Ponts.texteObjet(s)), 0xE8C36A);
             return;
         }
-        notif(p, Texte.cle("heraliz_quetes.notif.objet_recu", Texte.cle(s.getDescriptionId())), 0xE8C36A);
+        notif(p, Texte.cle("heraliz_quetes.notif.objet_recu", Ponts.texteObjet(s)), 0xE8C36A);
         ObjetsARendre.donner(p, s); // 02/11 : ce qui ne tient pas attend de la place, jamais au sol
     }
 
@@ -936,7 +936,7 @@ final class Moteur {
         for (Map.Entry<String, Integer> o : r.objets.entrySet()) {
             ResourceLocation rl = ResourceLocation.tryParse(o.getKey());
             var item = rl == null ? null : ForgeRegistries.ITEMS.getValue(rl);
-            Texte nom = item == null ? Texte.brut(o.getKey()) : Texte.cle(item.getDescriptionId());
+            Texte nom = item == null ? Texte.brut(o.getKey()) : Ponts.texteObjet(new ItemStack(item));
             if (o.getValue() > 1) nom = Texte.cle("heraliz_quetes.recompense.objet_nb", Texte.brut(o.getValue()), nom);
             t = t.vide() ? nom : Texte.cle("heraliz_quetes.recompense.et", t, nom);
         }

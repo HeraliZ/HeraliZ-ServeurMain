@@ -205,12 +205,14 @@ public final class SaisonCommandes {
                     "Plafond du jour des dons atteint (%s XP) : cet objet ne rapporterait que %s XP au lieu de %s. Gardez-le pour demain, ou tapez /clan don confirmer dans les 30 s pour le donner quand même.",
                     fr.heralisz.clans.server.XpClan.plafond(fr.heralisz.clans.model.SourceXp.DON), donne, propose));
         }
-        String nom = st.getHoverName().getString();
+        // 03/11 : le nom part traduisible (avant : texte du serveur, qui n'a pas les langues des mods : clé brute dans le
+        // chat du clan)
+        net.minecraft.network.chat.Component nom = st.getHoverName();
         p.getInventory().setItem(p.getInventory().selected, net.minecraft.world.item.ItemStack.EMPTY);
         s.noterDon(uid);
         long gagne = ClanService.ajouterXp(clan, fr.heralisz.clans.model.SourceXp.DON, propose, p.getUUID());
         ClanService.diffuserChat(clan, "msg.don.fait", p.getGameProfile().getName(), n, nom, gagne);
-        fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} ({}, numero {}) par {} (+{} XP sur {})", clan.tag, n, nom, id, uid,
+        fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} ({}, numero {}) par {} (+{} XP sur {})", clan.tag, n, nom.getString(), id, uid,
                 p.getGameProfile().getName(), gagne, propose);
         // l'objet n'existe plus : le fichier des clans est ecrit tout de suite (un plantage ne rend pas l'objet ET l'XP)
         p.getInventory().setChanged();

@@ -271,7 +271,7 @@ final class EditionMarchands {
                 // à l'op si un racheteur le payait plus
                 for (Defs.Pnj autre : Catalogue.tous()) {
                     if (autre.marchand != null && autre.marchand.rachat && Marchands.prixRachat(autre.marchand, main) > r.prix() / 2) {
-                        Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.rachat_moitie", Texte.cle(main.getDescriptionId()),
+                        Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.rachat_moitie", Ponts.texteObjet(main),
                                 Texte.brut(Ponts.nombre(r.prix())), Texte.brut(Ponts.nombre(r.prix() / 2))), 0xE8C36A);
                         break;
                     }
@@ -308,9 +308,9 @@ final class EditionMarchands {
                 quoi = "+ rachat " + objet + " " + r.prix();
                 long achat = SaisonQuetes.prixVente(SaisonQuetes.ventes(), main);
                 if (achat == 0) {
-                    Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.jamais_rachete", Texte.cle(main.getDescriptionId())), 0xE8C36A);
+                    Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.jamais_rachete", Ponts.texteObjet(main)), 0xE8C36A);
                 } else if (achat > 0 && r.prix() > achat / 2) {
-                    Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.rachat_moitie", Texte.cle(main.getDescriptionId()),
+                    Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.rachat_moitie", Ponts.texteObjet(main),
                             Texte.brut(Ponts.nombre(achat)), Texte.brut(Ponts.nombre(achat / 2))), 0xE8C36A);
                 }
             }
@@ -400,7 +400,7 @@ final class EditionMarchands {
         // l'objet reçu ne sera plus jamais racheté contre des hérals : on le dit à l'op s'il l'était
         for (Defs.Pnj autre : Catalogue.tous()) {
             if (autre.marchand != null && autre.marchand.rachat && Marchands.prixRachat(autre.marchand, recu) > 0) {
-                Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.jamais_rachete", Texte.cle(recu.getDescriptionId())), 0xE8C36A);
+                Moteur.notif(p, Texte.cle("heraliz_quetes.marchand.jamais_rachete", Ponts.texteObjet(recu)), 0xE8C36A);
                 break;
             }
         }

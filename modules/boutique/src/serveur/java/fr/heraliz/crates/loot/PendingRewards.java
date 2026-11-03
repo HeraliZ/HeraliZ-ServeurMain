@@ -93,7 +93,7 @@ public class PendingRewards extends SavedData {
         fr.heraliz.crates.HeralizCrates.LOGGER.info("[HeralizCrates] inventaire plein : {} x{} garde pour {} (rendu des qu'il y a de la place)",
                 s.getHoverName().getString(), s.getCount(), p.getGameProfile().getName());
         p.sendSystemMessage(Component.translatableWithFallback("message.heralizcrates.attente",
-                "Inventaire plein : %s t'attend ; il te sera donné dès qu'il y aura de la place.", s.getHoverName())
+                "Inventaire plein : %s t'attend ; il te sera donné dès qu'il y aura de la place.", fr.heraliz.grades.serveur.NomsObjets.nom(s))
                 .withStyle(ChatFormatting.GOLD));
     }
 

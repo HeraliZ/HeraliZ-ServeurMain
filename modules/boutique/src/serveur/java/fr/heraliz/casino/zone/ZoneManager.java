@@ -98,7 +98,7 @@ public final class ZoneManager {
             if (compte) return Component.translatableWithFallback("casino.heralizcasino.from_caps_account", "%s (avec ton compte de capsules)",
                     Chips.text(chips));
             if (item == null) return Chips.text(chips);
-            return Component.literal(count + " × ").append(new ItemStack(item).getHoverName());
+            return Component.literal(count + " × ").append(fr.heraliz.grades.serveur.NomsObjets.nom(new ItemStack(item)));
         }
     }
 

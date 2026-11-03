@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import fr.heraliz.quetes.Texte;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
@@ -566,6 +567,34 @@ final class Ponts {
         if (!net.minecraftforge.fml.ModList.get().isLoaded("heralisz_utils")) return true;
         CompoundTag root = p.getPersistentData();
         return root.getCompound(Player.PERSISTED_NBT_TAG).getBoolean("heraliz_cinematique_finie");
+    }
+
+    private static Method nomObjet;
+    private static boolean nomObjetCherche;
+
+    /**
+     * Nom d'un objet pour un message au joueur (03/11, retour du propriétaire : « item.tacz.modern_kinetic_gun » écrit
+     * dans le chat) : l'aide unique de HeraliZ Grades ({@code fr.heraliz.grades.serveur.GradesApi.nomObjet} : vrai nom
+     * d'une arme, d'une munition ou d'un accessoire de TaCZ, nom donné, sinon le nom habituel), changée en {@link Texte}
+     * traduit chez le joueur. Sans HeraliZ Grades : le nom habituel de l'objet.
+     */
+    static Texte texteObjet(ItemStack s) {
+        if (s == null || s.isEmpty()) return Texte.VIDE;
+        if (!nomObjetCherche) {
+            nomObjetCherche = true;
+            try {
+                nomObjet = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("nomObjet", ItemStack.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                nomObjet = null;
+            }
+        }
+        net.minecraft.network.chat.Component c = null;
+        try {
+            if (nomObjet != null) c = (net.minecraft.network.chat.Component) nomObjet.invoke(null, s);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            c = null;
+        }
+        return Texte.de(c != null ? c : s.getHoverName());
     }
 
     private static Method authentifie;

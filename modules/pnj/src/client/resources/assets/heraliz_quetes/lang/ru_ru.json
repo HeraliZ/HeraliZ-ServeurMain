@@ -178,6 +178,7 @@
   "item.heraliz_quetes.baguette.aide2": "Присесть + ПКМ: убрать точку",
   "heraliz_quetes.distance.m": "%s м",
   "heraliz_quetes.distance.km": "%s км",
+  "heraliz_quetes.texte.suite": "%s%s",
   "heraliz_quetes.niveau.0": "Незнакомец",
   "heraliz_quetes.niveau.1": "Терпимый",
   "heraliz_quetes.niveau.2": "Союзник",

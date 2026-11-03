@@ -199,14 +199,14 @@ final class Echanges {
             // objets partis et reçus écrits tout de suite (un arrêt brutal ne rend pas les deux)
             Ponts.sauverJoueur(p);
             p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7F, 1.0F);
-            Moteur.notif(p, Texte.cle("heraliz_quetes.echange.fait", Texte.brut(e.nRecu() * faits), Texte.cle(recu.getDescriptionId()),
-                    Texte.brut(e.nDonne() * faits), Texte.cle(modele.getDescriptionId())), 0xE8C36A);
+            Moteur.notif(p, Texte.cle("heraliz_quetes.echange.fait", Texte.brut(e.nRecu() * faits), Ponts.texteObjet(recu),
+                    Texte.brut(e.nDonne() * faits), Ponts.texteObjet(modele)), 0xE8C36A);
             LOG.info("[heraliz_quetes] {} échange {} x{} contre {} x{} chez {} ({} fois)", p.getGameProfile().getName(), e.donne(),
                     e.nDonne(), e.recu(), e.nRecu(), def.id, faits);
         }
         if (raison != null && (faits == 0 || raison.endsWith("plein"))) {
             Moteur.notif(p, raison.endsWith("pas_assez")
-                    ? Texte.cle(raison, Texte.brut(e.nDonne()), Texte.cle(modele.getDescriptionId()))
+                    ? Texte.cle(raison, Texte.brut(e.nDonne()), Ponts.texteObjet(modele))
                     : Texte.cle(raison), 0xFF6B6B);
         }
         Marchands.envoyerA(p, t.entite(), def);

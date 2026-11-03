@@ -178,6 +178,7 @@
   "item.heraliz_quetes.baguette.aide2": "Sneak + right-click: remove the point",
   "heraliz_quetes.distance.m": "%s m",
   "heraliz_quetes.distance.km": "%s km",
+  "heraliz_quetes.texte.suite": "%s%s",
   "heraliz_quetes.niveau.0": "Stranger",
   "heraliz_quetes.niveau.1": "Tolerated",
   "heraliz_quetes.niveau.2": "Ally",

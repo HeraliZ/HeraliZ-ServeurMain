@@ -60,4 +60,13 @@ public final class GradesApi {
     public static boolean authentifie(ServerPlayer joueur) {
         return joueur != null && PontBukkit.authentifie(joueur);
     }
+
+    /**
+     * Nom d'un objet tel que le joueur le voit, pour un message envoyé par le serveur (03/11, {@link NomsObjets}) : le vrai
+     * nom d'une arme, d'une munition ou d'un accessoire de TaCZ (pas la clé « item.tacz.modern_kinetic_gun »), sinon le nom
+     * donné ou le nom habituel. Lue par réflexion par HeraliZ Quêtes (messages des marchands, quêtes, échanges).
+     */
+    public static net.minecraft.network.chat.Component nomObjet(net.minecraft.world.item.ItemStack objet) {
+        return NomsObjets.nom(objet);
+    }
 }

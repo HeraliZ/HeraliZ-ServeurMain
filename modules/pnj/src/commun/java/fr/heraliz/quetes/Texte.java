@@ -63,6 +63,41 @@ public final class Texte {
         return fr(String.valueOf(o));
     }
 
+    /** Clé « %s%s » : deux morceaux l'un après l'autre (morceaux ajoutés à un composant de Minecraft, {@link #de}). */
+    public static final String SUITE = "heraliz_quetes.texte.suite";
+
+    /**
+     * Texte d'un composant de Minecraft (03/11 : nom d'un objet, {@code Ponts.texteObjet}) : clé traduisible avec ses
+     * arguments, texte brut (nom donné à l'enclume, texte littéral), et les morceaux ajoutés à la suite. Le serveur n'a pas
+     * les langues des mods : rien n'est traduit ici, tout l'est chez le joueur. Couleurs et styles ne sont pas gardés.
+     */
+    public static Texte de(net.minecraft.network.chat.Component c) {
+        return de(c, 0);
+    }
+
+    private static Texte de(net.minecraft.network.chat.Component c, int profondeur) {
+        if (c == null) return VIDE;
+        Texte t;
+        if (c.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents tc && profondeur < MAX_PROFONDEUR) {
+            Object[] a = tc.getArgs();
+            Texte[] args = new Texte[Math.min(a.length, MAX_ARGS)];
+            for (int i = 0; i < args.length; i++) {
+                args[i] = a[i] instanceof net.minecraft.network.chat.Component ac ? de(ac, profondeur + 1) : brut(a[i]);
+            }
+            t = cle(tc.getKey(), args);
+        } else if (c.getContents() instanceof net.minecraft.network.chat.contents.LiteralContents lc) {
+            t = fr(lc.text());
+        } else {
+            t = fr(net.minecraft.network.chat.MutableComponent.create(c.getContents()).getString());
+        }
+        for (net.minecraft.network.chat.Component s : c.getSiblings()) {
+            Texte suite = de(s, profondeur + 1);
+            if (suite.vide()) continue;
+            t = t.vide() ? suite : cle(SUITE, t, suite);
+        }
+        return t;
+    }
+
     public boolean vide() {
         return cle == null && ecrit.isEmpty();
     }

@@ -1147,14 +1147,14 @@ public final class HdvServeur {
                 + (a.efface ? " ; acheteur remis à zéro : objet non remis" : "") + (o.efface ? " ; vendeur remis à zéro : hérals non versés" : ""));
         ServerPlayer acheteur = joueur(a.acheteur);
         if (acheteur != null) {
-            acheteur.sendSystemMessage(msg("achete", "Achat réussi : %s.", objet(o).getHoverName()).withStyle(ChatFormatting.GREEN));
+            acheteur.sendSystemMessage(msg("achete", "Achat réussi : %s.", NomsObjets.nom(objet(o))).withStyle(ChatFormatting.GREEN));
             if (pourAcheteur != null) livrer(acheteur, List.of(pourAcheteur));
             if (a.devise == RegleHdv.PB) rafraichirSoldePb(acheteur, true);
             repondre(acheteur, "achete", true);
         }
         ServerPlayer vendeur = joueur(o.vendeur);
         if (vendeur != null) {
-            vendeur.sendSystemMessage(msg("vendu", "Hôtel des ventes : %s vendu à %s.", objet(o).getHoverName(), a.acheteurNom).withStyle(ChatFormatting.GOLD));
+            vendeur.sendSystemMessage(msg("vendu", "Hôtel des ventes : %s vendu à %s.", NomsObjets.nom(objet(o)), a.acheteurNom).withStyle(ChatFormatting.GOLD));
             repondre(vendeur, "", true);
         }
         if (v != null) verser(v);
@@ -1395,7 +1395,7 @@ public final class HdvServeur {
             journal("expirée " + o.id + " : " + resume(objet(o)) + " de " + o.vendeurNom + " revient dans « Mes ventes »");
             ServerPlayer p = joueur(o.vendeur);
             if (p != null) p.sendSystemMessage(msg("expire", "Hôtel des ventes : personne n'a acheté %s, il t'attend dans « Mes ventes ».",
-                    objet(o).getHoverName()).withStyle(ChatFormatting.YELLOW));
+                    NomsObjets.nom(objet(o))).withStyle(ChatFormatting.YELLOW));
         }
     }
 

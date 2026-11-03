@@ -709,7 +709,7 @@ final class Journalieres {
         if (!r.cle().isEmpty()) return Texte.cle("heraliz_quetes.jour.r.cle", Texte.cle("item.heralizcrates." + r.cle() + "_key"));
         ItemStack st = objet(r, 1);
         if (st.isEmpty()) return Texte.brut(r.id());
-        Texte n = Texte.cle(st.getDescriptionId());
+        Texte n = Ponts.texteObjet(st);
         if (r.objet().equals("tacz:modern_kinetic_gun") || r.objet().equals("tacz:ammo") || r.objet().equals("heralisz_tactical:consumable")) {
             n = Texte.cle("heraliz_quetes.jour.r.objet");   // nom lu sur l'objet chez le joueur (dépend de ses données)
         }

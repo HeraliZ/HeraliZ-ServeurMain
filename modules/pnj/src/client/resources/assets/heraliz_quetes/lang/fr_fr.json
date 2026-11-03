@@ -178,6 +178,7 @@
   "item.heraliz_quetes.baguette.aide2": "Accroupi + clic droit : retirer le point",
   "heraliz_quetes.distance.m": "%s m",
   "heraliz_quetes.distance.km": "%s km",
+  "heraliz_quetes.texte.suite": "%s%s",
   "heraliz_quetes.niveau.0": "Inconnu",
   "heraliz_quetes.niveau.1": "Toléré",
   "heraliz_quetes.niveau.2": "Allié",

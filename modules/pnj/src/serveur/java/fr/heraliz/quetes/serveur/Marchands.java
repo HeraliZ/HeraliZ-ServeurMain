@@ -155,7 +155,7 @@ final class Marchands {
             lot.add(s);
         }
         if (!ObjetsARendre.tiennent(p.getInventory(), lot)) {
-            Moteur.notif(p, Texte.cle("heraliz_quetes.notif.place_achat", Texte.brut(q), Texte.cle(modele.getDescriptionId())), 0xFF6B6B);
+            Moteur.notif(p, Texte.cle("heraliz_quetes.notif.place_achat", Texte.brut(q), Ponts.texteObjet(modele)), 0xFF6B6B);
             return;
         }
         if (!Ponts.retirer(p.getUUID(), total, "Achat : " + art.objet() + " x" + q)) {
@@ -165,7 +165,7 @@ final class Marchands {
         // place vérifiée avant le paiement ; par sécurité, un reste attendrait de la place (jamais au sol)
         for (ItemStack s : lot) ObjetsARendre.donner(p, s);
         p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7F, 1.0F);
-        Moteur.notif(p, Texte.cle("heraliz_quetes.notif.achete", Texte.brut(q), Texte.cle(modele.getDescriptionId()),
+        Moteur.notif(p, Texte.cle("heraliz_quetes.notif.achete", Texte.brut(q), Ponts.texteObjet(modele),
                 Texte.brut(Ponts.nombre(total))), 0xE8C36A);
         LOG.info("[heraliz_quetes] {} achète {} x{} à {} pour {} hérals", p.getGameProfile().getName(), art.objet(), q, def.id, total);
         envoyerA(p, a.entite(), def);

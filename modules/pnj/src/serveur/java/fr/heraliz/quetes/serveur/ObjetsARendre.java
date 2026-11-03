@@ -42,7 +42,7 @@ final class ObjetsARendre {
         l.add(s.save(new CompoundTag()));
         t.put(CLE, l);
         EN_ATTENTE.add(p.getUUID());
-        Moteur.notif(p, Texte.cle("heraliz_quetes.notif.attente_place", Texte.brut(s.getCount()), Texte.cle(s.getDescriptionId())), 0xFFB060);
+        Moteur.notif(p, Texte.cle("heraliz_quetes.notif.attente_place", Texte.brut(s.getCount()), Ponts.texteObjet(s)), 0xFFB060);
     }
 
     /** Rend ce qui tient maintenant ; le reste continue d'attendre. */
