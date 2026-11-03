@@ -77,5 +77,20 @@
   "heraliz_emote.cmd.voir": "%s: %s / %s emotes: %s",
   "heraliz_emote.cmd.inconnue": "Unknown emote: %s",
   "item.heraliz_emote.icone": "Emote",
-  "heraliz_emote.fichier_illisible": "[Emotes] The unlocked emotes file (%s) could not be read: it is not rewritten. See the server log."
+  "heraliz_emote.fichier_illisible": "[Emotes] The unlocked emotes file (%s) could not be read: it is not rewritten. See the server log.",
+  "heraliz_emote.roue.titre": "Emotes",
+  "heraliz_emote.roue.sous_titre": "Quick wheel · page %s / %s",
+  "heraliz_emote.roue.jouer": "Click: play",
+  "heraliz_emote.roue.vide": "Empty",
+  "heraliz_emote.roue.choisir": "Aim at a slot",
+  "heraliz_emote.roue.toutes": "All emotes",
+  "heraliz_emote.roue.modifier": "Edit the wheel",
+  "heraliz_emote.roue.k.jouer": "Play",
+  "heraliz_emote.roue.k.page": "Page",
+  "heraliz_emote.roue.k.case": "Slot",
+  "heraliz_emote.roue.k.fermer": "Close",
+  "heraliz_emote.roue.t.clic": "CLICK",
+  "heraliz_emote.roue.t.molette": "WHEEL",
+  "heraliz_emote.roue.t.cases": "1-8",
+  "heraliz_emote.roue.t.echap": "ESC"
 }

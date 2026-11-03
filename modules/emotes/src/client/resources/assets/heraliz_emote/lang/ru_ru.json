@@ -77,5 +77,20 @@
   "heraliz_emote.cmd.voir": "%s: %s / %s эмоций: %s",
   "heraliz_emote.cmd.inconnue": "Неизвестная эмоция: %s",
   "item.heraliz_emote.icone": "Эмоция",
-  "heraliz_emote.fichier_illisible": "[Эмоции] Файл открытых эмоций (%s) не удалось прочитать: он не перезаписывается. Смотри журнал сервера."
+  "heraliz_emote.fichier_illisible": "[Эмоции] Файл открытых эмоций (%s) не удалось прочитать: он не перезаписывается. Смотри журнал сервера.",
+  "heraliz_emote.roue.titre": "Эмоции",
+  "heraliz_emote.roue.sous_titre": "Быстрое колесо · стр. %s / %s",
+  "heraliz_emote.roue.jouer": "Клик: играть",
+  "heraliz_emote.roue.vide": "Пусто",
+  "heraliz_emote.roue.choisir": "Наведи на ячейку",
+  "heraliz_emote.roue.toutes": "Все эмоции",
+  "heraliz_emote.roue.modifier": "Изменить колесо",
+  "heraliz_emote.roue.k.jouer": "Играть",
+  "heraliz_emote.roue.k.page": "Стр.",
+  "heraliz_emote.roue.k.case": "Ячейка",
+  "heraliz_emote.roue.k.fermer": "Закрыть",
+  "heraliz_emote.roue.t.clic": "КЛИК",
+  "heraliz_emote.roue.t.molette": "КОЛЕСО",
+  "heraliz_emote.roue.t.cases": "1-8",
+  "heraliz_emote.roue.t.echap": "ESC"
 }

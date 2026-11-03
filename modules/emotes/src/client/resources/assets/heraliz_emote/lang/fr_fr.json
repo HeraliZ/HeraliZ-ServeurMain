@@ -77,5 +77,20 @@
   "heraliz_emote.cmd.voir": "%s : %s / %s emotes : %s",
   "heraliz_emote.cmd.inconnue": "Emote inconnue : %s",
   "item.heraliz_emote.icone": "Emote",
-  "heraliz_emote.fichier_illisible": "[Emotes] Le fichier des emotes débloquées (%s) était illisible : il n'est pas réécrit. Voir le journal du serveur."
+  "heraliz_emote.fichier_illisible": "[Emotes] Le fichier des emotes débloquées (%s) était illisible : il n'est pas réécrit. Voir le journal du serveur.",
+  "heraliz_emote.roue.titre": "Emotes",
+  "heraliz_emote.roue.sous_titre": "Roue rapide · page %s / %s",
+  "heraliz_emote.roue.jouer": "Clic : jouer",
+  "heraliz_emote.roue.vide": "Vide",
+  "heraliz_emote.roue.choisir": "Vise une case",
+  "heraliz_emote.roue.toutes": "Toutes les emotes",
+  "heraliz_emote.roue.modifier": "Modifier la roue",
+  "heraliz_emote.roue.k.jouer": "Jouer",
+  "heraliz_emote.roue.k.page": "Page",
+  "heraliz_emote.roue.k.case": "Case",
+  "heraliz_emote.roue.k.fermer": "Fermer",
+  "heraliz_emote.roue.t.clic": "CLIC",
+  "heraliz_emote.roue.t.molette": "MOLETTE",
+  "heraliz_emote.roue.t.cases": "1-8",
+  "heraliz_emote.roue.t.echap": "ÉCHAP"
 }

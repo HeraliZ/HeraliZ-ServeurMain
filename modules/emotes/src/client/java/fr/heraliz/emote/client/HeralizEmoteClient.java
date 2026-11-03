@@ -3,6 +3,7 @@ package fr.heraliz.emote.client;
 import fr.heraliz.emote.HeralizEmote;
 import fr.heraliz.emote.client.gui.EmoteBrowserScreen;
 import fr.heraliz.emote.client.gui.EmotePreview;
+import fr.heraliz.emote.client.gui.RoueEmotes;
 import fr.heraliz.emote.client.render.LayerHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -52,6 +53,12 @@ public final class HeralizEmoteClient {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderNameTagEvent.class, EmotePreview::onNameTag);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlaySoundEvent.class, EmoteAudio::onPlaySound);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ScreenEvent.Init.Post.class, EmoteAudio::onScreenInit);
+        // roue des emotes (touche Y) au style des écrans du clan, à la place de celle d'Emotecraft (03/11)
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ScreenEvent.Opening.class, event -> {
+            if (event.getNewScreen() instanceof io.github.kosmx.emotes.arch.gui.screen.ingame.FastChosseScreen) {
+                event.setNewScreen(new RoueEmotes(null));
+            }
+        });
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, MovementInputUpdateEvent.class, EmoteMotion::onInput);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, InputEvent.InteractionKeyMappingTriggered.class,
                 BorrowController::onInteraction);
