@@ -1,13 +1,14 @@
 {
-  "_aide": "Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle à courte distance (fusil à pompe : la décharge entière, que TaCZ partage entre les plombs) ; la baisse avec la distance et les accessoires gardent leur effet. « tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur.",
+  "_aide": "Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle à courte distance (fusil à pompe : la décharge entière, que TaCZ partage entre les plombs) ; la baisse avec la distance et les accessoires gardent leur effet. « tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. « plombs » : plombs imposés à une arme à plombs qui n'en tire qu'un ; « dispersion_min » : écart minimal des plombs en degrés (même en visant). Arme absente : dégâts de TaCZ. Fichier ÉCRIT par outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur et par /recharger armes.",
   "actif": true,
   "armes": {
     "tacz:aa12": {
-      "famille": "pompe",
+      "famille": "pompe_auto",
       "rarete": "legendaire",
-      "degats": 38.88,
+      "degats": 12.96,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 13.0,
+      "dispersion_min": 2.5
     },
     "tacz:aiawp": {
       "famille": "precision_338",
@@ -40,18 +41,20 @@
       "tete": 1.6
     },
     "tacz:db_long": {
-      "famille": "pompe",
+      "famille": "pompe_double",
       "rarete": "peu_commun",
-      "degats": 34.56,
+      "degats": 14.4,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "tacz:db_short": {
-      "famille": "pompe",
+      "famille": "pompe_double",
       "rarete": "peu_commun",
-      "degats": 34.56,
+      "degats": 14.4,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "tacz:deagle": {
       "famille": "pistolet_50",
@@ -108,11 +111,12 @@
       "tete": 1.7
     },
     "tacz:m870": {
-      "famille": "pompe",
+      "famille": "pompe_manuelle",
       "rarete": "rare",
-      "degats": 36.0,
+      "degats": 17.5,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "tacz:m95": {
       "famille": "precision_50",
@@ -205,11 +209,12 @@
       "tete": 1.5
     },
     "arkaniaz:686": {
-      "famille": "pompe",
+      "famille": "pompe_double",
       "rarete": "peu_commun",
-      "degats": 34.56,
+      "degats": 14.4,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "arkaniaz:882": {
       "famille": "fusil_556",
@@ -464,25 +469,29 @@
       "tete": 1.7
     },
     "maxstuff:db_50": {
-      "famille": "pompe_balle",
+      "famille": "pompe_double",
       "rarete": "peu_commun",
       "degats": 14.4,
-      "tete": 1.5,
-      "plafond": 13.0
+      "tete": 1.25,
+      "plafond": 19.0,
+      "plombs": 8,
+      "dispersion_min": 2.5
     },
     "maxstuff:db_short_tactical": {
-      "famille": "pompe",
+      "famille": "pompe_double",
       "rarete": "rare",
-      "degats": 36.0,
+      "degats": 15.0,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "maxstuff:deagle_12g": {
       "famille": "pistolet_pompe",
       "rarete": "epique",
-      "degats": 29.12,
+      "degats": 11.96,
       "tete": 1.25,
-      "plafond": 12.0
+      "plafond": 12.0,
+      "dispersion_min": 2.5
     },
     "maxstuff:deagle_50bmg": {
       "famille": "pistolet_50bmg",
@@ -557,11 +566,12 @@
       "tete": 1.6
     },
     "maxstuff:m870t": {
-      "famille": "pompe",
+      "famille": "pompe_manuelle",
       "rarete": "rare",
-      "degats": 36.0,
+      "degats": 17.5,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "maxstuff:mk11": {
       "famille": "fusil_308_rapide",
@@ -612,11 +622,12 @@
       "tete": 1.6
     },
     "maxstuff:saiga12": {
-      "famille": "pompe",
+      "famille": "pompe_auto",
       "rarete": "legendaire",
-      "degats": 38.88,
+      "degats": 12.96,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 13.0,
+      "dispersion_min": 2.5
     },
     "maxstuff:scar_hamr": {
       "famille": "mitrailleuse_556",
@@ -703,11 +714,12 @@
       "tete": 1.5
     },
     "heraliz_fuse:olympia": {
-      "famille": "pompe",
+      "famille": "pompe_double",
       "rarete": "peu_commun",
-      "degats": 34.56,
+      "degats": 14.4,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     },
     "heraliz_fuse:ro635v3": {
       "famille": "smg_9",
@@ -716,11 +728,12 @@
       "tete": 1.5
     },
     "heraliz_fuse:stakeout": {
-      "famille": "pompe",
+      "famille": "pompe_manuelle",
       "rarete": "epique",
-      "degats": 37.44,
+      "degats": 18.2,
       "tete": 1.25,
-      "plafond": 13.0
+      "plafond": 19.0,
+      "dispersion_min": 2.5
     }
   }
 }

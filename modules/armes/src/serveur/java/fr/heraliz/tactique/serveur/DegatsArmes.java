@@ -13,6 +13,7 @@ import com.tacz.guns.resource.pojo.data.gun.BurstData;
 import com.tacz.guns.resource.pojo.data.gun.GunData;
 import fr.heraliz.tactique.armes.DegatsJoueurs;
 import fr.heraliz.tactique.armes.PaquetDegatsArmes;
+import fr.heraliz.tactique.armes.PlombsArmes;
 import fr.heraliz.tactique.armes.ReseauArmes;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +52,9 @@ import org.slf4j.Logger;
  * d'UN tir sur un même joueur, tous plombs additionnés, tête comprise, avant l'armure. Les plombs d'un même tir partent
  * dans le même tick : au-delà du plafond, les plombs suivants ne font rien (événement annulé). Réglage du serveur
  * seulement (pas envoyé aux joueurs).</p>
+ * <p>« plombs » et « dispersion_min » (armes à plombs, 03/11 : tous les fusils à pompe dispersent leurs plombs) : nombre
+ * de plombs imposé et écart minimal des plombs, appliqués au tir par le mixin TaczPlombsMixin ({@link PlombsArmes}).
+ * Réglage du serveur seulement.</p>
  */
 public final class DegatsArmes {
    private static final Logger LOG = LogUtils.getLogger();
@@ -108,16 +112,19 @@ public final class DegatsArmes {
       if (!Files.isRegularFile(p)) {
          DegatsJoueurs.remplacer(Map.of());
          plafonds = Map.of();
+         PlombsArmes.remplacer(Map.of());
          LOG.info("[armes] {} absent : dégâts de TaCZ contre les joueurs inchangés", FICHIER);
          return true;
       }
       Map<ResourceLocation, DegatsJoueurs.Reglage> lus = new HashMap<>();
       Map<ResourceLocation, Float> plafondsLus = new HashMap<>();
+      Map<ResourceLocation, PlombsArmes.Reglage> plombsLus = new HashMap<>();
       try (Reader r = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
          JsonObject racine = JsonParser.parseReader(r).getAsJsonObject();
          if (racine.has("actif") && !racine.get("actif").getAsBoolean()) {
             DegatsJoueurs.remplacer(Map.of());
             plafonds = Map.of();
+            PlombsArmes.remplacer(Map.of());
             LOG.info("[armes] {} : « actif » à false, dégâts de TaCZ contre les joueurs inchangés", FICHIER);
             return true;
          }
@@ -129,10 +136,15 @@ public final class DegatsArmes {
             float tete = o.has("tete") ? o.get("tete").getAsFloat() : -1f;
             if (degats > 0) lus.put(id, new DegatsJoueurs.Reglage(degats, tete));
             if (degats > 0 && o.has("plafond") && o.get("plafond").getAsFloat() > 0) plafondsLus.put(id, o.get("plafond").getAsFloat());
+            int plombs = o.has("plombs") ? Math.max(0, Math.min(64, o.get("plombs").getAsInt())) : 0;
+            float dispersion = o.has("dispersion_min") ? Math.max(0f, Math.min(45f, o.get("dispersion_min").getAsFloat())) : 0f;
+            if (plombs > 1 || dispersion > 0f) plombsLus.put(id, new PlombsArmes.Reglage(plombs, dispersion));
          }
          DegatsJoueurs.remplacer(lus);
          plafonds = Map.copyOf(plafondsLus);
-         LOG.info("[armes] {} armes réglées contre les joueurs, {} avec un plafond par tir ({})", lus.size(), plafondsLus.size(), FICHIER);
+         PlombsArmes.remplacer(plombsLus);
+         LOG.info("[armes] {} armes réglées contre les joueurs, {} avec un plafond par tir, {} armes à plombs ({})", lus.size(),
+            plafondsLus.size(), plombsLus.size(), FICHIER);
          return true;
       } catch (Exception ex) {
          if (garderSiErreur) {
@@ -141,6 +153,7 @@ public final class DegatsArmes {
          }
          DegatsJoueurs.remplacer(Map.of());
          plafonds = Map.of();
+         PlombsArmes.remplacer(Map.of());
          LOG.error("[armes] {} illisible : dégâts de TaCZ contre les joueurs inchangés", FICHIER, ex);
          return false;
       }

@@ -14,12 +14,17 @@ Les gunpacks des autres auteurs ne sont PAS modifiés : les dégâts contre les 
   gunpacks), « tete » = multiplicateur d'un tir à la tête, « rarete », « plafond » (armes à plombs). La baisse
   avec la distance et les accessoires de l'arme gardent leur effet (même proportion qu'avant). Arme absente du fichier
   (lance-grenades, couteaux, Wonder Weapons) : dégâts de TaCZ inchangés. Contre les créatures (zombies...) : inchangé.
+  Armes à plombs seulement : « plombs » (nombre de plombs imposé à une arme qui n'en tire qu'un) et « dispersion_min »
+  (écart minimal des plombs, en degrés, même en visant) : appliqués par le serveur (mixin TaczPlombsMixin du mod
+  Tactique), gunpacks intacts.
 Et la section « armes », « accessoires », « munitions » de serveur/config/heraliz_loot/raretes.json (couleur des cases).
 
 Joueur : 20 points de vie. Repères (fusil d'assaut 5,56 Rare, 5,2 par balle) : 4 balles sans armure, 6 en Rare, 10 en
 Unique ; tir à la tête ×1,7 : 3 sans casque, 5 avec un casque Unique.
 
-Usage : python outils/equilibrage_armes.py [--tableau]
+Usage : python outils/equilibrage_armes.py [--tableau] [--pompes]
+  --pompes : tableau des fusils à pompe (plombs × dégâts, tirs pour tuer à bout portant et à 15-20 blocs, sans armure
+             et avec une tenue Rare, Épique, Légendaire), calculé comme le serveur (plafond, tête, armures).
 """
 import argparse
 import glob
@@ -60,19 +65,41 @@ FAMILLES = {
     # déjà (EntityKineticBullet.applyShotgunDamageSpread) : chaque plomb faisait 36 / 9 / 9 = 0,44 au lieu de 4, et une
     # décharge entière 4 dégâts (2 cœurs) au lieu de 36 (d'où « presque aucun dégât »). La décharge est maintenant
     # écrite telle quelle.
-    "pompe": (36.0, 1.25), "pompe_balle": (15.0, 1.5), "pistolet_pompe": (28.0, 1.25), "pistolet_50bmg": (14.0, 1.6),
+    # 03/11 (retour du propriétaire après son premier passage en jeu, 02/11 au soir) : « les pompes font tous 3 cœurs
+    # peu importe la rareté ; pour les automatiques c'est bien, pour les pompes pas auto c'est peu (armure Épique) ;
+    # certains tirent une seule balle ». Avant, la décharge valait 34 à 39 et le plafond 13 la coupait toujours : un plomb
+    # sur trois suffisait et toutes les armes faisaient 13. Maintenant la décharge ENTIÈRE (tous les plombs au corps, à
+    # bout portant) est le vrai chiffre, plomb par plomb (moins de 2 dégâts par plomb : un seul plomb ne fait presque
+    # rien), selon le mécanisme de l'arme, puis la rareté (BONUS_RARETE) :
+    #   - pompe_manuelle (à pompe, on réarme à chaque coup : M870, M870 tactique, Stakeout) : 17,5 en Rare ;
+    #   - pompe_double (canons doubles, 2 coups puis on recharge : DB, 686, Olympia, DB-4 Ursus) : 15 en Rare ;
+    #   - pompe_auto (semi-automatiques et automatiques à chargeur : AA-12, Saiga 12) : 12 en Rare, 12,96 en Légendaire
+    #     (comme avant : 13 par tir, « c'est bien car sinon trop fort »).
+    # Famille d'une arme de type « shotgun » sans famille imposée : culasse « manual_action » = pompe_manuelle, au plus 2
+    # coups dans l'arme = pompe_double, sinon pompe_auto (fonction famille()).
+    "pompe_manuelle": (17.5, 1.25), "pompe_double": (15.0, 1.25), "pompe_auto": (12.0, 1.25),
+    "pistolet_pompe": (11.5, 1.25), "pistolet_50bmg": (14.0, 1.6),
 }
 # Dégâts au plus d'UN tir sur un même joueur (tous plombs, tête comprise, avant l'armure ; DegatsArmes du mod
 # tactique). Objectif du propriétaire (24/10) : jamais tué d'un tir sans armure (20 PV), deux tirs bien placés
-# suffisent sans armure, trois avec une armure moyenne (Rare : 32 % au corps). 31/10 : 13 (au lieu de 17, qui tuait en
-# deux tirs même en Rare : 2 x 17 x 0,68 = 23,1) : sans armure 2 x 13 = 26, en Rare 2 x 8,84 = 17,7 (3 tirs : 26,5).
-# Pistolet à plombs : 12 (sans armure 24 en deux tirs, en Rare 16,3).
-PLAFOND_TIR = {"pompe": 13.0, "pompe_balle": 13.0, "pistolet_pompe": 12.0}
+# suffisent sans armure. 03/11 : le plafond ne coupe plus que les plombs à la tête (19 : une décharge entière dans la
+# tête sans casque ne tue jamais) pour les armes qu'on réarme ; les automatiques gardent 13 (= leur décharge entière,
+# comme avant), le pistolet à plombs 12. Une rafale (deux canons d'un coup) compte comme un seul tir.
+PLAFOND_TIR = {"pompe_manuelle": 19.0, "pompe_double": 19.0, "pompe_auto": 13.0, "pistolet_pompe": 12.0}
+# Armes à plombs (familles ci-dessus) : aucune ne tire une seule balle, et les plombs se dispersent toujours.
+#   - PLOMBS_SI_BALLE_UNIQUE : plombs imposés à une arme de ces familles dont le gunpack ne tire qu'un projectile
+#     (DB-4 Ursus, ancien fusil .50 passé en calibre 12 le 22/10 : 1 balle) ;
+#   - DISPERSION_MIN : écart minimal des plombs (degrés, même en visant, accessoires compris). Le Stakeout visait à
+#     0,25 : ses 8 plombs partaient ensemble, comme une seule balle. 2,5 = le plus serré des autres (DB long, 686,
+#     Olympia) : à 10 blocs les plombs restent dans ~0,9 bloc, à 20 blocs dans ~1,7 bloc (un joueur fait 0,5 de large).
+FAMILLES_PLOMBS = ("pompe_manuelle", "pompe_double", "pompe_auto", "pistolet_pompe")
+PLOMBS_SI_BALLE_UNIQUE = 8
+DISPERSION_MIN = 2.5
 
 # Famille imposée (sinon : type de l'arme + munition)
 FAMILLE_ARME = {
     "tacz:deagle": "pistolet_50", "maxstuff:deagle_12g": "pistolet_pompe", "maxstuff:deagle_50bmg": "pistolet_50bmg",
-    "maxstuff:db_50": "pompe_balle", "tacz:minigun": "minigun",
+    "tacz:minigun": "minigun",
     "maxstuff:ar10": "fusil_308_rapide", "maxstuff:ar10b": "fusil_308_rapide", "maxstuff:mk11": "fusil_308_rapide",
     "maxstuff:dragonuv_svd": "precision_semi", "arkaniaz:ssg_08": "precision_338",
 }
@@ -157,12 +184,20 @@ def armes():
         data_id = idx.get("data", "")
         d = datas.get(data_id, {})
         balle = d.get("bullet", {})
+        extra = balle.get("extra_damage") or {}
         sortie[gid] = {
             "type": idx.get("type", "?"),
             "ammo": d.get("ammo", "?"),
             "plombs": int(balle.get("bullet_amount", 1) or 1),
             "degats": float(balle.get("damage", 0) or 0),
             "couteau": data_id == "arkaniaz:knife_data",
+            # pour les fusils à pompe (famille, tableau --pompes)
+            "culasse": d.get("bolt", "?"),
+            "coups": int(d.get("ammo_amount", 0) or 0),
+            "rpm": int(d.get("rpm", 0) or 0),
+            "visee": float((d.get("inaccuracy") or {}).get("aim", 0) or 0),
+            "paliers": [(float("inf") if str(p.get("distance")) == "infinite" else float(p.get("distance", 0)),
+                         float(p.get("damage", 0))) for p in (extra.get("damage_adjust") or [])],
         }
     return sortie
 
@@ -171,6 +206,10 @@ def famille(gid, a):
     if gid in FAMILLE_ARME:
         return FAMILLE_ARME[gid]
     t, m = a["type"], a["ammo"]
+    if t == "shotgun":
+        if a["culasse"] == "manual_action":
+            return "pompe_manuelle"
+        return "pompe_double" if 0 < a["coups"] <= 2 else "pompe_auto"
     if t == "pistol":
         return {"tacz:45acp": "pistolet_45", "tacz:50ae": "pistolet_50"}.get(m, "pistolet_9")
     if t == "smg":
@@ -181,8 +220,6 @@ def famille(gid, a):
         return "mitrailleuse_556" if m == "tacz:556x45" else "mitrailleuse_762"
     if t == "sniper":
         return {"tacz:338": "precision_338", "tacz:50bmg": "precision_50", "tacz:762x39": "precision_762"}.get(m, "precision_308")
-    if t == "shotgun":
-        return "pompe"
     return None  # lance-grenades : dégâts de TaCZ
 
 
@@ -204,6 +241,10 @@ def regler():
         reglage[gid] = OrderedDict([("famille", fam), ("rarete", r), ("degats", round(degats, 2)), ("tete", tete)])
         if fam in PLAFOND_TIR:
             reglage[gid]["plafond"] = PLAFOND_TIR[fam]
+        if fam in FAMILLES_PLOMBS:
+            if a["plombs"] < 2:
+                reglage[gid]["plombs"] = PLOMBS_SI_BALLE_UNIQUE
+            reglage[gid]["dispersion_min"] = DISPERSION_MIN
     return liste, reglage, raretes
 
 
@@ -311,6 +352,96 @@ def rarete_accessoire(aid, a):
     return r
 
 
+# ------------------------------------------------------------------ tableau des fusils à pompe (--pompes)
+# Tenue complète (Armurerie, modules/equipement/outils/equilibrage_armures.py, TENUE) : % au corps, % à la tête ; le
+# plafond commun des armures (60 %, heraliz_armory-common.toml) n'est atteint par aucune de ces tenues.
+TENUES = [("sans armure", 0, 0), ("Rare", 32, 26), ("Épique", 41, 34), ("Légendaire", 50, 42)]
+PV_JOUEUR = 20.0
+# Silhouette d'un joueur debout, de face, arme en main (hitbox « en morceaux » du serveur, HitboxCorps : cubes du modèle
+# de Minecraft à l'échelle 0,9375, un demi-pixel de plus autour de la tête, un quart autour du reste) : rectangles
+# (x min, x max, y min, y max) en blocs, y depuis les pieds ; vrai si c'est la tête.
+_PX = 0.9375 / 16
+SILHOUETTE = [
+    (-4.5 * _PX, 4.5 * _PX, 23.5 * _PX, 32.5 * _PX, True),       # tête
+    (-4.25 * _PX, 4.25 * _PX, 11.75 * _PX, 24.25 * _PX, False),  # torse
+    (-8.25 * _PX, -3.75 * _PX, 19.75 * _PX, 24.25 * _PX, False),  # bras tendus vers l'avant (vus par le bout)
+    (3.75 * _PX, 8.25 * _PX, 19.75 * _PX, 24.25 * _PX, False),
+    (-4.15 * _PX, 4.15 * _PX, -0.25 * _PX, 12.25 * _PX, False),  # jambes
+]
+VISEE_Y = (11.75 + 24.25) / 2 * _PX  # visée au milieu du torse
+
+
+def _morceau(x, y):
+    """None (manqué), True (tête) ou False (corps)."""
+    for x0, x1, y0, y1, tete in SILHOUETTE:
+        if x0 <= x <= x1 and y0 <= y <= y1:
+            return tete
+    return None
+
+
+def _palier(paliers, origine, distance):
+    """Dégâts du gunpack à cette distance (paliers « damage_adjust » de TaCZ, en marches), ramenés à « damage »."""
+    for d, dmg in paliers:
+        if distance < d:
+            return dmg / origine if origine > 0 else 1.0
+    return 1.0
+
+
+def decharge(a, r, distance, tenue, essais, hasard):
+    """Moyennes sur `essais` décharges visées au milieu du torse : (plombs qui touchent, dégâts reçus après armure).
+    Même calcul que le serveur : dispersion de Minecraft (Projectile.shoot : écart en triangle de 0,0172275 x dispersion
+    sur chaque axe), dégâts de TaCZ partagés entre les plombs puis ramenés à « degats » (DegatsArmes), tête x « tete »,
+    plafond d'un tir (avant l'armure), armure du corps ou de la tête (ProtectionEvents)."""
+    n = r.get("plombs", a["plombs"])
+    largeur = 0.0172275 * max(a["visee"], r.get("dispersion_min", 0.0))
+    base = r["degats"] / n * _palier(a["paliers"], a["degats"], distance)
+    plafond = r.get("plafond", 1e9)
+    _, corps, tete = tenue
+    touches = degats = 0.0
+    for _ in range(essais):
+        cumul = 0.0
+        for _ in range(n):
+            x = distance * largeur * (hasard.random() - hasard.random())
+            y = VISEE_Y + distance * largeur * (hasard.random() - hasard.random())
+            m = _morceau(x, y)
+            if m is None:
+                continue
+            touches += 1
+            coup = base * (r["tete"] if m else 1.0)
+            coup = min(coup, max(0.0, plafond - cumul))
+            cumul += coup
+            degats += coup * (1 - (tete if m else corps) / 100.0)
+    return touches / essais, degats / essais
+
+
+def tableau_pompes(liste, reglage, essais=4000):
+    import math
+    import random
+    hasard = random.Random(3112026)
+    lignes = ["| Arme | Rareté | Mécanisme | Plombs × dégâts | Décharge | Bout portant (2 blocs) : tirs pour tuer "
+              "sans armure / Rare / Épique / Légendaire | 15 blocs : plombs qui touchent, tirs pour tuer | 20 blocs : "
+              "plombs qui touchent, tirs pour tuer |", "|---|---|---|---|---|---|---|---|"]
+    noms = {"pompe_manuelle": "à pompe", "pompe_double": "canons doubles", "pompe_auto": "automatique",
+            "pistolet_pompe": "pistolet à plombs"}
+    for gid, a in liste.items():
+        r = reglage.get(gid)
+        if not r or r["famille"] not in FAMILLES_PLOMBS:
+            continue
+        n = r.get("plombs", a["plombs"])
+        cellules = []
+        for distance in (2.0, 15.0, 20.0):
+            tirs, plombs = [], 0.0
+            for tenue in TENUES:
+                touches, moy = decharge(a, r, distance, tenue, essais if distance > 2 else 200, hasard)
+                plombs = touches
+                tirs.append(str(math.ceil(PV_JOUEUR / moy - 1e-9)) if moy > 0 else "-")
+            texte = " / ".join(tirs)
+            cellules.append(texte if distance <= 2 else "%.1f sur %d ; %s" % (plombs, n, texte))
+        lignes.append("| %s | %s | %s | %d × %.2f | %.1f (plafond %g) | %s |" % (
+            gid, r["rarete"], noms[r["famille"]], n, r["degats"] / n, r["degats"], r["plafond"], " | ".join(cellules)))
+    return "\n".join(lignes)
+
+
 # ------------------------------------------------------------------ écriture
 def ecrire(reglage, raretes_armes, raretes_acc):
     os.makedirs(os.path.dirname(SORTIE_ARMES), exist_ok=True)
@@ -318,8 +449,11 @@ def ecrire(reglage, raretes_armes, raretes_acc):
     doc["_aide"] = ("Dégâts des armes TaCZ contre les JOUEURS (mod Tactique, serveur). « degats » : une balle à courte "
                     "distance (fusil à pompe : la décharge entière, que TaCZ partage entre les plombs) ; la baisse avec la "
                     "distance et les accessoires gardent leur effet. "
-                    "« tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. Arme absente : dégâts de TaCZ. Fichier ÉCRIT par "
-                    "outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur.")
+                    "« tete » : multiplicateur d'un tir à la tête. « plafond » (fusils à pompe) : dégâts au plus d'un tir, tous plombs. "
+                    "« plombs » : plombs imposés à une arme à plombs qui n'en tire qu'un ; « dispersion_min » : écart minimal "
+                    "des plombs en degrés (même en visant). Arme absente : dégâts de TaCZ. Fichier ÉCRIT par "
+                    "outils/equilibrage_armes.py : changer le script et le relancer. Relu à chaque démarrage du serveur "
+                    "et par /recharger armes.")
     doc["actif"] = True
     doc["armes"] = reglage
     with open(SORTIE_ARMES, "w", encoding="utf-8", newline="\n") as f:
@@ -338,6 +472,7 @@ def ecrire(reglage, raretes_armes, raretes_acc):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tableau", action="store_true")
+    ap.add_argument("--pompes", action="store_true", help="tableau des fusils à pompe (tirs pour tuer selon l'armure)")
     a = ap.parse_args()
     liste, reglage, raretes = regler()
     inconnues = [g for g in RARETE_ARME if g not in liste]
@@ -360,6 +495,9 @@ def main():
         print("|---|---|---|---|")
         for aid, x in acc.items():
             print(f"| {aid} | {x['type']} | {score(x):.0f} | {raretes_acc[aid]} |")
+    if a.pompes:
+        print()
+        print(tableau_pompes(liste, reglage))
 
 
 if __name__ == "__main__":
