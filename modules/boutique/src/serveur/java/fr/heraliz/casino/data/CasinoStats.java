@@ -41,6 +41,8 @@ public class CasinoStats extends SavedData {
     private final TreeMap<Integer, Map<MachineType, Set<UUID>>> dayPlayers = new TreeMap<>();
     /** Par joueur : total mise, total verse, plus gros gain. */
     private final Map<UUID, long[]> players = new HashMap<>();
+    /** Pseudo de chaque joueur, retenu à sa connexion (03/11) : les écrans du casino le montrent même s'il est déconnecté. */
+    private final Map<UUID, String> noms = new HashMap<>();
     /** Record du casino : plus gros gain en une partie (joueur, montant, machine). */
     private UUID recordPlayer;
     private long recordAmount;
@@ -194,7 +196,20 @@ public class CasinoStats extends SavedData {
         return new Object[]{name(server, recordPlayer), recordAmount, recordMachine};
     }
 
+    /** Retient le pseudo d'un joueur (à sa connexion). */
+    public void retenirNom(UUID id, String nom) {
+        if (id == null || nom == null || nom.isEmpty() || nom.equals(noms.get(id))) return;
+        noms.put(id, nom);
+        setDirty();
+    }
+
     static String name(MinecraftServer server, UUID id) {
+        // pseudo retenu (même déconnecté), puis joueur en ligne, puis cache de Minecraft (03/11 : un déconnecté
+        // s'affichait par un bout d'identifiant)
+        String retenu = get(server).noms.get(id);
+        if (retenu != null) return retenu;
+        net.minecraft.server.level.ServerPlayer enLigne = server.getPlayerList().getPlayer(id);
+        if (enLigne != null) return enLigne.getGameProfile().getName();
         return server.getProfileCache() == null ? id.toString().substring(0, 8)
                 : server.getProfileCache().get(id).map(com.mojang.authlib.GameProfile::getName).orElse(id.toString().substring(0, 8));
     }
@@ -250,8 +265,7 @@ public class CasinoStats extends SavedData {
             if (i >= 6 && i < list.size() - 6) continue;
             Map.Entry<UUID, long[]> e = list.get(i);
             JsonObject o = new JsonObject();
-            o.addProperty("name", server.getProfileCache() == null ? e.getKey().toString()
-                    : server.getProfileCache().get(e.getKey()).map(com.mojang.authlib.GameProfile::getName).orElse(e.getKey().toString().substring(0, 8)));
+            o.addProperty("name", name(server, e.getKey()));
             o.addProperty("wagered", e.getValue()[0]);
             o.addProperty("paid", e.getValue()[1]);
             top.add(o);
@@ -334,6 +348,13 @@ public class CasinoStats extends SavedData {
             s.recordAmount = tag.getLong("RecordAmount");
             s.recordMachine = tag.getString("RecordMachine");
         }
+        CompoundTag nm = tag.getCompound("Noms");
+        for (String k : nm.getAllKeys()) {
+            try {
+                s.noms.put(UUID.fromString(k), nm.getString(k));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
         CompoundTag p = tag.getCompound("Players");
         for (String k : p.getAllKeys()) {
             try {
@@ -415,6 +436,9 @@ public class CasinoStats extends SavedData {
         CompoundTag p = new CompoundTag();
         for (Map.Entry<UUID, long[]> e : players.entrySet()) p.putLongArray(e.getKey().toString(), e.getValue().clone());
         tag.put("Players", p);
+        CompoundTag nm = new CompoundTag();
+        for (Map.Entry<UUID, String> e : noms.entrySet()) nm.putString(e.getKey().toString(), e.getValue());
+        tag.put("Noms", nm);
         if (recordPlayer != null) {
             tag.putUUID("RecordPlayer", recordPlayer);
             tag.putLong("RecordAmount", recordAmount);

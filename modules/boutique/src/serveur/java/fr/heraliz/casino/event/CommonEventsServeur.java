@@ -42,6 +42,8 @@ public final class CommonEventsServeur {
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player.getServer() == null) return;
         sendConfig(player);
+        // pseudo retenu pour les écrans du casino (classements), même quand le joueur sera déconnecté (03/11)
+        fr.heraliz.casino.data.CasinoStats.get(player.getServer()).retenirNom(player.getUUID(), player.getGameProfile().getName());
         ChipsServeur.convertirAnciennes(player);
         CasinoNet.sendTo(player, new JackpotPacket(Jackpot.get(player.getServer()).value()));
         fr.heraliz.casino.economy.CompteCapsules.envoyer(player);
