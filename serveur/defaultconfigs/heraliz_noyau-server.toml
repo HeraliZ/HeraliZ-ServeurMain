@@ -61,16 +61,21 @@
 	#Distance (blocs) jusqu'à laquelle on entend le pas d'un autre joueur, de moins en moins fort avec la
 	#distance (Minecraft : 16). Un joueur accroupi reste silencieux, comme dans Minecraft. Vanish du staff respecté.
 	#Range: 8 ~ 64
-	portee_joueurs = 32
-	#Volume du pas d'un autre joueur tout près, par rapport à Minecraft (1 : comme Minecraft ; 2 : deux fois
-	#plus fort). Ses propres pas ne changent pas.
+	portee_joueurs = 24
+	#Volume du pas d'un autre joueur tout près, par rapport à Minecraft (1 : comme Minecraft ; 1,3 (03/11,
+	#choix du propriétaire : « un peu mieux », 2 était trop fort)). Ses propres pas ne changent pas.
 	#Range: 0.25 ~ 4.0
-	volume_joueurs = 2.0
+	volume_joueurs = 1.3
+	#Baisse du pas d'un autre joueur avec la distance : volume x (1 - (distance / portee_joueurs) ^ douceur).
+	#1 : en ligne droite, comme Minecraft ; plus grand : baisse plus douce au début, plus rapide vers la fin. 1,2 : à 8 blocs
+	#environ deux fois plus fort que Minecraft, à 16 blocs comme Minecraft à 8, plus rien à 24.
+	#Range: 0.5 ~ 3.0
+	douceur = 1.2
 	#Volume du pas des zombies et des autres monstres, par rapport à avant (1 : comme avant, soit la moitié
-	#de Minecraft, réglée le 24/10 dans le pack de ressources des joueurs ; 2 : comme Minecraft). Leur distance ne change
-	#pas : 11 blocs pour les zombies.
+	#de Minecraft, réglée le 24/10 dans le pack de ressources des joueurs ; 2 : comme Minecraft ; 03/11, choix du
+	#propriétaire : 1). Leur distance ne change pas : 11 blocs pour les zombies.
 	#Range: 0.25 ~ 4.0
-	volume_monstres = 2.0
+	volume_monstres = 1.0
 
 [succes]
 	#Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à

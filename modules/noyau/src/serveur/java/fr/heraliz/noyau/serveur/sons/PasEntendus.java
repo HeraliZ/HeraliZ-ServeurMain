@@ -27,14 +27,16 @@ import net.minecraftforge.eventbus.api.EventPriority;
  * des joueurs, qui baisse aussi tous les sons des zombies de moitié depuis le 24/10).
  * <p><b>Ce qui change ici</b> (rien dans le jeu des joueurs, aucun paquet nouveau, ses propres pas jamais touchés) :
  * <ul>
- * <li>pas d'un joueur : envoyé aux autres jusqu'à {@code portee_joueurs} blocs (32), entendu {@code volume_joueurs} fois
- * (2) plus fort tout près, puis de moins en moins fort jusqu'à 0 à cette distance. Le jeu d'un joueur ne sait pas étendre
+ * <li>pas d'un joueur : envoyé aux autres jusqu'à {@code portee_joueurs} blocs (24), entendu {@code volume_joueurs} fois
+ * (1,3) plus fort tout près, puis de moins en moins fort jusqu'à 0 à cette distance, en 1 - (distance / portée) ^
+ * {@code douceur} (1,2 : baisse plus douce que la ligne droite de Minecraft). Le jeu d'un joueur ne sait pas étendre
  * son atténuation de 16 blocs : chaque joueur reçoit donc son propre envoi. Jusqu'à {@link #EXACT} blocs, le son garde sa
  * vraie place et son volume est relevé pour compenser l'atténuation du jeu ; plus loin, il est rapproché à {@link #EXACT}
  * blocs sur la même ligne (même direction, donc on sait d'où il vient) avec le volume voulu à sa vraie distance. Mêmes
  * destinataires que Minecraft sinon : même monde, jamais l'auteur, et le vanish du staff (test de Bukkit sous Mohist,
  * {@link VoirBukkit#entend}) ;</li>
- * <li>pas d'un monstre : volume x {@code volume_monstres} (2), distance inchangée.</li>
+ * <li>pas d'un monstre : volume x {@code volume_monstres} (1 depuis le choix du propriétaire du 03/11 : comme avant),
+ * distance inchangée.</li>
  * </ul>
  * Rien ne tourne entre deux sons : seulement au son d'un pas, comme l'envoi de Minecraft qu'il remplace (un passage sur
  * les joueurs du monde). Fil serveur seulement.
@@ -65,6 +67,7 @@ public final class PasEntendus {
       Holder<SoundEvent> son = e.getSound();
       if (son == null || !estUnPas(son.value())) return;
       if (source == SoundSource.HOSTILE) {
+         if (NoyauConfig.pasVolumeMonstres == 1.0F) return;   // choix du propriétaire (03/11) : volume normal
          float v = e.getNewVolume();
          // au plus 1 : au-delà, Minecraft l'enverrait plus loin (16 x volume)
          if (v < 1.0F) e.setNewVolume(Math.min(1.0F, v * NoyauConfig.pasVolumeMonstres));
@@ -85,7 +88,7 @@ public final class PasEntendus {
          }
       }
       if (auteur == null) return;   // son de pas posé ailleurs par un mod : envoi de Minecraft
-      double portee = NoyauConfig.pasPortee;
+      double portee = NoyauConfig.pasPortee, douceur = NoyauConfig.pasDouceur;
       float voulu0 = e.getNewVolume() * NoyauConfig.pasVolumeJoueurs, hauteur = e.getNewPitch();
       long graine = ThreadLocalRandom.current().nextLong();
       for (int i = 0; i < n; i++) {
@@ -96,7 +99,7 @@ public final class PasEntendus {
          double d2 = dx * dx + dy * dy + dz * dz;
          if (d2 >= portee * portee || !VoirBukkit.entend(j, auteur)) continue;
          double d = Math.sqrt(d2);
-         double voulu = voulu0 * (1.0 - d / portee);
+         double voulu = voulu0 * (1.0 - Math.pow(d / portee, douceur));
          double place = Math.min(d, EXACT);
          float volume = (float) Math.min(1.0, voulu / (1.0 - place / ATTENUATION_JEU));
          double f = d > EXACT ? EXACT / d : 1.0;

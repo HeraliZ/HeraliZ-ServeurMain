@@ -53,14 +53,17 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.IntValue PAS_PORTEE;
    public static final ForgeConfigSpec.DoubleValue PAS_VOLUME_JOUEURS;
    public static final ForgeConfigSpec.DoubleValue PAS_VOLUME_MONSTRES;
+   public static final ForgeConfigSpec.DoubleValue PAS_DOUCEUR;
    /** Pas des autres joueurs et des monstres réglés par le serveur, relu avec les réglages. */
    public static volatile boolean pasActif = true;
    /** Distance (blocs) jusqu'à laquelle on entend le pas d'un autre joueur. */
-   public static volatile int pasPortee = 32;
+   public static volatile int pasPortee = 24;
    /** Volume du pas d'un autre joueur, tout près, par rapport à Minecraft. */
-   public static volatile float pasVolumeJoueurs = 2.0F;
+   public static volatile float pasVolumeJoueurs = 1.3F;
    /** Volume du pas d'un monstre par rapport à avant (sa distance ne change pas). */
-   public static volatile float pasVolumeMonstres = 2.0F;
+   public static volatile float pasVolumeMonstres = 1.0F;
+   /** Baisse du pas d'un autre joueur avec la distance : 1 - (d / portée) ^ douceur (1 : en ligne droite comme Minecraft). */
+   public static volatile float pasDouceur = 1.2F;
    public static final ForgeConfigSpec.BooleanValue SUCCES_ACTIFS;
    /** Succès de Minecraft suivis, relu avec les réglages (SuccesMixin de la partie serveur). */
    public static volatile boolean succesActifs = false;
@@ -225,14 +228,18 @@ public final class NoyauConfig {
             .define("actif", true);
       PAS_PORTEE = b.comment("Distance (blocs) jusqu'à laquelle on entend le pas d'un autre joueur, de moins en moins fort avec la",
             "distance (Minecraft : 16). Un joueur accroupi reste silencieux, comme dans Minecraft. Vanish du staff respecté.")
-            .defineInRange("portee_joueurs", 32, 8, 64);
-      PAS_VOLUME_JOUEURS = b.comment("Volume du pas d'un autre joueur tout près, par rapport à Minecraft (1 : comme Minecraft ; 2 : deux fois",
-            "plus fort). Ses propres pas ne changent pas.")
-            .defineInRange("volume_joueurs", 2.0, 0.25, 4.0);
+            .defineInRange("portee_joueurs", 24, 8, 64);
+      PAS_VOLUME_JOUEURS = b.comment("Volume du pas d'un autre joueur tout près, par rapport à Minecraft (1 : comme Minecraft ; 1,3 (03/11,",
+            "choix du propriétaire : « un peu mieux », 2 était trop fort)). Ses propres pas ne changent pas.")
+            .defineInRange("volume_joueurs", 1.3, 0.25, 4.0);
+      PAS_DOUCEUR = b.comment("Baisse du pas d'un autre joueur avec la distance : volume x (1 - (distance / portee_joueurs) ^ douceur).",
+            "1 : en ligne droite, comme Minecraft ; plus grand : baisse plus douce au début, plus rapide vers la fin. 1,2 : à 8 blocs",
+            "environ deux fois plus fort que Minecraft, à 16 blocs comme Minecraft à 8, plus rien à 24.")
+            .defineInRange("douceur", 1.2, 0.5, 3.0);
       PAS_VOLUME_MONSTRES = b.comment("Volume du pas des zombies et des autres monstres, par rapport à avant (1 : comme avant, soit la moitié",
-            "de Minecraft, réglée le 24/10 dans le pack de ressources des joueurs ; 2 : comme Minecraft). Leur distance ne change",
-            "pas : 11 blocs pour les zombies.")
-            .defineInRange("volume_monstres", 2.0, 0.25, 4.0);
+            "de Minecraft, réglée le 24/10 dans le pack de ressources des joueurs ; 2 : comme Minecraft ; 03/11, choix du",
+            "propriétaire : 1). Leur distance ne change pas : 11 blocs pour les zombies.")
+            .defineInRange("volume_monstres", 1.0, 0.25, 4.0);
       b.pop();
       b.push("succes");
       SUCCES_ACTIFS = b.comment("Succès (« progrès ») de Minecraft (27/10, perf) : false = ni suivis ni enregistrés. Ils étaient vérifiés à",
@@ -334,6 +341,7 @@ public final class NoyauConfig {
       pasPortee = PAS_PORTEE.get();
       pasVolumeJoueurs = (float) (double) PAS_VOLUME_JOUEURS.get();
       pasVolumeMonstres = (float) (double) PAS_VOLUME_MONSTRES.get();
+      pasDouceur = (float) (double) PAS_DOUCEUR.get();
       succesActifs = SUCCES_ACTIFS.get();
       levelDatEnFond = LEVEL_DAT_FOND.get();
       spawnJamaisPrepare = SPAWN_JAMAIS_PREPARE.get();
