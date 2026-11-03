@@ -2634,18 +2634,6 @@
   {
    "objet": "tacz:modern_kinetic_gun",
    "cle": "GunId",
-   "valeur": "maxstuff:deagle_12g",
-   "rend": [
-    "heraliz_composants:canon_iv",
-    "heraliz_composants:ressort_iv",
-    "heraliz_composants:kit_pieces_iv",
-    "heraliz_composants:ferraille_iv",
-    "heraliz_composants:ferraille_iv"
-   ]
-  },
-  {
-   "objet": "tacz:modern_kinetic_gun",
-   "cle": "GunId",
    "valeur": "maxstuff:g36",
    "rend": [
     "heraliz_composants:canon_iii",
@@ -2894,18 +2882,6 @@
     "heraliz_composants:kit_pieces_iv",
     "heraliz_composants:ferraille_iv",
     "heraliz_composants:ferraille_iv",
-    "heraliz_composants:ferraille_iv",
-    "heraliz_composants:ferraille_iv"
-   ]
-  },
-  {
-   "objet": "tacz:modern_kinetic_gun",
-   "cle": "GunId",
-   "valeur": "maxstuff:thunderbird_short",
-   "rend": [
-    "heraliz_composants:canon_iv",
-    "heraliz_composants:ressort_iv",
-    "heraliz_composants:kit_pieces_iv",
     "heraliz_composants:ferraille_iv",
     "heraliz_composants:ferraille_iv"
    ]
@@ -3333,6 +3309,31 @@
    ]
   },
   {
+   "objet": "crac:echelle",
+   "rend": [
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:corde",
+    "heraliz_composants:corde"
+   ]
+  },
+  {
    "objet": "airstrike:designator",
    "rend": [
     "heraliz_composants:circuit_imprime_iv",
@@ -3404,12 +3405,38 @@
     "heraliz_composants:planche",
     "heraliz_composants:planche",
     "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
+    "heraliz_composants:planche",
     "heraliz_composants:clou",
     "heraliz_composants:clou",
     "heraliz_composants:clou",
     "heraliz_composants:clou",
     "heraliz_composants:clou",
     "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:clou",
+    "heraliz_composants:corde",
+    "heraliz_composants:corde",
     "heraliz_composants:corde"
    ]
   },
@@ -3841,15 +3868,6 @@
    ],
    "cle": "ConsumableId",
    "valeur": "heralisz_heal:attelle"
-  },
-  {
-   "objet": "heralisz_tactical:consumable",
-   "rend": [
-    "heraliz_composants:tissu_iii",
-    "heraliz_composants:alcool_iii"
-   ],
-   "cle": "ConsumableId",
-   "valeur": "heralisz_heal:attelle_bandage"
   },
   {
    "objet": "heralisz_tactical:consumable",

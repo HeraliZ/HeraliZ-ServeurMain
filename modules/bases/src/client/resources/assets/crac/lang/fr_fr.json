@@ -533,6 +533,8 @@
   "crac.ecran.depop_aucun": "DÉPOP —",
   "crac.ecran.depop_imminent": "DÉPOP IMMINENT",
   "block.crac.coeur_clan": "Cœur de clan",
+  "block.crac.echelle": "Échelle",
+  "crac.echelle.ou": "L'échelle se pose contre la face d'un mur droit de base (n'importe quelle base), le flanc d'une fondation, ou au-dessus d'une échelle.",
   "crac.coeur.points": "%s PTS",
   "crac.coeur.holo.pve": "CLASSEMENT PVE",
   "crac.coeur.holo.pvp": "CLASSEMENT PVP",

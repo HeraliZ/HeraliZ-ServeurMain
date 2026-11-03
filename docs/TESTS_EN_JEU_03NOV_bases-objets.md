@@ -102,3 +102,28 @@ la pièce n'est dessinée à part qu'ouvert et pendant 4 ticks après une fermet
 - [ ] Ouvrir / fermer : l'animation marche ; à la fermeture, au plus un très bref instant (0,2 s) de double dessin.
 - [ ] Caisse en métal (pas concernée par ce défaut, elle n'a pas de pièce dessinée à part) : rien ne clignote non plus.
 - [ ] Coffres posés avant la mise à jour : mêmes contrôles.
+
+## Échelle de raid (Bases 1.34.0-beta, demande du propriétaire du 03/11)
+
+Objet et bloc `crac:echelle` (identifiant figé). Une case par échelle, piles de 9, fabriquées par 3 à la Table d'armurier
+(onglet Divers : 9 planches, 9 clous, 2 cordes). Modèle provisoire (texture de l'échelle de Minecraft) tant que le modèle
+proposé n'est pas validé.
+
+- [ ] Fabrication : onglet Divers, 3 échelles par recette ; Peu commune ; jamais dans le loot.
+- [ ] Pose contre la FACE d'un mur droit (bois, pierre, métal, blindé) de sa base, dedans et dehors : collée au mur, le
+      mur paraît toujours plein des deux côtés. Pareil dans la base d'un AUTRE clan (pas besoin d'être membre), pendant et
+      hors Purge.
+- [ ] Pose contre le flanc d'une fondation (case libre devant) ; sur une échelle (visée sur l'échelle) : la suivante se met
+      au-dessus, même sens ; un étage = 3 échelles ; une 4e au-dessus du mur (pour passer sur le toit), pas une 5e.
+- [ ] Refus (« L'échelle se pose contre… ») : terrain hors base, mur en biais (pas prévu), mur avec porte ou fenêtre ouverte
+      d'une porte, case déjà prise d'un côté du mur par un coffre ou une autre échelle, sol, plafond.
+- [ ] Base d'un autre clan encore protégée (nouvelle base) : refusé ; sa propre base sous raid block : refusé.
+- [ ] Grimper : comme une échelle de Minecraft (montée, descente, accroupi pour rester accroché) ; arrivée sur le toit.
+- [ ] Anticheat : aucun signalement en grimpant.
+- [ ] Casse à la main : environ 10 coups de poing (moins avec une arme de mêlée forte), quel que soit le clan ; aux balles :
+      selon l'arme ; explosion et pioche : rien. Rien n'est lâché ; l'échelle du dessus (au-dessus du mur) tombe avec elle ;
+      le mur se rebouche.
+- [ ] Mur détruit (raid) : les échelles posées contre lui tombent, sans rien lâcher.
+- [ ] Créatif : un clic la casse.
+- [ ] Recycleur : une échelle se recycle (règle tirée de la recette).
+- [ ] Redémarrage : les échelles et leurs PV restent.

@@ -226,6 +226,8 @@ RARETES_IMPOSEES = {
     "heralizcasino:jeton_1": "commun", "heralizcasino:jeton_5": "peu_commun", "heralizcasino:jeton_10": "rare",
     # explosifs de CRac (23/10) : fabrication seulement, jamais dans le loot
     "crac:c4": "legendaire", "crac:explosive_charge": "epique",
+    # échelle de raid (03/11) : fabrication seulement, jamais dans le loot
+    "crac:echelle": "peu_commun",
     # kits de réparation (24/10) : fortune Rare, kit Épique, armurier Légendaire
     "heraliz_usure:kit_fortune": "rare", "heraliz_usure:kit_standard": "epique", "heraliz_usure:kit_armurier": "legendaire",
     # boîtes de munitions de TaCZ (24/10) : fer Rare, or Épique, diamant Légendaire (« Level » 0, 1, 2 ; RaretesObjets.boite)

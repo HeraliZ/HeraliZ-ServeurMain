@@ -45,6 +45,7 @@ public class ClientInit {
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.METAL_CRATE.get(), RenderType.cutoutMipped());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.CLAIM_BLOCK.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.COEUR_CLAN.get(), RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(ModBlocks.ECHELLE.get(), RenderType.cutout());
         for (var coffre : COFFRES) {
             ItemBlockRenderTypes.setRenderLayer(coffre.get(), RenderType.cutout());
         }

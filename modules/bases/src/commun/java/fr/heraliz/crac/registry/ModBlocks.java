@@ -4,6 +4,7 @@ import fr.heraliz.crac.block.ClaimBlock;
 import fr.heraliz.crac.block.ClaimBlockHaut;
 import fr.heraliz.crac.block.CoeurClanBlock;
 import fr.heraliz.crac.block.CoffreBlock;
+import fr.heraliz.crac.block.EchelleBlock;
 import fr.heraliz.crac.block.MetalCrateBlock;
 import fr.heraliz.crac.build.world.StructureBlock;
 import net.minecraft.sounds.SoundEvents;
@@ -55,6 +56,16 @@ public final class ModBlocks {
         "coffre_fort", () -> new CoffreBlock("coffre_fort", false, 13, 6, SoundEvents.IRON_DOOR_OPEN, SoundEvents.IRON_DOOR_CLOSE, 0.6F,
             Properties.of().mapColor(MapColor.COLOR_BLACK).strength(4.0F, 6.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
                 .noOcclusion())
+    );
+
+    /**
+     * Échelle de raid (03/11, identifiant figé) : se pose contre une pièce de n'importe quelle base ; cassée seulement à la
+     * main et aux balles (150 PV, placable/EchelleServeur) : incassable à la pioche, résiste aux explosions de Minecraft ;
+     * rien n'est lâché.
+     */
+    public static final RegistryObject<EchelleBlock> ECHELLE = BLOCKS.register(
+        "echelle", () -> new EchelleBlock(Properties.of().mapColor(MapColor.WOOD).strength(-1.0F, 3600000.0F).noOcclusion()
+            .noLootTable().sound(SoundType.LADDER))
     );
 
     private ModBlocks() {

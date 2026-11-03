@@ -65,6 +65,7 @@ public class Crac {
             event.accept(ModItems.CAISSE_ARMES);
             event.accept(ModItems.COFFRE_FORT);
             event.accept(ModItems.CLAIM_BLOCK);
+            event.accept(ModItems.ECHELLE);
             event.accept(ModItems.COEUR_CLAN);
             event.accept(ModItems.GLASS_WINDOW);
             event.accept(ModItems.METAL_WINDOW);

@@ -1,0 +1,31 @@
+{
+  "type": "tacz:gun_smith_table_crafting",
+  "materials": [
+    {
+      "item": {
+        "item": "heraliz_composants:planche"
+      },
+      "count": 9
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:clou"
+      },
+      "count": 9
+    },
+    {
+      "item": {
+        "item": "heraliz_composants:corde"
+      },
+      "count": 2
+    }
+  ],
+  "result": {
+    "type": "custom",
+    "item": {
+      "item": "crac:echelle",
+      "count": 3
+    },
+    "group": "heraliz_crafts:divers"
+  }
+}

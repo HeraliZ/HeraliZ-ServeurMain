@@ -151,6 +151,11 @@ DIVERS = [
     # (tag crac:placable, PV dans serveur/defaultconfigs/crac-placable-hp.txt) : seulement dans une base de son clan.
     ("9_table_armurier", "tacz:gun_smith_table", {C + "metal_renforce": 16, C + "fil_souder": 8, C + "equerres_acier": 12,
                                                   C + "kit_pieces_iv": 4, C + "canon_iv": 2, C + "ressort_iv": 2}),
+    # échelle de raid de CRac (03/11, demande du propriétaire : bois, clous, cordes) : 3 échelles par recette, de quoi monter
+    # un étage de base (3 blocs). Moitié du prix d'une barricade (18 planches, 18 clous, 3 cordes) : elle se casse à la
+    # main et aux balles comme elle, et sert à entrer, pas à bloquer. Peu commune (RARETES_IMPOSEES de loot_armes.py),
+    # jamais dans le loot. Quatrième valeur : nombre d'objets rendus.
+    ("10_echelle", "crac:echelle", {C + "planche": 9, C + "clou": 9, C + "corde": 2}, 3),
 ]
 
 # coffres de base par rareté (27/10, validés par le propriétaire) : comme le reste, le niveau des composants suit la
@@ -278,9 +283,10 @@ def main():
     for nom, item, compo in EXPLOSIFS:
         recettes[f"explosifs/{nom}"] = recette(materiaux(compo, "commun"),
                                                {"type": "custom", "item": {"item": item}, "group": f"{NS}:explosifs"})
-    for nom, item, compo in DIVERS:
+    for nom, item, compo, *nombre in DIVERS:
+        objet = {"item": item, "count": nombre[0]} if nombre else {"item": item}
         recettes[f"divers/{nom}"] = recette([{"item": {"item": i}, "count": n} for i, n in compo.items()],
-                                            {"type": "custom", "item": {"item": item}, "group": f"{NS}:divers"})
+                                            {"type": "custom", "item": objet, "group": f"{NS}:divers"})
     for nom, item, compo in RANGEMENT:
         recettes[f"rangement/{nom}"] = recette([{"item": {"item": i}, "count": n} for i, n in compo.items()],
                                                {"type": "custom", "item": {"item": item}, "group": f"{NS}:rangement"})

@@ -50,6 +50,11 @@ public final class ModItems {
         "coeur_clan", () -> new BlockItem(ModBlocks.COEUR_CLAN.get(), new Properties().stacksTo(1).fireResistant())
     );
 
+    /** Échelle de raid (03/11, identifiant figé) : piles de 9 (une case chacune, un étage de base = 3). */
+    public static final RegistryObject<BlockItem> ECHELLE = ITEMS.register(
+        "echelle", () -> new fr.heraliz.crac.item.EchelleItem(ModBlocks.ECHELLE.get(), new Properties().stacksTo(9))
+    );
+
     private ModItems() {
     }
 }

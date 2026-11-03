@@ -166,9 +166,30 @@ public class BuildEventHandler {
         return PlacableSet.contains(sl, block) || block instanceof fr.heraliz.crac.block.CoeurClanBlock;
     }
 
+    /**
+     * Échelle de raid (03/11, demande du propriétaire) : elle se pose dans n'importe quelle base, la sienne ou celle d'un
+     * autre clan (c'est son but), à sa place décidée par EchelleBlock.pose (contre une pièce de base : jamais sur le terrain).
+     * Refusée seulement dans une base encore protégée d'un autre clan (pas raidable) et, dans sa propre base, sous raid
+     * block (comme toute construction). Ni la Purge ni l'entretien n'entrent en compte : ce n'est pas une pièce.
+     */
+    @Nullable
+    private static String problemeEchelle(ServerLevel sl, ServerPlayer player, BlockPos pos) {
+        Claim claim = ClaimManager.getAt(sl, pos);
+        if (claim == null) {
+            return null;
+        }
+        if (isMember(sl, player, claim, ClanAccess.Action.BUILD)) {
+            return Config.raidBlockBuilding.get() && RaidBlockManager.isRaidBlocked(sl, claim.groupId()) ? "crac.build.raid_blocked" : null;
+        }
+        return fr.heraliz.crac.bases.Protections.groupeProtege(sl.getServer(), claim.groupId()) ? "crac.protection.base_protegee" : null;
+    }
+
     /** Why the player may not place {@code state} over these cells, or null. */
     @Nullable
     private static String placeProblem(ServerLevel sl, ServerPlayer player, BlockState state, List<BlockPos> cells) {
+        if (state.getBlock() instanceof fr.heraliz.crac.block.EchelleBlock) {
+            return problemeEchelle(sl, player, cells.get(0));
+        }
         Claim claim = ClaimManager.getAt(sl, cells.get(0));
         for (BlockPos cell : cells) {
             Claim c = ClaimManager.getAt(sl, cell);
@@ -271,7 +292,7 @@ public class BuildEventHandler {
                         PlacementSync.revert(player, sl, event.getPos(), event.getFace());
                         return;
                     }
-                    if (placesSomething(item)) {
+                    if (placesSomething(item) && !(item instanceof fr.heraliz.crac.item.EchelleItem)) {   // échelle : à la pose
                         if (!(item instanceof BlockItem bi && isSystemBlock(bi.getBlock().defaultBlockState()))) {
                             BlockPos placePos = event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace());
                             boolean placable = item instanceof BlockItem bi2 && posableEnBase(sl, bi2.getBlock());

@@ -60,6 +60,7 @@ public final class PartieServeur implements Partie {
         Serveur.MOTEUR = new Moteur();
         // monde des bases (1.5.0) : décision des carrières
         fr.heraliz.crac.bases.CarrieresServeur.brancher();
+        fr.heraliz.crac.placable.EchelleServeur.brancher();   // échelles : balles de TaCZ (03/11)
         NetworkHandler.RECEPTION_SERVEUR.brancher(PartieServeur::recevoir);
     }
 

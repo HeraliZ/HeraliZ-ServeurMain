@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,mur=false": {
+      "model": "crac:block/echelle"
+    },
+    "facing=north,mur=true": {
+      "model": "crac:block/echelle_mur"
+    },
+    "facing=east,mur=false": {
+      "model": "crac:block/echelle",
+      "y": 90
+    },
+    "facing=east,mur=true": {
+      "model": "crac:block/echelle_mur",
+      "y": 90
+    },
+    "facing=south,mur=false": {
+      "model": "crac:block/echelle",
+      "y": 180
+    },
+    "facing=south,mur=true": {
+      "model": "crac:block/echelle_mur",
+      "y": 180
+    },
+    "facing=west,mur=false": {
+      "model": "crac:block/echelle",
+      "y": 270
+    },
+    "facing=west,mur=true": {
+      "model": "crac:block/echelle_mur",
+      "y": 270
+    }
+  }
+}

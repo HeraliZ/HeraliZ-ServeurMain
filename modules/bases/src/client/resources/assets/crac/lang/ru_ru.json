@@ -533,6 +533,8 @@
   "crac.ecran.depop_aucun": "РАСПАД —",
   "crac.ecran.depop_imminent": "РАСПАД СЕЙЧАС",
   "block.crac.coeur_clan": "Ядро клана",
+  "block.crac.echelle": "Лестница",
+  "crac.echelle.ou": "Лестницу ставят к прямой стене базы (любой базы), к боку фундамента или над другой лестницей.",
   "crac.coeur.points": "%s ОЧК",
   "crac.coeur.holo.pve": "РЕЙТИНГ PVE",
   "crac.coeur.holo.pvp": "РЕЙТИНГ PVP",

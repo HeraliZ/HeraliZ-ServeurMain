@@ -33,6 +33,11 @@ public final class ModBlockEntities {
             ModBlocks.CAISSE_ARMES.get(), ModBlocks.COFFRE_FORT.get()).build(null)
     );
 
+    /** Points de vie de l'échelle de raid (03/11). */
+    public static final RegistryObject<BlockEntityType<fr.heraliz.crac.block.entity.EchelleBlockEntity>> ECHELLE = BLOCK_ENTITIES.register(
+        "echelle", () -> Builder.of(fr.heraliz.crac.block.entity.EchelleBlockEntity::new, ModBlocks.ECHELLE.get()).build(null)
+    );
+
     private ModBlockEntities() {
     }
 }

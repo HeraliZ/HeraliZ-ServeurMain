@@ -22,6 +22,7 @@ public final class PlaceInteractionHandler {
         ItemStack stack = event.getItemStack();
         if (stack.getItem() instanceof BuildingPlanItem
             || stack.getItem() instanceof BuildingHammerItem
+            || stack.getItem() instanceof fr.heraliz.crac.item.EchelleItem
             || stack.getItem() instanceof BlockItem pbi && PlacableSet.contains(event.getLevel(), pbi.getBlock())) {
             event.setUseBlock(Result.DENY);
         }

@@ -1,0 +1,43 @@
+{
+  "credit": "HeraliZ : modèle provisoire de l'échelle de raid (texture de l'échelle de Minecraft), en attente du modèle validé en rendus",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "minecraft:block/ladder",
+    "echelle": "minecraft:block/ladder"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13.2
+      ],
+      "to": [
+        16,
+        16,
+        13.2
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#echelle"
+        },
+        "south": {
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ],
+          "texture": "#echelle"
+        }
+      }
+    }
+  ]
+}

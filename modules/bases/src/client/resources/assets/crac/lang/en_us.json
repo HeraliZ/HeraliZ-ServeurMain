@@ -533,6 +533,8 @@
   "crac.ecran.depop_aucun": "DECAY —",
   "crac.ecran.depop_imminent": "DECAY NOW",
   "block.crac.coeur_clan": "Clan Core",
+  "block.crac.echelle": "Ladder",
+  "crac.echelle.ou": "The ladder goes against the face of a straight base wall (any base), the side of a foundation, or on top of a ladder.",
   "crac.coeur.points": "%s PTS",
   "crac.coeur.holo.pve": "PVE RANKING",
   "crac.coeur.holo.pvp": "PVP RANKING",
