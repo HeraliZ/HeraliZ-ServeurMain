@@ -1,5 +1,6 @@
 package fr.heralisz.camo.decor;
 
+import fr.heralisz.camo.Camo;
 import fr.heralisz.camo.HeraliszCamo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -41,8 +42,26 @@ public final class DecorItems {
    public static void init() {
    }
 
-   private static void howto(List<Component> tooltip) {
-      tooltip.add(Component.translatable("item.heralisz_camo.decor.howto").withStyle(ChatFormatting.DARK_GRAY));
+   /**
+    * Infobulle des stickers et du module StatTrak (03/11, choix du propriétaire, comme les camos : « pas de description,
+    * nom + rareté + une ligne simple ») : la rareté, puis « Posé depuis le menu de modification d'armes ».
+    */
+   private static void infobulle(List<Component> tooltip, Camo.Tier rarete) {
+      tooltip.add(Component.translatable(rarete.key()).withStyle(rarete.color, ChatFormatting.BOLD));
+      tooltip.add(Component.translatable("item.heralisz_camo.decor.howto").withStyle(ChatFormatting.GRAY));
+   }
+
+   /**
+    * Rareté d'un sticker selon sa finition, celle de la caisse Camo (outils/caisses.py, CAISSES_BETA : papier Commun, holo
+    * Rare, métallisé Épique, or Légendaire).
+    */
+   public static Camo.Tier rarete(DecorCatalog.Finish finition) {
+      return switch (finition) {
+         case PAPER -> Camo.Tier.COMMON;
+         case HOLO -> Camo.Tier.RARE;
+         case FOIL -> Camo.Tier.EPIC;
+         case GOLD -> Camo.Tier.LEGENDARY;
+      };
    }
 
    public static final class StickerItem extends Item {
@@ -55,10 +74,11 @@ public final class DecorItems {
          this.finish = finish;
       }
 
+      /** Nom dans la couleur de sa rareté (03/11, comme les camos et tous les objets ; avant : couleur de la finition). */
       @Override
       public Component getName(ItemStack stack) {
          return Component.translatable("item.heralisz_camo.sticker", Component.translatable("sticker.heralisz_camo." + this.design.id()),
-            Component.translatable("finish.heralisz_camo." + this.finish.id())).withStyle(this.finish.color);
+            Component.translatable("finish.heralisz_camo." + this.finish.id())).withStyle(rarete(this.finish).color);
       }
 
       @Override
@@ -68,8 +88,7 @@ public final class DecorItems {
 
       @Override
       public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-         tooltip.add(Component.translatable("item.heralisz_camo.sticker.desc").withStyle(ChatFormatting.GRAY));
-         howto(tooltip);
+         infobulle(tooltip, rarete(this.finish));
       }
    }
 
@@ -80,9 +99,8 @@ public final class DecorItems {
 
       @Override
       public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-         tooltip.add(Component.translatable("item.heralisz_camo.stattrack.desc").withStyle(ChatFormatting.GRAY));
-         howto(tooltip);
-         tooltip.add(Component.translatable("item.heralisz_camo.camo.permanent").withStyle(ChatFormatting.DARK_RED));
+         // Épique comme dans la caisse Camo (le nom l'est déjà : rareté Épique de Minecraft, en violet)
+         infobulle(tooltip, Camo.Tier.EPIC);
       }
    }
 }

@@ -115,23 +115,17 @@ public class CamoItem extends Item {
       return true;
    }
 
+   /**
+    * Infobulle (03/11, choix du propriétaire : « pas de description, nom + rareté + une ligne simple ») : le nom (couleur
+    * de la rareté), la rareté, l'arme réservée s'il y en a une (aucun camo aujourd'hui), puis « Clic droit : ajoute à la
+    * collection à vie ».
+    */
    @Override
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
       tooltip.add(Component.translatable(this.camo.tier.key()).withStyle(this.camo.tier.color, ChatFormatting.BOLD));
-      tooltip.add(Component.translatable("item.heralisz_camo.camo.desc." + this.camo.id).withStyle(ChatFormatting.GRAY));
       if (this.camo.gun != null) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.gun." + this.camo.id).withStyle(ChatFormatting.GOLD));
       }
-      if (fr.heraliz.tactique.avie.ObjetsAVie.estSkinAVie(this.camo)) {
-         // skin à vie (21/10) : seulement par la collection, jamais posé depuis l'objet
-         tooltip.add(Component.translatable("item.heralisz_camo.camo.a_vie").withStyle(ChatFormatting.GOLD));
-         return;
-      }
-      tooltip.add(Component.translatable("item.heralisz_camo.camo.collect").withStyle(ChatFormatting.YELLOW));
-      tooltip.add(Component.translatable("item.heralisz_camo.camo.howto").withStyle(ChatFormatting.DARK_GRAY));
-      if (this.camo.gun == null && fr.heralisz.camo.BagSupport.PRESENT) {
-         tooltip.add(Component.translatable("item.heralisz_camo.camo.howto_bag").withStyle(ChatFormatting.DARK_GRAY));
-      }
-      tooltip.add(Component.translatable("item.heralisz_camo.camo.permanent").withStyle(ChatFormatting.DARK_RED));
+      tooltip.add(Component.translatable("item.heralisz_camo.camo.collect").withStyle(ChatFormatting.GRAY));
    }
 }
