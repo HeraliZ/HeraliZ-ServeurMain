@@ -23,10 +23,13 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix3f;
@@ -138,6 +141,9 @@ public class DrapeauRenderer implements BlockEntityRenderer<DrapeauBlockEntity> 
      * Hauteur du sol (relative au drapeau) sous chaque point du cercle : carte MOTION_BLOCKING du client (la variante
      * NO_LEAVES est vide chez le joueur), bornee a +/- hauteurCapture ; sous un toit plus haut que la borne, premier
      * sol solide en descendant. Recalculee toutes les 40 ticks ou si le cercle change.
+     * <p>03/11 (retour du propriétaire : les zones « montent au-dessus des arbres », « bloquées par des props ») : cette
+     * carte des hauteurs compte les feuilles et les objets posés, et les feuilles, troncs, caisses ou lampadaires étaient
+     * pris pour du sol ; seul le vrai terrain compte maintenant ({@link #terrain}). Même dessin.
      */
     private static float[] sol(DrapeauBlockEntity be, Level level, BlockPos pos, int r, int n) {
         int h = Math.max(1, be.hauteurCapture);
@@ -155,7 +161,7 @@ public class DrapeauRenderer implements BlockEntityRenderer<DrapeauBlockEntity> 
             int y = Math.min(level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), haut + 1);
             int g = fy;
             for (int yy = y; yy > bas; yy--) {
-                if (solide(level, mp.set(x, yy - 1, z)) && !solide(level, mp.set(x, yy, z))) {
+                if (terrain(level, mp.set(x, yy - 1, z)) && !terrain(level, mp.set(x, yy, z))) {
                     g = yy;
                     break;
                 }
@@ -169,9 +175,20 @@ public class DrapeauRenderer implements BlockEntityRenderer<DrapeauBlockEntity> 
         return sol;
     }
 
-    private static boolean solide(Level level, BlockPos p) {
+    /**
+     * Vrai terrain (03/11) : bloc plein et opaque (terre, pierre, sable, béton, briques, planches), glace, eau, ou bloc bas
+     * qui couvre toute la case (chemin, dalle du bas). Jamais les feuilles, les troncs ni un objet posé (caisse, conteneur,
+     * meuble, lampadaire, barrière).
+     */
+    private static boolean terrain(Level level, BlockPos p) {
         BlockState s = level.getBlockState(p);
-        return !s.isAir() && !s.getCollisionShape(level, p).isEmpty();
+        if (!s.getFluidState().isEmpty()) return true;
+        if (s.isAir() || s.is(BlockTags.LEAVES) || s.is(BlockTags.LOGS)) return false;
+        if (s.is(BlockTags.ICE) || s.isSolidRender(level, p)) return true;
+        VoxelShape forme = s.getCollisionShape(level, p);
+        if (forme.isEmpty()) return false;
+        AABB b = forme.bounds();
+        return b.minX <= 0.01 && b.minZ <= 0.01 && b.maxX >= 0.99 && b.maxZ >= 0.99 && b.minY <= 0.01 && b.maxY >= 0.25 && b.maxY < 0.99;
     }
 
     /** Panneau vertical entre (x0,z0) pose a g0 et (x1,z1) pose a g1, emis dans les deux sens (pas de culling). */
