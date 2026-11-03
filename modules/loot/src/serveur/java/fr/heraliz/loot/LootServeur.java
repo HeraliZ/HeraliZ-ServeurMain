@@ -45,6 +45,7 @@ public final class LootServeur {
                 ZonesLoot.invalider();
                 ConteneursVanilla.invalider();
                 Presentoirs.invalider();
+                LootBeta.invalider();
             }
         });
         bus.addListener((ModConfigEvent.Reloading e) -> {
@@ -52,6 +53,7 @@ public final class LootServeur {
                 ZonesLoot.invalider();
                 ConteneursVanilla.invalider();
                 Presentoirs.invalider();
+                LootBeta.invalider();
             }
         });
         MinecraftForge.EVENT_BUS.addListener((AddReloadListenerEvent e) -> {

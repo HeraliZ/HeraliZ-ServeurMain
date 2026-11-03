@@ -28,6 +28,11 @@ public final class ConfigLoot {
     /** Autres façons d'abîmer la carte : seaux, feu, outils, engrais, panneaux (src/serveur : Nuisances). */
     public static final ForgeConfigSpec.BooleanValue NUIS_ACTIF, NUIS_SEAUX, NUIS_FEU, NUIS_OUTILS, NUIS_ENGRAIS, NUIS_PANNEAUX,
             NUIS_CLAIMS;
+    /** Loot plus généreux pendant la bêta (03/11, src/serveur : LootBeta). */
+    public static final ForgeConfigSpec.BooleanValue BETA_ACTIF;
+    public static final ForgeConfigSpec.DoubleValue BETA_QUANTITE, BETA_HAUTES, BETA_PEU_COMMUN;
+    public static final ForgeConfigSpec.IntValue BETA_OBJETS_MAX;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BETA_EXCLUS;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -63,6 +68,25 @@ public final class ConfigLoot {
         b.comment("Quantités des conteneurs (02/11 : avant écrites dans le code).").push("quantites");
         BALLES_MAX = b.comment("Balles (munitions TaCZ) au plus par case, bonus de loot compris (22/10 : 15 ; 26/10 : 40).")
                 .defineInRange("balles_max", 40, 1, 999);
+        b.pop();
+        b.comment("Loot de la bêta (03/11, demande du propriétaire : « tout un peu plus simple à avoir ») : appliqué au moment du",
+                "tirage, sans réécrire les tables. Conteneurs T1 à T7, familles (soins, nourriture, munitions), salles à carte,",
+                "coffres T7 (hélicoptère, points T7) et zombies. Chiffres avant / après : python outils/loot_beta.py ; en jeu :",
+                "/heralizloot beta. Pour la fin de la bêta : actif = false.").push("beta");
+        BETA_ACTIF = b.comment("Loot de la bêta en marche.").define("actif", true);
+        BETA_QUANTITE = b.comment("Objets par conteneur et par zombie multipliés par ce nombre (arrondi au hasard : 1.5 x 3 = 4 ou 5).")
+                .defineInRange("quantite", 1.5, 1.0, 3.0);
+        BETA_HAUTES = b.comment("Chances des objets Rare, Épique et Légendaire multipliées par ce nombre (la place est prise sur les",
+                        "objets ordinaires ; jamais les Uniques). Une rareté ne passe jamais devant celle d'en dessous.")
+                .defineInRange("chances_raretes_hautes", 1.5, 1.0, 3.0);
+        BETA_PEU_COMMUN = b.comment("Chances des objets Peu commun multipliées par ce nombre (1 : inchangées).")
+                .defineInRange("chances_peu_commun", 1.0, 1.0, 3.0);
+        BETA_OBJETS_MAX = b.comment("Objets au plus dans un conteneur avec la quantité en plus (27 cases), sauf si sa table en donnait",
+                "déjà plus : les conteneurs ne deviennent jamais pleins.").defineInRange("objets_max", 20, 1, 27);
+        BETA_EXCLUS = b.comment("Objets qui gardent leurs chances d'aujourd'hui (en plus des Uniques et des objets à vie) : identifiant",
+                        "d'objet, d'arme, d'accessoire, de munition ou de soin ; « * » à la fin = tout ce qui commence ainsi.",
+                        "heralisz_skins:* : les couteaux (coffres T7).")
+                .defineListAllowEmpty(List.of("exclus"), () -> List.of("heralisz_skins:*"), ConfigLoot::idValide);
         b.pop();
         b.comment("Conteneurs de Minecraft (coffre, baril, four, alambic, entonnoir...) : un joueur en survie ou en aventure ne",
                 "peut pas les ouvrir (« Ce conteneur est vide et scellé. »). Créatif, spectateur et staff (permission 2) : libres.",
@@ -197,6 +221,30 @@ public final class ConfigLoot {
 
     static int ballesMax() {
         return SPEC.isLoaded() ? BALLES_MAX.get() : 40;
+    }
+
+    static boolean betaActif() {
+        return SPEC.isLoaded() && BETA_ACTIF.get();
+    }
+
+    static double betaQuantite() {
+        return SPEC.isLoaded() ? BETA_QUANTITE.get() : 1.0;
+    }
+
+    static double betaHautes() {
+        return SPEC.isLoaded() ? BETA_HAUTES.get() : 1.0;
+    }
+
+    static double betaPeuCommun() {
+        return SPEC.isLoaded() ? BETA_PEU_COMMUN.get() : 1.0;
+    }
+
+    static int betaObjetsMax() {
+        return SPEC.isLoaded() ? BETA_OBJETS_MAX.get() : 20;
+    }
+
+    static List<? extends String> betaExclus() {
+        return SPEC.isLoaded() ? BETA_EXCLUS.get() : List.of("heralisz_skins:*");
     }
 
     static int etoilesParSeconde() {

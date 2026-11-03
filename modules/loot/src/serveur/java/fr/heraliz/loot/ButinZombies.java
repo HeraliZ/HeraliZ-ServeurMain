@@ -233,8 +233,11 @@ public final class ButinZombies {
         List<ItemStack> sortis = new ArrayList<>();
         TablesCoffres.Table t = TablesCoffres.table(table(r, tenue));
         if (t != null) {
-            ItemStack st = TablesCoffres.tirer(t, rnd);
-            if (!st.isEmpty()) sortis.add(st);
+            // un tirage par zombie ; avec le loot de la bêta (03/11), parfois deux (quantité 1,5 : un zombie sur deux)
+            for (int k = LootBeta.nombre(1, rnd); k > 0; k--) {
+                ItemStack st = TablesCoffres.tirer(t, rnd);
+                if (!st.isEmpty()) sortis.add(st);
+            }
         }
         // fragments : tirés à part, à chance pleine (la baisse de l'anti-farm est déjà passée au-dessus)
         String jour = LocalDate.now(PARIS).toString();
@@ -243,9 +246,10 @@ public final class ButinZombies {
             j.fragmentsJour = 0;
         }
         for (int i = 0; i < 3; i++) {
-            if (r.fragments()[i] <= 0 || j.fragmentsJour >= r.fragmentsMaxJour() || rnd.nextDouble() >= r.fragments()[i]) continue;
+            if (r.fragments()[i] <= 0 || j.fragmentsJour >= r.fragmentsMaxJour()) continue;
             Item it = fragment(i, 1 + rnd.nextInt(4));
-            if (it == null) continue;
+            // loot de la bêta (03/11) : chance x le multiplicateur de la rareté du fragment (plafond du jour inchangé)
+            if (it == null || rnd.nextDouble() >= chanceFragment(r, i, it)) continue;
             j.fragmentsJour++;
             fragments++;
             sortis.add(new ItemStack(it));
@@ -313,6 +317,12 @@ public final class ButinZombies {
     }
 
     @Nullable
+    /** Chance d'un fragment de cette couleur par zombie, avec le loot de la bêta ({@link LootBeta#chance}). */
+    private static double chanceFragment(Regles r, int couleur, @Nullable Item it) {
+        double c = r.fragments()[couleur];
+        return it != null && LootBeta.actif() ? LootBeta.chance(c, new ItemStack(it)) : c;
+    }
+
     private static Item fragment(int couleur, int numero) {
         ResourceLocation rl = new ResourceLocation("heralisz_bunker", "keycard_fragment_" + COULEURS[couleur] + "_" + numero);
         return ForgeRegistries.ITEMS.containsKey(rl) ? ForgeRegistries.ITEMS.getValue(rl) : null;
@@ -471,18 +481,26 @@ public final class ButinZombies {
         Map<String, Long> comptes = new HashMap<>();
         long rien = 0;
         long[] frag = new long[3];
+        // chances du jeu, loot de la bêta compris (03/11) : tirages par zombie et chances des fragments
+        double[] chances = new double[3];
+        for (int k = 0; k < 3; k++) chances[k] = chanceFragment(r, k, fragment(k, 1));
         for (int i = 0; i < n; i++) {
-            ItemStack st = TablesCoffres.tirer(t, rnd);
-            if (st.isEmpty()) rien++;
-            else comptes.merge(String.valueOf(ForgeRegistries.ITEMS.getKey(st.getItem())), 1L, Long::sum);
-            for (int k = 0; k < 3; k++) if (rnd.nextDouble() < r.fragments()[k]) frag[k]++;
+            boolean vide = true;
+            for (int k = LootBeta.nombre(1, rnd); k > 0; k--) {
+                ItemStack st = TablesCoffres.tirer(t, rnd);
+                if (st.isEmpty()) continue;
+                vide = false;
+                comptes.merge(String.valueOf(ForgeRegistries.ITEMS.getKey(st.getItem())), 1L, Long::sum);
+            }
+            if (vide) rien++;
+            for (int k = 0; k < 3; k++) if (rnd.nextDouble() < chances[k]) frag[k]++;
         }
         long rienF = rien;
         s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.zombies.simu",
                 "%s zombies (%s) : rien %s %% ; fragments vert %s, bleu %s, rouge %s (attendu %s, %s, %s).", String.valueOf(n), tenue,
                 String.format(java.util.Locale.ROOT, "%.1f", 100.0 * rienF / n), String.valueOf(frag[0]), String.valueOf(frag[1]),
-                String.valueOf(frag[2]), String.format(java.util.Locale.ROOT, "%.1f", n * r.fragments()[0]),
-                String.format(java.util.Locale.ROOT, "%.1f", n * r.fragments()[1]), String.format(java.util.Locale.ROOT, "%.1f", n * r.fragments()[2])), false);
+                String.valueOf(frag[2]), String.format(java.util.Locale.ROOT, "%.1f", n * chances[0]),
+                String.format(java.util.Locale.ROOT, "%.1f", n * chances[1]), String.format(java.util.Locale.ROOT, "%.1f", n * chances[2])), false);
         comptes.entrySet().stream().sorted((a, b) -> Long.compare(b.getValue(), a.getValue())).limit(12).forEach(en ->
                 s.sendSuccess(() -> Component.literal("  " + en.getKey() + " : " + en.getValue()
                         + String.format(java.util.Locale.ROOT, " (%.2f pour 100)", 100.0 * en.getValue() / n)), false));

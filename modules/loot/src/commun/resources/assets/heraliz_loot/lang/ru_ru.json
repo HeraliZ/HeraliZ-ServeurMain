@@ -525,5 +525,8 @@
   "heraliz_loot.zombies.stats": "С запуска (%s ч): засчитано зомби %s, с добычей %s, срезано антифармом %s, фрагментов %s.",
   "heraliz_loot.zombies.joueur": "%s: зомби за час %s, шанс добычи %s %%, фрагментов сегодня %s.",
   "heraliz_loot.zombies.simu": "%s зомби (%s): ничего %s %%; фрагменты зелёные %s, синие %s, красные %s (ожидается %s, %s, %s).",
-  "heraliz_loot.zombies.sans_table": "Таблица добычи зомби не найдена."
+  "heraliz_loot.zombies.sans_table": "Таблица добычи зомби не найдена.",
+  "heraliz_loot.beta.coupe": "Лут беты выключен: обычный лут (настройка [beta] в heraliz_loot-server.toml).",
+  "heraliz_loot.beta.etat": "Лут беты: предметы x%s (не больше %s в контейнере), Редкий / Эпический / Легендарный x%s, Необычный x%s. Уникальные, вечные предметы и исключения без изменений.",
+  "heraliz_loot.beta.table": "%s: Редкий %s → %s %%, Эпический %s → %s %%, Легендарный %s → %s %%"
 }

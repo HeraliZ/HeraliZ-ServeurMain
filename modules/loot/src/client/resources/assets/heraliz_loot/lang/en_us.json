@@ -525,5 +525,8 @@
   "heraliz_loot.zombies.stats": "Since startup (%s h): %s zombies counted, %s with loot, %s cut by anti-farm, %s fragments.",
   "heraliz_loot.zombies.joueur": "%s: %s zombies in the last hour, loot chance %s %%, %s fragment(s) today.",
   "heraliz_loot.zombies.simu": "%s zombies (%s): nothing %s %%; fragments green %s, blue %s, red %s (expected %s, %s, %s).",
-  "heraliz_loot.zombies.sans_table": "Zombie loot table not found."
+  "heraliz_loot.zombies.sans_table": "Zombie loot table not found.",
+  "heraliz_loot.beta.coupe": "Beta loot off: normal loot ([beta] setting in heraliz_loot-server.toml).",
+  "heraliz_loot.beta.etat": "Beta loot: items x%s (at most %s per container), Rare / Epic / Legendary x%s, Uncommon x%s. Uniques, lifetime items and exclusions unchanged.",
+  "heraliz_loot.beta.table": "%s: Rare %s → %s %%, Epic %s → %s %%, Legendary %s → %s %%"
 }

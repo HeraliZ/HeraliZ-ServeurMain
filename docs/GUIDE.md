@@ -25,7 +25,7 @@ spawn ──borne de départ──► carte DayZ ──loot──► sac / inven
 | Étape | Module | Où c'est défini |
 |---|---|---|
 | Spawn, borne de départ, cinématique | `monde` | `fr.heralisz.utils.spawn`, `fr.heralisz.utils.cine` ; réglages `defaultconfigs/heraliz_spawn-server.toml` |
-| Loot des conteneurs | `loot` | tables `modules/loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json`…`t7.json` (**écrites par `outils/loot_armes.py`**) ; raretés `serveur/config/heraliz_loot/raretes.json` ; rotation `defaultconfigs/heraliz_loot-server.toml` |
+| Loot des conteneurs | `loot` | tables `modules/loot/src/serveur/resources/data/heraliz_loot/coffres/t1.json`…`t7.json` (**écrites par `outils/loot_armes.py`**) ; raretés `serveur/config/heraliz_loot/raretes.json` ; rotation `defaultconfigs/heraliz_loot-server.toml` ; loot de la bêta (plus d'objets, raretés hautes plus fréquentes, `actif = false` pour l'arrêter) : section `[beta]` du même fichier, chiffres par `outils/loot_beta.py` et `/heralizloot beta` |
 | Zombies | `monde` (bientôt `zombies`) | `fr.heralisz.utils.zombies` ; réglages `heraliz_zombies-server.toml` (serverconfig du monde) |
 | Combat, mort, à terre | `noyau`, `survie`, `armes` | tag de combat `fr.heraliz.noyau` ; à terre `fr.heraliz.reanimation` ; dégâts des armes `serveur/config/heraliz_tactique/armes.json` (**écrit par `outils/equilibrage_armes.py`**) |
 | Cadavres | `monde` | `fr.heraliz.corps` |

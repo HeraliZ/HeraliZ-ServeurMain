@@ -23,3 +23,26 @@
 	#Étoiles envoyées par seconde et par conteneur (28/10 : étoiles d'une seconde environ, 4 pour garder le même éclat).
 	#Range: 1 ~ 8
 	par_seconde = 4
+
+# Loot de la bêta (03/11, demande du propriétaire : « tout un peu plus simple à avoir, sauf le couteau du T7 »). Appliqué
+# au moment du tirage (tables inchangées) : conteneurs T1 à T7, soins / nourriture / munitions, salles à carte, coffres T7
+# (hélicoptère, points T7) et zombies. Relu tout seul quand ce fichier change. Chiffres avant / après :
+# python outils/loot_beta.py (essayer 2 : --quantite 2 --raretes 2) ; en jeu : /heralizloot beta.
+# FIN DE LA BÊTA : actif = false (le loot redevient celui des tables).
+[beta]
+	#Loot de la bêta en marche.
+	actif = true
+	#Objets par conteneur et par zombie multipliés par ce nombre (arrondi au hasard : 1.5 x 3 = 4 ou 5).
+	#Range: 1.0 ~ 3.0
+	quantite = 1.5
+	#Chances des objets Rare, Épique et Légendaire multipliées par ce nombre (la place est prise sur les objets ordinaires ; jamais les Uniques).
+	#Range: 1.0 ~ 3.0
+	chances_raretes_hautes = 1.5
+	#Chances des objets Peu commun multipliées par ce nombre (1 : inchangées).
+	#Range: 1.0 ~ 3.0
+	chances_peu_commun = 1.0
+	#Objets au plus dans un conteneur avec la quantité en plus (27 cases), sauf si sa table en donnait déjà plus.
+	#Range: 1 ~ 27
+	objets_max = 20
+	#Objets qui gardent leurs chances d'aujourd'hui (en plus des Uniques et des objets à vie). heralisz_skins:* : les couteaux.
+	exclus = ["heralisz_skins:*"]

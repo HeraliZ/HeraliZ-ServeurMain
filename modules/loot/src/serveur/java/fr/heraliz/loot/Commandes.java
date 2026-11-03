@@ -46,6 +46,7 @@ final class Commandes {
         });
         d.register(CommandesRotation.ajouter(Commands.literal("heralizloot").requires(s -> s.hasPermission(2)))
                 .then(ButinZombies.commandes())
+                .then(Commands.literal("beta").executes(c -> beta(c.getSource())))
                 .then(Commands.literal("reinitialiser").executes(c -> reinit(c.getSource(), 24))
                         .then(Commands.argument("rayon", IntegerArgumentType.integer(1, 128))
                                 .executes(c -> reinit(c.getSource(), IntegerArgumentType.getInteger(c, "rayon")))))
@@ -85,6 +86,41 @@ final class Commandes {
         } catch (ReflectiveOperationException | LinkageError e) {
             com.mojang.logging.LogUtils.getLogger().warn("[loot] /recharger du noyau introuvable : « {} » ne se relit qu'au redémarrage ({})", nom, e.toString());
         }
+    }
+
+    /**
+     * /heralizloot beta (03/11) : état du loot de la bêta ([beta] de heraliz_loot-server.toml) et, pour les tables des
+     * conteneurs et des zombies, la part des objets Rare, Épique et Légendaire avant / après (vraies tables, vraies raretés).
+     */
+    private static int beta(CommandSourceStack s) {
+        if (!LootBeta.actif()) {
+            s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.beta.coupe",
+                    "Loot de la bêta coupé : loot normal (réglage [beta] de heraliz_loot-server.toml)."), false);
+            return 0;
+        }
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.beta.etat",
+                "Loot de la bêta : objets x%s (au plus %s par conteneur), Rare / Épique / Légendaire x%s, Peu commun x%s. Uniques, objets à vie et exclus inchangés.",
+                deci(ConfigLoot.betaQuantite()), String.valueOf(ConfigLoot.betaObjetsMax()), deci(ConfigLoot.betaHautes()),
+                deci(ConfigLoot.betaPeuCommun())), false);
+        int n = 0;
+        for (String nom : new String[]{"t1", "t2", "t3", "t4", "t5", "t6", "t7", "zombies", "zombies_militaire"}) {
+            TablesCoffres.Table t = TablesCoffres.table(nom);
+            if (t == null) continue;
+            double[] p = LootBeta.parts(t);
+            n++;
+            s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.beta.table",
+                    "%s : Rare %s → %s %%, Épique %s → %s %%, Légendaire %s → %s %%", nom,
+                    pct(p[0]), pct(p[3]), pct(p[1]), pct(p[4]), pct(p[2]), pct(p[5])), false);
+        }
+        return n;
+    }
+
+    private static String deci(double v) {
+        return String.format(java.util.Locale.ROOT, "%.2f", v).replaceAll("0+$", "").replaceAll("\\.$", "");
+    }
+
+    private static String pct(double part) {
+        return String.format(java.util.Locale.ROOT, "%.2f", part * 100);
     }
 
     /** Argument de mode : présence, délais (secondes) facultatifs. */

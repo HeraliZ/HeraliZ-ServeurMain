@@ -525,5 +525,8 @@
   "heraliz_loot.zombies.stats": "Depuis le démarrage (%s h) : %s zombies comptés, %s avec butin, %s coupés par l'anti-farm, %s fragments.",
   "heraliz_loot.zombies.joueur": "%s : %s zombies dans l'heure, chance de butin %s %%, %s fragment(s) aujourd'hui.",
   "heraliz_loot.zombies.simu": "%s zombies (%s) : rien %s %% ; fragments vert %s, bleu %s, rouge %s (attendu %s, %s, %s).",
-  "heraliz_loot.zombies.sans_table": "Table des zombies introuvable."
+  "heraliz_loot.zombies.sans_table": "Table des zombies introuvable.",
+  "heraliz_loot.beta.coupe": "Loot de la bêta coupé : loot normal (réglage [beta] de heraliz_loot-server.toml).",
+  "heraliz_loot.beta.etat": "Loot de la bêta : objets x%s (au plus %s par conteneur), Rare / Épique / Légendaire x%s, Peu commun x%s. Uniques, objets à vie et exclus inchangés.",
+  "heraliz_loot.beta.table": "%s : Rare %s → %s %%, Épique %s → %s %%, Légendaire %s → %s %%"
 }

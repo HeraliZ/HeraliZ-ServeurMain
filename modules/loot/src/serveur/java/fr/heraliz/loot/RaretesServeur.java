@@ -79,6 +79,7 @@ public final class RaretesServeur {
         base = b == null ? Fichier.vide() : b;
         jeu = j == null ? Fichier.vide() : j;
         RaretesObjets.remplacer(fusion());
+        LootBeta.invalider();   // poids du loot de la bêta selon les raretés : à refaire
         return b != null && j != null;
     }
 
@@ -176,6 +177,7 @@ public final class RaretesServeur {
     private static void appliquer() {
         ecrire(dossier().resolve("raretes_jeu.json"), jeu, "Choix faits en jeu avec /rarete (passent avant raretes.json). Ne pas mettre dans le dépôt.");
         RaretesObjets.remplacer(fusion());
+        LootBeta.invalider();   // poids du loot de la bêta selon les raretés : à refaire
         envoyerATous();
     }
 

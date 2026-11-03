@@ -49,8 +49,12 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
      */
     record Entree(Item item, int min, int max, int poids, @Nullable Rarete rarete, String nom, String nbt, double suite) {}
 
-    /** {@code poidsCases} : poids du nombre d'objets (indice = nombre), null : nombre au hasard entre min et max. */
-    record Table(int min, int max, Map<Integer, int[]> niveaux, List<Entree> objets, @Nullable int[] poidsCases) {}
+    /**
+     * {@code poidsCases} : poids du nombre d'objets (indice = nombre), null : nombre au hasard entre min et max.
+     * {@code beta} : poids des objets avec le loot de la bêta, calculés au premier tirage ({@link LootBeta}).
+     */
+    record Table(int min, int max, Map<Integer, int[]> niveaux, List<Entree> objets, @Nullable int[] poidsCases,
+                 LootBeta.Cache beta) {}
 
     /** Table choisie pour un conteneur (id de la table), avec le nombre de cases à remplir. */
     record Choix(String id, Table table, int min, int max) {}
@@ -146,12 +150,13 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
                         if (n >= 1) poids[n] = Math.max(0, c.getValue().getAsInt());
                     }
                 }
-                TABLES.put(id.getPath(), new Table(e.get(0).getAsInt(), e.get(1).getAsInt(), niveaux, l, poids));
+                TABLES.put(id.getPath(), new Table(e.get(0).getAsInt(), e.get(1).getAsInt(), niveaux, l, poids, new LootBeta.Cache()));
             } catch (Exception ex) {
                 HeralizLoot.LOG.error("Table de coffre {} illisible", id, ex);
             }
         });
         HeralizLoot.LOG.info("{} tables de loot{}", TABLES.size(), absents[0] > 0 ? " (" + absents[0] + " objets de mods absents ignorés)" : "");
+        LootBeta.invalider();
         // règles du butin des zombies (config/heraliz_loot/zombies.json), relues avec les tables (26/10)
         ButinZombies.charger();
         return TABLES.size();
@@ -193,9 +198,13 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
 
     /**
      * Nombre d'objets d'un conteneur : tiré avec les poids « cases_poids » de la table s'il y en a (23/10), sinon au
-     * hasard entre min et max.
+     * hasard entre min et max ; puis la quantité du loot de la bêta (03/11, {@link LootBeta#nombre}).
      */
     static int nombre(Table t, int min, int max, RandomSource r) {
+        return LootBeta.nombre(nombreTable(t, min, max, r), r);
+    }
+
+    private static int nombreTable(Table t, int min, int max, RandomSource r) {
         int[] p = t.poidsCases();
         if (p != null) {
             int total = 0;
@@ -290,6 +299,20 @@ public final class TablesCoffres extends SimpleJsonResourceReloadListener {
 
     @Nullable
     private static Entree entree(Table t, RandomSource r) {
+        // loot de la bêta (03/11) : poids recalculés une fois par table (raretés hautes plus fréquentes, LootBeta)
+        LootBeta.Poids p = LootBeta.poids(t);
+        if (p != null) {
+            if (p.total() <= 0) return null;
+            double k = r.nextDouble() * p.total();
+            double[] w = p.poids();
+            for (int i = 0; i < w.length; i++) {
+                k -= w[i];
+                if (k < 0) return t.objets().get(i);
+            }
+            // arrondi des doubles : le dernier objet qui a un poids
+            for (int i = w.length - 1; i >= 0; i--) if (w[i] > 0) return t.objets().get(i);
+            return null;
+        }
         int total = t.objets().stream().mapToInt(Entree::poids).sum();
         if (total <= 0) return null;
         int k = r.nextInt(total);
