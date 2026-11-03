@@ -62,6 +62,8 @@ TEXTES = {
                                              "Здесь без гералов: меняемся. Смотри, что я беру и что отдаю."),
     "heraliz_quetes.dialogue.recycler": ("Recycler des objets", "Recycle items", "Переработать предметы"),
     "heraliz_quetes.dialogue.hdv": ("Ouvrir l'hôtel des ventes", "Open the auction house", "Открыть аукцион"),
+    # nom d'objet suivi d'un complément (Texte.SUITE, vrais noms des objets, 03/11)
+    "heraliz_quetes.texte.suite": ("%s%s", "%s%s", "%s%s"),
     "heraliz_quetes.recycleur.titre": ("Recycleur", "Recycler", "Переработчик"),
     "heraliz_quetes.recycleur.ferme": ("Le recycleur est fermé pour l'instant.", "The recycler is closed for now.", "Переработка пока закрыта."),
     "heraliz_quetes.recycleur.resultat": ("Recyclé : %s objet(s) → %s composant(s) et %s hérals", "Recycled: %s item(s) → %s component(s) and %s herals",
