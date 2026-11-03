@@ -5,6 +5,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import fr.heraliz.crac.Crac;
+import fr.heraliz.crac.build.model.Piece;
+import fr.heraliz.crac.build.world.StructureService;
+import fr.heraliz.crac.build.world.StructureStore;
 import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.claim.ClaimData;
 import fr.heraliz.crac.claim.ClaimManager;
@@ -27,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
  * {@code [home] immobile_s} secondes sans bouger. Le staff (permission 2) part de partout, sans délai.
  * <p>HeraliZ (03/11, demande du propriétaire) : plus aucun home créé tout seul à la pose de l'armoire (il pouvait tomber
  * dehors, derrière des coffres). Un membre qui a le droit « Gérer la base » pose le home de la base lui-même, dedans, à
- * un endroit sûr, avec {@link #COMMANDE_POSER} ; {@code /home} et la réapparition à la base y mènent ({@link TeleportBase}).
+ * un endroit sûr, debout sur une fondation de la base, avec {@link #COMMANDE_POSER} ; {@code /home} et la réapparition à la base y mènent ({@link TeleportBase}).
  * Une base posée avant garde son home créé tout seul, devant l'armoire, tant qu'on n'en pose pas un.
  * <p>Avant le 25/10 : homes posés par {@code /home poser} (gardés dans {@code data/crac_bases.dat}, plus lus).
  */
@@ -115,7 +118,7 @@ public final class Homes {
                 : T.t("crac.home.arrive", "Bienvenue chez toi : te voici devant l'armoire de ta base.")).withStyle(ChatFormatting.GREEN));
         } else if (r < 0 && pose) {
             T.chat(p, T.t("crac.home.obstrue_home",
-                "Le home « %s » de ta base est bouché ou n'est plus sûr : dégage-le, ou pose-en un autre avec %s <nom>.", c.homeNom(),
+                "Le home « %s » de ta base est bouché, n'est plus sûr ou sa fondation a disparu : dégage-le, ou pose-en un autre avec %s <nom>.", c.homeNom(),
                 commande()), ChatFormatting.RED);
         } else if (r < 0) {
             T.chat(p, T.t("crac.home.obstrue_tc", "La place devant l'armoire de ta base est bouchée : dégage-la (ou préviens ton clan)."),
@@ -161,6 +164,14 @@ public final class Homes {
                 ChatFormatting.RED);
             return 0;
         }
+        // 03/11 (choix du propriétaire) : seulement debout sur une fondation de la base, jamais sur le sol, un plancher, un
+        // toit ou un autre bloc
+        if (!surFondation(l, c, pieds)) {
+            T.chat(p, T.t("crac.sethome.fondation",
+                "Le home se pose seulement debout sur une fondation de ta base (pas sur le sol, un plancher, un toit ou un autre bloc)."),
+                ChatFormatting.RED);
+            return 0;
+        }
         if (!p.onGround() || p.isPassenger() || p.isFallFlying() || p.isSwimming() || !Points.homeSur(l, p, pieds)) {
             T.chat(p, T.t("crac.sethome.pas_sur", "Endroit pas sûr pour le home : tiens-toi debout sur un sol, sans bloc ni liquide autour de toi."),
                 ChatFormatting.RED);
@@ -186,6 +197,24 @@ public final class Homes {
             }
         }
         return 1;
+    }
+
+    /**
+     * HeraliZ (03/11, choix du propriétaire) : les pieds {@code pieds} reposent sur une fondation (pièce de construction de
+     * CRac de type fondation) du bâtiment de l'armoire de la base {@code c} : le bloc juste sous les pieds en contient une.
+     * Revu aussi au départ de /home et de la réapparition : fondation démolie ou détruite = home refusé.
+     */
+    static boolean surFondation(ServerLevel l, Claim c, Vec3 pieds) {
+        BlockPos dessous = BlockPos.containing(pieds.x, pieds.y - 0.01, pieds.z);
+        if (!l.isLoaded(dessous)) {
+            return false;
+        }
+        for (Piece piece : StructureStore.get(l).index.occupants(dessous)) {
+            if (piece.kind().isFoundation() && StructureService.claimOf(l, StructureService.buildingOf(l, piece)) == c) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Nom d'un home : sans codes de couleur ni caractères de contrôle, {@value #NOM_MAX} caractères au plus. */
@@ -214,7 +243,7 @@ public final class Homes {
             return;
         }
         T.chat(p, T.t("crac.claim.poser_home",
-            "Choisis maintenant le home de ta base : mets-toi dedans, à un endroit sûr, et tape %s <nom>. Sans home, ni /home ni réapparition à la base.",
+            "Choisis maintenant le home de ta base : mets-toi dedans, debout sur une fondation, et tape %s <nom>. Sans home, ni /home ni réapparition à la base.",
             commande()), ChatFormatting.GOLD);
     }
 }

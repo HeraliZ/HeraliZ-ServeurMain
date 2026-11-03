@@ -154,7 +154,7 @@ public final class TeleportBase {
             case SANS_BASE -> T.t("crac.tpbase.sans_base", "Ton clan n'a pas de base (armoire à outils posée sur la carte).");
             case SANS_DROIT -> T.t("crac.tpbase.sans_droit", "Ton clan ne t'a pas donné le droit « Se téléporter à la base ».");
             case SANS_HOME -> T.t("crac.tpbase.sans_home",
-                "Ta base n'a pas encore de home : un membre qui gère la base doit le poser dedans, à un endroit sûr, avec %s <nom>.",
+                "Ta base n'a pas encore de home : un membre qui gère la base doit le poser dedans, debout sur une fondation, avec %s <nom>.",
                 Homes.commande());
             case ATTENTE -> T.t("crac.tpbase.attendre", "Prochaine téléportation vers ta base dans %s (/home et réapparition partagent ce délai).",
                 T.duree(resteMs(p) + 999));
@@ -177,7 +177,7 @@ public final class TeleportBase {
                     l.getChunk(cx, cz);
                 }
             }
-            return c.contains(h) && Points.homeSur(l, p, home) ? new Arrivee(home, c.homeLacet()) : null;
+            return c.contains(h) && Homes.surFondation(l, c, home) && Points.homeSur(l, p, home) ? new Arrivee(home, c.homeLacet()) : null;
         }
         BlockPos tc = c.anchor();
         // tronçons de l'armoire ET de sa place devant / autour (4 blocs) : une armoire au bord d'un tronçon avait sa

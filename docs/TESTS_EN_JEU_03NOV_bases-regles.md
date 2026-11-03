@@ -1,6 +1,6 @@
 # Essais en jeu — chantier « bases-regles » (retours du propriétaire du 02/11 au soir)
 
-Bases (CRac) **1.31.0-beta**. Rien n'a été testé en jeu ni fabriqué : Gradle est bloqué sur cette machine
+Bases (CRac) **1.31.0-beta**, puis **1.31.1-beta** (suite du 03/11 : home seulement sur une fondation). Rien n'a été testé en jeu ni fabriqué : Gradle est bloqué sur cette machine
 (maven.minecraftforge.net inaccessible). Tous les fichiers Java touchés passent la lecture de javac (syntaxe seulement,
 sans Minecraft) ; la pente de l'usure (`PenteUsure`, Java pur) a été compilée et essayée hors du jeu (13 h pour une pièce
 intacte, 7 h jusqu'à 30 %). La compilation complète et `verif_split` se feront au contrôle de branche de GitHub.
@@ -25,7 +25,8 @@ pas (protocole 31). Fichiers de réglages livrés : `crac-server.toml` (section 
 - Nom de la commande à un seul endroit : `Homes.COMMANDE_POSER` (`modules/bases/src/serveur/.../bases/Homes.java`) ; les
   textes le reçoivent en `%s`. Changer le nom = cette ligne + `commandes_permises` de `heraliz_noyau-server.toml`.
 - Règles : seulement dans la zone de l'armoire de la base de son clan (carte), droit de clan « Gérer la base » (le chef
-  l'a ; le staff aussi), debout sur un sol, aucun bloc ni liquide dans le corps, jamais au-dessus du vide ; hors combat,
+  l'a ; le staff aussi), **debout sur une fondation de la base** (1.31.1, choix du propriétaire : jamais sur le sol, un
+  plancher, un toit ou un autre bloc ; revu au départ de /home et de la réapparition : fondation démolie = refus), aucun bloc ni liquide dans le corps, jamais au-dessus du vide ; hors combat,
   à terre, match et tutoriel. Un seul home par base : le nouveau remplace l'ancien. Sans nom : le nom du clan. Les autres
   membres connectés sont prévenus. Le home est gardé avec le claim (`crac_claims.dat`) : armoire cassée ou déplacée au
   marteau = plus de home (il faut le reposer).
@@ -54,11 +55,14 @@ pas (protocole 31). Fichiers de réglages livrés : `crac-server.toml` (section 
 2. **/sethome** dans la base, debout sur une fondation : « Home « … » posé ici » ; un autre membre connecté reçoit le
    message gris. Du spawn, `/home` (attendre les 3 s) : arrivée exactement à cet endroit, regard dans le même sens,
    « Bienvenue chez toi : te voici au home « … » de ta base. » Mourir et choisir « À la base » : même endroit.
-3. **/sethome refusé** : hors de la zone de l'armoire ; sur la carte hors de toute base ; en sautant / en l'air ; dans
+3. **/sethome refusé** (1.31.1) : debout sur le sol de la zone, sur un plancher, un toit, un escalier, une caisse ou un
+   bloc posé : « Le home se pose seulement debout sur une fondation de ta base… » ; sur une fondation d'un bout de base
+   coupé de l'armoire : refusé aussi. Ailleurs : hors de la zone de l'armoire ; sur la carte hors de toute base ; en sautant / en l'air ; dans
    l'eau ; sous un plafond trop bas ; par un membre sans le droit « Gérer la base » ; en combat ; pendant le tutoriel.
    Chaque fois un message rouge clair, rien n'est changé.
 4. **Home bouché** : poser une caisse à l'endroit du home, `/home` : « Le home « … » de ta base est bouché… », pas de
-   téléportation, délai pas compté. Retirer la caisse : `/home` marche.
+   téléportation, délai pas compté. Retirer la caisse : `/home` marche. Démolir la fondation sous le home : `/home` refusé
+   (« … ou sa fondation a disparu »).
 5. **Base d'avant** (posée avant la mise à jour) : `/home` va devant l'armoire comme avant ; après un `/sethome`, va au
    nouveau home.
 6. **/sethome sur la carte** : la commande n'est pas refusée par le noyau (« seulement au spawn »).
