@@ -17,7 +17,8 @@ import java.util.List;
 /**
  * Niveau du clan (maquette validee du 21/10, arbre de la saison des clans du 22/10) : a gauche « Prochain niveau » et
  * « Gagner de l'XP » ; a droite l'arbre d'ameliorations (une ligne par branche : palier, effet actuel et suivant, cout en
- * points et en herals, bouton Ameliorer pour le chef) et, en bas, les points et places de la saison. Chiffres :
+ * points et en herals, bouton Ameliorer pour le chef ; en tete, 03/11, la ligne Membres : places donnees par le niveau du
+ * clan, chaque palier debloque ou bloque « au niveau X », rien a payer) et, en bas, les points et places de la saison. Chiffres :
  * {@link Arbre} (les memes que le serveur, qui verifie tout). Le prochain niveau est en gras 17 a sa vraie taille
  * ({@link Ui#GROS}), pose sur un point de l'ecran (regle du 23/10 : jamais de texte agrandi).
  */
@@ -32,7 +33,8 @@ public final class NiveauTab extends Tab {
         Arbre.Branche[] br = Arbre.Branche.values();
         for (int i = 0; i < br.length; i++) {
             Arbre.Branche b = br[i];
-            HzButton bt = new HzButton(tx + tw - 74, y + 30 + i * RANG, 64, 14, Component.translatable("gui.arbre.ameliorer"), accent,
+            // rang i + 1 : la ligne Membres (sans bouton) est en tete (03/11)
+            HzButton bt = new HzButton(tx + tw - 74, y + 30 + (i + 1) * RANG, 64, 14, Component.translatable("gui.arbre.ameliorer"), accent,
                     () -> envoyer(new Packets.AmeliorerC2S(b.id()))).look(HzButton.Look.LINK);
             ecran.ajouter(bt);
             boutons.add(bt);
@@ -105,6 +107,8 @@ public final class NiveauTab extends Tab {
             ly += LIGNE;
         }
         arbre(g);
+        int tx = x + GAUCHE + 8, tw = w - GAUCHE - 8;
+        if (dans(mouseX, mouseY, tx + 5, y + 24, tw - 10, RANG - 2)) ecran.infobulle(infobulleMembres());
     }
 
     /** Lignes de l'onglet « Gagner de l'XP », dans l'ordre d'affichage. */
@@ -139,10 +143,12 @@ public final class NiveauTab extends Tab {
         Arbre.Branche[] br = Arbre.Branche.values();
         // ligne 1 : nom puis effet (actuel → suivant) ; ligne 2 : pastilles du palier puis cout ; tout s'arrete avant le bouton
         int fin = tx + tw - 80, cx = tx + 44;
+        membres(g, tx, tw, fin, cx, y + 26);
         for (int i = 0; i < br.length; i++) {
             Arbre.Branche b = br[i];
-            int p = palier(a, i), ry = y + 26 + i * RANG;
-            if (i % 2 == 0) Ui.soft(g, tx + 5, ry - 2, tw - 10, RANG - 2, Ui.argb(0xFFFFFF, 6));
+            // rang i + 1 : la ligne Membres est en tete (03/11)
+            int p = palier(a, i), ry = y + 26 + (i + 1) * RANG;
+            if ((i + 1) % 2 == 0) Ui.soft(g, tx + 5, ry - 2, tw - 10, RANG - 2, Ui.argb(0xFFFFFF, 6));
             Component nom = Ui.lit(Ui.ellipsis(font, tr("arbre." + b.id()), Ui.BOLD, fin - tx - 10), Ui.BOLD);
             g.drawString(font, nom, tx + 10, ry, Ui.argb(Ui.TEXT, 255), false);
             // pastilles du palier
@@ -167,7 +173,7 @@ public final class NiveauTab extends Tab {
             }
         }
         // saison
-        int sy = y + 30 + br.length * RANG;
+        int sy = y + 30 + (br.length + 1) * RANG;
         Ui.hairline(g, tx + 8, tx + tw - 8, sy - 4, 0xFFFFFF, 30, true, true);
         if (a == null || !a.saison()) {
             g.drawString(font, Ui.tr(Ui.SMALL, "gui.saison.aucune"), tx + 10, sy + 2, Ui.argb(Ui.FAINT, 255), false);
@@ -180,6 +186,57 @@ public final class NiveauTab extends Tab {
             g.drawString(font, Ui.lit(Ui.ellipsis(font, l1, Ui.SMALL, tw - 20), Ui.SMALL), tx + 10, sy + 2, Ui.argb(Ui.TEXT, 230), false);
             g.drawString(font, Ui.tr(Ui.BOLD, "gui.saison.general", place(r, 3)), tx + 10, sy + 13, Ui.argb(Ui.OR, 255), false);
         }
+    }
+
+    /**
+     * Ligne « Membres » de l'arbre (03/11, retour du propriétaire : « je ne vois pas l'amelioration pour augmenter le nombre
+     * max de membres ; il faut l'afficher et juste la bloquer avant le niveau X ») : les places viennent du niveau du clan
+     * depuis le 31/10 ({@link Arbre#membresMax}, rien a acheter, regle inchangee). Meme dessin qu'une branche : nom et
+     * effet (places actuelles → suivantes), une pastille par palier (doree si atteint), puis chaque palier « 5 (niv. 2) »,
+     * dore s'il est debloque, gris sinon ; a la place du bouton, « Au niveau X » (prochain palier) ou « Tout debloque ».
+     * Chiffres envoyes par le serveur (section membres de niveaux.json).
+     */
+    private void membres(GuiGraphics g, int tx, int tw, int fin, int cx, int ry) {
+        int n = s.niveau();
+        int[] paliers = Arbre.niveauxMembres();
+        int max = Arbre.membresMax(n), prochain = Arbre.prochainNiveauMembres(n);
+        Ui.soft(g, tx + 5, ry - 2, tw - 10, RANG - 2, Ui.argb(0xFFFFFF, 6));
+        Component nom = Ui.lit(Ui.ellipsis(font, tr("arbre.membres"), Ui.BOLD, fin - tx - 10), Ui.BOLD);
+        g.drawString(font, nom, tx + 10, ry, Ui.argb(Ui.TEXT, 255), false);
+        for (int k = 0; k < paliers.length; k++) Ui.point(g, tx + 12 + k * 6, ry + 14, n >= paliers[k] ? Ui.OR : Ui.FAINT, 255);
+        String effet = tr("arbre.effet.membres", max);
+        if (prochain > 0) effet += "  →  " + tr("arbre.effet.membres", max + 1);
+        int ex = tx + 10 + font.width(nom) + 8;
+        if (fin - ex > 12) {
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, effet, Ui.SMALL, fin - ex), Ui.SMALL), ex, ry + 1, Ui.argb(Ui.MUTED, 255), false);
+        }
+        // chaque palier : places et niveau du clan qui les donne
+        int px = cx;
+        for (int k = 0; k < paliers.length; k++) {
+            Component t = Ui.lit(tr("gui.arbre.membres.palier", Arbre.membresDepart() + k + 1, paliers[k]), Ui.SMALL);
+            int pw = font.width(t);
+            if (px + pw > fin) break;
+            g.drawString(font, t, px, ry + 11, Ui.argb(n >= paliers[k] ? Ui.OR : Ui.FAINT, 255), false);
+            px += pw + 8;
+        }
+        // a la place du bouton Ameliorer : rien a acheter, seulement le niveau qui debloque la place suivante
+        Component droite = Ui.lit(prochain > 0 ? tr("gui.arbre.membres.bloque", prochain) : tr("gui.arbre.membres.toutes"), Ui.SMALL);
+        Ui.right(g, font, droite, tx + tw - 12, ry + 7, Ui.argb(prochain > 0 ? Ui.AMBRE : Ui.OK, 255));
+    }
+
+    /** Infobulle de la ligne Membres : rien a payer, places au depart, puis chaque palier debloque ou bloque. */
+    private List<Component> infobulleMembres() {
+        int n = s.niveau();
+        int[] paliers = Arbre.niveauxMembres();
+        List<Component> l = new ArrayList<>(paliers.length + 2);
+        l.add(Component.translatable("arbre.membres"));
+        l.add(Component.translatable("gui.arbre.membres.aide"));
+        l.add(Component.translatable("gui.arbre.membres.depart", Arbre.membresDepart()));
+        for (int k = 0; k < paliers.length; k++) {
+            l.add(Component.translatable(n >= paliers[k] ? "gui.arbre.membres.debloque" : "gui.arbre.membres.verrou",
+                    Arbre.membresDepart() + k + 1, paliers[k]));
+        }
+        return l;
     }
 
     private static String place(int[] r, int i) {
