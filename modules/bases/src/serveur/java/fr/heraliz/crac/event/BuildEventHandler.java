@@ -155,6 +155,17 @@ public class BuildEventHandler {
         }
     }
 
+    /**
+     * Ce qui se pose dans une base : les objets posés (placables, avec leurs PV) et, HeraliZ (03/11, retour du propriétaire :
+     * « ici seuls les blocs placables se placent » en posant le cœur de clan), le cœur de clan. Lui n'a pas de PV (il ne
+     * s'abîme pas, il se prend pendant la Purge) : il n'est pas un placable, et la règle des placables le refusait dans toute
+     * base, donc partout où il doit aller. Ses propres règles (base de son clan, droit « Gérer la base », un par clan) sont
+     * dans {@code CoeursClans.poser} ; il suit en plus celles d'un objet posé (sol sous sa forme, aucune pièce touchée).
+     */
+    private static boolean posableEnBase(ServerLevel sl, Block block) {
+        return PlacableSet.contains(sl, block) || block instanceof fr.heraliz.crac.block.CoeurClanBlock;
+    }
+
     /** Why the player may not place {@code state} over these cells, or null. */
     @Nullable
     private static String placeProblem(ServerLevel sl, ServerPlayer player, BlockState state, List<BlockPos> cells) {
@@ -179,7 +190,7 @@ public class BuildEventHandler {
             // a raider's ladder, scaffolding, vine or trapdoor in a base under raid block
             return null;
         }
-        boolean placable = PlacableSet.contains(sl, state.getBlock());
+        boolean placable = posableEnBase(sl, state.getBlock());
         if (!placable && !Config.allowBreakInClaim.get()) {
             return "crac.claim.only_placables";
         }
@@ -263,7 +274,7 @@ public class BuildEventHandler {
                     if (placesSomething(item)) {
                         if (!(item instanceof BlockItem bi && isSystemBlock(bi.getBlock().defaultBlockState()))) {
                             BlockPos placePos = event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace());
-                            boolean placable = item instanceof BlockItem bi2 && PlacableSet.contains(sl, bi2.getBlock());
+                            boolean placable = item instanceof BlockItem bi2 && posableEnBase(sl, bi2.getBlock());
                             String deny = useProblem(sl, player, event.getPos(), placePos, placable);
                             if (deny != null && item instanceof BlockItem aid && raidAccessClick(sl, player, aid.getBlock().defaultBlockState(), event.getPos(), placePos)) {
                                 // a raider's climbing or crawling aid: the place event checks the block it really sets
