@@ -161,6 +161,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.DoubleValue TIRS_COUP_SEC_DEGRES;
     public static final ForgeConfigSpec.IntValue TIRS_COUPS_SECS_MAX;
     public static final ForgeConfigSpec.IntValue TIRS_REFUS_CADENCE;
+    public static final ForgeConfigSpec.DoubleValue TIRS_REFUS_PART;
     public static final ForgeConfigSpec.IntValue TIRS_REFUS_HORLOGE;
     public static final ForgeConfigSpec.IntValue TIRS_REFUS_SECONDES;
     public static final ForgeConfigSpec.BooleanValue TIRS_JOURNAL;
@@ -532,6 +533,9 @@ public class SpartanConfig {
                 .defineInRange("snapHeadshots", 8, 2, 500);
         TIRS_REFUS_CADENCE = b.comment("Tirs refusés par TaCZ pour cadence trop rapide (COOL_DOWN) dans la fenêtre : alerte.")
                 .defineInRange("cooldownRefusals", 15, 3, 1000);
+        TIRS_REFUS_PART = b.comment("Tirs refusés pour cadence : part minimale des tirs de la fenêtre (refusés / refusés + acceptés)",
+                        "pour l'alerte. Un « rapid fire » se fait refuser un tir sur deux ou plus ; un joueur honnête presque jamais.")
+                .defineInRange("cooldownRatio", 0.2, 0.0, 1.0);
         TIRS_REFUS_HORLOGE = b.comment("Tirs refusés par TaCZ pour horloge des tirs incohérente (NETWORK_FAIL, aussi en cas",
                         "de gros lag) dans la fenêtre : alerte.")
                 .defineInRange("networkRefusals", 40, 5, 1000);

@@ -510,6 +510,10 @@
 	#Tirs refusés par TaCZ pour cadence trop rapide (COOL_DOWN) dans la fenêtre : alerte.
 	#Range: 3 ~ 1000
 	cooldownRefusals = 15
+	#Tirs refusés pour cadence : part minimale des tirs de la fenêtre (refusés / refusés + acceptés)
+	#pour l'alerte. Un « rapid fire » se fait refuser un tir sur deux ou plus ; un joueur honnête presque jamais.
+	#Range: 0.0 ~ 1.0
+	cooldownRatio = 0.2
 	#Tirs refusés par TaCZ pour horloge des tirs incohérente (NETWORK_FAIL, aussi en cas
 	#de gros lag) dans la fenêtre : alerte.
 	#Range: 5 ~ 1000

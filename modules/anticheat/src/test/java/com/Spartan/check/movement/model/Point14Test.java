@@ -131,13 +131,49 @@ class Point14Test {
         assertEquals(20, s.coupsSecs());
         s.oublierTouches();
         assertEquals(0, s.touches());
-        // refus de TaCZ : comptés sur une fenêtre de temps
+        // refus de TaCZ : comptés sur une fenêtre de temps, cadence et horloge à part (03/11)
         int n = 0;
         for (int k = 0; k < 20; k++) {
-            n = s.refus(1000 + k * 100L, 10_000);
+            n = s.refus(true, 1000 + k * 100L, 10_000);
         }
         assertEquals(20, n);
-        assertEquals(1, s.refus(60_000, 10_000), "les anciens refus sortent de la fenêtre");
+        assertEquals(1, s.refus(false, 3000, 10_000), "les refus d'horloge ne comptent pas dans la cadence");
+        assertEquals(1, s.refus(true, 60_000, 10_000), "les anciens refus sortent de la fenêtre");
+        s.oublierRefus(true);
+        assertEquals(1, s.refus(true, 60_100, 10_000), "après une alerte, la cadence repart de zéro");
+        assertEquals(1, s.refus(false, 60_100, 10_000), "les refus d'horloge de 3 s sont sortis de la fenêtre");
         assertTrue(s.resume().contains("70 touche(s)"), s.resume());
+    }
+
+    @Test
+    void partDesTirsRefusesPourCadence() {
+        // minigun d'un joueur honnête : 20 tirs acceptés par seconde pendant 10 s, quelques refus
+        StatsTirs honnete = new StatsTirs(40);
+        for (int k = 0; k < 200; k++) {
+            honnete.tir(100_000 + k * 50L);
+        }
+        assertEquals(200, honnete.tirsRecents(109_999, 10_000));
+        assertEquals(0, honnete.tirsRecents(200_000, 10_000), "les anciens tirs sortent de la fenêtre");
+        int n = 0;
+        for (int k = 0; k < 15; k++) {
+            n = honnete.refus(true, 105_000 + k * 300L, 10_000);
+        }
+        double part = (double) n / (n + honnete.tirsRecents(109_500, 10_000));
+        assertEquals(15, n);
+        assertTrue(part < 0.2, "15 refus sur 215 tirs : pas d'alerte (" + part + ")");
+        // « rapid fire » : deux fois la cadence d'un fusil à 600 coups/min, un tir sur deux refusé
+        StatsTirs triche = new StatsTirs(40);
+        n = 0;
+        for (int k = 0; k < 40; k++) {
+            long t = 300_000 + k * 50L;
+            if (k % 2 == 0) {
+                triche.tir(t);
+            } else {
+                n = triche.refus(true, t, 10_000);
+            }
+        }
+        part = (double) n / (n + triche.tirsRecents(302_000, 10_000));
+        assertEquals(20, n);
+        assertTrue(part >= 0.2, "un tir sur deux refusé : alerte (" + part + ")");
     }
 }

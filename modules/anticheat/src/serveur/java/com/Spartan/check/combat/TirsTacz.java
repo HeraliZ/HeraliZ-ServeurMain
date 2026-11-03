@@ -33,7 +33,11 @@ import net.minecraftforge.fml.ModList;
  *   <li>taux de tirs à la tête anormal sur les dernières touches de JOUEURS à distance (aimbot) ;</li>
  *   <li>tirs à la tête juste après un grand mouvement de visée en moins de 100 ms (« coup sec » d'un aimbot) ; ignoré en
  *   véhicule, en train et juste après une téléportation (la visée y tourne sans le joueur) ;</li>
- *   <li>tirs refusés par TaCZ lui-même (cadence de l'arme dépassée, horloge des tirs trafiquée : « rapid fire »).</li>
+ *   <li>tirs refusés par TaCZ lui-même (cadence de l'arme dépassée, horloge des tirs trafiquée : « rapid fire »). 03/11
+ *   (« 15 tirs refusés par TaCZ » au minigun, joueur honnête) : la vraie cause était un défaut de TaCZ corrigé dans
+ *   Tactique (horloge des tirs recalée, fr.heraliz.tactique.tir.HorlogeTirs) ; ici, refus de cadence et refus d'horloge
+ *   sont comptés à part, et l'alerte de cadence demande aussi une part des tirs refusés ({@code cooldownRatio}) : un
+ *   « rapid fire » se fait refuser un tir sur deux ou plus, un joueur honnête presque jamais.</li>
  * </ul>
  * Les zombies et les PNJ ne comptent pas, ni les bots de charge. Un résumé de chaque session (tirs, touches, têtes,
  * refus) est écrit dans {@code config/spartan/tirs.log} pour régler les seuils.
@@ -115,7 +119,7 @@ public class TirsTacz extends MovementCheck {
             return;
         }
         Etat e = etat(p);
-        e.stats.tir();
+        e.stats.tir(System.currentTimeMillis());
         long now = System.nanoTime();
         boolean neutre = p.isPassenger() || CheckManager.isInGrace(p.getUUID());
         e.dernierTirSec = !neutre && mouvementRecent(e, p, now) >= SpartanConfig.TIRS_COUP_SEC_DEGRES.get();
@@ -176,12 +180,20 @@ public class TirsTacz extends MovementCheck {
         ServerPlayer p = (ServerPlayer) tireur;
         Etat e = etat(p);
         long fenetre = SpartanConfig.TIRS_REFUS_SECONDES.get() * 1000L;
-        int n = e.stats.refus(System.currentTimeMillis(), fenetre);
-        int seuil = cadence ? SpartanConfig.TIRS_REFUS_CADENCE.get() : SpartanConfig.TIRS_REFUS_HORLOGE.get();
-        if (n >= seuil) {
-            instance.flag(p, String.format("%d tirs refusés par TaCZ en %d s (dernier : %s) : %s", n, fenetre / 1000, nom,
-                    cadence ? "cadence plus rapide que celle de l'arme (rapid fire) ?" : "horloge des tirs trafiquée ?"));
-            e.stats.oublierRefus();
+        long maintenant = System.currentTimeMillis();
+        int n = e.stats.refus(cadence, maintenant, fenetre);
+        if (cadence) {
+            int acceptes = e.stats.tirsRecents(maintenant, fenetre);
+            double part = (double) n / Math.max(1, n + acceptes);
+            if (n >= SpartanConfig.TIRS_REFUS_CADENCE.get() && part >= SpartanConfig.TIRS_REFUS_PART.get()) {
+                instance.flag(p, String.format("%d tirs refusés par TaCZ pour cadence en %d s (%d %% des tirs, %d acceptés) :"
+                        + " cadence plus rapide que celle de l'arme (rapid fire) ?", n, fenetre / 1000, Math.round(100 * part), acceptes));
+                e.stats.oublierRefus(true);
+            }
+        } else if (n >= SpartanConfig.TIRS_REFUS_HORLOGE.get()) {
+            instance.flag(p, String.format("%d tirs refusés par TaCZ pour l'horloge en %d s : horloge des tirs trafiquée ?"
+                    + " (aussi en cas de très mauvaise connexion)", n, fenetre / 1000));
+            e.stats.oublierRefus(false);
         }
     }
 
