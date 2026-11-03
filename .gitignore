@@ -52,3 +52,6 @@ serveur/config/heraliz_grades/boutique_site.json
 /construire.verrou
 /gradle-*.log
 /modules/*/build/
+
+# fichiers d arguments laissés par javac en cas d erreur
+javac.*.args
