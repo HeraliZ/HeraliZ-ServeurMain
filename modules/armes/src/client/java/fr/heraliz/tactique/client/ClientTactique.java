@@ -36,6 +36,8 @@ public final class ClientTactique implements Partie {
       fr.heraliz.tactique.client.soins.HudSoins.brancher(busMod);
       // munitions de l'arme en main (26/10) : remplace l'interface d'arme de TaCZ
       fr.heraliz.tactique.client.hud.HudMunitions.brancher(busMod);
+      // icône « s'allonger » en bas à gauche : prête, délai, impossible, allongé (03/11)
+      fr.heraliz.tactique.client.allonge.HudAllonge.brancher(busMod);
       // clic droit sur une porte avec une arme : la porte avant la visée ou le coup (31/10)
       fr.heraliz.tactique.client.portes.PortesEnMain.brancher();
    }

@@ -73,6 +73,8 @@ public final class AllongeClient {
    /** Heures (Allonge.maintenant()) du dernier coucher et du dernier relevé du joueur local ; 0 = jamais. */
    private static long coucheA;
    private static long releveA;
+   /** Le joueur local est-il allongé (dernier passage vu, mixin de LocalPlayerCrawl) ? Lu par l'icône HudAllonge. */
+   private static boolean allonge;
    /** Après un refus du serveur : pas de nouvel allongé avant cette heure. */
    private static long attenteServeurJusqua;
    /** Refus du serveur reçu : le mixin relève le joueur au tick suivant. */
@@ -132,6 +134,7 @@ public final class AllongeClient {
    private static void reinitialiser() {
       coucheA = 0L;
       releveA = 0L;
+      allonge = false;
       attenteServeurJusqua = 0L;
       releverDemande = false;
       dernierPlongeonA = 0L;
@@ -235,6 +238,7 @@ public final class AllongeClient {
 
    /** Passage debout <-> allongé du joueur local (mixin de LocalPlayerCrawl). */
    public static void changement(boolean allonge) {
+      AllongeClient.allonge = allonge;
       if (allonge) {
          // en retombant d'un plongeon : couché depuis le début du plongeon (durée sans tir)
          coucheA = retombeeDebutA != 0L ? retombeeDebutA : Allonge.maintenant();
@@ -259,6 +263,11 @@ public final class AllongeClient {
    /** Train de HeraliZ Utils (par réflexion) : le passager se relève ; le délai pour se rallonger repart. */
    public static void releveTrain() {
       releveA = Allonge.maintenant();
+   }
+
+   /** Vrai si le joueur local est allongé (icône HudAllonge). */
+   public static boolean estAllonge() {
+      return allonge;
    }
 
    /** Millisecondes avant de pouvoir se rallonger (0 : tout de suite). */
@@ -294,6 +303,7 @@ public final class AllongeClient {
       long restant = Math.max(0L, paquet.restantMs());
       attenteServeurJusqua = Math.max(attenteServeurJusqua, Allonge.maintenant() + restant + MARGE_REFUS_MS);
       releverDemande = true;
+      allonge = false;
       afficherAttente(restantMs());
    }
 

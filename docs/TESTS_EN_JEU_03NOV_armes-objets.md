@@ -2,7 +2,7 @@
 
 Retours du propriétaire après son premier passage en jeu (02/11 au soir), points 1 à 8 de ce chantier.
 
-Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.46.0 (`armes`, suite du 03/11 et coups mieux timés compris), Loot 0.14.8,
+Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.47.0 (`armes`, suite du 03/11, coups mieux timés et icône « s'allonger » compris), Loot 0.14.8,
 Monde 1.0.12. Données changées (mise en ligne complète puis redémarrage) : gunpacks `heraliz_5_couteaux_cs2` (fiche des
 couteaux TaCZ) et `heraliz_crafts` (3 recettes retirées, listées dans `serveur/tacz_retires.txt`), tables de loot T1 à T7,
 `serveur/config/heraliz_quetes/pnj/jacqueline.json`, `serveur/config/heralizcrates/quete.json`,
@@ -88,3 +88,21 @@ un serveur chargé) :
 - **Couteau à vie** (Credo, Push…) : bruit d'impact entendu par le frappeur au moment du coup.
 - Rien ne change pour la vitesse : toujours 1,2 s entre deux coups, toujours 1 bloc de portée ; cliquer très vite ne
   donne pas plus de coups. Frapper dans le vide : aucun bruit d'impact.
+
+## 9. Icône « s'allonger » en bas à gauche (demande du 03/11) — rendus à valider d'abord
+Rendus (vraie taille, coin bas-gauche d'un écran 1080p, échelles d'interface 3 et 4, et agrandi) :
+`rendus_03nov/armes-objets/allonge_1_echelle3.png`, `allonge_2_echelle4.png`, `allonge_3_zoom.png`. Le code n'est à
+mettre en ligne qu'une fois l'icône validée. Seul le jeu des joueurs change (rien côté serveur, aucun paquet en plus).
+
+Une fois en jeu, regarder le petit rond en bas à gauche, à la hauteur du milieu de la barre d'objets :
+- **Prêt** (debout, rien n'empêche) : soldat allongé blanc, anneau clair.
+- **Allongé** : soldat et anneau verts.
+- **Délai** : se relever ; l'icône passe en gris, un anneau ambre se remplit dans le sens des aiguilles d'une montre et
+  les secondes restantes s'affichent à droite (« 3 s », « 2 s »…). Quand l'anneau est plein, l'icône redevient blanche
+  et la touche « Ramper » marche du premier coup. Appuyer pendant le délai : toujours le message d'attente, comme avant.
+- **Impossible** : soldat gris barré de rouge à terre (Réanimation), en train de fouiller un corps ou de réanimer,
+  dans un véhicule ou dans l'eau. En sortir : l'icône redevient blanche (ou grise si le délai court encore).
+- Refus du serveur (fort ping, se rallonger tout juste à la fin du délai) : l'icône repasse en délai avec le temps
+  donné par le serveur.
+- Cachée en F1, avec F3, en spectateur, mort, et derrière les écrans plein écran (clans, quêtes, boutique…).
+- Elle ne gêne ni le chat (plus haut) ni la barre d'objets (au centre).
