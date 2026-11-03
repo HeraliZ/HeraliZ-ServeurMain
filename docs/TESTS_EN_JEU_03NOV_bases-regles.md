@@ -185,3 +185,28 @@ place sans faire un trou). Un objet poussé dans le bloc voisin (contre un mur d
 dépassait d'un bord, il est maintenant refusé. Les objets posés avant ne sont jamais retirés ; ils ne tombent qu'à la
 destruction du sol sous eux, comme avant.
 
+
+## Cœur de clan et murs derrière les objets (retours du 03/11, Bases 1.33.2-beta)
+
+**Cœur de clan** : il était refusé dans toute base (« Ici, seuls les blocs placables se posent ») : il n'a pas de PV,
+donc n'est pas un placable, et la règle des placables le bloquait au clic avant ses propres règles. Il est maintenant
+permis dans une base : base de son clan, droit « Gérer la base », un par clan (`CoeursClans`), plus la règle des objets
+posés (sol sous sa forme, aucune pièce touchée, pas pendant un raid).
+
+**Mur invisible ou trop fin derrière un objet** (photo du propriétaire) : quand un objet se tient dans la moitié intérieure
+d'une case de mur (table d'armurier posée contre un mur, ou objet posé avant le mur), le mur la lui laisse. Seuls les
+objets de CRac (armoire, caisses, coffres) faisaient redessiner cette moitié par la case de mur voisine : derrière la table
+d'armurier de TaCZ ou un objet de Minecraft (four, établi, enclume…), il ne restait que la moitié extérieure du mur
+(2 px au lieu de 4), et sa face tournée vers l'objet était cachée par Minecraft quand l'objet est un bloc plein : on
+voyait au travers. Maintenant tout objet posé d'une base fait redessiner la moitié (`StructureModel.laisseMoitie`) ;
+jamais le terrain. Calcul au moment où le tronçon est refait, comme avant : rien par image. Schéma :
+`12_mur_derriere_objet.png` (même dossier de rendus).
+
+**Essais à faire**
+26. Cœur de clan acheté au Bâtisseur : posé dans sa base par le chef ou un membre qui gère la base (sur une fondation ou
+    un plancher) : accepté ; hors de sa base, dans la base d'un autre clan, par un membre sans le droit, ou un deuxième
+    cœur : refusé avec son message ; à moitié sur le bord du sol : « Cet objet dépasserait du bord du sol… ».
+27. Armoire, caisse en métal, coffres, table d'armurier, four ou établi dans une base : se posent comme avant.
+28. Table d'armurier posée contre un mur (dans la rangée du mur) : le mur derrière reste entier, de face, de côté et
+    depuis l'extérieur ; même chose avec un four, un établi, une enclume posés avant de construire le mur, et avec les
+    caisses et coffres de CRac (inchangé). Retirer l'objet : le mur reprend sa case, toujours entier.

@@ -89,7 +89,7 @@ public final class StructureModel implements IDynamicBakedModel {
      * laisse à l'objet la moitié de case où il se tient (règle d'enfouissement de PlacementRules : la case reste celle de
      * l'objet, le mur la reprend quand il part). Personne ne dessinait cette moitié : au-dessus et autour de l'objet, le mur
      * était creux. La case du mur voisine la dessine maintenant, décalée d'un bloc vers l'objet ; refait à chaque
-     * reconstruction du tronçon (objet posé ou retiré). Seulement les murs, seulement contre un objet adossé.
+     * reconstruction du tronçon (objet posé ou retiré). Seulement les murs, seulement contre un objet posé ({@link #laisseMoitie}).
      * <p>HeraliZ (31/10) : une seule case la dessine ({@link #dessine}). Avant, chaque case voisine qui tenait ce mur la
      * dessinait : jusqu'à trois fois les mêmes faces (la case de l'autre côté du mur et les deux le long du mur, pour une
      * caisse posée au milieu d'un mur), éclairées chacune depuis sa case : des faces confondues qui pouvaient scintiller.
@@ -102,7 +102,7 @@ public final class StructureModel implements IDynamicBakedModel {
             List<BlockPos> blocs = null;
             for (Direction d : Direction.Plane.HORIZONTAL) {
                 BlockPos n = pos.relative(d);
-                if (!(level.getBlockState(n).getBlock() instanceof fr.heraliz.crac.block.Adosse.Adossable)) continue;
+                if (!laisseMoitie(level.getBlockState(n).getBlock())) continue;
                 if (blocs == null) {
                     blocs = fr.heraliz.crac.build.geom.PieceSolids.collisionBlocks(o.key());
                 }
@@ -121,6 +121,19 @@ public final class StructureModel implements IDynamicBakedModel {
             out[base.length + i] = plus.get(i);
         }
         return out;
+    }
+
+    /**
+     * Un objet de ce bloc peut se tenir dans la moitié intérieure d'une case de mur (le mur la lui laisse) : armoire,
+     * caisses et coffres de CRac ({@code Adosse.Adossable}) et, HeraliZ (03/11, photo du propriétaire : mur invisible ou
+     * trop fin derrière un objet collé), tout objet posé d'une base (placables : table d'armurier de TaCZ posée dans la
+     * rangée d'un mur, four, établi, enclume… posés avant le mur). Avant, seuls les objets de CRac faisaient redessiner la
+     * moitié laissée : derrière les autres, il ne restait que la moitié extérieure du mur (2 px), et sa face tournée vers
+     * l'objet était cachée par Minecraft quand l'objet est un bloc plein : on voyait au travers du mur. Jamais le terrain
+     * (un mur enterré n'est pas redessiné dans la terre).
+     */
+    private static boolean laisseMoitie(net.minecraft.world.level.block.Block b) {
+        return b instanceof fr.heraliz.crac.block.Adosse.Adossable || fr.heraliz.crac.placable.PlacableSet.canPlaceClient(b);
     }
 
     /** Les voisines d'une case dans l'ordre où l'une d'elles dessine la moitié laissée d'un mur le long de x (z constant). */
