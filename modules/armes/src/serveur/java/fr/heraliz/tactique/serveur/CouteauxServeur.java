@@ -32,9 +32,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
  * Coups de couteau TaCZ, décidés par le serveur seul (voir {@link CoupsCouteau}). Le joueur demande un coup
- * ({@link PaquetCoupCouteau}) ; le serveur vérifie tout de son côté, puis frappe {@link CoupsCouteau#delai} ticks
- * plus tard (coup puissant : à l'impact de l'animation du modèle en main, CoupsLourds ; cadence du coup puissant avec
- * l'écart de ce modèle), comme une arme de mêlée de LR (MeleeItemServeur) :
+ * ({@link PaquetCoupCouteau}) ; le serveur vérifie tout de son côté, puis frappe à l'impact de l'animation du joueur :
+ * {@link CoupsCouteau#delai} ticks après le début de son animation, en temps réel, l'arrivée de la demande comptant pour
+ * un demi-ping déjà écoulé (03/11 ; coup puissant : impact de l'animation du modèle en main, CoupsLourds ; cadence du
+ * coup puissant avec l'écart de ce modèle), comme une arme de mêlée de LR (MeleeItemServeur) :
  * <ul>
  *    <li><b>refus</b> (rien ne se passe) : couteaux non frappés par HeraliZ ({@code actif}), joueur mort ou spectateur, pas
  *    de couteau TaCZ en main, à terre ou en train de fouiller ou réanimer (Réanimation), couteau en train d'être sorti
@@ -53,7 +54,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
  *    (attaque du joueur + {@code degats}) × 1 ou × {@code multiplicateur_lourd}, donnés par le coup de LR
  *    ({@link IMeleeWeapon#attackTarget} : événement d'attaque de Forge, que Réanimation, CRac et Spartan peuvent refuser,
  *    coup critique, recul, temps d'invincibilité). Une cible touchée : son d'impact du couteau (« flesh_hit ») pour tous,
- *    le frappeur compris.</li>
+ *    sauf le frappeur, à qui son jeu le joue lui-même à l'impact de son animation (03/11, CouteauxClient).</li>
  * </ul>
  * Le coup de TaCZ (touche « Mêlée », 13 dégâts) n'est plus donné aux couteaux : {@code GunMeleeEvent} annulé côté
  * serveur (le jeu du joueur ne l'envoie plus, voir CouteauxClient ; un jeu modifié ne passerait pas non plus).
@@ -65,6 +66,14 @@ final class CouteauxServeur {
    private static final long MS_PAR_TICK = 50L;
    /** Temps de sortie restant (vu par le serveur, en ms) pardonné : le serveur voit la sortie un peu après le joueur. */
    private static final long SORTIE_TOLEREE_MS = 200L;
+   /** Plus grande avance donnée pour le ping (ms) : la moitié d'un ping de 200 ms ; au-delà, le coup arrive en retard. */
+   private static final long AVANCE_MAX_MS = 100L;
+
+   /** Temps (ms) entre le début de l'animation chez le joueur et l'arrivée de sa demande : la moitié de son ping, borné. */
+   private static long avance(ServerPlayer joueur) {
+      return Math.max(0L, Math.min(AVANCE_MAX_MS, joueur.latency / 2L));
+   }
+
    /** Distance des bruits du couteau si la config de TaCZ n'est pas lisible (sa valeur par défaut). */
    private static final int DISTANCE_SON_DEFAUT = 16;
 
@@ -74,8 +83,8 @@ final class CouteauxServeur {
    private static final class Etat {
       /** Heure (ms) où le coup suivant est dû : cadence du dernier coup accepté, comptée depuis l'heure où il était dû. */
       long pretMs = Long.MIN_VALUE / 4;
-      /** Tick du coup en attente ; -1 : aucun. */
-      int frappeA = -1;
+      /** Heure (ms, horloge du serveur) du coup en attente ; -1 : aucun. */
+      long frappeMs = -1L;
       boolean lourd;
       /** Case de la barre et couteau (identifiant TaCZ) au moment de la demande. */
       int caseBarre;
@@ -115,7 +124,7 @@ final class CouteauxServeur {
       }
       long maintenant = System.nanoTime() / 1_000_000L;
       Etat etat = ETATS.computeIfAbsent(joueur.getUUID(), u -> new Etat());
-      if (etat.frappeA >= 0 || maintenant < etat.pretMs - TOLERANCE_MS) {
+      if (etat.frappeMs >= 0L || maintenant < etat.pretMs - TOLERANCE_MS) {
          return;
       }
       ResourceLocation id = arme.getGunId(main);
@@ -123,7 +132,11 @@ final class CouteauxServeur {
       // la cadence repart du moment du coup (jamais d'avance gagnée après une pause : avant, le 2e coup d'une série
       // passait 0,25 s après le premier)
       etat.pretMs = Math.max(maintenant, etat.pretMs) + CoupsCouteau.cadence(d.lourd(), modele) * MS_PAR_TICK;
-      etat.frappeA = joueur.server.getTickCount() + CoupsCouteau.delai(d.lourd(), modele);
+      // 03/11 (« coups pas bien timés ») : le coup tombe à l'impact de l'animation du frappeur, en temps réel. Le joueur a
+      // lancé son animation la moitié de son ping avant que la demande arrive ici : ce temps est retiré du délai (borné
+      // par AVANCE_MAX_MS ; jamais avant l'arrivée de la demande, donc jamais plus tôt ni plus vite que la cadence). Avant :
+      // délai compté en ticks depuis l'arrivée (coup en retard d'un demi-ping, plus encore quand le serveur rame).
+      etat.frappeMs = maintenant + Math.max(0L, CoupsCouteau.delai(d.lourd(), modele) * MS_PAR_TICK - avance(joueur));
       etat.lourd = d.lourd();
       etat.caseBarre = joueur.getInventory().selected;
       etat.arme = id;
@@ -140,10 +153,10 @@ final class CouteauxServeur {
          return;
       }
       Etat etat = ETATS.get(joueur.getUUID());
-      if (etat == null || etat.frappeA < 0 || joueur.server.getTickCount() < etat.frappeA) {
+      if (etat == null || etat.frappeMs < 0L || System.nanoTime() / 1_000_000L < etat.frappeMs) {
          return;
       }
-      etat.frappeA = -1;
+      etat.frappeMs = -1L;
       frapper(joueur, etat);
    }
 
@@ -171,7 +184,8 @@ final class CouteauxServeur {
          }
       }
       if (touche) {
-         son(joueur, arme, main, SoundManager.FLESH_HIT_SOUND, true);
+         // le frappeur l'entend déjà, joué par son jeu à l'impact de son animation (CouteauxClient) : plus renvoyé
+         son(joueur, arme, main, SoundManager.FLESH_HIT_SOUND, false);
       }
    }
 

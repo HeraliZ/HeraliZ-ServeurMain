@@ -16,6 +16,9 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
+import fr.heralisz.tactical.api.collision.ConeFilter;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
@@ -62,12 +65,23 @@ public final class CouteauxClient {
    private static int caseVue = -1;
    @Nullable
    private static ResourceLocation armeVue;
+   /**
+    * Impact attendu du dernier coup (03/11) : heure (ms, System.nanoTime) où la lame passe dans l'animation, -1 : aucun ;
+    * couteau et sorte du coup. À cet instant, si une cible est à portée dans le cône (vu par ce jeu), le bruit d'impact du
+    * couteau est joué ici tout de suite (le serveur ne le renvoie plus au frappeur : il arrivait un ping trop tard). Le
+    * coup lui-même (cibles, dégâts) reste décidé par le serveur, au même instant (CouteauxServeur).
+    */
+   private static long impactMs = -1L;
+   private static boolean impactLourd;
+   @Nullable
+   private static ResourceLocation impactArme;
 
    private CouteauxClient() {
    }
 
    public static void brancher() {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ClientTickEvent.class, CouteauxClient::tick);
+      MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.RenderTickEvent.class, CouteauxClient::image);
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, InputEvent.MouseButton.Post.class, e -> {
          if (e.getAction() == GLFW.GLFW_PRESS) {
             appui(InputConstants.Type.MOUSE.getOrCreate(e.getButton()));
@@ -84,6 +98,7 @@ public final class CouteauxClient {
       MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ClientPlayerNetworkEvent.LoggingIn.class, e -> {
          pretA = 0L;
          pretMs = 0L;
+         impactMs = -1L;
          caseVue = -1;
          armeVue = null;
          AnimCouteaux.oublierJoueurs();
@@ -121,6 +136,9 @@ public final class CouteauxClient {
       pretA = horloge + cadence;
       pretMs = maintenant + cadence * 50L - 20L;
       ReseauCouteaux.envoyerAuServeur(new PaquetCoupCouteau(lourd));
+      impactMs = System.nanoTime() / 1_000_000L + CoupsCouteau.delai(lourd, CoupsCouteau.modele(id)) * 50L;
+      impactLourd = lourd;
+      impactArme = id;
       TimelessAPI.getGunDisplay(main).ifPresent(affichage -> {
          AnimationStateMachine<?> etats = affichage.getAnimationStateMachine();
          // coup puissant : animation HeraliZ du modèle (bruits et mouvement de caméra compris, AnimCouteaux)
@@ -134,6 +152,31 @@ public final class CouteauxClient {
          }
       });
       return true;
+   }
+
+   /** À chaque image (une comparaison tant qu'aucun coup n'attend) : impact du dernier coup arrivé ? */
+   private static void image(TickEvent.RenderTickEvent e) {
+      if (e.phase != TickEvent.Phase.START || impactMs < 0L || System.nanoTime() / 1_000_000L < impactMs) {
+         return;
+      }
+      impactMs = -1L;
+      Minecraft mc = Minecraft.getInstance();
+      LocalPlayer joueur = mc.player;
+      if (joueur == null || !joueur.isAlive() || !couteauEnMain(joueur)) {
+         return;
+      }
+      ItemStack main = joueur.getMainHandItem();
+      IGun ig = IGun.getIGunOrNull(main);
+      if (ig == null || !ig.getGunId(main).equals(impactArme)) {
+         return; // couteau changé entre le coup et l'impact : le serveur ne frappe pas non plus
+      }
+      ConeFilter cone = new ConeFilter(CoupsCouteau.portee(), CoupsCouteau.angle(impactLourd));
+      for (Entity cible : cone.filterTargets(joueur, joueur.getEyePosition(), joueur.getLookAngle())) {
+         if (cible != joueur && cible instanceof LivingEntity vivant && vivant.isAlive()) {
+            TimelessAPI.getGunDisplay(main).ifPresent(affichage -> SoundPlayManager.playFleshHitSound(joueur, affichage));
+            return;
+         }
+      }
    }
 
    private static void tick(TickEvent.ClientTickEvent e) {
