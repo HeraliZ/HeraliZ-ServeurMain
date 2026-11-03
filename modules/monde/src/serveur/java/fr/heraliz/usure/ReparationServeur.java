@@ -37,7 +37,7 @@ public final class ReparationServeur {
         Usure.ajouterReparation(arme);
         consommer(p, kit, r.kitUtilisations[niveau]);
         p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 0.6F, 1.25F);
-        p.displayClientMessage(Component.translatable("heraliz_usure.reparation.ok", arme.getHoverName(),
+        p.displayClientMessage(Component.translatable("heraliz_usure.reparation.ok", fr.heraliz.noyau.api.NomsObjets.nom(arme),
                 Reparation.pct(etat), Reparation.pct(cible), Reparation.pct(Usure.max(arme))).withStyle(ChatFormatting.GREEN), true);
         return Reparation.Resultat.REPAREE;
     }
@@ -63,7 +63,7 @@ public final class ReparationServeur {
         consommer(p, kit, r.kitUtilisations[niveau]);
         p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.ARMOR_EQUIP_IRON, SoundSource.PLAYERS, 0.7F, 1.1F);
         p.displayClientMessage(Component.translatableWithFallback("heraliz_usure.reparation.armure_ok", "%s réparée : %s → %s",
-                piece.getHoverName(), Reparation.pct(Math.round(1000f * (max - avant) / max)),
+                fr.heraliz.noyau.api.NomsObjets.nom(piece), Reparation.pct(Math.round(1000f * (max - avant) / max)),
                 Reparation.pct(Math.round(1000f * (max - apres) / max))).withStyle(ChatFormatting.GREEN), true);
         return Reparation.Resultat.REPAREE;
     }

@@ -759,7 +759,7 @@ public final class Tutoriel {
                     liste.append(", ");
                 }
                 premier = false;
-                liste.append(e.getValue() + " × ").append(new ItemStack(e.getKey()).getHoverName());
+                liste.append(e.getValue() + " × ").append(fr.heraliz.noyau.api.NomsObjets.nom(new ItemStack(e.getKey())));
             }
             j.etape = BasesDonnees.Etape.KIT;
             // un joueur qui a déjà une base (tuto relancé par le staff) ne regagne pas la protection de base

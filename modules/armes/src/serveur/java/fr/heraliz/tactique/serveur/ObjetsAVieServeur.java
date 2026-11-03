@@ -652,7 +652,7 @@ public final class ObjetsAVieServeur {
          }
          synchroniser(p);
          p.displayClientMessage(Component.translatableWithFallback("heraliz_tactique.a_vie.sauve",
-            "Objet à vie rendu : %s.", sauves.get(0).getHoverName()), false);
+            "Objet à vie rendu : %s.", fr.heraliz.noyau.api.NomsObjets.nom(sauves.get(0))), false);
       } else {
          List<CompoundTag> l = new ArrayList<>();
          for (ItemStack s : sauves) l.add(s.save(new CompoundTag()));

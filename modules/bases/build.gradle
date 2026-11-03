@@ -8,6 +8,8 @@ apply from: rootProject.file('gradle/module-coupe.gradle')
 
 dependencies {
     compileOnly project(path: ':clans', configuration: 'devComplet')
+    // noms des objets dans les messages (03/11) : fr.heraliz.noyau.api.NomsObjets
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
     // inventaire mis de côté pendant le tutoriel (03/11) : Curios lu seulement s'il est chargé (bases/CuriosTuto)
     compileOnly fg.deobf("blank:curios-forge:5.14.1")
 }

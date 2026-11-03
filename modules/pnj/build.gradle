@@ -8,4 +8,6 @@ apply from: rootProject.file('gradle/module-coupe.gradle')
 
 dependencies {
     compileOnly project(path: ':voix', configuration: 'devComplet')
+    // noms des objets dans les messages (03/11) : fr.heraliz.noyau.api.NomsObjets
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
 }

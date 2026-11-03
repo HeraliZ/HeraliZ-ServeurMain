@@ -69,7 +69,7 @@ public final class Commandes {
             repondre(c.getSource(), Component.translatable("heraliz_usure.cmd.migree").withStyle(ChatFormatting.AQUA));
         }
         CommandSourceStack src = c.getSource();
-        repondre(src, Component.translatable("heraliz_usure.cmd.voir.titre", s.getHoverName(), cible.getDisplayName()).withStyle(ChatFormatting.GOLD));
+        repondre(src, Component.translatable("heraliz_usure.cmd.voir.titre", fr.heraliz.noyau.api.NomsObjets.nom(s), cible.getDisplayName()).withStyle(ChatFormatting.GOLD));
         repondre(src, gris(Component.translatable("heraliz_usure.cmd.voir.id", id)));
         if (!p.suivie) {
             repondre(src, gris(Component.translatable(p.exclue ? "heraliz_usure.cmd.voir.exclue" : "heraliz_usure.cmd.voir.sans_usure",
@@ -98,7 +98,7 @@ public final class Commandes {
             t.remove(Usure.REPARATIONS);
         }
         cible.getInventory().setChanged();
-        repondre(c.getSource(), Component.translatable("heraliz_usure.cmd.reparee", s.getHoverName(), cible.getDisplayName()).withStyle(ChatFormatting.GREEN));
+        repondre(c.getSource(), Component.translatable("heraliz_usure.cmd.reparee", fr.heraliz.noyau.api.NomsObjets.nom(s), cible.getDisplayName()).withStyle(ChatFormatting.GREEN));
         return 1;
     }
 
@@ -113,7 +113,7 @@ public final class Commandes {
         Usure.ecrireMax(s, max);
         Usure.ecrireEtat(s, etat);
         cible.getInventory().setChanged();
-        repondre(c.getSource(), Component.translatable("heraliz_usure.cmd.definie", s.getHoverName(), Reparation.pct(etat), Reparation.pct(max))
+        repondre(c.getSource(), Component.translatable("heraliz_usure.cmd.definie", fr.heraliz.noyau.api.NomsObjets.nom(s), Reparation.pct(etat), Reparation.pct(max))
                 .withStyle(ChatFormatting.GREEN));
         return 1;
     }

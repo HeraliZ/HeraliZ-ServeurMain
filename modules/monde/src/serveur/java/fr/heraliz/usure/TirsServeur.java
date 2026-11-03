@@ -133,6 +133,6 @@ public final class TirsServeur {
 
     private static void ruinee(ServerPlayer p, ItemStack arme) {
         p.playNotifySound(SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 0.8F, 0.9F);
-        p.displayClientMessage(Component.translatable("heraliz_usure.message.ruinee", arme.getHoverName()).withStyle(ChatFormatting.RED), true);
+        p.displayClientMessage(Component.translatable("heraliz_usure.message.ruinee", fr.heraliz.noyau.api.NomsObjets.nom(arme)).withStyle(ChatFormatting.RED), true);
     }
 }

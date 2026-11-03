@@ -1,4 +1,4 @@
-package fr.heraliz.grades.serveur;
+package fr.heraliz.noyau.api;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
@@ -27,8 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * TaCZ reste facultatif) ; un nom donné à l'objet (enclume, bon, staff) passe avant ; tout autre objet garde son nom
  * habituel. Le joueur traduit la clé dans sa langue.
  * <p>
- * Une seule aide pour tout le serveur : HeraliZ Grades, Caisses et Casino l'appellent directement ; HeraliZ Quêtes la lit
- * par réflexion ({@link GradesApi#nomObjet}). Depuis n'importe quel fil (méthodes de TaCZ gardées une fois trouvées).
+ * Une seule aide pour tout le serveur, dans le noyau que tous les modules voient (03/11 : d'abord dans HeraliZ Grades,
+ * déplacée ici pour la Tactique, le Monde et CRac) : Grades, Caisses, Casino, Quêtes, Usure, objets à vie, zones,
+ * véhicules, tutoriel des bases ; {@code fr.heraliz.grades.serveur.GradesApi.nomObjet} y renvoie. Ne jamais renommer.
+ * Depuis n'importe quel fil (méthodes de TaCZ gardées une fois trouvées).
  */
 public final class NomsObjets {
     private static final Logger LOG = LogUtils.getLogger();
@@ -98,7 +100,7 @@ public final class NomsObjets {
             for (String[] t : TACZ) INDEX.put(t[0], api.getMethod(t[1], ResourceLocation.class));
         } catch (ReflectiveOperationException | LinkageError e) {
             taczAbsent = true;
-            LOG.info("[grades] TaCZ absent ou différent ({}) : noms des objets sans index d'armes", e.toString());
+            LOG.info("[noyau] TaCZ absent ou différent ({}) : noms des objets sans index d'armes", e.toString());
         }
         return !taczAbsent;
     }

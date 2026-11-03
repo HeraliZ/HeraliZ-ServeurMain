@@ -54,7 +54,7 @@ public final class Commandes {
                     .append(Component.translatable(id.replace(':', '.'))).withStyle(ChatFormatting.GRAY));
         }
         for (ItemStack s : Contenu.outils()) {
-            repondre(c.getSource(), Component.literal(" - ").append(s.getHoverName()).withStyle(ChatFormatting.GRAY));
+            repondre(c.getSource(), Component.literal(" - ").append(fr.heraliz.noyau.api.NomsObjets.nom(s)).withStyle(ChatFormatting.GRAY));
         }
         return 1;
     }

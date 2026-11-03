@@ -569,32 +569,14 @@ final class Ponts {
         return root.getCompound(Player.PERSISTED_NBT_TAG).getBoolean("heraliz_cinematique_finie");
     }
 
-    private static Method nomObjet;
-    private static boolean nomObjetCherche;
-
     /**
      * Nom d'un objet pour un message au joueur (03/11, retour du propriétaire : « item.tacz.modern_kinetic_gun » écrit
-     * dans le chat) : l'aide unique de HeraliZ Grades ({@code fr.heraliz.grades.serveur.GradesApi.nomObjet} : vrai nom
-     * d'une arme, d'une munition ou d'un accessoire de TaCZ, nom donné, sinon le nom habituel), changée en {@link Texte}
-     * traduit chez le joueur. Sans HeraliZ Grades : le nom habituel de l'objet.
+     * dans le chat) : l'aide unique du noyau ({@link fr.heraliz.noyau.api.NomsObjets} : vrai nom d'une arme, d'une munition
+     * ou d'un accessoire de TaCZ, nom donné, sinon le nom habituel), changée en {@link Texte} traduit chez le joueur.
      */
     static Texte texteObjet(ItemStack s) {
         if (s == null || s.isEmpty()) return Texte.VIDE;
-        if (!nomObjetCherche) {
-            nomObjetCherche = true;
-            try {
-                nomObjet = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("nomObjet", ItemStack.class);
-            } catch (ReflectiveOperationException | LinkageError e) {
-                nomObjet = null;
-            }
-        }
-        net.minecraft.network.chat.Component c = null;
-        try {
-            if (nomObjet != null) c = (net.minecraft.network.chat.Component) nomObjet.invoke(null, s);
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            c = null;
-        }
-        return Texte.de(c != null ? c : s.getHoverName());
+        return Texte.de(fr.heraliz.noyau.api.NomsObjets.nom(s));
     }
 
     private static Method authentifie;

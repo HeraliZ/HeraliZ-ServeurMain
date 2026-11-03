@@ -276,7 +276,7 @@ public final class ZonesServeur {
         }
         if (usee(st)) {
             p.displayClientMessage(Component.translatableWithFallback("heraliz_decors.zones.usee",
-                    "%s est usé(e) : ne protège plus de cette zone. Il faut le (la) réparer.", st.getHoverName()), true);
+                    "%s est usé(e) : ne protège plus de cette zone. Il faut le (la) réparer.", fr.heraliz.noyau.api.NomsObjets.nom(st)), true);
         }
     }
 
