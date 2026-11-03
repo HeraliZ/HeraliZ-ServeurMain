@@ -806,7 +806,10 @@ final class Journalieres {
         }
         try {
             Class.forName("fr.heraliz.loot.EvenementsLoot").getMethod("ecouterFouille", BiConsumer.class)
-                    .invoke(null, (BiConsumer<ServerPlayer, CompoundTag>) Journalieres::conteneur);
+                    .invoke(null, (BiConsumer<ServerPlayer, CompoundTag>) (p, e) -> {
+                        conteneur(p, e);
+                        Moteur.conteneurLoot(p, e);   // étapes « fouiller » des quêtes de Varga (03/11)
+                    });
         } catch (ReflectiveOperationException | LinkageError e) {
             LOG.warn("[heraliz_quetes] HeraliZ Loot (conteneurs) absent : quêtes du jour « conteneurs » impossibles ({})", e.toString());
         }

@@ -650,19 +650,11 @@ final class Moteur {
         envoyerSuivi(p);
     }
 
-    /** Clic droit sur un bloc : points de quête, et conteneurs de HeraliZ Loot (étapes « fouiller »). Vrai = pris. */
+    /** Clic droit sur un bloc : points de quête. Vrai = pris. */
     static boolean clic(ServerPlayer p, BlockPos pos, BlockState etat) {
         ResourceLocation monde = p.level().dimension().location();
-        ResourceLocation bloc = ForgeRegistries.BLOCKS.getKey(etat.getBlock());
-        if (bloc != null && bloc.getNamespace().equals("heraliz_loot")) {
-            // 25/10 : une « partie » d'un grand conteneur (heraliz_loot:partie, décalage dx/dy/dz) compte pour son bloc
-            // principal ; avant, cliquer les 4 parties d'un même meuble comptait 4 conteneurs fouillés
-            BlockPos principal = principalLoot(pos, etat);
-            if (principal != pos) {
-                ResourceLocation b2 = ForgeRegistries.BLOCKS.getKey(p.level().getBlockState(principal).getBlock());
-                if (b2 != null && b2.getNamespace().equals("heraliz_loot")) fouille(p, monde, principal, b2);
-            } else fouille(p, monde, pos, bloc);
-        }
+        // étapes « fouiller » : comptées à l'ouverture d'un conteneur NON VIDE (signal de HeraliZ Loot, conteneurLoot),
+        // plus au simple clic (03/11 : un conteneur vide comptait)
         Points.Point pt = points().auBloc(monde, pos);
         if (pt == null) return false;
         Donnees.DJoueur j = Donnees.de(p.getUUID());
@@ -729,26 +721,6 @@ final class Moteur {
         return false;
     }
 
-    /**
-     * Bloc principal d'une partie de conteneur de HeraliZ Loot ({@code PartieBlock} : propriétés dx, dy, dz, décalées de
-     * PORTEE = 3 en largeur), sinon pos elle-même. Lu par le nom des propriétés : Quêtes ne dépend pas de Loot.
-     */
-    private static BlockPos principalLoot(BlockPos pos, BlockState etat) {
-        Integer dx = null, dy = null, dz = null;
-        for (net.minecraft.world.level.block.state.properties.Property<?> pr : etat.getProperties()) {
-            if (!(pr instanceof net.minecraft.world.level.block.state.properties.IntegerProperty ip)) continue;
-            switch (pr.getName()) {
-                case "dx" -> dx = etat.getValue(ip);
-                case "dy" -> dy = etat.getValue(ip);
-                case "dz" -> dz = etat.getValue(ip);
-                default -> {
-                }
-            }
-        }
-        if (dx == null || dy == null || dz == null) return pos;
-        return pos.offset(-(dx - 3), -dy, -(dz - 3));
-    }
-
     private static void pointFait(ServerPlayer p, Donnees.DActive a, Defs.Quete q, Points.Point pt) {
         a.faits.add(pt.id());
         a.vus.add("p:" + pt.id());
@@ -771,6 +743,19 @@ final class Moteur {
         if (q == null || a.aRendre) return false;
         for (int i = a.etape; i < q.etapes.size(); i++) if (ref.equals(q.etapes.get(i).texte("objet_quete", ""))) return true;
         return false;
+    }
+
+    /**
+     * Première ouverture d'un conteneur NON VIDE (HeraliZ Loot, {@code EvenementsLoot.ecouterFouille}, branché par
+     * Journalieres) : fait avancer les étapes « fouiller » des quêtes de Varga (03/11 : avant, le simple clic sur un
+     * conteneur, même vide, comptait).
+     */
+    static void conteneurLoot(ServerPlayer p, net.minecraft.nbt.CompoundTag e) {
+        BlockPos pos = BlockPos.of(e.getLong("pos"));
+        ResourceLocation monde = p.level().dimension().location();
+        if (!monde.toString().equals(e.getString("monde"))) return;
+        ResourceLocation bloc = ForgeRegistries.BLOCKS.getKey(p.level().getBlockState(pos).getBlock());
+        if (bloc != null && bloc.getNamespace().equals("heraliz_loot")) fouille(p, monde, pos, bloc);
     }
 
     private static void fouille(ServerPlayer p, ResourceLocation monde, BlockPos pos, ResourceLocation bloc) {
