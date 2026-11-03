@@ -25,12 +25,16 @@ import org.joml.Matrix4f;
  *    <li><b>prêt</b> : soldat clair, anneau plein clair ;</li>
  *    <li><b>délai</b> (on vient de se relever, ou le serveur a refusé) : soldat grisé, anneau ambre qui se remplit de midi
  *    dans le sens horaire, secondes restantes à droite ;</li>
+ *    <li><b>plongeon en recharge</b> (s'allonger sur place est permis, mais le délai entre deux plongeons, compté depuis le
+ *    début du dernier, n'est pas écoulé) : soldat clair, l'anneau clair de « prêt » se remplit, secondes restantes à
+ *    droite ; plein, on peut de nouveau plonger ;</li>
  *    <li><b>impossible</b> (à terre, en train de fouiller ou réanimer, en véhicule, dans l'eau) : soldat grisé, trait
  *    rouge ;</li>
  *    <li><b>allongé</b>, ou en plein plongeon (de l'élan à la retombée) : soldat et anneau verts.</li>
  * </ul>
  * L'état est celui que le jeu du joueur applique déjà à la touche (AllongeClient : même délai que le serveur, réglage
- * {@code delai_rallonger} envoyé par Forge, et attente annoncée par un refus du serveur) : aucun paquet de plus, quelques
+ * {@code delai_rallonger} et {@code delai_plongeon} envoyés par Forge, attentes annoncées par un refus du serveur, plongeon
+ * accepté par le serveur) : aucun paquet de plus, quelques
  * lectures par image. Caché en F1, avec F3, en spectateur et derrière nos écrans plein écran (EcransPleins de
  * l'interface annule les surcouches). Formes puis texte, un vidage chacun ; aucune allocation par image.
  */
@@ -47,7 +51,7 @@ public final class HudAllonge {
     */
    private static final int GRIS_DELAI = Palette.mix(Palette.ATTENUE, Palette.VERRE, 0.4f);
 
-   private enum Etat { PRET, DELAI, IMPOSSIBLE, ALLONGE }
+   private enum Etat { PRET, DELAI, RECHARGE, IMPOSSIBLE, ALLONGE }
 
    private static final Anim.Fondu FONDU = new Anim.Fondu();
    private static final TexteHud SECONDES = new TexteHud(PoliceHud.CHIFFRE_PETIT);
@@ -74,7 +78,9 @@ public final class HudAllonge {
       } else if (restant > 0L) {
          etat = Etat.DELAI;
       } else {
-         etat = Etat.PRET;
+         // s'allonger sur place est permis ; le plongeon (même touche en se déplaçant) a son propre délai
+         restant = AllongeClient.plongeonRestantMs();
+         etat = restant > 0L ? Etat.RECHARGE : Etat.PRET;
       }
 
       float cx = Formes.caler(GAUCHE + R), cy = Formes.caler(h - MILIEU_BAS);
@@ -97,6 +103,12 @@ public final class HudAllonge {
             Formes.arc(vc, m, cx, cy, r0, r1, 0f, fait, Palette.argb(Palette.ALERTE, 0.95f * a), px);
             soldat = Palette.argb(GRIS_DELAI, a);
          }
+         case RECHARGE -> {
+            long total = Math.max(Allonge.delaiPlongeonMs(), restant);
+            float fait = total <= 0L ? 1f : 1f - (float) restant / total;
+            Formes.arc(vc, m, cx, cy, r0, r1, 0f, fait, Palette.argb(Palette.TEXTE, 0.55f * a), px);
+            soldat = Palette.argb(Palette.TEXTE, a);
+         }
          case ALLONGE -> {
             Formes.arc(vc, m, cx, cy, r0, r1, 0f, 1f, Palette.argb(Palette.OK, 0.9f * a), px);
             soldat = Palette.argb(Palette.OK, a);
@@ -109,7 +121,7 @@ public final class HudAllonge {
       }
       g.flush();
 
-      if (etat == Etat.DELAI) {
+      if (etat == Etat.DELAI || etat == Etat.RECHARGE) {
          long s = Math.max(1L, (restant + 999L) / 1000L);
          if (s != secondesAffichees) {
             SECONDES.texte(s + " s");

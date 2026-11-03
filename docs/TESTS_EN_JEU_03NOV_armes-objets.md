@@ -2,7 +2,7 @@
 
 Retours du propriétaire après son premier passage en jeu (02/11 au soir), points 1 à 8 de ce chantier.
 
-Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.48.0 (`armes`, suite du 03/11, coups mieux timés et icône « s'allonger » avec le plongeon compris), Loot 0.14.8,
+Jars touchés (joueurs ET serveur, même fabrication des deux côtés) : HeraliZ Tactique 2.48.1 (`armes`, suite du 03/11, coups mieux timés et icône « s'allonger » avec le plongeon compris), Loot 0.14.8,
 Monde 1.0.12. Données changées (mise en ligne complète puis redémarrage) : gunpacks `heraliz_5_couteaux_cs2` (fiche des
 couteaux TaCZ) et `heraliz_crafts` (3 recettes retirées, listées dans `serveur/tacz_retires.txt`), tables de loot T1 à T7,
 `serveur/config/heraliz_quetes/pnj/jacqueline.json`, `serveur/config/heralizcrates/quete.json`,
@@ -102,6 +102,14 @@ Une fois en jeu, regarder le petit rond en bas à gauche, à la hauteur du milie
 - **Délai** : se relever ; l'icône passe en gris, un anneau ambre se remplit dans le sens des aiguilles d'une montre et
   les secondes restantes s'affichent à droite (« 3 s », « 2 s »…). Quand l'anneau est plein, l'icône redevient blanche
   et la touche « Ramper » marche du premier coup. Appuyer pendant le délai : toujours le message d'attente, comme avant.
+- **Plongeon qui revient** (Tactique 2.48.1, rendus `plongeon_1_echelle3.png`, `plongeon_2_echelle4.png`,
+  `plongeon_3_zoom.png` à valider d'abord) : après un plongeon, il faut 6 s (comptées depuis son début) avant d'en refaire
+  un, alors que s'allonger sur place redevient possible dès la fin du délai ambre. Pendant ce temps : soldat blanc
+  (s'allonger sur place marche), l'anneau clair se remplit et les secondes avant le prochain plongeon s'affichent ; plein,
+  plonger remarche. À essayer : plonger, rester allongé 1 s, se relever : ambre jusqu'à la fin du délai, puis blanc qui
+  finit de se remplir, puis prêt ; plonger de nouveau dès que l'anneau est plein (pas de message « Tu pourras plonger
+  dans… ») ; plonger en gardant la touche de saut enfoncée (on retombe debout) : pas d'ambre, l'anneau blanc se remplit
+  tout de suite. S'allonger sur place pendant l'anneau blanc : doit marcher.
 - **Impossible** : soldat gris barré de rouge à terre (Réanimation), en train de fouiller un corps ou de réanimer,
   dans un véhicule ou dans l'eau. En sortir : l'icône redevient blanche (ou grise si le délai court encore).
 - Refus du serveur (fort ping, se rallonger tout juste à la fin du délai) : l'icône repasse en délai avec le temps

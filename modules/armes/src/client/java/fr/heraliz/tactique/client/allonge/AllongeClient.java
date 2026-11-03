@@ -314,6 +314,15 @@ public final class AllongeClient {
       return phasePlongeon != Plongeon.AUCUN;
    }
 
+   /**
+    * Millisecondes avant de pouvoir plonger de nouveau (0 : tout de suite, ou plongeon coupé par le réglage), sans compter
+    * le délai pour se rallonger ({@link #restantMs()}) : même calcul que la touche ({@link #tenterPlongeon}), délai entre
+    * deux plongeons compté depuis le dernier accepté, et attente annoncée par un refus du serveur. Lu par l'icône HudAllonge.
+    */
+   public static long plongeonRestantMs() {
+      return Allonge.plongeonActif() ? plongeonRestantMs(Allonge.maintenant()) : 0L;
+   }
+
    /** Millisecondes avant de pouvoir plonger de nouveau (0 : tout de suite). */
    private static long plongeonRestantMs(long t) {
       long local = dernierPlongeonA == 0L ? 0L : dernierPlongeonA + Allonge.delaiPlongeonMs() - t;
