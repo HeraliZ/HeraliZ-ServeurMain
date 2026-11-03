@@ -89,3 +89,16 @@ dedans, un objet à vie (couteau), un objet tenu à la souris en lançant le tut
 
 - [ ] Tutoriel avec Varga, dernière étape et fin : Varga explique de poser son home dans la vraie base avec
       `/sethome <nom>`, puis `/home` du spawn (fr, en, ru). Rien à taper dans le tutoriel.
+
+## Suite : éclairage des coffres qui « clignote » (Bases 1.33.2-beta)
+
+Cause : chaque coffre par rareté FERMÉ dessinait à chaque image son couvercle (malle, caisse d'armes) ou sa porte
+(casier, coffre-fort, avec la poignée) une deuxième fois, par-dessus celui du modèle du bloc, avec un autre calcul de
+lumière : les deux copies se départageaient au hasard (calcul de « fermé depuis un instant » qui débordait). Corrigé :
+la pièce n'est dessinée à part qu'ouvert et pendant 4 ticks après une fermeture.
+
+- [ ] Malle, casier, caisse d'armes, coffre-fort posés et fermés : de près, de loin, de jour, de nuit, près d'une torche,
+      en tournant autour : plus aucun clignotement ni éclairage qui saute ; même éclairage que les blocs voisins.
+- [ ] Ouvrir / fermer : l'animation marche ; à la fermeture, au plus un très bref instant (0,2 s) de double dessin.
+- [ ] Caisse en métal (pas concernée par ce défaut, elle n'a pas de pièce dessinée à part) : rien ne clignote non plus.
+- [ ] Coffres posés avant la mise à jour : mêmes contrôles.

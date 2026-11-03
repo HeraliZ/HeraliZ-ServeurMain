@@ -193,12 +193,21 @@ public class CoffreBlockEntity extends RandomizableContainerBlockEntity {
         return this.animOuvre ? t : 1F - t;
     }
 
-    /** La pièce mobile est à dessiner : coffre ouvert (modèle sans elle), ou fermé depuis un instant (modèle en route). */
+    /**
+     * La pièce mobile est à dessiner : coffre ouvert (modèle sans elle), ou fermé depuis un instant (modèle en route).
+     * <p>HeraliZ (03/11, « l'éclairage des coffres clignote ») : {@code fermeVu} vaut {@code Long.MIN_VALUE} tant que le
+     * joueur n'a pas vu ce coffre se fermer ; {@code getGameTime() - Long.MIN_VALUE} déborde et devient négatif, donc
+     * toujours « fermé depuis un instant » : chaque coffre fermé dessinait en plus, à chaque image, son couvercle (ou sa
+     * porte, son volant) par-dessus celui du modèle du bloc, au même endroit mais avec un éclairage calculé autrement. Les
+     * deux copies se départageaient au hasard : couvercle ou porte qui « clignote » (surtout les grandes faces de la malle
+     * et du coffre-fort). Il n'est plus dessiné qu'ouvert et pendant les {@link #RELAIS} ticks qui suivent une fermeture.
+     */
     public boolean mobileVisible() {
         if (this.level == null) {
             return false;
         }
-        return this.getBlockState().getValue(CoffreBlock.OPEN) || this.level.getGameTime() - this.fermeVu < RELAIS;
+        return this.getBlockState().getValue(CoffreBlock.OPEN)
+            || this.fermeVu != Long.MIN_VALUE && this.level.getGameTime() - this.fermeVu < RELAIS;
     }
 
     @Override
