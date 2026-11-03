@@ -13,14 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -30,11 +28,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Objets à vie de HeraliZ Tactique (couteaux, skins à vie) dans les bases : jamais au sol ni détruits (02/11, audit point
- * 8, règle du propriétaire : un objet à vie n'est jamais perdu, sauf si un admin le supprime).
+ * Objets à vie de HeraliZ Tactique (couteaux, skins à vie) dans les bases (02/11, audit point 8 ; revu le 03/11, règle du
+ * propriétaire : rangé dans un coffre avec confirmation, un objet à vie n'est plus à personne).
  * <ul>
- *   <li>Coffre ou caisse de CRac retiré (raid, chute faute d'appui, usure, démolition) : son contenu tombe comme avant,
- *   SAUF ses objets à vie, sortis avant et gardés pour le chef de la base (le propriétaire du groupe de son claim).</li>
+ *   <li>Coffre ou caisse de CRac retiré (raid, chute faute d'appui, usure, démolition) : tout son contenu tombe, objets à
+ *   vie compris (03/11 ; avant : gardés pour le chef de la base). Au sol, ils ne brûlent pas ; celui qui les ramasse les
+ *   garde.</li>
+ *   <li>Pilleur : il prend un objet à vie dans un coffre comme le reste ({@code lifetimeItemsOwnerOnly} faux par défaut
+ *   depuis le 03/11, voir {@link #peutPrendre}).</li>
  *   <li>Base effacée ({@code /base effacer}, fin du tutoriel sans place, {@code /wipe}) : les objets à vie de ses
  *   conteneurs et ceux restés au sol sont gardés pour son propriétaire au lieu de disparaître.</li>
  *   <li>Gardés avec le monde principal ({@code data/crac_objets_a_vie.dat}) et rendus dans l'inventaire du joueur tout
@@ -81,33 +82,6 @@ public final class ObjetsAVieBases extends SafeSavedData {
         }
     }
 
-    /** Le chef de la base qui contient {@code pos} (propriétaire du groupe de son claim), ou null hors de tout claim. */
-    @Nullable
-    static UUID chefDe(ServerLevel level, BlockPos pos) {
-        Claim c = ClaimManager.getAt(level, pos);
-        Group g = c == null ? null : GroupData.get(level.getServer()).getById(c.groupId());
-        return g == null ? null : g.owner();
-    }
-
-    /**
-     * Un conteneur de CRac va être retiré et son contenu tomber : ses objets à vie en sont sortis et gardés pour le chef de
-     * la base (appelé par CoffreBlock et MetalCrateBlock, juste avant de faire tomber le reste).
-     */
-    public static void avantChute(ServerLevel level, BlockPos pos, Container c) {
-        UUID chef = null;
-        boolean cherche = false;
-        for (int i = 0; i < c.getContainerSize(); i++) {
-            ItemStack s = c.getItem(i);
-            if (estAVie(s)) {
-                if (!cherche) {
-                    chef = chefDe(level, pos);
-                    cherche = true;
-                }
-                garder(level.getServer(), chef, c.removeItemNoUpdate(i), "conteneur retiré en " + pos.toShortString());
-            }
-        }
-    }
-
     /** Dernier refus montré à chaque joueur (ms), pour ne pas répéter le message à chaque clic. */
     private static final Map<UUID, Long> REFUS_MONTRE = new java.util.HashMap<>();
 
@@ -116,8 +90,9 @@ public final class ObjetsAVieBases extends SafeSavedData {
      * conteneur d'une base (bloc dans un claim) ne sort qu'avec ceux qui peuvent ouvrir les coffres de cette base (son clan
      * avec le droit « Ouvrir les coffres », accès donnés dans l'armoire) : un pilleur le voit mais ne peut pas le prendre,
      * il reste dans le conteneur. Libres : créatif, spectateur, staff (comme {@link Protections#coffres}), conteneur hors
-     * claim, claim sans groupe. Réglage {@code lifetimeItemsOwnerOnly} de crac-server.toml. Appelé par le mixin serveur
-     * de {@code Slot.mayPickup} (seulement au clic) ; vrai pour tout le reste.
+     * claim, claim sans groupe. Réglage {@code lifetimeItemsOwnerOnly} de crac-server.toml, faux par défaut depuis le 03/11
+     * (choix du propriétaire : le pilleur prend l'objet à vie comme le reste et en devient le propriétaire) : vrai pour
+     * tout le monde. Appelé par le mixin serveur de {@code Slot.mayPickup} (seulement au clic) ; vrai pour tout le reste.
      */
     public static boolean peutPrendre(ServerPlayer p, net.minecraft.world.level.block.entity.BlockEntity be, ItemStack s) {
         if (s.isEmpty() || p.isCreative() || p.isSpectator() || p.hasPermissions(2) || !(be.getLevel() instanceof ServerLevel level)

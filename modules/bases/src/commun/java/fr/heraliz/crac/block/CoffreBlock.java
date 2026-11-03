@@ -444,11 +444,8 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         if (!state.is(newState.getBlock())) {
             Adosse.changement();   // les cases de mur voisines refont leur forme (sans le coffre)
             if (!state.getValue(ANNEXE) && level.getBlockEntity(pos) instanceof CoffreBlockEntity be) {
-                // 02/11 (audit point 8) : ses objets à vie ne tombent pas, ils sont gardés pour le chef de la base
-                fr.heraliz.crac.pont.Serveur.Moteur ms = fr.heraliz.crac.pont.Serveur.MOTEUR;
-                if (level instanceof ServerLevel sla && ms != null) {
-                    ms.objetsAVieAvantChute(sla, pos, be);
-                }
+                // 03/11 (choix du propriétaire) : tout tombe, objets à vie compris (ils ne brûlent pas, celui qui les
+                // ramasse les garde) ; avant : gardés pour le chef de la base
                 Containers.dropContents(level, pos, be);
             }
             fr.heraliz.crac.pont.Serveur.Moteur m = fr.heraliz.crac.pont.Serveur.MOTEUR;
