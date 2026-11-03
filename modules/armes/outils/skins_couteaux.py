@@ -542,10 +542,44 @@ PORTEE_COUTEAUX = 1.0
 PORTEE_A_PART = set()
 
 
+# Moment du coup calé sur l'animation (03/11, retour du propriétaire : « les dégâts arrivent parfois trop tôt ou trop
+# tard ») : quand l'animation d'un coup a un bruit d'attaque (nom contenant « attack ») à un instant précis, cet instant
+# est l'impact, et le délai du coup (ticks entre l'appui et la prise des cibles, joueur et serveur) y est mis. Clic
+# gauche : melee_1 et melee_2 alternent, avec chacun son impact ; l'animation lit le compte des coups APRÈS l'appui
+# (1er coup : melee_2) et la fiche AVANT (1er coup : 1re entrée), d'où la liste [melee_2, melee_1]. Clic droit : melee_3.
+# Aujourd'hui seule la batte a ces bruits (0,31 / 0,22 / 0,54 s : 6 / 4 / 11 ticks au lieu de 7 / 7 / 12) ; les autres
+# armes gardent le délai de leur fiche.
+def impacts_animation(couteau):
+    """{melee_1|melee_2|melee_3: ticks de l'impact} lus dans les bruits d'attaque de l'animation de l'arme."""
+    aff = lire_json(MELEE_ASSETS / "display" / "melee" / (couteau + ".json"))
+    chemin = aff.get("animation", "").partition(":")[2]
+    clips = lire_json(MELEE_ASSETS / "animations" / (chemin + ".animation.json")).get("animations", {}) if chemin else {}
+    out = {}
+    for c in ("melee_1", "melee_2", "melee_3"):
+        # un bruit au tout début (moins de 0,1 s) est le souffle lancé à l'appui, pas l'impact (Push : « …attack… » à 0)
+        temps = [float(t) for t, s in clips.get(c, {}).get("sound_effects", {}).items()
+                 if float(t) >= 0.1 and "attack" in (s.get("effect", "") if isinstance(s, dict) else str(s))]
+        if temps:
+            out[c] = max(1, int(round(min(temps) * 20.0)))
+    return out
+
+
 def reglages_en_main(couteau, fiche):
-    """Bonus de vitesse en main (VITESSE_EN_MAIN, sinon VITESSE_COUTEAUX) et, pour un couteau, portée de chaque coup
-    (PORTEE_COUTEAUX), écrits dans la fiche."""
+    """Bonus de vitesse en main (VITESSE_EN_MAIN, sinon VITESSE_COUTEAUX), moment des coups calé sur l'animation
+    (impacts_animation) et, pour un couteau, portée de chaque coup (PORTEE_COUTEAUX), écrits dans la fiche."""
     data = fiche.setdefault("data", OrderedDict())
+    attaques = data.get("attack", {})
+    impacts = impacts_animation(couteau)
+    gauche = attaques.get("attack_left")
+    if isinstance(gauche, dict) and "melee_1" in impacts and "melee_2" in impacts:
+        coups = []
+        for clip in ("melee_2", "melee_1"):
+            coup = json.loads(json.dumps(gauche), object_pairs_hook=OrderedDict)
+            coup["delay"] = impacts[clip]
+            coups.append(coup)
+        attaques["attack_left"] = coups
+    if isinstance(attaques.get("attack_right"), dict) and "melee_3" in impacts:
+        attaques["attack_right"]["delay"] = impacts["melee_3"]
     attributs = data.setdefault("attributes", OrderedDict())
     attributs["minecraft:generic.movement_speed"] = OrderedDict(
         [("amount", VITESSE_EN_MAIN.get(couteau, VITESSE_COUTEAUX)), ("operation", "percent")])

@@ -37,6 +37,7 @@ public final class PartieClient implements Partie {
       ThrowableItem.RENDU_CLIENT.brancher(PartieClient::renduLancer);
       FlashShieldItem.RENDU_CLIENT.brancher(PartieClient::renduBouclier);
       CombatProperties.SON_ATTAQUE_CLIENT.brancher(PartieClient::sonAttaque);
+      CombatProperties.SON_IMPACT_CLIENT.brancher(PartieClient::sonImpact);
    }
 
    // MeleeItem.initializeClient (d'origine)
@@ -120,6 +121,17 @@ public final class PartieClient implements Partie {
                }
             }
          );
+   }
+
+   /** HeraliZ (03/11) : bruit d'impact du coup chez le frappeur, à l'impact de son animation (CombatProperties.DelayAttack). */
+   static void sonImpact(CombatProperties.SonAttaque s) {
+      HeraliszTacticalClientAPI.getMeleeDisplay(s.stack()).ifPresent(display -> {
+         net.minecraft.resources.ResourceLocation son = display.getSounds().get(s.action().getId() + "_hit");
+         if (son != null) {
+            s.joueur().level().playLocalSound(s.origine().x, s.origine().y, s.origine().z, SoundEvent.createVariableRangeEvent(son),
+               SoundSource.PLAYERS, 1.0F, 1.0F, false);
+         }
+      });
    }
 
    /** Ancien ThrowableItem.triggerAnimation (@OnlyIn(CLIENT), jamais appelé dans le mod) : gardé ici, côté client. */

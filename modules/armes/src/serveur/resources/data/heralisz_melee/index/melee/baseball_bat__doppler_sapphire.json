@@ -22,29 +22,55 @@
     "max_durability": 240,
     "enchantment_value": 8,
     "attack": {
-      "attack_left": {
-        // 伤害倍率
-        "factor": 1,
-        // 击退
-        "knockback": 0.25,
-        // 攻击冷却(tick)
-        "cooldown": 24,
-        // 延迟出伤(tick)
-        "delay": 7,
-        // 判定类型
-        "hitbox": {
-          // 圆锥区域
-          "type": "cone",
-          // 最大距离
-          "max_range": 1.0,
-          // 角度
-          "max_angle": 110,
-          // 排除自己
-          "exclude_self": true
+      // délais calés sur l'animation (03/11) : 1re entrée = melee_2 (impact 0,22 s), 2e = melee_1 (0,31 s)
+      "attack_left": [
+        {
+          // 伤害倍率
+          "factor": 1,
+          // 击退
+          "knockback": 0.25,
+          // 攻击冷却(tick)
+          "cooldown": 24,
+          // 延迟出伤(tick)
+          "delay": 4,
+          // 判定类型
+          "hitbox": {
+            // 圆锥区域
+            "type": "cone",
+            // 最大距离
+            "max_range": 1.0,
+            // 角度
+            "max_angle": 110,
+            // 排除自己
+            "exclude_self": true
+          },
+          // 如果攻击到实体的耐久度消耗
+          "durability_damage": 1
         },
-        // 如果攻击到实体的耐久度消耗
-        "durability_damage": 1
-      },
+        {
+          // 伤害倍率
+          "factor": 1,
+          // 击退
+          "knockback": 0.25,
+          // 攻击冷却(tick)
+          "cooldown": 24,
+          // 延迟出伤(tick)
+          "delay": 6,
+          // 判定类型
+          "hitbox": {
+            // 圆锥区域
+            "type": "cone",
+            // 最大距离
+            "max_range": 1.0,
+            // 角度
+            "max_angle": 110,
+            // 排除自己
+            "exclude_self": true
+          },
+          // 如果攻击到实体的耐久度消耗
+          "durability_damage": 1
+        }
+      ],
       "attack_right": {
         // 伤害倍率
         "factor": 1.5,
@@ -53,7 +79,7 @@
         // 攻击冷却(tick)
         "cooldown": 24,
         // 延迟出伤(tick)
-        "delay": 12,
+        "delay": 11,
         // 判定类型
         "hitbox": {
           // 圆锥区域

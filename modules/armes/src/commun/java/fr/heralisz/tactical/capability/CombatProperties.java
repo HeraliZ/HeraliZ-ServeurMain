@@ -50,6 +50,13 @@ public class CombatProperties {
    public record SonAttaque(Player joueur, ItemStack stack, MeleeAction action, Vec3 origine) {
    }
 
+   /**
+    * HeraliZ (03/11, « coups pas bien timés ») : bruit d'impact du coup (« attack_left_hit » / « attack_right_hit » de
+    * l'affichage de l'arme) joué chez le frappeur à l'impact de son animation, s'il a une cible à portée. Le serveur le
+    * joue aux autres joueurs (jamais au frappeur) : avant, le frappeur n'entendait aucun impact. Branché par PartieClient.
+    */
+   public static final Crochet<SonAttaque> SON_IMPACT_CLIENT = new Crochet<>();
+
    public CombatProperties(Player entity) {
       this.entity = entity;
    }
@@ -255,6 +262,13 @@ public class CombatProperties {
          if (this.stack.getItem() instanceof IMeleeWeapon weapon && weapon.isSame(this.stack, player.getMainHandItem())) {
             List<Entity> entities = weapon.collectTargets(player, this.stack, this.action, player.getEyePosition(), player.getLookAngle());
             NetworkHandler.CHANNEL.sendToServer(new CMeleeAttackRequest(this.action, this.actionCount, entities));
+            // HeraliZ (03/11) : impact entendu tout de suite par le frappeur (cible vivante à portée, vue par ce jeu)
+            for (Entity cible : entities) {
+               if (cible != player && cible instanceof net.minecraft.world.entity.LivingEntity vivant && vivant.isAlive()) {
+                  SON_IMPACT_CLIENT.accept(new SonAttaque(player, this.stack, this.action, player.getEyePosition()));
+                  break;
+               }
+            }
          }
       }
    }
