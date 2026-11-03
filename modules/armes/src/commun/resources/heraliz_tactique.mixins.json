@@ -6,8 +6,11 @@
   "refmap": "heraliz_tactique-commun.refmap.json",
   "mixins": [
     "LivingEntityCrawlMixin",
+    "ShooterDataHolderHorlogeMixin",
     "ShooterDataHolderMixin",
     "TaczHitboxCorpsMixin",
+    "TaczHorlogeBaseMixin",
+    "TaczHorlogeTirMixin",
     "TaczSilencieuxSansTraceuseMixin",
     "TaczTirsRefusesMixin",
     "TaczVerreBalleMixin"
