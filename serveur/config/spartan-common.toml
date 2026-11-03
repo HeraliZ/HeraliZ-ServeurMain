@@ -443,6 +443,11 @@
 	#Secret partagé avec le launcher (ou son serveur d'authentification) pour signer les jetons.
 	#Vide = vérification désactivée. Au moins 32 caractères aléatoires. NE JAMAIS LE PUBLIER.
 	launcherSecret = "__SPARTAN_LAUNCHER_SECRET__"
+	#Lien de téléchargement officiel du launcher, écrit en entier dans les messages de refus (launcher pas à
+	#jour, launcher qui ne répond pas, jeu lancé hors du launcher). Seul endroit de cette adresse côté serveur.
+	#Par défaut : le fichier Windows présenté par la page Launcher du site (Mac et Linux : page Launcher du site).
+	#Doit commencer par https://heraliz.fr/ (sinon le lien par défaut est utilisé).
+	lienTelechargement = "https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe"
 
 #Gardien : l'anticheat du launcher HeraliZ. Pendant la partie, le launcher reste en arrière-plan et regarde
 #depuis l'extérieur du jeu les programmes de triche connus (Cheat Engine, injecteurs, débogueurs,

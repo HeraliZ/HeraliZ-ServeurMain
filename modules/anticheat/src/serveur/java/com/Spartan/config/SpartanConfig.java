@@ -18,6 +18,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
  */
 public class SpartanConfig {
     public static final ForgeConfigSpec SPEC;
+    /** Lien de téléchargement du launcher (page Launcher du site : fichier Windows, comme theme_config('launcher')). */
+    public static final String LIEN_LAUNCHER_DEFAUT = "https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe";
 
     // --- général ---
     public static final ForgeConfigSpec.BooleanValue ENABLED;
@@ -106,6 +108,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.BooleanValue CAPTURE_REQUIRED;
     public static final ForgeConfigSpec.ConfigValue<String> LAUNCHER_SECRET;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ALLOWED_MODS_HASHES;
+    public static final ForgeConfigSpec.ConfigValue<String> LAUNCHER_LIEN;
 
     // --- correction instantanée ---
     public static final ForgeConfigSpec.BooleanValue MITIGATE_MOVEMENT;
@@ -507,6 +510,12 @@ public class SpartanConfig {
                 "Empreintes de dossier mods autorisées (vide = non vérifié). L'empreinte de chaque joueur",
                 "est écrite dans la console à sa connexion : ajoutez ici celle(s) de votre modpack officiel.")
                 .defineList("allowedModsHashes", List.of(), o -> o instanceof String);
+        LAUNCHER_LIEN = b.comment(
+                "Lien de téléchargement officiel du launcher, écrit en entier dans les messages de refus (launcher pas à",
+                "jour, launcher qui ne répond pas, jeu lancé hors du launcher). Seul endroit de cette adresse côté serveur.",
+                "Par défaut : le fichier Windows présenté par la page Launcher du site (Mac et Linux : page Launcher du site).",
+                "Doit commencer par https://heraliz.fr/ (sinon le lien par défaut est utilisé).")
+                .define("lienTelechargement", LIEN_LAUNCHER_DEFAUT);
         b.pop();
 
         b.comment("Gardien : l'anticheat du launcher HeraliZ. Pendant la partie, le launcher reste en arrière-plan et regarde",
@@ -915,6 +924,13 @@ public class SpartanConfig {
      * Un signal venant du jeu du joueur peut-il l'expulser ? Jamais en détection silencieuse
      * (par défaut), sinon seulement hors mode alerte.
      */
+    /** Lien de téléchargement du launcher pour les messages de refus : le réglage s'il est sur heraliz.fr, sinon le défaut. */
+    public static String lienLauncher() {
+        String v = LAUNCHER_LIEN.get();
+        String t = v == null ? "" : v.trim();
+        return t.startsWith("https://heraliz.fr/") && t.length() <= 200 && !t.matches(".*\\s.*") ? t : LIEN_LAUNCHER_DEFAUT;
+    }
+
     public static boolean mayKickForClientSignal() {
         return !SILENT_CLIENT.get() && !ALERT_ONLY.get();
     }

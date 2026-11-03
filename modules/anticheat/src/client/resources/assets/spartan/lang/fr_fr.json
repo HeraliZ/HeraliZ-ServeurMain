@@ -1,6 +1,6 @@
 {
   "spartan.expulsion.banni": "Vous êtes banni de ce serveur.\n\nRaison : %s\nDurée : %s",
-  "spartan.expulsion.launcher": "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)",
+  "spartan.expulsion.launcher": "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)\n\nTélécharger le launcher (Windows) :\n%s\nMac et Linux : page Launcher de heraliz.fr",
   "spartan.expulsion.version": "Votre version de Spartan n'est pas celle du serveur.\nRelancez le jeu depuis le launcher officiel pour la mettre à jour.",
   "spartan.expulsion.conformite": "Connexion refusée : ton jeu n'est pas identique au jeu officiel HeraliZ.\nFerme le jeu et relance-le depuis le launcher HeraliZ (il remet les fichiers officiels tout seul).",
   "spartan.expulsion.version_stricte": "Connexion refusée : ton jeu n'est pas à la version du serveur.\nFerme le jeu et relance-le depuis le launcher HeraliZ. Si tu viens de le faire, le serveur se met à jour : réessaie dans quelques minutes.",
@@ -13,7 +13,7 @@
   "spartan.expulsion.controle": "[Spartan] Expulsé : %s",
   "spartan.expulsion.capture": "Connexion refusée : acceptez les captures d'écran de l'anticheat dans le launcher HeraliZ.\n(Mettez le launcher à jour, puis cliquez sur « J'autorise et je joue ».)",
   "spartan.expulsion.gardien": "Lancez le jeu depuis le launcher HeraliZ à jour (anticheat du launcher requis).",
-  "spartan.expulsion.launcher_ancien": "Ton launcher HeraliZ n'est pas à jour.\nFerme-le complètement puis rouvre-le : il se met à jour tout seul (sinon, retélécharge-le sur heraliz.fr). Relance ensuite le jeu depuis le launcher.",
-  "spartan.expulsion.launcher_preuve": "Connexion refusée : le launcher HeraliZ ne répond pas (son anticheat doit rester ouvert pendant la partie).\nFerme le jeu, relance-le depuis le launcher HeraliZ à jour et laisse le launcher ouvert. Si ça recommence, contacte le staff.",
+  "spartan.expulsion.launcher_ancien": "Ton launcher HeraliZ n'est pas à jour.\nFerme-le complètement puis rouvre-le : il se met à jour tout seul. Sinon, télécharge le nouveau launcher, installe-le, puis relance le jeu depuis le launcher.\n\nTélécharger le launcher (Windows) :\n%s\nMac et Linux : page Launcher de heraliz.fr",
+  "spartan.expulsion.launcher_preuve": "Connexion refusée : le launcher HeraliZ ne répond pas (son anticheat doit rester ouvert pendant la partie).\nFerme le jeu, relance-le depuis le launcher HeraliZ à jour et laisse le launcher ouvert. Si ça recommence, contacte le staff.\n\nLauncher à jour :\n%s",
   "spartan.expulsion.injection": "Connexion fermée : un programme modifie le jeu ou s'y injecte (outil de triche, injecteur, débogueur).\nFerme-le, puis relance le jeu depuis le launcher HeraliZ."
 }

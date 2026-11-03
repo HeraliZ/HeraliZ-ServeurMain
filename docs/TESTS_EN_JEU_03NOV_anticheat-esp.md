@@ -1,6 +1,6 @@
 # Essais en jeu — chantier « anticheat-esp » (retours du 03/11)
 
-Spartan **2.11.0** (`anticheat`), launcher **1.16.2** (pas publié), extension du site **1.4.1**. Rien de tout cela n'a été
+Spartan **2.11.1** (`anticheat`), launcher **1.16.2** (pas publié), extension du site **1.4.1**. Rien de tout cela n'a été
 testé en jeu, sur le site en ligne ni sur un PC Windows. Gradle ne marche pas sur la machine de travail : seule la partie
 « mesure » du suivi à travers les murs (Java pur) a été compilée et essayée hors du jeu ; les tests du launcher passent ;
 les fichiers PHP passent `php -l`. Le reste sera compilé par le contrôle de branche de GitHub.
@@ -63,6 +63,11 @@ jour. Ferme-le complètement puis rouvre-le… ».
       comme avant.
 - [ ] Ancien launcher (1.15.x) : refus avec le message de mise à jour ; alerte « Gardien … connexion refusée : ancien
       launcher ».
+- [ ] (2.11.1) Les trois messages de refus du launcher (pas à jour, ne répond pas, jeu lancé hors du launcher) montrent
+      en entier, sur sa propre ligne, le lien `https://heraliz.fr/telecharger/HeraliZ-Launcher-Setup.exe` (réglage
+      `[launcher] lienTelechargement`), et « Mac et Linux : page Launcher de heraliz.fr ». Vérifier en français,
+      anglais et russe, et avec la plus grande taille d'interface (le lien ne doit pas être coupé). Il n'est pas
+      cliquable : l'écran de déconnexion de Minecraft n'ouvre pas les liens.
 - [ ] Jeu lancé autrement (CurseForge, Prism…) : refusé comme avant (« lancez le jeu depuis le launcher HeraliZ »).
 
 Pourquoi un refus propre et pas « faire crasher le jeu » : un plantage volontaire se contourne (le tricheur retire le code

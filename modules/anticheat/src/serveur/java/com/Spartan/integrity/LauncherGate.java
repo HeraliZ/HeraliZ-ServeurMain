@@ -99,7 +99,9 @@ public final class LauncherGate {
     public static void refuser(ServerPlayer p) {
         p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.launcher",
                 "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n"
-                        + "(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)"));
+                        + "(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)\n\n"
+                        + "Télécharger le launcher (Windows) :\n%s\nMac et Linux : page Launcher de heraliz.fr",
+                SpartanConfig.lienLauncher()));
     }
 
     /** Empreinte invalide, illisible, ou hors des modpacks autorisés. */

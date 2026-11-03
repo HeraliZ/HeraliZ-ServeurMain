@@ -362,15 +362,17 @@ public final class GardienServeur {
         p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.launcher_preuve",
                 "Connexion refusée : le launcher HeraliZ ne répond pas (son anticheat doit rester ouvert pendant la partie).\n"
                         + "Ferme le jeu, relance-le depuis le launcher HeraliZ à jour et laisse le launcher ouvert. Si ça"
-                        + " recommence, contacte le staff."));
+                        + " recommence, contacte le staff.\n\nLauncher à jour :\n%s", SpartanConfig.lienLauncher()));
         return true;
     }
 
     /** Message d'un launcher trop ancien (ou sans Gardien) : se mettre à jour, pas un reproche. */
     private static Component launcherAncien() {
         return Component.translatableWithFallback("spartan.expulsion.launcher_ancien",
-                "Ton launcher HeraliZ n'est pas à jour.\nFerme-le complètement puis rouvre-le : il se met à jour tout seul"
-                        + " (sinon, retélécharge-le sur heraliz.fr). Relance ensuite le jeu depuis le launcher.");
+                "Ton launcher HeraliZ n'est pas à jour.\nFerme-le complètement puis rouvre-le : il se met à jour tout seul."
+                        + " Sinon, télécharge le nouveau launcher, installe-le, puis relance le jeu depuis le launcher.\n\n"
+                        + "Télécharger le launcher (Windows) :\n%s\nMac et Linux : page Launcher de heraliz.fr",
+                SpartanConfig.lienLauncher());
     }
 
     /** Jeton sans clé du Gardien (launcher 1.15.x ou plus ancien) : selon {@code ancienLauncher}, et retour en arrière. */
