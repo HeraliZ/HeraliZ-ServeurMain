@@ -491,8 +491,8 @@ public final class DownedManagerServeur {
                      return;
                   }
 
-                  // objets à vie rangés dans ses sacs : rendus à la victime avant la fouille (audit du 02/11, point 8)
-                  fr.heraliz.reanimation.compat.ObjetsAVieFouille.proteger(target);
+                  // 03/11 (règle du propriétaire sur les objets à vie) : ceux rangés dans ses sacs suivent le sac (le
+                  // fouilleur peut le prendre avec) ; ceux de son inventaire restent à lui (SearchMenu)
                   // emplacements Curios de la victime (colonne a gauche de la fouille) ; aucun sans Curios
                   SearchMenu.Accessoires curios = CuriosFouille.de(target);
                   NetworkHooks.openScreen(
