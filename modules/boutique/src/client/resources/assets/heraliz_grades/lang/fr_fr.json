@@ -766,7 +766,7 @@
   "gui.heraliz_grades.staff.eco.motif_invite": "Pourquoi (obligatoire, noté au journal)…",
   "gui.heraliz_grades.staff.eco.note": "De 1 à %s par opération. Noté au journal du staff (qui, quoi, combien, motif) et sur Discord.",
   "gui.heraliz_grades.staff.eco.note_pb": "De 1 à %s PB par opération, par le site ; le site refuse au-delà de 50 000 PB donnés en 24 h (tout le serveur).",
-  "gui.heraliz_grades.staff.eco.note_xp": "De 1 à %s XP par opération. Retirer ne prend que l’XP du niveau en cours : le clan ne perd jamais de niveau.",
+  "gui.heraliz_grades.staff.eco.note_xp": "De 1 à %s XP par opération. Retirer peut faire redescendre le clan de niveau (améliorations et membres gardés).",
   "gui.heraliz_grades.staff.eco.incomplet": "Choisis une cible, un montant et écris un motif.",
   "gui.heraliz_grades.staff.eco.pret": "%1$s %2$s · %3$s",
   "gui.heraliz_grades.staff.eco.resume_donner": "donner %1$s %2$s à %3$s",

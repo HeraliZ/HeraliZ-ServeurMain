@@ -21,8 +21,8 @@ import java.util.Locale;
  *     journal de la saison ({@code heralisz_clans/saison_journal.log}) avec le Fondateur et son motif ; jamais en dessous
  *     de 0 (retirer plus que le clan n'a est refusé) ;</li>
  *     <li><b>XP du clan</b> : donnée comme {@code /clan admin xp} (source « admin », jamais plafonnée ; le clan peut monter
- *     de niveau) ; retirée seulement dans le niveau en cours (un clan ne redescend jamais de niveau : ses places de membre
- *     et ses améliorations restent) ; notée au journal du serveur.</li>
+ *     de niveau) ; retirée sur l'XP totale : le clan redescend de niveau si elle passe sous le palier (03/11, réponse du
+ *     propriétaire ; améliorations et membres gardés, voir {@link #redescendu}) ; notée au journal du serveur.</li>
  * </ul>
  */
 public final class PanelClans {
@@ -37,7 +37,7 @@ public final class PanelClans {
      * Résultat d'une lecture ou d'un changement : {@code code} = « ok », « introuvable » (aucun clan à ce tag),
      * « categorie » (catégorie inconnue), « insuffisant » (pas assez à retirer : {@code avant}), « indisponible » (clans pas
      * chargés), « montant » (montant hors bornes) ; tag et nom du clan ; valeur avant et après (points entiers, ou XP du
-     * niveau en cours) ; niveau du clan avant et après.
+     * niveau en cours ; XP totale pour un refus « insuffisant » d'XP) ; niveau du clan avant et après.
      */
     public record Resultat(String code, String tag, String nom, long avant, long apres, int niveauAvant, int niveauApres) {
         static Resultat non(String code, String tag) {
@@ -96,6 +96,22 @@ public final class PanelClans {
         return new Resultat("ok", c.tag, c.nom, avant, apres, c.niveau, c.niveau);
     }
 
+    /**
+     * Le clan vient de redescendre de niveau (XP retirée par le staff, 03/11). Choix les plus sûrs, comme au passage sur
+     * la nouvelle courbe du 31/10 (MigrationNiveaux) : rien n'est repris. Les améliorations déjà achetées restent (plus de
+     * point libre tant que les niveaux ne les couvrent plus) ; les membres au-delà de la nouvelle limite restent, mais le
+     * clan ne peut plus inviter tant qu'il est au-dessus ; ce que le NIVEAU ouvre se ferme tout seul (capture des zones
+     * sous le niveau 5 : {@link Clan#territoiresMax()}, déco du niveau). Le clan est prévenu ; noté au journal du serveur.
+     */
+    private static void redescendu(Clan c, int niveauAvant) {
+        ClanService.diffuserChat(c, ClanService.prefixe(c).append(net.minecraft.network.chat.Component.translatableWithFallback(
+                "msg.niveau.redescendu", "Correction du staff : le clan redescend au niveau %s (%s membres au plus, améliorations gardées).",
+                c.niveau, c.membresMax())));
+        for (net.minecraft.server.level.ServerPlayer p : ClanService.membresEnLigne(c)) p.refreshTabListName();
+        HeraliszClans.LOG.info("[clans] [{}] redescend du niveau {} au niveau {} (XP retiree par le staff) ; {} membres pour {} places",
+                c.tag, niveauAvant, c.niveau, c.membres.size(), c.membresMax());
+    }
+
     /** XP du clan dans son niveau en cours, sans rien changer ({@code avant} = XP, niveau). */
     public static Resultat voirXp(String tag) {
         ClanStore s = ClanStore.get();
@@ -107,7 +123,7 @@ public final class PanelClans {
 
     /**
      * Donne ({@code delta} &gt; 0, comme {@code /clan admin xp} : le clan peut monter de niveau) ou retire ({@code delta}
-     * &lt; 0, seulement l'XP du niveau en cours : jamais de niveau perdu) de l'XP au clan ; noté au journal du serveur.
+     * &lt; 0, sur l'XP totale : le niveau est recalculé et peut redescendre) de l'XP au clan ; noté au journal du serveur.
      */
     public static Resultat xp(String tag, long delta, String motif, String staff) {
         ClanStore s = ClanStore.get();
@@ -120,9 +136,22 @@ public final class PanelClans {
         if (delta > 0) {
             ClanService.ajouterXp(c, SourceXp.ADMIN, delta, null);
         } else {
-            if (-delta > c.xp) return new Resultat("insuffisant", c.tag, c.nom, avant, avant, niveauAvant, niveauAvant);
-            c.xp += delta;
+            // 03/11 (réponse du propriétaire) : retirer de l'XP fait redescendre le clan de niveau si son XP totale passe
+            // sous le palier : niveau recalculé depuis l'XP totale, comme une montée à l'envers
+            long total = c.xpTotale();
+            if (-delta > total) return new Resultat("insuffisant", c.tag, c.nom, total, total, niveauAvant, niveauAvant);
+            long reste = total + delta;
+            int niveau = 1;
+            while (niveau < Niveaux.MAX) {
+                long besoin = Niveaux.xpPour(niveau);
+                if (besoin <= 0 || reste < besoin) break;
+                reste -= besoin;
+                niveau++;
+            }
+            c.niveau = niveau;
+            c.xp = reste;
             s.marquerDirty();
+            if (niveau < niveauAvant) redescendu(c, niveauAvant);
         }
         Sync.marquer(c);
         HeraliszClans.LOG.info("[clans] [{}] XP du staff (panel) : {}{} par {} ({}) : niveau {} {}/{} -> niveau {} {}/{}", c.tag, delta > 0 ? "+" : "",

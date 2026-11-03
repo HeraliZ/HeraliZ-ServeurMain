@@ -766,7 +766,7 @@
   "gui.heraliz_grades.staff.eco.motif_invite": "Why (required, logged)…",
   "gui.heraliz_grades.staff.eco.note": "From 1 to %s per operation. Logged in the staff log (who, what, how much, reason) and on Discord.",
   "gui.heraliz_grades.staff.eco.note_pb": "From 1 to %s PB per operation, through the website; the website refuses beyond 50,000 PB given in 24 h (whole server).",
-  "gui.heraliz_grades.staff.eco.note_xp": "From 1 to %s XP per operation. Taking only removes XP of the current level: the clan never loses a level.",
+  "gui.heraliz_grades.staff.eco.note_xp": "From 1 to %s XP per operation. Taking can make the clan drop a level (upgrades and members kept).",
   "gui.heraliz_grades.staff.eco.incomplet": "Pick a target, an amount and type a reason.",
   "gui.heraliz_grades.staff.eco.pret": "%1$s %2$s · %3$s",
   "gui.heraliz_grades.staff.eco.resume_donner": "give %1$s %2$s to %3$s",

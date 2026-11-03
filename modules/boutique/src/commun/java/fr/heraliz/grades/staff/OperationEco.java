@@ -22,7 +22,7 @@ public enum OperationEco {
     PB(ActionStaff.ECO_PB, false, 20_000L, List.of(100L, 1_000L, 5_000L, 20_000L)),
     /** Points de saison du clan, dans une catégorie (PVE, PVP, événements), notés au journal de la saison. */
     SAISON(ActionStaff.ECO_SAISON, true, 100_000L, List.of(10L, 50L, 100L, 500L)),
-    /** XP du clan (donnée : le clan peut monter de niveau ; retirée : dans le niveau en cours seulement). */
+    /** XP du clan (donnée : le clan peut monter de niveau ; retirée : il peut redescendre, 03/11). */
     XP_CLAN(ActionStaff.ECO_XP_CLAN, true, 10_000_000L, List.of(1_000L, 10_000L, 50_000L, 100_000L));
 
     public final ActionStaff action;

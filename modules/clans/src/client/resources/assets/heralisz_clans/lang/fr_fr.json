@@ -835,6 +835,7 @@
   "gui.saison.c.objet_boite_noire_helico_plafond": "vendu à Mila au spawn, %s par clan et par jour au plus",
   "msg.niveau.capture": "Niveau %s : votre clan peut maintenant débloquer la capture des zones (amélioration Territoires, touche K, onglet Niveau).",
   "msg.niveau.membres": "Niveau %s : votre clan peut maintenant avoir %s membres.",
+  "msg.niveau.redescendu": "Correction du staff : le clan redescend au niveau %s (%s membres au plus, améliorations gardées).",
   "zone.etat.verrouillee": "Capture verrouillée",
   "gui.hud.verrouillee": "Capture verrouillée",
   "gui.tuile.territoires_niveau": "Niv. %s",

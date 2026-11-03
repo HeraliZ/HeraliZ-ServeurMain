@@ -835,6 +835,7 @@
   "gui.saison.c.objet_boite_noire_helico_plafond": "продажа Миле на спавне, не больше %s на клан в день",
   "msg.niveau.capture": "Уровень %s: теперь клан может открыть захват зон (улучшение «Территории», клавиша K, вкладка «Уровень»).",
   "msg.niveau.membres": "Уровень %s: теперь в клане может быть %s участников.",
+  "msg.niveau.redescendu": "Исправление персонала: клан опускается до уровня %s (не больше %s участников, улучшения сохранены).",
   "zone.etat.verrouillee": "Захват закрыт",
   "gui.hud.verrouillee": "Захват закрыт",
   "gui.tuile.territoires_niveau": "Ур. %s",

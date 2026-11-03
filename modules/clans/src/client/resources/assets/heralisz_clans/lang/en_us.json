@@ -835,6 +835,7 @@
   "gui.saison.c.objet_boite_noire_helico_plafond": "sold to Mila at spawn, %s per clan per day at most",
   "msg.niveau.capture": "Level %s: your clan can now unlock zone captures (Territories upgrade, K key, Level tab).",
   "msg.niveau.membres": "Level %s: your clan can now have %s members.",
+  "msg.niveau.redescendu": "Staff correction: the clan drops to level %s (%s members at most, upgrades kept).",
   "zone.etat.verrouillee": "Capture locked",
   "gui.hud.verrouillee": "Capture locked",
   "gui.tuile.territoires_niveau": "Lv. %s",

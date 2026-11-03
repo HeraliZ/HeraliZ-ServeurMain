@@ -766,7 +766,7 @@
   "gui.heraliz_grades.staff.eco.motif_invite": "Почему (обязательно, в журнал)…",
   "gui.heraliz_grades.staff.eco.note": "От 1 до %s за операцию. Записывается в журнал персонала (кто, что, сколько, причина) и в Discord.",
   "gui.heraliz_grades.staff.eco.note_pb": "От 1 до %s PB за операцию, через сайт; сайт откажет, если за 24 ч выдано больше 50 000 PB (на весь сервер).",
-  "gui.heraliz_grades.staff.eco.note_xp": "От 1 до %s опыта за операцию. Забрать можно только опыт текущего уровня: клан никогда не теряет уровень.",
+  "gui.heraliz_grades.staff.eco.note_xp": "От 1 до %s опыта за операцию. Если забрать, клан может потерять уровень (улучшения и участники остаются).",
   "gui.heraliz_grades.staff.eco.incomplet": "Выбери цель, сумму и напиши причину.",
   "gui.heraliz_grades.staff.eco.pret": "%1$s %2$s · %3$s",
   "gui.heraliz_grades.staff.eco.resume_donner": "выдать %1$s %2$s: %3$s",
