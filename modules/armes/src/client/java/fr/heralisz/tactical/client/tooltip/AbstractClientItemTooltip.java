@@ -30,11 +30,21 @@ public abstract class AbstractClientItemTooltip implements ClientTooltipComponen
    @Nullable
    private Component shiftHint;
    private int maxWidth;
+   /** HeraliZ (03/11) : rang du skin (étoiles allumées, total) lu dans la 1re ligne de description, dessiné par EtoilesRang. */
+   @Nullable
+   private int[] etoiles;
 
    protected void build(@Nullable String tooltipKey, List<TooltipLine> lines) {
       Font font = Minecraft.getInstance().font;
       if (tooltipKey != null && !tooltipKey.isEmpty()) {
          this.desc = font.split(Component.translatable(tooltipKey), 300);
+         // HeraliZ (03/11) : ligne d'étoiles du rang d'un skin de couteau -> étoiles nettes dessinées (renderImage)
+         this.etoiles = this.desc.isEmpty() ? null : fr.heraliz.tactique.client.couteaux.EtoilesRang.lire(this.desc.get(0));
+         if (this.etoiles != null) {
+            this.desc = new ArrayList<>(this.desc);
+            this.desc.set(0, FormattedCharSequence.EMPTY);
+            this.maxWidth = Math.max(fr.heraliz.tactique.client.couteaux.EtoilesRang.largeur(this.etoiles[1]), this.maxWidth);
+         }
 
          for (FormattedCharSequence sequence : this.desc) {
             this.maxWidth = Math.max(font.width(sequence), this.maxWidth);
@@ -131,6 +141,11 @@ public abstract class AbstractClientItemTooltip implements ClientTooltipComponen
       }
    }
 
-   public void renderImage(Font font, int mouseX, int mouseY, GuiGraphics guiGraphics) {
+   /** HeraliZ (03/11) : étoiles du rang du skin à la place de la 1re ligne de description (vidée par build). */
+   public void renderImage(Font font, int pX, int pY, GuiGraphics guiGraphics) {
+      int[] rang = this.etoiles;
+      if (rang != null && this.desc != null && !this.desc.isEmpty()) {
+         fr.heraliz.tactique.client.couteaux.EtoilesRang.dessiner(guiGraphics, pX, pY + 2, rang[0], rang[1]);
+      }
    }
 }

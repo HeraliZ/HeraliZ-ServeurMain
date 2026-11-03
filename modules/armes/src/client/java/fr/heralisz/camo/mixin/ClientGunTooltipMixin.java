@@ -38,7 +38,11 @@ public abstract class ClientGunTooltipMixin {
    private net.minecraft.network.chat.MutableComponent gunType;
    @Shadow
    private net.minecraft.network.chat.MutableComponent damage;
+   @Shadow
+   private java.util.List<net.minecraft.util.FormattedCharSequence> desc;
    private boolean heraliz$sansNiveau;
+   /** Rang du skin de couteau (étoiles allumées, total), lu dans la 1re ligne de description (03/11). */
+   private int[] heraliz$etoiles;
 
    @Inject(method = "shouldShow", at = @At("HEAD"), cancellable = true, require = 0)
    private void heraliz$masquer(GunTooltipPart part, CallbackInfoReturnable<Boolean> cir) {
@@ -75,6 +79,31 @@ public abstract class ClientGunTooltipMixin {
          this.damage = net.minecraft.network.chat.Component.empty();
       }
       this.heraliz$sansNiveau = true;
+   }
+
+   /**
+    * Couteaux (03/11, proposition A validée par le propriétaire) : la ligne d'étoiles « ★ » du rang du skin est vidée et
+    * remplacée par des étoiles nettes dessinées (EtoilesRang, heraliz$dessinerEtoiles).
+    */
+   @Inject(method = "getText", at = @At("TAIL"), require = 0)
+   private void heraliz$etoiles(org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+      if (this.desc == null || this.desc.isEmpty() || !fr.heraliz.tactique.onglets.Couteaux.estCouteau(this.gun)) return;
+      int[] rang = fr.heraliz.tactique.client.couteaux.EtoilesRang.lire(this.desc.get(0));
+      if (rang == null) return;
+      this.heraliz$etoiles = rang;
+      java.util.List<net.minecraft.util.FormattedCharSequence> copie = new java.util.ArrayList<>(this.desc);
+      copie.set(0, net.minecraft.util.FormattedCharSequence.EMPTY);
+      this.desc = copie;
+   }
+
+   /** Étoiles du rang à la place de la 1re ligne de description (décalée de 2 points, comme le texte de TaCZ). */
+   @Inject(method = {"renderImage", "m_183452_"}, at = @At("HEAD"), require = 0)
+   private void heraliz$dessinerEtoiles(net.minecraft.client.gui.Font font, int x, int y, net.minecraft.client.gui.GuiGraphics g,
+                                        org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+      int[] rang = this.heraliz$etoiles;
+      if (rang != null && this.desc != null) {
+         fr.heraliz.tactique.client.couteaux.EtoilesRang.dessiner(g, x, y + 2, rang[0], rang[1]);
+      }
    }
 
    @Inject(method = {"getHeight()I", "m_142103_()I"}, at = @At("RETURN"), cancellable = true, require = 0)
