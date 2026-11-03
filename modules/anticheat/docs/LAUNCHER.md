@@ -45,6 +45,15 @@ Code réel, à lire avant de changer quoi que ce soit (les deux côtés doivent 
 - **Jeu identique au jeu officiel** (`integrity.strictOfficial`) : voir le README (§ Jeu identique), `officiel.json` étant
   fabriqué avec le serveur par `outils/construire.py` (rien à faire à la main).
 - **Protections** : jeu sans `DisableAttachMechanism`, agent Java (`allowedJavaAgents` vide : aucun n'est permis) : écart.
+- **Launcher à jour et qui veille** (03/11, `[gardien]`) : jeu lancé sans Gardien (`required = true`) ou launcher 1.15 et
+  plus ancien (`ancienLauncher = "refuser"`) : refus « ton launcher n'est pas à jour, ferme-le et rouvre-le » ; launcher
+  1.16 et plus récent sans première preuve du Gardien dans les `preuveSecondes` (120 s) après le /login, ou avec un
+  rapport signé d'une autre clé avant toute preuve (`preuveExigee = "refuser"`) : refus « le launcher ne répond pas,
+  relance depuis le launcher et laisse-le ouvert ». Toujours un refus de connexion propre, jamais un plantage du jeu
+  (fragile, contournable, et un joueur honnête en pâtirait).
+- **Injection** (03/11, `[injection]`) : traces certaines d'un code étranger dans le jeu (agent, débogueur, anticheat
+  modifié en mémoire, client de triche connu, défi faux, code natif caché revu deux fois) ou injecteur / éditeur de
+  mémoire vu par le Gardien : alerte + capture + expulsion. Voir le README et la section du fichier de config.
 
 ## Le Gardien (section `[gardien]`)
 
@@ -63,12 +72,27 @@ le **défi** : 16 octets tirés par le serveur pour cette connexion et renouvel�
 jeu qui les écrit dans `spartan/gardien-defi.txt`, que le launcher recopie dans sa ligne. Un rapport sans le défi récent
 n'est pas « frais ».
 
-Alertes (jamais d'expulsion, sauf `required` et `ancienLauncher = "refuser"`) :
+Alertes (jamais d'expulsion en pleine partie, sauf les programmes de `[injection] outils` ; à la connexion : `required`,
+`ancienLauncher = "refuser"`, `preuveExigee = "refuser"`) :
 - « Gardien » : programme de triche ouvert, jar changé pendant la partie, rapport refusé (inventé, retouché, rejoué,
   d'un autre jeu), jeu lancé sans Gardien, ancien launcher (selon `ancienLauncher`), joueur revenu avec un ancien
   launcher après avoir eu le nouveau ;
 - « Gardien muet » : plus aucun rapport prouvé et frais depuis `silenceSeconds` (launcher fermé de force, jeu modifié qui
   ne transmet plus ou renvoie de vieux rapports).
+
+Liste des programmes (launcher 1.16.2) : noms par `tasklist /FO CSV /NH` (rapide ; PowerShell `Get-Process` en
+secours), titres des fenêtres à part par PowerShell. Avant, `tasklist /V` (titres et comptes de tous les programmes)
+dépassait souvent 12 s sur un PC chargé : « lecture impossible ». Un outil vu seulement dans un titre de fenêtre part
+marqué `outil.titre` : alerte, jamais expulsion.
+
+## Lancement bloqué par le launcher (launcher 1.16.2, site 1.4.1)
+
+Le launcher refuse de lancer le jeu (ou remet des fichiers en état) quand : un injecteur ou éditeur de mémoire est
+ouvert (nom de l'exécutable), un fichier du jeu diffère du pack signé, le Java du jeu a été modifié (remplacé ; refusé
+s'il l'est de nouveau aussitôt), des jars traînent dans le dossier mods (mis de côté), le pack est refusé (signature).
+Chaque cas est signalé au site (`POST /api/heraliz/launcher/refus`, compte connecté, raison d'une liste fermée, détail
+court sans chemin ni donnée personnelle), qui le poste dans le salon privé du staff (une alerte par compte et par raison
+toutes les 10 min ; synthèse au-delà de 5 comptes en 10 min).
 
 ## Mise en ligne d'un changement
 
