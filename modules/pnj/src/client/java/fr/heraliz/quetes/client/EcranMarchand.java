@@ -75,7 +75,7 @@ public final class EcranMarchand extends Screen {
 
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, 600, 330);
         pw = Math.min(600, width - 24);
         ph = Math.min(330, height - 20);
         px = (width - pw) / 2;

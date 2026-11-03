@@ -86,7 +86,7 @@ public final class EcranJournalieres extends Screen {
 
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, LARGEUR, HAUTEUR);
         pw = Math.min(LARGEUR, width - 16);
         ph = Math.min(HAUTEUR, height - 16);
         px = (width - pw) / 2;

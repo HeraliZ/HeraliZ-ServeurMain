@@ -33,9 +33,36 @@ public final class Echelle {
 
     /** A appeler au debut de init() : force l'echelle et recale width/height de l'ecran. */
     public static void forcer(Screen ecran) {
+        appliquer(ecran, voulue());
+    }
+
+    /**
+     * Ecran « panneau » (quetes, hotel des ventes, kits... : un panneau au milieu, pas tout le canevas), 03/11, retour du
+     * proprietaire (« on doit plisser les yeux ») : meme regle que {@link #forcer(Screen)}, puis jusqu'a deux demi-crans de
+     * plus (+0,5 ou +1) tant que le panneau de {@code largeur} x {@code hauteur} unites tient dans 90 % de la fenetre.
+     * Exemples pour un panneau de 560 x 320 : fenetre 1080p agrandie (1920 x 1009, l'ecran tombait a 2) -> 2,5 ;
+     * 1600 x 900 -> 2,5 ; plein ecran 1080p -> 3 (inchange) ; 1366 x 768 -> 2 (inchange). Jamais plus petit qu'avant.
+     * Une echelle non entiere est sans defaut pour le texte (lettres tracees a la finesse de l'ecran, heraliz_interface :
+     * PolicesDensite) et pour les formes posees sur les points de l'ecran (Net).
+     */
+    public static void forcer(Screen ecran, int largeur, int hauteur) {
+        appliquer(ecran, pourPanneau(largeur, hauteur));
+    }
+
+    /** Echelle d'un ecran panneau (voir {@link #forcer(Screen, int, int)}), par pas de 0,5. */
+    public static double pourPanneau(int largeur, int hauteur) {
         Window w = Minecraft.getInstance().getWindow();
-        int voulu = voulue();
-        if ((int) w.getGuiScale() != voulu) w.setGuiScale(voulu);
+        double base = voulue(), s = base;
+        for (double e = base + 0.5; e <= base + 1.0; e += 0.5) {
+            if (largeur * e > w.getWidth() * 0.9 || hauteur * e > w.getHeight() * 0.9) break;
+            s = e;
+        }
+        return s;
+    }
+
+    private static void appliquer(Screen ecran, double voulu) {
+        Window w = Minecraft.getInstance().getWindow();
+        if (w.getGuiScale() != voulu) w.setGuiScale(voulu);
         forcee = true;
         ecran.width = w.getGuiScaledWidth();
         ecran.height = w.getGuiScaledHeight();

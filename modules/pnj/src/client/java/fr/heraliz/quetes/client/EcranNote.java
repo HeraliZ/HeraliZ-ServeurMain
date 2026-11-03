@@ -38,7 +38,7 @@ public final class EcranNote extends Screen {
 
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, 340, 220);
         pw = Math.min(340, width - 40);
         lignes = font.split(Ui.lit(texte, Ui.FONT), pw - 36);
         ph = Math.min(height - 30, 52 + lignes.size() * 11 + 22);

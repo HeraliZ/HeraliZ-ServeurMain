@@ -39,7 +39,7 @@ public final class EcranClavier extends Screen {
 
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, 200, 214);
         pw = 200;
         ph = 214;
         px = (width - pw) / 2;

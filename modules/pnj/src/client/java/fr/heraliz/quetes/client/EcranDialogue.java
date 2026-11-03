@@ -79,7 +79,7 @@ public final class EcranDialogue extends Screen {
 
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, 500, 300);
         pw = Math.min(500, width - 40);
         px = (width - pw) / 2;
         List<FormattedCharSequence> l = font.split(Ui.lit(texte, Ui.FONT), pw - 32);

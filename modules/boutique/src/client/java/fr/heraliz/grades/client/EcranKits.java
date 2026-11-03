@@ -113,7 +113,7 @@ public final class EcranKits extends Screen {
     // ------------------------------------------------------------------ mise en page
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, 560, 300);
         pw = Math.min(560, width - 32);
         ph = Math.min(300, height - 24);
         px = (width - pw) / 2;

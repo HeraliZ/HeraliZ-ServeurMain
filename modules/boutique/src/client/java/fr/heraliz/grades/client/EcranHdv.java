@@ -210,7 +210,7 @@ public final class EcranHdv extends Screen {
     // ------------------------------------------------------------------ écran
     @Override
     protected void init() {
-        Echelle.forcer(this);
+        Echelle.forcer(this, GW, GH);
         ox = (width - GW) / 2;
         oy = (height - GH) / 2;
     }
