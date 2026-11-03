@@ -13,12 +13,12 @@ import net.minecraftforge.network.simple.SimpleChannel;
 /**
  * Canal reseau du mod : le client demande de baisser / relever les lunettes de vision nocturne ; le serveur envoie au
  * porteur de la tenue de plongee la reserve de sa bouteille (0.9.0, protocole 2), et a chaque joueur les reglages dont son
- * jeu a besoin (02/11, protocole 3 : ReglagesJoueur) ; cible d'essai (03/11, protocole 4 : PaquetsCible).
+ * jeu a besoin (02/11, protocole 3 : ReglagesJoueur) ; cible d'essai (03/11, protocoles 4 puis 5 : PaquetsCible).
  */
 public final class ArmoryNetwork {
     private ArmoryNetwork() {}
 
-    private static final String VERSION = "4";
+    private static final String VERSION = "5";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeralizArmory.id("main"), () -> VERSION, VERSION::equals,
             VERSION::equals);
 

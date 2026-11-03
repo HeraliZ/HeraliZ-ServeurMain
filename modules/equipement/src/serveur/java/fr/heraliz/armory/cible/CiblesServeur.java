@@ -2,7 +2,6 @@ package fr.heraliz.armory.cible;
 
 import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.api.event.common.EntityHurtByGunEvent;
-import fr.heraliz.armory.HeralizArmory;
 import fr.heraliz.armory.armor.ArmorConfig;
 import fr.heraliz.armory.armor.PieceDef;
 import fr.heraliz.armory.armor.Protection;
@@ -12,14 +11,12 @@ import fr.heraliz.armory.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -29,9 +26,7 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Cible d'essai, côté serveur (03/11) : mesure des coups, écran, pose et ramassage.
@@ -44,8 +39,7 @@ import java.util.UUID;
  *    <li><b>Balles de TaCZ</b> (si TaCZ est là) : EntityHurtByGunEvent.Pre en priorité la plus basse (après les réglages
  *    des armes : tête ou corps, plomb arrêté par le plafond d'un tir de fusil à pompe), puis .Post (fin de la balle : ses
  *    deux parts, normale et perce-armure, sont additionnées et envoyées au tireur).</li>
- *    <li><b>Pose</b> : staff (niveau 2) et créatif partout ; un joueur seulement dans la base de son clan, là où CRac lui
- *    donne le droit de construire, au plus {@code par_base} cibles par base ({@code [cible]} de heraliz_armory-common.toml).
+ *    <li><b>Pose</b> : seulement le staff (niveau 2) et le créatif, où ils veulent (03/11, choix du propriétaire).
  *    <b>Ramasser</b> : celui qui l'a posée, le staff, le créatif (bouton de l'écran) ; l'objet est rendu.</li>
  * </ul>
  * Rien ne tourne à chaque tick : seulement à un coup sur une cible, ou à un clic. Fil du serveur.
@@ -78,8 +72,8 @@ public final class CiblesServeur {
         if (tireur.hasDisconnected()) return;
         float distance = (float) tireur.getEyePosition().distanceTo(coup.point);
         ArmoryNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> tireur), new PaquetsCible.Touche(c.getId(), coup.point.x,
-                coup.point.y, coup.point.z, coup.zone, coup.avant, coup.recu, distance, coup.nomArme, coup.tir, coup.plafond, c.tenue(),
-                c.casque()));
+                coup.point.y, coup.point.z, coup.zone, coup.avant, coup.recu, distance, coup.nomArme, coup.tir, coup.plafond,
+                c.tenue()));
     }
 
     // ------------------------------------------------------------------ écran
@@ -99,7 +93,7 @@ public final class CiblesServeur {
             tete[i] = Math.min(plafond, (float) (h * mult));
         }
         ArmoryNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> joueur),
-                new PaquetsCible.Ouvrir(c.getId(), c.tenue(), c.casque(), peutRamasser(joueur, c), corps, tete));
+                new PaquetsCible.Ouvrir(c.getId(), c.tenue(), peutRamasser(joueur, c), corps, tete));
     }
 
     private static void action(PaquetsCible.Recu r) {
@@ -111,7 +105,7 @@ public final class CiblesServeur {
             return;
         }
         if (a.action() == PaquetsCible.CHOISIR) {
-            c.choisir(a.tenue(), a.casque());
+            c.choisir(a.tenue());
         } else if (a.action() == PaquetsCible.RAMASSER) {
             if (!peutRamasser(joueur, c)) {
                 dire(joueur, "message.heraliz_armory.cible.pas_a_toi", "Seul celui qui l'a posée (ou le staff) peut la ramasser.");
@@ -132,78 +126,14 @@ public final class CiblesServeur {
     }
 
     // ------------------------------------------------------------------ pose
-    /** Refus de la pose (message déjà dit au joueur), ou vrai si elle est permise. */
-    public static boolean posePermise(ServerPlayer joueur, ServerLevel sl, BlockPos pos) {
-        if (joueur.getAbilities().instabuild || joueur.hasPermissions(2)) return true;   // staff, créatif : partout
-        if (!ArmorConfig.CIBLE_EN_BASE.get()) {
-            dire(joueur, "message.heraliz_armory.cible.staff", "Seul le staff peut poser une cible d'essai.");
-            return false;
-        }
-        AABB base = BasesCrac.baseOu(joueur, sl, pos);
-        if (base == null) {
-            dire(joueur, "message.heraliz_armory.cible.base", "Une cible d'essai se pose seulement dans la base de ton clan.");
-            return false;
-        }
-        int max = ArmorConfig.CIBLE_PAR_BASE.get();
-        if (sl.getEntitiesOfClass(CibleEssai.class, base).size() >= max) {
-            dire(joueur, "message.heraliz_armory.cible.limite", "Cette base a déjà %s cible(s) d'essai.", max);
-            return false;
-        }
-        return true;
-    }
-
     /**
-     * Bases de CRac (module bases), par réflexion (aucune dépendance de compilation) : la zone de l'armoire qui contient ce
-     * bloc, si le joueur a le droit d'y construire (ClanAccess, droit BUILD). Sans CRac : aucune base.
+     * Pose permise ? 03/11 (choix du propriétaire) : seulement le staff (niveau 2) et le créatif, où ils veulent ; un joueur
+     * ne la pose nulle part (message dit au joueur).
      */
-    private static final class BasesCrac {
-        private static boolean cherche;
-        private static Method getAt, groupId, anchor, radius, yRadius, groupData, getById, allows;
-        private static Object construire;
-
-        @Nullable
-        static AABB baseOu(ServerPlayer joueur, ServerLevel sl, BlockPos pos) {
-            if (!cherche) chercher();
-            if (allows == null) return null;
-            try {
-                Object claim = getAt.invoke(null, sl, pos);
-                if (claim == null) return null;
-                Object groupe = getById.invoke(groupData.invoke(null, sl.getServer()), (UUID) groupId.invoke(claim));
-                if (!(boolean) allows.invoke(null, groupe, joueur.getUUID(), construire)) return null;
-                BlockPos a = (BlockPos) anchor.invoke(claim);
-                int r = (int) radius.invoke(claim), yr = (int) yRadius.invoke(claim);
-                return new AABB(a.getX() - r, a.getY() - yr, a.getZ() - r, a.getX() + r + 1, a.getY() + yr + 1, a.getZ() + r + 1);
-            } catch (ReflectiveOperationException | RuntimeException ex) {
-                HeralizArmory.LOGGER.warn("[cible] base de CRac illisible : {}", ex.toString());
-                return null;
-            }
-        }
-
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        private static void chercher() {
-            cherche = true;
-            if (ModList.get() == null || !ModList.get().isLoaded("crac")) return;
-            try {
-                Class<?> manager = Class.forName("fr.heraliz.crac.claim.ClaimManager");
-                Class<?> claim = Class.forName("fr.heraliz.crac.claim.Claim");
-                Class<?> data = Class.forName("fr.heraliz.crac.group.GroupData");
-                Class<?> group = Class.forName("fr.heraliz.crac.group.Group");
-                Class<?> acces = Class.forName("fr.heraliz.crac.heraliz.ClanAccess");
-                Class action = Class.forName("fr.heraliz.crac.heraliz.ClanAccess$Action");
-                getAt = manager.getMethod("getAt", ServerLevel.class, BlockPos.class);
-                groupId = claim.getMethod("groupId");
-                anchor = claim.getMethod("anchor");
-                radius = claim.getMethod("radius");
-                yRadius = claim.getMethod("yRadius");
-                groupData = data.getMethod("get", MinecraftServer.class);
-                getById = data.getMethod("getById", UUID.class);
-                construire = Enum.valueOf(action, "BUILD");
-                allows = acces.getMethod("allows", group, UUID.class, action);
-            } catch (ReflectiveOperationException | LinkageError ex) {
-                allows = null;
-                HeralizArmory.LOGGER.warn("[cible] bases de CRac introuvables : les joueurs ne posent pas de cible ({})", ex.toString());
-            }
-        }
+    public static boolean posePermise(ServerPlayer joueur, ServerLevel sl, BlockPos pos) {
+        if (joueur.getAbilities().instabuild || joueur.hasPermissions(2)) return true;
+        dire(joueur, "message.heraliz_armory.cible.staff", "Seul le staff peut poser une cible d'essai.");
+        return false;
     }
 
     // ------------------------------------------------------------------ balles de TaCZ (chargé seulement si TaCZ est là)

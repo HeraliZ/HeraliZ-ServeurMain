@@ -23,8 +23,8 @@ import java.util.Locale;
 /**
  * Écran de la cible d'essai (03/11) : choix de l'armure qu'elle porte, au style des écrans du clan (verre, DM Sans à sa
  * vraie taille, capitales espacées, aucun bouton de Minecraft). Une ligne par tenue (sans armure, ensembles du Commun à
- * l'Unique, combinaisons), avec la protection au corps et à la tête calculée par le serveur (vrai plafond) ; « Casque » :
- * les pièces de tête de la tenue, qu'on peut retirer ; « Ramasser » pour celui qui l'a posée et le staff. Un clic sur une
+ * l'Unique, combinaisons), avec la protection au corps et à la tête calculée par le serveur (vrai plafond) ; tenues
+ * complètes seulement, casque compris (choix du propriétaire) ; « Ramasser » pour le staff. Un clic sur une
  * ligne habille la cible tout de suite (le serveur vérifie la distance) ; on la voit derrière l'écran.
  */
 public class EcranCible extends Screen {
@@ -34,7 +34,6 @@ public class EcranCible extends Screen {
     private final PaquetsCible.Ouvrir ouvert;
     private final List<Tenues.Tenue> tenues = Tenues.TOUTES;
     private String choisie;
-    private boolean casque;
     private float defilement;
     private int x0, y0;
 
@@ -42,7 +41,6 @@ public class EcranCible extends Screen {
         super(Component.translatable("gui.heraliz_armory.cible.titre"));
         this.ouvert = ouvert;
         this.choisie = ouvert.tenue();
-        this.casque = ouvert.casque();
     }
 
     @Override
@@ -95,15 +93,9 @@ public class EcranCible extends Screen {
         }
         g.disableScissor();
         barre(g, lx + lw + 3, ly, lh);
-        // bas : casque, ramasser, fermer
+        // bas : ramasser, fermer
         int by = y0 + H - BAS + 8;
         Ui.hairline(g, x0 + 6, x0 + L - 6, by - 6, 0xFFFFFF, 30, true, true);
-        Tenues.Tenue t = Tenues.de(choisie);
-        boolean actif = t.aUnCasque();
-        boolean survol = actif && dans(mx, my, x0 + 10, by, 150, 16);
-        pastille(g, x0 + 10, by + 3, casque && actif, survol, actif);
-        texte(g, f, Component.translatable("gui.heraliz_armory.cible.casque").getString(), Ui.SMALL, 9.0F, x0 + 26, by + 8,
-                actif ? (survol ? Ui.TEXT : Ui.MUTED) : Ui.FAINT);
         int bx = x0 + L - 10;
         bx = bouton(g, f, Component.translatable("gui.heraliz_armory.cible.fermer").getString(), bx, by, mx, my, Ui.MUTED);
         if (ouvert.ramasser()) bouton(g, f, Component.translatable("gui.heraliz_armory.cible.ramasser").getString(), bx - 6, by, mx, my, Ui.OR);
@@ -125,7 +117,6 @@ public class EcranCible extends Screen {
         }
         float corps = i < ouvert.corps().length ? ouvert.corps()[i] : 0.0F;
         float tete = i < ouvert.tete().length ? ouvert.tete()[i] : 0.0F;
-        if (!casque && t.aUnCasque()) tete = 0.0F;
         droite(g, f, Math.round(corps) + " %", x + w - 56, cy, corps > 0 ? Ui.TEXT : Ui.FAINT);
         droite(g, f, Math.round(tete) + " %", x + w - 12, cy, tete > 0 ? Ui.TEXT : Ui.FAINT);
     }
@@ -137,17 +128,6 @@ public class EcranCible extends Screen {
         int ph = Math.max(14, Math.round(h * h / (float) (h + max)));
         int py = y + Math.round((h - ph) * (defilement / max));
         g.fill(x, py, x + 2, py + ph, Ui.argb(0xFFFFFF, 90));
-    }
-
-    private void pastille(GuiGraphics g, int x, int y, boolean coche, boolean survol, boolean actif) {
-        int a = actif ? 255 : 90;
-        if (coche) {
-            Ui.soft(g, x, y, 10, 10, Ui.argb(Ui.ACCENT, survol ? 255 : 215));
-        } else {
-            Ui.soft(g, x, y, 10, 10, Ui.argb(0xFFFFFF, survol ? 22 : 10));
-            Ui.softOutline(g, x + 1, y + 1, 8, 8, Ui.argb(0xFFFFFF, actif ? (survol ? 90 : 40) : 20));
-        }
-        if (coche) Ui.softOutline(g, x + 1, y + 1, 8, 8, Ui.argb(Ui.mix(Ui.ACCENT, 0xFFFFFF, 0.35F), a * 200 / 255));
     }
 
     /** Bouton texte aligné à droite sur {@code xDroit} ; rend son bord gauche. */
@@ -217,11 +197,6 @@ public class EcranCible extends Screen {
             }
         }
         int by = y0 + H - BAS + 8;
-        if (Tenues.de(choisie).aUnCasque() && dans(mx, my, x0 + 10, by, 150, 16)) {
-            casque = !casque;
-            envoyer(PaquetsCible.CHOISIR);
-            return true;
-        }
         Font f = this.font;
         int wFermer = (int) Ui.spacedWidth(f, Component.translatable("gui.heraliz_armory.cible.fermer").getString().toUpperCase(Locale.ROOT),
                 MINI_GRAS, 0.8F) + 16;
@@ -243,7 +218,7 @@ public class EcranCible extends Screen {
     }
 
     private void envoyer(byte action) {
-        ArmoryNetwork.CHANNEL.sendToServer(new PaquetsCible.Action(ouvert.entite(), action, choisie, casque));
+        ArmoryNetwork.CHANNEL.sendToServer(new PaquetsCible.Action(ouvert.entite(), action, choisie));
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 }

@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 /**
- * Paquets de la cible d'essai (03/11, canal heraliz_armory:main, protocole 4) :
+ * Paquets de la cible d'essai (03/11, canal heraliz_armory:main, protocole 5 : tenues complètes seulement) :
  * <ul>
  *    <li>{@link Ouvrir} (serveur → joueur) : écran du choix de l'armure, avec les protections de chaque tenue calculées par
  *    le serveur (vrai plafond, vrai multiplicateur : jamais envoyés autrement) ;</li>
@@ -22,13 +22,13 @@ public final class PaquetsCible {
 
     /**
      * @param corps protection (%) au corps de chaque tenue de {@link Tenues#TOUTES}, dans le même ordre
-     * @param tete  protection (%) à la tête, avec le casque de la tenue
+     * @param tete  protection (%) à la tête
      */
-    public record Ouvrir(int entite, String tenue, boolean casque, boolean ramasser, float[] corps, float[] tete) {}
+    public record Ouvrir(int entite, String tenue, boolean ramasser, float[] corps, float[] tete) {}
 
     public static final byte CHOISIR = 0, RAMASSER = 1;
 
-    public record Action(int entite, byte action, String tenue, boolean casque) {}
+    public record Action(int entite, byte action, String tenue) {}
 
     /** Zones d'un coup. */
     public static final byte CORPS = 0, TETE = 1, MELEE = 2, EXPLOSION = 3;
@@ -43,7 +43,7 @@ public final class PaquetsCible {
      * @param plafond  plomb arrêté par le plafond d'un tir de fusil à pompe (armes.json) : il ne fait rien
      */
     public record Touche(int entite, double x, double y, double z, byte zone, float arme, float recu, float distance,
-                         Component nomArme, long tir, boolean plafond, String tenue, boolean casque) {}
+                         Component nomArme, long tir, boolean plafond, String tenue) {}
 
     /** Action reçue par le serveur, avec son joueur. */
     public record Recu(ServerPlayer joueur, Action action) {}
@@ -58,12 +58,11 @@ public final class PaquetsCible {
                 .encoder((m, buf) -> {
                     buf.writeVarInt(m.entite());
                     buf.writeUtf(m.tenue(), Tenues.MAX_LETTRES);
-                    buf.writeBoolean(m.casque());
                     buf.writeBoolean(m.ramasser());
                     ecrire(buf, m.corps());
                     ecrire(buf, m.tete());
                 })
-                .decoder(buf -> new Ouvrir(buf.readVarInt(), buf.readUtf(Tenues.MAX_LETTRES), buf.readBoolean(), buf.readBoolean(),
+                .decoder(buf -> new Ouvrir(buf.readVarInt(), buf.readUtf(Tenues.MAX_LETTRES), buf.readBoolean(),
                         lire(buf), lire(buf)))
                 .consumerMainThread((m, ctx) -> {
                     RECEPTION_CLIENT.accept(m);
@@ -75,9 +74,8 @@ public final class PaquetsCible {
                     buf.writeVarInt(m.entite());
                     buf.writeByte(m.action());
                     buf.writeUtf(m.tenue(), Tenues.MAX_LETTRES);
-                    buf.writeBoolean(m.casque());
                 })
-                .decoder(buf -> new Action(buf.readVarInt(), buf.readByte(), buf.readUtf(Tenues.MAX_LETTRES), buf.readBoolean()))
+                .decoder(buf -> new Action(buf.readVarInt(), buf.readByte(), buf.readUtf(Tenues.MAX_LETTRES)))
                 .consumerMainThread((m, ctx) -> {
                     ServerPlayer joueur = ctx.get().getSender();
                     if (joueur != null) RECEPTION_SERVEUR.accept(new Recu(joueur, m));
@@ -98,11 +96,10 @@ public final class PaquetsCible {
                     buf.writeLong(m.tir());
                     buf.writeBoolean(m.plafond());
                     buf.writeUtf(m.tenue(), Tenues.MAX_LETTRES);
-                    buf.writeBoolean(m.casque());
                 })
                 .decoder(buf -> new Touche(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readByte(),
                         buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readComponent(), buf.readLong(), buf.readBoolean(),
-                        buf.readUtf(Tenues.MAX_LETTRES), buf.readBoolean()))
+                        buf.readUtf(Tenues.MAX_LETTRES)))
                 .consumerMainThread((m, ctx) -> {
                     RECEPTION_CLIENT.accept(m);
                     ctx.get().setPacketHandled(true);

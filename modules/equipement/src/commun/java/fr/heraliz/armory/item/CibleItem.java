@@ -22,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Pose une cible d'essai (03/11), tournée vers le joueur par pas de 45 degrés, comme le mannequin. Qui la pose et où :
- * décidé par le serveur (CibleItemServeur : staff et créatif partout, un joueur seulement dans la base de son clan).
+ * Pose une cible d'essai (03/11), tournée vers le joueur par pas de 45 degrés, comme le mannequin. Seulement par le staff
+ * et le créatif, où ils veulent (décidé par le serveur : CibleItemServeur, CiblesServeur.posePermise).
  * Jamais dans le loot, les fabrications ni chez les marchands : donnée par le staff ({@code /give}).
  */
 public class CibleItem extends Item {

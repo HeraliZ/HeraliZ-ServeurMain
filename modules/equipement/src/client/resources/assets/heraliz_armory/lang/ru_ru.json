@@ -376,14 +376,12 @@
   "item.heraliz_armory.cible_essai": "Тренировочная мишень",
   "entity.heraliz_armory.cible_essai": "Тренировочная мишень",
   "tooltip.heraliz_armory.cible_essai": "Получает урон точно как игрок (20 ОЗ) в выбранной броне: ПКМ пустой рукой, чтобы её выбрать. Урон показывается при каждом попадании.",
-  "tooltip.heraliz_armory.cible_essai.pose": "Ставится на базе вашего клана (персонал: где угодно).",
+  "tooltip.heraliz_armory.cible_essai.pose": "Ставится только персоналом.",
   "gui.heraliz_armory.cible.titre": "Тренировочная мишень",
   "gui.heraliz_armory.cible.aide": "Выберите броню: мишень получает урон как игрок (20 ОЗ).",
   "gui.heraliz_armory.cible.corps": "Тело",
   "gui.heraliz_armory.cible.tete": "Голова",
   "gui.heraliz_armory.cible.aucune": "Без брони",
-  "gui.heraliz_armory.cible.casque": "Шлем и маска комплекта",
-  "gui.heraliz_armory.cible.sans_casque": "без шлема",
   "gui.heraliz_armory.cible.ramasser": "Забрать",
   "gui.heraliz_armory.cible.fermer": "Закрыть",
   "gui.heraliz_armory.cible.etiquette": "Мишень · %s",
@@ -399,7 +397,5 @@
   "gui.heraliz_armory.cible.recap": "[Мишень] выстрелов: %s за %s с: получено %s (оружие %s, броня −%s %%)",
   "message.heraliz_armory.cible.loin": "Слишком далеко от мишени.",
   "message.heraliz_armory.cible.pas_a_toi": "Забрать её может только тот, кто поставил (или персонал).",
-  "message.heraliz_armory.cible.staff": "Ставить тренировочную мишень может только персонал.",
-  "message.heraliz_armory.cible.base": "Тренировочную мишень можно ставить только на базе вашего клана.",
-  "message.heraliz_armory.cible.limite": "На этой базе уже есть мишеней: %s."
+  "message.heraliz_armory.cible.staff": "Ставить тренировочную мишень может только персонал."
 }

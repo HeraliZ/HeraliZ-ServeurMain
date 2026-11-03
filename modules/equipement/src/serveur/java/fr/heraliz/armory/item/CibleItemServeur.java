@@ -18,7 +18,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 
 /**
  * Partie SERVEUR de {@link CibleItem} (docs/METHODE_CLIENT_SERVEUR.md §5.3) : pose de la cible d'essai, si elle est
- * permise (CiblesServeur.posePermise : staff et créatif partout, un joueur dans la base de son clan). Créée par l'usine
+ * permise (CiblesServeur.posePermise : staff et créatif seulement, où ils veulent). Créée par l'usine
  * ModItems.CIBLE_USINE, branchée par la partie serveur.
  */
 public class CibleItemServeur extends CibleItem {

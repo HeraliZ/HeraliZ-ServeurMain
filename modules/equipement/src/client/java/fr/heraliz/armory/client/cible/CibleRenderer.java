@@ -59,6 +59,6 @@ public class CibleRenderer extends LivingEntityRenderer<CibleEssai, CibleModel> 
 
     @Override
     protected void renderNameTag(CibleEssai e, Component nom, PoseStack pose, MultiBufferSource buffers, int light) {
-        super.renderNameTag(e, TextesCible.etiquette(e.tenue(), e.casque()), pose, buffers, light);
+        super.renderNameTag(e, TextesCible.etiquette(e.tenue()), pose, buffers, light);
     }
 }

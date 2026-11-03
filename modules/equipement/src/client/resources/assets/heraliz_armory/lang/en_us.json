@@ -376,14 +376,12 @@
   "item.heraliz_armory.cible_essai": "Test target",
   "entity.heraliz_armory.cible_essai": "Test target",
   "tooltip.heraliz_armory.cible_essai": "Takes hits exactly like a player (20 HP), wearing the armor of your choice: right-click with an empty hand to choose it. Damage is shown on every hit.",
-  "tooltip.heraliz_armory.cible_essai.pose": "Can be placed in your clan's base (staff: anywhere).",
+  "tooltip.heraliz_armory.cible_essai.pose": "Placed by staff only.",
   "gui.heraliz_armory.cible.titre": "Test target",
   "gui.heraliz_armory.cible.aide": "Choose its armor: it takes hits like a player (20 HP).",
   "gui.heraliz_armory.cible.corps": "Body",
   "gui.heraliz_armory.cible.tete": "Head",
   "gui.heraliz_armory.cible.aucune": "No armor",
-  "gui.heraliz_armory.cible.casque": "Outfit's helmet and mask",
-  "gui.heraliz_armory.cible.sans_casque": "without helmet",
   "gui.heraliz_armory.cible.ramasser": "Pick up",
   "gui.heraliz_armory.cible.fermer": "Close",
   "gui.heraliz_armory.cible.etiquette": "Test target · %s",
@@ -399,7 +397,5 @@
   "gui.heraliz_armory.cible.recap": "[Target] %s shot(s) in %s s: %s taken (weapon %s, armor −%s %%)",
   "message.heraliz_armory.cible.loin": "Too far from the target.",
   "message.heraliz_armory.cible.pas_a_toi": "Only whoever placed it (or staff) can pick it up.",
-  "message.heraliz_armory.cible.staff": "Only staff can place a test target.",
-  "message.heraliz_armory.cible.base": "A test target can only be placed in your clan's base.",
-  "message.heraliz_armory.cible.limite": "This base already has %s test target(s)."
+  "message.heraliz_armory.cible.staff": "Only staff can place a test target."
 }

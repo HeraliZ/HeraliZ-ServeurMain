@@ -15,9 +15,8 @@ import java.util.List;
  * Tenues proposées à la cible d'essai (03/11) : « sans armure », chaque ensemble de l'Armurerie qui a une tenue complète
  * (SetCatalog, du Commun à l'Unique, dans l'ordre de l'onglet), puis les combinaisons (SuitCatalog).
  * <p>La cible porte les VRAIS objets de la tenue, dans leurs vrais emplacements (armure de Minecraft et Curios) : le calcul
- * des protections (armor.Protection, ProtectionEvents) est donc exactement celui d'un joueur habillé ainsi. « Casque » =
- * les pièces de tête de l'ensemble (casque, visage), qu'on peut retirer ; une combinaison couvre tout le corps et n'a pas
- * de casque à part.</p>
+ * des protections (armor.Protection, ProtectionEvents) est donc exactement celui d'un joueur habillé ainsi. 03/11 (choix
+ * du propriétaire) : seulement des tenues complètes, casque compris, jamais de pièces mélangées.</p>
  */
 public final class Tenues {
     private Tenues() {}
@@ -33,21 +32,6 @@ public final class Tenues {
      * @param combinaison une combinaison intégrale (un seul objet, tout le corps)
      */
     public record Tenue(String id, int rang, List<PieceDef> pieces, boolean combinaison) {
-        /** La tenue a des pièces de tête qu'on peut retirer. */
-        public boolean aUnCasque() {
-            if (combinaison) return false;
-            for (PieceDef p : pieces) if (p.protectsHead()) return true;
-            return false;
-        }
-
-        /** Pièces portées par la cible : toutes, ou sans les pièces de tête. */
-        public List<PieceDef> portees(boolean casque) {
-            if (casque || combinaison) return pieces;
-            List<PieceDef> l = new ArrayList<>(pieces.size());
-            for (PieceDef p : pieces) if (!p.protectsHead()) l.add(p);
-            return l;
-        }
-
         /** Rareté (clé rarity.heraliz_armory.*), « none » sans armure. */
         public String rarete() {
             return rang <= 0 ? "none" : PieceItem.rarity(rang);

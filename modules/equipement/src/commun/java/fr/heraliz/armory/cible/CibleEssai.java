@@ -34,12 +34,11 @@ import net.minecraft.world.level.Level;
  *    <li>clic droit main vide (ou accroupi) : écran du choix de l'armure ;</li>
  *    <li>aucun recul, aucun effet (saignement, poison…), jamais en feu, poussée par personne.</li>
  * </ul>
- * Partie commune : état synchronisé (tenue, casque) et comportement lu des deux côtés. La logique (coups mesurés, tenue
+ * Partie commune : état synchronisé (tenue) et comportement lu des deux côtés. La logique (coups mesurés, tenue
  * enfilée, sauvegarde, écran) est dans {@code CibleEssaiServeur}, créée par l'usine (ModEntities.CIBLE_USINE).
  */
 public class CibleEssai extends LivingEntity {
     public static final EntityDataAccessor<String> TENUE = SynchedEntityData.defineId(CibleEssai.class, EntityDataSerializers.STRING);
-    public static final EntityDataAccessor<Boolean> CASQUE = SynchedEntityData.defineId(CibleEssai.class, EntityDataSerializers.BOOLEAN);
     /** Points de vie d'un joueur : base du « tué en N tirs ». */
     public static final float PV_JOUEUR = 20.0F;
     /** Yeux à la hauteur de ceux d'un joueur debout. */
@@ -56,15 +55,10 @@ public class CibleEssai extends LivingEntity {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(TENUE, Tenues.AUCUNE);
-        this.entityData.define(CASQUE, true);
     }
 
     public String tenue() {
         return this.entityData.get(TENUE);
-    }
-
-    public boolean casque() {
-        return this.entityData.get(CASQUE);
     }
 
     // ------------------------------------------------------------------ équipement (comme un porte-armure)

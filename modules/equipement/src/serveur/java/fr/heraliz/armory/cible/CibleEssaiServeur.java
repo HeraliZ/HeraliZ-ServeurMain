@@ -185,7 +185,7 @@ public class CibleEssaiServeur extends CibleEssai {
 
     // ------------------------------------------------------------------ tenue
     /** Enfile la tenue (les vrais objets, dans les vrais emplacements) ; tout le reste est retiré. */
-    void habiller(String id, boolean casque) {
+    void habiller(String id) {
         Tenues.Tenue t = Tenues.de(id);
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (slot.getType() == EquipmentSlot.Type.ARMOR) setItemSlot(slot, ItemStack.EMPTY);
@@ -197,17 +197,16 @@ public class CibleEssaiServeur extends CibleEssai {
                 }
             }
         }));
-        for (PieceDef def : t.portees(casque)) Equiper.piece(this, def, new ItemStack(ModItems.get(def)));
+        for (PieceDef def : t.pieces()) Equiper.piece(this, def, new ItemStack(ModItems.get(def)));
         entityData.set(TENUE, t.id());
-        entityData.set(CASQUE, casque);
     }
 
     /** Choix reçu de l'écran : au plus un changement toutes les {@link #ECART_CHOIX} ticks. */
-    boolean choisir(String id, boolean casque) {
+    boolean choisir(String id) {
         long t = level().getGameTime();
         if (t - dernierChoix < ECART_CHOIX || Tenues.index(id) < 0) return false;
         dernierChoix = t;
-        habiller(id, casque);
+        habiller(id);
         level().playSound(null, getX(), getY(), getZ(), SoundEvents.ARMOR_EQUIP_GENERIC, getSoundSource(), 1.0F, 1.0F);
         return true;
     }
@@ -217,7 +216,7 @@ public class CibleEssaiServeur extends CibleEssai {
         super.tick();
         if (aHabiller && !level().isClientSide) {
             aHabiller = false;
-            habiller(tenue(), casque());
+            habiller(tenue());
         }
     }
 
@@ -231,12 +230,11 @@ public class CibleEssaiServeur extends CibleEssai {
         CiblesServeur.ouvrir(joueur, this);
     }
 
-    // ------------------------------------------------------------------ sauvegarde (tenue, casque, poseur ; pas les objets)
+    // ------------------------------------------------------------------ sauvegarde (tenue, poseur ; pas les objets)
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putString("Tenue", tenue());
-        tag.putBoolean("Casque", casque());
         if (poseur != null) tag.putUUID("Poseur", poseur);
     }
 
@@ -244,7 +242,6 @@ public class CibleEssaiServeur extends CibleEssai {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.contains("Tenue")) entityData.set(TENUE, Tenues.de(tag.getString("Tenue")).id());
-        if (tag.contains("Casque")) entityData.set(CASQUE, tag.getBoolean("Casque"));
         poseur = tag.hasUUID("Poseur") ? tag.getUUID("Poseur") : null;
         aHabiller = true;
     }

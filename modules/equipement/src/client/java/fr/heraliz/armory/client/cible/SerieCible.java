@@ -17,7 +17,6 @@ final class SerieCible {
     static boolean active;
     static int entite = -1;
     static String tenue = "";
-    static boolean casque;
     static long debutMs, dernierMs;
     /** Tirs de la série, total reçu, total avant armure, tir où les 20 PV sont atteints (0 : pas encore). */
     static int tirs;
@@ -33,14 +32,13 @@ final class SerieCible {
 
     /** Ajoute un coup ; rend vrai s'il commence un nouveau tir. */
     static boolean ajouter(PaquetsCible.Touche t, long maintenant) {
-        if (active && (t.entite() != entite || !t.tenue().equals(tenue) || t.casque() != casque || maintenant - dernierMs > FIN_MS)) {
+        if (active && (t.entite() != entite || !t.tenue().equals(tenue) || maintenant - dernierMs > FIN_MS)) {
             active = false;
         }
         if (!active) {
             active = true;
             entite = t.entite();
             tenue = t.tenue();
-            casque = t.casque();
             debutMs = maintenant;
             tirs = 0;
             recu = arme = 0.0F;

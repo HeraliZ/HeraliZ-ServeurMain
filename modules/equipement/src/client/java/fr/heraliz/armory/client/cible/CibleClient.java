@@ -16,7 +16,8 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * Cible d'essai, côté joueur (03/11) : paquets reçus du serveur (écran du choix de l'armure, coups mesurés).
  * <ul>
- *    <li>chaque coup : une ligne au-dessus de la barre (zone, dégâts reçus, dégâts de l'arme, part prise par l'armure,
+ *    <li>chaque coup : le chiffre des dégâts reçus juste au-dessus de la cible (ChiffresCible), et une ligne au-dessus
+ *    de la barre (zone, dégâts reçus, dégâts de l'arme, part prise par l'armure,
  *    distance ; tir de fusil à pompe : tous ses plombs ensemble) ;</li>
  *    <li>fin d'une série (4 s sans coup) : un récapitulatif dans le chat (tirs, temps, total, « mort au tir n° N » sur les
  *    20 PV d'un joueur, arme, armure de la cible), qu'on peut relire pour équilibrer.</li>
@@ -41,12 +42,12 @@ public final class CibleClient {
 
     private static void touche(Minecraft mc, PaquetsCible.Touche t) {
         boolean finie = SerieCible.active && System.currentTimeMillis() - SerieCible.dernierMs > SerieCible.FIN_MS;
-        if (finie || SerieCible.active && (t.entite() != SerieCible.entite || !t.tenue().equals(SerieCible.tenue)
-                || t.casque() != SerieCible.casque)) {
+        if (finie || SerieCible.active && (t.entite() != SerieCible.entite || !t.tenue().equals(SerieCible.tenue))) {
             recapitulatif(mc);
         }
         SerieCible.ajouter(t, System.currentTimeMillis());
         mc.gui.setOverlayMessage(ligne(), false);
+        ChiffresCible.ajouter(t);
     }
 
     /** « Tête · 7,5 reçus (arme 10,2, armure −26 %) · 12,4 m », tir entier pour un fusil à pompe. */
@@ -81,7 +82,7 @@ public final class CibleClient {
         c.append(" · ").append(fin).append(Component.literal(" · ").withStyle(ChatFormatting.DARK_GRAY))
                 .append(t.nomArme().copy().withStyle(ChatFormatting.WHITE))
                 .append(Component.literal(" → ").withStyle(ChatFormatting.DARK_GRAY))
-                .append(TextesCible.tenue(SerieCible.tenue, SerieCible.casque).withStyle(ChatFormatting.WHITE));
+                .append(TextesCible.tenue(SerieCible.tenue).withStyle(ChatFormatting.WHITE));
         mc.player.displayClientMessage(c, false);
     }
 

@@ -25,18 +25,17 @@ final class TextesCible {
         };
     }
 
-    /** « Rempart (Rare) », « Rempart (Rare) sans casque », « Sans armure ». */
-    static MutableComponent tenue(String id, boolean casque) {
+    /** « Rempart (Rare) », « Sans armure ». */
+    static MutableComponent tenue(String id) {
         Tenues.Tenue t = Tenues.de(id);
         MutableComponent c = t.nom().copy();
         if (t.rang() > 0) c.append(" (").append(Component.translatable("rarity.heraliz_armory." + t.rarete())).append(")");
-        if (!casque && t.aUnCasque()) c.append(" ").append(Component.translatable("gui.heraliz_armory.cible.sans_casque"));
         return c;
     }
 
     /** Nom affiché au-dessus de la cible visée. */
-    static Component etiquette(String id, boolean casque) {
-        return Component.translatable("gui.heraliz_armory.cible.etiquette", tenue(id, casque));
+    static Component etiquette(String id) {
+        return Component.translatable("gui.heraliz_armory.cible.etiquette", tenue(id));
     }
 
     static Component zone(byte zone) {
