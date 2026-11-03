@@ -7,7 +7,8 @@ sources 1.20.1 (Zombie, Mob, Entity, PlayLevelSoundEvent, patchs de Mohist pour 
 sera faite par le contrôle de branche de GitHub. `outils/verifier_langues.py` : 0 erreur (aucun texte nouveau).
 `outils/verifier.py` ne peut pas tourner ici sans les jars fabriqués.
 
-Jars à mettre à jour ensemble (serveur ET joueurs) : **Monde 1.0.12**, **Noyau 1.0.15**, **Bases (CRac) 1.30.2-beta**.
+Jars à mettre à jour ensemble (serveur ET joueurs) : **Monde 1.0.12**, **Noyau 1.0.15**, **Bases (CRac) 1.30.2-beta**,
+**Clans 3.11.2**.
 Réglage du dépôt changé : `serveur/defaultconfigs/heraliz_noyau-server.toml` (nouvelle section `[pas]`).
 
 ## 1. Zones plan en main et cercle d'extraction posés sur le vrai sol (point 1, défauts corrigés, même dessin)
@@ -30,6 +31,8 @@ propriétaire entre les deux propositions (rendus : `rendus_03nov/monde-zones/`)
 - [ ] Rien ne change pour l'extraction elle-même : on s'extrait aux mêmes endroits qu'avant (dans le cercle, pas sous un
       toit, pas sur une caisse hors d'atteinte), même chrono.
 - [ ] Zone fixe d'admin (`/extraction create`) ouverte : même cercle propre.
+- [ ] Drapeau de territoire dont le cercle de capture passe sous des arbres ou sur des props : le mur du cercle reste au
+      sol (avant : il montait sur les feuilles et les caisses). Hors chantier (module clans), même correctif.
 
 ## 2. Aucun zombie équipé (point 2)
 
