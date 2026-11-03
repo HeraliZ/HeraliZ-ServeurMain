@@ -45,7 +45,6 @@
   "heraliz_tactique.a_vie.ranger_oui": "Да, положить",
   "heraliz_tactique.a_vie.temporaire": "Вечный предмет: не в этот ящик, он исчезнет вместе с содержимым.",
   "heraliz_tactique.a_vie.presentoir": "Вечный предмет: его нельзя положить на подставку.",
-  "heraliz_tactique.a_vie.touche": "Вечный предмет: его нельзя выбросить клавишей.",
   "heraliz_tactique.a_vie.garde": "Инвентарь полон: твой вечный предмет сохранён и вернётся, как только освободится ячейка.",
   "heraliz_tactique.a_vie.rendus": "Вечные предметы возвращены: %s.",
   "heraliz_tactique.a_vie.sauve": "Вечный предмет возвращён: %s.",

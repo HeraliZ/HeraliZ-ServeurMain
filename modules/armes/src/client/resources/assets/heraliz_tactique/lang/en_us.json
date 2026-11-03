@@ -45,7 +45,6 @@
   "heraliz_tactique.a_vie.ranger_oui": "Yes, store it",
   "heraliz_tactique.a_vie.temporaire": "Lifetime item: not in this crate, it disappears with its contents.",
   "heraliz_tactique.a_vie.presentoir": "Lifetime item: it can't be put on a display.",
-  "heraliz_tactique.a_vie.touche": "Lifetime item: it can't be dropped with the drop key.",
   "heraliz_tactique.a_vie.garde": "Inventory full: your lifetime item is kept and comes back as soon as a slot is free.",
   "heraliz_tactique.a_vie.rendus": "Lifetime items returned: %s.",
   "heraliz_tactique.a_vie.sauve": "Lifetime item returned: %s.",

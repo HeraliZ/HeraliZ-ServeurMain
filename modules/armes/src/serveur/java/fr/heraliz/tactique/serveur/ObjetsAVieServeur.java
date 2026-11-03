@@ -62,7 +62,8 @@ import net.minecraftforge.server.ServerLifecycleHooks;
  *     par Forge à la réapparition, donc aussi après un redémarrage) et rendus à la réapparition ou à la connexion. Ceux
  *     rangés (avec confirmation) dans un sac porté ou dans un sac de l'inventaire suivent le sac (03/11 ; avant : sortis
  *     du sac et gardés). Pas en match (drapeau {@code heralisz:en_match} : les kits des matchs sont gérés par le match) ;</li>
- *     <li>touche de jet (aucun menu ouvert) : rien n'est jeté, l'objet reste dans la main (petit message) ;</li>
+ *     <li>touche de jet (aucun menu ouvert) : rien n'est jeté, l'objet reste dans la main, sans message
+ *     (03/11) ;</li>
  *     <li>jet depuis un inventaire ouvert : l'objet est mis de côté (dans les données du joueur, {@code
  *     HeralizObjetsAVieQuestion} : il survit à un plantage) et le joueur reçoit « Jeter cet objet ? ». Oui : il tombe,
  *     n'est plus à personne et disparaît au bout du temps normal des objets au sol (03/11 ; avant : rendu au bout de
@@ -214,10 +215,9 @@ public final class ObjetsAVieServeur {
          return;
       }
       if (p.containerMenu == p.inventoryMenu) {
-         // touche de jet en jeu : jamais jeté
+         // touche de jet en jeu : jamais jeté, sans message (03/11, choix du propriétaire : on le jette seulement depuis
+         // l'inventaire, avec la confirmation)
          rendre(p, garde, true);
-         p.displayClientMessage(Component.translatableWithFallback("heraliz_tactique.a_vie.touche",
-            "Objet à vie : il ne se jette pas avec la touche de jet."), true);
          return;
       }
       rendreAttente(p);

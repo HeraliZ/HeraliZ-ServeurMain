@@ -45,7 +45,6 @@
   "heraliz_tactique.a_vie.ranger_oui": "Oui, le ranger",
   "heraliz_tactique.a_vie.temporaire": "Objet à vie : pas dans cette caisse, elle disparaît avec son contenu.",
   "heraliz_tactique.a_vie.presentoir": "Objet à vie : il ne se pose pas sur un présentoir.",
-  "heraliz_tactique.a_vie.touche": "Objet à vie : il ne se jette pas avec la touche de jet.",
   "heraliz_tactique.a_vie.garde": "Inventaire plein : ton objet à vie est gardé, il revient dès qu'une case se libère.",
   "heraliz_tactique.a_vie.rendus": "Objets à vie rendus : %s.",
   "heraliz_tactique.a_vie.sauve": "Objet à vie rendu : %s.",
