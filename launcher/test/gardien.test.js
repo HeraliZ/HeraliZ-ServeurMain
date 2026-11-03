@@ -6,7 +6,7 @@ const crypto = require('crypto')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const { Gardien, outilsTrouves, champsCsv } = require('../app/assets/js/gardien')
+const { Gardien, outilsTrouves, champsCsv, programmes, outilsInterdits } = require('../app/assets/js/gardien')
 const { environnementJeu } = require('../app/assets/js/spartan')
 
 function dossier() {
@@ -131,4 +131,55 @@ test('la clé publique du Gardien passe au jeu par sa propre variable, jamais h�
     assert.strictEqual(env.SPARTAN_GARDIEN_PUB, pub)
     assert.strictEqual(env.SPARTAN_GARDIEN_CLE, undefined)
     assert.strictEqual(environnementJeu(null, { SPARTAN_GARDIEN_PUB: pub }, false, null).SPARTAN_GARDIEN_PUB, undefined)
+})
+
+// 03/11 : liste des programmes rapide (tasklist sans /V), PowerShell en secours, titres à part
+function exec(reponses) {
+    const appels = []
+    const f = async (cmd, args) => {
+        appels.push([cmd, ...args].join(' '))
+        const r = reponses(cmd, args)
+        if (r instanceof Error) throw r
+        return r
+    }
+    f.appels = appels
+    return f
+}
+
+test('Windows : noms par tasklist sans /V, titres par PowerShell', async () => {
+    const e = exec((cmd, args) => cmd === 'tasklist'
+        ? '"javaw.exe","4242","Console","1","900 000 K"\r\n"Cheat Engine.exe","77","Console","1","20 000 K"\r\n'
+        : args.join(' ').includes('MainWindowTitle') ? 'chrome\tCheat Engine tuto - YouTube\r\nnotepad++\tCheat Engine 7.5\r\n' : '')
+    const l = await programmes('win32', e)
+    assert.deepStrictEqual(l.noms, ['javaw.exe', 'Cheat Engine.exe'])
+    assert.ok(!e.appels.some(a => a.includes('/V')), 'tasklist /V (lent) ne doit plus être appelé')
+    assert.deepStrictEqual(outilsTrouves(l.noms, l.titres), ['cheat engine'])
+})
+
+test('Windows : tasklist en échec ou trop lent, PowerShell donne les noms ; titres impossibles : lecture quand même', async () => {
+    const e = exec((cmd, args) => cmd === 'tasklist' ? new Error('ETIMEDOUT')
+        : args.join(' ').includes('MainWindowTitle') ? new Error('refusé') : 'javaw.exe\r\nxenos64.exe\r\n')
+    const l = await programmes('win32', e)
+    assert.deepStrictEqual(l.noms, ['javaw.exe', 'xenos64.exe'])
+    assert.deepStrictEqual(l.titres, [])
+})
+
+test('Windows : rien ne répond, lecture impossible (null), jamais d\'erreur', async () => {
+    const l = await programmes('win32', exec(() => new Error('refusé')))
+    assert.strictEqual(l, null)
+})
+
+test('lancement : injecteurs et éditeurs de mémoire seulement, noms lisibles', async () => {
+    assert.deepStrictEqual(await outilsInterdits(async () => ({ noms: ['xenos64.exe', 'x64dbg.exe', 'cheatengine-x86_64.exe'], titres: [] })),
+        ['Cheat Engine', 'Xenos'])
+    assert.deepStrictEqual(await outilsInterdits(async () => ({ noms: ['x64dbg.exe', 'recaf.exe'], titres: [] })), [])
+    assert.deepStrictEqual(await outilsInterdits(async () => null), [])
+    assert.deepStrictEqual(await outilsInterdits(async () => { throw new Error('x') }), [])
+})
+
+test('rapport : un outil vu seulement dans un titre de fenêtre est marqué « .titre » (alerte, jamais expulsion)', () => {
+    assert.deepStrictEqual(outilsTrouves(['notepad++.exe'], [{ nom: 'notepad++', titre: 'Cheat Engine 7.5.txt - Notepad++' }], true),
+        ['cheat engine.titre'])
+    assert.deepStrictEqual(outilsTrouves(['cheatengine-x86_64.exe'], [{ nom: 'cheatengine-x86_64', titre: 'Cheat Engine 7.5' }], true),
+        ['cheat engine', 'cheatengine'])
 })

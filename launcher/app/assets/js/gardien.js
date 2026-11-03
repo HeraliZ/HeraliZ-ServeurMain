@@ -62,7 +62,19 @@ const OUTILS_MAX = 200
 const SPARTAN_PREUVE = [2, 10, 0]
 const INTERVALLE_MIN_MS = 10_000
 const INTERVALLE_MAX_MS = 20_000
-const COMMANDE_MS = 12_000
+// liste des programmes (rapide : moins d'une seconde d'habitude) ; titres des fenêtres (PowerShell, plus lent au démarrage)
+const COMMANDE_MS = 20_000
+const TITRES_MS = 20_000
+// injecteurs et éditeurs de mémoire : le launcher refuse de lancer le jeu tant qu'ils sont ouverts, et le serveur expulse
+// un joueur chez qui le Gardien les voit (Spartan, section [injection], liste « outils »). Les autres outils de la liste
+// (débogueurs, décompilateurs, gestionnaires de processus) restent des alertes : un développeur honnête peut les avoir.
+const OUTILS_INTERDITS = ['cheatengine', 'cheat engine', 'extremeinjector', 'extreme injector', 'xenos', 'ghinjector',
+    'gh injector', 'dllinjector', 'kdmapper', 'artmoney', 'squalr']
+const NOMS_OUTILS = {
+    cheatengine: 'Cheat Engine', 'cheat engine': 'Cheat Engine', extremeinjector: 'Extreme Injector',
+    'extreme injector': 'Extreme Injector', xenos: 'Xenos', ghinjector: 'GH Injector', 'gh injector': 'GH Injector',
+    dllinjector: 'DLL Injector', kdmapper: 'kdmapper', artmoney: 'ArtMoney', squalr: 'Squalr'
+}
 // nom d'outil écrit dans le fichier : lettres, chiffres, espace, point, tiret (comme la liste)
 const NOM_SUR = /^[a-z0-9 ._-]{1,32}$/
 
@@ -72,20 +84,26 @@ function execFile(cmd, args, options) {
     })
 }
 
-/** Morceaux de la liste trouvés dans un nom d'exécutable ou un titre (minuscules), sans doublon, triés. */
-function outilsTrouves(noms, titres = []) {
+/**
+ * Morceaux de la liste trouvés dans un nom d'exécutable ou un titre (minuscules), sans doublon, triés.
+ * marquerTitres (rapports du Gardien, 03/11) : un outil vu SEULEMENT dans le titre d'une fenêtre est rendu « outil.titre »
+ * (un fichier « Cheat Engine.txt » ouvert dans un éditeur n'est pas Cheat Engine) : le serveur l'alerte sans expulser.
+ */
+function outilsTrouves(noms, titres = [], marquerTitres = false) {
     const trouves = new Set()
     for (const n of noms) {
         const nom = String(n || '').toLowerCase().replace(/\.exe$/, '')
         for (const o of OUTILS) if (nom.includes(o)) trouves.add(o)
     }
+    const parNom = new Set(trouves)
     for (const t of titres) {
         const titre = String(t && typeof t === 'object' ? t.titre : t || '').toLowerCase()
         if (t && typeof t === 'object' && SANS_TITRE.test(String(t.nom || ''))) continue
         if (!titre || titre === 'n/a') continue
         TITRES.forEach((o, i) => { if (TITRES_RE[i].test(titre)) trouves.add(o) })
     }
-    return [...trouves].filter(o => NOM_SUR.test(o)).sort()
+    return [...trouves].map(o => marquerTitres && !parNom.has(o) && !parNom.has(o.replace(/ /g, '')) ? o + '.titre' : o)
+        .filter(o => NOM_SUR.test(o)).sort()
 }
 
 /** Lecture d'une ligne CSV de tasklist ("a","b",...) : champs entre guillemets, "" pour un guillemet. */
@@ -97,26 +115,86 @@ function champsCsv(ligne) {
     return out
 }
 
-/** Programmes ouverts : { noms, titres }. Rien en cas d'erreur (le jeu ne doit jamais en pâtir). */
-async function programmes(plateforme = process.platform) {
-    try {
-        if (plateforme === 'win32') {
-            // /V : titre de la fenêtre principale (dernière colonne)
-            const out = await execFile('tasklist', ['/V', '/FO', 'CSV', '/NH'], { timeout: COMMANDE_MS, windowsHide: true })
-            const noms = [], titres = []
-            for (const ligne of out.split(/\r?\n/)) {
-                const c = champsCsv(ligne)
-                if (c.length < 2) continue
-                noms.push(c[0])
-                if (c.length >= 9) titres.push({ nom: c[0], titre: c[c.length - 1] })
-            }
-            return { noms, titres }
-        }
-        const out = await execFile('ps', ['-A', '-o', 'comm='], { timeout: COMMANDE_MS })
-        return { noms: out.split(/\r?\n/).map(l => path.basename(l.trim())).filter(Boolean), titres: [] }
-    } catch {
-        return null
+// PowerShell : titres des fenêtres (nom du programme, tabulation, titre), en UTF-8. Seulement les programmes qui ont une
+// fenêtre ; rien d'autre n'est lu.
+const TITRES_PS = '[Console]::OutputEncoding=[Text.Encoding]::UTF8;'
+    + 'Get-Process | Where-Object { $_.MainWindowTitle } | ForEach-Object { $_.ProcessName + [char]9 + $_.MainWindowTitle }'
+const NOMS_PS = '[Console]::OutputEncoding=[Text.Encoding]::UTF8; Get-Process | ForEach-Object { $_.ProcessName + \'.exe\' }'
+
+function powershell(commande, delai, exec) {
+    return exec('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', commande], { timeout: delai, windowsHide: true })
+}
+
+/** Noms des exécutables lus dans la sortie CSV de « tasklist /FO CSV /NH » (première colonne). */
+function nomsTasklist(out) {
+    const noms = []
+    for (const ligne of String(out).split(/\r?\n/)) {
+        const c = champsCsv(ligne)
+        if (c.length >= 2 && c[0]) noms.push(c[0])
     }
+    return noms
+}
+
+/** Titres lus dans la sortie de TITRES_PS : [{ nom, titre }]. */
+function titresPowershell(out) {
+    const titres = []
+    for (const ligne of String(out).split(/\r?\n/)) {
+        const i = ligne.indexOf('\t')
+        if (i <= 0) continue
+        titres.push({ nom: ligne.slice(0, i).trim(), titre: ligne.slice(i + 1).trim() })
+    }
+    return titres
+}
+
+/**
+ * Programmes ouverts : { noms, titres }. null si même la liste des noms est impossible (le jeu ne doit jamais en pâtir).
+ *
+ * 03/11 (retour du propriétaire : « le Gardien n'arrive jamais à lister les programmes ») : avant, une seule commande,
+ * « tasklist /V », qui va chercher le titre de la fenêtre ET le compte Windows de CHAQUE programme. Elle est très lente
+ * (souvent plus de 12 s quand le PC est chargé, comme au lancement du jeu, et parfois bloquée par un programme suspendu
+ * ou une recherche de compte) : coupée au bout de 12 s, la liste entière était perdue et le rapport disait « lecture
+ * impossible ». Maintenant : la liste des noms d'abord, par « tasklist » sans /V (moins d'une seconde), avec PowerShell
+ * en secours ; les titres à part, par PowerShell, en même temps ; des titres manquants n'empêchent pas la lecture.
+ */
+async function programmes(plateforme = process.platform, exec = execFile) {
+    if (plateforme !== 'win32') {
+        try {
+            const out = await exec('ps', ['-A', '-o', 'comm='], { timeout: COMMANDE_MS })
+            return { noms: out.split(/\r?\n/).map(l => path.basename(l.trim())).filter(Boolean), titres: [] }
+        } catch {
+            return null
+        }
+    }
+    const lireNoms = async () => {
+        try {
+            const noms = nomsTasklist(await exec('tasklist', ['/FO', 'CSV', '/NH'], { timeout: COMMANDE_MS, windowsHide: true }))
+            if (noms.length) return noms
+        } catch { /* secours ci-dessous */ }
+        try {
+            const noms = String(await powershell(NOMS_PS, COMMANDE_MS, exec)).split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+            return noms.length ? noms : null
+        } catch {
+            return null
+        }
+    }
+    const lireTitres = async () => {
+        try {
+            return titresPowershell(await powershell(TITRES_PS, TITRES_MS, exec))
+        } catch {
+            return []
+        }
+    }
+    const [noms, titres] = await Promise.all([lireNoms(), lireTitres()])
+    return noms ? { noms, titres } : null
+}
+
+/** Injecteurs et éditeurs de mémoire ouverts (noms lisibles, sans doublon), [] si aucun ou liste impossible. */
+async function outilsInterdits(lister = programmes) {
+    const liste = await lister().catch(() => null)
+    if (!liste) return []
+    // noms d'exécutables seulement : un titre de fenêtre (fichier, page) ne bloque jamais le lancement
+    const vus = outilsTrouves(liste.noms, []).filter(o => OUTILS_INTERDITS.includes(o))
+    return [...new Set(vus.map(o => NOMS_OUTILS[o] || o))]
 }
 
 function sha256Fichier(p) {
@@ -294,7 +372,7 @@ class Gardien {
 
     async rapport() {
         const liste = await this.lister()
-        const outils = liste ? outilsTrouves(liste.noms, liste.titres) : []
+        const outils = liste ? outilsTrouves(liste.noms, liste.titres, true) : []
         this.releverJars(false)
         const valeurs = {
             n: ++this.n,
@@ -349,4 +427,7 @@ class Gardien {
     }
 }
 
-module.exports = { Gardien, outilsTrouves, champsCsv, versionPreuve, OUTILS, TITRES }
+module.exports = {
+    Gardien, outilsTrouves, champsCsv, versionPreuve, programmes, outilsInterdits, nomsTasklist, titresPowershell,
+    OUTILS, TITRES, OUTILS_INTERDITS
+}

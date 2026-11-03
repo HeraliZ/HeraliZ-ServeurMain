@@ -230,7 +230,12 @@ public final class GardienServeur {
         // injecteurs et éditeurs de mémoire (liste injection.outils) : expulsion directe (03/11), capture comprise
         List<String> aExpulser = com.Spartan.integrity.Injection.outils(nouveaux);
         if (!nouveaux.isEmpty()) {
-            faits.add("programme de triche ou d'injection ouvert sur le PC : " + String.join(", ", nouveaux));
+            List<String> lisibles = new ArrayList<>();
+            for (String o : nouveaux) {
+                // launcher 1.16.2 : « outil.titre » = vu seulement dans le titre d'une fenêtre (fichier, page) : alerte seule
+                lisibles.add(o.endsWith(".titre") ? o.substring(0, o.length() - 6) + " (titre d'une fenêtre seulement)" : o);
+            }
+            faits.add("programme de triche ou d'injection ouvert sur le PC : " + String.join(", ", lisibles));
             if (aExpulser.isEmpty()) {
                 capture(player, "programme de triche ouvert (" + String.join(", ", nouveaux) + ")");
             }
