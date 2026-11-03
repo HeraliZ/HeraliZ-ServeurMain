@@ -60,7 +60,7 @@ public final class ProtectionEvents {
         DamageSource src = event.getSource();
         Protection.Kind kind = kind(victim, src);
         if (kind == null) return;
-        boolean headshot = kind == Protection.Kind.BULLET && TaczCompat.headshot(victim);
+        boolean headshot = kind == Protection.Kind.BULLET && TaczCompat.headshot(victim, src);
         double mult = kind == Protection.Kind.EXPLOSION ? ArmorConfig.EXPLOSION_MULTIPLIER.get() : ArmorConfig.PROTECTION_MULTIPLIER.get();
         float total = 0;
         for (Protection.Worn w : worn) {

@@ -1,6 +1,7 @@
 package fr.heraliz.armory.compat;
 
 import com.tacz.guns.api.event.common.EntityHurtByGunEvent;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
@@ -16,11 +17,16 @@ import java.util.WeakHashMap;
  * le premier coup qui la lit la consomme. Avant, elle valait pour toute la victime pendant tout le tick : un seul plomb a
  * la tete d'une decharge de fusil a pompe, et tous les autres plombs (et les balles des autres tireurs ce tick-la)
  * ignoraient le gilet.</p>
+ * <p>03/11 (tableau des fusils à pompe) : TaCZ inflige chaque balle en DEUX coups (la part normale, puis la part
+ * « perce-armure » de l'arme, 25 à 33 % pour les fusils à pompe), avec la même balle comme source. La note était consommée
+ * par le premier : la part perce-armure d'un plomb à la tête comptait le gilet au lieu du casque. La note retient
+ * maintenant la balle (son numéro d'entité) : les deux coups de CETTE balle la lisent, aucun autre.</p>
  */
 public final class TaczCompat {
     private TaczCompat() {}
 
-    private static final Map<Entity, Long> HEADSHOTS = new WeakHashMap<>();
+    /** Victime -> balle qui l'a touchée à la tête (numéro d'entité) et tick. */
+    private static final Map<Entity, long[]> HEADSHOTS = new WeakHashMap<>();
 
     /** A appeler une fois au demarrage du mod. */
     public static void register() {
@@ -28,12 +34,18 @@ public final class TaczCompat {
     }
 
     /**
-     * Vrai si le coup en cours est la balle TaCZ qui vient de toucher cette entite a la tete (meme tick) ; la note est
-     * consommee : un seul coup la lit.
+     * Vrai si le coup en cours vient de la balle TaCZ qui vient de toucher cette entite a la tete (meme balle, meme tick) :
+     * ses deux coups (part normale et part perce-armure) la lisent, aucun autre coup.
      */
-    public static boolean headshot(Entity victim) {
-        Long t = HEADSHOTS.remove(victim);
-        return t != null && t == victim.level().getGameTime();
+    public static boolean headshot(Entity victim, DamageSource source) {
+        long[] n = HEADSHOTS.get(victim);
+        if (n == null) return false;
+        Entity balle = source.getDirectEntity();
+        if (n[1] != victim.level().getGameTime()) {
+            HEADSHOTS.remove(victim);
+            return false;
+        }
+        return balle != null && balle.getId() == n[0];
     }
 
     private static final class Impl {
@@ -44,9 +56,12 @@ public final class TaczCompat {
         static void onGunHit(EntityHurtByGunEvent.Pre event) {
             Entity hurt = event.getHurtEntity();
             if (hurt == null || hurt.level().isClientSide) return;
-            // balle a la tete : notee pour ce coup ; ailleurs : la note d'une balle d'avant (meme tick) ne compte plus
-            if (event.isHeadShot()) HEADSHOTS.put(hurt, hurt.level().getGameTime());
-            else HEADSHOTS.remove(hurt);
+            // balle a la tete : notee pour ses deux coups ; ailleurs : la note d'une balle d'avant ne compte plus
+            if (event.isHeadShot() && event.getBullet() != null) {
+                HEADSHOTS.put(hurt, new long[]{event.getBullet().getId(), hurt.level().getGameTime()});
+            } else {
+                HEADSHOTS.remove(hurt);
+            }
         }
     }
 }
