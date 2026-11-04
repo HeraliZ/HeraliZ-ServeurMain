@@ -49,6 +49,11 @@ public class CorpsEntity extends Entity implements IEntityAdditionalSpawnData {
 
     /** Corps presents dans le monde du client (rendu, plafonds) ; vide cote serveur. Fil du client seulement. */
     public static final List<CorpsEntity> CLIENT = new ArrayList<>();
+    /**
+     * Le joueur voit-il ce corps (sans mur entre les deux) ? Branché par la partie serveur (Fouille.visible, 04/11) ;
+     * ailleurs, toujours vrai. Lu par la fouille ouverte (CorpsMenu.stillValid) une fois toutes les 10 ticks.
+     */
+    public static volatile java.util.function.BiPredicate<Player, CorpsEntity> VUE = (p, c) -> true;
 
     // ------------------------------------------------------------------ identite (serveur et client)
     UUID proprietaire = Util.NIL_UUID;

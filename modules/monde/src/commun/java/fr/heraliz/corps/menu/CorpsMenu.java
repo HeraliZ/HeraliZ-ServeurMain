@@ -134,7 +134,9 @@ public class CorpsMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         if (player.level().isClientSide) return true;
-        return corps != null && corps.contenu() == contenu && corps.resteAPortee(player);
+        if (corps == null || corps.contenu() != contenu || !corps.resteAPortee(player)) return false;
+        // 04/11 : ouvert puis caché derrière un mur ou une porte, on ne fouille plus (revu toutes les 10 ticks)
+        return player.tickCount % 10 != 0 || CorpsEntity.VUE.test(player, corps);
     }
 
     @Override

@@ -19,6 +19,8 @@ public final class PartieServeur implements Partie {
     public void init(IEventBus busMod) {
         Registres.CORPS_USINE.serveur(CorpsEntityServeur::new);
         CaptureMort.enregistrer();
+        fr.heraliz.corps.entite.CorpsEntity.VUE = (p, c) -> !(p instanceof net.minecraft.server.level.ServerPlayer sp)
+                || fr.heraliz.corps.menu.Fouille.visible(sp, c);
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> CommandeCorps.enregistrer(e.getDispatcher()));
     }
 }
