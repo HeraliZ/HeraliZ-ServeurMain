@@ -23,6 +23,7 @@
  "corps.heraliz_corps.cause.deconnexion_a_terre": "Déconnecté à terre",
  "corps.heraliz_corps.cause.deconnexion_combat": "Déconnecté en combat",
  "message.heraliz_corps.protege": "Ce corps est protégé encore %s s",
+ "message.heraliz_corps.cache": "Tu ne vois pas ce corps d'ici.",
  "message.heraliz_corps.inventaire_plein": "Inventaire plein : %s objet(s) restent sur le corps",
  "commands.heraliz_corps.liste.vide": "Aucun corps sur le serveur.",
  "commands.heraliz_corps.liste.titre": "Corps sur le serveur : %s",

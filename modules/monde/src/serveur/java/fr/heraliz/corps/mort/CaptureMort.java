@@ -186,6 +186,7 @@ public final class CaptureMort {
                 corps.setPos(x, haut, z);
             }
         }
+        horsDesMurs(level, corps);
         corps.preparer(p, contenu, s.cause, s.execution ? ReanimationCompat.SCENE_APRES_COUP : 0);
 
         plafonds(level, corps);
@@ -198,6 +199,47 @@ public final class CaptureMort {
                 p.getGameProfile().getName(), level.dimension().location(), (int) Math.floor(x), (int) Math.floor(corps.getY()),
                 (int) Math.floor(z), f.numero, total, nbCurios, autres.size(), fixes[CorpsContenu.SAC] != null ? "oui" : "non");
         return true;
+    }
+
+    /**
+     * Décalages essayés (blocs, sur x et z), du plus petit au plus grand : jamais plus d'un demi-bloc sur chaque axe (la
+     * demi-largeur du corps), sa boîte couvre donc toujours le point de mort.
+     */
+    private static final double[][] DECALAGES = decalages();
+
+    private static double[][] decalages() {
+        List<double[]> l = new ArrayList<>();
+        double[] pas = {0.0, 0.25, -0.25, 0.5, -0.5};
+        for (double dx : pas) for (double dz : pas) l.add(new double[]{dx, dz});
+        l.sort((a, b) -> Double.compare(a[0] * a[0] + a[1] * a[1], b[0] * b[0] + b[1] * b[1]));
+        return l.toArray(new double[0][]);
+    }
+
+    /**
+     * 04/11 (retour du propriétaire : « que les cadavres ne dépassent pas des murs, pour ne pas les fouiller à travers ») :
+     * le corps couché (1 x 1,9 bloc) ne doit entrer dans aucun bloc. On garde la position et le sens du mort s'ils vont ; sinon
+     * on essaie le corps droit (nord-sud ou est-ouest, au plus près du sens du mort), puis tourné d'un quart, en le poussant
+     * d'un demi-bloc au plus. Un demi-bloc est la demi-largeur du corps : sa boîte couvre toujours le point de mort, il ne
+     * peut donc jamais passer de l'autre côté d'un mur, d'une porte ou d'une vitre. Rien ne va (couloir trop étroit) : il
+     * reste où il est (la fouille demande de toute façon de le voir, Fouille.ouvrir).
+     */
+    private static void horsDesMurs(ServerLevel level, CorpsEntity corps) {
+        double x = corps.getX(), y = corps.getY(), z = corps.getZ();
+        float lacet = corps.getYRot();
+        if (libre(level, corps)) return;
+        float droit = Math.round(lacet / 90.0F) * 90.0F;
+        for (float essai : new float[]{droit, droit + 90.0F}) {
+            for (double[] d : DECALAGES) {
+                corps.moveTo(x + d[0], y, z + d[1], essai, 0);
+                if (libre(level, corps)) return;
+            }
+        }
+        corps.moveTo(x, y, z, lacet, 0);
+    }
+
+    /** La boîte du corps n'entre dans aucun bloc (un peu rentrée : poser sur le sol ou toucher un mur est permis). */
+    private static boolean libre(ServerLevel level, CorpsEntity corps) {
+        return !level.getBlockCollisions(corps, corps.getBoundingBox().deflate(0.02)).iterator().hasNext();
     }
 
     /** Filets anti-lag : trop de corps dans ce chunk ou sur le serveur -> le plus ancien disparait (journalise). */

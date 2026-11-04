@@ -23,6 +23,7 @@
   "corps.heraliz_corps.cause.deconnexion_a_terre": "Вышел из игры в нокауте",
   "corps.heraliz_corps.cause.deconnexion_combat": "Вышел из игры в бою",
   "message.heraliz_corps.protege": "Это тело защищено ещё %s с",
+  "message.heraliz_corps.cache": "Отсюда тебе не видно это тело.",
   "message.heraliz_corps.inventaire_plein": "Инвентарь полон: на теле осталось предметов: %s",
   "commands.heraliz_corps.liste.vide": "На сервере нет тел.",
   "commands.heraliz_corps.liste.titre": "Тела на сервере: %s",
