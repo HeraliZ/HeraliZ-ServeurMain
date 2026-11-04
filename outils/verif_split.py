@@ -264,13 +264,21 @@ class Monde:
         self.zips[str(jar)] = z
         self._indexer(str(jar), z, ecraser)
         if imbriques:
-            # bibliothèques embarquées par un mod (Jar-in-Jar de Forge), chargées en jeu avec lui (ex. LuaJ dans TaCZ)
-            for n in z.namelist():
-                if n.startswith("META-INF/jarjar/") and n.endswith(".jar"):
-                    cle = f"{jar}!{n}"
-                    zi = zipfile.ZipFile(io.BytesIO(z.read(n)))
-                    self.zips[cle] = zi
-                    self._indexer(cle, zi, False)
+            self._imbriques(str(jar), z, 3)
+
+    def _imbriques(self, cle_mere, z, profondeur):
+        """Bibliothèques embarquées par un mod (Jar-in-Jar de Forge), chargées en jeu avec lui (ex. LuaJ dans TaCZ), et
+        celles qu'elles embarquent elles-mêmes (04/11 : MixinExtras est dans META-INF/jars/ de mixinextras-forge, lui-même
+        dans META-INF/jarjar/ de TaCZ ; avant, un seul niveau de jarjar était lu et WrapOperation passait pour absent)."""
+        if profondeur <= 0:
+            return
+        for n in z.namelist():
+            if (n.startswith("META-INF/jarjar/") or n.startswith("META-INF/jars/")) and n.endswith(".jar"):
+                cle = f"{cle_mere}!{n}"
+                zi = zipfile.ZipFile(io.BytesIO(z.read(n)))
+                self.zips[cle] = zi
+                self._indexer(cle, zi, False)
+                self._imbriques(cle, zi, profondeur - 1)
 
     def _indexer(self, cle, z, ecraser):
         for n in z.namelist():
