@@ -17,13 +17,16 @@ Essais avec un compte joueur **sans droits de staff**, en survie ; pour le PvP, 
 - [ ] Ptero, `dayz_map/serverconfig/heraliz_noyau-server.toml` : `aide` dans les deux listes, `sethome` dans `commandes_permises`.
 - [ ] Ptero, `config/spartan-common.toml` : `ancienLauncher = "refuser"`, `required = true`, `[injection] expulser = true`.
 - [ ] Ptero, dossier `/tacz` : `maxstuff_deagle_12g.json`, `maxstuff_thunderbird_short.json`, `heralisz_heal_attelle_bandage.json` ont disparu.
-- [ ] `/heralizloot beta` : « objets x1.5 (au plus 20 par conteneur), Rare / Épique / Légendaire x1.5 », puis la ligne
+- [x] `/heralizloot beta` : « objets x1.5 (au plus 20 par conteneur), Rare / Épique / Légendaire x1.5 », puis la ligne
       « Économie de la bêta : achats x0.75, rachat x1, recycleur x1.25, améliorations x0.75, quêtes x1.25 ».
+      Vérifié le 04/11 dans le réglage du monde sur le Ptero : `[beta] actif = true`, mêmes chiffres.
 - [ ] Poser les 3 hologrammes au spawn, en visant le sol : `/classement poser argent`, `poser kills`, `poser clans` ;
       `/classement liste` les montre.
 - [ ] Poser une ou deux cibles d'essai au stand de tir : `/give @s heraliz_armory:cible_essai`, clic droit au sol.
-- [ ] Si un compte joueur ne peut pas ouvrir la cible ou ne voit aucun chiffre : `/rg flag <région du stand> interact allow`.
-- [ ] Si pas encore fait : commissaire-priseur (`/pnj creer commissaire`) et points de la visite du Guide (`/guide point …`).
+- [x] ~~`/rg flag <région du stand> interact allow`~~ : inutile, le monde du spawn n'a aucune région WorldGuard (vu sur le
+      Ptero le 04/11). Si aucun chiffre ne s'affiche : journal du serveur, lignes `[cible]` (ce qu'est devenu le tir).
+- [x] Commissaire-priseur posé et points de la visite posés (04/11). **Armurier et recycleur sont au même endroit** :
+      reposer `/guide point armurier` en regardant la Table d'armurier.
 - [ ] Site : double authentification pour les comptes admin ; anti-robot de la création de compte actif.
 - [ ] LuckPerms, pour les joueurs : `bukkit.command.plugins`, `bukkit.command.version`, `authme.player.unregister`,
       `authme.player.email` à faux.
@@ -31,6 +34,26 @@ Essais avec un compte joueur **sans droits de staff**, en survie ; pour le PvP, 
 À savoir en cas de souci (fichiers relus sans redémarrer) : Spartan `[suiviMurs] enabled = false`,
 `[gardien] preuveExigee = "alerte"`, `[injection] expulser = false`, `ancienLauncher = "alerte"` (si trop de joueurs
 Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `heraliz_loot-server.toml`.
+
+## 1 bis. Retours du 04/11 (Quêtes 1.20.0, Monde 1.1.0, Équipement 1.1.2, Tactique 2.49.0)
+
+- [ ] Cible d'essai, compte joueur sans droits : pas de bouton « Ramasser » (même s'il l'a posée avant) ; staff et créatif :
+      le bouton est là.
+- [ ] Cible : tirer dessus en survie, sans droits. Chiffre au-dessus et ligne au-dessus de la barre d'objets ? Sinon, noter
+      l'heure : le journal du serveur dit « balle passée à côté », « aucun dégât mesuré » ou « cible invulnérable ».
+- [ ] Visite du Guide : un appui sur Espace = présentation suivante (plus toute la visite d'un coup) ; après la dernière,
+      la caméra revient au joueur. Maître Verlaine est présenté après Jack.
+- [ ] Fin du tutoriel des bases : Varga dit à la radio que le matériel d'un début de base est dans le coffre du clan
+      (/clan coffre au spawn, ou menu du clan K, onglet Banque).
+- [ ] Carte (M), membre d'un clan qui a posé son armoire : petite maison « Base du clan » à sa place, nom dessous,
+      distance au survol. Sans clan ou sans armoire : rien.
+- [ ] Mourir collé à un mur, face au mur ou dos au mur : le corps ne rentre pas dans le mur (tourné ou poussé d'un
+      demi-bloc au plus). Fouiller un corps derrière un mur ou une porte fermée : « Tu ne vois pas ce corps d'ici ».
+- [ ] Tirer sur un mur, profil graphique « Performance » : trous de balle visibles (8 s), jusqu'à 32 blocs.
+- [ ] Soins (infobulle et en jeu) : Vaseline 2 utilisations, absorption 10 s ; Amoxicilline 2 utilisations, régénération
+      15 s ; Trousse CAR 3,5 s, 5 cœurs ; Kit de survie militaire 5 utilisations, 4 s ; Trousse AI-2 3 cœurs ; Ibuprofène
+      1 utilisation ; Lait concentré : seulement Rapidité, 30 s ; Poche de sang 5 s ; Bandage 2 utilisations (un paquet de
+      bandages entamé ne s'empile plus avec les neufs).
 
 ## 2. Priorité 1 : les gros systèmes
 
