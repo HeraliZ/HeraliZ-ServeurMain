@@ -53,7 +53,12 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
 - [ ] Soins (infobulle et en jeu) : Vaseline 2 utilisations, absorption 10 s ; Amoxicilline 2 utilisations, régénération
       15 s ; Trousse CAR 3,5 s, 5 cœurs ; Kit de survie militaire 5 utilisations, 4 s ; Trousse AI-2 3 cœurs ; Ibuprofène
       1 utilisation ; Lait concentré : seulement Rapidité, 30 s ; Poche de sang 5 s ; Bandage 2 utilisations (un paquet de
-      bandages entamé ne s'empile plus avec les neufs).
+      bandages entamé ne s'empile plus avec les neufs) ; Kit chirurgical CMS 5 s (Tactique 2.50.0).
+- [ ] Échelle de raid contre un mur : le mur reste entier et texturé derrière, sur les trois cases (Bases 1.34.2-beta).
+- [ ] Couteaux, batte, Bourreau (armes de mêlée à vie) : touchent à 2 blocs, plus à 3 ; aucune alerte « Reach » (Tactique 2.50.0).
+- [ ] Infobulle d'un couteau skinné : « Rang » puis 4 losanges de la couleur du rang, nets aux échelles 2, 3 et 4.
+- [ ] Roue des emotes (Y) → « Modifier la roue » : notre écran (maquette `maquettes/roue_emotes/`) ; ranger, reprendre,
+      vider (clic droit), changer de page ; après fermeture et relance du jeu, la roue a gardé les cases (Emotes 2.10.0).
 
 ## 2. Priorité 1 : les gros systèmes
 
