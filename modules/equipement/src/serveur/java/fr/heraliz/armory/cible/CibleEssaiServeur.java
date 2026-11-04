@@ -41,7 +41,7 @@ public class CibleEssaiServeur extends CibleEssai {
     /** Un changement de tenue au plus toutes les 4 ticks (chaque changement renvoie l'équipement à ceux qui la voient). */
     private static final long ECART_CHOIX = 4L;
 
-    /** Joueur qui l'a posée (il peut la ramasser), null si inconnu. */
+    /** Joueur qui l'a posée, null si inconnu (gardé pour information : depuis le 04/11, seuls le staff et le créatif la ramassent). */
     @Nullable
     UUID poseur;
     /** Tenue à enfiler au prochain tick (pose, chargement : Curios a alors fini de lire ses cases). */
@@ -225,7 +225,7 @@ public class CibleEssaiServeur extends CibleEssai {
         }
     }
 
-    /** Joueur qui la pose (il pourra la ramasser). */
+    /** Joueur qui la pose (gardé avec elle ; il ne la ramasse que s'il est du staff ou en créatif, 04/11). */
     public void poseePar(UUID joueur) {
         poseur = joueur;
     }

@@ -133,16 +133,19 @@ public final class CiblesServeur {
         return joueur.getAbilities().instabuild || joueur.hasPermissions(2);
     }
 
-    private static long dernierJournal;
+    /** Dernière ligne de chaque sorte (le texte du message sert de clé), en nanosecondes. */
+    private static final java.util.Map<String, Long> DERNIERS = new java.util.HashMap<>();
 
     /**
      * Journal des essais (04/11, chiffres non vus par le propriétaire) : ce qu'est devenu un tir sur une cible (balle à
-     * côté, coup refusé, dégâts envoyés au tireur). Au plus une ligne toutes les 2 s pour tout le serveur.
+     * côté, coup refusé, dégâts envoyés au tireur). Au plus une ligne de chaque sorte toutes les 2 s (une balle à côté ne
+     * cache pas les dégâts des plombs qui touchent).
      */
     public static void journal(String texte, Object... args) {
-        long t = System.currentTimeMillis();
-        if (t - dernierJournal < 2000L) return;
-        dernierJournal = t;
+        long t = System.nanoTime();
+        Long d = DERNIERS.get(texte);
+        if (d != null && t - d < 2_000_000_000L) return;
+        DERNIERS.put(texte, t);
         fr.heraliz.armory.HeralizArmory.LOGGER.info("[cible] " + texte, args);
     }
 
