@@ -33,7 +33,7 @@ final class Icones {
             "usine", "ancre", "croix", "train", "etoile", "losange", "fleche", "disque",
             "anneau", "halo", "nord", "maison", "cible", "helico", "epave"};
     static final int PASTILLE = 0, PASTILLE_BORD = 1, OMBRE = 2, SORTIE = 3, DRAPEAU = 7, LOSANGE = 13, FLECHE = 14, DISQUE = 15,
-            ANNEAU = 16, HALO = 17, NORD = 18, CIBLE = 20, HELICO = 21, EPAVE = 22;
+            ANNEAU = 16, HALO = 17, NORD = 18, MAISON = 19, CIBLE = 20, HELICO = 21, EPAVE = 22;
 
     private static BufferBuilder buf;
     private static Matrix4f m;

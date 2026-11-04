@@ -91,5 +91,7 @@
   "heraliz_carte.cmd.liste.vide": "Мест нет: /carte lieu ajouter <тип> <название> там, где стоишь.",
   "heraliz_carte.cmd.liste.titre": "Места карты «%s» (%s):",
   "heraliz_carte.cmd.liste.ligne": "%s · %s · %s, %s · %s",
-  "heraliz_carte.cmd.nom": "Название карты: %s."
+  "heraliz_carte.cmd.nom": "Название карты: %s.",
+  "heraliz_carte.base": "База клана",
+  "heraliz_carte.base.aide": "шкаф базы твоего клана, чтобы дойти до неё пешком"
 }

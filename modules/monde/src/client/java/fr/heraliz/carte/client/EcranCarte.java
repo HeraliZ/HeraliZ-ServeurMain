@@ -92,6 +92,8 @@ public final class EcranCarte extends Screen {
     private int zonesHors;
     private List<Sources.Allie> allies = List.of();
     private List<Sources.Extraction> ouvertes = List.of();
+    /** Base du clan dans le monde affiché (04/11), ou null. */
+    private fr.heraliz.carte.CarteNet.BaseS2C baseIci;
     /** Hélicoptère en vol et épaves (événement de la carte, sur la carte seulement), toujours montrés. */
     private List<HelicoCarte.Marque> helicos = List.of();
     private List<Lieu> lieuxIci = List.of();
@@ -157,6 +159,7 @@ public final class EcranCarte extends Screen {
             cz = czCible;
             derniereImage = Util.getMillis();
             Sources.demanderClans();
+            BaseClient.demander();   // 04/11 : repère de la base du clan
             derniereDemande = derniereImage;
             // aucun son à l'ouverture ni à la fermeture (2.22.0, demande du propriétaire)
         }
@@ -298,7 +301,7 @@ public final class EcranCarte extends Screen {
     }
 
     /** Demi-côté des pastilles des lieux, des extractions et des drapeaux. */
-    private static final float R_LIEU = 5.2f, R_EXTRACTION = 5.8f, R_DRAPEAU = 4.4f, R_HELICO = 6.4f;
+    private static final float R_LIEU = 5.2f, R_EXTRACTION = 5.8f, R_DRAPEAU = 4.4f, R_HELICO = 6.4f, R_BASE = 5.8f;
 
     /** 0 en vue d'ensemble, 1 de près (sert à la taille des noms de villes). */
     private float zoom01() {
@@ -383,6 +386,8 @@ public final class EcranCarte extends Screen {
         }
         lieuxIci = new ArrayList<>();
         for (Lieu l : LieuxClient.lieux()) if (l.dimension().equals(dim) && dansCarte(l.x() + 0.5, l.z() + 0.5)) lieuxIci.add(l);
+        fr.heraliz.carte.CarteNet.BaseS2C b = BaseClient.base();
+        baseIci = b.a() && b.monde().equals(dim.toString()) && dansCarte(b.x() + 0.5, b.z() + 0.5) ? b : null;
         px = Mth.lerp(pt, p.xo, p.getX());
         pz = Mth.lerp(pt, p.zo, p.getZ());
         cap = (float) Math.toRadians(p.getViewYRot(pt) + 180f);
@@ -419,6 +424,7 @@ public final class EcranCarte extends Screen {
         helicosIcones(e, maintenant);
         if (pings) pingsIcones(e);
         if (clan) alliesIcones(e);
+        baseIcone(e);
         joueurIcones(e);
         Icones.fin();
         // ---- bannières des clans au centre des zones
@@ -426,6 +432,7 @@ public final class EcranCarte extends Screen {
         // ---- étiquettes : mise en page (les plus importantes d'abord, les suivantes ne les recouvrent pas), puis les
         // fonds des pastilles, puis tous les textes en un seul envoi
         if (grille) grilleEtiquettes();
+        baseEtiquette(e);   // la première : jamais cachée par un autre nom
         if (lieux) lieuxEtiquettes(e, true);
         if (territoires) zonesEtiquettes(e);
         if (lieux) lieuxEtiquettes(e, false);
@@ -697,6 +704,25 @@ public final class EcranCarte extends Screen {
             Icones.icone(Icones.LOSANGE, X, Y, 4.9f * e, Formes.argb(0xFFFFFF, 0.9f));
             Icones.icone(Icones.LOSANGE, X, Y, 4.2f * e, 0xFF000000 | v.type.couleur);
         }
+    }
+
+    /**
+     * Base du clan (04/11, demande du propriétaire : pour y retourner à pied sans home) : maison sur une pastille, de la
+     * couleur du clan, à la place de l'armoire. Toujours montrée (aucun calque ne la cache).
+     */
+    private void baseIcone(float e) {
+        if (baseIci == null) return;
+        float X = sx(baseIci.x() + 0.5), Y = sy(baseIci.z() + 0.5);
+        if (horsEcran(X, Y, 12)) return;
+        Icones.icone(Icones.HALO, X, Y, R_BASE * e * 1.8f, Formes.argb(couleurClan(), 0.22f));
+        Icones.pastille(Icones.MAISON, X, Y, R_BASE * e, couleurClan(), 1f);
+    }
+
+    private void baseEtiquette(float e) {
+        if (baseIci == null) return;
+        float X = sx(baseIci.x() + 0.5), Y = sy(baseIci.z() + 0.5);
+        if (horsEcran(X, Y, 60)) return;
+        etiquette(I18n.get("heraliz_carte.base"), Ui.BOLD, X, Y + R_BASE * e + 5f, Formes.argb(couleurClan(), 1f), S_ETIQUETTE, 0, false, 0.7f);
     }
 
     /** Le joueur : halo léger, pastille sombre au bord blanc fin et flèche dans sa direction. */
@@ -1365,6 +1391,13 @@ public final class EcranCarte extends Screen {
                 if (v.moi) lignes.add(Ui.lit(I18n.get("heraliz_carte.ping.retirer"), Ui.FONT));
                 accent = v.type.couleur;
             }
+        }
+        if (lignes.isEmpty() && baseIci != null
+                && Math.hypot(sx(baseIci.x() + 0.5) - mx, sy(baseIci.z() + 0.5) - my) <= 7 * e) {
+            lignes.add(Ui.lit(I18n.get("heraliz_carte.base"), Ui.BOLD));
+            lignes.add(Ui.lit(I18n.get("heraliz_carte.base.aide"), Ui.FONT));
+            lignes.add(Ui.lit(metres(Math.hypot(baseIci.x() + 0.5 - px, baseIci.z() + 0.5 - pz)), Ui.FONT));
+            accent = couleurClan();
         }
         if (lignes.isEmpty()) {
             long maintenant = Util.getMillis();

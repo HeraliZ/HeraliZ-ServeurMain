@@ -91,5 +91,7 @@
   "heraliz_carte.cmd.liste.vide": "Aucun lieu : /carte lieu ajouter <type> <nom> à l'endroit voulu.",
   "heraliz_carte.cmd.liste.titre": "Lieux de la carte « %s » (%s) :",
   "heraliz_carte.cmd.liste.ligne": "%s · %s · %s, %s · %s",
-  "heraliz_carte.cmd.nom": "Nom de la carte : %s."
+  "heraliz_carte.cmd.nom": "Nom de la carte : %s.",
+  "heraliz_carte.base": "Base du clan",
+  "heraliz_carte.base.aide": "armoire de la base de ton clan, pour y revenir à pied"
 }

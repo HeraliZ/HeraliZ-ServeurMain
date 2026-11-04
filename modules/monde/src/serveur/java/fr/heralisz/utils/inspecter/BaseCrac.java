@@ -5,8 +5,11 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 
-/** Base CRac d'un joueur (CRac, par réflexion : {@code fr.heraliz.crac.api.BaseCracApi.base}). */
-final class BaseCrac {
+/**
+ * Base CRac d'un joueur (CRac, par réflexion : {@code fr.heraliz.crac.api.BaseCracApi.base}). Publique depuis le 04/11 :
+ * aussi lue par la carte du monde (repère de la base du clan, {@code fr.heraliz.carte.serveur.BaseCarte}).
+ */
+public final class BaseCrac {
     private static Method base;
     private static boolean cherche;
 
@@ -14,7 +17,7 @@ final class BaseCrac {
     }
 
     /** {monde, bloc de revendication, rayon, rayon en hauteur, nom du groupe}, ou null (sans base, ou sans CRac). */
-    static Object[] base(MinecraftServer srv, UUID joueur) {
+    public static Object[] base(MinecraftServer srv, UUID joueur) {
         if (!cherche) {
             cherche = true;
             try {

@@ -91,5 +91,7 @@
   "heraliz_carte.cmd.liste.vide": "No place: /carte lieu ajouter <type> <name> where you stand.",
   "heraliz_carte.cmd.liste.titre": "Places of the map \"%s\" (%s):",
   "heraliz_carte.cmd.liste.ligne": "%s · %s · %s, %s · %s",
-  "heraliz_carte.cmd.nom": "Map name: %s."
+  "heraliz_carte.cmd.nom": "Map name: %s.",
+  "heraliz_carte.base": "Clan base",
+  "heraliz_carte.base.aide": "your clan base's tool cupboard, to walk back to it"
 }

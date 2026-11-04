@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Canal {@code heraliz_carte:main} (version 1, facultatif des deux côtés). Un seul message : la liste des lieux nommés de
- * la carte ({@link LieuxS2C}), envoyée à la connexion et à chaque changement fait par le staff. Les territoires des clans
+ * Canal {@code heraliz_carte:main} (version 2, facultatif des deux côtés). La liste des lieux nommés de la carte
+ * ({@link LieuxS2C}), envoyée à la connexion et à chaque changement fait par le staff ; la base de son clan
+ * ({@link BaseC2S} à l'ouverture de la carte, réponse {@link BaseS2C}). Les territoires des clans
  * passent par le mod des clans ({@code fr.heralisz.clans.api.CarteApi}), les extractions par le leur
  * ({@code com.heraliz.extraction.api.ExtractionApi}), les pings par heraliz_ping.
  */
@@ -21,7 +22,8 @@ public final class CarteNet {
     private CarteNet() {
     }
 
-    public static final String VERSION = "1";
+    /** 2 (04/11) : repère de la base de son clan ({@link BaseC2S}, {@link BaseS2C}). */
+    public static final String VERSION = "2";
     public static final SimpleChannel CANAL = NetworkRegistry.ChannelBuilder.named(HeralizCarte.id("main"))
             .networkProtocolVersion(() -> VERSION)
             .clientAcceptedVersions(NetworkRegistry.acceptMissingOr(VERSION))
@@ -30,6 +32,40 @@ public final class CarteNet {
 
     /** Paquets reçus par le client : traités par la partie client (client.PartieClient), neutre ailleurs. */
     public static final Crochet<Object> RECEPTION_CLIENT = new Crochet<>();
+    /** Demandes de la base reçues par le serveur : traitées par la partie serveur (serveur.PartieServeur), neutre ailleurs. */
+    public static final Crochet<ServerPlayer> DEMANDE_BASE = new Crochet<>();
+
+    /**
+     * Demande du joueur à l'ouverture de la carte (04/11, demande du propriétaire : « un petit logo du claim block sur la
+     * carte, pour y retourner à pied si on n'a pas de home ») : où est la base de son clan ? Sans contenu.
+     */
+    public record BaseC2S() {
+        public void ecrire(FriendlyByteBuf b) {
+        }
+
+        public static BaseC2S lire(FriendlyByteBuf b) {
+            return new BaseC2S();
+        }
+    }
+
+    /** Réponse : armoire (Claim Block) de la base de son clan, son monde et son bloc ; {@link #AUCUNE} sans base. */
+    public record BaseS2C(boolean a, String monde, int x, int y, int z) {
+        public static final BaseS2C AUCUNE = new BaseS2C(false, "", 0, 0, 0);
+
+        public void ecrire(FriendlyByteBuf b) {
+            b.writeBoolean(a);
+            if (!a) return;
+            b.writeUtf(monde, 128);
+            b.writeInt(x);
+            b.writeInt(y);
+            b.writeInt(z);
+        }
+
+        public static BaseS2C lire(FriendlyByteBuf b) {
+            if (!b.readBoolean()) return AUCUNE;
+            return new BaseS2C(true, b.readUtf(128), b.readInt(), b.readInt(), b.readInt());
+        }
+    }
 
     /** Les lieux de tous les mondes et le nom de la carte (sous-titre de l'écran). */
     public record LieuxS2C(String nomCarte, List<Lieu> lieux) {
@@ -54,6 +90,17 @@ public final class CarteNet {
     public static void enregistrer() {
         CANAL.messageBuilder(LieuxS2C.class, 0, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(LieuxS2C::ecrire).decoder(LieuxS2C::lire)
+                .consumerMainThread((m, ctx) -> RECEPTION_CLIENT.accept(m))
+                .add();
+        CANAL.messageBuilder(BaseC2S.class, 1, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(BaseC2S::ecrire).decoder(BaseC2S::lire)
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) DEMANDE_BASE.accept(p);
+                })
+                .add();
+        CANAL.messageBuilder(BaseS2C.class, 2, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(BaseS2C::ecrire).decoder(BaseS2C::lire)
                 .consumerMainThread((m, ctx) -> RECEPTION_CLIENT.accept(m))
                 .add();
     }

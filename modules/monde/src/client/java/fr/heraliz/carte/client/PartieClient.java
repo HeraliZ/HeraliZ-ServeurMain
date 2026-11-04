@@ -38,10 +38,12 @@ public final class PartieClient implements Partie {
                 }));
         CarteNet.RECEPTION_CLIENT.brancher(m -> {
             if (m instanceof CarteNet.LieuxS2C l) LieuxClient.recevoir(l);
+            else if (m instanceof CarteNet.BaseS2C b) BaseClient.recevoir(b);
         });
         MinecraftForge.EVENT_BUS.addListener(PartieClient::tick);
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> {
             LieuxClient.vider();
+            BaseClient.vider();
             Sources.vider();
             Fond.oublier();
             precharge = false;

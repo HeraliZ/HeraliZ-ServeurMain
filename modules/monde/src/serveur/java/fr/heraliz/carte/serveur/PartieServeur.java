@@ -9,7 +9,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Partie serveur de heraliz_carte : commandes du staff ({@code /carte}) et envoi des lieux nommés à chaque joueur qui se
- * connecte. Les territoires, alliés, extractions et pings de la carte sont servis par leurs propres mods.
+ * connecte, repère de la base du clan ({@link BaseCarte}). Les territoires, alliés, extractions et pings de la carte sont
+ * servis par leurs propres mods.
  */
 public final class PartieServeur implements Partie {
     @Override
@@ -18,5 +19,8 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) LieuxData.de(p.server).envoyer(p);
         });
+        // 04/11 : repère de la base du clan, demandé à l'ouverture de la carte
+        fr.heraliz.carte.CarteNet.DEMANDE_BASE.brancher(BaseCarte::demande);
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> BaseCarte.oublier(e.getEntity().getUUID()));
     }
 }
