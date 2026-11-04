@@ -25,13 +25,6 @@ public final class FxContext {
    public float reveal = -1;
    /** Temps écoulé depuis le dernier tir du porteur (s) ; grand si inconnu (armes des autres, au sol). */
    public float fireAge = 99;
-   /** Âges (s) des derniers tirs de l'arme (joueur local), du plus récent au plus ancien ; null si inconnus. */
-   public float[] shotAges;
-   /** Numéro du dernier tir (le tir i de shotAges a le numéro shotSeq - i) : graine stable de ce qu'il éjecte. */
-   public int shotSeq;
-   /** Chaleur de l'arme (0 froide .. 1 à blanc) et nombre de kills qu'elle a faits. */
-   public float heat;
-   public int kills;
    /** Inspection de skin : paume de la main gauche animée (repère de rendu), null si elle n'est pas en scène. */
    public V handPos;
    /** Poignet gauche (même repère), null hors scène. */

@@ -132,7 +132,7 @@ final class DefaultLoot {
                 for (String c : new String[]{"orion", "singularity", "nexus_horizon", "dark_matter_nuclear", "liquid_chrome", "dragon", "storm", "dark_matter"}) {
                     l.add(camo(c, 2, LEGENDARY));
                 }
-                for (String c : new String[]{"seraphin", "chaines_enfer", "texture_manquante", "money_gun", "surchauffe", "trophee"}) {
+                for (String c : new String[]{"seraphin", "chaines_enfer"}) {
                     l.add(e("heralisz_camo:skinx_" + c, 1, 1, MYTHIC));
                 }
             }

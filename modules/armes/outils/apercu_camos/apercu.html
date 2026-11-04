@@ -43,7 +43,7 @@ function fs(id) {
     vec3 camo = camoColor(CamoId, pm.xyz, em);
     float lum = dot(base.rgb, vec3(0.299, 0.587, 0.114));
     camo *= mix(1.0, clamp(lum * 2.0, 0.45, 1.15), 0.12);
-    color = vec4(mix(camo, base.rgb, KEEP_BASE), 1.0);`;
+    color = vec4(camo, 1.0);`;
   const nouveau = `
 #ifdef CAMO_RELIEF
     RELIEF = baseRelief(base, texCoord0);
@@ -61,8 +61,6 @@ uniform int CamoId;
 uniform int CamoParts;
 uniform float CamoTime;
 uniform float CamoReveal;
-uniform float CamoHeat;
-uniform float CamoLevel;
 uniform vec4 CamoUvRect;
 uniform mat3 IViewRotMat;
 uniform vec4 CamoAnchor;
@@ -78,7 +76,6 @@ void main() {
   vec4 color = base;
   if (CamoId > 0 && camoCovers(pm.a, CamoParts)) {
     PART = pm.a;
-    KEEP_BASE = 0.0;
     BASE_COL = base.rgb;
     VN_DETAIL = normalize(viewNormal);
 #ifndef SANS_RELIEF
@@ -278,8 +275,6 @@ async function rendre(nom, camo, o) {
   gl.uniform1i(u('CamoParts'), o.parts || 7);
   gl.uniform1f(u('CamoTime'), o.temps || 0);
   gl.uniform1f(u('CamoReveal'), -1);
-  gl.uniform1f(u('CamoHeat'), 0);
-  gl.uniform1f(u('CamoLevel'), 0);
   gl.uniform4f(u('CamoUvRect'), 0, 0, 1, 1);
   gl.uniform4f(u('CamoAnchor'), ...(o.anchor || arme.anchor));
   gl.uniform1i(u('uMode'), o.relief ? 1 : 0);

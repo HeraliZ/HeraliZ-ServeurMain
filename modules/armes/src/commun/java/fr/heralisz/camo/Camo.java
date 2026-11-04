@@ -61,12 +61,10 @@ public enum Camo {
    // qui porte encore « pap_1 » à « pap_3 » s'affiche sans camo, voir byId)
    // skins X : camo vivant + effet 3D, onglet « HeralisZ - skinX » (un skin peut être réservé à une arme : Camo.gun)
    SERAPHIN("seraphin", 208, Tier.MYTHIC, Camo.ALL),
-   CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL),
-   // skins « buzz » (réactifs, mèmes) : 230+
-   TEXTURE_MANQUANTE("texture_manquante", 230, Tier.MYTHIC, Camo.ALL),
-   MONEY_GUN("money_gun", 231, Tier.MYTHIC, Camo.ALL),
-   SURCHAUFFE("surchauffe", 232, Tier.MYTHIC, Camo.ALL),
-   TROPHEE("trophee", 233, Tier.MYTHIC, Camo.ALL);
+   CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL);
+   // (230 à 233 Texture manquante, Money Gun, Surchauffe et Trophée, skins « buzz », supprimés le 04/11 : choix du
+   // propriétaire, seuls Séraphin et Chaînes de l'Enfer restent mythiques ; une arme qui porte encore un de ces ids
+   // s'affiche sans camo, un id gardé dans une collection est ignoré, voir byId)
 
    public static final int BODY = 1, MAG = 2, BARREL = 4, ALL = 7;
 

@@ -190,22 +190,6 @@
             ]
         },
         {
-            "name": "CamoHeat",
-            "type": "float",
-            "count": 1,
-            "values": [
-                0.0
-            ]
-        },
-        {
-            "name": "CamoLevel",
-            "type": "float",
-            "count": 1,
-            "values": [
-                0.0
-            ]
-        },
-        {
             "name": "CamoUvRect",
             "type": "float",
             "count": 4,

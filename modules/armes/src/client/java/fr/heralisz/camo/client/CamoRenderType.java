@@ -60,9 +60,6 @@ public final class CamoRenderType extends RenderType {
                   shader.safeGetUniform("CamoParts").set(k.parts);
                   shader.safeGetUniform("CamoTime").set((Util.getMillis() % 3_600_000L) / 1000.0F);
                   shader.safeGetUniform("CamoReveal").set(k.bag ? -1 : CamoFx.pendingReveal);
-                  float time = (Util.getMillis() % 3_600_000L) / 1000.0F;
-                  shader.safeGetUniform("CamoHeat").set(k.bag ? bagHeat(k.shaderId, time) : CamoFx.pendingHeat);
-                  shader.safeGetUniform("CamoLevel").set(k.bag ? bagLevel(k.shaderId, time) : (float) CamoFx.pendingKills);
                   shader.safeGetUniform("CamoUvRect").set(k.u0, k.v0, k.du, k.dv);
                }
             }, () -> CamoFx.DEFAULT_BLEND.apply()))   // le mélange du shader camo ne doit pas rester « dernier appliqué » (voir CamoFx.emit)
@@ -70,26 +67,6 @@ public final class CamoRenderType extends RenderType {
             .setLightmapState(LIGHTMAP)
             .setOverlayState(OVERLAY)
             .createCompositeState(true))));
-   }
-
-   /** Sac Surchauffe : pas de tirs, le sac chauffe et refroidit lentement (couleurs de revenu de l'acier). */
-   private static float bagHeat(int shaderId, float t) {
-      return shaderId == 232 ? 0.32F + 0.12F * (float) Math.sin(t * 0.6F) : 0;
-   }
-
-   /**
-    * Sac Trophée : pas de kills, il montre ses paliers l'un après l'autre (pierre, fer, or, diamant, netherite, ascendant),
-    * le matériau suivant gagnant le sac derrière la ligne lumineuse, 8 s par palier.
-    */
-   private static float bagLevel(int shaderId, float t) {
-      if (shaderId != 233) return 0;
-      float[] b = {0, 25, 100, 250, 500, 1000};
-      int i = (int) (t / 8) % 6;
-      if (i == 5) return 1000;
-      float u = (t % 8) / 8;
-      float prog = Math.max(0, Math.min(1, (u - 0.15F) / 0.6F));
-      prog = prog * prog * (3 - 2 * prog);
-      return b[i] + (b[i + 1] - b[i]) * prog;
    }
 
    private static RenderType register(Key k, RenderType type) {

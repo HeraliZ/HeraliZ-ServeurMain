@@ -66,6 +66,10 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
       chat revient ; un corps derrière une barrière ou un muret se fouille par-dessus ; ouvert puis caché derrière un mur, la
       fouille se ferme ; roue : deux emotes de la même page s'échangent, « Terminé » ferme tout, une emote à débloquer ne
       se choisit pas (message).
+- [ ] Skins mythiques (Tactique 2.51.0, demande du propriétaire du 04/11) : seuls Séraphin et Chaînes de l'Enfer restent ;
+      plus de Texture manquante, Money Gun, Surchauffe ni Trophée (menu créatif, `/camos`, atelier d'arme). Aucune
+      collection à vie ne les avait (vu sur le Ptero le 04/11). Une arme qui en portait un s'affiche sans camo ; console
+      au démarrage : objets `heralisz_camo:skinx_*` manquants signalés, sans erreur. Le StatTrack compte toujours les kills.
 
 ## 2. Priorité 1 : les gros systèmes
 

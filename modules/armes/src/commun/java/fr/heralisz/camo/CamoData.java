@@ -63,7 +63,7 @@ public final class CamoData {
       }
    }
 
-   /** Compteur de kills de l'arme (skins qui évoluent, compteur façon StatTrak). */
+   /** Compteur de kills de l'arme (module StatTrack). */
    public static final String KILLS = "HeraliszKills";
 
    public static int kills(ItemStack stack) {

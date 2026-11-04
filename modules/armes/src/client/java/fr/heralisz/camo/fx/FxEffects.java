@@ -10,10 +10,6 @@ public final class FxEffects {
    static {
       EFFECTS.put(208, new FxSeraph());
       EFFECTS.put(209, new FxInferno());
-      EFFECTS.put(230, new FxMissing());
-      EFFECTS.put(231, new FxMoney());
-      EFFECTS.put(232, new FxOverheat());
-      EFFECTS.put(233, new FxTrophy());
       // (72 Dark Matter Origine, piquots visqueux : retiré en 0.9.12, voir _retires/dark_matter_origin_0.9.11)
       EFFECTS.put(70, new FxLegacy.Storm());
    }

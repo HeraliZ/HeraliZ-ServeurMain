@@ -78,12 +78,6 @@ public final class CamoFx {
    static float fxTime, fxFade = 1, fxGui, fxLight = 1, fxFp, fxScale = 1;
    /** Apparition de l'arme en cours de rendu (posé par BedrockGunModelMixin, lu par le rendu camo et la capture) : 0..1, -1 = aucune. */
    public static float pendingReveal = -1;
-   /** Chaleur (arme du joueur local, ShotTracker) et kills (NBT) de l'arme en cours de rendu : lus par le rendu camo et les effets. */
-   public static float pendingHeat;
-   public static int pendingKills;
-   /** Derniers tirs de l'arme en cours de rendu (ShotTracker) : âges et numéro du dernier. */
-   public static float[] pendingAges;
-   public static int pendingSeq;
    /** L'arme en cours de rendu est-elle celle du joueur local (1re ou 3e personne) ? Posé par BedrockGunModelMixin. */
    public static boolean pendingLocal;
    /** Repère et silhouette de l'arme tenue en 1re personne à l'image précédente (main gauche de l'apparition). */
@@ -131,10 +125,6 @@ public final class CamoFx {
       c.light = pendingLight;
       c.reveal = pendingReveal;
       c.local = pendingLocal;
-      c.heat = pendingHeat;
-      c.kills = pendingKills;
-      c.ages = pendingAges;
-      c.seq = pendingSeq;
       STACK.push(c);
       return c;
    }
@@ -296,10 +286,6 @@ public final class CamoFx {
       fc.inspectTime = showcase ? SkinInspect.time() : 0;
       fc.reveal = revealing ? c.reveal : -1;
       fc.fireAge = c.local ? fireAge(mc) : 99;
-      fc.shotAges = c.ages;
-      fc.shotSeq = c.seq;
-      fc.heat = c.heat;
-      fc.kills = c.kills;
       fc.handPos = fp && SkinInspect.showcase() ? SkinInspect.handPos : null;
       fc.wristPos = fc.handPos != null ? SkinInspect.wristPos : null;
       if (fp) {
@@ -561,10 +547,6 @@ public final class CamoFx {
       int light;
       float reveal = -1;
       boolean local;
-      float heat;
-      int kills;
-      float[] ages;
-      int seq;
       float[] data;
       int count;
       boolean frozen;

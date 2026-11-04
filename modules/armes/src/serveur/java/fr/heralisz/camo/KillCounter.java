@@ -8,9 +8,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Compteur de kills des armes skinnées (côté serveur) : chaque kill fait avec une arme qui porte un camo ajoute 1 à son NBT
- * (CamoData.KILLS). Le compteur suit l'arme comme le camo ; le client le reçoit avec l'objet (skin Trophée : paliers et
- * compteur façon StatTrak).
+ * Compteur de kills des armes équipées du module StatTrack (côté serveur) : chaque kill ajoute 1 à leur NBT
+ * (CamoData.KILLS), que le client affiche sur la plaquette. (Avant le 04/11, les armes skinnées comptaient aussi, pour le
+ * skin Trophée, supprimé.)
  */
 @Mod.EventBusSubscriber(modid = HeraliszCamo.MODID)
 public final class KillCounter {
@@ -28,8 +28,7 @@ public final class KillCounter {
       // tueur en match (HeraliZ Matchs : ClashWar, duels, zombies) : le kill ne compte pas
       if (attacker.getPersistentData().contains(EN_MATCH)) return;
       ItemStack gun = attacker.getMainHandItem();
-      // armes skinnées (Trophée...) et armes équipées du module StatTrack
-      if (IGun.getIGunOrNull(gun) == null || CamoData.get(gun) == null && !fr.heralisz.camo.decor.DecorData.hasStatTrak(gun)) return;
+      if (IGun.getIGunOrNull(gun) == null || !fr.heralisz.camo.decor.DecorData.hasStatTrak(gun)) return;
       CamoData.addKill(gun);
    }
 }

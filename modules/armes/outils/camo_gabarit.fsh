@@ -22,9 +22,6 @@ uniform int CamoParts;
 uniform float CamoTime;
 // apparition de l'arme (skins à créature) : front de matérialisation 0 (crosse) .. 1 (canon), -1 = arme entière
 uniform float CamoReveal;
-// chaleur de l'arme (Surchauffe) 0..1 et nombre de kills de l'arme (skins qui évoluent)
-uniform float CamoHeat;
-uniform float CamoLevel;
 // coordonnées de texture -> carte de positions : (u0, v0, largeur, hauteur). Armes : (0, 0, 1, 1) ; sacs : leur texture
 // dans l'atlas des blocs. Hors du rectangle (autre texture du même modèle) : pas de camo.
 uniform vec4 CamoUvRect;
@@ -477,8 +474,6 @@ vec3 darkMatterNuclear(vec3 p, out vec3 em) {
 // Rendu « métal » : la lame reflète un décor de studio qui dépend de l'orientation, avec une légère courbure simulée
 // le long et en travers de la lame -> les reflets glissent quand le couteau bouge, comme dans CS.
 float PART = 1.0;
-// part de la texture d'origine de l'arme à garder (0 : camo seul, 1 : texture d'origine), posée par le camo
-float KEEP_BASE = 0.0;
 // couleur de la texture d'origine au point dessiné (manches ornés : leurs motifs restent visibles sous la finition)
 vec3 BASE_COL = vec3(0.0);
 
@@ -2914,276 +2909,12 @@ vec3 infernalIron(vec3 p, out vec3 em) {
     return col + studio(normalize(viewNormal)) * 0.05;
 }
 
-
-
-
-
-
-
-
-// 230 Texture manquante (mème Minecraft) : le damier rose et noir de la texture introuvable contamine l'arme par plaques
-// pixelisées qui rampent lentement ; ailleurs, la texture d'origine de l'arme (KEEP_BASE) ; la frontière clignote (cyan,
-// blanc, rose), des tranches de l'arme « sautent » (glitch) ; de temps en temps tout plante une fraction de seconde
-vec3 missingTexture(vec3 p, out vec3 em) {
-    float t = CamoTime;
-    const float CELLS = 44.0;
-    vec3 cellP = floor(p * CELLS);
-    vec3 cc = (cellP + 0.5) / CELLS;
-    vec3 f = fract(p * CELLS);
-    float chk = mod(cellP.x + cellP.y + cellP.z, 2.0);
-    float drift = t * 0.05;
-    float inf = fbm(cc * vec3(3.0, 5.0, 5.0) + vec3(drift, -drift * 0.7, drift * 0.4), 3);
-    float cover = 0.5 + 0.06 * sin(t * 0.37);
-    float edge = inf - (1.0 - cover);
-    float stepT = floor(t * 8.0);
-    float band = floor(p.x * 22.0);
-    float gl = step(0.86, hash(vec3(band, stepT, 3.0)));
-    edge += gl * (hash(vec3(band, stepT, 4.0)) - 0.35) * 0.3;
-    float win = floor(t / 5.0);
-    float ct = t - win * 5.0 - 3.6;
-    float crash = step(hash(vec3(win, 3.0, 17.0)), 0.55) * step(0.0, ct) * step(ct, 0.2);
-    float infected = max(step(0.0, edge), crash);
-    float front = step(abs(edge), 0.022) * (1.0 - crash);
-    float flick = hash(vec3(cellP.xy, floor(t * 10.0) + cellP.z));
-    vec3 magenta = vec3(0.973, 0.0, 0.973);
-    vec3 col = magenta * chk;
-    vec3 glitchCol = flick < 0.18 ? vec3(0.0, 1.0, 1.0) : flick < 0.26 ? vec3(1.0) : flick < 0.63 ? magenta : vec3(0.0);
-    col = mix(col, glitchCol, front);
-    col *= 0.88 + 0.12 * step(0.08, min(min(f.x, f.y), f.z));
-    KEEP_BASE = 1.0 - max(infected, front);
-    em = magenta * chk * infected * 0.35 + glitchCol * front * 0.6 + magenta * crash * 0.4;
-    return col;
-}
-
-// 231 Money Gun : corps emballé de billets qui se chevauchent (posés de travers, dans tous les sens), chargeur et canon en or
-// massif brossé avec un reflet qui glisse ; bande holographique des billets qui chatoie
-
-// billet (uv 0..1 x 0..1, format 2.3:1) : papier vert, guillochis, cadre, médaillon au buste, « 100 », bande holographique
-vec3 banknote(vec2 q, float seed, float t, out float foil) {
-    float aspect = 2.3;
-    vec3 paper = mix(hexc(0x3e7b58), hexc(0x9fd3a6), 0.5 + 0.5 * sin(q.x * 3.0 + seed));
-    float g1 = sin(q.x * 90.0 + sin(q.y * 12.0 + seed) * 3.0);
-    float g2 = sin(q.y * 70.0 + sin(q.x * 9.0 + seed) * 4.0);
-    paper *= 0.9 + 0.07 * g1 * g2;
-    float bx = min(q.x, 1.0 - q.x) * aspect, by = min(q.y, 1.0 - q.y);
-    float bd = min(bx, by);
-    float frame = smoothstep(0.11, 0.095, bd) * smoothstep(0.045, 0.06, bd);
-    float rosette = 0.5 + 0.5 * sin(atan(q.y - 0.5, (q.x - 0.5) * aspect) * 40.0);
-    paper = mix(paper, mix(hexc(0x1d4a33), hexc(0x2f6d4c), rosette), frame * 0.85);
-    float edge = smoothstep(0.03, 0.0, bd);
-    vec2 m = (q - vec2(0.27, 0.5)) * vec2(aspect, 1.0);
-    float oval = length(m / vec2(0.27, 0.37));
-    float inOval = smoothstep(1.0, 0.95, oval);
-    paper = mix(paper, hexc(0xd9efd2), inOval * 0.75);
-    float head = length((m - vec2(0.0, 0.07)) / vec2(0.085, 0.115));
-    float bust = length((m - vec2(0.0, -0.24)) / vec2(0.2, 0.15));
-    float figure = max(smoothstep(1.0, 0.88, head), smoothstep(1.0, 0.9, bust) * step(m.y, -0.11));
-    paper = mix(paper, hexc(0x234a36), figure * inOval * 0.85);
-    paper = mix(paper, hexc(0x1d4a33), smoothstep(0.05, 0.0, abs(oval - 1.0)));
-    vec2 d = (q - vec2(0.73, 0.5)) * vec2(aspect, 1.0);
-    float one = smoothstep(0.035, 0.02, abs(d.x + 0.3)) * step(abs(d.y), 0.2);
-    float z1 = abs(length((d - vec2(-0.1, 0.0)) / vec2(0.1, 0.2)) - 1.0);
-    float z2 = abs(length((d - vec2(0.16, 0.0)) / vec2(0.1, 0.2)) - 1.0);
-    float digits = max(one, max(smoothstep(0.3, 0.14, z1), smoothstep(0.3, 0.14, z2)));
-    paper = mix(paper, hexc(0x123524), digits);
-    foil = smoothstep(0.04, 0.025, abs(q.x - 0.52));
-    vec3 holo = 0.6 + 0.4 * cos(6.2831 * (q.y * 2.0 + t * 0.35 + seed * 0.1 + vec3(0.0, 0.33, 0.67)));
-    paper = mix(paper, holo, foil * 0.85);
-    return mix(paper, vec3(0.93, 0.95, 0.9), edge);
-}
-
-vec3 moneyGun(vec3 p, out vec3 em) {
-    float t = CamoTime;
-    vec3 n = faceNormal(p);
-    if (PART < 0.9) {
-        // or massif brossé : fond chaud et profond, stries fines, reflet franc qui glisse, liseré clair sur les arêtes
-        float lines = 0.5 + 0.5 * sin(p.x * 900.0 + fbm(p * 40.0, 2) * 6.0);
-        float sweep = pow(0.5 + 0.5 * sin(p.x * 8.0 - t * 1.6 + p.y * 3.0), 10.0);
-        vec3 gold = mix(hexc(0x5a3606), hexc(0xe8a92c), 0.35 + 0.45 * fbm(p * 24.0, 2));
-        gold = mix(gold, hexc(0xffd966), 0.25 * lines);
-        vec3 sh = studio(normalize(viewNormal));
-        gold += hexc(0xffe28a) * dot(sh, vec3(0.33)) * 0.55;
-        em = hexc(0xffe9a8) * sweep * 0.25;
-        return gold + hexc(0xfff4c8) * sweep * 0.6;
-    }
-    vec2 s2 = surf2d(p, n);
-    vec2 cs = vec2(0.14, 0.061);
-    vec2 cell = floor(s2 / cs);
-    float bestO = -1.0;
-    vec2 buv = vec2(0.5);
-    float bseed = 0.0;
-    for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            vec2 c = cell + vec2(float(dx), float(dy));
-            float h1 = hash(vec3(c, 1.0)), h2 = hash(vec3(c, 2.0)), h3 = hash(vec3(c, 3.0)), h4 = hash(vec3(c, 4.0));
-            vec2 ctr = (c + 0.5 + (vec2(h1, h2) - 0.5) * 0.5) * cs;
-            float ang = (h3 - 0.5) * 0.8;
-            vec2 d = s2 - ctr;
-            vec2 r = vec2(cos(ang) * d.x + sin(ang) * d.y, -sin(ang) * d.x + cos(ang) * d.y);
-            vec2 uvb = r / (cs * vec2(1.2, 1.25)) + 0.5;
-            if (uvb.x >= 0.0 && uvb.x <= 1.0 && uvb.y >= 0.0 && uvb.y <= 1.0 && h4 > bestO) {
-                bestO = h4;
-                buv = uvb;
-                bseed = h1 * 7.0;
-            }
-        }
-    }
-    if (bestO < 0.0) {
-        return lacquer(hexc(0x2e5e44), 0.8);
-    }
-    float foil;
-    vec3 col = banknote(buv, bseed, t, foil);
-    em = (0.6 + 0.4 * cos(6.2831 * (buv.y * 2.0 + t * 0.35 + vec3(0.0, 0.33, 0.67)))) * foil * 0.12;
-    return lacquer(col, 0.9);
-}
-
-// couleurs de revenu de l'acier (film d'oxyde) : paille, bronze, pourpre, bleu, bleu pâle
-vec3 temperColor(float k) {
-    vec3 c = mix(hexc(0xd8b35a), hexc(0xa8652a), smoothstep(0.0, 0.25, k));
-    c = mix(c, hexc(0x6b3a8c), smoothstep(0.25, 0.5, k));
-    c = mix(c, hexc(0x2c5fb8), smoothstep(0.5, 0.75, k));
-    return mix(c, hexc(0x86bde6), smoothstep(0.75, 1.0, k));
-}
-// incandescence (corps noir) : rouge sombre, rouge, orange, jaune, blanc
-vec3 blackbody(float k) {
-    vec3 c = mix(hexc(0x3a0400), hexc(0xb31a00), smoothstep(0.0, 0.3, k));
-    c = mix(c, hexc(0xff5a00), smoothstep(0.3, 0.55, k));
-    c = mix(c, hexc(0xffb347), smoothstep(0.55, 0.8, k));
-    return mix(c, hexc(0xfff4d6), smoothstep(0.8, 1.0, k));
-}
-// 232 Surchauffe : acier noir usiné, bout de canon en titane brûlé (visible à froid) ; l'arme chauffe à chaque tir
-// (CamoHeat) : couleurs de revenu qui gagnent l'arme depuis le canon, puis incandescence rouge -> blanc ; elle refroidit seule
-vec3 overheat(vec3 p, out vec3 em) {
-    float t = CamoTime;
-    vec3 n = faceNormal(p);
-    float barrel = PART < 0.6 ? 1.0 : 0.0;
-    float mach = 0.5 + 0.5 * sin(surf2d(p, n).x * 420.0);
-    vec3 col = mix(hexc(0x0b0d10), hexc(0x24282f), 0.35 + 0.4 * fbm(p * 40.0, 2)) * (0.92 + 0.08 * mach);
-    // titane brûlé au bout du canon, visible même à froid
-    float burn = smoothstep(0.18, 0.5, p.x) * (0.45 + 0.55 * barrel);
-    float tf = p.x * 7.0 + fbm(p * vec3(6.0, 20.0, 20.0), 3) * 1.4;
-    col = mix(col, temperColor(fract(tf * 0.5)) * 0.9, burn * 0.75);
-    // front de chaleur qui part de la bouche du canon : incandescence, puis bleu, pourpre, bronze, paille, puis acier nu
-    float d = 0.5 - p.x;
-    float wob = 0.05 * (fbm(p * vec3(8.0, 24.0, 24.0), 3) - 0.5);
-    float h = CamoHeat * 1.22 - d * 1.2 + 0.12 * barrel + wob;
-    float tw = smoothstep(0.02, 0.1, h) * (1.0 - smoothstep(0.5, 0.6, h));
-    vec3 temper = temperColor(clamp((h - 0.05) / 0.42, 0.0, 1.0));
-    col = mix(col, temper * (0.88 + 0.12 * mach), tw * 0.85);
-    float glow = clamp((h - 0.52) / 0.8 + 0.05 * (fbm(p * 30.0 + vec3(t * 2.0, 0.0, 0.0), 2) - 0.5), 0.0, 1.0);
-    vec3 bb = blackbody(glow);
-    col = mix(col, bb, smoothstep(0.0, 0.18, glow));
-    em = bb * glow * 0.9;
-    return lacquer(col, 1.3);
-}
-
-// paliers du Trophée : pierre (pavés), fer (plaques rivetées), or, diamant, netherite, ascendant (marbre blanc veiné d'or)
-vec3 trophyStone(vec3 p, out vec3 em) {
-    float f1, f2; vec3 cell, fp;
-    worley(p * vec3(12.0, 20.0, 20.0), f1, f2, cell, fp);
-    float h = hash(cell);
-    vec3 col = mix(hexc(0x5c5c5c), hexc(0x9a9a9a), 0.3 + 0.5 * h) * (0.85 + 0.15 * fbm(p * 90.0, 2));
-    float mortar = 1.0 - smoothstep(0.0, 0.06, f2 - f1);
-    col = mix(col, hexc(0x3a3a3a), mortar * 0.8);
-    em = vec3(0.0);
-    return lacquer(col, 0.3);
-}
-vec3 trophyIron(vec3 p, out vec3 em) {
-    vec3 n = faceNormal(p);
-    vec2 s2 = surf2d(p, n);
-    vec2 g = fract(s2 * vec2(9.0, 14.0));
-    float seam = 1.0 - smoothstep(0.0, 0.05, min(min(g.x, 1.0 - g.x), min(g.y, 1.0 - g.y)));
-    float rivet = smoothstep(0.1, 0.06, length((g - vec2(0.12, 0.2)) * vec2(1.0, 1.4)));
-    float brush = 0.92 + 0.08 * vnoise(vec3(p.x * 30.0, p.y * 600.0, p.z * 600.0));
-    vec3 col = mix(hexc(0xa9a9a9), hexc(0xe2e2e2), 0.45 + 0.35 * fbm(p * 20.0, 2)) * brush;
-    col = mix(col, hexc(0x6a6a6a), seam * 0.7);
-    col = mix(col, hexc(0xf4f4f4), rivet);
-    em = vec3(0.0);
-    return lacquer(col, 1.1);
-}
-vec3 trophyNetherite(vec3 p, out vec3 em) {
-    vec3 q = p * vec3(10.0, 18.0, 18.0);
-    float f = fbm(q, 4);
-    float diag = 0.5 + 0.5 * sin((p.x + p.y) * 160.0 + f * 6.0);
-    vec3 col = mix(hexc(0x1e191b), hexc(0x4a3f44), 0.35 + 0.4 * f) * (0.9 + 0.1 * diag);
-    col = mix(col, hexc(0x5b3a6e), pow(fbm(q * 0.5 + 7.0, 3), 3.0) * 0.8);
-    float vein = isoLine(fbm(q * 0.7 + 3.0, 3), 0.5, 0.003, p) * smoothstep(0.55, 0.7, fbm(p * 4.0 + 1.0, 2));
-    vec3 ember = mix(hexc(0x8a1a3a), hexc(0xd76bff), 0.5 + 0.5 * sin(CamoTime * 1.5 + p.x * 8.0));
-    col = mix(col, ember, vein);
-    em = ember * vein * 0.8;
-    return lacquer(col, 1.2);
-}
-vec3 trophyAscended(vec3 p, out vec3 em) {
-    float t = CamoTime;
-    vec3 q = p * vec3(6.0, 11.0, 11.0);
-    vec3 w = vec3(fbm(q + vec3(1.3, 0.0, t * 0.05), 3), fbm(q + vec3(5.1, 2.2, 0.0), 3), 0.0);
-    float m = fbm(q + 1.8 * w, 5);
-    // marbre ivoire nuancé (pas de blanc pur : il brûle sous le soleil et les shaders)
-    vec3 col = mix(hexc(0xb9b0a2), hexc(0xe6dfd2), smoothstep(0.25, 0.8, m));
-    col *= 0.9 + 0.1 * fbm(p * 70.0, 2);
-    float cloud = isoLine(fbm(q * 0.9 + 2.0 * w + 5.0, 3), 0.5, 0.012, p) * 0.35;
-    col = mix(col, hexc(0x8d8579), cloud);
-    float vein = isoLine(m, 0.52, 0.005, p);
-    float vein2 = isoLine(fbm(q * 1.7 + 3.0 * w, 4), 0.5, 0.0025, p) * 0.75;
-    float shine = 0.6 + 0.4 * sin(p.x * 14.0 - t * 1.4);
-    vec3 goldC = mix(hexc(0xa87a1e), hexc(0xffd66a), shine);
-    col = mix(col, goldC, max(vein, vein2));
-    float sweep = exp(-pow((p.x + 0.5 - (fract(t * 0.09) * 1.8 - 0.4) - p.y * 1.3) / 0.05, 2.0));
-    em = goldC * max(vein, vein2) * 0.8 + vec3(1.0, 0.93, 0.75) * sweep * 0.22;
-    return lacquer(col, 1.15);
-}
-vec3 trophyMat(int tier, vec3 p, out vec3 em) {
-    em = vec3(0.0);
-    if (tier <= 0) return trophyStone(p, em);
-    if (tier == 1) return trophyIron(p, em);
-    if (tier == 2) return gold(p, em);
-    if (tier == 3) return diamond(p, em);
-    if (tier == 4) return trophyNetherite(p, em);
-    return trophyAscended(p, em);
-}
-vec3 tierGlow(int tier) {
-    return tier == 1 ? vec3(1.0) : tier == 2 ? hexc(0xffd24a) : tier == 3 ? hexc(0x55f0e2) : tier == 4 ? hexc(0xc060ff) : hexc(0xfff0b0);
-}
-// 233 Trophée : le skin évolue avec les kills de l'arme (CamoLevel) ; le matériau du palier suivant gagne l'arme depuis le canon
-// au fil des kills, derrière une ligne lumineuse — on voit où on en est
-vec3 trophy(vec3 p, out vec3 em) {
-    float k = CamoLevel;
-    int tier = k >= 1000.0 ? 5 : k >= 500.0 ? 4 : k >= 250.0 ? 3 : k >= 100.0 ? 2 : k >= 25.0 ? 1 : 0;
-    float lo = tier == 5 ? 1000.0 : tier == 4 ? 500.0 : tier == 3 ? 250.0 : tier == 2 ? 100.0 : tier == 1 ? 25.0 : 0.0;
-    float hi = tier == 4 ? 1000.0 : tier == 3 ? 500.0 : tier == 2 ? 250.0 : tier == 1 ? 100.0 : 25.0;
-    vec3 emA;
-    vec3 a = trophyMat(tier, p, emA);
-    if (tier >= 5) {
-        em = emA;
-        return a;
-    }
-    float prog = clamp((k - lo) / (hi - lo), 0.0, 1.0);
-    if (prog <= 0.0) {
-        em = emA;
-        return a;
-    }
-    float b = 0.5 - prog + 0.05 * (fbm(p * 12.0, 2) - 0.5);
-    float inNext = step(b, p.x);
-    vec3 emB;
-    vec3 bc = trophyMat(tier + 1, p, emB);
-    em = mix(emA, emB, inNext) + tierGlow(tier + 1) * exp(-abs(p.x - b) * 180.0) * 0.8;
-    return mix(a, bc, inNext);
-}
-
 vec3 skinSurface(vec3 p, out vec3 em) {
     em = vec3(0.0);
 #if CAMO_ID == 208
     return seraphMarble(p, em);
 #elif CAMO_ID == 209
     return infernalIron(p, em);
-#elif CAMO_ID == 230
-    return missingTexture(p, em);
-#elif CAMO_ID == 231
-    return moneyGun(p, em);
-#elif CAMO_ID == 232
-    return overheat(p, em);
-#elif CAMO_ID == 233
-    return trophy(p, em);
 #else
     return darkMatter(p, em);
 #endif
@@ -3828,7 +3559,6 @@ void main() {
     vec4 color = base;
     if (CamoId > 0 && inRect && camoCovers(pm.a, CamoParts)) {
         PART = pm.a;
-        KEEP_BASE = 0.0;
         BASE_COL = base.rgb;
         VN_DETAIL = normalize(viewNormal);
         appliquerRelief(pm.xyz, pm.a);
@@ -3841,7 +3571,7 @@ void main() {
         // garde un soupçon des détails gravés de la texture d'origine
         float lum = dot(base.rgb, vec3(0.299, 0.587, 0.114));
         camo *= mix(1.0, clamp(lum * 2.0, 0.45, 1.15), 0.12);
-        color = vec4(mix(camo, base.rgb, KEEP_BASE), 1.0);
+        color = vec4(camo, 1.0);
 #endif
         color.rgb *= DETAIL_SHADE;
     }
