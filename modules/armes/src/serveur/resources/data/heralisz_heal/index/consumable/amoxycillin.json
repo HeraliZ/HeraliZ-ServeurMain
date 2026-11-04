@@ -7,7 +7,7 @@
     "cooldown": 60,
     "cooldown_category": "heralisz_tactical:medical",
     "stack_size": 1,
-    "max_durability": 8,
+    "max_durability": 2,
     "durability_damage": 1,
     "draw_time": 10,
     "put_away_time": 14,
@@ -25,7 +25,7 @@
     "effects": [
       {
         "id": "minecraft:regeneration",
-        "duration": 1200,
+        "duration": 300,
         "amplifier": 0,
         "chance": 1.0,
         "ambient": false,

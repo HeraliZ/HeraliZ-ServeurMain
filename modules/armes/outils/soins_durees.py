@@ -32,13 +32,13 @@ DUREES = {
     "amoxycillin": 30,     # (145) antibiotique
     # moyens : environ 2,5 s
     "ai2": 50,             # (93) petite trousse
-    "carfak": 50,          # (121) trousse de combat
-    "blood_pack": 60,      # (93) poche de sang (soigne 24 et la jambe cassée)
+    "carfak": 70,          # (121) trousse de combat ; 04/11 (propriétaire) : 3,5 s
+    "blood_pack": 100,     # (93) poche de sang (soigne 24 et la jambe cassée) ; 04/11 (propriétaire) : 5 s
     "bandage": 50,         # (70) bandage (arrête le saignement)
     # lourds : 3,5 s
     "attelle_bandage": 70,  # (70) attelle et bandage
     "attelle": 70,         # (70) attelle seule
-    "surv12": 70,          # (160) kit chirurgical de campagne
+    "surv12": 80,          # (160) kit chirurgical de campagne ; 04/11 (propriétaire) : 4 s
     "cms": 70,             # (259) kit chirurgical complet
     # nourriture : 1,6 s comme Minecraft
     "condensed_milk": 32,  # (109) lait concentré

@@ -10,7 +10,7 @@
     "max_durability": 0,
     "draw_time": 10,
     "put_away_time": 6,
-    "heal": 12.0,
+    "heal": 6.0,
     "use_mode": "toggle",
     "effects": [],
     "remove_effects": [
