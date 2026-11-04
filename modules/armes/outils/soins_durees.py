@@ -39,7 +39,7 @@ DUREES = {
     "attelle_bandage": 70,  # (70) attelle et bandage
     "attelle": 70,         # (70) attelle seule
     "surv12": 80,          # (160) kit chirurgical de campagne ; 04/11 (propriétaire) : 4 s
-    "cms": 70,             # (259) kit chirurgical complet
+    "cms": 100,            # (259) kit chirurgical complet ; 04/11 (propriétaire) : 5 s
     # nourriture : 1,6 s comme Minecraft
     "condensed_milk": 32,  # (109) lait concentré
 }
