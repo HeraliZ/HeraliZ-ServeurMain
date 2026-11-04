@@ -46,3 +46,12 @@ et le Vector).
 
 Rendus faits hors du jeu (vrai modèle des armes, vrai code de dessin d'essai, effets autour du chargeur posés en 2D) :
 **rien n'est testé en jeu**.
+
+## AK-47 Faille : modèle 3D propre au skin (premier jet, à valider, 05/11)
+
+Demande du propriétaire (« comme sur Valorant, un vrai modèle ») : avec le skin Faille, l'AK-47 change de forme.
+`ak_faille/planche_ak_faille.png` (avant / après, trois quarts, en main) ; modèle écrit par
+`ak_faille/ak_faille_modele.py <ak47_geo.json> <ak47.png> <sortie>` depuis l'AK de `serveur/tacz/heraliz_1_base_tacz`
+(même squelette : animations, rechargement, accessoires ; pièces lumineuses dans des os « *_illuminated »).
+En jeu (après validation) : TaCZ sait déjà donner à une arme un autre affichage (`IGun.setGunDisplayId`) ; le modèle irait
+dans le gunpack `heralisz_skins` comme nouvel affichage, posé sur l'AK quand le skin Faille y est appliqué et retiré avec lui.
