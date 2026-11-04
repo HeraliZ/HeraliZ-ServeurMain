@@ -48,6 +48,16 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.DoubleValue FAIM_FACTEUR;
    /** Vitesse de la faim, relue avec les réglages (FaimMixin de la partie serveur). */
    public static volatile float faimFacteur = 0.35F;
+   // Vie qui remonte (04/11) : lus par la partie serveur seulement (survie.RegenLente)
+   public static final ForgeConfigSpec.ConfigValue<String> REGEN_MODE;
+   public static final ForgeConfigSpec.DoubleValue REGEN_PV;
+   public static final ForgeConfigSpec.IntValue REGEN_INTERVALLE_S;
+   public static final ForgeConfigSpec.IntValue REGEN_FAIM_MIN;
+   public static final ForgeConfigSpec.IntValue REGEN_APRES_DEGATS_S;
+   public static final ForgeConfigSpec.DoubleValue REGEN_FATIGUE_PAR_PV;
+   public static volatile String regenMode = "lente";
+   public static volatile float regenPv = 2F, regenFatigueParPv = 6F;
+   public static volatile int regenIntervalleS = 10, regenFaimMin = 18, regenApresDegatsS = 10;
    // Bruits de pas (03/11) : lus par la partie serveur seulement (PasEntendus) ; ce fichier n'est jamais envoyé aux joueurs
    public static final ForgeConfigSpec.BooleanValue PAS_ACTIF;
    public static final ForgeConfigSpec.IntValue PAS_PORTEE;
@@ -219,6 +229,22 @@ public final class NoyauConfig {
       FAIM_FACTEUR = b.comment("Vitesse de la faim (25/10) : la fatigue de Minecraft (course, sauts, coups, vie qui remonte) est",
             "multipliée par ce nombre. 1 : comme Minecraft ; 0,35 (28/10) : la barre de faim dure environ trois fois plus longtemps.")
             .defineInRange("faim_facteur", 0.35, 0.1, 2.0);
+      REGEN_MODE = b.comment("Vie qui remonte toute seule (04/11, choix du propriétaire : « on récupère nos PV très vite »). « lente » : la",
+            "récupération de Minecraft est coupée (règle naturalRegeneration à false, posée par le serveur) et remplacée par la",
+            "nôtre, réglée ci-dessous ; « coupee » : aucune récupération, seulement les soins ; « minecraft » : comme Minecraft (le",
+            "ventre plein et la saturation rendent 1 cœur par seconde). Relu sans redémarrer.")
+            .define("regeneration", "lente", o -> o instanceof String s && (s.equals("lente") || s.equals("coupee") || s.equals("minecraft")));
+      REGEN_PV = b.comment("Mode « lente » : vie rendue à chaque palier (en PV : 2 = 1 cœur).")
+            .defineInRange("regen_pv", 2.0, 0.5, 20.0);
+      REGEN_INTERVALLE_S = b.comment("Mode « lente » : secondes entre deux paliers.")
+            .defineInRange("regen_intervalle_s", 10, 1, 300);
+      REGEN_FAIM_MIN = b.comment("Mode « lente » : barre de faim minimale (sur 20) pour que la vie remonte (Minecraft : 18).")
+            .defineInRange("regen_faim_min", 18, 0, 20);
+      REGEN_APRES_DEGATS_S = b.comment("Mode « lente » : secondes sans prendre de dégâts avant que la vie recommence à remonter ; jamais",
+            "en combat (tag de combat) ni à terre.")
+            .defineInRange("regen_apres_degats_s", 10, 0, 300);
+      REGEN_FATIGUE_PAR_PV = b.comment("Mode « lente » : fatigue ajoutée par PV rendu (Minecraft : 6), multipliée par faim_facteur.")
+            .defineInRange("regen_fatigue_par_pv", 6.0, 0.0, 40.0);
       b.pop();
       b.push("pas");
       PAS_ACTIF = b.comment("Bruits de pas (03/11, retour du propriétaire : « on n'entend pas assez les pas des ennemis »). Le pas d'un joueur",
@@ -337,6 +363,12 @@ public final class NoyauConfig {
       if (c.getSpec() != SPEC) return;
       CombatTag.dureeMs(TAG_COMBAT_S.get() * 1000L);
       faimFacteur = (float) (double) FAIM_FACTEUR.get();
+      regenMode = REGEN_MODE.get();
+      regenPv = (float) (double) REGEN_PV.get();
+      regenIntervalleS = REGEN_INTERVALLE_S.get();
+      regenFaimMin = REGEN_FAIM_MIN.get();
+      regenApresDegatsS = REGEN_APRES_DEGATS_S.get();
+      regenFatigueParPv = (float) (double) REGEN_FATIGUE_PAR_PV.get();
       pasActif = PAS_ACTIF.get();
       pasPortee = PAS_PORTEE.get();
       pasVolumeJoueurs = (float) (double) PAS_VOLUME_JOUEURS.get();

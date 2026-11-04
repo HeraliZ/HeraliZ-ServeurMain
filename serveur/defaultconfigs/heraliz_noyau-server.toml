@@ -51,6 +51,27 @@
 	#multipliée par ce nombre. 1 : comme Minecraft ; 0,35 (28/10) : la barre de faim dure environ trois fois plus longtemps.
 	#Range: 0.1 ~ 2.0
 	faim_facteur = 0.35
+	#Vie qui remonte toute seule (04/11, choix du propriétaire : « on récupère nos PV très vite »). « lente » : la
+	#récupération de Minecraft est coupée (règle naturalRegeneration à false, posée par le serveur) et remplacée par la
+	#nôtre, réglée ci-dessous ; « coupee » : aucune récupération, seulement les soins ; « minecraft » : comme Minecraft (le
+	#ventre plein et la saturation rendent 1 cœur par seconde). Relu sans redémarrer.
+	regeneration = "lente"
+	#Mode « lente » : vie rendue à chaque palier (en PV : 2 = 1 cœur).
+	#Range: 0.5 ~ 20.0
+	regen_pv = 2.0
+	#Mode « lente » : secondes entre deux paliers.
+	#Range: 1 ~ 300
+	regen_intervalle_s = 10
+	#Mode « lente » : barre de faim minimale (sur 20) pour que la vie remonte (Minecraft : 18).
+	#Range: 0 ~ 20
+	regen_faim_min = 18
+	#Mode « lente » : secondes sans prendre de dégâts avant que la vie recommence à remonter ; jamais
+	#en combat (tag de combat) ni à terre.
+	#Range: 0 ~ 300
+	regen_apres_degats_s = 10
+	#Mode « lente » : fatigue ajoutée par PV rendu (Minecraft : 6), multipliée par faim_facteur.
+	#Range: 0.0 ~ 40.0
+	regen_fatigue_par_pv = 6.0
 
 [pas]
 	#Bruits de pas (03/11, retour du propriétaire : « on n'entend pas assez les pas des ennemis »). Le pas d'un joueur

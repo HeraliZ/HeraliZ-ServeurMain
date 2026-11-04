@@ -48,6 +48,7 @@ public final class NoyauServeur implements Partie {
       fr.heraliz.noyau.serveur.perf.TicsAleatoires.enregistrer();
       fr.heraliz.noyau.serveur.interactions.ClicObjetBukkit.enregistrer();
       fr.heraliz.noyau.serveur.sons.PasEntendus.enregistrer();   // pas des autres joueurs et des monstres (03/11)
+      fr.heraliz.noyau.serveur.survie.RegenLente.enregistrer();   // vie qui remonte lentement (04/11)
       ReglagesGardes.enregistrer();   // réglages SERVER gardés au serveur (audit du 02/11, point 11)
       fr.heraliz.noyau.serveur.commandes.CommandesRetirees.enregistrer();
       fr.heraliz.noyau.serveur.commandes.CommandesBukkit.enregistrer();
