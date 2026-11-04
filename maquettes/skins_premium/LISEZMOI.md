@@ -55,3 +55,7 @@ Demande du propriétaire (« comme sur Valorant, un vrai modèle ») : avec le s
 (même squelette : animations, rechargement, accessoires ; pièces lumineuses dans des os « *_illuminated »).
 En jeu (après validation) : TaCZ sait déjà donner à une arme un autre affichage (`IGun.setGunDisplayId`) ; le modèle irait
 dans le gunpack `heralisz_skins` comme nouvel affichage, posé sur l'AK quand le skin Faille y est appliqué et retiré avec lui.
+2e jet (05/11, demande du propriétaire : chargeur transparent, plus propre et plus fin) : chargeur à fenêtre (montants, liseré
+lumineux, balles en laiton visibles, qui partent et reviennent avec lui) ; les balles portent une marque de texture (alpha 200)
+que le skin laisse en métal : `ak_faille/essai_laiton.py` (retouche d'essai du code commun des camos, à reporter dans
+`outils/camo_gabarit.fsh` après validation : `BASE_A`, `marqueLaiton`, `laitonPoli`).
