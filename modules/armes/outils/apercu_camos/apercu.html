@@ -61,6 +61,8 @@ uniform int CamoId;
 uniform int CamoParts;
 uniform float CamoTime;
 uniform float CamoReveal;
+uniform float CamoReload;
+uniform vec2 CamoMagY;
 uniform vec4 CamoUvRect;
 uniform mat3 IViewRotMat;
 uniform vec4 CamoAnchor;
@@ -275,6 +277,8 @@ async function rendre(nom, camo, o) {
   gl.uniform1i(u('CamoParts'), o.parts || 7);
   gl.uniform1f(u('CamoTime'), o.temps || 0);
   gl.uniform1f(u('CamoReveal'), -1);
+  gl.uniform1f(u('CamoReload'), o.recharge ?? -1);
+  gl.uniform2f(u('CamoMagY'), 0, 0);
   gl.uniform4f(u('CamoUvRect'), 0, 0, 1, 1);
   gl.uniform4f(u('CamoAnchor'), ...(o.anchor || arme.anchor));
   gl.uniform1i(u('uMode'), o.relief ? 1 : 0);

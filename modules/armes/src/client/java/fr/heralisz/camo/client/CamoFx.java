@@ -78,6 +78,11 @@ public final class CamoFx {
    static float fxTime, fxFade = 1, fxGui, fxLight = 1, fxFp, fxScale = 1;
    /** Apparition de l'arme en cours de rendu (posé par BedrockGunModelMixin, lu par le rendu camo et la capture) : 0..1, -1 = aucune. */
    public static float pendingReveal = -1;
+   /**
+    * Rechargement de l'arme en cours de rendu (RechargeSkins) : avancée 0..1 (-1 : aucun), phase du chargeur pour le shader
+    * (CamoReload) et hauteur du chargeur au repos (CamoMagY). Posés par BedrockGunModelMixin.
+    */
+   public static float pendingRecharge = -1, pendingReload = -1, pendingMagY0, pendingMagY1;
    /** L'arme en cours de rendu est-elle celle du joueur local (1re ou 3e personne) ? Posé par BedrockGunModelMixin. */
    public static boolean pendingLocal;
    /** Repère et silhouette de l'arme tenue en 1re personne à l'image précédente (main gauche de l'apparition). */
@@ -115,7 +120,8 @@ public final class CamoFx {
          STACK.clear();
       }
       CamoRenderType.Info info = CamoRenderType.info(type);
-      PosMap map = info == null || !FxEffects.has(info.shaderId()) || CamoShaders.fx(info.shaderId()) == null ? null : PosMap.byGlId(info.posMap());
+      PosMap map = info == null || !FxEffects.has(info.shaderId()) || CamoShaders.fx(info.shaderId()) == null
+         || !FxEffects.get(info.shaderId()).actif(pendingRecharge) ? null : PosMap.byGlId(info.posMap());
       if (map == null || horsBudget()) {
          STACK.push(SKIP);
          return buffer;
@@ -125,6 +131,7 @@ public final class CamoFx {
       c.light = pendingLight;
       c.reveal = pendingReveal;
       c.local = pendingLocal;
+      c.recharge = pendingRecharge;
       STACK.push(c);
       return c;
    }
@@ -286,6 +293,8 @@ public final class CamoFx {
       fc.inspectTime = showcase ? SkinInspect.time() : 0;
       fc.reveal = revealing ? c.reveal : -1;
       fc.fireAge = c.local ? fireAge(mc) : 99;
+      fc.recharge = c.recharge;
+      fc.repos = c.map.shape;
       fc.handPos = fp && SkinInspect.showcase() ? SkinInspect.handPos : null;
       fc.wristPos = fc.handPos != null ? SkinInspect.wristPos : null;
       if (fp) {
@@ -547,6 +556,7 @@ public final class CamoFx {
       int light;
       float reveal = -1;
       boolean local;
+      float recharge = -1;
       float[] data;
       int count;
       boolean frozen;

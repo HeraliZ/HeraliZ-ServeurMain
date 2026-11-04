@@ -14,6 +14,9 @@ changeant son « fragment », puis relancer ce script. Les fichiers produits von
 
 On modifie donc toujours le gabarit, jamais les camo_<id>.fsh ni heralisz_camo.glsl (ils seraient écrasés au prochain
 passage).
+
+Effets 3D des skins (fx_<id>.fsh, CamoFx) : même principe depuis le 04/11, gabarit outils/fx_gabarit.fsh (« #define FX_ID
+@FX_ID@ »), un programme complet par fichier fx_<id>.json présent (leur ancien générateur n'existait plus).
 """
 import re
 import sys
@@ -21,6 +24,7 @@ from pathlib import Path
 
 MOD = Path(__file__).resolve().parent.parent
 GABARIT = MOD / "outils" / "camo_gabarit.fsh"
+FX_GABARIT = MOD / "outils" / "fx_gabarit.fsh"
 CORE = MOD / "src" / "client" / "resources" / "assets" / "heralisz_camo" / "shaders" / "core"
 # code commun, inclus par « #moj_import <heralisz_camo.glsl> » (Minecraft cherche dans minecraft:shaders/include/)
 INCLUS = MOD / "src" / "client" / "resources" / "assets" / "minecraft" / "shaders" / "include" / "heralisz_camo.glsl"
@@ -51,7 +55,13 @@ def main():
     changes = int(ecrire(INCLUS, gabarit[len(ENTETE):]))
     for i in ids:
         changes += int(ecrire(CORE / ("camo_%d.fsh" % i), PROGRAMME % i))
-    print("[camos] %d programmes et le code commun, %d fichier(s) mis à jour" % (len(ids), changes))
+    fx = FX_GABARIT.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if fx.count("@FX_ID@") != 1:
+        sys.exit("[camos] le gabarit des effets doit contenir « #define FX_ID @FX_ID@ » (une seule fois)")
+    fx_ids = sorted(int(m.group(1)) for f in CORE.iterdir() if (m := re.fullmatch(r"fx_(\d+)\.json", f.name)))
+    for i in fx_ids:
+        changes += int(ecrire(CORE / ("fx_%d.fsh" % i), fx.replace("@FX_ID@", str(i))))
+    print("[camos] %d programmes, %d effets 3D et le code commun, %d fichier(s) mis à jour" % (len(ids), len(fx_ids), changes))
 
 
 if __name__ == "__main__":

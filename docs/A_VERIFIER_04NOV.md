@@ -70,6 +70,14 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
       plus de Texture manquante, Money Gun, Surchauffe ni Trophée (menu créatif, `/camos`, atelier d'arme). Aucune
       collection à vie ne les avait (vu sur le Ptero le 04/11). Une arme qui en portait un s'affiche sans camo ; console
       au démarrage : objets `heralisz_camo:skinx_*` manquants signalés, sans erreur. Le StatTrack compte toujours les kills.
+- [ ] Skins mythiques **Faille** et **Accès Rouge** (Tactique 2.52.0, rendus validés `maquettes/skins_premium/`) : pas encore
+      dans les caisses ; staff : `/camos ajouter <joueur> faille|acces_rouge` ou `/give @s heralisz_camo:skinx_faille`
+      (`skinx_acces_rouge`). Finition comme sur les planches (AK, M4, Vector, Glock, en main). Rechargement d'une arme à
+      chargeur : Faille, l'ancien chargeur se fend et disparaît, une faille s'ouvre sous l'arme, le nouveau revient
+      lumineux puis noir, éclair et onde au clic ; Accès Rouge, l'ancien part en cubes rouges, le nouveau s'imprime
+      (cadre, ligne de balayage), joints verts au clic. À voir aussi chez un autre joueur qui recharge (3e personne),
+      rechargement annulé (changer d'arme : le chargeur revient normal), fusil à pompe ou arme sans chargeur (rien de
+      spécial), et les images par seconde à plusieurs.
 
 ## 2. Priorité 1 : les gros systèmes
 

@@ -29,4 +29,12 @@ public interface FxEffect {
    default boolean fullInHand() {
       return false;
    }
+
+   /**
+    * L'effet a-t-il quelque chose à dessiner pour cette avancée de rechargement (-1 : pas de rechargement) ? Faux : ni copie
+    * des sommets ni calcul pour l'arme (skins dont l'effet n'existe que pendant le rechargement).
+    */
+   default boolean actif(float recharge) {
+      return true;
+   }
 }
