@@ -29,7 +29,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class ConsumableItem extends Item implements IAnimationItem, IConsumable {
    public ConsumableItem() {
-      super(new Properties().stacksTo(1));
+      // setNoRepair (04/11, relecture) : sans lui, deux soins à plusieurs utilisations posés dans la grille d'artisanat
+      // faisaient la recette « réparer » de Minecraft : un soin sans fiche (mort) et les deux soins perdus
+      super(new Properties().stacksTo(1).setNoRepair());
    }
 
    /**

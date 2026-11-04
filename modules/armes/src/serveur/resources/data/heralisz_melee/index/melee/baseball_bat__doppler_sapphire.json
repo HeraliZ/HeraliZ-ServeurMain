@@ -38,7 +38,7 @@
             // 圆锥区域
             "type": "cone",
             // 最大距离
-            "max_range": 1.0,
+            "max_range": 2.0,
             // 角度
             "max_angle": 110,
             // 排除自己
@@ -61,7 +61,7 @@
             // 圆锥区域
             "type": "cone",
             // 最大距离
-            "max_range": 1.0,
+            "max_range": 2.0,
             // 角度
             "max_angle": 110,
             // 排除自己
@@ -85,7 +85,7 @@
           // 圆锥区域
           "type": "cone",
           // 最大距离
-          "max_range": 1.0,
+          "max_range": 2.0,
           // 角度
           "max_angle": 60,
           // 排除自己

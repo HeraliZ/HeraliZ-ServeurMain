@@ -12,7 +12,8 @@ import net.minecraft.util.FormattedCharSequence;
  * Rang des skins de couteaux dans l'infobulle. 04/11 (proposition D validée par le propriétaire, maquette
  * {@code maquettes/etoiles_couteaux/propositions.png} ; avant : étoiles dorées lissées du 03/11, jugées « très moches ») :
  * le mot « Rang » puis quatre petits losanges en pixels, comme les lettres de l'infobulle, allumés de la couleur du rang
- * (1 gris, 2 bleu-vert, 3 violet, 4 rouge : celle du nom du skin), les autres sombres ; une ombre d'un point comme le texte.
+ * (1 gris, 2 bleu-vert, 3 violet, 4 rouge : celle du nom du skin), les autres sombres ; une ombre d'un point sous chaque
+ * losange.
  * <p>
  * Le texte des skins ne change pas (« §6★★★§8★ » puis « Exclusivité HeraliZ », écrit par skins_couteaux.py) : il reste le
  * secours. À la construction de l'infobulle, sa première ligne de description, si elle n'est faite que d'étoiles, est lue
@@ -76,17 +77,19 @@ public final class EtoilesRang {
    public static void dessiner(GuiGraphics g, int x, int y, int allumees, int total) {
       Font font = Minecraft.getInstance().font;
       Component mot = mot();
-      g.drawString(font, mot, x, y, 0xFF000000 | GRIS, true);
+      // sans ombre, comme les autres lignes de description de l'infobulle
+      g.drawString(font, mot, x, y, 0xFF000000 | GRIS, false);
       int lx = x + font.width(mot) + font.width(" ");
       int c = COULEURS[Math.max(0, Math.min(COULEURS.length - 1, allumees))];
-      for (int i = 0; i < total; i++) {
-         boolean allume = i < allumees;
-         int px = lx + i * PAS, py = y + 1;
-         int face = allume ? c : ETEINT;
-         int ombre = allume ? ombre(c) : ETEINT_OMBRE;
-         losange(g, px + 1, py + 1, 0xFF000000 | ombre);
-         losange(g, px, py, 0xFF000000 | face);
-      }
+      // tous les carrés en un seul envoi (sans drawManaged, chaque fill vidait le tampon : 40 envois par image)
+      g.drawManaged(() -> {
+         for (int i = 0; i < total; i++) {
+            boolean allume = i < allumees;
+            int px = lx + i * PAS, py = y + 1;
+            losange(g, px + 1, py + 1, 0xFF000000 | (allume ? ombre(c) : ETEINT_OMBRE));
+            losange(g, px, py, 0xFF000000 | (allume ? c : ETEINT));
+         }
+      });
    }
 
    private static void losange(GuiGraphics g, int x, int y, int argb) {

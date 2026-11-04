@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Impacts de balles sur les blocs (04/11, demande du propriétaire : « des impacts de balles sur les murs, assez légers,
  * mais qu'on voit »). TaCZ pose déjà un trou de balle ({@code tacz:bullet_hole} : la texture du bloc touché, qui s'efface
  * en 8 s, réglage d'Interface) là où une balle touche un bloc, mais comme une particule ordinaire : Minecraft ne la montre
- * pas avec les particules au minimum, et n'en montre qu'une sur trois avec les particules réduites. Or le profil
+ * pas avec les particules au minimum, et en retire une sur trois avec les particules réduites. Or le profil
  * « Performance », posé par défaut chez tout le monde (Interface, {@code Qualite}), met les particules au minimum : presque
  * personne ne voyait d'impact. Ici, un trou de balle est toujours dessiné, quel que soit ce réglage, jusqu'à 32 blocs de
  * la caméra comme les autres particules (le serveur ne les envoie de toute façon qu'aux joueurs à 32 blocs). Les autres

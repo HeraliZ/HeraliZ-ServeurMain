@@ -18,7 +18,7 @@
   "item.heralisz_heal.surv12": "Kit de survie militaire",
   "item.heralisz_heal.surv12.desc": "Kit chirurgical de campagne pour les blessures graves.",
   "item.heralisz_heal.vaseline": "Vaseline",
-  "item.heralisz_heal.vaseline.desc": "Donne de la résistance une fois appliquée.",
+  "item.heralisz_heal.vaseline.desc": "Une fois appliquée, ajoute des cœurs d'absorption pendant 10 s.",
   "pack.heralisz_heal.default_pack.name": "§aHeraliZ §7- §fSoins",
   "pack.heralisz_heal.name": "§aHeraliZ §7- §fSoins",
   "item.heralisz_heal.attelle_bandage": "Attelle et bandage",

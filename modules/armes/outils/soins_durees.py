@@ -2,7 +2,8 @@
 
 Choix du propriétaire après l'ouverture du 24/10 (« ça mettait 100 ans à se mettre le heal ») : soins légers environ
 1,5 s, moyens environ 2,5 s, lourds (attelle, trousses chirurgicales) 3,5 s au plus ; lait concentré (nourriture) 1,6 s
-comme la nourriture de Minecraft. Sortie de l'objet (dégainer) 0,5 s au plus.
+comme la nourriture de Minecraft. 04/11 (choix du propriétaire) : Trousse CAR 3,5 s, Kit de survie militaire 4 s, poche de
+sang et Kit chirurgical CMS 5 s. Sortie de l'objet (dégainer) 0,5 s au plus.
 
 Ce script écrit, pour chaque soin du tableau DUREES :
 - « use_duration » et « draw_time » de sa fiche (src/serveur/resources/data/heralisz_heal/index/consumable/<id>.json ;

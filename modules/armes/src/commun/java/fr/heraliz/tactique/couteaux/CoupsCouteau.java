@@ -121,7 +121,7 @@ public final class CoupsCouteau {
 
    /**
     * Portée en blocs, des yeux au point le plus proche de la cible : celle des couteaux ({@code [melee] portee_couteaux},
-    * 1 depuis le 03/11, choix du propriétaire ; avant : {@code portee_max}, 3), coup rapide comme coup puissant. Le serveur
+    * 2 depuis le 04/11, choix du propriétaire ; 1 le 03/11 ; avant : {@code portee_max}, 3), coup rapide comme coup puissant. Le serveur
     * choisit les cibles avec elle.
     */
    public static double portee() {

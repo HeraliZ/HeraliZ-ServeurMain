@@ -9,7 +9,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
  * Portée des armes de corps à corps vérifiée par le serveur à CHAQUE coup porté (03/11, demande du propriétaire : tous
- * les couteaux à 1 bloc au plus, clic gauche et clic droit, même avec un jeu modifié).
+ * les couteaux à 1 bloc au plus, puis 2 depuis le 04/11, clic gauche et clic droit, même avec un jeu modifié).
  * <p>
  * Les coups de nos armes passent tous par l'événement d'attaque de Forge (AttackEntityEvent) : couteaux TaCZ
  * (CouteauxServeur), armes de mêlée de LR (MeleeItemServeur, IMeleeWeapon.attackTarget) et le coup de Minecraft

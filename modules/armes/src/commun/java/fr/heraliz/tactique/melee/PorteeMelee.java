@@ -51,13 +51,14 @@ public final class PorteeMelee {
       return valeur(ServerConfig.MELEE_PORTEE_MAX, DEFAUT);
    }
 
-   /** Réglage par défaut de la portée des couteaux (03/11, choix du propriétaire : 1 bloc au plus, clic gauche et droit). */
-   public static final double DEFAUT_COUTEAUX = 2.0D;   // 04/11 (propriétaire) : 2 blocs (avant 1)
+   /** Réglage par défaut de la portée des couteaux (04/11, choix du propriétaire : 2 blocs, clic gauche et droit ; 1 le 03/11). */
+   public static final double DEFAUT_COUTEAUX = 2.0D;
 
    /**
-    * Portée des couteaux TaCZ et des couteaux de GeckoLib ({@code [melee] portee_couteaux}, 1 par défaut), jamais plus que
+    * Portée des couteaux TaCZ et des couteaux de GeckoLib ({@code [melee] portee_couteaux}, 2 par défaut), jamais plus que
     * {@link #max()}. Les couteaux à vie (armes de mêlée de LR) ont la leur dans leur fiche (max_range de chaque coup,
-    * écrit par modules/armes/outils/skins_couteaux.py, PORTEE_COUTEAUX : 1 aussi).
+    * écrit par modules/armes/outils/skins_couteaux.py, PORTEE_COUTEAUX : 2 aussi ; la batte Doppler Saphir, fiche écrite à
+    * la main, aussi).
     */
    public static double couteaux() {
       return Math.min(valeur(ServerConfig.MELEE_PORTEE_COUTEAUX, DEFAUT_COUTEAUX), max());
@@ -66,7 +67,7 @@ public final class PorteeMelee {
    /**
     * Portée de l'arme de corps à corps tenue, -1 si ce n'en est pas une (03/11) : couteau TaCZ ou couteau de GeckoLib :
     * {@link #couteaux()} ; arme de mêlée de LR : la plus longue portée des coups de sa fiche (gauche, droit, combos),
-    * ramenée à {@link #max()} (1 pour les couteaux à vie et la batte depuis le 03/11). Lue par le serveur à chaque coup porté
+    * ramenée à {@link #max()} (2 pour les couteaux à vie et la batte depuis le 04/11 ; 1 le 03/11). Lue par le serveur à chaque coup porté
     * (PorteeMeleeServeur), jamais à chaque image.
     */
    public static double porteeEnMain(ItemStack main) {
