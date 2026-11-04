@@ -133,7 +133,11 @@ public final class StructureModel implements IDynamicBakedModel {
      * (un mur enterré n'est pas redessiné dans la terre).
      */
     private static boolean laisseMoitie(net.minecraft.world.level.block.Block b) {
-        return b instanceof fr.heraliz.crac.block.Adosse.Adossable || fr.heraliz.crac.placable.PlacableSet.canPlaceClient(b);
+        // 04/11 (photo du propriétaire : « l'échelle coupe une partie du mur et enlève la texture ») : l'échelle de raid prend
+        // aussi la moitié intérieure de trois cases de mur (StructureService.ceder) ; elle n'était ni un objet de CRac
+        // « adossable » ni dans la liste des objets posables : derrière elle, le mur restait creux sur toute sa hauteur
+        return b instanceof fr.heraliz.crac.block.Adosse.Adossable || b instanceof fr.heraliz.crac.block.EchelleBlock
+            || fr.heraliz.crac.placable.PlacableSet.canPlaceClient(b);
     }
 
     /** Les voisines d'une case dans l'ordre où l'une d'elles dessine la moitié laissée d'un mur le long de x (z constant). */
