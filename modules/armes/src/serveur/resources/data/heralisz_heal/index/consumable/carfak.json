@@ -18,8 +18,8 @@
     "effects": [
       {
         "id": "minecraft:regeneration",
-        "duration": 100,
-        "amplifier": 0,
+        "duration": 80,
+        "amplifier": 2,
         "chance": 1.0,
         "ambient": false,
         "visible": true,

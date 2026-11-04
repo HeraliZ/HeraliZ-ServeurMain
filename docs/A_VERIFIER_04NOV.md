@@ -51,7 +51,7 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
       demi-bloc au plus). Fouiller un corps derrière un mur ou une porte fermée : « Tu ne vois pas ce corps d'ici ».
 - [ ] Tirer sur un mur, profil graphique « Performance » : trous de balle visibles (8 s), jusqu'à 32 blocs.
 - [ ] Soins (infobulle et en jeu) : Vaseline 2 utilisations, absorption 10 s ; Amoxicilline 2 utilisations, régénération
-      15 s ; Trousse CAR 3,5 s, 5 cœurs tout de suite (plus 1 cœur de régénération en 5 s, gardée) ; Kit de survie militaire 5 utilisations, 4 s ; Trousse AI-2 3 cœurs ; Ibuprofène
+      15 s ; Trousse CAR 3,5 s, 5 cœurs tout de suite puis 3 cœurs de régénération en 4 s (Tactique 2.50.2) ; Kit de survie militaire 5 utilisations, 4 s ; Trousse AI-2 3 cœurs ; Ibuprofène
       1 utilisation ; Lait concentré : seulement Rapidité, 30 s ; Poche de sang 5 s ; Bandage 2 utilisations (un objet à
       plusieurs utilisations ne s'empile plus : un bandage par case) ; Kit chirurgical CMS 5 s (Tactique 2.50.0).
 - [ ] Deux soins à plusieurs utilisations dans la grille d'artisanat : rien ne se passe (avant : les deux étaient perdus).
