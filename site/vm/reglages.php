@@ -91,6 +91,12 @@ if (setting('heraliz.vote_pb') === null) {
     pbParVote();
 }
 
+// clé vote à 60 % (04/11, demande du propriétaire) : une seule fois (repère « heraliz.vote_cle_60 »), voir cleVoteSoixante ;
+// ensuite l'administration fait foi
+if (setting('heraliz.vote_cle_60') === null) {
+    cleVoteSoixante();
+}
+
 // boutique de la saison 1 et pages légales : une seule fois (repère « heraliz.boutique »), chaque élément seulement s'il
 // manque ; ensuite l'administration fait foi
 if (setting('heraliz.boutique') === null) {
@@ -490,6 +496,51 @@ function votesProteges(): void
     dire($turnstile
         ? 'Votes : anti-robot Turnstile actif sur le bouton « Voter »'
         : '::warning::Votes : anti-robot Turnstile pas réglé (administration → Paramètres → Sécurité → captcha « Turnstile ») : un programme connecté à un compte validé peut encore cliquer « Voter » à la place du joueur');
+}
+
+/**
+ * Clé vote une fois sur 0,6 (04/11, demande du propriétaire : « 60 % de chance d'avoir une clé vote, et pas 100 % »). À
+ * chaque vote, l'extension Vote tire UNE récompense parmi celles du site de vote, selon leurs chances (des poids : une
+ * récompense seule sort toujours). Chaque récompense qui donne la clé vote passe donc à 60, et une récompense jumelle sans
+ * la clé est créée à 40 : mêmes hérals, mêmes PB, mêmes récompenses du mois, mêmes sites de vote et même serveur. Le joueur
+ * a toujours ses hérals et ses PB ; la clé, 6 votes sur 10.
+ */
+function cleVoteSoixante(): void
+{
+    if (! plugins()->isEnabled('vote')) {
+        return;
+    }
+    $Recompense = \Azuriom\Plugin\Vote\Models\Reward::class;
+    $n = 0;
+    foreach ($Recompense::all() as $r) {
+        $commandes = array_values((array) ($r->commands ?? []));
+        $sansCle = array_values(array_filter($commandes, fn ($c) => ! preg_match('/givekey\s+\{player\}\s+vote\b/i', (string) $c)));
+        if (! $r->is_enabled || count($sansCle) === count($commandes)) {
+            continue;   // récompense coupée, ou sans clé vote
+        }
+        $nom = trim((string) preg_replace('/^\s*1 clé vote\s*\+\s*/u', '', (string) $r->name));
+        if ($nom === '' || $nom === trim((string) $r->name)) {
+            $nom = $r->name.' (sans clé)';
+        }
+        $jumelle = $Recompense::create(colonnes('vote_rewards', [
+            'name' => $nom, 'image' => $r->image, 'chances' => 40, 'money' => $r->money, 'commands' => $sansCle,
+            'monthly_rewards' => $r->monthly_rewards, 'need_online' => $r->need_online, 'single_server' => $r->single_server,
+            'is_enabled' => true,
+        ]));
+        if (method_exists($r, 'sites')) {
+            $jumelle->sites()->sync($r->sites->modelKeys());
+        }
+        if (method_exists($r, 'servers')) {
+            $jumelle->servers()->sync($r->servers->modelKeys());
+        }
+        $r->update(['chances' => 60]);
+        $n++;
+        dire('Votes : « '.$r->name.' » à 60 % et « '.$nom.' » (sans clé) à 40 %');
+    }
+    if ($n === 0) {
+        dire('Votes : aucune récompense active ne donne la clé vote, rien n’est changé');
+    }
+    Setting::updateSettings('heraliz.vote_cle_60', now()->toDateString());
 }
 
 function pbParVote(): void
