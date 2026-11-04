@@ -226,7 +226,7 @@ public final class ServeurQuetes implements Partie {
             }
             case 3 -> Moteur.abandonner(p, a.cle(), false);
             case 4 -> {
-                // Espace maintenu pendant la visite du Guide (1.10.4) : visite passée, comme finie
+                // toute la visite du Guide passée (jeux d'avant le 04/11 : Espace maintenu, 1.10.4), comme finie
                 Accueil.passerVisite(p);
                 return;
             }

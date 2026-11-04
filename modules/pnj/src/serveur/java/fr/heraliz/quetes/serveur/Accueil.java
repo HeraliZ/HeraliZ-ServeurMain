@@ -37,11 +37,12 @@ final class Accueil {
     /** Secondes entre les mots de la fin de Varga (le premier pendant le tour de la base par la caméra). */
     private static final int FIN_ECART = 16;
     /**
-     * Les mots de la fin qui suivent le premier : raids et défenses, le coffre du clan et le matériel de la première base
-     * (04/11, demande du propriétaire), puis /home, /spawn et missions.
+     * Les mots de la fin qui suivent le premier : raids et défenses, /home, /spawn et missions, puis (04/11, demande du
+     * propriétaire) le coffre du clan et le matériel de la première base, en dernier : le joueur est déjà au spawn (CRac l'y
+     * renvoie 20 s après la fin) et le chat revient juste après ce message, il peut taper /clan coffre.
      */
-    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin2", "heraliz_quetes.tuto.radio.fin_coffre",
-            "heraliz_quetes.tuto.radio.fin3"};
+    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin2", "heraliz_quetes.tuto.radio.fin3",
+            "heraliz_quetes.tuto.radio.fin_coffre"};
 
     private record Etat(int tuto, int etape, boolean intro) {
     }
@@ -100,9 +101,13 @@ final class Accueil {
     // 20/10 : le tour dure 1 s de plus que l'écart : le PNJ suivant arrive caméra encore partie, sans retour au joueur
     private static final int VISITE_ECART = 12, VISITE_TICKS = VISITE_ECART * 20 + 20;
     private static final float VISITE_RAYON = 4F;
-    /** Visite en cours : rang du PNJ présenté et secondes depuis. */
-    private record Visite(int rang, int secondes) {
+    /** Visite en cours : rang du PNJ présenté, secondes depuis, tick du serveur où cette étape a commencé. */
+    private record Visite(int rang, int secondes, int debut) {
     }
+
+    /** Ticks après le début d'une étape pendant lesquels Espace est ignoré (sinon un appui pile au changement d'étape
+     * faisait passer l'étape qui venait de commencer). */
+    private static final int ESPACE_ATTENTE = 10;
 
     private static final Map<UUID, Visite> VISITES = new HashMap<>();
     /** Joueurs à qui le chat est caché en ce moment ({@link #chat}). */
@@ -146,12 +151,15 @@ final class Accueil {
 
     /** Bouton « Fais-moi visiter » du guide : la caméra passe d'un PNJ à l'autre pendant que le guide les présente. */
     static void visite(ServerPlayer p) {
-        VISITES.put(p.getUUID(), new Visite(-1, VISITE_ECART - 1));
+        VISITES.put(p.getUUID(), new Visite(-1, VISITE_ECART - 1, p.server.getTickCount()));
         chat(p, Ponts.tutoEtat(p));   // chat caché tout de suite (sinon à la seconde suivante)
         Moteur.suiviBientot(p);
     }
 
-    /** Visite du Guide passée par le joueur (Espace maintenu) : notée faite, mot de la fin, suivi vers Varga. */
+    /**
+     * Toute la visite du Guide passée d'un coup (jeux d'avant le 04/11 : Espace maintenu ; paquet Action 4, gardé) : notée
+     * faite, mot de la fin, suivi vers Varga.
+     */
     static void passerVisite(ServerPlayer p) {
         if (VISITES.remove(p.getUUID()) == null) return;
         persiste(p).putBoolean(VISITE_FAITE, true);
@@ -167,8 +175,8 @@ final class Accueil {
      */
     static void visiteSuivante(ServerPlayer p) {
         Visite v = VISITES.get(p.getUUID());
-        if (v == null) return;
-        VISITES.put(p.getUUID(), new Visite(v.rang(), VISITE_ECART - 1));
+        if (v == null || p.server.getTickCount() - v.debut() < ESPACE_ATTENTE) return;
+        VISITES.put(p.getUUID(), new Visite(v.rang(), VISITE_ECART - 1, v.debut()));
         visiteSeconde(p, true);
     }
 
@@ -181,7 +189,7 @@ final class Accueil {
         Visite v = VISITES.get(p.getUUID());
         if (v == null) return;
         if (v.secondes() + 1 < VISITE_ECART) {
-            VISITES.put(p.getUUID(), new Visite(v.rang(), v.secondes() + 1));
+            VISITES.put(p.getUUID(), new Visite(v.rang(), v.secondes() + 1, v.debut()));
             return;
         }
         int rang = v.rang() + 1;
@@ -196,6 +204,7 @@ final class Accueil {
             return;
         }
         String etape = VISITE[rang];
+        boolean camera = false;
         if (etape.startsWith("@")) {
             String id = etape.substring(1);
             PointsGuide.Point pt = PointsGuide.point(id);
@@ -204,9 +213,11 @@ final class Accueil {
                     && p.distanceToSqr(pt.x(), pt.y(), pt.z()) < 512 * 512) {
                 // centre envoyé 1,4 bloc plus bas : la caméra du joueur vise « y + 1,4 » (les yeux d'un PNJ)
                 Reseau.envoyer(p, new Reseau.Presentation(pt.x(), pt.y() - 1.4, pt.z(), pt.rayon(), VISITE_TICKS, pt.angle()));
+                camera = true;
             } else if ("recycleur".equals(id) && (e = pnj(p, "recycleur", 200)) != null) {
                 // recycleur sans point posé : le PNJ recycleur, s'il existe
                 Reseau.envoyer(p, new Reseau.Presentation(e.getX(), e.getY(), e.getZ(), VISITE_RAYON, VISITE_TICKS, Float.NaN));
+                camera = true;
             }
             // point pas posé par le staff (/guide point <id>) : la phrase seule, sans caméra
             radio(p, GUIDE, 0, "heraliz_quetes.guide." + id);
@@ -214,10 +225,14 @@ final class Accueil {
             Pnj e = pnj(p, etape, 200);
             if (e != null) {
                 Reseau.envoyer(p, new Reseau.Presentation(e.getX(), e.getY(), e.getZ(), VISITE_RAYON, VISITE_TICKS, Float.NaN));
+                camera = true;
             }
             radio(p, GUIDE, 0, "heraliz_quetes.guide." + etape);
         }
-        VISITES.put(p.getUUID(), new Visite(rang, 0));
+        // étape sans caméra (point pas posé, PNJ pas là) : la caméra de l'étape d'avant est rendue au joueur (04/11 : après
+        // un appui sur Espace, elle restait jusqu'à 12 s sur le PNJ précédent pendant que le Guide parlait d'autre chose)
+        if (!camera) Reseau.envoyer(p, new Reseau.Presentation(p.getX(), p.getY(), p.getZ(), 0F, 0, Float.NaN));
+        VISITES.put(p.getUUID(), new Visite(rang, 0, p.server.getTickCount()));
     }
 
     /** Le joueur doit d'abord faire le tutoriel des bases : Varga ne propose que « Faire ma base ». Jamais en créatif. */

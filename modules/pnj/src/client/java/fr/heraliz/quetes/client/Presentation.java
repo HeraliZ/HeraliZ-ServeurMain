@@ -169,7 +169,7 @@ final class Presentation {
         e.setRoll(0F);
     }
 
-    /** « Maintiens Espace pour passer » en bas de l'écran pendant la présentation. */
+    /** « Espace : présentation suivante » en bas de l'écran pendant la présentation. */
     static void aide(net.minecraftforge.client.event.RenderGuiEvent.Post e) {
         if (camera == null) return;
         Minecraft mc = Minecraft.getInstance();

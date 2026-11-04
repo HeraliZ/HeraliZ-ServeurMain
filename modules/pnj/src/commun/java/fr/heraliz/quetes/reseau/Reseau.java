@@ -70,7 +70,10 @@ public final class Reseau {
     public record DemandeJournal(boolean ouvrir) {
     }
 
-    /** type : 1 suivre, 2 ne plus suivre, 3 abandonner. */
+    /**
+     * type : 1 suivre, 2 ne plus suivre, 3 abandonner, 4 passer toute la visite du Guide (jeux d'avant le 04/11, Espace
+     * maintenu), 5 étape suivante de la visite (un appui sur Espace, 04/11).
+     */
     public record Action(int type, String cle) {
     }
 
@@ -148,11 +151,12 @@ public final class Reseau {
     /**
      * Présentation d'un PNJ (Quêtes 1.8.0 : le Bâtisseur, à la première arrivée au spawn après le tutoriel des bases) :
      * la caméra du joueur fait lentement le tour du point donné (rayon en blocs), pendant {@code ticks} ; seule la radio
-     * reste à l'écran. Espace maintenu pour passer.
+     * reste à l'écran.
      */
     /**
      * Tour de caméra (présentation d'un PNJ ou d'un point de la visite du Guide). {@code angle} : direction (radians,
-     * atan2(dz, dx) du centre vers la caméra) ; NaN = devant le PNJ le plus proche du centre (comme avant).
+     * atan2(dz, dx) du centre vers la caméra) ; NaN = devant le PNJ le plus proche du centre (comme avant). {@code ticks}
+     * à 0 (04/11) : fin de la caméra, rendue au joueur.
      */
     public record Presentation(double x, double y, double z, float rayon, int ticks, float angle) {
     }
@@ -348,8 +352,13 @@ public final class Reseau {
             b.writeFloat(m.rayon());
             b.writeVarInt(m.ticks());
             b.writeFloat(m.angle());
-        }, b -> new Presentation(b.readDouble(), b.readDouble(), b.readDouble(), Math.max(2F, Math.min(20F, b.readFloat())),
-                Math.max(20, Math.min(1200, b.readVarInt())), b.readFloat()), PRESENTATION);
+        }, b -> {
+            double x = b.readDouble(), y = b.readDouble(), z = b.readDouble();
+            float rayon = Math.max(2F, Math.min(20F, b.readFloat()));
+            int ticks = b.readVarInt();
+            // durée 0 (04/11) : fin de la caméra (visite passée à Espace, étape sans caméra) ; sinon 1 s à 1 min
+            return new Presentation(x, y, z, rayon, ticks <= 0 ? 0 : Math.max(20, Math.min(1200, ticks)), b.readFloat());
+        }, PRESENTATION);
         versJoueur(Edition.class, Reseau::ecrireEdition, Reseau::lireEdition, EDITION);
         versServeur(Modif.class, (m, b) -> {
             b.writeUtf(m.pnj(), MAX_CLE);
