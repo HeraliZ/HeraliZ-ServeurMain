@@ -51,14 +51,21 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
       demi-bloc au plus). Fouiller un corps derrière un mur ou une porte fermée : « Tu ne vois pas ce corps d'ici ».
 - [ ] Tirer sur un mur, profil graphique « Performance » : trous de balle visibles (8 s), jusqu'à 32 blocs.
 - [ ] Soins (infobulle et en jeu) : Vaseline 2 utilisations, absorption 10 s ; Amoxicilline 2 utilisations, régénération
-      15 s ; Trousse CAR 3,5 s, 5 cœurs ; Kit de survie militaire 5 utilisations, 4 s ; Trousse AI-2 3 cœurs ; Ibuprofène
-      1 utilisation ; Lait concentré : seulement Rapidité, 30 s ; Poche de sang 5 s ; Bandage 2 utilisations (un paquet de
-      bandages entamé ne s'empile plus avec les neufs) ; Kit chirurgical CMS 5 s (Tactique 2.50.0).
+      15 s ; Trousse CAR 3,5 s, 5 cœurs tout de suite (plus 1 cœur de régénération en 5 s, gardée) ; Kit de survie militaire 5 utilisations, 4 s ; Trousse AI-2 3 cœurs ; Ibuprofène
+      1 utilisation ; Lait concentré : seulement Rapidité, 30 s ; Poche de sang 5 s ; Bandage 2 utilisations (un objet à
+      plusieurs utilisations ne s'empile plus : un bandage par case) ; Kit chirurgical CMS 5 s (Tactique 2.50.0).
+- [ ] Deux soins à plusieurs utilisations dans la grille d'artisanat : rien ne se passe (avant : les deux étaient perdus).
 - [ ] Échelle de raid contre un mur : le mur reste entier et texturé derrière, sur les trois cases (Bases 1.34.2-beta).
-- [ ] Couteaux, batte, Bourreau (armes de mêlée à vie) : touchent à 2 blocs, plus à 3 ; aucune alerte « Reach » (Tactique 2.50.0).
+- [ ] Couteaux, battes et Bourreau à vie (skins, Doppler Saphir compris) : touchent à 2 blocs, plus à 3 ; aucune alerte
+      « Reach » (Tactique 2.50.1). La batte du kit de départ (objet GeckoLib, pas « à vie ») garde 3 blocs.
 - [ ] Infobulle d'un couteau skinné : « Rang » puis 4 losanges de la couleur du rang, nets aux échelles 2, 3 et 4.
 - [ ] Roue des emotes (Y) → « Modifier la roue » : notre écran (maquette `maquettes/roue_emotes/`) ; ranger, reprendre,
       vider (clic droit), changer de page ; après fermeture et relance du jeu, la roue a gardé les cases (Emotes 2.10.0).
+- [ ] Relecture du 04/11 (Quêtes 1.20.1, Monde 1.1.1, Emotes 2.10.1) : Espace sur la dernière étape de la visite : la caméra
+      revient tout de suite ; fin du tutoriel des bases : le message du coffre du clan arrive en dernier, au spawn, puis le
+      chat revient ; un corps derrière une barrière ou un muret se fouille par-dessus ; ouvert puis caché derrière un mur, la
+      fouille se ferme ; roue : deux emotes de la même page s'échangent, « Terminé » ferme tout, une emote à débloquer ne
+      se choisit pas (message).
 
 ## 2. Priorité 1 : les gros systèmes
 
@@ -171,10 +178,10 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
 
 ### Couteaux et batte
 - [ ] Couteau TaCZ, couteau à vie ou batte en main : environ +10 % de vitesse ; rangé : rien ; aucune alerte de vitesse.
-- [ ] Portée : touche collé à la cible, plus à 2 blocs (batte aussi) ; coup de grâce sur un joueur à terre : marche ; aucune alerte « Reach ».
+- [ ] Portée : 2 blocs depuis le 04/11 (batte aussi), plus à 3 ; coup de grâce sur un joueur à terre : marche ; aucune alerte « Reach ».
 - [ ] Le coup tombe quand la lame passe ; batte : chaque geste frappe ; le frappeur entend l'impact ; dans le vide : aucun bruit.
 - [ ] Toujours 1,2 s entre deux coups ; dégâts de mêlée divisés par deux ; armes de mêlée à vie : pas d'usure, ne cassent jamais.
-- [ ] Étoiles du rang dans l'infobulle : 4 étoiles nettes (or ou contour gris) aux échelles 2, 3 et 4.
+- [ ] Rang dans l'infobulle : « Rang » puis 4 losanges de la couleur du rang (04/11), nets aux échelles 2, 3 et 4.
 
 ### Soins et survie
 - [ ] Chaque soin va au bout de son animation ; changer de case pendant le soin l'arrête ; manger en regardant un mur : marche.
