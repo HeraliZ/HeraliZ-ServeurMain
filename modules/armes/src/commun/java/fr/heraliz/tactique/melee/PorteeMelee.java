@@ -24,9 +24,9 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    (gauche, droit, combos, balayages) a sa zone ({@code ConeFilter}, {@code OBBFilter}, {@code RayFilter}) ; sa
  *    portée est ramenée à {@link #max()} si la fiche dit plus (les fiches disent 4 à 4,5, la masse 3 et 3,5). Le joueur
  *    choisit ses cibles avec cette portée (config serveur envoyée par Forge à la connexion), le serveur la revérifie
- *    ({@link #aPortee}). Couteaux à vie : 1 bloc dans leur fiche depuis le 03/11 (skins_couteaux.py).</li>
+ *    ({@link #aPortee}). Couteaux à vie : 2 blocs dans leur fiche depuis le 04/11, 1 le 03/11 (skins_couteaux.py).</li>
  *    <li>Couteaux TaCZ ({@code fr.heraliz.tactique.couteaux.CoupsCouteau}) et couteaux de GeckoLib : {@link #couteaux()}
- *    ({@code portee_couteaux}, 1 bloc depuis le 03/11).</li>
+ *    ({@code portee_couteaux}, 2 blocs depuis le 04/11, 1 le 03/11).</li>
  *    <li>Tout coup porté avec une de ces armes en main, coup de Minecraft compris, est revérifié par le serveur
  *    ({@link #porteeEnMain}, PorteeMeleeServeur).</li>
  * </ul>
@@ -52,7 +52,7 @@ public final class PorteeMelee {
    }
 
    /** Réglage par défaut de la portée des couteaux (03/11, choix du propriétaire : 1 bloc au plus, clic gauche et droit). */
-   public static final double DEFAUT_COUTEAUX = 1.0D;
+   public static final double DEFAUT_COUTEAUX = 2.0D;   // 04/11 (propriétaire) : 2 blocs (avant 1)
 
    /**
     * Portée des couteaux TaCZ et des couteaux de GeckoLib ({@code [melee] portee_couteaux}, 1 par défaut), jamais plus que

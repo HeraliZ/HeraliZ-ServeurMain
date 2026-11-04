@@ -81,9 +81,9 @@ public class ServerConfig {
             "joueur 3 s et alerte le staff : 3, comme un coup de Minecraft.")
          .defineInRange("portee_max", PorteeMelee.DEFAUT, 1.0, 6.0);
       MELEE_PORTEE_COUTEAUX = builder.comment(
-            "Portée maximale (en blocs) des couteaux, clic gauche comme clic droit (03/11, choix du propriétaire : 1) : couteaux",
+            "Portée maximale (en blocs) des couteaux, clic gauche comme clic droit (04/11, choix du propriétaire : 2 ; avant 1) : couteaux",
             "TaCZ (M9, Karambit, Butterfly, CT, T) et couteaux de GeckoLib, jamais plus que portee_max. Les couteaux à vie",
-            "(armes de mêlée) ont la portée de leur fiche (max_range, 1 depuis le 03/11). Mesurée comme portee_max. Le serveur",
+            "(armes de mêlée) ont la portée de leur fiche (max_range, 2 depuis le 04/11). Mesurée comme portee_max. Le serveur",
             "refuse tout coup porté avec une arme de corps à corps en main au-delà de sa portée (plus 0,4 pour le décalage du",
             "réseau), même un coup de Minecraft envoyé par un jeu modifié.")
          .defineInRange("portee_couteaux", PorteeMelee.DEFAUT_COUTEAUX, 0.5, 6.0);

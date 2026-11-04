@@ -24,7 +24,7 @@
           "delay": 4,
           "hitbox": {
             "type": "cone",
-            "max_range": 1.0,
+            "max_range": 2.0,
             "max_angle": 110,
             "exclude_self": true
           },
@@ -37,7 +37,7 @@
           "delay": 6,
           "hitbox": {
             "type": "cone",
-            "max_range": 1.0,
+            "max_range": 2.0,
             "max_angle": 110,
             "exclude_self": true
           },
@@ -51,7 +51,7 @@
         "delay": 11,
         "hitbox": {
           "type": "cone",
-          "max_range": 1.0,
+          "max_range": 2.0,
           "max_angle": 60,
           "exclude_self": true
         }

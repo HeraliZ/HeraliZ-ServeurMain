@@ -28,7 +28,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
  *    <li>dégâts : (attaque du joueur, 1 à mains nues, + {@code degats}) pour le coup rapide, ×{@code multiplicateur_lourd}
  *    pour le coup puissant, comme les coups de LR (coup critique en tombant, recul, temps d'invincibilité de la cible) ;
  *    cibles : tout être vivant dans un cône devant les yeux (portée : {@code portee_couteaux} de la section {@code [melee]},
- *    1 bloc depuis le 03/11, {@link PorteeMelee#couteaux} ; {@code angle_rapide} / {@code angle_lourd}, vue
+ *    2 blocs depuis le 04/11, {@link PorteeMelee#couteaux} ; {@code angle_rapide} / {@code angle_lourd}, vue
  *    dégagée), plusieurs à la fois comme avec LR ;</li>
  *    <li>coup rapide : animation « melee_push » du couteau et son bruit (ceux de la touche « Mêlée » de TaCZ, comme
  *    avant la 2.16.0) ; coup puissant (16/10) : animation HeraliZ où le couteau tourne avec le geste du bras. Knife CT

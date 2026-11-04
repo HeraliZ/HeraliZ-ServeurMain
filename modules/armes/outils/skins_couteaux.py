@@ -538,7 +538,8 @@ VITESSE_EN_MAIN = {}
 # sa fiche. Le joueur choisit ses cibles avec cette
 # portée et le serveur la revérifie (MeleeItemServeur, PorteeMeleeServeur) ; les couteaux TaCZ ont la même dans
 # [melee] portee_couteaux de heralisz_tactical-server.toml.
-PORTEE_COUTEAUX = 1.0
+# 04/11 (demande du propriétaire) : 2 blocs pour toutes les armes de mêlée à vie (couteaux, batte, Bourreau...)
+PORTEE_COUTEAUX = 2.0
 PORTEE_A_PART = set()
 
 
