@@ -22,6 +22,14 @@ description='''PNJ posés par le staff, quêtes et contrats, points de quête su
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+# noyau : noms des objets dans les messages (fr.heraliz.noyau.api.NomsObjets) et règles communes, appelés
+# directement depuis le 03/11 (déclaré le 04/11)
+[[dependencies.heraliz_quetes]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
 [[dependencies.heraliz_quetes]]
     modId="caracrea"
     mandatory=false

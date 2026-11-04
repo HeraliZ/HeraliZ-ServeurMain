@@ -23,6 +23,14 @@ description='''Grades HeraliZ (staff, boutique, Survivant), préfixes, commandes
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+# noyau : noms des objets dans les messages (fr.heraliz.noyau.api.NomsObjets) et règles communes, appelés
+# directement depuis le 03/11 (déclaré le 04/11)
+[[dependencies.heraliz_grades]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
 
 # ---- un bloc par mod fusionné (modId D'ORIGINE), par exemple :
 # [[mods]]
@@ -60,6 +68,14 @@ description='''Le casino du serveur HERALIZ : machines 3D animees (machines a so
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+# noyau : noms des objets dans les messages (fr.heraliz.noyau.api.NomsObjets) et règles communes, appelés
+# directement depuis le 03/11 (déclaré le 04/11)
+[[dependencies.heralizcasino]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
 
 # HeraliZ Economie (les herals, monnaie du serveur) : facultatif. Present, la caisse vend et rachete les jetons contre
 # les herals du compte du joueur ; absent, le casino fonctionne comme avant (objets seulement).
@@ -90,4 +106,12 @@ description='''Caisses animées HD du serveur HERALIZ : caisses 3D (boss, vote, 
     mandatory=true
     versionRange="${minecraft_version_range}"
     ordering="NONE"
+    side="BOTH"
+# noyau : noms des objets dans les messages (fr.heraliz.noyau.api.NomsObjets) et règles communes, appelés
+# directement depuis le 03/11 (déclaré le 04/11)
+[[dependencies.heralizcrates]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="AFTER"
     side="BOTH"
