@@ -396,6 +396,6 @@
   "gui.heraliz_armory.cible.pas_mort": "not dead: %s / %s HP, %s shots like the last one needed",
   "gui.heraliz_armory.cible.recap": "[Target] %s shot(s) in %s s: %s taken (weapon %s, armor −%s %%)",
   "message.heraliz_armory.cible.loin": "Too far from the target.",
-  "message.heraliz_armory.cible.pas_a_toi": "Only whoever placed it (or staff) can pick it up.",
+  "message.heraliz_armory.cible.pas_a_toi": "Only staff can pick up a training target.",
   "message.heraliz_armory.cible.staff": "Only staff can place a test target."
 }

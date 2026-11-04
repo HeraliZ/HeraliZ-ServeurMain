@@ -102,7 +102,12 @@ public class CibleEssaiServeur extends CibleEssai {
             return false;
         }
         // seuls les coups d'un joueur sont mesurés (pas de feu, de chute, de créature...)
-        if (!(source.getEntity() instanceof ServerPlayer tireur) || tireur.isSpectator() || isInvulnerableTo(source)) return false;
+        if (!(source.getEntity() instanceof ServerPlayer tireur) || tireur.isSpectator()) return false;
+        if (isInvulnerableTo(source)) {
+            CiblesServeur.journal("coup de {} sur la cible refusé : cible invulnérable à « {} »", tireur.getGameProfile().getName(),
+                    source.getMsgId());
+            return false;
+        }
         // comme Player.hurt (Minecraft 1.20.1) : difficulté, puis coup nul ignoré
         if (source.scalesWithDifficulty()) {
             Difficulty d = level().getDifficulty();

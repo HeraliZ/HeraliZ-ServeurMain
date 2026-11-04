@@ -40,7 +40,8 @@ import java.util.List;
  *    des armes : tête ou corps, plomb arrêté par le plafond d'un tir de fusil à pompe), puis .Post (fin de la balle : ses
  *    deux parts, normale et perce-armure, sont additionnées et envoyées au tireur).</li>
  *    <li><b>Pose</b> : seulement le staff (niveau 2) et le créatif, où ils veulent (03/11, choix du propriétaire).
- *    <b>Ramasser</b> : celui qui l'a posée, le staff, le créatif (bouton de l'écran) ; l'objet est rendu.</li>
+ *    <b>Ramasser</b> : le staff et le créatif seulement (04/11 ; avant, aussi celui qui l'avait posée), bouton de
+ *    l'écran ; l'objet est rendu.</li>
  * </ul>
  * Rien ne tourne à chaque tick : seulement à un coup sur une cible, ou à un clic. Fil du serveur.
  */
@@ -67,9 +68,15 @@ public final class CiblesServeur {
 
     /** Envoie un coup mesuré à son tireur (rien si rien n'est passé : temps d'invincibilité, coup refusé). */
     static void envoyer(CibleEssaiServeur c, CibleEssaiServeur.Coup coup) {
-        if (coup.avant <= 0.0F && !coup.plafond) return;
         ServerPlayer tireur = coup.tireur;
+        if (coup.avant <= 0.0F && !coup.plafond) {
+            journal("coup de {} sur la cible : aucun dégât mesuré (refusé par une protection ou temps d'invincibilité)",
+                    tireur.getGameProfile().getName());
+            return;
+        }
         if (tireur.hasDisconnected()) return;
+        journal("coup de {} sur la cible : {} avant armure, {} reçus{}, envoyé au tireur", tireur.getGameProfile().getName(),
+                coup.avant, coup.recu, coup.plafond ? " (plafond du tir)" : "");
         float distance = (float) tireur.getEyePosition().distanceTo(coup.point);
         ArmoryNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> tireur), new PaquetsCible.Touche(c.getId(), coup.point.x,
                 coup.point.y, coup.point.z, coup.zone, coup.avant, coup.recu, distance, coup.nomArme, coup.tir, coup.plafond,
@@ -108,7 +115,7 @@ public final class CiblesServeur {
             c.choisir(a.tenue());
         } else if (a.action() == PaquetsCible.RAMASSER) {
             if (!peutRamasser(joueur, c)) {
-                dire(joueur, "message.heraliz_armory.cible.pas_a_toi", "Seul celui qui l'a posée (ou le staff) peut la ramasser.");
+                dire(joueur, "message.heraliz_armory.cible.pas_a_toi", "Seul le staff peut ramasser une cible d'essai.");
                 return;
             }
             c.discard();
@@ -117,8 +124,26 @@ public final class CiblesServeur {
         }
     }
 
+    /**
+     * 04/11 (retour du propriétaire : « un joueur peut la récupérer en faisant clic droit, Ramasser ») : seulement le staff
+     * (niveau 2) et le créatif. Avant, celui qui l'avait posée la reprenait aussi, même redevenu simple joueur (cible posée
+     * en créatif puis op retiré, ou posée par un joueur sous la 1.1.0).
+     */
     static boolean peutRamasser(ServerPlayer joueur, CibleEssaiServeur c) {
-        return joueur.getAbilities().instabuild || joueur.hasPermissions(2) || joueur.getUUID().equals(c.poseur);
+        return joueur.getAbilities().instabuild || joueur.hasPermissions(2);
+    }
+
+    private static long dernierJournal;
+
+    /**
+     * Journal des essais (04/11, chiffres non vus par le propriétaire) : ce qu'est devenu un tir sur une cible (balle à
+     * côté, coup refusé, dégâts envoyés au tireur). Au plus une ligne toutes les 2 s pour tout le serveur.
+     */
+    public static void journal(String texte, Object... args) {
+        long t = System.currentTimeMillis();
+        if (t - dernierJournal < 2000L) return;
+        dernierJournal = t;
+        fr.heraliz.armory.HeralizArmory.LOGGER.info("[cible] " + texte, args);
     }
 
     private static void dire(ServerPlayer joueur, String cle, String francais, Object... args) {

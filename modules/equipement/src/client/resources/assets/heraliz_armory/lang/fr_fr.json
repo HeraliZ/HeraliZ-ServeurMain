@@ -396,6 +396,6 @@
   "gui.heraliz_armory.cible.pas_mort": "pas mort : %s / %s PV, il faudrait %s tirs comme le dernier",
   "gui.heraliz_armory.cible.recap": "[Cible] %s tir(s) en %s s : %s reçus (arme %s, armure −%s %%)",
   "message.heraliz_armory.cible.loin": "Trop loin de la cible.",
-  "message.heraliz_armory.cible.pas_a_toi": "Seul celui qui l'a posée (ou le staff) peut la ramasser.",
+  "message.heraliz_armory.cible.pas_a_toi": "Seul le staff peut ramasser une cible d'essai.",
   "message.heraliz_armory.cible.staff": "Seul le staff peut poser une cible d'essai."
 }

@@ -396,6 +396,6 @@
   "gui.heraliz_armory.cible.pas_mort": "не убит: %s / %s ОЗ, нужно %s таких выстрелов",
   "gui.heraliz_armory.cible.recap": "[Мишень] выстрелов: %s за %s с: получено %s (оружие %s, броня −%s %%)",
   "message.heraliz_armory.cible.loin": "Слишком далеко от мишени.",
-  "message.heraliz_armory.cible.pas_a_toi": "Забрать её может только тот, кто поставил (или персонал).",
+  "message.heraliz_armory.cible.pas_a_toi": "Забрать тренировочную мишень может только персонал.",
   "message.heraliz_armory.cible.staff": "Ставить тренировочную мишень может только персонал."
 }

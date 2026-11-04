@@ -27,6 +27,10 @@ public abstract class TaczHitboxCibleMixin {
     private static void heraliz$cibleEssai(Projectile balle, Entity cible, Vec3 de, Vec3 a, CallbackInfoReturnable<EntityKineticBullet.EntityResult> cir) {
         if (!(cible instanceof CibleEssaiServeur c) || cible.level().isClientSide) return;
         HitboxCible.Touche t = c.toucherBalle(de, a);
+        if (t == null && balle.getOwner() instanceof net.minecraft.server.level.ServerPlayer p) {
+            // 04/11 : journal des essais (chiffres non vus) : la balle est passée à côté du corps de la cible
+            fr.heraliz.armory.cible.CiblesServeur.journal("balle de {} passée à côté du corps de la cible", p.getGameProfile().getName());
+        }
         cir.setReturnValue(t == null ? null : new EntityKineticBullet.EntityResult(cible, t.point(), t.tete()));
     }
 }
