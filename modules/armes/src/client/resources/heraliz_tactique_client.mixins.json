@@ -20,7 +20,8 @@
     "SonsArmeJoueurMixin",
     "SoundBufferAccessor",
     "SonsMonoMixin",
-    "TaczBalleArretMixin"
+    "TaczBalleArretMixin",
+    "TrousDeBalleMixin"
   ],
   "injectors": {
     "defaultRequire": 1
