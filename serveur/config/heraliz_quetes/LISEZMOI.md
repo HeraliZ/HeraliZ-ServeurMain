@@ -93,7 +93,8 @@ dans `varga.json`. Le poser au spawn avant d'ouvrir le serveur : sans lui, les n
 
 Le **Guide** (`/pnj creer guide`) accueille les nouveaux après la cinématique : une traînée verte au sol et un contour
 vert les mènent à lui (seulement chez eux). « Fais-moi visiter » : la caméra montre Mila, le Bâtisseur, Jacqueline, le
-Doyen, Jack, puis les **points de la visite**, puis le Commandant Varga (Espace maintenu 1 s pour passer). Ensuite la
+Doyen, Jack, Maître Verlaine (commissaire-priseur, PNJ `commissaire`), puis les **points de la visite**, puis le
+Commandant Varga (un appui sur Espace = présentation suivante, depuis le 04/11). Ensuite la
 traînée et le contour passent sur Varga, jusqu'à ce que le joueur lui parle.
 
 Les points de la visite se posent EN JEU (op niveau 2) : se placer là où la caméra doit se tenir, **regarder la chose à

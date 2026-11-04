@@ -589,7 +589,8 @@ TEXTES = {
     "heraliz_quetes.tuto.faire_base": ("Faire ma base", "Build my base", "Построить базу"),
     "heraliz_quetes.tuto.premiere_mission": ("Commencer ma première mission", "Start my first mission", "Начать первое задание"),
     # le guide du spawn (serveur : Accueil, Dialogues)
-    "heraliz_quetes.presentation.passer": ("Maintiens Espace pour passer", "Hold Space to skip", "Удерживай Пробел, чтобы пропустить"),
+    # 04/11 : un appui sur Espace = étape suivante de la visite (avant : Espace maintenu passait toute la visite)
+    "heraliz_quetes.presentation.passer": ("Espace : présentation suivante", "Space: next stop", "Пробел — дальше"),
     "heraliz_quetes.guide.intro": ("Va voir le Guide : il te fera visiter le spawn", "Go see the Guide: he'll show you around spawn",
                                    "Подойди к Проводнику: он покажет тебе спавн"),
     "heraliz_quetes.guide.suivi_visite": ("Visite du spawn avec le Guide", "Tour of spawn with the Guide", "Экскурсия по спавну с Проводником"),
@@ -616,6 +617,10 @@ TEXTES = {
     "heraliz_quetes.guide.jack": ("Jack, l'armurier : viseurs, poignées, silencieux… de quoi améliorer tes armes.",
                                   "Jack, the gunsmith: scopes, grips, suppressors… everything to improve your weapons.",
                                   "Джек, оружейник: прицелы, рукояти, глушители… всё, чтобы улучшить оружие."),
+    # 04/11 (demande du propriétaire) : Maître Verlaine (PNJ commissaire) dans la visite
+    "heraliz_quetes.guide.commissaire": ("Maître Verlaine, le commissaire-priseur : c'est l'hôtel des ventes. Mets en vente ce que tu ne gardes pas, à ton prix, en hérals ou en PB, et regarde ce que les autres proposent.",
+                                         "Master Verlaine, the auctioneer: this is the auction house. Put up for sale what you don't keep, at your own price, in herals or PB, and see what the others are offering.",
+                                         "Мэтр Верлен, аукционист: это аукционный дом. Выставляй на продажу то, что тебе не нужно, по своей цене, в гералах или PB, и смотри, что предлагают другие."),
     "heraliz_quetes.guide.varga": ("Et voici le Commandant Varga. C'est lui qui donne les missions, et il t'aidera à bâtir ta base.",
                                    "And this is Commander Varga. He gives out the missions, and he'll help you build your base.",
                                    "А это командир Варга. Он даёт задания и поможет тебе построить базу."),
@@ -776,6 +781,11 @@ TEXTES = {
     "heraliz_quetes.tuto.radio.fin2_np": ("N'importe qui peut l'attaquer, dès qu'elle est posée. Pendant une attaque, ta base passe en raid block : plus moyen de construire ni de réparer. Garde toujours des planches dans le Claim Block.",
                                          'Anyone can attack it as soon as it is built. During an attack, your base goes into raid block: no more building or repairing. Always keep planks in the Claim Block.',
                                          'Напасть может любой, как только она построена. Во время атаки база попадает в raid block: ни строить, ни чинить нельзя. Всегда держи доски в Claim Block.'),
+    # 04/11 (demande du propriétaire) : le coffre du clan et son matériel, dit à la radio (le chat est caché pendant le
+    # tutoriel : la ligne de CRac « crac.tuto.termine » n'était jamais lue)
+    "heraliz_quetes.tuto.radio.fin_coffre": ("Ton clan a un coffre, partagé entre ses membres. Je t'y ai rangé le matériel pour un début de base : plan, marteau, armoire, brindilles et planches. Ouvre-le au spawn avec /clan coffre, ou menu du clan (K), onglet Banque.",
+                                            "Your clan has a chest, shared by its members. I've put the gear for a starter base in it: plan, hammer, cupboard, twigs and planks. Open it at spawn with /clan coffre, or in the clan menu (K), Bank tab.",
+                                            "У твоего клана есть общий сундук. Я положил туда всё для начала базы: чертёж, молоток, шкаф, хворост и доски. Открой его на спавне командой /clan coffre или в меню клана (K), вкладка «Банк»."),
     "heraliz_quetes.tuto.radio.fin3": ("Je te ramène au spawn. Une fois la base de ton clan posée, pose ton home dedans avec /sethome <nom> : du spawn, /home t'y ramènera. Viens me voir au spawn pour des missions.",
                                       "I'm taking you back to spawn. Once your clan's base is placed, set your home inside it with /sethome <name>: from spawn, /home will bring you there. Come see me at spawn for missions.",
                                       'Я верну тебя на спавн. Когда база клана будет поставлена, поставь в ней дом командой /sethome <имя>: со спавна /home вернёт тебя туда. Приходи ко мне на спавн за заданиями.'),
@@ -949,6 +959,22 @@ TEXTES = {
     "heraliz_quetes.cmd.jour_essai": ("Impossible (quête inconnue ou pas en cours).", "Impossible (unknown quest or none in progress).",
                                       "Невозможно (неизвестное задание или оно не идёт)."),
     "heraliz_quetes.jour.notif.ferme": ("Les quêtes du jour ne sont pas disponibles", "Daily quests are not available", "Задания дня недоступны"),
+    # 03/11 : écran « Appeler le staff » (ajouté à la main dans les .json, repris ici le 04/11 : sinon l'outil l'effaçait)
+    "gui.heraliz_quetes.aide_staff.titre": ("Appeler le staff",
+        "Call the staff",
+        "Позвать персонал"),
+    "gui.heraliz_quetes.aide_staff.aide": ("Le chat revient à la fin du tutoriel. Un souci ? Écris-le ici : le staff connecté et le Discord du staff le reçoivent.",
+        "The chat comes back at the end of the tutorial. A problem? Write it here: the online staff and the staff Discord get it.",
+        "Чат вернётся в конце обучения. Проблема? Напиши здесь: её получат персонал в игре и Discord персонала."),
+    "gui.heraliz_quetes.aide_staff.invite": ("Ton problème…",
+        "Your problem…",
+        "Твоя проблема…"),
+    "gui.heraliz_quetes.aide_staff.envoyer": ("Envoyer",
+        "Send",
+        "Отправить"),
+    "gui.heraliz_quetes.aide_staff.annuler": ("Annuler",
+        "Cancel",
+        "Отмена"),
 }
 
 

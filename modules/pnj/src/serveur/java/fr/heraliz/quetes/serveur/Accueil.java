@@ -36,8 +36,12 @@ final class Accueil {
     static final String PNJ = "varga";
     /** Secondes entre les mots de la fin de Varga (le premier pendant le tour de la base par la caméra). */
     private static final int FIN_ECART = 16;
-    /** Les mots de la fin qui suivent le premier : raids et défenses, puis /home, /spawn et missions. */
-    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin2", "heraliz_quetes.tuto.radio.fin3"};
+    /**
+     * Les mots de la fin qui suivent le premier : raids et défenses, le coffre du clan et le matériel de la première base
+     * (04/11, demande du propriétaire), puis /home, /spawn et missions.
+     */
+    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin2", "heraliz_quetes.tuto.radio.fin_coffre",
+            "heraliz_quetes.tuto.radio.fin3"};
 
     private record Etat(int tuto, int etape, boolean intro) {
     }
@@ -85,10 +89,11 @@ final class Accueil {
      * Les étapes de la visite, dans l'ordre : les PNJ, puis (28/10, demande du propriétaire) les points d'intérêt posés
      * par le staff ({@code @id}, {@link PointsGuide}) : casino et capsules, Table d'armurier, coffre « Safe Planque 1 »,
      * caisses, borne de départ, recycleur ; Varga en dernier (on finit chez lui). Phrase du guide : clé
-     * {@code heraliz_quetes.guide.<id>}.
+     * {@code heraliz_quetes.guide.<id>}. 04/11 (demande du propriétaire) : Maître Verlaine, le commissaire-priseur (PNJ
+     * {@code commissaire}, hôtel des ventes), après Jack.
      */
-    private static final String[] VISITE = {"mila", BATISSEUR, "jacqueline", "doyen", "jack", "@casino", "@armurier", "@coffre",
-            "@caisses", "@borne", "@recycleur", PNJ};
+    private static final String[] VISITE = {"mila", BATISSEUR, "jacqueline", "doyen", "jack", "commissaire", "@casino", "@armurier",
+            "@coffre", "@caisses", "@borne", "@recycleur", PNJ};
     /** Donnée persistante du joueur : il a parlé au Commandant Varga (fin du guidage : traînée et surbrillance). */
     private static final String VARGA_PARLE = "heraliz_varga_parle";
     /** Secondes par PNJ (le temps que la phrase s'écrive et se lise) et durée du tour de caméra (ticks). */
@@ -155,8 +160,24 @@ final class Accueil {
         Moteur.suiviBientot(p);
     }
 
+    /**
+     * Espace pendant la visite du Guide (04/11, demande du propriétaire : « quand on appuie sur Espace, ça passe à la
+     * présentation suivante et non un skip complet ») : l'étape suivante tout de suite ; après la dernière, la visite est
+     * finie comme à la fin normale (caméra rendue au joueur tout de suite).
+     */
+    static void visiteSuivante(ServerPlayer p) {
+        Visite v = VISITES.get(p.getUUID());
+        if (v == null) return;
+        VISITES.put(p.getUUID(), new Visite(v.rang(), VISITE_ECART - 1));
+        visiteSeconde(p, true);
+    }
+
     /** Chaque seconde : PNJ suivant de la visite. */
     private static void visiteSeconde(ServerPlayer p) {
+        visiteSeconde(p, false);
+    }
+
+    private static void visiteSeconde(ServerPlayer p, boolean espace) {
         Visite v = VISITES.get(p.getUUID());
         if (v == null) return;
         if (v.secondes() + 1 < VISITE_ECART) {
@@ -167,6 +188,9 @@ final class Accueil {
         if (rang >= VISITE.length) {
             VISITES.remove(p.getUUID());
             persiste(p).putBoolean(VISITE_FAITE, true);
+            // passée à Espace : la caméra de la dernière étape tournait encore ; durée 0 = rendue au joueur
+            if (espace) Reseau.envoyer(p, new Reseau.Presentation(p.getX(), p.getY(), p.getZ(), 0F, 0, Float.NaN));
+            chat(p, Ponts.tutoEtat(p));   // le chat revient tout de suite
             radio(p, GUIDE, 0, "heraliz_quetes.guide.fin");
             Moteur.suiviBientot(p);
             return;

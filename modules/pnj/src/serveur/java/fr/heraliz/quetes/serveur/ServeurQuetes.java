@@ -230,6 +230,11 @@ public final class ServeurQuetes implements Partie {
                 Accueil.passerVisite(p);
                 return;
             }
+            case 5 -> {
+                // Espace pendant la visite du Guide (04/11) : étape suivante
+                Accueil.visiteSuivante(p);
+                return;
+            }
             default -> {
                 return;
             }

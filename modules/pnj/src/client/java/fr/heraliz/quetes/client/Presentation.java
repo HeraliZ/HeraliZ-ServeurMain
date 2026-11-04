@@ -17,8 +17,9 @@ import net.minecraftforge.event.TickEvent;
 /**
  * Présentation d'un PNJ (Quêtes 1.8.0, demande du propriétaire du 19/10) : la caméra fait lentement le tour du PNJ
  * (le Bâtisseur, à la première arrivée au spawn après le tutoriel des bases), regard toujours sur lui, pendant que
- * le Commandant Varga parle à la radio ; ni bras ni interface, sauf la radio. Espace maintenu 1 s pour passer (1.10.4 : toute
- * la visite du Guide, indication en bas de l'écran ; caméra devant le visage du PNJ, d'après le lacet de son corps). La
+ * le Commandant Varga parle à la radio ; ni bras ni interface, sauf la radio. Un appui sur Espace = étape suivante de la
+ * visite du Guide (04/11 ; avant : Espace maintenu 1 s passait toute la visite), indication en bas de l'écran ; caméra
+ * devant le visage du PNJ, d'après le lacet de son corps. La
  * caméra ne rentre jamais dans un bloc : elle s'arrête avant le premier mur ou plafond (le spawn est une grotte).
  * Même principe que le tour de la base à la fin du tutoriel (CRac).
  */
@@ -34,6 +35,8 @@ final class Presentation {
     private static Vec3 centre;
     private static float rayon;
     private static int ticks, duree, passer;
+    /** Espace enfoncé au tick d'avant : un appui = une étape (tenir Espace n'enchaîne pas les étapes). */
+    private static boolean espaceAvant;
     /** Distance de la caméra au PNJ à l'image d'avant (rapprochée d'un coup devant un mur, éloignée en douceur). */
     private static double dist;
     /** Angle (autour du PNJ) de la direction de son regard : la caméra reste devant lui, jamais dans son dos. */
@@ -45,11 +48,17 @@ final class Presentation {
     static void lancer(Reseau.Presentation m) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
+        if (m.ticks() <= 0) {
+            // durée 0 (04/11) : fin de la visite passée à Espace, caméra rendue au joueur
+            finir();
+            return;
+        }
         centre = new Vec3(m.x(), m.y() + 1.4, m.z());
         rayon = m.rayon();
         duree = m.ticks();
         ticks = 0;
         passer = 0;
+        espaceAvant = mc.options.keyJump.isDown();
         camera = new ArmorStand(EntityType.ARMOR_STAND, mc.level);
         camera.setInvisible(true);
         camera.setNoGravity(true);
@@ -134,12 +143,16 @@ final class Presentation {
             return;
         }
         ticks++;
-        passer = mc.options.keyJump.isDown() ? passer + 1 : 0;
-        if (passer > 20) {
-            // Espace maintenu 1 s : toute la visite du Guide est passée (Quêtes 1.10.4), pas seulement ce PNJ
-            Reseau.CANAL.sendToServer(new Reseau.Action(4, ""));
-            finir();
-        } else if (ticks >= duree || mc.getCameraEntity() != camera) {
+        boolean espace = mc.options.keyJump.isDown();
+        if (passer > 0) passer--;
+        if (espace && !espaceAvant && ticks > 6) {
+            // un appui sur Espace (04/11, demande du propriétaire) : étape suivante de la visite du Guide, plus toute la
+            // visite d'un coup ; la caméra reste en place jusqu'à l'étape suivante envoyée par le serveur
+            Reseau.CANAL.sendToServer(new Reseau.Action(5, ""));
+            passer = 8;
+        }
+        espaceAvant = espace;
+        if (ticks >= duree || mc.getCameraEntity() != camera) {
             finir();
         } else {
             placer(ticks, false);
