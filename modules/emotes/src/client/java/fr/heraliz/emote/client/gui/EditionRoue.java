@@ -68,6 +68,14 @@ public final class EditionRoue extends Screen {
     private final List<Ligne> toutes = new ArrayList<>();
     private final List<Ligne> montrees = new ArrayList<>();
     private final List<Zone> zones = new ArrayList<>();
+    /** Emotes par identifiant (04/11, relecture : avant, la liste était parcourue pour chaque case à chaque image). */
+    private final java.util.Map<UUID, Ligne> parId = new java.util.HashMap<>();
+    /** Où est chaque emote de la roue : {page, case}, la page affichée d'abord ; refait à chaque changement. */
+    private final java.util.Map<UUID, int[]> places = new java.util.HashMap<>();
+    /** Nombre d'emotes de chaque filtre (Toutes, Débloquées, Dans la roue) ; refait à chaque changement. */
+    private final int[] comptes = new int[3];
+    /** Textes coupés à une largeur (le même calcul à chaque image sinon : des milliers de mesures de lettres). */
+    private final java.util.Map<String, String> coupes = new java.util.HashMap<>();
     private float ox, oy;
     private int filtre;
     private int page;
@@ -102,7 +110,14 @@ public final class EditionRoue extends Screen {
         recherche.setValue(texte);
         recherche.setResponder(s -> refiltrer());
         addRenderableWidget(recherche);
+        setInitialFocus(recherche);
+        coupes.clear();
         refiltrer();
+    }
+
+    @Override
+    public void tick() {
+        if (recherche != null) recherche.tick();   // curseur qui clignote
     }
 
     @Override
@@ -135,7 +150,9 @@ public final class EditionRoue extends Screen {
         for (KeyframeAnimation anim : ClientEmoteAPI.clientEmoteList()) {
             String nom = texte(anim.extraData.get("name"), "?");
             String desc = texte(anim.extraData.get("description"), "");
-            toutes.add(new Ligne(anim, nom, desc, simple(nom + " " + desc)));
+            Ligne l = new Ligne(anim, nom, desc, simple(nom + " " + desc));
+            toutes.add(l);
+            parId.put(anim.getUuid(), l);
         }
         toutes.sort(Comparator.comparing(l -> simple(l.nom())));
     }
@@ -156,15 +173,34 @@ public final class EditionRoue extends Screen {
     }
 
     private void refiltrer() {
+        recalculer();
         String q = recherche == null ? "" : simple(recherche.getValue().trim());
         montrees.clear();
         for (Ligne l : toutes) {
             if (!q.isEmpty() && !l.cherche().contains(q)) continue;
             if (filtre == 1 && verrou(l)) continue;
-            if (filtre == 2 && ou(l.anim().getUuid())[0] < 0) continue;
+            if (filtre == 2 && !places.containsKey(l.anim().getUuid())) continue;
             montrees.add(l);
         }
         borner();
+    }
+
+    /** Places des emotes dans la roue et comptes des filtres, une fois par changement (jamais à chaque image). */
+    private void recalculer() {
+        places.clear();
+        UUID[][] r = roue();
+        if (r != null) {
+            for (int k = 0; k < CASES; k++) if (r[page][k] != null) places.putIfAbsent(r[page][k], new int[]{page, k});
+            for (int p = 0; p < PAGES; p++) {
+                for (int k = 0; k < CASES; k++) if (r[p][k] != null) places.putIfAbsent(r[p][k], new int[]{p, k});
+            }
+        }
+        java.util.Arrays.fill(comptes, 0);
+        for (Ligne l : toutes) {
+            comptes[0]++;
+            if (!verrou(l)) comptes[1]++;
+            if (places.containsKey(l.anim().getUuid())) comptes[2]++;
+        }
     }
 
     private static boolean verrou(Ligne l) {
@@ -198,20 +234,21 @@ public final class EditionRoue extends Screen {
         return r == null ? null : r[page][k];
     }
 
+    private static final int[] NULLE_PART = {-1, -1};
+
     /** {page, case} où se trouve l'emote : d'abord la page affichée ; {-1, -1} si elle n'est pas dans la roue. */
     private int[] ou(UUID id) {
-        UUID[][] r = roue();
-        if (r == null) return new int[]{-1, -1};
-        for (int k = 0; k < CASES; k++) if (id.equals(r[page][k])) return new int[]{page, k};
-        for (int p = 0; p < PAGES; p++) for (int k = 0; k < CASES; k++) if (id.equals(r[p][k])) return new int[]{p, k};
-        return new int[]{-1, -1};
+        return places.getOrDefault(id, NULLE_PART);
     }
 
     @Nullable
     private Ligne ligne(@Nullable UUID id) {
-        if (id == null) return null;
-        for (Ligne l : toutes) if (l.anim().getUuid().equals(id)) return l;
-        return null;
+        return id == null ? null : parId.get(id);
+    }
+
+    /** Texte coupé à {@code max} points (gardé : le calcul n'est fait qu'une fois par texte et par largeur). */
+    private String coupe(String s, ResourceLocation f, float max) {
+        return coupes.computeIfAbsent(s + '\u0001' + f + '\u0001' + Math.round(max * 4), k -> Net.couper(font, s, f, max));
     }
 
     private void ranger(int k) {
@@ -222,7 +259,11 @@ public final class EditionRoue extends Screen {
             dire(Component.translatable("heraliz_emote.menu.locked_tip"));
             return;
         }
-        for (int i = 0; i < CASES; i++) if (choisie.equals(r[page][i])) r[page][i] = null;
+        // déjà sur cette page dans une autre case : les deux cases sont échangées (sinon l'emote d'ici était perdue)
+        UUID ici = r[page][k];
+        for (int i = 0; i < CASES; i++) {
+            if (i != k && choisie.equals(r[page][i])) r[page][i] = ici;
+        }
         r[page][k] = choisie;
         choisie = null;
         modifie = true;
@@ -281,6 +322,11 @@ public final class EditionRoue extends Screen {
     // ------------------------------------------------------------------ souris et touches
     @Override
     public boolean mouseClicked(double mx, double my, int b) {
+        // un clic ailleurs que dans la recherche lui retire le clavier (flèches : pages de la roue)
+        if (recherche != null && recherche.isFocused() && !recherche.isMouseOver(mx, my)) {
+            recherche.setFocused(false);
+            setFocused(null);
+        }
         if (super.mouseClicked(mx, my, b)) return true;
         if (b == 0) {
             for (Zone z : new ArrayList<>(zones)) {
@@ -296,22 +342,37 @@ public final class EditionRoue extends Screen {
                 vider(k);
             } else if (b == 0 && choisie != null) {
                 ranger(k);
-            } else if (b == 0 && dansCase(k) != null) {
-                choisie = dansCase(k);   // reprise : la case pleine devient l'emote choisie
-                SonsUi.clic(0.5F);
+            } else if (b == 0 && ligne(dansCase(k)) != null) {
+                // reprise : la case pleine devient l'emote choisie (une emote qui n'existe plus est montrée vide et ne se
+                // reprend pas ; une emote à débloquer reste où elle est)
+                choisir(ligne(dansCase(k)));
             }
             return true;
         }
         if (b == 0 && surListe(mx, my)) {
             int i = (int) Math.floor((my - (oy + LISTE_Y) + defil) / HL);
             if (i >= 0 && i < montrees.size()) {
-                UUID id = montrees.get(i).anim().getUuid();
-                choisie = id.equals(choisie) ? null : id;
-                SonsUi.clic(0.5F);
+                Ligne l = montrees.get(i);
+                if (l.anim().getUuid().equals(choisie)) {
+                    choisie = null;
+                    SonsUi.clic(0.5F);
+                } else {
+                    choisir(l);
+                }
                 return true;
             }
         }
         return false;
+    }
+
+    /** Emote choisie (refusée, avec le message, si elle est à débloquer : elle ne se range pas dans la roue). */
+    private void choisir(Ligne l) {
+        if (verrou(l)) {
+            dire(Component.translatable("heraliz_emote.menu.locked_tip"));
+            return;
+        }
+        choisie = l.anim().getUuid();
+        SonsUi.clic(0.5F);
     }
 
     @Override
@@ -360,7 +421,7 @@ public final class EditionRoue extends Screen {
         float fx = x0 + 8, fy = y0 + 38;
         String[] noms = {t("filtre.toutes"), t("filtre.debloquees"), t("filtre.roue")};
         for (int i = 0; i < noms.length; i++) {
-            int n = compte(i);
+            int n = comptes[i];
             String s = noms[i] + "  " + n;
             float w = Net.largeur(font, s, Ui.SMALL) + 12;
             boolean actif = filtre == i, sv = mx >= fx && mx < fx + w && my >= fy - 6 && my < fy + 6;
@@ -402,15 +463,6 @@ public final class EditionRoue extends Screen {
         }
     }
 
-    private int compte(int f) {
-        int n = 0;
-        for (Ligne l : toutes) {
-            if (f == 1 && verrou(l) || f == 2 && ou(l.anim().getUuid())[0] < 0) continue;
-            n++;
-        }
-        return n;
-    }
-
     private void ligneDessin(GuiGraphics g, Ligne l, float x0, float ly, float x1, int mx, int my, int accent) {
         UUID id = l.anim().getUuid();
         boolean choix = id.equals(choisie), verrou = verrou(l);
@@ -434,8 +486,8 @@ public final class EditionRoue extends Screen {
             Net.centre(g, font, e, Ui.SMALL, ex + we / 2, ey, c);
         }
         float tx = x0 + 42, place = x1 - 18 - (e == null ? 0 : we + 6) - tx;
-        Net.texte(g, font, Net.couper(font, l.nom(), Ui.BOLD, place), Ui.BOLD, tx, ly + 9, verrou ? Ui.FAINT : Ui.TEXT);
-        Net.texte(g, font, Net.couper(font, l.desc(), Ui.SMALL, place), Ui.SMALL, tx, ly + 20, verrou ? Ui.FAINT : Ui.MUTED);
+        Net.texte(g, font, coupe(l.nom(), Ui.BOLD, place), Ui.BOLD, tx, ly + 9, verrou ? Ui.FAINT : Ui.TEXT);
+        Net.texte(g, font, coupe(l.desc(), Ui.SMALL, place), Ui.SMALL, tx, ly + 20, verrou ? Ui.FAINT : Ui.MUTED);
         icone(g, l.anim(), x0 + 12, ly + 2, 24, verrou ? 0.45f : 1f, verrou);
         if (verrou) cadenas(g, x0 + 28, ly + 17);
     }
@@ -454,7 +506,7 @@ public final class EditionRoue extends Screen {
         Ligne l = ligne(choisie);
         if (l != null) {
             icone(g, l.anim(), cx - 11, cy - 27, 22, 1f, false);
-            Net.centre(g, font, Net.couper(font, l.nom(), Ui.BOLD, 64), Ui.BOLD, cx, cy + 2, Ui.TEXT);
+            Net.centre(g, font, coupe(l.nom(), Ui.BOLD, 64), Ui.BOLD, cx, cy + 2, Ui.TEXT);
             Net.capsCentre(g, font, t("choisie"), Ui.SMALL, 0.6f, cx, cy + 12, accent);
         } else {
             Net.centre(g, font, t("choisir"), Ui.SMALL, cx, cy - 4, Ui.MUTED);
@@ -486,7 +538,7 @@ public final class EditionRoue extends Screen {
         } else if (l != null) {
             boolean verrou = verrou(l);
             icone(g, l.anim(), x + CASE / 2 - 14, y + 7, 28, verrou ? 0.45f : 1f, verrou);
-            Net.centre(g, font, Net.couper(font, l.nom(), Ui.SMALL, CASE - 6), Ui.SMALL, x + CASE / 2, y + CASE - 8,
+            Net.centre(g, font, coupe(l.nom(), Ui.SMALL, CASE - 6), Ui.SMALL, x + CASE / 2, y + CASE - 8,
                     sv ? Ui.TEXT : verrou ? Ui.FAINT : Ui.MUTED);
         } else {
             // case vide : carré en pointillés et « + »
@@ -522,7 +574,8 @@ public final class EditionRoue extends Screen {
         }
         float by = oy + BY;
         bouton(g, t("retour"), cx - BW - 4, by, BLANC, false, mx, my, this::onClose);
-        bouton(g, t("termine"), cx + 4, by, accent, true, mx, my, this::onClose);
+        // « Terminé » ferme tout ; « Retour à la roue » revient à la roue (04/11, relecture : les deux faisaient la même chose)
+        bouton(g, t("termine"), cx + 4, by, accent, true, mx, my, () -> Minecraft.getInstance().setScreen(null));
     }
 
     private void bouton(GuiGraphics g, String txt, float x, float y, int c, boolean plein, int mx, int my, Runnable action) {
