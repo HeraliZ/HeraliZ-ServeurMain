@@ -96,6 +96,10 @@ if (setting('heraliz.vote_pb') === null) {
 if (setting('heraliz.vote_cle_60') === null) {
     cleVoteSoixante();
 }
+// 04/11 (relecture) : jumelle sans clé créée avec les récompenses du mois de l'autre : retirées, une seule fois
+if (setting('heraliz.vote_cle_60_mois') === null) {
+    cleVoteMois();
+}
 
 // boutique de la saison 1 et pages légales : une seule fois (repère « heraliz.boutique »), chaque élément seulement s'il
 // manque ; ensuite l'administration fait foi
@@ -498,12 +502,20 @@ function votesProteges(): void
         : '::warning::Votes : anti-robot Turnstile pas réglé (administration → Paramètres → Sécurité → captcha « Turnstile ») : un programme connecté à un compte validé peut encore cliquer « Voter » à la place du joueur');
 }
 
+/** Commande qui donne la clé vote (les deux formes du joueur permises par Console : {player} et {name}). */
+function donneCleVote($commande): bool
+{
+    return (bool) preg_match('/givekey\s+\{(player|name)\}\s+vote\b/i', (string) $commande);
+}
+
 /**
  * Clé vote une fois sur 0,6 (04/11, demande du propriétaire : « 60 % de chance d'avoir une clé vote, et pas 100 % »). À
  * chaque vote, l'extension Vote tire UNE récompense parmi celles du site de vote, selon leurs chances (des poids : une
- * récompense seule sort toujours). Chaque récompense qui donne la clé vote passe donc à 60, et une récompense jumelle sans
- * la clé est créée à 40 : mêmes hérals, mêmes PB, mêmes récompenses du mois, mêmes sites de vote et même serveur. Le joueur
- * a toujours ses hérals et ses PB ; la clé, 6 votes sur 10.
+ * récompense seule sort toujours). Chaque récompense tirée au vote qui donne la clé vote garde 60 % de ses chances, et une
+ * récompense jumelle sans la clé reçoit les 40 % restants : mêmes hérals, mêmes PB, mêmes sites de vote et même serveur ;
+ * ni image (supprimer l'une effacerait celle de l'autre) ni récompenses du mois (elles seraient données deux fois). Le
+ * joueur a toujours ses hérals et ses PB ; la clé, 6 votes sur 10. Une récompense du mois seulement (chances à 0) n'est pas
+ * touchée. Chaque récompense en une seule opération : une erreur ne laisse jamais une jumelle sans repère.
  */
 function cleVoteSoixante(): void
 {
@@ -514,33 +526,69 @@ function cleVoteSoixante(): void
     $n = 0;
     foreach ($Recompense::all() as $r) {
         $commandes = array_values((array) ($r->commands ?? []));
-        $sansCle = array_values(array_filter($commandes, fn ($c) => ! preg_match('/givekey\s+\{player\}\s+vote\b/i', (string) $c)));
-        if (! $r->is_enabled || count($sansCle) === count($commandes)) {
-            continue;   // récompense coupée, ou sans clé vote
+        $sansCle = array_values(array_filter($commandes, fn ($c) => ! donneCleVote($c)));
+        $chances = (float) $r->chances;
+        if (! $r->is_enabled || $chances <= 0 || count($sansCle) === count($commandes)) {
+            continue;   // récompense coupée, du mois seulement, ou sans clé vote
         }
         $nom = trim((string) preg_replace('/^\s*1 clé vote\s*\+\s*/u', '', (string) $r->name));
         if ($nom === '' || $nom === trim((string) $r->name)) {
             $nom = $r->name.' (sans clé)';
         }
-        $jumelle = $Recompense::create(colonnes('vote_rewards', [
-            'name' => $nom, 'image' => $r->image, 'chances' => 40, 'money' => $r->money, 'commands' => $sansCle,
-            'monthly_rewards' => $r->monthly_rewards, 'need_online' => $r->need_online, 'single_server' => $r->single_server,
-            'is_enabled' => true,
-        ]));
-        if (method_exists($r, 'sites')) {
-            $jumelle->sites()->sync($r->sites->modelKeys());
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($Recompense, $r, $nom, $sansCle, $chances) {
+                $jumelle = $Recompense::create(colonnes('vote_rewards', [
+                    'name' => $nom, 'chances' => round($chances * 0.4, 2), 'money' => $r->money, 'commands' => $sansCle,
+                    'need_online' => $r->need_online, 'single_server' => $r->single_server, 'is_enabled' => true,
+                ]));
+                if (method_exists($r, 'sites')) {
+                    $jumelle->sites()->sync($r->sites->modelKeys());
+                }
+                if (method_exists($r, 'servers')) {
+                    $jumelle->servers()->sync($r->servers->modelKeys());
+                }
+                $r->update(['chances' => round($chances * 0.6, 2)]);
+            });
+        } catch (\Throwable $e) {
+            dire('::warning::Votes : « '.$r->name.' » non partagée ('.$e->getMessage().') : rien n’est changé pour elle');
+            continue;
         }
-        if (method_exists($r, 'servers')) {
-            $jumelle->servers()->sync($r->servers->modelKeys());
-        }
-        $r->update(['chances' => 60]);
         $n++;
-        dire('Votes : « '.$r->name.' » à 60 % et « '.$nom.' » (sans clé) à 40 %');
+        dire('Votes : « '.$r->name.' » garde 60 % de ses chances, « '.$nom.' » (sans la clé) reçoit les 40 % restants');
     }
     if ($n === 0) {
-        dire('Votes : aucune récompense active ne donne la clé vote, rien n’est changé');
+        dire('Votes : aucune récompense tirée au vote ne donne la clé vote, rien n’est changé');
     }
     Setting::updateSettings('heraliz.vote_cle_60', now()->toDateString());
+}
+
+/**
+ * Correction du 04/11 (relecture) pour les sites où cleVoteSoixante a déjà tourné dans sa première version : elle copiait
+ * les récompenses du mois sur la jumelle sans clé, qui les aurait données une deuxième fois aux meilleurs voteurs. Une
+ * récompense sans la clé vote qui a exactement les mêmes récompenses du mois et le même argent qu'une récompense avec la
+ * clé est une de ces jumelles : ses récompenses du mois sont retirées. Une seule fois (repère « heraliz.vote_cle_60_mois »).
+ */
+function cleVoteMois(): void
+{
+    if (! plugins()->isEnabled('vote')) {
+        return;
+    }
+    $Recompense = \Azuriom\Plugin\Vote\Models\Reward::class;
+    $toutes = $Recompense::all();
+    $avecCle = $toutes->filter(fn ($r) => collect((array) ($r->commands ?? []))->contains(fn ($c) => donneCleVote($c)));
+    foreach ($toutes as $r) {
+        $mois = array_values((array) ($r->monthly_rewards ?? []));
+        if ($mois === [] || $avecCle->contains(fn ($k) => $k->is($r))) {
+            continue;
+        }
+        $double = $avecCle->contains(fn ($k) => array_values((array) ($k->monthly_rewards ?? [])) == $mois
+            && (float) $k->money === (float) $r->money);
+        if ($double) {
+            $r->update(['monthly_rewards' => []]);
+            dire('Votes : récompenses du mois retirées de « '.$r->name.' » (copie de celles de la récompense avec la clé)');
+        }
+    }
+    Setting::updateSettings('heraliz.vote_cle_60_mois', now()->toDateString());
 }
 
 function pbParVote(): void
