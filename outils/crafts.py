@@ -156,7 +156,9 @@ DIVERS = [
     # prix d'une barricade (18 planches, 18 clous, 3 cordes) : elle se casse à la main et aux balles comme elle, et sert à
     # entrer, pas à bloquer. Peu commune (RARETES_IMPOSEES de loot_armes.py), jamais dans le loot. Une quatrième valeur
     # (facultative) donnerait le nombre d'objets rendus.
-    ("10_echelle", "crac:echelle", {C + "planche": 9, C + "clou": 9, C + "corde": 2}),
+    # 05/11 (demande du propriétaire : « corde, brindilles, bois ») : les clous remplacés par des brindilles (avant : 9
+    # planches, 9 clous, 2 cordes).
+    ("10_echelle", "crac:echelle", {C + "planche": 6, C + "brindilles": 10, C + "corde": 2}),
 ]
 
 # coffres de base par rareté (27/10, validés par le propriétaire) : comme le reste, le niveau des composants suit la

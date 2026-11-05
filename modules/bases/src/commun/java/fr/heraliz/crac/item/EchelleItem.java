@@ -2,6 +2,7 @@ package fr.heraliz.crac.item;
 
 import fr.heraliz.crac.block.EchelleBlock;
 import fr.heraliz.crac.heraliz.Txt;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -16,10 +17,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 
 /**
  * Objet de l'échelle de raid (03/11) : une échelle d'un étage (3 cases), posée d'un coup ; la place est décidée par
- * {@link EchelleBlock#pose} (face d'un mur droit, ou l'étage au-dessus d'une échelle). Chez le joueur : seulement le
- * geste et le son. Au serveur, les trois cases du mur sont d'abord laissées par le mur ({@code Serveur.Moteur#cederCase}),
- * puis la partie du bas est posée par le chemin habituel (évènement de pose : règles de la base dans BuildEventHandler) et
- * les deux autres la suivent ({@link EchelleBlock#setPlacedBy}). Pose refusée : le mur reprend ses cases au tick suivant.
+ * {@link EchelleBlock#pose} (depuis le 05/11 : n'importe quelle face debout d'une pièce de base, centrée au point visé ;
+ * ou l'étage au-dessus d'une échelle). Chez le joueur : seulement le geste et le son. Au serveur, les cases tenues par la
+ * moitié d'un mur droit sont d'abord laissées par le mur ({@code Serveur.Moteur#cederCase}), puis la partie du bas est posée
+ * par le chemin habituel (évènement de pose : règles de la base dans BuildEventHandler), garde sa place et les deux autres la
+ * suivent ({@link EchelleBlock#setPlacedBy}). Pose refusée : le mur reprend ses cases au tick suivant.
  */
 public class EchelleItem extends BlockItem {
     public EchelleItem(Block block, Properties props) {
@@ -65,17 +67,21 @@ public class EchelleItem extends BlockItem {
         if (m == null || !(level instanceof ServerLevel sl)) {
             return InteractionResult.FAIL;
         }
-        // si une case est refusée, celles déjà prises sont rendues au mur au tick suivant (rien n'est posé)
+        // cases tenues par la moitié d'un mur droit : il les laisse ; si une case est refusée, celles déjà prises sont
+        // rendues au mur au tick suivant (rien n'est posé). Cases libres (air) : rien à demander.
         for (int i = 0; i < EchelleBlock.HAUTEUR; i++) {
-            if (!m.cederCase(sl, p.partie(i))) {
+            BlockPos c = p.partie(i);
+            if (level.getBlockState(c).getBlock() instanceof fr.heraliz.crac.build.world.StructureBlock && !m.cederCase(sl, c)) {
                 return InteractionResult.FAIL;
             }
         }
         EchelleBlock.POSE.set(p.etat(this.getBlock(), 0));
+        EchelleBlock.POSE_PLACE.set(p);
         try {
             return super.place(BlockPlaceContext.at(ctx, p.bas(), p.facing()));
         } finally {
             EchelleBlock.POSE.remove();
+            EchelleBlock.POSE_PLACE.remove();
         }
     }
 }

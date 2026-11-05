@@ -73,6 +73,17 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
 - [ ] Skins **Faille** et **Accès Rouge** et modèle **AK-47 Faille** retirés (Tactique 2.54.0, demande du propriétaire du 05/11) :
       plus dans l'Atelier, le menu créatif ni `/camos` ; une arme qui en portait un s'affiche sans camo, un AK-47 skinné
       Faille redevient l'AK de base ; un objet skin donné pendant l'essai disparaît (normal).
+- [ ] **Échelle de raid, pose libre** (Bases 1.35.0-beta, demande du propriétaire du 05/11) : se pose en visant n'importe
+      quelle face debout d'une pièce de base (mur droit, mur en biais d'un triangle, demi-mur, côté d'une fondation),
+      milieu de l'échelle au point visé, dos contre la surface, à son angle ; elle peut dépasser au-dessus d'un demi-mur
+      ou d'une fondation. On y grimpe, on ne tire pas dessus, une 2e se pose au-dessus en visant la 1re. Pièce détruite :
+      l'échelle tombe (en 2 s au plus). Refusée contre un mur avec porte, sur le sol ou un toit visé par-dessus, et s'il
+      n'y a pas de place juste devant (viser un peu à côté). Échelles posées avant : inchangées. Aucune alerte de
+      l'anticheat en grimpant.
+- [ ] Recette de l'échelle (Table d'armurier, onglet Divers) : 6 planches, 10 brindilles, 2 cordes ; le recycleur rend
+      ça (une recette changée en jeu au Registre de l'armurier garde sa version).
+- [ ] Arme ou arme de mêlée en main devant un conteneur, une porte, un corps : plus de texte « Appuyez sur O pour
+      interagir » (Tactique 2.54.1) ; la touche O marche toujours.
 
 ## 2. Priorité 1 : les gros systèmes
 

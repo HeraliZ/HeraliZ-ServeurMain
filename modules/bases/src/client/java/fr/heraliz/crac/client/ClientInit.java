@@ -84,6 +84,8 @@ public class ClientInit {
         event.registerBlockEntityRenderer(ModBlockEntities.CLAIM_BLOCK.get(), EcranArmoireRendu::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COEUR_CLAN.get(), CoeurClanRendu::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COFFRE.get(), CoffreRendu::new);
+        // échelle de raid dessinée à sa vraie place, n'importe quel angle (pose libre, 05/11)
+        event.registerBlockEntityRenderer(ModBlockEntities.ECHELLE.get(), fr.heraliz.crac.client.render.EchelleRendu::new);
     }
 
     /** Modèles dessinés à part (03/11 : plus ceux du cœur de clan, devenu un modèle fixe de bloc). */

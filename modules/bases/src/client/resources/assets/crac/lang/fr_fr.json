@@ -534,7 +534,7 @@
   "crac.ecran.depop_imminent": "DÉPOP IMMINENT",
   "block.crac.coeur_clan": "Cœur de clan",
   "block.crac.echelle": "Échelle",
-  "crac.echelle.ou": "L'échelle se pose contre la face d'un mur droit de base (n'importe quelle base), de son pied à son sommet, ou au-dessus d'une échelle pour l'étage suivant.",
+  "crac.echelle.ou": "Vise une pièce de base (mur droit ou en biais, demi-mur, côté d'une fondation…) : l'échelle s'y pose au point visé, ou au-dessus d'une échelle pour l'étage suivant. Pas de place juste devant : vise un peu à côté.",
   "crac.echelle.gene": "Quelqu'un est dans la place de l'échelle : écarte-toi du mur.",
   "crac.echelle.tir": "Impossible de tirer sur une échelle.",
   "crac.coeur.points": "%s PTS",
