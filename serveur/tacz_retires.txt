@@ -1491,3 +1491,7 @@ heraliz_crafts/data/heraliz_crafts/recipes/soins/heralisz_heal_attelle_bandage.j
 # restent valables pour ceux qui les ont (fichiers du gunpack heraliz_6_armes_maxstuff gardés)
 heraliz_crafts/data/heraliz_crafts/recipes/armes/maxstuff_deagle_12g.json
 heraliz_crafts/data/heraliz_crafts/recipes/armes/maxstuff_thunderbird_short.json
+# 05/11 : modèle AK-47 Faille retiré avec les skins Faille et Accès Rouge (Tactique 2.54.0)
+heralisz_skins/assets/heralisz_skins/display/guns/ak47_faille_display.json
+heralisz_skins/assets/heralisz_skins/geo_models/gun/ak47_faille_geo.json
+heralisz_skins/assets/heralisz_skins/textures/gun/uv/ak47_faille.png
