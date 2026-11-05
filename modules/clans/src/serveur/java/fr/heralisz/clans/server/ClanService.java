@@ -1481,6 +1481,16 @@ public final class ClanService {
      * les coffres des clans ({@code garder}) sont rendus à leur chef. Renvoie ces objets, par joueur.
      */
     public static Map<UUID, List<ItemStack>> wipeServeur(java.util.function.Predicate<ItemStack> garder) {
+        return wipeReouverture(garder, u -> false);
+    }
+
+    /**
+     * Wipe de la réouverture (05/11, HeraliZ Quêtes par réflexion : ne pas renommer ni changer la signature) : comme
+     * {@link #wipeServeur}, mais les hérals des joueurs pour qui {@code epargne} est vrai (Fondateurs et Admins) sont
+     * gardés. Les clans sont tous dissous, même ceux des épargnés (choix du propriétaire : tout le monde repart sans clan).
+     */
+    public static Map<UUID, List<ItemStack>> wipeReouverture(java.util.function.Predicate<ItemStack> garder,
+                                                             java.util.function.Predicate<UUID> epargne) {
         Map<UUID, List<ItemStack>> rendus = new HashMap<>();
         ClanStore s = store();
         int clans = 0;
@@ -1497,7 +1507,7 @@ public final class ClanService {
             for (LienJoueur l : new ArrayList<>(s.liens())) {
                 l.clan = null;
                 l.quitteLe = 0;
-                l.soldeInterne = 0;
+                if (!epargne.test(l.joueur)) l.soldeInterne = 0;
                 l.chatClan = false;
                 l.absence = "";
             }
@@ -1508,7 +1518,7 @@ public final class ClanService {
         fr.heralisz.economie.server.ComptesStore cs = fr.heralisz.economie.server.ComptesStore.get();
         if (cs != null) {
             for (var compte : new ArrayList<>(cs.tous())) {
-                if (compte.solde() != 0 && EconomieApi.definir(compte.uuid(), 0L, "wipe")) comptes++;
+                if (compte.solde() != 0 && !epargne.test(compte.uuid()) && EconomieApi.definir(compte.uuid(), 0L, "wipe")) comptes++;
             }
             EconomieApi.sauvegarderMaintenant();
         }

@@ -85,6 +85,18 @@ public final class ClesApi {
         return ComptesCles.wipe(srv, joueur);
     }
 
+    /**
+     * Wipe de la réouverture (05/11, HeraliZ Quêtes par réflexion, joueur connecté ou non) : comme {@link #wipe}, mais les
+     * clés de vote sont gardées aussi ({@link ComptesCles#GARDEES_REOUVERTURE} : vote, Gemme, Camo, emotes).
+     */
+    public static boolean wipeReouverture(UUID joueur) {
+        if (joueur == null) return false;
+        var srv = ServerLifecycleHooks.getCurrentServer();
+        ServerPlayer p = srv == null ? null : srv.getPlayerList().getPlayer(joueur);
+        if (p != null) fr.heraliz.crates.cles.MigrationCles.convertir(p);
+        return ComptesCles.wipe(srv, joueur, ComptesCles.GARDEES_REOUVERTURE);
+    }
+
     /** Renvoie au joueur l'état de ses clés (écrans de la boutique et des caisses). */
     public static void envoyer(ServerPlayer p) {
         ComptesCles.envoyer(p);

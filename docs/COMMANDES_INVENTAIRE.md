@@ -82,7 +82,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/vitres` | armes | op 4 | pourquoi |
 | `/voix` | voix | tous | info, mute, mutes, stats, unmute |
 | `/warp` | boutique | tous | del, description, icone, liste, nom, set |
-| `/wipe` | pnj | op 4 | confirmer |
+| `/wipe` | pnj | op 4 | confirmer, tout, reouverture |
 | `/zombies` | monde | staff (op 2) | ajouter, liste, reserves, retirer, stats, zone |
 | `/zones` | monde | staff (op 2) | info |
 | `/zonevip` | boutique | tous | baguette, coin1, coin2, creer, liste, retirer, tp, voir |

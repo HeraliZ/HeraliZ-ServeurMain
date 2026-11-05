@@ -39,6 +39,23 @@ public final class GradesApi {
         return PermsServeur.valeur(joueur, p);
     }
 
+    /**
+     * Joueurs qui ont un grade du staff (05/11, wipe de la réouverture de HeraliZ Quêtes, par réflexion) : uuid → {identifiant
+     * du grade du staff (« fondateur », « admin »...), dernier pseudo connu}, connectés ou non, tels qu'enregistrés dans
+     * {@code heraliz_grades/grades.json}. null si les grades ne sont pas chargés ou si le fichier est illisible : on ne peut
+     * alors pas savoir qui est du staff (l'appelant doit refuser ce qui en dépend).
+     */
+    public static java.util.Map<UUID, String[]> staff() {
+        RegistreGrades r = ServeurGrades.registre;
+        if (r == null || r.illisible()) return null;
+        java.util.Map<UUID, String[]> m = new java.util.LinkedHashMap<>();
+        for (java.util.Map.Entry<UUID, RegistreGrades.Fiche> e : r.tous()) {
+            Grade s = e.getValue().staff();
+            if (s != null) m.put(e.getKey(), new String[]{s.id, e.getValue().nom()});
+        }
+        return m;
+    }
+
     /** Identifiant du grade affiché du joueur (« traqueur », « helper »... ; « survivant » par défaut). */
     public static String gradeAffiche(UUID joueur) {
         RegistreGrades r = ServeurGrades.registre;

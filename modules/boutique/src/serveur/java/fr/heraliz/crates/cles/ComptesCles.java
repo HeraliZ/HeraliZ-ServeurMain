@@ -304,12 +304,17 @@ public final class ComptesCles {
      * (Gemme, Camo et emotes, vendues en boutique, et stickers) sont gardées. Le numéro de conversion reste.
      */
     public static boolean wipe(@Nullable MinecraftServer srv, UUID u) {
+        return wipe(srv, u, GARDEES_AU_WIPE);
+    }
+
+    /** Comme {@link #wipe(MinecraftServer, UUID)}, en gardant les clés des caisses de {@code gardees} (les autres partent). */
+    public static boolean wipe(@Nullable MinecraftServer srv, UUID u, Set<CrateType> gardees) {
         Compte c = compte(u);
         if (c.ferme) return false;
         Map<String, Integer> avant = new LinkedHashMap<>(c.cles);
         boolean change = false;
         for (CrateType t : CrateType.values()) {
-            if (!GARDEES_AU_WIPE.contains(t) && c.de(t) > 0) {
+            if (!gardees.contains(t) && c.de(t) > 0) {
                 c.cles.remove(t.id);
                 change = true;
             }
@@ -322,7 +327,7 @@ public final class ComptesCles {
         }
         for (CrateType t : CrateType.values()) {
             int n = avant.getOrDefault(t.id, 0);
-            if (n > 0 && !GARDEES_AU_WIPE.contains(t)) journal(c, "-", t, n, "wipe");
+            if (n > 0 && !gardees.contains(t)) journal(c, "-", t, n, "wipe");
         }
         envoyer(srv, u);
         return true;
@@ -330,6 +335,13 @@ public final class ComptesCles {
 
     /** Clés gardées par {@code /wipe} : celles des caisses cosmétiques (achetées en boutique ou sans effet sur le jeu). */
     public static final Set<CrateType> GARDEES_AU_WIPE = Set.of(CrateType.GEMME, CrateType.CAMO, CrateType.SPECTACLE, CrateType.STICKER);
+
+    /**
+     * Clés gardées par le wipe de la réouverture (05/11, choix du propriétaire : « on garde juste pour tout le monde clé de
+     * vote + PB », plus les clés achetées en PB pas encore ouvertes) : vote, Gemme, Camo, emotes. Les autres partent
+     * (quêtes, événement, boss, chantier, trauma, largage, stickers).
+     */
+    public static final Set<CrateType> GARDEES_REOUVERTURE = Set.of(CrateType.VOTE, CrateType.GEMME, CrateType.CAMO, CrateType.SPECTACLE);
 
     // ------------------------------------------------------------------ affichage
     /** Envoie au joueur (s'il est en ligne) toutes ses clés. */

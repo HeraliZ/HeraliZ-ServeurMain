@@ -121,6 +121,26 @@ public final class Deblocages {
         return n;
     }
 
+    /**
+     * Wipe de la réouverture (05/11, HeraliZ Quêtes par réflexion : ne jamais renommer ni changer la signature) : toutes
+     * les emotes débloquées des joueurs pour qui {@code epargne} est faux sont retirées, connectés ou non. Renvoie le
+     * nombre de joueurs vidés ; -1 si le fichier était illisible au démarrage (rien n'est touché).
+     */
+    public static int wipeReouverture(java.util.function.Predicate<UUID> epargne) {
+        lire();
+        if (secours != null) return -1;
+        int n = 0;
+        for (var it = PAR_JOUEUR.entrySet().iterator(); it.hasNext(); ) {
+            if (!epargne.test(it.next().getKey())) {
+                it.remove();
+                n++;
+            }
+        }
+        if (n > 0) ecrire();
+        HeralizEmote.LOGGER.warn("[emote] wipe de la réouverture : emotes débloquées retirées à {} joueur(s)", n);
+        return n;
+    }
+
     /** Ce que le jeu du joueur doit griser (connexion, changement de mode de jeu, déblocage). */
     public static void envoyer(ServerPlayer p) {
         ReseauEmotes.envoyer(p, new ReseauEmotes.Deblocages(tout(p), List.copyOf(de(p.getUUID()))));

@@ -225,4 +225,26 @@ final class CollectionCamos {
    static Joueur trouver(UUID joueur) {
       return JOUEURS.get(joueur);
    }
+
+   /**
+    * Wipe de la réouverture (05/11) : la collection entière (camos et skins à vie, ids inconnus du catalogue compris) de
+    * chaque joueur pour qui {@code epargne} est faux est effacée, et le fichier réécrit tout de suite. Renvoie le nombre
+    * de collections effacées ; -1 si le fichier était illisible au démarrage (rien n'est touché).
+    */
+   static int oublierSauf(java.util.function.Predicate<UUID> epargne) {
+      if (!fiable || fichier == null) return -1;
+      int n = 0;
+      for (java.util.Iterator<UUID> it = JOUEURS.keySet().iterator(); it.hasNext(); ) {
+         if (!epargne.test(it.next())) {
+            it.remove();
+            n++;
+         }
+      }
+      if (n > 0) {
+         modifie = true;
+         sauvegarder();
+      }
+      LOG.warn("[Camos] wipe de la réouverture : {} collection(s) de camos à vie effacée(s)", n);
+      return n;
+   }
 }

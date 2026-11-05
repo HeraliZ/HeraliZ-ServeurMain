@@ -61,7 +61,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/staff panel` | Grades | modération (panel : touche P, actions selon le grade du staff ; « Se cacher » et « Cacher son nom » y sont des boutons, ex-`/staff vanish` et `/staff nametag`) ; onglet « Commandes du Fondateur » (28/10) : le Fondateur donne une commande précise à un grade du staff (`heraliz_grades/commandes_staff.json`, appliqué par le serveur) |
 | `/zonevip` | Grades | zones VIP |
 | `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête ; `/quete finir` : op 4 ; `/quete donner` : seulement avec le banc d'essai |
-| `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur |
+| `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur ; `/wipe reouverture` (05/11) : tous sauf Fondateurs et Admins, contenu à vie compris (PB, clés de vote, clés achetées et grades gardés), 3 codes comme `/wipe tout` |
 | `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection d'une base donnée à la main par le staff (plus aucune protection automatique depuis le 27/10 et le 31/10), carrières |
 | `/cracbuild` | CRac | outils de construction (`showcase`, `essai`, `clear`, `tier`, `damage`, `doors`) : op 4 (02/11, `clear` efface des bases) |
 | `/coffres voir` | CRac | coffres de la base où l'on se tient et leurs limites (op 4) ; `config/crac/coffres.json` : `/recharger coffres` |

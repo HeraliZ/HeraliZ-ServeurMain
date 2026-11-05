@@ -53,6 +53,7 @@ final class Commandes {
         // 20/10 : remise à zéro complète d'un joueur (op seulement), « confirmer » pour éviter un accident
         d.register(Commands.literal("wipe").requires(src -> src.hasPermission(4))
                 .then(WipeServeur.commande())
+                .then(WipeServeur.commandeReouverture())
                 .then(Commands.argument("joueur", EntityArgument.player())
                         .then(Commands.literal("confirmer").executes(c -> wipe(c, EntityArgument.getPlayer(c, "joueur"))))));
         d.register(Commands.literal("quetes").executes(c -> {
@@ -439,6 +440,8 @@ final class Commandes {
     /** Données du joueur gardées à la mort et qui disent « déjà fait » (cinématique, guide, Bâtisseur). */
     private static final String[] MARQUES = {"heraliz_cinematique_vue", "heraliz_cinematique_finie", "heraliz_guide_visite",
             "heraliz_batisseur_presente", "heraliz_kit_depart", "heraliz_varga_parle"};
+    /** En plus pour le wipe de la réouverture (05/11) : quête du jour en cours et gains, bonus de loot (clan, objet, bons). */
+    private static final String[] MARQUES_REOUVERTURE = {Journalieres.CLE, "HeralizBonusLoot"};
 
     /**
      * Remise à zéro complète : cabane d'essai du tutoriel (jamais la base du clan), coffre de match, inventaire mis de côté
@@ -464,11 +467,25 @@ final class Commandes {
      * clan) lui sont rendus, puis il est expulsé avec {@code message}.
      */
     static void remettreAZero(ServerPlayer p, List<ItemStack> enPlus, Component message) {
+        remettreAZero(p, enPlus, message, false);
+    }
+
+    /**
+     * {@code complet} (05/11, wipe de la réouverture, {@link WipeServeur}) : rien n'est rendu, pas même les objets à vie
+     * (ni {@code enPlus}) ; ce qui est gardé pour lui par HeraliZ Tactique (objets à vie mis de côté, boîte aux lettres) part
+     * aussi, comme ses quêtes du jour et ses bonus de loot ; ses clés de vote restent (avec les clés achetées). Ses camos et
+     * emotes à vie sont effacés par {@link WipeServeur} au lancement, pour tous les joueurs d'un coup.
+     */
+    static void remettreAZero(ServerPlayer p, List<ItemStack> enPlus, Component message, boolean complet) {
         String nom = p.getGameProfile().getName();
         var srv = p.server;
+        // 05/11 (réouverture) : écran ouvert fermé d'abord (établi, recycleur, écran de Curios...) : ses cases de fabrication
+        // reviennent dans l'inventaire, vidé plus bas, au lieu de tomber au sol à l'expulsion
+        if (complet && p.containerMenu != p.inventoryMenu) p.closeContainer();
         // 25/10 : clés de caisse sur le compte (HeraliZ Caisses) : celles des caisses de jeu partent, comme quand elles
         // étaient dans l'inventaire ; les clés cosmétiques achetées (Gemme, Camo, emotes) restent. Avant de vider l'inventaire.
-        appel("fr.heraliz.crates.api.ClesApi", "wipe", new Class<?>[]{UUID.class}, p.getUUID());
+        // 05/11 (réouverture) : les clés de vote restent aussi.
+        appel("fr.heraliz.crates.api.ClesApi", complet ? "wipeReouverture" : "wipe", new Class<?>[]{UUID.class}, p.getUUID());
         // 27/10 : compte de capsules du casino (HeraliZ Casino) remis à 0, comme les hérals et les capsules de l'inventaire
         appel("fr.heraliz.casino.api.CapsulesApi", "wipe", new Class<?>[]{UUID.class}, p.getUUID());
         List<ItemStack> aVie = new ArrayList<>();
@@ -507,11 +524,35 @@ final class Commandes {
         p.getInventory().clearContent();
         p.getEnderChestInventory().clearContent();
         p.containerMenu.setCarried(ItemStack.EMPTY);
-        for (ItemStack s : aVie) if (!p.getInventory().add(s)) p.getEnderChestInventory().addItem(s);
+        if (complet) {
+            // 05/11 : la grille 2x2 aussi (son contenu tomberait au sol à l'expulsion), et rien n'est rendu
+            p.inventoryMenu.getCraftSlots().clearContent();
+            appel("fr.heraliz.tactique.serveur.ObjetsAVieServeur", "oublier", new Class<?>[]{UUID.class}, p.getUUID());
+        } else {
+            for (ItemStack s : aVie) if (!p.getInventory().add(s)) p.getEnderChestInventory().addItem(s);
+        }
         CompoundTag pers = p.getPersistentData().getCompound(net.minecraft.world.entity.player.Player.PERSISTED_NBT_TAG);
         for (String m : MARQUES) pers.remove(m);
+        if (complet) for (String m : MARQUES_REOUVERTURE) pers.remove(m);
         Accueil.oublier(p.getUUID());
         p.connection.disconnect(message);
+    }
+
+    /**
+     * Wipe de la réouverture (05/11), au lancement, pour chaque joueur à remettre à zéro, connecté ou non : tout ce qui est
+     * gardé hors de ses données de joueur part tout de suite, sans rien rendre (ses ventes à l'hôtel des ventes ne
+     * peuvent plus être achetées d'ici sa connexion) : clés de caisse (sauf vote et clés achetées), capsules du casino,
+     * planque et coffre VIP, coffre de match, échanges en attente, hôtel des ventes, objets à vie gardés par HeraliZ
+     * Tactique. Le reste (inventaire, Curios, quêtes, personnage...) part à sa connexion ({@link #remettreAZero}).
+     */
+    static void viderHorsLigne(net.minecraft.server.MinecraftServer srv, UUID u) {
+        appel("fr.heraliz.crates.api.ClesApi", "wipeReouverture", new Class<?>[]{UUID.class}, u);
+        appel("fr.heraliz.casino.api.CapsulesApi", "wipe", new Class<?>[]{UUID.class}, u);
+        viderCoffresPerso(srv, u, new ArrayList<>());
+        appelObjets("fr.heraliz.clashwar.serveur.WipeClashWar", "vider", new Class<?>[]{net.minecraft.server.MinecraftServer.class, UUID.class}, srv, u);
+        appelObjets("fr.heraliz.grades.serveur.EchangeServeur", "wipe", new Class<?>[]{UUID.class}, u);
+        appelObjets("fr.heraliz.grades.serveur.HdvApi", "wipe", new Class<?>[]{UUID.class}, u);
+        appel("fr.heraliz.tactique.serveur.ObjetsAVieServeur", "oublier", new Class<?>[]{UUID.class}, u);
     }
 
     private static java.lang.reflect.Method estAVie;

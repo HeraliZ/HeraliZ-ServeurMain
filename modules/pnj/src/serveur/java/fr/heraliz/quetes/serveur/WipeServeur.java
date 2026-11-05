@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,24 @@ import java.util.stream.Stream;
  * collection de camos, emotes débloquées, grades et permissions, comptes AuthMe, bans, la carte elle-même. Joueurs à
  * remettre à zéro et objets à rendre gardés hors du monde ({@code heraliz_quetes/wipe.dat}) : un redémarrage n'efface
  * rien.
+ * <p>{@code /wipe reouverture} (05/11, demande du propriétaire pour la réouverture : « on wipe tout le monde sauf les fonda
+ * et admin, contenu à vie, clan, banque, base, inventaire... on garde juste pour tout le monde clé de vote + PB », puis
+ * « efface aussi les stats kill / mort, on repart vraiment à 0 ») : même triple vérification, plus large que
+ * {@code /wipe tout} :</p>
+ * <ul>
+ * <li>épargnés : les joueurs qui ont le grade Fondateur ou Admin (fichier des grades, connectés ou non), listés à la
+ * 1re étape ; fichier des grades illisible ou aucun épargné : rien n'est lancé. Ils gardent toutes leurs affaires
+ * (inventaire, sac, coffres, hérals, quêtes, objets, camos et emotes à vie, clés) ; leur clan et leur base partent comme
+ * ceux de tous (choix du propriétaire), les objets à vie trouvés dans une base ou un coffre de clan leur sont rendus ;</li>
+ * <li>tous les autres : comme {@code /wipe tout}, et en plus RIEN n'est rendu : objets à vie (couteaux, skins à vie, où
+ * qu'ils soient), collection de camos et skins à vie, emotes débloquées, objets gardés par HeraliZ Tactique, quêtes du
+ * jour, bonus de loot ; leurs ventes à l'hôtel des ventes, échanges, coffres personnels, capsules et clés partent tout de
+ * suite, même hors ligne ;</li>
+ * <li>pour tous : bases, clans, banques, saison, kills (« meilleurs tueurs » et statistiques des clans), classement du
+ * ClashWar ;</li>
+ * <li>gardés pour tous : PB (sur le site, jamais touchés par le serveur), clés de vote et clés achetées pas encore
+ * ouvertes (Gemme, Camo, emotes), grades (staff et boutique), comptes, bans.</li>
+ * </ul>
  */
 final class WipeServeur {
     private WipeServeur() {
@@ -71,6 +90,12 @@ final class WipeServeur {
     private static String code;
     private static long codeFin;
     private static String auteur = "";
+    /** Vérification en cours pour {@code /wipe reouverture} (faux : {@code /wipe tout}). */
+    private static boolean reouverture;
+    /** Réouverture : épargnés montrés à la 1re étape (uuid → pseudo), les seuls gardés au lancement. */
+    private static Map<UUID, String> epargnes = Map.of();
+    /** Grades du staff épargnés par la réouverture (choix du propriétaire du 05/11 : Fondateur et Admin). */
+    private static final Set<String> GRADES_EPARGNES = Set.of("fondateur", "admin");
     /** Compte à rebours lancé par la 3e étape : tick du lancement (-1 : aucun) et la source à qui répondre. */
     private static int lancementTick = -1;
     private static CommandSourceStack lanceur;
@@ -83,9 +108,20 @@ final class WipeServeur {
         return Commands.literal("tout")
                 .executes(c -> annoncer(c.getSource()))
                 .then(Commands.literal("confirmer").then(Commands.argument("code", StringArgumentType.word())
-                        .executes(c -> confirmer(c.getSource(), StringArgumentType.getString(c, "code")))))
+                        .executes(c -> confirmer(c.getSource(), StringArgumentType.getString(c, "code"), false))))
                 .then(Commands.literal("valider").then(Commands.argument("code", StringArgumentType.word())
-                        .executes(c -> valider(c.getSource(), StringArgumentType.getString(c, "code")))))
+                        .executes(c -> valider(c.getSource(), StringArgumentType.getString(c, "code"), false))))
+                .then(Commands.literal("annuler").executes(c -> annuler(c.getSource())));
+    }
+
+    /** {@code /wipe reouverture} (05/11) : voir la description de la classe. */
+    static LiteralArgumentBuilder<CommandSourceStack> commandeReouverture() {
+        return Commands.literal("reouverture")
+                .executes(c -> annoncerReouverture(c.getSource()))
+                .then(Commands.literal("confirmer").then(Commands.argument("code", StringArgumentType.word())
+                        .executes(c -> confirmer(c.getSource(), StringArgumentType.getString(c, "code"), true))))
+                .then(Commands.literal("valider").then(Commands.argument("code", StringArgumentType.word())
+                        .executes(c -> valider(c.getSource(), StringArgumentType.getString(c, "code"), true))))
                 .then(Commands.literal("annuler").executes(c -> annuler(c.getSource())));
     }
 
@@ -97,6 +133,8 @@ final class WipeServeur {
     private static int annoncer(CommandSourceStack src) {
         if (lancementTick >= 0) return dejaLance(src);
         etape = 1;
+        reouverture = false;
+        epargnes = Map.of();
         code = nouveauCode();
         codeFin = System.currentTimeMillis() + 60_000L;
         auteur = src.getTextName();
@@ -110,14 +148,82 @@ final class WipeServeur {
         return 1;
     }
 
-    /** 2e étape : premier code juste, par la même personne ; dernier avertissement et un second code. */
-    private static int confirmer(CommandSourceStack src, String saisi) {
+    /**
+     * 1re étape de {@code /wipe reouverture} (05/11) : ce qui va disparaître, les épargnés (Fondateurs et Admins, par leur
+     * pseudo), le nombre de joueurs remis à zéro et un premier code. Fichier des grades illisible ou aucun épargné : refusé.
+     */
+    private static int annoncerReouverture(CommandSourceStack src) {
         if (lancementTick >= 0) return dejaLance(src);
-        if (!codeBon(src, 1, saisi)) return mauvaisCode(src);
+        Map<UUID, String> ep = trouverEpargnes();
+        if (ep == null) {
+            etape = 0;
+            src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.grades_illisibles",
+                    "Fichier des grades illisible ou pas chargé : impossible de savoir qui épargner. Rien n'est lancé."));
+            return 0;
+        }
+        if (ep.isEmpty()) {
+            etape = 0;
+            src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.personne",
+                    "Aucun Fondateur ni Admin trouvé dans le fichier des grades : rien n'est lancé (donne d'abord ces grades à la console)."));
+            return 0;
+        }
+        Set<UUID> remis = joueursConnus(src.getServer());
+        remis.removeAll(ep.keySet());
+        etape = 1;
+        reouverture = true;
+        epargnes = Map.copyOf(ep);
+        code = nouveauCode();
+        codeFin = System.currentTimeMillis() + 60_000L;
+        auteur = src.getTextName();
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.avertir",
+                "RÉOUVERTURE : remise à zéro de tous les joueurs sauf les Fondateurs et Admins : objets, sacs, coffres, hérals, "
+                        + "capsules, quêtes, personnage, objets à vie, camos et emotes à vie. Pour tous : bases, clans, banques, saison, "
+                        + "kills et classements. Gardés pour tous : PB, clés de vote, clés achetées pas encore ouvertes, grades. "
+                        + "Impossible à annuler.").withStyle(ChatFormatting.RED), false);
+        String noms = String.join(", ", new java.util.TreeSet<>(ep.values()));
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.epargnes",
+                "Épargnés (Fondateur, Admin) : %s", noms).withStyle(ChatFormatting.GREEN), false);
+        String n = String.valueOf(remis.size());
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.nombre",
+                "Joueurs remis à zéro : %s (connectés : tout de suite ; les autres : à leur prochaine connexion).", n)
+                .withStyle(ChatFormatting.GOLD), false);
+        String c = code;
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.code",
+                "Pour lancer : /wipe reouverture confirmer %s (valable 1 minute).", c).withStyle(ChatFormatting.GOLD), false);
+        LOG.warn("[Quêtes] /wipe reouverture demandé par {} : {} épargné(s) ({}), {} joueur(s) à remettre à zéro", auteur,
+                ep.size(), noms, remis.size());
+        return 1;
+    }
+
+    /** Fondateurs et Admins (uuid → pseudo) d'après HeraliZ Grades, par réflexion ; null si on ne peut pas le savoir. */
+    @SuppressWarnings("unchecked")
+    private static Map<UUID, String> trouverEpargnes() {
+        Object r = appel("fr.heraliz.grades.serveur.GradesApi", "staff", new Class<?>[]{});
+        if (!(r instanceof Map<?, ?> m)) return null;
+        Map<UUID, String> ep = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> e : m.entrySet()) {
+            if (e.getKey() instanceof UUID u && e.getValue() instanceof String[] g && g.length >= 2 && GRADES_EPARGNES.contains(g[0])) {
+                ep.put(u, g[1]);
+            }
+        }
+        return ep;
+    }
+
+    /** 2e étape : premier code juste, par la même personne ; dernier avertissement et un second code. */
+    private static int confirmer(CommandSourceStack src, String saisi, boolean reo) {
+        if (lancementTick >= 0) return dejaLance(src);
+        if (!codeBon(src, 1, saisi, reo)) return mauvaisCode(src, reo);
         etape = 2;
         code = nouveauCode();
         codeFin = System.currentTimeMillis() + 30_000L;
         String c = code;
+        if (reo) {
+            String noms = String.join(", ", new java.util.TreeSet<>(epargnes.values()));
+            src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.derniere",
+                    "DERNIÈRE VÉRIFICATION : tous les joueurs sauf %s seront remis à zéro. Pour lancer : /wipe reouverture valider %s (valable 30 secondes).",
+                    noms, c).withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), false);
+            return 1;
+        }
         src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.derniere",
                 "DERNIÈRE VÉRIFICATION : tout le serveur sera remis à zéro. Pour lancer : /wipe tout valider %s (valable 30 secondes).",
                 c).withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD), false);
@@ -125,21 +231,27 @@ final class WipeServeur {
     }
 
     /** 3e étape : second code juste ; compte à rebours de 10 s annoncé à tous, {@code /wipe tout annuler} l'arrête. */
-    private static int valider(CommandSourceStack src, String saisi) {
+    private static int valider(CommandSourceStack src, String saisi, boolean reo) {
         if (lancementTick >= 0) return dejaLance(src);
-        if (!codeBon(src, 2, saisi)) return mauvaisCode(src);
+        if (!codeBon(src, 2, saisi, reo)) return mauvaisCode(src, reo);
         etape = 0;
         code = null;
         lancementTick = ticks + COMPTE_A_REBOURS * 20;
         lanceur = src;
-        LOG.warn("[Quêtes] remise à zéro du serveur validée par {} : lancement dans {} s", src.getTextName(), COMPTE_A_REBOURS);
+        LOG.warn("[Quêtes] remise à zéro du serveur{} validée par {} : lancement dans {} s", reo ? " (réouverture)" : "",
+                src.getTextName(), COMPTE_A_REBOURS);
         String n = String.valueOf(COMPTE_A_REBOURS);
         for (ServerPlayer p : src.getServer().getPlayerList().getPlayers()) {
             p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.rebours",
                     "Remise à zéro du serveur dans %s secondes.", n).withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         }
-        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.annulable",
-                "Lancement dans %s secondes. Pour l'arrêter : /wipe tout annuler", n).withStyle(ChatFormatting.GOLD), false);
+        if (reo) {
+            src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.annulable",
+                    "Lancement dans %s secondes. Pour l'arrêter : /wipe reouverture annuler", n).withStyle(ChatFormatting.GOLD), false);
+        } else {
+            src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.serveur.annulable",
+                    "Lancement dans %s secondes. Pour l'arrêter : /wipe tout annuler", n).withStyle(ChatFormatting.GOLD), false);
+        }
         return 1;
     }
 
@@ -149,6 +261,8 @@ final class WipeServeur {
         code = null;
         lancementTick = -1;
         lanceur = null;
+        reouverture = false;
+        epargnes = Map.of();
         if (enCours) {
             LOG.warn("[Quêtes] remise à zéro du serveur annulée par {}", src.getTextName());
             for (ServerPlayer p : src.getServer().getPlayerList().getPlayers()) {
@@ -161,12 +275,17 @@ final class WipeServeur {
         return 1;
     }
 
-    private static boolean codeBon(CommandSourceStack src, int attendue, String saisi) {
-        return etape == attendue && code != null && System.currentTimeMillis() <= codeFin && code.equals(saisi)
+    private static boolean codeBon(CommandSourceStack src, int attendue, String saisi, boolean reo) {
+        return etape == attendue && reouverture == reo && code != null && System.currentTimeMillis() <= codeFin && code.equals(saisi)
                 && auteur.equals(src.getTextName());
     }
 
-    private static int mauvaisCode(CommandSourceStack src) {
+    private static int mauvaisCode(CommandSourceStack src, boolean reo) {
+        if (reo) {
+            src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.mauvais_code",
+                    "Code faux ou périmé : tape d'abord /wipe reouverture."));
+            return 0;
+        }
         src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.serveur.mauvais_code",
                 "Code faux ou périmé : tape d'abord /wipe tout."));
         return 0;
@@ -215,6 +334,110 @@ final class WipeServeur {
                 n).withStyle(ChatFormatting.GREEN), true);
     }
 
+    /** La remise à zéro de la réouverture (05/11), à la fin du compte à rebours : voir la description de la classe. */
+    private static void lancerReouverture(CommandSourceStack src, Map<UUID, String> ep) {
+        MinecraftServer srv = src.getServer();
+        Set<UUID> garde = new java.util.HashSet<>(ep.keySet());
+        Predicate<UUID> epargne = garde::contains;
+        LOG.warn("[Quêtes] REMISE À ZÉRO DE LA RÉOUVERTURE lancée par {} ; épargnés : {}", src.getTextName(), ep.values());
+        for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
+            if (garde.contains(p.getUUID())) {
+                p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.annonce_epargne",
+                        "Remise à zéro de la réouverture : tu es épargné (Fondateur / Admin), tes affaires sont gardées ; "
+                                + "ton clan et ta base sont effacés comme ceux de tous.").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            } else {
+                p.sendSystemMessage(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.annonce",
+                        "Remise à zéro de la réouverture ! Tu vas être déconnecté : reconnecte-toi pour recommencer.")
+                        .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            }
+        }
+        Predicate<ItemStack> aVie = Commandes::estAVie;
+        Map<UUID, List<ItemStack>> rendus = new HashMap<>();
+        // les bases d'abord : elles sont rattachées aux groupes des clans
+        fusionner(rendus, appel("fr.heraliz.crac.api.WipeApi", "toutEffacer",
+                new Class<?>[]{MinecraftServer.class, Predicate.class}, srv, aVie));
+        // clans dissous (tous), banques perdues, hérals à 0 sauf les épargnés, saison et kills effacés
+        fusionner(rendus, appel("fr.heralisz.clans.server.ClanService", "wipeReouverture",
+                new Class<?>[]{Predicate.class, Predicate.class}, aVie, epargne));
+        appel("fr.heraliz.clashwar.tournoi.CwClassement", "toutEffacer", new Class<?>[]{MinecraftServer.class}, srv);
+        int sol = nettoyerSol(srv);
+        int recycleurs = RecycleurCarteEntiteServeur.toutVider(srv);
+        // collections de camos et skins à vie, emotes débloquées : effacées d'un coup, connectés ou non
+        Object camos = appel("fr.heralisz.camo.serveur.CamosAVie", "wipeReouverture", new Class<?>[]{Predicate.class}, epargne);
+        if (!(camos instanceof Integer nc) || nc < 0) {
+            src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.camos_pas_vides",
+                    "Camos à vie : fichier illisible ou mod absent, collections NON effacées (voir le journal du serveur)."));
+        }
+        Object emotes = appel("fr.heraliz.emote.serveur.Deblocages", "wipeReouverture", new Class<?>[]{Predicate.class}, epargne);
+        if (!(emotes instanceof Integer ne) || ne < 0) {
+            src.sendFailure(Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.emotes_pas_vides",
+                    "Emotes : fichier illisible ou mod absent, emotes NON effacées (voir le journal du serveur)."));
+        }
+        // objets à vie trouvés dans les bases et les coffres des clans : rendus aux seuls épargnés, perdus pour les autres
+        int rendusEp = 0;
+        for (Map.Entry<UUID, List<ItemStack>> r : rendus.entrySet()) {
+            if (!garde.contains(r.getKey())) continue;
+            for (ItemStack s : r.getValue()) {
+                rendreAVie(r.getKey(), s);
+                rendusEp++;
+            }
+        }
+        Etat e = Etat.lire(srv);
+        if (e.illisible) e = new Etat();   // l'ancien fichier est mis de côté, jamais écrasé
+        e.numero++;
+        e.date = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        // épargnés encore en attente d'un ancien /wipe tout : plus remis à zéro, ce qui leur était gardé leur est rendu
+        for (UUID u : garde) {
+            e.joueurs.remove(u);
+            e.complets.remove(u);
+            List<ItemStack> l = e.objets.remove(u);
+            if (l != null) for (ItemStack s : l) rendreAVie(u, s);
+        }
+        Set<UUID> joueurs = joueursConnus(srv);
+        joueurs.removeAll(garde);
+        int erreurs = 0;
+        for (UUID u : joueurs) {
+            e.objets.remove(u);   // objets à vie d'un ancien /wipe tout : plus rendus
+            try {
+                Commandes.viderHorsLigne(srv, u);
+            } catch (RuntimeException ex) {
+                erreurs++;
+                LOG.error("[Quêtes] /wipe reouverture : {} pas vidé hors ligne (le reste le sera à sa connexion)", u, ex);
+            }
+        }
+        e.joueurs.addAll(joueurs);
+        e.complets.addAll(joueurs);
+        e.ecrire(srv);
+        for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
+            if (!garde.contains(p.getUUID())) FILE.put(p.getUUID(), ticks + 20);
+        }
+        int n = joueurs.size();
+        LOG.warn("[Quêtes] remise à zéro de la réouverture n°{} : {} joueurs à remettre à zéro, {} épargnés, {} objets au sol ou "
+                        + "cadavres retirés, {} objets retirés des recycleurs de la carte chargés, {} collections de camos et {} listes "
+                        + "d'emotes effacées, {} objets à vie rendus aux épargnés, {} erreurs", e.numero, n, garde.size(), sol, recycleurs,
+                camos, emotes, rendusEp, erreurs);
+        String nbRemis = String.valueOf(n), nbEpargnes = String.valueOf(garde.size());
+        src.sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.fait",
+                "Réouverture : %s joueurs remis à zéro (ceux hors ligne à leur connexion), %s épargnés. Une nouvelle saison a commencé (date de fin : /saison fin).",
+                nbRemis, nbEpargnes).withStyle(ChatFormatting.GREEN), true);
+    }
+
+    private static java.lang.reflect.Method neJamaisDetruire;
+
+    /** Objet à vie rendu à un épargné (dans son inventaire s'il est connecté, sinon dans sa boîte aux lettres de HeraliZ Tactique). */
+    private static void rendreAVie(UUID u, ItemStack s) {
+        if (s == null || s.isEmpty()) return;
+        try {
+            if (neJamaisDetruire == null) {
+                neJamaisDetruire = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie")
+                        .getMethod("neJamaisDetruire", UUID.class, ItemStack.class, String.class);
+            }
+            neJamaisDetruire.invoke(null, u, s.copy(), "wipe reouverture");
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            LOG.error("[Quêtes] /wipe reouverture : objet à vie de {} impossible à rendre : {}", u, s.save(new CompoundTag()), ex);
+        }
+    }
+
     /** À la connexion : joueur pas encore remis à zéro depuis le dernier {@code /wipe tout}. */
     static void connexion(ServerPlayer p) {
         if (p.getTags().contains("heraliz_bot")) return;   // bots de charge (/bots de HeraliZ Utils)
@@ -225,11 +448,16 @@ final class WipeServeur {
         ticks++;
         if (lancementTick >= 0 && ticks >= lancementTick) {
             CommandSourceStack src = lanceur;
+            boolean reo = reouverture;
+            Map<UUID, String> ep = epargnes;
             lancementTick = -1;
             lanceur = null;
+            reouverture = false;
+            epargnes = Map.of();
             if (src != null) {
                 try {
-                    lancer(src);
+                    if (reo) lancerReouverture(src, ep);
+                    else lancer(src);
                 } catch (RuntimeException ex) {
                     LOG.error("[Quêtes] remise à zéro du serveur en erreur", ex);
                 }
@@ -244,9 +472,13 @@ final class WipeServeur {
             Etat e = Etat.lire(srv);
             if (e.illisible) continue;   // wipe.dat mis de côté : rien à rejouer, rien d'écrasé
             List<ItemStack> enPlus = e.objets.getOrDefault(u, List.of());
+            boolean complet = e.complets.contains(u);
             try {
-                Commandes.remettreAZero(p, enPlus, Component.translatableWithFallback("heraliz_quetes.wipe.serveur.kick",
-                        "Le serveur a été remis à zéro : nouvelle saison ! Reconnecte-toi pour recommencer."));
+                Commandes.remettreAZero(p, enPlus, complet
+                        ? Component.translatableWithFallback("heraliz_quetes.wipe.reouverture.kick",
+                                "Le serveur a été remis à zéro pour la réouverture. Reconnecte-toi pour recommencer !")
+                        : Component.translatableWithFallback("heraliz_quetes.wipe.serveur.kick",
+                                "Le serveur a été remis à zéro : nouvelle saison ! Reconnecte-toi pour recommencer."), complet);
             } catch (RuntimeException ex) {
                 // 23/10 : rien n'est noté, ses objets à vie à rendre restent dans wipe.dat (nouvel essai à sa connexion)
                 LOG.error("[Quêtes] remise à zéro de {} en erreur (objets à vie à rendre : {})", p.getGameProfile().getName(), enPlus, ex);
@@ -255,9 +487,10 @@ final class WipeServeur {
             // noté seulement après une remise à zéro réussie (23/10 : avant, un échec perdait les objets à vie à rendre)
             e.joueurs.remove(u);
             e.objets.remove(u);
+            e.complets.remove(u);
             e.ecrire(srv);
-            LOG.info("[Quêtes] remise à zéro du serveur : {} remis à zéro ({} objets à vie rendus en plus)",
-                    p.getGameProfile().getName(), enPlus.size());
+            LOG.info("[Quêtes] remise à zéro du serveur{} : {} remis à zéro ({} objets à vie rendus en plus)", complet ? " (réouverture)" : "",
+                    p.getGameProfile().getName(), complet ? 0 : enPlus.size());
         }
     }
 
@@ -330,6 +563,8 @@ final class WipeServeur {
         String date = "";
         final Set<UUID> joueurs = new LinkedHashSet<>();
         final Map<UUID, List<ItemStack>> objets = new HashMap<>();
+        /** Joueurs de {@code joueurs} à remettre à zéro par la réouverture (05/11) : rien ne leur est rendu. */
+        final Set<UUID> complets = new LinkedHashSet<>();
         /** Fichier illisible (mis de côté en {@code wipe.dat.illisible-<date>}) : rien n'est rejoué ni écrit dessus. */
         boolean illisible;
 
@@ -349,6 +584,14 @@ final class WipeServeur {
                 for (int i = 0; i < js.size(); i++) {
                     try {
                         e.joueurs.add(UUID.fromString(js.getString(i)));
+                    } catch (IllegalArgumentException ignore) {
+                        // ligne abîmée
+                    }
+                }
+                ListTag cs = t.getList("Complets", Tag.TAG_STRING);
+                for (int i = 0; i < cs.size(); i++) {
+                    try {
+                        e.complets.add(UUID.fromString(cs.getString(i)));
                     } catch (IllegalArgumentException ignore) {
                         // ligne abîmée
                     }
@@ -391,6 +634,9 @@ final class WipeServeur {
             ListTag js = new ListTag();
             for (UUID u : joueurs) js.add(StringTag.valueOf(u.toString()));
             t.put("Joueurs", js);
+            ListTag cs = new ListTag();
+            for (UUID u : complets) cs.add(StringTag.valueOf(u.toString()));
+            t.put("Complets", cs);
             CompoundTag os = new CompoundTag();
             for (Map.Entry<UUID, List<ItemStack>> e : objets.entrySet()) {
                 ListTag li = new ListTag();

@@ -71,6 +71,16 @@ public final class CamosAVie {
    private CamosAVie() {
    }
 
+   /**
+    * Wipe de la réouverture (05/11, HeraliZ Quêtes par réflexion : ne jamais renommer ni changer la signature) : la
+    * collection de camos et skins à vie de chaque joueur pour qui {@code epargne} est faux est effacée, connecté ou non.
+    * Renvoie le nombre de collections effacées ; -1 si le fichier était illisible au démarrage (rien n'est touché). Fil du
+    * serveur.
+    */
+   public static int wipeReouverture(java.util.function.Predicate<UUID> epargne) {
+      return CollectionCamos.oublierSauf(epargne);
+   }
+
    // ------------------------------------------------------------------ collection
    /** Clic droit avec un objet camo ({@code CamoItem.AJOUTER_COLLECTION}) ; vrai si le camo vient d'entrer dans la collection. */
    static boolean ajouter(ServerPlayer p, Camo camo) {

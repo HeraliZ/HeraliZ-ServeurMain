@@ -662,6 +662,42 @@ public final class ObjetsAVieServeur {
       return lui;
    }
 
+   /**
+    * Wipe de la réouverture (05/11, HeraliZ Quêtes par réflexion : ne jamais renommer ni changer la signature) : tout ce
+    * qui est gardé pour ce joueur part, sans rien rendre : objet mis de côté pendant une question, objets gardés dans ses
+    * données (s'il est connecté) et boîte aux lettres hors du monde (et sa copie lue). Renvoie le nombre d'objets oubliés.
+    * Fil du serveur.
+    */
+   public static int oublier(UUID u) {
+      if (u == null) return 0;
+      int n = EN_ATTENTE.remove(u) != null ? 1 : 0;
+      BOITES_LUES.remove(u);
+      for (boolean lue : new boolean[]{false, true}) {
+         Path f = boite(u, lue);
+         if (!Files.exists(f)) continue;
+         try {
+            n += lireListe(f).size();
+         } catch (IOException ex) {
+            // illisible : effacé quand même (wipe)
+         }
+         try {
+            Files.deleteIfExists(f);
+         } catch (IOException ex) {
+            LOG.error("[a vie] wipe : boîte aux lettres {} impossible à effacer : {}", f, ex.toString());
+         }
+      }
+      MinecraftServer srv = ServerLifecycleHooks.getCurrentServer();
+      ServerPlayer p = srv == null ? null : srv.getPlayerList().getPlayer(u);
+      if (p != null) {
+         CompoundTag per = persiste(p);
+         n += per.getList(CLE, Tag.TAG_COMPOUND).size();
+         per.remove(CLE);
+         per.remove(CLE_QUESTION);
+      }
+      if (n > 0) LOG.warn("[a vie] wipe de la réouverture : {} objet(s) à vie gardé(s) pour {} effacé(s)", n, u);
+      return n;
+   }
+
    // ------------------------------------------------------------------ boîte aux lettres (hors du monde)
    private static Path boite(UUID u, boolean lue) {
       return FMLPaths.GAMEDIR.get().resolve("heraliz_tactique").resolve("objets_a_vie").resolve(u + (lue ? ".lu.dat" : ".dat"));

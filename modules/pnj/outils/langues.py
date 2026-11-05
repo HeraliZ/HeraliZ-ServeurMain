@@ -579,7 +579,71 @@ TEXTES = {
     "heraliz_quetes.wipe.serveur.kick": ("Le serveur a été remis à zéro : nouvelle saison ! Reconnecte-toi pour recommencer.",
                                          "The server has been reset: new season! Reconnect to start over.",
                                          "Сервер сброшен: новый сезон! Перезайди, чтобы начать заново."),
-    "heraliz_quetes.cmd.reset": ("Progression des quêtes de %s remise à zéro.", "Quest progress of %s reset.", "Прогресс заданий игрока %s сброшен."),
+    # 05/11 : /wipe reouverture (WipeServeur)
+    "heraliz_quetes.wipe.reouverture.avertir": (
+        "RÉOUVERTURE : remise à zéro de tous les joueurs sauf les Fondateurs et Admins : objets, sacs, coffres, hérals, "
+        "capsules, quêtes, personnage, objets à vie, camos et emotes à vie. Pour tous : bases, clans, banques, saison, "
+        "kills et classements. Gardés pour tous : PB, clés de vote, clés achetées pas encore ouvertes, grades. "
+        "Impossible à annuler.",
+        "REOPENING: reset of every player except Founders and Admins: items, backpacks, chests, herals, caps, quests, "
+        "character, lifetime items, lifetime camos and emotes. For everyone: bases, clans, banks, season, kills and "
+        "rankings. Kept for everyone: PB, vote keys, bought keys not yet opened, ranks. Cannot be undone.",
+        "ПЕРЕЗАПУСК: сброс всех игроков, кроме Основателей и Админов: предметы, рюкзаки, сундуки, гералы, крышки, "
+        "задания, персонаж, пожизненные предметы, камуфляжи и эмоции. Для всех: базы, кланы, банки, сезон, убийства и "
+        "рейтинги. Сохраняются у всех: PB, ключи за голосование, купленные неоткрытые ключи, ранги. Отменить нельзя."),
+    "heraliz_quetes.wipe.reouverture.epargnes": ("Épargnés (Fondateur, Admin) : %s",
+                                                 "Spared (Founder, Admin): %s",
+                                                 "Не затронуты (Основатель, Админ): %s"),
+    "heraliz_quetes.wipe.reouverture.nombre": (
+        "Joueurs remis à zéro : %s (connectés : tout de suite ; les autres : à leur prochaine connexion).",
+        "Players reset: %s (online: right away; the others: at their next login).",
+        "Будут сброшены игроков: %s (в сети: сразу; остальные: при следующем входе)."),
+    "heraliz_quetes.wipe.reouverture.code": ("Pour lancer : /wipe reouverture confirmer %s (valable 1 minute).",
+                                             "To start: /wipe reouverture confirmer %s (valid for 1 minute).",
+                                             "Для запуска: /wipe reouverture confirmer %s (действует 1 минуту)."),
+    "heraliz_quetes.wipe.reouverture.derniere": (
+        "DERNIÈRE VÉRIFICATION : tous les joueurs sauf %s seront remis à zéro. Pour lancer : /wipe reouverture valider %s (valable 30 secondes).",
+        "FINAL CHECK: every player except %s will be reset. To start: /wipe reouverture valider %s (valid for 30 seconds).",
+        "ПОСЛЕДНЯЯ ПРОВЕРКА: все игроки, кроме %s, будут сброшены. Для запуска: /wipe reouverture valider %s (действует 30 секунд)."),
+    "heraliz_quetes.wipe.reouverture.annulable": ("Lancement dans %s secondes. Pour l'arrêter : /wipe reouverture annuler",
+                                                  "Starting in %s seconds. To stop it: /wipe reouverture annuler",
+                                                  "Запуск через %s секунд. Чтобы остановить: /wipe reouverture annuler"),
+    "heraliz_quetes.wipe.reouverture.mauvais_code": ("Code faux ou périmé : tape d'abord /wipe reouverture.",
+                                                     "Wrong or expired code: type /wipe reouverture first.",
+                                                     "Неверный или устаревший код: сначала введи /wipe reouverture."),
+    "heraliz_quetes.wipe.reouverture.grades_illisibles": (
+        "Fichier des grades illisible ou pas chargé : impossible de savoir qui épargner. Rien n'est lancé.",
+        "Ranks file unreadable or not loaded: impossible to know who to spare. Nothing is started.",
+        "Файл рангов не читается или не загружен: нельзя понять, кого не трогать. Ничего не запущено."),
+    "heraliz_quetes.wipe.reouverture.personne": (
+        "Aucun Fondateur ni Admin trouvé dans le fichier des grades : rien n'est lancé (donne d'abord ces grades à la console).",
+        "No Founder or Admin found in the ranks file: nothing is started (give these ranks from the console first).",
+        "В файле рангов нет ни Основателя, ни Админа: ничего не запущено (сначала выдай эти ранги через консоль)."),
+    "heraliz_quetes.wipe.reouverture.annonce_epargne": (
+        "Remise à zéro de la réouverture : tu es épargné (Fondateur / Admin), tes affaires sont gardées ; ton clan et ta base sont effacés comme ceux de tous.",
+        "Reopening reset: you are spared (Founder / Admin), your belongings are kept; your clan and base are erased like everyone's.",
+        "Сброс перед перезапуском: тебя не затронуло (Основатель / Админ), твои вещи сохранены; твой клан и база удалены, как у всех."),
+    "heraliz_quetes.wipe.reouverture.annonce": (
+        "Remise à zéro de la réouverture ! Tu vas être déconnecté : reconnecte-toi pour recommencer.",
+        "Reopening reset! You will be disconnected: reconnect to start over.",
+        "Сброс перед перезапуском! Тебя отключит: перезайди, чтобы начать заново."),
+    "heraliz_quetes.wipe.reouverture.camos_pas_vides": (
+        "Camos à vie : fichier illisible ou mod absent, collections NON effacées (voir le journal du serveur).",
+        "Lifetime camos: file unreadable or mod missing, collections NOT erased (see the server log).",
+        "Пожизненные камуфляжи: файл не читается или мода нет, коллекции НЕ удалены (смотри журнал сервера)."),
+    "heraliz_quetes.wipe.reouverture.emotes_pas_vides": (
+        "Emotes : fichier illisible ou mod absent, emotes NON effacées (voir le journal du serveur).",
+        "Emotes: file unreadable or mod missing, emotes NOT erased (see the server log).",
+        "Эмоции: файл не читается или мода нет, эмоции НЕ удалены (смотри журнал сервера)."),
+    "heraliz_quetes.wipe.reouverture.fait": (
+        "Réouverture : %s joueurs remis à zéro (ceux hors ligne à leur connexion), %s épargnés. Une nouvelle saison a commencé (date de fin : /saison fin).",
+        "Reopening: %s players reset (offline ones when they connect), %s spared. A new season has begun (end date: /saison fin).",
+        "Перезапуск: сброшено игроков: %s (кто не в сети: при входе), не затронуто: %s. Новый сезон начался (дата окончания: /saison fin)."),
+    "heraliz_quetes.wipe.reouverture.kick": (
+        "Le serveur a été remis à zéro pour la réouverture. Reconnecte-toi pour recommencer !",
+        "The server has been reset for the reopening. Reconnect to start over!",
+        "Сервер сброшен перед перезапуском. Перезайди, чтобы начать заново!"),
+    "heraliz_quetes.cmd.reset":("Progression des quêtes de %s remise à zéro.", "Quest progress of %s reset.", "Прогресс заданий игрока %s сброшен."),
 
     # arrivée et tutoriel des bases avec le Commandant Varga (serveur : Accueil ; client : RadioVarga)
     "heraliz_quetes.tuto.varga_nom": ("Commandant Varga", "Commander Varga", "Командир Варга"),
