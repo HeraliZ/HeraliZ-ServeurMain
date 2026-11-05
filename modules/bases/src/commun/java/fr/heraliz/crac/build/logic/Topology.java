@@ -79,16 +79,19 @@ public final class Topology {
     }
 
     /**
-     * Foundations at h = 0 sharing an edge with the footprint of {@code key}: the buildings a new foundation attaches
-     * to, and the ground adjacency of a split.
+     * Foundations sharing an edge with the footprint of {@code key}, at most {@link PieceKind#MARCHE_FONDATION} units
+     * above or below it (marches, 06/11 ; avant : seulement au niveau 0) : the buildings a new foundation attaches to,
+     * and the ground adjacency of a split.
      */
     public static List<Piece> foundationsSharingEdge(StructureView view, PieceKey key) {
         List<Piece> out = new ArrayList<>(4);
         FootprintKey own = key.footprint();
         for (EdgeKey e : key.edges()) {
-            for (Piece s : view.surfacesOnEdge(e, 0)) {
-                if (s.kind().isFoundation() && !s.key().footprint().equals(own) && !out.contains(s)) {
-                    out.add(s);
+            for (int dh = -PieceKind.MARCHE_FONDATION; dh <= PieceKind.MARCHE_FONDATION; dh++) {
+                for (Piece s : view.surfacesOnEdge(e, key.h() + dh)) {
+                    if (s.kind().isFoundation() && !s.key().footprint().equals(own) && !out.contains(s)) {
+                        out.add(s);
+                    }
                 }
             }
         }

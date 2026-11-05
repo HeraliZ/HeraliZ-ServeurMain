@@ -247,14 +247,18 @@ public final class PieceSolids {
         List<int[]> cols = Footprints.columns(key);
         double[][] poly = Footprints.solidPolygon(key);
         double bottom = key.baseY() - FOUNDATION_T;
+        // bas de la jupe sur la grille des blocs : une fondation à mi-hauteur (h impair, marches du 06/11) a sa dalle
+        // décalée d'un demi-bloc ; sa jupe descend jusqu'au sol, même sans rang entier (d = 0). h pair : comme avant
+        double rangDalle = (slabRow(key) - key.origin().getY()) * 16.0;
         for (int i = 0; i < cols.size() && i < skirt.length; i++) {
             int d = skirt[i];
-            if (d <= 0) continue;
+            double low = rangDalle - 16.0 * d;
+            if (low >= bottom - 1e-9) continue;
             double x0 = (cols.get(i)[0] - key.origin().getX()) * 16.0;
             double z0 = (cols.get(i)[1] - key.origin().getZ()) * 16.0;
             double[][] col = Poly.clipRect(poly, x0, z0, x0 + 16, z0 + 16);
             if (col != null) {
-                out.add(new Prism(col, bottom - 16.0 * d, bottom));
+                out.add(new Prism(col, low, bottom));
             }
         }
     }

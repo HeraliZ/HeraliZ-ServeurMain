@@ -384,11 +384,13 @@ public final class Sockets {
     @Nullable
     private static PieceKey foundationOn(StructureView view, PieceKind kind, Aim aim, Piece p) {
         if (!p.kind().isFoundation()) {
-            return snapToFoundation(view, kind, aim.hit());
+            return snapToFoundation(view, kind, aim.hit(), null);
         }
+        // visée sur une fondation : la suivante au même niveau qu'elle (marches du 06/11 : en visant le sol à côté, elle
+        // suit la hauteur du sol, voir snapToFoundation)
         List<PieceKey> keys = new ArrayList<>();
         for (int e : edgesByDistance(p.key(), aim.hit())) {
-            keys.add(Topology.across(p.key(), e, kind, 0));
+            keys.add(Topology.across(p.key(), e, kind, p.key().h()));
         }
         return preferFree(view, keys, p.buildingId);
     }
@@ -477,7 +479,7 @@ public final class Sockets {
 
     @Nullable
     private static PieceKey onTerrain(StructureView view, PieceKind kind, int rot, Aim aim) {
-        PieceKey snap = snapToFoundation(view, kind, aim.hit());
+        PieceKey snap = snapToFoundation(view, kind, aim.hit(), aim.block());
         if (snap != null) {
             return snap;
         }
@@ -503,7 +505,7 @@ public final class Sockets {
      * piece is closest to the point, if within {@link #SNAP} blocks of it (and {@link #SNAP_HEIGHT} in height).
      */
     @Nullable
-    public static PieceKey snapToFoundation(StructureView view, PieceKind kind, Vec3 point) {
+    public static PieceKey snapToFoundation(StructureView view, PieceKind kind, Vec3 point, @Nullable BlockPos sol) {
         AABB box = new AABB(point, point).inflate(SNAP + 4, SNAP_HEIGHT + 1, SNAP + 4);
         List<Piece> near = new ArrayList<>(view.near(null, box));
         near.sort(Comparator.comparingLong(f -> f.id));
@@ -512,9 +514,10 @@ public final class Sockets {
         List<Option> options = new ArrayList<>();
         for (Piece f : near) {
             if (!f.kind().isFoundation()) continue;
-            if (Math.abs(point.y - f.key().origin().getY()) > SNAP_HEIGHT) continue;
+            if (Math.abs(point.y - (f.key().origin().getY() + f.key().baseY() / 16.0)) > SNAP_HEIGHT) continue;
+            int h = marche(f.key(), sol);
             for (int e = 0; e < f.kind().shape.vertices; e++) {
-                PieceKey key = Topology.across(f.key(), e, kind, 0);
+                PieceKey key = Topology.across(f.key(), e, kind, h);
                 double d = distanceTo(key, point);
                 if (d > SNAP || !key.isWellFormed()) continue;
                 options.add(new Option(key, f.buildingId, d * 100 + centreDistance(key, point)));
@@ -528,6 +531,24 @@ public final class Sockets {
             }
         }
         return null;
+    }
+
+    /**
+     * Hauteur d'une fondation posée à côté de {@code voisine} en visant le bloc de terrain {@code sol} (marches façon
+     * Rust, 06/11, choix du propriétaire « en visant ») : le cran d'un demi-mur le plus bas dont la dalle ne s'enfonce pas
+     * dans ce bloc (le vide en dessous est comblé par la jupe), au plus {@link PieceKind#MARCHE_FONDATION} crans au-dessus
+     * ou au-dessous de la voisine. Sans terrain visé : le niveau de la voisine. Une marche trop haute ou trop basse pour le
+     * sol est refusée ensuite par les règles (fantôme rouge).
+     */
+    static int marche(PieceKey voisine, @Nullable BlockPos sol) {
+        if (sol == null) {
+            return voisine.h();
+        }
+        // dalle (16 px) sous la surface h : bas à origine + 1,5 h - 1 bloc, posé sur le dessus du bloc visé (y + 1)
+        double besoin = (sol.getY() + 1 - voisine.origin().getY() + 1) / 1.5;
+        int h = (int) Math.ceil(besoin - 1e-9);
+        int m = PieceKind.MARCHE_FONDATION;
+        return Math.max(voisine.h() - m, Math.min(voisine.h() + m, h));
     }
 
     // ------------------------------------------------------------------ helpers

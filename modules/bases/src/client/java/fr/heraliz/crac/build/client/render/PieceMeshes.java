@@ -152,9 +152,13 @@ public final class PieceMeshes {
         double[][] poly = Footprints.solidPolygon(key);
         double top = key.baseY() - PieceSolids.FOUNDATION_T;
         BlockPos o = key.origin();
-        for (int row = 0; row < SKIRT_ROWS; row++) {
-            double y1 = top - 16 * row;
-            double y0 = y1 - 16;
+        // rangs alignés sur les blocs (marches du 06/11) : sous une dalle à mi-hauteur (h impair), un demi-rang d'abord
+        // (dans le rang de la dalle), puis SKIRT_ROWS rangs entiers ; h pair : comme avant
+        double rangDalle = (PieceSolids.slabRow(key) - o.getY()) * 16.0;
+        for (int row = -1; row < SKIRT_ROWS; row++) {
+            double y1 = row < 0 ? top : rangDalle - 16 * row;
+            double y0 = row < 0 ? rangDalle : y1 - 16;
+            if (y1 - y0 < 1e-6) continue;
             for (int[] c : Footprints.columns(key)) {
                 double x0 = (c[0] - o.getX()) * 16.0;
                 double z0 = (c[1] - o.getZ()) * 16.0;

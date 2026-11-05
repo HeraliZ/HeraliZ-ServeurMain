@@ -165,7 +165,15 @@ public final class PlacementRules {
             }
         }
 
-        // 2. space among the pieces of the building
+        // 2. space among the pieces of the building ; une fondation jamais au-dessus ou au-dessous d'une autre sur la même
+        // empreinte (marches, 06/11 : sa jupe traverserait l'autre)
+        if (kind.isFoundation()) {
+            for (Piece s : view.withFootprint(key.footprint())) {
+                if (s.kind().isFoundation() && s.key().h() != key.h()) {
+                    return Plan.fail(Result.OCCUPIED);
+                }
+            }
+        }
         Result space = Conflicts.check(view, key, buildingId);
         if (space != Result.OK) {
             return Plan.fail(space);

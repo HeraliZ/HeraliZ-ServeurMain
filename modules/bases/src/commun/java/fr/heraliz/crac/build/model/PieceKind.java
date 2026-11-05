@@ -53,6 +53,14 @@ public enum PieceKind {
 
     /** Highest |h| a key may carry (half-wall units of 24 px). */
     public static final int H_MAX = 2048;
+    /**
+     * Fondations en marches, comme dans Rust (HeraliZ, 06/11, demande du propriétaire) : une fondation peut être posée
+     * jusqu'à {@code MARCHE_FONDATION} unités (2 = un mur, 3 blocs) au-dessus ou au-dessous d'une fondation voisine du même
+     * bâtiment, par crans d'un demi-mur (1,5 bloc) ; hauteur choisie en visant le sol (Sockets). Un bâtiment reste à
+     * {@code H_FONDATIONS} unités de son origine (le vide sous la dalle reste borné par foundationMaxHeight).
+     */
+    public static final int MARCHE_FONDATION = 2;
+    public static final int H_FONDATIONS = 16;
 
     private static final PieceKind[] VALUES = values();
 
@@ -146,16 +154,19 @@ public enum PieceKind {
         };
     }
 
-    /** Lowest height h (24 px units) this piece may sit at: foundations are at 0, floors and roofs above it. */
+    /**
+     * Lowest height h (24 px units) this piece may sit at: foundations down to {@code -H_FONDATIONS} (marches, 06/11),
+     * floors and roofs one unit above the lowest foundation.
+     */
     public int minH() {
         return switch (this) {
-            case FLOOR, TRI_FLOOR, ROOF, TRI_ROOF -> 1;
-            default -> 0;
+            case FLOOR, TRI_FLOOR, ROOF, TRI_ROOF -> 1 - H_FONDATIONS;
+            default -> -H_FONDATIONS;
         };
     }
 
-    /** Highest height h; foundations only exist at h = 0. */
+    /** Highest height h; foundations within {@code H_FONDATIONS} units of the building origin. */
     public int maxH() {
-        return this.isFoundation() ? 0 : H_MAX;
+        return this.isFoundation() ? H_FONDATIONS : H_MAX;
     }
 }
