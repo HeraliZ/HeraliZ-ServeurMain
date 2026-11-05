@@ -50,6 +50,8 @@ public final class HudMunitions {
 
     /** Interface d'arme de TaCZ, masquée pour toute arme. */
     private static final ResourceLocation TACZ_GUN_HUD = new ResourceLocation("tacz", "tac_gun_hud_overlay");
+    /** Texte « Appuyez sur O pour interagir » de TaCZ, masqué tout le temps (05/11, demande du propriétaire ; la touche marche). */
+    private static final ResourceLocation TACZ_INTERAGIR = new ResourceLocation("tacz", "tac_interact_key_overlay");
     /** Mêmes cotes que HudUsure (HeraliZ Utils) : hauteur, bord droit, milieu des cases DayZ depuis le bas. */
     static final float H = 11f, DROITE = 8f, BARRE_MILIEU = 12f;
     /** Écart avec l'indicateur d'usure posé dessous, marge intérieure, écarts entre les textes, inclinaison. */
@@ -82,6 +84,10 @@ public final class HudMunitions {
     }
 
     private static void masquerTacz(RenderGuiOverlayEvent.Pre e) {
+        if (TACZ_INTERAGIR.equals(e.getOverlay().id())) {
+            e.setCanceled(true);
+            return;
+        }
         if (!TACZ_GUN_HUD.equals(e.getOverlay().id())) return;
         LocalPlayer p = Minecraft.getInstance().player;
         if (p != null && IGun.getIGunOrNull(p.getMainHandItem()) != null) e.setCanceled(true);

@@ -1,7 +1,6 @@
 package fr.heralisz.tactical.client;
 
 import fr.heralisz.tactical.client.audio.SoundHandler;
-import fr.heralisz.tactical.client.gui.overlay.InteractKeyTextOverlay;
 import fr.heralisz.tactical.client.overlay.UsingProgressOverlay;
 import fr.heralisz.tactical.client.particle.SmokeCloudParticle;
 import fr.heralisz.tactical.client.renderer.CoolDownDecorations;
@@ -29,7 +28,6 @@ import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -90,9 +88,6 @@ public class ClientSetupHandler {
 
    // HeraliZ : plus de touches « Attaque normale » / « Attaque / action spéciale » (doublons d'Attaquer et d'Utiliser dans
    // les Commandes) : AttackKeys lit directement les touches de Minecraft.
-
-   @SubscribeEvent
-   public static void onRegisterGuiOverlays(RegisterGuiOverlaysEvent event) {
-      event.registerAbove(VanillaGuiOverlay.CROSSHAIR.id(), "lrt_interact_key_overlay", new InteractKeyTextOverlay());
-   }
+   // HeraliZ (05/11, demande du propriétaire) : plus de texte « Appuyez sur O pour interagir » arme de mêlée en main (la
+   // touche marche toujours) ; celui de TaCZ est masqué par fr.heraliz.tactique.client.hud.HudMunitions.
 }
