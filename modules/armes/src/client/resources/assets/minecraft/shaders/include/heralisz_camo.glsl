@@ -478,6 +478,9 @@ vec3 darkMatterNuclear(vec3 p, out vec3 em) {
 float PART = 1.0;
 // couleur de la texture d'origine au point dessiné (manches ornés : leurs motifs restent visibles sous la finition)
 vec3 BASE_COL = vec3(0.0);
+// alpha de la texture d'origine au point dessiné : 200/255 marque une balle d'un chargeur à fenêtre (modèles propres à un
+// skin, ex. AK-47 Faille), que le skin laisse en métal
+float BASE_A = 1.0;
 
 vec3 studio(vec3 n) {
     vec3 r = reflect(vec3(0.0, 0.0, -1.0), n);
@@ -2917,6 +2920,16 @@ vec3 infernalIron(vec3 p, out vec3 em) {
 // 2..3 enclenché (onde sur l'arme). Ne touche que le chargeur (PART ~ 0.75), sauf l'onde finale.
 bool estChargeur() { return PART > 0.62 && PART < 0.88; }
 
+// balles d'un chargeur à fenêtre (texture marquée : alpha 200) : métal poli de la couleur de la texture (laiton, cuivre)
+bool marqueLaiton() { return abs(BASE_A - 200.0 / 255.0) < 0.02; }
+vec3 laitonPoli(out vec3 em) {
+    vec3 n = normalize(viewNormal);
+    vec3 env = studio(n);
+    float fres = pow(1.0 - clamp(abs(n.z), 0.0, 1.0), 2.0);
+    em = vec3(0.0);
+    return BASE_COL * (0.5 + 0.5 * env.g) + env * BASE_COL * (0.25 + 0.5 * fres);
+}
+
 // distance (unités de l'arme) à la ligne de niveau v = c
 float isoDist(float v, float c, vec3 p) {
     float g = length(vec2(dFdx(v), dFdy(v))) / max(length(vec2(length(dFdx(p)), length(dFdy(p)))), 1e-7);
@@ -2941,6 +2954,7 @@ float failleV(vec3 p, out float vb) {
 }
 
 vec3 faille(vec3 p, out vec3 em) {
+    if (estChargeur() && marqueLaiton()) return laitonPoli(em);
     float t = CamoTime;
     vec3 n = normalize(viewNormal);
     vec3 env = studio(n);
@@ -3047,6 +3061,7 @@ float hexMicro(vec2 s) {
 }
 
 vec3 accesRouge(vec3 p, out vec3 em) {
+    if (estChargeur() && marqueLaiton()) return laitonPoli(em);
     float t = CamoTime;
     vec3 n = normalize(viewNormal);
     vec3 env = studio(n);
@@ -3795,6 +3810,7 @@ void main() {
     if (CamoId > 0 && inRect && camoCovers(pm.a, CamoParts)) {
         PART = pm.a;
         BASE_COL = base.rgb;
+        BASE_A = base.a;
         VN_DETAIL = normalize(viewNormal);
         appliquerRelief(pm.xyz, pm.a);
 #ifdef CAMO_RELIEF

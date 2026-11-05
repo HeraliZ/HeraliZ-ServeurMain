@@ -1,6 +1,14 @@
-"""AK-47 « Faille » : modèle remodelé (même squelette que l'AK de TaCZ : animations, rechargement, accessoires intacts).
+"""AK-47 « Faille » : modèle propre au skin Faille sur l'AK-47 (même squelette que l'AK de TaCZ : animations, rechargement,
+accessoires intacts). Rendus validés par le propriétaire le 05/11 (maquettes/skins_premium/ak_faille/).
 
-python ak_faille_modele.py <ak47_geo.json> <ak47.png> <sortie>   -> sortie/ak47_faille_geo.json + sortie/ak47_faille.png
+python modules/armes/outils/ak47_faille.py --installer
+    écrit dans le gunpack serveur/tacz/heralisz_skins : le modèle (geo_models/gun/ak47_faille_geo.json), sa texture
+    (textures/gun/uv/ak47_faille.png) et son affichage (display/guns/ak47_faille_display.json, copie de celui de l'AK-47 :
+    animations, sons, petit modèle de loin et icône de l'AK, seuls le modèle et la texture changent). Le jeu du joueur le
+    montre sur tout AK-47 qui porte le skin Faille (camo/client/ModelesSkins), rien n'est enregistré sur l'arme.
+python modules/armes/outils/ak47_faille.py <ak47_geo.json> <ak47.png> <sortie>   (essais : modèle et texture seulement)
+
+On modifie ce script, jamais les fichiers écrits (ils seraient écrasés au prochain passage).
 
 Pièces refaites, en version fine (2e jet, 05/11) :
 - crosse : squelette d'obsidienne mince (deux poutres, montant, plaque de couche chanfreinée), une grappe de cristaux
@@ -23,8 +31,20 @@ from pathlib import Path
 
 from PIL import Image
 
-SRC_GEO, SRC_TEX, OUT = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
-OUT.mkdir(parents=True, exist_ok=True)
+RACINE = Path(__file__).resolve().parents[3]
+AK = RACINE / "serveur/tacz/heraliz_1_base_tacz/assets/tacz"
+PACK = RACINE / "serveur/tacz/heralisz_skins/assets/heralisz_skins"
+INSTALLER = len(sys.argv) > 1 and sys.argv[1] == "--installer"
+if INSTALLER:
+    SRC_GEO, SRC_TEX = AK / "geo_models/gun/ak47_geo.json", AK / "textures/gun/uv/ak47.png"
+    SORTIE_GEO, SORTIE_TEX = PACK / "geo_models/gun/ak47_faille_geo.json", PACK / "textures/gun/uv/ak47_faille.png"
+elif len(sys.argv) == 4:
+    SRC_GEO, SRC_TEX, OUT = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+    SORTIE_GEO, SORTIE_TEX = OUT / "ak47_faille_geo.json", OUT / "ak47_faille.png"
+else:
+    sys.exit(__doc__)
+SORTIE_GEO.parent.mkdir(parents=True, exist_ok=True)
+SORTIE_TEX.parent.mkdir(parents=True, exist_ok=True)
 TW = TH = 512
 D = 2.0  # points de texture par pixel de modèle (faces neuves)
 MARQUE_LAITON = 200  # alpha des faces des balles : le skin les laisse en métal
@@ -229,6 +249,19 @@ nouvel_os("bouche_cristaux_illuminated", "muzzle_default", [0, 8.55, -20.8],
 for sg in (-1, 1):
     bones["cover"]["cubes"] = bones["cover"]["cubes"] + eclat((sg * 0.88, 9.6, 6.8), 20, sg * 32, 1.6, 0.32)
 
-json.dump(geo, open(OUT / "ak47_faille_geo.json", "w", encoding="utf-8"), indent=1)
-tex.save(OUT / "ak47_faille.png")
-print("faces neuves :", compte["n"], "| os :", len(g["bones"]))
+SORTIE_GEO.write_bytes((json.dumps(geo, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8"))
+tex.save(SORTIE_TEX)
+print("faces neuves :", compte["n"], "| os :", len(g["bones"]), "|", SORTIE_GEO.name, SORTIE_TEX.name)
+
+if INSTALLER:
+    # affichage : celui de l'AK-47 (commentaires du fichier retirés), avec ce modèle et cette texture
+    import re
+    texte = (AK / "display/guns/ak47_display.json").read_text(encoding="utf-8")
+    texte = "\n".join(re.sub(r"^\s*//.*$", "", l) for l in texte.splitlines())
+    aff = json.loads(texte)
+    assert aff["model"] == "tacz:gun/ak47_geo" and aff["texture"] == "tacz:gun/uv/ak47", (aff["model"], aff["texture"])
+    aff["model"] = "heralisz_skins:gun/ak47_faille_geo"
+    aff["texture"] = "heralisz_skins:gun/uv/ak47_faille"
+    d = PACK / "display/guns/ak47_faille_display.json"
+    d.write_bytes((json.dumps(aff, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
+    print("affichage :", d.relative_to(RACINE).as_posix())

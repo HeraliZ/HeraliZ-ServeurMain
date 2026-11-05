@@ -79,6 +79,7 @@ void main() {
   if (CamoId > 0 && camoCovers(pm.a, CamoParts)) {
     PART = pm.a;
     BASE_COL = base.rgb;
+    BASE_A = base.a;
     VN_DETAIL = normalize(viewNormal);
 #ifndef SANS_RELIEF
     appliquerRelief(pm.xyz, pm.a);

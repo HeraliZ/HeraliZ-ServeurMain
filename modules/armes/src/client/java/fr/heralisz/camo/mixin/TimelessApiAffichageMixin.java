@@ -17,6 +17,12 @@ public abstract class TimelessApiAffichageMixin {
 
    @Inject(method = GET, at = @At("HEAD"), cancellable = true)
    private static void heraliz$lire(ItemStack stack, CallbackInfoReturnable<Optional<GunDisplayInstance>> cir) {
+      // modèle propre au skin de l'arme (AK-47 Faille…) : avant le cache, qui ne distingue pas les skins
+      Optional<GunDisplayInstance> skin = fr.heralisz.camo.client.ModelesSkins.affichage(stack);
+      if (skin != null && skin.isPresent()) {
+         cir.setReturnValue(skin);
+         return;
+      }
       Optional<GunDisplayInstance> garde = AffichagesArmes.lire(stack);
       if (garde != null) {
          cir.setReturnValue(garde);

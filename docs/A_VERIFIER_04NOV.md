@@ -78,6 +78,12 @@ Mac bloqués) ; loot et économie de la bêta : `[beta] actif = false` dans `her
       (cadre, ligne de balayage), joints verts au clic. À voir aussi chez un autre joueur qui recharge (3e personne),
       rechargement annulé (changer d'arme : le chargeur revient normal), fusil à pompe ou arme sans chargeur (rien de
       spécial), et les images par seconde à plusieurs.
+- [ ] **AK-47 Faille** (Tactique 2.53.0, rendus validés `maquettes/skins_premium/ak_faille/`) : un AK-47 (`tacz:ak47`) avec le
+      skin Faille prend son propre modèle (crosse squelette et cristaux lumineux, garde-main fendu, chargeur à fenêtre avec
+      les balles en laiton visibles, couronne de cristaux) ; en main, en 3e personne, au sol, dans l'atelier (aperçu du skin
+      Faille), chez un autre joueur. Rechargement : la Faille avale le chargeur et ses balles, puis les rend. Accessoires
+      (lunette, silencieux, crosse, chargeur agrandi) bien placés ; crosse ou bouche montée = la crosse de cristal ou la
+      couronne disparaît. Skin retiré ou autre skin : AK de base. De loin, petit modèle de l'AK de base (normal).
 
 ## 2. Priorité 1 : les gros systèmes
 
