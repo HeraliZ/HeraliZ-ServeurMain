@@ -4,12 +4,12 @@
  "max_pieces": 2,
  "secondes_par_objet": 3.0,
  "herals_si_rien": [
-  1,
-  1,
-  1,
   2,
-  3,
-  4
+  5,
+  12,
+  25,
+  50,
+  100
  ],
  "profils": {
   "carte": {

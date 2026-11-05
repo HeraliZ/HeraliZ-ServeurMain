@@ -42,8 +42,11 @@ MAX_PIECES = 2
 SECONDES_PAR_OBJET = 3.0
 # 31/10 : recycleur de la carte, chance relative en plus (10 % -> 11 %)
 BONUS_CARTE = 0.10
-# hérals donnés pour un objet qui n'a rien rendu, par rang de rareté (Commun ... Unique) ; très bas exprès
-HERALS_SI_RIEN = [1, 1, 1, 2, 3, 4]
+# hérals donnés pour un objet qui n'a rien rendu, par rang de rareté (Commun ... Unique). 06/11 (demande du propriétaire) :
+# Commun 2, Peu commun 5, Rare 12, Épique 25, Légendaire 50 (avant 1, 1, 1, 2, 3) ; Unique 100 (non donné par le
+# propriétaire : le double du Légendaire). Un objet vendu par un marchand reste refusé s'il rapporterait plus de 50 % de
+# son prix (Recyclage.tropRentable, contrôlé aussi par outils/marchands.py --controle).
+HERALS_SI_RIEN = [2, 5, 12, 25, 50, 100]
 
 # composants qui existent en 4 niveaux (heraliz_composants:<id>, <id>_ii, _iii, _iv)
 A_NIVEAUX = {"canon", "ressort", "kit_pieces", "tissu", "alcool", "batterie", "circuit_imprime", "ferraille",
