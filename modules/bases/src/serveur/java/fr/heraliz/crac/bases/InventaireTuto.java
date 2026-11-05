@@ -192,15 +192,20 @@ public final class InventaireTuto {
                 ChatFormatting.RED);
             return;
         }
-        // tout ce que le joueur tient maintenant (hors kit, déjà repris) revient avec le reste, après son inventaire
-        extras.addAll(horsInventaire(p));
+        // tout ce que le joueur tient maintenant revient avec le reste, après son inventaire ; un objet du kit encore là
+        // (grille d'artisanat, souris, écran ouvert) n'est jamais rendu (06/11, sécurité en plus de Tutoriel.reprendreKit)
+        for (ItemStack s : horsInventaire(p)) {
+            if (!Tutoriel.estKit(s)) {
+                extras.add(s);
+            }
+        }
         if (p.containerMenu != p.inventoryMenu) {
             p.closeContainer();
         }
         Inventory inv = p.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.removeItemNoUpdate(i);
-            if (!s.isEmpty()) {
+            if (!s.isEmpty() && !Tutoriel.estKit(s)) {
                 extras.add(s);
             }
         }

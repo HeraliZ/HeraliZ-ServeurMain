@@ -268,9 +268,30 @@ public final class Tutoriel {
         terminer(p);
     }
 
-    /** Reprend tout ce qui reste du kit du tutoriel (objets marqués), où qu'il soit dans l'inventaire. */
+    /** Objet du kit du tutoriel (marqué à la remise du kit). */
+    static boolean estKit(ItemStack s) {
+        return !s.isEmpty() && s.hasTag() && s.getTag().getBoolean(MARQUE_KIT);
+    }
+
+    /**
+     * Reprend tout ce qui reste du kit du tutoriel (objets marqués), où qu'il soit : inventaire, grille d'artisanat 2 × 2,
+     * objet tenu à la souris, grille de l'écran de Curios. 06/11 (retour du propriétaire) : avant, seuls l'inventaire et
+     * la souris étaient vus ; ce qui restait dans la grille d'artisanat (brindilles, clous, plan, marteau) était rendu avec
+     * l'inventaire au retour au spawn.
+     */
     private static void reprendreKit(ServerPlayer p) {
         boolean pris = false;
+        // un écran ouvert (inventaire de Curios) rend d'abord sa grille et l'objet tenu à l'inventaire, repris juste après
+        if (p.containerMenu != p.inventoryMenu) {
+            p.closeContainer();
+        }
+        net.minecraft.world.inventory.CraftingContainer grille = p.inventoryMenu.getCraftSlots();
+        for (int i = 0; i < grille.getContainerSize(); i++) {
+            if (estKit(grille.getItem(i))) {
+                grille.removeItemNoUpdate(i);
+                pris = true;
+            }
+        }
         for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
             ItemStack s = p.getInventory().getItem(i);
             if (!s.isEmpty() && s.hasTag() && s.getTag().getBoolean(MARQUE_KIT)) {
