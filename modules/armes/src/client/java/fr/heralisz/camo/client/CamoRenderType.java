@@ -60,9 +60,6 @@ public final class CamoRenderType extends RenderType {
                   shader.safeGetUniform("CamoParts").set(k.parts);
                   shader.safeGetUniform("CamoTime").set((Util.getMillis() % 3_600_000L) / 1000.0F);
                   shader.safeGetUniform("CamoReveal").set(k.bag ? -1 : CamoFx.pendingReveal);
-                  // rechargement animé du skin (Faille, Accès Rouge) : phase du chargeur et sa hauteur au repos
-                  shader.safeGetUniform("CamoReload").set(k.bag ? -1 : CamoFx.pendingReload);
-                  shader.safeGetUniform("CamoMagY").set(CamoFx.pendingMagY0, CamoFx.pendingMagY1);
                   shader.safeGetUniform("CamoUvRect").set(k.u0, k.v0, k.du, k.dv);
                }
             }, () -> CamoFx.DEFAULT_BLEND.apply()))   // le mélange du shader camo ne doit pas rester « dernier appliqué » (voir CamoFx.emit)

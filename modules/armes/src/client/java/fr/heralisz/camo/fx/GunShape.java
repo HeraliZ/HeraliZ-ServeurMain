@@ -11,8 +11,6 @@ public final class GunShape {
    private final float[] yLo = new float[BINS], yHi = new float[BINS], zLo = new float[BINS], zHi = new float[BINS];
    /** Enveloppe lissée (pour s'enrouler sans à-coups). */
    private final float[] syLo = new float[BINS], syHi = new float[BINS], szLo = new float[BINS], szHi = new float[BINS];
-   /** Boîte du chargeur (pièces « chargeur » de la carte de positions) ; NaN : l'arme n'a pas de chargeur. */
-   public float magX0 = Float.NaN, magX1 = Float.NaN, magY0 = Float.NaN, magY1 = Float.NaN, magZ = Float.NaN;
 
    private GunShape(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
       this.xMin = xMin;
@@ -78,22 +76,6 @@ public final class GunShape {
             ylo[b] = y0; yhi[b] = y1; zlo[b] = z0; zhi[b] = z1;
          }
       }
-      // chargeur : boîte de ses pièces (rechargement des skins qui en ont un)
-      float mx0 = Float.MAX_VALUE, mx1 = -Float.MAX_VALUE, my0 = Float.MAX_VALUE, my1 = -Float.MAX_VALUE, mz = 0;
-      int mn = 0;
-      for (int q = 0; q < quads; q++) {
-         if (part[q] <= 0.62F || part[q] >= 0.88F || Float.isNaN(rest[q * 12])) continue;
-         for (int k = 0; k < 4; k++) {
-            float x = rest[q * 12 + k * 3], y = rest[q * 12 + k * 3 + 1];
-            mx0 = Math.min(mx0, x); mx1 = Math.max(mx1, x);
-            my0 = Math.min(my0, y); my1 = Math.max(my1, y);
-            mz += rest[q * 12 + k * 3 + 2];
-            mn++;
-         }
-      }
-      if (mn > 0 && mx1 > mx0 && my1 > my0) {
-         s.magX0 = mx0; s.magX1 = mx1; s.magY0 = my0; s.magY1 = my1; s.magZ = mz / mn;
-      }
       // enveloppe lissée : maximum sur une fenêtre puis moyenne (pas de creux brusques)
       smooth(ylo, s.syLo, true);
       smooth(yhi, s.syHi, false);
@@ -134,9 +116,6 @@ public final class GunShape {
    }
 
    public float length() { return this.xMax - this.xMin; }
-
-   /** L'arme a-t-elle un chargeur repéré (pièces « mag », « magazine », « clip », « drum ») ? */
-   public boolean aChargeur() { return !Float.isNaN(this.magX0); }
    /** x au repos pour une fraction f (0 = crosse, 1 = bouche du canon). */
    public float xAt(float f) { return this.xMin + f * (this.xMax - this.xMin); }
 

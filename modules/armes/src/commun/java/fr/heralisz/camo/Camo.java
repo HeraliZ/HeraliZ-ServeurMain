@@ -61,11 +61,7 @@ public enum Camo {
    // qui porte encore « pap_1 » à « pap_3 » s'affiche sans camo, voir byId)
    // skins X : camo vivant + effet 3D, onglet « HeralisZ - skinX » (un skin peut être réservé à une arme : Camo.gun)
    SERAPHIN("seraphin", 208, Tier.MYTHIC, Camo.ALL),
-   CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL),
-   // skins « premium animés » (04/11, rendus validés : maquettes/skins_premium) : finition + rechargement propre au skin
-   // (RechargeSkins côté joueur) ; 210 Faille (anomalies de la Zone), 211 Accès Rouge (laboratoires des bunkers)
-   FAILLE("faille", 210, Tier.MYTHIC, Camo.ALL),
-   ACCES_ROUGE("acces_rouge", 211, Tier.MYTHIC, Camo.ALL);
+   CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL);
    // (230 à 233 Texture manquante, Money Gun, Surchauffe et Trophée, skins « buzz », supprimés le 04/11 : choix du
    // propriétaire, seuls Séraphin et Chaînes de l'Enfer restent mythiques ; une arme qui porte encore un de ces ids
    // s'affiche sans camo, un id gardé dans une collection est ignoré, voir byId)
@@ -95,11 +91,6 @@ public enum Camo {
    /** Ce skin peut-il être posé sur cette arme ? */
    public boolean fits(@Nullable net.minecraft.resources.ResourceLocation gunId) {
       return this.gun == null || gunId != null && this.gun.equals(gunId.toString());
-   }
-
-   /** Skin au rechargement animé (le chargeur disparaît et revient à la façon du skin, effets autour). */
-   public boolean rechargeAnime() {
-      return this == FAILLE || this == ACCES_ROUGE;
    }
 
    /** Skin X : camo vivant avec effet 3D (onglet dédié). */

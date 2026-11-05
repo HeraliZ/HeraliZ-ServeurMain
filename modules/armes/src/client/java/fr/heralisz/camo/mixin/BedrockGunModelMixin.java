@@ -38,8 +38,6 @@ public abstract class BedrockGunModelMixin {
       if (camo == null && skin == null) {
          // arme sans skin (la plupart) : rien d'autre à lire pour elle, à chaque image et pour chaque joueur visible
          fr.heralisz.camo.client.CamoFx.pendingLocal = false;
-         fr.heralisz.camo.client.CamoFx.pendingRecharge = -1;
-         fr.heralisz.camo.client.CamoFx.pendingReload = -1;
          fr.heralisz.camo.client.CamoFx.pendingReveal = -1;
          return original;
       }
@@ -56,10 +54,6 @@ public abstract class BedrockGunModelMixin {
       // apparition (sortie de l'arme, 1re personne) : lue par le rendu camo (front de matérialisation) et par les effets
       net.minecraft.client.Minecraft mcl = net.minecraft.client.Minecraft.getInstance();
       fr.heralisz.camo.client.CamoFx.pendingLocal = mcl.player != null && gun == mcl.player.getMainHandItem();
-      // rechargement animé du skin (Faille, Accès Rouge) : pour tous les joueurs visibles
-      float recharge = camo != null && camo.rechargeAnime() ? fr.heralisz.camo.client.RechargeSkins.avancee(gun) : -1;
-      fr.heralisz.camo.client.CamoFx.pendingRecharge = recharge;
-      fr.heralisz.camo.client.CamoFx.pendingReload = fr.heralisz.camo.client.RechargeSkins.phase(camo, recharge);
       fr.heralisz.camo.client.CamoFx.pendingReveal = camo != null && ctx.firstPerson() && fr.heralisz.camo.client.SkinReveal.activeFor(gun)
          ? fr.heralisz.camo.client.SkinReveal.front(gun) : -1;
       if (CamoShaders.get(shaderId) == null) {
@@ -84,14 +78,6 @@ public abstract class BedrockGunModelMixin {
          return original;
       }
       PosMap map = PosMapCache.get(self, knife, texture);
-      if (map != null && map.shape != null && map.shape.aChargeur()) {
-         fr.heralisz.camo.client.CamoFx.pendingMagY0 = map.shape.magY0;
-         fr.heralisz.camo.client.CamoFx.pendingMagY1 = map.shape.magY1;
-      } else {
-         // pas de chargeur repéré : pas de rechargement animé
-         fr.heralisz.camo.client.CamoFx.pendingReload = -1;
-         fr.heralisz.camo.client.CamoFx.pendingRecharge = -1;
-      }
       return map == null ? original : CamoRenderType.get(texture, map.glId, shaderId, parts);
    }
 

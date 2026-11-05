@@ -37,7 +37,6 @@ public final class MeleeCamo {
          // apparition des armes à feu, lue par le shader au dessin : sinon la lame reprenait celle de la dernière arme TaCZ
          // dessinée (bandes d'hologramme sur une partie de la lame)
          CamoFx.pendingReveal = -1;
-         CamoFx.pendingReload = -1;
          return map == null ? original
             : CamoRenderType.get(texture, map.glId, skin.finish.shaderId, 15 | ((skin.knife.ordinal() + 1) << 4));
       });

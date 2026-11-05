@@ -25,10 +25,6 @@ public final class FxContext {
    public float reveal = -1;
    /** Temps écoulé depuis le dernier tir du porteur (s) ; grand si inconnu (armes des autres, au sol). */
    public float fireAge = 99;
-   /** Avancée du rechargement de l'arme (RechargeSkins, 0..1, enclenché à 0,88) ; -1 : pas de rechargement. */
-   public float recharge = -1;
-   /** Silhouette au repos de l'arme (carte de positions : boîte du chargeur au repos) ; shape suit les pièces animées. */
-   public GunShape repos;
    /** Inspection de skin : paume de la main gauche animée (repère de rendu), null si elle n'est pas en scène. */
    public V handPos;
    /** Poignet gauche (même repère), null hors scène. */

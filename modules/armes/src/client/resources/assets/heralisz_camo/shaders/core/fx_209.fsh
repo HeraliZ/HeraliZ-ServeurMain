@@ -1,10 +1,10 @@
 #version 150
 #define FX_ID 209
-// fichier généré par outils/generer_camos.py depuis outils/fx_gabarit.fsh (dossier du mod) : ne pas modifier ici
+// fichier généré par tools/gen_camo_shaders.py, ne pas modifier
 
-// Effets 3D des skins HeralisZ (CamoFx). Gabarit : outils/fx_gabarit.fsh, dont outils/generer_camos.py tire un programme par skin (FX_ID).
+// Effets 3D des skins HeralisZ (CamoFx). Gabarit : tools/gen_camo_shaders.py en tire un programme par skin (FX_ID).
 // Chaque sommet porte dans sa « couleur » la sorte d'élément (r), deux paramètres (g, b) et un fondu (a) ;
-// les vraies couleurs sont ici. La partie entre FX LIB BEGIN / END est aussi chargée par l'aperçu WebGL (outils/apercu_camos).
+// les vraies couleurs sont ici. La partie entre FX LIB BEGIN / END est aussi chargée par l'aperçu WebGL (tools/camo_preview).
 
 uniform float FxTime;
 uniform float FxFade;
@@ -212,97 +212,11 @@ vec4 fxStorm(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
 }
 #endif
 
-// ------------------------------------------------------------------ 210 Faille : rechargement (faille, éclats, éclair, onde)
-#if FX_ID == 210
-// rayon de la lentille (0..1) le long de x, bord déchiqueté qui frémit
-float failleLentille(float x, float t) {
-    float b = pow(max(sin(3.14159 * x), 0.0), 0.8);
-    return b * (0.78 + 0.22 * (vn(vec2(x * 14.0, t * 3.0)) - 0.5) * 2.0);
-}
-vec4 fxFaille(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
-    float o = prm.g;
-    if (kind == 1) {
-        // fond : l'espace de l'anomalie (nébuleuse, étoiles) dans la lentille
-        float y = abs(uv.y - 0.5) * 2.0;
-        float r = failleLentille(uv.x, t);
-        if (y > r) return vec4(0.0);
-        vec2 q = uv * vec2(3.0, 1.2) + vec2(t * 0.05, 0.0);
-        vec3 neb = mix(hexc(0x0a0214), hexc(0x2a0b4a), fbm(q * 3.0)) + hexc(0x06324a) * fbm3(q * 5.0 + 3.0) * 0.6;
-        vec2 cs = floor(uv * vec2(90.0, 40.0));
-        float st = step(0.985, h2(cs)) * (0.5 + 0.5 * sin(t * 6.0 + h2(cs + 3.0) * 30.0));
-        return vec4(neb + vec3(0.8, 0.9, 1.0) * st, 0.94 * o);
-    }
-    if (kind == 2) {
-        // bord : halo magenta, trait cyan, fil blanc (quad 1,3 fois plus grand que le fond)
-        vec2 w = (uv - 0.5) * 1.3 + 0.5;
-        float r = failleLentille(clamp(w.x, 0.0, 1.0), t);
-        float y = abs(w.y - 0.5) * 2.0;
-        float d = abs(y - r) + step(1.0, abs(w.x - 0.5) * 2.0) * 9.0;
-        vec3 c = hexc(0xff2bd6) * exp(-d * 9.0) * 1.2 + hexc(0x22e3ff) * exp(-d * 40.0) * 1.6 + vec3(1.0) * exp(-d * 120.0);
-        return vec4(c, clamp(max(c.r, max(c.g, c.b)), 0.0, 1.0) * o);
-    }
-    if (kind == 3) {
-        // éclat de lumière : triangle magenta ou cyan, cœur blanc
-        vec2 p = uv - 0.5;
-        float tri = max(abs(p.x) * 1.73 + p.y, -p.y * 2.0) - 0.35;
-        float g = smoothstep(0.08, -0.05, tri);
-        vec3 c = mix(hexc(0xff4ee0), hexc(0x55eeff), step(0.5, prm.b));
-        return vec4(mix(c, vec3(1.0), smoothstep(-0.05, -0.2, tri)) * 1.4, g * o);
-    }
-    if (kind == 4) {
-        // éclair de fermeture, à plat
-        float g = exp(-pow((uv.y - 0.5) * 2.0, 2.0) * 6.0) * smoothstep(0.0, 0.15, uv.x) * smoothstep(1.0, 0.85, uv.x);
-        return vec4(mix(hexc(0x22e3ff), vec3(1.0), g) * 1.8, g * o);
-    }
-    if (kind == 5) {
-        return vec4(hexc(0xb47cff) * 1.4, o * 0.8);
-    }
-    return vec4(0.0);
-}
-#endif
-
-// ------------------------------------------------------------------ 211 Accès Rouge : rechargement (cubes, cadre, balayage)
-#if FX_ID == 211
-vec4 fxAcces(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
-    float o = prm.g;
-    vec3 rouge = hexc(0xff1530);
-    if (kind == 1) {
-        // cube (vu comme un carré) : contour rouge, rempli une fois sur deux
-        vec2 p = abs(uv - 0.5) * 2.0;
-        float e = max(p.x, p.y);
-        float contour = smoothstep(0.62, 0.78, e) * (1.0 - smoothstep(0.9, 1.0, e));
-        float plein = step(0.55, prm.b) * (1.0 - smoothstep(0.4, 0.5, e)) * 0.8;
-        float g = max(contour, plein);
-        return vec4(mix(rouge, vec3(1.0, 0.7, 0.72), plein * 0.4) * 1.5, g * o);
-    }
-    if (kind == 2 || kind == 3) {
-        // traits du cadre (2) et ligne de balayage (3) : u en travers, v le long
-        float x = abs(uv.x - 0.5) * 2.0;
-        float bout = smoothstep(0.0, 0.08, uv.y) * smoothstep(1.0, 0.92, uv.y);
-        float coeur = exp(-x * x * (kind == 3 ? 10.0 : 6.0));
-        vec3 c = mix(rouge, vec3(1.0, 0.85, 0.85), kind == 3 ? coeur * 0.8 : coeur * 0.3) * (kind == 3 ? 2.0 : 1.5);
-        return vec4(c, coeur * bout * o);
-    }
-    if (kind == 4) {
-        float g = softGlow(uv, 4.0);
-        return vec4(hexc(0x2bff7a) * 1.4, g * o * 0.8);
-    }
-    if (kind == 5) {
-        return vec4(hexc(0x2bff7a) * 1.5, o);
-    }
-    return vec4(0.0);
-}
-#endif
-
 vec4 fxShade(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
 #if FX_ID == 208
     return fxSeraph(kind, prm, uv, n, v, sd, t);
 #elif FX_ID == 209
     return fxInferno(kind, prm, uv, n, v, sd, t);
-#elif FX_ID == 210
-    return fxFaille(kind, prm, uv, n, v, sd, t);
-#elif FX_ID == 211
-    return fxAcces(kind, prm, uv, n, v, sd, t);
 #elif FX_ID == 70
     return fxStorm(kind, prm, uv, n, v, sd, t);
 #else
