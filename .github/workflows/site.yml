@@ -12,7 +12,7 @@
 # - nouvelle_cle_pb : change la clé des Points Boutique du serveur de jeu (site/vm/nouvelle_cle_pb.sh) si elle a pu
 #   fuiter ; l'ancienne reste acceptée 7 jours au plus, le temps de la mise en ligne et du redémarrage du serveur.
 # - chercher_comptes : exporte, en lecture seule, les comptes du site (pseudo, Discord lié, comptes vus sur les mêmes
-#   adresses IP, sans adresse ni e-mail) CHIFFRÉS avec la clé publique « cle_publique » (site/vm/chercher_comptes.sh) :
+#   adresses IP, e-mail ; jamais d'adresse IP) CHIFFRÉS avec la clé publique « cle_publique » (site/vm/chercher_comptes.sh) :
 #   le dépôt est public, rien n'apparaît en clair dans le journal ; la recherche par nom se fait hors de GitHub.
 # Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ

@@ -5,7 +5,8 @@
 # Le dépôt est public, donc les journaux de GitHub aussi : AUCUN nom n'est envoyé à GitHub ni écrit dans le journal.
 # Ce script écrit sur sa sortie un JSON (comptes, Discord liés, comptes vus sur les mêmes adresses IP) que la tâche
 # GitHub chiffre aussitôt avec la clé publique donnée au lancement (seul celui qui a la clé privée le lit) ; la
-# comparaison avec les noms recherchés se fait hors de GitHub. Ni adresse IP ni e-mail dans l'export.
+# comparaison avec les noms recherchés se fait hors de GitHub. Aucune adresse IP dans l'export ; l'e-mail y est
+# (chiffré) pour le comparer au pseudo de jeu.
 set -uo pipefail
 DOSSIER=/var/www/azuriom
 if [ ! -f "$DOSSIER/artisan" ]; then echo "Azuriom introuvable" >&2; exit 1; fi
@@ -39,6 +40,7 @@ foreach (User::query()->get() as $u) {
     $comptes[] = [
         'id' => $u->id,
         'pseudo' => $u->name,
+        'mail' => $u->email,
         'inscrit' => substr((string) $u->created_at, 0, 10),
         'connexion' => $i && $i->vu ? substr((string) $i->vu, 0, 10) : substr((string) $u->last_login_at, 0, 10),
         'banni_site' => $u->isBanned(),
