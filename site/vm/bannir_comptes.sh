@@ -85,6 +85,14 @@ foreach ($ids as $id) {
     }
     $total = DB::table(Stockage::IPS_BANNIES)->where('user_id', $id)->count();
     echo "- adresses IP bloquées pour ce compte : $total (dont $bloquees ajoutée(s) maintenant ; $partagees laissée(s) car partagée(s) avec un autre joueur)\n";
+    // le message automatique du ban Discord (juste avant) ne compte que les adresses des dernières 48 h : on donne au
+    // staff le vrai total après le ban du staff
+    $salon = Reglages::get('salon_comptes');
+    if ($salon !== '' && $ligne->banni) {
+        rescue(fn () => \Azuriom\Plugin\Heraliz\Discord\DiscordApi::message($salon, ['content' => '🔨 Ban du staff, compte du site `'
+            .str_replace('`', 'ˋ', $user->name).'` : '.$total.' adresse(s) IP bloquée(s) au total (toutes celles du compte'
+            .($partagees > 0 ? ', sauf '.$partagees.' partagée(s) avec un autre joueur' : '').'), ban compte + IP + PC envoyé au serveur de jeu.']), null, false);
+    }
 
     // ban en jeu (compte + IP + PC) : commande envoyée au serveur de jeu par AzLink
     Comptes::envoyerCommandes();
