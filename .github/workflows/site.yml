@@ -11,6 +11,9 @@
 #   (site/vm/mot_de_passe.sh), vérifie qu'il marche, puis dit de le recopier dans SITE_SSH_MDP ;
 # - nouvelle_cle_pb : change la clé des Points Boutique du serveur de jeu (site/vm/nouvelle_cle_pb.sh) si elle a pu
 #   fuiter ; l'ancienne reste acceptée 7 jours au plus, le temps de la mise en ligne et du redémarrage du serveur.
+# - chercher_comptes : exporte, en lecture seule, les comptes du site (pseudo, Discord lié, comptes vus sur les mêmes
+#   adresses IP, sans adresse ni e-mail) CHIFFRÉS avec la clé publique « cle_publique » (site/vm/chercher_comptes.sh) :
+#   le dépôt est public, rien n'apparaît en clair dans le journal ; la recherche par nom se fait hors de GitHub.
 # Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ
 
@@ -26,10 +29,14 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban) ; mot_de_passe : remplacer le mot de passe SSH de la VM par le secret SITE_SSH_MDP_NOUVEAU ; nouvelle_cle_pb : changer la clé des Points Boutique du serveur de jeu (si elle a pu fuiter)"
+        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban) ; mot_de_passe : remplacer le mot de passe SSH de la VM par le secret SITE_SSH_MDP_NOUVEAU ; nouvelle_cle_pb : changer la clé des Points Boutique du serveur de jeu (si elle a pu fuiter) ; chercher_comptes : exporter les comptes du site chiffrés (lecture seule)"
         type: choice
-        options: [verifier, installer, theme, securite, mot_de_passe, nouvelle_cle_pb]
+        options: [verifier, installer, theme, securite, mot_de_passe, nouvelle_cle_pb, chercher_comptes]
         default: verifier
+      cle_publique:
+        description: "Seulement pour chercher_comptes : clé publique RSA (DER en base64, une ligne) qui chiffre l'export"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -70,6 +77,7 @@ jobs:
       # votes : jeton du serveur Top-Serveurs (panel Top-Serveurs), facultatif ; sans lui, protection par la page de vote
       TOPSERVEURS_TOKEN: ${{ secrets.TOPSERVEURS_TOKEN }}
       ACTION: ${{ inputs.action || 'theme' }}
+      CLE_PUBLIQUE: ${{ inputs.cle_publique }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -81,6 +89,7 @@ jobs:
           requis="SITE_SSH_HOTE SITE_SSH_UTILISATEUR SITE_SSH_MDP"
           [ "$ACTION" = installer ] && requis="$requis SITE_BDD_MDP"
           [ "$ACTION" = mot_de_passe ] && requis="$requis SITE_SSH_MDP_NOUVEAU"
+          [ "$ACTION" = chercher_comptes ] && requis="$requis CLE_PUBLIQUE"
           manque=""
           for s in $requis; do
             if [ -n "${!s}" ]; then echo "$s : présent"; else echo "$s : MANQUANT"; manque="$manque $s"; fi
@@ -530,14 +539,35 @@ jobs:
           DISTANT="/tmp/heraliz_site_$GITHUB_RUN_ID.sh"
           sshpass -e scp "${OPTS[@]}" -P "$SSH_PORT" script_vm.sh "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE:$DISTANT" < /dev/null
           rm -f script_vm.sh
+          # « chercher_comptes » : la sortie (noms des comptes) ne passe jamais en clair dans le journal, public
+          SORTIE=/dev/stdout
+          [ "$ACTION" = chercher_comptes ] && SORTIE="$RUNNER_TEMP/export.json"
           # en root (sudo si l'utilisateur n'est pas root : son mot de passe passe par l'entrée, jamais en clair dans une commande)
           if [ "$SITE_SSH_UTILISATEUR" = root ] || [ "$ACTION" = verifier ]; then
             sshpass -e ssh "${OPTS[@]}" -p "$SSH_PORT" "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE" \
-              "bash $DISTANT; r=\$?; rm -f $DISTANT; exit \$r" < /dev/null
+              "bash $DISTANT; r=\$?; rm -f $DISTANT; exit \$r" < /dev/null > "$SORTIE"
           else
             printf '%s\n' "$SITE_SSH_MDP" | sshpass -e ssh "${OPTS[@]}" -p "$SSH_PORT" "$SITE_SSH_UTILISATEUR@$SITE_SSH_HOTE" \
-              "sudo -S -p '' bash $DISTANT; r=\$?; rm -f $DISTANT; exit \$r"
+              "sudo -S -p '' bash $DISTANT; r=\$?; rm -f $DISTANT; exit \$r" > "$SORTIE"
           fi
+
+      # export chiffré : clé AES au hasard pour les données, elle-même chiffrée par la clé publique RSA ; seul le
+      # détenteur de la clé privée lit le résultat (le clair est effacé du runner)
+      - name: Export chiffré
+        if: env.ACTION == 'chercher_comptes'
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          umask 077
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(len(d["comptes"]), "compte(s),", len(d["memes_ips"]), "paire(s) de comptes sur une même adresse IP")' export.json
+          printf '%s' "$CLE_PUBLIQUE" | base64 -d > cle.der
+          openssl rand -hex 32 > aes.bin
+          openssl enc -aes-256-cbc -pbkdf2 -salt -pass file:aes.bin -in export.json -out export.enc
+          openssl pkeyutl -encrypt -pubin -keyform DER -inkey cle.der -pkeyopt rsa_padding_mode:oaep -in aes.bin -out aes.enc
+          shred -u export.json aes.bin 2>/dev/null || rm -f export.json aes.bin
+          echo "----- CLE -----"; base64 -w0 aes.enc; echo
+          echo "----- DONNEES -----"; base64 -w0 export.enc; echo
+          echo "----- FIN -----"
 
       # le nouveau mot de passe doit ouvrir la VM AVANT qu'on dise de remplacer l'ancien secret
       - name: Nouveau mot de passe
