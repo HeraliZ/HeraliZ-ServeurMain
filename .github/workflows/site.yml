@@ -14,6 +14,9 @@
 # - chercher_comptes : exporte, en lecture seule, les comptes du site (pseudo, Discord lié, comptes vus sur les mêmes
 #   adresses IP, e-mail ; jamais d'adresse IP) CHIFFRÉS avec la clé publique « cle_publique » (site/vm/chercher_comptes.sh) :
 #   le dépôt est public, rien n'apparaît en clair dans le journal ; la recherche par nom se fait hors de GitHub.
+# - bannir_comptes : ban définitif décidé par le staff des comptes du site dont les numéros sont dans « comptes »
+#   (site/vm/bannir_comptes.sh) : Discord lié banni par le bot, compte du site banni, adresses IP bloquées, ban compte
+#   + IP + PC envoyé au serveur de jeu. Aucun pseudo dans le journal.
 # Les accès sont dans les secrets SITE_* : jamais dans un fichier.
 name: Site HeraliZ
 
@@ -29,10 +32,14 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban) ; mot_de_passe : remplacer le mot de passe SSH de la VM par le secret SITE_SSH_MDP_NOUVEAU ; nouvelle_cle_pb : changer la clé des Points Boutique du serveur de jeu (si elle a pu fuiter) ; chercher_comptes : exporter les comptes du site chiffrés (lecture seule)"
+        description: "verifier : regarder la VM sans rien changer ; installer : installer ou mettre à jour le serveur web ; theme : mettre le site HeraliZ à jour (thème, comptes du launcher, boutique, votes) ; securite : bloquer les essais de mots de passe SSH (fail2ban) ; mot_de_passe : remplacer le mot de passe SSH de la VM par le secret SITE_SSH_MDP_NOUVEAU ; nouvelle_cle_pb : changer la clé des Points Boutique du serveur de jeu (si elle a pu fuiter) ; chercher_comptes : exporter les comptes du site chiffrés (lecture seule) ; bannir_comptes : ban définitif (Discord, site, IP, PC) des comptes donnés"
         type: choice
-        options: [verifier, installer, theme, securite, mot_de_passe, nouvelle_cle_pb, chercher_comptes]
+        options: [verifier, installer, theme, securite, mot_de_passe, nouvelle_cle_pb, chercher_comptes, bannir_comptes]
         default: verifier
+      comptes:
+        description: "Seulement pour bannir_comptes : numéros des comptes du site, séparés par des virgules (ex. 12,34)"
+        type: string
+        default: ""
       cle_publique:
         description: "Seulement pour chercher_comptes : clé publique RSA (DER en base64, une ligne) qui chiffre l'export"
         type: string
@@ -78,6 +85,7 @@ jobs:
       TOPSERVEURS_TOKEN: ${{ secrets.TOPSERVEURS_TOKEN }}
       ACTION: ${{ inputs.action || 'theme' }}
       CLE_PUBLIQUE: ${{ inputs.cle_publique }}
+      COMPTES: ${{ inputs.comptes }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -90,6 +98,11 @@ jobs:
           [ "$ACTION" = installer ] && requis="$requis SITE_BDD_MDP"
           [ "$ACTION" = mot_de_passe ] && requis="$requis SITE_SSH_MDP_NOUVEAU"
           [ "$ACTION" = chercher_comptes ] && requis="$requis CLE_PUBLIQUE"
+          [ "$ACTION" = bannir_comptes ] && requis="$requis COMPTES"
+          if [ "$ACTION" = bannir_comptes ] && ! [[ "$COMPTES" =~ ^[0-9]+(,[0-9]+)*$ ]]; then
+            echo "::error::comptes : numéros séparés par des virgules, sans espace (ex. 12,34) : rien n'est fait."
+            exit 1
+          fi
           manque=""
           for s in $requis; do
             if [ -n "${!s}" ]; then echo "$s : présent"; else echo "$s : MANQUANT"; manque="$manque $s"; fi
@@ -520,6 +533,9 @@ jobs:
             fi
             if [ "$ACTION" = mot_de_passe ]; then
               printf 'UTILISATEUR=%q\nNOUVEAU_MDP=%q\n' "$SITE_SSH_UTILISATEUR" "$SITE_SSH_MDP_NOUVEAU"
+            fi
+            if [ "$ACTION" = bannir_comptes ]; then
+              printf 'COMPTES=%q\n' "$COMPTES"
             fi
             if [ "$ACTION" = theme ]; then
               printf 'ARCHIVE=%q\n' "$ARCHIVE"
