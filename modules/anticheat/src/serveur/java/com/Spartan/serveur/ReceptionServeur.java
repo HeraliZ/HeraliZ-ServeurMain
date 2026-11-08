@@ -63,7 +63,8 @@ public final class ReceptionServeur {
             // paquets d'arrivée (envoyés une seule fois, avant le /login) : traités après la vérification ; les appuis de
             // touches d'avant ne comptent pas
             if (p instanceof TestPacket || p instanceof ModsPacket || p instanceof ResourcePackPacket || p instanceof BuildPacket
-                    || p instanceof GardienPacket || (p instanceof ClientReportPacket c1 && !c1.type().equals("touche"))) {
+                    || p instanceof GardienPacket || (p instanceof ClientReportPacket c1 && !c1.type().equals("touche")
+                    && !c1.type().equals("veille"))) {
                 java.util.List<Object> l = ATTENTE.computeIfAbsent(player.getUUID(), u -> new java.util.ArrayList<>());
                 // rapport du Gardien : toutes les 15 s, seul le dernier compte (sinon il remplissait la file en 4 min)
                 if (p instanceof GardienPacket) {
@@ -187,6 +188,19 @@ public final class ReceptionServeur {
             toucheSuspecte(player, detail);
             return;
         }
+        if (type.equals("veille")) {
+            // 08/11 : la veille du jeu a vu apparaître du code (thread, DLL, crochet de l'affichage) : contrôle complet
+            // tout de suite (le contrôle juge et expulse ; la veille ne prouve rien à elle seule)
+            String quoi = switch (detail) {
+                case "thread" -> "thread natif hors module";
+                case "module" -> "bibliothèque native chargée";
+                case "affichage" -> "affichage modifié";
+                case "java" -> "thread Java d'origine inconnue";
+                default -> "changement";
+            };
+            ScanManager.controleImmediat(player, "veille du jeu (" + quoi + ")");
+            return;
+        }
         if (!PacketGuard.allowReport(player.getUUID(), type + ":" + detail)) {
             return;
         }
@@ -301,6 +315,9 @@ public final class ReceptionServeur {
                 + " n'y est attachée : touche d'ouverture des menus de clients de triche (indice)");
         // Capture de l'écran au moment de l'appui (seulement si le joueur l'a autorisée dans le launcher).
         CaptureManager.demander(player, "touche « " + nom + " » pressée");
+        // 08/11 : contrôle complet tout de suite (un client de triche s'ouvre souvent sur cette touche juste après
+        // l'injection ; avant, il fallait attendre le contrôle au hasard suivant, jusqu'à 8 min)
+        ScanManager.controleImmediat(player, "touche des menus de triche");
     }
 
     /** Nom d'une touche GLFW pour le staff. */

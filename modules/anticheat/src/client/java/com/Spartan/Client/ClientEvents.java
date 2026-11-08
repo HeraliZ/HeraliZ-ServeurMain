@@ -51,6 +51,9 @@ public class ClientEvents {
 
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null || minecraft.player == null) {
+            if (wasConnected) {
+                com.Spartan.scan.collect.Veille.arreter();
+            }
             wasConnected = false;
             return;
         }
@@ -67,6 +70,12 @@ public class ClientEvents {
             ModMessages.sendToServer(new TestPacket(ComponentInfo.getSystemUUID()));
             ModMessages.sendToServer(new TestPacket(ComponentInfo.getHWID()));
             reportJavaAgents();
+            // 08/11 : veille légère (fil à part, toutes les 3 s) ; un changement suspect = contrôle complet immédiat
+            com.Spartan.scan.collect.Veille.demarrer(quoi -> Minecraft.getInstance().execute(() -> {
+                if (Minecraft.getInstance().getConnection() != null) {
+                    ModMessages.sendToServer(new ClientReportPacket("veille", quoi));
+                }
+            }));
             // Accord pour les captures d'écran, donné (ou non) dans le launcher.
             ModMessages.sendToServer(new ClientReportPacket("capture", CaptureEcran.autorisee() ? "oui" : "non"));
             String shader = ShaderProbe.activeShaderpack();

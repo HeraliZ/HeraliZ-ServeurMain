@@ -137,6 +137,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.IntValue SCAN_FIRST_MIN;
     public static final ForgeConfigSpec.IntValue SCAN_FIRST_MAX;
     public static final ForgeConfigSpec.IntValue SCAN_INTERVAL_MIN;
+    public static final ForgeConfigSpec.IntValue SCAN_IMMEDIAT_ECART;
     public static final ForgeConfigSpec.IntValue SCAN_INTERVAL_MAX;
     public static final ForgeConfigSpec.IntValue SCAN_TIMEOUT;
     public static final ForgeConfigSpec.IntValue SCAN_RENDER_SAMPLES;
@@ -718,6 +719,10 @@ public class SpartanConfig {
                 .defineInRange("intervalMinSeconds", 180, 30, 86400);
         SCAN_INTERVAL_MAX = b.comment("Contrôles suivants : intervalle aléatoire maximum (secondes).")
                 .defineInRange("intervalMaxSeconds", 480, 30, 86400);
+        SCAN_IMMEDIAT_ECART = b.comment("Contrôle immédiat (08/11) : une touche des menus de triche ou la veille du jeu (code",
+                        "natif ou Java apparu en cours de partie) lance tout de suite un contrôle complet. Écart minimum entre deux",
+                        "contrôles immédiats d'un même joueur (secondes) ; 0 = coupé (on attend le contrôle au hasard suivant).")
+                .defineInRange("immediateScanGapSeconds", 60, 0, 3600);
         SCAN_TIMEOUT = b.comment("Délai de réponse d'un contrôle (secondes). Deux absences de suite = alerte.")
                 .defineInRange("responseTimeoutSeconds", 90, 15, 600);
         SCAN_RENDER_SAMPLES = b.comment(

@@ -100,6 +100,8 @@ public final class ScanManager {
         Severity lastVerdict;
         long lastAt;
         String lastEvidence;
+        /** Dernier contrôle immédiat (touche des menus de triche, veille du jeu), en ms. */
+        long dernierImmediat;
 
         State(String name) {
             this.name = name;
@@ -303,6 +305,30 @@ public final class ScanManager {
         if (s.pendingId == 0) {
             send(p, s, learn ? "apprentissage de la référence" : "demandé par le staff");
         }
+    }
+
+    /**
+     * Contrôle complet TOUT DE SUITE (08/11 : un client injecté en cours de partie n'était vu qu'au contrôle au hasard
+     * suivant, une minute à huit minutes plus tard) : demandé par une touche des menus de triche ou par la veille du jeu.
+     * Au plus un toutes les {@code immediateScanGapSeconds} par joueur (0 = coupé) ; jamais pendant un contrôle en cours,
+     * un rapport encore en analyse, ni avant la vérification du joueur. Le contrôle juge et expulse comme les autres.
+     */
+    public static void controleImmediat(ServerPlayer p, String declencheur) {
+        int ecart = SpartanConfig.SCAN_IMMEDIAT_ECART.get();
+        if (!SpartanConfig.SCAN_ENABLED.get() || ecart <= 0) {
+            return;
+        }
+        State s = STATES.get(p.getUUID());
+        if (s == null || s.pendingId != 0 || analyseEnAttente(p.getUUID())
+                || !com.Spartan.integrity.PorteJoueurs.estVerifie(p.getUUID())) {
+            return;
+        }
+        long now = Util.getMillis();
+        if (s.dernierImmediat != 0 && now - s.dernierImmediat < ecart * 1000L) {
+            return;
+        }
+        s.dernierImmediat = now;
+        send(p, s, declencheur);
     }
 
     private static void send(ServerPlayer p, State s, String trigger) {

@@ -196,11 +196,24 @@ public final class InjectionCollector {
         if (dest != null && isSystem(dest)) {
             return;
         }
+        // Relais (08/11, overlay de Discord pris pour un cheat) : les crocheteurs (MinHook, Detours, overlay de Discord…)
+        // posent souvent un saut court vers un petit relais alloué près de la fonction (mémoire sans module), qui saute
+        // ensuite dans leur DLL. On suit ce relais (3 sauts au plus) pour juger la DLL qui reçoit vraiment l'affichage ;
+        // aucun module au bout = code injecté caché, comme avant.
+        boolean relais = false;
+        if (dest == null) {
+            long t = target;
+            for (int i = 0; i < 3 && dest == null && t != 0; i++) {
+                t = jumpTargetSur(t);
+                dest = t == 0 ? null : module(modules, t);
+            }
+            relais = dest != null;
+        }
         if (r.injection.size() < MAX_ENTREES) {
             String dossier = dest == null ? "" : NativeCollector.classify(dest.path(), System::getenv,
                     System.getProperty("java.home", ""), jeu, System.getProperty("user.home", ""), true).shown();
             r.injection.add("hook|" + library + "!" + function + "|" + hex(target) + "|" + (dest == null ? "" : dest.name())
-                    + "|" + dossier.replace('|', '/'));
+                    + "|" + dossier.replace('|', '/') + (relais ? "|relais" : ""));
         }
     }
 
@@ -214,6 +227,41 @@ public final class InjectionCollector {
             return 0;
         }
         byte[] b = code.getByteArray(0, 14);
+        return decoder(b, addr, slot -> owner.contains(slot) && owner.contains(slot + 8) ? new Pointer(slot).getLong(0) : 0);
+    }
+
+    /**
+     * Saut placé à une adresse hors de tout module (relais d'un crochet) : lu par ReadProcessMemory sur notre propre
+     * processus, qui répond « échec » pour une page absente ou illisible au lieu de faire planter le jeu.
+     */
+    static long jumpTargetSur(long addr) {
+        byte[] b = lire(addr, 14);
+        if (b == null) {
+            return 0;
+        }
+        return decoder(b, addr, slot -> {
+            byte[] c = lire(slot, 8);
+            return c == null ? 0 : longAt(c, 0);
+        });
+    }
+
+    static byte[] lire(long addr, int n) {
+        if (addr == 0) {
+            return null;
+        }
+        try {
+            Memory buf = new Memory(n);
+            IntByReference lus = new IntByReference();
+            boolean ok = Kernel32.INSTANCE.ReadProcessMemory(Kernel32.INSTANCE.GetCurrentProcess(), new Pointer(addr), buf,
+                    n, lus);
+            return ok && lus.getValue() == n ? buf.getByteArray(0, n) : null;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    /** Cible du saut codé dans {@code b} (lu à l'adresse {@code addr}), 0 si aucun ; {@code slot} lit une case d'adresse. */
+    static long decoder(byte[] b, long addr, java.util.function.LongUnaryOperator slot) {
         int op = b[0] & 0xFF;
         if (op == 0xE9) {                                           // jmp rel32
             return addr + 5 + intAt(b, 1);
@@ -222,8 +270,11 @@ public final class InjectionCollector {
             return addr + 2 + b[1];
         }
         if (op == 0xFF && (b[1] & 0xFF) == 0x25) {                  // jmp [rip+rel32]
-            long slot = addr + 6 + intAt(b, 2);
-            return owner.contains(slot) && owner.contains(slot + 8) ? new Pointer(slot).getLong(0) : 0;
+            long case8 = addr + 6 + intAt(b, 2);
+            if (case8 == addr + 6) {
+                return longAt(b, 6);                                // jmp [rip+0] : l'adresse suit (relais classique)
+            }
+            return slot.applyAsLong(case8);
         }
         if (op == 0x48 && (b[1] & 0xFF) == 0xB8 && (b[10] & 0xFF) == 0xFF && (b[11] & 0xFF) == 0xE0) {
             return longAt(b, 2);                                    // mov rax, imm64 ; jmp rax

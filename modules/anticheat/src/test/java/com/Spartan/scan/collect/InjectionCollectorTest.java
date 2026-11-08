@@ -114,4 +114,42 @@ class InjectionCollectorTest {
         code.setInt(2, 0x7FFFFFF0);
         assertEquals(0, InjectionCollector.jumpTarget(code, base, owner));
     }
+
+    /** Relais d'un crochet (08/11, overlay de Discord) : « jmp [rip+0] » suivi de l'adresse, décodé sans rien lire. */
+    @Test
+    void relayJumpIsDecodedWithoutReading() {
+        byte[] b = new byte[14];
+        b[0] = (byte) 0xFF;
+        b[1] = (byte) 0x25;
+        long cible = 0x00007FF812345678L;
+        for (int i = 0; i < 8; i++) {
+            b[6 + i] = (byte) (cible >>> (8 * i));
+        }
+        assertEquals(cible, InjectionCollector.decoder(b, 0x1000, slot -> {
+            throw new AssertionError("aucune case à lire pour jmp [rip+0]");
+        }));
+        // jmp rel32 depuis un relais
+        byte[] r = new byte[14];
+        r[0] = (byte) 0xE9;
+        r[1] = 0x10;
+        assertEquals(0x1000 + 5 + 0x10, InjectionCollector.decoder(r, 0x1000, slot -> 0));
+    }
+
+    /** Sur Windows : un relais posé en mémoire sans module est suivi ; une adresse illisible ne fait pas planter. */
+    @Test
+    void relayInUnbackedMemoryIsFollowedSafely() {
+        assumeTrue(System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win"), "Windows seulement");
+        assertEquals(0, InjectionCollector.jumpTargetSur(0x10));     // page jamais allouée : 0, pas de plantage
+        Pointer relais = K.I.VirtualAlloc(null, 4096, 0x3000, 0x40);
+        assertTrue(relais != null);
+        try {
+            relais.setByte(0, (byte) 0xFF);
+            relais.setByte(1, (byte) 0x25);
+            relais.setInt(2, 0);
+            relais.setLong(6, 0x00007FF812345678L);
+            assertEquals(0x00007FF812345678L, InjectionCollector.jumpTargetSur(Pointer.nativeValue(relais)));
+        } finally {
+            K.I.VirtualFree(relais, 0, 0x8000);
+        }
+    }
 }

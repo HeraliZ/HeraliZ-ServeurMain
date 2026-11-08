@@ -208,9 +208,12 @@ public final class ScanAnalyzer {
                     continue; // overlay connu à sa place (Discord, Steam, OBS…)
                 }
                 String ou = dossier.isEmpty() ? "" : " (" + dossier + ")";
+                // 6e champ « relais » (jeu d'après le 08/11) : saut vers un relais sans module qui mène à ce module (forme
+                // des crochets de MinHook, Detours et de l'overlay de Discord) ; jugé comme un saut direct vers ce module
+                boolean relais = p.length >= 6 && p[5].equals("relais");
                 out.add(new Finding(cache ? Severity.STRONG : Severity.SUSPECT, "inject:hook:" + p[1] + ":" + p[3],
                         "affichage détourné : " + p[1] + " saute vers " + (cache ? "du code injecté sans module (" + p[2] + ")"
-                                : "le module " + p[3] + ou + (overlay(p[3], s) ? " (nom d'overlay connu, mais dans un dossier"
+                                : (relais ? "un relais puis " : "") + "le module " + p[3] + ou + (overlay(p[3], s) ? " (nom d'overlay connu, mais dans un dossier"
                                 + " où les overlays ne sont jamais)" : " (overlay inconnu ou ESP)"))));
             }
         }

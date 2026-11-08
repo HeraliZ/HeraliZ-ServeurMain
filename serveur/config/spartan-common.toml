@@ -125,6 +125,11 @@
 	#Délai de réponse d'un contrôle (secondes). Deux absences de suite = alerte.
 	#Range: 15 ~ 600
 	responseTimeoutSeconds = 90
+	#Contrôle immédiat (08/11) : une touche des menus de triche ou la veille du jeu (code
+	#natif ou Java apparu en cours de partie) lance tout de suite un contrôle complet. Écart minimum entre deux
+	#contrôles immédiats d'un même joueur (secondes) ; 0 = coupé (on attend le contrôle au hasard suivant).
+	#Range: 0 ~ 3600
+	immediateScanGapSeconds = 60
 	#Classes de clients de triche connus, cherchées dans le jeu du joueur. Cette liste n'est
 	#jamais dans le jar : les développeurs de cheats ne la voient pas. À compléter avec les
 	#classes trouvées dans les preuves des tricheurs attrapés.

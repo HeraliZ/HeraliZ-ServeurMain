@@ -34,6 +34,27 @@ class ScanAnalyzerTest {
         d.injection.add("hook|opengl32!wglSwapBuffers|0x7FF1000|renderdoc.dll|%PROGRAMFILES%/renderdoc");
         assertTrue(ScanAnalyzer.analyze(d, null, null, ScanTestData.settings()).stream()
                 .anyMatch(f -> f.key().startsWith("inject:hook")));
+        // relais (08/11) : overlay de Discord à sa place atteint par un relais sans module = rien ; relais vers une DLL
+        // inconnue = soupçon ; relais vers un overlay rangé dans Temp = signalé
+        ScanReport rd = ScanTestData.clean();
+        rd.injection.add("hook|gdi32!SwapBuffers|0x7FF934610E46|discordhook64.dll"
+                + "|%USERPROFILE%/appdata/local/discord/app-1.0.9267/modules/discord_hook-1/discord_hook|relais");
+        assertTrue(ScanAnalyzer.analyze(rd, null, null, ScanTestData.settings()).stream()
+                .noneMatch(f -> f.key().startsWith("inject:")));
+        ScanReport ri = ScanTestData.clean();
+        ri.injection.add("hook|gdi32!SwapBuffers|0x7FF934610E46|esp.dll|%USERPROFILE%/appdata/roaming/x|relais");
+        assertTrue(ScanAnalyzer.analyze(ri, null, null, ScanTestData.settings()).stream()
+                .anyMatch(f -> f.key().startsWith("inject:hook") && f.severity() == Severity.SUSPECT
+                        && f.text().contains("relais")));
+        ScanReport rt = ScanTestData.clean();
+        rt.injection.add("hook|gdi32!SwapBuffers|0x7FF934610E46|discordhook64.dll|%TEMP%/a1|relais");
+        assertTrue(ScanAnalyzer.analyze(rt, null, null, ScanTestData.settings()).stream()
+                .anyMatch(f -> f.key().startsWith("inject:hook")));
+        // aucun module au bout du relais : code injecté caché, indice fort comme avant
+        ScanReport rc = ScanTestData.clean();
+        rc.injection.add("hook|gdi32!SwapBuffers|0x7FF934610E46||");
+        assertTrue(ScanAnalyzer.analyze(rc, null, null, ScanTestData.settings()).stream()
+                .anyMatch(f -> f.key().startsWith("inject:hook") && f.severity() == Severity.STRONG));
         // ancien format (sans dossier) : lu comme avant
         ScanReport v = ScanTestData.clean();
         v.injection.add("hook|opengl32!wglSwapBuffers|0x7FF1000|DiscordHook64.dll");
