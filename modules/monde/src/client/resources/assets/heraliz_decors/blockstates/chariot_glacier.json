@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/chariot_glacier"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/chariot_glacier",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/chariot_glacier",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/chariot_glacier",
+   "y": 270
+  }
+ }
+}

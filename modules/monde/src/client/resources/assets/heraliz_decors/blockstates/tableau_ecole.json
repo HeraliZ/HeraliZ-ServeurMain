@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/tableau_ecole"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/tableau_ecole",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/tableau_ecole",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/tableau_ecole",
+   "y": 270
+  }
+ }
+}

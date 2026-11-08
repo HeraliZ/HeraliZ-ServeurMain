@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/pompe_hydraulique"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/pompe_hydraulique",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/pompe_hydraulique",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/pompe_hydraulique",
+   "y": 270
+  }
+ }
+}

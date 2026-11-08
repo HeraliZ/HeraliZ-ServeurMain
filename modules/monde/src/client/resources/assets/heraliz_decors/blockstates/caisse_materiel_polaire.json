@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/caisse_materiel_polaire"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/caisse_materiel_polaire",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/caisse_materiel_polaire",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/caisse_materiel_polaire",
+   "y": 270
+  }
+ }
+}

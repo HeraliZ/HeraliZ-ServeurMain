@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/door_top_right_open",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_station_service_bas",
+  "top": "heraliz_decors:block/porte_station_service_haut",
+  "particle": "heraliz_decors:block/porte_station_service_bas"
+ },
+ "render_type": "minecraft:translucent"
+}

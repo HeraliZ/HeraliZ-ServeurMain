@@ -1,0 +1,55 @@
+{
+ "variants": {
+  "taille=petit": [
+   {
+    "model": "heraliz_decors:block/gravats_petit"
+   },
+   {
+    "model": "heraliz_decors:block/gravats_petit",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/gravats_petit",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/gravats_petit",
+    "y": 270
+   }
+  ],
+  "taille=moyen": [
+   {
+    "model": "heraliz_decors:block/gravats_moyen"
+   },
+   {
+    "model": "heraliz_decors:block/gravats_moyen",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/gravats_moyen",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/gravats_moyen",
+    "y": 270
+   }
+  ],
+  "taille=grand": [
+   {
+    "model": "heraliz_decors:block/gravats_grand"
+   },
+   {
+    "model": "heraliz_decors:block/gravats_grand",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/gravats_grand",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/gravats_grand",
+    "y": 270
+   }
+  ]
+ }
+}

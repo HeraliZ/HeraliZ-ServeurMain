@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "taille=petit": {
+   "model": "heraliz_decors:block/jarre_petit"
+  },
+  "taille=moyen": {
+   "model": "heraliz_decors:block/jarre_moyen"
+  },
+  "taille=grand": {
+   "model": "heraliz_decors:block/jarre_grand"
+  }
+ }
+}

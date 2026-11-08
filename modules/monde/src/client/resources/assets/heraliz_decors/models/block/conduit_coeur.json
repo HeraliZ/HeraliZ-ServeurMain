@@ -1,0 +1,109 @@
+{
+ "textures": {
+  "g": "heraliz_decors:block/conduit",
+  "b": "heraliz_decors:block/conduit_bride",
+  "particle": "heraliz_decors:block/conduit"
+ },
+ "elements": [
+  {
+   "from": [
+    5,
+    5,
+    5
+   ],
+   "to": [
+    11,
+    11,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    4.5,
+    4.5,
+    4.5
+   ],
+   "to": [
+    11.5,
+    11.5,
+    11.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      7.0
+     ]
+    },
+    "down": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      7.0
+     ]
+    }
+   }
+  }
+ ]
+}

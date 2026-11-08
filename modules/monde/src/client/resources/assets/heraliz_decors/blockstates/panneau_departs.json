@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/panneau_departs"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/panneau_departs",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/panneau_departs",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/panneau_departs",
+   "y": 270
+  }
+ }
+}

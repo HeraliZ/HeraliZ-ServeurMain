@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/siege_gare"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/siege_gare",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/siege_gare",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/siege_gare",
+   "y": 270
+  }
+ }
+}

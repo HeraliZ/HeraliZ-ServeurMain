@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "heraliz_decors:block/feuilles_palmier"
+ },
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/lampadaire_casse"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/lampadaire_casse",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/lampadaire_casse",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/lampadaire_casse",
+   "y": 270
+  }
+ }
+}

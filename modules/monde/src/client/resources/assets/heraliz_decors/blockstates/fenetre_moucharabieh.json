@@ -1,0 +1,64 @@
+{
+ "variants": {
+  "facing=north,partie=seule": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_seule"
+  },
+  "facing=north,partie=bas": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_bas"
+  },
+  "facing=north,partie=milieu": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_milieu"
+  },
+  "facing=north,partie=haut": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_haut"
+  },
+  "facing=east,partie=seule": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_seule",
+   "y": 90
+  },
+  "facing=east,partie=bas": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_bas",
+   "y": 90
+  },
+  "facing=east,partie=milieu": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_milieu",
+   "y": 90
+  },
+  "facing=east,partie=haut": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_haut",
+   "y": 90
+  },
+  "facing=south,partie=seule": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_seule",
+   "y": 180
+  },
+  "facing=south,partie=bas": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_bas",
+   "y": 180
+  },
+  "facing=south,partie=milieu": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_milieu",
+   "y": 180
+  },
+  "facing=south,partie=haut": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_haut",
+   "y": 180
+  },
+  "facing=west,partie=seule": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_seule",
+   "y": 270
+  },
+  "facing=west,partie=bas": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_bas",
+   "y": 270
+  },
+  "facing=west,partie=milieu": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_milieu",
+   "y": 270
+  },
+  "facing=west,partie=haut": {
+   "model": "heraliz_decors:block/fenetre_moucharabieh_haut",
+   "y": 270
+  }
+ }
+}

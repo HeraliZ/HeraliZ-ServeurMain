@@ -1,0 +1,64 @@
+{
+ "variants": {
+  "facing=north,partie=avant_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_gauche"
+  },
+  "facing=north,partie=avant_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_droite"
+  },
+  "facing=north,partie=arriere_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_gauche"
+  },
+  "facing=north,partie=arriere_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_droite"
+  },
+  "facing=east,partie=avant_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_gauche",
+   "y": 90
+  },
+  "facing=east,partie=avant_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_droite",
+   "y": 90
+  },
+  "facing=east,partie=arriere_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_gauche",
+   "y": 90
+  },
+  "facing=east,partie=arriere_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_droite",
+   "y": 90
+  },
+  "facing=south,partie=avant_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_gauche",
+   "y": 180
+  },
+  "facing=south,partie=avant_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_droite",
+   "y": 180
+  },
+  "facing=south,partie=arriere_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_gauche",
+   "y": 180
+  },
+  "facing=south,partie=arriere_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_droite",
+   "y": 180
+  },
+  "facing=west,partie=avant_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_gauche",
+   "y": 270
+  },
+  "facing=west,partie=avant_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_avant_droite",
+   "y": 270
+  },
+  "facing=west,partie=arriere_gauche": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_gauche",
+   "y": 270
+  },
+  "facing=west,partie=arriere_droite": {
+   "model": "heraliz_decors:block/tracteur_portuaire_arriere_droite",
+   "y": 270
+  }
+ }
+}

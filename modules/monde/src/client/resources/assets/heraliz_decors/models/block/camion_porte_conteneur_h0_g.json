@@ -1,0 +1,261 @@
+{
+ "textures": {
+  "c": "heraliz_decors:block/camion_cabine",
+  "n": "heraliz_decors:block/metal_sombre",
+  "k": "heraliz_decors:block/caoutchouc",
+  "g": "heraliz_decors:block/galet",
+  "v": "heraliz_decors:block/vitre_engin",
+  "l": "heraliz_decors:block/phare_engin",
+  "r": "heraliz_decors:block/acier_rouille",
+  "particle": "heraliz_decors:block/camion_cabine"
+ },
+ "elements": [
+  {
+   "from": [
+    2.0,
+    16.0,
+    1.0
+   ],
+   "to": [
+    16.0,
+    24.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.0,
+      8.0
+     ]
+    },
+    "west": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      15.0,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.0,
+      15.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    1.5,
+    24.0,
+    0.6
+   ],
+   "to": [
+    16.0,
+    26.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.5,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      15.4,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.5,
+      15.4
+     ]
+    },
+    "down": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.5,
+      15.4
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    4.0,
+    26.0,
+    3.0
+   ],
+   "to": [
+    16.0,
+    31.0,
+    16.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      5.0
+     ]
+    },
+    "west": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      5.0
+     ]
+    },
+    "up": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      13.0
+     ]
+    },
+    "down": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      13.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    4.0,
+    16.0,
+    0.6
+   ],
+   "to": [
+    16.0,
+    21.5,
+    1.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#v",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      5.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    1.6,
+    16.0,
+    3.0
+   ],
+   "to": [
+    2.0,
+    20.0,
+    14.0
+   ],
+   "faces": {
+    "west": {
+     "texture": "#v",
+     "uv": [
+      0.0,
+      0.0,
+      11.0,
+      4.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    16.0,
+    2.0
+   ],
+   "to": [
+    1.6,
+    18.0,
+    3.6
+   ],
+   "faces": {
+    "north": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      1.6,
+      2.0
+     ]
+    },
+    "south": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      1.6,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      1.6,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      1.6,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      1.6,
+      1.6
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

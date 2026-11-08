@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_decors:porte_grille",
+    "heraliz_decors:enduit_sable_mur",
+    "heraliz_decors:pierre_sable_mur",
+    "heraliz_decors:panneau_polaire_gris_mur",
+    "heraliz_decors:tole_larmee_mur",
+    "heraliz_decors:beton_polaire_mur",
+    "heraliz_decors:beton_banche_mur"
+  ]
+}

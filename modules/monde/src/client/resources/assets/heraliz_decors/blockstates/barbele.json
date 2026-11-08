@@ -1,0 +1,11 @@
+{
+ "variants": {
+  "axis=x": {
+   "model": "heraliz_decors:block/barbele"
+  },
+  "axis=z": {
+   "model": "heraliz_decors:block/barbele",
+   "y": 90
+  }
+ }
+}

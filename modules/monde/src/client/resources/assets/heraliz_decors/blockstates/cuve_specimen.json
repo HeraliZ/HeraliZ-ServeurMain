@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "cassee=true,facing=north": {
+   "model": "heraliz_decors:block/cuve_specimen_cassee"
+  },
+  "cassee=false,facing=north": {
+   "model": "heraliz_decors:block/cuve_specimen"
+  },
+  "cassee=true,facing=east": {
+   "model": "heraliz_decors:block/cuve_specimen_cassee",
+   "y": 90
+  },
+  "cassee=false,facing=east": {
+   "model": "heraliz_decors:block/cuve_specimen",
+   "y": 90
+  },
+  "cassee=true,facing=south": {
+   "model": "heraliz_decors:block/cuve_specimen_cassee",
+   "y": 180
+  },
+  "cassee=false,facing=south": {
+   "model": "heraliz_decors:block/cuve_specimen",
+   "y": 180
+  },
+  "cassee=true,facing=west": {
+   "model": "heraliz_decors:block/cuve_specimen_cassee",
+   "y": 270
+  },
+  "cassee=false,facing=west": {
+   "model": "heraliz_decors:block/cuve_specimen",
+   "y": 270
+  }
+ }
+}

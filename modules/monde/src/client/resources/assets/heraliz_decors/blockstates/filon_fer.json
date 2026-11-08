@@ -1,0 +1,21 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heraliz_decors:block/filon_fer"
+   },
+   {
+    "model": "heraliz_decors:block/filon_fer",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/filon_fer",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/filon_fer",
+    "y": 270
+   }
+  ]
+ }
+}

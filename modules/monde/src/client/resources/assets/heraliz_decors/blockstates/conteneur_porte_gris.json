@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/conteneur_porte_gris"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/conteneur_porte_gris",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/conteneur_porte_gris",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/conteneur_porte_gris",
+   "y": 270
+  }
+ }
+}

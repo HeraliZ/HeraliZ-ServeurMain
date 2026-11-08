@@ -1,0 +1,21 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heraliz_decors:block/flaque_toxique"
+   },
+   {
+    "model": "heraliz_decors:block/flaque_toxique",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/flaque_toxique",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/flaque_toxique",
+    "y": 270
+   }
+  ]
+ }
+}

@@ -1,0 +1,53 @@
+{
+ "textures": {
+  "l": "heraliz_decors:block/liquide_toxique",
+  "particle": "heraliz_decors:block/liquide_toxique"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    13,
+    0
+   ],
+   "to": [
+    16,
+    13,
+    16
+   ],
+   "shade": false,
+   "faces": {
+    "up": {
+     "texture": "#l",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "forge_data": {
+      "block_light": 12,
+      "sky_light": 12,
+      "ambient_occlusion": false
+     }
+    },
+    "down": {
+     "texture": "#l",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "forge_data": {
+      "block_light": 12,
+      "sky_light": 12,
+      "ambient_occlusion": false
+     }
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:translucent",
+ "ambientocclusion": false
+}

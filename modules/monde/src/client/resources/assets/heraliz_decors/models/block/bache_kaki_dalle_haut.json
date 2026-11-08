@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/slab_top",
+ "textures": {
+  "bottom": "heraliz_decors:block/bache_kaki",
+  "top": "heraliz_decors:block/bache_kaki",
+  "side": "heraliz_decors:block/bache_kaki"
+ }
+}

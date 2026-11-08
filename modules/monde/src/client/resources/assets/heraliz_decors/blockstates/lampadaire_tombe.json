@@ -1,0 +1,49 @@
+{
+ "variants": {
+  "facing=north,partie=pied": {
+   "model": "heraliz_decors:block/lampadaire_tombe_pied"
+  },
+  "facing=north,partie=fut": {
+   "model": "heraliz_decors:block/lampadaire_tombe_fut"
+  },
+  "facing=north,partie=tete": {
+   "model": "heraliz_decors:block/lampadaire_tombe_tete"
+  },
+  "facing=east,partie=pied": {
+   "model": "heraliz_decors:block/lampadaire_tombe_pied",
+   "y": 90
+  },
+  "facing=east,partie=fut": {
+   "model": "heraliz_decors:block/lampadaire_tombe_fut",
+   "y": 90
+  },
+  "facing=east,partie=tete": {
+   "model": "heraliz_decors:block/lampadaire_tombe_tete",
+   "y": 90
+  },
+  "facing=south,partie=pied": {
+   "model": "heraliz_decors:block/lampadaire_tombe_pied",
+   "y": 180
+  },
+  "facing=south,partie=fut": {
+   "model": "heraliz_decors:block/lampadaire_tombe_fut",
+   "y": 180
+  },
+  "facing=south,partie=tete": {
+   "model": "heraliz_decors:block/lampadaire_tombe_tete",
+   "y": 180
+  },
+  "facing=west,partie=pied": {
+   "model": "heraliz_decors:block/lampadaire_tombe_pied",
+   "y": 270
+  },
+  "facing=west,partie=fut": {
+   "model": "heraliz_decors:block/lampadaire_tombe_fut",
+   "y": 270
+  },
+  "facing=west,partie=tete": {
+   "model": "heraliz_decors:block/lampadaire_tombe_tete",
+   "y": 270
+  }
+ }
+}

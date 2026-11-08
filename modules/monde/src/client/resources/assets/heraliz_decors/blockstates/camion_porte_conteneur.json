@@ -1,0 +1,304 @@
+{
+ "variants": {
+  "facing=north,partie=r0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_g"
+  },
+  "facing=north,partie=r0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_d"
+  },
+  "facing=north,partie=r1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_g"
+  },
+  "facing=north,partie=r1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_d"
+  },
+  "facing=north,partie=r2_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_g"
+  },
+  "facing=north,partie=r2_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_d"
+  },
+  "facing=north,partie=r3_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_g"
+  },
+  "facing=north,partie=r3_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_d"
+  },
+  "facing=north,partie=r4_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_g"
+  },
+  "facing=north,partie=r4_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_d"
+  },
+  "facing=north,partie=r5_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_g"
+  },
+  "facing=north,partie=r5_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_d"
+  },
+  "facing=north,partie=r6_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_g"
+  },
+  "facing=north,partie=r6_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_d"
+  },
+  "facing=north,partie=r7_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_g"
+  },
+  "facing=north,partie=r7_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_d"
+  },
+  "facing=north,partie=h0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_g"
+  },
+  "facing=north,partie=h0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_d"
+  },
+  "facing=north,partie=h1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_g"
+  },
+  "facing=north,partie=h1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_d"
+  },
+  "facing=east,partie=r0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_g",
+   "y": 90
+  },
+  "facing=east,partie=r0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_d",
+   "y": 90
+  },
+  "facing=east,partie=r1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_g",
+   "y": 90
+  },
+  "facing=east,partie=r1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_d",
+   "y": 90
+  },
+  "facing=east,partie=r2_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_g",
+   "y": 90
+  },
+  "facing=east,partie=r2_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_d",
+   "y": 90
+  },
+  "facing=east,partie=r3_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_g",
+   "y": 90
+  },
+  "facing=east,partie=r3_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_d",
+   "y": 90
+  },
+  "facing=east,partie=r4_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_g",
+   "y": 90
+  },
+  "facing=east,partie=r4_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_d",
+   "y": 90
+  },
+  "facing=east,partie=r5_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_g",
+   "y": 90
+  },
+  "facing=east,partie=r5_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_d",
+   "y": 90
+  },
+  "facing=east,partie=r6_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_g",
+   "y": 90
+  },
+  "facing=east,partie=r6_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_d",
+   "y": 90
+  },
+  "facing=east,partie=r7_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_g",
+   "y": 90
+  },
+  "facing=east,partie=r7_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_d",
+   "y": 90
+  },
+  "facing=east,partie=h0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_g",
+   "y": 90
+  },
+  "facing=east,partie=h0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_d",
+   "y": 90
+  },
+  "facing=east,partie=h1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_g",
+   "y": 90
+  },
+  "facing=east,partie=h1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_d",
+   "y": 90
+  },
+  "facing=south,partie=r0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_g",
+   "y": 180
+  },
+  "facing=south,partie=r0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_d",
+   "y": 180
+  },
+  "facing=south,partie=r1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_g",
+   "y": 180
+  },
+  "facing=south,partie=r1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_d",
+   "y": 180
+  },
+  "facing=south,partie=r2_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_g",
+   "y": 180
+  },
+  "facing=south,partie=r2_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_d",
+   "y": 180
+  },
+  "facing=south,partie=r3_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_g",
+   "y": 180
+  },
+  "facing=south,partie=r3_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_d",
+   "y": 180
+  },
+  "facing=south,partie=r4_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_g",
+   "y": 180
+  },
+  "facing=south,partie=r4_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_d",
+   "y": 180
+  },
+  "facing=south,partie=r5_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_g",
+   "y": 180
+  },
+  "facing=south,partie=r5_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_d",
+   "y": 180
+  },
+  "facing=south,partie=r6_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_g",
+   "y": 180
+  },
+  "facing=south,partie=r6_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_d",
+   "y": 180
+  },
+  "facing=south,partie=r7_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_g",
+   "y": 180
+  },
+  "facing=south,partie=r7_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_d",
+   "y": 180
+  },
+  "facing=south,partie=h0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_g",
+   "y": 180
+  },
+  "facing=south,partie=h0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_d",
+   "y": 180
+  },
+  "facing=south,partie=h1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_g",
+   "y": 180
+  },
+  "facing=south,partie=h1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_d",
+   "y": 180
+  },
+  "facing=west,partie=r0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_g",
+   "y": 270
+  },
+  "facing=west,partie=r0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r0_d",
+   "y": 270
+  },
+  "facing=west,partie=r1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_g",
+   "y": 270
+  },
+  "facing=west,partie=r1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r1_d",
+   "y": 270
+  },
+  "facing=west,partie=r2_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_g",
+   "y": 270
+  },
+  "facing=west,partie=r2_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r2_d",
+   "y": 270
+  },
+  "facing=west,partie=r3_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_g",
+   "y": 270
+  },
+  "facing=west,partie=r3_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r3_d",
+   "y": 270
+  },
+  "facing=west,partie=r4_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_g",
+   "y": 270
+  },
+  "facing=west,partie=r4_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r4_d",
+   "y": 270
+  },
+  "facing=west,partie=r5_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_g",
+   "y": 270
+  },
+  "facing=west,partie=r5_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r5_d",
+   "y": 270
+  },
+  "facing=west,partie=r6_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_g",
+   "y": 270
+  },
+  "facing=west,partie=r6_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r6_d",
+   "y": 270
+  },
+  "facing=west,partie=r7_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_g",
+   "y": 270
+  },
+  "facing=west,partie=r7_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_r7_d",
+   "y": 270
+  },
+  "facing=west,partie=h0_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_g",
+   "y": 270
+  },
+  "facing=west,partie=h0_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h0_d",
+   "y": 270
+  },
+  "facing=west,partie=h1_g": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_g",
+   "y": 270
+  },
+  "facing=west,partie=h1_d": {
+   "model": "heraliz_decors:block/camion_porte_conteneur_h1_d",
+   "y": 270
+  }
+ }
+}

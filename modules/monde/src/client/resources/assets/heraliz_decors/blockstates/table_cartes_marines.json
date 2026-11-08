@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/table_cartes_marines"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/table_cartes_marines",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/table_cartes_marines",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/table_cartes_marines",
+   "y": 270
+  }
+ }
+}

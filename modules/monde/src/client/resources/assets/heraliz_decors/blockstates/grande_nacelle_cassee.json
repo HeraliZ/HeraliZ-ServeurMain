@@ -1,0 +1,124 @@
+{
+ "variants": {
+  "facing=north,partie=bas_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_gauche"
+  },
+  "facing=north,partie=bas_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_droite"
+  },
+  "facing=north,partie=bas_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_gauche"
+  },
+  "facing=north,partie=bas_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_droite"
+  },
+  "facing=north,partie=haut_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_gauche"
+  },
+  "facing=north,partie=haut_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_droite"
+  },
+  "facing=north,partie=haut_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_gauche"
+  },
+  "facing=north,partie=haut_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_droite"
+  },
+  "facing=east,partie=bas_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_gauche",
+   "y": 90
+  },
+  "facing=east,partie=bas_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_droite",
+   "y": 90
+  },
+  "facing=east,partie=bas_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_gauche",
+   "y": 90
+  },
+  "facing=east,partie=bas_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_droite",
+   "y": 90
+  },
+  "facing=east,partie=haut_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_gauche",
+   "y": 90
+  },
+  "facing=east,partie=haut_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_droite",
+   "y": 90
+  },
+  "facing=east,partie=haut_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_gauche",
+   "y": 90
+  },
+  "facing=east,partie=haut_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_droite",
+   "y": 90
+  },
+  "facing=south,partie=bas_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_gauche",
+   "y": 180
+  },
+  "facing=south,partie=bas_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_droite",
+   "y": 180
+  },
+  "facing=south,partie=bas_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_gauche",
+   "y": 180
+  },
+  "facing=south,partie=bas_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_droite",
+   "y": 180
+  },
+  "facing=south,partie=haut_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_gauche",
+   "y": 180
+  },
+  "facing=south,partie=haut_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_droite",
+   "y": 180
+  },
+  "facing=south,partie=haut_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_gauche",
+   "y": 180
+  },
+  "facing=south,partie=haut_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_droite",
+   "y": 180
+  },
+  "facing=west,partie=bas_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_gauche",
+   "y": 270
+  },
+  "facing=west,partie=bas_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_avant_droite",
+   "y": 270
+  },
+  "facing=west,partie=bas_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_gauche",
+   "y": 270
+  },
+  "facing=west,partie=bas_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_bas_arriere_droite",
+   "y": 270
+  },
+  "facing=west,partie=haut_avant_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_gauche",
+   "y": 270
+  },
+  "facing=west,partie=haut_avant_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_avant_droite",
+   "y": 270
+  },
+  "facing=west,partie=haut_arriere_gauche": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_gauche",
+   "y": 270
+  },
+  "facing=west,partie=haut_arriere_droite": {
+   "model": "heraliz_decors:block/grande_nacelle_cassee_haut_arriere_droite",
+   "y": 270
+  }
+ }
+}

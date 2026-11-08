@@ -1,0 +1,30 @@
+{
+ "variants": {
+  "facing=down": {
+   "model": "heraliz_decors:block/cristaux_mine",
+   "x": 180
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/cristaux_mine",
+   "x": 90,
+   "y": 90
+  },
+  "facing=north": {
+   "model": "heraliz_decors:block/cristaux_mine",
+   "x": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/cristaux_mine",
+   "x": 90,
+   "y": 180
+  },
+  "facing=up": {
+   "model": "heraliz_decors:block/cristaux_mine"
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/cristaux_mine",
+   "x": 90,
+   "y": 270
+  }
+ }
+}

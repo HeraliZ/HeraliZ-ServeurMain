@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "heraliz_decors:block/claustra"
+ },
+ "render_type": "minecraft:cutout"
+}

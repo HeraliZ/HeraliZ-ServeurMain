@@ -1,0 +1,213 @@
+{
+ "textures": {
+  "a": "heraliz_decors:block/acier_galva",
+  "m": "heraliz_decors:block/metal_sombre",
+  "r": "heraliz_decors:block/rayures_police",
+  "l": "heraliz_decors:block/panneau_lavage",
+  "o": "heraliz_decors:block/borne_lavage",
+  "particle": "heraliz_decors:block/acier_galva"
+ },
+ "elements": [
+  {
+   "from": [
+    4.0,
+    0,
+    4.0
+   ],
+   "to": [
+    12.0,
+    12.0,
+    12.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      7.111
+     ]
+    },
+    "south": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      7.111
+     ]
+    },
+    "east": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      7.111
+     ]
+    },
+    "west": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      7.111
+     ]
+    },
+    "up": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      8.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    12.0,
+    5.0
+   ],
+   "to": [
+    16.0,
+    16.0,
+    11.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      4.0
+     ]
+    },
+    "south": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      4.0
+     ]
+    },
+    "east": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      6.0,
+      4.0
+     ]
+    },
+    "west": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      6.0,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      6.0
+     ]
+    },
+    "down": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      6.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    2.0,
+    2.0,
+    3.2
+   ],
+   "to": [
+    14.0,
+    10.0,
+    4.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#l",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      16.0
+     ],
+     "forge_data": {
+      "block_light": 6,
+      "sky_light": 6,
+      "ambient_occlusion": false
+     }
+    },
+    "south": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      8.0
+     ]
+    },
+    "east": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      0.8,
+      8.0
+     ]
+    },
+    "west": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      0.8,
+      8.0
+     ]
+    },
+    "up": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      0.8
+     ]
+    },
+    "down": {
+     "texture": "#a",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      0.8
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

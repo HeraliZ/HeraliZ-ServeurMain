@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/hublot_carlingue_use"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/hublot_carlingue_use",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/hublot_carlingue_use",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/hublot_carlingue_use",
+   "y": 270
+  }
+ }
+}

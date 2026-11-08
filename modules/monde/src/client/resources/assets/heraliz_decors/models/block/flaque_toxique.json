@@ -1,0 +1,53 @@
+{
+ "textures": {
+  "f": "heraliz_decors:block/flaque_toxique",
+  "particle": "heraliz_decors:block/flaque_toxique"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0.1,
+    0
+   ],
+   "to": [
+    16,
+    0.1,
+    16
+   ],
+   "shade": false,
+   "faces": {
+    "up": {
+     "texture": "#f",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "forge_data": {
+      "block_light": 10,
+      "sky_light": 10,
+      "ambient_occlusion": false
+     }
+    },
+    "down": {
+     "texture": "#f",
+     "uv": [
+      0,
+      16,
+      16,
+      0
+     ],
+     "forge_data": {
+      "block_light": 10,
+      "sky_light": 10,
+      "ambient_occlusion": false
+     }
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false
+}

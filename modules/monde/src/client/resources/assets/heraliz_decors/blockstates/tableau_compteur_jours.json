@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/tableau_compteur_jours"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/tableau_compteur_jours",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/tableau_compteur_jours",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/tableau_compteur_jours",
+   "y": 270
+  }
+ }
+}

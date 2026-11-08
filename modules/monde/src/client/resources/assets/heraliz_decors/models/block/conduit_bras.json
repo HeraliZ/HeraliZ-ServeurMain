@@ -1,0 +1,136 @@
+{
+ "textures": {
+  "g": "heraliz_decors:block/conduit",
+  "b": "heraliz_decors:block/conduit_bride",
+  "particle": "heraliz_decors:block/conduit"
+ },
+ "elements": [
+  {
+   "from": [
+    5.5,
+    5.5,
+    0
+   ],
+   "to": [
+    10.5,
+    10.5,
+    5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      5.0
+     ]
+    },
+    "south": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      5.0
+     ]
+    },
+    "east": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5,
+      5.0
+     ]
+    },
+    "west": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5,
+      5.0
+     ]
+    },
+    "up": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      5
+     ]
+    },
+    "down": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    4.5,
+    4.5,
+    0
+   ],
+   "to": [
+    11.5,
+    11.5,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      7.0
+     ]
+    },
+    "south": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      7.0
+     ]
+    },
+    "east": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      1,
+      7.0
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      1,
+      7.0
+     ]
+    },
+    "up": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      1
+     ]
+    }
+   }
+  }
+ ]
+}

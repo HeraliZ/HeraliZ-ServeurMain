@@ -1,0 +1,191 @@
+{
+ "textures": {
+  "c": "heraliz_decors:block/voiture_epave",
+  "n": "heraliz_decors:block/metal_sombre",
+  "k": "heraliz_decors:block/caoutchouc",
+  "g": "heraliz_decors:block/galet",
+  "v": "heraliz_decors:block/verre_casse",
+  "particle": "heraliz_decors:block/voiture_epave"
+ },
+ "elements": [
+  {
+   "from": [
+    0.0,
+    3.0,
+    0.0
+   ],
+   "to": [
+    13.0,
+    6.0,
+    16.0
+   ],
+   "faces": {
+    "east": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      3.0
+     ]
+    },
+    "up": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      16.0
+     ]
+    },
+    "down": {
+     "texture": "#n",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      16.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    5.0,
+    0.0
+   ],
+   "to": [
+    14.0,
+    12.0,
+    16.0
+   ],
+   "faces": {
+    "east": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      7.0
+     ]
+    },
+    "down": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.0,
+      16.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    12.0,
+    12.0
+   ],
+   "to": [
+    14.0,
+    13.0,
+    16.0
+   ],
+   "faces": {
+    "up": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      14.0,
+      4.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    12.0,
+    0.0
+   ],
+   "to": [
+    13.0,
+    21.0,
+    10.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      9.0
+     ]
+    },
+    "east": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      9.0
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0.0,
+    20.0,
+    0.0
+   ],
+   "to": [
+    12.0,
+    22.0,
+    11.0
+   ],
+   "faces": {
+    "south": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      11.0,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      11.0
+     ]
+    },
+    "down": {
+     "texture": "#c",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      11.0
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

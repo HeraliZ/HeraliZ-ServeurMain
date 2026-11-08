@@ -1,0 +1,124 @@
+{
+ "variants": {
+  "facing=north,partie=r0_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_g"
+  },
+  "facing=north,partie=r0_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_d"
+  },
+  "facing=north,partie=r1_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_g"
+  },
+  "facing=north,partie=r1_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_d"
+  },
+  "facing=north,partie=r2_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_g"
+  },
+  "facing=north,partie=r2_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_d"
+  },
+  "facing=north,partie=r3_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_g"
+  },
+  "facing=north,partie=r3_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_d"
+  },
+  "facing=east,partie=r0_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_g",
+   "y": 90
+  },
+  "facing=east,partie=r0_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_d",
+   "y": 90
+  },
+  "facing=east,partie=r1_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_g",
+   "y": 90
+  },
+  "facing=east,partie=r1_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_d",
+   "y": 90
+  },
+  "facing=east,partie=r2_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_g",
+   "y": 90
+  },
+  "facing=east,partie=r2_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_d",
+   "y": 90
+  },
+  "facing=east,partie=r3_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_g",
+   "y": 90
+  },
+  "facing=east,partie=r3_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_d",
+   "y": 90
+  },
+  "facing=south,partie=r0_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_g",
+   "y": 180
+  },
+  "facing=south,partie=r0_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_d",
+   "y": 180
+  },
+  "facing=south,partie=r1_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_g",
+   "y": 180
+  },
+  "facing=south,partie=r1_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_d",
+   "y": 180
+  },
+  "facing=south,partie=r2_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_g",
+   "y": 180
+  },
+  "facing=south,partie=r2_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_d",
+   "y": 180
+  },
+  "facing=south,partie=r3_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_g",
+   "y": 180
+  },
+  "facing=south,partie=r3_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_d",
+   "y": 180
+  },
+  "facing=west,partie=r0_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_g",
+   "y": 270
+  },
+  "facing=west,partie=r0_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r0_d",
+   "y": 270
+  },
+  "facing=west,partie=r1_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_g",
+   "y": 270
+  },
+  "facing=west,partie=r1_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r1_d",
+   "y": 270
+  },
+  "facing=west,partie=r2_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_g",
+   "y": 270
+  },
+  "facing=west,partie=r2_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r2_d",
+   "y": 270
+  },
+  "facing=west,partie=r3_g": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_g",
+   "y": 270
+  },
+  "facing=west,partie=r3_d": {
+   "model": "heraliz_decors:block/voiture_accidentee_r3_d",
+   "y": 270
+  }
+ }
+}

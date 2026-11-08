@@ -1,0 +1,212 @@
+{
+ "textures": {
+  "g": "heraliz_decors:block/conduit",
+  "b": "heraliz_decors:block/conduit_bride",
+  "particle": "heraliz_decors:block/conduit"
+ },
+ "elements": [
+  {
+   "from": [
+    5.5,
+    5.5,
+    0
+   ],
+   "to": [
+    10.5,
+    10.5,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      5.0
+     ]
+    },
+    "south": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      5.0
+     ]
+    },
+    "east": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      16,
+      5.0
+     ]
+    },
+    "west": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      16,
+      5.0
+     ]
+    },
+    "up": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0,
+      5.0,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    4.5,
+    4.5,
+    7
+   ],
+   "to": [
+    11.5,
+    11.5,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      7.0
+     ]
+    },
+    "south": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      7.0
+     ]
+    },
+    "east": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      2,
+      7.0
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      2,
+      7.0
+     ]
+    },
+    "up": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7.0,
+      2
+     ]
+    }
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.6,
+    0.6,
+    0.6
+   ]
+  },
+  "ground": {
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "fixed": {
+   "scale": [
+    0.5,
+    0.5,
+    0.5
+   ]
+  },
+  "thirdperson_righthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    2.5,
+    0
+   ],
+   "scale": [
+    0.375,
+    0.375,
+    0.375
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    45,
+    0
+   ],
+   "scale": [
+    0.4,
+    0.4,
+    0.4
+   ]
+  }
+ }
+}

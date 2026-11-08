@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/rail_mine_virage"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/rail_mine_virage",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/rail_mine_virage",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/rail_mine_virage",
+   "y": 270
+  }
+ }
+}

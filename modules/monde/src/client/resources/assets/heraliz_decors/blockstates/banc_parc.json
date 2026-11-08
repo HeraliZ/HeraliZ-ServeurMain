@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/banc_parc"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/banc_parc",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/banc_parc",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/banc_parc",
+   "y": 270
+  }
+ }
+}

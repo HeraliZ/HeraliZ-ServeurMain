@@ -1,0 +1,364 @@
+{
+ "variants": {
+  "facing=north,motif=vous_etes_morts": {
+   "model": "heraliz_decors:block/tag_vous_etes_morts"
+  },
+  "facing=north,motif=bon_courage": {
+   "model": "heraliz_decors:block/tag_bon_courage"
+  },
+  "facing=north,motif=aidez_nous": {
+   "model": "heraliz_decors:block/tag_aidez_nous"
+  },
+  "facing=north,motif=ne_pas_entrer": {
+   "model": "heraliz_decors:block/tag_ne_pas_entrer"
+  },
+  "facing=north,motif=zombies": {
+   "model": "heraliz_decors:block/tag_zombies"
+  },
+  "facing=north,motif=clown": {
+   "model": "heraliz_decors:block/tag_clown"
+  },
+  "facing=north,motif=crane": {
+   "model": "heraliz_decors:block/tag_crane"
+  },
+  "facing=north,motif=fleche": {
+   "model": "heraliz_decors:block/tag_fleche"
+  },
+  "facing=north,motif=croix": {
+   "model": "heraliz_decors:block/tag_croix"
+  },
+  "facing=north,motif=compteur": {
+   "model": "heraliz_decors:block/tag_compteur"
+  },
+  "facing=north,motif=survivants": {
+   "model": "heraliz_decors:block/tag_survivants"
+  },
+  "facing=north,motif=danger": {
+   "model": "heraliz_decors:block/tag_danger"
+  },
+  "facing=north,motif=courez": {
+   "model": "heraliz_decors:block/tag_courez"
+  },
+  "facing=north,motif=pas_de_sortie": {
+   "model": "heraliz_decors:block/tag_pas_de_sortie"
+  },
+  "facing=north,motif=ils_entendent": {
+   "model": "heraliz_decors:block/tag_ils_entendent"
+  },
+  "facing=north,motif=infecte": {
+   "model": "heraliz_decors:block/tag_infecte"
+  },
+  "facing=north,motif=quarantaine": {
+   "model": "heraliz_decors:block/tag_quarantaine"
+  },
+  "facing=north,motif=dieu_nous_a_abandonnes": {
+   "model": "heraliz_decors:block/tag_dieu_nous_a_abandonnes"
+  },
+  "facing=north,motif=nous_sommes_la": {
+   "model": "heraliz_decors:block/tag_nous_sommes_la"
+  },
+  "facing=north,motif=ne_pas_ouvrir": {
+   "model": "heraliz_decors:block/tag_ne_pas_ouvrir"
+  },
+  "facing=north,motif=mains_sanglantes": {
+   "model": "heraliz_decors:block/tag_mains_sanglantes"
+  },
+  "facing=north,motif=traces_de_griffes": {
+   "model": "heraliz_decors:block/tag_traces_de_griffes"
+  },
+  "facing=north,motif=cible": {
+   "model": "heraliz_decors:block/tag_cible"
+  },
+  "facing=north,motif=sos": {
+   "model": "heraliz_decors:block/tag_sos"
+  },
+  "facing=east,motif=vous_etes_morts": {
+   "model": "heraliz_decors:block/tag_vous_etes_morts",
+   "y": 90
+  },
+  "facing=east,motif=bon_courage": {
+   "model": "heraliz_decors:block/tag_bon_courage",
+   "y": 90
+  },
+  "facing=east,motif=aidez_nous": {
+   "model": "heraliz_decors:block/tag_aidez_nous",
+   "y": 90
+  },
+  "facing=east,motif=ne_pas_entrer": {
+   "model": "heraliz_decors:block/tag_ne_pas_entrer",
+   "y": 90
+  },
+  "facing=east,motif=zombies": {
+   "model": "heraliz_decors:block/tag_zombies",
+   "y": 90
+  },
+  "facing=east,motif=clown": {
+   "model": "heraliz_decors:block/tag_clown",
+   "y": 90
+  },
+  "facing=east,motif=crane": {
+   "model": "heraliz_decors:block/tag_crane",
+   "y": 90
+  },
+  "facing=east,motif=fleche": {
+   "model": "heraliz_decors:block/tag_fleche",
+   "y": 90
+  },
+  "facing=east,motif=croix": {
+   "model": "heraliz_decors:block/tag_croix",
+   "y": 90
+  },
+  "facing=east,motif=compteur": {
+   "model": "heraliz_decors:block/tag_compteur",
+   "y": 90
+  },
+  "facing=east,motif=survivants": {
+   "model": "heraliz_decors:block/tag_survivants",
+   "y": 90
+  },
+  "facing=east,motif=danger": {
+   "model": "heraliz_decors:block/tag_danger",
+   "y": 90
+  },
+  "facing=east,motif=courez": {
+   "model": "heraliz_decors:block/tag_courez",
+   "y": 90
+  },
+  "facing=east,motif=pas_de_sortie": {
+   "model": "heraliz_decors:block/tag_pas_de_sortie",
+   "y": 90
+  },
+  "facing=east,motif=ils_entendent": {
+   "model": "heraliz_decors:block/tag_ils_entendent",
+   "y": 90
+  },
+  "facing=east,motif=infecte": {
+   "model": "heraliz_decors:block/tag_infecte",
+   "y": 90
+  },
+  "facing=east,motif=quarantaine": {
+   "model": "heraliz_decors:block/tag_quarantaine",
+   "y": 90
+  },
+  "facing=east,motif=dieu_nous_a_abandonnes": {
+   "model": "heraliz_decors:block/tag_dieu_nous_a_abandonnes",
+   "y": 90
+  },
+  "facing=east,motif=nous_sommes_la": {
+   "model": "heraliz_decors:block/tag_nous_sommes_la",
+   "y": 90
+  },
+  "facing=east,motif=ne_pas_ouvrir": {
+   "model": "heraliz_decors:block/tag_ne_pas_ouvrir",
+   "y": 90
+  },
+  "facing=east,motif=mains_sanglantes": {
+   "model": "heraliz_decors:block/tag_mains_sanglantes",
+   "y": 90
+  },
+  "facing=east,motif=traces_de_griffes": {
+   "model": "heraliz_decors:block/tag_traces_de_griffes",
+   "y": 90
+  },
+  "facing=east,motif=cible": {
+   "model": "heraliz_decors:block/tag_cible",
+   "y": 90
+  },
+  "facing=east,motif=sos": {
+   "model": "heraliz_decors:block/tag_sos",
+   "y": 90
+  },
+  "facing=south,motif=vous_etes_morts": {
+   "model": "heraliz_decors:block/tag_vous_etes_morts",
+   "y": 180
+  },
+  "facing=south,motif=bon_courage": {
+   "model": "heraliz_decors:block/tag_bon_courage",
+   "y": 180
+  },
+  "facing=south,motif=aidez_nous": {
+   "model": "heraliz_decors:block/tag_aidez_nous",
+   "y": 180
+  },
+  "facing=south,motif=ne_pas_entrer": {
+   "model": "heraliz_decors:block/tag_ne_pas_entrer",
+   "y": 180
+  },
+  "facing=south,motif=zombies": {
+   "model": "heraliz_decors:block/tag_zombies",
+   "y": 180
+  },
+  "facing=south,motif=clown": {
+   "model": "heraliz_decors:block/tag_clown",
+   "y": 180
+  },
+  "facing=south,motif=crane": {
+   "model": "heraliz_decors:block/tag_crane",
+   "y": 180
+  },
+  "facing=south,motif=fleche": {
+   "model": "heraliz_decors:block/tag_fleche",
+   "y": 180
+  },
+  "facing=south,motif=croix": {
+   "model": "heraliz_decors:block/tag_croix",
+   "y": 180
+  },
+  "facing=south,motif=compteur": {
+   "model": "heraliz_decors:block/tag_compteur",
+   "y": 180
+  },
+  "facing=south,motif=survivants": {
+   "model": "heraliz_decors:block/tag_survivants",
+   "y": 180
+  },
+  "facing=south,motif=danger": {
+   "model": "heraliz_decors:block/tag_danger",
+   "y": 180
+  },
+  "facing=south,motif=courez": {
+   "model": "heraliz_decors:block/tag_courez",
+   "y": 180
+  },
+  "facing=south,motif=pas_de_sortie": {
+   "model": "heraliz_decors:block/tag_pas_de_sortie",
+   "y": 180
+  },
+  "facing=south,motif=ils_entendent": {
+   "model": "heraliz_decors:block/tag_ils_entendent",
+   "y": 180
+  },
+  "facing=south,motif=infecte": {
+   "model": "heraliz_decors:block/tag_infecte",
+   "y": 180
+  },
+  "facing=south,motif=quarantaine": {
+   "model": "heraliz_decors:block/tag_quarantaine",
+   "y": 180
+  },
+  "facing=south,motif=dieu_nous_a_abandonnes": {
+   "model": "heraliz_decors:block/tag_dieu_nous_a_abandonnes",
+   "y": 180
+  },
+  "facing=south,motif=nous_sommes_la": {
+   "model": "heraliz_decors:block/tag_nous_sommes_la",
+   "y": 180
+  },
+  "facing=south,motif=ne_pas_ouvrir": {
+   "model": "heraliz_decors:block/tag_ne_pas_ouvrir",
+   "y": 180
+  },
+  "facing=south,motif=mains_sanglantes": {
+   "model": "heraliz_decors:block/tag_mains_sanglantes",
+   "y": 180
+  },
+  "facing=south,motif=traces_de_griffes": {
+   "model": "heraliz_decors:block/tag_traces_de_griffes",
+   "y": 180
+  },
+  "facing=south,motif=cible": {
+   "model": "heraliz_decors:block/tag_cible",
+   "y": 180
+  },
+  "facing=south,motif=sos": {
+   "model": "heraliz_decors:block/tag_sos",
+   "y": 180
+  },
+  "facing=west,motif=vous_etes_morts": {
+   "model": "heraliz_decors:block/tag_vous_etes_morts",
+   "y": 270
+  },
+  "facing=west,motif=bon_courage": {
+   "model": "heraliz_decors:block/tag_bon_courage",
+   "y": 270
+  },
+  "facing=west,motif=aidez_nous": {
+   "model": "heraliz_decors:block/tag_aidez_nous",
+   "y": 270
+  },
+  "facing=west,motif=ne_pas_entrer": {
+   "model": "heraliz_decors:block/tag_ne_pas_entrer",
+   "y": 270
+  },
+  "facing=west,motif=zombies": {
+   "model": "heraliz_decors:block/tag_zombies",
+   "y": 270
+  },
+  "facing=west,motif=clown": {
+   "model": "heraliz_decors:block/tag_clown",
+   "y": 270
+  },
+  "facing=west,motif=crane": {
+   "model": "heraliz_decors:block/tag_crane",
+   "y": 270
+  },
+  "facing=west,motif=fleche": {
+   "model": "heraliz_decors:block/tag_fleche",
+   "y": 270
+  },
+  "facing=west,motif=croix": {
+   "model": "heraliz_decors:block/tag_croix",
+   "y": 270
+  },
+  "facing=west,motif=compteur": {
+   "model": "heraliz_decors:block/tag_compteur",
+   "y": 270
+  },
+  "facing=west,motif=survivants": {
+   "model": "heraliz_decors:block/tag_survivants",
+   "y": 270
+  },
+  "facing=west,motif=danger": {
+   "model": "heraliz_decors:block/tag_danger",
+   "y": 270
+  },
+  "facing=west,motif=courez": {
+   "model": "heraliz_decors:block/tag_courez",
+   "y": 270
+  },
+  "facing=west,motif=pas_de_sortie": {
+   "model": "heraliz_decors:block/tag_pas_de_sortie",
+   "y": 270
+  },
+  "facing=west,motif=ils_entendent": {
+   "model": "heraliz_decors:block/tag_ils_entendent",
+   "y": 270
+  },
+  "facing=west,motif=infecte": {
+   "model": "heraliz_decors:block/tag_infecte",
+   "y": 270
+  },
+  "facing=west,motif=quarantaine": {
+   "model": "heraliz_decors:block/tag_quarantaine",
+   "y": 270
+  },
+  "facing=west,motif=dieu_nous_a_abandonnes": {
+   "model": "heraliz_decors:block/tag_dieu_nous_a_abandonnes",
+   "y": 270
+  },
+  "facing=west,motif=nous_sommes_la": {
+   "model": "heraliz_decors:block/tag_nous_sommes_la",
+   "y": 270
+  },
+  "facing=west,motif=ne_pas_ouvrir": {
+   "model": "heraliz_decors:block/tag_ne_pas_ouvrir",
+   "y": 270
+  },
+  "facing=west,motif=mains_sanglantes": {
+   "model": "heraliz_decors:block/tag_mains_sanglantes",
+   "y": 270
+  },
+  "facing=west,motif=traces_de_griffes": {
+   "model": "heraliz_decors:block/tag_traces_de_griffes",
+   "y": 270
+  },
+  "facing=west,motif=cible": {
+   "model": "heraliz_decors:block/tag_cible",
+   "y": 270
+  },
+  "facing=west,motif=sos": {
+   "model": "heraliz_decors:block/tag_sos",
+   "y": 270
+  }
+ }
+}

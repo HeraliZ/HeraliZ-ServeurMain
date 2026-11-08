@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/conteneur_porte_rouge"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/conteneur_porte_rouge",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/conteneur_porte_rouge",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/conteneur_porte_rouge",
+   "y": 270
+  }
+ }
+}

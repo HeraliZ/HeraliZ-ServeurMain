@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "facing=north,partie=avant": {
+   "model": "heraliz_decors:block/petit_train_wagon_avant"
+  },
+  "facing=north,partie=arriere": {
+   "model": "heraliz_decors:block/petit_train_wagon_arriere"
+  },
+  "facing=east,partie=avant": {
+   "model": "heraliz_decors:block/petit_train_wagon_avant",
+   "y": 90
+  },
+  "facing=east,partie=arriere": {
+   "model": "heraliz_decors:block/petit_train_wagon_arriere",
+   "y": 90
+  },
+  "facing=south,partie=avant": {
+   "model": "heraliz_decors:block/petit_train_wagon_avant",
+   "y": 180
+  },
+  "facing=south,partie=arriere": {
+   "model": "heraliz_decors:block/petit_train_wagon_arriere",
+   "y": 180
+  },
+  "facing=west,partie=avant": {
+   "model": "heraliz_decors:block/petit_train_wagon_avant",
+   "y": 270
+  },
+  "facing=west,partie=arriere": {
+   "model": "heraliz_decors:block/petit_train_wagon_arriere",
+   "y": 270
+  }
+ }
+}

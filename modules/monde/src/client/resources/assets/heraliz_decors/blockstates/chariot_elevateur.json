@@ -1,0 +1,64 @@
+{
+ "variants": {
+  "facing=north,partie=avant_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_bas"
+  },
+  "facing=north,partie=avant_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_haut"
+  },
+  "facing=north,partie=arriere_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_bas"
+  },
+  "facing=north,partie=arriere_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_haut"
+  },
+  "facing=east,partie=avant_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_bas",
+   "y": 90
+  },
+  "facing=east,partie=avant_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_haut",
+   "y": 90
+  },
+  "facing=east,partie=arriere_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_bas",
+   "y": 90
+  },
+  "facing=east,partie=arriere_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_haut",
+   "y": 90
+  },
+  "facing=south,partie=avant_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_bas",
+   "y": 180
+  },
+  "facing=south,partie=avant_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_haut",
+   "y": 180
+  },
+  "facing=south,partie=arriere_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_bas",
+   "y": 180
+  },
+  "facing=south,partie=arriere_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_haut",
+   "y": 180
+  },
+  "facing=west,partie=avant_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_bas",
+   "y": 270
+  },
+  "facing=west,partie=avant_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_avant_haut",
+   "y": 270
+  },
+  "facing=west,partie=arriere_bas": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_bas",
+   "y": 270
+  },
+  "facing=west,partie=arriere_haut": {
+   "model": "heraliz_decors:block/chariot_elevateur_arriere_haut",
+   "y": 270
+  }
+ }
+}

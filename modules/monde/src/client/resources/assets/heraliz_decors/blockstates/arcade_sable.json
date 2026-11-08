@@ -1,0 +1,46 @@
+{
+ "variants": {
+  "axis=x,cote=gauche,rang=haut": {
+   "model": "heraliz_decors:block/arcade_sable_haut"
+  },
+  "axis=z,cote=gauche,rang=haut": {
+   "model": "heraliz_decors:block/arcade_sable_haut",
+   "y": 90
+  },
+  "axis=x,cote=droite,rang=haut": {
+   "model": "heraliz_decors:block/arcade_sable_haut"
+  },
+  "axis=z,cote=droite,rang=haut": {
+   "model": "heraliz_decors:block/arcade_sable_haut",
+   "y": 90
+  },
+  "axis=x,cote=gauche,rang=milieu": {
+   "model": "heraliz_decors:block/arcade_sable_milieu"
+  },
+  "axis=z,cote=gauche,rang=milieu": {
+   "model": "heraliz_decors:block/arcade_sable_milieu",
+   "y": 90
+  },
+  "axis=x,cote=droite,rang=milieu": {
+   "model": "heraliz_decors:block/arcade_sable_milieu"
+  },
+  "axis=z,cote=droite,rang=milieu": {
+   "model": "heraliz_decors:block/arcade_sable_milieu",
+   "y": 90
+  },
+  "axis=x,cote=gauche,rang=bas": {
+   "model": "heraliz_decors:block/arcade_sable_bas"
+  },
+  "axis=z,cote=gauche,rang=bas": {
+   "model": "heraliz_decors:block/arcade_sable_bas",
+   "y": 90
+  },
+  "axis=x,cote=droite,rang=bas": {
+   "model": "heraliz_decors:block/arcade_sable_bas"
+  },
+  "axis=z,cote=droite,rang=bas": {
+   "model": "heraliz_decors:block/arcade_sable_bas",
+   "y": 90
+  }
+ }
+}

@@ -246,10 +246,10 @@ description='''Carte du monde du serveur HeraliZ (touche M) : vue satellite ou r
     ordering="NONE"
     side="BOTH"
 
-# ---- heraliz_decors (ancien projet heraliz-decors, version 1.12.1)
+# ---- heraliz_decors (ancien projet heraliz-decors, version 1.12.1 ; 1.31.0 : blocs de la nouvelle carte repris du jar 1.30.3)
 [[mods]]
 modId="heraliz_decors"
-version="1.12.1"
+version="1.31.0"
 displayName="HeraliZ Décors"
 authors="${mod_authors}"
 description='''Décors 3D de la map HeraliZ : lampes, guirlandes, projecteurs, grande cascade, rayons de soleil, eau animée, ambiance.'''
