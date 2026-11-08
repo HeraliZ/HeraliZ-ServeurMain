@@ -25,6 +25,8 @@ public final class ArmorConfig {
     public static final ForgeConfigSpec.IntValue TANK_SECONDS;
     public static final ForgeConfigSpec.IntValue REFILL_SECONDS;
     public static final ForgeConfigSpec.DoubleValue SWIM_BOOST;
+    /** 08/11 : petits chiffres des dégâts infligés à un autre joueur, montrés au tireur (cible.ChiffresJoueurs). */
+    public static final ForgeConfigSpec.BooleanValue CHIFFRES_JOUEURS;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -55,6 +57,11 @@ public final class ArmorConfig {
                 .defineInRange("refill_seconds", 5, 0, 600);
         SWIM_BOOST = b.comment("Bonus de vitesse de nage des palmes (0.8 = +80 %)")
                 .defineInRange("swim_boost", 0.8, 0.0, 3.0);
+        b.pop();
+        b.push("chiffres");
+        CHIFFRES_JOUEURS = b.comment("Petits chiffres des degats : quand un joueur en touche un autre, il voit (lui seul) la vie que l'autre",
+                        "a vraiment perdue, au-dessus de sa tete. false = coupe.")
+                .define("joueurs", true);
         b.pop();
         SPEC = b.build();
     }

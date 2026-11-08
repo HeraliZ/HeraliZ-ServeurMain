@@ -37,6 +37,8 @@ public final class CibleClient {
             if (e instanceof CibleEssai) mc.setScreen(new EcranCible(o));
         } else if (paquet instanceof PaquetsCible.Touche t) {
             touche(mc, t);
+        } else if (paquet instanceof PaquetsCible.Degats d) {
+            ChiffresCible.ajouter(d);   // 08/11 : dégâts infligés à un autre joueur (petit chiffre)
         }
     }
 

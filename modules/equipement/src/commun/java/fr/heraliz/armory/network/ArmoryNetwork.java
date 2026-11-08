@@ -18,7 +18,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 public final class ArmoryNetwork {
     private ArmoryNetwork() {}
 
-    private static final String VERSION = "5";
+    private static final String VERSION = "6"; // 6 (08/11) : chiffres des dégâts sur les joueurs (PaquetsCible.Degats)
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeralizArmory.id("main"), () -> VERSION, VERSION::equals,
             VERSION::equals);
 

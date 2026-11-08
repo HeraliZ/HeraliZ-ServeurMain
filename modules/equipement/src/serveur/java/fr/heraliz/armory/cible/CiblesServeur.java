@@ -173,6 +173,11 @@ public final class CiblesServeur {
 
         /** Après les réglages des armes (DegatsArmes) : tête ou corps, plomb arrêté par le plafond d'un tir. */
         private static void avant(EntityHurtByGunEvent.Pre e) {
+            // 08/11 : tir à la tête d'un joueur, pour la couleur du petit chiffre de ses dégâts (ChiffresJoueurs)
+            if (e.getLogicalSide() == LogicalSide.SERVER && !e.isCanceled() && e.isHeadShot()
+                    && e.getHurtEntity() instanceof ServerPlayer victime) {
+                ChiffresJoueurs.noterTete(victime, victime.level().getGameTime());
+            }
             if (e.getLogicalSide() != LogicalSide.SERVER || !(e.getHurtEntity() instanceof CibleEssaiServeur c)
                     || !(e.getAttacker() instanceof ServerPlayer tireur)) return;
             long t = c.level().getGameTime();

@@ -16,3 +16,8 @@
 	#Effets bloques par un masque filtrant (piece portee au visage ou sur la tete), ex. "minecraft:poison"
 	gas_effects = ["minecraft:poison"]
 
+
+[chiffres]
+	#Petits chiffres des degats : quand un joueur en touche un autre, il voit (lui seul) la vie que l'autre
+	#a vraiment perdue, au-dessus de sa tete. false = coupe.
+	joueurs = true

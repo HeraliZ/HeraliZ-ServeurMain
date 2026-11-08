@@ -117,17 +117,56 @@ public class CibleEssaiServeur extends CibleEssai {
         }
         if (amount == 0.0F) return false;
         Coup coup = coupDe(source, tireur);
+        // 08/11 : la mesure ne passe plus par LivingEntity.hurt. Sur le serveur (Mohist), ce chemin refusait chaque coup
+        // avant les évènements de dégâts (journal : « aucun dégât mesuré » à chaque tir et chaque coup de couteau, chiffres
+        // jamais affichés). La cible refait elle-même ce que fait le jeu pour un joueur : évènement d'attaque, temps
+        // d'invincibilité (0,5 s, sauf les coups qui l'ignorent), puis dégâts → armure → effets → absorption, avec les
+        // évènements de Forge que lisent les armures de l'Armurerie et les réglages des armes. Elle ne perd jamais de vie.
+        if (!net.minecraftforge.common.ForgeHooks.onLivingAttack(this, source, amount)) {
+            CiblesServeur.journal("coup de {} sur la cible refusé : attaque annulée par une règle du serveur",
+                    tireur.getGameProfile().getName());
+            return false;
+        }
+        float compte = amount;
+        if (invulnerableTime > 10 && !source.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
+            if (amount <= lastHurt) {
+                CiblesServeur.journal("coup de {} sur la cible ignoré : temps d'invincibilité (comme sur un joueur)",
+                        tireur.getGameProfile().getName());
+                return false;
+            }
+            compte = amount - lastHurt;
+            lastHurt = amount;
+        } else {
+            lastHurt = amount;
+            invulnerableTime = 20;
+            hurtDuration = 10;
+            hurtTime = hurtDuration;
+        }
         enCours = coup;
-        boolean touche;
         try {
-            touche = super.hurt(source, amount);
+            mesurer(source, compte);
         } finally {
             enCours = null;
         }
+        level().broadcastDamageEvent(this, source);   // la cible rougit comme un joueur touché
         remettreANeuf();
         // balle de TaCZ : envoyée à la fin de la balle (ses deux parts) ; le reste (mêlée, couteau, explosion) : tout de suite
         if (coup != balle) CiblesServeur.envoyer(this, coup);
-        return touche;
+        return true;
+    }
+
+    /**
+     * Ce que fait LivingEntity.actuallyHurt pour un joueur, sans retirer de vie : LivingHurtEvent (mesure « avant armure »,
+     * puis armures de l'Armurerie), armure et effets de Minecraft, absorption, LivingDamageEvent (mesure « reçu », annulé).
+     */
+    private void mesurer(DamageSource source, float amount) {
+        if (isInvulnerableTo(source)) return;
+        float f = net.minecraftforge.common.ForgeHooks.onLivingHurt(this, source, amount);
+        if (f <= 0.0F) return;
+        f = getDamageAfterArmorAbsorb(source, f);
+        f = getDamageAfterMagicAbsorb(source, f);
+        float apres = Math.max(f - getAbsorptionAmount(), 0.0F);
+        net.minecraftforge.common.ForgeHooks.onLivingDamage(this, source, apres);
     }
 
     /** Coup d'une balle de TaCZ en cours (même balle, même tick), ou nouveau coup (mêlée, explosion, autre projectile). */

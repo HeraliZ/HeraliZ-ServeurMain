@@ -9,12 +9,13 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 /**
- * Paquets de la cible d'essai (03/11, canal heraliz_armory:main, protocole 5 : tenues complètes seulement) :
+ * Paquets de la cible d'essai (03/11, canal heraliz_armory:main, protocole 6 depuis le 08/11) :
  * <ul>
  *    <li>{@link Ouvrir} (serveur → joueur) : écran du choix de l'armure, avec les protections de chaque tenue calculées par
  *    le serveur (vrai plafond, vrai multiplicateur : jamais envoyés autrement) ;</li>
  *    <li>{@link Action} (joueur → serveur) : choisir une tenue, ou ramasser la cible ; le serveur vérifie tout ;</li>
- *    <li>{@link Touche} (serveur → tireur seulement) : un coup mesuré sur la cible.</li>
+ *    <li>{@link Touche} (serveur → tireur seulement) : un coup mesuré sur la cible ;</li>
+ *    <li>{@link Degats} (serveur → tireur seulement, 08/11) : dégâts infligés à un autre joueur (petit chiffre).</li>
  * </ul>
  */
 public final class PaquetsCible {
@@ -44,6 +45,17 @@ public final class PaquetsCible {
      */
     public record Touche(int entite, double x, double y, double z, byte zone, float arme, float recu, float distance,
                          Component nomArme, long tir, boolean plafond, String tenue) {}
+
+    /**
+     * Dégâts réellement perdus par un autre joueur touché (08/11, demande du propriétaire : « voir en petit les dégâts qu'on
+     * met, pour être sûr d'avoir touché »). Envoyé au seul tireur.
+     *
+     * @param entite joueur touché
+     * @param recu   vie perdue (après armures et protections)
+     * @param tete   tir à la tête (balle de TaCZ)
+     * @param tir    tick du coup : les plombs d'un même tir de fusil à pompe s'additionnent en un seul chiffre
+     */
+    public record Degats(int entite, float recu, boolean tete, long tir) {}
 
     /** Action reçue par le serveur, avec son joueur. */
     public record Recu(ServerPlayer joueur, Action action) {}
@@ -100,6 +112,23 @@ public final class PaquetsCible {
                 .decoder(buf -> new Touche(buf.readVarInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readByte(),
                         buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readComponent(), buf.readLong(), buf.readBoolean(),
                         buf.readUtf(Tenues.MAX_LETTRES)))
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_CLIENT.accept(m);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        enregistrerDegats(canal);
+    }
+
+    private static void enregistrerDegats(SimpleChannel canal) {
+        canal.messageBuilder(Degats.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((m, buf) -> {
+                    buf.writeVarInt(m.entite());
+                    buf.writeFloat(m.recu());
+                    buf.writeBoolean(m.tete());
+                    buf.writeLong(m.tir());
+                })
+                .decoder(buf -> new Degats(buf.readVarInt(), buf.readFloat(), buf.readBoolean(), buf.readLong()))
                 .consumerMainThread((m, ctx) -> {
                     RECEPTION_CLIENT.accept(m);
                     ctx.get().setPacketHandled(true);

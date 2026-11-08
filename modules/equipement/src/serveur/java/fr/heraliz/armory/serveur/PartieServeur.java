@@ -1,5 +1,6 @@
 package fr.heraliz.armory.serveur;
 
+import fr.heraliz.armory.cible.ChiffresJoueurs;
 import fr.heraliz.armory.cible.CibleEssaiServeur;
 import fr.heraliz.armory.cible.CiblesServeur;
 import fr.heraliz.armory.compat.TaczCompat;
@@ -45,5 +46,6 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.addListener(AnciensObjets::remapOldItems);
         TaczCompat.register();
         CiblesServeur.brancher();
+        ChiffresJoueurs.brancher();
     }
 }
