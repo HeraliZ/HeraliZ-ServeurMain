@@ -31,10 +31,11 @@ import net.minecraftforge.registries.RegistryObject;
  * touchent le train) est dans TrainServeur, VoyageursServeur et BallesTrain (src/serveur).
  */
 public final class Train {
-    private static final String PROTO = "6";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
+    private static final String PROTO = "7";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
                                                               // 4 : saut dans la voiture, retouches de la voie (11/10) ;
                                                               // 5 : allongé et course dans la voiture, vitres cassées (12/10) ;
-                                                              // 6 : accroupi dans la voiture, bagages à fouiller (09/11)
+                                                              // 6 : accroupi dans la voiture, bagages à fouiller (09/11) ;
+                                                              // 7 : bagages en vrais conteneurs, étoiles, arrêt de 40 s (10/11)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -122,6 +123,18 @@ public final class Train {
 
         static Bagage lire(FriendlyByteBuf b) {
             return new Bagage(b.readVarInt(), b.readVarInt());
+        }
+    }
+
+    /** Bagages déjà ouverts pendant la période en cours (serveur -> client) : ils ne scintillent plus. */
+    public record BagagesOuverts(long epoque, long[] cles) {
+        void ecrire(FriendlyByteBuf b) {
+            b.writeLong(epoque);
+            b.writeLongArray(cles);
+        }
+
+        static BagagesOuverts lire(FriendlyByteBuf b) {
+            return new BagagesOuverts(b.readLong(), b.readLongArray());
         }
     }
 
@@ -234,6 +247,10 @@ public final class Train {
             });
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CANAL.registerMessage(7, BagagesOuverts.class, BagagesOuverts::ecrire, BagagesOuverts::lire, (m, ctx) -> {
+            ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         // écouteurs serveur (connexion, commandes, tick du monde, descentes forcées...) : TrainServeur.init (partie serveur).
         // Restent ici, des deux côtés comme à l'origine : à bord, rien n'est cassé, posé ni utilisé (le client n'essaie
         // même pas : pas de geste prédit qu'il faudrait corriger).

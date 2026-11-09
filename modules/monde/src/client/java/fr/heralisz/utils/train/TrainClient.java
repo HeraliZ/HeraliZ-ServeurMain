@@ -56,6 +56,8 @@ public final class TrainClient {
             recadrage(r.vehicule(), r.lx(), r.lz());
         } else if (m instanceof Train.Voie v) {
             VoieRendu.retouches(v.reseau(), v.retouches());
+        } else if (m instanceof Train.BagagesOuverts b) {
+            BagagesClient.recevoir(b);
         } else if (m instanceof Train.Vitres v) {
             java.util.Set<Integer> s = new java.util.HashSet<>(), voit = new java.util.HashSet<>();
             for (int k : v.cassees()) {

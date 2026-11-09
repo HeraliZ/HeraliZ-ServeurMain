@@ -10,7 +10,7 @@ public final class Horaire {
     public static final double VMAX = 15.0;          // blocs/s (54 km/h)
     public static final double ACC = 0.45, DEC = 0.55;
     public static final double ALAT = 1.6;            // accélération latérale admise dans les courbes (blocs/s²)
-    public static final double ARRET = 90.0;          // secondes à quai
+    public static final double ARRET = 40.0;          // secondes à quai (90 jusqu'au 10/11 : « trop longtemps en gare »)
     public static final double OUVERTURE = 3.0;       // portes ouvertes 3 s après l'arrêt...
     public static final double FERMETURE = 8.0;       // ...et fermées 8 s avant le départ
     public static final double MOUVEMENT_PORTE = 1.7; // durée d'ouverture / de fermeture (sortie puis glissement)

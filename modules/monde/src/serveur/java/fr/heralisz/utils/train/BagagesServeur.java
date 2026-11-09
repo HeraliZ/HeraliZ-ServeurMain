@@ -2,8 +2,10 @@ package fr.heralisz.utils.train;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import fr.heralisz.utils.HeraliszUtils;
 import net.minecraft.network.chat.Component;
@@ -15,25 +17,44 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Fouille des bagages du train (serveur) : le joueur doit être à bord de cette voiture, près du bagage (position
- * vérifiée par le serveur, celle du paquet Marche) ; le bagage se remplit à sa première ouverture, puis toutes les
- * 20 minutes de jeu, avec les tables de HeraliZ Loot (fr.heraliz.loot.TrainLoot, par réflexion : sans HeraliZ Loot, les
- * bagages restent vides). Contenu gardé en mémoire (repart à zéro au redémarrage du serveur).
+ * vérifiée par le serveur, celle du paquet Marche), et le bagage doit être « à fouiller » pendant cette période
+ * (Bagages.actif). Il se remplit à sa première ouverture de la période avec la table de son palier de HeraliZ Loot
+ * (fr.heraliz.loot.TrainLoot, par réflexion : sans HeraliZ Loot, les bagages restent vides). Un bagage ouvert perd ses
+ * étoiles chez tous les joueurs (paquet BagagesOuverts). Contenu gardé en mémoire (perdu au redémarrage du serveur).
  */
 public final class BagagesServeur {
-    private static final long RECHARGE = 20L * 60 * 20;
-    private static final Map<Long, Etat> ETATS = new HashMap<>();
+    private static final Map<Long, SimpleContainer> CONTENUS = new HashMap<>();
+    private static final Set<Long> OUVERTS = new HashSet<>();
+    private static long epoqueCourante = -1;
     private static Method tirer;
     private static boolean cherche;
 
-    private static final class Etat {
-        final SimpleContainer contenu = new SimpleContainer(18);
-        long epoque = -1;
+    private BagagesServeur() {}
+
+    private static void periode(long epoque) {
+        if (epoque != epoqueCourante) {
+            epoqueCourante = epoque;
+            CONTENUS.clear();
+            OUVERTS.clear();
+        }
     }
 
-    private BagagesServeur() {}
+    private static Train.BagagesOuverts etat() {
+        long[] c = new long[OUVERTS.size()];
+        int i = 0;
+        for (long k : OUVERTS) c[i++] = k;
+        return new Train.BagagesOuverts(epoqueCourante, c);
+    }
+
+    /** Bagages déjà ouverts pendant la période en cours, pour un joueur qui se connecte. */
+    static void envoyer(ServerPlayer p) {
+        periode(Bagages.epoque(p.server.overworld().getGameTime()));
+        Train.CANAL.send(PacketDistributor.PLAYER.with(() -> p), etat());
+    }
 
     static void ouvrir(ServerPlayer p, Train.Bagage m) {
         if (!(p.getVehicle() instanceof Voyageur v) || v.isRemoved()) return;
@@ -44,16 +65,20 @@ public final class BagagesServeur {
         Bagages.Place b = places.get(m.place());
         float x = v.getEntityData().get(Voyageur.LX), z = v.getEntityData().get(Voyageur.LZ);
         if (Math.hypot(x - b.lx(), z - b.lz()) > Bagages.PORTEE + 0.4) return;            // trop loin : refusé
-        long epoque = p.level().getGameTime() / RECHARGE;
-        long cle = ((long) veh << 8) | m.place();
-        Etat e = ETATS.computeIfAbsent(cle, k -> new Etat());
-        if (e.epoque != epoque) {
-            e.epoque = epoque;
-            remplir(e.contenu, b.palier(), p.getRandom());
+        long epoque = Bagages.epoque(p.level().getGameTime());
+        periode(epoque);
+        if (!Bagages.actif(veh, m.place(), epoque)) return;                               // du décor pour cette période
+        long cle = Bagages.cle(veh, m.place());
+        SimpleContainer contenu = CONTENUS.get(cle);
+        if (contenu == null) {
+            contenu = new SimpleContainer(18);
+            remplir(contenu, b.palier(), p.getRandom());
+            CONTENUS.put(cle, contenu);
         }
-        Component titre = Component.translatableWithFallback("heralisz_utils.train.bagage", "Bagage · %s",
-                b.palier().toUpperCase(java.util.Locale.ROOT));
-        p.openMenu(new SimpleMenuProvider((id, inv, pl) -> new ChestMenu(MenuType.GENERIC_9x2, id, inv, e.contenu, 2) {
+        if (OUVERTS.add(cle)) Train.CANAL.send(PacketDistributor.ALL.noArg(), etat());
+        final SimpleContainer inv = contenu;
+        Component titre = Component.translatable("block.heraliz_loot." + b.modele());
+        p.openMenu(new SimpleMenuProvider((id, pinv, pl) -> new ChestMenu(MenuType.GENERIC_9x2, id, pinv, inv, 2) {
             @Override
             public boolean stillValid(Player joueur) {                   // fermé si l'on quitte la voiture ou s'éloigne
                 if (!(joueur.getVehicle() instanceof Voyageur vv) || vv.isRemoved()) return false;

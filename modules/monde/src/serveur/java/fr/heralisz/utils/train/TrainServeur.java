@@ -212,6 +212,7 @@ public final class TrainServeur {
         if (e.getEntity() instanceof ServerPlayer sp && sp.getServer() != null) {
             annoncer(sp.getServer(), sp);
             BallesTrain.envoyerVitres(sp);
+            BagagesServeur.envoyer(sp);
             if (sp.getVehicle() instanceof Voyageur) VoyageursServeur.deconnexion(sp);   // ancien monde : réveil sur le quai
         }
     }
