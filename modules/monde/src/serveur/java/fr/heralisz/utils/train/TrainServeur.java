@@ -56,6 +56,8 @@ public final class TrainServeur {
     private static void recevoir(Train.Recu r) {
         if (r.paquet() instanceof Train.Marche m) {
             VoyageursServeur.marche(r.joueur(), m);
+        } else if (r.paquet() instanceof Train.Bagage b) {
+            BagagesServeur.ouvrir(r.joueur(), b);
         }
         // Train.Descente (ancienne descente par Maj) : ignoré depuis le 14/10, on ne descend que par les portes
     }

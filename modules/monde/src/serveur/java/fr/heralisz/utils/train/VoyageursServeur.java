@@ -92,8 +92,9 @@ public final class VoyageursServeur {
         v.placer(veh, x, z);
         v.getEntityData().set(Voyageur.ASSIS, place);
         v.getEntityData().set(Voyageur.ALLONGE, allonge && !place);
+        v.getEntityData().set(Voyageur.ACCROUPI, m.accroupi() && !place && !allonge);
         if (etaitAllonge && !(allonge && !place)) DelaiAllonge.releve(p);
-        boolean course = m.course() && !place && !allonge;
+        boolean course = m.course() && !place && !allonge && !m.accroupi();
         if (p.isSprinting() != course) p.setSprinting(course);
         if (pq != 0 && Math.signum(z) == pq && Math.abs(z) > Voyageurs.VW + 0.2f) {          // descente sur le quai
             Horaire.Placement pl = new Horaire.Placement();

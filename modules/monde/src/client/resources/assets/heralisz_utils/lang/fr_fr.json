@@ -429,5 +429,7 @@
   "heralisz_utils.zombies.cmd.zone.type": "Type inconnu : police, militaire, danger, village ou calme.",
   "heralisz_utils.zombies.cmd.zone.ajoutee": "Zone %s (%s) posee ici, rayon %s.",
   "heralisz_utils.zombies.cmd.zone.inconnue": "Zone inconnue : %s",
-  "heralisz_utils.zombies.cmd.zone.retiree": "Zone %s retiree."
+  "heralisz_utils.zombies.cmd.zone.retiree": "Zone %s retiree.",
+  "heralisz_utils.train.bagage": "Bagage · %s",
+  "heralisz_utils.train.bagage.aide": "Clic droit : fouiller le bagage"
 }

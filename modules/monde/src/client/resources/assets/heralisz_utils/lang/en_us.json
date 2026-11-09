@@ -429,5 +429,7 @@
   "heralisz_utils.zombies.cmd.zone.type": "Unknown type: police, militaire, danger, village or calme.",
   "heralisz_utils.zombies.cmd.zone.ajoutee": "Zone %s (%s) placed here, radius %s.",
   "heralisz_utils.zombies.cmd.zone.inconnue": "Unknown zone: %s",
-  "heralisz_utils.zombies.cmd.zone.retiree": "Zone %s removed."
+  "heralisz_utils.zombies.cmd.zone.retiree": "Zone %s removed.",
+  "heralisz_utils.train.bagage": "Luggage · %s",
+  "heralisz_utils.train.bagage.aide": "Right-click: search the luggage"
 }

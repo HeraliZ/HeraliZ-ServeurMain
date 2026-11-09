@@ -33,11 +33,15 @@ public class Voyageur extends Entity {
     static final EntityDataAccessor<Float> HAUTEUR = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.FLOAT);
     /** Le joueur porté est allongé sur le plancher (vérifié par le serveur, vu par les autres). */
     static final EntityDataAccessor<Boolean> ALLONGE = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.BOOLEAN);
+    /** Le joueur porté est accroupi (Maj tenu debout, hors d'une banquette ; vu par les autres). */
+    static final EntityDataAccessor<Boolean> ACCROUPI = SynchedEntityData.defineId(Voyageur.class, EntityDataSerializers.BOOLEAN);
     /** Le joueur porté est assis (prédiction de son propre client). */
     boolean passis;
     boolean accroupiPrec;
     /** Allongé (prédiction de son propre client), touche « Ramper » au tick précédent. */
     boolean pallonge;
+    /** Accroupi (prédiction de son propre client). */
+    boolean paccroupi;
     boolean ramperPrec;
     /** Vitesse de marche prédite dans la voiture (blocs par tick, coordonnées de la voiture), comme celle de Minecraft :
      *  accélération, frottement du sol (0,546 par tick) ou de l'air (0,91). */
@@ -94,6 +98,7 @@ public class Voyageur extends Entity {
         entityData.define(ASSIS, false);
         entityData.define(HAUTEUR, 0f);
         entityData.define(ALLONGE, false);
+        entityData.define(ACCROUPI, false);
     }
 
     public boolean assis() {
@@ -103,6 +108,11 @@ public class Voyageur extends Entity {
     /** Allongé sur le plancher (jamais assis en même temps). */
     public boolean allonge() {
         return !assis() && (pv >= 0 ? pallonge : entityData.get(ALLONGE));
+    }
+
+    /** Accroupi debout (jamais assis ni allongé en même temps). */
+    public boolean accroupi() {
+        return !assis() && !allonge() && (pv >= 0 ? paccroupi : entityData.get(ACCROUPI));
     }
 
     public int vehicule() {

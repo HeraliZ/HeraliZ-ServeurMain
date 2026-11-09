@@ -243,6 +243,7 @@ public final class TrainClient {
                     VoieRendu.dessiner(e.getPoseStack(), e.getProjectionMatrix(), cam, e.getFrustum());
                 } else if (st == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
                     RameRendu.dessiner(e.getPoseStack(), e.getProjectionMatrix(), cam, e.getFrustum(), e.getPartialTick(), false);
+                    BagagesClient.dessiner(e.getPoseStack(), cam, e.getPartialTick());
                 } else if (st == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
                     RameRendu.dessiner(e.getPoseStack(), e.getProjectionMatrix(), cam, e.getFrustum(), e.getPartialTick(), true);
                 }
