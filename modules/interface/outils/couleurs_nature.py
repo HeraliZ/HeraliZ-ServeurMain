@@ -7,7 +7,9 @@ celles de Minecraft), feuilles, terre et bois 30 à 50 % plus sombres. Cet outil
 (`src/main/resources/resourcepacks/textures/assets/minecraft/textures/`) :
 
 - `colormap/grass.png` et `colormap/foliage.png` : mélange de la carte de couleurs du pack et de celle de Minecraft
-  (`PART_MINECRAFT`) ;
+  (`PART_MINECRAFT`), puis écarts entre biomes resserrés autour de la couleur de la plaine (`ECART_BIOMES`, demande du
+  propriétaire du 10/11 : « la différence entre deux biomes sur le même bloc est trop flagrante ») : rivière, océan et
+  plage donnent la même herbe que la plaine à l'œil, savane, désert et neige ne s'en écartent presque plus (15 % de l'écart d'avant) ;
 - les feuilles (`block/*_leaves.png`, sauf celles qui ont leur propre couleur) et les lianes : éclaircies jusqu'à
   `FEUILLES` fois la clarté de la texture de Minecraft ;
 - la terre, le gravier, les pierres de sol et les troncs plus sombres que ceux de Minecraft (pas les planches, qui
@@ -37,6 +39,8 @@ sys.path.insert(0, str(RACINE / "outils"))
 import chemins  # noqa: E402
 
 PART_MINECRAFT = 0.55      # cartes de couleurs : 0 = celles du pack, 1 = celles de Minecraft
+ECART_BIOMES = 0.15        # part gardée de l'écart de couleur entre un biome et la plaine (1 = comme Minecraft, 0 = aucun)
+PLAINE = (50, 173)         # point de la plaine dans les cartes de couleurs (température 0,8, humidité 0,4)
 FEUILLES = 0.92            # clarté visée des feuilles, par rapport à la texture de Minecraft
 TERRE = 0.5                # part de l'écart de clarté rattrapée pour la terre et le bois
 GAIN_MAX_FEUILLES = 1.7
@@ -101,7 +105,9 @@ def main():
         if rel in CARTES:
             if v is not None and v.shape == a.shape:
                 m = a.astype(np.float32) * (1 - PART_MINECRAFT) + v.astype(np.float32) * PART_MINECRAFT
-                b, quoi = (np.clip(m, 0, 255) + 0.5).astype(np.uint8), f"mélange {int(PART_MINECRAFT * 100)} % Minecraft"
+                base = m[PLAINE[1] * m.shape[0] // 256, PLAINE[0] * m.shape[1] // 256, :3].copy()
+                m[..., :3] = base + (m[..., :3] - base) * ECART_BIOMES
+                b, quoi = (np.clip(m, 0, 255) + 0.5).astype(np.uint8),                     f"mélange {int(PART_MINECRAFT * 100)} % Minecraft, écarts entre biomes x{ECART_BIOMES}"
         elif v is not None and clarte(a) > 0:
             if n.endswith("_leaves") or n == "vine":
                 g = min(max(FEUILLES * clarte(v) / clarte(a), 1.0), GAIN_MAX_FEUILLES)
