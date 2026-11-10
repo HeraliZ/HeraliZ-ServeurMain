@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import fr.heralisz.utils.HeraliszUtils;
 import net.minecraft.client.Minecraft;
@@ -17,9 +18,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.LightLayer;
@@ -37,8 +35,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Bagages du train chez le joueur : dessinés à leur place dans chaque voiture avec le vrai modèle de leur conteneur de
- * HeraliZ Loot ; ceux qu'on peut fouiller pendant cette période scintillent (étoiles de HeraliZ Loot) jusqu'à leur
- * première ouverture. Fouille par le clic droit (touche « Utiliser ») en visant le bagage lui-même (rayon du regard
+ * HeraliZ Loot ; ceux qu'on peut fouiller pendant cette période scintillent (mêmes étoiles que les conteneurs de HeraliZ
+ * Loot) jusqu'à leur première ouverture. Les étoiles sont dessinées ici, dans le repère de la voiture, à chaque image :
+ * des particules posées dans le monde restaient sur place pendant que le train avançait (on ne les voyait jamais sur
+ * les bagages). Fouille par le clic droit (touche « Utiliser ») en visant le bagage lui-même (rayon du regard
  * contre sa boîte, à 3 blocs au plus) ; le serveur revérifie tout (BagagesServeur).
  */
 public final class BagagesClient {
@@ -47,8 +47,13 @@ public final class BagagesClient {
     private static final Map<String, BlockState> ETATS = new HashMap<>();
     private static final Set<Long> OUVERTS = new HashSet<>();
     private static long epoqueOuverts = -1;
-    private static ParticleOptions etoile;
-    private static int tic;
+    /** Images du scintillement (celles de la particule heraliz_loot:etoile), de la plus grande à la plus petite. */
+    private static final ResourceLocation[] ECLATS = new ResourceLocation[8];
+    private static final int ETOILES = 3;
+
+    static {
+        for (int i = 0; i < 8; i++) ECLATS[i] = new ResourceLocation("minecraft", "textures/particle/glitter_" + (7 - i) + ".png");
+    }
 
     private BagagesClient() {}
 
@@ -81,6 +86,11 @@ public final class BagagesClient {
         Minecraft mc = Minecraft.getInstance();
         if (h == null || mc.level == null) return;
         MultiBufferSource.BufferSource buf = mc.renderBuffers().bufferSource();
+        long epoque = Bagages.epoque(mc.level.getGameTime());
+        double tics = mc.level.getGameTime() + (double) partial;
+        // deux passes : les bagages, puis leurs étoiles par-dessus (dessinées avant, leurs bords transparents
+        // masqueraient le bagage placé derrière)
+        for (int passe = 0; passe < 2; passe++) {
         for (int rame = 0; rame < Horaire.RAMES; rame++) {
             Horaire.Etat e = h.etatRame(TrainClient.temps(partial), rame);
             for (int i = 0; i < Horaire.N; i++) {
@@ -89,7 +99,12 @@ public final class BagagesClient {
                 if (places.isEmpty()) continue;
                 h.placer(veh, e.s(), PL);
                 if (cam.distanceToSqr(PL.x, PL.y, PL.z) > 64 * 64) continue;
-                for (Bagages.Place b : places) {
+                for (int k = 0; k < places.size(); k++) {
+                    Bagages.Place b = places.get(k);
+                    if (passe == 1) {
+                        if (scintille(veh, k, epoque)) etoiles(ps, buf, cam, veh, k, b, tics);
+                        continue;
+                    }
                     Vec3 w = Voyageurs.versMonde(PL, b.lx(), Reseau.PLANCHER, b.lz());
                     BlockPos bp = BlockPos.containing(w.x, w.y + 0.5, w.z);
                     int lum = LightTexture.pack(Math.max(mc.level.getBrightness(LightLayer.BLOCK, bp), 9),
@@ -106,36 +121,46 @@ public final class BagagesClient {
             }
         }
         buf.endBatch();
+        }
     }
 
-    /** Étoiles sur les bagages à fouiller (à chaque tick du client, un bagage sur quatre à la fois). */
-    static void tick() {
+    private static float alea(long g) {
+        g ^= g >>> 33;
+        g *= 0xff51afd7ed558ccdL;
+        g ^= g >>> 33;
+        g *= 0xc4ceb9fe1a85ec53L;
+        g ^= g >>> 33;
+        return (g >>> 40) / (float) (1 << 24);
+    }
+
+    /** Étoiles du bagage (PL est déjà réglé sur sa voiture) : chacune apparaît à une place tirée au hasard autour du
+     *  bagage, grandit, puis s'éteint en moins d'une seconde, comme la particule de HeraliZ Loot, mais accrochée à la
+     *  voiture. Toujours face à la caméra, en pleine lumière. */
+    private static void etoiles(PoseStack ps, MultiBufferSource buf, Vec3 cam, int veh, int place, Bagages.Place b, double tics) {
         Minecraft mc = Minecraft.getInstance();
-        Horaire h = Horaire.get();
-        if (h == null || mc.level == null || mc.player == null || mc.isPaused() || !TrainClient.actif()) return;
-        if (++tic % 3 != 0) return;
-        if (etoile == null) {
-            ParticleType<?> t = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heraliz_loot", "etoile"));
-            etoile = t instanceof ParticleOptions o ? o : ParticleTypes.WAX_OFF;
-        }
-        long epoque = Bagages.epoque(mc.level.getGameTime());
-        var alea = mc.level.random;
-        for (int rame = 0; rame < Horaire.RAMES; rame++) {
-            Horaire.Etat e = h.etatRame(TrainClient.temps(1f), rame);
-            for (int i = 0; i < Horaire.N; i++) {
-                int veh = rame * Horaire.N + i;
-                List<Bagages.Place> places = Bagages.places(veh);
-                if (places.isEmpty()) continue;
-                h.placer(veh, e.s(), PL);
-                if (mc.player.distanceToSqr(PL.x, PL.y, PL.z) > 40 * 40) continue;
-                for (int k = 0; k < places.size(); k++) {
-                    if (!scintille(veh, k, epoque) || alea.nextInt(3) != 0) continue;
-                    Bagages.Place b = places.get(k);
-                    Vec3 w = Voyageurs.versMonde(PL, b.lx() + (alea.nextFloat() - 0.5f) * 0.7f,
-                            Reseau.PLANCHER + 0.25f + alea.nextFloat() * 0.75f, b.lz() + (alea.nextFloat() - 0.5f) * 0.7f);
-                    mc.level.addParticle(etoile, w.x, w.y, w.z, 0, 0.01, 0);
-                }
-            }
+        for (int n = 0; n < ETOILES; n++) {
+            long base = ((long) veh * 31 + place) * 31 + n;
+            double periode = 24 + alea(base * 7919L) * 14;
+            double t = tics + alea(base * 104729L) * periode;
+            long tour = (long) Math.floor(t / periode);
+            float f = (float) ((t - tour * periode) / 16.0);           // 16 ticks de vie visible, puis une attente
+            if (f >= 1f) continue;
+            long g = base * 1000003L + tour;
+            float eclat = f < 0.25f ? f / 0.25f : 1f - (f - 0.25f) / 0.75f;
+            float taille = (0.055f + alea(g * 3L) * 0.03f) * (0.4f + 0.6f * eclat);
+            Vec3 w = Voyageurs.versMonde(PL, b.lx() + (alea(g * 5L) - 0.5f) * 0.7f,
+                    Reseau.PLANCHER + 0.25f + alea(g * 11L) * 0.75f, b.lz() + (alea(g * 13L) - 0.5f) * 0.7f);
+            ps.pushPose();
+            ps.translate(w.x - cam.x, w.y - cam.y, w.z - cam.z);
+            ps.mulPose(mc.gameRenderer.getMainCamera().rotation());
+            org.joml.Matrix4f m = ps.last().pose();
+            VertexConsumer vc = buf.getBuffer(RenderType.text(ECLATS[Math.min(7, (int) (f * 8))]));
+            int a = Math.max(0, Math.min(255, (int) (eclat * 255)));
+            // les deux sens : visible quel que soit le côté dessiné par ce type de rendu
+            float[][] q = {{-taille, -taille, 1, 1}, {-taille, taille, 1, 0}, {taille, taille, 0, 0}, {taille, -taille, 0, 1}};
+            for (int s = 0; s < 4; s++) vc.vertex(m, q[s][0], q[s][1], 0).color(255, 255, 255, a).uv(q[s][2], q[s][3]).uv2(0xF000F0).endVertex();
+            for (int s = 3; s >= 0; s--) vc.vertex(m, q[s][0], q[s][1], 0).color(255, 255, 255, a).uv(q[s][2], q[s][3]).uv2(0xF000F0).endVertex();
+            ps.popPose();
         }
     }
 
@@ -203,11 +228,6 @@ public final class BagagesClient {
             Train.CANAL.sendToServer(new Train.Bagage(v.pv, k));
             e.setCanceled(true);
             e.setSwingHand(false);
-        }
-
-        @SubscribeEvent
-        public static void etoiles(net.minecraftforge.event.TickEvent.ClientTickEvent e) {
-            if (e.phase == net.minecraftforge.event.TickEvent.Phase.END) tick();
         }
 
         /** Passager accroupi dans le train : le modèle est penché comme tout joueur accroupi, pour lui-même (vue F5) et
