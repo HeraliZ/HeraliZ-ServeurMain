@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/grass_block",
+  "textures": {
+    "top": "heralisz_utils:block/sol/herbe_2"
+  }
+}

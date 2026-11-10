@@ -1,0 +1,123 @@
+{
+  "variants": {
+    "snowy=false": [
+      {
+        "model": "minecraft:block/grass_block",
+        "weight": 88
+      },
+      {
+        "model": "minecraft:block/grass_block",
+        "weight": 88,
+        "y": 90
+      },
+      {
+        "model": "minecraft:block/grass_block",
+        "weight": 88,
+        "y": 180
+      },
+      {
+        "model": "minecraft:block/grass_block",
+        "weight": 88,
+        "y": 270
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_2",
+        "weight": 88
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_2",
+        "weight": 88,
+        "y": 90
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_2",
+        "weight": 88,
+        "y": 180
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_2",
+        "weight": 88,
+        "y": 270
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_cailloux",
+        "weight": 5
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_cailloux",
+        "weight": 5,
+        "y": 90
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_cailloux",
+        "weight": 5,
+        "y": 180
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_cailloux",
+        "weight": 5,
+        "y": 270
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_terre",
+        "weight": 5
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_terre",
+        "weight": 5,
+        "y": 90
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_terre",
+        "weight": 5,
+        "y": 180
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_terre",
+        "weight": 5,
+        "y": 270
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_feuilles",
+        "weight": 6
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_feuilles",
+        "weight": 6,
+        "y": 90
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_feuilles",
+        "weight": 6,
+        "y": 180
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_feuilles",
+        "weight": 6,
+        "y": 270
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_fleurs",
+        "weight": 8
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_fleurs",
+        "weight": 8,
+        "y": 90
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_fleurs",
+        "weight": 8,
+        "y": 180
+      },
+      {
+        "model": "heralisz_utils:block/sol/herbe_fleurs",
+        "weight": 8,
+        "y": 270
+      }
+    ],
+    "snowy=true": {
+      "model": "minecraft:block/grass_block_snow"
+    }
+  }
+}

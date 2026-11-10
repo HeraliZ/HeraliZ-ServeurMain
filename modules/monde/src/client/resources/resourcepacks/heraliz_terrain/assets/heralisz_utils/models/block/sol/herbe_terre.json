@@ -1,0 +1,7 @@
+{
+  "parent": "heralisz_utils:block/sol/herbe_detail",
+  "textures": {
+    "top": "heralisz_utils:block/sol/herbe_2",
+    "detail": "heralisz_utils:block/sol/terre"
+  }
+}
