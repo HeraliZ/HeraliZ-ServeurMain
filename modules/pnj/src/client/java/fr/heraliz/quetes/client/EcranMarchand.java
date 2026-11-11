@@ -402,6 +402,9 @@ public final class EcranMarchand extends Screen {
                             bulle.add(Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.sans_points." + b.raisonPoints()), Ui.FONT).withStyle(st -> st.withColor(Ui.AMBRE)));
                             bulle.add(Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.garder"), Ui.FONT).withStyle(st -> st.withColor(Ui.MUTED)));
                         }
+                    } else if (b.pointsSlots()[i] == -2) {
+                        // objet d'essai du staff (11/11) : hérals seulement, jamais de points (avant : rien ne le disait)
+                        bulle.add(Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.essai"), Ui.FONT).withStyle(st -> st.withColor(Ui.AMBRE)));
                     }
                 } else bulle.add(Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.refuse"), Ui.FONT).withStyle(st -> st.withColor(Ui.MUTED)));
             }

@@ -834,6 +834,7 @@
   "msg.saison.nouvelle": "La saison %s commence : tous les clans repartent de 0 point !",
   "msg.saison.fin_programmee": "La saison %s se terminera le %s (heure de Paris).",
   "msg.saison.info_sans_fin": "Saison %s · pas de date de fin",
+  "msg.saison.creatif": "Mode créatif ou spectateur : aucun point de saison pour ton clan (passe en survie pour essayer).",
   "gui.saison.l.largage": "Largage militaire (1er à l'ouvrir)",
   "gui.saison.c.largage_plafond": "%s fois par clan et par jour au plus",
   "gui.saison.c.largage": "au clan du premier qui l'ouvre",

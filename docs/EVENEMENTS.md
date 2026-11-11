@@ -175,21 +175,28 @@ identifiant : `outils/verifier_langues.py` ne la voit pas, la vérifier dans l'a
 
 Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/saison.json` (relu par `/saison recharger`).
 
-**Deux conditions pour tout :**
+**Trois conditions pour tout :**
 - **une saison doit être en cours** : elle commence toute seule au premier démarrage, et repart de 0 avec `/saison reset`
   (puis `/saison reset confirmer`) ; elle ne s'arrête qu'à la date posée par `/saison fin jj/mm/aaaa hh:mm` ;
-- **le clan doit avoir posé son cœur** (CRac) : sans cœur, aucun point et pas de place au classement.
+- **le clan doit avoir posé son cœur** (CRac) : sans cœur, aucun point et pas de place au classement ;
+- **le joueur doit être en survie** (11/11) : en créatif ou en spectateur (staff), aucune source ne donne ni ne retire de
+  points ; le joueur le lit dans le chat.
+
+Depuis le 11/11, chaque point gagné ou perdu a sa ligne dans le journal du serveur (`[saison] +40 pve [TAG] salle_rouge
+(Pseudo) -> clan : …` ; zombies et conteneurs : une ligne par joueur et par minute) et chaque point refusé dit pourquoi
+(`[saison] pas de points : salle_rouge (Pseudo [TAG]) : clan sans coeur pose dans sa base`, la même raison au plus toutes
+les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/saison journal <tag>`).
 
 | Source | Points | Conditions | Où c'est branché |
 |---|---|---|---|
 | Zombie / mutant / Brute | 0,01 / 0,02 / 0,5 | hors vagues de capture ; plafond 50 pts par joueur et par jour (petites actions) | `ClanEvents` |
 | Boss | 60, partagé selon les dégâts | par clan et par boss : 100 %, puis 20 %, puis 0 dans la journée ; **boss mis de côté pour l'ouverture** | `ClanEvents`, `Saison.boss` |
-| Salle à carte verte / bleue / rouge | 5 / 15 / 40 | une fois par recharge de la salle | `loot` · `SaisonLoot` |
+| Salle à carte verte / bleue / rouge | 5 / 15 / 40 | une fois par recharge de la salle, au premier joueur en survie qui ouvre un de ses conteneurs (11/11 : le staff en créatif ne les prend plus) | `loot` · `RotationLoot.ouvrir` |
 | Conteneur T1 → T6 | 0,05 / 0,1 / 0,2 / 0,4 / 0,8 / 1,5 | première ouverture ; plafonné | `loot` · `SaisonLoot` |
 | Coffre d'événement T7 | 5 | première ouverture | `loot` · `SaisonLoot` |
 | Vente aux PNJ | 1 point pour 1 000 hérals | objets trouvés seulement ; plafonné | `pnj` · `SaisonQuetes` |
-| Arme fabriquée | 1 / 2 / 4 / 8 selon la rareté | plafonné | `pnj` · `SaisonQuetes` |
-| Quête de Varga | 10 | une fois chacune | `pnj` · `Moteur` |
+| Arme fabriquée | 1 / 2 / 4 / 8 selon la rareté | plafonné ; 11/11 : l'arme que TaCZ pose aux pieds du joueur est comptée (avant : jamais) | `pnj` · `SaisonQuetes.ramassage` |
+| Quête de Varga | 6 (10 avant le 11/11) | une fois chacune ; plafond des petites actions | `pnj` · `Moteur` |
 | Quête de clan | 5 | 3 par jour, 2 par semaine ; temps et distance comptés seulement en jeu actif sur la carte | `clans` · `Quetes` |
 | Kill d'un joueur / mort | +1 / −1 | hors même IP, même clan, victime sans arme ni armure ; même victime ×1, ×0,5 puis 0 sur 6 h ; jamais sous 0 | `ClanEvents`, `Saison.kill` |
 | ClashWar | places 100 / 60 / 40 / 20, participation 5, **×2** | au moins 4 clans différents | `clashwar` · `Recompenses` |

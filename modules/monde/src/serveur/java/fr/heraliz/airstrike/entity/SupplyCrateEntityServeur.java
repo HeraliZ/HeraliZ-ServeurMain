@@ -298,7 +298,14 @@ public class SupplyCrateEntityServeur extends SupplyCrateEntity {
      * les prend.
      */
     private void prevenirSiJoueur(Player player) {
-        if (evenement == null || player.isCreative() || player.isSpectator()) return;
+        if (evenement == null) return;
+        if (player.isCreative() || player.isSpectator()) {
+            // 11/11 : le staff le lit (avant : rien ; un largage ouvert en créatif semblait ne donner aucun point)
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatableWithFallback("msg.airstrike.largage_creatif",
+                    "Mode créatif ou spectateur : ce largage garde ses points de saison pour le premier joueur en survie qui l'ouvre.")
+                    .withStyle(net.minecraft.ChatFormatting.GRAY), false);
+            return;
+        }
         String ev = evenement;
         evenement = null;   // une seule fois, même si la caisse est rechargée
         FINS_EVENEMENT.remove(ev);

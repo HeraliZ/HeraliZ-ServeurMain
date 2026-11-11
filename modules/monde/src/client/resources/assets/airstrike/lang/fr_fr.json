@@ -161,5 +161,6 @@
   "tooltip.airstrike.cartridge.uses": "Frappes : %s / %s",
   "tooltip.airstrike.designator.uses": "Frappes restantes : %s",
   "msg.airstrike.zone_carte": "Pas de frappe aérienne ici : seulement sur la carte.",
-  "msg.airstrike.zone_vip": "Pas de frappe aérienne dans une zone VIP."
+  "msg.airstrike.zone_vip": "Pas de frappe aérienne dans une zone VIP.",
+  "msg.airstrike.largage_creatif": "Mode créatif ou spectateur : ce largage garde ses points de saison pour le premier joueur en survie qui l'ouvre."
 }

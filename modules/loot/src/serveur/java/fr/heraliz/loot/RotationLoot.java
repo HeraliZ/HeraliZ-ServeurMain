@@ -1041,18 +1041,23 @@ public final class RotationLoot extends SavedData {
             p.displayClientMessage(Component.translatableWithFallback("heraliz_loot.conteneur.vide", "Vide.").withStyle(ChatFormatting.GRAY), true);
             return;
         }
-        if (a.contenu == null) {
-            // salle à carte : la première ouverture depuis sa recharge rapporte les points de la salle (saison des clans)
-            String salle = null;
-            if (a.zone.startsWith(PREFIXE_SALLE)) {
-                boolean premiere = !e.sallesOuvertes.contains(a.zone);
-                for (Actif x : e.actifs.values()) {
-                    if (x != a && x.contenu != null && a.zone.equals(x.zone)) { premiere = false; break; }
+        // salle à carte : le premier joueur EN SURVIE qui ouvre un de ses conteneurs depuis sa recharge prend les points de
+        // la salle (saison des clans). 11/11 (retour du propriétaire : « salle à carte rouge qui n'a pas donné les points ») :
+        // avant, la toute première ouverture les prenait, même celle d'un membre du staff en créatif, qui n'en gagnait aucun :
+        // la salle ne rapportait ensuite plus rien à personne jusqu'à sa recharge (et un autre conteneur de la salle déjà
+        // ouvert les retirait aussi). Le staff ne les prend plus (la saison lui dit pourquoi) ; ils restent au premier joueur
+        // en survie, quel que soit le conteneur de la salle qu'il ouvre.
+        if (a.zone.startsWith(PREFIXE_SALLE) && !e.sallesOuvertes.contains(a.zone)) {
+            Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
+            if (s != null && s.couleur() != null) {
+                if (!p.isCreative() && !p.isSpectator()) {
+                    e.sallesOuvertes.add(a.zone);
+                    e.setDirty();
                 }
-                Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
-                if (premiere && s != null && s.couleur() != null) salle = "salle_" + s.couleur();
-                e.sallesOuvertes.add(a.zone);
+                SaisonLoot.pve(p, "salle_" + s.couleur());
             }
+        }
+        if (a.contenu == null) {
             // contenu tiré à la première ouverture : avec le bonus de loot de celui qui ouvre
             int bonus = BonusLoot.pourcent(p);
             a.contenu = e.remplir(k, cb.nom, l.random, bonus);
@@ -1062,7 +1067,6 @@ public final class RotationLoot extends SavedData {
             // un conteneur tiré vide ne compte ni pour la saison ni pour les quêtes (« fouiller N conteneurs », 03/11)
             boolean garni = !a.contenu.isEmpty();
             if (garni) SaisonLoot.conteneur(p, ConteneurBlock.palier(cb.nom));
-            if (salle != null) SaisonLoot.pve(p, salle);
             // quêtes du jour (26/10) : toute première ouverture d'un conteneur rempli, avec la couleur de sa salle à carte
             String couleur = "";
             if (a.zone.startsWith(PREFIXE_SALLE)) {

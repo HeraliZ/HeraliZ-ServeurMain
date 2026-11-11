@@ -834,6 +834,7 @@
   "msg.saison.nouvelle": "Season %s begins: every clan starts again from 0 points!",
   "msg.saison.fin_programmee": "Season %s will end on %s (Paris time).",
   "msg.saison.info_sans_fin": "Season %s · no end date",
+  "msg.saison.creatif": "Creative or spectator mode: no season points for your clan (switch to survival to try).",
   "gui.saison.l.largage": "Military airdrop (first to open it)",
   "gui.saison.c.largage_plafond": "%s times per clan per day at most",
   "gui.saison.c.largage": "to the clan of the first one to open it",

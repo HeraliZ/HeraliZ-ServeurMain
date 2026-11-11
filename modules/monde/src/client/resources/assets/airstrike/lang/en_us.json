@@ -161,5 +161,6 @@
   "tooltip.airstrike.cartridge.uses": "Strikes: %s / %s",
   "tooltip.airstrike.designator.uses": "Strikes left: %s",
   "msg.airstrike.zone_carte": "No air strike here: only on the map.",
-  "msg.airstrike.zone_vip": "No air strike in a VIP area."
+  "msg.airstrike.zone_vip": "No air strike in a VIP area.",
+  "msg.airstrike.largage_creatif": "Creative or spectator mode: this airdrop keeps its season points for the first survival player who opens it."
 }

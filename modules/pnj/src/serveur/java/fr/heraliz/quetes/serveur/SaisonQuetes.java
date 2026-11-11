@@ -2,11 +2,14 @@ package fr.heraliz.quetes.serveur;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -17,9 +20,11 @@ import net.minecraftforge.registries.ForgeRegistries;
  * <li>quête principale finie (suite d'un PNJ, jamais refaite) : {@code quete_principale} ;</li>
  * <li>vente à un marchand : {@code vente_1000} par tranche de 1 000 hérals, seulement pour des objets qu'AUCUN marchand ne
  * vend (sinon acheter puis revendre ferait des points) ; plafond par jour chez Clans ;</li>
- * <li>arme fabriquée à la Table d'armurier de TaCZ : {@code craft_<rareté>} pour chaque arme qui apparaît dans
- * l'inventaire pendant que la table est ouverte, sauf celles ramassées au sol entre-temps ; plafond par jour chez Clans.</li>
+ * <li>arme fabriquée à la Table d'armurier de TaCZ : {@code craft_<rareté>} pour chaque arme fabriquée (11/11 : voir
+ * {@link #ramassage}) ; plafond par jour chez Clans.</li>
  * </ul>
+ * Joueur en créatif ou en spectateur : refusé par la saison elle-même (11/11 : Clans le décide pour toutes les sources et
+ * prévient le joueur ; avant, filtré ici en silence).
  */
 final class SaisonQuetes {
     private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
@@ -39,7 +44,7 @@ final class SaisonQuetes {
                 pve = null;
             }
         }
-        if (pve == null || quantite <= 0 || p.isCreative() || p.isSpectator()) return;
+        if (pve == null || quantite <= 0) return;
         try {
             pve.invoke(null, p, source, quantite);
         } catch (ReflectiveOperationException | RuntimeException e) {
@@ -141,45 +146,47 @@ final class SaisonQuetes {
     }
 
     // ------------------------------------------------------------------ fabrication
-    /** Armes (identifiant TaCZ -> nombre) au dernier relevé, table ouverte ; absent = table fermée. */
-    private static final Map<UUID, Map<String, Integer>> RELEVES = new HashMap<>();
-    /** Armes ramassées au sol depuis le dernier relevé (pas fabriquées). */
-    private static final Map<UUID, Map<String, Integer>> RAMASSEES = new HashMap<>();
+    /**
+     * Âge (ticks) en dessous duquel un objet au sol ramassé est l'arme que la table vient de fabriquer : TaCZ la pose aux
+     * pieds du joueur SANS délai de ramassage ; tout autre objet au sol attend au moins 10 ticks avant de pouvoir être
+     * ramassé (objet d'un bloc 10, jeté par un joueur ou à sa mort 40, inventaire plein des mods 40).
+     */
+    private static final int AGE_FABRIQUEE = 10;
+    /** Joueurs dont la Table d'armurier était ouverte au dernier relevé (toutes les 10 ticks). */
+    private static final Set<UUID> TABLE = new HashSet<>();
+    /** Armes au sol déjà comptées (identifiant de l'objet au sol) : l'évènement revient à chaque tick où on la touche. */
+    private static final Set<UUID> COMPTEES = new java.util.LinkedHashSet<>();
 
     static void oublier(UUID u) {
-        RELEVES.remove(u);
-        RAMASSEES.remove(u);
+        TABLE.remove(u);
     }
 
+    /**
+     * Arme fabriquée (11/11, retour du propriétaire : « fabriquer une arme » ne donnait jamais de points). Cause : TaCZ
+     * 1.1.8 (GunSmithTableMenu.doCraft) et TaCZ Addon (CraftingTransaction.spawnOutput) ne mettent JAMAIS l'arme
+     * fabriquée dans l'inventaire : ils la posent au sol aux pieds du joueur, sans délai de ramassage, et le joueur la
+     * ramasse au tick suivant. L'ancien relevé de l'inventaire retirait toute arme ramassée au sol table ouverte (contre la
+     * triche d'une arme jetée par un ami) : il retirait donc aussi chaque arme fabriquée, et rien n'était jamais donné.
+     * Maintenant : une arme touchée au sol pendant que la table est ouverte (ou l'était au dernier relevé : la table fermée
+     * juste après le clic), dont l'objet au sol a moins de {@link #AGE_FABRIQUEE} ticks, est une arme fabriquée, comptée
+     * une seule fois (même inventaire plein : elle a bien été fabriquée) ; une arme jetée par quelqu'un d'autre ne se
+     * ramasse qu'après 40 ticks et ne compte jamais.
+     */
     static void ramassage(EntityItemPickupEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || !RELEVES.containsKey(p.getUUID())) return;
-        String g = Ponts.gunId(e.getItem().getItem());
-        if (g != null) RAMASSEES.computeIfAbsent(p.getUUID(), k -> new HashMap<>()).merge(g, e.getItem().getItem().getCount(), Integer::sum);
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        if (!TABLE.contains(p.getUUID()) && !Ponts.tableArmes(p)) return;
+        ItemEntity sol = e.getItem();
+        ItemStack s = sol.getItem();
+        if (s.isEmpty() || sol.getAge() >= AGE_FABRIQUEE || Ponts.gunId(s) == null || Ponts.couteau(s)) return;
+        if (!COMPTEES.add(sol.getUUID())) return;
+        if (COMPTEES.size() > 256) COMPTEES.remove(COMPTEES.iterator().next());
+        int r = Ponts.rarete(s);
+        pve(p, "craft_" + Ponts.RARETES.get(Math.max(0, Math.min(5, r))), s.getCount());
     }
 
-    /** Toutes les 10 ticks : armes apparues dans l'inventaire, table d'armurier ouverte. */
+    /** Toutes les 10 ticks : la Table d'armurier est-elle ouverte ? (seul relevé, aucun parcours de l'inventaire). */
     static void fabrication(ServerPlayer p) {
-        if (!Ponts.tableArmes(p)) {
-            oublier(p.getUUID());
-            return;
-        }
-        Map<String, Integer> now = new HashMap<>();
-        Map<String, ItemStack> exemple = new HashMap<>();
-        for (ItemStack s : p.getInventory().items) {
-            String g = Ponts.gunId(s);
-            if (g == null || Ponts.couteau(s)) continue;
-            now.merge(g, s.getCount(), Integer::sum);
-            exemple.putIfAbsent(g, s);
-        }
-        Map<String, Integer> avant = RELEVES.put(p.getUUID(), now);
-        Map<String, Integer> ram = RAMASSEES.remove(p.getUUID());
-        if (avant == null) return;
-        for (Map.Entry<String, Integer> e : now.entrySet()) {
-            int plus = e.getValue() - avant.getOrDefault(e.getKey(), 0) - (ram == null ? 0 : ram.getOrDefault(e.getKey(), 0));
-            if (plus <= 0) continue;
-            int r = Ponts.rarete(exemple.get(e.getKey()));
-            String nom = Ponts.RARETES.get(Math.max(0, Math.min(5, r)));
-            pve(p, "craft_" + nom, plus);
-        }
+        if (Ponts.tableArmes(p)) TABLE.add(p.getUUID());
+        else if (!TABLE.isEmpty()) TABLE.remove(p.getUUID());
     }
 }

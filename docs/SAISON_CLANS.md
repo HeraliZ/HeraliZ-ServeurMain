@@ -87,19 +87,23 @@ ce qui est dur rapporte beaucoup, ce qui est facile presque rien.
 | Crawler / Blister | 0,02 | mêmes conditions |
 | Brute | 0,5 | mêmes conditions |
 | Boss tué | 60 | apparu sur la carte ou dans un event (jamais invoqué par le staff) ; partagé selon les dégâts faits ; par clan et par jour : 1er kill de ce boss 100 %, 2e 20 %, ensuite 0 (25/10 : avant, 150 à chaque réapparition, toutes les heures) |
-| Salle à carte verte / bleue / rouge | 5 / 15 / 40 | une fois par recharge de la salle |
+| Salle à carte verte / bleue / rouge | 5 / 15 / 40 | une fois par recharge de la salle, au premier joueur en survie qui ouvre un de ses conteneurs (11/11 : un membre du staff en créatif ne les prend plus) |
 | Capture d'un drapeau (zone libre) | 3 × valeur de la ville (1 à 7) × difficulté des vagues (0,8 / 1 / 1,25) | 25/10 ; même zone pour le même clan : une fois par 12 h ; 40 points de capture par clan et par jour au plus (avec les prises ci-dessous) ; section `capture` de `saison.json` ; 31/10 : clan de niveau 5 au moins, avec l'amélioration Territoires, 2 zones au plus (§6 bis) |
 | Conteneur de loot T1 → T6 | 0,05 / 0,1 / 0,2 / 0,4 / 0,8 / 1,5 | première ouverture après qu'il a été rempli |
 | Coffre d'événement T7 | 5 | première ouverture |
 | Vente aux PNJ | 1 point pour 1 000 hérals | seulement les objets trouvés, jamais ceux achetés à un PNJ |
-| Arme fabriquée | Commun 1, Peu commun 2, Rare 4, Épique 8 | **[à valider]** quand le craft sera refait |
-| Quête de Varga finie | 10 | une fois chacune ; 02/11 (choix du propriétaire) : comptée dans les petites actions plafonnées par joueur et par jour (`plafonnees` de `saison.json`) |
+| Arme fabriquée | Commun 1, Peu commun 2, Rare 4, Épique 8 | à la Table d'armurier ; 11/11 : l'arme que TaCZ pose aux pieds du joueur est comptée (avant : jamais aucun point) |
+| Quête de Varga finie | 6 (10 avant le 11/11, demande du propriétaire : « réduire un peu ») | une fois chacune ; 02/11 (choix du propriétaire) : comptée dans les petites actions plafonnées par joueur et par jour (`plafonnees` de `saison.json`) |
 | Quête de clan finie | 5 | limite par jour ; « Jouer N min » : seulement les minutes sur la carte, en survie, où le joueur a marché au moins 10 m ou agi (dégâts, cache fouillée) ; « Parcourir N km » : seulement à pied (ni véhicule, ni train, ni nage) (25/10) |
 
 **Plafond par joueur et par jour** pour les petites actions (zombies, conteneurs, ventes, fabrication et, depuis le
 02/11, quêtes de Varga) : 50 points.
 Salles à carte et quêtes de clan ne sont pas plafonnées ; les boss ont leur rendement décroissant par clan et par jour
 (`boss_coefficients` de `saison.json`).
+
+**11/11** : un joueur en créatif ou en spectateur (staff) ne fait jamais gagner ni perdre de points, quelle que soit la
+source (il le lit dans le chat). Chaque point gagné ou perdu a sa ligne `[saison]` dans le journal du serveur (zombies et
+conteneurs : une ligne par joueur et par minute), chaque point refusé aussi, avec sa raison.
 
 ### PVP
 

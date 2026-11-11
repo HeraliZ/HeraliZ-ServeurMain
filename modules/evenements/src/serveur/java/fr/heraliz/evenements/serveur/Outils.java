@@ -135,10 +135,14 @@ public final class Outils {
         }
     }
 
-    /** Pourquoi le clan du joueur ne gagnerait aucun point : 0 il en gagne, 1 pas de saison en cours, 2 sans clan, 3 clan sans cœur. */
+    /**
+     * Pourquoi le clan du joueur ne gagnerait aucun point : 0 il en gagne, 1 pas de saison en cours, 2 sans clan, 3 clan sans
+     * cœur, 4 joueur en créatif ou en spectateur (11/11 : la saison des clans refuse ces modes pour toutes les sources).
+     */
     public static int raisonSansPoints(ServerPlayer p) {
         chercherSaisonVue();
         if (saisonBareme == null) return 1;
+        if (p.isCreative() || p.isSpectator()) return 4;
         try {
             if (!(boolean) saisonActive.invoke(null)) return 1;
             Object clan = saisonClanDe.invoke(null, p.getUUID());
@@ -147,6 +151,20 @@ public final class Outils {
         } catch (ReflectiveOperationException | RuntimeException e) {
             return 1;
         }
+    }
+
+    /**
+     * Pourquoi ce joueur n'a eu aucun point de saison (11/11 : il le lit au lieu de croire les points cassés) : pas de saison,
+     * sans clan, clan sans cœur, créatif ou spectateur ; sinon le plafond du jour de son clan pour cet événement.
+     */
+    public static MutableComponent sansPoints(ServerPlayer p) {
+        return switch (raisonSansPoints(p)) {
+            case 1 -> t("heraliz_evenements.sans_points.saison", "Pas de saison en cours : aucun point de saison.");
+            case 2 -> t("heraliz_evenements.sans_points.clan", "Sans clan : aucun point de saison.");
+            case 3 -> t("heraliz_evenements.sans_points.coeur", "Ton clan n'a pas posé son cœur dans sa base : aucun point de saison.");
+            case 4 -> t("heraliz_evenements.sans_points.creatif", "Mode créatif ou spectateur : aucun point de saison.");
+            default -> t("heraliz_evenements.sans_points.plafond", "Plafond du jour atteint pour ton clan : plus de points pour cet événement aujourd'hui.");
+        };
     }
 
     /**

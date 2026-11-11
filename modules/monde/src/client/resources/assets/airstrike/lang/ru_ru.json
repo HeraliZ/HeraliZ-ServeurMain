@@ -161,5 +161,6 @@
   "tooltip.airstrike.cartridge.uses": "Ударов: %s / %s",
   "tooltip.airstrike.designator.uses": "Осталось ударов: %s",
   "msg.airstrike.zone_carte": "Здесь нельзя вызвать авиаудар: только на карте.",
-  "msg.airstrike.zone_vip": "Авиаудар запрещён в VIP-зоне."
+  "msg.airstrike.zone_vip": "Авиаудар запрещён в VIP-зоне.",
+  "msg.airstrike.largage_creatif": "Творческий режим или наблюдатель: очки сезона за этот сброс получит первый игрок в режиме выживания, который его откроет."
 }

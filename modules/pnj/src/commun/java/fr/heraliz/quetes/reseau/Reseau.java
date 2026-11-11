@@ -113,8 +113,9 @@ public final class Reseau {
      * Écran d'un marchand (serveur -> joueur). rachat = il rachète : prixSlots et rarSlots donnent, pour chacune des 36
      * cases de l'inventaire, le prix de rachat de l'objet (0 = il ne le prend pas) et sa rareté ; sinon il vend ses
      * articles. ouvrir = ouvrir l'écran, sinon mettre à jour celui qui est ouvert. entite -1 = fermer. pointsSlots (25/10) :
-     * points de saison que rapporte l'objet de chaque case (objets d'événement ; -1 = aucun) ; raisonPoints : 0 le clan
-     * du joueur les gagne, 1 pas de saison, 2 sans clan, 3 clan sans cœur (le joueur peut garder l'objet pour plus tard).
+     * points de saison que rapporte l'objet de chaque case (objets d'événement ; -1 = aucun ; 11/11 : -2 = objet d'essai du
+     * staff, hérals seulement) ; raisonPoints : 0 le clan du joueur les gagne, 1 pas de saison, 2 sans clan, 3 clan sans
+     * cœur, 4 joueur en créatif ou en spectateur (le joueur peut garder l'objet pour plus tard).
      */
     public record Boutique(int entite, boolean ouvrir, Texte nom, Texte role, long solde, boolean rachat, List<Article> articles,
                            int[] prixSlots, int[] rarSlots, boolean troc, List<Echange> echanges, int[] pointsSlots, int raisonPoints) {

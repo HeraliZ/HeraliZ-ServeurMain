@@ -27,7 +27,9 @@ public final class SaisonApi {
     /**
      * Points PVE pour le clan du joueur : {@code source} = cle du bareme (« conteneur_t3 », « salle_rouge »,
      * « vente_1000 », « craft_rare », « quete_principale »...), {@code quantite} = unites (1 le plus souvent ;
-     * herals / 1 000 pour une vente). Sans clan, sans coeur ou hors saison : rien.
+     * herals / 1 000 pour une vente). Sans clan, sans coeur ou hors saison : rien. 11/11 : joueur en creatif ou en
+     * spectateur : rien non plus, decide ICI pour toutes les sources (l'appelant n'a plus a le filtrer ; le joueur est
+     * prevenu dans le chat) ; chaque point donne, et chaque refus avec sa raison, a sa ligne au journal du serveur.
      */
     public static void pve(ServerPlayer joueur, String source, double quantite) {
         Saison.pve(joueur, source, quantite);
@@ -36,7 +38,8 @@ public final class SaisonApi {
     /**
      * Evenement de la carte reussi par un joueur (25/10, module heraliz_evenements) : points de la categorie events
      * pour son clan ({@code events.points.<source>} du bareme, plafond {@code events.par_jour.<source>} par clan et par
-     * jour). Rend les points donnes (0 : sans clan, sans coeur, hors saison ou plafond).
+     * jour). Rend les points donnes (0 : sans clan, sans coeur, hors saison, plafond, ou 11/11 joueur en creatif ou en
+     * spectateur).
      */
     public static double evenement(ServerPlayer joueur, String source, double quantite) {
         return Saison.evenement(joueur, source, quantite);

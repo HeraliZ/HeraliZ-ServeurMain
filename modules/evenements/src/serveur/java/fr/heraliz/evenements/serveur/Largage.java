@@ -291,6 +291,9 @@ final class Largage implements Evenement {
         if (!o.points()) {
             Etat.fermer(id);
             Outils.journal(id + " ouvert par " + p.getGameProfile().getName() + " (sans points)");
+            // 11/11 : le joueur le lit (avant : seulement ce journal ; un largage du panel du staff semblait « cassé »)
+            p.sendSystemMessage(Outils.t("heraliz_evenements.largage.sans_points",
+                    "Largage lancé par le staff : aucun point de saison (essai).").withStyle(ChatFormatting.GRAY));
             return;
         }
         if (!Etat.recompenser(id)) return;   // noté sur le disque AVANT les points : jamais deux fois
@@ -300,6 +303,8 @@ final class Largage implements Evenement {
         if (pts > 0) {
             p.sendSystemMessage(Outils.t("heraliz_evenements.largage.points", "+%s points de saison pour ton clan (largage).",
                     String.valueOf(Math.round(pts))).withStyle(ChatFormatting.GREEN));
+        } else {
+            p.sendSystemMessage(Outils.sansPoints(p).withStyle(ChatFormatting.GRAY));
         }
     }
 

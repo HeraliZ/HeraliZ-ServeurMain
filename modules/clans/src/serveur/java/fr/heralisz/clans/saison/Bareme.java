@@ -128,7 +128,8 @@ public final class Bareme {
         double[] craft = {1, 2, 4, 8, 8, 8};
         String[] rar = {"commun", "peu_commun", "rare", "epique", "legendaire", "unique"};
         for (int i = 0; i < rar.length; i++) b.pve.put("craft_" + rar[i], craft[i]);
-        b.pve.put("quete_principale", 10.0);
+        // 11/11 (demande du proprietaire : « reduire un peu ») : 6 au lieu de 10 par quete de Varga
+        b.pve.put("quete_principale", 6.0);
         b.pve.put("quete_clan", 5.0);
         for (String s : new String[]{"zombie", "zombie_mutant", "brute", "vente_1000"}) b.plafonnees.add(s);
         // 02/11 (choix du proprietaire, A316) : les quetes de Varga comptent dans les petites actions plafonnees par joueur

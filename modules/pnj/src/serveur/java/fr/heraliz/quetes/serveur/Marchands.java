@@ -102,9 +102,10 @@ final class Marchands {
                 ItemStack s = p.getInventory().items.get(i);
                 long pe = ObjetsEvenements.prix(s);
                 if (pe >= 0) {
-                    // objet d'événement (25/10) : son prix et ses points, jamais les règles de rareté du marchand
+                    // objet d'événement (25/10) : son prix et ses points, jamais les règles de rareté du marchand ; 11/11 : -2
+                    // pour un objet d'essai (staff), dit au survol (avant : aucune ligne, on croyait les points cassés)
                     prix[i] = (int) Math.min(Integer.MAX_VALUE, pe);
-                    pts[i] = pe > 0 ? ObjetsEvenements.points(s) : -1;
+                    pts[i] = pe <= 0 ? -1 : ObjetsEvenements.essai(s) ? -2 : ObjetsEvenements.points(s);
                     objetEvenement |= pe > 0;
                 } else {
                     prix[i] = (int) Math.min(Integer.MAX_VALUE, prixRachat(m, s, ventes));
@@ -187,7 +188,7 @@ final class Marchands {
             return;
         }
         long total = 0, horsBoutique = 0, pointsEvenement = 0;
-        int nombre = 0;
+        int nombre = 0, essais = 0, sansPoints = 0;
         Map<String, Long> ventes = SaisonQuetes.ventes();
         for (int c : new LinkedHashSet<>(v.cases())) {
             if (c < 0 || c >= Reseau.CASES) continue;
@@ -195,10 +196,13 @@ final class Marchands {
             long pe = ObjetsEvenements.prix(s);
             if (pe >= 0) {
                 // objet d'événement (25/10) : noté vendu par le module des événements AVANT le paiement, points au clan
+                boolean essai = pe > 0 && ObjetsEvenements.essai(s);
                 long[] r = pe > 0 ? ObjetsEvenements.vendre(p, s) : null;
                 if (r == null) continue;
                 total += r[0];
                 pointsEvenement += r[1];
+                if (essai) essais++;
+                else if (r[1] <= 0) sansPoints++;
                 nombre++;
                 p.getInventory().items.set(c, ItemStack.EMPTY);
                 continue;
@@ -226,6 +230,13 @@ final class Marchands {
         p.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.2F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.vendu", Texte.brut(nombre), Texte.brut(Ponts.nombre(total))), 0xE8C36A);
         if (pointsEvenement > 0) Moteur.notif(p, Texte.cle("heraliz_quetes.notif.points_evenement", Texte.brut(pointsEvenement)), 0x7BD88F);
+        // 11/11 : un objet d'événement vendu sans points dit pourquoi (objet d'essai du staff, ou la raison de la saison)
+        if (essais > 0) Moteur.notif(p, Texte.cle("heraliz_quetes.notif.objet_essai"), 0xE8B34A);
+        if (sansPoints > 0) {
+            int raison = ObjetsEvenements.raisonSansPoints(p);
+            Moteur.notif(p, Texte.cle(raison == 0 ? "gui.heraliz_quetes.marchand.sans_points.plafond" : "gui.heraliz_quetes.marchand.sans_points." + raison),
+                    0xE8B34A);
+        }
         LOG.info("[heraliz_quetes] {} vend {} objets à {} pour {} hérals", p.getGameProfile().getName(), nombre, def.id, total);
         envoyerA(p, v.entite(), def);
     }

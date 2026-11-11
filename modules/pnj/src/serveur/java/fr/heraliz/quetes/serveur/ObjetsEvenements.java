@@ -20,7 +20,7 @@ final class ObjetsEvenements {
     private static final Logger LOG = LogUtils.getLogger();
 
     @Nullable
-    private static Method prix, points, raison, vendre;
+    private static Method prix, points, raison, vendre, essai;
     private static boolean cherche;
 
     private static boolean pret() {
@@ -35,8 +35,26 @@ final class ObjetsEvenements {
             } catch (ReflectiveOperationException | LinkageError e) {
                 prix = null;
             }
+            try {
+                essai = prix == null ? null : Class.forName("fr.heraliz.evenements.api.EvenementsApi").getMethod("objetEssai", ItemStack.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                essai = null;   // Événements d'avant le 11/11 : pas de mention « essai » chez le marchand
+            }
         }
         return prix != null;
+    }
+
+    /**
+     * Objet d'essai (11/11) : du staff ou d'un événement lancé par le staff sans « avec_points » : hérals seulement, jamais de
+     * points de saison. Le marchand le dit au survol et à la vente (avant : rien ne le disait).
+     */
+    static boolean essai(ItemStack s) {
+        if (!pret() || essai == null) return false;
+        try {
+            return Boolean.TRUE.equals(essai.invoke(null, s));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
     }
 
     /** Prix de rachat : -1 si ce n'est pas un objet d'événement, 0 s'il ne se vend pas (copie, déjà vendu). */
@@ -59,7 +77,7 @@ final class ObjetsEvenements {
         }
     }
 
-    /** 0 : le clan du joueur gagne des points ; 1 pas de saison, 2 sans clan, 3 clan sans cœur. */
+    /** 0 : le clan du joueur gagne des points ; 1 pas de saison, 2 sans clan, 3 clan sans cœur, 4 créatif ou spectateur (11/11). */
     static int raisonSansPoints(ServerPlayer p) {
         if (!pret()) return 1;
         try {

@@ -7,7 +7,9 @@ import net.minecraft.server.level.ServerPlayer;
 /**
  * Points de saison des clans (HeraliZ Clans 3.6.0, {@code fr.heralisz.clans.saison.SaisonApi.pve}, par réflexion ;
  * absent : rien). Le barème est chez Clans : on n'envoie qu'une source. Donnés une seule fois par remplissage, au premier
- * qui ouvre (le contenu est tiré à ce moment-là) : rouvrir ne rapporte rien.
+ * qui ouvre (le contenu est tiré à ce moment-là) : rouvrir ne rapporte rien. 11/11 : joueur en créatif ou en spectateur
+ * refusé par la saison elle-même (Clans 3.15.0 : prévenu dans le chat, raison au journal du serveur) et plus ici en
+ * silence.
  */
 final class SaisonLoot {
     private SaisonLoot() {
@@ -25,7 +27,7 @@ final class SaisonLoot {
                 pve = null;
             }
         }
-        if (pve == null || p.isCreative() || p.isSpectator()) return;
+        if (pve == null) return;
         try {
             pve.invoke(null, p, source, 1.0);
         } catch (ReflectiveOperationException | RuntimeException e) {

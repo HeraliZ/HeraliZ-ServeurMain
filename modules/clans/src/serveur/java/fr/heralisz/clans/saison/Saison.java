@@ -52,9 +52,16 @@ import java.util.UUID;
  * <li>events : grille de places, participation, multiplicateur par event ;</li>
  * <li>prise du coeur pendant la Purge (CRac) : -15 % pour le clan pris, +10 % pour l'attaquant, une fois par Purge ;</li>
  * <li>coeur deplace et pas repose a temps : le clan perd tout ;</li>
- * <li>les {@link Bareme#verrouJours} derniers jours, personne ne rejoint un clan.</li>
+ * <li>les {@link Bareme#verrouJours} derniers jours, personne ne rejoint un clan ;</li>
+ * <li>11/11 : un joueur en creatif ou en spectateur (staff) ne fait jamais gagner ni perdre de points, quelle que soit la
+ * source (avant : seulement filtre par certains mods appelants, sans rien dire) ; il en est prevenu dans le chat.</li>
  * </ul>
- * Chaque point est note dans heralisz_clans/saison_journal.log (qui, quand, pourquoi, combien). Fil serveur seulement.
+ * Chaque point est note dans heralisz_clans/saison_journal.log (qui, quand, pourquoi, combien). 11/11 (demande du
+ * proprietaire, « pour verifier ») : chaque point gagne ou perdu a aussi sa ligne dans le journal du serveur
+ * ({@code [saison] +40 pve [TAG] salle_rouge (Pseudo) ...}) ; les petites actions (zombies, conteneurs : moins d'un point
+ * chacune) une ligne par joueur et par minute ; et un point PAS donne dit pourquoi ({@code [saison] pas de points :
+ * ...} : sans clan, clan sans coeur, pas de saison, creatif, plafond...), la meme raison au plus toutes les 10 min.
+ * Fil serveur seulement.
  */
 public final class Saison {
     private Saison() {
@@ -96,6 +103,7 @@ public final class Saison {
 
     @SubscribeEvent
     public static void onStop(ServerStoppingEvent e) {
+        ecrirePetites();
         ecrireJournal();
         sauvegarder();
     }
@@ -125,6 +133,7 @@ public final class Saison {
         if (ECHEC.getAndSet(false)) sale = true;
         ecrireJournal();
         if (d.active && d.fin > 0 && System.currentTimeMillis() >= d.fin) terminer("fin de la date prevue");
+        if (ticks % 1200 == 0) ecrirePetites();
         if (ticks % 1200 == 0 && sale) sauvegarder();
         // classement refait toutes les 30 s meme sans point gagne : un clan dissous, renomme ou qui pose / perd son
         // coeur n'y restait (ou n'y apparaissait) qu'au prochain point marque par n'importe quel clan
@@ -168,27 +177,56 @@ public final class Saison {
     }
 
     // ------------------------------------------------------------------ PVE
-    /** Points PVE pour le clan du joueur ({@code quantite} unites de {@code source}). */
+    /**
+     * Points PVE pour le clan du joueur ({@code quantite} unites de {@code source}). 11/11 : joueur en creatif ou en
+     * spectateur (staff) refuse ici pour toutes les sources (prevenu dans le chat), bot de charge refuse comme pour les
+     * evenements ; chaque refus a sa raison au journal du serveur.
+     */
     public static void pve(ServerPlayer p, String source, double quantite) {
+        if (quantite <= 0 || creatif(p, source) || p.getTags().contains("heraliz_bot")) return;
         ClanStore s = ClanStore.get();
         Clan c = s == null ? null : s.clanDe(p.getUUID());
-        if (c != null) ajouterPve(c, p.getUUID(), p.getGameProfile().getName(), source, quantite);
+        String qui = p.getGameProfile().getName();
+        if (c == null) {
+            // joueur sans clan : l'etat normal d'un solo, pas de ligne pour ses zombies et ses conteneurs
+            if (d.active && !petite(source)) refus(qui, null, source, "sans clan");
+            return;
+        }
+        ajouterPve(c, p.getUUID(), qui, source, quantite);
     }
 
     public static void ajouterPve(Clan c, @Nullable UUID joueur, String qui, String source, double quantite) {
-        if (!d.active || c == null || quantite <= 0) return;
+        if (c == null || quantite <= 0) return;
+        if (!d.active) {
+            refus(qui, c, source, "pas de saison en cours");
+            return;
+        }
         double pts = bareme.pointsPve(source) * quantite;
-        if (pts <= 0 || !Ponts.aUnCoeur(c.id)) return;
+        if (pts <= 0) {
+            refus(qui, c, source, "source absente du bareme ou a 0 (config/heralisz_clans/saison.json)");
+            return;
+        }
+        if (!Ponts.aUnCoeur(c.id)) {
+            refus(qui, c, source, "clan sans coeur pose dans sa base");
+            return;
+        }
         if (joueur != null && bareme.plafonnees.contains(source)) {
             jourCourant();
             double deja = d.plafonds.getOrDefault(joueur, 0.0);
             pts = Math.min(pts, bareme.plafondJour - deja);
-            if (pts <= 1e-9) return;
+            if (pts <= 1e-9) {
+                refus(qui, c, "petites actions", "plafond du jour atteint (" + arrondi(bareme.plafondJour)
+                        + " points par joueur : zombies, conteneurs, ventes, armes fabriquees, quetes de Varga)");
+                return;
+            }
             d.plafonds.put(joueur, deja + pts);
         }
         d.scores(c.id)[SaisonDonnees.PVE] += pts;
         changer();
-        noter(c, qui, "pve", source + (quantite != 1 ? " x" + arrondi(quantite) : ""), pts);
+        String quoi = source + (quantite != 1 ? " x" + arrondi(quantite) : "");
+        boolean petite = petite(source);
+        noter(c, qui, "pve", quoi, pts, !petite);
+        if (petite) petiteAction(c, qui, source, quantite, pts);
     }
 
     /**
@@ -232,12 +270,27 @@ public final class Saison {
      * fois par clan et par jour. Rend les points donnés (0 : rien).
      */
     public static double evenement(ServerPlayer p, String source, double quantite) {
+        if (quantite <= 0 || creatif(p, source) || p.getTags().contains("heraliz_bot")) return 0;
         ClanStore s = ClanStore.get();
         Clan c = s == null ? null : s.clanDe(p.getUUID());
-        if (!d.active || c == null || quantite <= 0 || !Ponts.aUnCoeur(c.id)) return 0;
-        if (p.getTags().contains("heraliz_bot")) return 0;
+        String quiRefus = p.getGameProfile().getName();
+        if (!d.active) {
+            refus(quiRefus, c, source, "pas de saison en cours");
+            return 0;
+        }
+        if (c == null) {
+            refus(quiRefus, null, source, "sans clan");
+            return 0;
+        }
+        if (!Ponts.aUnCoeur(c.id)) {
+            refus(quiRefus, c, source, "clan sans coeur pose dans sa base");
+            return 0;
+        }
         Double v = bareme.evenementsPoints.get(source);
-        if (v == null || v <= 0) return 0;
+        if (v == null || v <= 0) {
+            refus(quiRefus, c, source, "source absente de events.points (config/heralisz_clans/saison.json)");
+            return 0;
+        }
         jourCourant();
         String cle = c.id + "|" + source;
         int deja = d.evenementsJour.getOrDefault(cle, 0);
@@ -265,7 +318,11 @@ public final class Saison {
      * {@link Bareme#capturePlafondJour} points de capture par clan et par jour.
      */
     public static void capture(@Nullable Clan c, @Nullable Clan ancien, String zone, String nomZone, int valeur, int difficulte, long tenueMs) {
-        if (!d.active || c == null || !Ponts.aUnCoeur(c.id)) return;
+        if (c == null) return;
+        if (!d.active || !Ponts.aUnCoeur(c.id)) {
+            refus("capture " + nomZone, c, "capture", d.active ? "clan sans coeur pose dans sa base" : "pas de saison en cours");
+            return;
+        }
         jourCourant();
         long now = System.currentTimeMillis();
         String cleZone = "zone|" + zone + "|" + c.id;
@@ -315,14 +372,23 @@ public final class Saison {
         if (!d.active || tueur == victime) return;
         // bots de charge (/bots de HeraliZ Utils) : jamais de points
         if (tueur.getTags().contains("heraliz_bot") || victime.getTags().contains("heraliz_bot")) return;
+        // 11/11 : tueur du staff en creatif ou spectateur : ni gain pour son clan, ni perte pour celui de la victime
+        if (creatif(tueur, "kill")) return;
         ClanStore s = ClanStore.get();
         if (s == null) return;
         Clan ct = s.clanDe(tueur.getUUID()), cv = s.clanDe(victime.getUUID());
         if (ct == null && cv == null) return;
         if (ct != null && ct == cv) return;
+        String nomT = tueur.getGameProfile().getName(), quoi = "kill " + victime.getGameProfile().getName();
         String ipT = tueur.getIpAddress(), ipV = victime.getIpAddress();
-        if (ipT != null && ipT.equals(ipV)) return;
-        if (!Ponts.menace(victime, bareme.pvpRareteMin, bareme.pvpExclus)) return;
+        if (ipT != null && ipT.equals(ipV)) {
+            refus(nomT, ct, quoi, "meme adresse IP que la victime");
+            return;
+        }
+        if (!Ponts.menace(victime, bareme.pvpRareteMin, bareme.pvpExclus)) {
+            refus(nomT, ct, quoi, "victime sans arme ni protection (rarete " + bareme.pvpRareteMin + " au moins)");
+            return;
+        }
         long now = System.currentTimeMillis(), fenetre = (long) (bareme.pvpFenetreH * 3_600_000L);
         String cle = tueur.getUUID() + "|" + victime.getUUID();
         List<Long> l = d.paires.computeIfAbsent(cle, k -> new ArrayList<>());
@@ -331,7 +397,10 @@ public final class Saison {
         l.add(now);
         if (d.paires.size() > 4096) d.paires.values().removeIf(x -> x.isEmpty() || now - x.get(x.size() - 1) >= fenetre);
         sale = true;
-        if (coef <= 0) return;
+        if (coef <= 0) {
+            refus(nomT, ct, quoi, "meme victime trop souvent (" + arrondi(bareme.pvpFenetreH) + " h)");
+            return;
+        }
         if (ct != null && Ponts.aUnCoeur(ct.id)) {
             double pts = bareme.pvpKill * coef;
             // 02/11 (choix du proprietaire) : au plus pvp.plafond_jour_clan points de kills par clan et par jour, comme les captures
@@ -348,6 +417,8 @@ public final class Saison {
             } else {
                 noter(ct, tueur.getGameProfile().getName(), "pvp", "kill " + victime.getGameProfile().getName() + " : plafond du jour atteint", 0);
             }
+        } else if (ct != null) {
+            refus(nomT, ct, quoi, "clan sans coeur pose dans sa base");
         }
         if (cv != null && Ponts.aUnCoeur(cv.id)) {
             double[] sc = d.scores(cv.id);
@@ -364,10 +435,14 @@ public final class Saison {
      * (ceux hors du podium recoivent la participation). Points x multiplicateur de l'event.
      */
     public static void event(String event, List<UUID> classement, Collection<UUID> participants) {
-        if (!d.active) return;
+        if (!d.active) {
+            refus("-", null, event, "pas de saison en cours");
+            return;
+        }
         ClanStore s = ClanStore.get();
         if (s == null) return;
         double mult = bareme.multiplicateur(event);
+        HeraliszClans.LOG.info("[saison] {} : {} clan(s) classe(s), {} participant(s), x{}", event, classement.size(), participants.size(), arrondi(mult));
         Set<UUID> faits = new LinkedHashSet<>();
         for (int i = 0; i < classement.size(); i++) {
             UUID id = classement.get(i);
@@ -381,7 +456,11 @@ public final class Saison {
     }
 
     private static void donnerEvent(@Nullable Clan c, String event, String quoi, double pts) {
-        if (c == null || pts <= 0 || !Ponts.aUnCoeur(c.id)) return;
+        if (c == null || pts <= 0) return;
+        if (!Ponts.aUnCoeur(c.id)) {
+            refus("-", c, event + " " + quoi, "clan sans coeur pose dans sa base");
+            return;
+        }
         d.scores(c.id)[SaisonDonnees.EVENTS] += pts;
         changer();
         noter(c, "-", "events", event + " " + quoi, pts);
@@ -584,10 +663,105 @@ public final class Saison {
 
     // ------------------------------------------------------------------ journal
     private static void noter(Clan c, String qui, String categorie, String quoi, double pts) {
+        noter(c, qui, categorie, quoi, pts, true);
+    }
+
+    /**
+     * Une ligne au journal de la saison (fichier), et, avec {@code journalServeur}, au journal du serveur (11/11, demande du
+     * proprietaire : verifier chaque point gagne ou perdu dans la console du Ptero). Les petites actions passent par
+     * {@link #petiteAction} : une ligne par joueur et par minute.
+     */
+    private static void noter(Clan c, String qui, String categorie, String quoi, double pts, boolean journalServeur) {
         fr.heralisz.clans.server.Sync.marquerLent(c);
         double[] s = d.scores(c.id);
         journal(String.format(Locale.ROOT, "[%s] | %s | %s | %s | %+.2f | pve %.2f pvp %.2f events %.2f", c.tag, qui, categorie, quoi,
                 pts, s[0], s[1], s[2]));
+        if (journalServeur) {
+            HeraliszClans.LOG.info("[saison] {} {} [{}] {} ({}) -> clan : pve {}, pvp {}, events {}", signe(pts), categorie, c.tag, quoi, qui,
+                    arrondi(s[0]), arrondi(s[1]), arrondi(s[2]));
+        }
+    }
+
+    private static String signe(double v) {
+        return (v >= 0 ? "+" : "-") + arrondi(Math.abs(v));
+    }
+
+    /**
+     * Source des « petites actions » : plafonnee par joueur et par jour et a moins d'un point l'unite (zombies, conteneurs
+     * T1 a T5) : des centaines par heure, une ligne par joueur et par minute au journal du serveur.
+     */
+    private static boolean petite(String source) {
+        return bareme.plafonnees.contains(source) && bareme.pointsPve(source) < 1;
+    }
+
+    /** Petites actions pas encore ecrites au journal du serveur : « [TAG] Pseudo » -> source -> {nombre, points}. */
+    private static final Map<String, Map<String, double[]>> PETITES = new java.util.LinkedHashMap<>();
+
+    private static void petiteAction(Clan c, String qui, String source, double quantite, double pts) {
+        double[] v = PETITES.computeIfAbsent("[" + c.tag + "] " + qui, k -> new java.util.LinkedHashMap<>()).computeIfAbsent(source, k -> new double[2]);
+        v[0] += quantite;
+        v[1] += pts;
+    }
+
+    /** Une fois par minute (et a l'arret) : une ligne par joueur pour ses petites actions de la minute. */
+    private static void ecrirePetites() {
+        if (PETITES.isEmpty()) return;
+        for (Map.Entry<String, Map<String, double[]>> e : PETITES.entrySet()) {
+            StringBuilder detail = new StringBuilder();
+            double total = 0;
+            for (Map.Entry<String, double[]> x : e.getValue().entrySet()) {
+                if (detail.length() > 0) detail.append(", ");
+                detail.append(x.getKey()).append(" x").append(arrondi(x.getValue()[0])).append(" +").append(arrondi(x.getValue()[1]));
+                total += x.getValue()[1];
+            }
+            HeraliszClans.LOG.info("[saison] +{} pve {} (petites actions de la derniere minute : {})", arrondi(total), e.getKey(), detail);
+        }
+        PETITES.clear();
+    }
+
+    /** Refus deja ecrits au journal du serveur : cle -> heure (la meme raison au plus une fois par {@link #REFUS_MS}). */
+    private static final Map<String, Long> REFUS = new HashMap<>();
+    private static final long REFUS_MS = 10 * 60_000L;
+
+    /**
+     * 11/11 : un point qui n'est PAS donne dit pourquoi au journal du serveur (avant : rien, impossible de savoir si une
+     * source etait cassee ou refusee par une regle). Petites actions : une ligne par clan et par raison ; le reste : par
+     * joueur, source et raison ; chaque fois au plus toutes les 10 minutes.
+     */
+    private static void refus(String qui, @Nullable Clan c, String source, String raison) {
+        String tag = c == null ? "-" : c.tag;
+        String cle = petite(source) ? tag + "|" + raison : qui + "|" + tag + "|" + source + "|" + raison;
+        long now = System.currentTimeMillis();
+        Long avant = REFUS.get(cle);
+        if (avant != null && now - avant < REFUS_MS) return;
+        if (REFUS.size() > 4096) {
+            REFUS.values().removeIf(t -> now - t >= REFUS_MS);
+            if (REFUS.size() > 4096) REFUS.clear();
+        }
+        REFUS.put(cle, now);
+        HeraliszClans.LOG.info("[saison] pas de points : {} ({}{}) : {}", source, qui, c == null ? "" : " [" + c.tag + "]", raison);
+    }
+
+    /** Membres du staff deja prevenus qu'ils ne marquent rien en creatif ou en spectateur (joueur -> heure). */
+    private static final Map<UUID, Long> PREVENUS_CREATIF = new HashMap<>();
+
+    /**
+     * Joueur en creatif ou en spectateur (staff) : aucun point de saison, quelle que soit la source (11/11 : avant, certains
+     * mods le filtraient en silence et d'autres pas ; le proprietaire, en creatif, ne voyait rien venir sans savoir
+     * pourquoi). Il le lit dans le chat, au plus toutes les 2 minutes. Vrai si le joueur ne marque rien.
+     */
+    private static boolean creatif(ServerPlayer p, String source) {
+        if (!p.isCreative() && !p.isSpectator()) return false;
+        refus(p.getGameProfile().getName(), null, source, "joueur en creatif ou en spectateur");
+        long now = System.currentTimeMillis();
+        Long avant = PREVENUS_CREATIF.get(p.getUUID());
+        if (avant == null || now - avant >= 120_000L) {
+            PREVENUS_CREATIF.put(p.getUUID(), now);
+            p.sendSystemMessage(Component.translatableWithFallback("msg.saison.creatif",
+                    "Mode créatif ou spectateur : aucun point de saison pour ton clan (passe en survie pour essayer).")
+                    .withStyle(ChatFormatting.GRAY));
+        }
+        return true;
     }
 
     /** Lignes du journal pas encore ecrites : ecrites en une fois chaque seconde (avant : un fichier ouvert par point gagne). */

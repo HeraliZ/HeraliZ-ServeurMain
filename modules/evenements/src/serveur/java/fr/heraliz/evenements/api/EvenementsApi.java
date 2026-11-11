@@ -51,9 +51,21 @@ public final class EvenementsApi {
         return ObjetsEvenementApi.points(objet);
     }
 
-    /** Pourquoi le clan du joueur ne gagnerait aucun point : 0 il en gagne, 1 pas de saison, 2 sans clan, 3 clan sans cœur. */
+    /**
+     * Pourquoi le clan du joueur ne gagnerait aucun point : 0 il en gagne, 1 pas de saison, 2 sans clan, 3 clan sans cœur,
+     * 4 joueur en créatif ou en spectateur (11/11 : la saison ne donne plus rien au staff dans ces modes).
+     */
     public static int raisonSansPoints(ServerPlayer joueur) {
         return ObjetsEvenementApi.raisonSansPoints(joueur);
+    }
+
+    /**
+     * L'objet est un objet d'événement « essai » (11/11) : donné par le staff ({@code /event objet}) ou venu d'un événement
+     * lancé par le staff sans « avec_points », ou d'un hélicoptère touché en créatif : hérals à la revente, jamais de points.
+     * Le marchand le dit au survol (avant : rien ne le disait, le propriétaire croyait les points cassés).
+     */
+    public static boolean objetEssai(ItemStack objet) {
+        return ObjetsEvenementApi.essai(objet);
     }
 
     /**

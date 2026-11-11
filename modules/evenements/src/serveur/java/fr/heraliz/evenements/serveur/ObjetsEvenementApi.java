@@ -27,6 +27,10 @@ public final class ObjetsEvenementApi {
         return Outils.raisonSansPoints(p);
     }
 
+    public static boolean essai(ItemStack s) {
+        return ObjetsServeur.type(s) != null && ObjetsServeur.essai(s);
+    }
+
     @Nullable
     public static long[] vendre(ServerPlayer p, ItemStack s) {
         return ObjetsServeur.vendre(p, s);
