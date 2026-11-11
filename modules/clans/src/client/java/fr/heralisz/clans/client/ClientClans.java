@@ -336,11 +336,13 @@ public final class ClientClans {
                         case 3 -> fauxCendres();
                         default -> fauxAleatoire(rnd, i * 3);
                     };
+                    // points en centiemes (canal 11) : quelques centiemes de zombies pour voir l'infobulle
                     top.add(new fr.heralisz.clans.model.SaisonLigne(i + 1, i == 1 ? clanId : new UUID(200, i), clans[i][0], clans[i][1], b,
-                            1800 - i * 150 + rnd.nextInt(100), 130 - i * 11, 340 - i * 30, i + 1, 1 + (i + 1) % clans.length, i + 1));
+                            (1800 - i * 150 + rnd.nextInt(100)) * 100L + rnd.nextInt(100), (130 - i * 11) * 100L, (340 - i * 30) * 100L,
+                            i + 1, 1 + (i + 1) % clans.length, i + 1));
                 }
                 saison = new Packets.SaisonS2C(true, 1, now + 23L * 86400_000L, true, new int[]{2, 2, 2, 2},
-                        new long[]{top.get(1).pve(), top.get(1).pvp(), top.get(1).events()}, top, List.of());
+                        new long[]{top.get(1).pve(), top.get(1).pvp(), top.get(1).events()}, top, List.of(), clans.length);
                 decalageMs = 0;
             }
             case "creeper", "nova", "raven", "cendres" -> {

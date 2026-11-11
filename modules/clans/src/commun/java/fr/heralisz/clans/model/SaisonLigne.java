@@ -6,10 +6,14 @@ import java.util.UUID;
 
 /**
  * Ligne du classement de la saison (onglet Saison de l'ecran du clan, 25/10) : place au general, identite, points des
- * trois categories (arrondis a l'unite) et place dans chacune.
+ * trois categories et place dans chacune. 11/11 (canal 11) : points en CENTIEMES ({@link #CENTIEMES}) : la case montre
+ * les points entiers, l'infobulle le compte exact (0,01 par zombie : invisible en points entiers, retour du proprietaire).
  */
 public record SaisonLigne(int rang, UUID id, String tag, String nom, Banniere banniere, long pve, long pvp, long events,
                           int rPve, int rPvp, int rEvents) {
+    /** Les points voyagent multiplies par 100 (0,37 point = 37). */
+    public static final int CENTIEMES = 100;
+
     public void write(FriendlyByteBuf b) {
         b.writeVarInt(rang);
         b.writeUUID(id);
@@ -32,5 +36,20 @@ public record SaisonLigne(int rang, UUID id, String tag, String nom, Banniere ba
     /** Somme des trois places (le classement general : la plus petite gagne). */
     public int sommePlaces() {
         return rPve + rPvp + rEvents;
+    }
+
+    /** Points (centiemes) de la categorie 0 PVE, 1 PVP, 2 events. */
+    public long centiemes(int categorie) {
+        return categorie == 0 ? pve : categorie == 1 ? pvp : events;
+    }
+
+    /** Place dans la categorie 0 PVE, 1 PVP, 2 events. */
+    public int place(int categorie) {
+        return categorie == 0 ? rPve : categorie == 1 ? rPvp : rEvents;
+    }
+
+    /** Points entiers a afficher (arrondis vers le bas, comme le total du serveur) depuis des centiemes. */
+    public static long entiers(long centiemes) {
+        return Math.floorDiv(centiemes, CENTIEMES);
     }
 }

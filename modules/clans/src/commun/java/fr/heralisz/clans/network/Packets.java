@@ -123,10 +123,11 @@ public final class Packets {
     /**
      * Onglet Saison (25/10, maquette validee) : saison en cours ou non, son numero et sa fin, le coeur du clan du joueur,
      * ses places {pve, pvp, events, general} (0 = pas classe) et ses points {pve, pvp, events}, le top 20 des clans et
-     * le bareme reel (« Gagner des points »). Envoye a la demande (SimpleC2S CLASSEMENT).
+     * le bareme reel (« Gagner des points »). Envoye a la demande (SimpleC2S CLASSEMENT). 11/11 (canal 11) : points en
+     * centiemes ({@link SaisonLigne#CENTIEMES}) et nombre de clans classes ({@code clans} : « 1er sur 7 clans » au survol).
      */
     public record SaisonS2C(boolean active, int numero, long finMs, boolean coeur, int[] mesRangs, long[] mesPoints,
-                            List<SaisonLigne> top, List<LigneBareme> bareme) {
+                            List<SaisonLigne> top, List<LigneBareme> bareme, int clans) {
         void write(FriendlyByteBuf b) {
             b.writeBoolean(active);
             b.writeVarInt(numero);
@@ -138,6 +139,7 @@ public final class Packets {
             for (SaisonLigne l : top) l.write(b);
             b.writeVarInt(bareme.size());
             for (LigneBareme l : bareme) l.write(b);
+            b.writeVarInt(Math.max(0, clans));
         }
 
         static SaisonS2C read(FriendlyByteBuf b) {
@@ -155,7 +157,7 @@ public final class Packets {
             int m = Math.min(64, b.readVarInt());
             List<LigneBareme> bareme = new ArrayList<>(m);
             for (int i = 0; i < m; i++) bareme.add(LigneBareme.read(b));
-            return new SaisonS2C(active, numero, fin, coeur, rangs, points, top, bareme);
+            return new SaisonS2C(active, numero, fin, coeur, rangs, points, top, bareme, b.readVarInt());
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

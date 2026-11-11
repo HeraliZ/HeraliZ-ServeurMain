@@ -18,15 +18,22 @@ import java.util.Locale;
 
 /**
  * Onglet Saison (25/10, maquette validee : maquettes/saison/, modules/clans/outils/apercu_saison.py) : a gauche le
- * classement de la saison (place au general, PVE / PVP / events avec la place dans chacune, somme des places) et l'etat
+ * classement de la saison (place au general, points PVE / PVP / events, place au general en toutes lettres) et l'etat
  * du clan du joueur (place, points, coeur, saison) ; a droite « Gagner des points » : le bareme reel envoye par le
  * serveur, par categorie (puces PVE / PVP / EVENEMENTS). Les donnees sont demandees a l'ouverture de l'onglet
  * (SimpleC2S CLASSEMENT) et arrivent par {@link Packets.SaisonS2C}.
+ * <p>11/11 (retour du proprietaire : « a cote de mes points, un autre chiffre de la couleur de la categorie : qu'est-ce
+ * que c'est ? ») : chaque case de categorie ne montre plus que les points ; la place dans la categorie (le petit chiffre
+ * colore d'avant) et les points exacts (0,01 par zombie) sont dans l'infobulle de la case ; la colonne « Gen. » montre la
+ * place au classement general (1er, 2e...) au lieu de la somme des places, expliquee dans son infobulle.
  */
 public final class SaisonTab extends Tab {
     private static final int GAUCHE = 300, LIGNE = 17, ENTREE = 21, BOITE = 34;
-    /** Colonnes (bord droit, depuis le bord gauche de l'onglet) : PVE, PVP, EVENTS, total des places. */
+    /** Colonnes (bord droit, depuis le bord gauche de l'onglet) : PVE, PVP, EVENTS ; la place au general finit a GAUCHE. */
     private static final int R_PVE = 196, R_PVP = 236, R_EV = 276;
+    private static final int[] R_CATEGORIES = {R_PVE, R_PVP, R_EV};
+    /** Case d'une categorie au survol : les CASE unites qui finissent au bord droit de sa colonne (« 99 999 » y tient). */
+    private static final int CASE = 40;
     private static final int C_PVE = 0x5FD08A, C_PVP = 0xFF6B6B, C_EV = 0xB57BFF;
     private static final int[] COULEURS = {C_PVE, C_PVP, C_EV};
     private static final String[] CATEGORIES = {"gui.saison.cat.pve", "gui.saison.cat.pvp", "gui.saison.cat.events"};
@@ -97,7 +104,7 @@ public final class SaisonTab extends Tab {
         if (sa == null) etat = tr("gui.saison.chargement");
         else if (!sa.active()) etat = tr("gui.saison.arretee");
         else if (sa.mesRangs()[3] <= 0) etat = tr("gui.saison.non_classe");
-        else etat = tr("gui.saison.etat", sa.mesRangs()[3], Ui.nombre(sa.mesPoints()[0] + sa.mesPoints()[1] + sa.mesPoints()[2]));
+        else etat = tr("gui.saison.etat", sa.mesRangs()[3], Ui.nombre(SaisonLigne.entiers(sa.mesPoints()[0] + sa.mesPoints()[1] + sa.mesPoints()[2])));
         g.drawString(font, Ui.lit(Ui.ellipsis(font, etat, Ui.BOLD, GAUCHE - 116), Ui.BOLD), x + 8, by + 17, Ui.argb(Ui.TEXT, 255), false);
         if (sa == null) return;
         int ix = x + GAUCHE - 100;
@@ -161,6 +168,47 @@ public final class SaisonTab extends Tab {
         return code != null && code.startsWith("en") ? s : s.replace('.', ',');
     }
 
+    /**
+     * Place en toutes lettres courtes (11/11) : 1er, 2e (francais) ; 1st, 2nd, 3rd, 11th, 21st (anglais) ; 1-е (russe). Le
+     * suffixe vient des fichiers de langue (gui.saison.rang.*), le choix de la forme suit la regle anglaise (la seule qui
+     * distingue 1, 2, 3 et 11 a 13) ; le francais n'a que « premier » et « autre ».
+     */
+    static String rang(int n) {
+        int unite = n % 10, centaine = n % 100;
+        String forme = n == 1 ? "premier" : centaine >= 11 && centaine <= 13 ? "autre"
+                : unite == 1 ? "un" : unite == 2 ? "deux" : unite == 3 ? "trois" : "autre";
+        return tr("gui.saison.rang." + forme, n);
+    }
+
+    /** « Place : 2e sur 7 clans » (ou « seul clan classe »). */
+    private static String place(Packets.SaisonS2C sa, int place) {
+        int n = Math.max(sa.clans(), place);
+        return n <= 1 ? tr("gui.saison.infobulle.place_seul", rang(place)) : tr("gui.saison.infobulle.place", rang(place), n);
+    }
+
+    /** Infobulle d'une case de categorie : nom de la categorie, points exacts, place dans la categorie. */
+    private static List<Component> infobulleCategorie(Packets.SaisonS2C sa, SaisonLigne c, int categorie) {
+        int couleur = COULEURS[categorie];
+        List<Component> l = new ArrayList<>(3);
+        l.add(Ui.lit(tr(CATEGORIES[categorie]), Ui.BOLD).withStyle(st -> st.withColor(couleur)));
+        l.add(Ui.lit(tr("gui.saison.infobulle.points", nombre(c.centiemes(categorie) / (double) SaisonLigne.CENTIEMES)), Ui.FONT));
+        l.add(Ui.lit(place(sa, c.place(categorie)), Ui.FONT));
+        return l;
+    }
+
+    /** Infobulle de la colonne « Gen. » : place au general, puis comment elle se calcule (somme des 3 places). */
+    private static List<Component> infobulleGeneral(Packets.SaisonS2C sa, SaisonLigne c) {
+        int n = Math.max(sa.clans(), c.rang());
+        String titre = n <= 1 ? tr("gui.saison.infobulle.general_seul", rang(c.rang()))
+                : tr("gui.saison.infobulle.general", rang(c.rang()), n);
+        List<Component> l = new ArrayList<>(3);
+        l.add(Ui.lit(titre, Ui.BOLD));
+        l.add(Ui.lit(tr("gui.saison.infobulle.general_regle"), Ui.FONT));
+        l.add(Ui.lit(tr("gui.saison.infobulle.general_calcul", c.rPve(), c.rPvp(), c.rEvents(), c.sommePlaces()), Ui.FONT)
+                .withStyle(st -> st.withColor(Ui.MUTED)));
+        return l;
+    }
+
     // ------------------------------------------------------------------ listes
     private final class Classement extends HzScroll {
         Classement(int x, int y, int w, int h) {
@@ -174,6 +222,7 @@ public final class SaisonTab extends Tab {
             List<SaisonLigne> l = sa.top();
             int premiere = Math.max(0, getScroll() / LIGNE), derniere = Math.min(l.size(), (getScroll() + getHeight()) / LIGNE + 1);
             int wl = getWidth() - 2;
+            List<Component> info = null;
             for (int i = premiere; i < derniere; i++) {
                 SaisonLigne c = l.get(i);
                 int ly = getY() + i * LIGNE, ty = ly + 5;
@@ -190,23 +239,28 @@ public final class SaisonTab extends Tab {
                 String nom = Ui.ellipsis(font, c.nom(), Ui.BOLD, 100);
                 g.drawString(font, Ui.lit(nom, Ui.BOLD), getX() + 34, ty, Ui.argb(Ui.TEXT, 255), false);
                 int nw = font.width(Ui.lit(nom, Ui.BOLD));
-                // le tag s'arrete avant les points PVE (au plus « 99 999 » + la place, environ 36 de large)
+                // le tag s'arrete avant la case des points PVE (« 99 999 » au plus, environ 36 de large)
                 String tag = Ui.ellipsis(font, "[" + c.tag() + "]", Ui.SMALL, Math.max(0, R_PVE - 36 - 4 - (34 + nw + 4)));
                 g.drawString(font, Ui.lit(tag, Ui.SMALL), getX() + 34 + nw + 4, ty + 1, Ui.argb(Ui.MUTED, 255), false);
-                colonne(g, c.pve(), c.rPve(), getX() + R_PVE, ty, C_PVE);
-                colonne(g, c.pvp(), c.rPvp(), getX() + R_PVP, ty, C_PVP);
-                colonne(g, c.events(), c.rEvents(), getX() + R_EV, ty, C_EV);
-                Ui.right(g, font, Ui.lit(String.valueOf(c.sommePlaces()), Ui.BOLD), getX() + wl, ty, Ui.argb(c.rang() == 1 ? Ui.OR : Ui.TEXT, 255));
+                boolean survolLigne = mouseY >= ly && mouseY < ly + LIGNE;
+                for (int k = 0; k < 3; k++) {
+                    int xr = getX() + R_CATEGORIES[k];
+                    // case survolee : leger fond de la couleur de la categorie, infobulle (points exacts, place)
+                    if (survolLigne && mouseX >= xr - CASE + 2 && mouseX < xr + 2) {
+                        Ui.soft(g, xr - CASE + 2, ly + 1, CASE, LIGNE - 2, Ui.argb(COULEURS[k], 22));
+                        info = infobulleCategorie(sa, c, k);
+                    }
+                    Ui.right(g, font, Ui.lit(Ui.nombre(SaisonLigne.entiers(c.centiemes(k))), Ui.FONT), xr, ty, Ui.argb(Ui.TEXT, 230));
+                }
+                int gx = getX() + R_EV + 2;
+                if (survolLigne && mouseX >= gx && mouseX < getX() + wl + 2) {
+                    Ui.soft(g, gx, ly + 1, getX() + wl + 2 - gx, LIGNE - 2, Ui.argb(0xFFFFFF, 14));
+                    info = infobulleGeneral(sa, c);
+                }
+                Ui.right(g, font, Ui.lit(rang(c.rang()), Ui.BOLD), getX() + wl, ty, Ui.argb(c.rang() == 1 ? Ui.OR : Ui.TEXT, 255));
                 if (i < l.size() - 1) Ui.hairline(g, getX(), getX() + wl, ly + LIGNE - 1, 0xFFFFFF, 14, false, true);
             }
-        }
-
-        /** Points (police normale) puis la place dans la categorie, en petit et en couleur, a droite. */
-        private void colonne(GuiGraphics g, long points, int place, int xr, int ty, int couleur) {
-            Component p = Ui.lit(String.valueOf(place), Ui.SMALL);
-            int pw = font.width(p);
-            Ui.right(g, font, p, xr, ty + 1, Ui.argb(couleur, 255));
-            Ui.right(g, font, Ui.lit(Ui.nombre(points), Ui.FONT), xr - pw - 3, ty, Ui.argb(Ui.TEXT, 230));
+            if (info != null) ecran.infobulle(info);
         }
     }
 

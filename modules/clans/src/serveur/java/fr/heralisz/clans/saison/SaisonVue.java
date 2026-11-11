@@ -26,26 +26,35 @@ public final class SaisonVue {
     private static final int CLASHWAR_CLANS_MIN = 4;
     private static final String[] AUCUN = new String[0];
 
-    /** L'onglet Saison pour ce joueur : top 20 et place de son clan. */
+    /**
+     * L'onglet Saison pour ce joueur : top 20 et place de son clan. 11/11 : points en centiemes (l'infobulle montre le compte
+     * exact : 0,01 par zombie) et nombre de clans classes (« 1er sur 7 clans »).
+     */
     public static Packets.SaisonS2C pour(ServerPlayer p) {
         ClanStore s = ClanStore.get();
         Clan mien = s == null ? null : s.clanDe(p.getUUID());
+        List<Saison.Ligne> classement = Saison.classement();
         List<SaisonLigne> top = new ArrayList<>();
-        for (Saison.Ligne l : Saison.classement()) {
+        for (Saison.Ligne l : classement) {
             if (top.size() >= 20) break;
             Clan c = s == null ? null : s.get(l.clan());
             if (c == null) continue;
-            top.add(new SaisonLigne(l.rGeneral(), c.id, c.tag, c.nom, c.banniere, Saison.entiers(l.pve()), Saison.entiers(l.pvp()),
-                    Saison.entiers(l.events()), l.rPve(), l.rPvp(), l.rEvents()));
+            top.add(new SaisonLigne(l.rGeneral(), c.id, c.tag, c.nom, c.banniere, centiemes(l.pve()), centiemes(l.pvp()),
+                    centiemes(l.events()), l.rPve(), l.rPvp(), l.rEvents()));
         }
         int[] rangs = mien == null ? new int[4] : Saison.rangs(mien.id);
         long[] points = new long[3];
         if (mien != null) {
             double[] sc = Saison.scores(mien.id);
-            for (int i = 0; i < 3; i++) points[i] = Saison.entiers(sc[i]);
+            for (int i = 0; i < 3; i++) points[i] = centiemes(sc[i]);
         }
         return new Packets.SaisonS2C(Saison.active(), Saison.numero(), Saison.fin(), mien != null && Ponts.aUnCoeur(mien.id), rangs, points,
-                top, bareme());
+                top, bareme(), classement.size());
+    }
+
+    /** Points de saison en centiemes, arrondis vers le bas comme {@link Saison#entiers} (0,999 ne fait jamais 1). */
+    static long centiemes(double v) {
+        return (long) Math.floor(v * SaisonLigne.CENTIEMES + 1e-6);
     }
 
     /** « Gagner des points » : seulement les sources reellement branchees aujourd'hui. */

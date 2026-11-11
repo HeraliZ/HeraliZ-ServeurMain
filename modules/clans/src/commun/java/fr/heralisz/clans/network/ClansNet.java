@@ -28,7 +28,8 @@ public final class ClansNet {
     /** 8 (31/10) : branche Membres retiree de l'arbre (paliers de ArbreSaisonS2C), membres donnes par le niveau (depart, niveaux). */
     /** 9 (02/11) : prix de creation d'un clan a la fin de ClanSnapshotS2C (reglage du serveur, plus lu chez le joueur). */
     /** 10 (03/11) : bareme de /clan don (DonsS2C) pour l'infobulle des objets qu'on peut donner au clan. */
-    private static final String VERSION = "10";
+    /** 11 (11/11) : onglet Saison, points en centiemes et nombre de clans classes (SaisonS2C, SaisonLigne). */
+    private static final String VERSION = "11";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
