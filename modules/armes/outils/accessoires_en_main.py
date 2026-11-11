@@ -22,8 +22,9 @@ Comment un accessoire tenu en main est dessiné (lu dans le code de Minecraft 1.
     référence 16:9.
 
 Règle : un accessoire (bouche, poignée, crosse, laser ; les viseurs ont leur propre dessin en main) dont le modèle, dessiné
-ainsi, sort par un bord de l'écran est tenu par le milieu de son modèle et réduit juste assez pour tenir à MARGE de
-chaque bord. Les autres ne bougent pas. Rien ne change sur l'arme, au sol, dans un cadre ni vu des autres joueurs.
+ainsi, sort par le côté de l'écran (à droite, à gauche pour la main gauche) est tenu par le milieu de son modèle et
+réduit juste assez pour tenir à MARGE de chaque bord. Les autres ne bougent pas, même coupés en bas de l'écran comme tout
+objet tenu de Minecraft. Rien ne change sur l'arme, au sol, dans un cadre ni vu des autres joueurs.
 Le modèle est lu comme TaCZ le construit (outils/verif_accessoires.py : mêmes os, mêmes cubes ; réticules, lentilles,
 faisceaux de laser et cubes transparents ne comptent pas).
 
@@ -128,7 +129,8 @@ def _r3(v):
 
 
 def calculer():
-    """{accessoire: (type, x, y, z, échelle, (x min, x max) avant)} des accessoires qui sortaient de l'écran."""
+    """{accessoire: (type, x, y, z, échelle, (x min, x max, y min, y max) à l'écran avant)} des accessoires qui sortaient
+    de l'écran."""
     ecran = Ecran(transformation_main())
     cat = va.Catalogue()
     out = {}
@@ -145,7 +147,8 @@ def calculer():
             continue          # tient en largeur (coupé en bas au plus, comme les objets tenus de Minecraft) : inchangé
         centre = (pts.min(axis=0) + pts.max(axis=0)) / 2
         s = math.floor(echelle(ecran, pts, centre) * 1000) / 1000      # arrondi vers le bas : tient toujours
-        out[ident] = (typ, _r3(centre[0]), _r3(centre[1]), _r3(centre[2]), _r3(s), (float(x.min()), float(x.max())))
+        out[ident] = (typ, _r3(centre[0]), _r3(centre[1]), _r3(centre[2]), _r3(s),
+                      (float(x.min()), float(x.max()), float(y.min()), float(y.max())))
     return out
 
 
@@ -214,8 +217,8 @@ def main():
     a = p.parse_args()
     res = calculer()
     for k, v in sorted(res.items()):
-        print("[en_main] %-40s %-6s sortait de l'écran (x %+.2f..%+.2f) : tenu par son milieu, échelle %.2f"
-              % (k, v[0], v[5][0], v[5][1], v[4]))
+        print("[en_main] %-40s %-6s sortait de l'écran (x %+.2f..%+.2f, y %+.2f..%+.2f) : tenu par son milieu, "
+              "échelle %.2f" % (k, v[0], v[5][0], v[5][1], v[5][2], v[5][3], v[4]))
     if a.apercu:
         apercu(a.apercu, res, a.ids.split(",") if a.ids else None)
         return
