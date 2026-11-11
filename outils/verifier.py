@@ -22,6 +22,8 @@ Contrôles :
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
   - icones           : icônes « carte » des accessoires (chargeurs, munitions spéciales, crosses d'usine) à la couleur
                        de leur rareté (outils/icones_accessoires.py) ;
+  - en_main          : table des accessoires TaCZ tenus en main qui sortaient de l'écran, à jour avec les gunpacks
+                       (module armes ; modules/armes/outils/accessoires_en_main.py --verifier) ;
   - verif_accessoires : chaque accessoire TaCZ bien placé sur chaque arme qui l'accepte, ni flottant, ni traversant,
                        ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
   - polices          : une seule copie des polices DM Sans, Onest et Oswald, dans le noyau ; les polices des modules la
@@ -251,6 +253,19 @@ def main():
                     print(l.strip())
             print("[icones] relancer : python outils/icones_accessoires.py")
             erreurs += 1
+    # accessoires TaCZ tenus en main (silencieux, bipieds qui sortaient de l'écran, retour du propriétaire du 11/11) : la
+    # table du module armes suit les modèles des gunpacks ; numpy et Pillow : sans eux, sauté comme les logos
+    if any(p.name == "armes" for p in choisis):
+        if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+            print("[en_main] numpy ou Pillow absent : table des accessoires tenus en main non contrôlée (à faire sur un PC)")
+        else:
+            code, out = lancer([str(chemins.MODS / "armes" / "outils" / "accessoires_en_main.py"), "--verifier"])
+            if code != 0:
+                for l in out.splitlines():
+                    if "pas à jour" in l:
+                        print(l.strip())
+                print("[en_main] puis refabriquer le module armes (jar des joueurs)")
+                erreurs += 1
     # placement de chaque accessoire sur chaque arme (ni flottant, ni traversant, ni invisible) : un gunpack ajouté ou
     # changé peut en déplacer. Calcul avec numpy et Pillow (textures) : sans eux, sauté comme les logos.
     if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):

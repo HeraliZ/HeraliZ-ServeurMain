@@ -21,7 +21,8 @@
     "SoundBufferAccessor",
     "SonsMonoMixin",
     "TaczBalleArretMixin",
-    "TrousDeBalleMixin"
+    "TrousDeBalleMixin",
+    "AccessoireEnMainMixin"
   ],
   "injectors": {
     "defaultRequire": 1
