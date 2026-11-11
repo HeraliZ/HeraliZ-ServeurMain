@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/wmags_wmag_pistols",
+  "texture": "tacz:gun/uv/glock_17",
   "slot": "wmags:attachment/slot/wmag_pistols",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

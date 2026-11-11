@@ -24,7 +24,9 @@ Comment un accessoire tenu en main est dessiné (lu dans le code de Minecraft 1.
 Règle : un accessoire (bouche, poignée, crosse, laser ; les viseurs ont leur propre dessin en main) dont le modèle, dessiné
 ainsi, sort par le côté de l'écran (à droite, à gauche pour la main gauche) est tenu par le milieu de son modèle et
 réduit juste assez pour tenir à MARGE de chaque bord. Les autres ne bougent pas, même coupés en bas de l'écran comme tout
-objet tenu de Minecraft. Rien ne change sur l'arme, au sol, dans un cadre ni vu des autres joueurs.
+objet tenu de Minecraft. Les chargeurs qui ont un modèle (outils/accessoires_3d.py : déjà posés au centre, nouveaux en
+main) tiennent aussi en hauteur : réduits dès qu'ils sortent par un bord. Rien ne change sur l'arme, au sol, dans un
+cadre ni vu des autres joueurs.
 Le modèle est lu comme TaCZ le construit (outils/verif_accessoires.py : mêmes os, mêmes cubes ; réticules, lentilles,
 faisceaux de laser et cubes transparents ne comptent pas).
 
@@ -49,7 +51,7 @@ import verif_accessoires as va  # noqa: E402
 TABLE = DEPOT / "modules" / "armes" / "src" / "client" / "resources" / "assets" / "heraliz_tactique" / "accessoires_en_main.json"
 JARS_TACZ = ("serveur/mods-tiers/tacz-1.20.1-1.1.8-hotfix.jar", "libs/tacz-1.20.1-1.1.8-hotfix.jar")
 MODELE_OBJET = "assets/tacz/models/item/attachment.json"
-TYPES = ("muzzle", "grip", "stock", "laser")
+TYPES = ("muzzle", "grip", "stock", "laser", "extended_mag")
 BRAS = np.array([0.56, -0.52, -0.72])     # ItemInHandRenderer.applyItemArmTransform (main droite, au repos)
 CHAMP = 70.0                              # degrés, vertical (GameRenderer.getFov(..., false))
 ECRAN = 16 / 9
@@ -143,7 +145,8 @@ def calculer():
             continue
         pts = points_objet(boites)
         x, y, _ = ecran.projeter(pts)
-        if np.abs(x).max() <= 1.0:
+        cote = np.abs(x).max() > 1.0
+        if not cote and not (typ == "extended_mag" and np.abs(y).max() > 1.0):
             continue          # tient en largeur (coupé en bas au plus, comme les objets tenus de Minecraft) : inchangé
         centre = (pts.min(axis=0) + pts.max(axis=0)) / 2
         s = math.floor(echelle(ecran, pts, centre) * 1000) / 1000      # arrondi vers le bas : tient toujours

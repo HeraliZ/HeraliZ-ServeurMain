@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/maxstuff_speed_mag",
+  "texture": "tacz:gun/uv/hk416d",
   "slot": "maxstuff:attachment/slot/speed_mag",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

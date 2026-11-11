@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/wmags_wmag_smg",
+  "texture": "tacz:gun/uv/ump45",
   "slot": "wmags:attachment/slot/wmag_smg",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

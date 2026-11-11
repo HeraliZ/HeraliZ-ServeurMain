@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/wmags_wmag_rpk",
+  "texture": "tacz:gun/uv/rpk",
   "slot": "wmags:attachment/slot/wmag_rpk",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/wmags_wmag_12g",
+  "texture": "tacz:gun/uv/aa12",
   "slot": "wmags:attachment/slot/wmag_12g",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

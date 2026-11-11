@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/wmags_wmag_762",
+  "texture": "tacz:gun/uv/ak47",
   "slot": "wmags:attachment/slot/wmag_762",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

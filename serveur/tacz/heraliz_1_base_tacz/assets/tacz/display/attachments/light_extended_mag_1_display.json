@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/tacz_light_extended_mag_1",
+  "texture": "tacz:gun/uv/cz75",
   "slot": "tacz:attachment/slot/light_extended_mag_1",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

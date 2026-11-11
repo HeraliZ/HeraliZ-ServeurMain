@@ -1,4 +1,6 @@
 {
+  "model": "heraliz_accessoires_3d:attachment/tacz_extended_mag_2",
+  "texture": "tacz:gun/uv/hk416d",
   "slot": "tacz:attachment/slot/extended_mag_2",
   "sounds": {
     "install": "tacz:attachments/extended_mag_install",

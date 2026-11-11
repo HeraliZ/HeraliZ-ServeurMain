@@ -24,6 +24,8 @@ Contrôles :
                        de leur rareté (outils/icones_accessoires.py) ;
   - en_main          : table des accessoires TaCZ tenus en main qui sortaient de l'écran, à jour avec les gunpacks
                        (module armes ; modules/armes/outils/accessoires_en_main.py --verifier) ;
+  - 3d               : chargeurs en 3D (modèles pris dans les armes, affichages, icônes) à jour avec les gunpacks
+                       (outils/accessoires_3d.py --verifier) ;
   - verif_accessoires : chaque accessoire TaCZ bien placé sur chaque arme qui l'accepte, ni flottant, ni traversant,
                        ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
   - polices          : une seule copie des polices DM Sans, Onest et Oswald, dans le noyau ; les polices des modules la
@@ -252,6 +254,19 @@ def main():
                 if l.startswith("[icones]") and "carte(s) d'accessoire" not in l:
                     print(l.strip())
             print("[icones] relancer : python outils/icones_accessoires.py")
+            erreurs += 1
+    # chargeurs en 3D (retour du propriétaire du 11/11, point 2b) : modèles pris dans les armes, affichages et icônes
+    # écrits par outils/accessoires_3d.py ; un gunpack mis à jour demande de les refaire. numpy et Pillow : sans eux, sauté.
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[3d] numpy ou Pillow absent : chargeurs 3D non contrôlés (à faire sur un PC)")
+    else:
+        code, out = lancer([str(O / "accessoires_3d.py"), "--verifier"])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[3d]") and "fichier(s)" not in l:
+                    print(l.strip())
+            print("[3d] relancer : python outils/accessoires_3d.py --installer, puis "
+                  "python modules/armes/outils/accessoires_en_main.py")
             erreurs += 1
     # accessoires TaCZ tenus en main (silencieux, bipieds qui sortaient de l'écran, retour du propriétaire du 11/11) : la
     # table du module armes suit les modèles des gunpacks ; numpy et Pillow : sans eux, sauté comme les logos
