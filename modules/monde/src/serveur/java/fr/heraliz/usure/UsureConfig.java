@@ -77,6 +77,10 @@ public final class UsureConfig {
             r.kitUtilisations[i] = Math.round(l.nombre(p + "utilisations", d.kitUtilisations[i]));
             r.kitRuinee[i] = l.bool(p + "arme_ruinee", d.kitRuinee[i]);
         }
+        // par rarete (11/11) : reparations possibles d'une arme
+        for (int i = 0; i < Regles.NB_RARETES; i++) {
+            r.reparationsMax[i] = Math.round(l.nombre("reparation.reparations_max." + Regles.RARETES[i], d.reparationsMax[i]));
+        }
         List<String> defautSurcharges = new ArrayList<>();
         d.surcharges.forEach(s -> defautSurcharges.add(s.ecrire()));
         for (String s : l.liste("armes.surcharges", defautSurcharges)) {
@@ -157,13 +161,18 @@ public final class UsureConfig {
             e.val(p + "silencieux", r.silencieux[i], null);
         }
 
-        e.table("reparation", "Reparation avec les kits (dans l'inventaire : prendre le kit, puis clic droit sur l'arme).",
+        e.table("reparation", "Reparation avec les kits (clic droit avec le kit en main : atelier de reparation).",
+                "Raretes : celles de HeraliZ Loot (couleur derriere l'objet dans les cases ; raretes.json, /rarete) : commun = gris,",
+                "peu_commun = vert, rare = bleu, epique = violet, legendaire = dore, unique = rouge.",
+                "reparations_max : reparations possibles d'une arme selon SA rarete. Chaque reparation en use une, quel que soit le",
+                "kit ; le compte est garde sur l'arme. 0 = l'arme ne se repare pas. Les armures n'ont pas de limite.",
                 "perte_max_par_reparation : l'etat maximal de l'arme baisse d'autant (points de %) a chaque reparation (0 = jamais).",
                 "max_minimum : il ne descend jamais en dessous.",
                 "Par kit : gain = % d'etat rendu ; plafond = le kit ne monte pas l'arme au-dessus ; utilisations = reparations",
                 "par kit ; arme_ruinee = le kit peut reparer une arme ruinee.");
         e.val("reparation.perte_max_par_reparation", r.perteMaxParReparation, null);
         e.val("reparation.max_minimum", r.maxMinimum, null);
+        for (int i = 0; i < Regles.NB_RARETES; i++) e.val("reparation.reparations_max." + Regles.RARETES[i], r.reparationsMax[i], null);
         for (int i = 0; i < Regles.NB_KITS; i++) {
             String p = "reparation." + KITS[i] + ".";
             e.val(p + "gain", r.kitGain[i], null);

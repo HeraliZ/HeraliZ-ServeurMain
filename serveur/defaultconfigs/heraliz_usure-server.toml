@@ -88,15 +88,28 @@
         eau = 0
         silencieux = 0
 
-# Reparation avec les kits (clic droit avec le kit en main : atelier de reparation, 26/10).
+# Reparation avec les kits (clic droit avec le kit en main : atelier de reparation).
+# Raretes : celles de HeraliZ Loot (couleur derriere l'objet dans les cases ; raretes.json, /rarete) : commun = gris,
+# peu_commun = vert, rare = bleu, epique = violet, legendaire = dore, unique = rouge.
+# reparations_max : reparations possibles d'une arme selon SA rarete. Chaque reparation en use une, quel que soit le
+# kit ; le compte est garde sur l'arme. 0 = l'arme ne se repare pas. Les armures n'ont pas de limite.
 # perte_max_par_reparation : l'etat maximal de l'arme baisse d'autant (points de %) a chaque reparation (0 = jamais).
 # max_minimum : il ne descend jamais en dessous.
 # Par kit : gain = % d'etat rendu ; plafond = le kit ne monte pas l'arme au-dessus ; utilisations = reparations
 # par kit ; arme_ruinee = le kit peut reparer une arme ruinee.
 # 26/10 (demande du proprietaire) : fortune +7 % x 1, kit +18 % x 2, armurier +45 % x 3.
+# 11/11 (demande du proprietaire) : armes grises 3 reparations, vertes 5, bleues 8, violettes 12, legendaires 17.
 [reparation]
     perte_max_par_reparation = 4
     max_minimum = 40
+
+    [reparation.reparations_max]
+        commun = 3
+        peu_commun = 5
+        rare = 8
+        epique = 12
+        legendaire = 17
+        unique = 17
 
     [reparation.kit_fortune]
         gain = 7

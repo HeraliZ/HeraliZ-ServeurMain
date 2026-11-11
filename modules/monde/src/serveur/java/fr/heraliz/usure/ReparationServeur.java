@@ -19,7 +19,11 @@ public final class ReparationServeur {
     private ReparationServeur() {
     }
 
-    /** Repare {@code arme} avec le kit de niveau {@code niveau} (0..2) ; rend le resultat et previent le joueur. */
+    /**
+     * Repare {@code arme} avec le kit de niveau {@code niveau} (0..2) ; rend le resultat et previent le joueur. 11/11 : une
+     * arme qui a deja eu toutes ses reparations (nombre fixe par sa rarete) est refusee ; une reparation faite en use une,
+     * quel que soit le kit.
+     */
     public static Reparation.Resultat appliquer(ServerPlayer p, ItemStack kit, ItemStack arme, int niveau) {
         if (Usure.gunId(arme) == null && KitReparation.estArmure(arme)) return armure(p, kit, arme, niveau);
         String id = Usure.gunId(arme);
@@ -29,7 +33,16 @@ public final class ReparationServeur {
         if (!pr.suivie) return message(p, Reparation.Resultat.NE_S_USE_PAS, arme);
         Usure.migrer(arme, pr);
         int etat = Usure.etat(arme, pr), max = Usure.max(arme);
-        Reparation.Calcul c = Reparation.calculer(etat, max, niveau, r);
+        int maximum = Reparation.maximum(Reparation.rareteArme(arme), r);
+        int restantes = Math.max(0, maximum - Usure.reparations(arme));
+        Reparation.Calcul c = Reparation.calculer(etat, max, restantes, niveau, r);
+        if (c.refus() == Reparation.Resultat.PLUS_DE_REPARATION) {
+            p.displayClientMessage(Component.translatableWithFallback("heraliz_usure.reparation.plus_de_reparation",
+                    "Plus aucune réparation possible : cette arme a atteint son maximum de réparations (%s).", maximum)
+                    .withStyle(ChatFormatting.RED), true);
+            p.playNotifySound(SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 0.5F, 1.2F);
+            return c.refus();
+        }
         if (c.refus() != null) return message(p, c.refus(), arme);
         int cible = c.etat();
         Usure.ecrireMax(arme, c.max());
@@ -37,15 +50,18 @@ public final class ReparationServeur {
         Usure.ajouterReparation(arme);
         consommer(p, kit, r.kitUtilisations[niveau]);
         p.level().playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 0.6F, 1.25F);
-        p.displayClientMessage(Component.translatable("heraliz_usure.reparation.ok", fr.heraliz.noyau.api.NomsObjets.nom(arme),
-                Reparation.pct(etat), Reparation.pct(cible), Reparation.pct(Usure.max(arme))).withStyle(ChatFormatting.GREEN), true);
+        p.displayClientMessage(Component.translatableWithFallback("heraliz_usure.reparation.ok",
+                "%s réparée : %s → %s (max %s) · réparations restantes : %s / %s", fr.heraliz.noyau.api.NomsObjets.nom(arme),
+                Reparation.pct(etat), Reparation.pct(cible), Reparation.pct(Usure.max(arme)), restantes - 1, maximum)
+                .withStyle(ChatFormatting.GREEN), true);
         return Reparation.Resultat.REPAREE;
     }
 
     /**
      * Piece de HeraliZ Armurerie (armure, masque a gaz, combinaison...) : le kit rend son gain en % de la durabilite
      * maximale, jusqu'a 100 % (demande du proprietaire, 24/10 : fortune +15 %, kit +35 %, armurier +60 %). Une piece usee
-     * (barre vide, plus de protection contre les zones) se repare aussi. Une utilisation du kit.
+     * (barre vide, plus de protection contre les zones) se repare aussi. Une utilisation du kit. Aucune limite de
+     * reparations (11/11 : elle ne vaut que pour les armes).
      */
     static Reparation.Resultat armure(ServerPlayer p, ItemStack kit, ItemStack piece, int niveau) {
         Regles r = ReglesServeur.get();
@@ -106,8 +122,10 @@ public final class ReparationServeur {
         Profil pr = r.profil(id);
         if (!pr.suivie) return new int[]{MenuReparation.NE_S_USE_PAS, MenuReparation.ARME, 0, 0, 0, 0};
         int etat = Usure.etat(cible, pr), max = Usure.max(cible);
-        Reparation.Calcul c = Reparation.calculer(etat, max, niveau, r);
-        int code = c.refus() == null ? MenuReparation.OK : c.refus() == Reparation.Resultat.RUINEE_REFUSEE ? MenuReparation.RUINEE
+        Reparation.Calcul c = Reparation.calculer(etat, max, Reparation.restantes(cible, r), niveau, r);
+        int code = c.refus() == null ? MenuReparation.OK
+                : c.refus() == Reparation.Resultat.RUINEE_REFUSEE ? MenuReparation.RUINEE
+                : c.refus() == Reparation.Resultat.PLUS_DE_REPARATION ? MenuReparation.PLUS_DE_REPARATION
                 : MenuReparation.PLAFOND;
         return new int[]{code, MenuReparation.ARME, etat, c.etat(), max, c.max()};
     }

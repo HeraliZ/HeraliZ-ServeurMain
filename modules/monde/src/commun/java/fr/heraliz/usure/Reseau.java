@@ -38,8 +38,11 @@ public final class Reseau {
     public record Recu(ServerPlayer joueur, Object paquet) {
     }
 
-    /** 2 = 1.0.1 (plus d'enrayage : regles plus courtes, plus de paquet de desenrayage). */
-    private static final String VERSION = "2";
+    /**
+     * 2 = 1.0.1 (plus d'enrayage : regles plus courtes, plus de paquet de desenrayage) ; 3 = 11/11 (nombre de reparations
+     * des armes par rarete).
+     */
+    private static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(HeralizUsure.id("main"), () -> VERSION, VERSION::equals, VERSION::equals);
 
     static void enregistrer() {

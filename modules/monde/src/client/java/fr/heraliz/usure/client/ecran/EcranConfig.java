@@ -1,6 +1,8 @@
 package fr.heraliz.usure.client.ecran;
 
 import fr.heraliz.usure.Contenu;
+import fr.heraliz.usure.RaretesLoot;
+import fr.heraliz.usure.Reparation;
 import fr.heraliz.usure.Reseau;
 import fr.heraliz.usure.Usure;
 import fr.heraliz.usure.client.kit.Echelle;
@@ -338,26 +340,31 @@ public class EcranConfig extends Screen {
             });
             champ(xs[1], y + 4, 70, travail.kitGain[i], "%", v -> travail.kitGain[i] = v);
             champ(xs[2], y + 4, 70, travail.kitPlafond[i], "%", v -> travail.kitPlafond[i] = v);
-            HzField u = new HzField(xs[3], y + 4, 70, 14, 4, ENTIER).accent(Ui.accent()).erreurVisible(false);
-            u.setValue(String.valueOf(travail.kitUtilisations[i]));
-            u.setResponder(s -> {
-                try {
-                    int v = Integer.parseInt(s);
-                    if (v < 1) throw new NumberFormatException();
-                    u.setErreur("");
-                    travail.kitUtilisations[i] = v;
-                    maj();
-                } catch (NumberFormatException ex) {
-                    u.setErreur("!");
-                }
-            });
-            zone.add(u);
+            entier(xs[3], y + 4, 70, travail.kitUtilisations[i], 1, v -> travail.kitUtilisations[i] = v);
             zone.add(new Interrupteur(xs[4], y + 4, 70, 14, () -> travail.kitRuinee[i], v -> {
                 travail.kitRuinee[i] = v;
                 maj();
             }));
         }
         int y = y0 + 12 + Regles.NB_KITS * (LIGNE + 3) + 10;
+        // par rareté (11/11) : réparations possibles d'une arme
+        section(x0 + 8, y, cw - 16, t("heraliz_usure.ecran.section.raretes"));
+        y += 12;
+        int[] xr = {x0 + 8, xs[1]};
+        entetes(y, xr, new String[]{t("heraliz_usure.ecran.col.rarete"), t("heraliz_usure.ecran.col.reparations_max")});
+        y += 12;
+        for (int k = 0; k < Regles.NB_RARETES; k++) {
+            int i = k, ly = y;
+            fondLigne(x0, ly, cw, LIGNE - 2);
+            String nom = t("heraliz_usure.rarete." + Regles.RARETES[i]);
+            zone.dessin((g, mx, my) -> {
+                Ui.soft(g, x0 + 8, ly + 7, 5, 5, Ui.argb(RaretesLoot.COULEURS[i], 255));
+                g.drawString(font, Ui.lit(nom, Ui.FONT), x0 + 18, ly + 5, Ui.argb(Ui.TEXT, 255), false);
+            });
+            entier(xr[1], ly + 2, 70, travail.reparationsMax[i], 0, v -> travail.reparationsMax[i] = v);
+            y += LIGNE;
+        }
+        y += 8;
         section(x0 + 8, y, cw - 16, t("heraliz_usure.ecran.section.max"));
         y += 12;
         fondLigne(x0, y, cw, LIGNE - 2);
@@ -377,8 +384,26 @@ public class EcranConfig extends Screen {
 
     /** Exemple calcule avec les valeurs en cours : une arme a 30 % reparee avec le kit standard. */
     private String exempleReparation() {
-        fr.heraliz.usure.Reparation.Calcul c = fr.heraliz.usure.Reparation.calculer(300, 1000, 1, travail);
+        Reparation.Calcul c = Reparation.calculer(300, 1000, 1, 1, travail);
         return t("heraliz_usure.ecran.exemple_reparation", t("item.heraliz_usure.kit_standard"), Math.round(c.etat() / 10f), Math.round(c.max() / 10f));
+    }
+
+    /** Champ entier (valeur obligatoire, au moins {@code min}). */
+    private void entier(int x, int y, int w, int valeur, int min, java.util.function.IntConsumer change) {
+        HzField f = new HzField(x, y, w, 14, 4, ENTIER).accent(Ui.accent()).erreurVisible(false);
+        f.setValue(String.valueOf(valeur));
+        f.setResponder(s -> {
+            try {
+                int v = Integer.parseInt(s);
+                if (v < min) throw new NumberFormatException();
+                f.setErreur("");
+                change.accept(v);
+                maj();
+            } catch (NumberFormatException ex) {
+                f.setErreur("!");
+            }
+        });
+        zone.add(f);
     }
 
     // ---------------------------------------------------------------- 4. armes et accessoires

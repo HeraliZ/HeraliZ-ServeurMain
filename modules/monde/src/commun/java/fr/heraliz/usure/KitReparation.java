@@ -102,6 +102,8 @@ public class KitReparation extends Item {
                 .withStyle(ChatFormatting.GRAY));
         lignes.add(Component.translatable("heraliz_usure.kit.utilisations", restantes(kit), r.kitUtilisations[niveau]).withStyle(ChatFormatting.GRAY));
         lignes.add(Component.translatable("heraliz_usure.kit.armures", Regles.texte(r.kitGain[niveau])).withStyle(ChatFormatting.GRAY));
+        // 11/11 : une arme ne se répare qu'un nombre limité de fois (selon sa rareté)
+        lignes.add(Component.translatable("heraliz_usure.kit.limite").withStyle(ChatFormatting.DARK_GRAY));
         if (!r.kitRuinee[niveau]) lignes.add(Component.translatable("heraliz_usure.kit.pas_ruinee").withStyle(ChatFormatting.DARK_GRAY));
         lignes.add(Component.translatable("heraliz_usure.kit.mode_emploi").withStyle(ChatFormatting.DARK_GRAY));
     }

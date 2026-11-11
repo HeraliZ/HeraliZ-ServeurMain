@@ -25,6 +25,12 @@ import java.util.Map;
  */
 public final class Regles {
     public static final int NB_KITS = 3;
+    /**
+     * Raretes de HeraliZ Loot dans leur ordre (rang 0 Commun / gris ... 5 Unique / rouge, voir fr.heraliz.usure.RaretesLoot) :
+     * cles du fichier de reglages.
+     */
+    public static final String[] RARETES = {"commun", "peu_commun", "rare", "epique", "legendaire", "unique"};
+    public static final int NB_RARETES = RARETES.length;
 
     // ---------------------------------------------------------------- general
     public boolean actif = true;
@@ -57,6 +63,14 @@ public final class Regles {
     public final boolean[] kitRuinee = {true, true, true};
     /** Points d'etat maximal perdus a chaque reparation (0 = jamais), et plancher de l'etat maximal. */
     public float perteMaxParReparation = 4, maxMinimum = 40;
+
+    // ---------------------------------------------------------------- par rarete (11/11, demande du proprietaire)
+    /**
+     * Reparations possibles d'une arme selon SA rarete (index = rang, {@link #RARETES}) : grise 3, verte 5, bleue 8, violette
+     * 12, legendaire 17 (Unique, aucune arme aujourd'hui : comme Legendaire). Chaque reparation en use une, quel que soit le
+     * kit ; le compte des reparations faites est garde sur l'arme (HzUsureRep). 0 = l'arme ne se repare pas.
+     */
+    public final int[] reparationsMax = {3, 5, 8, 12, 17, 17};
 
     // ---------------------------------------------------------------- armes et accessoires
     public final List<Surcharge> surcharges = new ArrayList<>();
@@ -230,6 +244,7 @@ public final class Regles {
         }
         b.writeFloat(perteMaxParReparation);
         b.writeFloat(maxMinimum);
+        for (int i = 0; i < NB_RARETES; i++) b.writeVarInt(reparationsMax[i]);
         b.writeVarInt(surcharges.size());
         for (Surcharge s : surcharges) b.writeUtf(s.ecrire(), 512);
         b.writeVarInt(accessoires.size());
@@ -267,6 +282,7 @@ public final class Regles {
         }
         r.perteMaxParReparation = b.readFloat();
         r.maxMinimum = b.readFloat();
+        for (int i = 0; i < NB_RARETES; i++) r.reparationsMax[i] = b.readVarInt();
         int ns = Math.min(b.readVarInt(), 1024);
         for (int i = 0; i < ns; i++) {
             Surcharge s = Surcharge.lire(b.readUtf(512));
@@ -333,6 +349,7 @@ public final class Regles {
         }
         perteMaxParReparation = borne(perteMaxParReparation, 0, 100);
         maxMinimum = borne(maxMinimum, 1, 100);
+        for (int i = 0; i < NB_RARETES; i++) reparationsMax[i] = Math.max(0, Math.min(1000, reparationsMax[i]));
         surcharges.removeIf(s -> s == null || s.motif.isEmpty());
         accessoires.entrySet().removeIf(e -> e.getKey().isEmpty() || e.getValue() == null || !Float.isFinite(e.getValue()));
         accessoires.replaceAll((k, v) -> borne(v, 0, 1000));

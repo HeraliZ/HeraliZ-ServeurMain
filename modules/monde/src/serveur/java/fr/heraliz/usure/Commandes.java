@@ -22,8 +22,9 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 /**
  * Commandes d'administration (op 2), sur l'arme tenue en main par le joueur vise :
  * <ul>
- *   <li>{@code /usure voir <joueur>} : categorie, etat, etat maximal, reparations, usure par tir ;</li>
- *   <li>{@code /usure reparer <joueur>} : remise a neuf (100 %, maximum rendu) ;</li>
+ *   <li>{@code /usure voir <joueur>} : categorie, etat, etat maximal, reparations faites sur le maximum de sa rarete,
+ *   usure par tir ;</li>
+ *   <li>{@code /usure reparer <joueur>} : remise a neuf (100 %, maximum rendu, compte des reparations remis a zero) ;</li>
  *   <li>{@code /usure definir <joueur> <etat %> [max %]} : regle l'etat (et l'etat maximal) ;</li>
  *   <li>{@code /usure config} : ouvre l'ecran des reglages.</li>
  * </ul>
@@ -80,8 +81,9 @@ public final class Commandes {
         Etat e = Etat.de(etat, r);
         repondre(src, gris(Component.translatable("heraliz_usure.cmd.voir.categorie", Component.translatable(p.categorie.cleTraduction()),
                 Regles.texte(p.usurePct), p.tirsPourRuiner())));
-        repondre(src, gris(Component.translatable("heraliz_usure.cmd.voir.etat", Component.translatable(e.cleTraduction())
-                .withStyle(st -> st.withColor(e.couleur)), Reparation.pct(etat), Reparation.pct(max), Usure.reparations(s))));
+        repondre(src, gris(Component.translatableWithFallback("heraliz_usure.cmd.voir.etat", " État : %s · %s (max %s) · réparations : %s faites sur %s",
+                Component.translatable(e.cleTraduction()).withStyle(st -> st.withColor(e.couleur)), Reparation.pct(etat), Reparation.pct(max),
+                Usure.reparations(s), Reparation.maximum(Reparation.rareteArme(s), r))));
         if (Tirs.exemptee(cible, s, r)) repondre(src, gris(Component.translatable("heraliz_usure.cmd.voir.exemptee")));
         return 1;
     }
