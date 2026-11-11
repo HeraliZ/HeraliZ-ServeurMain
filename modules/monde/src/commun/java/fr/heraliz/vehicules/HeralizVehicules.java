@@ -23,6 +23,8 @@ import org.slf4j.Logger;
  *   <li>{@code CoffreRetire}, {@code SuiviVehicules} : plus de coffre dans les véhicules (contenu déjà rangé posé au
  *   sol) ;</li>
  *   <li>{@link PointsDeVie} : PV max divisés par 5 (réglage pv_pourcent), véhicules déjà posés compris ;</li>
+ *   <li>{@code Passagers} (11/11) : un joueur dans ou sur un véhicule prend les dégâts comme à pied (réglages
+ *   passagers_proteges et balles_traversent) ;</li>
  *   <li>{@code client.IndicateurDegats} : plus de panneau des dégâts quand on touche un véhicule.</li>
  * </ul>
  * Jar fusionné HeraliZ Utils (docs/METHODE_CLIENT_SERVEUR.md) : ici le commun (liste des véhicules, onglet, réglages,

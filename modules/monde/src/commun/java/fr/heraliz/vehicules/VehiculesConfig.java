@@ -5,9 +5,10 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import java.util.List;
 
 /**
- * Réglages serveur ({@code serverconfig/heraliz_vehicules-server.toml} du monde). {@code coffre_retire} et
- * {@code pv_pourcent} sont appliqués par la partie serveur ({@code CoffreRetire}, {@code PointsDeVie}) ; la section
- * {@code physique} par {@code Stabilite} (mixins serveur sur le moteur de Limitless Vehicle).
+ * Réglages serveur ({@code serverconfig/heraliz_vehicules-server.toml} du monde). {@code coffre_retire},
+ * {@code pv_pourcent}, {@code passagers_proteges} et {@code balles_traversent} sont appliqués par la partie serveur
+ * ({@code CoffreRetire}, {@code PointsDeVie}, {@code Passagers}) ; la section {@code physique} par {@code Stabilite}
+ * (mixins serveur sur le moteur de Limitless Vehicle).
  */
 public final class VehiculesConfig {
     public static final ForgeConfigSpec SPEC;
@@ -17,6 +18,8 @@ public final class VehiculesConfig {
     public static final ForgeConfigSpec.BooleanValue PROTEGER_BLOCS;
     public static final ForgeConfigSpec.BooleanValue COFFRE_RETIRE;
     public static final ForgeConfigSpec.IntValue PV_POURCENT;
+    public static final ForgeConfigSpec.BooleanValue PASSAGERS_PROTEGES;
+    public static final ForgeConfigSpec.BooleanValue BALLES_TRAVERSENT;
     public static final ForgeConfigSpec.BooleanValue PHYSIQUE_STABLE;
     public static final ForgeConfigSpec.DoubleValue INERTIE;
     public static final ForgeConfigSpec.DoubleValue BASCULE_MAX;
@@ -49,6 +52,14 @@ public final class VehiculesConfig {
                         "moto 20, buggy et fourgon 60, camion 100). Les vehicules deja poses passent au nouveau maximum en gardant",
                         "leur pourcentage de vie.")
                 .defineInRange("pv_pourcent", 20, 1, 1000);
+        PASSAGERS_PROTEGES = b.comment("Passagers des vehicules proteges de tous les degats (regle d'origine de Limitless Vehicle : moto, camion",
+                        "et fourgon ; pas le buggy). false (11/11) : un joueur dans ou sur un vehicule prend les degats comme a pied",
+                        "(balles, coups, explosions, zombies, feu) ; le vehicule garde ses propres PV.")
+                .define("passagers_proteges", false);
+        BALLES_TRAVERSENT = b.comment("Une balle de TaCZ dont le trajet passe par le corps d'un passager le touche lui, meme a travers la",
+                        "carrosserie (fourgon, cabine du camion, motard) ; ailleurs, c'est le vehicule qui prend la balle. false : la",
+                        "carrosserie arrete toutes les balles (le passager cache dedans n'est jamais touche).")
+                .define("balles_traversent", true);
         b.pop();
         b.push("physique");
         PHYSIQUE_STABLE = b.comment("Vehicules a roues plus stables et plus maniables (moteur de Limitless Vehicle corrige par HeraliZ Utils).",

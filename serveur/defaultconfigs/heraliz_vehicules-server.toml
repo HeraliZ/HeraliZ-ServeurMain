@@ -19,4 +19,12 @@
 	#leur pourcentage de vie.
 	#Range: 1 ~ 1000
 	pv_pourcent = 20
+	#Passagers des vehicules proteges de tous les degats (regle d'origine de Limitless Vehicle : moto, camion
+	#et fourgon ; pas le buggy). false (11/11) : un joueur dans ou sur un vehicule prend les degats comme a pied
+	#(balles, coups, explosions, zombies, feu) ; le vehicule garde ses propres PV.
+	passagers_proteges = false
+	#Une balle de TaCZ dont le trajet passe par le corps d'un passager le touche lui, meme a travers la
+	#carrosserie (fourgon, cabine du camion, motard) ; ailleurs, c'est le vehicule qui prend la balle. false : la
+	#carrosserie arrete toutes les balles (le passager cache dedans n'est jamais touche).
+	balles_traversent = true
 

@@ -16,8 +16,9 @@ import java.util.WeakHashMap;
 
 /**
  * Suivi des véhicules du serveur : chaque véhicule qui arrive dans un monde (posé, chargé avec son chunk, changé de
- * dimension) est ramené à ses PV voulus ({@link PointsDeVie}) et son coffre est vidé au sol ({@link CoffreRetire}), puis
- * de nouveau une fois par seconde tant qu'il est chargé (réglages changés, objet poussé par un entonnoir).
+ * dimension) est ramené à ses PV voulus ({@link PointsDeVie}), ses passagers prennent les dégâts comme à pied
+ * ({@link Passagers}, 11/11) et son coffre est vidé au sol ({@link CoffreRetire}), puis de nouveau une fois par seconde
+ * tant qu'il est chargé (réglages changés, objet poussé par un entonnoir, données du moteur relues).
  * <p>Ordre : à l'arrivée, un véhicule chargé du disque est réglé tout de suite (avant d'être envoyé aux joueurs) ; un
  * véhicule neuf (pas encore initialisé par le moteur à cet instant) l'est au début ou à la fin du tick qui suit, avant
  * que ses PV ne partent chez les joueurs. Les objets ne sont jamais posés pendant l'arrivée elle-même (ajouter une entité
@@ -45,6 +46,7 @@ public final class SuiviVehicules {
     private static void onArrivee(EntityJoinLevelEvent e) {
         if (e.getLevel().isClientSide() || !(e.getEntity() instanceof AbstractVehicle v)) return;
         PointsDeVie.ajuster(v); // chargé du disque : déjà initialisé, réglé avant d'être envoyé aux joueurs
+        Passagers.appliquer(v); // neuf : le moteur le remet à son initialisation, juste après ; refait au passage suivant
         SUIVIS.add(v);
         ARRIVES.add(v);
     }
@@ -70,9 +72,10 @@ public final class SuiviVehicules {
         }
     }
 
-    /** PV voulus, coffre vidé au sol (objets à côté du véhicule). */
+    /** PV voulus, protection des passagers selon le réglage, coffre vidé au sol (objets à côté du véhicule). */
     private static void entretenir(AbstractVehicle v) {
         PointsDeVie.ajuster(v);
+        Passagers.appliquer(v);
         if (!CoffreRetire.actif() || !CoffreRetire.contientQuelqueChose(v)) return;
         Entity ent = v;
         if (ent.level() instanceof ServerLevel level) {

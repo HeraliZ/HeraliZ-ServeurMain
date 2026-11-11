@@ -60,9 +60,47 @@ fichier son.
 - [ ] Le son n'est ni désagréable ni couvrant (pas, tirs et zombies s'entendent toujours) ; si c'est encore trop ou
       plus assez, dire « plus discret » ou « plus présent » : les chiffres se règlent en une ligne.
 
+## 3. Véhicules : on prend les dégâts dedans et dessus, comme à pied
+
+Vraie cause trouvée dans le moteur des véhicules (Limitless Vehicle, jar d'un autre auteur, pas touché) : il annule
+**tous** les dégâts d'un joueur assis dans un véhicule « qui protège ses passagers », et c'est le cas par défaut de
+tous ses véhicules ; le pack de Fuse ne l'enlève que pour le buggy. Rien dans notre code n'annulait ces dégâts. Deuxième
+cause, pour les balles seulement : TaCZ ne touche que la première chose sur le trajet ; la « boîte » du fourgon et de la
+cabine du camion enferme le passager, celle de la moto enferme les jambes et le buste du motard : la balle tapait la
+carrosserie et le passager n'était jamais touché.
+
+Avant / maintenant :
+
+| Dégât | Moto | Buggy | Camion (cabine) | Fourgon |
+|---|---|---|---|---|
+| Balles | rien (avant) → touché partout où la balle passe par son corps, tête comprise | touché (avant aussi) ; maintenant aussi à travers la carrosserie | rien → touché à travers la cabine | rien → touché à travers la carrosserie |
+| Mêlée (couteaux, battes…) | rien → touché | touché (avant aussi) | rien → touché | rien → touché |
+| Explosions (grenades, C4, frappe, roquette) | rien → touché | touché (avant aussi) | rien → touché | rien → touché |
+| Zombies | rien → touché | touché (avant aussi) | rien → touché s'ils arrivent à portée | rien → touché s'ils arrivent à portée |
+| Minigun de l'hélicoptère, feu, saignement… | rien → touché | touché (avant aussi) | rien → touché | rien → touché |
+
+Le véhicule garde ses propres PV : une balle qui ne passe par aucun passager le touche lui, comme avant. Un passager qui
+tire depuis le véhicule ne touche jamais son propre véhicule (règle de TaCZ, inchangée). Réglages dans
+`serveur/defaultconfigs/heraliz_vehicules-server.toml` : `passagers_proteges = false` (true : retour à la règle du
+moteur) et `balles_traversent = true` (false : la carrosserie arrête toutes les balles).
+
+À vérifier (à deux, un tireur et un passager, sur chacun des 4 véhicules) :
+- [ ] Passager tiré de côté, de face et de dos : il perd de la vie (chiffre de dégâts chez le tireur) ; tir à la tête :
+      dégâts de la tête.
+- [ ] Tir sur le moteur, l'arrière vide du fourgon ou les roues : c'est le véhicule qui perd des PV, pas le passager.
+- [ ] Couteau ou batte sur un passager (moto, buggy, portière du fourgon) : il perd de la vie.
+- [ ] Grenade à côté du véhicule : passagers blessés (et le véhicule aussi).
+- [ ] Zombies autour d'un véhicule arrêté : ils blessent le motard et les passagers à leur portée.
+- [ ] Conducteur qui tire depuis sa moto ou son buggy : il touche sa cible, jamais son propre véhicule.
+- [ ] Hélicoptère qui attaque un joueur en véhicule : il le blesse.
+
 ## Non vérifié par Claude
 
 - Pas compilé ici (Minecraft et Forge ne se téléchargent pas dans cet environnement) : la fabrication complète est
   faite par le contrôle de branche de GitHub. Code relu ; textes contrôlés (`outils/verifier_langues.py` : 0 erreur).
 - Boîtes de collision relevées sur le modèle de l'épave par un script (vue de dessus et de côté contrôlées en image),
   pas vues en jeu : leur placement exact se voit avec F3+B.
+- Véhicules : la protection des passagers est retirée par notre code autour du moteur (le jar de Limitless Vehicle reste
+  intact) ; les balles à travers la carrosserie passent par un mixin sur TaCZ (jar intact, comme celui du train). Le
+  mixin ne peut pas se vérifier hors du jeu : s'il ne s'appliquait pas, les balles s'arrêteraient sur la carrosserie
+  comme avant (rien ne plante), le reste des dégâts marcherait quand même.
