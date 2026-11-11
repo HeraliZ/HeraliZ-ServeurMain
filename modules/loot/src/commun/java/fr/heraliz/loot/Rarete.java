@@ -28,6 +28,15 @@ public enum Rarete {
         this.duree = duree;
     }
 
+    /**
+     * Couleur du NOM d'un objet de cette rareté (infobulle, nom affiché au-dessus de la barre d'objets : {@link
+     * RaretesObjets#couleurNom}) : celle de la rareté, sauf Commun en blanc (comme les noms Commun depuis le 21/10 ; le
+     * gris reste au fond des cases).
+     */
+    public int couleurNom() {
+        return this == COMMUN ? 0xFFFFFF : couleur;
+    }
+
     /** Nom affiché, dans la langue du joueur (clé heraliz_loot.rarete.&lt;id&gt;, nom français en secours). */
     public MutableComponent texte() {
         return Component.translatableWithFallback("heraliz_loot.rarete." + id, nom);

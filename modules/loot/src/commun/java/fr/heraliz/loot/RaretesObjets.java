@@ -11,6 +11,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
@@ -152,6 +153,17 @@ public final class RaretesObjets {
     @Nullable
     public static Rarete de(ItemStack st) {
         if (st.isEmpty()) return null;
+        Rarete r = choisie(st);
+        return r != null ? r : table.defaut();
+    }
+
+    /**
+     * Rareté choisie pour cet objet : inscrite sur l'objet, sinon celle de sa sorte (raretes.json, /rarete), sans la rareté
+     * par défaut (null : aucune de choisie). Comme {@link #de}, sans allocation.
+     */
+    @Nullable
+    public static Rarete choisie(ItemStack st) {
+        if (st.isEmpty()) return null;
         Rarete r = Rarete.de(st);
         if (r != null) return r;
         Table t = table;
@@ -159,15 +171,54 @@ public final class RaretesObjets {
         if (tag != null) {
             for (Sorte s : SORTES) {
                 if (s.etiquette != null && tag.contains(s.etiquette, Tag.TAG_STRING)) {
-                    r = t.parSorte().getOrDefault(s, Map.of()).get(tag.getString(s.etiquette));
-                    return r != null ? r : t.defaut();
+                    return t.parSorte().getOrDefault(s, Map.of()).get(tag.getString(s.etiquette));
                 }
             }
         }
         String b = boite(st);
         r = b != null ? t.parSorte().getOrDefault(Sorte.OBJET, Map.of()).get(b) : null;
-        if (r == null) r = parObjet.get(st.getItem());
-        return r != null ? r : t.defaut();
+        return r != null ? r : parObjet.get(st.getItem());
+    }
+
+    /** Étiquette d'un objet dont le staff a choisi la couleur du nom (bons de HeraliZ Grades) : son nom n'est jamais recoloré. */
+    public static final String COULEUR_LIBRE = "HeralizCouleurLibre";
+
+    /** Le staff a-t-il choisi la couleur du nom de cet objet ({@link #COULEUR_LIBRE}) ? */
+    public static boolean couleurLibre(ItemStack st) {
+        CompoundTag t = st.getTag();
+        return t != null && t.getBoolean(COULEUR_LIBRE);
+    }
+
+    /**
+     * Rareté de Minecraft d'un objet lue comme la nôtre (11/11) : Peu commun, Rare, Épique (jaune, cyan et rose chez
+     * Minecraft : vert, bleu et violet chez nous) et les raretés « HERALIZ_* » des composants ; null pour Commun et une
+     * rareté inconnue (autre mod).
+     */
+    @Nullable
+    public static Rarete deMinecraft(@Nullable Rarity r) {
+        if (r == null) return null;
+        return switch (r.name()) {
+            case "UNCOMMON", "HERALIZ_UNCOMMON" -> Rarete.PEU_COMMUN;
+            case "RARE", "HERALIZ_RARE" -> Rarete.RARE;
+            case "EPIC", "HERALIZ_EPIC" -> Rarete.EPIQUE;
+            case "HERALIZ_LEGENDARY" -> Rarete.LEGENDAIRE;
+            case "HERALIZ_MYTHIC" -> Rarete.UNIQUE;
+            default -> null;
+        };
+    }
+
+    /**
+     * Couleur (RVB) du nom de cet objet, -1 : nom laissé tel quel (11/11, retour du propriétaire : « un item violet doit
+     * avoir un nom écrit en violet »). Rareté choisie ({@link #choisie}) : sa couleur ({@link Rarete#couleurNom}, Commun
+     * en blanc) ; sans rareté choisie, sa rareté de Minecraft lue comme la nôtre ({@link #deMinecraft} : un objet Épique
+     * de Minecraft en NOTRE violet, jamais en rose) ; -1 pour une couleur choisie par le staff ({@link #couleurLibre}) ou
+     * un objet Commun pour Minecraft. Lu par HeraliZ Noyau (NomsObjets.nomCrochets, par réflexion : ne pas renommer).
+     */
+    public static int couleurNom(ItemStack st) {
+        if (st.isEmpty() || couleurLibre(st)) return -1;
+        Rarete r = choisie(st);
+        if (r == null) r = deMinecraft(st.getRarity());
+        return r == null ? -1 : r.couleurNom();
     }
 
     /** Rareté propre à la sorte de cet objet (sans la rareté par défaut ni celle inscrite sur l'objet), null : aucune. */

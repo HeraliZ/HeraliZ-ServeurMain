@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.loot.client.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "heraliz_loot.refmap.json",
+  "client": [
+    "NomEnMainMixin",
+    "NomsTaczMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
