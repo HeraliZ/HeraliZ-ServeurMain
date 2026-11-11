@@ -31,6 +31,8 @@ public final class Regles {
      */
     public static final String[] RARETES = {"commun", "peu_commun", "rare", "epique", "legendaire", "unique"};
     public static final int NB_RARETES = RARETES.length;
+    /** Rarete d'un kit quand HeraliZ Loot ne la donne pas : celle du loot (24/10 : fortune Rare, kit Epique, armurier Legendaire). */
+    public static final int[] RARETE_KIT = {2, 3, 4};
 
     // ---------------------------------------------------------------- general
     public boolean actif = true;
@@ -55,9 +57,8 @@ public final class Regles {
     public float seuilNeuf = 90, seuilBon = 65, seuilUse = 35;
 
     // ---------------------------------------------------------------- reparation (kits : fortune, standard, armurier)
-    // 26/10 (demande du proprietaire) : fortune +7 % x 1, kit +18 % x 2, armurier +45 % x 3, jusqu'a 100 %, armes ruinees
-    // comprises (avant : +15 / +35 / +60 %, plafonds 65 / 90 / 100 %, 2 / 3 / 5 utilisations)
-    public final float[] kitGain = {7, 18, 45};
+    // 26/10 (demande du proprietaire) : 1 / 2 / 3 utilisations, jusqu'a 100 %, armes ruinees comprises (avant : plafonds
+    // 65 / 90 / 100 %, 2 / 3 / 5 utilisations). Le gain depend de la rarete du kit depuis le 11/11 (gainKit).
     public final float[] kitPlafond = {100, 100, 100};
     public final int[] kitUtilisations = {1, 2, 3};
     public final boolean[] kitRuinee = {true, true, true};
@@ -71,6 +72,11 @@ public final class Regles {
      * kit ; le compte des reparations faites est garde sur l'arme (HzUsureRep). 0 = l'arme ne se repare pas.
      */
     public final int[] reparationsMax = {3, 5, 8, 12, 17, 17};
+    /**
+     * % d'etat rendu par un kit selon SA rarete : gris +15, vert +20, bleu +25, violet +35, legendaire +50 (Unique comme
+     * Legendaire). Armes et pieces d'armure.
+     */
+    public final float[] gainKit = {15, 20, 25, 35, 50, 50};
 
     // ---------------------------------------------------------------- armes et accessoires
     public final List<Surcharge> surcharges = new ArrayList<>();
@@ -237,14 +243,16 @@ public final class Regles {
         b.writeFloat(seuilBon);
         b.writeFloat(seuilUse);
         for (int i = 0; i < NB_KITS; i++) {
-            b.writeFloat(kitGain[i]);
             b.writeFloat(kitPlafond[i]);
             b.writeVarInt(kitUtilisations[i]);
             b.writeBoolean(kitRuinee[i]);
         }
         b.writeFloat(perteMaxParReparation);
         b.writeFloat(maxMinimum);
-        for (int i = 0; i < NB_RARETES; i++) b.writeVarInt(reparationsMax[i]);
+        for (int i = 0; i < NB_RARETES; i++) {
+            b.writeVarInt(reparationsMax[i]);
+            b.writeFloat(gainKit[i]);
+        }
         b.writeVarInt(surcharges.size());
         for (Surcharge s : surcharges) b.writeUtf(s.ecrire(), 512);
         b.writeVarInt(accessoires.size());
@@ -275,14 +283,16 @@ public final class Regles {
         r.seuilBon = b.readFloat();
         r.seuilUse = b.readFloat();
         for (int i = 0; i < NB_KITS; i++) {
-            r.kitGain[i] = b.readFloat();
             r.kitPlafond[i] = b.readFloat();
             r.kitUtilisations[i] = b.readVarInt();
             r.kitRuinee[i] = b.readBoolean();
         }
         r.perteMaxParReparation = b.readFloat();
         r.maxMinimum = b.readFloat();
-        for (int i = 0; i < NB_RARETES; i++) r.reparationsMax[i] = b.readVarInt();
+        for (int i = 0; i < NB_RARETES; i++) {
+            r.reparationsMax[i] = b.readVarInt();
+            r.gainKit[i] = b.readFloat();
+        }
         int ns = Math.min(b.readVarInt(), 1024);
         for (int i = 0; i < ns; i++) {
             Surcharge s = Surcharge.lire(b.readUtf(512));
@@ -343,13 +353,15 @@ public final class Regles {
         seuilBon = borne(seuilBon, 0.1f, seuilNeuf);
         seuilUse = borne(seuilUse, 0.1f, seuilBon);
         for (int i = 0; i < NB_KITS; i++) {
-            kitGain[i] = borne(kitGain[i], 0, 100);
             kitPlafond[i] = borne(kitPlafond[i], 1, 100);
             kitUtilisations[i] = Math.max(1, Math.min(1000, kitUtilisations[i]));
         }
         perteMaxParReparation = borne(perteMaxParReparation, 0, 100);
         maxMinimum = borne(maxMinimum, 1, 100);
-        for (int i = 0; i < NB_RARETES; i++) reparationsMax[i] = Math.max(0, Math.min(1000, reparationsMax[i]));
+        for (int i = 0; i < NB_RARETES; i++) {
+            reparationsMax[i] = Math.max(0, Math.min(1000, reparationsMax[i]));
+            gainKit[i] = borne(gainKit[i], 0, 100);
+        }
         surcharges.removeIf(s -> s == null || s.motif.isEmpty());
         accessoires.entrySet().removeIf(e -> e.getKey().isEmpty() || e.getValue() == null || !Float.isFinite(e.getValue()));
         accessoires.replaceAll((k, v) -> borne(v, 0, 1000));

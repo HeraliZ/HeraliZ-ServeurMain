@@ -20,9 +20,9 @@ public final class ReparationServeur {
     }
 
     /**
-     * Repare {@code arme} avec le kit de niveau {@code niveau} (0..2) ; rend le resultat et previent le joueur. 11/11 : une
-     * arme qui a deja eu toutes ses reparations (nombre fixe par sa rarete) est refusee ; une reparation faite en use une,
-     * quel que soit le kit.
+     * Repare {@code arme} avec le kit de niveau {@code niveau} (0..2) ; rend le resultat et previent le joueur. 11/11 : le
+     * gain vient de la rarete du kit, et une arme qui a deja eu toutes ses reparations (nombre fixe par sa rarete) est
+     * refusee ; une reparation faite en use une, quel que soit le kit.
      */
     public static Reparation.Resultat appliquer(ServerPlayer p, ItemStack kit, ItemStack arme, int niveau) {
         if (Usure.gunId(arme) == null && KitReparation.estArmure(arme)) return armure(p, kit, arme, niveau);
@@ -35,7 +35,8 @@ public final class ReparationServeur {
         int etat = Usure.etat(arme, pr), max = Usure.max(arme);
         int maximum = Reparation.maximum(Reparation.rareteArme(arme), r);
         int restantes = Math.max(0, maximum - Usure.reparations(arme));
-        Reparation.Calcul c = Reparation.calculer(etat, max, restantes, niveau, r);
+        float gain = Reparation.gain(Reparation.rareteKit(kit, niveau), r);
+        Reparation.Calcul c = Reparation.calculer(etat, max, restantes, gain, niveau, r);
         if (c.refus() == Reparation.Resultat.PLUS_DE_REPARATION) {
             p.displayClientMessage(Component.translatableWithFallback("heraliz_usure.reparation.plus_de_reparation",
                     "Plus aucune réparation possible : cette arme a atteint son maximum de réparations (%s).", maximum)
@@ -59,9 +60,9 @@ public final class ReparationServeur {
 
     /**
      * Piece de HeraliZ Armurerie (armure, masque a gaz, combinaison...) : le kit rend son gain en % de la durabilite
-     * maximale, jusqu'a 100 % (demande du proprietaire, 24/10 : fortune +15 %, kit +35 %, armurier +60 %). Une piece usee
-     * (barre vide, plus de protection contre les zones) se repare aussi. Une utilisation du kit. Aucune limite de
-     * reparations (11/11 : elle ne vaut que pour les armes).
+     * maximale, jusqu'a 100 % (24/10 : meme gain que sur une arme ; depuis le 11/11, celui de la rarete du kit). Aucune
+     * limite de reparations (elle ne vaut que pour les armes). Une piece usee (barre vide, plus de protection contre les
+     * zones) se repare aussi. Une utilisation du kit.
      */
     static Reparation.Resultat armure(ServerPlayer p, ItemStack kit, ItemStack piece, int niveau) {
         Regles r = ReglesServeur.get();
@@ -73,7 +74,7 @@ public final class ReparationServeur {
             p.playNotifySound(SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 0.5F, 1.2F);
             return Reparation.Resultat.DEJA_AU_PLAFOND;
         }
-        int gain = Math.max(1, Math.round(max * r.kitGain[niveau] / 100f));
+        int gain = Math.max(1, Math.round(max * Reparation.gain(Reparation.rareteKit(kit, niveau), r) / 100f));
         int apres = Math.max(0, avant - gain);
         piece.setDamageValue(apres);
         consommer(p, kit, r.kitUtilisations[niveau]);
@@ -104,11 +105,13 @@ public final class ReparationServeur {
 
     /**
      * Aperçu pour l'atelier, sans rien changer : {code, genre, etat avant, etat apres, max avant, max apres} (milliemes ;
-     * codes et genres de {@link MenuReparation}).
+     * codes et genres de {@link MenuReparation}). {@code kit} : celui de la main (sa rareté donne le gain ; vide : celle du
+     * loot pour son niveau).
      */
-    static int[] apercu(ItemStack cible, int niveau) {
+    static int[] apercu(ItemStack cible, ItemStack kit, int niveau) {
         if (cible.isEmpty()) return new int[]{MenuReparation.VIDE, MenuReparation.RIEN, 0, 0, 0, 0};
         Regles r = ReglesServeur.get();
+        float gain = Reparation.gain(Reparation.rareteKit(kit, niveau), r);
         String id = Usure.gunId(cible);
         if (id == null) {
             if (!KitReparation.estArmure(cible)) return new int[]{MenuReparation.PAS_REPARABLE, MenuReparation.RIEN, 0, 0, 0, 0};
@@ -116,13 +119,13 @@ public final class ReparationServeur {
             if (max <= 0) return new int[]{MenuReparation.PAS_REPARABLE, MenuReparation.ARMURE, 0, 0, 0, 0};
             int etat = Math.round(1000f * (max - avant) / max);
             if (avant <= 0) return new int[]{MenuReparation.PLAFOND, MenuReparation.ARMURE, etat, etat, 1000, 1000};
-            int apres = Math.max(0, avant - Math.max(1, Math.round(max * r.kitGain[niveau] / 100f)));
+            int apres = Math.max(0, avant - Math.max(1, Math.round(max * gain / 100f)));
             return new int[]{MenuReparation.OK, MenuReparation.ARMURE, etat, Math.round(1000f * (max - apres) / max), 1000, 1000};
         }
         Profil pr = r.profil(id);
         if (!pr.suivie) return new int[]{MenuReparation.NE_S_USE_PAS, MenuReparation.ARME, 0, 0, 0, 0};
         int etat = Usure.etat(cible, pr), max = Usure.max(cible);
-        Reparation.Calcul c = Reparation.calculer(etat, max, Reparation.restantes(cible, r), niveau, r);
+        Reparation.Calcul c = Reparation.calculer(etat, max, Reparation.restantes(cible, r), gain, niveau, r);
         int code = c.refus() == null ? MenuReparation.OK
                 : c.refus() == Reparation.Resultat.RUINEE_REFUSEE ? MenuReparation.RUINEE
                 : c.refus() == Reparation.Resultat.PLUS_DE_REPARATION ? MenuReparation.PLUS_DE_REPARATION

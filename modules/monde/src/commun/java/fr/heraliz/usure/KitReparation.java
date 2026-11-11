@@ -98,10 +98,11 @@ public class KitReparation extends Item {
     @Override
     public void appendHoverText(ItemStack kit, @Nullable Level level, List<Component> lignes, TooltipFlag flag) {
         Regles r = regles();
-        lignes.add(Component.translatable("heraliz_usure.kit.effet", Regles.texte(r.kitGain[niveau]), Regles.texte(r.kitPlafond[niveau]))
-                .withStyle(ChatFormatting.GRAY));
+        // gain selon la rareté du kit (11/11) : celle que montre HeraliZ Loot (couleur de la case, ligne « Rare »)
+        String gain = Regles.texte(Reparation.gain(Reparation.rareteKit(kit, niveau), r));
+        lignes.add(Component.translatable("heraliz_usure.kit.effet", gain, Regles.texte(r.kitPlafond[niveau])).withStyle(ChatFormatting.GRAY));
         lignes.add(Component.translatable("heraliz_usure.kit.utilisations", restantes(kit), r.kitUtilisations[niveau]).withStyle(ChatFormatting.GRAY));
-        lignes.add(Component.translatable("heraliz_usure.kit.armures", Regles.texte(r.kitGain[niveau])).withStyle(ChatFormatting.GRAY));
+        lignes.add(Component.translatable("heraliz_usure.kit.armures", gain).withStyle(ChatFormatting.GRAY));
         // 11/11 : une arme ne se répare qu'un nombre limité de fois (selon sa rareté)
         lignes.add(Component.translatable("heraliz_usure.kit.limite").withStyle(ChatFormatting.DARK_GRAY));
         if (!r.kitRuinee[niveau]) lignes.add(Component.translatable("heraliz_usure.kit.pas_ruinee").withStyle(ChatFormatting.DARK_GRAY));

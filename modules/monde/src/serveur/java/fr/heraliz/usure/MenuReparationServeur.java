@@ -79,8 +79,8 @@ final class MenuReparationServeur extends MenuReparation {
         int total = r.kitUtilisations[niveau];
         donnees.set(D_TOTAL, total);
         donnees.set(D_RESTANTES, k.isEmpty() ? 0 : Math.max(0, total - (k.hasTag() ? k.getTag().getInt(KitReparation.UTILISEES) : 0)));
-        donnees.set(D_GAIN, Math.round(r.kitGain[niveau] * 10f));
-        int[] a = ReparationServeur.apercu(c, niveau);
+        donnees.set(D_GAIN, Math.round(Reparation.gain(Reparation.rareteKit(k, niveau), r) * 10f));
+        int[] a = ReparationServeur.apercu(c, k, niveau);
         int code = k.isEmpty() && a[0] != VIDE ? SANS_KIT : a[0];
         donnees.set(D_CODE, code);
         donnees.set(D_GENRE, a[1]);
@@ -95,7 +95,7 @@ final class MenuReparationServeur extends MenuReparation {
         if (bouton != BOUTON_REPARER || fini) return false;
         ItemStack k = kit(), c = cible.getItem(0);
         if (k.isEmpty() || c.isEmpty() || !KitReparation.reparable(c)) return false;
-        if (ReparationServeur.apercu(c, niveau)[0] != OK) return false;
+        if (ReparationServeur.apercu(c, k, niveau)[0] != OK) return false;
         ReparationServeur.appliquer(joueur, k, c, niveau);
         cible.setChanged();
         majApercu(true);

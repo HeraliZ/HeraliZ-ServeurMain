@@ -28,3 +28,25 @@ aujourd'hui : 17). Section `[reparation.reparations_max]` du fichier ; tableau �
 - [ ] Mettre `rare = 2` dans le fichier (ou dans `/usure config`) : quelques secondes après, une arme bleue montre « … / 2 »
       sans redémarrage. Remettre 8.
 - [ ] Changer la rareté d'une arme avec `/rarete` : son maximum suit la nouvelle couleur.
+
+## Point 2 — gain des kits selon leur rareté
+
+Gris (Commun) +15 %, vert +20 %, bleu (Rare) +25 %, violet (Épique) +35 %, légendaire +50 % (Unique : +50 %), sur les
+armes comme sur les armures. Section `[reparation.gain_kit]` du fichier ; colonne « Rend un kit » de `/usure config`.
+Les kits gardent leur rareté du loot (pas de kit gris ni vert aujourd'hui) :
+
+| Kit | Rareté (couleur) | Avant | Après |
+|---|---|---|---|
+| Kit de réparation de fortune | Rare (bleu) | +7 %, 1 utilisation | +25 %, 1 utilisation |
+| Kit de réparation | Épique (violet) | +18 %, 2 utilisations | +35 %, 2 utilisations |
+| Kit d'armurier | Légendaire (doré) | +45 %, 3 utilisations | +50 %, 3 utilisations |
+
+- [ ] Infobulle du kit de fortune : « Rend +25 % d'état (jusqu'à 100 %) » et « Répare aussi les armures : +25 % » ;
+      kit de réparation +35 % ; kit d'armurier +50 %.
+- [ ] Atelier, arme bleue neuve tirée jusqu'à 30 %, kit de fortune : « 30 % → 55 % », pastille « +25 % » ; même arme avec
+      le kit d'armurier : « 30 % → 80 % ».
+- [ ] Une armure à moitié usée : +25 % / +35 % / +50 % de sa durabilité selon le kit.
+- [ ] Passer le kit de fortune en gris avec `/rarete` : son infobulle dit +15 % et l'atelier rend 15 %. Remettre Rare.
+- [ ] `/usure config`, onglet « Réparation » : la colonne « Rend » des kits montre le gain de leur rareté (pastille de
+      couleur, non modifiable) ; le tableau « Par rareté » règle « Réparations d'une arme » et « Rend un kit ».
+- [ ] Mettre `rare = 30` dans `[reparation.gain_kit]` du fichier : le kit de fortune rend 30 % quelques secondes après.

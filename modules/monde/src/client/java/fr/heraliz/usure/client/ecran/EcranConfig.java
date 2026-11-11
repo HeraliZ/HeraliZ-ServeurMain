@@ -338,7 +338,12 @@ public class EcranConfig extends Screen {
                 g.renderItem(icone, x0 + 6, y + 3);
                 g.drawString(font, Ui.in(icone.getHoverName(), Ui.FONT), x0 + 26, y + 7, Ui.argb(Ui.TEXT, 255), false);
             });
-            champ(xs[1], y + 4, 70, travail.kitGain[i], "%", v -> travail.kitGain[i] = v);
+            // gain : celui de la rareté du kit (11/11), réglé dans le tableau « Par rareté » ci-dessous
+            int rarete = Reparation.rareteKit(icone, i);
+            zone.dessin((g, mx, my) -> {
+                Ui.soft(g, xs[1] + 2, y + 9, 5, 5, Ui.argb(RaretesLoot.COULEURS[rarete], 255));
+                g.drawString(font, Ui.lit("+" + nombre(travail.gainKit[rarete]) + " %", Ui.FONT), xs[1] + 12, y + 7, Ui.argb(Ui.MUTED, 255), false);
+            });
             champ(xs[2], y + 4, 70, travail.kitPlafond[i], "%", v -> travail.kitPlafond[i] = v);
             entier(xs[3], y + 4, 70, travail.kitUtilisations[i], 1, v -> travail.kitUtilisations[i] = v);
             zone.add(new Interrupteur(xs[4], y + 4, 70, 14, () -> travail.kitRuinee[i], v -> {
@@ -347,11 +352,12 @@ public class EcranConfig extends Screen {
             }));
         }
         int y = y0 + 12 + Regles.NB_KITS * (LIGNE + 3) + 10;
-        // par rareté (11/11) : réparations possibles d'une arme
+        // par rareté (11/11) : réparations possibles d'une arme, gain d'un kit
         section(x0 + 8, y, cw - 16, t("heraliz_usure.ecran.section.raretes"));
         y += 12;
-        int[] xr = {x0 + 8, xs[1]};
-        entetes(y, xr, new String[]{t("heraliz_usure.ecran.col.rarete"), t("heraliz_usure.ecran.col.reparations_max")});
+        int[] xr = {x0 + 8, xs[1], xs[3]};
+        entetes(y, xr, new String[]{t("heraliz_usure.ecran.col.rarete"), t("heraliz_usure.ecran.col.reparations_max"),
+                t("heraliz_usure.ecran.col.gain_kit")});
         y += 12;
         for (int k = 0; k < Regles.NB_RARETES; k++) {
             int i = k, ly = y;
@@ -362,6 +368,7 @@ public class EcranConfig extends Screen {
                 g.drawString(font, Ui.lit(nom, Ui.FONT), x0 + 18, ly + 5, Ui.argb(Ui.TEXT, 255), false);
             });
             entier(xr[1], ly + 2, 70, travail.reparationsMax[i], 0, v -> travail.reparationsMax[i] = v);
+            champ(xr[2], ly + 2, 70, travail.gainKit[i], "%", v -> travail.gainKit[i] = v);
             y += LIGNE;
         }
         y += 8;
@@ -375,16 +382,16 @@ public class EcranConfig extends Screen {
         texte(x0 + 8, y + 5, () -> t("heraliz_usure.ecran.max_minimum"), Ui.TEXT);
         champ(xs[3], y + 2, 70, travail.maxMinimum, "%", v -> travail.maxMinimum = v);
         y += LIGNE + 6;
-        int ye = y;
-        zone.dessin((g, mx, my) -> g.drawString(font, Ui.lit(exempleReparation(), Ui.SMALL), x0 + 8, ye, Ui.argb(Ui.OR, 230), false));
+        int ye = y, rareteStandard = Reparation.rareteKit(new ItemStack(Contenu.KIT_STANDARD.get()), 1);
+        zone.dessin((g, mx, my) -> g.drawString(font, Ui.lit(exempleReparation(rareteStandard), Ui.SMALL), x0 + 8, ye, Ui.argb(Ui.OR, 230), false));
         y += 12;
         y += aide(x0 + 8, y, cw - 16, t("heraliz_usure.ecran.aide.reparation"));
         zone.setContentHeight(y - zone.getY() + 4);
     }
 
-    /** Exemple calcule avec les valeurs en cours : une arme a 30 % reparee avec le kit standard. */
-    private String exempleReparation() {
-        Reparation.Calcul c = Reparation.calculer(300, 1000, 1, 1, travail);
+    /** Exemple calcule avec les valeurs en cours : une arme a 30 % reparee avec le kit standard (gain de sa rarete). */
+    private String exempleReparation(int rareteKit) {
+        Reparation.Calcul c = Reparation.calculer(300, 1000, 1, Reparation.gain(rareteKit, travail), 1, travail);
         return t("heraliz_usure.ecran.exemple_reparation", t("item.heraliz_usure.kit_standard"), Math.round(c.etat() / 10f), Math.round(c.max() / 10f));
     }
 

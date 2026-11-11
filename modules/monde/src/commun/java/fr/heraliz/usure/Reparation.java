@@ -10,7 +10,8 @@ import net.minecraft.world.item.ItemStack;
  * <p>11/11 (demande du proprietaire) : une arme ne se repare qu'un nombre de fois fixe par SA rarete (grise 3, verte 5,
  * bleue 8, violette 12, legendaire 17 : {@code reparations_max} du fichier de reglages) ; chaque reparation en use une,
  * quel que soit le kit, et le compte est garde sur l'arme ({@link Usure#reparations}, les reparations faites avant
- * comptent). Raretes : celles de HeraliZ Loot ({@link RaretesLoot}), comme partout sur le serveur.
+ * comptent). Le gain d'un kit depend de SA rarete (gris +15 % ... legendaire +50 % : {@code gain_kit}). Raretes : celles
+ * de HeraliZ Loot ({@link RaretesLoot}), comme partout sur le serveur.
  * <p>Jar fusionne (docs/METHODE_CLIENT_SERVEUR.md §5) : ici, le calcul et l'affichage lus des deux cotes (ecran des
  * reglages, infobulle, HUD) ; la reparation elle-meme ({@code appliquer}) est dans {@code ReparationServeur} (partie
  * serveur).
@@ -28,10 +29,10 @@ public final class Reparation {
     /**
      * Calcul seul (sans toucher a l'arme) : refus si l'arme n'a plus de reparation ({@code restantes}), si elle est ruinee
      * et que le kit ne le permet pas, ou si la reparation ne ferait pas monter l'etat. Sinon l'etat maximal baisse d'abord
-     * (sans passer sous le plancher), puis l'etat monte du gain du kit sans depasser ni le plafond du kit ni le nouvel etat
-     * maximal.
+     * (sans passer sous le plancher), puis l'etat monte de {@code gain} (% d'etat, celui du kit) sans depasser ni le plafond
+     * du kit ni le nouvel etat maximal.
      */
-    public static Calcul calculer(int etat, int max, int restantes, int niveau, Regles r) {
+    public static Calcul calculer(int etat, int max, int restantes, float gain, int niveau, Regles r) {
         if (restantes <= 0) return new Calcul(etat, max, Resultat.PLUS_DE_REPARATION);
         if (etat <= 0 && !r.kitRuinee[niveau]) return new Calcul(etat, max, Resultat.RUINEE_REFUSEE);
         int plafond = Math.round(r.kitPlafond[niveau] * 10f);
@@ -40,7 +41,7 @@ public final class Reparation {
             nouveauMax = Math.max(Math.round(r.maxMinimum * 10f), max - Math.round(r.perteMaxParReparation * 10f));
             nouveauMax = Math.min(max, nouveauMax);
         }
-        int cible = Math.min(Math.min(plafond, nouveauMax), etat + Math.round(r.kitGain[niveau] * 10f));
+        int cible = Math.min(Math.min(plafond, nouveauMax), etat + Math.round(gain * 10f));
         if (cible <= etat) return new Calcul(etat, max, Resultat.DEJA_AU_PLAFOND);
         return new Calcul(cible, nouveauMax, null);
     }
@@ -54,6 +55,17 @@ public final class Reparation {
     /** Rareté d'une arme (0 Commun ... 5 Unique) : celle de HeraliZ Loot, Commun si elle est inconnue. */
     public static int rareteArme(ItemStack arme) {
         return rang(RaretesLoot.rang(arme));
+    }
+
+    /** Rareté d'un kit : celle de HeraliZ Loot, sinon celle que le loot donne à son niveau (fortune Rare, kit Épique, armurier Légendaire). */
+    public static int rareteKit(ItemStack kit, int niveau) {
+        int r = RaretesLoot.rang(kit);
+        return r >= 0 ? rang(r) : Regles.RARETE_KIT[Math.max(0, Math.min(niveau, Regles.RARETE_KIT.length - 1))];
+    }
+
+    /** % d'état rendu par un kit de cette rareté (armes et pièces d'armure). */
+    public static float gain(int rareteKit, Regles r) {
+        return r.gainKit[rang(rareteKit)];
     }
 
     /** Réparations possibles en tout pour une arme de cette rareté. */
