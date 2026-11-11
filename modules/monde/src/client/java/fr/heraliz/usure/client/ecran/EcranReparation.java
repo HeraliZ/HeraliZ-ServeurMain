@@ -2,6 +2,7 @@ package fr.heraliz.usure.client.ecran;
 
 import fr.heraliz.usure.MenuReparation;
 import fr.heraliz.usure.Reparation;
+import fr.heraliz.usure.Usure;
 import fr.heraliz.usure.client.kit.Echelle;
 import fr.heraliz.usure.client.kit.Net;
 import fr.heraliz.usure.client.kit.SonsUi;
@@ -22,13 +23,20 @@ import java.util.List;
 /**
  * Atelier de réparation (26/10, demande du propriétaire) : au style des écrans de clan (verre, DM Sans à sa vraie taille),
  * panneau 228 x 252 : en-tête (kit et utilisations restantes), case de l'objet à réparer, état avant → après en
- * pourcentage avec sa barre (part rendue en vert ; pour une arme, l'état maximal qui baisse un peu à chaque réparation),
- * boutons « Annuler » et « Réparer », puis l'inventaire. La case du kit en main est grisée (bloquée). Le serveur calcule
- * et décide de tout ({@code MenuReparationServeur}) ; l'écran lit l'état synchronisé du menu.
+ * pourcentage avec sa barre (part rendue en vert), boutons « Annuler » et « Réparer », puis l'inventaire. La case du kit
+ * en main est grisée (bloquée). Le serveur calcule et décide de tout ({@code MenuReparationServeur}) ; l'écran lit l'état
+ * synchronisé du menu.
+ * <p>11/11 (demande du propriétaire : l'état maximal qui baisse n'était pas compris) : pour une arme, la part de la barre
+ * qui ne se répare plus est en rouge (vif : ce que coûte cette réparation ; plus sombre : ce qui était déjà perdu), avec
+ * une ligne « En rouge : ne se répare plus (max …) » et les réparations restantes de l'arme (nombre fixé par sa rareté).
+ * Une arme déjà au mieux ou sans réparation garde la même barre, pour voir pourquoi. Aperçus : modules/monde/outils/
+ * apercu_atelier.py.
  */
 public final class EcranReparation extends AbstractContainerScreen<MenuReparation> {
     private static final int L = 228, H = 252, ENTETE = 44, M = 16, CASE = MenuReparation.CASE;
     private static final int BLANC = 0xFFFFFF;
+    /** Ligne « en rouge » : rouge des refus adouci vers le texte atténué. */
+    private static final int ROUGE_DOUX = Ui.mix(Ui.DANGER, Ui.MUTED, 0.25f);
     private static final ResourceLocation TITRE = Net.TITRE, PG = Net.PETIT_GRAS, MICRO = Net.MICRO;
     /** Zone de l'aperçu (droite de la case) et boutons (depuis le coin du panneau). */
     private static final int AX = MenuReparation.CIBLE_X + CASE + 10, BY = 116, BH = 14, BW = 74;
@@ -125,37 +133,53 @@ public final class EcranReparation extends AbstractContainerScreen<MenuReparatio
             return;
         }
         Net.texte(g, f, Net.couper(f, objet.getHoverName().getString(), Ui.BOLD, aw), Ui.BOLD, ax, y + 70, Ui.TEXT);
-        if (code != MenuReparation.OK) {
+        boolean arme = menu.donnee(MenuReparation.D_GENRE) == MenuReparation.ARME;
+        // une arme déjà au mieux, ou sans réparation, garde la barre : on voit ce qui ne se répare plus (11/11)
+        boolean barre = code == MenuReparation.OK || arme && (code == MenuReparation.PLAFOND || code == MenuReparation.PLUS_DE_REPARATION);
+        if (!barre) {
             lignes(g, f, t("code." + code), ax, y + 84, aw, code == MenuReparation.PLAFOND ? Ui.MUTED : Ui.AMBRE, 3);
             return;
         }
         int avant = menu.donnee(MenuReparation.D_AVANT), apres = menu.donnee(MenuReparation.D_APRES);
-        // « 42 % → 49 % » et la pastille du gain
-        float cy = y + 85;
-        float w1 = Net.texte(g, f, Reparation.pct(avant), PG, ax, cy, Ui.MUTED);
-        float w2 = Net.texte(g, f, "→", Ui.SMALL, ax + w1 + 5, cy, Ui.FAINT);
-        float w3 = Net.texte(g, f, Reparation.pct(apres), PG, ax + w1 + 5 + w2 + 5, cy, Ui.OK);
-        String gain = "+" + Math.max(0, Math.round((apres - avant) / 10f)) + " %";
-        float gx = ax + w1 + w2 + w3 + 18, gw = Net.capsLargeur(f, gain, MICRO, 0.6f) + 8;
-        if (gx + gw <= ax + aw) {
-            Net.rect(g, gx, cy - 5, gx + gw, cy + 5, Ui.argb(Ui.OK, 40));
-            Net.cadre(g, gx, cy - 5, gw, 10, Ui.argb(Ui.OK, 170));
-            Net.capsCentre(g, f, gain, MICRO, 0.6f, gx + gw / 2, cy, Ui.OK);
+        int maxAvant = arme ? menu.donnee(MenuReparation.D_MAX_AVANT) : Usure.PLEIN, maxApres = arme ? menu.donnee(MenuReparation.D_MAX_APRES) : Usure.PLEIN;
+        float cy = y + 82;
+        if (code == MenuReparation.OK) {
+            // « 42 % → 49 % » et la pastille du gain
+            float w1 = Net.texte(g, f, Reparation.pct(avant), PG, ax, cy, Ui.MUTED);
+            float w2 = Net.texte(g, f, "→", Ui.SMALL, ax + w1 + 5, cy, Ui.FAINT);
+            float w3 = Net.texte(g, f, Reparation.pct(apres), PG, ax + w1 + 5 + w2 + 5, cy, Ui.OK);
+            String gain = "+" + Math.max(0, Math.round((apres - avant) / 10f)) + " %";
+            float gx = ax + w1 + w2 + w3 + 18, gw = Net.capsLargeur(f, gain, MICRO, 0.6f) + 8;
+            if (gx + gw <= ax + aw) {
+                Net.rect(g, gx, cy - 5, gx + gw, cy + 5, Ui.argb(Ui.OK, 40));
+                Net.cadre(g, gx, cy - 5, gw, 10, Ui.argb(Ui.OK, 170));
+                Net.capsCentre(g, f, gain, MICRO, 0.6f, gx + gw / 2, cy, Ui.OK);
+            }
+        } else {
+            Net.texte(g, f, Net.couper(f, t("code." + code), Ui.SMALL, aw), Ui.SMALL, ax, cy, code == MenuReparation.PLAFOND ? Ui.MUTED : Ui.DANGER);
         }
-        // barre : état avant (gris clair), part rendue (vert), état maximal (trait)
-        float by = y + 94, bx1 = ax + aw;
+        // barre : état (gris clair), part rendue (vert) ; en rouge ce qui ne se répare plus : vif pour ce que coûte cette
+        // réparation, plus sombre pour ce qui était déjà perdu
+        float by = y + 89, bx1 = ax + aw;
         Net.rect(g, ax, by, bx1, by + 3, Ui.argb(BLANC, 22));
         Net.rect(g, ax, by, ax + aw * avant / 1000f, by + 3, Ui.argb(BLANC, 110));
-        Net.rect(g, ax + aw * avant / 1000f, by, ax + aw * apres / 1000f, by + 3, Ui.argb(Ui.OK, 235));
-        if (menu.donnee(MenuReparation.D_GENRE) == MenuReparation.ARME) {
-            int maxApres = menu.donnee(MenuReparation.D_MAX_APRES), maxAvant = menu.donnee(MenuReparation.D_MAX_AVANT);
-            float mxx = ax + aw * maxApres / 1000f;
-            Net.rect(g, mxx - Net.point(), by - 2, mxx, by + 5, Ui.argb(Ui.DANGER, 200));
-            String l = maxApres < maxAvant ? t("max", Reparation.pct(maxAvant), Reparation.pct(maxApres)) : t("max_stable", Reparation.pct(maxApres));
-            Net.texte(g, f, Net.couper(f, l, Ui.SMALL, aw), Ui.SMALL, ax, y + 106, Ui.FAINT);
-        } else {
-            Net.texte(g, f, Net.couper(f, t("armure"), Ui.SMALL, aw), Ui.SMALL, ax, y + 106, Ui.FAINT);
+        if (apres > avant) Net.rect(g, ax + aw * avant / 1000f, by, ax + aw * apres / 1000f, by + 3, Ui.argb(Ui.OK, 235));
+        if (maxApres < maxAvant) Net.rect(g, ax + aw * maxApres / 1000f, by, ax + aw * maxAvant / 1000f, by + 3, Ui.argb(Ui.DANGER, 235));
+        if (maxAvant < Usure.PLEIN) Net.rect(g, ax + aw * maxAvant / 1000f, by, bx1, by + 3, Ui.argb(Ui.DANGER, 120));
+        if (!arme) {
+            Net.texte(g, f, Net.couper(f, t("armure"), Ui.SMALL, aw), Ui.SMALL, ax, y + 99, Ui.FAINT);
+            return;
         }
+        if (maxApres < Usure.PLEIN) {
+            String l = maxApres < maxAvant ? t("max", Reparation.pct(maxAvant), Reparation.pct(maxApres)) : t("max_stable", Reparation.pct(maxApres));
+            Net.texte(g, f, Net.couper(f, l, Ui.SMALL, aw), Ui.SMALL, ax, y + 99, ROUGE_DOUX);
+        }
+        // réparations restantes de l'arme (nombre fixé par sa rareté) : celle-ci en use une
+        int restantes = menu.donnee(MenuReparation.D_REP_RESTANTES), total = menu.donnee(MenuReparation.D_REP_MAX);
+        boolean ok = code == MenuReparation.OK;
+        String r = ok ? t("reparations", restantes, restantes - 1, total) : t("reparations_stable", restantes, total);
+        int c = restantes <= 0 ? Ui.DANGER : ok && restantes <= 1 ? Ui.AMBRE : Ui.MUTED;
+        Net.texte(g, f, Net.couper(f, r, Ui.SMALL, aw), Ui.SMALL, ax, y + 108, c);
     }
 
     private void lignes(GuiGraphics g, Font f, String txt, float x, float cy, float w, int c, int max) {

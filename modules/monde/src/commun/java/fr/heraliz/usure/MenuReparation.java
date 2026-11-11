@@ -19,9 +19,12 @@ import net.minecraft.world.item.ItemStack;
  * serveur ({@code MenuReparationServeur}), qui rend l'objet posé à la fermeture.
  */
 public class MenuReparation extends AbstractContainerMenu {
-    /** Données synchronisées (16 bits) : états en millièmes, code du résultat, utilisations, gain du kit (dixièmes de %). */
+    /**
+     * Données synchronisées (16 bits) : états en millièmes, code du résultat, utilisations du kit, gain du kit (dixièmes de
+     * %), et pour une arme ses réparations restantes et leur maximum (fixé par sa rareté, 11/11).
+     */
     public static final int D_AVANT = 0, D_APRES = 1, D_MAX_AVANT = 2, D_MAX_APRES = 3, D_CODE = 4, D_RESTANTES = 5,
-            D_TOTAL = 6, D_GAIN = 7, D_GENRE = 8, D_NIVEAU = 9, NB_DONNEES = 10;
+            D_TOTAL = 6, D_GAIN = 7, D_GENRE = 8, D_NIVEAU = 9, D_REP_RESTANTES = 10, D_REP_MAX = 11, NB_DONNEES = 12;
     /** Codes : case vide, réparation possible, déjà en parfait état, ruinée (refusée), ne s'use pas, plus de kit en main,
      *  objet qui ne se répare pas, arme qui a déjà eu toutes ses réparations (11/11, nombre fixé par sa rareté). */
     public static final int VIDE = 0, OK = 1, PLAFOND = 2, RUINEE = 3, NE_S_USE_PAS = 4, SANS_KIT = 5, PAS_REPARABLE = 6,

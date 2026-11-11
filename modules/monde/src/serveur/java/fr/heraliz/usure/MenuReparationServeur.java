@@ -88,6 +88,10 @@ final class MenuReparationServeur extends MenuReparation {
         donnees.set(D_APRES, a[3]);
         donnees.set(D_MAX_AVANT, a[4]);
         donnees.set(D_MAX_APRES, a[5]);
+        // réparations restantes de l'arme et maximum de sa rareté (11/11) : affichés sous la barre de l'atelier
+        boolean arme = a[1] == ARME;
+        donnees.set(D_REP_RESTANTES, arme ? Reparation.restantes(c, r) : 0);
+        donnees.set(D_REP_MAX, arme ? Reparation.maximum(Reparation.rareteArme(c), r) : 0);
     }
 
     @Override

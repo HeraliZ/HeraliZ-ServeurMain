@@ -40,9 +40,10 @@ public final class Reseau {
 
     /**
      * 2 = 1.0.1 (plus d'enrayage : regles plus courtes, plus de paquet de desenrayage) ; 3 = 11/11 (nombre de reparations
-     * des armes par rarete) ; 4 = 11/11 (gain des kits par rarete, plus de gain par kit).
+     * des armes par rarete) ; 4 = 11/11 (gain des kits par rarete, plus de gain par kit) ; 5 = 11/11 (atelier : 12 donnees
+     * synchronisees au lieu de 10, un joueur d'avant ne doit pas se connecter).
      */
-    private static final String VERSION = "4";
+    private static final String VERSION = "5";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(HeralizUsure.id("main"), () -> VERSION, VERSION::equals, VERSION::equals);
 
     static void enregistrer() {

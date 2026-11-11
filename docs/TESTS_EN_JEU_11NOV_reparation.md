@@ -50,3 +50,19 @@ Les kits gardent leur rareté du loot (pas de kit gris ni vert aujourd'hui) :
 - [ ] `/usure config`, onglet « Réparation » : la colonne « Rend » des kits montre le gain de leur rareté (pastille de
       couleur, non modifiable) ; le tableau « Par rareté » règle « Réparations d'une arme » et « Rend un kit ».
 - [ ] Mettre `rare = 30` dans `[reparation.gain_kit]` du fichier : le kit de fortune rend 30 % quelques secondes après.
+
+## Point 3 — atelier : en rouge ce qui ne se répare plus (À VALIDER)
+
+Écran changé seulement après validation des rendus (aperçus refaits par `python modules/monde/outils/apercu_atelier.py
+DOSSIER`). Sans ce changement, les points 1 et 2 marchent avec l'écran actuel (message du point 1 à 0 réparation).
+
+- [ ] Arme abîmée posée (ex. AK-47 à 30 %, max 88 %, kit de fortune) : « 30 % → 55 % » et « +25 % » ; sur la barre, en
+      vert ce que la réparation rend, en rouge vif ce qu'elle coûte (88 → 84 %), en rouge plus sombre ce qui était déjà
+      perdu (au-delà de 88 %) ; dessous « En rouge : ne se répare plus (max 88 % → 84 %) » puis « Réparations
+      restantes : 5 → 4 sur 8 » (en orange pour la dernière : 1 → 0).
+- [ ] Arme déjà à son maximum : « Déjà au mieux avec ce kit. », la barre et son rouge restent, « Réparations restantes :
+      4 sur 8 », « Réparer » grisé.
+- [ ] Arme sans réparation : « Plus aucune réparation possible. » et « Réparations restantes : 0 sur 8 » en rouge, barre
+      avec son rouge, « Réparer » grisé.
+- [ ] Armure : barre sans rouge, « Pièce d'armure : jusqu'à 100 % », pas de ligne de réparations.
+- [ ] En anglais et en russe : aucun texte coupé par « … » sous la barre.
