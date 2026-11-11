@@ -137,6 +137,10 @@ public final class CoeursClans extends SafeSavedData {
             d.coeurs.put(groupe, GlobalPos.of(level.dimension(), e.getPos().immutable()));
             d.setDirty();
             CoeurDeplacement.repose(level.getServer(), groupe);
+            // 11/11 : journal et historique du clan
+            if (e.getEntity() instanceof ServerPlayer poseur) {
+                JournalClan.groupe(level.getServer(), groupe, "crac.journal.coeur_pose", poseur.getGameProfile().getName());
+            }
         }
         if (level.getBlockEntity(e.getPos()) instanceof CoeurClanBlockEntity be) {
             be.setGroupe(groupe);

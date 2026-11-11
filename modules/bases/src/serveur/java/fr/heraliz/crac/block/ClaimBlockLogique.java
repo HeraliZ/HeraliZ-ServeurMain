@@ -90,11 +90,14 @@ public final class ClaimBlockLogique {
         }
 
     public static void retire(ServerLevel sl, BlockPos pos) {
-        if (ClaimManager.getByAnchor(sl, pos) != null) {
+        Claim ancien = ClaimManager.getByAnchor(sl, pos);
+        if (ancien != null) {
             ClaimManager.removeByAnchor(sl, pos);
             // HeraliZ : plus de Claim Block, plus de texte « Base protégée » au-dessus
             fr.heraliz.crac.bases.Protections.majTextes(sl.getServer());
             C2SRequestNearbyClaimsTraitement.pushAll(sl);
+            // 11/11 : journal et historique du clan (armoire cassée, déplacée au marteau ou détruite pendant un raid)
+            fr.heraliz.crac.heraliz.JournalClan.groupe(sl.getServer(), ancien.groupId(), "crac.journal.armoire_retiree");
         }
     }
 

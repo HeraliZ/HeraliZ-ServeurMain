@@ -115,6 +115,8 @@ public final class ClaimBlockHandler {
         }
         Costs.take(player, cost);
         ClaimManager.addClaim(level, pos, g.id(), tier);
+        // 11/11 : journal et historique du clan (groupe d'un clan seulement : la cabane du tutoriel n'en a pas)
+        fr.heraliz.crac.heraliz.JournalClan.groupe(level.getServer(), g.id(), "crac.journal.armoire_posee", player.getGameProfile().getName());
         if (level.getBlockEntity(pos) instanceof ClaimBlockEntity be) {
             // HeraliZ (28/10) : déplaçable au marteau peu après la pose (DeplacerArmoire), le palier payé rendu
             be.setPose(System.currentTimeMillis(), player.getAbilities().instabuild ? 1 : tier);

@@ -1071,7 +1071,15 @@ public final class ClanService {
             erreur(p, "msg.hierarchie");
             return false;
         }
+        java.util.EnumSet<Perm> avant = c.perms.get(grade);
+        int changes = Integer.bitCount((avant == null ? 0 : Perm.masque(avant)) ^ (masque & Perm.TOUTES));
         c.perms.put(grade, Perm.depuisMasque(masque & Perm.TOUTES));
+        // historique du clan (11/11) : les droits d'un grade changes (le journal d'activite n'en garde pas trace)
+        if (changes > 0) {
+            fr.heralisz.clans.historique.Historique.ajouter(c, fr.heralisz.clans.model.LigneHistorique.MEMBRES,
+                    fr.heralisz.clans.model.LigneHistorique.SANS, p.getGameProfile().getName(), "historique.droits_grade", 0,
+                    p.getGameProfile().getName(), fr.heralisz.clans.model.LigneHistorique.CLE_ARG + grade.libelle(), String.valueOf(changes));
+        }
         changement(c);
         return true;
     }
@@ -1137,6 +1145,8 @@ public final class ClanService {
                 }
             }
             c.journal.set(0, new Evenement(now, Evenement.Genre.PERMISSION, cible, auteur, "*", String.valueOf(n)));
+            // historique du clan (11/11) : chaque changement garde sa ligne (le journal d'activite les regroupe)
+            Clan.HISTORIQUE.accept(c, new Evenement(now, Evenement.Genre.PERMISSION, cible, auteur, perm.name(), etat.name()));
             return;
         }
         c.ajouterEvenement(new Evenement(now, Evenement.Genre.PERMISSION, cible, auteur, perm.name(), etat.name()));

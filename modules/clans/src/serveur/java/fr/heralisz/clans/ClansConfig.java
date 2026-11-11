@@ -41,6 +41,9 @@ public final class ClansConfig {
     public static final ForgeConfigSpec.IntValue BOOST_REAPPARITION_S;
     public static final ForgeConfigSpec.IntValue CLASSEMENTS_MINUTES;
     public static final ForgeConfigSpec.IntValue CLASSEMENTS_DISTANCE;
+    public static final ForgeConfigSpec.IntValue HISTORIQUE_LIGNES;
+    public static final ForgeConfigSpec.IntValue HISTORIQUE_JOURS;
+    public static final ForgeConfigSpec.IntValue HISTORIQUE_REGROUPEMENT_MIN;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -109,6 +112,15 @@ public final class ClansConfig {
                 .defineInRange("maj_minutes", 2, 1, 60);
         CLASSEMENTS_DISTANCE = b.comment("Distance (blocs) a laquelle un joueur doit etre d'un hologramme pour qu'il soit mis a jour")
                 .defineInRange("distance_joueurs", 64, 8, 512);
+        b.pop();
+
+        // 11/11 : historique du clan (onglet Historique de l'ecran du clan), heralisz_clans/historique/<clan>.json
+        b.comment("Historique du clan (onglet Historique : points de saison, morts et kills, membres, base, clan)").push("historique");
+        HISTORIQUE_LIGNES = b.comment("Lignes gardees par clan au plus (les plus anciennes partent)")
+                .defineInRange("lignes_max", 500, 50, 5000);
+        HISTORIQUE_JOURS = b.comment("Jours gardes au plus (une ligne plus ancienne part)").defineInRange("jours_max", 30, 1, 365);
+        HISTORIQUE_REGROUPEMENT_MIN = b.comment("Minutes regroupees en une ligne par joueur pour les petites actions (zombies, conteneurs)")
+                .defineInRange("regroupement_minutes", 30, 1, 24 * 60);
         b.pop();
         SPEC = b.build();
     }

@@ -97,3 +97,15 @@
 	#Range: 8 ~ 512
 	distance_joueurs = 64
 
+#Historique du clan (onglet Historique : points de saison, morts et kills, membres, base, clan)
+[historique]
+	#Lignes gardees par clan au plus (les plus anciennes partent)
+	#Range: 50 ~ 5000
+	lignes_max = 500
+	#Jours gardes au plus (une ligne plus ancienne part)
+	#Range: 1 ~ 365
+	jours_max = 30
+	#Minutes regroupees en une ligne par joueur pour les petites actions (zombies, conteneurs)
+	#Range: 1 ~ 1440
+	regroupement_minutes = 30
+

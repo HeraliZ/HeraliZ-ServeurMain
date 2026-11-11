@@ -655,5 +655,9 @@
   "crac.hud.vide_seulement": "Seulement s’il est vide",
   "crac.hud.armoire_delai": "Dans les %s min après la pose",
   "crac.hud.ramasser_hint": "Ramasser",
-  "crac.hud.deplacer_hint": "Déplacer"
+  "crac.hud.deplacer_hint": "Déplacer",
+  "crac.journal.armoire_posee": "%s a posé l'armoire de la base",
+  "crac.journal.armoire_retiree": "Armoire de la base retirée ou détruite",
+  "crac.journal.coeur_pose": "%s a posé le cœur du clan",
+  "crac.journal.coeur_repris": "%s a repris le cœur du clan (%s min pour le reposer)"
 }

@@ -1,7 +1,7 @@
 # Essais en jeu — saison des clans, retours du propriétaire du 11/11
 
 Rien n'a été essayé en jeu par Claude. Jars joueurs ET serveur à mettre à jour ensemble (canal des clans passé à la
-version 11 : un jeu pas à jour est refusé à la connexion ; le launcher met les joueurs à jour tout seul).
+version 12 : un jeu pas à jour est refusé à la connexion ; le launcher met les joueurs à jour tout seul).
 
 ## 1. Onglet Saison : seulement les points dans les cases (Clans 3.15.0)
 
@@ -58,3 +58,24 @@ Pour tester (en SURVIE, dans un clan dont le cœur est posé dans la base : ongl
       l'onglet Saison : les centièmes ;
 - [ ] en créatif, n'importe quelle action : message gris « Mode créatif ou spectateur : aucun point de saison… » (au plus
       toutes les 2 min).
+
+## 3. Historique du clan — partie serveur (Clans 3.15.0, CRac 1.36.1-beta)
+
+Le serveur tient maintenant un historique par clan : les 500 dernières lignes au plus, 30 jours au plus (réglages
+`[historique]` de `config/heralisz_clans-common.toml` : `lignes_max`, `jours_max`, `regroupement_minutes`), gardé hors
+du monde dans `heralisz_clans/historique/<clan>.json` (écrit au plus une fois par minute et à l'arrêt). Il est rempli par
+les vraies sources : chaque point de saison gagné ou perdu (raison et joueur), morts et kills des membres (cause, points),
+arrivées, départs, exclusions, grades, permissions (chaque changement), droits des grades, captures, niveau,
+améliorations, bannière, quêtes de clan, ClashWar, cœur et armoire de la base. Zombies et conteneurs : une ligne par
+joueur et par source toutes les 30 minutes (« Zombies tués ×37 · +0,37 »). Il s'affiche dans l'onglet « Historique » de
+l'écran du clan, envoyé par pages de 40 et trié par catégorie par le serveur : **cet onglet attend la validation de ses
+rendus** (commit « À VALIDER »). Aucun coût par tick (travail toutes les 20 s et toutes les minutes, seulement s'il y a
+quelque chose).
+
+À vérifier dès maintenant (sans l'onglet) :
+- [ ] onglet « Aperçu » du clan (journal d'activité) : poser l'armoire, poser le cœur, `/coeur deplacer`, casser
+      l'armoire : une ligne chaque fois (« X a posé l'armoire de la base », « X a posé le cœur du clan », « X a repris le
+      cœur du clan (N min pour le reposer) », « Armoire de la base retirée ou détruite ») ;
+- [ ] après une minute de jeu avec un clan (un point, une mort…), le fichier `heralisz_clans/historique/<clan>.json`
+      existe sur le Ptero ; il survit à un redémarrage ;
+- [ ] serveur arrêté proprement : rien de perdu (les zombies en cours de regroupement sont écrits).

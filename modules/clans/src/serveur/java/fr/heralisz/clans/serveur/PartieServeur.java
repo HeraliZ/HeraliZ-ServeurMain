@@ -34,6 +34,8 @@ public final class PartieServeur implements Partie {
         // saison des clans : points, classements, commandes /saison et /clan ameliorer|don
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.saison.Saison.class);
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.saison.SaisonCommandes.class);
+        // historique du clan (11/11) : lignes du journal, points, morts et kills ; pages pour l'onglet Historique
+        fr.heralisz.clans.historique.Historique.installer();
         // hologrammes de classement du spawn (03/11) : argent, kills, clans ; compteur des kills de joueurs ; /classement
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.KillsJoueurs.class);
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.Hologrammes.class);
@@ -67,6 +69,7 @@ public final class PartieServeur implements Partie {
             else if (m instanceof Packets.PermsJoueurC2S x) ServerHandlers.permsJoueur(p, x);
             else if (m instanceof Packets.CarteDemandeC2S) Territoires.carte(p);
             else if (m instanceof Packets.AmeliorerC2S x) ServerHandlers.ameliorer(p, x);
+            else if (m instanceof Packets.HistoriqueC2S x) fr.heralisz.clans.historique.Historique.page(p, x.categorie(), x.page());
         });
     }
 }

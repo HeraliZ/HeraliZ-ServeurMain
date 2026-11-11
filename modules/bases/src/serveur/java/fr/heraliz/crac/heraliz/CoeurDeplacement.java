@@ -152,6 +152,8 @@ public final class CoeurDeplacement extends SafeSavedData {
         d.limites.put(g.id(), System.currentTimeMillis() + Purge.deplacementMinutes * 60_000L);
         d.setDirty();
         Crac.LOGGER.info("[CRac] cœur du clan [{}] repris par {} ({} hérals)", PriseCoeur.tag(clan), p.getGameProfile().getName(), Purge.deplacementPrix);
+        // 11/11 : journal et historique du clan
+        JournalClan.clan(clan, "crac.journal.coeur_repris", p.getGameProfile().getName(), String.valueOf(Purge.deplacementMinutes));
         PriseCoeur.prevenir(server, clan, Purge.t("crac.coeur.deplace", "%s a repris le cœur du clan : il a %s minutes pour le reposer dans la base, sinon le clan perd TOUS ses points de saison.",
             p.getGameProfile().getName(), Purge.deplacementMinutes).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         return 1;

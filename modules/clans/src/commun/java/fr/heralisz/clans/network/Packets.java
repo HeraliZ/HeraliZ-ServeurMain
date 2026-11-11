@@ -7,6 +7,7 @@ import fr.heralisz.clans.model.EtatZone;
 import fr.heralisz.clans.model.Grade;
 import fr.heralisz.clans.model.InvitationVue;
 import fr.heralisz.clans.model.LigneBareme;
+import fr.heralisz.clans.model.LigneHistorique;
 import fr.heralisz.clans.model.SaisonLigne;
 import fr.heralisz.clans.model.TagVue;
 import fr.heralisz.clans.model.Texte;
@@ -770,6 +771,58 @@ public final class Packets {
             Map<String, Long> o = new HashMap<>(Math.max(4, k * 2));
             for (int i = 0; i < k; i++) o.put(b.readUtf(128), b.readVarLong());
             return new DonsS2C(r, o);
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(this);
+        }
+    }
+
+    /**
+     * Historique du clan (11/11) : demande de la page {@code page} (0 = la plus recente) des lignes de la categorie
+     * {@code categorie} ({@link LigneHistorique#TOUT} = tout). Le serveur choisit le clan (celui du joueur), filtre, coupe la
+     * page et repond par {@link HistoriqueS2C}.
+     */
+    public record HistoriqueC2S(int categorie, int page) {
+        void write(FriendlyByteBuf b) {
+            b.writeVarInt(categorie + 1);
+            b.writeVarInt(Math.max(0, page));
+        }
+
+        static HistoriqueC2S read(FriendlyByteBuf b) {
+            return new HistoriqueC2S(b.readVarInt() - 1, b.readVarInt());
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = sender(ctx);
+            if (p != null) RECEPTION_SERVEUR.accept(new Recu(p, this));
+        }
+    }
+
+    /**
+     * Une page de l'historique du clan (11/11) : categorie et page demandees, nombre de pages, nombre total de lignes de la
+     * categorie, lignes de la page (la plus recente d'abord).
+     */
+    public record HistoriqueS2C(int categorie, int page, int pages, int total, List<LigneHistorique> lignes) {
+        public static final int LIGNES_MAX = 64;
+
+        void write(FriendlyByteBuf b) {
+            b.writeVarInt(categorie + 1);
+            b.writeVarInt(page);
+            b.writeVarInt(pages);
+            b.writeVarInt(total);
+            int n = Math.min(lignes.size(), LIGNES_MAX);
+            b.writeVarInt(n);
+            for (int i = 0; i < n; i++) lignes.get(i).write(b);
+        }
+
+        static HistoriqueS2C read(FriendlyByteBuf b) {
+            int categorie = b.readVarInt() - 1, page = b.readVarInt(), pages = b.readVarInt(), total = b.readVarInt();
+            int n = b.readVarInt();
+            if (n < 0 || n > LIGNES_MAX) throw new IllegalArgumentException("HistoriqueS2C : " + n + " lignes");
+            List<LigneHistorique> l = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) l.add(LigneHistorique.read(b));
+            return new HistoriqueS2C(categorie, page, pages, total, l);
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

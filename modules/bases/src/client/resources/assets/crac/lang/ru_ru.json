@@ -655,5 +655,9 @@
   "crac.hud.vide_seulement": "Только если пусто",
   "crac.hud.armoire_delai": "В течение %s мин. после установки",
   "crac.hud.ramasser_hint": "Подобрать",
-  "crac.hud.deplacer_hint": "Перенести"
+  "crac.hud.deplacer_hint": "Перенести",
+  "crac.journal.armoire_posee": "%s установил шкаф базы",
+  "crac.journal.armoire_retiree": "Шкаф базы убран или уничтожен",
+  "crac.journal.coeur_pose": "%s установил ядро клана",
+  "crac.journal.coeur_repris": "%s забрал ядро клана (%s мин, чтобы поставить снова)"
 }

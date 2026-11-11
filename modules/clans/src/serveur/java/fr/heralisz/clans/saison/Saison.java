@@ -3,7 +3,9 @@ package fr.heralisz.clans.saison;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import fr.heralisz.clans.HeraliszClans;
+import fr.heralisz.clans.historique.Historique;
 import fr.heralisz.clans.model.Clan;
+import fr.heralisz.clans.model.LigneHistorique;
 import fr.heralisz.clans.model.Membre;
 import fr.heralisz.clans.server.ClanService;
 import fr.heralisz.clans.server.ClanStore;
@@ -195,7 +197,12 @@ public final class Saison {
         ajouterPve(c, p.getUUID(), qui, source, quantite);
     }
 
-    public static void ajouterPve(Clan c, @Nullable UUID joueur, String qui, String source, double quantite) {
+    /**
+     * Points PVE pour le clan {@code c} ({@code joueur} : celui qui les fait gagner, null pour une quete de clan ou un
+     * boss). {@code historique} : textes de la ligne de l'historique du clan quand la source en a besoin (titre de la
+     * quete de clan, type du boss).
+     */
+    public static void ajouterPve(Clan c, @Nullable UUID joueur, String qui, String source, double quantite, String... historique) {
         if (c == null || quantite <= 0) return;
         if (!d.active) {
             refus(qui, c, source, "pas de saison en cours");
@@ -220,13 +227,34 @@ public final class Saison {
                 return;
             }
             d.plafonds.put(joueur, deja + pts);
+            // historique du clan (11/11) : le jour ou ce joueur atteint le plafond, une ligne le dit (une seule fois)
+            if (deja + pts >= bareme.plafondJour - 1e-9) {
+                Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.PVE, qui, "historique.plafond.petites", 0, arrondi(bareme.plafondJour));
+            }
         }
         d.scores(c.id)[SaisonDonnees.PVE] += pts;
         changer();
         String quoi = source + (quantite != 1 ? " x" + arrondi(quantite) : "");
         boolean petite = petite(source);
         noter(c, qui, "pve", quoi, pts, !petite);
-        if (petite) petiteAction(c, qui, source, quantite, pts);
+        if (petite) {
+            petiteAction(c, qui, source, quantite, pts);
+            Historique.petite(c, qui, source, quantite, pts);
+        } else {
+            Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.PVE, joueur == null ? "" : qui, "historique.source." + source, pts,
+                    argsHistorique(source, quantite, historique));
+        }
+    }
+
+    /**
+     * Textes de la ligne de l'historique d'un gain PVE : ceux donnes par l'appelant (titre d'une quete de clan, type d'un
+     * boss), sinon les herals d'une vente, sinon le nombre (armes fabriquees, conteneurs, zombies... : une ligne a part
+     * quand le bareme les met a un point ou plus) ; un texte qui n'a pas besoin du nombre l'ignore.
+     */
+    private static String[] argsHistorique(String source, double quantite, @Nullable String[] historique) {
+        if (historique != null && historique.length > 0) return historique;
+        if (source.equals("vente_1000")) return new String[]{String.valueOf(Math.round(quantite * 1000))};
+        return new String[]{arrondi(quantite)};
     }
 
     /**
@@ -248,7 +276,7 @@ public final class Saison {
             noter(c, qui, "pve", "boss x" + arrondi(part), 0);
             return;
         }
-        ajouterPve(c, null, qui, "boss", part * coef);
+        ajouterPve(c, null, qui, "boss", part * coef, type);
     }
 
     /** Compteurs du jour (heure de Paris) : plafonds des petites actions, boss deja tues, captures ; remis a zero a minuit. */
@@ -298,6 +326,11 @@ public final class Saison {
         String qui = p.getGameProfile().getName();
         if (max != null && deja >= max) {
             noter(c, qui, "events", source + " : deja " + deja + " aujourd'hui (plafond)", 0);
+            // nom de l'événement ou de l'objet : celui des fichiers de langue du module des événements
+            String nom = source.startsWith("objet_") ? "item.heraliz_evenements." + source.substring("objet_".length())
+                    : "heraliz_evenements.nom." + source;
+            Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.EVENTS, qui, "historique.plafond.evenement", 0,
+                    LigneHistorique.CLE_ARG + nom, String.valueOf(max));
             return 0;
         }
         d.evenementsJour.put(cle, deja + 1);
@@ -305,6 +338,7 @@ public final class Saison {
         d.scores(c.id)[SaisonDonnees.EVENTS] += pts;
         changer();
         noter(c, qui, "events", source + " (" + (deja + 1) + "e du jour)", pts);
+        Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.EVENTS, qui, "historique.source." + source, pts);
         return pts;
     }
 
@@ -361,33 +395,37 @@ public final class Saison {
         d.scores(c.id)[cat] += pts;
         changer();
         noter(c, "capture " + nomZone, CATEGORIES[cat], (prise ? "prise a [" + ancien.tag + "]" : "zone libre") + " valeur " + valeur, pts);
+        if (prise) Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.PVP, "", "historique.capture.prise", pts, nomZone, ancien.tag);
+        else Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.PVE, "", "historique.capture.libre", pts, nomZone);
     }
 
     // ------------------------------------------------------------------ PVP
     /**
      * Un joueur en tue un autre (hors match, hors spawn : verifie par l'appelant). +kill au clan du tueur, -mort au clan de
-     * la victime (jamais sous 0), avec les regles anti-abus de la classe.
+     * la victime (jamais sous 0), avec les regles anti-abus de la classe. Rend {points gagnes par le clan du tueur, points
+     * perdus par celui de la victime (negatif ou 0)} pour l'historique des deux clans (11/11).
      */
-    public static void kill(ServerPlayer tueur, ServerPlayer victime) {
-        if (!d.active || tueur == victime) return;
+    public static double[] kill(ServerPlayer tueur, ServerPlayer victime) {
+        double[] r = new double[2];
+        if (!d.active || tueur == victime) return r;
         // bots de charge (/bots de HeraliZ Utils) : jamais de points
-        if (tueur.getTags().contains("heraliz_bot") || victime.getTags().contains("heraliz_bot")) return;
+        if (tueur.getTags().contains("heraliz_bot") || victime.getTags().contains("heraliz_bot")) return r;
         // 11/11 : tueur du staff en creatif ou spectateur : ni gain pour son clan, ni perte pour celui de la victime
-        if (creatif(tueur, "kill")) return;
+        if (creatif(tueur, "kill")) return r;
         ClanStore s = ClanStore.get();
-        if (s == null) return;
+        if (s == null) return r;
         Clan ct = s.clanDe(tueur.getUUID()), cv = s.clanDe(victime.getUUID());
-        if (ct == null && cv == null) return;
-        if (ct != null && ct == cv) return;
+        if (ct == null && cv == null) return r;
+        if (ct != null && ct == cv) return r;
         String nomT = tueur.getGameProfile().getName(), quoi = "kill " + victime.getGameProfile().getName();
         String ipT = tueur.getIpAddress(), ipV = victime.getIpAddress();
         if (ipT != null && ipT.equals(ipV)) {
             refus(nomT, ct, quoi, "meme adresse IP que la victime");
-            return;
+            return r;
         }
         if (!Ponts.menace(victime, bareme.pvpRareteMin, bareme.pvpExclus)) {
             refus(nomT, ct, quoi, "victime sans arme ni protection (rarete " + bareme.pvpRareteMin + " au moins)");
-            return;
+            return r;
         }
         long now = System.currentTimeMillis(), fenetre = (long) (bareme.pvpFenetreH * 3_600_000L);
         String cle = tueur.getUUID() + "|" + victime.getUUID();
@@ -399,7 +437,7 @@ public final class Saison {
         sale = true;
         if (coef <= 0) {
             refus(nomT, ct, quoi, "meme victime trop souvent (" + arrondi(bareme.pvpFenetreH) + " h)");
-            return;
+            return r;
         }
         if (ct != null && Ponts.aUnCoeur(ct.id)) {
             double pts = bareme.pvpKill * coef;
@@ -411,8 +449,16 @@ public final class Saison {
                 pts = Math.min(pts, bareme.pvpPlafondJour - dejaJour);
             }
             if (pts > 1e-9) {
-                if (bareme.pvpPlafondJour > 0) d.pvpJour.put(ct.id, dejaJour + pts);
+                if (bareme.pvpPlafondJour > 0) {
+                    d.pvpJour.put(ct.id, dejaJour + pts);
+                    // historique du clan (11/11) : le jour ou le clan atteint le plafond des kills, une ligne le dit (une fois)
+                    if (dejaJour + pts >= bareme.pvpPlafondJour - 1e-9) {
+                        Historique.ajouter(ct, LigneHistorique.POINTS, LigneHistorique.PVP, "", "historique.plafond.kills", 0,
+                                arrondi(bareme.pvpPlafondJour));
+                    }
+                }
                 d.scores(ct.id)[SaisonDonnees.PVP] += pts;
+                r[0] = pts;
                 noter(ct, tueur.getGameProfile().getName(), "pvp", "kill " + victime.getGameProfile().getName(), pts);
             } else {
                 noter(ct, tueur.getGameProfile().getName(), "pvp", "kill " + victime.getGameProfile().getName() + " : plafond du jour atteint", 0);
@@ -424,9 +470,11 @@ public final class Saison {
             double[] sc = d.scores(cv.id);
             double avant = sc[SaisonDonnees.PVP];
             sc[SaisonDonnees.PVP] = Math.max(0, avant - bareme.pvpMort * coef);
+            r[1] = sc[SaisonDonnees.PVP] - avant;
             noter(cv, victime.getGameProfile().getName(), "pvp", "mort par " + tueur.getGameProfile().getName(), sc[SaisonDonnees.PVP] - avant);
         }
         changer();
+        return r;
     }
 
     // ------------------------------------------------------------------ events
@@ -448,15 +496,17 @@ public final class Saison {
             UUID id = classement.get(i);
             if (id == null || !faits.add(id)) continue;
             double base = i < bareme.places.length ? bareme.places[i] : bareme.participation;
-            donnerEvent(s.get(id), event, "place " + (i + 1), base * mult);
+            donnerEvent(s.get(id), event, i + 1, base * mult);
         }
         for (UUID id : participants) {
-            if (id != null && faits.add(id)) donnerEvent(s.get(id), event, "participation", bareme.participation * mult);
+            if (id != null && faits.add(id)) donnerEvent(s.get(id), event, 0, bareme.participation * mult);
         }
     }
 
-    private static void donnerEvent(@Nullable Clan c, String event, String quoi, double pts) {
+    /** {@code place} : 1er, 2e... ; 0 = participation. */
+    private static void donnerEvent(@Nullable Clan c, String event, int place, double pts) {
         if (c == null || pts <= 0) return;
+        String quoi = place > 0 ? "place " + place : "participation";
         if (!Ponts.aUnCoeur(c.id)) {
             refus("-", c, event + " " + quoi, "clan sans coeur pose dans sa base");
             return;
@@ -464,6 +514,9 @@ public final class Saison {
         d.scores(c.id)[SaisonDonnees.EVENTS] += pts;
         changer();
         noter(c, "-", "events", event + " " + quoi, pts);
+        String nom = LigneHistorique.CLE_ARG + "historique.event." + event;
+        if (place > 0) Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.EVENTS, "", "historique.event.place", pts, nom, String.valueOf(place));
+        else Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.EVENTS, "", "historique.event.participation", pts, nom);
     }
 
     // ------------------------------------------------------------------ raids et coeur
@@ -485,7 +538,10 @@ public final class Saison {
             sv[i] = sv[i] * (100 - bareme.raidPerduPct) / 100.0;
         }
         double perte = (pris[0] + pris[1] + pris[2]) * bareme.raidPerduPct / 100.0;
-        if (cv != null) noter(cv, qui, "raid", "coeur pris par " + (ca == null ? "?" : "[" + ca.tag + "]"), -perte);
+        if (cv != null) {
+            noter(cv, qui, "raid", "coeur pris par " + (ca == null ? "?" : "[" + ca.tag + "]"), -perte);
+            Historique.ajouter(cv, LigneHistorique.BASE, LigneHistorique.TOUTES, qui, "historique.raid.perdu", -perte, ca == null ? "?" : ca.tag);
+        }
         if (ca != null && Ponts.aUnCoeur(ca.id)) {
             double[] sa = d.scores(ca.id);
             double gain = 0;
@@ -495,6 +551,7 @@ public final class Saison {
                 gain += g;
             }
             noter(ca, qui, "raid", "coeur de " + (cv == null ? "?" : "[" + cv.tag + "]"), gain);
+            Historique.ajouter(ca, LigneHistorique.BASE, LigneHistorique.TOUTES, qui, "historique.raid.gagne", gain, cv == null ? "?" : cv.tag);
         }
         changer();
         sauvegarder();
@@ -515,6 +572,7 @@ public final class Saison {
         Clan c = st == null ? null : st.get(clan);
         if (c != null) {
             noter(c, "-", "perte", motif, -avant);
+            Historique.ajouter(c, LigneHistorique.BASE, LigneHistorique.TOUTES, "", "historique.perte.tout", -avant, motif);
             ClanService.diffuserChat(c, "msg.saison.perdu", motif);
         }
     }
@@ -527,6 +585,7 @@ public final class Saison {
         changer();
         sauvegarder();
         noter(c, staff, CATEGORIES[categorie], "correction : " + motif, s[categorie] - avant);
+        Historique.ajouter(c, LigneHistorique.POINTS, categorie, staff, "historique.correction", s[categorie] - avant, motif);
     }
 
     // ------------------------------------------------------------------ classements

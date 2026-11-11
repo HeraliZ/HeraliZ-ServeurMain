@@ -655,5 +655,9 @@
   "crac.hud.vide_seulement": "Only when empty",
   "crac.hud.armoire_delai": "Within %s min of placing it",
   "crac.hud.ramasser_hint": "Pick up",
-  "crac.hud.deplacer_hint": "Move"
+  "crac.hud.deplacer_hint": "Move",
+  "crac.journal.armoire_posee": "%s placed the base cupboard",
+  "crac.journal.armoire_retiree": "Base cupboard removed or destroyed",
+  "crac.journal.coeur_pose": "%s placed the clan core",
+  "crac.journal.coeur_repris": "%s picked up the clan core (%s min to place it back)"
 }

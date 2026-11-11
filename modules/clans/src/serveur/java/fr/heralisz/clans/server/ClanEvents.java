@@ -305,7 +305,7 @@ public final class ClanEvents {
         Entity src = tueur(e);
         // match (HeraliZ Matchs) : ni la mort ni le kill ne comptent
         if (ClansApi.enMatch(victime) || ClansApi.enMatch(src)) return;
-        saison(e, victime, src);
+        double[] pvp = saison(e, victime, src);
         if (victime instanceof ServerPlayer mort) {
             Clan c = store.clanDe(mort.getUUID());
             Membre m = c == null ? null : c.membre(mort.getUUID());
@@ -313,6 +313,8 @@ public final class ClanEvents {
                 m.stats.morts++;
                 store.marquerDirty();
                 Sync.marquerLent(c);
+                // historique du clan (11/11) : la mort du membre, sa cause et les points de saison perdus
+                if (!mort.getTags().contains("heraliz_bot")) fr.heralisz.clans.historique.Historique.mort(c, mort, src, pvp[1]);
             }
         }
         if (!(src instanceof ServerPlayer tueur) || tueur == victime) return;
@@ -321,6 +323,8 @@ public final class ClanEvents {
         if (victime instanceof Player joueur) {
             // bots de charge (/bots) : ni XP ni quête, ni classement
             if (joueur.getTags().contains("heraliz_bot") || tueur.getTags().contains("heraliz_bot")) return;
+            // historique du clan (11/11) : le kill du membre, avec les points de saison gagnés (0 : la saison ne le comptait pas)
+            if (m != null) fr.heralisz.clans.historique.Historique.kill(c, tueur, joueur, pvp[0]);
             // une seule vérification (elle note le couple tueur / victime) : sert au classement des kills de tous les
             // joueurs, avec ou sans clan (hologramme du spawn, 03/11), puis aux statistiques du clan
             if (!killJoueurValide(c, tueur, joueur, System.currentTimeMillis())) return;
@@ -354,23 +358,30 @@ public final class ClanEvents {
     /** Degats des joueurs sur chaque boss vivant (boss -> joueur -> degats) : points du boss partages a sa mort. */
     private static final Map<UUID, Map<UUID, Double>> DEGATS_BOSS = new HashMap<>();
 
-    private static void saison(LivingDeathEvent e, LivingEntity victime, @javax.annotation.Nullable Entity src) {
-        if (!fr.heralisz.clans.saison.Saison.active()) return;
+    /** Aucun point de kill (jamais modifie). */
+    private static final double[] SANS_POINTS_KILL = new double[2];
+
+    /**
+     * Points de saison de la mort de {@code victime}. Rend, pour un joueur tue par un joueur, {points gagnes par le clan du
+     * tueur, points perdus par celui de la victime} (historique du clan, 11/11), sinon {0, 0}.
+     */
+    private static double[] saison(LivingDeathEvent e, LivingEntity victime, @javax.annotation.Nullable Entity src) {
+        if (!fr.heralisz.clans.saison.Saison.active()) return SANS_POINTS_KILL;
         String monde = victime.level().dimension().location().toString();
         if (MONDES_SANS_POINTS.contains(monde) || monde.startsWith("heraliz_clashwar:")) {
             DEGATS_BOSS.remove(victime.getUUID());
-            return;
+            return SANS_POINTS_KILL;
         }
         String type = idType(victime);
         var bareme = fr.heralisz.clans.saison.Saison.bareme();
         if (type != null && bareme.boss.contains(type)) {
             Map<UUID, Double> parts = DEGATS_BOSS.remove(victime.getUUID());
-            if (parts == null || victime.getTags().contains(SANS_POINTS)) return;
+            if (parts == null || victime.getTags().contains(SANS_POINTS)) return SANS_POINTS_KILL;
             double total = 0;
             for (double v : parts.values()) total += v;
-            if (total <= 0) return;
+            if (total <= 0) return SANS_POINTS_KILL;
             ClanStore store = ClanStore.get();
-            if (store == null) return;
+            if (store == null) return SANS_POINTS_KILL;
             // part de chaque clan = ses degats / tous les degats des joueurs
             Map<UUID, Double> parClan = new HashMap<>();
             for (Map.Entry<UUID, Double> x : parts.entrySet()) {
@@ -380,18 +391,18 @@ public final class ClanEvents {
             for (Map.Entry<UUID, Double> x : parClan.entrySet()) {
                 fr.heralisz.clans.saison.Saison.boss(store.get(x.getKey()), type, x.getValue());
             }
-            return;
+            return SANS_POINTS_KILL;
         }
-        if (!(src instanceof ServerPlayer tueur) || tueur == victime) return;
+        if (!(src instanceof ServerPlayer tueur) || tueur == victime) return SANS_POINTS_KILL;
         if (victime instanceof ServerPlayer mort) {
             Long reapparu = REAPPARU.get(mort.getUUID());
-            if (reapparu != null && System.currentTimeMillis() - reapparu < ClansConfig.BOOST_REAPPARITION_S.get() * 1000L) return;
-            fr.heralisz.clans.saison.Saison.kill(tueur, mort);
-            return;
+            if (reapparu != null && System.currentTimeMillis() - reapparu < ClansConfig.BOOST_REAPPARITION_S.get() * 1000L) return SANS_POINTS_KILL;
+            return fr.heralisz.clans.saison.Saison.kill(tueur, mort);
         }
-        if (type == null || victime.getTags().contains(fr.heralisz.clans.territory.Assauts.TAG)) return;
+        if (type == null || victime.getTags().contains(fr.heralisz.clans.territory.Assauts.TAG)) return SANS_POINTS_KILL;
         String source = bareme.entites.get(type);
         if (source != null) fr.heralisz.clans.saison.Saison.pve(tueur, source, 1);
+        return SANS_POINTS_KILL;
     }
 
     @javax.annotation.Nullable

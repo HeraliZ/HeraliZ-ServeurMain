@@ -280,9 +280,17 @@ public final class Clan {
         while (journalBanque.size() > Mouvement.MAX) journalBanque.remove(journalBanque.size() - 1);
     }
 
+    /**
+     * 11/11 : chaque ligne ajoutee au journal d'activite (20 dernieres, onglet Apercu) est aussi notee dans l'historique du
+     * clan (onglet Historique, des centaines de lignes) : branche par la partie serveur, neutre ailleurs.
+     */
+    public static volatile java.util.function.BiConsumer<Clan, Evenement> HISTORIQUE = (c, e) -> {
+    };
+
     public void ajouterEvenement(Evenement e) {
         journal.add(0, e);
         while (journal.size() > Evenement.MAX) journal.remove(journal.size() - 1);
+        HISTORIQUE.accept(this, e);
     }
 
     // ------------------------------------------------------------------ JSON

@@ -29,7 +29,8 @@ public final class ClansNet {
     /** 9 (02/11) : prix de creation d'un clan a la fin de ClanSnapshotS2C (reglage du serveur, plus lu chez le joueur). */
     /** 10 (03/11) : bareme de /clan don (DonsS2C) pour l'infobulle des objets qu'on peut donner au clan. */
     /** 11 (11/11) : onglet Saison, points en centiemes et nombre de clans classes (SaisonS2C, SaisonLigne). */
-    private static final String VERSION = "11";
+    /** 12 (11/11) : historique du clan, pages filtrees par categorie (HistoriqueC2S, HistoriqueS2C). */
+    private static final String VERSION = "12";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -74,6 +75,9 @@ public final class ClansNet {
         msg(Packets.ArbreSaisonS2C.class, s2c, Packets.ArbreSaisonS2C::write, Packets.ArbreSaisonS2C::read, Packets.ArbreSaisonS2C::handle);
         // 03/11 : bareme de /clan don, pour l'infobulle des objets de valeur
         msg(Packets.DonsS2C.class, s2c, Packets.DonsS2C::write, Packets.DonsS2C::read, Packets.DonsS2C::handle);
+        // 11/11 : historique du clan, une page filtree par categorie a la demande de l'ecran du clan
+        msg(Packets.HistoriqueC2S.class, c2s, Packets.HistoriqueC2S::write, Packets.HistoriqueC2S::read, Packets.HistoriqueC2S::handle);
+        msg(Packets.HistoriqueS2C.class, s2c, Packets.HistoriqueS2C::write, Packets.HistoriqueS2C::read, Packets.HistoriqueS2C::handle);
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {
