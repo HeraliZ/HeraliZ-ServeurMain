@@ -110,6 +110,9 @@ dans `saison/SaisonVue.bareme()` pour l'onglet Saison, annonces, loot, objet d'�
   du texte ; `outils/polices_nettes.py` règle l'oversample (plafonné pour les grandes tailles) ; outils de dessin net :
   `fr.heraliz.quetes.client.kit.Net`. Caractères absents de DM Sans (◀ ▶ ▲ ✕ ▾…) : dessinés en police pixel, utiliser
   ← → ↑ × ›.
+- Couleur du nom d'un objet = sa rareté HeraliZ (`raretes.json`), mise par Loot dans l'infobulle et au-dessus de la barre
+  (`fr.heraliz.loot.client.NomsRarete`) : un nouvel objet reçoit sa rareté là, pas une couleur dans `getName` ni une
+  rareté de Minecraft (Épique = rose).
 - Contrôle en jeu : captures automatiques dans un vrai client (`docs/AUDIT_UI.md` : `outils/client_essai.py`, mod
   `modules/capture` jamais livré, scripts `outils/capture/scripts/`). Serveur d'essai local seulement : sans AuthMe, lancer
   avec `-Dheraliz.essai.sansAuthme=true` ET `server-ip=127.0.0.1` (jamais sur le Ptero).
