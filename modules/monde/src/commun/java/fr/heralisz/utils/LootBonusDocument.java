@@ -8,8 +8,9 @@ import net.minecraft.world.level.Level;
 
 /**
  * Objet « Bonus de loot » (vendu sur la boutique) : clic droit = +10 % de loot (objets plus rares, quantités) à
- * l'ouverture des conteneurs de HeraliZ Loot, pendant 2 h de jeu (réglages : BonusLootConfig). Un deuxième objet ajoute
- * sa durée. Jar fusionné : l'objet ici ; l'effet du clic dans LootBonusDocumentServeur (HeraliszUtils.DOCUMENT_USINE).
+ * l'ouverture des conteneurs de HeraliZ Loot, pendant 2 h de temps réel depuis le 11/11, même déconnecté (réglages :
+ * BonusLootConfig). Un deuxième objet ajoute sa durée. Jar fusionné : l'objet ici ; l'effet du clic dans
+ * LootBonusDocumentServeur (HeraliszUtils.DOCUMENT_USINE).
  */
 public class LootBonusDocument extends UtilItem {
     public LootBonusDocument(String rarity) {

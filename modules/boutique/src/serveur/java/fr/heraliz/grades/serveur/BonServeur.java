@@ -578,7 +578,9 @@ final class BonServeur {
 
     /**
      * Effet « Bonus de loot » sans particules : niveau = bonus total (toutes les sources, plafond 25 %), durée = la source
-     * qui dure le plus. Remis à jour toutes les 5 s (mort, lait, autre source qui change).
+     * qui dure le plus. Remis à jour toutes les 5 s (mort, lait, autre source qui change). 11/11 (retour du propriétaire) :
+     * sans icône sur l'écran de jeu (il reste dans l'inventaire avec son temps) ; un effet posé avant, avec icône, est
+     * remplacé au passage suivant.
      */
     static void majEffet(ServerPlayer p) {
         MobEffect eff = ObjetBon.BONUS_LOOT.get();
@@ -603,9 +605,9 @@ final class BonServeur {
             return;
         }
         int duree = (int) Math.min(reste, Integer.MAX_VALUE - 1L);
-        if (cur == null || cur.getAmplifier() != total - 1 || Math.abs(cur.getDuration() - duree) > 200) {
+        if (cur == null || cur.getAmplifier() != total - 1 || Math.abs(cur.getDuration() - duree) > 200 || cur.showIcon()) {
             if (cur != null) p.removeEffect(eff);
-            p.addEffect(new MobEffectInstance(eff, duree, total - 1, true, false, true));
+            p.addEffect(new MobEffectInstance(eff, duree, total - 1, true, false, false));
         }
     }
 

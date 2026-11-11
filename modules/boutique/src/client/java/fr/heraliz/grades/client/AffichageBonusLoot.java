@@ -11,9 +11,16 @@ import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 /**
  * Effet « Bonus de loot » dans l'inventaire : « Bonus de loot +10 % » au lieu du niveau en chiffres romains, puis le temps
- * qui reste (comme les autres effets).
+ * qui reste (comme les autres effets). 11/11 (retour du propriétaire : l'icône restait 2 h en haut à droite de l'écran) :
+ * plus jamais dessiné sur l'écran de jeu, seulement dans l'inventaire.
  */
 final class AffichageBonusLoot implements IClientMobEffectExtensions {
+    /** Pas d'icône en haut à droite de l'écran de jeu (le serveur pose aussi l'effet sans icône, BonServeur.majEffet). */
+    @Override
+    public boolean isVisibleInGui(MobEffectInstance effet) {
+        return false;
+    }
+
     @Override
     public boolean renderInventoryText(MobEffectInstance effet, EffectRenderingInventoryScreen<?> ecran, GuiGraphics g, int x, int y, int blitOffset) {
         Font f = Minecraft.getInstance().font;
