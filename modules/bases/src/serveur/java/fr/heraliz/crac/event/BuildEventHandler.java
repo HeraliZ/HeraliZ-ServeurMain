@@ -194,17 +194,24 @@ public class BuildEventHandler {
         if (PlacableSet.poseInterdite(state)) {
             return PlacableSet.POSE_INTERDITE;
         }
+        // HeraliZ (11/11, demande du propriétaire) : un objet de base (placable) ne se pose que dans la base de son clan, sur
+        // une fondation ou un plancher : jamais dans la nature, ni dans la base d'un autre clan
+        boolean objetDeBase = PlacableSet.contains(sl, state.getBlock());
         Claim claim = ClaimManager.getAt(sl, cells.get(0));
         for (BlockPos cell : cells) {
             Claim c = ClaimManager.getAt(sl, cell);
             if (c != null && !isMember(sl, player, c, ClanAccess.Action.BUILD) && !RaidBlocks.isRaidAccess(sl, c, state)) {
-                return "crac.claim.not_yours";
+                // un membre du clan sans le droit de construire garde le message d'avant
+                return objetDeBase && !duGroupe(sl, player, c) ? PlacableSupport.BASE_SEULEMENT : "crac.claim.not_yours";
             }
             if (c != claim) {
                 return "crac.claim.must_fit";
             }
         }
         if (claim == null) {
+            if (objetDeBase) {
+                return PlacableSupport.BASE_SEULEMENT;
+            }
             return Config.protectOutsideClaims.get() ? "crac.claim.only_inside" : null;
         }
         if (!isMember(sl, player, claim, ClanAccess.Action.BUILD)) {
@@ -221,6 +228,14 @@ public class BuildEventHandler {
         }
         if (Config.raidBlockBuilding.get() && RaidBlockManager.isRaidBlocked(sl, claim.groupId())) {
             return "crac.build.raid_blocked";
+        }
+        if (placable) {
+            // HeraliZ (11/11) : sur une fondation ou un plancher de la base (au besoin sur d'autres objets posés dessus),
+            // jamais sur le terrain de la zone ; le cœur de clan aussi
+            String sol = PlacableSupport.solDeBaseProblem(sl, cells);
+            if (sol != null) {
+                return sol;
+            }
         }
         if (placable && PlacableSupport.enabled()) {
             return PlacableSupport.supportProblem(sl, cells, state);
@@ -249,11 +264,26 @@ public class BuildEventHandler {
 
     /**
      * HeraliZ (11/11) : refus d'un objet connu dès le clic droit (la pose, {@link #placeProblem}, refait la règle) : un
-     * coffre ou rangement de Minecraft, que plus personne ne pose ({@link PlacableSet#poseInterdite}).
+     * coffre ou rangement de Minecraft, que plus personne ne pose ({@link PlacableSet#poseInterdite}), ou un objet de base
+     * (placable) visé hors de toute base : il ne se pose que dans la base de son clan. Dans une base, la pose décide (l'objet
+     * peut se mettre dans la case d'un mur voisin).
      */
     @Nullable
-    private static String refusAuClic(ServerLevel sl, Block block) {
-        return PlacableSet.poseInterdite(block.defaultBlockState()) ? PlacableSet.POSE_INTERDITE : null;
+    private static String refusAuClic(ServerLevel sl, Block block, BlockPos clicked, BlockPos placePos) {
+        if (PlacableSet.poseInterdite(block.defaultBlockState())) {
+            return PlacableSet.POSE_INTERDITE;
+        }
+        if (PlacableSet.contains(sl, block) && ClaimManager.getAt(sl, clicked) == null && ClaimManager.getAt(sl, placePos) == null) {
+            return PlacableSupport.BASE_SEULEMENT;
+        }
+        return null;
+    }
+
+    /** HeraliZ (11/11) : le joueur est membre du groupe (clan) de ce claim, avec ou sans le droit de construire. */
+    private static boolean duGroupe(ServerLevel sl, ServerPlayer player, Claim claim) {
+        Group g = GroupData.get(sl.getServer()).getById(claim.groupId());
+        return g != null && (g.isMember(player.getUUID())
+            || fr.heraliz.crac.heraliz.BasesClans.duClanSansDroit(sl.getServer(), g, player.getUUID(), ClanAccess.Action.BUILD));
     }
 
     private static boolean placesSomething(Item item) {
@@ -316,7 +346,7 @@ public class BuildEventHandler {
                             }
                             if (deny == null && item instanceof BlockItem objet) {
                                 // HeraliZ (11/11) : refusé dès le clic, avec son message, comme les autres refus de ce clic
-                                deny = refusAuClic(sl, objet.getBlock());
+                                deny = refusAuClic(sl, objet.getBlock(), event.getPos(), placePos);
                             }
                             if (deny != null) {
                                 event.setUseItem(Result.DENY);

@@ -153,13 +153,18 @@ public final class PlacableGhostRenderer {
                                 for (BlockPos cell : cells) {
                                     ClientClaimCache.ClaimHere claim = ClientClaimCache.claimAt(cell);
                                     if (why == null && claim != ClientClaimCache.ClaimHere.OWN) {
-                                        why = claim == ClientClaimCache.ClaimHere.FOREIGN ? "crac.claim.not_yours" : "crac.claim.must_fit";
+                                        // HeraliZ (11/11) : la base d'un autre clan : un objet de base ne se pose que dans la sienne
+                                        why = claim == ClientClaimCache.ClaimHere.FOREIGN ? PlacableSupport.BASE_SEULEMENT : "crac.claim.must_fit";
                                     }
                                 }
                                 if (why == null && Config.SPEC.isLoaded() && Config.raidBlockBuilding.get() && RaidBlockOverlay.ownBaseBlocked()) {
                                     why = "crac.build.raid_blocked";
                                 }
-                                // a placable stands on a floor, the ground or another placable
+                                // HeraliZ (11/11) : sur une fondation ou un plancher de la base, jamais sur le terrain de la zone
+                                if (why == null) {
+                                    why = PlacableSupport.solDeBaseProblem(mc.level, cells);
+                                }
+                                // a placable stands on a floor or another placable
                                 if (why == null && PlacableSupport.enabled()) {
                                     why = PlacableSupport.supportProblem(mc.level, cells, state);
                                 }

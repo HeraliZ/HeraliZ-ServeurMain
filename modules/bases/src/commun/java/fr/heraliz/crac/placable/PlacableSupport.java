@@ -24,12 +24,17 @@ import org.jetbrains.annotations.Nullable;
  * au-dessus des fondations et planchers ({@link StructureBlock#solSousForme}), et elle ne doit toucher aucune pièce (mur,
  * porte, fenêtre, poteau…) d'un bloc voisin ({@link #touchePiece}). Remplace la règle « moitié de case avec son centre »
  * de la 1.33.0, qui laissait dépasser les caisses du bord du sol.
+ * <p>HeraliZ (11/11) : à la pose, un objet de base ne se pose plus sur le terrain, même dans sa base : seulement sur une
+ * fondation ou un plancher, au besoin sur d'autres objets qui y reposent ({@link #solDeBaseProblem}). Ce qui tient un
+ * objet déjà posé ({@link #isSupported}, chutes) ne change pas.
  */
 public final class PlacableSupport {
     /** How many stacked placables one removal may bring down. */
     private static final int MAX_CASCADE = 16;
     /** Refusal on a structure block that no foundation or floor covers (a roof, a wall top, a step). */
     public static final String NOT_A_FLOOR = "crac.placable.not_a_floor";
+    /** HeraliZ (11/11) : refus d'un objet de base posé ailleurs que sur une fondation ou un plancher de la base de son clan. */
+    public static final String BASE_SEULEMENT = "crac.placable.base_seulement";
 
     private PlacableSupport() {
     }
@@ -99,6 +104,50 @@ public final class PlacableSupport {
             }
         }
         return null;
+    }
+
+    /**
+     * HeraliZ (11/11, demande du propriétaire : « bloquer le fait de pouvoir poser n'importe quel item de base hors d'une
+     * fondation de notre clan ») : dans une base, un objet posé repose sur une fondation ou un plancher (une pièce de
+     * construction), directement ou sur d'autres objets posés qui y reposent (caisse sur caisse) ; jamais sur le terrain
+     * de la zone. Rend {@link #BASE_SEULEMENT} quand rien de l'objet ne repose sur la base, {@code crac.placable.cut}
+     * quand une partie seulement y repose (coffre à cheval sur le bord), sinon null. Le reste (sol sous toute la forme,
+     * toit, mi-bloc, pièce touchée) est la règle de {@link #supportProblem}. Seulement à la pose et au fantôme de pose :
+     * quelques blocs lus sous l'objet.
+     */
+    @Nullable
+    public static String solDeBaseProblem(Level level, Collection<BlockPos> cells) {
+        boolean surLaBase = false;
+        boolean ailleurs = false;
+        for (BlockPos cell : cells) {
+            if (cells.contains(cell.below())) continue;
+            if (reposeSurLaBase(level, cell.below())) {
+                surLaBase = true;
+            } else {
+                ailleurs = true;
+            }
+        }
+        if (!ailleurs) {
+            return null;
+        }
+        return surLaBase ? "crac.placable.cut" : BASE_SEULEMENT;
+    }
+
+    /** Le bloc {@code dessous} est une pièce de construction, ou un objet posé (pile) qui finit sur une pièce de construction. */
+    private static boolean reposeSurLaBase(Level level, BlockPos dessous) {
+        BlockPos.MutableBlockPos q = dessous.mutable();
+        for (int i = 0; i <= MAX_CASCADE; i++) {
+            BlockState s = level.getBlockState(q);
+            if (s.getBlock() instanceof StructureBlock) {
+                return true;
+            }
+            // un lit ou un sac de couchage est un tapis : rien ne tient dessus (isSupported)
+            if (!PlacableSet.contains(level, s.getBlock()) || s.getBlock() instanceof BedBlock) {
+                return false;
+            }
+            q.move(Direction.DOWN);
+        }
+        return false;
     }
 
     /**

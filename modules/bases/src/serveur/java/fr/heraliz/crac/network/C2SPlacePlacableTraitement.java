@@ -70,7 +70,8 @@ public final class C2SPlacePlacableTraitement {
         if (!claimAnchor) {
             Claim claim = ClaimManager.getAt(level, placePos);
             if (claim == null) {
-                player.displayClientMessage(Txt.red("crac.placable.only_in_claim"), true);
+                // HeraliZ (11/11) : même refus que la pose en survie (BuildEventHandler)
+                player.displayClientMessage(Txt.red(fr.heraliz.crac.placable.PlacableSupport.BASE_SEULEMENT), true);
                 return;
             }
 
