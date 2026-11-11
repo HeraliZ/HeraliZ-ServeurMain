@@ -1,6 +1,7 @@
 package fr.heraliz.armory.cible;
 
 import fr.heraliz.armory.armor.Equiper;
+import fr.heraliz.armory.armor.GearDef;
 import fr.heraliz.armory.armor.PieceDef;
 import fr.heraliz.armory.network.PaquetsCible;
 import fr.heraliz.armory.registry.ModItems;
@@ -242,6 +243,7 @@ public class CibleEssaiServeur extends CibleEssai {
             }
         }));
         for (PieceDef def : t.pieces()) Equiper.piece(this, def, new ItemStack(ModItems.get(def)));
+        for (GearDef g : t.objets()) Equiper.objet(this, g, new ItemStack(ModItems.GEAR.get(g.id()).get()));   // 11/11 : ghillie
         entityData.set(TENUE, t.id());
     }
 

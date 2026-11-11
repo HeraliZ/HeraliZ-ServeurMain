@@ -92,12 +92,20 @@ COMBINAISONS = {
     "plongee": ("rare", 6, 0, False),
 }
 
+# Ghillies (11/11, retour du propriétaire : « la tenue ghillie ne réduit pas les dégâts alors qu'il est dit que ça
+# devrait ») : une protection au corps, comme une pièce du corps (balles, explosions, corps à corps, morsures ; pas
+# la tête). Du 14/10 au 11/11 : 0 %, alors que l'infobulle disait « Protège le corps ». Intégrale ≈ un pantalon
+# Légendaire, incomplète un peu moins ; elles s'ajoutent à l'armure portée, sous le même plafond (60 %).
+GHILLIE_INTEGRALE = 8
+GHILLIE_INCOMPLETE = 5
+
+
 # Objets de l'ancien HeralisZ Armor : (rareté, protection) par famille ; radiation 0 partout (Hazmat seulement)
 def objet(id_, rarete_avant, fam):
     if fam == "gas_mask":
         return ("rare", 5) if "military" in id_ else ("peu_commun", 4)
     if fam == "ghillie":
-        return ("legendaire", 0) if "full" in id_ else ("epique", 0)
+        return ("legendaire", GHILLIE_INTEGRALE) if "full" in id_ else ("epique", GHILLIE_INCOMPLETE)
     if fam == "armband":
         return ("commun", 0)
     return (None, 0)  # objets d'événement : rareté « event », sans protection

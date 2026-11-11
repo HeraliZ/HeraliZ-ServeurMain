@@ -84,15 +84,23 @@ public interface GearItem extends ProtectiveItem {
         }
     }
 
+    /**
+     * 11/11 (retour du propriétaire : la ghillie « ne réduit pas les dégâts alors qu'il est dit que ça devrait ») : la
+     * ligne « Protection : x % » est toujours là (grisée à 0 %, comme les pièces d'armure) et « Protège le corps / la
+     * tête » n'apparaît plus que sur un objet qui protège vraiment. Avant : « Protège le corps » sur une ghillie, un
+     * brassard ou un objet event à 0 %. Le calcul est celui de armor.Protection (même valeur, même zone, même plafond).
+     */
     static void appendTooltip(GearDef g, List<Component> lines) {
         lines.add(rarityLine(g.rarity()));
         if (g.armor()) {
             lines.add(Component.translatable("tooltip.heraliz_armory.slot", Component.translatable("tooltip.heraliz_armory.slot." + g.slot()))
                     .withStyle(ChatFormatting.GRAY));
         }
-        if (g.bullet() > 0) lines.add(PieceItem.protection(g.bullet()));
-        lines.add(Component.translatable(g.protectsHead() ? "tooltip.heraliz_armory.zone.head" : "tooltip.heraliz_armory.zone.body")
-                .withStyle(ChatFormatting.DARK_GRAY));
+        lines.add(PieceItem.protection(g.bullet()));
+        if (g.bullet() > 0) {
+            lines.add(Component.translatable(g.protectsHead() ? "tooltip.heraliz_armory.zone.head" : "tooltip.heraliz_armory.zone.body")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
         if (g.bonus() != null) {
             lines.add(Component.literal("✦ ").append(Component.translatable("bonus.heraliz_armory." + g.bonus())).withStyle(ChatFormatting.AQUA));
         }

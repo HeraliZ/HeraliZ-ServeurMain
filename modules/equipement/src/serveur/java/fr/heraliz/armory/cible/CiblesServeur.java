@@ -3,7 +3,7 @@ package fr.heraliz.armory.cible;
 import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.api.event.common.EntityHurtByGunEvent;
 import fr.heraliz.armory.armor.ArmorConfig;
-import fr.heraliz.armory.armor.PieceDef;
+import fr.heraliz.armory.armor.Guard;
 import fr.heraliz.armory.armor.Protection;
 import fr.heraliz.armory.network.ArmoryNetwork;
 import fr.heraliz.armory.network.PaquetsCible;
@@ -92,7 +92,7 @@ public final class CiblesServeur {
         double mult = ArmorConfig.PROTECTION_MULTIPLIER.get();
         for (int i = 0; i < toutes.size(); i++) {
             float b = 0, h = 0;
-            for (PieceDef p : toutes.get(i).pieces()) {
+            for (Guard p : toutes.get(i).protections()) {   // pièces et objets (11/11 : ghillies)
                 b += Protection.value(p, Protection.Kind.BULLET) * Protection.share(p, false);
                 h += Protection.value(p, Protection.Kind.BULLET) * Protection.share(p, true);
             }
