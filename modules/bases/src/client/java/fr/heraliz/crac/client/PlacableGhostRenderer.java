@@ -105,7 +105,7 @@ public final class PlacableGhostRenderer {
                         boolean table = TableArmurier.estTable(blockItem.getBlock());
                         TableArmurier.DansMur contreMur = table ? TableArmurier.dansMur(mc.level, player, hit) : null;
                         // HeraliZ (28/10) : même place que la pose (objet collé aux murs visé sur une case de mur : case
-                        // libre voisine, poussé vers elle ; descente sur un plancher à mi-bloc ; sens choisi avec R)
+                        // libre voisine, poussé vers elle ; descente sur un plancher à mi-bloc ; sens du joueur)
                         fr.heraliz.crac.block.ObjetAdossable.Place place = contreMur != null ? null
                             : stack.getItem() instanceof fr.heraliz.crac.block.ObjetAdossable oa
                             ? oa.placeDePose(ctx) : ctx.canPlace() ? new fr.heraliz.crac.block.ObjetAdossable.Place(ctx, null) : null;
@@ -203,12 +203,6 @@ public final class PlacableGhostRenderer {
                 }
             }
         }
-    }
-
-    /** Pourquoi le fantôme de cette image est rouge, sinon null (lu par l'aide de la touche R, RotationObjetClient). */
-    @Nullable
-    static String raison() {
-        return reason;
     }
 
     /** HeraliZ (03/11) : dernier refus du serveur pour un objet posé ({@code RefusServeur}), montré sous le viseur 2 s. */

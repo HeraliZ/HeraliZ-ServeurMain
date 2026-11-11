@@ -35,7 +35,8 @@ public final class NetworkHandler {
     // 29 (31/10) : nouvel état de la caisse en métal (dans_mur) : joueurs et serveur doivent avoir la même fabrication
     // 30 (31/10) : coffres par rareté dans la rangée des murs (état dans_mur des coffres) : même fabrication des deux côtés
     // 31 (02/11) : console admin retirée (5 paquets en moins, numéros décalés) : même fabrication des deux côtés
-    private static final String PROTOCOL = "31";
+    // 32 (11/11) : plus de touche R pour tourner les objets posés (paquet C2SRotationObjet retiré) : même fabrication
+    private static final String PROTOCOL = "32";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation("crac", "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
     private NetworkHandler() {
@@ -80,8 +81,7 @@ public final class NetworkHandler {
         toClient(id++, S2CPurge.class, S2CPurge::encode, S2CPurge::decode, S2CPurge::handle);
         // zones où l'on ne construit pas, en rouge plan en main (27/10, protocole 26)
         toClient(id++, S2CZonesInterdites.class, S2CZonesInterdites::encode, S2CZonesInterdites::decode, S2CZonesInterdites::handle);
-        // sens des objets collés aux murs, touche R (28/10, protocole 28)
-        toServer(id++, C2SRotationObjet.class, C2SRotationObjet::encode, C2SRotationObjet::decode, C2SRotationObjet::handle);
+        // 11/11 (protocole 32) : le sens des objets collés aux murs choisi avec R (28/10) est retiré : sens du joueur seulement
     }
 
     private static <M> void toServer(

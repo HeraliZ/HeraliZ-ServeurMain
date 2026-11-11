@@ -244,7 +244,6 @@
   "crac.placable.damaged_hp": "Abîmé : %s PV",
   "crac.placable.damaged_pickup": "Il est abîmé : ramasse-le plutôt (accroupi + clic droit).",
   "crac.placable.half_level": "Ce plancher est posé sur des demi-murs : son dessus est à mi-bloc, seuls les coffres et la caisse en métal s'y posent.",
-  "crac.objet.tourner": "%s : tourner l'objet",
   "crac.placable.bas_gene": "Un mur ou un demi-mur dépasse de ce plancher ici : le coffre ne tient pas.",
   "crac.placable.items_inside": "Il contient encore des objets.",
   "crac.placable.needs_floor": "Il lui faut un plancher ou le sol en dessous.",

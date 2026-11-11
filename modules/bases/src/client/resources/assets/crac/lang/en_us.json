@@ -244,7 +244,6 @@
   "crac.placable.damaged_hp": "Damaged: %s HP",
   "crac.placable.damaged_pickup": "It is damaged: pick it up instead (sneak + right click).",
   "crac.placable.half_level": "This floor sits half a wall up: its top is mid-block, only chests and the metal crate can stand on it.",
-  "crac.objet.tourner": "%s: turn the object",
   "crac.placable.bas_gene": "A wall or half wall sticks out of this floor here: the chest does not fit.",
   "crac.placable.items_inside": "It still has items inside.",
   "crac.placable.needs_floor": "It needs a floor or the ground under it.",

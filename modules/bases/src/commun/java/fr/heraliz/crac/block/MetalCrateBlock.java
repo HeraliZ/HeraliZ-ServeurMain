@@ -90,7 +90,7 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
         if (mur != null) {
             return this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false).setValue(Adosse.DANS_MUR, mur);
         }
-        // face vers le joueur, tournée par R (OrientationObjet) ; descendue sur un plancher à mi-bloc (Adosse.BAS)
+        // face vers le joueur (OrientationObjet) ; descendue sur un plancher à mi-bloc (Adosse.BAS)
         BlockState s = this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false)
             .setValue(Adosse.BAS, Adosse.doitDescendre(ctx.getLevel(), ctx.getClickedPos()));
         return s.setValue(Adosse.ADOSSE, Adosse.choisir(ctx, s));

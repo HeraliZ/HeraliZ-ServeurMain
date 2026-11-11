@@ -244,7 +244,6 @@
   "crac.placable.damaged_hp": "Повреждён: %s ОЗ",
   "crac.placable.damaged_pickup": "Он повреждён: лучше подбери его (присесть + ПКМ).",
   "crac.placable.half_level": "Этот пол лежит на полустенах: его верх на полублоке, на нём стоят только сундуки и металлический ящик.",
-  "crac.objet.tourner": "%s: повернуть предмет",
   "crac.placable.bas_gene": "Здесь из пола выступает стена или полустена: сундук не помещается.",
   "crac.placable.items_inside": "В нём ещё есть предметы.",
   "crac.placable.needs_floor": "Под ним нужен пол или земля.",

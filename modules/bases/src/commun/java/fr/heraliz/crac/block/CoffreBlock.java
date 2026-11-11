@@ -194,7 +194,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
     // ---------------------------------------------------------------- pose
 
     /**
-     * Face avant vers le joueur, tournée des quarts de tour choisis avec R ({@link OrientationObjet}) ; l'autre case doit
+     * Face avant vers le joueur, selon le sens où il regarde ({@link OrientationObjet}) ; l'autre case doit
      * être libre. Sur un plancher à mi-bloc, le coffre descend d'un demi-bloc ({@link Adosse#BAS}) : ses deux cases doivent
      * alors être au-dessus d'un tel plancher (un coffre large à cheval sur deux hauteurs est refusé).
      */

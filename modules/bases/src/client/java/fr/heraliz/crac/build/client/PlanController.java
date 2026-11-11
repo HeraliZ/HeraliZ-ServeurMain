@@ -149,6 +149,11 @@ public final class PlanController {
         }
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || !BuildClient.holdingPlan(mc.player)) {
+            // HeraliZ (11/11) : R appuyé sans le plan en main (même touche que la recharge des armes) est oublié, sinon il
+            // tournerait la pièce quand on prend le plan (la touche R des objets posés, retirée, les oubliait)
+            while (BuildKeys.ROTATE.consumeClick()) {
+                // rien
+            }
             return;
         }
         if (mc.screen != null) {
