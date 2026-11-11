@@ -249,6 +249,12 @@ public class CoffreBlockEntity extends RandomizableContainerBlockEntity {
         return this.items.size();
     }
 
+    /** HeraliZ (11/11) : jamais de sac à dos, vide ou plein (entonnoir, autres mods ; écran : SlotCoffreSansSacMixin). */
+    @Override
+    public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
+        return fr.heraliz.crac.heraliz.SansSac.accepte(stack) && super.canPlaceItem(slot, stack);
+    }
+
     @NotNull
     @Override
     protected NonNullList<ItemStack> getItems() {

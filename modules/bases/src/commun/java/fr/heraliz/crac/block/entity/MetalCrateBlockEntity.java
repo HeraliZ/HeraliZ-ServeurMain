@@ -130,6 +130,12 @@ public class MetalCrateBlockEntity extends RandomizableContainerBlockEntity {
         return this.items.size();
     }
 
+    /** HeraliZ (11/11) : jamais de sac à dos, vide ou plein (entonnoir, autres mods ; écran : SlotCoffreSansSacMixin). */
+    @Override
+    public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
+        return fr.heraliz.crac.heraliz.SansSac.accepte(stack) && super.canPlaceItem(slot, stack);
+    }
+
     /** Caisse d'avant restée à 3 lignes : repasse à 2 dès que sa 3e ligne est vide (personne ne regarde). */
     private void retrecir() {
         if (this.items.size() <= CASES) {

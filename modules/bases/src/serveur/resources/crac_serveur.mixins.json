@@ -6,6 +6,7 @@
   "refmap": "crac-serveur.refmap.json",
   "mixins": [
     "AncienMondeBasesMixin",
+    "SlotCoffreSansSacMixin",
     "SlotObjetsAVieMixin"
   ],
   "injectors": {
