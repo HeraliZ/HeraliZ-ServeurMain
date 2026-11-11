@@ -53,7 +53,8 @@ W, H = PW - 2 * M, PY + PH - 14 - Y
 GAUCHE, LIGNE, ENTREE, BOITE = 300, 17, 21, 34           # SaisonTab
 R_CAT = (196, 236, 276)
 CASE = 40
-ONGLETS_CLES = ["apercu", "membres", "banque", "quetes", "niveau", "saison", "permissions", "parametres"]
+# barre d'onglets de ClanScreen (ordre de ClanScreen.Onglet ; « historique » : onglet du 11/11)
+ONGLETS_CLES = ["apercu", "membres", "banque", "quetes", "niveau", "saison", "historique", "permissions", "parametres"]
 # haut des capitales sous le y de drawString (glyphes décalés de 1, police à sa vraie taille)
 DY = {FONT: 1.6, BOLD: 1.6, SMALL: 1.5, SMALL_GRAS: 1.5, SMALL_ESP: 1.5}
 
@@ -205,7 +206,7 @@ def cadre_clan(e, L, actif, nom="Nuit Rouge", tag="HZ", banniere=ROUGE):
     e.rect(PX + 8, PY + ENTETE, PX + PW - 8, PY + ENTETE + 1 / 3, BLANC, 40)
     ox, ty = PX + M, PY + ENTETE + 6
     onglet = (False, 9 / 1.302, 1.0)
-    for cle in ONGLETS_CLES if actif in ONGLETS_CLES else ONGLETS_CLES + [actif]:
+    for cle in ONGLETS_CLES:
         lib = L.t("gui.onglet." + cle)
         lw = e.largeur(lib.upper(), onglet)
         ecrit(e, lib, ox, ty, onglet, TEXT if cle == actif else MUTED)

@@ -79,3 +79,21 @@ quelque chose).
 - [ ] après une minute de jeu avec un clan (un point, une mort…), le fichier `heralisz_clans/historique/<clan>.json`
       existe sur le Ptero ; il survit à un redémarrage ;
 - [ ] serveur arrêté proprement : rien de perdu (les zombies en cours de regroupement sont écrits).
+
+## 3 bis. Onglet « Historique » de l'écran du clan (commit « À VALIDER », seulement après validation des rendus)
+
+Rendus : `historique_tout_*.png`, `historique_points_*.png`, `historique_combats_*.png` (français, anglais, russe).
+Nouvel onglet entre « Saison » et « Permissions » : titre et nombre de lignes, puces Tout / Points / Combats / Membres /
+Base / Clan, pages de 40 lignes (← 1 / 3 →), chaque ligne avec son texte, « il y a 9 min · par X », et à droite les
+points de saison gagnés (couleur de leur catégorie) ou perdus (rouge).
+
+- [ ] touche K → onglet « Historique » : les lignes arrivent tout de suite, la plus récente en haut ;
+- [ ] chaque puce ne garde que sa catégorie ; « Points » montre toutes les lignes qui ont rapporté ou coûté des points
+      (kills et morts PvP compris) ; « Tout » montre tout ;
+- [ ] plus de 40 lignes : la flèche → passe aux plus anciennes, ← revient ; une flèche éteinte ne fait rien ;
+- [ ] survol d'une ligne : infobulle avec le texte entier, la date et l'heure (« le 11/11 à 14:32 »), le joueur et les
+      points exacts (« Points de saison : +0,37 (PVE) ») ;
+- [ ] tuer des zombies, onglet ouvert : la ligne « Zombies tués ×N » apparaît en moins de 5 secondes et son nombre monte ;
+- [ ] un membre sans droits particuliers voit le même historique que le chef (pas d'onglet réservé) ;
+- [ ] en russe et en anglais : rien ne dépasse, les puces ne touchent pas les flèches ;
+- [ ] quitter le clan puis en rejoindre un autre : l'onglet montre l'historique du nouveau clan, pas celui de l'ancien.

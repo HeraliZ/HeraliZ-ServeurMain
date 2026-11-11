@@ -35,6 +35,7 @@ public final class PartieClient implements Partie {
             else if (m instanceof Packets.InvitesS2C p) ClientHandlers.invitations(p);
             else if (m instanceof Packets.TagsS2C p) ClientHandlers.tags(p);
             else if (m instanceof Packets.SaisonS2C p) ClientHandlers.saison(p);
+            else if (m instanceof Packets.HistoriqueS2C p) ClientClans.setHistorique(p);
             else if (m instanceof Packets.NoticeS2C p) ClientHandlers.notice(p);
             else if (m instanceof Packets.OuvrirS2C p) ClientHandlers.ouvrir(p);
             else if (m instanceof Packets.TerritoireHudS2C p) ClientHandlers.hudZone(p);

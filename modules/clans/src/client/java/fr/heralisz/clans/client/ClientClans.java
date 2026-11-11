@@ -9,6 +9,7 @@ import fr.heralisz.clans.model.Formes;
 import fr.heralisz.clans.model.Evenement;
 import fr.heralisz.clans.model.Grade;
 import fr.heralisz.clans.model.InvitationVue;
+import fr.heralisz.clans.model.LigneHistorique;
 import fr.heralisz.clans.model.Mouvement;
 import fr.heralisz.clans.model.Perm;
 import fr.heralisz.clans.model.QueteEtat;
@@ -54,6 +55,11 @@ public final class ClientClans {
     /** Onglet Saison (classement et bareme), null tant que le serveur ne l'a pas envoye. */
     @Nullable
     private static Packets.SaisonS2C saison;
+    /** Derniere page recue de l'historique du clan (onglet Historique), null tant que le serveur n'en a pas envoye. */
+    @Nullable
+    private static Packets.HistoriqueS2C historique;
+    /** Historique factice du banc d'essai, coupe en pages par {@link #fauxHistorique(int, int)}. */
+    private static List<LigneHistorique> fauxLignes = List.of();
     @Nullable
     private static Packets.TerritoireHudS2C hudZone;
     @Nullable
@@ -95,6 +101,11 @@ public final class ClientClans {
     @Nullable
     public static Packets.SaisonS2C saison() {
         return saison;
+    }
+
+    @Nullable
+    public static Packets.HistoriqueS2C historique() {
+        return historique;
     }
 
     @Nullable
@@ -148,6 +159,8 @@ public final class ClientClans {
 
     // ------------------------------------------------------------------ ecriture (ClientHandlers, harness)
     public static void setSnapshot(@Nullable ClanSnapshot s) {
+        // plus de clan, ou un autre clan : la page d'historique gardee n'est plus la sienne (l'onglet la redemande)
+        if (s == null || snapshot == null || !s.id().equals(snapshot.id())) historique = null;
         snapshot = s;
         if (s != null) decalageMs = s.maintenant() - System.currentTimeMillis();
         versionSnapshot++;
@@ -174,6 +187,10 @@ public final class ClientClans {
         versionSaison++;
     }
 
+    public static void setHistorique(@Nullable Packets.HistoriqueS2C h) {
+        historique = h;
+    }
+
     public static void setHudZone(@Nullable Packets.TerritoireHudS2C h) {
         hudZone = h == null || !h.visible() ? null : h;
     }
@@ -190,6 +207,7 @@ public final class ClientClans {
         invitations = List.of();
         tags = Map.of();
         saison = null;
+        historique = null;
         hudZone = null;
         panneauDrapeau = null;
         toutChange();
@@ -343,6 +361,8 @@ public final class ClientClans {
                 }
                 saison = new Packets.SaisonS2C(true, 1, now + 23L * 86400_000L, true, new int[]{2, 2, 2, 2},
                         new long[]{top.get(1).pve(), top.get(1).pvp(), top.get(1).events()}, top, List.of(), clans.length);
+                fauxLignes = lignesFactices(now);
+                historique = null;
                 decalageMs = 0;
             }
             case "creeper", "nova", "raven", "cendres" -> {
@@ -425,12 +445,14 @@ public final class ClientClans {
                 invitationsRecuesLe = System.currentTimeMillis();
                 tags = Map.of();
                 saison = null;
+                historique = null;
             }
             default -> {
                 snapshot = null;
                 invitations = List.of();
                 tags = Map.of();
                 saison = null;
+                historique = null;
             }
         }
         hudZone = null;
@@ -444,6 +466,7 @@ public final class ClientClans {
         snapshot = null;
         invitations = List.of();
         saison = null;
+        historique = null;
         toutChange();
     }
 
@@ -468,6 +491,50 @@ public final class ClientClans {
         else m.put(membre, r);
         snapshot = s.avecPerms(s.perms(), m);
         versionSnapshot++;
+    }
+
+    /** Historique factice du banc (comme les rendus de apercu_historique.py), la ligne la plus recente d'abord. */
+    private static List<LigneHistorique> lignesFactices(long now) {
+        long m = 60_000L;
+        int pts = LigneHistorique.POINTS, cbt = LigneHistorique.COMBATS, mbr = LigneHistorique.MEMBRES, base = LigneHistorique.BASE;
+        String journal = LigneHistorique.EVENEMENT;
+        List<LigneHistorique> l = new ArrayList<>(List.of(
+                new LigneHistorique(now - 2 * m, pts, LigneHistorique.PVE, NOMS[1], "historique.source.salle_rouge", List.of(), 4000),
+                new LigneHistorique(now - 6 * m, cbt, LigneHistorique.PVP, "", "historique.kill", List.of(NOMS[1], "Rastaban [RVN]"), 100),
+                new LigneHistorique(now - 9 * m, pts, LigneHistorique.PVE, NOMS[3], "historique.source.zombie", List.of("37"), 37),
+                new LigneHistorique(now - 14 * m, pts, LigneHistorique.EVENTS, NOMS[3], "historique.source.objet_boite_noire_helico", List.of(), 1200),
+                new LigneHistorique(now - 21 * m, cbt, LigneHistorique.PVP, "", "historique.mort.joueur", List.of(NOMS[3], "Hexa [ASH]"), -100),
+                new LigneHistorique(now - 33 * m, mbr, LigneHistorique.SANS, "", journal + Evenement.Genre.PERMISSION.name(),
+                        List.of(NOMS[11], NOMS[1], Perm.BASE_CONSTRUIRE.name(), Perm.Etat.AUTORISE.name()), 0),
+                new LigneHistorique(now - 48 * m, pts, LigneHistorique.PVE, NOMS[11], "historique.source.craft_rare", List.of("1"), 400),
+                new LigneHistorique(now - 62 * m, base, LigneHistorique.SANS, "", journal + Evenement.Genre.PERSO.name(),
+                        List.of("crac.journal.coeur_pose", NOMS[1]), 0),
+                new LigneHistorique(now - 75 * m, pts, LigneHistorique.EVENTS, "", "historique.event.place",
+                        List.of(LigneHistorique.CLE_ARG + "historique.event.clashwar", "2"), 12000),
+                new LigneHistorique(now - 90 * m, mbr, LigneHistorique.SANS, "", journal + Evenement.Genre.ARRIVEE.name(), List.of(NOMS[11]), 0),
+                new LigneHistorique(now - 130 * m, pts, LigneHistorique.PVE, NOMS[1], "historique.source.quete_principale", List.of("1"), 600),
+                new LigneHistorique(now - 180 * m, cbt, LigneHistorique.SANS, "", "historique.mort.zombie", List.of(NOMS[11]), 0),
+                new LigneHistorique(now - 240 * m, pts, LigneHistorique.PVE, NOMS[3], "historique.source.vente_1000", List.of("2300"), 230),
+                new LigneHistorique(now - 300 * m, LigneHistorique.CLAN, LigneHistorique.SANS, "", journal + Evenement.Genre.NIVEAU.name(), List.of("7"), 0),
+                new LigneHistorique(now - 420 * m, pts, LigneHistorique.SANS, NOMS[1], "historique.plafond.petites", List.of("50"), 0),
+                new LigneHistorique(now - 600 * m, base, LigneHistorique.TOUTES, NOMS[8], "historique.raid.perdu", List.of("RVN"), -8450)));
+        // de quoi remplir trois pages de « Tout » : zombies regroupes toutes les 30 min sur deux jours
+        for (int i = 0; i < 80; i++) {
+            int n = 5 + (i * 7) % 40;
+            l.add(new LigneHistorique(now - 660 * m - i * 30 * m, pts, LigneHistorique.PVE, NOMS[1 + i % 11], "historique.source.zombie",
+                    List.of(String.valueOf(n)), n));
+        }
+        return List.copyOf(l);
+    }
+
+    /** Etat factice (banc) : le « serveur » coupe une page de l'historique factice (meme filtre, pages de 40 comme le serveur). */
+    public static void fauxHistorique(int categorie, int page) {
+        if (!faux) return;
+        List<LigneHistorique> l = new ArrayList<>();
+        for (LigneHistorique x : fauxLignes) if (x.dans(categorie)) l.add(x);
+        int parPage = 40, pages = Math.max(1, (l.size() + parPage - 1) / parPage), n = Math.max(0, Math.min(pages - 1, page));
+        historique = new Packets.HistoriqueS2C(categorie, n, pages, l.size(),
+                List.copyOf(l.subList(n * parPage, Math.min(l.size(), (n + 1) * parPage))));
     }
 
     /** Faux HUD de zone pour le banc : etat par nom (neutre, capture, conteste, tenue, defense, protegee, limite). */

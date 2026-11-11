@@ -35,8 +35,9 @@ public final class SaisonTab extends Tab {
     /** Case d'une categorie au survol : les CASE unites qui finissent au bord droit de sa colonne (« 99 999 » y tient). */
     private static final int CASE = 40;
     private static final int C_PVE = 0x5FD08A, C_PVP = 0xFF6B6B, C_EV = 0xB57BFF;
-    private static final int[] COULEURS = {C_PVE, C_PVP, C_EV};
-    private static final String[] CATEGORIES = {"gui.saison.cat.pve", "gui.saison.cat.pvp", "gui.saison.cat.events"};
+    /** Couleurs et noms des categories (repris par l'onglet Historique). */
+    static final int[] COULEURS = {C_PVE, C_PVP, C_EV};
+    static final String[] CATEGORIES = {"gui.saison.cat.pve", "gui.saison.cat.pvp", "gui.saison.cat.events"};
     /** Categorie affichee a droite (gardee entre deux reconstructions de l'ecran). */
     private static int categorie;
     private static long derniereDemande;
@@ -161,7 +162,7 @@ public final class SaisonTab extends Tab {
     }
 
     /** Nombre mis en forme : entier avec separateur de milliers, sinon deux decimales au plus (virgule hors anglais). */
-    private static String nombre(double v) {
+    static String nombre(double v) {
         if (Math.abs(v - Math.rint(v)) < 1e-6) return Ui.nombre(Math.round(v));
         String s = String.format(Locale.ROOT, "%.2f", v).replaceAll("0+$", "").replaceAll("\\.$", "");
         String code = Minecraft.getInstance().getLanguageManager().getSelected();

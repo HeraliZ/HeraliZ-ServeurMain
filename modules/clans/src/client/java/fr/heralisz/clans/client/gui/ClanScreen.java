@@ -15,6 +15,7 @@ import fr.heralisz.clans.client.gui.kit.Icons;
 import fr.heralisz.clans.client.gui.kit.Ui;
 import fr.heralisz.clans.client.gui.tabs.ApercuTab;
 import fr.heralisz.clans.client.gui.tabs.BanqueTab;
+import fr.heralisz.clans.client.gui.tabs.HistoriqueTab;
 import fr.heralisz.clans.client.gui.tabs.SaisonTab;
 import fr.heralisz.clans.client.gui.tabs.MembresTab;
 import fr.heralisz.clans.client.gui.tabs.ParametresTab;
@@ -44,7 +45,7 @@ import java.util.Map;
 /**
  * Ecran principal du clan (echelle forcee, canevas 640 x 360, panneau min(560, l-32) x min(320, h-24)) : en-tete
  * (banniere, nom, tag, niveau, barre d'XP, en ligne, croix), barre d'onglets APERCU · MEMBRES · BANQUE · QUETES ·
- * NIVEAU · SAISON · PERMISSIONS (chef) · PARAMETRES, contenu avec marge 16. Sans clan : invitations en attente (cartes
+ * NIVEAU · SAISON · HISTORIQUE (11/11) · PERMISSIONS (chef) · PARAMETRES, contenu avec marge 16. Sans clan : invitations en attente (cartes
  * dans une liste defilante, 4 visibles, ACCEPTER / REFUSER) ou « Vous n'avez pas de clan » + FONDER UN CLAN.
  * <p>Se reconstruit seulement quand l'etat qu'il affiche change ({@link ClientClans#versionSnapshot()}, invitations
  * sans clan, classement sur cet onglet) ; les tags et la barre de zone ne le touchent pas. Une reconstruction garde le
@@ -53,7 +54,7 @@ import java.util.Map;
 public class ClanScreen extends Screen implements Hote {
     /** Onglets de l'ecran (ordre de la barre). */
     public enum Onglet {
-        APERCU, MEMBRES, BANQUE, QUETES, NIVEAU, SAISON, PERMISSIONS, PARAMETRES;
+        APERCU, MEMBRES, BANQUE, QUETES, NIVEAU, SAISON, HISTORIQUE, PERMISSIONS, PARAMETRES;
 
         public String libelle() {
             return "gui.onglet." + name().toLowerCase(Locale.ROOT);
@@ -185,6 +186,7 @@ public class ClanScreen extends Screen implements Hote {
                 case QUETES -> new QuetesTab();
                 case NIVEAU -> new NiveauTab();
                 case SAISON -> new SaisonTab();
+                case HISTORIQUE -> new HistoriqueTab();
                 case PERMISSIONS -> new PermissionsTab();
                 case PARAMETRES -> new ParametresTab();
             };
