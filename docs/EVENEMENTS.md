@@ -196,7 +196,7 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
 | Coffre d'événement T7 | 5 | première ouverture | `loot` · `SaisonLoot` |
 | Vente aux PNJ | 1 point pour 1 000 hérals | objets trouvés seulement ; plafonné | `pnj` · `SaisonQuetes` |
 | Arme fabriquée | 1 / 2 / 4 / 8 selon la rareté | plafonné ; 11/11 : l'arme que TaCZ pose aux pieds du joueur est comptée (avant : jamais) | `pnj` · `SaisonQuetes.ramassage` |
-| Quête de Varga | 6 (10 avant le 11/11) | une fois chacune ; plafond des petites actions | `pnj` · `Moteur` |
+| Quête de Varga | 2 (10 avant le 11/11) | une fois chacune ; plafond des petites actions | `pnj` · `Moteur` |
 | Quête de clan | 5 | 3 par jour, 2 par semaine ; temps et distance comptés seulement en jeu actif sur la carte | `clans` · `Quetes` |
 | Kill d'un joueur / mort | +1 / −1 | hors même IP, même clan, victime sans arme ni armure ; même victime ×1, ×0,5 puis 0 sur 6 h ; jamais sous 0 | `ClanEvents`, `Saison.kill` |
 | ClashWar | places 100 / 60 / 40 / 20, participation 5, **×2** | au moins 4 clans différents | `clashwar` · `Recompenses` |
