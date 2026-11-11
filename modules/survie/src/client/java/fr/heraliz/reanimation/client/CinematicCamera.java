@@ -12,6 +12,20 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles;
 
+/**
+ * Caméra de cinéma d'une exécution, chez le bourreau ET chez la victime (la scène les concerne tous les deux,
+ * {@link ExecutionScenes#local()}) : 3e personne pendant toute la scène, plans de la chorégraphie, puis retour à la vue
+ * d'avant à la fin, si l'exécution est interrompue, à la mort (nouveau joueur : plus dans la scène), au changement de
+ * monde ou à la déconnexion.
+ * <p>11/11 (retour du propriétaire : « quand on exécute quelqu'un, on est en première personne ») : geckolib222 (jar d'un
+ * autre auteur, pas touché) remet la vue à la 1re personne à CHAQUE tick hors du créatif
+ * ({@code software.bernie.example.client.handler.PlayerShaderHandler.onClientTick}, aux deux phases du tick, et
+ * {@code BleedingEventHandler.onPlayerTick}). Si son écouteur passe APRÈS {@link #tick} (ordre d'inscription des mods,
+ * qui change d'un lancement du jeu à l'autre : Forge construit les mods en parallèle), l'image était dessinée à la 1re
+ * personne et les plans de la scène sautés ({@link #onCameraAngles} ne bouge la caméra qu'en 3e personne). Les ticks
+ * passent tous avant le dessin de l'image : la 3e personne est remise au début de chaque image ({@link #image}), après eux
+ * (même remède que les emotes depuis le 22/10, {@code fr.heraliz.emote.client.CameraEmote.image}).</p>
+ */
 public final class CinematicCamera {
    private static CameraType savedCamera;
    private static Vec3 pos;
@@ -40,6 +54,29 @@ public final class CinematicCamera {
          mc.options.setCameraType(savedCamera);
          reset();
       }
+   }
+
+   /**
+    * Début de chaque image (RenderTickEvent, phase START, après tous les ticks de l'image) : pendant la scène, 3e personne
+    * remise si un autre mod l'a ramenée à la 1re pendant les ticks (geckolib222, touche F5). Rien hors d'une exécution.
+    */
+   static void image(Minecraft mc) {
+      if (savedCamera == null || !mc.options.getCameraType().isFirstPerson()) {
+         return;
+      }
+
+      if (ExecutionScenes.local() != null && (Boolean)ClientConfig.EXECUTION_CAMERA.get()) {
+         mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+      }
+   }
+
+   /** Déconnexion (11/11) : la vue d'avant la scène est remise (avant : la 3e personne restait), puis tout est oublié. */
+   static void arreter(Minecraft mc) {
+      if (savedCamera != null) {
+         mc.options.setCameraType(savedCamera);
+      }
+
+      reset();
    }
 
    static void reset() {

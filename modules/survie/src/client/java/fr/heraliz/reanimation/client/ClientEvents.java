@@ -30,6 +30,7 @@ import net.minecraftforge.client.event.ViewportEvent.ComputeFov;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.event.TickEvent.RenderTickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
@@ -97,6 +98,14 @@ public final class ClientEvents {
          CinematicCamera.tick(mc);
          ExecutionFx.tick(mc);
          LocalEffects.tick(mc);
+      }
+   }
+
+   /** 11/11 : début de chaque image, après tous les ticks (3e personne de l'exécution, voir {@link CinematicCamera}). */
+   @SubscribeEvent
+   public static void onRenderTick(RenderTickEvent event) {
+      if (event.phase == Phase.START) {
+         CinematicCamera.image(Minecraft.getInstance());
       }
    }
 
@@ -263,7 +272,7 @@ public final class ClientEvents {
       ExecutionFx.clear();
       KnifeTrail.clear();
       ScriptFx.clear();
-      CinematicCamera.reset();
+      CinematicCamera.arreter(Minecraft.getInstance());
    }
 
    @SubscribeEvent
