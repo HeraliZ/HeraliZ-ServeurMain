@@ -316,10 +316,9 @@ public final class StructureService {
             if (!creative && !isMember(level, player, own, ClanAccess.Action.BUILD)) {
                 return "crac.build.not_yours";
             }
-            for (BlockPos pos : blocks) {
-                if (!own.contains(pos)) {
-                    return "crac.build.outside_zone";
-                }
+            // HeraliZ (11/11) : jusqu'au bord dessiné de la zone ; un mur posé sur ce bord est dedans (Claim.tientPiece)
+            if (!own.tientPiece(key, blocks)) {
+                return "crac.build.outside_zone";
             }
             if (claims.size() > 1 || (claims.size() == 1 && !claims.containsKey(own.anchor()))) {
                 return "crac.build.too_close";
@@ -1219,10 +1218,9 @@ public final class StructureService {
         }
         Claim probe = new Claim(new UUID(0, 0), claimPos, tier);
         for (Piece p : store.piecesOf(b)) {
-            for (BlockPos pos : PieceIndex.blocksOf(p)) {
-                if (!probe.contains(pos)) {
-                    return "crac.claim.too_big";
-                }
+            // HeraliZ (11/11) : même règle que la pose des pièces (un mur sur le bord de la zone est dedans)
+            if (!probe.tientPiece(p.key(), PieceIndex.blocksOf(p))) {
+                return "crac.claim.too_big";
             }
         }
         return null;
@@ -1238,20 +1236,28 @@ public final class StructureService {
         if (b == null) {
             return 1;
         }
-        int horizontal = 0;
-        int vertical = 0;
-        for (Piece p : store(level).piecesOf(b)) {
-            for (BlockPos pos : PieceIndex.blocksOf(p)) {
-                horizontal = Math.max(horizontal, Math.max(Math.abs(pos.getX() - claimPos.getX()), Math.abs(pos.getZ() - claimPos.getZ())));
-                vertical = Math.max(vertical, Math.abs(pos.getY() - claimPos.getY()));
-            }
-        }
+        List<Piece> pieces = store(level).piecesOf(b);
         for (int tier = 1; tier < 3; tier++) {
-            if (horizontal <= Config.claimRadius(tier) && vertical <= Config.claimYRadius(tier)) {
+            if (zoneTient(claimPos, tier, pieces)) {
                 return tier;
             }
         }
         return 3;
+    }
+
+    /**
+     * HeraliZ (11/11) : la zone du palier {@code tier} autour de {@code claimPos} tient toutes ces pièces, avec la règle de la
+     * pose ({@link Claim#tientPiece}) : un mur posé sur le bord d'une zone n'oblige pas à payer le palier suivant.
+     */
+    private static boolean zoneTient(BlockPos claimPos, int tier, List<Piece> pieces) {
+        int r = Config.claimRadius(tier);
+        int yr = Config.claimYRadius(tier);
+        for (Piece p : pieces) {
+            if (!Claim.tientPiece(claimPos, r, yr, p.key(), PieceIndex.blocksOf(p))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Links the building under a new Claim Block to its claim; the claim's group becomes the building's owner. */

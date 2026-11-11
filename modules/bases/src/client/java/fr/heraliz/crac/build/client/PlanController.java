@@ -363,14 +363,15 @@ public final class PlanController {
             if (!own.ownedByMe()) {
                 return "crac.build.not_yours";
             }
-            for (BlockPos pos : blocks) {
-                if (!own.contains(pos)) {
-                    return "crac.build.outside_zone";
-                }
+            // HeraliZ (11/11) : jusqu'au bord dessiné de la zone ; un mur posé sur ce bord est dedans (Claim.tientPiece)
+            if (!own.tientPiece(key, blocks)) {
+                return "crac.build.outside_zone";
             }
             for (BlockPos pos : blocks) {
-                // where zones overlap, a block belongs to the nearest Claim Block
-                if (!own.equals(S2CNearbyClaims.claimAt(claims, pos))) {
+                // where zones overlap, a block belongs to the nearest Claim Block ; HeraliZ (11/11) : la moitié extérieure
+                // d'un mur posé sur le bord de la zone n'est dans aucune zone, comme au serveur (seule une autre zone gêne)
+                S2CNearbyClaims.ClaimEntry here = S2CNearbyClaims.claimAt(claims, pos);
+                if (here != null && !own.equals(here)) {
                     return "crac.build.too_close";
                 }
             }

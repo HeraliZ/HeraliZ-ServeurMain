@@ -70,5 +70,10 @@ public record S2CNearbyClaims(List<S2CNearbyClaims.ClaimEntry> claims) {
                 && Math.abs(pos.getZ() - this.center.getZ()) <= this.radius
                 && Math.abs(pos.getY() - this.center.getY()) <= this.yRadius;
         }
+
+        /** HeraliZ (11/11) : la zone tient la pièce, comme au serveur ({@link Claim#tientPiece(BlockPos, int, int, fr.heraliz.crac.build.model.PieceKey, java.util.Collection)}). */
+        public boolean tientPiece(fr.heraliz.crac.build.model.PieceKey key, java.util.Collection<BlockPos> blocs) {
+            return Claim.tientPiece(this.center, this.radius, this.yRadius, key, blocs);
+        }
     }
 }

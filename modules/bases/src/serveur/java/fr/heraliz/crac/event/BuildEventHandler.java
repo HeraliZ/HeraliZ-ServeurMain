@@ -173,8 +173,13 @@ public class BuildEventHandler {
      * block (comme toute construction). Ni la Purge ni l'entretien n'entrent en compte : ce n'est pas une pièce.
      */
     @Nullable
-    private static String problemeEchelle(ServerLevel sl, ServerPlayer player, BlockPos pos) {
+    private static String problemeEchelle(ServerLevel sl, ServerPlayer player, BlockState state, BlockPos pos) {
         Claim claim = ClaimManager.getAt(sl, pos);
+        if (claim == null && state.hasProperty(fr.heraliz.crac.block.EchelleBlock.FACING)) {
+            // HeraliZ (11/11) : contre un mur ou une fondation posés sur le bord d'une zone, l'échelle est juste derrière la
+            // ligne : la base de la pièce qui la tient compte (mêmes règles qu'à l'intérieur)
+            claim = ClaimManager.getAt(sl, pos.relative(state.getValue(fr.heraliz.crac.block.EchelleBlock.FACING).getOpposite()));
+        }
         if (claim == null) {
             return null;
         }
@@ -188,7 +193,7 @@ public class BuildEventHandler {
     @Nullable
     private static String placeProblem(ServerLevel sl, ServerPlayer player, BlockState state, List<BlockPos> cells) {
         if (state.getBlock() instanceof fr.heraliz.crac.block.EchelleBlock) {
-            return problemeEchelle(sl, player, cells.get(0));
+            return problemeEchelle(sl, player, state, cells.get(0));
         }
         // HeraliZ (11/11, demande du propriétaire) : les coffres et rangements de Minecraft ne se posent plus, nulle part
         if (PlacableSet.poseInterdite(state)) {
