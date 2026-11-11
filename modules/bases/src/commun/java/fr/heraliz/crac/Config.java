@@ -127,6 +127,19 @@ public class Config {
             "(ground, foundation, floor) or another placable. Stacked placables fall when what holds them is destroyed."
         )
         .define("needSupport", true);
+    /**
+     * HeraliZ (11/11, demande du propriétaire : plus de coffres « non moddés » dans les bases) : ce que plus aucun joueur ne
+     * pose, nulle part (créatif excepté). Ceux déjà posés restent des objets posés comme avant. Lu par
+     * {@link fr.heraliz.crac.placable.PlacableSet#poseInterdite}.
+     */
+    public static final ConfigValue<List<? extends String>> forbiddenBlocks = BUILDER.comment(
+            "HeraliZ (11/11, owner's choice): blocks no player may place anywhere (creative excepted): Minecraft's chests and",
+            "other storage blocks, the bases use CRac's chests (metal crate, trunk, locker, weapons crate, safe). Those already",
+            "placed stay as they are (HP, raids, pickup). Block ids, or block tags written #modid:tag."
+        )
+        .defineList("forbiddenBlocks", List.of("minecraft:chest", "minecraft:trapped_chest", "minecraft:barrel", "#minecraft:shulker_boxes",
+                "minecraft:hopper", "minecraft:dispenser", "minecraft:dropper"),
+            o -> o instanceof String s && ResourceLocation.tryParse(s.startsWith("#") ? s.substring(1) : s) != null);
 
     static {
         BUILDER.pop();

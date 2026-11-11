@@ -240,6 +240,7 @@
   "crac.note.new_building": "new building",
   "crac.placable.cut": "This object would stick out over the edge of the floor: place it further inside the foundation or floor.",
   "crac.placable.touche_piece": "This object would touch a wall, a door, a window or another piece: place it somewhere else.",
+  "crac.placable.interdit": "Minecraft chests and storage blocks can no longer be placed: use the base chests (metal crate, trunk, locker…).",
   "crac.placable.damaged_hp": "Damaged: %s HP",
   "crac.placable.damaged_pickup": "It is damaged: pick it up instead (sneak + right click).",
   "crac.placable.half_level": "This floor sits half a wall up: its top is mid-block, only chests and the metal crate can stand on it.",

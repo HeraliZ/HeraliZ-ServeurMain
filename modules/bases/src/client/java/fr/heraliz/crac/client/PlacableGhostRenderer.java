@@ -147,8 +147,9 @@ public final class PlacableGhostRenderer {
                             BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
                             ClientClaimCache.ClaimHere here = ClientClaimCache.claimAt(placePos);
                             if (here != ClientClaimCache.ClaimHere.NONE) {
-                                // the server's reasons (BuildEventHandler.placeProblem), first failing one shown
-                                String why = null;
+                                // the server's reasons (BuildEventHandler.placeProblem), first failing one shown ; HeraliZ
+                                // (11/11) : un coffre ou rangement de Minecraft ne se pose plus, nulle part
+                                String why = PlacableSet.poseInterdite(state) ? PlacableSet.POSE_INTERDITE : null;
                                 for (BlockPos cell : cells) {
                                     ClientClaimCache.ClaimHere claim = ClientClaimCache.claimAt(cell);
                                     if (why == null && claim != ClientClaimCache.ClaimHere.OWN) {

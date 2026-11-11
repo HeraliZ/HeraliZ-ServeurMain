@@ -240,6 +240,7 @@
   "crac.note.new_building": "nouveau bâtiment",
   "crac.placable.cut": "Cet objet dépasserait du bord du sol : pose-le plus vers l’intérieur de la fondation ou du plancher.",
   "crac.placable.touche_piece": "Cet objet toucherait un mur, une porte, une fenêtre ou une autre pièce : pose-le ailleurs.",
+  "crac.placable.interdit": "Les coffres et rangements de Minecraft ne se posent plus : utilise les coffres de base (caisse en métal, malle, casier…).",
   "crac.placable.damaged_hp": "Abîmé : %s PV",
   "crac.placable.damaged_pickup": "Il est abîmé : ramasse-le plutôt (accroupi + clic droit).",
   "crac.placable.half_level": "Ce plancher est posé sur des demi-murs : son dessus est à mi-bloc, seuls les coffres et la caisse en métal s'y posent.",

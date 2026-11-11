@@ -106,6 +106,10 @@
 	#If true, placable blocks inside claims must stand on something: a full top face below
 	#(ground, foundation, floor) or another placable. Stacked placables fall when what holds them is destroyed.
 	needSupport = true
+	#HeraliZ (11/11, owner's choice): blocks no player may place anywhere (creative excepted): Minecraft's chests and
+	#other storage blocks, the bases use CRac's chests (metal crate, trunk, locker, weapons crate, safe). Those already
+	#placed stay as they are (HP, raids, pickup). Block ids, or block tags written #modid:tag.
+	forbiddenBlocks = ["minecraft:chest", "minecraft:trapped_chest", "minecraft:barrel", "#minecraft:shulker_boxes", "minecraft:hopper", "minecraft:dispenser", "minecraft:dropper"]
 
 [group]
 	#Maximum number of members in a group.

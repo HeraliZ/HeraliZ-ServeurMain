@@ -190,6 +190,10 @@ public class BuildEventHandler {
         if (state.getBlock() instanceof fr.heraliz.crac.block.EchelleBlock) {
             return problemeEchelle(sl, player, cells.get(0));
         }
+        // HeraliZ (11/11, demande du propriétaire) : les coffres et rangements de Minecraft ne se posent plus, nulle part
+        if (PlacableSet.poseInterdite(state)) {
+            return PlacableSet.POSE_INTERDITE;
+        }
         Claim claim = ClaimManager.getAt(sl, cells.get(0));
         for (BlockPos cell : cells) {
             Claim c = ClaimManager.getAt(sl, cell);
@@ -241,6 +245,15 @@ public class BuildEventHandler {
             return placable || Config.allowBreakInClaim.get() ? null : "crac.claim.only_placables";
         }
         return Config.protectOutsideClaims.get() ? "crac.claim.only_inside" : null;
+    }
+
+    /**
+     * HeraliZ (11/11) : refus d'un objet connu dès le clic droit (la pose, {@link #placeProblem}, refait la règle) : un
+     * coffre ou rangement de Minecraft, que plus personne ne pose ({@link PlacableSet#poseInterdite}).
+     */
+    @Nullable
+    private static String refusAuClic(ServerLevel sl, Block block) {
+        return PlacableSet.poseInterdite(block.defaultBlockState()) ? PlacableSet.POSE_INTERDITE : null;
     }
 
     private static boolean placesSomething(Item item) {
@@ -300,6 +313,10 @@ public class BuildEventHandler {
                             if (deny != null && item instanceof BlockItem aid && raidAccessClick(sl, player, aid.getBlock().defaultBlockState(), event.getPos(), placePos)) {
                                 // a raider's climbing or crawling aid: the place event checks the block it really sets
                                 deny = null;
+                            }
+                            if (deny == null && item instanceof BlockItem objet) {
+                                // HeraliZ (11/11) : refusé dès le clic, avec son message, comme les autres refus de ce clic
+                                deny = refusAuClic(sl, objet.getBlock());
                             }
                             if (deny != null) {
                                 event.setUseItem(Result.DENY);
