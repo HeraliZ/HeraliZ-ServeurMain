@@ -4,12 +4,21 @@ import fr.heraliz.airstrike.AirstrikeMod;
 import fr.heraliz.airstrike.api.HelicoApi;
 import fr.heraliz.airstrike.helico.Veille;
 import fr.heraliz.airstrike.registry.ModEntities;
+import fr.heraliz.airstrike.registry.ModParticles;
+import fr.heraliz.airstrike.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -25,6 +34,9 @@ import java.util.function.Consumer;
  * d'événement) ; épave, fumée et feu sont retirés {@code retrait} secondes plus tard. Fin du feu et retrait en heure de
  * jeu absolue (vérifiés aussi par {@link Veille}, même si l'épave ne tourne pas). Pendant le feu, le tronçon reste chargé
  * et actif (ticket) : le butin apparaît même si personne n'est là. Jamais sauvegardée.
+ * <p>11/11 : le module des événements pose le coffre dès l'impact, fermé jusqu'à la fin du feu ({@link #finDuFeu}), hors
+ * des boîtes de collision de l'épave ({@link #libre}) ; une balle qui touche l'épave s'y arrête dans une gerbe
+ * d'étincelles ({@link #touche}).
  */
 public class HelicopterWreckServeur extends HelicopterWreck {
     /** Tient le tronçon de l'épave actif pendant le feu ; rafraîchi chaque seconde, expire seul. */
@@ -60,6 +72,18 @@ public class HelicopterWreckServeur extends HelicopterWreck {
         return EPAVES.values();
     }
 
+    /** Heure de jeu où le feu de l'épave {@code id} s'éteint ; -1 : pas d'épave, ou feu déjà éteint. */
+    public static long finDuFeu(String id) {
+        HelicopterWreckServeur w = epave(id);
+        return w == null || w.feuFini ? -1 : w.feuFin;
+    }
+
+    /** Aucune boîte de collision de l'épave {@code id} ne touche cette boîte (vrai aussi sans épave). */
+    public static boolean libre(String id, AABB boite) {
+        HelicopterWreckServeur w = epave(id);
+        return w == null || !w.gene(boite);
+    }
+
     /** Retire l'épave, son feu et sa fumée sans rien donner (staff). */
     public static boolean retirer(String id) {
         HelicopterWreckServeur w = EPAVES.remove(id);
@@ -81,7 +105,9 @@ public class HelicopterWreckServeur extends HelicopterWreck {
         long now = level.getGameTime();
         w.feuFin = now + feuTicks;
         w.fin = now + vieTicks;
-        w.moveTo(p.x, p.y, p.z, lacet, 0f);
+        // lacet arrondi comme dans le paquet d'apparition : boîtes de collision au même endroit chez le joueur
+        w.moveTo(p.x, p.y, p.z, lacetEnvoye(lacet), 0f);
+        w.placerMorceaux();
         w.entityData.set(FEU_FIN, (int) (w.feuFin & 0x7FFFFFFFL));
         ChunkPos cp = new ChunkPos(BlockPos.containing(p));
         level.getChunkSource().addRegionTicket(TICKET, cp, RAYON_TICKET, w.getId());
@@ -129,6 +155,32 @@ public class HelicopterWreckServeur extends HelicopterWreck {
             prevenir(s -> s.fini(id, "epave_retiree"));
             discard();
         }
+    }
+
+    /** Dernière gerbe d'étincelles (heure de jeu) : au plus une tous les 2 ticks. */
+    private long derniersEclats = -10;
+
+    /**
+     * Une balle (ou tout projectile) touche une boîte de l'épave : elle s'y arrête (TaCZ la retire après le coup) ;
+     * étincelles et claquement de métal au point d'entrée, au plus tous les 2 ticks. Coups et explosions : rien. L'épave
+     * n'a pas de points de vie.
+     */
+    @Override
+    boolean touche(HelicopterWreckPart m, DamageSource source) {
+        Entity balle = source.getDirectEntity();
+        if (balle == null || balle instanceof Player || source.is(DamageTypeTags.IS_EXPLOSION) || !(level() instanceof ServerLevel sl)) {
+            return false;
+        }
+        long now = sl.getGameTime();
+        if (now - derniersEclats < 2) return false;
+        derniersEclats = now;
+        Vec3 de = balle.position();
+        Vec3 ou = m.getBoundingBox().clip(de, de.add(balle.getDeltaMovement())).orElse(m.getBoundingBox().getCenter());
+        for (ServerPlayer p : sl.players()) {
+            if (p.distanceToSqr(ou) < 96 * 96) sl.sendParticles(p, ModParticles.SPARK.get(), true, ou.x, ou.y, ou.z, 3, 0.1, 0.1, 0.1, 0.2);
+        }
+        sl.playSound(null, ou.x, ou.y, ou.z, ModSounds.BULLET_IMPACT.get(), SoundSource.BLOCKS, 1.5f, 1.2f + random.nextFloat() * 0.3f);
+        return false;
     }
 
     private void retirerNuages() {

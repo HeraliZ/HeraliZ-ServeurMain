@@ -58,7 +58,7 @@
   "heraliz_carte.helico": "Military helicopter",
   "heraliz_carte.helico.aide": "shoot it down to get its black box",
   "heraliz_carte.epave": "Helicopter wreck",
-  "heraliz_carte.epave.aide": "chest and black box once the fire dies down",
+  "heraliz_carte.epave.aide": "chest locked while the fire burns, black box inside",
   "heraliz_carte.menu.titre": "Mark here for the clan",
   "heraliz_carte.ping.de": "Marked by %s",
   "heraliz_carte.ping.retirer": "Right click: remove",

@@ -5,6 +5,7 @@ import fr.heraliz.airstrike.entity.HelicopterWreckServeur;
 import fr.heraliz.airstrike.helico.Veille;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -24,8 +25,8 @@ public final class HelicoApi {
 
     /** Réglages d'un vol (lus dans {@code config/heraliz_evenements/helico.json} par le module des événements). */
     public static final class Reglages {
-        /** Points de vie. */
-        public float pv = 600f;
+        /** Points de vie (11/11, demande du propriétaire : 6 fois plus qu'avant, 600 -> 3 600). */
+        public float pv = 3600f;
         /** Explosions (grenades, roquettes…) et poutre de queue. */
         public float multExplosifs = 2f, multQueue = 1.25f;
         /** Sans coup reçu depuis ce temps (s), il regagne ce pourcentage de ses PV max par seconde, jusqu'au maximum. */
@@ -95,11 +96,14 @@ public final class HelicoApi {
         default void abattu(Abattu a) {
         }
 
-        /** Écrasé au sol en {@code ou} (annonce du secteur). */
+        /**
+         * Écrasé au sol en {@code ou} (annonce du secteur). L'épave est déjà posée : {@link #finDuFeu} et {@link #libre}
+         * répondent (coffre posé dès l'impact, fermé pendant le feu).
+         */
         default void impact(String id, Vec3 ou) {
         }
 
-        /** Le feu de l'épave est éteint : place au butin, près de {@code ou} (sol de l'épave). */
+        /** Le feu de l'épave est éteint : le coffre s'ouvre, ou place au butin s'il n'a pas pu être posé, près de {@code ou}. */
         default void feuEteint(String id, BlockPos ou) {
         }
 
@@ -143,5 +147,18 @@ public final class HelicoApi {
     public static Etat etat(String id) {
         HelicopterServeur h = HelicopterServeur.enVol(id);
         return h == null ? null : h.etat();
+    }
+
+    /** Heure de jeu (level.getGameTime) où le feu de l'épave {@code id} s'éteint ; -1 : pas d'épave, ou feu déjà éteint. */
+    public static long finDuFeu(String id) {
+        return HelicopterWreckServeur.finDuFeu(id);
+    }
+
+    /**
+     * Vrai si aucune boîte de collision de l'épave {@code id} ne touche {@code boite} (vrai aussi sans épave) : un coffre
+     * ou un objet posé là reste atteignable, jamais dans la carcasse.
+     */
+    public static boolean libre(String id, AABB boite) {
+        return HelicopterWreckServeur.libre(id, boite);
     }
 }

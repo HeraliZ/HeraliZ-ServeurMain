@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fr.heraliz.evenements.HeralizEvenements;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
@@ -317,6 +318,14 @@ public final class Directeur {
         int i = id.indexOf('#');
         Evenement e = EVENEMENTS.get(i < 0 ? id : id.substring(0, i));
         if (e != null) e.coffreOuvert(p, id);
+    }
+
+    /** Ouverture d'un coffre d'événement pas encore ouvert refusée pour l'instant : le message, ou null (permise). */
+    @Nullable
+    public static Component refusOuverture(ServerPlayer p, String id) {
+        int i = id.indexOf('#');
+        Evenement e = EVENEMENTS.get(i < 0 ? id : id.substring(0, i));
+        return e == null ? null : e.refusOuverture(p, id);
     }
 
     // ------------------------------------------------------------------ agenda (joueurs)

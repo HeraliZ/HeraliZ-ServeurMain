@@ -1,5 +1,6 @@
 package fr.heraliz.evenements.serveur;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -46,5 +47,15 @@ public interface Evenement {
 
     /** Un coffre de cet événement est ouvert pour la première fois ({@code id} : « largage#12 »). */
     default void coffreOuvert(ServerPlayer p, String id) {
+    }
+
+    /**
+     * Un joueur essaie d'ouvrir un coffre de cet événement pas encore ouvert ({@code id} : numéro porté par le coffre,
+     * « helico#12 ») : le message à lui montrer si c'est refusé pour l'instant (coffre de l'épave dans le feu), null s'il
+     * peut l'ouvrir. Rien par défaut.
+     */
+    @Nullable
+    default Component refusOuverture(ServerPlayer p, String id) {
+        return null;
     }
 }

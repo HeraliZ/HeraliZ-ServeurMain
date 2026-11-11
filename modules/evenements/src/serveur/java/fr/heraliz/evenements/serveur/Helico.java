@@ -26,7 +26,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -75,11 +77,17 @@ import java.util.UUID;
  * est marquée « essai » (hérals à la revente, jamais de points) sauf {@code avec_points} ; de même si un joueur en
  * créatif ou en spectateur l'a touché ({@code Abattu.essai}). Les dégâts de chaque joueur (et son clan au moment du
  * coup) sont seulement notés au journal.</li>
- * <li><b>Butin</b> : le feu de l'épave éteint, un coffre T7 ({@code coffre_t7}, HeraliZ Loot, par réflexion) à 2 blocs
- * de hauteur au plus de l'épave, sur un sol de crash ({@code #airstrike:sol_crash}), et l'objet d'événement « Boîte noire
- * d'hélicoptère » ; explosion en l'air : seulement l'objet, posé sur le dernier sol valide survolé (choisi par le module
- * monde, {@code Abattu.sol}), sinon rien (journal). Tronçon pas chargé : un ticket le demande, l'objet est posé dès qu'il
- * est là ({@link #objetsEnAttente}).</li>
+ * <li><b>Butin</b> : un coffre T7 ({@code coffre_t7}, HeraliZ Loot, par réflexion) à 2 blocs de hauteur au plus de
+ * l'épave, sur un sol de crash ({@code #airstrike:sol_crash}), jamais dans ses boîtes de collision, et l'objet d'événement
+ * « Boîte noire d'hélicoptère » à sa première ouverture. 11/11 (demande du propriétaire : « les caisses doivent être là dès
+ * le début, juste inlootables le temps que le feu se dissipe ») : le coffre est posé dès l'impact et refuse de s'ouvrir tant
+ * que le feu brûle ({@link #refusOuverture}, demandé par HeraliZ Loot à chaque essai, message au joueur) ; il reste
+ * {@code coffre_t7_minutes} après la fin du feu, comme avant. Annulé pendant le feu (staff, arrêt du serveur) : le coffre
+ * encore fermé est retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu, sinon l'objet au sol à
+ * côté de l'épave ({@link #horsEpave}).
+ * Explosion en l'air : seulement l'objet, posé sur le dernier sol valide survolé (choisi par le module monde,
+ * {@code Abattu.sol}), sinon rien (journal). Tronçon pas chargé : un ticket le demande, l'objet est posé dès qu'il est là
+ * ({@link #objetsEnAttente}).</li>
  * </ul>
  * Réglages : {@code config/heraliz_evenements/helico.json} (relu par {@code /recharger evenements}). Hors événement : une
  * comparaison d'heure par minute ({@link #minute}).
@@ -117,6 +125,15 @@ final class Helico implements Evenement {
     /** Départ demandé par le staff ({@code /event helico lancer ici}). */
     @Nullable
     private Vec3 departDemande;
+    /** Coffre de l'épave (11/11) : posé dès l'impact, fermé jusqu'à la fin du feu. */
+    @Nullable
+    private BlockPos coffrePos;
+    @Nullable
+    private ServerLevel coffreMonde;
+    /** Numéro d'événement porté par le coffre (celui de la boîte noire : « helico#12 », ou « helico#12!essai »). */
+    private String coffreEvenement = "";
+    /** Heure de jeu jusqu'à laquelle le coffre refuse de s'ouvrir (0 : ouvert à tous). */
+    private long verrouJusqua;
 
     Helico() {
         instance = this;
@@ -206,6 +223,10 @@ final class Helico implements Evenement {
         programme = false;
         debutMs = System.currentTimeMillis();
         secteur = "";
+        coffrePos = null;
+        coffreMonde = null;
+        coffreEvenement = "";
+        verrouJusqua = 0;
         // heure provisoire du suivant dès le départ (arrêt du serveur pendant le vol) ; refaite à la fin de celui-ci
         prochainMs = tirer();
         sauverEtat();
@@ -248,6 +269,7 @@ final class Helico implements Evenement {
         if (idCourant == null) return;
         String id = idCourant;
         idCourant = null;   // avant de retirer : le suivi ignore ce qui suit
+        retirerCoffreFerme(motif);
         HelicoApi.annuler(id);
         programmer();
         Outils.journal(id + " : annule (" + motif + "), rien n'est donne");
@@ -284,6 +306,11 @@ final class Helico implements Evenement {
                 idCourant = null;
                 programmer();
                 Outils.journal(id + " : fin (" + cause + ")");
+                if (verrouJusqua > 0) {
+                    // épave partie avant la fin du feu (retirée par le staff, perdue) : plus de feu, le coffre s'ouvre
+                    verrouJusqua = 0;
+                    Outils.journal(id + " : plus de feu, le coffre de l'epave s'ouvre");
+                }
             }
         };
     }
@@ -325,24 +352,112 @@ final class Helico implements Evenement {
 
     private void impact(Vec3 ou) {
         MinecraftServer server = serveur;
-        if (server == null) return;
-        secteur = Outils.secteur(server.overworld(), ou.x, ou.z);
-        Outils.journal(idCourant + " : ecrase en " + BlockPos.containing(ou).toShortString() + " (secteur " + secteur + ")");
+        String id = idCourant;
+        if (server == null || id == null) return;
+        ServerLevel level = server.overworld();
+        secteur = Outils.secteur(level, ou.x, ou.z);
+        Outils.journal(id + " : ecrase en " + BlockPos.containing(ou).toShortString() + " (secteur " + secteur + ")");
         annoncer(server, Outils.t("heraliz_evenements.helico.crash", "Un hélicoptère s'est écrasé dans le secteur %s.", secteur)
                 .withStyle(ChatFormatting.GOLD), true);
+        // 11/11 (demande du propriétaire) : le coffre est là dès le crash, fermé tant que le feu brûle (refusOuverture) ;
+        // il porte le numéro de l'événement : à sa première ouverture, HeraliZ Loot y met l'objet d'événement
+        // (EvenementsApi.objetDuCoffre) et prévient l'événement (EvenementsApi.coffreOuvert)
+        long fin = HelicoApi.finDuFeu(id), maintenant = level.getGameTime();
+        int feu = fin > maintenant ? (int) Math.min(fin - maintenant, 72_000L) : 0;
+        String objet = idObjet(id);
+        BlockPos coffre = poserCoffre(level, BlockPos.containing(ou), objet, id, feu);
+        if (coffre == null) {
+            Outils.journal(id + " : pas de place pour le coffre au crash, nouvel essai a la fin du feu");
+            return;
+        }
+        coffrePos = coffre;
+        coffreMonde = level;
+        coffreEvenement = objet;
+        verrouJusqua = feu > 0 ? fin : 0;
+        Outils.journal(id + " : coffre " + coffreT7 + " pose en " + coffre.toShortString() + ", ferme pendant le feu (encore "
+                + (feu + 19) / 20 + " s)");
     }
 
     private void feuEteint(BlockPos ou) {
         MinecraftServer server = serveur;
-        if (server == null) return;
-        ServerLevel level = server.overworld();
         String id = idCourant;
-        // le coffre porte le numéro de l'événement : à sa première ouverture, HeraliZ Loot y met l'objet d'événement
-        // (EvenementsApi.objetDuCoffre) et prévient l'événement (EvenementsApi.coffreOuvert)
-        BlockPos coffre = poserCoffre(level, ou, idObjet(id));
+        if (server == null || id == null) return;
+        ServerLevel level = server.overworld();
+        String objet = idObjet(id);
+        if (coffrePos != null && objet.equals(coffreEvenement)) {
+            verrouJusqua = 0;   // posé au crash : il s'ouvre maintenant
+            Outils.journal(id + " : feu eteint, le coffre en " + coffrePos.toShortString() + " s'ouvre");
+            return;
+        }
+        // pas de place au crash : posé maintenant (comme avant le 11/11), sinon l'objet d'événement au sol
+        BlockPos coffre = poserCoffre(level, ou, objet, id, 0);
         Outils.journal(id + " : feu eteint, " + (coffre != null ? "coffre " + coffreT7 + " en " + coffre.toShortString()
                 : "AUCUN coffre T7 pose (pas de place) : objet d'evenement pose au sol"));
-        if (coffre == null) lacherObjet(level, ou, idObjet(id));
+        if (coffre == null) {
+            lacherObjet(level, horsEpave(level, ou, id), objet);
+            return;
+        }
+        coffrePos = coffre;
+        coffreMonde = level;
+        coffreEvenement = objet;
+        verrouJusqua = 0;
+    }
+
+    /**
+     * Un sol près de l'épave, hors de ses boîtes de collision (cercles de 3, 5 et 8 blocs, tronçons déjà chargés) : l'objet
+     * posé au milieu de la carcasse, devenue solide le 11/11, serait hors de portée. L'épave elle-même si rien n'est libre.
+     */
+    private static BlockPos horsEpave(ServerLevel level, BlockPos epave, String helico) {
+        for (int i = 0; i < 24; i++) {
+            int rayon = i < 8 ? 3 : i < 16 ? 5 : 8;
+            double a = i * (Math.PI / 4) + (i >= 8 && i < 16 ? Math.PI / 8 : 0);
+            int x = epave.getX() + (int) Math.round(Math.cos(a) * rayon), z = epave.getZ() + (int) Math.round(Math.sin(a) * rayon);
+            if (level.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) continue;
+            BlockPos p = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), z);
+            if (HelicoApi.libre(helico, new AABB(p).inflate(0.5, 0.0, 0.5))) return p;
+        }
+        return epave;
+    }
+
+    /**
+     * Coffre de l'épave encore dans le feu : ouverture refusée, avec le temps qui reste (HeraliZ Loot le montre au joueur).
+     * Seulement le coffre de cet hélicoptère ({@code id} : numéro porté par le coffre), seulement pendant le feu.
+     */
+    @Nullable
+    @Override
+    public Component refusOuverture(ServerPlayer p, String id) {
+        ServerLevel level = coffreMonde;
+        if (verrouJusqua <= 0 || level == null || !id.equals(coffreEvenement)) return null;
+        long reste = verrouJusqua - level.getGameTime();
+        if (reste <= 0) {
+            verrouJusqua = 0;
+            return null;
+        }
+        return Outils.t("heraliz_evenements.helico.coffre_brulant",
+                "Coffre encore dans les flammes : il s'ouvrira quand le feu sera éteint (encore %s).",
+                Outils.duree(reste)).withStyle(ChatFormatting.GOLD);
+    }
+
+    /**
+     * Annulation pendant le feu (staff, arrêt du serveur, erreur) : le coffre encore fermé est retiré, rien n'est donné
+     * (comme avant le 11/11, quand il n'apparaissait qu'après le feu). Seulement s'il n'a jamais été ouvert (le numéro de
+     * l'événement est encore dans le coffre) et si son tronçon est chargé (jamais de chargement ici). Feu éteint : le coffre
+     * reste (comme avant).
+     */
+    private void retirerCoffreFerme(String motif) {
+        ServerLevel level = coffreMonde;
+        BlockPos pos = coffrePos;
+        String evenement = coffreEvenement;
+        boolean ferme = verrouJusqua > 0;
+        coffrePos = null;
+        coffreMonde = null;
+        coffreEvenement = "";
+        verrouJusqua = 0;
+        if (!ferme || level == null || pos == null || level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) == null) return;
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be == null || !evenement.equals(be.saveWithoutMetadata().getString("Evenement"))) return;
+        level.removeBlock(pos, false);
+        Outils.journal(evenement + " : coffre encore ferme retire (" + motif + "), rien n'est donne");
     }
 
     @Override
@@ -383,10 +498,12 @@ final class Helico implements Evenement {
     /**
      * Coffre T7 (HeraliZ Loot, {@code PointsT7.apparaitre} avec le numéro de l'événement, par réflexion) sur le sol libre le
      * plus proche de l'épave (deux cercles de 5 et 8 blocs autour), face avant vers l'extérieur : à 2 blocs de hauteur au
-     * plus de l'épave (jamais sur un toit ni au fond d'un trou) et posé sur un sol de crash ({@code #airstrike:sol_crash}).
+     * plus de l'épave (jamais sur un toit ni au fond d'un trou), posé sur un sol de crash ({@code #airstrike:sol_crash}) et
+     * jamais dans ni contre les boîtes de collision de l'épave {@code helico} (11/11). Il reste {@code feuTicks} (feu
+     * restant) plus {@code coffre_t7_minutes}.
      */
     @Nullable
-    private static BlockPos poserCoffre(ServerLevel level, BlockPos epave, String id) {
+    private static BlockPos poserCoffre(ServerLevel level, BlockPos epave, String id, String helico, int feuTicks) {
         if (!lootCherche) {
             lootCherche = true;
             try {
@@ -397,7 +514,7 @@ final class Helico implements Evenement {
             }
         }
         if (apparaitre == null) return null;
-        int presence = Math.max(1, coffreT7Min) * 60 * 20;
+        int presence = Math.max(1, coffreT7Min) * 60 * 20 + Math.max(0, feuTicks);
         for (int i = 0; i < 16; i++) {
             int rayon = i < 8 ? 5 : 8;
             double a = i * (Math.PI / 4) + (i < 8 ? 0 : Math.PI / 8);
@@ -407,6 +524,8 @@ final class Helico implements Evenement {
             if (Math.abs(y - epave.getY()) > 2) continue;
             BlockPos p = new BlockPos(x, y, z);
             if (!level.getBlockState(p.below()).getFluidState().isEmpty() || !level.getBlockState(p.below()).is(PointCrash.SOL)) continue;
+            // jamais dans la carcasse ni contre elle (coffre de 2 blocs de large, tourné vers l'extérieur)
+            if (!HelicoApi.libre(helico, new AABB(p).inflate(1.0, 0.0, 1.0))) continue;
             Direction face = Direction.getNearest((float) Math.cos(a), 0f, (float) Math.sin(a));
             try {
                 if ((boolean) apparaitre.invoke(null, level, p, face, coffreT7, presence, "", id)) return p;
@@ -646,7 +765,7 @@ final class Helico implements Evenement {
             if (o.has("reessai_minutes")) HeralizEvenements.LOG.warn("[evenements] helico.json : reessai_minutes ignore (un depart refuse attend l'intervalle normal)");
             coffreT7 = o.has("coffre_t7") ? o.get("coffre_t7").getAsString() : "t7_coffre_armes";
             coffreT7Min = entier(o, "coffre_t7_minutes", 15, 1, 120);
-            R.pv = (float) reel(o, "pv", 600, 10, 100_000);
+            R.pv = (float) reel(o, "pv", 3600, 10, 100_000);
             R.multExplosifs = (float) reel(o, "mult_explosifs", 2.0, 0, 20);
             R.multQueue = (float) reel(o, "mult_queue", 1.25, 0, 20);
             R.regenApresS = entier(o, "regen_apres_s", 30, 0, 3600);
@@ -704,12 +823,12 @@ final class Helico implements Evenement {
                 + " hasard) ; attaque, il ne part que reste_apres_attaque_s secondes apres le dernier coup recu, jamais apres"
                 + " vol_max_minutes. Sans coup recu depuis regen_apres_s secondes, il regagne regen_pct_par_s % de ses PV par seconde."
                 + " Points de saison : aucun a la destruction ; seulement la boite noire, revendue a Mila"
-                + " (events.points.objet_boite_noire_helico). Butin : coffre_t7 (HeraliZ Loot) pendant coffre_t7_minutes a la fin du"
-                + " feu de l'epave. Relu par /recharger evenements.");
+                + " (events.points.objet_boite_noire_helico). Butin : coffre_t7 (HeraliZ Loot) pose des le crash, ferme tant que le"
+                + " feu de l'epave brule (feu_min_s a feu_max_s), puis ouvert pendant coffre_t7_minutes. Relu par /recharger evenements.");
         o.addProperty("joueurs_min", 10);
         o.addProperty("pause_minutes", 240);
         o.addProperty("fenetre_minutes", 120);
-        o.addProperty("pv", 600);
+        o.addProperty("pv", 3600);
         o.addProperty("mult_explosifs", 2.0);
         o.addProperty("mult_queue", 1.25);
         o.addProperty("regen_apres_s", 30);

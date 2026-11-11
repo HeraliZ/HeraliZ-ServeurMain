@@ -61,6 +61,13 @@ public final class Outils {
         return Component.translatableWithFallback(cle, fr, args);
     }
 
+    /** Durée lisible d'un nombre de ticks, arrondie à la seconde au-dessus (« 2 min 05 s », « 40 s »), dans la langue du joueur. */
+    public static MutableComponent duree(long ticks) {
+        long s = Math.max(1, (ticks + 19) / 20);
+        return s >= 60 ? t("heraliz_evenements.duree.min_s", "%s min %s s", String.valueOf(s / 60), String.format(java.util.Locale.ROOT, "%02d", s % 60))
+                : t("heraliz_evenements.duree.s", "%s s", String.valueOf(s));
+    }
+
     /** Secteur de la carte M (« C4 ») d'un point : colonnes A, B… d'ouest en est, lignes 1, 2… du nord au sud. */
     public static String secteur(ServerLevel level, double x, double z) {
         WorldBorder b = level.getWorldBorder();

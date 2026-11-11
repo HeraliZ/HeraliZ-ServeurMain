@@ -58,7 +58,7 @@
   "heraliz_carte.helico": "Hélicoptère militaire",
   "heraliz_carte.helico.aide": "abats-le pour récupérer sa boîte noire",
   "heraliz_carte.epave": "Épave d'hélicoptère",
-  "heraliz_carte.epave.aide": "coffre et boîte noire quand le feu s'éteint",
+  "heraliz_carte.epave.aide": "coffre fermé tant que le feu brûle, boîte noire dedans",
   "heraliz_carte.menu.titre": "Marquer ici pour le clan",
   "heraliz_carte.ping.de": "Marqué par %s",
   "heraliz_carte.ping.retirer": "Clic droit : retirer",

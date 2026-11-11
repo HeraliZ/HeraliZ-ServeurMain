@@ -58,7 +58,7 @@
   "heraliz_carte.helico": "Военный вертолёт",
   "heraliz_carte.helico.aide": "собей его, чтобы забрать бортовой самописец",
   "heraliz_carte.epave": "Обломки вертолёта",
-  "heraliz_carte.epave.aide": "ящик и самописец, когда огонь погаснет",
+  "heraliz_carte.epave.aide": "ящик заперт, пока горит огонь, самописец внутри",
   "heraliz_carte.menu.titre": "Отметить здесь для клана",
   "heraliz_carte.ping.de": "Отметил %s",
   "heraliz_carte.ping.retirer": "Правый клик: убрать",

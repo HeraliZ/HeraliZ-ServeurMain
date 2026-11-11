@@ -1,8 +1,11 @@
 package fr.heraliz.evenements.api;
 
 import fr.heraliz.evenements.serveur.ObjetsEvenementApi;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+
+import javax.annotation.Nullable;
 
 /**
  * API de HeraliZ Événements pour les autres mods, côté serveur, appelée PAR RÉFLEXION (Class.forName) : ne jamais
@@ -18,6 +21,16 @@ public final class EvenementsApi {
      */
     public static void coffreOuvert(ServerPlayer joueur, String evenement) {
         fr.heraliz.evenements.serveur.Directeur.coffreOuvert(joueur, evenement);
+    }
+
+    /**
+     * Ce joueur essaie d'ouvrir le coffre de l'événement {@code evenement} (« helico#12 »), pas encore ouvert : le message
+     * à lui montrer si l'événement refuse pour l'instant (11/11 : coffre de l'épave tant que le feu brûle), null s'il peut
+     * l'ouvrir. Appelé par HeraliZ Loot à chaque essai, avant de tirer le contenu.
+     */
+    @Nullable
+    public static Component refusOuverture(ServerPlayer joueur, String evenement) {
+        return fr.heraliz.evenements.serveur.Directeur.refusOuverture(joueur, evenement);
     }
 
     /**

@@ -297,12 +297,14 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
 - **Carte M** : tous les joueurs de la carte voient l'hélicoptère en direct (pictogramme vu de dessus, tourné dans son
   sens de vol, rouge orangé, halo qui pulse) et l'épave tant qu'elle est là (pictogramme ambre), au-dessus des
   extractions ; infobulles « Hélicoptère militaire · abats-le pour récupérer sa boîte noire » et « Épave d'hélicoptère ·
-  coffre et boîte noire quand le feu s'éteint ». Le serveur envoie les positions toutes les 2 s (`HelicoCartePacket`,
-  canal `airstrike:main` version 3), « retiré » à la fin ; chez le joueur, une marque non rafraîchie s'efface (6 s
-  l'hélicoptère, 12 s l'épave), tout est vidé à la déconnexion. Pictogrammes `helico` et `epave` de
-  `modules/monde/outils/icones_carte.py` (planche : `maquettes/helico/icones_carte.png`). Rien hors de l'événement.
-- **Combat** : 600 PV ; sans coup reçu depuis 30 s, il regagne 1,5 % de ses PV max par seconde. Boîte de touche en
-  5 morceaux (`PartEntity` de Forge comme le dragon : 2 pour la cabine, 3 pour la queue ×1,25) que les balles de TaCZ
+  coffre fermé tant que le feu brûle, boîte noire dedans » (11/11). Le serveur envoie les positions toutes les 2 s
+  (`HelicoCartePacket`, canal `airstrike:main` version 3), « retiré » à la fin ; chez le joueur, une marque non
+  rafraîchie s'efface (6 s l'hélicoptère, 12 s l'épave), tout est vidé à la déconnexion. Pictogrammes `helico` et
+  `epave` de `modules/monde/outils/icones_carte.py` (planche : `maquettes/helico/icones_carte.png`). Rien hors de
+  l'événement.
+- **Combat** : 3 600 PV (11/11, demande du propriétaire : 6 fois plus qu'avant, 600) ; sans coup reçu depuis 30 s, il
+  regagne 1,5 % de ses PV max par seconde. Boîte de touche en 5 morceaux (`PartEntity` de Forge comme le dragon : 2 pour
+  la cabine, 3 pour la queue ×1,25) que les balles de TaCZ
   touchent (vérifié dans TaCZ 1.1.8 : `EntityKineticBullet.MaybeMultipartEntity`) ; une balle qui traverse plusieurs
   morceaux ne compte que sur le premier (même projectile, même tick) ; seulement les dégâts d'un joueur, explosions ×2 une
   fois par tick. Un joueur en créatif ou en spectateur qui le touche le passe en « essai » (boîte noire sans points). Contre
@@ -317,11 +319,25 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
   d'apparition (64) et des zones VIP ; zones VIP ou bases illisibles : point REFUSÉ, une ligne au journal, nouvelle lecture
   plus tard. Chute scénarisée de 5 à 8 s (spirale, rotation, descente qui accélère ; le bruit du rotor au loin s'arrête) ;
   impact : explosion sans casse, petits dégâts tout près, bruit pour les zombies ; épave en feu 2 min à 3 min 30 (zone
-  `NAPALM` sans bloc de feu, fumée noire `MARKER`), puis coffre T7 (`t7_coffre_armes`, à 2 blocs de hauteur au plus de
-  l'épave, sur un sol de crash) avec la boîte noire à sa première ouverture ; épave et fumée retirées 15 min après le feu
-  (heures de jeu absolues, vérifiées même quand l'épave ne tourne pas). Aucun point valide : explosion en l'air, boîte
-  noire posée sur le dernier sol valide survolé, sinon le sol le plus proche (contrôles relâchés), sinon rien (journal) ;
-  tronçon pas chargé : demandé par un ticket, objet posé dès qu'il est là (60 s au plus), pas de coffre.
+  `NAPALM` sans bloc de feu, fumée noire `MARKER`) ; épave et fumée retirées 15 min après le feu (heures de jeu absolues,
+  vérifiées même quand l'épave ne tourne pas). Aucun point valide : explosion en l'air, boîte noire posée sur le dernier
+  sol valide survolé, sinon le sol le plus proche (contrôles relâchés), sinon rien (journal) ; tronçon pas chargé :
+  demandé par un ticket, objet posé dès qu'il est là (60 s au plus), pas de coffre.
+- **Coffre de l'épave** (11/11, demande du propriétaire : « les caisses doivent être là dès le début, juste inlootables le
+  temps que le feu se dissipe ») : coffre T7 (`t7_coffre_armes`, à 2 blocs de hauteur au plus de l'épave, sur un sol de
+  crash, jamais dans ni contre la carcasse) posé **dès l'impact** ; tant que le feu brûle, il refuse de s'ouvrir (« Coffre
+  encore dans les flammes : il s'ouvrira quand le feu sera éteint (encore 1 min 20 s). », son de coffre verrouillé ;
+  `EvenementsApi.refusOuverture`, demandé par HeraliZ Loot à chaque essai, avant de tirer le contenu : rien n'en sort
+  avant). Seul chemin pour l'ouvrir : le clic droit (aucun entonnoir ne le vide ; il est incassable et résiste aux
+  explosions, et sur la carte aucun bloc ne se casse, ni à la main ni par explosion). À la fin du feu, il s'ouvre à tous,
+  avec la boîte noire à sa première ouverture, et reste 15 min comme avant. Annulé pendant le feu (staff, arrêt du
+  serveur) : le coffre encore fermé est retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu,
+  sinon la boîte noire au sol à côté de l'épave (jamais dans la carcasse, devenue solide).
+- **Collision de l'épave** (11/11) : 8 boîtes (`HelicopterWreck.BOITES`, `HelicopterWreckPart` : `PartEntity` comme les
+  rondins de la barricade du bunker) relevées sur le modèle : cabine écrasée, bout de poutre, queue arrachée couchée à côté
+  (pas les pales, fines). Joueurs, zombies et objets ne passent plus au travers (même calcul chez le joueur : pas de retour
+  en arrière) ; les balles s'y arrêtent (étincelles et claquement de métal) : l'épave couvre ceux qui sont derrière.
+  N'existe qu'avec l'épave : sans épave, rien.
 - **Filet de sécurité** : en heure réelle, un hélicoptère encore en cours après sa vie la plus longue possible (vol
   maximal, sortie, chute, feu, retrait, marge ; ×1,5 contre un serveur qui rame) est retiré (`HelicoApi.annuler`).
 - **Points** (choix du propriétaire, 25/10) : **aucun à la destruction**, ni à l'ouverture du coffre de l'épave (un coffre
@@ -333,8 +349,8 @@ Vérifié dans le code le 25/10. Chiffres dans `serveur/config/heralisz_clans/sa
 - **Réglages** : `serveur/config/heraliz_evenements/helico.json` (dont `regen_apres_s`, `regen_pct_par_s`,
   `patrouille_min`, `patrouille_max`, `reste_apres_attaque_s`, `vol_max_minutes`, `portee_tir`, `poursuite`). **Tests** :
   `docs/TESTS_EN_JEU_25OCT.md` §11.
-- **Reste (v2)** : pièces d'épave à démonter, roquettes, projecteur rouge, compte à rebours au-dessus de l'épave, collision
-  de l'épave, XP de clan, points de crash préparés hors ligne.
+- **Reste (v2)** : pièces d'épave à démonter, roquettes, projecteur rouge, compte à rebours au-dessus de l'épave, XP de
+  clan, points de crash préparés hors ligne. **Tests du 11/11** : `docs/TESTS_EN_JEU_11NOV_evenements-monde.md`.
 
 ### 4.5 Cargaison sensible
 - **But** : le meilleur PvP naturel : un objet de grande valeur qu'il faut **ramener** à une extraction.

@@ -11,7 +11,10 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
@@ -144,6 +147,16 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
         if (etat == APPARITION || etat == DISPARITION) {
             return;
         }
+        // 11/11 : l'événement peut refuser l'ouverture pour l'instant (coffre de l'épave de l'hélicoptère tant que le feu
+        // brûle) ; seul chemin d'ouverture d'un coffre T7 (clic droit, sur lui ou sur sa partie) : rien n'en sort avant
+        if (!genere && !evenement.isEmpty()) {
+            Component refus = refusEvenement(p);
+            if (refus != null) {
+                p.displayClientMessage(refus, true);
+                p.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 0.8f, 1.0f);
+                return;
+            }
+        }
         if (!genere) {
             int bonus = BonusLoot.pourcent(p);
             generer(bonus);
@@ -171,8 +184,30 @@ public class CoffreBlockEntityServeur extends CoffreBlockEntity {
         }
     }
 
-    private static java.lang.reflect.Method coffreOuvert, objetDuCoffre;
-    private static boolean evenementsCherche;
+    private static java.lang.reflect.Method coffreOuvert, objetDuCoffre, refusOuverture;
+    private static boolean evenementsCherche, refusCherche;
+
+    /**
+     * Message de refus de l'événement du coffre (EvenementsApi.refusOuverture, par réflexion), ou null : il s'ouvre. Sans
+     * HeraliZ Événements, ou avec une version qui n'a pas cette fonction : jamais de refus.
+     */
+    private Component refusEvenement(ServerPlayer p) {
+        if (!refusCherche) {
+            refusCherche = true;
+            try {
+                refusOuverture = Class.forName("fr.heraliz.evenements.api.EvenementsApi").getMethod("refusOuverture", ServerPlayer.class, String.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                refusOuverture = null;
+            }
+        }
+        if (refusOuverture == null) return null;
+        try {
+            return refusOuverture.invoke(null, p, evenement) instanceof Component c ? c : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            HeralizLoot.LOG.warn("Coffre de l'evenement {} : refus d'ouverture illisible ({})", evenement, e.toString());
+            return null;
+        }
+    }
 
     /**
      * Première ouverture du coffre d'un événement : l'objet d'événement (numéroté, signé) dans une case vide (coffre plein :
