@@ -162,6 +162,10 @@
 	#chaque joueur à ses copies (NBT complet des armes, sacs, armures). true = quand les deux copies sont le même objet et
 	#que la 1re comparaison a dit « pareil », la 2e (la même question) est sautée. false : comme Minecraft.
 	menus_une_comparaison = true
+	#Chargement d'un tronçon (11/11) : quand aucun relevé de hauteur ne manque dans le tronçon lu, Minecraft
+	#parcourt quand même ses 256 colonnes pour ne rien noter (10 à 25 % du temps de lecture sur la carte construite).
+	#true = rien à refaire, rien de parcouru (même résultat). false : comme Minecraft.
+	hauteurs_sans_balayage = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée

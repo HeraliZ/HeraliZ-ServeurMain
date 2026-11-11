@@ -28,7 +28,8 @@
     "ActifsCarteMixin",
     "ActifsTronconMixin",
     "ActifsCacheMixin",
-    "MenuSyncMixin"
+    "MenuSyncMixin",
+    "RelevesHauteurMixin"
   ],
   "injectors": {
     "defaultRequire": 0

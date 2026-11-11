@@ -63,6 +63,9 @@ public final class Allege {
    public static long tronconsActifsControles;
    /** Deuxièmes comparaisons de cases de menu évitées. */
    public static long menusComparaisonsEvitees;
+   /** Relevés de hauteur à la lecture d'un tronçon : rien à refaire (parcours sauté) et vraiment refaits (ou génération). */
+   public static long hauteursSautees;
+   public static long hauteursRefaites;
 
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
@@ -108,6 +111,7 @@ public final class Allege {
             tronconsActifsTicks, tronconsActifsTicks == 0 ? 0.0 : (double) tronconsActifsParcourus / tronconsActifsTicks,
             tronconsActifsRefaits, tronconsActifsControles, TronconsActifs.etat()));
       s.append(String.format(Locale.ROOT, " ; comparaisons de menu évitées %d", menusComparaisonsEvitees));
+      s.append(String.format(Locale.ROOT, " ; relevés de hauteur : %d sans parcours, %d refaits", hauteursSautees, hauteursRefaites));
       ligne.accept(s.append(String.format("%n")).toString());
    }
 }

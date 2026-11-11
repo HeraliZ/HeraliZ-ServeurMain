@@ -114,6 +114,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue MENUS_UNE_COMPARAISON;
    /** broadcastChanges : la 2e comparaison d'une case est sautée quand elle repose la même question que la 1re. */
    public static volatile boolean menusUneComparaison = true;
+   public static final ForgeConfigSpec.BooleanValue HAUTEURS_SANS_BALAYAGE;
+   /** Lecture d'un tronçon : aucun relevé de hauteur à refaire = pas de parcours des colonnes pour rien. */
+   public static volatile boolean hauteursSansBalayage = true;
 
    /**
     * Commandes en plus jouées par /recharger : vide (02/11, audit point 36). Les modules HeraliZ inscrivent eux-mêmes leur
@@ -331,6 +334,10 @@ public final class NoyauConfig {
             "chaque joueur à ses copies (NBT complet des armes, sacs, armures). true = quand les deux copies sont le même objet et",
             "que la 1re comparaison a dit « pareil », la 2e (la même question) est sautée. false : comme Minecraft.")
             .define("menus_une_comparaison", true);
+      HAUTEURS_SANS_BALAYAGE = b.comment("Chargement d'un tronçon (11/11) : quand aucun relevé de hauteur ne manque dans le tronçon lu, Minecraft",
+            "parcourt quand même ses 256 colonnes pour ne rien noter (10 à 25 % du temps de lecture sur la carte construite).",
+            "true = rien à refaire, rien de parcouru (même résultat). false : comme Minecraft.")
+            .define("hauteurs_sans_balayage", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -386,6 +393,7 @@ public final class NoyauConfig {
       tronconsSansTicket = TRONCONS_SANS_TICKET.get();
       tronconsActifsListe = TRONCONS_ACTIFS_LISTE.get();
       menusUneComparaison = MENUS_UNE_COMPARAISON.get();
+      hauteursSansBalayage = HAUTEURS_SANS_BALAYAGE.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
