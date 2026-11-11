@@ -43,6 +43,23 @@ Ce qui change :
 - [ ] Zombies autour de l'épave : ils la contournent ou se bloquent contre, sans passer au travers.
 - [ ] `/diag mesure` pendant que l'épave est là : rien d'anormal (8 boîtes, seulement tant que l'épave existe).
 
+## 2. Zones radioactives : compteur Geiger plus discret
+
+Le bruit était le compteur Geiger, joué par le jeu de chaque joueur dans une zone de radiation (rien d'autre n'y fait
+de bruit, à part un « boum » grave une seule fois en entrant). Avant : le charleston aigu des blocs musicaux, poussé
+vers l'aigu, de 3 crépitements par seconde au bord de la zone jusqu'à 17 au cœur (1,6 sous combinaison Hazmat), volume
+0,25 à 0,6. Maintenant : un petit « tic » sec (le clic du comparateur de Minecraft, hauteur normale), d'environ 0,5 tic
+par seconde au bord à 2,7 au cœur, 0,3 sous Hazmat, jamais deux tics collés (au moins 0,2 s d'écart), volume 0,08 à 0,2
+(environ 3 fois moins fort). Toujours dans le curseur « Ambiance / environnement » des options du son. Aucun nouveau
+fichier son.
+
+À vérifier :
+- [ ] Entrer dans une zone de radiation sans protection : tics rares au bord, plus serrés et un peu plus forts vers le
+      centre ; plus de crépitement continu.
+- [ ] Avec une combinaison Hazmat : un tic de temps en temps (environ un toutes les 3 s).
+- [ ] Le son n'est ni désagréable ni couvrant (pas, tirs et zombies s'entendent toujours) ; si c'est encore trop ou
+      plus assez, dire « plus discret » ou « plus présent » : les chiffres se règlent en une ligne.
+
 ## Non vérifié par Claude
 
 - Pas compilé ici (Minecraft et Forge ne se téléchargent pas dans cet environnement) : la fabrication complète est

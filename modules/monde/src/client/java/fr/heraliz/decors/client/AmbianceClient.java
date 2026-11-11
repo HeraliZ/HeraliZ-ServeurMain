@@ -44,6 +44,18 @@ public final class AmbianceClient {
     private static boolean pGaz, pRad, pFroid;
     private static float lGaz, lRad, lFroid;                    // valeurs lissées (fondu du brouillard local)
     private static String derniereZone = "";
+    /**
+     * Compteur Geiger (11/11, demande du propriétaire : « un bruit moins fort, plus propre, qui gêne moins »). Avant : le
+     * charleston aigu des blocs musicaux (hauteur 1,6 à 2), 3 à 17 crépitements par seconde selon la radiation, 1,6 sous
+     * Hazmat, volume 0,25 à 0,6. Maintenant : un petit « tic » sec (clic du comparateur de Minecraft, hauteur 0,9 à 1,15),
+     * environ 0,5 à 2,7 tics par seconde selon la radiation, 0,3 sous Hazmat, jamais deux tics à moins de
+     * {@link #GEIGER_ECART} ticks, volume 0,08 à 0,2. Joué dans « Ambiance / environnement » (curseur du joueur).
+     */
+    private static final float GEIGER_CHANCE = 0.03f, GEIGER_CHANCE_RAD = 0.2f, GEIGER_CHANCE_PROTEGE = 0.015f;
+    private static final float GEIGER_VOLUME = 0.08f, GEIGER_VOLUME_RAD = 0.12f;
+    private static final int GEIGER_ECART = 3;
+    /** Ticks avant le prochain tic possible. */
+    private static int geigerAttente;
 
     static void recevoir(Object m) {
         if (m instanceof Ambiance.Brume b) {
@@ -170,10 +182,13 @@ public final class AmbianceClient {
                         p.getX() + (rnd.nextDouble() - 0.5) * 18, p.getY() + 3 + rnd.nextDouble() * 4, p.getZ() + (rnd.nextDouble() - 0.5) * 18,
                         (rnd.nextDouble() - 0.5) * 0.05, -0.05, (rnd.nextDouble() - 0.5) * 0.05);
             }
-            // compteur Geiger : clics d'autant plus serrés que la radiation est forte (sauf sous Hazmat : rares)
-            if (ra > 0 && rnd.nextFloat() < (pRad ? 0.08f : 0.15f + ra * 0.7f)) {
-                mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.AMBIENT,
-                        0.25f + ra * 0.35f, 1.6f + rnd.nextFloat() * 0.4f, false);
+            // compteur Geiger : tics d'autant plus serrés et forts que la radiation est forte (sous Hazmat : rares)
+            if (geigerAttente > 0) {
+                geigerAttente--;
+            } else if (ra > 0 && rnd.nextFloat() < (pRad ? GEIGER_CHANCE_PROTEGE : GEIGER_CHANCE + ra * GEIGER_CHANCE_RAD)) {
+                geigerAttente = GEIGER_ECART;
+                mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.COMPARATOR_CLICK, SoundSource.AMBIENT,
+                        GEIGER_VOLUME + ra * GEIGER_VOLUME_RAD, 0.9f + rnd.nextFloat() * 0.25f, false);
             }
             // gaz : sifflement de fuite, de temps en temps
             if (g > 0.3f && rnd.nextFloat() < 0.01f) {
