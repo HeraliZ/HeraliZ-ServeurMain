@@ -86,7 +86,7 @@ public final class RefitSkinTab {
       int gridX = right - COLONNES * CASE;
       if (current != null && owner == null) {
          add.accept(new Label(screen.width - 320, 34, right, Component.translatable("gui.heralisz_camo.locked",
-            Component.translatable(current.nameKey()).withStyle(current.tier.color, ChatFormatting.BOLD))));
+            Component.translatable(current.nameKey()).withStyle(current.tier::nom).withStyle(ChatFormatting.BOLD))));
          return;
       }
       boolean aMoi = current != null && player.getUUID().equals(owner);
@@ -117,7 +117,7 @@ public final class RefitSkinTab {
          }).bounds(screen.width - 250, 30, 238, 16).build());
       } else if (aMoi) {
          add.accept(new Label(screen.width - 320, 34, right - 64, Component.translatable("gui.heralisz_camo.life_on",
-            Component.translatable(current.nameKey()).withStyle(current.tier.color, ChatFormatting.BOLD))));
+            Component.translatable(current.nameKey()).withStyle(current.tier::nom).withStyle(ChatFormatting.BOLD))));
          add.accept(Button.builder(Component.translatable("gui.heralisz_camo.remove"), b -> {
             CamoNetwork.CHANNEL.sendToServer(new CollectionCamoPacket(CollectionCamoPacket.RETIRER, current.id));
             player.playSound(SoundEvents.BRUSH_GENERIC, 0.8F, 1.0F);
@@ -190,7 +190,7 @@ public final class RefitSkinTab {
    }
 
    private static Component nom(Camo camo) {
-      return Component.translatable(camo.nameKey()).withStyle(camo.tier.color);
+      return Component.translatable(camo.nameKey()).withStyle(camo.tier::nom);
    }
 
    private static long minutes(long ms) {
@@ -358,8 +358,8 @@ public final class RefitSkinTab {
          RenderSystem.enableDepthTest();
          if (this.isHovered()) {
             List<Component> lignes = new ArrayList<>();
-            lignes.add(Component.translatable(this.camo.nameKey()).withStyle(this.camo.tier.color, ChatFormatting.BOLD));
-            lignes.add(Component.translatable(this.camo.tier.key()).withStyle(this.camo.tier.color));
+            lignes.add(Component.translatable(this.camo.nameKey()).withStyle(this.camo.tier::nom).withStyle(ChatFormatting.BOLD));
+            lignes.add(Component.translatable(this.camo.tier.key()).withStyle(this.camo.tier::style));
             lignes.add(Component.translatable("gui.heralisz_camo.tip_life").withStyle(ChatFormatting.GOLD));
             if (this.surArme) lignes.add(Component.translatable("gui.heralisz_camo.tip_on_gun").withStyle(ChatFormatting.GREEN));
             if (reste > 0) lignes.add(Component.translatable("gui.heralisz_camo.tip_cooldown", minutes(reste)).withStyle(ChatFormatting.RED));

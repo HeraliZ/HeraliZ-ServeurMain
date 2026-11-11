@@ -69,7 +69,7 @@ public final class ReceptionServeur {
       player.inventoryMenu.broadcastChanges();
       player.level().playSound(null, player.blockPosition(), SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.2F);
       player.displayClientMessage(Component.translatable("msg.heralisz_camo.applied",
-         Component.translatable(item.camo().nameKey()).withStyle(item.camo().tier.color)).withStyle(ChatFormatting.GRAY), true);
+         Component.translatable(item.camo().nameKey()).withStyle(item.camo().tier::nom)).withStyle(ChatFormatting.GRAY), true);
    }
 
    // DecorPacket.handle (d'origine)

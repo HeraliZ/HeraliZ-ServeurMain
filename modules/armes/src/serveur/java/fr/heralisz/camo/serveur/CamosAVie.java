@@ -333,7 +333,7 @@ public final class CamosAVie {
    }
 
    static Component nom(Camo camo) {
-      return Component.translatable(camo.nameKey()).withStyle(camo.tier.color);
+      return Component.translatable(camo.nameKey()).withStyle(camo.tier::nom);
    }
 
    /** Minutes restantes, arrondies au-dessus (au moins 1). */

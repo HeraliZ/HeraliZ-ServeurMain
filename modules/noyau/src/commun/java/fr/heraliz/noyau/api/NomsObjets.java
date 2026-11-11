@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -15,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 
 /**
  * Nom d'un objet tel que le joueur le voit, pour tout message que le SERVEUR envoie (03/11, retour du propriétaire : « quand
@@ -53,18 +55,47 @@ public final class NomsObjets {
     }
 
     /**
-     * Comme {@code ItemStack.getDisplayName()} (« [nom] » dans la couleur de la rareté de Minecraft, l'objet montré au
-     * survol), avec le vrai nom de {@link #nom}.
+     * Comme {@code ItemStack.getDisplayName()} (« [nom] » dans la couleur de la rareté de l'objet, l'objet montré au
+     * survol), avec le vrai nom de {@link #nom}. Couleur (11/11, retour du propriétaire : « rose pas violet ») : celle de la
+     * rareté HeraliZ de l'objet quand HeraliZ Loot est là ({@link #couleurRarete} : un composant III en violet HeraliZ,
+     * plus jamais le rose de Minecraft), sinon celle de la rareté de Minecraft, comme avant.
      */
     public static MutableComponent nomCrochets(ItemStack st) {
         MutableComponent n = Component.empty().append(nom(st));
         if (st != null && st.hasCustomHoverName()) n.withStyle(ChatFormatting.ITALIC);
         MutableComponent c = ComponentUtils.wrapInSquareBrackets(n);
         if (st != null && !st.isEmpty()) {
-            c.withStyle(st.getRarity().getStyleModifier())
+            int couleur = couleurRarete(st);
+            UnaryOperator<Style> style = couleur >= 0 ? s -> s.withColor(couleur) : st.getRarity().getStyleModifier();
+            c.withStyle(style)
                     .withStyle(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(st))));
         }
         return c;
+    }
+
+    private static volatile Method couleurNom;
+    private static volatile boolean couleurCherchee;
+
+    /**
+     * Couleur (RVB) du nom de l'objet selon sa rareté HeraliZ : {@code fr.heraliz.loot.RaretesObjets.couleurNom} (HeraliZ
+     * Loot, lu par réflexion : Loot reste facultatif), -1 sans Loot ou pour un nom à laisser tel quel.
+     */
+    private static int couleurRarete(ItemStack st) {
+        if (!couleurCherchee) {
+            try {
+                couleurNom = Class.forName("fr.heraliz.loot.RaretesObjets").getMethod("couleurNom", ItemStack.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                couleurNom = null;
+            }
+            couleurCherchee = true;
+        }
+        Method m = couleurNom;
+        if (m == null) return -1;
+        try {
+            return m.invoke(null, st) instanceof Integer i ? i : -1;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return -1;
+        }
     }
 
     /** Clé de traduction du vrai nom d'un objet de TaCZ (arme, munition, accessoire), ou null. */

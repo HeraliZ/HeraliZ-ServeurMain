@@ -44,10 +44,10 @@ public final class CamoClient {
          // camo à vie (collection d'un joueur) : il ne suit pas l'arme si elle change de main
          String cle = CamoData.owner(event.getItemStack()) != null ? "tooltip.heralisz_camo.gun_camo_life" : "tooltip.heralisz_camo.gun_camo";
          event.getToolTip().add(1, Component.translatable(cle,
-            Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
+            Component.translatable(camo.nameKey()).withStyle(camo.tier::nom).withStyle(ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
       } else if (camo != null && fr.heralisz.camo.BagSupport.isBag(event.getItemStack())) {
          event.getToolTip().add(1, Component.translatable("tooltip.heralisz_camo.bag_camo",
-            Component.translatable(camo.nameKey()).withStyle(camo.tier.color, ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
+            Component.translatable(camo.nameKey()).withStyle(camo.tier::nom).withStyle(ChatFormatting.BOLD)).withStyle(ChatFormatting.GRAY));
       }
    }
 

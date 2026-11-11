@@ -47,7 +47,7 @@ public final class DecorItems {
     * nom + rareté + une ligne simple ») : la rareté, puis « Posé depuis le menu de modification d'armes ».
     */
    private static void infobulle(List<Component> tooltip, Camo.Tier rarete) {
-      tooltip.add(Component.translatable(rarete.key()).withStyle(rarete.color, ChatFormatting.BOLD));
+      tooltip.add(Component.translatable(rarete.key()).withStyle(rarete::style).withStyle(ChatFormatting.BOLD));
       tooltip.add(Component.translatable("item.heralisz_camo.decor.howto").withStyle(ChatFormatting.GRAY));
    }
 
@@ -78,7 +78,7 @@ public final class DecorItems {
       @Override
       public Component getName(ItemStack stack) {
          return Component.translatable("item.heralisz_camo.sticker", Component.translatable("sticker.heralisz_camo." + this.design.id()),
-            Component.translatable("finish.heralisz_camo." + this.finish.id())).withStyle(rarete(this.finish).color);
+            Component.translatable("finish.heralisz_camo." + this.finish.id())).withStyle(rarete(this.finish)::nom);
       }
 
       @Override
@@ -99,7 +99,8 @@ public final class DecorItems {
 
       @Override
       public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-         // Épique comme dans la caisse Camo (le nom l'est déjà : rareté Épique de Minecraft, en violet)
+         // Épique comme dans la caisse Camo (le nom aussi : rareté Épique de Minecraft, écrite en violet HeraliZ et non plus
+         // en rose par HeraliZ Loot, NomsRarete, depuis le 11/11)
          infobulle(tooltip, Camo.Tier.EPIC);
       }
    }

@@ -1,6 +1,6 @@
 package fr.heralisz.camo;
 
-import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Style;
 
 import javax.annotation.Nullable;
 
@@ -132,19 +132,35 @@ public enum Camo {
    /** Id du Dark Matter Origine (retiré en 0.9.12, remplacé par le Dark Matter) : NBT des armes et objet camo_ (CamoMigration). */
    public static final String DARK_MATTER_ORIGIN_ID = "dark_matter_origin";
 
-   /** Raretés des caisses. */
+   /**
+    * Raretés des caisses, aux couleurs des raretés HeraliZ (11/11, retour du propriétaire : un camo ou un sticker Épique
+    * s'écrivait en rose, le violet de Minecraft ; avant : couleurs de Minecraft, gris, vert, bleu, rose, or, rouge). Mêmes
+    * valeurs que fr.heraliz.loot.Rarete (HeraliZ Loot) : Commun gris, Peu commun vert, Rare bleu, Épique violet, Légendaire
+    * or, Mythique (= Unique) rouge.
+    */
    public enum Tier {
-      COMMON(ChatFormatting.GRAY),
-      UNCOMMON(ChatFormatting.GREEN),
-      RARE(ChatFormatting.BLUE),
-      EPIC(ChatFormatting.LIGHT_PURPLE),
-      LEGENDARY(ChatFormatting.GOLD),
-      MYTHIC(ChatFormatting.RED);
+      COMMON(0x9A9A9A),
+      UNCOMMON(0x5CBF4A),
+      RARE(0x3F8CFF),
+      EPIC(0xA64DFF),
+      LEGENDARY(0xF2B83A),
+      MYTHIC(0xFF3333);
 
-      public final ChatFormatting color;
+      /** Couleur (RVB) de la rareté. */
+      public final int couleur;
 
-      Tier(ChatFormatting color) {
-         this.color = color;
+      Tier(int couleur) {
+         this.couleur = couleur;
+      }
+
+      /** Texte de la rareté (ligne « Épique » des infobulles) : sa couleur. */
+      public Style style(Style s) {
+         return s.withColor(this.couleur);
+      }
+
+      /** Nom d'un camo ou d'un sticker de cette rareté : sa couleur, Commun en blanc (comme le nom des objets Commun). */
+      public Style nom(Style s) {
+         return s.withColor(this == COMMON ? 0xFFFFFF : this.couleur);
       }
 
       public String key() {

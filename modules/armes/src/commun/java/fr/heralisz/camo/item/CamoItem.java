@@ -48,7 +48,7 @@ public class CamoItem extends Item {
 
    @Override
    public Component getName(ItemStack stack) {
-      return super.getName(stack).copy().withStyle(this.camo.tier.color);
+      return super.getName(stack).copy().withStyle(this.camo.tier::nom);
    }
 
    @Override
@@ -75,7 +75,7 @@ public class CamoItem extends Item {
     */
    @Override
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-      tooltip.add(Component.translatable(this.camo.tier.key()).withStyle(this.camo.tier.color, ChatFormatting.BOLD));
+      tooltip.add(Component.translatable(this.camo.tier.key()).withStyle(this.camo.tier::style).withStyle(ChatFormatting.BOLD));
       if (this.camo.gun != null) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.gun." + this.camo.id).withStyle(ChatFormatting.GOLD));
       }
