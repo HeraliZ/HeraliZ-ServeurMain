@@ -96,10 +96,9 @@ public class KeycardItem extends Item {
       return Mth.hsvToRgb(f / 3.0F, 1.0F, 1.0F);
    }
 
-   @Override
-   public Component getName(ItemStack stack) {
-      return super.getName(stack).copy().withStyle(this.level.color);
-   }
+   // Nom (11/11, retour du propriétaire) : plus de couleur propre (verte, bleue ou rouge comme la carte, Minecraft) ; il
+   // prend la couleur de la rareté de la carte, comme ses fragments (HeraliZ Loot, raretes.json : verte Rare donc nom bleu,
+   // bleue Épique violet, rouge Légendaire or). La ligne « Ouvre les lecteurs … » garde la couleur de la carte.
 
    @Override
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
