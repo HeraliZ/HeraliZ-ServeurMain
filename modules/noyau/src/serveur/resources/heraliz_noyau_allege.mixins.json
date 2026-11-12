@@ -29,7 +29,9 @@
     "ActifsTronconMixin",
     "ActifsCacheMixin",
     "MenuSyncMixin",
-    "RelevesHauteurMixin"
+    "RelevesHauteurMixin",
+    "SauvegardesEtaleesMixin",
+    "MelangeTronconsMixin"
   ],
   "injectors": {
     "defaultRequire": 0

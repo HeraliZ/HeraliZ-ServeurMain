@@ -66,6 +66,11 @@ public final class Allege {
    /** Relevés de hauteur à la lecture d'un tronçon : rien à refaire (parcours sauté) et vraiment refaits (ou génération). */
    public static long hauteursSautees;
    public static long hauteursRefaites;
+   /** Sauvegarde au fil de l'eau étalée : tranches (une par tick et par monde) et tronçons regardés. */
+   public static long sauvegardesTranches;
+   public static long sauvegardesRegardes;
+   /** Mélanges de la liste des tronçons qui tournent sautés (monde sans apparitions naturelles). */
+   public static long melangesEvites;
 
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
@@ -112,6 +117,8 @@ public final class Allege {
             tronconsActifsRefaits, tronconsActifsControles, TronconsActifs.etat()));
       s.append(String.format(Locale.ROOT, " ; comparaisons de menu évitées %d", menusComparaisonsEvitees));
       s.append(String.format(Locale.ROOT, " ; relevés de hauteur : %d sans parcours, %d refaits", hauteursSautees, hauteursRefaites));
+      s.append(String.format(Locale.ROOT, " ; sauvegardes étalées : %d tranches (%.0f tronçons regardés par tranche) ; mélanges évités %d",
+            sauvegardesTranches, sauvegardesTranches == 0 ? 0.0 : (double) sauvegardesRegardes / sauvegardesTranches, melangesEvites));
       ligne.accept(s.append(String.format("%n")).toString());
    }
 }

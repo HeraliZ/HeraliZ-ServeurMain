@@ -117,6 +117,12 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue HAUTEURS_SANS_BALAYAGE;
    /** Lecture d'un tronçon : aucun relevé de hauteur à refaire = pas de parcours des colonnes pour rien. */
    public static volatile boolean hauteursSansBalayage = true;
+   public static final ForgeConfigSpec.BooleanValue SAUVEGARDES_ETALEES;
+   /** Sauvegarde au fil de l'eau : une tranche des tronçons chargés par tick au lieu de tous. */
+   public static volatile boolean sauvegardesEtalees = true;
+   public static final ForgeConfigSpec.BooleanValue MELANGE_SI_APPARITIONS;
+   /** tickChunks : la liste des tronçons qui tournent n'est mélangée que si des créatures peuvent apparaître. */
+   public static volatile boolean melangeSiApparitions = true;
 
    /**
     * Commandes en plus jouées par /recharger : vide (02/11, audit point 36). Les modules HeraliZ inscrivent eux-mêmes leur
@@ -338,6 +344,15 @@ public final class NoyauConfig {
             "parcourt quand même ses 256 colonnes pour ne rien noter (10 à 25 % du temps de lecture sur la carte construite).",
             "true = rien à refaire, rien de parcouru (même résultat). false : comme Minecraft.")
             .define("hauteurs_sans_balayage", true);
+      SAUVEGARDES_ETALEES = b.comment("Sauvegarde au fil de l'eau (11/11) : à chaque tick, Minecraft passe en revue TOUS les tronçons chargés pour écrire",
+            "ceux qui ont changé (8 ms par tick à 100 joueurs). true = une tranche d'un vingtième par tick, en reprenant où le tick",
+            "d'avant s'est arrêté : chaque tronçon est regardé une fois par seconde, mêmes écritures (20 par tick au plus). La",
+            "sauvegarde automatique, les déchargements et l'arrêt regardent toujours tout. false : comme Minecraft.")
+            .define("sauvegardes_etalees", true);
+      MELANGE_SI_APPARITIONS = b.comment("Tronçons qui tournent (11/11) : Minecraft mélange leur liste à chaque tick, pour les apparitions naturelles de",
+            "créatures. true = pas de mélange dans un monde où la règle doMobSpawning est à faux (rien n'apparaît : l'ordre ne",
+            "sert à rien). false : mélange à chaque tick, comme Minecraft.")
+            .define("melange_si_apparitions", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -394,6 +409,8 @@ public final class NoyauConfig {
       tronconsActifsListe = TRONCONS_ACTIFS_LISTE.get();
       menusUneComparaison = MENUS_UNE_COMPARAISON.get();
       hauteursSansBalayage = HAUTEURS_SANS_BALAYAGE.get();
+      sauvegardesEtalees = SAUVEGARDES_ETALEES.get();
+      melangeSiApparitions = MELANGE_SI_APPARITIONS.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
