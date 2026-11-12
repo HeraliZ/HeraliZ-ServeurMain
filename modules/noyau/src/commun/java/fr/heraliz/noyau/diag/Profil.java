@@ -43,6 +43,12 @@ public final class Profil {
     public final Map<String, Integer> lignes = new HashMap<>();
     public final Map<String, Integer> categories = new HashMap<>();
     public final Map<String, Integer> piles = new HashMap<>();
+    /**
+     * Qui a fait attendre un tronçon au fil du serveur (11/11) : les cadres qui ont demandé un tronçon pas encore chargé
+     * ({@code ServerChunkCache.getChunk} bloquant), que les 14 cadres du haut ne montraient jamais (ils sont tous dans
+     * la lecture du tronçon). Vide sans attente de ce genre.
+     */
+    public final Map<String, Integer> demandeurs = new HashMap<>();
     private final Map<String, String> modParCadre = new HashMap<>();
 
     public void ajouter(StackTraceElement[] pile) {
@@ -57,6 +63,35 @@ public final class Profil {
         StringBuilder b = new StringBuilder();
         for (int k = 0; k < Math.min(14, pile.length); k++) b.append("    ").append(cadre(pile[k])).append('\n');
         piles.merge(b.toString(), 1, Integer::sum);
+        int d = demandeur(pile);
+        if (d >= 0) {
+            b.setLength(0);
+            for (int k = d; k < Math.min(d + DEMANDEUR_CADRES, pile.length); k++) b.append("    ").append(cadre(pile[k])).append('\n');
+            demandeurs.merge(b.toString(), 1, Integer::sum);
+        }
+    }
+
+    private static final int DEMANDEUR_CADRES = 10;
+    private static final String CACHE_TRONCONS = "net.minecraft.server.level.ServerChunkCache";
+    private static final String BOUCLE = "net.minecraft.util.thread.BlockableEventLoop";
+
+    /**
+     * Indice du premier cadre qui a demandé un tronçon en bloquant le fil, ou -1. L'attente se reconnaît à la boucle
+     * d'attente de Minecraft ({@code BlockableEventLoop.managedBlock}) appelée directement par
+     * {@code ServerChunkCache} (son getChunk ; l'attente normale entre deux ticks est appelée par MinecraftServer, et les
+     * tâches de fond par une classe interne). Les noms de méthodes ne sont pas lus (ils changent entre l'atelier et le
+     * serveur), seulement les classes. On prend l'attente la plus extérieure (la demande d'origine), puis on saute les
+     * cadres du cache de tronçons.
+     */
+    private static int demandeur(StackTraceElement[] pile) {
+        int attente = -1;
+        for (int k = 0; k + 1 < pile.length; k++) {
+            if (BOUCLE.equals(pile[k].getClassName()) && CACHE_TRONCONS.equals(pile[k + 1].getClassName())) attente = k + 1;
+        }
+        if (attente < 0) return -1;
+        int k = attente;
+        while (k < pile.length && CACHE_TRONCONS.equals(pile[k].getClassName())) k++;
+        return k < pile.length ? k : -1;
     }
 
     private int responsable(StackTraceElement[] pile) {
@@ -144,6 +179,15 @@ public final class Profil {
         for (int i = 0; i < Math.min(8, l.size()); i++) {
             b.append(String.format(Locale.ROOT, "-- %.1f %% des relevés --%n", 100.0 * l.get(i).getValue() / Math.max(1, releves)));
             b.append(l.get(i).getKey()).append('\n');
+        }
+        if (!demandeurs.isEmpty()) {
+            b.append("\n== Tronçons attendus par le fil du serveur : qui les a demandés (10 cadres sous le chargement) ==\n");
+            List<Map.Entry<String, Integer>> d = new ArrayList<>(demandeurs.entrySet());
+            d.sort((x, y) -> Integer.compare(y.getValue(), x.getValue()));
+            for (int i = 0; i < Math.min(6, d.size()); i++) {
+                b.append(String.format(Locale.ROOT, "-- %.1f %% des relevés --%n", 100.0 * d.get(i).getValue() / Math.max(1, releves)));
+                b.append(d.get(i).getKey()).append('\n');
+            }
         }
     }
 }
