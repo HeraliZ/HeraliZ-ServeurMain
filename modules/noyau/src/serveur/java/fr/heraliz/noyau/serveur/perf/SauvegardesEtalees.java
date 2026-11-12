@@ -2,6 +2,7 @@ package fr.heraliz.noyau.serveur.perf;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.level.ChunkHolder;
 
@@ -40,13 +41,22 @@ public final class SauvegardesEtalees implements ObjectIterator<ChunkHolder> {
    public SauvegardesEtalees tranche(Long2ObjectLinkedOpenHashMap<ChunkHolder> visibles) {
       this.carte = visibles;
       int n = visibles.size();
+      if (n == 0) {
+         // monde sans tronçon chargé (arènes vides, tutoriel sans joueur) : rien à regarder. Surtout ne pas demander à la
+         // carte un parcours « à partir de » : sur une carte vide, fastutil lit sa case -1 (plantage du banc du 12/11).
+         this.reste = 0;
+         this.reparti = true;
+         this.aReprise = false;
+         this.cles = LongIterators.EMPTY_ITERATOR;
+         return this;
+      }
       this.reste = Math.min(n, Math.max(MINIMUM, (n + PART - 1) / PART));
       this.reparti = false;
       LongIterator depart = null;
       if (aReprise) {
          try {
             depart = visibles.keySet().iterator(reprise);   // juste après le dernier regardé
-         } catch (NoSuchElementException plusCharge) {
+         } catch (RuntimeException plusCharge) {
             depart = null;                                  // ce tronçon n'est plus chargé : on repart du début
          }
       }
