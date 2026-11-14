@@ -18,7 +18,8 @@ Contrôles :
                        modules/clashwar/outils/nettoyer_structures.py --verifier) ;
   - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
   - raretes          : chaque arme, accessoire, munition, pièce d'armure et composant a sa rareté dans raretes.json
-                       (sinon rien dans son infobulle ; outils/raretes_objets.py --verifier) ;
+                       (sinon rien dans son infobulle), et aucun nom d'objet ne contient le mot d'une rareté (elle n'est
+                       que le badge de l'infobulle) ; outils/raretes_objets.py --verifier ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
@@ -222,7 +223,7 @@ def main():
     code, out = lancer([str(O / "raretes_objets.py"), "--verifier"])
     if code != 0:
         for l in out.splitlines():
-            if l.startswith(("[raretes] SANS", "[raretes] relancer")):
+            if l.startswith(("[raretes] SANS", "[raretes] relancer", "[raretes] NOM")):
                 print(l.strip())
         erreurs += 1
     # portée du son de chaque silencieux des gunpacks (un gunpack ajouté peut en apporter un nouveau)

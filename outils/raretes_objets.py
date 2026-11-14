@@ -15,15 +15,22 @@ rareté) :
 Sans rareté, voulu (EXCLUS) : la munition factice des armes de mêlée des gunpacks et les objets d'événement de
 l'Armurerie (chapeaux d'Halloween, sacs sur la tête : ligne « Événement », aucun n'est obtenable aujourd'hui).
 
+Noms (même retour, point 3 : « Epic Épique », la rareté écrite 3 fois sur le même objet ; elle n'est plus que le badge
+de l'infobulle) : aucun nom d'objet ne contient le mot d'une rareté (« épique », « Legendary », « редкий »…), dans les
+fichiers de langue français, anglais et russe de nos modules et des gunpacks.
+
 Usage : python outils/raretes_objets.py [--liste] [--verifier]
   sans option : nombre d'objets par famille et par rareté ; --liste : chaque objet et sa rareté ; --verifier : code de
-  sortie 1 s'il manque une rareté (outils/verifier.py).
+  sortie 1 s'il manque une rareté ou si un nom contient une rareté (outils/verifier.py).
 """
 import json
 import re
 import sys
 from collections import Counter, OrderedDict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from silencieux import lire as lire_json  # noqa: E402  (lecture tolérante des gunpacks : commentaires, virgules finales)
 
 DEPOT = Path(__file__).resolve().parents[1]
 RARETES = DEPOT / "serveur/config/heraliz_loot/raretes.json"
@@ -71,6 +78,28 @@ def familles():
     return f
 
 
+# mots des raretés (et de l'ancienne « mythique ») en français, anglais et russe
+MOTS_RARETE = re.compile(r"(?i)(épique|\bepique\b|\bepic\b|légendaire|\blegendaire\b|\blegendary\b|\brare\b|\bcommun\b|"
+                         r"\bcommon\b|\buncommon\b|\bunique\b|mythique|\bmythic\b|\bэпическ|\bлегендарн|\bредк|\bобычн|"
+                         r"\bнеобычн|\bуникальн|\bмифическ)")
+# clé du nom d'un objet ou d'un bloc (« item.<mod>.<objet> »), d'une arme, d'un accessoire ou d'une munition des gunpacks
+CLE_NOM = re.compile(r"^(item|block)\.[^.]+\.[^.]+$|\.(gun|attachment|ammo)\.[^.]+(\.name)?$")
+
+
+def noms_avec_rarete():
+    """[(fichier, clé, nom)] des noms d'objets qui contiennent le mot d'une rareté."""
+    fichiers = sorted(set(DEPOT.glob("modules/*/src/*/resources/**/lang/*.json")) | set(TACZ.glob("*/assets/*/lang/*.json")))
+    out = []
+    for f in fichiers:
+        if f.stem not in ("fr_fr", "en_us", "ru_ru"):
+            continue
+        d = lire_json(f) or {}
+        for k, v in d.items():
+            if isinstance(v, str) and CLE_NOM.search(k) and MOTS_RARETE.search(v):
+                out.append((f.relative_to(DEPOT).as_posix(), k, v))
+    return out
+
+
 def main():
     ra = json.loads(RARETES.read_text(encoding="utf-8"))
     manquants = []
@@ -90,7 +119,11 @@ def main():
     if manquants:
         print("[raretes] relancer l'outil qui écrit cette rareté (voir l'aide de outils/raretes_objets.py)")
     print("[raretes] %d objet(s) sans rareté" % len(manquants))
-    if "--verifier" in sys.argv and manquants:
+    noms = noms_avec_rarete()
+    for f, k, v in noms:
+        print("[raretes] NOM AVEC UNE RARETÉ : %s (%s, %s) : la rareté est le badge de l'infobulle, pas dans le nom" % (v, k, f))
+    print("[raretes] %d nom(s) d'objet avec le mot d'une rareté" % len(noms))
+    if "--verifier" in sys.argv and (manquants or noms):
         sys.exit(1)
 
 
