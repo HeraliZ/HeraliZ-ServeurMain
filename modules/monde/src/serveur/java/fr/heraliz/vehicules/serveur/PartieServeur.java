@@ -10,8 +10,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * blocs, essence obligatoire), objets du moteur retirés effacés, commandes /vehicules, coffre retiré et PV divisés
  * (SuiviVehicules ; ouverture du coffre refusée par le mixin serveur VehiculeSansCoffreMixin), passagers qui prennent les
  * dégâts comme à pied (Passagers, 11/11 ; balles à travers la carrosserie : mixin serveur TaczPassagersMixin), sortie
- * jamais dans un bloc ni de l'autre côté d'un mur (SortieSure, 14/11 : mixin serveur VehiculeSortieMixin, sans écouteur),
- * sortie volontaire refusée au-dessus de 15 km/h (SortieVitesse, 14/11 : même mixin), véhicule sans conducteur qui freine
+ * jamais dans un bloc ni de l'autre côté d'un mur (SortieSure, 14/11 : vérifiée en fin de tick, inscrite au démarrage du serveur),
+ * sortie volontaire refusée au-dessus de 15 km/h (SortieVitesse, 14/11 : mixin serveur VehiculeMessageMixin), véhicule sans conducteur qui freine
  * et coupe son moteur (ArretSansConducteur, 14/11). Écouteurs dans l'ordre d'origine.
  */
 public final class PartieServeur implements Partie {

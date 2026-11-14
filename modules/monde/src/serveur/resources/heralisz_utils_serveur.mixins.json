@@ -7,6 +7,7 @@
     "TaczBoiteTrainMixin",
     "TaczPassagersMixin",
     "VehiculeConduiteMixin",
+    "VehiculeMessageMixin",
     "VehiculeSansCoffreMixin",
     "VehiculeStableMixin",
     "ZombieAwarenessSensMixin"

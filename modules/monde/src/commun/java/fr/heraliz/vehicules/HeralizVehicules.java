@@ -26,9 +26,9 @@ import org.slf4j.Logger;
  *   <li>{@code Passagers} (11/11) : un joueur dans ou sur un véhicule prend les dégâts comme à pied (réglages
  *   passagers_proteges et balles_traversent) ;</li>
  *   <li>{@code SortieSure} (14/11) : on ne sort jamais d'un véhicule dans un bloc ni de l'autre côté d'un mur (réglage
- *   sortie_sure ; mixin serveur VehiculeSortieMixin) ;</li>
+ *   sortie_sure ; vérifiée juste après la sortie) ;</li>
  *   <li>{@code SortieVitesse} (14/11) : pas de sortie volontaire d'un véhicule lancé (réglage sortie_vitesse_max_kmh,
- *   15 km/h ; même mixin) ;</li>
+ *   15 km/h ; mixin serveur VehiculeMessageMixin) ;</li>
  *   <li>{@code ArretSansConducteur} (14/11) : sans conducteur, le véhicule freine jusqu'à l'arrêt et coupe son moteur
  *   (réglage arret_sans_conducteur ; événement VehicleMoveEvent du moteur, sans mixin) ;</li>
  *   <li>{@code client.SortieAccroupi} (14/11) : on sort d'un véhicule avec la touche S'accroupir du joueur, par le paquet

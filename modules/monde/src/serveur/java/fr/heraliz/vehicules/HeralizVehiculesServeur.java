@@ -21,10 +21,9 @@ public final class HeralizVehiculesServeur {
         Regles.enregistrer(MinecraftForge.EVENT_BUS);
         MinecraftForge.EVENT_BUS.addListener(Commandes::onRegister);
         SuiviVehicules.enregistrer(MinecraftForge.EVENT_BUS);
-        // ArretSansConducteur écoute un évènement du moteur des véhicules (VehicleMoveEvent) : inscrit au démarrage du
-        // serveur, jamais pendant la construction des mods. Banc du 14/11 : s'y inscrire ici chargeait les classes de
-        // Limitless Vehicle (AbstractVehicle) pendant que ce mod se construisait sur un autre fil ; le chargement échouait
-        // (« Could not find parent AbstractVehicle ») et le serveur ne démarrait plus.
+        // ArretSansConducteur (évènement VehicleMoveEvent du moteur) et SortieSure (sortie jamais dans un mur) : inscrits au
+        // démarrage du serveur, quand tous les mods sont construits ; ils ne chargent ainsi aucune classe de Limitless
+        // Vehicle pendant sa construction (banc du 14/11)
         MinecraftForge.EVENT_BUS.addListener(HeralizVehiculesServeur::auDemarrage);
     }
 
@@ -34,5 +33,6 @@ public final class HeralizVehiculesServeur {
         if (arretInscrit) return;
         arretInscrit = true;
         ArretSansConducteur.enregistrer(MinecraftForge.EVENT_BUS);
+        SortieSure.enregistrer(MinecraftForge.EVENT_BUS);
     }
 }

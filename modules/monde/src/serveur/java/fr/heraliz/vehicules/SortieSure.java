@@ -1,5 +1,6 @@
 package fr.heraliz.vehicules;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
@@ -10,11 +11,15 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import org.joml.Vector3f;
 import org.ywzj.vehicle.entity.misc.VehiclePart;
 import org.ywzj.vehicle.entity.vehicle.AbstractVehicle;
 import org.ywzj.vehicle.vehicle.structure.VehicleCubeOBB;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,14 +31,16 @@ import java.util.Locale;
  * camion), sinon 1 bloc à côté d'un flanc et 1 bloc plus haut que le bas du véhicule (buggy, moto). Véhicule collé à un
  * mur : joueur posé dans le mur, ou de l'autre côté (mur d'une case : dans la base d'un autre clan) ; dans un garage :
  * dans le mur.
- * <p><b>Maintenant</b> (mixin serveur {@code VehiculeSortieMixin}, à la fin de {@code getDismountLocationForPassenger},
- * quand Minecraft demande l'endroit juste avant d'y poser le joueur) : l'endroit du moteur est gardé s'il est sûr, à
+ * <p><b>Maintenant</b> : à la fin du tick où le joueur est sorti (évènement de monture de Forge, sans mixin : un mixin sur
+ * {@code AbstractVehicle} empêchait le serveur de démarrer, banc du 14/11), l'endroit où le moteur l'a posé est gardé s'il
+ * est sûr, à
  * savoir le corps du joueur debout n'y touche aucun bloc et aucun bloc solide ne le sépare de la place du joueur (deux
  * lignes : depuis la place, et à la hauteur de la sortie) ; sinon le même endroit un demi-bloc ou un bloc plus haut
  * (pente, trottoir) ; sinon, dans l'ordre et avec les mêmes contrôles : l'autre flanc, le flanc de la sortie du moteur
  * (au milieu), l'arrière, l'avant ; sans aucune place sûre, sur le véhicule (règle de Minecraft pour toute monture).
- * Jamais de l'autre côté d'un mur. Rien n'est changé pour une sortie déjà sûre (le cas normal en terrain dégagé).
- * <p>Seulement au moment d'une sortie (aucun travail à chaque tick) ; réglage {@code sortie_sure}
+ * Jamais de l'autre côté d'un mur. Rien n'est changé pour une sortie déjà sûre (le cas normal en terrain dégagé) ; sinon
+ * le joueur est replacé (un petit saut chez lui, seulement dans ce cas).
+ * <p>Seulement au moment d'une sortie (rien à chaque tick sans sortie) ; réglage {@code sortie_sure}
  * ({@link VehiculesConfig#SORTIE_SURE}), à false : endroit du moteur tel quel. Le jar d'ywzj n'est pas touché.
  */
 public final class SortieSure {
@@ -62,10 +69,14 @@ public final class SortieSure {
      * joueur sortant d'un véhicule, côté serveur. Le joueur est encore à sa place dans le véhicule à cet instant.
      */
     public static Vec3 verifier(AbstractVehicle vehicule, LivingEntity passager, Vec3 sortie) {
-        if (sortie == null || !(passager instanceof Player) || vehicule instanceof VehiclePart || !actif()) return sortie;
+        return verifier(vehicule, passager, passager.position(), sortie);
+    }
+
+    /** Pareil, avec la place qu'avait le joueur dans le véhicule ({@code place}) : pour une vérification après la sortie. */
+    public static Vec3 verifier(AbstractVehicle vehicule, LivingEntity passager, Vec3 place, Vec3 sortie) {
+        if (sortie == null || place == null || !(passager instanceof Player) || vehicule instanceof VehiclePart || !actif()) return sortie;
         Level level = vehicule.level();
         if (level.isClientSide()) return sortie;
-        Vec3 place = passager.position();
         if (place.distanceToSqr(sortie) > DISTANCE_MAX * DISTANCE_MAX) return sortie;
         try {
             Vec3 sure = essayer(level, passager, place, sortie);
@@ -85,6 +96,39 @@ public final class SortieSure {
                     passager.getName().getString(), ex);
             return sortie;
         }
+    }
+
+    /** Sortie à vérifier à la fin du tick : le joueur, son véhicule, sa place dans le véhicule au moment de sortir. */
+    private record Sortie(ServerPlayer joueur, AbstractVehicle vehicule, Vec3 place) {
+    }
+
+    private static final List<Sortie> A_VERIFIER = new ArrayList<>();
+
+    /** Inscrit au démarrage du serveur (HeralizVehiculesServeur), jamais pendant la construction des mods. */
+    static void enregistrer(IEventBus bus) {
+        bus.addListener(SortieSure::onMonture);
+        bus.addListener(SortieSure::onTick);
+    }
+
+    /** Un joueur descend d'un véhicule (quelle qu'en soit la cause) : il est encore à sa place ; vérifié en fin de tick. */
+    private static void onMonture(EntityMountEvent e) {
+        if (!e.isDismounting() || e.getLevel().isClientSide()) return;
+        if (!(e.getEntityMounting() instanceof ServerPlayer sp) || !(e.getEntityBeingMounted() instanceof AbstractVehicle v)) return;
+        if (v instanceof VehiclePart || !actif()) return;
+        A_VERIFIER.add(new Sortie(sp, v, sp.position()));
+    }
+
+    /** Fin du tick : Minecraft a posé le joueur là où le moteur l'a dit ; replacé seulement si ce n'était pas sûr. */
+    private static void onTick(TickEvent.ServerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || A_VERIFIER.isEmpty()) return;
+        for (Sortie s : A_VERIFIER) {
+            ServerPlayer sp = s.joueur();
+            if (sp.isRemoved() || !sp.isAlive() || sp.isPassenger() || sp.level() != s.vehicule().level()) continue;
+            Vec3 ici = sp.position();
+            Vec3 sure = verifier(s.vehicule(), sp, s.place(), ici);
+            if (sure != null && sure != ici) sp.teleportTo(sure.x, sure.y, sure.z);
+        }
+        A_VERIFIER.clear();
     }
 
     /**

@@ -17,9 +17,9 @@ import java.util.WeakHashMap;
  * <ul>
  *   <li><b>Sortie volontaire</b> : la demande de sortie du moteur des véhicules (paquet {@code ClientVehicleAction},
  *   {@code leaveVehicle}), envoyée par la touche S'accroupir ({@code client.SortieAccroupi}) ou par la touche « Sortir »
- *   du moteur. Contrôlée par le mixin serveur {@code VehiculeSortieMixin}, au début de
- *   {@code AbstractVehicle.onClientVehicleAction}, seul endroit où le serveur reçoit cette demande : c'est lui qui
- *   décide, quoi que le jeu du joueur envoie.</li>
+ *   du moteur. Contrôlée par le mixin serveur {@code VehiculeMessageMixin}, au début du traitement de ce message sur
+ *   le fil du serveur, seul endroit où le serveur reçoit cette demande : c'est lui qui décide, quoi que le jeu du
+ *   joueur envoie.</li>
  *   <li><b>Jamais pour une sortie forcée</b> : mise à terre, mort, téléportation, véhicule détruit, déconnexion,
  *   changement de monde passent par {@code stopRiding} directement, sans ce paquet ; ils ne sont pas touchés.</li>
  *   <li><b>Vitesse</b> : vitesse au sol (horizontale) du véhicule où le joueur est assis, celle qu'il aura au prochain

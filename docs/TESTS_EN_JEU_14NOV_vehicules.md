@@ -127,8 +127,13 @@ jeu des joueurs ; la sortie sûre, la vitesse de sortie et l'arrêt sans conduct
   de branche de GitHub. Textes contrôlés (`outils/verifier_langues.py` : 0 erreur).
 - La cause « Maj gauche ne faisait pas sortir » vient de la lecture du traitement des touches par Forge, pas d'un essai en
   jeu ; la nouvelle sortie ne dépend pas de cette cause (elle lit S'accroupir comme le jeu).
-- Un petit mixin serveur sur deux méthodes du moteur (jar d'ywzj intact) : celle qui donne l'endroit de sortie (sortie
-  sûre) et celle qui reçoit la demande de sortie d'un joueur (limite de vitesse). Il ne se vérifie pas hors du jeu : s'il
-  ne s'appliquait pas, rien ne plante, la sortie redevient celle du moteur (sans contrôle de l'endroit ni de la vitesse).
+- Banc du 14/11 : le premier montage (un mixin sur `AbstractVehicle` du moteur) empêchait le serveur de démarrer
+  (Limitless Vehicle n'arrivait plus à charger ses véhicules). Refait sans toucher à `AbstractVehicle` :
+  - sortie sûre : vérifiée à la fin du tick où le joueur sort (évènement de monture de Forge) ; si l'endroit du moteur
+    n'était pas sûr, le joueur est replacé (un petit saut chez lui, seulement dans ce cas) ;
+  - limite de vitesse : un petit mixin serveur sur le message de sortie du moteur (`ClientVehicleAction`, jar d'ywzj
+    intact) ; s'il ne s'appliquait pas, rien ne plante, mais il n'y aurait plus de limite de vitesse ;
+  - les deux sont inscrits au démarrage du serveur, comme l'arrêt sans conducteur, jamais pendant la construction des
+    mods.
 - L'arrêt sans conducteur passe par un événement du moteur (sans mixin) ; les temps de freinage sont calculés depuis les
   réglages du pack (force de freinage, masse), pas mesurés en jeu.
