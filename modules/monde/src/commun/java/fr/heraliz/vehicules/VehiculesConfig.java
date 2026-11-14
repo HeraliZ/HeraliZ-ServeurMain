@@ -6,10 +6,11 @@ import java.util.List;
 
 /**
  * Réglages serveur ({@code serverconfig/heraliz_vehicules-server.toml} du monde). {@code coffre_retire},
- * {@code pv_pourcent}, {@code passagers_proteges}, {@code balles_traversent}, {@code sortie_sure} et
- * {@code sortie_vitesse_max_kmh} sont appliqués par la partie serveur ({@code CoffreRetire}, {@code PointsDeVie},
- * {@code Passagers}, {@code SortieSure}, {@code SortieVitesse}) ; la section {@code physique} par {@code Stabilite}
- * (mixins serveur sur le moteur de Limitless Vehicle).
+ * {@code pv_pourcent}, {@code passagers_proteges}, {@code balles_traversent}, {@code sortie_sure},
+ * {@code sortie_vitesse_max_kmh} et {@code arret_sans_conducteur} sont appliqués par la partie serveur
+ * ({@code CoffreRetire}, {@code PointsDeVie}, {@code Passagers}, {@code SortieSure}, {@code SortieVitesse},
+ * {@code ArretSansConducteur}) ; la section {@code physique} par {@code Stabilite} (mixins serveur sur le moteur de
+ * Limitless Vehicle).
  */
 public final class VehiculesConfig {
     public static final ForgeConfigSpec SPEC;
@@ -23,6 +24,7 @@ public final class VehiculesConfig {
     public static final ForgeConfigSpec.BooleanValue BALLES_TRAVERSENT;
     public static final ForgeConfigSpec.BooleanValue SORTIE_SURE;
     public static final ForgeConfigSpec.IntValue SORTIE_VITESSE_MAX_KMH;
+    public static final ForgeConfigSpec.BooleanValue ARRET_SANS_CONDUCTEUR;
     public static final ForgeConfigSpec.BooleanValue PHYSIQUE_STABLE;
     public static final ForgeConfigSpec.DoubleValue INERTIE;
     public static final ForgeConfigSpec.DoubleValue BASCULE_MAX;
@@ -72,6 +74,10 @@ public final class VehiculesConfig {
                         "sol, en km/h (conducteur et passagers ; message au joueur). Jamais pour une sortie forcee par le serveur (mise a",
                         "terre, mort, teleportation, vehicule detruit, deconnexion). 0 : pas de limite. Vitesse max des vehicules : 58 km/h.")
                 .defineInRange("sortie_vitesse_max_kmh", 15, 0, 1000);
+        ARRET_SANS_CONDUCTEUR = b.comment("Sans conducteur (sortie, mort, mise a terre, deconnexion, teleportation), un vehicule freine tout seul",
+                        "jusqu'a l'arret (frein du vehicule, roues au sol) et coupe son moteur (plus d'essence une fois le moteur arrete) ;",
+                        "le conducteur qui remonte le redemarre comme d'habitude. false : le vehicule continue sur sa lancee, moteur allume.")
+                .define("arret_sans_conducteur", true);
         b.pop();
         b.push("physique");
         PHYSIQUE_STABLE = b.comment("Vehicules a roues plus stables et plus maniables (moteur de Limitless Vehicle corrige par HeraliZ Utils).",

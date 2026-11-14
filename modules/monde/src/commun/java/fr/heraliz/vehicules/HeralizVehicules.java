@@ -29,6 +29,8 @@ import org.slf4j.Logger;
  *   sortie_sure ; mixin serveur VehiculeSortieMixin) ;</li>
  *   <li>{@code SortieVitesse} (14/11) : pas de sortie volontaire d'un véhicule lancé (réglage sortie_vitesse_max_kmh,
  *   15 km/h ; même mixin) ;</li>
+ *   <li>{@code ArretSansConducteur} (14/11) : sans conducteur, le véhicule freine jusqu'à l'arrêt et coupe son moteur
+ *   (réglage arret_sans_conducteur ; événement VehicleMoveEvent du moteur, sans mixin) ;</li>
  *   <li>{@code client.SortieAccroupi} (14/11) : on sort d'un véhicule avec la touche S'accroupir du joueur, par le paquet
  *   de sortie du moteur ;</li>
  *   <li>{@code client.IndicateurDegats} : plus de panneau des dégâts quand on touche un véhicule.</li>

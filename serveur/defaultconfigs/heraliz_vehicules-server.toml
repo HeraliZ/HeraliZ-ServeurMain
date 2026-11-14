@@ -37,4 +37,8 @@
 	#terre, mort, teleportation, vehicule detruit, deconnexion). 0 : pas de limite. Vitesse max des vehicules : 58 km/h.
 	#Range: 0 ~ 1000
 	sortie_vitesse_max_kmh = 15
+	#Sans conducteur (sortie, mort, mise a terre, deconnexion, teleportation), un vehicule freine tout seul
+	#jusqu'a l'arret (frein du vehicule, roues au sol) et coupe son moteur (plus d'essence une fois le moteur arrete) ;
+	#le conducteur qui remonte le redemarre comme d'habitude. false : le vehicule continue sur sa lancee, moteur allume.
+	arret_sans_conducteur = true
 

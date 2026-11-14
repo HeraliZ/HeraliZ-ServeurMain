@@ -7,7 +7,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * Partie SERVEUR de {@link HeralizVehicules} (docs/METHODE_CLIENT_SERVEUR.md §5) : les écouteurs serveur que le
  * constructeur du @Mod inscrivait, dans l'ordre d'origine (réglages relus -> protection des blocs, objets retirés effacés,
  * règles des véhicules, commandes /vehicules), puis le suivi des véhicules posés (PV divisés, coffre retiré :
- * {@link SuiviVehicules}).
+ * {@link SuiviVehicules}) et l'arrêt des véhicules sans conducteur (frein, moteur coupé : {@link ArretSansConducteur}).
  */
 public final class HeralizVehiculesServeur {
     private HeralizVehiculesServeur() {
@@ -20,5 +20,6 @@ public final class HeralizVehiculesServeur {
         Regles.enregistrer(MinecraftForge.EVENT_BUS);
         MinecraftForge.EVENT_BUS.addListener(Commandes::onRegister);
         SuiviVehicules.enregistrer(MinecraftForge.EVENT_BUS);
+        ArretSansConducteur.enregistrer(MinecraftForge.EVENT_BUS);
     }
 }
