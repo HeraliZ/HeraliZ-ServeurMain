@@ -229,6 +229,11 @@ final class EffacerBase {
                                 recup.add(s.copy());
                             } else if (ObjetsAVieBases.estAVie(s)) {
                                 ObjetsAVieBases.garder(level.getServer(), joueur, s, "base effacée");
+                            } else {
+                                // 14/11 : un sac à dos rangé dans un coffre de la base, avec des objets à vie dedans
+                                for (net.minecraft.world.item.ItemStack a : ObjetsAVieBases.objetsAVieDedans(s)) {
+                                    ObjetsAVieBases.garder(level.getServer(), joueur, a, "sac d'une base effacée");
+                                }
                             }
                         }
                         c.clearContent();
@@ -253,6 +258,10 @@ final class EffacerBase {
         for (ItemEntity it : level.getEntitiesOfClass(ItemEntity.class, zone)) {
             if (ObjetsAVieBases.estAVie(it.getItem())) {
                 ObjetsAVieBases.garder(level.getServer(), joueur, it.getItem(), "au sol d'une base effacée");
+            } else {
+                for (net.minecraft.world.item.ItemStack a : ObjetsAVieBases.objetsAVieDedans(it.getItem())) {
+                    ObjetsAVieBases.garder(level.getServer(), joueur, a, "sac au sol d'une base effacée");
+                }
             }
             it.discard();
         }

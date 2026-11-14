@@ -42,6 +42,8 @@ import org.jetbrains.annotations.Nullable;
  *   de suite s'il est connecté, sinon à sa connexion ; inventaire plein : ils attendent (nouvel essai toutes les 30 s).</li>
  *   <li>Sans propriétaire connu (conteneur hors de tout claim) : gardés à part, avec une ligne au journal du serveur,
  *   pour que le staff les rende ; jamais détruits.</li>
+ *   <li>Sac à dos rangé dans un coffre de la base (de nouveau permis, vide ou plein, depuis le 14/11) : les objets à vie
+ *   qu'il contient suivent les mêmes règles (pilleur, base effacée, {@code /wipe}) ; le sac lui-même suit son coffre.</li>
  * </ul>
  * Fil du serveur seulement.
  */
@@ -82,6 +84,56 @@ public final class ObjetsAVieBases extends SafeSavedData {
         }
     }
 
+    private static Method contientAVie, retirerContenuAVie;
+    private static boolean contenuCherche;
+
+    private static void chercherContenu() {
+        if (!contenuCherche) {
+            contenuCherche = true;
+            try {
+                Class<?> c = Class.forName("fr.heraliz.tactique.avie.ObjetsAVie");
+                contientAVie = c.getMethod("contientAVie", ItemStack.class);
+                retirerContenuAVie = c.getMethod("retirerContenuAVie", ItemStack.class);
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                contientAVie = null;
+                retirerContenuAVie = null;
+            }
+        }
+    }
+
+    /**
+     * Objet à vie, ou sac à dos (boîte) qui en contient ({@code ObjetsAVie.contientAVie} de Tactique, par réflexion) :
+     * depuis le 14/11, un sac, vide ou plein, se range dans les coffres des bases. Sans Tactique : {@link #estAVie}.
+     */
+    public static boolean contientAVie(ItemStack s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        chercherContenu();
+        try {
+            return contientAVie != null ? Boolean.TRUE.equals(contientAVie.invoke(null, s)) : estAVie(s);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return estAVie(s);
+        }
+    }
+
+    /**
+     * Les objets à vie rangés dans ce sac à dos (ou cette boîte), retirés d'une COPIE ({@code ObjetsAVie.retirerContenuAVie}
+     * de Tactique) : l'objet passé ne change pas. Vide pour tout autre objet, ou sans Tactique.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<ItemStack> objetsAVieDedans(ItemStack s) {
+        if (s == null || s.isEmpty() || !s.hasTag() || estAVie(s) || !contientAVie(s) || retirerContenuAVie == null) {
+            return List.of();
+        }
+        try {
+            Object l = retirerContenuAVie.invoke(null, s.copy());
+            return l instanceof List<?> ? (List<ItemStack>) l : List.of();
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return List.of();
+        }
+    }
+
     /** Dernier refus montré à chaque joueur (ms), pour ne pas répéter le message à chaque clic. */
     private static final Map<UUID, Long> REFUS_MONTRE = new java.util.HashMap<>();
 
@@ -93,10 +145,11 @@ public final class ObjetsAVieBases extends SafeSavedData {
      * claim, claim sans groupe. Réglage {@code lifetimeItemsOwnerOnly} de crac-server.toml, faux par défaut depuis le 03/11
      * (choix du propriétaire : le pilleur prend l'objet à vie comme le reste et en devient le propriétaire) : vrai pour
      * tout le monde. Appelé par le mixin serveur de {@code Slot.mayPickup} (seulement au clic) ; vrai pour tout le reste.
+     * 14/11 : un sac à dos qui contient un objet à vie compte comme lui (les sacs se rangent de nouveau dans les coffres).
      */
     public static boolean peutPrendre(ServerPlayer p, net.minecraft.world.level.block.entity.BlockEntity be, ItemStack s) {
         if (s.isEmpty() || p.isCreative() || p.isSpectator() || p.hasPermissions(2) || !(be.getLevel() instanceof ServerLevel level)
-            || !fr.heraliz.crac.Config.SPEC.isLoaded() || !fr.heraliz.crac.Config.lifetimeItemsOwnerOnly.get() || !estAVie(s)) {
+            || !fr.heraliz.crac.Config.SPEC.isLoaded() || !fr.heraliz.crac.Config.lifetimeItemsOwnerOnly.get() || !contientAVie(s)) {
             return true;
         }
         Claim c = ClaimManager.getAt(level, be.getBlockPos());

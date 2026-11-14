@@ -174,6 +174,13 @@ public final class WipeBases {
             ItemStack s = c.getItem(i);
             if (!s.isEmpty() && garder.test(s)) {
                 rendus.computeIfAbsent(proprio, k -> new ArrayList<>()).add(s.copy());
+            } else {
+                // 14/11 : sac à dos rangé dans un coffre, avec des objets à vie dedans : eux seuls sont rendus (jamais le sac)
+                for (ItemStack a : ObjetsAVieBases.objetsAVieDedans(s)) {
+                    if (garder.test(a)) {
+                        rendus.computeIfAbsent(proprio, k -> new ArrayList<>()).add(a);
+                    }
+                }
             }
         }
     }

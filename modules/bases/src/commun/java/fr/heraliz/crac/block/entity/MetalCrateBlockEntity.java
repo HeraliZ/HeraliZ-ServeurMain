@@ -130,11 +130,8 @@ public class MetalCrateBlockEntity extends RandomizableContainerBlockEntity {
         return this.items.size();
     }
 
-    /** HeraliZ (11/11) : jamais de sac à dos, vide ou plein (entonnoir, autres mods ; écran : SlotCoffreSansSacMixin). */
-    @Override
-    public boolean canPlaceItem(int slot, @NotNull ItemStack stack) {
-        return fr.heraliz.crac.heraliz.SansSac.accepte(stack) && super.canPlaceItem(slot, stack);
-    }
+    // HeraliZ (14/11, retour du propriétaire) : sacs à dos de nouveau acceptés, vides ou pleins (refusés du 11/11 au 14/11) ;
+    // audit anti-duplication : docs/TESTS_EN_JEU_14NOV_sacs-coffres.md
 
     /** Caisse d'avant restée à 3 lignes : repasse à 2 dès que sa 3e ligne est vide (personne ne regarde). */
     private void retrecir() {

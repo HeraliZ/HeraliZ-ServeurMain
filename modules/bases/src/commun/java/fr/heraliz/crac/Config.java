@@ -435,10 +435,10 @@ public class Config {
             )
             .defineList("protectedDimensions", List.of(), o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
         lifetimeItemsOwnerOnly = BUILDER.comment(
-                "HeraliZ: if true, a lifetime item (HeraliZ Tactique: knives, lifetime skins) in a container of a base can only be",
-                "taken out by those who may open the base's chests (its clan with the chests right, access given in the Claim",
-                "Block): a raider sees it but cannot take it. False (default since 03/11, owner's choice) = anyone who opens the",
-                "container takes it like any other item and becomes its owner."
+                "HeraliZ: if true, a lifetime item (HeraliZ Tactique: knives, lifetime skins), or a backpack holding one (14/11), in",
+                "a container of a base can only be taken out by those who may open the base's chests (its clan with the chests right,",
+                "access given in the Claim Block): a raider sees it but cannot take it. False (default since 03/11, owner's choice) =",
+                "anyone who opens the container takes it like any other item and becomes its owner."
             )
             .define("lifetimeItemsOwnerOnly", false);
         BUILDER.pop();
