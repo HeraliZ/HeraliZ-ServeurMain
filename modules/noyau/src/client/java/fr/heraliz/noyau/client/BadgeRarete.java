@@ -209,6 +209,33 @@ public final class BadgeRarete {
         return s.size() == 2 && ligne.getContents() == ComponentContents.EMPTY ? marqueur(s.get(0)) : -1;
     }
 
+    /** Rang du badge d'une infobulle du jeu déjà rassemblée (ses composants dessinés), -1 sans badge. Sans allocation. */
+    public static int rang(List<ClientTooltipComponent> composants) {
+        for (int i = 0; i < composants.size(); i++) {
+            if (composants.get(i) instanceof Dessin d) return d.rang();
+        }
+        return -1;
+    }
+
+    /** Couleur (RVB) de la rareté de ce rang (0 Commun … 5 Unique). */
+    public static int couleur(int rang) {
+        return COULEURS[Math.max(0, Math.min(5, rang))];
+    }
+
+    /** Rang de la rareté de cette couleur (RVB, celles de HeraliZ Loot), -1 pour une autre couleur. */
+    public static int rangCouleur(int rgb) {
+        for (int r = 0; r < 6; r++) {
+            if (COULEURS[r] == (rgb & 0xFFFFFF)) return r;
+        }
+        return -1;
+    }
+
+    /** Nom de la rareté de ce rang dans la langue du joueur (celui des badges). */
+    public static String nom(int rang) {
+        int r = Math.max(0, Math.min(5, rang));
+        return Language.getInstance().getOrDefault("heraliz_loot.rarete." + IDS[r], NOMS[r]);
+    }
+
     /** Largeur du badge de ce rang (unités d'interface). */
     public static int largeur(int rang) {
         maj();

@@ -5,8 +5,11 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "heraliz_noyau.refmap.json",
   "client": [
+    "CaseAcces",
+    "CaseVideMixin",
     "MesureBlocRenduMixin",
-    "MesureEntiteRenduMixin"
+    "MesureEntiteRenduMixin",
+    "SurvolCaseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

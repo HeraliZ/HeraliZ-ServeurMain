@@ -53,5 +53,7 @@
   "noyau.redemarrage.sous_titre": "dans %s",
   "noyau.redemarrage.minutes": "%s min",
   "noyau.redemarrage.secondes": "%s s",
-  "heraliz.redemarrage.deconnexion": "Redémarrage du serveur : ton jeu se reconnecte tout seul dans un instant."
+  "heraliz.redemarrage.deconnexion": "Redémarrage du serveur : ton jeu se reconnecte tout seul dans un instant.",
+  "noyau.verre.sur_toi": "Sur toi",
+  "noyau.verre.acces_rapide": "Accès rapide"
 }

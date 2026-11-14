@@ -8,7 +8,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 /**
  * Partie client du noyau : indicateur « EN COMBAT », analyse du jeu ({@code /diagclient}, {@code /diag client}), dessin
  * commun des zones de la carte ({@link fr.heraliz.noyau.client.zones.ZoneDessin}), badge de rareté des infobulles
- * ({@link BadgeRarete}).
+ * ({@link BadgeRarete}), pièces des écrans en verre ({@link fr.heraliz.noyau.client.kit.EcranVerre}).
  */
 public final class ClientNoyau implements Partie {
    @Override
@@ -16,6 +16,7 @@ public final class ClientNoyau implements Partie {
       fr.heraliz.noyau.client.diag.DiagClient.init();
       fr.heraliz.noyau.client.zones.ReglagesZones.enregistrer(busMod);   // dessin commun des zones (03/11)
       BadgeRarete.enregistrer(busMod);   // badge de rareté des infobulles, dessiné (14/11)
+      fr.heraliz.noyau.client.kit.InfobulleVerre.enregistrer();   // infobulles des écrans en verre (14/11)
       busMod.addListener((RegisterGuiOverlaysEvent e) ->
             e.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "combat", (gui, g, partial, w, h) -> HudCombat.dessiner(g, w, h)));
    }
