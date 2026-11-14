@@ -1,5 +1,7 @@
 package fr.heralisz.camo;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 
 import javax.annotation.Nullable;
@@ -139,21 +141,41 @@ public enum Camo {
     * or, Mythique (= Unique) rouge.
     */
    public enum Tier {
-      COMMON(0x9A9A9A),
-      UNCOMMON(0x5CBF4A),
-      RARE(0x3F8CFF),
-      EPIC(0xA64DFF),
-      LEGENDARY(0xF2B83A),
-      MYTHIC(0xFF3333);
+      COMMON(0x9A9A9A, "\ue806"),
+      UNCOMMON(0x5CBF4A, "\ue804"),
+      RARE(0x3F8CFF, "\ue803"),
+      EPIC(0xA64DFF, "\ue80d"),
+      LEGENDARY(0xF2B83A, "\ue805"),
+      MYTHIC(0xFF3333, "\ue810");
 
       /** Couleur (RVB) de la rareté. */
       public final int couleur;
+      /**
+       * Badge de la rareté dans l'infobulle des camos, stickers et du module StatTrak (14/11, retour du propriétaire :
+       * « juste une fois le petit encadré avec écrit EPIC ») : le même caractère que fr.heraliz.loot.Rarete (HeraliZ
+       * Loot), une petite image de la police des rangs (« COMMON », « UNCOMMON », « RARE », « EPIC », « LEGENDARY » ;
+       * « ARTIFACT », rouge, pour Mythique : il n'y a pas d'image « MYTHIC » dans cette police).
+       */
+      private final String glyphe;
 
-      Tier(int couleur) {
+      Tier(int couleur, String glyphe) {
          this.couleur = couleur;
+         this.glyphe = glyphe;
       }
 
-      /** Texte de la rareté (ligne « Épique » des infobulles) : sa couleur. */
+      /**
+       * Style du badge : blanc (l'image garde ses couleurs), police par défaut (la seule qui a ce caractère), sans gras
+       * ni italique.
+       */
+      private static final Style STYLE_BADGE = Style.EMPTY.withColor(0xFFFFFF).withFont(Style.DEFAULT_FONT).withBold(false)
+         .withItalic(false).withUnderlined(false);
+
+      /** Ligne de rareté des infobulles : le badge seul (une nouvelle ligne à chaque appel). */
+      public MutableComponent badge() {
+         return Component.literal(this.glyphe).setStyle(STYLE_BADGE);
+      }
+
+      /** Texte de la rareté (atelier d'arme, onglet Skin : « Épique ») : sa couleur. */
       public Style style(Style s) {
          return s.withColor(this.couleur);
       }

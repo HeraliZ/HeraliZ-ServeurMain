@@ -71,11 +71,12 @@ public class CamoItem extends Item {
    /**
     * Infobulle (03/11, choix du propriétaire : « pas de description, nom + rareté + une ligne simple ») : le nom (couleur
     * de la rareté), la rareté, l'arme réservée s'il y en a une (aucun camo aujourd'hui), puis « Clic droit : ajoute à la
-    * collection à vie ».
+    * collection à vie ». 14/11 (retour du propriétaire : « juste une fois le petit encadré avec écrit EPIC ») : la rareté
+    * est le badge (Camo.Tier.badge), plus le mot « Épique ».
     */
    @Override
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-      tooltip.add(Component.translatable(this.camo.tier.key()).withStyle(this.camo.tier::style).withStyle(ChatFormatting.BOLD));
+      tooltip.add(this.camo.tier.badge());
       if (this.camo.gun != null) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.gun." + this.camo.id).withStyle(ChatFormatting.GOLD));
       }

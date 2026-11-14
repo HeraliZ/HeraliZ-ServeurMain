@@ -4,13 +4,12 @@ import fr.heraliz.loot.ConteneurBlock;
 import fr.heraliz.loot.HeralizLoot;
 import fr.heraliz.loot.Rarete;
 import fr.heraliz.loot.RaretesObjets;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
 import net.minecraftforge.api.distmarker.Dist;
 import fr.heraliz.loot.client.rendu.conteneurs.Conteneurs;
 import net.minecraft.client.resources.model.BakedModel;
@@ -21,6 +20,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -69,12 +69,22 @@ public final class ClientLoot {
     public static final class Jeu {
         private Jeu() {}
 
-        @SubscribeEvent
+        /**
+         * Nom et rareté de tout objet. 14/11 (retour du propriétaire : « il y a écrit 3 fois le mot epic ou épique sur le
+         * même objet ; il faut juste une fois le petit encadré avec écrit EPIC et c'est tout ») : la rareté n'est plus
+         * qu'UN badge ({@link Rarete#badge}), juste sous le nom ; plus de ligne « Épique » écrite ici, et les autres mods
+         * n'en écrivent plus (l'Armurerie mettait sa propre ligne « badge + Épique » sous la nôtre). Appelé en dernier
+         * (LOWEST) : les lignes des autres mods sont déjà là, le badge se pose toujours juste sous le nom, et un badge déjà
+         * posé par un autre mod (camos, stickers…, par exemple si le staff choisit leur rareté avec /rarete) est retiré :
+         * il n'y en a jamais deux.
+         */
+        @SubscribeEvent(priority = EventPriority.LOWEST)
         public static void infobulleLoot(ItemTooltipEvent e) {
+            List<Component> l = e.getToolTip();
             // nom dans la couleur de sa rareté, même règle que le nom affiché au-dessus de la barre d'objets (NomsRarete ;
             // 21/10 : un viseur Légendaire s'affichait en violet ; 11/11 : aussi les noms à codes § des packs d'armes et
             // ceux qui ont leur propre couleur, plus jamais le rose de Minecraft)
-            if (!e.getToolTip().isEmpty()) e.getToolTip().set(0, NomsRarete.nom(e.getItemStack(), e.getToolTip().get(0)));
+            if (!l.isEmpty()) l.set(0, NomsRarete.nom(e.getItemStack(), l.get(0)));
             // rareté choisie pour l'objet : inscrite sur l'objet (coffres T7), sinon celle de sa sorte (raretes.json, /rarete).
             // 14/11 (retour du propriétaire : « sur beaucoup d'accessoires il n'y a pas écrit de rareté, exemple Bipod V9
             // Grip ») : Commun aussi. Avant, Commun n'était jamais rappelé : 47 accessoires, 5 armes, 2 munitions, 6 armes
@@ -82,9 +92,10 @@ public final class ClientLoot {
             // par défaut : blocs, objets de Minecraft…) n'en montre toujours pas.
             Rarete r = RaretesObjets.choisie(e.getItemStack());
             if (r == null) return;
-            // 21/10 (choix du propriétaire) : plus d'étoile devant la rareté
-            e.getToolTip().add(Math.min(1, e.getToolTip().size()), r.texte()
-                    .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur))));
+            for (int i = l.size() - 1; i >= 1; i--) {
+                if (Rarete.estBadge(l.get(i))) l.remove(i);
+            }
+            l.add(Math.min(1, l.size()), r.badge());
         }
 
         /**

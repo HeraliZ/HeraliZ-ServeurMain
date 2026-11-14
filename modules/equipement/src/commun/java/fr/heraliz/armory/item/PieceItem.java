@@ -13,7 +13,9 @@ import java.util.function.Supplier;
 
 /**
  * Commun aux pieces (armure vanilla ou Curios) : definition + infobulle. 0.15.0 : rarete, ensemble, emplacement, une
- * seule ligne « Protection : x % », zone protegee (plus de pictogrammes par type de degat).
+ * seule ligne « Protection : x % », zone protegee (plus de pictogrammes par type de degat). 14/11 : la rarete n'est
+ * plus ecrite ici ; c'est le badge de HeraliZ Loot, juste sous le nom (raretes.json, ecrit par
+ * outils/equilibrage_armures.py).
  */
 public interface PieceItem extends ProtectiveItem {
     PieceDef def();
@@ -53,7 +55,8 @@ public interface PieceItem extends ProtectiveItem {
     }
 
     static void appendTooltip(PieceDef def, List<Component> tooltip) {
-        tooltip.add(GearItem.rarityLine(rarity(def.tier())));
+        // 14/11 (retour du propriétaire : « Epic Épique », 3 fois la rareté sur le même casque) : plus de ligne de rareté
+        // ici (badge + « Épique » sous la ligne « Épique » de HeraliZ Loot) ; le seul badge est celui de Loot
         tooltip.add(Component.translatable("tooltip.heraliz_armory.set", Component.translatable("tooltip.heraliz_armory.set." + def.set()))
                 .withStyle(ChatFormatting.GRAY));
         // emplacement : seulement pour les pieces d'armure (Curios affiche deja « Emplacement : … » pour les siennes)

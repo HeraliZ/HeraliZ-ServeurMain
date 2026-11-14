@@ -73,9 +73,9 @@ public class SetKitItem extends Item {
         return super.getName(stack).copy().withStyle(PieceItem.nameStyle(tier()));
     }
 
+    /** Infobulle : coloris, protection de la tenue, pièces. La rareté est le badge de HeraliZ Loot, sous le nom (14/11). */
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(GearItem.rarityLine(PieceItem.rarity(tier())));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.family",
                 Component.translatable("tooltip.heraliz_armory.family." + set.family())).withStyle(set.familyColor()));
         float[] total = fr.heraliz.armory.armor.Protection.setBullet(set.pieces());

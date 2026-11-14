@@ -44,10 +44,11 @@ public final class DecorItems {
 
    /**
     * Infobulle des stickers et du module StatTrak (03/11, choix du propriétaire, comme les camos : « pas de description,
-    * nom + rareté + une ligne simple ») : la rareté, puis « Posé depuis le menu de modification d'armes ».
+    * nom + rareté + une ligne simple ») : la rareté, puis « Posé depuis le menu de modification d'armes ». 14/11 : la
+    * rareté est le badge (Camo.Tier.badge, « juste une fois le petit encadré avec écrit EPIC »), plus le mot « Épique ».
     */
    private static void infobulle(List<Component> tooltip, Camo.Tier rarete) {
-      tooltip.add(Component.translatable(rarete.key()).withStyle(rarete::style).withStyle(ChatFormatting.BOLD));
+      tooltip.add(rarete.badge());
       tooltip.add(Component.translatable("item.heralisz_camo.decor.howto").withStyle(ChatFormatting.GRAY));
    }
 

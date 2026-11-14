@@ -63,11 +63,13 @@ public class SuitItem extends SetArmorItem {
         return b.build();
     }
 
-    /** Infobulle au format de l'Armurerie : combinaison, « se porte seule », protections, bonus. */
+    /**
+     * Infobulle au format de l'Armurerie : combinaison, « se porte seule », protections, bonus. La rareté est le badge de
+     * HeraliZ Loot, sous le nom (14/11 : plus de ligne de rareté ici).
+     */
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         PieceDef def = def();
-        tooltip.add(GearItem.rarityLine(PieceItem.rarity(def.tier())));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.suit").withStyle(ChatFormatting.GOLD));
         tooltip.add(Component.translatable("tooltip.heraliz_armory.suit.alone").withStyle(ChatFormatting.YELLOW));
         tooltip.add(PieceItem.protection(def.bullet()));

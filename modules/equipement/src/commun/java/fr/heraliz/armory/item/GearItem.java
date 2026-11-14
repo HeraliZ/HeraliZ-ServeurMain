@@ -4,7 +4,6 @@ import fr.heraliz.armory.armor.GearDef;
 import fr.heraliz.armory.armor.Guard;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -51,23 +50,6 @@ public interface GearItem extends ProtectiveItem {
         return Style.EMPTY.withColor(TextColor.fromRgb(rgb));
     }
 
-    /** Pictogramme de rarete du serveur (police des rangs du pack de ressources), vide pour l'evenementiel. */
-    private static String glyph(String rarity) {
-        return switch (rarity) {
-            case "common" -> " ";
-            case "uncommon" -> " ";
-            case "rare" -> " ";
-            case "epic" -> " ";
-            case "legendary" -> " ";
-            case "unique" -> " ";
-            default -> "";
-        };
-    }
-
-    static MutableComponent rarityLine(String rarity) {
-        return Component.literal(glyph(rarity)).append(Component.translatable("rarity.heraliz_armory." + rarity).withStyle(rarityStyle(rarity)));
-    }
-
     /** Infobulle : rarete, emplacement, protection (s'il y en a une), zone, bonus. */
     /**
      * 0.16.0 (23/10) : durabilite d'un objet qui protege du gaz, de la radiation ou du froid (il s'use dans ces zones),
@@ -89,9 +71,13 @@ public interface GearItem extends ProtectiveItem {
      * ligne « Protection : x % » est toujours là (grisée à 0 %, comme les pièces d'armure) et « Protège le corps / la
      * tête » n'apparaît plus que sur un objet qui protège vraiment. Avant : « Protège le corps » sur une ghillie, un
      * brassard ou un objet event à 0 %. Le calcul est celui de armor.Protection (même valeur, même zone, même plafond).
+     * <p>14/11 (retour du propriétaire : la rareté écrite 3 fois sur le même objet) : plus de ligne de rareté (badge +
+     * « Épique ») ici ; la rareté est le badge de HeraliZ Loot, sous le nom (raretes.json, écrit par
+     * outils/equilibrage_armures.py). Les objets d'événement, qui n'ont pas de rareté HeraliZ, gardent leur ligne
+     * « Événement » (sans badge).
      */
     static void appendTooltip(GearDef g, List<Component> lines) {
-        lines.add(rarityLine(g.rarity()));
+        if (g.event()) lines.add(Component.translatable("rarity.heraliz_armory.event").withStyle(rarityStyle("event")));
         if (g.armor()) {
             lines.add(Component.translatable("tooltip.heraliz_armory.slot", Component.translatable("tooltip.heraliz_armory.slot." + g.slot()))
                     .withStyle(ChatFormatting.GRAY));

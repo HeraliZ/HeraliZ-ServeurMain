@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -79,8 +80,18 @@ public final class CardArt {
             lines.add(Ui.in(Ui.tr(Ui.SMALL, "gui.heralizcrates.amount", c.count()).withStyle(st -> st.withColor(Ui.MUTED)), Ui.SMALL));
         }
         for (int i = 1; i < vanilla.size() && i < 8; i++) {
+            // 14/11 (retour du propriétaire : la rareté une seule fois) : la carte dit déjà sa rareté, avec sa chance ; le
+            // badge de rareté de l'objet (HeraliZ Loot, camos…) n'est pas repris
+            if (badgeRarete(vanilla.get(i))) continue;
             lines.add(Ui.in(Component.empty().append(vanilla.get(i)).withStyle(st -> st.withColor(Ui.MUTED)), Ui.SMALL));
         }
         return lines;
+    }
+
+    /** Ligne faite d'un badge de rareté seul : un caractère de la police des rangs (U+E800 à U+E8FF). */
+    private static boolean badgeRarete(Component c) {
+        if (!c.getSiblings().isEmpty() || !(c.getContents() instanceof LiteralContents lc) || lc.text().length() != 1) return false;
+        char ch = lc.text().charAt(0);
+        return ch >= 0xE800 && ch <= 0xE8FF;
     }
 }
