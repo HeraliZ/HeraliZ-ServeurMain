@@ -1,0 +1,14 @@
+{
+  "zone.geiger_faible": {
+    "subtitle": "subtitles.heraliz_decors.zone.geiger",
+    "sounds": [ { "name": "heraliz_decors:zone/geiger_faible", "stream": false } ]
+  },
+  "zone.geiger_moyen": {
+    "subtitle": "subtitles.heraliz_decors.zone.geiger",
+    "sounds": [ { "name": "heraliz_decors:zone/geiger_moyen", "stream": false } ]
+  },
+  "zone.geiger_fort": {
+    "subtitle": "subtitles.heraliz_decors.zone.geiger",
+    "sounds": [ { "name": "heraliz_decors:zone/geiger_fort", "stream": false } ]
+  }
+}

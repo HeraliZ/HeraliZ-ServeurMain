@@ -10,6 +10,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -45,17 +47,26 @@ public final class AmbianceClient {
     private static float lGaz, lRad, lFroid;                    // valeurs lissées (fondu du brouillard local)
     private static String derniereZone = "";
     /**
-     * Compteur Geiger (11/11, demande du propriétaire : « un bruit moins fort, plus propre, qui gêne moins »). Avant : le
-     * charleston aigu des blocs musicaux (hauteur 1,6 à 2), 3 à 17 crépitements par seconde selon la radiation, 1,6 sous
-     * Hazmat, volume 0,25 à 0,6. Maintenant : un petit « tic » sec (clic du comparateur de Minecraft, hauteur 0,9 à 1,15),
-     * environ 0,5 à 2,7 tics par seconde selon la radiation, 0,3 sous Hazmat, jamais deux tics à moins de
-     * {@link #GEIGER_ECART} ticks, volume 0,08 à 0,2. Joué dans « Ambiance / environnement » (curseur du joueur).
+     * Compteur Geiger (14/11, demande du propriétaire : « c'est juste des tics de répéteur en redstone, il faut un son
+     * moddé, qui crépite un peu »). Avant (11/11) : le clic du comparateur de Minecraft. Maintenant : le vrai crépitement
+     * du compteur Geiger de HeraliZ (enregistrement du boss N07, à nous), en trois densités tirées du même son de 1,6 s
+     * ({@code assets/heraliz_decors/sounds/zone/}) : faible (8 crépitements par seconde), moyen (16), fort (47). Plus la
+     * radiation est forte, plus le crépitement choisi est dense et fort, et plus les salves se suivent (pause de 3 s à 0
+     * entre deux salves) ; sous Hazmat : salves faibles et espacées (5 à 8 s). Volume 0,15 à 0,35, hauteur 0,95 à 1,05.
+     * Joué dans « Ambiance / environnement » (curseur du joueur). Rien hors d'une zone irradiée.
      */
-    private static final float GEIGER_CHANCE = 0.03f, GEIGER_CHANCE_RAD = 0.2f, GEIGER_CHANCE_PROTEGE = 0.015f;
-    private static final float GEIGER_VOLUME = 0.08f, GEIGER_VOLUME_RAD = 0.12f;
-    private static final int GEIGER_ECART = 3;
-    /** Ticks avant le prochain tic possible. */
+    private static final SoundEvent GEIGER_FAIBLE = son("zone.geiger_faible");
+    private static final SoundEvent GEIGER_MOYEN = son("zone.geiger_moyen");
+    private static final SoundEvent GEIGER_FORT = son("zone.geiger_fort");
+    /** Durée d'une salve (ticks : 1,6 s) et pause la plus longue entre deux salves (ticks). */
+    private static final int GEIGER_SALVE = 32, GEIGER_PAUSE = 60;
+    private static final float GEIGER_VOLUME = 0.15f, GEIGER_VOLUME_RAD = 0.2f;
+    /** Ticks avant la prochaine salve possible. */
     private static int geigerAttente;
+
+    private static SoundEvent son(String nom) {
+        return SoundEvent.createVariableRangeEvent(new ResourceLocation(HeralizDecors.MODID, nom));
+    }
 
     static void recevoir(Object m) {
         if (m instanceof Ambiance.Brume b) {
@@ -182,13 +193,25 @@ public final class AmbianceClient {
                         p.getX() + (rnd.nextDouble() - 0.5) * 18, p.getY() + 3 + rnd.nextDouble() * 4, p.getZ() + (rnd.nextDouble() - 0.5) * 18,
                         (rnd.nextDouble() - 0.5) * 0.05, -0.05, (rnd.nextDouble() - 0.5) * 0.05);
             }
-            // compteur Geiger : tics d'autant plus serrés et forts que la radiation est forte (sous Hazmat : rares)
+            // compteur Geiger : crépitement d'autant plus dense, fort et continu que la radiation est forte (Hazmat : rare)
             if (geigerAttente > 0) {
                 geigerAttente--;
-            } else if (ra > 0 && rnd.nextFloat() < (pRad ? GEIGER_CHANCE_PROTEGE : GEIGER_CHANCE + ra * GEIGER_CHANCE_RAD)) {
-                geigerAttente = GEIGER_ECART;
-                mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.COMPARATOR_CLICK, SoundSource.AMBIENT,
-                        GEIGER_VOLUME + ra * GEIGER_VOLUME_RAD, 0.9f + rnd.nextFloat() * 0.25f, false);
+            } else if (ra > 0) {
+                SoundEvent salve;
+                float volume;
+                int pause;
+                if (pRad) {
+                    salve = GEIGER_FAIBLE;
+                    volume = GEIGER_VOLUME;
+                    pause = 100 + rnd.nextInt(60);
+                } else {
+                    salve = ra < 0.34f ? GEIGER_FAIBLE : ra < 0.67f ? GEIGER_MOYEN : GEIGER_FORT;
+                    volume = GEIGER_VOLUME + ra * GEIGER_VOLUME_RAD;
+                    pause = Math.round((1f - ra) * GEIGER_PAUSE) + rnd.nextInt(10);
+                }
+                geigerAttente = GEIGER_SALVE + pause;
+                mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), salve, SoundSource.AMBIENT, volume,
+                        0.95f + rnd.nextFloat() * 0.1f, false);
             }
             // gaz : sifflement de fuite, de temps en temps
             if (g > 0.3f && rnd.nextFloat() < 0.01f) {

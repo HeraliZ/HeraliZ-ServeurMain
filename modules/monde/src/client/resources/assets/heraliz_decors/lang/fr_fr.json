@@ -80,6 +80,7 @@
  "onglet.heraliz_decors": "HeraliZ · Décors",
  "msg.heraliz_decors.zone.gaz": "§a⚠ Zone de gaz toxique : masque à gaz ou combinaison Hazmat",
  "msg.heraliz_decors.zone.radiation": "§e☢ Zone irradiée : combinaison Hazmat obligatoire",
+ "subtitles.heraliz_decors.zone.geiger": "Compteur Geiger qui crépite",
  "msg.heraliz_decors.zone.froid": "§b❄ Froid extrême : combinaison arctique conseillée",
  "heraliz_decors.brume.info_fixee": "Brume : %s (fixée)",
  "heraliz_decors.brume.info": "Brume : %s, change dans %s min %s s",

@@ -80,6 +80,7 @@
  "onglet.heraliz_decors": "HeraliZ · Decors",
  "msg.heraliz_decors.zone.gaz": "§a⚠ Toxic gas zone: gas mask or Hazmat suit",
  "msg.heraliz_decors.zone.radiation": "§e☢ Irradiated zone: Hazmat suit required",
+ "subtitles.heraliz_decors.zone.geiger": "Geiger counter crackles",
  "msg.heraliz_decors.zone.froid": "§b❄ Extreme cold: arctic suit advised",
  "heraliz_decors.brume.info_fixee": "Fog: %s (locked)",
  "heraliz_decors.brume.info": "Fog: %s, changes in %s min %s s",
