@@ -16,5 +16,8 @@ Modifications (ArkaniaZ puis HeralisZ) :
   licence propriétaire : usage privé du serveur) : sac de sport en bandoulière (4x4), sacs à dos tactiques noir / vert
   (5x4), sacs de randonnée noir / urbain / vert / multicam (5x5). Modèles Java de Fuse recalculés en maillages OBJ
   (chargeur OBJ de Forge), masques de camo, icônes : `tools/fuse_backpacks.py`.
+- 2026-11-14 (heralisz24) : l'écran d'un sac ne vaut plus que tant que le même objet sac est sur le dos de son porteur
+  vivant (et la personne qui regarde vivante) ; sur le serveur, aucun clic n'est plus traité dans un écran qui ne vaut
+  plus (`BackpackInventory.stillValid`, `BackpackContainerMenu.clicked`).
 
 Sources obtenues en décompilant le jar du serveur (Vineflower 1.12), voir `tools/fork_backpacked.py`.

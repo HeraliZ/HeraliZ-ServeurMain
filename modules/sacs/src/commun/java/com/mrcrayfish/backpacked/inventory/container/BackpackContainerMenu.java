@@ -1,13 +1,16 @@
 package com.mrcrayfish.backpacked.inventory.container;
 
+import com.mrcrayfish.backpacked.Constants;
 import com.mrcrayfish.backpacked.core.ModContainers;
 import com.mrcrayfish.backpacked.inventory.container.slot.BackpackSlot;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +22,8 @@ public class BackpackContainerMenu extends AbstractContainerMenu {
    private final int cols;
    private final int rows;
    private final boolean owner;
+   /** Serveur : un clic refusé a déjà été noté dans le journal (une ligne par écran, pas une par clic). */
+   private boolean refusNote;
 
    public BackpackContainerMenu(int id, Inventory playerInventory, int cols, int rows, boolean owner) {
       this(id, playerInventory, new SimpleContainer(Mth.clamp(cols, 1, 13) * Mth.clamp(rows, 1, 7)), cols, rows, owner);
@@ -57,6 +62,28 @@ public class BackpackContainerMenu extends AbstractContainerMenu {
 
    public boolean stillValid(Player playerIn) {
       return this.backpackInventory.stillValid(playerIn);
+   }
+
+   /**
+    * HeraliZ (14/11, anti-duplication, sacs dans les coffres des bases) : sur le serveur, plus aucun clic dès que l'écran
+    * ne vaut plus ({@link com.mrcrayfish.backpacked.inventory.BackpackInventory#stillValid} : ce n'est plus CET objet sac
+    * qui est sur le dos de son porteur vivant). Sinon, le sac parti ailleurs (coffre, inventaire, sol, corps, fouille...)
+    * avec son contenu, ce qu'on sortirait encore de l'écran serait en double. Minecraft et Mohist refusent déjà ce clic
+    * avant d'appeler cette méthode, et Minecraft ferme l'écran au tick suivant ; ce garde-fou ne dépend pas d'eux (tout
+    * clic passe par ici : clic, Maj + clic, glisser, touches 1 à 9, main gauche, jet, double clic).
+    */
+   @Override
+   public void clicked(int slotId, int button, ClickType clickType, Player player) {
+      if (player instanceof ServerPlayer && !this.stillValid(player)) {
+         if (!this.refusNote) {
+            this.refusNote = true;
+            Constants.LOG.warn("[sacs] clic de {} refusé : son écran de sac ne vaut plus (sac déplacé, porteur mort ou parti)",
+               player.getGameProfile().getName());
+         }
+         return;
+      }
+
+      super.clicked(slotId, button, clickType, player);
    }
 
    public ItemStack quickMoveStack(Player playerIn, int index) {

@@ -44,13 +44,22 @@ public class BackpackInventory extends SimpleContainer {
       return this.stack;
    }
 
+   /**
+    * L'écran de ce sac vaut-il encore pour {@code player} ? HeraliZ (14/11, anti-duplication, sacs dans les coffres des
+    * bases) : seulement tant que CET objet sac (la même pile, comparée par identité : jamais une copie) est sur le dos de
+    * son porteur vivant, et que celui qui regarde est vivant. Le sac qui part ailleurs (coffre, inventaire, sol, corps,
+    * fouille, autre joueur) emporte son contenu, déjà écrit dans l'objet ({@link #setChanged}) : l'écran ne vaut plus,
+    * aucun clic n'y est plus accepté et Minecraft le ferme au tick suivant. Un autre joueur que le porteur : seulement si
+    * l'ouverture du sac d'autrui est permise ({@code enabledPickpocketing}, coupée sur HeraliZ) et à portée.
+    */
    public boolean stillValid(Player player) {
-      return this.player.isAlive()
-         && Services.BACKPACK.getBackpackStack(this.player).equals(this.stack)
-         && (
-            this.player.equals(player)
-               || PickpocketUtil.canPickpocketEntity(this.player, player, (Double)Config.SERVER.pickpocketing.maxReachDistance.get() + 0.5)
-         );
+      if (!this.player.isAlive() || !player.isAlive() || Services.BACKPACK.getBackpackStack(this.player) != this.stack) {
+         return false;
+      }
+
+      return this.player.equals(player)
+         || Boolean.TRUE.equals(Config.SERVER.pickpocketing.enabled.get())
+            && PickpocketUtil.canPickpocketEntity(this.player, player, (Double)Config.SERVER.pickpocketing.maxReachDistance.get() + 0.5);
    }
 
    public void setChanged() {
