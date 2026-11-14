@@ -860,6 +860,12 @@ def finir(a, d, rapport, res, serveur, gc_log):
     o.append("")
     if res.get("echec"):
         o += ["**Échec : %s.** Voir le journal complet (artefact, console.log)." % res["echec"], ""]
+        # 14/11 : le rapport de plantage dans le résumé et le journal de la tâche (l'artefact ne se lit pas toujours) : la
+        # vraie cause d'un serveur qui ne démarre pas est dans ses « Caused by », que la console filtrée ne montre pas
+        for c in sorted(rapport.glob("crash-*.txt"))[-1:]:
+            lignes = c.read_text(encoding="utf-8", errors="replace").splitlines()
+            o += ["<details><summary>Rapport de plantage %s (%d lignes, 300 premières)</summary>" % (c.name, len(lignes)), "",
+                  "```"] + lignes[:300] + ["```", "", "</details>", ""]
 
     # ---- machine Java (01/11 : 11 Go demandés, 3996 Mo vus au premier banc)
     o += ["### Machine Java du serveur", ""]
