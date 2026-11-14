@@ -45,7 +45,8 @@ public final class SoldeHud {
         int w2 = font.width(total);
         int w = Math.max(w1, w2) + 2 * Ui.ESPACE_L, h = 32;
         int x = largeur - MARGE - w;
-        int y = Math.round(MARGE + ClientSolde.glissement(age));
+        // sous la rangée des effets du coin haut droit (V2, 14/11), quand il y en a
+        int y = Math.round(MARGE + fr.heraliz.noyau.client.effets.EffetsHud.decalageHautDroite() + ClientSolde.glissement(age));
         int a = Math.round(255 * alpha);
 
         Ui.glass(g, x, y, w, h, alpha);
@@ -68,7 +69,7 @@ public final class SoldeHud {
         Component c = Ui.lit(chiffres, Ui.BOLD);
         int wc = font.width(c);
         int xRight = largeur - MARGE;
-        float y = MARGE;
+        float y = MARGE + fr.heraliz.noyau.client.effets.EffetsHud.decalageHautDroite();
         Ui.spacedRight(g, font, unite, Ui.SMALL, xRight, y + 1.5f, Ui.argb(Ui.MUTED, 200), 0.8f);
         Ui.texte(g, font, c, xRight - wu - 4 - wc, y, Ui.TEXT, 220);
     }

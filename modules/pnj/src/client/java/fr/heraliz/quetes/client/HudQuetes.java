@@ -178,7 +178,8 @@ public final class HudQuetes {
     private static void notifs(GuiGraphics g, Font f, int w) {
         long maintenant = System.currentTimeMillis();
         NOTIFS.removeIf(n -> maintenant - n.debut > NOTIF_MS);
-        int y = 8;
+        // sous la rangée des effets du coin haut droit (V2, 14/11), quand il y en a
+        int y = 8 + fr.heraliz.noyau.client.effets.EffetsHud.decalageHautDroite();
         for (int i = NOTIFS.size() - 1; i >= 0; i--) {
             Notif n = NOTIFS.get(i);
             long age = maintenant - n.debut;

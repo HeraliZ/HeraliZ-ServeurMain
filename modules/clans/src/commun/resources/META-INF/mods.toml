@@ -87,7 +87,7 @@ description='''Clans du serveur HeraliZ : création avec bannière personnalisé
 [[dependencies.heralisz_clans]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.16,)"
+    versionRange="[1.0.19,)"
     ordering="AFTER"
     side="CLIENT"
 

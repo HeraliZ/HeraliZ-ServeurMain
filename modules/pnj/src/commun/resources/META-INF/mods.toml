@@ -27,7 +27,7 @@ description='''PNJ posés par le staff, quêtes et contrats, points de quête su
 [[dependencies.heraliz_quetes]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.0,)"
+    versionRange="[1.0.19,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_quetes]]
