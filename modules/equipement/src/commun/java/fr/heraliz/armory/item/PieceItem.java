@@ -66,7 +66,8 @@ public interface PieceItem extends ProtectiveItem {
                 .withStyle(ChatFormatting.DARK_GRAY));
         if (def.gas()) tooltip.add(Component.translatable("tooltip.heraliz_armory.gas").withStyle(ChatFormatting.AQUA));
         if (def.nvg()) tooltip.add(Component.translatable("tooltip.heraliz_armory.nvg", NVG_KEY.key.get()).withStyle(ChatFormatting.AQUA));
-        // le poids (vitesse) est affiche par le jeu sous « Porte sur la tete : » / « Porte en gilet : » (attributs)
+        // 14/11 : plus aucun malus de vitesse, donc plus de ligne « -1 % Rapidite » sous « Sur la tete : » / « Porte en
+        // gilet : » (attributs affiches par le jeu) ; une vitesse positive y apparaitrait d'elle-meme
     }
 
     /** Rarete d'apres le palier des pieces (0.15.0 : palier = rang de rarete, 1 commun ... 6 unique). */

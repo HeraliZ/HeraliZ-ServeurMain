@@ -21,8 +21,8 @@ import net.minecraftforge.fml.common.Mod;
  *   reste plein ; hors de l'eau elle se recharge (5 s pour un plein) ; reserve gardee dans les donnees du joueur et
  *   envoyee a son client (HUD au-dessus de la barre d'air) ;</li>
  *   <li>nage automatique en eau profonde (le client met le sprint quand on avance : DivingClient) ;</li>
- *   <li>palmes : nage +80 %, -6 % de vitesse a terre (attributs de SuitItem) ; animations (crawl, dauphin, surplace) :
- *   client/DivingPoses.</li>
+ *   <li>palmes : nage +80 % (attributs de SuitItem ; plus de malus a terre depuis le 14/11) ; animations (crawl,
+ *   dauphin, surplace) : client/DivingPoses.</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID)

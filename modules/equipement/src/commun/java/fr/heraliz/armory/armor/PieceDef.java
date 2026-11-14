@@ -13,7 +13,8 @@ import org.jetbrains.annotations.Nullable;
  * @param piece      head, face, chest, vest, hands, legs, knees, feet
  * @param tier       palier 1 a 6, 7 = special (0 = mire de test)
  * @param durability durabilite
- * @param speed      modificateur de vitesse (ex. -0.05 = -5 %)
+ * @param speed      bonus de vitesse (ex. 0.05 = +5 %) ; 14/11 : jamais de malus, une valeur negative n'est pas appliquee
+ *                   (et l'outil ecrit 0 a la place)
  * @param bullet     % contre les balles et projectiles
  * @param melee      % contre les coups des joueurs
  * @param bite       % contre les attaques des creatures (zombies...)

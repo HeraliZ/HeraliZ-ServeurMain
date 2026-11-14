@@ -22,7 +22,8 @@ import java.util.UUID;
 
 /**
  * Piece portee dans un slot Curios : visage (slot « mask »), gilet (« belt »), gants (« hands »), genouilleres
- * (« knees »). 0.8.2 : aucun point d'armure vanilla (protection en % : ProtectionEvents) ; seul le poids reste.
+ * (« knees »). 0.8.2 : aucun point d'armure vanilla (protection en % : ProtectionEvents). 14/11 : plus de poids non
+ * plus (voir SetArmorItem) ; Curios redemande les attributs a l'objet a chaque changement, rien n'est garde sur lui.
  */
 public class SetCurioItem extends Item implements ICurioItem, PieceItem {
     private final PieceDef def;
@@ -45,7 +46,7 @@ public class SetCurioItem extends Item implements ICurioItem, PieceItem {
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid, ItemStack stack) {
         Multimap<Attribute, AttributeModifier> map = HashMultimap.create();
-        if (def.speed() != 0) {
+        if (def.speed() > 0) {
             map.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(uuid, "Armor weight", def.speed(), AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
         return map;

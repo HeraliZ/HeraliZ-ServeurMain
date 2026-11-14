@@ -12,7 +12,11 @@ seulement), « tête » pour un tir à la tête (casque et visage seulement). Ch
 quel que soit son nombre de pièces : la part de chaque pièce suit POIDS_CORPS / POIDS_TETE, ramenée aux pièces que
 l'ensemble a vraiment.
 
-Écrit (rien d'autre n'est touché ; les durabilités, vitesses et lunettes de vision nocturne restent) :
+Aucun malus (14/11, choix du propriétaire : « enlever les stats comme -1 % de rapidité, toutes les stats négatives des
+armures, de l'affichage de l'objet et de la réalité ») : une vitesse négative (gilets, casques, pantalons lourds, palmes
+de la plongée à terre : -1 à -10 %) est écrite 0 (sans_malus) ; une vitesse positive resterait.
+
+Écrit (rien d'autre n'est touché ; les durabilités, vitesses positives et lunettes de vision nocturne restent) :
 - src/commun/java/fr/heraliz/armory/armor/ArmorCatalog.java (palier = rang de rareté 1 à 6, mêmes valeurs partout) ;
 - src/commun/java/fr/heraliz/armory/armor/SuitCatalog.java ;
 - src/commun/java/fr/heraliz/armory/armor/GearCatalog.java (rareté, protection, radiation) ;
@@ -111,6 +115,11 @@ def objet(id_, rarete_avant, fam):
     return (None, 0)  # objets d'événement : rareté « event », sans protection
 
 
+def sans_malus(vitesse):
+    """Vitesse d'une pièce telle qu'écrite dans le catalogue : 0 si elle est négative (14/11, aucun malus)."""
+    return vitesse if float(vitesse) > 0 else "0"
+
+
 def repartir(total, poids):
     """Entiers dont la somme fait exactement total, proportionnels aux poids (plus grands restes)."""
     s = sum(poids.values())
@@ -156,11 +165,11 @@ def ecrire_armures(pieces):
     for p in pieces:
         v = valeurs[(p["set"], p["piece"])]
         rang = RANGS.index(ENSEMBLES[p["set"]]) + 1
-        lignes.append(f'            new PieceDef("{p["set"]}", "{p["piece"]}", {rang}, {p["dur"]}, {p["speed"]}, {v}, {v}, {v}, {v}.0f, 0, false, {p["nvg"]})')
+        lignes.append(f'            new PieceDef("{p["set"]}", "{p["piece"]}", {rang}, {p["dur"]}, {sans_malus(p["speed"])}, {v}, {v}, {v}, {v}.0f, 0, false, {p["nvg"]})')
     texte = ("package fr.heraliz.armory.armor;\n\nimport java.util.List;\n\n"
              "/**\n * GENERE par outils/equilibrage_armures.py : ne pas modifier a la main (changer le script et le relancer).\n"
              " * Une seule protection par piece (balles = explosion = corps a corps = morsure), radiation 0 (Hazmat seulement),\n"
-             " * aucun filtre a gaz ; palier = rang de rarete (1 commun ... 6 unique).\n */\n"
+             " * aucun filtre a gaz ; palier = rang de rarete (1 commun ... 6 unique) ; aucun malus de vitesse (14/11).\n */\n"
              "public final class ArmorCatalog {\n    private ArmorCatalog() {}\n\n"
              "    public static final List<PieceDef> PIECES = List.of(\n" + ",\n".join(lignes) + "\n    );\n}\n")
     with open(os.path.join(ARMOR, "ArmorCatalog.java"), "w", encoding="utf-8", newline="\n") as f:
@@ -178,11 +187,14 @@ def ecrire_combinaisons():
         if not m:
             raise SystemExit(f"SuitCatalog.java : combinaison {ens} introuvable")
         rang = RANGS.index(rarete) + 1
-        nouveau = (f'new PieceDef("{ens}", "suit", {rang}, {m.group(1)}, {m.group(2)}, {prot}, {prot}, {prot}, {prot}.0f, {rad}, '
+        nouveau = (f'new PieceDef("{ens}", "suit", {rang}, {m.group(1)}, {sans_malus(m.group(2))}, {prot}, {prot}, {prot}, {prot}.0f, {rad}, '
                    f'{"true" if gaz else "false"}, false, {m.group(3)})')
         texte = texte[:m.start()] + nouveau + texte[m.end():]
     texte = texte.replace("//                                set                 piece   palier dur.  vitesse balles melee morsure expl.  rad. gaz    nvg    bonus",
                           "// valeurs ecrites par outils/equilibrage_armures.py (palier = rang de rarete, une seule protection partout)")
+    # 14/11 : plus de malus de vitesse, palmes de la plongée comprises
+    texte = texte.replace("Aucun malus de vitesse, sauf les palmes de la plongee a terre.",
+                          "Aucun malus de vitesse (14/11 : palmes de la plongee comprises).")
     with open(chemin, "w", encoding="utf-8", newline="\n") as f:
         f.write(texte)
 

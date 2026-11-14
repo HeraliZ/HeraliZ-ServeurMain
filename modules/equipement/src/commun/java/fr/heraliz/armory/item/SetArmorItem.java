@@ -24,7 +24,10 @@ import java.util.function.Consumer;
 
 /**
  * Piece portee dans un slot d'armure vanilla (tete, torse, jambes, pieds), rendue avec son modele en relief.
- * 0.8.2 : aucun point d'armure vanilla (protection en % : ProtectionEvents) ; seul le poids (vitesse) reste un attribut.
+ * 0.8.2 : aucun point d'armure vanilla (protection en % : ProtectionEvents). 14/11 (choix du proprietaire : « enlever
+ * toutes les stats negatives des armures ») : plus de poids non plus, seule une vitesse POSITIVE deviendrait un attribut
+ * (aucune aujourd'hui). Rien n'est garde sur l'objet : les attributs viennent d'ici a chaque fois que la piece est mise,
+ * une piece deja portee ou rangee perd donc son ancien malus avec la mise a jour.
  */
 public class SetArmorItem extends ArmorItem implements PieceItem {
     private static final UUID[] SPEED_UUID = {
@@ -38,7 +41,7 @@ public class SetArmorItem extends ArmorItem implements PieceItem {
         super(new SetMaterial(def), def.armorType(), properties);
         this.def = def;
         ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        if (def.speed() != 0) {
+        if (def.speed() > 0) {
             b.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(SPEED_UUID[def.armorType().ordinal()], "Armor weight",
                     def.speed(), AttributeModifier.Operation.MULTIPLY_TOTAL));
         }

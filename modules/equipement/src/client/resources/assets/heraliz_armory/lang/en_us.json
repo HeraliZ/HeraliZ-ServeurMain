@@ -59,7 +59,7 @@
   "tooltip.heraliz_armory.radiation_proof": "Radiation immunity",
   "tooltip.heraliz_armory.cold": "Freeze immunity",
   "tooltip.heraliz_armory.tank": "Tank: %s s underwater, refills at the surface",
-  "tooltip.heraliz_armory.fins": "Fins: swimming +%s%% (on land: -6%% speed)",
+  "tooltip.heraliz_armory.fins": "Fins: swimming +%s%%",
   "hud.heraliz_armory.oxygene": "Oxygen",
   "hud.heraliz_armory.pleine_air": "Full in %s s out of water",
   "hud.heraliz_armory.recharge": "Full in %s s",

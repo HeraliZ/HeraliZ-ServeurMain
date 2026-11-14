@@ -7,7 +7,7 @@ import java.util.List;
  * torse, qui couvre tout le corps et se porte SEUL (voir suit.SuitRules). Modele armor/<ensemble>/suit.json, texture
  * textures/models/armor/<ensemble>.png.
  * <p>La combinaison etant seule, ses valeurs sont le total porte (meme echelle que les pieces de l'Armurerie) ; elle
- * compte en entier sur la tete comme sur le corps. Aucun malus de vitesse, sauf les palmes de la plongee a terre.
+ * compte en entier sur la tete comme sur le corps. Aucun malus de vitesse (14/11 : palmes de la plongee comprises).
  */
 public final class SuitCatalog {
     private SuitCatalog() {}
@@ -18,6 +18,6 @@ public final class SuitCatalog {
             new PieceDef("hazmat_renforce", "suit", 4, 450, 0, 36, 36, 36, 36.0f, 100, true, false, null),
             new PieceDef("arctique", "suit", 3, 300, 0, 12, 12, 12, 12.0f, 0, false, false, "cold"),
             new PieceDef("arctique_renforcee", "suit", 4, 450, 0, 36, 36, 36, 36.0f, 0, false, false, "cold"),
-            new PieceDef("plongee", "suit", 3, 400, -0.06, 6, 6, 6, 6.0f, 0, false, false, "diving")
+            new PieceDef("plongee", "suit", 3, 400, 0, 6, 6, 6, 6.0f, 0, false, false, "diving")
     );
 }

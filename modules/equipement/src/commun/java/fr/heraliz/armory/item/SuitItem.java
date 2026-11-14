@@ -27,8 +27,8 @@ import java.util.UUID;
 /**
  * Combinaison integrale (0.9.0) : un seul objet porte au torse qui couvre tout le corps (modele armor/<ensemble>/suit.json,
  * rendu par SetArmorLayer avec toutes les parties visibles). Elle se porte SEULE : voir {@link SuitRules}.
- * Tenue de plongee : en plus, palmes (nage +80 % par defaut, config) ; le -6 % a terre est le poids de la piece
- * (PieceDef.speed) ; bouteille d'air : suit.Diving.
+ * Tenue de plongee : en plus, palmes (nage +80 % par defaut, config), sans malus a terre depuis le 14/11 (avant : -6 %,
+ * le poids de la piece, PieceDef.speed) ; bouteille d'air : suit.Diving.
  */
 public class SuitItem extends SetArmorItem {
     private static final UUID FINS_UUID = UUID.fromString("8c2b6a41-5f0d-4e7a-9b1c-3d4e5f6a0002");

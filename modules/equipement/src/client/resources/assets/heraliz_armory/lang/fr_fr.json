@@ -59,7 +59,7 @@
   "tooltip.heraliz_armory.radiation_proof": "Immunité aux radiations",
   "tooltip.heraliz_armory.cold": "Immunité au gel",
   "tooltip.heraliz_armory.tank": "Bouteille : %s s sous l'eau, se recharge à la surface",
-  "tooltip.heraliz_armory.fins": "Palmes : nage +%s %% (à terre : -6 %% de vitesse)",
+  "tooltip.heraliz_armory.fins": "Palmes : nage +%s %%",
   "hud.heraliz_armory.oxygene": "Oxygène",
   "hud.heraliz_armory.pleine_air": "Bouteille pleine en %s s à l'air",
   "hud.heraliz_armory.recharge": "Pleine dans %s s",

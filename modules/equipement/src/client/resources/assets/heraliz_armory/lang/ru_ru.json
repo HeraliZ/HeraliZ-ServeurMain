@@ -59,7 +59,7 @@
   "tooltip.heraliz_armory.radiation_proof": "Иммунитет к радиации",
   "tooltip.heraliz_armory.cold": "Иммунитет к обморожению",
   "tooltip.heraliz_armory.tank": "Баллон: %s с под водой, пополняется на поверхности",
-  "tooltip.heraliz_armory.fins": "Ласты: плавание +%s %% (на суше: -6 %% скорости)",
+  "tooltip.heraliz_armory.fins": "Ласты: плавание +%s %%",
   "hud.heraliz_armory.oxygene": "Кислород",
   "hud.heraliz_armory.pleine_air": "Баллон полон через %s с на воздухе",
   "hud.heraliz_armory.recharge": "Полон через %s с",
