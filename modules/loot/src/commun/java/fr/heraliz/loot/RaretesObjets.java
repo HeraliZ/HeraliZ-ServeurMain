@@ -116,14 +116,15 @@ public final class RaretesObjets {
     @Nullable
     public static Cle cle(ItemStack st) {
         if (st.isEmpty()) return null;
+        // boîte de munitions d'abord (14/11) : voir choisie
+        String b = boite(st);
+        if (b != null) return new Cle(Sorte.OBJET, b);
         CompoundTag t = st.getTag();
         if (t != null) {
             for (Sorte s : SORTES) {
                 if (s.etiquette != null && t.contains(s.etiquette, Tag.TAG_STRING)) return new Cle(s, t.getString(s.etiquette));
             }
         }
-        String b = boite(st);
-        if (b != null) return new Cle(Sorte.OBJET, b);
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(st.getItem());
         return id == null ? null : new Cle(Sorte.OBJET, id.toString());
     }
@@ -167,6 +168,14 @@ public final class RaretesObjets {
         Rarete r = Rarete.de(st);
         if (r != null) return r;
         Table t = table;
+        // boîte de munitions d'abord (14/11) : elle porte aussi l'identifiant de ses munitions (étiquette « AmmoId » de TaCZ,
+        // « tacz:empty » quand elle est vide) ; avant, une boîte remplie prenait la rareté de ses balles et une boîte vide
+        // n'en avait aucune, jamais la sienne (fer Rare, or Épique, diamant Légendaire)
+        String b = boite(st);
+        if (b != null) {
+            r = t.parSorte().getOrDefault(Sorte.OBJET, Map.of()).get(b);
+            return r != null ? r : parObjet.get(st.getItem());
+        }
         CompoundTag tag = st.getTag();
         if (tag != null) {
             for (Sorte s : SORTES) {
@@ -175,9 +184,7 @@ public final class RaretesObjets {
                 }
             }
         }
-        String b = boite(st);
-        r = b != null ? t.parSorte().getOrDefault(Sorte.OBJET, Map.of()).get(b) : null;
-        return r != null ? r : parObjet.get(st.getItem());
+        return parObjet.get(st.getItem());
     }
 
     /** Étiquette d'un objet dont le staff a choisi la couleur du nom (bons de HeraliZ Grades) : son nom n'est jamais recoloré. */

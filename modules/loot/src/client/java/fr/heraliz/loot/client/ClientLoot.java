@@ -75,14 +75,16 @@ public final class ClientLoot {
             // 21/10 : un viseur Légendaire s'affichait en violet ; 11/11 : aussi les noms à codes § des packs d'armes et
             // ceux qui ont leur propre couleur, plus jamais le rose de Minecraft)
             if (!e.getToolTip().isEmpty()) e.getToolTip().set(0, NomsRarete.nom(e.getItemStack(), e.getToolTip().get(0)));
-            // rareté inscrite sur l'objet (coffres T7) ou celle de sa sorte ; Commun n'est pas rappelé
-            Rarete r = RaretesObjets.de(e.getItemStack());
+            // rareté choisie pour l'objet : inscrite sur l'objet (coffres T7), sinon celle de sa sorte (raretes.json, /rarete).
+            // 14/11 (retour du propriétaire : « sur beaucoup d'accessoires il n'y a pas écrit de rareté, exemple Bipod V9
+            // Grip ») : Commun aussi. Avant, Commun n'était jamais rappelé : 47 accessoires, 5 armes, 2 munitions, 6 armes
+            // de mêlée et 9 composants n'avaient aucune rareté dans l'infobulle. Un objet sans rareté choisie (seulement celle
+            // par défaut : blocs, objets de Minecraft…) n'en montre toujours pas.
+            Rarete r = RaretesObjets.choisie(e.getItemStack());
             if (r == null) return;
-            if (r != Rarete.COMMUN || Rarete.de(e.getItemStack()) != null) {
-                // 21/10 (choix du propriétaire) : plus d'étoile devant la rareté
-                e.getToolTip().add(Math.min(1, e.getToolTip().size()), r.texte()
-                        .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur))));
-            }
+            // 21/10 (choix du propriétaire) : plus d'étoile devant la rareté
+            e.getToolTip().add(Math.min(1, e.getToolTip().size()), r.texte()
+                    .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.couleur))));
         }
 
         /**

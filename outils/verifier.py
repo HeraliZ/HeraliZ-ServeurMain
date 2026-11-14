@@ -17,6 +17,8 @@ Contrôles :
   - structures       : structures du ClashWar sans bloc de meuble absent du jar cfm (module clashwar ;
                        modules/clashwar/outils/nettoyer_structures.py --verifier) ;
   - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
+  - raretes          : chaque arme, accessoire, munition, pièce d'armure et composant a sa rareté dans raretes.json
+                       (sinon rien dans son infobulle ; outils/raretes_objets.py --verifier) ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
@@ -212,6 +214,15 @@ def main():
     if code != 0:
         for l in out.splitlines():
             if l.startswith("[caisses]"):
+                print(l.strip())
+        erreurs += 1
+    # rareté de chaque arme, accessoire, munition, pièce d'armure et composant (retour du propriétaire du 14/11 : leur
+    # infobulle la montre toujours, Commun compris) : un gunpack, une pièce ou un composant ajouté sans relancer l'outil
+    # qui écrit sa rareté n'en aurait aucune
+    code, out = lancer([str(O / "raretes_objets.py"), "--verifier"])
+    if code != 0:
+        for l in out.splitlines():
+            if l.startswith(("[raretes] SANS", "[raretes] relancer")):
                 print(l.strip())
         erreurs += 1
     # portée du son de chaque silencieux des gunpacks (un gunpack ajouté peut en apporter un nouveau)
