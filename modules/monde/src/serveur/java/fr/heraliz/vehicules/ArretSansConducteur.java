@@ -49,6 +49,9 @@ public final class ArretSansConducteur {
 
     private static void onMouvement(VehicleMoveEvent e) {
         AbstractVehicle vehicule = e.getVehicle();
+        // monde du serveur seulement (en solo, le jeu et le serveur partagent les évènements : la copie du véhicule chez le
+        // joueur suit le serveur, on n'y touche pas)
+        if (vehicule.level().isClientSide()) return;
         if (!(vehicule instanceof WheeledVehicle roues) || vehicule.getDriver() != null || !actif()) return;
         if (vehicule.isEngineOn()) vehicule.toggleEngine(false);
         if (!vehicule.onGround()) return;
