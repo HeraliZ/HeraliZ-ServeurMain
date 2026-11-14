@@ -79,6 +79,16 @@ public final class GradesApi {
     }
 
     /**
+     * Le joueur a-t-il le grade du staff « fondateur », connecté à son compte (AuthMe) ? 14/11 : établi et artisanat réservés
+     * aux fondateurs, lu par réflexion par HeraliZ Loot ({@code fr.heraliz.loot.CraftReserve}). Faux hors d'un serveur démarré.
+     */
+    public static boolean fondateur(ServerPlayer joueur) {
+        RegistreGrades r = ServeurGrades.registre;
+        RegistreGrades.Fiche f = r == null || joueur == null ? null : r.fiche(joueur.getUUID());
+        return f != null && f.staff() == Grade.FONDATEUR && authentifie(joueur);
+    }
+
+    /**
      * Nom d'un objet tel que le joueur le voit, pour un message envoyé par le serveur (03/11, {@link fr.heraliz.noyau.api.NomsObjets}) : le vrai
      * nom d'une arme, d'une munition ou d'un accessoire de TaCZ (pas la clé « item.tacz.modern_kinetic_gun »), sinon le nom
      * donné ou le nom habituel. Lue par réflexion par HeraliZ Quêtes (messages des marchands, quêtes, échanges).

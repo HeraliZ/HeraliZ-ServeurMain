@@ -88,14 +88,25 @@ final class ConteneursVanilla {
     }
 
     private static void bloc(PlayerInteractEvent.RightClickBlock e) {
-        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof ServerPlayer sp) || !ConfigLoot.SPEC.isLoaded() || libre(sp)) return;
+        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof ServerPlayer sp) || !ConfigLoot.SPEC.isLoaded()) return;
         Level l = e.getLevel();
         BlockPos pos = e.getPos();
         BlockState st = l.getBlockState(pos);
+        if (CraftReserve.etabli(st) && CraftReserve.active()) {
+            // établi réservé au grade Fondateur (14/11, CraftReserve) : créatif et staff compris, partout (claims aussi)
+            if (!CraftReserve.permis(sp)) refuser(e, sp, Genre.POSTE);
+            return;
+        }
+        if (libre(sp)) return;
         Genre g = genre(l, pos, st, l.getBlockEntity(pos));
         if (g == Genre.AUCUN) return;
         boolean permisClaim = g == Genre.RANGEMENT ? ConfigLoot.VANILLA_CLAIMS.get() : ConfigLoot.POSTES_CLAIMS.get();
         if (permisClaim && l instanceof ServerLevel sl && dansClaimCrac(sl, pos)) return;
+        refuser(e, sp, g);
+    }
+
+    /** Bloc refusé : message dans la barre d'action ; accroupi avec un objet, l'objet sert quand même (poser contre le bloc). */
+    private static void refuser(PlayerInteractEvent.RightClickBlock e, ServerPlayer sp, Genre g) {
         boolean objet = !sp.getMainHandItem().isEmpty() || !sp.getOffhandItem().isEmpty();
         if (sp.isSecondaryUseActive() && objet) {
             // accroupi avec un objet : Minecraft n'utilise pas le bloc, l'objet sert (poser un bloc contre le coffre...) ;

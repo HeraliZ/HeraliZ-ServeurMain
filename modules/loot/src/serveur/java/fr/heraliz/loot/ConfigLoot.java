@@ -20,7 +20,7 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.BooleanValue VANILLA_ACTIF, VANILLA_AUTO, VANILLA_ENTITES, VANILLA_CLAIMS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> VANILLA_BLOQUES, VANILLA_EXCEPTIONS;
     /** Postes de travail et blocs à usage de Minecraft hors service (src/serveur : ConteneursVanilla). */
-    public static final ForgeConfigSpec.BooleanValue POSTES_ACTIF, POSTES_MENUS_AUTO, POSTES_CLAIMS;
+    public static final ForgeConfigSpec.BooleanValue POSTES_ACTIF, POSTES_MENUS_AUTO, POSTES_CLAIMS, POSTES_CRAFT_FONDATEURS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> POSTES_BLOQUES, POSTES_EXCEPTIONS;
     /** Présentoirs protégés : cadres, porte-armures, mannequins, peintures (src/serveur : Presentoirs). */
     public static final ForgeConfigSpec.BooleanValue PRES_ACTIF, PRES_AUTO, PRES_POSE, PRES_CLAIMS;
@@ -150,6 +150,11 @@ public final class ConfigLoot {
         POSTES_CLAIMS = b.comment("Laisser servir les postes posés dans un claim de CRac (bases des joueurs). false (choix du",
                 "propriétaire : bloquer en trop) : hors service là aussi. Les coffres et barils des bases suivent",
                 "permis_claims_crac de [conteneurs_vanilla].").define("permis_claims_crac", false);
+        POSTES_CRAFT_FONDATEURS = b.comment("Établi (table de craft) et artisanat de l'inventaire (grille 2×2) réservés au grade Fondateur",
+                "(14/11, choix du propriétaire). Tous les autres, créatif et staff compris, ne peuvent ni ouvrir l'établi (« Ce poste",
+                "est hors service. »), ni rien fabriquer : le résultat de la grille reste vide, même avec un jeu modifié. false :",
+                "règles d'avant (établi hors service sauf créatif, spectateur et staff ; artisanat 2×2 libre).")
+                .define("craft_fondateurs_seulement", true);
         b.pop();
         b.comment("Présentoirs (cadres, cadres lumineux, porte-armures, mannequins de l'Armurerie, peintures, noeuds de laisse) : un",
                 "joueur en survie ou en aventure ne peut ni les casser, ni les frapper, ni tourner ou prendre l'objet d'un cadre, ni",
