@@ -14,7 +14,11 @@ public enum LootRarity {
     RARE("rare", 0x4DA6FF, 1),
     EPIC("epic", 0xC45CFF, 1),
     LEGENDARY("legendary", 0xFFB42E, 2),
-    MYTHIC("mythic", 0xFF2E4A, 2);
+    /**
+     * Affichee "Unique" (14/11, demande du proprietaire : le meme nom et le meme rouge que la rarete Unique du reste du
+     * jeu et que son badge) ; l'identifiant "mythic" des fichiers des caisses et des donnees ne change pas.
+     */
+    MYTHIC("mythic", 0xFF3333, 2);
 
     public final String id;
     public final int color;
@@ -45,13 +49,13 @@ public enum LootRarity {
             for (LootRarity r : values()) {
                 if (r.id.equals(s)) return r;
             }
-            // alias francais
+            // alias francais ("unique" : le nom affiche de MYTHIC)
             switch (s) {
                 case "commun": return COMMON;
                 case "peu_commun": case "peu-commun": return UNCOMMON;
                 case "epique": case "épique": return EPIC;
                 case "legendaire": case "légendaire": return LEGENDARY;
-                case "mythique": return MYTHIC;
+                case "mythique": case "unique": return MYTHIC;
                 default: break;
             }
         }

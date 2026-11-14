@@ -81,7 +81,7 @@ stickers, le module StatTrak et le Bonus de loot avaient eux aussi le mot « Ép
 
 Maintenant, une seule indication de rareté : le badge, juste sous le nom.
 
-**Badge dessiné (demande du propriétaire du 14/11, À VALIDER : commit à part, rendus dans `rendus_14nov/badges/`)** : pour
+**Badge dessiné (demande du propriétaire du 14/11, validé le 14/11 ; rendus dans `rendus_14nov/badges/`)** : pour
 les six raretés, un rectangle de la couleur de la rareté (Commun gris, Peu commun vert, Rare bleu, Épique violet,
 Légendaire jaune, Unique rouge), coins adoucis, avec le nom de la rareté dedans, en capitales, dans la langue du joueur
 (COMMUN, PEU COMMUN, RARE, ÉPIQUE, LÉGENDAIRE, UNIQUE ; COMMON… UNIQUE en anglais ; ОБЫЧНЫЙ… УНИКАЛЬНЫЙ en russe : les
@@ -89,8 +89,7 @@ noms des raretés de Loot), lettres presque noires (lisibles sur les six couleur
 six. Il est dessiné par le noyau (`fr.heraliz.noyau.client.BadgeRarete`) partout où l'ancien petit badge en anglais
 s'affichait : infobulles du jeu, et infobulles de nos écrans (marchands, Table d'armurier, caisses). Pour une arme, un
 accessoire, une grenade, un soin, il passe aussi juste sous le nom (avant, sous les caractéristiques). Sur une carte de
-caisse : le badge de la carte, puis sa chance (« [ÉPIQUE] 2,5 % » ; la rareté Mythique des caisses y est UNIQUE). Sans
-ce commit, c'est l'ancien badge (image du jar des meubles : COMMON… LEGENDARY, ARTIFACT pour Unique).
+caisse : le badge de la carte, puis sa chance (« [ÉPIQUE] 2,5 % » ; la rareté Mythique des caisses y est UNIQUE).
 
 À vérifier :
 - [ ] casque Bélier (Épique) : nom violet, badge violet « ÉPIQUE », puis « Ensemble Bélier », « Emplacement : Tête »,
@@ -111,6 +110,29 @@ ce commit, c'est l'ancien badge (image du jar des meubles : COMMON… LEGENDARY,
       le badge de l'objet ; éditeur des caisses (staff) : le badge de l'objet s'affiche ;
 - [ ] interface à une autre échelle (2, 3) : badge net, texte centré.
 
+## UNIQUE au lieu de « Mythique » (caisses, camos)
+
+Demande du propriétaire du 14/11 : la plus haute rareté des caisses s'écrivait encore « Mythique » (MYTHIQUE sur les
+cartes). Elle s'écrit maintenant **Unique** partout (Unique en anglais, Уникальный en russe), le même nom que la rareté
+Unique du reste du jeu, dans le rouge de son badge : roue et cartes de l'écran des caisses, légende des chances, nom
+flottant de la caisse Gemme, texte du gain dans la scène, grand titre, messages du tchat et annonce à tout le serveur,
+aperçu du contenu, éditeur des caisses (staff), infobulles de la caisse et de la clé (« Rang : Unique »). Même chose dans
+l'atelier d'arme (onglet Skin) pour Séraphin et Chaînes de l'Enfer : « Unique », et « Unique ✦ Skin X » au survol.
+
+Rien ne change dans les fichiers : la clé reste `mythic` dans les fichiers des caisses (`serveur/config/heralizcrates/`),
+dans les récompenses déjà enregistrées et dans `outils/caisses.py` ; un fichier de caisse qui écrit `unique` est lu comme
+`mythic`.
+
+À vérifier :
+- [ ] caisse Gemme (ou une caisse avec un objet Unique) : sous l'objet de la roue, sur la carte gagnée et dans la légende
+      des chances : « UNIQUE » en rouge ; plus aucun « MYTHIQUE » ;
+- [ ] nom flottant au-dessus de la caisse Gemme : « UNIQUE » ; gain d'un objet Unique : grand titre « ✦ Unique ✦ » et
+      message du tchat « Unique », en rouge ;
+- [ ] éditeur des caisses (staff) : le bouton de rareté passe de « Légendaire » à « Unique » ; après l'enregistrement, le
+      fichier de la caisse garde `"rarity": "mythic"` ;
+- [ ] atelier d'arme, onglet Skin : Séraphin et Chaînes de l'Enfer marqués « Unique », en rouge ;
+- [ ] jeu en anglais puis en russe : Unique, Уникальный.
+
 ## Pas changé
 
 - Atelier d'arme et onglet Skin : l'étiquette de rareté des camos dans ces écrans reste un texte (ce sont des écrans,
@@ -118,6 +140,8 @@ ce commit, c'est l'ancien badge (image du jar des meubles : COMMON… LEGENDARY,
 - Le Flash Shield de Tactique (-25 % de vitesse en main) : ce n'est pas de l'équipement porté, et il n'est donné nulle
   part (plus dans aucun onglet).
 - Anciennes clés de caisse du jar des meubles (« Epic Amethyst Key »…) : jar d'un autre auteur, jamais données.
+- Filtres de l'onglet créatif HeraliZ Loot (constructeurs) : le palier T6 des conteneurs reste « Mythique : haute
+  sécurité » ; c'est un palier de conteneurs, pas une rareté d'objet, et T7 s'appelle déjà « Unique : coffres animés ».
 
 ## Rendus
 
@@ -125,6 +149,6 @@ ce commit, c'est l'ancien badge (image du jar des meubles : COMMON… LEGENDARY,
 `2_accessoire_commun.png`, `3_composant_epique.png`, `4_les_6_badges.png`. Police et fond d'infobulle de Minecraft,
 badges tirés du jar des meubles ; les lignes d'effets du bipied sont recopiées des textes de TaCZ.
 
-Badge dessiné (à valider) : `rendus_14nov/badges/` : `1_badges_seuls_taille_reelle.png` et `1_badges_seuls_zoom_x3.png`
+Badge dessiné (validé le 14/11) : `rendus_14nov/badges/` : `1_badges_seuls_taille_reelle.png` et `1_badges_seuls_zoom_x3.png`
 (l'ancien badge, puis les six nouveaux en français, anglais et russe), `2_infobulles_1920x1080_echelle4.png` (casque Épique
 et Bipod Commun, avant / après, à taille réelle), `3_casque_epique_zoom_x2.png`, `4_bipod_commun_zoom_x2.png`.

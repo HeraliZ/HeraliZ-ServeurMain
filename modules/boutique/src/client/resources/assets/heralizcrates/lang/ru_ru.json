@@ -32,7 +32,7 @@
   "rarity.heralizcrates.rare": "Редкий",
   "rarity.heralizcrates.epic": "Эпический",
   "rarity.heralizcrates.legendary": "Легендарный",
-  "rarity.heralizcrates.mythic": "Мифический",
+  "rarity.heralizcrates.mythic": "Уникальный",
   "tooltip.heralizcrates.key.opens": "Открывает: %s",
   "tooltip.heralizcrates.key.use": "Старый предмет: он переходит на твой счёт ключей, как только попадает в инвентарь",
   "tooltip.heralizcrates.tier": "Ранг: %s",

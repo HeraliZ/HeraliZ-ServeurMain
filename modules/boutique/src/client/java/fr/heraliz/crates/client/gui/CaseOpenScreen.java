@@ -54,8 +54,11 @@ public class CaseOpenScreen extends Screen {
             SOUS_GRAS = fr.heraliz.crates.HeralizCrates.id("ui_sous_bold"), TEXTE = Ui.SMALL,
             TEXTE_GRAS = fr.heraliz.crates.HeralizCrates.id("ui_small_bold"), COMPTE = fr.heraliz.crates.HeralizCrates.id("ui_compte_bold");
 
-    /** Couleurs des raretés de la maquette (Commun, Peu commun, Rare, Épique, Légendaire, Unique), par rang de LootRarity. */
-    private static final int[] RARETES = {0xB0B6C0, 0x5FD08A, 0x4C8DFF, 0xA86BFF, 0xE8C36A, 0xFF5A5A};
+    /**
+     * Couleurs des raretés de la maquette (Commun, Peu commun, Rare, Épique, Légendaire, Unique), par rang de LootRarity ;
+     * Unique (« mythic » des fichiers) : le rouge de son badge (14/11, demande du propriétaire).
+     */
+    private static final int[] RARETES = {0xB0B6C0, 0x5FD08A, 0x4C8DFF, 0xA86BFF, 0xE8C36A, 0xFF3333};
     private static final int OR_HAUT = 0xF0CF7B, OR_BAS = 0xD9AC4C, OR_TEXTE = 0x1A1408;
 
     /** Panneau (proposition B) : 584 x 328 au canevas d'au moins 600 x 340 (Echelle), marges intérieures PAD. */

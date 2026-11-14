@@ -471,7 +471,7 @@ final class OngletCamo implements AtelierArme.Partie {
          case RARE -> 0x5B9BFF;
          case EPIC -> 0xB57BFF;
          case LEGENDARY -> 0xF0A43A;
-         case MYTHIC -> 0xFF5A5A;
+         case MYTHIC -> 0xFF3333; // affiché « Unique » : le rouge de son badge (14/11)
       };
    }
 

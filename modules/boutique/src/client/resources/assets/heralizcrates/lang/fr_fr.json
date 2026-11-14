@@ -32,7 +32,7 @@
   "rarity.heralizcrates.rare": "Rare",
   "rarity.heralizcrates.epic": "Épique",
   "rarity.heralizcrates.legendary": "Légendaire",
-  "rarity.heralizcrates.mythic": "Mythique",
+  "rarity.heralizcrates.mythic": "Unique",
   "tooltip.heralizcrates.key.opens": "Ouvre : %s",
   "tooltip.heralizcrates.key.use": "Ancien objet : il passe sur ton compte de clés dès qu'il arrive dans ton inventaire",
   "tooltip.heralizcrates.tier": "Rang : %s",
