@@ -8,12 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -47,26 +50,25 @@ public final class AmbianceClient {
     private static float lGaz, lRad, lFroid;                    // valeurs lissées (fondu du brouillard local)
     private static String derniereZone = "";
     /**
-     * Compteur Geiger (14/11, demande du propriétaire : « c'est juste des tics de répéteur en redstone, il faut un son
-     * moddé, qui crépite un peu »). Avant (11/11) : le clic du comparateur de Minecraft. Maintenant : le vrai crépitement
-     * du compteur Geiger de HeraliZ (enregistrement du boss N07, à nous), en trois densités tirées du même son de 1,6 s
-     * ({@code assets/heraliz_decors/sounds/zone/}) : faible (8 crépitements par seconde), moyen (16), fort (47). Plus la
-     * radiation est forte, plus le crépitement choisi est dense et fort, et plus les salves se suivent (pause de 3 s à 0
-     * entre deux salves) ; sous Hazmat : salves faibles et espacées (5 à 8 s). Volume 0,15 à 0,35, hauteur 0,95 à 1,05.
-     * Joué dans « Ambiance / environnement » (curseur du joueur). Rien hors d'une zone irradiée.
+     * Compteur Geiger des zones irradiées (14/11). Avant (11/11) : le clic du comparateur de Minecraft (« des tics de
+     * répéteur en redstone »). Le propriétaire a choisi parmi trois sons « le 1, son ArkaniaZ » : le compteur Geiger du
+     * contenu ArkaniaZ, fichier {@code geckolib:geiger} du jar geckolib222 (d'un autre auteur, livré tel quel à tous les
+     * joueurs). Il n'est pas copié : notre son {@code heraliz_decors:zone.geiger} ({@code sounds.json}) ne fait que le
+     * désigner. Joué en boucle (55 s, de 11 à 25 crépitements par seconde) tant que le joueur est dans une zone irradiée,
+     * avec un fondu à l'entrée (1,3 s) et à la sortie (1 s). Plus la radiation est forte, plus il est fort (volume 0,3 à
+     * 0,8) et rapide (hauteur 0,85 à 1,25 : les crépitements se resserrent) ; sous Hazmat : volume × 0,4, hauteur 0,8.
+     * Catégorie « Ambiance / environnement » (curseur du joueur). Sans le fichier (jeu de test sans geckolib222) : rien.
      */
-    private static final SoundEvent GEIGER_FAIBLE = son("zone.geiger_faible");
-    private static final SoundEvent GEIGER_MOYEN = son("zone.geiger_moyen");
-    private static final SoundEvent GEIGER_FORT = son("zone.geiger_fort");
-    /** Durée d'une salve (ticks : 1,6 s) et pause la plus longue entre deux salves (ticks). */
-    private static final int GEIGER_SALVE = 32, GEIGER_PAUSE = 60;
-    private static final float GEIGER_VOLUME = 0.15f, GEIGER_VOLUME_RAD = 0.2f;
-    /** Ticks avant la prochaine salve possible. */
-    private static int geigerAttente;
-
-    private static SoundEvent son(String nom) {
-        return SoundEvent.createVariableRangeEvent(new ResourceLocation(HeralizDecors.MODID, nom));
-    }
+    private static final SoundEvent GEIGER = SoundEvent.createVariableRangeEvent(new ResourceLocation(HeralizDecors.MODID, "zone.geiger"));
+    private static final ResourceLocation GEIGER_FICHIER = new ResourceLocation("geckolib", "sounds/geiger.ogg");
+    private static final float GEIGER_VOLUME_MIN = 0.3f, GEIGER_VOLUME_MAX = 0.8f, GEIGER_HAZMAT = 0.4f;
+    private static final float GEIGER_HAUTEUR_MIN = 0.85f, GEIGER_HAUTEUR_MAX = 1.25f, GEIGER_HAUTEUR_HAZMAT = 0.8f;
+    /** Crépitement en cours (null hors d'une zone irradiée). */
+    private static Geiger geiger;
+    /** Le fichier du son est-il chez ce joueur ? (null : pas encore regardé) */
+    private static Boolean geigerDispo;
+    /** Ticks avant de relancer un crépitement coupé par le jeu (changement de monde, volume général à 0...). */
+    private static int geigerReprise;
 
     static void recevoir(Object m) {
         if (m instanceof Ambiance.Brume b) {
@@ -193,30 +195,48 @@ public final class AmbianceClient {
                         p.getX() + (rnd.nextDouble() - 0.5) * 18, p.getY() + 3 + rnd.nextDouble() * 4, p.getZ() + (rnd.nextDouble() - 0.5) * 18,
                         (rnd.nextDouble() - 0.5) * 0.05, -0.05, (rnd.nextDouble() - 0.5) * 0.05);
             }
-            // compteur Geiger : crépitement d'autant plus dense, fort et continu que la radiation est forte (Hazmat : rare)
-            if (geigerAttente > 0) {
-                geigerAttente--;
-            } else if (ra > 0) {
-                SoundEvent salve;
-                float volume;
-                int pause;
-                if (pRad) {
-                    salve = GEIGER_FAIBLE;
-                    volume = GEIGER_VOLUME;
-                    pause = 100 + rnd.nextInt(60);
-                } else {
-                    salve = ra < 0.34f ? GEIGER_FAIBLE : ra < 0.67f ? GEIGER_MOYEN : GEIGER_FORT;
-                    volume = GEIGER_VOLUME + ra * GEIGER_VOLUME_RAD;
-                    pause = Math.round((1f - ra) * GEIGER_PAUSE) + rnd.nextInt(10);
-                }
-                geigerAttente = GEIGER_SALVE + pause;
-                mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), salve, SoundSource.AMBIENT, volume,
-                        0.95f + rnd.nextFloat() * 0.1f, false);
-            }
+            // compteur Geiger : en boucle dans une zone irradiée, plus fort et plus rapide quand la radiation monte
+            compteurGeiger(mc, ra);
             // gaz : sifflement de fuite, de temps en temps
             if (g > 0.3f && rnd.nextFloat() < 0.01f) {
                 mc.level.playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.AMBIENT, 0.15f, 0.6f, false);
             }
+        }
+
+        private static void compteurGeiger(Minecraft mc, float ra) {
+            if (geiger != null && (geiger.isStopped() || !mc.getSoundManager().isActive(geiger))) {
+                if (!geiger.isStopped()) {
+                    geigerReprise = 100;                                  // coupé par le jeu : nouvel essai dans 5 s
+                }
+                geiger = null;
+            }
+            if (ra <= 0f) {
+                if (geiger != null) {
+                    geiger.viser(0f, geiger.hauteurVisee);               // fondu de sortie, puis le son s'arrête
+                }
+                return;
+            }
+            float volume = GEIGER_VOLUME_MIN + (GEIGER_VOLUME_MAX - GEIGER_VOLUME_MIN) * ra;
+            float hauteur = GEIGER_HAUTEUR_MIN + (GEIGER_HAUTEUR_MAX - GEIGER_HAUTEUR_MIN) * ra;
+            if (pRad) {
+                volume *= GEIGER_HAZMAT;
+                hauteur = GEIGER_HAUTEUR_HAZMAT;
+            }
+            if (geiger == null) {
+                if (geigerReprise > 0) {
+                    geigerReprise--;
+                    return;
+                }
+                if (geigerDispo == null) {
+                    geigerDispo = mc.getResourceManager().getResource(GEIGER_FICHIER).isPresent();
+                }
+                if (!geigerDispo) {
+                    return;
+                }
+                geiger = new Geiger(hauteur);
+                mc.getSoundManager().play(geiger);
+            }
+            geiger.viser(volume, hauteur);
         }
 
         @SubscribeEvent(priority = EventPriority.LOW)
@@ -301,6 +321,49 @@ public final class AmbianceClient {
             eGaz = eRad = eFroid = 0;
             lGaz = lRad = lFroid = 0;
             derniereZone = "";
+            if (geiger != null) {
+                Minecraft.getInstance().getSoundManager().stop(geiger);
+                geiger = null;
+            }
+            geigerReprise = 0;
+        }
+    }
+
+    /** Crépitement du compteur, en boucle : volume et hauteur suivent la radiation en douceur ; fondu de sortie. */
+    private static final class Geiger extends AbstractTickableSoundInstance {
+        private float volumeVise, hauteurVisee;
+
+        Geiger(float hauteur) {
+            super(GEIGER, SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
+            this.looping = true;
+            this.delay = 0;
+            this.relative = true;                                         // sur le joueur, sans atténuation
+            this.attenuation = SoundInstance.Attenuation.NONE;
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.volume = 0.01f;                                          // fondu d'entrée
+            this.pitch = hauteur;
+            this.hauteurVisee = hauteur;
+        }
+
+        void viser(float volume, float hauteur) {
+            this.volumeVise = volume;
+            this.hauteurVisee = hauteur;
+        }
+
+        @Override
+        public boolean canStartSilent() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            this.volume += Mth.clamp(this.volumeVise - this.volume, -0.04f, 0.03f);
+            this.pitch += Mth.clamp(this.hauteurVisee - this.pitch, -0.02f, 0.02f);
+            if (this.volumeVise <= 0f && this.volume <= 0.02f) {
+                stop();
+            }
         }
     }
 }
