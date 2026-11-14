@@ -1,8 +1,9 @@
 # Essais en jeu — infobulles (retours du propriétaire du 14/11, points 1 à 3)
 
-Loot 0.18.0, Équipement 1.3.0, Tactique 2.55.1, Monde 1.2.1, Boutique 1.5.7. Rien n'a été essayé en jeu par Claude, et
-rien n'a été compilé ici (Minecraft ne se télécharge pas dans cet environnement) : la fabrication complète est faite par
-le contrôle de branche de GitHub. Joueurs et serveur : nouveaux jars (le launcher met à jour ceux des joueurs).
+Loot 0.18.0, Équipement 1.3.0, Tactique 2.55.1, Monde 1.2.1, Boutique 1.5.7 ; badge dessiné (§ 3, à valider) : en plus
+Noyau 1.0.19 et Quêtes 1.21.2. Rien n'a été essayé en jeu par Claude, et rien n'a été compilé ici (Minecraft ne se
+télécharge pas dans cet environnement) : la fabrication complète est faite par le contrôle de branche de GitHub. Joueurs
+et serveur : nouveaux jars (le launcher met à jour ceux des joueurs).
 
 Une seule source pour la rareté d'un objet : `serveur/config/heraliz_loot/raretes.json` (et les choix du staff `/rarete`,
 relus par `/recharger raretes`). Liste complète des armes, accessoires, munitions, armures et composants avec leur
@@ -71,31 +72,44 @@ Curios redemandent les attributs à l'objet quand on l'enfile et à chaque conne
 - [ ] avec une tenue Titan complète portée AVANT la mise à jour : après la reconnexion, on court à la vitesse normale
       (même temps pour une même distance avec et sans la tenue, et avec un gilet lourd rangé puis remis).
 
-## 3. La rareté une seule fois : le petit badge « EPIC »
+## 3. La rareté une seule fois : le badge
 
 D'où venaient les répétitions sur le casque Épique (« Épique », puis « [EPIC] Épique ») : la ligne « Épique » de Loot,
 puis la ligne de l'Armurerie, badge + mot. Aucun nom d'objet ne contient le mot de sa rareté (fichiers de langue
 français, anglais et russe de nos mods et des gunpacks, contrôlé maintenant par `outils/verifier.py`). Les camos,
 stickers, le module StatTrak et le Bonus de loot avaient eux aussi le mot « Épique ».
 
-Maintenant, une seule indication de rareté : le badge, juste sous le nom (COMMON, UNCOMMON, RARE, EPIC, LEGENDARY ;
-**ARTIFACT** rouge pour Unique : la police n'a pas d'image « UNIQUE »). Ces badges viennent de la police des rangs du jar
-des meubles (cfm), que les joueurs ont : ce sont ceux que montrait déjà l'Armurerie.
+Maintenant, une seule indication de rareté : le badge, juste sous le nom.
+
+**Badge dessiné (demande du propriétaire du 14/11, À VALIDER : commit à part, rendus dans `rendus_14nov/badges/`)** : pour
+les six raretés, un rectangle de la couleur de la rareté (Commun gris, Peu commun vert, Rare bleu, Épique violet,
+Légendaire jaune, Unique rouge), coins adoucis, avec le nom de la rareté dedans, en capitales, dans la langue du joueur
+(COMMUN, PEU COMMUN, RARE, ÉPIQUE, LÉGENDAIRE, UNIQUE ; COMMON… UNIQUE en anglais ; ОБЫЧНЫЙ… УНИКАЛЬНЫЙ en russe : les
+noms des raretés de Loot), lettres presque noires (lisibles sur les six couleurs, jaune compris), même hauteur pour les
+six. Il est dessiné par le noyau (`fr.heraliz.noyau.client.BadgeRarete`) partout où l'ancien petit badge en anglais
+s'affichait : infobulles du jeu, et infobulles de nos écrans (marchands, Table d'armurier, caisses). Pour une arme, un
+accessoire, une grenade, un soin, il passe aussi juste sous le nom (avant, sous les caractéristiques). Sur une carte de
+caisse : le badge de la carte, puis sa chance (« [ÉPIQUE] 2,5 % » ; la rareté Mythique des caisses y est UNIQUE). Sans
+ce commit, c'est l'ancien badge (image du jar des meubles : COMMON… LEGENDARY, ARTIFACT pour Unique).
 
 À vérifier :
-- [ ] casque Bélier (Épique) : nom violet, badge EPIC, puis « Ensemble Bélier », « Emplacement : Tête »,
-      « Protection : 27 % », « Protège la tête » ; plus aucun « Épique » écrit ;
+- [ ] casque Bélier (Épique) : nom violet, badge violet « ÉPIQUE », puis « Ensemble Bélier », « Emplacement : Tête »,
+      « Protection : 27 % », « Protège la tête » ; plus aucun « Épique » écrit en texte ;
+- [ ] Bipod V9 Grip : badge gris « COMMUN » juste sous le nom, PUIS ses effets (recul, temps de visée…) ;
+- [ ] les six badges ont la même hauteur ; « LÉGENDAIRE » (jaune) se lit bien ; les accents (É) ne dépassent pas ;
+- [ ] langue du jeu en anglais puis en russe : COMMON… / ОБЫЧНЫЙ… ; retour en français : COMMUN… (le badge suit tout de
+      suite, sans redémarrer) ;
 - [ ] tenue complète, combinaison (Hazmat), masque à gaz, ghillie : badge seul, une fois ;
 - [ ] objet d'événement de l'Armurerie (citrouille, staff) : pas de badge, ligne « Événement » ;
-- [ ] Canon III (Épique) : badge EPIC, puis « Utilisé pour : Armes » et sa description ;
-- [ ] arme TaCZ, couteau skinné (Unique : badge ARTIFACT), munition, grenade, soin : un badge sous le nom ;
-- [ ] camo, sticker, module StatTrak : badge à la place du mot « Épique », une fois ;
-- [ ] Bonus de loot (boutique) : badge EPIC à la place du mot ;
+- [ ] Canon III (Épique) : badge, puis « Utilisé pour : Armes » et sa description ;
+- [ ] arme TaCZ, couteau skinné (Unique : badge rouge UNIQUE), munition, grenade, soin : un badge juste sous le nom ;
+- [ ] camo, sticker, module StatTrak, Bonus de loot : badge à la place du mot « Épique », une fois ;
 - [ ] arme avec un camo : badge sous le nom, puis « Camo : Galaxie » ;
-- [ ] dans les écrans de Mila, du recycleur, de l'atelier de réparation, du coffre T7 : le badge s'affiche (pas un carré
-      vide) ;
-- [ ] caisse (casino / caisses) : l'infobulle d'une carte dit « Épique · 2,5 % » et ne répète pas le badge de l'objet ;
-- [ ] en anglais et en russe : même badge (il est en anglais pour tous).
+- [ ] écrans de Mila (achat et vente), éditeur des marchands (staff), Table d'armurier, recycleur, atelier de réparation,
+      coffre T7, mannequin : le badge s'affiche (pas un carré vide, pas l'ancien badge anglais) ;
+- [ ] caisse (casino / caisses) : l'infobulle d'une carte montre le badge de la carte suivi de sa chance, et ne répète pas
+      le badge de l'objet ; éditeur des caisses (staff) : le badge de l'objet s'affiche ;
+- [ ] interface à une autre échelle (2, 3) : badge net, texte centré.
 
 ## Pas changé
 
@@ -110,3 +124,7 @@ des meubles (cfm), que les joueurs ont : ce sont ceux que montrait déjà l'Armu
 `rendus_14nov/infobulles/` (scratchpad de la session) : `0_infobulles_avant_apres.png` (les trois), `1_casque_epique.png`,
 `2_accessoire_commun.png`, `3_composant_epique.png`, `4_les_6_badges.png`. Police et fond d'infobulle de Minecraft,
 badges tirés du jar des meubles ; les lignes d'effets du bipied sont recopiées des textes de TaCZ.
+
+Badge dessiné (à valider) : `rendus_14nov/badges/` : `1_badges_seuls_taille_reelle.png` et `1_badges_seuls_zoom_x3.png`
+(l'ancien badge, puis les six nouveaux en français, anglais et russe), `2_infobulles_1920x1080_echelle4.png` (casque Épique
+et Bipod Commun, avant / après, à taille réelle), `3_casque_epique_zoom_x2.png`, `4_bipod_commun_zoom_x2.png`.

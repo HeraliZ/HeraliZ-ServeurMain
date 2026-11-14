@@ -2,12 +2,11 @@ package fr.heraliz.crates.client.gui;
 
 import fr.heraliz.crates.loot.LootRarity;
 import fr.heraliz.crates.network.Packets;
-import net.minecraft.ChatFormatting;
+import fr.heraliz.noyau.client.BadgeRarete;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -64,7 +63,12 @@ public final class CardArt {
         return code != null && code.startsWith("fr");
     }
 
-    /** Infobulle d'une carte : nom, rarete et chance, quantite, puis les lignes propres a l'objet (enchantements...). */
+    /**
+     * Infobulle d'une carte : nom, badge de rarete et chance, quantite, puis les lignes propres a l'objet (enchantements...).
+     * 14/11 (demande du proprietaire : le meme badge de rarete partout) : la rarete de la carte est le badge du noyau
+     * (BadgeRarete, rang de la caisse : Commun ... Mythique = Unique), suivi de sa chance ; avant, le mot (« Épique ·
+     * 2,5 % »). Le badge de rarete de l'objet lui-meme (HeraliZ Loot, camos...) n'est pas repris : un seul par carte.
+     */
     public static List<Component> tooltip(Packets.Card c) {
         LootRarity r = rarity(c.rarity());
         List<Component> vanilla = Screen.getTooltipFromItem(Minecraft.getInstance(), c.stack());
@@ -72,26 +76,15 @@ public final class CardArt {
         // nom brut : la couleur vient de la rarete de la caisse (un nom personnalise garde la sienne)
         Component name = c.stack().getHoverName();
         lines.add(Ui.in(Component.empty().append(name).withStyle(st -> st.withColor(r.color)), Ui.BOLD));
-        lines.add(Ui.in(Component.empty()
-                .append(r.displayName())
-                .append(Component.literal("  ·  ").withStyle(ChatFormatting.DARK_GRAY))
-                .append(Component.literal(Ui.pct(c.chance())).withStyle(st -> st.withColor(Ui.TEXT))), Ui.SMALL));
+        lines.add(Component.empty().append(BadgeRarete.ligne(r.ordinal()))
+                .append(Ui.in(Component.literal(Ui.pct(c.chance())).withStyle(st -> st.withColor(Ui.TEXT)), Ui.SMALL)));
         if (c.count() > 1) {
             lines.add(Ui.in(Ui.tr(Ui.SMALL, "gui.heralizcrates.amount", c.count()).withStyle(st -> st.withColor(Ui.MUTED)), Ui.SMALL));
         }
         for (int i = 1; i < vanilla.size() && i < 8; i++) {
-            // 14/11 (retour du propriétaire : la rareté une seule fois) : la carte dit déjà sa rareté, avec sa chance ; le
-            // badge de rareté de l'objet (HeraliZ Loot, camos…) n'est pas repris
-            if (badgeRarete(vanilla.get(i))) continue;
+            if (BadgeRarete.rangSeul(vanilla.get(i)) >= 0) continue;
             lines.add(Ui.in(Component.empty().append(vanilla.get(i)).withStyle(st -> st.withColor(Ui.MUTED)), Ui.SMALL));
         }
         return lines;
-    }
-
-    /** Ligne faite d'un badge de rareté seul : un caractère de la police des rangs (U+E800 à U+E8FF). */
-    private static boolean badgeRarete(Component c) {
-        if (!c.getSiblings().isEmpty() || !(c.getContents() instanceof LiteralContents lc) || lc.text().length() != 1) return false;
-        char ch = lc.text().charAt(0);
-        return ch >= 0xE800 && ch <= 0xE8FF;
     }
 }

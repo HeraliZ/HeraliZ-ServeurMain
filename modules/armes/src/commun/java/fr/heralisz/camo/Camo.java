@@ -151,10 +151,10 @@ public enum Camo {
       /** Couleur (RVB) de la rareté. */
       public final int couleur;
       /**
-       * Badge de la rareté dans l'infobulle des camos, stickers et du module StatTrak (14/11, retour du propriétaire :
-       * « juste une fois le petit encadré avec écrit EPIC ») : le même caractère que fr.heraliz.loot.Rarete (HeraliZ
-       * Loot), une petite image de la police des rangs (« COMMON », « UNCOMMON », « RARE », « EPIC », « LEGENDARY » ;
-       * « ARTIFACT », rouge, pour Mythique : il n'y a pas d'image « MYTHIC » dans cette police).
+       * Marqueur du badge de la rareté dans l'infobulle des camos, stickers et du module StatTrak (14/11, retour du
+       * propriétaire : « juste une fois le petit encadré avec écrit EPIC ») : le même caractère que fr.heraliz.loot.Rarete
+       * (HeraliZ Loot) ; le noyau (BadgeRarete) le dessine en badge, rectangle de la couleur et nom dans la langue du
+       * joueur (Mythique : le badge Unique).
        */
       private final String glyphe;
 

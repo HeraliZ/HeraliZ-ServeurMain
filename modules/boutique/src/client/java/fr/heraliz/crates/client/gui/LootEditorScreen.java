@@ -4,6 +4,7 @@ import fr.heraliz.crates.crate.CrateType;
 import fr.heraliz.crates.loot.LootRarity;
 import fr.heraliz.crates.network.HzNet;
 import fr.heraliz.crates.network.Packets;
+import fr.heraliz.noyau.client.BadgeRarete;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -510,6 +511,11 @@ public class LootEditorScreen extends Screen {
             tip.add(Ui.in(row.stack.getHoverName(), Ui.BOLD));
             List<Component> vanilla = getTooltipFromItem(minecraft, row.stack);
             for (int i = 1; i < vanilla.size() && i < 8; i++) {
+                // badge de rareté de l'objet (14/11) : gardé tel quel, l'infobulle le dessine (noyau, BadgeRarete)
+                if (BadgeRarete.rangSeul(vanilla.get(i)) >= 0) {
+                    tip.add(vanilla.get(i));
+                    continue;
+                }
                 tip.add(Ui.in(Component.empty().append(vanilla.get(i)).withStyle(st -> st.withColor(Ui.MUTED)), Ui.SMALL));
             }
             if (!row.itemId.isEmpty()) tip.add(Ui.lit(row.itemId, Ui.SMALL).withStyle(st -> st.withColor(Ui.FAINT)));
@@ -563,6 +569,10 @@ public class LootEditorScreen extends Screen {
             tip.add(Ui.in(hovered.getHoverName(), Ui.BOLD));
             List<Component> vanilla = getTooltipFromItem(minecraft, hovered);
             for (int i = 1; i < vanilla.size() && i < 8; i++) {
+                if (BadgeRarete.rangSeul(vanilla.get(i)) >= 0) {
+                    tip.add(vanilla.get(i));
+                    continue;
+                }
                 tip.add(Ui.in(Component.empty().append(vanilla.get(i)).withStyle(st -> st.withColor(Ui.MUTED)), Ui.SMALL));
             }
             Ui.tooltip(g, font, tip, mouseX, mouseY, glow);

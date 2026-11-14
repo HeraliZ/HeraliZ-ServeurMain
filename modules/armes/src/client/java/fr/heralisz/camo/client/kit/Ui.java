@@ -1,5 +1,6 @@
 package fr.heralisz.camo.client.kit;
 
+import fr.heraliz.noyau.client.BadgeRarete;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -520,7 +521,10 @@ public final class Ui {
     }
 
     // ------------------------------------------------------------------ infobulle
-    /** Infobulle sobre : fond sombre, lisere a la couleur d'accent, premiere ligne en titre. */
+    /**
+     * Infobulle sobre : fond sombre, lisere a la couleur d'accent, premiere ligne en titre. La ligne de rarete d'un objet
+     * (marqueur de HeraliZ Loot) est dessinee en badge par le noyau (BadgeRarete, 14/11), comme dans l'inventaire.
+     */
     public static void tooltip(GuiGraphics g, Font font, List<Component> lines, int mouseX, int mouseY, int accent) {
         if (lines.isEmpty()) return;
         // lignes trop longues coupees (au plus INFOBULLE_MAX, jamais plus large que l'ecran) ; le titre garde son ecart
@@ -528,13 +532,15 @@ public final class Ui {
         List<FormattedCharSequence> vues = new ArrayList<>();
         int titre = 1;
         for (int i = 0; i < lines.size(); i++) {
-            List<FormattedCharSequence> morceaux = font.split(lines.get(i), max);
+            int badge = i == 0 ? -1 : BadgeRarete.rangSeul(lines.get(i));
+            List<FormattedCharSequence> morceaux = badge >= 0 ? List.of(BadgeRarete.sequence(badge))
+                    : font.split(lines.get(i), max);
             if (morceaux.isEmpty()) morceaux = List.of(FormattedCharSequence.EMPTY);
             vues.addAll(morceaux);
             if (i == 0) titre = morceaux.size();
         }
         int w = 0;
-        for (FormattedCharSequence l : vues) w = Math.max(w, font.width(l));
+        for (FormattedCharSequence l : vues) w = Math.max(w, BadgeRarete.largeur(font, l));
         int n = vues.size();
         int h = 9 + (n - 1) * 10 + (n > titre ? 2 : 0);
         int x = mouseX + 12, y = mouseY - 10;
@@ -550,7 +556,9 @@ public final class Ui {
         g.fill(x - 6, y + h + 2, x + w + 6, y + h + 3, argb(0xFFFFFF, 18));
         int ly = y;
         for (int i = 0; i < n; i++) {
-            g.drawString(font, vues.get(i), x, ly, 0xFFFFFFFF, false);
+            if (!BadgeRarete.dessiner(g, vues.get(i), x, ly)) {
+                g.drawString(font, vues.get(i), x, ly, 0xFFFFFFFF, false);
+            }
             ly += i == titre - 1 ? 12 : 10;
         }
         g.pose().popPose();

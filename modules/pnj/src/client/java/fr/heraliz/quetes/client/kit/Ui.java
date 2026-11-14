@@ -1,5 +1,6 @@
 package fr.heraliz.quetes.client.kit;
 
+import fr.heraliz.noyau.client.BadgeRarete;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -431,11 +432,14 @@ public final class Ui {
     }
 
     // ------------------------------------------------------------------ infobulle
-    /** Infobulle sobre : fond sombre, lisere a la couleur d'accent, premiere ligne en titre. */
+    /**
+     * Infobulle sobre : fond sombre, lisere a la couleur d'accent, premiere ligne en titre. La ligne de rarete d'un objet
+     * (marqueur de HeraliZ Loot) est dessinee en badge par le noyau (BadgeRarete, 14/11), comme dans l'inventaire.
+     */
     public static void tooltip(GuiGraphics g, Font font, List<Component> lines, int mouseX, int mouseY, int accent) {
         if (lines.isEmpty()) return;
         int w = 0;
-        for (Component l : lines) w = Math.max(w, font.width(l));
+        for (Component l : lines) w = Math.max(w, BadgeRarete.largeur(font, l));
         int h = lines.size() == 1 ? 9 : lines.size() * 10 + 1;
         int x = mouseX + 12, y = mouseY - 10;
         if (x + w + 8 > g.guiWidth()) x = mouseX - w - 14;
@@ -449,7 +453,9 @@ public final class Ui {
         g.fill(x - 6, y + h + 2, x + w + 6, y + h + 3, argb(0xFFFFFF, 18));
         int ly = y;
         for (int i = 0; i < lines.size(); i++) {
-            g.drawString(font, lines.get(i), x, ly, 0xFFFFFFFF, false);
+            if (!BadgeRarete.dessiner(g, font, lines.get(i), x, ly, 0xFFFFFFFF)) {
+                g.drawString(font, lines.get(i), x, ly, 0xFFFFFFFF, false);
+            }
             ly += i == 0 ? 12 : 10;
         }
         g.pose().popPose();

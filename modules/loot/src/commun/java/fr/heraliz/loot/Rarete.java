@@ -23,11 +23,11 @@ public enum Rarete {
     public final String id, nom;
     public final int couleur, duree;
     /**
-     * Badge de la rareté (14/11, retour du propriétaire : « juste une fois le petit encadré avec écrit EPIC ») : un
-     * caractère de la police des rangs, une petite image de 8 points de haut (« COMMON », « UNCOMMON », « RARE »,
-     * « EPIC », « LEGENDARY » ; « ARTIFACT », rouge, pour Unique : il n'y a pas d'image « UNIQUE »). Cette police
-     * complète la police par défaut de Minecraft ; elle vient du jar des meubles (cfm) du serveur, que les joueurs ont
-     * aussi : c'est le badge que montraient déjà les pièces de l'Armurerie.
+     * Marqueur du badge de la rareté (14/11, retour du propriétaire : « juste une fois le petit encadré avec écrit
+     * EPIC ») : un caractère de la police des rangs du jar des meubles (cfm), une petite image en anglais (« COMMON »…
+     * « LEGENDARY », « ARTIFACT » pour Unique). Le noyau (fr.heraliz.noyau.client.BadgeRarete) remplace cette ligne par le
+     * vrai badge : rectangle de la couleur de la rareté, nom dans la langue du joueur ; l'image n'apparaît que si le
+     * noyau manque.
      */
     public final String glyphe;
 
