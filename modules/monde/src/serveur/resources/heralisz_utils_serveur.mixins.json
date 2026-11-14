@@ -8,6 +8,7 @@
     "TaczPassagersMixin",
     "VehiculeConduiteMixin",
     "VehiculeSansCoffreMixin",
+    "VehiculeSortieMixin",
     "VehiculeStableMixin",
     "ZombieAwarenessSensMixin"
   ],

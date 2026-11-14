@@ -27,4 +27,9 @@
 	#carrosserie (fourgon, cabine du camion, motard) ; ailleurs, c'est le vehicule qui prend la balle. false : la
 	#carrosserie arrete toutes les balles (le passager cache dedans n'est jamais touche).
 	balles_traversent = true
+	#Sortie d'un vehicule verifiee par le serveur : si l'endroit choisi par Limitless Vehicle est dans un bloc
+	#ou derriere un mur (vehicule colle a un mur, dans un garage), le joueur sort de l'autre cote, a l'arriere ou a
+	#l'avant ; sans aucune place libre, sur le vehicule. Jamais de l'autre cote d'un mur. false : endroit du moteur
+	#tel quel.
+	sortie_sure = true
 

@@ -6,9 +6,9 @@ import java.util.List;
 
 /**
  * Réglages serveur ({@code serverconfig/heraliz_vehicules-server.toml} du monde). {@code coffre_retire},
- * {@code pv_pourcent}, {@code passagers_proteges} et {@code balles_traversent} sont appliqués par la partie serveur
- * ({@code CoffreRetire}, {@code PointsDeVie}, {@code Passagers}) ; la section {@code physique} par {@code Stabilite}
- * (mixins serveur sur le moteur de Limitless Vehicle).
+ * {@code pv_pourcent}, {@code passagers_proteges}, {@code balles_traversent} et {@code sortie_sure} sont appliqués par la
+ * partie serveur ({@code CoffreRetire}, {@code PointsDeVie}, {@code Passagers}, {@code SortieSure}) ; la section
+ * {@code physique} par {@code Stabilite} (mixins serveur sur le moteur de Limitless Vehicle).
  */
 public final class VehiculesConfig {
     public static final ForgeConfigSpec SPEC;
@@ -20,6 +20,7 @@ public final class VehiculesConfig {
     public static final ForgeConfigSpec.IntValue PV_POURCENT;
     public static final ForgeConfigSpec.BooleanValue PASSAGERS_PROTEGES;
     public static final ForgeConfigSpec.BooleanValue BALLES_TRAVERSENT;
+    public static final ForgeConfigSpec.BooleanValue SORTIE_SURE;
     public static final ForgeConfigSpec.BooleanValue PHYSIQUE_STABLE;
     public static final ForgeConfigSpec.DoubleValue INERTIE;
     public static final ForgeConfigSpec.DoubleValue BASCULE_MAX;
@@ -60,6 +61,11 @@ public final class VehiculesConfig {
                         "carrosserie (fourgon, cabine du camion, motard) ; ailleurs, c'est le vehicule qui prend la balle. false : la",
                         "carrosserie arrete toutes les balles (le passager cache dedans n'est jamais touche).")
                 .define("balles_traversent", true);
+        SORTIE_SURE = b.comment("Sortie d'un vehicule verifiee par le serveur : si l'endroit choisi par Limitless Vehicle est dans un bloc",
+                        "ou derriere un mur (vehicule colle a un mur, dans un garage), le joueur sort de l'autre cote, a l'arriere ou a",
+                        "l'avant ; sans aucune place libre, sur le vehicule. Jamais de l'autre cote d'un mur. false : endroit du moteur",
+                        "tel quel.")
+                .define("sortie_sure", true);
         b.pop();
         b.push("physique");
         PHYSIQUE_STABLE = b.comment("Vehicules a roues plus stables et plus maniables (moteur de Limitless Vehicle corrige par HeraliZ Utils).",
