@@ -1,6 +1,7 @@
 package fr.heraliz.vehicules;
 
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
@@ -20,6 +21,18 @@ public final class HeralizVehiculesServeur {
         Regles.enregistrer(MinecraftForge.EVENT_BUS);
         MinecraftForge.EVENT_BUS.addListener(Commandes::onRegister);
         SuiviVehicules.enregistrer(MinecraftForge.EVENT_BUS);
+        // ArretSansConducteur écoute un évènement du moteur des véhicules (VehicleMoveEvent) : inscrit au démarrage du
+        // serveur, jamais pendant la construction des mods. Banc du 14/11 : s'y inscrire ici chargeait les classes de
+        // Limitless Vehicle (AbstractVehicle) pendant que ce mod se construisait sur un autre fil ; le chargement échouait
+        // (« Could not find parent AbstractVehicle ») et le serveur ne démarrait plus.
+        MinecraftForge.EVENT_BUS.addListener(HeralizVehiculesServeur::auDemarrage);
+    }
+
+    private static boolean arretInscrit;
+
+    private static void auDemarrage(ServerAboutToStartEvent e) {
+        if (arretInscrit) return;
+        arretInscrit = true;
         ArretSansConducteur.enregistrer(MinecraftForge.EVENT_BUS);
     }
 }
