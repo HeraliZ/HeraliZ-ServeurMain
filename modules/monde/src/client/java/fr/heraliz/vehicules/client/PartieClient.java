@@ -5,12 +5,13 @@ import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Partie client de heraliz_vehicules (jar fusionné HeraliZ Utils) : touches, caméra, HUD des véhicules, plus d'affichage
- * des dégâts faits à un véhicule ({@link IndicateurDegats}).
+ * des dégâts faits à un véhicule ({@link IndicateurDegats}), sortie avec la touche S'accroupir ({@link SortieAccroupi}).
  */
 public final class PartieClient implements Partie {
     @Override
     public void init(IEventBus busMod) {
         ClientVehicules.init(busMod);
         IndicateurDegats.init();
+        SortieAccroupi.init();
     }
 }

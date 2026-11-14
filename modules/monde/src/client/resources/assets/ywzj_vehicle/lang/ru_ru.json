@@ -25,7 +25,7 @@
   "key.ywzj_vehicle.switch_view.desc": "Сменить вид",
   "key.ywzj_vehicle.free_camera.desc": "Свободный обзор",
   "key.ywzj_vehicle.open_inventory.desc": "Багажник",
-  "key.ywzj_vehicle.leave_vehicle.desc": "Выйти из транспорта",
+  "key.ywzj_vehicle.leave_vehicle.desc": "Выйти (помимо «Красться»)",
   "key.ywzj_vehicle.inspect_vehicle.desc": "Осмотреть транспорт",
   "key.ywzj_vehicle.open_parachute.desc": "Раскрыть парашют",
   "key.ywzj_vehicle.change_seat.desc": "Сменить место (цифрами)",

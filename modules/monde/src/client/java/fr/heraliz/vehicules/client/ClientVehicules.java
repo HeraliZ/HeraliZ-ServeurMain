@@ -6,6 +6,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraftforge.client.settings.IKeyConflictContext;
+import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -30,7 +31,9 @@ import java.util.Map;
  *   <li>Nouvelles touches par défaut ({@link #TABLE}) : sur des touches libres ; le bouton « Réinitialiser » des
  *   options y ramène.</li>
  *   <li>Un joueur qui avait déjà choisi une autre touche la garde (on ne change que les touches restées à leur valeur
- *   d'origine).</li>
+ *   d'origine, ou à une ancienne valeur par défaut de HeraliZ : {@link #anciennes()}).</li>
+ *   <li>On sort d'un véhicule avec la touche S'accroupir du joueur ({@link SortieAccroupi}, 14/11) : la touche « Sortir
+ *   du véhicule » du moteur n'a plus de touche par défaut (un joueur peut lui en donner une en plus).</li>
  * </ul>
  * Le parachute (Espace en chute) passe par la touche Sauter comme avant : actif seulement en chute avec le parachute au
  * torse, et jamais signalé en conflit.
@@ -47,9 +50,15 @@ public final class ClientVehicules {
             return mc.screen == null && mc.player != null && mc.player.getVehicle() instanceof AbstractVehicle;
         }
 
+        /**
+         * Comme le contexte « en jeu » de Forge (14/11) : pour Forge, une touche sans modificateur d'un contexte qui ne
+         * « croise » pas celui du jeu n'est plus enfoncée tant qu'on tient Maj, Ctrl ou Alt (KeyModifier.NONE). À bord,
+         * on tient souvent Ctrl (sprint) ou Maj : la conduite ne répondait plus, et l'ancienne sortie sur Maj gauche ne
+         * pouvait jamais marcher. L'écran des touches n'en change pas (même touche : déjà montrée en rouge).
+         */
         @Override
         public boolean conflicts(IKeyConflictContext other) {
-            return other == this;
+            return other == this || other == KeyConflictContext.IN_GAME;
         }
     };
 
@@ -81,7 +90,7 @@ public final class ClientVehicules {
         t.put(AllKeys.LEFT, null);                                        // Q (A QWERTY)
         t.put(AllKeys.RIGHT, null);                                       // D
         t.put(AllKeys.UP, null);                                          // Espace : frein à main
-        t.put(AllKeys.LEAVE_VEHICLE, clavier(GLFW.GLFW_KEY_LEFT_SHIFT));  // J (tags) -> Maj gauche
+        t.put(AllKeys.LEAVE_VEHICLE, InputConstants.UNKNOWN);             // J (tags) -> aucune : S'accroupir fait sortir
         t.put(AllKeys.OPEN_INVENTORY, InputConstants.UNKNOWN);            // B (sac) -> aucune : plus de coffre (CoffreRetire)
         t.put(AllKeys.TOGGLE_ENGINE, clavier(GLFW.GLFW_KEY_WORLD_2));     // I (Reanimation) -> <
         t.put(AllKeys.LEFT_YAW, clavier(GLFW.GLFW_KEY_PAGE_UP));          // A QWERTY (jeter) -> Page préc. : benne du camion
@@ -93,7 +102,7 @@ public final class ClientVehicules {
         t.put(AllKeys.MAGNIFICATION_CHANGE, null);                        // clic droit : zoom de la vue
         t.put(AllKeys.MAIN_WEAPON_SHOOT, null);                           // clic gauche : arme du véhicule
         // avions, hélicoptères, armes (aucun sur le serveur) : pavé numérique et touches de navigation
-        t.put(AllKeys.DOWN, clavier(GLFW.GLFW_KEY_KP_0));                 // Maj gauche (sortir) -> 0 pavé
+        t.put(AllKeys.DOWN, clavier(GLFW.GLFW_KEY_KP_0));                 // Maj gauche (s'accroupir : sortir) -> 0 pavé
         t.put(AllKeys.FUNCTIONAL_UP, clavier(GLFW.GLFW_KEY_KP_8));        // flèche haut (vision nocturne) -> 8 pavé
         t.put(AllKeys.FUNCTIONAL_DOWN, clavier(GLFW.GLFW_KEY_KP_2));      // flèche bas (bases) -> 2 pavé
         t.put(AllKeys.FUNCTIONAL_LEFT, clavier(GLFW.GLFW_KEY_KP_4));      // flèche gauche (frappe aérienne) -> 4 pavé
@@ -115,6 +124,15 @@ public final class ClientVehicules {
         t.put(AllKeys.SWITCH_SCOPE, clavier(GLFW.GLFW_KEY_F6));           // X (barres d'outils) -> F6
         t.put(AllKeys.TOGGLE_AEROBATIC_SMOKE, clavier(GLFW.GLFW_KEY_F7)); // L (progrès) -> F7
         return t;
+    }
+
+    /**
+     * Anciennes touches par défaut de HeraliZ, changées depuis : un joueur qui a encore l'ancienne passe à la nouvelle,
+     * comme s'il n'y avait jamais touché. « Sortir du véhicule » était sur Maj gauche jusqu'au 14/11 (elle n'y marchait
+     * pas, voir {@link #A_BORD}) ; on sort maintenant avec la touche S'accroupir du joueur ({@link SortieAccroupi}).
+     */
+    static Map<KeyMapping, InputConstants.Key> anciennes() {
+        return Map.of(AllKeys.LEAVE_VEHICLE, clavier(GLFW.GLFW_KEY_LEFT_SHIFT));
     }
 
     /**
@@ -154,12 +172,14 @@ public final class ClientVehicules {
             HeralizVehicules.LOG.warn("[vehicules] touche par defaut non modifiable (Reinitialiser ramenera l'ancienne)", ex);
         }
         int changees = 0;
+        Map<KeyMapping, InputConstants.Key> anciennes = anciennes();
         for (Map.Entry<KeyMapping, InputConstants.Key> en : table().entrySet()) {
             KeyMapping k = en.getKey();
             InputConstants.Key nouvelle = en.getValue();
             k.setKeyConflictContext(A_BORD);
             if (nouvelle == null) continue;
-            if (k.isDefault() && !k.getKey().equals(nouvelle)) {
+            boolean parDefaut = k.isDefault() || k.getKey().equals(anciennes.get(k));
+            if (parDefaut && !k.getKey().equals(nouvelle)) {
                 k.setKey(nouvelle);
                 changees++;
             }

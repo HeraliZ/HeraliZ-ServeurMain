@@ -4,5 +4,6 @@
   "heraliz_vehicules.refus.retire": "Ce véhicule n'existe pas sur HeraliZ.",
   "heraliz_vehicules.cmd.liste": "Véhicules de HeraliZ (essence : jerrican, clic droit sur le véhicule) :",
   "heraliz_vehicules.cmd.inconnu": "Véhicule inconnu : %s (buggy, moto, camion, fourgon).",
-  "heraliz_vehicules.cmd.donne": "%s donné à %s joueur(s)."
+  "heraliz_vehicules.cmd.donne": "%s donné à %s joueur(s).",
+  "heraliz_vehicules.sortie.aide": "%s : sortir du véhicule"
 }

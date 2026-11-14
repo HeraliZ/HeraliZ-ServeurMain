@@ -4,5 +4,6 @@
   "heraliz_vehicules.refus.retire": "Этого транспорта нет на HeraliZ.",
   "heraliz_vehicules.cmd.liste": "Транспорт HeraliZ (топливо: канистра, ПКМ по транспорту):",
   "heraliz_vehicules.cmd.inconnu": "Неизвестный транспорт: %s (buggy, moto, camion, fourgon).",
-  "heraliz_vehicules.cmd.donne": "%s выдано (игроков: %s)."
+  "heraliz_vehicules.cmd.donne": "%s выдано (игроков: %s).",
+  "heraliz_vehicules.sortie.aide": "%s: выйти из транспорта"
 }

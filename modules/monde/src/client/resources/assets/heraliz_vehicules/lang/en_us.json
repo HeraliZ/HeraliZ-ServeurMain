@@ -4,5 +4,6 @@
   "heraliz_vehicules.refus.retire": "This vehicle does not exist on HeraliZ.",
   "heraliz_vehicules.cmd.liste": "HeraliZ vehicles (fuel: jerrycan, right-click the vehicle):",
   "heraliz_vehicules.cmd.inconnu": "Unknown vehicle: %s (buggy, moto, camion, fourgon).",
-  "heraliz_vehicules.cmd.donne": "%s given to %s player(s)."
+  "heraliz_vehicules.cmd.donne": "%s given to %s player(s).",
+  "heraliz_vehicules.sortie.aide": "%s: exit the vehicle"
 }

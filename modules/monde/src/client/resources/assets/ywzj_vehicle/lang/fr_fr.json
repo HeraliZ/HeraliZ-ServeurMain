@@ -25,7 +25,7 @@
   "key.ywzj_vehicle.switch_view.desc": "Changer de vue",
   "key.ywzj_vehicle.free_camera.desc": "Regard libre",
   "key.ywzj_vehicle.open_inventory.desc": "Coffre du véhicule",
-  "key.ywzj_vehicle.leave_vehicle.desc": "Sortir du véhicule",
+  "key.ywzj_vehicle.leave_vehicle.desc": "Sortir (en plus de S'accroupir)",
   "key.ywzj_vehicle.inspect_vehicle.desc": "Inspecter le véhicule",
   "key.ywzj_vehicle.open_parachute.desc": "Ouvrir le parachute",
   "key.ywzj_vehicle.change_seat.desc": "Changer de place (avec les chiffres)",

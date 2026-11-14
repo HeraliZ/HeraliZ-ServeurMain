@@ -25,7 +25,7 @@
   "key.ywzj_vehicle.switch_view.desc": "Switch view",
   "key.ywzj_vehicle.free_camera.desc": "Free look",
   "key.ywzj_vehicle.open_inventory.desc": "Vehicle trunk",
-  "key.ywzj_vehicle.leave_vehicle.desc": "Exit vehicle",
+  "key.ywzj_vehicle.leave_vehicle.desc": "Exit (in addition to Sneak)",
   "key.ywzj_vehicle.inspect_vehicle.desc": "Inspect vehicle",
   "key.ywzj_vehicle.open_parachute.desc": "Open parachute",
   "key.ywzj_vehicle.change_seat.desc": "Change seat (number keys)",
