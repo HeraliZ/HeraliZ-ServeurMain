@@ -397,5 +397,15 @@
   "gui.heraliz_armory.cible.recap": "[Target] %s shot(s) in %s s: %s taken (weapon %s, armor −%s %%)",
   "message.heraliz_armory.cible.loin": "Too far from the target.",
   "message.heraliz_armory.cible.pas_a_toi": "Only staff can pick up a training target.",
-  "message.heraliz_armory.cible.staff": "Only staff can place a test target."
+  "message.heraliz_armory.cible.staff": "Only staff can place a test target.",
+  "gui.heraliz_armory.inventaire.titre": "Inventory",
+  "gui.heraliz_armory.inventaire.equipement": "Equipment",
+  "gui.heraliz_armory.inventaire.sac": "Backpack",
+  "gui.heraliz_armory.inventaire.ouvrir": "Open",
+  "gui.heraliz_armory.inventaire.sans_sac": "No backpack",
+  "gui.heraliz_armory.inventaire.effet.soin": "Needs treatment: it won't go away on its own",
+  "gui.heraliz_armory.inventaire.effet.zone": "Zone effect: it stops when you leave the zone",
+  "gui.heraliz_armory.inventaire.effet.loot": "More items in containers",
+  "gui.heraliz_armory.inventaire.effet.encore": "%s left",
+  "gui.heraliz_armory.inventaire.effet.heures": "%s h %s"
 }

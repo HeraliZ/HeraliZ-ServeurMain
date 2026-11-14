@@ -43,6 +43,7 @@ public final class MarcheEcran {
     private static final Set<String> ECRANS = Set.of(
             "top.theillusivec4.curios.client.gui.CuriosScreen",      // inventaire (écran de Curios)
             "top.theillusivec4.curios.client.gui.CuriosScreenV2",
+            "fr.heraliz.armory.client.curios.EcranInventaire",       // inventaire en verre (D1, 14/11)
             "fr.heraliz.loot.client.EcranConteneur",                 // conteneurs de loot T1 à T6, salles à carte
             "fr.heraliz.loot.client.CoffreEcran",                    // coffres T7
             "fr.heraliz.corps.client.CorpsEcran",                    // cadavres

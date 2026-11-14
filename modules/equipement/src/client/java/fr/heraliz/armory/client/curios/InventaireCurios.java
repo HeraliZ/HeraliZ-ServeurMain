@@ -27,6 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import top.theillusivec4.curios.api.client.ICuriosScreen;
 import top.theillusivec4.curios.client.gui.CuriosButton;
+import top.theillusivec4.curios.client.gui.CuriosScreenV2;
 import top.theillusivec4.curios.common.inventory.container.CuriosContainerV2;
 import top.theillusivec4.curios.common.network.NetworkHandler;
 import top.theillusivec4.curios.common.network.client.CPacketOpenCurios;
@@ -51,6 +52,9 @@ import top.theillusivec4.curios.common.network.client.CPacketOpenCurios;
  *     ({@code curios/textures/gui/inventory_revamp.png}).</li>
  *     <li>Classes internes de Curios 5.14.1 (paquet, menu, bouton) : une erreur coupe tout pour la session et rend
  *     l'inventaire de base (journal).</li>
+ *     <li>14/11 (D1 « Verre », validé par le propriétaire) : hors créatif et spectateur, l'écran de Curios est remplacé à
+ *     l'ouverture par {@link EcranInventaire} (même menu) ; le fond, le bouton et le livre ci-dessus ne servent plus qu'à
+ *     l'écran de Curios (créatif, ou inventaire en verre en panne).</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID, value = Dist.CLIENT)
@@ -67,7 +71,7 @@ public final class InventaireCurios {
 
     /** Heure limite de la reponse attendue du serveur (0 : rien demande). */
     private static long attente;
-    private static boolean enPanne, secoursSignale;
+    private static boolean enPanne, secoursSignale, verreEnPanne;
     /** Dernier ecran de Curios initialise : le livre de recettes n'est ferme qu'a son ouverture, pas a chaque init. */
     private static WeakReference<Screen> dernier = new WeakReference<>(null);
 
@@ -77,6 +81,7 @@ public final class InventaireCurios {
         Screen s = e.getNewScreen();
         if (s instanceof ICuriosScreen) {
             attente = 0;
+            if (!e.isCanceled() && s.getClass() == CuriosScreenV2.class) verre(e, (CuriosScreenV2) s);
             return;
         }
         if (e.isCanceled() || enPanne || s == null || s.getClass() != InventoryScreen.class) return;
@@ -108,11 +113,34 @@ public final class InventaireCurios {
         }
     }
 
+    /**
+     * Inventaire D1 « Verre » (validé le 14/11) à la place de l'écran de Curios, hors créatif et spectateur : même menu
+     * (CuriosContainerV2), seul l'écran change ({@link EcranInventaire}). En panne : l'écran de Curios, comme avant.
+     */
+    private static void verre(ScreenEvent.Opening e, CuriosScreenV2 curios) {
+        if (enPanne || verreEnPanne) return;
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer joueur = mc.player;
+        if (joueur == null || mc.gameMode == null || mc.gameMode.hasInfiniteItems() || joueur.isSpectator()) return;
+        try {
+            e.setNewScreen(new EcranInventaire(curios.getMenu(), joueur.getInventory(), curios.getTitle()));
+        } catch (LinkageError | RuntimeException ex) {
+            panneVerre(ex);
+        }
+    }
+
+    /** Inventaire en verre en panne (journal) : l'écran de Curios pour le reste de la session. */
+    static void panneVerre(Throwable t) {
+        if (verreEnPanne) return;
+        verreEnPanne = true;
+        HeralizArmory.LOGGER.error("[armurerie] inventaire en verre en panne : écran de Curios pour cette session", t);
+    }
+
     /** Ecran de Curios (hors creatif) : sans le bouton Curios, livre de recettes ferme a l'ouverture. */
     @SubscribeEvent
     public static void init(ScreenEvent.Init.Post e) {
         Screen s = e.getScreen();
-        if (!(s instanceof ICuriosScreen) || enPanne) return;
+        if (!(s instanceof ICuriosScreen) || s instanceof EcranInventaire || enPanne) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.gameMode == null || mc.gameMode.hasInfiniteItems()) return;
         try {
@@ -140,7 +168,8 @@ public final class InventaireCurios {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void fond(ContainerScreenEvent.Render.Background e) {
         AbstractContainerScreen<?> ecran = e.getContainerScreen();
-        if (enPanne || !(ecran instanceof ICuriosScreen) || !(ecran.getMenu() instanceof CuriosContainerV2 menu)) return;
+        if (enPanne || !(ecran instanceof ICuriosScreen) || ecran instanceof EcranInventaire
+                || !(ecran.getMenu() instanceof CuriosContainerV2 menu)) return;
         try {
             List<Integer> grille = menu.grid;
             int haut = ecran.getYSize() - BAS;

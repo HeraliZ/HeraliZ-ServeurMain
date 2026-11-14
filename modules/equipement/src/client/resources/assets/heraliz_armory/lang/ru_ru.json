@@ -397,5 +397,15 @@
   "gui.heraliz_armory.cible.recap": "[Мишень] выстрелов: %s за %s с: получено %s (оружие %s, броня −%s %%)",
   "message.heraliz_armory.cible.loin": "Слишком далеко от мишени.",
   "message.heraliz_armory.cible.pas_a_toi": "Забрать тренировочную мишень может только персонал.",
-  "message.heraliz_armory.cible.staff": "Ставить тренировочную мишень может только персонал."
+  "message.heraliz_armory.cible.staff": "Ставить тренировочную мишень может только персонал.",
+  "gui.heraliz_armory.inventaire.titre": "Инвентарь",
+  "gui.heraliz_armory.inventaire.equipement": "Снаряжение",
+  "gui.heraliz_armory.inventaire.sac": "Рюкзак",
+  "gui.heraliz_armory.inventaire.ouvrir": "Открыть",
+  "gui.heraliz_armory.inventaire.sans_sac": "Нет рюкзака",
+  "gui.heraliz_armory.inventaire.effet.soin": "Нужно лечить: само не пройдёт",
+  "gui.heraliz_armory.inventaire.effet.zone": "Эффект зоны: прекратится, когда выйдешь из неё",
+  "gui.heraliz_armory.inventaire.effet.loot": "Больше предметов в контейнерах",
+  "gui.heraliz_armory.inventaire.effet.encore": "Ещё %s",
+  "gui.heraliz_armory.inventaire.effet.heures": "%s ч %s"
 }

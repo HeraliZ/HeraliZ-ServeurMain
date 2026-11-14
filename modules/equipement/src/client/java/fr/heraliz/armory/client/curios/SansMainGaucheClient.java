@@ -101,9 +101,12 @@ public final class SansMainGaucheClient {
         }
     }
 
-    /** L'inventaire du joueur : ecran de Curios ou inventaire de base (pas le createur). */
+    /**
+     * L'inventaire du joueur : ecran de Curios ou inventaire de base (pas le createur). L'inventaire en verre (14/11) cache
+     * lui-meme la main gauche (et n'a pas le cadre de la texture a recouvrir).
+     */
     private static boolean inventaire(AbstractContainerScreen<?> ecran) {
-        return ecran instanceof ICuriosScreen || ecran.getClass() == InventoryScreen.class;
+        return (ecran instanceof ICuriosScreen && !(ecran instanceof EcranInventaire)) || ecran.getClass() == InventoryScreen.class;
     }
 
     /** Remplace la case de la main gauche du menu par une case cachee ; rend cette case (null si le menu n'en a pas). */

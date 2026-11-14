@@ -397,5 +397,15 @@
   "gui.heraliz_armory.cible.recap": "[Cible] %s tir(s) en %s s : %s reçus (arme %s, armure −%s %%)",
   "message.heraliz_armory.cible.loin": "Trop loin de la cible.",
   "message.heraliz_armory.cible.pas_a_toi": "Seul le staff peut ramasser une cible d'essai.",
-  "message.heraliz_armory.cible.staff": "Seul le staff peut poser une cible d'essai."
+  "message.heraliz_armory.cible.staff": "Seul le staff peut poser une cible d'essai.",
+  "gui.heraliz_armory.inventaire.titre": "Inventaire",
+  "gui.heraliz_armory.inventaire.equipement": "Équipement",
+  "gui.heraliz_armory.inventaire.sac": "Sac à dos",
+  "gui.heraliz_armory.inventaire.ouvrir": "Ouvrir",
+  "gui.heraliz_armory.inventaire.sans_sac": "Aucun sac à dos",
+  "gui.heraliz_armory.inventaire.effet.soin": "À soigner : ne part pas tout seul",
+  "gui.heraliz_armory.inventaire.effet.zone": "Effet de zone : il s'arrête quand tu en sors",
+  "gui.heraliz_armory.inventaire.effet.loot": "Plus d'objets dans les conteneurs",
+  "gui.heraliz_armory.inventaire.effet.encore": "Encore %s",
+  "gui.heraliz_armory.inventaire.effet.heures": "%s h %s"
 }
