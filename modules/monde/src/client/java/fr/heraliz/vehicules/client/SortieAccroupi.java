@@ -25,7 +25,8 @@ import org.ywzj.vehicle.network.message.ClientVehicleAction;
  *   (place et conduite libérées, endroit de sortie du moteur, vérifié par le serveur : {@code SortieSure}), puis
  *   Minecraft replace le joueur chez lui. Le jeu ne fait rien descendre lui-même : le serveur et le joueur sont toujours
  *   d'accord. Une demande à l'appui, puis une toutes les {@value #RELANCE} ticks si la touche reste enfoncée et que le
- *   joueur est encore à bord (réponse du serveur en retard).</li>
+ *   joueur est encore à bord (réponse du serveur en retard, ou refus : véhicule trop rapide, {@code SortieVitesse} ; le
+ *   joueur sort alors dès que le véhicule est assez lent).</li>
  *   <li>En montant dans un véhicule : rappel « [touche] : sortir du véhicule » dans la barre d'action (le moteur y efface
  *   le message de Minecraft « Appuyez sur Maj gauche pour descendre »).</li>
  * </ul>

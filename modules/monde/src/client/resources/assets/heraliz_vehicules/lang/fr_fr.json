@@ -5,5 +5,6 @@
   "heraliz_vehicules.cmd.liste": "Véhicules de HeraliZ (essence : jerrican, clic droit sur le véhicule) :",
   "heraliz_vehicules.cmd.inconnu": "Véhicule inconnu : %s (buggy, moto, camion, fourgon).",
   "heraliz_vehicules.cmd.donne": "%s donné à %s joueur(s).",
-  "heraliz_vehicules.sortie.aide": "%s : sortir du véhicule"
+  "heraliz_vehicules.sortie.aide": "%s : sortir du véhicule",
+  "heraliz_vehicules.sortie.trop_vite": "Trop vite pour sortir : ralentis sous %s km/h"
 }

@@ -32,4 +32,9 @@
 	#l'avant ; sans aucune place libre, sur le vehicule. Jamais de l'autre cote d'un mur. false : endroit du moteur
 	#tel quel.
 	sortie_sure = true
+	#Sortie volontaire d'un vehicule (touche S'accroupir, touche du moteur) refusee au-dessus de cette vitesse au
+	#sol, en km/h (conducteur et passagers ; message au joueur). Jamais pour une sortie forcee par le serveur (mise a
+	#terre, mort, teleportation, vehicule detruit, deconnexion). 0 : pas de limite. Vitesse max des vehicules : 58 km/h.
+	#Range: 0 ~ 1000
+	sortie_vitesse_max_kmh = 15
 

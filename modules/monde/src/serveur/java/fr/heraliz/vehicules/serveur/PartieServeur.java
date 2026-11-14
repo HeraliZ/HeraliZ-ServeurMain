@@ -10,8 +10,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * blocs, essence obligatoire), objets du moteur retirés effacés, commandes /vehicules, coffre retiré et PV divisés
  * (SuiviVehicules ; ouverture du coffre refusée par le mixin serveur VehiculeSansCoffreMixin), passagers qui prennent les
  * dégâts comme à pied (Passagers, 11/11 ; balles à travers la carrosserie : mixin serveur TaczPassagersMixin), sortie
- * jamais dans un bloc ni de l'autre côté d'un mur (SortieSure, 14/11 : mixin serveur VehiculeSortieMixin, sans écouteur).
- * Écouteurs dans l'ordre d'origine.
+ * jamais dans un bloc ni de l'autre côté d'un mur (SortieSure, 14/11 : mixin serveur VehiculeSortieMixin, sans écouteur),
+ * sortie volontaire refusée au-dessus de 15 km/h (SortieVitesse, 14/11 : même mixin). Écouteurs dans l'ordre d'origine.
  */
 public final class PartieServeur implements Partie {
     @Override

@@ -6,9 +6,10 @@ import java.util.List;
 
 /**
  * Réglages serveur ({@code serverconfig/heraliz_vehicules-server.toml} du monde). {@code coffre_retire},
- * {@code pv_pourcent}, {@code passagers_proteges}, {@code balles_traversent} et {@code sortie_sure} sont appliqués par la
- * partie serveur ({@code CoffreRetire}, {@code PointsDeVie}, {@code Passagers}, {@code SortieSure}) ; la section
- * {@code physique} par {@code Stabilite} (mixins serveur sur le moteur de Limitless Vehicle).
+ * {@code pv_pourcent}, {@code passagers_proteges}, {@code balles_traversent}, {@code sortie_sure} et
+ * {@code sortie_vitesse_max_kmh} sont appliqués par la partie serveur ({@code CoffreRetire}, {@code PointsDeVie},
+ * {@code Passagers}, {@code SortieSure}, {@code SortieVitesse}) ; la section {@code physique} par {@code Stabilite}
+ * (mixins serveur sur le moteur de Limitless Vehicle).
  */
 public final class VehiculesConfig {
     public static final ForgeConfigSpec SPEC;
@@ -21,6 +22,7 @@ public final class VehiculesConfig {
     public static final ForgeConfigSpec.BooleanValue PASSAGERS_PROTEGES;
     public static final ForgeConfigSpec.BooleanValue BALLES_TRAVERSENT;
     public static final ForgeConfigSpec.BooleanValue SORTIE_SURE;
+    public static final ForgeConfigSpec.IntValue SORTIE_VITESSE_MAX_KMH;
     public static final ForgeConfigSpec.BooleanValue PHYSIQUE_STABLE;
     public static final ForgeConfigSpec.DoubleValue INERTIE;
     public static final ForgeConfigSpec.DoubleValue BASCULE_MAX;
@@ -66,6 +68,10 @@ public final class VehiculesConfig {
                         "l'avant ; sans aucune place libre, sur le vehicule. Jamais de l'autre cote d'un mur. false : endroit du moteur",
                         "tel quel.")
                 .define("sortie_sure", true);
+        SORTIE_VITESSE_MAX_KMH = b.comment("Sortie volontaire d'un vehicule (touche S'accroupir, touche du moteur) refusee au-dessus de cette vitesse au",
+                        "sol, en km/h (conducteur et passagers ; message au joueur). Jamais pour une sortie forcee par le serveur (mise a",
+                        "terre, mort, teleportation, vehicule detruit, deconnexion). 0 : pas de limite. Vitesse max des vehicules : 58 km/h.")
+                .defineInRange("sortie_vitesse_max_kmh", 15, 0, 1000);
         b.pop();
         b.push("physique");
         PHYSIQUE_STABLE = b.comment("Vehicules a roues plus stables et plus maniables (moteur de Limitless Vehicle corrige par HeraliZ Utils).",
