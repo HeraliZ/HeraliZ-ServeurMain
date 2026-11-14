@@ -24,3 +24,11 @@ description='''Loot de HeraliZ : conteneurs de loot par tiers (T1 commun à T7 u
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+# Noyau HeraliZ : kit des écrans en verre (fouille et coffres de base, 14/11) ; chargé avant nous.
+[[dependencies.heraliz_loot]]
+    modId="heraliz_noyau"
+    mandatory=true
+    versionRange="[1.0.19,)"
+    ordering="AFTER"
+    side="CLIENT"

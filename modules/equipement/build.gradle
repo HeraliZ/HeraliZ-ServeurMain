@@ -10,6 +10,7 @@ apply from: rootProject.file('gradle/module-coupe.gradle')
 dependencies {
     compileOnly fg.deobf("blank:curios-forge:5.14.1")
     compileOnly fg.deobf("blank:tacz-1.20.1:1.1.8-hotfix")
-    // kit des écrans en verre et effets du noyau (inventaire D1, 14/11)
+    // kit des écrans en verre et effets du noyau (inventaire D1, 14/11) ; écran du sac à dos (HeraliZ Backpack)
     compileOnly project(path: ':noyau', configuration: 'devComplet')
+    compileOnly project(path: ':sacs', configuration: 'devComplet')
 }

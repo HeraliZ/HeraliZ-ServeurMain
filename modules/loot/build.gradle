@@ -5,3 +5,8 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/module-coupe.gradle')
+
+dependencies {
+    // kit des écrans en verre du noyau (fouille et coffres de base en verre, 14/11)
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
+}

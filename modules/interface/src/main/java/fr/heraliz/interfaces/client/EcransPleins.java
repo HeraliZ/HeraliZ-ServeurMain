@@ -21,8 +21,8 @@ import java.util.Set;
  * Une seule règle pour tous les écrans plein écran des mods HeraliZ (25/10, audit des écrans en jeu : « que toutes les
  * interfaces aient la même charte, comme celles du clan ») : derrière eux, comme derrière les écrans du clan, ni HUD
  * (panneau de zone, Purge, suivi de quête, cœurs, barre d'objets) ni main ou arme du joueur ; ils passaient par-dessus les
- * titres. Gardent le HUD : le chat, et les écrans à cases qui ne sont pas dans {@link #PANNEAUX} (depuis le 14/11,
- * l'inventaire est en verre et le cache).
+ * titres. Gardent le HUD : le chat, et les écrans à cases qui ne sont pas dans {@link #PANNEAUX} (depuis le 14/11, inventaire,
+ * sac, fouille et coffres sont en verre et le cachent).
  * Les écrans qui ne dessinaient aucun fond reçoivent celui des écrans du clan ({@link #FOND}). Mort : plus de main ni
  * d'arme à l'écran (l'arme du mod tactique se dessinait avant le masquage de l'écran de mort).
  */
@@ -37,9 +37,9 @@ public final class EcransPleins {
     private static final Set<String> FOND = Set.of("EcranWarps", "EcranKits", "EmoteBrowserScreen", "ExecutionScreen");
     /**
      * Écrans à cases de nos mods qui sont des panneaux pleins (charte du clan, pas le style DayZ) : HUD caché aussi. 14/11 :
-     * l'inventaire passe en verre (choix du propriétaire) : HUD caché derrière.
+     * l'inventaire, le sac à dos, la fouille et les coffres passent en verre (choix du propriétaire) : HUD caché derrière.
      */
-    private static final Set<String> PANNEAUX = Set.of("EcranRecycleur", "EcranInventaire");
+    private static final Set<String> PANNEAUX = Set.of("EcranRecycleur", "EcranInventaire", "EcranSac", "EcranConteneur", "CoffreScreen");
 
     /**
      * Écran de modification d'arme de TaCZ et ses sous-classes (l'atelier d'arme du mod tactique) : TaCZ y dessine l'arme

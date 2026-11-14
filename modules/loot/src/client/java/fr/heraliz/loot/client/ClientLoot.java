@@ -105,7 +105,7 @@ public final class ClientLoot {
          */
         @SubscribeEvent
         public static void titreConteneur(ScreenEvent.Opening e) {
-            if (e.getNewScreen() == null || e.getNewScreen().getClass() != ContainerScreen.class) return;
+            if (EcranConteneur.enPanne || e.getNewScreen() == null || e.getNewScreen().getClass() != ContainerScreen.class) return;
             ContainerScreen s = (ContainerScreen) e.getNewScreen();
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) return;
