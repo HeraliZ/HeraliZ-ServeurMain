@@ -248,6 +248,12 @@ final class Recyclage {
      * tout objet à durabilité : durabilité restante ; le reste : 1.
      */
     static final float USURE_ZERO = 15f, USURE_COURBE = 1.5f;
+    /**
+     * Hérals « rien » d'un objet abîmé (15/11, audit n° 5) : x état, jamais moins de ce pourcentage, comme le rachat des
+     * armes chez Mila ({@link Marchands#selonEtat}, « selon_etat_min » = 10). Avant : pleins quel que soit l'état, une arme
+     * ruinée rapportait plus au recycleur (63 ou 125 hérals à coup sûr) qu'à Mila.
+     */
+    static final int ETAT_MIN_HERALS = 10;
 
     static int etatPct(ItemStack s) {
         if (Ponts.gunId(s) != null) return Ponts.usure(s);
@@ -272,9 +278,10 @@ final class Recyclage {
     static Verdict verdict(ItemStack s, Map<String, Long> ventes, Map<String, Long> valeurs, boolean carte) {
         Etat e = etat;
         int rang = Math.max(0, Ponts.rarete(s));
-        long herals = e.herals(rang);
         int u = etatPct(s);
         float f = facteurUsure(u);
+        // hérals « rien » selon l'état (15/11) : aperçu et paiement (tirer) les lisent tous les deux ici
+        long herals = Marchands.selonEtat(e.herals(rang), u, ETAT_MIN_HERALS);
         if (Contenu.de(s) != Contenu.RIEN) return new Verdict(CONTENU, rang, 1, List.of(), herals, f, u);
         if (Echanges.interdit(s)) return new Verdict(PROTEGE, rang, 1, List.of(), herals, f, u);
         Regle r = regle(s);
