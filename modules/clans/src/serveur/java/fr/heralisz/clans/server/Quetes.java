@@ -470,7 +470,7 @@ public final class Quetes {
         ClanService.diffuserChat(c, Component.translatable("msg.quete_finie", q.titreFr, q.xp, argent));
         ClanService.diffuser(c, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.QUETE_FINIE, List.of(q.titreFr), "quete_finie", null));
         ClanStore store = ClanStore.get();
-        if (store != null && q.argent > 0) store.sauvegarderMaintenant();
+        if (store != null && q.argent > 0) store.sauvegarderClanMaintenant(c);   // 15/11 (audit B2) : ce clan seul, par le journal
         HeraliszClans.LOG.info("[clans] [{}] quete « {} » terminee (+{} XP, +{})", c.tag, q.id, q.xp, q.argent);
     }
 }

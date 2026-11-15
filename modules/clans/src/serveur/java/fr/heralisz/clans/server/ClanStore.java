@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +44,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * sauvegarde toutes les 60 s si quelque chose a change, a l'arret (ServerStopping puis ServerStopped), et a la demande
  * (apres toute operation d'argent). Depuis le 27/10, la mise en texte et l'ecriture se font sur le fil d'ecriture des
  * clans ({@link EcrituresFond}) ; la sauvegarde a la demande et celle de l'arret attendent qu'elles soient finies.
+ * <p>15/11 (audit B2, performances n° 3) : une operation d'argent ou d'XP sur un seul clan (banque, credit ou debit par
+ * l'API, quete payee, don, arbre) ne fait plus relever et reecrire tous les clans et tous les joueurs en attendant le
+ * disque : l'etat de CE clan est ajoute tout de suite a la fin d'un petit journal d'ecriture
+ * ({@code clans.json.wal.<n>}, une ligne, {@link #sauvegarderClanMaintenant}) et clans.json entier suit avec la
+ * sauvegarde de la minute, en fond ; un morceau du journal est efface des que le clans.json qui le contient est ecrit.
+ * Au demarrage, les lignes plus recentes que clans.json (numero {@code mutation}) sont rejouees : rien n'est perdu par un
+ * arret brutal. Meme methode que les herals (ComptesStore, 02/11).
  * Index par id, tag et nom (insensibles a la casse) et par joueur. Toujours utilise depuis le thread serveur.
  */
 public final class ClanStore {
@@ -63,6 +71,14 @@ public final class ClanStore {
     private static final int DONS_UID_MAX = 50_000;
     private boolean dirtyClans, dirtyJoueurs;
     private int ticks;
+    /**
+     * Journal d'ecriture (15/11) : numero du dernier changement mis au journal (repris de clans.json et du journal au
+     * demarrage) et morceau courant ({@code clans.json.wal.<n>}, un nouveau a chaque releve complet de clans.json).
+     */
+    private long mutation;
+    private long morceau = 1;
+    private static final Gson GSON_LIGNE = new GsonBuilder().disableHtmlEscaping().create();
+    private static final String WAL = ".wal.";
 
     private ClanStore(Path dossier) {
         this.dossier = dossier;
@@ -309,11 +325,16 @@ public final class ClanStore {
         liens.clear();
         donsUid.clear();
         lectureIncomplete = false;
+        mutation = 0;
+        morceau = 1;
+        // dernier changement du journal d'ecriture contenu dans clans.json (15/11 ; 0 : fichier d'avant, absent ou illisible)
+        long couvert = 0;
         // les deux fichiers sont lus a part, entree par entree : une entree abimee ne fait plus perdre les autres
         if (Files.exists(fClans())) {
             int ignores = 0;
             try {
                 JsonObject root = JsonParser.parseString(Files.readString(fClans(), StandardCharsets.UTF_8)).getAsJsonObject();
+                couvert = Math.max(0, fr.heralisz.clans.model.Json.lng(root, "mutation", 0));
                 for (JsonElement e : root.getAsJsonArray("clans")) {
                     if (!e.isJsonObject()) continue;
                     Clan c;
@@ -344,6 +365,7 @@ public final class ClanStore {
             }
             if (ignores > 0) mettreDeCote(fClans(), ignores + " clan(s) illisible(s) ignores");
         }
+        rejouerJournal(couvert);
         if (Files.exists(fJoueurs())) {
             int ignores = 0;
             try {
@@ -376,6 +398,135 @@ public final class ClanStore {
         }
     }
 
+    // ------------------------------------------------------------------ journal d'ecriture (15/11, audit B2)
+    private Path morceau(long n) {
+        return dossier.resolve("clans.json" + WAL + n);
+    }
+
+    /** Numero d'un morceau du journal d'ecriture (clans.json.wal.<n>), 0 pour tout autre fichier. */
+    private static long numeroMorceau(Path p) {
+        String n = p.getFileName().toString(), prefixe = "clans.json" + WAL;
+        if (!n.startsWith(prefixe)) return 0;
+        try {
+            return Long.parseLong(n.substring(prefixe.length()));
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    /** Morceaux du journal d'ecriture presents dans le dossier, dans l'ordre (fil serveur ou fil d'ecriture). */
+    private List<Path> morceaux() {
+        List<Path> l = new ArrayList<>();
+        if (!Files.isDirectory(dossier)) return l;
+        try (java.util.stream.Stream<Path> s = Files.list(dossier)) {
+            s.filter(p -> numeroMorceau(p) > 0).forEach(l::add);
+        } catch (IOException | RuntimeException ex) {
+            HeraliszClans.LOG.warn("[clans] liste du journal d'ecriture impossible : {}", ex.toString());
+        }
+        l.sort(java.util.Comparator.comparingLong(ClanStore::numeroMorceau));
+        return l;
+    }
+
+    /**
+     * Demarrage : les etats de clans du journal d'ecriture plus recents que clans.json ({@code couvert}) sont rejoues dans
+     * l'ordre ; une ligne coupee (arret brutal pendant son ecriture) arrete la lecture de son morceau. Un morceau illisible
+     * est mis de cote comme un fichier des clans illisible (rien n'est efface tant que ce n'est pas regle).
+     */
+    private void rejouerJournal(long couvert) {
+        long dernier = couvert, dernierMorceau = 0;
+        int rejoues = 0;
+        for (Path m : morceaux()) {
+            dernierMorceau = Math.max(dernierMorceau, numeroMorceau(m));
+            List<String> lignes;
+            try {
+                lignes = Files.readAllLines(m, StandardCharsets.UTF_8);
+            } catch (IOException | RuntimeException ex) {
+                HeraliszClans.LOG.error("[clans] lecture du journal d'ecriture {} impossible", m, ex);
+                mettreDeCote(m, "journal d'ecriture illisible");
+                continue;
+            }
+            for (String l : lignes) {
+                if (l.isBlank()) continue;
+                JsonObject o;
+                long q;
+                try {
+                    o = JsonParser.parseString(l).getAsJsonObject();
+                    q = fr.heralisz.clans.model.Json.lng(o, "m", 0);
+                } catch (RuntimeException ex) {
+                    HeraliszClans.LOG.warn("[clans] {} : ligne illisible ignoree, ainsi que la suite du morceau (arret brutal ?)", m.getFileName());
+                    break;
+                }
+                dernier = Math.max(dernier, q);
+                if (q <= couvert) continue;
+                Clan c = null;
+                try {
+                    if (o.has("c") && o.get("c").isJsonObject()) c = Clan.fromJson(o.getAsJsonObject("c"));
+                } catch (RuntimeException ex) {
+                    HeraliszClans.LOG.error("[clans] {} : etat de clan illisible ignore", m.getFileName(), ex);
+                }
+                if (c != null) {
+                    Clan avant = clans.get(c.id);
+                    if (avant != null) desindexer(avant);
+                    clans.put(c.id, c);
+                    indexer(c);
+                    rejoues++;
+                }
+                long don = fr.heralisz.clans.model.Json.lng(o, "don", 0);
+                if (don != 0) donsUid.add(don);
+            }
+        }
+        mutation = dernier;
+        morceau = dernierMorceau + 1;
+        if (rejoues > 0) {
+            dirtyClans = true;
+            HeraliszClans.LOG.info("[clans] journal d'ecriture : {} etat(s) de clan rejoue(s) apres clans.json", rejoues);
+        }
+    }
+
+    /** Fil d'ecriture, apres un clans.json ecrit : les morceaux du journal qu'il contient (numeros jusqu'a {@code ferme}). */
+    private void effacerJournal(long ferme) {
+        for (Path m : morceaux()) {
+            if (numeroMorceau(m) > ferme) continue;
+            try {
+                Files.deleteIfExists(m);
+            } catch (IOException ex) {
+                HeraliszClans.LOG.warn("[clans] morceau du journal d'ecriture {} impossible a effacer : {}", m.getFileName(), ex.toString());
+            }
+        }
+    }
+
+    /**
+     * 15/11 (audit B2, performances n° 3) : operation d'argent ou d'XP sur un seul clan (banque, credit ou debit par l'API,
+     * quete payee, don, arbre) : l'etat de ce clan est ajoute tout de suite a la fin du journal d'ecriture (une ligne, fil
+     * serveur) ; clans.json entier suit avec la sauvegarde de la minute, en fond. Meme garantie qu'avant : au retour, le
+     * clan est sur le disque (l'ordre « cote debite d'abord » des operations d'argent tient), sans relever tous les clans
+     * et tous les joueurs ni attendre leur ecriture. Journal impossible a ecrire : sauvegarde complete attendue, comme
+     * avant.
+     */
+    public void sauvegarderClanMaintenant(Clan c) {
+        sauvegarderClanMaintenant(c, 0L);
+    }
+
+    /** Meme chose ; {@code donUid} (non nul) : numero anti-copie de l'objet donne au clan (/clan don), garde avec lui. */
+    public void sauvegarderClanMaintenant(Clan c, long donUid) {
+        dirtyClans = true;
+        if (c == null) return;
+        JsonObject l = new JsonObject();
+        l.addProperty("m", mutation + 1);
+        l.add("c", c.toJson());
+        if (donUid != 0) l.addProperty("don", donUid);
+        Path f = morceau(morceau);
+        try {
+            Files.createDirectories(dossier);
+            Files.writeString(f, GSON_LIGNE.toJson(l) + "\n", StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException | RuntimeException ex) {
+            HeraliszClans.LOG.error("[clans] journal d'ecriture {} impossible : sauvegarde complete a la place", f, ex);
+            sauvegarderClansMaintenant();
+            return;
+        }
+        mutation++;
+    }
+
     /** Une écriture en fond a échoué : le fichier redevient « à sauver » à la sauvegarde suivante. */
     private final AtomicBoolean echecClans = new AtomicBoolean(), echecJoueurs = new AtomicBoolean();
 
@@ -389,6 +540,8 @@ public final class ClanStore {
         if (force || dirtyClans) {
             JsonObject root = new JsonObject();
             root.addProperty("version", 1);
+            // 15/11 : dernier changement du journal d'ecriture contenu dans ce releve (les lignes suivantes seront rejouees)
+            root.addProperty("mutation", mutation);
             JsonArray a = new JsonArray();
             for (Clan c : clans.values()) a.add(c.toJson());
             root.add("clans", a);
@@ -397,7 +550,14 @@ public final class ClanStore {
             root.add("donsUid", dons);
             Path f = fClans();
             dirtyClans = false;
-            EcrituresFond.ecrire(f, () -> ecrireAtomique(f, root), () -> echecClans.set(true));
+            // le morceau courant du journal est ferme : les lignes suivantes vont dans le suivant ; ceux jusqu'a lui sont
+            // effaces une fois ce releve ecrit (jamais apres une lecture incomplete : ils peuvent servir a reparer)
+            long ferme = morceau++;
+            boolean effacer = !lectureIncomplete;
+            EcrituresFond.ecrire(f, () -> {
+                ecrireAtomique(f, root);
+                if (effacer) effacerJournal(ferme);
+            }, () -> echecClans.set(true));
         }
         if (force || dirtyJoueurs) {
             JsonObject root = new JsonObject();
