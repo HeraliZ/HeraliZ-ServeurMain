@@ -836,6 +836,7 @@
   "msg.saison.fin_programmee": "Season %s will end on %s (Paris time).",
   "msg.saison.info_sans_fin": "Season %s · no end date",
   "msg.saison.creatif": "Creative or spectator mode: no season points for your clan (switch to survival to try).",
+  "msg.saison.pause": "Warning: heralisz_clans/saison_etat.json could not be read at startup: the season is paused (no points counted, nothing is written). The original is kept next to it (%s): fix it, put it back, then /recharger saison.",
   "gui.saison.l.largage": "Military airdrop (first to open it)",
   "gui.saison.c.largage_plafond": "%s times per clan per day at most",
   "gui.saison.c.largage": "to the clan of the first one to open it",

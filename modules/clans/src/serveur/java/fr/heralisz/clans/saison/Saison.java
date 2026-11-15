@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -81,6 +82,13 @@ public final class Saison {
     /** Classement en cache (refait au plus une fois par seconde quand un score change). */
     private static List<Ligne> cache = List.of();
     private static boolean cacheSale = true;
+    /**
+     * 15/11 (audit M1) : saison_etat.json existait mais n'a pas pu etre lu au demarrage : nom de la copie gardee a cote ;
+     * null en temps normal. Tant que c'est le cas, la saison est en pause : aucun point n'est compte, rien n'est ecrit (ni
+     * l'etat, ni une nouvelle saison 1), les operateurs le lisent a la connexion ; /recharger saison relit le fichier repare.
+     */
+    @Nullable
+    private static String maintenance;
 
     /** Une ligne du classement : points par categorie, places (1 = premier) et place au general. */
     public record Ligne(UUID clan, String tag, String nom, double pve, double pvp, double events, int rPve, int rPvp, int rEvents,
@@ -95,12 +103,60 @@ public final class Saison {
     public static void onStart(ServerAboutToStartEvent e) {
         dossier = e.getServer().getServerDirectory().toPath().resolve("heralisz_clans");
         recharger();
-        d = SaisonDonnees.charger(dossier.resolve("saison_etat.json"));
+        maintenance = null;
+        etatLu(SaisonDonnees.charger(dossier.resolve("saison_etat.json"), true), "premier demarrage");
+    }
+
+    /**
+     * Etat de la saison lu ({@code motif} : celui d'une premiere saison lancee toute seule). 15/11 (audit M1) : un fichier
+     * illisible ne lance plus une nouvelle saison vide en silence (avant : « saison 1 », tous les clans a 0, fichier
+     * reecrit) : la saison est mise en pause ({@link #maintenance}).
+     */
+    private static void etatLu(SaisonDonnees lu, String motif) {
+        d = lu;
         cacheSale = true;
+        if (lu.illisible != null) {
+            maintenance = lu.illisible;
+            HeraliszClans.LOG.error("[saison] heralisz_clans/saison_etat.json illisible : saison EN PAUSE (aucun point compte, rien n'est"
+                    + " ecrit) ; original garde a cote ({}). Reparez-le, remettez-le a la place, puis /recharger saison.", maintenance);
+            return;
+        }
+        maintenance = null;
         // jamais aucune saison : la premiere commence toute seule (les points comptent des l'ouverture)
-        if (d.numero == 0 && !d.active) nouvelle("premier demarrage");
+        if (d.numero == 0 && !d.active) nouvelle(motif);
         HeraliszClans.LOG.info("[saison] saison {} {}", d.numero, !d.active ? "terminee (/saison reset pour en lancer une neuve)"
                 : d.fin > 0 ? "en cours jusqu'au " + HEURE.format(Instant.ofEpochMilli(d.fin)) : "en cours, sans date de fin");
+    }
+
+    /** Copie gardee du fichier de la saison illisible au demarrage (saison en pause), ou null. */
+    @Nullable
+    public static String maintenance() {
+        return maintenance;
+    }
+
+    /**
+     * {@code /recharger saison} : saison en pause (fichier illisible au demarrage), relit saison_etat.json repare. Rend ce
+     * qu'il faut dire au staff, ou null hors pause.
+     */
+    @Nullable
+    public static String relireEtat() {
+        if (maintenance == null || dossier == null) return null;
+        SaisonDonnees lu = SaisonDonnees.charger(dossier.resolve("saison_etat.json"), false);
+        if (lu.illisible != null) {
+            return "saison_etat.json toujours illisible : la saison reste en pause (journal du serveur).";
+        }
+        etatLu(lu, "fichier de la saison absent apres la pause");
+        return "saison_etat.json relu : saison " + d.numero + (d.active ? " en cours." : " terminee.");
+    }
+
+    /** 15/11 (audit M1) : saison en pause, l'operateur qui arrive le sait (comme les clans lus en partie). */
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent e) {
+        if (maintenance != null && e.getEntity() instanceof ServerPlayer p && p.hasPermissions(2)) {
+            p.sendSystemMessage(Component.translatableWithFallback("msg.saison.pause",
+                    "Attention : heralisz_clans/saison_etat.json n'a pas pu être lu au démarrage : la saison est en pause (aucun point compté, rien n'est écrit). L'original est gardé à côté (%s) : réparez-le, remettez-le à la place, puis /recharger saison.",
+                    maintenance).withStyle(ChatFormatting.RED));
+        }
     }
 
     @SubscribeEvent
@@ -123,7 +179,8 @@ public final class Saison {
     private static final java.util.concurrent.atomic.AtomicBoolean ECHEC = new java.util.concurrent.atomic.AtomicBoolean();
 
     static void sauvegarder() {
-        if (dossier == null) return;
+        // 15/11 (audit M1) : saison en pause (fichier illisible) : l'original n'est jamais remplace
+        if (dossier == null || maintenance != null) return;
         d.sauvegarder(dossier.resolve("saison_etat.json"), () -> ECHEC.set(true));
         sale = false;
     }
@@ -639,7 +696,9 @@ public final class Saison {
      * est figee et archivee ; {@link #reset} en relance une neuve.
      */
     private static void nouvelle(String motif) {
-        int numero = d.numero + 1;
+        // 15/11 (audit M1) : jamais un numero deja archive (fichier de la saison perdu : la suite des archives)
+        int numero = Math.max(d.numero, dernierArchive()) + 1;
+        maintenance = null;
         d = new SaisonDonnees();
         d.numero = numero;
         d.debut = System.currentTimeMillis();
@@ -703,13 +762,44 @@ public final class Saison {
             lignes.add(o);
         }
         a.add("classement", lignes);
-        if (dossier != null) SaisonDonnees.ecrire(dossier.resolve("saisons").resolve("saison_" + d.numero + ".json"), a);
+        if (dossier != null) SaisonDonnees.ecrire(archive(d.numero), a);
         changer();
         sauvegarder();
         journal("--- fin de la saison " + d.numero + " (" + motif + ")");
         annoncer(Component.translatableWithFallback("msg.saison.fin", "La saison %s est terminee ! Classement : /saison classement", d.numero)
                 .withStyle(ChatFormatting.GOLD));
         HeraliszClans.LOG.info("[saison] saison {} terminee ({}), archive dans saisons/saison_{}.json", d.numero, motif, d.numero);
+    }
+
+    /** Archives des saisons : saison_N.json, ou saison_N-2.json… (15/11, audit M1 : une archive n'est jamais ecrasee). */
+    private static final java.util.regex.Pattern ARCHIVE = java.util.regex.Pattern.compile("saison_(\\d{1,9})(-\\d+)?\\.json");
+
+    /** Fichier d'archive de la saison {@code n} : saison_n.json, ou saison_n-2.json, -3… s'il existe deja. */
+    private static Path archive(int n) {
+        Path dir = dossier.resolve("saisons");
+        Path f = dir.resolve("saison_" + n + ".json");
+        for (int i = 2; Files.exists(f) && i < 1000; i++) f = dir.resolve("saison_" + n + "-" + i + ".json");
+        if (!f.getFileName().toString().equals("saison_" + n + ".json")) {
+            HeraliszClans.LOG.warn("[saison] saisons/saison_{}.json existe deja : archive ecrite dans {} (rien n'est ecrase)", n, f.getFileName());
+        }
+        return f;
+    }
+
+    /** Plus grand numero de saison archive dans heralisz_clans/saisons (0 : aucun). */
+    private static int dernierArchive() {
+        if (dossier == null) return 0;
+        Path dir = dossier.resolve("saisons");
+        if (!Files.isDirectory(dir)) return 0;
+        int max = 0;
+        try (java.util.stream.Stream<Path> l = Files.list(dir)) {
+            for (java.util.Iterator<Path> it = l.iterator(); it.hasNext(); ) {
+                java.util.regex.Matcher m = ARCHIVE.matcher(it.next().getFileName().toString());
+                if (m.matches()) max = Math.max(max, Integer.parseInt(m.group(1)));
+            }
+        } catch (IOException | RuntimeException e) {
+            HeraliszClans.LOG.warn("[saison] liste des archives impossible : {}", e.toString());
+        }
+        return max;
     }
 
     /**

@@ -394,7 +394,11 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 **HeraliZ Clans 3.6.0** (`modules/clans`, `fr.heralisz.clans.saison`) :
 - barème : `serveur/config/heralisz_clans/saison.json` (fichier du dépôt qui fait foi, relu par `/saison recharger`) ;
   état hors du monde : `heralisz_clans/saison_etat.json`, journal de chaque point `heralisz_clans/saison_journal.log`,
-  archives `heralisz_clans/saisons/saison_N.json` (classement et membres de chaque clan) ;
+  archives `heralisz_clans/saisons/saison_N.json` (classement et membres de chaque clan) ; 15/11 (audit M1) : un état
+  illisible au démarrage met la saison **en pause** (aucun point compté, rien n'est écrit, original copié à côté en
+  `.illisible-…`, opérateurs prévenus à la connexion et par `/saison`) jusqu'à `/recharger saison` après réparation
+  (avant : une « saison 1 » vide démarrait en silence) ; une archive n'est jamais écrasée (`saison_N-2.json`…) et une
+  nouvelle saison prend le numéro qui suit la dernière archive ;
 - `/saison`, `/saison classement [general|pve|pvp|events]` ; staff (permission 4) : `/saison commencer <jours>`,
   `/saison terminer confirmer`, `/saison points <tag> <pve|pvp|events> <±n> <motif>`, `/saison journal <tag>` ;
 - PVP (kill/mort hors match, hors spawn et monde du tutoriel ; même IP ; victime sans arme ni armure d'au moins Peu

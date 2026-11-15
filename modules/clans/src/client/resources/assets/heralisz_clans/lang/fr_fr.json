@@ -836,6 +836,7 @@
   "msg.saison.fin_programmee": "La saison %s se terminera le %s (heure de Paris).",
   "msg.saison.info_sans_fin": "Saison %s · pas de date de fin",
   "msg.saison.creatif": "Mode créatif ou spectateur : aucun point de saison pour ton clan (passe en survie pour essayer).",
+  "msg.saison.pause": "Attention : heralisz_clans/saison_etat.json n'a pas pu être lu au démarrage : la saison est en pause (aucun point compté, rien n'est écrit). L'original est gardé à côté (%s) : réparez-le, remettez-le à la place, puis /recharger saison.",
   "gui.saison.l.largage": "Largage militaire (1er à l'ouvrir)",
   "gui.saison.c.largage_plafond": "%s fois par clan et par jour au plus",
   "gui.saison.c.largage": "au clan du premier qui l'ouvre",
