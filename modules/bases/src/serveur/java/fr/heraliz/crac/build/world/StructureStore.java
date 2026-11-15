@@ -330,8 +330,19 @@ public final class StructureStore extends SafeSavedData {
         return out;
     }
 
+    /**
+     * HeraliZ (15/11, audit performances n° 5) : le dernier {@link #recomputeAll} a été fait avec les réglages de stabilité
+     * du serveur (sinon, avec ceux par défaut : à refaire une fois les réglages chargés).
+     */
+    private boolean recalculAvecReglages;
+
+    boolean recalculAvecReglages() {
+        return this.recalculAvecReglages;
+    }
+
     /** Stability and variants of every piece; done once after loading. */
     public void recomputeAll() {
+        this.recalculAvecReglages = BuildConfig.SPEC.isLoaded();
         Stability.Params params = BuildConfig.SPEC.isLoaded() ? BuildConfig.stability() : Stability.Params.DEFAULT;
         for (Building b : this.index.allBuildings()) {
             Stability.recompute(this.index, this.piecesOf(b), params);
