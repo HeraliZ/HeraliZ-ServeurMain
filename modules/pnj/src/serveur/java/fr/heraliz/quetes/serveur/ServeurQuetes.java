@@ -113,6 +113,7 @@ public final class ServeurQuetes implements Partie {
         Moteur.arreter();
         Journalieres.arreter();
         ObjetsARendre.vider();
+        GardeRecycleur.vider();
         LUEURS.clear();
     }
 
@@ -140,6 +141,7 @@ public final class ServeurQuetes implements Partie {
         Journalieres.deconnexion(e.getEntity().getUUID());
         ObjetsARendre.oublier(e.getEntity().getUUID());
         REAPPARUS.remove(e.getEntity().getUUID());
+        GardeRecycleur.oublier(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 
@@ -224,6 +226,7 @@ public final class ServeurQuetes implements Partie {
         Moteur.envoyerSuivisEnAttente();
         WipeServeur.tick(e.getServer());
         ObjetsARendre.tick(e.getServer());
+        GardeRecycleur.tick(e.getServer());
         if (ticks % 20 == 11) Journalieres.tick(e.getServer());
         if (++ticks % 600 == 0) Donnees.toutEcrire();
     }

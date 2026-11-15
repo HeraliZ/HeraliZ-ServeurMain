@@ -198,5 +198,6 @@
   "command.heralizcrates.cles.retirees": "%s × %s retirée(s) à %s.",
   "command.heralizcrates.cles.rien": "%s n'a pas de %s à retirer.",
   "message.heralizcrates.attente": "Inventaire plein : %s t'attend ; il te sera donné dès qu'il y aura de la place.",
+  "message.heralizcrates.attente_match": "En match : %s t'attend ; il te sera donné à ton retour.",
   "message.heralizcrates.attente_rendue": "Objets qui t'attendaient remis dans ton inventaire : %s."
 }

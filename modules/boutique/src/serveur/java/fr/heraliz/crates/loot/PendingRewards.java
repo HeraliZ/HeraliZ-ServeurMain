@@ -8,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -24,9 +25,14 @@ import java.util.UUID;
  * 02/11 (audit points 8 et 23) : aussi les OBJETS qui ne tiennent pas dans l'inventaire (recompenses de caisses, /trade,
  * kits, bons…) : gardes ici au lieu d'etre jetes au sol, et rendus des qu'il y a de la place ({@link #donner},
  * {@link #rendre} a la connexion et toutes les 5 s). Fichier ecrit tout de suite a chaque changement.
+ * <p>15/11 (audit n° 1) : rien n'est livre pendant un match du ClashWar ni dans ses arenes, ni tant que son inventaire est
+ * mis de cote par le ClashWar ({@link #livrable}) : l'inventaire du match est efface au retour. Les objets attendent la
+ * fin du match et le retour, puis sont livres.
  */
 public class PendingRewards extends SavedData {
     private static final String NAME = "heralizcrates_pending";
+    /** Drapeau « en match » et marque du Coffre du ClashWar : cles de donnees partagees, lues sans dependance. */
+    private static final String DRAPEAU_MATCH = "heralisz:en_match", MARQUE_COFFRE = "HeralizClashWarDepot";
     private final Map<UUID, ListTag> pending = new HashMap<>();
     /** Objets qui attendent de la place dans l'inventaire de leur joueur (02/11). */
     private final Map<UUID, ListTag> objets = new HashMap<>();
@@ -84,17 +90,44 @@ public class PendingRewards extends SavedData {
      */
     public static void donner(ServerPlayer p, ItemStack s) {
         if (s == null || s.isEmpty()) return;
-        p.getInventory().add(s);
-        p.getInventory().setChanged();
+        // 15/11 : en match (ou inventaire mis de cote par le ClashWar), jamais dans l'inventaire du match : il attend
+        boolean enMatch = retenuParMatch(p);
+        if (!enMatch) {
+            p.getInventory().add(s);
+            p.getInventory().setChanged();
+        }
         if (s.isEmpty() || p.server == null) return;
         PendingRewards a = get(p.server);
         a.objets.computeIfAbsent(p.getUUID(), k -> new ListTag()).add(s.save(new CompoundTag()));
         a.sauverMaintenant(p.server);
-        fr.heraliz.crates.HeralizCrates.LOGGER.info("[HeralizCrates] inventaire plein : {} x{} garde pour {} (rendu des qu'il y a de la place)",
-                s.getHoverName().getString(), s.getCount(), p.getGameProfile().getName());
+        fr.heraliz.crates.HeralizCrates.LOGGER.info("[HeralizCrates] {} : {} x{} garde pour {} (rendu des que possible)",
+                enMatch ? "en match" : "inventaire plein", s.getHoverName().getString(), s.getCount(), p.getGameProfile().getName());
+        if (enMatch) {
+            p.sendSystemMessage(Component.translatableWithFallback("message.heralizcrates.attente_match",
+                    "En match : %s t'attend ; il te sera donné à ton retour.", fr.heraliz.noyau.api.NomsObjets.nom(s))
+                    .withStyle(ChatFormatting.GOLD));
+            return;
+        }
         p.sendSystemMessage(Component.translatableWithFallback("message.heralizcrates.attente",
                 "Inventaire plein : %s t'attend ; il te sera donné dès qu'il y aura de la place.", fr.heraliz.noyau.api.NomsObjets.nom(s))
                 .withStyle(ChatFormatting.GOLD));
+    }
+
+    /**
+     * Le ClashWar tient l'inventaire de ce joueur (15/11, audit n° 1) : en match (salle d'attente comprise), dans un monde
+     * de ses arenes, ou inventaire mis de cote par son Coffre (marque posee au depart, retiree au retour ; elle couvre aussi
+     * la reconnexion apres un plantage, avant que le Coffre soit rendu). Ce qui y serait livre serait efface au retour.
+     */
+    public static boolean retenuParMatch(ServerPlayer p) {
+        if (fr.heraliz.noyau.api.Matchs.enMatch(p)) return true;
+        CompoundTag d = p.getPersistentData();
+        if (d.getBoolean(DRAPEAU_MATCH) || d.getCompound(Player.PERSISTED_NBT_TAG).contains(MARQUE_COFFRE)) return true;
+        return "heraliz_clashwar".equals(p.level().dimension().location().getNamespace());
+    }
+
+    /** Un objet en attente peut etre livre maintenant : vivant, pas spectateur, et pas retenu par le ClashWar. */
+    public static boolean livrable(ServerPlayer p) {
+        return p.isAlive() && !p.isSpectator() && !retenuParMatch(p);
     }
 
     /**
@@ -102,7 +135,7 @@ public class PendingRewards extends SavedData {
      * l'inventaire PUIS fichier ecrit sans eux, sur le meme tick : un plantage ne les copie jamais.
      */
     public static void rendre(ServerPlayer p) {
-        if (p.server == null || !p.isAlive() || p.isSpectator()) return;
+        if (p.server == null || !livrable(p)) return;
         PendingRewards a = get(p.server);
         ListTag l = a.objets.get(p.getUUID());
         if (l == null) return;

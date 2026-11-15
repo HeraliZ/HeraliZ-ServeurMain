@@ -629,7 +629,7 @@ public final class EchangeServeur {
      * place (revérifié toutes les 5 s). Le disque est mis à jour AVANT de donner : jamais deux fois.
      */
     private static void distribuer(ServerPlayer p) {
-        if (serveur == null || LIVRAISONS.isEmpty() || !p.isAlive() || p.isSpectator() || !WarpsServeur.auSpawn(p)) return;
+        if (serveur == null || LIVRAISONS.isEmpty() || !WarpsServeur.auSpawn(p) || !fr.heraliz.crates.loot.PendingRewards.livrable(p)) return;
         String u = p.getUUID().toString();
         int libres = 0;
         for (ItemStack st : p.getInventory().items) if (st.isEmpty()) libres++;

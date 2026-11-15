@@ -4,12 +4,16 @@ import fr.heraliz.quetes.Texte;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Objets du recycleur du spawn d'un joueur, gardés AVEC le joueur (02/11, audit point 6) : avant, se déconnecter, planter
@@ -23,6 +27,8 @@ import java.util.List;
  *     pas reste dans la copie, jamais au sol, et le joueur le retrouve dans le recycleur en le rouvrant, ou dans son
  *     inventaire à sa prochaine connexion ou réapparition s'il y a la place ;</li>
  *     <li>plantage du serveur : à la connexion, la copie enregistrée est rendue de même.</li>
+ *     <li>15/11 (audit n° 1) : jamais pendant un match du ClashWar, dans ses arènes, ni tant que son inventaire est mis de
+ *     côté ({@link ObjetsARendre#retenuParMatch}) : rendu après le retour (essai toutes les 5 s).</li>
  * </ul>
  * Fil serveur seulement.
  */
@@ -31,6 +37,8 @@ final class GardeRecycleur {
     }
 
     private static final String PERSISTE = "PlayerPersisted", CLE = "HeralizRecycleur", ENTREE = "entree", SORTIE = "sortie";
+    /** Joueurs connectés dont le rendu attend la fin d'un match (15/11) : réessayé toutes les 5 s. */
+    private static final Set<UUID> APRES_MATCH = new HashSet<>();
 
     private static CompoundTag persiste(ServerPlayer p, boolean creer) {
         CompoundTag d = p.getPersistentData();
@@ -87,6 +95,11 @@ final class GardeRecycleur {
      */
     static void rendre(ServerPlayer p) {
         if (!present(p) || !p.isAlive()) return;
+        if (ObjetsARendre.retenuParMatch(p)) {
+            APRES_MATCH.add(p.getUUID());   // l'inventaire du match est effacé au retour : rendu après
+            return;
+        }
+        APRES_MATCH.remove(p.getUUID());
         List<ItemStack>[] g = lire(p);
         int rendus = 0;
         for (List<ItemStack> l : g) {
@@ -103,6 +116,24 @@ final class GardeRecycleur {
             Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.rendus", Texte.brut(rendus)), 0xE8C36A);
         }
         prevenir(p);
+    }
+
+    /** Toutes les 5 s : joueurs dont le rendu attendait la fin d'un match (rien à faire sinon). */
+    static void tick(MinecraftServer srv) {
+        if (APRES_MATCH.isEmpty() || srv.getTickCount() % 100 != 50) return;
+        for (UUID u : List.copyOf(APRES_MATCH)) {
+            ServerPlayer p = srv.getPlayerList().getPlayer(u);
+            if (p == null || !present(p)) APRES_MATCH.remove(u);
+            else if (p.isAlive() && !ObjetsARendre.retenuParMatch(p)) rendre(p);
+        }
+    }
+
+    static void oublier(UUID u) {
+        APRES_MATCH.remove(u);
+    }
+
+    static void vider() {
+        APRES_MATCH.clear();
     }
 
     /** Il reste des objets gardés : le joueur sait où les retrouver. */
