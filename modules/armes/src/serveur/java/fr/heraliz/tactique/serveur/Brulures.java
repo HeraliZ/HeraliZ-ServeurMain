@@ -33,8 +33,8 @@ import org.slf4j.Logger;
  *   des deux côtés (noyau), crédit du tueur (Réanimation retient celui qui met à terre, clans), chiffres des dégâts ; et là
  *   où un coup du lanceur serait refusé (zone sans PvP de WorldGuard, protections du spawn et des nouveaux joueurs), la
  *   victime brûle sans perdre de vie. Même montant (l'effet « inflammable » le double toujours), aucune armure (comme le
- *   feu), aucun recul (le coup rejoué ne repousse pas). Lanceur introuvable (parti, mort, autre monde) : feu sans auteur,
- *   comme avant.</li>
+ *   feu), aucun recul (le coup rejoué ne repousse pas). Lanceur introuvable (parti, mort, autre monde) ou qui brûle dans
+ *   son propre feu : feu sans auteur, comme avant.</li>
  *   <li><b>Balles incendiaires</b> (combat M3, décision du propriétaire du 15/11) : une balle de TaCZ qui enflamme
  *   (munitions incendiaires : {@code "ignite": {"entity": true, "block": false}} dans les données du gunpack) met la cible,
  *   joueur ou créature, en feu {@link #FEU_BALLE} ticks (3 s, visible), et lui retire UN seul tic de feu de
@@ -44,8 +44,7 @@ import org.slf4j.Logger;
  *   comme d'habitude. L'eau éteint ce feu comme les autres. Un seul tic par cible et par tick (les plombs d'une même
  *   cartouche). Pas de tic sur une cible à terre (il l'achèverait ; son feu ne la blesse pas non plus) ; rien si la balle
  *   a été refusée (zone sans PvP, protections : le feu de TaCZ est alors éteint). Jamais de feu sur les blocs (données du
- *   gunpack, et
- *   {@code IgniteBlock = false} de {@code tacz-common.toml}).</li>
+ *   gunpack, et {@code IgniteBlock = false} de {@code tacz-common.toml}).</li>
  * </ul>
  * Fil du serveur. Rien ne tourne sans brûlure marquée ; les marques sont oubliées à la fin de leur temps (contrôle toutes
  * les 5 s, seulement s'il en reste).
@@ -133,7 +132,8 @@ public final class Brulures {
          }
          return;
       }
-      if (!(niveau.getEntity(m.auteur) instanceof LivingEntity auteur) || !auteur.isAlive()) return;
+      // lanceur parti, mort, ou qui brûle dans son propre feu : feu sans auteur, comme avant
+      if (!(niveau.getEntity(m.auteur) instanceof LivingEntity auteur) || !auteur.isAlive() || auteur == v) return;
       e.setCanceled(true);
       blesser(v, auteur, e.getAmount());
    }
