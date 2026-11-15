@@ -36,6 +36,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -84,7 +85,11 @@ import net.minecraftforge.server.ServerLifecycleHooks;
  *     les cases de fabrication (inventaire de base, écran de Curios, établi, recycleur...). En dernier écouteur de la
  *     déconnexion (avant l'enregistrement), l'écran ouvert est fermé ici et les objets à vie du curseur et de la grille
  *     2x2 reviennent dans l'inventaire (sinon gardés) ; une question en cours aussi. Ce qui arriverait encore après part
- *     dans la boîte aux lettres ;</li>
+ *     dans la boîte aux lettres. Audit du 15/11 (duplication n° 4 et n° 2) : TOUT objet tenu au curseur et tout ce qui
+ *     reste dans une grille d'artisanat (inventaire de base, écran de Curios, établi) revient aussi dans l'inventaire
+ *     avant la fermeture (déconnexion comme redémarrage) ; s'il ne tient pas, il est mis de côté avec les objets à vie
+ *     (rendu dès qu'une case se libère), jamais posé au sol. Un objet ordinaire mis de côté ne traverse pas la mort : il
+ *     tombe avec le joueur, comme son inventaire. Objets d'un match ({@code HeraliszMatch}) : laissés au match ;</li>
  *     <li>pendant la mort ou la déconnexion, un objet à vie jeté par un écran qui se ferme est gardé, jamais posé ;</li>
  *     <li>au sol : invulnérable (feu, lave, explosions, cactus : jamais détruit par erreur), mais il disparaît au bout du
  *     temps normal, comme le reste (03/11 ; avant : rendu au bout de 5 min à celui qui l'avait jeté) ; un sac au sol
@@ -502,12 +507,41 @@ public final class ObjetsAVieServeur {
       }
       Attente attente = retirerAttente(p);
       if (attente != null && !attente.objet().isEmpty()) garde.add(attente.objet().save(new CompoundTag()));
+      tomberMisDeCote(p, e);
       if (garde.isEmpty()) return;
       CompoundTag persiste = persiste(p);
       ListTag deja = persiste.getList(CLE, Tag.TAG_COMPOUND);
       deja.addAll(garde);
       persiste.put(CLE, deja);
       LOG.info("[a vie] {} mort : {} objet(s) à vie gardé(s) pour la réapparition", nom(p), garde.size());
+   }
+
+   /**
+    * Objets ordinaires mis de côté (inventaire plein à la déconnexion, audit du 15/11) : ils tombent avec le joueur, sur
+    * son corps, comme le reste de son inventaire. Seuls les objets à vie traversent la mort.
+    */
+   private static void tomberMisDeCote(ServerPlayer p, LivingDropsEvent e) {
+      CompoundTag persiste = persiste(p);
+      if (!persiste.contains(CLE, Tag.TAG_LIST)) return;
+      ListTag liste = persiste.getList(CLE, Tag.TAG_COMPOUND);
+      ListTag reste = new ListTag();
+      int n = 0;
+      for (int i = 0; i < liste.size(); i++) {
+         CompoundTag donnees = liste.getCompound(i);
+         ItemStack s = ItemStack.of(donnees);
+         if (s.isEmpty() || ObjetsAVie.estAVie(s)) {
+            reste.add(donnees);
+            continue;
+         }
+         ItemEntity ie = new ItemEntity(p.level(), p.getX(), p.getY(), p.getZ(), s);
+         ie.setDefaultPickUpDelay();
+         e.getDrops().add(ie);
+         n++;
+      }
+      if (n == 0) return;
+      if (reste.isEmpty()) persiste.remove(CLE);
+      else persiste.put(CLE, reste);
+      LOG.info("[a vie] {} mort : {} objet(s) mis de côté tombent avec lui", nom(p), n);
    }
 
    private static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
@@ -539,11 +573,17 @@ public final class ObjetsAVieServeur {
     * En dernier écouteur de la déconnexion, AVANT que Minecraft n'enregistre le joueur : l'écran ouvert est fermé ici
     * (Mohist le fait juste après, Minecraft seul après l'enregistrement) pour que ses cases de fabrication et son curseur
     * passent par jet() ; les objets à vie du curseur et de la grille 2x2 de l'inventaire reviennent dans l'inventaire ; une
-    * question en cours aussi.
+    * question en cours aussi. Audit du 15/11 (duplication n° 4 et n° 2) : avant la fermeture, l'objet tenu au curseur et
+    * les grilles d'artisanat de l'écran ouvert et de l'inventaire de base reviennent dans l'inventaire (sinon mis de côté) :
+    * Minecraft les posait au sol, le joueur étant déjà parti. Joueur mort (déconnexion en combat) : comme une mort.
     */
    private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
       if (!(e.getEntity() instanceof ServerPlayer p) || p instanceof FakePlayer) return;
       try {
+         if (p.isAlive()) {
+            rangerAvantDepart(p, p.containerMenu);
+            if (p.containerMenu != p.inventoryMenu) rangerAvantDepart(p, p.inventoryMenu);
+         }
          if (p.containerMenu != p.inventoryMenu) p.closeContainer();
          if (concerne(p)) {
             ItemStack curseur = p.inventoryMenu.getCarried();
@@ -560,6 +600,37 @@ public final class ObjetsAVieServeur {
       } finally {
          SORTIS.add(p.getUUID());
       }
+   }
+
+   /** Curseur et grilles d'artisanat d'un écran, avant la déconnexion : dans l'inventaire, sinon mis de côté. */
+   private static void rangerAvantDepart(ServerPlayer p, AbstractContainerMenu menu) {
+      ItemStack curseur = menu.getCarried();
+      if (!curseur.isEmpty() && !deMatch(curseur)) {
+         menu.setCarried(ItemStack.EMPTY);
+         ranger(p, curseur);
+      }
+      for (Slot s : menu.slots) {
+         if (!(s.container instanceof TransientCraftingContainer grille) || !s.hasItem()) continue;
+         int i = s.getContainerSlot();
+         if (deMatch(grille.getItem(i))) continue;
+         ranger(p, grille.removeItemNoUpdate(i));
+      }
+   }
+
+   /** Objet prêté par un match : laissé au match (il le reprend). */
+   private static boolean deMatch(ItemStack s) {
+      return s.hasTag() && s.getTag().contains(fr.heraliz.noyau.api.Matchs.NBT_PRET);
+   }
+
+   /** Dans l'inventaire ; ce qui ne tient pas est mis de côté (rendu dès qu'une case se libère), jamais au sol. */
+   private static void ranger(ServerPlayer p, ItemStack objet) {
+      if (objet.isEmpty()) return;
+      if (ObjetsAVie.estAVie(objet)) {
+         rendre(p, objet, false);
+         return;
+      }
+      p.getInventory().add(objet);
+      if (!objet.isEmpty()) garder(p, objet, "déconnexion, inventaire plein");
    }
 
    /** Le joueur vient d'être enregistré : la copie lue de sa boîte aux lettres peut partir (ses objets sont à lui). */
@@ -581,6 +652,7 @@ public final class ObjetsAVieServeur {
       ListTag reste = new ListTag();
       Inventory inv = p.getInventory();
       int n = 0;
+      int ordinaires = 0;
       for (int i = 0; i < liste.size(); i++) {
          CompoundTag donnees = liste.getCompound(i);
          ItemStack s = ItemStack.of(donnees);
@@ -589,9 +661,11 @@ public final class ObjetsAVieServeur {
             reste.add(donnees);
             continue;
          }
+         boolean aVie = ObjetsAVie.estAVie(s);
          inv.add(s);
          if (s.isEmpty()) {
             n++;
+            if (!aVie) ordinaires++;
          } else {
             reste.add(s.save(new CompoundTag()));
          }
@@ -601,8 +675,9 @@ public final class ObjetsAVieServeur {
       if (n > 0) {
          synchroniser(p);
          LOG.info("[a vie] {} : {} objet(s) à vie rendu(s){}", nom(p), n, reste.isEmpty() ? "" : ", " + reste.size() + " encore gardé(s)");
-         p.displayClientMessage(Component.translatableWithFallback("heraliz_tactique.a_vie.rendus",
-            "Objets à vie rendus : %s.", String.valueOf(n)), false);
+         p.displayClientMessage(ordinaires > 0
+            ? Component.translatableWithFallback("heraliz_tactique.mis_de_cote.rendus", "Objets mis de côté rendus : %s.", String.valueOf(n))
+            : Component.translatableWithFallback("heraliz_tactique.a_vie.rendus", "Objets à vie rendus : %s.", String.valueOf(n)), false);
       }
    }
 

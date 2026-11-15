@@ -106,5 +106,6 @@
   "heraliz_crafts.onglet.rangement": "Storage",
   "hud.heraliz_tactique.tir.auto": "Auto",
   "hud.heraliz_tactique.tir.semi": "Semi",
-  "hud.heraliz_tactique.tir.burst": "Burst"
+  "hud.heraliz_tactique.tir.burst": "Burst",
+  "heraliz_tactique.mis_de_cote.rendus": "Set-aside items returned: %s."
 }

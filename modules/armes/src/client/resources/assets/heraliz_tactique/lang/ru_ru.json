@@ -106,5 +106,6 @@
   "heraliz_crafts.onglet.rangement": "Хранение",
   "hud.heraliz_tactique.tir.auto": "Авто",
   "hud.heraliz_tactique.tir.semi": "Одиноч.",
-  "hud.heraliz_tactique.tir.burst": "Очередь"
+  "hud.heraliz_tactique.tir.burst": "Очередь",
+  "heraliz_tactique.mis_de_cote.rendus": "Отложенные предметы возвращены: %s."
 }
