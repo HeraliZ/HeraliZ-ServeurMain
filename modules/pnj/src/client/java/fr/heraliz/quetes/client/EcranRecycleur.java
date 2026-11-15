@@ -1,5 +1,6 @@
 package fr.heraliz.quetes.client;
 
+import fr.heraliz.quetes.Contenu;
 import fr.heraliz.quetes.bloc.MenuRecycleur;
 import fr.heraliz.quetes.client.kit.Echelle;
 import fr.heraliz.quetes.client.kit.Net;
@@ -39,7 +40,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
     private static final int L = 560, H = 324, ENTETE = 44, M = 16, GAUCHE = 360, CASE = MenuRecycleur.CASE;
     private static final int BLANC = 0xFFFFFF;
     private static final int[] RARETES = {0xAAAAAA, 0x5FD06E, 0x508CFF, 0xB96EF0, 0xF0BE46, 0xEB4646};
-    private static final int[] ETATS = {Ui.OK, Ui.FAINT, Ui.DANGER, Ui.ACCENT_NEUTRE, Ui.AMBRE};
+    private static final int[] ETATS = {Ui.OK, Ui.FAINT, Ui.DANGER, Ui.ACCENT_NEUTRE, Ui.AMBRE, Ui.AMBRE};
     private static final ResourceLocation TITRE = Net.TITRE, PG = Net.PETIT_GRAS, MICRO = Net.MICRO;
 
     /** Dernier aperçu reçu (celui du menu ouvert : même numéro de conteneur). */
@@ -351,10 +352,13 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
                 for (int i = 0; i < Math.min(2, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, xi, y + 30 + i * 9, Ui.AMBRE);
             }
         } else {
-            List<FormattedCharSequence> l = f.split(Ui.lit(t("raison." + a.etat()), Ui.SMALL), (int) w - 20);
+            // 15/11 : objet qui contient quelque chose (balles, accessoires, munitions, sac) : ce qu'il faut vider
+            int contenu = a.etat() == 5 ? Contenu.de(objet) : Contenu.RIEN;
+            String raison = contenu != Contenu.RIEN ? TexteClient.tr("gui.heraliz_quetes.contenu." + contenu) : t("raison." + a.etat());
+            List<FormattedCharSequence> l = f.split(Ui.lit(raison, Ui.SMALL), (int) w - 20);
             for (int i = 0; i < Math.min(4, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, xi, y + 4 + i * 9, a.etat() == 2 ? Ui.DANGER : Ui.MUTED);
         }
-        int etat = Math.max(0, Math.min(4, a.etat()));
+        int etat = Math.max(0, Math.min(ETATS.length - 1, a.etat()));
         puce(g, f, t("etat." + etat), xi, y0 + h - 14, ETATS[etat], true);
     }
 

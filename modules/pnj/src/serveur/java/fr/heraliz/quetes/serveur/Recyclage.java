@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import fr.heraliz.quetes.Contenu;
 import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.entite.Pnj;
 import fr.heraliz.quetes.reseau.Reseau;
@@ -62,8 +63,12 @@ import java.util.Map;
 final class Recyclage {
     private static final Logger LOG = LogUtils.getLogger();
 
-    /** États d'un objet pour le recycleur (même ordre que les textes gui.heraliz_quetes.recycleur.etat.N). */
-    static final int OK = 0, NON = 1, REFUSE = 2, PROTEGE = 3, MANQUE = 4;
+    /**
+     * États d'un objet pour le recycleur (même ordre que les textes gui.heraliz_quetes.recycleur.etat.N). CONTENU (15/11,
+     * audit n° 2) : il contient quelque chose qui disparaîtrait avec lui (balles chargées, accessoires, munitions d'une
+     * boîte, sac plein : {@link Contenu}) ; refusé, l'écran dit quoi vider.
+     */
+    static final int OK = 0, NON = 1, REFUSE = 2, PROTEGE = 3, MANQUE = 4, CONTENU = 5;
 
     private Recyclage() {
     }
@@ -270,6 +275,7 @@ final class Recyclage {
         long herals = e.herals(rang);
         int u = etatPct(s);
         float f = facteurUsure(u);
+        if (Contenu.de(s) != Contenu.RIEN) return new Verdict(CONTENU, rang, 1, List.of(), herals, f, u);
         if (Echanges.interdit(s)) return new Verdict(PROTEGE, rang, 1, List.of(), herals, f, u);
         Regle r = regle(s);
         if (r == null) return new Verdict(NON, rang, 1, List.of(), herals, f, u);
