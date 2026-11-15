@@ -1,5 +1,7 @@
 package fr.heraliz.grades.serveur;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -44,8 +46,15 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 /**
  * Hôtel des ventes (Grades 2.9.0, maquettes validées le 28/10 : {@code maquettes/hotel_ventes/}) : les joueurs mettent
@@ -69,9 +78,13 @@ import java.util.UUID;
  * <p>
  * <b>Contre la duplication et l'argent perdu</b> (même méthode que {@code /trade}) :
  * <ul>
- * <li>Tout l'état tient dans UN fichier hors du monde ({@code heraliz_grades/hdv/hdv.json}), réécrit en une fois
- * (fichier temporaire puis remplacement) : une conclusion (offre vendue, objet de l'acheteur, argent du vendeur) est
- * écrite d'un seul coup ou pas du tout.</li>
+ * <li>Tout l'état tient dans UN fichier hors du monde ({@code heraliz_grades/hdv/hdv.json}) et son journal d'écriture :
+ * une conclusion (offre vendue, objet de l'acheteur, argent du vendeur) est écrite d'un seul coup ou pas du tout. 15/11
+ * (audit des performances n° 3a : tout l'état, objets compris, était mis en texte et réécrit sur le fil serveur à
+ * chaque action, deux fois par achat) : {@link #sauver()} n'ajoute plus, aux mêmes moments et avec la même garantie,
+ * que les lignes changées, en UNE ligne du journal ({@code hdv.json.wal.<n>}) ; le fichier complet est réécrit sur un fil
+ * à part au plus une fois par minute (et à l'arrêt), puis le journal qu'il contient est effacé ; au démarrage, le
+ * journal plus récent que le fichier est rejoué.</li>
  * <li>Mise en vente : l'offre est notée « en préparation » (taxe « à prélever »), la taxe est retirée (motif
  * {@code hdv:taxe:<offre>}) et le compte écrit sur le disque, puis l'objet quitte l'inventaire et le joueur est
  * sauvegardé avec une marque (données persistantes {@code heraliz_hdv_marques}), puis l'offre passe « en vente ». Après
@@ -168,6 +181,8 @@ public final class HdvServeur {
         List<Recup> recups = new ArrayList<>();
         List<Versement> versements = new ArrayList<>();
         List<Vente> ventes = new ArrayList<>();
+        /** 15/11 : numéro du dernier ajout au journal d'écriture que ce fichier contient (0 : fichier d'avant). */
+        long seq;
     }
 
     private static final Map<String, Offre> OFFRES = new LinkedHashMap<>();
@@ -223,22 +238,35 @@ public final class HdvServeur {
         OUVERTS.clear();
         bloque = false;
         repris = false;
+        seq = 0;
+        morceau = 1;
+        aReecrire = false;
+        reessayer = false;
+        dernierComplet = System.currentTimeMillis();
+        for (Map<String, Ecrit> m : ECRITS) m.clear();
         try {
+            long seqFichier = 0;
             if (Files.exists(fichier)) {
                 Fichier f = GSON.fromJson(Files.readString(fichier, StandardCharsets.UTF_8), Fichier.class);
                 if (f != null) {
                     if (f.offres != null) for (Offre o : f.offres) if (o != null && o.id != null && o.objet != null) OFFRES.put(o.id, o);
-                    if (f.achats != null) for (Achat a : f.achats) {
-                        if (a == null || a.ref == null) continue;
-                        // serveur arrêté pendant un débit de PB : le site dira s'il est passé
-                        if ("envoye".equals(a.etat)) a.etat = "verifier";
-                        ACHATS.put(a.ref, a);
-                    }
+                    if (f.achats != null) for (Achat a : f.achats) if (a != null && a.ref != null) ACHATS.put(a.ref, a);
                     if (f.recups != null) for (Recup r : f.recups) if (r != null && r.id != null && r.uuid != null) RECUPS.add(r);
                     if (f.versements != null) for (Versement v : f.versements) if (v != null && v.ref != null) VERSEMENTS.put(v.ref, v);
                     if (f.ventes != null) for (Vente v : f.ventes) if (v != null && v.vendeur != null) VENTES.add(v);
+                    seqFichier = f.seq;
                 }
             }
+            // 15/11 : changements écrits après ce fichier (journal d'écriture), rejoués dans l'ordre
+            seq = rejouer(seqFichier);
+            ecritsDepuisMemoire();
+            if (seq > seqFichier) {
+                aReecrire = true;
+                dernierComplet = 0;
+                LOG.info("[grades] hôtel des ventes : journal d'écriture rejoué ({} écriture(s) après le fichier)", seq - seqFichier);
+            }
+            // serveur arrêté pendant un débit de PB : le site dira s'il est passé
+            for (Achat a : ACHATS.values()) if ("envoye".equals(a.etat)) a.etat = "verifier";
         } catch (Exception ex) {
             // jamais écrasé : copie mise de côté, hôtel fermé jusqu'à ce que le staff regarde
             bloque = true;
@@ -253,6 +281,13 @@ public final class HdvServeur {
     }
 
     static void arreter() {
+        // 15/11 : ce qui reste est écrit, puis le fichier complet tout de suite (le journal d'écriture est vidé)
+        if (!bloque && fichier != null) {
+            sauver();
+            attendreFond();
+            if (LIBRE.get()) ecrireComplet(releve());
+        }
+        attendreFond();
         serveur = null;
         OUVERTS.clear();
         MISES_EN_ATTENTE.clear();
@@ -364,35 +399,365 @@ public final class HdvServeur {
 
     static void journal(String ligne) {
         if (dossier == null) return;
+        Path d = dossier;
+        String texte = java.time.LocalDateTime.now().withNano(0) + " " + ligne + "\n";
+        // 15/11 : écrit sur le fil d'écriture, dans l'ordre (plus sur le fil serveur) ; attendu à l'arrêt
+        Runnable r = () -> {
+            try {
+                Files.createDirectories(d);
+                Files.writeString(d.resolve("journal.log"), texte, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (Exception ex) {
+                LOG.warn("[grades] hôtel des ventes : journal ({})", ex.toString());
+            }
+        };
         try {
-            Files.createDirectories(dossier);
-            Files.writeString(dossier.resolve("journal.log"), java.time.LocalDateTime.now().withNano(0) + " " + ligne + "\n",
-                    StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (Exception ex) {
-            LOG.warn("[grades] hôtel des ventes : journal ({})", ex.toString());
+            FIL.execute(r);
+        } catch (RejectedExecutionException ex) {
+            r.run();
         }
     }
 
-    /** Écrit tout l'état en une fois ; faux (rien n'a changé sur le disque) si c'est impossible. */
+    // ------------------------------------------------------------------ écriture (15/11, audit des performances n° 3a)
+    /** Genres de lignes de l'état, dans l'ordre du fichier (mêmes noms que les listes de {@link Fichier}). */
+    private static final String[] GENRES = {"offres", "achats", "recups", "versements", "ventes"};
+    /** En-tête d'une ligne : tout sauf l'objet (données lourdes, jamais changées après la création de la ligne). */
+    private static final Gson GSON_ENTETE = new GsonBuilder().disableHtmlEscaping().setExclusionStrategies(new ExclusionStrategy() {
+        @Override
+        public boolean shouldSkipField(FieldAttributes a) {
+            return a.getName().equals("objet");
+        }
+
+        @Override
+        public boolean shouldSkipClass(Class<?> c) {
+            return false;
+        }
+    }).create();
+
+    /** Ce qui est sur le disque (fichier complet ou journal d'écriture) pour une ligne : en-tête, objet, texte complet. */
+    private record Ecrit(String entete, String objet, String json) {
+    }
+
+    /** Une ligne changée par {@link #sauver()} : genre, identifiant, ce qui est écrit (null : retirée). */
+    private record Fait(int genre, String cle, Ecrit ecrit) {
+    }
+
+    /** Relevé du fichier complet (fil serveur) : textes déjà prêts, dernier numéro, morceau du journal fermé, chemins. */
+    private record Releve(List<List<String>> lignes, long seq, int ferme, Path fichier, Path dossier) {
+    }
+
+    /** Par genre (ordre de {@link #GENRES}), puis identifiant : ce qui est sur le disque. Fil serveur. */
+    private static final List<Map<String, Ecrit>> ECRITS = List.of(new LinkedHashMap<>(), new LinkedHashMap<>(), new LinkedHashMap<>(),
+            new LinkedHashMap<>(), new LinkedHashMap<>());
+    /** Numéro du dernier ajout au journal d'écriture ; morceau du journal en cours. */
+    private static long seq;
+    private static int morceau = 1;
+    /** Des changements attendent d'être recopiés dans le fichier complet ; heure du dernier relevé complet. */
+    private static boolean aReecrire;
+    private static long dernierComplet;
+    /** Le fichier complet n'a pas pu être écrit sur le fil d'écriture : réessayé (le journal reste). */
+    private static volatile boolean reessayer;
+    /** Aucun fichier complet en cours d'écriture sur le fil d'écriture. */
+    private static final AtomicBoolean LIBRE = new AtomicBoolean(true);
+    /** Fil d'écriture de l'hôtel des ventes (fichier complet, journal des opérations) : un seul fil, dans l'ordre d'arrivée. */
+    private static final ExecutorService FIL = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "HeraliZ-HDV-sauvegarde");
+        t.setDaemon(true);
+        return t;
+    });
+
+    /** Lignes d'un genre, dans l'ordre de l'état. */
+    private static Iterable<?> lignes(int g) {
+        return switch (g) {
+            case 0 -> OFFRES.values();
+            case 1 -> ACHATS.values();
+            case 2 -> RECUPS;
+            case 3 -> VERSEMENTS.values();
+            default -> VENTES;
+        };
+    }
+
+    /** Identifiant d'une ligne, le même d'un démarrage à l'autre. */
+    private static String cle(Object o) {
+        if (o instanceof Offre x) return x.id;
+        if (o instanceof Achat x) return x.ref;
+        if (o instanceof Recup x) return x.id;
+        if (o instanceof Versement x) return x.ref;
+        Vente v = (Vente) o;
+        return v.ref != null ? v.ref : "?" + v.vendeur + "@" + v.quand;
+    }
+
+    private static String objetDe(Object o) {
+        if (o instanceof Offre x) return x.objet;
+        if (o instanceof Recup x) return x.objet;
+        if (o instanceof Vente x) return x.objet;
+        return null;
+    }
+
+    /**
+     * Écrit l'état sur le disque ; faux (rien n'a changé sur le disque) si c'est impossible. 15/11 : seules les lignes
+     * changées depuis le dernier passage (en-tête ou objet différent, ligne nouvelle ou retirée) sont ajoutées, toutes en
+     * UNE ligne du journal d'écriture (tout ou rien, même coupée par un plantage) ; le fichier complet suit sur le fil
+     * d'écriture ({@link #reecrireEnFond}). Vrai : c'est sur le disque, comme avant.
+     */
     private static boolean sauver() {
         if (bloque || fichier == null) return false;
-        try {
-            Files.createDirectories(dossier);
-            Fichier f = new Fichier();
-            f.offres = new ArrayList<>(OFFRES.values());
-            f.achats = new ArrayList<>(ACHATS.values());
-            f.recups = new ArrayList<>(RECUPS);
-            f.versements = new ArrayList<>(VERSEMENTS.values());
-            f.ventes = new ArrayList<>(VENTES);
-            Path tmp = fichier.resolveSibling("hdv.json.tmp");
-            Files.writeString(tmp, GSON.toJson(f), StandardCharsets.UTF_8);
-            Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        StringBuilder b = null;
+        List<Fait> faits = null;
+        for (int g = 0; g < GENRES.length; g++) {
+            Map<String, Ecrit> ecrits = ECRITS.get(g);
+            Set<String> vues = new HashSet<>();
+            for (Object o : lignes(g)) {
+                String k = cle(o);
+                if (k == null || !vues.add(k)) continue;
+                String entete = GSON_ENTETE.toJson(o), objet = objetDe(o);
+                Ecrit e = ecrits.get(k);
+                if (e != null && e.entete().equals(entete) && Objects.equals(e.objet(), objet)) continue;
+                String json = GSON.toJson(o);
+                if (b == null) {
+                    b = new StringBuilder(512);
+                    faits = new ArrayList<>();
+                } else {
+                    b.append(',');
+                }
+                b.append("{\"g\":\"").append(GENRES[g]).append("\",\"id\":").append(GSON.toJson(k)).append(",\"v\":").append(json).append('}');
+                faits.add(new Fait(g, k, new Ecrit(entete, objet, json)));
+            }
+            for (String k : ecrits.keySet()) {
+                if (vues.contains(k)) continue;
+                if (b == null) {
+                    b = new StringBuilder(512);
+                    faits = new ArrayList<>();
+                } else {
+                    b.append(',');
+                }
+                b.append("{\"g\":\"").append(GENRES[g]).append("\",\"id\":").append(GSON.toJson(k)).append(",\"x\":true}");
+                faits.add(new Fait(g, k, null));
+            }
+        }
+        if (b == null) {
             enRetard = false;
             return true;
+        }
+        long n = seq + 1;
+        Path m = morceau(dossier, morceau);
+        try {
+            Files.createDirectories(dossier);
+            Files.writeString(m, "{\"n\":" + n + ",\"c\":[" + b + "]}\n", StandardCharsets.UTF_8, StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
         } catch (Exception ex) {
-            LOG.error("[grades] hôtel des ventes : {} impossible à écrire ({})", fichier, ex.toString());
+            LOG.error("[grades] hôtel des ventes : {} impossible à écrire ({})", m, ex.toString());
             enRetard = true;
+            // un morceau neuf pour la suite : une ligne à moitié écrite reste la dernière du sien (ignorée à la relecture)
+            morceau++;
             return false;
+        }
+        seq = n;
+        for (Fait x : faits) {
+            if (x.ecrit() == null) ECRITS.get(x.genre()).remove(x.cle());
+            else ECRITS.get(x.genre()).put(x.cle(), x.ecrit());
+        }
+        aReecrire = true;
+        enRetard = false;
+        return true;
+    }
+
+    /** Ce qui est en mémoire juste après le chargement est ce qui est sur le disque (fichier, puis journal rejoué). */
+    private static void ecritsDepuisMemoire() {
+        for (int g = 0; g < GENRES.length; g++) {
+            Map<String, Ecrit> m = ECRITS.get(g);
+            m.clear();
+            for (Object o : lignes(g)) {
+                String k = cle(o);
+                if (k != null && !m.containsKey(k)) m.put(k, new Ecrit(GSON_ENTETE.toJson(o), objetDe(o), GSON.toJson(o)));
+            }
+        }
+    }
+
+    private static Path morceau(Path d, int n) {
+        return d.resolve("hdv.json.wal." + n);
+    }
+
+    private static int numero(Path p) {
+        String n = p.getFileName().toString();
+        if (!n.startsWith("hdv.json.wal.")) return 0;
+        try {
+            return Integer.parseInt(n.substring("hdv.json.wal.".length()));
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    /** Morceaux du journal d'écriture présents, dans l'ordre de leur numéro. */
+    private static List<Path> morceaux(Path d) throws java.io.IOException {
+        List<Path> l = new ArrayList<>();
+        if (!Files.isDirectory(d)) return l;
+        try (Stream<Path> s = Files.list(d)) {
+            s.filter(p -> numero(p) > 0).forEach(l::add);
+        }
+        l.sort(Comparator.comparingInt(HdvServeur::numero));
+        return l;
+    }
+
+    /**
+     * Démarrage : rejoue dans l'ordre les écritures du journal plus récentes que le fichier complet, rend le dernier numéro.
+     * Une dernière ligne de morceau illisible a été coupée par un plantage (ou une écriture ratée) : ignorée, son
+     * {@link #sauver()} n'avait pas rendu vrai, rien n'en dépendait (après un démarrage ou un échec, l'écriture reprend
+     * toujours dans un morceau neuf : une ligne coupée reste la dernière du sien) ; une ligne illisible ailleurs :
+     * exception (hôtel fermé, rien d'écrasé ni d'effacé).
+     */
+    private static long rejouer(long seqFichier) throws Exception {
+        long dernier = seqFichier;
+        List<Path> ms = morceaux(dossier);
+        int plusGrand = 0;
+        for (int k = 0; k < ms.size(); k++) {
+            Path m = ms.get(k);
+            plusGrand = Math.max(plusGrand, numero(m));
+            String[] l = new String(Files.readAllBytes(m), StandardCharsets.UTF_8).split("\n", -1);
+            int derniere = l.length - 1;
+            while (derniere >= 0 && l[derniere].isBlank()) derniere--;
+            for (int i = 0; i <= derniere; i++) {
+                if (l[i].isBlank()) continue;
+                JsonObject o;
+                try {
+                    o = JsonParser.parseString(l[i]).getAsJsonObject();
+                } catch (RuntimeException ex) {
+                    if (i == derniere) {
+                        LOG.warn("[grades] hôtel des ventes : dernière écriture de {} coupée (plantage pendant l'écriture) : ignorée", m.getFileName());
+                        continue;
+                    }
+                    throw new IllegalStateException("ligne " + (i + 1) + " de " + m.getFileName() + " illisible", ex);
+                }
+                long n = o.get("n").getAsLong();
+                if (n <= seqFichier) continue;
+                for (JsonElement c : o.getAsJsonArray("c")) appliquer(c.getAsJsonObject());
+                dernier = Math.max(dernier, n);
+            }
+        }
+        morceau = plusGrand + 1;
+        return dernier;
+    }
+
+    /** Une ligne changée du journal d'écriture : genre, identifiant, et la ligne (« v ») ou son retrait (« x »). */
+    private static void appliquer(JsonObject c) {
+        String g = c.get("g").getAsString(), id = c.get("id").getAsString();
+        JsonElement v = c.has("x") ? null : c.get("v");
+        switch (g) {
+            case "offres" -> {
+                Offre o = v == null ? null : GSON.fromJson(v, Offre.class);
+                if (o != null && o.id != null && o.objet != null) OFFRES.put(id, o);
+                else OFFRES.remove(id);
+            }
+            case "achats" -> {
+                Achat a = v == null ? null : GSON.fromJson(v, Achat.class);
+                if (a != null && a.ref != null) ACHATS.put(id, a);
+                else ACHATS.remove(id);
+            }
+            case "recups" -> {
+                Recup r = v == null ? null : GSON.fromJson(v, Recup.class);
+                remplacer(RECUPS, id, r != null && r.id != null && r.uuid != null ? r : null);
+            }
+            case "versements" -> {
+                Versement x = v == null ? null : GSON.fromJson(v, Versement.class);
+                if (x != null && x.ref != null) VERSEMENTS.put(id, x);
+                else VERSEMENTS.remove(id);
+            }
+            case "ventes" -> {
+                Vente x = v == null ? null : GSON.fromJson(v, Vente.class);
+                remplacer(VENTES, id, x != null && x.vendeur != null ? x : null);
+            }
+            default -> LOG.warn("[grades] hôtel des ventes : genre inconnu {} dans le journal d'écriture", g);
+        }
+    }
+
+    /** Remplace (à sa place) ou ajoute la ligne d'identifiant {@code id} ; {@code nouvelle} null : la retire. */
+    private static <T> void remplacer(List<T> l, String id, T nouvelle) {
+        for (int i = 0; i < l.size(); i++) {
+            if (id.equals(cle(l.get(i)))) {
+                if (nouvelle == null) l.remove(i);
+                else l.set(i, nouvelle);
+                return;
+            }
+        }
+        if (nouvelle != null) l.add(nouvelle);
+    }
+
+    /** Relevé du fichier complet (fil serveur) : les textes déjà prêts ; un nouveau morceau du journal commence. */
+    private static Releve releve() {
+        List<List<String>> l = new ArrayList<>(GENRES.length);
+        for (Map<String, Ecrit> m : ECRITS) {
+            List<String> j = new ArrayList<>(m.size());
+            for (Ecrit e : m.values()) j.add(e.json());
+            l.add(j);
+        }
+        int ferme = morceau;
+        morceau++;
+        aReecrire = false;
+        dernierComplet = System.currentTimeMillis();
+        return new Releve(l, seq, ferme, fichier, dossier);
+    }
+
+    /**
+     * Fichier complet (fil d'écriture, ou fil serveur à l'arrêt) : fichier temporaire puis remplacement, puis effacement
+     * des morceaux du journal qu'il contient. Faux (journal gardé, réessayé) si l'écriture rate.
+     */
+    private static boolean ecrireComplet(Releve r) {
+        try {
+            StringBuilder b = new StringBuilder(64 * 1024);
+            b.append('{');
+            for (int g = 0; g < GENRES.length; g++) {
+                b.append('"').append(GENRES[g]).append("\":[");
+                List<String> l = r.lignes().get(g);
+                for (int i = 0; i < l.size(); i++) {
+                    if (i > 0) b.append(',');
+                    b.append(l.get(i));
+                }
+                b.append("],");
+            }
+            b.append("\"seq\":").append(r.seq()).append('}');
+            Files.createDirectories(r.dossier());
+            Path tmp = r.fichier().resolveSibling("hdv.json.tmp");
+            Files.writeString(tmp, b, StandardCharsets.UTF_8);
+            Files.move(tmp, r.fichier(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (Exception ex) {
+            LOG.error("[grades] hôtel des ventes : {} impossible à écrire ({}), journal d'écriture gardé", r.fichier(), ex.toString());
+            reessayer = true;
+            return false;
+        }
+        try {
+            for (Path m : morceaux(r.dossier())) if (numero(m) <= r.ferme()) Files.deleteIfExists(m);
+        } catch (Exception ex) {
+            LOG.warn("[grades] hôtel des ventes : journal d'écriture pas effacé ({}), il sera rejoué sans effet", ex.toString());
+        }
+        return true;
+    }
+
+    /** Fichier complet réécrit sur le fil d'écriture (jamais deux à la fois). */
+    private static void reecrireEnFond() {
+        if (bloque || fichier == null || !LIBRE.compareAndSet(true, false)) return;
+        reessayer = false;
+        Releve r = releve();
+        Runnable t = () -> {
+            try {
+                ecrireComplet(r);
+            } finally {
+                LIBRE.set(true);
+            }
+        };
+        try {
+            FIL.execute(t);
+        } catch (RejectedExecutionException ex) {
+            t.run();
+        }
+    }
+
+    /** Attend la fin des écritures en fond (arrêt du serveur), 60 s au plus. */
+    private static void attendreFond() {
+        try {
+            FIL.submit(() -> { }).get(60, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (Exception ex) {
+            LOG.error("[grades] hôtel des ventes : écritures en fond pas terminées ({})", ex.toString());
         }
     }
 
@@ -1350,6 +1715,8 @@ public final class HdvServeur {
             reprendreHerals();
         }
         if (enRetard && ticks % 200 == 100) sauver();
+        // 15/11 : fichier complet recopié sur le fil d'écriture, au plus une fois par minute (le journal d'écriture suffit)
+        if ((aReecrire || reessayer) && ticks % 200 == 150 && System.currentTimeMillis() - dernierComplet >= 60_000L) reecrireEnFond();
         if (ticks % 200 == 0) {
             relireReglages();
             expirer();
