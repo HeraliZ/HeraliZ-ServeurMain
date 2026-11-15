@@ -11,8 +11,9 @@ import java.lang.reflect.Method;
 
 /**
  * Arme TaCZ mise en vente à l'hôtel des ventes : déchargée d'abord, comme le « Décharger » de HeraliZ Tactique
- * ({@code DechargerServeur}) : la balle de la chambre rejoint le chargeur, puis {@code dropAllAmmo} de TaCZ rend tout le
- * chargeur à l'inventaire (au sol s'il est plein). Les munitions sont déplacées, jamais copiées. TaCZ est lu par
+ * ({@code DechargerServeur}) : {@code dropAllAmmo} de TaCZ rend le chargeur à l'inventaire (au sol s'il est plein), puis
+ * la balle de la chambre à part (audit du 15/11, duplication n° 3 : ajoutée au chargeur, elle faisait déborder le compte
+ * des piles de TaCZ, une PKP pleine en perdait une). Les munitions sont déplacées, jamais copiées. TaCZ est lu par
  * réflexion (API publique de TaCZ, noms stables) : sans lui, rien n'est fait.
  */
 final class HdvTacz {
@@ -64,14 +65,27 @@ final class HdvTacz {
             }
             if ((Boolean) useInventoryAmmo.invoke(gun, st) || (Boolean) useDummyAmmo.invoke(gun, st)) return RIEN;
             boolean chambre = (Boolean) hasBulletInBarrel.invoke(gun, st);
-            int balles = (Integer) getCurrentAmmoCount.invoke(gun, st) + (chambre ? 1 : 0);
-            if (balles <= 0) return RIEN;
-            if (chambre) {
-                setBulletInBarrel.invoke(gun, st, false);
-                setCurrentAmmoCount.invoke(gun, st, balles);
-            }
+            int chargeur = (Integer) getCurrentAmmoCount.invoke(gun, st);
+            if (chargeur + (chambre ? 1 : 0) <= 0) return RIEN;
             // munitions inconnues de TaCZ (carburant, énergie) : rien n'est rendu, l'arme les garde (rien de copié)
-            dropAllAmmo.invoke(gun, p, st);
+            if (chargeur > 0) {
+                dropAllAmmo.invoke(gun, p, st);
+                if ((Integer) getCurrentAmmoCount.invoke(gun, st) > 0) {
+                    p.getInventory().setChanged();
+                    return DECHARGEE;
+                }
+            }
+            if (chambre) {
+                // la balle de la chambre à part (jamais ajoutée au chargeur : elle s'y perdait)
+                setBulletInBarrel.invoke(gun, st, false);
+                setCurrentAmmoCount.invoke(gun, st, 1);
+                dropAllAmmo.invoke(gun, p, st);
+                if ((Integer) getCurrentAmmoCount.invoke(gun, st) > 0) {
+                    // rien rendu : la balle retourne dans la chambre
+                    setCurrentAmmoCount.invoke(gun, st, 0);
+                    setBulletInBarrel.invoke(gun, st, true);
+                }
+            }
             p.getInventory().setChanged();
             return DECHARGEE;
         } catch (Throwable t) {
