@@ -43,6 +43,8 @@ public final class PartieServeur implements Partie {
         fr.heraliz.casino.data.EcrituresFond.init();
         // compte de capsules des joueurs (hors du monde ; cache oublie a l'arret)
         fr.heraliz.casino.economy.CompteCapsules.init();
+        // registre des versements des machines (15/11 : une manche reglee n'est jamais rejouee apres un plantage)
+        fr.heraliz.casino.data.RegistreManches.init();
 
         // versions serveur des machines (avant les evenements d'enregistrement)
         MachineType.CAISSE.usine.serveur(CashierBlockEntityServeur::new);

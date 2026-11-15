@@ -34,7 +34,8 @@ public record ActionPacket(BlockPos pos, int action, long[] args) {
         ServerPlayer player = ctx.get().getSender();
         if (player == null || player.isSpectator()) return;
         if (!player.level().isLoaded(p.pos)) return;
-        if (player.level().getBlockEntity(p.pos) instanceof MachineBlockEntity be && be.isNear(player)) {
+        // 15/11 (audit n° 6) : jamais sur une machine dont l'etat recharge est perime (remise a neuf au tick suivant)
+        if (player.level().getBlockEntity(p.pos) instanceof MachineBlockEntity be && be.isNear(player) && be.pret()) {
             be.handleAction(player, p.action, p.args);
         }
     }

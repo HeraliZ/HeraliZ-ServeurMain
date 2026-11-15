@@ -1,7 +1,9 @@
 package fr.heraliz.casino.block;
 
 import fr.heraliz.casino.config.CasinoConfig;
+import fr.heraliz.casino.HeralizCasino;
 import fr.heraliz.casino.data.CasinoStats;
+import fr.heraliz.casino.data.RegistreManches;
 import fr.heraliz.casino.economy.Chips;
 import fr.heraliz.casino.economy.ChipsServeur;
 import fr.heraliz.casino.economy.CompteCapsules;
@@ -10,8 +12,11 @@ import fr.heraliz.casino.net.WinPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
@@ -70,11 +75,57 @@ public final class MachinesServeur {
             public void unseat(MachineBlockEntity be, @Nullable UUID id) {
                 MachinesServeur.unseat(be, id);
             }
+
+            @Override
+            public boolean pret(MachineBlockEntity be) {
+                return MachinesServeur.pret(be);
+            }
         };
+    }
+
+    // =================================================================== versements surs (15/11, audit n° 6)
+    /** La machine peut jouer : verifiee une fois apres son chargement ({@link #verifier}), pas en attente de remise a neuf. */
+    static boolean pret(MachineBlockEntity be) {
+        if (!be.argentVerifie && be.getLevel() instanceof ServerLevel sl) verifier(sl, be);
+        return !be.gelee;
+    }
+
+    /**
+     * Premier tick (ou premiere action) d'une machine chargee : son numero de versement est-il plus petit que celui note
+     * hors du monde ({@link RegistreManches}) ? Alors le monde a ete recharge plus ancien qu'un versement deja fait
+     * (plantage) : la machine est gelee (plus rien ne tourne ni ne s'encaisse) puis remise a neuf au tick suivant, rien
+     * n'est rejoue.
+     */
+    private static void verifier(ServerLevel sl, MachineBlockEntity be) {
+        be.argentVerifie = true;
+        long note = RegistreManches.note(sl, be.getBlockPos());
+        if (be.argent >= note) return;
+        be.gelee = true;
+        BlockPos pos = be.getBlockPos().immutable();
+        HeralizCasino.LOGGER.warn("[HeralizCasino] machine {} en {} : son etat (versement n° {}) est plus ancien qu'un versement deja fait (n° {}), "
+                + "plantage ? Remise a neuf : la manche n'est pas rejouee", be.type.id, pos, be.argent, note);
+        MinecraftServer srv = sl.getServer();
+        srv.tell(new TickTask(srv.getTickCount(), () -> remettreANeuf(sl, pos, be, note)));
+    }
+
+    /** Une machine neuve (etat d'une machine posee) prend la place de l'etat perime ; le numero de versement continue. */
+    private static void remettreANeuf(ServerLevel sl, BlockPos pos, MachineBlockEntity ancienne, long note) {
+        if (sl.getBlockEntity(pos) != ancienne) return;
+        BlockState st = sl.getBlockState(pos);
+        if (!(st.getBlock() instanceof EntityBlock eb) || !(eb.newBlockEntity(pos, st) instanceof MachineBlockEntity neuve)) {
+            HeralizCasino.LOGGER.error("[HeralizCasino] machine en {} : remise a neuf impossible, elle reste gelee jusqu'au redemarrage", pos);
+            return;
+        }
+        neuve.argent = note;
+        neuve.argentVerifie = true;
+        sl.setBlockEntity(neuve);
+        neuve.sync();
     }
 
     // =================================================================== cycle de vie
     static void serverTick(ServerLevel sl, BlockPos pos, BlockState state, MachineBlockEntity be) {
+        // 15/11 (audit n° 6) : etat recharge perime (plus ancien qu'un versement deja fait) : rien ne tourne
+        if (!pret(be)) return;
         // lumiere reglee par les operateurs : appliquee aux machines posees (une verification par seconde)
         if ((sl.getGameTime() + (pos.hashCode() & 15)) % 20 == 0 && state.getBlock() instanceof MachineBlock mb) {
             BlockState lit = mb.withConfiguredLight(state);
@@ -90,6 +141,7 @@ public final class MachinesServeur {
      * @return true si la mise est encaissee
      */
     public static boolean takeBet(MachineBlockEntity be, ServerPlayer p, long amount) {
+        if (!pret(be)) return false;
         long min = be.minBet(), max = be.maxBet();
         if (amount < min || amount > max) {
             MachineBlockEntity.msg(p, Component.translatable("message.heralizcasino.bet_limits", Chips.format(min), Chips.format(max)).withStyle(ChatFormatting.RED));
@@ -110,6 +162,10 @@ public final class MachinesServeur {
      */
     public static void refund(MachineBlockEntity be, ServerLevel level, UUID player, long amount) {
         if (amount <= 0) return;
+        // 15/11 (audit n° 6) : noté hors du monde AVANT d'être versé (jamais rejoué) ; mise prise dans l'inventaire : le
+        // joueur est enregistré d'abord (un plantage ne rend plus les capsules en gardant le remboursement)
+        RegistreManches.avant(level, be);
+        ChipsServeur.avantVersement(level.getServer(), player);
         CasinoStats.get(level.getServer()).cancel(be.type, player, amount);
         ServerPlayer p = level.getServer().getPlayerList().getPlayer(player);
         long surCompte = CompteCapsules.verser(level.getServer(), player, p == null ? null : p.getGameProfile().getName(), amount,
@@ -125,6 +181,10 @@ public final class MachinesServeur {
      * @param wager mise correspondante (pour le multiplicateur affiche)
      */
     public static void payout(MachineBlockEntity be, ServerLevel level, UUID player, String name, long amount, long wager) {
+        // 15/11 (audit n° 6) : manche réglée (gagnée ou perdue) notée hors du monde AVANT le versement : un monde rechargé
+        // plus ancien ne la rejoue jamais ; mise prise dans l'inventaire : le joueur est enregistré avant le gain
+        RegistreManches.avant(level, be);
+        if (amount > 0) ChipsServeur.avantVersement(level.getServer(), player);
         CasinoStats.get(level.getServer()).paid(be.type, player, amount);
         ServerPlayer p = level.getServer().getPlayerList().getPlayer(player);
         float mult = wager > 0 ? (float) amount / wager : 0f;
