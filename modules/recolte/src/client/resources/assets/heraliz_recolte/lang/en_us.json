@@ -1,0 +1,21 @@
+{
+  "item.heraliz_recolte.buche": "Log",
+  "item.heraliz_recolte.pierre_brute": "Raw stone",
+  "item.heraliz_recolte.minerai_fer": "Iron ore",
+  "item.heraliz_recolte.minerai_rare": "Rare ore",
+  "item.heraliz_recolte.hache": "Felling axe",
+  "item.heraliz_recolte.pioche": "Pickaxe",
+  "item.heraliz_recolte.hache_pioche": "Survival pick-axe",
+  "entity.heraliz_recolte.gisement": "Deposit",
+  "entity.heraliz_recolte.arbre": "Tree to fell",
+  "heraliz_recolte.info.buche": "At spawn, the Foreman trades it for planks.",
+  "heraliz_recolte.info.pierre_brute": "At spawn, the Foreman trades it for cut stone.",
+  "heraliz_recolte.info.minerai_fer": "At spawn, the Foreman trades it for metal fragments.",
+  "heraliz_recolte.info.minerai_rare": "At spawn, the Foreman trades it for reinforced metal.",
+  "heraliz_recolte.info.hache": "Fells the trees you can cut down.",
+  "heraliz_recolte.info.pioche": "Breaks stone and metal deposits.",
+  "heraliz_recolte.info.hache_pioche": "Wood and stone, with 40%% fewer hits.",
+  "heraliz_recolte.refus.outil_arbre": "You need an axe to fell this tree.",
+  "heraliz_recolte.refus.outil_gisement": "You need a pickaxe to break this deposit.",
+  "heraliz_recolte.recu": "+%1$s %2$s"
+}

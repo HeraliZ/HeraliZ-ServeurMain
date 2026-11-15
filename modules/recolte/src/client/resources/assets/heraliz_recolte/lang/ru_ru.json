@@ -1,0 +1,21 @@
+{
+  "item.heraliz_recolte.buche": "Бревно",
+  "item.heraliz_recolte.pierre_brute": "Необработанный камень",
+  "item.heraliz_recolte.minerai_fer": "Железная руда",
+  "item.heraliz_recolte.minerai_rare": "Редкая руда",
+  "item.heraliz_recolte.hache": "Топор лесоруба",
+  "item.heraliz_recolte.pioche": "Кирка",
+  "item.heraliz_recolte.hache_pioche": "Топор-кирка выживания",
+  "entity.heraliz_recolte.gisement": "Залежь",
+  "entity.heraliz_recolte.arbre": "Дерево для рубки",
+  "heraliz_recolte.info.buche": "На спавне Прораб обменяет его на доски.",
+  "heraliz_recolte.info.pierre_brute": "На спавне Прораб обменяет его на тёсаный камень.",
+  "heraliz_recolte.info.minerai_fer": "На спавне Прораб обменяет её на металлические фрагменты.",
+  "heraliz_recolte.info.minerai_rare": "На спавне Прораб обменяет её на усиленный металл.",
+  "heraliz_recolte.info.hache": "Рубит деревья, которые можно срубить.",
+  "heraliz_recolte.info.pioche": "Разбивает залежи камня и металла.",
+  "heraliz_recolte.info.hache_pioche": "Дерево и камень, на 40%% меньше ударов.",
+  "heraliz_recolte.refus.outil_arbre": "Чтобы срубить это дерево, нужен топор.",
+  "heraliz_recolte.refus.outil_gisement": "Чтобы разбить эту залежь, нужна кирка.",
+  "heraliz_recolte.recu": "+%1$s %2$s"
+}
