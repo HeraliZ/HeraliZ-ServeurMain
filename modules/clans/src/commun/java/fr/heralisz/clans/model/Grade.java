@@ -40,6 +40,7 @@ public enum Grade {
                 yield s;
             }
             // base (BASES_SPEC §1) : membre = entrer, construire, casser, coffres, poser coffres, portes ; recrue = entrer, portes
+            // 15/11 (audit C1) : « Accepter un /tpa dans la base » (BASE_TP_ACCEPTER) : chef et haut grade seulement
             case MEMBRE -> EnumSet.of(Perm.BANQUE_DEPOSER, Perm.BANQUE_JOURNAL, Perm.CAPTURER, Perm.CHAT_CLAN,
                     Perm.BASE_ENTRER, Perm.BASE_CONSTRUIRE, Perm.BASE_CASSER, Perm.BASE_COFFRES, Perm.BASE_POSER_COFFRES, Perm.BASE_PORTES,
                     Perm.BASE_TP);

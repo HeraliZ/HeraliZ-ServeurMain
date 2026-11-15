@@ -405,6 +405,7 @@ public final class BasesClans extends SafeSavedData {
                 case CHESTS -> fr.heralisz.clans.model.Perm.BASE_COFFRES;
                 case MANAGE -> fr.heralisz.clans.model.Perm.BASE_GERER;
                 case TELEPORT -> fr.heralisz.clans.model.Perm.BASE_TP;
+                case TP_ACCEPT -> fr.heralisz.clans.model.Perm.BASE_TP_ACCEPTER;
             };
             return fr.heralisz.clans.api.ClansApi.aPerm(joueur, clan.get(), p);
         }

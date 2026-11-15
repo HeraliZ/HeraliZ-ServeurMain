@@ -735,6 +735,7 @@
   "gui.arbre.cout_niveau": "Lvl %3$s · %1$s pt · %2$s herals",
   "msg.arbre.niveau": "The clan must be level %s (it is level %s).",
   "perm.base_tp": "Teleport to the base",
+  "perm.base_tp_accepter": "Accept a /tpa into the base",
   "msg.admin.lecture_incomplete": "Warning: heralisz_clans/clans.json or joueurs.json could not be fully read at startup. The original is kept next to it (.illisible-…): stop the server, fix that copy and put it back before restarting.",
   "msg.clan_plein_max": "The clan is full (%s members, the maximum).",
   "msg.chef_seul_quitter": "You are alone in the clan: to leave, disband it (Settings tab or /clan dissoudre).",

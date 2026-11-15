@@ -735,6 +735,7 @@
   "gui.arbre.cout_niveau": "Niv. %3$s · %1$s pt · %2$s hérals",
   "msg.arbre.niveau": "Il faut le niveau %s du clan (il est niveau %s).",
   "perm.base_tp": "Se téléporter à la base",
+  "perm.base_tp_accepter": "Accepter un /tpa dans la base",
   "msg.admin.lecture_incomplete": "Attention : heralisz_clans/clans.json ou joueurs.json n'a pas pu être lu en entier au démarrage. L'original est gardé à côté (.illisible-…) : arrêtez le serveur, corrigez cette copie et remettez-la à la place avant de redémarrer.",
   "msg.clan_plein_max": "Le clan est plein (%s membres, le maximum).",
   "msg.chef_seul_quitter": "Tu es seul dans le clan : pour partir, dissous-le (onglet Paramètres ou /clan dissoudre).",

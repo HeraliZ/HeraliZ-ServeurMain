@@ -735,6 +735,7 @@
   "gui.arbre.cout_niveau": "Ур. %3$s · %1$s оч. · %2$s гералов",
   "msg.arbre.niveau": "Нужен %s уровень клана (сейчас %s).",
   "perm.base_tp": "Телепорт на базу",
+  "perm.base_tp_accepter": "Принимать /tpa на базе",
   "msg.admin.lecture_incomplete": "Внимание: heralisz_clans/clans.json или joueurs.json не удалось прочитать полностью при запуске. Оригинал сохранён рядом (.illisible-…): остановите сервер, исправьте эту копию и верните её на место перед перезапуском.",
   "msg.clan_plein_max": "Клан заполнен (%s участников, это максимум).",
   "msg.chef_seul_quitter": "Ты один в клане: чтобы уйти, распусти его (вкладка «Настройки» или /clan dissoudre).",

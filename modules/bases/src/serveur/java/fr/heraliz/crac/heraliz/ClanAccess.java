@@ -32,7 +32,9 @@ public final class ClanAccess {
         /** Upgrade or break the Claim Block (BASE_GERER). */
         MANAGE,
         /** Teleport to the base: /home and respawn at the base (BASE_TP, 25/10). */
-        TELEPORT
+        TELEPORT,
+        /** Accept a /tpa while in the base, that is bring someone into it (BASE_TP_ACCEPTER, 15/11, audit C1). */
+        TP_ACCEPT
     }
 
     private static final String CLANS = "heralisz_clans";

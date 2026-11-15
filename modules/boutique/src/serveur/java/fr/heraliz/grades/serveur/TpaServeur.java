@@ -48,7 +48,9 @@ import java.util.UUID;
  * pas. Refusé en match, en combat (celui qui part comme celui qui reçoit) et vers un joueur en match. Depuis la 2.4.0
  * (règle du propriétaire du 23/10) : seulement d'un joueur sur la carte (overworld) vers un joueur sur la carte, revérifié
  * à l'acceptation et au moment de partir ; refusé aussi à terre. Le tutoriel des
- * bases de CRac refuse ces commandes. Fil serveur seulement.
+ * bases de CRac refuse ces commandes. 15/11 (audit C1, demande du propriétaire) : refusé aussi quand celui qui accueille
+ * est dans la zone de la base de son clan sans le droit de clan « Accepter un /tpa dans la base » (CRac), revérifié au
+ * moment de partir ; les deux joueurs sont prévenus. Fil serveur seulement.
  */
 final class TpaServeur {
     private static final long EXPIRATION_MS = 60_000L;
@@ -271,6 +273,13 @@ final class TpaServeur {
         if (!staff(p) && cible.level().dimension() != Level.OVERWORLD) {
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.carte", "Le /tpa ne marche que sur la carte, vers un joueur sur la carte."));
         }
+        // 15/11 (audit C1, demande du propriétaire) : dans la zone de la base de son clan, il faut le droit de clan « Accepter
+        // un /tpa dans la base » pour y faire venir quelqu'un (CRac) ; celui qui demandait le sait aussi
+        if (!staff(p) && tpaRefuseeDansBase(cible)) {
+            refus(p, baseRefusDemandeur(cible));
+            return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.base",
+                    "Tu es dans la base de ton clan sans le droit « Accepter un /tpa dans la base » : personne ne peut t'y rejoindre. Sors de la base pour accepter."));
+        }
         Component non = empechement(p);
         if (non != null) {
             refus(p, non);
@@ -334,10 +343,48 @@ final class TpaServeur {
             if (ticks < a.fin()) return false;
             Component non = empechement(p);
             if (non == null && !staff(p)) non = empechementCible(cible);
+            // 15/11 (audit C1) : celui qui accueille est entré entre-temps dans la base de son clan sans le droit d'y faire
+            // venir quelqu'un : rien ne part, les deux le savent
+            if (non == null && !staff(p) && tpaRefuseeDansBase(cible)) {
+                non = baseRefusDemandeur(cible);
+                refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.base_depart",
+                        "Téléportation de %s annulée : tu es dans la base de ton clan sans le droit « Accepter un /tpa dans la base ».",
+                        p.getDisplayName()));
+            }
             if (non != null) refus(p, non);
             else teleporter(p, cible);
             return true;
         });
+    }
+
+    private static Component baseRefusDemandeur(ServerPlayer cible) {
+        return Component.translatableWithFallback("heraliz_grades.tpa.base_demandeur",
+                "%s est dans la base de son clan et n'a pas le droit d'y faire venir quelqu'un.", cible.getDisplayName());
+    }
+
+    /** {@code fr.heraliz.crac.api.BaseCracApi.tpaRefuseeDansBase} (CRac, par réflexion ; absent : jamais refusé). */
+    private static java.lang.reflect.Method baseRefus;
+    private static boolean baseCherche;
+
+    /**
+     * 15/11 (audit C1, demande du propriétaire) : le joueur est dans la zone de la base de son clan et n'a pas le droit de
+     * clan « Accepter un /tpa dans la base » : personne ne peut l'y rejoindre par /tpa. CRac absent ou en erreur : faux.
+     */
+    private static boolean tpaRefuseeDansBase(ServerPlayer cible) {
+        if (!baseCherche) {
+            baseCherche = true;
+            try {
+                baseRefus = Class.forName("fr.heraliz.crac.api.BaseCracApi").getMethod("tpaRefuseeDansBase", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                baseRefus = null;
+            }
+        }
+        if (baseRefus == null) return false;
+        try {
+            return Boolean.TRUE.equals(baseRefus.invoke(null, cible));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
     }
 
     // ------------------------------------------------------------------ commandes

@@ -30,7 +30,11 @@ public final class ClansNet {
     /** 10 (03/11) : bareme de /clan don (DonsS2C) pour l'infobulle des objets qu'on peut donner au clan. */
     /** 11 (11/11) : onglet Saison, points en centiemes et nombre de clans classes (SaisonS2C, SaisonLigne). */
     /** 12 (11/11) : historique du clan, pages filtrees par categorie (HistoriqueC2S, HistoriqueS2C). */
-    private static final String VERSION = "12";
+    /**
+     * 13 (15/11) : permission BASE_TP_ACCEPTER (bit 25) dans les masques des grades et des membres : un jeu plus ancien
+     * l'effacerait en reglant les permissions d'un grade.
+     */
+    private static final String VERSION = "13";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
