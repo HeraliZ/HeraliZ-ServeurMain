@@ -422,6 +422,8 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
   cœur posé seulement par le chef ou un membre qui gère la base ; points et rangs affichés sur le cœur (toutes les 5 s) ;
   clan dissous : cœur retiré ;
 - arbre : rayon de la base 20/23/26/29 (claim de niveau 4, `radiusL4`), plus d'agrandissement au métal renforcé ;
+  15/11 (audit H2) : une armoire (re)posée reprend la taille déjà payée par l'arbre sans redemander de métal, palier 4
+  compris (avant : « trop grand » au palier 4, 10 à 35 métal renforcé aux paliers 2 et 3) ;
   délai du `/home` 10/8/6/4 min ;
 - `fr.heraliz.crac.api.CoeurApi.clanAUnCoeur(UUID)` (lu par Clans ; cœur dans la zone de son armoire).
 

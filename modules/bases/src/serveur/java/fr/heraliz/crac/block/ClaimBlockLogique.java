@@ -5,6 +5,7 @@ import fr.heraliz.crac.heraliz.ClanAccess;
 import java.util.UUID;
 import fr.heraliz.crac.Config;
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
+import fr.heraliz.crac.build.world.StructureService;
 import fr.heraliz.crac.claim.Claim;
 import fr.heraliz.crac.claim.ClaimData;
 import fr.heraliz.crac.claim.ClaimManager;
@@ -113,12 +114,16 @@ public final class ClaimBlockLogique {
             sp.displayClientMessage(Txt.red("crac.claim.not_linked"), true);
             return null;
         }
-        String problem = ClaimBlockHandler.placementProblem(sl, sp, g, pos, state.getValue(ClaimBlock.TIER));
+        // HeraliZ (15/11, audit H2) : l'état du bloc s'arrête au palier 3 ; une base agrandie au palier 4 par l'arbre du clan
+        // reprend la zone que l'arbre a payée (avant : refusée, « trop grand »)
+        int arbre = fr.heraliz.crac.heraliz.ArbreBases.palierPaye(sl.getServer(), g.id());
+        int tier = Math.max(state.getValue(ClaimBlock.TIER), arbre > 3 ? StructureService.claimTierFor(sl, pos, arbre) : 0);
+        String problem = ClaimBlockHandler.placementProblem(sl, sp, g, pos, tier);
         if (problem != null) {
             sp.displayClientMessage(Txt.red("crac.claim.lost", Txt.c(problem)), false);
             return null;
         }
-        ClaimManager.addClaim(sl, pos, g.id(), state.getValue(ClaimBlock.TIER));
+        ClaimManager.addClaim(sl, pos, g.id(), tier);
         C2SRequestNearbyClaimsTraitement.pushAll(sl);
         sp.displayClientMessage(Txt.green("crac.claim.restored", g.name()), false);
         return ClaimManager.getByAnchor(sl, pos);

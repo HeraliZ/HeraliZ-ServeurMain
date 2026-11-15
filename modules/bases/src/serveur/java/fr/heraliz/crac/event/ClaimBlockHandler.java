@@ -104,12 +104,18 @@ public final class ClaimBlockHandler {
         if (zone != null) {
             return zone;
         }
-        int tier = StructureService.claimTierFor(level, pos);
+        // HeraliZ (15/11, audit H2) : la taille déjà payée par l'arbre du clan (palier 1 à 4) ne se repaie pas en métal, et une
+        // base agrandie au palier 4 (rayon 29) se repose (avant : palier de la pose limité à 3, « trop grand » ; 10 à 35 métal
+        // renforcé redemandés aux paliers 2 et 3). Au-delà de ce que l'arbre a payé (base agrandie au métal avant), le métal
+        // est demandé comme avant.
+        int arbre = g == null ? 0 : fr.heraliz.crac.heraliz.ArbreBases.palierPaye(level.getServer(), g.id());
+        int tier = StructureService.claimTierFor(level, pos, Math.max(3, arbre));
+        boolean parArbre = tier <= arbre;
         String problem = placementProblem(level, player, g, pos, tier);
         if (problem != null) {
             return Txt.red(problem);
         }
-        List<BuildCost> cost = ClaimManager.tierCost(tier);
+        List<BuildCost> cost = parArbre ? List.of() : ClaimManager.tierCost(tier);
         if (!Costs.has(player, cost)) {
             return Txt.red("crac.claim.needs_tier", tier, Costs.describe(cost));
         }
@@ -118,13 +124,15 @@ public final class ClaimBlockHandler {
         // 11/11 : journal et historique du clan (groupe d'un clan seulement : la cabane du tutoriel n'en a pas)
         fr.heraliz.crac.heraliz.JournalClan.groupe(level.getServer(), g.id(), "crac.journal.armoire_posee", player.getGameProfile().getName());
         if (level.getBlockEntity(pos) instanceof ClaimBlockEntity be) {
-            // HeraliZ (28/10) : déplaçable au marteau peu après la pose (DeplacerArmoire), le palier payé rendu
-            be.setPose(System.currentTimeMillis(), player.getAbilities().instabuild ? 1 : tier);
+            // HeraliZ (28/10) : déplaçable au marteau peu après la pose (DeplacerArmoire), le palier payé rendu ; 15/11 :
+            // taille payée par l'arbre = rien de payé à la pose, rien à rendre
+            be.setPose(System.currentTimeMillis(), player.getAbilities().instabuild || parArbre ? 1 : tier);
         }
         fr.heraliz.crac.bases.AccesBase.get(level.getServer()).armoirePosee(player.getUUID(), level, pos);
         BlockState state = level.getBlockState(pos);
-        if (state.getBlock() instanceof ClaimBlock && state.getValue(ClaimBlock.TIER) != tier) {
-            level.setBlock(pos, state.setValue(ClaimBlock.TIER, tier), Block.UPDATE_ALL);
+        // l'état du bloc va de 1 à 3 (palier 4 de l'arbre : 3, comme ArbreBases)
+        if (state.getBlock() instanceof ClaimBlock && state.getValue(ClaimBlock.TIER) != Math.min(3, tier)) {
+            level.setBlock(pos, state.setValue(ClaimBlock.TIER, Math.min(3, tier)), Block.UPDATE_ALL);
         }
         C2SRequestNearbyClaimsTraitement.pushAll(level);
         player.displayClientMessage(Txt.green("crac.claim.created", g.name(), tier, Config.claimRadius(tier)), false);

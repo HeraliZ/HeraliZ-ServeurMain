@@ -37,6 +37,19 @@ public final class ArbreBases {
         return BasesClans.actif() && SaisonPont.present();
     }
 
+    /**
+     * HeraliZ (15/11, audit H2) : palier de zone (1 à 4) que l'arbre du clan de ce groupe a déjà payé (hérals et points) ;
+     * 0 sans arbre ou pour un groupe qui n'est pas celui d'un clan. Une armoire (re)posée par ce clan prend jusqu'à ce
+     * palier sans payer de métal renforcé ({@code ClaimBlockHandler.claim}, {@code ClaimBlockLogique.restoreClaim}).
+     */
+    public static int palierPaye(MinecraftServer server, @Nullable UUID groupe) {
+        if (!agrandissementParArbre() || groupe == null) {
+            return 0;
+        }
+        UUID clan = BasesClans.clanDuGroupe(server, groupe);
+        return clan == null ? 0 : 1 + Math.max(0, Math.min(3, SaisonPont.palier(clan, "base")));
+    }
+
     static void appliquer(MinecraftServer server, BasesClans d) {
         if (!agrandissementParArbre()) {
             return;

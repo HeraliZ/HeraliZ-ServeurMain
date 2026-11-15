@@ -1232,17 +1232,25 @@ public final class StructureService {
      * zone is big enough ({@link #claimProblem} then refuses it).
      */
     public static int claimTierFor(ServerLevel level, BlockPos claimPos) {
+        return claimTierFor(level, claimPos, 3);
+    }
+
+    /**
+     * Same, up to tier {@code max}: HeraliZ (15/11, audit H2) : 4 for a clan whose tree paid the last size (radius 29),
+     * {@code max} when no smaller zone is big enough.
+     */
+    public static int claimTierFor(ServerLevel level, BlockPos claimPos, int max) {
         Building b = ClaimManager.buildingUnder(level, claimPos);
         if (b == null) {
             return 1;
         }
         List<Piece> pieces = store(level).piecesOf(b);
-        for (int tier = 1; tier < 3; tier++) {
+        for (int tier = 1; tier < max; tier++) {
             if (zoneTient(claimPos, tier, pieces)) {
                 return tier;
             }
         }
-        return 3;
+        return max;
     }
 
     /**
