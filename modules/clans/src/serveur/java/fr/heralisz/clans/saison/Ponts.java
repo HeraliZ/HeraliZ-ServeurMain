@@ -151,6 +151,35 @@ final class Ponts {
         return false;
     }
 
+    private static Method cwConfig;
+    private static java.lang.reflect.Field cwClansMin;
+    private static boolean cwCherche;
+
+    /**
+     * Clans differents au minimum pour qu'un ClashWar rapporte des points de saison : le reglage du ClashWar
+     * ({@code saison_clans_min} de heraliz_clashwar/clashwar.json, {@code fr.heraliz.clashwar.tournoi.CwConfig}, par
+     * reflexion). 15/11 (audit B1) : avant, l'onglet Saison montrait 4 ecrit en dur. ClashWar absent : 4, son defaut.
+     */
+    static int clashwarClansMin() {
+        if (!cwCherche) {
+            cwCherche = true;
+            try {
+                Class<?> c = Class.forName("fr.heraliz.clashwar.tournoi.CwConfig");
+                cwConfig = c.getMethod("get");
+                cwClansMin = c.getField("saisonClansMin");
+            } catch (ReflectiveOperationException | LinkageError e) {
+                cwConfig = null;
+                cwClansMin = null;
+            }
+        }
+        if (cwConfig == null || cwClansMin == null) return 4;
+        try {
+            return Math.max(1, cwClansMin.getInt(cwConfig.invoke(null)));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return 4;
+        }
+    }
+
     @Nullable
     static String id(net.minecraft.world.entity.Entity e) {
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());

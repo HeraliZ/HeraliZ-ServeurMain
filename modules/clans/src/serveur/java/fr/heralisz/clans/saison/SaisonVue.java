@@ -22,8 +22,6 @@ public final class SaisonVue {
     private SaisonVue() {
     }
 
-    /** Clans differents au minimum pour qu'un ClashWar compte (Recompenses.SAISON_CLANS_MIN du ClashWar). */
-    private static final int CLASHWAR_CLANS_MIN = 4;
     private static final String[] AUCUN = new String[0];
 
     /**
@@ -101,7 +99,8 @@ public final class SaisonVue {
         // events
         double m = b.multiplicateur("clashwar");
         double[] pl = b.places;
-        String[] min = {String.valueOf(CLASHWAR_CLANS_MIN)};
+        // 15/11 (audit B1) : clans differents au minimum, lu dans le reglage du ClashWar (avant : 4 ecrit en dur ici)
+        String[] min = {String.valueOf(Ponts.clashwarClansMin())};
         l.add(new LigneBareme(ev, "clashwar_12", "paire", new double[]{place(pl, 0) * m, place(pl, 1) * m}, "clashwar", min));
         l.add(new LigneBareme(ev, "clashwar_34", "paire", new double[]{place(pl, 2) * m, place(pl, 3) * m}, "clashwar", min));
         l.add(ligne(ev, "clashwar_participation", "un", new double[]{b.participation * m}, ""));
