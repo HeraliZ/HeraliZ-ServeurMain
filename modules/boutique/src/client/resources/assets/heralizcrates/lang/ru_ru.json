@@ -198,6 +198,7 @@
   "command.heralizcrates.cles.retirees": "%s × %s снято у игрока %s.",
   "command.heralizcrates.cles.rien": "У игрока %s нет ключа «%s» для снятия.",
   "message.heralizcrates.attente": "Инвентарь полон: %s ждёт тебя; получишь, как только освободится место.",
+  "command.heralizcrates.login": "Сначала войди (/login): эта команда только для вошедших операторов.",
   "message.heralizcrates.attente_match": "В матче: %s ждёт тебя; получишь по возвращении.",
   "message.heralizcrates.attente_rendue": "Ожидавшие тебя предметы положены в инвентарь: %s."
 }

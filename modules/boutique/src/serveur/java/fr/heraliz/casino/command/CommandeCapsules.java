@@ -74,6 +74,8 @@ final class CommandeCapsules {
     }
 
     private static int changer(CommandContext<CommandSourceStack> c, ServerPlayer p, long delta) {
+        // 15/11 (audit n° 3) : comme /eco donner, l'operateur doit etre connecte sur AuthMe (la console passe)
+        if (!CasinoCommand.authentifie(c.getSource())) return 0;
         String nom = p.getGameProfile().getName(), source = "staff " + c.getSource().getTextName();
         boolean ok = delta > 0 ? CompteCapsules.crediter(p.getUUID(), nom, delta, source) : CompteCapsules.debiter(p.getUUID(), nom, -delta, source);
         if (!ok) {

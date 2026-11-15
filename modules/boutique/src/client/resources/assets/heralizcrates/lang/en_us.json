@@ -198,6 +198,7 @@
   "command.heralizcrates.cles.retirees": "%s × %s removed from %s.",
   "command.heralizcrates.cles.rien": "%s has no %s to remove.",
   "message.heralizcrates.attente": "Inventory full: %s is waiting for you; you will get it as soon as there is room.",
+  "command.heralizcrates.login": "Log in first (/login): this command is reserved for logged-in operators.",
   "message.heralizcrates.attente_match": "In a match: %s is waiting for you; you will get it when you are back.",
   "message.heralizcrates.attente_rendue": "Items that were waiting for you put in your inventory: %s."
 }

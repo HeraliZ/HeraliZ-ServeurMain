@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import fr.heraliz.casino.HeralizCasino;
 import fr.heraliz.casino.config.CasinoConfig;
 import fr.heraliz.casino.data.CasinoStats;
 import fr.heraliz.casino.data.Jackpot;
@@ -33,6 +34,9 @@ import java.util.Locale;
 /**
  * /casino : solde, jetons (admin), machines (admin), statistiques, jackpot, rechargement des reglages. Les reponses
  * passent par {@link Reponses} (visibles meme avec la regle sendCommandFeedback=false).
+ * <p>15/11 (audit n° 3) : creer ou retirer des capsules ({@code jetons donner|retirer}) et fixer le jackpot demandent,
+ * comme {@code /eco donner}, l'operateur de niveau 4 connecte sur AuthMe ({@link #authentifie}) ; la console (site,
+ * AzLink, caisses) garde son niveau 4. Chaque operation est notee dans le journal du serveur.
  */
 public final class CasinoCommand {
     private CasinoCommand() {
@@ -98,10 +102,10 @@ public final class CasinoCommand {
                 .then(CommandeCapsules.staff())
                 .then(Commands.literal("solde").executes(CasinoCommand::balance))
                 .then(Commands.literal("jetons").requires(s -> s.hasPermission(2))
-                        .then(Commands.literal("donner").then(Commands.argument("joueurs", EntityArgument.players())
+                        .then(Commands.literal("donner").requires(s -> s.hasPermission(4)).then(Commands.argument("joueurs", EntityArgument.players())
                                 .then(Commands.argument("montant", LongArgumentType.longArg(1, 1_000_000_000L))
                                         .executes(c -> give(c, EntityArgument.getPlayers(c, "joueurs"), LongArgumentType.getLong(c, "montant"))))))
-                        .then(Commands.literal("retirer").then(Commands.argument("joueurs", EntityArgument.players())
+                        .then(Commands.literal("retirer").requires(s -> s.hasPermission(4)).then(Commands.argument("joueurs", EntityArgument.players())
                                 .then(Commands.argument("montant", LongArgumentType.longArg(1, 1_000_000_000L))
                                         .executes(c -> take(c, EntityArgument.getPlayers(c, "joueurs"), LongArgumentType.getLong(c, "montant"))))))
                         .then(Commands.literal("voir").then(Commands.argument("joueur", EntityArgument.player())
@@ -115,7 +119,7 @@ public final class CasinoCommand {
                         .then(Commands.literal("reset").executes(CasinoCommand::resetStats)))
                 .then(Commands.literal("jackpot")
                         .executes(CasinoCommand::jackpot)
-                        .then(Commands.argument("montant", LongArgumentType.longArg(0, 1_000_000_000L)).requires(s -> s.hasPermission(2))
+                        .then(Commands.argument("montant", LongArgumentType.longArg(0, 1_000_000_000L)).requires(s -> s.hasPermission(4))
                                 .executes(c -> setJackpot(c, LongArgumentType.getLong(c, "montant")))))
                 .then(Commands.literal("lumiere").requires(s -> s.hasPermission(2))
                         .executes(CasinoCommand::lights)
@@ -186,7 +190,21 @@ public final class CasinoCommand {
         return 1;
     }
 
+    /**
+     * 15/11 (audit n° 3) : un operateur joueur doit etre connecte sur AuthMe (un pseudo d'op ne vaut rien avant le /login),
+     * comme pour {@code /eco donner} ; la console et RCON passent toujours. Refus explique a l'auteur.
+     */
+    static boolean authentifie(CommandSourceStack s) {
+        if (!(s.getEntity() instanceof ServerPlayer p) || fr.heraliz.grades.serveur.GradesApi.authentifie(p)) return true;
+        Reponses.erreur(s, Component.translatableWithFallback("command.heralizcasino.login",
+                "Connecte-toi d'abord (/login) : cette commande est réservée aux opérateurs connectés."));
+        return false;
+    }
+
     private static int give(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> players, long amount) {
+        if (!authentifie(c.getSource())) return 0;
+        HeralizCasino.LOGGER.info("[HeralizCasino] /casino jetons donner par {} : {} capsules a {} joueur(s)", c.getSource().getTextName(), amount,
+                players.size());
         for (ServerPlayer p : players) {
             ChipsServeur.give(p, amount);
             p.sendSystemMessage(Component.translatable("command.heralizcasino.received", Chips.format(amount)).withStyle(ChatFormatting.GOLD));
@@ -196,6 +214,9 @@ public final class CasinoCommand {
     }
 
     private static int take(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> players, long amount) {
+        if (!authentifie(c.getSource())) return 0;
+        HeralizCasino.LOGGER.info("[HeralizCasino] /casino jetons retirer par {} : {} capsules a {} joueur(s)", c.getSource().getTextName(), amount,
+                players.size());
         int ok = 0;
         for (ServerPlayer p : players) {
             if (ChipsServeur.take(p, amount)) {
@@ -400,6 +421,8 @@ public final class CasinoCommand {
     }
 
     private static int setJackpot(CommandContext<CommandSourceStack> c, long v) {
+        if (!authentifie(c.getSource())) return 0;
+        HeralizCasino.LOGGER.info("[HeralizCasino] /casino jackpot par {} : {} capsules", c.getSource().getTextName(), v);
         Jackpot j = Jackpot.get(c.getSource().getServer());
         j.set(v);
         j.broadcast(c.getSource().getServer(), true);

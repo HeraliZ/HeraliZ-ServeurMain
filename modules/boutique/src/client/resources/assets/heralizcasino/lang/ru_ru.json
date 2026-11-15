@@ -100,6 +100,7 @@
   "command.heralizcasino.take_failed": "У %s недостаточно крышек (%s).",
   "command.heralizcasino.taken": "%s крышек отнято у игроков: %s.",
   "command.heralizcasino.see": "У %s крышек: %s.",
+  "command.heralizcasino.login": "Сначала войди (/login): эта команда только для вошедших операторов.",
   "command.heralizcasino.unknown_machine": "Неизвестный автомат: %s",
   "command.heralizcasino.lumiere.title": "Освещение автоматов (0 = нет, 15 = фонарь):",
   "command.heralizcasino.lumiere.usine": " (по умолчанию: %s)",

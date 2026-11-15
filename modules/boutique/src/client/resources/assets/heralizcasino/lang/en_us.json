@@ -100,6 +100,7 @@
   "command.heralizcasino.take_failed": "%s doesn't have enough caps (%s).",
   "command.heralizcasino.taken": "%s caps taken from %s player(s).",
   "command.heralizcasino.see": "%s has %s caps.",
+  "command.heralizcasino.login": "Log in first (/login): this command is reserved for logged-in operators.",
   "command.heralizcasino.unknown_machine": "Unknown machine: %s",
   "command.heralizcasino.lumiere.title": "Machine lighting (0 = none, 15 = lantern):",
   "command.heralizcasino.lumiere.usine": " (default: %s)",
