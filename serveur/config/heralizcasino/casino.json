@@ -210,13 +210,6 @@
         "vente": true
       },
       {
-        "item": "heralisz_tactical:consumable",
-        "nbt": "{ConsumableId:\"heralisz_heal:attelle_bandage\"}",
-        "jetons": 200,
-        "achat": false,
-        "vente": true
-      },
-      {
         "item": "tacz:ammo",
         "nbt": "{AmmoId:\"tacz:9mm\"}",
         "jetons": 4,

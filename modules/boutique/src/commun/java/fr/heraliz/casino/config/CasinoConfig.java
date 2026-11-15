@@ -382,7 +382,6 @@ public final class CasinoConfig {
         l.add(new Exchange("heraliz_composants:clou", 25, false, true));
         l.add(new Exchange("geckolib:food_mre", 15, false, true));
         l.add(new Exchange("heralisz_tactical:consumable", "{ConsumableId:\"heralisz_heal:ibuprofen\"}", 30, false, true));
-        l.add(new Exchange("heralisz_tactical:consumable", "{ConsumableId:\"heralisz_heal:attelle_bandage\"}", 60, false, true));
         l.add(new Exchange("tacz:ammo", "{AmmoId:\"tacz:9mm\"}", 3, false, true));
         l.add(new Exchange("heralisz_utils:document_lootbonus", 2500, false, true));
         l.add(new Exchange("heralizcrates:spectacle_key", 5000, false, true));
