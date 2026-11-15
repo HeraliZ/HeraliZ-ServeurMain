@@ -279,7 +279,8 @@ environ 3 à 5 XP par héral de leur prix chez Mila (Épique 50, Légendaire 200
 - refusé en créatif et en spectateur (copie au bouton du milieu) ;
 - les objets Légendaires et Uniques (non empilables) sont numérotés par l'anti-duplication de Spartan
   (`trackedItems` de `spartan-common.toml`) ; un objet dont le numéro a déjà été donné est refusé (copie), le staff le
-  voit dans le journal ; le fichier des clans est écrit tout de suite après chaque don ;
+  voit dans le journal ; à chaque don, le joueur est enregistré sans l'objet, puis le clan (XP et numéro de l'objet) est
+  écrit tout de suite (15/11, audit M3 : avant, seul le clan l'était, un plantage rendait l'objet ET gardait l'XP) ;
 - au-delà du plafond du jour (3 000 XP), le joueur doit confirmer (`/clan don confirmer`, 30 s) : il ne perd pas un
   objet rare sans le savoir.
 Les objets Uniques à revendre (`heraliz_composants:crane_cristal`, `sceptre`, `calice`) tombent depuis le 31/10

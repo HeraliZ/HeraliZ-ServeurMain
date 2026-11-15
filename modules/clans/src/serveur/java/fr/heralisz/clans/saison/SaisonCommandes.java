@@ -217,14 +217,18 @@ public final class SaisonCommandes {
         // chat du clan)
         net.minecraft.network.chat.Component nom = st.getHoverName();
         p.getInventory().setItem(p.getInventory().selected, net.minecraft.world.item.ItemStack.EMPTY);
+        // 15/11 (audit M3) : le joueur est enregistre sans l'objet AVANT que le clan ne recoive l'XP. Avant, seul le fichier
+        // des clans etait ecrit (XP), le joueur jamais : apres un plantage, il retrouvait l'objet et le clan gardait l'XP.
+        // Un plantage entre les deux perd maintenant l'XP, il ne rend jamais l'objet.
+        p.getInventory().setChanged();
+        fr.heralisz.clans.server.CoffreClan.sauverJoueurMaintenant(p);
         s.noterDon(uid);
         long gagne = ClanService.ajouterXp(clan, fr.heralisz.clans.model.SourceXp.DON, propose, p.getUUID());
         ClanService.diffuserChat(clan, "msg.don.fait", p.getGameProfile().getName(), n, nom, gagne);
         fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} ({}, numero {}) par {} (+{} XP sur {})", clan.tag, n, nom.getString(), id, uid,
                 p.getGameProfile().getName(), gagne, propose);
-        // l'objet n'existe plus : le fichier des clans est ecrit tout de suite (un plantage ne rend pas l'objet ET l'XP)
-        p.getInventory().setChanged();
-        s.sauvegarderMaintenant();
+        // puis le clan (XP et numero anti-copie de l'objet) tout de suite, par le journal d'ecriture des clans (audit B2)
+        s.sauvegarderClanMaintenant(clan, uid);
         if (DON_A_CONFIRMER.size() > 64) DON_A_CONFIRMER.values().removeIf(t -> t < now);
         return 1;
     }
