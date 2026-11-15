@@ -31,8 +31,9 @@ import java.util.Random;
  * </ul>
  * Les vols en cours ne survivent pas a un redemarrage du serveur : {@code Territoires.arreter} rend son delai a la
  * zone d'un vol qui n'a pas encore largue ({@link #zonesDelaiARendre}). 15/11 (audit B4) : ce que le signal rapporte
- * (XP, quetes, annonce : {@code auLargage}) n'est donne qu'au largage de la caisse ; avant, il l'etait au signal, et un
- * redemarrage pendant le vol rendait le delai en gardant l'XP et la quete : un second signal les comptait deux fois.
+ * (XP du clan, quete, statistique du joueur, journal du clan : {@code auLargage}) n'est donne qu'au largage de la caisse ;
+ * l'annonce a tout le serveur reste au signal. Avant, tout etait donne au signal, et un redemarrage pendant le vol rendait
+ * le delai en gardant l'XP et la quete : un second signal les comptait deux fois.
  */
 public final class Ravitaillement {
     /** 45 s entre le signal et le depart de l'avion. */
