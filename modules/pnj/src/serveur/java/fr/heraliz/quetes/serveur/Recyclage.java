@@ -307,6 +307,15 @@ final class Recyclage {
                 new ArrayList<>(parComposant.keySet()), new ArrayList<>(parComposant.values()), Math.round(v.facteur() * 1000), v.usure());
     }
 
+    /**
+     * Objets comptés pour la quête du jour « Recycler N objets » quand {@code n} objets de cette case sont recyclés (15/11,
+     * audit n° 4 : 8 balles suffisaient) : un objet seul compte pour un ; une règle « par N » (munitions par 15) compte
+     * pour un objet par paquet entier, un paquet incomplet ne compte pas.
+     */
+    static int objetsQuete(Verdict v, int n) {
+        return v.par() <= 1 ? n : n / v.par();
+    }
+
     /** Ce qui sort d'une unité recyclée : composants (au plus {@code max_pieces}) ou, si rien, des hérals. */
     record Tirage(List<ItemStack> pieces, long herals) {
     }
@@ -429,10 +438,13 @@ final class Recyclage {
         return esperance * 2 > cout;
     }
 
-    /** Fin d'une session de recyclage : résumé au joueur et dans le journal du serveur. */
-    static void bilan(ServerPlayer p, int recycles, int composants, long herals) {
+    /**
+     * Fin d'une session de recyclage : résumé au joueur et dans le journal du serveur ; la quête du jour avance de
+     * {@code objetsQuete} ({@link #objetsQuete} : par paquet de munitions entier).
+     */
+    static void bilan(ServerPlayer p, int recycles, int objetsQuete, int composants, long herals) {
         if (recycles <= 0) return;
-        Journalieres.recyclage(p, recycles);
+        if (objetsQuete > 0) Journalieres.recyclage(p, objetsQuete);
         Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.resultat", Texte.brut(recycles), Texte.brut(composants),
                 Texte.brut(Ponts.nombre(herals))), 0xE8C36A);
         LOG.info("[heraliz_quetes] recycleur : {} a recyclé {} objet(s) : {} composant(s), {} hérals", p.getGameProfile().getName(),

@@ -57,7 +57,7 @@ public class MenuRecycleur extends AbstractContainerMenu {
             addSlot(new Slot(entree, i, ENTREE_X + (i % 3) * (CASE + 2) + 2, MACHINE_Y + (i / 3) * (CASE + 2) + 2) {
                 @Override
                 public boolean mayPlace(ItemStack s) {
-                    return accepte(s);
+                    return accepte(getContainerSlot(), s);
                 }
             });
         }
@@ -92,6 +92,14 @@ public class MenuRecycleur extends AbstractContainerMenu {
     /** Une case « à recycler » accepte-t-elle cet objet ? Oui ici ; le recycleur de la carte trie (partie serveur). */
     protected boolean accepte(ItemStack s) {
         return true;
+    }
+
+    /**
+     * La case « à recycler » n° {@code caseEntree} accepte-t-elle cet objet ? Comme {@link #accepte(ItemStack)} ici ; le
+     * recycleur de la carte refuse en plus la case d'un autre joueur (15/11, partie serveur).
+     */
+    protected boolean accepte(int caseEntree, ItemStack s) {
+        return accepte(s);
     }
 
     /** Index des cases du menu : entrée 0-5, sortie 6-11, inventaire 12-38, barre 39-47. */

@@ -1,5 +1,6 @@
 package fr.heraliz.quetes.serveur;
 
+import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.bloc.MenuRecycleurCarte;
 import fr.heraliz.quetes.reseau.Reseau;
 import net.minecraft.server.level.ServerPlayer;
@@ -7,6 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -25,6 +27,8 @@ import java.util.UUID;
  * <ul>
  * <li>cases « à recycler » : seulement un objet que CE recycleur recycle ({@link Recyclage#verdict} : ni objet qui ne
  * donne rien, ni objet acheté trop rentable, ni objet à vie, de quête, de match, ni sac plein) : jamais une cachette ;</li>
+ * <li>15/11 (audit n° 4) : une case « à recycler » n'est qu'à un joueur à la fois : on ne pose ni ne complète la pile d'un
+ * autre (clic : refusé et dit ; Maj + clic : dans une case vide ou une pile à soi) ;</li>
  * <li>cases « récupéré » : on ne peut que les vider (commun) ;</li>
  * <li>chaque clic qui change la machine est sauvegardé dans l'ordre sûr ({@link RecycleurCarteEntiteServeur#apresClic}) ;
  * échange avec la barre entre deux cases pleines : refusé.</li>
@@ -116,6 +120,49 @@ final class MenuRecycleurCarteServeur extends MenuRecycleurCarte {
         return Recyclage.verdict(s, ventes, new HashMap<>(), true).etat() == Recyclage.OK;
     }
 
+    /** 15/11 : et seulement dans une case vide ou déjà à ce joueur ({@link RecycleurCarteEntiteServeur#peutDeposer}). */
+    @Override
+    protected boolean accepte(int caseEntree, ItemStack s) {
+        return machine.peutDeposer(caseEntree, joueur.getUUID()) && accepte(s);
+    }
+
+    /**
+     * Maj + clic d'un objet de l'inventaire vers la machine (15/11, audit n° 4) : comme Minecraft, d'abord sur les piles
+     * pareilles puis dans une case vide, mais jamais sur la pile d'un autre joueur (Minecraft complète une pile sans demander
+     * à la case : c'est ainsi qu'on ajoutait une balle à la case d'un autre). Dans l'autre sens : comme avant.
+     */
+    @Override
+    public ItemStack quickMoveStack(Player p, int index) {
+        if (index < ENTREES + SORTIES) return super.quickMoveStack(p, index);
+        Slot slot = slots.get(index);
+        if (!slot.hasItem()) return ItemStack.EMPTY;
+        ItemStack s = slot.getItem(), avant = s.copy();
+        // piles pareilles déjà à lui (ou sans déposant)
+        for (int i = 0; i < ENTREES && !s.isEmpty(); i++) {
+            Slot c = slots.get(i);
+            ItemStack dedans = c.getItem();
+            if (dedans.isEmpty() || !ItemStack.isSameItemSameTags(dedans, s) || !machine.peutDeposer(i, joueur.getUUID())) continue;
+            int n = Math.min(s.getCount(), c.getMaxStackSize(dedans) - dedans.getCount());
+            if (n <= 0) continue;
+            dedans.grow(n);
+            s.shrink(n);
+            c.setChanged();
+        }
+        // puis une case vide qui l'accepte
+        for (int i = 0; i < ENTREES && !s.isEmpty(); i++) {
+            Slot c = slots.get(i);
+            if (c.hasItem() || !c.mayPlace(s)) continue;
+            c.setByPlayer(s.split(Math.min(s.getCount(), c.getMaxStackSize(s))));
+            c.setChanged();
+            break;
+        }
+        if (s.getCount() == avant.getCount()) return ItemStack.EMPTY;
+        if (s.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
+        else slot.setChanged();
+        slot.onTake(p, s);
+        return avant;
+    }
+
     @Override
     public void clicked(int index, int bouton, ClickType type, Player p) {
         if (!machine.utilisable()) return;
@@ -134,6 +181,13 @@ final class MenuRecycleurCarteServeur extends MenuRecycleurCarte {
             clics = 0;
         }
         if (clics >= CLICS_PAR_SECONDE && toucheMachine(index, type)) {
+            sendAllDataToRemote();
+            return;
+        }
+        // 15/11 (audit n° 4) : poser ou compléter la pile d'un autre joueur : refusé, et il le sait
+        if (type == ClickType.PICKUP && index >= 0 && index < ENTREES && slots.get(index).hasItem() && !getCarried().isEmpty()
+                && !machine.peutDeposer(index, joueur.getUUID())) {
+            Moteur.notif(joueur, Texte.cle("heraliz_quetes.recycleur_carte.case_prise"), 0xFF6B6B);
             sendAllDataToRemote();
             return;
         }
