@@ -230,15 +230,24 @@ public final class StructureService {
         return b.ownerGroup;
     }
 
-    /** Building privilege over an existing piece: claim members, or anyone when the building has no claim. */
+    /**
+     * Building privilege over an existing piece: claim members, or anyone when the building has no claim. HeraliZ (15/11) :
+     * except a base whose Claim Block was destroyed in a raid, kept 24 h for its clan ({@code ArmoiresPerdues}) : its
+     * members only (no more windows and bars taken out with the hammer by anyone).
+     */
     public static boolean hasPrivilege(ServerLevel level, Player player, Piece p) {
         if (player.getAbilities().instabuild) {
             return true;
         }
-        Claim c = claimOf(level, buildingOf(level, p));
+        Building b = buildingOf(level, p);
+        Claim c = claimOf(level, b);
         if (c == null) {
             c = ClaimManager.getAt(level, p.centreBlock());
-            return c == null || isMember(level, player, c, ClanAccess.Action.BUILD);
+            if (c == null) {
+                UUID reserve = fr.heraliz.crac.heraliz.ArmoiresPerdues.groupeReserve(level, b);
+                return reserve == null || isMember(level, player, reserve, ClanAccess.Action.BUILD);
+            }
+            return isMember(level, player, c, ClanAccess.Action.BUILD);
         }
         return isMember(level, player, c, ClanAccess.Action.BUILD);
     }
@@ -307,6 +316,14 @@ public final class StructureService {
             }
         }
         boolean creative = player.getAbilities().instabuild;
+        // HeraliZ (15/11) : zone d'une base dont l'armoire a sauté pendant un raid : 24 h, seul son clan y construit (un
+        // bâtiment d'un autre posé dedans l'empêcherait de reposer son armoire)
+        if (claims.isEmpty() && !creative) {
+            String reservee = fr.heraliz.crac.heraliz.ArmoiresPerdues.refusConstruction(level, player, blocks);
+            if (reservee != null) {
+                return reservee;
+            }
+        }
         if (plan.buildingId() == PlacementRules.NEW_BUILDING) {
             return claims.isEmpty() || creative ? null : "crac.build.no_new_in_claim";
         }

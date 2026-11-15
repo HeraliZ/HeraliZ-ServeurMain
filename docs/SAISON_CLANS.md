@@ -72,6 +72,22 @@ Beaucoup d'actions donnent les deux.
   pendant une Purge se raide comme les autres ; plus de protection de 4 jours (coupée le 27/10) ni de 48 h avant la Purge
   (`protection_nouvelle_base_heures` = 0 dans `purge.json` ; un nombre d'heures la remettrait).
 
+## 3 bis. Armoire détruite pendant un raid (décision du 15/11)
+
+- Quand l'armoire d'une base de clan est détruite pendant un raid (elle part alors que la base est en raid block :
+  explosions dans sa zone ; son clan ne peut alors ni la casser, ni la déplacer, ni se dissoudre), la base reste **à son
+  clan pendant 24 h** (heure réelle, un redémarrage n'efface rien) : lui seul peut y reposer une armoire (même écart
+  qu'entre deux bases), lui seul y construit et touche à ses pièces au marteau (vitres, barreaux, améliorations), et elle
+  ne s'use pas en attendant. Elle reste raidable comme toutes les bases.
+- Le clan qui repose son armoire sur sa base la retrouve telle qu'elle était, à la taille que l'arbre du clan a payée,
+  sans rien repayer (palier 4 compris) ; le home de la base revient. Le stock d'entretien de l'ancienne armoire, lui, est
+  tombé au sol à sa destruction.
+- Le clan peut l'abandonner avant : `/base abandonner` (puis confirmer), ou le bouton « Abandonner la base » du message
+  (chef ou droit « Gérer la base »). Au bout de 24 h sans armoire, ou après l'abandon, n'importe qui peut y poser la
+  sienne (règles d'avant). Les membres sont prévenus à la destruction, à leur connexion et à la fin des 24 h ; une ligne
+  au journal du clan à chaque étape.
+- Code : `bases` · `heraliz/ArmoiresPerdues` (données `data/crac_armoires_perdues.dat` du monde principal).
+
 ---
 
 ## 4. Le barème des points de saison

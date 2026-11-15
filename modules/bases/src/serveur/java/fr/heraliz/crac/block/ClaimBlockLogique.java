@@ -99,6 +99,8 @@ public final class ClaimBlockLogique {
             C2SRequestNearbyClaimsTraitement.pushAll(sl);
             // 11/11 : journal et historique du clan (armoire cassée, déplacée au marteau ou détruite pendant un raid)
             fr.heraliz.crac.heraliz.JournalClan.groupe(sl.getServer(), ancien.groupId(), "crac.journal.armoire_retiree");
+            // HeraliZ (15/11, demande du propriétaire) : armoire détruite pendant un raid : la base reste 24 h à son clan
+            fr.heraliz.crac.heraliz.ArmoiresPerdues.armoireRetiree(sl, ancien);
         }
     }
 

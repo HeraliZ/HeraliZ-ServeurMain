@@ -180,11 +180,13 @@ public final class BasesClans extends SafeSavedData {
         } catch (LinkageError | RuntimeException e) {
             Crac.LOGGER.error("[CRac] bases des clans : mise à jour en erreur", e);
         }
-        // saison des clans : armoires vues (Purge), taille des bases (arbre du clan), points des cœurs
+        // saison des clans : armoires vues (Purge), taille des bases (arbre du clan), points des cœurs, bases réservées après
+        // une armoire détruite en raid (15/11)
         try {
             Purge.noterArmoires(server);
             ArbreBases.appliquer(server, get(server));
             CoeurDeplacement.majScores(server);
+            ArmoiresPerdues.seconde(server);
         } catch (LinkageError | RuntimeException e) {
             Crac.LOGGER.error("[CRac] saison des clans : mise à jour en erreur", e);
         }
@@ -206,6 +208,7 @@ public final class BasesClans extends SafeSavedData {
         d.kitAPrevenir.clear();
         d.setDirty();
         CoeurDeplacement.toutOublier(server);
+        ArmoiresPerdues.toutOublier(server);
         Purge.Donnees p = Purge.Donnees.get(server);
         p.vues.clear();
         p.setDirty();
@@ -222,6 +225,8 @@ public final class BasesClans extends SafeSavedData {
         if (gid == null) {
             return;
         }
+        // base réservée après une armoire détruite en raid (15/11) : plus de clan pour la reprendre
+        ArmoiresPerdues.oublier(server, gid);
         // son cœur de clan disparaît avec lui (et ses points : le clan n'existe plus)
         net.minecraft.core.GlobalPos coeur = CoeursClans.coeur(server, gid);
         if (coeur != null) {

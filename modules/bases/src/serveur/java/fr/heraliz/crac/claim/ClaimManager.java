@@ -158,9 +158,18 @@ public final class ClaimManager {
         return removed;
     }
 
-    public static Claim tooCloseTo(ServerLevel level, BlockPos anchor, UUID group) {
+    /**
+     * Smallest gap (blocks, along x and along z) between the Claim Blocks of two groups: two zones of the biggest tier plus
+     * the margin. HeraliZ (15/11) : also kept around a base whose Claim Block was destroyed in a raid, while its clan may
+     * take it back ({@code ArmoiresPerdues}).
+     */
+    public static int espacementMin() {
         int maxRadius = Math.max(Math.max(Config.claimRadiusL1.get(), Config.claimRadiusL4.get()), Math.max(Config.claimRadiusL2.get(), Config.claimRadiusL3.get()));
-        int minDist = maxRadius * 2 + 1 + Config.claimSpacingMargin.get();
+        return maxRadius * 2 + 1 + Config.claimSpacingMargin.get();
+    }
+
+    public static Claim tooCloseTo(ServerLevel level, BlockPos anchor, UUID group) {
+        int minDist = espacementMin();
         for (Claim c : ClaimData.get(level).all()) {
             if (!c.groupId().equals(group)) {
                 int dx = Math.abs(c.anchor().getX() - anchor.getX());

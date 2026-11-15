@@ -136,8 +136,13 @@ public final class ClaimBlockHandler {
         }
         C2SRequestNearbyClaimsTraitement.pushAll(level);
         player.displayClientMessage(Txt.green("crac.claim.created", g.name(), tier, Config.claimRadius(tier)), false);
+        // HeraliZ (15/11) : le clan reprend sa base dont l'armoire avait sauté pendant un raid : la réservation s'arrête et
+        // le home de la base revient
+        boolean homeRendu = fr.heraliz.crac.heraliz.ArmoiresPerdues.armoirePosee(level, player, g.id(), pos);
         // HeraliZ (03/11, demande du propriétaire) : plus de home créé tout seul ; le joueur pose le home de sa base lui-même
-        fr.heraliz.crac.bases.Homes.armoirePosee(player, level);
+        if (!homeRendu) {
+            fr.heraliz.crac.bases.Homes.armoirePosee(player, level);
+        }
         // tutoriel : l'armoire tournée vers la pièce et poussée dans l'angle (1.11.0)
         fr.heraliz.crac.bases.Tutoriel.armoirePosee(player, level, pos);
         return null;
@@ -186,6 +191,11 @@ public final class ClaimBlockHandler {
         }
         if (ClaimManager.tooCloseTo(level, pos, g.id()) != null) {
             return "crac.build.too_close";
+        }
+        // HeraliZ (15/11) : base dont l'armoire a sauté pendant un raid : 24 h, seul son clan y repose une armoire
+        String reservee = fr.heraliz.crac.heraliz.ArmoiresPerdues.refusArmoire(level, pos, g.id());
+        if (reservee != null) {
+            return reservee;
         }
         String problem = StructureService.claimProblem(level, pos, tier);
         if (problem != null) {

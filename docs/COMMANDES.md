@@ -23,6 +23,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/rtp` | CRac | aller du spawn vers un point libre pour sa base |
 | `/spawn` | CRac | retour au spawn depuis sa base (`definir`, `effacer`, `voir` : staff) |
 | `/base info` | CRac | fiche des bases (coûts, raids) ; `/base effacer` : op |
+| `/base abandonner` (`confirmer`) | CRac | (15/11) abandonner la base de son clan dont l'armoire a été détruite pendant un raid (réservée 24 h au clan) : chef ou droit « Gérer la base » |
 | `/coeur deplacer` | CRac | déplacer le cœur du clan |
 | `/purge` | CRac | créneaux de la Purge ; `forcer` : op |
 | `/tpa <joueur>` (`accepter [joueur]`, `refuser [joueur]`) | Grades | téléportation vers un joueur |

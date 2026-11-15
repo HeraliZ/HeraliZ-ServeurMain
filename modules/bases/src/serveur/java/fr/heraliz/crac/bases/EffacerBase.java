@@ -185,6 +185,10 @@ final class EffacerBase {
                 }
             }
         }
+        // HeraliZ (15/11) : base effacée par le staff : plus de réservation après une armoire détruite en raid (pas au tutoriel)
+        if (g != null && seul == null) {
+            fr.heraliz.crac.heraliz.ArmoiresPerdues.oublier(server, g.id());
+        }
         BasesDonnees d = BasesDonnees.get(server);
         BasesDonnees.Joueur j = d.joueur(joueur);
         j.batiment = -1L;
