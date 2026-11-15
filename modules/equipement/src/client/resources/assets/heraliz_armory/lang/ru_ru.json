@@ -407,5 +407,7 @@
   "gui.heraliz_armory.inventaire.effet.zone": "Эффект зоны: прекратится, когда выйдешь из неё",
   "gui.heraliz_armory.inventaire.effet.loot": "Больше предметов в контейнерах",
   "gui.heraliz_armory.inventaire.effet.encore": "Ещё %s",
-  "gui.heraliz_armory.inventaire.effet.heures": "%s ч %s"
+  "gui.heraliz_armory.inventaire.effet.heures": "%s ч %s",
+  "message.heraliz_armory.blessure.jambe": "Сломана нога: используй шину.",
+  "message.heraliz_armory.blessure.saignement": "У тебя кровотечение: используй бинт или аптечку."
 }

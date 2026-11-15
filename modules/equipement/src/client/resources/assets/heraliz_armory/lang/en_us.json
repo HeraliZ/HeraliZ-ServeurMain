@@ -407,5 +407,7 @@
   "gui.heraliz_armory.inventaire.effet.zone": "Zone effect: it stops when you leave the zone",
   "gui.heraliz_armory.inventaire.effet.loot": "More items in containers",
   "gui.heraliz_armory.inventaire.effet.encore": "%s left",
-  "gui.heraliz_armory.inventaire.effet.heures": "%s h %s"
+  "gui.heraliz_armory.inventaire.effet.heures": "%s h %s",
+  "message.heraliz_armory.blessure.jambe": "Broken leg: use a splint.",
+  "message.heraliz_armory.blessure.saignement": "You are bleeding: use a bandage or a medkit."
 }

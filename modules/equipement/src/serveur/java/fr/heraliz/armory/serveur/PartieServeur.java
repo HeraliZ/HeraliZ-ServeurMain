@@ -3,6 +3,7 @@ package fr.heraliz.armory.serveur;
 import fr.heraliz.armory.cible.ChiffresJoueurs;
 import fr.heraliz.armory.cible.CibleEssaiServeur;
 import fr.heraliz.armory.cible.CiblesServeur;
+import fr.heraliz.armory.compat.GeckolibServeur;
 import fr.heraliz.armory.compat.TaczCompat;
 import fr.heraliz.armory.curios.MajClicCurios;
 import fr.heraliz.armory.curios.MajClicCuriosServeur;
@@ -47,5 +48,7 @@ public final class PartieServeur implements Partie {
         TaczCompat.register();
         CiblesServeur.brancher();
         ChiffresJoueurs.brancher();
+        // jambe cassée et saignement de geckolib222 : notre message traduit au début de la blessure (audit du 15/11)
+        GeckolibServeur.brancher();
     }
 }
