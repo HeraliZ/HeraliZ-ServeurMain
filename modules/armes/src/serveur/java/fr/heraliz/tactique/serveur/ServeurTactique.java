@@ -32,7 +32,7 @@ public final class ServeurTactique implements Partie {
       BallesEnVol.brancher();
       // portée des armes de corps à corps vérifiée à chaque coup porté, couteaux et batte à 2 blocs (04/11)
       PorteeMeleeServeur.brancher();
-      // feu du molotov au nom de son lanceur : tag de combat, crédit du tueur (audit du 15/11)
+      // feu du molotov au nom de son lanceur, balles incendiaires (3 s de feu, un tic par balle) : audit du 15/11
       Brulures.brancher();
    }
 }

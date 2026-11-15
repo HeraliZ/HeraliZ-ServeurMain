@@ -282,7 +282,7 @@
   "gui.heralisz_camo.atelier.effet.knockback": "Отбрасывание",
   "gui.heralisz_camo.atelier.effet.silence": "Глушитель",
   "gui.heralisz_camo.atelier.effet.explosion": "Взрыв",
-  "gui.heralisz_camo.atelier.effet.ignite_entity": "Поджигает",
+  "gui.heralisz_camo.atelier.effet.ignite_entity": "Поджигает (3 с)",
   "gui.heralisz_camo.atelier.effet.ignite_block": "Поджигает землю",
   "gui.heralisz_camo.atelier.camos": "Камуфляжи",
   "gui.heralisz_camo.atelier.vue.vie": "Постоянные",

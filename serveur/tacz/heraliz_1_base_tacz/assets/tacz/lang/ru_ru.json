@@ -123,7 +123,7 @@
   "tacz.attachment.ammo_mod_fmj.desc": "Снаряды со стальной оболочкой.\nПовышает пробитие брони, но снижает наносимый урон.",
   "tacz.attachment.ammo_mod_he.desc": "Снаряды с большим количеством взрывчатки. \nУменьшенная способность к точности и пробитию, но высокая мощность взрыва.",
   "tacz.attachment.ammo_mod_hp.desc": "Полые снаряды.\nУвеличивает урон по небронированным целям, но снижает пробитие брони.",
-  "tacz.attachment.ammo_mod_i.desc": "Термические зажигательные снаряды. \nСпособны поджечь цель.",
+  "tacz.attachment.ammo_mod_i.desc": "Зажигательные пули.\nЦель загорается на 3 с и теряет ещё 0,5 сердца за каждую пулю; вода тушит огонь, земля никогда не загорается. Прицеливание чуть медленнее.",
   "tacz.attachment.grip_magpul_afg_2.name": "Рукоять Talon AFG1",
   "tacz.attachment.grip_vertical_talon.name": "Рукоять Talon SG2",
   "tacz.attachment.grip_vertical_military.name": "Стандартная военная рукоятка Ngoma",

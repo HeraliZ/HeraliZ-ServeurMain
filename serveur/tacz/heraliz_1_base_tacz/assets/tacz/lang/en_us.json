@@ -133,7 +133,7 @@
   "tacz.attachment.ammo_mod_fmj.desc": "Steel-covered warheads. \nIncreases armour penetration but reduces after-effects.",
   "tacz.attachment.ammo_mod_he.desc": "High explosive charged warheads. \nReduced direct hit and penetration capability, but high explosive power.",
   "tacz.attachment.ammo_mod_hp.desc": "Hollowed-out warheads. \nEnhances lethality against unarmoured targets, but reduces armour penetration.",
-  "tacz.attachment.ammo_mod_i.desc": "Aluminium thermal incendiaries filled warheads. \nCapable of igniting the target.",
+  "tacz.attachment.ammo_mod_i.desc": "Incendiary rounds.\nThe target hit burns for 3 s and loses 0.5 extra heart per bullet; water puts the fire out, the ground never catches fire. Slightly slower aiming.",
   "tacz.attachment.grip_magpul_afg_2.name": "Talon AFG1 Handstop",
   "tacz.attachment.grip_vertical_talon.name": "Talon SG2 Grip",
   "tacz.attachment.grip_vertical_military.name": "Nagoma Military Standard Grip",
