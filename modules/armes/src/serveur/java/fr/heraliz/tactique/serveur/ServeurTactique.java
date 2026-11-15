@@ -9,7 +9,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * entendus de loin (SonLointainServeur), les coups des couteaux TaCZ (CouteauxServeur) et les dégâts des armes TaCZ
  * contre les joueurs (DegatsArmes, config heraliz_tactique/armes.json), le tir automatique par défaut (TirAutoServeur), plus de deuxième main
  * (SansMainGauche), la jambe cassée sans perte des coups (JambeCasseeServeur), les balles de TaCZ qui volent jusqu'au
- * bout sans jamais rester figées (BallesEnVol).
+ * bout sans jamais rester figées (BallesEnVol), les brûlures qui ont un auteur (Brulures).
  */
 public final class ServeurTactique implements Partie {
    @Override
@@ -32,5 +32,7 @@ public final class ServeurTactique implements Partie {
       BallesEnVol.brancher();
       // portée des armes de corps à corps vérifiée à chaque coup porté, couteaux et batte à 2 blocs (04/11)
       PorteeMeleeServeur.brancher();
+      // feu du molotov au nom de son lanceur : tag de combat, crédit du tueur (audit du 15/11)
+      Brulures.brancher();
    }
 }
