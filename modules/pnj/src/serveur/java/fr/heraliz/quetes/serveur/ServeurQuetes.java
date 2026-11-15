@@ -96,6 +96,7 @@ public final class ServeurQuetes implements Partie {
 
     private static void demarrage(ServerStartedEvent e) {
         Moteur.demarrer(e.getServer());
+        Moteur.brancherCaptures();   // étape « capturer » (15/11) : prises de zones de HeraliZ Clans
         Donnees.demarrer(e.getServer().getServerDirectory().toPath());
         EditionMarchands.demarrer(e.getServer().getServerDirectory().toPath());
         PointsGuide.demarrer(e.getServer().getServerDirectory().toPath());

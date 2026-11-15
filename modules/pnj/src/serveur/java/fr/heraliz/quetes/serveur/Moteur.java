@@ -537,6 +537,44 @@ final class Moteur {
         avancerType(tueur, "executer");
     }
 
+    /** Les prises de zones des clans sont-elles écoutées ? (une seule fois par lancement : l'écouteur reste) */
+    private static boolean capturesBranchees;
+
+    /**
+     * Étape « capturer » (15/11, audit monde B2 : acceptée au chargement, mais rien ne la faisait avancer) : HeraliZ Clans
+     * annonce chaque prise de zone ({@code TerritoireEvents.Capture}, lu par réflexion : pas de dépendance) avec les
+     * membres du clan qui étaient au pied du drapeau ; chacun de ceux qui sont connectés avance d'un pas. Une prise forcée
+     * par le staff (sans capteurs) ne compte pas. Sans HeraliZ Clans : l'étape n'avance pas (une ligne dans le journal).
+     */
+    @SuppressWarnings("unchecked")
+    static void brancherCaptures() {
+        if (capturesBranchees) return;
+        capturesBranchees = true;
+        try {
+            Class<?> c = Class.forName("fr.heralisz.clans.territory.api.TerritoireEvents$Capture");
+            if (!net.minecraftforge.eventbus.api.Event.class.isAssignableFrom(c)) throw new ClassCastException(c.getName());
+            java.lang.reflect.Field capteurs = c.getField("capteurs");
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false,
+                    (Class<net.minecraftforge.eventbus.api.Event>) c, e -> capture(e, capteurs));
+        } catch (ReflectiveOperationException | LinkageError | ClassCastException ex) {
+            LOG.warn("[heraliz_quetes] HeraliZ Clans absent : l'étape « capturer » ne peut pas avancer ({})", ex.toString());
+        }
+    }
+
+    /** Une zone vient d'être prise : étapes « capturer » des capteurs connectés. */
+    private static void capture(Object evenement, java.lang.reflect.Field champ) {
+        if (serveur == null) return;
+        try {
+            if (!(champ.get(evenement) instanceof java.util.Collection<?> capteurs)) return;
+            for (Object o : capteurs) {
+                ServerPlayer p = o instanceof UUID u ? serveur.getPlayerList().getPlayer(u) : null;
+                if (p != null) avancerType(p, "capturer");
+            }
+        } catch (IllegalAccessException | RuntimeException ex) {
+            LOG.warn("[heraliz_quetes] prise de zone illisible : {}", ex.toString());
+        }
+    }
+
     /** Fait avancer d'un pas toutes les étapes de ce type du joueur. */
     static void avancerType(ServerPlayer p, String type) {
         Donnees.DJoueur j = Donnees.de(p.getUUID());
