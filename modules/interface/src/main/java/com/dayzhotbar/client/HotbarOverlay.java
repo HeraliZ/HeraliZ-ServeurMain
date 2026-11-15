@@ -45,6 +45,9 @@ public final class HotbarOverlay implements IGuiOverlay {
     private static volatile int hinted = -1;
 
     private final ChalkAtlas chalk = new ChalkAtlas();
+    // Reused every frame (audit of 15/11, perf 6): no small objects or digit strings allocated per frame any more
+    private final Slant slant = new Slant();
+    private final Labels labels = new Labels();
     private boolean frameRequested;
     private float shownSlot = Float.NaN;
     private int lastSelected = -1;
@@ -52,6 +55,18 @@ public final class HotbarOverlay implements IGuiOverlay {
     private long lastActivityMs;
     private final Item[] lastItems = new Item[10];
     private final int[] lastCounts = new int[10];
+    /** "0" to "127": slot numbers and stack counts without building a new string every frame. */
+    private static final String[] NUMBERS = new String[128];
+
+    static {
+        for (int i = 0; i < NUMBERS.length; i++) {
+            NUMBERS[i] = Integer.toString(i);
+        }
+    }
+
+    private static String number(int n) {
+        return n >= 0 && n < NUMBERS.length ? NUMBERS[n] : Integer.toString(n);
+    }
 
     /**
      * Points a hotbar slot out with a soft green glow that pulses, until called again with -1. Called by reflection
@@ -174,7 +189,7 @@ public final class HotbarOverlay implements IGuiOverlay {
         }
         chalk.end();
 
-        Slant p = new Slant(g, k, top + SLOT / 2f);
+        Slant p = slant.set(g, k, top + SLOT / 2f);
         if (attack < 1) {
             p.box(gaugeX, top, gaugeX + GAUGE_WIDTH, bottom, argb(GLASS, 0.5f * fade));
             p.box(gaugeX, bottom - SLOT * attack, gaugeX + GAUGE_WIDTH, bottom, argb(BONE, 0.9f * fade));
@@ -208,14 +223,14 @@ public final class HotbarOverlay implements IGuiOverlay {
         }
 
         // Items, with a small count in the bottom corner and the slot number in the top one
-        Labels labels = new Labels(g, mc.font, scale);
+        Labels labels = this.labels.set(g, mc.font, scale);
         int seed = 1;
         for (int i = 0; i < 9; i++) {
             int x = left + i * step;
             renderItem(g, mc.font, player, partialTick, inv.items.get(i), x + 2, top + 2, seed++);
             count(labels, p, inv.items.get(i), x, bottom);
             if (HotbarConfig.NUMBERS.get()) {
-                labels.topLeft(Integer.toString(i + 1), p.shear(x + 2.5f, top + 2.5f), top + 2.5f,
+                labels.topLeft(number(i + 1), p.shear(x + 2.5f, top + 2.5f), top + 2.5f,
                         argb(BONE, (i == inv.selected ? 1f : 0.65f) * fade));
             }
         }
@@ -265,7 +280,7 @@ public final class HotbarOverlay implements IGuiOverlay {
 
     private static void count(Labels labels, Slant p, ItemStack stack, int slotX, int bottom) {
         if (!stack.isEmpty() && stack.getCount() != 1) {
-            labels.bottomRight(Integer.toString(stack.getCount()), p.shear(slotX + SLOT - 2, bottom - 2), bottom - 2, 0xFFFFFFFF);
+            labels.bottomRight(number(stack.getCount()), p.shear(slotX + SLOT - 2, bottom - 2), bottom - 2, 0xFFFFFFFF);
         }
     }
 
@@ -348,14 +363,16 @@ public final class HotbarOverlay implements IGuiOverlay {
 
     /** Slanted like italics: sheared horizontally around the hotbar's middle line, as the chalk slots. */
     private static final class Slant {
-        private final GuiGraphics g;
-        private final float k;
-        private final float centerY;
+        private GuiGraphics g;
+        private float k;
+        private float centerY;
 
-        Slant(GuiGraphics g, float k, float centerY) {
+        /** Set up for this frame (one instance, reused). */
+        Slant set(GuiGraphics g, float k, float centerY) {
             this.g = g;
             this.k = k;
             this.centerY = centerY;
+            return this;
         }
 
         float shear(float x, float y) {
@@ -391,16 +408,18 @@ public final class HotbarOverlay implements IGuiOverlay {
     private static final class Labels {
         private static final int DIGIT_HEIGHT = 7;
 
-        private final GuiGraphics g;
-        private final Font font;
-        private final float guiScale;
-        private final float size;
+        private GuiGraphics g;
+        private Font font;
+        private float guiScale;
+        private float size;
 
-        Labels(GuiGraphics g, Font font, float guiScale) {
+        /** Set up for this frame (one instance, reused). */
+        Labels set(GuiGraphics g, Font font, float guiScale) {
             this.g = g;
             this.font = font;
             this.guiScale = guiScale;
             this.size = Math.max(1, Math.round(guiScale * 0.5f)) / guiScale;
+            return this;
         }
 
         void topLeft(String text, float x, float y, int color) {
