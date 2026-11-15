@@ -749,19 +749,28 @@ final class Moteur {
     /**
      * Première ouverture d'un conteneur NON VIDE (HeraliZ Loot, {@code EvenementsLoot.ecouterFouille}, branché par
      * Journalieres) : fait avancer les étapes « fouiller » des quêtes de Varga (03/11 : avant, le simple clic sur un
-     * conteneur, même vide, comptait).
+     * conteneur, même vide, comptait). 15/11 (audit monde B1) : le palier est celui que donne Loot
+     * ({@code ConteneurBlock.palier} : « munitions5_… » = 5, « soins3_… » = 3), comme pour les quêtes du jour et les
+     * points de saison ; avant, seul le préfixe « t3_ » était lu, et les caisses de munitions, de soins et de nourriture
+     * comptaient pour 0 (refusées par « palier_min »).
      */
     static void conteneurLoot(ServerPlayer p, net.minecraft.nbt.CompoundTag e) {
         BlockPos pos = BlockPos.of(e.getLong("pos"));
         ResourceLocation monde = p.level().dimension().location();
         if (!monde.toString().equals(e.getString("monde"))) return;
         ResourceLocation bloc = ForgeRegistries.BLOCKS.getKey(p.level().getBlockState(pos).getBlock());
-        if (bloc != null && bloc.getNamespace().equals("heraliz_loot")) fouille(p, monde, pos, bloc);
+        if (bloc == null || !bloc.getNamespace().equals("heraliz_loot")) return;
+        int palier;
+        if (e.contains("palier", net.minecraft.nbt.Tag.TAG_ANY_NUMERIC)) {
+            palier = e.getInt("palier");
+        } else {
+            Matcher m = PALIER.matcher(bloc.getPath());   // ancien signal sans palier : d'après le nom du bloc
+            palier = m.find() ? Integer.parseInt(m.group(1)) : 0;
+        }
+        fouille(p, monde, pos, bloc, palier);
     }
 
-    private static void fouille(ServerPlayer p, ResourceLocation monde, BlockPos pos, ResourceLocation bloc) {
-        Matcher m = PALIER.matcher(bloc.getPath());
-        int palier = m.find() ? Integer.parseInt(m.group(1)) : 0;
+    private static void fouille(ServerPlayer p, ResourceLocation monde, BlockPos pos, ResourceLocation bloc, int palier) {
         String cle = Points.cleBloc(monde.toString(), pos);
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
