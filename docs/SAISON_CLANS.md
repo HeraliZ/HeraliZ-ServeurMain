@@ -46,8 +46,10 @@ Beaucoup d'actions donnent les deux.
 - **Déplacer le cœur** : possible hors Purge, contre **50 000 hérals** (décision). Le chef le reprend en objet et a
   **10 minutes pour le reposer ; sinon le clan perd 100 % de ses points** (décision). Aucun point gagné tant qu'il n'est
   pas posé. Interdit pendant la Purge et dans l'heure qui la précède **[à valider]**, et (15/11) pendant un raid de la
-  base (raid block). L'objet ne se jette pas, ne se
-  range nulle part et revient au chef s'il meurt **[à valider]**.
+  base (raid block). L'objet ne se jette pas (il revient dans l'inventaire) ; 15/11 (audit B3, doc alignée sur le
+  code) : il peut être rangé (coffre, sac) et tombe dans le corps à la mort comme tout objet, ramassable par n'importe
+  qui : le clan doit reposer un cœur dans les 10 minutes, quel que soit celui qui tient l'objet. Un cœur acheté au
+  Bâtisseur et posé entre-temps compte aussi (le délai s'arrête ; l'objet repris reste alors un cœur en plus).
 - Clan dissous : le cœur disparaît avec tous ses points.
 
 ### Voler les points (pendant la Purge ; à toute heure quand elle est arrêtée)
