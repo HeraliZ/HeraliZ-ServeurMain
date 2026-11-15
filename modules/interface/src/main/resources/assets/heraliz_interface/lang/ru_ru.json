@@ -80,6 +80,7 @@
   "gui.heraliz_interface.graphismes.regle": "Текущие настройки",
   "gui.heraliz_interface.graphismes.detail": "Подробные настройки",
   "gui.heraliz_interface.graphismes.rechargement": "Текстуры перезагрузятся при закрытии этого экрана.",
+  "gui.heraliz_interface.graphismes.flou": "Размытие фона за окнами",
   "gui.heraliz_interface.graphismes.desc.performance": "Плавнее всего: быстрая графика, дальность 6, без облаков и теней.",
   "gui.heraliz_interface.graphismes.desc.equilibre": "Красивее: детальная графика, дальность 8, облака, мягкое освещение.",
   "gui.heraliz_interface.graphismes.desc.qualite": "Красивее всего: все частицы, тени, чёткие текстуры вдали.",
