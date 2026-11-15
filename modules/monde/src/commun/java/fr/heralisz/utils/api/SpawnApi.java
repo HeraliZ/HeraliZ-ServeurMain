@@ -1,6 +1,7 @@
 package fr.heralisz.utils.api;
 
 import fr.heralisz.utils.cine.CineDecor;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -16,12 +17,31 @@ public final class SpawnApi {
     /** Le monde du spawn. */
     public static final ResourceKey<Level> SPAWN = ResourceKey.create(Registries.DIMENSION, CineDecor.SPAWN);
     private static volatile Predicate<ServerPlayer> versSpawn;
+    private static volatile Consumer<ServerPlayer> versBase;
 
     private SpawnApi() {}
 
     /** Branché par la partie serveur de HeraliZ Utils. */
     public static void brancher(Predicate<ServerPlayer> p) {
         versSpawn = p;
+    }
+
+    /** Branché par la partie serveur de HeraliZ Utils (15/11). */
+    public static void brancherBase(Consumer<ServerPlayer> c) {
+        versBase = c;
+    }
+
+    /**
+     * Le joueur mort a choisi « À la base » sur son écran de mort (CRac, par réflexion, 15/11, audit perf n° 2) : sa
+     * réapparition se fait sur la carte, d'où CRac le mène à sa base dans le même monde ; avant, il passait d'abord par le
+     * point de réveil du spawn (trois changements de monde pour une mort). Si la base le refuse, CRac le renvoie au camp
+     * ({@link #allerAuSpawn}). Sans partie serveur : rien.
+     */
+    public static void reapparitionALaBase(ServerPlayer sp) {
+        Consumer<ServerPlayer> c = versBase;
+        if (c != null && sp != null) {
+            c.accept(sp);
+        }
     }
 
     /**

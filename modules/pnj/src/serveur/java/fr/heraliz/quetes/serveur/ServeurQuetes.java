@@ -81,6 +81,10 @@ public final class ServeurQuetes implements Partie {
             ObjetsARendre.rendre(p);
         });
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::changementMonde);
+        // 15/11 : tick de la dernière réapparition (en premier, avant toute téléportation qui la suit) : voir changementMonde
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, (PlayerEvent.PlayerRespawnEvent e) -> {
+            if (!e.isEndConquered() && e.getEntity() instanceof ServerPlayer p) REAPPARUS.put(p.getUUID(), p.server.getTickCount());
+        });
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ServeurQuetes::mortATerre);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurQuetes::mort);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, ServeurQuetes::blessure);
@@ -134,14 +138,22 @@ public final class ServeurQuetes implements Partie {
         SaisonQuetes.oublier(e.getEntity().getUUID());
         Journalieres.deconnexion(e.getEntity().getUUID());
         ObjetsARendre.oublier(e.getEntity().getUUID());
+        REAPPARUS.remove(e.getEntity().getUUID());
         Donnees.liberer(e.getEntity().getUUID());
     }
 
+    /** Tick de la dernière réapparition de chaque joueur (15/11). */
+    private static final Map<UUID, Integer> REAPPARUS = new HashMap<>();
+
     private static void changementMonde(PlayerEvent.PlayerChangedDimensionEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p) || Moteur.serveur == null || !p.isAlive()) return;
+        // 15/11 : téléporté au camp dans le tick même de sa réapparition (point de réveil bouché, base refusée) : c'est
+        // une mort, pas une extraction (avant, mourir sur la carte comptait comme une extraction pour les quêtes)
+        Integer reapparu = REAPPARUS.remove(p.getUUID());
+        boolean apresMort = reapparu != null && reapparu == p.server.getTickCount();
         // 25/10 : seulement en revenant de la carte (extraction) ; avant, tout retour au spawn comptait (sortie d'une
         // arène du ClashWar, fin du tutoriel des bases...)
-        if (e.getTo().location().toString().equals(Moteur.SPAWN) && e.getFrom() == net.minecraft.world.level.Level.OVERWORLD) {
+        if (!apresMort && e.getTo().location().toString().equals(Moteur.SPAWN) && e.getFrom() == net.minecraft.world.level.Level.OVERWORLD) {
             Moteur.arriveeSpawn(p);
             Journalieres.extraction(p);
         } else Moteur.envoyerSuivi(p);
