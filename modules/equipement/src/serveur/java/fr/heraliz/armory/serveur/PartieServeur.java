@@ -48,7 +48,8 @@ public final class PartieServeur implements Partie {
         TaczCompat.register();
         CiblesServeur.brancher();
         ChiffresJoueurs.brancher();
-        // jambe cassée et saignement de geckolib222 : notre message traduit au début de la blessure (audit du 15/11)
+        // geckolib222 (audit du 15/11) : message traduit au début d'une jambe cassée ou d'un saignement, liste des
+        // irradiés vidée à la mort et au départ
         GeckolibServeur.brancher();
     }
 }
