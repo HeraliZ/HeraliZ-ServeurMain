@@ -381,11 +381,10 @@ public final class EcranHdv extends Screen {
         return Minecraft.getInstance().player.getInventory().getItem(slot);
     }
 
-    /** Prix maximal en PB pour la rareté de cet objet. */
-    private long plafondPb(ItemStack st) {
-        int r = RegleHdv.rarete(st) + 1;
+    /** Prix maximal en PB : plafond technique du site, frais compris (15/11 : plus aucun plafond selon la rareté). */
+    private long plafondPb() {
         List<Long> pl = etat.plafondsPb();
-        return pl.isEmpty() ? 0 : pl.get(Math.max(0, Math.min(pl.size() - 1, r)));
+        return pl.isEmpty() ? RegleHdv.prixPbMax(etat.fraisPct()) : pl.get(0);
     }
 
     private static long nombreTape(String s) {
@@ -440,7 +439,7 @@ public final class EcranHdv extends Screen {
         if (etat.herals() < taxeVente()) return false;
         if (deviseVente != RegleHdv.PB) return true;
         long pb = prixPbVente();
-        return etat.pbActif() && pb >= 1 && pb <= plafondPb(st);
+        return etat.pbActif() && pb >= 1 && pb <= plafondPb();
     }
 
     private void mettreEnVente() {
@@ -931,7 +930,7 @@ public final class EcranHdv extends Screen {
             else if (focus == 3) focus = 2;
         });
         boolean avecPb = deviseVente == RegleHdv.PB;
-        long hmax = etat.prixHeralsMax(), plafondPb = plafondPb(st), p = prixVente(), pb = prixPbVente();
+        long hmax = etat.prixHeralsMax(), plafondPb = plafondPb(), p = prixVente(), pb = prixPbVente();
         boolean tropH = p > hmax, tropPb = avecPb && pb > plafondPb;
         float mid = (ix + xd) / 2;
         if (avecPb) {
@@ -951,7 +950,7 @@ public final class EcranHdv extends Screen {
             venteArmee = null;
         });
         String max = !avecPb ? t("plafond_herals", nombre(hmax)) : !etat.pbActif() ? t("msg.pb_ferme")
-                : p < 1 && pb >= 1 ? t("herals_requis") : tropH ? t("plafond_herals", nombre(hmax)) : t("plafond_pb", nombre(plafondPb));
+                : p < 1 && pb >= 1 ? t("herals_requis") : tropPb ? t("plafond_pb", nombre(plafondPb)) : t("plafond_herals", nombre(hmax));
         Trace.m(g, f, max, ix, 246, PETIT, a(tropH || tropPb || avecPb && (!etat.pbActif() || p < 1 && pb >= 1) ? ROUGE : GRIS, 255), xd - ix);
         Trace.rect(g, ix, 252, xd, 252 + 1 / 3F, a(LIGNE, 255));
         // taxe de mise en vente : payée maintenant, jamais rendue

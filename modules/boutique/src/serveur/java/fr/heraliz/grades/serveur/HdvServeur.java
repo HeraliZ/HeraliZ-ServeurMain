@@ -49,8 +49,9 @@ import java.util.UUID;
 
 /**
  * Hôtel des ventes (Grades 2.9.0, maquettes validées le 28/10 : {@code maquettes/hotel_ventes/}) : les joueurs mettent
- * en vente un objet de leur inventaire en hérals, avec en plus, s'ils le veulent, un prix en Points Boutique (prix
- * plafonné selon la rareté de l'objet). Depuis la 2.10.0 (31/10), une
+ * en vente un objet de leur inventaire en hérals, avec en plus, s'ils le veulent, un prix en Points Boutique (15/11,
+ * décision du propriétaire : plus aucun plafond selon la rareté, seulement le plafond technique du site,
+ * {@link RegleHdv#PB_MAX} frais compris). Depuis la 2.10.0 (31/10), une
  * annonce a TOUJOURS un prix en hérals, jamais seulement un prix en PB ; l'acheteur choisit sa monnaie. Pour 12, 24 ou
  * 48 h ; 5 ventes en même temps par joueur. Ouvert au spawn seulement ({@code /hdv} ou le PNJ commissaire-priseur),
  * jamais en combat, à terre, en match, au tutoriel.
@@ -96,8 +97,6 @@ public final class HdvServeur {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private static final String MARQUES = "heraliz_hdv_marques";
     private static final int CASES = 36;
-    /** Plafond technique d'un montant de PB (celui du site). */
-    private static final long PB_MAX = 100_000_000L;
     /** Un « pas fait » du site n'est cru que 2 min après l'envoi (une requête en retard ne passe plus). */
     private static final long ATTENTE_STATUT_MS = 120_000L;
     /** Lignes « vendu en PB » gardées pour « Mes ventes » : 7 jours, 10 par vendeur. */
@@ -107,8 +106,6 @@ public final class HdvServeur {
     // ------------------------------------------------------------------ réglages (config/heraliz_grades/hdv.json)
     private static int ventesMax = 5, fraisPct = 10;
     private static List<Integer> durees = List.of(12, 24, 48);
-    /** Plafond des prix en PB : index 0 sans rareté, puis Commun … Unique. */
-    private static List<Long> plafondsPb = List.of(30L, 30L, 75L, 200L, 500L, 1200L, 2500L);
     private static long prixHeralsMax = 10_000_000L;
     /** Taxe de mise en vente, pour dix mille du prix (1 250 = 12,5 %). */
     private static int taxePdm = 1250;
@@ -279,20 +276,14 @@ public final class HdvServeur {
             long phm = o.has("prix_herals_max") ? o.get("prix_herals_max").getAsLong() : 10_000_000L;
             double tx = o.has("taxe_mise_en_vente_pourcent") ? o.get("taxe_mise_en_vente_pourcent").getAsDouble() : 12.5;
             if (Double.isNaN(tx)) tx = 12.5;
-            List<Long> pl = new ArrayList<>(plafondsPb);
-            if (o.has("plafond_pb")) {
-                JsonObject p = o.getAsJsonObject("plafond_pb");
-                String[] cles = {"aucune", "commun", "peu_commun", "rare", "epique", "legendaire", "unique"};
-                for (int i = 0; i < cles.length; i++) if (p.has(cles[i])) pl.set(i, Math.max(1, Math.min(PB_MAX / 2, p.get(cles[i]).getAsLong())));
-            }
+            // 15/11 : « plafond_pb » (plafond selon la rareté) n'existe plus ; une ancienne clé est ignorée
             ventesMax = Math.max(1, Math.min(20, vm));
             fraisPct = Math.max(0, Math.min(50, fp));
             if (!du.isEmpty()) durees = List.copyOf(du);
             prixHeralsMax = Math.max(1, phm);
-            plafondsPb = List.copyOf(pl);
             taxePdm = (int) Math.round(Math.max(0, Math.min(50, tx)) * 100);
-            LOG.info("[grades] hôtel des ventes : {} ventes au plus, durées {} h, frais PB {} %, taxe de mise en vente {} %, plafonds PB {}", ventesMax,
-                    durees, fraisPct, taxePdm / 100.0, plafondsPb);
+            LOG.info("[grades] hôtel des ventes : {} ventes au plus, durées {} h, frais PB {} %, taxe de mise en vente {} %, prix PB au plus {}", ventesMax,
+                    durees, fraisPct, taxePdm / 100.0, RegleHdv.prixPbMax(fraisPct));
         } catch (Exception ex) {
             LOG.error("[grades] {} illisible ({}) : réglages de l'hôtel des ventes inchangés", fichierReglages, ex.toString());
         }
@@ -613,7 +604,7 @@ public final class HdvServeur {
         long pb = SOLDES_PB.getOrDefault(p.getUUID(), -1L);
         long hmax = EconomieApi.disponible() ? Math.min(prixHeralsMax, EconomieApi.maxSolde()) : prixHeralsMax;
         ReseauHdv.CANAL.send(PacketDistributor.PLAYER.with(() -> p), new ReseauHdv.Etat(ouvrir, herals, pb, offresVisibles(), mesEnVente(u), ventesMax,
-                aRecuperer(u), fraisPct, durees, plafondsPb, hmax, Pb.actif(), taxePdm, message, ok));
+                aRecuperer(u), fraisPct, durees, List.of(RegleHdv.prixPbMax(fraisPct)), hmax, Pb.actif(), taxePdm, message, ok));
     }
 
     // ------------------------------------------------------------------ liste
@@ -756,10 +747,9 @@ public final class HdvServeur {
             mettreEnVente(p, slot, st.copy(), prix, 0, taxe, duree);
             return;
         }
-        // PB en plus : plafond selon la rareté (contre les PB passés d'un compte à l'autre avec un objet sans valeur)
-        int rar = RegleHdv.rarete(st);
-        long plafond = plafondsPb.get(Math.max(0, Math.min(plafondsPb.size() - 1, rar + 1)));
-        if (prixPb > plafond || RegleHdv.total(RegleHdv.PB, prixPb, fraisPct) > PB_MAX) {
+        // PB en plus : 15/11, décision du propriétaire, plus aucun plafond selon la rareté ; seul le plafond technique du
+        // site (ce que paie l'acheteur, frais compris), testé d'abord sur le prix seul (jamais de dépassement de calcul)
+        if (prixPb > RegleHdv.PB_MAX || RegleHdv.total(RegleHdv.PB, prixPb, fraisPct) > RegleHdv.PB_MAX) {
             repondre(p, "prix_haut", false);
             return;
         }
