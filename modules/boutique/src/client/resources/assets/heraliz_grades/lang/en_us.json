@@ -897,7 +897,7 @@
   "heraliz_grades.staff.cmd.spawn": "Back to spawn from your base; set / clear / show the point (staff).",
   "heraliz_grades.staff.cmd.base": "Base sheet (costs, raids); erase a player's base (op).",
   "heraliz_grades.staff.cmd.coeur": "Move the clan heart (price and delay).",
-  "heraliz_grades.staff.cmd.purge": "Purge time slots; force a Purge (op).",
+  "heraliz_grades.staff.cmd.purge": "Purge stopped for now (purge.json); force it: op.",
   "heraliz_grades.staff.cmd.tpa": "Ask to teleport to a player; accept / deny.",
   "heraliz_grades.staff.cmd.warp": "Spawn warp menu; set, delete, rename a warp (staff).",
   "heraliz_grades.staff.cmd.kit": "Kit of the player's rank (once per cooldown).",

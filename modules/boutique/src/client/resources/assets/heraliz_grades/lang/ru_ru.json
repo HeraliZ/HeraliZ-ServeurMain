@@ -897,7 +897,7 @@
   "heraliz_grades.staff.cmd.spawn": "Возврат на спавн с базы; задать / удалить / показать точку (персонал).",
   "heraliz_grades.staff.cmd.base": "Справка по базам (цены, рейды); удалить базу игрока (оп).",
   "heraliz_grades.staff.cmd.coeur": "Переместить сердце клана (цена и задержка).",
-  "heraliz_grades.staff.cmd.purge": "Время Чистки; запустить Чистку принудительно (оп).",
+  "heraliz_grades.staff.cmd.purge": "Чистка пока остановлена (purge.json); запустить принудительно: оп.",
   "heraliz_grades.staff.cmd.tpa": "Запрос телепорта к игроку; принять / отклонить.",
   "heraliz_grades.staff.cmd.warp": "Меню варпов спавна; создать, удалить, переименовать варп (персонал).",
   "heraliz_grades.staff.cmd.kit": "Набор ранга игрока (раз в перезарядку).",

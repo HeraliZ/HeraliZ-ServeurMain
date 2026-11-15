@@ -897,7 +897,7 @@
   "heraliz_grades.staff.cmd.spawn": "Retour au spawn depuis sa base ; definir / effacer / voir le point (staff).",
   "heraliz_grades.staff.cmd.base": "Fiche des bases (coûts, raids) ; effacer la base d'un joueur (op).",
   "heraliz_grades.staff.cmd.coeur": "Déplacer le cœur du clan (prix et délai).",
-  "heraliz_grades.staff.cmd.purge": "Créneaux de la Purge ; forcer une Purge (op).",
+  "heraliz_grades.staff.cmd.purge": "Purge arrêtée pour l'instant (purge.json) ; la forcer : op.",
   "heraliz_grades.staff.cmd.tpa": "Demander une téléportation vers un joueur ; accepter / refuser.",
   "heraliz_grades.staff.cmd.warp": "Menu des warps du spawn ; poser, retirer, renommer un warp (staff).",
   "heraliz_grades.staff.cmd.kit": "Kit du grade du joueur (une fois par recharge).",

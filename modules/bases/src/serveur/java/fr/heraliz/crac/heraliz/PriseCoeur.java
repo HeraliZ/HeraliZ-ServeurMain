@@ -250,8 +250,10 @@ public final class PriseCoeur {
         boolean ok = SaisonPont.raid(pr.clanAttaquant, pr.clanPris, pr.purge, pr.joueur);
         Crac.LOGGER.info("[CRac] cœur de [{}] pris par [{}] ({}) : {}", tagP, tagA, pr.purge, ok ? "points volés" : "déjà pris, rien");
         if (!ok) {
-            prevenir(server, pr.clanAttaquant, Purge.t("crac.coeur.deja_pris", "Ce cœur a déjà été pris pendant cette Purge.")
-                .withStyle(ChatFormatting.RED));
+            // Purge arrêtée (15/11) : une prise à part n'est jamais « déjà prise » ; seule une saison finie entre-temps la refuse
+            prevenir(server, pr.clanAttaquant, (pr.purge.startsWith("hors-purge-")
+                ? Purge.t("crac.coeur.pas_saison", "Pas de saison des clans en cours : le cœur ne se prend pas.")
+                : Purge.t("crac.coeur.deja_pris", "Ce cœur a déjà été pris pendant cette Purge.")).withStyle(ChatFormatting.RED));
         }
     }
 
