@@ -95,7 +95,14 @@ public final class SaisonVue {
             l.add(new LigneBareme(pvp, "capture_prise", "par_niveau", new double[]{b.captureParValeur * b.capturePriseCoef}, "capture_prise",
                     new String[]{entier(b.captureTenueMin), entier(b.capturePlafondJour)}));
         }
-        l.add(new LigneBareme(pvp, "coeur", "pct", new double[]{b.raidGagnePct}, "coeur", new String[]{entier(b.raidPerduPct)}));
+        // 15/11 : Purge arretee (CRac, purge.json) : le coeur se prend a toute heure, une fois par N heures pour un meme clan
+        long sansPurge = Ponts.priseSansPurgeHeures();
+        if (sansPurge < 0) {
+            l.add(new LigneBareme(pvp, "coeur", "pct", new double[]{b.raidGagnePct}, "coeur", new String[]{entier(b.raidPerduPct)}));
+        } else {
+            l.add(new LigneBareme(pvp, "coeur_libre", "pct", new double[]{b.raidGagnePct}, sansPurge > 0 ? "coeur_libre" : "coeur",
+                    sansPurge > 0 ? new String[]{entier(b.raidPerduPct), String.valueOf(sansPurge)} : new String[]{entier(b.raidPerduPct)}));
+        }
         // events
         double m = b.multiplicateur("clashwar");
         double[] pl = b.places;

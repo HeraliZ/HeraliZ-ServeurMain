@@ -9,9 +9,10 @@ sans refabriquer les mods.
 ## 1. L'idée
 
 Une **saison dure 1 mois**. Les clans gagnent des **points de saison** dans trois classements (PVE, PVP, events). Les
-points sont gardés dans le **cœur de clan**, posé dans la base : pendant **la Purge** (les seuls moments où les bases
-peuvent être raidées), un clan ennemi qui tient le cœur vole une partie des points. À la fin du mois, les trois premiers
-clans du classement général gagnent un prix.
+points sont gardés dans le **cœur de clan**, posé dans la base : un clan ennemi qui tient le cœur vole une partie des
+points, pendant **la Purge** quand elle tourne (les seuls moments où les bases sont alors raidables). **Depuis le 15/11,
+la Purge est arrêtée** (décision du propriétaire) : les bases se raident et le cœur se prend à toute heure (§3). À la
+fin du mois, les trois premiers clans du classement général gagnent un prix.
 
 Prix de la bêta :
 
@@ -25,7 +26,7 @@ Membres récompensés : ceux du clan à la clôture de la saison (les clans sont
 **V1 : seulement des PB, pas d'argent réel** (décision du 22/10). Argent réel : saisons suivantes.
 
 **Deux choses différentes, à ne pas confondre :**
-- les **points de saison** : le classement, le cash prize ; gardés dans le cœur ; volables pendant la Purge ;
+- les **points de saison** : le classement, le cash prize ; gardés dans le cœur ; volables quand la base se raide ;
 - l'**XP de clan** : le niveau du clan et son arbre d'améliorations (§6) ; jamais volée.
 Beaucoup d'actions donnent les deux.
 
@@ -40,20 +41,23 @@ Beaucoup d'actions donnent les deux.
   (modèle très propre, c'est l'objet principal des clans : rendus à valider), le prix et le craft viendront ensuite.
 - **Un seul par clan**, posé seulement dans la zone de la base du clan (claim de son armoire), par le chef ou un membre
   qui a le droit de gérer la base.
-- **Hors Purge** : indestructible, personne ne peut y toucher.
+- **Indestructible**. Hors Purge (quand elle tourne), personne ne peut y toucher ; Purge arrêtée (15/11) : il se prend à
+  toute heure (ci-dessous).
 - **Déplacer le cœur** : possible hors Purge, contre **50 000 hérals** (décision). Le chef le reprend en objet et a
   **10 minutes pour le reposer ; sinon le clan perd 100 % de ses points** (décision). Aucun point gagné tant qu'il n'est
-  pas posé. Interdit pendant la Purge et dans l'heure qui la précède **[à valider]**. L'objet ne se jette pas, ne se
+  pas posé. Interdit pendant la Purge et dans l'heure qui la précède **[à valider]**, et (15/11) pendant un raid de la
+  base (raid block). L'objet ne se jette pas, ne se
   range nulle part et revient au chef s'il meurt **[à valider]**.
 - Clan dissous : le cœur disparaît avec tous ses points.
 
-### Voler les points pendant la Purge
+### Voler les points (pendant la Purge ; à toute heure quand elle est arrêtée)
 
 - Un membre d'un clan ennemi **tient le cœur 90 secondes** (entre 1 et 2 minutes, décision) : il reste à 3 blocs au plus,
   vivant, pas à terre. Tué, à terre ou éloigné : la prise repart de zéro. Une barre est visible par les deux clans.
 - Réussite : le clan raidé **perd 15 %** de ses points, le clan attaquant en **gagne 10 %** ; les 5 % restants
   disparaissent (décision). Les 15 % sont pris dans chacun des trois classements (PVE, PVP, events).
-- **Une seule prise par clan raidé et par Purge** (décision).
+- **Une seule prise par clan raidé et par Purge** (décision) ; Purge arrêtée (15/11) : une prise par clan raidé toutes
+  les 24 h au plus (`prise_hors_purge_heures` de `purge.json`).
 - L'attaquant doit avoir son propre cœur posé, sinon il ne gagne rien (le raidé perd quand même ses 15 %)
   **[à valider]**.
 - Défendre ne rapporte pas de points (décision) : les défenseurs gardent le loot et les explosifs des attaquants.
@@ -62,6 +66,12 @@ Beaucoup d'actions donnent les deux.
 
 ## 3. La Purge
 
+- **Arrêtée depuis le 15/11** (décision du propriétaire : « la Purge n'existe plus pour l'instant » ; il pense la remettre
+  plus tard) : `"actif": false` dans `serveur/config/crac/purge.json`, aussi la valeur par défaut (fichier absent ou
+  illisible : elle ne revient jamais seule), code gardé. Arrêtée : 100 % des bases se raident à toute heure (C4,
+  explosions, coffres pillables), le cœur se prend à toute heure (une fois par 24 h pour un même clan) et ne se déplace
+  pas pendant un raid de sa base ; aucune annonce ni icône ; `/purge` n'est plus proposée qu'au staff. La remettre :
+  `"actif": true`, puis `/recharger purge`. La suite de cette section décrit la Purge quand elle tourne.
 - **Les bases ne sont raidables que pendant la Purge.** Hors Purge, les explosifs ne font rien aux constructions de CRac
   et le cœur est intouchable. (Aujourd'hui, une base se raide à tout moment, sauf ses 4 premiers jours.)
 - Horaires réglables, exemple du propriétaire : vendredi 18 h – 21 h, samedi 15 h – 22 h, dimanche 15 h – 22 h.
@@ -358,7 +368,7 @@ rendre à chaque nouvelle saison, même avec une nouvelle carte.
 |---|---|
 | Se faire tuer par un 2e compte | rien pour même PC / même IP ; victime armée ou en armure (hors kit) |
 | Tuer le même joueur en boucle | ×1, ×0,5, puis 0 |
-| Deux clans complices qui se raident pour se passer des points | 15 % perdus, 10 % gagnés ; une prise par Purge |
+| Deux clans complices qui se raident pour se passer des points | 15 % perdus, 10 % gagnés ; une prise par Purge (Purge arrêtée : une par 24 h) |
 | Acheter chez un PNJ, revendre chez un autre | aucun point pour un objet qu'un marchand vend |
 | Fabriquer, défaire, refabriquer ; poser une arme au sol et la ramasser table ouverte | arme ramassée exclue ; plafond par jour |
 | Farmer les zombies des vagues de capture ou du mode Zombies | ne comptent pas |

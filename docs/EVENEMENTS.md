@@ -200,7 +200,7 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
 | Quête de clan | 5 | 3 par jour, 2 par semaine ; temps et distance comptés seulement en jeu actif sur la carte | `clans` · `Quetes` |
 | Kill d'un joueur / mort | +1 / −1 | hors même IP, même clan, victime sans arme ni armure ; même victime ×1, ×0,5 puis 0 sur 6 h ; jamais sous 0 | `ClanEvents`, `Saison.kill` |
 | ClashWar | places 100 / 60 / 40 / 20, participation 5, **×2** | au moins 4 clans différents | `clashwar` · `Recompenses` |
-| Prise du cœur pendant la Purge | −15 % au clan pris, +10 % à l'attaquant | une fois par clan pris et par Purge | `bases` · `PriseCoeur` |
+| Prise du cœur (pendant la Purge ; à toute heure depuis qu'elle est arrêtée, 15/11) | −15 % au clan pris, +10 % à l'attaquant | une fois par clan pris et par Purge ; Purge arrêtée : une fois par 24 h (`prise_hors_purge_heures`) | `bases` · `PriseCoeur` |
 | Capture d'un drapeau (25/10) | zone libre : 3 × valeur × difficulté (PVE) ; prise à un clan qui la tenait depuis 60 min : × 2 (PVP) — **depuis le 27/10, une zone n'est tenue que 2 h, protégée tout ce temps, puis redevient libre** (`tenue_min` de `heralisz_clans-common.toml`) : on ne la prend plus à un clan, seule la capture d'une zone libre compte (la ligne PVP de l'onglet Saison n'est montrée qu'avec `tenue_min = 0`) | même zone et même clan : 12 h ; mêmes deux clans sur la même zone : 48 h ; 40 points de capture par clan et par jour | `clans` · `Territoires.capturer`, `Saison.capture` |
 
 | Largage public (25/10) | 8 au clan du premier qui ouvre la caisse | 3 par clan et par jour ; lancé par le staff : sans points sauf `avec_points` | `evenements` · `Largage` |

@@ -25,7 +25,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/base info` | CRac | fiche des bases (coûts, raids) ; `/base effacer` : op |
 | `/base abandonner` (`confirmer`) | CRac | (15/11) abandonner la base de son clan dont l'armoire a été détruite pendant un raid (réservée 24 h au clan) : chef ou droit « Gérer la base » |
 | `/coeur deplacer` | CRac | déplacer le cœur du clan |
-| `/purge` | CRac | créneaux de la Purge ; `forcer` : op |
+| `/purge` | CRac | créneaux de la Purge ; `forcer` : op. 15/11 : Purge arrêtée (`purge.json`), commande proposée au staff seulement |
 | `/tpa <joueur>` (`accepter [joueur]`, `refuser [joueur]`) | Grades | téléportation vers un joueur |
 | `/warp` | Grades | menu des warps du spawn (`set`, `del`… : staff) |
 | `/kit` | Grades | kit du grade |

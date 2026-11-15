@@ -1,6 +1,6 @@
 {
-  "_aide": "La Purge (saison des clans) : les bases ne se raident que pendant ces créneaux (heure de Paris). Fin avant le début = passe minuit. actif false = raids à tout moment, comme avant. protection_nouvelle_base_heures : 0 = une base neuve se raide dès la première Purge. Relu par /recharger purge.",
-  "actif": true,
+  "_aide": "La Purge (saison des clans) : avec actif true, les bases ne se raident que pendant ces créneaux (heure de Paris ; fin avant le début = passe minuit). actif false (15/11, décision du propriétaire : arrêtée pour l'instant) = toutes les bases se raident à toute heure, le cœur se prend à toute heure, une fois toutes les prise_hors_purge_heures au plus pour un même clan. protection_nouvelle_base_heures : 0 = une base neuve se raide dès la première Purge. Relu par /recharger purge.",
+  "actif": false,
   "fuseau": "Europe/Paris",
   "creneaux": [
     {
@@ -24,5 +24,6 @@
   "prise_distance": 3.0,
   "deplacement_prix": 50000,
   "deplacement_minutes": 10,
-  "deplacement_interdit_avant_minutes": 60
+  "deplacement_interdit_avant_minutes": 60,
+  "prise_hors_purge_heures": 24
 }

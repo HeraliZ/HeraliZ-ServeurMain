@@ -36,6 +36,9 @@ import org.jetbrains.annotations.Nullable;
  * pris, +10 % pour l'attaquant s'il a son cœur, une fois par clan pris et par Purge). Une prise commencée va jusqu'au bout
  * même si la Purge finit. Toutes les règles sont vérifiées ici, au serveur. Clic droit d'un membre du clan : écran du
  * clan, onglet Saison (points, rangs, cœur ; 03/11), et ses points au-dessus de la barre.
+ * <p>15/11 (décision du propriétaire : Purge arrêtée, toutes les bases se raident à toute heure) : sans Purge, le cœur se
+ * prend aussi à toute heure, une fois toutes les {@code prise_hors_purge_heures} (24 h) au plus pour un même clan
+ * ({@link Purge#priseHorsPurgeReste}) ; avant, sans Purge, il ne se prenait jamais (« pas de saison en cours »).
  */
 @EventBusSubscriber(modid = "crac")
 public final class PriseCoeur {
@@ -117,7 +120,7 @@ public final class PriseCoeur {
     private static void commencer(ServerPlayer p, ServerLevel level, BlockPos pos, UUID groupe, UUID clanPris, @Nullable UUID monClan) {
         MinecraftServer server = level.getServer();
         GlobalPos gp = GlobalPos.of(level.dimension(), pos.immutable());
-        if (!Purge.systeme() || !SaisonPont.active()) {
+        if (!BasesClans.actif() || !SaisonPont.active()) {
             barre(p, Purge.t("crac.coeur.pas_saison", "Pas de saison des clans en cours : le cœur ne se prend pas."), ChatFormatting.RED);
             return;
         }
@@ -125,8 +128,10 @@ public final class PriseCoeur {
             barre(p, Purge.t("crac.coeur.deja_prise", "Une prise est déjà en cours sur ce cœur."), ChatFormatting.YELLOW);
             return;
         }
-        Purge.Fenetre f = Purge.enCours();
-        if (f == null) {
+        // 15/11 : Purge arrêtée (purge.json) : à toute heure ; sinon pendant la Purge seulement, comme avant
+        boolean purge = Purge.systeme();
+        Purge.Fenetre f = purge ? Purge.enCours() : null;
+        if (purge && f == null) {
             barre(p, Purge.t("crac.coeur.hors_purge", "Le cœur ne se prend que pendant la Purge (/purge)."), ChatFormatting.RED);
             return;
         }
@@ -137,22 +142,29 @@ public final class PriseCoeur {
         if (p.isCreative() || p.isSpectator() || SaisonPont.aTerre(p) || !p.isAlive()) {
             return;
         }
-        if (Purge.baseRecente(server, groupe, f)) {
+        if (purge && Purge.baseRecente(server, groupe, f)) {
             barre(p, Purge.t("crac.coeur.base_recente", "Cette base est trop récente : elle n'est pas raidable pendant cette Purge."), ChatFormatting.RED);
             return;
         }
-        String cle = f.id() + "|" + clanPris;
-        if (FAITES.contains(cle)) {
+        if (purge && FAITES.contains(f.id() + "|" + clanPris)) {
             barre(p, Purge.t("crac.coeur.deja_pris", "Ce cœur a déjà été pris pendant cette Purge."), ChatFormatting.RED);
+            return;
+        }
+        long reste = purge ? 0L : Purge.priseHorsPurgeReste(server, clanPris);
+        if (reste > 0) {
+            barre(p, Purge.t("crac.coeur.deja_pris_recemment", "Ce cœur a déjà été pris il y a peu : il se reprend dans %s.",
+                Purge.duree(reste)), ChatFormatting.RED);
             return;
         }
         if (!aPortee(p, gp)) {
             return;
         }
-        Prise prise = new Prise(gp, groupe, clanPris, monClan, f.id(), p.getGameProfile().getName());
+        // identifiant de la prise : la Purge en cours, ou (Purge arrêtée) une prise à part (saison : une seule par identifiant)
+        String id = purge ? f.id() : "hors-purge-" + System.currentTimeMillis();
+        Prise prise = new Prise(gp, groupe, clanPris, monClan, id, p.getGameProfile().getName());
         PRISES.put(gp, prise);
         String tagA = tag(monClan), tagP = tag(clanPris);
-        Crac.LOGGER.info("[CRac] prise du cœur de [{}] commencée par {} [{}] ({})", tagP, prise.joueur, tagA, f.id());
+        Crac.LOGGER.info("[CRac] prise du cœur de [{}] commencée par {} [{}] ({})", tagP, prise.joueur, tagA, id);
         prevenir(server, clanPris, Purge.t("crac.coeur.alerte", "⚠ [%s] prend le cœur de votre clan ! Défendez-le (%s s).", tagA, Purge.priseSecondes)
             .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         prevenir(server, monClan, Purge.t("crac.coeur.debut", "Prise du cœur de [%s] : restez à %s blocs du cœur pendant %s s.", tagP,
@@ -232,6 +244,9 @@ public final class PriseCoeur {
             return;
         }
         FAITES.add(pr.purge + "|" + pr.clanPris);
+        if (pr.purge.startsWith("hors-purge-")) {
+            Purge.notePriseHorsPurge(server, pr.clanPris);   // 15/11 : Purge arrêtée, prochaine prise de ce cœur dans 24 h
+        }
         boolean ok = SaisonPont.raid(pr.clanAttaquant, pr.clanPris, pr.purge, pr.joueur);
         Crac.LOGGER.info("[CRac] cœur de [{}] pris par [{}] ({}) : {}", tagP, tagA, pr.purge, ok ? "points volés" : "déjà pris, rien");
         if (!ok) {

@@ -169,9 +169,9 @@
         "ru": "Что такое кланы и сезон?"
       },
       "reponse": {
-        "fr": "Un clan, c'est une base, un coffre commun et une place au classement. Chaque saison dure un mois : les clans marquent des points en PVE, en PVP et pendant les événements. Pour compter, ton clan doit poser son cœur de clan dans sa base ; pendant la Purge, des ennemis peuvent venir le prendre et voler vos points. Tape /saison pour voir le classement.",
-        "en": "A clan means a base, a shared chest and a place in the ranking. Each season lasts a month: clans score points in PVE, in PVP and during events. To count, your clan must place its clan heart in its base; during the Purge, enemies can come and take it to steal your points. Type /saison to see the ranking.",
-        "ru": "Клан — это база, общий сундук и место в рейтинге. Каждый сезон длится месяц: кланы зарабатывают очки в PVE, PVP и на событиях. Чтобы они засчитывались, клан должен поставить сердце клана на своей базе; во время Чистки враги могут прийти, захватить его и украсть ваши очки. Набери /saison, чтобы увидеть рейтинг."
+        "fr": "Un clan, c'est une base, un coffre commun et une place au classement. Chaque saison dure un mois : les clans marquent des points en PVE, en PVP et pendant les événements. Pour compter, ton clan doit poser son cœur de clan dans sa base ; des ennemis peuvent venir le prendre à toute heure et voler vos points : les bases se raident à tout moment. Tape /saison pour voir le classement.",
+        "en": "A clan means a base, a shared chest and a place in the ranking. Each season lasts a month: clans score points in PVE, in PVP and during events. To count, your clan must place its clan heart in its base; enemies can come and take it at any time to steal your points: bases can be raided at any moment. Type /saison to see the ranking.",
+        "ru": "Клан — это база, общий сундук и место в рейтинге. Каждый сезон длится месяц: кланы зарабатывают очки в PVE, PVP и на событиях. Чтобы они засчитывались, клан должен поставить сердце клана на своей базе; враги могут прийти в любое время, захватить его и украсть ваши очки: базы можно рейдить когда угодно. Набери /saison, чтобы увидеть рейтинг."
       }
     },
     {

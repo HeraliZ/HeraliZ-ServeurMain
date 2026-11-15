@@ -151,6 +151,31 @@ final class Ponts {
         return false;
     }
 
+    private static Method priseSansPurge;
+    private static boolean priseCherche;
+
+    /**
+     * 15/11 (Purge arretee par le proprietaire) : -1 quand le coeur ne se prend que pendant la Purge ; sinon il se prend a
+     * toute heure et c'est le nombre d'heures entre deux prises d'un meme clan (0 : sans limite). CRac
+     * ({@code fr.heraliz.crac.api.CoeurApi.priseSansPurgeHeures}, par reflexion) absent ou trop ancien : -1.
+     */
+    static long priseSansPurgeHeures() {
+        if (!priseCherche) {
+            priseCherche = true;
+            try {
+                priseSansPurge = Class.forName("fr.heraliz.crac.api.CoeurApi").getMethod("priseSansPurgeHeures");
+            } catch (ReflectiveOperationException | LinkageError e) {
+                priseSansPurge = null;
+            }
+        }
+        if (priseSansPurge == null) return -1;
+        try {
+            return priseSansPurge.invoke(null) instanceof Long l ? l : -1;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return -1;
+        }
+    }
+
     private static Method cwConfig;
     private static java.lang.reflect.Field cwClansMin;
     private static boolean cwCherche;

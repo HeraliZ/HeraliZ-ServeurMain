@@ -180,10 +180,12 @@ public final class BasesClans extends SafeSavedData {
         } catch (LinkageError | RuntimeException e) {
             Crac.LOGGER.error("[CRac] bases des clans : mise à jour en erreur", e);
         }
-        // saison des clans : armoires vues (Purge), taille des bases (arbre du clan), points des cœurs, bases réservées après
-        // une armoire détruite en raid (15/11)
+        // saison des clans : armoires vues (Purge : seulement quand elle commande les raids, 15/11), taille des bases (arbre du
+        // clan), points des cœurs, bases réservées après une armoire détruite en raid (15/11)
         try {
-            Purge.noterArmoires(server);
+            if (Purge.systeme()) {
+                Purge.noterArmoires(server);
+            }
             ArbreBases.appliquer(server, get(server));
             CoeurDeplacement.majScores(server);
             ArmoiresPerdues.seconde(server);
@@ -211,6 +213,7 @@ public final class BasesClans extends SafeSavedData {
         ArmoiresPerdues.toutOublier(server);
         Purge.Donnees p = Purge.Donnees.get(server);
         p.vues.clear();
+        p.prises.clear();
         p.setDirty();
         return coeurs;
     }

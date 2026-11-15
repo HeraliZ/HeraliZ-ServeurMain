@@ -31,7 +31,8 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Déplacer le cœur de clan (docs/SAISON_CLANS.md §2) : {@code /coeur deplacer}, par le chef ou un membre qui gère la
- * base, à {@code 4} blocs du cœur, hors Purge et pas dans l'heure qui la précède, aucune prise en cours ; coûte
+ * base, à {@code 4} blocs du cœur, hors Purge et pas dans l'heure qui la précède, ni pendant un raid de la base (15/11),
+ * aucune prise en cours ; coûte
  * {@link Purge#deplacementPrix} hérals (50 000) pris dans la banque du clan. Le cœur revient en objet dans l'inventaire
  * et le clan a {@link Purge#deplacementMinutes} minutes (10) pour le reposer dans sa base ; sinon il perd 100 % de ses
  * points de saison. Tant qu'il n'est pas posé, le clan ne gagne rien. L'objet ne se jette pas. Délais gardés avec le monde
@@ -124,6 +125,11 @@ public final class CoeurDeplacement extends SafeSavedData {
             return refus(p, Purge.t("crac.coeur.deja_prise", "Une prise est déjà en cours sur ce cœur."));
         }
         ServerLevel level = server.getLevel(gp.dimension());
+        // 15/11 (Purge arrêtée : bases raidables et cœur pris à toute heure) : pas pendant un raid de la base (sinon le clan
+        // ramasserait son cœur à l'arrivée des pillards)
+        if (level != null && fr.heraliz.crac.raid.RaidBlockManager.isRaidBlocked(level, g.id())) {
+            return refus(p, Purge.t("crac.coeur.deplacement_raid", "Le cœur ne se déplace pas pendant un raid de la base."));
+        }
         if (level == null || p.level() != level || p.position().distanceToSqr(Vec3.atCenterOf(gp.pos())) > PORTEE * PORTEE
             || !(level.getBlockState(gp.pos()).getBlock() instanceof CoeurClanBlock)) {
             return refus(p, Purge.t("crac.coeur.trop_loin", "Mets-toi juste à côté du cœur de ton clan pour le reprendre."));
