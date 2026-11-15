@@ -88,12 +88,8 @@ public final class Horaire {
         float[] vp = new float[r.n];
         for (int i = 0; i < r.n; i++) vp[i] = (float) Math.min(VMAX, Math.sqrt(ALAT * r.rayon[i]));
         int demi = (int) Math.ceil(LONGUEUR / 2) + 4;
-        float[] vt = new float[r.n];
-        for (int i = 0; i < r.n; i++) {
-            float m = (float) VMAX;
-            for (int d = -demi; d <= demi; d++) m = Math.min(m, vp[(i + d + r.n) % r.n]);
-            vt[i] = m;
-        }
+        float[] vt = minimumGlissant(vp, demi);
+        for (int i = 0; i < r.n; i++) vt[i] = Math.min((float) VMAX, vt[i]);
         longueurTrajet = new double[ng];
         temps = new float[ng][];
         pas = new double[ng];
@@ -122,6 +118,37 @@ public final class Horaire {
             t += tk[m];
         }
         periode = t;
+    }
+
+    /**
+     * Minimum de {@code v} sur la fenêtre [i - demi, i + demi] de la boucle (indices pris modulo la longueur), pour chaque
+     * i, en une seule passe : file des positions dont la valeur croît (chacune entre et sort une fois). 15/11 (audit perf
+     * n° 5) : avant, 2 × demi + 1 = 171 lectures par point, environ un million de calculs sur le fil du serveur au premier
+     * tick et dans le jeu de chaque joueur à son arrivée ; maintenant de l'ordre de 15 000. Même résultat, au bit près.
+     */
+    static float[] minimumGlissant(float[] v, int demi) {
+        int n = v.length;
+        float[] out = new float[n];
+        if (n == 0) return out;
+        if (2 * demi + 1 >= n) {                                   // la fenêtre couvre toute la boucle
+            float m = Float.MAX_VALUE;
+            for (float x : v) m = Math.min(m, x);
+            java.util.Arrays.fill(out, m);
+            return out;
+        }
+        int[] file = new int[n + 2 * demi];                        // positions « dépliées » j, de -demi à n - 1 + demi
+        int tete = 0, queue = 0;
+        for (int j = -demi; j < n + demi; j++) {
+            float x = v[Math.floorMod(j, n)];
+            while (queue > tete && v[Math.floorMod(file[queue - 1], n)] >= x) queue--;
+            file[queue++] = j;
+            int i = j - demi;                                      // la fenêtre de i finit en j
+            if (i >= 0) {
+                while (file[tete] < i - demi) tete++;
+                out[i] = v[Math.floorMod(file[tete], n)];
+            }
+        }
+        return out;
     }
 
     /** L'horaire du réseau du jar, ou null s'il n'y a pas de réseau. */
