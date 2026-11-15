@@ -774,7 +774,12 @@ public final class Territoires {
         }
         e.prochainRavitaillement = now + ClansConfig.RAVITAILLEMENT_MIN.get() * 60_000L * (100 - fr.heralisz.clans.model.Arbre.ravitaillementPct(mien.palier(fr.heralisz.clans.model.Arbre.Branche.RAVITAILLEMENT))) / 100;
         data.setDirty();
-        ravitaillement.lancer(monde(), zone, mien.tag, Ravitaillement.DELAI_AVION_TICKS, true);
+        // 15/11 (audit B4) : XP, quete et statistique au largage de la caisse (avant : au signal ; un redemarrage pendant le
+        // vol rendait le delai en les gardant, un second signal les comptait deux fois) ; l'annonce reste au signal
+        UUID clanId = mien.id, joueur = p.getUUID();
+        String nomZone = zone.nom;
+        ravitaillement.lancer(monde(), zone, mien.tag, Ravitaillement.DELAI_AVION_TICKS, true,
+                () -> fr.heralisz.clans.server.ClanEvents.ravitaillementLargue(clanId, nomZone, joueur));
         ServerHandlers.info(p, "ravitaillement.lance", zone.nom, Ravitaillement.DELAI_AVION_TICKS / 20);
         MinecraftForge.EVENT_BUS.post(new TerritoireEvents.Ravitaillement(mien.id, zone.id, zone.nom, p.getUUID()));
         ClansNet.toPlayer(p, new Packets.PanneauDrapeauS2C(vue(zone, p, now)));

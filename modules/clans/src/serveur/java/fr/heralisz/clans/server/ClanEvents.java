@@ -672,20 +672,32 @@ public final class ClanEvents {
         ClanService.diffuser(c, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.ZONE_PERDUE, List.of(e.nomZone), "zone_perdue", null));
     }
 
+    /** Signal de ravitaillement lance : annonce a tout le serveur (ce qu'il rapporte suit au largage, {@link #ravitaillementLargue}). */
     @SubscribeEvent
     public static void onRavitaillement(TerritoireEvents.Ravitaillement e) {
         ClanStore store = ClanStore.get();
         Clan c = store == null ? null : store.get(e.clanId);
         if (c == null) return;
-        Membre m = c.membre(e.joueur);
-        if (m != null) m.stats.ravitaillements++;
-        ClanService.ajouterXp(c, SourceXp.RAVITAILLEMENT, ClansConfig.XP_RAVITAILLEMENT.get(), e.joueur);
-        Quetes.progresser(c, QueteEtat.Type.RAVITAILLEMENTS, 1);
-        c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.RAVITAILLEMENT, e.nomZone));
-        store.marquerDirty();
-        Sync.marquer(c);
         annoncerATous(ClanService.prefixe(c).append(Component.translatable("msg.ravitaillement", e.nomZone, c.tag)),
                 new Packets.NoticeS2C(Packets.NoticeS2C.Genre.RAVITAILLEMENT, List.of(e.nomZone, c.tag), "signal_fusee", c.banniere));
+    }
+
+    /**
+     * La caisse d'un signal de ravitaillement est larguee (15/11, audit B4) : statistique du joueur, XP du clan, quete
+     * « ravitaillements » et journal du clan. Avant, au signal : un redemarrage pendant le vol rendait le delai de la zone
+     * (la caisse n'etait jamais larguee) en gardant tout ca, et le signal suivant le comptait une deuxieme fois.
+     */
+    public static void ravitaillementLargue(UUID clanId, String nomZone, UUID joueur) {
+        ClanStore store = ClanStore.get();
+        Clan c = store == null ? null : store.get(clanId);
+        if (c == null) return;
+        Membre m = c.membre(joueur);
+        if (m != null) m.stats.ravitaillements++;
+        ClanService.ajouterXp(c, SourceXp.RAVITAILLEMENT, ClansConfig.XP_RAVITAILLEMENT.get(), joueur);
+        Quetes.progresser(c, QueteEtat.Type.RAVITAILLEMENTS, 1);
+        c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.RAVITAILLEMENT, nomZone));
+        store.marquerDirty();
+        Sync.marquer(c);
     }
 
     /** Chat + toast (+ son) a tous les joueurs du serveur. */
