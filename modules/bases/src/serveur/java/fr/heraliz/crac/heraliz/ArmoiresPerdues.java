@@ -138,7 +138,7 @@ public final class ArmoiresPerdues extends SafeSavedData {
             }
             BlockPos a = r.ancien().anchor();
             if (Math.max(Math.abs(a.getX() - pos.getX()), Math.abs(a.getZ() - pos.getZ())) < ecart) {
-                return Txt.k("crac.armoire.base_reservee", duree(r.fin() - now).getString());
+                return Txt.k("crac.armoire.base_reservee", heures(r.fin() - now), minutes(r.fin() - now));
             }
         }
         return null;
@@ -164,7 +164,7 @@ public final class ArmoiresPerdues extends SafeSavedData {
                     if (StructureService.isMember(level, player, r.groupe(), ClanAccess.Action.BUILD)) {
                         break;
                     }
-                    return Txt.k("crac.armoire.zone_reservee", duree(r.fin() - now).getString());
+                    return Txt.k("crac.armoire.zone_reservee", heures(r.fin() - now), minutes(r.fin() - now));
                 }
             }
         }
@@ -381,6 +381,18 @@ public final class ArmoiresPerdues extends SafeSavedData {
     }
 
     /** Durée lisible (mêmes textes que les bases : « 23 h 12 min », « 42 min », « 15 s »). */
+    /**
+     * Heures puis minutes d'un temps restant, pour un message encodé ({@link Txt#k} : texte seulement) : les unités sont
+     * dans le texte traduit chez le joueur (avant : « 23 h 12 min » écrit par le serveur, même pour un joueur russe).
+     */
+    private static long heures(long ms) {
+        return Math.max(0L, ms) / 3_600_000L;
+    }
+
+    private static long minutes(long ms) {
+        return Math.max(0L, ms) % 3_600_000L / 60_000L;
+    }
+
     static MutableComponent duree(long ms) {
         long s = Math.max(0L, ms / 1000L);
         long h = s / 3600L;
