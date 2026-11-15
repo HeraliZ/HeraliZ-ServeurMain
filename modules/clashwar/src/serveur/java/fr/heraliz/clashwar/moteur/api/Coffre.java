@@ -27,6 +27,14 @@ public final class Coffre {
     private Coffre() {
     }
 
+    /**
+     * Marque du depot dans {@code PlayerPersisted} du joueur (long = numero du depot, 0 ou absente : aucun), posee et
+     * enregistree avec lui juste apres le vidage, retiree au retour (15/11, audit M4 : un depot n'est rendu qu'au joueur
+     * qui porte sa marque). Lue sans dependance par HeraliZ Boutique et HeraliZ Quetes : tant qu'elle est la, aucun objet
+     * en attente n'est livre (il serait efface au retour). Cle de donnees partagee : ne jamais la renommer.
+     */
+    public static final String CLE_MARQUE = "HeralizClashWarDepot";
+
     /** Raisons de refus (cles de traduction {@code matchs.coffre.refus.<nom en minuscules>}). */
     public enum Refus { COMBAT, A_TERRE, VEHICULE, DEPOT_EXISTANT, MORT, ERREUR }
 

@@ -75,6 +75,7 @@ public final class MoteurLogique {
         CombatEvents.enregistrer();
         brancherNoyau();
         Descente.enregistrer();
+        Coffres.enregistrer();
         Protections.enregistrer();
         BordureArenes.enregistrer();
     }

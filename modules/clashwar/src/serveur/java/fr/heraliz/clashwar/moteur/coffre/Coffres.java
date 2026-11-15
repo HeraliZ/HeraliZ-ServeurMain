@@ -28,6 +28,10 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import javax.annotation.Nullable;
@@ -44,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Implementation du {@link Coffre} (MATCHS_SPEC §1.1) : instantane complet du joueur sur disque, vidage, restauration,
@@ -53,23 +58,87 @@ import java.util.UUID;
  * inventaire (Inventory.save), selection, curios (saveInventory(false), absent sans Curios),
  * sante, absorption, faim (FoodData), xpNiveau, xpProgres, xpTotal, effets (MobEffectInstance.save), mode (GameType),
  * dim, x, y, z, yaw, pitch, soif (IThirst.serializeNBT, absent sans le mod), brut (saveWithoutId, pour enquete),
- * a_cote (02/11 : objets tenus au curseur ou dans la grille 2 x 2 de l'inventaire au depot, absent s'il n'y en a pas)
+ * a_cote (02/11 : objets tenus au curseur ou dans la grille 2 x 2 de l'inventaire au depot, absent s'il n'y en a pas),
+ * numero (version 2, 15/11 : numero du depot, le meme que la marque {@link Coffre#CLE_MARQUE} posee sur le joueur)
  * </pre>
  * Objets a vie (02/11, audit point 8) : rien ne tombe au sol au depot (curseur et grille gardes dans le depot), et un
  * objet a vie qui n'est pas un pret du match retrouve dans l'inventaire du match au retour (rendu par HeraliZ Tactique
  * apres une question « Jeter cet objet ? » restee ouverte, par exemple) est rendu avec le reste, jamais efface.
  * Ecriture : octets prepares en memoire, ecrits dans {@code <uuid>.dat.tmp}, synchronises sur le disque (fsync), relus
  * et compares, puis deplaces par ATOMIC_MOVE. Un depot illisible ou une restauration incomplete deplace le fichier dans
- * {@code coffres/enquete/} (jamais supprime). Fil serveur.
+ * {@code coffres/enquete/} (jamais supprime).
+ * <p>Jamais de double, jamais de perte (15/11, audit clans_bases M4) : apres le vidage, le joueur recoit la marque du depot
+ * ({@link Coffre#CLE_MARQUE} = son numero) et il est enregistre tout de suite (avant : pas avant la sauvegarde
+ * automatique suivante ; un plantage entre les deux rendait le depot a un joueur qui avait encore tout, objets a vie
+ * doubles). Le depot n'est rendu qu'a un joueur qui porte SA marque : marque absente = le joueur n'a jamais ete enregistre
+ * vide (plantage juste apres le depot : il a encore son inventaire) ou le depot lui a deja ete rendu (plantage entre son
+ * enregistrement et l'effacement du fichier) ; le fichier part alors en enquete, jamais rendu une 2e fois. Au retour :
+ * marque retiree, joueur enregistre, PUIS fichier efface. Ce qu'un ecran ouvert ferait tomber au depot (inventaire plein)
+ * est garde dans le depot ({@code a_cote}), jamais au sol. Fil serveur.
  */
 public final class Coffres {
     private Coffres() {
     }
 
-    public static final int VERSION = 1;
+    /** 2 (15/11) : numero du depot et marque du joueur ; un depot de version 1 (sans numero) est rendu comme avant. */
+    public static final int VERSION = 2;
     /** Etiquette de joueur « reste allonge » (lue par Reanimation, posee par les Zombies a terre). */
     private static final String RESTE_ALLONGE = "heraliz_reste_allonge";
     private static Method sauverJoueur;
+    /** Joueur dont l'ecran se ferme pendant son depot : ce qui tomberait au sol est garde dans {@link #captures}. */
+    @Nullable
+    private static ServerPlayer capture;
+    @Nullable
+    private static List<ItemStack> captures;
+
+    /** Ecouteur du depot (branche par le moteur dans le constructeur du mod). */
+    public static void enregistrer() {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, Coffres::lache);
+    }
+
+    /**
+     * Objet que Minecraft fait tomber pendant la fermeture de l'ecran du depot (inventaire plein : cases d'un atelier,
+     * d'une enclume...) : garde dans le depot avec les objets « a cote », jamais au sol.
+     */
+    private static void lache(ItemTossEvent e) {
+        ServerPlayer p = capture;
+        List<ItemStack> l = captures;
+        if (p == null || l == null || e.getPlayer() != p) return;
+        ItemStack s = e.getEntity().getItem();
+        if (s.isEmpty()) return;
+        l.add(s.copy());
+        e.setCanceled(true);
+        HeralizClashWar.LOG.info("[matchs] {} : {} x{} garde dans le depot (il serait tombe a la fermeture de l'ecran)",
+                p.getGameProfile().getName(), s.getHoverName().getString(), s.getCount());
+    }
+
+    // ------------------------------------------------------------------ marque du depot (15/11, audit M4)
+    /** Numero du depot que porte le joueur (0 : aucun). */
+    public static long marque(Player p) {
+        CompoundTag t = p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        return t.contains(Coffre.CLE_MARQUE, Tag.TAG_LONG) ? t.getLong(Coffre.CLE_MARQUE) : 0L;
+    }
+
+    /** Pose (numero different de 0) ou retire (0) la marque du depot ; elle est enregistree avec le joueur. */
+    private static void marquer(Player p, long numero) {
+        CompoundTag racine = p.getPersistentData();
+        if (numero == 0L) {
+            if (racine.contains(Player.PERSISTED_NBT_TAG, Tag.TAG_COMPOUND)) {
+                racine.getCompound(Player.PERSISTED_NBT_TAG).remove(Coffre.CLE_MARQUE);
+            }
+            return;
+        }
+        if (!racine.contains(Player.PERSISTED_NBT_TAG, Tag.TAG_COMPOUND)) racine.put(Player.PERSISTED_NBT_TAG, new CompoundTag());
+        racine.getCompound(Player.PERSISTED_NBT_TAG).putLong(Coffre.CLE_MARQUE, numero);
+    }
+
+    private static long nouveauNumero() {
+        long n;
+        do {
+            n = ThreadLocalRandom.current().nextLong();
+        } while (n == 0L);
+        return n;
+    }
 
     // ------------------------------------------------------------------ refus
     /**
@@ -103,12 +172,22 @@ public final class Coffres {
         //    audit point 8 : la fermeture de l'ecran les rendait a l'inventaire, ou les jetait au sol s'il etait plein ;
         //    un objet a vie etait alors mis de cote par Tactique, rendu dans l'inventaire du match et efface a la fin)
         List<ItemStack> aCote = horsInventaire(p);
-        // puis fermer le conteneur ouvert (le contenu du menu revient dans l'inventaire ou tombe)
-        p.closeContainer();
+        // puis fermer le conteneur ouvert : son contenu revient dans l'inventaire ; ce qui n'y tient pas (et tomberait au
+        // sol) est garde avec les objets a cote (15/11)
+        capture = p;
+        captures = aCote;
+        try {
+            p.closeContainer();
+        } finally {
+            capture = null;
+            captures = null;
+        }
         // 2. forcer l'ecriture du sac (mixin addAdditionalSaveData de backpacked) : la copie brute sert aussi d'enquete
         CompoundTag brut = p.saveWithoutId(new CompoundTag());
         // 3. instantane
         CompoundTag t = instantane(p, raison, brut);
+        long numero = nouveauNumero();
+        t.putLong("numero", numero);
         if (!aCote.isEmpty()) {
             ListTag l = new ListTag();
             for (ItemStack s : aCote) l.add(s.save(new CompoundTag()));
@@ -121,9 +200,16 @@ public final class Coffres {
             rendreACote(p, aCote);
             return false;
         }
-        // 5. seulement maintenant : vidage (malus d'ArkaniaZ compris : tous les effets partent)
+        // 5. seulement maintenant : vidage (malus d'ArkaniaZ compris : tous les effets partent), marque du depot, joueur
+        //    enregistre tout de suite (15/11, audit M4 : un plantage avant la sauvegarde automatique rendait le depot a un
+        //    joueur qui avait encore tout)
         vider(p);
         CombatTag.effacer(p.getUUID());
+        marquer(p, numero);
+        if (!sauverJoueur(p)) {
+            HeralizClashWar.LOG.error("[matchs] {} vide mais pas enregistre : sa marque le sera avec sa prochaine sauvegarde",
+                    p.getGameProfile().getName());
+        }
         HeralizClashWar.LOG.info("[matchs] coffre de {} depose ({}) : {} piles, curios {}, soif {}", p.getGameProfile().getName(), raison,
                 t.getList("inventaire", Tag.TAG_COMPOUND).size(), t.contains("curios") ? t.getList("curios", Tag.TAG_COMPOUND).size() : "-",
                 t.contains("soif") ? "oui" : "-");
@@ -187,15 +273,30 @@ public final class Coffres {
     public static boolean rendre(ServerPlayer p) {
         Path f = Coffre.fichier(p.getUUID());
         if (f == null || !Files.isRegularFile(f)) {
-            // rien a rendre : on retire quand meme tout objet prete et le drapeau
+            // rien a rendre : on retire quand meme tout objet prete, le drapeau et une marque restee seule
             Equipement.retirer(p);
             detacher(p);
+            oublierMarque(p);
             return false;
         }
         CompoundTag t = lire(f);
         if (t == null) {
             HeralizClashWar.LOG.error("[matchs] coffre de {} illisible : deplace en enquete, rien rendu", p.getGameProfile().getName());
             enquete(f, "illisible");
+            oublierMarque(p);
+            return false;
+        }
+        long numero = t.getLong("numero");
+        if (numero != 0L && marque(p) != numero) {
+            // le joueur ne porte pas la marque de ce depot : jamais enregistre vide apres le depot (plantage juste apres :
+            // il a encore son inventaire d'avant) ou depot deja rendu (plantage avant l'effacement du fichier) : le rendre
+            // copierait ses objets
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : marque du joueur {} au lieu de {} (deja rendu, ou joueur jamais enregistre "
+                    + "apres le depot) : fichier deplace en enquete, rien rendu", p.getGameProfile().getName(), marque(p), numero);
+            enquete(f, "sans_marque");
+            Equipement.retirer(p);
+            detacher(p);
+            oublierMarque(p);
             return false;
         }
         // objets a vie arrives dans l'inventaire du match sans en etre des prets, et ce qui est au curseur ou dans la
@@ -243,9 +344,12 @@ public final class Coffres {
         p.setHealth(Math.max(1f, Math.min(sante, p.getMaxHealth())));
         p.inventoryMenu.broadcastChanges();
         p.containerMenu.broadcastChanges();
+        // marque retiree : enregistree avec l'inventaire rendu ; le fichier n'est efface qu'apres (jamais rendu deux fois)
+        marquer(p, 0L);
         if (!curiosOk) {
             HeralizClashWar.LOG.error("[matchs] coffre de {} : Curios non recharges, fichier garde en enquete", p.getGameProfile().getName());
             enquete(f, "curios");
+            sauverJoueur(p);
             return false;
         }
         // suppression du fichier APRES la sauvegarde du joueur
@@ -256,10 +360,19 @@ public final class Coffres {
                 HeralizClashWar.LOG.error("[matchs] coffre de {} rendu mais fichier non supprime : {}", p.getGameProfile().getName(), e.toString());
             }
         } else {
-            HeralizClashWar.LOG.error("[matchs] coffre de {} rendu mais joueur non sauvegarde : fichier garde", p.getGameProfile().getName());
+            HeralizClashWar.LOG.error("[matchs] coffre de {} rendu mais joueur non sauvegarde : fichier garde (sans sa marque, il ne "
+                    + "sera jamais rendu une 2e fois)", p.getGameProfile().getName());
         }
         HeralizClashWar.LOG.info("[matchs] coffre de {} rendu ({})", p.getGameProfile().getName(), t.getString("raison"));
         return true;
+    }
+
+    /** Marque d'un depot qui n'existe plus (fichier efface par /wipe, deplace en enquete) : retiree et enregistree. */
+    private static void oublierMarque(ServerPlayer p) {
+        if (marque(p) == 0L) return;
+        HeralizClashWar.LOG.warn("[matchs] {} : marque d'un depot sans fichier retiree", p.getGameProfile().getName());
+        marquer(p, 0L);
+        sauverJoueur(p);
     }
 
     /** Curseur et grille 2 x 2 de l'inventaire vides : leurs objets (rendus, a garder dans le depot). */
@@ -404,6 +517,7 @@ public final class Coffres {
         int n = Equipement.retirer(p);
         if (n > 0) HeralizClashWar.LOG.warn("[matchs] {} : {} objet(s) prete(s) purge(s) a la connexion", p.getGameProfile().getName(), n);
         detacher(p);
+        oublierMarque(p);
     }
 
     // ------------------------------------------------------------------ fichiers
