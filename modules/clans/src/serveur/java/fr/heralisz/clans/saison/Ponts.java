@@ -112,7 +112,13 @@ final class Ponts {
         return l;
     }
 
-    /** Une arme : arme TaCZ (couteaux compris), melee et grenades HeraliZ, Wonder, epee, hache, arc, trident. */
+    /**
+     * Une arme : arme TaCZ (couteaux compris), melee et grenades HeraliZ, epee, hache, arc, trident. 15/11 (audit M2) : les
+     * armes de melee et les grenades de Tactique sont les objets {@code heralisz_tactical:melee} et
+     * {@code heralisz_tactical:throwable} (leur arme exacte est dans l'objet : {@code heralisz_melee:...},
+     * {@code heralisz_grenade:...}) ; avant, seuls ces espaces de noms etaient cherches, jamais vus sur un objet : une
+     * victime armee d'une machette ou de grenades comptait comme « sans arme ».
+     */
     static boolean arme(ItemStack s) {
         if (s.getItem() instanceof SwordItem || s.getItem() instanceof AxeItem || s.getItem() instanceof ProjectileWeaponItem
                 || s.getItem() instanceof TridentItem) return true;
@@ -120,6 +126,7 @@ final class Ponts {
         if (id == null) return false;
         String ns = id.getNamespace(), path = id.getPath();
         if (ns.equals("tacz")) return path.contains("gun");
+        if (ns.equals("heralisz_tactical")) return path.equals("melee") || path.equals("throwable");
         return ns.equals("heralisz_melee") || ns.equals("heralisz_grenade");
     }
 
