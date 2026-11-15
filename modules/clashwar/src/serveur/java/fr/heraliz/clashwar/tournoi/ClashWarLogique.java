@@ -32,6 +32,7 @@ public final class ClashWarLogique {
         MinecraftForge.EVENT_BUS.addListener(ClashWarLogique::arret);
         MinecraftForge.EVENT_BUS.addListener(ClashWarLogique::tick);
         MinecraftForge.EVENT_BUS.addListener(ClashWarLogique::connexion);
+        MinecraftForge.EVENT_BUS.addListener(ClashWarLogique::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(ClashWarLogique::clanDissous);
         MinecraftForge.EVENT_BUS.addListener(ClashWarLogique::membreQuitte);
     }
@@ -71,6 +72,13 @@ public final class ClashWarLogique {
 
     private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.getEntity() instanceof ServerPlayer p) Tournois.connexion(p);
+    }
+
+    /** 15/11 (proprietaire) : un inscrit qui se deconnecte avant l'entree dans la salle retire son equipe ({@link Tournoi#deconnecte}). */
+    private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        Tournoi t = Tournois.courant();
+        if (t != null && t.actif()) t.deconnecte(p);
     }
 
     private static void clanDissous(ClanDissousEvent e) {

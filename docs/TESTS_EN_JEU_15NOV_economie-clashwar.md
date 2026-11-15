@@ -53,8 +53,13 @@ Pas appliqué (décision du propriétaire) : le n° 9 (boîtes de munitions à l
       réinscription possible ; l'autre équipe du clan, restée au spawn, reste inscrite ;
 - [ ] départ avec un membre sur la carte : son équipe est retirée (« … n'était pas au spawn au départ du ClashWar… »),
       personne de cette équipe n'est vidé ni téléporté ; les autres équipes partent normalement ;
-- [ ] un inscrit déconnecté au moment du départ : son équipe part sans lui (comme avant) ; à sa reconnexion, il n'a rien
-      perdu.
+- [ ] (ClashWar 1.1.4, règle du propriétaire du 15/11) équipe inscrite, un membre se déconnecte : au moment même, ses
+      coéquipiers connectés reçoivent « <pseudo> s'est déconnecté : votre équipe [TAG] n est retirée de l'inscription… » ;
+      l'écran ne la montre plus ; réinscription possible depuis le spawn, seulement avec des membres connectés (un membre
+      hors ligne : « Seuls les membres connectés peuvent être inscrits. ») ; l'autre équipe du clan reste inscrite ;
+- [ ] déconnexion entre la fin des inscriptions et l'entrée dans la salle : l'équipe est retirée du tournoi (« … s'est
+      déconnecté : votre équipe … est retirée du ClashWar. »), personne de cette équipe n'est vidé ni téléporté ;
+      déconnexion après l'entrée dans la salle : règles du match, comme avant.
 
 ### ClashWar : inventaire mis de côté (noter avant l'inventaire exact : sac, armes, objets à vie, Curios)
 - [ ] fin normale du match puis retour : tout revient, une fois ;
@@ -146,8 +151,8 @@ Pas appliqué (décision du propriétaire) : le n° 9 (boîtes de munitions à l
 
 - Rien n'a été fabriqué avec Minecraft et Forge : une faute de nom (méthode de Minecraft mal recopiée) ne se verra qu'à la
   fabrication du contrôle de branche ; rien n'a été essayé en jeu.
-- ClashWar : le joueur inscrit mais déconnecté n'est pas contrôlé (il ne peut pas être « au spawn ») : il garde sa place
-  jusqu'au départ, où il est laissé de côté comme avant. Le refus de l'écran d'inscription coupe une longue liste de
+- ClashWar : depuis la 1.1.4 (15/11), un inscrit qui se déconnecte retire son équipe au moment même (pendant les
+  inscriptions, ou entre leur fin et l'entrée dans la salle). Le refus de l'écran d'inscription coupe une longue liste de
   pseudos (le chat la donne en entier).
 - Plantage réel du serveur (casino, hôtel des ventes, ClashWar) : raisonné et, pour l'hôtel des ventes, essayé hors du
   jeu ; jamais avec le vrai serveur.
