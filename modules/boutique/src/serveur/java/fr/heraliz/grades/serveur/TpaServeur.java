@@ -50,7 +50,8 @@ import java.util.UUID;
  * à l'acceptation et au moment de partir ; refusé aussi à terre. Le tutoriel des
  * bases de CRac refuse ces commandes. 15/11 (audit C1, demande du propriétaire) : refusé aussi quand celui qui accueille
  * est dans la zone de la base de son clan sans le droit de clan « Accepter un /tpa dans la base » (CRac), revérifié au
- * moment de partir ; les deux joueurs sont prévenus. Fil serveur seulement.
+ * moment de partir ; les deux joueurs sont prévenus et la demande reste en attente (sorti de la base, il peut encore
+ * l'accepter dans ses 60 s). Fil serveur seulement.
  */
 final class TpaServeur {
     private static final long EXPIRATION_MS = 60_000L;
@@ -283,6 +284,8 @@ final class TpaServeur {
         // 15/11 (audit C1, demande du propriétaire) : dans la zone de la base de son clan, il faut le droit de clan « Accepter
         // un /tpa dans la base » pour y faire venir quelqu'un (CRac) ; celui qui demandait le sait aussi
         if (!staff(p) && tpaRefuseeDansBase(cible)) {
+            // la demande reste en attente (jusqu'à ses 60 s) : sorti de la base, il l'accepte encore, comme le dit son message
+            RECUES.computeIfAbsent(cible.getUUID(), k -> new HashMap<>()).put(d.demandeur(), d);
             refus(p, baseRefusDemandeur(cible));
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.base",
                     "Tu es dans la base de ton clan sans le droit « Accepter un /tpa dans la base » : personne ne peut t'y rejoindre. Sors de la base pour accepter."));

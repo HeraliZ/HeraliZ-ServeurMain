@@ -4,7 +4,7 @@ Bases (CRac) **1.38.0-beta**, Clans **3.16.0** (canal des clans en **version 13*
 `serveur/config/crac/purge.json` (Purge arrêtée), `serveur/config/heraliz_quetes/pnj/varga.json` (texte de Varga).
 Rien n'a été essayé en jeu par Claude, ni fabriqué avec Gradle (Minecraft et Forge ne se téléchargent pas sur la machine
 de travail). Essais faits hors du jeu : compilation avec javac contre de petites copies de Minecraft (classes nouvelles ou
-très changées : armoires perdues, Purge, prise et déplacement du cœur, saison, journal des clans), essai du journal
+très changées : armoires perdues, Purge, prise et déplacement du cœur, saison, journal des clans, `/tpa`), essai du journal
 d'écriture des clans (écriture, arrêt brutal, ligne coupée, effacement) et de la pause de la saison (fichier abîmé,
 relecture, archives). `python outils/verifier_langues.py` : 0 erreur.
 
@@ -19,7 +19,7 @@ connexion, le launcher le met à jour).
 | Cœur de clan sans Purge | il se prend à toute heure (90 s, comme avant), **une fois toutes les 24 h au plus pour un même clan** (`prise_hors_purge_heures`) ; avant, Purge arrêtée = jamais (« pas de saison en cours »). `/coeur deplacer` refusé pendant un raid de la base |
 | **Armoire détruite pendant un raid** | la base reste 24 h au clan : lui seul y repose une armoire (même écart qu'entre deux bases), lui seul y construit et touche aux pièces au marteau, elle ne s'use pas ; message aux membres avec un bouton « Abandonner la base » (chef ou « Gérer la base »), rappel à la connexion, `/base abandonner` (puis confirmer) ; au bout de 24 h ou après l'abandon : libre pour tous |
 | Armoire reposée (taille de l'arbre, H2) | plus de « trop grand » sur une base au palier 4 (rayon 29), plus de métal renforcé redemandé aux paliers 2 et 3 : la taille payée par l'arbre est reprise ; le home de la base revient si c'est la même base |
-| **Permission « Accepter un /tpa dans la base »** (C1) | nouvelle ligne du groupe BASE de l'onglet Permissions (par grade et par membre). **Défauts : chef et haut gradé oui, membre et recrue non.** Sans elle, dans la zone de l'armoire de son clan, on ne peut pas accepter un `/tpa` ; celui qui demandait le sait ; revérifié au départ (15 s) |
+| **Permission « Accepter un /tpa dans la base »** (C1) | nouvelle ligne du groupe BASE de l'onglet Permissions (par grade et par membre). **Défauts : chef et haut gradé oui, membre et recrue non.** Sans elle, dans la zone de l'armoire de son clan, on ne peut pas accepter un `/tpa` ; celui qui demandait le sait, la demande reste en attente (sortir de la base puis accepter) ; revérifié au départ (15 s) |
 | Saison : fichier illisible (M1) | la saison se met en pause (aucun point, rien d'écrit) au lieu d'une « saison 1 » vide ; staff prévenu à la connexion et par `/saison` ; `/recharger saison` après réparation ; archives jamais écrasées |
 | Points PvP (M2) | une victime qui ne porte qu'une arme de mêlée ou des grenades de Tactique (Peu commun ou plus) compte comme armée |
 | `/clan don` (M3) | le joueur est enregistré sans l'objet avant que le clan reçoive l'XP |
@@ -64,7 +64,8 @@ connexion, le launcher le met à jour).
    casser l'armoire (hors raid) puis en reposer une : acceptée, aucun métal pris. Palier 1 (rayon 23) : aucun métal.
 9. **Permission /tpa.** Clan : recrue R dans la zone de l'armoire. Un ami F fait `/tpa R` ; R accepte : refusé, R lit « Tu
    es dans la base de ton clan sans le droit… », F lit « R est dans la base de son clan et n'a pas le droit d'y faire venir
-   quelqu'un ». R hors de la zone : accepté. R accepte dehors puis entre dans la base pendant les 15 s : départ annulé, les
+   quelqu'un ». La demande reste en attente : R sort de la zone et reclique [Accepter] avant 60 s : accepté, F arrive.
+   R accepte dehors puis entre dans la base pendant les 15 s : départ annulé, les
    deux prévenus. Un haut gradé (défaut oui) accepte dans la base : F arrive. Onglet Permissions : la ligne « Accepter un
    /tpa dans la base » tient dans sa place (PAR GRADE et PAR JOUEUR, 3 langues) ; la cocher pour la recrue : R accepte.
 10. **Saison en pause** (serveur d'essai) : arrêter, abîmer `heralisz_clans/saison_etat.json` (une virgule en trop),
