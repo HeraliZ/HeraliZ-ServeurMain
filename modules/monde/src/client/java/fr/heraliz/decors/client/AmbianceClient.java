@@ -239,25 +239,36 @@ public final class AmbianceClient {
             geiger.viser(volume, hauteur);
         }
 
+        /**
+         * Le brouillard tiré au hasard par le serveur est celui de la carte : il ne s'affiche que sur la carte (15/11,
+         * audit monde M1 : il suivait aussi les joueurs dans les arènes du ClashWar et le monde du tutoriel des bases).
+         * Ailleurs (spawn, arènes, tutoriel, bunker...), seul le brouillard de Minecraft (ou celui du monde) reste.
+         */
+        private static boolean surCarte(Minecraft mc) {
+            return mc.level != null && mc.level.dimension() == net.minecraft.world.level.Level.OVERWORLD;
+        }
+
         @SubscribeEvent(priority = EventPriority.LOW)
         public static void brouillard(ViewportEvent.RenderFog e) {
             if (e.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null || mc.player == null) return;
-            if (mc.player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER) || mc.player.isEyeInFluid(net.minecraft.tags.FluidTags.LAVA)) return;
-            // fondu du profil global (temps réel)
+            // fondu du profil global (temps réel) et brouillard local des zones (lissé : on le voit monter en entrant) :
+            // tenus à jour dans tous les mondes, pour retrouver la carte telle que les autres la voient en y revenant
             long t = System.nanoTime();
             float dt = dernierNano == 0 ? 0f : Math.min(0.25f, (t - dernierNano) / 1e9f);
             dernierNano = t;
             if (fondu < 1f) fondu = duree <= 0 ? 1f : Math.min(1f, fondu + dt / duree);
-            float k = fondu * fondu * (3 - 2 * fondu);
-            float rd = e.getFarPlaneDistance();
-            float[] a = valeurs(depart, rd), b = valeurs(cible, rd);
-            float debut = a[0] + (b[0] - a[0]) * k, fin = a[1] + (b[1] - a[1]) * k;
-            // brouillard local des zones (lissé : on le voit monter en entrant)
             lGaz += (zGaz - lGaz) * Math.min(1f, dt * 0.8f);
             lRad += (zRad - lRad) * Math.min(1f, dt * 0.8f);
             lFroid += (zFroid - lFroid) * Math.min(1f, dt * 0.8f);
+            if (!surCarte(mc)) return;
+            if (mc.player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER) || mc.player.isEyeInFluid(net.minecraft.tags.FluidTags.LAVA)) return;
+            float k = fondu * fondu * (3 - 2 * fondu);
+            float rd = e.getFarPlaneDistance();
+            // début et fin du brouillard entre le profil de départ et le profil visé (sans tableau créé à chaque image)
+            float debut = debutDe(depart, rd) + (debutDe(cible, rd) - debutDe(depart, rd)) * k;
+            float fin = finDe(depart, rd) + (finDe(cible, rd) - finDe(depart, rd)) * k;
             float local = Math.max(lGaz, Math.max(lRad * 0.7f, lFroid * 0.8f));
             if (local > 0.01f) {
                 float fl = 24 + (1 - local) * 120, dl = 0;
@@ -271,14 +282,20 @@ public final class AmbianceClient {
             e.setCanceled(true);
         }
 
-        /** {début, fin} d'un profil pour une distance d'affichage rd (en blocs). */
-        private static float[] valeurs(Ambiance.Profil p, float rd) {
-            if (p == Ambiance.Profil.CLAIR) return new float[]{rd, rd};
-            return new float[]{Math.min(p.debut * rd, p.debutMax), Math.min(p.fin * rd, p.finMax)};
+        /** Début du brouillard d'un profil pour une distance d'affichage rd (en blocs). */
+        private static float debutDe(Ambiance.Profil p, float rd) {
+            return p == Ambiance.Profil.CLAIR ? rd : Math.min(p.debut * rd, p.debutMax);
+        }
+
+        /** Fin du brouillard (tout est caché au-delà) d'un profil pour une distance d'affichage rd (en blocs). */
+        private static float finDe(Ambiance.Profil p, float rd) {
+            return p == Ambiance.Profil.CLAIR ? rd : Math.min(p.fin * rd, p.finMax);
         }
 
         @SubscribeEvent(priority = EventPriority.LOW)
         public static void couleur(ViewportEvent.ComputeFogColor e) {
+            // teinte de la brume et des zones : sur la carte seulement (au spawn, elle changeait la couleur de l'horizon)
+            if (!surCarte(Minecraft.getInstance())) return;
             float local = Math.max(lGaz, Math.max(lRad, lFroid));
             float brume = cible == Ambiance.Profil.CLAIR ? 0 : fondu * (cible.ordinal() / 4f);
             float r = e.getRed(), g = e.getGreen(), b = e.getBlue();
