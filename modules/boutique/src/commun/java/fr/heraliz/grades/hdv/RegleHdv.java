@@ -106,6 +106,9 @@ public final class RegleHdv {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         String ns = id == null ? "" : id.getNamespace();
         if (t != null && t.contains("GunId", Tag.TAG_STRING)) return CAT_ARMES;
+        // 15/11 (audit, comme le M2 des clans) : les armes de mêlée et les grenades de Tactique sont les objets
+        // heralisz_tactical:melee et heralisz_tactical:throwable (l'arme exacte est dans l'objet) : avant, rangées dans « divers »
+        if (ns.equals("heralisz_tactical") && (id.getPath().equals("melee") || id.getPath().equals("throwable"))) return CAT_ARMES;
         if (ns.equals("heralisz_melee") || ns.equals("heralisz_grenade")) return CAT_ARMES;
         if (t != null && t.contains("AttachmentId", Tag.TAG_STRING)) return CAT_ACCESSOIRES;
         if (t != null && t.contains("ConsumableId", Tag.TAG_STRING) || ns.equals("heralisz_heal")) return CAT_SOINS;
