@@ -12,6 +12,9 @@ l'inventaire. Rien n'a été essayé en jeu par Claude.
   comme de celle de l'établi, même avec un jeu modifié qui la montrerait encore : c'est le serveur qui décide. Les objets
   posés dans la grille sont rendus à la fermeture, comme d'habitude. La grille 2×2 disparaît de l'écran avec le nouvel
   inventaire.
+  **Correction du 15/11 (audit, duplication n° 2)** : c'était faux pour l'inventaire réel du jeu (celui de Curios), qui
+  calcule sa recette lui-même : sa grille cachée fabriquait encore avec un jeu modifié. Corrigé dans Loot 0.18.1, voir
+  `docs/TESTS_EN_JEU_15NOV_combat-craft.md`.
 - Réglage : `craft_fondateurs_seulement` dans `[postes_vanilla]` de `heraliz_loot-server.toml` (vrai par défaut ;
   `false` = règles d'avant).
 
