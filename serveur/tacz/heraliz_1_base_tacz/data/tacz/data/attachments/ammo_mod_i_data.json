@@ -7,9 +7,6 @@
     "entity": true,
     "block": false
   },
-  "armor_ignore": {
-    "multiplier": 0.8
-  },
   "damage": {
     "multiplier": 1.0
   },

@@ -3,9 +3,6 @@
   "ads": {
     "addend": 0.02
   },
-  "armor_ignore": {
-    "multiplier": 0.5
-  },
   "damage": {
     "multiplier": 1.2
   },
