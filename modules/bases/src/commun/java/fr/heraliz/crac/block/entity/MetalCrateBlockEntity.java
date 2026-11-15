@@ -24,6 +24,11 @@ import org.jetbrains.annotations.NotNull;
  * Caisse en métal : la caisse Commune des coffres par rareté (27/10), 2 lignes (18 cases ; 3 avant). Une caisse posée
  * avant qui a encore des objets dans sa 3e ligne garde ses 3 lignes jusqu'à ce que la 3e soit vide (vérifié à chaque
  * fermeture et au chargement) : rien ne se perd.
+ * <p>Audit du 15/11 (duplication n° 5) : la caisse ne repasse à 2 lignes que si plus aucun joueur n'a son écran ouvert.
+ * Le compteur d'ouvertures ne voit que les joueurs à 5 blocs, alors qu'un écran reste ouvert jusqu'à 8 blocs : un joueur
+ * qui reculait à 6 ou 7 blocs, écran ouvert, faisait rétrécir la liste sous son écran (case 19 à 27 hors limites :
+ * plantage du serveur). En plus, une case hors limites se lit vide et une case hors limites écrite fait revenir la 3e
+ * ligne (l'objet n'est jamais perdu).</p>
  */
 public class MetalCrateBlockEntity extends RandomizableContainerBlockEntity {
     public static final int CASES = 18;
@@ -130,6 +135,28 @@ public class MetalCrateBlockEntity extends RandomizableContainerBlockEntity {
         return this.items.size();
     }
 
+    /** Case hors limites (écran d'une caisse qui a changé de taille) : vide, jamais de plantage. */
+    @NotNull
+    @Override
+    public ItemStack getItem(int i) {
+        return i >= 0 && i < this.items.size() ? super.getItem(i) : ItemStack.EMPTY;
+    }
+
+    /** Case hors limites écrite : la caisse reprend ses 3 lignes, l'objet n'est jamais perdu. */
+    @Override
+    public void setItem(int i, @NotNull ItemStack stack) {
+        if (i >= this.items.size() && i < CASES_AVANT) {
+            NonNullList<ItemStack> l = NonNullList.withSize(CASES_AVANT, ItemStack.EMPTY);
+            for (int j = 0; j < this.items.size(); j++) {
+                l.set(j, this.items.get(j));
+            }
+            this.items = l;
+        }
+        if (i >= 0 && i < this.items.size()) {
+            super.setItem(i, stack);
+        }
+    }
+
     // HeraliZ (14/11, retour du propriétaire) : sacs à dos de nouveau acceptés, vides ou pleins (refusés du 11/11 au 14/11) ;
     // audit anti-duplication : docs/TESTS_EN_JEU_14NOV_sacs-coffres.md
 
@@ -141,6 +168,14 @@ public class MetalCrateBlockEntity extends RandomizableContainerBlockEntity {
         for (int i = CASES; i < this.items.size(); i++) {
             if (!this.items.get(i).isEmpty()) {
                 return;
+            }
+        }
+        if (this.level != null) {
+            // un joueur à plus de 5 blocs peut encore avoir l'écran ouvert (jusqu'à 8) : on attend qu'il le ferme
+            for (Player p : this.level.players()) {
+                if (p.containerMenu instanceof ChestMenu cm && cm.getContainer() == this) {
+                    return;
+                }
             }
         }
         NonNullList<ItemStack> l = NonNullList.withSize(CASES, ItemStack.EMPTY);
