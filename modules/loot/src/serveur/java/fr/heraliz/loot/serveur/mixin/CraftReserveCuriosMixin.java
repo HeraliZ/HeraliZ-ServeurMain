@@ -11,6 +11,7 @@ import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,9 +27,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>Pour un joueur qui n'a pas le droit : la case résultat reste vide et le joueur la reçoit vide, comme
  * {@link CraftReserveMixin}. Les objets posés dans la grille restent à lui (rendus à la fermeture). Le joueur est lu dans
  * les cases de l'inventaire du menu (pas de {@code @Shadow} sur Curios). Noms de Curios, non obfusqués ({@code remap =
- * false}), Curios absent de la compilation de Loot (cibles par leur nom) ; {@code require = 0} et config non obligatoire :
- * si Curios change, rien ne plante (le garde-fou {@link CraftResultatMixin} reste).</p>
+ * false}), Curios absent de la compilation de Loot (cibles par leur nom, {@code @Pseudo} comme {@code MatmosServeurMixin}
+ * du noyau) ; {@code require = 0} et config non obligatoire : si Curios change, rien ne plante (le garde-fou
+ * {@link CraftResultatMixin} reste).</p>
  */
+@Pseudo
 @Mixin(targets = {"top.theillusivec4.curios.common.inventory.container.CuriosContainer",
         "top.theillusivec4.curios.common.inventory.container.CuriosContainerV2"}, remap = false)
 public abstract class CraftReserveCuriosMixin {

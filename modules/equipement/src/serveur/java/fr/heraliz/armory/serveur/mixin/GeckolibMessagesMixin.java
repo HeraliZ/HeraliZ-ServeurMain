@@ -3,6 +3,7 @@ package fr.heraliz.armory.serveur.mixin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * {@code GeckolibDegatsMixin}. {@code require = 0} et config non obligatoire : si le jar change, ses phrases reviennent,
  * rien ne plante. Serveur seulement (ces effets n'écrivent que côté serveur).</p>
  */
+@Pseudo
 @Mixin(targets = {"software.bernie.example.effect.BROKEN_BONE", "software.bernie.example.effect.BLEEDING"}, remap = false)
 public abstract class GeckolibMessagesMixin {
     @Redirect(method = "m_6742_", remap = false, require = 0,
