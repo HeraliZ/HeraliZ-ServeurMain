@@ -14,8 +14,10 @@ import net.minecraftforge.registries.ForgeRegistries;
  * bond de la course est retiré, vitesse au sol d'avant le saut seulement, réduite de moitié) et la course est coupée.
  * <p>
  * Le saut est décidé chez le joueur (Minecraft) : la vitesse y est corrigée tout de suite, sans à-coup. Le serveur
- * voit le même saut quand il reçoit le déplacement (ServerGamePacketListenerImpl appelle jumpFromGround) : il corrige
- * aussi et le renvoie au joueur (hurtMarked, vraie correction de vitesse suivie par Spartan), pour un jeu modifié.
+ * voit le même saut plus tard, quand il reçoit le déplacement (ServerGamePacketListenerImpl appelle jumpFromGround) : il
+ * ne renvoie pas de vitesse (elle faisait repartir la montée au milieu du saut), mais juge le saut à l'atterrissage
+ * (audit du 15/11, combat B3 : {@code fr.heraliz.tactique.serveur.JambeCasseeServeur}) : un jeu modifié qui garde le bond
+ * de la course est ramené au point de départ du saut.
  */
 public final class JambeCassee {
    private static final ResourceLocation EFFET = new ResourceLocation("geckolib", "broken_bone");
