@@ -83,6 +83,12 @@ final class TpaServeur {
             ATTENTES.remove(u);
             RECUES.remove(u);
             RECUES.values().forEach(m -> m.remove(u));
+            // 15/11 (audit perf n° 6) : une recharge finie, ou gardée sur le disque (relue à son prochain /tpa), quitte la
+            // mémoire (avant : gardée jusqu'à l'arrêt, une entrée par joueur venu) ; fichier illisible : gardée comme avant
+            long[] r = RECHARGES.get(u);
+            if (r != null && (r[0] <= System.currentTimeMillis() || disque != null && disque.dernier(u + ":tpa") == r[0])) {
+                RECHARGES.remove(u);
+            }
         });
     }
 
@@ -101,12 +107,13 @@ final class TpaServeur {
         long[] r = RECHARGES.get(joueur);
         if (r == null && disque != null) {
             long fin = disque.dernier(joueur + ":tpa");
-            if (fin > 0) {
-                r = new long[]{fin, disque.dernier(joueur + ":tpa_duree")};
-                RECHARGES.put(joueur, r);
-            }
+            if (fin > 0) r = new long[]{fin, disque.dernier(joueur + ":tpa_duree")};
         }
-        return r == null ? 0 : Math.max(0, Math.min(r[0] - System.currentTimeMillis(), r[1]));
+        long reste = r == null ? 0 : Math.max(0, Math.min(r[0] - System.currentTimeMillis(), r[1]));
+        // 15/11 (audit perf n° 6) : une recharge finie n'est plus gardée en mémoire
+        if (reste > 0) RECHARGES.put(joueur, r);
+        else RECHARGES.remove(joueur);
+        return reste;
     }
 
     private static void noterRecharge(UUID joueur, long duree) {
