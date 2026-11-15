@@ -151,8 +151,11 @@ conteneurs : une ligne par joueur et par minute), chaque point refusé aussi, av
 - **Rien** si le tueur et la victime ont le même PC ou la même IP (Spartan connaît le PC de chaque joueur), sont dans le
   même clan, ou si le kill a lieu en duel, en ClashWar ou en Zombies (ça compte dans les events).
 - Un joueur à terre puis achevé = un seul kill.
-- Une mort ne fait perdre des points que si le kill en aurait rapporté (pas de perte pour une mort contre un zombie,
-  `/suicide`, ou un ami au même PC).
+- Une mort contre un joueur fait perdre 1 point au clan de la victime (s'il a son cœur posé) quand le kill compte selon
+  les règles ci-dessus (victime armée ou en armure, pas la même adresse IP, même victime ×1 / ×0,5 / 0) : pas de perte
+  pour une mort contre un zombie, `/suicide`, ou un ami à la même adresse IP. 15/11 (audit B5, doc alignée sur le code,
+  dit aussi dans l'onglet Saison) : le clan de la victime perd son point **même si le tueur n'a pas de clan**, n'a pas de
+  cœur posé ou a atteint son plafond du jour (le kill ne lui rapporte alors rien).
 
 ### Events
 
