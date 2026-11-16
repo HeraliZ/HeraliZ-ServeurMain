@@ -5,7 +5,6 @@ import fr.heraliz.recolte.serveur.Apparition;
 import fr.heraliz.recolte.serveur.Coups;
 import fr.heraliz.recolte.serveur.Effets;
 import fr.heraliz.recolte.serveur.Reglages;
-import fr.heraliz.recolte.serveur.Saison;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,8 +23,8 @@ import net.minecraft.world.phys.Vec3;
  *    <li>La matière est donnée au prorata du travail : même total quel que soit l'outil (la légendaire fait gagner du
  *    temps, pas plus de ressources).</li>
  *    <li>{@link #ETAPE} = quarts du travail (le modèle suivant) ; {@link #SECOUSSE} = heure du coup (il tremble chez les
- *    joueurs) ; à la fin, il éclate et disparaît, sa place repart ailleurs après le délai de réapparition ; un gisement de
- *    métal ou de titane fini rapporte un point de saison au clan du dernier frappeur.</li>
+ *    joueurs) ; à la fin, il éclate et disparaît, sa place repart ailleurs après le délai de réapparition. La récolte ne
+ *    rapporte aucun point de saison (décision du propriétaire du 16/11).</li>
  * </ul>
  */
 public class GisementServeur extends Gisement {
@@ -89,11 +88,6 @@ public class GisementServeur extends Gisement {
         }
         Effets.coupGisement(l, this, point, nouvelle, fini);
         if (fini) {
-            if (type() == METAL) {
-                Saison.pve(joueur, "recolte_metal");
-            } else if (type() == RARE) {
-                Saison.pve(joueur, "recolte_rare");
-            }
             Apparition.liberer(l, this.getUUID(), r.reapparitionMs());
             this.discard();
         }
