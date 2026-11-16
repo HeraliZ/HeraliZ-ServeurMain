@@ -76,6 +76,13 @@ public final class SaisonVue {
             l.add(new LigneBareme(pve, "boss", "un", new double[]{b.pointsPve("boss")}, "boss",
                     new String[]{entier(100 * (b.bossCoefs.length > 1 ? b.bossCoefs[1] : b.bossCoefs[0]))}));
         }
+        // 16/11 (HeraliZ Recolte) : gisement de metal / de titane vide (« recolte_rare » = le titane), plafond par clan et par
+        // jour du groupe « recolte » ; seulement si le mod est sur le serveur
+        if (ModList.get().isLoaded("heraliz_recolte")) {
+            double max = b.plafondClan("recolte");
+            l.add(new LigneBareme(pve, "recolte", "paire", new double[]{b.pointsPve("recolte_metal"), b.pointsPve("recolte_rare")},
+                    max > 0 ? "recolte_plafond" : "recolte", max > 0 ? new String[]{entier(max)} : AUCUN));
+        }
         l.add(ligne(pve, "conteneurs", "plage", new double[]{b.pointsPve("conteneur_t1"), b.pointsPve("conteneur_t6")}, "fouille"));
         l.add(ligne(pve, "craft", "plage", new double[]{b.pointsPve("craft_commun"), b.pointsPve("craft_epique")}, "craft"));
         l.add(ligne(pve, "vente", "vente", new double[]{b.pointsPve("vente_1000"), 1000}, "vente"));

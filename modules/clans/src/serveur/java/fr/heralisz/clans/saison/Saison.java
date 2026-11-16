@@ -48,7 +48,7 @@ import java.util.UUID;
  * <ul>
  * <li>un clan sans coeur pose (CRac) ne gagne rien et n'est pas classe ;</li>
  * <li>PVE : bareme par source, petites actions plafonnees par joueur et par jour, boss a rendement decroissant par clan et
- * par jour ;</li>
+ * par jour, groupes de sources plafonnes par clan et par jour (16/11 : recolte, 10 points) ;</li>
  * <li>PVP : +1 / -1, jamais sous 0 pour un clan ; rien entre membres d'un meme clan, joueurs de la meme adresse IP,
  * victime sans arme ni protection (rarete minimale, objets du /kit exclus) ; meme victime : x1, x0,5 puis 0 sur 6 h ;
  * au plus {@link Bareme#pvpPlafondJour} points de kills gagnes par clan et par jour (02/11) ;</li>
@@ -274,6 +274,19 @@ public final class Saison {
             refus(qui, c, source, "clan sans coeur pose dans sa base");
             return;
         }
+        // 16/11 (HeraliZ Recolte) : plafond par clan et par jour d'un groupe de sources (plafonds_clan du bareme : recolte,
+        // 10 points) ; regarde avant le plafond du joueur, note apres : chaque compteur garde les points vraiment donnes
+        String groupe = bareme.groupesClan.get(source);
+        double maxClan = groupe == null ? 0 : bareme.plafondClan(groupe), dejaClan = 0;
+        if (maxClan > 0) {
+            jourCourant();
+            dejaClan = d.pveClanJour.getOrDefault(c.id + "|" + groupe, 0.0);
+            pts = Math.min(pts, maxClan - dejaClan);
+            if (pts <= 1e-9) {
+                noter(c, qui, "pve", source + " : plafond du jour du clan atteint (" + groupe + ", " + arrondi(maxClan) + " points)", 0);
+                return;
+            }
+        }
         if (joueur != null && bareme.plafonnees.contains(source)) {
             jourCourant();
             double deja = d.plafonds.getOrDefault(joueur, 0.0);
@@ -287,6 +300,13 @@ public final class Saison {
             // historique du clan (11/11) : le jour ou ce joueur atteint le plafond, une ligne le dit (une seule fois)
             if (deja + pts >= bareme.plafondJour - 1e-9) {
                 Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.PVE, qui, "historique.plafond.petites", 0, arrondi(bareme.plafondJour));
+            }
+        }
+        if (maxClan > 0) {
+            d.pveClanJour.put(c.id + "|" + groupe, dejaClan + pts);
+            // historique du clan : le jour ou le clan atteint le plafond du groupe, une ligne le dit (une seule fois)
+            if (dejaClan + pts >= maxClan - 1e-9) {
+                Historique.ajouter(c, LigneHistorique.POINTS, LigneHistorique.PVE, qui, "historique.plafond." + groupe, 0, arrondi(maxClan));
             }
         }
         d.scores(c.id)[SaisonDonnees.PVE] += pts;
@@ -336,7 +356,10 @@ public final class Saison {
         ajouterPve(c, null, qui, "boss", part * coef, type);
     }
 
-    /** Compteurs du jour (heure de Paris) : plafonds des petites actions, boss deja tues, captures ; remis a zero a minuit. */
+    /**
+     * Compteurs du jour (heure de Paris) : plafonds des petites actions, boss deja tues, captures, groupes plafonnes par clan
+     * (recolte, 16/11) ; remis a zero a minuit.
+     */
     private static void jourCourant() {
         String jour = LocalDate.now(PARIS).toString();
         if (jour.equals(d.jour)) return;
@@ -346,6 +369,7 @@ public final class Saison {
         d.capturesJour.clear();
         d.evenementsJour.clear();
         d.pvpJour.clear();
+        d.pveClanJour.clear();
         sale = true;
     }
 

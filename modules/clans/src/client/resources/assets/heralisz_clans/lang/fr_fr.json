@@ -850,6 +850,9 @@
   "gui.saison.c.objet_disque_dur_militaire_plafond": "vendu à Mila au spawn, %s par clan et par jour au plus",
   "gui.saison.l.objet_boite_noire_helico": "Boîte noire d'hélicoptère vendue",
   "gui.saison.c.objet_boite_noire_helico_plafond": "vendu à Mila au spawn, %s par clan et par jour au plus",
+  "gui.saison.l.recolte": "Gisement de métal / de titane",
+  "gui.saison.c.recolte": "quand le gisement est vidé",
+  "gui.saison.c.recolte_plafond": "gisement vidé ; %s points par clan et par jour au plus",
   "msg.niveau.capture": "Niveau %s : votre clan peut maintenant débloquer la capture des zones (amélioration Territoires, touche K, onglet Niveau).",
   "msg.niveau.membres": "Niveau %s : votre clan peut maintenant avoir %s membres.",
   "msg.niveau.redescendu": "Correction du staff : le clan redescend au niveau %s (%s membres au plus, améliorations gardées).",
@@ -939,6 +942,8 @@
   "historique.source.objet_mallette_scellee": "Mallette scellée vendue",
   "historique.source.objet_disque_dur_militaire": "Disque dur militaire vendu",
   "historique.source.objet_boite_noire_helico": "Boîte noire d'hélicoptère vendue",
+  "historique.source.recolte_metal": "Gisement de métal vidé",
+  "historique.source.recolte_rare": "Gisement de titane vidé",
   "historique.capture.libre": "Zone capturée : %s",
   "historique.capture.prise": "Zone %s prise à [%s]",
   "historique.kill": "%s a tué %s",
@@ -955,5 +960,6 @@
   "historique.plafond.petites": "Plafond du jour des petites actions atteint (%s points)",
   "historique.plafond.kills": "Plafond du jour des kills atteint (%s points)",
   "historique.plafond.evenement": "%s : plafond du jour atteint (%s par jour)",
+  "historique.plafond.recolte": "Plafond du jour de la récolte atteint (%s points)",
   "historique.droits_grade": "%s a changé les droits du grade %s (%s changements)"
 }

@@ -32,6 +32,14 @@ public final class Bareme {
     /** Sources des petites actions, plafonnees par joueur et par jour. */
     public final Set<String> plafonnees = new HashSet<>();
     public double plafondJour = 50;
+    /**
+     * Plafonds par clan et par jour (heure de Paris) de groupes de sources PVE (16/11, HeraliZ Recolte, choix du
+     * proprietaire : au plus 10 points de recolte par clan et par jour) : groupe -> points par jour au plus (0 : sans
+     * plafond). Section « plafonds_clan » de saison.json.
+     */
+    public final Map<String, Double> plafondsClan = new LinkedHashMap<>();
+    /** Source PVE -> son groupe de {@link #plafondsClan}. */
+    public final Map<String, String> groupesClan = new LinkedHashMap<>();
     /** Type d'entite -> source PVE quand un joueur la tue (zombies). */
     public final Map<String, String> entites = new HashMap<>();
     /** Types d'entites des boss (points « boss », partages selon les degats). */
@@ -87,6 +95,12 @@ public final class Bareme {
         return v == null ? 0 : v;
     }
 
+    /** Points par clan et par jour au plus du groupe de sources PVE {@code groupe} (0 : sans plafond, ou groupe inconnu). */
+    public double plafondClan(String groupe) {
+        Double v = plafondsClan.get(groupe);
+        return v == null ? 0 : v;
+    }
+
     public double multiplicateur(String event) {
         Double v = multiplicateurs.get(event);
         return v == null ? 1 : v;
@@ -131,6 +145,13 @@ public final class Bareme {
         // 11/11 (choix du proprietaire) : 2 points par quete de Varga (10 avant)
         b.pve.put("quete_principale", 2.0);
         b.pve.put("quete_clan", 5.0);
+        // 16/11 (HeraliZ Recolte, choix du proprietaire, maquettes/recolte/PROPOSITION.md §7) : gisement de metal vide 1 point,
+        // gisement de titane (« recolte_rare ») 2 ; rien pour le bois et la pierre ; au plus 10 points par clan et par jour
+        b.pve.put("recolte_metal", 1.0);
+        b.pve.put("recolte_rare", 2.0);
+        b.plafondsClan.put("recolte", 10.0);
+        b.groupesClan.put("recolte_metal", "recolte");
+        b.groupesClan.put("recolte_rare", "recolte");
         for (String s : new String[]{"zombie", "zombie_mutant", "brute", "vente_1000"}) b.plafonnees.add(s);
         // 02/11 (choix du proprietaire, A316) : les quetes de Varga comptent dans les petites actions plafonnees par joueur
         b.plafonnees.add("quete_principale");
@@ -171,6 +192,18 @@ public final class Bareme {
             for (JsonElement e : pl) if (e.isJsonPrimitive()) plafonnees.add(e.getAsString());
         }
         plafondJour = Math.max(0, Json.dbl(o, "plafond_jour_joueur", plafondJour));
+        // 16/11 : groupes de sources PVE plafonnes par clan et par jour (section absente ou vide : ceux par defaut)
+        JsonObject pc = Json.obj(o, "plafonds_clan");
+        if (!pc.entrySet().isEmpty()) {
+            plafondsClan.clear();
+            groupesClan.clear();
+            for (Map.Entry<String, JsonElement> e : pc.entrySet()) {
+                if (!e.getValue().isJsonObject()) continue;
+                JsonObject g = e.getValue().getAsJsonObject();
+                plafondsClan.put(e.getKey(), Math.max(0, Json.dbl(g, "points_jour", 0)));
+                for (JsonElement s : Json.arr(g, "sources")) if (s.isJsonPrimitive()) groupesClan.put(s.getAsString(), e.getKey());
+            }
+        }
         JsonObject en = Json.obj(o, "entites");
         if (!en.entrySet().isEmpty()) {
             entites.clear();
@@ -241,7 +274,9 @@ public final class Bareme {
     JsonObject toJson() {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals"
-                + " vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; boss_coefficients :"
+                + " vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; plafonds_clan :"
+                + " groupes de sources pve, au plus points_jour points par clan et par jour (0 : sans plafond ; recolte = gisements de"
+                + " metal et de titane de HeraliZ Recolte) ; boss_coefficients :"
                 + " part des points du boss pour le 1er kill de ce boss par le clan dans la journee, le 2e, puis tous les suivants ; capture :"
                 + " capture d'un drapeau = valeur de la ville x par_valeur x difficulte des vagues (1, 2, 3), x prise_coef (points PVP) si la"
                 + " zone etait tenue par un autre clan depuis tenue_min_minutes ; rien pour la meme zone et le meme clan avant meme_zone_heures,"
@@ -255,6 +290,16 @@ public final class Bareme {
         plafonnees.stream().sorted().forEach(pl::add);
         o.add("plafonnees", pl);
         o.addProperty("plafond_jour_joueur", plafondJour);
+        JsonObject pc = new JsonObject();
+        for (Map.Entry<String, Double> e : plafondsClan.entrySet()) {
+            JsonObject g = new JsonObject();
+            JsonArray sources = new JsonArray();
+            groupesClan.entrySet().stream().filter(x -> x.getValue().equals(e.getKey())).map(Map.Entry::getKey).sorted().forEach(sources::add);
+            g.add("sources", sources);
+            g.addProperty("points_jour", e.getValue());
+            pc.add(e.getKey(), g);
+        }
+        o.add("plafonds_clan", pc);
         JsonObject en = new JsonObject();
         entites.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(e -> en.addProperty(e.getKey(), e.getValue()));
         o.add("entites", en);

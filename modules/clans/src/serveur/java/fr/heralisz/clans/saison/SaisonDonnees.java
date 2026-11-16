@@ -26,8 +26,9 @@ import java.util.UUID;
 /**
  * Etat de la saison, hors du monde (survit a une nouvelle carte) : <serveur>/heralisz_clans/saison_etat.json. Scores
  * par clan (PVE, PVP, events), prises de coeur deja faites (une par clan pris et par Purge), kills recents par couple
- * (rendement decroissant), points des petites actions du jour par joueur (plafond), boss tues du jour par clan. Tout est garde pour qu'un
- * redemarrage ne remette aucun compteur a zero.
+ * (rendement decroissant), points des petites actions du jour par joueur (plafond), boss tues du jour par clan, points du
+ * jour des groupes plafonnes par clan (recolte, 16/11). Tout est garde pour qu'un redemarrage ne remette aucun compteur a
+ * zero.
  */
 final class SaisonDonnees {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -54,6 +55,8 @@ final class SaisonDonnees {
     final Map<String, Integer> evenementsJour = new HashMap<>();
     /** Points de kills (PVP) gagnes dans la journee par clan (plafond, 02/11). */
     final Map<UUID, Double> pvpJour = new HashMap<>();
+    /** « clan|groupe » -> points PVE du groupe gagnes dans la journee par le clan (plafonds_clan du bareme, 16/11). */
+    final Map<String, Double> pveClanJour = new HashMap<>();
     /**
      * 15/11 (audit M1) : le fichier existait mais n'a pas pu etre lu : nom de la copie gardee a cote (ou la raison si la copie
      * a rate) ; null quand la lecture a reussi ou que le fichier n'existe pas. Rien n'est alors ecrit ({@code Saison}).
@@ -108,6 +111,8 @@ final class SaisonDonnees {
             for (Map.Entry<String, JsonElement> e : ej.entrySet()) d.evenementsJour.put(e.getKey(), e.getValue().getAsInt());
             JsonObject pj = Json.obj(o, "pvp_jour");
             for (Map.Entry<String, JsonElement> e : pj.entrySet()) d.pvpJour.put(UUID.fromString(e.getKey()), e.getValue().getAsDouble());
+            JsonObject gj = Json.obj(o, "pve_clan_jour");
+            for (Map.Entry<String, JsonElement> e : gj.entrySet()) d.pveClanJour.put(e.getKey(), e.getValue().getAsDouble());
         } catch (IOException | RuntimeException ex) {
             // un fichier illisible n'est jamais ecrase : copie a cote ; 15/11 (audit M1) : la saison ne repart plus vide
             // en silence, elle est mise en pause (Saison.maintenance) jusqu'a la reparation
@@ -171,6 +176,9 @@ final class SaisonDonnees {
         JsonObject pj = new JsonObject();
         for (Map.Entry<UUID, Double> e : pvpJour.entrySet()) pj.addProperty(e.getKey().toString(), e.getValue());
         o.add("pvp_jour", pj);
+        JsonObject gj = new JsonObject();
+        for (Map.Entry<String, Double> e : pveClanJour.entrySet()) gj.addProperty(e.getKey(), e.getValue());
+        o.add("pve_clan_jour", gj);
         ecrire(f, o, siEchec);
     }
 

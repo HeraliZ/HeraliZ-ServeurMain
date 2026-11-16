@@ -132,6 +132,7 @@ def bareme_pve():
     b = json.loads(BAREME_JSON.read_text(encoding="utf-8"))
     p, pl = b["pve"], set(b.get("plafonnees", []))
     jour = b.get("plafond_jour_joueur", 50)
+    rec = b.get("plafonds_clan", {}).get("recolte", {}).get("points_jour", 0)  # 16/11 : HeraliZ Récolte, par clan et par jour
     ent = lambda v: str(int(round(v)))  # noqa: E731
     lignes = [("salle_rouge", "un", [p["salle_rouge"]], "salle", []),
               ("salles", "paire", [p["salle_bleue"], p["salle_verte"]], "salle", []),
@@ -140,6 +141,9 @@ def bareme_pve():
                "une_fois_plafond" if "quete_principale" in pl else "une_fois", [ent(jour)] if "quete_principale" in pl else []),
               ("quete_clan", "un", [p["quete_clan"]], "quetes_clan", ["3", "2"]),
               ("capture_libre", "par_niveau", [b["capture"]["par_valeur"]], "capture", [ent(b["capture"]["plafond_jour_clan"])]),
+              # 16/11 : gisements de métal / de titane (montrée en jeu seulement si HeraliZ Récolte est sur le serveur)
+              ("recolte", "paire", [p.get("recolte_metal", 0), p.get("recolte_rare", 0)],
+               "recolte_plafond" if rec > 0 else "recolte", [ent(rec)] if rec > 0 else []),
               ("conteneurs", "plage", [p["conteneur_t1"], p["conteneur_t6"]], "fouille", []),
               ("craft", "plage", [p["craft_commun"], p["craft_epique"]], "craft", []),
               ("vente", "vente", [p["vente_1000"], 1000], "vente", []),
