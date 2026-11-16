@@ -28,12 +28,6 @@ tenir, regarder dans la direction où il doit regarder, puis `/pnj creer contrem
 pour le bouger). Son apparence est dans son fichier ; pour lui donner la sienne : `/pnj apparence contremaitre moi`.
 Sans le mod HeraliZ Récolte sur le serveur, ses échanges ne s'affichent pas.
 
-**Plafond par jour des échanges** (16/11) : `plafonds_echanges.json` (objet reçu → nombre au plus par joueur et par
-jour, tous marchands confondus, remis à zéro à minuit, heure de Paris) ; aujourd'hui 12 fragments de métal et 3 métal
-renforcé. Un échange qui dépasserait le plafond est refusé et le joueur lit ce qui lui reste ; après chaque échange d'un
-objet plafonné, il lit aussi combien il peut encore en recevoir. Compteurs du jour : `heraliz_quetes/echanges_du_jour.json`
-à la racine du serveur (l'effacer, serveur arrêté, remet tout le monde à zéro). Après un changement : `/recharger quetes`.
-
 ### Créer son propre marchand, en jeu (sans fichier)
 
 Réservé aux op (niveau 4). Tout se fait en jeu, rien à écrire dans un fichier.

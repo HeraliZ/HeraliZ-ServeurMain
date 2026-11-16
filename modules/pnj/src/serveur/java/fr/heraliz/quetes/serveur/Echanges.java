@@ -33,17 +33,13 @@ import java.util.Set;
  * <li>l'inventaire est calculé sur une copie (objets retirés, puis objets reçus rangés) ; si tout ne tient pas : refus,
  * rien n'a bougé ; sinon la copie remplace l'inventaire en une fois, puis le joueur est sauvegardé ;</li>
  * <li>pas de boucle : un objet reçu par un échange n'est jamais donné dans un autre échange (ni racheté contre des
- * hérals, {@link SaisonQuetes#ventes()}) ; un échange qui le ferait est coupé ;</li>
- * <li>plafond par joueur et par jour de l'objet reçu (16/11, HeraliZ Récolte : 12 fragments de métal, 3 métal renforcé ;
- * {@link PlafondsEchanges}) : un échange qui le dépasserait est refusé, et le joueur lit ce qui lui reste.</li>
+ * hérals, {@link SaisonQuetes#ventes()}) ; un échange qui le ferait est coupé.</li>
  * </ul>
  */
 final class Echanges {
     private static final Logger LOG = LogUtils.getLogger();
     /** Maj + clic : 5 fois de suite au plus. */
     private static final int FOIS_MAX = 5;
-    /** Raison du refus : plafond du jour de l'objet reçu atteint ({@link PlafondsEchanges}). */
-    private static final String PLAFOND = "heraliz_quetes.echange.plafond";
     /** Données ignorées pour reconnaître l'objet donné : elles changent à l'usage ou ne sont qu'une marque. */
     private static final List<String> VOLATILES = List.of("spartan_uid", "Damage", "RepairCost", "GunCurrentAmmoCount",
             "HasBulletInBarrel", "GunFireMode", "HeralizTirAuto", "HeralizSacOk");
@@ -198,22 +194,12 @@ final class Echanges {
         }
         int fois = Math.max(1, Math.min(FOIS_MAX, t.fois())), faits = 0;
         String raison = null;
-        // 16/11 (HeraliZ Récolte) : plafond par joueur et par jour de l'objet reçu (12 fragments de métal, 3 métal renforcé),
-        // regardé avant chaque échange : jamais un échange à moitié
-        int reste = PlafondsEchanges.reste(p.getUUID(), e.recu());
         for (int i = 0; i < fois; i++) {
-            if (e.nRecu() > reste) {
-                raison = PLAFOND;
-                break;
-            }
             raison = unEchange(p, e, modele, recu);
             if (raison != null) break;
             faits++;
-            reste -= e.nRecu();
         }
         if (faits > 0) {
-            // reçus du jour comptés avant la sauvegarde du joueur (écrits sur le fil des quêtes)
-            PlafondsEchanges.compter(p.getUUID(), e.recu(), e.nRecu() * faits);
             // objets partis et reçus écrits tout de suite (un arrêt brutal ne rend pas les deux)
             Ponts.sauverJoueur(p);
             p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7F, 1.0F);
@@ -221,21 +207,11 @@ final class Echanges {
                     Texte.brut(e.nDonne() * faits), Ponts.texteObjet(modele)), 0xE8C36A);
             LOG.info("[heraliz_quetes] {} échange {} x{} contre {} x{} chez {} ({} fois)", p.getGameProfile().getName(), e.donne(),
                     e.nDonne(), e.recu(), e.nRecu(), def.id, faits);
-            // objet plafonné : ce qu'il peut encore recevoir aujourd'hui (le refus du plafond le dit déjà)
-            if (!PLAFOND.equals(raison) && PlafondsEchanges.plafond(e.recu()) >= 0) {
-                Moteur.notif(p, Texte.cle("heraliz_quetes.echange.reste", Texte.brut(reste), Ponts.texteObjet(recu)), 0xE8B34A);
-            }
         }
-        if (raison != null && (faits == 0 || raison.endsWith("plein") || raison.equals(PLAFOND))) {
+        if (raison != null && (faits == 0 || raison.endsWith("plein"))) {
             Moteur.notif(p, raison.endsWith("pas_assez")
                     ? Texte.cle(raison, Texte.brut(e.nDonne()), Ponts.texteObjet(modele))
-                    : raison.equals(PLAFOND)
-                    ? Texte.cle(raison, Texte.brut(PlafondsEchanges.plafond(e.recu())), Ponts.texteObjet(recu), Texte.brut(reste))
                     : Texte.cle(raison), 0xFF6B6B);
-            if (raison.equals(PLAFOND)) {
-                LOG.info("[heraliz_quetes] {} : plafond du jour de {} atteint chez {} (encore {})", p.getGameProfile().getName(), e.recu(),
-                        def.id, reste);
-            }
         }
         Marchands.envoyerA(p, t.entite(), def);
     }

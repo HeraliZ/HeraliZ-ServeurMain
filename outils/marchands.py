@@ -78,8 +78,7 @@ JAMAIS_VENDUS = {"heraliz_recolte:hache_pioche"}
 # les matières brutes récoltées sur la carte (arbres à abattre, gisements de pierre, de métal et de titane) contre les
 # matériaux des bases de CRac, ceux que vend le Bâtisseur (MATERIAUX). Troc seulement : ni hérals, ni rachat. Cher exprès :
 # un arbre (30 bûches) vaut 6 planches, un gisement de pierre (24 pierres brutes) 3 pierres taillées, un gisement de métal
-# (30 minerais de métal) 3 fragments de métal, un gisement de titane (16 minerais de titane) 2 métal renforcé. Métal reçu
-# par des échanges plafonné par joueur et par jour : serveur/config/heraliz_quetes/plafonds_echanges.json (HeraliZ Quêtes).
+# (30 minerais de métal) 3 fragments de métal, un gisement de titane (16 minerais de titane) 2 métal renforcé.
 CONTREMAITRE = [  # (objet donné, nombre, objet reçu, nombre)
     ("heraliz_recolte:buche", 5, "heraliz_composants:planches", 1),
     ("heraliz_recolte:buche", 1, "heraliz_composants:brindilles", 5),

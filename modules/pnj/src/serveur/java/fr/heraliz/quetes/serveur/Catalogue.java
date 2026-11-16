@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 /**
  * Les PNJ et leurs quêtes, lus dans {@code config/heraliz_quetes/pnj/*.json} au démarrage et à /recharger quetes. Un
  * fichier illisible est sauté (avec la raison dans le journal et dans la réponse de la commande) : les autres restent.
- * Relus en même temps : les changements en jeu des marchands, le recycleur et les plafonds des échanges (16/11).
  */
 final class Catalogue {
     private static final Logger LOG = LogUtils.getLogger();
@@ -65,8 +64,6 @@ final class Catalogue {
         }
         EditionMarchands.appliquer(m, erreurs);
         Recyclage.charger(erreurs);
-        // 16/11 (HeraliZ Récolte) : plafonds par joueur et par jour des objets reçus par des échanges
-        PlafondsEchanges.charger(erreurs);
         pnj = Map.copyOf(m);
         Marchands.oublierCache();
         LOG.info("[heraliz_quetes] {} PNJ chargés ({} quêtes de suite, {} modèles de contrats){}", m.size(),

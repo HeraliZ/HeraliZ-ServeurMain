@@ -107,8 +107,6 @@
   "heraliz_quetes.echange.fait": "Trade done: %s × %s for %s × %s.",
   "heraliz_quetes.echange.pas_assez": "You need %s × %s in good condition.",
   "heraliz_quetes.echange.plein": "Inventory full: make room, nothing was traded.",
-  "heraliz_quetes.echange.plafond": "Daily cap: at most %s × %s per day from trades. %s left today (resets at midnight).",
-  "heraliz_quetes.echange.reste": "Daily cap: %s × %s more possible from trades today.",
   "heraliz_quetes.echange.coupe": "This trade is disabled for now.",
   "heraliz_quetes.echange.interdit": "Item refused: lifetime item, match loan, lifetime camo or quest item.",
   "heraliz_quetes.echange.meme_objet": "A trade must give a different item from the one it takes.",

@@ -100,7 +100,6 @@ public final class ServeurQuetes implements Partie {
         Donnees.demarrer(e.getServer().getServerDirectory().toPath());
         EditionMarchands.demarrer(e.getServer().getServerDirectory().toPath());
         PointsGuide.demarrer(e.getServer().getServerDirectory().toPath());
-        PlafondsEchanges.demarrer(e.getServer().getServerDirectory().toPath());   // 16/11 : reçus du jour par des échanges
         Catalogue.charger();
         Ponts.relireArmes();
         Journalieres.demarrer(e.getServer());
@@ -111,7 +110,6 @@ public final class ServeurQuetes implements Partie {
         Donnees.arreter();
         Dialogues.vider();
         Marchands.vider();
-        PlafondsEchanges.arreter();
         Moteur.arreter();
         Journalieres.arreter();
         ObjetsARendre.vider();
