@@ -2,6 +2,7 @@ package fr.heraliz.recolte.entites;
 
 import fr.heraliz.recolte.objets.ObjetsRecolte;
 import fr.heraliz.recolte.objets.OutilRecolte;
+import fr.heraliz.recolte.serveur.Apparition;
 import fr.heraliz.recolte.serveur.Coups;
 import fr.heraliz.recolte.serveur.Effets;
 import fr.heraliz.recolte.serveur.Reglages;
@@ -27,9 +28,9 @@ import java.util.UUID;
  *    l'opposé du joueur à chaque coup, figée au dernier.</li>
  *    <li>Au dernier coup, {@link #CHUTE} = heure de jeu : il craque et tombe chez les joueurs ; à l'impact (≈ 2,4 s),
  *    poussière et feuilles le long de la chute ; 2 s plus tard, les bûches de la chute vont au joueur qui l'a abattu
- *    (au sol s'il n'est plus là) et {@link #SOUCHE} = vrai ; la souche reste 10 minutes (réglage
- *    {@code souche_minutes}) puis disparaît. L'arbre qui tombe ne blesse personne (dès la chute, sa boîte est celle de
- *    la souche).</li>
+ *    (au sol s'il n'est plus là) et {@link #SOUCHE} = vrai ; sa place repart ailleurs ; la souche reste 10 minutes
+ *    (réglage {@code souche_minutes}) puis disparaît. L'arbre qui tombe ne blesse personne (dès la chute, sa boîte est
+ *    celle de la souche).</li>
  * </ul>
  */
 public class ArbreServeur extends Arbre {
@@ -50,6 +51,17 @@ public class ArbreServeur extends Arbre {
 
     public ArbreServeur(EntityType<? extends Arbre> type, Level level) {
         super(type, level);
+    }
+
+    /** Nouvel arbre debout (apparition, /recolte placer) : 0 bouleau, 1 épicéa. */
+    public void preparer(int espece) {
+        this.entityData.set(ESPECE, borne(espece, 0, ESPECES.length - 1));
+        this.entityData.set(COUPS, 0);
+        this.entityData.set(CHUTE, -1L);
+        this.entityData.set(SOUCHE, false);
+        this.avance = 0.0;
+        this.donne = 0;
+        this.abatteur = null;
     }
 
     /** Un coup d'un joueur : jamais de dégâts ; seul un arbre debout se coupe. */
@@ -118,7 +130,7 @@ public class ArbreServeur extends Arbre {
         }
     }
 
-    /** Le tronc est parti : les dernières bûches à l'abatteur (au sol s'il n'est plus là), la souche reste. */
+    /** Le tronc est parti : les dernières bûches à l'abatteur (au sol s'il n'est plus là), la souche reste, la place repart. */
     private void abattu(ServerLevel l) {
         Reglages.Ressource r = Reglages.get().ressource(Reglages.ARBRE);
         // les bûches de la chute : ce qui manque pour le total du barème (6 avec le barème de la proposition)
@@ -134,6 +146,7 @@ public class ArbreServeur extends Arbre {
         }
         this.entityData.set(SOUCHE, true);
         Effets.tronc(l, this, longueur());
+        Apparition.liberer(l, this.getUUID(), r.reapparitionMs() + soucheTicks() * 50L);
     }
 
     private double longueur() {
@@ -143,6 +156,25 @@ public class ArbreServeur extends Arbre {
     /** Ticks où la souche reste (réglage {@code souche_minutes}). */
     private static long soucheTicks() {
         return Reglages.get().soucheMinutes * 1200L;
+    }
+
+    /**
+     * Abattu (en train de tomber, ou souche) et pas encore parti à cette heure de jeu : gardé au chargement de son coin de
+     * carte même sans place (la sienne repart ailleurs dès que le tronc est parti).
+     */
+    public boolean restePourLaSouche(long heureDeJeu) {
+        long debut = chute();
+        return debut >= 0L && heureDeJeu < debut + FIN + soucheTicks();
+    }
+
+    /** Enlevé autrement que par la récolte ({@code /kill}...) : sa place repart ailleurs après le délai de réapparition. */
+    @Override
+    public void remove(Entity.RemovalReason raison) {
+        boolean present = !this.isRemoved();
+        super.remove(raison);
+        if (present && raison.shouldDestroy() && this.level() instanceof ServerLevel l) {
+            Apparition.retiree(l, this, Reglages.ARBRE);
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package fr.heraliz.recolte.entites;
 
 import fr.heraliz.recolte.objets.OutilRecolte;
+import fr.heraliz.recolte.serveur.Apparition;
 import fr.heraliz.recolte.serveur.Coups;
 import fr.heraliz.recolte.serveur.Effets;
 import fr.heraliz.recolte.serveur.Reglages;
@@ -23,8 +24,8 @@ import net.minecraft.world.phys.Vec3;
  *    <li>La matière est donnée au prorata du travail : même total quel que soit l'outil (la légendaire fait gagner du
  *    temps, pas plus de ressources).</li>
  *    <li>{@link #ETAPE} = quarts du travail (le modèle suivant) ; {@link #SECOUSSE} = heure du coup (il tremble chez les
- *    joueurs) ; à la fin, il éclate et disparaît ; un gisement de métal ou de titane fini rapporte un point de saison au
- *    clan du dernier frappeur.</li>
+ *    joueurs) ; à la fin, il éclate et disparaît, sa place repart ailleurs après le délai de réapparition ; un gisement de
+ *    métal ou de titane fini rapporte un point de saison au clan du dernier frappeur.</li>
  * </ul>
  */
 public class GisementServeur extends Gisement {
@@ -35,6 +36,14 @@ public class GisementServeur extends Gisement {
 
     public GisementServeur(EntityType<? extends Gisement> type, Level level) {
         super(type, level);
+    }
+
+    /** Nouveau gisement entier (apparition, /recolte placer) : 0 pierre, 1 métal, 2 titane. */
+    public void preparer(int type) {
+        this.entityData.set(TYPE, borne(type, 0, TYPES.length - 1));
+        this.entityData.set(ETAPE, 0);
+        this.avance = 0.0;
+        this.donne = 0;
     }
 
     /** Sorte de ressource du barème ({@link Reglages#PIERRE}, {@link Reglages#METAL}, {@link Reglages#RARE}). */
@@ -85,7 +94,18 @@ public class GisementServeur extends Gisement {
             } else if (type() == RARE) {
                 Saison.pve(joueur, "recolte_rare");
             }
+            Apparition.liberer(l, this.getUUID(), r.reapparitionMs());
             this.discard();
+        }
+    }
+
+    /** Enlevé autrement que par la récolte ({@code /kill}...) : sa place repart ailleurs après le délai de réapparition. */
+    @Override
+    public void remove(Entity.RemovalReason raison) {
+        boolean present = !this.isRemoved();
+        super.remove(raison);
+        if (present && raison.shouldDestroy() && this.level() instanceof ServerLevel l) {
+            Apparition.retiree(l, this, sorte());
         }
     }
 

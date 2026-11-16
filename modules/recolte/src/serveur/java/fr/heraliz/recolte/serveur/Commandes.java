@@ -43,6 +43,7 @@ final class Commandes {
             s.sendFailure(t("heraliz_recolte.cmd.recharger.erreur", "recolte.json illisible, réglages en cours gardés : %s", String.valueOf(Reglages.derniereErreur())));
             return 0;
         }
+        Apparition.reglagesChanges(s.getServer());
         Reglages r = Reglages.get();
         ok(s, lu == 0 ? t("heraliz_recolte.cmd.recharger.absent", "recolte.json absent : barème par défaut.")
                 : t("heraliz_recolte.cmd.recharger.ok", "recolte.json relu : %1$s arbres, %2$s gisements de pierre, %3$s de métal et %4$s de titane à la fois.",
