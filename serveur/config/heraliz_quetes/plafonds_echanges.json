@@ -1,0 +1,5 @@
+{
+  "_aide": "Plafond par joueur et par jour (minuit, heure de Paris) des objets reçus par des échanges chez les marchands (HeraliZ Quêtes ; 16/11, HeraliZ Récolte : le Contremaître change le minerai en métal). Objet reçu -> nombre au plus par jour, tous marchands confondus ; un objet absent n'est pas plafonné ; 0 = jamais par un échange. Un échange qui dépasserait le plafond est refusé (le joueur lit ce qui lui reste). Compteurs du jour : heraliz_quetes/echanges_du_jour.json à la racine du serveur. Relu par /recharger quetes.",
+  "heraliz_composants:fragments_metal": 12,
+  "heraliz_composants:metal_renforce": 3
+}

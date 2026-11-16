@@ -172,6 +172,13 @@ TEXTES = {
     "heraliz_quetes.echange.pas_assez": ("Il te faut %s × %s en bon état.", "You need %s × %s in good condition.", "Нужно %s × %s в хорошем состоянии."),
     "heraliz_quetes.echange.plein": ("Inventaire plein : fais de la place, rien n'a été échangé.", "Inventory full: make room, nothing was traded.",
                                      "Инвентарь полон: освободите место, обмен не совершён."),
+    # 16/11 (HeraliZ Récolte) : plafond par joueur et par jour des objets reçus par des échanges (plafonds_echanges.json)
+    "heraliz_quetes.echange.plafond": ("Plafond du jour : %s × %s au plus par jour en échange. Il t'en reste %s (remise à zéro à minuit).",
+                                       "Daily cap: at most %s × %s per day from trades. %s left today (resets at midnight).",
+                                       "Дневной лимит: не больше %s × %s в день за обмены. Осталось: %s (сброс в полночь)."),
+    "heraliz_quetes.echange.reste": ("Plafond du jour : encore %s × %s possibles en échange aujourd'hui.",
+                                     "Daily cap: %s × %s more possible from trades today.",
+                                     "Дневной лимит: сегодня за обмены можно получить ещё %s × %s."),
     "heraliz_quetes.echange.coupe": ("Cet échange est coupé pour le moment.", "This trade is disabled for now.", "Этот обмен сейчас отключён."),
     "heraliz_quetes.echange.interdit": ("Objet refusé : objet à vie, prêté par un match, à camo à vie ou de quête.",
                                         "Item refused: lifetime item, match loan, lifetime camo or quest item.",

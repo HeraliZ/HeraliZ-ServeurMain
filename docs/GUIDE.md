@@ -30,7 +30,7 @@ spawn ──borne de départ──► carte DayZ ──loot──► sac / inven
 | Combat, mort, à terre | `noyau`, `survie`, `armes` | tag de combat `fr.heraliz.noyau` ; à terre `fr.heraliz.reanimation` ; dégâts des armes `serveur/config/heraliz_tactique/armes.json` (**écrit par `outils/equilibrage_armes.py`**) |
 | Cadavres | `monde` | `fr.heraliz.corps` |
 | Extraction | `monde` | `com.heraliz.extraction` ; réglages `serveur/config/heraliz_extraction-common.toml` |
-| Revente (marchands) | `pnj` | `fr.heraliz.quetes.serveur.Marchands` ; prix `serveur/config/heraliz_quetes/pnj/*.json`, clé `marchand` (**écrite par `outils/marchands.py`**) ; changements en jeu dans `heraliz_quetes/marchands_jeu.json` (racine du serveur) |
+| Revente (marchands) | `pnj` | `fr.heraliz.quetes.serveur.Marchands` ; prix `serveur/config/heraliz_quetes/pnj/*.json`, clé `marchand` (**écrite par `outils/marchands.py`**) ; changements en jeu dans `heraliz_quetes/marchands_jeu.json` (racine du serveur) ; plafond par joueur et par jour des objets reçus par des échanges (16/11, Contremaître de la Récolte) : `serveur/config/heraliz_quetes/plafonds_echanges.json`, compteurs `heraliz_quetes/echanges_du_jour.json` |
 | Recyclage | `pnj` | PNJ « recycleur » (`fr.heraliz.quetes.serveur.Recyclage`) ; règles `serveur/config/heraliz_quetes/recyclage.json` (**écrit par `outils/recyclage.py`**), voir section 9 |
 | Craft | `armes` + gunpack | recettes de la Table d'armurier : gunpack `serveur/tacz/heraliz_crafts` (**écrit par `outils/crafts.py`**) ; changements en jeu dans `heraliz_tactique/recettes_jeu.json` |
 | Hérals | `clans` | `fr.heralisz.economie` (`EconomieApi`) ; réglages `serveur/config/heralisz_economie-common.toml` |

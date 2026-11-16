@@ -107,6 +107,8 @@
   "heraliz_quetes.echange.fait": "Échange fait : %s × %s contre %s × %s.",
   "heraliz_quetes.echange.pas_assez": "Il te faut %s × %s en bon état.",
   "heraliz_quetes.echange.plein": "Inventaire plein : fais de la place, rien n'a été échangé.",
+  "heraliz_quetes.echange.plafond": "Plafond du jour : %s × %s au plus par jour en échange. Il t'en reste %s (remise à zéro à minuit).",
+  "heraliz_quetes.echange.reste": "Plafond du jour : encore %s × %s possibles en échange aujourd'hui.",
   "heraliz_quetes.echange.coupe": "Cet échange est coupé pour le moment.",
   "heraliz_quetes.echange.interdit": "Objet refusé : objet à vie, prêté par un match, à camo à vie ou de quête.",
   "heraliz_quetes.echange.meme_objet": "Un échange doit donner un autre objet que celui qu'il prend.",

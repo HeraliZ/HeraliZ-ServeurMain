@@ -107,6 +107,8 @@
   "heraliz_quetes.echange.fait": "Обмен совершён: %s × %s за %s × %s.",
   "heraliz_quetes.echange.pas_assez": "Нужно %s × %s в хорошем состоянии.",
   "heraliz_quetes.echange.plein": "Инвентарь полон: освободите место, обмен не совершён.",
+  "heraliz_quetes.echange.plafond": "Дневной лимит: не больше %s × %s в день за обмены. Осталось: %s (сброс в полночь).",
+  "heraliz_quetes.echange.reste": "Дневной лимит: сегодня за обмены можно получить ещё %s × %s.",
   "heraliz_quetes.echange.coupe": "Этот обмен сейчас отключён.",
   "heraliz_quetes.echange.interdit": "Предмет не принят: вечный, выданный в матче, с вечным камуфляжем или квестовый.",
   "heraliz_quetes.echange.meme_objet": "Обмен должен выдавать другой предмет, а не тот, что берёт.",
