@@ -262,6 +262,20 @@ def controle_jamais_vendus(marchands):
         raise SystemExit("Refusé : un objet qui ne se vend jamais est chez un marchand.")
 
 
+def controle_matieres_brutes(marchands):
+    """16/11 (HeraliZ Récolte, choix du propriétaire) : refus (SystemExit) si une règle de rachat ou du recycleur prendrait
+    une matière brute (MATIERES_BRUTES de outils/recyclage.py : échangées au Contremaître, jamais revendues)."""
+    from recyclage import MATIERES_BRUTES
+    rec = json.loads(RECYCLAGE.read_text(encoding="utf-8")) if RECYCLAGE.exists() else {"regles": []}
+    erreurs = [f"{pid} rachèterait {o}" for o in MATIERES_BRUTES for pid, m in marchands.items()
+               if m.get("type") == "rachat" and prix_regle(m, o, "") > 0]
+    erreurs += [f"le recycleur prendrait {o}" for o in MATIERES_BRUTES if regle_recyclage(rec, o, "") is not None]
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : les matières brutes de la Récolte ne se revendent jamais (ni Mila, ni le recycleur).")
+
+
 def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
     """(erreurs, notes) du contrôle des 50 %, avec les facteurs de l'économie de la bêta (03/11, réglage [beta] de
     heraliz_loot-server.toml, Ponts.prixAchat / Marchands.prixRachat / Recyclage de HeraliZ Quêtes) : prix d'achat x
@@ -360,11 +374,13 @@ if __name__ == "__main__":
         controle(actuels)
         controle_echanges(tous)
         controle_jamais_vendus(tous)
+        controle_matieres_brutes(tous)
         raise SystemExit(0)
     tags_rachat()
     controle(MARCHANDS)
     controle_echanges(MARCHANDS)
     controle_jamais_vendus(MARCHANDS)
+    controle_matieres_brutes(MARCHANDS)
     for pid, m in MARCHANDS.items():
         f = PNJ / f"{pid}.json"
         d = json.loads(f.read_text(encoding="utf-8"))

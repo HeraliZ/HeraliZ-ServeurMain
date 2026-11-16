@@ -98,7 +98,11 @@
   "heralisz_bunker:keycard*",
   "heralizcrates:*",
   "heraliz_grades:*",
-  "airstrike:*"
+  "airstrike:*",
+  "heraliz_recolte:buche",
+  "heraliz_recolte:pierre_brute",
+  "heraliz_recolte:minerai_fer",
+  "heraliz_recolte:minerai_rare"
  ],
  "regles": [
   {
