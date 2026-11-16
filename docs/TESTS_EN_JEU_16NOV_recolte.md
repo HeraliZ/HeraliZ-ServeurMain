@@ -92,4 +92,4 @@ Décisions du propriétaire du 16/11 (après le cahier) :
 - Une place est tirée au hasard dans la bordure du monde : la carte des places possibles calculée depuis la carte finie
   (comme `outils/zones_construction.py`) reste à faire avec la nouvelle carte.
 - Deux appels de Forge utilisés pour la première fois dans le dépôt (`ForgeHooksClient.onClickInput`,
-  `Options.screenEffectScale`) : à surveiller (fabrication de GitHub, puis en jeu).
+  `Options.screenEffectScale`) : compilés par la fabrication de GitHub (contrôle de branche vert), pas essayés en jeu.
