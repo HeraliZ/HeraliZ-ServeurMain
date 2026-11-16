@@ -1,10 +1,15 @@
 package fr.heraliz.recolte.serveur;
 
+import fr.heraliz.recolte.entites.ArbreServeur;
+import fr.heraliz.recolte.entites.EntitesRecolte;
+import fr.heraliz.recolte.entites.GisementServeur;
 import fr.heraliz.recolte.pont.Partie;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
@@ -18,8 +23,12 @@ public final class PartieServeur implements Partie {
 
     @Override
     public void init(IEventBus busMod) {
+        EntitesRecolte.GISEMENT_USINE.serveur(GisementServeur::new);
+        EntitesRecolte.ARBRE_USINE.serveur(ArbreServeur::new);
         MinecraftForge.EVENT_BUS.addListener(PartieServeur::demarrage);
+        MinecraftForge.EVENT_BUS.addListener(PartieServeur::arret);
         MinecraftForge.EVENT_BUS.addListener(PartieServeur::tick);
+        MinecraftForge.EVENT_BUS.addListener(PartieServeur::depart);
         MinecraftForge.EVENT_BUS.addListener(PartieServeur::commandes);
     }
 
@@ -27,6 +36,10 @@ public final class PartieServeur implements Partie {
     private static void demarrage(ServerAboutToStartEvent e) {
         ticks = 0;
         Reglages.charger();
+    }
+
+    private static void arret(ServerStoppedEvent e) {
+        Coups.vider();
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
@@ -37,6 +50,10 @@ public final class PartieServeur implements Partie {
             ticks = 0;
             Reglages.surveiller();
         }
+    }
+
+    private static void depart(PlayerEvent.PlayerLoggedOutEvent e) {
+        Coups.oublier(e.getEntity().getUUID());
     }
 
     private static void commandes(RegisterCommandsEvent e) {
