@@ -9,7 +9,8 @@ import net.minecraft.world.level.Level;
 
 /**
  * Partie SERVEUR de {@link SpEffectCloudEntity} (nuage au sol des molotovs et gaz ; docs/METHODE_CLIENT_SERVEUR.md §5) : met le
- * feu aux entités dans le nuage, s'éteint dans la fumée d'un fumigène ; code d'origine. La version commune n'a plus de tick
+ * feu aux entités dans le nuage (au nom du lanceur, fr.heraliz.tactique.serveur.Brulures, 15/11), s'éteint dans la fumée
+ * d'un fumigène ; code d'origine. La version commune n'a plus de tick
  * à elle (celui d'AreaEffectCloud) : le tick ci-dessous appelle super.tick() une seule fois, comme avant.
  */
 public class SpEffectCloudEntityServeur extends SpEffectCloudEntity {
@@ -33,6 +34,8 @@ public class SpEffectCloudEntityServeur extends SpEffectCloudEntity {
                }
             } else if (this.isIgnite() && !entity.fireImmune() && entity instanceof LivingEntity && this.getBoundingBox().intersects(entity.getBoundingBox())) {
                entity.setSecondsOnFire(this.getIgniteTime());
+               // HeraliZ (audit du 15/11, B1) : ce feu brûle au nom du lanceur (tag de combat, crédit du tueur)
+               fr.heraliz.tactique.serveur.Brulures.molotov(entity, this.getOwner());
             }
          }
       }

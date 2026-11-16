@@ -42,6 +42,9 @@ import java.util.Collection;
  * butin des caisses se relit par /recharger du noyau (/recharger caisses pour lui seul).
  *   editor                                    (op) donne l'outil d'edition des caisses
  *   interface <joueurs> <coffre>              (op) ouvre l'interface d'ouverture sans caisse (PNJ, menus...)
+ * 15/11 (audit n° 3) : givekey, keyall, cles retirer, givecrate et interface (des clés, des caisses ou des ouvertures
+ * gratuites) demandent, comme /eco donner, l'opérateur de niveau 4 connecté sur AuthMe ({@link #authentifie}) ; la
+ * console (site, AzLink, boutique, caisses, bons) garde son niveau 4. Avant : op 2.
  */
 public final class HeralizCommand {
     private HeralizCommand() {
@@ -62,14 +65,14 @@ public final class HeralizCommand {
                                     PreviewMenu.open(c.getSource().getPlayerOrException(), crate(c));
                                     return 1;
                                 })))
-                .then(Commands.literal("givekey").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("givekey").requires(s -> s.hasPermission(4))
                         .then(Commands.argument("targets", EntityArgument.players())
                                 .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                         .executes(c -> giveKeys(c, EntityArgument.getPlayers(c, "targets"), 1))
                                         .then(Commands.argument("amount", IntegerArgumentType.integer(1, 6400))
                                                 .executes(c -> giveKeys(c, EntityArgument.getPlayers(c, "targets"),
                                                         IntegerArgumentType.getInteger(c, "amount")))))))
-                .then(Commands.literal("keyall").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("keyall").requires(s -> s.hasPermission(4))
                         .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                 .executes(c -> giveKeys(c, c.getSource().getServer().getPlayerList().getPlayers(), 1))
                                 .then(Commands.argument("amount", IntegerArgumentType.integer(1, 6400))
@@ -79,13 +82,13 @@ public final class HeralizCommand {
                         .then(Commands.literal("voir")
                                 .then(Commands.argument("target", EntityArgument.player())
                                         .executes(c -> clesVoir(c, EntityArgument.getPlayer(c, "target")))))
-                        .then(Commands.literal("retirer")
+                        .then(Commands.literal("retirer").requires(s -> s.hasPermission(4))
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                                 .then(Commands.argument("amount", IntegerArgumentType.integer(1, 6400))
                                                         .executes(c -> clesRetirer(c, EntityArgument.getPlayers(c, "targets"),
                                                                 IntegerArgumentType.getInteger(c, "amount"))))))))
-                .then(Commands.literal("givecrate").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("givecrate").requires(s -> s.hasPermission(4))
                         .then(Commands.argument("targets", EntityArgument.players())
                                 .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                         .executes(c -> giveCrates(c, EntityArgument.getPlayers(c, "targets"), 1))
@@ -103,10 +106,11 @@ public final class HeralizCommand {
                             giveStacks(c.getSource().getPlayerOrException(), new ItemStack(ModRegistry.CRATE_EDITOR.get()), 1);
                             return 1;
                         }))
-                .then(Commands.literal("interface").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("interface").requires(s -> s.hasPermission(4))
                         .then(Commands.argument("targets", EntityArgument.players())
                                 .then(Commands.argument("crate", StringArgumentType.word()).suggests(CRATES)
                                         .executes(c -> {
+                                            if (!authentifie(c.getSource())) return 0;
                                             CrateType type = crate(c);
                                             Collection<ServerPlayer> players = EntityArgument.getPlayers(c, "targets");
                                             for (ServerPlayer p : players) CaseOpening.openScreen(p, type, null);
@@ -135,7 +139,19 @@ public final class HeralizCommand {
         return t;
     }
 
+    /**
+     * 15/11 (audit n° 3) : un opérateur joueur doit être connecté sur AuthMe (un pseudo d'op ne vaut rien avant le
+     * /login), comme pour /eco donner ; la console et RCON passent toujours. Refus expliqué à l'auteur.
+     */
+    private static boolean authentifie(CommandSourceStack s) {
+        if (!(s.getEntity() instanceof ServerPlayer p) || fr.heraliz.grades.serveur.GradesApi.authentifie(p)) return true;
+        s.sendFailure(Component.translatableWithFallback("command.heralizcrates.login",
+                "Connecte-toi d'abord (/login) : cette commande est réservée aux opérateurs connectés."));
+        return false;
+    }
+
     private static int giveKeys(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> players, int amount) throws CommandSyntaxException {
+        if (!authentifie(c.getSource())) return 0;
         CrateType type = crate(c);
         // 25/10 : plus d'objet ; les clés vont sur le compte du joueur (ComptesCles), écrit tout de suite. Même commande
         // qu'avant (le site, AzLink, la boutique, les caisses et les bons la jouent) ; rend le nombre de joueurs crédités
@@ -177,6 +193,7 @@ public final class HeralizCommand {
 
     /** /heraliz cles retirer <joueurs> <caisse> <nombre> : retire des clés du compte (correction du staff). */
     private static int clesRetirer(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> players, int amount) throws CommandSyntaxException {
+        if (!authentifie(c.getSource())) return 0;
         CrateType type = crate(c);
         int n = 0;
         for (ServerPlayer p : players) {
@@ -195,8 +212,11 @@ public final class HeralizCommand {
     }
 
     private static int giveCrates(CommandContext<CommandSourceStack> c, Collection<ServerPlayer> players, int amount) throws CommandSyntaxException {
+        if (!authentifie(c.getSource())) return 0;
         CrateType type = crate(c);
         Item item = ModRegistry.crateItem(type);
+        fr.heraliz.crates.HeralizCrates.LOGGER.info("[HeralizCrates] /heraliz givecrate par {} : {} x{} a {} joueur(s)", c.getSource().getTextName(),
+                type.id, amount, players.size());
         for (ServerPlayer p : players) {
             giveStacks(p, new ItemStack(item), amount);
         }

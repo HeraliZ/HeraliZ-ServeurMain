@@ -30,7 +30,10 @@ import java.util.Random;
  * <li>la caisse ({@link CaisseParachuteEntity}) descend, se pose en bloc, se remplit et fume 3 min.</li>
  * </ul>
  * Les vols en cours ne survivent pas a un redemarrage du serveur : {@code Territoires.arreter} rend son delai a la
- * zone d'un vol qui n'a pas encore largue ({@link #zonesDelaiARendre}).
+ * zone d'un vol qui n'a pas encore largue ({@link #zonesDelaiARendre}). 15/11 (audit B4) : ce que le signal rapporte
+ * (XP du clan, quete, statistique du joueur, journal du clan : {@code auLargage}) n'est donne qu'au largage de la caisse ;
+ * l'annonce a tout le serveur reste au signal. Avant, tout etait donne au signal, et un redemarrage pendant le vol rendait
+ * le delai en gardant l'XP et la quete : un second signal les comptait deux fois.
  */
 public final class Ravitaillement {
     /** 45 s entre le signal et le depart de l'avion. */
@@ -57,11 +60,15 @@ public final class Ravitaillement {
         final int debut;
         /** Le signal a pose le delai de la zone (faux pour un largage admin). */
         final boolean delaiPose;
+        /** Ce que rapporte le signal, donne au largage (null : rien, largage admin). */
+        @Nullable
+        final Runnable auLargage;
         boolean avionApparu, largue;
         @Nullable
         AvionEntity avion;
 
-        Vol(int id, String zoneId, String clanTag, ServerLevel level, double cx, double cz, double dirX, double dirZ, int debut, boolean delaiPose) {
+        Vol(int id, String zoneId, String clanTag, ServerLevel level, double cx, double cz, double dirX, double dirZ, int debut, boolean delaiPose,
+            @Nullable Runnable auLargage) {
             this.id = id;
             this.zoneId = zoneId;
             this.clanTag = clanTag;
@@ -74,6 +81,7 @@ public final class Ravitaillement {
             this.depZ = cz - dirZ * DISTANCE_APPROCHE;
             this.debut = debut;
             this.delaiPose = delaiPose;
+            this.auLargage = auLargage;
         }
     }
 
@@ -112,6 +120,11 @@ public final class Ravitaillement {
      * le signal a consomme le delai de la zone (rendu si le serveur s'arrete avant le largage).
      */
     public void lancer(ServerLevel level, Zone zone, String clanTag, int delaiTicks, boolean delaiPose) {
+        lancer(level, zone, clanTag, delaiTicks, delaiPose, null);
+    }
+
+    /** Meme chose ; {@code auLargage} : ce que rapporte le signal, fait quand la caisse est larguee (15/11, audit B4). */
+    public void lancer(ServerLevel level, Zone zone, String clanTag, int delaiTicks, boolean delaiPose, @Nullable Runnable auLargage) {
         BlockPos d = zone.drapeau;
         if (d == null) return;
         double fx = d.getX() + 0.5, fz = d.getZ() + 0.5, fy = d.getY();
@@ -124,7 +137,7 @@ public final class Ravitaillement {
         fumeeRouge(level, fx, fy + 1.4, fz, FUMEE_TICKS);
         double ang = random.nextDouble() * Math.PI * 2;
         Vol v = new Vol(prochainId++, zone.id, clanTag == null ? "" : clanTag, level, fx, fz, Math.cos(ang), Math.sin(ang),
-                tick + Math.max(0, delaiTicks), delaiPose);
+                tick + Math.max(0, delaiTicks), delaiPose, auLargage);
         vols.add(v);
         HeraliszClans.LOG.info("[clans] signal de ravitaillement sur {} ([{}]) : avion dans {} s depuis ({}, {})", zone.id, v.clanTag,
                 delaiTicks / 20, Math.round(v.depX), Math.round(v.depZ));
@@ -198,5 +211,12 @@ public final class Ravitaillement {
         v.level.addFreshEntity(c);
         v.level.playSound(null, x, ALTITUDE - 3, z, Sons.PARACHUTE_OUVERT.get(), SoundSource.NEUTRAL, 4f, 1f);
         HeraliszClans.LOG.info("[clans] caisse de ravitaillement larguee sur {} en ({}, {})", v.zoneId, Math.round(x), Math.round(z));
+        if (v.auLargage != null) {
+            try {
+                v.auLargage.run();
+            } catch (RuntimeException ex) {
+                HeraliszClans.LOG.error("[clans] ravitaillement de {} : recompense du signal en erreur", v.zoneId, ex);
+            }
+        }
     }
 }

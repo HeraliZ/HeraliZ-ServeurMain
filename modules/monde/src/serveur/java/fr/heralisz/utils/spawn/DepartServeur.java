@@ -148,7 +148,10 @@ public final class DepartServeur {
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::commandes);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::blesse);
-        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> REGIONS.clear());
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> {
+            REGIONS.clear();
+            DERNIER.clear();
+        });
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, DepartServeur::attaque);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, DepartServeur::arrivee);
         MinecraftForge.EVENT_BUS.addListener(DepartServeur::changementMonde);
@@ -683,6 +686,13 @@ public final class DepartServeur {
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
         EN_COURS.remove(e.getEntity().getUUID());
         PROTEGES.remove(e.getEntity().getUUID());
+        // 15/11 (audit perf n° 6) : l'attente entre deux départs n'est gardée que tant qu'elle court (une reconnexion ne
+        // permet pas de repartir plus tôt) ; finie, elle est oubliée (avant : une entrée par joueur venu, jamais retirée)
+        MinecraftServer server = e.getEntity().getServer();
+        if (server != null && !DERNIER.isEmpty()) {
+            int maintenant = server.getTickCount(), attente = DepartConfig.lire(DepartConfig.ATTENTE) * 20;
+            DERNIER.values().removeIf(t -> maintenant - t >= attente);
+        }
     }
 
     /** Blessé pendant le délai : départ annulé. */

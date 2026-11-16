@@ -27,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.GameType;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,6 +50,11 @@ import java.util.UUID;
  * Une edition du ClashWar (MATCHS_SPEC §2.2 a §2.4) : inscriptions par clan, cloture (Coffre + salle d'attente),
  * tableau, tours joues en parallele (une {@link MatchCw} par rencontre), finale, sacre, recompenses, retour de tout le
  * monde. Fil serveur ; pilote par {@link Tournois#tick}.
+ * <p>Regles du spawn (proprietaire, 15/11) : une equipe ne s'inscrit que si tous ses membres connectes sont dans le monde
+ * du spawn (sinon refus qui les nomme) ; pendant les inscriptions, un inscrit qui quitte le spawn retire son equipe (toute
+ * l'equipe est prevenue, elle peut se reinscrire depuis le spawn) ; au depart vers la salle, une equipe dont un joueur
+ * connecte n'est pas au spawn est retiree du tournoi (personne n'est depose ni teleporte). Un joueur deconnecte garde sa
+ * place jusqu'au depart, ou il est laisse de cote comme avant (son equipe joue sans lui).
  */
 public final class Tournoi {
     public enum Etat { INSCRIPTION, PREPARATION, PAUSE, TOUR, FIN, TERMINE, ANNULE }
@@ -106,6 +113,10 @@ public final class Tournoi {
     private PodiumSalle podium;
     final Random rnd = new Random();
     private final Map<UUID, Long> cadence = new HashMap<>();
+    /** Le monde du spawn : on ne s'inscrit, on ne reste inscrit et on ne part vers la salle que depuis lui (15/11). */
+    private static final ResourceLocation MONDE_SPAWN = new ResourceLocation("heralisz", "spawn");
+    /** Separateur des arguments d'un message de l'ecran d'inscription (« cle␟argument », traduit chez le joueur). */
+    static final char SEP = '\u001F';
 
     Tournoi(MinecraftServer serveur, int edition, Format format, long finInscriptionMs, boolean simulation) {
         this.serveur = serveur;
@@ -145,6 +156,8 @@ public final class Tournoi {
         switch (etat) {
             case INSCRIPTION -> {
                 if (simulation) return;
+                // 15/11 : une equipe dont un inscrit a quitte le spawn est retiree (une fois par seconde, inscrits seulement)
+                if (ticksEtat % 20 == 0) surveillerSpawn();
                 long reste = finInscriptionMs - System.currentTimeMillis();
                 if (!rappel5 && reste <= 5 * 60_000L && reste > 60_000L) {
                     rappel5 = true;
@@ -242,6 +255,7 @@ public final class Tournoi {
         // normalisation et validation
         List<List<UUID>> equipes = new ArrayList<>();
         Set<UUID> vus = new LinkedHashSet<>();
+        List<String> horsSpawn = new ArrayList<>();
         for (List<UUID> e : demande) {
             if (e.isEmpty()) continue;
             if (e.size() > format.taille) {
@@ -269,9 +283,14 @@ public final class Tournoi {
                     refus(sp, "clashwar.inscription.en_match");
                     return;
                 }
+                if (p != null && !auSpawn(p)) horsSpawn.add(p.getGameProfile().getName());
                 l.add(u);
             }
             equipes.add(l);
+        }
+        if (!horsSpawn.isEmpty()) {
+            refusHorsSpawn(sp, horsSpawn);
+            return;
         }
         int autres = equipesInscrites() - (inscriptions.containsKey(clan) ? inscriptions.get(clan).equipes.size() : 0);
         if (autres + equipes.size() > CwConfig.get().maxEquipes) {
@@ -346,11 +365,87 @@ public final class Tournoi {
         if (etat == Etat.INSCRIPTION && inscriptions.remove(clan) != null) Tournois.marquerVue();
     }
 
+    /** Inscription refusee : des membres ne sont pas au spawn (nommes dans l'ecran et dans le chat). */
+    private void refusHorsSpawn(ServerPlayer sp, List<String> noms) {
+        String liste = String.join(", ", noms);
+        Annonces.chat(sp, Component.translatableWithFallback("clashwar.chat.inscription_hors_spawn",
+                "Inscription refusée, pas au spawn : %s. Tous les membres d'une équipe doivent être au spawn pour l'inscrire au ClashWar.",
+                liste).withStyle(ChatFormatting.RED));
+        String m = "clashwar.inscription.hors_spawn" + SEP + liste;
+        // 96 caracteres au plus dans le paquet de l'ecran : la liste est coupee (le chat la donne en entier)
+        refus(sp, m.length() > 96 ? m.substring(0, 95) + "\u2026" : m);
+    }
+
+    // ================================================================== spawn (15/11)
+    /** Le joueur est dans le monde du spawn. */
+    static boolean auSpawn(ServerPlayer p) {
+        return MONDE_SPAWN.equals(p.level().dimension().location());
+    }
+
+    /** Premier joueur connecte de la liste qui n'est pas au spawn, ou null (les deconnectes ne comptent pas). */
+    @Nullable
+    private ServerPlayer premierHorsSpawn(List<UUID> joueurs) {
+        for (int i = 0; i < joueurs.size(); i++) {
+            ServerPlayer p = serveur.getPlayerList().getPlayer(joueurs.get(i));
+            if (p != null && !auSpawn(p)) return p;
+        }
+        return null;
+    }
+
+    /**
+     * Inscriptions ouvertes, une fois par seconde : l'equipe d'un inscrit connecte qui n'est plus au spawn est retiree de
+     * l'inscription ; toute l'equipe est prevenue (elle peut se reinscrire depuis le spawn tant que c'est ouvert). Seuls
+     * les inscrits sont regardes ; rien a faire sans inscription.
+     */
+    private void surveillerSpawn() {
+        if (inscriptions.isEmpty()) return;
+        for (Iterator<Inscription> it = inscriptions.values().iterator(); it.hasNext(); ) {
+            Inscription ins = it.next();
+            boolean change = false;
+            // de la derniere a la premiere : le numero annonce est celui que l'equipe voyait
+            for (int i = ins.equipes.size() - 1; i >= 0; i--) {
+                List<UUID> e = ins.equipes.get(i);
+                ServerPlayer parti = premierHorsSpawn(e);
+                if (parti == null) continue;
+                ins.equipes.remove(i);
+                change = true;
+                String equipe = ClansApi.infos(ins.clan).map(ClanInfo::tagCrochets).orElse("?") + " " + (i + 1);
+                HeralizClashWar.LOG.info("[clashwar] {} a quitte le spawn ({}) : equipe {} retiree de l'inscription",
+                        parti.getGameProfile().getName(), parti.level().dimension().location(), equipe);
+                Component msg = Component.translatableWithFallback("clashwar.chat.quitte_spawn",
+                        "%s a quitté le spawn : votre équipe %s est retirée de l'inscription au ClashWar. Revenez tous au spawn pour la réinscrire avant %s (%s).",
+                        fort(parti.getGameProfile().getName()), fort(equipe), fort(Tournois.heure(finInscriptionMs)), commande("/clashwar"))
+                        .withStyle(ChatFormatting.RED);
+                for (UUID u : e) {
+                    ServerPlayer p = serveur.getPlayerList().getPlayer(u);
+                    if (p != null) Annonces.chat(p, msg);
+                }
+            }
+            if (!change) continue;
+            if (ins.equipes.isEmpty()) it.remove();
+            ClansApi.infos(ins.clan).ifPresent(info -> majClan(info, null, "", false));
+            Tournois.marquerVue();
+        }
+    }
+
+    /** Depart vers la salle : l'equipe dont un joueur n'est pas au spawn est retiree du tournoi ; ses joueurs sont prevenus. */
+    private void retireeAuDepart(List<UUID> joueurs, String equipe, ServerPlayer dehors) {
+        HeralizClashWar.LOG.info("[clashwar] edition {} : {} pas au spawn au depart ({}) : equipe {} retiree du tournoi", edition,
+                dehors.getGameProfile().getName(), dehors.level().dimension().location(), equipe);
+        Component msg = Component.translatableWithFallback("clashwar.chat.depart_hors_spawn",
+                "%s n'était pas au spawn au départ du ClashWar : votre équipe %s est retirée du tournoi.",
+                fort(dehors.getGameProfile().getName()), fort(equipe)).withStyle(ChatFormatting.RED);
+        for (UUID u : joueurs) {
+            ServerPlayer p = serveur.getPlayerList().getPlayer(u);
+            if (p != null) Annonces.chat(p, msg);
+        }
+    }
+
     private void refus(ServerPlayer sp, String cle) {
         Optional<UUID> clan = ClansApi.clanDe(sp.getUUID());
         Optional<ClanInfo> info = clan.flatMap(ClansApi::infos);
         if (info.isPresent()) envoyerInscription(sp, info.get(), false, cle, true);
-        else Annonces.chat(sp, Component.translatable(cle).withStyle(ChatFormatting.RED));
+        else Annonces.chat(sp, Component.translatable(cle.indexOf(SEP) < 0 ? cle : cle.substring(0, cle.indexOf(SEP))).withStyle(ChatFormatting.RED));
     }
 
     /** Met a jour l'ecran d'inscription de tous les membres connectes du clan (message seulement pour l'auteur). */
@@ -389,6 +484,12 @@ public final class Tournoi {
             ClanInfo info = ClansApi.infos(ins.clan).orElse(null);
             if (info == null) continue;
             for (int i = 0; i < ins.equipes.size(); i++) {
+                // 15/11 : une equipe dont un joueur connecte n'est pas au spawn ne part pas
+                ServerPlayer dehors = premierHorsSpawn(ins.equipes.get(i));
+                if (dehors != null) {
+                    retireeAuDepart(ins.equipes.get(i), info.tagCrochets() + " " + (i + 1), dehors);
+                    continue;
+                }
                 List<UUID> joueurs = new ArrayList<>();
                 Map<UUID, String> noms = new LinkedHashMap<>();
                 for (UUID u : ins.equipes.get(i)) {
@@ -434,6 +535,13 @@ public final class Tournoi {
         poserMur(instanceSalle);
         List<Tableau.EquipeT> finales = new ArrayList<>();
         for (Tableau.EquipeT e : provisoires) {
+            // 15/11 (regle du proprietaire) : au depart, un joueur connecte qui n'est pas au spawn n'est pas teleporte et son
+            // equipe est retiree du tournoi (personne de l'equipe n'est depose ni teleporte)
+            ServerPlayer dehors = premierHorsSpawn(e.joueurs);
+            if (dehors != null) {
+                retireeAuDepart(e.joueurs, "[" + e.tag + "] " + e.numero, dehors);
+                continue;
+            }
             List<UUID> ok = new ArrayList<>();
             for (UUID u : e.joueurs) {
                 if (mannequins.contains(u)) {

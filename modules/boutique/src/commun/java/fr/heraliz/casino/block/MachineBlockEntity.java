@@ -39,6 +39,15 @@ public abstract class MachineBlockEntity extends BlockEntity {
     /** Client : debut du dernier tour pour lequel la camera est deja partie sur la machine. */
     public long clientWatched = Long.MIN_VALUE;
 
+    /**
+     * Numero du dernier versement (gain, remboursement, fin de manche) que cet etat contient (15/11, audit de l'economie
+     * n° 6), garde avec le monde ; la partie serveur le note aussi HORS du monde avant chaque versement (RegistreManches).
+     * Un etat recharge plus ancien qu'un versement deja fait (plantage) n'est jamais rejoue : la machine repart a neuf.
+     */
+    public long argent;
+    /** Partie serveur : etat compare au registre depuis le chargement ; etat perime, en attente de remise a neuf. */
+    public boolean argentVerifie, gelee;
+
     protected MachineBlockEntity(MachineType type, BlockPos pos, BlockState state) {
         super(ModRegistry.beType(type), pos, state);
         this.type = type;
@@ -67,6 +76,9 @@ public abstract class MachineBlockEntity extends BlockEntity {
         boolean seat(MachineBlockEntity be, ServerPlayer p, Spot s);
 
         void unseat(MachineBlockEntity be, @Nullable UUID id);
+
+        /** La machine peut jouer (15/11 : etat verifie apres son chargement, pas perime). */
+        boolean pret(MachineBlockEntity be);
     }
 
     static volatile Moteur moteur;
@@ -84,6 +96,15 @@ public abstract class MachineBlockEntity extends BlockEntity {
     public static void clientTick(Level level, BlockPos pos, BlockState state, MachineBlockEntity be) {
         BlockEntityTicker<MachineBlockEntity> t = TICK_CLIENT;
         if (t != null) t.tick(level, pos, state, be);
+    }
+
+    /**
+     * La machine peut recevoir une action d'un joueur (15/11, audit n° 6) : faux tant qu'un etat perime (plus ancien qu'un
+     * versement deja fait) attend sa remise a neuf. Sans partie serveur : vrai.
+     */
+    public boolean pret() {
+        Moteur m = moteur;
+        return m == null || m.pret(this);
     }
 
     /** Tick du serveur : redefini par la version serveur de chaque machine (neutre ici). */
@@ -126,6 +147,7 @@ public abstract class MachineBlockEntity extends BlockEntity {
         super.saveAdditional(tag);
         writeSync(tag);
         writeServer(tag);
+        tag.putLong("HzArgent", argent);
     }
 
     @Override
@@ -133,6 +155,7 @@ public abstract class MachineBlockEntity extends BlockEntity {
         super.load(tag);
         readSync(tag);
         readServer(tag);
+        argent = tag.getLong("HzArgent");
     }
 
     @Override

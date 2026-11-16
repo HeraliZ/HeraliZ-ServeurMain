@@ -30,6 +30,7 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
 CAISSES_DIR = RACINE / "serveur/config/heralizcrates"
+CASINO = RACINE / "serveur/config/heralizcasino/casino.json"
 RARETES = RACINE / "serveur/config/heraliz_loot/raretes.json"
 COMPOSANTS_DEFS = RACINE / "modules/equipement/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
 AIDE = ("Écrit par outils/caisses.py (ne pas modifier à la main). Chaque récompense : item, count, weight (poids du "
@@ -390,6 +391,12 @@ def verifier():
             if retire(r.get("nbt")):
                 print("[caisses] %s : objet retiré du jeu : %s" % (f.name, retire(r.get("nbt"))))
                 problemes += 1
+    # caisse du casino (15/11, audit n° 8 : elle vendait encore l'Attelle et bandage retirée le 03/11) : aucun objet
+    # retiré du jeu échangé contre des capsules
+    for e in json.loads(CASINO.read_text(encoding="utf-8")).get("caisse", {}).get("echanges", []):
+        if retire(e.get("nbt")):
+            print("[caisses] casino.json (caisse du casino) : objet retiré du jeu : %s" % retire(e.get("nbt")))
+            problemes += 1
     for pool in json.loads(LARGAGE.read_text(encoding="utf-8")).get("pools", []):
         for e in pool.get("entries", []):
             if not existe(e["name"], jars):

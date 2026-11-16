@@ -141,6 +141,9 @@ public final class MeteoServeur {
             case PUREE -> 2 + R.nextInt(3);
         };
         finTicks = srv.getTickCount() + minutes * 1200L + (long) (trans * 20);
+        // envoyé à tous, même hors de la carte (un tout petit message toutes les 6 à 25 min) : le jeu du joueur ne
+        // l'affiche que sur la carte (AmbianceClient, 15/11) mais suit le fondu partout, pour arriver sur la carte avec
+        // le même brouillard que les autres (un envoi seulement à l'arrivée sur la carte le ferait sauter d'un coup)
         Ambiance.CANAL.send(PacketDistributor.ALL.noArg(), new Ambiance.Brume(p.ordinal(), trans));
         HeralizDecors.LOG.info("Brume : {} pendant {} min (fondu {} s{})", p.nom, minutes, (int) trans, auto ? "" : ", à la main");
     }

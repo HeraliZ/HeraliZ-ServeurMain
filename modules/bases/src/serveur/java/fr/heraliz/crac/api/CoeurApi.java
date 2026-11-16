@@ -39,4 +39,13 @@ public final class CoeurApi {
         Claim c = level == null ? null : ClaimManager.getAt(level, g.pos());
         return c != null && groupe.equals(c.groupId());
     }
+
+    /**
+     * 15/11 (onglet Saison de HeraliZ Clans) : -1 quand le cœur ne se prend que pendant la Purge ; sinon (Purge arrêtée,
+     * {@code purge.json}) le cœur se prend à toute heure, et ceci est le nombre d'heures entre deux prises d'un même clan
+     * (0 : sans limite).
+     */
+    public static long priseSansPurgeHeures() {
+        return fr.heraliz.crac.heraliz.Purge.systeme() ? -1L : fr.heraliz.crac.heraliz.Purge.priseHorsPurgeHeures();
+    }
 }

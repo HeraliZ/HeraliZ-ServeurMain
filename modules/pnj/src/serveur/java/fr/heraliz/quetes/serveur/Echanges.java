@@ -1,6 +1,7 @@
 package fr.heraliz.quetes.serveur;
 
 import com.mojang.logging.LogUtils;
+import fr.heraliz.quetes.Contenu;
 import fr.heraliz.quetes.HeralizQuetes;
 import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.objet.ObjetQuete;
@@ -72,6 +73,9 @@ final class Echanges {
     static boolean interdit(ItemStack s) {
         if (s.isEmpty()) return false;
         if (sacPlein(s)) return true;
+        // 15/11 (audit n° 2) : arme chargée ou avec des accessoires, boîte de munitions pleine : refusée chez Mila, au
+        // recycleur et dans un échange (ce qu'elle contient disparaissait avec elle) ; l'écran dit quoi vider d'abord
+        if (Contenu.de(s) != Contenu.RIEN) return true;
         if (s.getItem() instanceof ObjetQuete || s.is(HeralizQuetes.REGISTRE.get())) return true;
         if (s.hasTag() && (s.getTag().contains("HeraliszMatch") || s.getTag().contains("HeraliszCamoProprio"))) return true;
         return Commandes.estAVie(s);

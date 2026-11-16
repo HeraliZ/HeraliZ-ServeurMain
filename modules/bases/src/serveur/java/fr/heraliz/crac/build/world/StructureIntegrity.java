@@ -95,8 +95,11 @@ public final class StructureIntegrity {
     public static void tick(ServerLevel level) {
         StructureStore store = StructureStore.get(level);
         if (BuildConfig.SPEC.isLoaded() && store.takeCollapsePending()) {
-            // again with the server's stability settings, in case the store was first read before they loaded
-            store.recomputeAll();
+            // again with the server's stability settings, only if the store was first read before they loaded (HeraliZ,
+            // 15/11, audit performances n° 5 : avant, toujours refait, tout le calcul deux fois au premier tick)
+            if (!store.recalculAvecReglages()) {
+                store.recomputeAll();
+            }
             collapseUnsupported(level, store);
         }
         LongArrayList blocks = take(BLOCKS, level);

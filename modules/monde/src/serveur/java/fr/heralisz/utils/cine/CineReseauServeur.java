@@ -3,15 +3,19 @@ package fr.heralisz.utils.cine;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
+import fr.heralisz.utils.api.SpawnApi;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,11 +23,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.network.PacketDistributor;
 
 /**
@@ -44,12 +51,23 @@ public final class CineReseauServeur {
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::pointDeReapparition);
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::tick);
         MinecraftForge.EVENT_BUS.addListener(CineReseauServeur::commandes);
+        // une mort = un seul changement de monde (15/11) : point de réveil posé à la mort, retiré à la réapparition
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, CineReseauServeur::mort);
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> A_LA_BASE.remove(e.getEntity().getUUID()));
+        SpawnApi.brancherBase(CineReseauServeur::reapparitionALaBase);
         // point de réveil gardé chargé (01/11 : chaque arrivée gelait le serveur le temps d'en charger les tronçons)
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStartedEvent e) -> CineDecorServeur.garderReveil(e.getServer()));
         CineReseau.FIN_SERVEUR.brancher(CineReseauServeur::fin);
     }
 
     private static final String VUE = "heraliz_cinematique_vue";
+    /**
+     * Donnée persistante (PlayerPersisted, lue seulement ici) : le point de réapparition du joueur est celui que
+     * {@link #mort} a posé au point de réveil, pour cette mort seulement (15/11).
+     */
+    private static final String REVEIL_TEMPORAIRE = "heraliz_reveil_temporaire";
+    /** Joueurs morts qui ont choisi « À la base » (CRac, {@link SpawnApi#reapparitionALaBase}) : réapparition sur la carte. */
+    private static final Set<UUID> A_LA_BASE = new HashSet<>();
     /** Donnée persistante (PlayerPersisted) : la cinématique d'arrivée est finie (lue par son nom par HeraliZ Quêtes). */
     public static final String FINIE = "heraliz_cinematique_finie";
     /** Sans nouvelles du joueur (paquet Fin) ce temps après le lancement, la cinématique est notée finie. */
@@ -139,15 +157,81 @@ public final class CineReseauServeur {
         }
     }
 
-    /** Mort sans lit ni ancre : on se réveille au spawn (dans son monde à part), sans la cinématique. */
+    /**
+     * Mort sans lit ni ancre : on se réveille au spawn (dans son monde à part), sans la cinématique. Depuis le 15/11
+     * (audit perf n° 2), Minecraft l'y fait réapparaître directement (point posé à la mort, {@link #mort}) : il ne reste
+     * qu'un pas de côté dans le même monde (place libre si d'autres arrivent en même temps, regard réglé), sans nouveau
+     * changement de monde. Point bouché entre-temps (ou plugin qui change la réapparition) : réapparu sur la carte, il est
+     * téléporté au spawn comme avant. « À la base » choisi : rien ici, CRac le mène à sa base depuis la carte.
+     */
     private static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
-        if (e.isEndConquered() || !(e.getEntity() instanceof ServerPlayer sp) || sp.getRespawnPosition() != null
-                || sp.getTags().contains("heraliz_bot")) {
+        if (e.isEndConquered() || !(e.getEntity() instanceof ServerPlayer sp) || sp.getTags().contains("heraliz_bot")) {
             return;
         }
-        if (decorPresent(sp.server)) {
+        boolean base = A_LA_BASE.remove(sp.getUUID());
+        if (donnees(sp).getBoolean(REVEIL_TEMPORAIRE)) {
+            oublierReveilTemporaire(sp);                                // il ne servait qu'à cette réapparition
+        } else if (sp.getRespawnPosition() != null) {
+            return;                                                     // point posé par le staff (/spawnpoint) : comme avant
+        }
+        if (!base && decorPresent(sp.server)) {
             allerAuReveil(sp);
         }
+    }
+
+    /**
+     * Mort (15/11, audit perf n° 2) : point de réapparition « forcé » posé au point de réveil, pour cette mort seulement :
+     * Minecraft fait réapparaître le joueur directement dans le monde du spawn, un seul changement de monde. Avant :
+     * réapparition sur la carte (zone de départ) puis téléportation au spawn, deux changements de monde (35 à 60 ms
+     * chacun pour le serveur : liste des commandes, permissions des plugins...), trois avec « À la base ». Rien pour un
+     * point posé par le staff ({@code /spawnpoint}) ou un point de réveil pas praticable : réapparition comme avant. Le
+     * point est retiré à la réapparition ({@link #reapparition}), ou dès le choix « À la base ». Mort annulée (joueur mis
+     * à terre, match) : cet écouteur passe en dernier et ne la voit pas.
+     */
+    private static void mort(LivingDeathEvent e) {
+        if (e.getEntity() instanceof ServerPlayer sp && !sp.getTags().contains("heraliz_bot")) {
+            poserReveilTemporaire(sp);
+        }
+    }
+
+    private static void poserReveilTemporaire(ServerPlayer sp) {
+        if (sp.getRespawnPosition() != null || !decorPresent(sp.server)) {
+            return;
+        }
+        CineDecorServeur dec = CineDecorServeur.get(sp.server);
+        ServerLevel l = dec.niveau(sp.server);
+        BlockPos b = BlockPos.containing(dec.etat().reveil());
+        // pieds et tête dans des blocs où Minecraft accepte un point forcé (sinon il dirait au joueur que son point de
+        // réapparition est bouché, et le poserait quand même sur la carte)
+        if (!reapparitionPermise(l, b) || !reapparitionPermise(l, b.above())) {
+            return;
+        }
+        sp.setRespawnPosition(l.dimension(), b, dec.etat().cap(), true, false);
+        donnees(sp).putBoolean(REVEIL_TEMPORAIRE, true);
+    }
+
+    private static boolean reapparitionPermise(ServerLevel l, BlockPos b) {
+        BlockState s = l.getBlockState(b);
+        return s.getBlock().isPossibleToRespawnInThis(s);
+    }
+
+    /** Retire le point posé par {@link #mort} (rien si le joueur n'en a pas). */
+    private static void oublierReveilTemporaire(ServerPlayer sp) {
+        CompoundTag d = donnees(sp);
+        if (!d.getBoolean(REVEIL_TEMPORAIRE)) {
+            return;
+        }
+        d.remove(REVEIL_TEMPORAIRE);
+        sp.setRespawnPosition(net.minecraft.world.level.Level.OVERWORLD, null, 0.0F, false, false);
+    }
+
+    /** « À la base » choisi sur l'écran de mort ({@link SpawnApi#reapparitionALaBase}, CRac) : réapparition sur la carte. */
+    public static void reapparitionALaBase(ServerPlayer sp) {
+        if (sp.isAlive()) {
+            return;
+        }
+        A_LA_BASE.add(sp.getUUID());
+        oublierReveilTemporaire(sp);
     }
 
     private static CompoundTag donnees(Player p) {
@@ -167,6 +251,9 @@ public final class CineReseauServeur {
             }
             envoyer(sp.server, sp);
             oublierLit(sp);
+            if (!sp.isAlive()) {
+                poserReveilTemporaire(sp);                          // revenu sur son écran de mort (15/11)
+            }
             if (!donnees(sp).getBoolean(VUE)) {
                 if (decorPresent(sp.server)) {
                     allerAuReveil(sp);                              // tout de suite dans le monde du spawn (rien vu d'autre)

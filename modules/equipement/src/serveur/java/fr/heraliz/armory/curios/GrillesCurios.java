@@ -26,6 +26,9 @@ import top.theillusivec4.curios.api.type.ICuriosMenu;
  *     Reanimation et les morts annulees des matchs, avant la photo du corps de HeraliZ Utils en LOWEST), ces objets vont
  *     dans l'inventaire du joueur : ils tombent avec lui, sur son corps. Inventaire plein : dans la grille de
  *     l'inventaire de base (le corps et les camos la lisent deja), sinon ils restent ou ils sont.</li>
+ *     <li>Deconnexion (audit du 15/11) : la grille revient dans l'inventaire avant la fermeture de l'ecran, comme le
+ *     curseur (HeraliZ Tactique, {@code ObjetsAVieServeur.deconnexion}) ; avant, Minecraft la jetait au sol. La
+ *     fabrication dans cette grille est reservee aux fondateurs (HeraliZ Loot, {@code CraftReserveCuriosMixin}).</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID)

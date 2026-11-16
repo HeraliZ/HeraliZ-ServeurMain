@@ -112,7 +112,13 @@ final class Ponts {
         return l;
     }
 
-    /** Une arme : arme TaCZ (couteaux compris), melee et grenades HeraliZ, Wonder, epee, hache, arc, trident. */
+    /**
+     * Une arme : arme TaCZ (couteaux compris), melee et grenades HeraliZ, epee, hache, arc, trident. 15/11 (audit M2) : les
+     * armes de melee et les grenades de Tactique sont les objets {@code heralisz_tactical:melee} et
+     * {@code heralisz_tactical:throwable} (leur arme exacte est dans l'objet : {@code heralisz_melee:...},
+     * {@code heralisz_grenade:...}) ; avant, seuls ces espaces de noms etaient cherches, jamais vus sur un objet : une
+     * victime armee d'une machette ou de grenades comptait comme « sans arme ».
+     */
     static boolean arme(ItemStack s) {
         if (s.getItem() instanceof SwordItem || s.getItem() instanceof AxeItem || s.getItem() instanceof ProjectileWeaponItem
                 || s.getItem() instanceof TridentItem) return true;
@@ -120,6 +126,7 @@ final class Ponts {
         if (id == null) return false;
         String ns = id.getNamespace(), path = id.getPath();
         if (ns.equals("tacz")) return path.contains("gun");
+        if (ns.equals("heralisz_tactical")) return path.equals("melee") || path.equals("throwable");
         return ns.equals("heralisz_melee") || ns.equals("heralisz_grenade");
     }
 
@@ -142,6 +149,60 @@ final class Ponts {
             if (rarete(s) >= rareteMin) return true;
         }
         return false;
+    }
+
+    private static Method priseSansPurge;
+    private static boolean priseCherche;
+
+    /**
+     * 15/11 (Purge arretee par le proprietaire) : -1 quand le coeur ne se prend que pendant la Purge ; sinon il se prend a
+     * toute heure et c'est le nombre d'heures entre deux prises d'un meme clan (0 : sans limite). CRac
+     * ({@code fr.heraliz.crac.api.CoeurApi.priseSansPurgeHeures}, par reflexion) absent ou trop ancien : -1.
+     */
+    static long priseSansPurgeHeures() {
+        if (!priseCherche) {
+            priseCherche = true;
+            try {
+                priseSansPurge = Class.forName("fr.heraliz.crac.api.CoeurApi").getMethod("priseSansPurgeHeures");
+            } catch (ReflectiveOperationException | LinkageError e) {
+                priseSansPurge = null;
+            }
+        }
+        if (priseSansPurge == null) return -1;
+        try {
+            return priseSansPurge.invoke(null) instanceof Long l ? l : -1;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return -1;
+        }
+    }
+
+    private static Method cwConfig;
+    private static java.lang.reflect.Field cwClansMin;
+    private static boolean cwCherche;
+
+    /**
+     * Clans differents au minimum pour qu'un ClashWar rapporte des points de saison : le reglage du ClashWar
+     * ({@code saison_clans_min} de heraliz_clashwar/clashwar.json, {@code fr.heraliz.clashwar.tournoi.CwConfig}, par
+     * reflexion). 15/11 (audit B1) : avant, l'onglet Saison montrait 4 ecrit en dur. ClashWar absent : 4, son defaut.
+     */
+    static int clashwarClansMin() {
+        if (!cwCherche) {
+            cwCherche = true;
+            try {
+                Class<?> c = Class.forName("fr.heraliz.clashwar.tournoi.CwConfig");
+                cwConfig = c.getMethod("get");
+                cwClansMin = c.getField("saisonClansMin");
+            } catch (ReflectiveOperationException | LinkageError e) {
+                cwConfig = null;
+                cwClansMin = null;
+            }
+        }
+        if (cwConfig == null || cwClansMin == null) return 4;
+        try {
+            return Math.max(1, cwClansMin.getInt(cwConfig.invoke(null)));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return 4;
+        }
     }
 
     @Nullable

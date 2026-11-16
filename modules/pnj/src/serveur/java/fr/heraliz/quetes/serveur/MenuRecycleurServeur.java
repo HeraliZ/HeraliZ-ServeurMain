@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 final class MenuRecycleurServeur extends MenuRecycleur {
     private final ServerPlayer joueur;
     private final Predicate<Player> valide;
-    private int enCours = -1, progres, tick, recycles, composants;
+    private int enCours = -1, progres, tick, recycles, objetsQuete, composants;
     private long herals;
     private boolean fini;
     /** Signature du contenu de toutes les cases au dernier aperçu envoyé, et verdicts des cases « à recycler ». */
@@ -197,6 +197,7 @@ final class MenuRecycleurServeur extends MenuRecycleur {
         }
         if (t.herals() > 0 && Ponts.deposer(joueur.getUUID(), t.herals(), "Recycleur")) herals += t.herals();
         recycles += n;
+        objetsQuete += Recyclage.objetsQuete(v, n);
         joueur.playNotifySound(t.pieces().isEmpty() ? SoundEvents.GRINDSTONE_USE : SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS,
                 0.35F, t.pieces().isEmpty() ? 0.8F : 1.1F);
     }
@@ -249,7 +250,7 @@ final class MenuRecycleurServeur extends MenuRecycleur {
         }
         joueur.getInventory().setChanged();
         GardeRecycleur.ecrire(joueur, resteEntree, resteSortie);
-        Recyclage.bilan(joueur, recycles, composants, herals);
+        Recyclage.bilan(joueur, recycles, objetsQuete, composants, herals);
         GardeRecycleur.prevenir(joueur);
     }
 

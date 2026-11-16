@@ -2,11 +2,16 @@ package fr.heraliz.casino.economy;
 
 import fr.heraliz.casino.item.ChipItem;
 import fr.heraliz.casino.registry.ModRegistry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Partie serveur des jetons du casino : mises prises dans l'inventaire (monnaie rendue) puis, s'il en manque, sur le
@@ -24,7 +29,35 @@ public final class ChipsServeur {
      * par le distributeur. Faux : rien n'a ete pris.
      */
     public static boolean miser(ServerPlayer p, long amount) {
-        return CompteCapsules.payer(p, amount, CompteCapsules.SOURCE_MISE) != null;
+        CompteCapsules.Paiement pay = CompteCapsules.payer(p, amount, CompteCapsules.SOURCE_MISE);
+        if (pay == null) return false;
+        // 15/11 (audit n° 6) : capsules prises dans l'inventaire seulement : le joueur n'est pas enregistré (le compte, lui,
+        // l'est) ; il le sera avant tout gain ou remboursement de la machine (avantVersement)
+        if (pay.inventaire() > 0 && pay.compte() == 0) MISES_INVENTAIRE.add(p.getUUID());
+        return true;
+    }
+
+    /** Joueurs dont une mise a été prise dans leur inventaire depuis leur dernier enregistrement (15/11). */
+    private static final Set<UUID> MISES_INVENTAIRE = new HashSet<>();
+
+    /**
+     * Juste avant un gain ou un remboursement d'une machine (15/11, audit n° 6) : une mise prise dans l'inventaire est
+     * d'abord enregistrée avec le joueur. Avant : un plantage rendait les capsules misées (inventaire d'avant) en gardant
+     * le gain (compte écrit tout de suite).
+     */
+    public static void avantVersement(MinecraftServer srv, UUID u) {
+        if (!MISES_INVENTAIRE.remove(u)) return;
+        ServerPlayer p = srv.getPlayerList().getPlayer(u);
+        if (p != null) CompteCapsules.sauverJoueur(p);
+    }
+
+    /** Déconnexion (Minecraft enregistre le joueur juste après) et arrêt du serveur. */
+    static void oublier(UUID u) {
+        MISES_INVENTAIRE.remove(u);
+    }
+
+    static void oublierTout() {
+        MISES_INVENTAIRE.clear();
     }
 
     /** Capsules utilisables pour une mise (inventaire, plus le compte s'il paie les mises). */

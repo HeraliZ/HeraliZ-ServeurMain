@@ -22,8 +22,6 @@ public final class SaisonVue {
     private SaisonVue() {
     }
 
-    /** Clans differents au minimum pour qu'un ClashWar compte (Recompenses.SAISON_CLANS_MIN du ClashWar). */
-    private static final int CLASHWAR_CLANS_MIN = 4;
     private static final String[] AUCUN = new String[0];
 
     /**
@@ -97,11 +95,19 @@ public final class SaisonVue {
             l.add(new LigneBareme(pvp, "capture_prise", "par_niveau", new double[]{b.captureParValeur * b.capturePriseCoef}, "capture_prise",
                     new String[]{entier(b.captureTenueMin), entier(b.capturePlafondJour)}));
         }
-        l.add(new LigneBareme(pvp, "coeur", "pct", new double[]{b.raidGagnePct}, "coeur", new String[]{entier(b.raidPerduPct)}));
+        // 15/11 : Purge arretee (CRac, purge.json) : le coeur se prend a toute heure, une fois par N heures pour un meme clan
+        long sansPurge = Ponts.priseSansPurgeHeures();
+        if (sansPurge < 0) {
+            l.add(new LigneBareme(pvp, "coeur", "pct", new double[]{b.raidGagnePct}, "coeur", new String[]{entier(b.raidPerduPct)}));
+        } else {
+            l.add(new LigneBareme(pvp, "coeur_libre", "pct", new double[]{b.raidGagnePct}, sansPurge > 0 ? "coeur_libre" : "coeur",
+                    sansPurge > 0 ? new String[]{entier(b.raidPerduPct), String.valueOf(sansPurge)} : new String[]{entier(b.raidPerduPct)}));
+        }
         // events
         double m = b.multiplicateur("clashwar");
         double[] pl = b.places;
-        String[] min = {String.valueOf(CLASHWAR_CLANS_MIN)};
+        // 15/11 (audit B1) : clans differents au minimum, lu dans le reglage du ClashWar (avant : 4 ecrit en dur ici)
+        String[] min = {String.valueOf(Ponts.clashwarClansMin())};
         l.add(new LigneBareme(ev, "clashwar_12", "paire", new double[]{place(pl, 0) * m, place(pl, 1) * m}, "clashwar", min));
         l.add(new LigneBareme(ev, "clashwar_34", "paire", new double[]{place(pl, 2) * m, place(pl, 3) * m}, "clashwar", min));
         l.add(ligne(ev, "clashwar_participation", "un", new double[]{b.participation * m}, ""));

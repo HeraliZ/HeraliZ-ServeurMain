@@ -54,13 +54,23 @@ final class SaisonDonnees {
     final Map<String, Integer> evenementsJour = new HashMap<>();
     /** Points de kills (PVP) gagnes dans la journee par clan (plafond, 02/11). */
     final Map<UUID, Double> pvpJour = new HashMap<>();
+    /**
+     * 15/11 (audit M1) : le fichier existait mais n'a pas pu etre lu : nom de la copie gardee a cote (ou la raison si la copie
+     * a rate) ; null quand la lecture a reussi ou que le fichier n'existe pas. Rien n'est alors ecrit ({@code Saison}).
+     */
+    @javax.annotation.Nullable
+    String illisible;
 
     double[] scores(UUID clan) {
         return scores.computeIfAbsent(clan, k -> new double[3]);
     }
 
     // ------------------------------------------------------------------ fichier
-    static SaisonDonnees charger(Path f) {
+    /**
+     * Lit l'etat de la saison. Fichier illisible : un etat vide marque {@link #illisible} ; avec {@code copier}, le fichier
+     * est d'abord copie a cote (une seule copie : pas a chaque relecture).
+     */
+    static SaisonDonnees charger(Path f, boolean copier) {
         SaisonDonnees d = new SaisonDonnees();
         if (!Files.exists(f)) return d;
         try {
@@ -99,15 +109,21 @@ final class SaisonDonnees {
             JsonObject pj = Json.obj(o, "pvp_jour");
             for (Map.Entry<String, JsonElement> e : pj.entrySet()) d.pvpJour.put(UUID.fromString(e.getKey()), e.getValue().getAsDouble());
         } catch (IOException | RuntimeException ex) {
-            // un fichier illisible n'est jamais ecrase : copie a cote, et la saison repart vide (journal du serveur)
-            Path copie = f.resolveSibling(f.getFileName() + ".illisible-" + System.currentTimeMillis());
-            try {
-                Files.copy(f, copie, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ignore) {
-                // rien de plus a faire
+            // un fichier illisible n'est jamais ecrase : copie a cote ; 15/11 (audit M1) : la saison ne repart plus vide
+            // en silence, elle est mise en pause (Saison.maintenance) jusqu'a la reparation
+            SaisonDonnees vide = new SaisonDonnees();
+            vide.illisible = "?";
+            if (copier) {
+                Path copie = f.resolveSibling(f.getFileName() + ".illisible-" + System.currentTimeMillis());
+                try {
+                    Files.copy(f, copie, StandardCopyOption.REPLACE_EXISTING);
+                    vide.illisible = copie.getFileName().toString();
+                } catch (IOException e2) {
+                    vide.illisible = "copie impossible : " + e2;
+                }
             }
-            HeraliszClans.LOG.error("[saison] {} illisible (copie : {}), saison vide", f, copie, ex);
-            return new SaisonDonnees();
+            HeraliszClans.LOG.error("[saison] {} illisible (copie : {})", f, vide.illisible, ex);
+            return vide;
         }
         return d;
     }

@@ -901,12 +901,13 @@ public final class ClanService {
         ClansNet.toPlayer(p, new Packets.NoticeS2C(Packets.NoticeS2C.Genre.INFO,
                 ServerHandlers.cleEtArgs(depot ? "msg.depot" : "msg.retrait", eco.format(montant)), "banque", null));
         changement(c);
-        // les deux cotes sont ecrits tout de suite, le cote debite en premier (clans.json seul : joueurs.json n'a pas change)
+        // les deux cotes sont ecrits tout de suite, le cote debite en premier ; 15/11 (audit B2, performances n° 3) : le clan
+        // par son journal d'ecriture (une ligne), plus clans.json entier attendu sur le fil serveur
         if (depot) {
             persisterEconomie();
-            s.sauvegarderClansMaintenant();
+            s.sauvegarderClanMaintenant(c);
         } else {
-            s.sauvegarderClansMaintenant();
+            s.sauvegarderClanMaintenant(c);
             persisterEconomie();
         }
         return true;
@@ -1380,7 +1381,7 @@ public final class ClanService {
         DERNIER_ACHAT_ARBRE.put(c.id, now());
         c.ajouterEvenement(new Evenement(now(), Evenement.Genre.PERSO, "evenement.arbre", b.id(), String.valueOf(palier)));
         changement(c);
-        s.sauvegarderMaintenant();
+        s.sauvegarderClanMaintenant(c);   // 15/11 (audit B2) : ce clan seul, par le journal d'ecriture
         Sync.envoyerAuxMembres(c); // l'onglet Niveau montre tout de suite le nouveau palier et le nouveau cout
         diffuserChat(c, "msg.arbre.achete", Component.translatable("arbre." + b.id()), palier, b.max);
         HeraliszClans.LOG.info("[clans] [{}] arbre : {} palier {} ({} points, {} herals) par {}", c.tag, b.id(), palier, points, prix,

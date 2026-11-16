@@ -277,8 +277,11 @@ public final class CoffreClan {
         return c == null || c.isEmpty();
     }
 
-    /** Ecrit tout de suite la sauvegarde d'un joueur qui vient de recevoir des objets du coffre (dissolution). */
-    static void sauverJoueurMaintenant(ServerPlayer p) {
+    /**
+     * Ecrit tout de suite la sauvegarde d'un joueur qui vient de recevoir des objets du coffre (dissolution) ou d'en donner
+     * un au clan (/clan don, 15/11 : avant le fichier des clans).
+     */
+    public static void sauverJoueurMaintenant(ServerPlayer p) {
         TOUCHES.add(p.getUUID());
         sauverJoueurs();
     }

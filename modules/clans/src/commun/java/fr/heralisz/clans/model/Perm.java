@@ -40,7 +40,13 @@ public enum Perm {
      * Se téléporter à la base du clan (25/10) : /home de CRac et réapparition à la base après une mort (même délai
      * partagé). Défaut : chef, haut grade et membre ; pas la recrue.
      */
-    BASE_TP;
+    BASE_TP,
+    /**
+     * Accepter un /tpa dans la base (15/11, audit C1, demande du propriétaire) : sans ce droit, un membre qui est dans la
+     * zone de l'armoire de son clan ne peut pas y faire venir quelqu'un par téléportation (HeraliZ Boutique, /tpa ; CRac,
+     * {@code BaseCracApi.tpaRefuseeDansBase}). Défaut prudent : chef et haut grade ; ni membre ni recrue.
+     */
+    BASE_TP_ACCEPTER;
 
     /** Reglage individuel d'une permission pour un membre : comme son grade, autorisee ou refusee. */
     public enum Etat {
@@ -84,7 +90,7 @@ public enum Perm {
 
     /** Permissions de la base (groupe « BASE » de l'onglet Permissions). */
     public static final java.util.Set<Perm> BASE = java.util.Collections.unmodifiableSet(EnumSet.of(BASE_ENTRER, BASE_CONSTRUIRE,
-            BASE_CASSER, BASE_COFFRES, BASE_POSER_COFFRES, BASE_PORTES, BASE_GERER, BASE_TP));
+            BASE_CASSER, BASE_COFFRES, BASE_POSER_COFFRES, BASE_PORTES, BASE_GERER, BASE_TP, BASE_TP_ACCEPTER));
 
     /**
      * Permissions connues avant l'ajout des permissions de base et de ClashWar : un clan sauvegarde sans la liste
@@ -101,7 +107,8 @@ public enum Perm {
             BANQUE_DEPOSER, BANQUE_RETIRER, BANQUE_JOURNAL,
             MODIFIER_NOM, MODIFIER_TAG, MODIFIER_DESCRIPTION, MODIFIER_BANNIERE,
             CAPTURER, RAVITAILLEMENT, CHAT_CLAN,
-            BASE_ENTRER, BASE_CONSTRUIRE, BASE_CASSER, BASE_COFFRES, BASE_POSER_COFFRES, BASE_PORTES, BASE_TP, BASE_GERER,
+            BASE_ENTRER, BASE_CONSTRUIRE, BASE_CASSER, BASE_COFFRES, BASE_POSER_COFFRES, BASE_PORTES, BASE_TP, BASE_TP_ACCEPTER,
+            BASE_GERER,
             CLASHWAR_INSCRIRE);
 
     /** Masque de toutes les permissions connues (bits hors de ce masque ignores a la lecture). */

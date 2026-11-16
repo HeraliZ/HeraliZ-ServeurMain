@@ -80,6 +80,7 @@
   "gui.heraliz_interface.graphismes.regle": "Réglages en cours",
   "gui.heraliz_interface.graphismes.detail": "Réglages détaillés",
   "gui.heraliz_interface.graphismes.rechargement": "Les textures seront rechargées en fermant cet écran.",
+  "gui.heraliz_interface.graphismes.flou": "Flou derrière les écrans",
   "gui.heraliz_interface.graphismes.desc.performance": "Le plus fluide : graphismes rapides, vue à 6, sans nuages ni ombres.",
   "gui.heraliz_interface.graphismes.desc.equilibre": "Plus joli : graphismes détaillés, vue à 8, nuages, lumière douce.",
   "gui.heraliz_interface.graphismes.desc.qualite": "Le plus beau : toutes les particules, ombres, textures nettes au loin.",

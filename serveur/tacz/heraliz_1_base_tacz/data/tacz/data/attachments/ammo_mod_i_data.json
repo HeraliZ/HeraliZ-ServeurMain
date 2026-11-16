@@ -4,10 +4,8 @@
     "addend": 0.02
   },
   "ignite": {
-    "entity": false
-  },
-  "armor_ignore": {
-    "multiplier": 0.8
+    "entity": true,
+    "block": false
   },
   "damage": {
     "multiplier": 1.0

@@ -15,6 +15,11 @@ import net.minecraft.world.level.block.state.BlockState;
  *   <li><b>Fabrication</b> : pour tous les autres, le résultat de la grille (2×2 de l'inventaire comme 3×3 de l'établi) reste
  *   vide, décidé par le serveur ({@code fr.heraliz.loot.serveur.mixin.CraftReserveMixin}) : un jeu modifié qui montrerait
  *   encore la grille ne fabrique rien.</li>
+ *   <li>Audit du 15/11 (duplication n° 2) : aussi la grille 2×2 de l'inventaire réel, celui de Curios, qui calcule sa
+ *   recette lui-même ({@code CraftReserveCuriosMixin}) ; et garde-fou sur toute case résultat de Minecraft
+ *   ({@code ResultSlot}), qui ne se prend plus ({@code CraftResultatMixin}). Le livre de recettes ne fait que poser les
+ *   objets dans la grille : le résultat reste vide. Table d'armurier (TaCZ), recycleur, marchands : pas des grilles de
+ *   Minecraft, inchangés ; les autres postes de Minecraft sont déjà hors service ({@link ConteneursVanilla}).</li>
  * </ul>
  * Fondateur : grade du staff « fondateur » de HeraliZ Grades, connecté à son compte (AuthMe), lu par réflexion
  * ({@code GradesApi.fondateur}). Sans HeraliZ Grades (serveur d'essai) : les opérateurs de niveau 4. Fil serveur seulement.

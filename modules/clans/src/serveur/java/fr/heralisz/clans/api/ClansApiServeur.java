@@ -177,7 +177,7 @@ public final class ClansApiServeur implements ClansApi.Moteur {
                 -montant, motif == null ? "" : motif));
         s.marquerDirty();
         Sync.marquer(c);
-        s.sauvegarderMaintenant();
+        s.sauvegarderClanMaintenant(c);   // 15/11 (audit B2) : ce clan seul, par le journal d'ecriture
         HeraliszClans.LOG.info("[clans] api : banque de [{}] debitee de {} ({})", c.tag, montant, motif);
         return true;
     }
@@ -205,7 +205,7 @@ public final class ClansApiServeur implements ClansApi.Moteur {
         }
         s.marquerDirty();
         Sync.marquer(c);
-        s.sauvegarderMaintenant();
+        s.sauvegarderClanMaintenant(c);   // 15/11 (audit B2) : ce clan seul, par le journal d'ecriture
         HeraliszClans.LOG.info("[clans] api : banque de [{}] creditee de {} ({})", c.tag, credite, motif);
         return credite;
     }

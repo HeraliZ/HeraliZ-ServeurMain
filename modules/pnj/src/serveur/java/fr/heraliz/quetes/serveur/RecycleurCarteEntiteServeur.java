@@ -38,7 +38,9 @@ import java.util.stream.Stream;
  * recycler », 6 cases « récupéré »), partagé comme un coffre par tous ceux qui ouvrent l'écran
  * ({@link MenuRecycleurCarteServeur}) ; le recyclage continue sans personne, n'importe qui reprend ce qu'il y a.
  * Mêmes règles que le recycleur du spawn ({@link Recyclage}), chance du profil « carte », pas de point de saison ; les
- * hérals d'un objet qui n'a rien rendu vont à celui qui l'a déposé (même hors ligne).
+ * hérals d'un objet qui n'a rien rendu vont à celui qui l'a déposé (même hors ligne). 15/11 (audit n° 4) : une case « à
+ * recycler » n'est qu'à un joueur à la fois (vide, ou déjà remplie par lui : {@link #peutDeposer}) ; avant, celui qui
+ * ajoutait une balle à la case d'un autre touchait les hérals et la quête du jour de toute la case.
  *
  * <p><b>Ne coûte rien à vide</b> : le bloc n'a un ticker que dans l'état {@link RecycleurCarte#MARCHE} (quelque chose à
  * recycler et de la place en sortie) ; tout autre changement (clic, chargement) passe par {@link #reprendre}. Tronçon
@@ -224,6 +226,16 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         return entree.isEmpty() && sortie.isEmpty();
     }
 
+    /**
+     * 15/11 (audit n° 4) : ce joueur peut-il déposer dans la case « à recycler » n° {@code i} ? Oui si elle est vide ou déjà
+     * à lui (une case d'avant, sans déposant noté, reste ouverte) : chacun touche les hérals et la quête du jour de ce qu'il
+     * a déposé, jamais de ce qu'un autre a mis.
+     */
+    boolean peutDeposer(int i, UUID joueur) {
+        if (i < 0 || i >= ENTREES || entree.getItem(i).isEmpty()) return true;
+        return deposants[i] == null || deposants[i].equals(joueur);
+    }
+
     /** La machine peut être ouverte (pas cassée, fichier lisible, dernière écriture réussie). */
     boolean utilisable() {
         return !retiree && !bloquee && !isRemoved() && level instanceof ServerLevel;
@@ -334,7 +346,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         if (entree.getItem(i).isEmpty()) deposants[i] = null;
         level.playSound(null, worldPosition, t.pieces().isEmpty() ? SoundEvents.GRINDSTONE_USE : SoundEvents.SMITHING_TABLE_USE, SoundSource.BLOCKS,
                 0.45F, t.pieces().isEmpty() ? 0.8F : 1.1F);
-        return new Paiement(qui, n, t.herals());
+        // quête du jour : un paquet de munitions entier compte pour un objet (15/11, Recyclage.objetsQuete)
+        return new Paiement(qui, Recyclage.objetsQuete(v, n), t.herals());
     }
 
     private void payer(List<Paiement> paiements) {
@@ -345,7 +358,7 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
                 for (MenuRecycleurCarteServeur m : vues) m.herals(pa.deposant(), pa.herals());
             }
             ServerPlayer p = srv.getPlayerList().getPlayer(pa.deposant());
-            if (p != null) Journalieres.recyclage(p, pa.objets());
+            if (p != null && pa.objets() > 0) Journalieres.recyclage(p, pa.objets());
         }
     }
 

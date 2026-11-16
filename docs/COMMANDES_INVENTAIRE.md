@@ -2,15 +2,16 @@
 
 Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une).
 
-**78 commandes de premier niveau sur le serveur, 341 sous-commandes repérées** (plus 2 dans des modules jamais livrés avec le serveur normal : /boss, /bots).
+**80 commandes de premier niveau sur le serveur, 347 sous-commandes repérées** (plus 2 dans des modules jamais livrés avec le serveur normal : /boss, /bots).
 
 | Commande | Module | Entrée | Sous-commandes (niveau si différent) |
 |---|---|---|---|
+| `/aide` | boutique | tous |  |
 | `/airstrike` | monde | staff (op 2) | call, clear |
 | `/armurier` | armes | op 4 | editer, registre |
 | `/avantages` | boutique | tous | couleur, nick, qui, reset |
 | `/banpc` | anticheat | staff (op 2) | info |
-| `/base` | bases | tous | effacer (op 4), info |
+| `/base` | bases | tous | abandonner, confirmer, effacer (op 4), info |
 | `/bon` | boutique | tous | editeur |
 | `/boss` | events (pas livré) | staff (op 2) | arene, decors, eveil, labo, mammouth, mere, n07, peste, reset, salle, station, sylvorn, vitrine |
 | `/bots` | banc (pas livré) | op 4 | action, camp, commandes, etat, frappes, gamerule, joueurs, jvm, lancer, mesure, off, pic, pregenerer, reseau, retirer, rythmes, scenario, stop, troncons, zone |
@@ -21,10 +22,11 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/capsules` | boutique | tous | deposer, retirer |
 | `/carriere` | bases | staff (op 2) | creer, liste, regenerer, retirer, tp |
 | `/carte` | monde | staff (op 2) | ajouter, lieu, liste, nom, retirer |
-| `/casino` | boutique | tous | clochard, defaut, donner, jackpot, jetons (staff (op 2)), lumiere (staff (op 2)), machine (staff (op 2)), reset, retirer, salle (staff (op 2)), solde, stats (staff (op 2)), vip, voir |
+| `/casino` | boutique | tous | clochard, defaut, donner (op 4), jackpot, jetons (staff (op 2)), lumiere (staff (op 2)), machine (staff (op 2)), reset, retirer (op 4), salle (staff (op 2)), solde, stats (staff (op 2)), vip, voir |
 | `/cinematique` | monde | tous | decaler, devant, epave (staff (op 2)), info (staff (op 2)), joueur (staff (op 2)), poser, retirer, reveil (staff (op 2)), tourner |
 | `/clan` | clans | tous | accepter, ameliorer, banque, coffre, confirmer, creer, deposer, dissoudre, don, exclure, info, inviter, perm, promouvoir, quitter, refuser, retirer, retrograder, top, transferer |
 | `/clashwar` | clashwar | tous | annuler (staff (op 2)), classement, cloturer (staff (op 2)), lancer (staff (op 2)), mur (staff (op 2)), quitter, regarder, retirer, salle, tableau |
+| `/classement` | clans | staff (op 2) | liste, maj, retirer |
 | `/coeur` | bases | tous | deplacer |
 | `/coffres` | bases | op 4 | voir |
 | `/combat` | noyau | staff (op 2) | effacer, etat, marquer |
@@ -44,8 +46,8 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/grade` | boutique | tous | acheter, donner, editeur, liste, registre, retirer, voir |
 | `/guide` | pnj | staff (op 2) | point, points, retirer, visite |
 | `/hdv` | boutique | tous |  |
-| `/heraliz` | boutique | tous | cles (staff (op 2)), edit (staff (op 2)), editor (staff (op 2)), fichier, givecrate (staff (op 2)), givekey (staff (op 2)), interface (staff (op 2)), keyall (staff (op 2)), loot (staff (op 2)), preview, retirer, voir |
-| `/heralizloot` | loot | staff (op 2) | ajouter, apparaitre, declencher, liste, point, reinitialiser, retirer |
+| `/heraliz` | boutique | tous | cles (staff (op 2)), edit (staff (op 2)), editor (staff (op 2)), fichier, givecrate (op 4), givekey (op 4), interface (op 4), keyall (op 4), loot (staff (op 2)), preview, retirer (op 4), voir |
+| `/heralizloot` | loot | staff (op 2) | ajouter, apparaitre, beta, declencher, liste, point, reinitialiser, retirer |
 | `/herals` | clans | tous | classement, payer |
 | `/home` | bases | tous |  |
 | `/inspecter` | monde | op 4 | base, coffres, inventaire, sac |
@@ -56,7 +58,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/perso` | voix | tous | open, random, reset |
 | `/pnj` | pnj | staff (op 2) | apparence, aucune, bras, creer, deplacer, fichier, fins, larges, liste, moi, retirer, skin |
 | `/protection` | bases | staff (op 2) | donner, retirer, voir |
-| `/purge` | bases | tous | arreter (op 4), forcer (op 4) |
+| `/purge` | bases | staff (op 2) | arreter (op 4), forcer (op 4) |
 | `/quete` | pnj | staff (op 2) | ajouter, baguette, donner (banc d'essai), finir (op 4), joueur, nom, point, points, reset, retirer, tp |
 | `/quetes` | pnj | tous |  |
 | `/r` | noyau | tous |  |

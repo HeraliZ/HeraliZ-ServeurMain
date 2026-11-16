@@ -180,11 +180,15 @@ public final class BasesClans extends SafeSavedData {
         } catch (LinkageError | RuntimeException e) {
             Crac.LOGGER.error("[CRac] bases des clans : mise à jour en erreur", e);
         }
-        // saison des clans : armoires vues (Purge), taille des bases (arbre du clan), points des cœurs
+        // saison des clans : armoires vues (Purge : seulement quand elle commande les raids, 15/11), taille des bases (arbre du
+        // clan), points des cœurs, bases réservées après une armoire détruite en raid (15/11)
         try {
-            Purge.noterArmoires(server);
+            if (Purge.systeme()) {
+                Purge.noterArmoires(server);
+            }
             ArbreBases.appliquer(server, get(server));
             CoeurDeplacement.majScores(server);
+            ArmoiresPerdues.seconde(server);
         } catch (LinkageError | RuntimeException e) {
             Crac.LOGGER.error("[CRac] saison des clans : mise à jour en erreur", e);
         }
@@ -206,8 +210,10 @@ public final class BasesClans extends SafeSavedData {
         d.kitAPrevenir.clear();
         d.setDirty();
         CoeurDeplacement.toutOublier(server);
+        ArmoiresPerdues.toutOublier(server);
         Purge.Donnees p = Purge.Donnees.get(server);
         p.vues.clear();
+        p.prises.clear();
         p.setDirty();
         return coeurs;
     }
@@ -222,6 +228,8 @@ public final class BasesClans extends SafeSavedData {
         if (gid == null) {
             return;
         }
+        // base réservée après une armoire détruite en raid (15/11) : plus de clan pour la reprendre
+        ArmoiresPerdues.oublier(server, gid);
         // son cœur de clan disparaît avec lui (et ses points : le clan n'existe plus)
         net.minecraft.core.GlobalPos coeur = CoeursClans.coeur(server, gid);
         if (coeur != null) {
@@ -405,6 +413,7 @@ public final class BasesClans extends SafeSavedData {
                 case CHESTS -> fr.heralisz.clans.model.Perm.BASE_COFFRES;
                 case MANAGE -> fr.heralisz.clans.model.Perm.BASE_GERER;
                 case TELEPORT -> fr.heralisz.clans.model.Perm.BASE_TP;
+                case TP_ACCEPT -> fr.heralisz.clans.model.Perm.BASE_TP_ACCEPTER;
             };
             return fr.heralisz.clans.api.ClansApi.aPerm(joueur, clan.get(), p);
         }

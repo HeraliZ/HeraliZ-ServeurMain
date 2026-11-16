@@ -123,10 +123,20 @@ public class EcranInscription extends Screen {
         compteurs.clear();
         for (int i = 0; i <= p.taille(); i++) compteurs.add(Ui.lit(i + "/" + p.taille(), Ui.SMALL));
         if (!p.message().isEmpty()) {
-            message = PeintreTableau.tr(p.message());
+            message = traduire(p.message());
             messageErreur = p.erreur();
             messageMs = Util.getMillis();
         }
+    }
+
+    /**
+     * Message du serveur : une cle, ou « cle␟argument␟… » (15/11 : noms des membres qui ne sont pas au spawn), traduit
+     * avec ses arguments.
+     */
+    private static String traduire(String m) {
+        int i = m.indexOf('\u001F');
+        if (i < 0) return PeintreTableau.tr(m);
+        return PeintreTableau.tr(m.substring(0, i), (Object[]) m.substring(i + 1).split("\u001F", -1));
     }
 
     private static List<List<UUID>> normaliser(List<List<UUID>> l) {

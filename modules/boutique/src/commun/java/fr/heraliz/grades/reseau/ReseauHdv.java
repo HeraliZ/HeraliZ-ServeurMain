@@ -60,8 +60,9 @@ public final class ReseauHdv {
     // ------------------------------------------------------------------ serveur -> joueur
     /**
      * État général : ouvrir l'écran ; soldes (hérals, PB : -1 inconnu) ; offres en cours sur tout l'hôtel ; ventes du
-     * joueur en cours, maximum, lignes à récupérer ; frais des ventes en PB (%) ; durées (h) ; plafond des prix en PB
-     * par rareté (index 0 : sans rareté, puis Commun … Unique) ; prix maximal en hérals ; PB reliés au site ; taxe de mise
+     * joueur en cours, maximum, lignes à récupérer ; frais des ventes en PB (%) ; durées (h) ; prix maximal en PB (un seul
+     * nombre depuis le 15/11 : plafond technique du site, frais compris, plus aucun selon la rareté ; même liste sur le
+     * réseau qu'avant) ; prix maximal en hérals ; PB reliés au site ; taxe de mise
      * en vente (pour dix mille du prix, {@link fr.heraliz.grades.hdv.RegleHdv#taxe}) ; message de la dernière action (clé
      * de langue sans préfixe, vide sinon) et réussite.
      */

@@ -51,7 +51,8 @@ public final class InterfaceConfig {
                 .define("sous_titre", "");
         ACCENT = b.comment("Couleur d'accent en hexadecimal (defaut : rouge du Z du logo, E3201B)")
                 .define("accent", "E3201B", o -> o instanceof String s && s.trim().matches("#?[0-9a-fA-F]{6}"));
-        FLOU = b.comment("Flouter le monde derriere le menu (false = simple voile sombre)")
+        FLOU = b.comment("Flouter le monde derriere nos ecrans : menus, inventaire, sac, fouille, coffres (false = simple voile sombre ;"
+                        + " se change aussi en jeu : ecran Graphismes, « Flou derriere les ecrans »)")
                 .define("flou", true);
         FLOU_FORCE = b.comment("Force du flou (rayon en pixels, 2 a 24)")
                 .defineInRange("flou_force", 10, 2, 24);

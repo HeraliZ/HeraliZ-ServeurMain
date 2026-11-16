@@ -83,6 +83,9 @@ public final class SaisonCommandes {
         fr.heralisz.clans.server.RechargementsNoyau.inscrire("saison", s -> {
             Saison.recharger();
             Reponses.ok(s, Component.literal("Barème de la saison relu (config/heralisz_clans/saison.json)."));
+            // 15/11 (audit M1) : saison en pause (fichier illisible au démarrage) : le fichier réparé est relu
+            String etat = Saison.relireEtat();
+            if (etat != null) Reponses.ok(s, Component.literal(etat));
             return 1;
         });
         d.register(Commands.literal("clan").then(Commands.literal("don").executes(c -> don(c, false))
@@ -108,6 +111,11 @@ public final class SaisonCommandes {
 
     private static int reset(CommandContext<CommandSourceStack> c) {
         RESET_DEMANDE.put(c.getSource().getTextName(), System.currentTimeMillis() + 30_000L);
+        if (Saison.maintenance() != null) {
+            // 15/11 (audit M1) : saison en pause : confirmer remplace le fichier illisible (sa copie reste à côté)
+            Reponses.ok(c.getSource(), Component.literal("La saison est en pause : heralisz_clans/saison_etat.json est illisible (original gardé : "
+                    + Saison.maintenance() + "). Le réparer puis /recharger saison garde les points ; /saison reset confirmer lance une NOUVELLE saison."));
+        }
         Reponses.ok(c.getSource(), Component.literal("ATTENTION : tous les clans vont repartir de 0 point (la saison " + Saison.numero()
                 + " est archivée dans heralisz_clans/saisons/, une nouvelle commence tout de suite). Tape /saison reset confirmer dans les 30 s."));
         return 1;
@@ -209,20 +217,28 @@ public final class SaisonCommandes {
         // chat du clan)
         net.minecraft.network.chat.Component nom = st.getHoverName();
         p.getInventory().setItem(p.getInventory().selected, net.minecraft.world.item.ItemStack.EMPTY);
+        // 15/11 (audit M3) : le joueur est enregistre sans l'objet AVANT que le clan ne recoive l'XP. Avant, seul le fichier
+        // des clans etait ecrit (XP), le joueur jamais : apres un plantage, il retrouvait l'objet et le clan gardait l'XP.
+        // Un plantage entre les deux perd maintenant l'XP, il ne rend jamais l'objet.
+        p.getInventory().setChanged();
+        fr.heralisz.clans.server.CoffreClan.sauverJoueurMaintenant(p);
         s.noterDon(uid);
         long gagne = ClanService.ajouterXp(clan, fr.heralisz.clans.model.SourceXp.DON, propose, p.getUUID());
         ClanService.diffuserChat(clan, "msg.don.fait", p.getGameProfile().getName(), n, nom, gagne);
         fr.heralisz.clans.HeraliszClans.LOG.info("[clans] [{}] don de {} x {} ({}, numero {}) par {} (+{} XP sur {})", clan.tag, n, nom.getString(), id, uid,
                 p.getGameProfile().getName(), gagne, propose);
-        // l'objet n'existe plus : le fichier des clans est ecrit tout de suite (un plantage ne rend pas l'objet ET l'XP)
-        p.getInventory().setChanged();
-        s.sauvegarderMaintenant();
+        // puis le clan (XP et numero anti-copie de l'objet) tout de suite, par le journal d'ecriture des clans (audit B2)
+        s.sauvegarderClanMaintenant(clan, uid);
         if (DON_A_CONFIRMER.size() > 64) DON_A_CONFIRMER.values().removeIf(t -> t < now);
         return 1;
     }
 
     private static int info(CommandContext<CommandSourceStack> c) {
         CommandSourceStack src = c.getSource();
+        if (Saison.maintenance() != null && src.hasPermission(2)) {
+            Reponses.ok(src, Component.literal("Saison en pause : heralisz_clans/saison_etat.json illisible au démarrage (original gardé : "
+                    + Saison.maintenance() + "). Réparez-le puis /recharger saison."));
+        }
         if (!Saison.active()) {
             Reponses.ok(src, Component.translatableWithFallback("msg.saison.aucune", "Aucune saison en cours."));
             return 1;

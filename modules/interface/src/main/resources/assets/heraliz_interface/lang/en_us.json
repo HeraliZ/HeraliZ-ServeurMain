@@ -80,6 +80,7 @@
   "gui.heraliz_interface.graphismes.regle": "Current settings",
   "gui.heraliz_interface.graphismes.detail": "Advanced settings",
   "gui.heraliz_interface.graphismes.rechargement": "Textures will reload when you close this screen.",
+  "gui.heraliz_interface.graphismes.flou": "Blur behind screens",
   "gui.heraliz_interface.graphismes.desc.performance": "Smoothest: fast graphics, view distance 6, no clouds or shadows.",
   "gui.heraliz_interface.graphismes.desc.equilibre": "Nicer: fancy graphics, view distance 8, clouds, smooth lighting.",
   "gui.heraliz_interface.graphismes.desc.qualite": "Best looking: all particles, shadows, sharp distant textures.",

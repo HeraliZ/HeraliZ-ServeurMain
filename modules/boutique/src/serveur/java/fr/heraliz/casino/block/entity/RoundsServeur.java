@@ -3,6 +3,7 @@ package fr.heraliz.casino.block.entity;
 import fr.heraliz.casino.block.MachineBlockEntity;
 import fr.heraliz.casino.block.MachinesServeur;
 import fr.heraliz.casino.data.CasinoStats;
+import fr.heraliz.casino.data.RegistreManches;
 import fr.heraliz.casino.economy.Chips;
 import fr.heraliz.casino.economy.ChipsServeur;
 import net.minecraft.ChatFormatting;
@@ -147,6 +148,9 @@ public final class RoundsServeur {
             be.onStart(level);
             be.sync();
         } else if (be.phase == RUNNING && be.runningDone(now)) {
+            // 15/11 (audit n° 6) : fin de manche notée hors du monde avant tout règlement (même sans gagnant : une manche
+            // perdue rechargée d'un monde plus ancien ne se rejoue pas non plus)
+            RegistreManches.avant(level, be);
             be.settle(level);
             be.phase = RESULT;
             be.phaseStart = now;

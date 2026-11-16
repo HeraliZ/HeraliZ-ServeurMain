@@ -27,7 +27,7 @@
 	#Whether a ammo can break the glass
 	DestroyGlass = false
 	#Whether a ammo can ignite the block
-	IgniteBlock = true
+	IgniteBlock = false
 	#Whether a ammo can ignite the entity
 	IgniteEntity = true
 	#Warning: Ammo with explosive properties can break blocks

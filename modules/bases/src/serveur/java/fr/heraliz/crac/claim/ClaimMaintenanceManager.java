@@ -365,6 +365,9 @@ public final class ClaimMaintenanceManager {
         boolean rapide = false;
         if (claim == null) {
             if (!m.unclaimedDecays) return 1;
+            // HeraliZ (15/11) : base dont l'armoire a sauté pendant un raid : elle ne s'use pas tant que son clan peut la
+            // reprendre (24 h, ArmoiresPerdues) : il la retrouve telle qu'elle était
+            if (fr.heraliz.crac.heraliz.ArmoiresPerdues.groupeReserve(level, b) != null) return 1;
             usure = TOUT;
             impaye = TOUT;
             rapide = b.ownerGroup == null;
@@ -413,7 +416,8 @@ public final class ClaimMaintenanceManager {
             ppd.markClaimed(pos);
             decays = m.usure.getOrDefault(claim.groupId(), 0) != 0;
         } else {
-            decays = m.unclaimedDecays && ppd.wasClaimed(pos);
+            // HeraliZ (15/11) : pas dans la zone d'une base réservée à son clan après une armoire détruite en raid
+            decays = m.unclaimedDecays && ppd.wasClaimed(pos) && !fr.heraliz.crac.heraliz.ArmoiresPerdues.dansZoneReservee(level, pos);
         }
         if (decays) {
             int perte = m.pente.perte(PlacableHpManager.currentHp(level, state, pos), PlacableHpManager.maxHpFor(state.getBlock()),

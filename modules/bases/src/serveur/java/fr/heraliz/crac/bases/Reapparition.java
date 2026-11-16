@@ -23,7 +23,9 @@ import net.minecraftforge.network.PacketDistributor;
  * base et le droit, une fois le délai partagé avec /home fini). Son choix n'est gardé que s'il est mort ; à la
  * réapparition, le serveur revérifie tout ({@link TeleportBase#teleporter}) : délai encore en cours, droit retiré, base
  * détruite = réapparition au camp, avec un message. Le camp, c'est la réapparition habituelle (point de réveil du
- * spawn, HeraliZ Utils), qui passe avant ; la base part de là, en dernier.
+ * spawn, HeraliZ Utils), qui passe avant. Depuis le 15/11 (audit perf n° 2), « À la base » choisi alors que la base est
+ * possible : HeraliZ Utils fait réapparaître le joueur sur la carte (SpawnApi.reapparitionALaBase), d'où la base est
+ * dans le même monde ; refusée au dernier moment, il est envoyé au camp.
  */
 @EventBusSubscriber(modid = "crac")
 public final class Reapparition {
@@ -55,6 +57,11 @@ public final class Reapparition {
                 CHOIX.put(p.getUUID(), m.base());
                 if (m.base()) {
                     TeleportBase.precharger(p, 1);   // ticket de 30 s rafraîchi (long arrêt sur l'écran de mort)
+                    // 15/11 (audit perf n° 2) : base possible maintenant : réapparition sur la carte, d'où la base est
+                    // dans le même monde (avant : carte, puis camp, puis base, trois changements de monde)
+                    if (TeleportBase.raison(p) == TeleportBase.OK) {
+                        Deplacements.reapparitionALaBase(p);
+                    }
                 }
             }
         });
@@ -72,6 +79,10 @@ public final class Reapparition {
         }
         fr.heraliz.crac.claim.Claim c = TeleportBase.base(p);
         int r = TeleportBase.teleporter(p);
+        if (r != TeleportBase.OK && !p.level().dimension().location().equals(MondeBases.SPAWN)) {
+            // 15/11 : réapparu sur la carte pour aller à sa base (sans passer par le camp) : la base refuse, direction le camp
+            Deplacements.allerAuSpawn(p);
+        }
         if (r == TeleportBase.OK) {
             Deplacements.apres(p, T.t("crac.reapparition.base", "Te voici à ta base. Prochaine téléportation vers ta base (/home compris) dans %s.",
                 T.duree(TeleportBase.resteMs(p) + 999)).withStyle(ChatFormatting.GREEN));

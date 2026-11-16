@@ -3,9 +3,6 @@
   "explosion": {
     "explode": true
   },
-  "armor_ignore": {
-    "multiplier": 0.5
-  },
   "damage": {
     "multiplier": 0.5
   },

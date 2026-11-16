@@ -20,20 +20,29 @@ import java.util.UUID;
  * 8 et 23) : gardés AVEC le joueur ({@code PlayerPersisted.HeralizQuetesARendre}, enregistrés avec son inventaire :
  * jamais à deux endroits, jamais au sol, objets à vie compris) et rendus dès qu'il y a de la place : à la connexion, à
  * la réapparition et toutes les 5 s. Fil serveur seulement.
+ * <p>15/11 (audit n° 1) : rien n'est livré pendant un match du ClashWar ni dans ses arènes, ni tant que son inventaire est
+ * mis de côté par le ClashWar ({@link #retenuParMatch}) : l'inventaire du match est effacé au retour. Les objets attendent
+ * la fin du match et le retour, puis sont livrés (essai toutes les 5 s).
  */
 final class ObjetsARendre {
     private ObjetsARendre() {
     }
 
     private static final String PERSISTE = "PlayerPersisted", CLE = "HeralizQuetesARendre";
+    /** Drapeau « en match » et marque du Coffre du ClashWar : clés de données partagées, lues sans dépendance. */
+    private static final String DRAPEAU_MATCH = "heralisz:en_match", MARQUE_COFFRE = "HeralizClashWarDepot";
     /** Joueurs connectés qui ont des objets à rendre (pour ne pas parcourir tout le monde toutes les 5 s). */
     private static final Set<UUID> EN_ATTENTE = new HashSet<>();
 
     /** Donne l'objet ; ce qui ne tient pas est gardé avec le joueur et rendu plus tard (le joueur est prévenu). */
     static void donner(ServerPlayer p, ItemStack s) {
         if (s == null || s.isEmpty()) return;
-        p.getInventory().add(s);
-        p.getInventory().setChanged();
+        // 15/11 : en match (ou inventaire mis de côté par le ClashWar), jamais dans l'inventaire du match : il attend
+        boolean enMatch = retenuParMatch(p);
+        if (!enMatch) {
+            p.getInventory().add(s);
+            p.getInventory().setChanged();
+        }
         if (s.isEmpty()) return;
         CompoundTag d = p.getPersistentData();
         if (!d.contains(PERSISTE, Tag.TAG_COMPOUND)) d.put(PERSISTE, new CompoundTag());
@@ -42,7 +51,20 @@ final class ObjetsARendre {
         l.add(s.save(new CompoundTag()));
         t.put(CLE, l);
         EN_ATTENTE.add(p.getUUID());
-        Moteur.notif(p, Texte.cle("heraliz_quetes.notif.attente_place", Texte.brut(s.getCount()), Ponts.texteObjet(s)), 0xFFB060);
+        Moteur.notif(p, Texte.cle(enMatch ? "heraliz_quetes.notif.attente_match" : "heraliz_quetes.notif.attente_place",
+                Texte.brut(s.getCount()), Ponts.texteObjet(s)), 0xFFB060);
+    }
+
+    /**
+     * Le ClashWar tient l'inventaire de ce joueur (15/11) : en match (salle d'attente comprise), dans un monde de ses arènes,
+     * ou inventaire mis de côté par son Coffre (marque posée au départ, retirée au retour ; elle couvre aussi la reconnexion
+     * après un plantage, avant que le Coffre soit rendu). Ce qui y serait livré serait effacé au retour.
+     */
+    static boolean retenuParMatch(ServerPlayer p) {
+        if (fr.heraliz.noyau.api.Matchs.enMatch(p)) return true;
+        CompoundTag d = p.getPersistentData();
+        if (d.getBoolean(DRAPEAU_MATCH) || d.getCompound(PERSISTE).contains(MARQUE_COFFRE)) return true;
+        return "heraliz_clashwar".equals(p.level().dimension().location().getNamespace());
     }
 
     /** Rend ce qui tient maintenant ; le reste continue d'attendre. */
@@ -53,6 +75,10 @@ final class ObjetsARendre {
             return;
         }
         if (!p.isAlive() || p.isSpectator()) return;
+        if (retenuParMatch(p)) {
+            EN_ATTENTE.add(p.getUUID());   // réessayé toutes les 5 s : livré après le retour
+            return;
+        }
         ListTag l = t.getList(CLE, Tag.TAG_COMPOUND), reste = new ListTag();
         int rendus = 0;
         for (int i = 0; i < l.size(); i++) {

@@ -30,6 +30,11 @@ public final class RegleHdv {
     public static final int HERALS = 0, PB = 1;
     /** Raretés de HeraliZ Loot (Commun … Unique), -1 : aucune. */
     public static final int RARETES = 6;
+    /**
+     * Plafond technique d'un montant de PB (celui du site) : depuis le 15/11 (décision du propriétaire), le seul plafond
+     * des prix en PB ; plus aucun selon la rareté (« s'il veut mettre 1 million de PB, il met 1 million de PB »).
+     */
+    public static final long PB_MAX = 100_000_000L;
 
     private static Method estAVie, rarete;
     private static boolean aVieCherche, rareteCherche;
@@ -101,6 +106,9 @@ public final class RegleHdv {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         String ns = id == null ? "" : id.getNamespace();
         if (t != null && t.contains("GunId", Tag.TAG_STRING)) return CAT_ARMES;
+        // 15/11 (audit, comme le M2 des clans) : les armes de mêlée et les grenades de Tactique sont les objets
+        // heralisz_tactical:melee et heralisz_tactical:throwable (l'arme exacte est dans l'objet) : avant, rangées dans « divers »
+        if (ns.equals("heralisz_tactical") && (id.getPath().equals("melee") || id.getPath().equals("throwable"))) return CAT_ARMES;
         if (ns.equals("heralisz_melee") || ns.equals("heralisz_grenade")) return CAT_ARMES;
         if (t != null && t.contains("AttachmentId", Tag.TAG_STRING)) return CAT_ACCESSOIRES;
         if (t != null && t.contains("ConsumableId", Tag.TAG_STRING) || ns.equals("heralisz_heal")) return CAT_SOINS;
@@ -133,6 +141,18 @@ public final class RegleHdv {
     public static long total(int devise, long prix, int fraisPct) {
         if (devise != PB || fraisPct <= 0) return prix;
         return prix + (prix * fraisPct + 99) / 100;
+    }
+
+    /**
+     * Prix en PB le plus haut qu'une annonce peut demander : ce que paie l'acheteur, frais compris ({@link #total}), ne
+     * dépasse pas {@link #PB_MAX} (10 % de frais : 90 909 090 PB). Même calcul chez le joueur et sur le serveur.
+     */
+    public static long prixPbMax(int fraisPct) {
+        int fp = Math.max(0, Math.min(50, fraisPct));
+        long p = PB_MAX * 100 / (100 + fp);
+        while (p > 0 && total(PB, p, fp) > PB_MAX) p--;
+        while (total(PB, p + 1, fp) <= PB_MAX) p++;
+        return p;
     }
 
     /** Texte de recherche d'un objet : identifiants (objet, arme, accessoire, munition, soin) et nom donné, en minuscules. */

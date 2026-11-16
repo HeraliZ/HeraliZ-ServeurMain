@@ -1,5 +1,6 @@
 package fr.heraliz.quetes.client;
 
+import fr.heraliz.quetes.Contenu;
 import fr.heraliz.quetes.client.kit.Echelle;
 import fr.heraliz.quetes.client.kit.HzButton;
 import fr.heraliz.quetes.client.kit.SonsUi;
@@ -406,7 +407,12 @@ public final class EcranMarchand extends Screen {
                         // objet d'essai du staff (11/11) : hérals seulement, jamais de points (avant : rien ne le disait)
                         bulle.add(Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.essai"), Ui.FONT).withStyle(st -> st.withColor(Ui.AMBRE)));
                     }
-                } else bulle.add(Ui.lit(TexteClient.tr("gui.heraliz_quetes.marchand.refuse"), Ui.FONT).withStyle(st -> st.withColor(Ui.MUTED)));
+                } else {
+                    // 15/11 : arme chargée ou avec des accessoires, boîte de munitions ou sac pleins : ce qu'il faut vider d'abord
+                    int contenu = Contenu.de(s);
+                    bulle.add(Ui.lit(TexteClient.tr(contenu != Contenu.RIEN ? "gui.heraliz_quetes.contenu." + contenu : "gui.heraliz_quetes.marchand.refuse"),
+                            Ui.FONT).withStyle(st -> st.withColor(contenu != Contenu.RIEN ? Ui.AMBRE : Ui.MUTED)));
+                }
             }
         }
         // aide sous l'inventaire, sur plusieurs lignes : elle ne passe plus sous le panneau de droite

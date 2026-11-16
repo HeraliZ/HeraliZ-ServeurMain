@@ -282,7 +282,7 @@
   "gui.heralisz_camo.atelier.effet.knockback": "Knockback",
   "gui.heralisz_camo.atelier.effet.silence": "Suppressed",
   "gui.heralisz_camo.atelier.effet.explosion": "Explosion",
-  "gui.heralisz_camo.atelier.effet.ignite_entity": "Ignites",
+  "gui.heralisz_camo.atelier.effet.ignite_entity": "Ignites (3 s)",
   "gui.heralisz_camo.atelier.effet.ignite_block": "Ignites ground",
   "gui.heralisz_camo.atelier.camos": "Camos",
   "gui.heralisz_camo.atelier.vue.vie": "Lifetime",

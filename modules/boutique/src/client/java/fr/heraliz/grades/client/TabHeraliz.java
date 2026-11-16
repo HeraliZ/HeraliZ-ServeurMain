@@ -43,6 +43,7 @@ public final class TabHeraliz {
     static void recevoir(ReseauGrades.InfosTab t) {
         INFOS.clear();
         for (ReseauGrades.LigneTab l : t.lignes()) INFOS.put(l.uuid(), l);
+        versionInfos++;
     }
 
     /** Grade et clan d'un joueur connecté, tels que le serveur les a envoyés (null : inconnu). Lu par le panel du staff. */
@@ -95,10 +96,26 @@ public final class TabHeraliz {
         return Component.translatable("gui.heraliz_grades.tab." + cle, args).getString();
     }
 
-    private static void dessiner(GuiGraphics g, Minecraft mc, ClientPacketListener co, int largeurEcran, int hauteurEcran) {
-        Font f = mc.font;
-        List<Joueur> tous = new ArrayList<>();
-        for (PlayerInfo info : co.getListedOnlinePlayers()) {
+    /**
+     * Liste gardée d'une image à l'autre (15/11, audit perf n° 6, A307 : avant, liste, tri, deux flux et mesure de chaque
+     * ligne refaits à chaque image tant que Tab est tenu) : refaite toutes les 250 ms, ou tout de suite si le nombre de
+     * joueurs ou leurs grades et clans (paquet du serveur) changent. Le ping et l'icône de voix restent lus à chaque image.
+     */
+    private static List<Joueur> tousGarde = List.of(), staffGarde = List.of(), autresGarde = List.of();
+    /** Plus grande largeur de ligne, en mode normal et en mode compact (mesurées avec la liste). */
+    private static int largeurNormale, largeurCompacte;
+    private static int nbGarde = -1, versionGardee = -1, versionInfos;
+    private static long refaiteA;
+
+    private static void refaire(Minecraft mc, ClientPacketListener co, Font f) {
+        java.util.Collection<PlayerInfo> liste = co.getListedOnlinePlayers();
+        long maintenant = net.minecraft.Util.getMillis();
+        if (maintenant - refaiteA < 250 && liste.size() == nbGarde && versionInfos == versionGardee) return;
+        refaiteA = maintenant;
+        nbGarde = liste.size();
+        versionGardee = versionInfos;
+        List<Joueur> tous = new ArrayList<>(liste.size());
+        for (PlayerInfo info : liste) {
             UUID uuid = info.getProfile().getId();
             ReseauGrades.LigneTab l = INFOS.get(uuid);
             Grade gr = l == null ? null : Grade.parId(l.grade());
@@ -110,8 +127,24 @@ public final class TabHeraliz {
             tous.add(new Joueur(info, nom, gr, l == null ? "" : l.clan(), l == null ? 0xFFFFFF : l.couleurClan()));
         }
         tous.sort(Comparator.comparingInt(Joueur::poids).reversed().thenComparing(j -> j.nom().toLowerCase(Locale.ROOT)));
-        List<Joueur> staff = tous.stream().filter(Joueur::staff).toList();
-        List<Joueur> autres = tous.stream().filter(j -> !j.staff()).toList();
+        List<Joueur> staff = new ArrayList<>(), autres = new ArrayList<>(tous.size());
+        int wn = 0, wc = 0;
+        for (Joueur j : tous) {
+            (j.staff() ? staff : autres).add(j);
+            wn = Math.max(wn, largeurLigne(f, mc, j, false));
+            wc = Math.max(wc, largeurLigne(f, mc, j, true));
+        }
+        tousGarde = tous;
+        staffGarde = staff;
+        autresGarde = autres;
+        largeurNormale = wn;
+        largeurCompacte = wc;
+    }
+
+    private static void dessiner(GuiGraphics g, Minecraft mc, ClientPacketListener co, int largeurEcran, int hauteurEcran) {
+        Font f = mc.font;
+        refaire(mc, co, f);
+        List<Joueur> tous = tousGarde, staff = staffGarde, autres = autresGarde;
         // tout le monde visible : 1 colonne jusqu'à 8 joueurs, 2 jusqu'à 40, puis mode compact à 20 joueurs par colonne ;
         // compact aussi dès que le panneau normal dépasserait la hauteur de l'écran (petite fenêtre)
         int dispo = hauteurEcran - 16;
@@ -131,8 +164,7 @@ public final class TabHeraliz {
         place = Math.max(0, place);
         int cachés = Math.max(0, autres.size() - place);
         if (cachés > 0) autres = autres.subList(0, place);
-        int colW = compact ? 70 : 110;
-        for (Joueur j : tous) colW = Math.max(colW, largeurLigne(f, mc, j));
+        int colW = Math.max(compact ? 70 : 110, compact ? largeurCompacte : largeurNormale);
         if (cols > 1) colW = Math.min(colW, (largeurEcran - 40 - (cols - 1) * ECART) / cols);
         float tw = Ui.spacedWidth(f, "HERALIZ", Ui.BOLD, 2.2f);
         String enLigne = t("en_ligne", String.valueOf(tous.size())), pingTxt = t("ping", "000");
@@ -181,10 +213,10 @@ public final class TabHeraliz {
         g.pose().popPose();
     }
 
-    /** Largeur d'une ligne : barre, grade, clan, pseudo, voix, ping. */
-    private static int largeurLigne(Font f, Minecraft mc, Joueur j) {
+    /** Largeur d'une ligne : barre, grade (sauf en mode compact), clan, pseudo, voix, ping. */
+    private static int largeurLigne(Font f, Minecraft mc, Joueur j, boolean modeCompact) {
         int w = 9;
-        if (!compact && j.grade() != Grade.SURVIVANT) w += (int) Ui.spacedWidth(f, j.grade().nomSansCouleur().getString().toUpperCase(Locale.ROOT), Ui.SMALL, 0.4f) + 5;
+        if (!modeCompact && j.grade() != Grade.SURVIVANT) w += (int) Ui.spacedWidth(f, j.grade().nomSansCouleur().getString().toUpperCase(Locale.ROOT), Ui.SMALL, 0.4f) + 5;
         if (!j.clan().isEmpty()) w += f.width(Ui.lit("[" + j.clan() + "]", Ui.BOLD)) + 4;
         w += f.width(Ui.lit(j.nom(), Ui.BOLD));
         Component v = voix(j.info().getProfile().getId());

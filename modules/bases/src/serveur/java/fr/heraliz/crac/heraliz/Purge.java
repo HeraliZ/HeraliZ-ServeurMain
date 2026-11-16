@@ -66,6 +66,12 @@ import org.jetbrains.annotations.Nullable;
  * qu'elle dure (25/10, {@code S2CPurge} et {@code client/PurgeHud} ; avant : barre rouge de Minecraft). Staff
  * (permission 4) : {@code /purge forcer <minutes>}, {@code /purge arreter} (jusqu'au redémarrage). Pour tous :
  * {@code /purge}. Sans HeraliZ Clans, ou avec {@code "actif": false} : les raids marchent comme avant (à tout moment).
+ * <p>15/11 (décision du propriétaire : « la Purge n'existe plus pour l'instant ») : arrêtée par son fichier
+ * ({@code "actif": false}, aussi la valeur par défaut, fichier absent ou illisible compris : elle ne revient jamais toute
+ * seule), code gardé pour la remettre plus tard. Arrêtée : toutes les bases se raident à toute heure (explosifs, coffres),
+ * aucune annonce ni icône, {@code /purge} n'est plus proposé qu'au staff ; le cœur de clan se prend aussi à toute heure,
+ * une fois toutes les {@link #priseHorsPurgeMs} (24 h) au plus pour un même clan ({@code PriseCoeur}), et ne se déplace
+ * pas pendant un raid de sa base ({@code CoeurDeplacement}).
  */
 @EventBusSubscriber(modid = "crac")
 public final class Purge {
@@ -84,7 +90,8 @@ public final class Purge {
     }
 
     // ---------------------------------------------------------------------------------------------- réglages
-    static boolean actif = true;
+    /** 15/11 : arrêtée par défaut (décision du propriétaire) ; seul {@code "actif": true} dans purge.json la remet. */
+    static boolean actif = false;
     static ZoneId zone = ZoneId.of("Europe/Paris");
     static final List<Creneau> CRENEAUX = new ArrayList<>();
     /**
@@ -97,6 +104,8 @@ public final class Purge {
     static long deplacementPrix = 50_000L;
     static int deplacementMinutes = 10;
     static int deplacementAvantMinutes = 60;
+    /** 15/11 : sans Purge, temps minimal entre deux prises du cœur d'un même clan ({@code prise_hors_purge_heures}). */
+    static long priseHorsPurgeMs = 24L * 3_600_000L;
 
     // ---------------------------------------------------------------------------------------------- état
     @Nullable
@@ -244,6 +253,31 @@ public final class Purge {
         }
     }
 
+    /**
+     * 15/11 (Purge arrêtée) : temps avant que le cœur du clan {@code clan} puisse être repris (0 : maintenant). Une seule
+     * prise par {@link #priseHorsPurgeMs} pour un même clan (comme « une par Purge » quand elle tourne) ; gardé avec le monde
+     * principal ({@link Donnees}).
+     */
+    static long priseHorsPurgeReste(MinecraftServer server, UUID clan) {
+        long derniere = Donnees.get(server).prises.getOrDefault(clan, 0L);
+        return derniere <= 0L ? 0L : Math.max(0L, derniere + priseHorsPurgeMs - System.currentTimeMillis());
+    }
+
+    /** 15/11 (Purge arrêtée) : le cœur du clan {@code clan} vient d'être pris. */
+    static void notePriseHorsPurge(MinecraftServer server, UUID clan) {
+        Donnees d = Donnees.get(server);
+        long now = System.currentTimeMillis();
+        // les prises plus vieilles que le délai ne servent plus
+        d.prises.values().removeIf(t -> now - t >= priseHorsPurgeMs);
+        d.prises.put(clan, now);
+        d.setDirty();
+    }
+
+    /** Heures entre deux prises du cœur d'un même clan quand la Purge est arrêtée (onglet Saison, {@code CoeurApi}). */
+    public static long priseHorsPurgeHeures() {
+        return Math.max(0L, priseHorsPurgeMs / 3_600_000L);
+    }
+
     /** Le cœur ne se déplace pas pendant la Purge ni dans l'heure qui la précède. */
     public static boolean deplacementInterdit() {
         if (!systeme()) {
@@ -285,7 +319,8 @@ public final class Purge {
                 return;
             }
             JsonObject o = JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonObject();
-            actif = !o.has("actif") || o.get("actif").getAsBoolean();
+            // 15/11 : sans la clé, arrêtée (avant : active)
+            actif = o.has("actif") && o.get("actif").getAsBoolean();
             if (o.has("fuseau")) {
                 zone = ZoneId.of(o.get("fuseau").getAsString());
             }
@@ -307,9 +342,11 @@ public final class Purge {
             deplacementPrix = (long) Math.max(0, nombre(o, "deplacement_prix", 50_000));
             deplacementMinutes = (int) Math.max(1, nombre(o, "deplacement_minutes", 10));
             deplacementAvantMinutes = (int) Math.max(0, nombre(o, "deplacement_interdit_avant_minutes", 60));
-            Crac.LOGGER.info("[CRac] Purge : {} créneau(x), {}", CRENEAUX.size(), actif ? "active" : "coupée (raids à tout moment)");
+            priseHorsPurgeMs = (long) (Math.max(0, nombre(o, "prise_hors_purge_heures", 24)) * 3_600_000L);
+            Crac.LOGGER.info("[CRac] Purge : {} créneau(x), {}", CRENEAUX.size(), actif ? "active"
+                : "arrêtée (raids et prise du cœur à toute heure, cœur repris une fois par " + priseHorsPurgeHeures() + " h au plus)");
         } catch (IOException | RuntimeException ex) {
-            Crac.LOGGER.error("[CRac] purge.json illisible : horaires par défaut", ex);
+            Crac.LOGGER.error("[CRac] purge.json illisible : réglages par défaut (Purge arrêtée)", ex);
             defaut();
         }
     }
@@ -319,7 +356,7 @@ public final class Purge {
     }
 
     private static void defaut() {
-        actif = true;
+        actif = false;
         zone = ZoneId.of("Europe/Paris");
         CRENEAUX.clear();
         CRENEAUX.add(new Creneau(DayOfWeek.FRIDAY, LocalTime.of(18, 0), LocalTime.of(21, 0)));
@@ -331,6 +368,7 @@ public final class Purge {
         deplacementPrix = 50_000L;
         deplacementMinutes = 10;
         deplacementAvantMinutes = 60;
+        priseHorsPurgeMs = 24L * 3_600_000L;
     }
 
     private static final String[] JOURS = {"lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"};
@@ -347,9 +385,11 @@ public final class Purge {
 
     static JsonObject json() {
         JsonObject o = new JsonObject();
-        o.addProperty("_aide", "La Purge (saison des clans) : les bases ne se raident que pendant ces créneaux (heure de Paris)."
-            + " Fin avant le début = passe minuit. actif false = raids à tout moment, comme avant."
-            + " protection_nouvelle_base_heures : 0 = une base neuve se raide dès la première Purge.");
+        o.addProperty("_aide", "La Purge (saison des clans) : avec actif true, les bases ne se raident que pendant ces créneaux"
+            + " (heure de Paris ; fin avant le début = passe minuit). actif false (15/11, décision du propriétaire : arrêtée pour"
+            + " l'instant) = toutes les bases se raident à toute heure, le cœur se prend à toute heure, une fois toutes les"
+            + " prise_hors_purge_heures au plus pour un même clan. protection_nouvelle_base_heures : 0 = une base neuve se raide"
+            + " dès la première Purge. Relu par /recharger purge.");
         o.addProperty("actif", actif);
         o.addProperty("fuseau", zone.getId());
         JsonArray a = new JsonArray();
@@ -367,6 +407,7 @@ public final class Purge {
         o.addProperty("deplacement_prix", deplacementPrix);
         o.addProperty("deplacement_minutes", deplacementMinutes);
         o.addProperty("deplacement_interdit_avant_minutes", deplacementAvantMinutes);
+        o.addProperty("prise_hors_purge_heures", priseHorsPurgeHeures());
         return o;
     }
 
@@ -481,10 +522,16 @@ public final class Purge {
     @SubscribeEvent
     public static void commandes(RegisterCommandsEvent e) {
         CommandDispatcher<CommandSourceStack> d = e.getDispatcher();
-        d.register(Commands.literal("purge")
+        // 15/11 : Purge arrêtée, la commande n'est plus proposée aux joueurs (rien ne doit laisser croire qu'il y en a une)
+        d.register(Commands.literal("purge").requires(s -> systeme() || s.hasPermission(2))
             .executes(c -> info(c.getSource()))
             .then(Commands.literal("forcer").requires(s -> s.hasPermission(4))
                 .then(Commands.argument("minutes", IntegerArgumentType.integer(1, 24 * 60)).executes(c -> {
+                    if (!systeme()) {
+                        Reply.fail(c.getSource(), Component.literal("La Purge est arrêtée (purge.json : actif false) : mets actif true puis"
+                            + " /recharger purge avant de la forcer."));
+                        return 0;
+                    }
                     long now = System.currentTimeMillis();
                     forcee = new Fenetre("forcee-" + now, now, now + IntegerArgumentType.getInteger(c, "minutes") * 60_000L);
                     Reply.ok(c.getSource(), Component.literal("Purge forcée jusqu'à " + heure(forcee.fin()) + "."));
@@ -509,14 +556,20 @@ public final class Purge {
         // 02/11 (audit point 36) : plus de « /purge recharger » ; /recharger (noyau) relit purge.json (/recharger purge)
         RechargementsNoyau.inscrire("purge", s -> {
             charger();
-            Reply.ok(s, Component.literal("purge.json relu : " + CRENEAUX.size() + " créneau(x)."));
+            Reply.ok(s, Component.literal("purge.json relu : " + (actif ? CRENEAUX.size() + " créneau(x)."
+                : "Purge arrêtée (raids et prise du cœur à toute heure).")));
+            // /purge proposé ou non aux joueurs selon la Purge : leur liste de commandes est renvoyée
+            MinecraftServer server = s.getServer();
+            for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+                server.getCommands().sendCommands(p);
+            }
             return 1;
         });
     }
 
     private static int info(CommandSourceStack src) {
         if (!systeme()) {
-            Reply.ok(src, t("crac.purge.coupee", "Pas de Purge sur ce serveur : les raids suivent les règles habituelles."));
+            Reply.ok(src, t("crac.purge.coupee", "Pas de Purge en ce moment : les bases des clans se raident à toute heure."));
             return 1;
         }
         Fenetre f = enCours();
@@ -542,12 +595,14 @@ public final class Purge {
 
     // ---------------------------------------------------------------------------------------------- données
     /**
-     * Première vue de l'armoire de chaque groupe (protection des nouvelles bases, coupée par défaut depuis le 31/10), gardée
-     * avec le monde principal.
+     * Première vue de l'armoire de chaque groupe (protection des nouvelles bases, coupée par défaut depuis le 31/10) et, 15/11,
+     * dernière prise du cœur de chaque clan quand la Purge est arrêtée ; gardées avec le monde principal.
      */
     public static final class Donnees extends SafeSavedData {
         public static final String ID = "crac_purge";
         final Map<UUID, Long> vues = new HashMap<>();
+        /** Clan -> heure (ms) de la dernière prise de son cœur, Purge arrêtée. */
+        final Map<UUID, Long> prises = new HashMap<>();
 
         public static Donnees get(MinecraftServer server) {
             return server.overworld().getDataStorage().computeIfAbsent(Donnees::load,
@@ -561,6 +616,13 @@ public final class Purge {
                 CompoundTag t = l.getCompound(i);
                 if (t.hasUUID("Groupe")) {
                     d.vues.put(t.getUUID("Groupe"), t.getLong("Le"));
+                }
+            }
+            ListTag p = tag.getList("Prises", 10);
+            for (int i = 0; i < p.size(); i++) {
+                CompoundTag t = p.getCompound(i);
+                if (t.hasUUID("Clan")) {
+                    d.prises.put(t.getUUID("Clan"), t.getLong("Le"));
                 }
             }
             return d;
@@ -577,6 +639,14 @@ public final class Purge {
                 l.add(t);
             }
             tag.put("Vues", l);
+            ListTag p = new ListTag();
+            for (Map.Entry<UUID, Long> e : this.prises.entrySet()) {
+                CompoundTag t = new CompoundTag();
+                t.putUUID("Clan", e.getKey());
+                t.putLong("Le", e.getValue());
+                p.add(t);
+            }
+            tag.put("Prises", p);
             return tag;
         }
     }

@@ -9,9 +9,10 @@ sans refabriquer les mods.
 ## 1. L'idée
 
 Une **saison dure 1 mois**. Les clans gagnent des **points de saison** dans trois classements (PVE, PVP, events). Les
-points sont gardés dans le **cœur de clan**, posé dans la base : pendant **la Purge** (les seuls moments où les bases
-peuvent être raidées), un clan ennemi qui tient le cœur vole une partie des points. À la fin du mois, les trois premiers
-clans du classement général gagnent un prix.
+points sont gardés dans le **cœur de clan**, posé dans la base : un clan ennemi qui tient le cœur vole une partie des
+points, pendant **la Purge** quand elle tourne (les seuls moments où les bases sont alors raidables). **Depuis le 15/11,
+la Purge est arrêtée** (décision du propriétaire) : les bases se raident et le cœur se prend à toute heure (§3). À la
+fin du mois, les trois premiers clans du classement général gagnent un prix.
 
 Prix de la bêta :
 
@@ -25,7 +26,7 @@ Membres récompensés : ceux du clan à la clôture de la saison (les clans sont
 **V1 : seulement des PB, pas d'argent réel** (décision du 22/10). Argent réel : saisons suivantes.
 
 **Deux choses différentes, à ne pas confondre :**
-- les **points de saison** : le classement, le cash prize ; gardés dans le cœur ; volables pendant la Purge ;
+- les **points de saison** : le classement, le cash prize ; gardés dans le cœur ; volables quand la base se raide ;
 - l'**XP de clan** : le niveau du clan et son arbre d'améliorations (§6) ; jamais volée.
 Beaucoup d'actions donnent les deux.
 
@@ -40,20 +41,25 @@ Beaucoup d'actions donnent les deux.
   (modèle très propre, c'est l'objet principal des clans : rendus à valider), le prix et le craft viendront ensuite.
 - **Un seul par clan**, posé seulement dans la zone de la base du clan (claim de son armoire), par le chef ou un membre
   qui a le droit de gérer la base.
-- **Hors Purge** : indestructible, personne ne peut y toucher.
+- **Indestructible**. Hors Purge (quand elle tourne), personne ne peut y toucher ; Purge arrêtée (15/11) : il se prend à
+  toute heure (ci-dessous).
 - **Déplacer le cœur** : possible hors Purge, contre **50 000 hérals** (décision). Le chef le reprend en objet et a
   **10 minutes pour le reposer ; sinon le clan perd 100 % de ses points** (décision). Aucun point gagné tant qu'il n'est
-  pas posé. Interdit pendant la Purge et dans l'heure qui la précède **[à valider]**. L'objet ne se jette pas, ne se
-  range nulle part et revient au chef s'il meurt **[à valider]**.
+  pas posé. Interdit pendant la Purge et dans l'heure qui la précède **[à valider]**, et (15/11) pendant un raid de la
+  base (raid block). L'objet ne se jette pas (il revient dans l'inventaire) ; 15/11 (audit B3, doc alignée sur le
+  code) : il peut être rangé (coffre, sac) et tombe dans le corps à la mort comme tout objet, ramassable par n'importe
+  qui : le clan doit reposer un cœur dans les 10 minutes, quel que soit celui qui tient l'objet. Un cœur acheté au
+  Bâtisseur et posé entre-temps compte aussi (le délai s'arrête ; l'objet repris reste alors un cœur en plus).
 - Clan dissous : le cœur disparaît avec tous ses points.
 
-### Voler les points pendant la Purge
+### Voler les points (pendant la Purge ; à toute heure quand elle est arrêtée)
 
 - Un membre d'un clan ennemi **tient le cœur 90 secondes** (entre 1 et 2 minutes, décision) : il reste à 3 blocs au plus,
   vivant, pas à terre. Tué, à terre ou éloigné : la prise repart de zéro. Une barre est visible par les deux clans.
 - Réussite : le clan raidé **perd 15 %** de ses points, le clan attaquant en **gagne 10 %** ; les 5 % restants
   disparaissent (décision). Les 15 % sont pris dans chacun des trois classements (PVE, PVP, events).
-- **Une seule prise par clan raidé et par Purge** (décision).
+- **Une seule prise par clan raidé et par Purge** (décision) ; Purge arrêtée (15/11) : une prise par clan raidé toutes
+  les 24 h au plus (`prise_hors_purge_heures` de `purge.json`).
 - L'attaquant doit avoir son propre cœur posé, sinon il ne gagne rien (le raidé perd quand même ses 15 %)
   **[à valider]**.
 - Défendre ne rapporte pas de points (décision) : les défenseurs gardent le loot et les explosifs des attaquants.
@@ -62,6 +68,12 @@ Beaucoup d'actions donnent les deux.
 
 ## 3. La Purge
 
+- **Arrêtée depuis le 15/11** (décision du propriétaire : « la Purge n'existe plus pour l'instant » ; il pense la remettre
+  plus tard) : `"actif": false` dans `serveur/config/crac/purge.json`, aussi la valeur par défaut (fichier absent ou
+  illisible : elle ne revient jamais seule), code gardé. Arrêtée : 100 % des bases se raident à toute heure (C4,
+  explosions, coffres pillables), le cœur se prend à toute heure (une fois par 24 h pour un même clan) et ne se déplace
+  pas pendant un raid de sa base ; aucune annonce ni icône ; `/purge` n'est plus proposée qu'au staff. La remettre :
+  `"actif": true`, puis `/recharger purge`. La suite de cette section décrit la Purge quand elle tourne.
 - **Les bases ne sont raidables que pendant la Purge.** Hors Purge, les explosifs ne font rien aux constructions de CRac
   et le cœur est intouchable. (Aujourd'hui, une base se raide à tout moment, sauf ses 4 premiers jours.)
 - Horaires réglables, exemple du propriétaire : vendredi 18 h – 21 h, samedi 15 h – 22 h, dimanche 15 h – 22 h.
@@ -71,6 +83,22 @@ Beaucoup d'actions donnent les deux.
 - Protection des nouvelles bases : **aucune** (décision du 31/10, CRac 1.29.0-beta). Une base posée juste avant ou
   pendant une Purge se raide comme les autres ; plus de protection de 4 jours (coupée le 27/10) ni de 48 h avant la Purge
   (`protection_nouvelle_base_heures` = 0 dans `purge.json` ; un nombre d'heures la remettrait).
+
+## 3 bis. Armoire détruite pendant un raid (décision du 15/11)
+
+- Quand l'armoire d'une base de clan est détruite pendant un raid (elle part alors que la base est en raid block :
+  explosions dans sa zone ; son clan ne peut alors ni la casser, ni la déplacer, ni se dissoudre), la base reste **à son
+  clan pendant 24 h** (heure réelle, un redémarrage n'efface rien) : lui seul peut y reposer une armoire (même écart
+  qu'entre deux bases), lui seul y construit et touche à ses pièces au marteau (vitres, barreaux, améliorations), et elle
+  ne s'use pas en attendant. Elle reste raidable comme toutes les bases.
+- Le clan qui repose son armoire sur sa base la retrouve telle qu'elle était, à la taille que l'arbre du clan a payée,
+  sans rien repayer (palier 4 compris) ; le home de la base revient. Le stock d'entretien de l'ancienne armoire, lui, est
+  tombé au sol à sa destruction.
+- Le clan peut l'abandonner avant : `/base abandonner` (puis confirmer), ou le bouton « Abandonner la base » du message
+  (chef ou droit « Gérer la base »). Au bout de 24 h sans armoire, ou après l'abandon, n'importe qui peut y poser la
+  sienne (règles d'avant). Les membres sont prévenus à la destruction, à leur connexion et à la fin des 24 h ; une ligne
+  au journal du clan à chaque étape.
+- Code : `bases` · `heraliz/ArmoiresPerdues` (données `data/crac_armoires_perdues.dat` du monde principal).
 
 ---
 
@@ -123,8 +151,11 @@ conteneurs : une ligne par joueur et par minute), chaque point refusé aussi, av
 - **Rien** si le tueur et la victime ont le même PC ou la même IP (Spartan connaît le PC de chaque joueur), sont dans le
   même clan, ou si le kill a lieu en duel, en ClashWar ou en Zombies (ça compte dans les events).
 - Un joueur à terre puis achevé = un seul kill.
-- Une mort ne fait perdre des points que si le kill en aurait rapporté (pas de perte pour une mort contre un zombie,
-  `/suicide`, ou un ami au même PC).
+- Une mort contre un joueur fait perdre 1 point au clan de la victime (s'il a son cœur posé) quand le kill compte selon
+  les règles ci-dessus (victime armée ou en armure, pas la même adresse IP, même victime ×1 / ×0,5 / 0) : pas de perte
+  pour une mort contre un zombie, `/suicide`, ou un ami à la même adresse IP. 15/11 (audit B5, doc alignée sur le code,
+  dit aussi dans l'onglet Saison) : le clan de la victime perd son point **même si le tueur n'a pas de clan**, n'a pas de
+  cœur posé ou a atteint son plafond du jour (le kill ne lui rapporte alors rien).
 
 ### Events
 
@@ -279,7 +310,8 @@ environ 3 à 5 XP par héral de leur prix chez Mila (Épique 50, Légendaire 200
 - refusé en créatif et en spectateur (copie au bouton du milieu) ;
 - les objets Légendaires et Uniques (non empilables) sont numérotés par l'anti-duplication de Spartan
   (`trackedItems` de `spartan-common.toml`) ; un objet dont le numéro a déjà été donné est refusé (copie), le staff le
-  voit dans le journal ; le fichier des clans est écrit tout de suite après chaque don ;
+  voit dans le journal ; à chaque don, le joueur est enregistré sans l'objet, puis le clan (XP et numéro de l'objet) est
+  écrit tout de suite (15/11, audit M3 : avant, seul le clan l'était, un plantage rendait l'objet ET gardait l'XP) ;
 - au-delà du plafond du jour (3 000 XP), le joueur doit confirmer (`/clan don confirmer`, 30 s) : il ne perd pas un
   objet rare sans le savoir.
 Les objets Uniques à revendre (`heraliz_composants:crane_cristal`, `sceptre`, `calice`) tombent depuis le 31/10
@@ -341,7 +373,7 @@ rendre à chaque nouvelle saison, même avec une nouvelle carte.
 |---|---|
 | Se faire tuer par un 2e compte | rien pour même PC / même IP ; victime armée ou en armure (hors kit) |
 | Tuer le même joueur en boucle | ×1, ×0,5, puis 0 |
-| Deux clans complices qui se raident pour se passer des points | 15 % perdus, 10 % gagnés ; une prise par Purge |
+| Deux clans complices qui se raident pour se passer des points | 15 % perdus, 10 % gagnés ; une prise par Purge (Purge arrêtée : une par 24 h) |
 | Acheter chez un PNJ, revendre chez un autre | aucun point pour un objet qu'un marchand vend |
 | Fabriquer, défaire, refabriquer ; poser une arme au sol et la ramasser table ouverte | arme ramassée exclue ; plafond par jour |
 | Farmer les zombies des vagues de capture ou du mode Zombies | ne comptent pas |
@@ -394,7 +426,11 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
 **HeraliZ Clans 3.6.0** (`modules/clans`, `fr.heralisz.clans.saison`) :
 - barème : `serveur/config/heralisz_clans/saison.json` (fichier du dépôt qui fait foi, relu par `/saison recharger`) ;
   état hors du monde : `heralisz_clans/saison_etat.json`, journal de chaque point `heralisz_clans/saison_journal.log`,
-  archives `heralisz_clans/saisons/saison_N.json` (classement et membres de chaque clan) ;
+  archives `heralisz_clans/saisons/saison_N.json` (classement et membres de chaque clan) ; 15/11 (audit M1) : un état
+  illisible au démarrage met la saison **en pause** (aucun point compté, rien n'est écrit, original copié à côté en
+  `.illisible-…`, opérateurs prévenus à la connexion et par `/saison`) jusqu'à `/recharger saison` après réparation
+  (avant : une « saison 1 » vide démarrait en silence) ; une archive n'est jamais écrasée (`saison_N-2.json`…) et une
+  nouvelle saison prend le numéro qui suit la dernière archive ;
 - `/saison`, `/saison classement [general|pve|pvp|events]` ; staff (permission 4) : `/saison commencer <jours>`,
   `/saison terminer confirmer`, `/saison points <tag> <pve|pvp|events> <±n> <motif>`, `/saison journal <tag>` ;
 - PVP (kill/mort hors match, hors spawn et monde du tutoriel ; même IP ; victime sans arme ni armure d'au moins Peu
@@ -417,6 +453,8 @@ Règle du concours : un clan pris à tricher est disqualifié et perd tout.
   cœur posé seulement par le chef ou un membre qui gère la base ; points et rangs affichés sur le cœur (toutes les 5 s) ;
   clan dissous : cœur retiré ;
 - arbre : rayon de la base 20/23/26/29 (claim de niveau 4, `radiusL4`), plus d'agrandissement au métal renforcé ;
+  15/11 (audit H2) : une armoire (re)posée reprend la taille déjà payée par l'arbre sans redemander de métal, palier 4
+  compris (avant : « trop grand » au palier 4, 10 à 35 métal renforcé aux paliers 2 et 3) ;
   délai du `/home` 10/8/6/4 min ;
 - `fr.heraliz.crac.api.CoeurApi.clanAUnCoeur(UUID)` (lu par Clans ; cœur dans la zone de son armoire).
 

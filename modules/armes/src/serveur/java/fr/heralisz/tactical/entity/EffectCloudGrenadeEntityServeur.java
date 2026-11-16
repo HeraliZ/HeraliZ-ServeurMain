@@ -107,6 +107,8 @@ public class EffectCloudGrenadeEntityServeur extends EffectCloudGrenadeEntity {
 
       if (ignite && !entity.fireImmune()) {
          entity.setSecondsOnFire(igniteTime);
+         // HeraliZ (audit du 15/11, B1) : ce feu brûle au nom du lanceur (tag de combat, crédit du tueur)
+         fr.heraliz.tactique.serveur.Brulures.molotov(entity, this.getOwner());
       }
    }
 }

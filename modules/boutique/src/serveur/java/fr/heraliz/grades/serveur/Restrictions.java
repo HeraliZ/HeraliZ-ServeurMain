@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  * leurs étiquettes ou par réflexion : un mod absent ne bloque rien. Fil serveur seulement.
  */
 final class Restrictions {
-    private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
+    private static final String CLE_COMBAT = "heralisz:combat_jusqua";
     private static Method downed, etatTuto;
     private static boolean downedCherche, tutoCherche;
 
@@ -24,8 +24,12 @@ final class Restrictions {
         return p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis();
     }
 
+    /**
+     * En match du ClashWar (drapeau, ou monde de ses arenes) ou inventaire mis de cote par son Coffre (15/11 : marque
+     * posee au depart, retiree au retour ; rien n'est livre tant qu'elle est la).
+     */
     static boolean enMatch(ServerPlayer p) {
-        return p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heraliz_clashwar");
+        return fr.heraliz.crates.loot.PendingRewards.retenuParMatch(p);
     }
 
     static boolean surCarte(ServerPlayer p) {

@@ -6,6 +6,7 @@ import com.mrcrayfish.backpacked.util.InventoryHelper;
 import com.mrcrayfish.backpacked.util.PickpocketUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +16,12 @@ public class BackpackInventory extends SimpleContainer {
    private final ItemStack stack;
    private boolean save;
    private boolean chargement;
+   /**
+    * HeraliZ (15/11, audit : copie d'un sac) : la liste « Items » de l'objet sac telle que ce sac l'a lue ou écrite en
+    * dernier (le même objet, comparé par identité). Si l'objet en porte une autre, quelqu'un d'autre a changé ce sac
+    * depuis (il est passé par un coffre, un autre joueur l'a vidé) : ce contenu en mémoire ne vaut plus rien.
+    */
+   private Tag dernierItems;
 
    public BackpackInventory(int cols, int rows, Player player, ItemStack stack) {
       super(rows * cols);
@@ -38,6 +45,13 @@ public class BackpackInventory extends SimpleContainer {
             this.saveItemsToStack();
          }
       }
+      this.dernierItems = compound.get("Items");
+   }
+
+   /** HeraliZ (15/11) : l'objet sac contient-il encore ce que ce sac a lu ou écrit en dernier ? Sinon, à oublier. */
+   public boolean aJour() {
+      CompoundTag tag = this.stack.getTag();
+      return (tag == null ? null : tag.get("Items")) == this.dernierItems;
    }
 
    public ItemStack getBackpackStack() {
@@ -53,7 +67,8 @@ public class BackpackInventory extends SimpleContainer {
     * l'ouverture du sac d'autrui est permise ({@code enabledPickpocketing}, coupée sur HeraliZ) et à portée.
     */
    public boolean stillValid(Player player) {
-      if (!this.player.isAlive() || !player.isAlive() || Services.BACKPACK.getBackpackStack(this.player) != this.stack) {
+      if (!this.player.isAlive() || !player.isAlive() || Services.BACKPACK.getBackpackStack(this.player) != this.stack
+         || !this.aJour()) {
          return false;
       }
 
@@ -81,6 +96,8 @@ public class BackpackInventory extends SimpleContainer {
 
    public void saveItemsToStack() {
       CompoundTag compound = this.stack.getOrCreateTag();
-      compound.put("Items", InventoryHelper.saveAllItems(new ListTag(), this));
+      ListTag items = InventoryHelper.saveAllItems(new ListTag(), this);
+      compound.put("Items", items);
+      this.dernierItems = items;
    }
 }

@@ -1,8 +1,11 @@
 package fr.heraliz.interfaces.client;
 
+import fr.heraliz.interfaces.HeralizInterface;
 import fr.heraliz.interfaces.InterfaceConfig;
 import fr.heraliz.interfaces.kit.Anim;
+import fr.heraliz.interfaces.kit.Bascule;
 import fr.heraliz.interfaces.kit.Echelle;
+import fr.heraliz.interfaces.kit.Flou;
 import fr.heraliz.interfaces.kit.Fond;
 import fr.heraliz.interfaces.kit.HzButton;
 import fr.heraliz.interfaces.kit.HzIcon;
@@ -35,7 +38,8 @@ import java.util.Locale;
  * place de l'ecran Video de Minecraft ou d'Embeddium quand on vient des Options ({@link InterfaceClient#video}), et par la
  * tuile « Qualite graphique » du menu Echap ; « Reglages detailles » ouvre l'ecran Video d'origine. Les mipmaps du profil
  * choisi sont posees en quittant l'ecran (un seul rechargement des textures). En panne : l'ecran d'origine (ou le parent)
- * a la place, et pour le reste de la session.
+ * a la place, et pour le reste de la session. 15/11 : interrupteur « Flou derriere les ecrans » au-dessus du pied
+ * ({@link Flou}, reglage {@code flou}).
  */
 public class EcranGraphismes extends Screen {
     private static final int ENTETE = 42, CARTE_H = 76, PIED = 18, LIGNE = 15, PAR_COLONNE = 5;
@@ -77,6 +81,31 @@ public class EcranGraphismes extends Screen {
         int fw = Math.max(100, Math.round(Ui.spacedWidth(font, CommonComponents.GUI_DONE.getString(), Ui.BOLD, 1.2f)) + 28);
         addRenderableWidget(new HzButton(px + pw - Ui.MARGE - fw, by, fw, PIED, CommonComponents.GUI_DONE, accent, this::onClose)
                 .look(HzButton.Look.PRIMARY));
+        // 15/11 (audit perf n° 1) : flou du monde derrière les écrans (menus, inventaire, sac, fouille, coffres) ; coupé,
+        // un voile sombre plus dense à la place. Même interrupteur que « Sprint en un appui » du menu Échap.
+        addRenderableWidget(new Bascule(px + Ui.MARGE, by - 8 - BASCULE_H, (pw - 2 * Ui.MARGE - 16) / 2, BASCULE_H,
+                Component.translatable("gui.heraliz_interface.graphismes.flou"), Ui.t("gui.heraliz_interface.pause.active"),
+                Ui.t("gui.heraliz_interface.pause.desactive"), accent, EcranGraphismes::flou, EcranGraphismes::basculerFlou));
+    }
+
+    /** Hauteur de l'interrupteur du flou (celle des petites tuiles du menu Échap). */
+    private static final int BASCULE_H = 17;
+
+    /** Flou derrière les écrans (réglage {@code flou} de heraliz_interface-client.toml). */
+    private static boolean flou() {
+        return InterfaceConfig.oui(InterfaceConfig.FLOU, true);
+    }
+
+    /** Inverse le flou et l'enregistre ; coupé, ses images de travail sont rendues à la carte graphique. */
+    private static void basculerFlou() {
+        boolean v = !flou();
+        try {
+            InterfaceConfig.FLOU.set(v);
+            InterfaceConfig.FLOU.save();
+        } catch (Exception e) {
+            HeralizInterface.LOG.warn("[interface] réglage du flou non enregistré : {}", e.toString());
+        }
+        if (!v) Flou.liberer();
     }
 
     @Override

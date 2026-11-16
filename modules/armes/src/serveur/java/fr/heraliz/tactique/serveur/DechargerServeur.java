@@ -16,6 +16,9 @@ import net.minecraft.world.item.ItemStack;
  * quand on retire un chargeur dans l'écran de TaCZ (munitions de l'arme, jamais copiées). Le chargeur reste sur l'arme,
  * vide. Refusé : arme d'un match (prêtée), arme en cours de rechargement, arme sans munitions à rendre (énergie,
  * carburant, munitions de l'inventaire, réserve de TaCZ).
+ * <p>Audit du 15/11 (duplication n° 3) : la balle de la chambre est rendue à part, après le chargeur. Ajoutée au chargeur,
+ * elle faisait déborder le compte des piles de {@code dropAllAmmo} (une pile de moins) : une PKP pleine (120 + 1, piles
+ * de 60) n'en rendait que 120.</p>
  */
 final class DechargerServeur {
    /** Main gauche dans {@link Inventory#getItem(int)}. */
@@ -50,20 +53,30 @@ final class DechargerServeur {
          message(sp, "heraliz_tactique.decharger.impossible", "Cette arme ne se décharge pas.");
          return;
       }
-      int balles = gun.getCurrentAmmoCount(st) + (gun.hasBulletInBarrel(st) ? 1 : 0);
+      boolean chambre = gun.hasBulletInBarrel(st);
+      int chargeur = gun.getCurrentAmmoCount(st);
+      int balles = chargeur + (chambre ? 1 : 0);
       if (balles <= 0) {
          message(sp, "heraliz_tactique.decharger.vide", "L'arme est déjà vide.");
          return;
       }
-      // la balle de la chambre rejoint le chargeur, puis TaCZ rend tout le chargeur
-      if (gun.hasBulletInBarrel(st)) {
-         gun.setBulletInBarrel(st, false);
-         gun.setCurrentAmmoCount(st, balles);
+      // TaCZ rend le chargeur, puis la balle de la chambre à part (jamais ajoutée au chargeur : elle s'y perdait)
+      if (chargeur > 0) {
+         gun.dropAllAmmo(sp, st);
+         if (gun.getCurrentAmmoCount(st) > 0) { // munitions inconnues de TaCZ : rien rendu, l'arme garde ses balles
+            return;
+         }
       }
-      gun.dropAllAmmo(sp, st);
-      int restant = gun.getCurrentAmmoCount(st);
-      if (restant > 0) { // munitions inconnues de TaCZ : rien rendu, l'arme garde ses balles
-         return;
+      if (chambre) {
+         gun.setBulletInBarrel(st, false);
+         gun.setCurrentAmmoCount(st, 1);
+         gun.dropAllAmmo(sp, st);
+         if (gun.getCurrentAmmoCount(st) > 0) { // rien rendu : la balle retourne dans la chambre
+            gun.setCurrentAmmoCount(st, 0);
+            gun.setBulletInBarrel(st, true);
+            if (chargeur <= 0) return;
+            balles = chargeur;
+         }
       }
       inv.setChanged();
       sp.inventoryMenu.broadcastChanges();

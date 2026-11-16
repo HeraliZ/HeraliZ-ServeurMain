@@ -76,6 +76,9 @@ public final class Deplacements {
     @Nullable
     private static Method allerAuSpawn;
     private static boolean spawnCherche;
+    @Nullable
+    private static Method reapparitionBase;
+    private static boolean baseCherche;
 
     private Deplacements() {
     }
@@ -349,6 +352,31 @@ public final class Deplacements {
         } catch (ReflectiveOperationException | RuntimeException e) {
             Crac.LOGGER.warn("[CRac] SpawnApi.allerAuSpawn en erreur", e);
             return false;
+        }
+    }
+
+    /**
+     * {@code SpawnApi.reapparitionALaBase(ServerPlayer)} de HeraliZ Utils (15/11, audit perf n° 2), lu par son nom (pas de
+     * dépendance) : le joueur mort qui a choisi « À la base » réapparaît sur la carte, sans passer par le point de réveil
+     * du spawn. Absente (ancienne version d'Utils) : rien, il passe par le camp comme avant.
+     */
+    static void reapparitionALaBase(ServerPlayer p) {
+        if (!baseCherche) {
+            baseCherche = true;
+            try {
+                reapparitionBase = Class.forName("fr.heralisz.utils.api.SpawnApi").getMethod("reapparitionALaBase", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                Crac.LOGGER.warn("[CRac] SpawnApi.reapparitionALaBase de HeraliZ Utils introuvable : réapparition à la base par le camp ({})",
+                    e.toString());
+            }
+        }
+        if (reapparitionBase == null) {
+            return;
+        }
+        try {
+            reapparitionBase.invoke(null, p);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            Crac.LOGGER.warn("[CRac] SpawnApi.reapparitionALaBase en erreur", e);
         }
     }
 

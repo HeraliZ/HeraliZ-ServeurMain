@@ -48,7 +48,7 @@ public class PlayerMixin implements BackpackedInventoryAccess {
       Item item = stack.getItem();
       if (item instanceof BackpackItem backpackItem) {
          if (this.backpacked$Inventory == null
-            || !this.backpacked$Inventory.getBackpackStack().equals(stack)
+            || this.backpacked$Inventory.getBackpackStack() != stack || !this.backpacked$Inventory.aJour()
             || this.backpacked$Inventory.getContainerSize() != backpackItem.getRowCount() * backpackItem.getColumnCount()) {
             this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem.getColumnCount(), backpackItem.getRowCount(), player, stack);
@@ -57,7 +57,7 @@ public class PlayerMixin implements BackpackedInventoryAccess {
          return this.backpacked$Inventory;
       } else if (item instanceof BackpackItem_expand1 backpackItem1) {
          if (this.backpacked$Inventory == null
-            || !this.backpacked$Inventory.getBackpackStack().equals(stack)
+            || this.backpacked$Inventory.getBackpackStack() != stack || !this.backpacked$Inventory.aJour()
             || this.backpacked$Inventory.getContainerSize() != backpackItem1.getRowCount() * backpackItem1.getColumnCount()) {
             this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem1.getColumnCount(), backpackItem1.getRowCount(), player, stack);
@@ -65,7 +65,7 @@ public class PlayerMixin implements BackpackedInventoryAccess {
 
          return this.backpacked$Inventory;
       } else if (item instanceof BackpackItem_expand2 backpackItem2) {
-         if (this.backpacked$Inventory == null || !this.backpacked$Inventory.getBackpackStack().equals(stack) || this.backpacked$Inventory.getContainerSize() != 54) {
+         if (this.backpacked$Inventory == null || this.backpacked$Inventory.getBackpackStack() != stack || !this.backpacked$Inventory.aJour() || this.backpacked$Inventory.getContainerSize() != 54) {
             this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem2.getColumnCount(), backpackItem2.getRowCount(), player, stack);
          }
@@ -74,7 +74,7 @@ public class PlayerMixin implements BackpackedInventoryAccess {
       } else if (!(item instanceof Backpack_Mountain backpackItem2)) {
          return null;
       } else {
-         if (this.backpacked$Inventory == null || !this.backpacked$Inventory.getBackpackStack().equals(stack) || this.backpacked$Inventory.getContainerSize() != 54) {
+         if (this.backpacked$Inventory == null || this.backpacked$Inventory.getBackpackStack() != stack || !this.backpacked$Inventory.aJour() || this.backpacked$Inventory.getContainerSize() != 54) {
             this.backpacked$Oublier();
             this.backpacked$Inventory = new BackpackInventory(backpackItem2.getColumnCount(), backpackItem2.getRowCount(), player, stack);
          }
@@ -94,7 +94,16 @@ public class PlayerMixin implements BackpackedInventoryAccess {
    @Inject(method = "tick", at = @At("HEAD"))
    public void backpacked$TickHead(CallbackInfo ci) {
       if (this.backpacked$Inventory != null) {
-         this.backpacked$Inventory.tick();
+         // HeraliZ (15/11, audit : copie d'un sac) : le sac a quitté le dos (coffre, autre joueur, sol...) ou son contenu
+         // a été changé ailleurs : la mémoire est oubliée sans être écrite, le sac sera relu dans l'objet à la prochaine
+         // ouverture. Avant, le même sac revenu sur le dos retrouvait son ancien contenu en mémoire (copie ou perte).
+         Player player = (Player)(Object)this;
+         if (Services.BACKPACK.getBackpackStack(player) != this.backpacked$Inventory.getBackpackStack()
+            || !this.backpacked$Inventory.aJour()) {
+            this.backpacked$Oublier();
+         } else {
+            this.backpacked$Inventory.tick();
+         }
       }
    }
 
@@ -104,7 +113,8 @@ public class PlayerMixin implements BackpackedInventoryAccess {
          // Seulement si ce sac est encore sur le dos : sinon (sac donné, posé sur un cadavre) on réécrirait un sac qui
          // appartient à quelqu'un d'autre avec un vieux contenu (copie ou perte).
          Player player = (Player)(Object)this;
-         if (Services.BACKPACK.getBackpackStack(player) == this.backpacked$Inventory.getBackpackStack()) {
+         if (Services.BACKPACK.getBackpackStack(player) == this.backpacked$Inventory.getBackpackStack()
+            && this.backpacked$Inventory.aJour()) {
             this.backpacked$Inventory.saveItemsToStack();
          } else {
             this.backpacked$Oublier();

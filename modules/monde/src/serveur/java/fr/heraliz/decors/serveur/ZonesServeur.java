@@ -284,15 +284,55 @@ public final class ZonesServeur {
         if (st == null || st.isEmpty()) return false;
         ResourceLocation k = ForgeRegistries.ITEMS.getKey(st.getItem());
         if (k == null) return false;
-        String id = k.toString();
-        for (String m : ids) {
-            if (m.equals(id)) return true;
-            if (m.contains("*")) {
-                String re = m.replace(".", "\\\\.").replace("*", ".*");
-                if (id.matches(re)) return true;
+        return motifs(ids).correspond(k.toString());
+    }
+
+    /**
+     * Motifs d'une liste du réglage [protections] : identifiants exacts, et motifs avec « * » (n'importe quelle suite de
+     * caractères ; tout le reste est pris tel quel, point compris). 15/11 (audit monde B3) : compilés une fois par liste
+     * et gardés jusqu'à la relecture du réglage (Forge rend alors une nouvelle liste) ; avant, chaque motif était recompilé
+     * à chaque contrôle (chaque seconde, pour chaque joueur dans une zone et chaque pièce portée), et un point dans un
+     * motif ne pouvait jamais correspondre (« . » devenait « \\. »).
+     */
+    private record Motifs(java.util.Set<String> exacts, java.util.regex.Pattern[] jokers) {
+        boolean correspond(String id) {
+            if (exacts.contains(id)) return true;
+            for (java.util.regex.Pattern p : jokers) {
+                if (p.matcher(id).matches()) return true;
             }
+            return false;
         }
-        return false;
+    }
+
+    /** Motifs compilés, par liste du réglage (même objet tant que le réglage n'est pas relu ; fil serveur seulement). */
+    private static final Map<List<? extends String>, Motifs> MOTIFS = new java.util.IdentityHashMap<>();
+
+    private static Motifs motifs(List<? extends String> ids) {
+        Motifs m = MOTIFS.get(ids);
+        if (m != null) return m;
+        if (MOTIFS.size() >= 12) MOTIFS.clear();                         // réglage relu : les anciennes listes partent
+        java.util.Set<String> exacts = new java.util.HashSet<>();
+        List<java.util.regex.Pattern> jokers = new ArrayList<>();
+        for (String s : ids) {
+            if (s.indexOf('*') < 0) exacts.add(s);
+            else jokers.add(joker(s));
+        }
+        m = new Motifs(exacts, jokers.toArray(new java.util.regex.Pattern[0]));
+        MOTIFS.put(ids, m);
+        return m;
+    }
+
+    /** « mod:masque_* » : les morceaux entre les « * » pris tels quels (Pattern.quote), chaque « * » = n'importe quelle suite. */
+    static java.util.regex.Pattern joker(String motif) {
+        StringBuilder re = new StringBuilder();
+        int debut = 0;
+        for (int i = motif.indexOf('*'); i >= 0; i = motif.indexOf('*', debut)) {
+            if (i > debut) re.append(java.util.regex.Pattern.quote(motif.substring(debut, i)));
+            re.append(".*");
+            debut = i + 1;
+        }
+        if (debut < motif.length()) re.append(java.util.regex.Pattern.quote(motif.substring(debut)));
+        return java.util.regex.Pattern.compile(re.toString());
     }
 
     /** Objets portés dans les emplacements Curios (par réflexion : Curios n'est pas une dépendance de compilation). */

@@ -407,5 +407,7 @@
   "gui.heraliz_armory.inventaire.effet.zone": "Effet de zone : il s'arrête quand tu en sors",
   "gui.heraliz_armory.inventaire.effet.loot": "Plus d'objets dans les conteneurs",
   "gui.heraliz_armory.inventaire.effet.encore": "Encore %s",
-  "gui.heraliz_armory.inventaire.effet.heures": "%s h %s"
+  "gui.heraliz_armory.inventaire.effet.heures": "%s h %s",
+  "message.heraliz_armory.blessure.jambe": "Jambe cassée : utilise une attelle.",
+  "message.heraliz_armory.blessure.saignement": "Tu saignes : utilise un bandage ou une trousse de soins."
 }

@@ -224,7 +224,7 @@ Un texte peut être en français seulement (`"Bonjour"`) ou dans les trois langu
 | `executer` | achever un joueur à terre (exécution de Réanimation ou coup de grâce) | `nombre` |
 | `fabriquer` | fabriquer une arme à feu à la Table d'armurier (TaCZ) | `nombre` |
 | `frappe` | appeler une frappe aérienne (jumelles d'Airstrike) | `nombre` |
-| `capturer` | capturer un territoire avec son clan : PAS ENCORE BRANCHÉ (quête `desactivee`) | |
+| `capturer` | capturer un territoire avec son clan : être au pied du drapeau quand le clan prend la zone (15/11 ; une prise forcée par le staff ne compte pas ; « Prendre le terrain » reste `desactivee` : un joueur sans clan y resterait bloqué) | `nombre` |
 
 Réglages communs : `libelle` (texte affiché), `marqueur` (`exact`, `zone` = distance arrondie, `aucun`), `delai`
 (secondes : au-delà, la quête échoue), `meme_point` (mêmes points que l'étape d'avant), `visible` (montrée avant d'y

@@ -117,6 +117,7 @@ public final class CompteCapsules {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStoppedEvent.class, e -> {
             CACHE.clear();
             DERNIERE.clear();
+            ChipsServeur.oublierTout();
         });
     }
 
@@ -128,6 +129,7 @@ public final class CompteCapsules {
         Compte c = CACHE.get(u);
         if (c != null && !c.ferme) CACHE.remove(u);
         DERNIERE.remove(u);
+        ChipsServeur.oublier(u);
     }
 
     public static CasinoConfig.Compte reglages() {

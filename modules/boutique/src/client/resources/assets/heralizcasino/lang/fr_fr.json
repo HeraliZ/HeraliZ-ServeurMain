@@ -100,6 +100,7 @@
   "command.heralizcasino.take_failed": "%s n'a pas assez de capsules (%s).",
   "command.heralizcasino.taken": "%s capsules retirées à %s joueur(s).",
   "command.heralizcasino.see": "%s possède %s capsules.",
+  "command.heralizcasino.login": "Connecte-toi d'abord (/login) : cette commande est réservée aux opérateurs connectés.",
   "command.heralizcasino.unknown_machine": "Machine inconnue : %s",
   "command.heralizcasino.lumiere.title": "Lumière des machines (0 = aucune, 15 = lanterne) :",
   "command.heralizcasino.lumiere.usine": " (usine : %s)",

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import fr.heraliz.quetes.Contenu;
 import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.entite.Pnj;
 import fr.heraliz.quetes.reseau.Reseau;
@@ -62,8 +63,12 @@ import java.util.Map;
 final class Recyclage {
     private static final Logger LOG = LogUtils.getLogger();
 
-    /** États d'un objet pour le recycleur (même ordre que les textes gui.heraliz_quetes.recycleur.etat.N). */
-    static final int OK = 0, NON = 1, REFUSE = 2, PROTEGE = 3, MANQUE = 4;
+    /**
+     * États d'un objet pour le recycleur (même ordre que les textes gui.heraliz_quetes.recycleur.etat.N). CONTENU (15/11,
+     * audit n° 2) : il contient quelque chose qui disparaîtrait avec lui (balles chargées, accessoires, munitions d'une
+     * boîte, sac plein : {@link Contenu}) ; refusé, l'écran dit quoi vider.
+     */
+    static final int OK = 0, NON = 1, REFUSE = 2, PROTEGE = 3, MANQUE = 4, CONTENU = 5;
 
     private Recyclage() {
     }
@@ -243,6 +248,12 @@ final class Recyclage {
      * tout objet à durabilité : durabilité restante ; le reste : 1.
      */
     static final float USURE_ZERO = 15f, USURE_COURBE = 1.5f;
+    /**
+     * Hérals « rien » d'un objet abîmé (15/11, audit n° 5) : x état, jamais moins de ce pourcentage, comme le rachat des
+     * armes chez Mila ({@link Marchands#selonEtat}, « selon_etat_min » = 10). Avant : pleins quel que soit l'état, une arme
+     * ruinée rapportait plus au recycleur (63 ou 125 hérals à coup sûr) qu'à Mila.
+     */
+    static final int ETAT_MIN_HERALS = 10;
 
     static int etatPct(ItemStack s) {
         if (Ponts.gunId(s) != null) return Ponts.usure(s);
@@ -267,9 +278,11 @@ final class Recyclage {
     static Verdict verdict(ItemStack s, Map<String, Long> ventes, Map<String, Long> valeurs, boolean carte) {
         Etat e = etat;
         int rang = Math.max(0, Ponts.rarete(s));
-        long herals = e.herals(rang);
         int u = etatPct(s);
         float f = facteurUsure(u);
+        // hérals « rien » selon l'état (15/11) : aperçu et paiement (tirer) les lisent tous les deux ici
+        long herals = Marchands.selonEtat(e.herals(rang), u, ETAT_MIN_HERALS);
+        if (Contenu.de(s) != Contenu.RIEN) return new Verdict(CONTENU, rang, 1, List.of(), herals, f, u);
         if (Echanges.interdit(s)) return new Verdict(PROTEGE, rang, 1, List.of(), herals, f, u);
         Regle r = regle(s);
         if (r == null) return new Verdict(NON, rang, 1, List.of(), herals, f, u);
@@ -292,6 +305,15 @@ final class Recyclage {
         for (String c : v.rend()) parComposant.merge(c, 1, Integer::sum);
         return new Reseau.ApercuCase(index, v.etat(), v.rang(), v.par(), (int) Math.min(Integer.MAX_VALUE, v.herals()),
                 new ArrayList<>(parComposant.keySet()), new ArrayList<>(parComposant.values()), Math.round(v.facteur() * 1000), v.usure());
+    }
+
+    /**
+     * Objets comptés pour la quête du jour « Recycler N objets » quand {@code n} objets de cette case sont recyclés (15/11,
+     * audit n° 4 : 8 balles suffisaient) : un objet seul compte pour un ; une règle « par N » (munitions par 15) compte
+     * pour un objet par paquet entier, un paquet incomplet ne compte pas.
+     */
+    static int objetsQuete(Verdict v, int n) {
+        return v.par() <= 1 ? n : n / v.par();
     }
 
     /** Ce qui sort d'une unité recyclée : composants (au plus {@code max_pieces}) ou, si rien, des hérals. */
@@ -416,10 +438,13 @@ final class Recyclage {
         return esperance * 2 > cout;
     }
 
-    /** Fin d'une session de recyclage : résumé au joueur et dans le journal du serveur. */
-    static void bilan(ServerPlayer p, int recycles, int composants, long herals) {
+    /**
+     * Fin d'une session de recyclage : résumé au joueur et dans le journal du serveur ; la quête du jour avance de
+     * {@code objetsQuete} ({@link #objetsQuete} : par paquet de munitions entier).
+     */
+    static void bilan(ServerPlayer p, int recycles, int objetsQuete, int composants, long herals) {
         if (recycles <= 0) return;
-        Journalieres.recyclage(p, recycles);
+        if (objetsQuete > 0) Journalieres.recyclage(p, objetsQuete);
         Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.resultat", Texte.brut(recycles), Texte.brut(composants),
                 Texte.brut(Ponts.nombre(herals))), 0xE8C36A);
         LOG.info("[heraliz_quetes] recycleur : {} a recyclé {} objet(s) : {} composant(s), {} hérals", p.getGameProfile().getName(),

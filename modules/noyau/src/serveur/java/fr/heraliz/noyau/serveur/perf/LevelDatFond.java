@@ -5,6 +5,7 @@ import fr.heraliz.noyau.NoyauConfig;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -65,8 +66,25 @@ public final class LevelDatFond {
          attendre();   // pas deux écritures de level.dat en même temps
          return false;
       }
-      RELEVE.set(new Releve(contenu.copy(), temporaire));
+      RELEVE.set(new Releve(copieUtile(contenu), temporaire));
       return true;
+   }
+
+   /**
+    * Copie de ce qui peut encore bouger pendant l'écriture en fond : « Data » (état du monde, quelques Ko) et toute autre
+    * partie ajoutée par un mod. 15/11 (audit perf n° 5) : la partie « fml » (registres de Forge : des dizaines de milliers
+    * d'éléments, l'essentiel des 400 Ko) est fabriquée par Forge pour cette seule sauvegarde
+    * ({@code ForgeHooks.writeAdditionalLevelSaveData}) et plus jamais touchée ensuite : elle est reprise telle quelle au
+    * lieu d'être recopiée (95 ms à la première sauvegarde automatique, sur le fil du serveur). Si une partie changeait
+    * quand même pendant l'écriture, l'erreur est attrapée et l'ancien level.dat gardé ({@link #remplacer}).
+    */
+   private static CompoundTag copieUtile(CompoundTag contenu) {
+      CompoundTag c = new CompoundTag();
+      for (String cle : contenu.getAllKeys()) {
+         Tag t = contenu.get(cle);
+         if (t != null) c.put(cle, "fml".equals(cle) ? t : t.copy());
+      }
+      return c;
    }
 
    /** À la place de {@code Util.safeReplaceFile} : vrai si le remplacement part avec l'écriture gardée par {@link #garder}. */
