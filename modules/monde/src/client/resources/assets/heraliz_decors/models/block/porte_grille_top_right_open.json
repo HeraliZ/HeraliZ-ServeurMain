@@ -1,0 +1,74 @@
+{
+ "textures": {
+  "p": "heraliz_decors:block/porte_grille_haut",
+  "c": "heraliz_decors:block/porte_grille_chant",
+  "particle": "heraliz_decors:block/porte_grille_chant"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    3,
+    16,
+    16
+   ],
+   "faces": {
+    "west": {
+     "texture": "#p",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "cullface": "west"
+    },
+    "east": {
+     "texture": "#p",
+     "uv": [
+      16,
+      0,
+      0,
+      16
+     ]
+    },
+    "north": {
+     "texture": "#c",
+     "uv": [
+      0,
+      0,
+      3,
+      16
+     ],
+     "cullface": "north"
+    },
+    "south": {
+     "texture": "#c",
+     "uv": [
+      0,
+      0,
+      3,
+      16
+     ],
+     "cullface": "south"
+    },
+    "up": {
+     "texture": "#c",
+     "uv": [
+      0,
+      0,
+      3,
+      16
+     ],
+     "cullface": "up"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false
+}

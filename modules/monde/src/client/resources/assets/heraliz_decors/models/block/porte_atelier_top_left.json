@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/door_top_left",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_atelier_bas",
+  "top": "heraliz_decors:block/porte_atelier_haut",
+  "particle": "heraliz_decors:block/porte_atelier_bas"
+ },
+ "render_type": "minecraft:translucent"
+}

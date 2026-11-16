@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/rayonnage_boutique"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/rayonnage_boutique",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/rayonnage_boutique",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/rayonnage_boutique",
+   "y": 270
+  }
+ }
+}

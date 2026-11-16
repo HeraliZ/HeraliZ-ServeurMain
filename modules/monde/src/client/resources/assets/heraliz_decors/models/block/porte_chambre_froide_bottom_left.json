@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/door_bottom_left",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_chambre_froide_bas",
+  "top": "heraliz_decors:block/porte_chambre_froide_haut",
+  "particle": "heraliz_decors:block/porte_chambre_froide_bas"
+ },
+ "render_type": "minecraft:translucent"
+}

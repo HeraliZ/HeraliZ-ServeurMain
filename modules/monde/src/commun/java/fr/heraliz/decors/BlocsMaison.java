@@ -72,9 +72,9 @@ final class BlocsMaison {
         cube("panneau_polaire_blanc", M.METAL, MapColor.SNOW);
         cube("panneau_polaire_orange", M.METAL, MapColor.COLOR_ORANGE);
         cube("panneau_polaire_rouge", M.METAL, MapColor.COLOR_RED);
-        cube("panneau_polaire_gris", M.METAL, MapColor.COLOR_GRAY);
+        cube("panneau_polaire_gris", M.METAL, MapColor.COLOR_GRAY, "escalier", "dalle", "mur");
         cube("panneau_givre", M.METAL, MapColor.SNOW);
-        cube("tole_larmee", M.METAL, MapColor.METAL, "dalle");
+        cube("tole_larmee", M.METAL, MapColor.METAL, "escalier", "dalle", "mur");
         cube("beton_polaire", M.BETON, MapColor.STONE, "escalier", "dalle", "mur");
         cube("neige_tassee", M.NEIGE, MapColor.SNOW);
         cube("glace_sale", M.NEIGE, MapColor.ICE);
@@ -83,6 +83,33 @@ final class BlocsMaison {
         cube("tole_toit_verte", M.METAL, MapColor.COLOR_GREEN, "escalier", "dalle");
         cube("tole_toit_bleue", M.METAL, MapColor.COLOR_BLUE, "escalier", "dalle");
         cube("tole_toit_rouille", M.METAL, MapColor.TERRACOTTA_BROWN, "escalier", "dalle");
+        // nouvelle carte (1.30.3, repris du jar de la carte) : médina, prison, piste d'aérodrome, carlingues, bâches
+        cube("enduit_bleu", M.ENDUIT, MapColor.COLOR_LIGHT_BLUE);
+        cube("enduit_bleu_use", M.ENDUIT, MapColor.COLOR_LIGHT_BLUE);
+        cube("tuile_verte", M.CARREAU, MapColor.COLOR_GREEN, "escalier", "dalle");
+        cube("zellige_ocre", M.CARREAU, MapColor.COLOR_ORANGE);
+        cube("pierre_sable_frise", M.PIERRE, MapColor.SAND);
+        pilier("pilier_sable", M.PIERRE, MapColor.SAND);
+        cube("pise", M.TERRE, MapColor.TERRACOTTA_ORANGE, "escalier", "dalle");
+        decoupe("claustra", M.ENDUIT, MapColor.SAND);
+        cube("sable_dune", M.SABLE, MapColor.SAND);
+        cube("stuc_sculpte", M.ENDUIT, MapColor.QUARTZ);
+        cube("bois_cedre", M.BOIS, MapColor.COLOR_BROWN, "escalier", "dalle");
+        decoupe("feuilles_palmier", M.PALME, MapColor.PLANT);
+        tapis("tapis_kilim", M.TOILE, MapColor.COLOR_BLUE);
+        cube("mur_prison", M.BETON, MapColor.TERRACOTTA_WHITE);
+        cube("mur_prison_bas", M.BETON, MapColor.COLOR_GREEN);
+        cube("sol_prison", M.BETON, MapColor.COLOR_GRAY, "dalle");
+        cube("beton_banche", M.BETON, MapColor.STONE, "escalier", "dalle", "mur");
+        decoupe("barreaux", M.METAL, MapColor.METAL);
+        cube("beton_piste", M.BETON, MapColor.STONE, "dalle");
+        cube("marquage_blanc", M.BETON, MapColor.SNOW);
+        cube("marquage_jaune", M.BETON, MapColor.COLOR_YELLOW);
+        cube("carlingue_kaki", M.METAL, MapColor.COLOR_GREEN, "escalier", "dalle");
+        cube("carlingue_grise", M.METAL, MapColor.COLOR_GRAY, "escalier", "dalle");
+        translucide("verriere", M.METAL, MapColor.COLOR_CYAN);
+        pilier("pneu", M.LAINE, MapColor.COLOR_BLACK);
+        cube("bache_kaki", M.TOILE, MapColor.COLOR_GREEN, "escalier", "dalle");
     }
 
     /** Bloc plein et ses variantes (escalier, dalle, muret). */

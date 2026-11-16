@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/echelle_givree"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/echelle_givree",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/echelle_givree",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/echelle_givree",
+   "y": 270
+  }
+ }
+}

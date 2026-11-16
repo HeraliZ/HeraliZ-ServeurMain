@@ -1,0 +1,42 @@
+{
+ "textures": {
+  "j": "heraliz_decors:block/jonchee_douilles",
+  "particle": "heraliz_decors:block/jonchee_douilles"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0.1,
+    0
+   ],
+   "to": [
+    16,
+    0.1,
+    16
+   ],
+   "faces": {
+    "up": {
+     "texture": "#j",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#j",
+     "uv": [
+      0,
+      16,
+      16,
+      0
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false
+}

@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/door_top_right_open",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_orientale_bleue_bas",
+  "top": "heraliz_decors:block/porte_orientale_bleue_haut",
+  "particle": "heraliz_decors:block/porte_orientale_bleue_bas"
+ }
+}

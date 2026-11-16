@@ -1,0 +1,11 @@
+{
+ "variants": {
+  "axis=x": {
+   "model": "heraliz_decors:block/arc_sable"
+  },
+  "axis=z": {
+   "model": "heraliz_decors:block/arc_sable",
+   "y": 90
+  }
+ }
+}

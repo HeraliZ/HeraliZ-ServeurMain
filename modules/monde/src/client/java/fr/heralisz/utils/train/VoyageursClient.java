@@ -86,6 +86,7 @@ public final class VoyageursClient {
             v.vz = 0f;
             v.passis = false;
             v.pallonge = false;
+            v.paccroupi = false;
             v.pcourse = false;
             v.sautBloque = TrainClient.saut();                               // Espace tenue en montant : pas un saut
             TrainClient.aide(false);
@@ -135,13 +136,16 @@ public final class VoyageursClient {
             change = true;
             TrainClient.aide(true);
         }
+        boolean accroupi = acc && !v.passis && !v.pallonge;               // Maj tenu debout : accroupi (09/11)
+        change |= accroupi != v.paccroupi;
+        v.paccroupi = accroupi;
         v.accroupiPrec = acc;
         v.ramperPrec = rp;
         boolean coursePrec = v.pcourse;
         boolean bouge = marche(v, p, h, e, pl);
         change |= v.pcourse != coursePrec;
         if (bouge || change || v.tickCount % 10 == 0) {
-            TrainClient.envoyer(v.pv, v.px, v.pz, Train.Marche.etat(v.passis, v.pallonge, v.pcourse), v.ph);
+            TrainClient.envoyer(v.pv, v.px, v.pz, Train.Marche.etat(v.passis, v.pallonge, v.pcourse, v.paccroupi), v.ph);
         }
         h.placer(v.pv, e.s(), pl);
         if (!Double.isNaN(v.capPrec)) {                                   // le regard tourne avec la voiture
@@ -152,6 +156,7 @@ public final class VoyageursClient {
             p.setYHeadRot(p.getYHeadRot() + (float) d);
         }
         v.capPrec = pl.cap;
+        BagagesClient.aide(v, p);
     }
 
     /** Vitesse de marche du joueur (attribut de Minecraft, sans le bonus de course), comme LivingEntity.getSpeed :
@@ -186,11 +191,15 @@ public final class VoyageursClient {
             ix *= 0.2f;
             iz *= 0.2f;
         }
+        if (v.paccroupi) {                                                // accroupi : à 30 %, comme Minecraft
+            ix *= 0.3f;
+            iz *= 0.3f;
+        }
         boolean auSol = v.ph <= 0f && v.pvy <= 0f;
         // course : comme Minecraft (touche de course en avançant franchement ; elle dure tant qu'on avance), debout,
         // assez nourri, sans objet en cours d'utilisation ni cécité
         boolean nourri = p.getFoodData().getFoodLevel() > 6 || p.getAbilities().mayfly;
-        boolean course = libre && !v.pallonge && !p.input.shiftKeyDown && nourri && !p.isUsingItem() && !p.hasEffect(MobEffects.BLINDNESS)
+        boolean course = libre && !v.pallonge && !v.paccroupi && !p.input.shiftKeyDown && nourri && !p.isUsingItem() && !p.hasEffect(MobEffects.BLINDNESS)
                 && (v.pcourse ? p.input.forwardImpulse > 1e-5f : mc.options.keySprint.isDown() && p.input.forwardImpulse >= 0.8f);
         course(v, p, course);
         double yaw = Math.toRadians(p.getYRot());

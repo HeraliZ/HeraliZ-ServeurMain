@@ -1,0 +1,62 @@
+{
+ "multipart": [
+  {
+   "apply": {
+    "model": "heraliz_decors:block/gaine_coeur"
+   }
+  },
+  {
+   "when": {
+    "north": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/gaine_bras"
+   }
+  },
+  {
+   "when": {
+    "east": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/gaine_bras",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "south": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/gaine_bras",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "west": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/gaine_bras",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "up": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/gaine_bras",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "down": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/gaine_bras",
+    "x": 90
+   }
+  }
+ ]
+}

@@ -31,9 +31,11 @@ import net.minecraftforge.registries.RegistryObject;
  * touchent le train) est dans TrainServeur, VoyageursServeur et BallesTrain (src/serveur).
  */
 public final class Train {
-    private static final String PROTO = "5";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
+    private static final String PROTO = "7";                  // 3 : réseau choisi par le monde, deux rames (09/10) ;
                                                               // 4 : saut dans la voiture, retouches de la voie (11/10) ;
-                                                              // 5 : allongé et course dans la voiture, vitres cassées (12/10)
+                                                              // 5 : allongé et course dans la voiture, vitres cassées (12/10) ;
+                                                              // 6 : accroupi dans la voiture, bagages à fouiller (09/11) ;
+                                                              // 7 : bagages en vrais conteneurs, étoiles, arrêt de 40 s (10/11)
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeraliszUtils.MODID, "train"),
             () -> PROTO, PROTO::equals, PROTO::equals);
 
@@ -72,10 +74,18 @@ public final class Train {
     /** Position d'un voyageur dans sa voiture (client -> serveur) : voiture, lx, lz, état (ASSIS, ALLONGE, COURSE),
      *  hauteur du saut au-dessus du plancher (0 : les pieds au plancher ; vérifiée par le serveur, VoyageursServeur.marche). */
     public record Marche(int vehicule, float lx, float lz, byte etat, float hauteur) {
-        public static final byte ASSIS = 1, ALLONGE = 2, COURSE = 4;
+        public static final byte ASSIS = 1, ALLONGE = 2, COURSE = 4, ACCROUPI = 8;
 
         public static byte etat(boolean assis, boolean allonge, boolean course) {
-            return (byte) ((assis ? ASSIS : 0) | (allonge ? ALLONGE : 0) | (course ? COURSE : 0));
+            return etat(assis, allonge, course, false);
+        }
+
+        public static byte etat(boolean assis, boolean allonge, boolean course, boolean accroupi) {
+            return (byte) ((assis ? ASSIS : 0) | (allonge ? ALLONGE : 0) | (course ? COURSE : 0) | (accroupi ? ACCROUPI : 0));
+        }
+
+        public boolean accroupi() {
+            return (etat & ACCROUPI) != 0;
         }
 
         public boolean assis() {
@@ -100,6 +110,31 @@ public final class Train {
 
         static Marche lire(FriendlyByteBuf b) {
             return new Marche(b.readVarInt(), b.readFloat(), b.readFloat(), b.readByte(), b.readFloat());
+        }
+    }
+
+    /** Fouille d'un bagage du train (client -> serveur) : voiture et numéro de la place (Bagages.places), tout est
+     *  revérifié par le serveur (BagagesServeur.ouvrir). */
+    public record Bagage(int vehicule, int place) {
+        void ecrire(FriendlyByteBuf b) {
+            b.writeVarInt(vehicule);
+            b.writeVarInt(place);
+        }
+
+        static Bagage lire(FriendlyByteBuf b) {
+            return new Bagage(b.readVarInt(), b.readVarInt());
+        }
+    }
+
+    /** Bagages déjà ouverts pendant la période en cours (serveur -> client) : ils ne scintillent plus. */
+    public record BagagesOuverts(long epoque, long[] cles) {
+        void ecrire(FriendlyByteBuf b) {
+            b.writeLong(epoque);
+            b.writeLongArray(cles);
+        }
+
+        static BagagesOuverts lire(FriendlyByteBuf b) {
+            return new BagagesOuverts(b.readLong(), b.readLongArray());
         }
     }
 
@@ -205,6 +240,17 @@ public final class Train {
             ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
             ctx.get().setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CANAL.registerMessage(6, Bagage.class, Bagage::ecrire, Bagage::lire, (m, ctx) -> {
+            ServerPlayer sp = ctx.get().getSender();
+            ctx.get().enqueueWork(() -> {
+                if (sp != null) RECEPTION_SERVEUR.accept(new Recu(sp, m));
+            });
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CANAL.registerMessage(7, BagagesOuverts.class, BagagesOuverts::ecrire, BagagesOuverts::lire, (m, ctx) -> {
+            ctx.get().enqueueWork(() -> RECEPTION_CLIENT.accept(m));
+            ctx.get().setPacketHandled(true);
+        }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         // écouteurs serveur (connexion, commandes, tick du monde, descentes forcées...) : TrainServeur.init (partie serveur).
         // Restent ici, des deux côtés comme à l'origine : à bord, rien n'est cassé, posé ni utilisé (le client n'essaie
         // même pas : pas de geste prédit qu'il faudrait corriger).
@@ -222,8 +268,10 @@ public final class Train {
     private static void poseAllonge(net.minecraftforge.event.TickEvent.PlayerTickEvent e) {
         if (e.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
         net.minecraft.world.entity.player.Player p = e.player;
-        if (p.getVehicle() instanceof Voyageur v && !v.isRemoved() && v.allonge() && p.getPose() != net.minecraft.world.entity.Pose.SWIMMING) {
-            p.setPose(net.minecraft.world.entity.Pose.SWIMMING);
+        if (p.getVehicle() instanceof Voyageur v && !v.isRemoved()) {
+            net.minecraft.world.entity.Pose voulue = v.allonge() ? net.minecraft.world.entity.Pose.SWIMMING
+                    : v.accroupi() ? net.minecraft.world.entity.Pose.CROUCHING : null;
+            if (voulue != null && p.getPose() != voulue) p.setPose(voulue);       // accroupi (09/11) : pose de Minecraft
         }
     }
 

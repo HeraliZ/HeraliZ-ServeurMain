@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heraliz_decors:block/cables_pendants"
+   },
+   {
+    "model": "heraliz_decors:block/cables_pendants",
+    "y": 90
+   }
+  ]
+ }
+}

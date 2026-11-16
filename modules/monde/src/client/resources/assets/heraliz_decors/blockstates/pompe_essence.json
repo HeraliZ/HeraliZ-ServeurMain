@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "facing=north,partie=bas": {
+   "model": "heraliz_decors:block/pompe_essence_bas"
+  },
+  "facing=north,partie=haut": {
+   "model": "heraliz_decors:block/pompe_essence_haut"
+  },
+  "facing=east,partie=bas": {
+   "model": "heraliz_decors:block/pompe_essence_bas",
+   "y": 90
+  },
+  "facing=east,partie=haut": {
+   "model": "heraliz_decors:block/pompe_essence_haut",
+   "y": 90
+  },
+  "facing=south,partie=bas": {
+   "model": "heraliz_decors:block/pompe_essence_bas",
+   "y": 180
+  },
+  "facing=south,partie=haut": {
+   "model": "heraliz_decors:block/pompe_essence_haut",
+   "y": 180
+  },
+  "facing=west,partie=bas": {
+   "model": "heraliz_decors:block/pompe_essence_bas",
+   "y": 270
+  },
+  "facing=west,partie=haut": {
+   "model": "heraliz_decors:block/pompe_essence_haut",
+   "y": 270
+  }
+ }
+}

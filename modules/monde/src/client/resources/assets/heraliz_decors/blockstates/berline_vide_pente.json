@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/berline_vide_pente"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/berline_vide_pente",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/berline_vide_pente",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/berline_vide_pente",
+   "y": 270
+  }
+ }
+}

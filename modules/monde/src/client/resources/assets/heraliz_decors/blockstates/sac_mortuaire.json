@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/sac_mortuaire"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/sac_mortuaire",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/sac_mortuaire",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/sac_mortuaire",
+   "y": 270
+  }
+ }
+}

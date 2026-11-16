@@ -1,0 +1,64 @@
+{
+ "variants": {
+  "facing=north,partie=no": {
+   "model": "heraliz_decors:block/hublot_grand_no"
+  },
+  "facing=north,partie=ne": {
+   "model": "heraliz_decors:block/hublot_grand_ne"
+  },
+  "facing=north,partie=so": {
+   "model": "heraliz_decors:block/hublot_grand_so"
+  },
+  "facing=north,partie=se": {
+   "model": "heraliz_decors:block/hublot_grand_se"
+  },
+  "facing=east,partie=no": {
+   "model": "heraliz_decors:block/hublot_grand_no",
+   "y": 90
+  },
+  "facing=east,partie=ne": {
+   "model": "heraliz_decors:block/hublot_grand_ne",
+   "y": 90
+  },
+  "facing=east,partie=so": {
+   "model": "heraliz_decors:block/hublot_grand_so",
+   "y": 90
+  },
+  "facing=east,partie=se": {
+   "model": "heraliz_decors:block/hublot_grand_se",
+   "y": 90
+  },
+  "facing=south,partie=no": {
+   "model": "heraliz_decors:block/hublot_grand_no",
+   "y": 180
+  },
+  "facing=south,partie=ne": {
+   "model": "heraliz_decors:block/hublot_grand_ne",
+   "y": 180
+  },
+  "facing=south,partie=so": {
+   "model": "heraliz_decors:block/hublot_grand_so",
+   "y": 180
+  },
+  "facing=south,partie=se": {
+   "model": "heraliz_decors:block/hublot_grand_se",
+   "y": 180
+  },
+  "facing=west,partie=no": {
+   "model": "heraliz_decors:block/hublot_grand_no",
+   "y": 270
+  },
+  "facing=west,partie=ne": {
+   "model": "heraliz_decors:block/hublot_grand_ne",
+   "y": 270
+  },
+  "facing=west,partie=so": {
+   "model": "heraliz_decors:block/hublot_grand_so",
+   "y": 270
+  },
+  "facing=west,partie=se": {
+   "model": "heraliz_decors:block/hublot_grand_se",
+   "y": 270
+  }
+ }
+}

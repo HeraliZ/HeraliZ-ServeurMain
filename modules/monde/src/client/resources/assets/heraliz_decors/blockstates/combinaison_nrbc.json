@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/combinaison_nrbc"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/combinaison_nrbc",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/combinaison_nrbc",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/combinaison_nrbc",
+   "y": 270
+  }
+ }
+}

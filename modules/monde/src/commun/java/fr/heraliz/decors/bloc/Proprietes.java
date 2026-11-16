@@ -21,6 +21,17 @@ public final class Proprietes {
         @Override public String getSerializedName() { return n; }
     }
 
+    /** Quart d'un décor posé sur 2 × 2 blocs (nord-ouest, nord-est, sud-ouest, sud-est) et son décalage depuis le nord-ouest. */
+    public enum Quart implements StringRepresentable {
+        NO("no", 0, 0), NE("ne", 1, 0), SO("so", 0, 1), SE("se", 1, 1);
+        private final String n;
+        public final int dx;
+        public final int dz;
+        Quart(String n, int dx, int dz) { this.n = n; this.dx = dx; this.dz = dz; }
+        @Override public String getSerializedName() { return n; }
+    }
+
+    public static final EnumProperty<Quart> QUART = EnumProperty.create("partie", Quart.class);
     public static final EnumProperty<Taille> TAILLE = EnumProperty.create("taille", Taille.class);
     public static final EnumProperty<Pose> POSE = EnumProperty.create("pose", Pose.class);
     public static final EnumProperty<Pose> POSE2 = EnumProperty.create("pose", Pose.class, Pose.SOL, Pose.PLAFOND);

@@ -1,0 +1,21 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heraliz_decors:block/filon_charbon"
+   },
+   {
+    "model": "heraliz_decors:block/filon_charbon",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/filon_charbon",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/filon_charbon",
+    "y": 270
+   }
+  ]
+ }
+}

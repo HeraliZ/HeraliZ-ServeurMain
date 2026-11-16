@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/door_bottom_right_open",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_cloutee_sombre_bas",
+  "top": "heraliz_decors:block/porte_cloutee_sombre_haut",
+  "particle": "heraliz_decors:block/porte_cloutee_sombre_bas"
+ }
+}

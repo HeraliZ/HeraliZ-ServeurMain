@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/conteneur_paroi_blanc"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/conteneur_paroi_blanc",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/conteneur_paroi_blanc",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/conteneur_paroi_blanc",
+   "y": 270
+  }
+ }
+}

@@ -427,5 +427,7 @@
   "heralisz_utils.zombies.cmd.zone.type": "Неизвестный тип: police, militaire, danger, village или calme.",
   "heralisz_utils.zombies.cmd.zone.ajoutee": "Зона %s (%s) установлена здесь, радиус %s.",
   "heralisz_utils.zombies.cmd.zone.inconnue": "Неизвестная зона: %s",
-  "heralisz_utils.zombies.cmd.zone.retiree": "Зона %s удалена."
+  "heralisz_utils.zombies.cmd.zone.retiree": "Зона %s удалена.",
+  "heralisz_utils.train.bagage": "Багаж · %s",
+  "heralisz_utils.train.bagage.aide": "ПКМ: обыскать багаж"
 }

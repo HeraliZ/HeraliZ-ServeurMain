@@ -1,0 +1,50 @@
+{
+ "variants": {
+  "allume=true,facing=north": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante"
+  },
+  "allume=true,facing=east": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante",
+   "y": 90
+  },
+  "allume=true,facing=south": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante",
+   "y": 180
+  },
+  "allume=true,facing=west": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante",
+   "y": 270
+  },
+  "allume=true,facing=down": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante",
+   "x": 90
+  },
+  "allume=true,facing=up": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante",
+   "x": 270
+  },
+  "allume=false,facing=north": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante_eteinte"
+  },
+  "allume=false,facing=east": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante_eteinte",
+   "y": 90
+  },
+  "allume=false,facing=south": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante_eteinte",
+   "y": 180
+  },
+  "allume=false,facing=west": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante_eteinte",
+   "y": 270
+  },
+  "allume=false,facing=down": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante_eteinte",
+   "x": 90
+  },
+  "allume=false,facing=up": {
+   "model": "heraliz_decors:block/lampe_rouge_clignotante_eteinte",
+   "x": 270
+  }
+ }
+}

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/masque_gaz_au_sol"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/masque_gaz_au_sol",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/masque_gaz_au_sol",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/masque_gaz_au_sol",
+   "y": 270
+  }
+ }
+}

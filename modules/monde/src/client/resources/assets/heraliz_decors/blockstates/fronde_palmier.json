@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/fronde_palmier"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/fronde_palmier",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/fronde_palmier",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/fronde_palmier",
+   "y": 270
+  }
+ }
+}

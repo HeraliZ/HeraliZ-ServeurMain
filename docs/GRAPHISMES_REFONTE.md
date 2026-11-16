@@ -61,6 +61,17 @@ copiées. Tout est **écrit** par `python modules/monde/outils/herbe_legere.py` 
 - Fichiers du pack « herbe » devenus inactifs (masqués par les nôtres, **gardés** : autre auteur, retour en arrière
   facile) : ses états de bloc `grass`, `tall_grass` et les modèles `grass*`, `os_tinted_cross`, `tall_grass_*`.
 
+
+**Bloc d'herbe « Prairie sauvage »** (10/11, Monde 1.2.1, choix du propriétaire sur des vues du joueur,
+`maquettes/herbe/` de sa copie de travail ; rien testé en jeu) : dessus en brins lisibles (5 tons, mèches d'herbe sèche,
+2 dessins tournés au hasard), côtés où l'herbe retombe en mèches sur la terre, et sur 12 % des blocs un détail posé à
+plat sur le dessus, jamais teinté (cailloux, terre nue, feuilles mortes, pâquerettes). Tout est **écrit** par
+`python modules/monde/outils/herbe_sol.py` (`--verifier`, `--apercu F.png`), jamais à la main : textures
+`grass_block_top`, `grass_block_side_overlay`, `heralisz_utils:block/sol/*`, modèles `heralisz_utils:block/sol/*` et
+état de bloc de `minecraft:grass_block`. La terre du côté (`grass_block_side.png`) et le bloc enneigé ne changent pas.
+Couleur de l'herbe : la même d'un biome à l'autre depuis Interface 2.0.8 (`ECART_BIOMES` de
+`modules/interface/outils/couleurs_nature.py`).
+
 ## 3. Nettoyage sûr des textures
 
 Outil : `python outils/textures_inutiles.py` (nouveau, **lecture seule** ; `--liste F` écrit la liste avec la preuve,

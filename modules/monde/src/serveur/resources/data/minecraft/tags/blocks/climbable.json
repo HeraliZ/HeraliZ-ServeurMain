@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "heraliz_decors:echelle_jaune",
+    "heraliz_decors:echelle_bois_brut",
+    "heraliz_decors:echelle_givree",
+    "heraliz_decors:echelle_corde_desert"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "heraliz_decors:block/cheval_carrousel"
+  },
+  "facing=east": {
+   "model": "heraliz_decors:block/cheval_carrousel",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "heraliz_decors:block/cheval_carrousel",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "heraliz_decors:block/cheval_carrousel",
+   "y": 270
+  }
+ }
+}

@@ -56,6 +56,8 @@ public final class TrainServeur {
     private static void recevoir(Train.Recu r) {
         if (r.paquet() instanceof Train.Marche m) {
             VoyageursServeur.marche(r.joueur(), m);
+        } else if (r.paquet() instanceof Train.Bagage b) {
+            BagagesServeur.ouvrir(r.joueur(), b);
         }
         // Train.Descente (ancienne descente par Maj) : ignoré depuis le 14/10, on ne descend que par les portes
     }
@@ -210,6 +212,7 @@ public final class TrainServeur {
         if (e.getEntity() instanceof ServerPlayer sp && sp.getServer() != null) {
             annoncer(sp.getServer(), sp);
             BallesTrain.envoyerVitres(sp);
+            BagagesServeur.envoyer(sp);
             if (sp.getVehicle() instanceof Voyageur) VoyageursServeur.deconnexion(sp);   // ancien monde : réveil sur le quai
         }
     }

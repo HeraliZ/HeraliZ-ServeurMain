@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/door_top_left_open",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_douane_bas",
+  "top": "heraliz_decors:block/porte_douane_haut",
+  "particle": "heraliz_decors:block/porte_douane_bas"
+ },
+ "render_type": "minecraft:cutout"
+}

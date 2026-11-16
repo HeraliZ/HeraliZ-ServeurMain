@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "partie=no": {
+   "model": "heraliz_decors:block/grand_groupe_ventilation_no"
+  },
+  "partie=ne": {
+   "model": "heraliz_decors:block/grand_groupe_ventilation_ne"
+  },
+  "partie=so": {
+   "model": "heraliz_decors:block/grand_groupe_ventilation_so"
+  },
+  "partie=se": {
+   "model": "heraliz_decors:block/grand_groupe_ventilation_se"
+  }
+ }
+}

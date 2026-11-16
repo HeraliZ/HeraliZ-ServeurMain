@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/door_bottom_left",
+ "textures": {
+  "bottom": "heraliz_decors:block/cellule_door_bas",
+  "top": "heraliz_decors:block/cellule_door_haut",
+  "particle": "heraliz_decors:block/cellule_door_bas"
+ },
+ "render_type": "minecraft:cutout"
+}

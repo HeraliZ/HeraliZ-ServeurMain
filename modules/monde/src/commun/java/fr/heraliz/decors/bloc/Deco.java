@@ -6,6 +6,8 @@ import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -117,6 +119,33 @@ public class Deco extends Block {
     }
 
     // ------------------------------------------------------------------ décor orienté (face au joueur à la pose)
+    /**
+     * Décor posé sur 2 × 2 blocs (1.30.3, repris du jar de la carte) : le bloc posé est le quart nord-ouest, les trois
+     * autres quarts sont posés à côté s'il y a la place (rien n'est remplacé).
+     */
+    public static class ParQuart extends Deco {
+        public ParQuart(Properties p, Function<BlockState, VoxelShape> forme, boolean traversable, Effet effet) {
+            super(p, forme, traversable, effet);
+            registerDefaultState(stateDefinition.any().setValue(Proprietes.QUART, Proprietes.Quart.NO));
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
+            b.add(Proprietes.QUART);
+        }
+
+        @Override
+        public void setPlacedBy(Level l, BlockPos p, BlockState s, LivingEntity e, ItemStack st) {
+            if (l.isClientSide) return;
+            for (Proprietes.Quart q : Proprietes.Quart.values()) {
+                BlockPos o = p.offset(q.dx, 0, q.dz);
+                if (q != Proprietes.Quart.NO && l.getBlockState(o).canBeReplaced()) {
+                    l.setBlock(o, s.setValue(Proprietes.QUART, q), 3);
+                }
+            }
+        }
+    }
+
     public static class Oriente extends Deco {
         public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 

@@ -1,0 +1,48 @@
+{
+ "multipart": [
+  {
+   "apply": {
+    "model": "heraliz_decors:block/barriere_file_attente_poteau"
+   }
+  },
+  {
+   "when": {
+    "north": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/barriere_file_attente_cote",
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "east": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/barriere_file_attente_cote",
+    "y": 90,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "south": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/barriere_file_attente_cote",
+    "y": 180,
+    "uvlock": false
+   }
+  },
+  {
+   "when": {
+    "west": "true"
+   },
+   "apply": {
+    "model": "heraliz_decors:block/barriere_file_attente_cote",
+    "y": 270,
+    "uvlock": false
+   }
+  }
+ ]
+}

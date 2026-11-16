@@ -1,0 +1,9 @@
+{
+ "parent": "minecraft:block/door_bottom_left",
+ "textures": {
+  "bottom": "heraliz_decors:block/porte_chalet_isolee_bas",
+  "top": "heraliz_decors:block/porte_chalet_isolee_haut",
+  "particle": "heraliz_decors:block/porte_chalet_isolee_bas"
+ },
+ "render_type": "minecraft:translucent"
+}

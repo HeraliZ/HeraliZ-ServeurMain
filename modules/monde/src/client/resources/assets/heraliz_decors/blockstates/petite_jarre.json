@@ -1,0 +1,21 @@
+{
+ "variants": {
+  "": [
+   {
+    "model": "heraliz_decors:block/petite_jarre"
+   },
+   {
+    "model": "heraliz_decors:block/petite_jarre",
+    "y": 90
+   },
+   {
+    "model": "heraliz_decors:block/petite_jarre",
+    "y": 180
+   },
+   {
+    "model": "heraliz_decors:block/petite_jarre",
+    "y": 270
+   }
+  ]
+ }
+}
