@@ -19,7 +19,10 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -36,6 +39,9 @@ import java.util.UUID;
  *    <li>Une entité enlevée autrement que par la récolte ({@code /kill}) libère sa place ; une entité sans place connue
  *    (copie, ancienne version, autre monde) n'entre pas dans le monde ; une place dont l'entité a disparu (arrêt brutal du
  *    serveur entre deux sauvegardes) est libérée après une minute de coin de carte chargé sans elle.</li>
+ *    <li>Un arbre abattu libère sa place dès le dernier coup ; sa chute et sa souche sont suivies ici à l'heure de jeu
+ *    ({@link #abattu}), même quand il ne tique pas (Spigot ne fait pas tiquer les entités à plus de 16 blocs d'un
+ *    joueur : {@code entity-activation-range.misc} de spigot.yml).</li>
  * </ul>
  * Fil du serveur seulement.
  */
@@ -53,6 +59,8 @@ public final class Apparition {
     /** Une place a changé pendant le tour : un nouveau tour tout de suite après. */
     private static boolean changement;
     private static final BlockPos.MutableBlockPos POS = new BlockPos.MutableBlockPos();
+    /** Arbres abattus du monde des ressources : UUID -> heure de jeu de la fin de leur chute (dernières bûches). */
+    private static final Map<UUID, Long> ABATTUS = new HashMap<>();
 
     // statistiques depuis le démarrage (/recolte info)
     static int controles, posees;
@@ -77,6 +85,8 @@ public final class Apparition {
     /** Serveur arrêté : tout ce qui est gardé en mémoire est oublié (solo : un autre monde peut suivre). */
     static void arreter() {
         remettreAZero();
+        // (pas au démarrage : les arbres abattus des coins de carte chargés avec la carte sont déjà suivis, arrivee)
+        ABATTUS.clear();
         Places.oublier();
         Zones.oublier();
     }
@@ -112,6 +122,9 @@ public final class Apparition {
         if (++ticksMaintenance >= 20) {
             ticksMaintenance = 0;
             maintenance(s);
+            if (!ABATTUS.isEmpty()) {
+                suivreAbattus(s);
+            }
         }
         long now = System.currentTimeMillis();
         if (now < prochainTravailMs) {
@@ -295,6 +308,44 @@ public final class Apparition {
         liberer(l, e.getUUID(), Reglages.get().ressource(sorte).reapparitionMs());
     }
 
+    /**
+     * Dernier coup sur un arbre : sa place repart tout de suite ailleurs (prête après la chute, la souche et la
+     * réapparition), et l'arbre est suivi jusqu'au départ de sa souche ({@code finChute} : heure de jeu des dernières
+     * bûches).
+     */
+    public static void abattu(ServerLevel l, ArbreServeur a, long finChute) {
+        ABATTUS.put(a.getUUID(), finChute);
+        Reglages r = Reglages.get();
+        liberer(l, a.getUUID(), ArbreServeur.FIN * 50L + ArbreServeur.soucheTicks() * 50L + r.ressource(Reglages.ARBRE).reapparitionMs());
+    }
+
+    /**
+     * Une fois par seconde, s'il y a des arbres abattus : à l'heure de jeu, leurs dernières bûches et leur souche, puis le
+     * départ de la souche, même s'ils ne tiquent pas. Un arbre dont le coin de carte est déchargé n'est plus suivi : il
+     * finit à son chargement (rattrapé par son tick, et suivi de nouveau, {@link #arrivee}), ou n'entre plus dans le monde
+     * si sa souche a fait son temps.
+     */
+    private static void suivreAbattus(MinecraftServer s) {
+        ServerLevel l = monde(s);
+        long t = l.getGameTime();
+        Iterator<Map.Entry<UUID, Long>> it = ABATTUS.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, Long> e = it.next();
+            if (t < e.getValue()) {
+                continue;
+            }
+            if (!(l.getEntity(e.getKey()) instanceof ArbreServeur a) || a.isRemoved()) {
+                it.remove();
+                continue;
+            }
+            a.finirChute(l);
+            if (!a.restePourLaSouche(t)) {
+                it.remove();
+                a.discard();
+            }
+        }
+    }
+
     /** Autant de places de chaque sorte que le barème en veut (les places du staff en plus). */
     static void ajuster(MinecraftServer s) {
         Reglages r = Reglages.get();
@@ -365,6 +416,8 @@ public final class Apparition {
             e.setCanceled(true);
             HeralizRecolte.LOG.info("[recolte] ressource sans place connue retiree en {} ({})", r.blockPosition().toShortString(),
                     l.dimension().location());
+        } else if (r instanceof ArbreServeur a && a.chute() >= 0L) {
+            ABATTUS.put(a.getUUID(), a.chute() + ArbreServeur.FIN);   // arbre abattu rechargé : suivi de nouveau
         }
     }
 

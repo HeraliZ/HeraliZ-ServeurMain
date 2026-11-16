@@ -26,11 +26,13 @@ import java.util.UUID;
  *    joueurs et gardée avec l'entité ; bûches au prorata (2 par coup à la hache), même total quel que soit l'outil.</li>
  *    <li>{@link #COUPS} (entaille) : 0, 1 puis 2 aux tiers du travail, 3 au dernier coup ; {@link #DIRECTION} : à
  *    l'opposé du joueur à chaque coup, figée au dernier.</li>
- *    <li>Au dernier coup, {@link #CHUTE} = heure de jeu : il craque et tombe chez les joueurs ; à l'impact (≈ 2,4 s),
- *    poussière et feuilles le long de la chute ; 2 s plus tard, les bûches de la chute vont au joueur qui l'a abattu
- *    (au sol s'il n'est plus là) et {@link #SOUCHE} = vrai ; sa place repart ailleurs ; la souche reste 10 minutes
- *    (réglage {@code souche_minutes}) puis disparaît. L'arbre qui tombe ne blesse personne (dès la chute, sa boîte est
- *    celle de la souche).</li>
+ *    <li>Au dernier coup, {@link #CHUTE} = heure de jeu : il craque et tombe chez les joueurs, sa place repart aussitôt
+ *    ailleurs (prête après la chute, la souche et le délai de réapparition) ; à l'impact (≈ 2,4 s), poussière et
+ *    feuilles le long de la chute ; 2 s plus tard, les bûches de la chute vont au joueur qui l'a abattu (au sol s'il
+ *    n'est plus là) et {@link #SOUCHE} = vrai ; la souche reste 10 minutes (réglage {@code souche_minutes}) puis
+ *    disparaît. L'arbre qui tombe ne blesse personne (dès la chute, sa boîte est celle de la souche).</li>
+ *    <li>La chute et la souche suivent l'heure de jeu : rattrapées par {@link Apparition} même quand l'arbre ne « tique »
+ *    pas (le serveur, Spigot, ne fait pas tiquer les entités à plus de 16 blocs d'un joueur), et à son chargement.</li>
  * </ul>
  */
 public class ArbreServeur extends Arbre {
@@ -103,6 +105,7 @@ public class ArbreServeur extends Arbre {
             this.impactJoue = false;
             this.entityData.set(CHUTE, l.getGameTime());
             Effets.craque(l, this);
+            Apparition.abattu(l, this, l.getGameTime() + FIN);
         }
     }
 
@@ -123,15 +126,21 @@ public class ArbreServeur extends Arbre {
                 }
             }
             if (t >= FIN) {
-                abattu(l);
+                finirChute(l);
             }
         } else if (t >= FIN + soucheTicks()) {
             this.discard();
         }
     }
 
-    /** Le tronc est parti : les dernières bûches à l'abatteur (au sol s'il n'est plus là), la souche reste, la place repart. */
-    private void abattu(ServerLevel l) {
+    /**
+     * Le tronc est parti : les dernières bûches à l'abatteur (au sol s'il n'est plus là), la souche reste. Appelé par son
+     * tick ou par {@link Apparition} (une seule fois : ensuite {@link #SOUCHE} est vrai).
+     */
+    public void finirChute(ServerLevel l) {
+        if (souche()) {
+            return;
+        }
         Reglages.Ressource r = Reglages.get().ressource(Reglages.ARBRE);
         // les bûches de la chute : ce qui manque pour le total du barème (6 avec le barème de la proposition)
         int reste = Math.max(0, r.matiere() - donne);
@@ -146,7 +155,6 @@ public class ArbreServeur extends Arbre {
         }
         this.entityData.set(SOUCHE, true);
         Effets.tronc(l, this, longueur());
-        Apparition.liberer(l, this.getUUID(), r.reapparitionMs() + soucheTicks() * 50L);
     }
 
     private double longueur() {
@@ -154,13 +162,13 @@ public class ArbreServeur extends Arbre {
     }
 
     /** Ticks où la souche reste (réglage {@code souche_minutes}). */
-    private static long soucheTicks() {
+    public static long soucheTicks() {
         return Reglages.get().soucheMinutes * 1200L;
     }
 
     /**
      * Abattu (en train de tomber, ou souche) et pas encore parti à cette heure de jeu : gardé au chargement de son coin de
-     * carte même sans place (la sienne repart ailleurs dès que le tronc est parti).
+     * carte même sans place (la sienne est repartie ailleurs dès le dernier coup).
      */
     public boolean restePourLaSouche(long heureDeJeu) {
         long debut = chute();
