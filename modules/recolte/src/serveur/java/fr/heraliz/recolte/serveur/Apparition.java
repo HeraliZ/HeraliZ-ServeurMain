@@ -13,6 +13,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 
 import javax.annotation.Nullable;
@@ -376,5 +378,59 @@ public final class Apparition {
             return true;
         }
         return r instanceof ArbreServeur a && a.restePourLaSouche(l.getGameTime());
+    }
+
+    // ------------------------------------------------------------------ commandes du staff
+    /** /recolte placer : une ressource en plus, à cet endroit, sans contrôle (place du staff, pas reposée une fois récoltée). */
+    @Nullable
+    static Entity placer(ServerLevel l, int sorte, int variante, Vec3 pos) {
+        Places pl = Places.de(l.getServer());
+        int espece = sorte == Reglages.ARBRE && variante < 0 ? especeEquilibree(pl, null, l.getRandom()) : Math.max(0, variante);
+        Places.Place p = pl.nouvelle(sorte, espece, true);
+        p.x = Mth.floor(pos.x);
+        p.z = Mth.floor(pos.z);
+        p.depuis = p.prete = System.currentTimeMillis();
+        Entity e = poser(l, pl, p, pos.x, pos.y, pos.z, l.getRandom().nextFloat() * 360.0F);
+        if (e == null) {
+            pl.retirer(p);
+        }
+        return e;
+    }
+
+    /** /recolte retirer : la ressource chargée la plus proche (à {@code rayon} blocs au plus) ; sa place repart tout de suite. */
+    @Nullable
+    static Entity retirerProche(ServerLevel l, Vec3 pos, double rayon) {
+        Entity proche = null;
+        double meilleure = rayon * rayon;
+        for (Entity e : l.getEntities((Entity) null, new AABB(pos, pos).inflate(rayon), x -> x instanceof RessourceEntite)) {
+            double d2 = e.distanceToSqr(pos);
+            if (d2 <= meilleure) {
+                meilleure = d2;
+                proche = e;
+            }
+        }
+        if (proche != null) {
+            liberer(l, proche.getUUID(), 0L);
+            proche.discard();
+        }
+        return proche;
+    }
+
+    /**
+     * /recolte vider : toutes les places oubliées et tirées de nouveau ; les ressources chargées partent maintenant, celles
+     * des coins de carte déchargés à leur chargement (plus de place connue). Rend {ressources retirées, places}.
+     */
+    static int[] vider(MinecraftServer s) {
+        Places pl = Places.de(s);
+        pl.vider();
+        ServerLevel l = monde(s);
+        List<Entity> chargees = new ArrayList<>();
+        chargees.addAll(l.getEntities(EntitesRecolte.GISEMENT.get(), x -> true));
+        chargees.addAll(l.getEntities(EntitesRecolte.ARBRE.get(), x -> true));
+        for (Entity e : chargees) {
+            e.discard();
+        }
+        ajuster(s);
+        return new int[]{chargees.size(), pl.liste().size()};
     }
 }
