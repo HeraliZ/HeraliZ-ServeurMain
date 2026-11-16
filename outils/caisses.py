@@ -406,6 +406,14 @@ def verifier():
             if retire(nbt):
                 print("[caisses] largage aérien : objet retiré du jeu : %s" % retire(nbt))
                 problemes += 1
+    # 16/11 : un objet de LARGAGE_RECOLTE demande le mod Récolte sur le serveur (un objet inconnu fait refuser TOUTE la table
+    # par Minecraft : largage vide) ; module recolte mis de côté (MODULES_DE_COTE de construire.py) : problème
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import construire
+    if "recolte" in construire.MODULES_DE_COTE and any(i.startswith("heraliz_recolte:") for i, _ in LARGAGE_RECOLTE):
+        print("[caisses] largage aérien : le module recolte est mis de côté : vider LARGAGE_RECOLTE et relancer l'outil "
+              "(sinon la table du largage ne se charge plus)")
+        problemes += 1
     print("[caisses] %d problème(s)" % problemes)
     return problemes
 
@@ -450,6 +458,18 @@ LARGAGE_GRENADES = [("m67", 4), ("rgn", 2), ("flash_grenade", 3), ("smoke_grenad
 LARGAGE_MUNITIONS = {"tacz:9mm": (5, 20, 45), "tacz:45acp": (4, 15, 35), "tacz:556x45": (5, 20, 45), "tacz:762x39": (5, 20, 45),
                      "tacz:12g": (3, 10, 20), "tacz:308": (3, 10, 25), "tacz:50ae": (2, 10, 20), "tacz:338": (1, 6, 12)}
 LARGAGE_SOINS = {"commun": (40, 1, 3), "peu_commun": (30, 1, 2), "rare": (20, 1, 1), "epique": (10, 1, 1)}
+# 16/11 (HeraliZ Récolte, choix du propriétaire, maquettes/recolte/PROPOSITION.md §4) : la hache-pioche de survie
+# (Légendaire) se trouve dans le loot T6, T7 et dans les coffres des événements ; la caisse du largage public en est un
+# (le coffre de l'épave de l'hélicoptère est un coffre T7 : outils/loot_armes.py). Chance par caisse, à part des autres
+# lots : la même que dans un coffre T7 (0,4 pour 100). Jamais vendue ni fabriquée.
+LARGAGE_RECOLTE = [("heraliz_recolte:hache_pioche", 0.004)]
+
+
+def ecrire_texte(f, texte):
+    """Écrit texte (lignes en \\n) en gardant les fins de ligne du fichier déjà là (16/11 : lancé sous Linux, l'outil
+    réécrivait en LF les caisses et le largage en CRLF, chaque ligne paraissait changée ; comme loot_armes.py)."""
+    crlf = f.exists() and b"\r\n" in f.read_bytes()[:4096]
+    f.write_bytes((texte.replace("\n", "\r\n") if crlf else texte).encode("utf-8"))
 
 
 def _pool(tirages, entrees):
@@ -497,6 +517,9 @@ def largage_aerien():
                      '{ConsumableId:"heralisz_heal:%s"}' % i, LARGAGE_SOINS[rar][1], LARGAGE_SOINS[rar][2])
              for rar, l in soins_par.items() for i in l]
     deuxieme = dict(_pool(1, armes), conditions=[{"condition": "minecraft:random_chance", "chance": LARGAGE_ARME_EN_PLUS}])
+    # 16/11 : objets rares de la Récolte, chacun avec sa chance par caisse (LARGAGE_RECOLTE)
+    recolte = [dict(_pool(1, [_entree(i, 1)]), conditions=[{"condition": "minecraft:random_chance", "chance": c}])
+               for i, c in LARGAGE_RECOLTE]
     table = {"type": "minecraft:chest",
              "_note": "Écrit par outils/caisses.py (largage_aerien) : ne pas modifier à la main.",
              "pools": [_pool(1, armes), deuxieme,
@@ -505,22 +528,22 @@ def largage_aerien():
                        _pool(LARGAGE_VENTE_TIRAGES, vente),
                        _pool([1, 2], grenades),
                        _pool([2, 3], munitions),
-                       _pool([1, 3], soins)]}
+                       _pool([1, 3], soins)] + recolte}
     return table
 
 
 def ecrire():
-    LARGAGE.write_text(json.dumps(largage_aerien(), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    ecrire_texte(LARGAGE, json.dumps(largage_aerien(), ensure_ascii=False, indent=1) + "\n")
     print("[caisses] largage aérien écrit (%s)" % LARGAGE.relative_to(RACINE))
     for nom, lignes in CAISSES.items():
         f = CAISSES_DIR / ("%s.json" % nom)
-        f.write_text(json.dumps({"_aide": AIDE, "rewards": recompenses(lignes)}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        ecrire_texte(f, json.dumps({"_aide": AIDE, "rewards": recompenses(lignes)}, ensure_ascii=False, indent=2) + "\n")
         print("[caisses] %s : %d récompenses" % (nom, len(json.loads(f.read_text(encoding="utf-8"))["rewards"])))
     # caisses de la bêta (26/10) : passent devant celles du dessus ; les autres sont vidées
     for nom, lignes in CAISSES_BETA.items():
         r = recompenses_beta(nom, lignes)
         f = CAISSES_DIR / ("%s.json" % nom)
-        f.write_text(json.dumps({"_aide": AIDE, "rewards": r}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        ecrire_texte(f, json.dumps({"_aide": AIDE, "rewards": r}, ensure_ascii=False, indent=2) + "\n")
         total = sum(x["weight"] for x in r)
         par = {}
         for x in r:
@@ -529,8 +552,8 @@ def ecrire():
             "%s %.2f %%" % (k, 100 * v / total) for k, v in sorted(par.items(), key=lambda kv: -kv[1]))))
     for nom in DESACTIVEES:
         f = CAISSES_DIR / ("%s.json" % nom)
-        f.write_text(json.dumps({"_aide": "Caisse fermée pendant la bêta (outils/caisses.py, DESACTIVEES) : vide, la clé "
-                                          "n'est pas utilisée.", "rewards": []}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        ecrire_texte(f, json.dumps({"_aide": "Caisse fermée pendant la bêta (outils/caisses.py, DESACTIVEES) : vide, la clé "
+                                            "n'est pas utilisée.", "rewards": []}, ensure_ascii=False, indent=2) + "\n")
         print("[caisses] %s : fermée pour la bêta" % nom)
     for f in sorted(CAISSES_DIR.glob("*.json")):
         if f.stem in CAISSES or f.stem in CAISSES_BETA or f.stem in DESACTIVEES:
@@ -544,7 +567,7 @@ def ecrire():
             apres.append(soin("surv12", 5, 3, "legendary"))   # à la place de l'ancien totem
         if apres != avant:
             d["rewards"] = apres
-            f.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            ecrire_texte(f, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
             print("[caisses] %s réparée (%d -> %d récompenses)" % (f.name, len(avant), len(apres)))
 
 
