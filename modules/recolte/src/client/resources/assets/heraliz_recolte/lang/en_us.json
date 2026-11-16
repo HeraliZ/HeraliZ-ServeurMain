@@ -17,5 +17,8 @@
   "heraliz_recolte.info.hache_pioche": "Wood and stone, with 40%% fewer hits.",
   "heraliz_recolte.refus.outil_arbre": "You need an axe to fell this tree.",
   "heraliz_recolte.refus.outil_gisement": "You need a pickaxe to break this deposit.",
+  "heraliz_recolte.cmd.recharger.ok": "recolte.json reloaded: %1$s trees, %2$s stone deposits, %3$s metal and %4$s titanium at a time.",
+  "heraliz_recolte.cmd.recharger.absent": "recolte.json missing: default settings.",
+  "heraliz_recolte.cmd.recharger.erreur": "recolte.json unreadable, current settings kept: %s",
   "heraliz_recolte.recu": "+%1$s %2$s"
 }

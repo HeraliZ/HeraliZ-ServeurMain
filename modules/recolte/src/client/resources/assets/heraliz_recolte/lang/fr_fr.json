@@ -17,5 +17,8 @@
   "heraliz_recolte.info.hache_pioche": "Le bois et la pierre, avec 40 %% de coups en moins.",
   "heraliz_recolte.refus.outil_arbre": "Il faut une hache pour abattre cet arbre.",
   "heraliz_recolte.refus.outil_gisement": "Il faut une pioche pour casser ce gisement.",
+  "heraliz_recolte.cmd.recharger.ok": "recolte.json relu : %1$s arbres, %2$s gisements de pierre, %3$s de métal et %4$s de titane à la fois.",
+  "heraliz_recolte.cmd.recharger.absent": "recolte.json absent : barème par défaut.",
+  "heraliz_recolte.cmd.recharger.erreur": "recolte.json illisible, réglages en cours gardés : %s",
   "heraliz_recolte.recu": "+%1$s %2$s"
 }

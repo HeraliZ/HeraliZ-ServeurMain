@@ -17,5 +17,8 @@
   "heraliz_recolte.info.hache_pioche": "Дерево и камень, на 40%% меньше ударов.",
   "heraliz_recolte.refus.outil_arbre": "Чтобы срубить это дерево, нужен топор.",
   "heraliz_recolte.refus.outil_gisement": "Чтобы разбить эту залежь, нужна кирка.",
+  "heraliz_recolte.cmd.recharger.ok": "recolte.json перечитан: одновременно деревьев %1$s, каменных залежей %2$s, металлических %3$s, титановых %4$s.",
+  "heraliz_recolte.cmd.recharger.absent": "recolte.json отсутствует: настройки по умолчанию.",
+  "heraliz_recolte.cmd.recharger.erreur": "recolte.json не читается, текущие настройки сохранены: %s",
   "heraliz_recolte.recu": "+%1$s %2$s"
 }
