@@ -1,0 +1,7 @@
+// HeraliZ Récolte : arbres à abattre et gisements de la carte, outils de récolte (cahier des charges : modules/recolte/A_FAIRE.md).
+plugins {
+    id 'net.minecraftforge.gradle'
+    id 'org.spongepowered.mixin'
+}
+
+apply from: rootProject.file('gradle/module-coupe.gradle')
