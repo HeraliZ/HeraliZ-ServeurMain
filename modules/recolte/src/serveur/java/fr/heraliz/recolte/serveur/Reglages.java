@@ -114,7 +114,7 @@ public final class Reglages {
         JsonObject a = objet(o, "apparition");
         ResourceLocation m = ResourceLocation.tryParse(texte(a, "monde", "minecraft:overworld"));
         monde = m == null ? Level.OVERWORLD : ResourceKey.create(Registries.DIMENSION, m);
-        distanceJoueurs = entier(a, "distance_joueurs", 48, 0, 160);
+        distanceJoueurs = entier(a, "distance_joueurs", 70, 0, 160);
         loinDuSpawn = entier(a, "loin_du_spawn", 200, 0, 5000);
         abordsVilles = entier(a, "abords_villes", 40, 0, 1000);
         margeVip = entier(a, "marge_vip", 16, 0, 500);

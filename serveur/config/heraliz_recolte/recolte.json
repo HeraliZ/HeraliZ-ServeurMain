@@ -14,7 +14,7 @@
   "apparition": {
     "_aide": "Où et quand une ressource apparaît. Le serveur ne charge jamais un coin de carte pour ça : une place tirée au hasard attend qu'un joueur charge son coin de carte, sans personne à moins de distance_joueurs blocs, puis elle est contrôlée (sinon : une autre place au hasard). monde : le monde des ressources (un seul ; après l'avoir changé : /recolte vider) ; loin_du_spawn : blocs autour du point d'apparition du monde ; abords_villes : blocs autour des villes (config/heralisz_clans/zones.json) ; marge_vip : blocs autour des zones VIP (heraliz_grades/zones_vip.json) ; marge_bordure : blocs à éviter près de la bordure du monde ; zone : [x1, z1, x2, z2] pour limiter le tirage (absent : toute la bordure) ; ecart_autres : blocs au moins entre deux ressources de sortes différentes ; ecart_sol : différence de hauteur permise sous la ressource (à plat : 1) ; eau : pas d'eau à moins de … blocs ; non_naturels : aucun bloc qui n'est pas dans sols_naturels ni naturels (route, mur, bâtiment) à moins de … blocs ; troncons_bases : aucune pièce de base de clan (CRac) dans les tronçons de 16 blocs à cette distance (2 : au moins 32 blocs) ; attente_max_minutes : une place qui attend depuis ce temps un coin de carte où personne ne va est tirée ailleurs ; essais : points tirés au plus pour une place ; sols_naturels : sols où une ressource peut être posée (« #… » : une étiquette de blocs de Minecraft) ; naturels : blocs admis autour (terrain, plantes, arbres).",
     "monde": "minecraft:overworld",
-    "distance_joueurs": 48,
+    "distance_joueurs": 70,
     "loin_du_spawn": 200,
     "abords_villes": 40,
     "marge_vip": 16,
