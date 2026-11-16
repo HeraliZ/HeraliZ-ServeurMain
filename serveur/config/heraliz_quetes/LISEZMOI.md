@@ -19,6 +19,15 @@ les composants (moitié prix) ; **Jacqueline** vend tous les soins ; **le Doyen*
 vend les accessoires d'armes Commun à Rare. On leur parle, puis « Voir ce que tu vends » / « Te vendre des objets ».
 Les poser : `/pnj creer mila`, `/pnj creer jacqueline`, `/pnj creer doyen`, `/pnj creer jack`.
 
+**Le Contremaître** (16/11, HeraliZ Récolte ; fichier `pnj/contremaitre.json`, marchand `"type": "troc"`, échanges
+**écrits** par `outils/marchands.py`, tableau `CONTREMAITRE`) ne vend ni ne rachète rien : il échange les matières brutes
+récoltées sur la carte contre les matériaux des bases (ceux que vend le Bâtisseur) : 5 bûches → 1 planche, 1 bûche →
+5 brindilles, 8 pierres brutes → 1 pierre taillée, 10 minerais de métal → 1 fragment de métal, 8 minerais de titane →
+1 métal renforcé. On lui parle, puis « Faire un échange ». Le poser au spawn, une fois : se placer là où il doit se
+tenir, regarder dans la direction où il doit regarder, puis `/pnj creer contremaitre` (`/pnj deplacer contremaitre`
+pour le bouger). Son apparence est dans son fichier ; pour lui donner la sienne : `/pnj apparence contremaitre moi`.
+Sans le mod HeraliZ Récolte sur le serveur, ses échanges ne s'affichent pas.
+
 ### Créer son propre marchand, en jeu (sans fichier)
 
 Réservé aux op (niveau 4). Tout se fait en jeu, rien à écrire dans un fichier.
