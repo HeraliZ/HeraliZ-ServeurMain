@@ -122,6 +122,13 @@ TAGS_PNJ = RACINE / "modules" / "pnj" / "src" / "serveur" / "resources" / "data"
 COFFRES = RACINE / "modules" / "loot" / "src" / "serveur" / "resources" / "data" / "heraliz_loot" / "coffres"
 
 
+def ecrire_texte(f, texte):
+    """Écrit texte (lignes en \\n) en gardant les fins de ligne du fichier déjà là (16/11 : lancé sous Linux, l'outil
+    réécrivait en LF les fichiers des PNJ et les tags en CRLF, chaque ligne paraissait changée ; comme loot_armes.py)."""
+    crlf = f.exists() and b"\r\n" in f.read_bytes()[:4096]
+    f.write_bytes((texte.replace("\n", "\r\n") if crlf else texte).encode("utf-8"))
+
+
 def tags_rachat():
     """Tags des armures et des sacs rachetés : tout ce que le loot T1 à T7 peut donner (entrées facultatives)."""
     familles = {"rachat_armures": set(), "rachat_sacs": set()}
@@ -134,8 +141,7 @@ def tags_rachat():
     TAGS_PNJ.mkdir(parents=True, exist_ok=True)
     for nom, ids in familles.items():
         valeurs = [{"id": i, "required": False} for i in sorted(ids)]
-        (TAGS_PNJ / (nom + ".json")).write_text(json.dumps({"replace": False, "values": valeurs}, indent=2) + "\n",
-                                                encoding="utf-8")
+        ecrire_texte(TAGS_PNJ / (nom + ".json"), json.dumps({"replace": False, "values": valeurs}, indent=2) + "\n")
         print(f"tag heraliz_quetes:{nom} : {len(ids)} objets")
 
 
@@ -306,5 +312,5 @@ if __name__ == "__main__":
         f = PNJ / f"{pid}.json"
         d = json.loads(f.read_text(encoding="utf-8"))
         d["marchand"] = m
-        f.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        ecrire_texte(f, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
         print(f"{pid} : {len(m.get('articles', m.get('rachat', [])))} {'articles' if 'articles' in m else 'règles'}")
