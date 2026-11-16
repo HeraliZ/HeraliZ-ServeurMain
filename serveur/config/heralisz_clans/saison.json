@@ -1,5 +1,5 @@
 {
-  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; plafonds_clan : groupes de sources pve, au plus points_jour points par clan et par jour (0 : sans plafond ; recolte = gisements de metal, recolte_metal, et de titane, recolte_rare, de HeraliZ Recolte) ; boss_coefficients : part des points du boss pour le 1er kill de ce boss par le clan dans la journee, le 2e, puis tous les suivants ; pvp.plafond_jour_clan : points de kills gagnes par clan et par jour au plus (0 : sans plafond ; les points perdus par le clan de la victime ne sont pas plafonnes) ; relu par /recharger saison.",
+  "_aide": "Bareme de la saison des clans (docs/SAISON_CLANS.md). pve : points par unite (vente_1000 = pour 1 000 herals vendus) ; plafonnees : petites actions, au plus plafond_jour_joueur points par joueur et par jour ; boss_coefficients : part des points du boss pour le 1er kill de ce boss par le clan dans la journee, le 2e, puis tous les suivants ; pvp.plafond_jour_clan : points de kills gagnes par clan et par jour au plus (0 : sans plafond ; les points perdus par le clan de la victime ne sont pas plafonnes) ; relu par /recharger saison.",
   "pve": {
     "zombie": 0.01,
     "zombie_mutant": 0.02,
@@ -23,9 +23,7 @@
     "craft_legendaire": 8.0,
     "craft_unique": 8.0,
     "quete_principale": 2.0,
-    "quete_clan": 5.0,
-    "recolte_metal": 1.0,
-    "recolte_rare": 2.0
+    "quete_clan": 5.0
   },
   "plafonnees": [
     "brute",
@@ -47,15 +45,6 @@
     "zombie_mutant"
   ],
   "plafond_jour_joueur": 50.0,
-  "plafonds_clan": {
-    "recolte": {
-      "sources": [
-        "recolte_metal",
-        "recolte_rare"
-      ],
-      "points_jour": 10.0
-    }
-  },
   "entites": {
     "heralisz_utils:zombie_survie": "zombie",
     "minecraft:zombie": "zombie",

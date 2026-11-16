@@ -850,9 +850,6 @@
   "gui.saison.c.objet_disque_dur_militaire_plafond": "sold to Mila at spawn, %s per clan per day at most",
   "gui.saison.l.objet_boite_noire_helico": "Helicopter black box sold",
   "gui.saison.c.objet_boite_noire_helico_plafond": "sold to Mila at spawn, %s per clan per day at most",
-  "gui.saison.l.recolte": "Metal / titanium deposit",
-  "gui.saison.c.recolte": "when the deposit is emptied",
-  "gui.saison.c.recolte_plafond": "deposit emptied; %s points per clan per day at most",
   "msg.niveau.capture": "Level %s: your clan can now unlock zone captures (Territories upgrade, K key, Level tab).",
   "msg.niveau.membres": "Level %s: your clan can now have %s members.",
   "msg.niveau.redescendu": "Staff correction: the clan drops to level %s (%s members at most, upgrades kept).",
@@ -942,8 +939,6 @@
   "historique.source.objet_mallette_scellee": "Sealed briefcase sold",
   "historique.source.objet_disque_dur_militaire": "Military hard drive sold",
   "historique.source.objet_boite_noire_helico": "Helicopter black box sold",
-  "historique.source.recolte_metal": "Metal deposit emptied",
-  "historique.source.recolte_rare": "Titanium deposit emptied",
   "historique.capture.libre": "Zone captured: %s",
   "historique.capture.prise": "Zone %s taken from [%s]",
   "historique.kill": "%s killed %s",
@@ -960,6 +955,5 @@
   "historique.plafond.petites": "Daily cap for small actions reached (%s points)",
   "historique.plafond.kills": "Daily kill cap reached (%s points)",
   "historique.plafond.evenement": "%s: daily cap reached (%s per day)",
-  "historique.plafond.recolte": "Daily harvesting cap reached (%s points)",
   "historique.droits_grade": "%s changed the rights of the %s rank (%s changes)"
 }

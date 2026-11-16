@@ -850,9 +850,6 @@
   "gui.saison.c.objet_disque_dur_militaire_plafond": "продажа Миле на спавне, не больше %s на клан в день",
   "gui.saison.l.objet_boite_noire_helico": "Продан бортовой самописец вертолёта",
   "gui.saison.c.objet_boite_noire_helico_plafond": "продажа Миле на спавне, не больше %s на клан в день",
-  "gui.saison.l.recolte": "Залежь металла / титана",
-  "gui.saison.c.recolte": "когда залежь опустошена",
-  "gui.saison.c.recolte_plafond": "залежь опустошена; не больше %s очков на клан в день",
   "msg.niveau.capture": "Уровень %s: теперь клан может открыть захват зон (улучшение «Территории», клавиша K, вкладка «Уровень»).",
   "msg.niveau.membres": "Уровень %s: теперь в клане может быть %s участников.",
   "msg.niveau.redescendu": "Исправление персонала: клан опускается до уровня %s (не больше %s участников, улучшения сохранены).",
@@ -942,8 +939,6 @@
   "historique.source.objet_mallette_scellee": "Продан опечатанный кейс",
   "historique.source.objet_disque_dur_militaire": "Продан военный жёсткий диск",
   "historique.source.objet_boite_noire_helico": "Продан бортовой самописец вертолёта",
-  "historique.source.recolte_metal": "Залежь металла опустошена",
-  "historique.source.recolte_rare": "Залежь титана опустошена",
   "historique.capture.libre": "Зона захвачена: %s",
   "historique.capture.prise": "Зона %s отбита у [%s]",
   "historique.kill": "%s убил %s",
@@ -960,6 +955,5 @@
   "historique.plafond.petites": "Дневной лимит мелких действий достигнут (%s очков)",
   "historique.plafond.kills": "Дневной лимит убийств достигнут (%s очков)",
   "historique.plafond.evenement": "%s: дневной лимит достигнут (%s в день)",
-  "historique.plafond.recolte": "Дневной лимит добычи достигнут (%s очков)",
   "historique.droits_grade": "%s изменил права звания «%s» (изменений: %s)"
 }

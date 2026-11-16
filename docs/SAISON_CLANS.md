@@ -123,18 +123,11 @@ ce qui est dur rapporte beaucoup, ce qui est facile presque rien.
 | Arme fabriquée | Commun 1, Peu commun 2, Rare 4, Épique 8 | à la Table d'armurier ; 11/11 : l'arme que TaCZ pose aux pieds du joueur est comptée (avant : jamais aucun point) |
 | Quête de Varga finie | 2 (10 avant le 11/11, choix du propriétaire) | une fois chacune ; 02/11 (choix du propriétaire) : comptée dans les petites actions plafonnées par joueur et par jour (`plafonnees` de `saison.json`) |
 | Quête de clan finie | 5 | limite par jour ; « Jouer N min » : seulement les minutes sur la carte, en survie, où le joueur a marché au moins 10 m ou agi (dégâts, cache fouillée) ; « Parcourir N km » : seulement à pied (ni véhicule, ni train, ni nage) (25/10) |
-| Gisement de métal / de titane vidé (HeraliZ Récolte, 16/11) | 1 / 2 | quand le gisement est vidé, au clan du joueur que désigne le mod Récolte (`SaisonApi.pve`) ; rien pour les arbres et la pierre ; **10 points de récolte par clan et par jour au plus** (`plafonds_clan.recolte` de `saison.json`, sources `recolte_metal` et `recolte_rare`) ; choix du propriétaire (`maquettes/recolte/PROPOSITION.md` §7) |
 
 **Plafond par joueur et par jour** pour les petites actions (zombies, conteneurs, ventes, fabrication et, depuis le
 02/11, quêtes de Varga) : 50 points.
 Salles à carte et quêtes de clan ne sont pas plafonnées ; les boss ont leur rendement décroissant par clan et par jour
 (`boss_coefficients` de `saison.json`).
-
-**Plafond par clan et par jour d'un groupe de sources** (16/11, section `plafonds_clan` de `saison.json`, relue par
-`/recharger saison`) : `{"recolte": {"sources": ["recolte_metal", "recolte_rare"], "points_jour": 10}}` ; un gain qui
-dépasserait le plafond est réduit à ce qui reste, puis plus rien jusqu'à minuit (heure de Paris) ; une ligne dans
-l'historique du clan le jour où il l'atteint ; `points_jour` à 0 : sans plafond. Compteurs gardés avec l'état de la
-saison (`pve_clan_jour` de `heralisz_clans/saison_etat.json`) : un redémarrage ne les remet pas à zéro.
 
 **11/11** : un joueur en créatif ou en spectateur (staff) ne fait jamais gagner ni perdre de points, quelle que soit la
 source (il le lit dans le chat). Chaque point gagné ou perdu a sa ligne `[saison]` dans le journal du serveur (zombies et
