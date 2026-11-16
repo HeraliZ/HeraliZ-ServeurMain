@@ -3,10 +3,12 @@ package fr.heraliz.recolte.serveur;
 import fr.heraliz.recolte.objets.ObjetsRecolte;
 import fr.heraliz.recolte.objets.OutilRecolte;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -121,6 +123,18 @@ public final class Coups {
             reste -= k;
         }
         joueur.displayClientMessage(Component.translatableWithFallback("heraliz_recolte.recu", "+%1$s %2$s", n, objet.getDescription()), true);
+    }
+
+    /** Pose {@code n} {@code objet} au sol, sans élan (celui qui a abattu l'arbre n'est plus là quand il finit de tomber). */
+    public static void lacher(ServerLevel l, double x, double y, double z, Item objet, int n) {
+        int pile = Math.max(1, new ItemStack(objet).getMaxStackSize());
+        for (int reste = n; reste > 0; ) {
+            int k = Math.min(reste, pile);
+            ItemEntity e = new ItemEntity(l, x, y, z, new ItemStack(objet, k), 0.0, 0.1, 0.0);
+            e.setDefaultPickUpDelay();
+            l.addFreshEntity(e);
+            reste -= k;
+        }
     }
 
     /** Distance des yeux du joueur au point le plus proche de la boîte de la cible (0 s'ils sont dedans), comme la mêlée. */

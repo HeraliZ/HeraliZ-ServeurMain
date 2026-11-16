@@ -78,6 +78,43 @@ public final class Effets {
         l.playSound(null, a.getX(), y, a.getZ(), SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS, 0.5F, 0.6F);
     }
 
+    /**
+     * L'arbre touche le sol (≈ 2,4 s après le dernier coup) : poussière du sol et feuilles le long du tronc couché, dans la
+     * direction de la chute, et le bruit de l'impact.
+     */
+    public static void impact(ServerLevel l, Arbre a, double longueur) {
+        double ang = Math.toRadians(a.direction()), dx = -Math.sin(ang), dz = Math.cos(ang);
+        Block sol = l.getBlockState(a.blockPosition().below()).getBlock();
+        BlockParticleOption poussiere = new BlockParticleOption(ParticleTypes.BLOCK, (sol == Blocks.AIR ? Blocks.DIRT : sol).defaultBlockState());
+        BlockParticleOption feuillage = new BlockParticleOption(ParticleTypes.BLOCK, feuilles(a).defaultBlockState());
+        double y = a.getY() + 0.3;
+        for (double d = 1.5; d <= longueur; d += 1.5) {
+            double x = a.getX() + dx * d, z = a.getZ() + dz * d;
+            l.sendParticles(poussiere, x, y, z, 4, 0.35, 0.1, 0.35, 0.15);
+            l.sendParticles(ParticleTypes.POOF, x, y, z, 1, 0.3, 0.05, 0.3, 0.02);
+            if (d >= longueur * 0.35) {
+                l.sendParticles(feuillage, x, y + 0.5, z, 6, 1.2, 0.4, 1.2, 0.1);
+            }
+        }
+        double x = a.getX() + dx * longueur * 0.6, z = a.getZ() + dz * longueur * 0.6;
+        l.playSound(null, x, y, z, SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS, 1.4F, 0.45F);
+        l.playSound(null, x, y, z, SoundEvents.GRASS_BREAK, SoundSource.BLOCKS, 1.2F, 0.6F);
+        l.playSound(null, x, y, z, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 1.0F, 0.5F);
+    }
+
+    /** Le tronc couché s'efface (dernières bûches données) : un peu de poussière le long du tronc. */
+    public static void tronc(ServerLevel l, Arbre a, double longueur) {
+        double ang = Math.toRadians(a.direction()), dx = -Math.sin(ang), dz = Math.cos(ang);
+        BlockParticleOption ecorce = new BlockParticleOption(ParticleTypes.BLOCK, bois(a).defaultBlockState());
+        double y = a.getY() + 0.4;
+        for (double d = 1.0; d <= longueur; d += 2.0) {
+            double x = a.getX() + dx * d, z = a.getZ() + dz * d;
+            l.sendParticles(ParticleTypes.POOF, x, y, z, 2, 0.3, 0.1, 0.3, 0.01);
+            l.sendParticles(ecorce, x, y, z, 3, 0.3, 0.1, 0.3, 0.05);
+        }
+        l.playSound(null, a.getX() + dx * longueur * 0.5, y, a.getZ() + dz * longueur * 0.5, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 0.8F, 0.8F);
+    }
+
     private static Block rocheDe(int type) {
         return type == Gisement.METAL ? Blocks.IRON_ORE : type == Gisement.RARE ? Blocks.DEEPSLATE : Blocks.STONE;
     }
