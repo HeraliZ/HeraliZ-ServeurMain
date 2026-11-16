@@ -8,6 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
@@ -18,6 +19,8 @@ import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+
+import java.util.WeakHashMap;
 
 /**
  * Le coup d'un outil de récolte chez le joueur (A_FAIRE §7, PROPOSITION §6 bis). Le serveur décide de tout (outil,
@@ -33,7 +36,10 @@ import net.minecraftforge.eventbus.api.EventPriority;
  *    <li>clic maintenu : un coup dès que la cadence le permet, tant qu'on vise un gisement ou un arbre debout que
  *    l'outil sait récolter. Un clic un peu trop tôt (0,3 s) est gardé ;</li>
  *    <li>cadence vue ici : un coup toutes les {@link #CADENCE} ticks (1,25 s : les 1,2 s du serveur plus une marge
- *    pour le réseau), et jamais plus vite en temps réel ; pas de coup pendant que l'outil sort.</li>
+ *    pour le réseau), et jamais plus vite en temps réel ; pas de coup pendant que l'outil sort ;</li>
+ *    <li>les autres joueurs voient le geste : il part avec le geste de la main GAUCHE de Minecraft (jamais fait par un
+ *    autre geste de l'outil, la main gauche du serveur étant vide), que les autres jeux reconnaissent
+ *    ({@link #ageVu}).</li>
  * </ul>
  * Rien ne tourne sans outil en main (une comparaison par tick). Aucune allocation par image.
  */
@@ -61,6 +67,8 @@ public final class CoupClient {
     private static Item objetVu;
     /** Vrai pendant que l'évènement de clic est posté ici (il ne doit pas être annulé par {@link #touche}). */
     private static boolean posteIci;
+    /** Coups vus des autres (et le sien, vue de dos) : début du geste (tick), côté pic (1). Oubliés avec l'entité. */
+    private static final WeakHashMap<Entity, long[]> COUPS = new WeakHashMap<>();
 
     private CoupClient() {
     }
@@ -82,6 +90,7 @@ public final class CoupClient {
         secousseDebut = LOIN;
         caseVue = -1;
         objetVu = null;
+        COUPS.clear();
     }
 
     // ------------------------------------------------------------------------------------------------ état lu au rendu
@@ -105,6 +114,37 @@ public final class CoupClient {
         }
         float u = 1.0F - t / SORTIE;
         return u * u;
+    }
+
+    /**
+     * Ticks depuis le début du dernier geste de cette entité, -1 sans geste. Le geste d'un autre joueur est reconnu au
+     * geste de sa main gauche (envoyé par son jeu au début du coup) : son début est retrouvé avec {@code swingTime},
+     * même si on le voit un peu après. Le sien est noté au début du coup ({@link #lancer}).
+     */
+    static float ageVu(LivingEntity e, float partiel) {
+        long[] c = COUPS.get(e);
+        if (e.swinging && e.swingingArm == InteractionHand.OFF_HAND) {
+            long d = horloge - e.swingTime;
+            if (c == null) {
+                c = new long[]{LOIN, 0L};
+                COUPS.put(e, c);
+            }
+            if (d > c[0] + 3L) {
+                c[0] = d;
+                c[1] = 0L;
+            }
+        }
+        if (c == null) {
+            return -1.0F;
+        }
+        float t = (float) (horloge - c[0]) + partiel;
+        return t >= 0.0F && t < Geste.FIN ? t : -1.0F;
+    }
+
+    /** Le dernier geste de cette entité est donné côté pic (seulement connu pour soi : les autres, côté hache). */
+    static boolean picVu(LivingEntity e) {
+        long[] c = COUPS.get(e);
+        return c != null && c[1] != 0L;
     }
 
     // ------------------------------------------------------------------------------------------------ ticks et touches
@@ -189,6 +229,15 @@ public final class CoupClient {
         pic = outil.legendaire() && mc.hitResult instanceof EntityHitResult h && h.getEntity() instanceof Gisement;
         pretA = maintenant + CADENCE;
         pretMs = System.currentTimeMillis() + CADENCE_MS;
+        long[] c = COUPS.get(joueur);
+        if (c == null) {
+            COUPS.put(joueur, new long[]{maintenant, pic ? 1L : 0L});
+        } else {
+            c[0] = maintenant;
+            c[1] = pic ? 1L : 0L;
+        }
+        // geste de la main gauche : les autres jeux y voient le début du coup (VueDesAutres)
+        joueur.swing(InteractionHand.OFF_HAND);
     }
 
     /** Impact du geste : l'attaque normale de Minecraft sur ce que vise le joueur, ou rien (coup dans le vide). */

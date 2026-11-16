@@ -7,7 +7,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
  * Outils de récolte en main, chez le joueur (A_FAIRE §7) : extensions client des objets ({@link ExtensionsOutil}),
- * première personne ({@link PremierePersonne}), coups ({@link CoupClient}).
+ * première personne ({@link PremierePersonne}), coups ({@link CoupClient}), vue des autres ({@link VueDesAutres}).
  */
 public final class OutilsEnMain {
     private OutilsEnMain() {
