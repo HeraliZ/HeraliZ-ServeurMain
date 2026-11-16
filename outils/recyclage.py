@@ -95,6 +95,10 @@ FAMILLES.append(("heraliz_extraction:extraction_terminal", None, ["circuit_impri
 # arrivait un jour. outils/marchands.py refuse aussi une règle de rachat ou de recyclage qui les prendrait.
 MATIERES_BRUTES = ["heraliz_recolte:buche", "heraliz_recolte:pierre_brute", "heraliz_recolte:minerai_fer",
                    "heraliz_recolte:minerai_rare"]
+# 16/11 (HeraliZ Récolte, demande du propriétaire : « donner un peu de loot en recyclant pioche et hache basique, et
+# légendaire aussi ») : un manche en bois et une tête en acier, composants du niveau de la rareté de l'outil (hache et
+# pioche Rare : niveau II ; hache-pioche Légendaire : niveau IV) ; comme toute règle, 10 % par pièce et 2 pièces au plus
+FAMILLES += [("heraliz_recolte:" + o, None, ["planche", "ferraille", "ferraille", "kit_pieces"]) for o in ("hache", "pioche", "hache_pioche")]
 COMPOSANTS_DEFS = RACINE / "modules/equipement/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
 
 
