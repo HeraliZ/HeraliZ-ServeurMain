@@ -11,6 +11,8 @@
   {"item": "ywzj_vehicle:fuel_tank", "nombre": [1, 1], "poids": 1147500, "_cat": "outils", "_base": 1530},
   {"item": "ywzj_vehicle:repair_tool", "nombre": [1, 1], "poids": 285000, "_cat": "outils", "_base": 380},
   {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 151861},
+  {"item": "heraliz_recolte:hache", "nombre": [1, 1], "_cat": "extras", "poids": 228131},
+  {"item": "heraliz_recolte:pioche", "nombre": [1, 1], "_cat": "extras", "poids": 228131},
   {"item": "heralisz_bunker:keycard_fragment_green_1", "nombre": [1, 1], "_cat": "fragments", "poids": 132679},
   {"item": "heralisz_bunker:keycard_fragment_green_2", "nombre": [1, 1], "_cat": "fragments", "poids": 132679},
   {"item": "heralisz_bunker:keycard_fragment_green_3", "nombre": [1, 1], "_cat": "fragments", "poids": 132679},

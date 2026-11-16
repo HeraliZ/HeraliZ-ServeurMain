@@ -10,6 +10,8 @@
   {"item": "heralisz_tactical:throwable", "nombre": [1, 1], "poids": 250000, "nbt": "{ThrowableId:\"heralisz_grenade:smoke_grenade\"}", "_cat": "explosifs", "_base": 5000},
   {"item": "geckolib:item_machete", "nombre": [1, 1], "poids": 600000, "_cat": "melee_militaire", "_base": 6000},
   {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 28549},
+  {"item": "heraliz_recolte:hache", "nombre": [1, 1], "_cat": "extras", "poids": 41285},
+  {"item": "heraliz_recolte:pioche", "nombre": [1, 1], "_cat": "extras", "poids": 41285},
   {"item": "heralisz_bunker:keycard_fragment_green_1", "nombre": [1, 1], "_cat": "fragments", "poids": 18525},
   {"item": "heralisz_bunker:keycard_fragment_green_2", "nombre": [1, 1], "_cat": "fragments", "poids": 18525},
   {"item": "heralisz_bunker:keycard_fragment_green_3", "nombre": [1, 1], "_cat": "fragments", "poids": 18525},

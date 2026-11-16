@@ -12,6 +12,7 @@
   {"item": "ywzj_vehicle:repair_tool", "nombre": [1, 1], "poids": 18750, "_cat": "outils_militaires", "_base": 25000},
   {"item": "minecraft:air", "nombre": [1, 1], "_cat": "vide", "poids": 2037},
   {"item": "heraliz_extraction:extraction_terminal", "nombre": [1, 1], "_cat": "extras", "poids": 1870},
+  {"item": "heraliz_recolte:hache_pioche", "nombre": [1, 1], "_cat": "extras", "poids": 134},
   {"item": "heralisz_bunker:keycard_fragment_blue_1", "nombre": [1, 1], "_cat": "fragments", "poids": 334},
   {"item": "heralisz_bunker:keycard_fragment_blue_2", "nombre": [1, 1], "_cat": "fragments", "poids": 334},
   {"item": "heralisz_bunker:keycard_fragment_blue_3", "nombre": [1, 1], "_cat": "fragments", "poids": 334},
