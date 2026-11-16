@@ -65,7 +65,15 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
     ("crac:claim_block", 250),    # 28/10 : prix réglé en jeu le 24/10, repris comme base (avant 500)
     ("crac:metal_crate", 300),
     ("crac:coeur_clan", 5000),    # 02/11 (choix du propriétaire, A322) : 5 000 au lieu de 1 000, jugé trop bon marché
+    # 16/11 (HeraliZ Récolte, choix du propriétaire du 15/11, maquettes/recolte/PROPOSITION.md §4) : la hache (arbres) et
+    # la pioche (gisements), Rares, aussi trouvées dans le loot T2 à T5 ; usées, elles cassent
+    ("heraliz_recolte:hache", 1200),
+    ("heraliz_recolte:pioche", 1200),
 ]
+# jamais vendus ni reçus par un échange chez un marchand des fichiers : l'outil refuse de les écrire. 16/11 : la hache-pioche
+# de survie (Légendaire) se trouve seulement dans le loot T6, T7 et les coffres des événements (choix du propriétaire :
+# pas de pay2win)
+JAMAIS_VENDUS = {"heraliz_recolte:hache_pioche"}
 # 16/11 (HeraliZ Récolte, maquettes/recolte/PROPOSITION.md §2, choix du propriétaire) : le Contremaître du spawn échange
 # les matières brutes récoltées sur la carte (arbres à abattre, gisements de pierre, de métal et de titane) contre les
 # matériaux des bases de CRac, ceux que vend le Bâtisseur (MATERIAUX). Troc seulement : ni hérals, ni rachat. Cher exprès :
@@ -242,6 +250,17 @@ def controle_echanges(marchands):
         print(f"[marchands] échanges : {len(echanges)}, aucune chaîne ni boucle")
 
 
+def controle_jamais_vendus(marchands):
+    """Refus (SystemExit) si un objet de JAMAIS_VENDUS est vendu ou reçu par un échange chez un marchand."""
+    erreurs = [f"{pid} : {o} jamais vendu ni échangé (JAMAIS_VENDUS)" for pid, m in marchands.items()
+               for o in [a["objet"] for a in m.get("articles", [])] + [e["recoit"]["objet"] for e in m.get("echanges", [])]
+               if o in JAMAIS_VENDUS]
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : un objet qui ne se vend jamais est chez un marchand.")
+
+
 def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
     """(erreurs, notes) du contrôle des 50 %, avec les facteurs de l'économie de la bêta (03/11, réglage [beta] de
     heraliz_loot-server.toml, Ponts.prixAchat / Marchands.prixRachat / Recyclage de HeraliZ Quêtes) : prix d'achat x
@@ -339,10 +358,12 @@ if __name__ == "__main__":
                 actuels[f.stem] = m
         controle(actuels)
         controle_echanges(tous)
+        controle_jamais_vendus(tous)
         raise SystemExit(0)
     tags_rachat()
     controle(MARCHANDS)
     controle_echanges(MARCHANDS)
+    controle_jamais_vendus(MARCHANDS)
     for pid, m in MARCHANDS.items():
         f = PNJ / f"{pid}.json"
         d = json.loads(f.read_text(encoding="utf-8"))
