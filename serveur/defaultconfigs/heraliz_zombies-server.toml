@@ -16,7 +16,7 @@
 	#Seulement des prisonniers.
 	villes_prison = ["prison"]
 	#Seulement des militaires.
-	villes_militaire = ["aerodrome", "silo"]
+	villes_militaire = ["aerodrome", "base_sentinelle", "silo"]
 	#Surtout des hazmat (aussi dans les zones « gaz » et « radiation » de HeraliZ Decors).
 	villes_contaminees = ["gaz", "radio"]
 	#Part de hazmat dans une zone contaminee (le reste : zombies de ville).
