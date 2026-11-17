@@ -1147,9 +1147,13 @@ public final class RotationLoot extends SavedData {
         return false;
     }
 
-    /** Contenu d'un conteneur, tiré dans sa table (bonus de loot en %) : objets placés au hasard dans les 27 cases. */
+    /**
+     * Contenu d'un conteneur, tiré dans sa table (bonus de loot en %) : objets placés au hasard dans les 27 cases. La table
+     * est celle du niveau au-dessus pour un conteneur surclassé (17/11, {@link ConfigLoot#nomPourLoot}).
+     */
     private Inventaire remplir(long k, String nom, RandomSource r, int bonus) {
         Inventaire inv = new Inventaire(this, k);
+        nom = ConfigLoot.nomPourLoot(nom, k);
         TablesCoffres.Choix c = TablesCoffres.pourConteneur(nom);
         if (c == null || c.table().objets().isEmpty()) {
             if (SANS_TABLE.add(nom)) HeralizLoot.LOG.warn("Aucune table de loot pour {} (data/heraliz_loot/coffres/)", nom);

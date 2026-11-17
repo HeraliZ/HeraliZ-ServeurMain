@@ -14,6 +14,10 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.DoubleValue PROPORTION;
     /** Facteur de la part d'actifs par niveau de zone (T1 à T7), écrit par outils/loot_armes.py. */
     public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> FACTEURS;
+    /** Part d'actifs par niveau de zone à la place de celle des fichiers de la carte (17/11 ; -1 : celle du fichier). */
+    public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> PARTS_NIVEAUX;
+    /** Part des conteneurs « t » de chaque niveau qui donnent le loot du niveau au-dessus (17/11). */
+    public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> SURCLASSEMENT;
     public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RESTES, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX, BALLES_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
     /** Conteneurs de Minecraft scellés (src/serveur : ConteneursVanilla). */
@@ -47,6 +51,17 @@ public final class ConfigLoot {
                 .defineList("facteurs_actifs",
                         // facteurs_actifs (outils/loot_armes.py)
                         List.of(0.932, 0.746, 0.802, 0.834, 0.714, 0.546, 0.129),
+                        o -> o instanceof Number n && n.doubleValue() >= 0 && n.doubleValue() <= 1);
+        PARTS_NIVEAUX = b.comment("Part des conteneurs actifs par niveau de zone, T1 à T7, à la place de la part « actifs » écrite dans",
+                        "les fichiers de la carte (17/11 : la carte en île en donne une par niveau, de 0.3 en T1 à 0.06 en T6) ;",
+                        "-1 : celle du fichier (sinon proportion_actifs). Le facteur du niveau s'applique ensuite, comme avant ;",
+                        "une part réglée en jeu (/heralizloot zone <id> part) passe toujours avant.")
+                .defineList("parts_par_niveau", List.of(-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0),
+                        o -> o instanceof Number n && n.doubleValue() >= -1 && n.doubleValue() <= 1);
+        SURCLASSEMENT = b.comment("Surclassement (17/11), T1 à T6 : part des conteneurs « t » de ce niveau (t5_...) qui donnent le loot du",
+                        "niveau au-dessus (table t6). Choisis une fois pour toutes d'après leur place : toujours les mêmes, d'un",
+                        "redémarrage à l'autre. Ils gardent leur apparence et leur zone. 0 : aucun.")
+                .defineList("surclassement", List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                         o -> o instanceof Number n && n.doubleValue() >= 0 && n.doubleValue() <= 1);
         DELAI_MIN = b.comment("Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.")
                 .defineInRange("delai_min_secondes", 240, 0, 86400);
@@ -213,6 +228,33 @@ public final class ConfigLoot {
 
     static double proportion() {
         return SPEC.isLoaded() ? PROPORTION.get() : 0.2;
+    }
+
+    /** Part d'actifs imposée pour les zones de ce niveau (parts_par_niveau), ou -1 : celle du fichier de la zone. */
+    static double partNiveau(int niveau) {
+        if (!SPEC.isLoaded() || niveau < 1) return -1;
+        List<? extends Double> l = PARTS_NIVEAUX.get();
+        if (niveau > l.size()) return -1;
+        Object v = l.get(niveau - 1);
+        return v instanceof Number n && n.doubleValue() >= 0 ? Math.min(1, n.doubleValue()) : -1;
+    }
+
+    /**
+     * Nom de table pour un conteneur de la rotation (17/11) : un conteneur « t » de niveau 1 à 6 (t5_casier_gris) dont la
+     * place tombe dans la part « surclassement » de son niveau prend la table du niveau au-dessus (t6_casier_gris : table
+     * t6). La place décide (mélange de ses coordonnées) : toujours les mêmes conteneurs. Les autres : leur nom.
+     */
+    static String nomPourLoot(String nom, long place) {
+        if (!SPEC.isLoaded() || nom.length() < 3 || nom.charAt(0) != 't' || nom.charAt(2) != '_') return nom;
+        int n = nom.charAt(1) - '0';
+        if (n < 1 || n > 6) return nom;
+        List<? extends Double> l = SURCLASSEMENT.get();
+        if (n > l.size()) return nom;
+        Object v = l.get(n - 1);
+        double part = v instanceof Number x ? x.doubleValue() : 0;
+        if (part <= 0) return nom;
+        double tirage = (it.unimi.dsi.fastutil.HashCommon.mix(place ^ 0x2545F4914F6CDD1DL) >>> 11) * 0x1.0p-53;
+        return tirage < part ? "t" + (n + 1) + nom.substring(2) : nom;
     }
 
     /** Délai de réapparition tiré entre min et max, en ticks. */
