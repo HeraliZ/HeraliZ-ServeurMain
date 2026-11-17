@@ -53,8 +53,10 @@ import java.util.UUID;
  * <p>Regles du spawn (proprietaire, 15/11) : une equipe ne s'inscrit que si tous ses membres connectes sont dans le monde
  * du spawn (sinon refus qui les nomme) ; pendant les inscriptions, un inscrit qui quitte le spawn retire son equipe (toute
  * l'equipe est prevenue, elle peut se reinscrire depuis le spawn) ; au depart vers la salle, une equipe dont un joueur
- * connecte n'est pas au spawn est retiree du tournoi (personne n'est depose ni teleporte). Un joueur deconnecte garde sa
- * place jusqu'au depart, ou il est laisse de cote comme avant (son equipe joue sans lui).
+ * connecte n'est pas au spawn est retiree du tournoi (personne n'est depose ni teleporte). Deconnexion (proprietaire, 15/11) :
+ * un inscrit qui se deconnecte pendant les inscriptions ou avant l'entree dans la salle retire son equipe au moment meme
+ * ({@link #deconnecte}) ; ses coequipiers sont prevenus (ils peuvent la reinscrire depuis le spawn tant que c'est ouvert).
+ * Seuls des membres connectes s'inscrivent ; une equipe ou il manque quelqu'un au depart ne part pas.
  */
 public final class Tournoi {
     public enum Etat { INSCRIPTION, PREPARATION, PAUSE, TOUR, FIN, TERMINE, ANNULE }
@@ -273,9 +275,8 @@ public final class Tournoi {
                     return;
                 }
                 ServerPlayer p = serveur.getPlayerList().getPlayer(u);
-                Inscription avant = inscriptions.get(clan);
-                boolean dejaInscrit = avant != null && avant.contient(u);
-                if (p == null && !dejaInscrit) {
+                // 15/11 (proprietaire) : seulement des membres connectes, meme deja inscrits (une deconnexion retire l'equipe)
+                if (p == null) {
                     refus(sp, "clashwar.inscription.hors_ligne");
                     return;
                 }
@@ -441,6 +442,73 @@ public final class Tournoi {
         }
     }
 
+    /** Premier joueur de la liste qui n'est pas connecte (les mannequins du banc d'essai ne comptent pas), ou null (15/11). */
+    @Nullable
+    private UUID premierAbsent(List<UUID> joueurs) {
+        for (int i = 0; i < joueurs.size(); i++) {
+            UUID u = joueurs.get(i);
+            if (!mannequins.contains(u) && serveur.getPlayerList().getPlayer(u) == null) return u;
+        }
+        return null;
+    }
+
+    /**
+     * 15/11 (regle du proprietaire) : un inscrit se deconnecte. Pendant les inscriptions, son equipe est retiree de
+     * l'inscription au moment meme (ses coequipiers peuvent la reinscrire depuis le spawn tant que c'est ouvert) ; apres la
+     * cloture et avant l'entree dans la salle, elle est retiree du tournoi. Ensuite, ce sont les regles du match. Rien a
+     * faire hors de ces deux moments ou pour un joueur qui n'est pas inscrit.
+     */
+    void deconnecte(ServerPlayer parti) {
+        if (simulation) return;
+        UUID u = parti.getUUID();
+        if (etat == Etat.INSCRIPTION) {
+            for (Iterator<Inscription> it = inscriptions.values().iterator(); it.hasNext(); ) {
+                Inscription ins = it.next();
+                if (!ins.contient(u)) continue;
+                String tag = ClansApi.infos(ins.clan).map(ClanInfo::tagCrochets).orElse("?");
+                // de la derniere a la premiere : le numero annonce est celui que l'equipe voyait
+                for (int i = ins.equipes.size() - 1; i >= 0; i--) {
+                    List<UUID> e = ins.equipes.get(i);
+                    if (!e.contains(u)) continue;
+                    ins.equipes.remove(i);
+                    retireeDeconnexion(e, tag + " " + (i + 1), u, true);
+                }
+                if (ins.equipes.isEmpty()) it.remove();
+                ClansApi.infos(ins.clan).ifPresent(info -> majClan(info, null, "", false));
+                Tournois.marquerVue();
+            }
+        } else if (etat == Etat.PREPARATION) {
+            for (Iterator<Tableau.EquipeT> it = provisoires.iterator(); it.hasNext(); ) {
+                Tableau.EquipeT e = it.next();
+                if (!e.joueurs.contains(u)) continue;
+                it.remove();
+                retireeDeconnexion(e.joueurs, "[" + e.tag + "] " + e.numero, u, false);
+                Tournois.marquerVue();
+            }
+        }
+    }
+
+    /**
+     * Equipe retiree parce que {@code absent} s'est deconnecte (15/11) : journal, et ses autres joueurs connectes prevenus
+     * ({@code inscription} : ils peuvent la reinscrire ; sinon : retiree du tournoi).
+     */
+    private void retireeDeconnexion(List<UUID> joueurs, String equipe, UUID absent, boolean inscription) {
+        String nom = ClansApi.nomJoueur(absent);
+        HeralizClashWar.LOG.info("[clashwar] edition {} : {} deconnecte : equipe {} retiree {}", edition, nom, equipe,
+                inscription ? "de l'inscription" : "du tournoi");
+        Component msg = inscription
+                ? Component.translatableWithFallback("clashwar.chat.deconnecte_inscription",
+                        "%s s'est déconnecté : votre équipe %s est retirée de l'inscription au ClashWar. Revenez tous au spawn pour la réinscrire avant %s (%s).",
+                        fort(nom), fort(equipe), fort(Tournois.heure(finInscriptionMs)), commande("/clashwar")).withStyle(ChatFormatting.RED)
+                : Component.translatableWithFallback("clashwar.chat.deconnecte_depart",
+                        "%s s'est déconnecté : votre équipe %s est retirée du ClashWar.", fort(nom), fort(equipe)).withStyle(ChatFormatting.RED);
+        for (UUID m : joueurs) {
+            if (m.equals(absent)) continue;
+            ServerPlayer p = serveur.getPlayerList().getPlayer(m);
+            if (p != null) Annonces.chat(p, msg);
+        }
+    }
+
     private void refus(ServerPlayer sp, String cle) {
         Optional<UUID> clan = ClansApi.clanDe(sp.getUUID());
         Optional<ClanInfo> info = clan.flatMap(ClansApi::infos);
@@ -488,6 +556,13 @@ public final class Tournoi {
                 ServerPlayer dehors = premierHorsSpawn(ins.equipes.get(i));
                 if (dehors != null) {
                     retireeAuDepart(ins.equipes.get(i), info.tagCrochets() + " " + (i + 1), dehors);
+                    continue;
+                }
+                // 15/11 (proprietaire) : ni une equipe dont un joueur n'est pas connecte (deja retiree a sa deconnexion,
+                // sauf deconnexion pas vue : redemarrage)
+                UUID absent = premierAbsent(ins.equipes.get(i));
+                if (absent != null) {
+                    retireeDeconnexion(ins.equipes.get(i), info.tagCrochets() + " " + (i + 1), absent, false);
                     continue;
                 }
                 List<UUID> joueurs = new ArrayList<>();
@@ -540,6 +615,12 @@ public final class Tournoi {
             ServerPlayer dehors = premierHorsSpawn(e.joueurs);
             if (dehors != null) {
                 retireeAuDepart(e.joueurs, "[" + e.tag + "] " + e.numero, dehors);
+                continue;
+            }
+            // 15/11 (proprietaire) : ni une equipe dont un joueur n'est pas connecte
+            UUID absent = premierAbsent(e.joueurs);
+            if (absent != null) {
+                retireeDeconnexion(e.joueurs, "[" + e.tag + "] " + e.numero, absent, false);
                 continue;
             }
             List<UUID> ok = new ArrayList<>();

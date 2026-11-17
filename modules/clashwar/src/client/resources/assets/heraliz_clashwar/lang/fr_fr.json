@@ -81,6 +81,8 @@
   "clashwar.chat.inscription_hors_spawn": "Inscription refusée, pas au spawn : %s. Tous les membres d'une équipe doivent être au spawn pour l'inscrire au ClashWar.",
   "clashwar.chat.quitte_spawn": "%s a quitté le spawn : votre équipe %s est retirée de l'inscription au ClashWar. Revenez tous au spawn pour la réinscrire avant %s (%s).",
   "clashwar.chat.depart_hors_spawn": "%s n'était pas au spawn au départ du ClashWar : votre équipe %s est retirée du tournoi.",
+  "clashwar.chat.deconnecte_inscription": "%s s'est déconnecté : votre équipe %s est retirée de l'inscription au ClashWar. Revenez tous au spawn pour la réinscrire avant %s (%s).",
+  "clashwar.chat.deconnecte_depart": "%s s'est déconnecté : votre équipe %s est retirée du ClashWar.",
   "clashwar.chat.vainqueur": "%s remporte le ClashWar %s (%s) ! Bravo à %s.",
   "clashwar.choix.titre": "CLASHWAR · %s",
   "clashwar.cmd.deja": "Un ClashWar est déjà en cours.",
