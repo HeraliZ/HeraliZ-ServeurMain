@@ -93,7 +93,7 @@ de travail).
 
 | Fichier | Pourquoi | Comment |
 |---|---|---|
-| `heraliz_quetes_points.dat` | points de quête : chacun a son monde | garder le fichier ; retirer en jeu les points de la carte (`/quete point …`) et les reposer |
+| `heraliz_quetes_points.dat` | points de quête : chacun a son monde | garder le fichier ; `/quete points vider_carte confirmer` (17/11, op 4 ou console) efface ceux de la carte et garde les autres ; le workflow l'envoie après la bascule ; puis les reposer en jeu |
 | `crac_bases.dat` | par joueur : étape du tutoriel, recharge de TP, homes, dernier `/home` et `/rtp` | `/wipe tout` le remet à zéro ; sans wipe, les homes posés sur l'ancienne carte pointent dans le vide de la nouvelle |
 
 Rien n'est supprimé : le workflow (§8) déplace les fichiers « à repartir de zéro » dans
@@ -110,7 +110,7 @@ AuthMe, bans, `/spawn definir` (`crac/spawn.json`, il désigne le monde du spawn
 
 | Réglage | Fichier | Comment |
 |---|---|---|
-| Territoires des clans (drapeaux, villes) | `config/heralisz_clans/zones.json` | la mise en ligne ne l'écrase **jamais** s'il est déjà sur le Ptero : le remplacer à la main (ou le supprimer pour que l'envoi suivant pose celui du dépôt) |
+| Territoires des clans (drapeaux, villes) | `config/heralisz_clans/zones.json` | la mise en ligne ne l'écrase **jamais** s'il est déjà sur le Ptero, sauf case « villes_du_depot » (lancement à la main de la mise en ligne, ou du workflow de bascule, 17/11) ; centres : conteneurs de loot de chaque ville (17/11) |
 | Lieux des événements (largage, hélicoptère…) | `heraliz_evenements/lieux.json` (racine du serveur) | `/event point …` ; jamais écrasé par la mise en ligne |
 | Zone du largage public | `config/heraliz_evenements/largage.json` (`zone`, `marge_bordure`) | à relire selon la taille de la nouvelle carte |
 | Zones VIP | `heraliz_grades/zones_vip.json` (racine du serveur) | à relire si elles sont sur la carte |
@@ -125,14 +125,17 @@ AuthMe, bans, `/spawn definir` (`crac/spawn.json`, il désigne le monde du spawn
 1. Bordure : `/worldborder`.
 2. Zones à effets (gaz, radiation, froid) : `/zones …` (HeraliZ Décors).
 3. Points d'arrivée de la borne : `/depart point …`, `/depart zone …` ; `/depart info` doit dire « prêt ».
-4. Zones d'extraction : `/extraction create <nom> [rayon]`, à ciel ouvert. Il en faut **au moins 12** (deux vagues de 6
+4. Zones d'extraction : `/extraction create <nom> [rayon]`, à ciel ouvert ; ou d'un coup depuis la console avec le
+   workflow « Commandes du serveur » (17/11 : lot `serveur/commandes/<lot>.txt`, lignes
+   `execute in minecraft:overworld positioned x y z run extraction create <nom> <rayon>` puis `extraction label …`). Il en faut **au moins 12** (deux vagues de 6
    sans reprendre une zone), et plutôt **25 à 30** bien réparties : simulé sur 30 zones de l'ancienne carte, 800 blocs
    d'écart et 2 par quart sont tenus à chaque vague. Aujourd'hui : **45 zones** au dernier relevé (17/10, dont 2 en
    double au même endroit) ; le nombre réel dépend des zones posées depuis (`/extraction list`).
 5. Lieux de la carte M : `/carte lieu ajouter …`, `/carte nom …`.
 6. Salles à carte du bunker : `/salle …` (boîte, couleur, portes).
 7. Points des coffres T7, points de quête de la carte (`/quete point …`), lieux des événements (`/event point …`).
-8. Territoires des clans : `zones.json` (drapeaux, rayons) puis vérifier `/territoire info`.
+8. Territoires des clans : `zones.json` (centres, rayons), drapeaux en jeu (`/territoire drapeau <id>`) ou depuis la
+   console (`/territoire drapeau <id> en <x y z> [nord|sud|est|ouest]`, 17/11), puis vérifier `/territoire info`.
 9. Conteneurs de loot : posés avec la carte, ils entrent tout seuls dans la rotation ; vérifier `/heralizloot zones`
    (zones de loot du pack de données de la nouvelle carte).
 10. Masque de construction, fond de la carte M, voie du train : voir §5.
