@@ -519,6 +519,7 @@
   "zone.cmd.drapeau_source.vise": "sur le bloc visé",
   "zone.cmd.drapeau_source.pieds": "à vos pieds : aucun bloc visé à portée",
   "zone.cmd.drapeau_source.meme": "même emplacement, orientation mise à jour",
+  "zone.cmd.drapeau_source.commande": "aux coordonnées données",
   "zone.cmd.centre_suit": "Centre de la zone placé sur le drapeau : %s, %s (avant : %s, %s, à %s blocs). Rayon %s blocs.",
   "zone.cmd.deplacee": "Zone « %s » (%s) déplacée ici : centre %s, %s (avant : %s, %s), rayon %s blocs.",
   "zone.cmd.deplacee_drapeau": "Son drapeau était hors du nouveau cercle : il est retiré. Reposez-le avec %s.",

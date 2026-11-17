@@ -17,7 +17,9 @@ import fr.heralisz.clans.territory.supply.Ravitaillement;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -37,7 +39,8 @@ import java.util.List;
 
 /**
  * Commandes op (niveau 2) : /territoire creer &lt;id&gt; &lt;rayon&gt; &lt;nom...&gt; (centre = ma position), supprimer &lt;id&gt;,
- * drapeau &lt;id&gt; (sur le bloc vise, sinon a mes pieds ; le centre de la zone suit le drapeau), deplacer &lt;id&gt; [rayon]
+ * drapeau &lt;id&gt; (sur le bloc vise, sinon a mes pieds ; le centre de la zone suit le drapeau), drapeau &lt;id&gt; en &lt;x y z&gt;
+ * [nord|sud|est|ouest] (17/11 : a cette place, aussi depuis la console), deplacer &lt;id&gt; [rayon]
  * (centre = ma position, etat garde : reposer une zone de l'ancienne carte), liste (signale les zones hors de la bordure
  * du monde), info [id],
  * difficulte &lt;id&gt; &lt;1-3&gt; (assaut des morts ; aussi en 2e argument de drapeau), reset &lt;id&gt;, capturer &lt;id&gt; &lt;tag&gt;, ravitailler &lt;id&gt; (largage immediat), valeur &lt;id&gt; &lt;1-7&gt; (niveau de loot de la
@@ -83,7 +86,13 @@ public final class TerritoireCommands {
                         .then(Commands.argument("difficulte", IntegerArgumentType.integer(1, 3)).executes(c -> {
                             int r = drapeau(c);
                             return r > 0 ? difficulte(c) : r;
-                        }))))
+                        }))
+                        // 17/11 : a une place donnee, sans joueur (console) : drapeaux d'une nouvelle carte d'apres une liste
+                        .then(lit("en").then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(c -> drapeauEn(c, Direction.NORTH))
+                                .then(lit("nord").executes(c -> drapeauEn(c, Direction.NORTH)))
+                                .then(lit("sud").executes(c -> drapeauEn(c, Direction.SOUTH)))
+                                .then(lit("est").executes(c -> drapeauEn(c, Direction.EAST)))
+                                .then(lit("ouest").executes(c -> drapeauEn(c, Direction.WEST)))))))
                 .then(lit("difficulte").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES)
                         .then(Commands.argument("difficulte", IntegerArgumentType.integer(1, 3)).executes(TerritoireCommands::difficulte))))
                 .then(lit("deplacer").then(Commands.argument("id", StringArgumentType.word()).suggests(ZONES).executes(c -> deplacer(c, false))
@@ -246,9 +255,35 @@ public final class TerritoireCommands {
         ServerLevel level = t.monde();
         Emplacement em = emplacement(t, level, p, z);
         if (em.erreur() != null) return echec(src, em.erreur());
+        return poser(src, t, level, z, em, p.getDirection());
+    }
+
+    /**
+     * /territoire drapeau &lt;id&gt; en &lt;x y z&gt; [nord|sud|est|ouest] (17/11) : le drapeau a cette place, sans joueur
+     * (console, workflow « Commandes du serveur ») pour poser ceux d'une nouvelle carte d'apres une liste. Memes controles
+     * que la pose en jeu (place libre posee sur du solide) ; sans sens donne, le tissu part vers le nord. Commande
+     * ponctuelle d'un op : le troncon est charge par la pose s'il ne l'etait pas.
+     */
+    private static int drapeauEn(CommandContext<CommandSourceStack> ctx, Direction sens) {
+        CommandSourceStack src = ctx.getSource();
+        Territoires t = moteur(ctx);
+        Zone z = t == null ? null : zone(ctx);
+        if (z == null) return 0;
+        ServerLevel level = t.monde();
+        Emplacement em = verifier(t, level, z, BlockPosArgument.getBlockPos(ctx, "pos"), "commande");
+        if (em.erreur() != null) return echec(src, em.erreur());
+        return poser(src, t, level, z, em, sens);
+    }
+
+    /**
+     * Pose retenue : bloc drapeau, centre de la zone, reponses. Textes avec leur francais en secours (17/11) : lisibles
+     * aussi a la console, qui n'a pas les fichiers de langue des joueurs.
+     */
+    private static int poser(CommandSourceStack src, Territoires t, ServerLevel level, Zone z, Emplacement em, Direction sens) {
         BlockPos pos = em.pos();
-        Territoires.Pose pose = t.poserDrapeau(z, pos, p.getDirection());
-        ok(src, tr("zone.cmd.drapeau_pose", z.nom, pos.getX(), pos.getY(), pos.getZ(), tr("zone.cmd.drapeau_source." + em.source())));
+        Territoires.Pose pose = t.poserDrapeau(z, pos, sens);
+        ok(src, trf("zone.cmd.drapeau_pose", "Drapeau de « %s » posé en %s %s %s (%s).", z.nom, pos.getX(), pos.getY(), pos.getZ(),
+                trf("zone.cmd.drapeau_source." + em.source(), em.source())));
         if (pose.centreDeplace(z)) {
             long d = Math.round(Math.hypot(pose.ancienX() - z.x, pose.ancienZ() - z.z));
             ligne(src, tr("zone.cmd.centre_suit", z.x, z.z, pose.ancienX(), pose.ancienZ(), d, z.rayon));
@@ -256,14 +291,16 @@ public final class TerritoireCommands {
         } else if (pose.centreSuit()) {
             ligne(src, tr("zone.cmd.zone_centree", z.rayon, z.demiHauteur()));
         } else {
-            avert(src, tr("zone.cmd.centre_garde", z.x, z.z, Math.round(z.distance(pos.getX() + 0.5, pos.getZ() + 0.5)), z.rayon));
+            avert(src, trf("zone.cmd.centre_garde", "Le centre de la zone reste en %s, %s (centreFixe dans zones.json) : le drapeau est à %s blocs du centre, rayon %s.",
+                    z.x, z.z, Math.round(z.distance(pos.getX() + 0.5, pos.getZ() + 0.5)), z.rayon));
             if (!z.contientHorizontal(pos.getX() + 0.5, pos.getZ() + 0.5)) {
                 avert(src, tr("zone.cmd.drapeau_hors_zone", Math.round(z.distance(pos.getX() + 0.5, pos.getZ() + 0.5)), z.rayon));
             }
         }
         BlockPos gene = obstacleMat(level, pos);
         if (gene != null) {
-            avert(src, tr("zone.cmd.mat_gene", level.getBlockState(gene).getBlock().getName(), gene.getX(), gene.getY(), gene.getZ()));
+            avert(src, trf("zone.cmd.mat_gene", "Attention : le mât (5 blocs) traverse %s en %s %s %s.",
+                    level.getBlockState(gene).getBlock().getName(), gene.getX(), gene.getY(), gene.getZ()));
         }
         return 1;
     }
