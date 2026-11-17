@@ -17,6 +17,18 @@
 	gas_effects = ["minecraft:poison"]
 
 
+[plongee]
+	#Eaux du labo sous-marin (17/11, demande du proprietaire) : cercles « x z rayon » de la carte principale ou, la tete sous
+	#l'eau, il faut la tenue de plongee. 1980 2025 110 : tout le labo (son verre est a 87 blocs au plus de ce centre).
+	labo_zones = ["1980 2025 110"]
+	#Sans la tenue, dans ces eaux : secondes d'air avant de se noyer, puis degats par seconde (5 = 2,5 coeurs).
+	labo_apnee_secondes = 2.5
+	labo_degats_par_seconde = 5.0
+	#Sans la tenue, sous cette hauteur : le noir (la mer est a 63, le labo de 14 a 35).
+	labo_noir_sous_y = 52
+	#Avec la tenue : vision de nuit dans ces eaux, pour voir correctement.
+	labo_vision_tenue = true
+
 [chiffres]
 	#Petits chiffres des degats : quand un joueur en touche un autre, il voit (lui seul) la vie que l'autre
 	#a vraiment perdue, au-dessus de sa tete. false = coupe.

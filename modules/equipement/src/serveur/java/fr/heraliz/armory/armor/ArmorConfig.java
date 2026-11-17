@@ -25,6 +25,12 @@ public final class ArmorConfig {
     public static final ForgeConfigSpec.IntValue TANK_SECONDS;
     public static final ForgeConfigSpec.IntValue REFILL_SECONDS;
     public static final ForgeConfigSpec.DoubleValue SWIM_BOOST;
+    /** 17/11 : eaux du labo sous-marin (suit/LaboSousMarin) : il y faut la tenue de plongee. */
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> LABO_ZONES;
+    public static final ForgeConfigSpec.DoubleValue LABO_APNEE;
+    public static final ForgeConfigSpec.DoubleValue LABO_DEGATS;
+    public static final ForgeConfigSpec.IntValue LABO_NOIR_Y;
+    public static final ForgeConfigSpec.BooleanValue LABO_VISION;
     /** 08/11 : petits chiffres des dégâts infligés à un autre joueur, montrés au tireur (cible.ChiffresJoueurs). */
     public static final ForgeConfigSpec.BooleanValue CHIFFRES_JOUEURS;
 
@@ -57,6 +63,19 @@ public final class ArmorConfig {
                 .defineInRange("refill_seconds", 5, 0, 600);
         SWIM_BOOST = b.comment("Bonus de vitesse de nage des palmes (0.8 = +80 %)")
                 .defineInRange("swim_boost", 0.8, 0.0, 3.0);
+        LABO_ZONES = b.comment("Eaux du labo sous-marin (17/11) : cercles « x z rayon » de la carte principale ou, la tete sous l'eau, il faut",
+                        "la tenue de plongee (vide : aucune). 1980 2025 110 : tout le labo de la carte en ile (son verre est a 87 blocs",
+                        "au plus de ce centre).")
+                .defineListAllowEmpty("labo_zones", List.of("1980 2025 110"),
+                        o -> o instanceof String s && s.trim().matches("-?\\d+\\s+-?\\d+\\s+\\d+"));
+        LABO_APNEE = b.comment("Sans la tenue, dans ces eaux : secondes d'air (les bulles se vident d'autant) avant de se noyer")
+                .defineInRange("labo_apnee_secondes", 2.5, 0.0, 15.0);
+        LABO_DEGATS = b.comment("Puis degats de noyade par seconde, sans la tenue (5 = 2,5 coeurs ; la noyade normale ne compte plus)")
+                .defineInRange("labo_degats_par_seconde", 5.0, 0.0, 40.0);
+        LABO_NOIR_Y = b.comment("Sans la tenue, dans ces eaux et sous cette hauteur : le noir (cecite). La mer est a 63, le labo de 14 a 35.")
+                .defineInRange("labo_noir_sous_y", 52, -64, 320);
+        LABO_VISION = b.comment("Avec la tenue, dans ces eaux : vision de nuit, pour voir correctement (retiree en sortant)")
+                .define("labo_vision_tenue", true);
         b.pop();
         b.push("chiffres");
         CHIFFRES_JOUEURS = b.comment("Petits chiffres des degats : quand un joueur en touche un autre, il voit (lui seul) la vie que l'autre",

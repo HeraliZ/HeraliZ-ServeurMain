@@ -18,6 +18,7 @@ import fr.heraliz.armory.registry.ModEntities;
 import fr.heraliz.armory.registry.ModItems;
 import fr.heraliz.armory.suit.Diving;
 import fr.heraliz.armory.suit.DivingServeur;
+import fr.heraliz.armory.suit.LaboSousMarin;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 
@@ -41,6 +42,8 @@ public final class PartieServeur implements Partie {
         // crochets : touche des lunettes (paquet ToggleNvg), bouteille de plongee (tick du porteur)
         ArmoryNetwork.RECEPTION_SERVEUR.brancher(NightVisionServeur::toggle);
         Diving.BOUTEILLE_SERVEUR.brancher(DivingServeur::bouteille);
+        // 17/11 : eaux du labo sous-marin : apnee courte et noir sans la tenue de plongee, vision avec
+        LaboSousMarin.brancher();
         // Maj + clic de l'inventaire vers les slots Curios (mixin commun InventoryCuriosQuickMoveMixin)
         MajClicCurios.SERVEUR = MajClicCuriosServeur::ranger;
         // ecouteurs de l'ancien constructeur, dans le meme ordre : remappage heralisz_armor, puis tirs a la tete TaCZ
