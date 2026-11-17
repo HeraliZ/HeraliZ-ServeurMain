@@ -40,7 +40,7 @@ import extractions_carte as ec  # noqa: E402  (fond, polices, grille)
 PACK_V3 = DEPOT / "monde/HeraliZ/datapacks/heraliz_carte/data/heraliz_loot/zones"
 EFFETS_V3 = DEPOT / "monde/HeraliZ/data/heraliz_zones.json"
 
-GRANDES = {"valmont", "tcherno", "marbois", "belcourt", "port", "mirage", "clairval", "gaz", "aerodrome", "silo",
+GRANDES = {"valmont", "tcherno", "marbois", "belcourt", "port", "mirage", "clairval", "gaz", "aerodrome", "silo", "base_sentinelle",
            "prison", "arctique", "radio"}
 MAISONS = {"campagne", "routes"}
 # marges réduites le 21/10 (« laisser plus de zone dispo pour build ») : 150 / 60 / 60 / 30 / 40 avant ; depuis la

@@ -1,13 +1,13 @@
 {
   "version": 1,
   "dimension": "minecraft:overworld",
-  "x0": -2048,
-  "z0": -2048,
-  "largeur": 4096,
-  "hauteur": 4096,
-  "blocsParPixel": 2,
-  "pixelsLargeur": 2048,
-  "pixelsHauteur": 2048,
+  "x0": -2250,
+  "z0": -2250,
+  "largeur": 4500,
+  "hauteur": 4500,
+  "blocsParPixel": 4,
+  "pixelsLargeur": 1125,
+  "pixelsHauteur": 1125,
   "tuile": 1024,
   "colonnes": 2,
   "lignes": 2,
@@ -17,11 +17,11 @@
   ],
   "niveauMer": 63,
   "bordure": [
-    -1500,
-    -1500,
-    1500,
-    1500
+    -2250,
+    -2250,
+    2250,
+    2250
   ],
-  "fait": "2026-10-12",
-  "chunks": 65536
+  "fait": "2026-11-17",
+  "chunks": 79524
 }
