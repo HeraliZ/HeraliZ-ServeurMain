@@ -35,8 +35,8 @@ import java.util.Locale;
  *     <li>Fond : vue de dessus du monde ({@link Fond}), coupée à la <b>bordure</b> : bordure du monde envoyée par le
  *     serveur, bordure écrite dans carte.json et emprise des images (la plus petite des trois). Dehors : fond sombre
  *     uni, rien d'autre ; le déplacement et le zoom ne sortent pas de la bordure. Sans image : fond neutre et message.</li>
- *     <li>Calques (panneau de gauche, chacun se coupe d'un clic) : territoires des clans (cercle, bannière, état, capture
- *     en cours), extractions ouvertes, lieux nommés (villes, villages, points d'intérêt), membres de son clan, pings du
+ *     <li>Calques (panneau de gauche, chacun se coupe d'un clic) : territoires des clans (nom, état dessous, bannière ;
+ *     plus aucun cercle depuis le 17/11, demande du propriétaire), extractions ouvertes, lieux nommés (villes, villages, points d'intérêt), membres de son clan, pings du
  *     clan, grille de 500 m (colonnes A, B... et lignes 1, 2... depuis le coin nord-ouest de la bordure).</li>
  *     <li>Territoires et lieux dont le centre est hors de la bordure ne sont pas montrés (zones de l'ancienne carte) :
  *     la liste dit combien, à reposer en jeu ({@code /territoire drapeau} ou {@code /territoire deplacer}).</li>
@@ -409,7 +409,6 @@ public final class EcranCarte extends Screen {
         // ---- formes
         Formes.debut(g);
         if (grille) grilleTraits();
-        if (territoires) zonesFormes(e);
         if (extractions) extractionsFormes(e);
         if (pings) pingsFormes(e);
         joueurFormes(e);
@@ -566,36 +565,6 @@ public final class EcranCarte extends Screen {
 
     private int couleurZone(Sources.Zone z) {
         return z.libre() ? NEUTRE : z.proprioCouleur();
-    }
-
-    private void zonesFormes(float e) {
-        float attenue = k > 0.33f ? 0.4f : 1f;
-        for (Sources.Zone z : zones) {
-            float X = sx(z.x() + 0.5), Y = sy(z.z() + 0.5), R = z.rayon() * k;
-            if (horsEcran(X, Y, R + 4)) continue;
-            int c = couleurZone(z);
-            if (!z.libre()) {
-                Formes.anneau(X, Y, R, 3.4f, Formes.argb(c, 0.10f));
-                Formes.anneau(X, Y, R, 1.8f, Formes.argb(c, 0.16f));
-            }
-            if ("CONTESTE".equals(z.etat())) {
-                Formes.hachures(X, Y, R, 2.4f, Formes.argb(c, 0.32f * attenue + 0.05f), Formes.argb(ROUGE, 0.30f * attenue + 0.05f));
-            } else {
-                float a = z.libre() ? 0.08f : z.monClan() ? 0.20f : 0.17f;
-                Formes.disque(X, Y, R, Formes.argb(c, a * attenue));
-            }
-            if (z.libre()) {
-                Formes.anneauPointille(X, Y, R, 1f, 3.3f, 2.7f, Formes.argb(c, 0.85f));
-            } else {
-                Formes.anneau(X, Y, R, 1.2f, Formes.argb(c, 0.95f));
-            }
-            if ("CAPTURE".equals(z.etat()) && !z.capteurTag().isEmpty()) {
-                float r2 = R + 2.6f, a0 = (float) (-Math.PI / 2);
-                Formes.anneau(X, Y, r2, 2.6f, 0x80000000);
-                Formes.arc(X, Y, r2, 1.9f, a0, a0 + (float) (Math.PI * 2 * z.progression()), Formes.argb(z.capteurCouleur(), 1f));
-            }
-            if (z.id().equals(selection)) Formes.anneau(X, Y, R + 1.2f, 0.8f, 0xE6FFFFFF);
-        }
     }
 
     private void extractionsFormes(float e) {
