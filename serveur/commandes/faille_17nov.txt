@@ -1,0 +1,7 @@
+# 17/11 : demande du propriétaire (« reboucher la faille et supprimer le point sur la map ») : le nom « La Faille » quitte
+# la carte M, et les trois zones d'extraction qui en portaient le nom prennent celui d'un lieu voisin (leurs identifiants
+# ne changent pas). Le ravin lui-même se rebouche en jeu (WorldEdit), dans le hameau en -565 -305 / -430 -205.
+carte lieu retirer La Faille
+extraction label foret_faille Forêt de Saint-Aubin
+extraction label prairie_faille Prairie ouest du Bunker des Bois
+extraction label foret_faille_s Forêt nord du Bunker des Bois
