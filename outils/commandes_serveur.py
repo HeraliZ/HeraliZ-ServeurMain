@@ -26,9 +26,11 @@ PAUSE = 0.6          # secondes entre deux commandes
 MAX_COMMANDES = 400
 # premiers mots permis (les commandes d'administration du jeu et de nos mods ; jamais stop, op, whitelist, ban...)
 PERMIS = {"execute", "extraction", "territoire", "quete", "heralizloot", "carte", "depart", "train", "recolte",
-          "worldborder", "pnj", "guide", "say", "recharger", "zonevip", "warp", "salle", "zombies", "setblock"}
+          "worldborder", "pnj", "guide", "say", "recharger", "zonevip", "warp", "salle", "zombies", "setblock", "forceload"}
 # setblock : seulement pour retirer un bloc (remplacé par de l'air), à des coordonnées écrites en entier
 SETBLOCK_AIR = re.compile(r"^setblock -?\d+ -?\d+ -?\d+ (minecraft:)?air$")
+# forceload : charger un tronçon le temps d'un setblock (la commande refuse un endroit non chargé), puis le libérer
+FORCELOAD = re.compile(r"^forceload (add|remove) -?\d+ -?\d+$")
 ENV = os.environ
 
 
@@ -49,9 +51,11 @@ def lire_lot(nom):
             cl.arreter("ligne %d : commande « %s » pas permise dans un lot (permises : %s)" % (n, mot, ", ".join(sorted(PERMIS))))
         if mot == "setblock" and not SETBLOCK_AIR.match(c):
             cl.arreter("ligne %d : setblock seulement pour retirer un bloc : « setblock x y z air »" % n)
+        if mot == "forceload" and not FORCELOAD.match(c):
+            cl.arreter("ligne %d : forceload seulement « forceload add|remove x z »" % n)
         if mot == "execute":
             m = re.search(r"\brun\s+(\S+)", c)
-            if not m or m.group(1).lstrip("/") not in PERMIS - {"execute", "setblock"}:
+            if not m or m.group(1).lstrip("/") not in PERMIS - {"execute", "setblock", "forceload"}:
                 cl.arreter("ligne %d : « execute … run » sans commande permise derrière" % n)
         if len(c) > 256:
             cl.arreter("ligne %d : commande trop longue (256 caractères au plus)" % n)
@@ -76,7 +80,7 @@ def reponses(texte, nb):
         if re.search(r"\[Server thread/(INFO|WARN|ERROR)\]", l) and re.search(
                 r"Unknown or incomplete command|Incorrect argument|<--\[HERE\]|Expected|Invalid|\[Server\]|"
                 r"Territoires|Drapeau|Zone |extraction|point\(s\) de quête|Impossible|Attention|[Ss]alle| — |Changed the block|"
-                r"Could not set the block|Lieu|lieu", l):
+                r"Could not set the block|Lieu|lieu|not loaded|[Ff]orce|chunk|Test passed|Test failed", l):
             garde.append(masque(l.strip()))
     return garde[-(nb * 4 + 20):]
 

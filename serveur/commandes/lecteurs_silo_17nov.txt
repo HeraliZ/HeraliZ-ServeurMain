@@ -1,0 +1,12 @@
+# 17/11 : les deux lecteurs bleus du Silo, retirés pour de bon (la demande du propriétaire : garder seulement les deux
+# lecteurs rouges de l'Arctique et de la plateforme pétrolière). Le premier essai (lot nettoyage_17nov) a été refusé :
+# setblock ne touche pas un endroit non chargé. Le tronçon est chargé le temps du retrait et du contrôle, puis libéré.
+forceload add -1600 -784
+forceload add -1595 -740
+setblock -1600 104 -784 air
+setblock -1595 106 -740 air
+# contrôle : un message à la console (et aux joueurs en ligne) pour chaque lecteur bien retiré
+execute if block -1600 104 -784 minecraft:air run say Lecteur bleu 1 du Silo retire
+execute if block -1595 106 -740 minecraft:air run say Lecteur bleu 2 du Silo retire
+forceload remove -1600 -784
+forceload remove -1595 -740
