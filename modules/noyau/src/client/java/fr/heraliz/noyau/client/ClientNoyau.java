@@ -15,7 +15,6 @@ public final class ClientNoyau implements Partie {
    @Override
    public void init(IEventBus busMod) {
       fr.heraliz.noyau.client.diag.DiagClient.init();
-      fr.heraliz.noyau.client.zones.ReglagesZones.enregistrer(busMod);   // dessin commun des zones (03/11)
       BadgeRarete.enregistrer(busMod);   // badge de rareté des infobulles, dessiné (14/11)
       fr.heraliz.noyau.client.kit.InfobulleVerre.enregistrer();   // infobulles des écrans en verre (14/11)
       fr.heraliz.noyau.client.effets.EffetsHud.enregistrer(busMod);   // effets à l'écran de jeu, V2 (14/11)

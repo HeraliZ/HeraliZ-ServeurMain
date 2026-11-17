@@ -21,9 +21,8 @@ import org.lwjgl.opengl.GL11;
  * <li>sol teinté dans la zone, très léger ({@code fond}, 0 pour aucun) ;</li>
  * <li>au bord : une bande nette au sol, un dégradé au sol vers l'intérieur, et un mur bas très léger qui s'efface vite
  * ({@link #MUR} bloc) : rien qui gêne la vue à l'intérieur de la zone ;</li>
- * <li>visible normalement jusqu'à la portée donnée par l'appelant ; en plus, à travers le décor (montagnes, bâtiments,
- * arbres, props) mais seulement près du joueur : morceau par morceau, jusqu'à {@link ReglagesZones#aTravers} blocs (10),
- * de plus en plus léger avec la distance ; au-delà, rien à travers les murs.</li>
+ * <li>visible jusqu'à la portée donnée par l'appelant, seulement là où on la voit : jamais à travers le décor (17/11,
+ * demande du propriétaire : avant, de près, une seconde passe la montrait à travers les blocs, comme des rayons X).</li>
  * </ul>
  * Géométrie construite UNE fois ({@link Construction}) en morceaux de {@link #MORCEAU} blocs, chacun dans son propre tampon
  * de la carte graphique ; à chaque image, seuls les morceaux à portée sont dessinés (deux appels chacun au plus), rien
@@ -31,7 +30,7 @@ import org.lwjgl.opengl.GL11;
  * seule son opacité est gardée. Toujours sur le fil du rendu ; {@link #close()} rend la mémoire de la carte graphique.
  */
 public final class ZoneDessin implements AutoCloseable {
-   /** Côté d'un morceau (blocs) : unité de la portée et du fondu « à travers ». */
+   /** Côté d'un morceau (blocs) : unité de la portée. */
    public static final int MORCEAU = 8;
    /** Hauteur du mur bas au bord (blocs) et son opacité en bas (0 en haut). */
    public static final float MUR = 0.9F, MUR_BAS = 0.22F;
@@ -39,8 +38,6 @@ public final class ZoneDessin implements AutoCloseable {
    public static final float NETTE = 0.14F, NETTE_A = 0.9F, DOUCE = 1.2F, DOUCE_A = 0.32F;
    /** Décollé du sol (pas de scintillement avec le bloc dessous). */
    public static final float DECOLLE = 0.03F;
-   /** Opacité de la part cachée par le décor, tout près (baisse jusqu'à 0 à {@link ReglagesZones#aTravers}). */
-   public static final float A_TRAVERS = 0.45F;
 
    private final double ox, oy, oz;
    private final List<Morceau> morceaux;
@@ -73,7 +70,6 @@ public final class ZoneDessin implements AutoCloseable {
       if (ferme || force <= 0.01F || morceaux.isEmpty()) return;
       ShaderInstance sh = GameRenderer.getPositionColorShader();
       if (sh == null) return;
-      double aTravers = ReglagesZones.aTravers;
       matrice.set(vue).translate((float) (ox - cam.x), (float) (oy - cam.y), (float) (oz - cam.z));
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
       RenderSystem.enableBlend();
@@ -89,12 +85,6 @@ public final class ZoneDessin implements AutoCloseable {
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.setShaderColor(r, g, b, force);
             m.vbo.drawWithShader(matrice, proj, sh);
-            if (d < aTravers) {
-               // seulement la part cachée par le décor (profondeur plus loin que ce qui est déjà dessiné), plus légère
-               RenderSystem.depthFunc(GL11.GL_GREATER);
-               RenderSystem.setShaderColor(r, g, b, force * A_TRAVERS * (float) (1.0 - d / aTravers));
-               m.vbo.drawWithShader(matrice, proj, sh);
-            }
          }
       } finally {
          VertexBuffer.unbind();

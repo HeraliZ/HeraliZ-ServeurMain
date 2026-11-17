@@ -30,7 +30,7 @@ import net.minecraftforge.fml.common.Mod;
  * commun des zones du noyau ({@link ZoneDessin}) à la place du mur lumineux de 1,6 bloc. Sol très léger dans le cercle,
  * au bord une bande nette, un dégradé au sol et un mur bas très léger ; rien qui gêne la vue de ceux qui se battent dedans.
  * Couleur selon l'état de la zone : capture ou contestation orange, tenue par son clan vert, par un autre rouge, libre
- * blanc. Visible jusqu'à {@link #PORTEE} blocs, à travers le décor seulement de près (réglage du noyau).
+ * blanc. Visible jusqu'à {@link #PORTEE} blocs, jamais à travers le décor (17/11).
  * <p>Posé sur le vrai sol (sans arbres ni objets posés), borné à +/- hauteurCapture du drapeau. Construit une fois par
  * drapeau, refait quand son cercle change ou au plus tard toutes les {@link #REFAIRE_TICKS} (le sol a pu changer), un seul
  * par image. Les drapeaux sont suivis dès que leur bloc est chargé chez le joueur
