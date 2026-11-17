@@ -347,7 +347,10 @@ final class CommandesSalle {
          MutableComponent ligne = Component.literal(x.nom).withStyle(st -> st.withColor(ChatFormatting.YELLOW)
             .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/salle voir " + x.nom)));
          ligne.append(Component.literal(" — ").withStyle(ChatFormatting.GRAY)).append(couleur(x.niveau))
-            .append(Component.literal(" — ").withStyle(ChatFormatting.GRAY)).append(etat(l, x));
+            .append(Component.literal(" — ").withStyle(ChatFormatting.GRAY)).append(etat(l, x))
+            // 17/11 : où elle est (coins de sa boîte), pour la retrouver depuis la console
+            .append(Component.literal(" — " + x.min.getX() + " " + x.min.getY() + " " + x.min.getZ() + " → "
+               + x.max.getX() + " " + x.max.getY() + " " + x.max.getZ()).withStyle(ChatFormatting.GRAY));
          ok(s, ligne);
       }
       return m.salles.size();
