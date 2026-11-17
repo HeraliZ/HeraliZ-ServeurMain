@@ -200,6 +200,57 @@ def console(cmd):
         pass
 
 
+def journal():
+    """Texte du journal du serveur (logs/latest.log), « » s'il est illisible."""
+    ok, _ = lftp("get /logs/latest.log -o journal_ptero.log;", 120)
+    if not ok:
+        return ""
+    try:
+        return Path("journal_ptero.log").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def attendre_journal(motif, depuis, delai=25):
+    """(correspondance, position de sa fin dans le journal) de motif (expression régulière) écrit au journal après le
+    caractère depuis, ou (None, depuis)."""
+    fin = time.time() + delai
+    while time.time() < fin:
+        texte = journal()
+        m = re.search(motif, texte[depuis:])
+        if m:
+            return m, depuis + m.end()
+        time.sleep(2)
+    return None, depuis
+
+
+def wipe_tout():
+    """
+    17/11 (demande du propriétaire : « wipe tout », tout le monde recommence au spawn) : /wipe tout de HeraliZ Quêtes
+    lancé depuis la console, ses deux codes lus dans le journal (1 min puis 30 s pour les taper). Faux si une étape n'a pas
+    abouti (rien n'est lancé tant que le 2e code n'est pas tapé ; les codes périment tout seuls).
+    """
+    depuis = len(journal())
+    console("wipe tout")
+    m, depuis = attendre_journal(r"/wipe tout confirmer (\d{4})", depuis)
+    if not m:
+        dire("- **wipe pas lancé** : premier code introuvable au journal (taper `/wipe tout` en jeu)")
+        return False
+    console("wipe tout confirmer " + m.group(1))
+    m, depuis = attendre_journal(r"/wipe tout valider (\d{4})", depuis, 20)
+    if not m:
+        dire("- **wipe pas lancé** : second code introuvable au journal (taper `/wipe tout` en jeu)")
+        return False
+    console("wipe tout valider " + m.group(1))
+    lance, depuis = attendre_journal(r"REMISE À ZÉRO DU SERVEUR lancée", depuis, 60)
+    if lance:
+        fait, _ = attendre_journal(r"remise à zéro du serveur n°\d+ : [^\n]*", depuis, 120)
+        dire("- **wipe fait** (`/wipe tout`)" + ((" : " + fait.group(0).strip()) if fait else ""))
+        return True
+    dire("- **wipe : lancement pas vu au journal** : le vérifier dans la console du panel")
+    return False
+
+
 # ---------------------------------------------------------------- la nouvelle carte
 
 def carte_release(dossier_local):
@@ -423,6 +474,9 @@ def main():
     apres = [c.strip().lstrip("/") for c in ENV.get("APRES", "").split(";") if c.strip()]
     if apres:
         dire("- commandes de console après le redémarrage : " + " ; ".join("`/%s`" % c for c in apres))
+    wipe = ENV.get("WIPE", "false").lower() == "true"
+    if wipe:
+        dire("- puis **`/wipe tout`** (clans, hérals, inventaires, quêtes de tous les joueurs ; codes lus au journal)")
     dire("### Ce qui est gardé tel quel")
     garder_racine = sorted(n + ("/" if est else "") for n, est in racine_monde.items() if n not in REMPLACES)
     dire("- racine du monde : " + ", ".join("`%s`" % n for n in garder_racine))
@@ -593,6 +647,13 @@ def main():
         else:
             dire("- **commandes pas envoyées** (serveur pas « running ») : les taper dans la console : "
                  + " ; ".join("`/%s`" % c for c in apres))
+    if wipe:
+        if e == "running":
+            if not apres:
+                time.sleep(20)   # les mods finissent leur démarrage
+            wipe_tout()
+        else:
+            dire("- **wipe pas lancé** (serveur pas « running ») : taper `/wipe tout` en jeu ou dans la console")
     dire("- ancienne carte gardée telle quelle dans `%s` (à supprimer depuis le panel quand tout va bien ; pour revenir "
          "en arrière : serveur arrêté, remettre ses dossiers et fichiers à leur place)" % garde)
     if source == "dossier_ptero":
