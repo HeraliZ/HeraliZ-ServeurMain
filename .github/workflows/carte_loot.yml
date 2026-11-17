@@ -43,9 +43,9 @@ on:
         type: boolean
         default: true
       commandes_apres:
-        description: "Commandes de console envoyées après le redémarrage, séparées par ; (bordure de la nouvelle carte, train...)"
+        description: "Commandes de console envoyées après le redémarrage, séparées par ; (bordure de la nouvelle carte, train, points de quête de l'ancienne carte effacés...)"
         type: string
-        default: "worldborder center 0 0;worldborder set 4500;train reseau reseau_v3;train actif true"
+        default: "worldborder center 0 0;worldborder set 4500;train reseau reseau_v3;train actif true;quete points vider_carte confirmer"
       wipe_tout:
         description: "Après le redémarrage : /wipe tout (clans, hérals, inventaires, quêtes de TOUS les joueurs), codes lus au journal du serveur"
         type: boolean

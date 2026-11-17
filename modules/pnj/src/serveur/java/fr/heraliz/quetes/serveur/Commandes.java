@@ -135,6 +135,9 @@ final class Commandes {
                         .then(Commands.literal("tp").then(Commands.argument("id", StringArgumentType.word()).suggests(POINTS)
                                 .executes(c -> tpPoint(c, StringArgumentType.getString(c, "id"))))))
                 .then(Commands.literal("points").executes(c -> listePoints(c, ""))
+                        // 17/11 : changement de carte : effacer les points restés sur l'ancienne (op 4, console comprise)
+                        .then(Commands.literal("vider_carte").requires(s -> s.hasPermission(4))
+                                .then(Commands.literal("confirmer").executes(Commandes::viderCarte)))
                         .then(Commands.argument("groupe", StringArgumentType.word()).suggests(GROUPES)
                                 .executes(c -> listePoints(c, StringArgumentType.getString(c, "groupe")))))
                 .then(Commands.literal("joueur").then(Commands.argument("joueur", EntityArgument.player())
@@ -347,6 +350,17 @@ final class Commandes {
         if (!Moteur.points().retirer(id)) return erreur(c, "heraliz_quetes.cmd.point_inconnu", "Point inconnu : %s", id);
         dire(c, "heraliz_quetes.cmd.point_retire", "Point %s retiré.", id);
         return 1;
+    }
+
+    /**
+     * /quete points vider_carte confirmer (17/11) : efface tous les points de quête de la carte principale, restés sur les
+     * coordonnées de l'ancienne carte après un changement de carte ; ceux des autres mondes (spawn...) sont gardés.
+     */
+    private static int viderCarte(CommandContext<CommandSourceStack> c) {
+        net.minecraft.server.MinecraftServer s = c.getSource().getServer();
+        int n = Moteur.points().viderMonde(s.overworld().dimension().location().toString());
+        dire(c, "heraliz_quetes.cmd.points_carte_vides", "%s point(s) de quête de la carte effacé(s) ; ceux des autres mondes sont gardés.", n);
+        return Math.max(1, n);
     }
 
     private static int nommerPoint(CommandContext<CommandSourceStack> c, String id, String nom) {

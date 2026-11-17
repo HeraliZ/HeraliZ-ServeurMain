@@ -354,6 +354,7 @@
   "heraliz_quetes.cmd.point_deja": "Ce bloc est déjà le point %s.",
   "heraliz_quetes.cmd.point_inconnu": "Point inconnu : %s",
   "heraliz_quetes.cmd.point_retire": "Point %s retiré.",
+  "heraliz_quetes.cmd.points_carte_vides": "%s point(s) de quête de la carte effacé(s) ; ceux des autres mondes sont gardés.",
   "heraliz_quetes.cmd.point_nomme": "Point %s : « %s ».",
   "heraliz_quetes.cmd.monde_inconnu": "Monde introuvable : %s",
   "heraliz_quetes.cmd.point_ligne": "%s · %s %s %s %s %s",

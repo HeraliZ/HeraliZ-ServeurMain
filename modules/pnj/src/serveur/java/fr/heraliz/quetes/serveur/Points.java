@@ -85,6 +85,20 @@ final class Points extends SavedData {
         return true;
     }
 
+    /** Retire tous les points de ce monde (changement de carte, 17/11) ; rend leur nombre. */
+    int viderMonde(String monde) {
+        int n = 0;
+        for (java.util.Iterator<Point> it = parId.values().iterator(); it.hasNext(); ) {
+            Point p = it.next();
+            if (!p.monde().equals(monde)) continue;
+            it.remove();
+            parBloc.remove(p.cleBloc());
+            n++;
+        }
+        if (n > 0) setDirty();
+        return n;
+    }
+
     boolean nommer(String id, String nom) {
         Point p = parId.get(id);
         if (p == null) return false;

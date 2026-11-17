@@ -354,6 +354,7 @@
   "heraliz_quetes.cmd.point_deja": "Этот блок уже точка %s.",
   "heraliz_quetes.cmd.point_inconnu": "Неизвестная точка: %s",
   "heraliz_quetes.cmd.point_retire": "Точка %s убрана.",
+  "heraliz_quetes.cmd.points_carte_vides": "Удалено точек заданий на карте: %s ; точки в других мирах сохранены.",
   "heraliz_quetes.cmd.point_nomme": "Точка %s: «%s».",
   "heraliz_quetes.cmd.monde_inconnu": "Мир не найден: %s",
   "heraliz_quetes.cmd.point_ligne": "%s · %s %s %s %s %s",

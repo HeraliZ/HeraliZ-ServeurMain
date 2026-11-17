@@ -354,6 +354,7 @@
   "heraliz_quetes.cmd.point_deja": "This block is already point %s.",
   "heraliz_quetes.cmd.point_inconnu": "Unknown point: %s",
   "heraliz_quetes.cmd.point_retire": "Point %s removed.",
+  "heraliz_quetes.cmd.points_carte_vides": "%s quest point(s) erased from the map; those in other worlds are kept.",
   "heraliz_quetes.cmd.point_nomme": "Point %s: \"%s\".",
   "heraliz_quetes.cmd.monde_inconnu": "World not found: %s",
   "heraliz_quetes.cmd.point_ligne": "%s · %s %s %s %s %s",
