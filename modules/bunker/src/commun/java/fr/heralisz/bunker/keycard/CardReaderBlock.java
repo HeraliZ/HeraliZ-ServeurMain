@@ -28,7 +28,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nullable;
 
 /**
- * Lecteur de carte mural façon Rust. Carte de la bonne couleur -> lecture (le temps du glissement), accès accordé :
+ * Lecteur de carte mural façon Rust. Il ouvre les portes à carte de sa couleur et les portes de bunker (désignées par le
+ * staff, 17/11) posées à 2 blocs au plus. Carte de la bonne couleur -> lecture (le temps du glissement), accès accordé :
  * signal redstone pendant {@link ReglagesCartes#impulsionTicks()} (réglage du serveur), puis retour en attente. Mauvaise carte -> refus.
  * Le signal est émis dans toutes les directions et renforcé dans le bloc support (porte derrière le mur).
  * Incassable en survie : ce sont les admins qui les posent aux entrées des zones.
@@ -86,7 +87,8 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
       level.playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 0.9F, 1.6F);
       level.scheduleTick(pos, this, READ_TICKS);
       if (player instanceof ServerPlayer sp) {
-         DoorBlockEntity door = ok ? KeycardDoors.doorsNear(level, pos, this.level).stream().findFirst().orElse(null) : null;
+         // porte filmée : sa porte à carte, ou la porte de bunker à côté (17/11)
+         DoorBlockEntity door = ok ? KeycardDoors.portesDuLecteur(level, pos, this.level).stream().findFirst().orElse(null) : null;
          KeycardNetwork.sendSwipe(sp, pos, state.getValue(FACING), ok, door);
       }
       if (ok && card.getItem() instanceof KeycardItem item) {
@@ -111,7 +113,7 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
                SallesPont.accesAccorde(level, pos, this.level);
                KeycardDoors.notifyDoors(level, pos, this.level);
                // le signal dure au moins le temps d'ouverture de la porte (sinon elle resterait ouverte)
-               int openTime = KeycardDoors.doorsNear(level, pos, this.level).stream().mapToInt(d -> d.getDoorDecl().getOpenTime()).max().orElse(0);
+               int openTime = KeycardDoors.portesDuLecteur(level, pos, this.level).stream().mapToInt(d -> d.getDoorDecl().getOpenTime()).max().orElse(0);
                level.scheduleTick(pos, this, Math.max(ReglagesCartes.impulsionTicks(), openTime + 60));
             } else {
                level.setBlock(pos, state.setValue(STATUS, Status.IDLE).setValue(POWERED, false), Block.UPDATE_ALL);

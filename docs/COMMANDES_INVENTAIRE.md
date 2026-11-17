@@ -68,7 +68,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/redemarrage` | noyau | op 4 | annuler |
 | `/rtp` | bases | tous |  |
 | `/saison` | clans | tous | annuler, classement, confirmer, fin (op 4), journal (op 4), points (op 4), reset (op 4) |
-| `/salle` | bunker | staff (op 2) | baguette, bleue, creer, delier, effacer, lier, liste, recharger, redefinir, retirer, rouge, selection, verte, voir |
+| `/salle` | bunker | staff (op 2) | ajouter, baguette, bleue, bunker, creer, delier, effacer, lier, liste, recharger, redefinir, retirer, rouge, selection, verte, voir |
 | `/spartan` | anticheat | staff (op 2) | add (op 3), capture, checks, clear (op 3), esp, info, learn (op 3), reference, report, scan, setback, status, suspects, vl |
 | `/spawn` | bases | tous | definir (staff (op 2)), effacer (staff (op 2)), voir (staff (op 2)) |
 | `/staff` | boutique | tous | panel |

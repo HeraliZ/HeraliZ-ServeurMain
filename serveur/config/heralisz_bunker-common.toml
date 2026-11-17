@@ -32,3 +32,13 @@
 	#Range: 1 ~ 10080
 	rechargeRougeMinutes = 240
 
+#Portes de bunker (17/11) : désignées par le staff (/salle bunker ajouter [nom], en regardant la porte), ouvertes
+#seulement par un lecteur de carte posé à 2 blocs au plus (n'importe quelle couleur : la carte du lecteur posé),
+#annoncées à tout le serveur, puis refermées
+[bunkers]
+	#Minutes pendant lesquelles la porte reste ouverte après un passage de carte (temps réel)
+	#Range: 1 ~ 1440
+	ouvertureMinutes = 30
+	#Secondes avant la fermeture où les joueurs à 48 blocs au plus de la porte sont prévenus (0 = jamais)
+	#Range: 0 ~ 600
+	avertirSecondes = 60

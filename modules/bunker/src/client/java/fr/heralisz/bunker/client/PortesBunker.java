@@ -2,6 +2,7 @@ package fr.heralisz.bunker.client;
 
 import com.hbm_m.block.UniversalMachinePartBlock;
 import com.hbm_m.block.decorations.DoorBlock;
+import com.hbm_m.block.entity.doors.DoorBlockEntity;
 import com.hbm_m.interfaces.IMultiblockPart;
 import fr.heralisz.bunker.keycard.KeycardDoors;
 import java.util.function.BiPredicate;
@@ -13,8 +14,9 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * Portes animées du bunker qui s'ouvrent à la main, déclarées au noyau ({@code fr.heraliz.noyau.api.Portes}, HeraliZ,
  * 31/10) : avec une arme en main, le clic droit sur une de ces portes (bloc principal ou une de ses parties) l'ouvre ou la
- * ferme au lieu de viser (HeraliZ Tactique, {@code PortesEnMain}). Les portes à carte ne sont pas déclarées : elles ne
- * s'ouvrent qu'au lecteur de carte, le clic garde la visée. Le serveur décide toujours.
+ * ferme au lieu de viser (HeraliZ Tactique, {@code PortesEnMain}). Les portes à carte et les portes de bunker (désignées
+ * par le staff, 17/11) ne sont pas déclarées : elles ne s'ouvrent qu'au lecteur de carte, le clic garde la visée. Le
+ * serveur décide toujours.
  */
 final class PortesBunker {
     private PortesBunker() {
@@ -36,8 +38,10 @@ final class PortesBunker {
         if (b instanceof UniversalMachinePartBlock && level.getBlockEntity(pos) instanceof IMultiblockPart partie) {
             BlockPos maitre = partie.getControllerPos();
             if (maitre == null) return false;
+            pos = maitre;
             b = level.getBlockState(maitre).getBlock();
         }
-        return b instanceof DoorBlock && KeycardDoors.levelOf(b) == null;
+        return b instanceof DoorBlock && KeycardDoors.levelOf(b) == null
+            && !(level.getBlockEntity(pos) instanceof DoorBlockEntity porte && porte.estBunker());
     }
 }

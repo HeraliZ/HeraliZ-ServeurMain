@@ -1,0 +1,11 @@
+# 17/11 : demande du propriétaire (« les deux bunkers, ne pas les afficher sur la map ») : leurs noms quittent la carte M,
+# et les six zones d'extraction qui portaient le nom d'un bunker prennent un nom neutre (leurs identifiants ne changent
+# pas). Les portes des bunkers deviennent des portes de bunker en jeu : /salle bunker ajouter [nom], en regardant la porte.
+carte lieu retirer Bunker des Bois
+carte lieu retirer Bunker du Pic
+extraction label plage_bunker_pic Plage du Pic
+extraction label plage_bunker_pic_e Plage est du Pic
+extraction label foret_bunker_bois Forêt du Grand Bois
+extraction label foret_bunker_bois_so Clairière du Grand Bois
+extraction label prairie_faille Grande Prairie
+extraction label foret_faille_s Forêt de Val-Fleuri

@@ -183,6 +183,15 @@ public class DoorBlock extends BaseEntityBlock implements IMultiblockController 
          }
          return InteractionResult.sidedSuccess(level.isClientSide);
       }
+      if (level.getBlockEntity(pos) instanceof DoorBlockEntity porte && porte.estBunker()) {
+         // HeraliZ (17/11) : porte de bunker (désignée par le staff), ne s'ouvre qu'avec un lecteur de carte posé à côté
+         if (level.isClientSide) {
+            player.displayClientMessage(Component.translatable("msg.heralisz_bunker.door_bunker").withStyle(ChatFormatting.GRAY), true);
+         } else {
+            level.playSound(null, pos, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.6F, 0.6F);
+         }
+         return InteractionResult.sidedSuccess(level.isClientSide);
+      }
       if (!level.isClientSide && level.getBlockEntity(pos) instanceof DoorBlockEntity doorBE) {
          doorBE.toggle();
       }

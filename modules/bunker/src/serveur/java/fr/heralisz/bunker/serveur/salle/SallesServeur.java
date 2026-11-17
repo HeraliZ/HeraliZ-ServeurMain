@@ -113,6 +113,21 @@ final class SallesServeur implements SallesPont.Regles {
       return c != null && couleurPorte(l, c) != null ? c : null;
    }
 
+   /** Porte visée (porte, une de ses pièces, ou un lecteur posé à côté) à 8 blocs au plus, quelle qu'elle soit (/salle bunker). */
+   @Nullable
+   static DoorBlockEntity porteQuelconqueVisee(ServerPlayer p) {
+      HitResult h = p.pick(8.0, 1.0F, false);
+      if (h.getType() != HitResult.Type.BLOCK || !(h instanceof BlockHitResult bh)) return null;
+      ServerLevel l = p.serverLevel();
+      BlockPos b = bh.getBlockPos();
+      if (l.getBlockState(b).getBlock() instanceof CardReaderBlock) {
+         List<DoorBlockEntity> portes = KeycardDoors.toutesPortesPres(l, b);
+         return portes.isEmpty() ? null : portes.get(0);
+      }
+      BlockPos c = controleur(l, b);
+      return c != null && l.getBlockEntity(c) instanceof DoorBlockEntity d ? d : null;
+   }
+
    /** Portes à carte de la couleur voulue autour de la boîte (3 blocs). */
    static List<BlockPos> portesDeCouleur(Map<BlockPos, AccessLevel> portes, AccessLevel niveau) {
       List<BlockPos> out = new ArrayList<>();

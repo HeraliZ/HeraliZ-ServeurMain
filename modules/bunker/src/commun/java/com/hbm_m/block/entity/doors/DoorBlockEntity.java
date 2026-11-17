@@ -1,6 +1,7 @@
 package com.hbm_m.block.entity.doors;
 
 import fr.heralisz.bunker.keycard.AccessLevel;
+import fr.heralisz.bunker.keycard.BunkerPont;
 import fr.heralisz.bunker.keycard.KeycardDoors;
 import fr.heralisz.bunker.keycard.ReglagesCartes;
 import fr.heralisz.bunker.salle.SallesPont;
@@ -76,6 +77,13 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
    // ouverte encore ce nombre de ticks avant de se refermer (avant : refermée aussitôt ouverte, on ne passait que parce
    // qu'elle était traversable pendant son ouverture)
    private int fermerDans = 0;
+   // HeraliZ (17/11) : porte de bunker désignée par le staff (/salle bunker ajouter [nom]) : nom donné dans l'annonce
+   // ("" : « la porte du bunker »), null : porte ordinaire. Ouverte par un lecteur : heure (temps réel, ms) de sa fermeture,
+   // gardée au redémarrage (0 : pas ouverte par un lecteur) ; joueurs proches déjà prévenus de la fermeture
+   @Nullable
+   private String bunker = null;
+   private long bunkerJusqua = 0L;
+   private boolean bunkerAverti = false;
    private DoorModelSelection modelSelection = DoorModelSelection.DEFAULT;
    private Object cachedModelData;
    private String doorDeclId;
@@ -237,6 +245,28 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
             if (keycard != null) {
                this.updateRedstoneState(SallesPont.tenueOuverte(this.level, this.worldPosition)
                   || KeycardDoors.readerGranted(this.level, KeycardDoors.parts(this), keycard));
+               return;
+            }
+            // 17/11 : porte de bunker -> seul compte un lecteur posé à côté (n'importe quelle couleur) ; ouverte, elle le
+            // reste jusqu'à bunkerJusqua (BunkerPont : réglage du serveur), même lecteur éteint
+            if (this.bunker != null) {
+               long maintenant = System.currentTimeMillis();
+               if (KeycardDoors.readerGranted(this.level, KeycardDoors.parts(this), null)) {
+                  long duree = BunkerPont.ouvertureMs();
+                  if (duree > 0L) {
+                     this.bunkerJusqua = maintenant + duree;
+                     this.bunkerAverti = false;
+                     this.setChanged();
+                  }
+                  // annoncée seulement quand elle était fermée (ou se fermait) : rouverte avant la fin = temps repris
+                  if (this.state == 0 || this.state == 2) BunkerPont.ouverte(this.level, this.worldPosition, this.bunker);
+                  this.updateRedstoneState(true);
+               } else {
+                  boolean tenue = this.bunkerJusqua > maintenant;
+                  this.updateRedstoneState(tenue);
+                  // ouverte sans lecteur ni heure de fermeture (à la main, avant le 17/11) : refermée
+                  if (!tenue && this.state == 1 && this.fermerDans == 0) this.close();
+               }
                return;
             }
             boolean isPowered = this.level.hasNeighborSignal(this.worldPosition);
@@ -450,6 +480,34 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       return sl.noCollision(e, b) ? c : null;
    }
 
+   /** Porte de bunker (désignée par le staff, /salle bunker) : ne s'ouvre qu'avec un lecteur de carte posé à côté. */
+   public boolean estBunker() {
+      return this.bunker != null;
+   }
+
+   /** Nom du bunker dans l'annonce ("" : sans nom), null : porte ordinaire. */
+   @Nullable
+   public String getBunker() {
+      return this.bunker;
+   }
+
+   /** Heure (temps réel, ms) où la porte de bunker se refermera, 0 : pas ouverte par un lecteur. */
+   public long getBunkerJusqua() {
+      return this.bunkerJusqua;
+   }
+
+   /**
+    * Fait de cette porte une porte de bunker (nom de l'annonce, "" : sans nom) ou, avec null, une porte ordinaire (serveur,
+    * /salle bunker). Désignée, elle se ferme aussitôt si elle était ouverte : elle attend un lecteur.
+    */
+   public void setBunker(@Nullable String nom) {
+      this.bunker = nom;
+      this.bunkerJusqua = 0L;
+      this.bunkerAverti = false;
+      this.syncToClient();
+      this.checkRedstonePower();
+   }
+
    public boolean isLocked() {
       return this.locked;
    }
@@ -466,6 +524,15 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
          if (be.fermerDans > 0 && --be.fermerDans == 0 && be.state == 1 && !be.lastRedstoneState) {
             be.close();
             be.setChanged();
+         }
+         // 17/11 : et, une fois par seconde, l'heure de fermeture d'une porte de bunker ouverte par un lecteur, ou une porte
+         // de bunker ouverte sans (à la main avant le 17/11, signal d'avant) : elle revoit ses lecteurs
+         if (be.bunker != null && level.getGameTime() % 20 == 0) {
+            if (be.bunkerJusqua != 0L) {
+               be.compterBunker();
+            } else if (be.state == 1 && be.fermerDans == 0) {
+               be.checkRedstonePower();
+            }
          }
          return;
       }
@@ -510,6 +577,28 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
 
       if (shouldSync) {
          be.syncToClient();
+      }
+   }
+
+   /**
+    * Porte de bunker ouverte par un lecteur (17/11) : à l'heure dite, elle se ferme (sauf lecteur encore actif) ; avant,
+    * les joueurs proches sont prévenus une fois (BunkerPont). Temps réel : un serveur lent ne la garde pas plus longtemps,
+    * un redémarrage ne la remet pas à zéro.
+    */
+   private void compterBunker() {
+      long reste = this.bunkerJusqua - System.currentTimeMillis();
+      if (reste <= 0L) {
+         this.bunkerJusqua = 0L;
+         this.bunkerAverti = false;
+         this.setChanged();
+         this.checkRedstonePower();
+         return;
+      }
+      long avertir = BunkerPont.avertirMs();
+      if (!this.bunkerAverti && this.state == 1 && avertir > 0L && reste <= avertir) {
+         this.bunkerAverti = true;
+         this.setChanged();
+         BunkerPont.bientotFermee(this.level, this.worldPosition, (int)((reste + 999L) / 1000L));
       }
    }
 
@@ -613,6 +702,11 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       tag.putBoolean("locked", this.locked);
       tag.putBoolean("redstoneState", this.lastRedstoneState);
       if (this.fermerDans > 0) tag.putInt("fermerDans", this.fermerDans);
+      if (this.bunker != null) tag.putString("bunker", this.bunker);
+      if (this.bunkerJusqua != 0L) {
+         tag.putLong("bunkerJusqua", this.bunkerJusqua);
+         tag.putBoolean("bunkerAverti", this.bunkerAverti);
+      }
       this.modelSelection.save(tag);
       if (this.controllerPos != null) {
          tag.putLong("controllerPos", this.controllerPos.asLong());
@@ -640,6 +734,9 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       this.locked = tag.getBoolean("locked");
       this.lastRedstoneState = tag.getBoolean("redstoneState");
       this.fermerDans = tag.getInt("fermerDans");
+      this.bunker = tag.contains("bunker") ? tag.getString("bunker") : null;
+      this.bunkerJusqua = tag.getLong("bunkerJusqua");
+      this.bunkerAverti = tag.getBoolean("bunkerAverti");
       boolean hadModelSelectionInNbt = tag.contains("modelType");
       if (hadModelSelectionInNbt) {
          this.modelSelection = DoorModelSelection.load(tag);

@@ -7,9 +7,13 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.hbm_m.block.entity.doors.DoorBlockEntity;
 import fr.heralisz.bunker.keycard.AccessLevel;
+import fr.heralisz.bunker.keycard.BunkerPont;
 import fr.heralisz.bunker.keycard.KeycardConfig;
+import fr.heralisz.bunker.keycard.KeycardDoors;
 import fr.heralisz.bunker.keycard.KeycardRegistry;
+import fr.heralisz.bunker.serveur.BunkerServeur;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -37,7 +41,10 @@ import java.util.Map;
  * <li>/salle redefinir &lt;nom&gt; — nouvelle boîte = la sélection ;</li>
  * <li>/salle lier|delier &lt;nom&gt; — lie (ou délie) la porte à carte visée (ou celle de son lecteur) ;</li>
  * <li>/salle liste, /salle voir [nom] — état des salles (voir : contour montré 30 s) ;</li>
- * <li>/salle recharger &lt;nom&gt; — loot remis tout de suite ; /salle retirer &lt;nom&gt;.</li></ul>
+ * <li>/salle recharger &lt;nom&gt; — loot remis tout de suite ; /salle retirer &lt;nom&gt;.</li>
+ * <li>/salle bunker [ajouter [nom] | retirer] — porte visée (ou celle du lecteur visé) : son état de porte de bunker, en
+ * faire une (ouverte seulement par un lecteur de carte posé à côté, 30 min, annoncée à tout le serveur : 17/11) ou la
+ * rendre ordinaire.</li></ul>
  * Réponses en message direct à celui qui tape la commande.
  */
 final class CommandesSalle {
@@ -69,7 +76,12 @@ final class CommandesSalle {
          .then(Commands.literal("voir").executes(c -> voir(c.getSource(), null))
             .then(nom().executes(c -> voir(c.getSource(), StringArgumentType.getString(c, "nom")))))
          .then(Commands.literal("recharger").then(nom().executes(CommandesSalle::recharger)))
-         .then(Commands.literal("retirer").then(nom().executes(CommandesSalle::retirer))));
+         .then(Commands.literal("retirer").then(nom().executes(CommandesSalle::retirer)))
+         .then(Commands.literal("bunker").executes(c -> bunker(c.getSource()))
+            .then(Commands.literal("ajouter").executes(c -> bunkerAjouter(c.getSource(), ""))
+               .then(Commands.argument("nom", StringArgumentType.greedyString())
+                  .executes(c -> bunkerAjouter(c.getSource(), StringArgumentType.getString(c, "nom")))))
+            .then(Commands.literal("retirer").executes(c -> bunkerRetirer(c.getSource())))));
    }
 
    private static RequiredArgumentBuilder<CommandSourceStack, String> nom() {
@@ -307,6 +319,87 @@ final class CommandesSalle {
       ok(s, Component.translatableWithFallback(lier ? "heralisz_bunker.salle.porte.liee" : "heralisz_bunker.salle.porte.deliee",
          lier ? "Porte en %1$s liée à la salle %2$s (%3$s porte(s))" : "Porte en %1$s déliée de la salle %2$s (%3$s porte(s))",
          Selections.coords(porte), nom, String.valueOf(x.portes.size())).withStyle(ChatFormatting.GREEN));
+      return 1;
+   }
+
+   // ------------------------------------------------------------------------------------------ portes de bunker
+   private static final int NOM_BUNKER_MAX = 48;
+
+   private static Component aucunePorte() {
+      return Component.translatableWithFallback("heralisz_bunker.bunker.porte.aucune",
+         "Regarde une porte (ou un lecteur posé à côté), à 8 blocs au plus");
+   }
+
+   private static int bunker(CommandSourceStack s) throws CommandSyntaxException {
+      DoorBlockEntity d = SallesServeur.porteQuelconqueVisee(s.getPlayerOrException());
+      if (d == null) {
+         echec(s, aucunePorte());
+         return 0;
+      }
+      String coords = Selections.coords(d.getBlockPos());
+      if (!d.estBunker()) {
+         echec(s, Component.translatableWithFallback("heralisz_bunker.bunker.pas_bunker",
+            "Porte en %s : porte ordinaire (/salle bunker ajouter [nom] pour en faire une porte de bunker)", coords));
+         return 0;
+      }
+      long reste = d.getBunkerJusqua() - System.currentTimeMillis();
+      boolean ouverte = d.getState() == 1 || d.getState() == 3;
+      Component etat = !ouverte
+         ? Component.translatableWithFallback("heralisz_bunker.bunker.etat.fermee", "fermée").withStyle(ChatFormatting.GREEN)
+         : reste > 0
+            ? Component.translatableWithFallback("heralisz_bunker.bunker.etat.ouverte_reste", "ouverte, se ferme dans %s", duree(reste / 50))
+               .withStyle(ChatFormatting.GOLD)
+            : Component.translatableWithFallback("heralisz_bunker.bunker.etat.ouverte", "ouverte").withStyle(ChatFormatting.GOLD);
+      int lecteurs = KeycardDoors.lecteursAPortee(d.getLevel(), KeycardDoors.parts(d));
+      ok(s, Component.translatableWithFallback("heralisz_bunker.bunker.etat",
+         "Porte de bunker en %1$s : %2$s ; %3$s lecteur(s) de carte à côté. Annonce : %4$s",
+         coords, etat, String.valueOf(lecteurs), BunkerServeur.annonce(d.getBunker(), BunkerPont.ouvertureMs())));
+      return 1;
+   }
+
+   private static int bunkerAjouter(CommandSourceStack s, String nom) throws CommandSyntaxException {
+      DoorBlockEntity d = SallesServeur.porteQuelconqueVisee(s.getPlayerOrException());
+      if (d == null) {
+         echec(s, aucunePorte());
+         return 0;
+      }
+      AccessLevel niveau = KeycardDoors.levelOf(d.getBlockState().getBlock());
+      if (niveau != null) {
+         echec(s, Component.translatableWithFallback("heralisz_bunker.bunker.porte_a_carte",
+            "Cette porte s'ouvre déjà avec une carte %s : prends une porte ordinaire (l'écluse à air ronde, par exemple)", couleur(niveau)));
+         return 0;
+      }
+      String n = nom.trim();
+      if (n.length() > NOM_BUNKER_MAX) n = n.substring(0, NOM_BUNKER_MAX).trim();
+      d.setBunker(n);
+      long ms = BunkerPont.ouvertureMs();
+      ok(s, Component.translatableWithFallback("heralisz_bunker.bunker.ajoutee",
+         "Porte en %1$s : porte de bunker. Elle ne s'ouvre plus qu'avec un lecteur de carte posé à 2 blocs au plus, puis reste ouverte %2$s min. Annonce : %3$s",
+         Selections.coords(d.getBlockPos()), String.valueOf(ms / 60_000L), BunkerServeur.annonce(n, ms)).withStyle(ChatFormatting.GREEN));
+      int lecteurs = KeycardDoors.lecteursAPortee(d.getLevel(), KeycardDoors.parts(d));
+      if (lecteurs < 2) {
+         ok(s, Component.translatableWithFallback("heralisz_bunker.bunker.lecteurs",
+            "%s lecteur(s) de carte à côté : pose-en un dehors et un dedans, à 2 blocs au plus de la porte (couleur du lecteur = carte qu'il faut)",
+            String.valueOf(lecteurs)).withStyle(ChatFormatting.YELLOW));
+      }
+      return 1;
+   }
+
+   private static int bunkerRetirer(CommandSourceStack s) throws CommandSyntaxException {
+      DoorBlockEntity d = SallesServeur.porteQuelconqueVisee(s.getPlayerOrException());
+      if (d == null) {
+         echec(s, aucunePorte());
+         return 0;
+      }
+      String coords = Selections.coords(d.getBlockPos());
+      if (!d.estBunker()) {
+         echec(s, Component.translatableWithFallback("heralisz_bunker.bunker.pas_bunker",
+            "Porte en %s : porte ordinaire (/salle bunker ajouter [nom] pour en faire une porte de bunker)", coords));
+         return 0;
+      }
+      d.setBunker(null);
+      ok(s, Component.translatableWithFallback("heralisz_bunker.bunker.retiree", "Porte en %s : redevenue une porte ordinaire", coords)
+         .withStyle(ChatFormatting.GREEN));
       return 1;
    }
 

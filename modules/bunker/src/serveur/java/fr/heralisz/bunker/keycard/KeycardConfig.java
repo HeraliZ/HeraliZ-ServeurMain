@@ -11,6 +11,7 @@ public final class KeycardConfig {
    public static final ForgeConfigSpec SPEC;
    public static final ForgeConfigSpec.IntValue USES_GREEN, USES_BLUE, USES_RED, PULSE_TICKS;
    public static final ForgeConfigSpec.IntValue ENTREE, FERMETURE, RECHARGE_GREEN, RECHARGE_BLUE, RECHARGE_RED;
+   public static final ForgeConfigSpec.IntValue BUNKER_MINUTES, BUNKER_AVERTIR;
 
    static {
       ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -29,6 +30,14 @@ public final class KeycardConfig {
          .defineInRange("rechargeVerteMinutes", 30, 1, 10080);
       RECHARGE_BLUE = b.comment("Minutes avant que le loot d'une salle bleue réapparaisse").defineInRange("rechargeBleueMinutes", 120, 1, 10080);
       RECHARGE_RED = b.comment("Minutes avant que le loot d'une salle rouge réapparaisse").defineInRange("rechargeRougeMinutes", 240, 1, 10080);
+      b.pop();
+      b.comment("Portes de bunker (17/11) : désignées par le staff (/salle bunker ajouter [nom], en regardant la porte), ouvertes",
+         "seulement par un lecteur de carte posé à 2 blocs au plus (n'importe quelle couleur : la carte du lecteur posé),",
+         "annoncées à tout le serveur, puis refermées").push("bunkers");
+      BUNKER_MINUTES = b.comment("Minutes pendant lesquelles la porte reste ouverte après un passage de carte (temps réel)")
+         .defineInRange("ouvertureMinutes", 30, 1, 1440);
+      BUNKER_AVERTIR = b.comment("Secondes avant la fermeture où les joueurs à 48 blocs au plus de la porte sont prévenus (0 = jamais)")
+         .defineInRange("avertirSecondes", 60, 0, 600);
       b.pop();
       SPEC = b.build();
    }

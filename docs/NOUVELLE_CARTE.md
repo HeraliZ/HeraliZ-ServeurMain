@@ -132,7 +132,12 @@ AuthMe, bans, `/spawn definir` (`crac/spawn.json`, il désigne le monde du spawn
    d'écart et 2 par quart sont tenus à chaque vague. Aujourd'hui : **45 zones** au dernier relevé (17/10, dont 2 en
    double au même endroit) ; le nombre réel dépend des zones posées depuis (`/extraction list`).
 5. Lieux de la carte M : `/carte lieu ajouter …`, `/carte nom …`.
-6. Salles à carte du bunker : `/salle …` (boîte, couleur, portes).
+6. Salles à carte du bunker : `/salle …` (boîte, couleur, portes). Portes des bunkers de la carte (17/11) : poser la
+   porte (l'écluse à air ronde) et deux lecteurs de carte, un dehors et un dedans, à 2 blocs au plus de la porte (la
+   couleur du lecteur = la carte qu'il faut) ; puis, en regardant la porte, `/salle bunker ajouter [nom]` (nom donné
+   dans l'annonce du tchat). Elle ne s'ouvre plus qu'au lecteur, reste ouverte 30 min (`[bunkers]` de
+   `config/heralisz_bunker-common.toml`), est annoncée à tout le serveur ; `/salle bunker` dit son état,
+   `/salle bunker retirer` la rend ordinaire.
 7. Points des coffres T7, points de quête de la carte (`/quete point …`), lieux des événements (`/event point …`).
 8. Territoires des clans : `zones.json` (centres, rayons), drapeaux en jeu (`/territoire drapeau <id>`) ou depuis la
    console (`/territoire drapeau <id> en <x y z> [nord|sud|est|ouest]`, 17/11), puis vérifier `/territoire info`.

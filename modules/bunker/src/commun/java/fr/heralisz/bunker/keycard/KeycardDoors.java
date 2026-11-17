@@ -16,10 +16,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Portes verrouillées par carte : elles ne s'ouvrent ni au clic droit ni avec un redstone ordinaire, seulement quand un
  * lecteur de leur couleur, posé à côté (2 blocs max d'une de leurs pièces), accorde l'accès.
+ * <p>Portes de bunker (17/11, demande du propriétaire : l'écluse à air ronde ferme les deux bunkers de la carte) : une
+ * porte ordinaire désignée par le staff ({@code /salle bunker ajouter}, gardée dans la porte : {@link DoorBlockEntity#estBunker()},
+ * jamais toutes les portes d'un type, les joueurs en posent dans leurs bases) ne s'ouvre plus qu'avec un lecteur posé à
+ * côté, de n'importe quelle couleur (le lecteur posé choisit la carte qu'il faut) ; ouverte, elle le reste un long moment,
+ * annoncé à tout le serveur (BunkerPont).</p>
  */
 public final class KeycardDoors {
    public static final Map<String, AccessLevel> LEVELS = Map.of(
@@ -44,12 +50,12 @@ public final class KeycardDoors {
    }
 
    /**
-    * Un lecteur de la bonne couleur, activé, à portée d'une des pièces de la porte ?
+    * Un lecteur de la bonne couleur (null : n'importe laquelle, portes de bunker), activé, à portée d'une des pièces de la porte ?
     * <p>24/10 (optimisation) : la boîte des pièces agrandie de la portée est lue une seule fois, puis chaque lecteur trouvé
     * est comparé aux pièces (même résultat qu'avant). Avant : un cube de 5 x 5 x 5 par pièce, rangé dans un ensemble
     * (plusieurs milliers de lectures pour une grande porte, toutes les 5 s par porte de salle à carte).</p>
     */
-   public static boolean readerGranted(Level level, List<BlockPos> parts, AccessLevel needed) {
+   public static boolean readerGranted(Level level, List<BlockPos> parts, @Nullable AccessLevel needed) {
       if (parts.isEmpty()) return false;
       int x0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE;
       int x1 = Integer.MIN_VALUE, y1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
@@ -66,7 +72,7 @@ public final class KeycardDoors {
          for (int y = y0 - READER_RANGE; y <= y1 + READER_RANGE; y++) {
             for (int z = z0 - READER_RANGE; z <= z1 + READER_RANGE; z++) {
                BlockState s = level.getBlockState(mp.set(x, y, z));
-               if (s.getBlock() instanceof CardReaderBlock reader && reader.level == needed && s.getValue(CardReaderBlock.POWERED)
+               if (s.getBlock() instanceof CardReaderBlock reader && (needed == null || reader.level == needed) && s.getValue(CardReaderBlock.POWERED)
                   && aPortee(parts, x, y, z)) {
                   return true;
                }
@@ -74,6 +80,21 @@ public final class KeycardDoors {
          }
       }
       return false;
+   }
+
+   /** Lecteurs (toutes couleurs, actifs ou non) à portée d'une des pièces de la porte : pour le staff (/salle bunker). */
+   public static int lecteursAPortee(Level level, List<BlockPos> parts) {
+      if (parts.isEmpty()) return 0;
+      BlockPos min = parts.get(0), max = parts.get(0);
+      for (BlockPos p : parts) {
+         min = new BlockPos(Math.min(min.getX(), p.getX()), Math.min(min.getY(), p.getY()), Math.min(min.getZ(), p.getZ()));
+         max = new BlockPos(Math.max(max.getX(), p.getX()), Math.max(max.getY(), p.getY()), Math.max(max.getZ(), p.getZ()));
+      }
+      int n = 0;
+      for (BlockPos p : BlockPos.betweenClosed(min.offset(-READER_RANGE, -READER_RANGE, -READER_RANGE), max.offset(READER_RANGE, READER_RANGE, READER_RANGE))) {
+         if (level.getBlockState(p).getBlock() instanceof CardReaderBlock && aPortee(parts, p.getX(), p.getY(), p.getZ())) n++;
+      }
+      return n;
    }
 
    /** Ce point est-il à READER_RANGE au plus (sur chaque axe) d'une des pièces ? */
@@ -88,6 +109,23 @@ public final class KeycardDoors {
 
    /** Portes (contrôleurs) de la couleur donnée proches d'un lecteur, la plus proche en premier. */
    public static List<DoorBlockEntity> doorsNear(Level level, BlockPos reader, AccessLevel needed) {
+      return portesPres(level, reader, d -> levelOf(d.getBlockState().getBlock()) == needed);
+   }
+
+   /**
+    * Portes qu'un lecteur de cette couleur ouvre : ses portes à carte et les portes de bunker proches, la plus proche en
+    * premier (les salles à carte ne voient que les premières : {@link #doorsNear}).
+    */
+   public static List<DoorBlockEntity> portesDuLecteur(Level level, BlockPos reader, AccessLevel lvl) {
+      return portesPres(level, reader, d -> d.estBunker() || levelOf(d.getBlockState().getBlock()) == lvl);
+   }
+
+   /** Toutes les portes (contrôleurs) proches de ce point, la plus proche en premier : pour le staff (/salle bunker). */
+   public static List<DoorBlockEntity> toutesPortesPres(Level level, BlockPos pos) {
+      return portesPres(level, pos, d -> true);
+   }
+
+   private static List<DoorBlockEntity> portesPres(Level level, BlockPos reader, Predicate<DoorBlockEntity> garder) {
       Set<BlockPos> controllers = new LinkedHashSet<>();
       for (BlockPos p : BlockPos.betweenClosed(reader.offset(-SEARCH_RADIUS, -SEARCH_RADIUS, -SEARCH_RADIUS), reader.offset(SEARCH_RADIUS, SEARCH_RADIUS, SEARCH_RADIUS))) {
          BlockState s = level.getBlockState(p);
@@ -99,7 +137,7 @@ public final class KeycardDoors {
       }
       List<DoorBlockEntity> out = new ArrayList<>();
       for (BlockPos c : controllers) {
-         if (level.getBlockEntity(c) instanceof DoorBlockEntity door && levelOf(door.getBlockState().getBlock()) == needed) {
+         if (level.getBlockEntity(c) instanceof DoorBlockEntity door && garder.test(door)) {
             out.add(door);
          }
       }
@@ -107,9 +145,9 @@ public final class KeycardDoors {
       return out;
    }
 
-   /** Le lecteur a changé d'état : les portes de sa couleur à proximité réévaluent leur « alimentation ». */
+   /** Le lecteur a changé d'état : les portes qu'il ouvre (sa couleur, bunker) réévaluent leur « alimentation ». */
    public static void notifyDoors(Level level, BlockPos reader, AccessLevel lvl) {
-      for (DoorBlockEntity door : doorsNear(level, reader, lvl)) {
+      for (DoorBlockEntity door : portesDuLecteur(level, reader, lvl)) {
          door.checkRedstonePower();
       }
    }
