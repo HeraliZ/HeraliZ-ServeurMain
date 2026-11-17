@@ -7,6 +7,13 @@
 	proportion_actifs = 0.2
 	#Facteur de la part d'actifs par niveau de zone, T1 à T7.
 	facteurs_actifs = [0.932, 0.746, 0.802, 0.834, 0.714, 0.546, 0.129]
+	#Part des conteneurs actifs par niveau de zone, T1 à T7, à la place de la part "actifs" des fichiers de la carte ; -1 : celle du fichier.
+	#17/11 (demande du propriétaire, carte en île) : T1-T2 comme la carte (plus riches qu'avant), T3-T4 comme en octobre (0.2),
+	#T5-T6 plus que ça (0.25) ; le facteur du niveau s'applique ensuite.
+	parts_par_niveau = [-1.0, -1.0, 0.2, 0.2, 0.25, 0.25, -1.0]
+	#Surclassement, T1 à T6 : part des conteneurs « t » de ce niveau qui donnent le loot du niveau au-dessus (toujours les mêmes,
+	#choisis d'après leur place). 17/11 : 1 conteneur T5 sur 10 donne le loot T6 (la carte n'a que 103 conteneurs T6).
+	surclassement = [0.0, 0.0, 0.0, 0.0, 0.1, 0.0]
 	#Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.
 	delai_min_secondes = 240
 	#Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.
