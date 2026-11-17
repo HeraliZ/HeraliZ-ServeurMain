@@ -207,7 +207,8 @@ public class DoorBlock extends BaseEntityBlock implements IMultiblockController 
 
       boolean isOpen;
       if (level.getBlockEntity(pos) instanceof DoorBlockEntity doorBE) {
-         isOpen = doorBE.getState() != 0;
+         // HeraliZ (17/11) : traversable seulement tout à fait ouverte (plus pendant l'ouverture ni la fermeture)
+         isOpen = doorBE.getState() == 1;
       } else {
          isOpen = (Boolean)state.getValue(OPEN);
       }
@@ -245,8 +246,9 @@ public class DoorBlock extends BaseEntityBlock implements IMultiblockController 
       Direction facing = (Direction)state.getValue(FACING);
       DoorDecl decl = doorBE.getDoorDecl();
       if (decl != null && decl.getStructureDefinition() != null) {
-         // HeralisZ : forme gardée par la définition (sens + ouverte / fermée), plus refaite à chaque appel
-         boolean isOpen = doorBE.getState() != 0;
+         // HeralisZ : forme gardée par la définition (sens + ouverte / fermée), plus refaite à chaque appel ; 17/11 :
+         // ouverte seulement une fois tout à fait ouverte, comme la collision
+         boolean isOpen = doorBE.getState() == 1;
          return decl.getStructureDefinition().getFullShape(facing, isOpen);
       } else {
          return Shapes.empty();

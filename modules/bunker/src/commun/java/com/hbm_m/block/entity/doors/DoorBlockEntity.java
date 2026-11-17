@@ -2,6 +2,7 @@ package com.hbm_m.block.entity.doors;
 
 import fr.heralisz.bunker.keycard.AccessLevel;
 import fr.heralisz.bunker.keycard.KeycardDoors;
+import fr.heralisz.bunker.keycard.ReglagesCartes;
 import fr.heralisz.bunker.salle.SallesPont;
 import com.hbm_m.block.UniversalMachinePartBlock;
 import com.hbm_m.block.decorations.DoorBlock;
@@ -16,7 +17,9 @@ import com.hbm_m.multiblock.MultiblockStructureHelper;
 import com.hbm_m.multiblock.PartRole;
 import com.hbm_m.platform.PlatformHooks;
 import com.hbm_m.sound.ClientSoundBootstrap;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,8 +35,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
@@ -66,6 +72,10 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
    // Ouverture lancée par le signal (lecteur, salle à carte, redstone) : si le signal coupe pendant l'ouverture, la porte
    // se referme à la fin de son ouverture au lieu de rester ouverte pour toujours.
    private boolean ouverteParSignal = false;
+   // HeraliZ (17/11) : porte longue à s'ouvrir (Vault-Tec : 6 s) dont le signal a coupé pendant l'ouverture : elle reste
+   // ouverte encore ce nombre de ticks avant de se refermer (avant : refermée aussitôt ouverte, on ne passait que parce
+   // qu'elle était traversable pendant son ouverture)
+   private int fermerDans = 0;
    private DoorModelSelection modelSelection = DoorModelSelection.DEFAULT;
    private Object cachedModelData;
    private String doorDeclId;
@@ -334,6 +344,7 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
    private void setState(byte newState) {
       this.state = newState;
       this.animStartTime = System.currentTimeMillis();
+      this.fermerDans = 0;
       if (newState == 3) {
          this.openTicks = 0;
       } else if (newState == 2) {
@@ -361,6 +372,9 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
                this.level.setBlock(this.worldPosition, newBlockState, 3);
             }
          }
+
+         // 17/11 : la porte redevient solide dès qu'elle se ferme : ce qui se tient dans son passage en est repoussé
+         if (newState == 2) this.repousserOccupants();
       }
 
       if (this.level != null && this.level.isClientSide) {
@@ -375,6 +389,67 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       return this.state == 1;
    }
 
+   /**
+    * HeraliZ (17/11, retour du propriétaire : on traversait la porte Vault-Tec pendant son ouverture, alors qu'elle
+    * paraissait encore fermée ; et en se plaçant dans la porte pendant qu'elle se fermait, on s'y retrouvait coincé,
+    * de quoi passer au travers). La porte n'est traversable qu'une fois tout à fait ouverte (DoorBlock,
+    * UniversalMachinePartBlock) ; dès que la fermeture commence, elle est de nouveau solide et ce qui vit dans son
+    * passage en est repoussé, du côté où il se tient (de l'autre si ce côté est pris ; vraie téléportation pour un
+    * joueur, suivie par l'anticheat). Serveur seulement, à chaque début de fermeture et une fois la porte fermée.
+    */
+   private void repousserOccupants() {
+      if (!(this.level instanceof ServerLevel sl) || !this.isController()) return;
+      BlockState etat = this.getBlockState();
+      if (!(etat.getBlock() instanceof DoorBlock doorBlock) || !etat.hasProperty(DoorBlock.FACING)) return;
+      Direction face = (Direction)etat.getValue(DoorBlock.FACING);
+      List<BlockPos> blocs = new ArrayList<>(doorBlock.getStructureHelper().getAllPartPositions(this.worldPosition, face));
+      blocs.add(this.worldPosition);
+      List<AABB> boites = new ArrayList<>();
+      AABB tout = null;
+      for (BlockPos p : blocs) {
+         VoxelShape forme = sl.getBlockState(p).getCollisionShape(sl, p);
+         if (forme.isEmpty()) continue;
+         for (AABB b : forme.toAabbs()) {
+            AABB m = b.move(p);
+            boites.add(m);
+            tout = tout == null ? m : tout.minmax(m);
+         }
+      }
+      if (tout == null) return;
+      Direction.Axis axe = face.getAxis();
+      double milieu = (tout.min(axe) + tout.max(axe)) / 2;
+      for (LivingEntity e : sl.getEntitiesOfClass(LivingEntity.class, tout, LivingEntity::isAlive)) {
+         AABB eb = e.getBoundingBox();
+         boolean dedans = false;
+         for (AABB b : boites) {
+            if (b.intersects(eb)) {
+               dedans = true;
+               break;
+            }
+         }
+         if (!dedans) continue;
+         double demi = (axe == Direction.Axis.X ? eb.getXsize() : eb.getZsize()) / 2;
+         double centre = axe == Direction.Axis.X ? e.getX() : e.getZ();
+         double plus = tout.max(axe) + demi + 0.05, moins = tout.min(axe) - demi - 0.05;
+         Vec3 cible = placeLibre(sl, e, axe, centre >= milieu ? plus : moins);
+         if (cible == null) cible = placeLibre(sl, e, axe, centre >= milieu ? moins : plus);
+         if (cible == null) continue;   // aucun côté libre (rare) : laissé où il est
+         if (e instanceof ServerPlayer sp) {
+            sp.teleportTo(sl, cible.x, cible.y, cible.z, sp.getYRot(), sp.getXRot());
+         } else {
+            e.teleportTo(cible.x, cible.y, cible.z);
+         }
+      }
+   }
+
+   /** Place de l'entité décalée sur l'axe de la porte jusqu'à v, si rien ne l'y gêne ; sinon null. */
+   @Nullable
+   private static Vec3 placeLibre(ServerLevel sl, LivingEntity e, Direction.Axis axe, double v) {
+      Vec3 c = axe == Direction.Axis.X ? new Vec3(v, e.getY(), e.getZ()) : new Vec3(e.getX(), e.getY(), v);
+      AABB b = e.getBoundingBox().move(c.x - e.getX(), 0, c.z - e.getZ());
+      return sl.noCollision(e, b) ? c : null;
+   }
+
    public boolean isLocked() {
       return this.locked;
    }
@@ -387,6 +462,11 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
    public static void serverTick(Level level, BlockPos pos, BlockState state, DoorBlockEntity be) {
       // HeraliZ (01/11, perf) : porte fermée ou ouverte, à l'arrêt : rien à faire (avant : sa déclaration relue à chaque tick)
       if (be.state != 2 && be.state != 3) {
+         // 17/11 : sauf l'attente d'une porte longue ouverte par un signal déjà coupé (voir fermerDans)
+         if (be.fermerDans > 0 && --be.fermerDans == 0 && be.state == 1 && !be.lastRedstoneState) {
+            be.close();
+            be.setChanged();
+         }
          return;
       }
       int openTime = be.getServerOpenTime();
@@ -402,7 +482,8 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
             }
 
             be.notifyNeighborsOfStateChange(level, pos);
-            if (be.ouverteParSignal && !be.lastRedstoneState) be.close();
+            // 17/11 : signal coupé pendant l'ouverture : on laisse le temps de passer (durée d'une impulsion de lecteur)
+            if (be.ouverteParSignal && !be.lastRedstoneState) be.fermerDans = ReglagesCartes.impulsionTicks();
             be.ouverteParSignal = false;
          }
       } else if (be.state == 2) {
@@ -416,6 +497,7 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
             }
 
             be.notifyNeighborsOfStateChange(level, pos);
+            be.repousserOccupants();   // 17/11 : par sécurité, personne ne reste dans la porte fermée
          }
       }
 
@@ -530,6 +612,7 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       tag.putString("doorDeclId", this.doorDeclId);
       tag.putBoolean("locked", this.locked);
       tag.putBoolean("redstoneState", this.lastRedstoneState);
+      if (this.fermerDans > 0) tag.putInt("fermerDans", this.fermerDans);
       this.modelSelection.save(tag);
       if (this.controllerPos != null) {
          tag.putLong("controllerPos", this.controllerPos.asLong());
@@ -556,6 +639,7 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       this.animStartTime = tag.getLong("animStartTime");
       this.locked = tag.getBoolean("locked");
       this.lastRedstoneState = tag.getBoolean("redstoneState");
+      this.fermerDans = tag.getInt("fermerDans");
       boolean hadModelSelectionInNbt = tag.contains("modelType");
       if (hadModelSelectionInNbt) {
          this.modelSelection = DoorModelSelection.load(tag);

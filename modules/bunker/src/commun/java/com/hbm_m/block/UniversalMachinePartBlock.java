@@ -198,7 +198,8 @@ public class UniversalMachinePartBlock extends BaseEntityBlock implements IDeton
                   BlockPos localOffset = MultiblockStructureHelper.rotateBack(worldOffset, facing);
                   boolean isOpen;
                   if (controllerBE instanceof DoorBlockEntity doorBE) {
-                     isOpen = doorBE.getState() != 0;
+                     // HeraliZ (17/11) : traversable seulement tout à fait ouverte (voir DoorBlockEntity#repousserOccupants)
+                     isOpen = doorBE.getState() == 1;
                   } else {
                      isOpen = (Boolean)controllerState.getValue(DoorBlock.OPEN);
                   }
