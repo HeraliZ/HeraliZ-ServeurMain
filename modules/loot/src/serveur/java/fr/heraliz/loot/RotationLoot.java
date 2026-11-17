@@ -1060,7 +1060,13 @@ public final class RotationLoot extends SavedData {
         if (a.contenu == null) {
             // contenu tiré à la première ouverture : avec le bonus de loot de celui qui ouvre
             int bonus = BonusLoot.pourcent(p);
-            a.contenu = e.remplir(k, cb.nom, l.random, bonus);
+            // 17/11 : conteneur d'une salle à carte : niveau de loot au moins celui de la couleur de la salle
+            String nomLoot = cb.nom;
+            if (a.zone.startsWith(PREFIXE_SALLE)) {
+                Salle s = e.salles.get(a.zone.substring(PREFIXE_SALLE.length()));
+                if (s != null) nomLoot = ConfigLoot.nomPourSalle(cb.nom, s.couleur());
+            }
+            a.contenu = e.remplir(k, nomLoot, l.random, bonus);
             e.tires.add(k);
             e.setDirty();
             BonusLoot.annoncer(p, bonus);

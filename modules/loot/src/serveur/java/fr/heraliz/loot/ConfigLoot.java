@@ -18,6 +18,8 @@ public final class ConfigLoot {
     public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> PARTS_NIVEAUX;
     /** Part des conteneurs « t » de chaque niveau qui donnent le loot du niveau au-dessus (17/11). */
     public static final ForgeConfigSpec.ConfigValue<List<? extends Double>> SURCLASSEMENT;
+    /** Niveau de loot au moins, dans une salle à carte verte, bleue, rouge (17/11). */
+    public static final ForgeConfigSpec.ConfigValue<List<? extends Integer>> NIVEAUX_SALLES;
     public static final ForgeConfigSpec.IntValue DELAI_MIN, DELAI_MAX, RESTES, RAYON_ETOILES, ETOILES_PAR_SECONDE, BONUS_MAX, BALLES_MAX;
     public static final ForgeConfigSpec.BooleanValue ETOILES;
     /** Conteneurs de Minecraft scellés (src/serveur : ConteneursVanilla). */
@@ -63,6 +65,10 @@ public final class ConfigLoot {
                         "redémarrage à l'autre. Ils gardent leur apparence et leur zone. 0 : aucun.")
                 .defineList("surclassement", List.of(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                         o -> o instanceof Number n && n.doubleValue() >= 0 && n.doubleValue() <= 1);
+        NIVEAUX_SALLES = b.comment("Salles à carte (17/11, demande du propriétaire : « qu'il y ait un but à aller dans les zones à cartes ») :",
+                        "niveau de loot au moins de leurs conteneurs, salle verte, bleue, rouge (t3_… dans une salle rouge à 7 : table",
+                        "t7 ; munitions, soins et nourriture : 6 au plus, leur dernier niveau). 0 : le niveau du conteneur.")
+                .defineList("niveau_salles", List.of(0, 0, 0), o -> o instanceof Number n && n.intValue() >= 0 && n.intValue() <= 7);
         DELAI_MIN = b.comment("Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.")
                 .defineInRange("delai_min_secondes", 240, 0, 86400);
         DELAI_MAX = b.comment("Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.")
@@ -237,6 +243,39 @@ public final class ConfigLoot {
         if (niveau > l.size()) return -1;
         Object v = l.get(niveau - 1);
         return v instanceof Number n && n.doubleValue() >= 0 ? Math.min(1, n.doubleValue()) : -1;
+    }
+
+    /**
+     * Nom de table d'un conteneur de salle à carte (17/11) : son niveau monté au plancher de la couleur de la salle
+     * (niveau_salles : verte, bleue, rouge) ; « t » jusqu'à 7, les familles (munitions, soins, nourriture) jusqu'à 6.
+     * Couleur inconnue ou plancher 0 : le nom tel quel.
+     */
+    static String nomPourSalle(String nom, @javax.annotation.Nullable String couleur) {
+        if (!SPEC.isLoaded() || couleur == null) return nom;
+        int i = switch (couleur) {
+            case "verte" -> 0;
+            case "bleue" -> 1;
+            case "rouge" -> 2;
+            default -> -1;
+        };
+        List<? extends Integer> l = NIVEAUX_SALLES.get();
+        if (i < 0 || i >= l.size()) return nom;
+        Object v = l.get(i);
+        int plancher = v instanceof Number x ? x.intValue() : 0;
+        int sep = nom.indexOf('_');
+        String prefixe = sep > 0 ? nom.substring(0, sep) : nom;
+        int j = prefixe.length();
+        while (j > 0 && Character.isDigit(prefixe.charAt(j - 1))) j--;
+        if (j == prefixe.length() || j == 0) return nom;      // sans niveau (véhicule...) : tel quel
+        String famille = prefixe.substring(0, j);
+        int niveau;
+        try {
+            niveau = Integer.parseInt(prefixe.substring(j));
+        } catch (NumberFormatException ex) {
+            return nom;
+        }
+        int cible = Math.min(plancher, famille.equals("t") ? 7 : 6);
+        return cible > niveau ? famille + cible + (sep > 0 ? nom.substring(sep) : "") : nom;
     }
 
     /**
