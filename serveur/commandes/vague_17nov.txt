@@ -1,0 +1,3 @@
+# 17/11 : après la pose des 47 zones, une vraie vague de 6 tout de suite (la première est partie avec une seule zone)
+extraction rotation next
+extraction rotation
