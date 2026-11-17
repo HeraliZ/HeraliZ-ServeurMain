@@ -173,8 +173,11 @@ EN_PLUS = {5: {"planches": 2, "clou": 2},
            7: {"planches": 6, "clou": 5, "sac_ciment": 4, "pierres_taillees": 3, "fragments_metal": 2, "corde": 2}}
 # munitions dans les conteneurs T1 à T7 (26/10, demande du propriétaire : « des munitions variées », plus seulement dans
 # les conteneurs de munitions) : nombre pour 100 conteneurs, et quantité = celle de munitions.json x MUNITIONS_ECHELLE
-MUNITIONS_POUR_100 = {1: 6, 2: 7, 3: 8, 4: 9, 5: 10, 6: 11, 7: 12}
-MUNITIONS_ECHELLE = {1: 0.8, 2: 0.9, 3: 1.0, 4: 1.15, 5: 1.3, 6: 1.5, 7: 1.8}
+# 17/11 (demande du propriétaire pour la bêta : « donner un bon nombre de balles pour profiter des armes ») : environ
+# 2,5 à 3 fois plus de balles en vrac (avant : 6 à 12 pour 100 objets, quantités x 0,8 à 1,8 ; une arme trouvée venait
+# avec à peine 7 balles en vrac) : parts doublées, piles plus grosses
+MUNITIONS_POUR_100 = {1: 12, 2: 14, 3: 18, 4: 20, 5: 22, 6: 24, 7: 26}
+MUNITIONS_ECHELLE = {1: 1.0, 2: 1.1, 3: 1.3, 4: 1.5, 5: 1.7, 6: 1.9, 7: 2.2}
 MUNITIONS_HORS = ("tacz:40mm", "tacz:rpg_rocket", "tacz:50bmg", "Level:")  # jamais dans les conteneurs T1 à T7
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 # capsules du casino (HeraliZ Casino, objets heralizcasino:jeton_*), choix du propriétaire (22/10) : plus aucun héral
