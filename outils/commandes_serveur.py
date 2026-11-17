@@ -26,7 +26,9 @@ PAUSE = 0.6          # secondes entre deux commandes
 MAX_COMMANDES = 400
 # premiers mots permis (les commandes d'administration du jeu et de nos mods ; jamais stop, op, whitelist, ban...)
 PERMIS = {"execute", "extraction", "territoire", "quete", "heralizloot", "carte", "depart", "train", "recolte",
-          "worldborder", "pnj", "guide", "say", "recharger", "zonevip", "warp"}
+          "worldborder", "pnj", "guide", "say", "recharger", "zonevip", "warp", "salle", "zombies", "setblock"}
+# setblock : seulement pour retirer un bloc (remplacé par de l'air), à des coordonnées écrites en entier
+SETBLOCK_AIR = re.compile(r"^setblock -?\d+ -?\d+ -?\d+ (minecraft:)?air$")
 ENV = os.environ
 
 
@@ -45,9 +47,11 @@ def lire_lot(nom):
         mot = c.split(" ", 1)[0]
         if mot not in PERMIS:
             cl.arreter("ligne %d : commande « %s » pas permise dans un lot (permises : %s)" % (n, mot, ", ".join(sorted(PERMIS))))
+        if mot == "setblock" and not SETBLOCK_AIR.match(c):
+            cl.arreter("ligne %d : setblock seulement pour retirer un bloc : « setblock x y z air »" % n)
         if mot == "execute":
             m = re.search(r"\brun\s+(\S+)", c)
-            if not m or m.group(1).lstrip("/") not in PERMIS - {"execute"}:
+            if not m or m.group(1).lstrip("/") not in PERMIS - {"execute", "setblock"}:
                 cl.arreter("ligne %d : « execute … run » sans commande permise derrière" % n)
         if len(c) > 256:
             cl.arreter("ligne %d : commande trop longue (256 caractères au plus)" % n)
@@ -71,7 +75,8 @@ def reponses(texte, nb):
             continue
         if re.search(r"\[Server thread/(INFO|WARN|ERROR)\]", l) and re.search(
                 r"Unknown or incomplete command|Incorrect argument|<--\[HERE\]|Expected|Invalid|\[Server\]|"
-                r"Territoires|Drapeau|Zone |extraction|point\(s\) de quête|Impossible|Attention", l):
+                r"Territoires|Drapeau|Zone |extraction|point\(s\) de quête|Impossible|Attention|[Ss]alle| — |Changed the block|"
+                r"Could not set the block|Lieu|lieu", l):
             garde.append(masque(l.strip()))
     return garde[-(nb * 4 + 20):]
 

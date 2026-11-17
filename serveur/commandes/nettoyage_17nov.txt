@@ -1,0 +1,29 @@
+# 17/11 : nettoyage de la carte en île, juste après la mise en ligne (demandes du propriétaire du 17/11).
+# Envoyé par le workflow « Commandes du serveur » (lot nettoyage_17nov). Une commande de console par ligne.
+
+# Points de quête restés sur les coordonnées de l'ancienne carte (ceux des autres mondes sont gardés)
+quete points vider_carte confirmer
+
+# Lecteurs de carte posés avec la carte, sauf les deux gardés par le propriétaire
+# (salles rouges : Arctique -160 79 -1824 et plateforme pétrolière -2146 85 259) : les deux lecteurs bleus du Silo
+setblock -1600 104 -784 air
+setblock -1595 106 -740 air
+
+# Salles à carte déjà déclarées, avec leurs coins : celles à retirer partent dans un second lot
+salle liste
+
+# Noms des lieux sur la carte M (les villes ont déjà leur nom par les territoires) : gares du train, puis lieux
+execute in minecraft:overworld positioned -200 100 1480 run carte lieu ajouter gare Gare de Bellerive
+execute in minecraft:overworld positioned -1620 100 900 run carte lieu ajouter gare Gare de Port-Margot
+execute in minecraft:overworld positioned -1180 100 470 run carte lieu ajouter gare Gare de Valmont
+execute in minecraft:overworld positioned -1228 100 -429 run carte lieu ajouter gare Gare de Marbois
+execute in minecraft:overworld positioned -447 100 -531 run carte lieu ajouter gare Gare de Belcourt
+execute in minecraft:overworld positioned 0 100 -440 run carte lieu ajouter gare Gare de l'Aérodrome
+execute in minecraft:overworld positioned 1300 100 160 run carte lieu ajouter gare Gare de Mirage
+execute in minecraft:overworld positioned 1150 100 1200 run carte lieu ajouter gare Gare de Radio
+execute in minecraft:overworld positioned 560 100 1320 run carte lieu ajouter gare Gare de Gaz
+execute in minecraft:overworld positioned -254 100 147 run carte lieu ajouter militaire Bunker des Bois
+execute in minecraft:overworld positioned 853 100 -998 run carte lieu ajouter militaire Bunker du Pic
+execute in minecraft:overworld positioned 1969 100 2038 run carte lieu ajouter point Laboratoire
+execute in minecraft:overworld positioned -450 100 -263 run carte lieu ajouter point La Faille
+execute in minecraft:overworld positioned -2133 100 247 run carte lieu ajouter usine Plateforme pétrolière
