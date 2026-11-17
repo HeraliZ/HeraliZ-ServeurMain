@@ -32,6 +32,7 @@
   "heraliz_tactique.vitres.eau": "Vitre gorgée d'eau : elle ne casse pas (l'eau se répandrait). La reposer à sec pour qu'elle casse.",
   "heraliz_tactique.vitres.protege": "Bloc de la liste blocs_proteges : il ne casse jamais.",
   "heraliz_tactique.vitres.dimension": "Dimension protégée (%s, dimensions_protegees) : rien n'y casse.",
+  "heraliz_tactique.vitres.zone": "Dans une zone protégée (zones_protegees : %s %s, rayon %s) : rien n'y casse.",
   "heraliz_tactique.vitres.spawn": "À %s blocs du point d'apparition du monde (%s) : dans le rayon_spawn de %s blocs, rien ne casse.",
   "heraliz_tactique.vitres.claim": "Dans un claim de CRac (bloc de claim en %s) : rien n'y casse (proteger_claims_crac).",
   "heraliz_tactique.a_vie.titre": "Jeter cet objet ?",

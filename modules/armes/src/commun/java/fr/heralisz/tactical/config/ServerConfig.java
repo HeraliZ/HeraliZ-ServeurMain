@@ -38,6 +38,8 @@ public class ServerConfig {
    public static IntValue VITRES_DELAI_MINUTES;
    public static ConfigValue<List<? extends String>> VITRES_DIMENSIONS;
    public static IntValue VITRES_RAYON_SPAWN;
+   /** Cercles de la carte où le verre ne casse jamais (17/11 : labo sous-marin). */
+   public static ConfigValue<List<? extends String>> VITRES_ZONES;
    public static BooleanValue VITRES_CLAIMS_CRAC;
    public static ConfigValue<List<? extends String>> VITRES_BLOCS_PROTEGES;
    public static ConfigValue<List<? extends String>> VITRES_BLOCS_EN_PLUS;
@@ -151,6 +153,10 @@ public class ServerConfig {
             "dimensions_protegees) ; sur la carte, le point d'apparition est au milieu d'une ville (-435 1118 sur la carte v3) :",
             "avec 64, le verre de cette ville ne cassait jamais.")
          .defineInRange("rayon_spawn", Vitres.DEFAUT_RAYON_SPAWN, 0, 100000);
+      VITRES_ZONES = builder.comment(
+            "Zones de la carte (dimension minecraft:overworld) où le verre ne casse jamais, sur toute la hauteur : « x z rayon »",
+            "(un cercle, en blocs). 17/11 : le labo sous-marin (une vitre cassée y ferait entrer l'eau).")
+         .defineList("zones_protegees", List.of(), o -> o instanceof String s && s.trim().matches("-?\\d+\\s+-?\\d+\\s+\\d+"));
       VITRES_CLAIMS_CRAC = builder.comment("Le verre ne casse pas dans les claims de CRac (bases des groupes).")
          .define("proteger_claims_crac", true);
       VITRES_BLOCS_PROTEGES = builder.comment("Blocs de verre qui ne cassent jamais (identifiants, par exemple \"minecraft:tinted_glass\").")

@@ -90,6 +90,10 @@
 	#avec 64, le verre de cette ville ne cassait jamais.
 	#Range: 0 ~ 100000
 	rayon_spawn = 0
+	#Zones de la carte (dimension minecraft:overworld) où le verre ne casse jamais, sur toute la hauteur : « x z rayon »
+	#(un cercle, en blocs). 17/11 (demande du propriétaire) : le labo sous-marin, dont les 2 226 blocs de verre sont sous
+	#l'eau (x 1902..2036, z 1955..2071, à 87 blocs au plus de son centre) : une vitre cassée y ferait entrer l'eau.
+	zones_protegees = ["1980 2025 110"]
 	#Le verre ne casse pas dans les claims de CRac (bases des groupes).
 	proteger_claims_crac = true
 	#Blocs de verre qui ne cassent jamais (identifiants, par exemple "minecraft:tinted_glass").

@@ -122,6 +122,13 @@ public final class VitresServeur {
             return rayon > 0 && level.dimension() == Level.OVERWORLD && distanceSpawnCarre(level, pos) <= (long) rayon * rayon;
          }
       },
+      /** Dans un cercle de {@code zones_protegees}, sur la carte principale (17/11 : labo sous-marin). */
+      ZONE {
+         @Override
+         boolean empeche(ServerLevel level, BlockPos pos, BlockState etat) {
+            return level.dimension() == Level.OVERWORLD && zoneProtegee(pos) != null;
+         }
+      },
       /** Dans un claim de CRac ({@code proteger_claims_crac}). */
       CLAIM_CRAC {
          @Override
@@ -140,6 +147,9 @@ public final class VitresServeur {
    private static List<? extends String> sourceBlocs;
    private static Set<ResourceLocation> blocs = Set.of();
    private static List<? extends String> sourceEnPlus;
+   private static List<? extends String> sourceZones;
+   /** zones_protegees lu : {x, z, rayon} par cercle. */
+   private static int[][] zones = new int[0][];
    /** blocs_en_plus : bloc -> sa version cassée (Blocks.AIR : il disparaît). */
    private static Map<Block, Block> enPlus = Map.of();
    // CRac : ClaimManager.getAt(ServerLevel, BlockPos), cherché une fois
@@ -474,6 +484,30 @@ public final class VitresServeur {
       long dx = pos.getX() - spawn.getX();
       long dz = pos.getZ() - spawn.getZ();
       return dx * dx + dz * dz;
+   }
+
+   /** Cercle de zones_protegees ({x, z, rayon}) qui contient pos, ou null (une ligne illisible est sautée). */
+   @Nullable
+   static int[] zoneProtegee(BlockPos pos) {
+      List<? extends String> l = lire(ServerConfig.VITRES_ZONES, List.of());
+      if (l != sourceZones) {
+         List<int[]> z = new ArrayList<>();
+         for (String s : l) {
+            String[] p = s.trim().split("\\s+");
+            try {
+               z.add(new int[]{Integer.parseInt(p[0]), Integer.parseInt(p[1]), Math.abs(Integer.parseInt(p[2]))});
+            } catch (RuntimeException ex) {
+               // ligne illisible (le réglage la refuse déjà) : sautée
+            }
+         }
+         zones = z.toArray(new int[0][]);
+         sourceZones = l;
+      }
+      for (int[] z : zones) {
+         long dx = pos.getX() - z[0], dz = pos.getZ() - z[1];
+         if (dx * dx + dz * dz <= (long) z[2] * z[2]) return z;
+      }
+      return null;
    }
 
    private static Set<ResourceLocation> dimensionsProtegees() {

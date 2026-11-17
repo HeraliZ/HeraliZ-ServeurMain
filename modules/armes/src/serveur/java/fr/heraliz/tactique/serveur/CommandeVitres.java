@@ -176,6 +176,11 @@ final class CommandeVitres {
                String.valueOf((long) Math.sqrt((double) VitresServeur.distanceSpawnCarre(level, pos))), position(spawn),
                String.valueOf(VitresServeur.rayonSpawn()));
          }
+         case ZONE -> {
+            int[] z = VitresServeur.zoneProtegee(pos);
+            yield tr("heraliz_tactique.vitres.zone", "Dans une zone protégée (zones_protegees : %s %s, rayon %s) : rien n'y casse.",
+               z == null ? "?" : String.valueOf(z[0]), z == null ? "?" : String.valueOf(z[1]), z == null ? "?" : String.valueOf(z[2]));
+         }
          case CLAIM_CRAC -> {
             Object claim = VitresServeur.claimCrac(level, pos);
             BlockPos ancre = claim == null ? null : VitresServeur.ancreClaim(claim);
