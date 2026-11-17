@@ -172,7 +172,7 @@ donner la réponse aux autres). Plus il y a de points, mieux c'est. Une quête d
 | `insigne_varga` | baguette : meubles, cadavres, casiers dans les villes (chacun le sien, 5 par joueur) | 15 et plus, dans plusieurs villes | 9 « Le 7e régiment » |
 | `deserteur` | baguette : 3 cadavres ou meubles (les carnets des déserteurs) | 3 et plus | 22 « Les déserteurs » |
 | `cachette_deserteurs` | baguette : une cachette (caisse, tiroir) | 1 à 3 | 22 |
-| `boite_noire` | baguette : un bloc d'une épave d'avion dans la zone de gaz | 1 à 3 | 29 « La boîte noire » |
+| `boite_noire` | baguette : un bloc d'une épave (avion, hélicoptère) dans la zone irradiée de Radio (17/11 : la carte en île n'a plus de zone de gaz) | 1 à 3 | 29 « La boîte noire » |
 | `salle_verte`, `salle_bleue`, `salle_rouge` | `/quete point ajouter` à l'intérieur de CHAQUE salle à carte de cette couleur (une seule suffit au joueur) | toutes | 24, 31, 38 |
 
 Sans ces points, la quête qui en a besoin attend (« pas encore prête ») et la suite s'arrête là.

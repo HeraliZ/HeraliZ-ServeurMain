@@ -1363,9 +1363,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Va dans la zone de gaz, retrouve la boîte noire et rapporte-la-moi.",
-        "en": "Go into the gas zone, find the black box and bring it back to me.",
-        "ru": "Отправляйся в газовую зону, найди чёрный ящик и принеси его мне."
+        "fr": "Va dans la zone irradiée de Radio, retrouve la boîte noire et rapporte-la-moi.",
+        "en": "Go into the irradiated zone of Radio, find the black box and bring it back to me.",
+        "ru": "Отправляйся в заражённую радиацией зону Радио, найди чёрный ящик и принеси его мне."
       },
       "fin": {
         "fr": "Enfin. On va savoir ce qui s'est passé.",
@@ -1376,9 +1376,9 @@
         {
           "type": "ramasser",
           "libelle": {
-            "fr": "Retrouver la boîte noire dans la zone de gaz",
-            "en": "Find the black box in the gas zone",
-            "ru": "Найти чёрный ящик в газовой зоне"
+            "fr": "Retrouver la boîte noire dans la zone irradiée de Radio",
+            "en": "Find the black box in the irradiated zone of Radio",
+            "ru": "Найти чёрный ящик в заражённой зоне Радио"
           },
           "groupe": "boite_noire",
           "nombre": 1,
