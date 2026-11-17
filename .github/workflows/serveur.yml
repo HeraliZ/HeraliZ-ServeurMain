@@ -21,6 +21,10 @@ on:
         description: "Envoyer un message de test dans le salon Discord privé des alertes de Spartan"
         type: boolean
         default: false
+      villes_du_depot:
+        description: "Remplacer les villes du Ptero (config/heralisz_clans/zones.json) par celles du dépôt : centres, rayons, noms ; les drapeaux posés en jeu sont oubliés (à reposer)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -444,6 +448,8 @@ jobs:
       - name: Mettre à jour le Ptero (SFTP)
         if: env.PTERO_SFTP_HOST != ''
         timeout-minutes: 60
+        env:
+          VILLES_DU_DEPOT: ${{ github.event_name == 'workflow_dispatch' && inputs.villes_du_depot }}
         run: |
           # plugins retirés du dépôt : on supprime leur JAR du Ptero, un par un (jamais leurs dossiers de données)
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$LFTP_REGLAGES cls -1 /plugins/; bye" > plugins_ptero.txt
@@ -505,8 +511,12 @@ jobs:
           esac
           echo "Monde du serveur : /$MONDE"
           sed -i "s|@MONDE@|$MONDE|g" retirer_config.lftp
-          # zones.json des territoires : seulement s'il n'est pas déjà sur le Ptero (réglé en jeu, voir audit A313)
-          if lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+          # zones.json des territoires : seulement s'il n'est pas déjà sur le Ptero (réglé en jeu, voir audit A313), sauf
+          # demande expresse (case « villes_du_depot », 17/11 : villes recentrées de la carte en île)
+          if [ "$VILLES_DU_DEPOT" = "true" ]; then
+            echo "zones.json du dépôt envoyé (case « villes_du_depot ») : les drapeaux posés en jeu sont à reposer."
+            echo "put -O /config/heralisz_clans serveur/config/heralisz_clans/zones.json;" > zones.lftp
+          elif lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
               -e "$LFTP_REGLAGES set cmd:fail-exit yes; cls -1 /config/heralisz_clans/zones.json; bye" < /dev/null > /dev/null 2>&1; then
             echo "zones.json déjà sur le Ptero : gardé (drapeaux posés en jeu)."
             : > zones.lftp
