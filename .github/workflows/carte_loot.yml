@@ -38,6 +38,14 @@ on:
         description: "Vraie exécution : sauvegarde du Ptero (onglet Backups, verrouillée) serveur arrêté, avant la bascule"
         type: boolean
         default: true
+      villes_du_depot:
+        description: "Remplacer les villes des territoires du Ptero (config/heralisz_clans/zones.json) par celles du dépôt ; l'ancien fichier est gardé avec l'ancienne carte"
+        type: boolean
+        default: true
+      commandes_apres:
+        description: "Commandes de console envoyées après le redémarrage, séparées par ; (bordure de la nouvelle carte, train...)"
+        type: string
+        default: "worldborder center 0 0;worldborder set 4500;train reseau reseau_v3;train actif true"
 
 permissions:
   contents: read
@@ -100,5 +108,7 @@ jobs:
           CONFIRMATION: ${{ inputs.confirmation }}
           PREAVIS: ${{ inputs.preavis_minutes }}
           SAUVEGARDE: ${{ inputs.sauvegarde_ptero }}
+          VILLES: ${{ inputs.villes_du_depot }}
+          APRES: ${{ inputs.commandes_apres }}
           GH_TOKEN: ${{ github.token }}
         run: python outils/carte_loot.py

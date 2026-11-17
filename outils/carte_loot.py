@@ -57,6 +57,10 @@ DATA_DE_LA_CARTE = ["heraliz_zones.json"]
 # fichiers de data/ indispensables : leur absence est signalée (jamais touchés)
 DATA_INDISPENSABLES = ["heraliz_cinematique.dat"]
 SPAWN = "dimensions/heralisz/spawn"
+# 17/11 (carte en île) : villes des territoires de la nouvelle carte, prises dans le dépôt (la mise en ligne ne remplace
+# jamais ce fichier s'il est déjà sur le Ptero) ; l'ancien est gardé avec l'ancienne carte. Case « villes_du_depot ».
+VILLES_PTERO = "/config/heralisz_clans/zones.json"
+VILLES_DEPOT = Path("serveur/config/heralisz_clans/zones.json")
 NOMS_INTERDITS_MONDE = {"mods", "plugins", "config", "defaultconfigs", "libraries", "logs", "tacz", "mohist-config"}
 MCA = re.compile(r"^r\.-?\d+\.-?\d+\.mca$")
 
@@ -376,6 +380,18 @@ def main():
     a_cote = [n for n in DATA_ANCIENNE_CARTE if n in data_monde and not data_monde[n]]
     for n in a_cote:
         deplacements.append((W + "/data/" + n, garde + "/data/" + n))
+    villes = ENV.get("VILLES", "true").lower() == "true"
+    nouvelles_villes = []
+    if villes:
+        try:
+            nouvelles_villes = [v["nom"] for v in json.loads(VILLES_DEPOT.read_text(encoding="utf-8"))]
+        except Exception as ex:
+            arreter("villes du dépôt illisibles (%s : %s) : décocher « villes_du_depot » ou corriger le fichier."
+                    % (VILLES_DEPOT, ex))
+        if not nouvelles_villes:
+            arreter("aucune ville dans %s : décocher « villes_du_depot » ou corriger le fichier." % VILLES_DEPOT)
+        if existe(VILLES_PTERO):
+            deplacements.append((VILLES_PTERO, garde + "/config/heralisz_clans/zones.json"))
     arrivees = []              # (de, vers) : la nouvelle carte prend la place
     for n in REMPLACES:
         if nouvelle[n]:
@@ -393,9 +409,20 @@ def main():
         if p in packs_monde:
             dire("- pack de données `datapacks/%s` (remplacé par celui de la nouvelle carte)" % p)
     dire("- data/ : " + (", ".join("`%s`" % n for n in a_cote) or "aucun fichier lié à l'ancienne carte"))
+    if villes:
+        dire("- villes des territoires du Ptero (`%s`) : %s" % (VILLES_PTERO, "mises de côté" if existe(VILLES_PTERO)
+                                                             else "absentes (rien à garder)"))
     dire("### Ce qui %s mis en place" % serait)
     for de, vers in arrivees:
         dire("- `%s` → `%s`" % (de, vers))
+    if villes:
+        dire("- villes de la nouvelle carte (dépôt, %d) → `%s` : %s" % (len(nouvelles_villes), VILLES_PTERO,
+                                                                    ", ".join(nouvelles_villes)))
+    else:
+        dire("- villes des territoires : **gardées** (case « villes_du_depot » décochée)")
+    apres = [c.strip().lstrip("/") for c in ENV.get("APRES", "").split(";") if c.strip()]
+    if apres:
+        dire("- commandes de console après le redémarrage : " + " ; ".join("`/%s`" % c for c in apres))
     dire("### Ce qui est gardé tel quel")
     garder_racine = sorted(n + ("/" if est else "") for n, est in racine_monde.items() if n not in REMPLACES)
     dire("- racine du monde : " + ", ".join("`%s`" % n for n in garder_racine))
@@ -530,6 +557,11 @@ def main():
                 probleme = "%s → %s" % (de, vers)
                 break
             faits.append((de, vers))
+        if villes and not probleme:
+            ok, _ = lftp("mkdir -p %s; put -O %s %s;" % (q(VILLES_PTERO.rsplit("/", 1)[0]), q(VILLES_PTERO.rsplit("/", 1)[0]),
+                                                      q(str(VILLES_DEPOT))), 300)
+            if not ok or not existe(VILLES_PTERO):
+                probleme = "envoi des villes de la nouvelle carte (%s)" % VILLES_PTERO
     except Exception as ex:   # jamais laisser le serveur arrêté au milieu de la bascule
         probleme = "erreur inattendue : %s" % ex
     if probleme:
@@ -548,6 +580,19 @@ def main():
     e = demarrer()
     dire("### Fait")
     dire("- état du serveur après le démarrage : " + e)
+    if villes:
+        dire("- villes des territoires de la nouvelle carte en place (%d)" % len(nouvelles_villes))
+    if apres:
+        if e == "running":
+            time.sleep(20)   # les mods finissent leur démarrage
+            for c in apres:
+                console(c)
+                time.sleep(2)
+            dire("- commandes envoyées à la console : " + " ; ".join("`/%s`" % c for c in apres)
+                 + " (vérifier leur réponse dans la console du panel)")
+        else:
+            dire("- **commandes pas envoyées** (serveur pas « running ») : les taper dans la console : "
+                 + " ; ".join("`/%s`" % c for c in apres))
     dire("- ancienne carte gardée telle quelle dans `%s` (à supprimer depuis le panel quand tout va bien ; pour revenir "
          "en arrière : serveur arrêté, remettre ses dossiers et fichiers à leur place)" % garde)
     if source == "dossier_ptero":
