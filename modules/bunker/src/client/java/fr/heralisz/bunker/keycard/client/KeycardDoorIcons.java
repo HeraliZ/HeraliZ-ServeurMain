@@ -21,6 +21,8 @@ public final class KeycardDoorIcons {
          case GREEN -> 0x22AA54;
          case BLUE -> 0x2066D6;
          case RED -> 0xC8222C;
+         case BUNKER_BOIS -> 0xD8822A;   // 17/11 : cartes des bunkers (aucune porte de ce niveau aujourd'hui)
+         case BUNKER_PIC -> 0x8A3FD1;
       } | (alpha << 24);
    }
 

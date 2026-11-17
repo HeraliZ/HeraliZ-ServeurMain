@@ -72,7 +72,7 @@ final class LootSalles {
       return switch (s.niveau) {
          case GREEN -> "verte";
          case BLUE -> "bleue";
-         case RED -> "rouge";
+         case RED, BUNKER_BOIS, BUNKER_PIC -> "rouge";   // cartes des bunkers : jamais de salle à carte
       };
    }
 

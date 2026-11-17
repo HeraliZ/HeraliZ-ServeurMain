@@ -115,6 +115,8 @@ final class CommandesSalle {
          case GREEN -> "verte";
          case BLUE -> "bleue";
          case RED -> "rouge";
+         case BUNKER_BOIS -> "du Bunker des Bois";
+         case BUNKER_PIC -> "du Bunker du Pic";
       };
       return Component.translatableWithFallback("heralisz_bunker.salle.couleur." + n.id, fr).withStyle(n.color);
    }

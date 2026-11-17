@@ -38,6 +38,7 @@ public final class ReglagesCartesServeur {
 
    private static void appliquer(boolean envoyer) {
       ReglagesCartes.definirPassages(KeycardConfig.USES_GREEN.get(), KeycardConfig.USES_BLUE.get(), KeycardConfig.USES_RED.get());
+      ReglagesCartes.definirPassagesBunker(KeycardConfig.USES_BUNKER.get());
       ReglagesCartes.definirImpulsion(KeycardConfig.PULSE_TICKS.get());
       MinecraftServer serveur = ServerLifecycleHooks.getCurrentServer();
       // fichier relu par Forge sur son propre fil : l'envoi se fait sur le fil du serveur

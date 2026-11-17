@@ -139,7 +139,7 @@ final class Selections {
       byte g = switch (x.niveau) {
          case GREEN -> ContoursPacket.SALLE_VERTE;
          case BLUE -> ContoursPacket.SALLE_BLEUE;
-         case RED -> ContoursPacket.SALLE_ROUGE;
+         case RED, BUNKER_BOIS, BUNKER_PIC -> ContoursPacket.SALLE_ROUGE;   // cartes des bunkers : jamais de salle à carte
       };
       return new ContoursPacket.Boite(x.min, x.max, g);
    }

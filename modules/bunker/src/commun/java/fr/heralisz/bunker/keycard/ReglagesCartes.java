@@ -19,6 +19,8 @@ public final class ReglagesCartes {
    public static final int MAX_PASSAGES = 10000;
 
    private static volatile int vert = 10, bleu = 8, rouge = 6;
+   // 17/11 : cartes des bunkers (toutes les mêmes)
+   private static volatile int bunker = 3;
    private static volatile int impulsionTicks = 100;
 
    /** Passages avant que la carte de ce niveau casse (0 = illimitée). */
@@ -27,6 +29,7 @@ public final class ReglagesCartes {
          case GREEN -> vert;
          case BLUE -> bleu;
          case RED -> rouge;
+         case BUNKER_BOIS, BUNKER_PIC -> bunker;
       };
    }
 
@@ -34,6 +37,10 @@ public final class ReglagesCartes {
       vert = borne(v);
       bleu = borne(b);
       rouge = borne(r);
+   }
+
+   public static void definirPassagesBunker(int n) {
+      bunker = borne(n);
    }
 
    /** Durée du signal redstone après un accès accordé (ticks) : serveur seulement. */

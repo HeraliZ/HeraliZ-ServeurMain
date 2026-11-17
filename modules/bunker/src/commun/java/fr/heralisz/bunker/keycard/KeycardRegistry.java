@@ -18,7 +18,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/** Cartes d'accès, leurs fragments numérotés 1 à 4 et lecteurs de cartes (verts, bleus, rouges). */
+/** Cartes d'accès, leurs fragments numérotés 1 à 4 et lecteurs de cartes (verts, bleus, rouges ; 17/11 : un par bunker, sans fragments). */
 public final class KeycardRegistry {
    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, HeraliszBunker.MODID);
    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, HeraliszBunker.MODID);
@@ -32,12 +32,14 @@ public final class KeycardRegistry {
    static {
       for (AccessLevel level : AccessLevel.values()) {
          CARDS.put(level, ITEMS.register("keycard_" + level.id, () -> new KeycardItem(level)));
-         List<RegistryObject<Item>> fragments = new ArrayList<>();
-         for (int n = 1; n <= KeycardFragmentItem.MORCEAUX; n++) {
-            int numero = n;
-            fragments.add(ITEMS.register("keycard_fragment_" + level.id + "_" + n, () -> new KeycardFragmentItem(level, numero)));
+         if (level.couleur) {
+            List<RegistryObject<Item>> fragments = new ArrayList<>();
+            for (int n = 1; n <= KeycardFragmentItem.MORCEAUX; n++) {
+               int numero = n;
+               fragments.add(ITEMS.register("keycard_fragment_" + level.id + "_" + n, () -> new KeycardFragmentItem(level, numero)));
+            }
+            FRAGMENTS.put(level, List.copyOf(fragments));
          }
-         FRAGMENTS.put(level, List.copyOf(fragments));
          RegistryObject<Block> reader = BLOCKS.register("card_reader_" + level.id, () -> new CardReaderBlock(level,
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(-1.0F, 3600000.0F).noOcclusion()
                .lightLevel(s -> switch (s.getValue(CardReaderBlock.STATUS)) {
@@ -50,7 +52,7 @@ public final class KeycardRegistry {
       BAGUETTE_SALLE = ITEMS.register("baguette_salle", BaguetteSalleItem::new);
    }
 
-   /** Fragment n (1 à 4) de la carte de ce niveau (registre déjà rempli). */
+   /** Fragment n (1 à 4) de la carte de ce niveau (registre déjà rempli ; cartes de couleur seulement). */
    public static Item fragment(AccessLevel level, int n) {
       return FRAGMENTS.get(level).get(n - 1).get();
    }

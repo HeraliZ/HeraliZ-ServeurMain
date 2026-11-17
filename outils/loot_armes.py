@@ -18,7 +18,7 @@ Réécrit les tables modules/loot/src/serveur/resources/data/heraliz_loot/coffre
 - fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids ;
 - objets rares en plus (EXTRAS : fusée d'extraction Épique en T5 à T7 ; objets Uniques à revendre, crâne de cristal,
   sceptre et calice, en T7 seulement : UNIQUES_T7 ; outils de HeraliZ Récolte : hache et pioche en T2 à T5, hache-pioche
-  de survie en T6 et T7), de la même façon.
+  de survie en T6 et T7 ; cartes des deux bunkers, Légendaires, en T7 seulement), de la même façon.
 Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
 changement des raretés, des gunpacks, de l'Armurerie ou des composants.
 `--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
@@ -295,6 +295,15 @@ EXTRAS.update({
     "heraliz_recolte:hache": ("rare", {2: 0.3, 3: 0.4, 4: 0.5, 5: 0.4}),
     "heraliz_recolte:pioche": ("rare", {2: 0.3, 3: 0.4, 4: 0.5, 5: 0.4}),
     "heraliz_recolte:hache_pioche": ("legendaire", {6: 0.05, 7: 0.4}),
+})
+# cartes des bunkers de la carte (17/11, demande du propriétaire : « une nouvelle carte pour chaque bunker », HeraliZ
+# Bunker) : Légendaires, seulement en T7 (coffres d'événement, points T7 du staff, salles à carte rouges : leur loot est
+# celui du T7), 0,5 de chaque pour 100 coffres T7 : environ 1 coffre T7 sur 100 donne l'une des deux (une carte rouge
+# complète, 8,3 fragments, sort environ 1 fois pour 700 coffres T7). 3 passages par carte (usesBunker de
+# heralisz_bunker-common.toml) : entrer, ressortir, et une fois de plus.
+EXTRAS.update({
+    "heralisz_bunker:keycard_bunker_bois": ("legendaire", {7: 0.5}),
+    "heralisz_bunker:keycard_bunker_pic": ("legendaire", {7: 0.5}),
 })
 RARETES_IMPOSEES.update({i: r for i, (r, _) in EXTRAS.items()})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun

@@ -10,6 +10,9 @@
 	#Passages avant que la carte rouge casse (0 = illimité)
 	#Range: 0 ~ 10000
 	usesRed = 6
+	#Passages avant qu'une carte de bunker (Bunker des Bois, Bunker du Pic) casse (0 = illimité)
+	#Range: 0 ~ 10000
+	usesBunker = 3
 	#Durée du signal redstone après un accès accordé (ticks, 20 = 1 s)
 	#Range: 10 ~ 12000
 	pulseTicks = 100
