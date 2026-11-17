@@ -1,0 +1,116 @@
+# 17/11 : drapeaux des 14 villes et 47 zones d'extraction de la carte en île (demande du propriétaire : « tu peux en
+# choisir toi, à des endroits cohérents, pas trop proches des grosses villes, bien espacés, aucune dans l'arctique »).
+# Points choisis dans une copie de la carte : à sec, à ciel ouvert, plats sur tout le cercle, 300 blocs au moins entre deux
+# zones, 150 blocs au moins du bord des villes (vue : outils/extractions_carte.py). Envoyé par « Commandes du serveur ».
+
+# Drapeaux : au centre de chaque ville (centreFixe : le centre de la zone ne bouge pas)
+territoire drapeau valmont en -1001 70 751
+territoire drapeau tcherno en -346 71 1682
+territoire drapeau marbois en -1475 69 -119
+territoire drapeau belcourt en -1030 110 -767
+territoire drapeau port en -1767 66 989
+territoire drapeau mirage en 1610 72 239
+territoire drapeau clairval en 140 72 499
+territoire drapeau gaz en 546 65 1479
+territoire drapeau aerodrome en 182 67 -741
+territoire drapeau base_sentinelle en 1092 68 -469
+territoire drapeau silo en -1609 111 -877
+territoire drapeau prison en 1657 68 -1133
+territoire drapeau arctique en -203 83 -1837
+territoire drapeau radio en 1428 68 1444
+
+# Zones d'extraction (rayon 8) : créées en rotation, puis leur nom affiché
+execute in minecraft:overworld positioned 782.5 63 -1285.5 run extraction create plage_bunker_pic 8
+execute in minecraft:overworld positioned 974.5 63 -1033.5 run extraction create plage_bunker_pic_e 8
+execute in minecraft:overworld positioned 1282.5 69 -849.5 run extraction create prairie_sentinelle 8
+execute in minecraft:overworld positioned 1680.5 63 -753.5 run extraction create plage_prison 8
+execute in minecraft:overworld positioned 1424.5 66 -579.5 run extraction create dunes_sentinelle 8
+execute in minecraft:overworld positioned -1775.5 63 -499.5 run extraction create plage_silo 8
+execute in minecraft:overworld positioned -623.5 79 -373.5 run extraction create foret_faille 8
+execute in minecraft:overworld positioned 1850.5 64 -369.5 run extraction create plage_oued 8
+execute in minecraft:overworld positioned 1538.5 73 -299.5 run extraction create dunes_oued 8
+execute in minecraft:overworld positioned -1079.5 74 -133.5 run extraction create prairie_marbois 8
+execute in minecraft:overworld positioned 1150.5 71 -115.5 run extraction create dunes_sentinelle_s 8
+execute in minecraft:overworld positioned -781.5 80 -87.5 run extraction create prairie_faille 8
+execute in minecraft:overworld positioned 836.5 71 -85.5 run extraction create foret_sentinelle 8
+execute in minecraft:overworld positioned -479.5 86 -63.5 run extraction create foret_faille_s 8
+execute in minecraft:overworld positioned 486.5 76 6.5 run extraction create foret_clairval 8
+execute in minecraft:overworld positioned 102.5 78 24.5 run extraction create prairie_val_fleuri 8
+execute in minecraft:overworld positioned 1002.5 69 176.5 run extraction create foret_mirage 8
+execute in minecraft:overworld positioned -825.5 74 238.5 run extraction create foret_valmont 8
+execute in minecraft:overworld positioned -1131.5 71 262.5 run extraction create foret_valmont_n 8
+execute in minecraft:overworld positioned -257.5 78 334.5 run extraction create foret_bunker_bois 8
+execute in minecraft:overworld positioned -1691.5 65 352.5 run extraction create plage_granges 8
+execute in minecraft:overworld positioned 580.5 73 384.5 run extraction create foret_clairval_e 8
+execute in minecraft:overworld positioned -557.5 75 406.5 run extraction create foret_bunker_bois_so 8
+execute in minecraft:overworld positioned 966.5 74 538.5 run extraction create foret_la_combe 8
+execute in minecraft:overworld positioned -1489.5 74 590.5 run extraction create foret_granges 8
+execute in minecraft:overworld positioned -443.5 69 684.5 run extraction create prairie_les_pres 8
+execute in minecraft:overworld positioned 720.5 71 718.5 run extraction create foret_la_combe_o 8
+execute in minecraft:overworld positioned -159.5 65 794.5 run extraction create prairie_clairval 8
+execute in minecraft:overworld positioned 1210.5 75 818.5 run extraction create dunes_ksar 8
+execute in minecraft:overworld positioned 410.5 68 830.5 run extraction create prairie_clairval_se 8
+execute in minecraft:overworld positioned 1506.5 70 870.5 run extraction create prairie_ksar 8
+execute in minecraft:overworld positioned 1798.5 63 958.5 run extraction create plage_ergs 8
+execute in minecraft:overworld positioned 940.5 70 960.5 run extraction create prairie_la_combe 8
+execute in minecraft:overworld positioned -397.5 66 1000.5 run extraction create prairie_les_pres_ne 8
+execute in minecraft:overworld positioned 640.5 69 1040.5 run extraction create prairie_gaz 8
+execute in minecraft:overworld positioned -1285.5 69 1074.5 run extraction create foret_valmont_so 8
+execute in minecraft:overworld positioned -27.5 65 1076.5 run extraction create foret_pont_rouge 8
+execute in minecraft:overworld positioned -687.5 66 1102.5 run extraction create foret_les_pres 8
+execute in minecraft:overworld positioned 300.5 64 1140.5 run extraction create prairie_pont_rouge 8
+execute in minecraft:overworld positioned -1005.5 67 1200.5 run extraction create prairie_valmont 8
+execute in minecraft:overworld positioned 856.5 67 1250.5 run extraction create prairie_gaz_ne 8
+execute in minecraft:overworld positioned 120.5 65 1380.5 run extraction create prairie_pont_rouge_s 8
+execute in minecraft:overworld positioned -989.5 68 1500.5 run extraction create prairie_parc 8
+execute in minecraft:overworld positioned -1641.5 63 1508.5 run extraction create plage_moulin 8
+execute in minecraft:overworld positioned -1343.5 64 1626.5 run extraction create plage_parc 8
+execute in minecraft:overworld positioned -1767.5 64 1856.5 run extraction create plage_anse 8
+execute in minecraft:overworld positioned -1015.5 65 1856.5 run extraction create plage_parc_se 8
+extraction label plage_bunker_pic Plage du Bunker du Pic
+extraction label plage_bunker_pic_e Plage est du Bunker du Pic
+extraction label prairie_sentinelle Plaine de la Base Sentinelle
+extraction label plage_prison Plage de la Prison
+extraction label dunes_sentinelle Dunes de la Base Sentinelle
+extraction label plage_silo Plage du Silo
+extraction label foret_faille Forêt de la Faille
+extraction label plage_oued Plage de l'Oued
+extraction label dunes_oued Dunes de l'Oued
+extraction label prairie_marbois Prairie de Marbois
+extraction label dunes_sentinelle_s Désert de la Base Sentinelle
+extraction label prairie_faille Prairie de la Faille
+extraction label foret_sentinelle Forêt de la Base Sentinelle
+extraction label foret_faille_s Forêt sud de la Faille
+extraction label foret_clairval Forêt de Clairval
+extraction label prairie_val_fleuri Prairie de Val-Fleuri
+extraction label foret_mirage Forêt de Mirage
+extraction label foret_valmont Forêt de Valmont
+extraction label foret_valmont_n Forêt nord de Valmont
+extraction label foret_bunker_bois Forêt du Bunker des Bois
+extraction label plage_granges Plage des Granges
+extraction label foret_clairval_e Forêt est de Clairval
+extraction label foret_bunker_bois_so Clairière du Bunker des Bois
+extraction label foret_la_combe Forêt de la Combe
+extraction label foret_granges Forêt des Granges
+extraction label prairie_les_pres Prairie des Prés
+extraction label foret_la_combe_o Forêt ouest de la Combe
+extraction label prairie_clairval Prairie de Clairval
+extraction label dunes_ksar Dunes du Ksar
+extraction label prairie_clairval_se Prairie sud-est de Clairval
+extraction label prairie_ksar Prairie du Ksar
+extraction label plage_ergs Plage des Ergs
+extraction label prairie_la_combe Prairie de la Combe
+extraction label prairie_les_pres_ne Prairie nord-est des Prés
+extraction label prairie_gaz Prairie de Gaz
+extraction label foret_valmont_so Forêt sud-ouest de Valmont
+extraction label foret_pont_rouge Forêt de Pont-Rouge
+extraction label foret_les_pres Forêt des Prés
+extraction label prairie_pont_rouge Prairie de Pont-Rouge
+extraction label prairie_valmont Prairie de Valmont
+extraction label prairie_gaz_ne Prairie nord-est de Gaz
+extraction label prairie_pont_rouge_s Prairie sud de Pont-Rouge
+extraction label prairie_parc Prairie du Parc
+extraction label plage_moulin Plage du Moulin
+extraction label plage_parc Plage du Parc
+extraction label plage_anse Plage de l'Anse aux Pêcheurs
+extraction label plage_parc_se Plage sud-est du Parc

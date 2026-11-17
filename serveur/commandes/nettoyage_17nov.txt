@@ -12,7 +12,8 @@ setblock -1595 106 -740 air
 # Salles à carte déjà déclarées, avec leurs coins : celles à retirer partent dans un second lot
 salle liste
 
-# Noms des lieux sur la carte M (les villes ont déjà leur nom par les territoires) : gares du train, puis lieux
+# Noms des lieux sur la carte M (les villes ont déjà leur nom par les territoires) : gares du train, puis lieux et villages
+# (noms pris dans la carte : pack de loot de chaque lieu)
 execute in minecraft:overworld positioned -200 100 1480 run carte lieu ajouter gare Gare de Bellerive
 execute in minecraft:overworld positioned -1620 100 900 run carte lieu ajouter gare Gare de Port-Margot
 execute in minecraft:overworld positioned -1180 100 470 run carte lieu ajouter gare Gare de Valmont
@@ -22,8 +23,25 @@ execute in minecraft:overworld positioned 0 100 -440 run carte lieu ajouter gare
 execute in minecraft:overworld positioned 1300 100 160 run carte lieu ajouter gare Gare de Mirage
 execute in minecraft:overworld positioned 1150 100 1200 run carte lieu ajouter gare Gare de Radio
 execute in minecraft:overworld positioned 560 100 1320 run carte lieu ajouter gare Gare de Gaz
-execute in minecraft:overworld positioned -254 100 147 run carte lieu ajouter militaire Bunker des Bois
-execute in minecraft:overworld positioned 853 100 -998 run carte lieu ajouter militaire Bunker du Pic
-execute in minecraft:overworld positioned 1969 100 2038 run carte lieu ajouter point Laboratoire
+execute in minecraft:overworld positioned -254 100 149 run carte lieu ajouter militaire Bunker des Bois
+execute in minecraft:overworld positioned 856 100 -998 run carte lieu ajouter militaire Bunker du Pic
+execute in minecraft:overworld positioned 1969 100 2038 run carte lieu ajouter point Labo sous-marin
 execute in minecraft:overworld positioned -450 100 -263 run carte lieu ajouter point La Faille
 execute in minecraft:overworld positioned -2133 100 247 run carte lieu ajouter usine Plateforme pétrolière
+execute in minecraft:overworld positioned -1156 100 1712 run carte lieu ajouter village Parc
+execute in minecraft:overworld positioned -1808 100 1804 run carte lieu ajouter village Anse aux Pêcheurs
+execute in minecraft:overworld positioned -1201 100 -1101 run carte lieu ajouter village Bois-Noir
+execute in minecraft:overworld positioned -521 100 1113 run carte lieu ajouter village Les Prés
+execute in minecraft:overworld positioned 1694 100 -421 run carte lieu ajouter village Oued
+execute in minecraft:overworld positioned 110 100 1149 run carte lieu ajouter village Pont-Rouge
+execute in minecraft:overworld positioned -1244 100 -1822 run carte lieu ajouter point Refuge du Col
+execute in minecraft:overworld positioned -335 100 -687 run carte lieu ajouter village Saint-Aubin
+execute in minecraft:overworld positioned 916 100 -1884 run carte lieu ajouter point Station météo
+execute in minecraft:overworld positioned -73 100 -155 run carte lieu ajouter village Val-Fleuri
+execute in minecraft:overworld positioned 1157 100 -1760 run carte lieu ajouter point Camp des glaces
+execute in minecraft:overworld positioned -780 100 -963 run carte lieu ajouter village Cap Nord
+execute in minecraft:overworld positioned 1768 100 543 run carte lieu ajouter village Ergs
+execute in minecraft:overworld positioned 1404 100 755 run carte lieu ajouter village Ksar
+execute in minecraft:overworld positioned 965 100 704 run carte lieu ajouter village La Combe
+execute in minecraft:overworld positioned -1500 100 1370 run carte lieu ajouter village Le Moulin
+execute in minecraft:overworld positioned -1627 100 420 run carte lieu ajouter village Les Granges
