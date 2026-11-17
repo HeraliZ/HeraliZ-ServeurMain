@@ -2,127 +2,141 @@
   {
     "id": "valmont",
     "nom": "Valmont",
-    "x": -1050,
-    "z": 650,
-    "rayon": 170,
+    "x": -1013,
+    "z": 751,
+    "rayon": 230,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "tcherno",
-    "nom": "Tcherno",
-    "x": -350,
-    "z": 1700,
-    "rayon": 330,
+    "nom": "Bellerive",
+    "x": -346,
+    "z": 1682,
+    "rayon": 350,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "marbois",
     "nom": "Marbois",
-    "x": -1450,
-    "z": -150,
-    "rayon": 160,
+    "x": -1469,
+    "z": -112,
+    "rayon": 180,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "belcourt",
     "nom": "Belcourt",
-    "x": -950,
-    "z": -780,
-    "rayon": 230,
+    "x": -1030,
+    "z": -769,
+    "rayon": 250,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "port",
     "nom": "Port-Margot",
-    "x": -1800,
-    "z": 950,
-    "rayon": 190,
+    "x": -1767,
+    "z": 994,
+    "rayon": 230,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "mirage",
     "nom": "Mirage",
-    "x": 1580,
-    "z": 250,
-    "rayon": 280,
+    "x": 1610,
+    "z": 239,
+    "rayon": 390,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "clairval",
     "nom": "Clairval",
-    "x": 250,
-    "z": 500,
-    "rayon": 170,
+    "x": 137,
+    "z": 494,
+    "rayon": 190,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "gaz",
     "nom": "Gaz",
-    "x": 500,
-    "z": 1500,
-    "rayon": 150,
+    "x": 546,
+    "z": 1478,
+    "rayon": 190,
     "valeur": 2,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "aerodrome",
     "nom": "Aérodrome",
-    "x": 250,
-    "z": -720,
-    "rayon": 380,
+    "x": 182,
+    "z": -748,
+    "rayon": 420,
     "valeur": 5,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "base_sentinelle",
     "nom": "Base Sentinelle",
-    "x": 1100,
-    "z": -480,
-    "rayon": 180,
+    "x": 1092,
+    "z": -469,
+    "rayon": 200,
     "valeur": 5,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "silo",
     "nom": "Silo",
-    "x": -1650,
-    "z": -950,
-    "rayon": 150,
+    "x": -1608,
+    "z": -878,
+    "rayon": 160,
     "valeur": 5,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "prison",
     "nom": "Prison",
-    "x": 1680,
-    "z": -1120,
-    "rayon": 170,
+    "x": 1660,
+    "z": -1128,
+    "rayon": 160,
     "valeur": 4,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "arctique",
     "nom": "Arctique",
-    "x": -200,
-    "z": -1840,
-    "rayon": 230,
+    "x": -202,
+    "z": -1841,
+    "rayon": 260,
     "valeur": 5,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   },
   {
     "id": "radio",
     "nom": "Radio",
-    "x": 1450,
-    "z": 1450,
-    "rayon": 260,
+    "x": 1428,
+    "z": 1442,
+    "rayon": 290,
     "valeur": 5,
-    "drapeau": null
+    "drapeau": null,
+    "centreFixe": true
   }
 ]
