@@ -130,6 +130,8 @@ TEXTES = {
     "gui.heraliz_quetes.recycleur.etat.2": ("Refusé", "Refused", "Отказ"),
     "gui.heraliz_quetes.recycleur.etat.3": ("Protégé", "Protected", "Защищён"),
     "gui.heraliz_quetes.recycleur.etat.4": ("Il en manque", "Not enough", "Не хватает"),
+    # 15/11 (audit n° 2, n° 4) : ajoutées à la main dans les .json, reprises ici le 16/11 (sinon l'outil les effaçait)
+    "gui.heraliz_quetes.recycleur.etat.5": ("À vider", "Empty it first", "Опустошить"),
     "gui.heraliz_quetes.recycleur.raison.1": ("Cet objet ne donne rien au recycleur.", "This item gives nothing at the recycler.",
                                              "Этот предмет ничего не даёт при переработке."),
     "gui.heraliz_quetes.recycleur.raison.2": ("Acheté chez un marchand : le recycler rapporterait plus que la revente.",
@@ -139,10 +141,16 @@ TEXTES = {
                                              "Вечный, квестовый или выданный предмет: не перерабатывается."),
     "gui.heraliz_quetes.recycleur.raison.4": ("Se recycle par paquet de %s : il en manque.", "Recycled in packs of %s: you need more.",
                                              "Перерабатывается пачками по %s: не хватает."),
+    "gui.heraliz_quetes.recycleur.raison.5": ("Il contient quelque chose : vide-le d'abord, son contenu serait perdu.",
+                                             "It holds something: empty it first, its contents would be lost.",
+                                             "Внутри что-то есть: сначала опустоши, иначе содержимое пропадёт."),
     # 31/10 : recycleur de la carte (même écran ; titre, sous-titre, pastille, aide d'Échap et note à lui)
     "heraliz_quetes.recycleur_carte.titre": ("Recycleur de terrain", "Field Recycler", "Полевой переработчик"),
     "heraliz_quetes.recycleur_carte.indisponible": ("Ce recycleur est hors service pour l'instant.", "This recycler is out of order for now.",
                                                     "Этот переработчик сейчас не работает."),
+    "heraliz_quetes.recycleur_carte.case_prise": ("Cette case est à un autre joueur : prends une case libre (chacun touche ce qu'il dépose).",
+                                                  "This slot belongs to another player: use a free slot (everyone gets paid for what they put in).",
+                                                  "Эта ячейка занята другим игроком: возьми свободную (каждый получает за то, что положил сам)."),
     "gui.heraliz_quetes.recycleur_carte.sous_titre": ("Machine partagée : tout le monde voit, dépose et reprend.",
                                                       "Shared machine: everyone sees, drops in and takes out.",
                                                       "Общая машина: все видят, кладут и забирают."),
@@ -319,6 +327,10 @@ TEXTES = {
     "heraliz_quetes.notif.attente_place": ("Inventaire plein : %s × %s t'attend ; tu le recevras dès qu'il y aura de la place.",
         "Inventory full: %s × %s is waiting for you; you will get it as soon as there is room.",
         "Инвентарь полон: %s × %s ждёт тебя; получишь, как только освободится место."),
+    # 15/11 (audit, CRITIQUE n° 1) : ajoutée à la main dans les .json, reprise ici le 16/11 (sinon l'outil l'effaçait)
+    "heraliz_quetes.notif.attente_match": ("En match : %s × %s t'attend ; tu le recevras à ton retour.",
+        "In a match: %s × %s is waiting for you; you will get it when you are back.",
+        "В матче: %s × %s ждёт тебя; получишь по возвращении."),
     "heraliz_quetes.notif.attente_rendue": ("Objets qui t'attendaient remis dans ton inventaire : %s.",
         "Items that were waiting for you put in your inventory: %s.",
         "Ожидавшие тебя предметы положены в инвентарь: %s."),
@@ -423,11 +435,30 @@ TEXTES = {
     "gui.heraliz_quetes.marchand.prix": ("Prix de rachat : %s hérals", "Buyback price: %s herals", "Цена выкупа: %s гералов"),
     "gui.heraliz_quetes.marchand.prix_pile": ("La pile (%s) : %s hérals", "The stack (%s): %s herals", "Вся стопка (%s): %s гералов"),
     "gui.heraliz_quetes.marchand.refuse": ("Il ne rachète pas cet objet.", "This trader doesn't buy this item.", "Этот предмет не выкупается."),
+    # 15/11 (audit n° 2) et 11/11 : ajoutées à la main dans les .json, reprises ici le 16/11 (sinon l'outil les effaçait)
+    "gui.heraliz_quetes.contenu.1": ("Arme chargée : décharge-la d'abord, ses balles seraient perdues.",
+                                     "Loaded weapon: unload it first, its rounds would be lost.",
+                                     "Оружие заряжено: сначала разряди его, иначе патроны пропадут."),
+    "gui.heraliz_quetes.contenu.2": ("Accessoires montés : retire-les d'abord, ils seraient perdus.",
+                                     "Attachments fitted: remove them first, they would be lost.",
+                                     "Установлены модули: сначала сними их, иначе они пропадут."),
+    "gui.heraliz_quetes.contenu.3": ("Boîte de munitions pleine : vide-la d'abord, ses balles seraient perdues.",
+                                     "Ammo box not empty: empty it first, its rounds would be lost.",
+                                     "Коробка с патронами не пуста: сначала опустоши её, иначе патроны пропадут."),
+    "gui.heraliz_quetes.contenu.4": ("Sac plein : vide-le d'abord, son contenu serait perdu.",
+                                     "Backpack not empty: empty it first, its contents would be lost.",
+                                     "Рюкзак не пуст: сначала опустоши его, иначе содержимое пропадёт."),
     # objets d'événement à revendre (25/10) : points de saison du clan, ou pourquoi il n'en aurait pas
     "gui.heraliz_quetes.marchand.points": ("+%s points de saison pour ton clan", "+%s season points for your clan", "+%s очков сезона для твоего клана"),
     "gui.heraliz_quetes.marchand.sans_points.1": ("Pas de saison en cours : aucun point.", "No season running: no points.", "Сезон не идёт: очков нет."),
     "gui.heraliz_quetes.marchand.sans_points.2": ("Sans clan : aucun point de saison.", "No clan: no season points.", "Без клана: очков сезона нет."),
     "gui.heraliz_quetes.marchand.sans_points.3": ("Ton clan n'a pas posé son cœur : aucun point.", "Your clan has no heart placed: no points.", "Твой клан не поставил сердце: очков нет."),
+    "gui.heraliz_quetes.marchand.sans_points.4": ("Mode créatif ou spectateur : aucun point.", "Creative or spectator mode: no points.",
+                                                 "Творческий режим или наблюдатель: очков нет."),
+    "gui.heraliz_quetes.marchand.sans_points.plafond": ("Plafond du jour de ton clan atteint : aucun point.", "Your clan reached today's cap: no points.",
+                                                       "Клан достиг дневного лимита: очков нет."),
+    "gui.heraliz_quetes.marchand.essai": ("Objet d'essai (staff) : hérals seulement, aucun point de saison.", "Test item (staff): herals only, no season points.",
+                                         "Тестовый предмет (администрация): только гералы, без очков сезона."),
     "gui.heraliz_quetes.marchand.garder": ("Garde-le pour plus tard : il vaudra des points.", "Keep it for later: it will be worth points.", "Сохрани на потом: он принесёт очки."),
     "gui.heraliz_quetes.rarete.0": ("Commun", "Common", "Обычный"),
     "gui.heraliz_quetes.rarete.1": ("Peu commun", "Uncommon", "Необычный"),
@@ -440,6 +471,9 @@ TEXTES = {
     "heraliz_quetes.notif.achete": ("Acheté : %s × %s (%s hérals)", "Bought: %s × %s (%s herals)", "Куплено: %s × %s (%s гералов)"),
     "heraliz_quetes.notif.vendu": ("Vendu : %s objet(s) pour %s hérals", "Sold: %s item(s) for %s herals", "Продано: %s предм. за %s гералов"),
     "heraliz_quetes.notif.points_evenement": ("+%s points de saison pour ton clan", "+%s season points for your clan", "+%s очков сезона для твоего клана"),
+    "heraliz_quetes.notif.objet_essai": ("Objet d'essai (événement lancé par le staff) : hérals seulement, aucun point de saison",
+                                         "Test item (event launched by the staff): herals only, no season points",
+                                         "Тестовый предмет (событие от администрации): только гералы, без очков сезона"),
     "gui.heraliz_quetes.clavier": ("Coffre à code", "Code safe", "Кодовый сейф"),
     "gui.heraliz_quetes.clavier.ok": ("OK", "OK", "OK"),
     "gui.heraliz_quetes.journal": ("Quêtes", "Quests", "Задания"),
@@ -995,7 +1029,9 @@ TEXTES = {
     "heraliz_quetes.jour.a.extraction": ("Revenir au spawn par une zone d'extraction", "Return to spawn through an extraction zone",
                                          "Вернуться на спавн через зону эвакуации"),
     "heraliz_quetes.jour.a.vendre": ("Chez Mila, au spawn", "At Mila's, at spawn", "У Милы, на спавне"),
-    "heraliz_quetes.jour.a.recycler": ("Au recycleur du spawn", "At the spawn recycler", "В переработчике на спавне"),
+    # 15/11 (audit n° 4 : quête du jour comptée par paquet entier) : texte changé à la main dans les .json, repris ici le 16/11
+    "heraliz_quetes.jour.a.recycler": ("Au recycleur (munitions : par paquet entier)", "At a recycler (ammo: by full pack)",
+                                       "В переработчике (патроны: полными пачками)"),
     "heraliz_quetes.jour.a.livrer": ("Ils sont pris quand tu valides", "They are taken when you hand them in", "Забираются при сдаче"),
     "heraliz_quetes.jour.a.distance": ("Sur la carte, ni véhicule ni train", "On the map, no vehicle or train", "На карте, без транспорта и поезда"),
     "heraliz_quetes.jour.a.pvp": ("Pas de ton clan, une fois par joueur", "Not from your clan, once per player", "Не из твоего клана, один раз на игрока"),
@@ -1042,11 +1078,18 @@ TEXTES = {
 }
 
 
+def ecrire_texte(f, texte):
+    """Écrit texte (lignes en \\n) en gardant les fins de ligne du fichier déjà là (16/11 : lancé sous Linux, l'outil
+    réécrivait en LF les fichiers en CRLF, chaque ligne paraissait changée ; comme outils/loot_armes.py)."""
+    crlf = f.exists() and b"\r\n" in f.read_bytes()[:4096]
+    f.write_bytes((texte.replace("\n", "\r\n") if crlf else texte).encode("utf-8"))
+
+
 def main():
     LANG.mkdir(parents=True, exist_ok=True)
     for i, nom in enumerate(("fr_fr", "en_us", "ru_ru")):
         d = {k: v[i] for k, v in TEXTES.items()}
-        (LANG / (nom + ".json")).write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        ecrire_texte(LANG / (nom + ".json"), json.dumps(d, ensure_ascii=False, indent=2) + "\n")
     print("[langues] %d clés écrites dans %s" % (len(TEXTES), LANG))
 
 

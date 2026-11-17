@@ -10,7 +10,9 @@ Le reste du fichier du PNJ (nom, apparence, phrases) n'est pas touché. Prix en 
   qu'ils nourrissent ;
 - accessoires TaCZ : ceux de rareté Commun à Rare (section « accessoires »), sans les munitions spéciales ;
 - matériaux de construction (Bâtisseur) : tableau MATERIAUX ;
-- rachat : objets de valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous).
+- rachat : objets de valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous) ;
+- échanges sans hérals (Contremaître, troc) : tableau CONTREMAITRE (clé « echanges »). Un objet reçu par un échange
+  n'est jamais donné dans un autre échange (le serveur couperait l'échange : Echanges.coupe) ; l'outil le refuse.
 
 Contrôle (règle des propriétaires du 25/10, pour toujours) : un objet qu'un marchand vend au prix P n'est jamais racheté
 plus de 50 % de P (Marchands.prixRachat de HeraliZ Quêtes : min(prix de la règle, P / 2), plus petit P chez tous les
@@ -63,6 +65,26 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
     ("crac:claim_block", 250),    # 28/10 : prix réglé en jeu le 24/10, repris comme base (avant 500)
     ("crac:metal_crate", 300),
     ("crac:coeur_clan", 5000),    # 02/11 (choix du propriétaire, A322) : 5 000 au lieu de 1 000, jugé trop bon marché
+    # 16/11 (HeraliZ Récolte, choix du propriétaire du 15/11, maquettes/recolte/PROPOSITION.md §4) : la hache (arbres) et
+    # la pioche (gisements), Rares, aussi trouvées dans le loot T2 à T5 ; usées, elles cassent
+    ("heraliz_recolte:hache", 1200),
+    ("heraliz_recolte:pioche", 1200),
+]
+# jamais vendus ni reçus par un échange chez un marchand des fichiers : l'outil refuse de les écrire. 16/11 : la hache-pioche
+# de survie (Légendaire) se trouve seulement dans le loot T6, T7 et les coffres des événements (choix du propriétaire :
+# pas de pay2win)
+JAMAIS_VENDUS = {"heraliz_recolte:hache_pioche"}
+# 16/11 (HeraliZ Récolte, maquettes/recolte/PROPOSITION.md §2, choix du propriétaire) : le Contremaître du spawn échange
+# les matières brutes récoltées sur la carte (arbres à abattre, gisements de pierre, de métal et de titane) contre les
+# matériaux des bases de CRac, ceux que vend le Bâtisseur (MATERIAUX). Troc seulement : ni hérals, ni rachat. Cher exprès :
+# un arbre (30 bûches) vaut 6 planches, un gisement de pierre (24 pierres brutes) 3 pierres taillées, un gisement de métal
+# (30 minerais de métal) 3 fragments de métal, un gisement de titane (16 minerais de titane) 2 métal renforcé.
+CONTREMAITRE = [  # (objet donné, nombre, objet reçu, nombre)
+    ("heraliz_recolte:buche", 5, "heraliz_composants:planches", 1),
+    ("heraliz_recolte:buche", 1, "heraliz_composants:brindilles", 5),
+    ("heraliz_recolte:pierre_brute", 8, "heraliz_composants:pierres_taillees", 1),
+    ("heraliz_recolte:minerai_fer", 10, "heraliz_composants:fragments_metal", 1),   # minerai de métal
+    ("heraliz_recolte:minerai_rare", 8, "heraliz_composants:metal_renforce", 1),    # minerai de titane
 ]
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
@@ -111,6 +133,8 @@ MARCHANDS = {
     "doyen": {"type": "achat", "articles": nourriture()},
     "jack": {"type": "achat", "articles": accessoires()},
     "batisseur": {"type": "achat", "articles": [{"objet": o, "prix": p} for o, p in MATERIAUX]},
+    "contremaitre": {"type": "troc", "echanges": [{"donne": {"objet": d, "nombre": nd}, "recoit": {"objet": r, "nombre": nr}}
+                                                 for d, nd, r, nr in CONTREMAITRE]},
 }
 
 TAGS = RACINE / "modules" / "equipement" / "src" / "serveur" / "resources" / "data" / "heraliz_composants" / "tags" / "items"
@@ -120,6 +144,13 @@ MARCHANDS_JAVA = (RACINE / "modules" / "pnj" / "src" / "serveur" / "java" / "fr"
 
 TAGS_PNJ = RACINE / "modules" / "pnj" / "src" / "serveur" / "resources" / "data" / "heraliz_quetes" / "tags" / "items"
 COFFRES = RACINE / "modules" / "loot" / "src" / "serveur" / "resources" / "data" / "heraliz_loot" / "coffres"
+
+
+def ecrire_texte(f, texte):
+    """Écrit texte (lignes en \\n) en gardant les fins de ligne du fichier déjà là (16/11 : lancé sous Linux, l'outil
+    réécrivait en LF les fichiers des PNJ et les tags en CRLF, chaque ligne paraissait changée ; comme loot_armes.py)."""
+    crlf = f.exists() and b"\r\n" in f.read_bytes()[:4096]
+    f.write_bytes((texte.replace("\n", "\r\n") if crlf else texte).encode("utf-8"))
 
 
 def tags_rachat():
@@ -134,8 +165,7 @@ def tags_rachat():
     TAGS_PNJ.mkdir(parents=True, exist_ok=True)
     for nom, ids in familles.items():
         valeurs = [{"id": i, "required": False} for i in sorted(ids)]
-        (TAGS_PNJ / (nom + ".json")).write_text(json.dumps({"replace": False, "values": valeurs}, indent=2) + "\n",
-                                                encoding="utf-8")
+        ecrire_texte(TAGS_PNJ / (nom + ".json"), json.dumps({"replace": False, "values": valeurs}, indent=2) + "\n")
         print(f"tag heraliz_quetes:{nom} : {len(ids)} objets")
 
 
@@ -203,6 +233,46 @@ def controle(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0):
         print("ERREUR : " + e)
     if erreurs:
         raise SystemExit("Refusé : une revente ou un recyclage rapporterait plus que la règle des 50 % du prix d'achat.")
+
+
+def controle_echanges(marchands):
+    """Échanges des fichiers (clé « echanges ») : refus (SystemExit) si un objet reçu par un échange est donné dans un
+    échange (chaîne, boucle, ou échange qui rend ce qu'il prend) : le serveur le couperait (Echanges.coupe)."""
+    echanges = [(pid, e) for pid, m in marchands.items() for e in m.get("echanges", [])]
+    recus = {e["recoit"]["objet"] for _, e in echanges}
+    erreurs = [f"{pid} : {e['donne']['objet']} -> {e['recoit']['objet']} : l'objet donné est déjà reçu par un échange"
+               for pid, e in echanges if e["donne"]["objet"] in recus]
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : pas de chaîne ni de boucle d'échanges.")
+    if echanges:
+        print(f"[marchands] échanges : {len(echanges)}, aucune chaîne ni boucle")
+
+
+def controle_jamais_vendus(marchands):
+    """Refus (SystemExit) si un objet de JAMAIS_VENDUS est vendu ou reçu par un échange chez un marchand."""
+    erreurs = [f"{pid} : {o} jamais vendu ni échangé (JAMAIS_VENDUS)" for pid, m in marchands.items()
+               for o in [a["objet"] for a in m.get("articles", [])] + [e["recoit"]["objet"] for e in m.get("echanges", [])]
+               if o in JAMAIS_VENDUS]
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : un objet qui ne se vend jamais est chez un marchand.")
+
+
+def controle_matieres_brutes(marchands):
+    """16/11 (HeraliZ Récolte, choix du propriétaire) : refus (SystemExit) si une règle de rachat ou du recycleur prendrait
+    une matière brute (MATIERES_BRUTES de outils/recyclage.py : échangées au Contremaître, jamais revendues)."""
+    from recyclage import MATIERES_BRUTES
+    rec = json.loads(RECYCLAGE.read_text(encoding="utf-8")) if RECYCLAGE.exists() else {"regles": []}
+    erreurs = [f"{pid} rachèterait {o}" for o in MATIERES_BRUTES for pid, m in marchands.items()
+               if m.get("type") == "rachat" and prix_regle(m, o, "") > 0]
+    erreurs += [f"le recycleur prendrait {o}" for o in MATIERES_BRUTES if regle_recyclage(rec, o, "") is not None]
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : les matières brutes de la Récolte ne se revendent jamais (ni Mila, ni le recycleur).")
 
 
 def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
@@ -293,18 +363,27 @@ def regle_recyclage(rec, objet, nbt):
 if __name__ == "__main__":
     import sys
     if "--controle" in sys.argv:
-        actuels = {}
+        actuels, tous = {}, {}
         for f in sorted(PNJ.glob("*.json")):
             m = json.loads(f.read_text(encoding="utf-8")).get("marchand")
+            if m:
+                tous[f.stem] = m
             if m and m.get("type") in ("achat", "rachat"):
                 actuels[f.stem] = m
         controle(actuels)
+        controle_echanges(tous)
+        controle_jamais_vendus(tous)
+        controle_matieres_brutes(tous)
         raise SystemExit(0)
     tags_rachat()
     controle(MARCHANDS)
+    controle_echanges(MARCHANDS)
+    controle_jamais_vendus(MARCHANDS)
+    controle_matieres_brutes(MARCHANDS)
     for pid, m in MARCHANDS.items():
         f = PNJ / f"{pid}.json"
         d = json.loads(f.read_text(encoding="utf-8"))
         d["marchand"] = m
-        f.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(f"{pid} : {len(m.get('articles', m.get('rachat', [])))} {'articles' if 'articles' in m else 'règles'}")
+        ecrire_texte(f, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
+        cle = next((k for k in ("articles", "echanges", "rachat") if k in m), "rachat")
+        print(f"{pid} : {len(m.get(cle, []))} {dict(articles='articles', echanges='échanges', rachat='règles')[cle]}")

@@ -82,6 +82,14 @@
       {
         "objet": "crac:coeur_clan",
         "prix": 5000
+      },
+      {
+        "objet": "heraliz_recolte:hache",
+        "prix": 1200
+      },
+      {
+        "objet": "heraliz_recolte:pioche",
+        "prix": 1200
       }
     ]
   }

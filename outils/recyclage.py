@@ -20,8 +20,8 @@ Règles, de la plus précise à la plus large :
   1. l'objet a une recette à la Table d'armurier (gunpack heraliz_crafts) : ses composants, unité par unité ;
   2. sinon une règle de famille (armures, sacs, soins, nourriture, mêlée, kits, outils...) : composants du niveau de la
      rareté de l'objet (Commun / Peu commun = niveau I, Rare = II, Épique = III, Légendaire / Unique = IV).
-Jamais recyclés : composants, capsules, fragments de cartes, clés, bons, objets à vie, prêtés ou de quête (refusés par
-le serveur, rendus au joueur).
+Jamais recyclés : composants, capsules, fragments de cartes, clés, bons, matières brutes de HeraliZ Récolte, objets à vie,
+prêtés ou de quête (refusés par le serveur, rendus au joueur).
 
     python outils/recyclage.py            écrit le fichier
     python outils/recyclage.py --verifier dit si le fichier est à jour (0 = oui)
@@ -89,6 +89,16 @@ COMPOSANTS_RECYCLABLES = {
 FAMILLES += [("heraliz_composants:" + i, None, rend) for i, rend in COMPOSANTS_RECYCLABLES.items()]
 # fusée d'extraction (26/10 : seul objet du loot sans règle) : électronique
 FAMILLES.append(("heraliz_extraction:extraction_terminal", None, ["circuit_imprime", "batterie"]))
+# 16/11 (HeraliZ Récolte, choix du propriétaire, maquettes/recolte/PROPOSITION.md §3) : les matières brutes récoltées
+# s'échangent au Contremaître contre des matériaux, elles ne se revendent jamais (ni Mila, ni le recycleur : la récolte fait
+# des matériaux, pas des hérals). Aucune règle ne les prend ; la liste « jamais » le garantit même si une règle large
+# arrivait un jour. outils/marchands.py refuse aussi une règle de rachat ou de recyclage qui les prendrait.
+MATIERES_BRUTES = ["heraliz_recolte:buche", "heraliz_recolte:pierre_brute", "heraliz_recolte:minerai_fer",
+                   "heraliz_recolte:minerai_rare"]
+# 16/11 (HeraliZ Récolte, demande du propriétaire : « donner un peu de loot en recyclant pioche et hache basique, et
+# légendaire aussi ») : un manche en bois et une tête en acier, composants du niveau de la rareté de l'outil (hache et
+# pioche Rare : niveau II ; hache-pioche Légendaire : niveau IV) ; comme toute règle, 10 % par pièce et 2 pièces au plus
+FAMILLES += [("heraliz_recolte:" + o, None, ["planche", "ferraille", "ferraille", "kit_pieces"]) for o in ("hache", "pioche", "hache_pioche")]
 COMPOSANTS_DEFS = RACINE / "modules/equipement/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
 
 
@@ -180,9 +190,10 @@ def construire():
         "herals_si_rien": HERALS_SI_RIEN,
         # 31/10 : recycleur de la carte (mêmes règles, chance relative en plus)
         "profils": {"carte": {"chance": round(CHANCE * (1 + BONUS_CARTE), 6)}},
-        # 26/10 : jumelles et munitions de frappe (fabrication seulement, Légendaires) jamais recyclées
+        # 26/10 : jumelles et munitions de frappe (fabrication seulement, Légendaires) jamais recyclées ; 16/11 : matières
+        # brutes de HeraliZ Récolte (MATIERES_BRUTES)
         "jamais": composants_jamais() + ["heralizcasino:*", "heralisz_bunker:keycard*", "heralizcrates:*",
-                                         "heraliz_grades:*", "airstrike:*"],
+                                         "heraliz_grades:*", "airstrike:*"] + MATIERES_BRUTES,
         "regles": regles,
     }
 
@@ -194,7 +205,9 @@ def main():
         print("[recyclage] " + ("à jour" if ok else "PAS à jour : relancer python outils/recyclage.py"))
         sys.exit(0 if ok else 1)
     SORTIE.parent.mkdir(parents=True, exist_ok=True)
-    SORTIE.write_text(texte, encoding="utf-8")
+    # 16/11 : fin de ligne du fichier déjà là gardée (lancé sous Linux, l'outil réécrivait en LF le fichier en CRLF)
+    crlf = SORTIE.exists() and b"\r\n" in SORTIE.read_bytes()[:4096]
+    SORTIE.write_bytes((texte.replace("\n", "\r\n") if crlf else texte).encode("utf-8"))
     d = json.loads(texte)
     print("[recyclage] %d règles écrites dans %s" % (len(d["regles"]), SORTIE.relative_to(RACINE)))
 

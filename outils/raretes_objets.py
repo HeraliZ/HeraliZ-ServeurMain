@@ -11,7 +11,9 @@ rareté) :
     frappe aérienne, explosifs de raid : section « objets », écrite par outils/loot_armes.py (RARETES_IMPOSEES) ;
   - pièces d'armure, tenues complètes, combinaisons, masques à gaz, ghillies, brassards : section « objets », écrite par
     modules/equipement/outils/equilibrage_armures.py ;
-  - composants : section « objets », écrite par modules/equipement/outils/build.py.
+  - composants : section « objets », écrite par modules/equipement/outils/build.py ;
+  - matières brutes et outils de HeraliZ Récolte (16/11) : section « objets », écrite par outils/loot_armes.py
+    (RARETES_IMPOSEES, EXTRAS).
 Sans rareté, voulu (EXCLUS) : la munition factice des armes de mêlée des gunpacks et les objets d'événement de
 l'Armurerie (chapeaux d'Halloween, sacs sur la tête : ligne « Événement », aucun n'est obtenable aujourd'hui).
 
@@ -37,6 +39,7 @@ RARETES = DEPOT / "serveur/config/heraliz_loot/raretes.json"
 TACZ = DEPOT / "serveur/tacz"
 ARMURERIE = DEPOT / "modules/equipement/src/commun/java/fr/heraliz/armory/armor"
 COMPOSANTS = DEPOT / "modules/equipement/src/commun/java/fr/heraliz/composants/ComponentDefs.java"
+RECOLTE = DEPOT / "modules/recolte/src/commun/java/fr/heraliz/recolte/objets/ObjetsRecolte.java"
 ORDRE = ["commun", "peu_commun", "rare", "epique", "legendaire", "unique"]
 
 # munition factice des armes de mêlée des gunpacks (couteaux) : jamais obtenable ; lui donner une rareté ferait aussi une
@@ -75,6 +78,10 @@ def familles():
                                          re.findall(r'new GearDef\("([a-z_]+)", "([a-z]+)", ', lire("GearCatalog.java")) if tab != "event"]
     f["composants"] = [("objets", "heraliz_composants:" + i) for i in
                        re.findall(r'new Def\("([a-z_0-9]+)", "[^"]*", HeralizRarity\.[A-Z]+, \d+\)', COMPOSANTS.read_text(encoding="utf-8"))]
+    # 16/11 : matières brutes et outils de HeraliZ Récolte (objets enregistrés dans ObjetsRecolte.java)
+    if RECOLTE.exists():
+        f["récolte"] = [("objets", "heraliz_recolte:" + i) for i in
+                        re.findall(r'ITEMS\.register\("([a-z_0-9]+)"', RECOLTE.read_text(encoding="utf-8"))]
     return f
 
 

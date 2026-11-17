@@ -1,0 +1,126 @@
+{
+  "id": "contremaitre",
+  "nom": {
+    "fr": "Le Contremaître",
+    "en": "The Foreman",
+    "ru": "Прораб"
+  },
+  "skin": "contremaitre",
+  "apparence": {
+    "skin_tone": "tan",
+    "eye_shape": "hooded",
+    "eye_color": "brown",
+    "brow_style": "thick",
+    "nose_style": "wide",
+    "mouth_style": "thin",
+    "hair_style": "crew",
+    "hair_color": "grey",
+    "facial_hair": "full_beard",
+    "shirt_style": "flannel",
+    "shirt_color": "orange",
+    "shirt_color2": "charcoal",
+    "pants_style": "cargo",
+    "pants_color": "brown",
+    "shoes_style": "hiking_boots",
+    "shoes_color": "brown",
+    "marks": [
+      "dirt"
+    ],
+    "wear": "dusty",
+    "eye_size": 3
+  },
+  "role": {
+    "fr": "Troc des matières brutes",
+    "en": "Raw materials barter",
+    "ru": "Обмен сырья"
+  },
+  "ambiance": [
+    {
+      "fr": "Du bois, de la pierre, du métal. Le reste, c'est de la sueur.",
+      "en": "Wood, stone, metal. The rest is sweat.",
+      "ru": "Дерево, камень, металл. Остальное — пот."
+    },
+    {
+      "fr": "Une base, ça commence par une bûche.",
+      "en": "A base starts with a log.",
+      "ru": "База начинается с бревна."
+    },
+    {
+      "fr": "Le métal, c'est compté. Tous les jours.",
+      "en": "Metal is rationed. Every day.",
+      "ru": "Металл на счету. Каждый день."
+    }
+  ],
+  "presentation": {
+    "fr": "Tu abats des arbres, tu casses des gisements ? Rapporte-moi tes bûches, tes pierres brutes et ton minerai : je te les échange contre des matériaux pour ta base. Pas d'hérals chez moi, et le métal est compté chaque jour.",
+    "en": "Felling trees, breaking deposits? Bring me your logs, raw stone and ore: I'll trade them for materials for your base. No herals here, and metal is rationed every day.",
+    "ru": "Рубишь деревья, разбиваешь залежи? Неси мне брёвна, необработанный камень и руду — обменяю их на материалы для базы. Гералов у меня нет, а металл выдаётся по дневной норме."
+  },
+  "accueil": {
+    "inconnu": {
+      "fr": "Ici, pas d'hérals : tu me rapportes ce que tu as récolté, je te donne de quoi bâtir.",
+      "en": "No herals here: you bring me what you've gathered, I give you what you need to build.",
+      "ru": "Здесь без гералов: приносишь то, что добыл, а я даю то, из чего строить."
+    },
+    "connu": {
+      "fr": "Alors, qu'est-ce que tu m'as rapporté aujourd'hui ?",
+      "en": "So, what did you bring me today?",
+      "ru": "Ну, что принёс сегодня?"
+    }
+  },
+  "marchand": {
+    "type": "troc",
+    "echanges": [
+      {
+        "donne": {
+          "objet": "heraliz_recolte:buche",
+          "nombre": 5
+        },
+        "recoit": {
+          "objet": "heraliz_composants:planches",
+          "nombre": 1
+        }
+      },
+      {
+        "donne": {
+          "objet": "heraliz_recolte:buche",
+          "nombre": 1
+        },
+        "recoit": {
+          "objet": "heraliz_composants:brindilles",
+          "nombre": 5
+        }
+      },
+      {
+        "donne": {
+          "objet": "heraliz_recolte:pierre_brute",
+          "nombre": 8
+        },
+        "recoit": {
+          "objet": "heraliz_composants:pierres_taillees",
+          "nombre": 1
+        }
+      },
+      {
+        "donne": {
+          "objet": "heraliz_recolte:minerai_fer",
+          "nombre": 10
+        },
+        "recoit": {
+          "objet": "heraliz_composants:fragments_metal",
+          "nombre": 1
+        }
+      },
+      {
+        "donne": {
+          "objet": "heraliz_recolte:minerai_rare",
+          "nombre": 8
+        },
+        "recoit": {
+          "objet": "heraliz_composants:metal_renforce",
+          "nombre": 1
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+# HeraliZ Récolte : arbres à abattre et gisements de la carte, outils de récolte (modules/recolte/A_FAIRE.md).
+# Ce fichier est IDENTIQUE dans les trois jars (-client, -serveur, -complet).
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="heraliz_recolte"
+version="${mod_version}"
+displayName="HeraliZ Récolte"
+authors="${mod_authors}"
+description='''Arbres à abattre et gisements de pierre et de métal sur la carte, décidés par le serveur ; hache, pioche et hache-pioche de survie.'''
+[[dependencies.heraliz_recolte]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.heraliz_recolte]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

@@ -49,6 +49,8 @@ include 'noyau'
 project(':noyau').projectDir = file('modules/noyau')
 include 'pnj'
 project(':pnj').projectDir = file('modules/pnj')
+include 'recolte'
+project(':recolte').projectDir = file('modules/recolte')
 include 'sacs'
 project(':sacs').projectDir = file('modules/sacs')
 include 'survie'

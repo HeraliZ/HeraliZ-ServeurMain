@@ -231,7 +231,10 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   staff). **Annonce à tous, dans le chat ET en notification, avec les coordonnées 6 minutes avant** (« Largage militaire
   dans 6 min · X …, Z … (secteur C4) »), **rappel 3 minutes avant** ; puis l'avion cargo passe et la caisse descend en
   parachute avec sa fumée (l'avion part 40 s avant la fin de l'annonce : passage et chute). La caisse disparaît au bout
-  de 20 min si personne ne l'ouvre. Elle contient toujours un objet d'événement à revendre (ci-dessus). **Son contenu se
+  de 20 min si personne ne l'ouvre. Elle contient toujours un objet d'événement à revendre (ci-dessus), et rarement la
+  hache-pioche de survie de HeraliZ Récolte (16/11 : 0,4 % des caisses, comme un coffre T7 ; `LARGAGE_RECOLTE` de
+  `outils/caisses.py`, qui écrit la table `airstrike:chests/supply_drop` ; ce mod doit être sur le serveur, sinon
+  Minecraft refuse toute la table). **Son contenu se
   découvre comme un coffre T7** (25/10, demande du propriétaire, pour le suspense) : même écran, objets cachés « ? »
   identifiés un par un, d'autant plus longtemps qu'ils sont rares, seulement pendant que quelqu'un regarde ; rien ne se
   dépose dedans (`fr.heraliz.loot.RevelationCaisses`, appelé par réflexion par la caisse ; identification gardée en

@@ -98,7 +98,11 @@
   "heralisz_bunker:keycard*",
   "heralizcrates:*",
   "heraliz_grades:*",
-  "airstrike:*"
+  "airstrike:*",
+  "heraliz_recolte:buche",
+  "heraliz_recolte:pierre_brute",
+  "heraliz_recolte:minerai_fer",
+  "heraliz_recolte:minerai_rare"
  ],
  "regles": [
   {
@@ -4756,6 +4760,129 @@
     [
      "heraliz_composants:circuit_imprime_iv",
      "heraliz_composants:batterie_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_recolte:hache",
+   "rend_rarete": [
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:kit_pieces_ii"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:kit_pieces_iii"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_recolte:pioche",
+   "rend_rarete": [
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:kit_pieces_ii"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:kit_pieces_iii"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ]
+   ]
+  },
+  {
+   "objet": "heraliz_recolte:hache_pioche",
+   "rend_rarete": [
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:ferraille",
+     "heraliz_composants:kit_pieces"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:ferraille_ii",
+     "heraliz_composants:kit_pieces_ii"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:ferraille_iii",
+     "heraliz_composants:kit_pieces_iii"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
+    ],
+    [
+     "heraliz_composants:planche",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:ferraille_iv",
+     "heraliz_composants:kit_pieces_iv"
     ]
    ]
   },

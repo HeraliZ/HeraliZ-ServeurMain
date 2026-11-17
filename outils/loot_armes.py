@@ -17,7 +17,8 @@ Réécrit les tables modules/loot/src/serveur/resources/data/heraliz_loot/coffre
   (nourriture, munitions, soins, grenades, sacs…) ; plus d'objets de Minecraft d'essai.
 - fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids ;
 - objets rares en plus (EXTRAS : fusée d'extraction Épique en T5 à T7 ; objets Uniques à revendre, crâne de cristal,
-  sceptre et calice, en T7 seulement : UNIQUES_T7), de la même façon.
+  sceptre et calice, en T7 seulement : UNIQUES_T7 ; outils de HeraliZ Récolte : hache et pioche en T2 à T5, hache-pioche
+  de survie en T6 et T7), de la même façon.
 Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
 changement des raretés, des gunpacks, de l'Armurerie ou des composants.
 `--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
@@ -243,6 +244,11 @@ RARETES_IMPOSEES = {
     "tacz:gun_smith_table": "legendaire",
     # cartes d'accès entières (26/10) : même rareté que leurs fragments
     "heralisz_bunker:keycard_green": "rare", "heralisz_bunker:keycard_blue": "epique", "heralisz_bunker:keycard_red": "legendaire",
+    # matières brutes de HeraliZ Récolte (16/11, choix du propriétaire, modules/recolte/A_FAIRE.md §3) : jamais dans le loot,
+    # récoltées sur la carte ; bûche et pierre brute Commun, minerai de métal Peu commun, minerai de titane Rare (les outils
+    # de la récolte : EXTRAS)
+    "heraliz_recolte:buche": "commun", "heraliz_recolte:pierre_brute": "commun",
+    "heraliz_recolte:minerai_fer": "peu_commun", "heraliz_recolte:minerai_rare": "rare",
 }
 # fragments des cartes d'accès de HeraliZ Bunker (24/10, demande du propriétaire) : 4 fragments numérotés par carte, les
 # 4 DIFFÉRENTS donnent la carte (grille 2 x 2 ou clic droit). Chaque numéro est tiré à part : on peut trouver plusieurs
@@ -277,6 +283,16 @@ EXTRAS = {
 UNIQUES_T7 = ("crane_cristal", "sceptre", "calice")
 UNIQUES_T7_POUR_100 = 2.0
 EXTRAS.update({COMPOSANT + i: ("unique", {7: UNIQUES_T7_POUR_100 / len(UNIQUES_T7)}) for i in UNIQUES_T7})
+# outils de HeraliZ Récolte (16/11, choix du propriétaire du 15/11, maquettes/recolte/PROPOSITION.md §4), chacun pour
+# 100 conteneurs : hache et pioche Rares (vendues aussi 1 200 hérals par le Bâtisseur ; usées, elles cassent) de T2 à T5 ;
+# hache-pioche de survie Légendaire (bois et pierre, 40 % de coups en moins) seulement en T6 et T7 (le T7 compte aussi le
+# coffre de l'épave de l'hélicoptère) et dans le largage public (outils/caisses.py, LARGAGE_RECOLTE) : jamais vendue ni
+# fabriquée, suivie par l'anti-duplication de Spartan
+EXTRAS.update({
+    "heraliz_recolte:hache": ("rare", {2: 0.3, 3: 0.4, 4: 0.5, 5: 0.4}),
+    "heraliz_recolte:pioche": ("rare", {2: 0.3, 3: 0.4, 4: 0.5, 5: 0.4}),
+    "heraliz_recolte:hache_pioche": ("legendaire", {6: 0.05, 7: 0.4}),
+})
 RARETES_IMPOSEES.update({i: r for i, (r, _) in EXTRAS.items()})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)

@@ -1,0 +1,30 @@
+{
+  "loader": "forge:separate_transforms",
+  "gui_light": "front",
+  "textures": {
+    "particle": "heraliz_recolte:item/pioche"
+  },
+  "base": {
+    "parent": "minecraft:builtin/entity"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "heraliz_recolte:item/pioche"
+      }
+    },
+    "ground": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "heraliz_recolte:item/pioche"
+      }
+    },
+    "fixed": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "heraliz_recolte:item/pioche"
+      }
+    }
+  }
+}
