@@ -11,6 +11,10 @@ on:
         description: "Mot à chercher en plus des erreurs (facultatif)"
         type: string
         default: ""
+      anciens:
+        description: "Lire aussi les trois journaux précédents (sinon : seulement le journal en cours et les plantages)"
+        type: boolean
+        default: false
   push:
     branches-ignore: [main]
     paths: [".github/workflows/journaux.yml"]
@@ -32,6 +36,7 @@ jobs:
       PTERO_SFTP_USER: ${{ secrets.PTERO_SFTP_USER }}
       PTERO_SFTP_PASSWORD: ${{ secrets.PTERO_SFTP_PASSWORD }}
       FILTRE: ${{ inputs.filtre || 'matchs' }}
+      ANCIENS: ${{ inputs.anciens && 'oui' || '' }}
       PTERO_SFTP_EMPREINTE: ${{ vars.PTERO_SFTP_EMPREINTE || secrets.PTERO_SFTP_EMPREINTE }}
     steps:
       # seulement l'outil de l'empreinte du Ptero
@@ -71,9 +76,17 @@ jobs:
           # journaux tournés : les plus récents par le nom daté (l'heure des fichiers du Ptero trompe)
           # (« cls -1 » rend des chemins complets : on ne garde que le nom ; le Ptero tourne ses journaux en .log.zip)
           noms() { l "cls -1 $1" 2>/dev/null | sed 's#.*/##' | tr -d '\r'; }
-          for f in $(noms /logs/ | grep -E '^20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]+\.log\.(gz|zip)$' | sort -V -r | head -3); do l "lcd j; get /logs/$f" || true; done
+          # 18/11 : les journaux précédents (pleins de joueurs) seulement sur demande ; dépôt public : le moins possible
+          if [ -n "$ANCIENS" ]; then
+            for f in $(noms /logs/ | grep -E '^20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]+\.log\.(gz|zip)$' | sort -V -r | head -3); do l "lcd j; get /logs/$f" || true; done
+          fi
           for f in $(noms /crash-reports/ | grep -E '^crash-' | sort -r | head -4); do l "lcd c; get /crash-reports/$f" || true; done
-          masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g'; }
+          # adresses IP et pseudos masqués (dépôt public : le résumé se lit par tous)
+          masque() { sed -E -e 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g' \
+            -e "s/(ServerPlayer|Player)\['[^']*'/\1['***'/g" -e 's/name=[A-Za-z0-9_]{2,16}/name=***/g' \
+            -e 's/(UUID of player )[A-Za-z0-9_]{2,16}/\1***/g' -e 's/<[A-Za-z0-9_]{2,16}>/<***>/g' \
+            -e 's/[A-Za-z0-9_]{2,16}( joined the game| left the game| lost connection|\[\/x\.x\.x\.x)/***\1/g' \
+            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g'; }
           {
             echo "## Rapports de plantage récents"
             for f in c/*; do [ -f "$f" ] || continue
