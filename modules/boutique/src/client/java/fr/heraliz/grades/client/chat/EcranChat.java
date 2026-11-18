@@ -20,6 +20,9 @@ import static fr.heraliz.grades.client.boutique.Trace.a;
  * historique, suggestions des commandes, Entrée) et ne change que l'affichage : panneau de verre à gauche, onglets
  * Proximité / Global / Clan au-dessus de la saisie (Tab change de canal hors d'une commande, messages non lus), lignes
  * marquées de leur canal, molette pour remonter, liens cliquables.
+ * <p>
+ * 18/11 (retour du propriétaire : pas de texte d'aide sur les écrans) : plus de « TAB pour changer » à côté des onglets ni
+ * dans la case de saisie ; Tab change toujours de canal, et un clic sur un onglet aussi.
  */
 public final class EcranChat extends ChatScreen {
     private static Field champSuggestions;
@@ -92,12 +95,6 @@ public final class EcranChat extends ChatScreen {
         int lb = largeurBas();
         Trace.rect(g, 4, height - 15, 4 + lb, height - 2, a(0x0D0F14, 215));
         Trace.bord(g, 4, height - 15, lb, 13, 1 / 3F, a(0xFFFFFF, 40));
-        if (!aideACote && input.getValue().isEmpty()) {
-            // pas la place à côté des onglets : l'aide se met dans la case de saisie vide, à droite
-            String aide = Component.translatable("gui.heraliz_grades.chat.aide_tab").getString();
-            float tw = Trace.largeur(font, aide, ChatHeraliz.MICRO);
-            Trace.m(g, font, aide, 4 + lb - 6 - tw, height - 8.5F, ChatHeraliz.MICRO, a(0x8F95A0, 170), 0);
-        }
         input.render(g, mx, my, pt);
         if (suggestions != null) suggestions.render(g, mx, my);
         Style s = ChatHeraliz.styleA(font, places, mx, my);
@@ -105,8 +102,6 @@ public final class EcranChat extends ChatScreen {
     }
 
     private static final String[] ONGLETS = {"proximite", "global", "clan"};
-    /** L'aide « TAB pour changer » tient à côté des onglets (calculé à chaque image). */
-    private boolean aideACote = true;
 
     /** Onglets ; rend la zone de chacun pour le clic : x0, x1 par canal. */
     private float[] zonesOnglets() {
@@ -143,11 +138,6 @@ public final class EcranChat extends ChatScreen {
                 Trace.c(g, font, String.valueOf(Math.min(9, ChatHeraliz.NON_LUS[c])), bx + 2.5F, y + h / 2, ChatHeraliz.MICRO, a(0xFFFFFF, 255), 0);
             }
         }
-        String aide = Component.translatable("gui.heraliz_grades.chat.aide_tab").getString();
-        float xi = z[z.length - 1] + 8, place = largeurBas() + 4 - xi;
-        // l'aide entière à côté des onglets, sinon dans la case de saisie (jamais coupée, jamais sous la barre d'objets)
-        aideACote = place >= Trace.largeur(font, aide, ChatHeraliz.MICRO);
-        if (aideACote) Trace.m(g, font, aide, xi, y + h / 2, ChatHeraliz.MICRO, a(0x8F95A0, 200), 0);
     }
 
     @Override

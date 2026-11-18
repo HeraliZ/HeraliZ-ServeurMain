@@ -22,16 +22,21 @@ import java.util.Locale;
 
 /**
  * Quêtes du jour (/journalieres, bouton du journal), 26/10, d'après la maquette {@code maquettes/journalieres/}
- * ({@code modules/pnj/outils/apercu_journalieres.py} : mêmes mesures) : panneau de verre 560 x 320 comme le journal ;
- * 1 choix de la difficulté (trois cartes, exemples, récompenses les plus rares), 2 les trois propositions et les
- * récompenses de la difficulté, 3 quête en cours (progression, temps restant, ce qui compte, abandon en deux clics),
+ * ({@code modules/pnj/outils/apercu_journalieres.py} : mêmes mesures, sauf le pied) : panneau de verre 560 x 310 comme
+ * le journal ; 1 choix de la difficulté (trois cartes, exemples, récompenses les plus rares), 2 les trois propositions et
+ * les récompenses de la difficulté, 3 quête en cours (progression, temps restant, ce qui compte, abandon en deux clics),
  * 4 quête réussie (tirer la récompense), 5 tirage (bande qui défile jusqu'au gagnant choisi par le serveur), 6 journée
  * terminée. Polices à leur vraie taille, texte posé sur un point de l'écran ({@link Net}). Tout est décidé par le serveur :
  * l'écran ne fait qu'envoyer des choix ({@code Reseau.JourAction}).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de pied (touches et
+ * notes : le panneau passe de 320 à 310, contenu à la même place) ; restent seulement les avertissements utiles, courts :
+ * choix définitif jusqu'à minuit, les deux autres quêtes disparaissent, abandon = plus de quête aujourd'hui (dit par le
+ * bouton au second clic), une case libre pour la récompense. Le temps restant n'est plus répété (il est dans l'en-tête).
  */
 public final class EcranJournalieres extends Screen {
     private static final ResourceLocation TITRE = Net.TITRE, PETIT_GRAS = Net.PETIT_GRAS, MICRO = Net.MICRO;
-    private static final int LARGEUR = 560, HAUTEUR = 320, ENTETE = 44, M = 16, BLANC = 0xFFFFFF;
+    private static final int LARGEUR = 560, HAUTEUR = 310, ENTETE = 44, M = 16, BLANC = 0xFFFFFF;
     private static final int[] RARETE = {0xB9BEC6, 0x5FD08A, 0x5AA9FF, 0xB57BFF, 0xF2B83A, 0xFF5A4E};
     /** Durée de la bande du tirage (ms). */
     private static final long DUREE_TIRAGE = 4800;
@@ -174,6 +179,11 @@ public final class EcranJournalieres extends Screen {
         return Math.max(0, j.resteMs() - (System.currentTimeMillis() - recuA));
     }
 
+    /** Bas du contenu : une marge M au-dessus du bas du panneau (18/11 : plus de pied). */
+    private float bas() {
+        return py + ph - M;
+    }
+
     private static String duree(long ms) {
         long min = (ms + 59_999) / 60_000;
         return min >= 60 ? t("duree_hm", min / 60, String.format(Locale.ROOT, "%02d", min % 60)) : t("duree_m", min);
@@ -239,7 +249,7 @@ public final class EcranJournalieres extends Screen {
     private void ecranChoix(GuiGraphics g, int mx, int my) {
         float y0 = py + ENTETE + 10;
         texte(g, couper(t("intro_choix"), Ui.SMALL, pw - 2 * M), Ui.SMALL, px + M, y0 + cap(Ui.SMALL) / 2, Ui.MUTED);
-        float cy0 = y0 + 14, ch = py + ph - 26 - cy0, cw = (pw - 2 * M - 16) / 3f;
+        float cy0 = y0 + 14, ch = bas() - cy0, cw = (pw - 2 * M - 16) / 3f;
         for (int k = 0; k < j.difficultes().size() && k < 3; k++) {
             Reseau.JDiff d = j.difficultes().get(k);
             int c = couleurDiff(d.id());
@@ -270,7 +280,6 @@ public final class EcranJournalieres extends Screen {
             String id = d.id();
             bouton(g, t("choisir"), x + 12, cy0 + ch - 16, cw - 24, 16, c, true, mx, my, () -> envoyer(1, id));
         }
-        pied(g, new String[][]{{t("touche_echap"), t("k.fermer")}, {t("touche_clic"), t("k.choisir")}}, t("note_choix"));
     }
 
     // --------------------------------------------------------------- 2 : trois propositions
@@ -301,18 +310,17 @@ public final class EcranJournalieres extends Screen {
         }
         Reseau.JDiff d = diff(j.difficulte());
         float gy = cy0 + ch + 8;
-        if (d != null) grille(g, d, px + M, gy, pw - 2 * M, py + ph - 26 - gy, t("recompenses_de", nomDiff(d.id())).toUpperCase(Locale.ROOT));
-        pied(g, new String[][]{{t("touche_echap"), t("k.fermer")}, {t("touche_clic"), t("k.accepter")}}, t("note_props"));
+        if (d != null) grille(g, d, px + M, gy, pw - 2 * M, bas() - gy, t("recompenses_de", nomDiff(d.id())).toUpperCase(Locale.ROOT));
     }
 
     // --------------------------------------------------------------- 3 : en cours
     private void ecranEnCours(GuiGraphics g, int mx, int my) {
-        float y0 = py + ENTETE + 10, gw = 250, h = py + ph - 26 - y0;
+        float y0 = py + ENTETE + 10, gw = 250, h = bas() - y0;
         Reseau.JProp q = j.propositions().isEmpty() ? null : j.propositions().get(0);
         if (q != null) carteQuete(g, q, px + M, y0, gw, 112, false);
         float ix = px + M, iy = y0 + 124;
         boolean zombies = q != null && q.famille().equals("zombies"), fouille = q != null && (q.famille().equals("fouille") || q.famille().equals("salle"));
-        String[][] infos = {{t("temps_restant"), t("temps_restant_v", duree(reste()))},
+        String[][] infos = {{t("temps_restant"), duree(reste())},
                 {t("compte"), zombies ? t("c.zombies") : fouille ? t("c.conteneurs") : t("c.autre")},
                 {t("compte_pas"), zombies ? t("n.zombies") : fouille ? t("n.conteneurs") : t("n.autre")}};
         for (int k = 0; k < infos.length; k++) {
@@ -335,7 +343,6 @@ public final class EcranJournalieres extends Screen {
         });
         Reseau.JDiff d = diff(j.difficulte());
         if (d != null) table(g, d, px + M + gw + 12, y0, pw - 2 * M - gw - 12, h);
-        pied(g, new String[][]{{t("touche_echap"), t("k.fermer")}, {t("touche_clic2"), t("k.abandonner")}}, t("note_abandon"));
     }
 
     /** La quête acceptée : « Quête acceptée », titre, aide, progression et sa barre. */
@@ -360,21 +367,20 @@ public final class EcranJournalieres extends Screen {
 
     // --------------------------------------------------------------- 4 : réussie
     private void ecranReussie(GuiGraphics g, int mx, int my) {
-        float y0 = py + ENTETE + 10, gw = 250, h = py + ph - 26 - y0;
+        float y0 = py + ENTETE + 10, gw = 250, h = bas() - y0;
         String gd = j.gainDiff().isEmpty() ? j.difficulte() : j.gainDiff();
         Reseau.JProp q = j.propositions().isEmpty() ? null : j.propositions().get(0);
         if (q != null && gd.equals(j.difficulte()) && (j.etat() == 3 || j.etat() == 4)) carteQuete(g, q, px + M, y0, gw, 112, true);
-        float cx = px + M + gw / 2f, cy = y0 + 150;
+        // coche et titre au milieu, entre la carte de la quête et l'avertissement du bas (18/11 : plus de phrase dessous)
+        float cx = px + M + gw / 2f, cy = y0 + 156;
         Net.disque(g, cx, cy, 13, Ui.argb(Ui.OK, 60));
         Net.anneau(g, cx, cy, 13, 1.2f, Ui.argb(Ui.OK, 230));
         Net.coche(g, cx - 6, cy - 6, 12, 2.2f, Ui.argb(Ui.OK, 255));
         Net.centre(g, font, j.etat() == 3 ? t("reussie") : t("gain_attente"), Ui.BOLD, cx, cy + 25, Ui.TEXT);
-        Net.centre(g, font, couper(t("attend", nomDiff(gd)), Ui.SMALL, gw - 16), Ui.SMALL, cx, cy + 38, Ui.MUTED);
         Net.centre(g, font, couper(t("case_libre"), Ui.SMALL, gw), Ui.SMALL, cx, y0 + h - 24, Ui.FAINT);
         bouton(g, j.remise() ? t("recuperer") : t("tirer"), px + M, y0 + h - 8, gw, 18, Ui.OR, true, mx, my, () -> envoyer(4, ""));
         Reseau.JDiff d = diff(gd);
         if (d != null) table(g, d, px + M + gw + 12, y0, pw - 2 * M - gw - 12, h);
-        pied(g, new String[][]{{t("touche_echap"), t("k.fermer")}, {t("touche_clic"), t("k.tirer")}}, t("note_reussie"));
     }
 
     // --------------------------------------------------------------- 5 : tirage
@@ -430,31 +436,29 @@ public final class EcranJournalieres extends Screen {
                 Net.centre(g, font, couper(rar.isEmpty() ? pct(r.chance()) : t("detail", rar, pct(r.chance())), Ui.SMALL, pw - 60), Ui.SMALL,
                         milieu, ry + 32, Ui.TEXT);
             }
-            bouton(g, t("fermer"), milieu - 50, py + ph - 40, 100, 16, BLANC, false, mx, my, () -> {
+            bouton(g, t("fermer"), milieu - 50, bas() - 14, 100, 16, BLANC, false, mx, my, () -> {
                 SonsUi.clic(0.6F);
                 tirage = null;
             });
         }
-        pied(g, new String[][]{{t("touche_espace"), t("k.passer")}, {t("touche_echap"), t("k.fermer")}}, t("note_tirage"));
     }
 
     // --------------------------------------------------------------- 6 : journée terminée
     private void ecranTermine(GuiGraphics g) {
-        float cx = px + pw / 2f, cy = py + ph / 2f - 10;
+        // 18/11 : plus de « Nouvelles quêtes dans… » (l'en-tête le dit déjà) ; le bloc reste centré
+        float cx = px + pw / 2f, cy = py + ph / 2f - 3;
         icone(g, cx - 11, cy - 46, Ui.FAINT);
         Net.centre(g, font, t("fini"), Ui.BOLD, cx, cy, Ui.TEXT);
-        Net.centre(g, font, couper(t("nouvelles", duree(reste())), Ui.SMALL, pw - 80), Ui.SMALL, cx, cy + 14, Ui.MUTED);
         float w = 250;
-        Ui.glass(g, (int) (cx - w / 2), (int) (cy + 30), (int) w, 44, 110);
-        caps(g, t("aujourdhui"), MICRO, 0.8f, cx - w / 2 + 12, cy + 38 + cap(MICRO) / 2, Ui.FAINT);
+        Ui.glass(g, (int) (cx - w / 2), (int) (cy + 16), (int) w, 44, 110);
+        caps(g, t("aujourdhui"), MICRO, 0.8f, cx - w / 2 + 12, cy + 24 + cap(MICRO) / 2, Ui.FAINT);
         Reseau.JProp q = j.propositions().isEmpty() ? null : j.propositions().get(0);
         String quete = q == null ? t("e.aucune") : TexteClient.str(q.titre());
-        texte(g, couper(quete, PETIT_GRAS, w - 90), PETIT_GRAS, cx - w / 2 + 12, cy + 50 + cap(PETIT_GRAS) / 2, Ui.TEXT);
+        texte(g, couper(quete, PETIT_GRAS, w - 90), PETIT_GRAS, cx - w / 2 + 12, cy + 36 + cap(PETIT_GRAS) / 2, Ui.TEXT);
         boolean reussie = j.etat() == 4;
-        if (q != null) capsDroite(g, reussie ? t("e.reussie") : t("e.abandon"), MICRO, 0.8f, cx + w / 2 - 12, cy + 53, reussie ? Ui.OK : Ui.DANGER);
+        if (q != null) capsDroite(g, reussie ? t("e.reussie") : t("e.abandon"), MICRO, 0.8f, cx + w / 2 - 12, cy + 39, reussie ? Ui.OK : Ui.DANGER);
         String res = resultat();
-        if (!res.isEmpty()) texte(g, couper(t("recompense_v", res), Ui.SMALL, w - 24), Ui.SMALL, cx - w / 2 + 12, cy + 62 + cap(Ui.SMALL) / 2, Ui.MUTED);
-        pied(g, new String[][]{{t("touche_echap"), t("k.fermer")}}, "");
+        if (!res.isEmpty()) texte(g, couper(t("recompense_v", res), Ui.SMALL, w - 24), Ui.SMALL, cx - w / 2 + 12, cy + 48 + cap(Ui.SMALL) / 2, Ui.MUTED);
     }
 
     /** Nom de la récompense tirée aujourd'hui (« difficulté:id »), ou « ». */
@@ -484,10 +488,9 @@ public final class EcranJournalieres extends Screen {
     private void table(GuiGraphics g, Reseau.JDiff d, float x, float y, float w, float h) {
         Ui.glass(g, (int) x, (int) y, (int) w, (int) h, 110);
         caps(g, couperCaps(t("recompenses"), PETIT_GRAS, 1.0f, w - 20), PETIT_GRAS, 1.0f, x + 10, y + 8 + cap(PETIT_GRAS) / 2, Ui.MUTED);
-        texte(g, couper(t("un_tirage"), Ui.SMALL, w - 20), Ui.SMALL, x + 10, y + 20 + cap(Ui.SMALL) / 2, Ui.FAINT);
         List<Reseau.JRec> rec = new ArrayList<>(d.recompenses());
         rec.sort(Comparator.comparingDouble(Reseau.JRec::chance).reversed());
-        float pas = Math.min(14.5f, (h - 44) / Math.max(1, rec.size())), cy = y + 38;
+        float pas = Math.min(14.5f, (h - 32) / Math.max(1, rec.size())), cy = y + 26;
         for (Reseau.JRec r : rec) {
             ligneRecompense(g, r, x + 10, cy, w - 20, r.chance() <= 1);
             cy += pas;
@@ -497,8 +500,7 @@ public final class EcranJournalieres extends Screen {
     /** Les récompenses en colonnes (écran des propositions). */
     private void grille(GuiGraphics g, Reseau.JDiff d, float x, float y, float w, float h, String titre) {
         Ui.glass(g, (int) x, (int) y, (int) w, (int) h, 110);
-        caps(g, couperCaps(titre, PETIT_GRAS, 1.0f, w - 140), PETIT_GRAS, 1.0f, x + 10, y + 8 + cap(PETIT_GRAS) / 2, Ui.MUTED);
-        Net.droite(g, font, t("un_tirage"), Ui.SMALL, x + w - 10, y + 11.5f, Ui.FAINT);
+        caps(g, couperCaps(titre, PETIT_GRAS, 1.0f, w - 20), PETIT_GRAS, 1.0f, x + 10, y + 8 + cap(PETIT_GRAS) / 2, Ui.MUTED);
         List<Reseau.JRec> rec = new ArrayList<>(d.recompenses());
         rec.sort(Comparator.comparingDouble(Reseau.JRec::chance).reversed());
         int cols = 3, lignes = Math.max(1, (rec.size() + cols - 1) / cols);
@@ -533,21 +535,6 @@ public final class EcranJournalieres extends Screen {
         Net.rect(g, x, cy - 5, x + w, cy + 5, Ui.argb(c, plein ? 70 : 26));
         Net.cadre(g, x, cy - 5, w, 10, Ui.argb(c, 170));
         capsCentre(g, txt, MICRO, 0.8f, x + w / 2f, cy, plein ? Ui.TEXT : c);
-    }
-
-    private void pied(GuiGraphics g, String[][] aides, String note) {
-        float y = py + ph - 12;
-        Net.rect(g, px + 8, y - 8, px + pw - 8, y - 8 + Net.point(), Ui.argb(BLANC, 22));
-        float x = px + M;
-        for (String[] a : aides) {
-            float w = Net.capsLargeur(font, a[0], MICRO, 0.8f) + 8;
-            Net.rect(g, x, y - 4.5f, x + w, y + 4.5f, Ui.argb(BLANC, 18));
-            Net.cadre(g, x, y - 4.5f, w, 9, Ui.argb(BLANC, 60));
-            capsCentre(g, a[0], MICRO, 0.8f, x + w / 2f, y, Ui.TEXT);
-            x += w + 4;
-            x += texte(g, a[1], Ui.SMALL, x, y, Ui.MUTED) + 12;
-        }
-        if (!note.isEmpty()) Net.droite(g, font, couper(note, Ui.SMALL, px + pw - M - x - 8), Ui.SMALL, px + pw - M, y, Ui.FAINT);
     }
 
     /** Icône d'un objet de taille {@code taille} (le jeu dessine les objets en 16 : agrandi ou réduit, jamais du texte). */
