@@ -597,7 +597,8 @@ def tables_survie(t):
     nourr = json.loads((COFFRES / "nourriture.json").read_text(encoding="utf-8"))["objets"]
     out = []
     for liste in (soins, nourr):
-        liste = [e for e in liste if e.get("poids", 0) > 0 and not e["item"].startswith(RETIRES)]
+        # 18/11 : les « gros lots » de nourriture (une pile de 16 à 20) restent dans les caisses de nourriture
+        liste = [e for e in liste if e.get("poids", 0) > 0 and not e["item"].startswith(RETIRES) and e.get("_cat") != "nourriture_lot"]
         s = sum(e["poids"] for e in liste)
         out.append([(dict({k: v for k, v in e.items() if k not in ("poids", "_base")}, nombre=[1, 1]), e["poids"] / s) for e in liste])
     return out
