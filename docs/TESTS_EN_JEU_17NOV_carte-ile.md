@@ -95,7 +95,7 @@ Quand c'est fait, le dire : la liste complète est vérifiée depuis la console 
 
 À tester :
 - [ ] Carte de la bonne couleur : la porte s'ouvre, 20 s pour entrer (18/11), elle reste ouverte tant que quelqu'un est dedans,
-      puis se ferme ; mauvaise couleur : refusée.
+      puis se ferme 4 s après la sortie du dernier (18/11, avant 2 s) ; mauvaise couleur : refusée.
 - [ ] Loot de la salle au bon niveau ; il revient 30 min (verte), 2 h (bleue), 4 h (rouge) après la sortie du dernier.
 - [ ] Déconnexion dans une salle : à la reconnexion, on est devant sa porte.
 

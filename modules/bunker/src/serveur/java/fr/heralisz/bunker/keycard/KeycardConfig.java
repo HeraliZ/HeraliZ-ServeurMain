@@ -29,8 +29,9 @@ public final class KeycardConfig {
       b.comment("Salles à carte (délimitées par le staff avec /salle) : porte tenue ouverte et loot de la salle").push("salles");
       ENTREE = b.comment("Secondes pour entrer dans la salle une fois la porte ouverte ; personne dedans à la fin : elle se referme")
          .defineInRange("entreeSecondes", 20, 1, 600);
+      // 18/11 (demande du propriétaire : « quand on sort, le délai 2 fois plus long avant que ça se referme ») : 4 (avant 2)
       FERMETURE = b.comment("Secondes d'attente avant que la porte se referme quand le dernier joueur est sorti")
-         .defineInRange("fermetureSecondes", 2, 0, 60);
+         .defineInRange("fermetureSecondes", 4, 0, 60);
       RECHARGE_GREEN = b.comment("Minutes, après la sortie du dernier joueur, avant que le loot d'une salle verte réapparaisse")
          .defineInRange("rechargeVerteMinutes", 30, 1, 10080);
       RECHARGE_BLUE = b.comment("Minutes avant que le loot d'une salle bleue réapparaisse").defineInRange("rechargeBleueMinutes", 120, 1, 10080);
@@ -68,7 +69,7 @@ public final class KeycardConfig {
    }
 
    public static int fermetureTicks() {
-      return 20 * (SPEC.isLoaded() ? FERMETURE.get() : 2);
+      return 20 * (SPEC.isLoaded() ? FERMETURE.get() : 4);
    }
 
    private KeycardConfig() {}

@@ -13,7 +13,8 @@
  ],
  "profils": {
   "carte": {
-   "chance": 0.11
+   "chance": 0.11,
+   "secondes_par_objet": 5.0
   }
  },
  "jamais": [

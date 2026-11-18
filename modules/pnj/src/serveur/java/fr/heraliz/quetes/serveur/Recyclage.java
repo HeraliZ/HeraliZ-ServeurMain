@@ -85,7 +85,7 @@ final class Recyclage {
         }
     }
 
-    private record Etat(double chance, double chanceCarte, int maxPieces, int ticksParObjet, long[] herals, List<String> jamais,
+    private record Etat(double chance, double chanceCarte, int maxPieces, int ticksParObjet, int ticksCarte, long[] herals, List<String> jamais,
                         Map<String, String> cles, Map<String, Regle> exactes, List<Regle> larges) {
         /** Chance par composant, rendement de l'économie de la bêta compris (03/11, facteur « recyclage »), 1 au plus. */
         double chance(boolean carte) {
@@ -105,7 +105,7 @@ final class Recyclage {
     static volatile int version;
 
     private static Etat vide() {
-        return new Etat(0, 0, 0, 60, new long[6], List.of(), Map.of(), Map.of(), List.of());
+        return new Etat(0, 0, 0, 60, 100, new long[6], List.of(), Map.of(), Map.of(), List.of());
     }
 
     static Path fichier() {
@@ -125,14 +125,18 @@ final class Recyclage {
             double chance = Math.max(0, Math.min(1, o.has("chance") ? o.get("chance").getAsDouble() : 0.1));
             // 31/10 : profil du recycleur de la carte ; absent = même chance que le spawn (jamais plus généreux par défaut)
             double chanceCarte = chance;
+            double secondes = Math.max(0.5, Math.min(30, o.has("secondes_par_objet") ? o.get("secondes_par_objet").getAsDouble() : 3));
+            // 18/11 (demande du propriétaire : « ça recycle trop vite sur la carte, 5 s ») : durée propre au profil « carte »,
+            // absente = celle du spawn
+            double secondesCarte = secondes;
             if (o.has("profils") && o.getAsJsonObject("profils").has("carte")) {
                 JsonObject c = o.getAsJsonObject("profils").getAsJsonObject("carte");
                 if (c.has("chance")) chanceCarte = Math.max(0, Math.min(1, c.get("chance").getAsDouble()));
+                if (c.has("secondes_par_objet")) secondesCarte = Math.max(0.5, Math.min(30, c.get("secondes_par_objet").getAsDouble()));
             } else {
                 LOG.warn("[heraliz_quetes] recyclage.json sans profil « carte » : le recycleur de la carte garde la chance du spawn");
             }
             int maxPieces = Math.max(1, o.has("max_pieces") ? o.get("max_pieces").getAsInt() : 2);
-            double secondes = Math.max(0.5, Math.min(30, o.has("secondes_par_objet") ? o.get("secondes_par_objet").getAsDouble() : 3));
             long[] herals = new long[6];
             if (o.has("herals_si_rien")) {
                 JsonArray a = o.getAsJsonArray("herals_si_rien");
@@ -166,10 +170,11 @@ final class Recyclage {
                     larges.add(regle);
                 }
             }
-            etat = new Etat(chance, chanceCarte, maxPieces, (int) Math.round(secondes * 20), herals, List.copyOf(jamais), Map.copyOf(cles),
-                    Map.copyOf(exactes), List.copyOf(larges));
-            LOG.info("[heraliz_quetes] recycleur : {} règles, {} % par composant ({} % sur la carte), {} pièce(s) au plus, {} s par objet",
-                    exactes.size() + larges.size(), Math.round(chance * 1000) / 10.0, Math.round(chanceCarte * 1000) / 10.0, maxPieces, secondes);
+            etat = new Etat(chance, chanceCarte, maxPieces, (int) Math.round(secondes * 20), (int) Math.round(secondesCarte * 20), herals,
+                    List.copyOf(jamais), Map.copyOf(cles), Map.copyOf(exactes), List.copyOf(larges));
+            LOG.info("[heraliz_quetes] recycleur : {} règles, {} % par composant ({} % sur la carte), {} pièce(s) au plus, {} s par objet ({} s sur la carte)",
+                    exactes.size() + larges.size(), Math.round(chance * 1000) / 10.0, Math.round(chanceCarte * 1000) / 10.0, maxPieces, secondes,
+                    secondesCarte);
         } catch (Exception ex) {
             erreurs.add("recyclage.json : " + ex.getMessage());
         }
@@ -209,6 +214,11 @@ final class Recyclage {
 
     static int ticksParObjet() {
         return etat.ticksParObjet;
+    }
+
+    /** Ticks par objet : spawn, ou recycleur de la carte (profil « carte », 18/11 : 5 s). */
+    static int ticksParObjet(boolean carte) {
+        return carte ? etat.ticksCarte : etat.ticksParObjet;
     }
 
     /** La règle de l'objet, ou null s'il ne se recycle pas. */

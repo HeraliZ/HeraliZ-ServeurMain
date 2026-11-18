@@ -13,7 +13,8 @@ se recycle au prorata. N reste donc celui de la recette (le refus « trop rentab
 
 Profil « carte » (décision du propriétaire du 31/10) : le recycleur posé sur la carte (bloc heraliz_quetes:recycleur_carte,
 partagé comme un coffre) suit les mêmes règles avec BONUS_CARTE (10 %) de chance en plus, relatif : une pièce à 10 % au
-spawn a 11 % sur la carte. Seule la chance change (clé « profils » -> « carte ») ; le refus « trop rentable » du serveur
+spawn a 11 % sur la carte. Changent : la chance (clé « profils » -> « carte ») et, depuis le 18/11, la durée
+(SECONDES_CARTE : 5 s par objet, 3 au spawn) ; le refus « trop rentable » du serveur
 se juge avec la chance du profil, et outils/marchands.py --controle vérifie les deux profils.
 
 Règles, de la plus précise à la plus large :
@@ -42,6 +43,8 @@ MAX_PIECES = 2
 SECONDES_PAR_OBJET = 3.0
 # 31/10 : recycleur de la carte, chance relative en plus (10 % -> 11 %)
 BONUS_CARTE = 0.10
+# 18/11 (demande du propriétaire : « ça recycle trop rapidement sur la carte, 5 s ») : plus lent que le spawn (3 s)
+SECONDES_CARTE = 5.0
 # hérals donnés pour un objet qui n'a rien rendu, par rang de rareté (Commun ... Unique). 06/11 (demande du propriétaire) :
 # Commun 2, Peu commun 5, Rare 12, Épique 25, Légendaire 50 (avant 1, 1, 1, 2, 3) ; Unique 100 (non donné par le
 # propriétaire : le double du Légendaire). Un objet vendu par un marchand reste refusé s'il rapporterait plus de 50 % de
@@ -188,8 +191,8 @@ def construire():
         "max_pieces": MAX_PIECES,
         "secondes_par_objet": SECONDES_PAR_OBJET,
         "herals_si_rien": HERALS_SI_RIEN,
-        # 31/10 : recycleur de la carte (mêmes règles, chance relative en plus)
-        "profils": {"carte": {"chance": round(CHANCE * (1 + BONUS_CARTE), 6)}},
+        # 31/10 : recycleur de la carte (mêmes règles, chance relative en plus) ; 18/11 : 5 s par objet
+        "profils": {"carte": {"chance": round(CHANCE * (1 + BONUS_CARTE), 6), "secondes_par_objet": SECONDES_CARTE}},
         # 26/10 : jumelles et munitions de frappe (fabrication seulement, Légendaires) jamais recyclées ; 16/11 : matières
         # brutes de HeraliZ Récolte (MATIERES_BRUTES)
         "jamais": composants_jamais() + ["heralizcasino:*", "heralisz_bunker:keycard*", "heralizcrates:*",

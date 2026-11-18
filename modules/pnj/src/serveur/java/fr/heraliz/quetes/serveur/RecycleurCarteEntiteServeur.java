@@ -70,6 +70,13 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
     static final int ENTREES = MenuRecycleur.ENTREES, SORTIES = MenuRecycleur.SORTIES;
     /** Rattrapage au plus 20 min de jeu après un tronçon déchargé. */
     private static final int RATTRAPAGE_MAX = 20 * 60 * 20;
+    /**
+     * 18/11 (demande du propriétaire : « qu'on entende quelqu'un qui recycle ») : bruit de la machine en marche, toutes les
+     * {@code BRUIT_TICKS}, porté à {@code 16 x BRUIT_VOLUME} blocs (au-delà de 1, Minecraft allonge la portée sans
+     * monter le son) ; la fin de chaque objet s'entend aussi loin.
+     */
+    private static final int BRUIT_TICKS = 24;
+    private static final float BRUIT_VOLUME = 1.5F;
     /** Machines chargées (monde + position), pour {@code /wipe tout}. */
     private static final Map<String, RecycleurCarteEntiteServeur> CHARGEES = new HashMap<>();
 
@@ -321,6 +328,14 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         }
         if (paiements != null && ecrire()) payer(paiements);
         reprendre();
+        // en marche (pas de bruit pendant un rattrapage : tronçon qui revient de déchargé)
+        if (ticks == 1 && !bloquee && enCours >= 0 && (level.getGameTime() + worldPosition.hashCode()) % BRUIT_TICKS == 0) {
+            BlockState s = level.getBlockState(worldPosition);
+            if (s.getBlock() instanceof RecycleurCarte && s.getValue(RecycleurCarte.MARCHE)) {
+                level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, BRUIT_VOLUME,
+                        0.6F + level.random.nextFloat() * 0.12F);
+            }
+        }
     }
 
     /** Ce qu'un objet recyclé doit encore donner, une fois la machine écrite : hérals au déposant, quête du jour. */
@@ -345,7 +360,7 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         UUID qui = deposants[i];
         if (entree.getItem(i).isEmpty()) deposants[i] = null;
         level.playSound(null, worldPosition, t.pieces().isEmpty() ? SoundEvents.GRINDSTONE_USE : SoundEvents.SMITHING_TABLE_USE, SoundSource.BLOCKS,
-                0.45F, t.pieces().isEmpty() ? 0.8F : 1.1F);
+                BRUIT_VOLUME, t.pieces().isEmpty() ? 0.8F : 1.1F);
         // quête du jour : un paquet de munitions entier compte pour un objet (15/11, Recyclage.objetsQuete)
         return new Paiement(qui, Recyclage.objetsQuete(v, n), t.herals());
     }
@@ -410,9 +425,12 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         return Math.max(1, Math.min(entree.getItem(i).getCount(), verdicts[i].par()));
     }
 
-    /** Ticks pour l'objet (ou le paquet) de la case : comme au spawn ({@code secondes_par_objet} x part du paquet, 0,5 s au moins). */
+    /**
+     * Ticks pour l'objet (ou le paquet) de la case : {@code profils.carte.secondes_par_objet} (18/11 : 5 s, 3 au spawn) x part
+     * du paquet, 0,5 s au moins.
+     */
     private int duree(int i) {
-        int plein = Math.max(10, Recyclage.ticksParObjet());
+        int plein = Math.max(10, Recyclage.ticksParObjet(true));
         if (i < 0 || verdicts[i] == null) return plein;
         return Math.max(10, Math.round(plein * verdicts[i].part(quantite(i))));
     }

@@ -83,6 +83,8 @@ public final class HudQuetes {
     static void notif(Reseau.Notif n) {
         String s = TexteClient.str(n.texte());
         if (s.isEmpty()) return;
+        // 18/11 : écran du recycleur ouvert (ce HUD est caché dessous) : le message s'affiche dans son bandeau
+        if (EcranRecycleur.bandeauSiOuvert(s, n.couleur())) return;
         NOTIFS.add(new Notif(s, n.couleur(), System.currentTimeMillis()));
         while (NOTIFS.size() > 4) NOTIFS.remove(0);
         SonsUi.clic(0.35F);

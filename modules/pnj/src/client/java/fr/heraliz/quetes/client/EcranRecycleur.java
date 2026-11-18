@@ -11,10 +11,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,17 +30,24 @@ import java.util.Locale;
 /**
  * Écran du recycleur (25/10, maquette validée : maquettes/recycleur/, modules/pnj/outils/apercu_recycleur.py, mêmes
  * mesures) : à gauche « À recycler », au milieu l'objet en cours et sa barre qui avance, à droite « Récupéré » et « Tout
- * prendre » ; en bas l'inventaire et l'aide ; à droite l'aperçu de l'objet survolé (ce qu'il peut donner, chances,
- * moyenne, hérals si rien ne sort, ou pourquoi il est refusé). Le serveur décide de tout ({@code MenuRecycleurServeur}) :
- * l'écran lit l'état synchronisé du menu et l'aperçu envoyé par le serveur. Panneau 560 x 324 au style des écrans du clan,
- * polices à leur vraie taille.
+ * prendre » ; en bas l'inventaire ; à droite l'aperçu de l'objet survolé (ce qu'il peut donner, chances, moyenne, hérals
+ * si rien ne sort, ou pourquoi il est refusé). Le serveur décide de tout ({@code MenuRecycleurServeur}) : l'écran lit
+ * l'état synchronisé du menu et l'aperçu envoyé par le serveur. Panneau 560 x 284 au style des écrans du clan, polices à
+ * leur vraie taille.
  * <p>
- * Recycleur de la carte (31/10, {@link MenuRecycleur#carte()}) : même écran ; titre, sous-titre (machine partagée),
- * pastille « +10 % de chances », aide d'Échap (le contenu reste dans la machine) et note (seuls les objets qui se
- * recyclent entrent) à lui. L'aperçu montre déjà ses chances (envoyées par le serveur).
+ * Recycleur de la carte (31/10, {@link MenuRecycleur#carte()}) : même écran ; titre et pastille « +10 % de chances » à
+ * lui. L'aperçu montre déjà ses chances (envoyées par le serveur).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de sous-titre, d'aide
+ * des touches (Maj + clic, survol, Échap), de pied ni de phrases d'explication ; l'inventaire est centré sous la machine,
+ * le panneau perd le pied (560 x 284). Un objet refusé (arme chargée, objet qui ne se recycle pas…) le dit dans un petit
+ * bandeau rouge entre la machine et l'inventaire, 3 s ({@link #bandeau}).
  */
 public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur> {
-    private static final int L = 560, H = 324, ENTETE = 44, M = 16, GAUCHE = 360, CASE = MenuRecycleur.CASE;
+    private static final int L = 560, H = 284, ENTETE = 44, M = 16, GAUCHE = 360, CASE = MenuRecycleur.CASE;
+    /** Bandeau d'erreur : milieu (depuis le haut du panneau), durée, fondu. */
+    private static final int BANDEAU_Y = 151;
+    private static final long BANDEAU_MS = 3200, BANDEAU_FONDU = 300;
     private static final int BLANC = 0xFFFFFF;
     private static final int[] RARETES = {0xAAAAAA, 0x5FD06E, 0x508CFF, 0xB96EF0, 0xF0BE46, 0xEB4646};
     private static final int[] ETATS = {Ui.OK, Ui.FAINT, Ui.DANGER, Ui.ACCENT_NEUTRE, Ui.AMBRE, Ui.AMBRE};
@@ -45,6 +55,13 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
 
     /** Dernier aperçu reçu (celui du menu ouvert : même numéro de conteneur). */
     private static Reseau.ApercuRecyclage apercu;
+    /** Bandeau montré (texte traduit, couleur, heure d'apparition), ou null. */
+    private static String bandeau;
+    private static int bandeauCouleur;
+    private static long bandeauDepuis;
+    /** Objet pris au curseur depuis l'inventaire et son état d'après l'aperçu (pour un dépôt au curseur). */
+    private ItemStack porte = ItemStack.EMPTY;
+    private int porteEtat = -1;
 
     public EcranRecycleur(MenuRecycleur menu, Inventory inv, Component titre) {
         super(menu, inv, titre);
@@ -74,6 +91,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
     @Override
     public void removed() {
         Echelle.restaurer();
+        bandeau = null;
         super.removed();
     }
 
@@ -82,6 +100,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         Ui.fond(g, width, height);
         super.render(g, mx, my, pt);
         apercu(g, mx, my);
+        dessinerBandeau(g);
         renderTooltip(g, mx, my);
     }
 
@@ -90,7 +109,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         // tout est dessiné par renderBg et apercu (polices du mod, places de la maquette)
     }
 
-    // ------------------------------------------------------------------ fond, en-tête, machine, inventaire, pied
+    // ------------------------------------------------------------------ fond, en-tête, machine, inventaire
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
         Font f = font;
@@ -106,8 +125,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         }
         int y0 = y + ENTETE + 10;
         machine(g, f, x, y0, mx, my);
-        inventaire(g, f, x, y0 + 96);
-        pied(g, f, x, y);
+        libelle(g, f, t("inventaire"), x + MenuRecycleur.INVENTAIRE_X, y + MenuRecycleur.INVENTAIRE_Y - 12, 9 * (CASE + 2) - 2);
     }
 
     private void entete(GuiGraphics g, Font f, int x, int y, int mx, int my) {
@@ -115,17 +133,12 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         float tx = x + M + 34;
         boolean carte = menu.carte();
         String titre = TexteClient.tr(carte ? "heraliz_quetes.recycleur_carte.titre" : "heraliz_quetes.recycleur.titre");
-        Net.texte(g, f, Net.couper(f, titre, TITRE, 300), TITRE, tx, y + 9 + Net.cap(TITRE) / 2, Ui.TEXT);
-        Net.texte(g, f, Net.couper(f, carte ? tc("sous_titre") : t("sous_titre"), Ui.SMALL, 300), Ui.SMALL, tx, y + 27 + Net.cap(Ui.SMALL) / 2, Ui.MUTED);
-        float xd = x + L - 34;
-        String par = t("par_objet", dixiemes(menu.donnee(MenuRecycleur.D_DIXIEMES)));
-        float xp = xd - Net.capsLargeur(f, par, MICRO, 0.8f) - 10;
-        puce(g, f, par, xp, y + 16, Ui.MUTED, false);
+        Net.texte(g, f, Net.couper(f, titre, TITRE, 300), TITRE, tx, y + 22, Ui.TEXT);
         if (carte) {
             String bonus = tc("bonus");
-            puce(g, f, bonus, xp - Net.capsLargeur(f, bonus, MICRO, 0.8f) - 16, y + 16, Ui.OK, false);
+            puce(g, f, bonus, x + L - 34 - Net.capsLargeur(f, bonus, MICRO, 0.8f) - 10, y + 22, Ui.OK, false);
         }
-        float fx = x + L - 18, fy = y + 16;
+        float fx = x + L - 18, fy = y + 22;
         boolean survol = mx >= fx - 8 && mx < fx + 8 && my >= fy - 8 && my < fy + 8;
         Net.centre(g, f, "×", Ui.BOLD, fx, fy, survol ? Ui.TEXT : Ui.MUTED);
         Net.rect(g, x + 8, y + ENTETE, x + L - 8, y + ENTETE + Net.point(), Ui.argb(BLANC, 40));
@@ -201,9 +214,8 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
                 Net.texte(g, f, Net.couper(f, t("plein.1") + " " + t("plein.2"), Ui.SMALL, mx1 - mx0), Ui.SMALL, mx0, by + 9, Ui.AMBRE);
             }
         } else {
-            String l1 = etat == MenuRecycleur.RIEN ? t("rien.1") : t("vide.1"), l2 = etat == MenuRecycleur.RIEN ? t("rien.2") : t("vide.2");
-            Net.centre(g, f, Net.couper(f, l1, Ui.SMALL, mx1 - mx0), Ui.SMALL, (mx0 + mx1) / 2, y0 + 26, Ui.MUTED);
-            Net.centre(g, f, Net.couper(f, l2, Ui.SMALL, mx1 - mx0), Ui.SMALL, (mx0 + mx1) / 2, y0 + 36, Ui.MUTED);
+            // 18/11 : plus de mode d'emploi ; seulement « rien à recycler » quand ce qui est déposé ne se recycle pas
+            if (etat == MenuRecycleur.RIEN) Net.centre(g, f, Net.couper(f, t("rien.1"), Ui.SMALL, mx1 - mx0), Ui.SMALL, (mx0 + mx1) / 2, y0 + 31, Ui.MUTED);
             Net.rect(g, mx0, by, mx1, by + 2.4f, Ui.argb(BLANC, 18));
         }
         float ox = x0 + GAUCHE - 66;
@@ -222,49 +234,115 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         }
     }
 
-    private void inventaire(GuiGraphics g, Font f, int x, int y0) {
-        int x0 = x + M;
-        libelle(g, f, t("inventaire"), x0, y0, 9 * (CASE + 2) - 2);
-        float ax = x0 + 9 * (CASE + 2) + 10, aw = x + M + GAUCHE - ax;
-        boolean carte = menu.carte();
-        String[][] aides = {{t("touche.maj"), t("aide.maj")}, {t("touche.survol"), t("aide.survol")},
-                {t("touche.echap"), carte ? tc("aide.echap") : t("aide.echap")}};
-        float yy = y0 + 18;
-        for (String[] a : aides) {
-            touche(g, f, a[0], ax, yy);
-            List<FormattedCharSequence> l = f.split(Ui.lit(a[1], Ui.SMALL), (int) aw);
-            for (int i = 0; i < Math.min(2, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, ax, yy + 7 + Net.cap(Ui.SMALL) / 2 + i * 9, Ui.MUTED);
-            yy += 30;
-        }
-        Net.texte(g, f, Net.couper(f, carte ? tc("note") : t("note_achetes"), Ui.SMALL, aw), Ui.SMALL, ax,
-                y0 + 12 + 4 * (CASE + 2) - 4 + Net.cap(Ui.SMALL) / 2, Ui.FAINT);
-    }
-
-    private float touche(GuiGraphics g, Font f, String txt, float x, float cy) {
-        float w = Net.capsLargeur(f, txt, MICRO, 0.8f) + 8;
-        Net.rect(g, x, cy - 4.5f, x + w, cy + 4.5f, Ui.argb(BLANC, 18));
-        Net.cadre(g, x, cy - 4.5f, w, 9, Ui.argb(BLANC, 60));
-        Net.capsCentre(g, f, txt, MICRO, 0.8f, x + w / 2, cy, Ui.TEXT);
-        return w;
-    }
-
-    private void pied(GuiGraphics g, Font f, int x, int y) {
-        float cy = y + H - 12;
-        Net.rect(g, x + 8, cy - 8, x + L - 8, cy - 8 + Net.point(), Ui.argb(BLANC, 22));
-        float px = x + M;
-        String[][] aides = {{t("touche.echap"), t("pied.fermer")}, {t("touche.maj"), t("pied.mettre")}, {t("touche.clic"), t("pied.prendre")}};
-        for (String[] a : aides) {
-            px += touche(g, f, a[0], px, cy) + 4;
-            px += Net.texte(g, f, a[1], Ui.SMALL, px, cy, Ui.MUTED) + 12;
-        }
-    }
-
     private float puce(GuiGraphics g, Font f, String txt, float x, float cy, int c, boolean plein) {
         float w = Net.capsLargeur(f, txt, MICRO, 0.8f) + 10;
         Net.rect(g, x, cy - 5, x + w, cy + 5, Ui.argb(c, plein ? 70 : 26));
         Net.cadre(g, x, cy - 5, w, 10, Ui.argb(c, 170));
         Net.capsCentre(g, f, txt, MICRO, 0.8f, x + w / 2, cy, plein ? Ui.TEXT : c);
         return w;
+    }
+
+    // ------------------------------------------------------------------ bandeau (18/11)
+    /**
+     * Un objet que la machine refuse, ou qu'elle ne recyclera pas, dit pourquoi tout de suite (retour du propriétaire : son
+     * arme chargée « ne voulait pas » entrer, sans rien dire). Lu chez le joueur : ce que contient l'objet ({@link Contenu},
+     * balles, accessoires, boîte, sac) et l'état de sa case dans le dernier aperçu du serveur (ne se recycle pas, acheté,
+     * protégé). Le serveur décide toujours ; ceci ne fait que l'expliquer.
+     */
+    @Override
+    protected void slotClicked(Slot slot, int index, int bouton, ClickType type) {
+        if (slot != null) verifierDepot(slot, index, bouton, type);
+        super.slotClicked(slot, index, bouton, type);
+    }
+
+    private void verifierDepot(Slot slot, int index, int bouton, ClickType type) {
+        int inv = MenuRecycleur.ENTREES + MenuRecycleur.SORTIES;
+        ItemStack curseur = menu.getCarried();
+        if (type == ClickType.QUICK_MOVE && index >= inv && slot.hasItem()) {
+            refus(slot.getItem(), etatCase(index));
+        } else if (type == ClickType.PICKUP && MenuRecycleur.estEntree(index) && !curseur.isEmpty()) {
+            refus(curseur, ItemStack.isSameItemSameTags(curseur, porte) ? porteEtat : -1);
+        } else if (type == ClickType.SWAP && MenuRecycleur.estEntree(index) && bouton >= 0 && bouton < 9) {
+            Slot barre = menu.slots.get(inv + 27 + bouton);
+            if (barre.hasItem()) refus(barre.getItem(), etatCase(inv + 27 + bouton));
+        }
+        // objet pris au curseur dans l'inventaire : son état, pour le cas où il est ensuite posé dans la machine
+        if (type == ClickType.PICKUP && index >= inv && curseur.isEmpty() && slot.hasItem()) {
+            porte = slot.getItem().copy();
+            porteEtat = etatCase(index);
+        }
+    }
+
+    /** État de la case d'après le dernier aperçu du serveur (-1 : inconnu). */
+    private static int etatCase(int index) {
+        Reseau.ApercuCase c = cas(index);
+        return c == null ? -1 : c.etat();
+    }
+
+    /** Si l'objet ne sera pas recyclé : pourquoi, dans le bandeau rouge. */
+    private static void refus(ItemStack s, int etat) {
+        int contenu = Contenu.de(s);
+        String texte = contenu != Contenu.RIEN ? t("refus.contenu." + contenu) : etat >= 1 && etat <= 3 ? t("refus." + etat) : null;
+        if (texte != null) bandeau(texte, Ui.DANGER);
+    }
+
+    /**
+     * Message reçu du serveur (HudQuetes) pendant que l'écran du recycleur est ouvert : montré dans son bandeau (le HUD est
+     * caché sous l'écran). Rend true s'il l'a pris.
+     */
+    static boolean bandeauSiOuvert(String texte, int couleur) {
+        if (!(Minecraft.getInstance().screen instanceof EcranRecycleur)) return false;
+        bandeau(texte, couleur);
+        return true;
+    }
+
+    private static void bandeau(String texte, int couleur) {
+        if (texte == null || texte.isEmpty()) return;
+        long t = System.currentTimeMillis();
+        boolean nouveau = !texte.equals(bandeau) || t - bandeauDepuis > BANDEAU_MS - BANDEAU_FONDU;
+        bandeau = texte;
+        bandeauCouleur = couleur & 0xFFFFFF;
+        bandeauDepuis = t;
+        if (nouveau && bandeauCouleur == Ui.DANGER) {
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_BASS.value(), 0.7F, 0.45F));
+        }
+    }
+
+    /** Petit bandeau centré entre la machine et l'inventaire : fond sombre teinté, filet et bord gauche de sa couleur. */
+    private void dessinerBandeau(GuiGraphics g) {
+        String texte = bandeau;
+        if (texte == null) return;
+        long age = System.currentTimeMillis() - bandeauDepuis;
+        if (age < 0 || age >= BANDEAU_MS) {
+            bandeau = null;
+            return;
+        }
+        float a = Math.min(1f, age / 120f) * Math.min(1f, (BANDEAU_MS - age) / (float) BANDEAU_FONDU);
+        Font f = font;
+        boolean erreur = bandeauCouleur == Ui.DANGER;
+        String s = Net.couper(f, texte, Ui.SMALL, GAUCHE - 60);
+        float marge = erreur ? 22 : 10, w = Net.largeur(f, s, Ui.SMALL) + marge + 10, h = 17;
+        // un petit « non » au début (deux allers-retours de 2 points, amortis)
+        float dx = erreur && age < 280 ? (float) (Math.sin(age / 280.0 * Math.PI * 4) * 2 * (1 - age / 280.0)) : 0;
+        float x0 = leftPos + M + GAUCHE / 2f - w / 2 + dx, cy = topPos + BANDEAU_Y, y0 = cy - h / 2;
+        int c = bandeauCouleur;
+        Net.rect(g, x0, y0, x0 + w, y0 + h, Ui.argb(0x120C0E, (int) (235 * a)));
+        Net.rect(g, x0, y0, x0 + w, y0 + h, Ui.argb(c, (int) (30 * a)));
+        Net.cadre(g, x0, y0, w, h, Ui.argb(c, (int) (150 * a)));
+        Net.rect(g, x0, y0, x0 + 2, y0 + h, Ui.argb(c, (int) (255 * a)));
+        if (erreur) {
+            Net.disque(g, x0 + 12, cy, 4.6f, Ui.argb(c, (int) (240 * a)));
+            texteAlpha(g, f, "!", PG, x0 + 12 - Net.largeur(f, "!", PG) / 2, cy, 0xFFFFFF, a);
+        }
+        texteAlpha(g, f, s, Ui.SMALL, x0 + marge, cy, Ui.mix(c, 0xFFFFFF, 0.62f), a);
+    }
+
+    /** Texte net (comme {@link Net#texte}) avec une transparence, pour le fondu du bandeau. */
+    private static void texteAlpha(GuiGraphics g, Font font, String s, ResourceLocation f, float x, float cy, int rgb, float a) {
+        g.pose().pushPose();
+        Net.placer(g, x, cy - Net.milieu(f));
+        g.drawString(font, Ui.lit(s, f), 0, 0, Ui.argb(rgb, Math.max(5, Math.round(255 * a))), false);
+        g.pose().popPose();
     }
 
     // ------------------------------------------------------------------ aperçu
@@ -279,14 +357,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         if (hoveredSlot != null && hoveredSlot.hasItem() && !MenuRecycleur.estSortie(hoveredSlot.index)) index = hoveredSlot.index;
         else if (menu.donnee(MenuRecycleur.D_CASE) >= 0 && menu.donnee(MenuRecycleur.D_ETAT) != MenuRecycleur.VIDE) index = menu.donnee(MenuRecycleur.D_CASE);
         Reseau.ApercuCase a = index >= 0 ? cas(index) : null;
-        if (a == null || !menu.slots.get(index).hasItem()) {
-            List<FormattedCharSequence> l = f.split(Ui.lit(t("apercu_vide"), Ui.SMALL), (int) w - 20);
-            for (int i = 0; i < l.size(); i++) {
-                float lw = f.getSplitter().stringWidth(l.get(i));
-                Net.ligne(g, f, l.get(i), Ui.SMALL, x + w / 2 - lw / 2, y0 + h / 2f - 4 + i * 9, Ui.FAINT);
-            }
-            return;
-        }
+        if (a == null || !menu.slots.get(index).hasItem()) return;   // 18/11 : vide, sans phrase d'aide
         ItemStack objet = menu.slots.get(index).getItem();
         int rang = Math.max(0, Math.min(5, a.rang()));
         float iy = y0 + 18;
@@ -331,9 +402,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
                 Net.droite(g, f, pct + " %", PG, x + w - 10, y + 6, Ui.TEXT);
                 y += 17;
             }
-            List<FormattedCharSequence> l = f.split(Ui.lit(t("chance", Math.round(1 / Math.max(0.001f, chance * part)), max), Ui.SMALL), (int) w - 20);
-            for (int i = 0; i < Math.min(2, l.size()); i++) Net.ligne(g, f, l.get(i), Ui.SMALL, xi, y + 3 + i * 9, Ui.MUTED);
-            y += 4 + Math.min(2, l.size()) * 9 + 3;
+            y += 4;
             Net.rect(g, xi, y, x + w - 10, y + Net.point(), Ui.argb(BLANC, 26));
             y += 7;
         }
@@ -411,10 +480,6 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         return m;
     }
 
-    private static String dixiemes(int d) {
-        return d % 10 == 0 ? Integer.toString(d / 10) : String.format(Locale.ROOT, "%.1f", d / 10f).replace('.', ',');
-    }
-
     @Override
     public boolean mouseClicked(double mx, double my, int b) {
         int x0 = leftPos + M, y0 = topPos + ENTETE + 10;
@@ -426,7 +491,7 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
             }
             return true;
         }
-        float fx = leftPos + L - 18, fy = topPos + 16;
+        float fx = leftPos + L - 18, fy = topPos + 22;
         if (b == 0 && mx >= fx - 8 && mx < fx + 8 && my >= fy - 8 && my < fy + 8) {
             onClose();
             return true;

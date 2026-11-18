@@ -24,7 +24,7 @@
 	entreeSecondes = 20
 	#Secondes d'attente avant que la porte se referme quand le dernier joueur est sorti
 	#Range: 0 ~ 60
-	fermetureSecondes = 2
+	fermetureSecondes = 4
 	#Minutes, après la sortie du dernier joueur, avant que le loot d'une salle verte réapparaisse
 	#Range: 1 ~ 10080
 	rechargeVerteMinutes = 30

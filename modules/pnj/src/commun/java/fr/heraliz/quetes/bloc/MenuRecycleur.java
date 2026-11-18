@@ -17,8 +17,8 @@ import net.minecraft.world.item.ItemStack;
  * Menu du recycleur (25/10, maquette validée : maquettes/recycleur/) : 6 cases « à recycler », 6 cases « récupéré » (on y
  * prend seulement), l'inventaire du joueur, et l'état du recyclage synchronisé pour l'écran ({@link #donnees}). Toute la
  * décision (quoi recycler, tirage, hérals) est dans la partie serveur ({@code serveur/MenuRecycleurServeur}) ; ici,
- * seulement la disposition des cases (mêmes mesures que l'écran : panneau 560 x 324, cases de 20 points, objet à +2) et
- * les déplacements Maj + clic.
+ * seulement la disposition des cases (mêmes mesures que l'écran : panneau 560 x 284, cases de 20 points, objet à +2) et
+ * les déplacements Maj + clic. 18/11 : inventaire centré sous la machine (plus d'aide à sa droite ni de pied).
  * <p>
  * Deux types de menu, même disposition et même écran : {@code heraliz_quetes:recycleur} (spawn : cases à soi, rendues à
  * la fermeture) et {@code heraliz_quetes:recycleur_carte} (31/10 : cases de la machine, partagées comme un coffre ;
@@ -34,7 +34,7 @@ public class MenuRecycleur extends AbstractContainerMenu {
     public static final int BOUTON_TOUT_PRENDRE = 0;
 
     /** Disposition (points d'interface, depuis le coin du panneau) : grilles de 3 x 2 cases, inventaire 9 x 4. */
-    public static final int CASE = 20, ENTREE_X = 16, SORTIE_X = 310, MACHINE_Y = 66, INVENTAIRE_X = 16, INVENTAIRE_Y = 162;
+    public static final int CASE = 20, ENTREE_X = 16, SORTIE_X = 310, MACHINE_Y = 66, INVENTAIRE_X = 97, INVENTAIRE_Y = 178;
 
     protected final Container entree, sortie;
     protected final ContainerData donnees;
