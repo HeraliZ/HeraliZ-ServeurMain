@@ -12,6 +12,7 @@ import fr.heraliz.noyau.client.kit.EcranVerre;
 import fr.heraliz.noyau.client.kit.Echelle;
 import fr.heraliz.noyau.client.kit.FondVerre;
 import fr.heraliz.noyau.client.kit.Formes;
+import fr.heraliz.noyau.client.kit.HzButton;
 import fr.heraliz.noyau.client.kit.InfobulleVerre;
 import fr.heraliz.noyau.client.kit.InventaireVerre;
 import fr.heraliz.noyau.client.kit.Palette;
@@ -45,8 +46,9 @@ import top.theillusivec4.curios.common.inventory.container.CuriosContainerV2;
  *     fine bande des effets (icônes dans un anneau fin, bonus de loot en doré tout à gauche), détail au survol ;</li>
  *     <li>à gauche, le personnage entre ses cases d'équipement (cases de 22) : casque, masque, gilet, plastron, jambières,
  *     bottes ; sac, corps, mains, brassard, genoux ;</li>
- *     <li>à droite, « Sur toi » (27 cases) et « Accès rapide » (la barre), puis la carte du sac à dos porté (Ouvrir, ou
- *     sa touche, B par défaut) ;</li>
+ *     <li>à droite, « Sur toi » (27 cases) et « Accès rapide » (la barre), puis la carte du sac à dos porté : bouton
+ *     « Ouvrir » du kit (18/11, demande du propriétaire : avant, une pastille dessinée à la main, pas nette, qui ne
+ *     marchait pas), ou sa touche (B par défaut) ;</li>
  *     <li>plus d'artisanat 2 x 2 (bloqué par le serveur à part) ni de main gauche (retirée le 31/10), ni d'aides.</li>
  * </ul>
  * Le serveur garde le même menu de Curios (CuriosContainerV2) : mêmes cases aux mêmes numéros, mêmes règles
@@ -78,16 +80,16 @@ public final class EcranInventaire extends AbstractContainerScreen<CuriosContain
     private final InventaireVerre inventaire = new InventaireVerre();
     private final TexteHud titre = new TexteHud(PoliceHud.TEXTE_GRAS, 1.4f), equipement = new TexteHud(PoliceHud.MINI_GRAS, 0.9f),
             sacEtiquette = new TexteHud(PoliceHud.MINI_GRAS, 0.9f), sacNom = new TexteHud(PoliceHud.TEXTE_GRAS),
-            sacRarete = new TexteHud(PoliceHud.MINI), ouvrir = new TexteHud(PoliceHud.MINI_GRAS, 0.9f),
-            toucheSac = new TexteHud(PoliceHud.MINI_GRAS), sansSac = new TexteHud(PoliceHud.MINI);
+            sacRarete = new TexteHud(PoliceHud.MINI), sansSac = new TexteHud(PoliceHud.MINI);
     private final InfobulleVerre.Bulle bulle = new InfobulleVerre.Bulle();
     private final List<Component> lignesBulle = new ArrayList<>(3);
     private long signature;
     private Slot caseSac;
     private ItemStack sacVu;
     private int sacCouleur = -1;
-    /** Bouton « Ouvrir » de la carte du sac (depuis le panneau), largeur 0 : pas de bouton. */
-    private int boutonX, boutonY, boutonL, boutonH;
+    /** Bouton « Ouvrir » de la carte du sac (kit, comme les écrans du clan), visible seulement avec un sac porté. */
+    private HzButton boutonOuvrir;
+    private static final int BOUTON_H = 16;
     /** Effets de la bande : numéro dans la liste du noyau et centre (x absolu), effet survolé (-1 : aucun). */
     private final int[] effetsI = new int[EffetsJoueur.MAX];
     private final float[] effetsX = new float[EffetsJoueur.MAX];
@@ -114,10 +116,13 @@ public final class EcranInventaire extends AbstractContainerScreen<CuriosContain
         titre.texte(t("titre", "Inventaire"));
         equipement.texte(t("equipement", "Équipement"));
         sacEtiquette.texte(t("sac", "Sac à dos"));
-        ouvrir.texte(t("ouvrir", "Ouvrir"));
         sansSac.texte(t("sans_sac", "Aucun sac à dos"));
-        KeyMapping k = SacClient.touche();
-        toucheSac.texte(k == null ? "" : k.getTranslatedKeyMessage().getString());
+        String ouvrir = t("ouvrir", "Ouvrir");
+        int bw = Math.round(Ui.spacedWidth(font, ouvrir.toUpperCase(java.util.Locale.ROOT), Ui.BOLD, 1.2f)) + 18;
+        boutonOuvrir = addRenderableWidget(new HzButton(leftPos + G_X + 8 * InventaireVerre.PAS + CADRE - 7 - bw,
+            topPos + SAC_Y + (SAC_H - BOUTON_H) / 2, bw, BOUTON_H, Component.literal(ouvrir), Ui.accent(), this::ouvrirSac)
+            .look(HzButton.Look.PRIMARY));
+        boutonOuvrir.visible = false;
         inventaire.textes();
         sacVu = null;
         bulle.oublier();
@@ -278,25 +283,13 @@ public final class EcranInventaire extends AbstractContainerScreen<CuriosContain
         Formes.rect(vc, m, x0 + 1, y0, x0 + w - 1, y0 + SAC_H, Palette.argb(0xFFFFFF, 11));
         Formes.rect(vc, m, x0, y0 + 1, x0 + 1, y0 + SAC_H - 1, Palette.argb(0xFFFFFF, 11));
         Formes.rect(vc, m, x0 + w - 1, y0 + 1, x0 + w, y0 + SAC_H - 1, Palette.argb(0xFFFFFF, 11));
-        if (boutonL <= 0) return;
-        boolean survol = surBouton(mx, my);
-        float bx = x + boutonX, by = y + boutonY;
-        Formes.rect(vc, m, bx + 3, by, bx + boutonL - 3, by + boutonH, Palette.argb(0xFFFFFF, survol ? 46 : 26));
-        Formes.disque(vc, m, bx + 3, by + boutonH / 2f, boutonH / 2f, Palette.argb(0xFFFFFF, survol ? 46 : 26), Formes.pixel());
-        Formes.disque(vc, m, bx + boutonL - 3, by + boutonH / 2f, boutonH / 2f, Palette.argb(0xFFFFFF, survol ? 46 : 26), Formes.pixel());
-        if (!toucheSac.vide()) {
-            float kx = bx + boutonL - 14, ky = by + 2;
-            Formes.rect(vc, m, kx + 1, ky, kx + 9, ky + 10, Palette.argb(0xFFFFFF, 41));
-            Formes.rect(vc, m, kx, ky + 1, kx + 1, ky + 9, Palette.argb(0xFFFFFF, 41));
-            Formes.rect(vc, m, kx + 9, ky + 1, kx + 10, ky + 9, Palette.argb(0xFFFFFF, 41));
-        }
     }
 
     /** Textes de la carte, refaits seulement quand le sac porté change. */
     private void majSac(ItemStack sac) {
         sacVu = sac.copy();
-        boutonL = 0;
         sacCouleur = -1;
+        if (boutonOuvrir != null) boutonOuvrir.visible = !sac.isEmpty();
         if (sac.isEmpty()) {
             sacNom.texte("");
             sacRarete.texte("");
@@ -307,10 +300,6 @@ public final class EcranInventaire extends AbstractContainerScreen<CuriosContain
         int rang = c < 0 ? -1 : BadgeRarete.rangCouleur(c);
         sacCouleur = c;
         sacRarete.texte(rang < 0 ? "" : BadgeRarete.nom(rang));
-        boutonL = Math.round(ouvrir.largeur()) + 7 + (toucheSac.vide() ? 7 : 4 + 10 + 4);
-        boutonH = 14;
-        boutonX = G_X + 8 * InventaireVerre.PAS + CADRE - 6 - boutonL;
-        boutonY = SAC_Y + SAC_H / 2 - boutonH / 2;
     }
 
     private void textesSac(GuiGraphics g, int x, int y) {
@@ -322,27 +311,13 @@ public final class EcranInventaire extends AbstractContainerScreen<CuriosContain
         boolean rarete = !sacRarete.vide();
         sacNom.ajouter(g, x + G_X + 32, rarete ? cy - 4.5f : cy, Palette.argb(Palette.TEXTE, 255), TexteHud.GAUCHE, false);
         if (rarete) sacRarete.ajouter(g, x + G_X + 32, cy + 5.5f, Palette.argb(Palette.clair(sacCouleur, 0.2f), 255), TexteHud.GAUCHE, false);
-        if (boutonL <= 0) return;
-        float bx = x + boutonX, bcy = y + boutonY + boutonH / 2f;
-        ouvrir.ajouter(g, bx + 7, bcy, Palette.argb(Palette.TEXTE, 255), TexteHud.GAUCHE, false);
-        if (!toucheSac.vide()) toucheSac.ajouter(g, bx + boutonL - 9, bcy, Palette.argb(Palette.TEXTE, 255), TexteHud.CENTRE, false);
     }
 
-    private boolean surBouton(double mx, double my) {
-        double rx = mx - leftPos, ry = my - topPos;
-        return boutonL > 0 && rx >= boutonX && rx < boutonX + boutonL && ry >= boutonY && ry < boutonY + boutonH;
-    }
-
+    /** Bouton « Ouvrir » ou touche du sac : le serveur ouvre le sac porté (rien avec un objet tenu au curseur). */
     private boolean ouvrirSac() {
         if (sacVu == null || sacVu.isEmpty() || !menu.getCarried().isEmpty()) return false;
         SacClient.ouvrir();
         return true;
-    }
-
-    @Override
-    public boolean mouseClicked(double mx, double my, int bouton) {
-        if (bouton == 0 && surBouton(mx, my) && ouvrirSac()) return true;
-        return super.mouseClicked(mx, my, bouton);
     }
 
     @Override

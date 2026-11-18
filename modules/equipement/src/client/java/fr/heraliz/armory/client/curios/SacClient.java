@@ -48,8 +48,19 @@ final class SacClient {
             }
             Method getPlay = Class.forName("com.mrcrayfish.backpacked.network.Network").getMethod("getPlay");
             reseau = getPlay.invoke(null);
-            envoyer = getPlay.getReturnType().getMethod("sendToServer", Object.class);
-            message = Class.forName("com.mrcrayfish.backpacked.network.message.MessageOpenBackpack").getConstructor();
+            Class<?> classeMessage = Class.forName("com.mrcrayfish.backpacked.network.message.MessageOpenBackpack");
+            message = classeMessage.getConstructor();
+            // 18/11 : Framework déclare sendToServer(IMessage), pas sendToServer(Object) : la méthode est cherchée par son
+            // nom et son seul paramètre (avant, introuvable : le bouton « Ouvrir » et la touche B de l'inventaire ne
+            // faisaient rien)
+            envoyer = null;
+            for (Method m : getPlay.getReturnType().getMethods()) {
+                if (m.getName().equals("sendToServer") && m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(classeMessage)) {
+                    envoyer = m;
+                    break;
+                }
+            }
+            if (envoyer == null) throw new NoSuchMethodException("sendToServer(" + classeMessage.getName() + ")");
             touche = (KeyMapping) Class.forName("com.mrcrayfish.backpacked.client.Keys").getField("KEY_BACKPACK").get(null);
             pret = reseau != null && touche != null;
             absent = !pret;
