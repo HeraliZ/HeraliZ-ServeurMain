@@ -378,7 +378,6 @@
   "tooltip.heraliz_armory.cible_essai": "Takes hits exactly like a player (20 HP), wearing the armor of your choice: right-click with an empty hand to choose it. Damage is shown on every hit.",
   "tooltip.heraliz_armory.cible_essai.pose": "Placed by staff only.",
   "gui.heraliz_armory.cible.titre": "Test target",
-  "gui.heraliz_armory.cible.aide": "Choose its armor: it takes hits like a player (20 HP).",
   "gui.heraliz_armory.cible.corps": "Body",
   "gui.heraliz_armory.cible.tete": "Head",
   "gui.heraliz_armory.cible.aucune": "No armor",

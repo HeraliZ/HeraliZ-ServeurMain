@@ -431,14 +431,10 @@ public class ExecutionScreen extends Screen {
          this.paragraph(g, Component.translatable("menu.reanimation.air"), px, dy + 2, pw, 2, Ui.argb(Ui.AMBRE, 255));
       }
 
-      // ---- footer: weapons hint next to the equip button
-      Ui.hairline(g, this.x0 + 16, this.x0 + this.w - 16, this.y0 + this.h - 41, 0xFFFFFF, 30, true, true);
-      List<FormattedCharSequence> hint = this.font.split(Ui.tr(Ui.SMALL, "menu.reanimation.weapons"), px + pw - this.previewX());
-
-      for (int i = 0; i < Math.min(2, hint.size()); i++) {
-         g.drawString(this.font, hint.get(i), px, this.y0 + this.h - 33 + i * 9 + (hint.size() == 1 ? 5 : 0), Ui.argb(Ui.FAINT, 255), false);
-      }
-
+      // ---- footer: filet au-dessus du bouton Équiper, sous la liste seulement (18/11 : plus de note sur les armes à
+      // côté, demande du propriétaire : moins de texte ; elle chevauchait aussi la ligne « verrouillée » sous une
+      // description de trois lignes)
+      Ui.hairline(g, this.x0 + 16, this.listX() + this.listW() + 6, this.y0 + this.h - 41, 0xFFFFFF, 30, true, true);
       super.render(g, mx, my, pt);
    }
 

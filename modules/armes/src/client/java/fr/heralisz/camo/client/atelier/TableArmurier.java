@@ -89,10 +89,14 @@ public final class TableArmurier extends GunSmithTableScreen {
    /** Hauteur de l'en-tête sur une ligne / sur deux lignes (filtres sous la recherche). */
    static final int ENTETE_1 = 38, ENTETE_2 = 52;
    static final int RECHERCHE_Y = 15, RECHERCHE_H = 16, RECHERCHE_MIN = 150, LIGNE2_Y = 36, LIGNE2_H = 12;
-   /** Case à cocher : côté, écart case-texte, écart entre filtres, écart recherche-filtres, écart avant « Fermer ». */
-   static final int CASE = 9, CASE_TEXTE = 6, FILTRE_ECART = 12, APRES_RECHERCHE = 12, AVANT_FERMER = 14;
+   /**
+    * Case à cocher : côté, écart case-texte, écart entre filtres, écart recherche-filtres, écart avant la croix de fermeture,
+    * largeur de la croix (18/11 : « × » au lieu de la touche « Échap » et de « Fermer » ; 15 : encre centrée au point
+    * d'écran près aux échelles 2 et 3, vérifié par l'aperçu).
+    */
+   static final int CASE = 9, CASE_TEXTE = 6, FILTRE_ECART = 12, APRES_RECHERCHE = 12, AVANT_FERMER = 14, FERMER_L = 15;
    static final int DETAIL_PAD = 8, TUILE_H = 36, TUILE_ECART = 4, TUILE_PAD = 6, TUILE_INTER = 6, BOUTON_H = 19;
-   /** Milieux des capitales : petit titre, grand titre (= milieu du champ de recherche), touche « Échap » (haut). */
+   /** Milieux des capitales : petit titre, grand titre (= milieu du champ de recherche), croix de fermeture (haut). */
    static final int TITRE_PETIT_CY = 11, TITRE_CY = 23, FERMER_Y = 18;
    /** Cartes : milieu des capitales du nom et de l'état, sous le haut de la carte. */
    static final int CARTE_NOM_CY = 44, CARTE_ETAT_CY = 55;
@@ -356,9 +360,8 @@ public final class TableArmurier extends GunSmithTableScreen {
       this.cx = this.px + GRILLE_X;
       this.cw = COLONNES * CARTE_W + (COLONNES - 1) * ECART;
 
-      // en-tête : titre à gauche, recherche, deux filtres, « Échap Fermer » à droite ; chaque place est mesurée
-      String fermer = AtelierArme.tr("fermer"), echap = AtelierArme.tr("echap");
-      int fw = this.largeur(echap, Ui.SMALL) + 8 + 5 + this.largeur(fermer, Ui.FONT);
+      // en-tête : titre à gauche, recherche, deux filtres, croix « × » à droite ; chaque place est mesurée
+      int fw = FERMER_L;
       int fx = this.px + this.pw - MARGE - fw;
       int titreW = (int) Math.ceil(Math.max(this.largeurCaps(tr("titre_petit"), Ui.SMALL, ESP_TITRE_PETIT), this.largeurCaps(tr("titre"), GROS, ESP_TITRE)));
       int sx = Math.max(this.cx, this.px + MARGE + titreW + AVANT_FERMER);
@@ -406,10 +409,9 @@ public final class TableArmurier extends GunSmithTableScreen {
       this.recherche.setY(this.py + RECHERCHE_Y);
       this.recherche.setWidth(rechercheW);
       this.ajouter(this.recherche);
-      this.ajouter(new Zone(fx, this.py + FERMER_Y, fw, 11, (g, z, mx, my, pt) -> {
-         int kw = Dessins.touche(g, this.font, echap, z.getX(), z.getY(), z.survol());
-         Ui.gauche(g, this.font, Ui.lit(fermer, Ui.FONT), Ui.FONT, z.getX() + kw + 5, z.getY() + 5.5f, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255));
-      }, this::onClose, null));
+      this.ajouter(new Zone(fx, this.py + FERMER_Y, fw, 11, (g, z, mx, my, pt) ->
+         Ui.centre(g, this.font, Ui.lit("×", Ui.BOLD), Ui.BOLD, z.getX() + fw / 2f, z.getY() + 5.5f, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255)),
+         this::onClose, null));
 
       // catégories, à gauche
       this.gx = this.px + CAT_X;
@@ -818,20 +820,7 @@ public final class TableArmurier extends GunSmithTableScreen {
    private void dessinerDetail(GuiGraphics g, int mouseX, int mouseY) {
       GunSmithTableRecipe r = this.tacz().heralisz$recette();
       LocalPlayer p = Minecraft.getInstance().player;
-      if (r == null || p == null) {
-         int lw = this.dw - 2 * DETAIL_PAD;
-         Component c = Ui.lit(tr("choisir"), Ui.FONT);
-         List<net.minecraft.util.FormattedCharSequence> lignes = this.font.split(c, lw);
-         float cyl = this.dy + this.dh / 2f - (lignes.size() - 1) * 11 / 2f;
-         for (net.minecraft.util.FormattedCharSequence l : lignes) {
-            g.pose().pushPose();
-            Ui.placer(g, this.dx + (this.dw - this.font.getSplitter().stringWidth(l)) / 2f, cyl - Ui.milieu(Ui.FONT));
-            g.drawString(this.font, l, 0, 0, Ui.argb(Ui.MUTED, 255), false);
-            g.pose().popPose();
-            cyl += 11;
-         }
-         return;
-      }
+      if (r == null || p == null) return;   // 18/11 : rien de choisi, panneau vide (plus de « Choisis un objet à fabriquer »)
       ItemStack sortie = r.getOutput();
       int x = this.dx + DETAIL_PAD, w = this.dw - 2 * DETAIL_PAD;
       // modèle 3D qui tourne (un peu plus petit si l'en-tête est sur deux lignes)

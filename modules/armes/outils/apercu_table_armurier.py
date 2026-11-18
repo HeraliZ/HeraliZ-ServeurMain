@@ -17,8 +17,8 @@ Java) et les mêmes polices (TTF du mod, tailles et décalages des fichiers `fon
 L'écran est dessiné en français, anglais et russe, aux fenêtres usuelles, à l'échelle que choisit `kit/Echelle` (et à
 l'échelle 2 forcée en 1080p). Deux contrôles, sur l'encre réellement dessinée (chaque texte rendu à part) :
 1. débordement : aucun texte ne sort de sa case ;
-2. centrage : pour chaque texte centré dans une case (pastilles, bouton, touche « Échap », champ de recherche, filtres,
-   « Fermer », lignes des catégories et des matériaux, bloc chiffre + légende des tuiles, état des cartes à côté de leur
+2. centrage : pour chaque texte centré dans une case (pastilles, bouton, croix « × » de fermeture, champ de recherche,
+   filtres, lignes des catégories et des matériaux, bloc chiffre + légende des tuiles, état des cartes à côté de leur
    point), |écart du haut − écart du bas| ≤ 1 point d'écran, mesuré sur la bande des capitales (encre d'un « H » posé
    comme le texte : les jambages de « p » ou « g » ne comptent pas, comme pour l'œil), et, pour les textes centrés en
    largeur, |écart gauche − écart droit| ≤ 1 point d'écran sur l'encre du texte lui-même.
@@ -383,8 +383,7 @@ def dessiner(code, lw, lh, s, manque, sortie, garder=True):
     cx = px + K["GRILLE_X"]
     cw = K["COLONNES"] * K["CARTE_W"] + (K["COLONNES"] - 1) * K["ECART"]
     # ---- en-tête (TableArmurier.construire)
-    fermer, echap = L["gui.heralisz_camo.atelier.fermer"], L["gui.heralisz_camo.atelier.echap"]
-    fw = SMALL.largeur(echap) + 8 + 5 + FONT.largeur(fermer)
+    fw = K["FERMER_L"]
     fx = px + pw - K["MARGE"] - fw
     titre_w = math.ceil(max(caps_largeur(tr("titre_petit"), SMALL, K["ESP_TITRE_PETIT"]), caps_largeur(tr("titre"), GROS, K["ESP_TITRE"])))
     sx = max(cx, px + K["MARGE"] + titre_w + K["AVANT_FERMER"])
@@ -430,13 +429,10 @@ def dessiner(code, lw, lh, s, manque, sortie, garder=True):
         e.rect(zx, by, K["CASE"], K["CASE"], (111, 168, 255, 215) if coche else (255, 255, 255, 30))
         e.texte(vu, FONT, zx + case_t, by + K["CASE"] / 2, GRIS, (zx, zy, zw, zh), "filtre", centre_sur=(zx, by, zw, K["CASE"]))  # centré sur la case à cocher
         e.case("filtre " + texte, zx, zy, zw, zh)
-    # fermer : touche « Échap » (largeur Font.width + 8, hauteur 11), libellé centré dedans ; « Fermer » sur le même milieu
+    # fermer : croix « × » (gras 11) centrée dans sa case de FERMER_L x 11 (18/11 : plus de touche « Échap » ni de « Fermer »)
     fy = py + K["FERMER_Y"]
-    kw = SMALL.largeur(echap) + 8
-    e.rect(fx, fy, kw, 11, (255, 255, 255, 30), (255, 255, 255, 60))
-    gl, dr = encre_px(echap, SMALL)
-    e.texte(echap, SMALL, fx + kw / 2 - (SMALL.exacte(echap) + gl - dr) / 2, fy + 5.5, TEXTE, (fx, fy, kw, 11), "touche Échap", centre_h=True)
-    e.texte(fermer, FONT, fx + kw + 5, fy + 5.5, GRIS, (fx + kw, fy, fw - kw, 11), "Fermer")
+    gl, dr = encre_px("×", BOLD)
+    e.texte("×", BOLD, fx + fw / 2 - (BOLD.exacte("×") + gl - dr) / 2, fy + 5.5, GRIS, (fx, fy, fw, 11), "croix de fermeture", centre_h=True)
     e.case("fermer", fx, fy, fw, 11)
     e.ligne_h(px + 8, px + pw - 8, py + entete, (255, 255, 255, 34))
     # ---- catégories

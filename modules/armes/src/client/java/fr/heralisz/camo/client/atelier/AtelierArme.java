@@ -42,6 +42,10 @@ import java.util.Locale;
  * d'objets bloquée, rafraîchissement après une pose, couleur du laser envoyée à la fermeture). La pose et le retrait des
  * accessoires passent par les paquets de TaCZ, les camos et les stickers par les nôtres : le serveur revérifie tout. Si
  * l'atelier plante, l'écran de TaCZ (avec nos anciens onglets) reprend la main jusqu'au redémarrage du jeu.
+ * <p>
+ * 18/11 (demande du propriétaire : moins de texte, l'écran est intuitif) : croix « × » au lieu de « Échap Fermer », plus
+ * de phrases d'aide ni de pieds de panneau dans les onglets ; restent les noms, valeurs, états, erreurs et la mise en
+ * garde avant une pose définitive. Les précisions restent dans les infobulles.
  */
 public final class AtelierArme extends GunRefitScreen {
    private static final Logger LOG = LogUtils.getLogger();
@@ -266,13 +270,10 @@ public final class AtelierArme extends GunRefitScreen {
          }, this::decharger, null));
       }
 
-      String fermer = tr("fermer");
-      String echap = tr("echap");
-      int fw = this.font.width(Ui.lit(echap, Ui.SMALL)) + 8 + 5 + this.font.width(Ui.lit(fermer, Ui.FONT));
-      this.addRenderableWidget(new Zone(this.width - 16 - fw, 14, fw, 12, (g, z, mx, my, pt) -> {
-         int kw = Dessins.touche(g, this.font, echap, z.getX(), z.getY(), z.survol());
-         g.drawString(this.font, Ui.lit(fermer, Ui.FONT), z.getX() + kw + 5, z.getY() + 1, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255), false);
-      }, this::onClose, null));
+      // fermeture : croix « × » des écrans du clan (18/11 : plus de touche « Échap » dessinée)
+      this.addRenderableWidget(new Zone(this.width - 16 - 15, 13, 15, 14, (g, z, mx, my, pt) ->
+         Ui.centre(g, this.font, Ui.lit("×", Ui.BOLD), Ui.BOLD, z.getX() + 7.5f, z.getY() + 7f, Ui.argb(z.survol() ? Ui.TEXT : Ui.MUTED, 255)),
+         this::onClose, null));
 
       this.partie().construire();
       this.signature = this.signatureActuelle();

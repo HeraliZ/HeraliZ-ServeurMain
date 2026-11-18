@@ -10,7 +10,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
-/** Reglages du joueur (liste des mods, bouton « Config ») : petit indicateur de l'arme en main, en bas a droite. */
+import java.util.List;
+
+/**
+ * Reglages du joueur (liste des mods, bouton « Config ») : petit indicateur de l'arme en main, en bas a droite.
+ * 18/11 (moins de texte, demande du proprietaire) : plus de sous-titre ; la precision de la ligne (l'alerte « ruinee »
+ * reste toujours) passe dans une infobulle, au survol du libelle.
+ */
 public class EcranReglages extends Screen {
     private final Screen parent;
     private int px, py, pw, ph;
@@ -43,18 +49,21 @@ public class EcranReglages extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        Cadre.panneau(g, font, width, height, px, py, pw, ph, title.getString(), t("heraliz_usure.reglages.sous_titre"));
+        Cadre.panneau(g, font, width, height, px, py, pw, ph, title.getString(), null);
         Cadre.fermer(g, px + pw - Ui.MARGE - 7, py + 14, mouseX, mouseY);
         int x = px + Ui.MARGE, cw = pw - 2 * Ui.MARGE;
         ligne(g, x, py + 48, cw, "heraliz_usure.reglages.hud", mouseX, mouseY);
         Ui.hairline(g, px + Ui.MARGE, px + pw - Ui.MARGE, py + ph - 36, 0xFFFFFF, 30, true, true);
         super.render(g, mouseX, mouseY, partialTick);
+        if (Cadre.dedans(mouseX, mouseY, x, py + 48, cw / 2, 26)) {
+            Ui.tooltip(g, font, List.of(Ui.lit(t("heraliz_usure.reglages.hud.aide"), Ui.FONT)), mouseX, mouseY, Ui.accent());
+        }
     }
 
+    /** Ligne de reglage : libelle seul, centre dans sa hauteur (sa precision est dans l'infobulle). */
     private void ligne(GuiGraphics g, int x, int y, int w, String cle, int mx, int my) {
         Cadre.ligne(g, x, y, w, 26, Cadre.dedans(mx, my, x, y, w, 26));
-        g.drawString(font, Ui.lit(t(cle), Ui.FONT), x + 8, y + 4, Ui.argb(Ui.TEXT, 255), false);
-        g.drawString(font, Ui.lit(Ui.ellipsis(font, t(cle + ".aide"), Ui.SMALL, w / 2 - 16), Ui.SMALL), x + 8, y + 15, Ui.argb(Ui.MUTED, 255), false);
+        g.drawString(font, Ui.lit(Ui.ellipsis(font, t(cle), Ui.FONT, w / 2 - 16), Ui.FONT), x + 8, y + 9, Ui.argb(Ui.TEXT, 255), false);
     }
 
     @Override
