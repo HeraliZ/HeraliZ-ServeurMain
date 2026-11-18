@@ -83,6 +83,9 @@ Ce que tout le serveur partage :
 - **`EtatClient`** : état côté joueur (combat, en match) ;
 - **`Portes`** : portes qui s'ouvrent au clic droit (Minecraft, plus celles déclarées par CRac et le bunker), ouvertes
   avec une arme en main (Tactique, `PortesEnMain`).
+- **`Notifs`** (serveur) et **`client/Bandeaux`** (joueur) : le style commun des messages à l'écran (bandeau de verre,
+  trait de couleur, titre gras 6 et texte 5,5 ; `client/kit/Bandeau`) : pile à droite de l'écran, et la barre d'action
+  de tous les mods au-dessus de la barre d'objets (`BarreActionMixin`).
 - **Diagnostic** (`serveur/diag`) : `/diag profil` remplace spark, retiré (mod, fichier:ligne, arbre des appels, temps par système,
   pendant et entre les ticks ; `diag/profil-<date>.txt`, noms lisibles par `outils/diag_noms.py` et le workflow « Lenteurs
   du serveur », qui peut aussi le lancer), rapports de blocage automatiques ; guide : `docs/GUIDE.md` section 10.
@@ -106,6 +109,9 @@ dans `saison/SaisonVue.bareme()` pour l'onglet Saison, annonces, loot, objet d'�
   Côté serveur : `Component.translatableWithFallback(clé, texte français, args...)`.
 - Style de toutes les interfaces : celui des écrans de clan (verre, DM Sans, texte net à sa vraie taille). Exceptions :
   inventaire, fouille du loot et sacs (style DayZ de base), machines du casino.
+- Message d'information à l'écran (quête, vente, extraction, clan, gain...) : toujours un bandeau du noyau (`Notifs`
+  côté serveur, `Bandeaux` côté joueur ; maquette validée `maquettes/notifications/`), jamais un panneau ou un titre à
+  part, ni une ligne de chat pour une information du moment.
 - Texte net : une police par taille (copie de `ui_bold.json` en changeant `size`), jamais `pose().scale` ni `Ui.gros` sur
   du texte ; `outils/polices_nettes.py` règle l'oversample (plafonné pour les grandes tailles) ; outils de dessin net :
   `fr.heraliz.quetes.client.kit.Net`. Caractères absents de DM Sans (◀ ▶ ▲ ✕ ▾…) : dessinés en police pixel, utiliser
