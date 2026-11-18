@@ -4,6 +4,7 @@ import fr.heraliz.noyau.HeralizNoyau;
 import fr.heraliz.noyau.api.EtatClient;
 import fr.heraliz.noyau.pont.Crochet;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
@@ -20,7 +21,8 @@ import java.util.function.Supplier;
 public final class NoyauNet {
    private NoyauNet() {}
 
-   public static final String VERSION = "2";
+   /** 3 (18/11) : bandeaux des messages à l'écran ({@link BandeauS2C}). */
+   public static final String VERSION = "3";
    public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(HeralizNoyau.id("main"),
          () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -35,10 +37,40 @@ public final class NoyauNet {
             .encoder(DiagDemandeS2C::write).decoder(DiagDemandeS2C::read).consumerMainThread(DiagDemandeS2C::handle).add();
       CANAL.messageBuilder(DiagRapportC2S.class, 2, NetworkDirection.PLAY_TO_SERVER)
             .encoder(DiagRapportC2S::write).decoder(DiagRapportC2S::read).consumerMainThread(DiagRapportC2S::handle).add();
+      CANAL.messageBuilder(BandeauS2C.class, 3, NetworkDirection.PLAY_TO_CLIENT)
+            .encoder(BandeauS2C::write).decoder(BandeauS2C::read).consumerMainThread(BandeauS2C::handle).add();
    }
 
    public static void versServeur(Object paquet) {
       CANAL.sendToServer(paquet);
+   }
+
+   /** Bandeau reçu du serveur ({@link fr.heraliz.noyau.api.Notifs}) : la partie client y branche l'affichage. */
+   public static final Crochet<BandeauS2C> BANDEAU = new Crochet<>();
+
+   /**
+    * Message à l'écran du joueur, dans le style commun (18/11) : titre, texte (null : titre seul), couleur du trait (RGB),
+    * durée en secondes (0 : celle par défaut). Textes traduits chez le joueur (clés et textes de secours du serveur).
+    */
+   public record BandeauS2C(Component titre, @javax.annotation.Nullable Component texte, int couleur, int secondes) {
+      public void write(FriendlyByteBuf buf) {
+         buf.writeComponent(titre);
+         buf.writeBoolean(texte != null);
+         if (texte != null) buf.writeComponent(texte);
+         buf.writeInt(couleur);
+         buf.writeVarInt(secondes);
+      }
+
+      public static BandeauS2C read(FriendlyByteBuf buf) {
+         Component t = buf.readComponent();
+         Component x = buf.readBoolean() ? buf.readComponent() : null;
+         return new BandeauS2C(t, x, buf.readInt() & 0xFFFFFF, Math.max(0, Math.min(60, buf.readVarInt())));
+      }
+
+      public static void handle(BandeauS2C p, Supplier<NetworkEvent.Context> ctx) {
+         BANDEAU.accept(p);
+         ctx.get().setPacketHandled(true);
+      }
    }
 
    /** Demande reçue du serveur (/diag client) : la partie client y branche l'enregistrement. */

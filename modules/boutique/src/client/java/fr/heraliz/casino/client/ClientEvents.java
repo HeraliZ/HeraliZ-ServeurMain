@@ -26,7 +26,9 @@ public final class ClientEvents {
             VanillaGuiOverlay.HOTBAR.id(), VanillaGuiOverlay.CROSSHAIR.id(), VanillaGuiOverlay.PLAYER_HEALTH.id(),
             VanillaGuiOverlay.ARMOR_LEVEL.id(), VanillaGuiOverlay.FOOD_LEVEL.id(), VanillaGuiOverlay.AIR_LEVEL.id(),
             VanillaGuiOverlay.MOUNT_HEALTH.id(), VanillaGuiOverlay.JUMP_BAR.id(), VanillaGuiOverlay.EXPERIENCE_BAR.id(),
-            VanillaGuiOverlay.ITEM_NAME.id(), VanillaGuiOverlay.RECORD_OVERLAY.id(), VanillaGuiOverlay.CHAT_PANEL.id());
+            VanillaGuiOverlay.ITEM_NAME.id(), VanillaGuiOverlay.RECORD_OVERLAY.id(), VanillaGuiOverlay.CHAT_PANEL.id(),
+            // 18/11 : bandeaux communs du noyau (messages à droite et au-dessus de la barre) : la machine montre déjà les siens
+            new ResourceLocation("heraliz_noyau", "bandeaux"));
     /**
      * Pastille du solde de HeraliZ Economie (en haut a droite) : dans un ecran de machine, elle chevaucherait le solde de
      * jetons de casino ; a la caisse, la ligne des jetons et le message du guichet disent deja tout.

@@ -3,7 +3,6 @@ package fr.heralisz.economie.client;
 import fr.heralisz.economie.api.EconomieApi;
 import fr.heralisz.economie.network.Packets;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.util.Mth;
 
 import java.util.Locale;
 
@@ -20,10 +19,9 @@ public final class ClientSolde {
     private static String nomSingulier = "héral", nomPluriel = "hérals", symbole = "";
     private static boolean hudPermanent;
 
-    /** Derniere variation : montant, motif brut, instant (ms) ; delta = 0 = rien a montrer. */
+    /** Derniere variation : montant, motif brut ; delta = 0 = rien a montrer. */
     private static long delta;
     private static String motif = "";
-    private static long depuis;
 
     // ------------------------------------------------------------------ reception
     public static void reglages(Packets.ReglagesS2C m) {
@@ -41,7 +39,11 @@ public final class ClientSolde {
         if (m.delta() != 0) {
             delta = m.delta();
             motif = m.motif();
-            depuis = System.currentTimeMillis();
+            // 18/11 : la variation s'affiche dans un bandeau commun à droite de l'écran (maquette validée), au lieu d'une
+            // pastille à part : « +250 hérals » puis « Quête · solde 1 250 hérals »
+            String raison = motifLisible(motif), total = I18n.get("economie.hud.solde", format(solde));
+            fr.heraliz.noyau.client.Bandeaux.ajouter(formatSigne(delta), raison.isEmpty() ? total : raison + " · " + total,
+                    delta >= 0 ? 0x5FD08A : 0xE3201B, 3);
         }
     }
 
@@ -50,7 +52,6 @@ public final class ClientSolde {
         connu = false;
         delta = 0;
         motif = "";
-        depuis = 0;
     }
 
     // ------------------------------------------------------------------ lecture
@@ -73,11 +74,6 @@ public final class ClientSolde {
 
     public static String motif() {
         return motif;
-    }
-
-    /** Millisecondes ecoulees depuis la derniere variation (Long.MAX_VALUE si aucune). */
-    public static long ageVariation() {
-        return depuis == 0 ? Long.MAX_VALUE : System.currentTimeMillis() - depuis;
     }
 
     /** Pour le banc d'essai / debug : simule une variation. */
@@ -114,21 +110,5 @@ public final class ClientSolde {
         reste = reste.replace('_', ' ').trim();
         if (reste.isEmpty()) reste = prefixe;
         return reste.isEmpty() ? "" : Character.toUpperCase(reste.charAt(0)) + reste.substring(1);
-    }
-
-    /** Alpha 0..1 de la pastille selon l'age de la variation : 0,2 s d'apparition, 2,3 s pleine, 0,5 s de fondu. */
-    public static float alphaPastille(long age) {
-        if (age < 0 || age >= 3000) return 0;
-        if (age < 200) return age / 200f;
-        if (age > 2500) return 1 - (age - 2500) / 500f;
-        return 1;
-    }
-
-    /** Glissement vertical (px) a l'apparition : -6 -> 0. */
-    public static float glissement(long age) {
-        if (age >= 200) return 0;
-        float t = Mth.clamp(age / 200f, 0, 1);
-        t = 1 - (1 - t) * (1 - t);
-        return -6 * (1 - t);
     }
 }

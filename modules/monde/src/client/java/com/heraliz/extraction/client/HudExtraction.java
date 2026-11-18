@@ -1,35 +1,39 @@
 package com.heraliz.extraction.client;
 
-import com.heraliz.extraction.HeralizExtraction;
 import com.heraliz.extraction.item.ExtractionTerminalItem;
 import com.heraliz.extraction.reseau.Reseau;
-import java.util.Locale;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import fr.heraliz.noyau.client.kit.Bandeau;
+import fr.heraliz.noyau.client.kit.Formes;
+import fr.heraliz.noyau.client.kit.Palette;
+import fr.heraliz.noyau.client.kit.PoliceHud;
+import fr.heraliz.noyau.client.kit.TexteHud;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 /**
- * Chrono d'extraction en haut de l'écran (maquette validée « petites jauges », à la place de l'ancienne barre de boss) :
- * une carte de verre avec un point vert, « EXTRACTION » et le temps qui reste à tenir, une barre verte, puis l'aide
- * (« Reste dans la zone, à ciel ouvert ») et le temps avant la fermeture de la zone. Hors de la zone (tolérance au bord) :
- * point rouge et « Reviens dans la zone ! ». Le serveur envoie le chrono toutes les 4 ticks ({@link Reseau.Progression}) ;
- * entre deux, il avance tout seul.
+ * Chrono d'extraction en haut au milieu de l'écran, version compacte (18/11, demande du propriétaire : « une UI plus propre
+ * pendant qu'on s'extracte » ; maquette validée {@code maquettes/notifications/2_extraction_avant_apres.jpg}) : le même
+ * verre que les bandeaux communs ({@link Bandeau}), 100 x 18 au lieu de 154 x 34. « Extraction » et le temps qui reste à
+ * tenir, une barre fine (verte dans la zone, rouge au bord), puis l'aide (« Reste dans la zone », « Reviens dans la
+ * zone ! ») et le temps avant la fermeture de la zone. Le serveur envoie le chrono toutes les 4 ticks
+ * ({@link Reseau.Progression}) ; entre deux, il avance tout seul.
  */
 public final class HudExtraction {
     private HudExtraction() {
     }
 
-    /** Gras 12 (= 11 x 1,1, temps qui reste) : texte à sa vraie taille, jamais agrandi. */
-    private static final ResourceLocation GRAS_12 = new ResourceLocation(HeralizExtraction.MODID, "ui_bold_12"),
-            MINI = new ResourceLocation(HeralizExtraction.MODID, "ui_mini"), MINI_GRAS = new ResourceLocation(HeralizExtraction.MODID, "ui_mini_bold");
-    private static final int VERT = 0x5FD08A, VERT_FONCE = 0x2E8A52, ROUGE = 0xFF4A3D;
-    private static final int HAUTEUR = 34;
+    private static final float LARGEUR_MIN = 100f, HAUTEUR = 18f, HAUT = 5f, MARGE = 4f;
+    private static final int ROUGE_TEXTE = 0xFFB3AC;
+
+    /** Textes à leur vraie taille (polices des bandeaux) ; recalculés seulement quand ils changent. */
+    private static final TexteHud TITRE = new TexteHud(PoliceHud.BANDEAU_TITRE), TEMPS = new TexteHud(PoliceHud.MINI_GRAS),
+            AIDE_DEDANS = new TexteHud(PoliceHud.PETIT), AIDE_DEHORS = new TexteHud(PoliceHud.PETIT), ZONE = new TexteHud(PoliceHud.PETIT);
 
     /** Dernier chrono reçu (null : aucun) et l'heure du jeu à sa réception. */
     @Nullable
@@ -79,102 +83,32 @@ public final class HudExtraction {
         float f = tenus / p.aTenir();
         int reste = Mth.ceil((p.aTenir() - tenus) / 20.0F);
         int zone = p.zone() < 0 ? -1 : Math.max(0, (int) ((p.zone() - ecoule) / 20));
-
         float ease = 1 - (1 - apparition) * (1 - apparition);
-        int a = Math.round(255 * ease);
-        Font font = mc.font;
-        // largeur : celle de l'aide dans la zone et du temps de la zone (pas de saut quand on passe au bord)
-        MutableComponent aideZone = lit(Component.translatable(p.cielOuvert() ? "hud.heraliz_extraction.reste_ciel" : "hud.heraliz_extraction.reste").getString(), MINI);
-        MutableComponent z = zone < 0 ? null : lit(Component.translatable("hud.heraliz_extraction.zone", ExtractionTerminalItem.formatTime(zone)).getString(), MINI);
-        int lw = Mth.clamp(14 + font.width(aideZone) + (z == null ? 0 : 12 + font.width(z)), 154, Math.max(154, w - 24));
-        int x0 = (w - lw) / 2, y0 = Math.round(12 - (1 - ease) * 10);
-        verre(g, x0, y0, lw, HAUTEUR, a);
-        // point : vert (il pulse doucement) dans la zone, rouge au bord
-        int point = p.dedans() ? VERT : ROUGE;
-        float pulse = p.dedans() ? 0.6F + 0.4F * Mth.sin((maintenant + partial) * 0.25F) : 1;
-        g.fill(x0 + 6, y0 + 8, x0 + 11, y0 + 13, argb(point, Math.round(60 * pulse * ease)));
-        g.fill(x0 + 7, y0 + 9, x0 + 10, y0 + 12, argb(point, a));
-        // barre
-        int bx = x0 + 7, bw = lw - 14, by = y0 + 17, fw = Math.round(bw * Mth.clamp(f, 0, 1));
-        g.fill(bx, by, bx + bw, by + 2, argb(0xFFFFFF, 31 * a / 255));
-        if (fw > 0) {
-            g.fill(bx, by - 1, bx + fw, by + 3, argb(VERT, 40 * a / 255));
-            degrade(g, bx, by, bx + fw, by + 2, argb(VERT_FONCE, a), argb(VERT, a));
-        }
-        if (a < 4) return;
-        // textes
-        caps(g, font, Component.translatable("hud.heraliz_extraction.titre").getString(), MINI_GRAS, x0 + 14, y0 + 7, 1.2F, argb(0xFFFFFF, a));
-        // police 12 (= 11 x 1,1) à sa vraie taille, posée sur un point de l'écran, milieu des capitales à la même place
-        // (DM Sans, décalage 1 : milieu = taille x 0,49309 - 1 sous le point de dessin)
-        MutableComponent temps = lit(ExtractionTerminalItem.formatTime(reste), GRAS_12);
-        g.pose().pushPose();
-        placer(g, x0 + lw - 7 - font.getSplitter().stringWidth(temps), y0 + 3 + 1.1F * (11 * 0.49309F - 1) - (12 * 0.49309F - 1));
-        g.drawString(font, temps, 0, 0, argb(0xFFFFFF, a), false);
-        g.pose().popPose();
-        if (p.dedans()) {
-            g.drawString(font, aideZone, x0 + 7, y0 + 23, argb(0xFFFFFF, 179 * a / 255), false);
-        } else {
-            g.drawString(font, lit(Component.translatable("hud.heraliz_extraction.reviens").getString(), MINI), x0 + 7, y0 + 23, argb(0xFFB3AC, a), false);
-        }
-        if (z != null) g.drawString(font, z, x0 + lw - 7 - font.width(z), y0 + 23, argb(0xFFFFFF, 179 * a / 255), false);
-    }
 
-    // ------------------------------------------------------------------ dessin
+        TITRE.texte(Component.translatable("hud.heraliz_extraction.titre").getString());
+        TEMPS.texte(ExtractionTerminalItem.formatTime(reste));
+        AIDE_DEDANS.texte(Component.translatable(p.cielOuvert() ? "hud.heraliz_extraction.reste_ciel" : "hud.heraliz_extraction.reste").getString());
+        AIDE_DEHORS.texte(Component.translatable("hud.heraliz_extraction.reviens").getString());
+        ZONE.texte(zone < 0 ? "" : Component.translatable("hud.heraliz_extraction.zone", ExtractionTerminalItem.formatTime(zone)).getString());
+        // largeur : la plus longue des deux aides (pas de saut quand on passe au bord), plus le temps de la zone
+        float aide = Math.max(AIDE_DEDANS.largeur(), AIDE_DEHORS.largeur());
+        float lw = Math.max(LARGEUR_MIN, Math.max(TITRE.largeur() + 8 + TEMPS.largeur(), aide + (ZONE.vide() ? 0 : 8 + ZONE.largeur())) + 2 * MARGE);
+        float x = Formes.caler((w - lw) / 2f), y = Formes.caler(HAUT - (1 - ease) * 10);
 
-    private static int argb(int rgb, int alpha) {
-        return (Mth.clamp(alpha, 0, 255) << 24) | (rgb & 0xFFFFFF);
-    }
-
-    private static MutableComponent lit(String s, ResourceLocation font) {
-        return Component.literal(s).withStyle(st -> st.withFont(font));
-    }
-
-    /** Pose le dessin qui suit sur le point d'écran le plus proche (lettres nettes ; repris du journal des quêtes). */
-    private static void placer(GuiGraphics g, float x, float y) {
-        org.joml.Matrix4f m = g.pose().last().pose();
-        double s = Minecraft.getInstance().getWindow().getGuiScale();
-        float ex = m.m00() * x + m.m30(), ey = m.m11() * y + m.m31();
-        float rx = (float) (Math.round(ex * s) / s), ry = (float) (Math.round(ey * s) / s);
-        float kx = m.m00() == 0 ? 1 : m.m00(), ky = m.m11() == 0 ? 1 : m.m11();
-        g.pose().translate(x + (rx - ex) / kx, y + (ry - ey) / ky, 0);
-    }
-
-    /** Capitales espacées (x = bord gauche). */
-    private static void caps(GuiGraphics g, Font font, String s, ResourceLocation f, float x, float y, float espace, int argb) {
-        String up = s.toUpperCase(Locale.ROOT);
-        float cx = x;
-        for (int i = 0; i < up.length(); i = up.offsetByCodePoints(i, 1)) {
-            MutableComponent c = lit(new String(Character.toChars(up.codePointAt(i))), f);
-            g.pose().pushPose();
-            g.pose().translate(cx, y, 0);
-            // au tampon, dessinées en une fois après la boucle (g.drawString le vidait à chaque lettre)
-            font.drawInBatch(c, 0, 0, argb, false, g.pose().last().pose(), g.bufferSource(), Font.DisplayMode.NORMAL, 0, 15728880);
-            g.pose().popPose();
-            cx += font.width(c) + espace;
-        }
+        Matrix4f m = g.pose().last().pose();
+        VertexConsumer vc = Formes.tampon(g);
+        Formes.rect(vc, m, x, y, x + lw, y + HAUTEUR, Palette.argb(Palette.VERRE, Math.round(205 * ease)));
+        Formes.bord(vc, m, x, y, lw, HAUTEUR, Formes.pixel(), Palette.argb(0xFFFFFF, Math.round(20 * ease)));
+        // barre fine : verte dans la zone, rouge au bord
+        float bx0 = x + MARGE, bx1 = x + lw - MARGE, by = y + 9.5f;
+        Formes.rect(vc, m, bx0, by, bx1, by + 0.75f, Palette.argb(0xFFFFFF, Math.round(30 * ease)));
+        Formes.rect(vc, m, bx0, by, bx0 + (bx1 - bx0) * Mth.clamp(f, 0, 1), by + 0.75f, Palette.argb(p.dedans() ? Bandeau.OK : Bandeau.DANGER, ease));
         g.flush();
-    }
-
-    /** Panneau de verre : fond sombre translucide, contour fin, liseré haut, coins adoucis. */
-    private static void verre(GuiGraphics g, int x, int y, int w, int h, int a) {
-        int fond = argb(0x0A0C10, 179 * a / 255), bord = argb(0xFFFFFF, 20 * a / 255);
-        g.fill(x + 1, y, x + w - 1, y + 1, fond);
-        g.fill(x, y + 1, x + w, y + h - 1, fond);
-        g.fill(x + 1, y + h - 1, x + w - 1, y + h, fond);
-        g.fill(x + 2, y + 1, x + w - 2, y + 2, argb(0xFFFFFF, 31 * a / 255));
-        g.fill(x + 2, y + h - 2, x + w - 2, y + h - 1, bord);
-        g.fill(x + 1, y + 2, x + 2, y + h - 2, bord);
-        g.fill(x + w - 2, y + 2, x + w - 1, y + h - 2, bord);
-    }
-
-    /** Rectangle en dégradé horizontal (gauche -> droite). */
-    private static void degrade(GuiGraphics g, int x0, int y0, int x1, int y1, int gauche, int droite) {
-        org.joml.Matrix4f m = g.pose().last().pose();
-        com.mojang.blaze3d.vertex.VertexConsumer vc = g.bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui());
-        vc.vertex(m, x0, y0, 0).color(gauche >> 16 & 0xFF, gauche >> 8 & 0xFF, gauche & 0xFF, gauche >>> 24).endVertex();
-        vc.vertex(m, x0, y1, 0).color(gauche >> 16 & 0xFF, gauche >> 8 & 0xFF, gauche & 0xFF, gauche >>> 24).endVertex();
-        vc.vertex(m, x1, y1, 0).color(droite >> 16 & 0xFF, droite >> 8 & 0xFF, droite & 0xFF, droite >>> 24).endVertex();
-        vc.vertex(m, x1, y0, 0).color(droite >> 16 & 0xFF, droite >> 8 & 0xFF, droite & 0xFF, droite >>> 24).endVertex();
+        TITRE.ajouter(g, x + MARGE, y + 5.5f, Palette.argb(Bandeau.TEXTE, ease), TexteHud.GAUCHE, true);
+        TEMPS.ajouter(g, x + lw - MARGE, y + 5.5f, Palette.argb(Bandeau.TEXTE, ease), TexteHud.DROITE, true);
+        if (p.dedans()) AIDE_DEDANS.ajouter(g, x + MARGE, y + 13.75f, Palette.argb(Bandeau.ATTENUE, ease), TexteHud.GAUCHE, true);
+        else AIDE_DEHORS.ajouter(g, x + MARGE, y + 13.75f, Palette.argb(ROUGE_TEXTE, ease), TexteHud.GAUCHE, true);
+        if (!ZONE.vide()) ZONE.ajouter(g, x + lw - MARGE, y + 13.75f, Palette.argb(Bandeau.FAIBLE, ease), TexteHud.DROITE, true);
         g.flush();
     }
 }

@@ -18,6 +18,12 @@ public final class ClientNoyau implements Partie {
       BadgeRarete.enregistrer(busMod);   // badge de rareté des infobulles, dessiné (14/11)
       fr.heraliz.noyau.client.kit.InfobulleVerre.enregistrer();   // infobulles des écrans en verre (14/11)
       fr.heraliz.noyau.client.effets.EffetsHud.enregistrer(busMod);   // effets à l'écran de jeu, V2 (14/11)
+      // 18/11 : messages à l'écran dans le style commun (bandeaux à droite, et au-dessus de la barre : BarreActionMixin)
+      fr.heraliz.noyau.net.NoyauNet.BANDEAU.brancher(p -> Bandeaux.ajouter(p.titre().getString(),
+            p.texte() == null ? null : p.texte().getString(), p.couleur(), p.secondes()));
+      busMod.addListener((RegisterGuiOverlaysEvent e) -> e.registerAboveAll("bandeaux", Bandeaux::rendu));
+      net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
+            (net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut e) -> Bandeaux.vider());
       busMod.addListener((RegisterGuiOverlaysEvent e) ->
             e.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "combat", (gui, g, partial, w, h) -> HudCombat.dessiner(g, w, h)));
    }

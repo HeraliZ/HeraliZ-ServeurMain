@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * À l'écran, sans rien ouvrir : la quête suivie, en petit à droite (choisie avec « Suivre » dans /quetes), et les
- * notifications courtes en haut à droite (« Étape terminée », « Quête terminée : +300 hérals »).
- * Panneaux dessinés dans un repère réduit (0,7 et 0,8) ; leurs textes, eux, avec des polices à leur vraie taille (le texte
- * réduit d'avant, arrondi au demi-point), jamais agrandis ni réduits, chacun posé sur un point de l'écran.
+ * À l'écran, sans rien ouvrir : la quête suivie, en petit à droite (choisie avec « Suivre » dans /quetes). Panneau
+ * dessiné dans un repère réduit (0,7) ; ses textes, eux, avec des polices à leur vraie taille, jamais agrandis ni réduits,
+ * chacun posé sur un point de l'écran. Les notifications courtes (« Étape terminée », « Quête terminée : +300 hérals »)
+ * vont depuis le 18/11 dans les bandeaux communs du noyau ({@code fr.heraliz.noyau.client.Bandeaux}, maquette validée).
  */
 public final class HudQuetes {
     private HudQuetes() {
@@ -30,37 +30,18 @@ public final class HudQuetes {
     private static final int LARGEUR = 150;
     /** Taille du suivi à l'écran (1 = taille de l'interface du jeu : jugée beaucoup trop grosse). */
     private static final float ECHELLE = 0.7F;
-    /** Taille des notifications en haut à droite. */
-    private static final float ECHELLE_NOTIFS = 0.8F;
     /**
      * Polices à leur vraie taille. Suivi (avant : 11 et 9 réduits à 0,7) : titre en gras 7,5, étapes en 7,5, nom du PNJ
-     * et distances en 6,5. Notifications (avant : 11 réduit à 0,8) : 9.
+     * et distances en 6,5.
      */
     private static final ResourceLocation TITRE = new ResourceLocation("heraliz_quetes", "ui_micro"),
-            MOYEN = new ResourceLocation("heraliz_quetes", "ui_moyen"), MINI = new ResourceLocation("heraliz_quetes", "ui_mini"),
-            NOTIF = Ui.SMALL;
+            MOYEN = new ResourceLocation("heraliz_quetes", "ui_moyen"), MINI = new ResourceLocation("heraliz_quetes", "ui_mini");
     /**
      * Milieu des capitales des anciennes polices (11 et 9) sous le haut de leur ligne, en unités du repère réduit : chaque
      * texte garde le milieu de ses capitales à sa place d'avant.
      */
     private static final float M11 = 11 * 0.49309F - 1F, M9 = 9 * 0.49309F - 1F;
     private static Reseau.Suivi suivi = new Reseau.Suivi(fr.heraliz.quetes.Texte.VIDE, fr.heraliz.quetes.Texte.VIDE, List.of());
-
-    /** Une notification ; ses lignes coupées à la largeur sont calculées à sa première image, pas à chaque image. */
-    private static final class Notif {
-        final String texte;
-        final int couleur;
-        final long debut;
-        List<FormattedCharSequence> lignes;
-        /** Largeur de la plus longue ligne, dans le repère réduit des notifications. */
-        int largeur;
-
-        Notif(String texte, int couleur, long debut) {
-            this.texte = texte;
-            this.couleur = couleur;
-            this.debut = debut;
-        }
-    }
 
     /**
      * Mise en page de la quête suivie (lignes coupées, textes de droite, hauteur) : refaite seulement quand le serveur
@@ -73,9 +54,6 @@ public final class HudQuetes {
 
     private static Page page;
 
-    private static final List<Notif> NOTIFS = new ArrayList<>();
-    private static final long NOTIF_MS = 4500;
-
     static void suivi(Reseau.Suivi s) {
         suivi = s;
     }
@@ -85,30 +63,24 @@ public final class HudQuetes {
         if (s.isEmpty()) return;
         // 18/11 : écran du recycleur ouvert (ce HUD est caché dessous) : le message s'affiche dans son bandeau
         if (EcranRecycleur.bandeauSiOuvert(s, n.couleur())) return;
-        NOTIFS.add(new Notif(s, n.couleur(), System.currentTimeMillis()));
-        while (NOTIFS.size() > 4) NOTIFS.remove(0);
+        // 18/11 : bandeau commun à droite (titre et texte coupés sur « · » ou « : »)
+        fr.heraliz.noyau.client.Bandeaux.message(s, n.couleur(), 0);
         SonsUi.clic(0.35F);
     }
 
     static void vider() {
         suivi = new Reseau.Suivi(fr.heraliz.quetes.Texte.VIDE, fr.heraliz.quetes.Texte.VIDE, List.of());
         page = null;
-        NOTIFS.clear();
     }
 
     static void rendu(ForgeGui gui, GuiGraphics g, float pt, int w, int h) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null) return;
         if (mc.screen != null && !(mc.screen instanceof ChatScreen)) return;
-        if (NOTIFS.isEmpty() && suivi.titre().vide()) return;
+        if (suivi.titre().vide()) return;
         Font f = mc.font;
         // rien que des aplats et du texte : envoyés en un seul lot (sinon un dessin par aplat et par texte, à chaque image)
         g.drawManaged(() -> {
-            g.pose().pushPose();
-            g.pose().scale(ECHELLE_NOTIFS, ECHELLE_NOTIFS, 1);
-            notifs(g, f, (int) (w / ECHELLE_NOTIFS));
-            g.pose().popPose();
-            if (suivi.titre().vide()) return;
             g.pose().pushPose();
             g.pose().scale(ECHELLE, ECHELLE, 1);
             dessinerSuivi(g, f, (int) (w / ECHELLE), (int) (h / ECHELLE));
@@ -174,36 +146,6 @@ public final class HudQuetes {
             }
             if (l.total() > 1) Ui.bar(g, x + 18, cy, LARGEUR - 28, 1, l.fait() / (float) l.total(), Ui.OK);
             cy += 3;
-        }
-    }
-
-    private static void notifs(GuiGraphics g, Font f, int w) {
-        long maintenant = System.currentTimeMillis();
-        NOTIFS.removeIf(n -> maintenant - n.debut > NOTIF_MS);
-        // sous la rangée des effets du coin haut droit (V2, 14/11), quand il y en a
-        int y = 8 + fr.heraliz.noyau.client.effets.EffetsHud.decalageHautDroite();
-        for (int i = NOTIFS.size() - 1; i >= 0; i--) {
-            Notif n = NOTIFS.get(i);
-            long age = maintenant - n.debut;
-            float a = age < 200 ? age / 200f : age > NOTIF_MS - 500 ? (NOTIF_MS - age) / 500f : 1f;
-            if (n.lignes == null) {
-                // coupées à la largeur d'avant, en points d'interface ; largeur ramenée dans le repère réduit
-                n.lignes = f.split(Ui.lit(n.texte, NOTIF), (int) (190 * ECHELLE_NOTIFS));
-                float plus = 0;
-                for (FormattedCharSequence s : n.lignes) plus = Math.max(plus, f.getSplitter().stringWidth(s));
-                n.largeur = (int) Math.ceil(plus / ECHELLE_NOTIFS);
-            }
-            List<FormattedCharSequence> l = n.lignes;
-            int lw = n.largeur;
-            int bw = lw + 20, bh = l.size() * 10 + 10, x = w - bw - 8 + (int) ((1 - a) * 20);
-            Ui.glass(g, x, y, bw, bh, (int) (190 * a));
-            g.fill(x + 1, y + 2, x + 3, y + bh - 2, Ui.argb(n.couleur, (int) (230 * a)));
-            int cy = y + 5;
-            for (FormattedCharSequence s : l) {
-                ligne(g, f, s, NOTIF, ECHELLE_NOTIFS, x + 11, cy + M11, Ui.argb(Ui.TEXT, Math.max(8, (int) (255 * a))));
-                cy += 10;
-            }
-            y += bh + 4;
         }
     }
 

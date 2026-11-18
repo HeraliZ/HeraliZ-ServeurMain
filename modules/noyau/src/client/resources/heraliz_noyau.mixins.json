@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "heraliz_noyau.refmap.json",
   "client": [
+    "BarreActionMixin",
     "CaseAcces",
     "CaseVideMixin",
     "MesureBlocRenduMixin",

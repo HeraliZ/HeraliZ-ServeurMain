@@ -1502,14 +1502,19 @@ public final class HdvServeur {
                 + (a.efface ? " ; acheteur remis à zéro : objet non remis" : "") + (o.efface ? " ; vendeur remis à zéro : hérals non versés" : ""));
         ServerPlayer acheteur = joueur(a.acheteur);
         if (acheteur != null) {
-            acheteur.sendSystemMessage(msg("achete", "Achat réussi : %s.", fr.heraliz.noyau.api.NomsObjets.nom(objet(o))).withStyle(ChatFormatting.GREEN));
+            // 18/11 : bandeau commun à droite de l'écran (maquette validée) au lieu d'une ligne de chat
+            fr.heraliz.noyau.api.Notifs.envoyer(acheteur, msg("bandeau.titre", "Hôtel des ventes"),
+                    msg("bandeau.achete", "%s acheté", fr.heraliz.noyau.api.NomsObjets.nom(objet(o))), fr.heraliz.noyau.api.Notifs.OK);
             if (pourAcheteur != null) livrer(acheteur, List.of(pourAcheteur));
             if (a.devise == RegleHdv.PB) rafraichirSoldePb(acheteur, true);
             repondre(acheteur, "achete", true);
         }
         ServerPlayer vendeur = joueur(o.vendeur);
         if (vendeur != null) {
-            vendeur.sendSystemMessage(msg("vendu", "Hôtel des ventes : %s vendu à %s.", fr.heraliz.noyau.api.NomsObjets.nom(objet(o)), a.acheteurNom).withStyle(ChatFormatting.GOLD));
+            String prix = a.devise == RegleHdv.PB ? EconomieApi.nombre(prixVendeur) + " PB" : EconomieApi.format(prixVendeur);
+            fr.heraliz.noyau.api.Notifs.envoyer(vendeur, msg("bandeau.titre", "Hôtel des ventes"),
+                    msg("bandeau.vendu", "%s vendu à %s · %s", fr.heraliz.noyau.api.NomsObjets.nom(objet(o)), a.acheteurNom, prix),
+                    fr.heraliz.noyau.api.Notifs.OR, 6);
             repondre(vendeur, "", true);
         }
         if (v != null) verser(v);

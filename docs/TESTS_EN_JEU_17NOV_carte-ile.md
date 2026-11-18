@@ -170,3 +170,20 @@ Aujourd'hui, sur la carte, seul le recycleur de terrain donne des hérals (les z
 - [ ] Anti-copie, avec le staff en créatif : copier une bourse (clic molette), vendre l'originale à Mila, puis la copie :
       la copie est refusée (« Mila refuse cette bourse : elle ne vaut plus rien »). `/bourse info` : nombre de bourses
       valables et total ; `/bourse donner <joueur> <hérals>` en crée une (essais, dédommagement).
+
+## 9. Messages à l'écran : un seul style, plus petit (18/11)
+
+Maquette validée (`maquettes/notifications/`) : verre sombre, trait de couleur à gauche, titre en gras et texte dessous,
+sans icône ni capitales espacées.
+- [ ] À droite de l'écran, empilés (le plus récent en haut, 4 au plus) : quêtes (« Étape terminée », « Tu trouves… »),
+      hérals gagnés ou dépensés (« +250 hérals », « Quête · solde … »), hôtel des ventes (« AK-47 vendu à … · 1 200
+      hérals », « … acheté »), clans (invitation, capture, niveau…), extractions ouvertes (une vague = un seul message qui
+      se met à jour), fermetures d'extraction, événements (largage…), bourse (« +60 hérals · dans la bourse… »).
+      Sous un inventaire ou un menu, ils attendent : ils s'affichent en le fermant.
+- [ ] Au-dessus de la barre d'objets : les petits messages qui étaient en texte nu (« Impossible en combat »…) sont dans
+      le même bandeau, trait de la couleur du message.
+- [ ] Extraction : le chrono en haut au milieu est plus petit (« Extraction » et le temps, barre fine, « Reste dans la
+      zone » / « Reviens dans la zone ! » et le temps de la zone).
+- [ ] Ville à drapeau : panneau en haut à gauche dans le même style (nom de la ville, « Zone libre · drapeau à 25 m »,
+      capture en cours et sa barre).
+- [ ] Rien ne se chevauche avec les effets en haut à droite, la Purge en haut à gauche, les cœurs et la faim.

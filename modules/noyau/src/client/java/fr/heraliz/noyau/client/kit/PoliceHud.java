@@ -30,6 +30,14 @@ public final class PoliceHud {
     /** DM Sans 6,5, normal et gras : aides, légendes, touches, pastilles. */
     public static final PoliceHud MINI = new PoliceHud("hud_mini", 6.5f, DMSANS_ASC, DMSANS_CAP);
     public static final PoliceHud MINI_GRAS = new PoliceHud("hud_mini_gras", 6.5f, DMSANS_ASC, DMSANS_CAP);
+    /**
+     * DM Sans gras 6 et normal 5,5 (18/11, maquette validée {@code maquettes/notifications/}) : titre et texte des bandeaux,
+     * le style commun des messages à l'écran ({@link Bandeau}).
+     */
+    public static final PoliceHud BANDEAU_TITRE = new PoliceHud("hud_bandeau_titre", 6f, DMSANS_ASC, DMSANS_CAP);
+    public static final PoliceHud BANDEAU_TEXTE = new PoliceHud("hud_bandeau_texte", 5.5f, DMSANS_ASC, DMSANS_CAP);
+    /** DM Sans 5 : petites aides sous un bandeau (chrono d'extraction). */
+    public static final PoliceHud PETIT = new PoliceHud("hud_petit", 5f, DMSANS_ASC, DMSANS_CAP);
 
     /** Police du jeu ({@code heraliz_noyau:hud_*}). */
     public final ResourceLocation id;

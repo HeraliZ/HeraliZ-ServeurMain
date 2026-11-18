@@ -23,7 +23,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -189,7 +188,6 @@ public final class ChatHeraliz {
         if (mc.options.hideGui) return;
         GuiGraphics g = e.getGuiGraphics();
         int w = e.getWindow().getGuiScaledWidth(), h = e.getWindow().getGuiScaledHeight();
-        if (mc.screen == null || mc.screen instanceof EcranChat) NotifExtraction.dessiner(g, mc.font);
         if (mc.screen == null) dessinerFerme(g, mc.font, w, h);
     }
 
@@ -277,95 +275,48 @@ public final class ChatHeraliz {
 
     // ------------------------------------------------------------------ notification des extractions
     /**
-     * Annonces d'extraction (HeraliZ Extraction, préfixe « [Extraction] ») : en haut à gauche, 10 s. Les ouvertures d'une
-     * même vague (arrivées à moins de 2 s) sont groupées : « Extraction 3 · 7 · 12 · 18 — pendant 1 h ». Même place pour
-     * les annonces des événements de la carte (25/10, HeraliZ Événements, préfixe « [Événement] ») : titre et filet orange.
+     * Annonces d'extraction (HeraliZ Extraction, préfixe « [Extraction] ») : jamais dans le chat ; depuis le 18/11 dans les
+     * bandeaux communs à droite de l'écran (maquette validée, {@code fr.heraliz.noyau.client.Bandeaux}). Les ouvertures
+     * d'une même vague (arrivées à moins de 2 s) sont groupées dans un seul bandeau qui se met à jour : « Extractions
+     * ouvertes · Extraction 3 · 7 · 12 — pendant 1 h ». Même chose pour les annonces des événements de la carte (HeraliZ
+     * Événements, préfixe « [Événement] »), trait orange.
      */
     static final class NotifExtraction {
         private static final List<String> ZONES = new ArrayList<>();
-        private static String duree = "", texte = "";
-        private static long debut, derniere;
-        private static boolean ouverture, evenement;
-        private static Method hudZone;
-        private static boolean hudCherche;
+        private static final int VERT = 0x5FD08A, AMBRE = 0xE8B34A, NEUTRE = 0x8F95A0, ORANGE = 0xFF7A45;
+        private static String duree = "";
+        private static long derniere;
 
         static void recevoir(Component m, boolean annonceEvenement) {
             long now = System.currentTimeMillis();
-            evenement = annonceEvenement;
-            for (Component s : annonceEvenement ? List.<Component>of() : m.getSiblings()) {
-                if (s.getContents() instanceof TranslatableContents tc && tc.getKey().equals("heraliz_extraction.zone.ouverte")
-                        && tc.getArgs().length >= 2) {
-                    if (!ouverture || now - derniere > 2000) ZONES.clear();
-                    Object nom = tc.getArgs()[0], d = tc.getArgs()[1];
-                    String n = nom instanceof Component c ? c.getString() : String.valueOf(nom);
-                    ZONES.add(n.replaceAll("(?i)^extraction\\s+", ""));
-                    duree = d instanceof Component c ? c.getString() : String.valueOf(d);
-                    ouverture = true;
-                    derniere = now;
-                    debut = now;
-                    return;
+            if (!annonceEvenement) {
+                for (Component s : m.getSiblings()) {
+                    if (s.getContents() instanceof TranslatableContents tc && tc.getKey().equals("heraliz_extraction.zone.ouverte")
+                            && tc.getArgs().length >= 2) {
+                        if (now - derniere > 2000) ZONES.clear();
+                        Object nom = tc.getArgs()[0], d = tc.getArgs()[1];
+                        String n = nom instanceof Component c ? c.getString() : String.valueOf(nom);
+                        ZONES.add(n.replaceAll("(?i)^extraction\\s+", ""));
+                        duree = d instanceof Component c ? c.getString() : String.valueOf(d);
+                        derniere = now;
+                        fr.heraliz.noyau.client.Bandeaux.remplacer("extractions_ouvertes",
+                                Component.translatable("gui.heraliz_grades.chat.extractions_ouvertes").getString(),
+                                Component.translatable("gui.heraliz_grades.chat.extractions_liste", String.join(" · ", ZONES), duree).getString(),
+                                VERT, 10);
+                        return;
+                    }
                 }
             }
             StringBuilder b = new StringBuilder();
-            for (Component s : m.getSiblings()) b.append(s.getString());
-            texte = b.toString().strip();
-            ouverture = false;
-            debut = now;
-        }
-
-        /** Le panneau de la zone des clans est déjà en haut à gauche : on se pose dessous. */
-        private static boolean zoneClan() {
-            if (!hudCherche) {
-                hudCherche = true;
-                try {
-                    hudZone = Class.forName("fr.heralisz.clans.client.ClientClans").getMethod("hudZone");
-                } catch (ReflectiveOperationException | LinkageError ex) {
-                    hudZone = null;
-                }
+            int couleur = annonceEvenement ? ORANGE : AMBRE;
+            for (Component s : m.getSiblings()) {
+                b.append(s.getString());
+                if (s.getContents() instanceof TranslatableContents tc && tc.getKey().equals("heraliz_extraction.zone.fermee")) couleur = NEUTRE;
             }
-            try {
-                return hudZone != null && hudZone.invoke(null) != null;
-            } catch (ReflectiveOperationException | RuntimeException ex) {
-                return false;
-            }
-        }
-
-        private static java.lang.reflect.Method purge;
-        private static boolean purgeCherche;
-
-        /** L'icône de la Purge de CRac est aussi en haut à gauche (25/10) : on se pose dessous ({@code PurgeHud.hauteur()}). */
-        private static int hauteurPurge() {
-            if (!purgeCherche) {
-                purgeCherche = true;
-                try {
-                    purge = Class.forName("fr.heraliz.crac.client.PurgeHud").getMethod("hauteur");
-                } catch (ReflectiveOperationException | LinkageError ex) {
-                    purge = null;
-                }
-            }
-            try {
-                return purge == null ? 0 : (int) purge.invoke(null);
-            } catch (ReflectiveOperationException | RuntimeException ex) {
-                return 0;
-            }
-        }
-
-        static void dessiner(GuiGraphics g, Font f) {
-            long age = System.currentTimeMillis() - debut;
-            if (debut == 0 || age > 10_000) return;
-            float alpha = Math.min(1, Math.min(age / 250F, (10_000 - age) / 800F));
-            String titre = Component.translatable(evenement ? "gui.heraliz_grades.chat.evenement"
-                    : ouverture ? "gui.heraliz_grades.chat.extractions_ouvertes" : "gui.heraliz_grades.chat.extraction").getString();
-            int couleur = evenement ? 0xFF7A45 : 0xF2C14E;
-            String corps = ouverture ? Component.translatable("gui.heraliz_grades.chat.extractions_liste", String.join(" · ", ZONES), duree).getString()
-                    : texte;
-            float x = 10, y = (zoneClan() ? 52 : 10) + hauteurPurge();
-            float w = Math.min(300, Math.max(Trace.largeur(f, titre, MINI), Trace.largeur(f, corps, GRAS)) + 22), h = 28;
-            Trace.rect(g, x, y, x + w, y + h, a(0x0D0F14, 205 * alpha));
-            Trace.bord(g, x, y, w, h, 1 / 3F, a(0xFFFFFF, 26 * alpha));
-            Trace.rect(g, x, y, x + 1.5F, y + h, a(couleur, 255 * alpha));
-            Trace.texte(g, f, titre, x + 9, y + 7, MINI, a(couleur, 255 * alpha));
-            Trace.m(g, f, corps, x + 9, y + 19.5F, GRAS, a(0xFFFFFF, 255 * alpha), w - 16);
+            String texte = b.toString().strip();
+            if (texte.isEmpty()) return;
+            String titre = Component.translatable(annonceEvenement ? "gui.heraliz_grades.chat.evenement" : "gui.heraliz_grades.chat.extraction").getString();
+            fr.heraliz.noyau.client.Bandeaux.ajouter(titre, texte, couleur, annonceEvenement ? 10 : 6);
         }
     }
 }
