@@ -232,7 +232,7 @@ RARETES_IMPOSEES = {
     "heraliz_evenements:boite_noire_helico": "legendaire",
     "ywzj_vehicle:fuel_tank": "peu_commun", "ywzj_vehicle:repair_tool": "rare", "ywzj_vehicle:parachute_pack": "epique",
     "heralizcasino:jeton_1": "commun", "heralizcasino:jeton_5": "peu_commun", "heralizcasino:jeton_10": "rare",
-    # explosifs de CRac (23/10) : fabrication seulement, jamais dans le loot
+    # explosifs de CRac (23/10) : fabrication ; depuis le 18/11, aussi très rares dans le loot de T5 à T7 (EXTRAS)
     "crac:c4": "legendaire", "crac:explosive_charge": "epique",
     # échelle de raid (03/11) : fabrication seulement, jamais dans le loot
     "crac:echelle": "peu_commun",
@@ -318,7 +318,17 @@ TENUES = {3: 0.5, 4: 1.0, 5: 1.5, 6: 2.0, 7: 3.0}
 TENUES_RENFORCEES = {6: 0.3, 7: 0.8}
 EXTRAS.update({ARMURE + i: ("rare", TENUES) for i in ("plongee_suit", "arctique_suit", "hazmat_suit")})
 EXTRAS.update({ARMURE + i: ("epique", TENUES_RENFORCEES) for i in ("arctique_renforcee_suit", "hazmat_renforce_suit")})
-RARETES_IMPOSEES.update({i: r for i, (r, _) in EXTRAS.items()})
+# explosifs de CRac (18/11, demande du propriétaire : « explosifs lootables depuis le T5 mais avec une chance extrêmement
+# faible ; un C4 ou 1-2 charges dans un T7, c'est déjà très bien : environ 1 chance sur 10 à 15 par T7 ») : C4 Légendaire,
+# charge explosive Épique (par 1 ou 2), pour 100 conteneurs AVANT le réglage « bêta » du loot, qui multiplie le nombre
+# d'objets et les chances des raretés hautes. Après lui (python outils/loot_armes.py --explosifs), un conteneur en donne :
+# T5 environ 1 sur 200, T6 1 sur 50, T7 1 sur 12. Fabriqués comme avant (heraliz_crafts : poudre, scotch, corde...) ;
+# raid d'un mur blindé (2 000 points) : 7 C4.
+EXTRAS.update({
+    "crac:c4": ("legendaire", {5: 0.045, 6: 0.22, 7: 1.55}),
+    "crac:explosive_charge": ("epique", {5: 0.16, 6: 0.65, 7: 3.25}, [1, 2]),
+})
+RARETES_IMPOSEES.update({i: v[0] for i, v in EXTRAS.items()})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)
 
@@ -675,14 +685,16 @@ def ajouter_fragments(objets, t):
 def ajouter_extras(objets, t):
     """Objets de EXTRAS du palier t, placés juste après la case vide, comme les fragments : leur poids est calculé sur le
     total de la table pour donner le nombre voulu pour 100 conteneurs (les poids des autres objets ne changent pas)."""
-    parts = {i: d[t] / 100 / cases_moyennes(t) for i, (_, d) in EXTRAS.items() if t in d}
+    parts = {i: v[1][t] / 100 / cases_moyennes(t) for i, v in EXTRAS.items() if t in v[1]}
     if not parts:
         return objets
     q = sum(parts.values())
     total = sum(e["poids"] for e in objets) * q / (1 - q)
     ajout = []
     for i, part in parts.items():
-        e = {"item": i, "nombre": [1, 1], "_cat": "extras", "poids": max(1, round(total * part / q))}
+        # nombre par tirage : [1, 1], ou celui donné en 3e place de EXTRAS (charges explosives : 1 ou 2)
+        e = {"item": i, "nombre": list(EXTRAS[i][2]) if len(EXTRAS[i]) > 2 else [1, 1], "_cat": "extras",
+             "poids": max(1, round(total * part / q))}
         if t == 7:
             e["rarete"] = EXTRAS[i][0]
         ajout.append(e)
@@ -875,5 +887,40 @@ def simuler(essais=1000):
               "| fragments " + str({k: round(v / essais, 2) for k, v in fragments.items()}))
 
 
+def explosifs():
+    """Chance qu'un conteneur T5 à T7 donne un explosif de CRac (C4, charges explosives), réglage « bêta » du loot compris
+    (même calcul que le serveur : outils/loot_beta.py) ; lit les tables écrites (serveur/config/heraliz_loot/coffres)."""
+    import loot_beta as lb
+    r = lb.reglages()
+    q = r["quantite"] if r["actif"] else 1.0
+    for t in (5, 6, 7):
+        table = json.loads((CONFIG_COFFRES / f"t{t}.json").read_text(encoding="utf-8"))
+        w = lb.poids_beta(table, r)
+        tot = sum(w)
+        p = {i: sum(x for e, x in zip(table["objets"], w) if e["item"] == i) / tot for i in ("crac:c4", "crac:explosive_charge")}
+        cp = {int(k): v for k, v in table["cases_poids"].items()}
+        tc = sum(cp.values())
+
+        def aucun(pi):
+            s = 0.0
+            for n, v in cp.items():
+                x = n * q
+                cap = max(n, r["objets_max"])
+                if x > cap:
+                    s += v / tc * (1 - pi) ** cap
+                else:
+                    b, f = int(x), x - int(x)
+                    s += v / tc * ((1 - f) * (1 - pi) ** b + f * (1 - pi) ** (b + 1))
+            return s
+        tous = 1 - aucun(sum(p.values()))
+        print(f"T{t} : un explosif dans {tous * 100:.2f} % des conteneurs (1 sur {1 / tous:.0f}) ; C4 1 sur "
+              f"{1 / (1 - aucun(p['crac:c4'])):.0f}, charges 1 sur {1 / (1 - aucun(p['crac:explosive_charge'])):.0f}")
+
+
 if __name__ == "__main__":
-    simuler() if "--simuler" in sys.argv else ecrire()
+    if "--simuler" in sys.argv:
+        simuler()
+    elif "--explosifs" in sys.argv:
+        explosifs()
+    else:
+        ecrire()

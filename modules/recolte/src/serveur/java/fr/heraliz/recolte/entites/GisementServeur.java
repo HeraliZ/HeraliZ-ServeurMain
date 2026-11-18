@@ -75,7 +75,8 @@ public class GisementServeur extends Gisement {
         }
         Vec3 point = Coups.pointTouche(joueur, this);
         Coups.user(joueur);
-        int du = Coups.part(avance, r.matiere());
+        // 18/11 : un gisement de la zone de neige donne plus (Reglages.bonus)
+        int du = Coups.part(avance, r.matiere(Reglages.get().bonus(this.getX(), this.getZ())));
         if (du > donne) {
             Coups.donner(joueur, Coups.matiere(sorte()), du - donne);
             donne = du;

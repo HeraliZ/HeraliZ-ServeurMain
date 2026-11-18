@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:zombie",
+    "minecraft:husk",
+    "minecraft:drowned",
+    "minecraft:zombie_villager",
+    {
+      "id": "heralisz_utils:zombie_survie",
+      "required": false
+    },
+    {
+      "id": "mutantszombies:zombie_brute",
+      "required": false
+    },
+    {
+      "id": "mutantszombies:blister_zombie",
+      "required": false
+    },
+    {
+      "id": "mutantszombies:crawler",
+      "required": false
+    },
+    {
+      "id": "mutantszombies:spitter",
+      "required": false
+    }
+  ]
+}

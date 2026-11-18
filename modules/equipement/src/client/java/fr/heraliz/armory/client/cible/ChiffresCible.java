@@ -1,22 +1,24 @@
 package fr.heraliz.armory.client.cible;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.Window;
 import fr.heraliz.armory.HeralizArmory;
-import fr.heraliz.armory.client.gui.Ui;
 import fr.heraliz.armory.network.PaquetsCible;
-import net.minecraft.client.Camera;
+import fr.heraliz.noyau.client.kit.Formes;
+import fr.heraliz.noyau.client.kit.Palette;
+import fr.heraliz.noyau.client.kit.PoliceHud;
+import fr.heraliz.noyau.client.kit.TexteHud;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,23 +27,31 @@ import java.util.List;
  * Chiffres de dégâts au-dessus de la cible d'essai (03/11, demande du propriétaire) : à chaque touche, le nombre de dégâts
  * reçus (ce qu'aurait perdu un joueur) s'écrit juste au-dessus de sa tête, monte d'un demi-bloc et s'efface en 1 s. Tête :
  * doré ; corps, mêlée, explosion : blanc. Les plombs d'un même tir de fusil à pompe s'additionnent en un seul chiffre. Vu
- * du tireur seulement (seul lui reçoit les coups). DM Sans gras du mod (ui_chiffre), à l'échelle des noms au-dessus des
- * entités. Aucun coût sans chiffre en cours : l'écouteur sort tout de suite ; au plus {@link #MAX} chiffres à la fois.
+ * du tireur seulement (seul lui reçoit les coups). Écrits sur l'écran depuis le 18/11 (voir plus bas). Aucun coût sans
+ * chiffre en cours : les écouteurs sortent tout de suite ; au plus {@link #MAX} chiffres à la fois.
  * <p>08/11 : aussi les dégâts infligés à un AUTRE JOUEUR (PaquetsCible.Degats, décidés par le serveur), même dessin en plus
- * petit (70 %) et plus bas, juste au-dessus de sa tête ; doré à la tête ; plombs d'un même tir additionnés.</p>
+ * petit et plus bas, juste au-dessus de sa tête ; doré à la tête ; plombs d'un même tir additionnés.</p>
+ * <p>18/11 (retour du propriétaire : « les nombres qui apparaissent sont flous, on dirait qu'ils sont dessinés avec du code ;
+ * je veux un truc bien propre, en gras, bien visible, net ») : ils étaient écrits DANS le monde, en tout petit (une lettre
+ * tracée 8 fois plus fin, réduite par la carte graphique selon la distance : traits grignotés, bords qui scintillent). Ils
+ * sont maintenant écrits SUR L'ÉCRAN, à l'endroit du monde où ils apparaissent : Oswald Bold du HUD (la police des chiffres
+ * du noyau) à sa vraie taille, posée sur les pixels de l'écran, contour sombre d'un pixel (lisible sur la neige comme sur un
+ * mur sombre). Même taille à toute distance ; cachés derrière la caméra. La position à l'écran est calculée pendant le
+ * rendu du monde ({@link #placer}), le dessin se fait avec le HUD ({@link #dessiner}).</p>
  */
 @Mod.EventBusSubscriber(modid = HeralizArmory.MOD_ID, value = Dist.CLIENT)
 public final class ChiffresCible {
     private ChiffresCible() {}
 
-    private static final ResourceLocation CHIFFRE = HeralizArmory.id("ui_chiffre");
     private static final long DUREE_MS = 1000L;
     private static final double MONTEE = 0.5D, AU_DESSUS = 0.35D;
     private static final int MAX = 16;
-    private static final int OR = 0xFFC94A, BLANC = 0xFFFFFF;
-    /** Taille des chiffres : cible d'essai (taille des noms au-dessus des entités), joueurs touchés (plus discrets). */
-    private static final float TAILLE = 0.025F, TAILLE_JOUEUR = 0.0175F;
+    private static final int OR = 0xFFC94A, BLANC = 0xFFFFFF, CONTOUR = 0x0A0B0E;
+    /** Polices des chiffres : cible d'essai (Oswald Bold 11), joueurs touchés (Oswald Bold 8, plus discrets). */
+    private static final PoliceHud TAILLE = PoliceHud.TITRE, TAILLE_JOUEUR = PoliceHud.CHIFFRE_PETIT;
     private static final double AU_DESSUS_JOUEUR = 0.15D;
+    /** Montée à l'écran (unités d'interface) pendant la vie du chiffre, en plus de sa montée dans le monde. */
+    private static final float MONTEE_ECRAN = 6F;
 
     private static final class Chiffre {
         final double x, y, z;
@@ -50,9 +60,12 @@ public final class ChiffresCible {
         float valeur;
         long debut;
         int couleur;
-        final float taille;
+        final TexteHud texte;
+        /** Place à l'écran (unités d'interface) calculée à l'image en cours ; faux : derrière la caméra. */
+        float sx, sy;
+        boolean visible;
 
-        Chiffre(double x, double y, double z, int entite, long tir, float valeur, long debut, int couleur, float taille) {
+        Chiffre(double x, double y, double z, int entite, long tir, float valeur, long debut, int couleur, PoliceHud police) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -61,7 +74,7 @@ public final class ChiffresCible {
             this.valeur = valeur;
             this.debut = debut;
             this.couleur = couleur;
-            this.taille = taille;
+            this.texte = new TexteHud(police).texte(TextesCible.nombre(valeur));
         }
     }
 
@@ -85,13 +98,14 @@ public final class ChiffresCible {
         return d.entite == entite && d.tir == tir;
     }
 
-    private static void ajouter(int entite, long tir, float recu, boolean tete, float taille, double auDessus) {
+    private static void ajouter(int entite, long tir, float recu, boolean tete, PoliceHud taille, double auDessus) {
         long maintenant = System.currentTimeMillis();
         int couleur = tete ? OR : BLANC;
         // plomb d'un tir déjà affiché : même chiffre, additionné (plafond atteint : rien de plus)
         if (memeTir(entite, tir)) {
             Chiffre d = CHIFFRES.get(CHIFFRES.size() - 1);
             d.valeur += recu;
+            d.texte.texte(TextesCible.nombre(d.valeur));
             d.debut = maintenant;
             if (couleur == OR) d.couleur = OR;
             return;
@@ -106,31 +120,55 @@ public final class ChiffresCible {
                 recu, maintenant, couleur, taille));
     }
 
+    private static final Matrix4f VUE = new Matrix4f();
+    private static final Vector4f POINT = new Vector4f();
+
+    /**
+     * Pendant le rendu du monde : place à l'écran de chaque chiffre (projection de la caméra, balancement de la marche
+     * compris), en unités d'interface. Rien n'est alloué.
+     */
     @SubscribeEvent
-    public static void dessiner(RenderLevelStageEvent e) {
+    public static void placer(RenderLevelStageEvent e) {
         if (CHIFFRES.isEmpty() || e.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
         long maintenant = System.currentTimeMillis();
         CHIFFRES.removeIf(c -> maintenant - c.debut > DUREE_MS);
         if (CHIFFRES.isEmpty()) return;
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui) return;
-        Camera camera = e.getCamera();
-        Vec3 cam = camera.getPosition();
-        PoseStack pose = e.getPoseStack();
-        Font font = mc.font;
-        MultiBufferSource.BufferSource tampon = mc.renderBuffers().bufferSource();
+        Vec3 cam = e.getCamera().getPosition();
+        VUE.set(e.getProjectionMatrix()).mul(e.getPoseStack().last().pose());
+        Window w = Minecraft.getInstance().getWindow();
+        float gw = w.getGuiScaledWidth(), gh = w.getGuiScaledHeight();
         for (Chiffre c : CHIFFRES) {
             float t = (maintenant - c.debut) / (float) DUREE_MS;
-            int alpha = Math.max(8, Math.round(255.0F * (1.0F - t * t)));
-            MutableComponent texte = Ui.lit(TextesCible.nombre(c.valeur), CHIFFRE);
-            pose.pushPose();
-            pose.translate(c.x - cam.x, c.y + MONTEE * t - cam.y, c.z - cam.z);
-            pose.mulPose(camera.rotation());
-            pose.scale(-c.taille, -c.taille, c.taille);
-            font.drawInBatch(texte, -font.width(texte) / 2.0F, 0.0F, Ui.argb(c.couleur, alpha), true, pose.last().pose(), tampon,
-                    Font.DisplayMode.SEE_THROUGH, 0, LightTexture.FULL_BRIGHT);
-            pose.popPose();
+            POINT.set((float) (c.x - cam.x), (float) (c.y + MONTEE * t - cam.y), (float) (c.z - cam.z), 1F);
+            VUE.transform(POINT);
+            c.visible = POINT.w > 0.05F;
+            if (!c.visible) continue;
+            c.sx = (POINT.x / POINT.w * 0.5F + 0.5F) * gw;
+            c.sy = (0.5F - POINT.y / POINT.w * 0.5F) * gh - MONTEE_ECRAN * t;
         }
-        tampon.endBatch();
+    }
+
+    /** Avec le HUD : chaque chiffre à sa place, contour sombre d'un pixel d'écran puis le chiffre. */
+    @SubscribeEvent
+    public static void dessiner(RenderGuiEvent.Post e) {
+        if (CHIFFRES.isEmpty()) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.hideGui) return;
+        long maintenant = System.currentTimeMillis();
+        GuiGraphics g = e.getGuiGraphics();
+        float px = Formes.pixel();
+        for (Chiffre c : CHIFFRES) {
+            if (!c.visible) continue;
+            float t = Mth.clamp((maintenant - c.debut) / (float) DUREE_MS, 0F, 1F);
+            float a = 1F - t * t;
+            int fond = Palette.argb(CONTOUR, a * 0.85F);
+            float x = Formes.caler(c.sx), y = Formes.caler(c.sy);
+            c.texte.ajouter(g, x - px, y, fond, TexteHud.CENTRE, false);
+            c.texte.ajouter(g, x + px, y, fond, TexteHud.CENTRE, false);
+            c.texte.ajouter(g, x, y - px, fond, TexteHud.CENTRE, false);
+            c.texte.ajouter(g, x, y + px, fond, TexteHud.CENTRE, false);
+            c.texte.ajouter(g, x, y, Palette.argb(c.couleur, a), TexteHud.CENTRE, false);
+        }
+        g.flush();
     }
 }

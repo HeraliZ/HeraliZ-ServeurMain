@@ -19,16 +19,17 @@ public final class Echelle {
     private static boolean forcee;
 
     /**
-     * Echelle voulue pour la fenetre courante : la plus grande qui laisse au moins ~94 % du canevas (600 x 340). La fenetre
-     * "1080p" ne fait que 1057 px de haut une fois la barre de titre retiree : une division entiere stricte donnerait 2
-     * au lieu de 3.
+     * Echelle voulue pour la fenetre courante : la plus grande, par quarts, qui laisse au moins ~94 % du canevas
+     * (600 x 340). La fenetre "1080p" ne fait que 1057 px de haut une fois la barre de titre retiree : une division stricte
+     * donnerait moins que 3. 18/11 (retour du proprietaire : « en fenetre, c'est petit et difficile a lire ») : par crans
+     * entiers, une fenetre a peine plus petite que l'ecran (1920 x 990) tombait de 3 a 2, un tiers plus petit ; par quarts,
+     * elle prend 2,75 (1600 x 900 : 2,5 ; plein ecran 1080p : 3 et 1440p : 4, inchanges). Les lettres restent nettes a
+     * ces echelles (heraliz_interface : PolicesDensite, finesse par quarts).
      */
-    public static int voulue() {
+    public static double voulue() {
         Window w = Minecraft.getInstance().getWindow();
-        for (int s = 8; s >= 2; s--) {
-            if (w.getWidth() / s >= CANEVAS_L - 40 && w.getHeight() / s >= CANEVAS_H - 20) return s;
-        }
-        return 1;
+        double s = Math.min(w.getWidth() / (double) (CANEVAS_L - 40), w.getHeight() / (double) (CANEVAS_H - 20));
+        return Math.max(1.0, Math.min(8.0, Math.floor(s * 4.0) / 4.0));
     }
 
     /** A appeler au debut de init() : force l'echelle et recale width/height de l'ecran. */
@@ -49,11 +50,11 @@ public final class Echelle {
         appliquer(ecran, pourPanneau(largeur, hauteur));
     }
 
-    /** Echelle d'un ecran panneau (voir {@link #forcer(Screen, int, int)}), par pas de 0,5. */
+    /** Echelle d'un ecran panneau (voir {@link #forcer(Screen, int, int)}), par quarts (18/11 ; avant : par demis). */
     public static double pourPanneau(int largeur, int hauteur) {
         Window w = Minecraft.getInstance().getWindow();
         double base = voulue(), s = base;
-        for (double e = base + 0.5; e <= base + 1.0; e += 0.5) {
+        for (double e = base + 0.25; e <= base + 1.0; e += 0.25) {
             if (largeur * e > w.getWidth() * 0.9 || hauteur * e > w.getHeight() * 0.9) break;
             s = e;
         }

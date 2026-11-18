@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import static fr.heraliz.grades.client.boutique.Trace.a;
 
@@ -93,8 +94,23 @@ public final class ChatHeraliz {
     }
 
     // ------------------------------------------------------------------ messages
+    /**
+     * Le composant dans la police {@code p} du chat, sans le « gras » de Minecraft (18/11, retour du propriétaire : le grade
+     * « FONDATEUR » semblait écrit deux fois l'un sur l'autre). Minecraft fait le gras en redessinant chaque lettre décalée
+     * d'un point : sur une police DM Sans, déjà grasse pour le nom, on voyait deux textes. Les morceaux en gras passent dans
+     * la police grasse du chat, les autres dans {@code p} ; un morceau qui a sa propre police (icônes...) la garde.
+     * Couleurs, liens et survols restent (ils sont dans le style de chaque morceau).
+     */
     private static Component police(Component c, P p) {
-        return Ui.in(c, p.police());
+        MutableComponent r = Component.empty();
+        c.visit((Style st, String s) -> {
+            if (!s.isEmpty()) {
+                boolean propre = !Style.DEFAULT_FONT.equals(st.getFont());
+                r.append(Component.literal(s).withStyle(propre ? st : st.withBold(false).withFont(st.isBold() ? GRAS.police() : p.police())));
+            }
+            return Optional.empty();
+        }, Style.EMPTY);
+        return r;
     }
 
     private static void ajouter(int c, Component texte) {

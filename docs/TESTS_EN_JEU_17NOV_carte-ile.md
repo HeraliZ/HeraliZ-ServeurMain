@@ -187,3 +187,26 @@ sans icône ni capitales espacées.
 - [ ] Ville à drapeau : panneau en haut à gauche dans le même style (nom de la ville, « Zone libre · drapeau à 25 m »,
       capture en cours et sa barre).
 - [ ] Rien ne se chevauche avec les effets en haut à droite, la Purge en haut à gauche, les cœurs et la faim.
+
+## 10. Retours du 18/11 au soir (zombies, récolte, explosifs, écrans, tchat, chiffres)
+
+Réglages des zombies : section `[zombies]` de `serveur/defaultconfigs/heralisz_tactical-server.toml` (multiplicateur des
+balles, tête, sniper, armure). Récolte : `serveur/config/heraliz_recolte/recolte.json` (relu tout seul).
+- [ ] Zombies : une balle dans la tête au fusil de précision (Dragunov, M82A3, M95, AWP, M200…) tue n'importe quel zombie,
+      même un Zombie Brute. Les .50 (M82A3, M95) font enfin des dégâts aux zombies (avant : 0).
+- [ ] Zombies : fusil 5,56 ou pistolet 9 mm, une balle dans la tête tue un marcheur ou un coureur ; au corps, environ
+      3 balles pour un marcheur, 5 pour un costaud. Au corps à corps (couteau, hache…), rien ne change : ils encaissent.
+- [ ] Récolte : bien plus d'arbres et de gisements partout (3 fois plus), mais chacun donne environ 3 fois moins (arbre
+      10 bûches, pierre 8, fer 10, titane 6).
+- [ ] Zone de neige (île arctique, au nord) : beaucoup plus de ressources qu'ailleurs (4 sur 10 de la carte y sont), et
+      elles donnent 50 % de plus (arbre 15 bûches, pierre 12, fer 15, titane 9). Elles apparaissent quand un joueur y va.
+- [ ] Explosifs dans le loot : C4 ou 1 à 2 charges explosives, environ 1 conteneur T7 sur 12, T6 1 sur 50, T5 1 sur 200
+      (jamais avant T5).
+- [ ] Écrans en fenêtre (hôtel des ventes, quêtes, clans, kits…) : plus grands qu'avant dans une fenêtre un peu plus
+      petite que l'écran (par quarts : 2,5 ou 2,75 au lieu de 2) ; en plein écran 1080p, rien ne change. Textes nets.
+      Le casino et les caisses gardent leur taille d'avant.
+- [ ] Tchat : le grade (« FONDATEUR »…) n'est plus écrit deux fois l'un sur l'autre ; il reste en gras.
+- [ ] Chiffres de dégâts (joueur touché, cible d'essai) : écrits net, en gras, avec un contour sombre, même taille de
+      loin ; doré pour la tête.
+- [ ] Recycleur : « Chance de chaque pièce » (chaque pièce est tirée à part, on peut en avoir plusieurs à la fois) et
+      « Aucune pièce : 23 % » ; les chiffres ne s'additionnent donc pas à 100 %.

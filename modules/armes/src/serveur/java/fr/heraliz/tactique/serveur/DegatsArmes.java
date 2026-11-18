@@ -49,6 +49,7 @@ import org.slf4j.Logger;
  * une décharge entière faisait 4 au lieu de 36) ; une arme dont TaCZ donne 0 dégât (quelques fusils anti-matériel des gunpacks) prend
  * « degats » tel quel. Arme absente du fichier, créatures, fichier absent ou « actif » à false : rien ne change. Fichier
  * relu à chaque démarrage du serveur, et envoyé à chaque joueur qui se connecte (chiffres affichés chez lui).
+ * <p>18/11 : les balles qui touchent un zombie suivent leurs propres règles ({@link ZombiesArmes}).</p>
  * <p>03/11 : la cible d'essai de l'Armurerie (tag {@link #COMME_UN_JOUEUR}) est réglée exactement comme un joueur.</p>
  * <p>Relu en marche (audit du 02/11, mineur 12) par {@code /recharger armes} (op 4 ; aussi par {@code /recharger} seul, avec tous les modules) :
  * réglages renvoyés aux joueurs connectés ; un fichier illisible à ce moment ne change rien (les anciens réglages restent,
@@ -174,7 +175,12 @@ public final class DegatsArmes {
       new ResourceLocation("heraliz_tactique", "comme_un_joueur"));
 
    private static void touche(EntityHurtByGunEvent.Pre e) {
-      if (e.getLogicalSide() != LogicalSide.SERVER || !commeUnJoueur(e.getHurtEntity())) return;
+      if (e.getLogicalSide() != LogicalSide.SERVER) return;
+      if (!commeUnJoueur(e.getHurtEntity())) {
+         // 18/11 : les zombies ont leurs propres règles (ZombiesArmes)
+         if (ZombiesArmes.estZombie(e.getHurtEntity())) ZombiesArmes.touche(e, (LivingEntity) e.getHurtEntity());
+         return;
+      }
       ResourceLocation arme = e.getGunId();
       if (arme == null) return;
       DegatsJoueurs.Reglage r = DegatsJoueurs.de(arme);

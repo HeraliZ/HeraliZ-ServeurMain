@@ -90,10 +90,12 @@ TEXTES = {
     "gui.heraliz_quetes.recycleur.plein.2": ("prends ce qui est récupéré.", "take what was recovered.", "забери полученное."),
     "gui.heraliz_quetes.recycleur.inventaire": ("Ton inventaire", "Your inventory", "Твой инвентарь"),
     "gui.heraliz_quetes.recycleur.apercu": ("Aperçu", "Preview", "Предпросмотр"),
-    "gui.heraliz_quetes.recycleur.peut_donner": ("Peut donner", "Can give", "Может дать"),
+    # 18/11 (retour du propriétaire : « poudre 26 %, ferraille 69 %, rien 23 % : ça fait plus que 100 % ») : chaque pièce
+    # est tirée à part (on peut en avoir plusieurs à la fois) ; les titres le disent
+    "gui.heraliz_quetes.recycleur.peut_donner": ("Chance de chaque pièce", "Chance of each part", "Шанс каждой детали"),
     "gui.heraliz_quetes.recycleur.moyenne": ("En moyenne", "On average", "В среднем"),
     "gui.heraliz_quetes.recycleur.pieces": ("%s pièce(s)", "%s part(s)", "%s дет."),
-    "gui.heraliz_quetes.recycleur.rien_du_tout": ("Rien du tout (%s %%)", "Nothing at all (%s %%)", "Ничего (%s %%)"),
+    "gui.heraliz_quetes.recycleur.rien_du_tout": ("Aucune pièce : %s %%", "No part at all: %s %%", "Ни одной детали: %s %%"),
     "gui.heraliz_quetes.recycleur.herals_n": ("%s hérals", "%s herals", "%s гералов"),
     "gui.heraliz_quetes.recycleur.herals_n_un": ("1 héral", "1 heral", "1 герал"),
     "gui.heraliz_quetes.recycleur.herals_un": ("+ 1 héral sur ton compte", "+ 1 heral to your account", "+ 1 герал на счёт"),

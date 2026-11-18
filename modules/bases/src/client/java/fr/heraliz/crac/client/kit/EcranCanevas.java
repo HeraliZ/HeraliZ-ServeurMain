@@ -33,9 +33,9 @@ public abstract class EcranCanevas extends Screen {
         this.initCanevas();
     }
 
-    /** Pixels d'écran par unité du canevas : l'échelle entière des écrans de clan ; un écran peut en prendre une autre. */
+    /** Pixels d'écran par unité du canevas : l'échelle des écrans de clan (par quarts) ; un écran peut en prendre une autre. */
     protected float echelleEcran(Window w) {
-        return Echelle.voulue();
+        return (float) Echelle.voulue();
     }
 
     /** Lettres lissées : pour un écran agrandi d'un facteur non entier, où les polices lues au point près s'abîment. */

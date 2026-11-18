@@ -88,7 +88,8 @@ public class ArbreServeur extends Arbre {
         }
         Vec3 point = Coups.pointTouche(joueur, this);
         Coups.user(joueur);
-        int du = Coups.part(avance, r.matiereCoups());
+        // 18/11 : un arbre de la zone de neige donne plus (Reglages.bonus)
+        int du = Coups.part(avance, r.matiereCoups(Reglages.get().bonus(this.getX(), this.getZ())));
         if (du > donne) {
             Coups.donner(joueur, ObjetsRecolte.BUCHE.get(), du - donne);
             donne = du;
@@ -142,8 +143,8 @@ public class ArbreServeur extends Arbre {
             return;
         }
         Reglages.Ressource r = Reglages.get().ressource(Reglages.ARBRE);
-        // les bûches de la chute : ce qui manque pour le total du barème (6 avec le barème de la proposition)
-        int reste = Math.max(0, r.matiere() - donne);
+        // les bûches de la chute : ce qui manque pour le total du barème (2 depuis le 18/11 ; 3 dans la zone de neige)
+        int reste = Math.max(0, r.matiere(Reglages.get().bonus(this.getX(), this.getZ())) - donne);
         donne += reste;
         if (reste > 0) {
             ServerPlayer joueur = abatteur == null ? null : l.getServer().getPlayerList().getPlayer(abatteur);

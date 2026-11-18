@@ -168,6 +168,29 @@
 	#n'est jamais retirée. false : comme avant.
 	retirer_figees = true
 
+[zombies]
+	#Balles des armes TaCZ contre les zombies (tag heraliz_tactique:zombies : zombies HeraliZ et de Minecraft, Zombie
+	#Brute, Blister, Crawler et Spitter des mutants) : il ne faut plus un chargeur par zombie (choix du propriétaire,
+	#18/11 : « une tête au sniper tue n'importe quel zombie ; au corps à corps ils doivent tanker, mais avec les armes
+	#il ne faut pas en mettre autant »). Le corps à corps ne change pas. false : dégâts de TaCZ tels quels.
+	actif = true
+	#Dégâts d'une balle sur un zombie : ceux de TaCZ (baisse avec la distance et accessoires compris) multipliés par
+	#cette valeur. 2 : une balle de 5,56 (6 dégâts) en fait 12, un marcheur (30 de vie) tombe en 3 balles au corps.
+	#Les fusils dont TaCZ donne 0 dégât aux créatures (.50 M82A3 et M95) prennent leurs dégâts contre les joueurs
+	#(armes.json).
+	#Range: 0.1 ~ 20.0
+	multiplicateur = 2.0
+	#Tir à la tête d'un zombie : au moins cette fois les dégâts d'un tir au corps (TaCZ : 1,2 à 1,75 selon l'arme).
+	#3,5 : une balle de 5,56 ou de 9 mm dans la tête tue un marcheur ou un coureur.
+	#Range: 1.0 ~ 20.0
+	tete = 3.5
+	#Un tir à la tête au fusil de précision (armes de type « sniper » de TaCZ : Dragunov, M82A3, M95, AWP, M200...)
+	#tue n'importe quel zombie, même un Zombie Brute (100 de vie, 16 d'armure). false : il compte comme les autres.
+	tete_precision_tue = true
+	#Les balles ne sont plus freinées par l'armure des zombies (Zombie Brute : 16 points d'armure, une balle de
+	#5,56 y perdait plus de la moitié de ses dégâts). Le corps à corps la subit toujours. false : comme TaCZ.
+	armure_ignoree = true
+
 [camos]
 	#Camos à vie : attente (en minutes) après une mort avec l'arme qui le portait, avant de pouvoir remettre le camo
 	#(choix du propriétaire : 15). 0 : aucune attente.

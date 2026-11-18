@@ -237,12 +237,34 @@ public final class Apparition {
      * Tire une nouvelle position pour la place, sans lire un bloc (essais du réglage ; sinon la dernière tirée). 18/11 : la
      * plupart des tirages ({@code pres_joueurs}) se font autour d'un joueur de la carte pris au hasard, dans un anneau
      * assez loin pour qu'il ne voie pas la ressource surgir ({@code distance_joueurs} + 30 à {@code rayon_joueurs} blocs) ;
-     * les autres, partout dans la bordure comme avant (personne en ligne : tous).
+     * les autres, partout dans la bordure comme avant (personne en ligne : tous). 18/11 au soir : une part des places
+     * ({@code neige.part}) est tirée dans la zone de neige ({@link Reglages.Neige}), qu'il y ait quelqu'un ou non : elles
+     * attendent qu'un joueur y aille (zone où l'on va farmer).
      */
     static void tirer(ServerLevel l, Places pl, Places.Place p, Reglages r) {
         RandomSource rnd = l.getRandom();
         double[] b = Terrain.bornes(l, r);
         int x = p.x, z = p.z;
+        Reglages.Neige neige = r.neige;
+        if (neige != null && rnd.nextDouble() < neige.part()) {
+            double x0 = Math.max(b[0], neige.minX()), z0 = Math.max(b[1], neige.minZ());
+            double x1 = Math.min(b[2], neige.maxX()), z1 = Math.min(b[3], neige.maxZ());
+            if (x0 < x1 && z0 < z1) {
+                // bien plus d'essais : une partie du rectangle de la zone est hors de son contour (mer, autres terres)
+                for (int i = 0; i < r.essais * 3; i++) {
+                    int nx = Mth.floor(Mth.lerp(rnd.nextDouble(), x0, x1)), nz = Mth.floor(Mth.lerp(rnd.nextDouble(), z0, z1));
+                    if (!neige.contient(nx + 0.5, nz + 0.5)) {
+                        continue;
+                    }
+                    x = nx;
+                    z = nz;
+                    if (Terrain.raisonSansBloc(l, pl, p, x, z, r, b) < 0) {
+                        noter(pl, p, x, z);
+                        return;
+                    }
+                }
+            }
+        }
         List<ServerPlayer> joueurs = r.presJoueurs > 0 ? l.players() : List.of();
         double min = r.distanceJoueurs + 30.0, max = Math.max(min + 50.0, r.rayonJoueurs);
         for (int i = 0; i < r.essais; i++) {
@@ -260,6 +282,11 @@ public final class Apparition {
                 break;
             }
         }
+        noter(pl, p, x, z);
+    }
+
+    /** La place attend désormais en (x, z). */
+    private static void noter(Places pl, Places.Place p, int x, int z) {
         p.x = x;
         p.z = z;
         p.y = 0;

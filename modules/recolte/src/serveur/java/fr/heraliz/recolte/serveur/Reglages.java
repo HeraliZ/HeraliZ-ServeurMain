@@ -44,13 +44,16 @@ public final class Reglages {
     // barème par défaut (PROPOSITION.md §2 et §4), dans l'ordre des sortes
     // 18/11 (retour du propriétaire : « pas assez d'arbres et de minerais, je n'en ai croisé aucun ») : 4 fois plus, plus
     // serrés, qui reviennent 2 fois plus vite (avant : 30, 24, 10, 4 ; 90, 120, 240, 480 min ; écarts 50, 60, 150, 300)
-    private static final int[] A_LA_FOIS = {120, 90, 40, 14};
-    private static final int[] MATIERE = {30, 24, 30, 16};
-    private static final int[] CHUTE = {6, 0, 0, 0};
+    // 18/11 au soir (« ça donne beaucoup trop ; 3 fois plus de ressources mais qui donnent moins », pour que monter sa base
+    // reste à la mesure des explosifs) : 3 fois plus, environ 3 fois moins de matière chacune (avant : 120, 90, 40, 14 ;
+    // 30, 24, 30, 16 ; chute 6 ; écarts du métal et du titane 80, 160), et la zone de neige en plus ({@link Neige})
+    private static final int[] A_LA_FOIS = {360, 270, 120, 42};
+    private static final int[] MATIERE = {10, 8, 10, 6};
+    private static final int[] CHUTE = {2, 0, 0, 0};
     private static final int[] COUPS = {12, 16, 20, 24};
     private static final int[] COUPS_LEGENDAIRE = {7, 10, 12, 14};
     private static final int[] REAPPARITION_MINUTES = {45, 60, 120, 240};
-    private static final int[] ECART = {30, 35, 80, 160};
+    private static final int[] ECART = {30, 35, 60, 90};
 
     /** Sols sur lesquels une ressource peut être posée (herbe, terre, pierre, sable, neige). */
     private static final List<String> SOLS = List.of("minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt",
@@ -76,6 +79,21 @@ public final class Reglages {
         /** Matière donnée par les coups (pour un arbre, le reste est donné quand il tombe). */
         public int matiereCoups() {
             return Math.max(0, matiere - chute);
+        }
+
+        /** Matière d'une ressource posée là où la récolte donne {@code bonus} fois plus ({@link Reglages#bonus}). */
+        public int matiere(double bonus) {
+            return (int) Math.round(matiere * bonus);
+        }
+
+        /** Bûches de la chute d'un arbre posé là où la récolte donne {@code bonus} fois plus. */
+        public int chute(double bonus) {
+            return Math.min(matiere(bonus), (int) Math.round(chute * bonus));
+        }
+
+        /** Matière des coups d'une ressource posée là où la récolte donne {@code bonus} fois plus. */
+        public int matiereCoups(double bonus) {
+            return Math.max(0, matiere(bonus) - chute(bonus));
         }
 
         public long reapparitionMs() {
@@ -104,6 +122,9 @@ public final class Reglages {
     /** Rectangle {x1, z1, x2, z2} où tirer les places (null : toute la bordure du monde). */
     @Nullable
     public final int[] zone;
+    /** Zone de neige : une part des places y est tirée, et ses ressources donnent plus (null : pas de zone). */
+    @Nullable
+    public final Neige neige;
     public final Filtre sols, naturels;
 
     private Reglages(JsonObject o) {
@@ -138,6 +159,7 @@ public final class Reglages {
         presJoueurs = reel(a, "pres_joueurs", 0.7, 0.0, 1.0);
         rayonJoueurs = entier(a, "rayon_joueurs", 450, 120, 3000);
         zone = zone(a);
+        neige = Neige.lire(objet(o, "neige"));
         sols = new Filtre(liste(a, "sols_naturels", SOLS));
         naturels = new Filtre(liste(a, "naturels", NATURELS));
     }
@@ -149,6 +171,66 @@ public final class Reglages {
 
     public long attenteMaxMs() {
         return attenteMaxMinutes * 60_000L;
+    }
+
+    /** Matière en plus d'une ressource posée en (x, z) : le bonus de la zone de neige, sinon 1. */
+    public double bonus(double x, double z) {
+        Neige n = neige;
+        return n != null && n.contient(x, z) ? n.bonus() : 1.0;
+    }
+
+    /**
+     * La zone de neige (18/11, choix du propriétaire : « les arbres et les ressources doivent apparaître en plus grand
+     * nombre dans la zone de neige ; c'est là qu'on va en priorité pour farmer, c'est plus fort que sur le reste de la
+     * carte ») : contour en points {x, z} (l'Île arctique de config/crac/zones_construction.json), {@code part} des places
+     * de chaque sorte tirées dedans (0 à 1), matière multipliée par {@code bonus} pour une ressource posée dedans.
+     */
+    public record Neige(int[] xs, int[] zs, int minX, int minZ, int maxX, int maxZ, double part, double bonus) {
+        /** Le point (x, z) est-il dans le contour (rectangle d'abord, puis rayon qui traverse le contour) ? */
+        public boolean contient(double x, double z) {
+            if (x < minX || x > maxX || z < minZ || z > maxZ) {
+                return false;
+            }
+            boolean dedans = false;
+            for (int i = 0, j = xs.length - 1; i < xs.length; j = i++) {
+                if ((zs[i] > z) != (zs[j] > z) && x < (double) (xs[j] - xs[i]) * (z - zs[i]) / (zs[j] - zs[i]) + xs[i]) {
+                    dedans = !dedans;
+                }
+            }
+            return dedans;
+        }
+
+        /** Lue dans « neige » de recolte.json ; null sans contour d'au moins 3 points. */
+        @Nullable
+        static Neige lire(JsonObject o) {
+            JsonElement e = o.get("contour");
+            if (e == null || !e.isJsonArray()) {
+                return null;
+            }
+            List<int[]> points = new ArrayList<>();
+            for (JsonElement p : e.getAsJsonArray()) {
+                if (p.isJsonArray() && p.getAsJsonArray().size() == 2 && p.getAsJsonArray().get(0).isJsonPrimitive()
+                        && p.getAsJsonArray().get(1).isJsonPrimitive()) {
+                    points.add(new int[]{(int) Math.round(p.getAsJsonArray().get(0).getAsDouble()),
+                            (int) Math.round(p.getAsJsonArray().get(1).getAsDouble())});
+                }
+            }
+            if (points.size() < 3) {
+                return null;
+            }
+            int n = points.size();
+            int[] xs = new int[n], zs = new int[n];
+            int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
+            for (int i = 0; i < n; i++) {
+                xs[i] = points.get(i)[0];
+                zs[i] = points.get(i)[1];
+                x0 = Math.min(x0, xs[i]);
+                z0 = Math.min(z0, zs[i]);
+                x1 = Math.max(x1, xs[i]);
+                z1 = Math.max(z1, zs[i]);
+            }
+            return new Neige(xs, zs, x0, z0, x1, z1, reel(o, "part", 0.4, 0.0, 1.0), reel(o, "bonus", 1.5, 1.0, 10.0));
+        }
     }
 
     // ------------------------------------------------------------------ réglages en cours

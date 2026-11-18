@@ -59,6 +59,12 @@ public class ServerConfig {
    /** HeraliZ : balles de TaCZ qui volent jusqu'au bout et ne restent jamais figées (fr.heraliz.tactique.serveur.BallesEnVol). */
    public static BooleanValue BALLES_TOUJOURS_ACTIVES;
    public static BooleanValue BALLES_RETIRER_FIGEES;
+   // HeraliZ : balles contre les zombies (18/11)
+   public static BooleanValue ZOMBIES_ACTIF;
+   public static DoubleValue ZOMBIES_MULTIPLICATEUR;
+   public static DoubleValue ZOMBIES_TETE;
+   public static BooleanValue ZOMBIES_TETE_PRECISION;
+   public static BooleanValue ZOMBIES_ARMURE;
 
    public static ForgeConfigSpec init() {
       Builder builder = new Builder();
@@ -237,6 +243,33 @@ public class ServerConfig {
             "un joueur approchait, une balle qui se réveillait et touchait des minutes après le tir. Une balle qui avance",
             "n'est jamais retirée. false : comme avant.")
          .define("retirer_figees", true);
+      builder.pop();
+      // HeraliZ : balles contre les zombies (18/11 ; lu par le serveur seulement, à chaque balle ; fr.heraliz.tactique.serveur.ZombiesArmes)
+      builder.push("zombies");
+      ZOMBIES_ACTIF = builder.comment(
+            "Balles des armes TaCZ contre les zombies (tag heraliz_tactique:zombies : zombies HeraliZ et de Minecraft, Zombie",
+            "Brute, Blister, Crawler et Spitter des mutants) : il ne faut plus un chargeur par zombie (choix du propriétaire,",
+            "18/11 : « une tête au sniper tue n'importe quel zombie ; au corps à corps ils doivent tanker, mais avec les armes",
+            "il ne faut pas en mettre autant »). Le corps à corps ne change pas. false : dégâts de TaCZ tels quels.")
+         .define("actif", true);
+      ZOMBIES_MULTIPLICATEUR = builder.comment(
+            "Dégâts d'une balle sur un zombie : ceux de TaCZ (baisse avec la distance et accessoires compris) multipliés par",
+            "cette valeur. 2 : une balle de 5,56 (6 dégâts) en fait 12, un marcheur (30 de vie) tombe en 3 balles au corps.",
+            "Les fusils dont TaCZ donne 0 dégât aux créatures (.50 M82A3 et M95) prennent leurs dégâts contre les joueurs",
+            "(armes.json).")
+         .defineInRange("multiplicateur", 2.0, 0.1, 20.0);
+      ZOMBIES_TETE = builder.comment(
+            "Tir à la tête d'un zombie : au moins cette fois les dégâts d'un tir au corps (TaCZ : 1,2 à 1,75 selon l'arme).",
+            "3,5 : une balle de 5,56 ou de 9 mm dans la tête tue un marcheur ou un coureur.")
+         .defineInRange("tete", 3.5, 1.0, 20.0);
+      ZOMBIES_TETE_PRECISION = builder.comment(
+            "Un tir à la tête au fusil de précision (armes de type « sniper » de TaCZ : Dragunov, M82A3, M95, AWP, M200...)",
+            "tue n'importe quel zombie, même un Zombie Brute (100 de vie, 16 d'armure). false : il compte comme les autres.")
+         .define("tete_precision_tue", true);
+      ZOMBIES_ARMURE = builder.comment(
+            "Les balles ne sont plus freinées par l'armure des zombies (Zombie Brute : 16 points d'armure, une balle de",
+            "5,56 y perdait plus de la moitié de ses dégâts). Le corps à corps la subit toujours. false : comme TaCZ.")
+         .define("armure_ignoree", true);
       builder.pop();
       builder.push("camos");
       CAMO_RECHARGE_MINUTES = builder.comment(

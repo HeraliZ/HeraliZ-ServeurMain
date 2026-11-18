@@ -215,7 +215,8 @@ public final class EcranHdv extends Screen {
     // ------------------------------------------------------------------ écran
     @Override
     protected void init() {
-        Echelle.forcer(this, GW, GH);
+        // 18/11 : la vraie taille du panneau (560 x 310) : il peut grandir d'un quart ou deux dans une grande fenêtre
+        Echelle.forcer(this, 560, 310);
         ox = (width - GW) / 2;
         // 18/11 : panneau de 20 à 330 sur le canevas (plus de pied) : décalé de 5 pour rester au milieu de l'écran
         oy = (height - GH) / 2 + 5;

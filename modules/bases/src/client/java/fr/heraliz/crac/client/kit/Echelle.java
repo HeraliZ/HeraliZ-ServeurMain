@@ -19,23 +19,24 @@ public final class Echelle {
     private static boolean forcee;
 
     /**
-     * Echelle voulue pour la fenetre courante : la plus grande qui laisse au moins ~94 % du canevas (600 x 340). La fenetre
-     * "1080p" ne fait que 1057 px de haut une fois la barre de titre retiree : une division entiere stricte donnerait 2
-     * au lieu de 3.
+     * Echelle voulue pour la fenetre courante : la plus grande, par quarts, qui laisse au moins ~94 % du canevas
+     * (600 x 340). La fenetre "1080p" ne fait que 1057 px de haut une fois la barre de titre retiree : une division stricte
+     * donnerait moins que 3. 18/11 (retour du proprietaire : « en fenetre, c'est petit et difficile a lire ») : par crans
+     * entiers, une fenetre a peine plus petite que l'ecran (1920 x 990) tombait de 3 a 2, un tiers plus petit ; par quarts,
+     * elle prend 2,75 (1600 x 900 : 2,5 ; plein ecran 1080p : 3 et 1440p : 4, inchanges). Les lettres restent nettes a
+     * ces echelles (heraliz_interface : PolicesDensite, finesse par quarts).
      */
-    public static int voulue() {
+    public static double voulue() {
         Window w = Minecraft.getInstance().getWindow();
-        for (int s = 8; s >= 2; s--) {
-            if (w.getWidth() / s >= CANEVAS_L - 40 && w.getHeight() / s >= CANEVAS_H - 20) return s;
-        }
-        return 1;
+        double s = Math.min(w.getWidth() / (double) (CANEVAS_L - 40), w.getHeight() / (double) (CANEVAS_H - 20));
+        return Math.max(1.0, Math.min(8.0, Math.floor(s * 4.0) / 4.0));
     }
 
     /** A appeler au debut de init() : force l'echelle et recale width/height de l'ecran. */
     public static void forcer(Screen ecran) {
         Window w = Minecraft.getInstance().getWindow();
-        int voulu = voulue();
-        if ((int) w.getGuiScale() != voulu) w.setGuiScale(voulu);
+        double voulu = voulue();
+        if (w.getGuiScale() != voulu) w.setGuiScale(voulu);
         forcee = true;
         ecran.width = w.getGuiScaledWidth();
         ecran.height = w.getGuiScaledHeight();
