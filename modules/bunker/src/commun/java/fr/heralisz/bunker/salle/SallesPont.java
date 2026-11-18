@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 public final class SallesPont {
    /** Règles des salles, tenues par le serveur. */
    public interface Regles {
-      /** La porte (contrôleur en porte) doit-elle rester ouverte pour une salle (10 s pour entrer, salle occupée) ? */
+      /** La porte (contrôleur en porte) doit-elle rester ouverte pour une salle (20 s pour entrer, salle occupée) ? */
       boolean tenueOuverte(Level level, BlockPos porte);
 
       /** Un lecteur de cette couleur vient d'accorder l'accès : la fenêtre d'entrée de ses salles commence. */

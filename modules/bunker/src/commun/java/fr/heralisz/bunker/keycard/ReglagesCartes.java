@@ -21,7 +21,7 @@ public final class ReglagesCartes {
    // 18/11 : verte 4, bleue 3, rouge 2 ; cartes des bunkers (toutes les mêmes) 2
    private static volatile int vert = 4, bleu = 3, rouge = 2;
    private static volatile int bunker = 2;
-   private static volatile int impulsionTicks = 100;
+   private static volatile int impulsionTicks = 200;
 
    /** Passages avant que la carte de ce niveau casse (0 = illimitée). */
    public static int passages(AccessLevel niveau) {

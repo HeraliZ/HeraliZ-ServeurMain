@@ -124,7 +124,7 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
             if (!state.getValue(POWERED)) {
                level.setBlock(pos, state.setValue(POWERED, true), Block.UPDATE_ALL);
                this.updateSupport(level, pos, state);
-               // salle à carte derrière la porte : 10 s pour entrer, puis porte tenue tant que quelqu'un est dedans
+               // salle à carte derrière la porte : 20 s pour entrer, puis porte tenue tant que quelqu'un est dedans
                SallesPont.accesAccorde(level, pos, this.level);
                KeycardDoors.notifyDoors(level, pos, this.level);
                // le signal dure au moins le temps d'ouverture de la porte (sinon elle resterait ouverte)

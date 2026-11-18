@@ -23,11 +23,12 @@ public final class KeycardConfig {
       USES_RED = b.comment("Passages avant que la carte rouge casse (0 = illimité)").defineInRange("usesRed", 2, 0, 10000);
       USES_BUNKER = b.comment("Passages avant qu'une carte de bunker (Bunker des Bois, Bunker du Pic) casse (0 = illimité)")
          .defineInRange("usesBunker", 2, 0, 10000);
-      PULSE_TICKS = b.comment("Durée du signal redstone après un accès accordé (ticks, 20 = 1 s)").defineInRange("pulseTicks", 100, 10, 12000);
+      // 18/11 (demande du propriétaire : « doubler le temps avant que la porte se referme si personne n'entre ») : 200
+      PULSE_TICKS = b.comment("Durée du signal redstone après un accès accordé (ticks, 20 = 1 s)").defineInRange("pulseTicks", 200, 10, 12000);
       b.pop();
       b.comment("Salles à carte (délimitées par le staff avec /salle) : porte tenue ouverte et loot de la salle").push("salles");
       ENTREE = b.comment("Secondes pour entrer dans la salle une fois la porte ouverte ; personne dedans à la fin : elle se referme")
-         .defineInRange("entreeSecondes", 10, 1, 600);
+         .defineInRange("entreeSecondes", 20, 1, 600);
       FERMETURE = b.comment("Secondes d'attente avant que la porte se referme quand le dernier joueur est sorti")
          .defineInRange("fermetureSecondes", 2, 0, 60);
       RECHARGE_GREEN = b.comment("Minutes, après la sortie du dernier joueur, avant que le loot d'une salle verte réapparaisse")
@@ -63,7 +64,7 @@ public final class KeycardConfig {
    }
 
    public static int entreeTicks() {
-      return 20 * (SPEC.isLoaded() ? ENTREE.get() : 10);
+      return 20 * (SPEC.isLoaded() ? ENTREE.get() : 20);
    }
 
    public static int fermetureTicks() {

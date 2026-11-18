@@ -240,7 +240,7 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
             MultiblockStructureHelper var8 = doorBlock.getStructureHelper();
             Direction facing = (Direction)blockState.getValue(DoorBlock.FACING);
             // HeralisZ : porte à carte -> seule compte l'activation d'un lecteur de sa couleur, ou sa salle à carte
-            // (10 s pour entrer, puis ouverte tant que quelqu'un est dedans : SallesPont, décidé par le serveur)
+            // (20 s pour entrer, puis ouverte tant que quelqu'un est dedans : SallesPont, décidé par le serveur)
             AccessLevel keycard = KeycardDoors.levelOf(doorBlock);
             if (keycard != null) {
                this.updateRedstoneState(SallesPont.tenueOuverte(this.level, this.worldPosition)

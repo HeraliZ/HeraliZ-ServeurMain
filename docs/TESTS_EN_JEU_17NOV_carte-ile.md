@@ -94,7 +94,7 @@ Pour chaque salle :
 Quand c'est fait, le dire : la liste complète est vérifiée depuis la console (`salle liste`).
 
 À tester :
-- [ ] Carte de la bonne couleur : la porte s'ouvre, 10 s pour entrer, elle reste ouverte tant que quelqu'un est dedans,
+- [ ] Carte de la bonne couleur : la porte s'ouvre, 20 s pour entrer (18/11), elle reste ouverte tant que quelqu'un est dedans,
       puis se ferme ; mauvaise couleur : refusée.
 - [ ] Loot de la salle au bon niveau ; il revient 30 min (verte), 2 h (bleue), 4 h (rouge) après la sortie du dernier.
 - [ ] Déconnexion dans une salle : à la reconnexion, on est devant sa porte.
