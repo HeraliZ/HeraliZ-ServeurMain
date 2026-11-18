@@ -25,6 +25,10 @@ import java.util.Set;
  * la sélection » ou « Tout vendre ». Échanges (1.11.0, onglet à part, ou seul pour un marchand de troc) : une carte par
  * échange (objet donné × n → objet reçu × n, combien on en a, ÉCHANGER ; Maj + clic = 5 fois). Prix, solde et échanges
  * viennent du serveur, qui revérifie tout.
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus d'aide du rachat ni
+ * de pied (Maj + clic, objets abîmés) ; un échange dont le joueur n'a que des objets abîmés le dit sur sa carte, à la
+ * place de « Vous en avez 0 / n » (le marchand ne les prend pas, {@code Echanges.possede}).
  */
 public final class EcranMarchand extends Screen {
     /** Titre à sa vraie taille (police 14) : jamais de texte agrandi, flou (25/10, audit des écrans). */
@@ -41,8 +45,6 @@ public final class EcranMarchand extends Screen {
     private boolean ongletEchanges;
     /** Boutons à refaire au prochain tick (onglet changé, échanges apparus ou disparus). */
     private boolean aRefaire;
-    /** Aide du rachat, coupée en lignes à la largeur de la colonne de gauche (calculée dans init). */
-    private List<String> aideLignes = List.of();
 
     private EcranMarchand(Reseau.Boutique b) {
         super(Component.translatable("gui.heraliz_quetes.marchand"));
@@ -83,8 +85,6 @@ public final class EcranMarchand extends Screen {
         py = (height - ph) / 2;
         vendreSel = null;
         vendreTout = null;
-        // colonne de gauche du rachat : de px + 18 jusqu'à 10 px avant le panneau de droite (px + pw - 200)
-        aideLignes = Ui.lignesEspacees(font, TexteClient.tr("gui.heraliz_quetes.marchand.aide"), Ui.SMALL, 0.4f, pw - 228);
         if (onglets()) {
             // deux onglets en haut, au milieu : ce qu'il vend (ou rachète) / ses échanges
             int cx = px + pw / 2;
@@ -199,6 +199,16 @@ public final class EcranMarchand extends Screen {
         return x.actif() && x.possede() >= x.nDonne();
     }
 
+    /** Le joueur a-t-il cet objet, mais abîmé (usure) ? Le marchand ne le compte pas : la carte le dit (18/11). */
+    private static boolean abime(ItemStack modele) {
+        var p = Minecraft.getInstance().player;
+        if (p == null || modele.isEmpty()) return false;
+        for (ItemStack s : p.getInventory().items) {
+            if (!s.isEmpty() && s.getItem() == modele.getItem() && s.isDamaged()) return true;
+        }
+        return false;
+    }
+
     // ------------------------------------------------------------------ souris
     @Override
     public boolean mouseClicked(double mx, double my, int bouton) {
@@ -308,8 +318,9 @@ public final class EcranMarchand extends Screen {
             g.drawString(f, Ui.lit(Ui.ellipsis(f, x.recu().getHoverName().getString(), Ui.BOLD, tw), Ui.BOLD), tx, c[1] + 6, Ui.argb(col, 255), false);
             String contre = TexteClient.tr("gui.heraliz_quetes.marchand.contre", x.nDonne(), x.donne().getHoverName().getString());
             g.drawString(f, Ui.lit(Ui.ellipsis(f, contre, Ui.SMALL, tw), Ui.SMALL), tx, c[1] + 17, Ui.argb(Ui.MUTED, 255), false);
-            String etat = x.actif() ? TexteClient.tr("gui.heraliz_quetes.marchand.possede", x.possede(), x.nDonne())
-                    : TexteClient.tr("gui.heraliz_quetes.marchand.echange_coupe");
+            String etat = !x.actif() ? TexteClient.tr("gui.heraliz_quetes.marchand.echange_coupe")
+                    : !possible && abime(x.donne()) ? TexteClient.tr("gui.heraliz_quetes.marchand.abime")
+                    : TexteClient.tr("gui.heraliz_quetes.marchand.possede", x.possede(), x.nDonne());
             g.drawString(f, Ui.lit(Ui.ellipsis(f, etat, Ui.SMALL, tw - 60), Ui.SMALL), tx, c[1] + CARTE_H - 13,
                     Ui.argb(possible ? Ui.OK : Ui.DANGER, 255), false);
             // bouton ÉCHANGER (éteint si impossible)
@@ -324,7 +335,6 @@ public final class EcranMarchand extends Screen {
             }
         }
         g.disableScissor();
-        Ui.spaced(g, f, TexteClient.tr("gui.heraliz_quetes.marchand.lot_echange"), Ui.SMALL, px + 18, py + ph - 12, Ui.argb(Ui.FAINT, 255), 0.4f);
         return bulle;
     }
 
@@ -368,7 +378,6 @@ public final class EcranMarchand extends Screen {
             }
         }
         g.disableScissor();
-        Ui.spaced(g, f, TexteClient.tr("gui.heraliz_quetes.marchand.lot"), Ui.SMALL, px + 18, py + ph - 12, Ui.argb(Ui.FAINT, 255), 0.4f);
         return bulle;
     }
 
@@ -414,13 +423,6 @@ public final class EcranMarchand extends Screen {
                             Ui.FONT).withStyle(st -> st.withColor(contenu != Contenu.RIEN ? Ui.AMBRE : Ui.MUTED)));
                 }
             }
-        }
-        // aide sous l'inventaire, sur plusieurs lignes : elle ne passe plus sous le panneau de droite
-        int ay = py + 168;
-        for (String l : aideLignes) {
-            if (ay > py + ph - 14) break;
-            Ui.spaced(g, f, l, Ui.SMALL, px + 18, ay, Ui.argb(Ui.FAINT, 255), 0.4f);
-            ay += 10;
         }
         // panneau de droite : sélection et total
         int rx = px + pw - 200, ry = py + 52, rw = 190;

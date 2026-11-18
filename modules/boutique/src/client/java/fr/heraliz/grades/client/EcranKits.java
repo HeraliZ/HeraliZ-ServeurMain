@@ -21,6 +21,9 @@ import java.util.List;
  * kits, à droite le kit choisi (nom en couleur du grade, contenu, recharge, bouton). Le menu n'affiche que ce que le
  * serveur envoie et ne fait que DEMANDER le kit : le serveur décide de tout. Grands textes dans des polices à leur vraie
  * taille, posés sur un point de l'écran (règle du 23/10 : jamais de texte agrandi, il deviendrait flou).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de sous-titre ni de
+ * phrase sous le nom du kit (elle répétait la pastille, le bas du panneau et le bouton) ; le contenu remonte d'autant.
  */
 public final class EcranKits extends Screen {
     private static final int LISTE_L = 170, LIGNE_H = 32, CASE = 18, LIGNE_OBJET = 22;
@@ -205,8 +208,6 @@ public final class EcranKits extends Screen {
         // titre en gras 18 : même milieu des capitales que l'ancien texte 11 agrandi 1,6 fois depuis py + 2
         Component entete = Ui.lit(t("titre").toUpperCase(java.util.Locale.ROOT), TITRE);
         net(g, f, entete, px, py + 2 + 1.6f * milieu(11) - milieu(18), Ui.argb(Ui.TEXT, 255));
-        float tw = f.width(entete);
-        Ui.spaced(g, f, t("sous_titre"), Ui.SMALL, px + tw + 12, py + 8, Ui.argb(Ui.MUTED, 255), 1.0f);
         if (!etat.kitJoueur().isEmpty()) {
             Component droite = Ui.in(Component.literal(t("ton_kit").toUpperCase(java.util.Locale.ROOT) + "  ·  "), Ui.SMALL)
                     .append(Ui.in(nom(etat.kitJoueur().split("/")[0]).copy(), Ui.BOLD));
@@ -263,13 +264,11 @@ public final class EcranKits extends Screen {
             net(g, f, nomKit, rx + 14, ly + 12 + 1.4f * milieu(11) - milieu(15), Ui.argb(c, 255));
             int nw = f.width(nomKit);
             Ui.chip(g, f, t(sien ? "debloque" : "non_debloque"), rx + 14 + nw + 10, ly + 13, sien ? Ui.OK : Ui.MUTED);
-            String desc = soutien(k) ? t("desc_soutien") : sien ? t("desc_sien") : Component.translatable("gui.heraliz_grades.kits.desc_autre", nom(k.grade())).getString();
-            g.drawString(f, Ui.lit(Ui.ellipsis(f, desc, Ui.SMALL, rw - 28), Ui.SMALL), rx + 14, ly + 30, Ui.argb(Ui.MUTED, 255), false);
 
             // contenu en liste (25/10, audit des écrans : des icônes seules ne disent pas ce qu'il y a) : case, nom,
-            // quantité ; deux colonnes s'il ne tient pas en une, « + N autres » au-delà
-            Ui.section(g, f, t("contenu"), rx + 14, ly + 48, rw - 28);
-            int haut = ly + 60, parColonne = Math.max(1, (ly + lh - 14 - 52 - haut) / LIGNE_OBJET);
+            // quantité ; deux colonnes s'il ne tient pas en une, « + N autres » au-delà ; 18/11 : juste sous le nom
+            Ui.section(g, f, t("contenu"), rx + 14, ly + 36, rw - 28);
+            int haut = ly + 48, parColonne = Math.max(1, (ly + lh - 14 - 52 - haut) / LIGNE_OBJET);
             int colonnes = k.objets().size() > parColonne ? 2 : 1, cl = colonnes == 2 ? (rw - 28 - 12) / 2 : rw - 28;
             int montres = Math.min(k.objets().size(), parColonne * colonnes);
             if (montres < k.objets().size()) montres--;

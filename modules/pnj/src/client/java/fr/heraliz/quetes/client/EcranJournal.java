@@ -23,19 +23,22 @@ import java.util.Locale;
 
 /**
  * Journal des quêtes (/quetes ou touche J), refait le 25/10 d'après la maquette validée
- * (maquettes/quetes/journal_quetes.png, modules/pnj/outils/apercu_journal.py : mêmes mesures) : panneau de verre
- * 560 x 320 comme l'écran du clan ; en-tête (carnet, titre, compteurs, titre porté) ; à gauche les personnages chez qui on
- * a des quêtes (réputation) ; à droite leurs quêtes en cours : difficulté, état (suivie, à rendre), étapes cochées avec
- * leur barre, récompense, « Suivre » et « Abandonner » (deux clics) ; pied avec les touches. Polices à leur vraie taille
- * (titre 14, texte 11, petit 9, micro 7,5 : jamais de texte agrandi), chaque texte posé sur un point de l'écran et centré
- * sur le milieu de ses capitales (Minecraft 1.20.1 pose une lettre TTF à y + ascendante + 2 x décalage - 3 ; DM Sans :
- * ascendante 992 et capitales 700 sur 1302, décalage 1 : milieu = taille x 0,49309 - 1). Les étapes à venir restent
- * cachées (le serveur ne les envoie pas).
+ * (maquettes/quetes/journal_quetes.png, modules/pnj/outils/apercu_journal.py : mêmes mesures, sauf le pied) : panneau
+ * de verre 560 x 310 ; en-tête (carnet, titre, compteurs, titre porté) ; à gauche les personnages chez qui on a des quêtes
+ * (réputation) ; à droite leurs quêtes en cours : difficulté, état (suivie, à rendre), étapes cochées avec leur barre,
+ * récompense, « Suivre » et « Abandonner » (deux clics). Polices à leur vraie taille (titre 14, texte 11, petit 9, micro
+ * 7,5 : jamais de texte agrandi), chaque texte posé sur un point de l'écran et centré sur le milieu de ses capitales
+ * (Minecraft 1.20.1 pose une lettre TTF à y + ascendante + 2 x décalage - 3 ; DM Sans : ascendante 992 et capitales 700
+ * sur 1302, décalage 1 : milieu = taille x 0,49309 - 1). Les étapes à venir restent cachées (le serveur ne les envoie pas).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de pied avec les
+ * touches (le panneau perd sa bande du bas : 320 -> 310, même hauteur que les quêtes du jour) ni de phrases d'état vide en
+ * double ; reste seulement, quand on n'a aucune quête, qui aller voir.
  */
 public final class EcranJournal extends Screen {
     private static final ResourceLocation TITRE = new ResourceLocation("heraliz_quetes", "ui_titre"),
             PETIT_GRAS = new ResourceLocation("heraliz_quetes", "ui_small_bold"), MICRO = new ResourceLocation("heraliz_quetes", "ui_micro");
-    private static final int LARGEUR = 560, HAUTEUR = 320, ENTETE = 44, MARGE = 16, LISTE = 172, LIGNE = 34, ECART = 4;
+    private static final int LARGEUR = 560, HAUTEUR = 310, ENTETE = 44, MARGE = 16, LISTE = 172, LIGNE = 34, ECART = 4;
     private static final int BLANC = 0xFFFFFF;
     /** Couleurs des avatars des personnages (Varga : or). */
     private static final int[] TEINTES = {Ui.ACCENT_NEUTRE, Ui.OK, 0xC792EA, 0xFF8A65, 0x4FD1C5, Ui.OR};
@@ -121,8 +124,9 @@ public final class EcranJournal extends Screen {
         return py + ENTETE + 10;
     }
 
+    /** Corps : de haut() jusqu'à MARGE au-dessus du bas du panneau (18/11 : plus de pied). */
     private int hauteurCorps() {
-        return ph - ENTETE - 34;
+        return ph - ENTETE - 10 - MARGE;
     }
 
     private int listeHaut() {
@@ -204,11 +208,10 @@ public final class EcranJournal extends Screen {
         Reseau.JPnj p = choix < j.pnj().size() ? j.pnj().get(choix) : null;
         if (p != null) entetePnj(g, p, rx, rw, y0);
         if (p == null || p.quetes().isEmpty()) {
-            vide(g, rx, rw, p == null ? y0 : y0 + 20, p == null ? h : h - 20, p == null ? t("vide_aide") : t("aucune_quete"));
+            vide(g, rx, rw, p == null ? y0 : y0 + 20, p == null ? h : h - 20, p == null ? t("vide_aide") : "");
         } else {
             quetes(g, p, rx, rw, mx, my);
         }
-        pied(g);
         super.render(g, mx, my, pt);
     }
 
@@ -263,11 +266,7 @@ public final class EcranJournal extends Screen {
         float x0 = px + MARGE, y0 = haut();
         float tw = caps(g, t("pnj"), PETIT_GRAS, 1.0f, x0, y0 + cap(PETIT_GRAS) / 2, Ui.MUTED);
         rect(g, x0 + tw + 6, y0 + 3.5f, x0 + LISTE, y0 + 3.5f + point(), Ui.argb(BLANC, 30));
-        if (j.pnj().isEmpty()) {
-            List<FormattedCharSequence> l = font.split(Ui.lit(t("aucun_pnj"), Ui.SMALL), LISTE - 4);
-            for (int i = 0; i < l.size(); i++) ligne(g, l.get(i), Ui.SMALL, x0, y0 + 14 + i * 9 + cap(Ui.SMALL) / 2, Ui.FAINT);
-            return;
-        }
+        if (j.pnj().isEmpty()) return;   // 18/11 : la colonne de droite le dit déjà (« Aucune quête en cours »)
         int maxListe = maxDefileListe();
         if (voirChoix) {
             voirChoix = false;
@@ -334,12 +333,13 @@ public final class EcranJournal extends Screen {
         if (!role.isEmpty()) caps(g, role, Ui.SMALL, 1.0f, rx + 12 + nw + 8, base - cap(Ui.SMALL) / 2, Ui.MUTED);
     }
 
-    /** Aucune quête : carnet pâle, phrase, aide. */
+    /** Aucune quête : carnet pâle, phrase, et qui aller voir quand on n'a encore aucune quête (aide vide : rien). */
     private void vide(GuiGraphics g, float rx, float rw, float y0, float h, String aide) {
-        float cx = rx + rw / 2f, cy = y0 + h / 2f - 14;
+        List<FormattedCharSequence> l = aide.isEmpty() ? List.of() : font.split(Ui.lit(aide, Ui.SMALL), (int) rw - 60);
+        // bloc centré dans la colonne : un peu plus bas sans la ligne d'aide
+        float cx = rx + rw / 2f, cy = y0 + h / 2f - (l.isEmpty() ? 7 : 14);
         icone(g, cx - 11, cy - 30, Ui.FAINT);
         centre(g, t("vide"), Ui.BOLD, cx, cy + 8, Ui.TEXT);
-        List<FormattedCharSequence> l = font.split(Ui.lit(aide, Ui.SMALL), (int) rw - 60);
         for (int i = 0; i < l.size(); i++) {
             float w = font.getSplitter().stringWidth(l.get(i));
             ligne(g, l.get(i), Ui.SMALL, cx - w / 2f, cy + 22 + i * 9, Ui.MUTED);
@@ -478,25 +478,6 @@ public final class EcranJournal extends Screen {
         cadre(g, x, cy - 5, w, 10, Ui.argb(c, 170));
         capsCentre(g, txt, MICRO, 0.8f, x + w / 2f, cy, plein ? Ui.TEXT : c);
         return w;
-    }
-
-    /** Pied : touches utiles. */
-    private void pied(GuiGraphics g) {
-        float y = py + ph - 12;
-        rect(g, px + 8, y - 8, px + pw - 8, y - 8 + point(), Ui.argb(BLANC, 22));
-        float x = px + MARGE;
-        String[][] aides = {
-                {ClientQuetes.JOURNAL.getTranslatedKeyMessage().getString(), t("touche.fermer")},
-                {t("touche.molette"), t("touche.defiler")},
-                {t("touche.clic"), t("touche.choisir")}};
-        for (String[] a : aides) {
-            float w = capsLargeur(a[0], MICRO, 0.8f) + 8;
-            rect(g, x, y - 4.5f, x + w, y + 4.5f, Ui.argb(BLANC, 18));
-            cadre(g, x, y - 4.5f, w, 9, Ui.argb(BLANC, 60));
-            capsCentre(g, a[0], MICRO, 0.8f, x + w / 2f, y, Ui.TEXT);
-            x += w + 4;
-            x += texte(g, a[1], Ui.SMALL, x, y, Ui.MUTED) + 12;
-        }
     }
 
     private static int teinte(String id) {

@@ -32,13 +32,17 @@ import java.util.Locale;
 /**
  * Ecran d'une caisse (proposition B « carte centrale » validée le 23/10, maquettes/caisses_proposition_B.png, style des
  * écrans de clan) : ouvert par un clic droit sur n'importe quelle caisse, avec ou sans clé. Panneau de verre centré
- * (584 x 328 depuis Caisses 2.20.0 : il occupe presque tout le canevas, comme le créateur de personnage) : nom de la
- * caisse en capitales espacées, « N clés · N objets » ; la roue, dont la carte du milieu est la
+ * (584 x 326 ; 18/11 : 334 -> 326, plus de rangée des touches ; il occupe presque tout le canevas, comme le créateur de
+ * personnage) : nom de la caisse en capitales espacées, « N clés · N objets » ; la roue, dont la carte du milieu est la
  * plus grande et les autres rapetissent et s'effacent vers les bords (repère doré au-dessus) ; le nom et la rareté de
  * l'objet sous le repère ; les chances en une barre colorée et sa légende ; le contenu possible en mini-grille d'icônes ;
  * le bouton doré arrondi (« Il te faut une clé » éteint, ou « Ouvrir · 1 clé »). La roue tourne dans
  * l'écran et ralentit en douceur (temps réel, rien par à-coups) ; à l'arrêt, une carte « Tu as obtenu » (Encore / Fermer).
  * Espace ou un clic pendant la roue la passe. Tout est décidé par le serveur (CaseOpening) : l'écran ne fait qu'afficher.
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de rangée de touches
+ * en bas (ESPACE, MOLETTE, ÉCHAP) ni de « · Espace » sur le bouton ; sous le bouton, centrée, il ne reste qu'une note :
+ * l'erreur du serveur, ou d'où viennent les clés quand on n'en a pas.
  */
 public class CaseOpenScreen extends Screen {
     private enum State { IDLE, WAIT, SPIN, DONE }
@@ -61,17 +65,16 @@ public class CaseOpenScreen extends Screen {
     private static final int[] RARETES = {0xB0B6C0, 0x5FD08A, 0x4C8DFF, 0xA86BFF, 0xE8C36A, 0xFF3333};
     private static final int OR_HAUT = 0xF0CF7B, OR_BAS = 0xD9AC4C, OR_TEXTE = 0x1A1408;
 
-    /** Panneau (proposition B) : 584 x 328 au canevas d'au moins 600 x 340 (Echelle), marges intérieures PAD. */
-    private static final int PANNEAU_W = 584, PANNEAU_H = 334, PAD = 30;
+    /** Panneau (proposition B) : 584 x 326 au canevas d'au moins 600 x 340 (Echelle), marges intérieures PAD. */
+    private static final int PANNEAU_W = 584, PANNEAU_H = 326, PAD = 30;
     /** Hauts des lignes (depuis le haut du panneau) : titre, sous-titre, roue, nom, rareté, barre des chances, légende,
-     *  section « Contenu possible », grille, bouton, rangée des touches en bas (comme la boutique : ESPACE Ouvrir…). */
+     *  section « Contenu possible », grille, bouton, note sous le bouton (erreur ou d'où viennent les clés). */
     private static final int TITRE_Y = 12, SOUS_Y = 34, ROUE_Y = 57, NOM_Y = 155, RARETE_Y = 175, CHANCES_Y = 194,
-            LEGENDE_Y = 202, SECTION_Y = 230, GRILLE_Y = 244, BOUTON_Y = 285, TOUCHES_Y = 315;
-    /** Rangée des touches : hauteur d'une touche, marge du texte dans la touche, écart touche-action, écart entre deux. */
-    private static final int TOUCHE_H = 15, TOUCHE_PAD = 5, TOUCHE_ECART = 5, TOUCHES_ESPACE = 14;
+            LEGENDE_Y = 202, SECTION_Y = 230, GRILLE_Y = 244, BOUTON_Y = 285, NOTE_Y = 311;
+    /** Hauteur de la ligne de la note (son texte y est centré sur le milieu de ses capitales), juste sous le bouton. */
+    private static final int NOTE_H = 13;
     /** Espacement des capitales : titre, rareté, section, bouton, boutons du gain. */
-    private static final float ESP_TITRE = 2.2f, ESP_TOUCHE = 0.3f, ESP_RARETE = 1.4f, ESP_SECTION = 1.4f, ESP_BOUTON = 1.4f,
-            ESP_GAIN = 1.0f;
+    private static final float ESP_TITRE = 2.2f, ESP_RARETE = 1.4f, ESP_SECTION = 1.4f, ESP_BOUTON = 1.4f, ESP_GAIN = 1.0f;
     /** Halo de rareté derrière la roue : demi-largeur (part du panneau), demi-hauteur (part de la roue). */
     private static final float HALO_L = 0.42f, HALO_H = 0.95f;
     /** Roue : écart entre les centres des cartes (STEP), largeur logique d'une carte (CW, sert au point d'arrêt), carte du
@@ -798,11 +801,11 @@ public class CaseOpenScreen extends Screen {
         }
     }
 
-    /** Bouton principal et ligne d'aide dessous. */
+    /** Bouton principal et, dessous, la note (erreur du serveur, ou d'où viennent les clés). */
     private void renderBouton(GuiGraphics g, int mx, int my) {
         boolean actif = peutOuvrir() || state == State.SPIN;
         String cle;
-        if (state == State.SPIN) cle = "gui.heralizcrates.case.skip_space";
+        if (state == State.SPIN) cle = "gui.heralizcrates.case.skip";
         else if (state == State.WAIT) cle = "gui.heralizcrates.case.wait";
         else if (!free && keys < 1) cle = "gui.heralizcrates.case.need_key";
         else if (free) cle = "gui.heralizcrates.case.open";
@@ -822,56 +825,25 @@ public class CaseOpenScreen extends Screen {
         String texte = Component.translatable(cle).getString().toUpperCase(Locale.ROOT);
         Ui.spacedCentered(g, font, texte, Ui.BOLD, boutonX + boutonW / 2f, yCentre(boutonY, BOUTON_H, T_BOUTON, texte), Ui.argb(dore ? OR_TEXTE : Ui.MUTED, 255), ESP_BOUTON);
 
-        renderTouches(g);
+        renderNote(g);
     }
 
     /**
-     * Rangée du bas, comme la boutique : touches en pastilles (ESPACE Ouvrir, MOLETTE Contenu, ÉCHAP Fermer) à gauche ;
-     * à droite, l'erreur du serveur ou d'où viennent les clés.
+     * Note centrée sous le bouton : l'erreur du serveur (4 s), sinon, sans clé, d'où viennent les clés. 18/11 : plus de
+     * rangée de touches (ESPACE, MOLETTE, ÉCHAP), et plus de « caisse vide » ici (la grille le dit déjà).
      */
-    private void renderTouches(GuiGraphics g) {
-        List<String[]> touches = new ArrayList<>();
-        if (state == State.SPIN) touches.add(new String[]{"gui.heralizcrates.case.touche.espace", "gui.heralizcrates.case.skip"});
-        else if (peutOuvrir()) touches.add(new String[]{"gui.heralizcrates.case.touche.espace", "gui.heralizcrates.case.open"});
-        if (maxScroll() > 0) touches.add(new String[]{"gui.heralizcrates.case.touche.molette", "gui.heralizcrates.case.action.contenu"});
-        touches.add(new String[]{"gui.heralizcrates.case.touche.echap", "gui.heralizcrates.case.close"});
-        int y = py + TOUCHES_Y;
-        float x = px + pad;
-        for (String[] t : touches) {
-            String touche = Component.translatable(t[0]).getString().toUpperCase(Locale.ROOT);
-            String action = Component.translatable(t[1]).getString();
-            int tw = Math.round(Ui.spacedWidth(font, touche, TEXTE_GRAS, ESP_TOUCHE)) + 2 * TOUCHE_PAD;
-            float ty = yCentre(y, TOUCHE_H, T_TEXTE, touche), tya = yCentre(y, TOUCHE_H, T_TEXTE, action);
-            Lot lot = new Lot(g);
-            lot.rond(Math.round(x), y, tw, TOUCHE_H, Ui.argb(0xFFFFFF, 14));
-            lot.rondContour(Math.round(x), y, tw, TOUCHE_H, Ui.argb(0xFFFFFF, 70));
-            lot.fin();
-            Ui.spaced(g, font, touche, TEXTE_GRAS, Math.round(x) + TOUCHE_PAD, ty, Ui.argb(Ui.TEXT, 255), ESP_TOUCHE);
-            float ax = Math.round(x) + tw + TOUCHE_ECART;
-            g.pose().pushPose();
-            Ui.placer(g, ax, tya);
-            g.drawString(font, Ui.lit(action, TEXTE), 0, 0, Ui.argb(CLAIR, 255), false);
-            g.pose().popPose();
-            x = ax + font.width(Ui.lit(action, TEXTE)) + TOUCHES_ESPACE;
-        }
-        // à droite : erreur du serveur, ou d'où viennent les clés
+    private void renderNote(GuiGraphics g) {
         String note = null;
         int couleur = Ui.MUTED;
         if (error != null && ticks - errorAt < 80) {
             note = error.getString();
             couleur = Ui.DANGER;
-        } else if (contents.isEmpty()) {
-            note = Component.translatable("gui.heralizcrates.case.empty").getString();
-        } else if (!free && keys < 1 && state != State.SPIN) {
+        } else if (!free && keys < 1 && state != State.SPIN && !contents.isEmpty()) {
             note = Component.translatable("gui.heralizcrates.case.help.keys").getString();
         }
-        if (note != null) {
-            int place = Math.round(px + pw - pad - 2 - x);
-            if (place > 20) {
-                note = Ui.ellipsis(font, note, TEXTE, place);
-                Ui.right(g, font, Ui.lit(note, TEXTE), px + pw - pad - 2, yCentre(y, TOUCHE_H, T_TEXTE, note), Ui.argb(couleur, 255));
-            }
-        }
+        if (note == null) return;
+        note = Ui.ellipsis(font, note, TEXTE, pw - 2 * pad);
+        Ui.centered(g, font, Ui.lit(note, TEXTE), px + pw / 2f, yCentre(py + NOTE_Y, NOTE_H, T_TEXTE, note), Ui.argb(couleur, 255));
     }
 
     /** Fin de la roue : panneau principal assombri, carte « Tu as obtenu » au centre. */

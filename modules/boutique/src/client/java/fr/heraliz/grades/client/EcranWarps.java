@@ -25,6 +25,10 @@ import java.util.Locale;
  * menu n'affiche que ce que le serveur envoie et ne fait que DEMANDER le warp : lieu, grade et règles sont décidés par le
  * serveur. Grands textes dans des polices à leur vraie taille, posés sur un point de l'écran (règle du 23/10 : jamais de
  * texte agrandi, il deviendrait flou).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de sous-titre, ni de
+ * « seulement au spawn » en haut (le bouton le dit), ni de règle des 3 s (le serveur l'annonce au départ), ni de phrase
+ * d'état vide en double ; reste, pour le staff seulement, la commande qui pose un warp.
  */
 public final class EcranWarps extends Screen {
     private static final int LISTE_L = 190, LIGNE_H = 26, ECART = 4;
@@ -152,9 +156,6 @@ public final class EcranWarps extends Screen {
         // titre en gras 18 : même milieu des capitales que l'ancien texte 11 agrandi 1,6 fois depuis py + 2
         Component titre = Ui.lit(t("titre").toUpperCase(Locale.ROOT), TITRE);
         net(g, f, titre, px, py + 2 + 1.6f * milieu(11) - milieu(18), Ui.argb(Ui.TEXT, 255));
-        float tw = f.width(titre);
-        Ui.spaced(g, f, t("sous_titre"), Ui.SMALL, px + tw + 12, py + 8, Ui.argb(Ui.MUTED, 255), 1.0f);
-        if (!etat.utilisable()) Ui.right(g, f, Ui.lit(t("pas_spawn_long"), Ui.SMALL), px + pw, py + 7, Ui.argb(Ui.AMBRE, 255));
         Ui.hairline(g, px, px + pw, py + 24, 0xFFFFFF, 60, false, true);
 
         // liste
@@ -180,7 +181,6 @@ public final class EcranWarps extends Screen {
                 Ui.chip(g, f, chip, x0 + wl - cw - 6, y + 8, w.permis() ? couleur(w) : Ui.FAINT);
             }
         }
-        if (etat.warps().isEmpty()) Ui.spaced(g, f, t("aucun"), Ui.SMALL, lx + 10, ly + 28, Ui.argb(Ui.FAINT, 255), 0.6f);
 
         // warp choisi
         int rx = px + LISTE_L + 10, rw = pw - LISTE_L - 10;
@@ -218,9 +218,6 @@ public final class EcranWarps extends Screen {
             g.drawString(f, Ui.lit(acces, Ui.SMALL), rx + 26, ya, Ui.argb(Ui.TEXT, 255), false);
             Ui.chip(g, f, t(w.permis() ? "ouvert" : "ferme"), rx + rw - 14 - (int) Ui.spacedWidth(f, t(w.permis() ? "ouvert" : "ferme")
                     .toUpperCase(Locale.ROOT), Ui.SMALL, 0.6f) - 10, ya - 1, w.permis() ? Ui.OK : Ui.FAINT);
-
-            int bas = ly + lh - 14;
-            Ui.spaced(g, f, t("regle"), Ui.SMALL, rx + 14, bas - 36, Ui.argb(Ui.FAINT, 255), 0.6f);
         } else {
             vide(g, f, rx, ly, rw, lh);
         }
@@ -229,14 +226,14 @@ public final class EcranWarps extends Screen {
     }
 
     /**
-     * Aucun warp : état vide centré dans le panneau de droite, titre en gras et une ligne d'aide en petit gris (pour le
-     * staff, la commande qui pose un warp ; le serveur garde seul le droit de l'utiliser).
+     * Aucun warp : état vide centré dans le panneau de droite, titre en gras ; pour le staff seulement, une ligne d'aide en
+     * petit gris (la commande qui pose un warp ; le serveur garde seul le droit de l'utiliser).
      */
     private void vide(GuiGraphics g, Font f, int x, int y, int w, int h) {
         boolean staff = Minecraft.getInstance().player != null && Minecraft.getInstance().player.hasPermissions(2);
-        List<FormattedCharSequence> aide = f.split(Ui.lit(t(staff ? "vide_aide_staff" : "vide_aide"), Ui.SMALL), w - 60);
-        // bloc centré : titre (milieu des capitales) 14 au-dessus de la première ligne d'aide, lignes de 10
-        float cx = x + w / 2f, cyTitre = y + h / 2f - 7 - (aide.size() - 1) * 5f;
+        List<FormattedCharSequence> aide = staff ? f.split(Ui.lit(t("vide_aide_staff"), Ui.SMALL), w - 60) : List.of();
+        // bloc centré : titre (milieu des capitales) 14 au-dessus de la première ligne d'aide, lignes de 10 ; seul, au milieu
+        float cx = x + w / 2f, cyTitre = aide.isEmpty() ? y + h / 2f : y + h / 2f - 7 - (aide.size() - 1) * 5f;
         Component titre = Ui.lit(t("vide_titre"), Ui.BOLD);
         net(g, f, titre, cx - f.width(titre) / 2f, cyTitre - milieu(11), Ui.argb(Ui.TEXT, 255));
         for (int i = 0; i < aide.size(); i++) {

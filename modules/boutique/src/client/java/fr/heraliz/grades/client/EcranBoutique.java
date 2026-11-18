@@ -38,6 +38,11 @@ import static fr.heraliz.grades.client.boutique.Trace.mix;
  * dans les trois langues et refuse tout texte qui dépasse : changer l'un, c'est changer l'autre. L'écran n'affiche que ce
  * que le serveur envoie et ne fait que DEMANDER un achat (deux clics : « Acheter » puis « Confirmer ») : prix et solde sont
  * vérifiés par le serveur et le site.
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de touches ni de note
+ * dans le pied ; seul le message du dernier achat y reste (6 s), et dans « Mes clés » la page ou le compte indisponible.
+ * Le sous-titre des grades ne dit plus comment choisir, mais garde ce qui compte : actif tout de suite, jamais renouvelé
+ * tout seul (c'était la note du pied).
  */
 public final class EcranBoutique extends Screen {
     // ------------------------------------------------------------------ mesures de la maquette
@@ -451,26 +456,13 @@ public final class EcranBoutique extends Screen {
         Trace.rect(g, M, ty + th + 4, GW - M, ty + th + 4 + 1 / 3F, a(WHITE, 23));
     }
 
-    /** Touches et note du pied ; un message d'achat récent prend la place de la note. */
-    private void pied(GuiGraphics g, Font f, String[][] touches, String note) {
-        float cy = 348, x = M;
-        for (String[] k : touches) {
-            String kl = t("touche." + k[0]).toUpperCase(Locale.ROOT);
-            float tw = Trace.largeur(f, kl, MINI_NUM), w = Math.max(9, tw + 4.67F);
-            Trace.rect(g, x, cy - 4.5F, x + w, cy + 4.5F, a(WHITE, 30));
-            Trace.bord(g, x, cy - 4.5F, w, 9, 1 / 3F, a(WHITE, 61));
-            Trace.c(g, f, kl, x + w / 2, cy, MINI_NUM, a(WHITE, 255), 0);
-            x += w + 3.5F;
-            x += Trace.m(g, f, t("pied." + k[1]), x, cy, PETIT, a(MUTED, 255), 0) + 10;
-        }
+    /** Pied : le message de la dernière demande d'achat (6 s), à droite sous les cartes (18/11 : plus de touches ni de note). */
+    private void pied(GuiGraphics g, Font f) {
         long age = System.currentTimeMillis() - messageA;
-        if (!message.isEmpty() && age < 6000) {
-            float al = 255 * Math.min(1, (6000 - age) / 600F);
-            String cle = message.startsWith("achete") ? "msg.achete" : "msg." + message;
-            Trace.d(g, f, t(cle), GW - M, cy, PETIT_GRAS, a(messageOk ? OK : DANGER, Math.max(20, al)), GW - M - x - 8);
-        } else {
-            Trace.d(g, f, t("note." + note), GW - M, cy, PETIT, a(FAINT, 255), GW - M - x - 8);
-        }
+        if (message.isEmpty() || age >= 6000) return;
+        float al = 255 * Math.min(1, (6000 - age) / 600F);
+        String cle = message.startsWith("achete") ? "msg.achete" : "msg." + message;
+        Trace.d(g, f, t(cle), GW - M, 348, PETIT_GRAS, a(messageOk ? OK : DANGER, Math.max(20, al)), GW - 2 * M);
     }
 
     private static String avantage(String[] av) {
@@ -542,7 +534,7 @@ public final class EcranBoutique extends Screen {
             });
         }
         panneauAchat(g, f, M + 3 * cw + 2 * gap + 10);
-        pied(g, f, new String[][]{{"clic", "choisir"}, {"entree", "acheter"}, {"echap", "fermer"}}, "grades");
+        pied(g, f);
     }
 
     private void panneauAchat(GuiGraphics g, Font f, float px) {
@@ -700,7 +692,7 @@ public final class EcranBoutique extends Screen {
         bouton(g, cx, by, cw, bh, ok, ACCENT);
         Trace.c(g, f, libelleAchat(o), cx + cw / 2, by + bh / 2, BOUTON, a(ok ? WHITE : MUTED, 255), cw - 8);
         if (ok) zone(cx, by, cw, bh, () -> acheter(o));
-        pied(g, f, new String[][]{{"clic", "choisir"}, {"echap", "fermer"}}, "beta");
+        pied(g, f);
     }
 
     /** Fenêtre après l'achat du BETA : la demande d'emote ou de finisher se fait sur Discord. */
@@ -803,7 +795,7 @@ public final class EcranBoutique extends Screen {
             if (ok) zone(x + 10, by, cw - 20, bh, () -> acheter(o));
             else if (!attente) zone(x + 10, by, cw - 20, bh, () -> lien(LIEN_PB));
         }
-        pied(g, f, new String[][]{{"clic", "choisir"}, {"entree", "acheter"}, {"echap", "fermer"}}, "cles");
+        pied(g, f);
     }
 
     // ------------------------------------------------------------------ 3 bis. Mes clés
@@ -864,28 +856,17 @@ public final class EcranBoutique extends Screen {
             for (int j = 0; j < Math.min(2, ls.size()); j++) Trace.m(g, f, ls.get(j), tx, y + 53 + j * 9, TEXTE, a(LIGHT, 255), tw);
         }
         if (!fr.heraliz.crates.cles.SoldeCles.disponible()) {
-            piedTexte(g, f, pages > 1, t("mes_cles.indispo"), DANGER);
+            piedTexte(g, f, t("mes_cles.indispo"), DANGER);
         } else if (pages > 1) {
-            piedTexte(g, f, true, t("mes_cles.page", pageCles + 1, pages), MUTED);
+            piedTexte(g, f, t("mes_cles.page", pageCles + 1, pages), MUTED);
         } else {
-            pied(g, f, new String[][]{{"echap", "fermer"}}, "mes_cles");
+            pied(g, f);
         }
     }
 
-    /** Pied de l'onglet « Mes clés » : touches (flèches si plusieurs pages) et un texte à droite. */
-    private void piedTexte(GuiGraphics g, Font f, boolean fleches, String texte, int couleur) {
-        String[][] touches = fleches ? new String[][]{{"fleches", "page"}, {"echap", "fermer"}} : new String[][]{{"echap", "fermer"}};
-        float cy = 348, x = M;
-        for (String[] k : touches) {
-            String kl = t("touche." + k[0]).toUpperCase(Locale.ROOT);
-            float tw = Trace.largeur(f, kl, MINI_NUM), w = Math.max(9, tw + 4.67F);
-            Trace.rect(g, x, cy - 4.5F, x + w, cy + 4.5F, a(WHITE, 30));
-            Trace.bord(g, x, cy - 4.5F, w, 9, 1 / 3F, a(WHITE, 61));
-            Trace.c(g, f, kl, x + w / 2, cy, MINI_NUM, a(WHITE, 255), 0);
-            x += w + 3.5F;
-            x += Trace.m(g, f, t("pied." + k[1]), x, cy, PETIT, a(MUTED, 255), 0) + 10;
-        }
-        Trace.d(g, f, texte, GW - M, cy, PETIT_GRAS, a(couleur, 255), GW - M - x - 8);
+    /** Pied de l'onglet « Mes clés » : un texte à droite, la page ou le compte indisponible (18/11 : plus de touches). */
+    private void piedTexte(GuiGraphics g, Font f, String texte, int couleur) {
+        Trace.d(g, f, texte, GW - M, 348, PETIT_GRAS, a(couleur, 255), GW - 2 * M);
     }
 
     /** L'objet (la vraie clé de HeraliZ Caisses, avec son modèle 3D) dessiné par le jeu, centré, penché comme la maquette. */
@@ -942,6 +923,6 @@ public final class EcranBoutique extends Screen {
         Trace.c(g, f, t("discord.bouton"), bx + bw / 2, by + bhh / 2 - 3.5F, BOUTON, a(WHITE, 255), bw - 10);
         Trace.c(g, f, "discord.gg/heraliz", bx + bw / 2, by + bhh / 2 + 6.5F, PETIT, a(mix(DISCORD, WHITE, 0.7F), 255), 0);
         zone(bx, by, bw, bhh, () -> lien(LIEN_DISCORD));
-        pied(g, f, new String[][]{{"clic", "discord"}, {"echap", "fermer"}}, "sur_mesure");
+        pied(g, f);
     }
 }

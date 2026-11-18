@@ -16,7 +16,7 @@ Les objets sont des carrés de couleur à leur place et à leur taille.
 
 Contrôle : chaque texte (encre réelle des lettres) doit rester dans sa boîte (panneau, carte, bouton, colonne, bande) et
 ne toucher aucun autre texte, pour les trois langues et plusieurs tailles de fenêtre. Les textes centrés dans une
-boîte (touches, boutons, quantités) : écart en haut et écart en bas des capitales égaux à un point d'écran près (aux
+boîte (note, boutons, quantités) : écart en haut et écart en bas des capitales égaux à un point d'écran près (aux
 échelles 2 et 3), accents et jambages dans la boîte ; pastilles de la légende sur le milieu des capitales à un point
 près. La liste des défauts doit être vide (sinon code de sortie 1).
 
@@ -66,11 +66,20 @@ C = constantes()
 
 
 # ----------------------------------------------------------------------------------------------- polices
+def fichier_police(ref):
+    """« espace:fichier.ttf » du .json de la police -> le fichier, dans les assets de ce mod (18/11 : les TTF sont rangés
+    dans le noyau, heraliz_noyau:…, l'outil ne les trouvait plus)."""
+    ns, nom = ref.split(":")
+    for p in sorted(DEPOT.glob(f"modules/*/src/client/resources/assets/{ns}/font/{nom}")):
+        return p
+    return POLICES / nom
+
+
 class Fonte:
     """Une police TTF d'un fournisseur : métriques comme TrueTypeGlyphProvider."""
 
     def __init__(self, fichier, taille, decalage):
-        self.chemin = POLICES / fichier.split(":")[1]
+        self.chemin = fichier_police(fichier)
         tt = TTFont(self.chemin)
         self.cmap = tt.getBestCmap()
         self.hmtx = tt["hmtx"]
@@ -487,9 +496,9 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
         if cnt > 1:
             e.compte(f"compte grille {i}", cnt, x + celluleW - 2, grilleY + 2)
 
-    # bouton et aide
+    # bouton et note
     if etat == "roue":
-        cle = "gui.heralizcrates.case.skip_space"
+        cle = "gui.heralizcrates.case.skip"
     elif etat == "cle":
         cle = "gui.heralizcrates.case.need_key"
     elif cles == "free":
@@ -506,42 +515,18 @@ def dessiner_ecran(fen_w, fen_h, code, etat, dessiner=True, sous_repere=0, titre
                     C["OR_TEXTE"] if dore else MUTED, C["ESP_BOUTON"],
                     (boutonX + boutonH / 2 - 2, boutonY + 3, boutonX + boutonW - boutonH / 2 + 2, boutonY + boutonH - 3),
                     boite=(boutonY, boutonY + boutonH))
-    # rangée des touches (renderTouches) : pastilles à gauche, note à droite
-    touches = []
-    if etat == "roue":
-        touches.append(("touche.espace", "skip"))
-    elif etat != "cle":
-        touches.append(("touche.espace", "open"))
-    if plein:
-        touches.append(("touche.molette", "action.contenu"))
-    touches.append(("touche.echap", "close"))
-    ty, th, tpad, tec, tesp = py + C["TOUCHES_Y"], C["TOUCHE_H"], C["TOUCHE_PAD"], C["TOUCHE_ECART"], C["TOUCHES_ESPACE"]
-    bande_touches = (interieur[0], boutonY + boutonH + 1, interieur[2], py + ph - 2)
-    x = px + pad
-    for tk, ak in touches:
-        touche = L["gui.heralizcrates.case." + tk].upper()
-        action = L["gui.heralizcrates.case." + ak]
-        tw = round(POL["TEXTE_GRAS"].largeur_espacee(touche, C["ESP_TOUCHE"])) + 2 * tpad
-        tyt, tya = y_centre(ty, th, C["T_TEXTE"], touche), y_centre(ty, th, C["T_TEXTE"], action)
-        xr = round(x)
-        e.rond(xr, ty, tw, th, 0xFFFFFF, 14, contour=(0xFFFFFF, 70))
-        e.espace(f"touche {touche}", POL["TEXTE_GRAS"], touche, xr + tpad, tyt, TEXTE, C["ESP_TOUCHE"],
-                 (xr + 1, ty + 1, xr + tw - 1, ty + th - 1), boite=(ty, ty + th))
-        ax = xr + tw + tec
-        e.texte(f"action {action}", POL["TEXTE"], action, ax, tya, clair, bande_touches, boite=(ty, ty + th))
-        x = ax + POL["TEXTE"].largeur(action) + tesp
+    # note centrée sous le bouton (renderNote ; 18/11 : plus de rangée de touches) : erreur du serveur, ou d'où viennent
+    # les clés quand on n'en a pas
+    ny, nh = py + C["NOTE_Y"], C["NOTE_H"]
+    bande_note = (interieur[0], boutonY + boutonH + 1, interieur[2], py + ph - 2)
     note, coul = None, MUTED
     if erreur:
         note, coul = L["gui.heralizcrates.case.error.all_emotes"], 0xFF6B6B
     elif etat == "cle":
         note = L["gui.heralizcrates.case.help.keys"]
     if note is not None:
-        place = round(px + pw - pad - 2 - x)
-        if place > 20:
-            note = ellipsis(POL["TEXTE"], note, place)
-            e.droite("note", POL["TEXTE"], note, px + pw - pad - 2, y_centre(ty, th, C["T_TEXTE"], note), coul, bande_touches)
-        else:
-            e.textes.append(("note : pas de place", (0, 0, 1, 1), (0, 0, 0, 0)))
+        note = ellipsis(POL["TEXTE"], note, pw - 2 * pad)
+        e.centre("note", POL["TEXTE"], note, px + pw / 2, y_centre(ny, nh, C["T_TEXTE"], note), coul, bande_note, boite=(ny, ny + nh))
 
     if etat == "gain":
         gain(e, L, code, cles)

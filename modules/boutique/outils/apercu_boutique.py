@@ -536,18 +536,8 @@ def entete(e, onglet):
     e.rect(M, ty + th + 4, GW - M, ty + th + 4 + 1 / 3, WHITE, 23)
 
 
-def pied(e, touches, note):
-    cy, x = 348, M
-    for k, lab in touches:
-        kl = t("touche." + k).upper()
-        tw = e.largeur(kl, MINI_NUM)
-        w = max(9, tw + 4.67)
-        e.rect(x, cy - 4.5, x + w, cy + 4.5, WHITE, 30)
-        e.border(x, cy - 4.5, w, 9, WHITE, 61)
-        e.c(kl, x + w / 2, cy, MINI_NUM, WHITE)
-        x += w + 3.5
-        x += e.m(t("pied." + lab), x, cy, PETIT, MUTED) + 10
-    e.d(t("note." + note), GW - M, cy, PETIT, FAINT, maxw=GW - M - x - 8, quoi="note du pied")
+# 18/11 (EcranBoutique.pied) : plus de touches ni de note dans le pied ; seul le message du dernier achat y vient (6 s),
+# qu'une maquette n'a pas : rien à dessiner ici.
 
 
 def avantage(cle, arg):
@@ -690,7 +680,6 @@ def ecran_grades(sortie, choisi=1, duree=1):
         e.defauts.append("[%s] panneau d'achat trop rempli (%.1f)" % (LANGUE, y + 18 - by))
     bouton(e, cx, by, cwid, bh)
     e.c(t("acheter", nombre(choix["prix"])), cx + cwid / 2, by + bh / 2, BOUTON, WHITE, maxw=cwid - 8, quoi="bouton acheter")
-    pied(e, [("clic", "choisir"), ("entree", "acheter"), ("echap", "fermer")], "grades")
     e.sauver(sortie)
 
 
@@ -769,7 +758,6 @@ def ecran_beta(sortie):
         e.defauts.append("[%s] panneau beta trop rempli (%.1f)" % (LANGUE, y - by + 13))
     bouton(e, cx, by, cw, bh, actif=assez)
     e.c(t("acheter", nombre(pb)), cx + cw / 2, by + bh / 2, BOUTON, WHITE if assez else MUTED, maxw=cw - 8)
-    pied(e, [("clic", "choisir"), ("echap", "fermer")], "beta")
     e.sauver(sortie)
 
 
@@ -834,7 +822,6 @@ def ecran_cles(sortie, choix=(1, 0, 1)):
             e.defauts.append("[%s] colonne %s trop remplie" % (LANGUE, g))
         bouton(e, x + 10, by, cw - 20, bh)
         e.c(t("acheter", nombre(os_[choix[i]]["prix"])), x + cw / 2, by + bh / 2, BOUTON, WHITE, maxw=cw - 28, quoi="bouton clé")
-    pied(e, [("clic", "choisir"), ("entree", "acheter"), ("echap", "fermer")], "cles")
     e.sauver(sortie)
 
 
@@ -843,19 +830,9 @@ def source_cle(c):
     return t("mes_cles.src." + (c if c in CLES_TOUJOURS else "autre"))
 
 
-def pied_texte(e, fleches, texte, couleur):
-    """EcranBoutique.piedTexte : touches (flèches si plusieurs pages) et un texte à droite."""
-    cy, x = 348, M
-    for k, lab in ([("fleches", "page")] if fleches else []) + [("echap", "fermer")]:
-        kl = t("touche." + k).upper()
-        tw = e.largeur(kl, MINI_NUM)
-        w = max(9, tw + 4.67)
-        e.rect(x, cy - 4.5, x + w, cy + 4.5, WHITE, 30)
-        e.border(x, cy - 4.5, w, 9, WHITE, 61)
-        e.c(kl, x + w / 2, cy, MINI_NUM, WHITE)
-        x += w + 3.5
-        x += e.m(t("pied." + lab), x, cy, PETIT, MUTED) + 10
-    e.d(texte, GW - M, cy, PETIT_GRAS, couleur, maxw=GW - M - x - 8, quoi="pied de Mes clés")
+def pied_texte(e, texte, couleur):
+    """EcranBoutique.piedTexte : un texte à droite, la page ou le compte indisponible (18/11 : plus de touches)."""
+    e.d(texte, GW - M, 348, PETIT_GRAS, couleur, maxw=GW - 2 * M, quoi="pied de Mes clés")
 
 
 def ecran_mes_cles(sortie, solde, page=0, dispo=True):
@@ -898,11 +875,9 @@ def ecran_mes_cles(sortie, solde, page=0, dispo=True):
         for j, l in enumerate(ls[:2]):
             e.m(l, tx, y + 53 + j * 9, TEXTE, LIGHT, maxw=tw, quoi="source de la clé")
     if not dispo:
-        pied_texte(e, pages > 1, t("mes_cles.indispo"), DANGER)
+        pied_texte(e, t("mes_cles.indispo"), DANGER)
     elif pages > 1:
-        pied_texte(e, True, t("mes_cles.page", page + 1, pages), MUTED)
-    else:
-        pied(e, [("echap", "fermer")], "mes_cles")
+        pied_texte(e, t("mes_cles.page", page + 1, pages), MUTED)
     e.sauver(sortie)
 
 
@@ -955,7 +930,6 @@ def ecran_sur_mesure(sortie):
     e.border(bx, by, bw, bhh, mix(DISCORD, WHITE, 0.4), 220)
     e.c(t("discord.bouton"), bx + bw / 2, by + bhh / 2 - 3.5, BOUTON, WHITE, maxw=bw - 10, quoi="bouton discord")
     e.c("discord.gg/heraliz", bx + bw / 2, by + bhh / 2 + 6.5, PETIT, mix(DISCORD, WHITE, 0.7))
-    pied(e, [("clic", "discord"), ("echap", "fermer")], "sur_mesure")
     e.sauver(sortie)
 
 

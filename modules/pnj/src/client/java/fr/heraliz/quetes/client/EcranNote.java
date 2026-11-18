@@ -15,7 +15,11 @@ import net.minecraft.util.Mth;
 
 import java.util.List;
 
-/** Une note, une lettre, un indice trouvé sur un point de quête : un panneau au milieu de l'écran, à lire. */
+/**
+ * Une note, une lettre, un indice trouvé sur un point de quête : un panneau au milieu de l'écran, à lire ; un clic ou
+ * Échap le ferme. 18/11 (retour du propriétaire : pas de texte d'aide) : plus de « Cliquer pour fermer » en bas, le
+ * panneau perd cette bande.
+ */
 public final class EcranNote extends Screen {
     /** Titre à sa vraie taille (police 14) : jamais de texte agrandi, flou (25/10, audit des écrans). */
     private static final ResourceLocation TITRE = new ResourceLocation("heraliz_quetes", "ui_titre");
@@ -41,7 +45,8 @@ public final class EcranNote extends Screen {
         Echelle.forcer(this, 340, 220);
         pw = Math.min(340, width - 40);
         lignes = font.split(Ui.lit(texte, Ui.FONT), pw - 36);
-        ph = Math.min(height - 30, 52 + lignes.size() * 11 + 22);
+        // haut 38 (titre et filet), texte (lignes de 11, marge de 4 + 2), bas 12 : tout tient sans défilement
+        ph = Math.min(height - 30, 56 + lignes.size() * 11);
         px = (width - pw) / 2;
         py = (height - ph) / 2;
     }
@@ -69,7 +74,7 @@ public final class EcranNote extends Screen {
     }
 
     private int bas() {
-        return py + ph - 22;
+        return py + ph - 12;
     }
 
     private int maxDefile() {
@@ -104,7 +109,6 @@ public final class EcranNote extends Screen {
             int zone = b - h, barre = Math.max(16, zone * zone / (zone + max)), by = h + (zone - barre) * defile / max;
             g.fill(px + pw - 7, by, px + pw - 5, by + barre, Ui.argb(0xFFFFFF, 60));
         }
-        Ui.spacedCentered(g, f, TexteClient.tr("gui.heraliz_quetes.note.fermer"), Ui.SMALL, px + pw / 2f, py + ph - 14, Ui.argb(Ui.FAINT, 255), 0.8f);
         super.render(g, mx, my, pt);
     }
 }

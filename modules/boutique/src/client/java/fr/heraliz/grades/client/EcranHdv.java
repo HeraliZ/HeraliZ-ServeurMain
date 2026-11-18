@@ -36,6 +36,11 @@ import static fr.heraliz.grades.client.boutique.Trace.a;
  * second clic),
  * Mes ventes (en cours, vendues, expirées, à récupérer). Textes DM Sans à leur vraie taille ({@link Trace}, une police par
  * taille), posés sur un point de l'écran. L'écran ne décide rien : il envoie des identifiants et un prix, le serveur relit.
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de pied (touches et
+ * notes) ni de phrases d'aide (étapes 1 et 2, objets grisés, « clique un objet », « deuxième clic »…) ; le message de la
+ * dernière action s'affiche à droite des onglets ; le panneau perd sa bande du bas (560 x 310, recentré) ; la taxe de mise
+ * en vente se dit « non remboursable » sur sa ligne (c'était la note du pied).
  */
 public final class EcranHdv extends Screen {
     private static final int GW = 640, GH = 360;
@@ -212,7 +217,8 @@ public final class EcranHdv extends Screen {
     protected void init() {
         Echelle.forcer(this, GW, GH);
         ox = (width - GW) / 2;
-        oy = (height - GH) / 2;
+        // 18/11 : panneau de 20 à 330 sur le canevas (plus de pied) : décalé de 5 pour rester au milieu de l'écran
+        oy = (height - GH) / 2 + 5;
     }
 
     @Override
@@ -472,8 +478,8 @@ public final class EcranHdv extends Screen {
         g.pose().pushPose();
         g.pose().translate(ox, oy, 0);
         Font f = font;
-        Trace.rect(g, 40, 20, 600, 340, a(FOND, 219));
-        Trace.bord(g, 40, 20, 560, 320, 1 / 3F, a(0x2C3039, 255));
+        Trace.rect(g, 40, 20, 600, 330, a(FOND, 219));
+        Trace.bord(g, 40, 20, 560, 310, 1 / 3F, a(0x2C3039, 255));
         entete(g, f);
         switch (onglet) {
             case 1 -> vendre(g, f);
@@ -530,6 +536,12 @@ public final class EcranHdv extends Screen {
             ox2 += w;
         }
         Trace.rect(g, 56, 83.33F, 584, 83.33F + 1 / 3F, a(LIGNE, 255));
+        // message de la dernière action (vert : fait, rouge : refusé), 7 s, à droite des onglets (18/11 : avant, dans le pied)
+        long age = System.currentTimeMillis() - messageA;
+        if (!message.isEmpty() && age < 7000) {
+            float al = 255 * Math.min(1, (7000 - age) / 600F);
+            Trace.d(g, f, t("msg." + message), 584, 73.67F, GRAS, a(messageOk ? VERT : ROUGE, Math.max(20, al)), 584 - ox2 - 10);
+        }
     }
 
     /** Une case de solde, alignée à droite sur xd ; rend sa largeur. */
@@ -590,29 +602,6 @@ public final class EcranHdv extends Screen {
         g.renderItem(st, 0, 0);
         g.pose().popPose();
         if (grise) Trace.rect(g, x, y, x + s, y + s, a(FOND, 165));
-    }
-
-    private void pied(GuiGraphics g, Font f, String[][] touches, String note) {
-        Trace.rect(g, 56, 314.67F, 584, 314.67F + 1 / 3F, a(LIGNE, 255));
-        float cy = 327.33F, x = 56;
-        g.pose().pushPose();
-        g.pose().translate(0, 0, 200);
-        for (String[] k : touches) {
-            String kl = t("touche." + k[0]);
-            float w = Trace.largeur(f, kl, TOUCHE) + 6.67F;
-            Trace.bord(g, x, cy - 4.5F, w, 9, 1 / 3F, a(0x555B66, 255));
-            Trace.c(g, f, kl, x + w / 2, cy, TOUCHE, a(TEXTE, 255), 0);
-            x += w + 4;
-            x += Trace.m(g, f, t("pied." + k[1]), x, cy, TXT, a(CLAIR, 255), 0) + 12;
-        }
-        long age = System.currentTimeMillis() - messageA;
-        if (!message.isEmpty() && age < 7000) {
-            float al = 255 * Math.min(1, (7000 - age) / 600F);
-            Trace.d(g, f, t("msg." + message), 584, cy, GRAS, a(messageOk ? VERT : ROUGE, Math.max(20, al)), 584 - x - 6);
-        } else {
-            Trace.d(g, f, t("note." + note), 584, cy, TXT, a(GRIS, 255), 584 - x - 6);
-        }
-        g.pose().popPose();
     }
 
     private void label(GuiGraphics g, Font f, String s, float x, float cy, int c, float maxw) {
@@ -706,7 +695,6 @@ public final class EcranHdv extends Screen {
         });
         liste(g, f);
         detail(g, f);
-        pied(g, f, new String[][]{{"echap", "fermer"}, {"molette", "defiler"}, {"clic2", "acheter"}}, "acheter");
     }
 
     private void liste(GuiGraphics g, Font f) {
@@ -764,10 +752,7 @@ public final class EcranHdv extends Screen {
         Trace.bord(g, x0, y0, x1 - x0, y1 - y0, 1 / 3F, a(LIGNE, 255));
         label(g, f, t("offre_choisie"), ix, 112, OR, xd - ix);
         ReseauHdv.LigneOffre o = offreChoisie();
-        if (o == null) {
-            Trace.c(g, f, t("choisir"), (x0 + x1) / 2, 200, TXT, a(GRIS, 255), x1 - x0 - 16);
-            return;
-        }
+        if (o == null) return;   // liste vide : elle le dit déjà
         ItemStack st = o.objet();
         int r = RegleHdv.rarete(st), c = couleur(r);
         caseObjet(g, st, ix, 122, 36.67F, false);
@@ -808,8 +793,8 @@ public final class EcranHdv extends Screen {
         boolean peut = !o.mienne() && peutPayer(o) && !attente;
         String lib = attente ? t("attente") : o.mienne() ? t("ta_vente_bouton") : !peutPayer(o) ? t("solde_bas")
                 : t(armee(o) ? "confirmer" : "acheter", nombre(total) + " " + (pb ? "PB" : u));
-        bouton(g, f, ix, 277.67F, xd - ix, 19.67F, lib, peut, true, BOUTON, this::acheter);
-        Trace.c(g, f, t("deux_clics"), (ix + xd) / 2, 305.33F, PETIT, a(GRIS, 255), xd - ix);
+        // en bas du panneau (18/11 : plus de « deuxième clic pour confirmer » dessous, le bouton le dit)
+        bouton(g, f, ix, 285.67F, xd - ix, 19.67F, lib, peut, true, BOUTON, this::acheter);
     }
 
     private void kv(GuiGraphics g, Font f, String k, String v, float x, float xd, float cy, P p, int c) {
@@ -850,15 +835,14 @@ public final class EcranHdv extends Screen {
         float x0 = 56, x1 = 374, y0 = 99.67F, y1 = 314, ix = 65.33F;
         Trace.rect(g, x0, y0, x1, y1, a(0xFFFFFF, 5));
         Trace.bord(g, x0, y0, x1 - x0, y1 - y0, 1 / 3F, a(LIGNE, 255));
-        label(g, f, t("etape1"), ix, 112.33F, OR, x1 - ix - 9);
-        Trace.m(g, f, t("grises"), ix, 123.33F, TXT, a(GRIS, 255), x1 - ix - 9);
+        label(g, f, t("ton_inventaire"), ix, 112.33F, OR, x1 - ix - 9);
         ItemStack survole = ItemStack.EMPTY;
         int refusSurvole = 0;
         if (joueur != null) {
             for (int k = 0; k < 36; k++) {
                 int ligne = k < 27 ? k / 9 : 3, col = k % 9;
                 int s = k < 27 ? k + 9 : k - 27;   // inventaire (9 à 35) puis barre d'objets (0 à 8)
-                float x = ix + col * 26.67F, y = 134.67F + ligne * 26.67F + (ligne == 3 ? 2.67F : 0);
+                float x = ix + col * 26.67F, y = 124.67F + ligne * 26.67F + (ligne == 3 ? 2.67F : 0);
                 ItemStack st = joueur.getInventory().getItem(s);
                 int refus = RegleHdv.refus(st);
                 boolean bloque = !st.isEmpty() && refus != RegleHdv.OK;
@@ -897,7 +881,6 @@ public final class EcranHdv extends Screen {
             Trace.m(g, f, nom(survole), ix, 296.67F, TXT, a(GRIS, 255), x1 - ix - 9);
         }
         prixVente(g, f);
-        pied(g, f, new String[][]{{"clic", "choisir"}, {"entree", "mettre"}, {"echap", "fermer"}}, "vendre");
     }
 
     private void prixVente(GuiGraphics g, Font f) {
@@ -906,12 +889,9 @@ public final class EcranHdv extends Screen {
         Trace.bord(g, x0, y0, x1 - x0, y1 - y0, 1 / 3F, a(LIGNE, 255));
         String compte = t("ventes", etat.mesEnVente(), etat.ventesMax());
         float cw = Trace.d(g, f, compte, xd, 111.67F, LABEL, a(etat.mesEnVente() >= etat.ventesMax() ? ROUGE : GRIS, 255), 0);
-        label(g, f, t("etape2"), ix, 111.67F, OR, xd - ix - cw - 6);
+        label(g, f, t("nouvelle_vente"), ix, 111.67F, OR, xd - ix - cw - 6);
         ItemStack st = objetVente();
-        if (st.isEmpty()) {
-            Trace.c(g, f, t("choisir_objet"), (x0 + x1) / 2, 200, TXT, a(GRIS, 255), x1 - x0 - 16);
-            return;
-        }
+        if (st.isEmpty()) return;
         int c = couleur(RegleHdv.rarete(st));
         caseObjet(g, st, ix, 121.33F, 26.67F, false);
         String q = st.getCount() > 1 ? " ×" + st.getCount() : "";
@@ -919,8 +899,6 @@ public final class EcranHdv extends Screen {
         List<String> car = new ArrayList<>();
         for (String[] kv : caracteristiques(st)) car.add(kv[0] + " " + kv[1]);
         Trace.m(g, f, String.join(" · ", car.subList(0, Math.min(2, car.size()))), 426, 136.67F, PETIT, a(GRIS, 255), xd - 426);
-        CompoundTag tg = st.getTag();
-        if (tg != null && tg.contains("GunId", Tag.TAG_STRING)) Trace.m(g, f, t("dechargee_vente"), 426, 145.33F, PETIT, a(GRIS, 255), xd - 426);
         // monnaie : toujours un prix en hérals ; « Hérals + PB » ajoute un prix en PB (l'acheteur choisit)
         label(g, f, t("monnaie"), ix, 156.33F, GRIS, 100);
         choix(g, f, ix, 163, xd - ix, 14.33F, new String[]{t("herals_seuls"), t("herals_et_pb")}, deviseVente, PETIT, k -> {
@@ -1057,6 +1035,5 @@ public final class EcranHdv extends Screen {
             float h = 172.67F, th = h * 6 / mes.size(), ty = 141.33F + (h - th) * defile / Math.max(1, mes.size() - 6);
             Trace.rect(g, 582, ty, 583, ty + th, a(0xFFFFFF, 60));
         }
-        pied(g, f, new String[][]{{"clic", "recuperer"}, {"echap", "fermer"}}, "mes_ventes");
     }
 }

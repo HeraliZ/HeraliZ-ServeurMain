@@ -23,6 +23,10 @@ import java.util.Locale;
  * DEMANDER (proposer une case, retirer, PB, prêt, annuler) : le serveur garde l'échange et le revérifie à chaque tick.
  * Fermer l'écran annule l'échange (sauf pendant l'exécution). Grands textes dans des polices à leur vraie taille, posés
  * sur un point de l'écran (règle du 23/10 : jamais de texte agrandi, il deviendrait flou).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'avoir autant de texte, c'est très intuitif ») : plus de sous-titre ni
+ * d'aide à droite de l'inventaire (clic, reclic, « Prêt »…) ; l'inventaire est centré sous les deux côtés. La taxe de 10 %
+ * reste dite sous les PB, avec ce qu'elle retire.
  */
 public final class EcranEchange extends Screen {
     private static final int PB = 0xFFC23A, CASE = 22, ECART = 3, INV = 20;
@@ -140,8 +144,13 @@ public final class EcranEchange extends Screen {
         return n < 27 ? n + 9 : n - 27;
     }
 
+    /** Bord gauche de l'inventaire : centré dans le panneau (18/11 : plus d'aide à sa droite). */
+    private int inventaireX() {
+        return px + (pw - 9 * INV) / 2;
+    }
+
     private int[] posInventaire(int n) {
-        int x0 = px + 14 + (cw - 9 * INV) / 2, y0 = py + 168;
+        int x0 = inventaireX(), y0 = py + 168;
         return new int[]{x0 + (n % 9) * INV, y0 + (n / 9) * INV + (n >= 27 ? 4 : 0)};
     }
 
@@ -205,7 +214,6 @@ public final class EcranEchange extends Screen {
         // titre en gras 18 : même milieu des capitales que l'ancien texte 11 agrandi 1,6 fois depuis py + 12
         Component titre = Ui.lit(t("titre").toUpperCase(Locale.ROOT), TITRE);
         net(g, f, titre, px + 14, py + 12 + 1.6f * milieu(11) - milieu(18), Ui.argb(Ui.TEXT, 255));
-        Ui.spaced(g, f, t("sous_titre"), Ui.SMALL, px + 14 + f.width(titre) + 12, py + 18, Ui.argb(Ui.MUTED, 255), 0.8f);
         Component cs = Ui.in(Component.literal(etat.monSolde() < 0 ? "— PB" : Ui.nombre(etat.monSolde()) + " PB"), Ui.BOLD);
         int sw = f.width(cs) + 22, sx = px + pw - 14 - sw;
         Ui.soft(g, sx, py + 10, sw, 18, Ui.argb(PB, 30));
@@ -256,9 +264,8 @@ public final class EcranEchange extends Screen {
             }
         }
 
-        // mon inventaire
-        int ix = px + 14;
-        Ui.section(g, f, t("inventaire"), ix, py + 160 - 2, cw);
+        // mon inventaire, centré
+        Ui.section(g, f, t("inventaire"), inventaireX(), py + 160 - 2, 9 * INV - 1);
         java.util.List<Integer> cases = etat.mesCases();
         net.minecraft.world.entity.player.Inventory inv = Minecraft.getInstance().player.getInventory();
         for (int n = 0; n < 36; n++) {
@@ -274,13 +281,6 @@ public final class EcranEchange extends Screen {
                 if (sur) survole = st;
             }
         }
-        // aide à droite
-        int ax = px + 14 + cw + 10, ay = py + 166;
-        for (int i = 1; i <= 4; i++) {
-            Ui.soft(g, ax, ay + (i - 1) * 22, 4, 4, Ui.argb(PB, 200));
-            Ui.spaced(g, f, Ui.ellipsisSpaced(f, t("aide." + i), Ui.SMALL, 0.4f, cw - 16), Ui.SMALL, ax + 10, ay - 1 + (i - 1) * 22, Ui.argb(Ui.MUTED, 255), 0.4f);
-        }
-
         // message, compte à rebours
         long age = System.currentTimeMillis() - messageA;
         if (!message.isEmpty() && age < 5000) {
