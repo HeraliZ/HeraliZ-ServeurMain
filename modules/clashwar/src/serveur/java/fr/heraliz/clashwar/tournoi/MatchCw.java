@@ -146,6 +146,21 @@ public final class MatchCw extends Partie {
 
     /** Boîte de deux coins (blocs inclus, 3 blocs de haut au-dessus du plus haut), ou null. */
     @Nullable
+    /**
+     * Nom de l'arme pour le fil des éliminations, traduit chez le joueur (18/11, retour du propriétaire : « en haut à gauche,
+     * l'arme s'appelle “kinetic…” alors que dans la barre c'est le M200 ») : le serveur n'a ni les noms des armes TaCZ (ils
+     * viennent des packs d'armes, côté joueur) ni les textes de nos mods. « # » + clé de traduction : nom du pack de l'arme
+     * TaCZ, sinon clé du nom de l'objet ; un nom donné à l'enclume reste tel quel.
+     */
+    private static String nomArme(net.minecraft.world.item.ItemStack st) {
+        if (st.hasCustomHoverName()) return st.getHoverName().getString();
+        String cle = fr.heraliz.clashwar.moteur.compat.Tacz.cleNom(st);
+        if (cle == null && st.getHoverName().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents tc) {
+            cle = tc.getKey();
+        }
+        return cle != null && cle.length() < 63 ? "#" + cle : st.getHoverName().getString();
+    }
+
     private static AABB boite(List<Pose> coins) {
         if (coins.size() < 2) return null;
         Pose p = coins.get(0), q = coins.get(1);
@@ -506,7 +521,7 @@ public final class MatchCw extends Partie {
         if (tueur != null) {
             nomTueur = tueur.getName().getString();
             ItemStack main = tueur.getMainHandItem();
-            if (!main.isEmpty()) arme = main.getHoverName().getString();
+            if (!main.isEmpty()) arme = nomArme(main);
             if (tueur instanceof ServerPlayer tp) {
                 Equipe et = equipeDe(tp.getUUID());
                 if (et != null) couleurTueur = et.couleur();

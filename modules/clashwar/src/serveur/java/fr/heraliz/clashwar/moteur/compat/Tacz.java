@@ -72,6 +72,31 @@ public final class Tacz {
         return init();
     }
 
+    private static Method getPojo, getNom;
+
+    /**
+     * Clé de traduction du nom d'une arme TaCZ (« arkaniaz.gun.m200.name », celle du pack d'armes, traduite chez le
+     * joueur comme dans sa barre d'objets), ou null si ce n'est pas une arme TaCZ connue (18/11).
+     */
+    @Nullable
+    public static String cleNom(ItemStack st) {
+        if (st.isEmpty() || !st.hasTag() || !st.getTag().contains("GunId") || !init()) return null;
+        ResourceLocation rl = ResourceLocation.tryParse(st.getTag().getString("GunId"));
+        if (rl == null) return null;
+        try {
+            Optional<?> index = (Optional<?>) gunIndex.invoke(null, rl);
+            if (index.isEmpty()) return null;
+            if (getPojo == null) getPojo = index.get().getClass().getMethod("getPojo");
+            Object pojo = getPojo.invoke(index.get());
+            if (pojo == null) return null;
+            if (getNom == null) getNom = pojo.getClass().getMethod("getName");
+            Object nom = getNom.invoke(pojo);
+            return nom instanceof String s && !s.isBlank() ? s : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
     /** Vrai si l'arme existe dans les packs TaCZ installes. */
     public static boolean armeExiste(String gunId) {
         if (!init()) return false;

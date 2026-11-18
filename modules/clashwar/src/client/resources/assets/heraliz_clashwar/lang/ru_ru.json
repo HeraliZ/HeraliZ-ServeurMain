@@ -111,6 +111,7 @@
   "clashwar.chat.podium.4": "  4-е место: %s",
   "clashwar.chat.regarder": "Вы смотрите %s. Стрелки влево / вправо — сменить игрока, %s — вернуться в зал.",
   "clashwar.chat.regarder_aucun": "Сейчас нет матчей в прямом эфире.",
+  "clashwar.chat.regarder_spawn": "Чтобы смотреть ClashWar, приходи на спавн.",
   "clashwar.chat.regarder_en_match": "Вы играете матч: смотреть другой нельзя.",
   "clashwar.chat.pas_spectateur": "Вы не смотрите ни один матч.",
   "clashwar.ecran.regarder": "Клик: смотреть этот матч",

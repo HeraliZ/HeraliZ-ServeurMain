@@ -964,13 +964,15 @@ public final class Tournoi {
     /**
      * {@code /clashwar regarder [tour index]} : un participant libre (en salle, ou deja en train de regarder un autre
      * match) regarde une rencontre en direct, par les yeux des joueurs ; sans rencontre donnee, le premier match en direct.
+     * 18/11 : un joueur qui n'est pas du tournoi peut venir regarder ({@link #entrerSpectateur}).
      */
     void regarder(ServerPlayer p, int tour, int index) {
         UUID u = p.getUUID();
-        if (!participants.contains(u) || salle == null) {
-            Annonces.chat(p, Component.translatable("clashwar.chat.pas_participant"));
+        if (salle == null) {
+            Annonces.chat(p, Component.translatable("clashwar.chat.regarder_aucun").withStyle(ChatFormatting.GRAY));
             return;
         }
+        if (!participants.contains(u) && !entrerSpectateur(p)) return;
         MatchCw courantVu = MatchApi.partieDe(p) instanceof MatchCw m && m.equipeDe(u) == null ? m : null;
         if (courantVu == null && MatchApi.partieDe(p) != salle) {
             Annonces.chat(p, Component.translatable("clashwar.chat.regarder_en_match").withStyle(ChatFormatting.RED));
@@ -993,6 +995,31 @@ public final class Tournoi {
         if (cible.regarder(p)) {
             Annonces.chat(p, Component.translatable("clashwar.chat.regarder", cible.contre(), commande("/clashwar salle")));
         }
+    }
+
+    /**
+     * Un joueur qui n'est pas du tournoi vient le regarder (18/11, retour du propriétaire : « /clashwar regarder ne marche
+     * pas pour quelqu'un qui n'était ni inscrit ni éliminé »). Seulement depuis le spawn (sinon : un moyen de fuir un combat
+     * ou de traverser la carte) ; il passe par le Coffre comme un inscrit (inventaire et position mis de côté, rendus à
+     * {@code /clashwar quitter}, à la fin du tournoi ou à la déconnexion), puis entre en salle sans équipe : il n'est
+     * jamais tiré dans un match. Faux s'il ne peut pas venir (message déjà dit).
+     */
+    private boolean entrerSpectateur(ServerPlayer p) {
+        if (!auSpawn(p)) {
+            Annonces.chat(p, Component.translatableWithFallback("clashwar.chat.regarder_spawn",
+                    "Pour regarder le ClashWar, viens au spawn.").withStyle(ChatFormatting.RED));
+            return false;
+        }
+        Coffre.Refus r = Coffre.refus(p);
+        if (r != null || !Coffre.deposer(p, "clashwar_spectateur")) {
+            Annonces.chat(p, Component.translatable("matchs.coffre.refus." + (r == null ? "erreur" : r.name().toLowerCase(Locale.ROOT)))
+                    .withStyle(ChatFormatting.RED));
+            return false;
+        }
+        participants.add(p.getUUID());
+        placerEnSalle(p);
+        HeralizClashWar.LOG.info("[clashwar] {} vient regarder (pas inscrit)", p.getGameProfile().getName());
+        return true;
     }
 
     /** {@code /clashwar salle} : le joueur qui regardait un match revient en salle d'attente. */

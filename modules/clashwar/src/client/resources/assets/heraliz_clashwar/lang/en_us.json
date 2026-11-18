@@ -111,6 +111,7 @@
   "clashwar.chat.podium.4": "  4th: %s",
   "clashwar.chat.regarder": "You are watching %s. Left / right arrows to switch player, %s to go back to the lobby.",
   "clashwar.chat.regarder_aucun": "No live match to watch right now.",
+  "clashwar.chat.regarder_spawn": "To watch the ClashWar, come to spawn.",
   "clashwar.chat.regarder_en_match": "You are playing a match: you can't watch another one.",
   "clashwar.chat.pas_spectateur": "You are not watching any match.",
   "clashwar.ecran.regarder": "Click: watch this match",

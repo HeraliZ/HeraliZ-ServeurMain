@@ -144,6 +144,7 @@ public final class Structure {
             }
             // structures annexes (autres mods) : elles gagnent sur la carte a la meme case
             int annexes = annexes(serveur, carte, registre, t, blocs, crc);
+            int murs = mursInvisibles(carte, t, blocs);
             // tri : tronçon (x >> 4, z >> 4), puis hauteur, puis position
             blocs.sort((a, b) -> {
                 int c = Integer.compare(a.x >> 4, b.x >> 4);
@@ -167,12 +168,45 @@ public final class Structure {
             int n = blocs.size();
             crc.update(new byte[]{(byte) (n >>> 24), (byte) (n >>> 16), (byte) (n >>> 8), (byte) n});
             if (annexes > 0) HeralizClashWar.LOG.info("[matchs] structure {} : {} annexe(s), {} blocs a poser", carte, annexes, n);
+            if (murs > 0) HeralizClashWar.LOG.info("[matchs] structure {} : {} barrieres autour de la carte", carte, murs);
             return new Structure(carte, List.copyOf(blocs), List.copyOf(ents), crc.getValue());
         } catch (Exception ex) {
             HeralizClashWar.LOG.error("[matchs] structure {} illisible", rl, ex);
             return null;
         }
     }
+    /** Hauteur des murs invisibles au-dessus du haut de la structure (on ne les saute pas). */
+    private static final int MURS_AU_DESSUS = 4;
+
+    /**
+     * Murs invisibles (18/11, retour du propriétaire : « on peut sauter dans le vide, ça nous tue : mettre des blocs
+     * invisibles autour pour empêcher d'aller dans le vide ») : des barrières de Minecraft tout autour du volume de la
+     * structure, juste à l'extérieur, du bas jusqu'à {@value #MURS_AU_DESSUS} blocs au-dessus de son haut. Comptées dans
+     * les blocs posés, donc dans l'empreinte : une instance posée sans elles est reposée. Réglage {@code murs_invisibles}
+     * du JSON de la carte (vrai si absent). Rend le nombre de barrières ajoutées.
+     */
+    private static int mursInvisibles(String carte, CompoundTag principale, List<Bloc> blocs) {
+        Carte c = Arenes.carte(carte);
+        if (c != null && c.meta().has("murs_invisibles") && !c.meta().get("murs_invisibles").getAsBoolean()) return 0;
+        ListTag taille = principale.getList("size", Tag.TAG_INT);
+        if (taille.size() != 3) return 0;
+        int sx = taille.getInt(0), sy = taille.getInt(1), sz = taille.getInt(2);
+        if (sx <= 0 || sy <= 0 || sz <= 0) return 0;
+        BlockState barriere = Blocks.BARRIER.defaultBlockState();
+        int avant = blocs.size();
+        for (int y = 0; y < sy + MURS_AU_DESSUS; y++) {
+            for (int x = -1; x <= sx; x++) {
+                blocs.add(new Bloc(x, y, -1, barriere, null));
+                blocs.add(new Bloc(x, y, sz, barriere, null));
+            }
+            for (int z = 0; z < sz; z++) {
+                blocs.add(new Bloc(-1, y, z, barriere, null));
+                blocs.add(new Bloc(sx, y, z, barriere, null));
+            }
+        }
+        return blocs.size() - avant;
+    }
+
     /**
      * Ajoute les structures annexes de la carte a la liste des blocs (et a l'empreinte). Rend le nombre d'annexes posees.
      * Lecture des ressources seulement, aucun acces au monde.

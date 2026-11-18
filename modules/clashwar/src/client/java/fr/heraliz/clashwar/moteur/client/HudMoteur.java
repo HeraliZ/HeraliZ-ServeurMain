@@ -565,7 +565,8 @@ public final class HudMoteur {
         r.ligne = l;
         r.tueur = Ui.lit(nomAffiche(l.tueur()), Ui.BOLD);
         r.victime = Ui.lit(nomAffiche(l.victime()), Ui.BOLD);
-        r.arme = Ui.lit(l.arme(), Ui.SMALL);
+        // 18/11 : « # » + clé de traduction (nom du pack de l'arme TaCZ...), traduite ici comme dans la barre d'objets
+        r.arme = l.arme().startsWith("#") ? Ui.tr(Ui.SMALL, l.arme().substring(1)) : Ui.lit(l.arme(), Ui.SMALL);
         r.wt = l.tueur().isEmpty() ? 0 : font.width(r.tueur);
         r.wv = font.width(r.victime);
         r.wa = l.arme().isEmpty() ? 0 : font.width(r.arme);

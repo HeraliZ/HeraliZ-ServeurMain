@@ -225,3 +225,13 @@ balles, tête, sniper, armure). Récolte : `serveur/config/heraliz_recolte/recol
 - [ ] ClashWar : les heures des messages sont à l'heure française (avant : une heure de retard). Le tournoi part
       maintenant à 20 h 30 heure française (avant : 21 h 30 en hiver). Quêtes de clan : le tirage du jour aussi à
       l'heure française.
+
+## 12. ClashWar (18/11, dans la nuit)
+
+- [ ] Fil des éliminations (en haut à gauche) : le nom de l'arme est celui de la barre d'objets (« M200 »), plus
+      « kinetic… ».
+- [ ] `/clashwar regarder` par un joueur qui n'est pas du tournoi (ni inscrit, ni éliminé) : depuis le spawn, il est mis
+      en salle (inventaire mis de côté comme un inscrit), puis regarde le match en direct ; `/clashwar quitter` le
+      ramène au spawn avec son inventaire. Hors du spawn : « Pour regarder le ClashWar, viens au spawn. »
+- [ ] Arènes : murs invisibles tout autour (on ne tombe plus dans le vide). Les arènes déjà posées sont reposées toutes
+      seules au premier match (leur empreinte change).

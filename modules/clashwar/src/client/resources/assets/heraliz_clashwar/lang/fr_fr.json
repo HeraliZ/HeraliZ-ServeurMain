@@ -111,6 +111,7 @@
   "clashwar.chat.podium.4": "  4e : %s",
   "clashwar.chat.regarder": "Vous regardez %s. Flèches gauche / droite pour changer de joueur, %s pour revenir en salle.",
   "clashwar.chat.regarder_aucun": "Aucun match en direct à regarder pour l'instant.",
+  "clashwar.chat.regarder_spawn": "Pour regarder le ClashWar, viens au spawn.",
   "clashwar.chat.regarder_en_match": "Vous jouez un match : impossible d'en regarder un autre.",
   "clashwar.chat.pas_spectateur": "Vous ne regardez aucun match.",
   "clashwar.ecran.regarder": "Clic : regarder ce match",
