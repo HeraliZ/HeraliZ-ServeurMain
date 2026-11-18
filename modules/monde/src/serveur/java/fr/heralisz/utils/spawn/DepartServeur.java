@@ -86,7 +86,9 @@ import org.joml.Vector3f;
  * ciel au-dessus (jamais un toit, l'eau, l'intérieur d'un bâtiment ni sous un arbre), hors des zones dangereuses de
  * HeraliZ Décors et à « distance_villes » au moins du bord de chaque ville (territoires des clans).
  * Partout : place libre, aucun autre joueur à moins de « distance_joueurs », dans la bordure, et seulement dans une
- * partie de la carte déjà construite (fichier de régions présent : jamais de terrain généré).</li>
+ * partie de la carte déjà construite (fichier de régions présent : jamais de terrain généré). 18/11 : jamais à moins de
+ * « distance_bases » d'une base de clan (claims de CRac, points posés à la main compris) ni, hors points posés à la main,
+ * à moins de « distance_loot » d'un conteneur de loot (HeraliZ Loot).</li>
  * <li>Monde du spawn : pas de monstres, pas de combat entre joueurs (réglables), sa propre bordure centrée sur le
  * réveil, envoyée aux joueurs qui y entrent (le jeu leur enverrait celle de la carte).</li>
  * <li>{@link SpawnApi#allerAuSpawn} branché sur le point de réveil de la cinématique (CineReseauServeur).</li>
@@ -443,7 +445,8 @@ public final class DepartServeur {
     /** Contrôle d'un point tiré (charge son tronçon s'il ne l'est pas encore) ; null si refusé. */
     private static Arrivee controler(ServerLevel carte, ServerPlayer pour, Tirage t, RandomSource r) {
         if (t.point()) {
-            return pointLibre(carte, pour, t.x(), t.y(), t.z()) ? new Arrivee(t.x(), t.y(), t.z(), t.lacet(), t.origine()) : null;
+            return pointLibre(carte, pour, t.x(), t.y(), t.z()) && !basePres(carte, Mth.floor(t.x()), Mth.floor(t.z()))
+                    ? new Arrivee(t.x(), t.y(), t.z(), t.lacet(), t.origine()) : null;
         }
         return sol(carte, pour, Mth.floor(t.x()), Mth.floor(t.z()), r, t.origine());
     }
@@ -540,7 +543,7 @@ public final class DepartServeur {
         int marge = DepartConfig.lire(DepartConfig.MARGE_BORDURE);
         WorldBorder b = carte.getWorldBorder();
         if (x < b.getMinX() + marge || x > b.getMaxX() - marge || z < b.getMinZ() + marge || z > b.getMaxZ() - marge
-                || !regionPresente(carte, x, z) || dangereux(carte, x + 0.5, z + 0.5)) {
+                || !regionPresente(carte, x, z) || dangereux(carte, x + 0.5, z + 0.5) || basePres(carte, x, z) || lootPres(carte, x, z)) {
             return null;
         }
         carte.getChunk(x >> 4, z >> 4);                            // chargé depuis le disque (jamais généré : région présente)
@@ -625,6 +628,52 @@ public final class DepartServeur {
     // zones dangereuses de HeraliZ Décors (data/heraliz_zones.json du monde principal) : polygones et leur bordure
     private static long zonesDate = -1;
     private static List<double[][]> zones = List.of();
+
+    // 18/11 : bases de clan (CRac) et conteneurs de loot (HeraliZ Loot), lus par réflexion (mod absent : rien d'évité)
+    private static java.lang.reflect.Method basePres, lootPres;
+    private static boolean basesCherchees, lootCherche;
+
+    /** Une base de clan à « distance_bases » au plus (claims de CRac). */
+    static boolean basePres(ServerLevel carte, int x, int z) {
+        int d = DepartConfig.lire(DepartConfig.DISTANCE_BASES);
+        if (d <= 0) {
+            return false;
+        }
+        if (!basesCherchees) {
+            basesCherchees = true;
+            try {
+                basePres = Class.forName("fr.heraliz.crac.claim.ClaimManager").getMethod("basePres", ServerLevel.class, int.class, int.class, int.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                HeraliszUtils.LOG.warn("[spawn] bases de CRac introuvables : la borne de départ ne les évite pas ({})", ex.toString());
+            }
+        }
+        try {
+            return basePres != null && Boolean.TRUE.equals(basePres.invoke(null, carte, x, z, d));
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return false;
+        }
+    }
+
+    /** Un conteneur de loot à « distance_loot » au plus (zones de HeraliZ Loot). */
+    static boolean lootPres(ServerLevel carte, int x, int z) {
+        int d = DepartConfig.lire(DepartConfig.DISTANCE_LOOT);
+        if (d <= 0) {
+            return false;
+        }
+        if (!lootCherche) {
+            lootCherche = true;
+            try {
+                lootPres = Class.forName("fr.heraliz.loot.ZonesLoot").getMethod("conteneurPres", ServerLevel.class, int.class, int.class, int.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                HeraliszUtils.LOG.warn("[spawn] conteneurs de HeraliZ Loot introuvables : la borne de départ ne les évite pas ({})", ex.toString());
+            }
+        }
+        try {
+            return lootPres != null && Boolean.TRUE.equals(lootPres.invoke(null, carte, x, z, d));
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return false;
+        }
+    }
 
     private static boolean dangereux(ServerLevel carte, double x, double z) {
         if (!DepartConfig.lire(DepartConfig.EVITER_ZONES) || carte != carte.getServer().overworld()) {

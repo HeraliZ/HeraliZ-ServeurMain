@@ -14,9 +14,10 @@
 	#Surclassement, T1 à T6 : part des conteneurs « t » de ce niveau qui donnent le loot du niveau au-dessus (toujours les mêmes,
 	#choisis d'après leur place). 17/11 : aucun (choix du propriétaire : « T5 qui donne du T6, ne pas faire »).
 	surclassement = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-	#Salles à carte : niveau de loot au moins de leurs conteneurs, salle verte, bleue, rouge (0 : celui du conteneur). 17/11
-	#(propriétaire : « qu'il y ait un but à aller dans les zones à cartes ») : verte T5, bleue T6, rouge T7 (comme un largage).
-	niveau_salles = [5, 6, 7]
+	#Salles à carte : niveau de loot au moins de leurs conteneurs, salle verte, bleue, rouge (0 : celui du conteneur). 18/11
+	#(propriétaire : « laisser la rareté à leurs blocs, j'ai fait des mélanges T4, T5, T6, T7, soins, munitions ») : chaque
+	#conteneur garde son niveau (avant, 17/11 : verte T5, bleue T6, rouge T7 pour tous).
+	niveau_salles = [0, 0, 0]
 	#Délai minimal (secondes) avant qu'un autre conteneur de la zone se remplisse quand un conteneur a été vidé.
 	delai_min_secondes = 240
 	#Délai maximal (secondes). Le délai est tiré au hasard entre le minimum et le maximum.

@@ -86,8 +86,9 @@ Pour chaque salle :
    autour » : vérifier la porte, ou donner la couleur (`/salle creer silo bleue`).
 4. Si la porte n'est pas liée : la regarder et `/salle lier <nom>`.
 5. `/salle voir <nom>` : contour montré 30 s. `/salle liste` : toutes les salles, avec leur état.
-6. Les conteneurs de loot dans la boîte sont remplis par la salle : au moins du vert T5, du bleu T6, du rouge T7.
-   Pas de conteneur dedans = pas de loot : en poser 2 à 4 par salle.
+6. Les conteneurs de loot dans la boîte sont remplis par la salle, tous à la fois, chacun à SON niveau (18/11 : plus de
+   niveau imposé par la couleur ; avant, tout passait en T5 / T6 / T7). Pas de conteneur dedans = pas de loot.
+   Après la mise à jour : `/salle recharger <nom>` pour remplir tout de suite une salle à son vrai niveau.
 
 Quand c'est fait, le dire : la liste complète est vérifiée depuis la console (`salle liste`).
 

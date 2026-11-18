@@ -13,7 +13,7 @@ public final class DepartConfig {
     public static final ForgeConfigSpec.DoubleValue BOUGER;
     public static final ForgeConfigSpec.BooleanValue SEULEMENT_AU_SPAWN, AVEUGLEMENT;
     public static final ForgeConfigSpec.ConfigValue<String> MONDE;
-    public static final ForgeConfigSpec.IntValue DISTANCE_JOUEURS, DISTANCE_VILLES, ESSAIS, MARGE_BORDURE;
+    public static final ForgeConfigSpec.IntValue DISTANCE_JOUEURS, DISTANCE_VILLES, ESSAIS, MARGE_BORDURE, DISTANCE_BASES, DISTANCE_LOOT;
     public static final ForgeConfigSpec.BooleanValue CARTE_ENTIERE, EVITER_ZONES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> SOLS;
     public static final ForgeConfigSpec.BooleanValue MONSTRES, PVP;
@@ -43,6 +43,13 @@ public final class DepartConfig {
         DISTANCE_VILLES = b.comment("Zones et carte entière : distance minimale (blocs) entre le point d'arrivée et le bord de chaque",
                 "ville (cercles des territoires des clans, config/heralisz_clans/zones.json). 0 : aucune. Les points posés à la",
                 "main ne sont pas concernés.").defineInRange("distance_villes", 200, 0, 4096);
+        // 18/11 (demande du propriétaire : « que le départ ne pose pas dans la base de quelqu'un, ni directement dans une zone
+        // lootable »)
+        DISTANCE_BASES = b.comment("Partout (points posés à la main compris) : distance minimale (blocs) entre le point d'arrivée et la",
+                "zone d'une base de clan (claim de CRac). 0 : aucune.").defineInRange("distance_bases", 64, 0, 4096);
+        DISTANCE_LOOT = b.comment("Zones et carte entière : distance minimale (blocs, à un tronçon de 16 près) entre le point d'arrivée et",
+                "un conteneur de loot (HeraliZ Loot). 0 : aucune. Les points posés à la main ne sont pas concernés.")
+                .defineInRange("distance_loot", 40, 0, 512);
         ESSAIS = b.comment("Points essayés au plus pour un départ (un par tick, pendant le délai puis après).")
                 .defineInRange("essais", 60, 1, 400);
         CARTE_ENTIERE = b.comment("Sans aucun point ni zone posés : chercher un sol sûr n'importe où dans la bordure de la carte.")

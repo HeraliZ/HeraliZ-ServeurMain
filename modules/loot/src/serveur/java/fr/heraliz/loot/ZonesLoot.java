@@ -264,6 +264,37 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
         if (inconnus > 0) HeralizLoot.LOG.warn("Zones de loot : {} conteneurs au nom inconnu (détail en DEBUG)", inconnus);
     }
 
+    // 18/11 (demande du propriétaire : la borne de départ ne pose jamais un joueur « directement dans une zone lootable ») :
+    // tronçons (16 x 16) qui ont au moins un conteneur de loot, par dimension ; refaits quand les zones changent (version)
+    private static int versionTroncons = -1;
+    private static Map<ResourceKey<Level>, it.unimi.dsi.fastutil.longs.LongOpenHashSet> TRONCONS = Map.of();
+
+    /**
+     * Un conteneur de loot (zones de rotation, salles à carte comprises) à {@code rayon} blocs au plus de (x, z), à un
+     * tronçon près, dans ce monde ? Lu par réflexion par la borne de départ de HeraliZ Utils. Fil du serveur.
+     */
+    public static boolean conteneurPres(net.minecraft.server.level.ServerLevel l, int x, int z, int rayon) {
+        if (versionTroncons != version) {
+            Map<ResourceKey<Level>, it.unimi.dsi.fastutil.longs.LongOpenHashSet> n = new HashMap<>();
+            for (Map.Entry<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> e : INDEX.entrySet()) {
+                it.unimi.dsi.fastutil.longs.LongOpenHashSet s = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+                for (long p : e.getValue().keySet()) s.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(p) >> 4, BlockPos.getZ(p) >> 4));
+                n.put(e.getKey(), s);
+            }
+            TRONCONS = n;
+            versionTroncons = version;
+        }
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet s = TRONCONS.get(l.dimension());
+        if (s == null || s.isEmpty()) return false;
+        int r = Math.max(0, (rayon + 15) >> 4), cx = x >> 4, cz = z >> 4;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                if (s.contains(net.minecraft.world.level.ChunkPos.asLong(cx + dx, cz + dz))) return true;
+            }
+        }
+        return false;
+    }
+
     static int version() {
         return version;
     }

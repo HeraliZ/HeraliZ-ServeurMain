@@ -33,6 +33,18 @@ public final class ClaimManager {
         return ClaimData.get(level).getAt(level, pos);
     }
 
+    /**
+     * HeraliZ (18/11, demande du propriétaire : la borne de départ ne pose jamais un joueur « dans la base de quelqu'un ») :
+     * une zone de base (claim) à {@code marge} blocs au plus de (x, z) dans ce monde ? Lu par réflexion par HeraliZ Utils.
+     */
+    public static boolean basePres(ServerLevel level, int x, int z, int marge) {
+        for (Claim c : ClaimData.get(level).all()) {
+            int r = c.radius() + Math.max(0, marge);
+            if (Math.abs(x - c.anchor().getX()) <= r && Math.abs(z - c.anchor().getZ()) <= r) return true;
+        }
+        return false;
+    }
+
     public static Claim getByGroup(ServerLevel level, UUID groupId) {
         return ClaimData.get(level).getByGroup(groupId);
     }
