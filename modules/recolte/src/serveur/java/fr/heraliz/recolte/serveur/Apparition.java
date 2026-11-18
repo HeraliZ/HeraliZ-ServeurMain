@@ -233,14 +233,29 @@ public final class Apparition {
     }
 
     // ------------------------------------------------------------------ places
-    /** Tire une nouvelle position pour la place, sans lire un bloc (essais du réglage ; sinon la dernière tirée). */
+    /**
+     * Tire une nouvelle position pour la place, sans lire un bloc (essais du réglage ; sinon la dernière tirée). 18/11 : la
+     * plupart des tirages ({@code pres_joueurs}) se font autour d'un joueur de la carte pris au hasard, dans un anneau
+     * assez loin pour qu'il ne voie pas la ressource surgir ({@code distance_joueurs} + 30 à {@code rayon_joueurs} blocs) ;
+     * les autres, partout dans la bordure comme avant (personne en ligne : tous).
+     */
     static void tirer(ServerLevel l, Places pl, Places.Place p, Reglages r) {
         RandomSource rnd = l.getRandom();
         double[] b = Terrain.bornes(l, r);
         int x = p.x, z = p.z;
+        List<ServerPlayer> joueurs = r.presJoueurs > 0 ? l.players() : List.of();
+        double min = r.distanceJoueurs + 30.0, max = Math.max(min + 50.0, r.rayonJoueurs);
         for (int i = 0; i < r.essais; i++) {
-            x = Mth.floor(Mth.lerp(rnd.nextDouble(), b[0], b[2]));
-            z = Mth.floor(Mth.lerp(rnd.nextDouble(), b[1], b[3]));
+            ServerPlayer j = joueurs.isEmpty() || rnd.nextDouble() >= r.presJoueurs ? null : joueurs.get(rnd.nextInt(joueurs.size()));
+            if (j != null && !j.isSpectator()) {
+                double angle = rnd.nextDouble() * Math.PI * 2.0;
+                double d = Math.sqrt(Mth.lerp(rnd.nextDouble(), min * min, max * max));   // même densité partout dans l'anneau
+                x = Mth.floor(j.getX() + Math.cos(angle) * d);
+                z = Mth.floor(j.getZ() + Math.sin(angle) * d);
+            } else {
+                x = Mth.floor(Mth.lerp(rnd.nextDouble(), b[0], b[2]));
+                z = Mth.floor(Mth.lerp(rnd.nextDouble(), b[1], b[3]));
+            }
             if (Terrain.raisonSansBloc(l, pl, p, x, z, r, b) < 0) {
                 break;
             }

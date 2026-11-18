@@ -42,13 +42,15 @@ public final class Reglages {
     public static final String[] SORTES = {"arbre", "pierre", "metal", "rare"};
 
     // barème par défaut (PROPOSITION.md §2 et §4), dans l'ordre des sortes
-    private static final int[] A_LA_FOIS = {30, 24, 10, 4};
+    // 18/11 (retour du propriétaire : « pas assez d'arbres et de minerais, je n'en ai croisé aucun ») : 4 fois plus, plus
+    // serrés, qui reviennent 2 fois plus vite (avant : 30, 24, 10, 4 ; 90, 120, 240, 480 min ; écarts 50, 60, 150, 300)
+    private static final int[] A_LA_FOIS = {120, 90, 40, 14};
     private static final int[] MATIERE = {30, 24, 30, 16};
     private static final int[] CHUTE = {6, 0, 0, 0};
     private static final int[] COUPS = {12, 16, 20, 24};
     private static final int[] COUPS_LEGENDAIRE = {7, 10, 12, 14};
-    private static final int[] REAPPARITION_MINUTES = {90, 120, 240, 480};
-    private static final int[] ECART = {50, 60, 150, 300};
+    private static final int[] REAPPARITION_MINUTES = {45, 60, 120, 240};
+    private static final int[] ECART = {30, 35, 80, 160};
 
     /** Sols sur lesquels une ressource peut être posée (herbe, terre, pierre, sable, neige). */
     private static final List<String> SOLS = List.of("minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt",
@@ -92,6 +94,13 @@ public final class Reglages {
     public final ResourceKey<Level> monde;
     public final int distanceJoueurs, loinDuSpawn, abordsVilles, margeVip, margeBordure, ecartAutres, ecartSol, eau, nonNaturels,
             troncsBases, attenteMaxMinutes, essais;
+    /**
+     * 18/11 : part des tirages faits autour d'un joueur sur la carte (0 à 1), dans un anneau de {@code distance_joueurs} +
+     * 30 à {@code rayon_joueurs} blocs : les ressources apparaissent là où l'on joue (avant : partout dans la bordure, mer
+     * comprise, à attendre qu'un joueur passe).
+     */
+    public final double presJoueurs;
+    public final int rayonJoueurs;
     /** Rectangle {x1, z1, x2, z2} où tirer les places (null : toute la bordure du monde). */
     @Nullable
     public final int[] zone;
@@ -124,8 +133,10 @@ public final class Reglages {
         eau = entier(a, "eau", 3, 0, 8);
         nonNaturels = entier(a, "non_naturels", 6, 0, 8);
         troncsBases = entier(a, "troncons_bases", 2, 0, 3);
-        attenteMaxMinutes = entier(a, "attente_max_minutes", 120, 5, 100_000);
+        attenteMaxMinutes = entier(a, "attente_max_minutes", 20, 5, 100_000);
         essais = entier(a, "essais", 40, 1, 500);
+        presJoueurs = reel(a, "pres_joueurs", 0.7, 0.0, 1.0);
+        rayonJoueurs = entier(a, "rayon_joueurs", 450, 120, 3000);
         zone = zone(a);
         sols = new Filtre(liste(a, "sols_naturels", SOLS));
         naturels = new Filtre(liste(a, "naturels", NATURELS));

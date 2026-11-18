@@ -5,14 +5,14 @@
   "marge_portee": 0.4,
   "souche_minutes": 10,
   "ressources": {
-    "_aide": "a_la_fois : nombre sur la carte en même temps ; matiere : total donné par une ressource (au prorata du travail : le même total quel que soit l'outil) ; chute : bûches données quand l'arbre tombe (comprises dans matiere : 2 par coup de hache + 6 à la chute = 30) ; coups / coups_legendaire : coups pour la vider avec la hache ou la pioche / avec la hache-pioche de survie (elle fait gagner du temps, pas plus de ressources) ; reapparition_minutes : délai avant qu'elle revienne ailleurs ; ecart : blocs au moins entre deux ressources de la même sorte. arbre : moitié bouleaux, moitié épicéas ; rare : gisement de titane.",
-    "arbre": {"a_la_fois": 30, "matiere": 30, "chute": 6, "coups": 12, "coups_legendaire": 7, "reapparition_minutes": 90, "ecart": 50},
-    "pierre": {"a_la_fois": 24, "matiere": 24, "coups": 16, "coups_legendaire": 10, "reapparition_minutes": 120, "ecart": 60},
-    "metal": {"a_la_fois": 10, "matiere": 30, "coups": 20, "coups_legendaire": 12, "reapparition_minutes": 240, "ecart": 150},
-    "rare": {"a_la_fois": 4, "matiere": 16, "coups": 24, "coups_legendaire": 14, "reapparition_minutes": 480, "ecart": 300}
+    "_aide": "a_la_fois : nombre sur la carte en même temps ; matiere : total donné par une ressource (au prorata du travail : le même total quel que soit l'outil) ; chute : bûches données quand l'arbre tombe (comprises dans matiere : 2 par coup de hache + 6 à la chute = 30) ; coups / coups_legendaire : coups pour la vider avec la hache ou la pioche / avec la hache-pioche de survie (elle fait gagner du temps, pas plus de ressources) ; reapparition_minutes : délai avant qu'elle revienne ailleurs ; ecart : blocs au moins entre deux ressources de la même sorte. arbre : moitié bouleaux, moitié épicéas ; rare : gisement de titane. 18/11 (retour du propriétaire : « pas assez d'arbres et de minerais, je n'en ai croisé aucun ») : 4 fois plus, plus serrés, qui reviennent 2 fois plus vite.",
+    "arbre": {"a_la_fois": 120, "matiere": 30, "chute": 6, "coups": 12, "coups_legendaire": 7, "reapparition_minutes": 45, "ecart": 30},
+    "pierre": {"a_la_fois": 90, "matiere": 24, "coups": 16, "coups_legendaire": 10, "reapparition_minutes": 60, "ecart": 35},
+    "metal": {"a_la_fois": 40, "matiere": 30, "coups": 20, "coups_legendaire": 12, "reapparition_minutes": 120, "ecart": 80},
+    "rare": {"a_la_fois": 14, "matiere": 16, "coups": 24, "coups_legendaire": 14, "reapparition_minutes": 240, "ecart": 160}
   },
   "apparition": {
-    "_aide": "Où et quand une ressource apparaît. Le serveur ne charge jamais un coin de carte pour ça : une place tirée au hasard attend qu'un joueur charge son coin de carte, sans personne à moins de distance_joueurs blocs, puis elle est contrôlée (sinon : une autre place au hasard). monde : le monde des ressources (un seul ; après l'avoir changé : /recolte vider) ; loin_du_spawn : blocs autour du point d'apparition du monde ; abords_villes : blocs autour des villes (config/heralisz_clans/zones.json) ; marge_vip : blocs autour des zones VIP (heraliz_grades/zones_vip.json) ; marge_bordure : blocs à éviter près de la bordure du monde ; zone : [x1, z1, x2, z2] pour limiter le tirage (absent : toute la bordure) ; ecart_autres : blocs au moins entre deux ressources de sortes différentes ; ecart_sol : différence de hauteur permise sous la ressource (à plat : 1) ; eau : pas d'eau à moins de … blocs ; non_naturels : aucun bloc qui n'est pas dans sols_naturels ni naturels (route, mur, bâtiment) à moins de … blocs ; troncons_bases : aucune pièce de base de clan (CRac) dans les tronçons de 16 blocs à cette distance (2 : au moins 32 blocs) ; attente_max_minutes : une place qui attend depuis ce temps un coin de carte où personne ne va est tirée ailleurs ; essais : points tirés au plus pour une place ; sols_naturels : sols où une ressource peut être posée (« #… » : une étiquette de blocs de Minecraft) ; naturels : blocs admis autour (terrain, plantes, arbres).",
+    "_aide": "Où et quand une ressource apparaît. Le serveur ne charge jamais un coin de carte pour ça : une place tirée au hasard attend qu'un joueur charge son coin de carte, sans personne à moins de distance_joueurs blocs, puis elle est contrôlée (sinon : une autre place au hasard). monde : le monde des ressources (un seul ; après l'avoir changé : /recolte vider) ; loin_du_spawn : blocs autour du point d'apparition du monde ; abords_villes : blocs autour des villes (config/heralisz_clans/zones.json) ; marge_vip : blocs autour des zones VIP (heraliz_grades/zones_vip.json) ; marge_bordure : blocs à éviter près de la bordure du monde ; zone : [x1, z1, x2, z2] pour limiter le tirage (absent : toute la bordure) ; ecart_autres : blocs au moins entre deux ressources de sortes différentes ; ecart_sol : différence de hauteur permise sous la ressource (à plat : 1) ; eau : pas d'eau à moins de … blocs ; non_naturels : aucun bloc qui n'est pas dans sols_naturels ni naturels (route, mur, bâtiment) à moins de … blocs ; troncons_bases : aucune pièce de base de clan (CRac) dans les tronçons de 16 blocs à cette distance (2 : au moins 32 blocs) ; attente_max_minutes : une place qui attend depuis ce temps un coin de carte où personne ne va est tirée ailleurs ; essais : points tirés au plus pour une place ; sols_naturels : sols où une ressource peut être posée (« #… » : une étiquette de blocs de Minecraft) ; naturels : blocs admis autour (terrain, plantes, arbres). pres_joueurs (18/11) : part des tirages faits autour d'un joueur de la carte pris au hasard (0 à 1 ; les autres : partout dans la bordure), dans un anneau de distance_joueurs + 30 à rayon_joueurs blocs : les ressources apparaissent là où l'on joue.",
     "monde": "minecraft:overworld",
     "distance_joueurs": 70,
     "loin_du_spawn": 200,
@@ -24,7 +24,9 @@
     "eau": 3,
     "non_naturels": 6,
     "troncons_bases": 2,
-    "attente_max_minutes": 120,
+    "attente_max_minutes": 20,
+    "pres_joueurs": 0.7,
+    "rayon_joueurs": 450,
     "essais": 40,
     "sols_naturels": [
       "minecraft:grass_block",
