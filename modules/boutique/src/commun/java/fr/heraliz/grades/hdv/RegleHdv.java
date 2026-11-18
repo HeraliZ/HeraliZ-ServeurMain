@@ -23,7 +23,8 @@ public final class RegleHdv {
     }
 
     /** Raisons de refus (index des textes {@code gui.heraliz_grades.hdv.refus.N}) ; 0 = se vend. */
-    public static final int OK = 0, VIDE = 1, A_VIE = 2, MATCH = 3, QUETE = 4, CAMO = 5, SAC_PLEIN = 6, CLE = 7, STAFF = 8, CONTENU = 9;
+    public static final int OK = 0, VIDE = 1, A_VIE = 2, MATCH = 3, QUETE = 4, CAMO = 5, SAC_PLEIN = 6, CLE = 7, STAFF = 8, CONTENU = 9,
+            BOURSE = 10;
     /** Catégories (index des textes {@code gui.heraliz_grades.hdv.cat.N}) : 0 = tout. */
     public static final int CAT_TOUT = 0, CAT_ARMES = 1, CAT_ACCESSOIRES = 2, CAT_ARMURES = 3, CAT_SOINS = 4, CAT_COMPOSANTS = 5, CAT_DIVERS = 6, CATEGORIES = 7;
     /** Devises : 0 hérals, 1 PB. */
@@ -47,6 +48,8 @@ public final class RegleHdv {
         if (t != null && t.contains("HeraliszCamoProprio")) return CAMO;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
         String ns = id == null ? "" : id.getNamespace();
+        // bourse de hérals (18/11, HeraliZ Quêtes) : ne se revend qu'à Mila (registre anti-copie des bourses)
+        if (id != null && id.toString().equals("heraliz_quetes:bourse")) return BOURSE;
         if (ns.equals("heraliz_quetes")) return QUETE;
         if (s.getItem() instanceof fr.heraliz.crates.item.CrateKeyItem) return CLE;
         if (id != null && (id.toString().equals("heraliz_grades:registre_grades") || id.getPath().startsWith("registre"))) return STAFF;

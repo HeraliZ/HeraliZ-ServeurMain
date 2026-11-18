@@ -315,6 +315,8 @@ final class WipeServeur {
         appel("fr.heraliz.clashwar.tournoi.CwClassement", "toutEffacer", new Class<?>[]{MinecraftServer.class}, srv);
         int sol = nettoyerSol(srv);
         int recycleurs = RecycleurCarteEntiteServeur.toutVider(srv);
+        // bourses de hérals (18/11) : plus aucune ne vaut rien (inventaires, coffres et sol partent aussi)
+        Bourses.toutVider();
         Etat e = Etat.lire(srv);
         if (e.illisible) e = new Etat();   // l'ancien fichier est mis de côté, jamais écrasé
         e.numero++;

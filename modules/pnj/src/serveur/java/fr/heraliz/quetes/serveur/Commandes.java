@@ -60,6 +60,30 @@ final class Commandes {
             Moteur.envoyerJournal(c.getSource().getPlayerOrException(), true);
             return 1;
         }));
+        // bourses de hérals (18/11) : le staff voit le registre et peut en donner une (essais, dédommagement)
+        d.register(Commands.literal("bourse").requires(s -> s.hasPermission(2))
+                .then(Commands.literal("info").executes(c -> {
+                    long[] i = Bourses.info();
+                    c.getSource().sendSuccess(() -> i[2] != 0
+                            ? Component.translatableWithFallback("heraliz_quetes.bourse.cmd.bloquees",
+                                    "Bourses BLOQUÉES (registre illisible ou écriture ratée) : voir le journal du serveur.")
+                            : Component.translatableWithFallback("heraliz_quetes.bourse.cmd.info", "Bourses valables : %s, pour %s hérals en tout.",
+                                    i[0], Ponts.nombre(i[1])), false);
+                    return 1;
+                }))
+                .then(Commands.literal("donner").then(Commands.argument("joueur", EntityArgument.player())
+                        .then(Commands.argument("herals", com.mojang.brigadier.arguments.LongArgumentType.longArg(1, 1_000_000)).executes(c -> {
+                            ServerPlayer p = EntityArgument.getPlayer(c, "joueur");
+                            long n = com.mojang.brigadier.arguments.LongArgumentType.getLong(c, "herals");
+                            if (Bourses.donner(p, n, c.getSource().getTextName()) == null) {
+                                c.getSource().sendFailure(Component.translatableWithFallback("heraliz_quetes.bourse.cmd.bloquees",
+                                        "Bourses BLOQUÉES (registre illisible ou écriture ratée) : voir le journal du serveur."));
+                                return 0;
+                            }
+                            c.getSource().sendSuccess(() -> Component.translatableWithFallback("heraliz_quetes.bourse.cmd.donnee",
+                                    "Bourse de %s hérals donnée à %s.", Ponts.nombre(n), p.getGameProfile().getName()), true);
+                            return 1;
+                        })))));
         // quêtes du jour (26/10) : /journalieres ouvre le menu ; le staff (op 2) voit l'état d'un joueur ou relance sa remise
         d.register(Commands.literal("journalieres").executes(c -> {
             Journalieres.envoyer(c.getSource().getPlayerOrException(), true);

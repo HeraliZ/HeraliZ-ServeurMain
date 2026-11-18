@@ -43,6 +43,9 @@ public final class ClientQuetes implements Partie {
             // recycleur de la carte (31/10) : même écran, textes de la machine partagée
             net.minecraft.client.gui.screens.MenuScreens.register(HeralizQuetes.RECYCLEUR_CARTE_MENU.get(), EcranRecycleur::new);
         }));
+        // 18/11 : montant des bourses de hérals dans le coin de leur case
+        busMod.addListener((net.minecraftforge.client.event.RegisterItemDecorationsEvent e) ->
+                e.register(HeralizQuetes.BOURSE.get(), DecorBourse::dessiner));
         busMod.addListener((RegisterGuiOverlaysEvent e) -> {
             e.registerAboveAll("quetes", HudQuetes::rendu);
             e.registerAboveAll("radio", RadioVarga::rendu);

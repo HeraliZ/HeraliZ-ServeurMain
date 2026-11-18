@@ -67,6 +67,8 @@ public final class ServeurQuetes implements Partie {
         EcrituresFond.init();
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::demarrage);
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::arret);
+        // bourses de hérals (18/11) : registre réécrit et fermé quand plus rien ne bouge (après l'enregistrement des joueurs)
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> Bourses.arreter());
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> Commandes.enregistrer(e.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::connexion);
         MinecraftForge.EVENT_BUS.addListener(ServeurQuetes::deconnexion);
@@ -95,6 +97,7 @@ public final class ServeurQuetes implements Partie {
     }
 
     private static void demarrage(ServerStartedEvent e) {
+        Bourses.demarrer(e.getServer());
         Moteur.demarrer(e.getServer());
         Moteur.brancherCaptures();   // étape « capturer » (15/11) : prises de zones de HeraliZ Clans
         Donnees.demarrer(e.getServer().getServerDirectory().toPath());

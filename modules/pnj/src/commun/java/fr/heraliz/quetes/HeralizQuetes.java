@@ -2,6 +2,7 @@ package fr.heraliz.quetes;
 
 import fr.heraliz.quetes.entite.Pnj;
 import fr.heraliz.quetes.objet.Baguette;
+import fr.heraliz.quetes.objet.Bourse;
 import fr.heraliz.quetes.objet.ObjetQuete;
 import fr.heraliz.quetes.objet.RegistreMarchand;
 import fr.heraliz.quetes.pont.Parties;
@@ -107,6 +108,12 @@ public class HeralizQuetes {
             () -> new net.minecraft.world.item.BlockItem(RECYCLEUR.get(), new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> RECYCLEUR_CARTE_OBJET = OBJETS.register("recycleur_carte",
             () -> new net.minecraft.world.item.BlockItem(RECYCLEUR_CARTE.get(), new Item.Properties().stacksTo(1)));
+    /**
+     * Bourse de hérals (18/11, identifiant figé {@code heraliz_quetes:bourse}) : les hérals gagnés sur la carte, revendus à
+     * Mila (objet.Bourse, registre serveur.Bourses). Pas dans l'onglet créatif : une bourse sans numéro ne vaut rien
+     * ({@code /bourse donner} pour le staff).
+     */
+    public static final RegistryObject<Item> BOURSE = OBJETS.register("bourse", () -> new Bourse(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<CreativeModeTab> ONGLET = ONGLETS.register("onglet", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.heraliz_quetes"))

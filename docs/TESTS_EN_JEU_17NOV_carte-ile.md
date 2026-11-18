@@ -152,3 +152,21 @@ contremaitre. Pour un PNJ absent : se placer à l'endroit voulu, regard dans la 
 - [ ] Éponge mouillée : même texture que l'éponge.
 - [ ] Drapeaux des villes : `/territoire info` ; une capture.
 - [ ] Une extraction ouverte : la tenir, retour au spawn.
+
+## 8. Bourse de hérals (18/11)
+
+Les hérals gagnés sur la carte ne vont plus sur le compte : ils vont dans une **bourse** (un objet), qu'on revend à Mila.
+Aujourd'hui, sur la carte, seul le recycleur de terrain donne des hérals (les zombies n'en donnent pas).
+- [ ] Recycleur de terrain : un objet qui ne rend aucune pièce met ses hérals dans une bourse, dans les cases
+      « Récupéré » ; les suivants s'ajoutent à la même bourse (3 puis 60 : une bourse de 63). Le montant est écrit en or
+      dans le coin de la case ; au survol : « 63 hérals » et « À revendre à Mila, au spawn » (pas de « tombe au sol »).
+- [ ] Parti plus loin pendant que la machine tourne : message « +N hérals · dans la bourse du recycleur » (un toutes les
+      20 s au plus) ; un autre joueur peut prendre la bourse.
+- [ ] Poser une bourse (au curseur) sur une autre dans l'inventaire : il n'en reste qu'une, avec la somme.
+- [ ] Mila : la bourse se sélectionne comme un objet, au prix de ce qu'elle contient ; vendue, le compte monte d'autant.
+      Pas de points de saison ni de quête du jour « vendre » pour une bourse.
+- [ ] Hôtel des ventes : une bourse est refusée (« bourse : se revend à Mila, au spawn »). Le recycleur ne la prend pas.
+- [ ] Mourir avec une bourse : elle tombe avec le reste.
+- [ ] Anti-copie, avec le staff en créatif : copier une bourse (clic molette), vendre l'originale à Mila, puis la copie :
+      la copie est refusée (« Mila refuse cette bourse : elle ne vaut plus rien »). `/bourse info` : nombre de bourses
+      valables et total ; `/bourse donner <joueur> <hérals>` en crée une (essais, dédommagement).

@@ -3,6 +3,7 @@ package fr.heraliz.quetes.serveur;
 import com.mojang.logging.LogUtils;
 import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.entite.Pnj;
+import fr.heraliz.quetes.objet.Bourse;
 import fr.heraliz.quetes.objet.ObjetQuete;
 import fr.heraliz.quetes.reseau.Reseau;
 import net.minecraft.core.registries.Registries;
@@ -100,6 +101,13 @@ final class Marchands {
             boolean objetEvenement = false;
             for (int i = 0; i < Reseau.CASES; i++) {
                 ItemStack s = p.getInventory().items.get(i);
+                long pb = Bourses.valeur(s);
+                if (pb >= 0) {
+                    // bourse de hérals (18/11) : ce qu'elle contient ; 0 si elle ne vaut rien (revendue, copie)
+                    prix[i] = (int) Math.min(Integer.MAX_VALUE, pb);
+                    rar[i] = Ponts.rarete(s);
+                    continue;
+                }
                 long pe = ObjetsEvenements.prix(s);
                 if (pe >= 0) {
                     // objet d'événement (25/10) : son prix et ses points, jamais les règles de rareté du marchand ; 11/11 : -2
@@ -188,11 +196,24 @@ final class Marchands {
             return;
         }
         long total = 0, horsBoutique = 0, pointsEvenement = 0;
-        int nombre = 0, essais = 0, sansPoints = 0;
+        int nombre = 0, essais = 0, sansPoints = 0, boursesRefusees = 0;
         Map<String, Long> ventes = SaisonQuetes.ventes();
         for (int c : new LinkedHashSet<>(v.cases())) {
             if (c < 0 || c >= Reseau.CASES) continue;
             ItemStack s = p.getInventory().items.get(c);
+            if (s.getItem() instanceof Bourse) {
+                // bourse de hérals (18/11) : numéro effacé du registre AVANT le paiement (une copie ne paie jamais deux
+                // fois) ; ni points de saison ni quête du jour « vendre » (ce sont des hérals déjà gagnés)
+                long vb = Bourses.encaisser(p, s);
+                if (vb <= 0) {
+                    boursesRefusees++;
+                    continue;
+                }
+                total += vb;
+                nombre++;
+                p.getInventory().items.set(c, ItemStack.EMPTY);
+                continue;
+            }
             long pe = ObjetsEvenements.prix(s);
             if (pe >= 0) {
                 // objet d'événement (25/10) : noté vendu par le module des événements AVANT le paiement, points au clan
@@ -215,6 +236,7 @@ final class Marchands {
             nombre += s.getCount();
             p.getInventory().items.set(c, ItemStack.EMPTY);
         }
+        if (boursesRefusees > 0) Moteur.notif(p, Texte.cle("heraliz_quetes.bourse.refusee"), 0xFF6B6B);
         if (nombre == 0) return;
         if (!Ponts.deposer(p.getUUID(), total, "vente:" + def.id)) {
             LOG.error("[heraliz_quetes] vente de {} : {} hérals NON versés (économie absente)", p.getGameProfile().getName(), total);

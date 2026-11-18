@@ -36,7 +36,7 @@ import java.util.UUID;
  * Fermé si la machine part, si le joueur s'éloigne (8 blocs), passe à terre ou en match.
  */
 final class MenuRecycleurCarteServeur extends MenuRecycleurCarte {
-    private final ServerPlayer joueur;
+    final ServerPlayer joueur;
     private final RecycleurCarteEntiteServeur machine;
     private final Vec3 centre;
     private final Donnees vue;

@@ -37,8 +37,10 @@ import java.util.stream.Stream;
  * Recycleur de la carte, partie serveur (31/10, décision du propriétaire) : le contenu est À LA MACHINE (6 cases « à
  * recycler », 6 cases « récupéré »), partagé comme un coffre par tous ceux qui ouvrent l'écran
  * ({@link MenuRecycleurCarteServeur}) ; le recyclage continue sans personne, n'importe qui reprend ce qu'il y a.
- * Mêmes règles que le recycleur du spawn ({@link Recyclage}), chance du profil « carte », pas de point de saison ; les
- * hérals d'un objet qui n'a rien rendu vont à celui qui l'a déposé (même hors ligne). 15/11 (audit n° 4) : une case « à
+ * Mêmes règles que le recycleur du spawn ({@link Recyclage}), chance du profil « carte », pas de point de saison. Les
+ * hérals d'un objet qui n'a rien rendu vont (18/11, demande du propriétaire) dans la BOURSE de la machine, rangée dans ses
+ * sorties comme les pièces ({@link Bourses#dansMachine}) : celui qui la prend la revend à Mila ; elle se perd ou se vole
+ * comme le reste. Bourses bloquées ou sortie pleine : versés au déposant, comme avant. 15/11 (audit n° 4) : une case « à
  * recycler » n'est qu'à un joueur à la fois (vide, ou déjà remplie par lui : {@link #peutDeposer}) ; avant, celui qui
  * ajoutait une balle à la case d'un autre touchait les hérals et la quête du jour de toute la case.
  *
@@ -58,7 +60,8 @@ import java.util.stream.Stream;
  * <li>échange avec la barre (touches 1 à 9, F) entre une case pleine de la machine et une case pleine de l'inventaire :
  * refusé (les deux sens à la fois ; {@link MenuRecycleurCarteServeur#clicked}) ; un échange au curseur se range dans le
  * premier cas (le curseur n'est jamais sauvegardé) ;</li>
- * <li>recyclage : objet retiré et pièces ajoutées dans la même écriture, puis les hérals ;</li>
+ * <li>recyclage : objet retiré, pièces et bourse ajoutées dans la même écriture (registre des bourses écrit juste avant :
+ * un plantage entre les deux perd au pire un gain, il ne copie rien) ;</li>
  * <li>machine cassée par le staff : contenu au sol, puis fichier effacé.</li>
  * </ul>
  * Un fichier illisible n'est jamais écrasé : la machine reste fermée (journal du serveur). Une écriture ratée ferme aussi
@@ -338,9 +341,16 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         }
     }
 
-    /** Ce qu'un objet recyclé doit encore donner, une fois la machine écrite : hérals au déposant, quête du jour. */
-    private record Paiement(UUID deposant, int objets, long herals) {
+    /**
+     * Ce qu'un objet recyclé doit encore donner, une fois la machine écrite : quête du jour, message au déposant, et ses
+     * hérals sur son compte seulement s'ils n'ont pas pu aller dans la bourse ({@code enBourse} : déjà dans la bourse de la
+     * machine, qui contient maintenant {@code bourse}).
+     */
+    private record Paiement(UUID deposant, int objets, long herals, long enBourse, long bourse) {
     }
+
+    /** Dernier message « dans la bourse du recycleur » de chaque déposant (tick du jeu) : un toutes les 20 s au plus. */
+    private final Map<UUID, Long> derniersMessages = new HashMap<>(2);
 
     private Paiement recycler(int i) {
         Recyclage.Verdict v = verdicts[i];
@@ -361,18 +371,34 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         if (entree.getItem(i).isEmpty()) deposants[i] = null;
         level.playSound(null, worldPosition, t.pieces().isEmpty() ? SoundEvents.GRINDSTONE_USE : SoundEvents.SMITHING_TABLE_USE, SoundSource.BLOCKS,
                 BRUIT_VOLUME, t.pieces().isEmpty() ? 0.8F : 1.1F);
+        // 18/11 : les hérals dans la bourse des sorties, AVANT l'écriture de la machine (registre des bourses écrit d'abord)
+        long h = t.herals(), bourse = h > 0 ? Bourses.dansMachine(sortie, h) : 0;
+        boolean enBourse = bourse > 0;
         // quête du jour : un paquet de munitions entier compte pour un objet (15/11, Recyclage.objetsQuete)
-        return new Paiement(qui, Recyclage.objetsQuete(v, n), t.herals());
+        return new Paiement(qui, Recyclage.objetsQuete(v, n), enBourse ? 0 : h, enBourse ? h : 0, Math.max(0, bourse));
     }
 
     private void payer(List<Paiement> paiements) {
         MinecraftServer srv = level.getServer();
         for (Paiement pa : paiements) {
             if (pa.deposant() == null) continue;
-            if (pa.herals() > 0 && Ponts.deposer(pa.deposant(), pa.herals(), "Recycleur de la carte")) {
+            ServerPlayer p = srv.getPlayerList().getPlayer(pa.deposant());
+            if (pa.enBourse() > 0) {
+                boolean regarde = false;
+                for (MenuRecycleurCarteServeur m : vues) {
+                    m.herals(pa.deposant(), pa.enBourse());
+                    regarde |= m.joueur.getUUID().equals(pa.deposant());
+                }
+                // parti plus loin : prévenu que la bourse de la machine se remplit (et qu'on peut la lui prendre)
+                Long dernier = derniersMessages.get(pa.deposant());
+                long maintenant = level.getGameTime();
+                if (p != null && !regarde && (dernier == null || maintenant - dernier >= 400)) {
+                    derniersMessages.put(pa.deposant(), maintenant);
+                    Bourses.prevenir(p, pa.enBourse(), pa.bourse(), true);
+                }
+            } else if (pa.herals() > 0 && Ponts.deposer(pa.deposant(), pa.herals(), "Recycleur de la carte")) {
                 for (MenuRecycleurCarteServeur m : vues) m.herals(pa.deposant(), pa.herals());
             }
-            ServerPlayer p = srv.getPlayerList().getPlayer(pa.deposant());
             if (p != null && pa.objets() > 0) Journalieres.recyclage(p, pa.objets());
         }
     }

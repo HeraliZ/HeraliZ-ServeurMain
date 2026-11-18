@@ -229,7 +229,9 @@ public final class EcranRecycleur extends AbstractContainerScreen<MenuRecycleur>
         Net.capsCentre(g, f, t("tout_prendre"), PG, 1.0f, bx + bw / 2, bcy, sortie ? Ui.TEXT : Ui.FAINT);
         int herals = menu.donnee(MenuRecycleur.D_HERALS);
         if (herals > 0) {
-            String h = Net.couper(f, herals == 1 ? t("herals_un") : t("herals", herals), Ui.SMALL, 96);
+            // 18/11 : recycleur de terrain, les hérals vont dans la bourse de ses sorties (plus sur le compte)
+            String h = Net.couper(f, menu.carte() ? (herals == 1 ? tc("herals_un") : tc("herals", herals))
+                    : (herals == 1 ? t("herals_un") : t("herals", herals)), Ui.SMALL, 96);
             Net.centre(g, f, h, Ui.SMALL, ox + 28, y0 + 81, Ui.OR);
         }
     }
