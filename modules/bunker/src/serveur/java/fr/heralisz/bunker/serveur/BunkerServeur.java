@@ -7,8 +7,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 /**
@@ -20,17 +18,14 @@ import org.slf4j.Logger;
  */
 public final class BunkerServeur implements BunkerPont.Regles {
    private static final Logger LOG = LogUtils.getLogger();
-   /** Joueurs prévenus de la fermeture : à ce rayon (blocs) de la porte, tout le bunker derrière. */
-   private static final double RAYON_AVERTI = 48.0;
-
    @Override
    public long ouvertureMs() {
-      return 60_000L * (KeycardConfig.SPEC.isLoaded() ? KeycardConfig.BUNKER_MINUTES.get() : 30);
+      return 60_000L * (KeycardConfig.SPEC.isLoaded() ? KeycardConfig.BUNKER_MINUTES.get() : 20);
    }
 
    @Override
    public long avertirMs() {
-      return 1000L * (KeycardConfig.SPEC.isLoaded() ? KeycardConfig.BUNKER_AVERTIR.get() : 60);
+      return 1000L * (KeycardConfig.SPEC.isLoaded() ? KeycardConfig.BUNKER_AVERTIR.get() : 300);
    }
 
    @Override
@@ -49,13 +44,17 @@ public final class BunkerServeur implements BunkerPont.Regles {
             "La porte du %1$s a été ouverte ! Elle reste ouverte %2$s min.", nom, minutes)).withStyle(ChatFormatting.GOLD);
    }
 
+   /** 18/11 (demande du propriétaire) : l'alerte avant la fermeture part dans le tchat de tout le serveur, comme l'annonce. */
    @Override
-   public void bientotFermee(ServerLevel level, BlockPos porte, int secondes) {
-      Component msg = Component.translatableWithFallback("heralisz_bunker.bunker.fermeture",
-         "La porte du bunker se ferme dans %s s : sans carte, plus de sortie !", String.valueOf(secondes)).withStyle(ChatFormatting.RED);
-      Vec3 c = Vec3.atCenterOf(porte);
-      for (ServerPlayer p : level.players()) {
-         if (p.distanceToSqr(c) <= RAYON_AVERTI * RAYON_AVERTI) p.sendSystemMessage(msg);
-      }
+   public void bientotFermee(ServerLevel level, BlockPos porte, String nom, int secondes) {
+      Component duree = secondes >= 60
+         ? Component.translatableWithFallback("heralisz_bunker.bunker.duree.min", "%s min", String.valueOf((secondes + 30) / 60))
+         : Component.translatableWithFallback("heralisz_bunker.bunker.duree.s", "%s s", String.valueOf(secondes));
+      Component msg = (nom == null || nom.isBlank()
+         ? Component.translatableWithFallback("heralisz_bunker.bunker.fermeture",
+            "La porte du bunker se ferme dans %s : sans carte, plus de sortie !", duree)
+         : Component.translatableWithFallback("heralisz_bunker.bunker.fermeture_nom",
+            "La porte du %1$s se ferme dans %2$s : sans carte, plus de sortie !", nom, duree)).withStyle(ChatFormatting.RED);
+      level.getServer().getPlayerList().broadcastSystemMessage(msg, false);
    }
 }

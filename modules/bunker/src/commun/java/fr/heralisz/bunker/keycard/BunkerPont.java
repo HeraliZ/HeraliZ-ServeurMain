@@ -18,14 +18,14 @@ public final class BunkerPont {
       /** Durée d'ouverture après un passage de carte (millisecondes, temps réel). */
       long ouvertureMs();
 
-      /** Combien de temps avant la fermeture les joueurs proches sont prévenus (millisecondes ; 0 : jamais). */
+      /** Combien de temps avant la fermeture l'alerte part (millisecondes ; 0 : jamais). */
       long avertirMs();
 
       /** La porte (contrôleur en porte), fermée, vient d'être ouverte par un lecteur : annonce (nom "" : sans nom). */
       void ouverte(ServerLevel level, BlockPos porte, String nom);
 
-      /** La porte se ferme dans ce nombre de secondes : les joueurs proches sont prévenus. */
-      void bientotFermee(ServerLevel level, BlockPos porte, int secondes);
+      /** La porte se ferme dans ce nombre de secondes : alerte (nom "" : sans nom). */
+      void bientotFermee(ServerLevel level, BlockPos porte, String nom, int secondes);
    }
 
    public static volatile Regles REGLES;
@@ -45,9 +45,9 @@ public final class BunkerPont {
       if (r != null && level instanceof ServerLevel sl) r.ouverte(sl, porte, nom);
    }
 
-   public static void bientotFermee(Level level, BlockPos porte, int secondes) {
+   public static void bientotFermee(Level level, BlockPos porte, String nom, int secondes) {
       Regles r = REGLES;
-      if (r != null && level instanceof ServerLevel sl) r.bientotFermee(sl, porte, secondes);
+      if (r != null && level instanceof ServerLevel sl) r.bientotFermee(sl, porte, nom, secondes);
    }
 
    private BunkerPont() {}

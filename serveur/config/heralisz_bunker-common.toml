@@ -41,7 +41,7 @@
 [bunkers]
 	#Minutes pendant lesquelles la porte reste ouverte après un passage de carte (temps réel)
 	#Range: 1 ~ 1440
-	ouvertureMinutes = 30
-	#Secondes avant la fermeture où les joueurs à 48 blocs au plus de la porte sont prévenus (0 = jamais)
-	#Range: 0 ~ 600
-	avertirSecondes = 60
+	ouvertureMinutes = 20
+	#Secondes avant la fermeture où tout le serveur est prévenu dans le tchat (0 = jamais)
+	#Range: 0 ~ 3600
+	avertirSecondes = 300

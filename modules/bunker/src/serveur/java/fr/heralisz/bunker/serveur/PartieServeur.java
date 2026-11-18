@@ -9,13 +9,13 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * Partie serveur de HeraliZ Bunker (docs/METHODE_CLIENT_SERVEUR.md §4) : salles à carte (porte tenue ouverte tant que
  * quelqu'un est dedans, loot de la salle avec HeraliZ Loot, commande /salle, baguette du staff). Les fragments de cartes
  * d'accès ne s'assemblent plus au clic droit (28/10) : seulement à la Table d'armurier, onglet Divers. Portes de bunker
- * (17/11) : ouvertes par un lecteur de carte, annoncées, refermées au bout de 30 minutes (BunkerServeur).
+ * (17/11) : ouvertes par un lecteur de carte, annoncées, refermées au bout de 20 minutes (BunkerServeur).
  */
 public final class PartieServeur implements Partie {
    @Override
    public void init(IEventBus busMod) {
       ReglagesCartesServeur.brancher(busMod);   // heralisz_bunker-common.toml : serveur seulement (audit du 02/11, point 11)
       SallesBranchement.brancher();
-      BunkerPont.REGLES = new BunkerServeur();   // 17/11 : portes de bunker (30 min ouvertes, annonce dans le tchat)
+      BunkerPont.REGLES = new BunkerServeur();   // 17/11 : portes de bunker (20 min ouvertes, annonce dans le tchat)
    }
 }

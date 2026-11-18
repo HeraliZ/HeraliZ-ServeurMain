@@ -38,10 +38,11 @@ public final class KeycardConfig {
       b.comment("Portes de bunker (17/11) : désignées par le staff (/salle bunker ajouter [nom], en regardant la porte), ouvertes",
          "seulement par un lecteur de carte posé à 2 blocs au plus (n'importe quelle couleur : la carte du lecteur posé),",
          "annoncées à tout le serveur, puis refermées").push("bunkers");
+      // 18/11 (demande du propriétaire) : 20 min ouverte, alerte dans le tchat 5 min avant la fermeture
       BUNKER_MINUTES = b.comment("Minutes pendant lesquelles la porte reste ouverte après un passage de carte (temps réel)")
-         .defineInRange("ouvertureMinutes", 30, 1, 1440);
-      BUNKER_AVERTIR = b.comment("Secondes avant la fermeture où les joueurs à 48 blocs au plus de la porte sont prévenus (0 = jamais)")
-         .defineInRange("avertirSecondes", 60, 0, 600);
+         .defineInRange("ouvertureMinutes", 20, 1, 1440);
+      BUNKER_AVERTIR = b.comment("Secondes avant la fermeture où tout le serveur est prévenu dans le tchat (0 = jamais)")
+         .defineInRange("avertirSecondes", 300, 0, 3600);
       b.pop();
       SPEC = b.build();
    }

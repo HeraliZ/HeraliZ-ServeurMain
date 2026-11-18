@@ -22,7 +22,7 @@ Pour chaque bunker, en créatif :
 2. `/give @s heralisz_bunker:card_reader_bunker_bois 2` (ou `_pic`), puis poser un lecteur **dehors** et un **dedans**,
    à 2 blocs au plus de la porte.
 3. Regarder la porte (ou un de ses lecteurs), à 8 blocs au plus, et taper :
-   - `/salle bunker ajouter` → annonce « La porte du bunker a été ouverte ! Elle reste ouverte 30 min. » ;
+   - `/salle bunker ajouter` → annonce « La porte du bunker a été ouverte ! Elle reste ouverte 20 min. » ;
    - ou `/salle bunker ajouter Bunker des Bois` → annonce « La porte du Bunker des Bois a été ouverte ! … ».
    La réponse dit combien de lecteurs sont à côté (il en faut 2).
 4. `/salle bunker` en regardant la porte : « porte de bunker, fermée, 2 lecteur(s) à côté ».
@@ -32,15 +32,15 @@ Pour chaque bunker, en créatif :
 - [ ] `/give @s heralisz_bunker:keycard_bunker_bois`, glisser la carte dans le lecteur du dehors : cinématique, la porte
       s'ouvre, **tout le serveur** lit l'annonce dans le tchat.
 - [ ] La carte du Pic dans le lecteur des Bois : refusée (et l'inverse) ; une carte rouge : refusée.
-- [ ] `/salle bunker` : « ouverte, se ferme dans 29 min … ».
-- [ ] 1 minute avant la fin, les joueurs à 48 blocs lisent « La porte du bunker se ferme dans 60 s : sans carte, plus de
-      sortie ! » ; au bout de 30 min, la porte se ferme ; qui est dans le passage est repoussé.
-- [ ] Enfermé dedans : la carte dans le lecteur du dedans rouvre la porte (30 min de plus, nouvelle annonce).
+- [ ] `/salle bunker` : « ouverte, se ferme dans 19 min … ».
+- [ ] 5 minutes avant la fin, tout le serveur lit dans le tchat « La porte du bunker se ferme dans 5 min : sans carte,
+      plus de sortie ! » ; au bout de 20 min, la porte se ferme ; qui est dans le passage est repoussé.
+- [ ] Enfermé dedans : la carte dans le lecteur du dedans rouvre la porte (20 min de plus, nouvelle annonce).
 - [ ] Infobulle de la carte : « Ouvre les lecteurs du Bunker des Bois », « Passages restants : 2 » ; au 2e passage,
       elle disparaît de l'inventaire et se casse dans le lecteur (bruit et éclats, comme un outil de Minecraft).
 - [ ] Un redémarrage pendant que la porte est ouverte : elle garde son heure de fermeture.
 
-Réglages (`config/heralisz_bunker-common.toml`) : `[bunkers] ouvertureMinutes = 30`, `avertirSecondes = 60` ;
+Réglages (`config/heralisz_bunker-common.toml`) : `[bunkers] ouvertureMinutes = 20`, `avertirSecondes = 300` ;
 `[keycards] usesBunker = 2`. Les cartes sortent des coffres T7 et des salles rouges (environ 1 coffre T7 sur 100 donne
 l'une des deux) ; elles sont Légendaires et suivies par l'anti-duplication.
 

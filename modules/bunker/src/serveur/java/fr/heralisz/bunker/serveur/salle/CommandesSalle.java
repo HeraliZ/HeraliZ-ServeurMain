@@ -43,7 +43,7 @@ import java.util.Map;
  * <li>/salle liste, /salle voir [nom] — état des salles (voir : contour montré 30 s) ;</li>
  * <li>/salle recharger &lt;nom&gt; — loot remis tout de suite ; /salle retirer &lt;nom&gt;.</li>
  * <li>/salle bunker [ajouter [nom] | retirer] — porte visée (ou celle du lecteur visé) : son état de porte de bunker, en
- * faire une (ouverte seulement par un lecteur de carte posé à côté, 30 min, annoncée à tout le serveur : 17/11) ou la
+ * faire une (ouverte seulement par un lecteur de carte posé à côté, 20 min, annoncée à tout le serveur : 17/11) ou la
  * rendre ordinaire.</li></ul>
  * Réponses en message direct à celui qui tape la commande.
  */

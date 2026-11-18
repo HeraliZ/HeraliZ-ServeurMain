@@ -582,8 +582,8 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
 
    /**
     * Porte de bunker ouverte par un lecteur (17/11) : à l'heure dite, elle se ferme (sauf lecteur encore actif) ; avant,
-    * les joueurs proches sont prévenus une fois (BunkerPont). Temps réel : un serveur lent ne la garde pas plus longtemps,
-    * un redémarrage ne la remet pas à zéro.
+    * une alerte part une fois dans le tchat (BunkerPont, 18/11 : 5 min avant). Temps réel : un serveur lent ne la garde
+    * pas plus longtemps, un redémarrage ne la remet pas à zéro.
     */
    private void compterBunker() {
       long reste = this.bunkerJusqua - System.currentTimeMillis();
@@ -598,7 +598,7 @@ public class DoorBlockEntity extends BlockEntity implements IMultiblockPart {
       if (!this.bunkerAverti && this.state == 1 && avertir > 0L && reste <= avertir) {
          this.bunkerAverti = true;
          this.setChanged();
-         BunkerPont.bientotFermee(this.level, this.worldPosition, (int)((reste + 999L) / 1000L));
+         BunkerPont.bientotFermee(this.level, this.worldPosition, this.bunker == null ? "" : this.bunker, (int)((reste + 999L) / 1000L));
       }
    }
 
