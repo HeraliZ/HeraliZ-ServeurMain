@@ -7,7 +7,6 @@
   "mixins": [
     "FaimMixin",
     "LevelDatEnFondMixin",
-    "RetourCommandesStaffMixin",
     "StatsSansDisqueMixin",
     "SuccesMixin"
   ],
