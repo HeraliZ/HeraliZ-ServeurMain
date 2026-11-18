@@ -179,6 +179,8 @@ EN_PLUS = {5: {"planches": 2, "clou": 2},
 MUNITIONS_POUR_100 = {1: 12, 2: 14, 3: 18, 4: 20, 5: 22, 6: 24, 7: 26}
 MUNITIONS_ECHELLE = {1: 1.0, 2: 1.1, 3: 1.3, 4: 1.5, 5: 1.7, 6: 1.9, 7: 2.2}
 MUNITIONS_HORS = ("tacz:40mm", "tacz:rpg_rocket", "tacz:50bmg", "Level:")  # jamais dans les conteneurs T1 à T7
+# 18/11 (demande du propriétaire) : les piles des caisses de munitions (munitions.json) x 2,2 ; les munitions des
+# conteneurs T1 à T7 gardent leurs quantités : elles partent des anciennes, gardées dans « _nombre_t »
 IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 # capsules du casino (HeraliZ Casino, objets heralizcasino:jeton_*), choix du propriétaire (22/10) : plus aucun héral
 # dans le casino, les capsules se trouvent sur la carte et s'échangent contre des objets à la caisse. Nombre de piles
@@ -585,7 +587,7 @@ def munitions_coffres(t):
     out = []
     k = MUNITIONS_ECHELLE[t]
     for e in liste:
-        a, b = e.get("nombre", [1, 1])
+        a, b = e.get("_nombre_t", e.get("nombre", [1, 1]))
         a, b = max(2, round(a * k)), max(2, round(b * k))
         out.append(({"item": e["item"], "nombre": [a, max(a, b)], "nbt": e["nbt"], "_cat": "munitions_coffres"}, e["poids"] / s))
     return out
