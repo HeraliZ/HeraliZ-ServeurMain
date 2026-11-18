@@ -20,6 +20,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -55,7 +56,8 @@ import org.slf4j.Logger;
  *    blocs voisins (rien ne tombe ni ne se décroche : la carte reste telle quelle autour du trou) ; seules les vitres
  *    fines voisines qui s'y raccordaient perdent leur raccord vers le trou, pour un bord net.</li>
  *    <li><b>Zones où rien ne casse</b> ({@link Raison}) : réglage {@code [vitres] casser} à false, verre gorgé d'eau,
- *    blocs de la liste {@code blocs_proteges}, dimensions protégées (spawn {@code heralisz:spawn}, matchs, zombies,
+ *    verre qui touche l'eau (18/11 : labo sous-marin, aquariums ; l'eau entrerait par le trou), blocs de la liste
+ *    {@code blocs_proteges}, dimensions protégées (spawn {@code heralisz:spawn}, matchs, zombies,
  *    bunkers), rayon autour du point d'apparition de l'overworld (0 par défaut : le spawn est un monde à part, et le
  *    point d'apparition de la carte est au milieu d'une ville), claims de CRac (lus par réflexion, CRac facultatif). Là,
  *    tout reste comme avant. {@code /vitres pourquoi} (CommandeVitres) dit au staff laquelle s'applique à un bloc.</li>
@@ -98,6 +100,17 @@ public final class VitresServeur {
          @Override
          boolean empeche(ServerLevel level, BlockPos pos, BlockState etat) {
             return !etat.getFluidState().isEmpty();
+         }
+      },
+      /**
+       * 18/11 (retour du propriétaire : les vitres du labo sous-marin cassaient encore sous les balles) : verre qui touche
+       * l'eau par un de ses six côtés ; cassé, il laisserait entrer l'eau (au prochain bloc mis à jour à côté). Vaut partout,
+       * même si {@code zones_protegees} n'est pas lu.
+       */
+      CONTRE_EAU {
+         @Override
+         boolean empeche(ServerLevel level, BlockPos pos, BlockState etat) {
+            return toucheEau(level, pos);
          }
       },
       /** Bloc de la liste {@code blocs_proteges}. */
@@ -319,7 +332,24 @@ public final class VitresServeur {
       }
    }
 
+   private static final Direction[] COTES = Direction.values();
+
+   /** Un des six blocs voisins (chargé) contient de l'eau. */
+   static boolean toucheEau(ServerLevel level, BlockPos pos) {
+      BlockPos.MutableBlockPos v = new BlockPos.MutableBlockPos();
+      for (Direction d : COTES) {
+         v.setWithOffset(pos, d);
+         if (level.isLoaded(v) && level.getFluidState(v).is(FluidTags.WATER)) {
+            return true;
+         }
+      }
+      return false;
+   }
+
    private static void demarrage(ServerStartedEvent e) {
+      // 18/11 : réglages lus, dans le journal du serveur (les vitres du labo cassaient : savoir ce que le serveur a lu)
+      LOG.info("[heraliz_tactique] vitres : casser = {}, zones protégées = {}, dimensions protégées = {}, verre contre l'eau jamais cassé",
+         lire(ServerConfig.VITRES_CASSER, true), lire(ServerConfig.VITRES_ZONES, Vitres.DEFAUT_ZONES), dimensionsProtegees());
       long maintenant = System.currentTimeMillis();
       int[] chargements = {MAX_CHARGEMENTS_DEMARRAGE};
       for (ServerLevel level : e.getServer().getAllLevels()) {
@@ -489,7 +519,7 @@ public final class VitresServeur {
    /** Cercle de zones_protegees ({x, z, rayon}) qui contient pos, ou null (une ligne illisible est sautée). */
    @Nullable
    static int[] zoneProtegee(BlockPos pos) {
-      List<? extends String> l = lire(ServerConfig.VITRES_ZONES, List.of());
+      List<? extends String> l = lire(ServerConfig.VITRES_ZONES, Vitres.DEFAUT_ZONES);
       if (l != sourceZones) {
          List<int[]> z = new ArrayList<>();
          for (String s : l) {

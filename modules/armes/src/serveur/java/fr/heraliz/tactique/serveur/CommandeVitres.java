@@ -166,6 +166,7 @@ final class CommandeVitres {
          case DESACTIVE -> tr("heraliz_tactique.vitres.desactive", "Réglage [vitres] casser = false : rien ne casse.");
          case GORGEE_EAU -> tr("heraliz_tactique.vitres.eau",
             "Vitre gorgée d'eau : elle ne casse pas (l'eau se répandrait). La reposer à sec pour qu'elle casse.");
+         case CONTRE_EAU -> tr("heraliz_tactique.vitres.contre_eau", "Vitre contre l'eau : elle ne casse pas (l'eau entrerait par le trou).");
          case BLOC_PROTEGE -> tr("heraliz_tactique.vitres.protege", "Bloc de la liste blocs_proteges : il ne casse jamais.");
          case DIMENSION -> tr("heraliz_tactique.vitres.dimension", "Dimension protégée (%s, dimensions_protegees) : rien n'y casse.",
             level.dimension().location().toString());

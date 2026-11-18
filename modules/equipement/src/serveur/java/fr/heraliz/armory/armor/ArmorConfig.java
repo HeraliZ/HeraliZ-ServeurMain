@@ -68,10 +68,11 @@ public final class ArmorConfig {
                         "au plus de ce centre).")
                 .defineListAllowEmpty("labo_zones", List.of("1980 2025 110"),
                         o -> o instanceof String s && s.trim().matches("-?\\d+\\s+-?\\d+\\s+\\d+"));
+        // 18/11 (demande du proprietaire) : 5,5 s d'air (avant 2,5), puis 2 coeurs par coup, chaque seconde (avant 2,5)
         LABO_APNEE = b.comment("Sans la tenue, dans ces eaux : secondes d'air (les bulles se vident d'autant) avant de se noyer")
-                .defineInRange("labo_apnee_secondes", 2.5, 0.0, 15.0);
-        LABO_DEGATS = b.comment("Puis degats de noyade par seconde, sans la tenue (5 = 2,5 coeurs ; la noyade normale ne compte plus)")
-                .defineInRange("labo_degats_par_seconde", 5.0, 0.0, 40.0);
+                .defineInRange("labo_apnee_secondes", 5.5, 0.0, 15.0);
+        LABO_DEGATS = b.comment("Puis degats de noyade par seconde, sans la tenue (4 = 2 coeurs ; la noyade normale ne compte plus)")
+                .defineInRange("labo_degats_par_seconde", 4.0, 0.0, 40.0);
         LABO_NOIR_Y = b.comment("Sans la tenue, dans ces eaux et sous cette hauteur : le noir (cecite). La mer est a 63, le labo de 14 a 35.")
                 .defineInRange("labo_noir_sous_y", 52, -64, 320);
         LABO_VISION = b.comment("Avec la tenue, dans ces eaux : vision de nuit, pour voir correctement (retiree en sortant)")

@@ -21,9 +21,10 @@
 	#Eaux du labo sous-marin (17/11, demande du proprietaire) : cercles « x z rayon » de la carte principale ou, la tete sous
 	#l'eau, il faut la tenue de plongee. 1980 2025 110 : tout le labo (son verre est a 87 blocs au plus de ce centre).
 	labo_zones = ["1980 2025 110"]
-	#Sans la tenue, dans ces eaux : secondes d'air avant de se noyer, puis degats par seconde (5 = 2,5 coeurs).
-	labo_apnee_secondes = 2.5
-	labo_degats_par_seconde = 5.0
+	#Sans la tenue, dans ces eaux : secondes d'air avant de se noyer, puis degats par seconde (4 = 2 coeurs).
+	#18/11 (demande du proprietaire) : 5,5 s d'air (avant 2,5), puis 2 coeurs par coup chaque seconde (avant 2,5).
+	labo_apnee_secondes = 5.5
+	labo_degats_par_seconde = 4.0
 	#Sans la tenue, sous cette hauteur : le noir (la mer est a 63, le labo de 14 a 35).
 	labo_noir_sous_y = 52
 	#Avec la tenue : vision de nuit dans ces eaux, pour voir correctement.

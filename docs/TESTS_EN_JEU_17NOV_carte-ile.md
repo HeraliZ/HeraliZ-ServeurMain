@@ -134,9 +134,20 @@ contremaitre. Pour un PNJ absent : se placer à l'endroit voulu, regard dans la 
 ## 7. Le reste à vérifier
 
 - [ ] Carte M : plus de « Bunker des Bois » ni de « Bunker du Pic » ; noms des extractions à jour (`/extraction list`).
-- [ ] Labo sous-marin, **sans** tenue de plongée : 2,5 s d'air, puis 2,5 cœurs par seconde ; sous y 52, tout noir.
+- [ ] Labo sous-marin, **sans** tenue de plongée : 5,5 s d'air (18/11, avant 2,5), puis 2 cœurs par seconde (avant 2,5) ;
+      sous y 52, tout noir.
       **Avec** la tenue : on respire et on voit correctement.
-- [ ] Vitres du labo : un tir ne les casse pas (`/vitres pourquoi` en regardant une vitre dit pourquoi).
+- [ ] Vitres du labo : un tir ne les casse pas (`/vitres pourquoi` en regardant une vitre dit pourquoi). 18/11 : elles
+      cassaient encore ; maintenant une vitre qui touche l'eau ne casse jamais, partout sur la carte, et le labo est protégé
+      même si le réglage n'est pas lu. Si une vitre du labo casse encore : `/vitres pourquoi` en la regardant, et m'envoyer
+      ce qu'il répond.
+- [ ] Téléportation (18/11), avec un compte **qui n'est pas du staff** (le staff passe outre) : dans une ville à drapeau,
+      l'aérodrome, la prison, la radio…, et dans les zones de loot (`/tpa zone liste` : plateforme pétrolière, labo
+      sous-marin), `/tpa <joueur>` est refusé ; une demande reçue ne s'accepte pas (elle attend : sorti de la zone, on
+      l'accepte encore) ; on ne peut pas se téléporter vers quelqu'un qui y est. Régler une zone de loot : debout au centre,
+      `/tpa zone ajouter <rayon> <nom>` (même nom : remplacée) ; `/tpa zone retirer <nom>`.
+- [ ] Tenues (18/11) : plongée, arctique et hazmat sortent des conteneurs de T3 à T7 (environ 2 de chaque pour 100
+      conteneurs T5, 3 pour 100 en T6) ; les versions renforcées en T6 et T7, plus rares.
 - [ ] Zones de capture et d'extraction : plus d'effet « rayons X », plus de traits vus à travers les blocs.
 - [ ] Éponge mouillée : même texture que l'éponge.
 - [ ] Drapeaux des villes : `/territoire info` ; une capture.

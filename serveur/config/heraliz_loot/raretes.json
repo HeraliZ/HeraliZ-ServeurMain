@@ -406,6 +406,8 @@
     "heraliz_recolte:hache": "rare",
     "heraliz_recolte:pioche": "rare",
     "heraliz_recolte:hache_pioche": "legendaire",
+    "heralisz_bunker:keycard_bunker_bois": "legendaire",
+    "heralisz_bunker:keycard_bunker_pic": "legendaire",
     "backpacked:backpack": "peu_commun",
     "backpacked:backpack_hiking_black": "epique",
     "backpacked:backpack_hiking_blue": "epique",
@@ -461,9 +463,7 @@
     "backpacked:backpack_tactical_red": "peu_commun",
     "backpacked:backpack_tactical_snow": "peu_commun",
     "backpacked:backpack_tactical_white": "peu_commun",
-    "backpacked:backpack_tactical_yellow": "peu_commun",
-    "heralisz_bunker:keycard_bunker_bois": "legendaire",
-    "heralisz_bunker:keycard_bunker_pic": "legendaire"
+    "backpacked:backpack_tactical_yellow": "peu_commun"
   },
   "armes": {
     "heralisz_skins:butterfly__blue_carbon": "unique",

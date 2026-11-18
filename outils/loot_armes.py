@@ -18,7 +18,8 @@ Réécrit les tables modules/loot/src/serveur/resources/data/heraliz_loot/coffre
 - fragments des cartes d'accès (HeraliZ Bunker) : FRAGMENTS_POUR_100, ajoutés sans changer les autres poids ;
 - objets rares en plus (EXTRAS : fusée d'extraction Épique en T5 à T7 ; objets Uniques à revendre, crâne de cristal,
   sceptre et calice, en T7 seulement : UNIQUES_T7 ; outils de HeraliZ Récolte : hache et pioche en T2 à T5, hache-pioche
-  de survie en T6 et T7 ; cartes des deux bunkers, Légendaires, en T7 seulement), de la même façon.
+  de survie en T6 et T7 ; cartes des deux bunkers, Légendaires, en T7 seulement ; combinaisons intégrales de plongée,
+  arctique et hazmat, Rares, de T3 à T7, et leurs versions renforcées, Épiques, en T6 et T7), de la même façon.
 Les anciens vêtements heralisz_armor (mod retiré) sont retirés des tables. À relancer après un
 changement des raretés, des gunpacks, de l'Armurerie ou des composants.
 `--simuler` : ouvre 100 conteneurs par palier (moyenne de 1 000 essais) et compte chaque famille.
@@ -148,7 +149,8 @@ ARMES_EXCLUES = {"cis:at_rpg_7_lvd",  # jamais dans le loot (choix du propriéta
 # armes retirées du jeu (outils/donnees/objets_retires.json, identifiants figés) : plus dans aucun loot (conteneurs,
 # hélicoptère, zombies, largage), 03/11 : Deagle .12g et Thunderbird Short
 ARMES_EXCLUES |= set(json.loads((RACINE / "outils/donnees/objets_retires.json").read_text(encoding="utf-8"))["armes"])
-ARMURES_EXCLUES = {"heraliz_armory:plongee_suit"}  # jamais dans le loot (23/10 : tenue de plongée pas lootable pour l'instant)
+# 18/11 : la tenue de plongée n'est plus exclue ; comme les autres combinaisons intégrales (*_suit), elle sort par EXTRAS
+ARMURES_EXCLUES = set()
 # couteaux (skins heralisz_skins) : seulement ceux de 1, 2 ou 3 étoiles dans le loot, jamais les 4 étoiles (choix du
 # propriétaire, 23/10) ; rangs lus dans ETOILES de modules/armes/outils/skins_couteaux.py (non cité = 4)
 SKINS_COUTEAUX = RACINE / "modules/armes/outils/skins_couteaux.py"
@@ -307,6 +309,15 @@ EXTRAS.update({
     "heralisz_bunker:keycard_bunker_bois": ("legendaire", {7: 0.5}),
     "heralisz_bunker:keycard_bunker_pic": ("legendaire", {7: 0.5}),
 })
+# combinaisons intégrales de l'Armurerie (18/11, demande du propriétaire : « rendre moins rares la tenue de plongée et la
+# tenue arctique : jamais vues après beaucoup de T5 à T7 ; trop rares, les premiers à l'avoir prennent trop d'avance ») :
+# elles n'étaient dans AUCUN loot (familles : jamais les *_suit). Chacune, pour 100 conteneurs : Rare de T3 à T7, comme
+# un sac à dos en T4 à T6 ; hazmat aussi (seule protection de la zone de radiation, heraliz_decors-server.toml). Les
+# versions renforcées (Épiques, plus de points d'usure) seulement en T6 et T7, plus rares.
+TENUES = {3: 0.5, 4: 1.0, 5: 1.5, 6: 2.0, 7: 3.0}
+TENUES_RENFORCEES = {6: 0.3, 7: 0.8}
+EXTRAS.update({ARMURE + i: ("rare", TENUES) for i in ("plongee_suit", "arctique_suit", "hazmat_suit")})
+EXTRAS.update({ARMURE + i: ("epique", TENUES_RENFORCEES) for i in ("arctique_renforcee_suit", "hazmat_renforce_suit")})
 RARETES_IMPOSEES.update({i: r for i, (r, _) in EXTRAS.items()})
 # armes de mêlée de GeckoLib (machette, tuyau de plomb, batte, masse…) et nourriture : Commun
 COMMUN_PREFIXES = ("geckolib:item_",)

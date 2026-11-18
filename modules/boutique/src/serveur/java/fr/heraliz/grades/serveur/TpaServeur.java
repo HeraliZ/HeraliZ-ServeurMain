@@ -1,6 +1,8 @@
 package fr.heraliz.grades.serveur;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,6 +20,9 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -52,6 +57,12 @@ import java.util.UUID;
  * est dans la zone de la base de son clan sans le droit de clan « Accepter un /tpa dans la base » (CRac), revérifié au
  * moment de partir ; les deux joueurs sont prévenus et la demande reste en attente (sorti de la base, il peut encore
  * l'accepter dans ses 60 s). Fil serveur seulement.
+ * <p>18/11 (demande du propriétaire : « interdire /tpa et /tpaccept dans les grosses zones de loot, sinon les grosses équipes
+ * se téléportent en boucle ») : les zones sans téléportation sont les 14 zones à drapeau (villes, aérodrome, prison,
+ * radio… : {@code config/heralisz_clans/zones.json}, déjà refusées depuis le 21/10) ET les grosses zones de loot sans
+ * drapeau ({@code config/heraliz_grades/zones_sans_tp.json} : plateforme pétrolière, labo sous-marin…, posées par le staff
+ * avec {@code /tpa zone}). Dedans, on n'envoie pas de demande, on n'en accepte pas (elle reste en attente : sorti, on
+ * l'accepte encore dans ses 60 s) et personne n'y arrive ; revérifié au moment de partir. Le staff passe outre.
  */
 final class TpaServeur {
     private static final long EXPIRATION_MS = 60_000L;
@@ -96,6 +107,7 @@ final class TpaServeur {
     static void demarrer(Path dossier) {
         RECHARGES.clear();
         disque = new Recharges(dossier, "recharges_tp.json");
+        zonesParDefaut();
     }
 
     static void arreter() {
@@ -161,7 +173,8 @@ final class TpaServeur {
         if (!staff(p) && p.level().dimension() != Level.OVERWORLD) {
             return Component.translatableWithFallback("heraliz_grades.tpa.carte", "Le /tpa ne marche que sur la carte, vers un joueur sur la carte.");
         }
-        if (!staff(p) && dansVille(p)) return Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon.");
+        String zone = staff(p) ? null : zoneSansTp(p);
+        if (zone != null) return Component.translatableWithFallback("heraliz_grades.tpa.zone", "Pas de téléportation dans la zone « %s » : sors-en d'abord.", zone);
         return null;
     }
 
@@ -173,47 +186,167 @@ final class TpaServeur {
         if (cible.level().dimension() != Level.OVERWORLD) {
             return Component.translatableWithFallback("heraliz_grades.tpa.cible_carte", "%s n'est pas sur la carte.", cible.getDisplayName());
         }
-        if (dansVille(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_ville", "%s est dans une ville.", cible.getDisplayName());
+        String zone = zoneSansTp(cible);
+        if (zone != null) {
+            return Component.translatableWithFallback("heraliz_grades.tpa.cible_zone", "%1$s est dans la zone « %2$s » : pas de téléportation là-bas.",
+                    cible.getDisplayName(), zone);
+        }
         return null;
     }
 
-    // ------------------------------------------------------------------ villes (cercles de config/heralisz_clans/zones.json)
-    private record Ville(double x, double z, double r2) {
+    // ------------------------------------------------------------------ zones sans téléportation
+    /** Cercle « x z rayon » (nom affiché dans les messages). */
+    private record Cercle(String nom, double x, double z, double rayon) {
+        boolean contient(double px, double pz) {
+            double dx = px - x, dz = pz - z;
+            return dx * dx + dz * dz <= rayon * rayon;
+        }
     }
 
-    private static List<Ville> villes = List.of();
-    private static long dateVilles = -1;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    /** Villes : les 14 zones à drapeau ({@code config/heralisz_clans/zones.json}). */
+    private static List<Cercle> villes = List.of();
+    /** Grosses zones de loot sans drapeau ({@code config/heraliz_grades/zones_sans_tp.json}, 18/11). */
+    private static List<Cercle> zonesLoot = List.of();
+    private static long dateVilles = -1, dateZones = -1;
+    /**
+     * Zones de loot au premier démarrage (18/11) : centres pris des coordonnées données par le propriétaire (lecteur de la
+     * salle rouge de la plateforme, eaux du labo de heraliz_armory-common.toml), rayons larges ; à régler en jeu
+     * ({@code /tpa zone ajouter <rayon> <nom>} au centre, même nom : remplacée).
+     */
+    private static final List<Cercle> ZONES_DEFAUT = List.of(new Cercle("Plateforme pétrolière", -2146, 259, 150),
+            new Cercle("Labo sous-marin", 1980, 2025, 150));
 
-    /** Vrai si le joueur est sur la carte (overworld) dans le rayon d'une ville ; fichier relu quand il change. */
-    private static boolean dansVille(ServerPlayer p) {
-        if (p.level().dimension() != Level.OVERWORLD) return false;
-        Path f = FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
-        try {
-            // date relevée sur un fil à part (1.3.4, comme boutique.json et hdv.json) : un /tpa ne touche plus le disque
-            // que si le fichier a changé (0 : absent)
-            long d = DatesFichiers.date(f);
-            if (d != dateVilles) {
-                dateVilles = d;
-                List<Ville> l = new ArrayList<>();
-                if (d != 0) {
-                    try (Reader in = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
-                        for (JsonElement el : JsonParser.parseReader(in).getAsJsonArray()) {
-                            JsonObject v = el.getAsJsonObject();
-                            double r = v.get("rayon").getAsDouble();
-                            l.add(new Ville(v.get("x").getAsDouble(), v.get("z").getAsDouble(), r * r));
-                        }
-                    }
-                }
-                villes = l;
+    private static Path fichierVilles() {
+        return FMLPaths.CONFIGDIR.get().resolve("heralisz_clans").resolve("zones.json");
+    }
+
+    private static Path fichierZones() {
+        return FMLPaths.CONFIGDIR.get().resolve("heraliz_grades").resolve("zones_sans_tp.json");
+    }
+
+    /**
+     * Nom de la zone sans téléportation où est ce joueur (ville à drapeau ou grosse zone de loot), ou null ; seulement sur
+     * la carte (overworld). Fichiers relus quand ils changent (date relevée sur un fil à part, 1.3.4 : un /tpa ne touche le
+     * disque que si un fichier a changé).
+     */
+    private static String zoneSansTp(ServerPlayer p) {
+        if (p.level().dimension() != Level.OVERWORLD) return null;
+        relire();
+        for (Cercle c : villes) if (c.contient(p.getX(), p.getZ())) return c.nom();
+        for (Cercle c : zonesLoot) if (c.contient(p.getX(), p.getZ())) return c.nom();
+        return null;
+    }
+
+    /** Cercles d'un fichier (tableau d'objets « nom », « x », « z », « rayon ») ; illisible : aucun. */
+    private static List<Cercle> lire(Path f) {
+        List<Cercle> l = new ArrayList<>();
+        try (Reader in = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
+            for (JsonElement el : JsonParser.parseReader(in).getAsJsonArray()) {
+                JsonObject v = el.getAsJsonObject();
+                String nom = v.has("nom") ? v.get("nom").getAsString() : "?";
+                l.add(new Cercle(nom, v.get("x").getAsDouble(), v.get("z").getAsDouble(), v.get("rayon").getAsDouble()));
             }
         } catch (Exception e) {
-            villes = List.of();
+            return List.of();
         }
-        for (Ville v : villes) {
-            double dx = p.getX() - v.x(), dz = p.getZ() - v.z();
-            if (dx * dx + dz * dz <= v.r2()) return true;
+        return l;
+    }
+
+    /** Au démarrage : le fichier des zones de loot, s'il n'existe pas encore, est créé avec {@link #ZONES_DEFAUT}. */
+    private static void zonesParDefaut() {
+        Path f = fichierZones();
+        if (Files.exists(f)) return;
+        ecrireZones(ZONES_DEFAUT);
+    }
+
+    private static boolean ecrireZones(List<Cercle> l) {
+        JsonArray a = new JsonArray();
+        for (Cercle c : l) {
+            JsonObject o = new JsonObject();
+            o.addProperty("nom", c.nom());
+            o.addProperty("x", Math.round(c.x()));
+            o.addProperty("z", Math.round(c.z()));
+            o.addProperty("rayon", Math.round(c.rayon()));
+            a.add(o);
         }
-        return false;
+        Path f = fichierZones();
+        try {
+            Files.createDirectories(f.getParent());
+            Path tmp = f.resolveSibling(f.getFileName() + ".tmp");
+            Files.writeString(tmp, GSON.toJson(a), StandardCharsets.UTF_8);
+            Files.move(tmp, f, java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+        } catch (Exception e) {
+            return false;
+        }
+        zonesLoot = List.copyOf(l);
+        dateZones = DatesFichiers.date(f);   // relu (même contenu) quand le fil des dates verra la nouvelle date
+        return true;
+    }
+
+    /** {@code /tpa zone ajouter <rayon> <nom>} : grosse zone de loot centrée sur le staff (même nom : remplacée). */
+    private static int zoneAjouter(CommandSourceStack s, int rayon, String nom) {
+        Vec3 pos = s.getPosition();
+        relire();
+        List<Cercle> l = new ArrayList<>();
+        for (Cercle c : zonesLoot) if (!c.nom().equalsIgnoreCase(nom)) l.add(c);
+        l.add(new Cercle(nom, Math.round(pos.x), Math.round(pos.z), rayon));
+        if (!ecrireZones(l)) {
+            s.sendFailure(Component.translatableWithFallback("heraliz_grades.tpa.zones_erreur", "Impossible d'écrire %s.", fichierZones().toString()));
+            return 0;
+        }
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_grades.tpa.zone_ajoutee",
+                "Zone sans téléportation « %1$s » : %2$s %3$s, rayon %4$s.", nom, Math.round(pos.x), Math.round(pos.z), rayon), true);
+        return 1;
+    }
+
+    /** {@code /tpa zone retirer <nom>}. */
+    private static int zoneRetirer(CommandSourceStack s, String nom) {
+        relire();
+        List<Cercle> l = new ArrayList<>();
+        for (Cercle c : zonesLoot) if (!c.nom().equalsIgnoreCase(nom)) l.add(c);
+        if (l.size() == zonesLoot.size()) {
+            s.sendFailure(Component.translatableWithFallback("heraliz_grades.tpa.zone_inconnue", "Aucune zone de loot « %s » (les villes se règlent dans zones.json).", nom));
+            return 0;
+        }
+        if (!ecrireZones(l)) {
+            s.sendFailure(Component.translatableWithFallback("heraliz_grades.tpa.zones_erreur", "Impossible d'écrire %s.", fichierZones().toString()));
+            return 0;
+        }
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_grades.tpa.zone_retiree", "Zone sans téléportation « %s » retirée.", nom), true);
+        return 1;
+    }
+
+    /** {@code /tpa zone liste} : villes à drapeau, puis zones de loot. */
+    private static int zoneListe(CommandSourceStack s) {
+        relire();
+        s.sendSuccess(() -> Component.translatableWithFallback("heraliz_grades.tpa.zones_titre",
+                "Zones sans téléportation : %1$s ville(s) à drapeau, %2$s zone(s) de loot.", villes.size(), zonesLoot.size()), false);
+        for (Cercle c : villes) {
+            s.sendSuccess(() -> Component.literal(" · " + c.nom() + " : " + Math.round(c.x()) + " " + Math.round(c.z()) + ", r " + Math.round(c.rayon()))
+                    .withStyle(ChatFormatting.GRAY), false);
+        }
+        for (Cercle c : zonesLoot) {
+            s.sendSuccess(() -> Component.literal(" · " + c.nom() + " : " + Math.round(c.x()) + " " + Math.round(c.z()) + ", r " + Math.round(c.rayon()))
+                    .withStyle(ChatFormatting.GOLD), false);
+        }
+        return 1;
+    }
+
+    /** Relit les deux fichiers s'ils ont changé. */
+    private static void relire() {
+        Path fv = fichierVilles();
+        long dv = DatesFichiers.date(fv);
+        if (dv != dateVilles) {
+            dateVilles = dv;
+            villes = dv == 0 ? List.of() : lire(fv);
+        }
+        Path fz = fichierZones();
+        long dz = DatesFichiers.date(fz);
+        if (dz != dateZones) {
+            dateZones = dz;
+            zonesLoot = dz == 0 ? List.of() : lire(fz);
+        }
     }
 
     private static int refus(ServerPlayer p, Component c) {
@@ -277,7 +410,16 @@ final class TpaServeur {
         ServerPlayer p = cible.server.getPlayerList().getPlayer(d.demandeur());
         if (p == null) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.parti", "Ce joueur n'est plus connecté."));
         if (enMatch(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.match", "Impossible pendant un match."));
-        if (!staff(p) && dansVille(cible)) return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.ville", "Impossible dans une ville : sors de son rayon."));
+        // 18/11 : dans une zone sans téléportation (ville ou grosse zone de loot), on n'accepte pas ; la demande reste en
+        // attente (jusqu'à ses 60 s) : sorti de la zone, il l'accepte encore ; celui qui demandait le sait
+        String zone = staff(p) ? null : zoneSansTp(cible);
+        if (zone != null) {
+            RECUES.computeIfAbsent(cible.getUUID(), k -> new HashMap<>()).put(d.demandeur(), d);
+            refus(p, Component.translatableWithFallback("heraliz_grades.tpa.zone_demandeur",
+                    "%1$s est dans la zone « %2$s » : il doit en sortir pour accepter.", cible.getDisplayName(), zone));
+            return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.zone_accepter",
+                    "Pas de téléportation dans la zone « %s » : sors-en pour accepter (la demande attend encore).", zone));
+        }
         if (!staff(p) && cible.level().dimension() != Level.OVERWORLD) {
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.carte", "Le /tpa ne marche que sur la carte, vers un joueur sur la carte."));
         }
@@ -402,6 +544,17 @@ final class TpaServeur {
         CommandDispatcher<CommandSourceStack> d = e.getDispatcher();
         // 25/10 (tri des commandes) : une seule commande /tpa ; /tpa accepter et /tpa refuser deviennent /tpa accepter et /tpa refuser
         d.register(Commands.literal("tpa")
+                // 18/11 : grosses zones de loot sans téléportation (staff)
+                .then(Commands.literal("zone").requires(s -> s.hasPermission(2))
+                        .then(Commands.literal("liste").executes(c -> zoneListe(c.getSource())))
+                        .then(Commands.literal("ajouter")
+                                .then(Commands.argument("rayon", IntegerArgumentType.integer(10, 2000))
+                                        .then(Commands.argument("nom", StringArgumentType.greedyString())
+                                                .executes(c -> zoneAjouter(c.getSource(), IntegerArgumentType.getInteger(c, "rayon"),
+                                                        StringArgumentType.getString(c, "nom").trim())))))
+                        .then(Commands.literal("retirer")
+                                .then(Commands.argument("nom", StringArgumentType.greedyString())
+                                        .executes(c -> zoneRetirer(c.getSource(), StringArgumentType.getString(c, "nom").trim())))))
                 .then(Commands.literal("accepter")
                         .executes(c -> accepter(c.getSource().getPlayerOrException(), null))
                         .then(Commands.argument("joueur", EntityArgument.player())

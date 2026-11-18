@@ -30,6 +30,7 @@
   "heraliz_tactique.vitres.crochet": "Перехватчик HeraliZ на пути пуль TaCZ не отвечает (TaCZ изменился?): блоки, сквозь которые проходят пули (цельное стекло, окна мебели), не бьются.",
   "heraliz_tactique.vitres.desactive": "Настройка [vitres] casser = false: ничего не бьётся.",
   "heraliz_tactique.vitres.eau": "Окно заполнено водой: оно не бьётся (вода разлилась бы). Поставьте его заново без воды, чтобы оно билось.",
+  "heraliz_tactique.vitres.contre_eau": "Окно касается воды: оно не бьётся (вода вошла бы через пробоину).",
   "heraliz_tactique.vitres.protege": "Блок из списка blocs_proteges: он никогда не бьётся.",
   "heraliz_tactique.vitres.dimension": "Защищённое измерение (%s, dimensions_protegees): здесь ничего не бьётся.",
   "heraliz_tactique.vitres.zone": "В защищённой зоне (zones_protegees: %s %s, радиус %s): здесь ничего не разбивается.",

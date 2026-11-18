@@ -156,7 +156,7 @@ public class ServerConfig {
       VITRES_ZONES = builder.comment(
             "Zones de la carte (dimension minecraft:overworld) où le verre ne casse jamais, sur toute la hauteur : « x z rayon »",
             "(un cercle, en blocs). 17/11 : le labo sous-marin (une vitre cassée y ferait entrer l'eau).")
-         .defineList("zones_protegees", List.of(), o -> o instanceof String s && s.trim().matches("-?\\d+\\s+-?\\d+\\s+\\d+"));
+         .defineList("zones_protegees", Vitres.DEFAUT_ZONES, o -> o instanceof String s && s.trim().matches("-?\\d+\\s+-?\\d+\\s+\\d+"));
       VITRES_CLAIMS_CRAC = builder.comment("Le verre ne casse pas dans les claims de CRac (bases des groupes).")
          .define("proteger_claims_crac", true);
       VITRES_BLOCS_PROTEGES = builder.comment("Blocs de verre qui ne cassent jamais (identifiants, par exemple \"minecraft:tinted_glass\").")

@@ -56,6 +56,11 @@ public final class Vitres {
     * {@code cfm:vb_4} : fenêtre à croisée grise des meubles (posée sur la carte), {@code cfm:vb_5} : la même, vitre brisée.
     */
    public static final List<String> DEFAUT_BLOCS_EN_PLUS = List.of("cfm:vb_4 > cfm:vb_5");
+   /**
+    * Réglage par défaut : zones de la carte où le verre ne casse jamais, « x z rayon » (18/11 : le labo sous-marin aussi par
+    * défaut, si le fichier du serveur n'a pas la ligne).
+    */
+   public static final List<String> DEFAUT_ZONES = List.of("1980 2025 110");
 
    /** Décision du serveur : ce bloc (verre, ou bloc de la liste blocs_en_plus) casse-t-il ici sous les balles ? */
    @FunctionalInterface
