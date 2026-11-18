@@ -106,6 +106,8 @@
   "backpacked.title.customise_backpack": "Customize Backpack",
   "backpacked.toast.unlocked_backpack": "Unlocked Backpack",
   "backpacked.tooltip.remove_items": "You must empty the backpack before you can remove it or you can instead place it on a shelf",
+  "backpacked.tooltip.contenu": "Contents: %s/%s slots · %s items",
+  "backpacked.tooltip.vide": "Empty",
   "block.backpacked.acacia_backpack_shelf": "Acacia Backpack Shelf",
   "block.backpacked.birch_backpack_shelf": "Birch Backpack Shelf",
   "block.backpacked.cherry_backpack_shelf": "Cherry Backpack Shelf",

@@ -106,6 +106,8 @@
   "backpacked.title.customise_backpack": "Настройка рюкзака",
   "backpacked.toast.unlocked_backpack": "Рюкзак разблокирован",
   "backpacked.tooltip.remove_items": "Опустошите рюкзак, чтобы снять его, или поставьте его на полку",
+  "backpacked.tooltip.contenu": "Содержимое: %s/%s ячеек · предметов: %s",
+  "backpacked.tooltip.vide": "Пусто",
   "block.backpacked.acacia_backpack_shelf": "Рюкзак: Акациевая полка",
   "block.backpacked.birch_backpack_shelf": "Рюкзак: Берёзовая полка",
   "block.backpacked.cherry_backpack_shelf": "Рюкзак: Вишнёвая полка",

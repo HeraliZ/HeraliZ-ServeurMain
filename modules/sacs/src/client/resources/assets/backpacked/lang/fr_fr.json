@@ -106,6 +106,8 @@
   "backpacked.title.customise_backpack": "Personnaliser le sac à dos",
   "backpacked.toast.unlocked_backpack": "Sac à dos débloqué",
   "backpacked.tooltip.remove_items": "Vide le sac à dos avant de le retirer, ou pose-le plutôt sur une étagère",
+  "backpacked.tooltip.contenu": "Contenu : %s/%s cases · %s objets",
+  "backpacked.tooltip.vide": "Vide",
   "block.backpacked.acacia_backpack_shelf": "Étagère à sac à dos en acacia",
   "block.backpacked.birch_backpack_shelf": "Étagère à sac à dos en bouleau",
   "block.backpacked.cherry_backpack_shelf": "Étagère à sac à dos en cerisier",
