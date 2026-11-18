@@ -254,6 +254,11 @@ public final class ServeurQuetes implements Partie {
                 Accueil.visiteSuivante(p);
                 return;
             }
+            case 6 -> {
+                // « Quitter le tutoriel » de la fenêtre « Appeler le staff » (18/11)
+                Accueil.quitterTuto(p);
+                return;
+            }
             default -> {
                 return;
             }

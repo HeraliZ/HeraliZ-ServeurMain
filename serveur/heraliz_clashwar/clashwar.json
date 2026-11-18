@@ -5,7 +5,7 @@
     "SUNDAY"
   ],
   "heure": "20:30",
-  "fuseau": "",
+  "fuseau": "Europe/Paris",
   "rotation": [
     "2v2",
     "3v3",

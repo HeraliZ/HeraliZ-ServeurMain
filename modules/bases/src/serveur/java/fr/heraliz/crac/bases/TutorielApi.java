@@ -58,6 +58,17 @@ public final class TutorielApi {
         return false;
     }
 
+    /**
+     * Le joueur quitte le tutoriel (18/11, bouton « Quitter le tutoriel » de HeraliZ Quêtes) : compté comme fait, cabane
+     * d'essai effacée, kit repris, inventaire rendu, retour au spawn. False s'il était déjà fini ou sans tutoriel ici.
+     */
+    public static boolean quitter(ServerPlayer p) {
+        if (etat(p) < 0) {
+            return false;
+        }
+        return Tutoriel.quitter(p);
+    }
+
     /** Lance le tutoriel (titres, kit, envoi dans le monde du tutoriel) d'un joueur qui ne l'a pas fait ; false sinon. */
     public static boolean lancer(ServerPlayer p) {
         if (etat(p) != 0) {

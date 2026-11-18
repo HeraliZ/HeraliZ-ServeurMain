@@ -458,12 +458,12 @@
   "heraliz_quetes.tuto.aide.10": "Здесь ничего писать не нужно: в обучении дома нет. На настоящей базе клана напиши /sethome <имя> (T открывает чат); потом со спавна /home вернёт тебя туда.",
   "heraliz_quetes.tuto.radio.fin": "Хорошая работа. Посмотри на свою базу. Я добавил тамбур перед входом: две двери вместо одной, и пока обе открыты, никто не пройдёт. %s дн. никто не сможет её рейдить.",
   "heraliz_quetes.tuto.radio.fin2": "Потом напасть сможет любой. Во время атаки база попадает в raid block: ни строить, ни чинить нельзя. Всегда держи доски в Claim Block.",
-  "heraliz_quetes.tuto.radio.fin_sans_sas": "Хорошая работа. Это была пробная хижина: она исчезнет. Настоящая база клана ставится на карте, подальше от городов и лута; %s дн. никто не сможет её рейдить.",
+  "heraliz_quetes.tuto.radio.fin_sans_sas": "Отлично! Эта хижина была пробной, она исчезнет. Всё для настоящей базы ждёт в сундуке клана (/clan coffre); %s дн. никто не сможет её рейдить.",
   "heraliz_quetes.tuto.radio.fin_np": "Хорошая работа. Посмотри на свою базу. Я добавил тамбур перед входом: две двери вместо одной, и пока обе открыты, никто не пройдёт.",
-  "heraliz_quetes.tuto.radio.fin_sans_sas_np": "Хорошая работа. Это была пробная хижина: она исчезнет. Настоящая база клана ставится на карте, подальше от городов и лута.",
+  "heraliz_quetes.tuto.radio.fin_sans_sas_np": "Отлично! Эта хижина была пробной, она исчезнет. Всё для настоящей базы ждёт в сундуке клана (/clan coffre): ставь её на карте, подальше от городов.",
   "heraliz_quetes.tuto.radio.fin2_np": "Напасть может любой, как только она построена. Во время атаки база попадает в raid block: ни строить, ни чинить нельзя. Всегда держи доски в Claim Block.",
   "heraliz_quetes.tuto.radio.fin_coffre": "У твоего клана есть общий сундук. Я положил туда всё для начала базы: чертёж, молоток, шкаф, хворост и доски. Открой его на спавне командой /clan coffre или в меню клана (K), вкладка «Банк».",
-  "heraliz_quetes.tuto.radio.fin3": "Я верну тебя на спавн. Когда база клана будет поставлена, поставь в ней дом командой /sethome <имя>: со спавна /home вернёт тебя туда. Приходи ко мне на спавн за заданиями.",
+  "heraliz_quetes.tuto.radio.fin3": "И последнее: на настоящей базе напиши /sethome <имя>. Со спавна /home вернёт тебя туда. Возвращайся ко мне за заданиями.",
   "heraliz_quetes.tuto.spawn": "Вернись на спавн (/spawn): Варга хочет тебя кое с кем познакомить",
   "heraliz_quetes.dialogue.infos_base": "Сведения о базах (цены, ремонт, рейды)",
   "heraliz_quetes.tuto.rappel_spawn": "Набери /spawn: я жду тебя на спавне, хочу тебя ещё кое с кем познакомить.",
@@ -474,6 +474,7 @@
   "heraliz_quetes.tuto.radio_etape": "Этап %s/%s",
   "heraliz_quetes.tuto.radio_fini": "Готово",
   "heraliz_quetes.tuto.notif_fin": "Обучение завершено: командир Варга ждёт тебя на спавне с заданиями",
+  "heraliz_quetes.tuto.notif_quitte": "Обучение пропущено · Варга ждёт тебя на спавне с заданиями",
   "key.heraliz_quetes.journalieres": "Ежедневные задания",
   "gui.heraliz_quetes.jour.titre": "Задания дня",
   "gui.heraliz_quetes.jour.renouvellement": "Обновление в полночь  ·  через %s",
@@ -584,5 +585,7 @@
   "gui.heraliz_quetes.aide_staff.aide": "Чат вернётся в конце обучения. Проблема? Напиши здесь: её получат персонал в игре и Discord персонала.",
   "gui.heraliz_quetes.aide_staff.invite": "Твоя проблема…",
   "gui.heraliz_quetes.aide_staff.envoyer": "Отправить",
-  "gui.heraliz_quetes.aide_staff.annuler": "Отмена"
+  "gui.heraliz_quetes.aide_staff.annuler": "Отмена",
+  "gui.heraliz_quetes.aide_staff.quitter": "Выйти",
+  "gui.heraliz_quetes.aide_staff.quitter_sur": "Точно выйти?"
 }

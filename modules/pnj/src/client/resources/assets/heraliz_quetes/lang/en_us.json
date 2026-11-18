@@ -458,12 +458,12 @@
   "heraliz_quetes.tuto.aide.10": "Nothing to type here: no home in the tutorial. In your clan's real base, type /sethome <name> (T opens the chat); then, from spawn, /home brings you back there.",
   "heraliz_quetes.tuto.radio.fin": "Nice work. Look at it, your base. I added an airlock in front of the entrance: two doors to break instead of one, and while both are open, nobody gets through. For %s days, nobody can raid it.",
   "heraliz_quetes.tuto.radio.fin2": "After that, anyone can attack it. During an attack, your base goes into raid block: no more building or repairing. Always keep planks in the Claim Block.",
-  "heraliz_quetes.tuto.radio.fin_sans_sas": "Nice work. That was a practice cabin: it will disappear. Your clan's real base goes on the map, away from towns and loot; for %s days, nobody will be able to raid it.",
+  "heraliz_quetes.tuto.radio.fin_sans_sas": "Well done! This cabin was only a test, it will disappear. The gear for your real base is waiting in your clan chest (/clan coffre); nobody can raid it for %s days.",
   "heraliz_quetes.tuto.radio.fin_np": "Nice work. Look at it, your base. I added an airlock in front of the entrance: two doors to break instead of one, and while both are open, nobody gets through.",
-  "heraliz_quetes.tuto.radio.fin_sans_sas_np": "Nice work. That was a practice cabin: it will disappear. Your clan's real base goes on the map, away from towns and loot.",
+  "heraliz_quetes.tuto.radio.fin_sans_sas_np": "Well done! This cabin was only a test, it will disappear. The gear for your real base is waiting in your clan chest (/clan coffre): build it on the map, away from towns.",
   "heraliz_quetes.tuto.radio.fin2_np": "Anyone can attack it as soon as it is built. During an attack, your base goes into raid block: no more building or repairing. Always keep planks in the Claim Block.",
   "heraliz_quetes.tuto.radio.fin_coffre": "Your clan has a chest, shared by its members. I've put the gear for a starter base in it: plan, hammer, cupboard, twigs and planks. Open it at spawn with /clan coffre, or in the clan menu (K), Bank tab.",
-  "heraliz_quetes.tuto.radio.fin3": "I'm taking you back to spawn. Once your clan's base is placed, set your home inside it with /sethome <name>: from spawn, /home will bring you there. Come see me at spawn for missions.",
+  "heraliz_quetes.tuto.radio.fin3": "One last thing: in your real base, type /sethome <name>. From spawn, /home will bring you back there. Come back to me for missions.",
   "heraliz_quetes.tuto.spawn": "Go back to spawn (/spawn): Varga wants to introduce you to someone",
   "heraliz_quetes.dialogue.infos_base": "Base info (costs, repairs, raids)",
   "heraliz_quetes.tuto.rappel_spawn": "Type /spawn: I'm waiting for you at spawn, there's someone else I want you to meet.",
@@ -474,6 +474,7 @@
   "heraliz_quetes.tuto.radio_etape": "Step %s/%s",
   "heraliz_quetes.tuto.radio_fini": "Done",
   "heraliz_quetes.tuto.notif_fin": "Tutorial complete: Commander Varga is waiting for you at spawn with missions",
+  "heraliz_quetes.tuto.notif_quitte": "Tutorial left · Varga is waiting for you at spawn with missions",
   "key.heraliz_quetes.journalieres": "Daily quests",
   "gui.heraliz_quetes.jour.titre": "Daily quests",
   "gui.heraliz_quetes.jour.renouvellement": "Resets at midnight  ·  in %s",
@@ -584,5 +585,7 @@
   "gui.heraliz_quetes.aide_staff.aide": "The chat comes back at the end of the tutorial. A problem? Write it here: the online staff and the staff Discord get it.",
   "gui.heraliz_quetes.aide_staff.invite": "Your problem…",
   "gui.heraliz_quetes.aide_staff.envoyer": "Send",
-  "gui.heraliz_quetes.aide_staff.annuler": "Cancel"
+  "gui.heraliz_quetes.aide_staff.annuler": "Cancel",
+  "gui.heraliz_quetes.aide_staff.quitter": "Leave tutorial",
+  "gui.heraliz_quetes.aide_staff.quitter_sur": "Sure? Leave"
 }

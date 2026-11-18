@@ -211,3 +211,17 @@ balles, tête, sniper, armure). Récolte : `serveur/config/heraliz_recolte/recol
       loin ; doré pour la tête.
 - [ ] Recycleur : « Chance de chaque pièce » (chaque pièce est tirée à part, on peut en avoir plusieurs à la fois) et
       « Aucune pièce : 23 % » ; les chiffres ne s'additionnent donc pas à 100 %.
+
+## 11. Tutoriel de Varga et heure du serveur (18/11, dans la nuit)
+
+- [ ] Pendant la visite du Guide ou le tutoriel des bases, touche T : la fenêtre « Appeler le staff » a un bouton rouge
+      « Quitter le tuto ». Premier clic : il devient « Sûr ? Quitter » ; second clic : retour au spawn, kit repris,
+      inventaire rendu, chat revenu, bandeau « Tutoriel quitté », Varga donne ses missions. Le tutoriel ne revient pas
+      (le staff peut le relancer avec `/tuto rejouer <joueur>`).
+- [ ] Tutoriel : démolir une fondation qui porte des murs : la fondation ET les murs tombés sont rendus (avant : la
+      fondation seule, on restait bloqué).
+- [ ] Fin du tutoriel (normale ou `/tuto finir`) : Varga ne dit plus que 2 messages courts, à 8 s d'écart (la cabane
+      disparaît, le matériel est dans le coffre du clan ; puis `/sethome <nom>` dans la vraie base, `/home` du spawn).
+- [ ] ClashWar : les heures des messages sont à l'heure française (avant : une heure de retard). Le tournoi part
+      maintenant à 20 h 30 heure française (avant : 21 h 30 en hiver). Quêtes de clan : le tirage du jour aussi à
+      l'heure française.

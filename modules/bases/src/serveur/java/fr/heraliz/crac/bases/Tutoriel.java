@@ -175,6 +175,40 @@ public final class Tutoriel {
      * du clan, sur la carte), ce qui reste du kit est repris, et le joueur revient au spawn.
      */
     static void terminer(ServerPlayer p) {
+        nettoyer(p);
+        T.chat(p, T.t("crac.tuto.termine", "[Tuto] Fini ! La cabane d'essai a disparu. Le matériel de ta première base t'attend dans le coffre du clan (/clan coffre) : pose-la sur la carte, loin des villes et du loot."),
+            ChatFormatting.GREEN);
+        Crac.LOGGER.info("[CRac] tutoriel : cabane d'essai de {} effacée", p.getGameProfile().getName());
+    }
+
+    /**
+     * « Quitter le tutoriel » (18/11, demande du propriétaire : « pouvoir le quitter si on ne veut pas faire le tuto », bouton
+     * de la fenêtre « Appeler le staff » de HeraliZ Quêtes) : le joueur ne le fera pas. Compté comme fait (étape FINI : il ne
+     * repart pas tout seul, les missions de Varga s'ouvrent), puis comme à la fin : cabane d'essai effacée, kit repris,
+     * inventaire mis de côté rendu, retour au spawn (HeraliZ Quêtes le dit par un bandeau). Le staff peut le relancer
+     * ({@code /tuto rejouer}). Rien (false) si le tutoriel est déjà fini.
+     */
+    static boolean quitter(ServerPlayer p) {
+        BasesDonnees d = BasesDonnees.get(p.server);
+        BasesDonnees.Joueur j = d.joueur(p.getUUID());
+        if (j.etape == BasesDonnees.Etape.FINI) {
+            return false;
+        }
+        j.etape = BasesDonnees.Etape.FINI;
+        j.batiment = -1L;
+        j.arete = -1;
+        j.finEnAttente = false;
+        j.tutoClan = false;
+        d.marquer();
+        oublier(p.getUUID());
+        effacerGuide(p);
+        nettoyer(p);
+        Crac.LOGGER.info("[CRac] tutoriel quitté par {}", p.getGameProfile().getName());
+        return true;
+    }
+
+    /** Fin du tutoriel, fini ou quitté : cabane d'essai effacée, kit repris, inventaire rendu, retour au spawn. */
+    private static void nettoyer(ServerPlayer p) {
         FINS.remove(p.getUUID());
         BasesDonnees dd = BasesDonnees.get(p.server);
         BasesDonnees.Joueur jj = dd.joueur(p.getUUID());
@@ -201,9 +235,6 @@ public final class Tutoriel {
                 p.teleportTo(o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);
             }
         }
-        T.chat(p, T.t("crac.tuto.termine", "[Tuto] Fini ! La cabane d'essai a disparu. Le matériel de ta première base t'attend dans le coffre du clan (/clan coffre) : pose-la sur la carte, loin des villes et du loot."),
-            ChatFormatting.GREEN);
-        Crac.LOGGER.info("[CRac] tutoriel : cabane d'essai de {} effacée", p.getGameProfile().getName());
     }
 
     /**

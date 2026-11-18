@@ -4,6 +4,7 @@ import fr.heraliz.quetes.client.kit.Echelle;
 import fr.heraliz.quetes.client.kit.HzButton;
 import fr.heraliz.quetes.client.kit.SonsUi;
 import fr.heraliz.quetes.client.kit.Ui;
+import fr.heraliz.quetes.reseau.Reseau;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,11 +20,17 @@ import java.util.List;
  * pouvoir appeler le staff ») : le chat reste caché ({@link ChatTutoriel}) ; T ou / ouvrent cette petite fenêtre à la
  * place. On écrit son problème, Entrée ou « Envoyer » joue {@code /aide <message>} (HeraliZ Grades : staff connecté et
  * salon Discord du staff, une fois par minute au plus). Aucune autre commande ne peut partir d'ici.
+ * <p>18/11 (demande du propriétaire : « pouvoir quitter le tuto si on ne veut pas le faire ») : « Quitter le tuto », en
+ * rouge à gauche ; le premier clic demande de confirmer (le bouton le dit), le second l'envoie au serveur (paquet Action 6 :
+ * visite du Guide et tutoriel des bases arrêtés, inventaire rendu, retour au spawn).</p>
  */
 final class EcranAideStaff extends Screen {
     private static final int MAX = 160, PW = 280, PH = 150;
     private String texte = "";
     private int px, py;
+    /** Premier clic sur « Quitter le tuto » fait : le suivant l'envoie. */
+    private boolean confirmer;
+    private HzButton quitter;
 
     private EcranAideStaff() {
         super(Component.translatable("gui.heraliz_quetes.aide_staff.titre"));
@@ -40,11 +47,26 @@ final class EcranAideStaff extends Screen {
         Echelle.forcer(this, PW, PH);
         px = (width - PW) / 2;
         py = (height - PH) / 2;
-        int bw = 96, y = py + PH - 32;
-        addRenderableWidget(new HzButton(px + PW / 2 - bw - 4, y, bw, 20, Component.translatable("gui.heraliz_quetes.aide_staff.annuler"), Ui.MUTED,
+        int bw = 82, y = py + PH - 32;
+        quitter = addRenderableWidget(new HzButton(px + 10, y, bw, 20, Component.translatable(confirmer
+                ? "gui.heraliz_quetes.aide_staff.quitter_sur" : "gui.heraliz_quetes.aide_staff.quitter"), Ui.MUTED, this::quitter).danger());
+        addRenderableWidget(new HzButton(px + PW - 10 - 2 * bw - 6, y, bw, 20, Component.translatable("gui.heraliz_quetes.aide_staff.annuler"), Ui.MUTED,
                 this::onClose));
-        addRenderableWidget(new HzButton(px + PW / 2 + 4, y, bw, 20, Component.translatable("gui.heraliz_quetes.aide_staff.envoyer"), Ui.OK,
+        addRenderableWidget(new HzButton(px + PW - 10 - bw, y, bw, 20, Component.translatable("gui.heraliz_quetes.aide_staff.envoyer"), Ui.OK,
                 this::envoyer).look(HzButton.Look.PRIMARY));
+    }
+
+    /** « Quitter le tuto » : le premier clic demande de confirmer (le bouton le dit), le second l'envoie au serveur. */
+    private void quitter() {
+        if (!confirmer) {
+            confirmer = true;
+            quitter.setMessage(Component.translatable("gui.heraliz_quetes.aide_staff.quitter_sur"));
+            SonsUi.clic(0.6F);
+            return;
+        }
+        Reseau.CANAL.sendToServer(new Reseau.Action(6, ""));
+        SonsUi.clic(0.8F);
+        onClose();
     }
 
     private void envoyer() {

@@ -34,15 +34,17 @@ import java.util.UUID;
 final class Accueil {
     /** Le PNJ qui accueille les nouveaux et guide le tutoriel des bases. */
     static final String PNJ = "varga";
-    /** Secondes entre les mots de la fin de Varga (le premier pendant le tour de la base par la caméra). */
-    private static final int FIN_ECART = 16;
     /**
-     * Les mots de la fin qui suivent le premier : raids et défenses, /home, /spawn et missions, puis (04/11, demande du
-     * propriétaire) le coffre du clan et le matériel de la première base, en dernier : le joueur est déjà au spawn (CRac l'y
-     * renvoie 20 s après la fin) et le chat revient juste après ce message, il peut taper /clan coffre.
+     * Secondes entre les mots de la fin de Varga (le premier pendant le tour de la base par la caméra). 18/11 (retour du
+     * propriétaire : « à la fin du tuto, il parle 100 ans ») : 8 au lieu de 16.
      */
-    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin2", "heraliz_quetes.tuto.radio.fin3",
-            "heraliz_quetes.tuto.radio.fin_coffre"};
+    private static final int FIN_ECART = 8;
+    /**
+     * Les mots de la fin qui suivent le premier. 18/11 (même retour) : un seul, court : /sethome dans la vraie base, /home
+     * du spawn, et les missions (avant : raids et défenses, /home, puis le coffre du clan, 48 s de radio et de chat caché) ;
+     * le premier dit déjà que la cabane disparaît et que le matériel de la vraie base est dans le coffre du clan.
+     */
+    private static final String[] FINS = {"heraliz_quetes.tuto.radio.fin3"};
 
     private record Etat(int tuto, int etape, boolean intro) {
     }
@@ -169,6 +171,34 @@ final class Accueil {
     }
 
     /**
+     * « Quitter le tutoriel » (18/11, demande du propriétaire : « pouvoir quitter le tuto si on ne veut pas le faire, dans la
+     * fenêtre de la touche T ») : la visite du Guide s'arrête (notée faite, caméra rendue), le tutoriel des bases aussi
+     * (CRac : compté comme fait, cabane d'essai effacée, kit repris, inventaire rendu, retour au spawn), sans les mots de
+     * fin du Guide ni de Varga ; la radio se range, le chat revient, les missions de Varga s'ouvrent. Le staff peut relancer
+     * le tutoriel ({@code /tuto rejouer}). Rien si ni la visite ni le tutoriel ne sont en cours.
+     */
+    static void quitterTuto(ServerPlayer p) {
+        UUID u = p.getUUID();
+        boolean visite = VISITES.remove(u) != null;
+        if (visite) {
+            persiste(p).putBoolean(VISITE_FAITE, true);
+            Reseau.envoyer(p, new Reseau.Presentation(p.getX(), p.getY(), p.getZ(), 0F, 0, Float.NaN));
+        }
+        int tuto = Ponts.tutoEtat(p);
+        boolean quitte = tuto >= 0 && tuto <= 2 && Ponts.tutoQuitter(p);
+        if (!visite && !quitte) return;
+        FIN.remove(u);
+        SUR_ETAPE.remove(u);
+        int apres = Ponts.tutoEtat(p);
+        // le tutoriel passe à « fait » sans les mots de la fin (secondeTuto les dit quand on passe d'« en cours » à « fait »)
+        DERNIER.put(u, new Etat(apres, 0, false));
+        Reseau.envoyer(p, new Reseau.Radio(Texte.VIDE, new CompoundTag(), "", false, 0, Ponts.tutoEtapes(), Texte.VIDE));
+        chat(p, apres);
+        Moteur.suiviBientot(p);
+        Moteur.notif(p, Texte.cle("heraliz_quetes.tuto.notif_quitte"), 0x8F95A0);
+    }
+
+    /**
      * Espace pendant la visite du Guide (04/11, demande du propriétaire : « quand on appuie sur Espace, ça passe à la
      * présentation suivante et non un skip complet ») : l'étape suivante tout de suite ; après la dernière, la visite est
      * finie comme à la fin normale (caméra rendue au joueur tout de suite).
@@ -278,7 +308,7 @@ final class Accueil {
             if (fin.secondes() > 1) {
                 FIN.put(p.getUUID(), new Suite(fin.rang(), fin.secondes() - 1));
             } else {
-                radio(p, 0, fin.rang() == 0 && Ponts.tutoJours() <= 0 ? FINS[0] + "_np" : FINS[fin.rang()]);
+                radio(p, 0, FINS[fin.rang()]);
                 if (fin.rang() + 1 < FINS.length) {
                     FIN.put(p.getUUID(), new Suite(fin.rang() + 1, FIN_ECART));
                 } else {

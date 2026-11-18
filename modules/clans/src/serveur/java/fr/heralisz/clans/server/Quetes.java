@@ -220,7 +220,8 @@ public final class Quetes {
 
     // ------------------------------------------------------------------ horaires
     private static ZonedDateTime maintenant() {
-        return ZonedDateTime.now(ZoneId.systemDefault());
+        // 18/11 : heure française (le serveur est en UTC : le tirage partait une heure trop tard l'hiver)
+        return ZonedDateTime.now(XpClan.PARIS);
     }
 
     /** Prochain tirage quotidien : aujourd'hui a l'heure configuree si elle n'est pas passee, sinon demain. */

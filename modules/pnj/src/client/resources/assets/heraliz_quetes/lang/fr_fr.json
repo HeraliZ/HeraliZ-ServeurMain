@@ -458,12 +458,12 @@
   "heraliz_quetes.tuto.aide.10": "Rien à taper ici : pas de home dans le tutoriel. Dans la vraie base de ton clan, tape /sethome <nom> (T pour ouvrir le chat) ; ensuite, du spawn, /home t'y ramène.",
   "heraliz_quetes.tuto.radio.fin": "Beau travail. Regarde-la, ta base. Je t'ai ajouté un sas devant l'entrée : deux portes à forcer au lieu d'une, et tant que les deux sont ouvertes, personne ne passe. Pendant %s jours, personne ne peut la raider.",
   "heraliz_quetes.tuto.radio.fin2": "Après, n'importe qui pourra l'attaquer. Pendant une attaque, ta base passe en raid block : plus moyen de construire ni de réparer. Garde toujours des planches dans le Claim Block.",
-  "heraliz_quetes.tuto.radio.fin_sans_sas": "Beau travail. C'était une cabane d'essai : elle va disparaître. La vraie base de ton clan se pose sur la carte, loin des villes et du loot ; pendant %s jours, personne ne pourra la raider.",
+  "heraliz_quetes.tuto.radio.fin_sans_sas": "Bravo ! Cette cabane n'était qu'un essai, elle va disparaître. Le matériel de ta vraie base t'attend dans le coffre du clan (/clan coffre) ; personne ne pourra la raider pendant %s jours.",
   "heraliz_quetes.tuto.radio.fin_np": "Beau travail. Regarde-la, ta base. Je t'ai ajouté un sas devant l'entrée : deux portes à forcer au lieu d'une, et tant que les deux sont ouvertes, personne ne passe.",
-  "heraliz_quetes.tuto.radio.fin_sans_sas_np": "Beau travail. C'était une cabane d'essai : elle va disparaître. La vraie base de ton clan se pose sur la carte, loin des villes et du loot.",
+  "heraliz_quetes.tuto.radio.fin_sans_sas_np": "Bravo ! Cette cabane n'était qu'un essai, elle va disparaître. Le matériel de ta vraie base t'attend dans le coffre du clan (/clan coffre) : pose-la sur la carte, loin des villes.",
   "heraliz_quetes.tuto.radio.fin2_np": "N'importe qui peut l'attaquer, dès qu'elle est posée. Pendant une attaque, ta base passe en raid block : plus moyen de construire ni de réparer. Garde toujours des planches dans le Claim Block.",
   "heraliz_quetes.tuto.radio.fin_coffre": "Ton clan a un coffre, partagé entre ses membres. Je t'y ai rangé le matériel pour un début de base : plan, marteau, armoire, brindilles et planches. Ouvre-le au spawn avec /clan coffre, ou menu du clan (K), onglet Banque.",
-  "heraliz_quetes.tuto.radio.fin3": "Je te ramène au spawn. Une fois la base de ton clan posée, pose ton home dedans avec /sethome <nom> : du spawn, /home t'y ramènera. Viens me voir au spawn pour des missions.",
+  "heraliz_quetes.tuto.radio.fin3": "Dernière chose : dans ta vraie base, tape /sethome <nom>. Du spawn, /home t'y ramènera. Reviens me voir pour des missions.",
   "heraliz_quetes.tuto.spawn": "Retourne au spawn (/spawn) : Varga veut te présenter quelqu'un",
   "heraliz_quetes.dialogue.infos_base": "Infos sur les bases (coûts, réparation, raids)",
   "heraliz_quetes.tuto.rappel_spawn": "Tape /spawn : je t'attends au spawn, j'ai encore quelqu'un à te présenter.",
@@ -474,6 +474,7 @@
   "heraliz_quetes.tuto.radio_etape": "Étape %s/%s",
   "heraliz_quetes.tuto.radio_fini": "Terminé",
   "heraliz_quetes.tuto.notif_fin": "Tutoriel terminé : le Commandant Varga t'attend au spawn pour tes missions",
+  "heraliz_quetes.tuto.notif_quitte": "Tutoriel quitté · Varga t'attend au spawn pour tes missions",
   "key.heraliz_quetes.journalieres": "Quêtes du jour",
   "gui.heraliz_quetes.jour.titre": "Quêtes du jour",
   "gui.heraliz_quetes.jour.renouvellement": "Renouvellement à minuit  ·  dans %s",
@@ -584,5 +585,7 @@
   "gui.heraliz_quetes.aide_staff.aide": "Le chat revient à la fin du tutoriel. Un souci ? Écris-le ici : le staff connecté et le Discord du staff le reçoivent.",
   "gui.heraliz_quetes.aide_staff.invite": "Ton problème…",
   "gui.heraliz_quetes.aide_staff.envoyer": "Envoyer",
-  "gui.heraliz_quetes.aide_staff.annuler": "Annuler"
+  "gui.heraliz_quetes.aide_staff.annuler": "Annuler",
+  "gui.heraliz_quetes.aide_staff.quitter": "Quitter le tuto",
+  "gui.heraliz_quetes.aide_staff.quitter_sur": "Sûr ? Quitter"
 }

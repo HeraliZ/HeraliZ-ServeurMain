@@ -420,7 +420,7 @@ public final class EconomieCommands {
             return 1;
         }
         repondre(ctx.getSource(), () -> msg("admin.journal_titre", nom(affiche), l.size()).withStyle(ChatFormatting.BOLD), false);
-        ZoneId zone = ZoneId.systemDefault();
+        ZoneId zone = ZoneId.of("Europe/Paris");   // 18/11 : heure française (le serveur est en UTC)
         for (Transaction t : l) {
             String date = DATE.format(Instant.ofEpochMilli(t.quand()).atZone(zone));
             String motif = t.motif().isEmpty() ? "—" : t.motif();

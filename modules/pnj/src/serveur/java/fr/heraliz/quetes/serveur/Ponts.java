@@ -527,7 +527,7 @@ final class Ponts {
     }
 
     // ------------------------------------------------------------------ tutoriel des bases (CRac)
-    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours, tutoSas, tutoFiche;
+    private static Method tutoEtat, tutoProgression, tutoLancer, tutoEtapes, tutoJours, tutoSas, tutoFiche, tutoQuitter;
     private static boolean tutoAbsent;
 
     private static boolean tuto() {
@@ -553,6 +553,11 @@ final class Ponts {
                 tutoSas = c.getMethod("sas", ServerPlayer.class);
             } catch (NoSuchMethodException ancien) {
                 tutoSas = null;   // avant CRac 1.8.4 : pas de sas posé par Varga
+            }
+            try {
+                tutoQuitter = c.getMethod("quitter", ServerPlayer.class);
+            } catch (NoSuchMethodException ancien) {
+                tutoQuitter = null;   // avant CRac 1.38.4 : le joueur ne peut pas quitter le tutoriel
             }
             return true;
         } catch (Throwable t) {
@@ -602,6 +607,17 @@ final class Ponts {
             hdvOuvrir.invoke(null, p);
         } catch (ReflectiveOperationException | LinkageError e) {
             LOG.warn("[heraliz_quetes] hôtel des ventes indisponible ({})", e.toString());
+        }
+    }
+
+    /** Le joueur quitte le tutoriel des bases de CRac (18/11) ; false si impossible ou déjà fini. */
+    static boolean tutoQuitter(ServerPlayer p) {
+        if (!tuto() || tutoQuitter == null) return false;
+        try {
+            return (boolean) tutoQuitter.invoke(null, p);
+        } catch (Throwable t) {
+            LOG.warn("[heraliz_quetes] tutoriel des bases : sortie impossible ({})", t.toString());
+            return false;
         }
     }
 

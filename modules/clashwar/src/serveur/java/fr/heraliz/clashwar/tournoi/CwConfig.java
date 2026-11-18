@@ -34,7 +34,10 @@ public final class CwConfig {
     public List<DayOfWeek> jours = List.of(DayOfWeek.WEDNESDAY, DayOfWeek.SUNDAY);
     /** Heure de depart (fin des inscriptions). */
     public int heure = 20, minute = 30;
-    /** Fuseau ("Europe/Paris"), vide = celui de la machine. */
+    /**
+     * Fuseau ("Europe/Paris"). 18/11 (retour du propriétaire : « le message du ClashWar dit 23h16 alors qu'il est 00h16 ») :
+     * vide = heure française (avant : celle de la machine, en UTC sur le serveur : une heure de retard l'hiver, deux l'été).
+     */
     public String fuseau = "";
     /** Rotation des formats d'une edition a l'autre. */
     public List<Format> rotation = List.of(Format.DEUX_DEUX, Format.TROIS_TROIS, Format.QUATRE_QUATRE, Format.UN_UN);
@@ -79,6 +82,8 @@ public final class CwConfig {
         return courant;
     }
 
+    private static final ZoneId PARIS = ZoneId.of("Europe/Paris");
+
     public ZoneId zone() {
         if (fuseau != null && !fuseau.isBlank()) {
             try {
@@ -87,7 +92,7 @@ public final class CwConfig {
                 HeralizClashWar.LOG.warn("[clashwar] fuseau inconnu {}", fuseau);
             }
         }
-        return ZoneId.systemDefault();
+        return PARIS;
     }
 
     /** Limite de la classe pour une equipe (Integer.MAX_VALUE = aucune). */

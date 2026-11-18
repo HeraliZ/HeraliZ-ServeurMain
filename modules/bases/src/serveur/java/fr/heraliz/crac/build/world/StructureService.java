@@ -706,10 +706,18 @@ public final class StructureService {
         removeBatch(level, store, List.of(piece), cause, 0);
     }
 
+    /**
+     * HeraliZ (18/11) : pièces retirées par la démolition en cours, elle et celles qui tombent avec elle (null : pas de
+     * relevé). Fil du serveur seulement.
+     */
+    @Nullable
+    private static List<Piece> retirees;
+
     private static void removeBatch(ServerLevel level, StructureStore store, List<Piece> batch, Cause cause, int depth) {
         LongSet touchedBuildings = new LongOpenHashSet();
         for (Piece p : batch) {
             if (store.index.piece(p.id) == null) continue;
+            if (retirees != null) retirees.add(p);
             touchedBuildings.add(p.buildingId);
             playDestroy(level, p, cause);
             store.index.removeWithBlocks(p);
@@ -961,9 +969,19 @@ public final class StructureService {
                 return Outcome.fail(coupe);
             }
         }
-        remove(level, p, Cause.DEMOLISH);
+        List<Piece> tombees = tuto ? new ArrayList<>() : null;
+        retirees = tombees;
+        try {
+            remove(level, p, Cause.DEMOLISH);
+        } finally {
+            retirees = null;
+        }
         if (tuto) {
-            fr.heraliz.crac.bases.Tutoriel.rembourser(player, p);
+            // 18/11 (retour du propriétaire : « j'ai démoli une fondation avec 3 murs dessus : les murs sont tombés mais seule
+            // la fondation m'a été rendue, je suis bloqué dans le tuto ») : tout ce qui tombe avec elle est rendu aussi
+            for (Piece q : tombees) {
+                fr.heraliz.crac.bases.Tutoriel.rembourser(player, q);
+            }
         }
         return Outcome.ok(p);
     }
