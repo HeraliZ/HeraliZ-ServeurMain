@@ -54,14 +54,17 @@ ARMES = ("ak47", "m1911", "glock_17", "m4a1")
 NOMS = {"fr_fr": ("AK-47", "Kit de réparation de fortune", "Gilet Cobra"),
         "en_us": ("AK-47", "Makeshift repair kit", "Cobra vest"),
         "ru_ru": ("АК-47", "Самодельный ремкомплект", "Жилет «Кобра»")}
-# textes de l'atelier avant le 11/11 (écran d'avant)
+# textes de l'atelier avant le 11/11 (écran d'avant) ; « armure » : note retirée du jeu le 18/11
 ANCIENS = {
     "fr_fr": {"max": "État maximal : %s → %s", "max_stable": "État maximal : %s",
-              "code.7": "Plus aucune réparation : cette arme a atteint son maximum de réparations."},
+              "code.7": "Plus aucune réparation : cette arme a atteint son maximum de réparations.",
+              "armure": "Pièce d'armure : jusqu'à 100 %%"},
     "en_us": {"max": "Maximum condition: %s → %s", "max_stable": "Maximum condition: %s",
-              "code.7": "No repairs left: this weapon has reached its maximum number of repairs."},
+              "code.7": "No repairs left: this weapon has reached its maximum number of repairs.",
+              "armure": "Armour piece: up to 100 %%"},
     "ru_ru": {"max": "Макс. состояние: %s → %s", "max_stable": "Макс. состояние: %s",
-              "code.7": "Ремонт больше невозможен: лимит ремонтов этого оружия исчерпан."},
+              "code.7": "Ремонт больше невозможен: лимит ремонтов этого оружия исчерпан.",
+              "armure": "Броня: до 100 %%"},
 }
 TXT = {}
 DEFAUTS = []
@@ -228,7 +231,7 @@ def apercu_avant(e, cas):
             else t("max_stable", pct(cas["max_apres"]), ancien=True)
         e.m(couper(e, l, SMALL, aw), ax, y + 106, SMALL, FAINT)
     else:
-        e.m(couper(e, t("armure"), SMALL, aw), ax, y + 106, SMALL, FAINT)
+        e.m(couper(e, t("armure", ancien=True), SMALL, aw), ax, y + 106, SMALL, FAINT)
 
 
 def mix(a, b, tt):
@@ -275,8 +278,7 @@ def apercu_apres(e, cas):
     if max_avant < 1000:
         e.rect(ax + aw * max_avant / 1000, by, ax + aw, by + 3, DANGER, 120)
     if not arme:
-        e.m(t("armure"), ax, y + 99, SMALL, FAINT, maxw=aw, quoi="armure")
-        return
+        return  # armure : la barre seule (18/11, plus de note « jusqu'à 100 % »)
     if max_apres < 1000:
         l = t("max", pct(max_avant), pct(max_apres)) if max_apres < max_avant else t("max_stable", pct(max_apres))
         e.m(l, ax, y + 99, SMALL, ROUGE_DOUX, maxw=aw, quoi="ligne rouge")

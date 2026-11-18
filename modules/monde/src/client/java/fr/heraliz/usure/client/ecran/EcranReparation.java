@@ -31,6 +31,9 @@ import java.util.List;
  * une ligne « En rouge : ne se répare plus (max …) » et les réparations restantes de l'arme (nombre fixé par sa rareté).
  * Une arme déjà au mieux ou sans réparation garde la même barre, pour voir pourquoi. Aperçus : modules/monde/outils/
  * apercu_atelier.py.
+ * <p>18/11 (retour du propriétaire : « pas besoin d'autant de texte, c'est intuitif ») : plus de phrase quand la case est
+ * vide (« Pose une arme… »), plus de note « Pièce d'armure : jusqu'à 100 % » ; la ligne rouge des armes reste (perte
+ * définitive de l'état maximal, demandée le 11/11).
  */
 public final class EcranReparation extends AbstractContainerScreen<MenuReparation> {
     private static final int L = 228, H = 252, ENTETE = 44, M = 16, CASE = MenuReparation.CASE;
@@ -128,10 +131,7 @@ public final class EcranReparation extends AbstractContainerScreen<MenuReparatio
         int code = menu.donnee(MenuReparation.D_CODE);
         float ax = x + AX, aw = x + L - M - ax;
         ItemStack objet = menu.slots.get(0).getItem();
-        if (code == MenuReparation.VIDE || objet.isEmpty()) {
-            lignes(g, f, t("vide"), ax, y + 72, aw, Ui.FAINT, 3);
-            return;
-        }
+        if (code == MenuReparation.VIDE || objet.isEmpty()) return;   // 18/11 : case vide, sans phrase d'aide
         Net.texte(g, f, Net.couper(f, objet.getHoverName().getString(), Ui.BOLD, aw), Ui.BOLD, ax, y + 70, Ui.TEXT);
         boolean arme = menu.donnee(MenuReparation.D_GENRE) == MenuReparation.ARME;
         // une arme déjà au mieux, ou sans réparation, garde la barre : on voit ce qui ne se répare plus (11/11)
@@ -166,10 +166,7 @@ public final class EcranReparation extends AbstractContainerScreen<MenuReparatio
         if (apres > avant) Net.rect(g, ax + aw * avant / 1000f, by, ax + aw * apres / 1000f, by + 3, Ui.argb(Ui.OK, 235));
         if (maxApres < maxAvant) Net.rect(g, ax + aw * maxApres / 1000f, by, ax + aw * maxAvant / 1000f, by + 3, Ui.argb(Ui.DANGER, 235));
         if (maxAvant < Usure.PLEIN) Net.rect(g, ax + aw * maxAvant / 1000f, by, bx1, by + 3, Ui.argb(Ui.DANGER, 120));
-        if (!arme) {
-            Net.texte(g, f, Net.couper(f, t("armure"), Ui.SMALL, aw), Ui.SMALL, ax, y + 99, Ui.FAINT);
-            return;
-        }
+        if (!arme) return;   // armure : la barre suffit (18/11, plus de note « jusqu'à 100 % »)
         if (maxApres < Usure.PLEIN) {
             String l = maxApres < maxAvant ? t("max", Reparation.pct(maxAvant), Reparation.pct(maxApres)) : t("max_stable", Reparation.pct(maxApres));
             Net.texte(g, f, Net.couper(f, l, Ui.SMALL, aw), Ui.SMALL, ax, y + 99, ROUGE_DOUX);

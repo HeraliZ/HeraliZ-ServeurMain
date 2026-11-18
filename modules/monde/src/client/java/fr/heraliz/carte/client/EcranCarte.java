@@ -856,15 +856,13 @@ public final class EcranCarte extends Screen {
         return selection != null && x > width - MARGE - FICHE_L - 2 && y > MARGE + VUE_H + 4 && y < ficheY1 + 2;
     }
 
+    /** Pas d'image de la carte : son titre seul (18/11 : plus de phrase dessous, elle redisait le titre). */
     private void messageFond(GuiGraphics g) {
-        boolean absent = fond == null;
-        String titre = I18n.get(absent ? "heraliz_carte.fond.absent.titre" : "heraliz_carte.fond.autre_monde.titre");
-        String texte = I18n.get(absent ? "heraliz_carte.fond.absent" : "heraliz_carte.fond.autre_monde");
-        float w = Math.max(Texte.largeurEspacee(font, titre, Ui.BOLD, 1f, 1.4f), Texte.largeur(font, texte, Ui.FONT, S_TEXTE)) + 28;
+        String titre = I18n.get(fond == null ? "heraliz_carte.fond.absent.titre" : "heraliz_carte.fond.autre_monde.titre");
+        float w = Texte.largeurEspacee(font, titre, Ui.BOLD, 1f, 1.4f) + 28;
         float x = ox - w / 2, y = MARGE + 34;
-        Ui.glass(g, Math.round(x), Math.round(y), Math.round(w), 40);
-        Texte.espaceeCentree(g, font, titre, Ui.BOLD, ox, y + 9, Formes.argb(TEXTE, 1f), 1f, 1.4f, false);
-        Texte.ecrire(g, font, texte, Ui.FONT, ox - Texte.largeur(font, texte, Ui.FONT, S_TEXTE) / 2, y + 25, Formes.argb(GRIS, 1f), S_TEXTE);
+        Ui.glass(g, Math.round(x), Math.round(y), Math.round(w), 26);
+        Texte.espaceeCentree(g, font, titre, Ui.BOLD, ox, y + 8, Formes.argb(TEXTE, 1f), 1f, 1.4f, false);
     }
 
     /** Petit interrupteur Activé / Désactivé (pastille arrondie et bouton rond). */
@@ -1213,11 +1211,7 @@ public final class EcranCarte extends Screen {
         if (lim != null) {
             carre = dansCarte(wx, wz) ? colonne((int) Math.floor((wx - grilleX0()) / GRILLE)) + (int) (Math.floor((wz - grilleZ0()) / GRILLE) + 1) : "—";
         }
-        String touche = PartieClient.TOUCHE.getTranslatedKeyMessage().getString();
-        String[][] aides = {{I18n.get("heraliz_carte.bas.clic"), I18n.get("heraliz_carte.bas.choisir")},
-                {I18n.get("heraliz_carte.bas.clic_droit"), I18n.get("heraliz_carte.bas.marquer")},
-                {I18n.get("heraliz_carte.bas.espace"), I18n.get("heraliz_carte.bas.sur_moi")},
-                {touche, I18n.get("heraliz_carte.bas.fermer")}};
+        // 18/11 (demande du propriétaire : moins de texte) : plus d'aide des touches (clic, clic droit, Espace, fermer)
         String lcarreTitre = I18n.get("heraliz_carte.bas.carre");
         // largeurs
         float lx = Texte.largeur(font, "X", Ui.BOLD, sl) + 4 + lnum + 8 + Texte.largeur(font, "Z", Ui.BOLD, sl) + 4 + lnum;
@@ -1225,18 +1219,7 @@ public final class EcranCarte extends Screen {
         float lc = carre == null ? 0 : Texte.largeurEspacee(font, lcarreTitre, Ui.BOLD, S_CAPS, 0.8f) + 5 + lcarre;
         float le = 44 + 5 + Texte.largeur(font, "2 000 m", Ui.FONT, S_TEXTE);
         float sep = 16;
-        float base = 20 + lx + sep + (carre == null ? 0 : lc + sep) + le;
-        float dispo = width - MARGE * 3 - PANNEAU_L - BOUTON - 8;
-        // aides : autant qu'il en tient
-        List<String[]> montrees = new ArrayList<>();
-        float la = 0;
-        for (String[] a : aides) {
-            float l = Texte.largeurEspacee(font, a[0], Ui.BOLD, S_CAPS, 0.5f) + 8 + 3 + Texte.largeur(font, a[1], Ui.FONT, S_PETIT) + 9;
-            if (base + sep + la + l > dispo) break;
-            montrees.add(a);
-            la += l;
-        }
-        float w = base + (montrees.isEmpty() ? 0 : sep + la);
+        float w = 20 + lx + sep + (carre == null ? 0 : lc + sep) + le;
         float centre = (MARGE + PANNEAU_L + width - BOUTON - MARGE) / 2f;
         float x = Math.max(MARGE * 2 + PANNEAU_L, centre - w / 2), y = height - MARGE - BAS_H;
         basX0 = x;
@@ -1267,19 +1250,6 @@ public final class EcranCarte extends Screen {
         g.fill(bx0, byb - 4, bx0 + 1, byb + 1, 0xFFFFFFFF);
         g.fill(bx1 - 1, byb - 4, bx1, byb + 1, 0xFFFFFFFF);
         Texte.ecrire(g, font, echelle, Ui.FONT, cxb + barre + 5, ym - 11 * S_TEXTE / 2, Formes.argb(TEXTE, 1f), S_TEXTE);
-        cxb += le;
-        if (!montrees.isEmpty()) {
-            cxb = separateur(g, cxb, y, sep);
-            for (String[] a : montrees) {
-                float lt = Texte.largeurEspacee(font, a[0], Ui.BOLD, S_CAPS, 0.5f) + 8;
-                Ui.soft(g, Math.round(cxb), Math.round(ym - 5.5f), Math.round(lt), 11, 0x22FFFFFF);
-                Ui.softOutline(g, Math.round(cxb) + 1, Math.round(ym - 4.5f), Math.round(lt) - 2, 9, 0x30FFFFFF);
-                Texte.espacee(g, font, a[0], Ui.BOLD, cxb + 4, ym - 11 * S_CAPS / 2, 0xFFFFFFFF, S_CAPS, 0.5f, false);
-                cxb += lt + 3;
-                Texte.ecrire(g, font, a[1], Ui.FONT, cxb, ym - 11 * S_PETIT / 2, Formes.argb(GRIS, 1f), S_PETIT);
-                cxb += Texte.largeur(font, a[1], Ui.FONT, S_PETIT) + 9;
-            }
-        }
     }
 
     private float separateur(GuiGraphics g, float x, float y, float sep) {

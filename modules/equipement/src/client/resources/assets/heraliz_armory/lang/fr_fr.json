@@ -378,7 +378,6 @@
   "tooltip.heraliz_armory.cible_essai": "Encaisse les coups exactement comme un joueur (20 PV), avec l'armure de ton choix : clic droit main vide pour la choisir. Les dégâts s'affichent à chaque touche.",
   "tooltip.heraliz_armory.cible_essai.pose": "Posée seulement par le staff.",
   "gui.heraliz_armory.cible.titre": "Cible d'essai",
-  "gui.heraliz_armory.cible.aide": "Choisis son armure : elle encaisse comme un joueur (20 PV).",
   "gui.heraliz_armory.cible.corps": "Corps",
   "gui.heraliz_armory.cible.tete": "Tête",
   "gui.heraliz_armory.cible.aucune": "Sans armure",

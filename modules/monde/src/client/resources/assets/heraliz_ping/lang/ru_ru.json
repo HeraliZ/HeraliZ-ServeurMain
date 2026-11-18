@@ -48,7 +48,6 @@
   "heraliz_ping.cmd.admin.liens": "Связи: кланы %s · матчи %s",
   "heraliz_ping.cmd.admin.usage": "/canal admin <duree|portee|rafale|recharge|max|vue|spectateurs|groupe|carte|actif> <значение>",
   "heraliz_ping.reglages.titre": "Метки",
-  "heraliz_ping.reglages.sous_titre": "Отображение и звук меток",
   "heraliz_ping.reglages.volume": "Громкость звука",
   "heraliz_ping.reglages.taille": "Размер маркеров",
   "heraliz_ping.reglages.noms": "Ники авторов",
@@ -57,6 +56,6 @@
   "heraliz_ping.reglages.fleches": "Стрелки у края экрана",
   "heraliz_ping.reglages.max": "Максимум меток на экране",
   "heraliz_ping.reglages.legende": "6 меток",
-  "heraliz_ping.reglages.touche": "Клавиша: %s (Настройки > Управление > HeraliZ: метки)",
+  "heraliz_ping.reglages.touche": "Клавиша: %s",
   "heraliz_ping.reglages.termine": "Готово"
 }

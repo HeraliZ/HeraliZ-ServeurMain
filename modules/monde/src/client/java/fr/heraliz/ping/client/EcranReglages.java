@@ -24,9 +24,13 @@ import java.util.Locale;
  * son, taille des marqueurs, pseudo des auteurs, fleches au bord de l'ecran, nombre de pings affiches ; legende des 6
  * types et rappel de la touche. Ouvert depuis la liste des mods (Config) ou par la touche « Reglages des pings ».
  * Chaque changement s'applique tout de suite ; le fichier est ecrit a la fermeture.
+ * <p>18/11 (moins de texte, demande du proprietaire) : plus de sous-titre (titre et croix centres dans l'en-tete) ; le
+ * rappel de la touche n'est plus que « Touche : X ».
  */
 public final class EcranReglages extends Screen {
     private static final int PL = 360, PH = 270, LIGNE = 24;
+    /** Haut du titre et de la croix : centrés dans l'en-tête (filet à 42), sans sous-titre depuis le 18/11. */
+    private static final int CROIX_Y = 17;
     @Nullable
     private final Screen parent;
     private int px, py;
@@ -85,8 +89,7 @@ public final class EcranReglages extends Screen {
         Ui.fond(g, width, height);
         Ui.glass(g, px, py, PL, PH);
         int accent = Ui.accent();
-        Ui.spaced(g, font, I18n.get("heraliz_ping.reglages.titre"), Ui.BOLD, px + 16, py + 14, Ui.argb(Ui.TEXT, 255), 1.6f);
-        g.drawString(font, Ui.tr(Ui.FONT, "heraliz_ping.reglages.sous_titre"), px + 16, py + 28, Ui.argb(Ui.MUTED, 255), false);
+        Ui.spaced(g, font, I18n.get("heraliz_ping.reglages.titre"), Ui.BOLD, px + 16, py + CROIX_Y, Ui.argb(Ui.TEXT, 255), 1.6f);
         g.fill(px + 16, py + 42, px + 16 + 26, py + 43, Ui.argb(accent, 230));
         Ui.hairline(g, px + 44, px + PL - 16, py + 42, 0xFFFFFF, 36, false, true);
         String[] cles = {"volume", "taille", "noms", "fleches", "max"};
@@ -140,7 +143,7 @@ public final class EcranReglages extends Screen {
         for (int i = 0; i < Math.min(2, lignes.size()); i++) {
             g.drawString(font, lignes.get(i), px + 16, ry + 9 * i, Ui.argb(Ui.MUTED, 255), false);
         }
-        croix(g, px + PL - 16 - 7, py + 14, mouseX, mouseY);
+        croix(g, px + PL - 16 - 7, py + CROIX_Y, mouseX, mouseY);
         super.render(g, mouseX, mouseY, pt);
     }
 
@@ -164,7 +167,7 @@ public final class EcranReglages extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int bouton) {
-        int x = px + PL - 16 - 7, y = py + 14;
+        int x = px + PL - 16 - 7, y = py + CROIX_Y;
         if (bouton == 0 && mx >= x - 3 && my >= y - 3 && mx < x + 10 && my < y + 10) {
             onClose();
             return true;

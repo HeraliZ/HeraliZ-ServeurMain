@@ -38,6 +38,11 @@ import java.util.UUID;
  * en cartes (l'arme photographiée avec le camo), collection à vie ou objets de l'inventaire ; en bas, l'aperçu choisi à
  * confirmer. Un clic montre le camo sur l'arme (aperçu, chez le joueur seulement) ; « Appliquer » l'envoie au serveur, qui
  * revérifie tout (possession, délai après une mort, arme compatible, camo définitif).
+ * <p>
+ * 18/11 (moins de texte) : à gauche plus que le camo de l'arme (plus de légende « à vie » / « objet », ni de phrase
+ * « Choisis un camo à droite » ou « ce camo est définitif » : la pastille le dit) ; à droite plus de pied d'aide ni de
+ * mode d'emploi quand la collection est vide. La mise en garde du bandeau (pose définitive, une arme à la fois) reste,
+ * raccourcie ; les détails restent dans les infobulles des cartes.
  */
 final class OngletCamo implements AtelierArme.Partie {
    private enum Vue { VIE, INVENTAIRE }
@@ -63,7 +68,7 @@ final class OngletCamo implements AtelierArme.Partie {
    private List<Integer> objets = List.of();
    // géométrie
    private int gx, gy, gw, gh;
-   private int dx, dy, dw, dh, grilleY, grilleH, carteW, rangs, rangsVisibles, piedY;
+   private int dx, dy, dw, dh, grilleY, grilleH, carteW, rangs, rangsVisibles;
    private int bx, by, bw;
 
    OngletCamo(AtelierArme a) {
@@ -151,14 +156,14 @@ final class OngletCamo implements AtelierArme.Partie {
       // grille de cartes
       this.carteW = (this.dw - 24 - (COLONNES - 1) * ECART) / COLONNES;
       this.grilleY = this.dy + 32;
-      int pied = 24;
       int bas = this.a.basPanneaux(BANDEAU_H);
-      this.rangsVisibles = Math.max(1, (bas - this.grilleY - pied - 6 + ECART) / (CARTE_H + ECART));
+      this.rangsVisibles = Math.max(1, (bas - this.grilleY - 12 + ECART) / (CARTE_H + ECART));
       int total = this.vue == Vue.VIE ? this.vie.size() : this.objets.size();
       this.rangs = (total + COLONNES - 1) / COLONNES;
       this.defil = Math.max(0, Math.min(this.defil, this.rangs - this.rangsVisibles));
       int affiches = Math.min(this.rangsVisibles, this.rangs);
-      this.grilleH = total == 0 ? 44 : affiches * (CARTE_H + ECART) - ECART;
+      // vide : une ligne d'état seulement (18/11, plus de mode d'emploi dessous)
+      this.grilleH = total == 0 ? 16 : affiches * (CARTE_H + ECART) - ECART;
       for (int k = this.defil * COLONNES; k < Math.min(total, (this.defil + affiches) * COLONNES); k++) {
          int n = k - this.defil * COLONNES;
          int x = this.dx + 12 + (n % COLONNES) * (this.carteW + ECART);
@@ -174,8 +179,7 @@ final class OngletCamo implements AtelierArme.Partie {
                () -> this.choisirObjet(slot, c), null));
          }
       }
-      this.piedY = this.grilleY + this.grilleH + 8;
-      this.dh = this.piedY + pied - this.dy;
+      this.dh = this.grilleY + this.grilleH + 12 - this.dy;   // plus de pied d'aide (18/11)
       this.a.bloc(this.dx, this.dy, this.dw, this.dh);
    }
 
@@ -284,15 +288,10 @@ final class OngletCamo implements AtelierArme.Partie {
       if (this.apercu != null) this.dessinerBandeau(g, font, this.apercu);
    }
 
-   /** Hauteur du panneau de gauche (mêmes mesures que son dessin). */
+   /** Hauteur du panneau de gauche (mêmes mesures que son dessin) : le camo de l'arme et, s'il y a lieu, la mise en garde. */
    private int hauteurGauche(Font font) {
-      int largeur = this.gw - 24;
       int h = 26 + 34;
-      if (this.definitif) h += Dessins.hauteur(font, Ui.in(AtelierArme.trc("definitif_aide"), Ui.SMALL), largeur, 9) + 4;
-      if (this.autre) h += Dessins.hauteur(font, Ui.in(AtelierArme.trc("vie_autre"), Ui.SMALL), largeur, 9) + 4;
-      h += 10;
-      h += 12 + Dessins.hauteur(font, Ui.in(AtelierArme.trc("a_vie_aide"), Ui.SMALL), largeur - 14, 9) + 8;
-      h += 12 + Dessins.hauteur(font, Ui.in(AtelierArme.trc("objet_aide"), Ui.SMALL), largeur - 14, 9) + 6;
+      if (this.autre) h += Dessins.hauteur(font, Ui.in(AtelierArme.trc("vie_autre"), Ui.SMALL), this.gw - 24, 9) + 6;
       return h;
    }
 
@@ -305,9 +304,9 @@ final class OngletCamo implements AtelierArme.Partie {
       Dessins.caseIcone(g, x, y, 26, c != null);
       int tx = x + 26 + 8;
       if (c == null) {
+         // « Aucun camo » seul, au milieu de la case (18/11 : plus de « Choisis un camo à droite »)
          Dessins.cadenas(g, x + 9, y + 8, Ui.argb(Ui.MUTED, 200));
-         g.drawString(font, Ui.lit(AtelierArme.tr("aucun_camo"), Ui.FONT), tx, y + 3, Ui.argb(Ui.TEXT, 200), false);
-         g.drawString(font, Ui.lit(AtelierArme.tr(this.definitif ? "aucun_camo" : "aucun_camo_aide"), Ui.SMALL), tx, y + 15, Ui.argb(Ui.MUTED, 255), false);
+         g.drawString(font, Ui.lit(AtelierArme.tr("aucun_camo"), Ui.FONT), tx, y + 9, Ui.argb(Ui.TEXT, 200), false);
       } else {
          g.renderItem(new ItemStack(HeraliszCamo.CAMO_ITEMS.get(c).get()), x + 5, y + 5);
          String nom = Ui.ellipsis(font, Component.translatable(c.nameKey()).getString(), Ui.FONT, this.gx + this.gw - 12 - tx);
@@ -316,41 +315,23 @@ final class OngletCamo implements AtelierArme.Partie {
          else Ui.chip(g, font, AtelierArme.tr("a_vie"), tx, y + 15, Ui.OR);
       }
       y += 34;
-      if (this.definitif) y += Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("definitif_aide"), Ui.SMALL), x, y, largeur, Ui.argb(Ui.MUTED, 255), 9) + 4;
-      if (this.autre) y += Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("vie_autre"), Ui.SMALL), x, y, largeur, Ui.argb(Ui.AMBRE, 255), 9) + 4;
-      Ui.hairline(g, x, x + largeur, y + 2, 0xFFFFFF, 30, false, true);
-      y += 10;
-      // ce que veulent dire « à vie » et « objet »
-      Dessins.infini(g, font, x - 1, y - 1, Ui.argb(Ui.OR, 255));
-      g.drawString(font, Ui.lit(AtelierArme.tr("a_vie"), Ui.BOLD), x + 14, y, Ui.argb(Ui.OR, 255), false);
-      y += 12;
-      y += Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("a_vie_aide"), Ui.SMALL), x + 14, y, largeur - 14, Ui.argb(Ui.MUTED, 255), 9) + 8;
-      Dessins.cadenas(g, x + 1, y - 1, Ui.argb(Ui.MUTED, 255));
-      g.drawString(font, Ui.lit(AtelierArme.tr("objet"), Ui.BOLD), x + 14, y, Ui.argb(Ui.TEXT, 255), false);
-      y += 12;
-      Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("objet_aide"), Ui.SMALL), x + 14, y, largeur - 14, Ui.argb(Ui.MUTED, 255), 9);
+      // camo à vie d'un autre joueur : il va partir (seule phrase gardée, 18/11)
+      if (this.autre) Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("vie_autre"), Ui.SMALL), x, y, largeur, Ui.argb(Ui.AMBRE, 255), 9);
    }
 
    private void dessinerDroite(GuiGraphics g, Font font) {
       Ui.glass(g, this.dx, this.dy, this.dw, this.dh);
       Dessins.titre(g, font, AtelierArme.tr("camos"), Ui.BOLD, this.dx + 12, this.dy + 11, 1.15f, Ui.argb(Ui.TEXT, 255), 1.2f);
       int total = this.vue == Vue.VIE ? this.vie.size() : this.objets.size();
-      int largeur = this.dw - 24;
       if (total == 0) {
          String vide = AtelierArme.tr(this.vue == Vue.VIE ? "collection_vide" : "inventaire_vide");
-         g.drawString(font, Ui.lit(vide, Ui.FONT), this.dx + 12, this.grilleY + 6, Ui.argb(Ui.TEXT, 200), false);
-         if (this.vue == Vue.VIE) {
-            Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("collection_vide_aide"), Ui.SMALL), this.dx + 12, this.grilleY + 19, largeur,
-               Ui.argb(Ui.MUTED, 255), 9);
-         }
+         g.drawString(font, Ui.lit(Ui.ellipsis(font, vide, Ui.FONT, this.dw - 24), Ui.FONT), this.dx + 12, this.grilleY + 6, Ui.argb(Ui.TEXT, 200), false);
       } else if (this.rangs > this.rangsVisibles) {
          int bh = Math.max(10, this.grilleH * this.rangsVisibles / this.rangs);
          int y = this.grilleY + (this.grilleH - bh) * this.defil / Math.max(1, this.rangs - this.rangsVisibles);
          g.fill(this.dx + this.dw - 7, this.grilleY, this.dx + this.dw - 5, this.grilleY + this.grilleH, Ui.argb(0xFFFFFF, 18));
          g.fill(this.dx + this.dw - 7, y, this.dx + this.dw - 5, y + bh, Ui.argb(Ui.OR, 200));
       }
-      Component pied = AtelierArme.trc(this.vue == Vue.VIE ? "pied_vie" : "pied_inventaire");
-      Dessins.paragraphe(g, font, Ui.in(pied, Ui.SMALL), this.dx + 12, this.piedY, largeur, Ui.argb(Ui.FAINT, 255), 9);
    }
 
    private void dessinerSegment(GuiGraphics g, Zone z, Vue v, String label, String n) {

@@ -26,10 +26,15 @@ import java.util.Locale;
  * l'Unique, combinaisons), avec la protection au corps et à la tête calculée par le serveur (vrai plafond) ; tenues
  * complètes seulement, casque compris (choix du propriétaire) ; « Ramasser » pour le staff. Un clic sur une
  * ligne habille la cible tout de suite (le serveur vérifie la distance) ; on la voit derrière l'écran.
+ * <p>
+ * 18/11 (moins de texte, demande du propriétaire) : plus de phrase d'aide sous le titre ; les en-têtes des colonnes et
+ * la liste remontent, le panneau perd 11 points (même nombre de lignes visibles).
  */
 public class EcranCible extends Screen {
     private static final ResourceLocation MINI_GRAS = HeralizArmory.id("ui_mini_bold"), CHIFFRE = HeralizArmory.id("ui_chiffre");
-    private static final int L = 300, H = 236, LIGNE = 15, HAUT_LISTE = 46, BAS = 34;
+    private static final int L = 300, H = 225, LIGNE = 15, HAUT_LISTE = 35, BAS = 34;
+    /** Haut des en-têtes des colonnes (Corps, Tête), 9 points au-dessus de la liste. */
+    private static final int COLONNES_Y = HAUT_LISTE - 9;
 
     private final PaquetsCible.Ouvrir ouvert;
     private final List<Tenues.Tenue> tenues = Tenues.TOUTES;
@@ -77,11 +82,10 @@ public class EcranCible extends Screen {
         Ui.band(g, x0 + 2, y0 + 2, x0 + L - 2, y0 + 18, Ui.ACCENT, 26, 60);
         Ui.spaced(g, f, title.getString(), Ui.BOLD, x0 + 10, y0 + 6, Ui.argb(Ui.TEXT, 255), 1.2F);
         Ui.hairline(g, x0 + 4, x0 + L - 4, y0 + 18, 0xFFFFFF, 40, false, true);
-        texte(g, f, Component.translatable("gui.heraliz_armory.cible.aide").getString(), Ui.SMALL, 9.0F, x0 + 10, y0 + 27, Ui.MUTED);
-        // en-têtes des colonnes
-        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.corps").getString(), MINI_GRAS, x0 + L - 66, y0 + 37,
+        // en-têtes des colonnes (18/11 : plus de phrase d'aide au-dessus)
+        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.corps").getString(), MINI_GRAS, x0 + L - 66, y0 + COLONNES_Y,
                 Ui.argb(Ui.FAINT, 255), 0.8F);
-        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.tete").getString(), MINI_GRAS, x0 + L - 22, y0 + 37,
+        Ui.spacedRight(g, f, Component.translatable("gui.heraliz_armory.cible.tete").getString(), MINI_GRAS, x0 + L - 22, y0 + COLONNES_Y,
                 Ui.argb(Ui.FAINT, 255), 0.8F);
         // liste
         int lx = x0 + 6, ly = y0 + HAUT_LISTE, lw = L - 16, lh = hauteurListe();

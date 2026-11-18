@@ -23,6 +23,10 @@ import java.util.Locale;
  * gratter ; à droite les stickers et modules StatTrack de l'inventaire. Choisir un sticker, puis cliquer sur l'arme pour
  * le coller (molette : tourner, Maj + molette : taille, clic droit : annuler) ; le StatTrack se pose tout seul. Placement
  * et envoi au serveur : RefitDecorTab (le serveur revérifie tout).
+ * <p>
+ * 18/11 (moins de texte) : plus de ligne d'aide sous les objets (le mode d'emploi est dans l'infobulle de chaque objet,
+ * et « 5 stickers au plus » dans celle des objets grisés) ; pendant une pose, seulement ce qui ne se devine pas : molette
+ * et Maj + molette.
  */
 final class OngletPerso implements AtelierArme.Partie {
    private static final int CASE = 22, COLONNES = 6, RANG = 20;
@@ -32,7 +36,7 @@ final class OngletPerso implements AtelierArme.Partie {
    private boolean statTrack;
    private List<Integer> objets = List.of();
    private int gx, gy, gw, gh, listeY;
-   private int dx, dy, dw, dh, grilleY, aideY;
+   private int dx, dy, dw, dh, grilleY;
 
    OngletPerso(AtelierArme a) {
       this.a = a;
@@ -87,7 +91,7 @@ final class OngletPerso implements AtelierArme.Partie {
       this.dy = 58;
       this.grilleY = this.dy + 28;
       int bas = this.a.basPanneaux(24);
-      int rangsMax = Math.max(1, (bas - this.grilleY - 40) / (CASE + 2));
+      int rangsMax = Math.max(1, (bas - this.grilleY - 10) / (CASE + 2));
       int n = Math.min(this.objets.size(), rangsMax * COLONNES);
       for (int k = 0; k < n; k++) {
          int slot = this.objets.get(k);
@@ -96,11 +100,10 @@ final class OngletPerso implements AtelierArme.Partie {
          this.a.ajouter(new Zone(x, yy, CASE, CASE, (g, z, mx, my, pt) -> this.dessinerCase(g, z, slot), () -> RefitDecorTab.choisirObjet(slot), null));
       }
       int rangs = n == 0 ? 0 : (n + COLONNES - 1) / COLONNES;
-      // inventaire vide : la phrase peut tenir sur deux lignes, l'aide se pose dessous
+      // inventaire vide : la phrase peut tenir sur deux lignes ; plus de ligne d'aide dessous (18/11)
       int videH = Dessins.hauteur(font, Ui.lit(AtelierArme.tr("decor_inventaire_vide"), Ui.SMALL), this.dw - 24, 9);
-      this.aideY = this.grilleY + (rangs == 0 ? 2 + videH + 5 : rangs * (CASE + 2) + 6);
-      int aideH = Dessins.hauteur(font, Ui.in(AtelierArme.trc("decor_aide"), Ui.SMALL), this.dw - 24, 9);
-      this.dh = this.aideY + aideH + 8 - this.dy;
+      int fin = this.grilleY + (rangs == 0 ? 2 + videH : rangs * (CASE + 2) - 2);
+      this.dh = fin + 10 - this.dy;
       this.a.bloc(this.dx, this.dy, this.dw, this.dh);
    }
 
@@ -156,20 +159,18 @@ final class OngletPerso implements AtelierArme.Partie {
       if (this.objets.isEmpty()) {
          Dessins.paragraphe(g, font, Ui.lit(AtelierArme.tr("decor_inventaire_vide"), Ui.SMALL), this.dx + 12, this.grilleY + 2, this.dw - 24, Ui.argb(Ui.MUTED, 255), 9);
       }
-      Component aide = AtelierArme.trc(this.stickers.size() >= DecorData.MAX_STICKERS ? "stickers_pleins" : "decor_aide");
-      Dessins.paragraphe(g, font, Ui.in(aide, Ui.SMALL), this.dx + 12, this.aideY, this.dw - 24, Ui.argb(Ui.FAINT, 255), 9);
    }
 
-   /** Pendant un placement : l'aide en bas de l'écran. */
+   /** Pendant un placement : une ligne discrète en bas de l'écran, ce qui ne se devine pas (molette, Maj + molette). */
    @Override
    public void dessinerDessus(GuiGraphics g, int mx, int my, float pt) {
       if (!RefitDecorTab.enPose(-1)) return;
       Font font = this.a.police();
       Component t = Ui.in(AtelierArme.trc("pose_aide"), Ui.SMALL);
-      int w = Math.min(this.a.width - 32, font.width(t) + 32);
-      int x = (this.a.width - w) / 2, y = this.a.height - 14 - 22;
-      Ui.glass(g, x, y, w, 22);
-      Ui.centered(g, font, t, this.a.width / 2f, y + 8, Ui.argb(Ui.TEXT, 255));
+      int w = Math.min(this.a.width - 32, font.width(t) + 24);
+      int x = (this.a.width - w) / 2, y = this.a.height - 14 - 20;
+      Ui.glass(g, x, y, w, 20, 160);
+      Ui.centered(g, font, t, this.a.width / 2f, y + 7, Ui.argb(Ui.MUTED, 255));
    }
 
    private void dessinerCase(GuiGraphics g, Zone z, int slot) {

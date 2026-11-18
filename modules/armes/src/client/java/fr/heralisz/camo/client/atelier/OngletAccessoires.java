@@ -39,6 +39,10 @@ import java.util.Map;
  * l'inventaire), à droite les accessoires de l'emplacement choisi (effets en pastilles), en bas les caractéristiques de
  * l'arme et ce que changerait l'accessoire choisi. Clic : choisir (aperçu des caractéristiques) ; double-clic ou bouton :
  * poser. Pose et retrait par les paquets de TaCZ (le serveur revérifie, rend l'ancien accessoire à l'inventaire).
+ * <p>
+ * 18/11 (moins de texte) : plus de pied d'aide sous les emplacements ni de ligne d'aide sous les boutons ; seule l'erreur
+ * (inventaire plein) a sa ligne, le temps qu'elle s'affiche (le panneau se refait quand elle disparaît, voir
+ * {@link #signature()}).
  */
 final class OngletAccessoires implements AtelierArme.Partie {
    /** Ordre des emplacements, comme sur l'arme : viseur, bouche, poignée, crosse, laser, chargeur. */
@@ -121,7 +125,7 @@ final class OngletAccessoires implements AtelierArme.Partie {
       this.gx = 16;
       this.gy = 58;
       this.gw = 146;
-      int entete = 26, pied = 30;
+      int entete = 26, pied = 8;
       this.rangH = this.types.isEmpty() ? 0 : Math.max(22, Math.min(30, (bas - this.gy - entete - pied) / this.types.size()));
       this.gh = this.types.isEmpty() ? 64 : entete + this.types.size() * this.rangH + pied;
       this.a.bloc(this.gx, this.gy, this.gw, this.gh);
@@ -191,8 +195,10 @@ final class OngletAccessoires implements AtelierArme.Partie {
          poser.active = this.slotChoisi >= 0 && !verrou;
          this.a.ajouter(poser);
       }
+      // ligne de l'erreur sous les boutons, seulement pendant qu'elle s'affiche
       this.aideY = by + 17 + 6;
-      this.dh = this.aideY + 12 - this.dy;
+      int erreurH = this.erreurVisible() ? Dessins.hauteur(this.a.police(), Ui.in(this.erreur, Ui.SMALL), this.dw - 24, 9) + 3 : 0;
+      this.dh = this.aideY + erreurH - this.dy;
       if (this.laser != null) {
          this.laserY = this.dh + this.dy + 2;
          this.ajouterLasers(gun, iGun, this.dx + 12, this.laserY + 12);
@@ -276,6 +282,7 @@ final class OngletAccessoires implements AtelierArme.Partie {
       if (inv.getFreeSlot() == -1) {
          this.erreur = AtelierArme.trc("inventaire_plein");
          this.erreurFin = Util.getMillis() + 4000L;
+         this.a.reconstruire();   // la ligne de l'erreur apparaît sous les boutons
          return;
       }
       SoundPlayManager.playerRefitSound(pose, p, SoundManager.UNINSTALL_SOUND);
@@ -291,11 +298,17 @@ final class OngletAccessoires implements AtelierArme.Partie {
       return true;
    }
 
+   /** Une erreur est affichée (elle s'efface seule après 4 s). */
+   private boolean erreurVisible() {
+      return this.erreur != null && Util.getMillis() < this.erreurFin;
+   }
+
    @Override
    public String signature() {
       LocalPlayer p = Minecraft.getInstance().player;
       if (p == null) return "";
-      StringBuilder sb = new StringBuilder();
+      // l'erreur affichée en fait partie : à sa disparition, le panneau se refait sans sa ligne
+      StringBuilder sb = new StringBuilder(this.erreurVisible() ? "!" : "");
       Inventory inv = p.getInventory();
       for (int i = 0; i < inv.getContainerSize(); i++) {
          ItemStack s = inv.getItem(i);
@@ -315,10 +328,6 @@ final class OngletAccessoires implements AtelierArme.Partie {
       Ui.section(g, font, AtelierArme.tr("sur_arme"), this.gx + 12, this.gy + 11, this.gw - 24);
       if (this.types.isEmpty()) {
          Dessins.paragraphe(g, font, Ui.in(AtelierArme.trc("aucun_emplacement"), Ui.SMALL), this.gx + 12, this.gy + 30, this.gw - 24, Ui.argb(Ui.MUTED, 255), 10);
-      } else {
-         int py = this.gy + this.gh - 26;
-         Component aide = this.courant == AttachmentType.NONE ? AtelierArme.trc("choisir_emplacement") : AtelierArme.trc("compte_aide");
-         Dessins.paragraphe(g, font, Ui.in(aide, Ui.SMALL), this.gx + 12, py, this.gw - 24, Ui.argb(Ui.FAINT, 255), 9);
       }
       // accessoires de l'emplacement
       if (this.dw > 0) {
@@ -338,10 +347,9 @@ final class OngletAccessoires implements AtelierArme.Partie {
                g.fill(this.dx + this.dw - 7, this.listeY, this.dx + this.dw - 5, this.listeY + this.listeH, Ui.argb(0xFFFFFF, 18));
                g.fill(this.dx + this.dw - 7, by, this.dx + this.dw - 5, by + bh, Ui.argb(accent, 200));
             }
-            boolean enErreur = this.erreur != null && Util.getMillis() < this.erreurFin;
-            Component aide = enErreur ? this.erreur : AtelierArme.trc("choisir_aide");
-            Dessins.paragraphe(g, font, Ui.in(aide, Ui.SMALL), this.dx + 12, this.aideY, this.dw - 24,
-               Ui.argb(enErreur ? Ui.DANGER : Ui.FAINT, 255), 9);
+            if (this.erreurVisible()) {
+               Dessins.paragraphe(g, font, Ui.in(this.erreur, Ui.SMALL), this.dx + 12, this.aideY, this.dw - 24, Ui.argb(Ui.DANGER, 255), 9);
+            }
          }
          if (this.laser != null) {
             String titre = AtelierArme.tr(this.courant == AttachmentType.NONE ? "laser_arme" : "laser");

@@ -378,7 +378,6 @@
   "tooltip.heraliz_armory.cible_essai": "Получает урон точно как игрок (20 ОЗ) в выбранной броне: ПКМ пустой рукой, чтобы её выбрать. Урон показывается при каждом попадании.",
   "tooltip.heraliz_armory.cible_essai.pose": "Ставится только персоналом.",
   "gui.heraliz_armory.cible.titre": "Тренировочная мишень",
-  "gui.heraliz_armory.cible.aide": "Выберите броню: мишень получает урон как игрок (20 ОЗ).",
   "gui.heraliz_armory.cible.corps": "Тело",
   "gui.heraliz_armory.cible.tete": "Голова",
   "gui.heraliz_armory.cible.aucune": "Без брони",

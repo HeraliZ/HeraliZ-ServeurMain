@@ -32,6 +32,9 @@ import java.util.Locale;
  * a left click) loads it, the centre (or a right click) cancels. Light on the left, Heavy at the top, Special on the
  * right; the centre shows the pointed strike, its level and its power. Style of the clan screens (glass, thin
  * outlines, spaced capitals, DM Sans), drawn on a 640 x 360 design canvas.
+ * <p>
+ * 18/11 (demande du propriétaire : moins de texte) : plus d'aide des touches en bas de l'écran ni de « Relâcher R » au
+ * centre ; le contenu du centre descend de {@link #CENTRE_DY} pour rester au milieu du disque.
  */
 public class CartridgeWheelScreen extends Screen {
     public static final ResourceLocation FONT = new ResourceLocation(AirstrikeMod.MODID, "ui");
@@ -40,6 +43,8 @@ public class CartridgeWheelScreen extends Screen {
     private static final StrikeType[] WHEEL = StrikeType.WHEEL;
     private static final float STEP = 360f / WHEEL.length;
     private static final float R_IN = 58f, R_OUT = 118f, GAP = 0.9f;
+    /** Décalage vers le bas du contenu du centre (niveau, nom, barres, état), sans la ligne « Relâcher » d'avant. */
+    private static final float CENTRE_DY = 8f;
     private static final int TEXT = 0xECEEF2, MUTED = 0x8F95A0, OK = 0x5FD08A, DANGER = 0xFF6B6B;
     /** Damage, area, duration (0..1) shown by the bars of the centre, per strike. */
     private static final float[][] STATS = new float[StrikeType.values().length][];
@@ -273,7 +278,7 @@ public class CartridgeWheelScreen extends Screen {
             // bars: damage, area, duration
             float[] st = STATS[pointed.ordinal()];
             for (int i = 0; i < 3; i++) {
-                float y = cy - 7f + i * 9f + 2f;
+                float y = cy + CENTRE_DY - 7f + i * 9f + 2f;
                 quad(mat, cx - 4f, y, cx + 34f, y + 2.4f, argb(0xFFFFFF, (int) (23 * e)));
                 quad(mat, cx - 4f, y, cx - 4f + Math.max(0.6f, 38f * st[i]), y + 2.4f, argb(pointed.tier.color, (int) (235 * e)));
             }
@@ -321,11 +326,12 @@ public class CartridgeWheelScreen extends Screen {
             String qty = creative() ? "∞" : has ? "×" + count : Component.translatable("hud.airstrike.wheel.none_short").getString().toUpperCase(Locale.ROOT);
             spaced(g, font, qty, FONT, xTxt, yTxt + 11f, 0.62f, argb(MUTED, (int) ((has ? 255 : 150) * e)), 0.8f, align);
         }
-        // centre texts
+        // centre texts (yc : milieu du contenu, un peu sous le centre depuis le 18/11)
         if (pointed != null) {
+            float yc = cy + CENTRE_DY;
             CartridgeTier tier = pointed.tier;
             String tierName = Component.translatable(tier.translationKey()).getString().toUpperCase(Locale.ROOT);
-            chip(g, font, tierName, cx, cy - 40f, pointedAvail ? tier.color : MUTED, alpha);
+            chip(g, font, tierName, cx, yc - 40f, pointedAvail ? tier.color : MUTED, alpha);
             String full = Component.translatable(pointed.translationKey()).getString().toUpperCase(Locale.ROOT);
             // largeur mesuree contre la corde du disque central (marge de 6 de chaque cote) ; trop long : deux lignes
             float corde = 2f * (float) Math.sqrt((R_IN - 5f) * (R_IN - 5f) - 28f * 28f) - 12f;
@@ -337,30 +343,27 @@ public class CartridgeWheelScreen extends Screen {
             if (w1 * 0.72f > corde && coupe > 0) {
                 String l1 = full.substring(0, coupe), l2 = full.substring(coupe + 1);
                 float s = Math.min(0.78f, corde / Math.max(spacedWidth(font, l1, BOLD, 1f, 0.9f), spacedWidth(font, l2, BOLD, 1f, 0.9f)));
-                spaced(g, font, l1, BOLD, cx, cy - 28f, s, argb(TEXT, alpha), 0.9f, 0);
-                spaced(g, font, l2, BOLD, cx, cy - 28f + 9.5f * s, s, argb(TEXT, alpha), 0.9f, 0);
+                spaced(g, font, l1, BOLD, cx, yc - 28f, s, argb(TEXT, alpha), 0.9f, 0);
+                spaced(g, font, l2, BOLD, cx, yc - 28f + 9.5f * s, s, argb(TEXT, alpha), 0.9f, 0);
             } else {
-                spaced(g, font, full, BOLD, cx, cy - 26f, Math.min(1f, corde / w1), argb(TEXT, alpha), 0.9f, 0);
+                spaced(g, font, full, BOLD, cx, yc - 26f, Math.min(1f, corde / w1), argb(TEXT, alpha), 0.9f, 0);
             }
             if (pointedAvail) {
                 String[] labels = {"hud.airstrike.wheel.damage", "hud.airstrike.wheel.area", "hud.airstrike.wheel.duration"};
                 for (int i = 0; i < 3; i++) {
                     spaced(g, font, Component.translatable(labels[i]).getString().toUpperCase(Locale.ROOT), FONT, cx - 34f,
-                            cy - 7f + i * 9f, 0.55f, argb(MUTED, alpha), 0.6f, -1);
+                            yc - 7f + i * 9f, 0.55f, argb(MUTED, alpha), 0.6f, -1);
                 }
+                // 18/11 : plus de « Relâcher R » (aide de touche) ; seulement l'état « déjà chargée »
                 if (pointed == loaded) {
                     spaced(g, font, Component.translatable("hud.airstrike.wheel.already").getString().toUpperCase(Locale.ROOT), BOLD,
-                            cx, cy + 24f, 0.6f, argb(OK, alpha), 1.2f, 0);
-                } else {
-                    String rel = Component.translatable("hud.airstrike.wheel.release_key",
-                            DesignatorClient.CYCLE_KEY.getTranslatedKeyMessage()).getString().toUpperCase(Locale.ROOT);
-                    spaced(g, font, rel, BOLD, cx, cy + 24f, 0.6f, argb(TEXT, (int) (195 * e)), 1.2f, 0);
+                            cx, yc + 24f, 0.6f, argb(OK, alpha), 1.2f, 0);
                 }
             } else {
                 spaced(g, font, Component.translatable("hud.airstrike.wheel.no_cartridge").getString().toUpperCase(Locale.ROOT), BOLD,
-                        cx, cy - 4f, 0.68f, argb(DANGER, alpha), 0.8f, 0);
-                spaced(g, font, tierName, BOLD, cx, cy + 6f, 0.68f, argb(DANGER, alpha), 0.8f, 0);
-                spaced(g, font, Component.translatable("hud.airstrike.wheel.find_" + tier.id).getString(), FONT, cx, cy + 20f, 0.55f,
+                        cx, yc - 4f, 0.68f, argb(DANGER, alpha), 0.8f, 0);
+                spaced(g, font, tierName, BOLD, cx, yc + 6f, 0.68f, argb(DANGER, alpha), 0.8f, 0);
+                spaced(g, font, Component.translatable("hud.airstrike.wheel.find_" + tier.id).getString(), FONT, cx, yc + 20f, 0.55f,
                         argb(MUTED, alpha), 0.2f, 0);
             }
         } else {
@@ -369,7 +372,7 @@ public class CartridgeWheelScreen extends Screen {
         }
         g.pose().popPose();
 
-        // description under the wheel, key help at the bottom
+        // description under the wheel (18/11 : plus d'aide des touches en bas de l'écran)
         if (pointed != null && open > 0.6f) {
             int a = (int) (255 * (open - 0.6f) / 0.4f);
             String desc = Component.translatable(pointed.descriptionKey()).getString();
@@ -378,9 +381,6 @@ public class CartridgeWheelScreen extends Screen {
             glassBox(g, cx - dw / 2f, yd, dw, 15f, a);
             spaced(g, font, desc, FONT, cx, yd + 4f, 0.64f, argb(0xECEEF2, (int) (a * 0.9f)), 0f, 0);
         }
-        String help = Component.translatable("hud.airstrike.wheel.help", DesignatorClient.CYCLE_KEY.getTranslatedKeyMessage())
-                .getString().toUpperCase(Locale.ROOT);
-        spaced(g, font, help, FONT, cx, h - 14f, 0.55f, argb(MUTED, (int) (215 * e)), 0.9f, 0);
         g.pose().popPose();
         RenderSystem.disableBlend();
     }
