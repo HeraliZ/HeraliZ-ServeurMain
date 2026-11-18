@@ -3,16 +3,16 @@
 [keycards]
 	#Passages avant que la carte verte casse (0 = illimité)
 	#Range: 0 ~ 10000
-	usesGreen = 10
+	usesGreen = 4
 	#Passages avant que la carte bleue casse (0 = illimité)
 	#Range: 0 ~ 10000
-	usesBlue = 8
+	usesBlue = 3
 	#Passages avant que la carte rouge casse (0 = illimité)
 	#Range: 0 ~ 10000
-	usesRed = 6
+	usesRed = 2
 	#Passages avant qu'une carte de bunker (Bunker des Bois, Bunker du Pic) casse (0 = illimité)
 	#Range: 0 ~ 10000
-	usesBunker = 3
+	usesBunker = 2
 	#Durée du signal redstone après un accès accordé (ticks, 20 = 1 s)
 	#Range: 10 ~ 12000
 	pulseTicks = 100

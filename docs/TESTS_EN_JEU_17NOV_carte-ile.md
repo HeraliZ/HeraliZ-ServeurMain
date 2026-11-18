@@ -36,15 +36,24 @@ Pour chaque bunker, en créatif :
 - [ ] 1 minute avant la fin, les joueurs à 48 blocs lisent « La porte du bunker se ferme dans 60 s : sans carte, plus de
       sortie ! » ; au bout de 30 min, la porte se ferme ; qui est dans le passage est repoussé.
 - [ ] Enfermé dedans : la carte dans le lecteur du dedans rouvre la porte (30 min de plus, nouvelle annonce).
-- [ ] Infobulle de la carte : « Ouvre les lecteurs du Bunker des Bois », « Passages restants : 3 » ; au 3e passage,
-      elle casse.
+- [ ] Infobulle de la carte : « Ouvre les lecteurs du Bunker des Bois », « Passages restants : 2 » ; au 2e passage,
+      elle disparaît de l'inventaire et se casse dans le lecteur (bruit et éclats, comme un outil de Minecraft).
 - [ ] Un redémarrage pendant que la porte est ouverte : elle garde son heure de fermeture.
 
 Réglages (`config/heralisz_bunker-common.toml`) : `[bunkers] ouvertureMinutes = 30`, `avertirSecondes = 60` ;
-`[keycards] usesBunker = 3`. Les cartes sortent des coffres T7 et des salles rouges (environ 1 coffre T7 sur 100 donne
+`[keycards] usesBunker = 2`. Les cartes sortent des coffres T7 et des salles rouges (environ 1 coffre T7 sur 100 donne
 l'une des deux) ; elles sont Légendaires et suivies par l'anti-duplication.
 
-## 2. Salles à carte
+## 2. Usure des cartes (18/11)
+
+Passages avant que la carte casse : **verte 4, bleue 3, rouge 2, cartes des bunkers 2** (`[keycards]` de
+`config/heralisz_bunker-common.toml`). En créatif, la carte ne s'use pas : essayer en survie.
+- [ ] Infobulle : « Passages restants : N » ; barre d'usure sous la carte après le premier passage.
+- [ ] Au dernier passage, la porte s'ouvre quand même ; la carte disparaît de l'inventaire et se casse dans la fente du
+      lecteur à la fin de la lecture (bruit d'objet cassé, éclats de la carte).
+- [ ] Aucune réparation : enclume, meule, Raccommodage, recycleur (refusée), table d'armurier.
+
+## 3. Salles à carte
 
 Coordonnées données le 17/11 (lecteur posé devant la porte). La porte doit aller avec la couleur du lecteur :
 - verte : Trappe de silo, Porte cargo, Porte coulissante QE, Porte coup-de-feu ;
@@ -90,7 +99,7 @@ Quand c'est fait, le dire : la liste complète est vérifiée depuis la console 
 - [ ] Loot de la salle au bon niveau ; il revient 30 min (verte), 2 h (bleue), 4 h (rouge) après la sortie du dernier.
 - [ ] Déconnexion dans une salle : à la reconnexion, on est devant sa porte.
 
-## 3. Points de quête de Varga (effacés avec l'ancienne carte)
+## 4. Points de quête de Varga (effacés avec l'ancienne carte)
 
 Poser au clic droit avec la baguette (`/quete baguette <groupe>` ; accroupi + clic droit = retirer) ou debout sur
 place avec `/quete point ajouter <groupe>` :
@@ -105,14 +114,14 @@ place avec `/quete point ajouter <groupe>` :
 
 Vérifier : `/quete points` (tous) ou `/quete points <groupe>` ; `/quete point tp <id>` pour y aller.
 
-## 4. PNJ du spawn
+## 5. PNJ du spawn
 
 `/pnj liste` doit montrer : varga, mila, jack, jacqueline, doyen, commissaire, batisseur, recycleur, guide,
 contremaitre. Pour un PNJ absent : se placer à l'endroit voulu, regard dans la bonne direction, `/pnj creer <id>`
 (ex. `/pnj creer contremaitre`). Le déplacer : `/pnj deplacer <id>` (il vient là où on se tient). Le retirer :
 `/pnj retirer <id>`.
 
-## 5. Arrivée sur la carte, coffres T7, événements
+## 6. Arrivée sur la carte, coffres T7, événements
 
 - [ ] `/depart info` doit dire « prêt » ; `/depart liste` : les points et zones d'arrivée doivent être **sur l'île**.
       Sinon : `/depart zone ajouter <nom> <rayon>` (au centre d'un endroit dégagé) ou `/depart point ajouter <nom>`, puis
@@ -122,7 +131,7 @@ contremaitre. Pour un PNJ absent : se placer à l'endroit voulu, regard dans la 
 - [ ] Événements (largage public toutes les 3 h 30, hélicoptère) : lieux tirés au hasard sur la carte, rien à poser ;
       `/event liste` montre le planning. Vérifier qu'un largage tombe bien sur l'île.
 
-## 6. Le reste à vérifier
+## 7. Le reste à vérifier
 
 - [ ] Carte M : plus de « Bunker des Bois » ni de « Bunker du Pic » ; noms des extractions à jour (`/extraction list`).
 - [ ] Labo sous-marin, **sans** tenue de plongée : 2,5 s d'air, puis 2,5 cœurs par seconde ; sous y 52, tout noir.

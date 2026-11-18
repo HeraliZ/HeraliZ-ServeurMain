@@ -299,8 +299,8 @@ EXTRAS.update({
 # cartes des bunkers de la carte (17/11, demande du propriétaire : « une nouvelle carte pour chaque bunker », HeraliZ
 # Bunker) : Légendaires, seulement en T7 (coffres d'événement, points T7 du staff, salles à carte rouges : leur loot est
 # celui du T7), 0,5 de chaque pour 100 coffres T7 : environ 1 coffre T7 sur 100 donne l'une des deux (une carte rouge
-# complète, 8,3 fragments, sort environ 1 fois pour 700 coffres T7). 3 passages par carte (usesBunker de
-# heralisz_bunker-common.toml) : entrer, ressortir, et une fois de plus.
+# complète, 8,3 fragments, sort environ 1 fois pour 700 coffres T7). 2 passages par carte (usesBunker de
+# heralisz_bunker-common.toml, 18/11) : entrer et ressortir.
 EXTRAS.update({
     "heralisz_bunker:keycard_bunker_bois": ("legendaire", {7: 0.5}),
     "heralisz_bunker:keycard_bunker_pic": ("legendaire", {7: 0.5}),

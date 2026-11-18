@@ -123,6 +123,9 @@ public final class KeycardSwipes {
          Swipe s = e.getValue();
          float t = time(p, s, event.getPartialTick());
          if (t < 0 || t > T_BACK) continue;
+         // 18/11 : carte à son dernier passage, détruite par le serveur : elle s'est cassée dans le lecteur (éclats envoyés
+         // par CardReaderBlock à la fin de la lecture), elle ne revient pas dans la main
+         if (t > T_SLIDE_END && !(p.getMainHandItem().getItem() instanceof KeycardItem) && !(p.getOffhandItem().getItem() instanceof KeycardItem)) continue;
          Vec3 c = cardCenter(p, s, t);
          Vec3 up = new Vec3(0, 1, 0);
          Vec3 f = ReaderGeometry.front(s.facing);

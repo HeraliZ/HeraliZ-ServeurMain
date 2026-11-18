@@ -138,7 +138,7 @@ AuthMe, bans, `/spawn definir` (`crac/spawn.json`, il désigne le monde du spawn
    lecteur à côté ; puis, en regardant la porte, `/salle bunker ajouter [nom]` (nom donné dans l'annonce du tchat).
    Elle ne s'ouvre plus qu'au lecteur, reste ouverte 30 min (`[bunkers]` de `config/heralisz_bunker-common.toml`), est
    annoncée à tout le serveur ; `/salle bunker` dit son état, `/salle bunker retirer` la rend ordinaire. Les cartes
-   des bunkers (3 passages, `usesBunker`) sortent des coffres T7 et des salles rouges (`outils/loot_armes.py`).
+   des bunkers (2 passages, `usesBunker`) sortent des coffres T7 et des salles rouges (`outils/loot_armes.py`).
 7. Points des coffres T7, points de quête de la carte (`/quete point …`), lieux des événements (`/event point …`).
 8. Territoires des clans : `zones.json` (centres, rayons), drapeaux en jeu (`/territoire drapeau <id>`) ou depuis la
    console (`/territoire drapeau <id> en <x y z> [nord|sud|est|ouest]`, 17/11), puis vérifier `/territoire info`.

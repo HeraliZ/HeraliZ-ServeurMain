@@ -4,6 +4,8 @@ import com.hbm_m.block.entity.doors.DoorBlockEntity;
 import fr.heralisz.bunker.salle.SallesPont;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -22,10 +24,14 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Lecteur de carte mural façon Rust. Il ouvre les portes à carte de sa couleur et les portes de bunker (désignées par le
@@ -47,6 +53,11 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
    private static final VoxelShape EAST = Block.box(0, 1, 3, 3, 15, 13);
 
    public final AccessLevel level;
+   /**
+    * 18/11 : cartes qui viennent de faire leur dernier passage (déjà retirées de l'inventaire), par lecteur : elles se
+    * cassent à la fin de la lecture (tick READING_OK). Serveur seulement, en mémoire : un redémarrage n'en perd que l'effet.
+    */
+   private static final Map<Level, Map<BlockPos, ItemStack>> CASSEES = new WeakHashMap<>();
 
    public CardReaderBlock(AccessLevel level, Properties props) {
       super(props);
@@ -92,7 +103,8 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
          KeycardNetwork.sendSwipe(sp, pos, state.getValue(FACING), ok, door);
       }
       if (ok && card.getItem() instanceof KeycardItem item) {
-         item.consumeUse(card, player);
+         ItemStack cassee = item.consumeUse(card, player);
+         if (!cassee.isEmpty()) CASSEES.computeIfAbsent(level, l -> new HashMap<>()).put(pos.immutable(), cassee);
       }
    }
 
@@ -104,6 +116,9 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
             level.setBlock(pos, state.setValue(STATUS, Status.GRANTED), Block.UPDATE_ALL);
             level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, 1.0F, 1.8F);
             level.scheduleTick(pos, this, DOOR_DELAY);
+            Map<BlockPos, ItemStack> cassees = CASSEES.get(level);
+            ItemStack cassee = cassees == null ? null : cassees.remove(pos);
+            if (cassee != null) casser(level, pos, state.getValue(FACING), cassee);
          }
          case GRANTED -> {
             if (!state.getValue(POWERED)) {
@@ -130,6 +145,13 @@ public class CardReaderBlock extends HorizontalDirectionalBlock {
          default -> {
          }
       }
+   }
+
+   /** La carte de son dernier passage se casse dans la fente, comme un outil de Minecraft : bruit et éclats de la carte. */
+   private static void casser(ServerLevel level, BlockPos pos, Direction facing, ItemStack carte) {
+      Vec3 fente = ReaderGeometry.slot(pos, facing, 0.5).add(ReaderGeometry.front(facing).scale(0.08));
+      level.playSound(null, pos, SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 0.9F, 0.9F + level.random.nextFloat() * 0.2F);
+      level.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, carte), fente.x, fente.y, fente.z, 12, 0.06, 0.12, 0.06, 0.05);
    }
 
    /** Prévient le bloc support et ses voisins (le signal traverse le mur). */

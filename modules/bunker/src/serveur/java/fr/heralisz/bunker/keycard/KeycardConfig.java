@@ -16,11 +16,13 @@ public final class KeycardConfig {
    static {
       ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
       b.comment("Cartes d'accès (lecteurs de cartes façon Rust)").push("keycards");
-      USES_GREEN = b.comment("Passages avant que la carte verte casse (0 = illimité)").defineInRange("usesGreen", 10, 0, 10000);
-      USES_BLUE = b.comment("Passages avant que la carte bleue casse (0 = illimité)").defineInRange("usesBlue", 8, 0, 10000);
-      USES_RED = b.comment("Passages avant que la carte rouge casse (0 = illimité)").defineInRange("usesRed", 6, 0, 10000);
+      // 18/11 (demande du propriétaire) : verte 4, bleue 3, rouge 2, cartes des bunkers 2 ; au dernier passage, la carte
+      // se casse et disparaît (jamais réparable)
+      USES_GREEN = b.comment("Passages avant que la carte verte casse (0 = illimité)").defineInRange("usesGreen", 4, 0, 10000);
+      USES_BLUE = b.comment("Passages avant que la carte bleue casse (0 = illimité)").defineInRange("usesBlue", 3, 0, 10000);
+      USES_RED = b.comment("Passages avant que la carte rouge casse (0 = illimité)").defineInRange("usesRed", 2, 0, 10000);
       USES_BUNKER = b.comment("Passages avant qu'une carte de bunker (Bunker des Bois, Bunker du Pic) casse (0 = illimité)")
-         .defineInRange("usesBunker", 3, 0, 10000);
+         .defineInRange("usesBunker", 2, 0, 10000);
       PULSE_TICKS = b.comment("Durée du signal redstone après un accès accordé (ticks, 20 = 1 s)").defineInRange("pulseTicks", 100, 10, 12000);
       b.pop();
       b.comment("Salles à carte (délimitées par le staff avec /salle) : porte tenue ouverte et loot de la salle").push("salles");

@@ -4,8 +4,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -22,6 +20,10 @@ import java.util.List;
 /**
  * Carte d'accès. Clic droit sur un lecteur = on glisse la carte (cinématique) ; le lecteur décide. Les passages réussis
  * usent la carte (compteur NBT « Uses », limite réglée par le serveur : ReglagesCartes) ; elle casse au dernier passage.
+ * 18/11 (demande du propriétaire) : verte 4 passages, bleue 3, rouge 2, cartes des bunkers 2 ; au dernier, la carte
+ * disparaît de l'inventaire et se casse dans le lecteur à la fin de la lecture, comme un outil de Minecraft (bruit et
+ * éclats : CardReaderBlock). Jamais réparable : ce n'est pas un objet à durabilité de Minecraft (enclume, Raccommodage,
+ * meule, kits de réparation n'y touchent pas) et le recycleur la refuse.
  */
 public class KeycardItem extends Item {
    private static final String USES = "Uses";
@@ -57,25 +59,30 @@ public class KeycardItem extends Item {
       return InteractionResult.sidedSuccess(world.isClientSide);
    }
 
-   /** Un passage réussi : +1 usage, la carte casse à la limite (0 = illimitée). */
-   public void consumeUse(ItemStack stack, Player player) {
+   /**
+    * Un passage réussi : +1 usage (0 = illimitée, créatif : rien). Au dernier, la carte est détruite tout de suite (plus
+    * moyen de la garder) et sa copie est rendue, pour la casser dans le lecteur à la fin de la lecture ; sinon EMPTY.
+    */
+   public ItemStack consumeUse(ItemStack stack, Player player) {
       int max = ReglagesCartes.passages(this.level);
       if (max <= 0 || player.getAbilities().instabuild) {
-         return;
+         return ItemStack.EMPTY;
       }
       CompoundTag tag = stack.getOrCreateTag();
       int used = tag.getInt(USES) + 1;
       if (used >= max) {
-         player.level().playSound(null, player.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 0.8F, 1.3F);
+         ItemStack copie = stack.copyWithCount(1);
          stack.shrink(1);
-      } else {
-         tag.putInt(USES, used);
+         return copie;
       }
+      tag.putInt(USES, used);
+      return ItemStack.EMPTY;
    }
 
+   /** Passages restants (jamais moins de 0 : carte usée sous une ancienne limite plus haute), -1 : illimitée. */
    private int remaining(ItemStack stack) {
       int max = ReglagesCartes.passages(this.level);
-      return max <= 0 ? -1 : max - (stack.hasTag() ? stack.getTag().getInt(USES) : 0);
+      return max <= 0 ? -1 : Math.max(0, max - (stack.hasTag() ? stack.getTag().getInt(USES) : 0));
    }
 
    @Override

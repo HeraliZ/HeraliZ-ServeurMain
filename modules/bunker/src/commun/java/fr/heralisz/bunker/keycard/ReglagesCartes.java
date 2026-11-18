@@ -18,9 +18,9 @@ public final class ReglagesCartes {
    /** Borne des passages (comme le réglage). */
    public static final int MAX_PASSAGES = 10000;
 
-   private static volatile int vert = 10, bleu = 8, rouge = 6;
-   // 17/11 : cartes des bunkers (toutes les mêmes)
-   private static volatile int bunker = 3;
+   // 18/11 : verte 4, bleue 3, rouge 2 ; cartes des bunkers (toutes les mêmes) 2
+   private static volatile int vert = 4, bleu = 3, rouge = 2;
+   private static volatile int bunker = 2;
    private static volatile int impulsionTicks = 100;
 
    /** Passages avant que la carte de ce niveau casse (0 = illimitée). */
