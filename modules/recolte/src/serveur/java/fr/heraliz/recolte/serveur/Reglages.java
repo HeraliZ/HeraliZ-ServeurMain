@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,10 +46,12 @@ public final class Reglages {
     // 18/11 (retour du propriétaire : « pas assez d'arbres et de minerais, je n'en ai croisé aucun ») : 4 fois plus, plus
     // serrés, qui reviennent 2 fois plus vite (avant : 30, 24, 10, 4 ; 90, 120, 240, 480 min ; écarts 50, 60, 150, 300)
     // 18/11 au soir (« ça donne beaucoup trop ; 3 fois plus de ressources mais qui donnent moins », pour que monter sa base
-    // reste à la mesure des explosifs) : 3 fois plus, environ 3 fois moins de matière chacune (avant : 120, 90, 40, 14 ;
-    // 30, 24, 30, 16 ; chute 6 ; écarts du métal et du titane 80, 160), et la zone de neige en plus ({@link Neige})
+    // reste à la mesure des explosifs) : 3 fois plus (avant : 120, 90, 40, 14 ; écarts du métal et du titane 80, 160), et
+    // plus de places dans la zone de neige ({@link Neige}) ; matière tirée entre deux bornes (choix du propriétaire : pierre
+    // 10 à 14, métal 7 à 12, titane 4 à 8 ; arbre 10 ; avant : 30, 24, 30, 16 ; chute 6), meilleure avec l'outil légendaire
     private static final int[] A_LA_FOIS = {360, 270, 120, 42};
-    private static final int[] MATIERE = {10, 8, 10, 6};
+    private static final int[] MATIERE_MIN = {10, 10, 7, 4};
+    private static final int[] MATIERE_MAX = {10, 14, 12, 8};
     private static final int[] CHUTE = {2, 0, 0, 0};
     private static final int[] COUPS = {12, 16, 20, 24};
     private static final int[] COUPS_LEGENDAIRE = {7, 10, 12, 14};
@@ -69,31 +72,31 @@ public final class Reglages {
             "minecraft:azalea", "minecraft:flowering_azalea", "minecraft:big_dripleaf", "minecraft:small_dripleaf",
             "minecraft:pointed_dripstone", "minecraft:dripstone_block");
 
-    /** Barème d'une sorte de ressource. */
-    public record Ressource(int aLaFois, int matiere, int chute, int coups, int coupsLegendaire, int reapparitionMinutes, int ecart) {
+    /**
+     * Barème d'une sorte de ressource. Matière : entre {@code matiereMin} et {@code matiereMax}, tirée au premier coup
+     * ({@link #tirer}).
+     */
+    public record Ressource(int aLaFois, int matiereMin, int matiereMax, int chute, int coups, int coupsLegendaire,
+                            int reapparitionMinutes, int ecart) {
         /** Coups pour la vider avec l'outil tenu (la hache-pioche de survie en demande moins). */
         public int coups(boolean legendaire) {
             return Math.max(1, legendaire ? coupsLegendaire : coups);
         }
 
-        /** Matière donnée par les coups (pour un arbre, le reste est donné quand il tombe). */
-        public int matiereCoups() {
-            return Math.max(0, matiere - chute);
+        /**
+         * Matière que donnera une ressource, tirée à son premier coup : au hasard entre les deux bornes ; avec l'outil
+         * légendaire (la hache-pioche de survie), deux tirages et le meilleur gardé (18/11, choix du propriétaire : « de
+         * meilleures chances avec la meilleure hache ou pioche, et plus vite »).
+         */
+        public int tirer(RandomSource rnd, boolean legendaire) {
+            int ecartBornes = Math.max(0, matiereMax - matiereMin);
+            int n = matiereMin + rnd.nextInt(ecartBornes + 1);
+            return legendaire ? Math.max(n, matiereMin + rnd.nextInt(ecartBornes + 1)) : n;
         }
 
-        /** Matière d'une ressource posée là où la récolte donne {@code bonus} fois plus ({@link Reglages#bonus}). */
-        public int matiere(double bonus) {
-            return (int) Math.round(matiere * bonus);
-        }
-
-        /** Bûches de la chute d'un arbre posé là où la récolte donne {@code bonus} fois plus. */
-        public int chute(double bonus) {
-            return Math.min(matiere(bonus), (int) Math.round(chute * bonus));
-        }
-
-        /** Matière des coups d'une ressource posée là où la récolte donne {@code bonus} fois plus. */
-        public int matiereCoups(double bonus) {
-            return Math.max(0, matiere(bonus) - chute(bonus));
+        /** Bûches de la chute d'un arbre qui donne {@code total} en tout (le reste vient des coups). */
+        public int chute(int total) {
+            return Math.min(chute, Math.max(0, total));
         }
 
         public long reapparitionMs() {
@@ -135,9 +138,9 @@ public final class Reglages {
         JsonObject res = objet(o, "ressources");
         for (int i = 0; i < SORTES.length; i++) {
             JsonObject r = objet(res, SORTES[i]);
-            int matiere = entier(r, "matiere", MATIERE[i], 0, 10_000);
-            ressources[i] = new Ressource(entier(r, "a_la_fois", A_LA_FOIS[i], 0, 500), matiere,
-                    i == ARBRE ? entier(r, "chute", CHUTE[i], 0, matiere) : 0,
+            int[] matiere = bornes(r, "matiere", MATIERE_MIN[i], MATIERE_MAX[i], 0, 10_000);
+            ressources[i] = new Ressource(entier(r, "a_la_fois", A_LA_FOIS[i], 0, 500), matiere[0], matiere[1],
+                    i == ARBRE ? entier(r, "chute", CHUTE[i], 0, matiere[0]) : 0,
                     entier(r, "coups", COUPS[i], 1, 1000), entier(r, "coups_legendaire", COUPS_LEGENDAIRE[i], 1, 1000),
                     entier(r, "reapparition_minutes", REAPPARITION_MINUTES[i], 0, 100_000), entier(r, "ecart", ECART[i], 0, 5000));
         }
@@ -173,19 +176,14 @@ public final class Reglages {
         return attenteMaxMinutes * 60_000L;
     }
 
-    /** Matière en plus d'une ressource posée en (x, z) : le bonus de la zone de neige, sinon 1. */
-    public double bonus(double x, double z) {
-        Neige n = neige;
-        return n != null && n.contient(x, z) ? n.bonus() : 1.0;
-    }
-
     /**
      * La zone de neige (18/11, choix du propriétaire : « les arbres et les ressources doivent apparaître en plus grand
-     * nombre dans la zone de neige ; c'est là qu'on va en priorité pour farmer, c'est plus fort que sur le reste de la
-     * carte ») : contour en points {x, z} (l'Île arctique de config/crac/zones_construction.json), {@code part} des places
-     * de chaque sorte tirées dedans (0 à 1), matière multipliée par {@code bonus} pour une ressource posée dedans.
+     * nombre dans la zone de neige ; c'est là qu'on va en priorité pour farmer ») : contour en points {x, z} (l'Île
+     * arctique de config/crac/zones_construction.json), {@code part} des places de chaque sorte tirées dedans (0 à 1). Ses
+     * ressources ne donnent pas plus qu'ailleurs (« juste plus de points d'apparition : on cherche moins, on mine plus,
+     * donc plus de risque »).
      */
-    public record Neige(int[] xs, int[] zs, int minX, int minZ, int maxX, int maxZ, double part, double bonus) {
+    public record Neige(int[] xs, int[] zs, int minX, int minZ, int maxX, int maxZ, double part) {
         /** Le point (x, z) est-il dans le contour (rectangle d'abord, puis rayon qui traverse le contour) ? */
         public boolean contient(double x, double z) {
             if (x < minX || x > maxX || z < minZ || z > maxZ) {
@@ -229,7 +227,7 @@ public final class Reglages {
                 x1 = Math.max(x1, xs[i]);
                 z1 = Math.max(z1, zs[i]);
             }
-            return new Neige(xs, zs, x0, z0, x1, z1, reel(o, "part", 0.4, 0.0, 1.0), reel(o, "bonus", 1.5, 1.0, 10.0));
+            return new Neige(xs, zs, x0, z0, x1, z1, reel(o, "part", 0.4, 0.0, 1.0));
         }
     }
 
@@ -324,6 +322,26 @@ public final class Reglages {
         }
         long v = Math.round(o.get(cle).getAsDouble());
         return (int) Math.max(min, Math.min(max, v));
+    }
+
+    /**
+     * Deux bornes {min, max} : un nombre (les deux bornes égales) ou [min, max] ; absent ou illisible : les valeurs par
+     * défaut ; bornes ramenées dans [bas, haut], et min jamais au-dessus de max.
+     */
+    private static int[] bornes(JsonObject o, String cle, int defMin, int defMax, int bas, int haut) {
+        JsonElement e = o.get(cle);
+        int a = defMin, b = defMax;
+        if (e != null && e.isJsonPrimitive() && e.getAsJsonPrimitive().isNumber()) {
+            a = b = (int) Math.round(e.getAsDouble());
+        } else if (e != null && e.isJsonArray() && e.getAsJsonArray().size() == 2 && e.getAsJsonArray().get(0).isJsonPrimitive()
+                && e.getAsJsonArray().get(0).getAsJsonPrimitive().isNumber() && e.getAsJsonArray().get(1).isJsonPrimitive()
+                && e.getAsJsonArray().get(1).getAsJsonPrimitive().isNumber()) {
+            a = (int) Math.round(e.getAsJsonArray().get(0).getAsDouble());
+            b = (int) Math.round(e.getAsJsonArray().get(1).getAsDouble());
+        }
+        a = Math.max(bas, Math.min(haut, a));
+        b = Math.max(bas, Math.min(haut, b));
+        return new int[]{Math.min(a, b), Math.max(a, b)};
     }
 
     private static double reel(JsonObject o, String cle, double defaut, double min, double max) {

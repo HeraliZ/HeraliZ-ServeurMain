@@ -196,10 +196,11 @@ balles, tête, sniper, armure). Récolte : `serveur/config/heraliz_recolte/recol
       même un Zombie Brute. Les .50 (M82A3, M95) font enfin des dégâts aux zombies (avant : 0).
 - [ ] Zombies : fusil 5,56 ou pistolet 9 mm, une balle dans la tête tue un marcheur ou un coureur ; au corps, environ
       3 balles pour un marcheur, 5 pour un costaud. Au corps à corps (couteau, hache…), rien ne change : ils encaissent.
-- [ ] Récolte : bien plus d'arbres et de gisements partout (3 fois plus), mais chacun donne environ 3 fois moins (arbre
-      10 bûches, pierre 8, fer 10, titane 6).
-- [ ] Zone de neige (île arctique, au nord) : beaucoup plus de ressources qu'ailleurs (4 sur 10 de la carte y sont), et
-      elles donnent 50 % de plus (arbre 15 bûches, pierre 12, fer 15, titane 9). Elles apparaissent quand un joueur y va.
+- [ ] Récolte : bien plus d'arbres et de gisements partout (3 fois plus), mais chacun donne moins : arbre 10 bûches,
+      pierre 10 à 14, métal 7 à 12, titane 4 à 8 (tiré au premier coup). Avec la hache-pioche de survie : plus vite, et
+      plus souvent le haut de la fourchette.
+- [ ] Zone de neige (île arctique, au nord) : beaucoup plus de ressources qu'ailleurs (4 sur 10 de la carte y sont),
+      mais pas plus de matière chacune. Elles apparaissent quand un joueur y va.
 - [ ] Explosifs dans le loot : C4 ou 1 à 2 charges explosives, environ 1 conteneur T7 sur 12, T6 1 sur 50, T5 1 sur 200
       (jamais avant T5).
 - [ ] Écrans en fenêtre (hôtel des ventes, quêtes, clans, kits…) : plus grands qu'avant dans une fenêtre un peu plus

@@ -23,7 +23,8 @@ import java.util.UUID;
  * le serveur juge chaque coup de hache (attaque de Minecraft, {@link #skipAttackInteraction}).
  * <ul>
  *    <li>Travail et matière comme un gisement : avance d'1 / coups nécessaires avec l'outil tenu, partagée entre les
- *    joueurs et gardée avec l'entité ; bûches au prorata (2 par coup à la hache), même total quel que soit l'outil.</li>
+ *    joueurs et gardée avec l'entité ; bûches au prorata, total tiré au premier coup entre les bornes du barème (18/11 :
+ *    10 ; la hache-pioche de survie garde le meilleur de deux tirages).</li>
  *    <li>{@link #COUPS} (entaille) : 0, 1 puis 2 aux tiers du travail, 3 au dernier coup ; {@link #DIRECTION} : à
  *    l'opposé du joueur à chaque coup, figée au dernier.</li>
  *    <li>Au dernier coup, {@link #CHUTE} = heure de jeu : il craque et tombe chez les joueurs, sa place repart aussitôt
@@ -45,6 +46,8 @@ public class ArbreServeur extends Arbre {
     private double avance;
     /** Bûches déjà données. */
     private int donne;
+    /** Bûches que donne cet arbre en tout, tirées à son premier coup (0 : pas encore tirées ; 18/11). */
+    private int total;
     /** Celui qui a porté le dernier coup (il reçoit les bûches de la chute). */
     @Nullable
     private UUID abatteur;
@@ -63,6 +66,7 @@ public class ArbreServeur extends Arbre {
         this.entityData.set(SOUCHE, false);
         this.avance = 0.0;
         this.donne = 0;
+        this.total = 0;
         this.abatteur = null;
     }
 
@@ -81,6 +85,9 @@ public class ArbreServeur extends Arbre {
             return;
         }
         Reglages.Ressource r = Reglages.get().ressource(Reglages.ARBRE);
+        if (total <= 0) {
+            total = r.tirer(l.getRandom(), outil.legendaire());
+        }
         avance = Math.min(1.0, avance + 1.0 / r.coups(outil.legendaire()));
         boolean fini = avance >= Coups.FINI;
         if (fini) {
@@ -88,8 +95,7 @@ public class ArbreServeur extends Arbre {
         }
         Vec3 point = Coups.pointTouche(joueur, this);
         Coups.user(joueur);
-        // 18/11 : un arbre de la zone de neige donne plus (Reglages.bonus)
-        int du = Coups.part(avance, r.matiereCoups(Reglages.get().bonus(this.getX(), this.getZ())));
+        int du = Coups.part(avance, Math.max(0, total - r.chute(total)));
         if (du > donne) {
             Coups.donner(joueur, ObjetsRecolte.BUCHE.get(), du - donne);
             donne = du;
@@ -143,8 +149,11 @@ public class ArbreServeur extends Arbre {
             return;
         }
         Reglages.Ressource r = Reglages.get().ressource(Reglages.ARBRE);
-        // les bûches de la chute : ce qui manque pour le total du barème (2 depuis le 18/11 ; 3 dans la zone de neige)
-        int reste = Math.max(0, r.matiere(Reglages.get().bonus(this.getX(), this.getZ())) - donne);
+        // les bûches de la chute : ce qui manque pour le total tiré au premier coup (2 sur 10 depuis le 18/11)
+        if (total <= 0) {
+            total = r.tirer(l.getRandom(), false);
+        }
+        int reste = Math.max(0, total - donne);
         donne += reste;
         if (reste > 0) {
             ServerPlayer joueur = abatteur == null ? null : l.getServer().getPlayerList().getPlayer(abatteur);
@@ -191,6 +200,7 @@ public class ArbreServeur extends Arbre {
         super.readAdditionalSaveData(tag);
         this.avance = tag.contains("Avance") ? Mth.clamp(tag.getDouble("Avance"), 0.0, 1.0) : entaille() / 3.0;
         this.donne = Math.max(0, tag.getInt("Donne"));
+        this.total = Math.max(0, tag.getInt("Total"));
         this.abatteur = tag.hasUUID("Abatteur") ? tag.getUUID("Abatteur") : null;
         this.impactJoue = chute() >= 0L;
     }
@@ -200,6 +210,7 @@ public class ArbreServeur extends Arbre {
         super.addAdditionalSaveData(tag);
         tag.putDouble("Avance", this.avance);
         tag.putInt("Donne", this.donne);
+        tag.putInt("Total", this.total);
         if (this.abatteur != null) {
             tag.putUUID("Abatteur", this.abatteur);
         }

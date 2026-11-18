@@ -20,8 +20,9 @@ import net.minecraft.world.phys.Vec3;
  * <ul>
  *    <li>Le travail avance d'une fraction : 1 / coups nécessaires avec l'outil tenu (barème de recolte.json ; la
  *    hache-pioche de survie en demande 40 % de moins), partagé entre tous ceux qui frappent ; gardé avec l'entité.</li>
- *    <li>La matière est donnée au prorata du travail : même total quel que soit l'outil (la légendaire fait gagner du
- *    temps, pas plus de ressources).</li>
+ *    <li>La matière est donnée au prorata du travail. 18/11 : son total est tiré au premier coup, entre les bornes du
+ *    barème (pierre 10 à 14, métal 7 à 12, titane 4 à 8) ; la hache-pioche de survie tire deux fois et garde le meilleur
+ *    (choix du propriétaire : « de meilleures chances avec la meilleure pioche, et plus vite »).</li>
  *    <li>{@link #ETAPE} = quarts du travail (le modèle suivant) ; {@link #SECOUSSE} = heure du coup (il tremble chez les
  *    joueurs) ; à la fin, il éclate et disparaît, sa place repart ailleurs après le délai de réapparition. La récolte ne
  *    rapporte aucun point de saison (décision du propriétaire du 16/11).</li>
@@ -32,6 +33,8 @@ public class GisementServeur extends Gisement {
     private double avance;
     /** Matière déjà donnée. */
     private int donne;
+    /** Matière que donne ce gisement en tout, tirée à son premier coup (0 : pas encore tirée). */
+    private int total;
 
     public GisementServeur(EntityType<? extends Gisement> type, Level level) {
         super(type, level);
@@ -43,6 +46,7 @@ public class GisementServeur extends Gisement {
         this.entityData.set(ETAPE, 0);
         this.avance = 0.0;
         this.donne = 0;
+        this.total = 0;
     }
 
     /** Sorte de ressource du barème ({@link Reglages#PIERRE}, {@link Reglages#METAL}, {@link Reglages#RARE}). */
@@ -68,6 +72,9 @@ public class GisementServeur extends Gisement {
             return;
         }
         Reglages.Ressource r = Reglages.get().ressource(sorte());
+        if (total <= 0) {
+            total = r.tirer(l.getRandom(), outil.legendaire());
+        }
         avance = Math.min(1.0, avance + 1.0 / r.coups(outil.legendaire()));
         boolean fini = avance >= Coups.FINI;
         if (fini) {
@@ -75,8 +82,7 @@ public class GisementServeur extends Gisement {
         }
         Vec3 point = Coups.pointTouche(joueur, this);
         Coups.user(joueur);
-        // 18/11 : un gisement de la zone de neige donne plus (Reglages.bonus)
-        int du = Coups.part(avance, r.matiere(Reglages.get().bonus(this.getX(), this.getZ())));
+        int du = Coups.part(avance, total);
         if (du > donne) {
             Coups.donner(joueur, Coups.matiere(sorte()), du - donne);
             donne = du;
@@ -109,6 +115,7 @@ public class GisementServeur extends Gisement {
         super.readAdditionalSaveData(tag);
         this.avance = tag.contains("Avance") ? Mth.clamp(tag.getDouble("Avance"), 0.0, 1.0) : etape() / (double) ETAPES;
         this.donne = Math.max(0, tag.getInt("Donne"));
+        this.total = Math.max(0, tag.getInt("Total"));
     }
 
     @Override
@@ -116,5 +123,6 @@ public class GisementServeur extends Gisement {
         super.addAdditionalSaveData(tag);
         tag.putDouble("Avance", this.avance);
         tag.putInt("Donne", this.donne);
+        tag.putInt("Total", this.total);
     }
 }
