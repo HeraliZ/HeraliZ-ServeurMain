@@ -39,6 +39,8 @@ import java.util.UUID;
  * capitals, clan accent. Left: categories; middle: emote tiles; right: preview stage, details, Play / Stop.
  * <p>Emotes not unlocked yet (emote crate) are greyed with a padlock: clicking one still shows it on the stage, and the
  * Play button then reads "To unlock in the emote crate" instead.
+ * <p>18/11 (owner's feedback: no help text on screen): no more key hint in the footer ("Double-click or Enter: play…")
+ * nor "Drag to rotate" in the corner of the stage; the footer keeps the others' sound switch and Close.
  */
 public class EmoteBrowserScreen extends Screen {
     private static final int TILE_W = 52;
@@ -336,11 +338,8 @@ public class EmoteBrowserScreen extends Screen {
 
         renderPreviewPanel(g, partialTick, accent);
 
-        // ---- footer: hint, others' sound switch, close
+        // ---- footer: others' sound switch, close (18/11 : plus d'aide « Double-clic ou Entrée : jouer · … · Échap : fermer »)
         Ui.hairline(g, px + Ui.MARGE, px + pw - Ui.MARGE, footY - 7, 0xFFFFFF, 30, true, true);
-        String hint = Component.translatable("heraliz_emote.menu.hint").getString();
-        g.drawString(font, Ui.lit(Ui.ellipsis(font, hint, Ui.SMALL, soundX0 - (px + Ui.MARGE) - 12), Ui.SMALL), px + Ui.MARGE, footY + 1,
-                Ui.argb(Ui.FAINT, 255), false);
         boolean on = HeralizConfig.OTHER_PLAYERS_SOUNDS.get();
         boolean overSound = over(mouseX, mouseY, soundX0, soundY - 2, soundX1, soundY + 10);
         Ui.pastille(g, soundX0, soundY, 8, accent, on, overSound);
@@ -448,14 +447,12 @@ public class EmoteBrowserScreen extends Screen {
             preview.render(g, cx, feet, size, yaw, -6, partialTick);
             g.disableScissor();
         }
+        // un refus seulement (18/11 : plus de « Glisser pour tourner » dans le coin de l'aperçu)
         if (status != null) {
             int sw = Math.min(w - 12, font.width(Ui.in(status, Ui.SMALL)) + 12);
             Ui.soft(g, cx - sw / 2, st0 + 6, sw, 13, Ui.argb(Ui.DANGER, 40));
             Ui.softOutline(g, cx - sw / 2 + 1, st0 + 7, sw - 2, 11, Ui.argb(Ui.DANGER, 120));
             Ui.centered(g, font, Ui.in(status, Ui.SMALL), cx, st0 + 9, Ui.argb(Ui.mix(Ui.DANGER, 0xFFFFFF, 0.3f), 255));
-        } else {
-            Ui.spacedRight(g, font, Component.translatable("heraliz_emote.menu.drag").getString(), Ui.SMALL, sx1 - 6, st1 - 9,
-                    Ui.argb(0xFFFFFF, 60), 0.6f);
         }
         if (e == null) return;
 

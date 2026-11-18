@@ -17,6 +17,11 @@ import static fr.heraliz.crac.client.kit.Dessin.*;
 /**
  * Fiche technique des bases ({@code /base info}, CRac 1.13.0, maquette validée le 19/10) : onglets Poser, Améliorer,
  * Réparer, Entretien et Raids. Rien n'est calculé ici : les chiffres viennent du serveur ({@link S2CFicheBase}).
+ * <p>
+ * 18/11 (retour du propriétaire : « pas besoin d'autant de texte ») : plus de « Échap fermer » ni de sous-titre (titre
+ * centré au-dessus des onglets) ; une règle courte par onglet au-dessus du tableau, et un pied d'une ligne seulement où
+ * il apprend quelque chose (Poser : où acheter les brindilles ; Entretien : la base s'use sans lui ; Raids : ce que
+ * comptent les colonnes). Plus de mode d'emploi du marteau ni de redites des colonnes.
  */
 public class EcranFicheBase extends EcranGroupe {
     private static final float W = 600, H = 336, ROW = 35;
@@ -147,14 +152,12 @@ public class EcranFicheBase extends EcranGroupe {
         }
     }
 
-    /** En-tête de la fiche dans ses propres polices (plus grandes et nettes) : titre, sous-titre, « Échap fermer ». */
+    /**
+     * En-tête de la fiche dans ses propres polices (plus grandes et nettes) : le titre seul (18/11), milieu des capitales à
+     * mi-hauteur entre le haut du panneau et les onglets (y0 + 19).
+     */
     private void enteteFiche(GuiGraphics g) {
-        float x = this.gx();
-        String fermer = Component.translatable("crac.gui.esc_close").getString();
-        float fw = largeurCaps(this.font, fermer, FICHE_MINI, 0.7F);
-        caps(g, this.font, fermer, FICHE_MINI, this.x0 + W - 13.33F - fw, this.y0 + 12, 0.7F, a(GRIS, 255));
-        caps(g, this.font, t("crac.fiche.titre"), FICHE_GROS, x, this.y0 + 9, 1.1F, a(BLANC, 255));
-        this.ecrire(g, t("crac.fiche.sous"), MINI, x, this.y0 + 28, W - 40, a(GRIS, 255));
+        caps(g, this.font, t("crac.fiche.titre"), FICHE_GROS, this.gx(), this.y0 + 15, 1.1F, a(BLANC, 255));
     }
 
     /** Texte agrandi ({@link #E}), centré verticalement sur {@code cy}, coupé à {@code maxW} unités. */
@@ -169,13 +172,11 @@ public class EcranFicheBase extends EcranGroupe {
         this.ecrire(g, s, MOYEN, this.gx(), y + 5, this.gw(), a(GRIS, 255));
     }
 
-    private void pied(GuiGraphics g, String l1, String l2) {
+    /** Pied d'une ligne (18/11 : une seule, centrée entre le filet et le bas du panneau). */
+    private void pied(GuiGraphics g, String ligne) {
         float x = this.gx(), w = this.gw();
         rect(g, x, this.y0 + H - 32, x + w, this.y0 + H - 32 + this.px, a(BLANC, 20));
-        this.ecrire(g, l1, MINI, x, this.y0 + H - 22, w, a(GRIS, 255));
-        if (!l2.isEmpty()) {
-            this.ecrire(g, l2, MINI, x, this.y0 + H - 10, w, a(GRIS, 255));
-        }
+        this.ecrire(g, ligne, MINI, x, this.y0 + H - 16, w, a(GRIS, 255));
     }
 
     private void entetes(GuiGraphics g, float y, float[] cols, String... noms) {
@@ -232,7 +233,7 @@ public class EcranFicheBase extends EcranGroupe {
                 cx += this.cout(g, c, cx, cy, Math.round(x + colW - cx)) + 8;
             }
         }
-        this.pied(g, t("crac.fiche.poser.pied1"), t("crac.fiche.poser.pied2"));
+        this.pied(g, t("crac.fiche.poser.pied1"));
     }
 
     private void ameliorer(GuiGraphics g) {
@@ -267,7 +268,7 @@ public class EcranFicheBase extends EcranGroupe {
             }
             y += ROW;
         }
-        this.pied(g, t("crac.fiche.ameliorer.pied1"), t("crac.fiche.ameliorer.pied2"));
+        // 18/11 : plus de pied (les colonnes « Matériau (Bâtisseur) » et « Objet de la carte » disent déjà d'où ça vient)
     }
 
     private void reparer(GuiGraphics g) {
@@ -288,7 +289,7 @@ public class EcranFicheBase extends EcranGroupe {
             this.ecrire(g, t("crac.fiche.pv", nombre(p.pvMur())), MOYEN, cols[2], cy, 160, a(TEXTE, 255));
             y += ROW - 2;
         }
-        this.pied(g, t("crac.fiche.reparer.pied"), "");
+        // 18/11 : plus de mode d'emploi du marteau en pied
     }
 
     private void entretien(GuiGraphics g) {
@@ -307,7 +308,7 @@ public class EcranFicheBase extends EcranGroupe {
             }
             y += ROW - 2;
         }
-        this.pied(g, t("crac.fiche.entretien.pied"), "");
+        this.pied(g, t("crac.fiche.entretien.pied"));
     }
 
     private void raids(GuiGraphics g) {
@@ -325,7 +326,7 @@ public class EcranFicheBase extends EcranGroupe {
             this.ecrire(g, nombre(p.charges()), MOYEN_GRAS, cols[3], cy, 160, a(ROUGE_PALE, 255));
             y += ROW - 2;
         }
-        this.pied(g, t("crac.fiche.raids.pied"), "");
+        this.pied(g, t("crac.fiche.raids.pied"));
     }
 
     /** « 3 », « 2,5 ». */

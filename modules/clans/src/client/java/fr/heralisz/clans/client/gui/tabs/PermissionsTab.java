@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 /**
  * Permissions (chef, et quiconque peut GERER_PERMISSIONS) : bascule PAR GRADE / PAR JOUEUR en haut a gauche,
- * indication discrete a droite.
+ * indication discrete a droite en PAR GRADE (le chef a tous les droits, ou lecture seule).
  * <ul>
  * <li>PAR GRADE : colonnes HAUT GRADE · MEMBRE · RECRUE, liste defilante groupee CLAN · BASE · CLASHWAR
  * ({@link ListeGrades}) ; modifiable par le chef seul, lecture seule pour les autres ;</li>
@@ -81,7 +81,7 @@ public final class PermissionsTab extends Tab {
             }
             Ui.hairline(g, x, x + w, y + 31, 0xFFFFFF, 40, false, true);
         } else {
-            Ui.right(g, font, Ui.tr(Ui.SMALL, "gui.permissions.astuce_joueur"), x + w, y + 3, Ui.argb(Ui.FAINT, 255));
+            // 18/11 : plus d'astuce « un réglage personnel l'emporte sur le grade » à droite de la bascule
             if (editeur != null) editeur.render(g, mouseX, mouseY);
         }
     }

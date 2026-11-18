@@ -76,7 +76,8 @@ public class PermissionsScreen extends Screen implements Hote {
         vSnapshot = ClientClans.versionSnapshot();
         addRenderableWidget(new HzIcon(px + pw - 24, py + 10, 12, Icons.CROIX, Component.translatable("gui.fermer"), this::onClose));
         ClanSnapshot s = ClientClans.snapshot();
-        editeur = s == null ? null : new EditeurJoueurs(this, s, px + Ui.MARGE, py + ENTETE + 24, pw - 2 * Ui.MARGE, ph - ENTETE - 24 - 14, seulementBase);
+        // 18/11 : plus de ligne d'astuce sous l'en-tête : l'éditeur monte d'autant
+        editeur = s == null ? null : new EditeurJoueurs(this, s, px + Ui.MARGE, py + ENTETE + 10, pw - 2 * Ui.MARGE, ph - ENTETE - 10 - 14, seulementBase);
     }
 
     /** Nouveau snapshot : reconstruction en gardant le defilement des deux listes. */
@@ -113,8 +114,6 @@ public class PermissionsScreen extends Screen implements Hote {
             Ui.spaced(g, font, getTitle().getString(), Ui.BOLD, tx, py + 11, Ui.argb(Ui.TEXT, 255), 1.2f);
             g.drawString(font, Ui.lit("[" + s.tag() + "] " + s.nom(), Ui.SMALL), tx, py + 25, Ui.argb(Ui.MUTED, 255), false);
             Ui.hairline(g, px + 8, px + pw - 8, py + ENTETE, 0xFFFFFF, 40, true, true);
-            // indication, puis l'editeur
-            g.drawString(font, Ui.tr(Ui.SMALL, "gui.permissions.astuce_joueur"), px + Ui.MARGE, py + ENTETE + 9, Ui.argb(Ui.FAINT, 255), false);
             if (editeur != null) editeur.render(g, mouseX, mouseY);
         }
         super.render(g, mouseX, mouseY, partialTick);

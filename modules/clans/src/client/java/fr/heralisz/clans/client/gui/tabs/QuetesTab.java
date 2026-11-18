@@ -28,10 +28,7 @@ public final class QuetesTab extends Tab {
         int y2 = y1 + 14 + CARTE_H + 18;
         entete(g, tr("quete.hebdomadaires"), s.resetSemaineMs(), y2);
         cartes(g, s.quetesSemaine(), y2 + 14, cw, mouseX, mouseY);
-        int y3 = y2 + 14 + CARTE_H + 14;
-        if (y3 + 10 <= y + h) {
-            g.drawString(font, Ui.tr(Ui.SMALL, "gui.quetes.auto"), x, y3, Ui.argb(Ui.FAINT, 255), false);
-        }
+        // 18/11 : plus de note « les quêtes se valident toutes seules » sous les cartes
     }
 
     private void entete(GuiGraphics g, String titre, long resetMs, int yy) {

@@ -223,10 +223,13 @@ public class AtelierScreen extends Screen implements Atelier {
         }
     }
 
-    /** Texte du pied (delai restant, permission) : recalcule a l'ouverture puis une fois par seconde. */
+    /**
+     * Texte du pied (delai restant, permission) : recalcule a l'ouverture puis une fois par seconde. 18/11 : rien a la
+     * fondation (plus de « la banniere sera enregistree a la fondation du clan »).
+     */
     private void majPied() {
         if (mode == Mode.CREATION) {
-            pied = Ui.tr(Ui.SMALL, "gui.atelier.pied_creation");
+            pied = Component.empty();
             piedCouleur = Ui.FAINT;
             return;
         }

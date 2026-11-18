@@ -13,8 +13,8 @@ import java.util.Locale;
 /**
  * Panneau contextuel d'un calque selectionne (colonne de droite) : COULEUR (cibles FORME / CONTOUR, palette de 16
  * couleurs ; le champ hexa est un widget de l'ecran place a droite des cibles), CONTOUR (aucun · 1 · 2 · 3 · 4),
- * TAILLE (glissiere, proportions gardees), ROTATION (glissiere + 0° / 90°), puis un rappel des gestes.
- * Dimensions : voir les constantes Y_* (decalages depuis le haut du panneau).
+ * TAILLE (glissiere, proportions gardees), ROTATION (glissiere + 0° / 90°) ; 18/11 : plus de rappel des gestes dessous.
+ * Dimensions : voir les constantes Y_* (decalages depuis le haut du panneau ; Y_AIDE borne encore la zone cliquable).
  */
 public final class PanneauCalque {
     /** Decalages verticaux des rangees depuis le haut du panneau. */
@@ -29,7 +29,7 @@ public final class PanneauCalque {
     private int indexGeste = -1;
     private int groupe;
     private String forme = "", cibleForme = "", cibleContour = "", contour = "", tailleTitre = "", rotationTitre = "", aucun = "";
-    private Component aide1, aide2, aide3, tropPetit;
+    private Component tropPetit;
     /** Textes des valeurs, recalcules seulement quand elles changent. */
     private int tailleW = -1, tailleH = -1, rotationV = -1, formeV = -1;
     private Component tailleTxt = Component.empty(), rotationTxt = Component.empty();
@@ -62,9 +62,6 @@ public final class PanneauCalque {
         tailleTitre = tr("gui.atelier.taille");
         rotationTitre = tr("gui.atelier.rotation");
         aucun = tr("gui.atelier.contour_aucun");
-        aide1 = Ui.tr(Ui.SMALL, "gui.atelier.aide_toile");
-        aide2 = Ui.tr(Ui.SMALL, "gui.atelier.aide_maj");
-        aide3 = Ui.tr(Ui.SMALL, "gui.atelier.aide_clavier");
         tropPetit = Ui.tr(Ui.SMALL, "gui.atelier.contour_trop_petit");
         formeV = -1;
         tailleW = -1;
@@ -164,10 +161,7 @@ public final class PanneauCalque {
         Dessin.puce(g, font, ANGLES[0], ax, ay, ANGLE_W, 14, c.rot() == 0, Dessin.dans(mx, my, ax, ay, ANGLE_W, 14), false, accent);
         Dessin.puce(g, font, ANGLES[1], ax + ANGLE_W + 4, ay, ANGLE_W, 14, c.rot() == 90, Dessin.dans(mx, my, ax + ANGLE_W + 4, ay, ANGLE_W, 14), false,
                 accent);
-        // aide
-        g.drawString(font, aide1, x, y + Y_AIDE, Ui.argb(Ui.FAINT, 255), false);
-        g.drawString(font, aide2, x, y + Y_AIDE + 10, Ui.argb(Ui.FAINT, 255), false);
-        g.drawString(font, aide3, x, y + Y_AIDE + 20, Ui.argb(Ui.FAINT, 255), false);
+        // 18/11 : plus de rappel des gestes et des touches sous la rotation (les raccourcis restent dans les infobulles des outils)
     }
 
     private static final String[] CHIFFRES = {"0", "1", "2", "3", "4"};

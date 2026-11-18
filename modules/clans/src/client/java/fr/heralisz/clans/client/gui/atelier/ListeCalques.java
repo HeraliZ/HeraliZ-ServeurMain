@@ -25,7 +25,7 @@ public final class ListeCalques {
     private boolean glisse;
     /** Ecart d'insertion vise (0 = au-dessus de la premiere ligne, n = sous la derniere). */
     private int ecart;
-    private Component vide1, vide2;
+    private Component vide;
 
     public ListeCalques(Atelier at) {
         this.at = at;
@@ -35,8 +35,7 @@ public final class ListeCalques {
         this.x = x;
         this.y = y;
         this.w = w;
-        vide1 = Ui.tr(Ui.SMALL, "gui.atelier.aucun_calque");
-        vide2 = Ui.tr(Ui.SMALL, "gui.atelier.aucun_calque_aide");
+        vide = Ui.tr(Ui.SMALL, "gui.atelier.aucun_calque");
     }
 
     private int ligneDe(int index, int n) {
@@ -48,8 +47,8 @@ public final class ListeCalques {
         Font font = at.police();
         int n = b.nombreCalques(), accent = at.accent();
         if (n == 0) {
-            g.drawString(font, vide1, x + 2, y + 6, Ui.argb(Ui.MUTED, 255), false);
-            g.drawString(font, vide2, x + 2, y + 17, Ui.argb(Ui.FAINT, 255), false);
+            // 18/11 : l'état seul (plus de « + AJOUTER pour poser une forme » dessous)
+            g.drawString(font, vide, x + 2, y + 6, Ui.argb(Ui.MUTED, 255), false);
             return;
         }
         for (int i = n - 1; i >= 0; i--) {

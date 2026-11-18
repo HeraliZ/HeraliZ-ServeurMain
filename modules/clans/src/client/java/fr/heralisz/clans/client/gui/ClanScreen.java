@@ -151,9 +151,9 @@ public class ClanScreen extends Screen implements Hote {
         if (s != null) {
             pw = Math.min(560, width - 32);
             ph = Math.min(320, height - 24);
-        } else if (inv.isEmpty()) {                                    // « vous n'avez pas de clan »
+        } else if (inv.isEmpty()) {                                    // « vous n'avez pas de clan » (18/11 : sans sous-titre)
             pw = Math.min(380, width - 32);
-            ph = Math.min(190, height - 24);
+            ph = Math.min(170, height - 24);
         } else {                                                       // invitations : hauteur selon leur nombre (4 au plus)
             pw = Math.min(560, width - 32);
             ph = Math.min(SANS_CLAN_ENTETE + Math.min(inv.size(), INVITATIONS_VISIBLES) * INVITATION_H + SANS_CLAN_PIED, height - 24);
@@ -200,7 +200,7 @@ public class ClanScreen extends Screen implements Hote {
     private void construireSansClan(List<InvitationVue> inv) {
         int accent = Ui.accent();
         if (inv.isEmpty()) {
-            addRenderableWidget(new HzButton(px + pw / 2 - 70, py + ph / 2 + 4, 140, 20, Component.translatable("gui.fonder"), accent,
+            addRenderableWidget(new HzButton(px + pw / 2 - 70, py + ph / 2 + 8, 140, 20, Component.translatable("gui.fonder"), accent,
                     () -> ClansClient.ouvrir("creation")).look(HzButton.Look.PRIMARY));
         } else {
             ListeInvitations liste = new ListeInvitations(px + Ui.MARGE, py + SANS_CLAN_ENTETE, pw - 2 * Ui.MARGE,
@@ -318,9 +318,9 @@ public class ClanScreen extends Screen implements Hote {
         List<InvitationVue> inv = ClientClans.invitations();
         Component cout = Component.translatable("gui.cout", Ui.jetons(coutCreation(), Ui.SMALL));
         if (inv.isEmpty()) {
-            Ui.centered(g, font, Ui.tr(Ui.BOLD, "gui.sans_clan"), px + pw / 2f, py + ph / 2f - 28, Ui.argb(Ui.TEXT, 255));
-            Ui.centered(g, font, Ui.tr(Ui.FONT, "gui.sans_clan_sous"), px + pw / 2f, py + ph / 2f - 14, Ui.argb(Ui.MUTED, 255));
-            Ui.centered(g, font, Ui.in(cout, Ui.SMALL), px + pw / 2f, py + ph / 2f + 30, Ui.argb(Ui.FAINT, 255));
+            // 18/11 : « Vous n'avez pas de clan », FONDER UN CLAN et son coût, centrés sous l'en-tête (plus de phrase d'aide)
+            Ui.centered(g, font, Ui.tr(Ui.BOLD, "gui.sans_clan"), px + pw / 2f, py + ph / 2f - 13, Ui.argb(Ui.TEXT, 255));
+            Ui.centered(g, font, Ui.in(cout, Ui.SMALL), px + pw / 2f, py + ph / 2f + 34, Ui.argb(Ui.FAINT, 255));
             return;
         }
         Ui.section(g, font, Component.translatable("gui.invitations", inv.size()).getString(), px + Ui.MARGE, py + 40, pw - 2 * Ui.MARGE);

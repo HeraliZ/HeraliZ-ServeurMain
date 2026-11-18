@@ -145,7 +145,7 @@ public final class Reconnexion {
             Component ligne;
             if (jusqua == 0 || maintenant > jusqua) {
                 ligne = Component.translatableWithFallback("gui.heraliz_interface.reconnexion.abandon",
-                        "Le serveur ne répond toujours pas : reviens par le bouton Jouer un peu plus tard.");
+                        "Le serveur ne répond toujours pas : réessaie plus tard.");
             } else {
                 long s = Math.max(0, (prochainEssai - maintenant + 999) / 1000);
                 ligne = Component.translatableWithFallback("gui.heraliz_interface.reconnexion.attente",

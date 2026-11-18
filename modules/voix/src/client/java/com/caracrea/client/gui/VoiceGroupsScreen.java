@@ -127,8 +127,8 @@ public class VoiceGroupsScreen extends Screen {
         boolean in = inGroup();
         UUID me = minecraft.player == null ? null : minecraft.player.getUUID();
         GroupInfo mine = in ? VoiceClient.group(VoiceClient.groupOf(me)) : null;
-        String subtitle = mine != null ? Component.translatable("caracrea.voice.groups.yours", mine.name(), typeName(mine.type())).getString()
-                : Component.translatable("caracrea.voice.groups.hint").getString();
+        // 18/11 : sous-titre seulement dans un groupe (son nom et son type) ; plus de « Parlez à votre groupe où qu'il soit. »
+        String subtitle = mine != null ? Component.translatable("caracrea.voice.groups.yours", mine.name(), typeName(mine.type())).getString() : "";
         VoiceUi.panel(g, font, width, height, px, py, pw, ph, title.getString(), subtitle);
         VoiceUi.close(g, px + pw - Ui.MARGE - 7, py + 14, mouseX, mouseY);
         int x = px + Ui.MARGE;

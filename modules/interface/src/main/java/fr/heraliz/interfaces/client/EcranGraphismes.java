@@ -40,9 +40,13 @@ import java.util.Locale;
  * choisi sont posees en quittant l'ecran (un seul rechargement des textures). En panne : l'ecran d'origine (ou le parent)
  * a la place, et pour le reste de la session. 15/11 : interrupteur « Flou derriere les ecrans » au-dessus du pied
  * ({@link Flou}, reglage {@code flou}).
+ * <p>
+ * 18/11 (retour du proprietaire : « pas besoin d'autant de texte, c'est intuitif ») : plus de sous-titre (titre centre dans
+ * l'en-tete), cartes sans « Choisir » et avec une seule ligne (« Le plus fluide »...) ; cartes de 54 et panneau de 290 de
+ * haut. Le detail de chaque profil reste dans l'infobulle de la tuile du menu Echap.
  */
 public class EcranGraphismes extends Screen {
-    private static final int ENTETE = 42, CARTE_H = 76, PIED = 18, LIGNE = 15, PAR_COLONNE = 5;
+    private static final int ENTETE = 42, CARTE_H = 54, PIED = 18, LIGNE = 15, PAR_COLONNE = 5;
     private final Screen parent;
     /** Ecran Video d'origine (Minecraft ou Embeddium), null : ouvert depuis le menu Echap (cree a la demande). */
     @Nullable
@@ -61,11 +65,12 @@ public class EcranGraphismes extends Screen {
         if (ouvert < 0) ouvert = Util.getMillis();
         if (InterfaceConfig.oui(InterfaceConfig.ECHELLE_AUTO, true)) Echelle.forcer(this);
         pw = Math.min(540, width - 32);
-        ph = Math.min(312, height - 24);
+        ph = Math.min(290, height - 24);
         px = (width - pw) / 2;
         py = (height - ph) / 2;
         int accent = Ui.accent();
-        addRenderableWidget(new HzIcon(px + pw - 24, py + 12, 12, Icons.CROIX, CommonComponents.GUI_DONE, this::onClose));
+        // croix au milieu de l'en-tete, a la hauteur du titre
+        addRenderableWidget(new HzIcon(px + pw - 24, py + 15, 12, Icons.CROIX, CommonComponents.GUI_DONE, this::onClose));
         Qualite.Profil[] profils = Qualite.Profil.values();
         int n = profils.length;
         int cw = (pw - 2 * Ui.MARGE - (n - 1) * Ui.ESPACE) / n;
@@ -118,9 +123,8 @@ public class EcranGraphismes extends Screen {
             Ui.glass(g, px, py, pw, ph, Math.round(Ui.VERRE_ALPHA * t));
             Ui.hairline(g, px + 24, px + pw - 24, py, Ui.accent(), Math.round(160 * t), true, true);
             int a = Math.round(255 * t);
-            Ui.spaced(g, font, title.getString().toUpperCase(Locale.ROOT), Ui.BOLD, px + Ui.MARGE, py + 11, Ui.argb(Ui.TEXT, a), 1.6f);
-            g.drawString(font, Ui.tr(Ui.SMALL, "gui.heraliz_interface.graphismes.sous_titre"), px + Ui.MARGE, py + 25,
-                    Ui.argb(Ui.MUTED, a), false);
+            // 18/11 : titre seul, centre dans l'en-tete (plus de sous-titre)
+            Ui.spaced(g, font, title.getString().toUpperCase(Locale.ROOT), Ui.BOLD, px + Ui.MARGE, py + 17, Ui.argb(Ui.TEXT, a), 1.6f);
             Ui.hairline(g, px + 8, px + pw - 8, py + ENTETE, 0xFFFFFF, 40, true, true);
             resume(g, px + Ui.MARGE, resumeY, pw - 2 * Ui.MARGE, a);
             super.render(g, mouseX, mouseY, partialTick);
@@ -199,14 +203,17 @@ public class EcranGraphismes extends Screen {
     }
 
     // ------------------------------------------------------------------ carte d'un profil
-    /** Carte d'un profil : barres de niveau et nom, description, « Actif » ou « Choisir », etiquette « Conseille ». */
+    /**
+     * Carte d'un profil : barres de niveau et nom, une ligne (« Le plus fluide »...), « Actif » sur le profil choisi,
+     * etiquette « Conseille ». 18/11 : plus de « Choisir » (la carte se voit cliquable au survol), description d'une ligne.
+     */
     private final class Carte extends AbstractButton {
         private final Qualite.Profil profil;
         private final int accent;
-        private final String nom, actif, choisir;
+        private final String nom, actif;
         @Nullable
         private final String conseille;
-        private final List<Component> description = new ArrayList<>();
+        private final Component description;
         private final Anim.Horloge horloge = new Anim.Horloge();
         private float survol, choisi;
         private boolean pret;
@@ -217,11 +224,11 @@ public class EcranGraphismes extends Screen {
             this.accent = accent & 0xFFFFFF;
             this.nom = getMessage().getString().toUpperCase(Locale.ROOT);
             this.actif = Ui.t("gui.heraliz_interface.graphismes.actif").toUpperCase(Locale.ROOT);
-            this.choisir = Ui.t("gui.heraliz_interface.graphismes.choisir").toUpperCase(Locale.ROOT);
             this.conseille = profil == Qualite.Profil.PERFORMANCE
                     ? Ui.t("gui.heraliz_interface.graphismes.conseille").toUpperCase(Locale.ROOT) : null;
-            List<String> l = Ui.lignes(font, Ui.t("gui.heraliz_interface.graphismes.desc." + profil.cle), Ui.SMALL, w - 20);
-            for (int i = 0; i < Math.min(3, l.size()); i++) description.add(Ui.lit(l.get(i), Ui.SMALL));
+            // une seule ligne, coupee avec « … » si une langue la fait deborder (la carte n'a la place que pour elle)
+            String d = Ui.ellipsis(font, Ui.t("gui.heraliz_interface.graphismes.desc." + profil.cle), Ui.SMALL, w - 20);
+            this.description = Ui.lit(d, Ui.SMALL);
         }
 
         @Override
@@ -255,18 +262,12 @@ public class EcranGraphismes extends Screen {
                 g.fill(x + 10 + i * 5, base - bh, x + 13 + i * 5, base, couleur);
             }
             Ui.spaced(g, f, nom, Ui.BOLD, x + 30, y + 11, Ui.argb(0xFFFFFF, 255), 1.0f);
-            int ly = y + 29;
             int texte = Ui.argb(Ui.mix(Ui.MUTED, Ui.TEXT, 0.25f * survol + 0.4f * choisi), 255);
-            for (Component c : description) {
-                g.drawString(f, c, x + 10, ly, texte, false);
-                ly += 9;
-            }
+            g.drawString(f, description, x + 10, y + 26, texte, false);
             int bas = y + h - 14;
             if (estActif) {
                 Ui.point(g, x + 10, bas + 1, Ui.OK, 255);
                 Ui.spaced(g, f, actif, Ui.SMALL, x + 18, bas, Ui.argb(Ui.OK, 255), 0.8f);
-            } else {
-                Ui.spaced(g, f, choisir, Ui.SMALL, x + 10, bas, Ui.argb(Ui.mix(Ui.FAINT, Ui.TEXT, survol), 255), 0.8f);
             }
             if (conseille != null) {
                 Ui.chip(g, f, conseille, x + w - 10 - Ui.chipWidth(f, conseille), bas - 3, Ui.OK);

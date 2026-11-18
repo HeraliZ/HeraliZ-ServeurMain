@@ -43,6 +43,8 @@ import java.util.UUID;
  * défilement.</li>
  * <li>Mêmes réglages qu'Emotecraft ({@code ClientConfig.fastMenuEmotes}), enregistrés en quittant l'écran par son propre
  * enregistrement ({@code ClientSerializer.saveConfig}) : rien ne change pour le reste (roue, touches d'Emotecraft).</li>
+ * <li>18/11 (retour du propriétaire : pas de texte d'aide) : plus de sous-titre, de « PAGE 1 / 10 » sous « Roue rapide »
+ * (la page est au milieu), de « Choisis une emote » ni d'aide des touches en bas ; « Placer ici » au survol reste.</li>
  * </ul>
  * Polices du mod à leur vraie taille, texte posé sur un point de l'écran (kit {@link Net}) ; canevas de 640 x 360 points.
  */
@@ -403,8 +405,8 @@ public final class EditionRoue extends Screen {
         Ui.fond(g, width, height);
         int accent = Ui.accent();
 
-        Net.texte(g, font, t("titre"), TITRE, ox + 24, oy + 22, Ui.TEXT);
-        Net.texte(g, font, t("sous_titre"), Ui.SMALL, ox + 24, oy + 38, Ui.MUTED);
+        // 18/11 : le titre seul, au milieu de la bande au-dessus de la liste (plus de phrase « choisis une emote, puis… »)
+        Net.texte(g, font, t("titre"), TITRE, ox + 24, oy + 30, Ui.TEXT);
 
         liste(g, mx, my, accent);
         roueDessin(g, mx, my, accent);
@@ -494,8 +496,8 @@ public final class EditionRoue extends Screen {
 
     private void roueDessin(GuiGraphics g, int mx, int my, int accent) {
         float cx = ox + CXR, cy = oy + CYR;
-        Net.centre(g, font, t("roue_titre"), Ui.BOLD, cx, cy - RAYON - CASE / 2 - 20, Ui.TEXT);
-        Net.capsCentre(g, font, t("page", page + 1, PAGES), Ui.SMALL, 0.8f, cx, cy - RAYON - CASE / 2 - 9, Ui.MUTED);
+        // 18/11 : plus de « PAGE 1 / 10 » sous le titre (la page est déjà au milieu de la roue)
+        Net.centre(g, font, t("roue_titre"), Ui.BOLD, cx, cy - RAYON - CASE / 2 - 14, Ui.TEXT);
         Net.anneau(g, cx, cy, RAYON, Net.point(), Ui.argb(BLANC, 22));
         int survol = caseSous(mx, my);
         for (int k = 0; k < CASES; k++) caseDessin(g, k, k == survol, accent);
@@ -508,9 +510,8 @@ public final class EditionRoue extends Screen {
             icone(g, l.anim(), cx - 11, cy - 27, 22, 1f, false);
             Net.centre(g, font, coupe(l.nom(), Ui.BOLD, 64), Ui.BOLD, cx, cy + 2, Ui.TEXT);
             Net.capsCentre(g, font, t("choisie"), Ui.SMALL, 0.6f, cx, cy + 12, accent);
-        } else {
-            Net.centre(g, font, t("choisir"), Ui.SMALL, cx, cy - 4, Ui.MUTED);
         }
+        // 18/11 : rien au milieu tant qu'aucune emote n'est choisie (plus de « Choisis une emote »)
         fleche(g, "←", cx - 20, cy + 24, mx, my, () -> changerPage(-1));
         Net.centre(g, font, (page + 1) + " / " + PAGES, Ui.SMALL, cx, cy + 24, Ui.TEXT);
         fleche(g, "→", cx + 20, cy + 24, mx, my, () -> changerPage(1));
@@ -556,21 +557,9 @@ public final class EditionRoue extends Screen {
 
     private void bas(GuiGraphics g, int mx, int my, int accent) {
         float cx = ox + CXR, y = oy + CYR + RAYON + CASE / 2 + 12;
+        // un refus seulement ; 18/11 : plus d'aide des touches (CLIC ranger, CLIC DROIT vider, MOLETTE page)
         if (statut != null && System.currentTimeMillis() - statutA < 4000) {
             Net.centre(g, font, Net.couper(font, statut.getString(), Ui.SMALL, 300), Ui.SMALL, cx, y, Ui.DANGER);
-        } else {
-            String[][] aides = {{rt("t.clic"), t("aide.ranger")}, {t("t.droit"), t("aide.vider")}, {rt("t.molette"), rt("k.page")}};
-            float total = -12;
-            for (String[] a : aides) total += Net.capsLargeur(font, a[0], Ui.SMALL, 0.8f) + 8 + 4 + Net.largeur(font, a[1], Ui.SMALL) + 12;
-            float x = cx - total / 2;
-            for (String[] a : aides) {
-                float w = Net.capsLargeur(font, a[0], Ui.SMALL, 0.8f) + 8;
-                Net.rect(g, x, y - 5, x + w, y + 5, Ui.argb(BLANC, 18));
-                Net.cadre(g, x, y - 5, w, 10, Ui.argb(BLANC, 60));
-                Net.capsCentre(g, font, a[0], Ui.SMALL, 0.8f, x + w / 2, y, Ui.TEXT);
-                x += w + 4;
-                x += Net.texte(g, font, a[1], Ui.SMALL, x, y, Ui.MUTED) + 12;
-            }
         }
         float by = oy + BY;
         bouton(g, t("retour"), cx - BW - 4, by, BLANC, false, mx, my, this::onClose);
@@ -630,10 +619,5 @@ public final class EditionRoue extends Screen {
 
     private static String t(String cle, Object... args) {
         return Component.translatable("heraliz_emote.edition." + cle, args).getString();
-    }
-
-    /** Textes partagés avec la roue. */
-    private static String rt(String cle) {
-        return Component.translatable("heraliz_emote.roue." + cle).getString();
     }
 }

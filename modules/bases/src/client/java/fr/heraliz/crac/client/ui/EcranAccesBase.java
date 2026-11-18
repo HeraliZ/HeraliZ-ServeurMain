@@ -155,10 +155,9 @@ public class EcranAccesBase extends EcranGroupe {
             this.section(g, t("crac.acces.ajouter"), x, this.y0 + 64, w);
             this.champ(g, x, this.champY(), w, 15.33F, this.recherche, t("crac.acces.chercher"), true);
             List<S2CAccesBase.Ligne> tr = this.etat.trouves();
+            // 18/11 : champ vide, rien dessous (plus de mode d'emploi de la recherche) ; « personne à ce nom » reste
             if (tr.isEmpty() && !this.recherche.isEmpty() && this.attente < 0) {
                 texte(g, this.font, lit(t("crac.acces.aucun"), MINI), x + 2, this.trouvesY() + 5 - 4.21F, a(ATTENUE, 255));
-            } else if (this.recherche.isEmpty()) {
-                texte(g, this.font, lit(t("crac.acces.aide"), MINI), x + 2, this.trouvesY() + 5 - 4.21F, a(PALE, 255));
             }
             int finTrouves = Math.min(tr.size(), this.defileTrouves + TROUVES_VUS);
             for (int i = this.defileTrouves; i < finTrouves; i++) {
@@ -191,9 +190,15 @@ public class EcranAccesBase extends EcranGroupe {
             float ty = this.listeY() + (piste - pouce) * this.defile / Math.max(1, ont.size() - vues);
             rect(g, this.x0 + W - 6, ty, this.x0 + W - 5, ty + pouce, a(BLANC, 56));
         }
+        // pied : ce que donne l'accès ; 18/11 : « seul le propriétaire gère cette liste » seulement pour qui ne la gère pas
+        // (une seule ligne : centrée dans le pied)
         rect(g, x, this.y0 + H - 30, x + w, this.y0 + H - 30 + this.px, a(BLANC, 20));
-        texte(g, this.font, lit(Ui.ellipsis(this.font, t("crac.acces.pied1"), MINI, Math.round(w)), MINI), x, this.y0 + H - 24 - 4.21F, a(ATTENUE, 255));
-        texte(g, this.font, lit(Ui.ellipsis(this.font, t("crac.acces.pied2"), MINI, Math.round(w)), MINI), x, this.y0 + H - 14 - 4.21F, a(ATTENUE, 255));
+        boolean deux = !this.etat.gerer();
+        texte(g, this.font, lit(Ui.ellipsis(this.font, t("crac.acces.pied1"), MINI, Math.round(w)), MINI), x,
+            this.y0 + H - (deux ? 24 : 19) - 4.21F, a(ATTENUE, 255));
+        if (deux) {
+            texte(g, this.font, lit(Ui.ellipsis(this.font, t("crac.acces.pied2"), MINI, Math.round(w)), MINI), x, this.y0 + H - 14 - 4.21F, a(ATTENUE, 255));
+        }
     }
 
     /** Une ligne de joueur : tête, pseudo, point vert s'il est connecté, rôle ou bouton à droite. */
@@ -243,9 +248,7 @@ public class EcranAccesBase extends EcranGroupe {
             y += 16;
             rect(g, x, y - 4, x + w, y - 4 + this.px, a(BLANC, 14));
         }
-        y += 6;
-        texte(g, this.font, lit(Ui.ellipsis(this.font, t("crac.acces.base.aide1"), MINI, Math.round(w)), MINI), x, y, a(PALE, 255));
-        texte(g, this.font, lit(Ui.ellipsis(this.font, t("crac.acces.base.aide2"), MINI, Math.round(w)), MINI), x, y + 10, a(PALE, 255));
+        // 18/11 : plus de conseils (planches, pierre, métal) sous les chiffres : l'onglet Entretien et /base info les donnent
     }
 
     /** « 3 j 21 h », « 5 h 20 min », « 42 min ». */

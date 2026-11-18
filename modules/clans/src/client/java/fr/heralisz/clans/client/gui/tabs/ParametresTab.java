@@ -121,12 +121,13 @@ public final class ParametresTab extends Tab {
                 int c = Integer.compare(a.grade().ordinal(), b.grade().ordinal());
                 return c != 0 ? c : a.nom().compareToIgnoreCase(b.nom());
             });
-            ListeMembres liste = new ListeMembres(x + DROITE_X, y + 108, w - DROITE_X, 60);
+            // 18/11 : plus de phrase « choisissez un membre, puis maintenez » : la liste et le bouton montent sous le titre
+            ListeMembres liste = new ListeMembres(x + DROITE_X, y + 100, w - DROITE_X, 60);
             liste.accent(accent);
             liste.setContentHeight(autres.size() * 12);
             ecran.ajouter(liste);
             // assez large pour « Transferer a <pseudo> » ; un libelle trop long est resserre puis coupe par Hold
-            transferer = new Hold(x + DROITE_X, y + 174, Math.min(190, w - DROITE_X), 16, Component.translatable("gui.action.transferer"), 1000, () -> {
+            transferer = new Hold(x + DROITE_X, y + 166, Math.min(190, w - DROITE_X), 16, Component.translatable("gui.action.transferer"), 1000, () -> {
                 if (cibleTransfert != null) envoyer(new Packets.ActionMembreC2S(Packets.ActionMembreC2S.Genre.TRANSFERER, cibleTransfert));
                 ecran.garderBrouillon("param.cible", null);
             }).couleur(accent);
@@ -167,13 +168,15 @@ public final class ParametresTab extends Tab {
         libelle(g, tr("gui.creation.tag"), x, y + 49, s.cdTagMs(), s.jePeux(Perm.MODIFIER_TAG), fw);
         libelle(g, tr("gui.creation.description"), x, y + 85, s.cdDescMs(), s.jePeux(Perm.MODIFIER_DESCRIPTION), fw);
         petit(g, tr("gui.parametres.cooldown_info"), x, y + 140, GAUCHE - 8, Ui.FAINT);
-        // danger : l'aide a droite du bouton tient dans la colonne (deux lignes au plus, centrees sur le bouton)
+        // danger : a droite du bouton, seulement la regle du chef (il transfere la direction avant de partir) ; 18/11 : plus
+        // de « maintenez pour confirmer » (deux lignes au plus, centrees sur le bouton)
         Ui.section(g, font, tr("gui.parametres.danger"), x, y + h - 36, GAUCHE - 16);
-        String aide = tr(s.jeSuisChef() ? "gui.parametres.chef_quitter" : "gui.parametres.maintenir");
-        List<FormattedCharSequence> lignes = font.split(Ui.lit(aide, Ui.SMALL), GAUCHE - 4 - 128);
-        int n = Math.min(2, lignes.size());
-        for (int i = 0; i < n; i++) {
-            g.drawString(font, lignes.get(i), x + 128, y + h - 15 - (n - 1) * 5 + i * 10, Ui.argb(Ui.FAINT, 255), false);
+        if (s.jeSuisChef()) {
+            List<FormattedCharSequence> lignes = font.split(Ui.lit(tr("gui.parametres.chef_quitter"), Ui.SMALL), GAUCHE - 4 - 128);
+            int n = Math.min(2, lignes.size());
+            for (int i = 0; i < n; i++) {
+                g.drawString(font, lignes.get(i), x + 128, y + h - 15 - (n - 1) * 5 + i * 10, Ui.argb(Ui.FAINT, 255), false);
+            }
         }
         // separateur
         g.fill(x + GAUCHE + 4, y, x + GAUCHE + 5, y + h, Ui.argb(0xFFFFFF, 14));
@@ -183,18 +186,16 @@ public final class ParametresTab extends Tab {
         BannerArt.draw(g, s.banniere(), bx, y + 14, 45, 60);
         long resteBanniere = ClientClans.reste(s.cdBanniereMs());
         int bw = w - DROITE_X - 56;
+        // 18/11 : le delai ou le manque de droit seulement (plus de « Formes, emblemes et calques » sous MODIFIER)
         if (resteBanniere > 0) {
             petit(g, tr("gui.parametres.prochain", Ui.duree(resteBanniere)), bx + 56, y + 34, bw, Ui.AMBRE);
         } else if (!s.jePeux(Perm.MODIFIER_BANNIERE)) {
             petit(g, tr("gui.parametres.sans_permission"), bx + 56, y + 34, bw, Ui.FAINT);
-        } else {
-            petit(g, tr("gui.atelier.parametres_info"), bx + 56, y + 34, bw, Ui.FAINT);
         }
         // direction
         if (s.jeSuisChef()) {
             Ui.section(g, font, tr("gui.parametres.direction"), bx, y + 86, w - DROITE_X);
-            petit(g, tr("gui.parametres.transfert_info"), bx, y + 97, w - DROITE_X, Ui.FAINT);
-            if (autres.isEmpty()) petit(g, tr("gui.parametres.seul"), bx, y + 112, w - DROITE_X, Ui.FAINT);
+            if (autres.isEmpty()) petit(g, tr("gui.parametres.seul"), bx, y + 104, w - DROITE_X, Ui.FAINT);
             ClanSnapshot.MembreVue c = cibleTransfert == null ? null : s.membre(cibleTransfert);
             if (transferer != null) transferer.setMessage(c == null ? Component.translatable("gui.action.transferer")
                     : Component.translatable("gui.action.transferer_a", c.nom()));
