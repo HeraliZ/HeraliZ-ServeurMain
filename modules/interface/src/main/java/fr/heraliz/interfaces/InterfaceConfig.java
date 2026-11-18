@@ -74,7 +74,7 @@ public final class InterfaceConfig {
                 .define("nom", "HeraliZ");
         b.pop();
         b.comment("Qualite graphique (menu Echap) : se change en jeu, pas besoin de toucher ce fichier").push("graphismes");
-        PROFIL_GRAPHIQUE = b.comment("Profil choisi : performance, equilibre ou qualite (filtrage anisotrope des blocs : aucun, x4, x8)")
+        PROFIL_GRAPHIQUE = b.comment("Profil choisi : performance, equilibre ou qualite")
                 .define("profil", "performance", o ->o instanceof String s && PROFILS.contains(s.trim().toLowerCase(Locale.ROOT)));
         b.pop();
         SPEC = b.build();

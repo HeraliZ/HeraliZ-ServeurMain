@@ -1,0 +1,6 @@
+# 18/11 : demande du propriétaire (« supprimer dans l'Arctique les étoiles, station météo etc., ne rien mettre ») : les
+# trois lieux à étoile du nord enneigé, posés par le lot nettoyage_17nov.txt, quittent la carte M. Rien ne les remplace.
+# Le nom de la zone à drapeau « Arctique » reste (territoire des clans).
+carte lieu retirer Refuge du Col
+carte lieu retirer Station météo
+carte lieu retirer Camp des glaces

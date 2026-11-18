@@ -32,8 +32,11 @@ public final class Qualite {
 
     public enum Profil {
         PERFORMANCE("performance", GraphicsStatus.FAST, 6, ParticleStatus.MINIMAL, 2, CloudStatus.OFF, 0, 0, false, false, 0.75),
-        EQUILIBRE("equilibre", GraphicsStatus.FANCY, 8, ParticleStatus.DECREASED, 4, CloudStatus.FAST, 1, 4, false, true, 1.0),
-        QUALITE("qualite", GraphicsStatus.FANCY, 8, ParticleStatus.ALL, 4, CloudStatus.FANCY, 2, 8, true, true, 1.0);
+        // 18/11 : plus de filtrage anisotrope (avant x4 et x8) : il lit au-delà du bord de chaque texture dans la grande
+        // texture des blocs, d'où un trait foncé entre chaque bloc vu en biais (capture du propriétaire, neige de l'Arctique,
+        // carte AMD ; même avec les mipmaps à 0)
+        EQUILIBRE("equilibre", GraphicsStatus.FANCY, 8, ParticleStatus.DECREASED, 4, CloudStatus.FAST, 1, 0, false, true, 1.0),
+        QUALITE("qualite", GraphicsStatus.FANCY, 8, ParticleStatus.ALL, 4, CloudStatus.FANCY, 2, 0, true, true, 1.0);
 
         /** Nom garde dans la config (et fin de la cle de traduction). */
         public final String cle;
@@ -166,9 +169,9 @@ public final class Qualite {
     }
 
     /**
-     * Filtrage anisotrope de la grande texture des blocs selon le profil (aucun en Performance, x4 en Equilibre, x8 en
-     * Qualite), si la carte graphique le gere : appele apres chaque rechargement des ressources et a chaque changement
-     * de profil (fil de rendu).
+     * Filtrage anisotrope de la grande texture des blocs selon le profil (depuis le 18/11 : aucun dans les trois profils,
+     * il faisait un trait entre chaque bloc ; avant x4 en Equilibre, x8 en Qualite), si la carte graphique le gere :
+     * remis a 1 (coupe) apres chaque rechargement des ressources et a chaque changement de profil (fil de rendu).
      */
     public static void anisotrope() {
         try {
