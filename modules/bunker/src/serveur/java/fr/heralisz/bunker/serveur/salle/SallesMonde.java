@@ -96,6 +96,27 @@ public final class SallesMonde extends SavedData {
       return l.getDataStorage().computeIfAbsent(SallesMonde::charger, SallesMonde::new, FICHIER);
    }
 
+   /**
+    * 18/11 (quêtes de Varga : « entrer dans une salle à carte verte, bleue, rouge », sans point de quête à poser ; lu par
+    * réflexion par heraliz_quetes, toutes les 10 ticks pour un joueur qui a cette étape) : couleur de la salle où se tient
+    * ce joueur (« verte », « bleue », « rouge »), "" s'il n'est dans aucune. Les boîtes des salles du monde, sans rien créer.
+    */
+   public static String couleurIci(ServerPlayer p) {
+      SallesMonde m = get(p.serverLevel());
+      if (m.salles.isEmpty()) return "";
+      double x = p.getX(), y = p.getY(), z = p.getZ();
+      for (Salle s : m.salles.values()) {
+         if (x >= s.min.getX() && x < s.max.getX() + 1 && y >= s.min.getY() && y < s.max.getY() + 1 && z >= s.min.getZ() && z < s.max.getZ() + 1) {
+            return switch (s.niveau) {
+               case GREEN -> "verte";
+               case BLUE -> "bleue";
+               default -> "rouge";
+            };
+         }
+      }
+      return "";
+   }
+
    // ------------------------------------------------------------------------------------------ sauvegarde
    static SallesMonde charger(CompoundTag t) {
       SallesMonde m = new SallesMonde();

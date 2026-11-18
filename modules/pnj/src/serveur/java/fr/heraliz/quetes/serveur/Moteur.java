@@ -151,6 +151,7 @@ final class Moteur {
         List<String> avant = new ArrayList<>(a.cibles);
         a.progres = 0;
         a.tenu = 0;
+        a.sansTrouver = 0;
         a.faits.clear();
         a.cibles.clear();
         a.debutEtape = System.currentTimeMillis();
@@ -596,6 +597,7 @@ final class Moteur {
         ARMES.remove(u);
         FRAPPES.remove(u);
         DERNIER_SUIVI.remove(u);
+        APRES_CAISSE.remove(u);
     }
 
     /** Étape « fabriquer » : une arme de plus dans l'inventaire pendant que la Table d'armurier (TaCZ) est ouverte. */
@@ -814,7 +816,26 @@ final class Moteur {
         for (Donnees.DActive a : new ArrayList<>(j.actives.values())) {
             Defs.Quete q = def(a);
             Defs.Etape e = etape(a, q);
-            if (e == null || !e.type.equals("fouiller") || palier < e.entier("palier_min", 0)) continue;
+            if (e == null) continue;
+            // 18/11 : objet ou carnet à trouver dans les caisses ({@link #caisse})
+            if (dansLesCaisses(e) && (e.type.equals("ramasser") || e.type.equals("indice"))) {
+                if (caisse(p, a, e, pos, palier)) trouveEnCaisse(p, a, q, e);
+                continue;
+            }
+            // 18/11 : objet perdu (mort) que l'étape « donner » demande encore : il se retrouve aussi dans les caisses
+            if (e.type.equals("donner")) {
+                String ref = e.texte("objet_quete", "");
+                Defs.Etape src = ref.isEmpty() ? null : ramassage(q, ref);
+                if (src != null && dansLesCaisses(src) && a.progres + compter(p, e, a) < e.nombre() && caisse(p, a, src, pos, palier)) {
+                    donnerObjet(p, src.texte("objet", "document"), a.cle, ref, src.t("nom"), src.t("desc"));
+                    p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.8F, 0.9F);
+                    Texte nom = src.t("nom");
+                    apresCaisse(p, j2 -> notif(j2, Texte.cle("heraliz_quetes.notif.retrouve", nom), 0xE8C36A));
+                    envoyerSuivi(p);
+                }
+                continue;
+            }
+            if (!e.type.equals("fouiller") || palier < e.entier("palier_min", 0)) continue;
             String modele = e.texte("modele", "");
             if (!modele.isEmpty() && !bloc.getPath().contains(modele)) continue;
             if (!a.cibles.isEmpty() && !dansZone(monde, pos, a, e.rayon())) continue;
@@ -824,6 +845,83 @@ final class Moteur {
             if (a.progres >= e.nombre()) avancer(p, a, q, false);
             else suiviBientot(p);
         }
+    }
+
+    // ------------------------------------------------------------------ objets de quête trouvés dans les caisses (18/11)
+    /*
+     * Décision du propriétaire du 18/11 : plus de points de quête à poser pour les insignes, les carnets, la sacoche et la
+     * boîte noire de Varga ; tant que l'étape est en cours, chaque conteneur de HeraliZ Loot ouvert rempli pour la première
+     * fois (une fois par remplissage : le signal de Loot, conteneurLoot) a une chance de les donner, selon son palier
+     * (« chances » : T1 à T7 ; « palier_min » ; « zone_danger » : seulement dans une zone de ce genre de HeraliZ Décors, la
+     * radiation de Radio pour la boîte noire) ; au plus « garantie » conteneurs d'affilée sans rien. Plein de hasard, mais
+     * jamais bloqué. L'objet va dans l'inventaire du joueur (jamais dans le conteneur : personne ne peut le prendre) ; le
+     * message, et le carnet à lire, attendent que le conteneur soit refermé (l'écran du carnet fermerait celui de la fouille).
+     */
+
+    /** L'étape se trouve dans les caisses ({@code "source": "caisses"}). */
+    static boolean dansLesCaisses(Defs.Etape e) {
+        return e.texte("source", "").equals("caisses");
+    }
+
+    /** Chance (0 à 1) que ce conteneur donne l'objet de l'étape, selon son palier ; 0 sous « palier_min ». */
+    private static double chanceCaisse(Defs.Etape e, int palier) {
+        if (palier < Math.max(1, e.entier("palier_min", 1)) || !e.p.has("chances") || !e.p.get("chances").isJsonArray()) return 0;
+        com.google.gson.JsonArray t = e.p.getAsJsonArray("chances");
+        if (t.isEmpty()) return 0;
+        try {
+            return Math.max(0, Math.min(1, t.get(Math.max(0, Math.min(t.size() - 1, palier - 1))).getAsDouble()));
+        } catch (RuntimeException ex) {
+            return 0;
+        }
+    }
+
+    /** Tirage d'un conteneur pour l'étape : vrai si l'objet est trouvé (chance du palier, ou garantie atteinte). */
+    private static boolean caisse(ServerPlayer p, Donnees.DActive a, Defs.Etape e, BlockPos pos, int palier) {
+        double chance = chanceCaisse(e, palier);
+        if (chance <= 0) return false;
+        String zone = e.texte("zone_danger", "");
+        if (!zone.isEmpty() && Ponts.zoneDanger(zone, pos) <= 0) return false;
+        int garantie = e.entier("garantie", 0);
+        a.sansTrouver++;
+        Donnees.sale(p.getUUID());
+        if (RANDOM.nextDouble() >= chance && (garantie <= 0 || a.sansTrouver < garantie)) return false;
+        a.sansTrouver = 0;
+        return true;
+    }
+
+    /** L'objet (ou le carnet) de l'étape est trouvé dans un conteneur. */
+    private static void trouveEnCaisse(ServerPlayer p, Donnees.DActive a, Defs.Quete q, Defs.Etape e) {
+        if (e.type.equals("ramasser")) {
+            String ref = e.texte("ref", e.texte("objet", "document"));
+            for (int i = 0; i < Math.max(1, e.entier("quantite", 1)); i++) {
+                donnerObjet(p, e.texte("objet", "document"), a.cle, ref, e.t("nom"), e.t("desc"));
+            }
+            a.refQuand.put(ref, System.currentTimeMillis());
+            Texte nom = e.t("nom");
+            apresCaisse(p, j -> notif(j, Texte.cle("heraliz_quetes.notif.trouve", nom), 0xE8C36A));
+        } else {
+            Reseau.Note note = new Reseau.Note(e.t("titre"), e.t("texte"));
+            apresCaisse(p, j -> Reseau.envoyer(j, note));
+        }
+        p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.8F, 0.9F);
+        a.faits.add("caisse:" + a.faits.size());
+        Donnees.sale(p.getUUID());
+        if (a.faits.size() >= e.nombre()) avancer(p, a, q, false);
+        else suiviBientot(p);
+    }
+
+    /** Ce qu'un objet trouvé dans un conteneur doit encore montrer une fois le conteneur refermé (message, carnet). */
+    private static final Map<UUID, List<java.util.function.Consumer<ServerPlayer>>> APRES_CAISSE = new HashMap<>();
+
+    private static void apresCaisse(ServerPlayer p, java.util.function.Consumer<ServerPlayer> c) {
+        APRES_CAISSE.computeIfAbsent(p.getUUID(), k -> new ArrayList<>(2)).add(c);
+    }
+
+    /** Toutes les 10 ticks (tick du joueur) : plus aucun conteneur ouvert, ce qui attendait est montré. */
+    private static void montrerApresCaisse(ServerPlayer p) {
+        if (APRES_CAISSE.isEmpty() || p.containerMenu != p.inventoryMenu) return;
+        List<java.util.function.Consumer<ServerPlayer>> l = APRES_CAISSE.remove(p.getUUID());
+        if (l != null) for (java.util.function.Consumer<ServerPlayer> c : l) c.accept(p);
     }
 
     /** Dernier essai de code par joueur (un toutes les 2 s : pas de recherche du code par force brute). */
@@ -862,6 +960,7 @@ final class Moteur {
 
     /** Toutes les 10 ticks : endroits, tenir, attendre, survivre, délais. */
     static void tick(ServerPlayer p) {
+        montrerApresCaisse(p);
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         if (j.actives.isEmpty()) return;
         ResourceLocation monde = p.level().dimension().location();
@@ -899,6 +998,17 @@ final class Moteur {
             }
             switch (e.type) {
                 case "endroit" -> {
+                    // 18/11 (décision du propriétaire) : « entrer dans une salle à carte » de cette couleur : n'importe
+                    // laquelle des salles créées par le staff (/salle creer, HeraliZ Bunker), sans point de quête à poser
+                    String salle = e.texte("salle", "");
+                    if (!salle.isEmpty()) {
+                        if (salle.equals(Ponts.salleIci(p))) {
+                            a.faits.add("salle");
+                            Donnees.sale(p.getUUID());
+                            avancer(p, a, q, false);
+                        }
+                        continue;
+                    }
                     for (String id : a.cibles) {
                         if (a.faits.contains(id)) continue;
                         Points.Point pt = pts.point(id);

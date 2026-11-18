@@ -88,8 +88,6 @@ Pour chaque salle :
 5. `/salle voir <nom>` : contour montré 30 s. `/salle liste` : toutes les salles, avec leur état.
 6. Les conteneurs de loot dans la boîte sont remplis par la salle : au moins du vert T5, du bleu T6, du rouge T7.
    Pas de conteneur dedans = pas de loot : en poser 2 à 4 par salle.
-7. Point de quête de Varga dans la salle : debout dedans, `/quete point ajouter salle_verte` (ou `salle_bleue`,
-   `salle_rouge`).
 
 Quand c'est fait, le dire : la liste complète est vérifiée depuis la console (`salle liste`).
 
@@ -99,20 +97,17 @@ Quand c'est fait, le dire : la liste complète est vérifiée depuis la console 
 - [ ] Loot de la salle au bon niveau ; il revient 30 min (verte), 2 h (bleue), 4 h (rouge) après la sortie du dernier.
 - [ ] Déconnexion dans une salle : à la reconnexion, on est devant sa porte.
 
-## 4. Points de quête de Varga (effacés avec l'ancienne carte)
+## 4. Quêtes de Varga : plus rien à poser (18/11)
 
-Poser au clic droit avec la baguette (`/quete baguette <groupe>` ; accroupi + clic droit = retirer) ou debout sur
-place avec `/quete point ajouter <groupe>` :
-
-| Groupe | Combien | Où |
-|---|---|---|
-| `insigne_varga` | 15 et plus | dans plusieurs villes |
-| `deserteur` | 3 et plus | sur la carte, loin du spawn |
-| `cachette_deserteurs` | 1 à 3 | cachettes (forêt, cabanes) |
-| `boite_noire` | 1 et plus | dans la zone irradiée de Radio (le texte de la quête le dit) |
-| `salle_verte`, `salle_bleue`, `salle_rouge` | 1 par salle | dans chaque salle à carte |
-
-Vérifier : `/quete points` (tous) ou `/quete points <groupe>` ; `/quete point tp <id>` pour y aller.
+Décision du propriétaire du 18/11 : les insignes, les carnets et la sacoche des déserteurs et la boîte noire se trouvent
+dans les caisses pendant que l'étape est en cours ; les salles à carte sont reconnues toutes seules. Aucun point de quête.
+- [ ] Quête « Le 7e régiment » : en ouvrant des caisses, « Tu trouves : Insigne du 7e régiment » à la fermeture de la
+      caisse (bruit de ramassage tout de suite) ; jamais plus de 20 caisses d'affilée sans insigne ; 5 puis les rapporter.
+- [ ] « Les déserteurs » : 3 carnets (le carnet s'ouvre à la fermeture de la caisse), puis la sacoche dans une caisse T4 ou
+      mieux.
+- [ ] « La boîte noire » : seulement dans les caisses de la zone de radiation de Radio (tenue hazmat).
+- [ ] « Fin de classe » et « La salle rouge » : entrer dans n'importe quelle salle à carte de la bonne couleur.
+- [ ] Mourir avec un insigne avant de le rapporter : il se retrouve dans les caisses (« Tu retrouves : … »).
 
 ## 5. PNJ du spawn
 

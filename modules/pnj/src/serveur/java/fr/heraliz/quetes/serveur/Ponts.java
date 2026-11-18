@@ -99,6 +99,48 @@ final class Ponts {
         }
     }
 
+    // 18/11 (quêtes de Varga trouvées dans les caisses) : salles à carte de HeraliZ Bunker, zones dangereuses de HeraliZ
+    // Décors ; cherchées une fois ; mod absent : aucune salle, aucune zone (journal du serveur)
+    private static java.lang.reflect.Method salleIci, zoneNiveau;
+    private static boolean salleCherchee, zoneCherchee;
+
+    /** Couleur de la salle à carte où se tient le joueur (« verte », « bleue », « rouge ») ; "" : aucune. */
+    static String salleIci(ServerPlayer p) {
+        if (!salleCherchee) {
+            salleCherchee = true;
+            try {
+                salleIci = Class.forName("fr.heralisz.bunker.serveur.salle.SallesMonde").getMethod("couleurIci", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                LOG.warn("[heraliz_quetes] salles à carte de HeraliZ Bunker introuvables : « entrer dans une salle » ne se valide pas ({})", ex.toString());
+            }
+        }
+        if (salleIci == null) return "";
+        try {
+            return salleIci.invoke(null, p) instanceof String s ? s : "";
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return "";
+        }
+    }
+
+    /** Niveau (0 : dehors) de la zone dangereuse de ce genre (« gaz », « radiation », « froid ») en ce point de la carte. */
+    static float zoneDanger(String genre, net.minecraft.core.BlockPos pos) {
+        if (!zoneCherchee) {
+            zoneCherchee = true;
+            try {
+                zoneNiveau = Class.forName("fr.heraliz.decors.serveur.ZonesServeur").getMethod("niveauZone", String.class, double.class,
+                        double.class, double.class);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                LOG.warn("[heraliz_quetes] zones dangereuses de HeraliZ Décors introuvables : rien ne se trouve « dans une zone » ({})", ex.toString());
+            }
+        }
+        if (zoneNiveau == null) return 0f;
+        try {
+            return zoneNiveau.invoke(null, genre, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) instanceof Float f ? f : 0f;
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            return 0f;
+        }
+    }
+
     /** Prix d'achat chez un marchand avec l'économie de la bêta : prix x facteur « achat », arrondi, 1 héral au moins. */
     static long prixAchat(long prix) {
         if (prix <= 0) return prix;

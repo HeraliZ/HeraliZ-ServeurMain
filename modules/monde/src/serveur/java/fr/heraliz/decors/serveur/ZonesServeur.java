@@ -115,6 +115,23 @@ public final class ZonesServeur {
         if (!e.isEndConquered()) EXPO.remove(e.getEntity().getUUID());
     }
 
+    /**
+     * 18/11 (quêtes de Varga : la boîte noire se trouve dans les caisses de la zone irradiée de Radio ; lu par réflexion par
+     * heraliz_quetes) : niveau de la zone de ce genre (« gaz », « radiation », « froid ») en ce point de la carte, 0 dehors.
+     */
+    public static float niveauZone(String genre, double x, double y, double z) {
+        List<Zone> zs = zones;
+        float[][] bs = boites;
+        float n = 0f;
+        for (int i = 0; i < zs.size() && i < bs.length; i++) {
+            float[] bo = bs[i];
+            if (x < bo[0] || x > bo[1] || z < bo[2] || z > bo[3]) continue;
+            Zone zo = zs.get(i);
+            if (zo.genre().equals(genre)) n = Math.max(n, zo.niveau(x, y, z));
+        }
+        return n;
+    }
+
     /** Envoie l'exposition au joueur seulement si elle a changé (avant : un paquet par joueur et par seconde, même à 0). */
     private static void envoyer(ServerPlayer p, Ambiance.Exposition x) {
         if (x.equals(ENVOYEE.get(p.getUUID()))) return;

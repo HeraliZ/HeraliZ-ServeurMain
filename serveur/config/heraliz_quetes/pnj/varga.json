@@ -510,9 +510,9 @@
       },
       "difficulte": 2,
       "demande": {
-        "fr": "Retrouve 5 insignes du 7e régiment dans les villes et rapporte-les-moi.",
-        "en": "Find 5 insignia of the 7th Regiment in the towns and bring them back to me.",
-        "ru": "Найди в городах 5 нашивок 7-го полка и принеси их мне."
+        "fr": "Fouille les caisses de la carte : retrouve 5 insignes du 7e régiment et rapporte-les-moi.",
+        "en": "Search the crates on the map: find 5 insignia of the 7th Regiment and bring them back to me.",
+        "ru": "Обыскивай ящики на карте: найди 5 нашивок 7-го полка и принеси их мне."
       },
       "fin": {
         "fr": "Cinq hommes de mon régiment. On ne les oubliera pas.",
@@ -523,11 +523,13 @@
         {
           "type": "ramasser",
           "libelle": {
-            "fr": "Retrouver 5 insignes du 7e régiment",
-            "en": "Find 5 insignia of the 7th Regiment",
-            "ru": "Найти 5 нашивок 7-го полка"
+            "fr": "Retrouver 5 insignes du 7e régiment (dans les caisses)",
+            "en": "Find 5 insignia of the 7th Regiment (in crates)",
+            "ru": "Найти 5 нашивок 7-го полка (в ящиках)"
           },
-          "groupe": "insigne_varga",
+          "source": "caisses",
+          "chances": [0.03, 0.04, 0.05, 0.07, 0.09, 0.11, 0.18],
+          "garantie": 20,
           "nombre": 5,
           "objet": "insigne_regiment",
           "ref": "insigne",
@@ -1039,9 +1041,9 @@
       },
       "difficulte": 3,
       "demande": {
-        "fr": "Lis les carnets de 3 déserteurs, retrouve leur sacoche cachée et rapporte-la-moi.",
-        "en": "Read the notebooks of 3 deserters, find their hidden satchel and bring it back to me.",
-        "ru": "Прочитай дневники 3 дезертиров, найди их спрятанную сумку и принеси её мне."
+        "fr": "Fouille les caisses : lis les carnets de 3 déserteurs, puis retrouve leur sacoche dans une caisse T4 ou mieux et rapporte-la-moi.",
+        "en": "Search the crates: read the notebooks of 3 deserters, then find their satchel in a T4 or better crate and bring it back to me.",
+        "ru": "Обыскивай ящики: прочитай дневники 3 дезертиров, затем найди их сумку в ящике T4 или лучше и принеси её мне."
       },
       "fin": {
         "fr": "Ces lâches avaient tout planqué. Bon travail.",
@@ -1052,11 +1054,13 @@
         {
           "type": "indice",
           "libelle": {
-            "fr": "Lire les carnets de 3 déserteurs",
-            "en": "Read the notebooks of 3 deserters",
-            "ru": "Прочитать дневники 3 дезертиров"
+            "fr": "Lire les carnets de 3 déserteurs (dans les caisses)",
+            "en": "Read the notebooks of 3 deserters (in crates)",
+            "ru": "Прочитать дневники 3 дезертиров (в ящиках)"
           },
-          "groupe": "deserteur",
+          "source": "caisses",
+          "chances": [0.03, 0.04, 0.05, 0.07, 0.09, 0.11, 0.18],
+          "garantie": 20,
           "nombre": 3,
           "titre": {
             "fr": "Carnet d'un déserteur",
@@ -1072,11 +1076,14 @@
         {
           "type": "ramasser",
           "libelle": {
-            "fr": "Retrouver la sacoche des déserteurs",
-            "en": "Find the deserters' satchel",
-            "ru": "Найти сумку дезертиров"
+            "fr": "Retrouver la sacoche des déserteurs (caisses T4 ou mieux)",
+            "en": "Find the deserters' satchel (T4 or better crates)",
+            "ru": "Найти сумку дезертиров (ящики T4 или лучше)"
           },
-          "groupe": "cachette_deserteurs",
+          "source": "caisses",
+          "palier_min": 4,
+          "chances": [0, 0, 0, 0.08, 0.10, 0.12, 0.18],
+          "garantie": 14,
           "nombre": 1,
           "objet": "sacoche_deserteurs",
           "ref": "sacoche",
@@ -1169,7 +1176,7 @@
             "en": "Enter a green keycard room",
             "ru": "Войти в комнату с зелёной ключ-картой"
           },
-          "groupe": "salle_verte",
+          "salle": "verte",
           "un_seul": true,
           "rayon": 4
         },
@@ -1363,9 +1370,9 @@
       },
       "difficulte": 4,
       "demande": {
-        "fr": "Va dans la zone irradiée de Radio, retrouve la boîte noire et rapporte-la-moi.",
-        "en": "Go into the irradiated zone of Radio, find the black box and bring it back to me.",
-        "ru": "Отправляйся в заражённую радиацией зону Радио, найди чёрный ящик и принеси его мне."
+        "fr": "Va dans la zone irradiée de Radio, fouille ses caisses pour retrouver la boîte noire et rapporte-la-moi.",
+        "en": "Go into the irradiated zone of Radio, search its crates to find the black box and bring it back to me.",
+        "ru": "Отправляйся в заражённую радиацией зону Радио, обыщи её ящики, найди чёрный ящик и принеси его мне."
       },
       "fin": {
         "fr": "Enfin. On va savoir ce qui s'est passé.",
@@ -1376,11 +1383,14 @@
         {
           "type": "ramasser",
           "libelle": {
-            "fr": "Retrouver la boîte noire dans la zone irradiée de Radio",
-            "en": "Find the black box in the irradiated zone of Radio",
-            "ru": "Найти чёрный ящик в заражённой зоне Радио"
+            "fr": "Retrouver la boîte noire dans les caisses de la zone irradiée de Radio",
+            "en": "Find the black box in the crates of the irradiated zone of Radio",
+            "ru": "Найти чёрный ящик в ящиках заражённой зоны Радио"
           },
-          "groupe": "boite_noire",
+          "source": "caisses",
+          "zone_danger": "radiation",
+          "chances": [0.12, 0.13, 0.14, 0.15, 0.17, 0.19, 0.25],
+          "garantie": 8,
           "nombre": 1,
           "objet": "boite_noire",
           "ref": "boite_noire",
@@ -1472,7 +1482,7 @@
             "en": "Enter a blue keycard room",
             "ru": "Войти в комнату с синей ключ-картой"
           },
-          "groupe": "salle_bleue",
+          "salle": "bleue",
           "un_seul": true,
           "rayon": 4
         },
@@ -1753,7 +1763,7 @@
             "en": "Enter a red keycard room",
             "ru": "Войти в комнату с красной ключ-картой"
           },
-          "groupe": "salle_rouge",
+          "salle": "rouge",
           "un_seul": true,
           "rayon": 4
         }

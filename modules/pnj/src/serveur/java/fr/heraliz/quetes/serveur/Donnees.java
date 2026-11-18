@@ -62,6 +62,11 @@ final class Donnees {
         public Map<String, Long> refQuand = new HashMap<>();
         /** Objets déjà comptés (étapes « differents »). */
         public Set<String> vus = new LinkedHashSet<>();
+        /**
+         * 18/11 : conteneurs ouverts sans rien trouver depuis le dernier objet trouvé (étapes trouvées dans les caisses,
+         * {@code "source": "caisses"} : la garantie) ; 0 au début de chaque étape.
+         */
+        public int sansTrouver;
     }
 
     public static final class DJoueur {

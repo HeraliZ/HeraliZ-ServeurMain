@@ -87,9 +87,18 @@
 
 ## 3. Ce que le staff pose en jeu
 
-Points de quête (baguette `/quete baguette <groupe>` ou `/quete point ajouter <groupe>`) : `insigne_varga` (15 et plus,
-dans plusieurs villes), `deserteur` (3 et plus), `cachette_deserteurs` (1 à 3), `boite_noire` (dans la zone de gaz),
-`salle_verte`, `salle_bleue`, `salle_rouge` (dans chaque salle à carte). Puis `/pnj creer varga` au spawn.
+Depuis le 18/11 (décision du propriétaire), **plus aucun point de quête à poser** pour Varga : `/pnj creer varga` au spawn
+suffit.
+- Insignes (5), carnets des déserteurs (3), sacoche des déserteurs, boîte noire : trouvés dans les caisses de HeraliZ Loot
+  pendant que l'étape est en cours (première ouverture d'une caisse remplie), avec une chance par palier et une garantie
+  (au plus N caisses d'affilée sans rien) : insignes et carnets 3 % (T1) à 18 % (T7), au plus 20 caisses ; sacoche
+  seulement en T4 et mieux, 8 à 18 %, au plus 14 ; boîte noire seulement dans les caisses d'une zone de radiation (Radio),
+  12 à 25 %, au plus 8. L'objet arrive dans l'inventaire (jamais dans la caisse) ; le message, et le carnet à lire,
+  s'affichent quand la caisse est refermée. Un objet perdu (mort) avant d'être rapporté se retrouve de la même façon.
+  Réglages dans `serveur/config/heraliz_quetes/pnj/varga.json` (« source » : « caisses », « chances », « garantie »,
+  « palier_min », « zone_danger »).
+- « Entrer dans une salle à carte verte / bleue / rouge » : n'importe quelle salle de cette couleur créée avec `/salle
+  creer` (HeraliZ Bunker), reconnue toute seule (« salle » : « verte »…).
 
 ## 4. Comment le serveur voit chaque action
 
