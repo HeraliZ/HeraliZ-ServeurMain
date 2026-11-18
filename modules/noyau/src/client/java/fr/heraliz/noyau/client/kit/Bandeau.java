@@ -14,13 +14,15 @@ import java.util.List;
 /**
  * Le bandeau commun des messages à l'écran (18/11, demande du propriétaire : « un affichage toujours le même, bien propre,
  * un peu plus petit » ; maquette validée {@code maquettes/notifications/}, outil {@code modules/noyau/outils/apercu_notifications.py}) :
- * verre sombre, filet d'un pixel d'écran, trait de couleur d'une unité à gauche, titre en DM Sans gras 6 sur une ligne,
- * puis le texte en DM Sans 5,5 (4 lignes au plus), et au besoin une barre fine. Ni icône, ni capitales espacées.
+ * verre sombre, filet d'un pixel d'écran, trait de couleur d'une unité à gauche, titre en DM Sans gras 6 (une ligne, 3
+ * pour un long message sans texte), puis le texte en DM Sans 5,5 (4 lignes au plus), et au besoin une barre fine. Ni
+ * icône, ni capitales espacées.
  *
  * <p>La mise en page (textes mesurés, coupés, abrégés) se fait quand on pose le texte ({@link #poser}, {@link #ligne}) ;
  * le dessin n'alloue rien. Dessin en deux temps pour qu'une pile de bandeaux n'envoie qu'un lot de formes puis un lot de
  * textes : {@link #formes} puis {@link #textes} (au tampon, sans le vider), ou {@link #dessiner} pour un bandeau seul.
- * Géométrie de la maquette, en unités d'interface : titre seul 10 de haut ; titre et texte 17, puis 6,5 par ligne.
+ * Géométrie de la maquette, en unités d'interface : titre seul 10 de haut ; titre et texte 17, puis 6,5 par ligne de
+ * texte et 7 par ligne de titre en plus.
  */
 public final class Bandeau {
     /** Couleurs des textes : texte, atténué, très atténué. */
@@ -29,21 +31,23 @@ public final class Bandeau {
     public static final int OK = 0x5FD08A, OR = 0xE8C36A, INFO = 0x6FA8FF, ALERTE = 0xE8B34A, DANGER = 0xE3201B, NEUTRE = 0x8F95A0;
     /** Marge intérieure et trait de couleur. */
     public static final float MARGE = 4f, TRAIT = 1f;
-    /** Largeur d'un texte au plus, par défaut (au-delà : coupé en lignes ; titre abrégé par « … »). */
+    /** Largeur d'un texte au plus, par défaut (au-delà : coupé en lignes ; la dernière ligne finit par « … »). */
     public static final float TEXTE_MAX = 160f;
-    public static final int LIGNES_MAX = 4;
+    public static final int LIGNES_MAX = 4, TITRES_MAX = 3;
     private static final int OPACITE_VERRE = 205, OPACITE_BORD = 20, OPACITE_PISTE = 30;
 
-    private final TexteHud titre = new TexteHud(PoliceHud.BANDEAU_TITRE);
+    private final TexteHud[] titres = new TexteHud[TITRES_MAX];
     private final TexteHud[] lignes = new TexteHud[LIGNES_MAX];
     private final int[] couleurs = new int[LIGNES_MAX];
-    private int n;
+    /** Lignes du titre (1 à 3) et du texte (0 à 4). */
+    private int nt = 1, n;
     private int accent = NEUTRE;
     private float barre = -1f;
     private int couleurBarre = OK;
     private float max = TEXTE_MAX;
 
     public Bandeau() {
+        for (int i = 0; i < TITRES_MAX; i++) titres[i] = new TexteHud(PoliceHud.BANDEAU_TITRE);
         for (int i = 0; i < LIGNES_MAX; i++) lignes[i] = new TexteHud(PoliceHud.BANDEAU_TEXTE);
     }
 
@@ -54,9 +58,22 @@ public final class Bandeau {
         return this;
     }
 
-    /** Titre (abrégé s'il est trop long) et texte coupé en lignes atténuées ; trait de couleur {@code accent} ; pas de barre. */
+    /**
+     * Titre (coupé en 3 lignes au plus) et texte coupé en lignes atténuées ; trait de couleur {@code accent} ; pas de
+     * barre.
+     */
     public Bandeau poser(String titre, @Nullable String texte, int accent) {
-        titre(titre);
+        nt = 0;
+        List<FormattedText> lt = splitter().splitLines(titre == null ? "" : titre.trim(), (int) max, style(PoliceHud.BANDEAU_TITRE));
+        for (int i = 0; i < lt.size() && nt < TITRES_MAX; i++) {
+            String s = lt.get(i).getString().trim();
+            if (nt == TITRES_MAX - 1 && i < lt.size() - 1) s = abreger(s + " …", PoliceHud.BANDEAU_TITRE, max);
+            titres[nt++].texte(s);
+        }
+        if (nt == 0) {
+            titres[0].texte("");
+            nt = 1;
+        }
         this.accent = accent;
         barre = -1f;
         n = 0;
@@ -73,9 +90,10 @@ public final class Bandeau {
         return this;
     }
 
-    /** Change le titre seul (abrégé s'il est trop long). */
+    /** Change le titre seul, sur une ligne (abrégé s'il est trop long). */
     public Bandeau titre(String s) {
-        titre.texte(abreger(s == null ? "" : s, PoliceHud.BANDEAU_TITRE, max));
+        titres[0].texte(abreger(s == null ? "" : s, PoliceHud.BANDEAU_TITRE, max));
+        nt = 1;
         return this;
     }
 
@@ -107,18 +125,28 @@ public final class Bandeau {
     }
 
     public float largeur() {
-        float l = titre.largeur();
+        float l = 0f;
+        for (int i = 0; i < nt; i++) l = Math.max(l, titres[i].largeur());
         for (int i = 0; i < n; i++) l = Math.max(l, lignes[i].largeur());
         return l + TRAIT + 2 * MARGE;
     }
 
     public float hauteur() {
-        float h = n == 0 ? 10f : 17f + (n - 1) * 6.5f;
+        float h = (n == 0 ? 10f : 17f + (n - 1) * 6.5f) + (nt - 1) * 7f;
         return barre >= 0f ? h + 3.5f : h;
     }
 
+    /** Milieu des capitales de la ligne {@code i} du titre, puis de la ligne {@code i} du texte. */
+    private float yTitre(float y, int i) {
+        return y + (n == 0 ? 5f : 5.5f) + i * 7f;
+    }
+
+    private float yLigne(float y, int i) {
+        return y + 12f + (nt - 1) * 7f + i * 6.5f;
+    }
+
     private float yBarre(float y) {
-        return n == 0 ? y + 9f : y + 12f + (n - 1) * 6.5f + 4f;
+        return n == 0 ? y + 9f + (nt - 1) * 7f : yLigne(y, n - 1) + 4f;
     }
 
     // ------------------------------------------------------------------ dessin
@@ -142,9 +170,9 @@ public final class Bandeau {
     public void textes(GuiGraphics g, float x, float y, float opacite) {
         if (opacite <= 0.01f) return;
         float xi = x + TRAIT + MARGE;
-        titre.ajouter(g, xi, y + (n == 0 ? 5f : 5.5f), Palette.argb(TEXTE, opacite), TexteHud.GAUCHE, true);
+        for (int i = 0; i < nt; i++) titres[i].ajouter(g, xi, yTitre(y, i), Palette.argb(TEXTE, opacite), TexteHud.GAUCHE, true);
         for (int i = 0; i < n; i++) {
-            lignes[i].ajouter(g, xi, y + 12f + i * 6.5f, Palette.argb(couleurs[i], opacite), TexteHud.GAUCHE, true);
+            lignes[i].ajouter(g, xi, yLigne(y, i), Palette.argb(couleurs[i], opacite), TexteHud.GAUCHE, true);
         }
     }
 
