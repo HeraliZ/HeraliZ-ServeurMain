@@ -40,6 +40,9 @@ import java.util.UUID;
  * « Modifier la roue » : notre écran d'édition ({@link EditionRoue}, 04/11 ; avant : le menu d'Emotecraft).</li>
  * <li>Polices du mod à leur vraie taille, texte posé sur un point de l'écran ; écran « panneau » (Echelle.forcer(écran,
  * l, h)).</li>
+ * <li>18/11 (retour du propriétaire : « pas besoin d'autant de texte, c'est intuitif ») : plus de sous-titre « Roue rapide ·
+ * page » (la page est au milieu), de « Clic : jouer », de « Vise une case » ni de pied d'aide des touches ; seul un refus
+ * s'écrit sous les boutons.</li>
  * </ul>
  */
 public final class RoueEmotes extends Screen {
@@ -194,21 +197,20 @@ public final class RoueEmotes extends Screen {
         int accent = Ui.accent();
         EmoteHolder montree = survol >= 0 ? emote(survol) : null;
 
+        // 18/11 (retour du propriétaire : pas de texte d'aide) : le titre seul au-dessus de la roue (la page est au milieu)
         float haut = cy - RAYON - CASE / 2f;
-        centre(g, t("titre"), TITRE, cx, haut - 30, Ui.TEXT);
-        capsCentre(g, t("sous_titre", page() + 1, PAGES), Ui.SMALL, 1.0f, cx, haut - 14, Ui.MUTED);
+        centre(g, t("titre"), TITRE, cx, haut - 20, Ui.TEXT);
         anneau(g, cx, cy, RAYON, point(), Ui.argb(BLANC, 22));
 
         for (int k = 0; k < CASES; k++) caseEmote(g, k, accent);
 
-        // milieu
+        // milieu : le nom de l'emote visée (ou « Vide »), sans « Clic : jouer » ni « Vise une case »
         disque(g, cx, cy, 48, Ui.argb(Ui.VERRE, 235));
         anneau(g, cx, cy, 48, point(), Ui.argb(BLANC, 40));
         if (montree != null) {
-            centre(g, couper(nom(montree.getEmote()).getString(), Ui.BOLD, 84), Ui.BOLD, cx, cy - 8, Ui.TEXT);
-            capsCentre(g, t("jouer"), Ui.SMALL, 0.8f, cx, cy + 5, Ui.MUTED);
-        } else {
-            centre(g, t(survol >= 0 ? "vide" : "choisir"), Ui.SMALL, cx, cy - 4, Ui.MUTED);
+            centre(g, couper(nom(montree.getEmote()).getString(), Ui.BOLD, 84), Ui.BOLD, cx, cy - 4, Ui.TEXT);
+        } else if (survol >= 0) {
+            centre(g, t("vide"), Ui.SMALL, cx, cy - 4, Ui.MUTED);
         }
         fleche(g, "←", cx - 24, cy + 22, mx, my, () -> changerPage(-1));
         capsCentre(g, (page() + 1) + " / " + PAGES, Ui.SMALL, 0.8f, cx, cy + 22, Ui.TEXT);
@@ -226,12 +228,10 @@ public final class RoueEmotes extends Screen {
             Minecraft.getInstance().setScreen(new EditionRoue(this));
         });
 
-        // message (refus) ou aides
+        // message (refus) seulement ; 18/11 : plus de pied d'aide (CLIC jouer, MOLETTE page, 1-8 case, ÉCHAP fermer)
         float y = by + 22;
         if (statut != null && System.currentTimeMillis() - statutA < 4000) {
             centre(g, couper(statut.getString(), Ui.SMALL, L), Ui.SMALL, cx, y, Ui.DANGER);
-        } else {
-            aides(g, y);
         }
         super.render(g, mx, my, pt);
     }
@@ -300,21 +300,6 @@ public final class RoueEmotes extends Screen {
         boutons.add(new Bouton(x, cyb - h / 2, w, h, action));
     }
 
-    private void aides(GuiGraphics g, float y) {
-        String[][] aides = {{t("t.clic"), t("k.jouer")}, {t("t.molette"), t("k.page")}, {t("t.cases"), t("k.case")}, {t("t.echap"), t("k.fermer")}};
-        float total = -12;
-        for (String[] a : aides) total += capsLargeur(a[0], Ui.SMALL, 0.8f) + 8 + 4 + largeur(a[1], Ui.SMALL) + 12;
-        float x = cx - total / 2;
-        for (String[] a : aides) {
-            float w = capsLargeur(a[0], Ui.SMALL, 0.8f) + 8;
-            rect(g, x, y - 5, x + w, y + 5, Ui.argb(BLANC, 18));
-            cadre(g, x, y - 5, w, 10, Ui.argb(BLANC, 60));
-            capsCentre(g, a[0], Ui.SMALL, 0.8f, x + w / 2, y, Ui.TEXT);
-            x += w + 4;
-            x += texte(g, a[1], Ui.SMALL, x, y, Ui.MUTED) + 12;
-        }
-    }
-
     private static String t(String cle, Object... args) {
         return Component.translatable("heraliz_emote.roue." + cle, args).getString();
     }
@@ -324,20 +309,12 @@ public final class RoueEmotes extends Screen {
         return Net.point();
     }
 
-    private float largeur(String s, ResourceLocation f) {
-        return Net.largeur(font, s, f);
-    }
-
     private float texte(GuiGraphics g, String s, ResourceLocation f, float x, float cyt, int rgb) {
         return Net.texte(g, font, s, f, x, cyt, rgb);
     }
 
     private void centre(GuiGraphics g, String s, ResourceLocation f, float x, float cyt, int rgb) {
         Net.centre(g, font, s, f, x, cyt, rgb);
-    }
-
-    private float capsLargeur(String s, ResourceLocation f, float esp) {
-        return Net.capsLargeur(font, s, f, esp);
     }
 
     private void capsCentre(GuiGraphics g, String s, ResourceLocation f, float esp, float x, float cyt, int rgb) {

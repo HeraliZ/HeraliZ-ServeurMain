@@ -11,8 +11,8 @@ import static fr.heraliz.crac.client.kit.Dessin.*;
 
 /**
  * Base des écrans de groupe (maquette validée) : le monde assombri derrière un panneau de verre centré, un filet de
- * couleur en haut, un en-tête en capitales, « Échap fermer » à droite. Les lignes de joueurs, les champs de saisie et
- * les petits boutons sont dessinés ici pour tous les écrans du groupe.
+ * couleur en haut, un en-tête en capitales (18/11 : plus de « Échap fermer » à droite). Les lignes de joueurs, les champs
+ * de saisie et les petits boutons sont dessinés ici pour tous les écrans du groupe.
  */
 public abstract class EcranGroupe extends EcranCanevas {
     /** Rectangle du panneau. */
@@ -47,8 +47,9 @@ public abstract class EcranGroupe extends EcranCanevas {
     }
 
     /**
-     * En-tête : pastille de couleur (si {@code pastille} >= 0), titre en capitales, sous-titre, et « Échap fermer » à
-     * droite. Rend le bas de l'en-tête.
+     * En-tête : pastille de couleur (si {@code pastille} >= 0), titre en capitales, sous-titre. Rend le bas de l'en-tête.
+     * 18/11 (retour du propriétaire : pas de « Échap pour fermer » à l'écran) : plus de « Échap fermer » à droite, le titre
+     * a toute la largeur.
      */
     protected float entete(GuiGraphics g, int pastille, String titre, int couleurTitre, String sousTitre) {
         float x = this.x0 + 13.33F;
@@ -57,10 +58,7 @@ public abstract class EcranGroupe extends EcranCanevas {
             contour(g, x, this.y0 + 11.33F, 15.33F, 15.33F, this.px, a(BLANC, 89));
             x += 15.33F + 5.33F;
         }
-        String fermer = Component.translatable("crac.gui.esc_close").getString();
-        float fw = largeurCaps(this.font, fermer, MINI, 0.69F);
-        caps(g, this.font, fermer, MINI, this.x0 + this.pw - 13.33F - fw, this.y0 + 21.33F - 4.21F, 0.69F, a(ATTENUE, 255));
-        float place = this.x0 + this.pw - 13.33F - fw - 8 - x;
+        float place = this.x0 + this.pw - 13.33F - x;
         float echelle = 0.93F;
         float tw = largeurCaps(this.font, titre, TITRE, 1.12F / echelle) * echelle;
         if (tw > place) {

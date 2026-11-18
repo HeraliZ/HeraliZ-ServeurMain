@@ -56,9 +56,15 @@ public final class SaisonTab extends Tab {
         Classement cl = new Classement(x, y + 26, GAUCHE, h - 26 - BOITE - 4);
         cl.setContentHeight(sa == null ? 0 : sa.top().size() * LIGNE);
         ecran.ajouter(cl);
-        Bareme ba = new Bareme(rx + 10, y + 38, rw - 20, h - 38 - 24);
+        // 18/11 : la note du cœur n'a sa ligne (en bas à droite) que quand elle sert ; sinon le barème va jusqu'en bas
+        Bareme ba = new Bareme(rx + 10, y + 38, rw - 20, h - 38 - (noteCoeur(sa) ? 24 : 8));
         ba.setContentHeight(lignes(sa).size() * ENTREE);
         ecran.ajouter(ba);
+    }
+
+    /** « Sans cœur posé, le clan ne gagne rien » : montré seulement pendant une saison, au clan qui n'a pas posé son cœur. */
+    private static boolean noteCoeur(Packets.SaisonS2C sa) {
+        return sa != null && sa.active() && !sa.coeur();
     }
 
     private static List<LigneBareme> lignes(Packets.SaisonS2C sa) {
@@ -137,8 +143,10 @@ public final class SaisonTab extends Tab {
         if (sa != null && lignes(sa).isEmpty()) {
             Ui.centered(g, font, Ui.tr(Ui.SMALL, "gui.saison.chargement"), rx + rw / 2f, y + 60, Ui.argb(Ui.FAINT, 255));
         }
-        String note = tr("gui.saison.note");
-        g.drawString(font, Ui.lit(Ui.ellipsis(font, note, Ui.SMALL, rw - 20), Ui.SMALL), rx + 10, y + h - 14, Ui.argb(Ui.AMBRE, 255), false);
+        if (noteCoeur(sa)) {
+            String note = tr("gui.saison.note");
+            g.drawString(font, Ui.lit(Ui.ellipsis(font, note, Ui.SMALL, rw - 20), Ui.SMALL), rx + 10, y + h - 14, Ui.argb(Ui.AMBRE, 255), false);
+        }
     }
 
     private int puce(String nom) {

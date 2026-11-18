@@ -335,7 +335,8 @@ def onglet_saison(e, L, clans, moi, survol=None, cat_bareme=0):
     e.rect(rx + 10, Y + 34, rx + rw - 10, Y + 34 + 1 / 3, BLANC, 22)
     ly = Y + 38
     for cle, forme, valeurs, cond, args in bareme_pve():
-        if ly + ENTREE > Y + H - 24:      # liste défilante de hauteur h - 62 : la suite se voit en faisant défiler
+        # 18/11 : comme dans le jeu, sans la note du cœur (le clan de l'aperçu a posé son cœur) le barème va jusqu'en bas
+        if ly + ENTREE > Y + H - 8:       # liste défilante : la suite se voit en faisant défiler
             break
         pts = L.t("gui.saison.pts." + forme, *[L.decimal(v) for v in valeurs])
         pwid = e.largeur(pts, BOLD)
@@ -345,7 +346,7 @@ def onglet_saison(e, L, clans, moi, survol=None, cat_bareme=0):
             ecrit(e, couper(e, L.t("gui.saison.c." + cond, *args), SMALL, rw - 22), rx + 10, ly + 12, SMALL, FAINT)
         e.rect(rx + 10, ly + ENTREE - 1, rx + rw - 12, ly + ENTREE - 1 + 1 / 3, BLANC, 14)
         ly += ENTREE
-    ecrit(e, couper(e, L.t("gui.saison.note"), SMALL, rw - 20), rx + 10, Y + H - 14, SMALL, AMBRE)
+    # la note « Sans cœur posé… » n'apparaît dans le jeu qu'au clan qui n'a pas posé son cœur (pas celui de l'aperçu)
     return bulle, souris
 
 

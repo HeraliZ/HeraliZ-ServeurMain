@@ -184,27 +184,7 @@ public abstract class RadialMenuScreen extends EcranCanevas {
         }
         this.drawHub(g, cx, cy);
         capsCentre(g, this.font, this.heading(), MOYEN_GRAS, cx, cy - 134.33F - 2.68F, 1.44F, a(TEXTE, 217));
-        this.drawHelp(g, cx, cy + 141.33F);
-    }
-
-    /** "Release [key] or click: choose    [Esc] cancel". */
-    private void drawHelp(GuiGraphics g, float cx, float cy) {
-        String release = Component.translatable("crac.wheel.release").getString();
-        String key = this.trigger.getDisplayName().getString();
-        String choose = Component.translatable("crac.wheel.choose").getString();
-        String esc = Component.translatable("crac.wheel.escape").getString();
-        String cancel = Component.translatable("crac.wheel.cancel").getString();
-        float total = largeur(this.font, release, MINI) + 3.33F + largeurTouche(this.font, key, 0.4F, 7.33F) + 3.33F
-            + largeur(this.font, choose, MINI) + 6.67F + 3.33F + largeurTouche(this.font, esc, 0.4F, 7.33F) + 3.33F + largeur(this.font, cancel, MINI);
-        float x = cx - total / 2;
-        int color = a(TEXTE, 191);
-        texte(g, this.font, lit(release, MINI), x, cy - 4.21F, color);
-        x += largeur(this.font, release, MINI) + 3.33F;
-        x += touche(g, this.font, key, x, cy, 6.67F, 0.4F, 7.33F, this.px) + 3.33F;
-        texte(g, this.font, lit(choose, MINI), x, cy - 4.21F, color);
-        x += largeur(this.font, choose, MINI) + 6.67F + 3.33F;
-        x += touche(g, this.font, esc, x, cy, 6.67F, 0.4F, 7.33F, this.px) + 3.33F;
-        texte(g, this.font, lit(cancel, MINI), x, cy - 4.21F, color);
+        // 18/11 (retour du propriétaire) : plus d'aide « Relâche [touche] ou clic : choisir · [Échap] annuler » sous la roue
     }
 
     private void commit() {

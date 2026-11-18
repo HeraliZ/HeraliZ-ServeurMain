@@ -167,10 +167,10 @@ public class EcranPause extends Screen {
         sousY = y;
         if (sousTitre != null) y += sousH + 14;
 
-        // ---- lignes (ordre de la maquette)
+        // ---- lignes (ordre de la maquette) ; 18/11 : plus d'aide « ÉCHAP » au bout de REPRENDRE
         int x = colX;
         lignes.add(new MenuLigne(x, y, colW, lh, Icons.REPRENDRE, Component.translatable("gui.heraliz_interface.pause.reprendre"), accent,
-                this::onClose).style(MenuLigne.Style.PRINCIPAL).indice(t("pause.echap")));
+                this::onClose).style(MenuLigne.Style.PRINCIPAL));
         y += lh;
         lignes.add(new MenuLigne(x, y, colW, lh, Icons.INFO, libelle(InterfaceConfig.INFORMATIONS_LIBELLE, "pause.informations"), accent,
                 () -> mc.setScreen(new EcranInformations(this))).iconeDroite(Icons.CHEVRON).sobre());

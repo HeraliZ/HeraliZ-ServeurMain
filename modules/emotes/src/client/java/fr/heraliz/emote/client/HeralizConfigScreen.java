@@ -45,12 +45,14 @@ public class HeralizConfigScreen extends Screen {
     protected void init() {
         Echelle.forcer(this);
         rows.clear();
+        // 18/11 : plus de phrase d'aide sous l'en-tête (« Vise un joueur qui danse et fais Maj + clic droit… ») : les
+        // réglages montent de 10 et le panneau perd autant
         pw = Math.min(440, width - 24);
-        ph = Math.min(9 * ROW + 92, height - 12);
+        ph = Math.min(9 * ROW + 82, height - 12);
         px = (width - pw) / 2;
         py = (height - ph) / 2;
         int x = px + Ui.MARGE, w = pw - 2 * Ui.MARGE;
-        int y = py + 52;
+        int y = py + 42;
         toggle(x, y, w, "enabled", HeralizConfig.BORROW_ENABLED);
         toggle(x, y += ROW, w, "empty_hand_only", HeralizConfig.EMPTY_HAND_ONLY);
         toggle(x, y += ROW, w, "sync_emote", HeralizConfig.SYNC_EMOTE);
@@ -228,8 +230,6 @@ public class HeralizConfigScreen extends Screen {
             g.fill(closeX + 6 - i, closeY + i, closeX + 7 - i, closeY + i + 1, c);
         }
         Ui.hairline(g, px + Ui.MARGE, px + pw - Ui.MARGE, py + 34, 0xFFFFFF, 36, false, true);
-        String sub = Component.translatable("heraliz_emote.config.subtitle").getString();
-        g.drawString(font, Ui.lit(Ui.ellipsis(font, sub, Ui.SMALL, pw - 2 * Ui.MARGE), Ui.SMALL), px + Ui.MARGE, py + 40, Ui.argb(Ui.MUTED, 255), false);
         Ui.hairline(g, px + Ui.MARGE, px + pw - Ui.MARGE, py + ph - 36, 0xFFFFFF, 30, true, true);
         super.render(g, mouseX, mouseY, partialTick);
         for (AbstractWidget r : rows) {

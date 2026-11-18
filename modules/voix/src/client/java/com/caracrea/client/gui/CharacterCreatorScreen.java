@@ -38,6 +38,10 @@ import static com.caracrea.client.gui.CreatorUi.*;
  * the middle (drag to turn, wheel to zoom), the choices of the category in a glass panel on the right, and the actions at the
  * bottom. Every change shows on the character within a frame or two; nothing is sent to the server until "Confirm".
  * Laid out on the 640 x 360 canvas of our full screens ({@link Echelle}).
+ * <p>18/11 (owner's feedback: "no need for so much text, it's intuitive"): no subtitle under the title (the first-time
+ * welcome stays; the categories move up under the title otherwise), no sentence under the category title in the panel
+ * (content starts higher), no "drag / wheel" hint (turn buttons side by side), no "Enter" chip on Confirm, no keyboard
+ * shortcuts row; the scar hint only says it shows on bare skin.
  */
 public class CharacterCreatorScreen extends Screen {
     private static final int CAT_W = 133;
@@ -77,10 +81,6 @@ public class CharacterCreatorScreen extends Screen {
 
         Component title() {
             return Component.translatable("caracrea.category." + id);
-        }
-
-        Component hint() {
-            return Component.translatable("caracrea.category." + id + ".hint");
         }
     }
 
@@ -154,7 +154,8 @@ public class CharacterCreatorScreen extends Screen {
         margin = Mth.clamp(Math.round(width * 0.05F), 16, 32);
         barY = height - 44;
         catX = margin;
-        catY = 79;
+        // 18/11 : sans sous-titre (hors première connexion), les catégories montent sous le titre
+        catY = firstTime ? 79 : 52;
         panelW = PANEL_W;
         panelX = width - margin - panelW;
         panelY = 22;
@@ -166,7 +167,8 @@ public class CharacterCreatorScreen extends Screen {
         stageCX = stageX + stageW / 2F;
         contentX = panelX + 10;
         contentW = panelW - 21;
-        contentY = panelY + 40;
+        // 18/11 : en-tête du panneau sans la phrase de la catégorie : le titre seul, le contenu monte
+        contentY = panelY + 26;
         contentH = panelY + panelH - 1 - contentY;
         // The Random button keeps one width whatever the category.
         randomW = 110;
@@ -438,8 +440,12 @@ public class CharacterCreatorScreen extends Screen {
             capTop = 42.67F;
         }
         caps(g, font, title.getString(), TITLE, margin, capTop - 4.44F, 1.135F, 1.93F, a(LIGHT, 255));
-        Component line = Component.translatable(firstTime ? "caracrea.screen.first_time" : "caracrea.screen.subtitle");
-        text(g, font, Ui.in(line, TEXT), margin, capTop + 17.33F - 2.95F, 1.1F, a(firstTime ? WELCOME : MUTED, 255));
+        // 18/11 (retour du propriétaire : pas de phrase d'explication) : le mot de bienvenue de la première connexion
+        // seulement, plus de « Choisis ton apparence : elle sera la même pour tout le monde »
+        if (firstTime) {
+            Component line = Component.translatable("caracrea.screen.first_time");
+            text(g, font, Ui.in(line, TEXT), margin, capTop + 17.33F - 2.95F, 1.1F, a(WELCOME, 255));
+        }
     }
 
     private void renderCategories(GuiGraphics g, int mouseX, int mouseY) {
@@ -474,9 +480,8 @@ public class CharacterCreatorScreen extends Screen {
         gradientH(g, panelX + 10, panelY, mid, panelY + 2 * px, a(ACCENT, 0), a(ACCENT, 255));
         gradientH(g, mid, panelY, panelX + panelW - 10, panelY + 2 * px, a(ACCENT, 255), a(ACCENT, 0));
         caps(g, font, category.title().getString(), TITLE, contentX, panelY + 7.8F, 1.6F, a(WHITE, 255));
-        String hint = Ui.ellipsis(font, category.hint().getString(), AIDE, contentW + 4);
-        text(g, font, lit(hint, AIDE), contentX, panelY + 23F, a(MUTED, 255));
-        rect(g, contentX, panelY + 39.67F, contentX + contentW + 1, panelY + 39.67F + px, a(WHITE, 23));
+        // 18/11 : plus de phrase sous le titre de la catégorie (« Teint de peau. »…) : le filet remonte sous le titre
+        rect(g, contentX, contentY - 0.33F, contentX + contentW + 1, contentY - 0.33F + px, a(WHITE, 23));
 
         boolean inContent = inside(mouseX, mouseY, contentX - 4, contentY, contentW + 8, contentH);
         int mx = inContent ? mouseX : -10000;
@@ -532,9 +537,9 @@ public class CharacterCreatorScreen extends Screen {
         return barY + 13;
     }
 
-    /** Distance from the stage centre to the turn buttons (they make room for the hint between them). */
+    /** Distance from the stage centre to the turn buttons (18/11: no hint between them any more, side by side). */
     private float turnOffset() {
-        return Math.max(67.67F, capsWidth(font, tr("caracrea.screen.drag_hint"), MINI, 0.65F) / 2 + 15);
+        return 13.33F;
     }
 
     /** {x, y, w, h} of the "back to my current look" link, or null when there is nothing to undo. */
@@ -563,11 +568,8 @@ public class CharacterCreatorScreen extends Screen {
         button(g, ax, y, aw, BAR_H, false, h, px);
         caps(g, font, tr("caracrea.screen.random_all"), BOUTON_BOLD, ax + 7.33F, cy - 4.55F, 0.85F, a(mix(BUTTON, WHITE, h), 255));
 
-        // Turn buttons, with the hint between them, under the character.
+        // Turn buttons under the character (18/11: no "drag: turn · wheel: zoom" hint between them).
         float ty = turnY();
-        String drag = tr("caracrea.screen.drag_hint");
-        float dw = capsWidth(font, drag, MINI, 0.65F);
-        caps(g, font, drag, MINI, stageCX - dw / 2, ty - 4.21F, 0.65F, a(GREY, 255));
         turnButton(g, stageCX - turnOffset(), ty, true, mx, my);
         turnButton(g, stageCX + turnOffset(), ty, false, mx, my);
 
@@ -583,11 +585,10 @@ public class CharacterCreatorScreen extends Screen {
         float vx = confirmX(), vw = panelX + panelW - vx;
         h = hover("confirm", inside(mx, my, vx, y, vw, BAR_H));
         button(g, vx, y, vw, BAR_H, true, h, px);
-        String confirm = tr("caracrea.screen.confirm"), enter = tr("caracrea.screen.key.enter");
+        // 18/11: the label alone, centred (no "Enter" key chip)
+        String confirm = tr("caracrea.screen.confirm");
         float tw = capsWidth(font, confirm, TEXT_BOLD, 0.96F);
-        float tx = vx + (vw - tw - 4 - keyWidth(font, enter, 0.6F, 8)) / 2;
-        caps(g, font, confirm, TEXT_BOLD, tx, cy - 4.7F, 0.96F, a(WHITE, 255));
-        key(g, font, enter, tx + tw + 4, cy, 6.33F, 0.6F, 8, a(WHITE, 41), px);
+        caps(g, font, confirm, TEXT_BOLD, vx + (vw - tw) / 2, cy - 4.7F, 0.96F, a(WHITE, 255));
         float[] reset = resetRect();
         if (reset != null) {
             boolean hovered = inside(mx, my, reset[0] - 2, reset[1], reset[2] + 4, reset[3]);
@@ -596,20 +597,7 @@ public class CharacterCreatorScreen extends Screen {
             caps(g, font, tr("caracrea.screen.reset"), MINI, reset[0], ry - 4.21F, 0.43F, col);
             rect(g, reset[0], ry + 3.08F, reset[0] + reset[2], ry + 3.08F + px, col);
         }
-
-        // Keyboard shortcuts.
-        // 23/10 (rendu validé) : touches de 9 px, textes en 7,5 px, flèches dessinées et centrées.
-        float sy = barY + 28.5F;
-        float sx = margin;
-        int fill = a(WHITE, 31);
-        sx += keyArrow(g, sx, sy, 9, 10.5F, 0, fill, px) + 3.33F;
-        sx += keyArrow(g, sx, sy, 9, 10.5F, 1, fill, px) + 3.33F;
-        sx += caps(g, font, tr("caracrea.screen.key.category"), TEXT, sx, sy - 4.9F, 0.43F, a(KEYS, 255)) + 9.33F;
-        sx += keyArrow(g, sx, sy, 9, 10.5F, 2, fill, px) + 3.33F;
-        sx += keyArrow(g, sx, sy, 9, 10.5F, 3, fill, px) + 3.33F;
-        sx += caps(g, font, tr("caracrea.screen.key.turn"), TEXT, sx, sy - 4.9F, 0.43F, a(KEYS, 255)) + 9.33F;
-        sx += keyLarge(g, font, tr("caracrea.screen.key.ctrl_r"), sx, sy, 9, 0.4F, 10.5F, fill, px) + 3.33F;
-        caps(g, font, tr("caracrea.screen.key.random"), TEXT, sx, sy - 4.9F, 0.43F, a(KEYS, 255));
+        // 18/11 (owner's feedback): no keyboard shortcuts row under the bar any more (the keys still work).
     }
 
     private void turnButton(GuiGraphics g, float cx, float cy, boolean left, int mx, int my) {

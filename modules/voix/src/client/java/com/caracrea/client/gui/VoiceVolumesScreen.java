@@ -75,7 +75,8 @@ public class VoiceVolumesScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        VoiceUi.panel(g, font, width, height, px, py, pw, ph, title.getString(), Component.translatable("caracrea.voice.volumes.hint").getString());
+        // 18/11 : le titre seul (plus de « Réglez la voix de chacun, ou coupez quelqu'un. »)
+        VoiceUi.panel(g, font, width, height, px, py, pw, ph, title.getString(), "");
         VoiceUi.close(g, px + pw - Ui.MARGE - 7, py + 14, mouseX, mouseY);
         if (players.isEmpty()) {
             Ui.centered(g, font, Ui.tr(Ui.FONT, "caracrea.voice.volumes.empty"), px + pw / 2f, listY + 20, Ui.argb(Ui.MUTED, 255));

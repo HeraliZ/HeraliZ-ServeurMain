@@ -50,7 +50,7 @@ public class ClanCreateScreen extends Screen {
     private Banniere b;
     /**
      * Derniere banniere composee dans l'atelier quand un clic sur un modele l'a remplacee : le lien « REPRENDRE MA
-     * BANNIERE » (a la place de l'aide de PERSONNALISER) la rend, un clic par megarde ne perd plus le travail.
+     * BANNIERE » (a droite de PERSONNALISER) la rend, un clic par megarde ne perd plus le travail.
      */
     @Nullable
     private Banniere perso;
@@ -63,7 +63,6 @@ public class ClanCreateScreen extends Screen {
     private String tagV = "", nomV = "", descV = "";
     private int page;
     private String titreBanniere = "";
-    private Component apercuAide = Component.empty(), personnaliserAide = Component.empty();
     private final List<Component> infos = new ArrayList<>(1);
 
     public ClanCreateScreen() {
@@ -145,8 +144,6 @@ public class ClanCreateScreen extends Screen {
                 .look(HzButton.Look.PRIMARY);
         addRenderableWidget(valider);
         titreBanniere = Component.translatable("gui.creation.banniere_modeles").getString();
-        apercuAide = Ui.tr(Ui.SMALL, "gui.creation.apercu_aide");
-        personnaliserAide = Ui.tr(Ui.SMALL, "gui.creation.personnaliser_aide");
         page = Math.max(0, Math.min(page, pages() - 1));
     }
 
@@ -270,7 +267,7 @@ public class ClanCreateScreen extends Screen {
         String t = tagV.isBlank() ? "" : "[" + tagV.toUpperCase(Locale.ROOT) + "]";
         Ui.centered(g, font, Ui.lit(Ui.ellipsis(font, n, Ui.BOLD, 160), Ui.BOLD), px + 104, by + 170, Ui.argb(nomV.isBlank() ? Ui.FAINT : Ui.TEXT, 255));
         if (!t.isEmpty()) Ui.centered(g, font, Ui.lit(t, Ui.FONT), px + 104, by + 182, Ui.argb(Ui.MUTED, 255));
-        if (survolApercu) Ui.centered(g, font, apercuAide, px + 104, by + 196, Ui.argb(Ui.mix(accent, 0xFFFFFF, 0.4f), 255));
+        // 18/11 : plus de « Cliquer pour personnaliser » au survol (le cadre s'allume à l'accent, c'est assez clair)
         // libelles de droite
         int rx = px + DROITE_X, rw = pw - DROITE_X - 16;
         Ui.spaced(g, font, Component.translatable("gui.creation.tag").getString(), Ui.SMALL, rx, py + 14, Ui.argb(Ui.MUTED, 255), 1.0f);
@@ -303,7 +300,7 @@ public class ClanCreateScreen extends Screen {
                 Ui.soft(g, dx, py + POINTS_Y, 5, 5, p == page ? Ui.argb(accent, 255) : Ui.argb(0xFFFFFF, survol ? 120 : 45));
             }
         }
-        if (!reprendre.visible) g.drawString(font, personnaliserAide, rx + PERSONNALISER_W + 10, py + PERSONNALISER_Y + 5, Ui.argb(Ui.FAINT, 255), false);
+        // 18/11 : plus de « formes, emblèmes, calques » à droite de PERSONNALISER (la place reste au lien REPRENDRE)
         // pied : cout
         int fy = py + ph - 16 - 18;
         long solde = soldePerso();

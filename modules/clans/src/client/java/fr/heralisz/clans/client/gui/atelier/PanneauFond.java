@@ -11,17 +11,17 @@ import java.util.Locale;
 
 /**
  * Panneau du fond (aucun calque selectionne) : FOND (cibles COULEUR A / COULEUR B, palette ; le champ hexa est un
- * widget de l'ecran), STYLE (5 pastilles avec apercu : vertical, diagonal, radial, partage, uni), puis l'aide.
- * La couleur B est grisee en style UNI.
+ * widget de l'ecran), STYLE (5 pastilles avec apercu : vertical, diagonal, radial, partage, uni). 18/11 : plus d'aide
+ * dessous (« cliquez une forme », « + AJOUTER »). La couleur B est grisee en style UNI.
  */
 public final class PanneauFond {
+    /** Y_AIDE : bas de la zone cliquable du panneau (la ou etait l'aide). */
     public static final int Y_CIBLES = 14, Y_PALETTE = 32, Y_STYLE = 52, Y_PASTILLES = 64, Y_NOM_STYLE = 92, Y_AIDE = 160;
     public static final int CIBLE_W = 64, PUCE_H = 12, STYLE_W = 40, STYLE_H = 24, STYLE_PAS = 44;
     private final Atelier at;
     private int x, y, w;
     private String fond = "", cibleA = "", cibleB = "", style = "";
     private final String[] styles = new String[Banniere.Degrade.values().length];
-    private Component aide1, aide2;
 
     public PanneauFond(Atelier at) {
         this.at = at;
@@ -36,8 +36,6 @@ public final class PanneauFond {
         cibleB = tr("gui.atelier.couleur_b");
         style = tr("gui.atelier.style");
         for (Banniere.Degrade d : Banniere.Degrade.values()) styles[d.ordinal()] = tr(d.libelle()).toUpperCase(Locale.ROOT);
-        aide1 = Ui.tr(Ui.SMALL, "gui.atelier.aide_fond");
-        aide2 = Ui.tr(Ui.SMALL, "gui.atelier.aide_ajouter");
     }
 
     private static String tr(String cle) {
@@ -86,8 +84,6 @@ public final class PanneauFond {
         }
         String nom = styles[survole >= 0 ? survole : b.degrade.ordinal()];
         Ui.spaced(g, font, nom, Ui.SMALL, x, y + Y_NOM_STYLE, Ui.argb(survole >= 0 ? Ui.TEXT : Ui.MUTED, 255), 0.8f);
-        g.drawString(font, aide1, x, y + Y_AIDE, Ui.argb(Ui.FAINT, 255), false);
-        g.drawString(font, aide2, x, y + Y_AIDE + 10, Ui.argb(Ui.FAINT, 255), false);
     }
 
     public boolean clic(double mx, double my, int bouton) {
