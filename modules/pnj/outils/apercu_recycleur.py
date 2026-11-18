@@ -21,7 +21,9 @@ RACINE = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(RACINE / "modules" / "boutique" / "outils"))
 import apercu_boutique as ab  # noqa: E402
 
-ab.FONTS = RACINE / "modules/pnj/src/client/resources/assets/heraliz_quetes/font"
+# polices DM Sans : rangées depuis dans le noyau (heraliz_noyau/font) ; ancienne place gardée si elle revient
+ab.FONTS = next(p for p in (RACINE / "modules/pnj/src/client/resources/assets/heraliz_quetes/font",
+                            RACINE / "modules/noyau/src/client/resources/assets/heraliz_noyau/font") if (p / "dmsans_bold.ttf").exists())
 GW, GH, K = ab.GW, ab.GH, ab.K
 TEXT, MUTED, FAINT, OK, OR, DANGER, BLANC = 0xECEEF2, 0x8F95A0, 0x5A5F69, 0x5FD08A, 0xE8C36A, 0xFF6B6B, 0xFFFFFF
 VERRE = 0x0D0F14
@@ -35,7 +37,10 @@ CAPS_GRAS = (True, 9 / 1.302, 1.0)
 MICRO = (True, 7.5 / 1.302, 0.8)
 DEFAUTS = []
 
-PX, PY, PW, PH = 40, 18, 560, 324
+# 18/11 (retour du propriétaire : moins de texte) : plus de sous-titre, d'aide ni de pied ; inventaire centré ; 560 x 284
+PX, PY, PW, PH = 40, 38, 560, 284
+INV_X, INV_Y = 97, 178    # MenuRecycleur.INVENTAIRE_X / INVENTAIRE_Y
+BANDEAU_Y = 151           # EcranRecycleur.BANDEAU_Y
 ENTETE, M = 44, 16
 CASE = 20
 GAUCHE_L = 360           # zone machine + inventaire ; à droite le panneau d'aperçu
@@ -136,15 +141,14 @@ def chevrons(e, x, cy, c, a=150):
         e.trait([(xx, cy - 3), (xx + 2.6, cy), (xx, cy + 3)], 0.9, c, a - k * 35)
 
 
-def entete(e):
+def entete(e, carte=True):
     icone_recycleur(e, PX + M, PY + 10, OR)
     tx = PX + M + 34
-    e.texte("Recycleur", tx, PY + 9, TITRE, TEXT, quoi="titre")
-    e.texte("Dépose des objets : ils sont recyclés un par un, sous tes yeux.", tx, PY + 27, SMALL, MUTED, maxw=300, quoi="sous-titre")
-    xd = PX + PW - 34
-    w = e.largeur("3 S PAR OBJET", MICRO) + 10
-    puce(e, "3 S PAR OBJET", xd - w, PY + 16, MUTED)
-    e.c("×", PX + PW - 18, PY + 16, BOLD, MUTED)
+    e.m("Recycleur de terrain" if carte else "Recycleur", tx, PY + 22, TITRE, TEXT, maxw=300, quoi="titre")
+    if carte:
+        w = e.largeur("+10 % DE CHANCES", MICRO) + 10
+        puce(e, "+10 % DE CHANCES", PX + PW - 34 - w, PY + 22, OK)
+    e.c("×", PX + PW - 18, PY + 22, BOLD, MUTED)
     e.rect(PX + 8, PY + ENTETE, PX + PW - 8, PY + ENTETE + 1 / 3, BLANC, 40)
 
 
@@ -171,8 +175,6 @@ def machine(e, y0, en_cours):
         e.d("0,6 s", mx1, by + 9, SMALL_GRAS, TEXT)
         e.m("+ 2 en attente", mx0, by + 20, SMALL, FAINT)
     else:
-        e.c("Dépose un objet à gauche :", (mx0 + mx1) / 2, y0 + 26, SMALL, MUTED, maxw=mx1 - mx0, quoi="vide 1")
-        e.c("le recyclage démarre tout seul.", (mx0 + mx1) / 2, y0 + 36, SMALL, MUTED, maxw=mx1 - mx0, quoi="vide 2")
         e.rect(mx0, y0 + 47, mx1, y0 + 49.4, BLANC, 18)
     # sortie : ce qui est sorti, à prendre
     ox = x0 + GAUCHE_L - 66
@@ -184,8 +186,8 @@ def machine(e, y0, en_cours):
         e.c("+ 1 hérals sur ton compte", ox + 28, y0 + 81, SMALL, OR, maxw=90, quoi="hérals")
 
 
-def inventaire(e, y0, survol, cas="ak47"):
-    x0 = PX + M
+def inventaire(e, survol, cas="ak47"):
+    x0, y0 = PX + INV_X, PY + INV_Y - 12
     libelle(e, "TON INVENTAIRE", x0, y0, 9 * (CASE + 2) - 2)
     inv = [("ferraille", 6, "commun"), ("scotch", 2, "peu_commun"), None, ("batterie", 1, "peu_commun"), None, None, None, None, None,
            None, None, None, None, None, None, None, None, None,
@@ -195,22 +197,19 @@ def inventaire(e, y0, survol, cas="ak47"):
         inv[2] = ("1p87", 1, "rare")
     grille(e, x0, y0 + 12, 9, 3, inv[:27], survol=survol)
     grille(e, x0, y0 + 12 + 3 * (CASE + 2) + 4, 9, 1, inv[27:], survol=survol - 27 if survol >= 27 else -1)
-    # aide à droite de l'inventaire
-    ax = x0 + 9 * (CASE + 2) + 10
-    aw = PX + M + GAUCHE_L - ax
-    lignes = [("MAJ + CLIC", "met l'objet au recycleur, ou le reprend"),
-              ("SURVOL", "montre à droite ce qu'il peut donner"),
-              ("ÉCHAP", "ferme : ce qui reste t'est rendu")]
-    yy = y0 + 18
-    for touche, aide in lignes:
-        w = e.largeur(touche, MICRO) + 8
-        e.rect(ax, yy - 4.5, ax + w, yy + 4.5, BLANC, 18)
-        e.border(ax, yy - 4.5, w, 9, BLANC, 60)
-        e.c(touche, ax + w / 2, yy, MICRO, TEXT)
-        for i, l in enumerate(e.lignes(aide, SMALL, aw)):
-            e.texte(l, ax, yy + 7 + i * 9, SMALL, MUTED, maxw=aw, quoi="aide")
-        yy += 30
-    e.texte("Objets achetés chez un marchand : refusés.", ax, y0 + 12 + 4 * (CASE + 2) - 4, SMALL, FAINT, maxw=aw, quoi="note")
+
+
+def bandeau(e, texte):
+    """Bandeau rouge d'un objet refusé (EcranRecycleur.dessinerBandeau) : entre la machine et l'inventaire."""
+    w = e.largeur(texte, SMALL) + 32
+    x0, cy, h = PX + M + GAUCHE_L / 2 - w / 2, PY + BANDEAU_Y, 17
+    e.rect(x0, cy - h / 2, x0 + w, cy + h / 2, 0x120C0E, 235)
+    e.rect(x0, cy - h / 2, x0 + w, cy + h / 2, DANGER, 30)
+    e.border(x0, cy - h / 2, w, h, DANGER, 150)
+    e.rect(x0, cy - h / 2, x0 + 2, cy + h / 2, DANGER, 255)
+    e.disc(x0 + 12, cy, 4.6, DANGER, 240)
+    e.c("!", x0 + 12, cy, SMALL_GRAS, BLANC)
+    e.m(texte, x0 + 22, cy, SMALL, ab.mix(DANGER, BLANC, 0.62), quoi="bandeau")
 
 
 def apercu(e, y0, h, cas):
@@ -233,10 +232,7 @@ def apercu(e, y0, h, cas):
             e.m(lib, xi + 19, y + 6, SMALL, TEXT, maxw=w - 70, quoi="composant")
             e.d("%d %%" % round((1 - 0.9 ** n) * 100), x + w - 10, y + 6, SMALL_GRAS, TEXT)
             y += 17
-        e.texte("Chaque pièce : 1 chance sur 10,", xi, y + 1, SMALL, MUTED, maxw=w - 20, quoi="chance")
-        e.texte("2 au plus.", xi, y + 10, SMALL, MUTED, maxw=w - 20, quoi="chance")
-        y += 9
-        y += 14
+        y += 4
         e.rect(xi, y, x + w - 10, y + 1 / 3, BLANC, 26)
         y += 7
         e.m("En moyenne", xi, y + 4, SMALL, MUTED)
@@ -245,53 +241,40 @@ def apercu(e, y0, h, cas):
         e.d("1 hérals", x + w - 10, y + 16, SMALL_GRAS, OR)
         puce(e, "SE RECYCLE", xi, y0 + h - 14, OK, plein=True)
     else:
-        case(e, xi, y0 + 18, "1p87", None, "rare", s=28)
-        e.texte("Viseur 1P87", xi + 34, y0 + 21, BOLD, TEXT, maxw=w - 54, quoi="nom aperçu")
+        # arme chargée survolée : ce qu'elle peut donner, puis ce qu'il faut vider (état « À vider »)
+        case(e, xi, y0 + 18, "ak47", None, "rare", s=28)
+        e.texte("AK-47", xi + 34, y0 + 21, BOLD, TEXT, maxw=w - 54, quoi="nom aperçu")
         e.texte("Rare", xi + 34, y0 + 34, SMALL, RARETES["rare"])
         y = y0 + 58
         libelle(e, "PEUT DONNER", xi, y, w - 20)
         y += 14
-        for nom, lib, n, r in (("circuit_imprime", "Circuit imprimé", 2, "peu_commun"), ("batterie", "Batterie", 2, "peu_commun")):
+        for nom, lib, n, r in (("ferraille_iii", "Ferraille III", 4, "epique"), ("canon_iii", "Canon III", 2, "epique"),
+                               ("ressort_iii", "Ressort III", 2, "epique"), ("kit_pieces_iii", "Kit de pièces III", 2, "epique")):
             e.rect(xi, y - 1, xi + 14, y + 13, 0x000000, 80)
             e.rect(xi + 2, y + 11.6, xi + 12, y + 12.4, RARETES[r], 220)
             icone(e, nom, xi + 1, y, 12)
             e.m(lib, xi + 19, y + 6, SMALL, TEXT, maxw=w - 70, quoi="composant")
             e.d("%d %%" % round((1 - 0.9 ** n) * 100), x + w - 10, y + 6, SMALL_GRAS, TEXT)
             y += 17
-        e.texte("Chaque pièce : 1 chance sur 10,", xi, y + 1, SMALL, MUTED, maxw=w - 20, quoi="chance")
-        e.texte("2 au plus.", xi, y + 10, SMALL, MUTED, maxw=w - 20, quoi="chance")
-        y += 9
-        y += 14
+        y += 4
         e.rect(xi, y, x + w - 10, y + 1 / 3, BLANC, 26)
         y += 7
-        for i, l in enumerate(e.lignes("Tu l'as acheté chez Jack : le recycleur le refuse (il rapporterait plus que la revente).", SMALL, w - 20)):
-            e.texte(l, xi, y + i * 9, SMALL, DANGER, maxw=w - 20, quoi="refus")
-        puce(e, "REFUSÉ", xi, y0 + h - 14, DANGER, plein=True)
+        for i, l in enumerate(e.lignes("Arme chargée : décharge-la d'abord, ses balles seraient perdues.", SMALL, w - 20)):
+            e.texte(l, xi, y + i * 9, SMALL, MUTED, maxw=w - 20, quoi="refus")
+        puce(e, "À VIDER", xi, y0 + h - 14, 0xE8B34A, plein=True)
 
 
-def pied(e):
-    y = PY + PH - 12
-    e.rect(PX + 8, y - 8, PX + PW - 8, y - 8 + 1 / 3, BLANC, 22)
-    x = PX + M
-    for touche, aide in (("ÉCHAP", "Fermer"), ("MAJ + CLIC", "Mettre / reprendre"), ("CLIC", "Prendre un objet récupéré")):
-        w = e.largeur(touche, MICRO) + 8
-        e.rect(x, y - 4.5, x + w, y + 4.5, BLANC, 18)
-        e.border(x, y - 4.5, w, 9, BLANC, 60)
-        e.c(touche, x + w / 2, y, MICRO, TEXT)
-        x += w + 4
-        x += e.m(aide, x, y, SMALL, MUTED) + 12
-
-
-def ecran(sortie, en_cours=True, cas="ak47"):
+def ecran(sortie, en_cours=True, cas="ak47", texte_bandeau=None):
     e = ab.Ecran(ab.fond())
     e.rect(0, 0, GW, GH, 0x050608, 130)
     verre(e, PX, PY, PW, PH)
     entete(e)
     y0 = PY + ENTETE + 10
     machine(e, y0, en_cours)
-    inventaire(e, y0 + 96, 27 if cas == "ak47" else 2, cas)
+    inventaire(e, 27 if cas in ("ak47", "arme_chargee") else 2, cas)
     apercu(e, y0, PH - ENTETE - 34, cas)
-    pied(e)
+    if texte_bandeau:
+        bandeau(e, texte_bandeau)
     DEFAUTS.extend(e.defauts)
     e.defauts = []
     e.sauver(sortie)
@@ -303,7 +286,8 @@ def main():
     ab.POL = ab.Polices()
     ab.LANGUE = "fr_fr"
     ecran(dossier / "recycleur_en_cours.png")
-    ecran(dossier / "recycleur_vide_refus.png", en_cours=False, cas="1p87")
+    ecran(dossier / "recycleur_vide_refus.png", en_cours=False, cas="arme_chargee",
+          texte_bandeau="Arme chargée : décharge-la d'abord.")
     if DEFAUTS:
         print("\n".join(DEFAUTS))
         sys.exit(1)
