@@ -1,0 +1,6 @@
+{
+ "parent": "heraliz_decors:block/lampe_rouge_clignotante",
+ "textures": {
+  "v": "heraliz_decors:block/lampe_rouge_clignote"
+ }
+}

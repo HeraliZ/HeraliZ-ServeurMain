@@ -1,0 +1,6 @@
+{
+ "parent": "heraliz_decors:block/gyrophare",
+ "textures": {
+  "v": "heraliz_decors:block/gyrophare_clignote"
+ }
+}

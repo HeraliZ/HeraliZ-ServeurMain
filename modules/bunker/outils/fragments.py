@@ -15,8 +15,10 @@ et sa tranche faite de bandes qui suivent la déchirure (pas de 22,5°, les seul
 éléments) : tranche blanche cassée sur la déchirure, couleur de la carte sur les bords d'origine.
 
 Écrit (jamais à la main) :
-  - textures/item/keycard_fragment_<couleur>_<n>.png (512 x 512 : face en haut, dos en bas, 32 points par pixel de
-    modèle comme la carte) et textures/item/keycard_fragment_<couleur>_edge_h.png / _edge_v.png (tranche cassée) ;
+  - textures/item/keycard_fragment_<couleur>_<n>.png (face en haut, dos juste dessous, 32 points par pixel de modèle
+    comme la carte ; image à la taille du morceau, côtés et dos calés sur des multiples de 16 pour garder les mipmaps :
+    19/11, ≈ 288 x 384 au lieu de 512 x 512, la grande texture des blocs en a besoin) et
+    textures/item/keycard_fragment_<couleur>_edge_h.png / _edge_v.png (tranche cassée) ;
   - models/item/keycard_fragment_<couleur>_<n>.json.
 
     python modules/bunker/outils/fragments.py --rendus DOSSIER     planches d'aperçu (rien d'installé)
@@ -471,9 +473,23 @@ AFFICHAGE_CARTE = {
 }
 
 
+def seize(v):
+    """Multiple de 16 au-dessus (côtés des images de la grande texture des blocs : mipmaps gardées jusqu'au niveau 4)."""
+    return -(-int(v) // 16) * 16
+
+
+def disposition(boite_face, boite_dos):
+    """Image d'un morceau : (largeur, hauteur, y du dos). Face en (0, 0), dos à la ligne multiple de 16 qui suit : aucun
+    carré de mipmap (16 x 16 au plus) n'y mélange la face et le dos."""
+    y_dos = seize(boite_face[3])
+    return seize(max(boite_face[2], boite_dos[2])), seize(y_dos + boite_dos[3]), y_dos
+
+
 def modele(couleur, n, pts, genres, boite_face, boite_dos):
     """Modèle d'objet du morceau n : centré sur (8, 8), même épaisseur que la carte."""
     x0, y0, w, h = boite_face
+    lt, ht, y_dos = disposition(boite_face, boite_dos)
+    su, sv = 16.0 / lt, 16.0 / ht             # points de l'image -> UV (0 à 16 sur toute l'image)
     cx, cy = x0 + w / 2, y0 + h / 2
     to_m = lambda p: np.array([(p[0] - cx) / PX + 8, 8 - (p[1] - cy) / PX])  # noqa: E731
     X0, X1 = 8 - w / PX / 2, 8 + w / PX / 2
@@ -482,8 +498,8 @@ def modele(couleur, n, pts, genres, boite_face, boite_dos):
     els = [{
         "from": [r4(X0), r4(Y0), Z0], "to": [r4(X1), r4(Y1), Z1],
         "faces": {
-            "south": {"uv": [0, 0, r4(w / PX), r4(h / PX)], "texture": "#face"},
-            "north": {"uv": [0, 8, r4(boite_dos[2] / PX), r4(8 + boite_dos[3] / PX)], "texture": "#face"},
+            "south": {"uv": [0, 0, r4(w * su), r4(h * sv)], "texture": "#face"},
+            "north": {"uv": [0, r4(y_dos * sv), r4(boite_dos[2] * su), r4((y_dos + boite_dos[3]) * sv)], "texture": "#face"},
         },
     }]
     mp = [to_m(p) for p in pts]
@@ -523,7 +539,7 @@ def modele(couleur, n, pts, genres, boite_face, boite_dos):
 
 
 def fabriquer():
-    """{couleur: {"fragments": [(modèle, texture RGBA 512, (x0, y0) du morceau sur la carte)], "h": tranche, "v": ...}}"""
+    """{couleur: {"fragments": [(modèle, texture RGBA du morceau, (x0, y0) du morceau sur la carte)], "h": tranche, "v": ...}}"""
     out = {}
     for couleur, (rarete, graine) in CARTES.items():
         devant = charger(f"keycard_{couleur}_front.png")
@@ -536,9 +552,10 @@ def fabriquer():
             rng = random.Random(graine * 31 + n)
             f, bf = face(devant, pts, genres, rarete, carte_rgb, n, False, rng)
             b, bd = face(dos, pts, genres, rarete, carte_rgb, n, True, rng)
-            tex = np.zeros((512, 512, 4), np.float32)
+            lt, ht, y_dos = disposition(bf, bd)
+            tex = np.zeros((ht, lt, 4), np.float32)
             tex[:bf[3], :bf[2]] = f
-            tex[256:256 + bd[3], :bd[2]] = b
+            tex[y_dos:y_dos + bd[3], :bd[2]] = b
             liste.append((modele(couleur, n, pts, genres, bf, bd), tex, (bf[0], bf[1], bf[2], bf[3])))
         out[couleur] = {"fragments": liste, "h": tranche(carte_rgb, False), "v": tranche(carte_rgb, True)}
     return out

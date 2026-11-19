@@ -1,0 +1,6 @@
+{
+ "parent": "heraliz_decors:block/lampe_rouge_fixe",
+ "textures": {
+  "n": "heraliz_decors:block/neon_rouge_clignote"
+ }
+}

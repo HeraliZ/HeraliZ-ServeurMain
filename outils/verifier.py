@@ -16,7 +16,15 @@ Contrôles :
                        modules/loot/outils/lod_props.py --controle) ;
   - structures       : structures du ClashWar sans bloc de meuble absent du jar cfm (module clashwar ;
                        modules/clashwar/outils/nettoyer_structures.py --verifier) ;
-  - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
+  - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses, et chaque objet annoncé à sa vraie
+                       rareté (outils/caisses.py) ;
+  - economie         : marchands (revente et recyclage d'un article jamais au-dessus de 50 % de son prix, sans et avec
+                       la bêta, outils/marchands.py --controle), recycleur à jour et armes / accessoires un peu sous le
+                       prix de Mila (outils/recyclage.py --verifier), boucles d'argent de la bêta
+                       (outils/loot_beta.py --economie) ;
+  - atlas            : grande texture des blocs dans 8192 x 8192 (au-delà, Minecraft la double : +336 Mo de mémoire
+                       graphique le 17/11) et aucune image retirée par nos filtres citée par un modèle
+                       (outils/atlas_blocs.py --verifier, sans dépendance : tourne aussi sur GitHub) ;
   - raretes          : chaque arme, accessoire, munition, pièce d'armure et composant a sa rareté dans raretes.json
                        (sinon rien dans son infobulle), et aucun nom d'objet ne contient le mot d'une rareté (elle n'est
                        que le badge de l'infobulle) ; outils/raretes_objets.py --verifier ;
@@ -237,13 +245,44 @@ def main():
                 if l.startswith("[structures]") and ("nettoyer" in l or "ERREUR" in l):
                     print(l.strip())
             erreurs += 1
-    # caisses : aucun objet de Minecraft ni objet disparu (outils/caisses.py)
+    # grande texture des blocs (audit du 19/11) : toutes les images textures/block et textures/item de tous les mods et
+    # packs y sont rangées ; au-delà de 8192 x 8192, Minecraft passe à 16384 x 8192 (mémoire graphique doublée, saccades
+    # sur les petites cartes graphiques). Une nouvelle texture de bloc ou d'objet en 512 ou 1024 peut suffire à la faire
+    # déborder : python outils/atlas_blocs.py montre les plus grosses.
+    code, out = lancer([str(O / "atlas_blocs.py"), "--verifier"])
+    for l in out.splitlines():
+        if l.startswith("[atlas]") and (code != 0 or "attention" in l):
+            print(l.strip())
+    erreurs += code != 0
+    # caisses : aucun objet de Minecraft ni objet disparu, rareté annoncée = rareté de l'objet (outils/caisses.py)
     code, out = lancer([str(O / "caisses.py"), "--verifier"])
     if code != 0:
         for l in out.splitlines():
             if l.startswith("[caisses]"):
                 print(l.strip())
         erreurs += 1
+    # économie (audit du 19/11 : ces contrôles ne tournaient pas sur GitHub ; une règle de Mila trop généreuse ou un
+    # recyclage.json pas à jour partait sur le Ptero sans alerte) : revente et recyclage des articles des marchands sous
+    # 50 % de leur prix, bêta comprise ; recycleur à jour, armes et accessoires un peu sous le prix de Mila ; boucles
+    # d'argent de l'économie de la bêta
+    for outil, option, quoi, relancer in (
+            ("marchands.py", "--controle", "un article des marchands se revend ou se recycle à plus de 50 % de son prix, "
+             "ou un échange fait une chaîne", "corriger outils/marchands.py, puis python outils/marchands.py"),
+            ("recyclage.py", "--verifier", "recyclage.json n'est pas à jour, ou des armes ou accessoires sortent de la "
+             "règle du 19/11 (un peu sous le prix de Mila)",
+             "corriger outils/recyclage.py, puis python outils/recyclage.py"),
+            ("loot_beta.py", "--economie", "une boucle d'argent avec l'économie de la bêta",
+             "voir python outils/loot_beta.py --economie")):
+        code, out = lancer([str(O / outil), option])
+        if code != 0:
+            mots = ("ERREUR", "PAS à jour", "Refusé", "refusé", "Traceback", "Error")
+            vues = [l.strip() for l in out.splitlines() if any(m in l for m in mots)]
+            for l in vues[:15]:
+                print("      " + l)
+            if len(vues) > 15:
+                print("      ... et %d autre(s) : python outils/%s %s" % (len(vues) - 15, outil, option))
+            print("[economie]    %s %s : ÉCHEC, %s ; %s" % (outil, option, quoi, relancer))
+            erreurs += 1
     # rareté de chaque arme, accessoire, munition, pièce d'armure et composant (retour du propriétaire du 14/11 : leur
     # infobulle la montre toujours, Commun compris) : un gunpack, une pièce ou un composant ajouté sans relancer l'outil
     # qui écrit sa rareté n'en aurait aucune

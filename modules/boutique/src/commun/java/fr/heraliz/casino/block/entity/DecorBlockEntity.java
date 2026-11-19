@@ -1,7 +1,6 @@
 package fr.heraliz.casino.block.entity;
 
 import fr.heraliz.casino.block.DecorBlock;
-import fr.heraliz.casino.block.FlickerDecorBlock;
 import fr.heraliz.casino.decor.DecorType;
 import fr.heraliz.casino.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
@@ -27,9 +26,11 @@ public class DecorBlockEntity extends BlockEntity {
     /** Valeur propre a l'element (0..1) : chacun gresille a son rythme. */
     public final float seed;
 
-    // ---- serveur uniquement : rafale en cours de la lumiere qui gresille (non sauvegarde)
+    // ---- client uniquement (19/11, avant : serveur) : rafale en cours de la lumiere qui gresille (non sauvegarde) et
+    // heure du monde de la prochaine saute (FlickerDecorBlock.next, joue par DecorClientTicker)
     public int flickerBurst;
     public boolean flickerDead;
+    public long flickerNext = Long.MIN_VALUE;
 
     // ---- client uniquement : dernier tick d'effets joue, poteaux voisins (chaines) et date de la recherche
     public long fxLastTick = Long.MIN_VALUE;
@@ -55,31 +56,28 @@ public class DecorBlockEntity extends BlockEntity {
         return !s.hasProperty(DecorBlock.ON) || s.getValue(DecorBlock.ON);
     }
 
+    /**
+     * Saute de la lumiere qui gresille (0 pleine, 1 faible, 2 coupee) : jouee par le client depuis le 19/11 (voir
+     * FlickerDecorBlock), plus lue dans l'etat du bloc.
+     */
     public int flicker() {
-        BlockState s = getBlockState();
-        return s.hasProperty(FlickerDecorBlock.FLICKER) ? s.getValue(FlickerDecorBlock.FLICKER) : 0;
+        return clientFlicker;
     }
 
     /**
-     * Client : note les changements d'etat (porte qui s'ouvre, tube qui claque) pour les animer. A la premiere vue
-     * (chunk charge), l'etat est pris tel quel, sans animation.
+     * Client : note les changements d'etat (porte qui s'ouvre) pour les animer. A la premiere vue (chunk charge), l'etat
+     * est pris tel quel, sans animation. Les sautes de lumiere sont notees par celui qui les joue (clientFlickerAt).
      */
     public void watch(long gameTime) {
         boolean on = on();
-        int fl = flicker();
         if (!clientSeen) {
             clientSeen = true;
             clientOn = on;
-            clientFlicker = fl;
             return;
         }
         if (on != clientOn) {
             clientOn = on;
             clientOnAt = gameTime;
-        }
-        if (fl != clientFlicker) {
-            clientFlicker = fl;
-            clientFlickerAt = gameTime;
         }
     }
 

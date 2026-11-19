@@ -25,12 +25,23 @@ import net.minecraftforge.fml.loading.FMLPaths;
  *     d'abord par {@code DimensionSpecialEffects.renderClouds} ; Embeddium n'intervient qu'après, si nos nuages ne se
  *     sont pas dessinés) ; hors de la carte, aucun nuage ; version 4, 25/10, choix du propriétaire : le profil
  *     Performance de {@link Qualite} chez tout le monde, même ceux qui avaient choisi un autre profil, synchronisation
- *     verticale coupée et images par seconde illimitées). Le joueur peut les remettre : on n'y revient pas.</li>
+ *     verticale coupée et images par seconde illimitées ; version 5, 19/11, choix du propriétaire : images par seconde
+ *     plafonnées à {@link #PLAFOND_IPS} au lieu d'illimitées, carte graphique moins chargée, moins de chauffe sur les
+ *     portables, temps entre deux images plus régulier). Le joueur peut les remettre : on n'y revient pas.</li>
+ *     <li>à chaque lancement : le cran {@link #CRAN_PLAFOND} du réglage vaut {@link #PLAFOND_IPS} images par seconde
+ *     ({@link #plafond}).</li>
  * </ul>
  */
 final class ReglagesDefaut {
     /** À monter pour reposer de nouveaux réglages une fois chez tout le monde. */
-    static final int VERSION = 4;
+    static final int VERSION = 5;
+    /** Plafond d'images par seconde posé par HeraliZ (version 5). */
+    static final int PLAFOND_IPS = 144;
+    /**
+     * Cran du réglage de Minecraft qui le porte : ce réglage ne garde que des multiples de 10 (curseur de 10 à 260 de
+     * Minecraft et d'Embeddium ; {@code OptionInstance.set(144)} et options.txt donnent 140).
+     */
+    static final int CRAN_PLAFOND = 140;
 
     private ReglagesDefaut() {
     }
@@ -42,6 +53,7 @@ final class ReglagesDefaut {
         }
         Path repere = FMLPaths.CONFIGDIR.get().resolve("heraliz_interface-reglages.txt");
         if (lu(repere) >= VERSION) {
+            plafond(mc);
             return;
         }
         int avant = lu(repere);
@@ -68,13 +80,34 @@ final class ReglagesDefaut {
             o.enableVsync().set(false);
             o.framerateLimit().set(260);                     // 260 = illimité
         }
+        if (avant < 5) {
+            o.framerateLimit().set(CRAN_PLAFOND);            // 144 images par seconde (plafond), voir plafond()
+        }
         o.save();
+        plafond(mc);
         try {
             Files.writeString(repere, VERSION + "\n", StandardCharsets.UTF_8);
         } catch (Exception e) {
             HeralizInterface.LOG.warn("[interface] repère des réglages non écrit : {}", e.toString());
         }
         HeralizInterface.LOG.info("[interface] réglages HeraliZ posés (version {})", VERSION);
+    }
+
+    /**
+     * Le cran {@link #CRAN_PLAFOND} vaut {@link #PLAFOND_IPS} images par seconde : posé à chaque lancement sur la fenêtre
+     * (c'est elle qui limite, {@code Minecraft.getFramerateLimit}). Un joueur qui choisit un autre cran (150, 260 =
+     * illimité…) l'a tel quel, tout de suite (Minecraft repose la fenêtre à chaque changement du réglage).
+     */
+    static void plafond(Minecraft mc) {
+        if (mc.options.framerateLimit().get() == CRAN_PLAFOND) {
+            mc.getWindow().setFramerateLimit(PLAFOND_IPS);
+        }
+    }
+
+    /** Images par seconde que donne le réglage en cours (le cran du plafond vaut {@link #PLAFOND_IPS}). */
+    static int ips(Options o) {
+        int v = o.framerateLimit().get();
+        return v == CRAN_PLAFOND ? PLAFOND_IPS : v;
     }
 
     /** Durée de vie des trous de balle de TaCZ (réglage joueur de son tacz-client.toml), lue par réflexion. */

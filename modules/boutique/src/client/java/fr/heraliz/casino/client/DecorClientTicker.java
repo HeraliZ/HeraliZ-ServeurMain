@@ -1,6 +1,7 @@
 package fr.heraliz.casino.client;
 
 import fr.heraliz.casino.block.DecorBlock;
+import fr.heraliz.casino.block.FlickerDecorBlock;
 import fr.heraliz.casino.block.entity.DecorBlockEntity;
 import fr.heraliz.casino.client.render.DecorRenderer;
 import fr.heraliz.casino.client.render.MachineRenderer;
@@ -10,10 +11,12 @@ import fr.heraliz.casino.client.render.scene.Scene;
 import fr.heraliz.casino.client.render.scene.decor.DecorView;
 import fr.heraliz.casino.config.ClientConfig;
 import fr.heraliz.casino.decor.DecorType;
+import fr.heraliz.noyau.client.Eclairage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
@@ -36,6 +39,7 @@ public final class DecorClientTicker {
         if (!(state.getBlock() instanceof DecorBlock block)) return;
         long gt = level.getGameTime();
         be.watch(gt);
+        if (block.type.flicker()) gresiller(level, pos, state, be, gt);
         if (block.type.linked() && (be.clientLinksAt == Long.MIN_VALUE || gt - be.clientLinksAt >= 20)) {
             be.clientLinks = links(level, pos, block.type, be.unhooked);
             be.clientLinksAt = gt;
@@ -63,6 +67,40 @@ public final class DecorClientTicker {
             d.tickFxRaw(s, v, FX, RANDOM);
         }
         be.fxLastTick = gt;
+    }
+
+    /**
+     * Reglette qui gresille (19/11, audit des images par seconde) : le client joue la suite d'a-coups que jouait le serveur
+     * (FlickerDecorBlock.next, memes rafales et memes delais), sans rien changer au bloc ni a sa lumiere ; le modele la
+     * suit comme avant (flicker, clientFlickerAt). Pendant une saute faible ou une coupure, la salle s'assombrit pres de
+     * la reglette par la teinte de la lumiere (Eclairage : toute la lumiere de bloc a moins de 6 blocs, plus rien a 16),
+     * au lieu de refaire l'eclairage du monde.
+     */
+    private static void gresiller(Level level, BlockPos pos, BlockState state, DecorBlockEntity be, long gt) {
+        if (!state.getValue(DecorBlock.ON)) {
+            if (be.clientFlicker != 0) {
+                be.clientFlicker = 0;
+                be.clientFlickerAt = gt;
+            }
+            be.flickerNext = Long.MIN_VALUE;
+            return;
+        }
+        // premiere vue, ou heure du monde revenue en arriere : chaque reglette repart a son rythme
+        if (be.flickerNext == Long.MIN_VALUE || be.flickerNext - gt > 1000) be.flickerNext = gt + 2 + (long) (be.seed * 60);
+        if (gt >= be.flickerNext) {
+            FlickerDecorBlock.Step st = FlickerDecorBlock.next(be.clientFlicker, Math.floorMod(be.mode, 3), be, level.random);
+            if (st.level() != be.clientFlicker) {
+                be.clientFlicker = st.level();
+                be.clientFlickerAt = gt;
+            }
+            be.flickerNext = gt + Math.max(1, st.delay());
+        }
+        if (be.clientFlicker == 0) return;
+        Player p = Minecraft.getInstance().player;
+        if (p == null) return;
+        double d = Math.sqrt(p.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
+        float pres = d <= 6 ? 1f : (float) Math.max(0, 1 - (d - 6) / 10);
+        if (pres > 0) Eclairage.demander(pres * (be.clientFlicker == 2 ? 1f : 0.5f));
     }
 
     /**
