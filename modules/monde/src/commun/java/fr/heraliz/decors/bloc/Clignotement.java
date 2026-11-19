@@ -1,61 +1,42 @@
 package fr.heraliz.decors.bloc;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 /**
- * Lampes rouges qui clignotent (1.30.3, repris du jar Décors de la nouvelle carte) : toutes sur la même horloge, allumées
- * 5 s puis éteintes 1 s (cycle de {@link #CYCLE} ticks, dont {@link #NOIR} dans le noir). L'état {@link #ALLUME} est changé
- * par le serveur aux bons moments (tick programmé) ; au chargement d'un morceau de carte, la partie serveur relance les
- * lampes qui y sont posées ({@code serveur/ClignotementServeur}).
+ * Lampes rouges qui clignotent (1.30.3, repris du jar Décors de la nouvelle carte) : toutes sur le même rythme, allumées
+ * 5 s puis éteintes 1 s (cycle de {@link #CYCLE} ticks, dont {@link #NOIR} dans le noir).
+ * <p>
+ * 19/11 (audit des images par seconde, point 2) : le clignotement n'est plus qu'une image. Avant, le serveur basculait
+ * l'état {@link #ALLUME} de chaque lampe, et sa lumière (15 / 0), toutes au même tick : chez chaque joueur proche,
+ * l'éclairage refait et les morceaux de carte autour reconstruits (jusqu'à 27 par lampe), un à-coup toutes les 5 s puis
+ * 1 s après ; au serveur, la lumière refaite et un paquet par lampe. Maintenant la lumière reste à {@link #LUMIERE},
+ * l'état ne change plus, le verre clignote par sa texture animée (écrite par modules/monde/outils/lampes_clignotantes.py,
+ * même rythme) et la seconde noire de la pièce est refaite près du joueur par la teinte de la lumière
+ * ({@code client/AlarmeRouge}). {@link #ALLUME} reste (états déjà posés sur la carte) : ses deux valeurs ont le même
+ * modèle. Les lampes dont la lumière a été gardée éteinte par une sauvegarde sont rallumées une fois au chargement
+ * ({@code serveur/ClignotementServeur}).
  */
 public final class Clignotement {
     public static final BooleanProperty ALLUME = BooleanProperty.create("allume");
     public static final int CYCLE = 120;
     public static final int NOIR = 20;
+    /** Lumière des lampes, la même allumées ou dans la seconde noire. */
+    public static final int LUMIERE = 15;
 
     private Clignotement() {}
 
+    /** Vrai pendant les {@code CYCLE - NOIR} premiers ticks du cycle (même rythme que les textures animées). */
     public static boolean allumeA(long t) {
         return Math.floorMod(t, CYCLE) < CYCLE - NOIR;
-    }
-
-    private static int attente(long t) {
-        int m = (int) Math.floorMod(t, (long) CYCLE);
-        return m < CYCLE - NOIR ? CYCLE - NOIR - m : CYCLE - m;
     }
 
     public static boolean clignote(Block b) {
         return b instanceof LampeBunker || b instanceof LampeFixe || b instanceof Gyrophare;
     }
 
-    public static void demarrer(Level l, BlockPos p, Block b) {
-        if (!l.isClientSide) {
-            l.scheduleTick(p, b, 1);
-        }
-    }
-
-    public static void basculer(BlockState s, ServerLevel l, BlockPos p, RandomSource r) {
-        long t = l.getGameTime();
-        boolean a = allumeA(t);
-        if (s.getValue(ALLUME) != a) {
-            l.setBlock(p, s.setValue(ALLUME, a), 2);
-        }
-        l.scheduleTick(p, s.getBlock(), attente(t));
-    }
-
-    public static void relancer(ServerLevel l, BlockPos p, Block b, RandomSource r) {
-        if (!l.getBlockTicks().hasScheduledTick(p, b)) {
-            l.scheduleTick(p, b, 1);
-        }
-    }
-
     public static int lumiere(BlockState s) {
-        return s.getValue(ALLUME) ? 15 : 0;
+        return LUMIERE;
     }
 }

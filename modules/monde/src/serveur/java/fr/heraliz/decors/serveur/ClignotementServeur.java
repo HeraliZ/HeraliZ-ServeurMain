@@ -8,7 +8,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraftforge.event.TickEvent;
@@ -17,13 +18,17 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Relance les lampes qui clignotent d'un morceau de carte qu'on charge (1.30.3, repris du jar Décors de la nouvelle
- * carte) : leurs ticks programmés ne sont pas toujours gardés avec le monde. Le chargement note les lampes (seulement les
- * sections qui en contiennent), le tick du serveur suivant leur programme un tick.
+ * Lampes qui clignotent d'un morceau de carte qu'on charge (1.30.3, repris du jar Décors de la nouvelle carte).
+ * <p>
+ * 19/11 : elles ne basculent plus (lumière fixe, voir {@link Clignotement}) ; il ne reste qu'à rallumer une fois celles
+ * qu'une sauvegarde a gardées dans la seconde noire : la lumière enregistrée avec le morceau de carte y est encore à 0, et
+ * Minecraft ne la recalcule pas tout seul (lumière jugée correcte au chargement). Le chargement note les lampes (seulement
+ * les sections qui en contiennent), le tick du serveur suivant fait recalculer la lumière des seules lampes encore
+ * sombres : une fois par lampe, ensuite la bonne lumière est enregistrée.
  */
 @Mod.EventBusSubscriber(modid = HeralizDecors.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ClignotementServeur {
-    private static final ConcurrentLinkedQueue<Object[]> A_LANCER = new ConcurrentLinkedQueue<>();
+    private static final ConcurrentLinkedQueue<Object[]> A_VOIR = new ConcurrentLinkedQueue<>();
 
     private ClignotementServeur() {}
 
@@ -41,7 +46,7 @@ public final class ClignotementServeur {
                 for (int z = 0; z < 16; z++) {
                     for (int x = 0; x < 16; x++) {
                         if (Clignotement.clignote(s.getBlockState(x, y, z).getBlock())) {
-                            A_LANCER.add(new Object[]{l.dimension(), new BlockPos(bx + x, by + y, bz + z)});
+                            A_VOIR.add(new Object[]{l.dimension(), new BlockPos(bx + x, by + y, bz + z)});
                         }
                     }
                 }
@@ -52,16 +57,16 @@ public final class ClignotementServeur {
     @SubscribeEvent
     @SuppressWarnings("unchecked")
     public static void clignotementTickServeur(TickEvent.ServerTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || A_LANCER.isEmpty()) return;
+        if (e.phase != TickEvent.Phase.END || A_VOIR.isEmpty()) return;
         MinecraftServer srv = e.getServer();
         Object[] q;
-        while ((q = A_LANCER.poll()) != null) {
+        while ((q = A_VOIR.poll()) != null) {
             ServerLevel l = srv.getLevel((ResourceKey<Level>) q[0]);
             BlockPos p = (BlockPos) q[1];
             if (l == null || !l.isLoaded(p)) continue;
-            Block b = l.getBlockState(p).getBlock();
-            if (Clignotement.clignote(b) && !l.getBlockTicks().hasScheduledTick(p, b)) {
-                l.scheduleTick(p, b, 1);
+            BlockState s = l.getBlockState(p);
+            if (Clignotement.clignote(s.getBlock()) && l.getBrightness(LightLayer.BLOCK, p) < s.getLightEmission(l, p)) {
+                l.getChunkSource().getLightEngine().checkBlock(p);
             }
         }
     }

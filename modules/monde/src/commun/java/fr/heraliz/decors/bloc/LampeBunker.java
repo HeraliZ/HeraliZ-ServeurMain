@@ -2,12 +2,8 @@ package fr.heraliz.decors.bloc;
 
 /* Repris du jar Décors 1.30.3 de la nouvelle carte (décompilé le 08/11, sources d'origine absentes du dépôt). */
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -43,28 +39,7 @@ public class LampeBunker extends Deco {
         return this.defaultBlockState().setValue(FACING, c.getClickedFace());
     }
 
-    @Override
-    public void onPlace(BlockState s, Level l, BlockPos p, BlockState ancien, boolean deplace) {
-        super.onPlace(s, l, p, ancien, deplace);
-        if (!ancien.is(this)) {
-            Clignotement.demarrer(l, p, this);
-        }
-    }
-
-    @Override
-    public void tick(BlockState s, ServerLevel l, BlockPos p, RandomSource r) {
-        Clignotement.basculer(s, l, p, r);
-    }
-
-    @Override
-    public boolean isRandomlyTicking(BlockState s) {
-        return true;
-    }
-
-    @Override
-    public void randomTick(BlockState s, ServerLevel l, BlockPos p, RandomSource r) {
-        Clignotement.relancer(l, p, this, r);
-    }
+    // 19/11 : plus de tick programmé ni de tick au hasard, la lampe clignote par sa texture (voir Clignotement)
 
     @Override
     public BlockState rotate(BlockState s, Rotation r) {

@@ -176,7 +176,7 @@ public enum DecorType {
         return this == COFFRE;
     }
 
-    /** Lumiere qui gresille pour de bon (le serveur fait varier la lumiere du bloc). */
+    /** Lumiere qui gresille (sautes jouees par chaque client, lumiere du bloc fixe depuis le 19/11 : FlickerDecorBlock). */
     public boolean flicker() {
         return this == NEON_PLAFOND;
     }

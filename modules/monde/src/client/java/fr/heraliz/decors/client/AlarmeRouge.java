@@ -25,6 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult.Type;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent.Stage;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
@@ -33,6 +35,19 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
+/**
+ * Teinte rouge de la lumière près des lampes qui clignotent, et la seconde noire.
+ * <p>
+ * 19/11 (audit des images par seconde, point 2) : les lampes ne changent plus d'état ni de lumière (toujours 15, voir
+ * {@link Clignotement}) ; leur verre clignote par sa texture animée. Le moment de la seconde noire vient donc de
+ * l'horloge des textures animées de la grande texture des blocs ({@link #horloge} : ticks depuis son dernier
+ * rechargement, comme leur compteur d'images), plus de l'état du bloc. Et comme la lumière des lampes reste là pendant
+ * la seconde noire, la teinte la retire elle-même près du joueur : chaque niveau de lumière de bloc y est ramené vers
+ * « sans lumière de bloc », d'autant plus que la lampe est proche (le même poids que l'assombrissement d'avant) et que le
+ * ciel est loin (comme lui : rien en plein ciel, ni sur les faces qui brillent d'elles-mêmes) ; sous terre et à moins de
+ * 6 blocs, c'est exactement la lumière d'avant, lampes éteintes. Une coupure demandée par un autre mod
+ * ({@code fr.heraliz.noyau.client.Eclairage}, réglette du casino) passe par le même chemin.
+ */
 public final class AlarmeRouge {
     private static final boolean ACTIF = true;
     private static final int VUE = 20;
@@ -43,7 +58,10 @@ public final class AlarmeRouge {
     private static final List<BlockPos> LAMPES = new ArrayList<>();
     private static volatile float niveau = 0.0F;
     private static volatile float noir = 0.0F;
+    private static volatile float coupure = 0.0F;
     private static int compteur = 0;
+    /** Ticks des textures animées depuis le dernier rechargement des ressources (même compteur que leurs images). */
+    private static long horloge = 0;
     private static LightTexture lt;
     private static NativeImage pixels;
     private static DynamicTexture texture;
@@ -53,6 +71,17 @@ public final class AlarmeRouge {
     private static final int[] SORTIE = new int[256];
 
     private AlarmeRouge() {
+    }
+
+    /** Mélange de deux couleurs de la lightmap (ABGR), t de 0 (c1) à 1 (c2). */
+    private static int melange(int c1, int c2, float t) {
+        int out = 0;
+        for (int k = 0; k < 32; k += 8) {
+            int v1 = c1 >>> k & 0xFF;
+            int v2 = c2 >>> k & 0xFF;
+            out |= Math.min(255, Math.round(v1 + (v2 - v1) * t)) << k;
+        }
+        return out;
     }
 
     private static int teinte(int c, int x, int y, float a, float n) {
@@ -128,10 +157,18 @@ public final class AlarmeRouge {
 
                 float a = niveau;
                 float n = noir;
+                // lumière de bloc retirée : lampes dans leur seconde noire, ou coupure demandée (réglette du casino)
+                float k = Math.max(n, coupure);
                 boolean change = false;
 
                 for (int ix = 0; ix < 256; ix++) {
-                    int c = a <= 0.01F && n <= 0.01F ? BASE[ix] : teinte(BASE[ix], ix & 15, ix >> 4, a, n);
+                    int c = a <= 0.01F && k <= 0.01F ? BASE[ix] : teinte(BASE[ix], ix & 15, ix >> 4, a, n);
+                    if (k > 0.01F && (ix & 15) > 0) {
+                        // comme l'assombrissement : rien sous le ciel (ni les faces qui brillent d'elles-mêmes, 15 / 15)
+                        int y = ix >> 4;
+                        float sous = 1.0F - y / 15.0F;
+                        c = melange(c, teinte(BASE[y << 4], 0, y, a, n), k * sous * sous);
+                    }
                     SORTIE[ix] = c;
                     if (pixels.getPixelRGBA(ix & 15, ix >> 4) != c) {
                         pixels.setPixelRGBA(ix & 15, ix >> 4, c);
@@ -205,6 +242,10 @@ public final class AlarmeRouge {
         public static void alarmeRougeTick(ClientTickEvent e) {
             if (e.phase == Phase.END) {
                 Minecraft mc = Minecraft.getInstance();
+                if (mc.level != null) {
+                    AlarmeRouge.horloge++;               // Minecraft.tick : les textures animées avancent s'il y a un monde
+                }
+                AlarmeRouge.coupure = fr.heraliz.noyau.client.Eclairage.lire();
                 Player p = mc.player;
                 if (p != null && mc.level != null) {
                     if (AlarmeRouge.compteur++ % 10 == 0) {
@@ -215,7 +256,7 @@ public final class AlarmeRouge {
                     double oy = p.getEyeY();
                     double oz = p.getZ();
                     double d2 = Double.MAX_VALUE;
-                    boolean allumee = false;
+                    boolean allumee = Clignotement.allumeA(AlarmeRouge.horloge);
                     Vec3 oeil = p.getEyePosition();
 
                     for (BlockPos q : AlarmeRouge.LAMPES) {
@@ -230,7 +271,6 @@ public final class AlarmeRouge {
                                 BlockHitResult hr = mc.level.clip(new ClipContext(oeil, cible3, Block.VISUAL, Fluid.NONE, p));
                                 if (hr.getType() == Type.MISS || hr.getBlockPos().equals(q)) {
                                     d2 = dd;
-                                    allumee = s.getValue(Clignotement.ALLUME);
                                 }
                             }
                         }
@@ -254,6 +294,23 @@ public final class AlarmeRouge {
                     AlarmeRouge.noir = 0.0F;
                 }
             }
+        }
+    }
+
+    /** Horloge remise à zéro à chaque rechargement des ressources (les textures animées repartent de leur 1re image). */
+    @EventBusSubscriber(
+        modid = HeralizDecors.MODID,
+        bus = Bus.MOD,
+        value = {Dist.CLIENT}
+    )
+    public static final class Mod_ {
+        private Mod_() {
+        }
+
+        @SubscribeEvent
+        public static void alarmeRougeRechargement(RegisterClientReloadListenersEvent e) {
+            // après celui des modèles de Minecraft (inscrit avant les mods), qui refait la grande texture des blocs
+            e.registerReloadListener((ResourceManagerReloadListener) rm -> AlarmeRouge.horloge = 0);
         }
     }
 }
