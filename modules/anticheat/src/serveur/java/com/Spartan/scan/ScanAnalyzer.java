@@ -78,6 +78,54 @@ public final class ScanAnalyzer {
             + "|vcruntime140(_1)?|ucrtbase|concrt140)\\.(dll|so)$|^api-ms-win-[a-z0-9-]+\\.dll$|^(java|javaw)\\.exe$");
 
     /**
+     * Bibliothèques de Java qu'un jeu lancé par le launcher ne charge JAMAIS (19/11) : celle des agents Java (instrument,
+     * java.lang.instrument) et celles du débogueur (jdwp et ses transports). Elles font partie de tout Java installé (d'où
+     * leur place dans {@link #JDK_NATIF}), mais ne sont CHARGÉES que si un agent ou un débogueur tourne dans le jeu. Le
+     * launcher retire toutes les options qui les chargent et coupe l'attache : chargées quand même = un programme les a
+     * injectées dans Java en cours de partie (DLL qui charge un agent Java, contourne « DisableAttachMechanism »). Aucun
+     * overlay ni antivirus ne porte ces noms. Indice fort.
+     */
+    static final java.util.regex.Pattern AGENT_NATIF =
+            java.util.regex.Pattern.compile("^(lib)?(instrument|jdwp|dt_socket|dt_shmem)\\.(dll|so|dylib)$");
+    /**
+     * Outils de Java sans rien à faire dans un jeu (19/11) : attache à un AUTRE programme Java (attach), contrôle à
+     * distance de Java (management_agent, JMX), lecture de la mémoire de Java par un outil de débogage (sawindbg, saproc).
+     * Soupçon : jamais vus dans un jeu normal, mais pas une injection à eux seuls.
+     */
+    static final java.util.regex.Pattern OUTIL_NATIF =
+            java.util.regex.Pattern.compile("^(lib)?(attach|management_agent|sawindbg|saproc)\\.(dll|so|dylib)$");
+    /** Nom de classe Java reçu dans un rapport (« redef|classe|fois ») : rien d'autre n'est cru. */
+    private static final java.util.regex.Pattern CLASSE = java.util.regex.Pattern.compile("^[A-Za-z_$][A-Za-z0-9_$.]{0,199}$");
+
+    /**
+     * Indice pour une bibliothèque d'agent, de débogueur ou d'outil de Java chargée dans le jeu, ou null (19/11). Un agent
+     * ou un débogueur déjà mis au lancement ({@code -javaagent}, {@code -agentlib:jdwp}) est jugé par son option : pas
+     * d'indice en double (sa bibliothèque est alors chargée normalement).
+     */
+    static Finding bibliothequeJava(ScanReport.NativeEntry n, boolean agentAuLancement, boolean debogueurAuLancement) {
+        String nom = n.name().toLowerCase(Locale.ROOT);
+        String ou = n.place().isEmpty() ? "" : ", " + n.place();
+        java.util.regex.Matcher a = AGENT_NATIF.matcher(nom);
+        if (a.matches()) {
+            boolean instrument = a.group(2).equals("instrument");
+            if (instrument ? agentAuLancement : debogueurAuLancement) {
+                return null;
+            }
+            return new Finding(Severity.STRONG, "natif:agent:" + nom, instrument
+                    ? "agent Java chargé dans le jeu sans option de lancement (" + n.name() + ou + ") : du code a été injecté"
+                    + " dans Java en cours de partie (injecteur qui contourne la protection du launcher)"
+                    : "débogueur Java chargé dans le jeu sans option de lancement (" + n.name() + ou + ") : le jeu peut être"
+                    + " modifié en direct (injecteur ou débogueur branché en cours de partie)");
+        }
+        if (OUTIL_NATIF.matcher(nom).matches()) {
+            return new Finding(Severity.SUSPECT, "natif:outil:" + nom, "outil de Java chargé dans le jeu (" + n.name() + ou
+                    + ") : attache à un autre Java, contrôle à distance ou lecture de la mémoire de Java, jamais utilisé par le"
+                    + " jeu (outil d'injection ?)");
+        }
+        return null;
+    }
+
+    /**
      * Bibliothèque rangée dans le Java du jeu : son dossier java.home ou un de ses sous-dossiers (bin, bin/server, lib…).
      * Le jeu du joueur ne marque « %JAVA% » que ce qui est sous le java.home du jeu en cours (NativeCollector.classify).
      */
@@ -154,7 +202,14 @@ public final class ScanAnalyzer {
             out.add(new Finding(Severity.SUSPECT, "proc:" + p.toLowerCase(Locale.ROOT),
                     "programme de triche / d'injection ouvert sur le PC : " + p));
         }
+        boolean agentAuLancement = r.jvmFlags.stream().anyMatch(f -> f.startsWith("-javaagent:"));
+        boolean debogueurAuLancement = r.jvmFlags.stream().anyMatch(f -> f.startsWith("-agentlib:jdwp"));
         for (ScanReport.NativeEntry n : r.natives) {
+            Finding outilJava = bibliothequeJava(n, agentAuLancement, debogueurAuLancement);
+            if (outilJava != null) {
+                out.add(outilJava);
+                continue;
+            }
             String raison = raisonNative(n, s.nativePatterns());
             if (!raison.isEmpty()) {
                 out.add(new Finding(Severity.SUSPECT, "dll:" + n.name().toLowerCase(Locale.ROOT),
@@ -215,6 +270,24 @@ public final class ScanAnalyzer {
                         "affichage détourné : " + p[1] + " saute vers " + (cache ? "du code injecté sans module (" + p[2] + ")"
                                 : (relais ? "un relais puis " : "") + "le module " + p[3] + ou + (overlay(p[3], s) ? " (nom d'overlay connu, mais dans un dossier"
                                 + " où les overlays ne sont jamais)" : " (overlay inconnu ou ESP)"))));
+            } else if (p[0].equals("redef") && p.length >= 3 && CLASSE.matcher(p[1]).matches()) {
+                // 19/11 (jeu 2.13.0, Redefinitions) : classe redéfinie EN MÉMOIRE après son chargement. Mixin et Forge modifient
+                // les classes avant leur chargement ; seuls un agent Java ou natif (JVMTI) ou un débogueur redéfinissent une
+                // classe déjà chargée : c'est ainsi qu'un client injecté en cours de partie détourne le jeu ou l'anticheat.
+                int fois;
+                try {
+                    fois = Integer.parseInt(p[2]);
+                } catch (NumberFormatException illisible) {
+                    continue;
+                }
+                if (fois <= 0) {
+                    continue;
+                }
+                boolean anticheat = p[1].startsWith("com.Spartan.");
+                String quoi = anticheat ? null : sensitive(p[1]);
+                out.add(new Finding(Severity.STRONG, "inject:redef:" + p[1], "classe " + (anticheat ? "de l'anticheat" : "du jeu")
+                        + " modifiée en mémoire après son chargement (" + Math.min(fois, 9999) + " fois) : " + p[1]
+                        + (quoi == null ? "" : " — " + quoi) + " (agent Java ou natif injecté, ou débogueur)"));
             }
         }
     }
@@ -256,6 +329,17 @@ public final class ScanAnalyzer {
             } else if (flag.startsWith("arg:--fml.")) {
                 out.add(new Finding(Severity.STRONG, key, "option de lancement qui charge du code hors du dossier mods : "
                         + flag.substring(4)));
+            } else if (flag.startsWith("-Dcom.sun.management") || flag.equals("-XX:+ManagementServer")) {
+                // 19/11 : JMX ouvert au lancement = contrôle de Java à distance, qui sait charger un agent dans le jeu SANS
+                // l'attache (coupée par le launcher). Le launcher HeraliZ ne met jamais ces options.
+                out.add(new Finding(Severity.STRONG, key, "contrôle à distance de Java ouvert au lancement (" + flag
+                        + ", JMX) : permet de charger un agent dans le jeu sans passer par l'attache"));
+            } else if (flag.equals("-XX:+AllowRedefinitionToAddDeleteMethods")) {
+                out.add(new Finding(Severity.SUSPECT, key, "redéfinition des classes élargie au lancement (" + flag
+                        + ") : ne sert qu'aux agents et aux débogueurs"));
+            } else if (flag.equals("-XX:Flags") || flag.equals("-XX:VMOptionsFile")) {
+                out.add(new Finding(Severity.SUSPECT, key, "options de Java lues dans un fichier au lancement (" + flag
+                        + ") : le launcher HeraliZ n'en met jamais"));
             } else if (flag.equals("-XX:+EnableDynamicAgentLoading") || flag.equals("-XX:+StartAttachListener")) {
                 out.add(new Finding(Severity.SUSPECT, key, "injection à chaud explicitement autorisée (" + flag + ")"));
             } else if (flag.equals("-Xverify:none")) {

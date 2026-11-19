@@ -214,6 +214,24 @@ class ConformiteStricteTest {
     }
 
     @Test
+    void controleADistanceDeJavaRefuseMaisReglesEnRodageNon() {
+        // 19/11 : JMX ouvert au lancement = porte pour injecter du code (le launcher ne le met jamais) : refusé
+        for (String option : List.of("-Dcom.sun.management.jmxremote", "-Dcom.sun.management.jmxremote.port",
+                "-XX:+ManagementServer")) {
+            ScanReport r = ScanTestData.clean();
+            r.jvmFlags.add(option);
+            assertTrue(ecarts(r).stream().anyMatch(s -> s.contains("contrôle à distance")), option + " : " + ecarts(r));
+        }
+        // les nouvelles traces d'injection (bibliothèque d'agent, classe redéfinie) passent par le disjoncteur de la règle
+        // d'injection (Rodage), jamais par un refus du mode strict qui ne pourrait pas être suspendu
+        ScanReport n = ScanTestData.clean();
+        n.natives.add(new ScanReport.NativeEntry("instrument.dll", "%JAVA%/bin", ""));
+        n.injection.add("redef|net.minecraft.client.renderer.LevelRenderer|1");
+        n.jvmFlags.add("-XX:+AllowRedefinitionToAddDeleteMethods");
+        assertEquals(List.of(), ecarts(n));
+    }
+
+    @Test
     void sansModpackOfficielSeulsLesLancementsSontJuges() {
         ScanReport r = ScanTestData.clean();
         r.files.add(new ScanReport.FileEntry("mods", "x.jar", 1, "a".repeat(64)));

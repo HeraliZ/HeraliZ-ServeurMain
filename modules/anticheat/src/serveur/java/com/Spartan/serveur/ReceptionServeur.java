@@ -196,6 +196,7 @@ public final class ReceptionServeur {
                 case "module" -> "bibliothèque native chargée";
                 case "affichage" -> "affichage modifié";
                 case "java" -> "thread Java d'origine inconnue";
+                case "memoire" -> "classe modifiée en mémoire";
                 default -> "changement";
             };
             ScanManager.controleImmediat(player, "veille du jeu (" + quoi + ")");

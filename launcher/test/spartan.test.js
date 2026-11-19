@@ -59,6 +59,18 @@ test('Linux et Mac : aucune bibliothèque native imposée au jeu par l’environ
     assert.deepStrictEqual(environnementJeu(undefined, base), { HOME: '/home/x', LD_LIBRARY_PATH: '/opt/gpu/lib' })
 })
 
+test('19/11 : ni contrôle à distance de Java, ni redéfinition élargie, ni CLASSPATH, ni dossiers de bibliothèques de Mac', () => {
+    assert.deepStrictEqual(optionsSures(['-XX:+ManagementServer', '-XX:+AllowRedefinitionToAddDeleteMethods',
+        '-xx:+managementserver', '-Dcom.sun.management.jmxremote', '-Dcom.sun.management.jmxremote.port=9999', '-XX:+UseG1GC']),
+    ['-XX:+UseG1GC'])
+    const base = {
+        HOME: '/Users/x', CLASSPATH: '/tmp/triche.jar', DYLD_LIBRARY_PATH: '/tmp/gl', DYLD_FRAMEWORK_PATH: '/tmp/f',
+        DYLD_FALLBACK_LIBRARY_PATH: '/tmp/g', DYLD_FALLBACK_FRAMEWORK_PATH: '/tmp/h', DYLD_VERSIONED_LIBRARY_PATH: '/tmp/i',
+        DYLD_VERSIONED_FRAMEWORK_PATH: '/tmp/j', DYLD_IMAGE_SUFFIX: '_debug', classpath: 'x.jar', LD_LIBRARY_PATH: '/opt/gpu/lib'
+    }
+    assert.deepStrictEqual(environnementJeu(undefined, base), { HOME: '/Users/x', LD_LIBRARY_PATH: '/opt/gpu/lib' })
+})
+
 test('environnement du jeu : sans les variables d’injection de Java ni jeton hérité, le reste gardé', () => {
     const base = {
         Path: 'C:\\Windows', SystemRoot: 'C:\\Windows', JAVA_TOOL_OPTIONS: '-javaagent:triche.jar',

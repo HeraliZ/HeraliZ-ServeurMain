@@ -10,7 +10,11 @@
  *    nom de l'exécutable, et sous Windows titre de sa fenêtre, comparés à la liste OUTILS. Seuls les noms de la liste
  *    trouvés sont notés (« cheatengine »), JAMAIS la liste des programmes ni les titres des fenêtres du joueur ;
  *  - un jar du jeu changé pendant la partie (dossier mods, bibliothèques des mods du launcher) : taille et date de chaque
- *    fichier, empreinte recalculée seulement si l'une change ;
+ *    fichier, empreinte recalculée seulement si l'une change ; depuis le 19/11, chaque jar du pack est aussi comparé une
+ *    fois à son empreinte SIGNÉE juste après le lancement (un jar remplacé entre le contrôle et le lancement compte) ;
+ *  - (19/11) les bibliothèques chargées DANS le processus du jeu, lues de l'extérieur (Windows : PowerShell ou tasklist ;
+ *    Linux : /proc) : seules celles d'agent Java ou de débogueur de Java (instrument, jdwp…) partent, en « dll.nom » parmi
+ *    les outils ; un jeu modifié ne peut pas les cacher au launcher ;
  *  - le jeu lui-même toujours là (même numéro de processus).
  * Le résultat est écrit dans <dossier du jeu>/spartan/gardien.txt (une ligne, puis sa signature) ; le jeu le transmet tel
  * quel au serveur, qui le vérifie et juge (alerte au staff). Un launcher fermé de force arrête les rapports : « Gardien
@@ -77,6 +81,20 @@ const NOMS_OUTILS = {
 }
 // nom d'outil écrit dans le fichier : lettres, chiffres, espace, point, tiret (comme la liste)
 const NOM_SUR = /^[a-z0-9 ._-]{1,32}$/
+// Bibliothèques de Java qu'un jeu lancé par ce launcher ne charge JAMAIS (19/11, lues par Spartan 2.13.0) : agent Java
+// (instrument), débogueur (jdwp et ses liaisons), attache à un autre Java, contrôle à distance (JMX), lecture de la
+// mémoire de Java. Le Gardien lit, depuis l'extérieur du jeu, les bibliothèques chargées dans SON processus : un jeu
+// modifié ne peut pas les lui cacher. Seules celles-ci partent (« dll.instrument »), jamais la liste du joueur.
+const BIBLIOTHEQUES_JAVA = /^(?:lib)?(instrument|jdwp|dt_socket|dt_shmem|attach|management_agent|sawindbg|saproc)\.(?:dll|so|dylib)$/i
+// la liste des bibliothèques du jeu est relue un rapport sur trois (et au premier) : une bibliothèque chargée le reste
+const TOURS_MODULES = 3
+const MODULES_PS = '[Console]::OutputEncoding=[Text.Encoding]::UTF8; try { (Get-Process -Id {pid} -ErrorAction Stop).Modules'
+    + ' | ForEach-Object { $_.ModuleName } } catch { }'
+// chemins comparés comme le système de fichiers (insensible à la casse sous Windows et Mac)
+const comparable = chemin => {
+    const p = path.resolve(chemin)
+    return process.platform === 'win32' || process.platform === 'darwin' ? p.toLowerCase() : p
+}
 
 function execFile(cmd, args, options) {
     return new Promise((resolve, reject) => {
@@ -188,6 +206,75 @@ async function programmes(plateforme = process.platform, exec = execFile) {
     return noms ? { noms, titres } : null
 }
 
+/** Bibliothèques de la liste BIBLIOTHEQUES_JAVA parmi des noms de fichiers (« instrument », « jdwp »…), sans doublon, triées. */
+function bibliothequesJava(noms) {
+    const out = new Set()
+    for (const n of noms || []) {
+        const m = BIBLIOTHEQUES_JAVA.exec(path.posix.basename(String(n ?? '').trim().replace(/\\/g, '/')))
+        if (m) out.add(m[1].toLowerCase())
+    }
+    return [...out].sort()
+}
+
+/** Noms des bibliothèques lus dans /proc/<pid>/maps (Linux) : dernier élément de chaque chemin .so, sans doublon. */
+function nomsMaps(texte) {
+    const noms = new Set()
+    for (const ligne of String(texte).split('\n')) {
+        const i = ligne.indexOf('/')
+        if (i < 0) continue
+        const chemin = ligne.slice(i).replace(/ \(deleted\)$/, '').trim()
+        if (/\.so(\.|$)|\.dylib$/.test(chemin)) noms.add(path.posix.basename(chemin))
+    }
+    return [...noms]
+}
+
+/** Noms des bibliothèques lus dans la sortie de « tasklist /M /FO CSV /NH » (troisième colonne, séparée par des virgules). */
+function nomsTasklistModules(out) {
+    const noms = []
+    for (const ligne of String(out).split(/\r?\n/)) {
+        const c = champsCsv(ligne)
+        if (c.length < 3) continue
+        for (const n of c[2].split(',')) {
+            const nom = n.trim()
+            if (nom && nom !== 'N/A') noms.push(nom)
+        }
+    }
+    return noms
+}
+
+/**
+ * Bibliothèques chargées dans le processus du jeu, lues DE L'EXTÉRIEUR du jeu (19/11) : Windows, PowerShell (ce seul
+ * processus), tasklist en secours ; Linux, /proc/<pid>/maps. null si la lecture est impossible (Mac, jeu fermé, accès
+ * refusé) : rien n'est dit.
+ */
+async function modulesJeu(pid, plateforme = process.platform, exec = execFile, lire = f => fs.readFileSync(f, 'utf8')) {
+    if (!Number.isInteger(pid) || pid <= 0) return null
+    if (plateforme === 'linux') {
+        try { return nomsMaps(lire(`/proc/${pid}/maps`)) } catch { return null }
+    }
+    if (plateforme !== 'win32') return null
+    try {
+        const noms = String(await powershell(MODULES_PS.replace('{pid}', String(pid)), COMMANDE_MS, exec)).split(/\r?\n/)
+            .map(l => l.trim()).filter(Boolean)
+        if (noms.length) return noms
+    } catch { /* secours ci-dessous */ }
+    try {
+        const noms = nomsTasklistModules(await exec('tasklist', ['/M', '/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'],
+            { timeout: COMMANDE_MS, windowsHide: true }))
+        return noms.length ? noms : null
+    } catch {
+        return null
+    }
+}
+
+/** Empreinte SHA-256 d'un fichier, lu par morceaux (jamais tout en mémoire, et sans bloquer le launcher). */
+function sha256Flux(fichier) {
+    return new Promise((resolve, reject) => {
+        const h = crypto.createHash('sha256')
+        fs.createReadStream(fichier).on('data', d => h.update(d)).on('end', () => resolve(h.digest('hex'))).on('error', reject)
+    })
+}
+
 /** Injecteurs et éditeurs de mémoire ouverts (noms lisibles, sans doublon), [] si aucun ou liste impossible. */
 async function outilsInterdits(lister = programmes) {
     const liste = await lister().catch(() => null)
@@ -253,8 +340,12 @@ class Gardien {
      * @param {string[]} o.dossiersJars dossiers dont les jars ne doivent pas changer pendant la partie
      * @param {number} o.pid numéro du processus du jeu
      * @param {object} [o.cles] clés du lancement (nouvellesCles) ; sinon o.cle, clé HMAC hexadécimale (ancien mode)
+     * @param {function} [o.modules] (pid) -> noms des bibliothèques chargées dans le jeu (modulesJeu) ; sans : pas lues
+     * @param {Map} [o.attendues] empreintes signées du pack (empreintesAttendues) : un jar surveillé qui n'y correspond pas,
+     *   même avant le premier relevé, compte comme changé
      */
-    constructor({ dossierJeu, dossiersJars = [], pid, cles = null, cle = null, lister = programmes, maintenant = Date.now }) {
+    constructor({ dossierJeu, dossiersJars = [], pid, cles = null, cle = null, lister = programmes, maintenant = Date.now,
+        modules = null, attendues = null }) {
         this.dossierJeu = dossierJeu
         this.dossiersJars = dossiersJars
         this.pid = pid
@@ -262,11 +353,29 @@ class Gardien {
         this.cle = this.cles.version === 2 ? null : Buffer.from(this.cles.cle, 'hex')
         this.lister = lister
         this.maintenant = maintenant
+        this.modules = typeof modules === 'function' ? modules : null
+        this.attendues = attendues instanceof Map ? attendues : new Map()
+        this.bibliotheques = new Set() // bibliothèques de Java vues dans le jeu (une fois chargée, elle reste dite)
+        this.tours = 0
         this.n = 0
-        this.etat = new Map() // chemin -> { taille, date, empreinte }
+        this.etat = new Map() // chemin -> { taille, date, empreinte, chemin }
         this.modifies = new Set()
         this.minuteur = null
         this.arrete = false
+    }
+
+    /**
+     * Empreintes signées du pack (empreintesDuPack du service : [{ chemin, sha256 }]) rangées pour le Gardien : chemin
+     * comparable -> sha256 en minuscules. Les entrées mal formées sont ignorées.
+     */
+    static empreintesAttendues(liste) {
+        const out = new Map()
+        for (const e of Array.isArray(liste) ? liste : []) {
+            if (e && typeof e.chemin === 'string' && /^[a-f0-9]{64}$/i.test(String(e.sha256))) {
+                out.set(comparable(e.chemin), String(e.sha256).toLowerCase())
+            }
+        }
+        return out
     }
 
     /** Clé neuve pour un lancement en ancien mode : 32 octets en hexadécimal. */
@@ -314,11 +423,35 @@ class Gardien {
         }
     }
 
-    /** Relevé de départ des jars (avant le premier rapport), puis premier rapport et suivants. */
+    /**
+     * Relevé de départ des jars (avant le premier rapport), puis premier rapport et suivants. 19/11 : les jars du pack sont
+     * aussi comparés, en fond, à leur empreinte SIGNÉE : un jar remplacé entre le contrôle d'avant la partie et le
+     * lancement du jeu (puis remis en place) ne passe plus inaperçu.
+     */
     demarrer() {
         this.releverJars(true)
+        this.verifierPack().catch(erreur => console.error('[HeraliZ/gardien]', erreur?.code || erreur?.message))
         this.tour()
         return this
+    }
+
+    /**
+     * Chaque jar surveillé qui a une empreinte signée dans le pack est relu une fois : différent = changé (compté dans le
+     * prochain rapport). Égal : son empreinte devient la référence des relevés suivants. Fichier illisible : rien.
+     */
+    async verifierPack() {
+        for (const [cle, e] of [...this.etat]) {
+            if (this.arrete) return
+            const attendu = e?.chemin ? this.attendues.get(comparable(e.chemin)) : null
+            if (!attendu) continue
+            let lu
+            try { lu = await sha256Flux(e.chemin) } catch { continue }
+            if (lu !== attendu) {
+                this.modifies.add(path.basename(e.chemin))
+            } else if (this.etat.get(cle) === e && e.empreinte == null) {
+                e.empreinte = lu
+            }
+        }
     }
 
     arreter() {
@@ -354,7 +487,7 @@ class Gardien {
                 const avant = this.etat.get(cle)
                 if (!avant) {
                     if (!depart) this.modifies.add(path.basename(p))
-                    this.etat.set(cle, { taille: st.size, date: st.mtimeMs, empreinte: null })
+                    this.etat.set(cle, { taille: st.size, date: st.mtimeMs, empreinte: null, chemin: p })
                     continue
                 }
                 if (avant.taille === st.size && avant.date === st.mtimeMs) continue
@@ -362,7 +495,7 @@ class Gardien {
                 try { e = sha256Fichier(p) } catch { continue }
                 // pas d'empreinte de départ (relevé rapide au lancement) : taille ou date changée = changé
                 if (avant.empreinte == null || avant.empreinte !== e) this.modifies.add(path.basename(p))
-                this.etat.set(cle, { taille: st.size, date: st.mtimeMs, empreinte: e })
+                this.etat.set(cle, { taille: st.size, date: st.mtimeMs, empreinte: e, chemin: p })
             }
         }
         if (!depart) {
@@ -371,8 +504,15 @@ class Gardien {
     }
 
     async rapport() {
-        const liste = await this.lister()
-        const outils = liste ? outilsTrouves(liste.noms, liste.titres, true) : []
+        // 19/11 : bibliothèques du processus du jeu relues un rapport sur trois (et au premier), en même temps que la liste
+        // des programmes ; une lecture impossible ne dit rien
+        const relire = this.modules !== null && this.tours++ % TOURS_MODULES === 0
+        const [liste, modules] = await Promise.all([this.lister(),
+            relire ? Promise.resolve().then(() => this.modules(this.pid)).catch(() => null) : null])
+        for (const b of bibliothequesJava(modules)) this.bibliotheques.add(b)
+        // les bibliothèques d'abord : la liste des outils est bornée (outilsTexte)
+        const outils = [...this.bibliotheques].map(b => 'dll.' + b)
+            .concat(liste ? outilsTrouves(liste.noms, liste.titres, true) : [])
         this.releverJars(false)
         const valeurs = {
             n: ++this.n,
@@ -429,5 +569,5 @@ class Gardien {
 
 module.exports = {
     Gardien, outilsTrouves, champsCsv, versionPreuve, programmes, outilsInterdits, nomsTasklist, titresPowershell,
-    OUTILS, TITRES, OUTILS_INTERDITS
+    modulesJeu, bibliothequesJava, nomsMaps, nomsTasklistModules, OUTILS, TITRES, OUTILS_INTERDITS
 }

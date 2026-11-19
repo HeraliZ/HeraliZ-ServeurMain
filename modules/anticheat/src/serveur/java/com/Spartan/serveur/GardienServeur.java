@@ -8,6 +8,8 @@ import com.Spartan.ban.PlayerRegistry;
 import com.Spartan.capture.CaptureManager;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
+import com.Spartan.integrity.GardienBibliotheques;
+import com.Spartan.integrity.GardienCles;
 import com.Spartan.integrity.GardienJuge;
 import com.Spartan.integrity.GardienPreuve;
 import java.util.ArrayList;
@@ -38,6 +40,11 @@ import net.minecraftforge.common.util.FakePlayer;
  * {@code ancienLauncher = "refuser"} et {@code preuveExigee = "refuser"} (03/11 : un launcher 1.16 ou plus récent doit
  * prouver qu'il veille juste après le /login, sinon c'est un launcher modifié ou imité ; refus de connexion propre, avec
  * un message clair). Programme d'injection vu par le Gardien : expulsion ({@link com.Spartan.integrity.Injection}).
+ *
+ * <p>19/11 (launcher 1.17.0, règles en rodage) : bibliothèque d'agent Java ou de débogueur vue par le launcher DANS le
+ * processus du jeu (« dll.instrument »… dans la ligne signée, {@link GardienBibliotheques}) : alerte, et expulsion si le
+ * rapport est prouvé ; clé du Gardien réutilisée par deux comptes ou pour deux jeux ({@link GardienCles}) : launcher
+ * imité avec une clé fixe, alerte et refus de connexion si {@code preuveExigee = "refuser"}.
  */
 public final class GardienServeur {
     private GardienServeur() {
@@ -68,10 +75,17 @@ public final class GardienServeur {
     private static final Map<UUID, GardienJuge> JUGES = new ConcurrentHashMap<>();
     /** Une surveillance coupée pendant la partie est redite toutes les 10 min (avant : une fois, puis plus rien). */
     private static final long RAPPEL_MS = 10 * 60_000L;
+    /** Clés du Gardien prouvées (19/11) : la même clé pour deux comptes ou deux jeux = launcher imité avec une clé fixe. */
+    private static final GardienCles CLES = new GardienCles();
+    /** Clé prouvée de la connexion (texte) et joueurs déjà signalés pour une clé réutilisée (une fois par connexion). */
+    private static final Map<UUID, String> CLE_JOUEUR = new ConcurrentHashMap<>();
+    private static final Set<UUID> CLE_SIGNALEE = ConcurrentHashMap.newKeySet();
 
     public static void oublier(UUID id) {
         ETATS.remove(id);
         JUGES.remove(id);
+        CLE_JOUEUR.remove(id);
+        CLE_SIGNALEE.remove(id);
     }
 
     /**
@@ -84,7 +98,34 @@ public final class GardienServeur {
         JUGES.put(p.getUUID(), juge);
         if (lien == GardienJuge.Lien.PROUVE && !fictif(p)) {
             PlayerRegistry.notePreuveGardien(p.getUUID(), p.getName().getString());
+            CLE_JOUEUR.put(p.getUUID(), cle);
+            String reutilisee = CLES.lier(cle, p.getUUID(), p.getName().getString(), System.currentTimeMillis());
+            if (reutilisee != null) {
+                cleReutilisee(p, reutilisee);
+            }
         }
+    }
+
+    /**
+     * Clé du Gardien réutilisée (19/11) : jamais le launcher HeraliZ (une clé neuve à chaque lancement), toujours un
+     * programme qui l'imite. Alerte ; refus de connexion propre si {@code preuveExigee = "refuser"}, sauf si la règle en
+     * rodage {@code gardien:cle:} est suspendue (disjoncteur). Une fois par connexion. Fil du serveur.
+     */
+    private static void cleReutilisee(ServerPlayer p, String raison) {
+        if (!CLE_SIGNALEE.add(p.getUUID())) {
+            return;
+        }
+        boolean refuser = "refuser".equals(SpartanConfig.GARDIEN_PREUVE_EXIGEE.get())
+                && com.Spartan.integrity.Injection.rodageAutorise(p, "gardien:cle:");
+        CheckManager.flag("Launcher", p, (refuser ? "connexion refusée : " : "") + "launcher imité — " + raison);
+        if (!refuser) {
+            return;
+        }
+        Spartan.LOGGER.info("[Spartan] {} refusé : clé du Gardien réutilisée ({}).", p.getName().getString(), raison);
+        p.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.launcher_imite",
+                "Connexion refusée : ce jeu n'a pas été lancé par le launcher HeraliZ officiel.\n"
+                        + "Ferme le jeu et relance-le depuis le launcher HeraliZ (à télécharger seulement sur heraliz.fr).\n\n"
+                        + "Launcher officiel :\n%s", SpartanConfig.lienLauncher()));
     }
 
     /** État du Gardien de ce joueur, en clair (message « Jeu validé ») : jamais exigé pour la validation. */
@@ -218,12 +259,30 @@ public final class GardienServeur {
             faits.add("le launcher n'arrive pas à lister les programmes du PC (indice faible)");
         }
         List<String> nouveaux = new ArrayList<>();
+        // launcher 1.17.0 (19/11) : « dll.nom » = bibliothèque de Java vue DANS le processus du jeu (agent, débogueur…)
+        List<GardienBibliotheques.Bibliotheque> bibliotheques = new ArrayList<>();
         List<String> ignores = SpartanConfig.getGardienIgnoredTools();
         if (!r.outils().isEmpty()) {
             for (String o : r.outils().split(",")) {
                 String t = o.trim();
                 if (OUTIL.matcher(t).matches() && !ignores.contains(t) && e.outils.add(t)) {
-                    nouveaux.add(t);
+                    GardienBibliotheques.Bibliotheque b = GardienBibliotheques.lire(t);
+                    if (b != null) {
+                        bibliotheques.add(b);
+                    } else {
+                        nouveaux.add(t);
+                    }
+                }
+            }
+        }
+        // clé du Gardien réutilisée pour un autre jeu (launcher imité avec une clé fixe) : seulement un rapport prouvé
+        String cle = v.prouve() ? CLE_JOUEUR.get(player.getUUID()) : null;
+        if (cle != null) {
+            String reutilisee = CLES.jeu(cle, player.getUUID(), r.pid(), now);
+            if (reutilisee != null) {
+                cleReutilisee(player, reutilisee);
+                if (player.hasDisconnected()) {
+                    return;
                 }
             }
         }
@@ -244,12 +303,36 @@ public final class GardienServeur {
             e.jars = r.jars();
             faits.add(r.jars() + " jar(s) du jeu changé(s), ajouté(s) ou retiré(s) pendant la partie");
         }
+        List<String> fortes = new ArrayList<>();
+        boolean expulserBibliotheque = false;
+        if (!bibliotheques.isEmpty()) {
+            List<String> lisibles = new ArrayList<>();
+            for (GardienBibliotheques.Bibliotheque b : bibliotheques) {
+                lisibles.add(b.nom() + " (" + b.role() + ")");
+                if (b.forte()) {
+                    fortes.add(b.nom());
+                }
+            }
+            faits.add("bibliothèque(s) de Java chargée(s) DANS le jeu sans option de lancement, vue(s) par le launcher : "
+                    + String.join(", ", lisibles) + (fortes.isEmpty() ? "" : " — agent ou débogueur injecté en cours de partie"));
+            // agent ou débogueur dans un rapport signé par le launcher de ce lancement : le jeu ne peut ni l'inventer ni le
+            // cacher. Expulsion (règle en rodage, disjoncteur) ; sinon capture d'écran comme pour un programme de triche
+            expulserBibliotheque = aExpulser.isEmpty() && !fortes.isEmpty() && v.prouve()
+                    && com.Spartan.integrity.Injection.actif()
+                    && com.Spartan.integrity.Injection.rodageAutorise(player, "gardien:dll:" + fortes.get(0));
+            if (aExpulser.isEmpty() && !expulserBibliotheque) {
+                capture(player, "bibliothèque de Java chargée dans le jeu (" + String.join(", ", lisibles) + ")");
+            }
+        }
         if (!faits.isEmpty()) {
             CheckManager.flag("Gardien", player, String.join(" ; ", faits) + preuve);
         }
         if (!aExpulser.isEmpty()) {
             com.Spartan.integrity.Injection.expulser(player, "programme d'injection ou d'édition de la mémoire ouvert sur le PC : "
                     + String.join(", ", aExpulser) + preuve, "Gardien du launcher");
+        } else if (expulserBibliotheque) {
+            com.Spartan.integrity.Injection.expulser(player, "agent Java ou débogueur chargé dans le jeu sans option de"
+                    + " lancement, vu par le launcher : " + String.join(", ", fortes) + " (règle en rodage)", "Gardien du launcher");
         }
     }
 

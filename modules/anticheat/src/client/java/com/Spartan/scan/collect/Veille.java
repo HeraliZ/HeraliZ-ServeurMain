@@ -20,6 +20,10 @@ import java.util.function.Consumer;
  *    <li>sous Windows 64 bits : les nouveaux threads natifs démarrés hors de tout module, les nouvelles DLL chargées
  *    hors de Windows et du Java du jeu, et le début des fonctions d'affichage (SwapBuffers) qui change.</li>
  * </ul>
+ * 19/11 : aussi, sur tous les systèmes, les classes de l'anticheat et les classes sensibles du jeu REDÉFINIES en mémoire
+ * depuis le dernier passage ({@link Redefinitions}, lecture d'un entier par classe), et les bibliothèques d'agent Java ou
+ * de débogueur (instrument, jdwp…) qui apparaissent, même rangées dans le Java du jeu (Windows ; Linux : /proc/self/maps
+ * relu toutes les 30 s).
  * La veille ne JUGE rien : elle dit seulement au serveur « quelque chose a changé » (un mot, aucune donnée) ; le serveur
  * lance alors tout de suite un contrôle complet, qui juge et expulse comme d'habitude. Au plus un signal toutes les 20 s.
  * Ce qui existait déjà au premier passage n'est jamais signalé (le contrôle de connexion le juge).
@@ -29,6 +33,19 @@ public final class Veille {
     private static final long SILENCE_MS = 20_000;
     private static final String[][] AFFICHAGE = {{"opengl32", "wglSwapBuffers"}, {"gdi32", "SwapBuffers"},
             {"gdi32full", "SwapBuffers"}};
+    /**
+     * Bibliothèques de Java qu'un jeu lancé par le launcher ne charge jamais (agent Java, débogueur, attache, contrôle à
+     * distance, lecture de la mémoire de Java) : leur apparition est signalée même depuis le dossier du Java du jeu. Ce
+     * sont des noms de Java, connus de tous : aucun secret ici, le serveur juge.
+     */
+    private static final java.util.regex.Pattern JAVA_SENSIBLE = java.util.regex.Pattern.compile(
+            "^(lib)?(instrument|jdwp|dt_socket|dt_shmem|attach|management_agent|sawindbg|saproc)\\.(dll|so|dylib)$");
+
+    /** Classes surveillées (fournies par le contrôle d'intégrité) et leur dernier nombre de redéfinitions connu. */
+    private static Class<?>[] classes = new Class<?>[0];
+    private static int[] comptes = new int[0];
+    /** Linux : bibliothèques sensibles déjà vues dans /proc/self/maps. */
+    private static final Set<String> sensiblesVues = new HashSet<>();
 
     private static volatile Thread fil;
     private static volatile boolean actif;
@@ -69,9 +86,76 @@ public final class Veille {
         actif = false;
     }
 
+    /**
+     * Classes à surveiller pour une redéfinition en mémoire (19/11), déjà chargées : appelé par chaque contrôle d'intégrité.
+     * Leur nombre de redéfinitions actuel sert de référence (une redéfinition déjà là est jugée par ce contrôle).
+     */
+    public static void surveiller(List<Class<?>> liste) {
+        Class<?>[] c = liste.toArray(new Class<?>[0]);
+        int[] n = new int[c.length];
+        for (int i = 0; i < c.length; i++) {
+            n[i] = Math.max(0, Redefinitions.compte(c[i]));
+        }
+        synchronized (Veille.class) {
+            classes = c;
+            comptes = n;
+        }
+    }
+
+    /** Bibliothèque d'agent, de débogueur ou d'outil de Java (nom de fichier, sans le dossier) ? */
+    static boolean javaSensible(String nomFichier) {
+        return nomFichier != null && JAVA_SENSIBLE.matcher(nomFichier.toLowerCase(Locale.ROOT)).matches();
+    }
+
+    /** Une classe surveillée a-t-elle été redéfinie depuis le dernier passage ? (« memoire », ou null) */
+    private static String memoire() {
+        Class<?>[] c;
+        int[] n;
+        synchronized (Veille.class) {
+            c = classes;
+            n = comptes;
+        }
+        String quoi = null;
+        for (int i = 0; i < c.length; i++) {
+            int v = Redefinitions.compte(c[i]);
+            if (v > n[i]) {
+                n[i] = v;
+                quoi = "memoire";
+            }
+        }
+        return quoi;
+    }
+
+    /** Linux, toutes les 30 s : bibliothèque sensible de Java apparue dans /proc/self/maps (« module », ou null). */
+    private static String natifsLinux() {
+        if (!premierPassage && tours % 10 != 0) {
+            return null;
+        }
+        String quoi = null;
+        try {
+            for (String ligne : java.nio.file.Files.readAllLines(java.nio.file.Paths.get("/proc/self/maps"))) {
+                int slash = ligne.lastIndexOf('/');
+                if (slash < 0) {
+                    continue;
+                }
+                String nom = ligne.substring(slash + 1).trim();
+                if (nom.endsWith(" (deleted)")) {
+                    nom = nom.substring(0, nom.length() - " (deleted)".length());
+                }
+                if (javaSensible(nom) && sensiblesVues.add(nom) && !premierPassage) {
+                    quoi = "module";
+                }
+            }
+        } catch (Exception e) {
+            return null; // /proc illisible : le contrôle au hasard reste là
+        }
+        return quoi;
+    }
+
     private static void boucle() {
         String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
         boolean windows = os.contains("win") && Native.POINTER_SIZE == 8;
+        boolean linux = os.contains("linux");
         while (true) {
             try {
                 Thread.sleep(PERIODE_MS);
@@ -83,7 +167,7 @@ public final class Veille {
             }
             try {
                 tours++;
-                String quoi = verifier(windows);
+                String quoi = verifier(windows, linux);
                 premierPassage = false;
                 long now = System.currentTimeMillis();
                 Consumer<String> s = signal;
@@ -98,12 +182,17 @@ public final class Veille {
     }
 
     /** Ce qui vient d'apparaître (premier trouvé), ou null. Au premier passage, tout est seulement noté. */
-    private static String verifier(boolean windows) {
+    private static String verifier(boolean windows, boolean linux) {
         String quoi = threadsJava();
+        String m = memoire();
+        quoi = quoi != null ? quoi : m;
         if (windows) {
             String n = threadsNatifs();
             quoi = quoi != null ? quoi : n;
             n = affichage();
+            quoi = quoi != null ? quoi : n;
+        } else if (linux) {
+            String n = natifsLinux();
             quoi = quoi != null ? quoi : n;
         }
         return premierPassage ? null : quoi;
@@ -162,8 +251,10 @@ public final class Veille {
         String quoi = null;
         String java = System.getProperty("java.home", "").toLowerCase(Locale.ROOT).replace('/', '\\');
         for (InjectionCollector.Module m : modules) {
-            if (modulesVus.add(m.base()) && !premierPassage && quoi == null && !InjectionCollector.isSystem(m)
-                    && (java.isEmpty() || !m.path().toLowerCase(Locale.ROOT).replace('/', '\\').startsWith(java))) {
+            // une bibliothèque d'agent ou de débogueur de Java (19/11) compte même rangée dans le Java du jeu
+            if (modulesVus.add(m.base()) && !premierPassage && quoi == null && (javaSensible(m.name())
+                    || (!InjectionCollector.isSystem(m)
+                    && (java.isEmpty() || !m.path().toLowerCase(Locale.ROOT).replace('/', '\\').startsWith(java))))) {
                 quoi = "module";
             }
         }

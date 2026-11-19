@@ -219,6 +219,9 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_INDICES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_OUTILS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_A_CONFIRMER;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_RODAGE;
+    public static final ForgeConfigSpec.IntValue INJECTION_RODAGE_JOUEURS;
+    public static final ForgeConfigSpec.IntValue INJECTION_RODAGE_MINUTES;
 
     // --- suivi à travers les murs (03/11) ---
     public static final ForgeConfigSpec.BooleanValue SUIVI_ENABLED;
@@ -603,10 +606,14 @@ public class SpartanConfig {
                 "cours de partie ; tamper: = anticheat modifié en mémoire ; class: = paquet d'un client de triche connu ;",
                 "jvm:-javaagent / -agentlib / -agentpath / -xbootclasspath / -djava.system.class.loader /",
                 "-djdk.attach.allowattachself = code injecté au lancement (agent, débogueur…) ; inject:thread: = thread",
-                "démarré hors de tout module (DLL cachée) ; inject:hook: = affichage détourné vers du code sans module.")
+                "démarré hors de tout module (DLL cachée) ; inject:hook: = affichage détourné vers du code sans module.",
+                "19/11 : jvm:-dcom.sun.management / jvm:-xx:+managementserver = contrôle à distance de Java (JMX) ouvert au",
+                "lancement ; natif:agent: = bibliothèque d'agent Java ou de débogueur (instrument, jdwp) chargée dans le jeu sans",
+                "option de lancement ; inject:redef: = classe du jeu ou de l'anticheat modifiée en mémoire après son chargement.")
                 .defineList("indices", List.of("attach", "tamper:", "class:", "jvm:-javaagent", "jvm:-agentlib",
                         "jvm:-agentpath", "jvm:-xbootclasspath", "jvm:-djava.system.class.loader",
-                        "jvm:-djdk.attach.allowattachself", "inject:thread:", "inject:hook:"), o -> o instanceof String);
+                        "jvm:-djdk.attach.allowattachself", "inject:thread:", "inject:hook:", "jvm:-dcom.sun.management",
+                        "jvm:-xx:+managementserver", "natif:agent:", "inject:redef:"), o -> o instanceof String);
         INJECTION_A_CONFIRMER = b.comment(
                 "Indices de la liste ci-dessus qui doivent être revus au contrôle suivant (demandé aussitôt) avant l'expulsion :",
                 "code natif caché, dont une trace passagère d'un seul relevé est concevable.")
@@ -616,6 +623,20 @@ public class SpartanConfig {
                 "éditeurs de mémoire. Les autres (débogueurs, Process Hacker, décompilateurs…) restent des alertes.")
                 .defineList("outils", List.of("cheatengine", "cheat engine", "extremeinjector", "extreme injector", "xenos",
                         "ghinjector", "gh injector", "dllinjector", "kdmapper", "artmoney", "squalr"), o -> o instanceof String);
+        INJECTION_RODAGE = b.comment(
+                "Règles « en rodage » (19/11) : jamais essayées sur de vrais PC de joueurs. Disjoncteur : si rodageJoueurs joueurs",
+                "DIFFÉRENTS les déclenchent en moins de rodageMinutes, la règle est suspendue (alerte seulement, plus",
+                "d'expulsion) jusqu'au prochain redémarrage, et le staff est prévenu (« Règle suspendue ») : une règle qui se",
+                "trompe n'expulse jamais plus de rodageJoueurs - 1 joueurs honnêtes. gardien:dll: = bibliothèque d'agent Java ou",
+                "de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité).",
+                "Vider la liste une fois les règles éprouvées (une semaine sans « Règle suspendue »).")
+                .defineList("rodage", List.of("natif:agent:", "inject:redef:", "gardien:dll:", "gardien:cle:"),
+                        o -> o instanceof String);
+        INJECTION_RODAGE_JOUEURS = b.comment(
+                "Joueurs différents qui suspendent une règle en rodage (0 = disjoncteur coupé : la règle expulse toujours).")
+                .defineInRange("rodageJoueurs", 3, 0, 1000);
+        INJECTION_RODAGE_MINUTES = b.comment("Durée pendant laquelle ces joueurs sont comptés (minutes).")
+                .defineInRange("rodageMinutes", 60, 1, 10080);
         b.pop();
 
         b.comment("Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent",

@@ -54,6 +54,10 @@ Code réel, à lire avant de changer quoi que ce soit (les deux côtés doivent 
 - **Injection** (03/11, `[injection]`) : traces certaines d'un code étranger dans le jeu (agent, débogueur, anticheat
   modifié en mémoire, client de triche connu, défi faux, code natif caché revu deux fois) ou injecteur / éditeur de
   mémoire vu par le Gardien : alerte + capture + expulsion. Voir le README et la section du fichier de config.
+- **Launcher imité** (19/11, Spartan 2.13.0, `GardienCles`) : la même clé du Gardien prouvée par deux comptes, ou pour deux
+  jeux différents (numéros de processus), vient d'un programme qui imite le launcher avec une clé fixe (le vrai en tire
+  une neuve à chaque lancement, une reconnexion du même jeu garde la sienne) : refus « ce jeu n'a pas été lancé par le
+  launcher HeraliZ officiel » si `preuveExigee = "refuser"`. Règle en rodage (`gardien:cle:`).
 
 ## Le Gardien (section `[gardien]`)
 
@@ -65,6 +69,16 @@ joueur) et les jars du jeu (changés pendant la partie). Il écrit une ligne dan
 v2|n|t|pid|défi|lecture|outil,outil|jars changés
 <signature Ed25519 de la ligne, base64url>
 ```
+
+Launcher 1.17.0 (19/11) : un rapport sur trois, le Gardien lit aussi, depuis l'extérieur du jeu, les bibliothèques
+chargées dans le processus du jeu (Windows : PowerShell sur ce seul processus, `tasklist /M` en secours ; Linux :
+`/proc/<pid>/maps` ; Mac : rien). Seules celles d'agent ou d'outil de Java partent, en `dll.nom` dans le champ des outils
+(`dll.instrument`, `dll.jdwp`, `dll.dt_socket`, `dll.dt_shmem`, `dll.attach`, `dll.management_agent`, `dll.sawindbg`,
+`dll.saproc`) ; une fois vue, une bibliothèque reste dite. Juste après le lancement, chaque jar surveillé qui est dans le
+pack est comparé à son empreinte signée (`Gardien.verifierPack`) : un jar différent compte dans « jars changés ».
+Serveur (`GardienBibliotheques`) : agent ou débogueur (`instrument`, `jdwp`, `dt_*`) dans un rapport prouvé = expulsion
+(règle en rodage `gardien:dll:`) ; les autres = alerte. Un Spartan plus ancien lit `dll.nom` comme un programme de triche
+(alerte, jamais d'expulsion) : le launcher peut sortir avant ou après le serveur.
 
 Le jeu la transmet **telle quelle** au serveur toutes les 15 s ; il ne vérifie rien et n'a aucune clé secrète. Le serveur
 vérifie : la signature avec la clé prouvée par le jeton, le numéro (jamais en arrière), le numéro de processus du jeu, et
@@ -107,7 +121,11 @@ toutes les 10 min ; synthèse au-delà de 5 comptes en 10 min).
 ## Limites (à connaître)
 
 Tout ce qui tourne sur le PC du joueur peut mentir à un tricheur déterminé : un programme qui imite le launcher avec le
-compte du joueur obtient un jeton du site et peut signer ses propres rapports du Gardien ; un Spartan modifié avec soin
-peut répondre juste au défi d'intégrité ; le jeu calcule lui-même l'empreinte de ses mods. Ces murailles arrêtent les
-outils tout faits et obligent à un vrai travail ; le filet final reste les **détections côté serveur** (mouvement,
-combat, tirs TaCZ, latence, anti-ESP), que le joueur ne peut pas falsifier.
+compte du joueur obtient un jeton du site et peut signer ses propres rapports du Gardien (avec une clé neuve à chaque
+lancement, la règle de la clé réutilisée ne le voit pas) ; un Spartan modifié avec soin peut répondre juste au défi
+d'intégrité ; le jeu calcule lui-même l'empreinte de ses mods. Ces murailles arrêtent les outils tout faits et obligent
+à un vrai travail ; le filet final reste les **détections côté serveur** (mouvement, combat, tirs TaCZ, latence,
+anti-ESP), que le joueur ne peut pas falsifier.
+
+Le dépôt GitHub est **public** (constat du 19/11) : ce fichier, le code du launcher et celui de Spartan y sont lisibles
+par tous. Options et coûts : `launcher/docs/HERALIZ-SECURITE.md`, « Dépôt public ».
