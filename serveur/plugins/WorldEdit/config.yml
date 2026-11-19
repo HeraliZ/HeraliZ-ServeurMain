@@ -16,16 +16,19 @@
 # - If you want to allow blocks, make sure to change "disallowed-blocks" to []
 #
 
+# HeraliZ (19/11, audit F1) : WorldEdit travaille sur le fil du serveur (gels de 78 s et 63 s le 19/11). Une opération
+# s'arrête à 250 000 blocs changés ; pour une grosse opération voulue : //limit 2000000 au plus, en morceaux, quand
+# personne ne joue (mode d'emploi : docs/DEPLOIEMENT.md, « Grosses opérations WorldEdit »).
 limits:
     max-blocks-changed:
-        default: -1
-        maximum: -1
+        default: 250000
+        maximum: 2000000
     vertical-height:
         default: 256
     max-polygonal-points:
         default: -1
         maximum: 20
-    max-radius: -1
+    max-radius: 64
     max-super-pickaxe-size: 15
     max-brush-radius: 15
     butcher-radius:
@@ -134,8 +137,9 @@ saving:
 files:
     allow-symbolic-links: false
 
+# HeraliZ (19/11) : 6 retours en arrière par personne (chaque opération gardée tient tous ses blocs en mémoire)
 history:
-    size: 15
+    size: 6
     expiration: 10
 
 calculation:

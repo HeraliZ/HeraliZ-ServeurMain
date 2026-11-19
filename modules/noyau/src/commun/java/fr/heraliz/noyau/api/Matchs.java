@@ -1,6 +1,8 @@
 package fr.heraliz.noyau.api;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -21,6 +23,13 @@ public final class Matchs {
    public static final String CLE_EN_MATCH = "heralisz:en_match";
    /** Étiquette NBT d'un objet prêté par un match (kit) : jamais gardé, échangé, vendu ni usé. */
    public static final String NBT_PRET = "HeraliszMatch";
+   /**
+    * Marque du {@code PlayerPersisted} : inventaire du joueur mis de côté par le Coffre du mod des matchs (posée au départ,
+    * retirée au retour ; elle reste après un plantage tant que le Coffre n'est pas rendu).
+    */
+   public static final String CLE_DEPOT = "HeralizClashWarDepot";
+   /** Espace de noms des mondes des matchs (arènes, zombies). */
+   public static final String MONDES = "heraliz_clashwar";
 
    /** Ce que le mod des matchs sait d'un joueur. */
    public interface Fournisseur {
@@ -55,6 +64,21 @@ public final class Matchs {
    public static boolean enMatch(UUID joueur) {
       Fournisseur f = fournisseur;
       return f != null && f.enMatch(joueur);
+   }
+
+   /**
+    * Inventaire « tenu par le match » (19/11, audit des duplications) : joueur en match, drapeau {@link #CLE_EN_MATCH},
+    * inventaire mis de côté par le Coffre ({@link #CLE_DEPOT}, reconnexion après un plantage comprise) ou joueur dans un
+    * monde des matchs. Ce qui serait livré dans cet inventaire servirait pendant le match, puis serait effacé au retour :
+    * toute attente (objets à rendre, copie gardée d'un écran, récompense, kit) attend que ce soit faux. La seule règle pour
+    * tous les mods : l'utiliser plutôt qu'une copie. Fil serveur.
+    */
+   public static boolean inventaireRetenu(@Nullable ServerPlayer p) {
+      if (p == null) return false;
+      if (enMatch(p.getUUID())) return true;
+      CompoundTag d = p.getPersistentData();
+      if (d.getBoolean(CLE_EN_MATCH) || d.getCompound(Player.PERSISTED_NBT_TAG).contains(CLE_DEPOT)) return true;
+      return MONDES.equals(p.level().dimension().location().getNamespace());
    }
 
    @Nullable

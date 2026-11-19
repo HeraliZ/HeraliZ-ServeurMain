@@ -234,6 +234,13 @@ public final class Deplacements {
             }
         }
         attendre(p, "spawn", () -> {
+            // 19/11 (audit) : revu au départ ; seul un coup reçu annulait le compte à rebours, celui qui tirait pendant ce
+            // temps arrivait au spawn encore en combat
+            int combat = staff(p) ? 0 : Heraliz.combatSecondsLeft(p);
+            if (combat > 0) {
+                T.chat(p, T.t("crac.spawn.combat", "Tu es en combat : /spawn dans %s s.", String.valueOf(combat)), ChatFormatting.RED);
+                return;
+            }
             if (allerAuPointSpawn(p)) {
                 // au-dessus de la barre d'objets, pas dans le chat : il passait par-dessus la radio de Varga (20/10)
                 p.displayClientMessage(T.t("crac.spawn.arrive", "Te voici au spawn.").withStyle(ChatFormatting.GREEN), true);

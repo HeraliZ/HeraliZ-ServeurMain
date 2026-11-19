@@ -94,6 +94,10 @@ final class GardeRecycleur {
      * prévenu. Connexion et réapparition (objets gardés après un plantage ou un inventaire plein).
      */
     static void rendre(ServerPlayer p) {
+        // 19/11 (audit des duplications, C1) : recycleur ouvert, la copie gardée est le miroir de ses cases, pas une
+        // attente ; la rendre doublait tout (retour d'un ClashWar, recycleur rouvert avant l'essai des 5 s). Le contenu
+        // revient de toute façon à la fermeture de l'écran (comme l'atelier de réparation).
+        if (p.containerMenu instanceof MenuRecycleurServeur) return;
         if (!present(p) || !p.isAlive()) return;
         if (ObjetsARendre.retenuParMatch(p)) {
             APRES_MATCH.add(p.getUUID());   // l'inventaire du match est effacé au retour : rendu après
@@ -128,6 +132,7 @@ final class GardeRecycleur {
         }
     }
 
+    /** Plus rien à rendre plus tard pour ce joueur : déconnecté, ou son recycleur rouvert a repris la copie (19/11). */
     static void oublier(UUID u) {
         APRES_MATCH.remove(u);
     }

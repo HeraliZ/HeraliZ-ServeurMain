@@ -34,8 +34,6 @@ import java.util.UUID;
  */
 final class Marchands {
     private static final Logger LOG = LogUtils.getLogger();
-    /** Achat avec Maj : 5 d'un coup au plus. */
-    private static final int LOT_MAX = 5;
     /** Marchand ouvert par chaque joueur (identifiant de l'entité PNJ). */
     private static final Map<UUID, Integer> OUVERTS = new HashMap<>();
 
@@ -143,28 +141,44 @@ final class Marchands {
         return def == null || def.marchand == null ? null : def;
     }
 
+    /**
+     * Achat d'un article, confirmé par le joueur dans le panneau de l'écran du marchand (19/11, demande du propriétaire :
+     * « un panneau de sécurité au cas où on clique par erreur, et combien on en veut : 500 brindilles, c'est 500 clics »).
+     * Le serveur revérifie tout, et c'est tout ou rien :
+     * <ul>
+     * <li>quantité de 1 à {@link Reseau#ACHAT_MAX} (le panneau n'envoie jamais autre chose : un paquet hors bornes est
+     * ignoré, rien ne bouge) ;</li>
+     * <li>prix à l'unité : celui que le joueur a vu et confirmé ; s'il a changé entre-temps (marchand modifié au Registre,
+     * /recharger quetes, économie de la bêta), rien n'est acheté et l'écran est remis à jour ;</li>
+     * <li>place : tout le lot doit tenir dans l'inventaire AVANT de payer (sinon refus : jamais d'objet au sol, 02/11) ;</li>
+     * <li>hérals : retirés d'un coup par l'économie (solde trop bas : refus, rien n'est pris) ; puis le lot est donné.</li>
+     * </ul>
+     * Les marchands n'ont ni stock ni limite par jour : rien d'autre à compter.
+     */
     static void achat(ServerPlayer p, Reseau.Achat a) {
         Defs.Pnj def = verifier(p, a.entite());
         if (def == null || def.marchand.rachat || def.marchand.troc || a.index() < 0 || a.index() >= def.marchand.articles.size()) return;
+        if (a.quantite() < 1 || a.quantite() > Reseau.ACHAT_MAX) return;
         Texte refus = empechement(p);
         if (refus != null) {
             Moteur.notif(p, refus, 0xFF6B6B);
             return;
         }
         Defs.ArticleDef art = def.marchand.articles.get(a.index());
-        int q = Math.max(1, Math.min(LOT_MAX, a.quantite()));
+        int q = a.quantite();
         ItemStack modele = objet(art, 1);
         if (modele.isEmpty()) return;
-        // 03/11 : prix de l'économie de la bêta (le même qu'à l'écran)
-        long total = Ponts.prixAchat(art.prix()) * q;
+        // 03/11 : prix de l'économie de la bêta (le même qu'à l'écran) ; 19/11 : le prix confirmé, sinon rien
+        long unite = Ponts.prixAchat(art.prix());
+        if (unite != a.prix()) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.notif.prix_change", Ponts.texteObjet(modele)), 0xFF6B6B);
+            envoyerA(p, a.entite(), def);
+            return;
+        }
+        long total = unite * q;
         // 02/11 (audit point 23) : sans la place pour tout le lot, l'achat est refusé avant de payer (avant, le reste
         // tombait au sol)
-        List<ItemStack> lot = new ArrayList<>(q);
-        for (int i = 0; i < q; i++) {
-            ItemStack s = modele.copy();
-            Ponts.exemplaire(s, "marchand " + def.id);
-            lot.add(s);
-        }
+        List<ItemStack> lot = lot(modele, q, def.id);
         if (!ObjetsARendre.tiennent(p.getInventory(), lot)) {
             Moteur.notif(p, Texte.cle("heraliz_quetes.notif.place_achat", Texte.brut(q), Ponts.texteObjet(modele)), 0xFF6B6B);
             return;
@@ -175,11 +189,34 @@ final class Marchands {
         }
         // place vérifiée avant le paiement ; par sécurité, un reste attendrait de la place (jamais au sol)
         for (ItemStack s : lot) ObjetsARendre.donner(p, s);
+        // 19/11 (audit des duplications, B3) : hérals sortis du compte écrits d'abord, puis le joueur avec ses achats ; avant,
+        // si le joueur était écrit avant le compte (sous 60 s), un plantage rendait les hérals ET gardait l'achat
+        Ponts.sauvegarderEconomie();
+        Ponts.sauverJoueur(p);
         p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7F, 1.0F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.achete", Texte.brut(q), Ponts.texteObjet(modele),
                 Texte.brut(Ponts.nombre(total))), 0xE8C36A);
         LOG.info("[heraliz_quetes] {} achète {} x{} à {} pour {} hérals", p.getGameProfile().getName(), art.objet(), q, def.id, total);
         envoyerA(p, a.entite(), def);
+    }
+
+    /**
+     * Le lot de {@code n} objets d'un achat, en piles pleines (19/11 : 500 brindilles = 8 piles, plus 500 objets un par un).
+     * Chaque pile est un exemplaire neuf ({@link Ponts#exemplaire} : bons de HeraliZ Grades) ; un objet que l'exemplaire
+     * change (un bon reçoit son numéro) est donné un par un, pour que chacun ait le sien.
+     */
+    private static List<ItemStack> lot(ItemStack modele, int n, String pnj) {
+        ItemStack essai = modele.copy();
+        Ponts.exemplaire(essai, "marchand " + pnj);
+        int max = ItemStack.isSameItemSameTags(essai, modele) ? Math.max(1, modele.getMaxStackSize()) : 1;
+        List<ItemStack> lot = new ArrayList<>((n + max - 1) / max);
+        for (int reste = n; reste > 0; reste -= max) {
+            ItemStack s = modele.copy();
+            s.setCount(Math.min(max, reste));
+            Ponts.exemplaire(s, "marchand " + pnj);
+            lot.add(s);
+        }
+        return lot;
     }
 
     static void vente(ServerPlayer p, Reseau.Vente v) {

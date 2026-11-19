@@ -31,6 +31,9 @@ public class KitReparationServeur extends KitReparation {
         if (main == InteractionHand.MAIN_HAND && player instanceof ServerPlayer sp && !sp.isSpectator()) {
             // un objet de l'atelier attend encore de la place dans l'inventaire (02/11) : rendu d'abord, sinon pas d'atelier
             if (MenuReparationServeur.rendreGarde(sp, true)) return InteractionResultHolder.fail(kit);
+            // 19/11 (audit M1) : pas d'atelier tant que le match tient l'inventaire (l'objet posé y reviendrait, effacé au
+            // retour, ou resterait gardé et sortirait du match)
+            if (fr.heraliz.noyau.api.Matchs.inventaireRetenu(sp)) return InteractionResultHolder.fail(kit);
             int caseKit = sp.getInventory().selected;
             NetworkHooks.openScreen(sp, new SimpleMenuProvider((id, inv, p) -> new MenuReparationServeur(id, inv, caseKit, niveau),
                     Component.translatableWithFallback("heraliz_usure.atelier.titre", "Réparation")), buf -> buf.writeVarInt(caseKit));

@@ -32,8 +32,9 @@ import java.util.Set;
  * {@code serveur/config/heraliz_recolte/recolte.json}) : au démarrage du serveur, par {@code /recharger recolte}, et tout
  * seul quand le fichier change (date relevée sur un fil à part par {@link DatesFichiers} : le fil du serveur ne touche le
  * disque que si le fichier a changé). Un fichier illisible ne casse rien : les réglages en cours restent, l'erreur va au
- * journal. Une valeur absente prend celle du barème de {@code maquettes/recolte/PROPOSITION.md}, une valeur hors bornes
- * sa borne. Lecture des réglages en cours : {@link #get()} (fil du serveur).
+ * journal. Une valeur absente prend celle du barème par défaut ci-dessous (celui du fichier du dépôt ; au départ
+ * {@code maquettes/recolte/PROPOSITION.md}), une valeur hors bornes sa borne. Lecture des réglages en cours : {@link #get()}
+ * (fil du serveur).
  * <p>La hache-pioche de survie (légendaire) « fait gagner du temps, pas plus de ressources » : elle demande moins de
  * coups ({@code coups_legendaire}), mais la matière donnée est la même ({@code matiere}), au prorata du travail fait.
  */
@@ -49,14 +50,21 @@ public final class Reglages {
     // reste à la mesure des explosifs) : 3 fois plus (avant : 120, 90, 40, 14 ; écarts du métal et du titane 80, 160), et
     // plus de places dans la zone de neige ({@link Neige}) ; matière tirée entre deux bornes (choix du propriétaire : pierre
     // 10 à 14, métal 7 à 12, titane 4 à 8 ; arbre 10 ; avant : 30, 24, 30, 16 ; chute 6), meilleure avec l'outil légendaire
-    private static final int[] A_LA_FOIS = {360, 270, 120, 42};
-    private static final int[] MATIERE_MIN = {10, 10, 7, 4};
-    private static final int[] MATIERE_MAX = {10, 14, 12, 8};
-    private static final int[] CHUTE = {2, 0, 0, 0};
+    // 19/11 (choix du propriétaire, au lieu d'un plafond par jour : « plus d'arbres et de minerais sur la carte, c'est bien,
+    // les gens auront envie d'aller farmer ; mais chacun donne un peu moins ») : 2 fois plus (avant : 360, 270, 120, 42),
+    // environ 40 % de matière en moins chacun (pierre 6 à 9, métal 4 à 8, titane 2 à 5, arbre 6 dont 1 à la chute ; avant :
+    // 10 à 14, 7 à 12, 4 à 8, 10 dont 2), mêmes coups et même usure des outils ; écarts x 0,7 (avant : 30, 35, 60, 90) pour
+    // que 2 fois plus de ressources tiennent dans la zone de neige comme avant (même part)
+    private static final int[] A_LA_FOIS = {720, 540, 240, 84};
+    private static final int[] MATIERE_MIN = {6, 6, 4, 2};
+    private static final int[] MATIERE_MAX = {6, 9, 8, 5};
+    private static final int[] CHUTE = {1, 0, 0, 0};
     private static final int[] COUPS = {12, 16, 20, 24};
     private static final int[] COUPS_LEGENDAIRE = {7, 10, 12, 14};
     private static final int[] REAPPARITION_MINUTES = {45, 60, 120, 240};
-    private static final int[] ECART = {30, 35, 60, 90};
+    private static final int[] ECART = {21, 25, 42, 64};
+    /** Ressources d'une sorte sur la carte en même temps, au plus (19/11 : 720 arbres ; avant : 500). */
+    private static final int A_LA_FOIS_MAX = 2000;
 
     /** Sols sur lesquels une ressource peut être posée (herbe, terre, pierre, sable, neige). */
     private static final List<String> SOLS = List.of("minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt",
@@ -139,7 +147,7 @@ public final class Reglages {
         for (int i = 0; i < SORTES.length; i++) {
             JsonObject r = objet(res, SORTES[i]);
             int[] matiere = bornes(r, "matiere", MATIERE_MIN[i], MATIERE_MAX[i], 0, 10_000);
-            ressources[i] = new Ressource(entier(r, "a_la_fois", A_LA_FOIS[i], 0, 500), matiere[0], matiere[1],
+            ressources[i] = new Ressource(entier(r, "a_la_fois", A_LA_FOIS[i], 0, A_LA_FOIS_MAX), matiere[0], matiere[1],
                     i == ARBRE ? entier(r, "chute", CHUTE[i], 0, matiere[0]) : 0,
                     entier(r, "coups", COUPS[i], 1, 1000), entier(r, "coups_legendaire", COUPS_LEGENDAIRE[i], 1, 1000),
                     entier(r, "reapparition_minutes", REAPPARITION_MINUTES[i], 0, 100_000), entier(r, "ecart", ECART[i], 0, 5000));

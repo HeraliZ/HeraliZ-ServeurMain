@@ -25,7 +25,8 @@ import org.jetbrains.annotations.Nullable;
  * building pieces and placables a blast can see in range take damage scaled by its power, once each; nothing behind a
  * wall is hit. World blocks: inside claims only what a raid may break, for blasts no mob caused, never natural terrain
  * (see {@link RaidBlocks}); outside claims the blast keeps its block list, minus CRac's own blocks.
- * <p>HeraliZ: the C4 of the server ({@code heralisz_grenade:c4}, {@link HeralizC4}) is a CRac C4: the piece it is stuck
+ * <p>HeraliZ: a heralisz_tactical C4 ({@code heraliz.c4ThrowableIds}, {@link HeralizC4}; none since 19/11, the C4 of the
+ * server is the CRac C4 {@code crac:c4}) is a CRac C4: the piece it is stuck
  * to takes {@code c4.damage} (Rust: 1 for wood, 2 stone, 4 sheet metal, 7 armored) and, stuck to a plain block in a
  * claim, it breaches like the CRac C4 instead of carving its 7.5 block crater. Nothing is done in the dimensions where
  * CRac is off ({@code heraliz.blockedDimensions}: matches, clan bunkers), which keep their own explosion rules.

@@ -1,1 +1,3 @@
-superbwarfare:.*
+# HeraliZ (19/11, audit F12) : liste vide exprès. Le mod superbwarfare n'est pas sur le serveur, et chaque ligne était
+# comparée (expression régulière) à chaque entité de chaque monde, à chaque passage du mod. Les lignes qui commencent
+# par # sont ignorées par le mod, qui ne recrée ce fichier (avec superbwarfare) que s'il manque.

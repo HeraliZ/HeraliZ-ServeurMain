@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "minecraft:air",
-    "tactical_curios:em_016"
+    "minecraft:air"
   ]
 }

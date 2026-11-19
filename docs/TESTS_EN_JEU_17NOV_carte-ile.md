@@ -478,3 +478,222 @@ Capsules du casino : beaucoup plus de capsules dans les conteneurs, surtout en p
 piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta : T1 0,3 (avant 0,07), T3 1,6 (0,2), T5 5,5
 (0,45), T6 10,7 (0,9), T7 21 (1,3). Les autres objets perdent 1 à 2,5 % de leur place.
 - [ ] Ouvrir une dizaine de conteneurs T4-T5 : des capsules dans 1 sur 8 environ, parfois une pile de 4 à 7 capsules de 10.
+
+## 24. Duplications : correctifs de l'audit du 19/11
+
+Noyau 1.1.3, Quêtes 1.22.5, Boutique 1.5.16, Monde 1.3.2, CRac 1.38.5-beta, Tactique 2.59.1, ClashWar 1.3.1. Rien à
+voir de nouveau pour les joueurs. **Rien n'a été essayé en jeu.** Il faut le serveur d'essai, deux comptes et un op pour
+lancer un ClashWar. Nouvelle règle commune : rien de ce qui attend (objets gardés, récompenses, clés) n'arrive pendant un
+match, dans le monde des matchs, ni tant que l'inventaire est mis de côté par le ClashWar ; tout arrive après le retour.
+
+Recycleur du spawn (le plus grave : objets doublés à volonté pendant un tournoi) :
+- [ ] Poser des objets dans le recycleur, remplir son inventaire, fermer : le reste est « gardé ». Pendant un tournoi :
+      `/clashwar regarder`, se déconnecter, se reconnecter, `/clashwar quitter`, rouvrir tout de suite le recycleur
+      (moins de 5 s), attendre 10 s, le fermer : chaque objet une seule fois (avant : tout en double).
+- [ ] Même chose sans rouvrir le recycleur : les objets gardés reviennent seuls dans les 5 s après le retour.
+- [ ] Hors ClashWar : reconnexion et réapparition avec des objets gardés : rendus comme avant.
+
+Objets en attente pendant un ClashWar :
+- [ ] Atelier de réparation : arme posée, inventaire plein, fermer (« t'attend »). Partir au ClashWar : l'arme n'arrive
+      pas dans l'inventaire du match ; elle revient dans les 5 s après le retour. En match, un kit de réparation n'ouvre
+      pas l'atelier.
+- [ ] Objets du tutoriel qui attendaient une case, objets à vie gardés (inventaire plein), objets à vie d'une base
+      effacée : rien pendant le match ni à une reconnexion pendant le tournoi ; tout arrive après le retour.
+
+Tutoriel des bases :
+- [ ] Étape de l'entretien : mettre les planches du kit dans l'armoire, puis les reprendre (clic, Maj + clic, touches 1
+      à 9) ; « Quitter le tuto » : ces planches sont reprises avec le reste du kit (rien en plus dans l'inventaire rendu).
+- [ ] Étape de la caisse : poser la caisse en métal, la ramasser, finir ou quitter : la caisse est reprise aussi.
+- [ ] L'armoire d'une vraie base sur la carte : rien ne change (les planches reprises s'empilent avec les autres).
+
+Recycleur de la carte :
+- [ ] Machine restée vide plus de 20 min : y déposer 10 objets (5 s chacun), `/tp` à 1 000 blocs tout de suite (le
+      coin se décharge), attendre 10 s, revenir : environ 20 s après le dépôt, 4 à 6 objets recyclés, pas les 10 d'un
+      coup (avant : la machine rattrapait aussi le temps passé vide).
+
+Plantages au mauvais moment (non provoqués : vérifier seulement que tout marche comme avant) :
+- [ ] Recycler une pile au spawn : les hérals arrivent comme avant. `/diag profil` pendant que deux joueurs recyclent :
+      l'enregistrement des joueurs (`PlayerList.save`) reste petit.
+- [ ] Achat chez un marchand ; quête de Varga avec une étape « donner » (donner en deux fois) et une étape « payer » ;
+      clés du ClashWar en fin de tournoi : comme avant, une seule fois.
+- Pas encore corrigés (il faudrait changer la façon dont ces fichiers s'écrivent) : planque et coffre VIP, coffre du
+  clan. Il faudrait un plantage du serveur dans la seconde qui suit la fermeture du coffre.
+
+## 25. Acheter avec la quantité, et le Passeur : armes et munitions (19/11)
+
+Demandes du propriétaire : un panneau de confirmation avant chaque achat, avec la quantité (« 500 brindilles, c'est 500
+clics ») ; et un PNJ qui vend des armes et des munitions, cher. Quêtes 1.23.0 : tout le monde doit avoir la nouvelle
+version (le launcher la donne ; un jeu plus ancien est refusé à la connexion). Maquette du panneau, **pas encore validée
+par le propriétaire** : `maquettes/achat_quantite/`. Prix et calculs : en tête de `outils/marchands.py`.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois : au spawn, se placer là où le Passeur doit se tenir, regarder dans la direction voulue, puis
+`/pnj creer passeur` (`/pnj deplacer passeur` pour le bouger). `/pnj liste` doit le montrer.
+
+Le panneau d'achat (chez tous les vendeurs : le Bâtisseur, Jacqueline, le Doyen, Jack, le Passeur) :
+- [ ] Clic sur « Acheter » : le panneau s'ouvre au milieu de l'écran (l'objet, son nom à la couleur de sa rareté, le prix à
+      l'unité), quantité 1. Rien n'est acheté tant qu'on n'a pas confirmé.
+- [ ] Taper 500 au clavier (le premier chiffre remplace le 1) : le total, le solde et « Après l'achat » suivent. Chez le
+      Bâtisseur, 500 brindilles = 1 000 hérals (2 l'unité pendant la bêta).
+- [ ] − et + (avec Maj : de 10 en 10), la molette, les flèches haut et bas ; pastilles ×1, ×10, une pile (×64 pour les
+      brindilles, ×60 pour les balles de 9 mm, ×36 en calibre 12) ou ×5 (une arme), et Max.
+- [ ] « Max » = ce que tes hérals paient, ou ce qui tient dans ton inventaire : la ligne sous la quantité dit lequel des
+      deux. Une quantité plus grande : ligne rouge, total en rouge, « Confirmer » éteint.
+- [ ] Inventaire presque plein : Max = ce qui tient vraiment ; acheter Max : tout rentre, rien au sol.
+- [ ] Échap ou « Annuler » : le panneau se ferme, rien n'est acheté. Entrée ou « Confirmer » : l'achat se fait. Double
+      clic sur « Acheter » : le panneau s'ouvre mais rien n'est acheté (« Confirmer » reste éteint une demi-seconde).
+- [ ] Après l'achat : le bandeau « Acheté : 500 × Brindilles (1 000 hérals) » ; le solde de l'écran baisse d'autant.
+- [ ] Un op change le prix de l'article au Registre pendant qu'un joueur a le panneau ouvert, puis le joueur confirme :
+      « Le prix de … vient de changer : rien n'a été acheté », aucun hérals retiré ; l'écran montre le nouveau prix et le
+      panneau, rouvert, aussi.
+- [ ] En anglais et en russe : aucun texte ne dépasse du panneau.
+
+Le Passeur :
+- [ ] Lui parler : « Le Passeur », « Armes et munitions », ses phrases en français, anglais et russe ; son apparence
+      (marinière bleu marine, collier de barbe, bottes de pluie).
+- [ ] « Voir ce que tu vends » : 24 armes (les 20 grises et vertes, puis 4 bleues : Mk 23, UMP-45, M870, SKS tactique) et
+      4 munitions (.45 ACP, 9 mm, calibre 12, 7,62 × 39), chaque nom à la couleur de sa rareté.
+- [ ] Prix pendant la bêta (prix des fichiers x 0,75) : pistolet gris 1 125, pistolet vert 2 250, pistolet-mitrailleur ou
+      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles : 9 mm et .45 ACP 8, calibre 12 11,
+      7,62 × 39 15.
+- [ ] Une arme achetée est neuve (100 %) et vide : la charger avec les balles achetées.
+- [ ] Revendre à Mila une arme achetée chez lui : environ 15 (grise), 30 (verte), 60 (bleue) ; la recycler : quelques
+      composants ou quelques hérals. Jamais plus d'un dixième de son prix.
+- [ ] Une arme grise ou verte trouvée sur la carte, revendue à Mila : payée comme avant, mais plus de points de saison ni
+      d'avancée de la quête du jour « Vendre » (un marchand la vend maintenant : règle du 25/10, acheter puis revendre ne
+      rapporte rien).
+- [ ] Sur la carte, en combat, à terre ou en match : il refuse, comme les autres marchands.
+
+## 26. Sacs : plus aucun défi ni apparence à débloquer (19/11)
+
+Choix du propriétaire : les sacs se trouvent seulement sur la carte, avec leur apparence ; rien à débloquer.
+`serveur/config/backpacked.server.toml` : `unlockAllCosmetics = true` (aucun défi suivi, aucun déblocage annoncé) et
+`disableCustomisation = true` (plus de bouton de personnalisation).
+- [ ] Ouvrir son sac : plus de bouton « Personnaliser » ; aucun message « sac débloqué » en jouant.
+- [ ] Un sac trouvé garde l'apparence avec laquelle il a été trouvé (tactique, randonnée, sport…), même sur le dos.
+- [ ] Les camos sur les sacs (table d'armurier) marchent comme avant.
+
+## 27. Corrections de l'audit du 19/11 (bugs de jeu)
+
+Noyau 1.1.4, Monde 1.3.3, Quêtes 1.23.1, CRac 1.38.6-beta, Tactique 2.59.3, Sacs 3.0.1-beta.4-heralisz27.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois en jeu (staff) :
+- [ ] **Plus de `/tpa` dans les deux bunkers** (on en sortait sans carte et on y faisait entrer son clan). Les zones sans
+      téléportation ne sont pas dans le dépôt : elles se règlent en jeu. Taper, de n'importe où :
+      - `/execute in minecraft:overworld positioned -254 64 147 run tpa zone ajouter 96 Grand Bois`
+      - `/execute in minecraft:overworld positioned 853 64 -998 run tpa zone ajouter 93 Pic`
+      - puis `/tpa zone liste` : les deux zones sont dans la liste.
+      Centre et rayon : ceux des deux bunkers dans `serveur/config/crac/zones_construction.json` (tout le bunker, plus
+      40 blocs autour). Le joueur qui tente un `/tpa` dedans lit le nom de la zone : un nom neutre, pour ne pas montrer
+      où sont les bunkers (ils ne sont plus sur la carte M). Pour le nom « Bunker des Bois » à la place, c'est la même
+      commande avec ce nom.
+- [ ] **Quête « La boîte noire »** : elle ne se finit que dans les caisses d'une zone de radiation. Au démarrage, le
+      journal du serveur ne doit avoir aucune ligne « QUÊTE IMPOSSIBLE » ; `/zones info` doit montrer « Zone irradiée de
+      Radio (radiation) ». Sinon : remettre cette zone dans `dayz_map/data/heraliz_zones.json` (la carte en île l'apporte
+      dans son propre fichier du même nom), puis `/recharger zones`.
+
+À tester :
+- [ ] **Extraction sous le feu** : un autre joueur tire sur celui qui s'extrait (ou le staff tape
+      `/combat marquer <joueur>` pendant le compte à rebours). À l'arrivée au spawn : plus d'« EN COMBAT »,
+      `/combat etat <joueur>` dit « libre », `/hdv` marche tout de suite. Quitter le jeu aussitôt et revenir : vivant, au
+      spawn, rien de perdu. Celui qui a tiré reste en combat, lui.
+- [ ] **Spawn sans mort** : au spawn, `/combat marquer <joueur>` (staff), puis le joueur quitte le jeu : à son retour,
+      vivant, rien de perdu, pas de message « déconnecté en plein combat ». Journal du serveur : « sans sanction (monde
+      du spawn) ».
+- [ ] **`/spawn` depuis sa base** : pendant le compte à rebours, tirer sur un autre joueur (ou `/combat marquer
+      <joueur>`) : pas de départ, message « Tu es en combat : /spawn dans … s. ». Hors combat : départ comme avant.
+- [ ] Quêtes : trois textes s'affichaient en clé brute ; ils sont écrits en français, anglais et russe (quête finie
+      mais hérals en attente ; vente refusée quand les hérals ne peuvent pas être versés ; pour le staff, dans
+      l'édition d'un marchand). Le dernier se voit facilement : ajouter un rachat plus cher que la moitié du prix de
+      vente d'un objet → « … se vend … hérals : il ne sera jamais racheté plus de … hérals (la moitié). »
+- [ ] Journal du démarrage : plus de « Couldn't load tag curios:ear_protection ».
+- [ ] Rien ne doit changer pour : les masques à gaz et tenues Hazmat dans les zones de gaz (motifs qui ne servaient à
+      rien retirés), le C4 de CRac sur les bases (`c4ThrowableIds` vidé : il visait un C4 qui n'existe plus), le verre
+      du spawn et des arènes (monde des anciens bunkers de clan retiré de la liste).
+
+Sans essai possible : après une erreur, la détection « à terre » des quêtes (marchands, recycleurs, étapes
+« exécuter ») réessaie toute seule (1 s, 2 s, 4 s… jusqu'à 5 min) au lieu de rester coupée jusqu'au redémarrage.
+
+## 28. Réglages du serveur, plugins et mise en ligne (audit du 19/11)
+
+Rien de tout cela n'a été essayé en jeu ni sur le Ptero : seulement contrôlé dans le dépôt, et le démarrage d'essai a
+tourné sur une machine de GitHub. Tout compte au **redémarrage** qui suit la mise en ligne. Détail et raisons :
+`docs/DEPLOIEMENT.md`, sections 6 à 9.
+
+Mise en ligne :
+- [ ] Résumé de « Serveur HeraliZ » : partie « Démarrage d'essai » à « Réussi », puis le job « serveur » a tourné (envoi
+      au Ptero). Si « Refusé » : rien n'est parti, la raison et les lignes en cause sont dans ce résumé.
+- [ ] Sur le Ptero (gestionnaire de fichiers du panel) : `bukkit.yml` dit `autosave: 12000` et `warn-on-overload: true` ;
+      `spigot.yml` dit `user-cache-size: 1000` et `ignore-spectators: true` ; `server.properties` n'a pas changé.
+- [ ] `plugins/AuthMe/config.yml` du Ptero : `UnrestrictedName: []` (plus aucun pseudo `hzbot` dedans).
+
+Jeu (après le redémarrage) :
+- [ ] Sauvegarde automatique toutes les 10 min : dans `logs/debug.log`, les lignes « Autosave » sont à 10 min d'écart
+      (5 avant).
+- [ ] WorldEdit : `//size` donne le nombre de blocs ; un `//set` de plus de 250 000 blocs s'arrête (« Max blocks changed
+      in an operation reached ») et `//undo` le défait ; `//limit 2000000` permet plus ; `//sphere` de rayon 65 refusé
+      (64 au plus) ; au 7e `//undo` de suite, « Nothing left to undo » (6 retours au plus).
+- [ ] Connexion avec le plus gros inventaire possible : sac plein d'armes équipées (accessoires), Curios pleins ; ouvrir
+      un coffre de clan, le coffre VIP, un recycleur plein et un coffre du ClashWar : aucune expulsion (« Badly
+      compressed packet », « Payload may not be larger », « Packet too big »).
+- [ ] Après `rate-limit=1000` mis à la main dans `server.properties` (propriétaire) : 10 min de jeu normal (tir en
+      automatique, voix, inventaire en cliquant vite) sans expulsion « paquets ».
+- [ ] Zombies : un joueur blessé n'attire plus les zombies par l'odeur du sang, mais les tirs et les blocs cassés les
+      attirent toujours ; dans les rapports `/diag`, beaucoup moins d'entités `zombieawareness:scent`.
+- [ ] Véhicules : un conducteur voit toujours les véhicules lointains (mis à jour une fois par seconde au lieu de quatre).
+- [ ] Menu des réglages de TaCZ (touche du jeu) toujours là chez les joueurs (cloth-config retiré du serveur seulement).
+- [ ] Changer le grade d'un joueur connecté (LuckPerms) : ses nouvelles commandes arrivent dans la complétion du tchat au
+      prochain changement de monde ou à la reconnexion (plus tout de suite : voulu).
+- [ ] Démarrage du serveur : plus de « Downloading GeoIP » de LiteBans dans le journal. Un gros `//set` du staff fait de
+      nouveau apparaître « Can't keep up » dans la console.
+
+À faire par le propriétaire ou l'hébergeur :
+- [ ] `server.properties` du Ptero : `rate-limit=1000` ; décider `enable-query` (false sauf site de classement) et
+      `player-idle-timeout`.
+- [ ] Hébergeur : ligne Java de `docs/DEPLOIEMENT.md` §8 (`-Xms16G -Xmx16G` + réglages Aikar + `gc.log`), conteneur de
+      20 Go au moins ; puis `/diag` : 16 384 Mo et `logs/gc.log` présent.
+- [ ] Hébergeur, pour viser 150 joueurs : processeur récent à haute fréquence, cœurs réservés, disque NVMe.
+- [ ] Mise à jour de Mohist (build après le 20/07/2025) : seulement après un banc de charge et un essai.
+- [ ] WorldGuard : `/rg list` dans chaque monde ; si aucune région n'utilise de drapeau de mouvement (entry, exit,
+      greeting, farewell, ceux de WorldGuardExtraFlags), demander à passer `use-player-move-event` à `false`.
+
+## 29. Économie : récolte, recycleur, cœur de clan, caisses (19/11)
+
+Récolte 1.1.2 et Quêtes 1.23.2. Les réglages sont relus sans redémarrer (`recolte.json` tout seul, `/recharger` pour le
+reste), mais la limite de 2 000 ressources par sorte demande la nouvelle Récolte (avec l'ancienne, 500 arbres au plus).
+**Rien de tout cela n'a été testé en jeu.**
+
+Récolte (choix du propriétaire : 2 fois plus d'arbres et de gisements, chacun donne environ 40 % de moins) :
+- [ ] `/recharger recolte` : « 720 arbres, 540 gisements de pierre, 240 de métal et 84 de titane à la fois » (avant :
+      360, 270, 120, 42). Les nouvelles places se remplissent petit à petit là où des joueurs passent ; pas de lag au
+      moment où le fichier est relu.
+- [ ] Un arbre abattu à la hache : 6 bûches en tout (5 pendant les coups, 1 quand il tombe), toujours 12 coups.
+- [ ] Gisements : pierre 6 à 9 pierres brutes, métal 4 à 8 minerais, titane 2 à 5 ; toujours 16, 20 et 24 coups. Avec
+      la hache-pioche de survie : moins de coups, et plus souvent le haut de la fourchette.
+- [ ] L'usure de la hache et de la pioche par coup ne change pas (elles s'usent donc un peu plus par bûche ou minerai).
+- [ ] Île arctique (zone de neige) : bien plus d'arbres et de gisements qu'ailleurs, plus serrés qu'avant (deux arbres
+      peuvent être à une vingtaine de blocs, deux gisements de métal à une quarantaine).
+- [ ] Le Contremaître ne dit plus que « le métal est compté chaque jour » (il n'y a pas de plafond par jour).
+
+Recycleur (armes et accessoires : en moyenne un peu moins que Mila, avec de la chance nettement plus) :
+- [ ] Aperçu d'une arme Commune (pistolet gris) : Canon II, Ressort II, Ferraille II, Ferraille, Kit de pièces ; d'une
+      Légendaire : Canon IV, Ressort IV, Ferraille IV, Kit de pièces IV. Jamais plus de 5 lignes.
+- [ ] Un viseur rend des batteries, une poignée du caoutchouc, un chargeur un ressort ; plus jamais de scotch ni de
+      circuit imprimé sur une arme ou un accessoire (ce sont des pièces des explosifs).
+- [ ] Recycler une dizaine d'armes Rares neuves : environ un tiers ne rend que 15 hérals, un tiers une pièce (20 ou 50
+      chez Mila), un tiers deux pièces (jusqu'à 100) ; Mila en donne 60 chacune.
+- [ ] Une conserve geckolib (haricots, pêches…) rend une ferraille ; une boisson ou des chips du plastique ; une batte ou
+      une machette 2 ferrailles, comme avant.
+- [ ] Un article acheté chez Jack ou le Passeur se recycle comme avant (aucun refus nouveau) ; le saucisson du Doyen
+      reste refusé (« rapporterait trop »).
+
+Cœur de clan, caisses, Mila :
+- [ ] Cœur de clan chez le Bâtisseur : nom et badge Légendaire (or) ; prix inchangé (3 750 hérals pendant la bêta).
+- [ ] Caisse Gemme : un couteau 1 étoile annoncé « Peu commun » arrive Peu commun (vert) dans l'inventaire ; 2 étoiles
+      Épique, 3 étoiles Légendaire, 4 étoiles Unique. Pareil dans la caisse Événement. Un couteau trouvé dans un coffre
+      T7 reste Unique.
+- [ ] Caisse des quêtes : fragment vert annoncé Épique, bleu Légendaire (annoncé à tout le serveur), kit de fortune Rare,
+      kit standard Épique. Caisse de vote : le cœur de clan est annoncé Légendaire (annoncé à tout le serveur).
+- [ ] Mila rachète maintenant les combinaisons intégrales trouvées (plongée, arctique, hazmat : 25 hérals ; renforcées :
+      60) ; avant, elle les refusait.

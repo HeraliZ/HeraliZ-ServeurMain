@@ -13,8 +13,9 @@ preparer : serveur d'essai fait par outils/serveur_local.py <dossier> --banc (de
     normal (ou plat avec --plat) à graine fixe, distances du Ptero (vue 6, simulation 4, relevées le 01/11 ; le
     server.properties du dépôt dit 8 et 5 mais n'est envoyé qu'en installation complète), secrets vidés (Spartan sans
     jeton du launcher, LiteBans en base locale H2, lien Discord coupé), « Can't keep up » affichés, zombies du peuplement
-    aussi autour des bots, commandes des bots (outils/banc/commandes.txt). Le jar de Mohist (mohist-*.jar) est à poser
-    dans le dossier (Release « base-serveur »).
+    aussi autour des bots, commandes des bots (outils/banc/commandes.txt), pseudos des bots HzBot001 à HzBot200 sans mot
+    de passe dans AuthMe (UnrestrictedName, mis par serveur_local.py --banc ; vide dans le dépôt et sur le Ptero). Le jar
+    de Mohist (mohist-*.jar) est à poser dans le dossier (Release « base-serveur »).
 lancer :
   0. machine Java (01/11) : au premier démarrage, Mohist installe Forge puis SE RELANCE dans une autre machine Java par
      « java -jar mohist.jar », sans aucun réglage de la ligne de commande (premier banc : 11 Go demandés, 3996 Mo vus,
@@ -142,6 +143,10 @@ def preparer(a):
         sys.exit("serveur_local.py a échoué (fabrication faite ? python outils/construire.py)")
     if not list((d / "mods").glob("heraliz_banc-*.jar")):
         sys.exit("module banc absent de livraison/banc/ : le fabriquer (python outils/construire.py banc)")
+    # pseudos des bots sans mot de passe dans l'AuthMe de CE serveur d'essai seulement (19/11, serveur_local.py --banc)
+    authme = d / "plugins" / "AuthMe" / "config.yml"
+    if authme.exists() and "'hzbot001'" not in authme.read_text(encoding="utf-8", errors="replace"):
+        dire("ATTENTION : pseudos des bots absents de plugins/AuthMe/config.yml : AuthMe les gardera non connectés")
     shutil.copy2(SRV / "eula.txt", d / "eula.txt")   # EULA de Mojang acceptée par le propriétaire (fichier du dépôt)
     sp = d / "server.properties"
     monde = "dayz_map"
@@ -186,7 +191,11 @@ def preparer(a):
 # ---------------------------------------------------------------------------------------------------------- serveur
 
 class Serveur:
-    """Le serveur Mohist : console (entrée), journal (sortie) lu par un fil, attentes sur un motif."""
+    """Le serveur Mohist : console (entrée), journal (sortie) lu par un fil, attentes sur un motif. Repris par le démarrage
+    d'essai de la mise en ligne (outils/demarrage_essai.py : autre préfixe, rien avant « stop »)."""
+
+    PREFIXE = "[banc]"
+    AVANT_ARRET = ("bots retirer",)
 
     IMPORTANT = re.compile(r"\]: Done \(|Can't keep up|\[banc\]|\[bots\]|\[Diag\]|\[diag\]|\[zombies\] peuplement|Stopping|"
                            r"[/ ](ERROR|FATAL)\]|Exception|Caused by|Mohist|Loading libraries|Download|Prepar|\[matchs\] (arenes|instance)|"
@@ -203,11 +212,14 @@ class Serveur:
         self.affichees = 0
         self.fini = False   # tout le journal est lu (Java arrêté)
 
+    def dire(self, *a):
+        ecrire(self.PREFIXE + " " + " ".join(str(x) for x in a))
+
     def demarrer(self):
-        dire("démarrage :", " ".join(self.cmd))
+        self.dire("démarrage :", " ".join(self.cmd))
         if self.env and self.env.get("JDK_JAVA_OPTIONS"):
-            dire("JDK_JAVA_OPTIONS (reprises par toute machine Java lancée par « java », Mohist relancé compris) :",
-                 self.env["JDK_JAVA_OPTIONS"])
+            self.dire("JDK_JAVA_OPTIONS (reprises par toute machine Java lancée par « java », Mohist relancé compris) :",
+                      self.env["JDK_JAVA_OPTIONS"])
         self.debut = time.time()
         self.proc = subprocess.Popen(self.cmd, cwd=self.dossier, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT, env=self.env)
@@ -240,12 +252,12 @@ class Serveur:
     def commande(self, texte):
         if not self.vivant():
             return
-        dire("> " + texte)
+        self.dire("> " + texte)
         try:
             self.proc.stdin.write((texte + "\n").encode("utf-8"))
             self.proc.stdin.flush()
         except OSError as e:
-            dire("console fermée (%s)" % e)
+            self.dire("console fermée (%s)" % e)
 
     def attendre(self, motif, depuis=0, limite=60.0):
         """Première ligne (à partir de l'indice depuis) qui correspond au motif, ou None (délai, serveur arrêté)."""
@@ -272,13 +284,15 @@ class Serveur:
     def arreter(self, limite=240):
         if not self.vivant():
             return self.proc.returncode if self.proc else None
-        self.commande("bots retirer")
-        time.sleep(3)
+        for c in self.AVANT_ARRET:
+            self.commande(c)
+        if self.AVANT_ARRET:
+            time.sleep(3)
         self.commande("stop")
         try:
             self.proc.wait(limite)
         except subprocess.TimeoutExpired:
-            dire("le serveur ne s'arrête pas : arrêt forcé")
+            self.dire("le serveur ne s'arrête pas : arrêt forcé")
             self.proc.terminate()
             try:
                 self.proc.wait(30)

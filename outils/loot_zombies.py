@@ -237,10 +237,12 @@ ESTIMATIONS = {"heraliz_usure:kit_fortune": 40, "heraliz_usure:kit_standard": 10
 
 
 def cout_balle(aid):
-    """Coût de fabrication d'une balle (Table d'armurier : bocaux + ferraille, rachetés par Mila)."""
+    """Coût de fabrication d'une balle (Table d'armurier : bocaux + ferraille, rachetés par Mila). 19/11 (audit de
+    l'économie) : bocal de poudre au niveau de crafts.POUDRE (deux niveaux pour les munitions depuis le 28/10 ; avant :
+    crafts.NIVEAU, quatre niveaux, une balle Rare ou Épique comptée trop chère)."""
     import crafts
     r = RARETES["munitions"].get(aid, "commun")
-    bocal = C + "bocal_poudre" + crafts.NIVEAU[r]
+    bocal = C + "bocal_poudre" + crafts.POUDRE[r]
     v = crafts.BOCAUX[r] * M.RACHAT_VALEUR[RARETES["objets"].get(bocal, "peu_commun")] \
         + crafts.FERRAILLE[r] * M.RACHAT_VALEUR[RARETES["objets"].get(C + "ferraille", "peu_commun")]
     return v / crafts.PAQUET

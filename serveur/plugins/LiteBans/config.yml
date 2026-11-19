@@ -203,7 +203,7 @@ exempt:
   exempt_players: []
 
 geoip:
-  enable: true
+  enable: false
   # Anyone from these locations will not be able to join.
   # A full list of countries that can be blacklisted (fifth column: Country): https://www.geonames.org/countries/
   # Example:

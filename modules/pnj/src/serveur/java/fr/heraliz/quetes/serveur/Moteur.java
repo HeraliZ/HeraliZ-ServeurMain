@@ -474,6 +474,13 @@ final class Moteur {
                 int pris = prendre(p, e, a, voulu - a.progres);
                 a.progres += pris;
                 Donnees.sale(p.getUUID());
+                // 19/11 (audit des duplications, B3) : objets donnés = sortis du joueur : le joueur écrit sans eux d'abord, puis
+                // la progression (avant : progression sur le fil de fond sous 30 s, joueur à l'autosave ; un plantage entre les
+                // deux rendait les objets ET gardait la progression)
+                if (pris > 0) {
+                    Ponts.sauverJoueur(p);
+                    Donnees.ecrireMaintenant(p.getUUID());
+                }
                 if (a.progres < voulu) {
                     if (pris == 0) notif(p, Texte.cle("heraliz_quetes.notif.rien_a_donner", libelle(e)), 0xFF6B6B);
                     else notif(p, Texte.cle("heraliz_quetes.notif.donne", Texte.brut(a.progres), Texte.brut(voulu)), 0xE8C36A);
@@ -489,7 +496,13 @@ final class Moteur {
             }
             case "payer" -> {
                 long v = e.entier("herals", 0);
-                if (v <= 0 || Ponts.retirer(p.getUUID(), v, "quete:" + q.titre.francais())) return true;
+                if (v <= 0) return true;
+                if (Ponts.retirer(p.getUUID(), v, "quete:" + q.titre.francais())) {
+                    // 19/11 (audit des duplications, B3) : hérals sortis du compte écrits tout de suite, AVANT la progression
+                    // (écrite juste après par avancer) : un plantage ne rend plus les hérals avec l'étape payée
+                    Ponts.sauvegarderEconomie();
+                    return true;
+                }
                 notif(p, Texte.cle("heraliz_quetes.notif.pas_assez", Texte.brut(Ponts.nombre(v))), 0xFF6B6B);
                 return false;
             }
@@ -861,6 +874,29 @@ final class Moteur {
     /** L'étape se trouve dans les caisses ({@code "source": "caisses"}). */
     static boolean dansLesCaisses(Defs.Etape e) {
         return e.texte("source", "").equals("caisses");
+    }
+
+    /**
+     * 19/11 (audit) : au démarrage (premier tick, zones de HeraliZ Décors déjà lues), une étape « zone_danger » sans aucune
+     * zone de ce genre sur la carte ne peut pas être finie (la boîte noire de Varga : zone de radiation de Radio, posée dans
+     * les données du monde, data/heraliz_zones.json) : une ligne claire dans le journal du serveur pour le staff.
+     */
+    static void verifierZonesDanger() {
+        for (Defs.Pnj d : Catalogue.tous()) {
+            for (Defs.Quete q : d.suite) {
+                if (q.desactivee) continue;
+                for (Defs.Etape e : q.etapes) {
+                    String genre = e.texte("zone_danger", "");
+                    if (genre.isEmpty()) continue;
+                    int n = Ponts.nombreZones(genre);
+                    if (n > 0) continue;
+                    LOG.warn("[heraliz_quetes] QUÊTE IMPOSSIBLE : « {} » ({}) demande une zone dangereuse « {} » et {} : son étape « {} » "
+                                    + "ne peut pas être finie. Poser la zone dans data/heraliz_zones.json du monde, puis /recharger zones ; "
+                                    + "contrôle : /zones info.", q.titre.francais(), d.id, genre,
+                            n == 0 ? "la carte n'en a aucune" : "les zones de HeraliZ Décors sont introuvables", e.libelle.francais());
+                }
+            }
+        }
     }
 
     /** Chance (0 à 1) que ce conteneur donne l'objet de l'étape, selon son palier ; 0 sous « palier_min ». */

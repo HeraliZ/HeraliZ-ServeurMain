@@ -29,8 +29,6 @@ final class ObjetsARendre {
     }
 
     private static final String PERSISTE = "PlayerPersisted", CLE = "HeralizQuetesARendre";
-    /** Drapeau « en match » et marque du Coffre du ClashWar : clés de données partagées, lues sans dépendance. */
-    private static final String DRAPEAU_MATCH = "heralisz:en_match", MARQUE_COFFRE = "HeralizClashWarDepot";
     /** Joueurs connectés qui ont des objets à rendre (pour ne pas parcourir tout le monde toutes les 5 s). */
     private static final Set<UUID> EN_ATTENTE = new HashSet<>();
 
@@ -58,13 +56,11 @@ final class ObjetsARendre {
     /**
      * Le ClashWar tient l'inventaire de ce joueur (15/11) : en match (salle d'attente comprise), dans un monde de ses arènes,
      * ou inventaire mis de côté par son Coffre (marque posée au départ, retirée au retour ; elle couvre aussi la reconnexion
-     * après un plantage, avant que le Coffre soit rendu). Ce qui y serait livré serait effacé au retour.
+     * après un plantage, avant que le Coffre soit rendu). Ce qui y serait livré serait effacé au retour. 19/11 : la règle
+     * commune du noyau ({@code Matchs.inventaireRetenu}), la même pour toutes les attentes du serveur.
      */
     static boolean retenuParMatch(ServerPlayer p) {
-        if (fr.heraliz.noyau.api.Matchs.enMatch(p)) return true;
-        CompoundTag d = p.getPersistentData();
-        if (d.getBoolean(DRAPEAU_MATCH) || d.getCompound(PERSISTE).contains(MARQUE_COFFRE)) return true;
-        return "heraliz_clashwar".equals(p.level().dimension().location().getNamespace());
+        return fr.heraliz.noyau.api.Matchs.inventaireRetenu(p);
     }
 
     /** Rend ce qui tient maintenant ; le reste continue d'attendre. */
