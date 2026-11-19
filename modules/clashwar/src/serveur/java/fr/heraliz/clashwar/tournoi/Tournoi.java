@@ -13,6 +13,7 @@ import fr.heraliz.clashwar.tournoi.net.CwPaquets;
 import fr.heraliz.clashwar.tournoi.net.VueTableau;
 import fr.heraliz.clashwar.moteur.api.Annonces;
 import fr.heraliz.clashwar.moteur.api.Arenes;
+import fr.heraliz.clashwar.moteur.api.Carte;
 import fr.heraliz.clashwar.moteur.api.Coffre;
 import fr.heraliz.noyau.api.CombatTag;
 import fr.heraliz.clashwar.moteur.api.Equipement;
@@ -160,6 +161,8 @@ public final class Tournoi {
                 if (simulation) return;
                 // 15/11 : une equipe dont un inscrit a quitte le spawn est retiree (une fois par seconde, inscrits seulement)
                 if (ticksEtat % 20 == 0) surveillerSpawn();
+                // arenes du premier tour posees d'avance pendant les inscriptions (toutes les 10 s, en tache de fond)
+                if (ticksEtat % 200 == 100) preparerArenes(equipesInscrites());
                 long reste = finInscriptionMs - System.currentTimeMillis();
                 if (!rappel5 && reste <= 5 * 60_000L && reste > 60_000L) {
                     rappel5 = true;
@@ -598,7 +601,21 @@ public final class Tournoi {
             annuler("salle_indisponible");
             return;
         }
+        preparerArenes(provisoires.size());
         instanceSalle.quandPrete(this::entrerSalle);
+    }
+
+    /**
+     * Pose d'avance des arenes du premier tour (19/11, cartes de 90 a 220 blocs de cote) : autant d'instances de la carte
+     * du format que de matchs possibles (moitie des equipes, arrondie au-dessus). Tous les matchs d'un tour partent
+     * ensemble et les poses passent l'une apres l'autre (une quinzaine de secondes pour la carte du 4v4) : sans cela, les
+     * derniers matchs attendraient leur arene au-dela de {@code attente_arene_secondes} et seraient tranches au hasard.
+     * Les instances posees restent (registre des arenes) et servent aux editions suivantes.
+     */
+    private void preparerArenes(int equipes) {
+        int matchs = (equipes + 1) / 2;
+        if (simulation || matchs <= 0) return;
+        for (Carte c : Arenes.cartesDeType(format.typeCarte)) Arenes.preparer(c.id(), matchs);
     }
 
     /** Salle prete : chaque inscrit passe par le Coffre puis y est teleporte ; le tableau est tire. */

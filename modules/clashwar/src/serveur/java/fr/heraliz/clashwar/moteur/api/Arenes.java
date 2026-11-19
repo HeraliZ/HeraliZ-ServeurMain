@@ -51,6 +51,19 @@ public final class Arenes {
     }
 
     /**
+     * Pose d'avance, en tache de fond, des instances de cette carte pour qu'il y en ait au moins {@code nombre} (pretes, en
+     * pose ou occupees) : les matchs lances ensemble (un tour du tournoi) les trouvent pretes au lieu d'attendre leur pose.
+     * Meme file et meme budget par tick que les autres poses ; chaque instance est libre des qu'elle est posee. Rend le
+     * nombre de poses ajoutees (0 sans serveur).
+     */
+    public static int preparer(String carte, int nombre) {
+        MinecraftServer s = ServerLifecycleHooks.getCurrentServer();
+        if (s == null) return 0;
+        Services.Moteur m = Services.MOTEUR;
+        return m != null ? m.arenesPreparer(s, carte, nombre) : 0;
+    }
+
+    /**
      * Rend l'instance : nettoie les entites (objets au sol, grenades, corps, mobs), remet l'etat propre au mode (portes
      * zombies...) puis la marque libre. Sans effet si l'instance est deja libre.
      * <p>La remise en etat propre a un mode s'enregistre avec {@link #quandLiberee(Consumer)}.

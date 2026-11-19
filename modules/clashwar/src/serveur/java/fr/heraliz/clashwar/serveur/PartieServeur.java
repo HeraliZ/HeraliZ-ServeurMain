@@ -56,6 +56,11 @@ public final class PartieServeur implements fr.heraliz.clashwar.pont.Partie {
         }
 
         @Override
+        public int arenesPreparer(MinecraftServer s, String carte, int nombre) {
+            return ArenesService.preparer(s, carte, nombre);
+        }
+
+        @Override
         public void arenesLiberer(Instance instance) {
             ArenesService.liberer(instance);
         }

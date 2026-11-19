@@ -1,0 +1,178 @@
+{
+ "id": "clashwar_2v2_kombinat",
+ "nom_fr": "Cité du Kombinat",
+ "nom_en": "Kombinat estate",
+ "type": "clashwar_2v2",
+ "dimension": "heraliz_clashwar:arenes",
+ "taille": [
+  130,
+  28,
+  130
+ ],
+ "bornes": [
+  2,
+  0,
+  2,
+  127,
+  31,
+  127
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    62.5,
+    5.0,
+    6.5,
+    0.0
+   ],
+   [
+    66.5,
+    5.0,
+    6.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    67.5,
+    5.0,
+    123.5,
+    180.0
+   ],
+   [
+    63.5,
+    5.0,
+    123.5,
+    180.0
+   ]
+  ],
+  "barriere_a": [
+   [
+    58.0,
+    5.0,
+    3.0,
+    0.0
+   ],
+   [
+    71.0,
+    7.0,
+    9.0,
+    0.0
+   ]
+  ],
+  "barriere_b": [
+   [
+    58.0,
+    5.0,
+    120.0,
+    0.0
+   ],
+   [
+    71.0,
+    7.0,
+    126.0,
+    0.0
+   ]
+  ],
+  "zone_centre": [
+   [
+    65.0,
+    5.0,
+    65.0,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    65.0,
+    29.0,
+    2.5,
+    0.0
+   ],
+   [
+    65.0,
+    29.0,
+    127.5,
+    180.0
+   ]
+  ],
+  "bombe_a": [
+   [
+    112.5,
+    5.0,
+    119.5,
+    160.0
+   ]
+  ],
+  "site_a": [
+   [
+    112.5,
+    5.0,
+    119.5,
+    160.0
+   ]
+  ],
+  "bombe_b": [
+   [
+    14.5,
+    5.0,
+    107.5,
+    -160.0
+   ]
+  ],
+  "site_b": [
+   [
+    14.5,
+    5.0,
+    107.5,
+    -160.0
+   ]
+  ],
+  "charge": [
+   [
+    64.5,
+    5.0,
+    6.5,
+    0.0
+   ]
+  ]
+ },
+ "format": "2v2",
+ "joueurs_par_equipe": 2,
+ "theme": "cité soviétique",
+ "barrieres": {
+  "a": [
+   58,
+   5,
+   3,
+   71,
+   7,
+   9
+  ],
+  "b": [
+   58,
+   5,
+   120,
+   71,
+   7,
+   126
+  ]
+ },
+ "zone": {
+  "centre": [
+   65.0,
+   5,
+   65.0
+  ],
+  "rayon_depart": 92.0,
+  "rayon_min": 6.0
+ },
+ "symetrie": "centrale (rotation 180° autour du point x = 65, z = 65)",
+ "blocs": 76662,
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "Sites A (garages sud-est) et B (marché sud-ouest) du côté de spawn_b, pour le mode recherche et destruction (inactif aujourd'hui) : à déplacer librement dans generer_kombinat.py, la carte reste symétrique."
+ },
+ "generateur": "modules/clashwar/outils/cartes_clashwar/generer_kombinat.py"
+}

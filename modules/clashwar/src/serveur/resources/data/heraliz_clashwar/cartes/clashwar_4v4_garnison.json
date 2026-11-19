@@ -1,0 +1,202 @@
+{
+ "id": "clashwar_4v4_garnison",
+ "nom_fr": "Garnison",
+ "nom_en": "Garrison",
+ "type": "clashwar_4v4",
+ "dimension": "heraliz_clashwar:arenes",
+ "taille": [
+  220,
+  28,
+  220
+ ],
+ "bornes": [
+  2,
+  0,
+  2,
+  217,
+  31,
+  217
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    104.5,
+    5.0,
+    11.5,
+    0.0
+   ],
+   [
+    108.5,
+    5.0,
+    11.5,
+    0.0
+   ],
+   [
+    111.5,
+    5.0,
+    11.5,
+    0.0
+   ],
+   [
+    115.5,
+    5.0,
+    11.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    115.5,
+    5.0,
+    208.5,
+    180.0
+   ],
+   [
+    111.5,
+    5.0,
+    208.5,
+    180.0
+   ],
+   [
+    108.5,
+    5.0,
+    208.5,
+    180.0
+   ],
+   [
+    104.5,
+    5.0,
+    208.5,
+    180.0
+   ]
+  ],
+  "barriere_a": [
+   [
+    101.0,
+    5.0,
+    8.0,
+    0.0
+   ],
+   [
+    118.0,
+    7.0,
+    14.0,
+    0.0
+   ]
+  ],
+  "barriere_b": [
+   [
+    101.0,
+    5.0,
+    205.0,
+    0.0
+   ],
+   [
+    118.0,
+    7.0,
+    211.0,
+    0.0
+   ]
+  ],
+  "zone_centre": [
+   [
+    110.0,
+    5.0,
+    110.0,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    110.0,
+    29.0,
+    2.5,
+    0.0
+   ],
+   [
+    110.0,
+    29.0,
+    217.5,
+    180.0
+   ]
+  ],
+  "bombe_a": [
+   [
+    74.5,
+    5.0,
+    168.5,
+    160.0
+   ]
+  ],
+  "site_a": [
+   [
+    74.5,
+    5.0,
+    168.5,
+    160.0
+   ]
+  ],
+  "bombe_b": [
+   [
+    159.5,
+    5.0,
+    168.5,
+    -160.0
+   ]
+  ],
+  "site_b": [
+   [
+    159.5,
+    5.0,
+    168.5,
+    -160.0
+   ]
+  ],
+  "charge": [
+   [
+    110.0,
+    5.0,
+    11.5,
+    0.0
+   ]
+  ]
+ },
+ "format": "4v4",
+ "joueurs_par_equipe": 4,
+ "theme": "garnison et village",
+ "barrieres": {
+  "a": [
+   101,
+   5,
+   8,
+   118,
+   7,
+   14
+  ],
+  "b": [
+   101,
+   5,
+   205,
+   118,
+   7,
+   211
+  ]
+ },
+ "zone": {
+  "centre": [
+   110.0,
+   5,
+   110.0
+  ],
+  "rayon_depart": 155.0,
+  "rayon_min": 7.0
+ },
+ "symetrie": "centrale (rotation 180° autour du point x = 110, z = 110)",
+ "blocs": 177926,
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "Sites A (place de l'état-major, sud-ouest) et B (place d'armes, sud-est) du côté de spawn_b, pour le mode recherche et destruction (inactif aujourd'hui) : à déplacer librement dans generer_garnison.py."
+ },
+ "generateur": "modules/clashwar/outils/cartes_clashwar/generer_garnison.py"
+}

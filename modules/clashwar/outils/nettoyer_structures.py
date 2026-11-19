@@ -8,9 +8,10 @@ meubles devient de l'air DANS LE FICHIER.
                                                                        bloc absent (outils/verifier.py clashwar)
 
 En jeu, rien ne change : Structure.lire (module clashwar) posait déjà ces blocs en air, mais l'écrivait au journal à
-chaque démarrage (« structure lobby_clashwar : 14 bloc(s) inconnu(s) poses en air (cfm:wires, … ) »). Les fichiers
-lobby_clashwar et clashwar_1v1 à clashwar_4v4 ont été faits en jeu par le propriétaire avec une autre version des
-meubles ; les six grandes cartes sont écrites par cartes_clashwar/generer.py (blocs de Minecraft seulement).
+chaque démarrage (« structure lobby_clashwar : 14 bloc(s) inconnu(s) poses en air (cfm:wires, … ) »). Le fichier
+lobby_clashwar a été fait en jeu par le propriétaire avec une autre version des meubles ; les quatre cartes du tournoi
+(une par format) sont écrites par cartes_clashwar/generer_*.py, qui ne citent que des blocs existants (contrôle :
+cartes_clashwar/valider_xl.py).
 
 Ce que l'outil change, et rien d'autre :
 - chaque bloc dont l'état est un bloc absent pointe vers l'air de la palette (`minecraft:air`, ajouté à la fin de la

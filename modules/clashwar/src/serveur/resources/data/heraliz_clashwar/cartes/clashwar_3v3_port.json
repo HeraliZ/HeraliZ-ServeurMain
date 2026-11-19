@@ -1,0 +1,190 @@
+{
+ "id": "clashwar_3v3_port",
+ "nom_fr": "Port à sec",
+ "nom_en": "Dry harbour",
+ "type": "clashwar_3v3",
+ "dimension": "heraliz_clashwar:arenes",
+ "taille": [
+  170,
+  30,
+  170
+ ],
+ "bornes": [
+  2,
+  0,
+  2,
+  167,
+  33,
+  167
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    81.5,
+    5.0,
+    6.5,
+    0.0
+   ],
+   [
+    84.5,
+    5.0,
+    6.5,
+    0.0
+   ],
+   [
+    87.5,
+    5.0,
+    6.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    88.5,
+    5.0,
+    163.5,
+    180.0
+   ],
+   [
+    85.5,
+    5.0,
+    163.5,
+    180.0
+   ],
+   [
+    82.5,
+    5.0,
+    163.5,
+    180.0
+   ]
+  ],
+  "barriere_a": [
+   [
+    79.0,
+    5.0,
+    3.0,
+    0.0
+   ],
+   [
+    90.0,
+    7.0,
+    9.0,
+    0.0
+   ]
+  ],
+  "barriere_b": [
+   [
+    79.0,
+    5.0,
+    160.0,
+    0.0
+   ],
+   [
+    90.0,
+    7.0,
+    166.0,
+    0.0
+   ]
+  ],
+  "zone_centre": [
+   [
+    85.0,
+    5.0,
+    85.0,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    85.0,
+    30.0,
+    2.5,
+    0.0
+   ],
+   [
+    85.0,
+    30.0,
+    167.5,
+    180.0
+   ]
+  ],
+  "bombe_a": [
+   [
+    49.5,
+    5.0,
+    144.5,
+    160.0
+   ]
+  ],
+  "site_a": [
+   [
+    49.5,
+    5.0,
+    144.5,
+    160.0
+   ]
+  ],
+  "bombe_b": [
+   [
+    129.5,
+    5.0,
+    135.5,
+    -160.0
+   ]
+  ],
+  "site_b": [
+   [
+    129.5,
+    5.0,
+    135.5,
+    -160.0
+   ]
+  ],
+  "charge": [
+   [
+    84.5,
+    5.0,
+    6.5,
+    0.0
+   ]
+  ]
+ },
+ "format": "3v3",
+ "joueurs_par_equipe": 3,
+ "theme": "port asséché",
+ "barrieres": {
+  "a": [
+   79,
+   5,
+   3,
+   90,
+   7,
+   9
+  ],
+  "b": [
+   79,
+   5,
+   160,
+   90,
+   7,
+   166
+  ]
+ },
+ "zone": {
+  "centre": [
+   85.0,
+   5,
+   85.0
+  ],
+  "rayon_depart": 120.0,
+  "rayon_min": 6.0
+ },
+ "symetrie": "centrale (rotation 180° autour du point x = 85, z = 85)",
+ "blocs": 108488,
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "Sites A (entrepôt sud-ouest) et B (parc à conteneurs sud-est) du côté de spawn_b, pour le mode recherche et destruction (inactif aujourd'hui) : à déplacer librement dans generer_port.py."
+ },
+ "generateur": "modules/clashwar/outils/cartes_clashwar/generer_port.py"
+}

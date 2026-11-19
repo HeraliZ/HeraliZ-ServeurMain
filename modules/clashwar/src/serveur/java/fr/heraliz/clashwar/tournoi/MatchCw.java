@@ -103,7 +103,6 @@ public final class MatchCw extends Partie {
 
     static MatchCw creer(Tournoi tournoi, Tableau.Rencontre rencontre, Tableau.EquipeT ta, Tableau.EquipeT tb, Component nomTour) {
         List<Carte> cartes = Arenes.cartesDeType(tournoi.format.typeCarte);
-        if (cartes.isEmpty()) cartes = Arenes.cartesDeType(Carte.TYPE_CLASHWAR_RD);
         Carte c = cartes.isEmpty() ? null : cartes.get(tournoi.rnd.nextInt(cartes.size()));
         if (c == null) HeralizClashWar.LOG.warn("[clashwar] aucune carte de type {}", tournoi.format.typeCarte);
         Equipe a = new Equipe("a", ta.libelle(), ta.couleur);
@@ -176,6 +175,14 @@ public final class MatchCw extends Partie {
     /** Libellé « [A] contre [B] » (tableau, chat). */
     Component contre() {
         return Component.translatable("clashwar.annonce.contre", ta.libelle(), tb.libelle());
+    }
+
+    /**
+     * Nom de la carte du match, traduit chez le joueur (clé {@code clashwar.carte.<id>} ; à défaut, nom français du JSON
+     * de la carte).
+     */
+    private Component nomCarte() {
+        return carte == null ? Component.empty() : Component.translatableWithFallback("clashwar.carte." + carte.id(), carte.nomFr());
     }
 
     // ================================================================== déroulé
@@ -272,8 +279,9 @@ public final class MatchCw extends Partie {
         rencontre.vivantsA = rencontre.vivantsB = 0;
         rencontre.totalA = rencontre.totalB = CwConfig.get().manchesGagnantes;
         tournoi.diffuserRencontre(rencontre);
-        Annonces.grande(joueursEnLigne(), new Annonces.Annonce(nomTour, contre(), Tournois.ACCENT, CwSons.id(CwSons.APPEL), 60,
-                Annonces.Style.NORMALE));
+        Annonces.grande(joueursEnLigne(), new Annonces.Annonce(nomTour,
+                Component.translatableWithFallback("clashwar.annonce.appel.sous", "%s · %s", contre(), nomCarte()), Tournois.ACCENT,
+                CwSons.id(CwSons.APPEL), 60, Annonces.Style.NORMALE));
         tournoi.bandeauSalle();
         debutManche();
     }
@@ -345,9 +353,9 @@ public final class MatchCw extends Partie {
         if (defaut != null && kits.remove(defaut)) kits.add(0, defaut);
         int s = CwConfig.get().choixSecondes;
         bandeau();
-        // ligne sous le titre de l'écran de choix : « Quarts de finale · manche 4 sur 5 »
-        Component sous = Component.translatableWithFallback("clashwar.choix.sous_titre", "%s · manche %s sur %s", nomTour, manche,
-                CwConfig.get().manchesGagnantes * 2 - 1);
+        // ligne sous le titre de l'écran de choix : « Quarts de finale · Garnison · manche 4 sur 5 »
+        Component sous = Component.translatableWithFallback("clashwar.choix.sous_titre", "%s · %s · manche %s sur %s", nomTour, nomCarte(),
+                manche, CwConfig.get().manchesGagnantes * 2 - 1);
         ChoixClasse.ouvrir(this, joueurs, kits, CwConfig.get().limites, s, sous, this::finChoix);
     }
 

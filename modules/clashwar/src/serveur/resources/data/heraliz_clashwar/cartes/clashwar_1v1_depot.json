@@ -1,0 +1,166 @@
+{
+ "id": "clashwar_1v1_depot",
+ "nom_fr": "Dépôt des locomotives",
+ "nom_en": "Locomotive depot",
+ "type": "clashwar_1v1",
+ "dimension": "heraliz_clashwar:arenes",
+ "taille": [
+  90,
+  26,
+  90
+ ],
+ "bornes": [
+  2,
+  0,
+  2,
+  87,
+  29,
+  87
+ ],
+ "points": {
+  "spawn_a": [
+   [
+    44.5,
+    5.0,
+    5.5,
+    0.0
+   ]
+  ],
+  "spawn_b": [
+   [
+    45.5,
+    5.0,
+    84.5,
+    180.0
+   ]
+  ],
+  "barriere_a": [
+   [
+    39.0,
+    5.0,
+    3.0,
+    0.0
+   ],
+   [
+    50.0,
+    7.0,
+    7.0,
+    0.0
+   ]
+  ],
+  "barriere_b": [
+   [
+    39.0,
+    5.0,
+    82.0,
+    0.0
+   ],
+   [
+    50.0,
+    7.0,
+    86.0,
+    0.0
+   ]
+  ],
+  "zone_centre": [
+   [
+    45.0,
+    5.0,
+    45.0,
+    0.0
+   ]
+  ],
+  "spectateur": [
+   [
+    45.0,
+    24.0,
+    2.5,
+    0.0
+   ],
+   [
+    45.0,
+    24.0,
+    87.5,
+    180.0
+   ]
+  ],
+  "bombe_a": [
+   [
+    14.5,
+    5.0,
+    67.5,
+    160.0
+   ]
+  ],
+  "site_a": [
+   [
+    14.5,
+    5.0,
+    67.5,
+    160.0
+   ]
+  ],
+  "bombe_b": [
+   [
+    70.5,
+    5.0,
+    51.5,
+    -160.0
+   ]
+  ],
+  "site_b": [
+   [
+    70.5,
+    5.0,
+    51.5,
+    -160.0
+   ]
+  ],
+  "charge": [
+   [
+    44.5,
+    5.0,
+    5.5,
+    0.0
+   ]
+  ]
+ },
+ "format": "1v1",
+ "joueurs_par_equipe": 1,
+ "theme": "dépôt ferroviaire",
+ "barrieres": {
+  "a": [
+   39,
+   5,
+   3,
+   50,
+   7,
+   7
+  ],
+  "b": [
+   39,
+   5,
+   82,
+   50,
+   7,
+   86
+  ]
+ },
+ "zone": {
+  "centre": [
+   45.0,
+   5,
+   45.0
+  ],
+  "rayon_depart": 64.0,
+  "rayon_min": 4.0
+ },
+ "symetrie": "centrale (rotation 180° autour du point x = 45, z = 45)",
+ "blocs": 29598,
+ "recherche_destruction": {
+  "attaquants": "a",
+  "defenseurs": "b",
+  "note": "Sites A (remise sud-ouest) et B (château d'eau sud-est) du côté de spawn_b, pour le mode recherche et destruction (inactif aujourd'hui) : à déplacer librement dans generer_depot.py."
+ },
+ "generateur": "modules/clashwar/outils/cartes_clashwar/generer_depot.py"
+}

@@ -21,8 +21,8 @@ import java.util.Map;
  * Metadonnees d'une carte de match, lues dans {@code data/heraliz_clashwar/cartes/<id>.json} (la structure est
  * {@code data/heraliz_clashwar/structures/<id>.nbt}). Format (MATCHS_SPEC §1.5) :
  * <pre>
- * {"id": "clashwar_2v2", "nom_fr": "Entrepot", "nom_en": "Warehouse", "type": "clashwar_2v2",
- *  "dimension": "heraliz_clashwar:arenes", "taille": [52, 24, 52], "bornes": [0, 0, 0, 51, 23, 51],
+ * {"id": "clashwar_2v2_kombinat", "nom_fr": "Cité du Kombinat", "nom_en": "Kombinat estate", "type": "clashwar_2v2",
+ *  "dimension": "heraliz_clashwar:arenes", "taille": [130, 28, 130], "bornes": [2, 0, 2, 127, 31, 127],
  *  "points": {"spawn_a": [[4, 1, 26, -90], ...], "spawn_b": [...], "spectateur": [[26, 12, 26]]},
  *  ... champs propres au mode ...}
  * </pre>
@@ -45,8 +45,6 @@ public record Carte(String id, String nomFr, String nomEn, String type, Resource
     public static final String TYPE_LOBBY_CLASHWAR = "lobby_clashwar";
     public static final String TYPE_CLASHWAR_1V1 = "clashwar_1v1", TYPE_CLASHWAR_2V2 = "clashwar_2v2",
             TYPE_CLASHWAR_3V3 = "clashwar_3v3", TYPE_CLASHWAR_4V4 = "clashwar_4v4";
-    /** Grandes cartes de recherche et destruction du ClashWar, pour tous les formats (passent avant celles du format). */
-    public static final String TYPE_CLASHWAR_RD = "clashwar_rd";
     public static final String TYPE_DUEL = "duel";
 
     /** Points relatifs de ce nom (liste vide si absent). */

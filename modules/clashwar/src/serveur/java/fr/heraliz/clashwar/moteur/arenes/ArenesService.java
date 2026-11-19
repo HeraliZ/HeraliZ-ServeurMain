@@ -115,13 +115,66 @@ public final class ArenesService {
                 return i;
             }
         }
-        // instance encore en pose d'avance (demarrage) : on la prend, elle sera prete avant une neuve
+        // instance encore en pose d'avance (demarrage, inscriptions du tournoi) : on la prend, elle sera prete avant une neuve
         for (Instance i : Arenes.instances()) {
             if (i.carte().id().equals(carteId) && PRECHAUFFAGE.equals(i.occupant()) && utilisable(s, i)) {
                 i.occuper("?");
                 return i;
             }
         }
+        Instance inst = nouvelle(s, c, niveau);
+        if (inst != null) inst.occuper("?");
+        return inst;
+    }
+
+    /**
+     * Pose d'avance, en tache de fond, des instances de cette carte pour qu'il y en ait au moins {@code nombre} (pretes,
+     * en pose ou occupees) : le tournoi du ClashWar lance tous les matchs d'un tour ensemble, une instance par match ; une
+     * grande carte (4v4 : 220 x 220, environ 200 000 blocs avec ses murs invisibles) met une quinzaine de secondes a se
+     * poser, et ces poses passent l'une apres l'autre. Meme file et meme budget par tick que les autres poses (jamais de
+     * gel) ; chaque instance est rendue libre des qu'elle est posee. Au plus {@link #PREPARATION_MAX} par carte. Rend le
+     * nombre de poses ajoutees.
+     */
+    public static int preparer(MinecraftServer s, String carteId, int nombre) {
+        Carte c = Arenes.carte(carteId);
+        if (c == null) return 0;
+        ServerLevel niveau = s.getLevel(c.dimension());
+        if (niveau == null) return 0;
+        int voulu = Math.min(nombre, PREPARATION_MAX), existantes = 0;
+        for (Instance i : Arenes.instances()) {
+            if (i.carte().id().equals(carteId) && utilisable(s, i)) existantes++;
+        }
+        if (existantes >= voulu) return 0;
+        BordureArenes.imposer(niveau);
+        int ajout = 0;
+        while (existantes + ajout < voulu) {
+            Instance i = nouvelle(s, c, niveau);
+            if (i == null) break;
+            enAvance(i);
+            ajout++;
+        }
+        if (ajout > 0) HeralizClashWar.LOG.info("[matchs] arenes : {} instance(s) de {} posee(s) d'avance ({} voulues)", ajout, carteId, voulu);
+        return ajout;
+    }
+
+    /** Instances au plus posees d'avance par {@link #preparer} pour une carte (32 equipes = 16 matchs au premier tour). */
+    private static final int PREPARATION_MAX = 32;
+
+    /** Instance posee d'avance : occupee (« prechauffage ») pendant sa pose, libre des qu'elle est prete. */
+    private static void enAvance(Instance i) {
+        i.occuper(PRECHAUFFAGE);
+        i.quandPrete(() -> {
+            if (PRECHAUFFAGE.equals(i.occupant())) i.occuper(null);
+        });
+    }
+
+    /**
+     * Nouvelle instance de la carte dans la case suivante de la grille, mise dans la file de pose (libre, pas encore
+     * prete), ou null si sa structure manque ou si la case sortirait de la bordure.
+     */
+    @Nullable
+    private static Instance nouvelle(MinecraftServer s, Carte c, ServerLevel niveau) {
+        String carteId = c.id();
         Structure st = structure(s, carteId);
         if (st == null) return null;
         RegistreArenes reg = RegistreArenes.de(s);
@@ -144,7 +197,6 @@ public final class ArenesService {
         reg.setDirty();
         Instance inst = new Instance(c, niveau, e.origine, index);
         Arenes.inscrire(inst);
-        inst.occuper("?");
         FILE.addLast(new Pose(inst, st, e));
         HeralizClashWar.LOG.info("[matchs] nouvelle instance {} en {} : pose de {} blocs", inst.id(), e.origine.toShortString(), st.blocs.size());
         return inst;
@@ -331,10 +383,7 @@ public final class ArenesService {
             if (existe) continue;
             Instance i = reserver(s, c.id());
             if (i == null) continue;
-            i.occuper(PRECHAUFFAGE);
-            i.quandPrete(() -> {
-                if (PRECHAUFFAGE.equals(i.occupant())) i.occuper(null);
-            });
+            enAvance(i);
             n++;
         }
         if (n > 0) HeralizClashWar.LOG.info("[matchs] arenes : {} carte(s) posee(s) d'avance en tache de fond", n);

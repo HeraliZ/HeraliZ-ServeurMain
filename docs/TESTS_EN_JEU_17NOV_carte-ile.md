@@ -380,3 +380,36 @@ en jeu** (rendus hors jeu seulement).
 - [ ] Caisse Événement, aperçu : Or craquelé et Dichroïque 0,59 %, Vipère et Rouages 1,13 %, Prisme 1 % ; les autres
       camos gardent leurs chances ; hérals 28,2 % en tout au lieu de 32,6 % (jamais moins de 25 %).
 - [ ] FPS pareils qu'avec le Diamant ou le Séraphin : camo en main, et plusieurs joueurs avec le Prisme autour.
+
+## 19. Nouvelles cartes du ClashWar (19/11)
+
+Une carte par format, tirée à chaque match : 1v1 « Dépôt des locomotives » (90 × 90), 2v2 « Cité du Kombinat »
+(130 × 130, la carte d'essai validée par le propriétaire le 19/11), 3v3 « Port à sec » (170 × 170), 4v4 « Garnison »
+(220 × 220). Les anciennes (Check-point, Dépôt de fret, Carrière abandonnée, Berezka) et les six grandes cartes de
+recherche et destruction sont retirées. ClashWar 1.3.0 : tout le monde doit avoir la nouvelle version (le launcher la
+donne). Outils (fabrication des cartes, contrôles, images) : `modules/clashwar/outils/cartes_clashwar/`. **Rien n'a été
+testé en jeu** : les cartes ont été contrôlées par calcul (blocs qui existent, rien qui flotte, lignes de vue, abris,
+endroits atteignables) et en images seulement.
+- [ ] Chaque format joue bien sa nouvelle carte ; les textures sont celles du pack imposé, aucun bloc violet et noir,
+      aucun trou.
+- [ ] Entrée dans l'arène : l'annonce dit « [A] contre [B] · Garnison » (nom de la carte) ; écran du choix de classe :
+      « Quarts de finale · Garnison · manche 1 sur 5 » ; en français, anglais et russe.
+- [ ] Départ : chaque équipe dans son abri (vestiaire, hangar, douane, hangar des véhicules), retenue par la barrière
+      pendant le choix et la préparation, puis libre ; les deux équipes ne se voient pas au départ.
+- [ ] Les deux moitiés de chaque carte sont les mêmes (tournées d'un demi-tour) avec un autre aspect : changer de côté
+      aux manches 3 et 5 ne donne aucun avantage. Trois chemins vers le centre sur chaque carte.
+- [ ] On ne sort pas de la carte : enceinte de béton tout autour (plus haute là où l'on grimpe près du bord, par
+      exemple les buttes du dépôt de munitions de la Garnison), murs invisibles derrière. Essayer de sauter par-dessus
+      depuis les endroits hauts près du bord.
+- [ ] Les hauteurs s'atteignent à pied : passerelle et château d'eau (dépôt) ; étages 1 et 2 des barres (Kombinat) ;
+      grue, cargo échoué, mezzanine de l'entrepôt (port) ; étages des casernes, tours de guet, buttes, galerie et balcon
+      du club, clocher de l'église (Garnison). Les toits fermés (barres, hangars, château d'eau…) ne s'atteignent pas.
+- [ ] Mort subite : la zone se resserre jusqu'au centre (plaque tournante, patinoire, pont central, monument aux
+      morts) ; depuis un coin on a le temps d'y arriver.
+- [ ] Premier démarrage après la mise à jour : les 4 cartes et la salle se posent d'avance en tâche de fond (moins
+      d'une minute ; les six grandes cartes ne se posent plus), sans gel du serveur (pas de « Can't keep up »).
+- [ ] Pendant les inscriptions, les arènes du premier tour se posent d'avance, une par match possible (environ 15 s
+      chacune pour la Garnison) ; journal : « [matchs] arenes : … posee(s) d'avance ». Au lancement du tour, aucun match
+      « arène indisponible ». À essayer avec beaucoup d'équipes en 4v4 (16 matchs : environ 4 minutes de pose pendant les
+      10 minutes d'inscriptions).
+- [ ] FPS et TPS sur la Garnison à 8 joueurs : vue lointaine depuis le clocher et les étages, arbres, décors.

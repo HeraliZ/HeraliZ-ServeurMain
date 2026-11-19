@@ -34,6 +34,8 @@ public final class Services {
         @Nullable
         Instance arenesReserver(MinecraftServer s, String carte);
 
+        int arenesPreparer(MinecraftServer s, String carte, int nombre);
+
         void arenesLiberer(Instance instance);
 
         void arenesQuandLiberee(Consumer<Instance> ecouteur);
