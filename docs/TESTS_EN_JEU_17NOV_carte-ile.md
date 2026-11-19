@@ -413,3 +413,14 @@ endroits atteignables) et en images seulement.
       « arène indisponible ». À essayer avec beaucoup d'équipes en 4v4 (16 matchs : environ 4 minutes de pose pendant les
       10 minutes d'inscriptions).
 - [ ] FPS et TPS sur la Garnison à 8 joueurs : vue lointaine depuis le clocher et les étages, arbres, décors.
+
+## 20. L'eau ne gèle plus, la neige ne s'entasse plus (19/11)
+
+Minecraft gelait l'eau des zones froides (arctique) petit à petit, et posait de la neige au sol quand il neigeait. C'est
+coupé par le noyau (`[monde] gel_eau` et `neige_au_sol` de `heraliz_noyau-server.toml`, à `false`).
+- [ ] Après la mise à jour, remettre la glace déjà formée en eau : WorldEdit, sélection autour des plans d'eau gelés de
+      l'arctique, `//replace ice water` (`//undo` si une glace posée exprès est touchée).
+- [ ] Un moment plus tard (rester près de l'eau quelques minutes) : l'eau de l'arctique reste de l'eau.
+- [ ] Quand il neige : la neige tombe à l'écran mais aucune nouvelle couche n'apparaît au sol.
+- [ ] `/diag etat`, ligne « Minecraft allégé, étape 2 » : « contrôles de gel sautés » et « de neige au sol » montent
+      (preuve que le blocage est en place).
