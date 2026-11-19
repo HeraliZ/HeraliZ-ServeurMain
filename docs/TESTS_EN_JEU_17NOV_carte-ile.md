@@ -458,3 +458,10 @@ change de carte : la recherche repart alors toute seule). **Rien de tout cela n'
       la carte disparu (bloc relu au chargement du tronçon) », ou avec `/carte recycleurs chercher`.
 - [ ] Redémarrage suivant : la recherche ne repart pas (journal : « N recycleur(s) de la carte sur la carte du monde
       (recherche automatique déjà faite) »).
+
+## 22. Fouille des caisses : seulement le palier (19/11)
+
+- [ ] Ouvrir une caisse de loot (T1 à T6, salle à carte) : en haut à gauche, plus de nom, seulement le badge « T3 »… de
+      la couleur du palier.
+- [ ] Coffre T7 : seulement le badge « T7 » ; à droite, le compteur « à identifier » ne change pas.
+- [ ] Caisse de largage, planque, coffre VIP, coffre du clan : leur nom reste (ils n'ont pas de palier).

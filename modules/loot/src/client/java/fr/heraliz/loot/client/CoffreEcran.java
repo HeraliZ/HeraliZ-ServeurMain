@@ -141,11 +141,15 @@ public class CoffreEcran extends AbstractContainerScreen<CoffreMenu> {
         int n = menu.donnees.get(CoffreMenu.D_RESTANTS);
         String droite = n > 0 ? I18n.get("heraliz_loot.coffre.a_identifier", n) : I18n.get("heraliz_loot.coffre.tout_identifie");
         int wd = font.width(droite);
-        // nom coupé pour laisser la place au badge et au compteur de droite (noms longs en russe)
-        String nom = BadgePalier.couper(font, title.getString().replaceFirst("^\\[T\\d] ", ""), imageWidth - 16 - wd - (menu.badge ? BadgePalier.largeur(font, 7) + 8 : 4));
-        g.drawString(font, nom, 8, 7, TITRE, false);
-        g.fill(8, 17, 8 + font.width(nom), 18, FILET);
-        if (menu.badge) BadgePalier.dessiner(g, font, 7, 8 + font.width(nom) + 4, 6);   // pas de palier sur une caisse de largage
+        if (menu.badge) {
+            // coffre T7 : seulement son palier, sans son nom (19/11, demande du propriétaire)
+            BadgePalier.dessiner(g, font, 7, 8, 6);
+        } else {
+            // caisse de largage (pas de palier) : son nom, coupé pour laisser la place au compteur de droite (russe)
+            String nom = BadgePalier.couper(font, title.getString().replaceFirst("^\\[T\\d] ", ""), imageWidth - 16 - wd - 4);
+            g.drawString(font, nom, 8, 7, TITRE, false);
+            g.fill(8, 17, 8 + font.width(nom), 18, FILET);
+        }
         g.drawString(font, droite, imageWidth - 8 - wd, 7, TEXTE, false);
         g.drawString(font, playerInventoryTitle, 8, inventoryLabelY, TEXTE, false);
     }

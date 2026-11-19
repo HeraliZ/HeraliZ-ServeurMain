@@ -9,8 +9,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 
 /**
- * Fouille d'un conteneur de loot T1-T6 (et des salles à carte), avec le badge du palier juste après le nom
- * ({@link BadgePalier}). Depuis le 25/10, aussi tous les autres coffres de base (planque, coffre VIP, coffre du clan,
+ * Fouille d'un conteneur de loot T1-T6 (et des salles à carte) : en haut, seulement le badge de son palier
+ * ({@link BadgePalier}), sans le nom du conteneur (19/11, demande du propriétaire ; avant : le nom puis le badge). Depuis le 25/10, aussi tous les autres coffres de base (planque, coffre VIP, coffre du clan,
  * inspection…), palier 0 : sans badge. Ouvert à la place de l'écran de coffre vanilla par
  * {@link ClientLoot.Jeu#titreConteneur}.
  * <p>14/11 (aperçu validé par le propriétaire) : en verre comme l'inventaire ({@link EcranConteneurVerre} du noyau) :
@@ -27,10 +27,24 @@ public class EcranConteneur extends EcranConteneurVerre<ChestMenu> {
         this.palier = palier;
     }
 
-    /** Badge du palier juste après le nom (rien pour un coffre de base : palier 0). */
+    /** Conteneur de loot (palier 1 à 7) : pas de nom, seulement son palier (19/11, demande du propriétaire). */
+    private boolean aPalier() {
+        return palier >= 1 && palier <= 7;
+    }
+
+    /** Un conteneur de loot n'écrit pas son nom ; un coffre de base (palier 0 : planque, coffre VIP, du clan…) le garde. */
+    @Override
+    protected String nom() {
+        return aPalier() ? "" : super.nom();
+    }
+
+    /**
+     * Badge du palier à la place du nom, au bord gauche du panneau (x arrive après un nom vide et l'écart de 6 points qui
+     * le suit) ; rien pour un coffre de base.
+     */
     @Override
     protected void apresNom(GuiGraphics g, float x, float cy) {
-        if (palier >= 1 && palier <= 7) BadgePalier.dessiner(g, font, palier, Math.round(x), Math.round(cy - 4f));
+        if (aPalier()) BadgePalier.dessiner(g, font, palier, Math.round(x - 6f), Math.round(cy - 4f));
     }
 
     @Override
