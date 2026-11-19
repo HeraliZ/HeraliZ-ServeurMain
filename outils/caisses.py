@@ -49,6 +49,10 @@ NOM_GRADE = {"rescape": "Rescapé", "traqueur": "Traqueur", "roi_de_la_zone": "R
 
 # ---------------------------------------------------------------- caisses écrites par l'outil
 # Poids sur 1 000 environ. Chaque ligne : (genre, réglages, poids, rareté).
+# 19/11 (audit de l'économie) : la rareté annoncée d'un objet (animation, titre, annonce au serveur) est celle de l'objet
+# lui-même (raretes.json, couleur dans l'inventaire) : fragments de cartes vert Épique, bleu Légendaire, rouge Unique,
+# kits de fortune Rare, standard Épique, d'armurier Légendaire, cœur de clan Légendaire (avant : un cran plus bas).
+# Contrôlé par --verifier (verifier_raretes).
 #   herals N | soins <rareté HeraliZ> N | composants <rareté> N | fragments <couleur> | kit <id> N | capsules <id> N
 #   cle <caisse> N | grade <id> <jours>
 CAISSES = {
@@ -58,8 +62,9 @@ CAISSES = {
         ("soins", "commun", 1, 110, "common"), ("soins", "peu_commun", 1, 80, "uncommon"),
         ("soins", "rare", 1, 45, "rare"), ("soins", "epique", 1, 12, "epic"),
         ("composants", "peu_commun", 3, 130, "uncommon"), ("composants", "rare", 2, 70, "rare"),
-        ("fragments", "green", 30, "rare"), ("fragments", "blue", 10, "epic"), ("fragments", "red", 2, "legendary"),
-        ("kit", "kit_fortune", 1, 55, "uncommon"), ("kit", "kit_standard", 1, 25, "rare"), ("kit", "kit_armurier", 1, 6, "epic"),
+        ("fragments", "green", 30, "epic"), ("fragments", "blue", 10, "legendary"), ("fragments", "red", 2, "mythic"),
+        ("kit", "kit_fortune", 1, 55, "rare"), ("kit", "kit_standard", 1, 25, "epic"),
+        ("kit", "kit_armurier", 1, 6, "legendary"),
         ("capsules", "jeton_5", 2, 45, "uncommon"),
         ("cle", "quete", 1, 20, "rare"),
         ("grade", "rescape", 7, 1, "mythic"),
@@ -69,8 +74,8 @@ CAISSES = {
         ("herals", 50, 260, "common"), ("herals", 100, 140, "uncommon"), ("herals", 250, 40, "rare"),
         ("soins", "commun", 2, 150, "common"), ("soins", "peu_commun", 1, 70, "uncommon"),
         ("composants", "commun", 3, 120, "common"), ("composants", "peu_commun", 2, 70, "uncommon"),
-        ("kit", "kit_fortune", 1, 60, "uncommon"), ("capsules", "jeton_1", 3, 70, "common"),
-        ("fragments", "green", 12, "rare"),
+        ("kit", "kit_fortune", 1, 60, "rare"), ("capsules", "jeton_1", 3, 70, "common"),
+        ("fragments", "green", 12, "epic"),
         ("grade", "rescape", 7, 1, "mythic"),
     ],
     # Clé d'Événement (coffres T7, boss, events)
@@ -78,8 +83,8 @@ CAISSES = {
         ("herals", 500, 170, "uncommon"), ("herals", 1000, 90, "rare"), ("herals", 2500, 25, "epic"),
         ("composants", "rare", 3, 120, "rare"), ("composants", "epique", 2, 70, "epic"), ("composants", "legendaire", 1, 20, "legendary"),
         ("soins", "rare", 2, 80, "rare"), ("soins", "epique", 1, 40, "epic"),
-        ("fragments", "blue", 45, "epic"), ("fragments", "red", 15, "legendary"),
-        ("kit", "kit_standard", 1, 60, "rare"), ("kit", "kit_armurier", 1, 30, "epic"),
+        ("fragments", "blue", 45, "legendary"), ("fragments", "red", 15, "mythic"),
+        ("kit", "kit_standard", 1, 60, "epic"), ("kit", "kit_armurier", 1, 30, "legendary"),
         ("capsules", "jeton_10", 2, 60, "rare"),
         ("cle", "event", 1, 25, "epic"),
         ("grade", "rescape", 7, 8, "legendary"), ("grade", "traqueur", 7, 2, "mythic"),
@@ -90,8 +95,8 @@ BOSS = [
     ("herals", 300, 160, "uncommon"), ("herals", 800, 80, "rare"), ("herals", 1500, 25, "epic"),
     ("soins", "rare", 2, 90, "rare"), ("soins", "epique", 1, 35, "epic"),
     ("composants", "rare", 3, 110, "rare"), ("composants", "epique", 2, 55, "epic"), ("composants", "legendaire", 1, 12, "legendary"),
-    ("fragments", "blue", 30, "epic"), ("fragments", "red", 8, "legendary"),
-    ("kit", "kit_standard", 1, 60, "rare"), ("kit", "kit_armurier", 1, 25, "epic"),
+    ("fragments", "blue", 30, "legendary"), ("fragments", "red", 8, "mythic"),
+    ("kit", "kit_standard", 1, 60, "epic"), ("kit", "kit_armurier", 1, 25, "legendary"),
     ("capsules", "jeton_10", 1, 50, "rare"),
     ("grade", "rescape", 7, 3, "mythic"),
 ]
@@ -141,8 +146,9 @@ CAISSES_BETA = {
         ("stickers", "papier", 9, "common"), ("stickers", "holo", 5, "rare"), ("stickers", "foil", 3, "epic"),
         ("stickers", "gold", 1.5, "legendary"), ("stattrak", 2, "epic"),
     ],
-    # tous les couteaux : 1 étoile Peu commun, 2 Épique, 3 Légendaire, 4 Mythique (0,12 % chacun ; ils restent Unique
-    # sur leur icône, raretes.json)
+    # tous les couteaux : 1 étoile Peu commun, 2 Épique, 3 Légendaire, 4 Mythique (0,12 % chacun). 19/11 (audit de
+    # l'économie) : la caisse inscrit cette rareté sur le couteau (inscrire_rarete) ; avant, il restait Unique sur son
+    # icône (raretes.json) et le joueur voyait deux raretés pour le même objet
     "gemme": [
         ("couteaux", 1, None, "uncommon"), ("couteaux", 2, 0.8, "epic"), ("couteaux", 3, 0.5, "legendary"),
         ("couteaux", 4, 0.12, "mythic"),
@@ -161,7 +167,7 @@ CAISSES_BETA = {
         ("herals", 30, 22, "common"), ("herals", 50, 14, "common"), ("herals", 100, 6, "uncommon"),
         ("grade", "rescape", 1, 2.5, "rare"), ("grade", "traqueur", 1, 1.5, "epic"), ("grade", "roi_de_la_zone", 1, 1, "legendary"),
         ("cle", "camo", 1, 5, "rare"), ("cle", "spectacle", 1, 3, "epic"), ("cle", "gemme", 1, 1, "legendary"),
-        ("coeur", 3, "epic"),
+        ("coeur", 3, "legendary"),
         ("finishers", "vote", "commun", 14, "rare"), ("finishers", "vote", "rare", 3, "legendary"),
         ("soins", "commun", 2, 8, "common"), ("capsules", "jeton_1", 3, 8, "common"), ("composants", "peu_commun", 2, 8, "uncommon"),
     ],
@@ -172,8 +178,8 @@ CAISSES_BETA = {
         ("finishers", "quete", "commun", 14, "rare"), ("finishers", "quete", "rare", 4, "legendary"),
         ("soins", "peu_commun", 1, 7, "uncommon"), ("soins", "rare", 1, 4, "rare"),
         ("composants", "peu_commun", 3, 8, "uncommon"), ("composants", "rare", 2, 5, "rare"),
-        ("fragments", "green", 4, "rare"), ("fragments", "blue", 1.5, "epic"),
-        ("kit", "kit_fortune", 1, 3, "uncommon"), ("kit", "kit_standard", 1, 1.5, "rare"),
+        ("fragments", "green", 4, "epic"), ("fragments", "blue", 1.5, "legendary"),
+        ("kit", "kit_fortune", 1, 3, "rare"), ("kit", "kit_standard", 1, 1.5, "epic"),
         ("capsules", "jeton_5", 2, 5, "uncommon"), ("cle", "quete", 1, 2, "rare"),
     ],
 }
@@ -208,6 +214,24 @@ def couteaux_par_etoiles():
     return out
 
 
+# raretés des caisses -> nos raretés (étiquette HeralizRarete, lue par RaretesObjets de HeraliZ Loot)
+NOTRE_RARETE = {"common": "commun", "uncommon": "peu_commun", "rare": "rare", "epic": "epique", "legendary": "legendaire",
+                "mythic": "unique"}
+
+
+def inscrire_rarete(entrees, rar):
+    """19/11 (audit de l'économie) : couteaux et armes de mêlée skinnées (Uniques dans raretes.json : seulement dans le
+    loot du T7) reçoivent la rareté annoncée par la caisse, inscrite sur l'objet (étiquette HeralizRarete, comme les objets
+    des coffres T7) : même rareté à l'ouverture et dans l'inventaire. Rien d'autre ne change (objets à vie : jamais
+    vendus, recyclés ni mis à l'hôtel des ventes)."""
+    out = []
+    for e in entrees:
+        nbt = (e.get("nbt") or "{}").strip()
+        nbt = nbt[:-1] + ("," if nbt != "{}" else "") + 'HeralizRarete:"%s"}' % NOTRE_RARETE[rar]
+        out.append(dict(e, nbt=nbt))
+    return out
+
+
 def _groupe(entrees, pourcent, rar):
     """Entrées partagées à parts égales sur pourcent (%)."""
     if not entrees:
@@ -225,7 +249,7 @@ def recompenses_beta(nom, lignes):
     if nom == "gemme":
         fixe = sum(len(couteaux.get(l[1], [])) * l[2] for l in lignes if l[2] is not None)
         for _, et, par, rar in lignes:
-            l = couteaux.get(et, [])
+            l = inscrire_rarete(couteaux.get(et, []), rar)
             out += _groupe(l, (100 - fixe) if par is None else par * len(l), rar)
         return out
     remplissage = []    # indices (dans out) des récompenses de REMPLISSAGE
@@ -256,7 +280,7 @@ def recompenses_beta(nom, lignes):
             out += _groupe([{"item": "heralisz_camo:stattrack_module", "count": 1}], p, rar)
         elif g == "couteaux_total":
             _, et, p, rar = l
-            out += _groupe(couteaux.get(et, []), p, rar)
+            out += _groupe(inscrire_rarete(couteaux.get(et, []), rar), p, rar)
         elif g == "emotes":
             _, r0, p, rar = l
             out += _groupe([{k: v for k, v in e.items() if k not in ("weight", "rarity")} for e in spectacle if e.get("rarity") == r0], p, rar)
@@ -438,9 +462,53 @@ def existe(it, jars):
     return "assets/%s/models/item/%s.json" % (ns, p) in jars
 
 
+SORTES_RARETE = (("GunId", "armes"), ("AttachmentId", "accessoires"), ("AmmoId", "munitions"), ("ConsumableId", "soins"))
+
+
+def rarete_objet(item, nbt, raretes):
+    """Rareté HeraliZ d'un objet, comme RaretesObjets.choisie de HeraliZ Loot : inscrite sur l'objet (HeralizRarete), boîte
+    de munitions, arme / accessoire / munition / soin de son étiquette, sinon l'objet ; None : aucune n'est choisie."""
+    nbt = nbt or ""
+    m = re.search(r'HeralizRarete\s*:\s*"([a-z_]+)"', nbt)
+    if m:
+        return "unique" if m.group(1) == "mythique" else m.group(1)
+    if item == "tacz:ammo_box":
+        m = re.search(r"Level\s*:\s*(\d+)", nbt)
+        return raretes["objets"].get("tacz:ammo_box/" + (m.group(1) if m else "0")) or raretes["objets"].get(item)
+    for cle, section in SORTES_RARETE:
+        m = re.search(cle + r'\s*:\s*"([^"]+)"', nbt)
+        if m:
+            return raretes[section].get(m.group(1))
+    return raretes["objets"].get(item)
+
+
+def verifier_raretes():
+    """19/11 (audit de l'économie) : chaque objet d'une caisse qui a une rareté HeraliZ est annoncé à cette rareté (sinon le
+    joueur voit deux raretés pour le même objet : couteaux annoncés Épique et Uniques dans l'inventaire...). Rend le
+    nombre de problèmes."""
+    raretes = json.loads(RARETES.read_text(encoding="utf-8"))
+    problemes = 0
+    for f in sorted(CAISSES_DIR.glob("*.json")):
+        ecarts = {}
+        for r in json.loads(f.read_text(encoding="utf-8")).get("rewards", []):
+            if r.get("commands") and r.get("give_item") is False:
+                continue
+            propre = rarete_objet(r["item"], r.get("nbt"), raretes)
+            if propre is None:
+                continue
+            annoncee = NOTRE_RARETE.get(r.get("rarity"), r.get("rarity"))
+            if annoncee != propre:
+                ecarts.setdefault((annoncee, propre), []).append(r["item"] + (r.get("nbt") or ""))
+        for (a, p), l in sorted(ecarts.items()):
+            print("[caisses] %s : %d objet(s) annoncé(s) %s mais %s dans l'inventaire (ex. %s) : corriger la rareté dans "
+                  "outils/caisses.py, puis python outils/caisses.py" % (f.name, len(l), a, p, l[0]))
+            problemes += len(l)
+    return problemes
+
+
 def verifier():
     jars = objets_connus()
-    problemes = 0
+    problemes = verifier_raretes()
     for f in sorted(CAISSES_DIR.glob("*.json")):
         d = json.loads(f.read_text(encoding="utf-8"))
         for r in d.get("rewards", []):

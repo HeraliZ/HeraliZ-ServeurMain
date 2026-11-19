@@ -256,10 +256,12 @@ def economie(r, md):
     fq = r["quetes_herals"] if actif else 1.0
     print(f"Économie : {'active' if actif else 'COUPÉE'} ; achat x{fa:g} ; rachat x{fr:g} ; recycleur x{fy:g} ; "
           f"améliorations du clan x{fm:g} ; hérals des quêtes x{fq:g}")
+    # tous les marchands, troc compris (19/11 : un objet reçu par un échange compte pour un prix d'achat de 0, comme le
+    # serveur, SaisonQuetes.calculerVentes)
     pnj = {}
     for f in sorted(M.PNJ.glob("*.json")):
         m = json.loads(f.read_text(encoding="utf-8")).get("marchand")
-        if m and m.get("type") in ("achat", "rachat"):
+        if m:
             pnj[f.stem] = m
 
     def achat(p):
@@ -284,11 +286,27 @@ def economie(r, md):
     eff = max(10, min(10000, M.arrondi(pct * max(1, min(100, M.arrondi(fm * 100))) / 100)))
     lignes.append(("Arbre du clan : palier 1 / 2 / 3", " / ".join(f"{n * 5000 * pct // 100:,}".replace(",", " ") for n in (1, 2, 3)),
                    " / ".join(f"{n * 5000 * eff // 100:,}".replace(",", " ") for n in (1, 2, 3))))
-    lignes.append(("Quêtes de Varga (hérals)", "100 à 7 000", f"{M.arrondi(100 * fq)} à {M.arrondi(7000 * fq):,}".replace(",", " ")))
-    lignes.append(("Quêtes de clan (hérals, jour / semaine)", "250 à 900 / 1 500 à 3 000",
-                   f"{M.arrondi(250 * fq)} à {M.arrondi(900 * fq)} / {M.arrondi(1500 * fq):,} à {M.arrondi(3000 * fq):,}".replace(",", " ")))
-    lignes.append(("Rachat de Mila (objets de valeur, Commun → Légendaire)", "2 / 8 / 20 / 50 / 200",
-                   " / ".join(str(x if fr == 1.0 else max(1, M.arrondi(x * fr))) for x in (2, 8, 20, 50, 200))))
+    # 19/11 (audit de l'économie) : récompenses lues dans les fichiers (avant : « 100 à 7 000 » écrit ici, alors que 7 000
+    # est une étape « payer » ; la plus grosse récompense de Varga est 5 000)
+    def nb(x):
+        return f"{x:,}".replace(",", " ")
+
+    varga = json.loads((M.PNJ / "varga.json").read_text(encoding="utf-8"))
+    hv = [q["recompense"]["herals"] for q in varga.get("suite", []) + varga.get("contrats", [])
+          if (q.get("recompense") or {}).get("herals")]
+    if hv:
+        lignes.append(("Quêtes de Varga (hérals)", f"{nb(min(hv))} à {nb(max(hv))}",
+                       f"{nb(M.arrondi(min(hv) * fq))} à {nb(M.arrondi(max(hv) * fq))}"))
+    qc = json.loads((RACINE / "serveur/config/heralisz_clans/quetes.json").read_text(encoding="utf-8"))
+    hc = {p: [q["argent"] for q in qc if q.get("periode") == p and q.get("argent")] for p in ("jour", "semaine")}
+    if hc["jour"] and hc["semaine"]:
+        periodes = ("jour", "semaine")
+        lignes.append(("Quêtes de clan (hérals, jour / semaine)",
+                       " / ".join(f"{nb(min(hc[p]))} à {nb(max(hc[p]))}" for p in periodes),
+                       " / ".join(f"{nb(M.arrondi(min(hc[p]) * fq))} à {nb(M.arrondi(max(hc[p]) * fq))}" for p in periodes)))
+    valeur = [M.RACHAT_VALEUR[r] for r in ("commun", "peu_commun", "rare", "epique", "legendaire")]
+    lignes.append(("Rachat de Mila (objets de valeur, Commun → Légendaire)", " / ".join(str(x) for x in valeur),
+                   " / ".join(str(x if fr == 1.0 else max(1, M.arrondi(x * fr))) for x in valeur)))
     if md:
         print("| | Avant | Après |\n|---|---|---|")
         for a, b, c in lignes:

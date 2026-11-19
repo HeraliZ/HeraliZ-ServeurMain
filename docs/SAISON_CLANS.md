@@ -193,7 +193,9 @@ nouveau système à faire (PNJ armés).
 
 - Le clan gagne de l'XP et monte de niveau ; **chaque niveau donne 1 point de compétence**.
 - Une amélioration coûte **des points + des hérals** ; les points ne sont **jamais remboursés** (décision).
-- **Palier n d'une branche = n points et n × 5 000 hérals** (décision).
+- **Palier n d'une branche = n points et n × 5 000 hérals** (décision), hérals multipliés par `facteur_prix_arbre` de
+  `serveur/config/heralisz_clans/niveaux.json` (2 aujourd'hui : n × 10 000) et, pendant la bêta, par le réglage
+  `ameliorations` de l'économie de la bêta (× 0,75 : n × 7 500). Le tableau donne les prix de base (sans ces facteurs).
 - **Niveau maximum = le niveau qui permet de tout prendre** : **45**.
 - **Chaque niveau est plus dur que le précédent** (décision). ~~Premiers niveaux en quelques heures, tout prendre en 2 à
   3 semaines~~ : remplacé le 31/10 (demande du propriétaire : « beaucoup trop facile, dès le début ») par la courbe
@@ -208,7 +210,7 @@ nouveau système à faire (PNJ armés).
 | Ravitaillement plus rapide : −15 / −30 / −45 % | 1 + 2 + 3 | 6 | 30 000 |
 | Loot dans ses territoires : +2 / +4 % | 1 + 2 | 3 | 15 000 |
 | Territoires tenus en même temps : 0 → 1 → 2 (31/10 ; paliers réservés aux niveaux 5 et 10 du clan ; avant : 1 → 2 → 3) | 1 + 2 | 3 | 15 000 |
-| **Total** (sans Membres, depuis le 31/10) | | **30** | **150 000** |
+| **Total** (sans Membres, depuis le 31/10) | | **30** | **150 000** (avec `facteur_prix_arbre` 2 : **300 000** ; pendant la bêta : **225 000**) |
 
 - **La déco reste automatique** avec le niveau (décision) : fonds de bannière, tag en couleur, formes rares, tag doré
   (niveaux à recaler sur le nouveau maximum de 45).
