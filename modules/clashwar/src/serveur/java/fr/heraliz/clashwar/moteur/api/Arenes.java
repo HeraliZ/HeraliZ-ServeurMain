@@ -64,6 +64,18 @@ public final class Arenes {
     }
 
     /**
+     * Ouverture des inscriptions (19/11, audit des lenteurs C8) : poses d'arenes interrompues par un arret reprises, et une
+     * instance de chaque carte de {@code cartes} (salle d'attente, cartes du format) qui n'en a aucune posee d'avance, en
+     * tache de fond. Au demarrage du serveur, plus rien n'est pose (reglage {@code arenes_au_demarrage}).
+     */
+    public static void ouverture(Collection<String> cartes) {
+        MinecraftServer s = ServerLifecycleHooks.getCurrentServer();
+        if (s == null) return;
+        Services.Moteur m = Services.MOTEUR;
+        if (m != null) m.arenesOuverture(s, cartes);
+    }
+
+    /**
      * Rend l'instance : nettoie les entites (objets au sol, grenades, corps, mobs), remet l'etat propre au mode (portes
      * zombies...) puis la marque libre. Sans effet si l'instance est deja libre.
      * <p>La remise en etat propre a un mode s'enregistre avec {@link #quandLiberee(Consumer)}.

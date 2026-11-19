@@ -33,7 +33,7 @@ de Mohist) ne change pas.
 - **Démarrage d'essai** (19/11) : le serveur fabriqué (nos jars, les plugins et les réglages du dépôt, le même Mohist,
   un monde plat neuf, aucun secret) démarre sur une machine de GitHub. Sans « Done », ou avec un mixin qui ne s'applique
   pas ou un plantage dans son journal, **rien n'est envoyé au Ptero** (raison dans le résumé, partie « Démarrage
-  d'essai » ; environ 3 min). Urgence seulement : « Run workflow » avec la case `sans_demarrage_essai`.
+  d'essai » ; 3 à 4 min). Urgence seulement : « Run workflow » avec la case `sans_demarrage_essai`.
 - Met à jour le Ptero par SFTP :
   - `mods/` devient la copie exacte des nouveaux jars : **les anciens jars sont retirés** (dont `heraliz_boss`,
     `heralisz_matchs`, `heraliz_wonder`, `dayzhotbar`…) ;

@@ -79,6 +79,11 @@ public final class Saison {
     private static Path dossier;
     private static boolean sale;
     private static int ticks;
+    /**
+     * 19/11 (audit des lenteurs, C2) : écritures jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du
+     * noyau) ; multiple de 20 (le tick de la saison ne tourne qu'une fois par seconde).
+     */
+    private static final int DECALAGE_SAUVEGARDE = 20 * fr.heraliz.noyau.api.Etalement.decalage("clans.saison", 60);
     /** Classement en cache (refait au plus une fois par seconde quand un score change). */
     private static List<Ligne> cache = List.of();
     private static boolean cacheSale = true;
@@ -192,8 +197,8 @@ public final class Saison {
         if (ECHEC.getAndSet(false)) sale = true;
         ecrireJournal();
         if (d.active && d.fin > 0 && System.currentTimeMillis() >= d.fin) terminer("fin de la date prevue");
-        if (ticks % 1200 == 0) ecrirePetites();
-        if (ticks % 1200 == 0 && sale) sauvegarder();
+        if (fr.heraliz.noyau.api.Etalement.tour(ticks, 1200, DECALAGE_SAUVEGARDE)) ecrirePetites();
+        if (fr.heraliz.noyau.api.Etalement.tour(ticks, 1200, DECALAGE_SAUVEGARDE) && sale) sauvegarder();
         // classement refait toutes les 30 s meme sans point gagne : un clan dissous, renomme ou qui pose / perd son
         // coeur n'y restait (ou n'y apparaissait) qu'au prochain point marque par n'importe quel clan
         if (ticks % 600 == 0) cacheSale = true;

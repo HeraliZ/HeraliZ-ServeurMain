@@ -200,8 +200,12 @@ public final class MatchCw extends Partie {
                 if (i == null) {
                     if (ticksPhase() % 100 == 0) reserver();
                     if (ticksPhase() > cfg.attenteArene * 20) forfaitTechnique();
-                } else if (i.prete() && ticksPhase() >= delaiAppel()) {
-                    appeler();
+                } else if (i.prete()) {
+                    // 19/11 (audit des lenteurs C1) : arrivées des deux camps préchargées pendant l'annonce du tour ; l'appel
+                    // les attend, 3 s de plus au plus (avant : téléportation dans des tronçons pas chargés, lus sur le fil serveur)
+                    boolean pretes = arriveesPretes(i);
+                    if (ticksPhase() >= delaiAppel() && pretes) appeler();
+                    else if (ticksPhase() > cfg.attenteArene * 20) forfaitTechnique();
                 } else if (ticksPhase() > cfg.attenteArene * 20) {
                     forfaitTechnique();
                 }
@@ -246,6 +250,40 @@ public final class MatchCw extends Partie {
     private int delaiAppel() {
         Tableau tab = tournoi.tableau;
         return tab != null && rencontre.tour == tab.nbTours() - 1 ? 120 : 60;
+    }
+
+    /** Points d'arrivée de l'arène préchargés avant l'appel (19/11). */
+    private static final String[] POINTS_ARRIVEE = {"spawn_a", "spawn_b", "spectateur"};
+    /** Attente au plus des arrivées après leur demande (ticks) : passé ce délai, l'appel se fait quand même. */
+    private static final int ATTENTE_ARRIVEES = 60;
+    /** Tick de la phase où les arrivées ont été demandées (-1 : pas encore). */
+    private int arriveesDemandees = -1;
+
+    /**
+     * Arrivées de l'arène prêtes (19/11) : les 3 × 3 tronçons autour de chaque point d'apparition des deux camps et du
+     * point des spectateurs (sinon le centre des bornes) sont chargés ; demandées au premier appel, vrai aussi
+     * {@link #ATTENTE_ARRIVEES} ticks après la demande. Sans allocation (listes de points gardées par l'instance).
+     */
+    private boolean arriveesPretes(Instance i) {
+        boolean demander = arriveesDemandees < 0;
+        if (demander) arriveesDemandees = ticksPhase();
+        boolean pretes = true, aucun = true;
+        for (String nom : POINTS_ARRIVEE) {
+            List<Pose> l = i.points(nom);
+            for (int k = 0; k < l.size(); k++) {
+                Pose p = l.get(k);
+                aucun = false;
+                if (demander) fr.heraliz.clashwar.moteur.Arrivees.precharger(i.niveau(), p.x(), p.z());
+                else if (pretes && !fr.heraliz.clashwar.moteur.Arrivees.pret(i.niveau(), p.x(), p.z())) pretes = false;
+            }
+        }
+        if (aucun) {
+            AABB b = i.bornes();
+            if (demander) fr.heraliz.clashwar.moteur.Arrivees.precharger(i.niveau(), b.getCenter().x, b.getCenter().z);
+            else pretes = fr.heraliz.clashwar.moteur.Arrivees.pret(i.niveau(), b.getCenter().x, b.getCenter().z);
+        }
+        if (demander) return false;
+        return pretes || ticksPhase() - arriveesDemandees >= ATTENTE_ARRIVEES;
     }
 
     /** L'arène n'a pas pu être posée à temps : la rencontre est tranchée au hasard (signalé). */
@@ -761,6 +799,8 @@ public final class MatchCw extends Partie {
      */
     boolean regarder(ServerPlayer p) {
         if (!regardable() || equipeDe(p.getUUID()) != null) return false;
+        // 19/11 : une arrivée en salle encore en attente ne doit pas le ramener pendant qu'il regarde
+        fr.heraliz.clashwar.moteur.Arrivees.oublier(p.getUUID());
         spectateurs.add(p.getUUID());
         MatchApi.rejoindre(p, this);
         Spectateur.suivre(p, this);

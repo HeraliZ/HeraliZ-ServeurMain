@@ -96,6 +96,8 @@ public final class Historique {
     @Nullable
     private static Path dossier;
     private static int ticks;
+    /** 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau). */
+    private static final int DECALAGE_SAUVEGARDE = fr.heraliz.noyau.api.Etalement.decalage("clans.historique", 1200);
 
     /** Petites actions d'un joueur pour une source, depuis {@code premier}. */
     private static final class Regroupement {
@@ -165,7 +167,7 @@ public final class Historique {
     public static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || dossier == null) return;
         if (++ticks % 400 == 0) finirRegroupements(false);
-        if (ticks % 1200 == 0) {
+        if (fr.heraliz.noyau.api.Etalement.tour(ticks, 1200, DECALAGE_SAUVEGARDE)) {
             for (Iterator<UUID> it = ECHECS.iterator(); it.hasNext(); ) {
                 SALES.add(it.next());
                 it.remove();

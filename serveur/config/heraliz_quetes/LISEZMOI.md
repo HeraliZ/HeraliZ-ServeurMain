@@ -30,9 +30,10 @@ Sans le mod HeraliZ Récolte sur le serveur, ses échanges ne s'affichent pas.
 
 **Le Passeur** (19/11, fichier `pnj/passeur.json`, articles **écrits** par `outils/marchands.py` : tableaux `PRIX_ARMES`,
 `ARMES_RARES_PASSEUR` et `PRIX_MUNITIONS`) fait passer des armes du continent et les vend cher : toutes les armes Commun et
-Peu commun des gunpacks, quatre Rares (Mk 23, UMP-45, M870, SKS tactique) et les balles de leurs calibres (9 mm, .45 ACP,
-calibre 12, 7,62 × 39). Armes neuves et vides. Revendu à Mila ou recyclé, un de ses articles ne rend jamais plus de 10 % de
-son prix (contrôle : `python outils/marchands.py --controle`). Le poser au spawn, une fois : se placer là où il doit se
+Peu commun des gunpacks, quatre Rares (Mk 23, UMP-45, M870, SKS tactique) et des balles : moins une arme doit tirer pour
+tuer, plus sa balle est chère (prix pendant la bêta : 9 mm et .45 ACP 6, .50 AE, 5,56 et 7,62 × 39 8, calibre 12 30, .308
+et .338 45 ; jamais 40 mm, roquettes ni .50 BMG). Armes neuves et vides. Revendu à Mila ou recyclé, un de
+ses articles ne rend jamais plus de 10 % de son prix (munitions : 20 %) (contrôle : `python outils/marchands.py --controle`). Le poser au spawn, une fois : se placer là où il doit se
 tenir, regarder dans la direction où il doit regarder, puis `/pnj creer passeur` (`/pnj deplacer passeur` pour le bouger).
 Son apparence (créateur de personnage) est dans son fichier.
 

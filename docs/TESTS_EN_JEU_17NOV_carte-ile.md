@@ -552,10 +552,11 @@ Le Passeur :
 - [ ] Lui parler : « Le Passeur », « Armes et munitions », ses phrases en français, anglais et russe ; son apparence
       (marinière bleu marine, collier de barbe, bottes de pluie).
 - [ ] « Voir ce que tu vends » : 24 armes (les 20 grises et vertes, puis 4 bleues : Mk 23, UMP-45, M870, SKS tactique) et
-      4 munitions (.45 ACP, 9 mm, calibre 12, 7,62 × 39), chaque nom à la couleur de sa rareté.
+      8 munitions (.45 ACP, 9 mm, calibre 12, .50 AE, 5,56, 7,62 × 39, .308, .338), chaque nom à la couleur de sa rareté.
 - [ ] Prix pendant la bêta (prix des fichiers x 0,75) : pistolet gris 1 125, pistolet vert 2 250, pistolet-mitrailleur ou
-      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles : 9 mm et .45 ACP 8, calibre 12 11,
-      7,62 × 39 15.
+      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles (19/11, « moins on doit tirer de
+      balles, plus c'est cher ») : 9 mm et .45 ACP 6 ; .50 AE, 5,56 et 7,62 × 39 8 ; calibre 12 30 ; .308 (précision et
+      fusils semi-automatiques) et .338 (AWP, M200) 45.
 - [ ] Une arme achetée est neuve (100 %) et vide : la charger avec les balles achetées.
 - [ ] Revendre à Mila une arme achetée chez lui : environ 15 (grise), 30 (verte), 60 (bleue) ; la recycler : quelques
       composants ou quelques hérals. Jamais plus d'un dixième de son prix.
@@ -617,9 +618,10 @@ Sans essai possible : après une erreur, la détection « à terre » des quête
 
 ## 28. Réglages du serveur, plugins et mise en ligne (audit du 19/11)
 
-Rien de tout cela n'a été essayé en jeu ni sur le Ptero : seulement contrôlé dans le dépôt, et le démarrage d'essai a
-tourné sur une machine de GitHub. Tout compte au **redémarrage** qui suit la mise en ligne. Détail et raisons :
-`docs/DEPLOIEMENT.md`, sections 6 à 9.
+Rien de tout cela n'a été essayé en jeu ni sur le Ptero. Vérifié le 19/11 sur les machines de GitHub : fabrication et
+contrôles de la branche (0 problème) ; démarrage d'essai réussi avec ces réglages (« Done » en 94 s, aucune ligne
+fatale, arrêt propre), cloth-config retiré du serveur compris. Tout compte au **redémarrage** qui suit la mise en
+ligne. Détail et raisons : `docs/DEPLOIEMENT.md`, sections 6 à 9.
 
 Mise en ligne :
 - [ ] Résumé de « Serveur HeraliZ » : partie « Démarrage d'essai » à « Réussi », puis le job « serveur » a tourné (envoi
@@ -640,7 +642,9 @@ Jeu (après le redémarrage) :
 - [ ] Après `rate-limit=1000` mis à la main dans `server.properties` (propriétaire) : 10 min de jeu normal (tir en
       automatique, voix, inventaire en cliquant vite) sans expulsion « paquets ».
 - [ ] Zombies : un joueur blessé n'attire plus les zombies par l'odeur du sang, mais les tirs et les blocs cassés les
-      attirent toujours ; dans les rapports `/diag`, beaucoup moins d'entités `zombieawareness:scent`.
+      attirent toujours ; pendant les combats, moins d'entités `zombieawareness:scent` dans les rapports `/diag` (celles
+      des sons restent : pour les réduire aussi, l'audit propose `blockBreakEvent_PlayersOnly = true` et
+      `blockHittingEvent_Active = false` dans `General.toml`, choix de jeu à décider).
 - [ ] Véhicules : un conducteur voit toujours les véhicules lointains (mis à jour une fois par seconde au lieu de quatre).
 - [ ] Menu des réglages de TaCZ (touche du jeu) toujours là chez les joueurs (cloth-config retiré du serveur seulement).
 - [ ] Changer le grade d'un joueur connecté (LuckPerms) : ses nouvelles commandes arrivent dans la complétion du tchat au
@@ -685,6 +689,8 @@ Recycleur (armes et accessoires : en moyenne un peu moins que Mila, avec de la c
       chez Mila), un tiers deux pièces (jusqu'à 100) ; Mila en donne 60 chacune.
 - [ ] Une conserve geckolib (haricots, pêches…) rend une ferraille ; une boisson ou des chips du plastique ; une batte ou
       une machette 2 ferrailles, comme avant.
+- [ ] Un sac Légendaire : son aperçu montre Tissu IV, Scotch IV, Caoutchouc IV et Tissu (avant deux Tissu IV) ; en
+      moyenne un peu moins que Mila (120 hérals), avec de la chance bien plus. Les autres sacs ne changent pas.
 - [ ] Un article acheté chez Jack ou le Passeur se recycle comme avant (aucun refus nouveau) ; le saucisson du Doyen
       reste refusé (« rapporterait trop »).
 
@@ -697,3 +703,163 @@ Cœur de clan, caisses, Mila :
       kit standard Épique. Caisse de vote : le cœur de clan est annoncé Légendaire (annoncé à tout le serveur).
 - [ ] Mila rachète maintenant les combinaisons intégrales trouvées (plongée, arctique, hazmat : 25 hérals ; renforcées :
       60) ; avant, elle les refusait.
+
+## 30. Lenteurs du serveur : téléportations, sauvegardes, démarrage, diagnostic (19/11)
+
+Audit des lenteurs du 19/11 (points C1, C2, C4, C5, C7, C9, C15, F2, F5, F7). Presque tout est dans le noyau ; chaque
+changement a son réglage dans `heraliz_noyau-server.toml` (à `true` = nouveau, à `false` = comme avant) et son compteur
+dans `/diag etat` (ligne « Lenteurs (19/11) », puis « Écritures en fond » et « Préchauffage du démarrage »). **Rien n'a été
+testé en jeu** (pas de serveur ici) : tout est à vérifier ci-dessous. Après la mise à jour, garder un œil sur le journal
+les premiers jours : une ligne « [noyau] … impossible » ou une erreur de mixin au démarrage est à signaler.
+Versions : Noyau 1.1.5, Anticheat 2.12.1, Tactique 2.59.5, CRac 1.38.7-beta, Boutique 1.5.17, Bunker 0.14.6, Clans 3.17.3,
+ClashWar 1.3.2, Événements 1.3.1, Loot 0.20.4, Monde 1.3.4, Quêtes 1.23.3 (le launcher donne les nouvelles aux joueurs).
+
+Téléportations (plus de gel de 0,4 à 2,5 s quand l'arrivée n'est pas chargée)
+- [ ] `/tp` (staff) vers un endroit lointain de la carte, jamais visité depuis le démarrage : le message de Minecraft
+      arrive tout de suite, un bandeau « Téléportation — l'arrivée se charge… » aussi, et le départ se fait une fraction de
+      seconde plus tard (3 s au plus). Pas de « [Diag] Blocage » juste après. Même chose avec `/tp <joueur> x y z` et un
+      `/tp` vers un joueur d'un autre monde.
+- [ ] `/tp` tout près (même zone) : départ tout de suite, sans bandeau, comme avant.
+- [ ] `/warp` (au spawn) vers un warp lointain : toujours 3 s sans bouger, puis départ ; `/tpa` accepté : départ comme
+      avant ; panneau du staff « Aller voir » / « Faire venir » ; `/zonevip tp`, `/carriere tp`, `/quete point tp`,
+      `/corps tp`, `/extraction tp` : départ normal, sans gel.
+- [ ] `/diag etat`, ligne « Lenteurs (19/11) » : « arrivées … attendues » et « /tp retardés » montent après ces essais ;
+      « délais de 3 s dépassés » reste à 0 ou presque (sinon le dire : le disque est lent).
+- [ ] Vol rapide en créatif ou en spectateur vers des zones jamais chargées : on peut être « retenu » une fraction de
+      seconde au bord d'une zone qui se charge (comme un petit élastique), mais le serveur ne gèle plus. Compteur
+      « mouvements refusés ». À pied ou en véhicule, en survie : jamais d'élastique.
+
+Sauvegarde automatique (toutes les 5 min)
+- [ ] Avec quelques joueurs, attendre une sauvegarde automatique : pas de « [Diag] Blocage » à ce moment-là. Compteurs :
+      « partie fml resservie », « réglages de génération », « fichiers data/ écrits en fond », « sauvegarde automatique
+      étalée : … tours, … joueurs par tranches » montent.
+- [ ] Après une sauvegarde : se déconnecter, se reconnecter : inventaire, sac, armes et position intacts. Ouvrir le coffre
+      du clan pendant une sauvegarde, y prendre un objet : un seul exemplaire (coffre ou inventaire), même après un
+      redémarrage.
+- [ ] Clans, banque, saison, quêtes, butin des zombies : rien ne change pour les joueurs (leurs écritures tombent
+      seulement à d'autres moments que la sauvegarde de Minecraft). Après un `/stop` propre : clans, comptes, quêtes,
+      territoires, corps, recycleurs, casino, coffres personnels et bases (CRac) sont tous là au redémarrage.
+- [ ] `/diag etat`, ligne « Écritures en fond » : des fichiers écrits, 0 échec ; les voies « loot », « clans », « quetes »,
+      « evenements », « casino », « crac », « coffres », « donnees », « level-dat » apparaissent au fil du temps.
+
+Grands déchargements et tronçons « pas prêts »
+- [ ] Après un gros `//replace` ou `//set` (serveur fermé, si possible), partir loin : plus de gel de 1 à 2 s une seconde
+      après. Compteur « grands déchargements bornés ».
+- [ ] Territoires des clans (drapeaux), cœurs de clan (scores, prise), salles à carte (portes), coffres T7 automatiques,
+      conteneurs des événements, étoiles du loot, pings, vitres du labo : tout marche comme avant. Compteur « attentes de
+      tronçon évitées ».
+- [ ] Anticheat (Spartan) : courir, sauter, tomber près du bord d'une zone qui se charge (arrivée de `/tp`, `/rtp`) : pas
+      de fausse alerte de mouvement, pas de gel. Les renvois de l'anticheat (sol sous les pieds) marchent toujours.
+
+Démarrage et premières fois
+- [ ] Pendant les 3 minutes qui suivent un redémarrage : pas de message « [Diag] Blocage » aux opérateurs ; les longs
+      ticks sont dans `diag/demarrage-<date>.txt` et le journal dit « [diag] démarrage : tick de … ms ».
+- [ ] Journal du démarrage : « [noyau] préchauffage : N classes des mods lues à l'avance … » (une vingtaine de secondes
+      après « Done »), puis « … classes de M plugins lues à l'avance … ». Ensuite : première connexion et premier
+      WorldEdit sans gel d'une seconde.
+- [ ] `/diag etat` : ligne « Préchauffage du démarrage » à « fait » pour les deux.
+
+Diagnostic
+- [ ] `/diag etat` : deux lignes « Java : … » et « Arguments de Java : … » (la vraie ligne de lancement de Java, à
+      comparer aux réglages demandés à l'hébergeur ; un argument qui ressemble à un mot de passe est masqué).
+- [ ] Un rapport `diag/blocage-*.txt` commence par la ligne « Relevés de la pile dès 50 ms du tick » et en a une
+      douzaine pour un tick de 120 ms ; les rapports d'un blocage de 300 ms et plus sont toujours écrits ; le dossier
+      `diag/` garde jusqu'à 60 rapports de blocage (les plus longs restent) et 20 de chaque autre sorte.
+- [ ] Ligne « points d'intérêt relus » : à relever après une soirée avec des joueurs (temps passé à relire les lits,
+      postes de villageois… à chaque tronçon lu) : décidera si on le coupe sur la carte.
+
+Réglages (section `[perf]`, à `false` pour revenir comme avant) : `arrivees_prechargees`, `tp_precharge`,
+`mouvements_troncons_prets`, `dechargements_forces_par_tick` (50 ; 0 = comme Minecraft), `registres_en_memoire`,
+`donnees_en_fond`, `joueurs_etales`, `entites_etalees`, `classes_prechargees`, `plugins_prechauffes` (liste vide = rien) ;
+section `[diag]` : `releves_des_ms` (50), `calme_demarrage_s` (180 ; 0 = alertes dès le démarrage).
+
+Pas fait (pour plus tard) : véhicules rapides qui entrent dans une zone pas chargée (seuls les joueurs à pied ou en vol
+sont retenus) ; écriture des fichiers des joueurs en fond (seulement étalée sur 5 s, pour ne jamais lire un fichier pas
+encore écrit à la reconnexion) ; points d'intérêt (seulement mesurés) ; préchargement des classes des mods des autres
+auteurs.
+
+## 31. Lenteurs du serveur : ClashWar, loot, hélicoptère, zombies, clans (19/11)
+
+Suite de l'audit des lenteurs du 19/11 (points C3, C6, C7, C8, C10, C11, C13, C14) et deux bugs (épave de l'hélicoptère
+au redémarrage, heure du tableau du ClashWar). Le but : plus aucune alerte de blocage pendant un ClashWar, un collage
+WorldEdit de conteneurs ou une sauvegarde des clans. **Rien de tout cela n'a été testé en jeu** (pas de serveur ici) :
+pendant les essais, garder un œil sur les alertes de blocage du staff et sur `/diag etat`.
+Versions : Anticheat 2.12.2, Clans 3.17.4, ClashWar 1.3.3, Événements 1.3.2, Loot 0.20.5, Monde 1.3.5 (le launcher les
+donne aux joueurs ; le canal réseau du ClashWar change de version : un jeu qui n'a pas le nouveau ClashWar est refusé à
+la connexion).
+
+ClashWar : dépôts et retours du Coffre étalés, écrits en tâche de fond, arrivées préchargées
+- [ ] ClashWar à 2 équipes (clans différents) : à la clôture, les joueurs entrent en salle quelques-uns par tick (avant :
+      tous dans le même tick), l'inventaire n'est vidé qu'à ce moment. Journal du serveur : une ligne « coffre de …
+      depose » par joueur, puis « [matchs] coffres : N depot(s) fait(s), 0 rate(s) … ».
+- [ ] Pendant le dépôt (quelques ticks) : jeter un objet (Q) ne le fait pas tomber (il est dans le Coffre et revient à la
+      fin) ; pas de ramassage, de clic sur un bloc ni de commande. Le joueur ne prend aucun coup.
+- [ ] Fin du tournoi : chacun retrouve son inventaire et sa position d'avant, quelques joueurs par tick ; la salle ne se
+      ferme qu'après le dernier retour (30 s au plus). Clés de caisse données après le retour.
+- [ ] Se déconnecter pendant son dépôt (tout de suite après la clôture) : à la reconnexion, inventaire complet, aucun
+      objet en double, pas de dépôt qui traîne (`/clashwar coffre etat <joueur>` : rien).
+- [ ] Se déconnecter dans la salle puis revenir après la fin du tournoi : le Coffre est rendu (un instant après la
+      connexion), à la position d'avant, rien en double.
+- [ ] Arrêt brutal du serveur (kill) pendant un match : à la reconnexion, le Coffre est rendu, rien en double, rien de
+      perdu ; le kit du match a disparu.
+- [ ] Entrée en salle, appel d'un match, retour en salle, retour à la fin : plus de gel d'une seconde à la téléportation
+      (alertes de blocage du staff) ; `/diag etat`, ligne « Lenteurs (19/11) » : les « arrivées … attendues » montent
+      (les téléportations du ClashWar passent maintenant par le noyau, comme `/tp`). Le match peut démarrer jusqu'à 3 s
+      plus tard qu'avant.
+- [ ] `/clashwar regarder` par un joueur qui n'est pas du tournoi (au spawn) : son Coffre est déposé, il arrive en salle
+      puis regarde le match, comme avant.
+- [ ] Réglages de `serveur/heraliz_clashwar/clashwar.json` : `coffres_en_fond` (false = écriture sur le fil du serveur,
+      comme avant), `coffres_par_tick` (4) et `coffres_budget_ms` (6), `precharger_arrivees` (false = téléportations
+      immédiates, comme avant), `arenes_au_demarrage` (false). `/recharger clashwar` les relit.
+
+ClashWar : arènes posées à l'ouverture des inscriptions
+- [ ] Redémarrage : plus aucune arène posée au démarrage (journal : « poses interrompues (reprises a l'ouverture des
+      inscriptions) ») ; `/diag etat` : presque plus de tronçons chargés dans `heraliz_clashwar:arenes`.
+- [ ] Ouverture des inscriptions (ou `/clashwar lancer`) : journal « ouverture des inscriptions, … pose(s) reprise(s), …
+      carte(s) posee(s) d'avance » ; pendant la pose, peu de tronçons chargés dans le monde des arènes (avant : 2 746), et
+      plus de grand déchargement 30 s après.
+- [ ] Une carte posée : ses décors (cadres, supports) sont bien là, la salle et les arènes se jouent comme avant.
+
+ClashWar : récompenses (décision du propriétaire) et heure
+- [ ] Deux équipes d'un même clan seules : le tournoi se joue, mais ni primes ni clés ; le chat dit « Pas de primes ni de
+      clés pour ce ClashWar : 1 clan(s) différent(s) seulement, il en faut 3. » ; le podium affiche « Sans prime ».
+- [ ] Trois clans différents ou plus : primes versées ; un clan avec deux équipes sur le podium ne touche que la prime de
+      la meilleure (l'autre marche affiche « Une prime par clan »). Réglage `recompenses_clans_min` (3).
+- [ ] Les points de saison gardent leur règle (`saison_clans_min`).
+- [ ] Mettre l'heure du PC dans un autre fuseau (ou jouer depuis un PC russe) : le tableau du ClashWar et le panneau du
+      classement montrent la même heure que le chat (heure de Paris) ; le panneau du classement n'écrit plus l'heure deux
+      fois (« Prochain ClashWar : mercredi 20:30 · /clashwar »).
+
+Loot : collages WorldEdit de conteneurs et démarrage
+- [ ] Coller (`//paste`) un bâtiment avec des dizaines de conteneurs : beaucoup moins long qu'avant ; les conteneurs
+      rejoignent la zone de leur niveau la plus proche (ou en créent une), comme avant (`/heralizloot proche`).
+- [ ] Démarrage : plus d'alerte de blocage « RotationLoot.salleDe » ; les salles à carte se rechargent comme avant.
+- [ ] Vider des conteneurs, les reposer, casser et reposer un conteneur : le nombre d'actifs de la zone reste juste
+      (`/heralizloot zone <zone> info` : actifs + en attente = cible).
+
+Hélicoptère
+- [ ] Hélicoptère en vol loin de tout joueur (`/event helico lancer`, puis s'éloigner) : il continue de voler et de
+      tourner (il ne s'arrête jamais net au bord d'un tronçon) ; `/diag etat` : moins de tronçons chargés sur la carte
+      pendant son vol. Réglage `rayon_ticket` de `serveur/config/heraliz_evenements/helico.json` (2 ; 3 = comme avant).
+- [ ] Abattre l'hélicoptère, puis `/redemarrage` pendant le feu de l'épave : après le redémarrage, le coffre T7 (avec la
+      boîte noire) est toujours là, encore fermé (« Caisse en feu · s'ouvre dans … ») jusqu'à l'heure de fin du feu,
+      puis il s'ouvre ; les deux caisses T6 aussi. Avant : retirés au redémarrage, rien n'était donné.
+- [ ] Même essai avec un arrêt brutal (kill) : le coffre ne s'ouvre pas tout de suite au redémarrage.
+- [ ] `/event annuler helico` par le staff pendant le feu : coffre et caisses fermés retirés, comme avant.
+
+Zombies
+- [ ] `/zombies stats` : nouvelle ligne « Plafond : N monstres suivis a leur arrivee ; 0 oublie(s) au dernier recensement
+      complet … ». Le plafond des monstres de la carte et le peuplement marchent comme avant. Réglage
+      `plafond_par_arrivees` de `heraliz_zombies-server.toml` (false = toutes les entités parcourues chaque seconde, comme
+      avant).
+
+Clans
+- [ ] Sauvegarde des clans (chaque minute) : plus d'alerte de blocage « ClanStore.sauvegarder » ; après un redémarrage,
+      rien de perdu (banque, XP, statistiques, membres, journal).
+- [ ] Coffre du clan : déposer et prendre, fermer, redémarrer : le contenu est le bon, rien en double.
+
+Anticheat
+- [ ] Anti-ESP (Spartan) : marche comme avant ; plus d'alerte de blocage « VisibilityEngine.configureWorkers ».
+
+Pas fait (pour plus tard) : hélicoptère qui vole « sans tronçon » loin des joueurs (il garde un petit ticket) ; commandes
+du staff du Coffre (`/clashwar coffre …`), toujours tout de suite sur le fil du serveur ; bordure des arènes inchangée.

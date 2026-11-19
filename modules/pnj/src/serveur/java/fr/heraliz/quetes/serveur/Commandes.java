@@ -401,7 +401,7 @@ final class Commandes {
         ServerLevel lvl = rl == null ? null : Moteur.serveur.getLevel(ResourceKey.create(Registries.DIMENSION, rl));
         if (lvl == null) return erreur(c, "heraliz_quetes.cmd.monde_inconnu", "Monde introuvable : %s", p.monde());
         BlockPos b = p.pos();
-        moi.teleportTo(lvl, b.getX() + 0.5, b.getY() + 1, b.getZ() + 0.5, moi.getYRot(), moi.getXRot());
+        fr.heraliz.noyau.api.Arrivees.teleporter(moi, lvl, b.getX() + 0.5, b.getY() + 1, b.getZ() + 0.5, moi.getYRot(), moi.getXRot());   // 19/11 : arrivée chargée d'abord
         return 1;
     }
 

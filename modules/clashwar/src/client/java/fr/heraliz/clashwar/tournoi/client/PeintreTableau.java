@@ -388,20 +388,45 @@ public final class PeintreTableau {
         return Component.translatable(cle, args).getString();
     }
 
-    /** « 20:30 » aujourd'hui, sinon « mer. 20:30 » (fuseau du client). */
+    /**
+     * Fuseau des heures du ClashWar (19/11, audit des bugs n° 11) : celui du serveur, envoyé avec la vue du tableau
+     * (« Europe/Paris » par défaut), comme les heures du chat ; avant, celui de la machine du joueur (un joueur russe lisait
+     * 22:30 sur le tableau et 20:30 dans le chat).
+     */
+    private static ZoneId zone() {
+        String f = CwClient.vue().fuseau();
+        if (!f.equals(zoneNom)) {
+            ZoneId z;
+            try {
+                z = ZoneId.of(f);
+            } catch (RuntimeException ex) {
+                z = ZoneId.of(VueTableau.FUSEAU_DEFAUT);
+            }
+            zoneNom = f;
+            zone = z;
+        }
+        return zone;
+    }
+
+    private static String zoneNom = "";
+    private static ZoneId zone = ZoneId.of(VueTableau.FUSEAU_DEFAUT);
+
+    /** « 20:30 » aujourd'hui, sinon « mer. 20:30 » (fuseau du serveur, comme le chat). */
     static String heure(long ms) {
         if (ms <= 0) return "--:--";
-        ZonedDateTime d = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault());
+        ZoneId z = zone();
+        ZonedDateTime d = Instant.ofEpochMilli(ms).atZone(z);
         String hm = String.format(Locale.ROOT, "%02d:%02d", d.getHour(), d.getMinute());
-        if (d.toLocalDate().equals(LocalDate.now())) return hm;
+        if (d.toLocalDate().equals(LocalDate.now(z))) return hm;
         return tr("clashwar.jour.court." + d.getDayOfWeek().getValue()) + " " + hm;
     }
 
-    /** « mercredi 20:30 » (ou « aujourd'hui 20:30 »). */
+    /** « mercredi 20:30 » (ou « aujourd'hui 20:30 »), fuseau du serveur. */
     static String date(long ms) {
-        ZonedDateTime d = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault());
+        ZoneId z = zone();
+        ZonedDateTime d = Instant.ofEpochMilli(ms).atZone(z);
         String hm = String.format(Locale.ROOT, "%02d:%02d", d.getHour(), d.getMinute());
-        if (d.toLocalDate().equals(LocalDate.now())) return tr("clashwar.jour.aujourdhui", hm);
+        if (d.toLocalDate().equals(LocalDate.now(z))) return tr("clashwar.jour.aujourdhui", hm);
         return tr("clashwar.jour.long." + d.getDayOfWeek().getValue()) + " " + hm;
     }
 

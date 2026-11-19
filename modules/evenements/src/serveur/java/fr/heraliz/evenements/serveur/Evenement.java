@@ -34,6 +34,15 @@ public interface Evenement {
     void annuler(MinecraftServer server, String motif);
 
     /**
+     * Arrêt du serveur pendant l'événement (appelé par le Directeur à la place de {@link #annuler}). Par défaut : annulé
+     * comme par le staff. 19/11 : l'hélicoptère abattu garde au contraire le butin de son épave, fermé jusqu'à la fin du feu
+     * après le redémarrage.
+     */
+    default void arret(MinecraftServer server) {
+        annuler(server, "arret du serveur");
+    }
+
+    /**
      * Une fois par minute, actif ou non : pour un événement sans heure dans le planning, qui décide lui-même quand partir
      * (hélicoptère : 4 h après le précédent, puis un instant au hasard ; il demande son départ par {@code Directeur.lancer}).
      * Rien par défaut.

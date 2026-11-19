@@ -28,7 +28,7 @@ final class Vue {
         if (a.distanceToSqr(b) < 1.0E-6) return null;
         return BlockGetter.traverseBlocks(a, b, niveau, (lvl, pos) -> {
             if (lvl.isOutsideBuildHeight(pos)) return null;
-            if (!lvl.hasChunkAt(pos)) return INCONNU;
+            if (!fr.heraliz.noyau.api.Troncons.charge(lvl, pos)) return INCONNU;   // tronçon complet seulement (19/11)
             BlockState etat = lvl.getBlockState(pos);
             if (etat.isAir()) return null;
             VoxelShape forme = etat.getCollisionShape(lvl, pos, CollisionContext.empty());

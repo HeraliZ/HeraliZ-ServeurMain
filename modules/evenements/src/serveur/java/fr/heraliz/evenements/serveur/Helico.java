@@ -51,9 +51,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -87,8 +89,10 @@ import java.util.function.Predicate;
  * « Boîte noire d'hélicoptère » à sa première ouverture. 11/11 (demande du propriétaire : « les caisses doivent être là dès
  * le début, juste inlootables le temps que le feu se dissipe ») : le coffre est posé dès l'impact et refuse de s'ouvrir tant
  * que le feu brûle ({@link #refusOuverture}, demandé par HeraliZ Loot à chaque essai, message au joueur) ; il reste
- * {@code coffre_t7_minutes} après la fin du feu, comme avant. Annulé pendant le feu (staff, arrêt du serveur) : le coffre
- * encore fermé est retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu, sinon l'objet au sol à
+ * {@code coffre_t7_minutes} après la fin du feu, comme avant. Annulé pendant le feu par le staff : le coffre encore fermé
+ * est retiré, rien n'est donné. 19/11 (audit des bugs n° 3) : arrêt du serveur ou plantage pendant le feu, le butin reste,
+ * fermé jusqu'à la fin du feu en heure réelle (gardée dans {@link Etat}, rétablie au démarrage : {@link #arret},
+ * {@link #resteVerrou}). Pas de place au crash : nouvel essai à la fin du feu, sinon l'objet au sol à
  * côté de l'épave ({@link #horsEpave}). 19/11 (demande du propriétaire : « en plus du loot T7, deux lootables T6
  * aléatoires ») : {@code lootables_t6_nombre} conteneurs T6 tirés dans {@code lootables_t6} ({@link #poserLootables}),
  * mêmes règles de place, même feu et même durée que le coffre, retirés de même s'il est annulé pendant le feu ; refus
@@ -161,12 +165,21 @@ final class Helico implements Evenement {
     private String evenementButin = "";
     /** Conteneurs T6 pas posés au crash faute de place : nouvel essai à la fin du feu. */
     private int lootablesManquants;
+    /** Point d'impact de l'épave en cours (null : pas encore tombé) : le butin sans place y est posé à l'arrêt du serveur. */
+    @Nullable
+    private BlockPos epavePos;
+    /**
+     * Butins d'épave encore dans le feu au dernier arrêt ou plantage (19/11, audit des bugs n° 3) : numéro porté par le coffre
+     * et les caisses -> fin du feu en heure réelle (ms), rétablis au démarrage depuis {@link Etat}. L'épave n'est jamais
+     * sauvegardée : après le redémarrage, ce verrou suit seulement l'heure.
+     */
+    private final Map<String, Long> verrousRestaures = new HashMap<>();
 
     Helico() {
         instance = this;
         // objets d'événement en attente de leur tronçon : vérifiés chaque seconde, même hors événement
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ServerTickEvent.class, this::tick);
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStoppingEvent.class, this::arret);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStoppingEvent.class, this::arretObjets);
     }
 
     @Override
@@ -257,6 +270,7 @@ final class Helico implements Evenement {
         mondeButin = null;
         evenementButin = "";
         lootablesManquants = 0;
+        epavePos = null;
         // heure provisoire du suivant dès le départ (arrêt du serveur pendant le vol) ; refaite à la fin de celui-ci
         prochainMs = tirer();
         sauverEtat();
@@ -305,6 +319,50 @@ final class Helico implements Evenement {
         Outils.journal(id + " : annule (" + motif + "), rien n'est donne");
     }
 
+    /**
+     * Arrêt du serveur (19/11, audit des bugs n° 3). Encore en vol : annulé comme avant (rien n'a été donné). Abattu et
+     * tombé : le butin de l'épave RESTE (coffre T7 avec la boîte noire, caisses T6), fermé jusqu'à la fin du feu en heure
+     * réelle, gardée dans {@link Etat} et rétablie au démarrage ({@link #chargerEtat}) ; un coffre qui n'avait pas trouvé de
+     * place au crash (nouvel essai prévu à la fin du feu, qui n'aura pas lieu) est posé maintenant, sinon la boîte noire
+     * au sol près de l'épave. Avant : arrêt propre pendant le feu = coffre et caisses retirés, « rien n'est donné ».
+     */
+    @Override
+    public void arret(MinecraftServer server) {
+        String id = idCourant;
+        ServerLevel level = mondeButin;
+        String objet = evenementButin;
+        if (id == null || level == null || objet.isEmpty()) {
+            annuler(server, "arret du serveur");
+            return;
+        }
+        long reste = verrouJusqua > 0 ? Math.max(0, verrouJusqua - level.getGameTime()) : 0;
+        if (reste > 0) Etat.verrou(objet, System.currentTimeMillis() + reste * 50L);
+        else Etat.oublierVerrou(objet);
+        BlockPos epave = epavePos;
+        if (epave != null && (coffrePos == null || !objet.equals(coffreEvenement))) {
+            BlockPos coffre = poserCoffre(level, epave, objet, id, (int) Math.min(reste, 72_000L));
+            if (coffre == null) lacherObjet(level, horsEpave(level, epave, id), objet);
+            Outils.journal(id + " : arret du serveur, " + (coffre != null ? "coffre " + coffreT7 + " pose en " + coffre.toShortString()
+                    : "AUCUN coffre T7 pose (pas de place) : objet d'evenement pose au sol"));
+        }
+        if (lootablesManquants > 0) {
+            Outils.journal(id + " : " + lootablesManquants + " conteneur(s) T6 sans place au crash, pas poses (arret du serveur)");
+        }
+        idCourant = null;   // avant de retirer : le suivi ignore ce qui suit
+        verrouJusqua = 0;
+        mondeButin = null;
+        evenementButin = "";
+        lootablesManquants = 0;
+        coffrePos = null;
+        coffreMonde = null;
+        coffreEvenement = "";
+        epavePos = null;
+        HelicoApi.annuler(id);
+        programmer();
+        Outils.journal(id + " : arret du serveur, butin de l'epave garde" + (reste > 0
+                ? ", ferme encore " + (reste + 19) / 20 + " s apres le redemarrage (fin du feu gardee)" : ""));
+    }
+
     // ------------------------------------------------------------------ suivi du vol (module monde)
     private HelicoApi.Suivi suivi(String id) {
         return new HelicoApi.Suivi() {
@@ -339,6 +397,7 @@ final class Helico implements Evenement {
                 if (verrouJusqua > 0) {
                     // épave partie avant la fin du feu (retirée par le staff, perdue) : plus de feu, le coffre s'ouvre
                     verrouJusqua = 0;
+                    Etat.oublierVerrou(evenementButin);
                     Outils.journal(id + " : plus de feu, le coffre de l'epave s'ouvre");
                 }
             }
@@ -399,7 +458,10 @@ final class Helico implements Evenement {
         mondeButin = level;
         evenementButin = objet;
         verrouJusqua = feu > 0 ? fin : 0;
+        // 19/11 (audit des bugs n° 3) : fin du feu gardée hors du monde, rétablie après un redémarrage ou un plantage
+        if (feu > 0) Etat.verrou(objet, System.currentTimeMillis() + feu * 50L);
         BlockPos epave = BlockPos.containing(ou);
+        epavePos = epave;
         BlockPos coffre = poserCoffre(level, epave, objet, id, feu);
         if (coffre == null) {
             Outils.journal(id + " : pas de place pour le coffre au crash, nouvel essai a la fin du feu");
@@ -425,6 +487,7 @@ final class Helico implements Evenement {
         ServerLevel level = server.overworld();
         String objet = idObjet(id);
         verrouJusqua = 0;   // feu éteint : le coffre et les conteneurs T6 posés au crash s'ouvrent maintenant
+        Etat.oublierVerrou(objet);
         if (coffrePos != null && objet.equals(coffreEvenement)) {
             Outils.journal(id + " : feu eteint, le coffre en " + coffrePos.toShortString() + " s'ouvre");
         } else {
@@ -474,19 +537,39 @@ final class Helico implements Evenement {
     @Nullable
     @Override
     public Component refusOuverture(ServerPlayer p, String id) {
-        ServerLevel level = mondeButin;
-        if (verrouJusqua <= 0 || level == null || !id.equals(evenementButin)) return null;
-        long reste = verrouJusqua - level.getGameTime();
-        if (reste <= 0) {
-            verrouJusqua = 0;
-            return null;
-        }
+        long reste = resteVerrou(id);
+        if (reste <= 0) return null;
         return Outils.t("heraliz_evenements.helico.caisse_en_feu", "Caisse en feu · s'ouvre dans %s", Outils.duree(reste))
                 .withStyle(ChatFormatting.GOLD);
     }
 
     /**
-     * Annulation pendant le feu (staff, arrêt du serveur, erreur) : le coffre encore fermé est retiré, rien n'est donné
+     * Ticks qui restent avant que le butin {@code id} s'ouvre (0 : ouvert) : feu de l'épave en cours (heure de jeu), sinon
+     * verrou rétabli après un redémarrage (heure réelle, 19/11). Un verrou passé est oublié (aussi dans {@link Etat}).
+     */
+    private long resteVerrou(String id) {
+        ServerLevel level = mondeButin;
+        if (verrouJusqua > 0 && level != null && id.equals(evenementButin)) {
+            long reste = verrouJusqua - level.getGameTime();
+            if (reste > 0) return reste;
+            verrouJusqua = 0;
+            Etat.oublierVerrou(id);
+            return 0;
+        }
+        if (verrousRestaures.isEmpty()) return 0;
+        Long fin = verrousRestaures.get(id);
+        if (fin == null) return 0;
+        long resteMs = fin - System.currentTimeMillis();
+        if (resteMs > 0) return (resteMs + 49) / 50;
+        verrousRestaures.remove(id);
+        Etat.oublierVerrou(id);
+        Outils.journal(id + " : fin du feu (heure gardee au redemarrage), le butin de l'epave s'ouvre");
+        return 0;
+    }
+
+    /**
+     * Annulation pendant le feu (staff, erreur ; plus l'arrêt du serveur depuis le 19/11, voir {@link #arret}) : le coffre
+     * encore fermé est retiré, rien n'est donné
      * (comme avant le 11/11, quand il n'apparaissait qu'après le feu). Seulement s'il n'a jamais été ouvert (le numéro de
      * l'événement est encore dans le coffre) et si son tronçon est chargé (jamais de chargement ici). Feu éteint : le coffre
      * reste (comme avant).
@@ -505,6 +588,8 @@ final class Helico implements Evenement {
         mondeButin = null;
         evenementButin = "";
         lootablesManquants = 0;
+        epavePos = null;
+        Etat.oublierVerrou(butin);
         // 19/11 : les conteneurs T6 encore fermés aussi (jamais ouverts : rien n'en est sorti)
         if (ferme && monde != null && !butin.isEmpty()) {
             int n = retirerLootables(monde, butin);
@@ -767,7 +852,7 @@ final class Helico implements Evenement {
         }
     }
 
-    private void arret(ServerStoppingEvent e) {
+    private void arretObjets(ServerStoppingEvent e) {
         for (ObjetEnAttente o : objetsEnAttente) Outils.journal(o.id() + " : PERDU, serveur arrete avant que le troncon " + o.cp() + " soit charge");
         objetsEnAttente.clear();
     }
@@ -888,6 +973,13 @@ final class Helico implements Evenement {
                 HeralizEvenements.LOG.error("[evenements] {} illisible : premiere apparition tiree a nouveau", f, ex);
             }
         }
+        // 19/11 (audit des bugs n° 3) : butins d'épave encore dans le feu au dernier arrêt ou plantage, fermés jusqu'à leur fin
+        verrousRestaures.clear();
+        for (Map.Entry<String, Long> v : Etat.verrous().entrySet()) {
+            if (!v.getKey().startsWith(ID + "#")) continue;
+            verrousRestaures.put(v.getKey(), v.getValue());
+            Outils.journal(v.getKey() + " : butin de l'epave ferme jusqu'a " + heure(v.getValue()) + " (feu en cours au dernier arret)");
+        }
         // au démarrage : heure absente, passée ou dans la minute -> 30 à 60 min au hasard (jamais juste après un démarrage)
         long maintenant = System.currentTimeMillis();
         if (prochainMs < maintenant + 60_000L) {
@@ -977,6 +1069,8 @@ final class Helico implements Evenement {
             R.rechercheLoin = Math.max(R.rechercheProche, entier(o, "recherche_loin", 200, 0, 512));
             R.crashDegats = (float) reel(o, "crash_degats", 8, 0, 100);
             R.crashRayon = entier(o, "crash_rayon", 6, 0, 32);
+            // 19/11 (audit des lenteurs) : 2 = tronçons tenus autour de lui en vol réduits (avant : 3)
+            R.rayonTicket = entier(o, "rayon_ticket", 2, 2, 3);
         } catch (IOException | RuntimeException ex) {
             HeralizEvenements.LOG.error("[evenements] helico.json illisible : reglages precedents gardes", ex);
         }
@@ -1029,7 +1123,8 @@ final class Helico implements Evenement {
                 + " boite noire, revendue a Mila (events.points.objet_boite_noire_helico). Butin : coffre_t7 (HeraliZ Loot) et"
                 + " lootables_t6_nombre conteneurs T6 tires au hasard dans lootables_t6 (liste vide : tous les T6), poses des le crash,"
                 + " fermes tant que le feu de l'epave brule (feu_min_s a feu_max_s ; message au-dessus de la barre, sans bruit), puis"
-                + " ouverts pendant coffre_t7_minutes. Relu par /recharger evenements.");
+                + " ouverts pendant coffre_t7_minutes ; un redemarrage pendant le feu les garde fermes jusqu'a l'heure de fin du feu."
+                + " rayon_ticket : troncons tenus charges autour de lui en vol (2 conseille, 3 comme avant). Relu par /recharger evenements.");
         o.addProperty("joueurs_min", 10);
         o.addProperty("pause_minutes", 240);
         o.addProperty("fenetre_minutes", 120);
@@ -1074,6 +1169,7 @@ final class Helico implements Evenement {
         o.addProperty("recherche_loin", 200);
         o.addProperty("crash_degats", 8);
         o.addProperty("crash_rayon", 6);
+        o.addProperty("rayon_ticket", 2);
         o.addProperty("coffre_t7", "t7_coffre_armes");
         o.addProperty("coffre_t7_minutes", 15);
         o.addProperty("lootables_t6_nombre", 2);

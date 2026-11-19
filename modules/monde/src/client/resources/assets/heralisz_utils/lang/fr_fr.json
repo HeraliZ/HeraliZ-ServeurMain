@@ -415,6 +415,7 @@
   "heralisz_utils.cycle.desactive": "Attention : le cycle est désactivé (heraliz_cycle-server.toml, actif = false) : l'heure ne bouge pas toute seule.",
   "heralisz_utils.zombies.cmd.stats.titre": "Zombies HeraliZ : %s suivis (proches %s, moyens %s, loin %s, endormis %s)",
   "heralisz_utils.zombies.cmd.stats.peuplement": "Peuplement : %s zombies poses ; monstres sur la carte : %s ; secteurs entames : %s",
+  "heralisz_utils.zombies.cmd.stats.plafond": "Plafond : %s monstres suivis a leur arrivee ; %s oublie(s) au dernier recensement complet (%s depuis le demarrage)",
   "heralisz_utils.zombies.cmd.stats.chemins": "Chemins depuis le demarrage : %s calcules, %s partages, %s refuses (budget)",
   "heralisz_utils.zombies.cmd.stats.directs": "Poursuites en ligne droite (sans calcul de chemin) : %s",
   "heralisz_utils.zombies.cmd.stats.chemins_temps": "Chemins gardes (cible loin ou hors d'atteinte) : %s ; refuses faute de temps : %s ; pire tick : %s ms de calcul",

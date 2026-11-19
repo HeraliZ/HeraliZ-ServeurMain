@@ -146,7 +146,7 @@ public final class ClanEvents {
                 avisCourbe = c.niveauAvantCourbe > 1 && c.courbeLe > 0 && m.vuLe < c.courbeLe;
                 m.dernierNom = nom;
                 m.vuLe = now;
-                store.marquerDirty();
+                store.marquerDirty(c);
             }
             Sync.marquer(c); // les autres voient le point vert
         }
@@ -205,7 +205,7 @@ public final class ClanEvents {
         Membre m = c.membre(u);
         if (m != null) {
             m.vuLe = System.currentTimeMillis();
-            store.marquerDirty();
+            store.marquerDirty(c);
         }
         if (arret) return; // tout le monde part : pas n² tables de tags
         Sync.marquer(c);
@@ -311,7 +311,7 @@ public final class ClanEvents {
             Membre m = c == null ? null : c.membre(mort.getUUID());
             if (m != null) {
                 m.stats.morts++;
-                store.marquerDirty();
+                store.marquerDirty(c);
                 Sync.marquerLent(c);
                 // historique du clan (11/11) : la mort du membre, sa cause et les points de saison perdus
                 if (!mort.getTags().contains("heraliz_bot")) fr.heralisz.clans.historique.Historique.mort(c, mort, src, pvp[1]);
@@ -346,7 +346,7 @@ public final class ClanEvents {
         } else {
             return;
         }
-        store.marquerDirty();
+        store.marquerDirty(c);
         Sync.marquerLent(c);
     }
 
@@ -456,7 +456,7 @@ public final class ClanEvents {
         if (reel <= 0) return;
         action(attaquant);
         m.stats.degats += reel;
-        store.marquerDirty();
+        store.marquerDirty(c);
         Quetes.progresser(c, QueteEtat.Type.DEGATS, (long) Math.floor(reel));
         Sync.marquerLent(c);
     }
@@ -495,7 +495,7 @@ public final class ClanEvents {
         if (m == null) return;
         action(p);
         m.stats.lootOuverts++;
-        store.marquerDirty();
+        store.marquerDirty(c);
         Quetes.progresser(c, QueteEtat.Type.LOOT_OUVERTS, 1);
         Sync.marquerLent(c);
     }
@@ -531,7 +531,7 @@ public final class ClanEvents {
             m.stats.tempsJeuTicks += 20;
             if (avant / 1200 != m.stats.tempsJeuTicks / 1200) {
                 Sync.marquerLent(c);
-                store.marquerDirty();
+                store.marquerDirty(c);
             }
             boolean enJeu = EtatJoueur.surCarte(p) && p.isAlive() && !p.isCreative() && !p.isSpectator();
             boolean aPied = enJeu && !p.isPassenger() && !p.isInWater() && !p.isFallFlying() && !p.getAbilities().flying;
@@ -584,7 +584,7 @@ public final class ClanEvents {
         Set<UUID> invitesTouches = null;
         for (Clan c : store.tous()) {
             if (Quetes.verifier(c, now)) {
-                store.marquerDirty();
+                store.marquerDirty(c);
                 Sync.marquer(c);
             }
             if (!c.invitations.isEmpty()) {
@@ -595,7 +595,7 @@ public final class ClanEvents {
                     return true;
                 });
                 if (!expires.isEmpty()) {
-                    store.marquerDirty();
+                    store.marquerDirty(c);
                     if (invitesTouches == null) invitesTouches = new HashSet<>();
                     invitesTouches.addAll(expires);
                 }
@@ -638,7 +638,7 @@ public final class ClanEvents {
         Quetes.progresser(c, QueteEtat.Type.CAPTURES, 1);
         c.statZone(e.zoneId).captures++;
         c.ajouterEvenement(new Evenement(now, Evenement.Genre.CAPTURE, e.nomZone));
-        store.marquerDirty();
+        store.marquerDirty(c);
         Sync.marquer(c);
         // annonce a tout le serveur : chat + toast + son
         annoncerATous(ClanService.prefixe(c).append(Component.translatable("msg.capture", e.nomZone, c.tag)),
@@ -658,7 +658,7 @@ public final class ClanEvents {
         Clan c = store == null ? null : store.get(e.clanId);
         if (c == null) return;
         c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.ZONE_PERDUE, e.nomZone));
-        store.marquerDirty();
+        store.marquerDirty(c);
         Sync.marquer(c);
         if (e.finTenue) {
             // 27/10 : fin de la tenue (tenue_min) : la zone redevient libre, personne ne l'a prise
@@ -696,7 +696,7 @@ public final class ClanEvents {
         ClanService.ajouterXp(c, SourceXp.RAVITAILLEMENT, ClansConfig.XP_RAVITAILLEMENT.get(), joueur);
         Quetes.progresser(c, QueteEtat.Type.RAVITAILLEMENTS, 1);
         c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.RAVITAILLEMENT, nomZone));
-        store.marquerDirty();
+        store.marquerDirty(c);
         Sync.marquer(c);
     }
 
@@ -724,7 +724,7 @@ public final class ClanEvents {
         c.pointsTerritoire += e.valeurTenue;
         c.minutesZonesAPayer += e.zonesTenues;
         c.minutesValeurAConvertir += e.valeurTenue;
-        store.marquerDirty();
+        store.marquerDirty(c);
         long heures = c.minutesZonesAPayer / 60;
         if (heures > 0) {
             c.minutesZonesAPayer -= heures * 60;

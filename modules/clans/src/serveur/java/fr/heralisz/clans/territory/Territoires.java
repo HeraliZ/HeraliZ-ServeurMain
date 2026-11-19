@@ -653,10 +653,14 @@ public final class Territoires {
         return O == null ? EtatZone.NEUTRE : EtatZone.TENUE;
     }
 
-    /** Met a jour le bloc-entite du drapeau de la zone si son chunk est charge (synchronise seulement si ca change). */
+    /**
+     * Met a jour le bloc-entite du drapeau de la zone si son chunk est charge (synchronise seulement si ca change). 19/11
+     * (audit des lenteurs, C4) : chunk complet seulement ; isLoaded le disait aussi pendant sa lecture, et le fil du serveur
+     * l'attendait (194 et 266 ms le 18/11).
+     */
     private void rafraichirDrapeau(ServerLevel level, Zone zone, @Nullable Clan O, EtatZone etat) {
         BlockPos pos = zone.drapeau;
-        if (pos == null || !level.isLoaded(pos)) return;
+        if (pos == null || !fr.heraliz.noyau.api.Troncons.charge(level, pos)) return;
         if (level.getBlockEntity(pos) instanceof DrapeauBlockEntity be) {
             if (be.appliquer(zone.id, zone.nom, O == null ? "" : O.tag, O == null ? null : O.banniere, etatDrapeau(O, etat))) be.synchroniser();
         }

@@ -115,7 +115,7 @@ public final class AncienMondeBases {
         if (!Deplacements.allerAuSpawn(p)) {
             ServerLevel o = p.server.overworld();
             BlockPos s = o.getSharedSpawnPos();
-            p.teleportTo(o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);
+            fr.heraliz.noyau.api.Arrivees.teleporter(p, o, s.getX() + 0.5, s.getY(), s.getZ() + 0.5, p.getYRot(), 0f);   // 19/11 : arrivée chargée d'abord
         }
         T.chat(p, T.t("crac.bases.ancien_ferme", "Le monde où tu étais (l'ancien monde des bases) est fermé : te voilà au spawn, avec ton inventaire."),
             ChatFormatting.YELLOW);

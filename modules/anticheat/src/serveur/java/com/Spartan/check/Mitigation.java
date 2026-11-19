@@ -152,6 +152,9 @@ public final class Mitigation {
         if (from == null) {
             from = new Vec3(p.xo, p.yo, p.zo);
         }
+        if (!MovementEnv.loaded(p, from)) {
+            return null; // 19/11 : colonne encore en lecture, jamais attendue par le fil du serveur
+        }
         BlockHitResult hit = p.level().clip(new ClipContext(from, from.subtract(0, MAX_DROP, 0),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, p));
         if (hit.getType() != HitResult.Type.BLOCK || !p.level().getFluidState(hit.getBlockPos()).isEmpty()) {
@@ -164,8 +167,8 @@ public final class Mitigation {
     /** Zone chargée, place libre, ni fluide ni bloc dangereux dans la hitbox ou sous les pieds. */
     private static boolean isSafe(ServerPlayer p, Vec3 pos) {
         Level level = p.level();
-        if (!level.hasChunkAt(BlockPos.containing(pos))) {
-            return false;
+        if (!MovementEnv.loaded(p, pos)) {
+            return false; // 19/11 : tronçons complets seulement (hasChunkAt le dit aussi pendant leur lecture)
         }
         AABB box = MovementEnv.boxAt(p, pos).deflate(1.0E-7);
         if (!level.noCollision(p, box) || level.containsAnyLiquid(box)) {

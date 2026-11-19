@@ -140,7 +140,7 @@ public final class StructureIntegrity {
         int unknown = 0;
         for (long l : batch) {
             BlockPos pos = BlockPos.of(l);
-            if (!level.isLoaded(pos) || !(level.getBlockState(pos).getBlock() instanceof StructureBlock)
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, pos) || !(level.getBlockState(pos).getBlock() instanceof StructureBlock)
                 || !(level.getBlockEntity(pos) instanceof StructureBlockEntity be)) {
                 continue;
             }
@@ -369,7 +369,7 @@ public final class StructureIntegrity {
         int slab = PieceSolids.slabRow(f.key());
         for (int i = 0; i < cols.size() && i < f.skirt.length; i++) {
             BlockPos ground = new BlockPos(cols.get(i)[0], slab - f.skirt[i] - 1, cols.get(i)[1]);
-            if (!level.isLoaded(ground) || env.isGround(ground)) {
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, ground) || env.isGround(ground)) {
                 return true;
             }
         }

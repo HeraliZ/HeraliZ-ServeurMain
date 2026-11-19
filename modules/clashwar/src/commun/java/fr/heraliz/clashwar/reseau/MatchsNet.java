@@ -18,8 +18,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Canal reseau {@code heraliz_clashwar:main}, version "2" (identique des deux cotes ; 19/11 : tableau de score et choix
- * de classe, paquets changes). Chaque module enregistre ses
+ * Canal reseau {@code heraliz_clashwar:main}, version "3" (identique des deux cotes ; 19/11 : tableau de score et choix
+ * de classe, paquets changes ; puis fuseau des heures dans la vue du tableau). Chaque module enregistre ses
  * paquets dans sa methode statique {@code paquets(MatchsNet.Registre r)} (voir {@link Modules}), appelee par
  * {@link #init()} dans l'ordre de {@link Modules#COMMUNS} : les identifiants sont donc stables pour un meme jar.
  * <p>Patron d'un paquet : un record avec {@code write(FriendlyByteBuf)}, {@code static read(FriendlyByteBuf)} et
@@ -47,7 +47,7 @@ public final class MatchsNet {
     private MatchsNet() {
     }
 
-    public static final String VERSION = "2";
+    public static final String VERSION = "3";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(HeralizClashWar.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 

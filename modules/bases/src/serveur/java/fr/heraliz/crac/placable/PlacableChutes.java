@@ -36,7 +36,7 @@ public final class PlacableChutes {
             return;
         }
         BlockPos cur = pos.above();
-        for (int i = 0; i < MAX_CASCADE && level.isLoaded(cur); i++) {
+        for (int i = 0; i < MAX_CASCADE && fr.heraliz.noyau.api.Troncons.charge(level, cur); i++) {
             BlockState state = level.getBlockState(cur);
             if (!PlacableHpManager.isTracked(state) || isSupported(level, cur, state)) {
                 return;

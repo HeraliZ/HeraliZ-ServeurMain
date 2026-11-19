@@ -1293,7 +1293,7 @@ public final class ClanService {
         }
         ClanStore st = store();
         if (xp <= 0) {
-            if (st != null) st.marquerDirty();   // compteur du jour change
+            if (st != null) st.marquerDirty(c);   // compteur du jour change
             Sync.marquerLent(c);
             return 0;
         }
@@ -1325,7 +1325,7 @@ public final class ClanService {
                         "Niveau %s : votre clan peut maintenant avoir %s membres.", c.niveau, c.membresMax())));
             }
         }
-        if (st != null) st.marquerDirty();
+        if (st != null) st.marquerDirty(c);
         if (monte) {
             Sync.marquer(c);
             // 25/10 : le tag de la liste Tab change de couleur avec le niveau (gris, couleur du clan, or) ; avant, il

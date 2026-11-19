@@ -138,9 +138,15 @@ def lancer(a, d):
             m = serveur.attendre(DONE, 0, max(10.0, fin_max - time.time()))
             if m:
                 break
-            if serveur.vivant():
-                res["echec"] = "« Done » jamais vu en %d min (serveur bloqué au démarrage ?)" % a.attente
+            if not serveur.fini:
+                # journal toujours ouvert : Java tourne encore, sans « Done » dans le temps donné
+                res["echec"] = "« Done » jamais vu en %g min (serveur bloqué au démarrage ?)" % a.attente
                 break
+            # journal fermé : Java s'arrête (son code de sortie arrive juste après la fin du journal)
+            try:
+                serveur.proc.wait(15)
+            except subprocess.TimeoutExpired:
+                pass
             fatale = any(FATALES.search(l) for l in serveur.depuis(0))
             if essai == 1 and relance and not fatale and time.time() < fin_max - 60:
                 dire("Mohist s'est arrêté avant « Done » (code %s) pendant son installation : nouvel essai"

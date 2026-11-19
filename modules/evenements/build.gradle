@@ -9,4 +9,6 @@ apply from: rootProject.file('gradle/module-coupe.gradle')
 dependencies {
     // largage public : frappes aériennes du module monde (avion cargo, caisse en parachute)
     compileOnly project(path: ':monde', configuration: 'devComplet')
+    // écrivain en fond commun (19/11, fr.heraliz.noyau.api.EcrituresFond)
+    compileOnly project(path: ':noyau', configuration: 'devComplet')
 }

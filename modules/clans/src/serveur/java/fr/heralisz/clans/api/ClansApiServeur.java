@@ -175,7 +175,7 @@ public final class ClansApiServeur implements ClansApi.Moteur {
         c.banque -= montant;
         c.ajouterMouvement(new Mouvement(System.currentTimeMillis(), auteur, auteur == null ? NOM_SYSTEME : ClanService.nomDe(auteur),
                 -montant, motif == null ? "" : motif));
-        s.marquerDirty();
+        s.marquerDirty(c);
         Sync.marquer(c);
         s.sauvegarderClanMaintenant(c);   // 15/11 (audit B2) : ce clan seul, par le journal d'ecriture
         HeraliszClans.LOG.info("[clans] api : banque de [{}] debitee de {} ({})", c.tag, montant, motif);
@@ -203,7 +203,7 @@ public final class ClansApiServeur implements ClansApi.Moteur {
             c.ajouterMouvement(new Mouvement(System.currentTimeMillis(), auteur, auteur == null ? NOM_SYSTEME : ClanService.nomDe(auteur),
                     credite, motif == null ? "" : motif));
         }
-        s.marquerDirty();
+        s.marquerDirty(c);
         Sync.marquer(c);
         s.sauvegarderClanMaintenant(c);   // 15/11 (audit B2) : ce clan seul, par le journal d'ecriture
         HeraliszClans.LOG.info("[clans] api : banque de [{}] creditee de {} ({})", c.tag, credite, motif);
@@ -221,7 +221,7 @@ public final class ClansApiServeur implements ClansApi.Moteur {
         if (s == null || c == null) return false;
         c.clashwarJoues++;
         if (gagne) c.clashwarGagnes++;
-        s.marquerDirty();
+        s.marquerDirty(c);
         Sync.marquer(c);
         return true;
     }
@@ -246,7 +246,7 @@ public final class ClansApiServeur implements ClansApi.Moteur {
         tout[0] = cle;
         for (int i = 0; i < n; i++) tout[i + 1] = args[i] == null ? "" : args[i];
         c.ajouterEvenement(new Evenement(System.currentTimeMillis(), Evenement.Genre.PERSO, tout));
-        s.marquerDirty();
+        s.marquerDirty(c);
         Sync.marquer(c);
         return true;
     }

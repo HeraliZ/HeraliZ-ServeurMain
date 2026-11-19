@@ -544,6 +544,8 @@ jobs:
             echo "put -O /config/heralisz_clans serveur/config/heralisz_clans/zones.json;" > zones.lftp
           fi
           echo "MONDE=$MONDE" >> "$GITHUB_ENV"
+          # fichiers de la racine : bukkit.yml et spigot.yml à chaque fois (aucun secret dedans, audit du 19/11, F8) ;
+          # server.properties JAMAIS ici (adresse et port propres au Ptero : à la main, ou « Installation complète »)
           lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "
             $LFTP_REGLAGES
             source retirer.lftp;

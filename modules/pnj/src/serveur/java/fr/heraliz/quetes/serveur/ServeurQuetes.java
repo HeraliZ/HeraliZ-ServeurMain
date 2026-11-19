@@ -36,6 +36,8 @@ import java.util.UUID;
  */
 public final class ServeurQuetes implements Partie {
     private static int ticks;
+    /** 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau). */
+    private static final int DECALAGE_ECRITURE = fr.heraliz.noyau.api.Etalement.decalage("quetes.progressions", 600);
     /** Dernières lueurs envoyées à chaque joueur (pour ne renvoyer que ce qui change). */
     private static final Map<UUID, Integer> LUEURS = new HashMap<>();
 
@@ -239,7 +241,7 @@ public final class ServeurQuetes implements Partie {
         ObjetsARendre.tick(e.getServer());
         GardeRecycleur.tick(e.getServer());
         if (ticks % 20 == 11) Journalieres.tick(e.getServer());
-        if (++ticks % 600 == 0) Donnees.toutEcrire();
+        if (fr.heraliz.noyau.api.Etalement.tour(++ticks, 600, DECALAGE_ECRITURE)) Donnees.toutEcrire();
     }
 
     private static void action(ServerPlayer p, Reseau.Action a) {

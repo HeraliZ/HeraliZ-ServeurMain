@@ -358,7 +358,8 @@ final class ZonesVip {
         ServerPlayer p = c.getSource().getPlayerOrException();
         ServerLevel l = c.getSource().getServer().getLevel(z.monde());
         if (l == null) return inconnue(c.getSource(), nom);
-        p.teleportTo(l, (z.minX() + z.maxX()) / 2.0, z.minY(), (z.minZ() + z.maxZ()) / 2.0, p.getYRot(), p.getXRot());
+        // 19/11 : départ dès que l'arrivée est chargée (api.Arrivees du noyau, 3 s au plus)
+        fr.heraliz.noyau.api.Arrivees.teleporter(p, l, (z.minX() + z.maxX()) / 2.0, z.minY(), (z.minZ() + z.maxZ()) / 2.0, p.getYRot(), p.getXRot());
         return 1;
     }
 

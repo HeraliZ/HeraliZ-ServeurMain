@@ -34,8 +34,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,12 +67,19 @@ public final class ArenesService {
     private static final String PRECHAUFFAGE = "prechauffage";
     private static final int DRAPEAUX = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
     /**
-     * Garde chargé le tronçon où l'on pose (30 s, renouvelé à chaque passage) : un tronçon absent est demandé puis
-     * attendu, il se crée sur les fils de travail du jeu (25/10, audit : sans ça, le premier bloc posé dans un tronçon
-     * neuf le créait sur le fil serveur, 250 à 340 ms de gel par tick pendant la pose d'avance des 11 cartes).
+     * Garde chargé le tronçon où l'on pose (renouvelé à chaque passage) : un tronçon absent est demandé puis attendu, il se
+     * crée sur les fils de travail du jeu (25/10, audit : sans ça, le premier bloc posé dans un tronçon neuf le créait sur
+     * le fil serveur, 250 à 340 ms de gel par tick pendant la pose d'avance des 11 cartes). 19/11 (audit des lenteurs C8) :
+     * rendu dès que la pose passe au tronçon suivant (les blocs sont rangés par tronçon) ; 5 s seulement en secours (avant :
+     * 30 s pour chacun, soit ~140 tickets à la fois et 2 746 tronçons tenus dans le monde des arènes, puis plus de 2 000
+     * lâchés ensemble).
      */
-    private static final TicketType<ChunkPos> TICKET_POSE = TicketType.create("heraliz_arenes", Comparator.comparingLong(ChunkPos::toLong), 600);
+    private static final TicketType<ChunkPos> TICKET_POSE = TicketType.create("heraliz_arenes", Comparator.comparingLong(ChunkPos::toLong), 100);
+    /** Tronçons qui ont des entités de décor à poser à la fin : gardés jusqu'à {@link #terminer}, rendus là (sans délai). */
+    private static final TicketType<ChunkPos> TICKET_DECOR = TicketType.create("heraliz_arenes_decor", Comparator.comparingLong(ChunkPos::toLong));
     private static int dernierCx = Integer.MIN_VALUE, dernierCz = Integer.MIN_VALUE;
+    /** Pas de tronçon (clé impossible). */
+    private static final long AUCUN = Long.MAX_VALUE;
 
     /** Pose en cours. */
     private static final class Pose {
@@ -79,15 +88,37 @@ public final class ArenesService {
         final RegistreArenes.Entree entree;
         int i;
         final long debutMs = System.currentTimeMillis();
+        /** Tronçon où la pose en est (son ticket est rendu quand elle passe au suivant), AUCUN au départ. */
+        long troncon = AUCUN;
+        /** Tronçons des entités de décor de la structure (clés), et ceux d'entre eux déjà tenus par TICKET_DECOR. */
+        final it.unimi.dsi.fastutil.longs.LongOpenHashSet decor = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        final it.unimi.dsi.fastutil.longs.LongArrayList gardes = new it.unimi.dsi.fastutil.longs.LongArrayList();
 
         Pose(Instance inst, Structure st, RegistreArenes.Entree entree) {
             this.inst = inst;
             this.st = st;
             this.entree = entree;
+            BlockPos o = inst.origine();
+            for (Structure.Ent e : st.entites) {
+                decor.add(ChunkPos.asLong((int) Math.floor(o.getX() + e.x()) >> 4, (int) Math.floor(o.getZ() + e.z()) >> 4));
+            }
         }
     }
 
     private static final ArrayDeque<Pose> FILE = new ArrayDeque<>();
+    /**
+     * Poses interrompues par un arrêt du serveur (19/11, audit C8) : reprises à l'ouverture des inscriptions
+     * ({@link #ouverture}), ou dès que leur instance est réservée ou préparée, plus au démarrage (sauf réglage
+     * {@code arenes_au_demarrage}).
+     */
+    private static final List<Pose> EN_ATTENTE = new ArrayList<>();
+    /** Réglage {@code arenes_au_demarrage} de clashwar.json : vrai = poses reprises et cartes posées d'avance au démarrage. */
+    private static boolean auDemarrage;
+
+    /** Réglage de clashwar.json (relu au démarrage et par {@code /recharger clashwar}). */
+    public static void regler(boolean poserAuDemarrage) {
+        auDemarrage = poserAuDemarrage;
+    }
     private static final Map<String, Structure> STRUCTURES = new HashMap<>();
     private static final List<Consumer<Instance>> ECOUTEURS = new ArrayList<>();
     private static final BlockPos.MutableBlockPos CURSEUR = new BlockPos.MutableBlockPos();
@@ -108,10 +139,11 @@ public final class ArenesService {
         }
         // bordure propre aux matchs (independante de celle de la carte) avant tout choix de case
         BordureArenes.imposer(niveau);
-        // instances deja posees, reutilisees (jamais une qui serait hors de la bordure)
+        // instances deja posees, reutilisees (jamais une qui serait hors de la bordure) ; pose interrompue : reprise
         for (Instance i : Arenes.instances()) {
             if (i.carte().id().equals(carteId) && i.libre() && utilisable(s, i)) {
                 i.occuper("?");
+                reprendre(i);
                 return i;
             }
         }
@@ -119,6 +151,7 @@ public final class ArenesService {
         for (Instance i : Arenes.instances()) {
             if (i.carte().id().equals(carteId) && PRECHAUFFAGE.equals(i.occupant()) && utilisable(s, i)) {
                 i.occuper("?");
+                reprendre(i);
                 return i;
             }
         }
@@ -142,7 +175,10 @@ public final class ArenesService {
         if (niveau == null) return 0;
         int voulu = Math.min(nombre, PREPARATION_MAX), existantes = 0;
         for (Instance i : Arenes.instances()) {
-            if (i.carte().id().equals(carteId) && utilisable(s, i)) existantes++;
+            if (i.carte().id().equals(carteId) && utilisable(s, i)) {
+                existantes++;
+                reprendre(i);   // pose interrompue par un arrêt : elle compte, et reprend maintenant
+            }
         }
         if (existantes >= voulu) return 0;
         BordureArenes.imposer(niveau);
@@ -287,7 +323,7 @@ public final class ArenesService {
         for (int x = x0; x < x1; x++) {
             for (int z = z0; z < z1; z++) {
                 p.set(x, y0, z);
-                if (!niveau.hasChunkAt(p)) continue;
+                if (!fr.heraliz.noyau.api.Troncons.charge(niveau, p)) continue;
                 for (int y = y0; y < y1; y++) {
                     p.setY(y);
                     if (niveau.getBlockState(p).getBlock() instanceof BaseFireBlock) {
@@ -358,21 +394,59 @@ public final class ArenesService {
                 inst.marquerPrete();
                 ok++;
             } else {
-                FILE.addLast(new Pose(inst, st, e));
+                // 19/11 (audit C8) : pas au démarrage ; reprise à l'ouverture des inscriptions ou à la réservation
+                EN_ATTENTE.add(new Pose(inst, st, e));
                 reprises++;
             }
         }
-        HeralizClashWar.LOG.info("[matchs] arenes : {} instances pretes, {} poses reprises, {} obsoletes", ok, reprises, obsoletes);
-        prechauffer(s);
+        HeralizClashWar.LOG.info("[matchs] arenes : {} instances pretes, {} poses interrompues (reprises a l'ouverture des inscriptions), {} obsoletes",
+                ok, reprises, obsoletes);
+        demarrageAFaire = true;
+    }
+
+    /** Au premier tick après le démarrage (réglages relus) : poses reprises et cartes posées d'avance, si demandé. */
+    private static boolean demarrageAFaire;
+
+    /**
+     * Ouverture des inscriptions du ClashWar (19/11, audit C8) : poses interrompues reprises, puis une instance de chaque
+     * carte de {@code cartes} (salle et cartes du format) qui n'en a encore aucune, posée d'avance en tâche de fond. Avant,
+     * au démarrage du serveur : 2 746 tronçons tenus dans le monde des arènes alors que personne ne jouait.
+     */
+    public static void ouverture(MinecraftServer s, Collection<String> cartes) {
+        int reprises = reprendreTout();
+        int n = prechauffer(s, cartes);
+        if (reprises + n > 0) HeralizClashWar.LOG.info("[matchs] arenes : ouverture des inscriptions, {} pose(s) reprise(s), {} carte(s) posee(s) d'avance", reprises, n);
+    }
+
+    /** Pose interrompue de cette instance : remise dans la file (rien si elle n'attendait pas). */
+    private static void reprendre(Instance i) {
+        if (EN_ATTENTE.isEmpty()) return;
+        for (Iterator<Pose> it = EN_ATTENTE.iterator(); it.hasNext(); ) {
+            Pose p = it.next();
+            if (p.inst != i) continue;
+            it.remove();
+            FILE.addLast(p);
+            return;
+        }
+    }
+
+    /** Toutes les poses interrompues remises dans la file ; rend combien. */
+    private static int reprendreTout() {
+        int n = EN_ATTENTE.size();
+        FILE.addAll(EN_ATTENTE);
+        EN_ATTENTE.clear();
+        return n;
     }
 
     /**
      * Pose d'avance, en tache de fond, une instance de chaque carte qui n'en a encore aucune (premier demarrage apres
-     * une installation ou une nouvelle version de la carte) : le premier joueur qui lance la carte la trouve prete.
+     * une installation ou une nouvelle version de la carte) : le premier joueur qui lance la carte la trouve prete. 19/11 :
+     * seulement les cartes {@code cartes} (null : toutes). Rend le nombre de cartes posées.
      */
-    private static void prechauffer(MinecraftServer s) {
+    private static int prechauffer(MinecraftServer s, @Nullable Collection<String> cartes) {
         int n = 0;
         for (Carte c : Arenes.cartes()) {
+            if (cartes != null && !cartes.contains(c.id())) continue;
             boolean existe = false;
             for (Instance i : Arenes.instances()) {
                 if (i.carte().id().equals(c.id())) {
@@ -387,13 +461,22 @@ public final class ArenesService {
             n++;
         }
         if (n > 0) HeralizClashWar.LOG.info("[matchs] arenes : {} carte(s) posee(s) d'avance en tache de fond", n);
+        return n;
     }
 
     /**
      * Pose par tranches (appele a chaque tick serveur) : au plus {@link Arenes#BLOCS_PAR_TICK} blocs et
-     * {@link #BUDGET_POSE_NS} de temps par tick. Sans allocation hors fin de pose.
+     * {@link #BUDGET_POSE_NS} de temps par tick. Sans allocation hors fin de pose et changement de tronçon.
      */
     public static void tick(MinecraftServer s) {
+        if (demarrageAFaire) {
+            demarrageAFaire = false;
+            if (auDemarrage) {
+                // réglage arenes_au_demarrage : comme avant le 19/11
+                reprendreTout();
+                prechauffer(s, null);
+            }
+        }
         if (FILE.isEmpty()) return;
         int budget = Arenes.BLOCS_PAR_TICK;
         long fin = System.nanoTime() + BUDGET_POSE_NS;
@@ -409,6 +492,12 @@ public final class ArenesService {
                 CURSEUR.set(o.getX() + b.x(), o.getY() + b.y(), o.getZ() + b.z());
                 int cx = CURSEUR.getX() >> 4, cz = CURSEUR.getZ() >> 4;
                 if (cx != dernierCx || cz != dernierCz) {
+                    long cle = ChunkPos.asLong(cx, cz);
+                    // 19/11 (audit C8) : tronçon fini (les blocs sont rangés par tronçon) : son ticket est rendu tout de suite
+                    if (cle != p.troncon) {
+                        lacher(p, lvl);
+                        p.troncon = cle;
+                    }
                     ChunkPos cp = new ChunkPos(cx, cz);
                     lvl.getChunkSource().addRegionTicket(TICKET_POSE, cp, 0, cp);
                     // pas encore prêt : on reprend au prochain tick (getChunkNow ne bloque jamais ; hasChunk dit seulement
@@ -440,6 +529,23 @@ public final class ArenesService {
         }
     }
 
+    /**
+     * La pose quitte son tronçon : ticket rendu tout de suite (19/11), sauf si des entités de décor doivent y être posées à
+     * la fin : il passe alors sous un ticket sans délai, rendu par {@link #terminer} (elles ne sont jamais posées dans un
+     * tronçon déchargé).
+     */
+    private static void lacher(Pose p, ServerLevel lvl) {
+        long k = p.troncon;
+        if (k == AUCUN) return;
+        ChunkPos cp = new ChunkPos(k);
+        if (p.decor.contains(k) && !p.gardes.contains(k)) {
+            lvl.getChunkSource().addRegionTicket(TICKET_DECOR, cp, 0, cp);
+            p.gardes.add(k);
+        }
+        lvl.getChunkSource().removeRegionTicket(TICKET_POSE, cp, 0, cp);
+        p.troncon = AUCUN;
+    }
+
     private static void terminer(MinecraftServer s, Pose p) {
         ServerLevel lvl = p.inst.niveau();
         BlockPos o = p.inst.origine();
@@ -455,6 +561,13 @@ public final class ArenesService {
             if (ent != null && lvl.addFreshEntity(ent)) ents++;
         }
         nettoyer(p.inst);
+        // 19/11 : dernier tronçon et tronçons des décors rendus (rien ne reste tenu après la pose)
+        lacher(p, lvl);
+        for (int k = 0; k < p.gardes.size(); k++) {
+            ChunkPos cp = new ChunkPos(p.gardes.getLong(k));
+            lvl.getChunkSource().removeRegionTicket(TICKET_DECOR, cp, 0, cp);
+        }
+        p.gardes.clear();
         p.entree.prete = true;
         RegistreArenes.de(s).setDirty();
         HeralizClashWar.LOG.info("[matchs] instance {} posee : {} blocs, {} entites en {} ms", p.inst.id(), p.st.blocs.size(), ents,
@@ -465,6 +578,8 @@ public final class ArenesService {
     /** Arret du serveur : oublie la file (les poses inachevees seront reprises au demarrage). */
     public static void arret() {
         FILE.clear();
+        EN_ATTENTE.clear();
+        demarrageAFaire = false;
         STRUCTURES.clear();
         HORS_BORDURE.clear();
     }

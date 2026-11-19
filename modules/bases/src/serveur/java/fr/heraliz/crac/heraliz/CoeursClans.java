@@ -55,7 +55,7 @@ public final class CoeursClans extends SafeSavedData {
         }
         ServerLevel l = server.getLevel(g.dimension());
         // chunk pas chargé : on le croit là (on ne charge rien pour ça)
-        if (l != null && l.isLoaded(g.pos()) && !(l.getBlockState(g.pos()).getBlock() instanceof CoeurClanBlock)) {
+        if (l != null && fr.heraliz.noyau.api.Troncons.charge(l, g.pos()) && !(l.getBlockState(g.pos()).getBlock() instanceof CoeurClanBlock)) {
             d.coeurs.remove(groupe);
             d.setDirty();
             return null;

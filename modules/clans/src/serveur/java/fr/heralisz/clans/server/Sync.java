@@ -221,7 +221,7 @@ public final class Sync {
         long now = System.currentTimeMillis();
         for (Clan c : store.tous()) {
             if (c.invitations.isEmpty()) continue;
-            if (c.purgerInvitations(now)) store.marquerDirty();
+            if (c.purgerInvitations(now)) store.marquerDirty(c);
             Invitation i = c.invitationDe(joueur);
             if (i == null) continue;
             l.add(new InvitationVue(c.id, c.tag, c.nom, c.banniere, c.membres.size(), c.membresMax(), i.auteurNom(),

@@ -46,6 +46,14 @@ final class Etat {
     private static final Set<String> RECOMPENSES_SET = new HashSet<>();
     /** Prochain départ des événements « toutes les … » du planning (heure en ms) : un redémarrage ne remet pas l'attente à zéro. */
     private static final Map<String, Long> PROCHAINS = new LinkedHashMap<>();
+    /**
+     * Butins d'événement fermés jusqu'à une heure réelle (ms) : numéro porté par les conteneurs (« helico#12 ») -> fin du
+     * verrou. 19/11 (audit des bugs, n° 3) : le feu de l'épave de l'hélicoptère n'était gardé qu'en mémoire ; après un
+     * redémarrage pendant le feu, coffre T7 et caisses T6 s'ouvraient tout de suite (plantage) ou étaient retirés (arrêt
+     * propre). Gardé ici, il est rétabli au démarrage jusqu'à cette heure.
+     */
+    private static final Map<String, Long> VERROUS = new LinkedHashMap<>();
+    private static final int VERROUS_MAX = 16;
 
     static void charger(Path dossier) {
         fichier = dossier.resolve("etat.json");
@@ -54,12 +62,20 @@ final class Etat {
         RECOMPENSES.clear();
         RECOMPENSES_SET.clear();
         PROCHAINS.clear();
+        VERROUS.clear();
         if (!Files.exists(fichier)) return;
         try {
             JsonObject o = JsonParser.parseString(Files.readString(fichier, StandardCharsets.UTF_8)).getAsJsonObject();
             numero = o.has("numero") ? o.get("numero").getAsInt() : 0;
             if (o.has("prochains")) {
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("prochains").entrySet()) PROCHAINS.put(e.getKey(), e.getValue().getAsLong());
+            }
+            if (o.has("verrous") && o.get("verrous").isJsonObject()) {
+                long maintenant = System.currentTimeMillis();
+                for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("verrous").entrySet()) {
+                    long fin = e.getValue().getAsLong();
+                    if (fin > maintenant) VERROUS.put(e.getKey(), fin);   // déjà passés : oubliés
+                }
             }
             if (o.has("ouverts")) {
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject("ouverts").entrySet()) {
@@ -100,6 +116,9 @@ final class Etat {
         JsonObject pro = new JsonObject();
         PROCHAINS.forEach(pro::addProperty);
         o.add("prochains", pro);
+        JsonObject ver = new JsonObject();
+        VERROUS.forEach(ver::addProperty);
+        o.add("verrous", ver);
         JsonArray r = new JsonArray();
         RECOMPENSES.forEach(r::add);
         o.add("recompenses", r);
@@ -137,6 +156,30 @@ final class Etat {
     static void prochain(String evenement, long ms) {
         PROCHAINS.put(evenement, ms);
         sauver();
+    }
+
+    /** Le butin {@code id} reste fermé jusqu'à {@code finMs} (heure réelle), même après un redémarrage ; écrit tout de suite. */
+    static void verrou(String id, long finMs) {
+        if (id == null || id.isEmpty()) return;
+        Long avant = VERROUS.put(id, finMs);
+        while (VERROUS.size() > VERROUS_MAX) VERROUS.remove(VERROUS.keySet().iterator().next());
+        if (avant == null || avant != finMs) sauver();
+    }
+
+    /** Fin du verrou du butin {@code id} (heure réelle en ms), 0 : aucun. */
+    static long verrou(String id) {
+        Long fin = VERROUS.get(id);
+        return fin == null ? 0L : fin;
+    }
+
+    /** Le butin {@code id} est ouvert (feu éteint, épave partie, annulé) : verrou oublié. */
+    static void oublierVerrou(String id) {
+        if (id != null && VERROUS.remove(id) != null) sauver();
+    }
+
+    /** Verrous encore à venir (numéro -> fin en ms), copie : rétablis au démarrage. */
+    static Map<String, Long> verrous() {
+        return new LinkedHashMap<>(VERROUS);
     }
 
     static void ouvrir(String id, boolean points, String secteur) {

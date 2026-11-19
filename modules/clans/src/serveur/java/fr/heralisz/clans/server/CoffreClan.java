@@ -357,9 +357,19 @@ public final class CoffreClan {
         }
     }
 
-    /** Écrit les coffres s'ils ont changé (appelé par la sauvegarde des clans et après tout dépôt sans joueur). */
+    /** Écriture en fond ratée : les coffres redeviennent « à sauver » à la sauvegarde suivante. */
+    private static final java.util.concurrent.atomic.AtomicBoolean ECHEC = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * Écrit les coffres s'ils ont changé (appelé par la sauvegarde des clans et après tout dépôt sans joueur). Ordre gardé :
+     * les joueurs qui ont touché au coffre sont enregistrés d'abord (fil serveur), puis le contenu des coffres est relevé.
+     * 19/11 (audit des lenteurs C11) : la compression et l'écriture du fichier partent sur le fil d'écriture des clans
+     * ({@link EcrituresFond}, dans l'ordre, attendu à l'arrêt) ; avant, sur le fil serveur à chaque fermeture du coffre et à
+     * chaque sauvegarde. Écrit à côté puis renommé : un arrêt brutal pendant l'écriture laisse l'ancien fichier entier.
+     */
     public static void sauvegarder() {
         Path f = fichier();
+        if (ECHEC.getAndSet(false)) sale = true;
         if (!sale || illisible || f == null || !f.equals(chargeDe)) return;
         ClanStore s = ClanStore.get();
         sauverJoueurs();
@@ -375,6 +385,8 @@ public final class CoffreClan {
                 CompoundTag o = new CompoundTag();
                 o.putByte("Slot", (byte) i);
                 st.save(o);
+                // le relevé part sur un autre fil : aucune donnée qu'un autre mod pourrait encore modifier (capacités Forge)
+                if (o.contains("ForgeCaps", Tag.TAG_COMPOUND)) o.put("ForgeCaps", o.getCompound("ForgeCaps").copy());
                 objets.add(o);
             }
             if (objets.isEmpty()) continue;
@@ -384,14 +396,19 @@ public final class CoffreClan {
             l.add(t);
         }
         root.put("coffres", l);
+        sale = false;
+        EcrituresFond.ecrire(f, () -> ecrireFichier(f, root), () -> ECHEC.set(true));
+    }
+
+    /** Fil d'écriture : NBT compressé dans coffres.dat.tmp, puis renommé à la place de coffres.dat. */
+    private static void ecrireFichier(Path f, CompoundTag root) throws IOException {
+        Files.createDirectories(f.getParent());
+        Path tmp = f.resolveSibling("coffres.dat.tmp");
+        NbtIo.writeCompressed(root, tmp.toFile());
         try {
-            Files.createDirectories(f.getParent());
-            Path tmp = f.resolveSibling("coffres.dat.tmp");
-            NbtIo.writeCompressed(root, tmp.toFile());
-            Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
-            sale = false;
+            Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
-            HeraliszClans.LOG.error("[clans] sauvegarde de {} impossible", f, ex);
+            Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 

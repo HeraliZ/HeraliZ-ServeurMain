@@ -32,7 +32,7 @@ final class Contexte {
         }
         BlockPos pos = BlockPos.of(bloc);
         boolean contenant = false;
-        if (niveau.isLoaded(pos)) {
+        if (fr.heraliz.noyau.api.Troncons.charge(niveau, pos)) {   // tronçon complet seulement (19/11)
             BlockEntity be = niveau.getBlockEntity(pos);
             contenant = be instanceof Container || (be != null && be.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent());
         }

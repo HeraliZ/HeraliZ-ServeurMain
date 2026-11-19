@@ -180,6 +180,9 @@ public final class PriseCoeur {
         while (it.hasNext()) {
             Prise pr = it.next();
             ServerLevel level = server.getLevel(pr.coeur.dimension());
+            if (level != null && level.isLoaded(pr.coeur.pos()) && !fr.heraliz.noyau.api.Troncons.charge(level, pr.coeur.pos())) {
+                continue;   // 19/11 : tronçon du cœur encore en lecture : la prise attend (rien n'est jugé sur un bloc inconnu)
+            }
             boolean coeurLa = level != null && level.isLoaded(pr.coeur.pos())
                 && level.getBlockState(pr.coeur.pos()).getBlock() instanceof CoeurClanBlock;
             boolean tenu = coeurLa && tenu(server, pr);

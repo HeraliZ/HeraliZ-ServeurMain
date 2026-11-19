@@ -55,5 +55,7 @@
   "noyau.redemarrage.secondes": "%s s",
   "heraliz.redemarrage.deconnexion": "Server restarting: your game will reconnect by itself in a moment.",
   "noyau.verre.sur_toi": "On you",
-  "noyau.verre.acces_rapide": "Quick access"
+  "noyau.verre.acces_rapide": "Quick access",
+  "noyau.arrivee.tp_titre": "Teleport",
+  "noyau.arrivee.tp_texte": "The destination is loading: leaving in a moment (3 s at most)."
 }
