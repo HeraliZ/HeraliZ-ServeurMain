@@ -1,0 +1,74 @@
+{
+  "music.desert": {
+    "sounds": [
+      {
+        "name": "matmos_tct:music.desert",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "music.desertvillage": {
+    "sounds": [
+      {
+        "name": "matmos_tct:music.desert_village",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "music.jungle": {
+    "sounds": [
+      {
+        "name": "matmos_tct:music.jungle",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "music.badlands": {
+    "sounds": [
+      {
+        "name": "matmos_tct:music.badlands",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "music.end": {
+    "sounds": [
+      {
+        "name": "matmos_tct:music.end",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "music.nether": {
+    "sounds": [
+      {
+        "name": "matmos_tct:music.nether",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "biome.nether.ambiant": {
+    "sounds": [
+      {
+        "name": "matmos_tct:biome.nether.ambiant",
+        "stream": true
+      }
+    ],
+    "replace": true
+  },
+  "weather.interiorwind": {
+    "sounds": [
+      {
+        "name": "matmos_tct:weather.wind.interiorwind",
+        "stream": true
+      }
+    ],
+    "replace": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "fr.heraliz.noyau.client.mixin.matmos",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "MatmosJoueurMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

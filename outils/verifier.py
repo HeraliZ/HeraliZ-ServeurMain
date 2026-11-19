@@ -25,6 +25,7 @@ Contrôles :
   - atlas            : grande texture des blocs dans 8192 x 8192 (au-delà, Minecraft la double : +336 Mo de mémoire
                        graphique le 17/11) et aucune image retirée par nos filtres citée par un modèle
                        (outils/atlas_blocs.py --verifier, sans dépendance : tourne aussi sur GitHub) ;
+  - matmos           : sons longs de MAtmos lus en continu, à jour avec son jar (outils/sons_matmos.py --verifier) ;
   - raretes          : chaque arme, accessoire, munition, pièce d'armure et composant a sa rareté dans raretes.json
                        (sinon rien dans son infobulle), et aucun nom d'objet ne contient le mot d'une rareté (elle n'est
                        que le badge de l'infobulle) ; outils/raretes_objets.py --verifier ;
@@ -254,6 +255,14 @@ def main():
         if l.startswith("[atlas]") and (code != 0 or "attention" in l):
             print(l.strip())
     erreurs += code != 0
+    # sons longs de MAtmos lus en continu (audit du 19/11) : notre sounds.json reprend ses événements, à refaire si son
+    # jar change
+    code, out = lancer([str(O / "sons_matmos.py"), "--verifier"])
+    if code != 0:
+        for l in out.splitlines():
+            if l.startswith("[matmos]"):
+                print(l.strip())
+        erreurs += 1
     # caisses : aucun objet de Minecraft ni objet disparu, rareté annoncée = rareté de l'objet (outils/caisses.py)
     code, out = lancer([str(O / "caisses.py"), "--verifier"])
     if code != 0:
