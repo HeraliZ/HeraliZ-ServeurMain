@@ -17,6 +17,9 @@ Contrôles :
   - structures       : structures du ClashWar sans bloc de meuble absent du jar cfm (module clashwar ;
                        modules/clashwar/outils/nettoyer_structures.py --verifier) ;
   - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
+  - atlas            : grande texture des blocs dans 8192 x 8192 (au-delà, Minecraft la double : +336 Mo de mémoire
+                       graphique le 17/11) et aucune image retirée par nos filtres citée par un modèle
+                       (outils/atlas_blocs.py --verifier, sans dépendance : tourne aussi sur GitHub) ;
   - raretes          : chaque arme, accessoire, munition, pièce d'armure et composant a sa rareté dans raretes.json
                        (sinon rien dans son infobulle), et aucun nom d'objet ne contient le mot d'une rareté (elle n'est
                        que le badge de l'infobulle) ; outils/raretes_objets.py --verifier ;
@@ -210,6 +213,15 @@ def main():
                 if l.startswith("[structures]") and ("nettoyer" in l or "ERREUR" in l):
                     print(l.strip())
             erreurs += 1
+    # grande texture des blocs (audit du 19/11) : toutes les images textures/block et textures/item de tous les mods et
+    # packs y sont rangées ; au-delà de 8192 x 8192, Minecraft passe à 16384 x 8192 (mémoire graphique doublée, saccades
+    # sur les petites cartes graphiques). Une nouvelle texture de bloc ou d'objet en 512 ou 1024 peut suffire à la faire
+    # déborder : python outils/atlas_blocs.py montre les plus grosses.
+    code, out = lancer([str(O / "atlas_blocs.py"), "--verifier"])
+    for l in out.splitlines():
+        if l.startswith("[atlas]") and (code != 0 or "attention" in l):
+            print(l.strip())
+    erreurs += code != 0
     # caisses : aucun objet de Minecraft ni objet disparu (outils/caisses.py)
     code, out = lancer([str(O / "caisses.py"), "--verifier"])
     if code != 0:
