@@ -76,6 +76,7 @@ public final class MoteurLogique {
         brancherNoyau();
         Descente.enregistrer();
         Coffres.enregistrer();
+        fr.heraliz.noyau.api.Fuites.surveiller("clashwar.arrivees_en_attente", Arrivees::attentes);
         Protections.enregistrer();
         BordureArenes.enregistrer();
     }
@@ -162,6 +163,9 @@ public final class MoteurLogique {
             }
             CONNEXIONS.clear();
         }
+        // 19/11 : arrivées préchargées des téléportations, puis dépôts et retours du Coffre étalés (rien sans travail en cours)
+        Arrivees.tick();
+        Coffres.tick(s);
         GardeHorsMatch.tick(s);
         TAMPON.clear();
         TAMPON.addAll(MatchApi.parties());
@@ -213,9 +217,12 @@ public final class MoteurLogique {
         Protections.oublier(u);
         CombatEvents.oublier(u);
         ChoixService.oublier(u);
+        Arrivees.oublier(u);
     }
 
     private static void arret(ServerStoppedEvent e) {
+        Coffres.arret();
+        Arrivees.vider();
         MatchApi.vider();
         Arenes.vider();
         ArenesService.arret();

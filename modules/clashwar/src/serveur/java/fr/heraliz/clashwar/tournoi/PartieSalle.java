@@ -1,5 +1,6 @@
 package fr.heraliz.clashwar.tournoi;
 
+import fr.heraliz.clashwar.moteur.Arrivees;
 import fr.heraliz.clashwar.moteur.api.Equipe;
 import fr.heraliz.clashwar.moteur.api.Equipement;
 import fr.heraliz.clashwar.moteur.api.Instance;
@@ -63,12 +64,18 @@ public final class PartieSalle extends Partie {
     /**
      * Teleporte le joueur dans la salle (rien si l'instance n'existe plus), le regard leve vers le centre du mur-tableau
      * ({@code tableau_mur} de la carte) : a l'horizontale, depuis les points d'apparition, l'ecran etait presque hors champ.
+     * 19/11 (audit des lenteurs C1) : des que l'arrivee est chargee ({@link Arrivees}, 3 s au plus ; tout de suite si elle
+     * l'est deja, la salle etant gardee chargee pendant le tournoi). Plus rattache a la salle a ce moment-la : rien.
      */
     void teleporter(ServerPlayer p) {
         Instance i = instance();
         if (i == null) return;
         Pose s = spawn();
-        p.teleportTo(i.niveau(), s.x(), s.y(), s.z(), s.yaw(), tangageVersMur(i, s));
+        float tangage = tangageVersMur(i, s);
+        Arrivees.puis(p, i.niveau(), s.x(), s.z(), () -> {
+            if (MatchApi.partieDe(p) != this || instance() != i) return;
+            p.teleportTo(i.niveau(), s.x(), s.y(), s.z(), s.yaw(), tangage);
+        });
     }
 
     /** Tangage (degres, negatif = vers le haut) du regard des yeux vers le centre du mur, 0 sans mur dans la carte. */

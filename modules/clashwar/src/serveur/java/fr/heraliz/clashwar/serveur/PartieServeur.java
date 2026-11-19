@@ -61,6 +61,11 @@ public final class PartieServeur implements fr.heraliz.clashwar.pont.Partie {
         }
 
         @Override
+        public void arenesOuverture(MinecraftServer s, Collection<String> cartes) {
+            ArenesService.ouverture(s, cartes);
+        }
+
+        @Override
         public void arenesLiberer(Instance instance) {
             ArenesService.liberer(instance);
         }

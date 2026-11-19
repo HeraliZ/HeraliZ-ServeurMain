@@ -35,6 +35,8 @@ final class GardeHorsMatch {
             if (!HeralizClashWar.MODID.equals(p.level().dimension().location().getNamespace())) continue;
             if (p.isCreative() || p.isSpectator() || p.hasPermissions(2)) continue;
             if (MatchApi.partieDe(p.getUUID()) != null || Spectateurs.estSpectateur(p.getUUID())) continue;
+            // 19/11 : dépôt ou retour du Coffre en cours (étalés), ou arrivée en attente : il part dans quelques ticks
+            if (Coffres.enCours(p.getUUID()) || Arrivees.enAttente(p.getUUID())) continue;
             try {
                 renvoyer(p);
             } catch (RuntimeException ex) {

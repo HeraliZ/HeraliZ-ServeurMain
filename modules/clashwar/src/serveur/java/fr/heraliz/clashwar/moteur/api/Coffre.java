@@ -22,6 +22,9 @@ import java.util.UUID;
  * Restauration : vidage, rechargement, soif, teleportation, suppression du fichier <b>apres</b> sauvegarde du joueur.
  * Au login : depot present et aucune partie active pour ce joueur = restauration (reprise apres crash).
  * Fil serveur uniquement.
+ * <p>19/11 (audit des lenteurs C3) : le tournoi passe par les versions etalees de {@code moteur.coffre.Coffres}
+ * ({@code deposerPuis}, {@code rendrePuis} : ecriture en fond, joueur fige jusqu'a la confirmation, arrivee prechargee) ;
+ * {@link #deposer} et {@link #rendre} restent immediats (outils du staff, garde hors match).
  */
 public final class Coffre {
     private Coffre() {

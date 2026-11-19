@@ -20,6 +20,8 @@ import fr.heraliz.clashwar.moteur.api.Equipement;
 import fr.heraliz.clashwar.moteur.api.Hud;
 import fr.heraliz.clashwar.moteur.api.Instance;
 import fr.heraliz.clashwar.moteur.api.MatchApi;
+import fr.heraliz.clashwar.moteur.Arrivees;
+import fr.heraliz.clashwar.moteur.coffre.Coffres;
 import fr.heraliz.clashwar.reseau.MatchsNet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -156,6 +158,8 @@ public final class Tournoi {
     void tick() {
         ticksEtat++;
         CwConfig cfg = CwConfig.get();
+        // 19/11 : salle d'attente gardee chargee pendant le jeu (retours des matchs sans attente)
+        if (enJeu() && !simulation && ticksEtat % 200 == 0) tenirSalle();
         switch (etat) {
             case INSCRIPTION -> {
                 if (simulation) return;
@@ -618,14 +622,38 @@ public final class Tournoi {
         for (Carte c : Arenes.cartesDeType(format.typeCarte)) Arenes.preparer(c.id(), matchs);
     }
 
-    /** Salle prete : chaque inscrit passe par le Coffre puis y est teleporte ; le tableau est tire. */
+    /** Une equipe qui part vers la salle (19/11) : ses joueurs deposes, et ses depots encore en cours. */
+    private static final class Depart {
+        final Tableau.EquipeT equipe;
+        final Set<UUID> deposes = new java.util.HashSet<>();
+        int enCours;
+
+        Depart(Tableau.EquipeT equipe) {
+            this.equipe = equipe;
+        }
+    }
+
+    /** Depart vers la salle en cours (depots etales, 19/11) ; null avant et apres. */
+    @Nullable
+    private List<Depart> departs;
+    private boolean departFait;
+
+    /**
+     * Salle prete : chaque inscrit passe par le Coffre puis y est teleporte ; le tableau est tire quand tous les depots sont
+     * finis. 19/11 (audit des lenteurs C3) : les depots sont etales sur plusieurs ticks et ecrits en tache de fond
+     * ({@code Coffres.deposerPuis}) ; chaque joueur entre en salle des que le sien est confirme (arrivee prechargee).
+     */
     private void entrerSalle() {
-        if (etat != Etat.PREPARATION || instanceSalle == null) return;
+        if (etat != Etat.PREPARATION || instanceSalle == null || departFait) return;
+        departFait = true;
         salle = new PartieSalle(this, "clashwar-" + edition + "-salle");
         salle.instance(instanceSalle);
         MatchApi.enregistrer(salle);
         poserMur(instanceSalle);
-        List<Tableau.EquipeT> finales = new ArrayList<>();
+        tenirSalle();
+        List<Depart> l = new ArrayList<>();
+        departs = l;
+        ticksEtat = 0;   // le delai de la preparation repart pour les depots
         for (Tableau.EquipeT e : provisoires) {
             // 15/11 (regle du proprietaire) : au depart, un joueur connecte qui n'est pas au spawn n'est pas teleporte et son
             // equipe est retiree du tournoi (personne de l'equipe n'est depose ni teleporte)
@@ -640,33 +668,65 @@ public final class Tournoi {
                 retireeDeconnexion(e.joueurs, "[" + e.tag + "] " + e.numero, absent, false);
                 continue;
             }
-            List<UUID> ok = new ArrayList<>();
+            Depart d = new Depart(e);
+            l.add(d);
             for (UUID u : e.joueurs) {
-                if (mannequins.contains(u)) {
-                    // banc d'essai : joueur factice, ni connecte ni Coffre
-                    ok.add(u);
-                    continue;
-                }
+                // banc d'essai : joueur factice, ni connecte ni Coffre (garde dans l'equipe, voir finDeparts)
+                if (mannequins.contains(u)) continue;
                 ServerPlayer p = serveur.getPlayerList().getPlayer(u);
                 if (p == null) continue;
                 if (CombatTag.estTague(p)) {
                     Annonces.chat(p, Component.translatable("clashwar.chat.retire_combat").withStyle(ChatFormatting.RED));
                     continue;
                 }
-                Coffre.Refus r = Coffre.refus(p);
+                d.enCours++;
+                Coffre.Refus r = Coffres.deposerPuis(p, "clashwar", ok -> depose(d, u, ok));
                 if (r != null) {
+                    d.enCours--;
                     Annonces.chat(p, Component.translatable("clashwar.chat.retire_coffre",
                             Component.translatable("matchs.coffre.refus." + r.name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.RED));
-                    continue;
                 }
-                if (!Coffre.deposer(p, "clashwar")) {
-                    Annonces.chat(p, Component.translatable("clashwar.chat.retire_coffre",
-                            Component.translatable("matchs.coffre.refus.erreur")).withStyle(ChatFormatting.RED));
-                    continue;
-                }
-                participants.add(u);
-                ok.add(u);
-                placerEnSalle(p);
+            }
+        }
+        finDeparts();
+    }
+
+    /**
+     * Depot d'un joueur fini (19/11) : fait, il entre en salle ; rate, il reste dehors (prevenu). Edition annulee pendant son
+     * ecriture : son Coffre lui est rendu tout de suite. Le tableau est tire quand tous les depots sont finis.
+     */
+    private void depose(Depart d, UUID u, boolean ok) {
+        d.enCours--;
+        ServerPlayer p = serveur.getPlayerList().getPlayer(u);
+        if (!ok) {
+            if (p != null) {
+                Annonces.chat(p, Component.translatable("clashwar.chat.retire_coffre",
+                        Component.translatable("matchs.coffre.refus.erreur")).withStyle(ChatFormatting.RED));
+            }
+        } else if (etat != Etat.PREPARATION || departs == null || salle == null) {
+            if (p != null) rendreJoueur(p);
+        } else {
+            participants.add(u);
+            d.deposes.add(u);
+            if (p != null) placerEnSalle(p);
+        }
+        finDeparts();
+    }
+
+    /** Tous les depots finis : equipes retenues (dans leur ordre, joueurs dans le leur), tableau tire, premiere pause. */
+    private void finDeparts() {
+        List<Depart> l = departs;
+        if (l == null || etat != Etat.PREPARATION) return;
+        for (Depart d : l) {
+            if (d.enCours > 0) return;
+        }
+        departs = null;
+        List<Tableau.EquipeT> finales = new ArrayList<>();
+        for (Depart d : l) {
+            Tableau.EquipeT e = d.equipe;
+            List<UUID> ok = new ArrayList<>();
+            for (UUID u : e.joueurs) {
+                if (mannequins.contains(u) || d.deposes.contains(u)) ok.add(u);
             }
             if (ok.isEmpty()) continue;
             Map<UUID, String> noms = new LinkedHashMap<>();
@@ -683,6 +743,22 @@ public final class Tournoi {
         Annonces.grande(joueursSalle(), new Annonces.Annonce(Component.translatable("clashwar.annonce.tableau"),
                 Component.translatable("clashwar.annonce.premier_tour", s), Tournois.ACCENT, CwSons.id(CwSons.ANNONCE), 80, Annonces.Style.NORMALE));
         bandeauSalle();
+    }
+
+    /**
+     * Salle d'attente gardee chargee pendant le tournoi (19/11) : ses points d'apparition prechargees (ticket de 30 s,
+     * redemande toutes les 10 s) ; les joueurs qui y reviennent d'un match n'attendent pas son chargement.
+     */
+    private void tenirSalle() {
+        Instance i = instanceSalle;
+        if (i == null) return;
+        List<fr.heraliz.clashwar.moteur.api.Pose> l = i.points("spawn");
+        if (l.isEmpty()) {
+            net.minecraft.world.phys.AABB b = i.bornes();
+            Arrivees.precharger(i.niveau(), b.getCenter().x, b.getCenter().z);
+            return;
+        }
+        for (int k = 0; k < l.size(); k++) Arrivees.precharger(i.niveau(), l.get(k).x(), l.get(k).z());
     }
 
     /** Rattache le joueur a la salle, le teleporte, mode aventure, soigne. */
@@ -880,7 +956,9 @@ public final class Tournoi {
         if (tableau == null) return;
         this.podium = PodiumSalle.poser(instanceSalle, tableau, places, this);
         CwConfig cfg = CwConfig.get();
-        long[] montants = {cfg.recompenseVainqueur, cfg.recompenseFinaliste, cfg.recompenseTroisieme};
+        // 19/11 : primes vraiment versees (rien sous recompenses_clans_min clans, une seule par clan)
+        long[] montants = Recompenses.primesParPlace(tableau);
+        boolean primes = Recompenses.avecPrimes(tableau);
         List<CwPaquets.Marche> marches = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             if (places[i] < 0) continue;
@@ -890,8 +968,11 @@ public final class Tournoi {
                 if (noms.length() > 0) noms.append(" · ");
                 noms.append(e.nom(u));
             }
-            boolean cle = i == 0 && cfg.clesParJoueur > 0 && !cfg.cleEvent.isBlank();
-            Component recompense = Component.translatable(cle ? "clashwar.podium.recompense_cle" : "clashwar.podium.recompense", heralsTexte(montants[i]));
+            boolean cle = i == 0 && primes && cfg.clesParJoueur > 0 && !cfg.cleEvent.isBlank();
+            Component recompense = montants[i] > 0
+                    ? Component.translatable(cle ? "clashwar.podium.recompense_cle" : "clashwar.podium.recompense", heralsTexte(montants[i]))
+                    : !primes ? Component.translatableWithFallback("clashwar.podium.sans_recompense", "Sans prime")
+                    : Component.translatableWithFallback("clashwar.podium.deja_prime", "Une prime par clan");
             marches.add(new CwPaquets.Marche(i + 1, e.libelle(), e.nomClan, e.couleur, noms.toString(), recompense));
         }
         MatchsNet.versJoueurs(joueursSalle(), new CwPaquets.PodiumS2C(edition, format.nom, marches, cfg.finSecondes));
@@ -920,7 +1001,11 @@ public final class Tournoi {
                 .withStyle(ChatFormatting.GRAY));
     }
 
-    /** Rend le Coffre a chaque participant (les deconnectes le recuperent a leur retour) et ferme la salle. */
+    /**
+     * Rend le Coffre a chaque participant (les deconnectes le recuperent a leur retour) et ferme la salle. 19/11 : les
+     * retours sont etales ({@link #rendreJoueur}) ; la salle reste ouverte (joueurs encore rattaches, sans degats ni
+     * commandes) jusqu'au dernier retour, 30 s au plus ({@link #apresFin}).
+     */
     private void rendreTout() {
         if (podium != null) {
             podium.retirer();
@@ -934,26 +1019,74 @@ public final class Tournoi {
         participants.clear();
         for (MatchCw m : new ArrayList<>(matchs)) m.fermer();
         matchs.clear();
+        salleAFermer = true;
+        ticksFermeture = 0;
+        if (retours.isEmpty()) fermerSalle();
+    }
+
+    /** Joueurs dont le retour etale est en cours (19/11) ; la salle se ferme apres le dernier. */
+    private final Set<UUID> retours = new java.util.HashSet<>();
+    private boolean salleAFermer;
+    private int ticksFermeture;
+
+    /** Salle fermee et instance rendue (fin ou annulation, apres les retours). */
+    private void fermerSalle() {
+        salleAFermer = false;
         if (salle != null) salle.fermer();
         else if (instanceSalle != null) Arenes.liberer(instanceSalle);
         instanceSalle = null;
     }
 
-    /** Rend son Coffre a un joueur (position d'origine) et le detache ; donne ses cles de caisse en attente. */
+    /**
+     * Chaque tick apres la fin ou l'annulation (Tournois.tick) : la salle se ferme quand tous les retours sont faits, ou
+     * 30 s apres au plus (un retour bloque ne la garde pas ouverte). Rien a faire ensuite.
+     */
+    /** Nouvelle edition ouverte : la salle de celle-ci, si elle attendait encore des retours, est fermee tout de suite. */
+    void fermerSiBesoin() {
+        if (salleAFermer) fermerSalle();
+    }
+
+    void apresFin() {
+        if (!salleAFermer) return;
+        if (retours.isEmpty() || ++ticksFermeture > 20 * 30) {
+            if (!retours.isEmpty()) HeralizClashWar.LOG.warn("[clashwar] edition {} : salle fermee avec {} retour(s) encore en cours", edition, retours.size());
+            fermerSalle();
+        }
+    }
+
+    /**
+     * Rend son Coffre a un joueur (position d'origine) et le detache ; donne ses cles de caisse en attente. 19/11 (audit
+     * des lenteurs C3) : le retour lui-meme est etale ({@code Coffres.rendrePuis} : depot lu d'avance, arrivee prechargee,
+     * quelques retours par tick) ; le joueur reste en salle, sans kit, jusqu'a son tour.
+     */
     void rendreJoueur(ServerPlayer p) {
+        UUID u = p.getUUID();
         MatchsNet.versJoueur(p, CwPaquets.MatchHudS2C.AUCUN);
         Equipement.retirer(p);
         p.setCamera(p);
         Hud.effacer(p);
         MatchsNet.versJoueur(p, new CwPaquets.ZoneS2C(false, 0, 0, 0, 0, 0, 0));
-        if (salle != null) salle.retirer(p.getUUID());
-        if (!Coffre.rendre(p)) {
-            HeralizClashWar.LOG.warn("[clashwar] Coffre.rendre({}) a echoue : le depot reste sur disque", p.getGameProfile().getName());
-            if (p.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) p.setGameMode(GameType.SURVIVAL);
-        }
-        MatchApi.quitter(p);
-        participants.remove(p.getUUID());
-        Recompenses.donnerCles(p);
+        // une arrivee en salle encore en attente ne doit pas le ramener apres son retour
+        Arrivees.oublier(u);
+        participants.remove(u);
+        retours.add(u);
+        Coffres.rendrePuis(p, rendu -> {
+            retours.remove(u);
+            ServerPlayer q = serveur.getPlayerList().getPlayer(u);
+            if (salle != null) salle.retirer(u);
+            if (q == null) {
+                // parti avant son tour : son depot reste sur le disque (rendu a sa reconnexion)
+                MatchApi.quitter(u);
+            } else {
+                if (!rendu) {
+                    HeralizClashWar.LOG.warn("[clashwar] Coffre.rendre({}) a echoue : le depot reste sur disque", q.getGameProfile().getName());
+                    if (q.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) q.setGameMode(GameType.SURVIVAL);
+                }
+                MatchApi.quitter(q);
+                Recompenses.donnerCles(q);
+            }
+            if (salleAFermer && retours.isEmpty()) fermerSalle();
+        });
     }
 
     /** /clashwar quitter : un participant qui n'est pas en train de jouer recupere son Coffre et quitte l'evenement. */
@@ -989,7 +1122,11 @@ public final class Tournoi {
             Annonces.chat(p, Component.translatable("clashwar.chat.regarder_aucun").withStyle(ChatFormatting.GRAY));
             return;
         }
-        if (!participants.contains(u) && !entrerSpectateur(p)) return;
+        if (!participants.contains(u)) {
+            // 19/11 : son depot est etale ; il regarde des qu'il est en salle
+            entrerSpectateur(p, tour, index);
+            return;
+        }
         MatchCw courantVu = MatchApi.partieDe(p) instanceof MatchCw m && m.equipeDe(u) == null ? m : null;
         if (courantVu == null && MatchApi.partieDe(p) != salle) {
             Annonces.chat(p, Component.translatable("clashwar.chat.regarder_en_match").withStyle(ChatFormatting.RED));
@@ -1019,24 +1156,36 @@ public final class Tournoi {
      * pas pour quelqu'un qui n'était ni inscrit ni éliminé »). Seulement depuis le spawn (sinon : un moyen de fuir un combat
      * ou de traverser la carte) ; il passe par le Coffre comme un inscrit (inventaire et position mis de côté, rendus à
      * {@code /clashwar quitter}, à la fin du tournoi ou à la déconnexion), puis entre en salle sans équipe : il n'est
-     * jamais tiré dans un match. Faux s'il ne peut pas venir (message déjà dit).
+     * jamais tiré dans un match. 19/11 : dépôt étalé ({@code Coffres.deposerPuis}) ; une fois en salle, il regarde la
+     * rencontre demandée. S'il ne peut pas venir : message.
      */
-    private boolean entrerSpectateur(ServerPlayer p) {
+    private void entrerSpectateur(ServerPlayer p, int tour, int index) {
         if (!auSpawn(p)) {
             Annonces.chat(p, Component.translatableWithFallback("clashwar.chat.regarder_spawn",
                     "Pour regarder le ClashWar, viens au spawn.").withStyle(ChatFormatting.RED));
-            return false;
+            return;
         }
-        Coffre.Refus r = Coffre.refus(p);
-        if (r != null || !Coffre.deposer(p, "clashwar_spectateur")) {
-            Annonces.chat(p, Component.translatable("matchs.coffre.refus." + (r == null ? "erreur" : r.name().toLowerCase(Locale.ROOT)))
-                    .withStyle(ChatFormatting.RED));
-            return false;
+        UUID u = p.getUUID();
+        Coffre.Refus r = Coffres.deposerPuis(p, "clashwar_spectateur", ok -> {
+            ServerPlayer q = serveur.getPlayerList().getPlayer(u);
+            if (q == null) return;
+            if (!ok) {
+                Annonces.chat(q, Component.translatable("matchs.coffre.refus.erreur").withStyle(ChatFormatting.RED));
+                return;
+            }
+            if (!actif() || salle == null) {
+                // l'edition s'est finie pendant l'ecriture : son Coffre lui est rendu tout de suite
+                rendreJoueur(q);
+                return;
+            }
+            participants.add(u);
+            placerEnSalle(q);
+            HeralizClashWar.LOG.info("[clashwar] {} vient regarder (pas inscrit)", q.getGameProfile().getName());
+            regarder(q, tour, index);
+        });
+        if (r != null) {
+            Annonces.chat(p, Component.translatable("matchs.coffre.refus." + r.name().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.RED));
         }
-        participants.add(p.getUUID());
-        placerEnSalle(p);
-        HeralizClashWar.LOG.info("[clashwar] {} vient regarder (pas inscrit)", p.getGameProfile().getName());
-        return true;
     }
 
     /** {@code /clashwar salle} : le joueur qui regardait un match revient en salle d'attente. */
@@ -1126,7 +1275,7 @@ public final class Tournoi {
             }
         }
         return new VueTableau(edition, format.nom, e, finInscriptionMs, prochaineMs, prochainFormat, inscriptions.size(), equipesInscrites(),
-                tourCourant, equipes, tours, champion, championEdition);
+                tourCourant, equipes, tours, champion, championEdition, CwConfig.get().zone().getId());
     }
 
     static VueTableau.Equipe vueEquipe(Tableau.EquipeT t) {
