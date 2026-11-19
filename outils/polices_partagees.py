@@ -12,8 +12,14 @@ mods ensemble, la police du module trouve le fichier dans le jar du noyau (livr�
 est retirée quand plus aucune police ne la cite, et ses licences (*_ofl.txt) quand le dossier n'a plus de police.
 Une police différente (autre fichier, autre version) n'est jamais touchée. Les fichiers .json eux-mêmes restent dans
 chaque module (tailles et réglages propres) ; outils/polices_nettes.py et outils/polices_cyrillique.py les relisent.
+
+Symboles (19/11) : DM Sans et Onest n'ont pas ☢ ⚠ ❄ ✔ ✖ ☠ ★…, que Minecraft prenait dans sa police, posés trop bas.
+Chaque police qui utilise DM Sans cite aussi « heraliz_noyau:symboles.ttf » (dessinée aux mesures de DM Sans par
+modules/noyau/outils/symboles_police.py), juste après DM Sans et Onest, aux mêmes taille, oversample et décalage : le
+fournisseur est recopié de celui de la police (mise en forme et fins de ligne du fichier gardées).
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -21,6 +27,9 @@ ROOT = Path(__file__).resolve().parents[1]
 NOYAU_ESPACE = "heraliz_noyau"
 NOYAU_FONT = ROOT / "modules/noyau/src/client/resources/assets/heraliz_noyau/font"
 LICENCES = ("dmsans_ofl.txt", "onest_ofl.txt", "oswald_ofl.txt")
+SYMBOLES = NOYAU_ESPACE + ":symboles.ttf"
+DM_SANS = ("dmsans_medium.ttf", "dmsans_bold.ttf")
+ONEST = ("cyrillique_medium.ttf", "cyrillique_bold.ttf")
 
 
 def partagees():
@@ -39,6 +48,80 @@ def dossiers_polices():
 
 def lire(f):
     return json.loads(f.read_text(encoding="utf-8"))
+
+
+def elements(brut):
+    """Début et fin, dans le texte, de chaque fournisseur de la liste « providers »."""
+    j = brut.index("[", brut.index('"providers"'))
+    elems, prof, debut, chaine, echap = [], 0, None, False, False
+    for k in range(j + 1, len(brut)):
+        c = brut[k]
+        if chaine:
+            if echap:
+                echap = False
+            elif c == "\\":
+                echap = True
+            elif c == '"':
+                chaine = False
+            continue
+        if c == '"':
+            chaine = True
+        elif c in "{[":
+            if prof == 0:
+                debut = k
+            prof += 1
+        elif c in "}]":
+            if prof == 0:
+                break
+            prof -= 1
+            if prof == 0:
+                elems.append((debut, k + 1))
+    return elems
+
+
+def symboles(f):
+    """Police de symboles du noyau dans une police qui utilise DM Sans. Renvoie (texte corrigé ou None, problème ou
+    None) : None, None quand la police n'utilise pas DM Sans ou qu'elle est déjà à jour."""
+    doc = lire(f)
+    fournisseurs = doc.get("providers", [])
+    ttf = [isinstance(p, dict) and p.get("type") == "ttf" for p in fournisseurs]
+    noms = [str(p.get("file", "")).partition(":")[2] if t else "" for p, t in zip(fournisseurs, ttf)]
+    if not any(n in DM_SANS for n in noms):
+        return None, None
+    i = next(k for k, n in enumerate(noms) if n in DM_SANS)
+    dm = fournisseurs[i]
+    voulu = {"type": "ttf", "size": dm.get("size", 11.0), "oversample": dm.get("oversample", 1.0),
+             "shift": dm.get("shift", [0.0, 0.0])}
+    deja = [p for p, t in zip(fournisseurs, ttf) if t and p.get("file") == SYMBOLES]
+    if deja:
+        p = deja[0]
+        actuel = {"type": "ttf", "size": p.get("size", 11.0), "oversample": p.get("oversample", 1.0),
+                  "shift": p.get("shift", [0.0, 0.0])}
+        if actuel != voulu:
+            return None, "symboles.ttf n'a pas la taille, l'oversample ou le décalage de DM Sans"
+        return None, None
+    # juste après DM Sans et Onest
+    fin = i
+    while fin + 1 < len(fournisseurs) and ttf[fin + 1] and noms[fin + 1] in ONEST:
+        fin += 1
+    brut = f.read_bytes().decode("utf-8")
+    elems = elements(brut)
+    if len(elems) != len(fournisseurs) or len(elems) < 2:
+        return None, "liste des fournisseurs illisible"
+    # modèle : un fournisseur de la police aux mêmes réglages (Onest juste avant, sinon DM Sans), recopié tel quel
+    modele = None
+    for k in (fin, i):
+        p = fournisseurs[k]
+        if {c for c in p if c != "file"} <= set(voulu) and {c: p.get(c, voulu[c]) for c in voulu} == voulu:
+            modele = k
+            break
+    if modele is None:
+        return None, "aucun fournisseur à recopier pour symboles.ttf (réglages de DM Sans différents)"
+    a, b = elems[modele]
+    texte = re.sub(r'("file"\s*:\s*)"[^"]*"', lambda m: m.group(1) + '"%s"' % SYMBOLES, brut[a:b], count=1)
+    separateur = brut[elems[0][1]:elems[1][0]]
+    _, b = elems[fin]
+    return brut[:b] + separateur + texte + brut[b:], None
 
 
 def main():
@@ -119,6 +202,24 @@ def main():
         ns, _, nom = c.partition(":")
         if ns == NOYAU_ESPACE and nom not in noyau:
             problemes.append("police citée absente du noyau : %s" % c)
+    # 4. symboles du noyau dans toutes les polices qui utilisent DM Sans (noyau compris)
+    for f in sorted((ROOT / "modules").glob("*/src/**/assets/*/font/*.json")):
+        if "build" in f.relative_to(ROOT).parts:
+            continue
+        try:
+            texte, probleme = symboles(f)
+        except ValueError:
+            continue  # illisible : déjà signalé plus haut
+        if probleme:
+            problemes.append("%s : %s" % (f.relative_to(ROOT), probleme))
+        elif texte is not None:
+            changees += 1
+            if verifier:
+                problemes.append("%s : symboles.ttf du noyau absent" % f.relative_to(ROOT))
+            elif not essai:
+                json.loads(texte)  # contrôle : le texte reste un JSON valable
+                f.write_bytes(texte.encode("utf-8"))
+            print("[polices] symboles ajoutés : %s" % f.relative_to(ROOT))
     for p in problemes:
         print("[polices] PROBLÈME " + p)
     print("[polices] %d police(s) changée(s), %d copie(s) retirée(s)%s ; %d problème(s)"

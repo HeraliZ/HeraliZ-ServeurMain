@@ -298,3 +298,13 @@ Tableau de score en haut, pendant les manches :
       saute.
 - [ ] Le fil des éliminations reste en haut à droite ; s'il venait sur le tableau (longue ligne, grande échelle
       d'interface), il passe dessous.
+
+## 15. Symboles des messages (19/11)
+
+Le ☢ de la zone irradiée était posé trop bas : DM Sans n'a pas ce symbole, Minecraft le prenait dans sa propre police.
+Les symboles des messages (☢ ⚠ ❄ ✔ ✓ ✖ ✕ ☠ ★ ✦ ▲ ▼ ▶ ◀ ■ ● ◆) sont maintenant dessinés par une petite police à nous, aux
+mesures de DM Sans, dans toutes nos polices.
+- [ ] Zone irradiée : « ☢ Zone irradiée : combinaison Hazmat obligatoire » : le ☢ est centré sur les lettres, net, jaune.
+- [ ] Zone de gaz (⚠) et froid (❄) : même chose.
+- [ ] Un message de clan ou de base avec ⚠ ou ☠ (Purge, prise du cœur, vague d'assaut) : symbole à la bonne hauteur.
+- [ ] En fenêtré et à une autre échelle d'interface : toujours net, rien ne bouge dans les écrans.

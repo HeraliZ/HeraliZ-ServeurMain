@@ -114,8 +114,10 @@ dans `saison/SaisonVue.bareme()` pour l'onglet Saison, annonces, loot, objet d'�
   part, ni une ligne de chat pour une information du moment.
 - Texte net : une police par taille (copie de `ui_bold.json` en changeant `size`), jamais `pose().scale` ni `Ui.gros` sur
   du texte ; `outils/polices_nettes.py` règle l'oversample (plafonné pour les grandes tailles) ; outils de dessin net :
-  `fr.heraliz.quetes.client.kit.Net`. Caractères absents de DM Sans (◀ ▶ ▲ ✕ ▾…) : dessinés en police pixel, utiliser
-  ← → ↑ × ›.
+  `fr.heraliz.quetes.client.kit.Net`. Symboles ☢ ⚠ ❄ ✔ ✓ ✖ ✕ ☠ ★ ✦ ▲ ▼ ▶ ◀ ■ ● ◆ : police `symboles.ttf` du noyau
+  (mesures de DM Sans, `modules/noyau/outils/symboles_police.py`), ajoutée à chaque police par
+  `outils/polices_partagees.py` ; un autre caractère absent de DM Sans (▾…) sort en police pixel, trop bas : l'ajouter à
+  `symboles_police.py` ou utiliser ← → ↑ × ›.
 - Couleur du nom d'un objet = sa rareté HeraliZ (`raretes.json`), mise par Loot dans l'infobulle et au-dessus de la barre
   (`fr.heraliz.loot.client.NomsRarete`) : un nouvel objet reçoit sa rareté là, pas une couleur dans `getName` ni une
   rareté de Minecraft (Épique = rose).

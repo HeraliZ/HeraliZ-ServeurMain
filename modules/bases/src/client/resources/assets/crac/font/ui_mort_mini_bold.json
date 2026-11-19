@@ -28,6 +28,16 @@
       "file": "heraliz_noyau:cyrillique_bold.ttf"
     },
     {
+      "type": "ttf",
+      "size": 7.8,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        1.2
+      ],
+      "file": "heraliz_noyau:symboles.ttf"
+    },
+    {
       "type": "reference",
       "id": "minecraft:default"
     }

@@ -21,6 +21,16 @@
       ]
     },
     {
+      "type": "ttf",
+      "file": "heraliz_noyau:symboles.ttf",
+      "size": 10.416,
+      "oversample": 8.0,
+      "shift": [
+        0.0,
+        0.0
+      ]
+    },
+    {
       "type": "reference",
       "id": "minecraft:default"
     }
