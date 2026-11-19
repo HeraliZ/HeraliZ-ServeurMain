@@ -689,6 +689,8 @@ Recycleur (armes et accessoires : en moyenne un peu moins que Mila, avec de la c
       chez Mila), un tiers deux pièces (jusqu'à 100) ; Mila en donne 60 chacune.
 - [ ] Une conserve geckolib (haricots, pêches…) rend une ferraille ; une boisson ou des chips du plastique ; une batte ou
       une machette 2 ferrailles, comme avant.
+- [ ] Un sac Légendaire : son aperçu montre Tissu IV, Scotch IV, Caoutchouc IV et Tissu (avant deux Tissu IV) ; en
+      moyenne un peu moins que Mila (120 hérals), avec de la chance bien plus. Les autres sacs ne changent pas.
 - [ ] Un article acheté chez Jack ou le Passeur se recycle comme avant (aucun refus nouveau) ; le saucisson du Doyen
       reste refusé (« rapporterait trop »).
 

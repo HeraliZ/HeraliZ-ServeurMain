@@ -7336,15 +7336,15 @@
     ],
     [
      "heraliz_composants:tissu_iv",
-     "heraliz_composants:tissu_iv",
      "heraliz_composants:scotch_iv",
-     "heraliz_composants:caoutchouc_iv"
+     "heraliz_composants:caoutchouc_iv",
+     "heraliz_composants:tissu"
     ],
     [
      "heraliz_composants:tissu_iv",
-     "heraliz_composants:tissu_iv",
      "heraliz_composants:scotch_iv",
-     "heraliz_composants:caoutchouc_iv"
+     "heraliz_composants:caoutchouc_iv",
+     "heraliz_composants:tissu"
     ]
    ]
   },
