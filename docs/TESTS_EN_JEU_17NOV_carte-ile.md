@@ -863,3 +863,80 @@ Anticheat
 
 Pas fait (pour plus tard) : hélicoptère qui vole « sans tronçon » loin des joueurs (il garde un petit ticket) ; commandes
 du staff du Coffre (`/clashwar coffre …`), toujours tout de suite sur le fil du serveur ; bordure des arènes inchangée.
+
+## 32. Images par seconde chez les joueurs : corrections de l'audit du 19/11
+
+Suite de l'audit des images par seconde du 19/11 (points 1, 2, 4, 6, 7, 9, 11, 12). Le but : moins de mémoire graphique,
+plus d'à-coups réguliers près des lampes et au casino, plus de gel à la première vue d'une arme ou d'une ville.
+**Rien de tout cela n'a été testé en jeu, aucune image par seconde n'a été mesurée** : tous les gains sont calculés.
+Versions : Armes 2.59.7, Boutique 1.5.18, Bunker 0.14.7, Interface 2.0.14, Loot 0.20.6, Monde 1.3.6, Noyau 1.1.6 (le
+launcher les donne aux joueurs ; aucun changement de canal réseau) ; gunpack `heraliz_5_couteaux_cs2` (texture du M9).
+
+Grande texture des blocs (point 1 : ≈ 268 Mo de mémoire graphique en moins)
+- [ ] Journal d'un joueur (`logs/latest.log`), chercher `blocks.png-atlas` : `8192x8192x0` attendu (avant :
+      `16384x8192x0` ; le dernier chiffre est le niveau de mipmaps, 0 aujourd'hui : voir « À décider » plus bas).
+      Mémoire graphique de cette texture : ≈ 268 Mo de moins (537 → 268 Mo sans mipmaps).
+- [ ] Les 5 cartes d'accès (rouge, verte, bleue, Bunker des Bois, Bunker du Pic) : en main, au sol, dans un cadre, dans
+      l'inventaire : face et dos comme avant (images recadrées sur la partie lue, rien d'autre ne change).
+- [ ] Les 12 fragments (vert, bleu, rouge, 1 à 4) : face, dos et numéro comme avant, de près et dans l'inventaire.
+- [ ] Quelques blocs de meubles cfm (bunkers, villes, maisons) : aucun damier violet. 386 images de cfm que rien ne cite
+      ne sont plus rangées (filtre de notre pack « textures ») ; 262 images orphelines du pack « textures » retirées.
+- [ ] `python outils/atlas_blocs.py` : taille, remplissage (94 %) et plus grosses images ; `verifier.py` refuse
+      maintenant une texture qui ferait déborder la grande texture des blocs.
+
+Lampes rouges, gyrophares, lampe rouge fixe (point 2 : plus d'à-coups toutes les 5 s)
+- [ ] Salle d'un bunker avec des lampes rouges : le verre clignote comme avant (5 s allumé, 1 s éteint), la pièce
+      s'assombrit pendant la seconde noire près des lampes (à moins de 6 blocs, comme avant ; plus rien au-delà de 20
+      blocs : une pièce vue de loin ne s'éteint plus), la teinte rouge reste.
+- [ ] F3 près des lampes : la ligne des tronçons en construction ne monte plus toutes les 5 s.
+- [ ] Gyrophare : la lumière tourne puis s'éteint 1 s, comme avant ; lampe rouge fixe (néon) : clignote comme avant.
+- [ ] Icônes des trois lampes dans l'inventaire : allumées, ne clignotent pas.
+- [ ] Une lampe posée avant cette mise à jour et restée dans la seconde noire : la pièce est éclairée au chargement.
+
+Réglette qui grésille du casino (point 2)
+- [ ] Au Trou : la réglette grésille comme avant (rafales, coupures, starter), selon sa variante (Grésille, Agonise,
+      Stable) ; la salle s'assombrit près d'elle pendant les coupures (toute la lumière de bloc à moins de 6 blocs, plus
+      rien à 16) ; plus de saccade pendant les rafales (F3 : tronçons en construction). Deux joueurs voient chacun leurs
+      propres rafales (plus synchronisées).
+
+Armes des autres joueurs (point 4)
+- [ ] Un autre joueur sort une arme jamais vue de la session (ou arrive avec) : plus de gel à la première vue.
+      `/diagclient 30` pendant un combat à plusieurs : moins d'images lentes au premier contact.
+- [ ] M9 et ses 18 skins : même aspect en main, à l'inspection et sur les autres (texture 4096 → 2048 ; comparaison des
+      images, gauche avant, droite après : `maquettes/fps_19nov/m9_2048_avant_apres_rouille.png` et `_bords.png` ;
+      seule différence visible à l'agrandissement : les filets d'un point au bord des faces, moitié moins nets).
+
+Conteneurs HD (point 6)
+- [ ] Journal du jeu au démarrage : « [loot] 246 maillages de conteneurs prêts en fond (… fils, … ms) » ; entrée dans la
+      première ville de la session : le terrain apparaît sans retard ; conteneurs identiques.
+
+MAtmos (point 7)
+- [ ] Sa propre ambiance comme avant (oiseaux, vent, eau, grottes) ; plus de sons d'ambiance joués à la place des autres
+      joueurs proches ; musiques de biome et ambiance du Nether jouées comme avant (lues en continu).
+
+Stickers et StatTrack (point 9)
+- [ ] Arme stickée et StatTrack : même dessin, en main et chez les autres ; placement des stickers au menu de l'arme
+      (viser à la souris) comme avant.
+
+Shaders des camos (point 11)
+- [ ] F3+T (ou changer le profil graphique, qui change les mipmaps) : le rechargement est plus court ; journal « Shaders
+      des camos inchangés : … programmes gardés » ; les camos et les effets 3D s'affichent toujours ensuite.
+
+Images par seconde plafonnées à 144 (point 12, choix du propriétaire)
+- [ ] Nouvelle installation, et une fois chez les joueurs déjà là : plafond 144 images par seconde (réglages HeraliZ
+      version 5). L'écran Graphismes montre 144 ; le curseur de Minecraft et d'Embeddium montre 140 (il ne garde que des
+      multiples de 10 : le cran 140 vaut 144 chez HeraliZ). Remonter le curseur ou « Illimité » marche tout de suite.
+- [ ] `/diagclient` : « FPS max : 144 » (plafond réel de la fenêtre).
+
+À décider (propriétaire) : **la grande texture des blocs n'a aucune mipmap aujourd'hui**, quel que soit le profil
+graphique. Trois images d'anciens menus du jar de cfm (`clans_gui/gui/cakdhrb` 236 x 245, `required/recipe_showcase`
+174 x 164, `required/recipe_stonecutter` 164 x 174), ajoutées par son atlases/blocks.json, ne sont pas des multiples de
+16 : Minecraft coupe alors les mipmaps de tout le terrain (journal : « limits mip level from 2 to 0 »). Terrain qui
+scintille au loin, et plus de travail pour la carte graphique de loin. `python outils/mipmaps.py --corriger` pose des
+copies retaillées (240 x 240, 176 x 160, 160 x 176) dans notre pack « textures » (jar intact) et rend les mipmaps des
+profils (2 ou 4) ; **pas fait** : le terrain au loin change d'aspect (plus doux, plus de scintillement), à voir en jeu
+avant. `outils/atlas_blocs.py --verifier` le signale (sans bloquer).
+
+Pas fait (décision du propriétaire, rendus à valider d'abord) : vraies versions allégées des 62 armes sans LOD,
+allègement plus fort des conteneurs HD, camos « cuits » dans une texture ; textures des armures, de la roue du Souffle du
+loup et de l'Olympia gardées à leur taille (vrai détail).

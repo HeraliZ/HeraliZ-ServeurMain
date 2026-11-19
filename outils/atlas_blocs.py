@@ -511,6 +511,14 @@ def main():
     manquantes = sorted((k, ref[k]) for k in retires if k in ref)
     for k, m in manquantes[:20]:
         print("[atlas] RETIRÉE MAIS CITÉE : %s (%s) : relancer python outils/atlas_blocs.py --filtre-cfm" % (k, m))
+    # une seule image dont un côté n'est pas un multiple de 16 coupe les mipmaps de toute la grande texture (journal du
+    # jeu : « limits mip level ») : terrain qui scintille au loin (copie retaillée dans notre pack : outils/mipmaps.py)
+    # (19/11 : trois images d'anciens menus de cfm le font depuis le début ; leur correction change l'aspect du terrain au
+    # loin, décision du propriétaire : seulement signalé, pas encore bloquant)
+    coupe = sorted((k, l, h, o) for k, (l, h, o) in sp.items() if min(l & -l, h & -h) < 16 and k != "minecraft:missingno"
+                   and not k.startswith("minecraft:trims/"))
+    for k, l, h, o in coupe[:20]:
+        print("[atlas] attention, coupe les mipmaps : %s %dx%d (%s) : python outils/mipmaps.py --corriger" % (k, l, h, o))
     surface = sum(w * h for w, h in rects)
     t = taille_modernfix(rects)
     rempli = 100.0 * surface / (LIMITE * LIMITE)
@@ -537,6 +545,8 @@ def main():
             print("   %5d x %-5d %-75s %s" % (l, h, k, o))
     if a.verifier:
         ok = t is not None and t[0] <= LIMITE and t[1] <= LIMITE and not manquantes
+        if coupe:
+            print("[atlas] attention : %d image(s) coupent les mipmaps de toute la grande texture des blocs" % len(coupe))
         if manquantes:
             print("[atlas] %d image(s) retirée(s) par nos filtres mais citée(s) par un modèle" % len(manquantes))
         elif not ok:

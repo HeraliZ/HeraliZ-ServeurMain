@@ -105,6 +105,12 @@ les étiquettes de Forge). Rien de certain : on n'y touche pas.
 La grande texture des blocs fait ≈ 52,7 M pixels (audit) : −2,6 %. Elle reste une puissance de 2 : le gain réel dépend
 de la place qu'occupe le rangement (Minecraft peut garder la même taille) [calcul].
 
+**19/11 (audit des images par seconde, point 1) : appliqué.** Liste refaite sans le jar de Minecraft ni Forge (noms de
+toutes les versions 1.13 à 26.1 du paquet minecraft-assets, chaînes et textes de tous les jars livrés, des modules et des
+gunpacks) : 256 orphelines (206 noms de la 1.12, 50 noms inconnus, citées nulle part, même comme mot) et les 6 remplacées
+retirées avec leurs 5 animations, ≈ −0,52 M pixels (beaucoup d'images de la liste du 25/10 avaient déjà changé). La
+grande texture des blocs se calcule maintenant avec `python outils/atlas_blocs.py` (contrôlée par `verifier.py`).
+
 `snow.png` (neige qui tombe, `textures/environment`, hors grande texture) : 1024 × 4096 → **128 × 512** dans
 `heraliz_terrain` (Pillow, LANCZOS, alpha prémultiplié, même cadrage, restes de filtre < 6/255 effacés), 168 ko → 6,6 ko,
 ≈ 16 Mo → 0,26 Mo en mémoire quand il neige. Le fichier de l'autre pack n'est pas touché (masqué par le nôtre ; ne pas

@@ -16,6 +16,10 @@ Ce script cherche les textures dont un côté n'est pas un multiple de 16 (image
 
 À relancer après l'ajout d'un mod, d'un gunpack ou de textures de blocs. verifier.py peut l'appeler (code de sortie 1
 s'il reste une texture fautive).
+
+19/11 : aussi les images « seules » que les atlases/blocks.json des jars ajoutent à la grande texture des blocs hors de
+textures/block et textures/item (cfm : 73 images d'anciens menus, dont 3 de 236 x 245, 174 x 164 et 164 x 174 qui
+coupaient toutes les mipmaps) ; outils/atlas_blocs.py --verifier (lancé par verifier.py) les signale.
 """
 import argparse
 import glob
@@ -91,17 +95,37 @@ def retailler(data, meta):
     return b.getvalue(), nouveau_meta, (fw, fh), (nw, nh)
 
 
+def singles(z, noms):
+    """Chemins des images « seules » (type single) de l'atlases/blocks.json d'un jar."""
+    out = set()
+    if "assets/minecraft/atlases/blocks.json" not in noms:
+        return out
+    try:
+        d = json.loads(z.read("assets/minecraft/atlases/blocks.json").decode("utf-8-sig"))
+    except ValueError:
+        return out
+    for s in d.get("sources", []):
+        if isinstance(s, dict) and s.get("type", "").replace("minecraft:", "") == "single" and "resource" in s:
+            r = s["resource"]
+            ns, p = r.split(":", 1) if ":" in r else ("minecraft", r)
+            out.add("assets/%s/textures/%s.png" % (ns, p))
+    return out
+
+
 def sources():
     """(chemin dans les assets, octets, mcmeta, origine) dans l'ordre où le jeu les empile : jars, nos mods, packs."""
     vus = {}
+    seules = set()
     for jar in sorted(glob.glob(str(RACINE / "serveur" / "mods-tiers" / "*.jar")) + glob.glob(str(RACINE / "client" / "mods-tiers" / "*.jar"))):
         try:
             z = zipfile.ZipFile(jar)
         except zipfile.BadZipFile:
             continue
         noms = set(z.namelist())
+        s = singles(z, noms)
+        seules |= s
         for n in noms:
-            if ATLAS.match(n):
+            if ATLAS.match(n) or n in s:
                 vus[n] = (z.read(n), z.read(n + ".mcmeta") if n + ".mcmeta" in noms else None, ("jar", jar))
     for p in sorted(glob.glob(str(RACINE / "modules" / "*" / "src" / "**" / "assets" / "*" / "textures" / "*" / "**" / "*.png"), recursive=True)):
         p = p.replace("\\", "/")  # chemins Windows
@@ -115,7 +139,7 @@ def sources():
         for p in sorted(glob.glob(str(pack / "assets" / "*" / "textures" / "*" / "**" / "*.png"), recursive=True)):
             p = p.replace("\\", "/")  # chemins Windows
             rel = p[p.index("assets/"):]
-            if ATLAS.match(rel):
+            if ATLAS.match(rel) or rel in seules:
                 mp = Path(p + ".mcmeta")
                 vus[rel] = (Path(p).read_bytes(), mp.read_bytes() if mp.exists() else None, ("pack", p))
     return vus
