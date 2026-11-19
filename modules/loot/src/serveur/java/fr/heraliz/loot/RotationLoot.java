@@ -138,7 +138,7 @@ public final class RotationLoot extends SavedData {
     record ZoneAjoutee(String nom, @Nullable Double actifs) {}
 
     final Long2ObjectOpenHashMap<Actif> actifs = new Long2ObjectOpenHashMap<>();
-    final List<Attente> attentes = new ArrayList<>();
+    final ListeSuivie<Attente> attentes = new ListeSuivie<>();
     /** Positions retirées de leur zone (le bloc en place n'est pas le conteneur attendu) -> nom attendu. */
     final Long2ObjectOpenHashMap<String> invalides = new Long2ObjectOpenHashMap<>();
     /** Conteneurs posés ou changés en jeu (position -> zone, nom) : remis dans les zones à chaque lecture des fichiers. */
@@ -166,6 +166,32 @@ public final class RotationLoot extends SavedData {
     }
     /** Index spatial des actifs (étoiles) : secteur -> positions. */
     private final Long2ObjectOpenHashMap<LongArrayList> parSecteur = new Long2ObjectOpenHashMap<>();
+    /**
+     * Comptes par zone (19/11, audit des lenteurs C6) : actifs (tenus à jour à chaque ajout, retrait ou changement de
+     * zone d'un actif), réapparitions en attente et positions invalides (recomptées seulement quand leur liste a changé).
+     * {@link #completer}, appelé pour chaque conteneur posé, ne parcourt plus tous les actifs, toutes les attentes et toute la
+     * zone (un collage WorldEdit de 1 000 conteneurs : 1 000 fois tout le loot de la carte).
+     */
+    private final Object2IntOpenHashMap<String> actifsParZone = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<String> attentesParZone = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<String> invalidesParZone = new Object2IntOpenHashMap<>();
+    /** Changements de la liste des attentes déjà comptés ; positions invalides à recompter (et version des zones vue). */
+    private int attentesVues = -1, versionInvalides = -1;
+    private boolean invalidesSales = true;
+    /**
+     * Index des salles à carte (19/11, audit des lenteurs C7) : tronçon -> salles dont la boîte le touche, dans l'ordre de
+     * leurs noms ; refait au premier besoin après un changement des salles (null). {@link #salleDe} ne parcourt plus toutes
+     * les salles pour chaque conteneur (283 ms au démarrage du 19/11, 96 % dans la boucle des salles).
+     */
+    @Nullable
+    private Long2ObjectOpenHashMap<List<String>> sallesParTroncon;
+
+    /** Liste qui dit quand elle a changé (compteur de changements de Java : ajouts, retraits, removeIf, itérateur). */
+    static final class ListeSuivie<T> extends ArrayList<T> {
+        int changements() {
+            return modCount;
+        }
+    }
     private int versionVue = -1;
     @Nullable
     private ServerLevel niveau;
@@ -220,7 +246,46 @@ public final class RotationLoot extends SavedData {
             r.salles.put(c.getString("Id"), new Salle(nom, c.getLong("Min"), c.getLong("Max"), couleur));
         }
         for (Tag x : t.getList("SallesOuvertes", Tag.TAG_STRING)) r.sallesOuvertes.add(x.getAsString());
+        r.recompterActifs();
         return r;
+    }
+
+    /** Recompte les actifs de chaque zone (lecture du fichier, réconciliation) : remet {@link #actifsParZone} d'accord. */
+    private void recompterActifs() {
+        actifsParZone.clear();
+        for (Actif a : actifs.values()) actifsParZone.addTo(a.zone, 1);
+    }
+
+    /** Un actif de plus (+1) ou de moins (-1) dans la zone. */
+    private void compterActif(String zone, int d) {
+        if (actifsParZone.addTo(zone, d) + d <= 0) actifsParZone.removeInt(zone);
+    }
+
+    /** Réapparitions en attente par zone (recomptées seulement si la liste a changé depuis). */
+    private Object2IntOpenHashMap<String> attentesParZone() {
+        int c = attentes.changements();
+        if (c != attentesVues) {
+            attentesVues = c;
+            attentesParZone.clear();
+            for (int i = 0; i < attentes.size(); i++) attentesParZone.addTo(attentes.get(i).zone(), 1);
+        }
+        return attentesParZone;
+    }
+
+    /** Positions invalides par zone (recomptées seulement si elles ont changé, ou si les zones ont été relues). */
+    private Object2IntOpenHashMap<String> invalidesParZone(ResourceKey<Level> dim) {
+        int v = ZonesLoot.version();
+        if (invalidesSales || v != versionInvalides) {
+            invalidesSales = false;
+            versionInvalides = v;
+            invalidesParZone.clear();
+            it.unimi.dsi.fastutil.longs.LongIterator it = invalides.keySet().iterator();
+            while (it.hasNext()) {
+                ZonesLoot.Zone z = ZonesLoot.zoneDe(dim, it.nextLong());
+                if (z != null) invalidesParZone.addTo(z.id, 1);
+            }
+        }
+        return invalidesParZone;
     }
 
     @Override
@@ -355,7 +420,10 @@ public final class RotationLoot extends SavedData {
     }
 
     private void ajouterActif(long k, Actif a) {
-        if (actifs.put(k, a) == null) indexer(k);
+        Actif avant = actifs.put(k, a);
+        if (avant == null) indexer(k);
+        else compterActif(avant.zone, -1);
+        compterActif(a.zone, 1);
         setDirty();
     }
 
@@ -363,6 +431,7 @@ public final class RotationLoot extends SavedData {
     private Actif retirerActif(long k) {
         Actif a = actifs.remove(k);
         if (a == null) return null;
+        compterActif(a.zone, -1);
         tires.remove(k);
         entames.remove(k);
         long s = secteur(k);
@@ -432,6 +501,7 @@ public final class RotationLoot extends SavedData {
             ZonesLoot.enlever(dim, k);
             invalides.remove(k);
         }
+        invalidesSales = true;
         nettoyer(dim, avant);
         setDirty();
         if (a == null) return;
@@ -460,7 +530,7 @@ public final class RotationLoot extends SavedData {
         ZonesLoot.Zone avant = ZonesLoot.zoneDe(dim, k);
         ZonesLoot.placer(z, k, nom);
         if (avant != null && avant != z) nettoyer(dim, avant);
-        invalides.remove(k);
+        if (invalides.remove(k) != null) invalidesSales = true;
         if (chezLui) places.remove(k);
         else places.put(k, new Place(z.id, nom));
         Actif a = actifs.get(k);
@@ -468,15 +538,17 @@ public final class RotationLoot extends SavedData {
             if (a.zone.equals(z.id)) {                                  // même zone : le nouveau modèle reste actif
                 Actif b = new Actif(z.id, nom);
                 b.contenu = a.contenu;
-                actifs.put(k, b);
+                actifs.put(k, b);                                       // même zone : comptes inchangés
             } else {                                                    // autre zone : l'ancienne en active un autre
                 retirerActif(k);
                 ZonesLoot.Zone za = ZonesLoot.zone(dim, a.zone);
                 if (za != null && !estSalle(za.id)) activerUn(za, k, l.random);
             }
         }
-        if (avant != z) {
-            HeralizLoot.LOG.debug("Rotation : {} posé en {}, rejoint la zone {}", nom, BlockPos.of(k).toShortString(), z.id);
+        // 19/11 (audit des lenteurs C6) : une ligne par conteneur posé, mise en forme même sans être écrite (debug.log est
+        // actif sur le serveur) : en TRACE, et seulement si ce niveau est ouvert
+        if (avant != z && HeralizLoot.LOG.isTraceEnabled()) {
+            HeralizLoot.LOG.trace("Rotation : {} posé en {}, rejoint la zone {}", nom, BlockPos.of(k).toShortString(), z.id);
         }
         if (!estSalle(z.id)) completer(l, z);                           // une salle attend sa recharge (Bunker)
         setDirty();
@@ -484,13 +556,37 @@ public final class RotationLoot extends SavedData {
     }
 
     // ------------------------------------------------------------------------------------------ salles à carte
-    /** Salle à carte dont la boîte contient k (null : aucune). */
+    /**
+     * Salle à carte dont la boîte contient k (null : aucune). 19/11 : par l'index des salles ({@link #sallesParTroncon}) ;
+     * même réponse qu'avant (la première salle dans l'ordre des noms dont la boîte contient k).
+     */
     @Nullable
     String salleDe(long k) {
-        for (Map.Entry<String, Salle> e : salles.entrySet()) {
-            if (e.getValue().contient(k)) return e.getKey();
+        if (salles.isEmpty()) return null;
+        Long2ObjectOpenHashMap<List<String>> idx = sallesParTroncon;
+        if (idx == null) idx = indexerSalles();
+        List<String> l = idx.get(ChunkPos.asLong(BlockPos.getX(k) >> 4, BlockPos.getZ(k) >> 4));
+        if (l == null) return null;
+        for (int i = 0; i < l.size(); i++) {
+            Salle s = salles.get(l.get(i));
+            if (s != null && s.contient(k)) return l.get(i);
         }
         return null;
+    }
+
+    /** Refait l'index des salles (tronçon -> salles qui le touchent, dans l'ordre des noms de {@link #salles}). */
+    private Long2ObjectOpenHashMap<List<String>> indexerSalles() {
+        Long2ObjectOpenHashMap<List<String>> idx = new Long2ObjectOpenHashMap<>();
+        for (Map.Entry<String, Salle> e : salles.entrySet()) {
+            Salle s = e.getValue();
+            int x0 = BlockPos.getX(s.min()) >> 4, z0 = BlockPos.getZ(s.min()) >> 4;
+            int x1 = BlockPos.getX(s.max()) >> 4, z1 = BlockPos.getZ(s.max()) >> 4;
+            for (int cx = x0; cx <= x1; cx++) {
+                for (int cz = z0; cz <= z1; cz++) idx.computeIfAbsent(ChunkPos.asLong(cx, cz), c -> new ArrayList<>(1)).add(e.getKey());
+            }
+        }
+        sallesParTroncon = idx;
+        return idx;
     }
 
     /** Zone de la salle id (créée si besoin) : part d'actifs 1 (tout se remplit), niveau -1 (aucun conteneur posé
@@ -525,6 +621,7 @@ public final class RotationLoot extends SavedData {
         if (avant != null && avant.min() == min && avant.max() == max) {
             if (!nom.equals(avant.nom()) || !java.util.Objects.equals(couleur, avant.couleur())) {
                 salles.put(id, new Salle(nom, min, max, couleur));      // même boîte : nom ou couleur mis à jour seulement
+                sallesParTroncon = null;
                 setDirty();
             }
             ZonesLoot.Zone z = ZonesLoot.zone(l.dimension(), PREFIXE_SALLE + id);
@@ -533,6 +630,7 @@ public final class RotationLoot extends SavedData {
         if (avant != null) retirerSalle(l, id);
         Salle s = new Salle(nom, min, max, couleur);
         salles.put(id, s);
+        sallesParTroncon = null;
         setDirty();
         ResourceKey<Level> dim = l.dimension();
         ZonesLoot.Zone zs = zoneSalle(l, id);
@@ -575,6 +673,7 @@ public final class RotationLoot extends SavedData {
     boolean retirerSalle(ServerLevel l, String id) {
         aJour(l);
         if (salles.remove(id) == null) return false;
+        sallesParTroncon = null;
         setDirty();
         ResourceKey<Level> dim = l.dimension();
         String zid = PREFIXE_SALLE + id;
@@ -668,18 +767,14 @@ public final class RotationLoot extends SavedData {
         ZonesLoot.invalider();                                          // les comptes se refont au prochain tick
     }
 
-    /** Zone qui a grandi (ou retrouvé un conteneur) : si sa part d'actifs le demande, un conteneur de plus devient actif. */
+    /**
+     * Zone qui a grandi (ou retrouvé un conteneur) : si sa part d'actifs le demande, un conteneur de plus devient actif.
+     * 19/11 (audit des lenteurs C6) : par les comptes de la zone ({@link #actifsParZone}, {@link #attentesParZone},
+     * {@link #invalidesParZone}) : même calcul qu'avant, sans parcourir tout le loot de la carte.
+     */
     private void completer(ServerLevel l, ZonesLoot.Zone z) {
-        int a = 0, inv = 0;
-        for (Actif x : actifs.values()) {
-            if (x.zone.equals(z.id)) a++;
-        }
-        for (Attente x : attentes) {
-            if (x.zone().equals(z.id)) a++;
-        }
-        for (int i = 0; i < z.taille(); i++) {
-            if (invalides.containsKey(z.position(i))) inv++;
-        }
+        int a = actifsParZone.getInt(z.id) + attentesParZone().getInt(z.id);
+        int inv = invalidesParZone(l.dimension()).getInt(z.id);
         int cible = z.cible(z.taille() - inv);
         while (a < cible && activerUn(z, AUCUNE, l.random)) a++;
     }
@@ -724,6 +819,8 @@ public final class RotationLoot extends SavedData {
      * zones ramenées à leur nombre d'actifs (actifs + réapparitions en attente = cible).
      */
     void reconcilier(ServerLevel l) {
+        invalidesSales = true;
+        sallesParTroncon = null;
         remettrePlaces(l);
         if (!salles.isEmpty()) {                                        // conteneur d'un fichier ajouté depuis dans une salle
             Map<Long, String> dedans = new HashMap<>();
@@ -743,6 +840,7 @@ public final class RotationLoot extends SavedData {
             ZonesLoot.Zone z = ZonesLoot.zoneDe(l.dimension(), e.getLongKey());
             if (z == null || !e.getValue().equals(z.conteneur(e.getLongKey()))) {
                 ii.remove();
+                invalidesSales = true;
                 setDirty();
             } else {
                 nbInvalides.addTo(z.id, 1);
@@ -759,7 +857,9 @@ public final class RotationLoot extends SavedData {
                 continue;
             }
             if (!z.id.equals(a.zone)) {
+                compterActif(a.zone, -1);
                 a.zone = z.id;
+                compterActif(a.zone, 1);
                 setDirty();
             }
             parZone.computeIfAbsent(z.id, x -> new LongArrayList()).add(k);
@@ -812,6 +912,7 @@ public final class RotationLoot extends SavedData {
                 ajoutes++;
             }
         }
+        recompterActifs();                                              // filet : comptes par zone remis d'accord
         if (!zones.isEmpty() || ajoutes > 0 || retires > 0) {
             HeralizLoot.LOG.info("Rotation du loot ({}) : {} zones, {} actifs ({} ajoutés, {} retirés), {} en attente, {} invalides, {} posés en jeu",
                     l.dimension().location(), zones.size(), actifs.size(), ajoutes, retires, attentes.size(), invalides.size(), places.size());
@@ -828,6 +929,7 @@ public final class RotationLoot extends SavedData {
         attentes.removeIf(a -> a.zone().equals(z.id));
         sallesOuvertes.remove(z.id);                                    // salle rechargée : ses points reviennent
         for (int i = 0; i < z.taille(); i++) invalides.remove(z.position(i));   // revérifiés quand on les approchera
+        invalidesSales = true;
         int cible = z.cible(z.taille()), n = 0;
         while (n < cible && activerUn(z, AUCUNE, l.random)) n++;
         setDirty();
