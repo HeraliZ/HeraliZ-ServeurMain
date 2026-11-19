@@ -6,7 +6,8 @@ const crypto = require('crypto')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const { Gardien, outilsTrouves, champsCsv, programmes, outilsInterdits } = require('../app/assets/js/gardien')
+const { Gardien, outilsTrouves, champsCsv, programmes, outilsInterdits, modulesJeu, bibliothequesJava, nomsMaps,
+    nomsTasklistModules } = require('../app/assets/js/gardien')
 const { environnementJeu } = require('../app/assets/js/spartan')
 
 function dossier() {
@@ -175,6 +176,93 @@ test('lancement : injecteurs et éditeurs de mémoire seulement, noms lisibles',
     assert.deepStrictEqual(await outilsInterdits(async () => ({ noms: ['x64dbg.exe', 'recaf.exe'], titres: [] })), [])
     assert.deepStrictEqual(await outilsInterdits(async () => null), [])
     assert.deepStrictEqual(await outilsInterdits(async () => { throw new Error('x') }), [])
+})
+
+// ------------------------------------------------------------------ 19/11 : bibliothèques du jeu, pack signé
+
+test('bibliothèques d’agent ou de débogueur de Java reconnues, jamais les autres', () => {
+    assert.deepStrictEqual(bibliothequesJava(['ntdll.dll', 'C:\\jdk\\bin\\instrument.dll', 'JDWP.DLL', 'dt_socket.dll',
+        '/usr/lib/jvm/x/lib/libinstrument.so', 'attach.dll', 'management_agent.dll', 'java.dll', 'management.dll',
+        'management_ext.dll', 'javajpeg.dll', 'discordhook64.dll', 'instrumentation.dll', '', null]),
+    ['attach', 'dt_socket', 'instrument', 'jdwp', 'management_agent'])
+    assert.deepStrictEqual(bibliothequesJava(null), [])
+})
+
+test('Linux : bibliothèques lues dans /proc/<pid>/maps', async () => {
+    const maps = '7f00-7f01 r-xp 0 08:01 1 /usr/lib/jvm/java-17/lib/libjava.so\n'
+        + '7f02-7f03 r-xp 0 08:01 2 /usr/lib/jvm/java-17/lib/libinstrument.so\n'
+        + '7f04-7f05 r-xp 0 08:01 3 /tmp/x/libtriche.so (deleted)\n7f06-7f07 rw-p 0 0 0 [heap]\n'
+    assert.deepStrictEqual(nomsMaps(maps), ['libjava.so', 'libinstrument.so', 'libtriche.so'])
+    const lu = []
+    const noms = await modulesJeu(4242, 'linux', undefined, f => { lu.push(f); return maps })
+    assert.deepStrictEqual(lu, ['/proc/4242/maps'])
+    assert.deepStrictEqual(bibliothequesJava(noms), ['instrument'])
+    assert.strictEqual(await modulesJeu(4242, 'linux', undefined, () => { throw new Error('ENOENT') }), null)
+    assert.strictEqual(await modulesJeu(4242, 'darwin'), null, 'Mac : pas de lecture')
+    assert.strictEqual(await modulesJeu(0, 'linux'), null)
+})
+
+test('Windows : bibliothèques du jeu par PowerShell (ce seul processus), tasklist /M en secours', async () => {
+    const ps = exec((cmd, args) => cmd === 'powershell.exe' && args.join(' ').includes('Get-Process -Id 4242')
+        ? 'ntdll.dll\r\njvm.dll\r\ninstrument.dll\r\n' : new Error('inattendu'))
+    assert.deepStrictEqual(await modulesJeu(4242, 'win32', ps), ['ntdll.dll', 'jvm.dll', 'instrument.dll'])
+    const tl = exec((cmd, args) => cmd === 'tasklist'
+        ? '"javaw.exe","4242","ntdll.dll,KERNEL32.DLL,jdwp.dll,dt_socket.dll"\r\n' : new Error('PowerShell bloqué'))
+    assert.deepStrictEqual(await modulesJeu(4242, 'win32', tl), ['ntdll.dll', 'KERNEL32.DLL', 'jdwp.dll', 'dt_socket.dll'])
+    assert.ok(tl.appels.some(a => a.startsWith('tasklist /M /FI PID eq 4242')), tl.appels.join(' ; '))
+    assert.deepStrictEqual(nomsTasklistModules('"javaw.exe","4242","N/A"\r\nINFO: aucune tâche\r\n'), [])
+    assert.strictEqual(await modulesJeu(4242, 'win32', exec(() => new Error('refusé'))), null)
+})
+
+test('rapport : une bibliothèque d’agent vue dans le jeu part en « dll.nom », lue un rapport sur trois', async () => {
+    const d = dossier()
+    let lectures = 0
+    const modules = async pid => {
+        lectures++
+        assert.strictEqual(pid, 4242)
+        return lectures === 1 ? ['ntdll.dll', 'jvm.dll'] : ['ntdll.dll', 'jvm.dll', 'instrument.dll']
+    }
+    const g = new Gardien({ dossierJeu: d, pid: 4242, cles: Gardien.nouvellesCles(2), modules,
+        lister: async () => ({ noms: ['xenos64.exe'], titres: [] }), maintenant: () => 1000 })
+    assert.strictEqual(await g.rapport(), 'v2|1|1000|4242|-|ok|xenos|0')   // 1re lecture : rien de suspect
+    assert.strictEqual(await g.rapport(), 'v2|2|1000|4242|-|ok|xenos|0')   // pas relu
+    assert.strictEqual(await g.rapport(), 'v2|3|1000|4242|-|ok|xenos|0')
+    assert.strictEqual(await g.rapport(), 'v2|4|1000|4242|-|ok|dll.instrument,xenos|0') // relu : agent chargé
+    assert.strictEqual(lectures, 2)
+    // une fois vue, elle reste dite (une bibliothèque d'agent ne se décharge pas)
+    assert.strictEqual(await g.rapport(), 'v2|5|1000|4242|-|ok|dll.instrument,xenos|0')
+    g.arreter()
+    // lecture impossible ou en erreur : rien, jamais d'erreur ; sans fonction de lecture : jamais lu
+    const muet = new Gardien({ dossierJeu: dossier(), pid: 1, cles: Gardien.nouvellesCles(2),
+        modules: async () => { throw new Error('x') }, lister: async () => null, maintenant: () => 1 })
+    assert.match(await muet.rapport(), /\|impossible\|\|0$/)
+    muet.arreter()
+})
+
+test('pack signé : un jar remplacé avant le lancement compte comme changé dès le départ', async () => {
+    const d = dossier()
+    const store = path.join(d, 'modstore')
+    fs.mkdirSync(store)
+    const h = x => crypto.createHash('sha256').update(x).digest('hex')
+    fs.writeFileSync(path.join(store, 'bon.jar'), 'officiel')
+    fs.writeFileSync(path.join(store, 'remplace.jar'), 'triche')
+    fs.writeFileSync(path.join(store, 'horspack.jar'), 'x')
+    const attendues = Gardien.empreintesAttendues([
+        { chemin: path.join(store, 'bon.jar'), sha256: h('officiel') },
+        { chemin: path.join(store, 'remplace.jar'), sha256: h('officiel').toUpperCase() },
+        { chemin: path.join(store, 'abime.jar'), sha256: 'pas-une-empreinte' }, null])
+    assert.strictEqual(attendues.size, 2)
+    const g = new Gardien({ dossierJeu: d, dossiersJars: [store], pid: 1, cles: Gardien.nouvellesCles(2), attendues,
+        lister: async () => null, maintenant: () => 1 })
+    g.releverJars(true)
+    await g.verifierPack()
+    assert.deepStrictEqual([...g.modifies], ['remplace.jar'])
+    assert.match(await g.rapport(), /\|1$/)
+    // le jar vérifié garde son empreinte de référence : le remettre à l'identique (même contenu) ne compte pas
+    fs.writeFileSync(path.join(store, 'bon.jar'), 'officiel')
+    fs.utimesSync(path.join(store, 'bon.jar'), new Date(), new Date(Date.now() + 5000))
+    assert.match(await g.rapport(), /\|1$/)
+    g.arreter()
 })
 
 test('rapport : un outil vu seulement dans un titre de fenêtre est marqué « .titre » (alerte, jamais expulsion)', () => {

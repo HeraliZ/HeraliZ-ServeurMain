@@ -12,7 +12,7 @@ const { validateSelectedJvm, ensureJavaDirIsRoot, javaExecFromRoot, discoverBest
 const { getServerStatus } = require('helios-core/mojang')
 const Config = require('./configmanager')
 const ProcessBuilder = require('./processbuilder')
-const { Gardien, versionPreuve, outilsInterdits } = require('./gardien')
+const { Gardien, versionPreuve, outilsInterdits, modulesJeu } = require('./gardien')
 const { createOfflineProfile } = require('./offline-profile')
 const { httpsUrl, validateDistribution, sansChemins } = require('./security')
 const { chargerClePublique, verifierPack } = require('./signature')
@@ -748,7 +748,10 @@ class LauncherService {
                 try {
                     this.gardien = new Gardien({
                         dossierJeu: pb.gameDir, pid: jeu.pid, cles: clesGardien,
-                        dossiersJars: [path.join(pb.gameDir, 'mods'), path.join(Config.getCommonDirectory(), 'modstore')]
+                        dossiersJars: [path.join(pb.gameDir, 'mods'), path.join(Config.getCommonDirectory(), 'modstore')],
+                        // 19/11 : bibliothèques d'agent Java ou de débogueur vues dans le jeu, jars comparés au pack signé
+                        modules: modulesJeu,
+                        attendues: Gardien.empreintesAttendues(empreintesDuPack(server.modules))
                     }).demarrer()
                 } catch (erreur) {
                     console.error('[HeraliZ/gardien]', erreur?.code || erreur?.message)

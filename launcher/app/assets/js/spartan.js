@@ -20,6 +20,7 @@
  *    triche pourrait y glisser un -javaagent sans toucher aux options du launcher. Même chose sur Linux et Mac pour les
  *    variables qui font charger une bibliothèque native dans tout programme lancé (LD_PRELOAD, LD_AUDIT,
  *    DYLD_INSERT_LIBRARIES) : rien n'est injecté dans le jeu par ce biais (une surcouche comme MangoHud non plus).
+ *    Depuis le 19/11 : CLASSPATH et les dossiers de bibliothèques de Mac (DYLD_LIBRARY_PATH…) aussi.
  */
 
 const crypto = require('crypto')
@@ -38,6 +39,10 @@ const DANGEREUSES = [
     /^-XX:\+EnableDynamicAgentLoading/i,
     /^-XX:\+StartAttachListener/i,
     /^-XX:-DisableAttachMechanism/i,
+    // 19/11 : contrôle à distance de Java (JMX), qui sait charger un agent sans l'attache, et redéfinition élargie des
+    // classes (ne sert qu'aux agents et aux débogueurs) : Spartan 2.13.0 les signale
+    /^-XX:\+ManagementServer/i,
+    /^-XX:\+AllowRedefinitionToAddDeleteMethods/i,
     /^-Xverify:none/i,
     /^-noverify$/i,
     /^-Dspartan\./i
@@ -69,9 +74,13 @@ const PUB_GARDIEN = /^[A-Za-z0-9_-]{43}$/
 // jeton v1 rendu par le site : base64url(contenu) "." base64url(HMAC-SHA256), rien d'autre
 const JETON = /^[A-Za-z0-9_-]{20,2000}\.[A-Za-z0-9_-]{43}$/
 // variables d'environnement lues par Java au démarrage (une option -javaagent y suffit), bibliothèques natives imposées
-// à tout programme lancé (Linux, Mac), et tout jeton hérité
+// à tout programme lancé (Linux, Mac), et tout jeton hérité. 19/11 : aussi CLASSPATH (classes ajoutées si une option
+// venait à manquer) et, sur Mac, les dossiers où chercher les bibliothèques avant ceux du système (une fausse
+// bibliothèque OpenGL y suffirait pour un ESP) ; LD_LIBRARY_PATH reste (Linux : souvent nécessaire au pilote graphique).
 const VARIABLES_DANGEREUSES = ['JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'LD_PRELOAD', 'LD_AUDIT',
-    'DYLD_INSERT_LIBRARIES', VAR_JETON, VAR_CAPTURE, VAR_GARDIEN, VAR_GARDIEN_PUB]
+    'DYLD_INSERT_LIBRARIES', 'CLASSPATH', 'DYLD_LIBRARY_PATH', 'DYLD_FRAMEWORK_PATH', 'DYLD_FALLBACK_LIBRARY_PATH',
+    'DYLD_FALLBACK_FRAMEWORK_PATH', 'DYLD_VERSIONED_LIBRARY_PATH', 'DYLD_VERSIONED_FRAMEWORK_PATH', 'DYLD_IMAGE_SUFFIX',
+    VAR_JETON, VAR_CAPTURE, VAR_GARDIEN, VAR_GARDIEN_PUB]
 
 /** Options Java ajoutées à chaque lancement (copie). */
 function protections() {

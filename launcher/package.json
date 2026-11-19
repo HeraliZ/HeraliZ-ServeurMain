@@ -1,6 +1,6 @@
 {
   "name": "heraliz-launcher",
-  "version": "1.16.2",
+  "version": "1.17.0",
   "productName": "HeraliZ Launcher",
   "description": "Launcher HeraliZ — survie Minecraft DayZ",
   "author": "Daniel Scalzi (https://github.com/dscalzi/)",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "adm-zip": "0.6.1",
-    "electron-updater": "6.8.9",
+    "electron-updater": "6.8.11",
     "fs-extra": "11.3.1",
     "got": "11.8.6",
     "helios-core": "2.2.4",
@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
-    "electron": "44.10.1",
+    "electron": "44.11.3",
     "electron-builder": "26.15.3",
     "eslint": "9.39.5",
     "globals": "16.5.0"
