@@ -137,6 +137,7 @@ final class PacketObserver extends ChannelDuplexHandler {
             return;
         }
         inbox.tirs.noter(b.getLong(i + 1), now, silences.recent(now, SILENCE_FENETRE));
+        inbox.push(MoveInbox.Event.simple(MoveInbox.Kind.SHOT, now, 0, null)); // à sa place parmi les visées
     }
 
     /** Canal réseau de TaCZ. */

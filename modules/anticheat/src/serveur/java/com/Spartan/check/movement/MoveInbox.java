@@ -23,7 +23,8 @@ final class MoveInbox {
         IMPULSE,       // le serveur impose une vitesse (recul, explosion, propulsion de mod) : x, y, z = vitesse
         PING,          // notre ping part vers le client (voir Transactions)
         PONG,          // le client répond à un ping
-        USE_CHANGE     // le client relâche, change ou lâche l'objet en main : son ralentissement peut cesser
+        USE_CHANGE,    // le client relâche, change ou lâche l'objet en main : son ralentissement peut cesser
+        SHOT           // tir de TaCZ (19/11), à sa place exacte parmi les visées (visée forcée, TirsTacz)
     }
 
     /**

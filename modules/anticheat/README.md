@@ -314,7 +314,7 @@ rame n'envoie rien : il n'est jamais pris pour un tricheur.
 | **FastBreak** | Speedmine | Temps réel de minage comparé au temps attendu pour CE joueur (outil, enchantements, Célérité, eau…), plusieurs blocs de suite. |
 | **Duplication** | Objets copiés (exploit de duplication) | Chaque objet de valeur non empilable reçoit un numéro unique invisible ; un relevé périodique (inventaires, coffre de l'Ender, Curios, contenu des sacs, en une fois) repère un même numéro à deux endroits au même instant. Alerte seulement, rien n'est supprimé. |
 | **IllegalEffect** | « Se donne des effets » | Effet de niveau ou de durée impossible. Un client ne peut pas se donner un vrai effet : s'il en a un, c'est une commande ou une faille de mod → à investiguer en priorité. Staff ignoré. |
-| **Tirs** (rafales, 2.14.0) | « Rapid fire » par heures de tir trafiquées | TaCZ juge la cadence sur l'heure écrite par le jeu (à 300 ms près en avance, ~400 ms en retard) : une rafale envoyée d'un coup passait (8 balles d'un fusil à 600 coups/min dans le même tick). Chaque tir est aussi daté par son **arrivée sur le réseau** ; une rafale arrivée d'un coup est **étalée** à la cadence de l'arme (rien de perdu), une cadence soutenue plus rapide que l'arme est refusée. Tolérés : à-coups du réseau (150 ms), tirs groupés par une coupure (silence mesuré). Alerte après 8 tirs étalés de plus de 300 ms (impossible pour un jeu honnête) ou refusés en 60 s. Section `[tirs]`, voir 4 bis. |
+| **Tirs** (rafales, 2.14.0) | « Rapid fire » par heures de tir trafiquées | TaCZ juge la cadence sur l'heure écrite par le jeu (à 300 ms près en avance, ~400 ms en retard) : une rafale envoyée d'un coup passait (8 balles d'un fusil à 600 coups/min dans le même tick). Chaque tir est aussi daté par son **arrivée sur le réseau** ; une rafale arrivée d'un coup est **étalée** à la cadence de l'arme (rien de perdu), une cadence soutenue plus rapide que l'arme est refusée. Tolérés : à-coups du réseau (150 ms), tirs groupés par une coupure (silence mesuré). Alerte après 8 tirs étalés de plus de 300 ms (impossible pour un jeu honnête) ou refusés en 60 s. **Visée forcée** (« silent aim » : visée tournée sur un joueur le temps du seul paquet de tir, puis rendue) : alerte au 4e cas en 10 min. Section `[tirs]`, voir 4 bis. |
 | **Interaction** (2.14.0) | Ouvrir à travers un mur ou de trop loin, toucher un joueur caché | Minecraft ne vérifie que la distance d'un clic droit (6 blocs), jamais ce qu'il y a entre le joueur et l'objet. Le serveur refait le rayon du jeu : conteneurs (loot, salles à carte, coffres T7, largages, tout bloc qui ouvre un écran), entités (joueur à terre, caisse…), portée de 4,5 blocs (3 pour une entité) + 1. Coup ou clic sur un joueur que l'anti-ESP cache à ce joueur : refusé (son jeu n'a pas ce joueur). Le clic refusé ne fait rien ; alerte après 3 refus en 10 min. Section `[interactions]`, voir 4 bis. |
 
 **Reculs, explosions et lag : les transactions.** Le serveur envoie à chaque
@@ -384,6 +384,14 @@ dans le bilan des tirs refusés : il n'est pas perdu, il part un peu plus tard.
 l'endroit où elle était il y a « ping du tireur » (keepalive, jusqu'à `ServerHitboxLatencyMaxSaveMs` = 350 ms) ; un faux
 lag gonflait ce ping pour toucher un joueur déjà à couvert. TaCZ lit maintenant la latence de Spartan : jamais plus que la
 latence mesurée par les transactions + 100 ms. Joueur honnête : la même qu'avant.
+
+**Visée forcée, « silent aim »** (`[tirs] viseeForcee`, `ViseeForcee`). Un aimbot discret ne bouge pas l'écran : il envoie
+une visée tournée vers la cible juste avant le paquet de tir, puis la vraie visée au paquet suivant. Le tir de TaCZ est
+placé dans le flux des visées (même observateur réseau) : visée d'avant (A), visée du tir (B), visée d'après (C). Compté
+si B s'écarte de A d'au moins 15°, C de B d'au moins 15° en revenant à moins de 4° de A, B juste avant le tir et C juste
+après (un tick du jeu), et si B vise un joueur que ni A ni C ne visent. Une ligne dans `tirs.log` par cas ; alerte « Tirs »
+au 4e cas en 10 min ; jamais de tir annulé. Le recul de l'arme (quelques degrés, après le tir) et le suivi d'une cible ne
+font jamais cet aller-retour (tests `ViseeForceeTest`).
 
 **Interactions impossibles** (`[interactions]`, `InteractionCheck`). Clic droit sur un bloc protégé (qui ouvre un écran,
 ou de la liste `blocs` : tout le loot, les largages) ou sur une entité : un rayon des yeux vers le point visé par le jeu,
@@ -702,8 +710,9 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 - **2.14.0 (19/11, demande du propriétaire : « le plus possible côté serveur »)** — **Cadence réelle des tirs** : une
   rafale de tirs TaCZ envoyée d'un coup (heures trafiquées) est étalée à la cadence de l'arme. **Recul des hitbox au vrai
   ping** (faux lag sans effet sur TaCZ). **Interactions impossibles** refusées : conteneurs, coffres, largages et joueurs à
-  terre à travers un mur ou hors de portée, coups et clics sur un joueur que l'anti-ESP cache. Section 4 bis ; réglages
-  `[tirs]` et `[interactions]` ; tests `CadenceTirsTest`, `ArriveesTirsTest`, `PointsDeVueTest`, `CompteurTest`.
+  terre à travers un mur ou hors de portée, coups et clics sur un joueur que l'anti-ESP cache. **Visée forcée** (« silent
+  aim ») : alerte. Section 4 bis ; réglages `[tirs]` et `[interactions]` ; tests `CadenceTirsTest`, `ArriveesTirsTest`,
+  `PointsDeVueTest`, `CompteurTest`, `ViseeForceeTest`.
 - **2.1.0 (HeraliZ)** — **Anti-duplication** (section `[antidupe]`). **Jeton du launcher HeraliZ** (6 h) et `tokenRequired` qui refuse la connexion sans jeton, même en détection silencieuse.
 - **2.0.0 (HeraliZ)** — **Coupé client / serveur** : le jar des joueurs ne contient plus aucune détection serveur ;
   le jar serveur embarque une copie du jar joueur pour les défis. **Défi lié au code réellement chargé** : en plus des

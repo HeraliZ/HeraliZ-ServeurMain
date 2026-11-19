@@ -177,6 +177,10 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.IntValue TIRS_RAFALE_ATTENTE;
     public static final ForgeConfigSpec.IntValue TIRS_RAFALE_ALERTE;
     public static final ForgeConfigSpec.BooleanValue TIRS_RECUL_MESURE;
+    public static final ForgeConfigSpec.BooleanValue TIRS_VISEE_FORCEE;
+    public static final ForgeConfigSpec.DoubleValue TIRS_VISEE_COUP;
+    public static final ForgeConfigSpec.DoubleValue TIRS_VISEE_RETOUR;
+    public static final ForgeConfigSpec.IntValue TIRS_VISEE_ALERTE;
 
     // --- interactions impossibles (19/11) ---
     public static final ForgeConfigSpec.BooleanValue INTER_ENABLED;
@@ -689,6 +693,18 @@ public class SpartanConfig {
                         "les transactions + 100 ms : un faux lag ne fait plus toucher un joueur déjà à couvert. Joueur honnête :",
                         "rien ne change. Nécessite transactions.")
                 .define("reculPingMesure", true);
+        TIRS_VISEE_FORCEE = b.comment("Visée forcée (19/11, « silent aim ») : un aimbot discret ne bouge pas l'écran du tricheur ; il envoie",
+                        "une visée tournée vers un joueur juste avant le tir, puis la vraie visée au paquet suivant. Le serveur voit",
+                        "les paquets dans l'ordre : visée d'avant, visée du tir (sur un joueur), visée d'après (revenue à celle",
+                        "d'avant). Compté seulement si la visée du tir est sur un joueur que les deux autres ne visent pas. ALERTE",
+                        "seulement, jamais de tir annulé ; chaque cas est noté dans config/spartan/tirs.log.")
+                .define("viseeForcee", true);
+        TIRS_VISEE_COUP = b.comment("Visée forcée : saut minimal de la visée (degrés) vers le joueur, puis en revenant.")
+                .defineInRange("viseeForceeDegres", 15.0, 8.0, 90.0);
+        TIRS_VISEE_RETOUR = b.comment("Visée forcée : la visée d'après revient à moins de ces degrés de celle d'avant.")
+                .defineInRange("viseeRetourDegres", 4.0, 1.0, 15.0);
+        TIRS_VISEE_ALERTE = b.comment("Visée forcée : cas en 10 minutes avant l'alerte « Tirs » au staff.")
+                .defineInRange("viseeForceeAlerte", 4, 1, 100);
         b.pop();
 
         b.comment("Interactions impossibles pour un jeu honnête (19/11) : Minecraft ne vérifie que la distance d'un clic droit",

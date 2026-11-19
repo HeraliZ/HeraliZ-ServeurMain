@@ -293,6 +293,7 @@ public final class MovementEngine {
                 case PING -> s.tx.onWritten(e.id(), e.nanos());
                 case PONG -> pong(p, s, e);
                 case USE_CHANGE -> s.useChanged = true;
+                case SHOT -> CheckManager.runShot(p, e.nanos()); // 19/11 : tir de TaCZ, dans l'ordre des visées
                 default -> {
                 }
             }

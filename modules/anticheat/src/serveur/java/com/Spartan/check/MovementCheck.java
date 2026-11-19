@@ -29,6 +29,13 @@ public abstract class MovementCheck extends Check {
     public void onMovePacket(ServerPlayer player, MovePacket packet) {
     }
 
+    /**
+     * Un tir de TaCZ (19/11), vu à sa place exacte dans le flux : les paquets de mouvement reçus avant lui sont déjà passés,
+     * ceux d'après suivront.
+     */
+    public void onShot(ServerPlayer player, long nanos) {
+    }
+
     /** Constats du moteur en fin de tick (positions retenues, téléportation non confirmée…). */
     public void onTickEnd(ServerPlayer player, MoveTickInfo info) {
     }

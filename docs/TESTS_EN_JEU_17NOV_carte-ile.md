@@ -1012,6 +1012,10 @@ Ce qu'un tricheur pouvait faire avant, et ce qui se passe maintenant :
   joueur déjà caché. Maintenant TaCZ ne recule les cibles que du vrai ping mesuré par l'anticheat.
 - **Frapper un joueur caché** : un joueur que l'anticheat cache (derrière un mur) n'existe pas dans le jeu du tricheur ;
   un coup ou un clic sur lui est donc fabriqué : refusé.
+- **Visée forcée** (« silent aim ») : un aimbot discret tourne la visée sur un joueur seulement le temps du paquet de tir,
+  puis rend la vraie visée au paquet suivant, sans que l'écran du tricheur bouge. Le serveur voit cet aller-retour (plus
+  de 15° aller, retour au degré près, en un tick) : alerte au 4e cas en 10 minutes, chaque cas écrit dans
+  `config/spartan/tirs.log`.
 
 Ce qu'une alerte donne au staff (salon Discord de l'anticheat, staff en jeu, `config/spartan/alerts.log`) :
 - « **Tirs** (VL 1) : 8 tirs arrivés d'un coup alors que leurs heures suivent la cadence de l'arme, étalés de plus de
@@ -1044,11 +1048,15 @@ Ce qu'une alerte donne au staff (salon Discord de l'anticheat, staff en jeu, `co
 - [ ] `config/spartan/interactions.log` après une soirée de jeu normal : vide ou presque (une ligne isolée de temps en temps
       peut venir d'un décalage du réseau ; plusieurs lignes du même joueur honnête : prévenir).
 - [ ] Combat au corps à corps et à l'arme près d'un mur et d'un coin de rue : coups et tirs comme avant.
+- [ ] Combats à l'arme entre deux comptes, en visant vite d'une cible à l'autre, en « flick » (coup de souris sec puis
+      tir), au sniper : aucune alerte « Tirs … visée tournée sur un joueur seulement le temps du tir ». Dans
+      `config/spartan/tirs.log`, aucune ligne « visée forcée ? » après une soirée de jeu normal (une ligne isolée : à
+      signaler, avec l'arme et le geste).
 
 Si un souci apparaît, à couper tout de suite dans `config/spartan-common.toml` du Ptero (pris à chaud) :
 `[tirs] cadenceReelle = false` (TaCZ juge seul les tirs, comme avant), `[tirs] reculPingMesure = false`,
-`[interactions] enabled = false` (ou seulement `ligneDeVue = false`, `portee = false`, `entites = false`,
-`cibleCachee = false`).
+`[tirs] viseeForcee = false`, `[interactions] enabled = false` (ou seulement `ligneDeVue = false`, `portee = false`,
+`entites = false`, `cibleCachee = false`).
 
 Pas fait, volontairement :
 - **Renvoi en arrière des tricheurs qui volent ou courent trop vite** (`[mitigation] movementSetback`) : toujours coupé
@@ -1057,7 +1065,6 @@ Pas fait, volontairement :
 - **Cacher les zombies et les objets derrière les murs** comme les joueurs : les zombies se font entendre de toute façon
   (sons envoyés à leur place) et ça multiplierait le coût de l'anticheat. Le contenu des conteneurs, lui, ne part jamais
   avant l'ouverture (T7 : « ? » tant que l'objet n'est pas identifié), seule leur place se voit (c'est la carte).
-- **Visée « silencieuse »** (tir dans une autre direction que celle de l'écran) : pas de règle sans fausses alertes
-  trouvée pour l'instant ; les alertes « tirs à la tête » et « coups secs » restent.
+- **Tir annulé pour une visée forcée** : seulement une alerte (le staff juge) ; seule la rafale est corrigée d'office.
 - **Clics trop rapides dans l'inventaire** (prendre tout un coffre d'un coup) : Minecraft le fait déjà lui-même avec
   Maj + double-clic ; une règle sur la vitesse des clics donnerait des alertes à tort.

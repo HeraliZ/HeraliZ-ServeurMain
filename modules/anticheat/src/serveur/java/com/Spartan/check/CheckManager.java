@@ -156,6 +156,20 @@ public class CheckManager {
         }
     }
 
+    /** Tir de TaCZ vu passer sur le réseau, à sa place exacte parmi les paquets de mouvement (19/11, visée forcée). */
+    public static void runShot(ServerPlayer player, long nanos) {
+        for (MovementCheck c : MOVEMENT) {
+            if (player.hasDisconnected()) {
+                return;
+            }
+            try {
+                c.onShot(player, nanos);
+            } catch (Exception e) {
+                erreur(c, e);
+            }
+        }
+    }
+
     /** Réponse du client à l'un de nos pings (horloge du client, voir TimerCheck). */
     public static void runPong(ServerPlayer player, long sentNanos, long nanos) {
         for (MovementCheck c : MOVEMENT) {

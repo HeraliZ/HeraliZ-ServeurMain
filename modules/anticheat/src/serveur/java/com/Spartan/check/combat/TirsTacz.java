@@ -25,6 +25,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.eventbus.api.Event;
@@ -76,6 +78,18 @@ public class TirsTacz extends MovementCheck {
      * que TaCZ accepte (~400 ms) + 50 ms. Un joueur honnête n'y arrive jamais.
      */
     private static final double ETALEMENT_HONNETE_MAX = 450;
+    /** Visée forcée : la visée du tir (B) arrive au plus autant avant le tir (même tick du jeu). */
+    private static final long VISEE_AVANT_NANOS = 80_000_000L;
+    /** Visée forcée : la visée qui suit le tir (C) arrive au plus autant après lui (tick suivant du jeu). */
+    private static final long VISEE_APRES_NANOS = 120_000_000L;
+    /** Visée forcée : joueurs regardés jusqu'à cette distance (blocs). */
+    private static final double VISEE_PORTEE = 128;
+    /** Visée forcée : la visée du tir est sur le joueur (degrés au-delà de sa taille apparente). */
+    private static final double VISEE_SUR_CIBLE = 2;
+    /** Visée forcée : les visées d'avant et d'après sont loin de lui (degrés). */
+    private static final double VISEE_HORS_CIBLE = 8;
+    /** Visée forcée : fenêtre de l'alerte (ms). */
+    private static final long VISEE_ALERTE_MS = 600_000L;
     /** Joueurs qui ont des tirs mis de côté (presque toujours vide). Fil du serveur. */
     private static final ArrayDeque<Etat> A_JOUER = new ArrayDeque<>();
     /** Un tir mis de côté est en train d'être joué : la cadence réelle ne le juge pas une seconde fois. */
@@ -116,6 +130,15 @@ public class TirsTacz extends MovementCheck {
         double pireRetard;
         int etalesSession;
         int refusesSession;
+        // visée forcée (19/11) : visées A et B du dernier tir, en attente de la visée C qui le suit
+        boolean viseeEnAttente;
+        long viseeTirNanos;
+        float lacetA;
+        float tangageA;
+        float lacetB;
+        float tangageB;
+        final com.Spartan.check.Compteur viseesForcees = new com.Spartan.check.Compteur(32);
+        int viseesSession;
 
         Etat(UUID id, String nom) {
             this.id = id;
@@ -155,10 +178,90 @@ public class TirsTacz extends MovementCheck {
         if (e == null) {
             return; // jamais tiré : rien à garder
         }
+        if (e.viseeEnAttente) {
+            // visée forcée (19/11) : première visée après le tir (C), comparée à celles d'avant (A, B)
+            e.viseeEnAttente = false;
+            if (packet.nanos() - e.viseeTirNanos <= VISEE_APRES_NANOS
+                    && ViseeForcee.allerRetour(e.lacetA, e.tangageA, e.lacetB, e.tangageB, packet.yRot(), packet.xRot(),
+                    SpartanConfig.TIRS_VISEE_COUP.get(), SpartanConfig.TIRS_VISEE_RETOUR.get())) {
+                viseeForcee(player, e, packet.yRot(), packet.xRot());
+            }
+        }
         e.nanos[e.pos] = packet.nanos();
         e.yaw[e.pos] = packet.yRot();
         e.pitch[e.pos] = packet.xRot();
         e.pos = (e.pos + 1) % e.nanos.length;
+    }
+
+    /**
+     * Tir de TaCZ à sa place dans le flux (19/11, visée forcée) : les deux dernières visées reçues avant lui (A, B) sont
+     * gardées ; la visée suivante (C) décide ({@link #onMovePacket}). Rien si B n'est pas arrivée juste avant le tir (le
+     * joueur ne bougeait pas la souris), en véhicule, juste après une téléportation, en créatif ou spectateur.
+     */
+    @Override
+    public void onShot(ServerPlayer player, long nanos) {
+        if (!SpartanConfig.TIRS_ENABLED.get() || !SpartanConfig.TIRS_VISEE_FORCEE.get() || ignore(player)
+                || player.isPassenger() || player.isCreative() || player.isSpectator()
+                || CheckManager.isInGrace(player.getUUID())) {
+            return;
+        }
+        Etat e = etat(player);
+        int n = e.nanos.length;
+        int b = (e.pos + n - 1) % n;
+        int a = (e.pos + n - 2) % n;
+        if (e.nanos[a] == 0 || e.nanos[b] == 0 || nanos - e.nanos[b] > VISEE_AVANT_NANOS) {
+            e.viseeEnAttente = false;
+            return;
+        }
+        e.viseeEnAttente = true;
+        e.viseeTirNanos = nanos;
+        e.lacetA = e.yaw[a];
+        e.tangageA = e.pitch[a];
+        e.lacetB = e.yaw[b];
+        e.tangageB = e.pitch[b];
+    }
+
+    /**
+     * Aller-retour de la visée autour d'un tir : confirmé seulement si la visée du tir (B) était sur un joueur que les
+     * visées d'avant et d'après (A, C) ne visaient pas. Compté, noté dans tirs.log ; alerte au N-ième en 10 min.
+     */
+    private static void viseeForcee(ServerPlayer p, Etat e, float lacetC, float tangageC) {
+        Vec3 oeil = p.getEyePosition();
+        ServerPlayer vise = null;
+        double distance = 0;
+        for (ServerPlayer t : p.serverLevel().players()) {
+            if (t == p || t.isSpectator() || !t.isAlive() || t.distanceToSqr(p) > VISEE_PORTEE * VISEE_PORTEE) {
+                continue;
+            }
+            AABB b = t.getBoundingBox();
+            if (ViseeForcee.ecartBoite(oeil.x, oeil.y, oeil.z, e.lacetB, e.tangageB, b.minX, b.minY, b.minZ, b.maxX, b.maxY,
+                    b.maxZ) <= VISEE_SUR_CIBLE
+                    && ViseeForcee.ecartBoite(oeil.x, oeil.y, oeil.z, e.lacetA, e.tangageA, b.minX, b.minY, b.minZ, b.maxX,
+                    b.maxY, b.maxZ) >= VISEE_HORS_CIBLE
+                    && ViseeForcee.ecartBoite(oeil.x, oeil.y, oeil.z, lacetC, tangageC, b.minX, b.minY, b.minZ, b.maxX,
+                    b.maxY, b.maxZ) >= VISEE_HORS_CIBLE) {
+                vise = t;
+                distance = Math.sqrt(t.distanceToSqr(p));
+                break;
+            }
+        }
+        if (vise == null) {
+            return;
+        }
+        e.viseesSession++;
+        double saut = ViseeForcee.ecart(e.lacetA, e.tangageA, e.lacetB, e.tangageB);
+        double retour = ViseeForcee.ecart(e.lacetA, e.tangageA, lacetC, tangageC);
+        String detail = String.format("visée tournée de %.0f° sur %s (%.0f blocs) pour le tir, puis revenue à %.1f° de la visée"
+                + " d'avant au paquet suivant", saut, vise.getName().getString(), distance, retour);
+        if (SpartanConfig.TIRS_JOURNAL.get()) {
+            AlertManager.journal("tirs.log", e.nom + " (" + e.id + ") : visée forcée ? " + detail);
+        }
+        int n = e.viseesForcees.ajouter(System.currentTimeMillis(), VISEE_ALERTE_MS);
+        if (n >= SpartanConfig.TIRS_VISEE_ALERTE.get()) {
+            e.viseesForcees.vider();
+            instance.flag(p, n + " tirs en 10 min avec la visée tournée sur un joueur seulement le temps du tir puis rendue"
+                    + " (aimbot discret, « silent aim ») ; le dernier : " + detail + ". Session : " + e.viseesSession);
+        }
     }
 
     /** Plus grand mouvement de visée (degrés) entre la visée actuelle et celles des 100 dernières ms. */
