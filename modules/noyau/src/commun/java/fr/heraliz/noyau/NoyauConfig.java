@@ -196,7 +196,7 @@ public final class NoyauConfig {
       b.push("combat");
       TAG_COMBAT_S = b.comment("Duree du tag de combat en secondes (degats infliges ou recus d'un autre joueur)")
             .defineInRange("tag_secondes", 15, 1, 300);
-      MORT_DECONNEXION = b.comment("Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur)")
+      MORT_DECONNEXION = b.comment("Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur ni dans le monde du spawn)")
             .define("mort_deconnexion", true);
       REFUS_COMMANDES = b.comment("Refuser au joueur tague (ou a terre) toute commande absente de commandes_permises_combat")
             .define("refus_commandes", true);

@@ -203,6 +203,10 @@ TEXTES = {
     "heraliz_quetes.marchand.jamais_rachete": ("%s s'obtient chez un marchand (vente ou échange) : aucun marchand ne le rachète contre des hérals.",
                                                "%s can be obtained from a merchant (sale or trade): no merchant buys it back for herals.",
                                                "%s можно получить у торговца (покупка или обмен): никто не выкупает его за гералы."),
+    # 19/11 (audit) : clé citée par l'édition des marchands, absente des trois langues
+    "heraliz_quetes.marchand.rachat_moitie": ("%s se vend %s hérals : il ne sera jamais racheté plus de %s hérals (la moitié).",
+                                              "%s sells for %s herals: it will never be bought back for more than %s herals (half).",
+                                              "%s продаётся за %s гералов: его никогда не выкупят дороже %s гералов (половина)."),
     "heraliz_quetes.marchand.pas_cree": ("« %s » vient d'un fichier du serveur : on ne le supprime pas en jeu (/pnj retirer l'enlève du monde).",
                                          "\"%s\" comes from a server file: it can't be deleted in game (/pnj retirer removes it from the world).",
                                          "«%s» задан файлом сервера: его нельзя удалить в игре (/pnj retirer убирает его из мира)."),
@@ -325,6 +329,10 @@ TEXTES = {
     "heraliz_quetes.notif.finie_sans_herals": ("Quête terminée : %s. Les %s hérals n'ont pas pu être versés : préviens le staff.",
                                                "Quest complete: %s. The %s herals could not be paid: tell the staff.",
                                                "Задание выполнено: %s. %s гералов не удалось выплатить: сообщи администрации."),
+    # 19/11 (audit) : quête finie, hérals pas versés (économie injoignable) : à rendre plus tard
+    "heraliz_quetes.notif.recompense_attente": ("Quête finie, mais les hérals ne peuvent pas être versés pour l'instant : reviens la rendre un peu plus tard.",
+                                                "Quest done, but the herals cannot be paid right now: come back and hand it in a little later.",
+                                                "Задание выполнено, но гералы сейчас нельзя выплатить: вернись и сдай его чуть позже."),
     "heraliz_quetes.notif.titre": ("Nouveau titre : %s", "New title: %s", "Новый титул: %s"),
     "heraliz_quetes.notif.echec": ("Quête échouée (temps écoulé) : %s", "Quest failed (time is up): %s", "Задание провалено (время вышло): %s"),
     "heraliz_quetes.notif.abandon": ("Quête abandonnée : %s", "Quest abandoned: %s", "Задание брошено: %s"),
@@ -499,6 +507,10 @@ TEXTES = {
                                            "Не хватает гералов даже на одну штуку"),
     "gui.heraliz_quetes.achat.plein": ("Plus de place dans ton inventaire", "No room left in your inventory", "В инвентаре нет места"),
     "heraliz_quetes.notif.vendu": ("Vendu : %s objet(s) pour %s hérals", "Sold: %s item(s) for %s herals", "Продано: %s предм. за %s гералов"),
+    # 19/11 (audit) : vente refusée, économie injoignable (rien n'est pris)
+    "heraliz_quetes.notif.economie_absente": ("Vente impossible pour l'instant : les hérals ne peuvent pas être versés. Rien n'a été pris.",
+                                              "Selling is not possible right now: the herals cannot be paid. Nothing was taken.",
+                                              "Продажа сейчас невозможна: гералы нельзя выплатить. Ничего не забрано."),
     "heraliz_quetes.notif.points_evenement": ("+%s points de saison pour ton clan", "+%s season points for your clan", "+%s очков сезона для твоего клана"),
     "heraliz_quetes.notif.objet_essai": ("Objet d'essai (événement lancé par le staff) : hérals seulement, aucun point de saison",
                                          "Test item (event launched by the staff): herals only, no season points",

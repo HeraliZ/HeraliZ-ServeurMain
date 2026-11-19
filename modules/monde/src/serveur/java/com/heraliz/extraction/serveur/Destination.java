@@ -14,8 +14,17 @@ public final class Destination {
     private Destination() {
     }
 
-    /** Téléporte le joueur au point d'extraction configuré (vraie téléportation : suivie par l'anticheat). */
+    /**
+     * Téléporte le joueur au point d'extraction configuré (vraie téléportation : suivie par l'anticheat), puis efface son
+     * tag de combat (19/11, audit) : touché pendant l'extraction, il arrivait au spawn encore « en combat » ; s'il quittait
+     * le jeu dans les secondes qui suivaient, il mourait au spawn et son corps y restait, pillable.
+     */
     public static void teleport(ServerPlayer player) {
+        allerAuPoint(player);
+        finDuCombat(player);
+    }
+
+    private static void allerAuPoint(ServerPlayer player) {
         // d'abord le point /spawn posé par le staff (/spawn definir de CRac, par réflexion : facultatif), puis le point de
         // réveil du monde du spawn de HeraliZ (Utils, par réflexion : facultatif), s'il est en place
         if (ExtractionConfig.USE_HERALIZ_SPAWN.get() && (versSpawnDefini(player) || versSpawnHeraliz(player))) {
@@ -48,6 +57,19 @@ public final class Destination {
         player.stopRiding();
         player.teleportTo(target, x, y, z, player.getYRot(), player.getXRot());
         player.resetFallDistance();
+    }
+
+    /**
+     * Le combat s'arrête à l'extraction : tag du noyau effacé (clé heralisz:combat_jusqua des données du joueur comprise,
+     * indicateur « EN COMBAT » masqué), comme à la mort. Celui qui l'a touché reste tagué, lui.
+     */
+    private static void finDuCombat(ServerPlayer player) {
+        try {
+            fr.heraliz.noyau.api.CombatTag.effacer(player.getUUID());
+        } catch (LinkageError e) {
+            // noyau absent ou trop ancien : au moins la clé lue par les autres mods
+            player.getPersistentData().remove("heralisz:combat_jusqua");
+        }
     }
 
     private static java.lang.reflect.Method spawnCrac;

@@ -876,6 +876,29 @@ final class Moteur {
         return e.texte("source", "").equals("caisses");
     }
 
+    /**
+     * 19/11 (audit) : au démarrage (premier tick, zones de HeraliZ Décors déjà lues), une étape « zone_danger » sans aucune
+     * zone de ce genre sur la carte ne peut pas être finie (la boîte noire de Varga : zone de radiation de Radio, posée dans
+     * les données du monde, data/heraliz_zones.json) : une ligne claire dans le journal du serveur pour le staff.
+     */
+    static void verifierZonesDanger() {
+        for (Defs.Pnj d : Catalogue.tous()) {
+            for (Defs.Quete q : d.suite) {
+                if (q.desactivee) continue;
+                for (Defs.Etape e : q.etapes) {
+                    String genre = e.texte("zone_danger", "");
+                    if (genre.isEmpty()) continue;
+                    int n = Ponts.nombreZones(genre);
+                    if (n > 0) continue;
+                    LOG.warn("[heraliz_quetes] QUÊTE IMPOSSIBLE : « {} » ({}) demande une zone dangereuse « {} » et {} : son étape « {} » "
+                                    + "ne peut pas être finie. Poser la zone dans data/heraliz_zones.json du monde, puis /recharger zones ; "
+                                    + "contrôle : /zones info.", q.titre.francais(), d.id, genre,
+                            n == 0 ? "la carte n'en a aucune" : "les zones de HeraliZ Décors sont introuvables", e.libelle.francais());
+                }
+            }
+        }
+    }
+
     /** Chance (0 à 1) que ce conteneur donne l'objet de l'étape, selon son palier ; 0 sous « palier_min ». */
     private static double chanceCaisse(Defs.Etape e, int palier) {
         if (palier < Math.max(1, e.entier("palier_min", 1)) || !e.p.has("chances") || !e.p.get("chances").isJsonArray()) return 0;

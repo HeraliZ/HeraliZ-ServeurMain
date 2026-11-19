@@ -107,7 +107,11 @@ public final class ServeurQuetes implements Partie {
         Ponts.relireArmes();
         Journalieres.demarrer(e.getServer());
         LUEURS.clear();
+        zonesAVerifier = true;
     }
+
+    /** Zones dangereuses demandées par les quêtes, contrôlées au premier tick (HeraliZ Décors les lit au même démarrage). */
+    private static boolean zonesAVerifier;
 
     private static void arret(ServerStoppingEvent e) {
         Donnees.arreter();
@@ -226,6 +230,10 @@ public final class ServeurQuetes implements Partie {
 
     private static void tickServeur(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || Moteur.serveur == null) return;
+        if (zonesAVerifier) {
+            zonesAVerifier = false;
+            Moteur.verifierZonesDanger();
+        }
         Moteur.envoyerSuivisEnAttente();
         WipeServeur.tick(e.getServer());
         ObjetsARendre.tick(e.getServer());

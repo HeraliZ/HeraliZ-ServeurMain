@@ -29,7 +29,8 @@ COULEUR = re.compile(r"§[0-9a-fk-orA-FK-OR]")
 ACCENTS = set("éèêëàâçùûîïôœÉÈÊÀÇÙÛÎÔ")
 # module -> modids dont les clés citées dans le code sont contrôlées (les autres modules ont encore des faux positifs :
 # préfixes « …_ » complétés dans le code, noms de propriétés système)
-CLES_DU_CODE = {"bases": ("crac",)}
+# 19/11 (audit) : pnj (heraliz_quetes) ajouté, trois de ses clés manquaient dans les trois langues
+CLES_DU_CODE = {"bases": ("crac",), "pnj": ("heraliz_quetes",)}
 # appels de traduction : la clé en premier argument ; translatableWithFallback et T.t ont ensuite le texte français
 APPEL = re.compile(r'\b(translatable|translatableWithFallback|k|red|green|yellow|gray|tr|t|c|fail|error)\(\s*"([a-z0-9_]+\.[A-Za-z0-9_.]+)"')
 AVEC_TEXTE = ("translatableWithFallback", "t")

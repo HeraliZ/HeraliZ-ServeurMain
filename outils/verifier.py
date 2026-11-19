@@ -33,6 +33,8 @@ Contrôles :
                        ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
   - polices          : une seule copie des polices DM Sans, Onest et Oswald, dans le noyau ; les polices des modules la
                        citent (outils/polices_partagees.py --verifier) ;
+  - authme           : aucun pseudo sans mot de passe (UnrestrictedName vide) dans l'AuthMe du serveur en jeu
+                       (serveur/plugins/AuthMe/config.yml ; les bots du banc n'y sont que dans son serveur d'essai) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
@@ -92,6 +94,31 @@ def lancer(args):
     r = subprocess.run([sys.executable, "-X", "utf8"] + args, cwd=D, capture_output=True, text=True, encoding="utf-8",
                        errors="replace", env=env)
     return r.returncode, r.stdout + r.stderr
+
+
+def pseudos_sans_mot_de_passe():
+    """Pseudos de UnrestrictedName dans l'AuthMe du serveur en jeu (audit du 19/11) : en mode hors ligne, ils entrent sans
+    mot de passe. Toujours vide dans le dépôt ; le banc met ses bots dans SON serveur d'essai (serveur_local.py --banc)."""
+    f = D / "serveur" / "plugins" / "AuthMe" / "config.yml"
+    if not f.exists():
+        return []
+    lignes = f.read_text(encoding="utf-8", errors="replace").splitlines()
+    for i, l in enumerate(lignes):
+        m = re.match(r"^\s*UnrestrictedName:\s*(.*?)\s*$", l)
+        if not m:
+            continue
+        if m.group(1) not in ("", "[]"):
+            return [x.strip(" '\"") for x in m.group(1).strip("[]").split(",") if x.strip(" '\"")]
+        noms = []
+        for x in lignes[i + 1:]:
+            if x.strip().startswith("#"):
+                continue
+            mx = re.match(r"^\s*-\s*['\"]?([^'\"]*)['\"]?\s*$", x)
+            if not mx:
+                break
+            noms.append(mx.group(1))
+        return noms
+    return []
 
 
 def noms_interdits():
@@ -313,6 +340,12 @@ def main():
             if "PROBLÈME" in l:
                 print(l.strip())
         print("[polices] relancer : python outils/polices_partagees.py")
+        erreurs += 1
+    # AuthMe du serveur en jeu : aucun pseudo sans mot de passe (19/11 : les bots du banc y étaient, HzBot001 à HzBot200)
+    libres = pseudos_sans_mot_de_passe()
+    if libres:
+        print("[authme]      serveur/plugins/AuthMe/config.yml : UnrestrictedName n'est pas vide (%d pseudo(s) qui entrent "
+              "sans mot de passe, dont %s) : remettre « UnrestrictedName: [] »" % (len(libres), ", ".join(libres[:3])))
         erreurs += 1
     # trois langues : paramètres (%s...) et codes couleur identiques, sinon le joueur voit un texte cassé
     code, out = lancer([str(O / "verifier_langues.py")] + [p.name for p in choisis])

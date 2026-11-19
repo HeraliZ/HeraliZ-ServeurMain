@@ -572,3 +572,88 @@ Choix du propriétaire : les sacs se trouvent seulement sur la carte, avec leur 
 - [ ] Ouvrir son sac : plus de bouton « Personnaliser » ; aucun message « sac débloqué » en jouant.
 - [ ] Un sac trouvé garde l'apparence avec laquelle il a été trouvé (tactique, randonnée, sport…), même sur le dos.
 - [ ] Les camos sur les sacs (table d'armurier) marchent comme avant.
+
+## 27. Corrections de l'audit du 19/11 (bugs de jeu)
+
+Noyau 1.1.4, Monde 1.3.3, Quêtes 1.23.1, CRac 1.38.6-beta, Tactique 2.59.3, Sacs 3.0.1-beta.4-heralisz27.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois en jeu (staff) :
+- [ ] **Plus de `/tpa` dans les deux bunkers** (on en sortait sans carte et on y faisait entrer son clan). Les zones sans
+      téléportation ne sont pas dans le dépôt : elles se règlent en jeu. Taper, de n'importe où :
+      - `/execute in minecraft:overworld positioned -254 64 147 run tpa zone ajouter 96 Grand Bois`
+      - `/execute in minecraft:overworld positioned 853 64 -998 run tpa zone ajouter 93 Pic`
+      - puis `/tpa zone liste` : les deux zones sont dans la liste.
+      Centre et rayon : ceux des deux bunkers dans `serveur/config/crac/zones_construction.json` (tout le bunker, plus
+      40 blocs autour). Le joueur qui tente un `/tpa` dedans lit le nom de la zone : un nom neutre, pour ne pas montrer
+      où sont les bunkers (ils ne sont plus sur la carte M). Pour le nom « Bunker des Bois » à la place, c'est la même
+      commande avec ce nom.
+- [ ] **Quête « La boîte noire »** : elle ne se finit que dans les caisses d'une zone de radiation. Au démarrage, le
+      journal du serveur ne doit avoir aucune ligne « QUÊTE IMPOSSIBLE » ; `/zones info` doit montrer « Zone irradiée de
+      Radio (radiation) ». Sinon : remettre cette zone dans `dayz_map/data/heraliz_zones.json` (la carte en île l'apporte
+      dans son propre fichier du même nom), puis `/recharger zones`.
+
+À tester :
+- [ ] **Extraction sous le feu** : un autre joueur tire sur celui qui s'extrait (ou le staff tape
+      `/combat marquer <joueur>` pendant le compte à rebours). À l'arrivée au spawn : plus d'« EN COMBAT »,
+      `/combat etat <joueur>` dit « libre », `/hdv` marche tout de suite. Quitter le jeu aussitôt et revenir : vivant, au
+      spawn, rien de perdu. Celui qui a tiré reste en combat, lui.
+- [ ] **Spawn sans mort** : au spawn, `/combat marquer <joueur>` (staff), puis le joueur quitte le jeu : à son retour,
+      vivant, rien de perdu, pas de message « déconnecté en plein combat ». Journal du serveur : « sans sanction (monde
+      du spawn) ».
+- [ ] **`/spawn` depuis sa base** : pendant le compte à rebours, tirer sur un autre joueur (ou `/combat marquer
+      <joueur>`) : pas de départ, message « Tu es en combat : /spawn dans … s. ». Hors combat : départ comme avant.
+- [ ] Quêtes : trois textes s'affichaient en clé brute ; ils sont écrits en français, anglais et russe (quête finie
+      mais hérals en attente ; vente refusée quand les hérals ne peuvent pas être versés ; pour le staff, dans
+      l'édition d'un marchand). Le dernier se voit facilement : ajouter un rachat plus cher que la moitié du prix de
+      vente d'un objet → « … se vend … hérals : il ne sera jamais racheté plus de … hérals (la moitié). »
+- [ ] Journal du démarrage : plus de « Couldn't load tag curios:ear_protection ».
+- [ ] Rien ne doit changer pour : les masques à gaz et tenues Hazmat dans les zones de gaz (motifs qui ne servaient à
+      rien retirés), le C4 de CRac sur les bases (`c4ThrowableIds` vidé : il visait un C4 qui n'existe plus), le verre
+      du spawn et des arènes (monde des anciens bunkers de clan retiré de la liste).
+
+Sans essai possible : après une erreur, la détection « à terre » des quêtes (marchands, recycleurs, étapes
+« exécuter ») réessaie toute seule (1 s, 2 s, 4 s… jusqu'à 5 min) au lieu de rester coupée jusqu'au redémarrage.
+
+## 28. Réglages du serveur, plugins et mise en ligne (audit du 19/11)
+
+Rien de tout cela n'a été essayé en jeu ni sur le Ptero : seulement contrôlé dans le dépôt, et le démarrage d'essai a
+tourné sur une machine de GitHub. Tout compte au **redémarrage** qui suit la mise en ligne. Détail et raisons :
+`docs/DEPLOIEMENT.md`, sections 6 à 9.
+
+Mise en ligne :
+- [ ] Résumé de « Serveur HeraliZ » : partie « Démarrage d'essai » à « Réussi », puis le job « serveur » a tourné (envoi
+      au Ptero). Si « Refusé » : rien n'est parti, la raison et les lignes en cause sont dans ce résumé.
+- [ ] Sur le Ptero (gestionnaire de fichiers du panel) : `bukkit.yml` dit `autosave: 12000` et `warn-on-overload: true` ;
+      `spigot.yml` dit `user-cache-size: 1000` et `ignore-spectators: true` ; `server.properties` n'a pas changé.
+- [ ] `plugins/AuthMe/config.yml` du Ptero : `UnrestrictedName: []` (plus aucun pseudo `hzbot` dedans).
+
+Jeu (après le redémarrage) :
+- [ ] Sauvegarde automatique toutes les 10 min : dans `logs/debug.log`, les lignes « Autosave » sont à 10 min d'écart
+      (5 avant).
+- [ ] WorldEdit : `//size` donne le nombre de blocs ; un `//set` de plus de 250 000 blocs s'arrête (« Max blocks changed
+      in an operation reached ») et `//undo` le défait ; `//limit 2000000` permet plus ; `//sphere` de rayon 65 refusé
+      (64 au plus) ; au 7e `//undo` de suite, « Nothing left to undo » (6 retours au plus).
+- [ ] Connexion avec le plus gros inventaire possible : sac plein d'armes équipées (accessoires), Curios pleins ; ouvrir
+      un coffre de clan, le coffre VIP, un recycleur plein et un coffre du ClashWar : aucune expulsion (« Badly
+      compressed packet », « Payload may not be larger », « Packet too big »).
+- [ ] Après `rate-limit=1000` mis à la main dans `server.properties` (propriétaire) : 10 min de jeu normal (tir en
+      automatique, voix, inventaire en cliquant vite) sans expulsion « paquets ».
+- [ ] Zombies : un joueur blessé n'attire plus les zombies par l'odeur du sang, mais les tirs et les blocs cassés les
+      attirent toujours ; dans les rapports `/diag`, beaucoup moins d'entités `zombieawareness:scent`.
+- [ ] Véhicules : un conducteur voit toujours les véhicules lointains (mis à jour une fois par seconde au lieu de quatre).
+- [ ] Menu des réglages de TaCZ (touche du jeu) toujours là chez les joueurs (cloth-config retiré du serveur seulement).
+- [ ] Changer le grade d'un joueur connecté (LuckPerms) : ses nouvelles commandes arrivent dans la complétion du tchat au
+      prochain changement de monde ou à la reconnexion (plus tout de suite : voulu).
+- [ ] Démarrage du serveur : plus de « Downloading GeoIP » de LiteBans dans le journal. Un gros `//set` du staff fait de
+      nouveau apparaître « Can't keep up » dans la console.
+
+À faire par le propriétaire ou l'hébergeur :
+- [ ] `server.properties` du Ptero : `rate-limit=1000` ; décider `enable-query` (false sauf site de classement) et
+      `player-idle-timeout`.
+- [ ] Hébergeur : ligne Java de `docs/DEPLOIEMENT.md` §8 (`-Xms16G -Xmx16G` + réglages Aikar + `gc.log`), conteneur de
+      20 Go au moins ; puis `/diag` : 16 384 Mo et `logs/gc.log` présent.
+- [ ] Hébergeur, pour viser 150 joueurs : processeur récent à haute fréquence, cœurs réservés, disque NVMe.
+- [ ] Mise à jour de Mohist (build après le 20/07/2025) : seulement après un banc de charge et un essai.
+- [ ] WorldGuard : `/rg list` dans chaque monde ; si aucune région n'utilise de drapeau de mouvement (entry, exit,
+      greeting, farewell, ceux de WorldGuardExtraFlags), demander à passer `use-player-move-event` à `false`.
