@@ -1014,8 +1014,9 @@ Ce qu'un tricheur pouvait faire avant, et ce qui se passe maintenant :
   un coup ou un clic sur lui est donc fabriqué : refusé.
 
 Ce qu'une alerte donne au staff (salon Discord de l'anticheat, staff en jeu, `config/spartan/alerts.log`) :
-- « **Tirs** (VL 1) : 8 tirs arrivés d'un coup alors que leurs heures suivent la cadence de l'arme, étalés ou refusés
-  en 60 s (…) : rafale « rapid fire » par heures de tir trafiquées ? » ;
+- « **Tirs** (VL 1) : 8 tirs arrivés d'un coup alors que leurs heures suivent la cadence de l'arme, étalés de plus de
+  300 ms (impossible pour un jeu honnête) ou refusés, en 60 s (…) : rafale « rapid fire » par heures de tir
+  trafiquées ? ». Un étalement plus court (réseau qui se vide d'un coup) ne compte jamais pour l'alerte ;
 - « **Interaction** (VL 1) : 3 interaction(s) impossible(s) refusée(s) en 10 min ; la dernière : ouvre heraliz_loot:…
   (le conteneur) à travers un mur (3.2 blocs, aucune ligne de vue) ». Chaque refus, même seul, est aussi écrit dans
   `config/spartan/interactions.log`.

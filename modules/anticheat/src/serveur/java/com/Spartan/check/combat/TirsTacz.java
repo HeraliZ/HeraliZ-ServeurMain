@@ -71,6 +71,11 @@ public class TirsTacz extends MovementCheck {
     static final double FENETRE_MS = 600;
     /** Cadence réelle : fenêtre de l'alerte (ms). */
     private static final long ALERTE_MS = 60_000L;
+    /**
+     * Cadence réelle : étalement (ms) au-delà duquel le tir compte pour l'alerte, plus la tolérance : retard le plus grand
+     * que TaCZ accepte (~400 ms) + 50 ms. Un joueur honnête n'y arrive jamais.
+     */
+    private static final double ETALEMENT_HONNETE_MAX = 450;
     /** Joueurs qui ont des tirs mis de côté (presque toujours vide). Fil du serveur. */
     private static final ArrayDeque<Etat> A_JOUER = new ArrayDeque<>();
     /** Un tir mis de côté est en train d'être joué : la cadence réelle ne le juge pas une seconde fois. */
@@ -354,7 +359,12 @@ public class TirsTacz extends MovementCheck {
             A_JOUER.addLast(e);
         }
         e.etalesSession++;
-        compterEtalement(p, e, etaler);
+        // seul un étalement qu'aucun jeu honnête ne peut avoir compte pour l'alerte : TaCZ refuse lui-même un tir en
+        // retard de plus de ~400 ms (NETWORK_FAIL), donc un réseau qui se vide ne fait jamais étaler plus de 400 ms moins
+        // la tolérance (marge de 50 ms en plus)
+        if (etaler > ETALEMENT_HONNETE_MAX - SpartanConfig.TIRS_RAFALE_TOLERANCE.get()) {
+            compterEtalement(p, e, etaler);
+        }
         return misDeCote;
     }
 
@@ -367,10 +377,11 @@ public class TirsTacz extends MovementCheck {
         int n = e.etales.ajouter(maintenant, ALERTE_MS);
         if (n >= SpartanConfig.TIRS_RAFALE_ALERTE.get()) {
             instance.flag(p, String.format("%d tirs arrivés d'un coup alors que leurs heures suivent la cadence de l'arme, "
-                            + "étalés ou refusés en 60 s (jusqu'à %.0f ms d'étalement ; avance des heures annoncées sur leur "
-                            + "arrivée : %.0f ms, tolérance %d ms) : rafale « rapid fire » par heures de tir trafiquées ? "
-                            + "Session : %d étalé(s), %d refusé(s)", n, e.pireRetard, e.cadence.derniereDette(),
-                    SpartanConfig.TIRS_RAFALE_TOLERANCE.get(), e.etalesSession, e.refusesSession));
+                            + "étalés de plus de %.0f ms (impossible pour un jeu honnête) ou refusés, en 60 s (jusqu'à %.0f ms "
+                            + "d'étalement ; avance des heures annoncées sur leur arrivée : %.0f ms, tolérance %d ms) : rafale "
+                            + "« rapid fire » par heures de tir trafiquées ? Session : %d étalé(s), %d refusé(s)", n,
+                    ETALEMENT_HONNETE_MAX - SpartanConfig.TIRS_RAFALE_TOLERANCE.get(), e.pireRetard,
+                    e.cadence.derniereDette(), SpartanConfig.TIRS_RAFALE_TOLERANCE.get(), e.etalesSession, e.refusesSession));
             e.etales.vider();
             e.pireRetard = 0;
         }

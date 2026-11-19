@@ -93,6 +93,8 @@ class CadenceTirsTest {
         List<Jugement> j = jouer(honnete(0, 8000), retard);
         assertTrue(j.stream().noneMatch(x -> x.etaler() == CadenceTirs.REFUSE), "un tir honnête a été refusé");
         assertTrue(plusGrandEtalement(j) <= 200, () -> "retard trop grand : " + plusGrandEtalement(j));
+        // jamais assez pour compter dans l'alerte (étalement de plus de 450 - tolérance)
+        assertTrue(plusGrandEtalement(j) < 450 - TOLERANCE, "un joueur honnête compterait pour l'alerte");
     }
 
     @Test
@@ -114,6 +116,8 @@ class CadenceTirsTest {
         double premier = rafale.get(0).arrivee() + rafale.get(0).etaler();
         long debut = rafale.stream().filter(x -> x.arrivee() + x.etaler() - premier < 100).count();
         assertTrue(debut <= 3, () -> debut + " tirs de la rafale dans les 100 premières ms");
+        // l'alerte ne compte que les étalements de plus de 300 ms (450 - tolérance) : la rafale en a plusieurs
+        assertTrue(rafale.stream().filter(x -> x.etaler() > 450 - TOLERANCE).count() >= 3, "rafale sans étalement suspect");
         double depart = 0;
         for (int k = 0; k < rafale.size(); k++) {
             Jugement x = rafale.get(k);

@@ -680,7 +680,9 @@ public class SpartanConfig {
         TIRS_RAFALE_ATTENTE = b.comment("Cadence réelle : un tir qui devrait attendre plus que ça (ms) pour suivre la cadence de l'arme",
                         "est refusé (cadence soutenue plus rapide que l'arme). Un joueur honnête n'attend jamais plus de 200 ms.")
                 .defineInRange("rafaleAttenteMaxMs", 1000, 200, 5000);
-        TIRS_RAFALE_ALERTE = b.comment("Cadence réelle : tirs étalés ou refusés en 60 s avant l'alerte « Tirs » au staff.")
+        TIRS_RAFALE_ALERTE = b.comment("Cadence réelle : tirs étalés de plus de 450 ms moins rafaleToleranceMs (300 ms par défaut : aucun",
+                        "jeu honnête n'y arrive, TaCZ refuse lui-même un tir en retard de plus de ~400 ms) ou refusés, en 60 s,",
+                        "avant l'alerte « Tirs » au staff.")
                 .defineInRange("rafaleAlerte", 8, 2, 1000);
         TIRS_RECUL_MESURE = b.comment("Recul des hitbox (19/11) : TaCZ replace chaque cible là où elle était il y a « ping du tireur »",
                         "(jusqu'à ServerHitboxLatencyMaxSaveMs de tacz-common.toml). Ce ping ne dépasse plus la latence mesurée par",

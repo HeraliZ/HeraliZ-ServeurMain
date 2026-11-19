@@ -605,7 +605,9 @@
 	#est refusé (cadence soutenue plus rapide que l'arme). Un joueur honnête n'attend jamais plus de 200 ms.
 	#Range: 200 ~ 5000
 	rafaleAttenteMaxMs = 1000
-	#Cadence réelle : tirs étalés ou refusés en 60 s avant l'alerte « Tirs » au staff.
+	#Cadence réelle : tirs étalés de plus de 450 ms moins rafaleToleranceMs (300 ms par défaut : aucun
+	#jeu honnête n'y arrive, TaCZ refuse lui-même un tir en retard de plus de ~400 ms) ou refusés, en 60 s,
+	#avant l'alerte « Tirs » au staff.
 	#Range: 2 ~ 1000
 	rafaleAlerte = 8
 	#Recul des hitbox (19/11) : TaCZ replace chaque cible là où elle était il y a « ping du tireur »
