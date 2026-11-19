@@ -6,11 +6,14 @@ du dépôt (serveur/), pour essayer le nouveau serveur avant toute mise en ligne
 Ce que fait l'outil (rien n'est supprimé hors de `mods/` du dossier cible) :
 - `mods/` = exactement `livraison/mods serveur/` (anciens jars retirés), plus le module `banc` (bots de charge) avec --banc ;
 - `plugins/` (jars + réglages, sans données), `config/`, `defaultconfigs/`, `tacz/`, `mohist-config/`, `heraliz_clashwar/` ;
+  avec --banc, les pseudos des bots (HzBot001 à HzBot200) sont ajoutés à `UnrestrictedName` d'AuthMe DANS CE DOSSIER
+  SEULEMENT (19/11 : la liste reste vide dans le dépôt et sur le Ptero, sinon ces pseudos entrent sans mot de passe) ;
 - `server.properties`, `bukkit.yml`, `spigot.yml`, `commands.yml`, `server-icon.png` (seulement s'ils n'existent pas encore :
   un réglage changé à la main dans le dossier cible est gardé) ;
 - `LISEZ-MOI.txt` : la suite (jar Mohist, EULA, monde, démarrage).
 Le monde n'est jamais touché : copiez celui que vous voulez (par exemple `dayz_map` du Ptero) dans le dossier cible.
 """
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -18,6 +21,32 @@ from pathlib import Path
 RACINE = Path(__file__).resolve().parent.parent
 LIV = RACINE / "livraison"
 SRV = RACINE / "serveur"
+# pseudos des bots de charge (module banc : HzBot%03d, 200 au plus ; fr.heraliz.noyau.api.Bots.PSEUDOS)
+BOTS_MAX = 200
+
+
+def bots_authme(cible):
+    """Avec --banc seulement : pseudos des bots ajoutés à UnrestrictedName d'AuthMe, dans le serveur d'essai cible.
+    Sur Mohist, la connexion forcée des bots par l'API d'AuthMe ne suffisait pas (26/10 : inventaire caché, expulsion au
+    bout de 185 s). Jamais dans le dépôt ni sur le Ptero : en mode hors ligne, un pseudo de cette liste entre sans mot de
+    passe (audit du 19/11 ; outils/verifier.py refuse une liste non vide dans serveur/plugins/AuthMe/config.yml)."""
+    f = cible / "plugins" / "AuthMe" / "config.yml"
+    if not f.exists():
+        print("[serveur_local] ATTENTION : plugins/AuthMe/config.yml absent : pseudos des bots non ajoutés à AuthMe")
+        return False
+    s = f.read_text(encoding="utf-8")
+
+    def liste(m):
+        return m.group(1) + "UnrestrictedName:" + "".join("\n%s- 'hzbot%03d'" % (m.group(1), i) for i in range(1, BOTS_MAX + 1))
+
+    s, n = re.subn(r"(?m)^([ \t]*)UnrestrictedName:[ \t]*\[\][ \t]*$", liste, s, count=1)
+    if n != 1:
+        print("[serveur_local] ATTENTION : « UnrestrictedName: [] » introuvable dans plugins/AuthMe/config.yml : "
+              "pseudos des bots non ajoutés")
+        return False
+    f.write_text(s, encoding="utf-8")
+    print("[serveur_local] AuthMe du serveur d'essai : %d pseudos de bots sans mot de passe (ce dossier seulement)" % BOTS_MAX)
+    return True
 
 
 def copier_dossier(src, dst):
@@ -54,6 +83,8 @@ def main():
             shutil.copy2(j, mods / j.name)
     n = sum(copier_dossier(SRV / d, cible / d) for d in ("config", "defaultconfigs", "tacz", "mohist-config", "heraliz_clashwar"))
     n += copier_dossier(LIV / "plugins", cible / "plugins")
+    if "--banc" in sys.argv:
+        bots_authme(cible)
     officiel = LIV / "spartan" / "officiel.json"
     if officiel.exists():
         (cible / "config" / "spartan").mkdir(parents=True, exist_ok=True)
@@ -82,6 +113,8 @@ LISEZ_MOI = """Serveur de test HeraliZ (préparé par outils/serveur_local.py)
    captureRequired = false (sinon Spartan refuse les connexions qui ne viennent pas du launcher HeraliZ).
    Ne jamais envoyer ce fichier modifié sur le serveur en ligne.
 7. Bots de charge (avec --banc) : /bots scenario 10 5   (10 bots, 5 minutes, rapport dans diag/).
+   Les pseudos HzBot001 à HzBot200 entrent ici sans mot de passe (plugins/AuthMe/config.yml de CE dossier) :
+   ne jamais copier ce fichier sur le serveur en ligne.
    Liste des essais : docs/TESTS_EN_JEU_25OCT.md du dépôt.
 """
 

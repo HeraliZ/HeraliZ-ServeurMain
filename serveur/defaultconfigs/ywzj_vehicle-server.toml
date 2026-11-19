@@ -3,5 +3,7 @@
 showVehicleInfoDistance = 512.0
 #服务端向玩家广播其所在世界超视距实体的时间间隔（单位：tick）
 #Range: 1 ~ 72000
-serverBroadcastEntitiesInterval = 5
+#HeraliZ (19/11, audit F12) : 20 (une fois par seconde au lieu de quatre) : à chaque passage, le mod passe en revue
+#toutes les entités de chaque monde ; les véhicules proches restent suivis normalement.
+serverBroadcastEntitiesInterval = 20
 

@@ -63,7 +63,7 @@ event-handling:
     block-entity-spawns-with-untraceable-cause: false
     interaction-whitelist: []
     emit-block-use-at-feet: []
-    ignore-hopper-item-move-events: false
+    ignore-hopper-item-move-events: true
     break-hoppers-on-denied-move: true
 protection:
     item-durability: true

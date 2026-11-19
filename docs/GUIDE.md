@@ -148,7 +148,10 @@ d'écrire du code qui tourne en boucle, vérifier :
 ```
 python outils/construire.py               tous les modules (sans nom) ou ceux donnés
 python outils/verifier.py                 tous les contrôles, 0 problème exigé
+python outils/demarrage_essai.py <dossier>   le serveur fabriqué démarre-t-il ? (jar de Mohist posé dans le dossier)
 ```
+Le démarrage d'essai est aussi fait par GitHub avant chaque mise en ligne (19/11 : sans « Done », rien n'est envoyé au
+Ptero ; `docs/DEPLOIEMENT.md` §6).
 Résultat dans `livraison/` : `mods serveur/` (Ptero), `mods client/` (joueurs), `mods solo/`, `plugins/`,
 `banc/` (bots de charge, **seulement le temps d'un test**), `spartan/officiel.json`.
 
@@ -402,8 +405,9 @@ neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
      dans une seule machine Java, réglages passés aussi par `JDK_JAVA_OPTIONS` ; le rapport écrit ses vrais arguments ;
   1. fabrication des mods changés (caches de la mise en ligne), serveur d'essai par `outils/serveur_local.py --banc`,
      Mohist de la Release « base-serveur » (empreinte contrôlée), réglages d'essai dans ce dossier seulement
-     (`server-ip=127.0.0.1`, AuthMe en mode essai, Spartan sans jeton du launcher, LiteBans en base locale, « Can't keep
-     up » affichés, zombies du peuplement aussi autour des bots) ;
+     (`server-ip=127.0.0.1`, AuthMe en mode essai, pseudos des bots HzBot001 à HzBot200 sans mot de passe dans l'AuthMe
+     de CE serveur seulement (19/11 : vide dans le dépôt et sur le Ptero), Spartan sans jeton du launcher, LiteBans en
+     base locale, « Can't keep up » affichés, zombies du peuplement aussi autour des bots) ;
   2. spawn du banc et zones de groupe, terrain des zones créé d'avance (avant les bots) ; 10 % des bots dans le tutoriel
      des bases (`/tuto lancer`), les autres par groupes de 5 sur une grille de la carte (320 blocs entre deux groupes),
      rythmes de 150 joueurs ; zones d'extraction ouvertes près d'un groupe sur quatre ; `doMobSpawning false`
