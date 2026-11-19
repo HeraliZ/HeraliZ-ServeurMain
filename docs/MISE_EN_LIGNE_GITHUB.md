@@ -29,11 +29,16 @@ de Mohist) ne change pas.
 ## 3. Ce que GitHub fait tout seul (onglet Actions, « Serveur HeraliZ »)
 
 - Fabrique tous les modules (la première fois : environ 30 à 60 min).
-- Contrôles (GeckoLib, langues, noms interdits).
+- Contrôles (GeckoLib, langues, noms interdits, aucun pseudo sans mot de passe dans AuthMe).
+- **Démarrage d'essai** (19/11) : le serveur fabriqué (nos jars, les plugins et les réglages du dépôt, le même Mohist,
+  un monde plat neuf, aucun secret) démarre sur une machine de GitHub. Sans « Done », ou avec un mixin qui ne s'applique
+  pas ou un plantage dans son journal, **rien n'est envoyé au Ptero** (raison dans le résumé, partie « Démarrage
+  d'essai » ; environ 3 min). Urgence seulement : « Run workflow » avec la case `sans_demarrage_essai`.
 - Met à jour le Ptero par SFTP :
   - `mods/` devient la copie exacte des nouveaux jars : **les anciens jars sont retirés** (dont `heraliz_boss`,
     `heralisz_matchs`, `heraliz_wonder`, `dayzhotbar`…) ;
   - `config/`, `defaultconfigs/` (recopié dans `dayz_map/serverconfig/`), `tacz/`, `heraliz_clashwar/`, plugins ;
+  - `bukkit.yml` et `spigot.yml` de la racine (19/11 ; aucun secret dedans ; comptent au redémarrage suivant) ;
   - les **anciens gunpacks** (`arkaniaz_pack_0_converted` à `_5`, `arkaniaz_custom_converted`, `Cislumen_Armory`) sont
     supprimés du Ptero (liste en fin de `serveur/tacz_retires.txt`) ;
   - `config/heralisz_clans/zones.json` (territoires) n'est **jamais écrasé** s'il existe déjà sur le Ptero : les
@@ -56,8 +61,10 @@ pour les votes du site (section 6).
    publier (workflow « Launcher HeraliZ », case « publier ») pour qu'il retire lui-même les anciens gunpacks.
 
 À faire une fois à la main sur le Ptero (pas fait par GitHub) :
-- `server.properties` : `sync-chunk-writes=false`, et changer la description du serveur (`motd`).
-- Réglages Java à demander à l'hébergeur (`-Xms` égal à `-Xmx`, voir `docs/DEPLOIEMENT.md`).
+- `server.properties` : `sync-chunk-writes=false`, et changer la description du serveur (`motd`) ; depuis le 19/11
+  aussi `rate-limit=1000` (`docs/DEPLOIEMENT.md` §9).
+- Réglages Java à demander à l'hébergeur (`-Xms` égal à `-Xmx`, conteneur de 20 Go : ligne complète dans
+  `docs/DEPLOIEMENT.md` §8).
 - En jeu : `/gamerule doMobSpawning false`, `/gamerule keepInventory false`. Tronçons forcés : retirés tout seuls au
   démarrage par le noyau (02/11, `/forceload` est retirée) ; le journal dit `forced x0` 30 s après le démarrage.
 
@@ -73,6 +80,7 @@ pour les votes du site (section 6).
 | `enquete.yml` | enquête Spartan sur un joueur (lecture seule) |
 | `journaux.yml` | lire les journaux du serveur (lecture seule) |
 | `banc.yml` « Banc de charge » | « Run workflow » (ou envoi sur une branche de travail qui change ce fichier) : vrai serveur avec nos mods monté sur la machine de GitHub, monde neuf, 100 bots (jusqu'à 150) qui jouent, mesure et diagnostic, résumé et rapports ; **sans le Ptero ni aucun secret** (01/11, `docs/GUIDE.md` §12) |
+| `demarrage.yml` « Démarrage d'essai » | appelé par « Serveur HeraliZ » avant l'envoi au Ptero (19/11) ; aussi « Run workflow » sur n'importe quelle branche (ou envoi sur une branche de travail qui change ce fichier ou `outils/demarrage_essai.py`) : le serveur fabriqué démarre sur une machine de GitHub jusqu'à « Done », 20 s à vide, puis s'arrête ; **sans le Ptero ni aucun secret** (`docs/DEPLOIEMENT.md` §6) |
 | `carte_loot.yml` « Remplacer la carte de loot » | **seulement par « Run workflow »** : remplacer la carte de loot en gardant le spawn (31/10). Par défaut, essai à blanc qui ne change rien et liste ce qui serait remplacé ou gardé ; vraie exécution seulement avec la case « executer » ET la phrase `REMPLACER LA CARTE DE LOOT`, depuis `main`. Nouvelle carte dans `/carte_nouvelle/` du Ptero (ou archive d'une Release). Mode d'emploi : `docs/NOUVELLE_CARTE.md` §8 |
 
 Retirés (outils de l'ancienne carte qui ne sont plus dans le projet) : props de la carte, inventaire de la carte, monde

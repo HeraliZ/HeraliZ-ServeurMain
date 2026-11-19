@@ -16,7 +16,7 @@ settings:
   bungeecord: false
   sample-count: 20
   player-shuffle: 0
-  user-cache-size: 100000
+  user-cache-size: 1000
   moved-wrongly-threshold: 0.0625
   moved-too-quickly-multiplier: 10.0
   timeout-time: 60
@@ -93,7 +93,7 @@ world-settings:
       raiders: 1
       misc: 16
       tick-inactive-villagers: false
-      ignore-spectators: false
+      ignore-spectators: true
     entity-tracking-range:
       players: 300
       animals: 50

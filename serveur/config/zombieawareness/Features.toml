@@ -4,7 +4,9 @@
 	#Spawn sound sense sources for monsters to track
 	awareness_Sound = true
 	#Spawn scent/blood sense sources for monsters to track
-	awareness_Scent = true
+	#HeraliZ (19/11, audit F11, accord du propriétaire) : coupé. Jusqu'à 135 entités « odeur » sur la carte avec 3 joueurs,
+	#envoyées à chaque joueur proche et enregistrées ; les zombies gardent les sons, la lumière et la vue.
+	awareness_Scent = false
 	#Monsters see light near player and move towards it
 	awareness_Light = true
 	#Growling zombies attracts other zombies

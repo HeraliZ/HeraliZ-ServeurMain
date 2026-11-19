@@ -1,6 +1,8 @@
 # Banc de charge : un VRAI serveur HeraliZ (Mohist de la Release « base-serveur » + nos mods de la branche) monté sur une
 # machine de GitHub, avec des bots qui jouent (module banc : /bots), mesuré par /bots mesure et le diagnostic du noyau
-# (/diag). Rien n'est envoyé au Ptero ni au site : AUCUN secret, monde généré sur place puis jeté.
+# (/diag). Rien n'est envoyé au Ptero ni au site : AUCUN secret, monde généré sur place puis jeté. Les pseudos des bots
+# (HzBot001 à HzBot200) entrent sans mot de passe dans l'AuthMe de CE serveur d'essai seulement (serveur_local.py --banc,
+# 19/11) : la liste reste vide dans le dépôt et sur le Ptero.
 # Résultat : résumé de la tâche (TPS, ms par tick, ms par tick hors banc, machine Java réelle, mémoire, rythmes, tronçons et
 # ce qui les tient, temps par mod, pics, A/B, erreurs, rapports du diagnostic), journal de la tâche, artefact
 # « banc-rapport » (journal complet du serveur, rapports diag/, ramasse-miettes).

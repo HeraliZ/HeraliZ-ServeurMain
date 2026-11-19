@@ -1,6 +1,8 @@
 # Fabrication et mise en ligne du serveur HeraliZ (voir CLAUDE.md, section 8).
-# À chaque envoi sur main : fabrique les mods modifiés, contrôle, garde les jars à télécharger et, si les secrets du
-# Ptero sont réglés, met à jour les fichiers du serveur par SFTP. Redémarrage seulement sur demande (Run workflow).
+# À chaque envoi sur main : fabrique les mods modifiés, contrôle, garde les jars à télécharger, démarre le serveur
+# fabriqué sur une machine de GitHub (démarrage d'essai, demarrage.yml : sans « Done », rien n'est envoyé) et, si les
+# secrets du Ptero sont réglés, met à jour les fichiers du serveur par SFTP. Redémarrage seulement sur demande (Run
+# workflow).
 name: Serveur HeraliZ
 
 on:
@@ -23,6 +25,10 @@ on:
         default: false
       villes_du_depot:
         description: "Remplacer les villes du Ptero (config/heralisz_clans/zones.json) par celles du dépôt : centres, rayons, noms ; les drapeaux posés en jeu sont oubliés (à reposer)"
+        type: boolean
+        default: false
+      sans_demarrage_essai:
+        description: "URGENCE SEULEMENT : envoyer au Ptero sans le démarrage d'essai (serveur fabriqué démarré sur une machine de GitHub avant l'envoi)"
         type: boolean
         default: false
 
@@ -95,8 +101,22 @@ jobs:
             livraison/mods client/heraliz_interface-*.jar
           retention-days: 3
 
-  serveur:
+  # Démarrage d'essai (audit du 19/11, F10 ; 18/11 : deux démarrages du Ptero arrêtés net par une injection de mixin
+  # ratée) : les jars de « fabriquer », les plugins et les réglages du dépôt démarrent sur une machine de GitHub, SANS
+  # AUCUN secret (workflow demarrage.yml, outils/demarrage_essai.py). Sans « Done » (ou avec une ligne fatale : mixin qui
+  # ne s'applique pas, plantage), le job « serveur » ne tourne pas : rien n'est envoyé au Ptero. Sauté seulement par la
+  # case « sans_demarrage_essai » de « Run workflow » (urgence).
+  demarrage:
     needs: fabriquer
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.sans_demarrage_essai) }}
+    uses: ./.github/workflows/demarrage.yml
+    with:
+      deja_fabrique: true
+
+  serveur:
+    needs: [fabriquer, demarrage]
+    # démarrage d'essai réussi, ou sauté par la case « sans_demarrage_essai » (et seulement par elle)
+    if: ${{ !cancelled() && needs.fabriquer.result == 'success' && (needs.demarrage.result == 'success' || (needs.demarrage.result == 'skipped' && github.event_name == 'workflow_dispatch' && inputs.sans_demarrage_essai)) }}
     runs-on: ubuntu-latest
     # Secrets de mise en ligne : environnement GitHub « production », réservé à main (audit du 02/11, point 15 ;
     # réglage du propriétaire : docs/MISE_EN_LIGNE_GITHUB.md, section 7)
@@ -543,6 +563,8 @@ jobs:
             source retirer_tacz.lftp;
             mirror -R -P 8 serveur/heraliz_clashwar /heraliz_clashwar;
             mirror -R -P 8 serveur/mohist-config /mohist-config;
+            put -O / serveur/bukkit.yml;
+            put -O / serveur/spigot.yml;
             bye"
           echo "Mise à jour du Ptero terminée."
 

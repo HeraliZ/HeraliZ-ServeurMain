@@ -478,3 +478,46 @@ Capsules du casino : beaucoup plus de capsules dans les conteneurs, surtout en p
 piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta : T1 0,3 (avant 0,07), T3 1,6 (0,2), T5 5,5
 (0,45), T6 10,7 (0,9), T7 21 (1,3). Les autres objets perdent 1 à 2,5 % de leur place.
 - [ ] Ouvrir une dizaine de conteneurs T4-T5 : des capsules dans 1 sur 8 environ, parfois une pile de 4 à 7 capsules de 10.
+
+## 24. Réglages du serveur, plugins et mise en ligne (audit du 19/11)
+
+Rien de tout cela n'a été essayé en jeu ni sur le Ptero : seulement contrôlé dans le dépôt, et le démarrage d'essai a
+tourné sur une machine de GitHub. Tout compte au **redémarrage** qui suit la mise en ligne. Détail et raisons :
+`docs/DEPLOIEMENT.md`, sections 6 à 9.
+
+Mise en ligne :
+- [ ] Résumé de « Serveur HeraliZ » : partie « Démarrage d'essai » à « Réussi », puis le job « serveur » a tourné (envoi
+      au Ptero). Si « Refusé » : rien n'est parti, la raison et les lignes en cause sont dans ce résumé.
+- [ ] Sur le Ptero (gestionnaire de fichiers du panel) : `bukkit.yml` dit `autosave: 12000` et `warn-on-overload: true` ;
+      `spigot.yml` dit `user-cache-size: 1000` et `ignore-spectators: true` ; `server.properties` n'a pas changé.
+- [ ] `plugins/AuthMe/config.yml` du Ptero : `UnrestrictedName: []` (plus aucun pseudo `hzbot` dedans).
+
+Jeu (après le redémarrage) :
+- [ ] Sauvegarde automatique toutes les 10 min : dans `logs/debug.log`, les lignes « Autosave » sont à 10 min d'écart
+      (5 avant).
+- [ ] WorldEdit : `//size` donne le nombre de blocs ; un `//set` de plus de 250 000 blocs s'arrête (« Max blocks changed
+      in an operation reached ») et `//undo` le défait ; `//limit 2000000` permet plus ; `//sphere` de rayon 65 refusé
+      (64 au plus) ; au 7e `//undo` de suite, « Nothing left to undo » (6 retours au plus).
+- [ ] Connexion avec le plus gros inventaire possible : sac plein d'armes équipées (accessoires), Curios pleins ; ouvrir
+      un coffre de clan, le coffre VIP, un recycleur plein et un coffre du ClashWar : aucune expulsion (« Badly
+      compressed packet », « Payload may not be larger », « Packet too big »).
+- [ ] Après `rate-limit=1000` mis à la main dans `server.properties` (propriétaire) : 10 min de jeu normal (tir en
+      automatique, voix, inventaire en cliquant vite) sans expulsion « paquets ».
+- [ ] Zombies : un joueur blessé n'attire plus les zombies par l'odeur du sang, mais les tirs et les blocs cassés les
+      attirent toujours ; dans les rapports `/diag`, beaucoup moins d'entités `zombieawareness:scent`.
+- [ ] Véhicules : un conducteur voit toujours les véhicules lointains (mis à jour une fois par seconde au lieu de quatre).
+- [ ] Menu des réglages de TaCZ (touche du jeu) toujours là chez les joueurs (cloth-config retiré du serveur seulement).
+- [ ] Changer le grade d'un joueur connecté (LuckPerms) : ses nouvelles commandes arrivent dans la complétion du tchat au
+      prochain changement de monde ou à la reconnexion (plus tout de suite : voulu).
+- [ ] Démarrage du serveur : plus de « Downloading GeoIP » de LiteBans dans le journal. Un gros `//set` du staff fait de
+      nouveau apparaître « Can't keep up » dans la console.
+
+À faire par le propriétaire ou l'hébergeur :
+- [ ] `server.properties` du Ptero : `rate-limit=1000` ; décider `enable-query` (false sauf site de classement) et
+      `player-idle-timeout`.
+- [ ] Hébergeur : ligne Java de `docs/DEPLOIEMENT.md` §8 (`-Xms16G -Xmx16G` + réglages Aikar + `gc.log`), conteneur de
+      20 Go au moins ; puis `/diag` : 16 384 Mo et `logs/gc.log` présent.
+- [ ] Hébergeur, pour viser 150 joueurs : processeur récent à haute fréquence, cœurs réservés, disque NVMe.
+- [ ] Mise à jour de Mohist (build après le 20/07/2025) : seulement après un banc de charge et un essai.
+- [ ] WorldGuard : `/rg list` dans chaque monde ; si aucune région n'utilise de drapeau de mouvement (entry, exit,
+      greeting, farewell, ceux de WorldGuardExtraFlags), demander à passer `use-player-move-event` à `false`.
