@@ -45,6 +45,10 @@ public final class NoyauConfig {
    public static volatile int ticsAleatoires = 0;
    /** Tronçons forcés (/forceload) de chaque monde retirés au démarrage (TronconsForces du serveur, 02/11). */
    public static final ForgeConfigSpec.BooleanValue RETIRER_TRONCONS_FORCES;
+   /** Eau qui gèle et neige qui s'entasse dans les biomes froids (19/11, GelNeigeMixin de la partie serveur). */
+   public static final ForgeConfigSpec.BooleanValue GEL_EAU;
+   public static final ForgeConfigSpec.BooleanValue NEIGE_AU_SOL;
+   public static volatile boolean gelEau = false, neigeAuSol = false;
    public static final ForgeConfigSpec.DoubleValue FAIM_FACTEUR;
    /** Vitesse de la faim, relue avec les réglages (FaimMixin de la partie serveur). */
    public static volatile float faimFacteur = 0.35F;
@@ -366,6 +370,14 @@ public final class NoyauConfig {
             "environ 2 000 tronçons, même serveur vide. Aucun de nos mods n'en pose ; les tickets des autres mods (Forge) et des",
             "plugins ne sont pas touchés. false : on n'y touche pas.")
             .define("retirer_troncons_forces", true);
+      GEL_EAU = b.comment("Eau qui gèle (19/11, retour du propriétaire : « dans l'arctique l'eau gèle ») : dans un biome froid, Minecraft change",
+            "en glace l'eau au bord d'un plan d'eau, puis la glace gagne de proche en proche, près des joueurs, même avec",
+            "tics_aleatoires = 0 (ce n'est pas un tic aléatoire). false : l'eau ne gèle jamais (la carte est construite à la main) ;",
+            "true : comme Minecraft. La glace déjà formée reste : la remettre en eau à la main (WorldEdit).")
+            .define("gel_eau", false);
+      NEIGE_AU_SOL = b.comment("Neige qui s'entasse (19/11) : quand il neige dans un biome froid, Minecraft pose des couches de neige sur le sol",
+            "et les blocs. false : la neige tombe mais ne s'entasse plus ; true : comme Minecraft.")
+            .define("neige_au_sol", false);
       b.pop();
       b.push("redemarrage");
       REDEMARRAGE_CODE = b.comment("/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait",
@@ -412,6 +424,8 @@ public final class NoyauConfig {
       sauvegardesEtalees = SAUVEGARDES_ETALEES.get();
       melangeSiApparitions = MELANGE_SI_APPARITIONS.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
+      gelEau = GEL_EAU.get();
+      neigeAuSol = NEIGE_AU_SOL.get();
       if (APPLIQUES.branche()) APPLIQUES.accept(null);
    }
 

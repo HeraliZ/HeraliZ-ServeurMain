@@ -71,6 +71,9 @@ public final class Allege {
    public static long sauvegardesRegardes;
    /** Mélanges de la liste des tronçons qui tournent sautés (monde sans apparitions naturelles). */
    public static long melangesEvites;
+   /** Contrôles de gel de l'eau et de neige au sol sautés (GelNeigeMixin : ni gel ni neige au sol). */
+   public static long gelsEvites;
+   public static long neigesEvitees;
 
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
@@ -119,6 +122,7 @@ public final class Allege {
       s.append(String.format(Locale.ROOT, " ; relevés de hauteur : %d sans parcours, %d refaits", hauteursSautees, hauteursRefaites));
       s.append(String.format(Locale.ROOT, " ; sauvegardes étalées : %d tranches (%.0f tronçons regardés par tranche) ; mélanges évités %d",
             sauvegardesTranches, sauvegardesTranches == 0 ? 0.0 : (double) sauvegardesRegardes / sauvegardesTranches, melangesEvites));
+      s.append(String.format(Locale.ROOT, " ; contrôles de gel sautés %d, de neige au sol %d", gelsEvites, neigesEvitees));
       ligne.accept(s.append(String.format("%n")).toString());
    }
 }

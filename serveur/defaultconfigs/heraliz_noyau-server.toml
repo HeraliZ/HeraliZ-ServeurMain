@@ -189,6 +189,14 @@
 	#environ 2 000 tronçons, même serveur vide. Aucun de nos mods n'en pose ; les tickets des autres mods (Forge) et des
 	#plugins ne sont pas touchés. false : on n'y touche pas.
 	retirer_troncons_forces = true
+	#Eau qui gèle (19/11, retour du propriétaire : « dans l'arctique l'eau gèle ») : dans un biome froid, Minecraft change
+	#en glace l'eau au bord d'un plan d'eau, puis la glace gagne de proche en proche, près des joueurs, même avec
+	#tics_aleatoires = 0 (ce n'est pas un tic aléatoire). false : l'eau ne gèle jamais (la carte est construite à la main) ;
+	#true : comme Minecraft. La glace déjà formée reste : la remettre en eau à la main (WorldEdit).
+	gel_eau = false
+	#Neige qui s'entasse (19/11) : quand il neige dans un biome froid, Minecraft pose des couches de neige sur le sol
+	#et les blocs. false : la neige tombe mais ne s'entasse plus ; true : comme Minecraft.
+	neige_au_sol = false
 
 [redemarrage]
 	#/redemarrage : code de sortie de Java à la fin (0 : arrêt normal ; une valeur autre que 0 fait

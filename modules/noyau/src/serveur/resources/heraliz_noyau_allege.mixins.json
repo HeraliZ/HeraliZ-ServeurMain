@@ -31,7 +31,8 @@
     "MenuSyncMixin",
     "RelevesHauteurMixin",
     "SauvegardesEtaleesMixin",
-    "MelangeTronconsMixin"
+    "MelangeTronconsMixin",
+    "GelNeigeMixin"
   ],
   "injectors": {
     "defaultRequire": 0
