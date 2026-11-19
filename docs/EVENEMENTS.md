@@ -303,7 +303,9 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   45 blocs au-dessus du terrain relevé devant lui tous les 16 blocs ; il note au passage le dernier sol où il pourrait
   s'écraser. **Patrouille de 5 à 10 min** (au hasard) ; attaqué, il ne repart que 60 s après le dernier coup reçu, et
   jamais après **25 min de vol** ; il sort par le bord le plus proche (56 blocs à l'intérieur ; aucune récompense).
-  Tronçon tenu chargé par un ticket qui le suit ; jamais sauvegardé (redémarrage : plus là, rien donné).
+  Tronçon tenu chargé par un ticket qui le suit (19/11 : rayon 2, `rayon_ticket` de helico.json, avant 3 ; le tronçon
+  voisin vers lequel il vole reçoit le sien juste avant qu'il y entre) ; jamais sauvegardé (redémarrage : plus là, rien
+  donné).
 - **Vu de loin** (19/11, demande du propriétaire : « à 60-70 blocs je ne le vois plus, il faudrait 200-300 blocs ») : le
   serveur n'envoie l'entité qu'à 64 blocs (spigot.yml `entity-tracking-range.other`) et la distance de vue est de 6
   tronçons (~96 blocs) ; ces réglages ne bougent pas (perfs). À la place, le serveur envoie sa position, son cap, son
@@ -375,8 +377,11 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   d'action, dessinée dans le bandeau du noyau, trait ambre ; `heraliz_evenements.helico.caisse_en_feu`). Seul chemin pour
   l'ouvrir : le clic droit (aucun entonnoir ne le vide ; il est incassable et résiste aux explosions, et sur la carte aucun
   bloc ne se casse, ni à la main ni par explosion). À la fin du feu, il s'ouvre à tous, avec la boîte noire à sa première
-  ouverture, et reste 15 min comme avant. Annulé pendant le feu (staff, arrêt du serveur) : le coffre encore fermé est
-  retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu, sinon la boîte noire au sol à côté de
+  ouverture, et reste 15 min comme avant. Annulé pendant le feu par le staff : le coffre encore fermé est retiré, rien
+  n'est donné. **Redémarrage pendant le feu** (19/11, arrêt propre ou plantage) : coffre, boîte noire et caisses T6 restent,
+  fermés jusqu'à l'heure de fin du feu (gardée dans `heraliz_evenements/etat.json`, clé `verrous`, rétablie au
+  démarrage ; l'épave elle-même n'est jamais sauvegardée) ; à l'arrêt, un coffre qui n'avait pas trouvé de place au crash
+  est posé tout de suite (sinon la boîte noire au sol). Pas de place au crash : nouvel essai à la fin du feu, sinon la boîte noire au sol à côté de
   l'épave (jamais dans la carcasse, devenue solide).
 - **Deux conteneurs T6** (19/11, demande du propriétaire : « en plus du loot T7, deux lootables T6 aléatoires ») : posés
   dès l'impact avec les règles du coffre (cercles de 5, 8 et 11 blocs autour de l'épave, départ au hasard ; à 2 blocs de
@@ -385,8 +390,8 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   (deux différents) dans `lootables_t6` : des T6 militaires qui tiennent seuls au sol (caisse de missiles, caisse
   militaire scellée, coffre à munitions blindé, valise de drone, loot crash, loots militaires…; liste vide : tous les T6).
   Même feu que le coffre (même numéro d'événement, même message, sans bruit) et même durée (feu restant + 15 min ; vidés :
-  retirés 30 s après) ; annulé pendant le feu : ceux jamais ouverts sont retirés. Pas de place au crash : nouvel essai à la
-  fin du feu. Contenu tiré à la première ouverture dans la table T6 (bonus de loot compris), même écran de fouille qu'un
+  retirés 30 s après) ; annulé pendant le feu par le staff : ceux jamais ouverts sont retirés (redémarrage : ils restent,
+  fermés jusqu'à la fin du feu, comme le coffre). Pas de place au crash : nouvel essai à la fin du feu. Contenu tiré à la première ouverture dans la table T6 (bonus de loot compris), même écran de fouille qu'un
   conteneur de la carte, étoiles tant qu'il reste quelque chose. Ils sont **hors de la rotation du loot** (HeraliZ Loot,
   `ConteneursEvenement` : jamais rattachés à une zone ; fichier `heraliz_loot_conteneurs_evenements` par dimension, ils
   disparaissent à leur heure même après un redémarrage). Ni points de saison ni quête « fouiller » (comme le coffre de

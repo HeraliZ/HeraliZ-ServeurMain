@@ -83,6 +83,12 @@ public final class HelicoApi {
         /** Impact : dégâts au plus près, rayon (blocs). */
         public float crashDegats = 8f;
         public int crashRayon = 6;
+        /**
+         * Rayon du ticket qui tient chargés les tronçons autour de lui en vol (19/11, audit des lenteurs) : 2 (conseillé :
+         * 27 × 27 tronçons au plus, le voisin vers lequel il vole reçoit le sien avant qu'il y entre) ou 3 (comme avant :
+         * 29 × 29, 841 tronçons). Lu à son départ.
+         */
+        public int rayonTicket = 2;
 
         /** Plus longue vie possible d'un hélicoptère et de son épave (secondes), marge comprise : garde-fou en heure réelle. */
         public int vieMaxS() {

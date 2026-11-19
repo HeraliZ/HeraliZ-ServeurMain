@@ -28,6 +28,10 @@
 	#Monstres au plus dans un carre de 5 x 5 troncons (80 blocs) autour du point d'apparition. 0 : pas de plafond.
 	#Range: 0 ~ 10000
 	plafond_local = 0
+	#Comptage des monstres de la carte pour ces plafonds (19/11, audit des lenteurs) : true = seulement les
+	#monstres suivis a leur arrivee et a leur depart, et un recensement complet de la carte une fois par minute en controle ;
+	#false = toutes les entites de la carte parcourues chaque seconde, comme avant (plus lent avec beaucoup d'entites).
+	plafond_par_arrivees = true
 	#IA allegee des zombies HeraliZ : seulement les joueurs comme cibles, pas de village ni d'oeufs de tortue.
 	ia_allegee = true
 	#Taille maximale d'une recherche de chemin, par rapport a Minecraft (1.0), niveau moyen.
