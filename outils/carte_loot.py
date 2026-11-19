@@ -51,6 +51,8 @@ DATA_ANCIENNE_CARTE = [
     # 17/11 (inventaire des données avant la carte en île) : bases réservées 24 h après un raid (CRac 1.38.0), créneaux
     # de la Purge vus par les armoires (effacés avec les bases) et places des ressources de HeraliZ Récolte
     "crac_armoires_perdues.dat", "crac_purge.dat", "heraliz_recolte.dat",
+    # 19/11 : repères des recycleurs de la carte M (retrouvés tout seuls sur la nouvelle carte : recherche automatique)
+    "heraliz_carte_recycleurs.dat",
 ]
 # fichier de data/ que la nouvelle carte peut apporter (zones à effets dessinées pour elle)
 DATA_DE_LA_CARTE = ["heraliz_zones.json"]

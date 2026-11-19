@@ -19,7 +19,8 @@ import java.util.Locale;
 /**
  * Lieux nommés de la carte et nom de la carte, gardés AVEC LE MONDE (data/heraliz_carte_lieux.dat du monde principal) :
  * posés en jeu par le staff ({@link CarteCommandes}), ils suivent la carte quand elle est copiée. Envoyés à chaque joueur
- * à sa connexion et à tous à chaque changement.
+ * à sa connexion et à tous à chaque changement, suivis des repères des recycleurs de la carte (19/11, {@link RecycleursCarte} :
+ * gardés à part, jamais dans cette liste du staff).
  */
 public final class LieuxData extends SavedData {
     public static final String FICHIER = "heraliz_carte_lieux";
@@ -66,18 +67,24 @@ public final class LieuxData extends SavedData {
         return ok;
     }
 
-    public CarteNet.LieuxS2C paquet() {
-        return new CarteNet.LieuxS2C(nom, List.copyOf(lieux));
+    /** Les lieux du staff, puis un repère par recycleur de la carte (19/11). */
+    public CarteNet.LieuxS2C paquet(MinecraftServer serveur) {
+        List<Lieu> recycleurs = RecycleursCarte.lieux(serveur);
+        if (recycleurs.isEmpty()) return new CarteNet.LieuxS2C(nom, List.copyOf(lieux));
+        List<Lieu> tous = new ArrayList<>(lieux.size() + recycleurs.size());
+        tous.addAll(lieux);
+        tous.addAll(recycleurs);
+        return new CarteNet.LieuxS2C(nom, tous);
     }
 
     /** Envoie la liste à un joueur (connexion). */
     public void envoyer(ServerPlayer p) {
-        CarteNet.versJoueur(p, paquet());
+        CarteNet.versJoueur(p, paquet(p.server));
     }
 
     /** Envoie la liste à tous les joueurs connectés (après un changement). */
     public void diffuser(MinecraftServer serveur) {
-        CarteNet.LieuxS2C m = paquet();
+        CarteNet.LieuxS2C m = paquet(serveur);
         for (ServerPlayer p : serveur.getPlayerList().getPlayers()) CarteNet.versJoueur(p, m);
     }
 
@@ -107,7 +114,7 @@ public final class LieuxData extends SavedData {
             Lieu.Type type = Lieu.Type.parId(t.getString("type"));
             ResourceLocation dim = ResourceLocation.tryParse(t.getString("dim"));
             String n = Lieu.nettoyer(t.getString("nom"));
-            if (type == null || dim == null || n.isEmpty()) continue;
+            if (type == null || type.automatique() || dim == null || n.isEmpty()) continue;
             d.lieux.add(new Lieu(n, type, dim, t.getInt("x"), t.getInt("z")));
         }
         return d;

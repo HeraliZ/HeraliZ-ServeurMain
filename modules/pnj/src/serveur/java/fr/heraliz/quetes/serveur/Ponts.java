@@ -38,7 +38,9 @@ import java.util.UUID;
  *    <li>joueur à terre : {@code fr.heraliz.reanimation.core.Downed.isDowned(Entity)} (Réanimation) ;</li>
  *    <li>tutoriel des bases : {@code fr.heraliz.crac.bases.TutorielApi} (CRac : état, étape de la cabane, lancement) ;</li>
  *    <li>cinématique d'arrivée finie : donnée persistante {@code heraliz_cinematique_finie} de HeraliZ Utils ;</li>
- *    <li>joueur connecté sur AuthMe : {@code fr.heraliz.grades.serveur.GradesApi.authentifie} (HeraliZ Grades).</li>
+ *    <li>joueur connecté sur AuthMe : {@code fr.heraliz.grades.serveur.GradesApi.authentifie} (HeraliZ Grades) ;</li>
+ *    <li>repère d'un recycleur de la carte sur la carte du monde : {@code fr.heraliz.carte.api.RecycleursApi.signaler}
+ *    (HeraliZ Carte, 19/11).</li>
  * </ul>
  */
 final class Ponts {
@@ -701,6 +703,34 @@ final class Ponts {
             return Boolean.TRUE.equals(authentifie.invoke(null, p));
         } catch (ReflectiveOperationException | RuntimeException e) {
             return false;
+        }
+    }
+
+    private static Method repereCarte;
+    private static boolean repereCarteCherche;
+
+    /**
+     * Repère d'un recycleur de la carte sur la carte du monde (19/11, demande du propriétaire : « un petit point sur la
+     * carte pour chaque recycleur, posé tout seul dès qu'il est posé »). La machine le dit elle-même à HeraliZ Carte
+     * ({@code fr.heraliz.carte.api.RecycleursApi.signaler}) : present = posée ou son tronçon vient de se charger, faux =
+     * retirée. La carte n'envoie quelque chose aux joueurs que si ça change. Sans HeraliZ Carte : rien.
+     */
+    static void repereCarte(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos, boolean present) {
+        if (!repereCarteCherche) {
+            repereCarteCherche = true;
+            try {
+                repereCarte = Class.forName("fr.heraliz.carte.api.RecycleursApi").getMethod("signaler",
+                        net.minecraft.server.level.ServerLevel.class, net.minecraft.core.BlockPos.class, boolean.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                repereCarte = null;
+                LOG.warn("[heraliz_quetes] HeraliZ Carte absente ({}) : pas de repère des recycleurs sur la carte du monde", e.toString());
+            }
+        }
+        if (repereCarte == null) return;
+        try {
+            repereCarte.invoke(null, level, pos, present);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOG.error("[heraliz_quetes] repère du recycleur de la carte {} : {}", pos, e.toString());
         }
     }
 }

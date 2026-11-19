@@ -424,3 +424,37 @@ coupé par le noyau (`[monde] gel_eau` et `neige_au_sol` de `heraliz_noyau-serve
 - [ ] Quand il neige : la neige tombe à l'écran mais aucune nouvelle couche n'apparaît au sol.
 - [ ] `/diag etat`, ligne « Minecraft allégé, étape 2 » : « contrôles de gel sautés » et « de neige au sol » montent
       (preuve que le blocage est en place).
+
+## 21. Recycleurs sur la carte M (19/11)
+
+Demande du propriétaire : un petit point sur la carte pour chaque recycleur de terrain, posé tout seul. Monde 1.3.1 et
+Quêtes 1.22.4 : tout le monde doit avoir les nouvelles versions (le launcher les donne). Le pictogramme (deux flèches
+vertes en cercle, sur la petite pastille ronde des lieux) est nouveau et **pas encore validé par le propriétaire** :
+aperçu dans `maquettes/carte_recycleurs/repere_recycleur.jpg`.
+Les positions sont gardées dans `dayz_map/data/heraliz_carte_recycleurs.dat` (mis de côté avec l'ancienne carte si on
+change de carte : la recherche repart alors toute seule). **Rien de tout cela n'a été testé en jeu.**
+- [ ] Premier démarrage après la mise à jour : une minute après, la recherche des recycleurs déjà posés part toute
+      seule. Journal du serveur : « [carte] recherche des recycleurs : … région(s) … », l'avancement toutes les 30 s,
+      chaque recycleur trouvé, puis « [carte] recherche des recycleurs finie en … : N recycleur(s) sur la carte ». Compter
+      5 à 12 minutes pour la carte. Pendant ce temps : pas de « Can't keep up », TPS normal, les joueurs qui courent ou
+      roulent voient le terrain arriver comme d'habitude.
+- [ ] Carte (M) : chaque recycleur de terrain a sa pastille, visible même en vue d'ensemble ; de près, « Recycleur »
+      écrit dessous ; au survol : « Recycleur », « machine partagée : recycle tes objets en composants » et la distance.
+      Le calque « Points d'intérêt » les cache et les montre avec les autres lieux, son compteur les compte. En anglais et
+      en russe aussi.
+- [ ] Un recycleur posé dans un autre monde n'apparaît que sur la carte de ce monde.
+- [ ] Poser un nouveau recycleur de terrain (créatif) : sa pastille apparaît tout de suite chez tous les joueurs, même
+      carte ouverte. Le casser : elle part tout de suite.
+- [ ] `/carte recycleurs` (staff) : la liste (coordonnées, monde), puis « Recherche … faite le … ». Cliquer une ligne met
+      la téléportation dans le tchat (Entrée pour y aller).
+- [ ] `/carte recycleurs chercher` : « Recherche des recycleurs lancée … » ; `/carte recycleurs` pendant ce temps :
+      « Recherche en cours : x % … » ; à la fin, dans le tchat de celui qui l'a lancée : « Recherche des recycleurs finie
+      (… min … s) : N recycleur(s) sur la carte (… ajouté(s), … retiré(s)) ».
+- [ ] `/carte lieu ajouter recycleur Essai` est refusé (« Les repères « Recycleur » se posent tout seuls… ») et
+      « recycleur » n'est pas proposé dans les types ; `/carte lieu retirer` ne propose aucun recycleur ; `/carte lieu
+      liste` finit par « Et N recycleur(s) de la carte, repérés tout seuls ».
+- [ ] Recycleur enlevé avec WorldEdit (`//set air` dessus, son voisin invisible compris) : la pastille part tout de
+      suite ; si elle reste, elle part au prochain chargement de son tronçon (y revenir plus tard), journal « recycleur de
+      la carte disparu (bloc relu au chargement du tronçon) », ou avec `/carte recycleurs chercher`.
+- [ ] Redémarrage suivant : la recherche ne repart pas (journal : « N recycleur(s) de la carte sur la carte du monde
+      (recherche automatique déjà faite) »).

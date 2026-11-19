@@ -9,6 +9,9 @@ import java.util.Locale;
  * Un lieu nommé de la carte du monde (ville, village, aérodrome, base militaire...), posé en jeu par le staff
  * ({@code /carte lieu ajouter <type> <nom>} à l'endroit où il se tient) et gardé avec le monde. Les villes et les villages
  * n'ont que leur nom sur la carte ; les autres ont aussi une icône.
+ * <p>19/11 : les lieux d'un type {@linkplain Type#automatique() automatique} (un par recycleur de la carte) ne sont jamais
+ * posés par le staff : le serveur les ajoute et les retire tout seul ({@code serveur/RecycleursCarte}). Ils n'ont pas de
+ * nom (vide) : l'écran écrit celui de leur type.
  *
  * @param dimension monde où le lieu a été posé (la carte ne montre que ceux du monde du joueur)
  */
@@ -16,7 +19,10 @@ public record Lieu(String nom, Type type, ResourceLocation dimension, int x, int
     /** Longueur maximale d'un nom de lieu. */
     public static final int NOM_MAX = 40;
 
-    /** Types de lieux : identifiant (commandes, traductions {@code heraliz_carte.type.<id>}), icône de l'atlas, couleur. */
+    /**
+     * Types de lieux : identifiant (commandes, traductions {@code heraliz_carte.type.<id>}), icône de l'atlas, couleur. Le
+     * réseau les envoie par leur rang : un nouveau type va TOUJOURS à la fin.
+     */
     public enum Type {
         VILLE("ville", "", 0xECEEF2),
         VILLAGE("village", "", 0xC9CED8),
@@ -27,7 +33,9 @@ public record Lieu(String nom, Type type, ResourceLocation dimension, int x, int
         PORT("port", "ancre", 0x7FC4FF),
         HOPITAL("hopital", "croix", 0xFF7A7A),
         GARE("gare", "train", 0xC8CED8),
-        POINT("point", "etoile", 0xE8C36A);
+        POINT("point", "etoile", 0xE8C36A),
+        /** 19/11 : un recycleur de la carte ({@code heraliz_quetes:recycleur_carte}), repéré tout seul ({@link #automatique()}). */
+        RECYCLEUR("recycleur", "recyclage", 0xA8E063);
 
         public final String id;
         /** Nom de l'icône dans l'atlas (vide : seulement le nom, pour les villes et les villages). */
@@ -42,6 +50,11 @@ public record Lieu(String nom, Type type, ResourceLocation dimension, int x, int
 
         public boolean texteSeul() {
             return icone.isEmpty();
+        }
+
+        /** Posé et retiré par le serveur lui-même, jamais par {@code /carte lieu} (19/11 : les recycleurs de la carte). */
+        public boolean automatique() {
+            return this == RECYCLEUR;
         }
 
         public String cle() {

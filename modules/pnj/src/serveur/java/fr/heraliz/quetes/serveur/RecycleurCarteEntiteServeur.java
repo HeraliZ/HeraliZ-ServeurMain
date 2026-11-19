@@ -48,6 +48,10 @@ import java.util.stream.Stream;
  * recycler et de la place en sortie) ; tout autre changement (clic, chargement) passe par {@link #reprendre}. Tronçon
  * déchargé pendant qu'elle tournait : au retour, le temps passé est rattrapé (20 min de jeu au plus).
  *
+ * <p><b>Repère sur la carte du monde</b> (19/11, demande du propriétaire) : la machine se signale à HeraliZ Carte quand
+ * elle est posée ou que son tronçon se charge ({@link #onLoad}), et quand elle est retirée ({@link #retire}) ; la carte
+ * montre un repère « Recycleur » à tous les joueurs ({@link Ponts#repereCarte}).
+ *
  * <p><b>Contre la duplication, même en cas de plantage</b> : rien n'est gardé dans le monde. Le contenu est écrit HORS DU
  * MONDE ({@code heraliz_quetes/recycleurs/<monde>/<x>_<y>_<z>.dat}), d'un coup (fichier temporaire puis remplacement),
  * à CHAQUE changement, sur le fil serveur, dans un ordre qui ne peut jamais laisser un objet à deux endroits sur le
@@ -112,6 +116,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         super.onLoad();
         if (!(level instanceof ServerLevel sl)) return;
         CHARGEES.put(cle(), this);
+        // 19/11 : repère sur la carte du monde (posée, ou tronçon chargé : rien ne part aux joueurs si elle était connue)
+        Ponts.repereCarte(sl, worldPosition, true);
         if (!charge) {
             charge = true;
             lire();
@@ -516,6 +522,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         java.util.Arrays.fill(deposants, null);
         retiree = true;
         CHARGEES.remove(cle(), this);
+        // 19/11 : son repère quitte la carte du monde
+        Ponts.repereCarte((ServerLevel) level, worldPosition, false);
         if (!bloquee) {
             try {
                 Files.deleteIfExists(fichier());

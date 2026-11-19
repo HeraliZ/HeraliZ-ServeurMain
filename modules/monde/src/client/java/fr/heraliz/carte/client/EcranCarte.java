@@ -285,12 +285,13 @@ public final class EcranCarte extends Screen {
     }
 
     /**
-     * Visibilité d'un lieu selon le zoom : les grands lieux (villes, aérodromes, bases militaires, ports, centrales)
-     * toujours ; villages et petits points d'intérêt (usine, hôpital, gare, point) seulement quand on s'approche.
+     * Visibilité d'un lieu selon le zoom : les grands lieux (villes, aérodromes, bases militaires, ports, centrales) et les
+     * recycleurs de la carte (19/11 : « que les joueurs voient où ils sont ») toujours ; villages et petits points
+     * d'intérêt (usine, hôpital, gare, point) seulement quand on s'approche.
      */
     private float visibilite(Lieu l) {
         return switch (l.type()) {
-            case VILLE, AERODROME, MILITAIRE, PORT, CENTRALE -> 1f;
+            case VILLE, AERODROME, MILITAIRE, PORT, CENTRALE, RECYCLEUR -> 1f;
             default -> fondu(zoom01(), 0.08f, 0.28f);
         };
     }
@@ -755,10 +756,15 @@ public final class EcranCarte extends Screen {
                     // nom sous l'icône : grands lieux dès la vue d'ensemble, les autres de près, toujours en fondu
                     boolean grand = l.type() == Lieu.Type.AERODROME || l.type() == Lieu.Type.MILITAIRE || l.type() == Lieu.Type.PORT;
                     float a = (grand ? 1f : fondu(z, 0.32f, 0.5f)) * visibilite(l);
-                    etiquette(l.nom(), Ui.BOLD, X, Y + R_LIEU * e + 5f, Formes.argb(l.type().couleur, a), S_ETIQUETTE, 0, false, 0.7f);
+                    etiquette(nom(l), Ui.BOLD, X, Y + R_LIEU * e + 5f, Formes.argb(l.type().couleur, a), S_ETIQUETTE, 0, false, 0.7f);
                 }
             }
         }
+    }
+
+    /** Nom écrit d'un lieu : le sien, ou celui de son type pour un repère sans nom (19/11 : « Recycleur »). */
+    private static String nom(Lieu l) {
+        return l.nom().isEmpty() ? I18n.get(l.type().cle()) : l.nom();
     }
 
     /** Texte de la pastille d'une zone (sous son nom) et sa couleur. */
@@ -1365,8 +1371,9 @@ public final class EcranCarte extends Screen {
         if (lignes.isEmpty() && lieux) {
             for (Lieu l : lieuxIci) {
                 if (l.type().texteSeul() || visibilite(l) < 0.5f || Math.hypot(sx(l.x() + 0.5) - mx, sy(l.z() + 0.5) - my) > 7 * e) continue;
-                lignes.add(Ui.lit(l.nom(), Ui.BOLD));
-                lignes.add(Ui.lit(I18n.get(l.type().cle()), Ui.FONT));
+                lignes.add(Ui.lit(nom(l), Ui.BOLD));
+                // repère posé tout seul (recycleur de la carte, 19/11) : ce qu'on y fait, sous son nom
+                lignes.add(Ui.lit(I18n.get(l.type().automatique() ? l.type().cle() + ".aide" : l.type().cle()), Ui.FONT));
                 lignes.add(Ui.lit(metres(Math.hypot(l.x() + 0.5 - px, l.z() + 0.5 - pz)), Ui.FONT));
                 accent = l.type().couleur;
                 break;

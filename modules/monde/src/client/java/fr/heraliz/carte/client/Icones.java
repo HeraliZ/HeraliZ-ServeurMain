@@ -31,7 +31,7 @@ final class Icones {
     private static final int[] CASES = {32, 64, 128}, HAUTS = {576, 384, 0};
     static final String[] NOMS = {"pastille", "pastille_bord", "ombre", "sortie", "avion", "danger", "eclair", "drapeau",
             "usine", "ancre", "croix", "train", "etoile", "losange", "fleche", "disque",
-            "anneau", "halo", "nord", "maison", "cible", "helico", "epave"};
+            "anneau", "halo", "nord", "maison", "cible", "helico", "epave", "recyclage"};
     static final int PASTILLE = 0, PASTILLE_BORD = 1, OMBRE = 2, SORTIE = 3, DRAPEAU = 7, LOSANGE = 13, FLECHE = 14, DISQUE = 15,
             ANNEAU = 16, HALO = 17, NORD = 18, MAISON = 19, CIBLE = 20, HELICO = 21, EPAVE = 22;
 

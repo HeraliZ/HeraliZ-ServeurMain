@@ -13,7 +13,8 @@ import java.util.List;
 
 /**
  * Canal {@code heraliz_carte:main} (version 2, facultatif des deux côtés). La liste des lieux nommés de la carte
- * ({@link LieuxS2C}), envoyée à la connexion et à chaque changement fait par le staff ; la base de son clan
+ * ({@link LieuxS2C}), envoyée à la connexion et à chaque changement fait par le staff, avec un repère par recycleur de la
+ * carte (19/11 : type {@link Lieu.Type#RECYCLEUR}, ajouté et retiré tout seul) ; la base de son clan
  * ({@link BaseC2S} à l'ouverture de la carte, réponse {@link BaseS2C}). Les territoires des clans
  * passent par le mod des clans ({@code fr.heralisz.clans.api.CarteApi}), les extractions par le leur
  * ({@code com.heraliz.extraction.api.ExtractionApi}), les pings par heraliz_ping.
@@ -67,7 +68,7 @@ public final class CarteNet {
         }
     }
 
-    /** Les lieux de tous les mondes et le nom de la carte (sous-titre de l'écran). */
+    /** Les lieux de tous les mondes (ceux du staff, puis les repères des recycleurs) et le nom de la carte (sous-titre de l'écran). */
     public record LieuxS2C(String nomCarte, List<Lieu> lieux) {
         public static final int MAX = 512;
 

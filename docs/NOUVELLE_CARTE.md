@@ -76,6 +76,7 @@ de travail).
 |---|---|---|
 | `heraliz_extraction_zones.dat` | zones d'extraction et vagues | `/extraction create` (§6) |
 | `heraliz_carte_lieux.dat` | lieux nommés de la carte M et nom de la carte | `/carte lieu ajouter`, `/carte nom` |
+| `heraliz_carte_recycleurs.dat` | repères des recycleurs de la carte M (19/11) | rien : retrouvés seuls au démarrage suivant (recherche automatique, `/carte recycleurs`) |
 | `heraliz_depart.dat` | points et zones d'arrivée de la borne de départ | `/depart point …`, `/depart zone …` |
 | `heralisz_bunker_salles.dat` | salles à carte (boîtes, portes) | `/salle …` |
 | `heraliz_loot_rotation.dat` | conteneurs actifs de la rotation du loot | rien : refait seul à partir des conteneurs de la nouvelle carte |

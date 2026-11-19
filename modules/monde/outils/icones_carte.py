@@ -27,7 +27,7 @@ CASES = (128, 64, 32)
 SUR, COLONNES = 8, 8
 NOMS = ["pastille", "pastille_bord", "ombre", "sortie", "avion", "danger", "eclair", "drapeau",
         "usine", "ancre", "croix", "train", "etoile", "losange", "fleche", "disque",
-        "anneau", "halo", "nord", "maison", "cible", "helico", "epave"]
+        "anneau", "halo", "nord", "maison", "cible", "helico", "epave", "recyclage"]
 TRAIT = 2.0  # épaisseur des pictogrammes (unités sur 36)
 
 
@@ -201,6 +201,19 @@ def dessiner(nom):
         c.plein([(-4.6, -1.4), (-0.6, -3.6), (0.6, -1.6), (-3.4, 0.6)], 0.8)
         c.plein([(0.4, 0.4), (4.4, -1.2), (5.0, 0.8), (1.2, 2.6)], 0.8)
         c.trait([(-1.6, 1.6), (-3.2, 4.4)], 1.2)
+    elif nom == "recyclage":
+        # recycleur de la carte (19/11) : deux flèches en arc qui se suivent dans le sens des aiguilles d'une montre (un
+        # cycle), au trait fin ; pointe en chevron un peu au-delà du bout de chaque arc
+        r = 7.4
+        for a0 in (205, 25):
+            a1 = a0 + 118
+            c.arc(0, 0, r, a0, a1)
+            a = math.radians(a1 + 4)
+            tx, ty = r * math.cos(a), r * math.sin(a)
+            ux, uy = -math.sin(a), math.cos(a)   # sens de la marche (tangente)
+            nx, ny = math.cos(a), math.sin(a)    # vers l'extérieur (rayon)
+            c.trait([(tx - 3.4 * ux + 3.0 * nx, ty - 3.4 * uy + 3.0 * ny), (tx, ty),
+                     (tx - 3.4 * ux - 3.0 * nx, ty - 3.4 * uy - 3.0 * ny)])
     return c.img
 
 

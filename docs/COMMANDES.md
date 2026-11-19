@@ -66,7 +66,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection d'une base donnée à la main par le staff (plus aucune protection automatique depuis le 27/10 et le 31/10), carrières |
 | `/cracbuild` | CRac | outils de construction (`showcase`, `essai`, `clear`, `tier`, `damage`, `doors`) : op 4 (02/11, `clear` efface des bases) |
 | `/coffres voir` | CRac | coffres de la base où l'on se tient et leurs limites (op 4) ; `config/crac/coffres.json` : `/recharger coffres` |
-| `/depart`, `/carte`, `/train`, `/cinematique` | Utils | borne de départ, lieux de la carte, train, cinématique |
+| `/depart`, `/carte`, `/train`, `/cinematique` | Utils | borne de départ, lieux de la carte, train, cinématique ; `/carte recycleurs` (19/11) : recycleurs de la carte repérés tout seuls (liste, clic = téléportation proposée), `/carte recycleurs chercher` relance leur recherche dans tous les tronçons enregistrés |
 | `/corps`, `/usure`, `/vehicules` (op 2 depuis le 02/11), `/inspecter` | Utils | cadavres, usure des armes, véhicules, inventaire d'un joueur |
 | `/zombies` (`stats`, `reserves`, `zone`) | Utils | zombies HeraliZ (02/11 : `banc` retiré) |
 | `/vitres` (op 4), `/camos`, `/armurier` | Tactique | vitres cassables (diagnostic), camos à vie, recettes de la Table d'armurier |
