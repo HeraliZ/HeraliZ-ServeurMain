@@ -617,9 +617,10 @@ Sans essai possible : après une erreur, la détection « à terre » des quête
 
 ## 28. Réglages du serveur, plugins et mise en ligne (audit du 19/11)
 
-Rien de tout cela n'a été essayé en jeu ni sur le Ptero : seulement contrôlé dans le dépôt, et le démarrage d'essai a
-tourné sur une machine de GitHub. Tout compte au **redémarrage** qui suit la mise en ligne. Détail et raisons :
-`docs/DEPLOIEMENT.md`, sections 6 à 9.
+Rien de tout cela n'a été essayé en jeu ni sur le Ptero. Vérifié le 19/11 sur les machines de GitHub : fabrication et
+contrôles de la branche (0 problème) ; démarrage d'essai réussi avec ces réglages (« Done » en 94 s, aucune ligne
+fatale, arrêt propre), cloth-config retiré du serveur compris. Tout compte au **redémarrage** qui suit la mise en
+ligne. Détail et raisons : `docs/DEPLOIEMENT.md`, sections 6 à 9.
 
 Mise en ligne :
 - [ ] Résumé de « Serveur HeraliZ » : partie « Démarrage d'essai » à « Réussi », puis le job « serveur » a tourné (envoi
@@ -640,7 +641,9 @@ Jeu (après le redémarrage) :
 - [ ] Après `rate-limit=1000` mis à la main dans `server.properties` (propriétaire) : 10 min de jeu normal (tir en
       automatique, voix, inventaire en cliquant vite) sans expulsion « paquets ».
 - [ ] Zombies : un joueur blessé n'attire plus les zombies par l'odeur du sang, mais les tirs et les blocs cassés les
-      attirent toujours ; dans les rapports `/diag`, beaucoup moins d'entités `zombieawareness:scent`.
+      attirent toujours ; pendant les combats, moins d'entités `zombieawareness:scent` dans les rapports `/diag` (celles
+      des sons restent : pour les réduire aussi, l'audit propose `blockBreakEvent_PlayersOnly = true` et
+      `blockHittingEvent_Active = false` dans `General.toml`, choix de jeu à décider).
 - [ ] Véhicules : un conducteur voit toujours les véhicules lointains (mis à jour une fois par seconde au lieu de quatre).
 - [ ] Menu des réglages de TaCZ (touche du jeu) toujours là chez les joueurs (cloth-config retiré du serveur seulement).
 - [ ] Changer le grade d'un joueur connecté (LuckPerms) : ses nouvelles commandes arrivent dans la complétion du tchat au

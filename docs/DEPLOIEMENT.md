@@ -134,7 +134,7 @@ Le nouveau serveur démarre sur le monde actuel `dayz_map` et sur les dossiers d
   `.github/workflows/demarrage.yml`, `outils/demarrage_essai.py`). S'il n'arrive pas à « Done », ou si son journal
   montre un mixin qui ne s'applique pas ou un plantage, **rien n'est envoyé au Ptero** : le serveur en ligne garde la
   version d'avant (le 18/11, deux démarrages ratés avaient laissé le serveur à terre). La raison est dans le résumé de la
-  tâche (« Démarrage d'essai ») ; environ 3 minutes de plus par mise en ligne.
+  tâche (« Démarrage d'essai ») ; 3 à 4 minutes de plus par mise en ligne.
   - En urgence seulement : « Run workflow » avec la case `sans_demarrage_essai`.
   - Pour essayer une branche avant de la passer sur `main` : onglet Actions → « Démarrage d'essai » → « Run workflow »
     (choisir la branche).
