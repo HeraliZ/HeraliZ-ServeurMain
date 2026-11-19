@@ -563,3 +563,12 @@ Le Passeur :
       d'avancée de la quête du jour « Vendre » (un marchand la vend maintenant : règle du 25/10, acheter puis revendre ne
       rapporte rien).
 - [ ] Sur la carte, en combat, à terre ou en match : il refuse, comme les autres marchands.
+
+## 26. Sacs : plus aucun défi ni apparence à débloquer (19/11)
+
+Choix du propriétaire : les sacs se trouvent seulement sur la carte, avec leur apparence ; rien à débloquer.
+`serveur/config/backpacked.server.toml` : `unlockAllCosmetics = true` (aucun défi suivi, aucun déblocage annoncé) et
+`disableCustomisation = true` (plus de bouton de personnalisation).
+- [ ] Ouvrir son sac : plus de bouton « Personnaliser » ; aucun message « sac débloqué » en jouant.
+- [ ] Un sac trouvé garde l'apparence avec laquelle il a été trouvé (tactique, randonnée, sport…), même sur le dos.
+- [ ] Les camos sur les sacs (table d'armurier) marchent comme avant.
