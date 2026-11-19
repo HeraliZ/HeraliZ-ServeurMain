@@ -150,6 +150,7 @@
   "entity.airstrike.helicopter_wreck": "Обломки вертолёта",
   "death.attack.airstrike.helico": "%1$s скошен миниганом военного вертолёта",
   "death.attack.airstrike.helico_crash": "%1$s раздавлен военным вертолётом",
+  "death.attack.airstrike.helico_roquette": "%1$s разорван ракетой военного вертолёта",
   "subtitles.airstrike.helico_rotor": "Винт вертолёта",
   "subtitles.airstrike.helico_rotor_loin": "Вертолёт вдалеке",
   "subtitles.airstrike.helico_tir": "Очередь минигана",

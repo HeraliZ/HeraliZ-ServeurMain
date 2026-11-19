@@ -43,14 +43,35 @@ public final class HelicoApi {
         public int patrouilleMinS = 300, patrouilleMaxS = 600, resteApresAttaqueS = 60, volMaxS = 1500;
         /**
          * Portée de tir et de poursuite (blocs). Le serveur n'envoie les entités des mods qu'à 64 blocs des joueurs
-         * (spigot.yml, entity-tracking-range.other) : au-delà, personne ne le voit ni ne peut le viser.
+         * (spigot.yml, entity-tracking-range.other) : au-delà, on le voit (modèle dessiné d'après ses positions, 19/11) mais
+         * ses morceaux ne sont pas là chez le joueur, personne ne peut le toucher.
          */
         public int porteeTir = 60, poursuite = 96;
         /** Rayon et hauteur du cercle autour de la cible. */
         public int rayonCercle = 40, altitudeCombat = 22;
-        /** Dégâts d'un coup du minigun, coups par rafale, pause entre deux rafales (s), alerte avant la rafale (ticks). */
+        /**
+         * Dégâts d'un coup du minigun, coups par rafale, pause entre deux rafales (s). 19/11 (demande du propriétaire : « le
+         * joueur ne doit pas être prévenu ») : plus d'alerte avant la rafale, elle part dès que la pause est finie.
+         */
         public float degatsCoup = 2.5f;
-        public int coupsRafale = 8, pauseMinS = 3, pauseMaxS = 5, alerteTicks = 24;
+        public int coupsRafale = 8, pauseMinS = 3, pauseMaxS = 5;
+        /**
+         * Rage (19/11, demande du propriétaire : « plus il a peu de vie, plus il attaque vite et longtemps ») : à 0 PV, coups
+         * par rafale × {@code rageCoups}, pauses entre deux rafales ÷ {@code ragePauses}, pauses entre deux salves de
+         * roquettes ÷ {@code rageRoquettes} ; entre les deux, en proportion des PV perdus (pleins PV : valeurs de base).
+         */
+        public float rageCoups = 2f, ragePauses = 3f, rageRoquettes = 2f;
+        /**
+         * Roquettes (19/11, comme l'hélicoptère de Rust) : salves de {@code roquettesSalve} roquettes (0 : aucune) contre sa
+         * cible, toutes les {@code roquettesPauseMinS} à {@code roquettesPauseMaxS} s (tirées au hasard). Chacune vise la
+         * cible (déplacement anticipé de {@code roquettesAvance}, 0 à 1) à {@code roquettesDispersion} blocs près, vole à
+         * {@code roquettesVitesse} blocs par tick et explose au premier bloc ou contre la cible : {@code roquettesDegats} au
+         * centre, moins jusqu'au bord ({@code roquettesRayon}), multipliés par la part visible du corps (murs et toits
+         * protègent, comme les explosions de Minecraft) ; seulement ses agresseurs ; aucun bloc cassé.
+         */
+        public int roquettesSalve = 4, roquettesPauseMinS = 12, roquettesPauseMaxS = 18;
+        public float roquettesDegats = 8f, roquettesRayon = 4.5f, roquettesDispersion = 3f, roquettesAvance = 0.7f;
+        public double roquettesVitesse = 2.0;
         /** Un agresseur sans nouveau tir depuis ce temps est oublié (secondes). */
         public int oubliAgresseursS = 60;
         /** Durée du feu de l'épave (secondes, tirée entre les deux) ; épave, feu et fumée retirés ce temps après le feu (s). */

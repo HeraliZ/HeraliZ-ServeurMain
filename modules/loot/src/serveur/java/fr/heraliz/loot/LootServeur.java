@@ -24,20 +24,22 @@ public final class LootServeur {
         EcrituresFond.init();
         HeralizLoot.COFFRE_USINE.serveur(CoffreBlockEntityServeur::new);
         FouilleServeur.brancher();
+        // 19/11 : les conteneurs posés par un événement (ConteneursEvenement : T6 du crash de l'hélicoptère) restent hors de
+        // la rotation : ils s'ouvrent à part, et la rotation ne les adopte ni ne les invalide
         ConteneurBlock.ROTATION = new ConteneurBlock.Rotation() {
             @Override
             public void ouvrir(ServerLevel sl, BlockPos pos, BlockState st, ConteneurBlock bloc, ServerPlayer sp) {
-                RotationLoot.ouvrir(sl, pos, st, bloc, sp);
+                if (!ConteneursEvenement.ouvrir(sl, pos, st, bloc, sp)) RotationLoot.ouvrir(sl, pos, st, bloc, sp);
             }
 
             @Override
             public void blocPose(ServerLevel sl, BlockPos pos, String nom) {
-                RotationLoot.blocPose(sl, pos, nom);
+                if (!ConteneursEvenement.estLa(sl, pos)) RotationLoot.blocPose(sl, pos, nom);
             }
 
             @Override
             public void blocRetire(ServerLevel sl, BlockPos pos, String nom) {
-                RotationLoot.blocRetire(sl, pos, nom);
+                if (!ConteneursEvenement.retire(sl, pos)) RotationLoot.blocRetire(sl, pos, nom);
             }
         };
         bus.addListener((ModConfigEvent.Loading e) -> {
@@ -74,13 +76,15 @@ public final class LootServeur {
         ButinZombies.brancher();
         // raretés des objets : config/heraliz_loot/raretes.json, envoyées aux joueurs
         RaretesServeur.brancher();
-        // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions) ; chaque tick : les étoiles
-        // d'un joueur sur 20 (01/11 : avant, celles de tous les joueurs dans le même tick)
+        // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions) ; conteneurs des événements
+        // (retrait, étoiles ; rien sans eux) ; chaque tick : les étoiles d'un joueur sur 20 (01/11 : avant, celles de tous
+        // les joueurs dans le même tick)
         MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent e) -> {
             if (e.phase == TickEvent.Phase.END && e.level instanceof ServerLevel sl) {
                 if (sl.getGameTime() % 20 == 0) {
                     PointsT7.get(sl).tick(sl);
                     RotationLoot.tick(sl);
+                    ConteneursEvenement.tick(sl);
                 }
                 RotationLoot.etoilesTick(sl);
             }

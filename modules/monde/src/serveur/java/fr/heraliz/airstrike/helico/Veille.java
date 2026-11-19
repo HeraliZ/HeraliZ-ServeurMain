@@ -33,9 +33,10 @@ import java.util.function.Function;
  * jamais chargé sur le fil du serveur) ; au plus {@link #ATTENTE_DEPART_S} secondes, sinon il est perdu ;</li>
  * <li><b>carte M</b> : toutes les 2 s, la position de chaque hélicoptère et de chaque épave est envoyée à tous les joueurs
  * de la carte (overworld) ; « retiré » à leur fin ({@link #retire}) ;</li>
- * <li><b>épaves</b> : fin du feu et retrait vérifiés en heure de jeu, même quand l'épave ne tourne pas.</li>
+ * <li><b>épaves</b> : fin du feu et retrait vérifiés en heure de jeu, même quand l'épave ne tourne pas ;</li>
+ * <li><b>roquettes</b> (19/11) : celles en vol avancent chaque tick ({@link Roquettes}), même si l'hélicoptère est abattu.</li>
  * </ul>
- * Sans départ, hélicoptère ni épave, le tick sort tout de suite (trois tests de listes vides).
+ * Sans départ, hélicoptère, épave ni roquette, le tick sort tout de suite (quatre tests de listes vides).
  */
 public final class Veille {
     private Veille() {
@@ -162,8 +163,9 @@ public final class Veille {
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || e.getServer() == null) return;
-        if (DEPARTS.isEmpty() && HelicopterServeur.tous().isEmpty() && HelicopterWreckServeur.toutes().isEmpty()) return;
+        if (DEPARTS.isEmpty() && HelicopterServeur.tous().isEmpty() && HelicopterWreckServeur.toutes().isEmpty() && Roquettes.vide()) return;
         ticks++;
+        Roquettes.tick();
         if (!DEPARTS.isEmpty() && ticks % 5 == 0) departs();
         if (ticks % 40 == 0) carte(e.getServer());
         if (ticks % 20 == 0 && !HelicopterWreckServeur.toutes().isEmpty()) {
@@ -175,5 +177,6 @@ public final class Veille {
     @SubscribeEvent
     public static void arret(ServerStoppedEvent e) {
         DEPARTS.clear();
+        Roquettes.vider();
     }
 }

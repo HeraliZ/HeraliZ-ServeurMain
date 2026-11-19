@@ -206,4 +206,16 @@ public final class GeoPart {
         for (GeoPart c : children.values()) c.render(ps, vc, light, overlay, r, g, b, a);
         ps.popPose();
     }
+
+    /**
+     * Comme {@link #render}, sans les faces de la pièce elle-même : seulement ses enfants (19/11 : le missile du modèle des
+     * munitions sans son rail d'accroche, pour les roquettes de l'hélicoptère).
+     */
+    public void renderChildren(PoseStack ps, VertexConsumer vc, int light, int overlay, float r, float g, float b, float a) {
+        if (!visible || children.isEmpty()) return;
+        ps.pushPose();
+        translateAndRotate(ps);
+        for (GeoPart c : children.values()) c.render(ps, vc, light, overlay, r, g, b, a);
+        ps.popPose();
+    }
 }

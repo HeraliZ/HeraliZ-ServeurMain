@@ -2,6 +2,8 @@ package fr.heraliz.evenements.serveur;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -27,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -46,12 +49,14 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * Hélicoptère militaire (docs/EVENEMENTS.md §4.4, fiche docs/GAME_DESIGN_25OCT.md §5 ; règles du propriétaire du 25/10,
@@ -84,7 +89,10 @@ import java.util.UUID;
  * que le feu brûle ({@link #refusOuverture}, demandé par HeraliZ Loot à chaque essai, message au joueur) ; il reste
  * {@code coffre_t7_minutes} après la fin du feu, comme avant. Annulé pendant le feu (staff, arrêt du serveur) : le coffre
  * encore fermé est retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu, sinon l'objet au sol à
- * côté de l'épave ({@link #horsEpave}).
+ * côté de l'épave ({@link #horsEpave}). 19/11 (demande du propriétaire : « en plus du loot T7, deux lootables T6
+ * aléatoires ») : {@code lootables_t6_nombre} conteneurs T6 tirés dans {@code lootables_t6} ({@link #poserLootables}),
+ * mêmes règles de place, même feu et même durée que le coffre, retirés de même s'il est annulé pendant le feu ; refus
+ * d'ouverture : un message court au-dessus de la barre d'objets, sans bruit (« Caisse en feu · s'ouvre dans 1 min 20 s »).
  * Explosion en l'air : seulement l'objet, posé sur le dernier sol valide survolé (choisi par le module monde,
  * {@code Abattu.sol}), sinon rien (journal). Tronçon pas chargé : un ticket le demande, l'objet est posé dès qu'il est là
  * ({@link #objetsEnAttente}).</li>
@@ -105,6 +113,16 @@ final class Helico implements Evenement {
     private static long pauseMs = 240 * 60_000L, fenetreMs = 120 * 60_000L;
     private static String coffreT7 = "t7_coffre_armes";
     private static int coffreT7Min = 15;
+    /**
+     * Conteneurs T6 de l'épave (19/11) : combien, et parmi lesquels (tirés au hasard ; liste vide : tous les T6 de HeraliZ
+     * Loot). Par défaut, des T6 militaires qui tiennent seuls au sol (ni coffre mural, ni banque, ni baie de serveurs).
+     */
+    private static int lootablesNombre = 2;
+    static final List<String> LOOTABLES_DEFAUT = List.of("t6_loot_crash_6", "t6_caisse_missiles", "t6_caisse_scellee",
+            "t6_coffre_munitions_blinde", "t6_valise_drone", "t6_caisse_prototype", "t6_conteneur_securise", "t6_mallette_ouverte",
+            "t6_station_satellite", "t6_brouilleur", "t6_loot_militaire_7", "t6_loot_militaire_12", "t6_loot_militaire_22",
+            "t6_loot_militaire_23");
+    private static List<String> lootables = LOOTABLES_DEFAUT;
     private static final HelicoApi.Reglages R = new HelicoApi.Reglages();
 
     // ------------------------------------------------------------------ état
@@ -132,8 +150,17 @@ final class Helico implements Evenement {
     private ServerLevel coffreMonde;
     /** Numéro d'événement porté par le coffre (celui de la boîte noire : « helico#12 », ou « helico#12!essai »). */
     private String coffreEvenement = "";
-    /** Heure de jeu jusqu'à laquelle le coffre refuse de s'ouvrir (0 : ouvert à tous). */
+    /**
+     * Heure de jeu jusqu'à laquelle le butin de l'épave (coffre T7 et conteneurs T6, numéro {@link #evenementButin}) refuse
+     * de s'ouvrir (0 : ouvert à tous).
+     */
     private long verrouJusqua;
+    /** Butin de l'épave (19/11) : son monde et le numéro d'événement qu'il porte (coffre et conteneurs T6) ; "" : aucun. */
+    @Nullable
+    private ServerLevel mondeButin;
+    private String evenementButin = "";
+    /** Conteneurs T6 pas posés au crash faute de place : nouvel essai à la fin du feu. */
+    private int lootablesManquants;
 
     Helico() {
         instance = this;
@@ -227,6 +254,9 @@ final class Helico implements Evenement {
         coffreMonde = null;
         coffreEvenement = "";
         verrouJusqua = 0;
+        mondeButin = null;
+        evenementButin = "";
+        lootablesManquants = 0;
         // heure provisoire du suivant dès le départ (arrêt du serveur pendant le vol) ; refaite à la fin de celui-ci
         prochainMs = tirer();
         sauverEtat();
@@ -365,17 +395,27 @@ final class Helico implements Evenement {
         long fin = HelicoApi.finDuFeu(id), maintenant = level.getGameTime();
         int feu = fin > maintenant ? (int) Math.min(fin - maintenant, 72_000L) : 0;
         String objet = idObjet(id);
-        BlockPos coffre = poserCoffre(level, BlockPos.containing(ou), objet, id, feu);
+        // coffre T7 et conteneurs T6 (19/11) portent le même numéro : tous fermés tant que le feu brûle (refusOuverture)
+        mondeButin = level;
+        evenementButin = objet;
+        verrouJusqua = feu > 0 ? fin : 0;
+        BlockPos epave = BlockPos.containing(ou);
+        BlockPos coffre = poserCoffre(level, epave, objet, id, feu);
         if (coffre == null) {
             Outils.journal(id + " : pas de place pour le coffre au crash, nouvel essai a la fin du feu");
-            return;
+        } else {
+            coffrePos = coffre;
+            coffreMonde = level;
+            coffreEvenement = objet;
+            Outils.journal(id + " : coffre " + coffreT7 + " pose en " + coffre.toShortString() + ", ferme pendant le feu (encore "
+                    + (feu + 19) / 20 + " s)");
         }
-        coffrePos = coffre;
-        coffreMonde = level;
-        coffreEvenement = objet;
-        verrouJusqua = feu > 0 ? fin : 0;
-        Outils.journal(id + " : coffre " + coffreT7 + " pose en " + coffre.toShortString() + ", ferme pendant le feu (encore "
-                + (feu + 19) / 20 + " s)");
+        int t6 = poserLootables(level, epave, objet, id, feu, lootablesNombre, coffre);
+        lootablesManquants = Math.max(0, lootablesNombre - t6);
+        if (lootablesNombre > 0) {
+            Outils.journal(id + " : " + t6 + " conteneur(s) T6 pose(s) au crash, fermes pendant le feu"
+                    + (lootablesManquants > 0 ? " (" + lootablesManquants + " sans place : nouvel essai a la fin du feu)" : ""));
+        }
     }
 
     private void feuEteint(BlockPos ou) {
@@ -384,23 +424,30 @@ final class Helico implements Evenement {
         if (server == null || id == null) return;
         ServerLevel level = server.overworld();
         String objet = idObjet(id);
+        verrouJusqua = 0;   // feu éteint : le coffre et les conteneurs T6 posés au crash s'ouvrent maintenant
         if (coffrePos != null && objet.equals(coffreEvenement)) {
-            verrouJusqua = 0;   // posé au crash : il s'ouvre maintenant
             Outils.journal(id + " : feu eteint, le coffre en " + coffrePos.toShortString() + " s'ouvre");
-            return;
+        } else {
+            // pas de place au crash : posé maintenant (comme avant le 11/11), sinon l'objet d'événement au sol
+            BlockPos coffre = poserCoffre(level, ou, objet, id, 0);
+            Outils.journal(id + " : feu eteint, " + (coffre != null ? "coffre " + coffreT7 + " en " + coffre.toShortString()
+                    : "AUCUN coffre T7 pose (pas de place) : objet d'evenement pose au sol"));
+            if (coffre == null) {
+                lacherObjet(level, horsEpave(level, ou, id), objet);
+            } else {
+                coffrePos = coffre;
+                coffreMonde = level;
+                coffreEvenement = objet;
+            }
         }
-        // pas de place au crash : posé maintenant (comme avant le 11/11), sinon l'objet d'événement au sol
-        BlockPos coffre = poserCoffre(level, ou, objet, id, 0);
-        Outils.journal(id + " : feu eteint, " + (coffre != null ? "coffre " + coffreT7 + " en " + coffre.toShortString()
-                : "AUCUN coffre T7 pose (pas de place) : objet d'evenement pose au sol"));
-        if (coffre == null) {
-            lacherObjet(level, horsEpave(level, ou, id), objet);
-            return;
+        if (lootablesManquants > 0) {
+            // conteneurs T6 sans place au crash : nouvel essai maintenant (déjà ouverts)
+            int t6 = poserLootables(level, ou, objet, id, 0, lootablesManquants, coffrePos);
+            lootablesManquants -= t6;
+            Outils.journal(id + " : feu eteint, " + t6 + " conteneur(s) T6 de plus" + (lootablesManquants > 0
+                    ? " (" + lootablesManquants + " toujours sans place : pas pose(s))" : ""));
+            lootablesManquants = 0;
         }
-        coffrePos = coffre;
-        coffreMonde = level;
-        coffreEvenement = objet;
-        verrouJusqua = 0;
     }
 
     /**
@@ -420,22 +467,22 @@ final class Helico implements Evenement {
     }
 
     /**
-     * Coffre de l'épave encore dans le feu : ouverture refusée, avec le temps qui reste (HeraliZ Loot le montre au joueur).
-     * Seulement le coffre de cet hélicoptère ({@code id} : numéro porté par le coffre), seulement pendant le feu.
+     * Butin de l'épave encore dans le feu (coffre T7 et conteneurs T6 de cet hélicoptère, {@code id} : numéro qu'ils
+     * portent) : ouverture refusée, avec le temps qui reste. HeraliZ Loot le montre au-dessus de la barre d'objets (bandeau
+     * du noyau), sans bruit (19/11, demande du propriétaire : « pas de son, juste un petit message propre »).
      */
     @Nullable
     @Override
     public Component refusOuverture(ServerPlayer p, String id) {
-        ServerLevel level = coffreMonde;
-        if (verrouJusqua <= 0 || level == null || !id.equals(coffreEvenement)) return null;
+        ServerLevel level = mondeButin;
+        if (verrouJusqua <= 0 || level == null || !id.equals(evenementButin)) return null;
         long reste = verrouJusqua - level.getGameTime();
         if (reste <= 0) {
             verrouJusqua = 0;
             return null;
         }
-        return Outils.t("heraliz_evenements.helico.coffre_brulant",
-                "Coffre encore dans les flammes : il s'ouvrira quand le feu sera éteint (encore %s).",
-                Outils.duree(reste)).withStyle(ChatFormatting.GOLD);
+        return Outils.t("heraliz_evenements.helico.caisse_en_feu", "Caisse en feu · s'ouvre dans %s", Outils.duree(reste))
+                .withStyle(ChatFormatting.GOLD);
     }
 
     /**
@@ -449,10 +496,20 @@ final class Helico implements Evenement {
         BlockPos pos = coffrePos;
         String evenement = coffreEvenement;
         boolean ferme = verrouJusqua > 0;
+        ServerLevel monde = mondeButin;
+        String butin = evenementButin;
         coffrePos = null;
         coffreMonde = null;
         coffreEvenement = "";
         verrouJusqua = 0;
+        mondeButin = null;
+        evenementButin = "";
+        lootablesManquants = 0;
+        // 19/11 : les conteneurs T6 encore fermés aussi (jamais ouverts : rien n'en est sorti)
+        if (ferme && monde != null && !butin.isEmpty()) {
+            int n = retirerLootables(monde, butin);
+            if (n > 0) Outils.journal(butin + " : " + n + " conteneur(s) T6 encore ferme(s) retire(s) (" + motif + "), rien n'est donne");
+        }
         if (!ferme || level == null || pos == null || level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) == null) return;
         BlockEntity be = level.getBlockEntity(pos);
         if (be == null || !evenement.equals(be.saveWithoutMetadata().getString("Evenement"))) return;
@@ -535,6 +592,116 @@ final class Helico implements Evenement {
             }
         }
         return null;
+    }
+
+    // ------------------------------------------------------------------ conteneurs T6 de l'épave (19/11)
+    @Nullable
+    private static Method poserConteneur, retirerConteneurs, nomsConteneurs;
+    private static boolean conteneursCherche;
+
+    /** HeraliZ Loot sait poser des conteneurs d'événement ({@code ConteneursEvenement}, par réflexion) ? */
+    private static boolean conteneurs() {
+        if (!conteneursCherche) {
+            conteneursCherche = true;
+            try {
+                Class<?> c = Class.forName("fr.heraliz.loot.ConteneursEvenement");
+                poserConteneur = c.getMethod("poser", ServerLevel.class, BlockPos.class, Direction.class, String.class, int.class,
+                        String.class, Predicate.class);
+                retirerConteneurs = c.getMethod("retirer", ServerLevel.class, String.class);
+                nomsConteneurs = c.getMethod("noms", String.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                poserConteneur = null;
+                HeralizEvenements.LOG.warn("[evenements] helico : HeraliZ Loot sans conteneurs d'evenement, pas de conteneur T6 ({})", e.toString());
+            }
+        }
+        return poserConteneur != null;
+    }
+
+    /**
+     * Conteneurs T6 de l'épave (19/11, demande du propriétaire : « en plus du loot T7, deux lootables T6 aléatoires ») :
+     * {@code nombre} conteneurs tirés au hasard dans {@code lootables_t6} (deux différents quand c'est possible ; liste
+     * vide : tous les T6 de HeraliZ Loot), posés par HeraliZ Loot avec les règles du coffre : trois cercles de 5, 8 et 11
+     * blocs autour de l'épave (départ au hasard), à 2 blocs de hauteur au plus de l'épave, sur un sol de crash
+     * ({@code #airstrike:sol_crash}), ni dans ni contre la carcasse (toute la boîte du conteneur), à 3,5 blocs au moins du
+     * coffre et l'un de l'autre, face avant vers l'extérieur. Ils portent le numéro du coffre ({@code evenement}) : même
+     * feu ({@link #refusOuverture}) et même durée ({@code feuTicks} plus {@code coffre_t7_minutes}). -> nombre posés.
+     */
+    private static int poserLootables(ServerLevel level, BlockPos epave, String evenement, String helico, int feuTicks, int nombre,
+                                      @Nullable BlockPos coffre) {
+        if (nombre <= 0 || !conteneurs()) return 0;
+        List<String> noms = new ArrayList<>(lootables.isEmpty() ? tousLesT6() : lootables);
+        if (noms.isEmpty()) return 0;
+        Collections.shuffle(noms, ALEA);
+        int presence = Math.max(1, coffreT7Min) * 60 * 20 + Math.max(0, feuTicks);
+        List<BlockPos> pris = new ArrayList<>();
+        if (coffre != null) pris.add(coffre);
+        Predicate<AABB> libre = b -> HelicoApi.libre(helico, b.inflate(1.0, 0.0, 1.0));
+        int poses = 0, suivant = 0, depart = ALEA.nextInt(8);
+        for (int i = 0; i < 24 && poses < nombre; i++) {
+            int rayon = i < 8 ? 5 : i < 16 ? 8 : 11;
+            double a = (i + depart) * (Math.PI / 4) + (i >= 8 && i < 16 ? Math.PI / 8 : 0);
+            int x = epave.getX() + (int) Math.round(Math.cos(a) * rayon), z = epave.getZ() + (int) Math.round(Math.sin(a) * rayon);
+            if (level.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) continue;
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            if (Math.abs(y - epave.getY()) > 2) continue;
+            BlockPos p = new BlockPos(x, y, z);
+            BlockState sol = level.getBlockState(p.below());
+            if (!sol.getFluidState().isEmpty() || !sol.is(PointCrash.SOL) || tropPres(p, pris)) continue;
+            Direction face = Direction.getNearest((float) Math.cos(a), 0f, (float) Math.sin(a));
+            // le suivant de la liste tirée ; trop grand pour cette place : les trois d'après
+            for (int k = 0; k < Math.min(4, noms.size()); k++) {
+                String nom = noms.get((suivant + k) % noms.size());
+                if (poserConteneur(level, p, face, nom, presence, evenement, libre)) {
+                    pris.add(p);
+                    poses++;
+                    suivant = (suivant + k + 1) % noms.size();
+                    break;
+                }
+            }
+        }
+        return poses;
+    }
+
+    private static boolean tropPres(BlockPos p, List<BlockPos> pris) {
+        for (BlockPos q : pris) {
+            double dx = p.getX() - q.getX(), dz = p.getZ() - q.getZ();
+            if (dx * dx + dz * dz < 3.5 * 3.5) return true;
+        }
+        return false;
+    }
+
+    private static boolean poserConteneur(ServerLevel level, BlockPos p, Direction face, String nom, int presence, String evenement,
+                                          Predicate<AABB> libre) {
+        try {
+            return Boolean.TRUE.equals(poserConteneur.invoke(null, level, p, face, nom, presence, evenement, libre));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            HeralizEvenements.LOG.warn("[evenements] helico : conteneur {} impossible : {}", nom, e.toString());
+            return false;
+        }
+    }
+
+    /** Tous les conteneurs T6 de HeraliZ Loot (lootables_t6 vide). */
+    private static List<String> tousLesT6() {
+        List<String> l = new ArrayList<>();
+        try {
+            if (nomsConteneurs != null && nomsConteneurs.invoke(null, "t6") instanceof List<?> noms) {
+                for (Object o : noms) if (o instanceof String s) l.add(s);
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            HeralizEvenements.LOG.warn("[evenements] helico : liste des conteneurs T6 illisible : {}", e.toString());
+        }
+        return l;
+    }
+
+    /** Annulé pendant le feu : les conteneurs T6 de l'événement jamais ouverts sont retirés. -> combien. */
+    private static int retirerLootables(ServerLevel level, String evenement) {
+        if (!conteneurs() || retirerConteneurs == null) return 0;
+        try {
+            return retirerConteneurs.invoke(null, level, evenement) instanceof Integer n ? n : 0;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            HeralizEvenements.LOG.warn("[evenements] helico : conteneurs T6 pas retires : {}", e.toString());
+            return 0;
+        }
     }
 
     // ------------------------------------------------------------------ objet d'événement au sol
@@ -765,6 +932,8 @@ final class Helico implements Evenement {
             if (o.has("reessai_minutes")) HeralizEvenements.LOG.warn("[evenements] helico.json : reessai_minutes ignore (un depart refuse attend l'intervalle normal)");
             coffreT7 = o.has("coffre_t7") ? o.get("coffre_t7").getAsString() : "t7_coffre_armes";
             coffreT7Min = entier(o, "coffre_t7_minutes", 15, 1, 120);
+            lootablesNombre = entier(o, "lootables_t6_nombre", 2, 0, 6);
+            lootables = listeNoms(o, "lootables_t6", LOOTABLES_DEFAUT);
             R.pv = (float) reel(o, "pv", 3600, 10, 100_000);
             R.multExplosifs = (float) reel(o, "mult_explosifs", 2.0, 0, 20);
             R.multQueue = (float) reel(o, "mult_queue", 1.25, 0, 20);
@@ -785,7 +954,19 @@ final class Helico implements Evenement {
             R.coupsRafale = entier(o, "coups_rafale", 8, 1, 60);
             R.pauseMinS = entier(o, "pause_rafale_min_s", 3, 1, 60);
             R.pauseMaxS = Math.max(R.pauseMinS, entier(o, "pause_rafale_max_s", 5, 1, 60));
-            R.alerteTicks = (int) Math.round(reel(o, "alerte_s", 1.2, 0.1, 10) * 20);
+            // 19/11 (demande du propriétaire) : plus d'alerte avant l'attaque ; ancienne clé signalée
+            if (o.has("alerte_s")) HeralizEvenements.LOG.warn("[evenements] helico.json : alerte_s ignore (plus d'alerte avant l'attaque depuis le 19/11)");
+            R.rageCoups = (float) reel(o, "rage_coups", 2.0, 1, 10);
+            R.ragePauses = (float) reel(o, "rage_pauses", 3.0, 1, 10);
+            R.rageRoquettes = (float) reel(o, "rage_roquettes", 2.0, 1, 10);
+            R.roquettesSalve = entier(o, "roquettes_salve", 4, 0, 16);
+            R.roquettesPauseMinS = entier(o, "roquettes_pause_min_s", 12, 2, 600);
+            R.roquettesPauseMaxS = Math.max(R.roquettesPauseMinS, entier(o, "roquettes_pause_max_s", 18, 2, 600));
+            R.roquettesDegats = (float) reel(o, "roquettes_degats", 8, 0, 100);
+            R.roquettesRayon = (float) reel(o, "roquettes_rayon", 4.5, 0.5, 16);
+            R.roquettesDispersion = (float) reel(o, "roquettes_dispersion", 3, 0, 32);
+            R.roquettesVitesse = reel(o, "roquettes_vitesse", 2.0, 0.5, 6);
+            R.roquettesAvance = (float) reel(o, "roquettes_avance", 0.7, 0, 1);
             R.oubliAgresseursS = entier(o, "oubli_agresseurs_s", 60, 5, 3600);
             R.feuMinS = entier(o, "feu_min_s", 120, 5, 3600);
             R.feuMaxS = Math.max(R.feuMinS, entier(o, "feu_max_s", 210, 5, 3600));
@@ -802,6 +983,22 @@ final class Helico implements Evenement {
         HeralizEvenements.LOG.info("[evenements] helico : {} PV, patrouille {}-{} min (vol {} min au plus), pause {} min + fenetre {} min,"
                         + " {} joueur(s) au moins, prochain {}", Math.round(R.pv), R.patrouilleMinS / 60, R.patrouilleMaxS / 60, R.volMaxS / 60,
                 pauseMs / 60_000L, fenetreMs / 60_000L, joueursMin, prochainMs > 0 ? heure(prochainMs) : "a tirer");
+        HeralizEvenements.LOG.info("[evenements] helico : rafales de {} coups toutes les {}-{} s, salves de {} roquettes toutes les {}-{} s,"
+                        + " rage x{} coups, pauses /{} (roquettes /{}), {} conteneur(s) T6 parmi {}", R.coupsRafale, R.pauseMinS, R.pauseMaxS,
+                R.roquettesSalve, R.roquettesPauseMinS, R.roquettesPauseMaxS, R.rageCoups, R.ragePauses, R.rageRoquettes, lootablesNombre,
+                lootables.isEmpty() ? "tous les T6" : lootables.size() + " types");
+    }
+
+    /** Liste de noms (tableau de textes du fichier, sans doublon) ; absente ou illisible : {@code defaut}. */
+    private static List<String> listeNoms(JsonObject o, String cle, List<String> defaut) {
+        if (!o.has(cle) || !o.get(cle).isJsonArray()) return defaut;
+        List<String> l = new ArrayList<>();
+        for (JsonElement e : o.getAsJsonArray(cle)) {
+            if (!e.isJsonPrimitive()) continue;
+            String s = e.getAsString().trim();
+            if (!s.isEmpty() && !l.contains(s)) l.add(s);
+        }
+        return List.copyOf(l);
     }
 
     private static int entier(JsonObject o, String cle, int defaut, int min, int max) {
@@ -822,9 +1019,17 @@ final class Helico implements Evenement {
                 + " portee_tir blocs, les suit jusqu'a poursuite blocs. Patrouille de patrouille_min a patrouille_max minutes (au"
                 + " hasard) ; attaque, il ne part que reste_apres_attaque_s secondes apres le dernier coup recu, jamais apres"
                 + " vol_max_minutes. Sans coup recu depuis regen_apres_s secondes, il regagne regen_pct_par_s % de ses PV par seconde."
-                + " Points de saison : aucun a la destruction ; seulement la boite noire, revendue a Mila"
-                + " (events.points.objet_boite_noire_helico). Butin : coffre_t7 (HeraliZ Loot) pose des le crash, ferme tant que le"
-                + " feu de l'epave brule (feu_min_s a feu_max_s), puis ouvert pendant coffre_t7_minutes. Relu par /recharger evenements.");
+                + " Il tire sans prevenir (plus d'alerte) : rafales de coups_rafale coups de degats_coup, pause de pause_rafale_min_s a"
+                + " pause_rafale_max_s s ; salves de roquettes_salve roquettes (0 : aucune) toutes les roquettes_pause_min_s a"
+                + " roquettes_pause_max_s s, chacune visant sa cible (deplacement anticipe de roquettes_avance, 0 a 1) a"
+                + " roquettes_dispersion blocs pres, a roquettes_vitesse blocs par tick ; explosion : roquettes_degats au centre, moins"
+                + " jusqu'a roquettes_rayon blocs, fois la part visible du corps (murs et toits protegent), seulement ses agresseurs,"
+                + " aucun bloc casse. Rage : a 0 PV, coups par rafale x rage_coups, pauses entre rafales / rage_pauses, entre salves"
+                + " / rage_roquettes (entre les deux, selon les PV perdus). Points de saison : aucun a la destruction ; seulement la"
+                + " boite noire, revendue a Mila (events.points.objet_boite_noire_helico). Butin : coffre_t7 (HeraliZ Loot) et"
+                + " lootables_t6_nombre conteneurs T6 tires au hasard dans lootables_t6 (liste vide : tous les T6), poses des le crash,"
+                + " fermes tant que le feu de l'epave brule (feu_min_s a feu_max_s ; message au-dessus de la barre, sans bruit), puis"
+                + " ouverts pendant coffre_t7_minutes. Relu par /recharger evenements.");
         o.addProperty("joueurs_min", 10);
         o.addProperty("pause_minutes", 240);
         o.addProperty("fenetre_minutes", 120);
@@ -848,7 +1053,17 @@ final class Helico implements Evenement {
         o.addProperty("coups_rafale", 8);
         o.addProperty("pause_rafale_min_s", 3);
         o.addProperty("pause_rafale_max_s", 5);
-        o.addProperty("alerte_s", 1.2);
+        o.addProperty("roquettes_salve", 4);
+        o.addProperty("roquettes_pause_min_s", 12);
+        o.addProperty("roquettes_pause_max_s", 18);
+        o.addProperty("roquettes_degats", 8);
+        o.addProperty("roquettes_rayon", 4.5);
+        o.addProperty("roquettes_dispersion", 3);
+        o.addProperty("roquettes_vitesse", 2.0);
+        o.addProperty("roquettes_avance", 0.7);
+        o.addProperty("rage_coups", 2.0);
+        o.addProperty("rage_pauses", 3.0);
+        o.addProperty("rage_roquettes", 2.0);
         o.addProperty("oubli_agresseurs_s", 60);
         o.addProperty("feu_min_s", 120);
         o.addProperty("feu_max_s", 210);
@@ -861,6 +1076,10 @@ final class Helico implements Evenement {
         o.addProperty("crash_rayon", 6);
         o.addProperty("coffre_t7", "t7_coffre_armes");
         o.addProperty("coffre_t7_minutes", 15);
+        o.addProperty("lootables_t6_nombre", 2);
+        JsonArray t6 = new JsonArray();
+        for (String n : LOOTABLES_DEFAUT) t6.add(n);
+        o.add("lootables_t6", t6);
         return o;
     }
 }

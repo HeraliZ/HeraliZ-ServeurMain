@@ -150,6 +150,7 @@
  "entity.airstrike.helicopter_wreck": "Helicopter Wreck",
  "death.attack.airstrike.helico": "%1$s was cut down by a military helicopter's minigun",
  "death.attack.airstrike.helico_crash": "%1$s was crushed by a military helicopter",
+ "death.attack.airstrike.helico_roquette": "%1$s was blown up by a military helicopter's rocket",
  "subtitles.airstrike.helico_rotor": "Helicopter rotor",
  "subtitles.airstrike.helico_rotor_loin": "Distant helicopter",
  "subtitles.airstrike.helico_tir": "Minigun burst",

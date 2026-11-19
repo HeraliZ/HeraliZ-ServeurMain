@@ -7,6 +7,7 @@ import fr.heraliz.airstrike.entity.HelicopterWreck;
 import fr.heraliz.airstrike.item.DesignatorItem;
 import fr.heraliz.airstrike.network.HelicoCartePacket;
 import fr.heraliz.airstrike.network.HelicoPositionPacket;
+import fr.heraliz.airstrike.network.HelicoRoquettePacket;
 import fr.heraliz.airstrike.network.HelicoTirPacket;
 import fr.heraliz.airstrike.network.ImpactPacket;
 import fr.heraliz.airstrike.network.Network;
@@ -33,6 +34,8 @@ public final class PartieClient implements Partie {
             HelicoClient.position(p);
          } else if (paquet instanceof HelicoCartePacket p) {
             HelicoCarte.recevoir(p);
+         } else if (paquet instanceof HelicoRoquettePacket p) {
+            HelicoClient.roquette(p);   // roquettes de l'hélicoptère (19/11)
          }
       });
       // hélicoptère de l'événement (25/10) : sons, fumée, feu, traînée ; flammes de l'épave

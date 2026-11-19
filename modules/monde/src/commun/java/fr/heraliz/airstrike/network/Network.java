@@ -12,8 +12,11 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class Network {
-    /** 3 (25/10) : paquets de l'hélicoptère ; jars joueurs et serveur de la même fabrication. */
-    private static final String PROTOCOL = "3";
+    /**
+     * 3 (25/10) : paquets de l'hélicoptère ; 4 (19/11) : position de l'hélicoptère avec son cap et son assiette (modèle
+     * dessiné de loin), roquettes. Jars joueurs et serveur de la même fabrication.
+     */
+    private static final String PROTOCOL = "4";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(AirstrikeMod.MODID, "main"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 
@@ -53,6 +56,10 @@ public final class Network {
         CHANNEL.messageBuilder(HelicoCartePacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(HelicoCartePacket::encode).decoder(HelicoCartePacket::new)
                 .consumerMainThread(HelicoCartePacket::handle).add();
+        // roquettes de l'hélicoptère (19/11) : départ et fin de chaque roquette (l'explosion part en ImpactPacket)
+        CHANNEL.messageBuilder(HelicoRoquettePacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(HelicoRoquettePacket::encode).decoder(HelicoRoquettePacket::new)
+                .consumerMainThread(HelicoRoquettePacket::handle).add();
     }
 
     public static void sendImpact(ServerLevel level, ImpactPacket packet) {

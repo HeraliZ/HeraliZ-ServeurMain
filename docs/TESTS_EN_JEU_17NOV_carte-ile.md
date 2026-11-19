@@ -235,3 +235,32 @@ balles, tête, sniper, armure). Récolte : `serveur/config/heraliz_recolte/recol
       ramène au spawn avec son inventaire. Hors du spawn : « Pour regarder le ClashWar, viens au spawn. »
 - [ ] Arènes : murs invisibles tout autour (on ne tombe plus dans le vide). Les arènes déjà posées sont reposées toutes
       seules au premier match (leur empreinte change).
+
+## 13. Hélicoptère (19/11)
+
+Pour les essais : `/event helico lancer ici` (staff, hélicoptère à 48 blocs devant soi). Pour le toucher et qu'il attaque,
+il faut être en **survie** (en créatif, il ne riposte pas). Réglages : `serveur/config/heraliz_evenements/helico.json`
+(relus par `/recharger evenements`). **Rien de tout cela n'a été testé en jeu.**
+- [ ] **De loin** : en s'éloignant (ou en le laissant s'éloigner), on le voit toujours à 100, 200, 300 blocs (petit dans le
+      ciel, pales qui tournent), sans à-coups. Il ne disparaît plus vers 60-70 blocs. Quand il se rapproche, pas de saut
+      ni de double hélicoptère au moment où il redevient « normal » (vers 64 blocs).
+- [ ] De loin aussi : on le voit tourner dans ses virages, et tomber quand quelqu'un l'abat ; le bruit du rotor baisse
+      avec la distance.
+- [ ] De loin, les FPS restent les mêmes qu'avant (comparer avec et sans hélicoptère en vue).
+- [ ] **Plus d'alerte** : aucun bip avant qu'il tire. La rafale part d'un coup, avec seulement le bruit du minigun.
+- [ ] **Roquettes** : quand on lui tire dessus, il envoie de temps en temps 4 roquettes (fumée, flamme, « whoosh ») qui
+      explosent au sol près de soi. À découvert, ça fait très mal (bien plus qu'une rafale) ; caché dans un bâtiment ou
+      derrière un mur épais, presque rien. Aucun bloc cassé.
+- [ ] Les roquettes ne blessent que ceux qui lui ont tiré dessus : un ami à côté qui n'a pas tiré ne prend rien.
+- [ ] **Rage** : plus il est abîmé (fumée, puis feu), plus ses rafales sont longues et rapprochées, et plus les roquettes
+      reviennent vite. Presque mort : environ deux fois plus de coups par rafale, et presque plus de pause.
+- [ ] **Butin** : à l'épave, en plus du coffre T7, **deux conteneurs T6** (deux modèles différents, posés au sol, pas dans
+      l'épave ni collés à elle). Pendant le feu, ils ne s'ouvrent pas.
+- [ ] En essayant d'ouvrir pendant le feu (coffre T7 ou T6) : **aucun bruit de loquet**, seulement un petit message
+      au-dessus de la barre d'objets : « Caisse en feu · s'ouvre dans 1 min 20 s » (le temps baisse).
+- [ ] Après le feu : les deux T6 s'ouvrent (écran de fouille normal, loot T6, étoiles blanches tant qu'il reste quelque
+      chose) ; ils disparaissent en même temps que le coffre T7 (environ 15 min après le feu), ou 30 s après avoir été
+      vidés.
+- [ ] Annuler pendant le feu (`/event annuler helico`) : coffre et T6 encore fermés disparaissent.
+- [ ] Les deux T6 ne rejoignent pas la rotation du loot : après leur départ, aucun conteneur « fantôme » ne réapparaît au
+      même endroit.

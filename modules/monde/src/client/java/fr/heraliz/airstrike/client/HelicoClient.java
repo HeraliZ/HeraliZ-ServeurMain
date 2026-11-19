@@ -1,44 +1,64 @@
 package fr.heraliz.airstrike.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import fr.heraliz.airstrike.client.fx.Flares;
 import fr.heraliz.airstrike.client.fx.FxQuality;
 import fr.heraliz.airstrike.client.model.GeoModel;
+import fr.heraliz.airstrike.client.model.GeoPart;
 import fr.heraliz.airstrike.client.model.ModModels;
+import fr.heraliz.airstrike.client.render.HelicopterRenderer;
 import fr.heraliz.airstrike.client.render.ModRenderTypes;
 import fr.heraliz.airstrike.client.sound.HelicoSound;
 import fr.heraliz.airstrike.entity.Helicopter;
 import fr.heraliz.airstrike.entity.HelicopterWreck;
 import fr.heraliz.airstrike.network.HelicoPositionPacket;
+import fr.heraliz.airstrike.network.HelicoRoquettePacket;
 import fr.heraliz.airstrike.network.HelicoTirPacket;
 import fr.heraliz.airstrike.particle.SmokeParticleOptions;
 import fr.heraliz.airstrike.registry.ModParticles;
 import fr.heraliz.airstrike.registry.ModSounds;
+import fr.heraliz.airstrike.strike.FlightPath;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * L'hélicoptère chez le joueur, hors du modèle lui-même ({@code HelicopterRenderer}) : les sons en boucle (rotor proche,
  * rotor lointain, alarme), la fumée et le feu des moteurs selon la santé, la traînée de la chute, les traçantes et
- * étincelles du minigun, les flammes et la fumée de l'épave. Un hélicoptère est suivi par son entité quand le serveur
- * l'envoie (jusqu'à la distance de vue), sinon par la position reçue chaque seconde ({@link HelicoPositionPacket}),
- * prolongée entre deux paquets : on l'entend avant de le voir. Sans hélicoptère, {@link #tick()} sort tout de suite.
+ * étincelles du minigun, les roquettes (19/11), les flammes et la fumée de l'épave. Un hélicoptère est suivi par son entité
+ * quand le serveur l'envoie (64 blocs, spigot.yml), sinon par la position reçue 4 fois par seconde
+ * ({@link HelicoPositionPacket}), prolongée et lissée entre deux paquets : on l'entend avant de le voir.
+ * <p>19/11 (demande du propriétaire : « à 60-70 blocs je ne le vois plus, il faudrait le voir à 200-300 ») : sans son entité,
+ * le modèle est dessiné à cette position jusqu'à {@link #LOIN_MAX} blocs ({@link #rendreLointains}), sans le brouillard de la
+ * distance de vue (sauf brouillard de la météo) ; dès que le serveur envoie l'entité, c'est elle qu'on voit, au même endroit
+ * (même position, même cap) : pas de saut. Le dessin lointain n'alloue rien de plus que celui de l'entité (listes
+ * parcourues par leur rang, rotations et points réutilisés). Sans hélicoptère ni roquette, {@link #tick()} et
+ * {@link #rendre} sortent tout de suite.</p>
  */
 public final class HelicoClient {
     private HelicoClient() {
@@ -47,12 +67,27 @@ public final class HelicoClient {
     /** Un hélicoptère connu de ce jeu. */
     public static final class Suivi {
         final int id;
+        /** Position affichée (son, modèle lointain) ; celle du tick d'avant (lissage à l'image). */
         public double x, y, z;
+        double xo, yo, zo;
+        /** Vitesse (blocs par tick). */
         double vx, vy, vz;
+        /** Position du serveur prolongée depuis le dernier paquet : la position affichée la rejoint en douceur. */
+        double sx, sy, sz;
+        /** Cap, tangage et roulis affichés (degrés), au tick d'avant, et visés (dernier paquet, cap prolongé). */
+        float lacet, lacetO, lacetS, vLacet, tangage, tangageO, tangageS, roulis, roulisO, roulisS;
+        /** Cap du dernier paquet et ticks depuis (vitesse de virage). */
+        float lacetPaquet;
+        int depuisPaquet;
+        /** Angles des pales et du rotor de queue (radians), et au tick d'avant. */
+        float pales, palesO, queue, queueO;
         public float rotor = 1f, chute, sante = 1f;
         byte phase;
         int sansNouvelles;
-        boolean vuEntite;
+        /** A une position (entité ou paquet) : le modèle lointain peut être dessiné. */
+        boolean place;
+        /** Vu par son entité ce tick ; dernières nouvelles venues de l'entité (pas d'un paquet). */
+        boolean vuEntite, parEntite;
         boolean fini;
         /** Tick client du dernier coup de chaque minigun. */
         long tirG = -1000, tirD = -1000;
@@ -93,11 +128,52 @@ public final class HelicoClient {
         }
     }
 
+    /** Une roquette en vol (19/11) : position, au tick d'avant, vitesse (blocs par tick), direction et cap du modèle. */
+    private static final class Roquette {
+        final int id;
+        double x, y, z, xo, yo, zo;
+        final double vx, vy, vz, ux, uy, uz;
+        final float lacet, tangage;
+        int age;
+
+        Roquette(HelicoRoquettePacket p) {
+            id = p.id;
+            x = xo = p.x;
+            y = yo = p.y;
+            z = zo = p.z;
+            vx = p.vx;
+            vy = p.vy;
+            vz = p.vz;
+            double v = Math.max(1e-6, Math.sqrt(vx * vx + vy * vy + vz * vz));
+            ux = vx / v;
+            uy = vy / v;
+            uz = vz / v;
+            lacet = (float) FlightPath.yawOf(vx, vz);
+            tangage = (float) Math.toDegrees(Math.atan2(-vy, Math.max(1e-4, Math.sqrt(vx * vx + vz * vz))));
+        }
+    }
+
     private static final Int2ObjectOpenHashMap<Suivi> SUIVIS = new Int2ObjectOpenHashMap<>();
+    /** Les mêmes, dans une liste : parcourus sans rien allouer (rendu à chaque image). */
+    private static final List<Suivi> LISTE = new ArrayList<>();
     private static final List<Tracante> TRACANTES = new ArrayList<>();
+    private static final List<Roquette> ROQUETTES = new ArrayList<>();
     private static final RandomSource R = RandomSource.create();
     /** Fumée et flammes au-delà de cette distance : rien (le modèle est déjà petit). */
     private static final double PARTICULES_MAX = 200;
+    /** Modèle sans entité jusqu'à cette distance (blocs) : celle des paquets de position ({@code HelicopterServeur.PORTEE_SON}). */
+    private static final double LOIN_MAX = 320;
+    /** Part de l'écart rattrapée chaque tick entre la position affichée et celle du serveur prolongée. */
+    private static final float RAPPEL = 0.25f;
+    /** Lumière du modèle lointain et des roquettes : ciel plein (assombri la nuit), comme les avions des frappes. */
+    private static final int LUMIERE_CIEL = LightTexture.pack(0, 15);
+    private static final ResourceLocation TEX_MUNITIONS = ModModels.texture("ordnance"), TEX_FLAMME = ModModels.texture("designator_display");
+    /** Roquette : le missile du modèle des munitions (1,9 bloc) à cette taille ; hauteur de son corps dans le modèle (blocs). */
+    private static final float ROQUETTE_ECHELLE = 0.6f, ROQUETTE_AXE = 6.3f / 16f;
+    /** Vie d'une roquette chez le joueur s'il n'apprend pas sa fin (ticks ; 100 au serveur). */
+    private static final int ROQUETTE_VIE = 110;
+    private static final Quaternionf ROT = new Quaternionf();
+    private static final Vector3f CENTRE = new Vector3f();
     private static long ticks;
 
     // ------------------------------------------------------------------ suivi
@@ -106,6 +182,7 @@ public final class HelicoClient {
         if (s == null) {
             s = new Suivi(id);
             SUIVIS.put(id, s);
+            LISTE.add(s);
         }
         return s;
     }
@@ -121,72 +198,145 @@ public final class HelicoClient {
         mc.getSoundManager().play(s.alarme);
     }
 
-    /** Chaque tick, pour chaque hélicoptère que le serveur envoie (Helicopter.TICK_CLIENT). */
+    /**
+     * Chaque tick, pour chaque hélicoptère que le serveur envoie (Helicopter.TICK_CLIENT) : tout est repris de l'entité
+     * (position, cap, assiette, pales), pour que le modèle lointain reparte d'ici sans saut si l'entité s'en va.
+     */
     public static void entite(Helicopter h) {
         Suivi s = suivi(h.getId());
-        s.x = h.getX();
-        s.y = h.getY();
-        s.z = h.getZ();
+        s.xo = h.xo;
+        s.yo = h.yo;
+        s.zo = h.zo;
+        s.x = s.sx = h.getX();
+        s.y = s.sy = h.getY();
+        s.z = s.sz = h.getZ();
         s.vx = h.getX() - h.xo;
         s.vy = h.getY() - h.yo;
         s.vz = h.getZ() - h.zo;
+        s.lacetO = h.yRotO;
+        s.lacet = s.lacetS = s.lacetPaquet = h.getYRot();
+        s.vLacet = Mth.wrapDegrees(h.getYRot() - h.yRotO);
+        s.depuisPaquet = 0;
+        s.tangageO = h.tangage(0f);
+        s.tangage = s.tangageS = h.tangage(1f);
+        s.roulisO = h.roulis(0f);
+        s.roulis = s.roulisS = h.roulis(1f);
+        s.palesO = h.pales(0f);
+        s.pales = h.pales(1f);
+        s.queueO = h.rotorQueue(0f);
+        s.queue = h.rotorQueue(1f);
         s.rotor = h.rotor();
         s.sante = h.sante();
         s.phase = h.phase();
         float c = h.chute(0f);
         s.chute = Math.max(0f, c);
+        s.place = true;
         s.vuEntite = true;
+        s.parEntite = true;
         s.sansNouvelles = 0;
         sons(s);
         particules(h, s);
     }
 
-    /** Position reçue chaque seconde : seulement pour un hélicoptère que le serveur n'envoie pas (trop loin). */
+    /**
+     * Position reçue (4 fois par seconde) : seulement pour un hélicoptère que le serveur n'envoie pas (trop loin). La
+     * première fois, il apparaît là ; ensuite, la position du serveur est prolongée à sa vitesse et la position affichée la
+     * rejoint en douceur ({@link #avancer}) ; le cap tourne à la vitesse des deux derniers paquets.
+     */
     public static void position(HelicoPositionPacket p) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null || level.getEntity(p.entite) instanceof Helicopter) return;
-        // de loin, le rotor se tait dès la chute (de près, l'entité joue la chute et son rotor qui ralentit)
-        if (p.phase == Helicopter.CHUTE) {
-            retire(p.entite);
-            return;
-        }
         Suivi s = suivi(p.entite);
-        s.x = p.x;
-        s.y = p.y;
-        s.z = p.z;
+        if (!s.place) {
+            s.x = s.xo = s.sx = p.x;
+            s.y = s.yo = s.sy = p.y;
+            s.z = s.zo = s.sz = p.z;
+            s.lacet = s.lacetO = s.lacetS = p.lacet;
+            s.vLacet = 0f;
+            s.tangage = s.tangageO = p.tangage;
+            s.roulis = s.roulisO = p.roulis;
+            s.place = true;
+        } else {
+            s.vLacet = Mth.clamp(Mth.wrapDegrees(p.lacet - s.lacetPaquet) / Math.max(1, s.depuisPaquet), -8f, 8f);
+            s.sx = p.x;
+            s.sy = p.y;
+            s.sz = p.z;
+            s.lacetS = p.lacet;
+        }
+        s.lacetPaquet = p.lacet;
+        s.depuisPaquet = 0;
         s.vx = p.vx;
         s.vy = p.vy;
         s.vz = p.vz;
+        s.tangageS = p.tangage;
+        s.roulisS = p.roulis;
         s.rotor = p.rotor;
+        s.sante = p.sante;
         s.phase = p.phase;
+        // en chute, vue de loin : avancement d'après le rotor, qui ralentit de 1 à 0,45 pendant la chute (son plus grave) ;
+        // le modèle tombe jusqu'au sol, puis la marque « retiré » de l'impact l'efface (HelicoCarte)
+        s.chute = p.phase == Helicopter.CHUTE ? Mth.clamp((1f - p.rotor) / 0.55f, 0f, 1f) : 0f;
+        s.parEntite = false;
         s.sansNouvelles = 0;
         sons(s);
     }
 
-    /** Fin de tick client : prolonge les hélicoptères lointains, oublie ceux dont on n'a plus de nouvelles, vieillit les traçantes. */
+    /**
+     * Fin de tick client : prolonge les hélicoptères sans entité, oublie ceux dont on n'a plus de nouvelles, vieillit les
+     * traçantes, fait voler les roquettes.
+     */
     public static void tick() {
-        if (SUIVIS.isEmpty() && TRACANTES.isEmpty()) return;
+        if (LISTE.isEmpty() && TRACANTES.isEmpty() && ROQUETTES.isEmpty()) return;
         ticks++;
-        if (!SUIVIS.isEmpty()) {
-            Iterator<Suivi> it = SUIVIS.values().iterator();
-            while (it.hasNext()) {
-                Suivi s = it.next();
-                if (s.vuEntite) {
-                    s.vuEntite = false;
-                    continue;
-                }
-                // écrasé (fin de la chute) : le rotor se tait tout de suite
-                if (s.phase == Helicopter.CHUTE && s.chute > 0.9f || ++s.sansNouvelles > 50) {
-                    s.fini = true;
-                    it.remove();
-                    continue;
-                }
-                s.x += s.vx;
-                s.y += s.vy;
-                s.z += s.vz;
+        for (int i = LISTE.size() - 1; i >= 0; i--) {
+            Suivi s = LISTE.get(i);
+            if (s.vuEntite) {
+                s.vuEntite = false;
+                continue;
             }
+            // écrasé (fin de la chute vue de près) : le rotor se tait tout de suite ; plus de nouvelles : oublié
+            if (s.phase == Helicopter.CHUTE && s.chute > 0.9f && s.parEntite || ++s.sansNouvelles > 50) {
+                s.fini = true;
+                LISTE.remove(i);
+                SUIVIS.remove(s.id);
+                continue;
+            }
+            avancer(s);
         }
         if (!TRACANTES.isEmpty()) TRACANTES.removeIf(t -> ++t.age > t.vie + 1);
+        if (!ROQUETTES.isEmpty()) roquettes();
+    }
+
+    /** Un tick sans entité : position et cap prolongés, rappelés vers ceux du serveur ; assiette lissée ; pales. */
+    private static void avancer(Suivi s) {
+        s.xo = s.x;
+        s.yo = s.y;
+        s.zo = s.z;
+        s.lacetO = s.lacet;
+        s.tangageO = s.tangage;
+        s.roulisO = s.roulis;
+        s.sx += s.vx;
+        s.sy += s.vy;
+        s.sz += s.vz;
+        s.x += s.vx;
+        s.y += s.vy;
+        s.z += s.vz;
+        s.x += (s.sx - s.x) * RAPPEL;
+        s.y += (s.sy - s.y) * RAPPEL;
+        s.z += (s.sz - s.z) * RAPPEL;
+        s.lacetS += s.vLacet;
+        s.lacet = Mth.wrapDegrees(s.lacet + s.vLacet + Mth.wrapDegrees(s.lacetS - s.lacet) * RAPPEL);
+        s.tangage += (s.tangageS - s.tangage) * 0.2f;
+        s.roulis += (s.roulisS - s.roulis) * 0.2f;
+        s.depuisPaquet++;
+        // pales : comme l'entité (Helicopter.tickClient)
+        float v = s.rotor * Helicopter.VITESSE_PALES;
+        s.palesO = s.pales;
+        s.queueO = s.queue;
+        s.pales = (s.pales + v) % (Mth.TWO_PI * 64);
+        s.queue = (s.queue + v * 1.7f) % (Mth.TWO_PI * 64);
+        if (s.palesO > s.pales) s.palesO -= Mth.TWO_PI * 64;
+        if (s.queueO > s.queue) s.queueO -= Mth.TWO_PI * 64;
     }
 
     /** Ticks depuis le dernier coup de ce minigun (grand s'il n'a pas tiré). */
@@ -195,16 +345,21 @@ public final class HelicoClient {
         return s == null ? 1000 : ticks - (droite ? s.tirD : s.tirG);
     }
 
-    /** Hélicoptère retiré (carte M) ou en chute vu de loin : ses sons s'arrêtent tout de suite. */
+    /** Hélicoptère retiré (carte M : impact, départ, annulation) : ses sons et son modèle lointain s'arrêtent tout de suite. */
     public static void retire(int id) {
         Suivi s = SUIVIS.remove(id);
-        if (s != null) s.fini = true;
+        if (s != null) {
+            s.fini = true;
+            LISTE.remove(s);
+        }
     }
 
     public static void vider() {
-        for (Suivi s : SUIVIS.values()) s.fini = true;
+        for (Suivi s : LISTE) s.fini = true;
         SUIVIS.clear();
+        LISTE.clear();
         TRACANTES.clear();
+        ROQUETTES.clear();
     }
 
     // ------------------------------------------------------------------ tirs
@@ -236,17 +391,79 @@ public final class HelicoClient {
         }
     }
 
-    /** Traçantes : une tête lumineuse et sa traînée qui filent du canon jusqu'à l'impact (RenderLevelStageEvent). */
-    public static void rendre(RenderLevelStageEvent e) {
-        if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || TRACANTES.isEmpty()) return;
+    // ------------------------------------------------------------------ roquettes (19/11)
+    /** Départ d'une roquette (elle vole en ligne droite chez le joueur) ou sa fin (le jeu cesse de la dessiner). */
+    public static void roquette(HelicoRoquettePacket p) {
+        if (p.type == HelicoRoquettePacket.LANCEE) {
+            if (ROQUETTES.size() < 48) ROQUETTES.add(new Roquette(p));
+            return;
+        }
+        for (int i = 0; i < ROQUETTES.size(); i++) {
+            if (ROQUETTES.get(i).id == p.id) {
+                ROQUETTES.remove(i);
+                return;
+            }
+        }
+    }
+
+    /** Chaque tick : les roquettes avancent (arrêtées au premier bloc, l'explosion vient du serveur), traînée de fumée. */
+    private static void roquettes() {
         Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || mc.player == null) {
+            ROQUETTES.clear();
+            return;
+        }
+        Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+        for (int i = ROQUETTES.size() - 1; i >= 0; i--) {
+            Roquette r = ROQUETTES.get(i);
+            r.xo = r.x;
+            r.yo = r.y;
+            r.zo = r.z;
+            Vec3 de = new Vec3(r.x, r.y, r.z), vers = new Vec3(r.x + r.vx, r.y + r.vy, r.z + r.vz);
+            if (++r.age > ROQUETTE_VIE || level.clip(new ClipContext(de, vers, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, mc.player))
+                    .getType() != HitResult.Type.MISS) {
+                ROQUETTES.remove(i);
+                continue;
+            }
+            r.x = vers.x;
+            r.y = vers.y;
+            r.z = vers.z;
+            double d = Math.sqrt(cam.distanceToSqr(r.x, r.y, r.z));
+            if (d > 160) continue;
+            float q = FxQuality.at(d);
+            // traînée de fumée claire, en deux bouffées par tick (une roquette fait 2 blocs par tick)
+            for (int k = 0, n = FxQuality.count(2, q, 1); k < n; k++) {
+                double f = (k + R.nextFloat()) / n;
+                level.addParticle(SmokeParticleOptions.of(0xBDB8B0, (0.7f + R.nextFloat() * 0.5f) * FxQuality.grow(q), 30 + R.nextInt(25), 0.01f, 0.7f),
+                        r.x - r.vx * f, r.y - r.vy * f, r.z - r.vz * f, R.nextGaussian() * 0.01, 0.01, R.nextGaussian() * 0.01);
+            }
+            if (d < 64 && R.nextFloat() < q) level.addParticle(ParticleTypes.FLAME, r.x - r.ux * 0.6, r.y - r.uy * 0.6, r.z - r.uz * 0.6, 0, 0, 0);
+        }
+    }
+
+    // ------------------------------------------------------------------ rendu
+    /**
+     * Après les entités (RenderLevelStageEvent) : hélicoptères lointains, roquettes (missile, flamme), traçantes et
+     * traînées lumineuses. Rien sans hélicoptère, roquette ni traçante.
+     */
+    public static void rendre(RenderLevelStageEvent e) {
+        if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
+        if (LISTE.isEmpty() && TRACANTES.isEmpty() && ROQUETTES.isEmpty()) return;
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null) return;
         Vec3 cam = e.getCamera().getPosition();
         PoseStack ps = e.getPoseStack();
         float pt = e.getPartialTick();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        if (!LISTE.isEmpty()) rendreLointains(e.getCamera(), mc, level, cam, ps, pt, buffers);
+        if (!ROQUETTES.isEmpty()) rendreRoquettes(e.getCamera(), cam, ps, pt, buffers);
+        if (TRACANTES.isEmpty() && ROQUETTES.isEmpty()) return;
         VertexConsumer vc = buffers.getBuffer(ModRenderTypes.GLOW);
         Matrix4f mat = ps.last().pose();
-        for (Tracante t : TRACANTES) {
+        for (int i = 0; i < TRACANTES.size(); i++) {
+            Tracante t = TRACANTES.get(i);
             float p = (t.age + pt) / t.vie;
             if (p > 1f) continue;
             double tete = p * t.longueur, queue = Math.max(0, tete - 7);
@@ -255,7 +472,100 @@ public final class HelicoClient {
             ruban(vc, mat, qx, qy, qz, hx, hy, hz, 0.06f, 1f, 0.86f, 0.5f, 0.95f);
             ruban(vc, mat, qx, qy, qz, hx, hy, hz, 0.2f, 1f, 0.5f, 0.12f, 0.35f);
         }
+        // roquettes : flamme qui file derrière elles
+        for (int i = 0; i < ROQUETTES.size(); i++) {
+            Roquette r = ROQUETTES.get(i);
+            double bx = Mth.lerp(pt, r.xo, r.x) - r.ux * 0.6 - cam.x, by = Mth.lerp(pt, r.yo, r.y) - r.uy * 0.6 - cam.y,
+                    bz = Mth.lerp(pt, r.zo, r.z) - r.uz * 0.6 - cam.z;
+            ruban(vc, mat, bx - r.ux * 3.5, by - r.uy * 3.5, bz - r.uz * 3.5, bx, by, bz, 0.16f, 1f, 0.62f, 0.2f, 0.85f);
+        }
         buffers.endBatch(ModRenderTypes.GLOW);
+    }
+
+    /**
+     * Hélicoptères sans entité chez ce joueur (au-delà de 64 blocs) : leur modèle à la position lissée, jusqu'à
+     * {@link #LOIN_MAX} blocs. Le brouillard de la distance de vue (6 tronçons sur le serveur, ~96 blocs) l'effacerait :
+     * pendant son dessin, le brouillard commence au-delà de {@link #LOIN_MAX} (réduit d'autant si la météo en met un plus
+     * proche), puis il est remis tel quel. Au-delà de la portée de la caméra, il est dessiné plus près et plus petit, dans
+     * la même direction (même taille à l'écran). Derrière la caméra : rien.
+     */
+    private static void rendreLointains(Camera camera, Minecraft mc, ClientLevel level, Vec3 cam, PoseStack ps, float pt,
+                                        MultiBufferSource.BufferSource buffers) {
+        GeoModel m = null;
+        float debut = 0f, fin = 0f;
+        Vector3f regard = camera.getLookVector();
+        float vue = mc.options.getEffectiveRenderDistance() * 16f;
+        // plan lointain de la caméra de Minecraft : 4 fois la distance de vue
+        double limite = Math.max(48.0, vue * 4.0 * 0.8);
+        for (int i = 0; i < LISTE.size(); i++) {
+            Suivi s = LISTE.get(i);
+            // l'entité est là : c'est elle qu'on voit ; chute vue de près : l'entité vient de s'écraser, rien de plus
+            if (s.fini || !s.place || level.getEntity(s.id) instanceof Helicopter || s.parEntite && s.phase == Helicopter.CHUTE) continue;
+            double x = Mth.lerp(pt, s.xo, s.x) - cam.x, y = Mth.lerp(pt, s.yo, s.y) - cam.y, z = Mth.lerp(pt, s.zo, s.z) - cam.z;
+            double d2 = x * x + y * y + z * z;
+            if (d2 > LOIN_MAX * LOIN_MAX || d2 < 1) continue;
+            double d = Math.sqrt(d2);
+            if (x * regard.x() + y * regard.y() + z * regard.z() < -0.35 * d - 12) continue;
+            if (m == null) {
+                m = ModModels.helicopter();
+                if (m.topLevel.isEmpty()) return;
+                buffers.endLastBatch();   // ce qui attend encore garde le brouillard normal
+                debut = RenderSystem.getShaderFogStart();
+                fin = RenderSystem.getShaderFogEnd();
+                float k = vue > 1f ? Mth.clamp(fin / vue, 0.15f, 1f) : 1f;   // < 1 : brouillard de la météo, plus proche
+                RenderSystem.setShaderFogStart((float) LOIN_MAX * 1.1f * k);
+                RenderSystem.setShaderFogEnd((float) LOIN_MAX * 1.6f * k);
+            }
+            float echelle = 1f;
+            if (d > limite) {
+                echelle = (float) (limite / d);
+                x *= echelle;
+                y *= echelle;
+                z *= echelle;
+            }
+            ps.pushPose();
+            ps.translate(x, y, z);
+            if (echelle != 1f) ps.scale(echelle, echelle, echelle);
+            HelicopterRenderer.dessiner(m, ps, buffers, LUMIERE_CIEL, Mth.rotLerp(pt, s.lacetO, s.lacet), Mth.lerp(pt, s.tangageO, s.tangage),
+                    Mth.lerp(pt, s.roulisO, s.roulis), Mth.lerp(pt, s.palesO, s.pales), Mth.lerp(pt, s.queueO, s.queue), s.rotor, ticks,
+                    ticks - s.tirG, ticks - s.tirD, ticks + pt);
+            ps.popPose();
+        }
+        if (m != null) {
+            HelicopterRenderer.finir(buffers);
+            RenderSystem.setShaderFogStart(debut);
+            RenderSystem.setShaderFogEnd(fin);
+        }
+    }
+
+    /** Roquettes : le missile du modèle des munitions (sans son rail), tourné dans le sens du vol, et l'éclat du moteur. */
+    private static void rendreRoquettes(Camera camera, Vec3 cam, PoseStack ps, float pt, MultiBufferSource.BufferSource buffers) {
+        GeoPart missile = ModModels.ordnance().topLevel.get("missile");
+        if (missile != null) {
+            VertexConsumer vc = buffers.getBuffer(RenderType.entityCutout(TEX_MUNITIONS));
+            for (int i = 0; i < ROQUETTES.size(); i++) {
+                Roquette r = ROQUETTES.get(i);
+                ps.pushPose();
+                ps.translate(Mth.lerp(pt, r.xo, r.x) - cam.x, Mth.lerp(pt, r.yo, r.y) - cam.y, Mth.lerp(pt, r.zo, r.z) - cam.z);
+                ps.mulPose(ROT.rotationY((float) Math.toRadians(180f - r.lacet)));
+                ps.mulPose(ROT.rotationX((float) Math.toRadians(-r.tangage)));
+                ps.scale(-ROQUETTE_ECHELLE, -ROQUETTE_ECHELLE, ROQUETTE_ECHELLE);
+                ps.translate(0f, -ROQUETTE_AXE, 0f);
+                missile.renderChildren(ps, vc, LUMIERE_CIEL, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+                ps.popPose();
+            }
+            buffers.endBatch(RenderType.entityCutout(TEX_MUNITIONS));
+        }
+        VertexConsumer flamme = buffers.getBuffer(RenderType.eyes(TEX_FLAMME));
+        Matrix4f mat = ps.last().pose();
+        for (int i = 0; i < ROQUETTES.size(); i++) {
+            Roquette r = ROQUETTES.get(i);
+            CENTRE.set((float) (Mth.lerp(pt, r.xo, r.x) - r.ux * 0.6 - cam.x), (float) (Mth.lerp(pt, r.yo, r.y) - r.uy * 0.6 - cam.y),
+                    (float) (Mth.lerp(pt, r.zo, r.z) - r.uz * 0.6 - cam.z));
+            float k = 0.75f + 0.25f * Mth.abs(Mth.sin((ticks + pt) * 5.1f + r.id));
+            Flares.billboard(flamme, mat, ps.last().normal(), CENTRE, camera.getLeftVector(), camera.getUpVector(), 1.7f * k, k, 0.62f * k, 0.22f * k);
+        }
+        buffers.endBatch(RenderType.eyes(TEX_FLAMME));
     }
 
     /** Quad face à la caméra entre deux points (relatifs à la caméra) : transparent en a, opaque en b. */

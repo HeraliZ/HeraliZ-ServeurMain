@@ -33,7 +33,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TINNITUS = variable("tinnitus");
     public static final RegistryObject<SoundEvent> FLARES = far("flares", 200f);
     // hélicoptère de l'événement (25/10) : les deux rotors et l'alarme sont joués par le jeu du joueur (volume calculé
-    // selon la distance) ; le minigun et l'impact par le serveur, jusqu'à leur portée ; l'alerte seulement chez la cible
+    // selon la distance) ; le minigun et l'impact par le serveur, jusqu'à leur portée. L'alerte de verrouillage n'est plus
+    // jouée depuis le 19/11 (demande du propriétaire : le joueur n'est plus prévenu) ; gardée enregistrée
     public static final RegistryObject<SoundEvent> HELICO_ROTOR = variable("helico_rotor");
     public static final RegistryObject<SoundEvent> HELICO_ROTOR_LOIN = variable("helico_rotor_loin");
     public static final RegistryObject<SoundEvent> HELICO_TIR = far("helico_tir", 220f);

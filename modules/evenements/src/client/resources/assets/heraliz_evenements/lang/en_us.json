@@ -18,7 +18,7 @@
   "heraliz_evenements.helico.crash": "A helicopter crashed in sector %s.",
   "heraliz_evenements.helico.explose": "A helicopter exploded in mid-air in sector %s.",
   "heraliz_evenements.helico.depart": "The helicopter is leaving.",
-  "heraliz_evenements.helico.coffre_brulant": "Crate still engulfed in flames: it will open once the fire is out (%s left).",
+  "heraliz_evenements.helico.caisse_en_feu": "Crate on fire · opens in %s",
   "heraliz_evenements.duree.min_s": "%s min %s s",
   "heraliz_evenements.duree.s": "%s s",
   "heraliz_evenements.agenda.en_cours": "In progress: %s",

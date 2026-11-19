@@ -284,7 +284,7 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   optimisés ; appel par le Directeur.
 - **Complexité** : faible (après le travail sur les boss). **Priorité** : après le retour des boss.
 
-### 4.4 Hélicoptère abattu — **codé le 25/10** (rien testé en jeu)
+### 4.4 Hélicoptère abattu — **codé le 25/10, revu le 19/11** (rien testé en jeu)
 - Fiche d'origine : `docs/GAME_DESIGN_25OCT.md` §5 ; **règles du propriétaire du 25/10, qui l'emportent** : il n'attaque
   **que** les joueurs qui lui ont fait des dégâts (oubliés après 60 s sans nouveau tir) ; apparition **imprévisible** ; il
   s'écrase **là où il est abattu**, jamais dans l'eau, toujours à un endroit accessible.
@@ -304,12 +304,26 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   s'écraser. **Patrouille de 5 à 10 min** (au hasard) ; attaqué, il ne repart que 60 s après le dernier coup reçu, et
   jamais après **25 min de vol** ; il sort par le bord le plus proche (56 blocs à l'intérieur ; aucune récompense).
   Tronçon tenu chargé par un ticket qui le suit ; jamais sauvegardé (redémarrage : plus là, rien donné).
+- **Vu de loin** (19/11, demande du propriétaire : « à 60-70 blocs je ne le vois plus, il faudrait 200-300 blocs ») : le
+  serveur n'envoie l'entité qu'à 64 blocs (spigot.yml `entity-tracking-range.other`) et la distance de vue est de 6
+  tronçons (~96 blocs) ; ces réglages ne bougent pas (perfs). À la place, le serveur envoie sa position, son cap, son
+  assiette, le régime du rotor et sa santé **4 fois par seconde** (`HelicoPositionPacket`, avant une fois) aux joueurs à
+  moins de 320 blocs ; les autres n'ont que la marque de la carte M (toutes les 2 s). Chez le joueur, sans l'entité, le
+  même modèle est dessiné à cette position jusqu'à **320 blocs** (`HelicoClient.rendreLointains`) : trajectoire prolongée
+  et lissée entre deux paquets, pales qui tournent, éclairs des miniguns ; le brouillard de la distance de vue ne l'efface
+  pas (celui de la météo, oui) ; trop loin pour la caméra, il est dessiné plus près et plus petit dans la même direction
+  (même taille à l'écran). Dès que l'entité arrive (64 blocs), c'est elle qu'on voit, au même endroit et dans le même cap ;
+  quand elle repart, le modèle lointain reprend d'où elle était. On le voit aussi tomber de loin. Le bruit du rotor au
+  loin suit la même position (il baisse avec la distance, jusqu'à ~260 blocs). Le dessin ne coûte pas plus que celui de
+  l'entité (rien de plus alloué à l'image). Un hélicoptère vu de loin ne peut pas être touché (ses morceaux n'existent que
+  là où l'entité est envoyée).
 - **Carte M** : tous les joueurs de la carte voient l'hélicoptère en direct (pictogramme vu de dessus, tourné dans son
   sens de vol, rouge orangé, halo qui pulse) et l'épave tant qu'elle est là (pictogramme ambre), au-dessus des
   extractions ; infobulles « Hélicoptère militaire · abats-le pour récupérer sa boîte noire » et « Épave d'hélicoptère ·
   coffre fermé tant que le feu brûle, boîte noire dedans » (11/11). Le serveur envoie les positions toutes les 2 s
-  (`HelicoCartePacket`, canal `airstrike:main` version 3), « retiré » à la fin ; chez le joueur, une marque non
-  rafraîchie s'efface (6 s l'hélicoptère, 12 s l'épave), tout est vidé à la déconnexion. Pictogrammes `helico` et
+  (`HelicoCartePacket`, canal `airstrike:main` version 4 depuis le 19/11 : jars joueurs et serveur de la même
+  fabrication), « retiré » à la fin ; chez le joueur, une marque non rafraîchie s'efface (6 s l'hélicoptère, 12 s
+  l'épave), tout est vidé à la déconnexion. Pictogrammes `helico` et
   `epave` de `modules/monde/outils/icones_carte.py` (planche : `maquettes/helico/icones_carte.png`). Rien hors de
   l'événement.
 - **Combat** : 3 600 PV (11/11, demande du propriétaire : 6 fois plus qu'avant, 600) ; sans coup reçu depuis 30 s, il
@@ -318,10 +332,29 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   touchent (vérifié dans TaCZ 1.1.8 : `EntityKineticBullet.MaybeMultipartEntity`) ; une balle qui traverse plusieurs
   morceaux ne compte que sur le premier (même projectile, même tick) ; seulement les dégâts d'un joueur, explosions ×2 une
   fois par tick. Un joueur en créatif ou en spectateur qui le touche le passe en « essai » (boîte noire sans points). Contre
-  ses agresseurs : tir jusqu'à 60 blocs, poursuite jusqu'à 96 (au-delà, il ne les suit plus), cercle de 40 blocs, alerte
-  chez la cible, rafale de 8 coups de 2,5 toutes les 3 à 5 s (un rayon par coup, arrêté par le premier bloc : sous un
-  toit, rien ; personne d'autre que la cible n'est touché) ; la rafale s'arrête si la cible n'est plus en vue, est à terre
-  ou n'est plus un agresseur.
+  ses agresseurs : tir jusqu'à 60 blocs, poursuite jusqu'à 96 (au-delà, il ne les suit plus), cercle de 40 blocs. **Plus
+  aucune alerte** (19/11, demande du propriétaire : « le joueur ne doit pas être prévenu, il doit toujours être prêt à se
+  mettre à couvert » ; avant : son de verrouillage chez la cible 1,2 s avant la rafale ; la clé `alerte_s` est ignorée) :
+  rafale de 8 coups de 2,5 toutes les 3 à 5 s, dès la fin de la pause (un rayon par coup, arrêté par le premier bloc :
+  sous un toit, rien ; personne d'autre que la cible n'est touché) ; la rafale s'arrête si la cible n'est plus en vue, est
+  à terre ou n'est plus un agresseur. Seul bruit : celui du minigun, en même temps que les coups (il repart au milieu
+  d'une longue rafale).
+- **Roquettes** (19/11, demande du propriétaire : « en plus des rafales, des missiles comme dans Rust, qui explosent et
+  font plus mal mais moins souvent ; il faut se mettre à couvert dans un bâtiment ») : contre sa cible (toujours un de ses
+  agresseurs, en vue, à portée de tir), une **salve de 4 roquettes** toutes les **12 à 18 s** (la première 6 à 9 s après
+  le début de l'attaque), une tous les 4 ticks, par les deux flancs (`airstrike/helico/Roquettes`). Chacune vise les
+  pieds de la cible, son déplacement anticipé (70 %), à 3 blocs près (au hasard), vole à 2 blocs par tick (un rayon par
+  tick) et explose au premier bloc ou à l'eau, au passage de la cible, ou au bout de 5 s. Explosion : **8** au centre,
+  moins jusqu'au bord (rayon **4,5**), multipliés par la part visible du corps (le calcul des explosions de Minecraft :
+  derrière un mur ou sous un toit, rien) ; armure contre les explosions comprise (type de dégâts `airstrike:helico_roquette`,
+  dans `is_explosion`) ; petit recul ; **seulement ses agresseurs** debout et en survie ; aucun bloc cassé, aucun feu.
+  Chez le joueur : la roquette (missile du modèle des munitions des frappes, sans nouveau modèle), sa flamme, sa traînée
+  de fumée, le « whoosh » du napalm au départ, et l'explosion des frappes (petite) à l'impact. Les roquettes en vol finissent
+  leur vol si l'hélicoptère est abattu ; une roquette qui sort de la zone chargée disparaît (jamais de chargement).
+- **Rage** (19/11, demande du propriétaire : « plus il a peu de vie, plus il attaque vite et longtemps ») : en proportion
+  des PV perdus, de pleins PV (valeurs de base) à 0 PV : coups par rafale ×2 (`rage_coups`), pauses entre rafales ÷3
+  (`rage_pauses`), pauses entre salves ÷2 (`rage_roquettes`). À mi-vie : 12 coups, pauses de 1,5 à 2,5 s, salves toutes les
+  8 à 12 s. Sa régénération (sans coup reçu) le calme d'autant.
 - **Chute et crash** : point de crash cherché une fois (`airstrike/helico/PointCrash`) : la position un peu en avant, puis
   autour jusqu'à 96 puis 200 blocs : sol naturel (étiquette `airstrike:sol_crash`, jamais de matériau de toit), sans eau ni
   feuillage, plat à 3 blocs près sur 9 × 9, 3 blocs pleins sous la surface au centre et aux 4 coins, surface à ±3 blocs de
@@ -335,14 +368,29 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   demandé par un ticket, objet posé dès qu'il est là (60 s au plus), pas de coffre.
 - **Coffre de l'épave** (11/11, demande du propriétaire : « les caisses doivent être là dès le début, juste inlootables le
   temps que le feu se dissipe ») : coffre T7 (`t7_coffre_armes`, à 2 blocs de hauteur au plus de l'épave, sur un sol de
-  crash, jamais dans ni contre la carcasse) posé **dès l'impact** ; tant que le feu brûle, il refuse de s'ouvrir (« Coffre
-  encore dans les flammes : il s'ouvrira quand le feu sera éteint (encore 1 min 20 s). », son de coffre verrouillé ;
-  `EvenementsApi.refusOuverture`, demandé par HeraliZ Loot à chaque essai, avant de tirer le contenu : rien n'en sort
-  avant). Seul chemin pour l'ouvrir : le clic droit (aucun entonnoir ne le vide ; il est incassable et résiste aux
-  explosions, et sur la carte aucun bloc ne se casse, ni à la main ni par explosion). À la fin du feu, il s'ouvre à tous,
-  avec la boîte noire à sa première ouverture, et reste 15 min comme avant. Annulé pendant le feu (staff, arrêt du
-  serveur) : le coffre encore fermé est retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu,
-  sinon la boîte noire au sol à côté de l'épave (jamais dans la carcasse, devenue solide).
+  crash, jamais dans ni contre la carcasse) posé **dès l'impact** ; tant que le feu brûle, il refuse de s'ouvrir
+  (`EvenementsApi.refusOuverture`, demandé par HeraliZ Loot à chaque essai, avant de tirer le contenu : rien n'en sort
+  avant). 19/11 (demande du propriétaire : « pas de bruit de loquet, juste un petit message propre ») : plus de son de
+  coffre verrouillé, seulement **« Caisse en feu · s'ouvre dans 1 min 20 s »** au-dessus de la barre d'objets (barre
+  d'action, dessinée dans le bandeau du noyau, trait ambre ; `heraliz_evenements.helico.caisse_en_feu`). Seul chemin pour
+  l'ouvrir : le clic droit (aucun entonnoir ne le vide ; il est incassable et résiste aux explosions, et sur la carte aucun
+  bloc ne se casse, ni à la main ni par explosion). À la fin du feu, il s'ouvre à tous, avec la boîte noire à sa première
+  ouverture, et reste 15 min comme avant. Annulé pendant le feu (staff, arrêt du serveur) : le coffre encore fermé est
+  retiré, rien n'est donné. Pas de place au crash : nouvel essai à la fin du feu, sinon la boîte noire au sol à côté de
+  l'épave (jamais dans la carcasse, devenue solide).
+- **Deux conteneurs T6** (19/11, demande du propriétaire : « en plus du loot T7, deux lootables T6 aléatoires ») : posés
+  dès l'impact avec les règles du coffre (cercles de 5, 8 et 11 blocs autour de l'épave, départ au hasard ; à 2 blocs de
+  hauteur au plus de l'épave, sur un sol de crash, chaque case du bas sur un sol solide, ni dans ni contre la carcasse :
+  toute leur boîte ; à 3,5 blocs au moins du coffre et l'un de l'autre ; face avant vers l'extérieur), tirés au hasard
+  (deux différents) dans `lootables_t6` : des T6 militaires qui tiennent seuls au sol (caisse de missiles, caisse
+  militaire scellée, coffre à munitions blindé, valise de drone, loot crash, loots militaires…; liste vide : tous les T6).
+  Même feu que le coffre (même numéro d'événement, même message, sans bruit) et même durée (feu restant + 15 min ; vidés :
+  retirés 30 s après) ; annulé pendant le feu : ceux jamais ouverts sont retirés. Pas de place au crash : nouvel essai à la
+  fin du feu. Contenu tiré à la première ouverture dans la table T6 (bonus de loot compris), même écran de fouille qu'un
+  conteneur de la carte, étoiles tant qu'il reste quelque chose. Ils sont **hors de la rotation du loot** (HeraliZ Loot,
+  `ConteneursEvenement` : jamais rattachés à une zone ; fichier `heraliz_loot_conteneurs_evenements` par dimension, ils
+  disparaissent à leur heure même après un redémarrage). Ni points de saison ni quête « fouiller » (comme le coffre de
+  l'épave : ses points viennent de la boîte noire).
 - **Collision de l'épave** (11/11) : 8 boîtes (`HelicopterWreck.BOITES`, `HelicopterWreckPart` : `PartEntity` comme les
   rondins de la barricade du bunker) relevées sur le modèle : cabine écrasée, bout de poutre, queue arrachée couchée à côté
   (pas les pales, fines). Joueurs, zombies et objets ne passent plus au travers (même calcul chez le joueur : pas de retour
@@ -357,10 +405,14 @@ les 10 minutes). Le détail reste dans `heralisz_clans/saison_journal.log` (`/sa
   dégâts de chaque tireur sont notés au journal.
 - **Annonces** (joueurs sur la carte) : il patrouille (sans position), il s'est écrasé (secteur), il s'éloigne.
 - **Réglages** : `serveur/config/heraliz_evenements/helico.json` (dont `regen_apres_s`, `regen_pct_par_s`,
-  `patrouille_min`, `patrouille_max`, `reste_apres_attaque_s`, `vol_max_minutes`, `portee_tir`, `poursuite`). **Tests** :
+  `patrouille_min`, `patrouille_max`, `reste_apres_attaque_s`, `vol_max_minutes`, `portee_tir`, `poursuite` ; 19/11 :
+  `roquettes_salve` 4, `roquettes_pause_min_s` 12, `roquettes_pause_max_s` 18, `roquettes_degats` 8, `roquettes_rayon` 4,5,
+  `roquettes_dispersion` 3, `roquettes_vitesse` 2, `roquettes_avance` 0,7, `rage_coups` 2, `rage_pauses` 3,
+  `rage_roquettes` 2, `lootables_t6_nombre` 2, `lootables_t6` ; `alerte_s` ignorée). **Tests** :
   `docs/TESTS_EN_JEU_25OCT.md` §11.
-- **Reste (v2)** : pièces d'épave à démonter, roquettes, projecteur rouge, compte à rebours au-dessus de l'épave, XP de
-  clan, points de crash préparés hors ligne. **Tests du 11/11** : `docs/TESTS_EN_JEU_11NOV_evenements-monde.md`.
+- **Reste (v2)** : pièces d'épave à démonter, projecteur rouge, compte à rebours au-dessus de l'épave, XP de clan, points
+  de crash préparés hors ligne. **Tests du 11/11** : `docs/TESTS_EN_JEU_11NOV_evenements-monde.md` ; **du 19/11** :
+  `docs/TESTS_EN_JEU_17NOV_carte-ile.md` §13.
 
 ### 4.5 Cargaison sensible
 - **But** : le meilleur PvP naturel : un objet de grande valeur qu'il faut **ramener** à une extraction.

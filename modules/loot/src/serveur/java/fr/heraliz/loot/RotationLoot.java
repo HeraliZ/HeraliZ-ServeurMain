@@ -967,7 +967,7 @@ public final class RotationLoot extends SavedData {
      * Les étoiles d'un joueur partent en un seul paquet groupé par seconde (25/10 : avant, un paquet par étoile, soit des
      * dizaines par seconde et par joueur en ville, chacun envoyé à part). Même rendu chez le joueur.
      */
-    private static void envoyerLot(ServerPlayer p,
+    static void envoyerLot(ServerPlayer p,
                                    List<net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener>> lot) {
         if (lot.isEmpty()) return;
         if (lot.size() == 1) {
@@ -981,7 +981,7 @@ public final class RotationLoot extends SavedData {
     }
 
     /** Quelques étoiles (blanches, dorées en T7) sur le dessus, l'avant et les côtés de l'objet (pas le dos, contre le mur). */
-    private static void scintiller(ServerLevel l, ServerPlayer p, BlockPos b, BlockState st, ConteneurBlock cb, int nb,
+    static void scintiller(ServerLevel l, ServerPlayer p, BlockPos b, BlockState st, ConteneurBlock cb, int nb,
                                    List<net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener>> lot) {
         Direction face = st.getValue(HorizontalDirectionalBlock.FACING);
         VoxelShape s = cb.encombrement().outline(face, 0, 0, 0);
@@ -1194,7 +1194,8 @@ public final class RotationLoot extends SavedData {
         get(l).invalider(l, k, BuiltInRegistries.BLOCK.getKey(l.getBlockState(pos).getBlock()).toString(), true);
     }
 
-    private static void son(ServerLevel l, BlockPos pos, BlockState st, boolean ouverture) {
+    /** Bruit d'ouverture ou de fermeture selon la matière du conteneur (aussi pour ceux des événements, ConteneursEvenement). */
+    static void son(ServerLevel l, BlockPos pos, BlockState st, boolean ouverture) {
         SoundType t = st.getSoundType(l, pos, null);
         SoundEvent s;
         if (t == SoundType.METAL) s = ouverture ? SoundEvents.IRON_TRAPDOOR_OPEN : SoundEvents.IRON_TRAPDOOR_CLOSE;

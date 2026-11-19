@@ -150,6 +150,7 @@
  "entity.airstrike.helicopter_wreck": "Épave d'hélicoptère",
  "death.attack.airstrike.helico": "%1$s a été fauché par le minigun d'un hélicoptère militaire",
  "death.attack.airstrike.helico_crash": "%1$s a été écrasé par un hélicoptère militaire",
+ "death.attack.airstrike.helico_roquette": "%1$s a été soufflé par une roquette d'un hélicoptère militaire",
  "subtitles.airstrike.helico_rotor": "Rotor d'hélicoptère",
  "subtitles.airstrike.helico_rotor_loin": "Hélicoptère au loin",
  "subtitles.airstrike.helico_tir": "Rafale de minigun",

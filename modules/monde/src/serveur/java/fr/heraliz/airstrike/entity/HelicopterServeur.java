@@ -3,6 +3,7 @@ package fr.heraliz.airstrike.entity;
 import fr.heraliz.airstrike.AirstrikeMod;
 import fr.heraliz.airstrike.api.HelicoApi;
 import fr.heraliz.airstrike.helico.PointCrash;
+import fr.heraliz.airstrike.helico.Roquettes;
 import fr.heraliz.airstrike.helico.Veille;
 import fr.heraliz.airstrike.network.HelicoPositionPacket;
 import fr.heraliz.airstrike.network.HelicoTirPacket;
@@ -64,10 +65,13 @@ import java.util.function.Function;
  * proche, sauf s'il a été touché depuis moins de 60 s ; au bout de 25 min, il part quoi qu'il arrive.</li>
  * <li><b>Combat</b> (règle du propriétaire) : il n'attaque QUE les joueurs qui lui ont fait des dégâts (oubliés après
  * {@code oubli} secondes sans nouveau tir). Toutes les 10 ticks : l'agresseur le plus proche (96 blocs au plus) en survie
- * sur la carte, et un seul rayon de vue depuis le canon. Il tourne autour (rayon ~40, cible + 22), alerte chez la cible
- * seule, puis rafale de 8 coups en 0,8 s, toutes les 3 à 5 s ; chaque coup vérifie la vue depuis le canon et que la cible
- * est encore un agresseur debout, puis part en rayon vers elle avec dispersion, arrêté par le premier bloc : un joueur
- * sous un toit ne prend rien, et personne d'autre que la cible n'est touché. Aucun bloc cassé.</li>
+ * sur la carte, et un seul rayon de vue depuis le canon. Il tourne autour (rayon ~40, cible + 22) et tire SANS prévenir
+ * (19/11, demande du propriétaire : plus d'alerte) : rafale de 8 coups en 0,8 s, toutes les 3 à 5 s ; chaque coup vérifie
+ * la vue depuis le canon et que la cible est encore un agresseur debout, puis part en rayon vers elle avec dispersion,
+ * arrêté par le premier bloc : un joueur sous un toit ne prend rien, et personne d'autre que la cible n'est touché. Aucun
+ * bloc cassé. Entre les rafales, salves de roquettes ({@link Roquettes}, 19/11) : 4 roquettes toutes les 12 à 18 s, qui
+ * explosent au sol près de la cible (seuls ses agresseurs à découvert sont touchés). Rage (19/11) : moins il a de PV, plus
+ * ses rafales sont longues (×2 presque abattu) et rapprochées (pauses ÷3), ses salves aussi (÷2).</li>
  * <li><b>Dégâts reçus</b> : seulement d'un joueur (balle, projectile, explosion dont il est l'auteur), par les morceaux de
  * la boîte de touche ; une balle qui perce ne compte que sur le premier morceau touché ; explosions ×
  * {@code mult_explosifs} (une fois par tick et par auteur : elles touchent tous les morceaux), queue × {@code mult_queue}.
@@ -87,8 +91,20 @@ public class HelicopterServeur extends Helicopter {
     public static final int RAYON_TICKET = 3;
     public static final ResourceKey<DamageType> DEGATS_TIR = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(AirstrikeMod.MODID, "helico"));
     public static final ResourceKey<DamageType> DEGATS_CRASH = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(AirstrikeMod.MODID, "helico_crash"));
-    /** Joueurs qui reçoivent les traçantes, et la position pour le son lointain (blocs). */
+    /**
+     * Joueurs qui reçoivent les traçantes et les roquettes, et la position pour le son et le modèle lointains (blocs).
+     */
     public static final double PORTEE_TRACANTES = 192, PORTEE_SON = 320;
+    /**
+     * Position envoyée aux joueurs à moins de {@link #PORTEE_SON} blocs toutes les tant de ticks (19/11 : avant, chaque
+     * seconde) : le modèle lointain vole sans à-coups (prolongé et lissé chez le joueur). Les autres joueurs de la carte
+     * n'ont que la marque de la carte M (toutes les 2 s, {@link Veille}).
+     */
+    public static final int DIFFUSION = 5;
+    /** Longue rafale (rage) : le bruit du minigun repart tous les tant de coups (son de 1,3 s, un coup tous les 2 ticks). */
+    private static final int COUPS_PAR_SON = 12;
+    /** Écart entre deux roquettes d'une salve (ticks). */
+    private static final int ECART_ROQUETTES = 4;
     /** Entrée et sortie : à tant de blocs au moins en dedans de la bordure du monde. */
     public static final int MARGE_BORD = 56;
     /** Dispersion d'un coup du minigun (radians, écart type). */
@@ -142,9 +158,12 @@ public class HelicopterServeur extends Helicopter {
     private final Map<String, Part> parts = new LinkedHashMap<>();
     @Nullable
     private ServerPlayer cible;
-    private boolean vue, droiteRafale;
-    private int alerte = -1, rafale;
-    private long prochaineRafale, derniereExplosion = -1, derniersEclats, dernierCoup = -1;
+    private boolean vue, droiteRafale, droiteSalve;
+    /** Coups qui restent dans la rafale, coups depuis le dernier bruit de minigun, roquettes qui restent dans la salve. */
+    private int rafale, coupsSon, salve;
+    private long prochaineRafale, prochaineSalve, roquetteSuivante, derniereExplosion = -1, derniersEclats, dernierCoup = -1;
+    /** Cible relevée toutes les 10 ticks : position d'alors et vitesse (blocs par tick), pour anticiper les roquettes. */
+    private double cibleX, cibleZ, cibleVx, cibleVz;
     @Nullable
     private UUID auteurExplosion;
     /** Dernière balle comptée : numéro d'entité, tick et morceau (une balle qui perce ne compte qu'une fois). */
@@ -293,7 +312,7 @@ public class HelicopterServeur extends Helicopter {
         voler(level);
         if (fini) return;
         if (cible != null) tirer(level, now);
-        if (tickCount % 20 == 0) diffuser(level);
+        if (tickCount % DIFFUSION == 0) diffuser(level);
     }
 
     /** Sans coup reçu depuis {@code regen_apres_s}, il regagne {@code regen_pct_par_s} % de ses PV max par seconde. */
@@ -417,8 +436,8 @@ public class HelicopterServeur extends Helicopter {
         depart = true;
         departTick = now;
         cible = null;
-        alerte = -1;
         rafale = 0;
+        salve = 0;
         WorldBorder b = level.getWorldBorder();
         double x1 = b.getMinX() + MARGE_BORD, x2 = b.getMaxX() - MARGE_BORD, z1 = b.getMinZ() + MARGE_BORD, z2 = b.getMaxZ() - MARGE_BORD;
         if (x2 - x1 > 8000 || z2 - z1 > 8000 || x2 <= x1 || z2 <= z1) {
@@ -457,9 +476,22 @@ public class HelicopterServeur extends Helicopter {
         }
         if (meilleur != cible) {
             cible = meilleur;
-            alerte = -1;
             rafale = 0;
+            salve = 0;
             prochaineRafale = Math.max(prochaineRafale, now + 20);
+            // première salve de roquettes : la moitié d'une pause après le début de l'attaque
+            prochaineSalve = Math.max(prochaineSalve, now + pauseSalve() / 2);
+            cibleVx = cibleVz = 0;
+            if (meilleur != null) {
+                cibleX = meilleur.getX();
+                cibleZ = meilleur.getZ();
+            }
+        } else if (cible != null) {
+            // vitesse de la cible sur les 10 derniers ticks (le serveur ne connaît pas celle d'un joueur)
+            cibleVx = (cible.getX() - cibleX) / 10.0;
+            cibleVz = (cible.getZ() - cibleZ) / 10.0;
+            cibleX = cible.getX();
+            cibleZ = cible.getZ();
         }
         vue = cible != null && dMin <= (double) r.porteeTir * r.porteeTir && ligneDeVue(level, cible);
         byte phase = cible != null ? COMBAT : VOL;
@@ -492,39 +524,108 @@ public class HelicopterServeur extends Helicopter {
         return position().add(versMonde(c[0], c[1], c[2], getYRot(), entityData.get(TANGAGE), entityData.get(ROULIS)));
     }
 
+    /** Départ d'une roquette (flanc gauche ou droit de la cabine). */
+    private Vec3 lanceur(boolean droite) {
+        double[] c = droite ? LANCE_D : LANCE_G;
+        return position().add(versMonde(c[0], c[1], c[2], getYRot(), entityData.get(TANGAGE), entityData.get(ROULIS)));
+    }
+
+    // ------------------------------------------------------------------ rage (19/11)
+    /** PV perdus, de 0 (pleins PV) à 1 (abattu). */
+    private float rage() {
+        return pvMax <= 0 ? 0f : Mth.clamp(1f - pv / pvMax, 0f, 1f);
+    }
+
+    /** 1 à pleins PV, {@code max} à 0 PV, en proportion des PV perdus. */
+    private float selonRage(float max) {
+        return 1f + (Math.max(1f, max) - 1f) * rage();
+    }
+
+    /** Coups de la prochaine rafale : la base, jusqu'à {@code rage_coups} fois plus presque abattu. */
+    private int coupsRafale() {
+        return Math.max(1, Math.round(r.coupsRafale * selonRage(r.rageCoups)));
+    }
+
+    /** Pause avant la prochaine salve de roquettes (ticks), raccourcie par la rage. */
+    private long pauseSalve() {
+        int min = r.roquettesPauseMinS * 20, max = Math.max(min, r.roquettesPauseMaxS * 20);
+        return Math.max(20L, Math.round((min + random.nextInt(max - min + 1)) / selonRage(r.rageRoquettes)));
+    }
+
+    /**
+     * Rafale en cours, sinon salve de roquettes en cours, sinon la prochaine qui est due (vue et portée de tir) : salve si
+     * son heure est passée, puis rafale. 19/11 (demande du propriétaire : « le joueur ne doit pas être prévenu ») : plus
+     * d'alerte (son de verrouillage chez la cible, 1,2 s avant) ; la rafale part dès la fin de la pause.
+     */
     private void tirer(ServerLevel level, long now) {
         ServerPlayer c = cible;
         if (c == null) return;
         if (rafale > 0) {
             if ((now & 1) == 0) {
                 coup(level, c, now);
-                if (rafale > 0 && --rafale == 0) pause(now);
+                if (rafale > 0 && --rafale == 0) {
+                    pause(now);
+                } else if (rafale > 0 && ++coupsSon >= COUPS_PAR_SON) {
+                    coupsSon = 0;
+                    sonRafale(level);   // rafale plus longue que le bruit du minigun : il repart
+                }
             }
             return;
         }
-        if (!vue || c.distanceToSqr(this) > (double) r.porteeTir * r.porteeTir) {
-            alerte = -1;
+        if (salve > 0) {
+            if (now >= roquetteSuivante) roquette(level, c, now);
             return;
         }
-        if (alerte >= 0) {
-            if (--alerte <= 0) {
-                alerte = -1;
-                rafale = Math.max(1, r.coupsRafale);
-                droiteRafale = cote(c);
-                level.playSound(null, getX(), getY() + 1, getZ(), ModSounds.HELICO_TIR.get(), SoundSource.HOSTILE, 1f, 0.95f + random.nextFloat() * 0.1f);
-            }
+        if (!vue || c.distanceToSqr(this) > (double) r.porteeTir * r.porteeTir) return;
+        if (r.roquettesSalve > 0 && now >= prochaineSalve) {
+            salve = r.roquettesSalve;
+            roquetteSuivante = now;
+            droiteSalve = cote(c);
             return;
         }
         if (now >= prochaineRafale) {
-            alerte = Math.max(1, r.alerteTicks);
-            // l'alerte de verrouillage, chez la cible seulement
-            c.playNotifySound(ModSounds.HELICO_ALERTE.get(), SoundSource.HOSTILE, 1f, 1f);
+            rafale = coupsRafale();
+            coupsSon = 0;
+            droiteRafale = cote(c);
+            sonRafale(level);
         }
     }
 
+    private void sonRafale(ServerLevel level) {
+        level.playSound(null, getX(), getY() + 1, getZ(), ModSounds.HELICO_TIR.get(), SoundSource.HOSTILE, 1f, 0.95f + random.nextFloat() * 0.1f);
+    }
+
+    /** Fin de la rafale : la pause tirée entre les deux réglages, raccourcie par la rage ({@code rage_pauses}). */
     private void pause(long now) {
         rafale = 0;
-        prochaineRafale = now + (r.pauseMinS + random.nextInt(Math.max(1, r.pauseMaxS - r.pauseMinS + 1))) * 20L;
+        int min = r.pauseMinS * 20, max = Math.max(min, r.pauseMaxS * 20);
+        prochaineRafale = now + Math.max(4L, Math.round((min + random.nextInt(max - min + 1)) / selonRage(r.ragePauses)));
+    }
+
+    /**
+     * Une roquette de la salve : la salve s'arrête comme une rafale (cible plus agresseur, à terre, hors de vue) ; sinon
+     * elle part du flanc vers la cible, son déplacement anticipé ({@code roquettes_avance}), à {@code roquettes_dispersion}
+     * blocs près (au hasard dans un disque), visée aux pieds : celles qui la manquent explosent au sol tout près.
+     */
+    private void roquette(ServerLevel level, ServerPlayer c, long now) {
+        if (!c.isAlive() || c.level() != level || aTerre(c) || !agresseurs.containsKey(c.getUUID()) || !ligneDeVue(level, c)) {
+            finSalve(now);
+            return;
+        }
+        Vec3 de = lanceur(droiteSalve);
+        double vol = Math.sqrt(c.distanceToSqr(de)) / Math.max(0.5, r.roquettesVitesse);
+        double avance = Mth.clamp(r.roquettesAvance, 0f, 1f) * Math.min(vol, 60);
+        double a = random.nextDouble() * Math.PI * 2, d = r.roquettesDispersion * Math.sqrt(random.nextDouble());
+        Vec3 vers = new Vec3(c.getX() + cibleVx * avance + Math.cos(a) * d, c.getY() + 0.2, c.getZ() + cibleVz * avance + Math.sin(a) * d);
+        Roquettes.lancer(level, this, de, vers, r, agresseurs, c);
+        droiteSalve = !droiteSalve;
+        roquetteSuivante = now + ECART_ROQUETTES;
+        if (--salve <= 0) finSalve(now);
+    }
+
+    private void finSalve(long now) {
+        salve = 0;
+        prochaineSalve = now + pauseSalve();
     }
 
     /**
@@ -637,8 +738,8 @@ public class HelicopterServeur extends Helicopter {
         entityData.set(PHASE, CHUTE);
         entityData.set(SANTE, 0f);
         cible = null;
-        alerte = -1;
         rafale = 0;
+        salve = 0;
         List<HelicoApi.Contribution> contribs = contributions();
         double rad = Math.toRadians(getYRot());
         double fx = -Math.sin(rad), fz = Math.cos(rad);
@@ -703,8 +804,8 @@ public class HelicopterServeur extends Helicopter {
         majFloat(ROTOR, (float) (1 - 0.55 * u));
         if (chuteT >= chuteDuree) {
             impact(level);
-        } else if (chuteT % 20 == 0) {
-            diffuser(level);
+        } else if (chuteT % DIFFUSION == 0) {
+            diffuser(level);   // les joueurs loin voient aussi la chute (modèle lointain)
         }
     }
 
@@ -736,10 +837,14 @@ public class HelicopterServeur extends Helicopter {
     }
 
     // ------------------------------------------------------------------ diffusion, ticket, fin
-    /** Position et vitesse pour le son lointain, une fois par seconde, aux joueurs à moins de {@link #PORTEE_SON}. */
+    /**
+     * Position, vitesse, cap, assiette, régime et santé pour le son et le modèle lointains, toutes les {@link #DIFFUSION}
+     * ticks, aux joueurs à moins de {@link #PORTEE_SON} (ceux qui ont l'entité l'ignorent).
+     */
     private void diffuser(ServerLevel level) {
         Network.sendNear(level, getX(), getY(), getZ(), PORTEE_SON, new HelicoPositionPacket(getId(), getX(), getY(), getZ(),
-                getX() - xo, getY() - yo, getZ() - zo, rotor(), phase()));
+                getX() - xo, getY() - yo, getZ() - zo, rotor(), phase(), getYRot(), entityData.get(TANGAGE),
+                entityData.get(ROULIS), sante()));
     }
 
     private void tenirTicket(ServerLevel level) {

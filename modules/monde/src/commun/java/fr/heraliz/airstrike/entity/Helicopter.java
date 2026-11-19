@@ -62,6 +62,11 @@ public class Helicopter extends Entity {
     public static final double[] CANON_G = {-1.934, 1.789, -2.349}, CANON_D = {1.934, 1.789, -2.349};
     /** Sorties des moteurs ({@code engine_l} / {@code engine_r}) si le modèle ne les donne pas. */
     public static final double[] MOTEUR_G = {-1.170, 3.269, 1.978}, MOTEUR_D = {1.170, 3.269, 1.978};
+    /**
+     * Départ des roquettes (19/11), repère naturel, en blocs : flancs de la cabine, sous les miniguns de porte (le modèle
+     * n'a pas de paniers de roquettes ; mêmes points des deux côtés, gauche puis droite).
+     */
+    public static final double[] LANCE_G = {-1.75, 1.35, -1.9}, LANCE_D = {1.75, 1.35, -1.9};
 
     /** Pas de lissage chez le joueur : la position du serveur est rejointe en 2 ticks (fluide, 1 tick de retard). */
     private static final int LISSAGE = 2;
@@ -157,7 +162,19 @@ public class Helicopter extends Entity {
      * {@link #CENTRE}). Même rotation que le rendu.
      */
     public static Vec3 versMonde(double x, double y, double z, double lacet, double tangage, double roulis) {
-        double px = CENTRE[0], py = CENTRE[1], pz = CENTRE[2];
+        double[] o = new double[3];
+        versMonde(x, y, z, lacet, tangage, roulis, CENTRE, o);
+        return new Vec3(o[0], o[1], o[2]);
+    }
+
+    /**
+     * Même calcul que {@link #versMonde(double, double, double, double, double, double)}, sans rien allouer : décalage écrit
+     * dans {@code sortie} (x, y, z), pivot {@code pivot} (celui du modèle chez le joueur, {@link #CENTRE} sinon). Pour le
+     * rendu, à chaque image.
+     */
+    public static void versMonde(double x, double y, double z, double lacet, double tangage, double roulis, double[] pivot,
+                                 double[] sortie) {
+        double px = pivot[0], py = pivot[1], pz = pivot[2];
         // roulis puis tangage autour du pivot
         double a = Math.toRadians(-roulis);
         double x1 = (x - px) * Math.cos(a) - (y - py) * Math.sin(a);
@@ -170,7 +187,9 @@ public class Helicopter extends Entity {
         z2 += pz;
         // lacet (même rotation que Axis.YP de 180 - lacet)
         double c = Math.toRadians(180.0 - lacet);
-        return new Vec3(x1 * Math.cos(c) + z2 * Math.sin(c), y2, -x1 * Math.sin(c) + z2 * Math.cos(c));
+        sortie[0] = x1 * Math.cos(c) + z2 * Math.sin(c);
+        sortie[1] = y2;
+        sortie[2] = -x1 * Math.sin(c) + z2 * Math.cos(c);
     }
 
     /** Pose les morceaux de la boîte de touche autour de la position (lacet seulement). Appelé chaque tick, des deux côtés. */
@@ -276,6 +295,11 @@ public class Helicopter extends Entity {
         return false;
     }
 
+    /**
+     * Le serveur n'envoie l'entité qu'à 64 blocs des joueurs (spigot.yml) : au-delà, jusqu'à 320 blocs, le jeu du joueur
+     * dessine le même modèle d'après les positions reçues ({@code HelicoClient}, 19/11), et l'entité reprend la main dès
+     * qu'elle arrive.
+     */
     @Override
     public boolean shouldRenderAtSqrDistance(double distSqr) {
         return distSqr < 320.0 * 320.0;
