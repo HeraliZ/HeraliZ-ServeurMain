@@ -167,7 +167,9 @@ public final class Recompenses {
     static void donnerCles(ServerPlayer p) {
         Integer n = CwEtat.CLES.get(p.getUUID());
         if (n == null || n <= 0) return;
-        if (MatchApi.enMatch(p) || Coffre.aUnDepot(p.getUUID())) return;
+        // 19/11 (audit des duplications, M1) : plus la regle commune du noyau (inventaire tenu par un match : marque du
+        // Coffre, monde des matchs) ; reessaye toutes les 5 s (Tournois.clesEnAttente)
+        if (MatchApi.enMatch(p) || Coffre.aUnDepot(p.getUUID()) || fr.heraliz.noyau.api.Matchs.inventaireRetenu(p)) return;
         String id = CwConfig.get().cleEvent;
         ResourceLocation rl = ResourceLocation.tryParse(id);
         Item item = rl == null ? null : ForgeRegistries.ITEMS.getValue(rl);
@@ -175,16 +177,19 @@ public final class Recompenses {
             HeralizClashWar.LOG.warn("[clashwar] cle d'event {} introuvable : {} cle(s) gardee(s) pour {}", id, n, p.getGameProfile().getName());
             return;
         }
+        // 19/11 (audit des duplications, B3) : les cles quittent d'abord l'attente, ecrite tout de suite, puis elles sont
+        // donnees : un plantage entre les deux les perd au lieu de les donner deux fois (avant : compte credite et ecrit,
+        // puis attente ecrite)
+        CwEtat.CLES.remove(p.getUUID());
+        CwEtat.sauver(p.server);
         // 25/10 : une cle de caisse va sur le compte de cles du joueur (HeraliZ Caisses, ClesApi, ecrit tout de suite),
         // jamais en objet ; sans le compte : l'objet, comme avant (converti plus tard par HeraliZ Caisses)
         boolean surCompte = crediterCle(p, id, n);
-        CwEtat.CLES.remove(p.getUUID());
         if (!surCompte) {
             ItemStack pile = new ItemStack(item, n);
             if (!p.getInventory().add(pile)) p.drop(pile, false);
         }
         Annonces.chat(p, Component.translatable("clashwar.chat.cles", n, item.getDescription()));
-        CwEtat.sauver(p.server);
     }
 
     private static java.lang.reflect.Method crediterCle;

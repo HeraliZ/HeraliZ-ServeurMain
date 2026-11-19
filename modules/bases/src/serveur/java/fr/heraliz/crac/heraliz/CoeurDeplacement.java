@@ -220,7 +220,7 @@ public final class CoeurDeplacement extends SafeSavedData {
         }
         for (Map.Entry<UUID, GlobalPos> e : CoeursClans.tous(server).entrySet()) {
             ServerLevel level = server.getLevel(e.getValue().dimension());
-            if (level == null || !level.isLoaded(e.getValue().pos())) {
+            if (level == null || !fr.heraliz.noyau.api.Troncons.charge(level, e.getValue().pos())) {
                 continue;
             }
             if (level.getBlockEntity(e.getValue().pos()) instanceof CoeurClanBlockEntity be) {

@@ -46,15 +46,15 @@
       "ru": "База начинается с бревна."
     },
     {
-      "fr": "Le métal, c'est compté. Tous les jours.",
-      "en": "Metal is rationed. Every day.",
-      "ru": "Металл на счету. Каждый день."
+      "fr": "Le métal, ça se mérite. Un gisement, ça ne donne pas grand-chose.",
+      "en": "Metal has to be earned. One deposit won't give you much.",
+      "ru": "Металл надо заслужить. Одна залежь много не даст."
     }
   ],
   "presentation": {
-    "fr": "Tu abats des arbres, tu casses des gisements ? Rapporte-moi tes bûches, tes pierres brutes et ton minerai : je te les échange contre des matériaux pour ta base. Pas d'hérals chez moi, et le métal est compté chaque jour.",
-    "en": "Felling trees, breaking deposits? Bring me your logs, raw stone and ore: I'll trade them for materials for your base. No herals here, and metal is rationed every day.",
-    "ru": "Рубишь деревья, разбиваешь залежи? Неси мне брёвна, необработанный камень и руду — обменяю их на материалы для базы. Гералов у меня нет, а металл выдаётся по дневной норме."
+    "fr": "Tu abats des arbres, tu casses des gisements ? Rapporte-moi tes bûches, tes pierres brutes et ton minerai : je te les échange contre des matériaux pour ta base. Pas d'hérals chez moi, et le métal, ça se mérite : il en faut, du minerai.",
+    "en": "Felling trees, breaking deposits? Bring me your logs, raw stone and ore: I'll trade them for materials for your base. No herals here, and metal has to be earned: it takes a lot of ore.",
+    "ru": "Рубишь деревья, разбиваешь залежи? Неси мне брёвна, необработанный камень и руду — обменяю их на материалы для базы. Гералов у меня нет, а металл надо заслужить: руды на него уходит много."
   },
   "accueil": {
     "inconnu": {

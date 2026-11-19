@@ -310,7 +310,8 @@ public final class ExtractionCommand {
         if (level == null) {
             throw NO_DIMENSION.create();
         }
-        player.teleportTo(level, zone.pos().x, zone.pos().y, zone.pos().z, player.getYRot(), player.getXRot());
+        // 19/11 : départ dès que l'arrivée est chargée (api.Arrivees du noyau, 3 s au plus)
+        fr.heraliz.noyau.api.Arrivees.teleporter(player, level, zone.pos().x, zone.pos().y, zone.pos().z, player.getYRot(), player.getXRot());
         return 1;
     }
 

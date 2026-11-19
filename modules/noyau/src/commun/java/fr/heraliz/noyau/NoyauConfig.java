@@ -127,6 +127,42 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue MELANGE_SI_APPARITIONS;
    /** tickChunks : la liste des tronçons qui tournent n'est mélangée que si des créatures peuvent apparaître. */
    public static volatile boolean melangeSiApparitions = true;
+   // Lenteurs du 18-19/11 (audit, points C1 à C9, F2, F5, F7) : lus par la partie serveur seulement
+   public static final ForgeConfigSpec.BooleanValue ARRIVEES_PRECHARGEES;
+   /** Téléportations de nos mods (api.Arrivees) faites quand l'arrivée est chargée (3 s au plus). */
+   public static volatile boolean arriveesPrechargees = true;
+   public static final ForgeConfigSpec.BooleanValue TP_PRECHARGE;
+   /** /tp de Minecraft d'un joueur vers une arrivée pas chargée : fait par api.Arrivees. */
+   public static volatile boolean tpPrecharge = true;
+   public static final ForgeConfigSpec.BooleanValue MOUVEMENTS_TRONCONS_PRETS;
+   /** Mouvement d'un joueur vers un tronçon pas encore complet refusé (renvoi à sa place, comme Paper). */
+   public static volatile boolean mouvementsTronconsPrets = true;
+   public static final ForgeConfigSpec.IntValue DECHARGEMENTS_FORCES;
+   /** Au-delà de 2 000 tronçons à décharger : au plus autant de déchargements forcés par tick (0 : règle de Minecraft). */
+   public static volatile int dechargementsForces = 50;
+   public static final ForgeConfigSpec.BooleanValue REGISTRES_EN_MEMOIRE;
+   /** Partie « fml » de level.dat et réglages de génération gardés d'une sauvegarde à l'autre. */
+   public static volatile boolean registresEnMemoire = true;
+   public static final ForgeConfigSpec.BooleanValue DONNEES_EN_FOND;
+   /** Fichiers data/ des mondes (SavedData) : copiés sur le fil serveur, compressés et écrits en fond. */
+   public static volatile boolean donneesEnFond = true;
+   public static final ForgeConfigSpec.BooleanValue JOUEURS_ETALES;
+   /** Sauvegarde automatique : joueurs écrits quelques-uns par tick pendant 5 s. */
+   public static volatile boolean joueursEtales = true;
+   public static final ForgeConfigSpec.BooleanValue ENTITES_ETALEES;
+   /** Sauvegarde automatique : entités des tronçons écrites par tranches pendant 5 s. */
+   public static volatile boolean entitesEtalees = true;
+   public static final ForgeConfigSpec.BooleanValue CLASSES_PRECHARGEES;
+   /** Classes de nos mods chargées à l'avance, sur un fil à part, après le démarrage. */
+   public static volatile boolean classesPrechargees = true;
+   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PLUGINS_PRECHAUFFES;
+   public static final List<String> PLUGINS_PRECHAUFFES_DEFAUT = List.of("WorldEdit", "WorldGuard", "WorldGuardExtraFlags", "LuckPerms", "AuthMe", "LiteBans");
+   public static final ForgeConfigSpec.IntValue DIAG_RELEVES_DES_MS;
+   /** Le veilleur du diagnostic relève la pile dès ce temps de tick (ms), seul un tick plus long que le seuil fait un rapport. */
+   public static volatile int diagRelevesDesMs = 50;
+   public static final ForgeConfigSpec.IntValue DIAG_CALME_DEMARRAGE_S;
+   /** Après le démarrage : ticks longs notés à part (diag/demarrage-…), sans alerte, pendant ce temps (s). */
+   public static volatile int diagCalmeDemarrageS = 180;
 
    /**
     * Commandes en plus jouées par /recharger : vide (02/11, audit point 36). Les modules HeraliZ inscrivent eux-mêmes leur
@@ -196,7 +232,7 @@ public final class NoyauConfig {
       b.push("combat");
       TAG_COMBAT_S = b.comment("Duree du tag de combat en secondes (degats infliges ou recus d'un autre joueur)")
             .defineInRange("tag_secondes", 15, 1, 300);
-      MORT_DECONNEXION = b.comment("Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur)")
+      MORT_DECONNEXION = b.comment("Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur ni dans le monde du spawn)")
             .define("mort_deconnexion", true);
       REFUS_COMMANDES = b.comment("Refuser au joueur tague (ou a terre) toute commande absente de commandes_permises_combat")
             .define("refus_commandes", true);
@@ -219,6 +255,15 @@ public final class NoyauConfig {
             .defineInRange("seuil_ms", 250, 60, 60000);
       DIAG_ANNONCER = b.comment("Prévenir les opérateurs connectés (niveau 4) à chaque blocage, dans le chat (une fois par 30 s au plus).")
             .define("annoncer", true);
+      DIAG_RELEVES_DES_MS = b.comment("Relevés de la pile (19/11, audit des lenteurs) : le veilleur commence à relever la pile du serveur dès que le tick",
+            "dure plus que ce temps (ms), pour que le rapport décrive le blocage depuis son début (avant : seulement après seuil_ms, 2 ou",
+            "3 relevés pris à la fin d'un tick de 114 ms). Seul un tick plus long que seuil_ms fait un rapport ; les relevés d'un tick",
+            "plus court sont jetés. Une valeur plus grande que seuil_ms : comme avant (relevés après le seuil).")
+            .defineInRange("releves_des_ms", 50, 10, 60000);
+      DIAG_CALME_DEMARRAGE_S = b.comment("Démarrage du serveur (19/11) : pendant ce temps (secondes) après « Done », les ticks longs (classes et données",
+            "lues pour la première fois) ne sont pas des alertes : ni message aux opérateurs, ni ligne « [diag] blocage » ; ils sont",
+            "écrits dans le journal (« [diag] démarrage ») et dans diag/demarrage-<date>.txt. 0 : alertes dès le démarrage.")
+            .defineInRange("calme_demarrage_s", 180, 0, 3600);
       b.pop();
       b.push("recharger");
       RECHARGER_COMMANDES = b.comment("/recharger [module] relit les données de tous les modules (ou d'un seul), sans redémarrer ni déconnecter",
@@ -357,6 +402,52 @@ public final class NoyauConfig {
             "créatures. true = pas de mélange dans un monde où la règle doMobSpawning est à faux (rien n'apparaît : l'ordre ne",
             "sert à rien). false : mélange à chaque tick, comme Minecraft.")
             .define("melange_si_apparitions", true);
+      ARRIVEES_PRECHARGEES = b.comment("Téléportations de nos mods (19/11, audit des lenteurs) : warps, extraction, /tpa, éjection du casino, sortie des salles",
+            "à carte, ClashWar... passent par le noyau : l'arrivée est demandée à Minecraft (5 x 5 tronçons lus en tâche de fond) et le",
+            "joueur part dès que les 3 x 3 tronçons autour du point sont prêts, 3 s au plus (avant : 0,4 à 2,5 s de gel pour tout le",
+            "serveur quand l'arrivée n'était pas chargée). false : tout de suite, comme avant.")
+            .define("arrivees_prechargees", true);
+      TP_PRECHARGE = b.comment("/tp de Minecraft (19/11, staff) : un joueur envoyé vers une arrivée pas encore chargée part dès qu'elle est prête",
+            "(3 s au plus) ; le message de Minecraft part tout de suite, un bandeau prévient celui qui a tapé la commande. Arrivée",
+            "déjà chargée : tout de suite, comme avant. false : comme Minecraft.")
+            .define("tp_precharge", true);
+      MOUVEMENTS_TRONCONS_PRETS = b.comment("Mouvements (19/11, comme le réglage prevent-moving-into-unloaded-chunks de Paper) : un joueur qui avance vers un",
+            "tronçon encore en lecture (vol rapide du staff, effets de vitesse) est renvoyé à sa place, comme pour « moved too",
+            "quickly », au lieu de faire attendre ce tronçon par tout le serveur. Marche normale : jamais (les tronçons sont prêts",
+            "bien avant). false : comme Minecraft.")
+            .define("mouvements_troncons_prets", true);
+      DECHARGEMENTS_FORCES = b.comment("Grands déchargements (19/11) : au-delà de 2 000 tronçons à décharger (après WorldEdit, après le départ d'une grande",
+            "zone), Minecraft décharge et écrit tout l'excédent dans le même tick, sans regarder le temps (1,4 et 2 s de gel le 19/11).",
+            "Ici : au plus ce nombre de déchargements forcés par tick, en plus de ceux que le temps libre permet (comme Minecraft) ;",
+            "le reste suit aux ticks suivants. Au-delà de 20 000 en attente (mémoire) : règle de Minecraft. 0 : règle de Minecraft.")
+            .defineInRange("dechargements_forces_par_tick", 50, 0, 100000);
+      REGISTRES_EN_MEMOIRE = b.comment("Sauvegarde automatique (19/11) : la partie « fml » de level.dat (registres de Forge, des dizaines de milliers",
+            "d'identifiants) et les réglages de génération des mondes étaient refaits à chaque sauvegarde, alors qu'ils ne changent",
+            "plus une fois le serveur démarré. true = faits à la première sauvegarde, puis resservis tels quels (même contenu).",
+            "false : refaits à chaque fois, comme Forge.")
+            .define("registres_en_memoire", true);
+      DONNEES_EN_FOND = b.comment("Fichiers data/ des mondes (19/11) : données de Minecraft, des mods et des nôtres qui n'ont pas leur propre écriture",
+            "(territoires, corps, recycleurs, récolte, casino...). Leur contenu est relevé puis copié sur le fil du serveur ; la",
+            "compression et l'écriture (fichier à côté puis remplacement) partent sur l'écrivain en fond du noyau. Pendant l'arrêt :",
+            "tout de suite, après les écritures en file. false : écrits sur le fil du serveur, comme Minecraft.")
+            .define("donnees_en_fond", true);
+      JOUEURS_ETALES = b.comment("Sauvegarde automatique des joueurs (19/11) : Minecraft écrivait TOUS les joueurs connectés dans le même tick",
+            "(265 à 325 ms à 20-30 bots le 25/10). true = quelques-uns par tick pendant 5 s ; un joueur qui a un coffre ou un autre",
+            "menu ouvert est écrit tout de suite (échange en cours), un joueur qui se déconnecte est écrit par Minecraft. /save-all,",
+            "l'arrêt et Bukkit écrivent toujours tout. false : comme Minecraft.")
+            .define("joueurs_etales", true);
+      ENTITES_ETALEES = b.comment("Sauvegarde automatique des entités (19/11) : Minecraft remettait en NBT toutes les entités de tous les tronçons",
+            "chargés dans le même tick (zombies, corps, véhicules...). true = par tranches pendant 5 s (comme la sauvegarde étalée",
+            "des tronçons de Paper). /save-all flush et l'arrêt écrivent toujours tout. false : comme Minecraft.")
+            .define("entites_etalees", true);
+      CLASSES_PRECHARGEES = b.comment("Démarrage (19/11) : les classes de nos mods sont lues et préparées à l'avance sur un fil à part, dès le lancement du",
+            "serveur, sans être lancées : la première ouverture d'un écran, le premier tournoi ou la première connexion ne les lisent",
+            "plus sur le fil du serveur. Jamais les mods des autres auteurs. false : lues à leur première utilisation.")
+            .define("classes_prechargees", true);
+      PLUGINS_PRECHAUFFES = b.comment("Démarrage (19/11) : classes de ces plugins lues à l'avance, par le chargeur du plugin, sur un fil à part, 20 s après",
+            "« Done » : Mohist les traduit alors avant l'arrivée des joueurs (1,4 s de gel à la première connexion, 0,2 à 0,8 s au",
+            "premier WorldEdit, le 18/11). Liste vide : rien.")
+            .defineListAllowEmpty(List.of("plugins_prechauffes"), () -> PLUGINS_PRECHAUFFES_DEFAUT, o -> o instanceof String);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -423,6 +514,17 @@ public final class NoyauConfig {
       hauteursSansBalayage = HAUTEURS_SANS_BALAYAGE.get();
       sauvegardesEtalees = SAUVEGARDES_ETALEES.get();
       melangeSiApparitions = MELANGE_SI_APPARITIONS.get();
+      arriveesPrechargees = ARRIVEES_PRECHARGEES.get();
+      tpPrecharge = TP_PRECHARGE.get();
+      mouvementsTronconsPrets = MOUVEMENTS_TRONCONS_PRETS.get();
+      dechargementsForces = DECHARGEMENTS_FORCES.get();
+      registresEnMemoire = REGISTRES_EN_MEMOIRE.get();
+      donneesEnFond = DONNEES_EN_FOND.get();
+      joueursEtales = JOUEURS_ETALES.get();
+      entitesEtalees = ENTITES_ETALEES.get();
+      classesPrechargees = CLASSES_PRECHARGEES.get();
+      diagRelevesDesMs = DIAG_RELEVES_DES_MS.get();
+      diagCalmeDemarrageS = DIAG_CALME_DEMARRAGE_S.get();
       ticsAleatoires = TICS_ALEATOIRES.get();
       gelEau = GEL_EAU.get();
       neigeAuSol = NEIGE_AU_SOL.get();
@@ -431,6 +533,15 @@ public final class NoyauConfig {
 
    /** Valeur d'un réglage, ou la valeur par défaut si les réglages ne sont pas encore chargés. */
    public static boolean vrai(ForgeConfigSpec.BooleanValue v, boolean defaut) {
+      try {
+         return v.get();
+      } catch (IllegalStateException e) {
+         return defaut;
+      }
+   }
+
+   /** Valeur d'une liste de réglages, ou {@code defaut} si les réglages ne sont pas encore chargés. */
+   public static List<? extends String> liste(ForgeConfigSpec.ConfigValue<List<? extends String>> v, List<String> defaut) {
       try {
          return v.get();
       } catch (IllegalStateException e) {

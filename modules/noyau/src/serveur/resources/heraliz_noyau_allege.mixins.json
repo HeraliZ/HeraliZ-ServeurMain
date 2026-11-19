@@ -32,7 +32,17 @@
     "RelevesHauteurMixin",
     "SauvegardesEtaleesMixin",
     "MelangeTronconsMixin",
-    "GelNeigeMixin"
+    "GelNeigeMixin",
+    "CommandeTpMixin",
+    "MouvementsPretsMixin",
+    "DechargementsMixin",
+    "ReglagesGenerationMixin",
+    "DonneesEnFondMixin",
+    "DonneesLectureMixin",
+    "JoueursAcces",
+    "JoueursEtalesMixin",
+    "EntitesEtaleesMixin",
+    "PoiMesureMixin"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -323,7 +323,7 @@ public final class ArenesService {
         for (int x = x0; x < x1; x++) {
             for (int z = z0; z < z1; z++) {
                 p.set(x, y0, z);
-                if (!niveau.hasChunkAt(p)) continue;
+                if (!fr.heraliz.noyau.api.Troncons.charge(niveau, p)) continue;
                 for (int y = y0; y < y1; y++) {
                     p.setY(y);
                     if (niveau.getBlockState(p).getBlock() instanceof BaseFireBlock) {

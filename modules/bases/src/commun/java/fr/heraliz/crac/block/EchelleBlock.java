@@ -237,7 +237,7 @@ public class EchelleBlock extends Block implements EntityBlock {
         }
         return (l, pos, s, be) -> {
             if (Math.floorMod(l.getGameTime() + pos.asLong(), 40L) == 0 && be instanceof EchelleBlockEntity e && e.appui() != null
-                && l.isLoaded(e.appui()) && !(l.getBlockState(e.appui()).getBlock() instanceof StructureBlock)) {
+                && fr.heraliz.noyau.api.Troncons.charge(l, e.appui()) && !(l.getBlockState(e.appui()).getBlock() instanceof StructureBlock)) {
                 l.destroyBlock(pos, false);
             }
         };

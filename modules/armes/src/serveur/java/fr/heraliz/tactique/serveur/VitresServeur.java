@@ -339,7 +339,8 @@ public final class VitresServeur {
       BlockPos.MutableBlockPos v = new BlockPos.MutableBlockPos();
       for (Direction d : COTES) {
          v.setWithOffset(pos, d);
-         if (level.isLoaded(v) && level.getFluidState(v).is(FluidTags.WATER)) {
+         // 19/11 (audit des lenteurs, C4) : tronçon complet seulement (isLoaded le dit aussi pendant sa lecture)
+         if (fr.heraliz.noyau.api.Troncons.charge(level, v) && level.getFluidState(v).is(FluidTags.WATER)) {
             return true;
          }
       }

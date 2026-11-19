@@ -9,7 +9,7 @@
   "showicon": true,
   "enableNSFW": false,
   "alwaysOpenScreen": false,
-  "debug": true,
+  "debug": false,
   "validate": false,
   "validationThreshold": 8.0,
   "emotesFolderOnLogicalServer": false,

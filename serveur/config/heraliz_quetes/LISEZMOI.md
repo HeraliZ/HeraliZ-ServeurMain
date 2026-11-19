@@ -28,6 +28,19 @@ tenir, regarder dans la direction où il doit regarder, puis `/pnj creer contrem
 pour le bouger). Son apparence est dans son fichier ; pour lui donner la sienne : `/pnj apparence contremaitre moi`.
 Sans le mod HeraliZ Récolte sur le serveur, ses échanges ne s'affichent pas.
 
+**Le Passeur** (19/11, fichier `pnj/passeur.json`, articles **écrits** par `outils/marchands.py` : tableaux `PRIX_ARMES`,
+`ARMES_RARES_PASSEUR` et `PRIX_MUNITIONS`) fait passer des armes du continent et les vend cher : toutes les armes Commun et
+Peu commun des gunpacks, quatre Rares (Mk 23, UMP-45, M870, SKS tactique) et les balles de leurs calibres (9 mm, .45 ACP,
+calibre 12, 7,62 × 39), de 4 à 8 hérals la balle pendant la bêta. Armes neuves et vides. Revendu à Mila ou recyclé, un de
+ses articles ne rend jamais plus de 10 % de son prix (munitions : 20 %) (contrôle : `python outils/marchands.py --controle`). Le poser au spawn, une fois : se placer là où il doit se
+tenir, regarder dans la direction où il doit regarder, puis `/pnj creer passeur` (`/pnj deplacer passeur` pour le bouger).
+Son apparence (créateur de personnage) est dans son fichier.
+
+**Acheter** (19/11) : chez tous les vendeurs, « Acheter » ouvre un panneau de confirmation : l'objet et son prix à l'unité,
+la quantité (champ, − et +, ×1, ×10, une pile, Max), le total, le solde avant et après, puis Confirmer ou Annuler. Le
+serveur revérifie la quantité (2 304 au plus), le prix (s'il a changé, rien n'est acheté), la place dans l'inventaire et les
+hérals : tout ou rien.
+
 ### Créer son propre marchand, en jeu (sans fichier)
 
 Réservé aux op (niveau 4). Tout se fait en jeu, rien à écrire dans un fichier.

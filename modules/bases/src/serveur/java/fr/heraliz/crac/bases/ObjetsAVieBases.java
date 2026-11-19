@@ -188,18 +188,28 @@ public final class ObjetsAVieBases extends SafeSavedData {
         }
     }
 
-    /** Rend au joueur ce qui l'attend, autant que son inventaire le permet ; le reste attend. */
+    /**
+     * Rend au joueur ce qui l'attend, autant que son inventaire le permet ; le reste attend. 19/11 (audit des duplications) :
+     * jamais tant que le match tient l'inventaire ({@code Matchs.inventaireRetenu}, M1 : l'objet servait dans le ClashWar) ;
+     * ce qui sort est écrit tout de suite dans le fichier, puis le joueur est enregistré (B3.7 : avant, le fichier attendait la
+     * sauvegarde suivante, et un plantage après la déconnexion du joueur rendait l'objet une 2e fois).
+     */
     static void rendre(ServerPlayer p) {
         ObjetsAVieBases d = get(p.server);
         List<ItemStack> l = d.aRendre.get(p.getUUID());
-        if (l == null || l.isEmpty() || p.isCreative() || p.isSpectator() || !p.isAlive()) {
+        if (l == null || l.isEmpty() || p.isCreative() || p.isSpectator() || !p.isAlive()
+            || fr.heraliz.noyau.api.Matchs.inventaireRetenu(p)) {
             return;
         }
         int rendus = 0;
+        boolean sorti = false;
         List<ItemStack> reste = new ArrayList<>();
         for (ItemStack s : l) {
             ItemStack copie = s.copy();
             p.getInventory().add(copie);
+            if (copie.getCount() != s.getCount()) {
+                sorti = true;   // entré en tout ou en partie (une pile entamée se remplit aussi)
+            }
             if (copie.isEmpty()) {
                 rendus++;
             } else {
@@ -212,6 +222,11 @@ public final class ObjetsAVieBases extends SafeSavedData {
             d.aRendre.put(p.getUUID(), reste);
         }
         d.setDirty();
+        if (sorti) {
+            // objet sorti d'un stockage : le stockage d'abord sur le disque, le joueur ensuite
+            d.save(SafeSavedData.dataFile(p.server.overworld(), ID).toFile());
+            InventaireTuto.sauver(p);
+        }
         if (rendus > 0) {
             p.inventoryMenu.broadcastChanges();
             T.chat(p, T.t("crac.avie.rendu", "%s objet(s) à vie de ta base (coffre détruit ou base effacée) rendu(s) dans ton inventaire.",

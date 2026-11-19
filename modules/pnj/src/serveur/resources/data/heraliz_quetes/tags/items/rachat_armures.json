@@ -2,6 +2,14 @@
   "replace": false,
   "values": [
     {
+      "id": "heraliz_armory:arctique_renforcee_suit",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:arctique_suit",
+      "required": false
+    },
+    {
       "id": "heraliz_armory:armband_black",
       "required": false
     },
@@ -422,6 +430,14 @@
       "required": false
     },
     {
+      "id": "heraliz_armory:hazmat_renforce_suit",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:hazmat_suit",
+      "required": false
+    },
+    {
       "id": "heraliz_armory:meute_chest",
       "required": false
     },
@@ -531,6 +547,10 @@
     },
     {
       "id": "heraliz_armory:ours_vest",
+      "required": false
+    },
+    {
+      "id": "heraliz_armory:plongee_suit",
       "required": false
     },
     {

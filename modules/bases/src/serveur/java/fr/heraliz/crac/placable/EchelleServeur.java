@@ -157,7 +157,7 @@ public final class EchelleServeur {
         BlockPos centre = BlockPos.containing(origine);
         java.util.Set<BlockPos> echelles = new java.util.LinkedHashSet<>();
         for (BlockPos p : BlockPos.betweenClosed(centre.offset(-r, -r, -r), centre.offset(r, r, r))) {
-            if (!level.isLoaded(p) || Vec3.atCenterOf(p).distanceToSqr(origine) > r2) {
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, p) || Vec3.atCenterOf(p).distanceToSqr(origine) > r2) {
                 continue;
             }
             BlockState s = level.getBlockState(p);

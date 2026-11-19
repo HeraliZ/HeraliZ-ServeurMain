@@ -435,7 +435,13 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         }
         BlockState s = level.getBlockState(worldPosition);
         if (s.getBlock() instanceof RecycleurCarte && s.getValue(RecycleurCarte.MARCHE) != marche) {
-            if (marche) dernierTick = level.getGameTime();   // le temps à l'arrêt ne compte pas
+            if (marche) {
+                // le temps à l'arrêt ne compte pas. 19/11 (audit des duplications, B2) : l'heure du départ est aussi écrite
+                // tout de suite dans le fichier ; avant, seulement en mémoire : un tronçon déchargé avant la fin du premier
+                // objet relisait l'ancienne heure, et la machine rattrapait jusqu'à 20 min passées à l'arrêt
+                dernierTick = level.getGameTime();
+                if (!ecrire()) return;   // écriture ratée : machine fermée, déjà remise à jour par ecrire()
+            }
             level.setBlock(worldPosition, s.setValue(RecycleurCarte.MARCHE, marche), 3);
         }
     }

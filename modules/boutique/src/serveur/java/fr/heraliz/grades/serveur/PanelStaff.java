@@ -412,11 +412,14 @@ final class PanelStaff {
             }
             case ALLER_VOIR -> {
                 if (permis(p, ActionStaff.SE_CACHER, rang(p)) && !VanishServeur.cache(p.getUUID())) VanishServeur.basculerCache(p, true);
-                p.teleportTo(cible.serverLevel(), cible.getX(), cible.getY(), cible.getZ(), cible.getYRot(), cible.getXRot());
+                // 19/11 : par le noyau (api.Arrivees) : tout de suite si l'arrivée est chargée, sinon dès qu'elle l'est
+                fr.heraliz.noyau.api.Arrivees.puis(p, cible.serverLevel(), cible.getX(), cible.getZ(),
+                        () -> p.teleportTo(cible.serverLevel(), cible.getX(), cible.getY(), cible.getZ(), cible.getYRot(), cible.getXRot()));
                 return Resultat.ok("");
             }
             case FAIRE_VENIR -> {
-                cible.teleportTo(p.serverLevel(), p.getX(), p.getY(), p.getZ(), cible.getYRot(), cible.getXRot());
+                fr.heraliz.noyau.api.Arrivees.puis(cible, p.serverLevel(), p.getX(), p.getZ(),
+                        () -> cible.teleportTo(p.serverLevel(), p.getX(), p.getY(), p.getZ(), cible.getYRot(), cible.getXRot()));
                 return Resultat.ok("");
             }
             case LIBERER -> {

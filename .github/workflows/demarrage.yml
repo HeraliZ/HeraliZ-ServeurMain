@@ -1,0 +1,132 @@
+# Démarrage d'essai (audit du 19/11, point F10) : le serveur fabriqué démarre sur une machine de GitHub AVANT toute mise
+# en ligne. Appelé par « Serveur HeraliZ » (serveur.yml, job « demarrage ») entre la fabrication et l'envoi au Ptero : si
+# le serveur n'arrive pas à « Done », rien n'est envoyé (18/11 : deux démarrages du Ptero arrêtés net par une injection
+# de mixin ratée). Lançable seul aussi : « Run workflow » sur n'importe quelle branche, ou un envoi sur une branche de
+# travail qui change ce fichier ou outils/demarrage_essai.py (les mods changés sont alors fabriqués ici).
+# AUCUN secret dans ce workflow : jars, plugins et réglages du dépôt, Mohist de la Release « base-serveur », monde plat
+# neuf, jeté après (outils/demarrage_essai.py). Résultat dans le résumé de la tâche ; journal complet en artefact si ça
+# échoue.
+name: Démarrage d'essai
+
+on:
+  workflow_call:
+    inputs:
+      deja_fabrique:
+        description: "Jars déjà fabriqués par l'appelant (cache jars-<commit>) : rien à fabriquer ici"
+        type: boolean
+        default: false
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: [".github/workflows/demarrage.yml", "outils/demarrage_essai.py"]
+
+permissions:
+  contents: read
+
+jobs:
+  demarrer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      PYTHONIOENCODING: utf-8
+      # même dossier que le banc de charge : les bibliothèques de Mohist partagent son cache (même chemin, même clé)
+      ESSAI: ${{ github.workspace }}/_banc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # appelé par « Serveur HeraliZ » : les jars de son job « fabriquer » (sans secrets), rangés sans rien recompiler
+      - name: Jars fabriqués par la mise en ligne
+        if: ${{ inputs.deja_fabrique }}
+        uses: actions/cache/restore@v4
+        with:
+          path: modules/*/build/libs
+          key: jars-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Ranger les jars fabriqués
+        if: ${{ inputs.deja_fabrique }}
+        run: python outils/construire.py --sans-build
+
+      # lancé seul : seuls les mods changés sont refaits (caches de la mise en ligne et des branches) ; ce workflow n'a
+      # aucun secret, la fabrication peut donc se faire dans le même job
+      - name: Caches de Gradle
+        if: ${{ !inputs.deja_fabrique }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('settings.gradle', 'build.gradle', 'gradle.properties', 'gradle/*.gradle', 'modules/*/build.gradle') }}
+          restore-keys: gradle-
+
+      - name: Jars déjà fabriqués (cache)
+        if: ${{ !inputs.deja_fabrique }}
+        uses: actions/cache@v4
+        with:
+          path: modules/*/build/libs
+          key: jars-${{ github.sha }}
+          restore-keys: jars-
+
+      - name: Fabriquer les mods modifiés
+        if: ${{ !inputs.deja_fabrique }}
+        timeout-minutes: 75
+        run: python outils/sans_secrets.py python outils/construire.py --si-change
+
+      # Mohist télécharge ses bibliothèques (Minecraft, Forge…) au premier démarrage : gardées d'une fois à l'autre
+      - name: Bibliothèques de Mohist (cache)
+        id: libs
+        uses: actions/cache/restore@v4
+        with:
+          path: _banc/libraries
+          key: mohist-libs-${{ hashFiles('serveur/mohist.sha256') }}
+
+      - name: Mohist (Release « base-serveur »)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$ESSAI"
+          JAR=$(cut -d' ' -f3 serveur/mohist.sha256)
+          gh release download base-serveur --pattern "$JAR" --dir "$ESSAI" --clobber
+          (cd "$ESSAI" && sha256sum -c "$GITHUB_WORKSPACE/serveur/mohist.sha256")
+
+      # le serveur fait tourner du code d'autres auteurs (mods, plugins) : aucun jeton dans son environnement
+      - name: Démarrage d'essai (jusqu'à « Done », 20 s à vide, arrêt)
+        timeout-minutes: 18
+        run: python outils/sans_secrets.py python outils/demarrage_essai.py "$ESSAI" --rapport "$RUNNER_TEMP/demarrage"
+
+      - name: Bibliothèques de Mohist prêtes ?
+        id: libs_pretes
+        if: always() && steps.libs.outputs.cache-hit != 'true'
+        run: |
+          if [ -n "$(find "$ESSAI/libraries" -name '*.jar' -print -quit 2>/dev/null)" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Garder les bibliothèques de Mohist
+        if: always() && steps.libs_pretes.outputs.ok == 'true'
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: _banc/libraries
+          key: mohist-libs-${{ hashFiles('serveur/mohist.sha256') }}
+
+      # journal complet du serveur d'essai, seulement en cas d'échec (un quota d'artefacts plein ne bloque rien : le
+      # résumé et le journal de la tâche ont déjà l'essentiel)
+      - name: Garder le journal du serveur d'essai
+        if: failure()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: demarrage-journal
+          path: ${{ runner.temp }}/demarrage
+          retention-days: 7
+          if-no-files-found: ignore

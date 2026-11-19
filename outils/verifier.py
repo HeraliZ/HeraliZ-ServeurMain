@@ -16,7 +16,15 @@ Contrôles :
                        modules/loot/outils/lod_props.py --controle) ;
   - structures       : structures du ClashWar sans bloc de meuble absent du jar cfm (module clashwar ;
                        modules/clashwar/outils/nettoyer_structures.py --verifier) ;
-  - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses (outils/caisses.py) ;
+  - caisses         : aucun objet de Minecraft ni objet disparu dans les caisses, et chaque objet annoncé à sa vraie
+                       rareté (outils/caisses.py) ;
+  - economie         : marchands (revente et recyclage d'un article jamais au-dessus de 50 % de son prix, sans et avec
+                       la bêta, outils/marchands.py --controle), recycleur à jour et armes / accessoires un peu sous le
+                       prix de Mila (outils/recyclage.py --verifier), boucles d'argent de la bêta
+                       (outils/loot_beta.py --economie) ;
+  - atlas            : grande texture des blocs dans 8192 x 8192 (au-delà, Minecraft la double : +336 Mo de mémoire
+                       graphique le 17/11) et aucune image retirée par nos filtres citée par un modèle
+                       (outils/atlas_blocs.py --verifier, sans dépendance : tourne aussi sur GitHub) ;
   - raretes          : chaque arme, accessoire, munition, pièce d'armure et composant a sa rareté dans raretes.json
                        (sinon rien dans son infobulle), et aucun nom d'objet ne contient le mot d'une rareté (elle n'est
                        que le badge de l'infobulle) ; outils/raretes_objets.py --verifier ;
@@ -33,6 +41,8 @@ Contrôles :
                        ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
   - polices          : une seule copie des polices DM Sans, Onest et Oswald, dans le noyau ; les polices des modules la
                        citent (outils/polices_partagees.py --verifier) ;
+  - authme           : aucun pseudo sans mot de passe (UnrestrictedName vide) dans l'AuthMe du serveur en jeu
+                       (serveur/plugins/AuthMe/config.yml ; les bots du banc n'y sont que dans son serveur d'essai) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
@@ -92,6 +102,31 @@ def lancer(args):
     r = subprocess.run([sys.executable, "-X", "utf8"] + args, cwd=D, capture_output=True, text=True, encoding="utf-8",
                        errors="replace", env=env)
     return r.returncode, r.stdout + r.stderr
+
+
+def pseudos_sans_mot_de_passe():
+    """Pseudos de UnrestrictedName dans l'AuthMe du serveur en jeu (audit du 19/11) : en mode hors ligne, ils entrent sans
+    mot de passe. Toujours vide dans le dépôt ; le banc met ses bots dans SON serveur d'essai (serveur_local.py --banc)."""
+    f = D / "serveur" / "plugins" / "AuthMe" / "config.yml"
+    if not f.exists():
+        return []
+    lignes = f.read_text(encoding="utf-8", errors="replace").splitlines()
+    for i, l in enumerate(lignes):
+        m = re.match(r"^\s*UnrestrictedName:\s*(.*?)\s*$", l)
+        if not m:
+            continue
+        if m.group(1) not in ("", "[]"):
+            return [x.strip(" '\"") for x in m.group(1).strip("[]").split(",") if x.strip(" '\"")]
+        noms = []
+        for x in lignes[i + 1:]:
+            if x.strip().startswith("#"):
+                continue
+            mx = re.match(r"^\s*-\s*['\"]?([^'\"]*)['\"]?\s*$", x)
+            if not mx:
+                break
+            noms.append(mx.group(1))
+        return noms
+    return []
 
 
 def noms_interdits():
@@ -210,13 +245,44 @@ def main():
                 if l.startswith("[structures]") and ("nettoyer" in l or "ERREUR" in l):
                     print(l.strip())
             erreurs += 1
-    # caisses : aucun objet de Minecraft ni objet disparu (outils/caisses.py)
+    # grande texture des blocs (audit du 19/11) : toutes les images textures/block et textures/item de tous les mods et
+    # packs y sont rangées ; au-delà de 8192 x 8192, Minecraft passe à 16384 x 8192 (mémoire graphique doublée, saccades
+    # sur les petites cartes graphiques). Une nouvelle texture de bloc ou d'objet en 512 ou 1024 peut suffire à la faire
+    # déborder : python outils/atlas_blocs.py montre les plus grosses.
+    code, out = lancer([str(O / "atlas_blocs.py"), "--verifier"])
+    for l in out.splitlines():
+        if l.startswith("[atlas]") and (code != 0 or "attention" in l):
+            print(l.strip())
+    erreurs += code != 0
+    # caisses : aucun objet de Minecraft ni objet disparu, rareté annoncée = rareté de l'objet (outils/caisses.py)
     code, out = lancer([str(O / "caisses.py"), "--verifier"])
     if code != 0:
         for l in out.splitlines():
             if l.startswith("[caisses]"):
                 print(l.strip())
         erreurs += 1
+    # économie (audit du 19/11 : ces contrôles ne tournaient pas sur GitHub ; une règle de Mila trop généreuse ou un
+    # recyclage.json pas à jour partait sur le Ptero sans alerte) : revente et recyclage des articles des marchands sous
+    # 50 % de leur prix, bêta comprise ; recycleur à jour, armes et accessoires un peu sous le prix de Mila ; boucles
+    # d'argent de l'économie de la bêta
+    for outil, option, quoi, relancer in (
+            ("marchands.py", "--controle", "un article des marchands se revend ou se recycle à plus de 50 % de son prix, "
+             "ou un échange fait une chaîne", "corriger outils/marchands.py, puis python outils/marchands.py"),
+            ("recyclage.py", "--verifier", "recyclage.json n'est pas à jour, ou des armes ou accessoires sortent de la "
+             "règle du 19/11 (un peu sous le prix de Mila)",
+             "corriger outils/recyclage.py, puis python outils/recyclage.py"),
+            ("loot_beta.py", "--economie", "une boucle d'argent avec l'économie de la bêta",
+             "voir python outils/loot_beta.py --economie")):
+        code, out = lancer([str(O / outil), option])
+        if code != 0:
+            mots = ("ERREUR", "PAS à jour", "Refusé", "refusé", "Traceback", "Error")
+            vues = [l.strip() for l in out.splitlines() if any(m in l for m in mots)]
+            for l in vues[:15]:
+                print("      " + l)
+            if len(vues) > 15:
+                print("      ... et %d autre(s) : python outils/%s %s" % (len(vues) - 15, outil, option))
+            print("[economie]    %s %s : ÉCHEC, %s ; %s" % (outil, option, quoi, relancer))
+            erreurs += 1
     # rareté de chaque arme, accessoire, munition, pièce d'armure et composant (retour du propriétaire du 14/11 : leur
     # infobulle la montre toujours, Commun compris) : un gunpack, une pièce ou un composant ajouté sans relancer l'outil
     # qui écrit sa rareté n'en aurait aucune
@@ -313,6 +379,12 @@ def main():
             if "PROBLÈME" in l:
                 print(l.strip())
         print("[polices] relancer : python outils/polices_partagees.py")
+        erreurs += 1
+    # AuthMe du serveur en jeu : aucun pseudo sans mot de passe (19/11 : les bots du banc y étaient, HzBot001 à HzBot200)
+    libres = pseudos_sans_mot_de_passe()
+    if libres:
+        print("[authme]      serveur/plugins/AuthMe/config.yml : UnrestrictedName n'est pas vide (%d pseudo(s) qui entrent "
+              "sans mot de passe, dont %s) : remettre « UnrestrictedName: [] »" % (len(libres), ", ".join(libres[:3])))
         erreurs += 1
     # trois langues : paramètres (%s...) et codes couleur identiques, sinon le joueur voit un texte cassé
     code, out = lancer([str(O / "verifier_langues.py")] + [p.name for p in choisis])

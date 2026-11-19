@@ -36,6 +36,8 @@ import java.util.UUID;
  */
 public final class ServeurQuetes implements Partie {
     private static int ticks;
+    /** 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau). */
+    private static final int DECALAGE_ECRITURE = fr.heraliz.noyau.api.Etalement.decalage("quetes.progressions", 600);
     /** Dernières lueurs envoyées à chaque joueur (pour ne renvoyer que ce qui change). */
     private static final Map<UUID, Integer> LUEURS = new HashMap<>();
 
@@ -107,7 +109,11 @@ public final class ServeurQuetes implements Partie {
         Ponts.relireArmes();
         Journalieres.demarrer(e.getServer());
         LUEURS.clear();
+        zonesAVerifier = true;
     }
+
+    /** Zones dangereuses demandées par les quêtes, contrôlées au premier tick (HeraliZ Décors les lit au même démarrage). */
+    private static boolean zonesAVerifier;
 
     private static void arret(ServerStoppingEvent e) {
         Donnees.arreter();
@@ -226,12 +232,16 @@ public final class ServeurQuetes implements Partie {
 
     private static void tickServeur(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || Moteur.serveur == null) return;
+        if (zonesAVerifier) {
+            zonesAVerifier = false;
+            Moteur.verifierZonesDanger();
+        }
         Moteur.envoyerSuivisEnAttente();
         WipeServeur.tick(e.getServer());
         ObjetsARendre.tick(e.getServer());
         GardeRecycleur.tick(e.getServer());
         if (ticks % 20 == 11) Journalieres.tick(e.getServer());
-        if (++ticks % 600 == 0) Donnees.toutEcrire();
+        if (fr.heraliz.noyau.api.Etalement.tour(++ticks, 600, DECALAGE_ECRITURE)) Donnees.toutEcrire();
     }
 
     private static void action(ServerPlayer p, Reseau.Action a) {

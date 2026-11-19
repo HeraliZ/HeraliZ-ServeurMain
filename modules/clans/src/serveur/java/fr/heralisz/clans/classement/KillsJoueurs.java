@@ -60,6 +60,8 @@ public final class KillsJoueurs {
     /** Change a chaque kill compte (le classement n'est retrie que s'il a change). */
     private static int version;
     private static int ticks;
+    /** 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau). */
+    private static final int DECALAGE_SAUVEGARDE = fr.heraliz.noyau.api.Etalement.decalage("clans.kills", 1200);
     private static final java.util.concurrent.atomic.AtomicBoolean ECHEC = new java.util.concurrent.atomic.AtomicBoolean();
 
     // ------------------------------------------------------------------ cycle de vie
@@ -119,8 +121,7 @@ public final class KillsJoueurs {
     @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || fichier == null) return;
-        if (++ticks < 1200) return;
-        ticks = 0;
+        if (!fr.heraliz.noyau.api.Etalement.tour(e.getServer().getTickCount(), 1200, DECALAGE_SAUVEGARDE)) return;
         if (ECHEC.getAndSet(false)) sale = true;
         if (sale) sauvegarder();
     }

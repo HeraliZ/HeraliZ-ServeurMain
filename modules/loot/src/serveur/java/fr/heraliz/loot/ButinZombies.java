@@ -76,6 +76,8 @@ import java.util.function.BiConsumer;
  * zéro. Rien ne tourne entre deux morts de zombie, sauf une écriture par minute si quelque chose a changé.
  */
 public final class ButinZombies {
+    private static final int DECALAGE_SAUVEGARDE = fr.heraliz.noyau.api.Etalement.decalage("loot.butin_zombies", 1200);
+
     private ButinZombies() {
     }
 
@@ -131,7 +133,8 @@ public final class ButinZombies {
             JOUEURS.clear();
         });
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
-            if (e.phase != TickEvent.Phase.END || e.getServer().getTickCount() % 1200 != 0) return;
+            // 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau)
+            if (e.phase != TickEvent.Phase.END || !fr.heraliz.noyau.api.Etalement.tour(e.getServer().getTickCount(), 1200, DECALAGE_SAUVEGARDE)) return;
             if (ECHEC.getAndSet(false)) sale = true;
             if (sale) ecrire();
         });

@@ -115,7 +115,7 @@ mohist:
   watchdog_spigot: true
   watchdog_mohist: false
   show_logo: true
-  check_update: true
+  check_update: false
   lang: en
   libraries:
     check: true

@@ -9,7 +9,7 @@
   "particle": "heralisz_bunker:item/keycard_fragment_red_2"
  },
  "elements": [
-  {"from": [3.6562, 5.375, 7.7], "to": [12.3438, 10.625, 8.3], "faces": {"south": {"uv": [0, 0, 8.6875, 5.25], "texture": "#face"}, "north": {"uv": [0, 8, 8.6875, 13.25], "texture": "#face"}}},
+  {"from": [3.6562, 5.375, 7.7], "to": [12.3438, 10.625, 8.3], "faces": {"south": {"uv": [0, 0, 15.4444, 7.6364], "texture": "#face"}, "north": {"uv": [0, 8.0, 15.4444, 15.6364], "texture": "#face"}}},
   {"from": [11.7069, 10.4856, 7.7], "to": [12.0173, 10.5656, 8.3], "faces": {"up": {"uv": [0, 0, 16, 16], "texture": "#bord"}}, "rotation": {"angle": -22.5, "axis": "z", "origin": [11.8621, 10.5656, 8]}},
   {"from": [11.96, 10.3165, 7.7], "to": [12.2704, 10.3965, 8.3], "faces": {"up": {"uv": [0, 0, 16, 16], "texture": "#bord"}}, "rotation": {"angle": -45.0, "axis": "z", "origin": [12.1152, 10.3965, 8]}},
   {"from": [12.2044, 9.9882, 7.7], "to": [12.2844, 10.2986, 8.3], "faces": {"east": {"uv": [0, 0, 16, 16], "texture": "#bord"}}, "rotation": {"angle": 22.5, "axis": "z", "origin": [12.2844, 10.1434, 8]}},
