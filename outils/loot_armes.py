@@ -242,6 +242,10 @@ RARETES_IMPOSEES = {
     "crac:c4": "legendaire", "crac:explosive_charge": "epique",
     # échelle de raid (03/11) : fabrication seulement, jamais dans le loot
     "crac:echelle": "peu_commun",
+    # cœur de clan (19/11, choix du propriétaire après l'audit de l'économie : il n'avait aucune rareté et s'affichait
+    # Commun) : Légendaire ; prix inchangés (Bâtisseur 5 000 hérals, 3 750 pendant la bêta ; caisse du casino 20 000
+    # capsules ; caisse de vote 3 %)
+    "crac:coeur_clan": "legendaire",
     # kits de réparation (24/10) : fortune Rare, kit Épique, armurier Légendaire
     "heraliz_usure:kit_fortune": "rare", "heraliz_usure:kit_standard": "epique", "heraliz_usure:kit_armurier": "legendaire",
     # boîtes de munitions de TaCZ (24/10) : fer Rare, or Épique, diamant Légendaire (« Level » 0, 1, 2 ; RaretesObjets.boite)

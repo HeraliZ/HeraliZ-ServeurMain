@@ -161,7 +161,7 @@ public final class DiagClient {
         b.append(String.format(Locale.ROOT, "Mémoire du jeu : %d / %d Mo%n", (rt.totalMemory() - rt.freeMemory()) >> 20, rt.maxMemory() >> 20));
         b.append("Fenêtre : ").append(mc.getWindow().getWidth()).append(" × ").append(mc.getWindow().getHeight()).append('\n');
         b.append("Distance de vue : ").append(mc.options.renderDistance().get()).append(", graphismes : ").append(mc.options.graphicsMode().get())
-                .append(", particules : ").append(mc.options.particles().get()).append(", FPS max : ").append(mc.options.framerateLimit().get())
+                .append(", particules : ").append(mc.options.particles().get()).append(", FPS max : ").append(mc.getWindow().getFramerateLimit())
                 .append(", synchronisation verticale : ").append(mc.options.enableVsync().get()).append(", mélange des biomes : ")
                 .append(mc.options.biomeBlendRadius().get()).append('\n');
         b.append("Mods chargés : ").append(ModList.get().size()).append('\n');

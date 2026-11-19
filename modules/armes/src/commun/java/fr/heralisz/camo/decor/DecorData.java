@@ -82,6 +82,15 @@ public final class DecorData {
       return root.getCompound(KEY);
    }
 
+   /**
+    * Données de personnalisation de l'arme (null sans) : le client s'en sert de clé pour ne relire les stickers qu'une fois
+    * (DecorRender) ; seul le serveur les écrit, le client reçoit une nouvelle pile à chaque changement.
+    */
+   @Nullable
+   public static Object donnees(ItemStack gun) {
+      return tag(gun);
+   }
+
    /** L'arme a-t-elle au moins un élément de personnalisation ? */
    public static boolean any(ItemStack gun) {
       CompoundTag t = tag(gun);

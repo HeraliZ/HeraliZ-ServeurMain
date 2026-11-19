@@ -260,7 +260,7 @@
 	#Range: 1 ~ 100000
 	repairHpPerMinute = 15
 
-#HeraliZ: where CRac works, combat tag, the HeraliZ C4 (heralisz_tactical) and the clans.
+#HeraliZ: where CRac works, combat tag, C4 and the clans.
 [heraliz]
 	#Dimensions where nothing of CRac can be placed (building pieces, Claim Block, sleeping bags) and where CRac
 	#leaves explosions alone: the ClashWar arenas (02/11: the clan bunkers of heralisz_bases, removed, left the list).
@@ -270,7 +270,9 @@
 	combatBlocksBuilding = true
 	#ThrowableId of the heralisz_tactical explosives that count as a C4: the piece they are stuck to takes c4.damage
 	#(like the CRac C4: 1 for wood, 2 for stone, 4 for sheet metal, 7 for armored) instead of a generic blast.
-	c4ThrowableIds = ["heralisz_grenade:c4"]
+	#Empty (19/11): heralisz_tactical has no C4 throwable any more; the C4 of the server is the CRac C4 (crac:c4),
+	#which is always a C4 and needs nothing here.
+	c4ThrowableIds = []
 	#If true and HeraliZ Clans is installed, the clan of a group's owner gets into its claim like the group itself,
 	#each member by the BASE_* permissions of his rank (build, doors, chests, Claim Block).
 	clansAccess = true
@@ -280,9 +282,10 @@
 	#True gives CRac's original rules: no world block breaks outside claims, placables have HP and can be picked up
 	#everywhere.
 	cracRulesOutsideClaims = false
-	#If true (HeraliZ), only C4 damage building pieces and placables: the HeraliZ C4 (c4ThrowableIds), the CRac C4
-	#and the CRac Explosive Charge. Grenades, TNT and every other explosion, mobs (zombies), melee hits, tools, fire,
-	#projectiles and vehicles do nothing to them, and other blasts break nothing inside claims.
+	#If true (HeraliZ), only C4 damage building pieces and placables: the CRac C4 (crac:c4), the CRac Explosive
+	#Charge and the heralisz_tactical explosives of c4ThrowableIds (none today). Grenades, TNT and every other
+	#explosion, mobs (zombies), melee hits, tools, fire, projectiles and vehicles do nothing to them, and other blasts
+	#break nothing inside claims.
 	#Upkeep decay of the Claim Block (decay section) still applies.
 	onlyC4Damages = true
 	#HeraliZ: dimensions where NO explosion breaks any block (C4, grenades, TNT, creepers, airstrikes, other mods...),

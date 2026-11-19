@@ -41,6 +41,12 @@ import java.util.WeakHashMap;
  * <li>StatTrack : plaquette noire et chiffres orange lumineux (kills de l'arme, 10 000 au plus).</li>
  * </ul>
  * La dernière image en 1re personne est gardée (poses et cubes) pour viser l'arme à la souris dans le menu (DecorPick).
+ * <p>
+ * 19/11 (audit des images par seconde, point 9) : plus rien de créé à chaque image pour une arme stickée (avant, ≈ 600
+ * objets par arme et par image : un os, une pièce et leurs deux matrices pour chaque pièce, la liste des stickers relue dans
+ * l'objet) : os et pièces gardés d'une image à l'autre (une pièce par BedrockPart de TaCZ, un os par nom), seules leurs
+ * matrices sont recopiées ; stickers et StatTrack lus une fois par données de l'objet ; StatTrack dessiné avec des vecteurs
+ * de travail. L'image gardée pour le menu est une vraie copie (faite seulement écran ouvert).
  */
 public final class DecorRender {
    public static final ResourceLocation STICKERS = new ResourceLocation("heralisz_camo", "textures/decor/stickers.png");
@@ -93,6 +99,12 @@ public final class DecorRender {
     */
    private static final Map<BedrockPart, List<float[]>> FACES_OF = new WeakHashMap<>();
    private static final String ROOT = "#root";
+   /** Pièce gardée par BedrockPart (ses matrices sont recopiées à chaque image ; cubes et faces sont ceux de la pièce). */
+   private static final Map<BedrockPart, Piece> PIECE_DE = new WeakHashMap<>();
+   /** Os gardés par nom (un par nom d'os des modèles : leurs matrices sont recopiées à chaque image). */
+   private static final Map<String, Bone> OS_DE = new HashMap<>();
+   /** Pièces déjà relevées pour l'arme en cours (vidé à chaque arme ; rien de créé tant qu'il ne grandit pas). */
+   private static final java.util.IdentityHashMap<BedrockPart, Boolean> VUES = new java.util.IdentityHashMap<>();
    public static volatile Snapshot lastFp;
    /** Aperçu au menu (placement en cours) : élément fantôme dessiné en plus sur l'arme tenue. */
    @Nullable public static volatile Ghost ghost;
@@ -115,6 +127,7 @@ public final class DecorRender {
       BONES.clear();
       PIECES.clear();
       STACK.clear();
+      VUES.clear();
    }
 
    /** Juste avant que la pièce dessine ses cubes (pose de la pièce en haut de la pile). */
@@ -123,14 +136,36 @@ public final class DecorRender {
       PoseStack.Pose last = ps.last();
       if (part.name != null) {
          STACK.push(part);
-         BONES.putIfAbsent(part.name, new Bone(part.name, new Matrix4f(last.pose()), new Matrix3f(last.normal())));
+         if (!BONES.containsKey(part.name)) BONES.put(part.name, os(part.name, last));
       }
       if (part.cubes.isEmpty()) return;
       List<float[]> cubes = CUBES.computeIfAbsent(part, DecorRender::readCubes);
       if (cubes.isEmpty()) return;
       String bone = part.name != null ? part.name : STACK.isEmpty() ? ROOT : STACK.peek().name;
-      if (bone.equals(ROOT)) BONES.putIfAbsent(ROOT, new Bone(ROOT, new Matrix4f(last.pose()), new Matrix3f(last.normal())));
-      PIECES.add(new Piece(bone, new Matrix4f(last.pose()), new Matrix3f(last.normal()), cubes, FACES_OF.computeIfAbsent(part, DecorRender::readFaces)));
+      if (bone.equals(ROOT) && !BONES.containsKey(ROOT)) BONES.put(ROOT, os(ROOT, last));
+      Piece p = PIECE_DE.get(part);
+      if (VUES.put(part, Boolean.TRUE) != null) {
+         // pièce dessinée deux fois dans la même arme : une pièce à part pour la 2e fois, comme avant
+         p = new Piece(bone, new Matrix4f(), new Matrix3f(), cubes, FACES_OF.computeIfAbsent(part, DecorRender::readFaces));
+      } else if (p == null || !p.bone().equals(bone)) {
+         p = new Piece(bone, new Matrix4f(), new Matrix3f(), cubes, FACES_OF.computeIfAbsent(part, DecorRender::readFaces));
+         PIECE_DE.put(part, p);
+      }
+      p.pose().set(last.pose());
+      p.normal().set(last.normal());
+      PIECES.add(p);
+   }
+
+   /** Os gardé pour ce nom, matrices de l'image en cours. */
+   private static Bone os(String nom, PoseStack.Pose last) {
+      Bone b = OS_DE.get(nom);
+      if (b == null) {
+         b = new Bone(nom, new Matrix4f(), new Matrix3f());
+         OS_DE.put(nom, b);
+      }
+      b.pose().set(last.pose());
+      b.normal().set(last.normal());
+      return b;
    }
 
    /** Fin du dessin d'une pièce (enfants compris). */
@@ -182,7 +217,7 @@ public final class DecorRender {
       STACK.clear();
       // image gardée seulement écran ouvert (seul DecorPick la lit, depuis l'écran de l'arme, et seulement fraîche) : en jeu,
       // plus de copie des os et des pièces à chaque image
-      if (ctx.firstPerson() && (RefitDecorTab.open || Minecraft.getInstance().screen != null)) lastFp = new Snapshot(new HashMap<>(BONES), new ArrayList<>(PIECES),
+      if (ctx.firstPerson() && (RefitDecorTab.open || Minecraft.getInstance().screen != null)) lastFp = new Snapshot(copieOs(), copiePieces(),
          new Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getProjectionMatrix()), System.currentTimeMillis(), gunLength());
       try {
          draw();
@@ -193,27 +228,71 @@ public final class DecorRender {
       }
    }
 
+   /** Copies des os et des pièces de l'image (gardés d'une image à l'autre : l'image du menu ne doit pas bouger avec eux). */
+   private static Map<String, Bone> copieOs() {
+      Map<String, Bone> out = new HashMap<>();
+      for (Bone b : BONES.values()) out.put(b.name(), new Bone(b.name(), new Matrix4f(b.pose()), new Matrix3f(b.normal())));
+      return out;
+   }
+
+   private static List<Piece> copiePieces() {
+      List<Piece> out = new ArrayList<>(PIECES.size());
+      for (Piece p : PIECES) out.add(new Piece(p.bone(), new Matrix4f(p.pose()), new Matrix3f(p.normal()), p.cubes(), p.faces()));
+      return out;
+   }
+
+   // ------------------------------------------------------------------ données lues une fois par objet
+   /**
+    * Stickers (clés de décalque, null pour un dessin inconnu : l'index reste celui de la liste) et StatTrack d'une arme, lus
+    * une fois par données de l'objet : la clé est l'objet même de ses données (le client reçoit une nouvelle pile à chaque
+    * changement, le serveur seul les écrit). Quelques armes à la fois à l'écran : 8 places, la plus ancienne remplacée.
+    */
+   private record Lu(Object donnees, CleSticker[] cles, @Nullable DecorData.Placement statTrak) {
+   }
+
+   private static final Lu[] LUS = new Lu[8];
+   private static int lusTour;
+   private static final Lu RIEN = new Lu(null, new CleSticker[0], null);
+
+   private static Lu lire(ItemStack stack) {
+      Object d = DecorData.donnees(stack);
+      if (d == null) return RIEN;
+      for (Lu l : LUS) {
+         if (l != null && l.donnees == d) return l;
+      }
+      List<DecorData.Sticker> stickers = DecorData.stickers(stack);
+      CleSticker[] cles = new CleSticker[stickers.size()];
+      for (int i = 0; i < cles.length; i++) {
+         DecorData.Sticker s = stickers.get(i);
+         DecorCatalog.Sticker c = DecorCatalog.Sticker.byId(s.id());
+         cles[i] = c == null ? null : new CleSticker(s.at(), c.ordinal(), s.finish());
+      }
+      Lu l = new Lu(d, cles, DecorData.statTrak(stack));
+      LUS[lusTour] = l;
+      lusTour = (lusTour + 1) % LUS.length;
+      return l;
+   }
+
    // ------------------------------------------------------------------ dessin
    private static void draw() {
       MultiBufferSource.BufferSource bs = Minecraft.getInstance().renderBuffers().bufferSource();
       Ghost g = ctx.firstPerson() ? ghost : null;
-      List<DecorData.Sticker> stickers = DecorData.stickers(gun);
-      if (!stickers.isEmpty() || g != null && g.kind == 0) {
+      Lu lu = lire(gun);
+      CleSticker[] cles = lu.cles;
+      if (cles.length > 0 || g != null && g.kind == 0) {
          RenderType type = StickerRenderType.get(gunTexture());
          VertexConsumer vc = bs.getBuffer(type);
-         for (int i = 0; i < stickers.size(); i++) {
+         for (int i = 0; i < cles.length; i++) {
             if (g != null && g.kind == 0 && g.skip == i) continue;
-            DecorData.Sticker s = stickers.get(i);
-            DecorCatalog.Sticker d = DecorCatalog.Sticker.byId(s.id());
-            if (d != null) sticker(vc, d.ordinal(), s.finish(), s.at());
+            if (cles[i] != null) sticker(vc, cles[i]);
          }
          if (g != null && g.kind == 0) {
             DecorCatalog.Sticker d = DecorCatalog.Sticker.byId(g.id);
-            if (d != null) sticker(vc, d.ordinal(), g.finish, g.at);
+            if (d != null) sticker(vc, new CleSticker(g.at, d.ordinal(), g.finish));
          }
          bs.endBatch(type);
       }
-      DecorData.Placement st = DecorData.statTrak(gun);
+      DecorData.Placement st = lu.statTrak;
       if (g != null && g.kind == 2) st = g.at;
       if (st != null) statTrak(bs, st, Math.min(DecorData.MAX_SHOWN, CamoData.kills(gun)));
    }
@@ -264,17 +343,21 @@ public final class DecorRender {
     * unes par rapport aux autres (sinon, pendant une animation de culasse ou de chargeur, elle est refaite comme avant) et
     * renvoyer les sommets. Même dessin.
     */
-   private static void sticker(VertexConsumer vc, int cell, int finish, DecorData.Placement at) {
+   private static void sticker(VertexConsumer vc, CleSticker cle) {
+      DecorData.Placement at = cle.at();
       Bone bone = BONES.get(at.bone());
       if (bone == null) return;
       int n = PIECES.size();
       float[] rel = relatifs(bone, n);
-      Map<CleSticker, Decal> parModele = DECALS.computeIfAbsent(gunModel, k -> new HashMap<>());
-      CleSticker cle = new CleSticker(at, cell, finish);
+      Map<CleSticker, Decal> parModele = DECALS.get(gunModel);
+      if (parModele == null) {
+         parModele = new HashMap<>();
+         DECALS.put(gunModel, parModele);
+      }
       Decal d = parModele.get(cle);
       if (d == null || !d.valable(rel, n)) {
-         d = new Decal(rel, n, finish);
-         calculer(d, bone, cell, at);
+         d = new Decal(rel, n, cle.finish());
+         calculer(d, bone, cle.cell(), at);
          if (parModele.size() >= DECALS_PAR_MODELE) parModele.clear();
          parModele.put(cle, d);
       }
@@ -503,20 +586,47 @@ public final class DecorRender {
    }
 
    // ------------------------------------------------------------------ StatTrack : plaquette et chiffres
+   /** Vecteurs de travail du StatTrack (rendu sur le fil du rendu seulement). */
+   private static final Vector3f[] T = new Vector3f[16];
+   private static final int[] CHIFFRES = new int[5];
+   private static final float[][] UV_FACE = {{0, 1}, {1, 1}, {1, 0}, {0, 0}};
+   private static final float[][] UV_TRANCHE = {{0, 0.02F}, {0.02F, 0.02F}, {0.02F, 0}, {0, 0}};
+
+   static {
+      for (int i = 0; i < T.length; i++) T[i] = new Vector3f();
+   }
+
+   /** Repère de basis(), dans T[0..3] (point, normale, haut, droite) : mêmes calculs, sans rien créer. */
+   private static void basisT(DecorData.Placement a, float det) {
+      Vector3f n = T[1].set(a.nx(), a.ny(), a.nz()).normalize();
+      Vector3f u = T[2].set(a.ux(), a.uy(), a.uz());
+      u.sub(T[3].set(n).mul(u.dot(n)));
+      if (u.lengthSquared() < 1e-6F) {
+         if (Math.abs(n.y) < 0.9F) u.set(0, -1, 0);
+         else u.set(0, 0, -1);
+      }
+      u.normalize();
+      u.rotateAxis((float) Math.toRadians(a.rot()), n.x, n.y, n.z);
+      Vector3f r = T[3].set(u).cross(n);
+      if (det < 0) r.negate();
+      T[0].set(a.px(), a.py(), a.pz());
+   }
+
    private static void statTrak(MultiBufferSource.BufferSource bs, DecorData.Placement at, int kills) {
       Bone part = BONES.get(at.bone());
       if (part == null) return;
-      Vector3f[] b = basis(at, part.pose.determinant());
-      Vector3f P = b[0], N = b[1], V = b[2], R = b[3];
+      basisT(at, part.pose.determinant());
+      Vector3f P = T[0], N = T[1], V = T[2], R = T[3];
       float s = at.scale();
       float w = PLATE_W * s, h = PLATE_H * s, th = 0.3F * s;
-      Vector3f c = new Vector3f(P).add(new Vector3f(N).mul(th * 0.5F + 0.02F));
+      Vector3f c = T[4].set(N).mul(th * 0.5F + 0.02F).add(P);
       // plaquette (boîte fine) texturée
-      VertexConsumer plate = bs.getBuffer(RenderType.entityCutoutNoCull(PLATE));
-      box(plate, part, c, new Vector3f(R).mul(w * 0.5F), new Vector3f(V).mul(h * 0.5F), new Vector3f(N).mul(th * 0.5F), light);
-      bs.endBatch(RenderType.entityCutoutNoCull(PLATE));
+      RenderType plaque = RenderType.entityCutoutNoCull(PLATE);
+      VertexConsumer plate = bs.getBuffer(plaque);
+      box(plate, part, c, T[5].set(R).mul(w * 0.5F), T[6].set(V).mul(h * 0.5F), T[7].set(N).mul(th * 0.5F), light);
+      bs.endBatch(plaque);
       // chiffres : 5 cases, zéros de tête éteints (seulement le fantôme « 8 »)
-      int[] dg = new int[5];
+      int[] dg = CHIFFRES;
       int v = kills;
       for (int i = 4; i >= 0; i--) {
          dg[i] = v % 10;
@@ -524,41 +634,49 @@ public final class DecorRender {
       }
       int lead = 0;
       while (lead < 4 && dg[lead] == 0) lead++;
-      VertexConsumer vc = bs.getBuffer(RenderType.eyes(DIGITS));
-      Vector3f front = new Vector3f(c).add(new Vector3f(N).mul(th * 0.5F + 0.03F)).add(new Vector3f(V).mul(0.18F * h));
+      RenderType yeux = RenderType.eyes(DIGITS);
+      VertexConsumer vc = bs.getBuffer(yeux);
+      Vector3f front = T[8].set(N).mul(th * 0.5F + 0.03F).add(c).add(T[9].set(V).mul(0.18F * h));
+      Vector3f ax = T[10].set(R).mul(0.5F * s), ay = T[11].set(V).mul(0.72F * s);
       for (int i = 0; i < 5; i++) {
-         Vector3f dc = new Vector3f(front).add(new Vector3f(R).mul((i - 2) * 1.2F * s));
-         digitQuad(vc, part, dc, new Vector3f(R).mul(0.5F * s), new Vector3f(V).mul(0.72F * s), 10, 0.35F);
-         if (i >= lead) digitQuad(vc, part, dc, new Vector3f(R).mul(0.5F * s), new Vector3f(V).mul(0.72F * s), dg[i], 1F);
+         Vector3f dc = T[12].set(R).mul((i - 2) * 1.2F * s).add(front);
+         digitQuad(vc, part, dc, ax, ay, 10, 0.35F);
+         if (i >= lead) digitQuad(vc, part, dc, ax, ay, dg[i], 1F);
       }
-      bs.endBatch(RenderType.eyes(DIGITS));
+      bs.endBatch(yeux);
+   }
+
+   /** Coin k (0 à 3) d'un quadrilatère centré en c : c - ax - ay, c + ax - ay, c + ax + ay, c - ax + ay. */
+   private static Vector3f coin(Vector3f out, Vector3f c, Vector3f ax, Vector3f ay, int k) {
+      float sx = k == 1 || k == 2 ? 1 : -1, sy = k >= 2 ? 1 : -1;
+      return out.set(c.x + sx * ax.x + sy * ay.x, c.y + sx * ax.y + sy * ay.y, c.z + sx * ax.z + sy * ay.z);
    }
 
    private static void digitQuad(VertexConsumer vc, Bone part, Vector3f c, Vector3f ax, Vector3f ay, int cell, float alpha) {
       float u0 = cell / 11F, u1 = (cell + 1) / 11F;
-      Vector3f[] q = {new Vector3f(c).sub(ax).sub(ay), new Vector3f(c).add(ax).sub(ay), new Vector3f(c).add(ax).add(ay), new Vector3f(c).sub(ax).add(ay)};
-      float[][] uv = {{u0, 1}, {u1, 1}, {u1, 0}, {u0, 0}};
-      Vector3f n = new Vector3f(ax).cross(ay).normalize();
+      Vector3f n = T[13].set(ax).cross(ay).normalize();
       part.normal.transform(n);
+      Vector3f q = T[14];
       for (int k = 0; k < 4; k++) {
-         vc.vertex(part.pose, q[k].x / 16F, q[k].y / 16F, q[k].z / 16F).color(alpha, alpha, alpha, 1F).uv(uv[k][0], uv[k][1]).overlayCoords(OverlayTexture.NO_OVERLAY)
-            .uv2(LightTexture.FULL_BRIGHT).normal(n.x, n.y, n.z).endVertex();
+         coin(q, c, ax, ay, k);
+         vc.vertex(part.pose, q.x / 16F, q.y / 16F, q.z / 16F).color(alpha, alpha, alpha, 1F).uv(k == 0 || k == 3 ? u0 : u1, k < 2 ? 1 : 0)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT).normal(n.x, n.y, n.z).endVertex();
       }
    }
 
    /** Boîte (centre, demi-axes) dans le repère d'une pièce ; UV 0..1 sur chaque face. */
    private static void box(VertexConsumer vc, Bone part, Vector3f c, Vector3f ax, Vector3f ay, Vector3f az, int lt) {
-      Vector3f[] axes = {ax, ay, az};
       for (int k = 0; k < 3; k++) {
-         Vector3f n = axes[k], u = axes[(k + 1) % 3], w = axes[(k + 2) % 3];
+         Vector3f n = k == 0 ? ax : k == 1 ? ay : az, u = k == 0 ? ay : k == 1 ? az : ax, w = k == 0 ? az : k == 1 ? ax : ay;
          for (int sg = -1; sg <= 1; sg += 2) {
-            Vector3f fc = new Vector3f(c).add(new Vector3f(n).mul(sg));
-            Vector3f[] q = {new Vector3f(fc).sub(u).sub(w), new Vector3f(fc).add(u).sub(w), new Vector3f(fc).add(u).add(w), new Vector3f(fc).sub(u).add(w)};
-            Vector3f nn = new Vector3f(n).normalize().mul(sg);
+            Vector3f fc = T[13].set(n).mul(sg).add(c);
+            Vector3f nn = T[15].set(n).normalize().mul(sg);
             part.normal.transform(nn);
-            float[][] uv = k == 2 ? new float[][] {{0, 1}, {1, 1}, {1, 0}, {0, 0}} : new float[][] {{0, 0.02F}, {0.02F, 0.02F}, {0.02F, 0}, {0, 0}};
+            float[][] uv = k == 2 ? UV_FACE : UV_TRANCHE;
+            Vector3f q = T[14];
             for (int i = 0; i < 4; i++) {
-               vc.vertex(part.pose, q[i].x / 16F, q[i].y / 16F, q[i].z / 16F).color(1F, 1F, 1F, 1F).uv(uv[i][0], uv[i][1]).overlayCoords(OverlayTexture.NO_OVERLAY)
+               coin(q, fc, u, w, i);
+               vc.vertex(part.pose, q.x / 16F, q.y / 16F, q.z / 16F).color(1F, 1F, 1F, 1F).uv(uv[i][0], uv[i][1]).overlayCoords(OverlayTexture.NO_OVERLAY)
                   .uv2(lt).normal(nn.x, nn.y, nn.z).endVertex();
             }
          }

@@ -1,6 +1,6 @@
 settings:
   allow-end: false
-  warn-on-overload: false
+  warn-on-overload: true
   permissions-file: permissions.yml
   update-folder: update
   plugin-profiling: false
@@ -26,5 +26,5 @@ ticks-per:
   water-ambient-spawns: 0
   water-underground-creature-spawns: 1
   ambient-spawns: 1
-  autosave: 6000
+  autosave: 12000
 aliases: now-in-commands.yml

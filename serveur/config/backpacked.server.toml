@@ -53,10 +53,12 @@
 	inventorySizeRows = 6
 	# Allows every player to use any backpack cosmetic variant without needing to complete the challenges. Side note, any progress to a challenge will not be tracked while enabled.
 	# Valid values: true, false
-	unlockAllCosmetics = false
+	# HeraliZ (19/11, choix du propriétaire : « les sacs se trouvent uniquement en map, pas de quêtes pour débloquer des skins ») : true = aucun défi suivi, aucun déblocage annoncé ; chaque sac garde l'apparence avec laquelle il a été trouvé.
+	unlockAllCosmetics = true
 	# If enabled, prevents backpacks from being customised. This will remove the customise button from the backpack inventory
 	# Valid values: true, false
-	disableCustomisation = false
+	# HeraliZ (19/11) : true = plus de bouton de personnalisation (l'écran était déjà fermé côté serveur).
+	disableCustomisation = true
 	# The amount of slot columns in the backpack inventory.
 	# Valid range: 1 to 13 (inclusive)
 	inventorySizeColumns = 9

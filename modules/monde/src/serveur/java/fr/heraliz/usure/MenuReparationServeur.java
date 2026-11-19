@@ -158,12 +158,15 @@ final class MenuReparationServeur extends MenuReparation {
 
     /**
      * Objet gardé (atelier fermé) rendu dans l'inventaire s'il y a la place. Vrai s'il attend encore. Jamais pendant que
-     * l'atelier est ouvert : la copie gardée est alors celle de l'objet posé dedans.
+     * l'atelier est ouvert : la copie gardée est alors celle de l'objet posé dedans. 19/11 (audit des duplications, M1) :
+     * jamais non plus tant que le match tient l'inventaire ({@code Matchs.inventaireRetenu}) : l'objet servait pendant le
+     * ClashWar, puis était effacé au retour ; il attend le retour (essai toutes les 5 s), sans message.
      */
     static boolean rendreGarde(ServerPlayer sp, boolean prevenir) {
         if (sp.containerMenu instanceof MenuReparationServeur) return false;
         CompoundTag g = sp.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         if (!g.contains(CLE, Tag.TAG_COMPOUND)) return false;
+        if (fr.heraliz.noyau.api.Matchs.inventaireRetenu(sp)) return true;
         ItemStack s = ItemStack.of(g.getCompound(CLE));
         if (s.isEmpty()) {
             g.remove(CLE);

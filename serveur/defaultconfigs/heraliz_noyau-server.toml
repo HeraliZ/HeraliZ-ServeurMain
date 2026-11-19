@@ -3,7 +3,7 @@
 	#Duree du tag de combat en secondes (degats infliges ou recus d'un autre joueur)
 	#Range: 1 ~ 300
 	tag_secondes = 15
-	#Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur)
+	#Deconnexion pendant le tag de combat = mort (le corps reste ; jamais a l'arret du serveur ni dans le monde du spawn)
 	mort_deconnexion = true
 	#Refuser au joueur tague (ou a terre) toute commande absente de commandes_permises_combat
 	refus_commandes = true

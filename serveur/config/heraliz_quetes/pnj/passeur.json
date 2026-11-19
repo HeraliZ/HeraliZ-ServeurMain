@@ -1,0 +1,217 @@
+{
+  "id": "passeur",
+  "nom": {
+    "fr": "Le Passeur",
+    "en": "The Smuggler",
+    "ru": "Контрабандист"
+  },
+  "skin": "passeur",
+  "apparence": {
+    "skin_tone": "caramel",
+    "eye_shape": "narrow",
+    "eye_color": "light_blue",
+    "brow_style": "angled",
+    "nose_style": "wide",
+    "mouth_style": "thin",
+    "hair_style": "slicked_back",
+    "hair_color": "dark_brown",
+    "facial_hair": "chinstrap",
+    "shirt_style": "striped",
+    "shirt_color": "navy",
+    "shirt_color2": "white",
+    "pants_style": "cargo",
+    "pants_color": "charcoal",
+    "shoes_style": "rain_boots",
+    "shoes_color": "black",
+    "marks": [
+      "scar_right",
+      "dirt"
+    ],
+    "wear": "dirty",
+    "eye_size": 2
+  },
+  "role": {
+    "fr": "Armes et munitions",
+    "en": "Weapons and ammo",
+    "ru": "Оружие и патроны"
+  },
+  "ambiance": [
+    {
+      "fr": "Chaque traversée a un prix.",
+      "en": "Every crossing has a price.",
+      "ru": "У каждого рейса своя цена."
+    },
+    {
+      "fr": "Des armes du continent. Propres, sans histoire.",
+      "en": "Guns from the mainland. Clean, no history.",
+      "ru": "Оружие с материка. Чистое, без истории."
+    },
+    {
+      "fr": "Je ne fais pas crédit.",
+      "en": "I don't do credit.",
+      "ru": "В долг не даю."
+    }
+  ],
+  "presentation": {
+    "fr": "Tu veux une arme sans fouiller toute l'île ? Je les fais passer du continent, par la mer, de nuit. Pistolets, mitraillettes, fusils à pompe, et les balles qui vont avec. C'est cher : chaque traversée a un prix.",
+    "en": "Want a gun without searching the whole island? I bring them over from the mainland, by sea, at night. Pistols, SMGs, shotguns, and the rounds to go with them. It's expensive: every crossing has a price.",
+    "ru": "Хочешь ствол, не обыскивая весь остров? Я переправляю их с материка, морем, по ночам. Пистолеты, пистолеты-пулемёты, дробовики и патроны к ним. Дорого: у каждого рейса своя цена."
+  },
+  "accueil": {
+    "inconnu": {
+      "fr": "Des armes et des balles, payées en hérals. Je ne fais pas crédit.",
+      "en": "Guns and rounds, paid in herals. I don't do credit.",
+      "ru": "Оружие и патроны за гералы. В долг не даю."
+    },
+    "connu": {
+      "fr": "Encore toi ? Il me reste quelques caisses de la dernière traversée.",
+      "en": "You again? I've got a few crates left from the last crossing.",
+      "ru": "Снова ты? У меня осталось несколько ящиков с последнего рейса."
+    }
+  },
+  "marchand": {
+    "type": "achat",
+    "articles": [
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"arkaniaz:p250\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 1500
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"arkaniaz:usp\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 1500
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"maxstuff:m17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 1500
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:glock_17\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 1500
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:m1911\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 1500
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"arkaniaz:tec9\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 3000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"maxstuff:glock_bulpup\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 3000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:cz75\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 3000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:p320\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 3000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"arkaniaz:pp19\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"arkaniaz:sr_2m\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"heraliz_fuse:mp5_classic\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"heraliz_fuse:mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"maxstuff:hk_mp5k\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:uzi\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"arkaniaz:686\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"heraliz_fuse:olympia\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"maxstuff:db_50\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:db_long\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:db_short\",GunFireMode:\"BURST\",GunCurrentAmmoCount:0}",
+        "prix": 4000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"maxstuff:mk23\",GunFireMode:\"BURST\",GunCurrentAmmoCount:0}",
+        "prix": 7000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:ump45\",GunFireMode:\"AUTO\",GunCurrentAmmoCount:0}",
+        "prix": 9000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:m870\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 9000
+      },
+      {
+        "objet": "tacz:modern_kinetic_gun",
+        "nbt": "{GunId:\"tacz:sks_tactical\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:0}",
+        "prix": 10000
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:45acp\"}",
+        "prix": 10
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:9mm\"}",
+        "prix": 10
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:12g\"}",
+        "prix": 14
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:762x39\"}",
+        "prix": 20
+      }
+    ]
+  }
+}

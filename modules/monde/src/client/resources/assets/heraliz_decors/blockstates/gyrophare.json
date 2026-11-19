@@ -1,10 +1,10 @@
 {
  "variants": {
   "allume=true": {
-   "model": "heraliz_decors:block/gyrophare"
+   "model": "heraliz_decors:block/gyrophare_anime"
   },
   "allume=false": {
-   "model": "heraliz_decors:block/gyrophare_eteint"
+   "model": "heraliz_decors:block/gyrophare_anime"
   }
  }
 }

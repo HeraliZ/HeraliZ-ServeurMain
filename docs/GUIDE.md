@@ -148,7 +148,10 @@ d'écrire du code qui tourne en boucle, vérifier :
 ```
 python outils/construire.py               tous les modules (sans nom) ou ceux donnés
 python outils/verifier.py                 tous les contrôles, 0 problème exigé
+python outils/demarrage_essai.py <dossier>   le serveur fabriqué démarre-t-il ? (jar de Mohist posé dans le dossier)
 ```
+Le démarrage d'essai est aussi fait par GitHub avant chaque mise en ligne (19/11 : sans « Done », rien n'est envoyé au
+Ptero ; `docs/DEPLOIEMENT.md` §6).
 Résultat dans `livraison/` : `mods serveur/` (Ptero), `mods client/` (joueurs), `mods solo/`, `plugins/`,
 `banc/` (bots de charge, **seulement le temps d'un test**), `spartan/officiel.json`.
 
@@ -186,22 +189,30 @@ Le PNJ « recycleur » du spawn (fichier `serveur/config/heraliz_quetes/pnj/recy
 `"recyclage"`, à poser une fois en jeu : `/pnj creer recycleur`). « Recycler des objets » ouvre un coffre de 27 cases ; à
 la fermeture, le serveur recycle tout ce qui a été déposé :
 
-- chaque composant de la règle de l'objet sort avec **10 % de chances** (une chance par unité de la recette, 2 pièces au
-  plus), multipliées par l'état de l'objet (26/10 : neuf 1, 50 % : 0,26, 20 % : presque rien ; `Recyclage.facteurUsure`) ;
-- règle de l'objet : sa **recette à la Table d'armurier** s'il en a une (armes, accessoires, munitions par paquet de 15,
-  soins, explosifs) ; sinon une **règle de famille** (armures et sacs : tissu, scotch, caoutchouc ; soins : tissu et
-  alcool ; nourriture : plastique ou ferraille ; mêlée, kits, outils de véhicule…), au niveau de la rareté de l'objet
-  (Commun / Peu commun = I, Rare = II, Épique = III, Légendaire et Unique = IV) ;
+- chaque composant de la règle de l'objet sort avec **10 % de chances** (12,5 % pendant la bêta ; recycleur de la carte :
+  11 %, 13,75 % pendant la bêta), 2 pièces au plus, multipliées par l'état de l'objet (26/10 : neuf 1, 50 % : 0,26, 20 % :
+  presque rien ; `Recyclage.facteurUsure`) ;
+- règle de l'objet : **armes et accessoires** (19/11, décision du propriétaire : « un peu aléatoire ») : règle de leur
+  famille, réglée sur le prix de Mila : en moyenne 0,85 à 0,9 fois son prix (bêta comprise), plus pour une rareté plus
+  haute, un bon tirage nettement plus que Mila, un mauvais bien moins ; pièces d'arme (canon, ressort, ferraille, kit de
+  pièces), et pour un accessoire celles de sa sorte (viseur : batteries ; poignée : caoutchouc ; chargeur : ressort…),
+  jamais de composant des explosifs de raid ; les autres objets : leur **recette à la Table d'armurier** s'ils en ont une
+  (munitions par paquet de 15, soins, explosifs, rangements) ; sinon une **règle de famille** (armures et sacs : tissu,
+  scotch, caoutchouc ; soins : tissu et alcool ; nourriture : plastique ou ferraille ; mêlée, kits, outils de
+  véhicule…), au niveau de la rareté de l'objet (Commun / Peu commun = I, Rare = II, Épique = III, Légendaire et
+  Unique = IV) ;
 - **paquet incomplet** (27/10, règle du propriétaire) : une règle « par 15 » (munitions) accepte aussi 1 à 14 objets ;
   pour n objets, le tirage d'un paquet complet a lieu une fois sur 15 / n, sinon rien (1 balle : 15 fois moins de
   chances d'avoir une pièce) ; temps x n / 15 (0,5 s au moins) ; même gain moyen par balle qu'un paquet complet, plafond
   de 2 pièces et hérals compris ; une munition empilée par moins de 15 (roquettes par 6) se recycle donc case par case
   (l'aperçu dit « 6 sur 15 : moins de chances » et montre les chances réduites) ;
-- un objet qui ne rend rien donne quelques hérals (1 à 8 selon sa rareté) : vider son sac au lieu de jeter ;
+- un objet qui ne rend rien donne quelques hérals (2 / 5 / 12 / 25 / 50 / 100 de Commun à Unique, x 1,25 pendant la
+  bêta, x l'état de l'objet, 10 % au moins) : vider son sac au lieu de jeter ;
 - jamais recyclés, rendus tels quels : composants (sauf la corde, les objets cassés et les plaques, 26/10), capsules,
   fragments de cartes, clés, bons, objets à vie, prêtés par un match ou de quête.
 
-C'est un tri pour qui est plein, pas une source de richesse. Changer les chances ou les familles : tableaux en tête de
+C'est un tri pour qui est plein, pas une source de richesse : en moyenne un peu moins que Mila, plus avec de la chance
+(19/11). Changer les chances ou les familles : tableaux en tête de
 `outils/recyclage.py`, puis `python outils/recyclage.py` (relu au démarrage et par `/recharger quetes`).
 Même règle que les marchands : seulement au spawn, ni en combat, ni à terre, ni en match. Joueur mort ou déconnecté
 pendant que le coffre est ouvert : rien n'est recyclé, les objets tombent à ses pieds.
@@ -394,8 +405,9 @@ neuf (la vraie carte n'est pas dans le dépôt), puis jeté.
      dans une seule machine Java, réglages passés aussi par `JDK_JAVA_OPTIONS` ; le rapport écrit ses vrais arguments ;
   1. fabrication des mods changés (caches de la mise en ligne), serveur d'essai par `outils/serveur_local.py --banc`,
      Mohist de la Release « base-serveur » (empreinte contrôlée), réglages d'essai dans ce dossier seulement
-     (`server-ip=127.0.0.1`, AuthMe en mode essai, Spartan sans jeton du launcher, LiteBans en base locale, « Can't keep
-     up » affichés, zombies du peuplement aussi autour des bots) ;
+     (`server-ip=127.0.0.1`, AuthMe en mode essai, pseudos des bots HzBot001 à HzBot200 sans mot de passe dans l'AuthMe
+     de CE serveur seulement (19/11 : vide dans le dépôt et sur le Ptero), Spartan sans jeton du launcher, LiteBans en
+     base locale, « Can't keep up » affichés, zombies du peuplement aussi autour des bots) ;
   2. spawn du banc et zones de groupe, terrain des zones créé d'avance (avant les bots) ; 10 % des bots dans le tutoriel
      des bases (`/tuto lancer`), les autres par groupes de 5 sur une grille de la carte (320 blocs entre deux groupes),
      rythmes de 150 joueurs ; zones d'extraction ouvertes près d'un groupe sur quatre ; `doMobSpawning false`

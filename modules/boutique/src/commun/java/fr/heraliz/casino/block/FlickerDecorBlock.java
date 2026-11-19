@@ -5,15 +5,22 @@ import fr.heraliz.casino.decor.DecorType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 /**
- * Lumiere qui gresille pour de bon (reglette a tubes du Trou) : le serveur fait varier la lumiere du bloc par a-coups
- * (pleine, faible, coupee), la salle entiere clignote avec elle. Le modele 3D suit l'etat du bloc et ajoute ses propres
- * parasites, plus rapides (purement visuels).
+ * Lumiere qui gresille (reglette a tubes du Trou) : a-coups pleine, faible, coupee ; le modele 3D les suit et ajoute ses
+ * propres parasites, plus rapides.
+ * <p>
+ * 19/11 (audit des images par seconde, point 2) : avant, le serveur faisait varier l'etat et la lumiere du bloc a chaque
+ * saute (jusqu'a toutes les 1 a 5 ticks pendant une rafale) : chez chaque joueur proche, l'eclairage refait et les
+ * morceaux de carte autour reconstruits a chaque fois. Maintenant la lumiere du bloc reste pleine ({@link #light}) et
+ * l'etat ne change plus : la meme suite d'a-coups ({@link #next}) est jouee par chaque joueur (client, DecorClientTicker),
+ * le modele la suit comme avant, et la salle s'assombrit pendant les coupures par la teinte de la lumiere, pres de la
+ * reglette (fr.heraliz.noyau.client.Eclairage). La propriete {@link #FLICKER} reste (blocs deja poses), elle n'est plus lue.
  * <ul>
  * <li>variante 0, "Gresille" : allumee, puis des rafales de claquements, parfois une coupure et le starter qui
  * reessaie ;</li>
@@ -36,31 +43,29 @@ public class FlickerDecorBlock extends DecorBlock {
         builder.add(FLICKER);
     }
 
-    /** Lumiere du bloc selon l'etat. */
+    /** Lumiere du bloc : pleine des qu'elle est allumee (les sautes ne sont plus qu'a l'image, voir plus haut). */
     public static int light(BlockState s, int full) {
-        if (!s.getValue(ON)) return 0;
-        return switch (s.getValue(FLICKER)) {
-            case 1 -> Math.max(1, full / 2 - 1);
-            case 2 -> 0;
-            default -> full;
-        };
+        return s.getValue(ON) ? full : 0;
     }
 
     /** Prochain etat et delai avant le suivant (ticks). */
-    record Step(int level, int delay) {
+    public record Step(int level, int delay) {
     }
 
+    /**
+     * Tick programme (pose, allumage, changement de variante, et le dernier tick garde par une sauvegarde d'avant le
+     * 19/11) : plus de saute de lumiere, seulement la lumiere recalculee une fois si une sauvegarde l'a gardee coupee.
+     */
     @Override
     @SuppressWarnings("deprecation")
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!state.getValue(ON)) return;
-        if (!(level.getBlockEntity(pos) instanceof DecorBlockEntity be)) return;
-        Step step = next(state.getValue(FLICKER), Math.floorMod(be.mode, 3), be, random);
-        if (step.level() != state.getValue(FLICKER)) level.setBlock(pos, state.setValue(FLICKER, step.level()), Block.UPDATE_CLIENTS);
-        level.scheduleTick(pos, this, Math.max(1, step.delay()));
+        if (level.getBrightness(LightLayer.BLOCK, pos) < state.getLightEmission(level, pos)) {
+            level.getChunkSource().getLightEngine().checkBlock(pos);
+        }
     }
 
-    static Step next(int cur, int mode, DecorBlockEntity be, RandomSource r) {
+    /** Suite des a-coups (cur : 0 pleine, 1 faible, 2 coupee ; mode : variante), jouee par chaque joueur. */
+    public static Step next(int cur, int mode, DecorBlockEntity be, RandomSource r) {
         switch (mode) {
             case 2 -> {
                 // stable : un battement de temps en temps
