@@ -969,7 +969,8 @@ Ces règles sont nouvelles : elles sont **« en rodage »**. Si trois joueurs di
 heure, elle se coupe toute seule (alerte « Règle suspendue » au staff) : une erreur ne peut jamais expulser tout le monde.
 Versions : Anticheat **2.13.0** (avec la mise en ligne du serveur), launcher **1.17.0** (à publier ensuite : onglet
 Actions, « Launcher HeraliZ », « Run workflow », case **publier** ; pas fait). Les deux marchent avec l'ancienne version de
-l'autre. **Rien de tout cela n'a été testé en jeu** (aucun Minecraft ici) : seulement des tests automatiques.
+l'autre. Mis à jour le 19/11 (décisions du propriétaire, en bas de cette section) : anticheat **2.15.0**, launcher
+**1.18.0**. **Rien de tout cela n'a été testé en jeu** (aucun Minecraft ici) : seulement des tests automatiques.
 
 À tester (joueurs honnêtes : rien ne doit changer pour eux)
 - [ ] Windows, launcher 1.17.0 : se connecter, jouer 10 min avec Discord, Steam, OBS ou NVIDIA ouverts. « ✅ Jeu validé »
@@ -992,17 +993,26 @@ Si quelque chose se passe mal
 - Après une semaine sans « Règle suspendue » ni fausse alerte : on peut vider `rodage = []` (les règles restent, sans
   disjoncteur), ou le laisser.
 
-À décider (propriétaire, détail et coûts dans `launcher/docs/HERALIZ-SECURITE.md`)
-1. **Le dépôt GitHub est public** : tout le code de l'anticheat (et du site) y est lisible, et les jars serveur de l'onglet
-   Actions téléchargeables. Le rendre privé ? (conseillé ; environ 20 à 40 $ par mois de minutes GitHub en plus, ou moins
-   en fabriquant moins souvent pour Mac).
-2. `requireHardenedJvm = true` ? Sans risque (tous les launchers mettent la protection, Windows, Mac et Linux), mais
-   n'ajoute qu'une alerte : le jeu sans protection est déjà refusé par le mode strict.
-3. Packs de textures ajoutés par le joueur (risque de X-ray) : aujourd'hui une alerte. Les refuser à la connexion, ou les
-   faire retirer par le launcher avant la partie ?
-4. Verrou d'Electron « intégrité de l'archive » (le launcher refuse de démarrer si on modifie son code) : à essayer d'abord
-   sur un PC Windows avec le launcher de l'onglet Actions, avant toute publication (s'il se trompait, le launcher ne
-   démarrerait plus du tout chez les joueurs).
+Décidé par le propriétaire le 19/11 (détail dans `launcher/docs/HERALIZ-SECURITE.md`)
+1. Le dépôt GitHub **reste public** (choix délibéré, la doc le dit).
+2. `requireHardenedJvm = true` : fait (une alerte de plus, sans risque).
+3. **Packs de textures ajoutés par le joueur interdits** : fait (anticheat **2.15.0**, launcher **1.18.0**, à publier ensuite
+   comme le 1.17.0 ; pas fait). Le launcher met de côté, avant la partie, les packs du dossier `resourcepacks` (et
+   `kiwipacks`) du jeu, dans `spartan/ecartes/<date>/` (jamais effacés). Le serveur refuse un joueur qui a encore un pack
+   ajouté actif, avec un message qui dit lequel retirer (jamais de ban). Nos packs (textures et herbe HeraliZ, terrain), le
+   pack de base de Minecraft et les ressources des mods ne comptent jamais.
+4. Verrou d'Electron « intégrité de l'archive » : reste coupé (pas encore essayé sur un vrai PC Windows).
+
+À tester en plus (packs de textures ; **rien n'a été testé en jeu**)
+- [ ] Mettre un pack de textures quelconque (.zip) dans le dossier `resourcepacks` du jeu HeraliZ, puis lancer depuis le
+      launcher 1.18.0 : la partie démarre normalement, le pack a été déplacé dans `spartan/ecartes/<date>/resourcepacks`, et
+      la connexion au serveur se passe sans refus ni alerte « ResourcePack ».
+- [ ] Jeu normal (sans pack ajouté) : textures HeraliZ et herbe comme avant, aucun refus, aucune alerte « ResourcePack ».
+- [ ] Avec l'ancien launcher (1.17.0 ou 1.16.2) et un pack dans `resourcepacks` : le mod d'interface ne l'active pas, donc
+      connexion normale. Si quelqu'un est refusé : il lit le nom du pack à retirer ; dans le fil Discord, alerte
+      « ResourcePack … connexion refusée ».
+- [ ] `/spartan status <joueur>` : toujours pas de ligne « règles en rodage suspendues ». Refus à tort : passer
+      `refuseCustomResourcePacks = false` dans `[resources]` (relu sans redémarrer ; il ne reste alors qu'une alerte).
 
 ## 34. Anticheat côté serveur : rafales de tirs, ouvertures à travers les murs, faux lag (19/11)
 
