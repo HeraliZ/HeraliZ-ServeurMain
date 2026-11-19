@@ -46,8 +46,9 @@ vec3 VN_DETAIL = vec3(0.0, 0.0, 1.0);
 #if CAMO_ID == 1 || CAMO_ID == 5 || CAMO_ID == 43 || CAMO_ID == 44 || (CAMO_ID >= 20 && CAMO_ID <= 25)
 #define CAMO_RELIEF
 #endif
-// nouveaux camos du 19/11 (Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses) : même relief, mêmes reflets
-#if (CAMO_ID >= 80 && CAMO_ID <= 84) || CAMO_ID == 210 || CAMO_ID == 211
+// nouveaux camos du 19/11 (Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses ; Forge, Or craquelé, Dichroïque,
+// Vipère, Rouages, Prisme) : même relief, mêmes reflets
+#if (CAMO_ID >= 80 && CAMO_ID <= 89) || (CAMO_ID >= 210 && CAMO_ID <= 212)
 #define CAMO_RELIEF
 #endif
 const float TAU = 6.2831853;
@@ -2917,6 +2918,10 @@ vec3 infernalIron(vec3 p, out vec3 em) {
 vec3 phenix(vec3 p, out vec3 em);
 vec3 abysses(vec3 p, out vec3 em);
 #endif
+#if CAMO_ID == 212
+// 212 Prisme (2e lot du 19/11) : surface écrite plus bas, avec le 2e lot
+vec3 l2Prisme(vec3 p, out vec3 em);
+#endif
 
 vec3 skinSurface(vec3 p, out vec3 em) {
     em = vec3(0.0);
@@ -2928,6 +2933,8 @@ vec3 skinSurface(vec3 p, out vec3 em) {
     return phenix(p, em);
 #elif CAMO_ID == 211
     return abysses(p, em);
+#elif CAMO_ID == 212
+    return l2Prisme(p, em);
 #else
     return darkMatter(p, em);
 #endif
@@ -3548,9 +3555,10 @@ vec3 solid(int id, vec3 p, out vec3 em) {
 // (CAMO_RELIEF). Repris du Diamond : diamPlan (plan du motif), diamIsotropie (la carte de positions suit-elle la
 // surface ?) et, pour le Rubis, paveCell, diamRedresse et diamSecours. Cette partie n'est compilée que dans les programmes
 // de ces sept camos (les autres n'ont pas à la lire au chargement du jeu).
-#if (CAMO_ID >= 80 && CAMO_ID <= 84) || CAMO_ID == 210 || CAMO_ID == 211
 // Contre le bruit de pixels (vue joueur) : chaque détail a une taille minimale à l'écran ; un trait plus fin qu'un pixel
 // s'estompe (couverture) au lieu de clignoter ; un point lumineux garde son énergie en grossissant jusqu'à un pixel.
+// Outils communs aux deux lots du 19/11 (le 2e lot, plus bas, s'en sert aussi)
+#if (CAMO_ID >= 80 && CAMO_ID <= 89) || (CAMO_ID >= 210 && CAMO_ID <= 212)
 
 // taille d'un pixel à l'écran, en unités de l'arme (1 = longueur de l'arme)
 float ncPx(vec3 p) {
@@ -3561,12 +3569,6 @@ float ncPx(vec3 p) {
 float ncTrait(float d, float w, float px) {
     float ww = max(w, 0.5 * px);
     return (1.0 - smoothstep(ww - 0.5 * px, ww + 0.5 * px, abs(d))) * (w / ww);
-}
-
-// distance (unités de l'arme) à la ligne de niveau v = c d'un champ lisse : pente prise sur les dérivées écran
-float ncDistIso(float v, float c, vec3 p) {
-    float g = length(vec2(dFdx(v), dFdy(v))) / max(length(vec2(length(dFdx(p)), length(dFdy(p)))), 1e-7);
-    return abs(v - c) / max(g, 1e-3);
 }
 
 // parallaxe (vraie profondeur sous la surface) : déplacement, dans le plan de la face et dans le repère de l'arme, du point
@@ -3609,6 +3611,15 @@ mat3 ncRepere(vec3 n, vec2 uv) {
     T = lt > 1e-30 ? T * inversesqrt(lt) : normalize(cross(n, abs(n.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0)));
     vec3 bb = cross(n, T);
     return mat3(T, dot(bb, B) < 0.0 ? -bb : bb, n);
+}
+#endif
+
+// 1er lot : Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses
+#if (CAMO_ID >= 80 && CAMO_ID <= 84) || CAMO_ID == 210 || CAMO_ID == 211
+// distance (unités de l'arme) à la ligne de niveau v = c d'un champ lisse : pente prise sur les dérivées écran
+float ncDistIso(float v, float c, vec3 p) {
+    float g = length(vec2(dFdx(v), dFdy(v))) / max(length(vec2(length(dFdx(p)), length(dFdy(p)))), 1e-7);
+    return abs(v - c) / max(g, 1e-3);
 }
 
 float ncSeg(vec2 p, vec2 a, vec2 b) {
@@ -4287,6 +4298,687 @@ vec3 abysses(vec3 p, out vec3 em) {
 }
 #endif
 
+// ================================================================== 2e lot de camos du 19/11 (demandés par le propriétaire)
+// Forge 85 (rare), Or craquelé 86 (épique), Dichroïque 87 (épique), Vipère 88 (légendaire), Rouages 89 (légendaire,
+// animé), Prisme 212 (skin X mythique, animé : surface sous son effet 3D, appelée par skinSurface). Entièrement procéduraux :
+// aucune texture. Ils gardent le relief de l'arme et les reflets liés au monde des camos refaits (CAMO_RELIEF). Ce qui est
+// propre à ce lot commence par l2 / L2_ ; outils repris du 1er lot (bloc commun plus haut) : ncPx, ncTrait, ncRepere,
+// ncParallaxe. Compilé seulement dans les programmes de ces six camos.
+#if (CAMO_ID >= 85 && CAMO_ID <= 89) || CAMO_ID == 212
+// Contre le bruit de pixels (vue joueur) : chaque trait a une largeur réelle sur l'arme et s'estompe (couverture) quand il
+// devient plus fin qu'un pixel ; les motifs fins (dents, écailles, cuvettes, stries) se fondent en leur teinte moyenne quand
+// ils passent sous quelques pixels ; un point lumineux garde au moins un pixel.
+
+// plan du motif sur la face (projection sur le plan des axes le plus proche de la normale, égalités toujours tranchées
+// pareil, comme le Diamond) : x reste le long de l'arme sur les flancs, le dessus et le dessous.
+// axe : 0 bouts (zy), 1 dessus / dessous (xz), 2 flancs (xy)
+vec2 l2Plan(vec3 p, vec3 n, out float axe) {
+    vec3 a = abs(n) + vec3(0.0, 0.05, 0.1);
+    if (a.x > a.y && a.x > a.z) {
+        axe = 0.0;
+        return p.zy;
+    }
+    if (a.y > a.z) {
+        axe = 1.0;
+        return p.xz;
+    }
+    axe = 2.0;
+    return p.xy;
+}
+
+// point de l'arme qui a les coordonnées uv dans le plan du motif (3e coordonnée : celle du pixel)
+vec3 l2Point(vec3 p, vec2 uv, float axe) {
+    return axe < 0.5 ? vec3(p.x, uv.y, uv.x) : axe < 1.5 ? vec3(uv.x, p.y, uv.y) : vec3(uv, p.z);
+}
+
+// normale penchée par une hauteur h dont on connaît le gradient g (repère de l'arme, unités de l'arme) : formule de
+// bumpNormal (Mikkelsen 2010) avec les dérivées de h calculées (g . dp) au lieu de dFdx(h) : facettes nettes, aucun pixel
+// faux aux arêtes du motif. dpx, dpy : dérivées écran de la position sur l'arme ; sx, sy : de la position dans la vue
+vec3 l2Pente(vec3 n, vec3 g, vec3 dpx, vec3 dpy, vec3 sx, vec3 sy) {
+    vec3 r1 = cross(sy, n);
+    vec3 r2 = cross(n, sx);
+    float det = dot(sx, r1);
+    if (abs(det) < 1e-24) return n;
+    float k = length(sx) / max(length(dpx), 1e-9);
+    vec3 grad = sign(det) * (dot(g, dpx) * r1 + dot(g, dpy) * r2) * k;
+    float gmax = 2.0 * abs(det);
+    float gl = length(grad);
+    grad *= gl > gmax ? gmax / gl : 1.0;
+    return normalize(abs(det) * n - grad);
+}
+
+// hachage 3D sans sinus (moins cher que hash3 : il est appelé 27 fois par pixel dans les cellules de Voronoï)
+vec3 l2Hash3(vec3 p) {
+    p = fract(p * vec3(0.1031, 0.103, 0.0973));
+    p += dot(p, p.yxz + 33.33);
+    return fract((p.xxy + p.yxx) * p.zyx);
+}
+
+// cellules de Voronoï 3D, domaine non tordu (bords droits) : c1 cellule du 1er point, p1 / p2 : 1er et 2e points
+void l2Voronoi(vec3 q, float jit, out vec3 c1, out vec3 p1, out vec3 p2) {
+    vec3 b = floor(q);
+    float f1 = 9.0, f2 = 9.0;
+    c1 = b;
+    p1 = b;
+    p2 = b;
+    for (int x = -1; x <= 1; x++)
+    for (int y = -1; y <= 1; y++)
+    for (int z = -1; z <= 1; z++) {
+        vec3 cc = b + vec3(float(x), float(y), float(z));
+        vec3 pt = cc + 0.5 + jit * (l2Hash3(cc) - 0.5);
+        vec3 d = q - pt;
+        float dd = dot(d, d);
+        // sélections sans branchement (moins cher que des if dans la boucle de 27 cellules)
+        bool a1 = dd < f1;
+        bool a2 = dd < f2;
+        p2 = a1 ? p1 : (a2 ? pt : p2);
+        f2 = a1 ? f1 : (a2 ? dd : f2);
+        p1 = a1 ? pt : p1;
+        c1 = a1 ? cc : c1;
+        f1 = a1 ? dd : f1;
+    }
+}
+
+// distance signée (unités de l'arme, mesurée sur la face) au bord entre les cellules de p1 et de p2 (Voronoï en q = p * S),
+// < 0 dans la cellule de p1 ; fn : normale de la face (repère de l'arme). Rend aussi gb, la direction (repère de l'arme)
+// qui sort de la cellule vers p2
+float l2Bord(vec3 q, vec3 p1, vec3 p2, vec3 S, vec3 fn, out vec3 gb) {
+    vec3 nq = normalize(p2 - p1);
+    float e = dot(q - 0.5 * (p1 + p2), nq);
+    vec3 ng = S * nq;
+    float lg = length(ng);
+    gb = ng / lg;
+    // le plan du bord coupe la face de biais : distance sur la face = distance au plan / sinus de l'angle
+    float sinA = length(gb - fn * dot(gb, fn));
+    return e / lg / max(sinA, 0.25);
+}
+
+// métal jaune poli : le reflet net du décor lié au monde passe par une rampe (creux sombres, éclats pâles), comme l'or du
+// Diamond ; rampe 0 : or jaune, 1 : laiton d'horlogerie ; eclat : éclats les plus forts. Une seule lecture du décor (un peu
+// adoucie) : c'est la lecture la plus chère du camo
+vec3 l2MetalJaune(vec3 n, float rough, float rampe, out float eclat) {
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 e = envWorld(r, rough + 0.05);
+    float L = lum3(e) + 0.08;
+    L += (0.3 + 0.4 * L) * pow(1.0 - ndv, 5.0);
+    L = pow(L, 1.3) * 1.1;
+    float tt = 1.0 - exp(-0.95 * L);
+    float s[6] = float[6](0.0, 0.2, 0.42, 0.62, 0.82, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x2a1400), hexc(0x643a04), hexc(0xb0780c), hexc(0xe3aa1e), hexc(0xf9d046), hexc(0xffeca6));
+    if (rampe > 0.5) {
+        c = vec3[6](hexc(0x241809), hexc(0x5e4417), hexc(0xa47b2e), hexc(0xd6ad58), hexc(0xf2dc9c), hexc(0xfff6dc));
+    }
+    eclat = smoothstep(0.85, 0.98, tt);
+    return ramp6(tt, s, c);
+}
+
+// points lumineux (un par cellule de taille cs, rayon r0, une cellule sur deux environ) : rayon d'au moins un pixel,
+// énergie gardée (pas de scintillement de pixels de loin) ; vif : scintillement qui suit l'angle de vue (r)
+float l2Points(vec3 q, float cs, float r0, float px, vec3 r, float graine) {
+    vec3 g = q / cs;
+    vec3 c = floor(g);
+    vec3 h = hash3(c + graine);
+    vec3 pt = c + 0.22 + 0.56 * h;
+    float d = length(g - pt) * cs;
+    float rr = max(r0, 0.8 * px);
+    float k = (r0 / rr) * (r0 / rr);
+    float vif = 0.35 + 0.65 * pow(0.5 + 0.5 * sin(dot(r, vec3(9.0, 7.0, 8.0)) + h.x * 40.0), 3.0);
+    return step(0.5, h.y) * exp(-d * d / (rr * rr)) * k * vif;
+}
+
+// ------------------------------------------------------------------ 85 Forge (rare)
+// acier forgé à la main : cuvettes de martelage (chacune renvoie le décor à sa façon : l'arme scintille doucement quand elle
+// bouge), calamine bleu-noir mate dans les creux et par plaques, couleurs de revenu (paille, bronze, pourpre, bleu) en
+// auréoles là où le métal a chauffé, arêtes plus claires (usure)
+vec3 l2Revenu(float x) {
+    // 0 acier nu -> paille -> bronze -> pourpre -> bleu roi -> bleu pâle
+    float s[6] = float[6](0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
+    vec3 c[6] = vec3[6](vec3(1.0), hexc(0xf6dca0), hexc(0xd29550), hexc(0xa04a78), hexc(0x3d48b8), hexc(0x86b0dc));
+    return ramp6(x, s, c);
+}
+
+vec3 l2Forge(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    NO_SHADE = 0.35;
+    vec3 nv = normalize(viewNormal);
+    vec3 dpx = dFdx(p), dpy = dFdy(p), sx = dFdx(viewPos), sy = dFdy(viewPos);
+    float px = ncPx(p);
+    // cuvettes de martelage : cellules de Voronoï (~1,4 % de la longueur de l'arme) creusées en paraboloïde autour du point
+    // de frappe ; pente analytique : facettes nettes, crêtes vives entre deux cuvettes ; fondues de loin (moins de ~4 pixels)
+    const vec3 S = vec3(68.0, 74.0, 74.0);
+    vec3 q = p * S;
+    vec3 c1, p1, p2;
+    l2Voronoi(q, 0.75, c1, p1, p2);
+    vec3 hc = l2Hash3(c1 + 5.3);
+    float fin = 1.0 - smoothstep(0.0022, 0.0045, px);
+    vec3 g = 2.0 * 0.0009 * S * (q - p1) * (0.7 + 0.6 * hc.x) * fin;
+    vec3 n = l2Pente(nv, g, dpx, dpy, sx, sy);
+    // couleurs de revenu : champ de chaleur lent, auréoles le long de ses lignes de niveau ; acier nu ailleurs
+    // points chauds (un par case de 0,22 de côté vue de profil, neuf sur dix) : auréole complète de la paille au bleu
+    vec2 hxy = p.xy / 0.22;
+    vec2 h0 = floor(hxy - 0.5);
+    float heat = 0.0;
+    for (int k = 0; k < 4; k++) {
+        vec2 cc = h0 + vec2(float(k - (k / 2) * 2), float(k / 2));
+        vec3 hh = hash3(vec3(cc, 17.0));
+        if (hh.z < 0.1) continue;
+        vec2 hp = (cc + 0.2 + 0.6 * hh.xy) * 0.22;
+        float R = 0.085 + 0.07 * hh.z;
+        heat = max(heat, 1.0 - length((p.xy - hp) * vec2(1.0, 1.25)) / R);
+    }
+    heat += 0.12 * (fbm(p * 26.0, 2) - 0.5);
+    float tr = clamp(heat * 1.15, 0.0, 1.0);
+    vec3 tint = l2Revenu(tr);
+    // calamine : plaques et creux de la texture d'origine, bord net écaillé (pas dans les auréoles de chauffe)
+    float cav = smoothstep(0.2, 0.5, 1.0 - RELIEF);
+    float sc = fbm(p * vec3(9.0, 15.0, 15.0) + vec3(3.0, 1.0, 7.0), 4) + 0.22 * cav;
+    float cal = smoothstep(0.56, 0.6, sc) * (1.0 - smoothstep(0.1, 0.4, heat));
+    // usure : arêtes claires de la texture d'origine plus polies, revenu effacé
+    float usure = smoothstep(0.15, 0.45, RELIEF - 1.0);
+    tint = mix(tint, vec3(1.0), usure * 0.7);
+    // acier poli : reflet net et reflet adouci du décor lié au monde
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 F0 = vec3(0.6, 0.61, 0.63);
+    vec3 F = F0 + (vec3(1.0) - F0) * pow(1.0 - ndv, 5.0);
+    vec3 env = envWorld(r, 0.13) * 0.6 + envWorld(r, 0.42) * 0.4;
+    vec3 acier = (env * F * 0.8 + F0 * 0.06) * tint;
+    // calamine : bleu-noir mat (reflet très flou), un peu de grain
+    vec3 calc = mix(hexc(0x101318), hexc(0x252b34), vnoise(q * 0.7)) * (0.75 + 0.45 * lum3(envWorld(reflWorld(nv), 0.85)));
+    vec3 col = mix(acier, calc, cal * (1.0 - usure * 0.5));
+    return col * reliefMetal(0.6);
+}
+
+// ------------------------------------------------------------------ 86 Or craquelé (épique)
+// or poli brisé puis recollé : plaques (Voronoï 3D, bords droits) penchées un peu les unes par rapport aux autres (chacune
+// renvoie le décor à sa façon : mosaïque de reflets qui s'allument et s'éteignent quand la vue bouge), joints noirs fins,
+// bords des plaques arrondis (liseré clair ou sombre selon le décor), quelques plaques plus mates, nuances d'or
+vec3 l2OrCraquele(vec3 p, out vec3 em) {
+    NO_SHADE = 0.45;
+    vec3 nv = normalize(viewNormal);
+    vec3 dpx = dFdx(p), dpy = dFdy(p), sx = dFdx(viewPos), sy = dFdy(viewPos);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    const vec3 S = vec3(24.0, 31.0, 31.0);
+    vec3 q = p * S;
+    vec3 c1, p1, p2;
+    l2Voronoi(q, 0.95, c1, p1, p2);
+    vec3 gb;
+    float e = l2Bord(q, p1, p2, S, fn, gb);
+    vec3 hc = l2Hash3(c1 + 1.7);
+    vec3 hd = l2Hash3(c1 + 8.9);
+    // fissure secondaire : plan au hasard passant par le centre de la plaque (une plaque sur deux) ; distance sur la face
+    vec3 nf = normalize(l2Hash3(c1 + 4.1) - 0.5);
+    vec3 ngf = S * nf;
+    float lgf = length(ngf);
+    vec3 gf = ngf / lgf;
+    float df = dot(q - p1, nf) / lgf / max(length(gf - fn * dot(gf, fn)), 0.25);
+    float fis = step(0.5, hc.x);
+    float cote = fis * (df < 0.0 ? -1.0 : 1.0);
+    // plaque penchée au hasard (jusqu'à ~9 degrés), chaque morceau un peu autrement ; bord arrondi sur 0,3 % de l'arme,
+    // effacé quand il passe sous 2 pixels
+    float bw = 0.003;
+    float bev = (1.0 - smoothstep(0.0, bw, -e)) * smoothstep(1.0, 2.5, bw / px);
+    vec3 g = (hd - 0.5) * 0.32 + cote * (l2Hash3(c1 + 6.6) - 0.5) * 0.14 - gb * 0.75 * bev;
+    vec3 n = l2Pente(nv, g, dpx, dpy, sx, sy);
+    float rough = hc.y < 0.22 ? 0.16 : 0.02;
+    float ecl;
+    vec3 gold = l2MetalJaune(n, rough, 0.0, ecl);
+    // nuances : la plupart en or jaune, quelques plaques plus rosées ou plus pâles
+    gold *= hc.z < 0.14 ? vec3(1.04, 0.86, 0.8) : hc.z > 0.9 ? vec3(1.02, 1.0, 0.86) : vec3(1.0);
+    // joint noir (laque) au fond de la fissure
+    float joint = max(ncTrait(e, 0.00065, px), ncTrait(df, 0.0004, px) * fis);
+    vec3 col = mix(gold, hexc(0x0a0705), joint * 0.92);
+    em = gold * ecl * 0.3 * (1.0 - joint);
+    return col * reliefMetal(0.6);
+}
+
+// ------------------------------------------------------------------ 87 Dichroïque (épique)
+// panneaux de verre dichroïque sertis dans un cadre d'argent brossé : la couche mince du verre renvoie un vert d'eau qui
+// vire au bleu puis au violet et au rose de biais (la teinte suit l'angle de vue, un peu différente d'un panneau à l'autre),
+// le décor s'y reflète net ; dessous, à faible profondeur (parallaxe), un fond nuit pailleté de points fins qui scintillent
+// avec l'angle ; cadre brossé le long de l'arme (reflet étiré en travers), chanfreins polis autour du verre
+const float L2_LC = 0.085, L2_HR = 0.036, L2_CADRE = 0.0033, L2_COIN = 0.003;
+
+float l2BordCol(float k) {
+    return (k + 0.3 * (hash(vec3(k, 3.0, 1.0)) - 0.5)) * L2_LC;
+}
+
+vec3 l2Dichroique(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    NO_SHADE = 0.4;
+    vec3 nv = normalize(viewNormal);
+    vec3 dpx = dFdx(p), dpy = dFdy(p), sx = dFdx(viewPos), sy = dFdy(viewPos);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    float axe;
+    vec2 uv = l2Plan(p, fn, axe);
+    mat3 tbn = ncRepere(nv, uv);
+    vec3 par = ncParallaxe(p);
+    // colonnes de largeur irrégulière le long de l'arme, rangées décalées d'une colonne à l'autre ; un panneau sur quatre
+    // couvre deux rangées
+    float k0 = floor(uv.x / L2_LC);
+    float xa = l2BordCol(k0), xb = l2BordCol(k0 + 1.0), kc = k0;
+    if (uv.x < xa) {
+        kc = k0 - 1.0;
+        xb = xa;
+        xa = l2BordCol(k0 - 1.0);
+    } else if (uv.x >= xb) {
+        kc = k0 + 1.0;
+        xa = xb;
+        xb = l2BordCol(k0 + 2.0);
+    }
+    float ph = hash(vec3(kc, 5.0, 2.0)) * L2_HR + axe * 0.37;
+    float jr = floor((uv.y + ph) / L2_HR);
+    float ya = jr * L2_HR - ph, yb = ya + L2_HR;
+    if (hash(vec3(kc, jr, 4.0)) < 0.25) {
+        yb += L2_HR;
+    } else if (hash(vec3(kc, jr - 1.0, 4.0)) < 0.25) {
+        ya -= L2_HR;
+        jr -= 1.0;
+    }
+    vec2 cen = vec2(0.5 * (xa + xb), 0.5 * (ya + yb));
+    vec2 hs = vec2(0.5 * (xb - xa), 0.5 * (yb - ya)) - L2_CADRE;
+    vec2 dv = abs(uv - cen) - hs + L2_COIN;
+    float sd = length(max(dv, 0.0)) + min(max(dv.x, dv.y), 0.0) - L2_COIN;      // < 0 dans le verre
+    vec2 gd = (dv.x > 0.0 && dv.y > 0.0) ? normalize(dv) : (dv.x > dv.y ? vec2(1.0, 0.0) : vec2(0.0, 1.0));
+    gd *= sign(uv - cen + 1e-7);
+    float verre = 1.0 - smoothstep(-0.5 * px, 0.5 * px, sd);
+    float hp = hash(vec3(kc, jr, 9.0));
+    float ndv = facing(nv);
+    vec3 col = vec3(0.0);
+    if (verre > 0.0) {
+        // couche mince : épaisseur optique propre au panneau (vert d'eau, vert, bleu) ; de biais, le chemin dans la couche
+        // raccourcit et la teinte glisse vers le bleu, le violet puis le rose
+        float cosT = sqrt(1.0 - (1.0 - ndv * ndv) / 4.2);
+        float trainee = vnoise(vec3(uv.x * 14.0, uv.y * 70.0, hp * 9.0 + axe));
+        float ep = (0.472 + 0.06 * (hp - 0.5) + 0.03 * (trainee - 0.5)) * cosT;
+        vec3 film = 0.5 + 0.5 * cos(TAU * 2.0 * ep / vec3(0.65, 0.53, 0.45));
+        film = mix(film, vec3(dot(film, vec3(0.3333))), 0.12);
+        vec3 r = reflWorld(nv);
+        vec3 eS = envWorld(r, 0.012);
+        float Ls = lum3(eS);
+        float Fg = 0.04 + 0.96 * pow(1.0 - ndv, 5.0);
+        // fond nuit à faible profondeur, points fins qui scintillent avec l'angle (pas de bruit de pixels : rayon >= 1 px)
+        vec3 pf = p + par * 0.005;
+        float st = l2Points(pf, 0.0045, 0.00045, px, r, 3.0) + 0.6 * l2Points(pf + par * 0.004, 0.0032, 0.00035, px, r, 11.0);
+        vec3 fond = mix(hexc(0x03060c), hexc(0x0a2230), smoothstep(0.3, 0.8, fbm(pf * vec3(18.0, 30.0, 30.0), 2)));
+        float lis = (1.0 - smoothstep(0.0, 0.0022, -sd)) * smoothstep(1.0, 2.5, 0.0022 / px);
+        vec3 glass = film * (0.42 + 0.7 * pow(Ls, 0.75)) * (1.0 + 0.6 * lis) + eS * Fg * 0.55
+                   + (fond + st * vec3(0.75, 0.95, 1.0)) * (1.0 - film * 0.6);
+        col = glass * verre;
+        em = st * vec3(0.5, 0.85, 1.0) * 0.35 * verre + film * 0.03 * verre;
+    }
+    if (verre < 1.0) {
+        // argent brossé : reflet étiré en travers des stries (moyenne de trois normales penchées en travers), stries fines
+        // effacées de loin ; chanfrein poli autour du verre (penché vers le verre)
+        float ch = (1.0 - smoothstep(0.0, 0.0022, sd)) * smoothstep(1.0, 2.5, 0.0022 / px);
+        vec3 nf = normalize(nv - (tbn[0] * gd.x + tbn[1] * gd.y) * 0.9 * ch);
+        float strie = (vnoise(vec3(uv.x * 40.0, uv.y * 1500.0, axe * 7.0)) - 0.5) * (1.0 - smoothstep(0.0004, 0.0012, px));
+        vec3 bt = tbn[1];
+        vec3 fr = envWorld(reflWorld(normalize(nf + bt * 0.14)), 0.12) + envWorld(reflWorld(normalize(nf - bt * 0.14)), 0.12)
+                + envWorld(reflWorld(normalize(nf + bt * strie * 0.3)), 0.06);
+        float fnd = facing(nf);
+        vec3 F0 = vec3(0.82, 0.84, 0.86);
+        vec3 F = F0 + (vec3(1.0) - F0) * pow(1.0 - fnd, 5.0);
+        vec3 argent = (fr * 0.3333 * F * 0.82 + F0 * 0.05) * vec3(0.96, 0.99, 1.0) * (1.0 + 0.06 * strie);
+        col += argent * (1.0 - verre);
+    }
+    return col * reliefMetal(0.55);
+}
+
+// ------------------------------------------------------------------ 88 Vipère (légendaire)
+// écailles de serpent en relief, en quinconce, qui se recouvrent (celle qui est le plus vers le canon passe dessus, bord libre
+// relevé vers la crosse), carène au milieu ; or poli (chaque écaille renvoie le décor à sa façon) ; robe de vipère : réseau de
+// losanges d'écailles noires (or noir, reflets irisés de biais) bordées d'écailles d'or pâle ; ombre de chaque écaille sur
+// celles qu'elle recouvre
+const float L2_EW = 0.024, L2_EH = 0.0085;
+
+// robe au point c de l'arme : grandes selles (taches étirées le long de l'arme), lues dans un champ lisse en 3D : le dessin
+// passe d'une pièce à l'autre sans coupure
+float l2Robe(vec3 c) {
+    return 0.5 + 2.6 * (fbm(c * vec3(6.5, 11.0, 11.0) + vec3(3.0, 7.0, 1.0), 3) - 0.44);
+}
+
+// or noir poli aux reflets irisés de biais (comme une peau de serpent arc-en-ciel)
+vec3 l2NoirIrise(vec3 n) {
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 e = envWorld(r, 0.03);
+    float F = 0.08 + 0.92 * pow(1.0 - ndv, 4.0);
+    vec3 irid = spectrum(fract(0.55 + 1.6 * (1.0 - ndv) + 0.15 * r.y));
+    return hexc(0x060504) + e * e * 0.12 * F + irid * pow(1.0 - ndv, 2.0) * 0.16 * (0.4 + 0.6 * min(lum3(e), 1.5));
+}
+
+vec3 l2Vipere(vec3 p, out vec3 em) {
+    NO_SHADE = 0.45;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    float axe;
+    vec2 uv = l2Plan(p, fn, axe);
+    mat3 tbn = ncRepere(nv, uv);
+    float pps = L2_EW / px;
+    float fine = smoothstep(3.0, 7.0, pps);
+    // écaille visible : parmi les 9 voisines, celle qui couvre le point et dont le centre est le plus vers le canon ;
+    // demi-diagonales du losange de pavage : 0.5 dans les deux sens (coordonnées réduites)
+    const float RS = 0.55, EXPO = 1.8;
+    float j0 = floor(uv.y / L2_EH);
+    float Fk[9];
+    float Ck[9];
+    float bu = -1e9, bF = 9.0;
+    vec2 bq = vec2(0.0), bc = vec2(0.0);
+    for (int k = 0; k < 9; k++) {
+        float j = j0 + float(k / 3 - 1);
+        float off = 0.5 * mod(j, 2.0);
+        float i = floor(uv.x / L2_EW - off + 0.5) + float(k - (k / 3) * 3 - 1);
+        vec2 c = vec2((i + off) * L2_EW, (j + 0.5) * L2_EH);
+        vec2 q = (uv - c) / vec2(L2_EW, 2.0 * L2_EH);
+        vec2 aq = abs(q) + 1e-6;
+        float F = pow(pow(aq.x, EXPO) + pow(aq.y, EXPO), 1.0 / EXPO) / RS;
+        Fk[k] = F;
+        Ck[k] = c.x + 0.001 * c.y;
+        if (F < 1.0 && Ck[k] > bu) {
+            bu = Ck[k];
+            bF = F;
+            bq = q;
+            bc = c;
+        }
+    }
+    // ombre portée : écailles placées au-dessus (plus vers le canon) dont le bord libre passe tout près
+    float ombre = 0.0;
+    for (int k = 0; k < 9; k++) {
+        if (Ck[k] > bu + 1e-5) ombre = max(ombre, 1.0 - smoothstep(1.0, 1.16, Fk[k]));
+    }
+    // relief de l'écaille (hauteur en unités de l'arme) : bombée, bord libre relevé vers la crosse, carène au milieu
+    float qy = bq.y;
+    float dhx = -2.0 * bq.x / (RS * RS) * 0.6 - 0.3;
+    float dhy = -2.0 * qy / (RS * RS) * 0.6 - 0.12 * qy / sqrt(qy * qy + 0.0006);
+    float Hs = 0.17 * L2_EW;
+    vec2 pente = vec2(dhx * Hs / L2_EW, dhy * Hs / (2.0 * L2_EH)) * fine;
+    vec3 n = normalize(tbn * vec3(-pente, 1.0));
+    // robe : couleur de l'écaille (motif lu à son centre) ; de loin (écailles sous ~3 pixels) motif lissé au pixel
+    float rb = mix(l2Robe(p), l2Robe(l2Point(p, bc, axe)), smoothstep(1.5, 3.0, pps));
+    // contour noir de la selle, cœur bronze sombre, écailles d'or pâle juste autour
+    float wNoir = 1.0 - smoothstep(0.045, 0.06, abs(rb - 0.6));
+    float wCoeur = smoothstep(0.64, 0.66, rb) * (1.0 - wNoir);
+    float wPale = (1.0 - smoothstep(0.03, 0.05, abs(rb - 0.515))) * (1.0 - wNoir) * (1.0 - wCoeur);
+    vec3 he = hash3(vec3(bc * 37.0, axe));
+    float ecl;
+    vec3 gold = l2MetalJaune(n, 0.03, 0.0, ecl) * (0.9 + 0.2 * he.x);
+    vec3 pale = mix(gold, vec3(lum3(gold)) * vec3(1.05, 1.0, 0.86), 0.35) * 1.08;
+    vec3 col = mix(gold, pale, wPale);
+    col = mix(col, gold * vec3(0.5, 0.33, 0.2), wCoeur);
+    if (wNoir > 0.0) col = mix(col, l2NoirIrise(n), wNoir);
+    // liseré du bord libre (épaisseur de l'écaille) et ombre sur les écailles recouvertes : de près seulement
+    col *= 1.0 - 0.45 * smoothstep(0.86, 0.995, bF) * fine;
+    col *= 1.0 - 0.6 * ombre * fine;
+    em = gold * ecl * 0.25 * (1.0 - wNoir) * (1.0 - ombre);
+    return col * reliefMetal(0.55);
+}
+
+// ------------------------------------------------------------------ 89 Rouages (légendaire, animé)
+// mouvement d'horlogerie vivant : roues ajourées en laiton poli (jante, bras, dents), grandes et petites en damier, qui
+// s'engrènent toutes et tournent (deux voisines en sens contraire, la petite 1,5 fois plus vite) ; petits pignons d'acier
+// bleui avec un rubis serti en chaton d'or, posés au-dessus aux coins ; platine anthracite à côtes de Genève très douces ;
+// sous chaque roue, une lueur vert d'eau qui pulse (l'énergie qui fait tourner le mécanisme) se voit à travers les ajours ;
+// chanfreins polis, ombres portées
+const float L2_RC = 0.064;
+
+// roue dentée de centre c (rayon primitif R, N dents, K bras), angle phi : couverture du métal (bords adoucis sur un pixel) ;
+// ajour : où le fond se voit à travers la roue ; dch : direction (plan du motif) vers laquelle penche le chanfrein ; cf :
+// force du chanfrein. Hauteur des dents : moitié du pas (même pas pour toutes les roues : elles s'engrènent)
+float l2Roue(vec2 uv, vec2 c, float R, float N, float K, float phi, float px, out float ajour, out vec2 dch, out float cf) {
+    vec2 d = uv - c;
+    float r = length(d) + 1e-7;
+    vec2 rad = d / r;
+    float th = atan(d.y, d.x) - phi;
+    float Ht = 0.5 * TAU * R / N;
+    float Rr = R - 0.5 * Ht, Ro = R + 0.5 * Ht;
+    // dents : trapèzes (plus étroits en tête) ; de loin (période sous ~3 pixels), couronne moyenne
+    float a = fract(th * N / TAU + 0.5) - 0.5;
+    float wt = mix(0.27, 0.15, clamp((r - Rr) / (Ro - Rr), 0.0, 1.0));
+    float per = TAU * r / N;
+    float sdDent = min((wt - abs(a)) * per, Ro - r);
+    float covD = smoothstep(-0.5 * px, 0.5 * px, sdDent);
+    covD = mix(0.42 * (1.0 - smoothstep(Ro - 0.5 * px, Ro + 0.5 * px, r)), covD, smoothstep(2.0, 4.0, per / px));
+    float covOut = max(covD, 1.0 - smoothstep(Rr - 0.5 * px, Rr + 0.5 * px, r));
+    // ajours : entre la jante, le moyeu et les bras (bras droits, un peu plus larges au moyeu)
+    float rimW = 0.19 * R, hubR = 0.25 * R;
+    float ks = floor(th * K / TAU + 0.5);
+    float ang = ks * TAU / K;
+    float dS = r * abs(sin(th - ang));
+    float ws = R * mix(0.12, 0.085, clamp((r - hubR) / (Rr - rimW - hubR), 0.0, 1.0));
+    float t1 = Rr - rimW - r, t2 = r - hubR, t3 = dS - ws;
+    float sdCut = min(min(t1, t2), t3);
+    float cov = covOut * (1.0 - smoothstep(-0.5 * px, 0.5 * px, sdCut));
+    ajour = covOut * smoothstep(-0.5 * px, 0.5 * px, sdCut);
+    // chanfrein : vers l'ajour le plus proche (dans le métal), ou vers l'extérieur au bord de la roue
+    float bw = 0.07 * R;
+    vec2 sp = vec2(cos(ang + phi), sin(ang + phi));
+    vec2 perp = d - sp * dot(d, sp);
+    vec2 g3 = perp / (length(perp) + 1e-9);
+    dch = t1 < t2 && t1 < t3 ? -rad : (t2 < t3 ? rad : g3);
+    cf = (1.0 - smoothstep(0.0, bw, -sdCut)) * step(sdCut, 0.0);
+    float sdo = r < Rr ? Rr - r : sdDent;
+    float co = (1.0 - smoothstep(0.0, bw, sdo)) * step(0.0, sdo);
+    if (co > cf) {
+        cf = co;
+        dch = rad;
+    }
+    cf *= smoothstep(1.0, 2.5, bw / px);
+    return cov;
+}
+
+// acier bleui poli (pignons) : le reflet du décor passe par une rampe bleu nuit -> bleu roi -> bleu ciel
+vec3 l2AcierBleu(vec3 n) {
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    float L = lum3(envWorld(r, 0.05)) + 0.06;
+    L += 0.4 * pow(1.0 - ndv, 5.0);
+    float tt = 1.0 - exp(-0.9 * L);
+    float s[6] = float[6](0.0, 0.2, 0.42, 0.62, 0.82, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x02040e), hexc(0x081a4a), hexc(0x1438a0), hexc(0x2f62d8), hexc(0x7fb0ff), hexc(0xe6f2ff));
+    return ramp6(tt, s, c);
+}
+
+vec3 l2Rouages(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.4;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    float axe;
+    vec2 uv = l2Plan(p, fn, axe);
+    mat3 tbn = ncRepere(nv, uv);
+    // dessus et dessous : une rangée de roues centrée sur la ligne du milieu de l'arme
+    uv.y += axe > 0.5 && axe < 1.5 ? 0.5 * L2_RC : 0.0;
+    // ombre portée : lumière venue d'en haut du motif
+    const vec2 OMB = vec2(0.0022, -0.003);
+    // --- roues (laiton) en damier : grandes (rayon primitif 0,6 pas, 24 dents) et petites (0,4 pas, 16 dents) ; même pas
+    // de denture, la petite décalée d'une demi-dent : toutes les voisines s'engrènent (24 et 16 : multiples de 4, aussi en
+    // vertical). Les quatre centres autour du point suffisent. Animation de 4 s qui boucle exactement : en 4 s la grande
+    // roue (6 bras) tourne d'un sixième de tour, la petite (4 bras) d'un quart, le pignon (3 bras) d'un tour
+    float w = PI / 12.0 * t;
+    vec2 g0 = floor(uv / L2_RC - 0.5);
+    float cov1 = 0.0, aj1 = 0.0, cf1 = 0.0, omb1 = 0.0, puits = 0.0, rc1 = 1.0;
+    vec2 dch1 = vec2(0.0), cen1 = vec2(0.0);
+    float hub1 = 9.0;
+    for (int k = 0; k < 4; k++) {
+        vec2 ij = g0 + vec2(float(k - (k / 2) * 2), float(k / 2));
+        vec3 h = hash3(vec3(ij, 7.0 + axe));
+        vec2 c = (ij + 0.5) * L2_RC;
+        bool grande = mod(ij.x + ij.y, 2.0) < 0.5;
+        float R = (grande ? 0.6 : 0.4) * L2_RC;
+        float N = grande ? 24.0 : 16.0;
+        float phi = grande ? w : -1.5 * w + PI / 16.0;
+        float K = grande ? 6.0 : 4.0;
+        float aj, cf;
+        vec2 dch;
+        float cv = l2Roue(uv, c, R, N, K, phi, px, aj, dch, cf);
+        omb1 = max(omb1, 1.0 - smoothstep(R * 0.93, R * 1.07, length(uv - OMB - c)));
+        if (cv > cov1) {
+            cov1 = cv;
+            dch1 = dch;
+            cf1 = cf;
+            cen1 = c;
+            rc1 = R;
+        }
+        aj1 = max(aj1, aj);
+        float rr = length(uv - c);
+        puits = max(puits, 1.0 - smoothstep(R * 0.66, R * 0.8, rr));
+        hub1 = min(hub1, rr / R);
+    }
+    // --- pignons (acier bleui, rubis) aux coins de la grille, au-dessus des roues ; un coin sur trois environ
+    // coin de la grille le plus proche
+    vec2 cn = floor(uv / L2_RC + 0.5);
+    vec3 hp = hash3(vec3(cn, 13.0 + axe));
+    float cov2 = 0.0, cf2 = 0.0, omb2 = 0.0, rub = 0.0, chaton = 0.0;
+    vec2 dch2 = vec2(0.0), dq = vec2(0.0);
+    float R2 = 0.17 * L2_RC;
+    if (hp.x > 0.64) {
+        vec2 c = cn * L2_RC;
+        float phi = (hp.y < 0.5 ? 1.0 : -1.0) * (TAU / 4.0) * t + hp.z * TAU;
+        float aj, cf;
+        vec2 dch;
+        cov2 = l2Roue(uv, c, R2, 10.0, 3.0, phi, px, aj, dch, cf);
+        cf2 = cf;
+        dch2 = dch;
+        omb2 = 1.0 - smoothstep(R2 * 0.95, R2 * 1.12, length(uv - OMB * 1.5 - c));
+        dq = (uv - c) / (0.045 * L2_RC);
+        float rq = length(dq);
+        float aq = px / (0.045 * L2_RC);
+        rub = 1.0 - smoothstep(1.0 - aq, 1.0 + aq, rq);
+        chaton = (1.0 - smoothstep(1.4 - aq, 1.4 + aq, rq)) * (1.0 - rub);
+        cov2 = max(cov2, rub + chaton);
+    }
+    // de loin (une case de la grille sous ~20 pixels) : roues fondues en leur teinte moyenne, sans pignons ni chanfreins
+    // (bras, jantes et dents de 1 à 3 pixels feraient du bruit de pixels en vue joueur)
+    float lodR = smoothstep(9.0, 20.0, L2_RC / px);
+    cov1 = mix(0.6, cov1, lodR);
+    cf1 *= lodR;
+    cov2 *= lodR;
+    rub *= lodR;
+    chaton *= lodR;
+    // --- fond (platine, ou puits d'énergie sous les roues) : seulement là où une roue ne le cache pas
+    vec3 col = vec3(0.0);
+    em = vec3(0.0);
+    if (cov1 < 0.999) {
+        // platine : côtes de Genève très douces (bandes brossées en arc : la normale penche d'un bord à l'autre), acier
+        // anthracite ; effacées de loin
+        vec2 dirC = normalize(vec2(1.0, 0.55));
+        float fC = fract(dot(uv, dirC) / 0.011) - 0.5;
+        float tiltC = fC * 0.12 * (1.0 - smoothstep(0.0012, 0.003, px));
+        vec3 nC = normalize(nv + (tbn[0] * dirC.x + tbn[1] * dirC.y) * tiltC);
+        vec3 platine = hexc(0x0a0b0d) + envWorld(reflWorld(nC), 0.25) * 0.14 * vec3(0.9, 0.95, 1.0);
+        // puits d'énergie sous les roues : vert d'eau qui pulse et circule (vu à travers les ajours) ; une vague de lumière
+        // court le long de l'arme, de la crosse vers le canon (boucle de 4 s)
+        float fl = fbm(vec3(uv * 60.0, 0.0) + vec3(0.6 * cos(TAU * t / 4.0), 0.6 * sin(TAU * t / 4.0), 0.0), 3);
+        float vague = pow(0.5 + 0.5 * sin(TAU * (p.x * 1.5 - t / 4.0)), 8.0);
+        float pouls = 0.55 + 0.25 * sin(TAU * t / 4.0 - hub1 * 3.0) + 0.9 * vague;
+        vec3 nrj = mix(hexc(0x01100f), hexc(0x16e6c4), smoothstep(0.45, 0.85, fl)) * pouls * (1.0 - 0.55 * smoothstep(0.2, 0.75, hub1));
+        col = mix(platine, nrj * 0.55 + hexc(0x021010), puits) * (1.0 - 0.6 * omb1 * (1.0 - cov1));
+        em = nrj * puits * (1.0 - cov1) * 0.9 * (1.0 - cov2);
+    }
+    if (cov1 > 0.0) {
+        vec3 nb = normalize(nv + (tbn[0] * dch1.x + tbn[1] * dch1.y) * 0.8 * cf1);
+        float ecl;
+        vec3 laiton = l2MetalJaune(nb, 0.04, 1.0, ecl);
+        // arbre au centre de la roue (acier sombre poli)
+        float ra = 0.09 * rc1;
+        float arbre = 1.0 - smoothstep(ra - px, ra + px, length(uv - cen1));
+        laiton = mix(laiton, hexc(0x1a1c20) + envWorld(reflWorld(nv), 0.05) * 0.35, arbre);
+        col = mix(col, laiton, cov1);
+        em += laiton * ecl * 0.15 * cov1;
+    }
+    col *= 1.0 - 0.55 * omb2 * (1.0 - cov2);
+    if (cov2 > 0.0) {
+        vec3 ns = normalize(nv + (tbn[0] * dch2.x + tbn[1] * dch2.y) * 0.8 * cf2);
+        vec3 acier = l2AcierBleu(ns);
+        // rubis en cabochon (bombé) dans un chaton d'or
+        vec3 nr = normalize(tbn * vec3(dq * 0.6, 1.0));
+        float spec = pow(max(dot(reflWorld(nr), normalize(vec3(0.42, 0.68, -0.6))), 0.0), 40.0);
+        vec3 rubis = mix(hexc(0x3a0008), hexc(0xc80c28), 0.3 + 0.7 * (1.0 - min(length(dq), 1.0) * 0.7))
+                   + spec * vec3(1.0, 0.8, 0.85) * 1.5 + lum3(envWorld(reflWorld(nr), 0.1)) * hexc(0xff4060) * 0.1;
+        float eo;
+        vec3 orC = l2MetalJaune(nv, 0.05, 0.0, eo);
+        vec3 pig = mix(acier, orC, chaton);
+        pig = mix(pig, rubis, rub);
+        col = mix(col, pig, min(cov2, 1.0));
+        em += rubis * rub * 0.1;
+    }
+    return col * reliefMetal(0.5);
+}
+
+// ------------------------------------------------------------------ 212 Prisme (skin X mythique, animé)
+// cristal taillé : éclats (Voronoï 3D, bords droits) taillés en pyramide basse, une facette par voisin (chaque facette est un
+// petit miroir penché) ; teintes de joyau (indigo, violet, magenta, bleu électrique, cyan, quelques éclats d'ambre)
+// regroupées par zones ; chaque facette renvoie le décor lié au monde dans sa teinte, dispersion (franges spectrales) sur les
+// reflets forts, éclairs de soleil sur les facettes ; arêtes en lumière fine ; une onde de lumière intérieure parcourt
+// l'arme lentement (émission : il luit la nuit) ; petites pièces et poignée en verre noir poli
+vec3 l2Joyau(float h) {
+    float s[6] = float[6](0.0, 0.2, 0.4, 0.6, 0.8, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x1c0c90), hexc(0x5a1ee0), hexc(0x9a2cf2), hexc(0xd42cc8), hexc(0x2a48ff), hexc(0x16c4ff));
+    return ramp6(h, s, c);
+}
+
+vec3 l2Prisme(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.5;
+    vec3 nv = normalize(viewNormal);
+    vec3 dpx = dFdx(p), dpy = dFdy(p), sx = dFdx(viewPos), sy = dFdy(viewPos);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    const vec3 S = vec3(21.0, 33.0, 33.0);
+    vec3 q = p * S;
+    vec3 c1, p1, p2;
+    l2Voronoi(q, 0.8, c1, p1, p2);
+    vec3 gb;
+    float e = l2Bord(q, p1, p2, S, fn, gb);
+    vec3 hc = l2Hash3(c1 + 9.1);
+    vec3 ht = l2Hash3(c1 + 2.3);
+    // facette : la pyramide de l'éclat descend vers le voisin p2 (pente de 20 à 40 degrés), plus une inclinaison propre
+    vec3 g = -gb * (0.38 + 0.42 * hc.x) + (ht - 0.5) * 0.3;
+    vec3 n = l2Pente(nv, g, dpx, dpy, sx, sy);
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 env = envWorld(r, 0.02);
+    float L = lum3(env);
+    // teinte : zones lentes sur l'arme + écart propre à l'éclat ; un éclat sur 14 en ambre
+    float zone = 0.25 + 0.5 * vnoise(p * vec3(1.8, 2.6, 2.6) + vec3(5.0, 1.0, 3.0));
+    float h = clamp(0.45 + 2.2 * (zone - 0.5) + 0.45 * (hc.y - 0.5) + 0.32 * dot(r, normalize(vec3(0.5, 0.75, -0.4))), 0.0, 1.0);
+    vec3 gem = hc.z > 0.955 ? mix(hexc(0xff9a1a), hexc(0xffd86a), hc.x) : l2Joyau(h);
+    // la lumière se concentre près des arêtes de l'éclat (cœur plus profond)
+    gem *= 0.8 + 0.45 * (1.0 - smoothstep(0.0, 0.007, -e));
+    float F = 0.05 + 0.95 * pow(1.0 - ndv, 5.0);
+    vec3 col = gem * (0.03 + 0.8 * pow(L, 1.35)) + env * F * 0.22;
+    // dispersion : franges spectrales sur les reflets forts, propres à chaque facette
+    float fs = smoothstep(1.1, 3.0, L);
+    col += spectrum(fract(dot(r, vec3(1.7, 2.3, 1.1)) * 1.4 + hc.x)) * fs * 0.4;
+    // éclair de soleil sur la facette, éclat qui s'allume de temps en temps
+    float soleil = pow(max(dot(r, normalize(vec3(0.42, 0.68, -0.6))), 0.0), 260.0);
+    float tw = pow(max(0.0, sin(TAU * t / 4.0 + hc.z * 60.0)), 30.0) * step(0.7, ht.z);
+    // arêtes des éclats : fil de lumière
+    float arete = ncTrait(e, 0.00055, px);
+    col = mix(col, mix(gem, vec3(0.85, 0.92, 1.0), 0.4) * (0.45 + 0.45 * min(L, 2.0)), arete * 0.55);
+    // onde de lumière intérieure qui parcourt l'arme (de la crosse vers le canon)
+    float onde = pow(0.5 + 0.5 * sin(p.x * 8.0 - TAU * t / 4.0 + hc.y * 2.0), 6.0);
+    em = gem * (0.1 + 0.5 * onde) * (0.6 + 0.4 * hc.x) + arete * vec3(0.55, 0.8, 1.0) * (0.2 + 0.4 * onde)
+       + (soleil * 2.0 + tw * 0.8) * mix(gem, vec3(1.0), 0.6);
+    // petites pièces et poignée : verre noir poli
+    float acc = clamp((1.0 - smoothstep(0.004, 0.009, abs(PART - 0.97))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 0.985))), 0.0, 1.0);
+    if (acc > 0.0) {
+        float nd = facing(nv);
+        vec3 en = envWorld(reflWorld(nv), 0.015);
+        vec3 noir = hexc(0x050409) + en * en * 0.45 * (0.06 + 0.94 * pow(1.0 - nd, 4.0)) + hexc(0x3a1a80) * pow(1.0 - nd, 2.0) * 0.2;
+        col = mix(col, noir, acc);
+        em *= 1.0 - acc;
+    }
+    return col * reliefMetal(0.55);
+}
+#endif
+
 vec3 camoColor(int id, vec3 p, out vec3 em) {
     em = vec3(0.0);
 #if CAMO_ID == 1
@@ -4367,6 +5059,16 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
     return neon(p, em);
 #elif CAMO_ID == 84
     return rubis(p, em);
+#elif CAMO_ID == 85
+    return l2Forge(p, em);
+#elif CAMO_ID == 86
+    return l2OrCraquele(p, em);
+#elif CAMO_ID == 87
+    return l2Dichroique(p, em);
+#elif CAMO_ID == 88
+    return l2Vipere(p, em);
+#elif CAMO_ID == 89
+    return l2Rouages(p, em);
 #elif CAMO_ID >= 200
     return skinSurface(p, em);
 #elif (CAMO_ID >= 50 && CAMO_ID < 70) || (CAMO_ID >= 100 && CAMO_ID < 200)
@@ -4444,8 +5146,8 @@ void main() {
     color.rgb += em;
     if (CamoReveal >= 0.0) {
         // apparition : derrière le front l'arme est faite ; devant, un hologramme sombre strié de lumière ; le front brille
-        // front orange (201, Phénix 210) ou bleu ; aucun skin n'a d'apparition aujourd'hui (SkinReveal.has)
-        vec3 rc = CamoId == 201 || CamoId == 210 ? vec3(1.0, 0.78, 0.3) : vec3(0.35, 0.85, 1.0);
+        // front orange (201, Phénix 210), violet (Prisme 212) ou bleu ; aucun skin n'a d'apparition aujourd'hui (SkinReveal.has)
+        vec3 rc = CamoId == 201 || CamoId == 210 ? vec3(1.0, 0.78, 0.3) : CamoId == 212 ? vec3(0.72, 0.42, 1.0) : vec3(0.35, 0.85, 1.0);
         float gx = pm.x + 0.5;
         float front = CamoReveal * 1.08 - 0.04;
         float d = gx - front;

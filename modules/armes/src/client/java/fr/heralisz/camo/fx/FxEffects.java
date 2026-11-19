@@ -13,6 +13,8 @@ public final class FxEffects {
       // 19/11 : Phénix (ailes de flammes, braises) et Abysses (filaments bioluminescents, plancton)
       EFFECTS.put(210, new FxPhenix());
       EFFECTS.put(211, new FxAbysses());
+      // 19/11, 2e lot : Prisme (éclats de cristal en orbite, comme un atome)
+      EFFECTS.put(212, new FxPrisme());
       // (72 Dark Matter Origine, piquots visqueux : retiré en 0.9.12, voir _retires/dark_matter_origin_0.9.11)
       EFFECTS.put(70, new FxLegacy.Storm());
    }

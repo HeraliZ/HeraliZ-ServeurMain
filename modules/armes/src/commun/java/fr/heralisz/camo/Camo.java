@@ -64,6 +64,12 @@ public enum Camo {
    PATINE("patine", 82, Tier.RARE, Camo.ALL),
    NEON("neon", 83, Tier.EPIC, Camo.ALL),
    RUBIS("rubis", 84, Tier.LEGENDARY, Camo.ALL),
+   // 2e lot du 19/11 (demandé par le propriétaire), lui aussi entièrement dessiné par le shader
+   FORGE("forge", 85, Tier.RARE, Camo.ALL),
+   OR_CRAQUELE("or_craquele", 86, Tier.EPIC, Camo.ALL),
+   DICHROIQUE("dichroique", 87, Tier.EPIC, Camo.ALL),
+   VIPERE("vipere", 88, Tier.LEGENDARY, Camo.ALL),
+   ROUAGES("rouages", 89, Tier.LEGENDARY, Camo.ALL),
    // (72 Dark Matter Origine, le Dark Matter à piquots visqueux, retiré en 0.9.12 : son id est lu comme DARK_MATTER, voir byId)
    // (73 à 75 Pack-a-Punch I à III, camos du mode Zombies retiré, supprimés le 02/11 : plus rien ne les donnait ; une arme
    // qui porte encore « pap_1 » à « pap_3 » s'affiche sans camo, voir byId)
@@ -72,7 +78,9 @@ public enum Camo {
    CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL),
    // 19/11 : Phénix (ailes de flammes) et Abysses (filaments bioluminescents), rendus validés par le propriétaire
    PHENIX("phenix", 210, Tier.MYTHIC, Camo.ALL),
-   ABYSSES("abysses", 211, Tier.MYTHIC, Camo.ALL);
+   ABYSSES("abysses", 211, Tier.MYTHIC, Camo.ALL),
+   // 19/11, 2e lot : Prisme (éclats de cristal en orbite autour de l'arme)
+   PRISME("prisme", 212, Tier.MYTHIC, Camo.ALL);
    // (230 à 233 Texture manquante, Money Gun, Surchauffe et Trophée, skins « buzz », supprimés le 04/11 : choix du
    // propriétaire, seuls Séraphin et Chaînes de l'Enfer restent mythiques ; une arme qui porte encore un de ces ids
    // s'affiche sans camo, un id gardé dans une collection est ignoré, voir byId)

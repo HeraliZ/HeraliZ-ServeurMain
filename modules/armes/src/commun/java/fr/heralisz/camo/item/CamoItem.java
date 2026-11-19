@@ -40,7 +40,8 @@ public class CamoItem extends Item {
 
    /**
     * Ce camo peut-il aller sur un sac ? Pas un skin réservé à une arme, ni un skin à vie (skins X : Séraphin, Chaînes de
-    * l'Enfer, Phénix, Abysses : seulement par la collection, jamais consommé). Même règle pour l'artisanat (CamoBagRecipe).
+    * l'Enfer, Phénix, Abysses, Prisme : seulement par la collection, jamais consommé). Même règle pour l'artisanat
+    * (CamoBagRecipe).
     */
    public static boolean vaSurUnSac(Camo camo) {
       return camo.gun == null && !fr.heraliz.tactique.avie.ObjetsAVie.estSkinAVie(camo);

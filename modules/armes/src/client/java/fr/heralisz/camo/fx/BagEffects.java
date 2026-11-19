@@ -21,6 +21,7 @@ public final class BagEffects {
       EFFECTS.put(209, new BagInferno());
       EFFECTS.put(210, new BagPhenix());
       EFFECTS.put(211, new BagAbysses());
+      EFFECTS.put(212, new BagPrisme());
    }
 
    private BagEffects() {

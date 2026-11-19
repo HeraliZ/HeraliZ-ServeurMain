@@ -348,3 +348,35 @@ donne). Pour les essais (staff) : onglet HeraliZ · Tactique, groupe Camos, ou `
 - [ ] Caisse Événement, aperçu : Opale et Néon 0,59 %, Marbre noir et Rubis 1,13 %, Phénix et Abysses 1 % ; les autres
       camos gardent leurs chances ; hérals 32,6 % en tout au lieu de 38 %.
 - [ ] FPS pareils qu'avec le Diamant ou le Séraphin : camo en main, et plusieurs joueurs avec Phénix ou Abysses autour.
+
+## 18. Six nouveaux camos, 2e lot (19/11, demandés par le propriétaire)
+
+Forge (Rare), Or craquelé (Épique), Dichroïque (Épique), Vipère (Légendaire), Rouages (Légendaire, animé) et un skin X
+(Unique, avec effet 3D) : Prisme. Tactique 2.59.0 : tout le monde doit avoir la nouvelle version (le launcher la donne).
+Pour les essais (staff) : onglet HeraliZ · Tactique, groupe Camos, ou `/give @s heralisz_camo:camo_forge` (puis
+`camo_or_craquele`, `camo_dichroique`, `camo_vipere`, `camo_rouages`, `skinx_prisme`). **Rien de tout cela n'a été testé
+en jeu** (rendus hors jeu seulement).
+- [ ] Les 6 objets : nom de la couleur de leur rareté (Forge bleu, Or craquelé et Dichroïque violet, Vipère et Rouages or,
+      Prisme rouge), icône (losange pour les camos, cadre rouge pour le Prisme), textes en français, anglais et russe.
+- [ ] En main et vu par un autre joueur, chaque camo ressemble aux planches du concept : Forge (acier martelé, auréoles de
+      chauffe paille, pourpre et bleu), Or craquelé (or brisé puis recollé, joints noirs, reflets qui s'allument éclat par
+      éclat), Dichroïque (verre vert d'eau qui vire au bleu et au violet de biais, cadre d'argent brossé), Vipère (écailles
+      d'or en relief, grandes taches sombres), Rouages (roues de laiton qui s'engrènent et tournent, lueur vert d'eau).
+- [ ] Dichroïque, Vipère et Rouages sont posés face par face (comme le Diamant) : coupés aux arêtes, c'est normal ; pas de
+      grésillement en bougeant la vue. Rouages sur un pistolet : le motif n'est-il pas trop serré ?
+- [ ] Rouages, Prisme et un peu le Dichroïque brillent la nuit.
+- [ ] Prisme : cristal taillé violet, magenta, bleu et cyan (quelques éclats d'ambre), une onde de lumière qui court de la
+      crosse vers le canon ; quinze éclats de cristal tournent autour de l'arme sur trois orbites, comme un atome, avec
+      leurs traînées de couleur, des étincelles et une lueur au centre.
+- [ ] Vu par le porteur, l'effet n'est qu'un soupçon (orbites plus petites), comme le Séraphin : il disparaît en visée et
+      juste après un tir, le centre de l'écran reste dégagé.
+- [ ] Sur un sac (skin X posé depuis la collection) : le même atome, en grand, dans le dos (trois orbites, éclats,
+      traînées, étincelles). **Pas de rendu validé pour le sac** : à regarder en premier.
+- [ ] Le Prisme est un objet à vie (gardé à la mort, « Jeter cet objet ? » avant de le sortir de l'inventaire).
+- [ ] Caisse Camo, aperçu : stickers et module StatTrak à 10 % en tout (leur minimum, au lieu de 13,3 %) ; pour garder
+      ce minimum, tous les camos baissent un peu ensemble (environ 3 %) : communs 4,67 %, peu communs 3,22 %, rares (dont
+      Forge) 3,14 %, épiques (dont Or craquelé et Dichroïque) 0,68 %, légendaires (dont Vipère et Rouages) 0,48 %, skins X
+      (dont Prisme) 0,72 %.
+- [ ] Caisse Événement, aperçu : Or craquelé et Dichroïque 0,59 %, Vipère et Rouages 1,13 %, Prisme 1 % ; les autres
+      camos gardent leurs chances ; hérals 28,2 % en tout au lieu de 32,6 % (jamais moins de 25 %).
+- [ ] FPS pareils qu'avec le Diamant ou le Séraphin : camo en main, et plusieurs joueurs avec le Prisme autour.

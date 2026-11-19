@@ -186,8 +186,8 @@ vec4 fxInferno(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
 }
 #endif
 
-#if FX_ID == 210 || FX_ID == 211
-// lumière ajoutée (éléments additifs du Phénix et des Abysses) : couleur prémultipliée par son intensité, comme dans les
+#if FX_ID == 210 || FX_ID == 211 || FX_ID == 212
+// lumière ajoutée (éléments additifs du Phénix, des Abysses et du Prisme) : couleur prémultipliée par son intensité, comme dans les
 // rendus validés (au-delà de 1, chaque canal sature : cœurs blancs des flammes) ; le fondu (FxFade, œil) s'applique ensuite
 // dans main ; rien à ajouter : fragment jeté
 vec4 fxAjout(vec3 col, float a) {
@@ -258,6 +258,52 @@ vec4 fxAbysses(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
 }
 #endif
 
+// ------------------------------------------------------------------ 212 Prisme (19/11)
+#if FX_ID == 212
+// teintes de joyau du Prisme (les mêmes que sa surface) ; au-delà de 1 : ambre
+vec3 prsJoyau(float h) {
+    if (h > 1.0) return mix(hexc(0xff9a1a), hexc(0xffd86a), fract(h));
+    float x = clamp(h, 0.0, 1.0) * 5.0;
+    vec3 c = mix(hexc(0x1c0c90), hexc(0x5a1ee0), clamp(x, 0.0, 1.0));
+    c = mix(c, hexc(0x9a2cf2), clamp(x - 1.0, 0.0, 1.0));
+    c = mix(c, hexc(0xd42cc8), clamp(x - 2.0, 0.0, 1.0));
+    c = mix(c, hexc(0x2a48ff), clamp(x - 3.0, 0.0, 1.0));
+    return mix(c, hexc(0x16c4ff), clamp(x - 4.0, 0.0, 1.0));
+}
+vec4 fxPrisme(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
+    vec2 d = uv * 2.0 - 1.0;
+    if (kind == 1) {
+        // éclat de cristal : losange à facettes (quatre faces et une arête centrale) qui tourne sur lui-même (prm.b : angle,
+        // en tours) : ses faces s'allument tour à tour ; liseré de lumière, halo doux autour ; prm.g : teinte
+        float r = abs(d.x) + abs(d.y);
+        float sp = prm.b * TAU;
+        vec3 nf = normalize(vec3(sign(d.x) * 0.75 * cos(sp), sign(d.y) * 0.5, 0.8 + 0.4 * sin(sp) * sign(d.x)));
+        float face = pow(max(dot(nf, normalize(vec3(0.35, 0.6, 0.72))), 0.0), 3.0);
+        vec3 c = prsJoyau(prm.g);
+        float dedans = 1.0 - smoothstep(0.94, 1.0, r);
+        float arete = exp(-abs(d.x) * 30.0) * dedans * 0.6 + exp(-abs(r - 0.97) * 28.0) * 0.8;
+        vec3 col = c * (0.25 + 1.6 * face) * dedans + mix(c, vec3(1.0), 0.6) * (arete + face * face * 0.8 * dedans)
+                 + c * exp(-r * r * 1.6) * 0.35;
+        return fxAjout(col, (dedans * 0.9 + (1.0 - dedans) * exp(-(r - 1.0) * 5.0) * 0.5) * prm.a);
+    }
+    if (kind == 2) {
+        // traînée de l'éclat le long de son orbite (ruban : u de l'éclat (0) au bout (1), v en travers) ; prm.g : teinte
+        float x = (uv.y - 0.5) * 2.0;
+        float y = uv.x;
+        vec3 col = mix(prsJoyau(prm.g), vec3(1.0), 0.25) * (exp(-x * x * 18.0) + 0.35 * exp(-x * x * 3.0));
+        return fxAjout(col, pow(1.0 - y, 2.2) * smoothstep(0.0, 0.05, y) * 0.55 * prm.a);
+    }
+    if (kind == 3) {
+        // étincelle : étoile à quatre branches qui scintille ; prm.g : éclat, prm.b : teinte
+        float st = exp(-abs(d.x) * 12.0) * exp(-abs(d.y) * 2.2) + exp(-abs(d.y) * 12.0) * exp(-abs(d.x) * 2.2) + exp(-dot(d, d) * 9.0);
+        return fxAjout(mix(prsJoyau(prm.b), vec3(1.0), 0.55) * st, prm.g * prm.a);
+    }
+    // lueur douce au centre de l'atome
+    if (kind == 4) return fxAjout(mix(prsJoyau(0.3), prsJoyau(0.55), 0.5) * exp(-dot(d, d) * 2.6), prm.g * prm.a);
+    return vec4(0.0);
+}
+#endif
+
 
 
 
@@ -295,6 +341,8 @@ vec4 fxShade(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
     return fxPhenix(kind, prm, uv, n, v, sd, t);
 #elif FX_ID == 211
     return fxAbysses(kind, prm, uv, n, v, sd, t);
+#elif FX_ID == 212
+    return fxPrisme(kind, prm, uv, n, v, sd, t);
 #else
     return vec4(1.0, 0.0, 1.0, 1.0);
 #endif

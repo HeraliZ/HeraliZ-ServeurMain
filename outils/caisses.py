@@ -23,6 +23,7 @@ devant ce fichier : `/heraliz loot fichier <caisse>` y revient.
 """
 import glob
 import json
+import math
 import re
 import sys
 import zipfile
@@ -109,10 +110,11 @@ for _c, _g in SPECIALITE.items():
 # Sauf camos_chacun <rareté d'origine> et camos_mythiques_chacun (19/11) : pourcentage PAR camo. Un camo ajouté dans
 # cosmetiques.json a alors la même chance que ceux de sa rareté, sans rien prendre aux autres camos : la place qu'il prend
 # est rendue par les récompenses de REMPLISSAGE de la caisse (même proportions entre elles, total de la caisse inchangé).
+# Le remplissage ne descend pas sous REMPLISSAGE_MIN : au-delà, ce sont tous les camos de la caisse qui baissent ensemble.
 COSMETIQUES = RACINE / "outils/donnees/cosmetiques.json"
-# camos mythiques (skins X) : Séraphin et Chaînes de l'Enfer, Phénix et Abysses depuis le 19/11
+# camos mythiques (skins X) : Séraphin et Chaînes de l'Enfer ; Phénix, Abysses et Prisme depuis le 19/11
 CAMOS_MYTHIQUES = ("heralisz_camo:skinx_seraphin", "heralisz_camo:skinx_chaines_enfer", "heralisz_camo:skinx_phenix",
-                   "heralisz_camo:skinx_abysses")
+                   "heralisz_camo:skinx_abysses", "heralisz_camo:skinx_prisme")
 DESACTIVEES = ("sticker", "build", "trauma", "largage", "mere_des_ruines", "porteur_de_peste", "sujet_n07", "sylvorn")
 # finishers (survie, ExecutionType) en deux groupes, du moins au plus travaillé (taille de leur mise en scène) ; chaque
 # groupe partagé entre les caisses Vote et Quête (un sur deux) pour qu'elles ne se ressemblent pas. Le premier
@@ -127,9 +129,11 @@ FINISHERS = {
 # retirés des caisses après le partage Vote / Quête, pour que les autres finishers restent dans leur caisse
 EXCLUSIFS_CASINO = ("main_joker",)
 CAISSES_BETA = {
-    # 19/11 (7 nouveaux camos : Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses) : rares, épiques, légendaires et
-    # skins X à chance fixe PAR camo, celle du 26/10 (13 % pour 4 rares, 12 % pour 17 épiques, 4 % pour 8 légendaires,
-    # 1,5 % pour 2 skins X) ; les stickers et le module StatTrak prennent le reste (REMPLISSAGE)
+    # 19/11 (7 nouveaux camos : Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses ; puis 6 : Forge, Or craquelé,
+    # Dichroïque, Vipère, Rouages, Prisme) : rares, épiques, légendaires et skins X à chance fixe PAR camo, celle du 26/10
+    # (13 % pour 4 rares, 12 % pour 17 épiques, 4 % pour 8 légendaires, 1,5 % pour 2 skins X) ; les stickers et le module
+    # StatTrak prennent le reste (REMPLISSAGE), jamais moins de 10 % (REMPLISSAGE_MIN : depuis le 2e lot, ils sont à 10 %
+    # et tous les camos de la caisse ont baissé ensemble d'environ 3 %)
     "camo": [
         ("camos", "common", 29, "common"), ("camos", "uncommon", 20, "uncommon"), ("camos_chacun", "rare", 13 / 4, "rare"),
         ("camos_chacun", "epic", 12 / 17, "epic"), ("camos_chacun", "legendary", 4 / 8, "legendary"),
@@ -148,7 +152,7 @@ CAISSES_BETA = {
         ("grade", "rescape", 3, 6, "epic"), ("grade", "traqueur", 3, 3.5, "legendary"), ("grade", "roi_de_la_zone", 3, 2, "mythic"),
         ("couteaux_total", 4, 2, "mythic"), ("couteaux_total", 3, 8, "legendary"), ("couteaux_total", 2, 6, "epic"),
         # 19/11 : chance fixe PAR camo, celle du 26/10 (10 % pour 17 épiques, 9 % pour 8 légendaires, 2 % pour 2 skins X) ;
-        # les hérals prennent le reste (REMPLISSAGE)
+        # les hérals prennent le reste (REMPLISSAGE), jamais moins de 25 % (REMPLISSAGE_MIN)
         ("camos_chacun", "epic", 10 / 17, "epic"), ("camos_chacun", "legendary", 9 / 8, "legendary"),
         ("camos_mythiques_chacun", 2 / 2, "mythic"),
         ("emotes", "epic", 13.5, "epic"),
@@ -177,6 +181,11 @@ ECHELLE_BETA = 1000  # poids = pourcentage x ECHELLE_BETA (total d'une caisse = 
 # récompenses qui rendent la place des camos ajoutés (camos_chacun) : réduites ensemble, dans leurs proportions, pour que le
 # total de la caisse reste 100 000 (les chances de tout le reste ne bougent pas)
 REMPLISSAGE = {"camo": ("stickers", "stattrak"), "event": ("herals",)}
+# part minimale du remplissage, en % (19/11, demande du propriétaire : stickers + StatTrak au moins 10 % de la caisse Camo,
+# hérals au moins 25 % de la caisse Événement). Si les camos ajoutés le feraient passer dessous, il reste à ce minimum et
+# tous les camos de la caisse (GENRES_CAMOS) baissent ensemble, dans leurs proportions : les raretés gardent leur écart.
+REMPLISSAGE_MIN = {"camo": 10, "event": 25}
+GENRES_CAMOS = ("camos", "camos_chacun", "camos_mythiques", "camos_mythiques_chacun")
 
 
 def _etoiles():
@@ -220,6 +229,7 @@ def recompenses_beta(nom, lignes):
             out += _groupe(l, (100 - fixe) if par is None else par * len(l), rar)
         return out
     remplissage = []    # indices (dans out) des récompenses de REMPLISSAGE
+    camos = []          # indices (dans out) des camos (GENRES_CAMOS)
     for l in lignes:
         g = l[0]
         debut = len(out)
@@ -277,15 +287,31 @@ def recompenses_beta(nom, lignes):
             out += recompenses([tuple(r)])
         if g in REMPLISSAGE.get(nom, ()):
             remplissage += range(debut, len(out))
+        if g in GENRES_CAMOS:
+            camos += range(debut, len(out))
     if remplissage:
         # le remplissage rend la place prise au-delà de 100 % (camos ajoutés) : total de la caisse ramené à 100 000
         total = sum(x["weight"] for x in out)
         rempl = sum(out[i]["weight"] for i in remplissage)
         cible = rempl - (total - 100 * ECHELLE_BETA)
+        mini = REMPLISSAGE_MIN.get(nom, 0) * ECHELLE_BETA
+        if cible < mini and camos:
+            # pas sous le minimum : la place qui manque est prise à tous les camos ensemble (mêmes proportions), puis le
+            # remplissage prend son minimum exact de la caisse
+            wc = sum(out[i]["weight"] for i in camos)
+            k = (wc - (mini - cible)) / wc
+            if k <= 0:
+                raise SystemExit("[caisses] %s : les camos ne tiennent plus avec %d %% de remplissage" % (nom, REMPLISSAGE_MIN[nom]))
+            for i in camos:
+                out[i] = dict(out[i], weight=max(1, round(out[i]["weight"] * k)))
+            reste = sum(x["weight"] for x in out) - rempl
+            cible = mini * reste / (100 * ECHELLE_BETA - mini)
         if cible <= 0:
             raise SystemExit("[caisses] %s : plus de place pour le remplissage (%s)" % (nom, ", ".join(REMPLISSAGE[nom])))
+        # poids arrondis au plus près ; près du minimum, au-dessus : le remplissage ne passe jamais sous son minimum
+        arrondi = round if cible - len(remplissage) / 2 >= mini else math.ceil
         for i in remplissage:
-            out[i] = dict(out[i], weight=max(1, round(out[i]["weight"] * cible / rempl)))
+            out[i] = dict(out[i], weight=max(1, arrondi(out[i]["weight"] * cible / rempl)))
     return out
 
 

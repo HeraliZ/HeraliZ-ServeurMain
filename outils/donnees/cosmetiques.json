@@ -70,6 +70,10 @@
    "rarity": "rare"
   },
   {
+   "item": "heralisz_camo:camo_forge",
+   "rarity": "rare"
+  },
+  {
    "item": "heralisz_camo:camo_gold",
    "rarity": "epic"
   },
@@ -146,6 +150,14 @@
    "rarity": "epic"
   },
   {
+   "item": "heralisz_camo:camo_or_craquele",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_dichroique",
+   "rarity": "epic"
+  },
+  {
    "item": "heralisz_camo:camo_orion",
    "rarity": "legendary"
   },
@@ -186,6 +198,14 @@
    "rarity": "legendary"
   },
   {
+   "item": "heralisz_camo:camo_vipere",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_rouages",
+   "rarity": "legendary"
+  },
+  {
    "item": "heralisz_camo:skinx_seraphin",
    "rarity": "mythic"
   },
@@ -199,6 +219,10 @@
   },
   {
    "item": "heralisz_camo:skinx_abysses",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_prisme",
    "rarity": "mythic"
   }
  ],
