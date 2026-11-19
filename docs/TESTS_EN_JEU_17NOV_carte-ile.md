@@ -869,7 +869,7 @@ du staff du Coffre (`/clashwar coffre …`), toujours tout de suite sur le fil d
 Suite de l'audit des images par seconde du 19/11 (points 1, 2, 4, 6, 7, 9, 11, 12). Le but : moins de mémoire graphique,
 plus d'à-coups réguliers près des lampes et au casino, plus de gel à la première vue d'une arme ou d'une ville.
 **Rien de tout cela n'a été testé en jeu, aucune image par seconde n'a été mesurée** : tous les gains sont calculés.
-Versions : Armes 2.59.7, Boutique 1.5.18, Bunker 0.14.7, Interface 2.0.14, Loot 0.20.6, Monde 1.3.6, Noyau 1.1.6 (le
+Versions : Armes 2.59.7, Boutique 1.5.18, Bunker 0.14.7, Interface 2.0.14, Loot 0.20.6, Monde 1.3.7, Noyau 1.1.6 (le
 launcher les donne aux joueurs ; aucun changement de canal réseau) ; gunpack `heraliz_5_couteaux_cs2` (texture du M9).
 
 Grande texture des blocs (point 1 : ≈ 268 Mo de mémoire graphique en moins)
