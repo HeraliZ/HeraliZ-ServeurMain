@@ -166,7 +166,7 @@ public class EcranGraphismes extends Screen {
         l.add(ligne("options.ao", CommonComponents.optionStatus(o.ambientOcclusion().get())));
         l.add(ligne("options.entityDistanceScaling", Component.literal(Math.round(o.entityDistanceScaling().get() * 100) + " %")));
         l.add(ligne("options.vsync", CommonComponents.optionStatus(o.enableVsync().get())));
-        int ips = o.framerateLimit().get();
+        int ips = ReglagesDefaut.ips(o);                 // le cran 140 vaut 144 (plafond HeraliZ)
         l.add(ligne("options.framerateLimit", ips >= 260 ? Component.translatable("options.framerateLimit.max")
                 : Component.translatable("options.framerate", ips)));
         return l;
