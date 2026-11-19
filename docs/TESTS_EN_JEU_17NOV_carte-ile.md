@@ -552,10 +552,11 @@ Le Passeur :
 - [ ] Lui parler : « Le Passeur », « Armes et munitions », ses phrases en français, anglais et russe ; son apparence
       (marinière bleu marine, collier de barbe, bottes de pluie).
 - [ ] « Voir ce que tu vends » : 24 armes (les 20 grises et vertes, puis 4 bleues : Mk 23, UMP-45, M870, SKS tactique) et
-      4 munitions (.45 ACP, 9 mm, calibre 12, 7,62 × 39), chaque nom à la couleur de sa rareté.
+      8 munitions (.45 ACP, 9 mm, calibre 12, .50 AE, 5,56, 7,62 × 39, .308, .338), chaque nom à la couleur de sa rareté.
 - [ ] Prix pendant la bêta (prix des fichiers x 0,75) : pistolet gris 1 125, pistolet vert 2 250, pistolet-mitrailleur ou
-      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles (19/11, « entre 4 et 8 la balle ») :
-      9 mm 4, .45 ACP 5, calibre 12 6, 7,62 × 39 8.
+      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles (19/11, « moins on doit tirer de
+      balles, plus c'est cher ») : 9 mm et .45 ACP 6 ; .50 AE, 5,56 et 7,62 × 39 8 ; calibre 12 30 ; .308 (précision et
+      fusils semi-automatiques) et .338 (AWP, M200) 45.
 - [ ] Une arme achetée est neuve (100 %) et vide : la charger avec les balles achetées.
 - [ ] Revendre à Mila une arme achetée chez lui : environ 15 (grise), 30 (verte), 60 (bleue) ; la recycler : quelques
       composants ou quelques hérals. Jamais plus d'un dixième de son prix.
