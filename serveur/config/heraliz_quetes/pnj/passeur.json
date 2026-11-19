@@ -194,23 +194,23 @@
       },
       {
         "objet": "tacz:ammo",
-        "nbt": "{AmmoId:\"tacz:45acp\"}",
-        "prix": 10
+        "nbt": "{AmmoId:\"tacz:9mm\"}",
+        "prix": 5
       },
       {
         "objet": "tacz:ammo",
-        "nbt": "{AmmoId:\"tacz:9mm\"}",
-        "prix": 10
+        "nbt": "{AmmoId:\"tacz:45acp\"}",
+        "prix": 7
       },
       {
         "objet": "tacz:ammo",
         "nbt": "{AmmoId:\"tacz:12g\"}",
-        "prix": 14
+        "prix": 8
       },
       {
         "objet": "tacz:ammo",
         "nbt": "{AmmoId:\"tacz:762x39\"}",
-        "prix": 20
+        "prix": 11
       }
     ]
   }

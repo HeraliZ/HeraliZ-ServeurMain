@@ -25,7 +25,8 @@ Le script refuse d'écrire si une revente ou un recyclage dépasse ces bornes sa
 P = 0 (jamais racheté), et le contrôle est fait deux fois : sans la bêta, puis avec l'économie de la bêta du fichier de
 réglages du loot (section [beta] de serveur/defaultconfigs/heraliz_loot-server.toml : prix d'achat, rachat, recycleur).
 Le Passeur (armes et munitions, 19/11) a une borne bien plus dure (controle_passeur) : revendu ou recyclé, un de ses
-articles ne rend jamais plus de PASSEUR_RENDU_MAX (10 %) du prix payé, avec et sans l'économie de la bêta.
+articles ne rend jamais plus de PASSEUR_RENDU_MAX (10 %) du prix payé (munitions : PASSEUR_RENDU_MAX_MUNITIONS, 20 %,
+depuis qu'elles coûtent 4 à 8 hérals la balle), avec et sans l'économie de la bêta.
 
     python outils/marchands.py             écrit les fichiers (après le contrôle)
     python outils/marchands.py --controle  contrôle seulement les fichiers actuels (code 1 en cas d'erreur ; lancé par
@@ -122,10 +123,15 @@ ORDRE_GENRES = ["pistolet", "smg", "pompe", "fusil"]
 # MUNITIONS_HORS de outils/loot_armes.py) : environ 4 fois (3,8 à 4,7) leur fabrication la moins chère à la Table
 # d'armurier (9 mm : 2,2 hérals la balle en composants au prix de Mila), au moins MUNITIONS_FOIS_FABRICATION fois
 # (fabriquer reste la voie bon marché)
-PRIX_MUNITIONS = {"tacz:9mm": 10, "tacz:45acp": 10, "tacz:12g": 14, "tacz:762x39": 20, "tacz:556x45": 20, "tacz:50ae": 20}
+# 19/11 (demande du propriétaire : « les balles un peu moins cher, entre 4 et 8 la balle ») : affichées pendant la bêta
+# (prix x 0,75, arrondi) 4 (9 mm), 5 (.45 ACP), 6 (12 gauge) et 8 (7,62 et le reste) ; avant 10 / 10 / 14 / 20.
+PRIX_MUNITIONS = {"tacz:9mm": 5, "tacz:45acp": 7, "tacz:12g": 8, "tacz:762x39": 11, "tacz:556x45": 11, "tacz:50ae": 11}
 MUNITIONS_FOIS_FABRICATION = 2.0
 # acheter chez le Passeur puis revendre (Mila) ou recycler (spawn, carte) ne rend jamais plus que cette part du prix payé
 PASSEUR_RENDU_MAX = 0.10
+# munitions (19/11, à 4-8 hérals la balle) : Mila rachète toujours environ 0,5 à 1,2 héral la balle, soit 10 à 15 % du prix
+# pendant la bêta ; on y perd toujours plus de 80 %, aucune boucle : borne propre aux munitions
+PASSEUR_RENDU_MAX_MUNITIONS = 0.20
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
 # 24/10 (revue de la boucle de jeu) : Mila rachète aussi armes, armures, sacs, grenades et accessoires trouvés sur la
@@ -586,14 +592,15 @@ def controle_passeur(marchands, bavard=True):
         pire = (0.0, "")
         for a, paye, revente, spawn, carte in rendus_articles(marchands, "passeur", fa, fr, fy):
             part = max(revente, spawn, carte) / paye
+            borne = PASSEUR_RENDU_MAX_MUNITIONS if "AmmoId" in (a.get("nbt") or "") else PASSEUR_RENDU_MAX
             if part > pire[0]:
                 pire = (part, a.get("nbt") or a["objet"])
-            if part > PASSEUR_RENDU_MAX:
+            if part > borne:
                 erreurs.append(f"{nom} : {a['objet']}{a.get('nbt', '')} payé {paye}, rend jusqu'à {max(revente, spawn, carte):.1f} "
-                               f"({part * 100:.1f} %, borne {PASSEUR_RENDU_MAX * 100:g} %)")
+                               f"({part * 100:.1f} %, borne {borne * 100:g} %)")
         if bavard:
             print(f"[marchands] passeur ({nom}) : revendu ou recyclé, un article rend au plus {pire[0] * 100:.1f} % de son prix "
-                  f"({pire[1]}) ; borne {PASSEUR_RENDU_MAX * 100:g} %")
+                  f"({pire[1]}) ; bornes {PASSEUR_RENDU_MAX * 100:g} % (armes), {PASSEUR_RENDU_MAX_MUNITIONS * 100:g} % (munitions)")
     for e in erreurs:
         print("ERREUR : " + e)
     if erreurs:
