@@ -25,6 +25,12 @@ public final class MondeBases {
     public static final ResourceLocation TUTO_ID = new ResourceLocation("crac", "tuto");
     public static final ResourceKey<Level> TUTO = ResourceKey.create(Registries.DIMENSION, TUTO_ID);
     public static final ResourceLocation SPAWN = new ResourceLocation("heralisz", "spawn");
+    /**
+     * Marque des objets du kit du tutoriel (NBT booléen, identifiant figé : gardé dans les inventaires) : ce qui la porte est
+     * repris à la fin du tutoriel. Posée aussi sur ce qui sort du stock d'une armoire du monde du tutoriel et sur ce qui y
+     * est ramassé ou y tombe au sol (19/11, audit des duplications B1 : ces objets ressortaient neufs, sans marque).
+     */
+    public static final String MARQUE_KIT_TUTO = "CracKitTuto";
 
     private MondeBases() {
     }

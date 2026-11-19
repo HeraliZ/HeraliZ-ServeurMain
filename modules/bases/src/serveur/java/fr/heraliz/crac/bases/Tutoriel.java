@@ -166,7 +166,7 @@ public final class Tutoriel {
      * de caméra, serveur redémarré) ; pendant le tutoriel, aucun autre conteneur ne s'ouvre (sac, coffre du clan…) : le
      * kit ne peut pas être mis de côté.
      */
-    private static final String MARQUE_KIT = "CracKitTuto";
+    private static final String MARQUE_KIT = MondeBases.MARQUE_KIT_TUTO;
     /** Tour de caméra (15 s) et mots de Varga, puis effacement. */
     private static final long FIN_DELAI = 20L * 20L;
 
@@ -360,6 +360,22 @@ public final class Tutoriel {
             reprendreKit(p);
             // 03/11 : inventaire mis de côté pas encore rendu (fin pendant son absence, plantage, /wipe tout) : rendu
             InventaireTuto.rendre(p, List.of());
+        }
+    }
+
+    /**
+     * 19/11 (audit des duplications, B1) : tout objet qui apparaît au sol dans le monde du tutoriel (pièce qui tombe faute
+     * d'appui quand on ramasse ce qui la portait…) porte la marque du kit : rien ne sort du tutoriel neuf par le sol.
+     */
+    @SubscribeEvent
+    public static void auSol(net.minecraftforge.event.entity.EntityJoinLevelEvent e) {
+        if (e.getLevel().isClientSide() || !(e.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity ie)
+            || !MondeBases.estTuto(e.getLevel())) {
+            return;
+        }
+        ItemStack s = ie.getItem();
+        if (!s.isEmpty() && !estKit(s)) {
+            s.getOrCreateTag().putBoolean(MARQUE_KIT, true);
         }
     }
 

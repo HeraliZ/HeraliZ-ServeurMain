@@ -479,9 +479,103 @@ piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta 
 (0,45), T6 10,7 (0,9), T7 21 (1,3). Les autres objets perdent 1 à 2,5 % de leur place.
 - [ ] Ouvrir une dizaine de conteneurs T4-T5 : des capsules dans 1 sur 8 environ, parfois une pile de 4 à 7 capsules de 10.
 
-## 24. Corrections de l'audit du 19/11 (bugs de jeu)
+## 24. Duplications : correctifs de l'audit du 19/11
 
-Noyau 1.1.3, Monde 1.3.2, Quêtes 1.22.5, CRac 1.38.5-beta, Tactique 2.59.1, Sacs 3.0.1-beta.4-heralisz27.
+Noyau 1.1.3, Quêtes 1.22.5, Boutique 1.5.16, Monde 1.3.2, CRac 1.38.5-beta, Tactique 2.59.1, ClashWar 1.3.1. Rien à
+voir de nouveau pour les joueurs. **Rien n'a été essayé en jeu.** Il faut le serveur d'essai, deux comptes et un op pour
+lancer un ClashWar. Nouvelle règle commune : rien de ce qui attend (objets gardés, récompenses, clés) n'arrive pendant un
+match, dans le monde des matchs, ni tant que l'inventaire est mis de côté par le ClashWar ; tout arrive après le retour.
+
+Recycleur du spawn (le plus grave : objets doublés à volonté pendant un tournoi) :
+- [ ] Poser des objets dans le recycleur, remplir son inventaire, fermer : le reste est « gardé ». Pendant un tournoi :
+      `/clashwar regarder`, se déconnecter, se reconnecter, `/clashwar quitter`, rouvrir tout de suite le recycleur
+      (moins de 5 s), attendre 10 s, le fermer : chaque objet une seule fois (avant : tout en double).
+- [ ] Même chose sans rouvrir le recycleur : les objets gardés reviennent seuls dans les 5 s après le retour.
+- [ ] Hors ClashWar : reconnexion et réapparition avec des objets gardés : rendus comme avant.
+
+Objets en attente pendant un ClashWar :
+- [ ] Atelier de réparation : arme posée, inventaire plein, fermer (« t'attend »). Partir au ClashWar : l'arme n'arrive
+      pas dans l'inventaire du match ; elle revient dans les 5 s après le retour. En match, un kit de réparation n'ouvre
+      pas l'atelier.
+- [ ] Objets du tutoriel qui attendaient une case, objets à vie gardés (inventaire plein), objets à vie d'une base
+      effacée : rien pendant le match ni à une reconnexion pendant le tournoi ; tout arrive après le retour.
+
+Tutoriel des bases :
+- [ ] Étape de l'entretien : mettre les planches du kit dans l'armoire, puis les reprendre (clic, Maj + clic, touches 1
+      à 9) ; « Quitter le tuto » : ces planches sont reprises avec le reste du kit (rien en plus dans l'inventaire rendu).
+- [ ] Étape de la caisse : poser la caisse en métal, la ramasser, finir ou quitter : la caisse est reprise aussi.
+- [ ] L'armoire d'une vraie base sur la carte : rien ne change (les planches reprises s'empilent avec les autres).
+
+Recycleur de la carte :
+- [ ] Machine restée vide plus de 20 min : y déposer 10 objets (5 s chacun), `/tp` à 1 000 blocs tout de suite (le
+      coin se décharge), attendre 10 s, revenir : environ 20 s après le dépôt, 4 à 6 objets recyclés, pas les 10 d'un
+      coup (avant : la machine rattrapait aussi le temps passé vide).
+
+Plantages au mauvais moment (non provoqués : vérifier seulement que tout marche comme avant) :
+- [ ] Recycler une pile au spawn : les hérals arrivent comme avant. `/diag profil` pendant que deux joueurs recyclent :
+      l'enregistrement des joueurs (`PlayerList.save`) reste petit.
+- [ ] Achat chez un marchand ; quête de Varga avec une étape « donner » (donner en deux fois) et une étape « payer » ;
+      clés du ClashWar en fin de tournoi : comme avant, une seule fois.
+- Pas encore corrigés (il faudrait changer la façon dont ces fichiers s'écrivent) : planque et coffre VIP, coffre du
+  clan. Il faudrait un plantage du serveur dans la seconde qui suit la fermeture du coffre.
+
+## 25. Acheter avec la quantité, et le Passeur : armes et munitions (19/11)
+
+Demandes du propriétaire : un panneau de confirmation avant chaque achat, avec la quantité (« 500 brindilles, c'est 500
+clics ») ; et un PNJ qui vend des armes et des munitions, cher. Quêtes 1.23.0 : tout le monde doit avoir la nouvelle
+version (le launcher la donne ; un jeu plus ancien est refusé à la connexion). Maquette du panneau, **pas encore validée
+par le propriétaire** : `maquettes/achat_quantite/`. Prix et calculs : en tête de `outils/marchands.py`.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois : au spawn, se placer là où le Passeur doit se tenir, regarder dans la direction voulue, puis
+`/pnj creer passeur` (`/pnj deplacer passeur` pour le bouger). `/pnj liste` doit le montrer.
+
+Le panneau d'achat (chez tous les vendeurs : le Bâtisseur, Jacqueline, le Doyen, Jack, le Passeur) :
+- [ ] Clic sur « Acheter » : le panneau s'ouvre au milieu de l'écran (l'objet, son nom à la couleur de sa rareté, le prix à
+      l'unité), quantité 1. Rien n'est acheté tant qu'on n'a pas confirmé.
+- [ ] Taper 500 au clavier (le premier chiffre remplace le 1) : le total, le solde et « Après l'achat » suivent. Chez le
+      Bâtisseur, 500 brindilles = 1 000 hérals (2 l'unité pendant la bêta).
+- [ ] − et + (avec Maj : de 10 en 10), la molette, les flèches haut et bas ; pastilles ×1, ×10, une pile (×64 pour les
+      brindilles, ×60 pour les balles de 9 mm, ×36 en calibre 12) ou ×5 (une arme), et Max.
+- [ ] « Max » = ce que tes hérals paient, ou ce qui tient dans ton inventaire : la ligne sous la quantité dit lequel des
+      deux. Une quantité plus grande : ligne rouge, total en rouge, « Confirmer » éteint.
+- [ ] Inventaire presque plein : Max = ce qui tient vraiment ; acheter Max : tout rentre, rien au sol.
+- [ ] Échap ou « Annuler » : le panneau se ferme, rien n'est acheté. Entrée ou « Confirmer » : l'achat se fait. Double
+      clic sur « Acheter » : le panneau s'ouvre mais rien n'est acheté (« Confirmer » reste éteint une demi-seconde).
+- [ ] Après l'achat : le bandeau « Acheté : 500 × Brindilles (1 000 hérals) » ; le solde de l'écran baisse d'autant.
+- [ ] Un op change le prix de l'article au Registre pendant qu'un joueur a le panneau ouvert, puis le joueur confirme :
+      « Le prix de … vient de changer : rien n'a été acheté », aucun hérals retiré ; l'écran montre le nouveau prix et le
+      panneau, rouvert, aussi.
+- [ ] En anglais et en russe : aucun texte ne dépasse du panneau.
+
+Le Passeur :
+- [ ] Lui parler : « Le Passeur », « Armes et munitions », ses phrases en français, anglais et russe ; son apparence
+      (marinière bleu marine, collier de barbe, bottes de pluie).
+- [ ] « Voir ce que tu vends » : 24 armes (les 20 grises et vertes, puis 4 bleues : Mk 23, UMP-45, M870, SKS tactique) et
+      4 munitions (.45 ACP, 9 mm, calibre 12, 7,62 × 39), chaque nom à la couleur de sa rareté.
+- [ ] Prix pendant la bêta (prix des fichiers x 0,75) : pistolet gris 1 125, pistolet vert 2 250, pistolet-mitrailleur ou
+      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles : 9 mm et .45 ACP 8, calibre 12 11,
+      7,62 × 39 15.
+- [ ] Une arme achetée est neuve (100 %) et vide : la charger avec les balles achetées.
+- [ ] Revendre à Mila une arme achetée chez lui : environ 15 (grise), 30 (verte), 60 (bleue) ; la recycler : quelques
+      composants ou quelques hérals. Jamais plus d'un dixième de son prix.
+- [ ] Une arme grise ou verte trouvée sur la carte, revendue à Mila : payée comme avant, mais plus de points de saison ni
+      d'avancée de la quête du jour « Vendre » (un marchand la vend maintenant : règle du 25/10, acheter puis revendre ne
+      rapporte rien).
+- [ ] Sur la carte, en combat, à terre ou en match : il refuse, comme les autres marchands.
+
+## 26. Sacs : plus aucun défi ni apparence à débloquer (19/11)
+
+Choix du propriétaire : les sacs se trouvent seulement sur la carte, avec leur apparence ; rien à débloquer.
+`serveur/config/backpacked.server.toml` : `unlockAllCosmetics = true` (aucun défi suivi, aucun déblocage annoncé) et
+`disableCustomisation = true` (plus de bouton de personnalisation).
+- [ ] Ouvrir son sac : plus de bouton « Personnaliser » ; aucun message « sac débloqué » en jouant.
+- [ ] Un sac trouvé garde l'apparence avec laquelle il a été trouvé (tactique, randonnée, sport…), même sur le dos.
+- [ ] Les camos sur les sacs (table d'armurier) marchent comme avant.
+
+## 27. Corrections de l'audit du 19/11 (bugs de jeu)
+
+Noyau 1.1.4, Monde 1.3.3, Quêtes 1.23.1, CRac 1.38.6-beta, Tactique 2.59.3, Sacs 3.0.1-beta.4-heralisz27.
 **Rien de tout cela n'a été testé en jeu.**
 
 À faire une fois en jeu (staff) :

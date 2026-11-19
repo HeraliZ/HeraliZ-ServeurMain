@@ -199,6 +199,15 @@ public final class ObjetsAVieServeur {
       return p.getPersistentData().contains(DRAPEAU_EN_MATCH);
    }
 
+   /**
+    * 19/11 (audit des duplications, M1) : rien n'est rendu tant que le match tient l'inventaire (en match, inventaire mis de
+    * côté par le Coffre, reconnexion pendant un tournoi, monde des matchs) : la règle commune du noyau. Avant, seul le
+    * drapeau était lu, et la connexion et la réapparition rendaient sans regarder.
+    */
+   private static boolean retenu(ServerPlayer p) {
+      return fr.heraliz.noyau.api.Matchs.inventaireRetenu(p);
+   }
+
    private static String nom(ServerPlayer p) {
       return p.getGameProfile().getName();
    }
@@ -239,8 +248,8 @@ public final class ObjetsAVieServeur {
       if ((p.tickCount + p.getId()) % 20 == 0) {
          Inventory inv = p.getInventory();
          for (int i = 0; i < inv.getContainerSize(); i++) demarquer(inv.getItem(i));
-         if (p.isAlive() && !SORTIS.contains(p.getUUID()) && !enMatch(p)
-            && p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).contains(CLE)) rendreGardes(p);
+         if (p.isAlive() && !SORTIS.contains(p.getUUID())
+            && p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).contains(CLE) && !retenu(p)) rendreGardes(p);
       }
    }
 
@@ -545,7 +554,7 @@ public final class ObjetsAVieServeur {
    }
 
    private static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
-      if (e.getEntity() instanceof ServerPlayer p && !e.isEndConquered()) rendreGardes(p);
+      if (e.getEntity() instanceof ServerPlayer p && !e.isEndConquered() && !retenu(p)) rendreGardes(p);
    }
 
    // ------------------------------------------------------------------ connexion, déconnexion
@@ -566,7 +575,7 @@ public final class ObjetsAVieServeur {
          BOITES_LUES.add(p.getUUID());
          LOG.info("[a vie] {} : {} objet(s) à vie de sa boîte aux lettres", nom(p), boite.size());
       }
-      if (p.isAlive()) rendreGardes(p);
+      if (p.isAlive() && !retenu(p)) rendreGardes(p);   // sinon : rendu par le tick après le retour du match
    }
 
    /**
@@ -722,7 +731,7 @@ public final class ObjetsAVieServeur {
       ServerPlayer p = srv == null ? null : srv.getPlayerList().getPlayer(proprio);
       if (p != null && !SORTIS.contains(proprio)) {
          for (ItemStack s : sauves) {
-            if (p.isAlive() && !enMatch(p)) rendre(p, s, false);
+            if (p.isAlive() && !retenu(p)) rendre(p, s, false);
             else garder(p, s, origine);
          }
          synchroniser(p);

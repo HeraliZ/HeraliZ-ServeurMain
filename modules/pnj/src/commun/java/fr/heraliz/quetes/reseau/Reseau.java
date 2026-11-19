@@ -32,7 +32,7 @@ public final class Reseau {
     }
 
     /** 7 (Quêtes 1.11.0) : échanges (troc) et marchands créés en jeu. 9 (1.13.0) : aperçu du recycleur. 10 (1.14.0) : quêtes du jour. */
-    private static final String VERSION = "13";   // 13 (03/11) : chat caché pendant la visite et le tutoriel ; 12 (28/10) : angle de la caméra des points de la visite du Guide ; 11 (26/10) : état de l'objet dans l'aperçu du recycleur
+    private static final String VERSION = "14";   // 14 (19/11) : achat avec quantité et prix confirmés ; 13 (03/11) : chat caché pendant la visite et le tutoriel ; 12 (28/10) : angle de la caméra des points de la visite du Guide ; 11 (26/10) : état de l'objet dans l'aperçu du recycleur
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizQuetes.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -129,9 +129,16 @@ public final class Reseau {
     public record Echange(int index, ItemStack donne, int nDonne, ItemStack recu, int nRecu, int rarete, int possede, boolean actif) {
     }
 
-    /** Achat d'un article (joueur -> serveur). */
-    public record Achat(int entite, int index, int quantite) {
+    /**
+     * Achat d'un article (joueur -> serveur), confirmé dans le panneau de l'écran du marchand (19/11) : quantité de 1 à
+     * {@link #ACHAT_MAX}, et le prix à l'unité que le joueur a vu (s'il a changé depuis, le serveur refuse : on paie
+     * toujours le prix confirmé).
+     */
+    public record Achat(int entite, int index, int quantite, long prix) {
     }
+
+    /** Quantité d'un achat, au plus : 36 piles de 64 (au-delà, rien ne tiendrait dans l'inventaire). */
+    public static final int ACHAT_MAX = 36 * 64;
 
     /** Faire un échange (joueur -> serveur), fois = 1 à 5 de suite. */
     public record Troc(int entite, int index, int fois) {
@@ -319,7 +326,8 @@ public final class Reseau {
             b.writeVarInt(m.entite());
             b.writeVarInt(m.index());
             b.writeVarInt(m.quantite());
-        }, b -> new Achat(b.readVarInt(), b.readVarInt(), b.readVarInt()), ACHAT);
+            b.writeVarLong(m.prix());
+        }, b -> new Achat(b.readVarInt(), b.readVarInt(), b.readVarInt(), b.readVarLong()), ACHAT);
         versServeur(Vente.class, (m, b) -> {
             b.writeVarInt(m.entite());
             int n = Math.min(m.cases().size(), CASES);
