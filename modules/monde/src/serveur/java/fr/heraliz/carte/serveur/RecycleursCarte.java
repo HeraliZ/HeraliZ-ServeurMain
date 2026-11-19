@@ -136,7 +136,9 @@ public final class RecycleursCarte {
             MinecraftServer srv = l.getServer();
             RecycleursData d = donnees;
             if (d == null) {
-                if (!srv.isSameThread()) return;
+                // pendant « Preparing level », le monde principal n'est pas encore là (overworld() nul) : ses données non
+                // plus ; un tronçon chargé si tôt n'est pas relu (19/11, ligne ERROR vue à chaque démarrage d'essai)
+                if (!srv.isSameThread() || srv.overworld() == null) return;
                 d = donnees(srv);
             }
             if (d.nombre() == 0) return;
