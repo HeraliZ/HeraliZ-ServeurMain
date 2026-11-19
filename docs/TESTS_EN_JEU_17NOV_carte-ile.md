@@ -518,3 +518,47 @@ Plantages au mauvais moment (non provoqués : vérifier seulement que tout march
       clés du ClashWar en fin de tournoi : comme avant, une seule fois.
 - Pas encore corrigés (il faudrait changer la façon dont ces fichiers s'écrivent) : planque et coffre VIP, coffre du
   clan. Il faudrait un plantage du serveur dans la seconde qui suit la fermeture du coffre.
+
+## 25. Acheter avec la quantité, et le Passeur : armes et munitions (19/11)
+
+Demandes du propriétaire : un panneau de confirmation avant chaque achat, avec la quantité (« 500 brindilles, c'est 500
+clics ») ; et un PNJ qui vend des armes et des munitions, cher. Quêtes 1.23.0 : tout le monde doit avoir la nouvelle
+version (le launcher la donne ; un jeu plus ancien est refusé à la connexion). Maquette du panneau, **pas encore validée
+par le propriétaire** : `maquettes/achat_quantite/`. Prix et calculs : en tête de `outils/marchands.py`.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois : au spawn, se placer là où le Passeur doit se tenir, regarder dans la direction voulue, puis
+`/pnj creer passeur` (`/pnj deplacer passeur` pour le bouger). `/pnj liste` doit le montrer.
+
+Le panneau d'achat (chez tous les vendeurs : le Bâtisseur, Jacqueline, le Doyen, Jack, le Passeur) :
+- [ ] Clic sur « Acheter » : le panneau s'ouvre au milieu de l'écran (l'objet, son nom à la couleur de sa rareté, le prix à
+      l'unité), quantité 1. Rien n'est acheté tant qu'on n'a pas confirmé.
+- [ ] Taper 500 au clavier (le premier chiffre remplace le 1) : le total, le solde et « Après l'achat » suivent. Chez le
+      Bâtisseur, 500 brindilles = 1 000 hérals (2 l'unité pendant la bêta).
+- [ ] − et + (avec Maj : de 10 en 10), la molette, les flèches haut et bas ; pastilles ×1, ×10, une pile (×64 pour les
+      brindilles, ×60 pour les balles de 9 mm, ×36 en calibre 12) ou ×5 (une arme), et Max.
+- [ ] « Max » = ce que tes hérals paient, ou ce qui tient dans ton inventaire : la ligne sous la quantité dit lequel des
+      deux. Une quantité plus grande : ligne rouge, total en rouge, « Confirmer » éteint.
+- [ ] Inventaire presque plein : Max = ce qui tient vraiment ; acheter Max : tout rentre, rien au sol.
+- [ ] Échap ou « Annuler » : le panneau se ferme, rien n'est acheté. Entrée ou « Confirmer » : l'achat se fait. Double
+      clic sur « Acheter » : le panneau s'ouvre mais rien n'est acheté (« Confirmer » reste éteint une demi-seconde).
+- [ ] Après l'achat : le bandeau « Acheté : 500 × Brindilles (1 000 hérals) » ; le solde de l'écran baisse d'autant.
+- [ ] Un op change le prix de l'article au Registre pendant qu'un joueur a le panneau ouvert, puis le joueur confirme :
+      « Le prix de … vient de changer : rien n'a été acheté », et le panneau montre le nouveau prix.
+- [ ] En anglais et en russe : aucun texte ne dépasse du panneau.
+
+Le Passeur :
+- [ ] Lui parler : « Le Passeur », « Armes et munitions », ses phrases en français, anglais et russe ; son apparence
+      (marinière bleu marine, collier de barbe, bottes de pluie).
+- [ ] « Voir ce que tu vends » : 24 armes (les 20 grises et vertes, puis 4 bleues : Mk 23, UMP-45, M870, SKS tactique) et
+      4 munitions (.45 ACP, 9 mm, calibre 12, 7,62 × 39), chaque nom à la couleur de sa rareté.
+- [ ] Prix pendant la bêta (prix des fichiers x 0,75) : pistolet gris 1 125, pistolet vert 2 250, pistolet-mitrailleur ou
+      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles : 9 mm et .45 ACP 8, calibre 12 11,
+      7,62 × 39 15.
+- [ ] Une arme achetée est neuve (100 %) et vide : la charger avec les balles achetées.
+- [ ] Revendre à Mila une arme achetée chez lui : environ 15 (grise), 30 (verte), 60 (bleue) ; la recycler : quelques
+      composants ou quelques hérals. Jamais plus d'un dixième de son prix.
+- [ ] Une arme grise ou verte trouvée sur la carte, revendue à Mila : payée comme avant, mais plus de points de saison ni
+      d'avancée de la quête du jour « Vendre » (un marchand la vend maintenant : règle du 25/10, acheter puis revendre ne
+      rapporte rien).
+- [ ] Sur la carte, en combat, à terre ou en match : il refuse, comme les autres marchands.

@@ -9,6 +9,8 @@ Le reste du fichier du PNJ (nom, apparence, phrases) n'est pas touché. Prix en 
 - nourriture : quelques aliments du mod de nourriture (geckolib222), toujours en bon état (FoodState 0), prix selon ce
   qu'ils nourrissent ;
 - accessoires TaCZ : ceux de rareté Commun à Rare (section « accessoires »), sans les munitions spéciales ;
+- armes et munitions (le Passeur, 19/11) : toutes les armes Commun et Peu commun des gunpacks (section « armes »), les
+  Rares d'ARMES_RARES_PASSEUR, puis les munitions de leurs calibres ; prix PRIX_ARMES (rareté, genre) et PRIX_MUNITIONS ;
 - matériaux de construction (Bâtisseur) : tableau MATERIAUX ;
 - rachat : objets de valeur (tag heraliz_composants:vente), puis tous les composants (heraliz_composants:tous) ;
 - échanges sans hérals (Contremaître, troc) : tableau CONTREMAITRE (clé « echanges »). Un objet reçu par un échange
@@ -19,6 +21,8 @@ plus de 50 % de P (Marchands.prixRachat de HeraliZ Quêtes : min(prix de la règ
 vendeurs, aussi pour les articles ajoutés en jeu au Registre), et le recycler ne rapporte pas plus : espérance des
 composants revendus (ou hérals « rien ») au plus P / 2 (Recyclage.tropRentable, même calcul).
 Le script refuse d'écrire si une revente ou un recyclage dépasse ces bornes sans que le serveur les plafonne.
+Le Passeur (armes et munitions, 19/11) a une borne bien plus dure (controle_passeur) : revendu ou recyclé, un de ses
+articles ne rend jamais plus de PASSEUR_RENDU_MAX (10 %) du prix payé, avec et sans l'économie de la bêta.
 
     python outils/marchands.py             écrit les fichiers (après le contrôle)
     python outils/marchands.py --controle  contrôle seulement les fichiers actuels (code 1 en cas d'erreur)
@@ -86,6 +90,36 @@ CONTREMAITRE = [  # (objet donné, nombre, objet reçu, nombre)
     ("heraliz_recolte:minerai_fer", 10, "heraliz_composants:fragments_metal", 1),   # minerai de métal
     ("heraliz_recolte:minerai_rare", 8, "heraliz_composants:metal_renforce", 1),    # minerai de titane
 ]
+# 19/11 (demande du propriétaire : « un PNJ qui vend directement des armes et des munitions : toutes les armes grises et
+# vertes, et quelques bleues ; ça doit rester cher, mais un joueur riche, ou un débutant avec un peu d'argent, peut
+# s'acheter une arme pas trop forte, et des balles s'il veut dépenser son argent ») : le Passeur (PNJ « passeur », fichier
+# pnj/passeur.json), qui fait passer les armes du continent par la mer. Prix à l'unité, selon la rareté de l'arme (section
+# « armes » de raretes.json) et son genre (famille de serveur/config/heraliz_tactique/armes.json, le mot avant « _ »).
+# Repères (hérals) : une heure de fouille rapporte environ 2 300 à 3 200 en ville moyenne (T2-T3) et 12 500 à 15 700 en
+# zone militaire (T5-T6), avant la bêta (outils/loot_zombies.py --simuler) ; Jack vend ses accessoires 240 / 600 / 1 400 ;
+# Mila rachète une arme 15 / 30 / 60 (Commun / Peu commun / Rare, neuve). Un pistolet gris vaut donc environ une demi-heure
+# de fouille, une arme bleue deux à trois heures en ville. Économie de la bêta : x 0,75 à l'achat, comme les autres.
+PRIX_ARMES = {
+    "commun":     {"pistolet": 1500, "smg": 2000, "pompe": 2000, "fusil": 2500},
+    "peu_commun": {"pistolet": 3000, "smg": 4000, "pompe": 4000, "fusil": 5000},
+    "rare":       {"pistolet": 7000, "smg": 9000, "pompe": 9000, "fusil": 10000},
+}
+# Rares vendues (choix du 19/11) : une par genre, la plus simple de son genre, pour un joueur qui débute : le Mk 23 (pistolet
+# .45, coup par coup ou rafale courte), l'UMP-45 (pistolet-mitrailleur .45, déjà une récompense des quêtes du jour), le M870
+# (fusil à pompe) et le SKS tactique (fusil semi-automatique de 10 coups). Jamais : précision, mitrailleuse, lance-grenades
+# (GENRES_INTERDITS), fusil d'assaut automatique (AK-47, M4…), arme à silencieux intégré (MP5SD), pistolet automatique
+# (G18C, 93R) ni .50 AE.
+ARMES_RARES_PASSEUR = ["maxstuff:mk23", "tacz:ump45", "tacz:m870", "tacz:sks_tactical"]
+GENRES_INTERDITS = ("precision", "mitrailleuse", "minigun")  # et les armes sans famille (lance-grenades)
+ORDRE_GENRES = ["pistolet", "smg", "pompe", "fusil"]
+# munitions des calibres de ses armes, à la balle (jamais les munitions spéciales du loot : 40 mm, roquettes, .50 BMG ;
+# MUNITIONS_HORS de outils/loot_armes.py) : environ 4 fois (3,8 à 4,7) leur fabrication la moins chère à la Table
+# d'armurier (9 mm : 2,2 hérals la balle en composants au prix de Mila), au moins MUNITIONS_FOIS_FABRICATION fois
+# (fabriquer reste la voie bon marché)
+PRIX_MUNITIONS = {"tacz:9mm": 10, "tacz:45acp": 10, "tacz:12g": 14, "tacz:762x39": 20, "tacz:556x45": 20, "tacz:50ae": 20}
+MUNITIONS_FOIS_FABRICATION = 2.0
+# acheter chez le Passeur puis revendre (Mila) ou recycler (spawn, carte) ne rend jamais plus que cette part du prix payé
+PASSEUR_RENDU_MAX = 0.10
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
 # 24/10 (revue de la boucle de jeu) : Mila rachète aussi armes, armures, sacs, grenades et accessoires trouvés sur la
@@ -120,6 +154,69 @@ def accessoires():
     return [{"objet": "tacz:attachment", "nbt": '{AttachmentId:"%s"}' % k, "prix": PRIX_ACCESSOIRES[r]} for k, r in l]
 
 
+ARMES_TACTIQUE = RACINE / "serveur" / "config" / "heraliz_tactique" / "armes.json"
+TACZ = RACINE / "serveur" / "tacz"
+RECETTES_MUNITIONS = TACZ / "heraliz_crafts" / "data" / "heraliz_crafts" / "recipes" / "munitions"
+
+
+def genre_arme(gid):
+    """« pistolet », « smg », « pompe », « fusil », « precision »… : famille de l'arme dans armes.json (mot avant « _ »), ""
+    sans famille (lance-grenades)."""
+    fam = json.loads(ARMES_TACTIQUE.read_text(encoding="utf-8"))["armes"].get(gid, {}).get("famille", "")
+    return fam.split("_", 1)[0]
+
+
+def fiches_armes():
+    """Identifiant -> fiche de l'arme dans son gunpack (data/guns : munition, modes de tir), pour toutes les armes des
+    gunpacks ; lues comme TaCZ les lit (commentaires acceptés, outils/loot_armes.py)."""
+    import loot_armes as L
+    donnees = {}
+    for f in sorted(TACZ.glob("*/data/*/data/guns/*.json")):
+        d = L.lire_json(f)
+        if d is not None:
+            donnees[f.as_posix().split("/data/")[1].split("/")[0] + ":" + f.stem] = d
+    return {gid: donnees.get(i.get("data", ""), {}) for gid, i in L.index_tacz("guns").items()}
+
+
+def armes_passeur(bavard=False):
+    """Articles du Passeur (19/11) : armes Commun et Peu commun des gunpacks (jamais une arme cassée ou retirée du jeu,
+    ARMES_EXCLUES de outils/loot_armes.py), les Rares d'ARMES_RARES_PASSEUR, puis les munitions de leurs calibres. Arme
+    vendue neuve et vide (GunCurrentAmmoCount 0 : Mila et le recycleur la prennent telle quelle), premier mode de tir."""
+    import loot_armes as L
+    fiches, rar = fiches_armes(), RARETES["armes"]
+    armes, calibres = [], set()
+    for gid in sorted(g for g, r in rar.items() if r in ("commun", "peu_commun")) + ARMES_RARES_PASSEUR:
+        if gid not in fiches or gid in L.ARMES_EXCLUES:
+            if bavard:
+                print(f"[marchands] passeur : {gid} pas vendu (absent des gunpacks, cassé ou retiré du jeu)")
+            continue
+        r, genre = rar.get(gid, "commun"), genre_arme(gid)
+        if genre in GENRES_INTERDITS or not genre:
+            if bavard:
+                print(f"[marchands] passeur : {gid} pas vendu (arme de précision ou lourde)")
+            continue
+        prix = PRIX_ARMES.get(r, {}).get(genre)
+        if prix is None:
+            raise SystemExit(f"Refusé : {gid} ({r}, genre « {genre} ») n'a pas de prix dans PRIX_ARMES.")
+        d = fiches[gid]
+        mode = str((d.get("fire_mode") or ["semi"])[0]).upper()
+        armes.append(((ORDRE.index(r), ORDRE_GENRES.index(genre) if genre in ORDRE_GENRES else 9, prix, gid),
+                      {"objet": "tacz:modern_kinetic_gun", "nbt": '{GunId:"%s",GunFireMode:"%s",GunCurrentAmmoCount:0}' % (gid, mode),
+                       "prix": prix}))
+        if d.get("ammo"):
+            calibres.add(d["ammo"])
+    munitions = []
+    for aid in sorted(calibres):
+        if aid in L.MUNITIONS_HORS:
+            continue
+        if aid not in PRIX_MUNITIONS:
+            raise SystemExit(f"Refusé : munition {aid} (arme du Passeur) sans prix dans PRIX_MUNITIONS.")
+        r = RARETES["munitions"].get(aid, "commun")
+        munitions.append(((ORDRE.index(r), PRIX_MUNITIONS[aid], aid), {"objet": "tacz:ammo", "nbt": '{AmmoId:"%s"}' % aid,
+                                                                     "prix": PRIX_MUNITIONS[aid]}))
+    return [a for _, a in sorted(armes, key=lambda x: x[0])] + [m for _, m in sorted(munitions, key=lambda x: x[0])]
+
+
 MARCHANDS = {
     "mila": {"type": "rachat", "rachat": [{"tag": "heraliz_composants:vente", "prix": RACHAT_VALEUR},
                                           {"tag": "heraliz_composants:tous", "prix": RACHAT_COMPOSANTS},
@@ -133,6 +230,7 @@ MARCHANDS = {
     "doyen": {"type": "achat", "articles": nourriture()},
     "jack": {"type": "achat", "articles": accessoires()},
     "batisseur": {"type": "achat", "articles": [{"objet": o, "prix": p} for o, p in MATERIAUX]},
+    "passeur": {"type": "achat", "articles": armes_passeur()},
     "contremaitre": {"type": "troc", "echanges": [{"donne": {"objet": d, "nombre": nd}, "recoit": {"objet": r, "nombre": nr}}
                                                  for d, nd, r, nr in CONTREMAITRE]},
 }
@@ -340,6 +438,108 @@ def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
     return erreurs, notes
 
 
+def cout_fabrication(aid, mila):
+    """Coût d'une munition à la Table d'armurier, à la balle : la recette la moins chère de heraliz_crafts, composants au
+    prix de rachat de Mila ; None sans recette."""
+    best = None
+    for f in sorted(RECETTES_MUNITIONS.glob("*.json")):
+        r = json.loads(f.read_text(encoding="utf-8"))
+        res = r.get("result", {})
+        if res.get("type") != "ammo" or res.get("id") != aid:
+            continue
+        v = sum(prix_regle(mila, m["item"]["item"], "") * int(m.get("count", 1)) for m in r.get("materials", []))
+        v /= max(1, int(res.get("count", 1)))
+        best = v if best is None else min(best, v)
+    return best
+
+
+def rendus_articles(marchands, pid, achat=1.0, rachat_f=1.0, recyclage=1.0):
+    """[(article, prix payé, revente, recyclé au spawn, recyclé sur la carte)] des articles du marchand pid, à l'unité et
+    en moyenne, comme le serveur : prix payé = prix x achat (Ponts.prixAchat) ; revente = meilleure règle de rachat x
+    rachat_f, plafond des 50 % du plus petit prix d'achat (Marchands.prixRachat) ; recyclé = espérance du recycleur sur un
+    paquet complet (composants revendus, ou hérals « rien »), chance et hérals x recyclage (Recyclage.tropRentable), divisée
+    par la taille du paquet. Objet neuf (état 100 %)."""
+    rec = json.loads(RECYCLAGE.read_text(encoding="utf-8"))
+    racheteurs = [m for m in marchands.values() if m.get("type") == "rachat"]
+    ventes = {}
+    for m in marchands.values():
+        if m.get("type") == "rachat":
+            continue
+        for a in m.get("articles", []):
+            p = a["prix"] if achat == 1.0 else max(1, arrondi(a["prix"] * achat))
+            ventes[(a["objet"], a.get("nbt", ""))] = min(p, ventes.get((a["objet"], a.get("nbt", "")), p))
+
+    def revente(objet, nbt):
+        brut = max([prix_regle(m, objet, nbt, rachat_f) for m in racheteurs] + [0])
+        vendu = min([p for (o, n), p in ventes.items() if o == objet and (not n or n == nbt)], default=None)
+        return brut if vendu is None else min(brut, vendu // 2)
+
+    chances = [rec["chance"], rec.get("profils", {}).get("carte", {}).get("chance", rec["chance"])]
+    out = []
+    for a in marchands[pid].get("articles", []):
+        objet, nbt = a["objet"], a.get("nbt", "")
+        paye = a["prix"] if achat == 1.0 else max(1, arrondi(a["prix"] * achat))
+        recy = [0.0, 0.0]
+        r = regle_recyclage(rec, objet, nbt)
+        if r is not None:
+            g = max(0, rang(objet, nbt))
+            rend = r.get("rend") or r["rend_rarete"][min(len(r["rend_rarete"]) - 1, g)]
+            somme = sum(revente(c, "") for c in rend)
+            rien = rec["herals_si_rien"][min(5, g)]
+            rien = rien if recyclage == 1.0 or rien <= 0 else arrondi(rien * recyclage)
+            for i, ch in enumerate(chances):
+                ch = min(1.0, ch * recyclage)
+                recy[i] = (ch * somme + (1 - ch) ** len(rend) * rien) / r.get("par", 1)
+        out.append((a, paye, revente(objet, nbt), recy[0], recy[1]))
+    return out
+
+
+def controle_passeur(marchands, bavard=True):
+    """19/11 : le Passeur vend cher. Refus (SystemExit) si un de ses articles est une arme de précision ou lourde, une
+    munition spéciale du loot, une munition à moins de MUNITIONS_FOIS_FABRICATION fois sa fabrication, ou s'il rend, revendu
+    à Mila ou recyclé (spawn ou carte), plus de PASSEUR_RENDU_MAX du prix payé : avec les prix des fichiers, et avec
+    l'économie de la bêta (section [beta] de serveur/defaultconfigs/heraliz_loot-server.toml) quand elle est active."""
+    import re
+    import loot_armes as L
+    from loot_beta import reglages
+    if "passeur" not in marchands:
+        return
+    erreurs = []
+    mila = marchands.get("mila", {})
+    for a in marchands["passeur"].get("articles", []):
+        m = re.search(r'(GunId|AmmoId):"([^"]+)"', a.get("nbt", ""))
+        if not m:
+            continue
+        if m.group(1) == "GunId" and (genre_arme(m.group(2)) in GENRES_INTERDITS or not genre_arme(m.group(2))):
+            erreurs.append(f"{m.group(2)} : arme de précision ou lourde, jamais chez le Passeur")
+        if m.group(1) == "AmmoId":
+            if m.group(2) in L.MUNITIONS_HORS:
+                erreurs.append(f"{m.group(2)} : munition spéciale, jamais chez le Passeur")
+            cout = cout_fabrication(m.group(2), mila)
+            if cout and a["prix"] < MUNITIONS_FOIS_FABRICATION * cout:
+                erreurs.append(f"{m.group(2)} : {a['prix']} la balle, moins de {MUNITIONS_FOIS_FABRICATION:g} fois sa fabrication ({cout:.1f})")
+    b = reglages()
+    jeux = [("fichiers", 1.0, 1.0, 1.0)]
+    if b.get("actif"):
+        jeux.append(("bêta", b["prix_achat"], b["prix_rachat"], b["recyclage"]))
+    for nom, fa, fr, fy in jeux:
+        pire = (0.0, "")
+        for a, paye, revente, spawn, carte in rendus_articles(marchands, "passeur", fa, fr, fy):
+            part = max(revente, spawn, carte) / paye
+            if part > pire[0]:
+                pire = (part, a.get("nbt") or a["objet"])
+            if part > PASSEUR_RENDU_MAX:
+                erreurs.append(f"{nom} : {a['objet']}{a.get('nbt', '')} payé {paye}, rend jusqu'à {max(revente, spawn, carte):.1f} "
+                               f"({part * 100:.1f} %, borne {PASSEUR_RENDU_MAX * 100:g} %)")
+        if bavard:
+            print(f"[marchands] passeur ({nom}) : revendu ou recyclé, un article rend au plus {pire[0] * 100:.1f} % de son prix "
+                  f"({pire[1]}) ; borne {PASSEUR_RENDU_MAX * 100:g} %")
+    for e in erreurs:
+        print("ERREUR : " + e)
+    if erreurs:
+        raise SystemExit("Refusé : le Passeur doit vendre cher, sans argent en boucle.")
+
+
 def regle_recyclage(rec, objet, nbt):
     """Règle du recycleur pour cet objet, dans l'ordre de Recyclage.regle (jamais, règles exactes, règles larges)."""
     import re
@@ -374,12 +574,14 @@ if __name__ == "__main__":
         controle_echanges(tous)
         controle_jamais_vendus(tous)
         controle_matieres_brutes(tous)
+        controle_passeur(tous)
         raise SystemExit(0)
     tags_rachat()
     controle(MARCHANDS)
     controle_echanges(MARCHANDS)
     controle_jamais_vendus(MARCHANDS)
     controle_matieres_brutes(MARCHANDS)
+    controle_passeur(MARCHANDS)
     for pid, m in MARCHANDS.items():
         f = PNJ / f"{pid}.json"
         d = json.loads(f.read_text(encoding="utf-8"))
