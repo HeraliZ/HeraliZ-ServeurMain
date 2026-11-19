@@ -4,7 +4,7 @@
     {
       "item": "heraliz_grades:bon",
       "count": 1,
-      "weight": 20000,
+      "weight": 17155,
       "rarity": "rare",
       "name": "&9+1 500 hérals",
       "give_item": false,
@@ -15,7 +15,7 @@
     {
       "item": "heraliz_grades:bon",
       "count": 1,
-      "weight": 12000,
+      "weight": 10293,
       "rarity": "epic",
       "name": "&5+2 000 hérals",
       "give_item": false,
@@ -26,7 +26,7 @@
     {
       "item": "heraliz_grades:bon",
       "count": 1,
-      "weight": 6000,
+      "weight": 5147,
       "rarity": "legendary",
       "name": "&6+3 000 hérals",
       "give_item": false,
@@ -933,6 +933,18 @@
       "rarity": "epic"
     },
     {
+      "item": "heralisz_camo:camo_opale",
+      "count": 1,
+      "weight": 588,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_neon",
+      "count": 1,
+      "weight": 588,
+      "rarity": "epic"
+    },
+    {
       "item": "heralisz_camo:camo_orion",
       "count": 1,
       "weight": 1125,
@@ -981,6 +993,18 @@
       "rarity": "legendary"
     },
     {
+      "item": "heralisz_camo:camo_marbre_noir",
+      "count": 1,
+      "weight": 1125,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_rubis",
+      "count": 1,
+      "weight": 1125,
+      "rarity": "legendary"
+    },
+    {
       "item": "heralisz_camo:skinx_seraphin",
       "count": 1,
       "weight": 1000,
@@ -988,6 +1012,18 @@
     },
     {
       "item": "heralisz_camo:skinx_chaines_enfer",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_phenix",
+      "count": 1,
+      "weight": 1000,
+      "rarity": "mythic"
+    },
+    {
+      "item": "heralisz_camo:skinx_abysses",
       "count": 1,
       "weight": 1000,
       "rarity": "mythic"

@@ -25,6 +25,20 @@ public final class FxFrame {
       return this.x.mul(dx).add(this.y, dy).add(this.z, dz).norm();
    }
 
+   /** Comme at, écrit dans out[i..i+2] sans créer d'objet (effets qui posent des centaines de points par image). */
+   public void at(float gx, float gy, float gz, float[] out, int i) {
+      out[i] = this.o.x + (this.x.x * gx + this.y.x * gy + this.z.x * gz) * this.s;
+      out[i + 1] = this.o.y + (this.x.y * gx + this.y.y * gy + this.z.y * gz) * this.s;
+      out[i + 2] = this.o.z + (this.x.z * gx + this.y.z * gy + this.z.z * gz) * this.s;
+   }
+
+   /** Comme vec, écrit dans out[i..i+2] sans créer d'objet. */
+   public void vec(float dx, float dy, float dz, float[] out, int i) {
+      out[i] = (this.x.x * dx + this.y.x * dy + this.z.x * dz) * this.s;
+      out[i + 1] = (this.x.y * dx + this.y.y * dy + this.z.y * dz) * this.s;
+      out[i + 2] = (this.x.z * dx + this.y.z * dy + this.z.z * dz) * this.s;
+   }
+
    /** Faces au plus pour le calage : au-delà on en garde un échantillon fixe (le repère ne bouge pas, le coût si). */
    private static final int FIT_MAX = 160;
    private static final float[] RC = new float[FIT_MAX * 3], VC = new float[FIT_MAX * 3], W = new float[FIT_MAX], RES = new float[FIT_MAX],

@@ -14,6 +14,10 @@ changeant son « fragment », puis relancer ce script. Les fichiers produits von
 
 On modifie donc toujours le gabarit, jamais les camo_<id>.fsh ni heralisz_camo.glsl (ils seraient écrasés au prochain
 passage).
+
+Les effets 3D des skins (CamoFx : fx_<id>.fsh, un par fx_<id>.json) sortent de même de outils/fx_gabarit.fsh (19/11 : leur
+ancien outil n'existait plus) : « #define FX_ID <id> » puis le code des effets, entier (quelques Ko par programme). Pour un
+nouvel effet : sa recette dans le gabarit, un fx_<id>.json copié d'un autre en changeant son « fragment », puis ce script.
 """
 import re
 import sys
@@ -25,6 +29,8 @@ CORE = MOD / "src" / "client" / "resources" / "assets" / "heralisz_camo" / "shad
 # code commun, inclus par « #moj_import <heralisz_camo.glsl> » (Minecraft cherche dans minecraft:shaders/include/)
 INCLUS = MOD / "src" / "client" / "resources" / "assets" / "minecraft" / "shaders" / "include" / "heralisz_camo.glsl"
 ENTETE = "#version 150\n#define CAMO_ID @CAMO_ID@\n"
+GABARIT_FX = MOD / "outils" / "fx_gabarit.fsh"
+ENTETE_FX = "#version 150\n#define FX_ID @FX_ID@\n"
 PROGRAMME = ("#version 150\n#define CAMO_ID %d\n"
              "// fichier généré par outils/generer_camos.py depuis outils/camo_gabarit.fsh (dossier du mod) : ne pas modifier ici.\n"
              "// Le code des camos est dans assets/minecraft/shaders/include/heralisz_camo.glsl (un seul exemplaire).\n"
@@ -51,7 +57,14 @@ def main():
     changes = int(ecrire(INCLUS, gabarit[len(ENTETE):]))
     for i in ids:
         changes += int(ecrire(CORE / ("camo_%d.fsh" % i), PROGRAMME % i))
-    print("[camos] %d programmes et le code commun, %d fichier(s) mis à jour" % (len(ids), changes))
+    # effets 3D des skins : un programme complet par fx_<id>.json
+    fx = GABARIT_FX.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if fx.count("@FX_ID@") != 1 or not fx.startswith(ENTETE_FX):
+        sys.exit("[camos] le gabarit des effets doit commencer par « #version 150 » puis « #define FX_ID @FX_ID@ » (seul @FX_ID@)")
+    ids_fx = sorted(int(m.group(1)) for f in CORE.iterdir() if (m := re.fullmatch(r"fx_(\d+)\.json", f.name)))
+    for i in ids_fx:
+        changes += int(ecrire(CORE / ("fx_%d.fsh" % i), fx.replace("@FX_ID@", str(i))))
+    print("[camos] %d programmes de camo, %d d'effets 3D et le code commun, %d fichier(s) mis à jour" % (len(ids), len(ids_fx), changes))
 
 
 if __name__ == "__main__":

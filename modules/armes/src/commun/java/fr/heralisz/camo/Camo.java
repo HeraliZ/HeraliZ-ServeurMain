@@ -58,12 +58,21 @@ public enum Camo {
    DRAGON("dragon", 46, Tier.LEGENDARY, Camo.ALL),
    STORM("storm", 70, Tier.LEGENDARY, Camo.ALL),
    DARK_MATTER("dark_matter", 6, Tier.LEGENDARY, Camo.ALL),
+   // nouveaux camos du 19/11 (rendus validés par le propriétaire), entièrement dessinés par le shader (aucune texture)
+   OPALE("opale", 80, Tier.EPIC, Camo.ALL),
+   MARBRE_NOIR("marbre_noir", 81, Tier.LEGENDARY, Camo.ALL),
+   PATINE("patine", 82, Tier.RARE, Camo.ALL),
+   NEON("neon", 83, Tier.EPIC, Camo.ALL),
+   RUBIS("rubis", 84, Tier.LEGENDARY, Camo.ALL),
    // (72 Dark Matter Origine, le Dark Matter à piquots visqueux, retiré en 0.9.12 : son id est lu comme DARK_MATTER, voir byId)
    // (73 à 75 Pack-a-Punch I à III, camos du mode Zombies retiré, supprimés le 02/11 : plus rien ne les donnait ; une arme
    // qui porte encore « pap_1 » à « pap_3 » s'affiche sans camo, voir byId)
    // skins X : camo vivant + effet 3D, onglet « HeralisZ - skinX » (un skin peut être réservé à une arme : Camo.gun)
    SERAPHIN("seraphin", 208, Tier.MYTHIC, Camo.ALL),
-   CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL);
+   CHAINES_ENFER("chaines_enfer", 209, Tier.MYTHIC, Camo.ALL),
+   // 19/11 : Phénix (ailes de flammes) et Abysses (filaments bioluminescents), rendus validés par le propriétaire
+   PHENIX("phenix", 210, Tier.MYTHIC, Camo.ALL),
+   ABYSSES("abysses", 211, Tier.MYTHIC, Camo.ALL);
    // (230 à 233 Texture manquante, Money Gun, Surchauffe et Trophée, skins « buzz », supprimés le 04/11 : choix du
    // propriétaire, seuls Séraphin et Chaînes de l'Enfer restent mythiques ; une arme qui porte encore un de ces ids
    // s'affiche sans camo, un id gardé dans une collection est ignoré, voir byId)

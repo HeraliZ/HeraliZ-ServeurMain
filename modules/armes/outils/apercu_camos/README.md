@@ -65,5 +65,5 @@ pip install moderngl
 xvfb-run -a python3 verif_glsl.py
 ```
 
-Compile les 62 programmes avec un vrai compilateur OpenGL de bureau (Mesa) en `#version 150`, comme le jeu.
-À lancer après chaque `python3 ../generer_camos.py`.
+Compile tous les programmes (camos `camo_<id>` et effets 3D des skins `fx_<id>`) avec un vrai compilateur OpenGL de
+bureau (Mesa) en `#version 150`, comme le jeu. À lancer après chaque `python3 ../generer_camos.py`.

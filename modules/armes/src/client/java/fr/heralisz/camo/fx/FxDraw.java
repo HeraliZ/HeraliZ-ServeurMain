@@ -40,6 +40,110 @@ public final class FxDraw {
       c.mesh.quad(p.sub(ax).sub(ay), p.add(ax).sub(ay), p.add(ax).add(ay), p.sub(ax).add(ay), 0, 0, 1, 1, n);
    }
 
+   // ------------------------------------------------------------------ mêmes formes, à plat (19/11, Phénix et Abysses)
+   // Coordonnées en flottants, aucun objet créé : pour les effets qui dessinent des centaines d'éléments par image
+   // (braises, plancton, filaments). Mêmes règles et mêmes UV que billboard, quad et ribbon ci-dessus.
+
+   /** Sprite face à la caméra centré en (x, y, z), sans rotation ; UV 0..1 (v = 1 en haut). */
+   public static void billboard(FxContext c, float x, float y, float z, float w, float h) {
+      // direction vers la caméra (FxContext.toCam)
+      float nx = 0, ny = 0, nz = 1;
+      if (!c.gui) {
+         float l = (float) Math.sqrt(x * x + y * y + z * z);
+         if (l < 1e-9F) {
+            nx = 0; ny = 1; nz = 0;
+         } else {
+            nx = -x / l; ny = -y / l; nz = -z / l;
+         }
+      }
+      // haut : c.up sans sa part sur n (V.perp), à défaut n'importe quelle perpendiculaire (V.anyPerp)
+      float d = c.up.x * nx + c.up.y * ny + c.up.z * nz;
+      float ux = c.up.x - nx * d, uy = c.up.y - ny * d, uz = c.up.z - nz * d;
+      float ul = (float) Math.sqrt(ux * ux + uy * uy + uz * uz);
+      if (ul < 1e-6F) {
+         if (Math.abs(ny) < 0.9F) {
+            ux = -nz; uy = 0; uz = nx;
+         } else {
+            ux = 0; uy = nz; uz = -ny;
+         }
+         ul = Math.max((float) Math.sqrt(ux * ux + uy * uy + uz * uz), 1e-9F);
+      }
+      ux /= ul; uy /= ul; uz /= ul;
+      // droite = haut × n
+      float rx = uy * nz - uz * ny, ry = uz * nx - ux * nz, rz = ux * ny - uy * nx;
+      float hw = w * 0.5F, hh = h * 0.5F;
+      FxMesh m = c.mesh;
+      m.v(x - rx * hw - ux * hh, y - ry * hw - uy * hh, z - rz * hw - uz * hh, 0, 0, nx, ny, nz);
+      m.v(x + rx * hw - ux * hh, y + ry * hw - uy * hh, z + rz * hw - uz * hh, 1, 0, nx, ny, nz);
+      m.v(x + rx * hw + ux * hh, y + ry * hw + uy * hh, z + rz * hw + uz * hh, 1, 1, nx, ny, nz);
+      m.v(x - rx * hw + ux * hh, y - ry * hw + uy * hh, z - rz * hw + uz * hh, 0, 1, nx, ny, nz);
+   }
+
+   /** Quad orienté : centre (px, py, pz), demi-axes a (u) et b (v) ; UV 0..1, normale a × b. */
+   public static void quad(FxContext c, float px, float py, float pz, float ax, float ay, float az, float bx, float by, float bz) {
+      float nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+      float nl = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+      if (nl < 1e-9F) {
+         nx = 0; ny = 1; nz = 0;
+      } else {
+         nx /= nl; ny /= nl; nz /= nl;
+      }
+      FxMesh m = c.mesh;
+      m.v(px - ax - bx, py - ay - by, pz - az - bz, 0, 0, nx, ny, nz);
+      m.v(px + ax - bx, py + ay - by, pz + az - bz, 1, 0, nx, ny, nz);
+      m.v(px + ax + bx, py + ay + by, pz + az + bz, 1, 1, nx, ny, nz);
+      m.v(px - ax + bx, py - ay + by, pz - az + bz, 0, 1, nx, ny, nz);
+   }
+
+   /**
+    * Ruban face à la caméra le long des n premiers points de pts (x, y, z à la suite), largeur w[i] ; u de u0 à u1 le long,
+    * v 0..1 en travers.
+    */
+   public static void ribbon(FxContext c, float[] pts, float[] w, int n, float u0, float u1) {
+      if (n < 2) return;
+      FxMesh m = c.mesh;
+      float plx = 0, ply = 0, plz = 0, prx = 0, pry = 0, prz = 0, pcx = 0, pcy = 0, pcz = 0, pu = 0;
+      for (int i = 0; i < n; i++) {
+         int o = i * 3, a = Math.min(i + 1, n - 1) * 3, b = Math.max(i - 1, 0) * 3;
+         float x = pts[o], y = pts[o + 1], z = pts[o + 2];
+         float tx = pts[a] - pts[b], ty = pts[a + 1] - pts[b + 1], tz = pts[a + 2] - pts[b + 2];
+         float cx = 0, cy = 0, cz = 1;
+         if (!c.gui) {
+            float l = (float) Math.sqrt(x * x + y * y + z * z);
+            if (l < 1e-9F) {
+               cx = 0; cy = 1; cz = 0;
+            } else {
+               cx = -x / l; cy = -y / l; cz = -z / l;
+            }
+         }
+         float sx = ty * cz - tz * cy, sy = tz * cx - tx * cz, sz = tx * cy - ty * cx;
+         float sl = (float) Math.sqrt(sx * sx + sy * sy + sz * sz);
+         if (sl < 1e-9F) {
+            // le ruban file droit vers la caméra : n'importe quelle perpendiculaire (V.anyPerp)
+            float tl = Math.max((float) Math.sqrt(tx * tx + ty * ty + tz * tz), 1e-9F);
+            if (Math.abs(ty / tl) < 0.9F) {
+               sx = -tz; sy = 0; sz = tx;
+            } else {
+               sx = 0; sy = tz; sz = -ty;
+            }
+            sl = Math.max((float) Math.sqrt(sx * sx + sy * sy + sz * sz), 1e-9F);
+         }
+         float k = w[i] * 0.5F / sl;
+         sx *= k; sy *= k; sz *= k;
+         float u = u0 + (u1 - u0) * i / (n - 1);
+         if (i > 0) {
+            m.v(plx, ply, plz, pu, 0, pcx, pcy, pcz);
+            m.v(x - sx, y - sy, z - sz, u, 0, cx, cy, cz);
+            m.v(x + sx, y + sy, z + sz, u, 1, cx, cy, cz);
+            m.v(prx, pry, prz, pu, 1, pcx, pcy, pcz);
+         }
+         plx = x - sx; ply = y - sy; plz = z - sz;
+         prx = x + sx; pry = y + sy; prz = z + sz;
+         pcx = cx; pcy = cy; pcz = cz;
+         pu = u;
+      }
+   }
+
    /** Ruban face à la caméra le long d'une polyligne ; u de u0 à u1 le long, v 0..1 en travers. */
    public static void ribbon(FxContext c, V[] pts, float[] w, float u0, float u1) {
       int n = pts.length;

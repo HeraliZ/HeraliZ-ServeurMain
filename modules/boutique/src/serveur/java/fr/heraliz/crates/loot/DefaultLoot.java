@@ -120,19 +120,22 @@ final class DefaultLoot {
                         .command("heraliz givekey {player} event 1"));
                 l.add(e("minecraft:elytra", 1, 2, LEGENDARY));
             }
-            // caisse Camos : tous les camos d'armes de heralisz_camo, par rarete (communs 9 % chacun ... skins X 0,1 %)
+            // caisse Camos : tous les camos d'armes de heralisz_camo, par rarete (communs 9 % chacun ... skins X 0,1 %) ; 19/11 :
+            // Patine, Opale, Neon, Marbre noir, Rubis, Phenix et Abysses avec le meme poids que les camos de leur rarete
             case CAMO -> {
                 for (String c : new String[]{"crimson", "navy", "arctic", "olive", "sand", "sakura"}) l.add(camo(c, 90, COMMON));
                 for (String c : new String[]{"carbon", "woodland", "digital", "tiger", "rust", "damascus"}) l.add(camo(c, 45, UNCOMMON));
-                for (String c : new String[]{"ice", "toxic", "plasma", "circuit"}) l.add(camo(c, 25, RARE));
+                for (String c : new String[]{"ice", "toxic", "plasma", "circuit", "patine"}) l.add(camo(c, 25, RARE));
                 for (String c : new String[]{"gold", "honeycomb", "lava", "galaxy", "solar", "borealis", "afterlife", "bioluminescence",
-                        "genesis", "dark_aether", "infestation", "atomic", "obsidian", "glitch", "amethyst", "diamond", "black_ice"}) {
+                        "genesis", "dark_aether", "infestation", "atomic", "obsidian", "glitch", "amethyst", "diamond", "black_ice", "opale",
+                        "neon"}) {
                     l.add(camo(c, 4, EPIC));
                 }
-                for (String c : new String[]{"orion", "singularity", "nexus_horizon", "dark_matter_nuclear", "liquid_chrome", "dragon", "storm", "dark_matter"}) {
+                for (String c : new String[]{"orion", "singularity", "nexus_horizon", "dark_matter_nuclear", "liquid_chrome", "dragon", "storm", "dark_matter",
+                        "marbre_noir", "rubis"}) {
                     l.add(camo(c, 2, LEGENDARY));
                 }
-                for (String c : new String[]{"seraphin", "chaines_enfer"}) {
+                for (String c : new String[]{"seraphin", "chaines_enfer", "phenix", "abysses"}) {
                     l.add(e("heralisz_camo:skinx_" + c, 1, 1, MYTHIC));
                 }
             }

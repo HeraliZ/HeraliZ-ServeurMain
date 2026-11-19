@@ -46,6 +46,10 @@ vec3 VN_DETAIL = vec3(0.0, 0.0, 1.0);
 #if CAMO_ID == 1 || CAMO_ID == 5 || CAMO_ID == 43 || CAMO_ID == 44 || (CAMO_ID >= 20 && CAMO_ID <= 25)
 #define CAMO_RELIEF
 #endif
+// nouveaux camos du 19/11 (Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses) : même relief, mêmes reflets
+#if (CAMO_ID >= 80 && CAMO_ID <= 84) || CAMO_ID == 210 || CAMO_ID == 211
+#define CAMO_RELIEF
+#endif
 const float TAU = 6.2831853;
 
 // ------------------------------------------------------------------ bruit
@@ -2907,12 +2911,23 @@ vec3 infernalIron(vec3 p, out vec3 em) {
     return col + studio(normalize(viewNormal)) * 0.05;
 }
 
+#if CAMO_ID == 210 || CAMO_ID == 211
+// 210 Phénix et 211 Abysses (19/11) : surfaces écrites plus bas avec les nouveaux camos du 19/11, après les reflets liés au
+// monde (envWorld, reflWorld…) qu'elles lisent
+vec3 phenix(vec3 p, out vec3 em);
+vec3 abysses(vec3 p, out vec3 em);
+#endif
+
 vec3 skinSurface(vec3 p, out vec3 em) {
     em = vec3(0.0);
 #if CAMO_ID == 208
     return seraphMarble(p, em);
 #elif CAMO_ID == 209
     return infernalIron(p, em);
+#elif CAMO_ID == 210
+    return phenix(p, em);
+#elif CAMO_ID == 211
+    return abysses(p, em);
 #else
     return darkMatter(p, em);
 #endif
@@ -3526,6 +3541,752 @@ vec3 solid(int id, vec3 p, out vec3 em) {
     return col;
 }
 
+// ================================================================== nouveaux camos du 19/11 (rendus validés par le propriétaire)
+// Opale 80 (épique), Marbre noir 81 (légendaire), Patine 82 (rare), Néon 83 (épique, animé), Rubis 84 (légendaire),
+// Phénix 210 et Abysses 211 (skins X mythiques, animés : surfaces sous leurs effets 3D, appelées par skinSurface).
+// Entièrement procéduraux : aucune texture. Ils gardent le relief de l'arme et les reflets liés au monde des camos refaits
+// (CAMO_RELIEF). Repris du Diamond : diamPlan (plan du motif), diamIsotropie (la carte de positions suit-elle la
+// surface ?) et, pour le Rubis, paveCell, diamRedresse et diamSecours. Cette partie n'est compilée que dans les programmes
+// de ces sept camos (les autres n'ont pas à la lire au chargement du jeu).
+#if (CAMO_ID >= 80 && CAMO_ID <= 84) || CAMO_ID == 210 || CAMO_ID == 211
+// Contre le bruit de pixels (vue joueur) : chaque détail a une taille minimale à l'écran ; un trait plus fin qu'un pixel
+// s'estompe (couverture) au lieu de clignoter ; un point lumineux garde son énergie en grossissant jusqu'à un pixel.
+
+// taille d'un pixel à l'écran, en unités de l'arme (1 = longueur de l'arme)
+float ncPx(vec3 p) {
+    return max(length(fwidth(p)), 1e-6);
+}
+
+// trait de demi-largeur w autour de d = 0 (mêmes unités que px), adouci sur un pixel ; plus fin qu'un demi-pixel : estompé
+float ncTrait(float d, float w, float px) {
+    float ww = max(w, 0.5 * px);
+    return (1.0 - smoothstep(ww - 0.5 * px, ww + 0.5 * px, abs(d))) * (w / ww);
+}
+
+// distance (unités de l'arme) à la ligne de niveau v = c d'un champ lisse : pente prise sur les dérivées écran
+float ncDistIso(float v, float c, vec3 p) {
+    float g = length(vec2(dFdx(v), dFdy(v))) / max(length(vec2(length(dFdx(p)), length(dFdy(p)))), 1e-7);
+    return abs(v - c) / max(g, 1e-3);
+}
+
+// parallaxe (vraie profondeur sous la surface) : déplacement, dans le plan de la face et dans le repère de l'arme, du point
+// vu à la profondeur d, par unité de d. Tiré des dérivées écran de la position sur l'arme et de la position dans la vue :
+// ni uniforme ni texture de plus, et le sens du repère de la carte n'intervient pas. Borné de biais (pas de traînées) et
+// effacé là où la carte de positions ne suit pas la surface.
+vec3 ncParallaxe(vec3 p) {
+    vec3 ex = dFdx(viewPos), ey = dFdy(viewPos);
+    vec3 px = dFdx(p), py = dFdy(p);
+    vec3 nvv = cross(ex, ey);
+    float lv = length(nvv);
+    float lg = length(cross(px, py));
+    float fid = diamIsotropie(ex, ey, px, py);
+    vec3 n = nvv / max(lv, 1e-30);
+    vec3 e = eyeDir();
+    // e = a ex + b ey + c n (base duale de la face)
+    float a = dot(e, cross(ey, n)) / max(lv, 1e-30);
+    float b = dot(e, cross(n, ex)) / max(lv, 1e-30);
+    float c = dot(e, n);
+    float k = sqrt(lg / max(lv, 1e-30));
+    vec3 tg = (a * px + b * py) / max(k, 1e-12);
+    float ok = lv > 1e-30 && lg > 1e-30 ? 1.0 : 0.0;
+    return tg / max(abs(c), 0.35) * smoothstep(0.6, 0.85, fid) * ok;
+}
+
+// repère orthonormé de la face dans la vue, premier axe le long de u du motif (dérivées écran : constant sur une face) ;
+// le faceFrame du Diamond n'est pas orthonormé (il garde l'étirement du motif) : les normales des rivets et des rubis
+// seraient penchées autrement
+mat3 ncRepere(vec3 n, vec2 uv) {
+    vec3 dp1 = dFdx(viewPos);
+    vec3 dp2 = dFdy(viewPos);
+    vec2 du1 = dFdx(uv);
+    vec2 du2 = dFdy(uv);
+    vec3 dp2perp = cross(dp2, n);
+    vec3 dp1perp = cross(n, dp1);
+    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
+    T -= n * dot(T, n);
+    float lt = dot(T, T);
+    T = lt > 1e-30 ? T * inversesqrt(lt) : normalize(cross(n, abs(n.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0)));
+    vec3 bb = cross(n, T);
+    return mat3(T, dot(bb, B) < 0.0 ? -bb : bb, n);
+}
+
+float ncSeg(vec2 p, vec2 a, vec2 b) {
+    vec2 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-12), 0.0, 1.0);
+    return length(pa - ba * h);
+}
+
+// or jaune poli (rampe d'or sur le reflet du décor lié au monde, comme l'or du Diamond) ; eclat : éclats les plus forts
+vec3 ncOr(vec3 n, float rough, out float eclat) {
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 e = envWorld(r, rough) * 0.75 + envWorld(r, rough + 0.25) * 0.25;
+    float L = lum3(e) + 0.08;
+    L += (0.3 + 0.4 * L) * pow(1.0 - ndv, 5.0);
+    L = pow(L, 1.3) * 1.1;
+    float tt = 1.0 - exp(-0.95 * L);
+    float s[6] = float[6](0.0, 0.2, 0.42, 0.62, 0.82, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x2a1400), hexc(0x643a04), hexc(0xb0780c), hexc(0xe3aa1e), hexc(0xf9d046), hexc(0xffeca6));
+    eclat = smoothstep(0.85, 0.98, tt);
+    return ramp6(tt, s, c);
+}
+
+// rampe de feu : 0 rouge sombre -> orange -> jaune -> 1 blanc chaud
+vec3 ncFeu(float x) {
+    return mix(mix(hexc(0x3a0500), hexc(0xff4a00), smoothstep(0.0, 0.45, x)),
+               mix(hexc(0xffb52a), hexc(0xfff3c8), smoothstep(0.72, 1.0, x)), smoothstep(0.4, 0.78, x));
+}
+
+// points lumineux d'une couche (un point par cellule de taille cs, rayon r0, une cellule sur deux environ) : rayon d'au
+// moins un pixel, énergie gardée (pas de scintillement de pixels de loin) ; tw : scintillement lent
+float ncPoints(vec3 q, float cs, float r0, float px, float t, float graine) {
+    vec3 g = q / cs;
+    vec3 c = floor(g);
+    vec3 h = hash3(c + graine);
+    vec3 pt = c + 0.22 + 0.56 * h;
+    float d = length(g - pt) * cs;
+    float r = max(r0, 0.8 * px);
+    float k = (r0 / r) * (r0 / r);
+    float tw = 0.55 + 0.45 * sin(t * (0.7 + 1.6 * h.z) + h.x * 40.0);
+    return step(0.45, h.y) * exp(-d * d / (r * r)) * k * tw;
+}
+
+// ------------------------------------------------------------------ 80 Opale (épique)
+// opale blanche : corps laiteux bleuté, translucide ; « jeu de couleurs » : chaque plage (domaine de silice ordonnée) a sa
+// propre orientation fixée dans le monde et renvoie une couleur pure (bleu, vert, jaune, orange, un peu de rouge) quand le
+// regard s'y aligne ; l'alignement varie un peu à travers la plage, si bien que l'éclat la balaie et change de teinte quand
+// la vue bouge ; les plages voisines s'allument ensemble (champ d'orientation lent). Nacre et plages vues un peu sous la
+// surface (parallaxe), vernis poli
+vec3 ncOpaleTeinte(float h) {
+    float s[6] = float[6](0.0, 0.22, 0.44, 0.6, 0.8, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x2f4bff), hexc(0x0cc0ff), hexc(0x16e88a), hexc(0x9cf03a), hexc(0xffa21e), hexc(0xff4a2e));
+    return ramp6(h, s, c);
+}
+
+// une couche de plages : rend l'éclat (a), la teinte (rgb) ; q : point de la couche, r : reflet lié au monde
+vec4 ncOpaleCouche(vec3 q, vec3 sc, float warp, vec3 r, vec3 champ, float t, float graine) {
+    vec3 qc = q * sc + graine;
+    vec3 w = vec3(fbm(qc * 0.3, 2), fbm(qc * 0.3 + vec3(5.2, 1.3, 2.8), 2), 0.5) - 0.5;
+    float f1, f2; vec3 cell, fp;
+    vec3 qw = qc + warp * w;
+    worley(qw, f1, f2, cell, fp);
+    vec3 hc = hash3(cell + 3.7);
+    // orientation du réseau : penchée différemment à travers la plage (l'éclat la balaie)
+    // orientation propre à chaque plage, autour d'un champ qui varie lentement sur l'arme : les plages voisines s'allument
+    // ensemble (grands éclats qui balaient l'arme) au lieu de confettis
+    vec3 gdir = normalize(champ * 3.0 + (hash3(cell + 11.3) - 0.5) * 1.3 + (qw - fp) * 0.15);
+    float al = dot(r, gdir);
+    float k = 0.5 + 0.5 * cos(TAU * (al * 1.1 + 0.25 * hc.y));
+    // éclat franc quand le regard s'aligne, lueur colorée faible sinon
+    float I = smoothstep(0.7, 0.93, k) + 0.1 * smoothstep(0.45, 0.7, k);
+    float hue = fract(hc.x * 0.55 + 0.45 * al + 0.9 * champ.x + 0.03 * sin(t * 0.3 + hc.z * 6.0));
+    // la plage est plus vive en son cœur qu'à ses bords (l'éclat vient de la masse)
+    float edge = smoothstep(0.01, 0.045, f2 - f1) * (0.75 + 0.25 * smoothstep(0.05, 0.3, f2 - f1)) * step(0.12, hc.z);
+    return vec4(ncOpaleTeinte(hue), clamp(I, 0.0, 1.0) * edge);
+}
+
+vec3 opale(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.3;
+    vec3 nv = normalize(viewNormal);
+    float px = ncPx(p);
+    vec3 par = ncParallaxe(p);
+    vec3 r = reflWorld(nv);
+    float ndv = facing(nv);
+    // nacre laiteuse, un peu sous la surface : couches ondulées et irisation douce (film mince) qui glisse avec l'angle
+    vec3 qm = (p + par * 0.006) * vec3(3.5, 8.0, 8.0);
+    vec3 wm = vec3(fbm(qm, 2), fbm(qm + vec3(5.2, 1.3, 2.8), 2), 0.0);
+    float couche = fbm(qm * 1.3 + 2.0 * wm, 3);
+    float bande = 0.5 + 0.5 * sin(couche * 38.0);
+    float film = couche * 3.0 + 0.6 * dot(r, vec3(0.3, 0.8, 0.5)) + 0.3 * (1.0 - ndv);
+    vec3 irid = spectrum(fract(film));
+    vec3 milk = mix(hexc(0xd2dbe4), hexc(0xf8f6f1), smoothstep(0.3, 0.7, fbm(qm * 0.9 + vec3(3.0), 3)));
+    vec3 nacre = mix(milk, milk * (0.78 + 0.4 * irid), 0.3 + 0.25 * bande);
+    // éclats d'opale : petites plages vives, regroupées en zones, qui s'allument quand le regard s'y aligne
+    vec3 champ = vec3(fbm(p * 2.2 + vec3(1.0, 7.0, 3.0), 2), fbm(p * 2.2 + vec3(8.0, 2.0, 5.0), 2), fbm(p * 2.2 + vec3(4.0, 9.0, 1.0), 2)) - 0.5;
+    vec4 c1 = ncOpaleCouche(p + par * 0.004, vec3(30.0, 48.0, 48.0), 1.4, r, champ, t, 0.0);
+    float zone = smoothstep(0.36, 0.56, fbm(p * vec3(3.0, 5.0, 5.0) + vec3(4.0), 2));
+    c1.a *= 0.4 + 0.6 * zone;
+    vec3 col = mix(nacre, c1.rgb * 1.1, c1.a * 0.92);
+    // vernis poli : reflet net du décor surtout de biais, reflet doux ; reflet bleuté de biais
+    float F = 0.04 + 0.96 * pow(1.0 - ndv, 5.0);
+    col = col * 0.93 + envWorld(r, 0.03) * F * 0.5 + envWorld(r, 0.55) * 0.035;
+    col += hexc(0x6f9cff) * pow(1.0 - ndv, 3.0) * 0.1;
+    em = c1.rgb * c1.a * 0.22;
+    return col * reliefMetal(0.5);
+}
+
+// ------------------------------------------------------------------ 81 Marbre noir (légendaire)
+// marbre noir (Nero Marquina) poli miroir : nuages gris très sombres ; veines blanches de marbre (familles de veines
+// sinueuses qui se croisent, plus ou moins marquées le long de leur cours, halo laiteux autour des grandes) ; quelques veines d'or poli qui luisent, dont les éclats courent le long de la veine quand la vue bouge ;
+// reflets nets et contrastés du décor lié au monde
+// veine de marbre : lignes phase = k pi d'un champ ondulé ; rend la distance (unités de l'arme) et l'indice de la veine
+float ncVeine(vec3 p, vec3 dir, float freq, float amp, vec3 w, float graine, out float idx) {
+    float ph = dot(p, dir) * freq + amp * fbm(p * vec3(3.5, 6.0, 6.0) + 1.8 * w + graine, 4);
+    idx = floor(ph / PI + 0.5);
+    return ncDistIso(sin(ph), 0.0, p);
+}
+
+vec3 marbreNoir(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.45;
+    vec3 nv = normalize(viewNormal);
+    float px = ncPx(p);
+    vec3 q = p * vec3(2.4, 4.6, 4.6) + vec3(4.0, 1.0, 7.0);
+    vec3 w0 = vec3(fbm(q, 3), fbm(q + vec3(5.2, 1.3, 2.8), 3), fbm(q + vec3(9.1, 4.4, 0.7), 3));
+    float i1, i2, iG;
+    float d1 = ncVeine(p, normalize(vec3(1.0, 0.62, 0.35)), 30.0, 5.5, w0, 0.0, i1);
+    float d2 = ncVeine(p, normalize(vec3(-0.45, 1.0, 0.6)), 46.0, 4.0, w0, 9.0, i2);
+    float dG = ncVeine(p, normalize(vec3(1.0, -0.35, 0.5)), 16.0, 4.5, w0, 21.0, iG);
+    // marquage des veines le long de leur cours : elles apparaissent, s'affinent, disparaissent
+    float m1 = smoothstep(0.25, 0.5, fbm(p * vec3(3.0, 5.0, 5.0) + vec3(i1 * 1.7, 3.0, 1.0), 2));
+    float m2 = smoothstep(0.3, 0.55, fbm(p * vec3(4.0, 7.0, 7.0) + vec3(i2 * 2.3, 8.0, 2.0), 2));
+    float or_ = step(0.4, hash(vec3(iG, 2.0, 5.0))) * smoothstep(0.28, 0.45, fbm(p * vec3(2.0, 4.0, 4.0) + vec3(iG, 1.0, 9.0), 2));
+    // fond : noir profond, nuages gris-bleu très sombres
+    float cloud = fbm(q * 0.8 + w0, 3);
+    vec3 col = mix(hexc(0x030304), hexc(0x16171c), smoothstep(0.38, 0.85, cloud));
+    // veines blanches
+    float wv = ncTrait(d1, 0.0017 * (0.45 + 0.75 * m1), px) * m1 + 0.85 * ncTrait(d2, 0.0008, px) * m2;
+    col += hexc(0xbcb9b2) * (exp(-d1 / 0.008) * m1 * 0.2 + exp(-d2 / 0.004) * m2 * 0.07);
+    col = mix(col, hexc(0xefece5), clamp(wv, 0.0, 1.0));
+    // veines d'or : surface un peu ondulée (les reflets varient le long de la veine), éclats qui courent quand la vue bouge
+    float gold = ncTrait(dG, 0.0022, px) * or_;
+    vec3 nG = normalize(nv + 0.35 * softWarp(p * 3.0, 9.0));
+    float ecl;
+    vec3 gcol = ncOr(nG, 0.03, ecl);
+    vec3 rg = reflWorld(nG);
+    float glint = pow(max(0.0, sin(dot(rg, vec3(5.0, 3.0, 4.0)) * 2.3 + dot(p, vec3(60.0, 35.0, 35.0)) + t * 0.5)), 14.0);
+    col = mix(col, gcol * (1.0 + 1.1 * glint), gold);
+    col += hexc(0xffb43a) * exp(-dG / 0.004) * or_ * 0.06;
+    // poli miroir : reflet net, contrasté (le gris du décor s'efface, panneaux, horizon et soleil restent)
+    vec3 n = normalize(nv + 0.025 * softWarp(p, 3.0));
+    float ndv = facing(n);
+    vec3 env = envWorld(reflWorld(n), 0.012);
+    float F = 0.07 + 0.93 * pow(1.0 - ndv, 5.0);
+    col += env * env * 0.55 * F * (1.0 - gold);
+    em = (hexc(0xffc24a) * (0.12 + 0.9 * glint) + gcol * ecl * 0.3) * gold;
+    return col * reliefMetal(0.6);
+}
+
+// ------------------------------------------------------------------ 82 Patine (rare)
+// cuivre vieilli assemblé en plaques : joints creusés, rivets bombés (cuivre poli, collerette de vert-de-gris), vert-de-gris
+// crayeux en plaques et dans les creux de l'arme, coulures vertes sous les rivets et le joint du flanc, cuivre poli là où
+// l'arme s'use (arêtes), crasse dans le bas (ambiance survie)
+vec3 patine(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    NO_SHADE = 0.15;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    vec3 an = abs(fn);
+    float px = ncPx(p);
+    // plan du motif (diamPlan du Diamond) : x reste le long de l'arme sur les flancs, le dessus et le dessous
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    mat3 tbn = ncRepere(nv, uv);
+    float flanc = smoothstep(0.55, 0.75, an.z);
+    float trans = 1.0 - smoothstep(0.55, 0.75, an.x);
+    // joints transverses (plaques de 1/8.5 de longueur) et joint longitudinal des flancs
+    const float NP = 8.5;
+    float sx = p.x * NP + 0.31;
+    float kS = floor(sx + 0.5);
+    float xsj = (kS - 0.31) / NP;
+    float dS = abs(p.x - xsj);
+    const float Y0 = 0.012;
+    float dL = abs(p.y - Y0);
+    float joint = max(ncTrait(dS, 0.0010, px) * trans, ncTrait(dL, 0.0010, px) * flanc);
+    // rivets : deux rangées de part et d'autre du joint transverse le plus proche, et le long du joint des flancs
+    const float SP = 0.0145, RR = 0.0034, OFF = 0.0072;
+    vec2 rc = vec2(xsj + (p.x > xsj ? OFF : -OFF), (floor(uv.y / SP) + 0.5) * SP);
+    vec2 rl = vec2((floor(p.x / SP) + 0.5) * SP, Y0 + (p.y > Y0 ? OFF : -OFF));
+    vec2 o1 = vec2(p.x, uv.y) - rc;
+    vec2 o2 = p.xy - rl;
+    float d1 = length(o1) + (1.0 - trans);
+    float d2 = length(o2) + (1.0 - flanc);
+    vec2 ro = d1 < d2 ? o1 : o2;
+    float dR = min(d1, d2);
+    float rvis = smoothstep(1.3, 2.4, RR / px);
+    float riv = (1.0 - smoothstep(RR - 0.5 * px, RR + 0.5 * px, dR)) * rvis;
+    float col_ = (1.0 - smoothstep(RR * 1.2, RR * 2.1, dR)) * (1.0 - riv) * rvis;
+    // coulures sous les rivets (flancs, vers le bas de l'arme) et sous le joint longitudinal
+    float drip = 0.0;
+    {
+        float xr = rc.x + (vnoise(vec3(p.y * 90.0, kS, 1.0)) - 0.5) * 0.002;
+        for (int k = 0; k < 3; k++) {
+            float yr = (floor(p.y / SP) + 0.5 + float(k)) * SP;
+            float dy = yr - p.y - RR;
+            float hk = hash(vec3(kS, floor(yr / SP), p.x > xsj ? 1.0 : 0.0));
+            float Ld = 0.014 + 0.04 * hk;
+            float wd = 0.0019 + 0.03 * max(dy, 0.0);
+            drip = max(drip, step(0.0, dy) * exp(-dy / Ld) * exp(-pow((p.x - xr) / wd, 2.0)) * step(0.3, hk));
+        }
+        float colL = (floor(p.x / 0.0055) + 0.5) * 0.0055 + (vnoise(vec3(p.y * 70.0, 3.0, floor(p.x / 0.0055))) - 0.5) * 0.0018;
+        float hL = hash(vec3(floor(p.x / 0.0055), 5.0, 7.0));
+        float dyL = Y0 - OFF - RR - p.y;
+        drip = max(drip, step(0.0, dyL) * exp(-dyL / (0.015 + 0.05 * hL)) * exp(-pow((p.x - colL) / 0.0016, 2.0)) * step(0.55, hL));
+        drip *= flanc;
+    }
+    // vert-de-gris : plaques, creux de la texture d'origine, bord des joints, collerette des rivets, coulures
+    vec3 q = p * vec3(10.0, 17.0, 17.0);
+    float n1 = fbm(q + vec3(3.0), 4);
+    float cav = smoothstep(0.25, 0.55, 1.0 - RELIEF);
+    float vdgF = n1 + 0.12 * cav + 0.24 * exp(-dS / 0.0035) * trans + 0.2 * exp(-dL / 0.003) * flanc;
+    float vdg = smoothstep(0.52, 0.62, vdgF);
+    vdg = max(max(vdg, col_ * 0.92), drip * 0.9);
+    // liseré sombre autour des plaques de vert-de-gris (cuivre noirci au bord de la croûte)
+    float lis = smoothstep(0.44, 0.52, vdgF) * (1.0 - vdg);
+    // cuivre : rampe de cuivre sur le reflet du décor (creux brun profond, cuivre, saumon clair) ; poli là où l'arme s'use
+    // (arêtes claires de la texture, plaques usées, têtes de rivets), patiné ailleurs (brun rouge marbré, reflet terne)
+    float wear = smoothstep(0.5, 0.7, fbm(q * 1.6 + vec3(9.0), 3) + 0.15 * smoothstep(0.2, 0.5, RELIEF - 1.0));
+    vec2 rd = ro / RR;
+    vec3 nr = normalize(tbn * vec3(rd * 0.9, sqrt(max(1.0 - dot(rd, rd), 0.0)) + 0.25));
+    vec3 n = normalize(mix(nv + 0.06 * softWarp(p, 8.0), nr, riv));
+    vec3 rr = reflWorld(n);
+    float ndv = facing(n);
+    vec3 eS = envWorld(rr, 0.22), eR = envWorld(rr, 0.75);
+    float LS = lum3(eS) + 0.1;
+    LS += (0.3 + 0.3 * LS) * pow(1.0 - ndv, 5.0);
+    float tt = 1.0 - exp(-0.9 * pow(LS, 1.25));
+    float s6[6] = float[6](0.0, 0.2, 0.42, 0.62, 0.82, 1.0);
+    vec3 c6[6] = vec3[6](hexc(0x1e0a04), hexc(0x5a2410), hexc(0x9c4a22), hexc(0xd07a46), hexc(0xf0a878), hexc(0xffe0c8));
+    vec3 polished = ramp6(tt, s6, c6);
+    float ox = fbm(q * 2.2 + vec3(1.0, 4.0, 2.0), 4);
+    vec3 tarnish = mix(mix(hexc(0x24140c), hexc(0x4a2616), smoothstep(0.3, 0.6, ox)), hexc(0x6a3420), smoothstep(0.62, 0.82, ox));
+    tarnish *= 0.75 + 0.45 * lum3(eR);
+    tarnish += polished * 0.16;
+    vec3 metal = mix(tarnish, polished, max(wear * 0.9, riv));
+    // vert-de-gris crayeux, mat : croûte claire, fond plus bleu et plus sombre, coulures bleu-vert
+    float vt = smoothstep(0.25, 0.8, fbm(q * 3.1 + vec3(5.0), 3));
+    vec3 verd = mix(hexc(0x24645a), mix(hexc(0x4fa58c), hexc(0x9ad8bf), smoothstep(0.55, 0.9, vt)), smoothstep(0.1, 0.6, vt));
+    verd = mix(verd, hexc(0x2f7d78), drip * 0.45);
+    verd *= (0.8 + 0.25 * lum3(eR)) * (0.95 + 0.1 * vnoise(p * 150.0) * (1.0 - smoothstep(0.001, 0.0025, px)));
+    vec3 col = mix(metal, verd, vdg);
+    col *= 1.0 - 0.45 * lis;
+    // joints : creux sombres, bord éclairé d'un côté
+    col = mix(col, hexc(0x120804), joint * 0.85);
+    // crasse : le bas de l'arme et les creux plus sombres
+    col *= (0.82 + 0.18 * smoothstep(-0.1, 0.05, p.y)) * mix(1.0, 0.85, cav);
+    return col * reliefMetal(0.55);
+}
+
+// ------------------------------------------------------------------ 83 Néon (épique, animé)
+// noir mat (toucher doux) parcouru de pistes de néon rose et cyan façon circuit : voies le long de l'arme, coudes à 45°,
+// pastilles aux bouts ; tubes incrustés (sillon sombre autour), cœur blanc, halo ; les voies respirent lentement et des
+// impulsions de lumière y glissent (boucle de 4 s)
+float neonBase(vec2 c) {
+    return hash(vec3(c, 41.0)) < 0.44 ? 0.0 : 1.0;
+}
+
+// 0 vide, 1 droite, 2 coude vers la voie du dessus, 3 vers celle du dessous (seulement si la cellule visée est vide)
+float neonEtat(vec2 c) {
+    if (neonBase(c) < 0.5) return 0.0;
+    float hj = hash(vec3(c, 43.0));
+    if (hj > 0.8 && neonBase(c + vec2(0.0, 1.0)) < 0.5) return 2.0;
+    if (hj < 0.2 && neonBase(c - vec2(0.0, 1.0)) < 0.5) return 3.0;
+    return 1.0;
+}
+
+vec3 neon(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.1;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    const float CL = 0.05, CH = 0.0165, PAD = 0.0034;
+    vec2 g = vec2(uv.x / CL, uv.y / CH);
+    vec2 c0 = floor(g);
+    float dmin = 1e3;
+    float cSel = 0.0;
+    float lane = 0.0;
+    for (int di = -1; di <= 1; di++)
+    for (int dj = -1; dj <= 1; dj++) {
+        vec2 c = c0 + vec2(float(di), float(dj));
+        float e = neonEtat(c);
+        if (e < 0.5) continue;
+        float x0 = c.x * CL, x1 = x0 + CL, yc = (c.y + 0.5) * CH;
+        float s = e < 1.5 ? 0.0 : e < 2.5 ? 1.0 : -1.0;
+        float y1 = yc + s * CH;
+        float ca = step(0.5, hash(vec3(floor(c.x / 3.0), floor(c.y / 2.0), 47.0)));
+        float cb = step(0.5, hash(vec3(floor(c.x / 3.0), floor((c.y + s) / 2.0), 47.0)));
+        // bouts libres : la piste s'arrête sur une pastille
+        bool finD = neonEtat(c + vec2(1.0, s)) < 0.5;
+        bool finG = neonEtat(c - vec2(1.0, 0.0)) < 0.5;
+        float xg = finG ? x0 + PAD * 1.6 : x0;
+        float xd = finD ? x1 - PAD * 1.6 : x1;
+        float d;
+        float cc = ca;
+        if (s == 0.0) {
+            d = ncSeg(uv, vec2(xg, yc), vec2(xd, yc));
+        } else {
+            float xa = x0 + 0.5 * (CL - CH), xb = xa + CH;
+            float da = ncSeg(uv, vec2(xg, yc), vec2(xa, yc));
+            float dd = ncSeg(uv, vec2(xa, yc), vec2(xb, y1));
+            float db = ncSeg(uv, vec2(xb, y1), vec2(xd, y1));
+            d = min(min(da, dd), db);
+            // la couleur passe d'une voie à l'autre le long du coude
+            cc = db < min(da, dd) ? cb : dd < da ? mix(ca, cb, clamp((uv.x - xa) / CH, 0.0, 1.0)) : ca;
+        }
+        if (finD) d = min(d, abs(length(uv - vec2(xd, y1)) - PAD * 0.75));
+        if (finG) d = min(d, abs(length(uv - vec2(xg, yc)) - PAD * 0.75));
+        if (d < dmin) { dmin = d; cSel = cc; lane = c.y + 0.37 * c.x; }
+    }
+    vec3 rose = hexc(0xff2bd0), cyan = hexc(0x18eaff);
+    vec3 nc = mix(cyan, rose, cSel);
+    // respiration lente par voie et impulsions qui glissent le long de l'arme (périodiques : 4 s)
+    float ph = hash(vec3(floor(lane), 3.0, 9.0));
+    float souffle = 0.62 + 0.38 * (0.5 + 0.5 * sin(TAU * (t / 4.0 + ph)));
+    float pk = fract(uv.x / 0.32 - t / 4.0 + ph);
+    float impuls = exp(-pow((pk - 0.5) / 0.05, 2.0));
+    float tube = ncTrait(dmin, 0.0011, px);
+    float coeur = ncTrait(dmin, 0.0004, px);
+    float sillon = ncTrait(dmin, 0.0024, px) * (1.0 - tube);
+    float halo = exp(-dmin / 0.0026);
+    // noir mat : grain très fin (effacé de loin), reflet doux du décor, un peu de lustre de biais
+    float ndv = facing(nv);
+    vec3 env = envWorld(reflWorld(nv), 0.75);
+    float grain = (vnoise(p * 260.0) - 0.5) * (1.0 - smoothstep(0.0009, 0.0022, px));
+    vec3 col = hexc(0x0e0e12) * (1.0 + 0.25 * grain) + env * (0.03 + 0.16 * pow(1.0 - ndv, 4.0));
+    col *= 1.0 - 0.6 * sillon;
+    vec3 lum = nc * (tube * (0.55 + 0.45 * souffle + 0.9 * impuls)) + vec3(1.0) * coeur * (0.35 + 0.5 * impuls) * souffle;
+    col = mix(col, nc * 0.35, tube);
+    em = lum * 1.1 + nc * halo * (0.12 + 0.18 * souffle + 0.25 * impuls);
+    return col * reliefMetal(0.6);
+}
+
+// ------------------------------------------------------------------ 84 Rubis (légendaire)
+// frère du Diamond : tout le corps (carcasse, garde-main, crosse) couvert d'un pavé serré de rubis taille brillant sertis
+// dans de l'or noir ; canon, chargeur, poignée et petites pièces en or noir poli. Même logique de niveaux de détail que le
+// Diamond refait le 18/11 (taille d'une pierre à l'écran) : facettes de près, pierre simple et nette à mi-distance, rouge
+// profond scintillant de loin ; jamais d'un pixel à l'autre. Les rubis rougeoient un peu à l'ombre (fluorescence).
+// Comme le Diamond corrigé le 19/11 : là où la carte de positions ne suit pas la surface, le pavé est posé sur son repère
+// de secours (diamSecours), mêmes pierres, au lieu d'un aplat ; pierres rondes sur les faces penchées (diamRedresse).
+const float RB_ECHELLE = 88.0;
+const float RB_R = 0.46;
+
+float rbEclat(vec3 rF, float h, float t) {
+    return 0.5 + 0.5 * sin(TAU * h + dot(rF, vec3(3.1, 2.3, 2.7)) + t * 0.25);
+}
+
+float rbTeinte(float base, float s) {
+    return base + 0.85 * (s - 0.5) + 0.5 * pow(s, 10.0);
+}
+
+// rouge du rubis : 0 grenat presque noir, 0.5 rouge vif, 1 rose clair, au-delà blanc rosé (reflets)
+vec3 rbRouge(float x) {
+    float s[6] = float[6](0.0, 0.22, 0.45, 0.66, 0.84, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x0e0002), hexc(0x3c000c), hexc(0x860014), hexc(0xd00a26), hexc(0xff3a55), hexc(0xffd0d8));
+    return ramp6(x / 1.3, s, c);
+}
+
+// or noir (rhodié) poli : noir chaud, reflets nets gris chaud, bords plus clairs
+vec3 orNoir(vec3 n) {
+    vec3 r = reflWorld(n);
+    float ndv = facing(n);
+    vec3 e = envWorld(r, 0.03) * 0.8 + envWorld(r, 0.3) * 0.2;
+    float F = 0.3 + 0.7 * pow(1.0 - ndv, 5.0);
+    return hexc(0x090605) + (e * 0.2 + e * e * 0.1) * vec3(1.0, 0.86, 0.72) * F;
+}
+
+vec3 rubis(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.5;
+    vec3 nv = normalize(viewNormal);
+    vec3 ed = eyeDir();
+    vec3 fnl = faceNormal(p);
+    vec3 plan;
+    vec2 uvC = diamPlan(p, fnl, plan) * RB_ECHELLE;
+    // là où la carte de positions ne suit pas la surface : repère de secours du Diamond (pierres à la même taille)
+    vec3 evx = dFdx(viewPos), evy = dFdy(viewPos);
+    vec2 tx = dFdx(texCoord0), ty = dFdy(texCoord0);
+    bool secours = diamIsotropie(evx, evy, dFdx(p), dFdy(p)) < 0.35;
+    vec2 uv = secours ? diamSecours(nv, evx, evy, tx, ty, tx.x * ty.y - ty.x * tx.y) * (RB_ECHELLE / 160.0) : uvC;
+    // redressement des pierres (diamRedresse) : xy = part de la normale dans le plan du motif, z = 1 / (nz (1 + nz))
+    vec3 nm = secours ? vec3(0.0) : vec3(plan.xy, 1.0 / (plan.z * (1.0 + plan.z)));
+    float pps = 1.0 / max(max(length(dFdx(uv)), length(dFdy(uv))), 1e-4);
+    mat3 tbn = ncRepere(nv, uv);
+    vec3 n0 = normalize(nv + 0.16 * softWarp(p, 2.4));
+    float m = clamp((1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0))), 0.0, 1.0);
+    vec3 noir = orNoir(n0);
+    if (m < 0.001) {
+        em = vec3(0.0);
+        return noir * reliefMetal(0.5);
+    }
+    float wB = smoothstep(3.5, 6.0, pps);
+    float wA = smoothstep(16.0, 24.0, pps);
+    float aa = 0.7 / pps;
+    vec2 cid;
+    vec2 g = paveCell(uv, cid);
+    vec2 gf = diamRedresse(g, nm);
+    float rf = length(gf);
+    vec3 hs3 = hash3(vec3(cid, 7.0));
+    // de loin : rouge profond velouté (moyenne des pierres et du serti), un éclat par pierre qui varie lentement
+    vec3 metal = noir;
+    float Lm = min(lum3(metal), 1.4);
+    vec3 rougeMoy = rbRouge(0.48 + 0.25 * Lm);
+    vec3 loin = mix(metal, rougeMoy, 0.78);
+    float eclatP = 0.5 + 0.5 * sin(hs3.x * TAU + t * 0.4 + dot(reflWorld(n0), vec3(2.3, 1.7, 2.9)));
+    loin *= 1.0 + 0.3 * (eclatP - 0.5) * smoothstep(1.5, 3.0, pps);
+    vec3 col = loin;
+    vec3 emP = rougeMoy * 0.06;
+    if (wB > 0.0) {
+        vec3 lv = normalize(transpose(IViewRotMat) * normalize(vec3(0.25, 1.0, 0.35)));
+        vec3 lt = transpose(tbn) * lv;
+        float inside = 1.0 - smoothstep(RB_R - aa, RB_R + aa, rf);
+        // serti d'or noir : plus sombre contre les pierres, ombre portée de chaque pierre (relief)
+        float pres = smoothstep(7.0, 12.0, pps);
+        float ao = 1.0 - 0.35 * pres * (1.0 - smoothstep(RB_R, RB_R + 0.09, rf));
+        float ombre = 1.0 - smoothstep(RB_R - 0.04, RB_R + 0.05, length(gf + lt.xy * (0.14 / max(lt.z, 0.3))));
+        vec3 serti = metal * ao * (1.0 - 0.35 * ombre * pres);
+        // griffes : billes d'or noir là où trois pierres se touchent
+        float ka = floor((atan(g.y, g.x) - PI / 6.0) / (PI / 3.0) + 0.5);
+        vec2 bc = 0.57735 * vec2(cos(PI / 6.0 + ka * PI / 3.0), sin(PI / 6.0 + ka * PI / 3.0));
+        vec2 bd = (gf - diamRedresse(bc, nm)) / 0.085;
+        float bm = (1.0 - smoothstep(1.0 - aa / 0.085, 1.0 + aa / 0.085, length(bd))) * pres;
+        vec3 nb = normalize(tbn * vec3(bd, sqrt(max(1.0 - dot(bd, bd), 0.0)) + 0.15));
+        float bl = 0.8 + 0.6 * max(dot(nb, lv), 0.0) + 2.0 * pow(max(dot(reflect(-lv, nb), -ed), 0.0), 24.0);
+        serti = mix(serti, orNoir(nb) * bl, bm);
+        // pierre : une normale par pierre (penchée au hasard) donne sa clarté propre ; secteurs de couronne et table
+        vec3 nS = normalize(tbn * normalize(vec3((hs3.xy - 0.5) * 0.5, 1.0)));
+        vec3 rS = reflWorld(nS);
+        float LS = min(lum3(envWorld(rS, 0.35)), 1.4);
+        float a0 = hash(vec3(cid, 5.0)) * TAU;
+        float r = rf / RB_R;
+        float an8 = (atan(gf.y, abs(gf.x) > 1e-7 ? gf.x : 1e-7) - a0) / (TAU / 8.0);
+        float sec = floor(an8 + 0.5);
+        float phi = (an8 - sec) * (TAU / 8.0);
+        float haut = phi >= 0.0 ? 1.0 : 0.0;
+        vec2 P = r * vec2(cos(phi), abs(sin(phi)));
+        float aaN = aa / RB_R;
+        float mTable = 1.0 - smoothstep(-aaN, aaN, P.x * 0.9239 + P.y * 0.3827 - 0.52);
+        float azB = sec * (TAU / 8.0) + a0;
+        float sB = rbEclat(reflWorld(tbn * vec3(cos(azB) * 0.5, sin(azB) * 0.5, 0.866)), hash(vec3(cid, 20.0 + mod(sec, 8.0))), t);
+        float sT = rbEclat(rS, hs3.z, t);
+        // rubis : table plus claire et plus rose, couronne en rouge profond qui s'allume par secteurs ; bord du rondiste sombre
+        float teinte = mix(mix(0.55, rbTeinte(0.5, sB), smoothstep(6.0, 10.0, pps)), rbTeinte(0.72, sT), mTable);
+        teinte += 0.15 * (LS - 0.5);
+        if (wA > 0.0) {
+            vec2 C = vec2(0.563, 0.0), E = vec2(0.7234, 0.2996), G = vec2(1.0, 0.0);
+            float dEt = ((E.x - C.x) * (P.y - C.y) - (E.y - C.y) * (P.x - C.x)) / 0.3398;
+            float dHa = ((G.x - E.x) * (P.y - E.y) - (G.y - E.y) * (P.x - E.x)) / 0.4078;
+            float k = haut > 0.5 ? sec : sec - 1.0;
+            float azE = (k + 0.5) * (TAU / 8.0) + a0, azL = sec * (TAU / 8.0) + a0;
+            float azH = (sec + (haut - 0.5) * 0.6) * (TAU / 8.0) + a0;
+            float sE = rbEclat(reflWorld(tbn * vec3(cos(azE) * 0.27, sin(azE) * 0.27, 0.963)), hash(vec3(cid, 40.0 + mod(k, 8.0))), t);
+            float sL = rbEclat(reflWorld(tbn * vec3(cos(azL) * 0.565, sin(azL) * 0.565, 0.825)), hash(vec3(cid, 50.0 + mod(sec, 8.0))), t);
+            float sH = rbEclat(reflWorld(tbn * vec3(cos(azH) * 0.667, sin(azH) * 0.667, 0.745)), hash(vec3(cid, 60.0 + 2.0 * mod(sec, 8.0) + haut)), t);
+            float tL = rbTeinte(0.8, sL);
+            float tE = rbTeinte(0.42, sE);
+            float tH = rbTeinte(mod(sec + haut, 2.0) > 0.5 ? 0.7 : 0.2, sH);
+            float couronne = mix(mix(tL, tH, smoothstep(-aaN, aaN, dHa)), tE, smoothstep(-aaN, aaN, dEt));
+            float fleche = (1.0 - smoothstep(-aaN, aaN, P.y - 0.12 * P.x)) * smoothstep(28.0, 40.0, pps);
+            float tT = rbTeinte(0.78, sT) - 0.5 * fleche;
+            teinte = mix(teinte, mix(couronne, tT, mTable), wA);
+        }
+        teinte = clamp(teinte, 0.03, mix(1.0, 1.3, smoothstep(9.0, 16.0, pps)));
+        vec3 pierre = rbRouge(teinte);
+        // reflet du soleil et des panneaux sur la table (vernis de la gemme)
+        float spec = pow(max(dot(reflect(-lv, nS), -ed), 0.0), 28.0) * mTable;
+        pierre += vec3(1.0, 0.85, 0.88) * spec * 0.35 * smoothstep(7.0, 12.0, pps);
+        // rondiste : liseré sombre du bord de la pierre
+        pierre *= 1.0 - 0.45 * smoothstep(5.0, 10.0, pps) * smoothstep(1.0 - max(0.07, 1.4 * aaN), 1.0, r);
+        col = mix(loin, mix(serti, pierre, inside), wB);
+        // éclats en étoile (blanc rosé), comme le Diamond : la pierre et ses deux voisines du côté du pixel
+        vec3 rN = reflWorld(nv);
+        float wr = max(0.025, aa);
+        float eclats = 0.0;
+        for (int j = 0; j < 3; j++) {
+            float aj = (ka + float(j - 1)) * (PI / 3.0);
+            vec2 o = j == 0 ? vec2(0.0) : vec2(cos(aj), sin(aj));
+            vec2 idk = floor((uv - g + o) * 2.0 + 0.5);
+            float hx = hash(vec3(idk, 11.0));
+            if (hx < 0.86) continue;
+            vec3 hk = hash3(vec3(idk, 7.0));
+            float f = pow(max(0.0, sin(t * 0.9 + hx * 600.0)), 24.0)
+                    + pow(max(dot(normalize(rN + (hk - 0.5) * 1.2), normalize(vec3(0.42, 0.68, -0.6))), 0.0), 80.0);
+            if (f < 0.02) continue;
+            vec2 d = g - o;
+            d = diamRedresse(d, nm);
+            float ak = hash(vec3(idk, 5.0)) * TAU;
+            vec2 gr = vec2(cos(ak) * d.x + sin(ak) * d.y, -sin(ak) * d.x + cos(ak) * d.y);
+            eclats += min(f, 1.2) * (exp(-abs(gr.x) / wr) * exp(-abs(gr.y) * 1.7) + exp(-abs(gr.y) / wr) * exp(-abs(gr.x) * 1.7)
+                                     + 0.8 * exp(-dot(d, d) * 8.0));
+        }
+        emP = mix(emP, pierre * 0.2 * inside, wB) + eclats * vec3(1.0, 0.86, 0.9) * wB * smoothstep(5.0, 9.0, pps);
+    }
+    em = emP * m;
+    return mix(noir * reliefMetal(0.5), col, m);
+}
+
+// ------------------------------------------------------------------ 210 Phénix (skin X mythique, animé)
+// or en fusion qui coule lentement vers la crosse : grande houle et vaguelettes (les reflets nets du décor ondulent),
+// chaleur qui fait trembler les reflets (miroitement) ; dessous, le métal chauffé à blanc affleure par grandes plages
+// orange et jaune qui dérivent, et des filets incandescents filent le long de l'arme avec la coulée (lignes de coulée,
+// halo orange) ; lueur propre (émission) : il brille même dans le noir
+vec3 phenix(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.45;
+    vec3 nv = normalize(viewNormal);
+    float px = ncPx(p);
+    // miroitement de chaleur : le motif et les reflets tremblent un peu (bruit lent qui monte)
+    float sh1 = vnoise(vec3(p.x * 36.0, p.y * 36.0 - t * 2.4, p.z * 36.0)) - 0.5;
+    float sh2 = vnoise(vec3(p.x * 36.0 + 7.0, p.y * 36.0 - t * 2.0, p.z * 36.0 + 3.0)) - 0.5;
+    vec3 ps = p + vec3(sh1, sh2, 0.0) * 0.0025;
+    // coulée vers la crosse : le domaine avance le long de l'arme
+    float adv = t * 0.05;
+    vec3 q = vec3(ps.x + adv, ps.y, ps.z) * vec3(3.0, 7.0, 7.0);
+    vec3 w = vec3(fbm(q * 0.8, 3), fbm(q * 0.8 + vec3(5.2, 1.3, 2.8), 3), 0.0);
+    float swell = fbm(q + 1.6 * w + vec3(0.0, 0.0, t * 0.04), 4);
+    float h = swell * 0.011 + sin((ps.x + adv * 1.6) * 75.0 + swell * 6.0) * 0.0005;
+    vec3 n = bumpNormal(nv, h, p);
+    n = normalize(n + vec3(sh1, sh2, 0.0) * 0.1);
+    float ecl;
+    vec3 gold = ncOr(n, 0.02, ecl);
+    // métal chauffé à blanc qui affleure (creux de la houle, plages qui dérivent)
+    float T = fbm(q * 1.1 + 2.2 * w + vec3(7.0, 0.0, t * 0.05), 4) + 0.35 * (0.5 - swell);
+    float hot = smoothstep(0.52, 0.7, T);
+    // filets incandescents : lignes de coulée le long de l'arme (champ étiré), seulement par endroits
+    float fl = ps.y * 46.0 + 5.0 * fbm(vec3((ps.x + adv * 1.3) * 7.0, ps.y * 6.0, ps.z * 6.0) + w, 4);
+    float dl = ncDistIso(sin(fl * PI), 0.0, p);
+    float li = floor(fl + 0.5);
+    float on = smoothstep(0.38, 0.6, fbm(vec3((ps.x + adv * 1.3) * 6.0, li * 0.73, ps.z * 3.0), 3)) * step(0.25, hash(vec3(li, 4.0, 1.0)));
+    float filet = ncTrait(dl, 0.0011, px) * on;
+    float halo = exp(-dl / 0.0045) * on;
+    // or liquide ; la chaleur le fait virer à l'orange incandescent (cœur jaune-blanc) ; filets blanc-jaune, halo orange
+    float cT = smoothstep(0.62, 0.9, T);
+    float vT = fbm(q * 3.0 + 1.5 * w + vec3(0.0, -t * 0.12, 0.0), 3);
+    vec3 chaud = mix(ncFeu(0.42 + 0.12 * vT), ncFeu(0.9), cT);
+    vec3 col = mix(gold, chaud * 0.9, hot * 0.85);
+    col = mix(col, ncFeu(0.97), filet);
+    float pouls = 0.85 + 0.15 * sin(t * 2.2 + swell * 9.0);
+    em = chaud * hot * (0.55 + 0.35 * cT) * pouls + ncFeu(0.92) * filet * 1.1 + ncFeu(0.55) * halo * (0.45 + 0.2 * hot) + gold * ecl * 0.25;
+    return col * reliefMetal(0.35);
+}
+
+// ------------------------------------------------------------------ 211 Abysses (skin X mythique, animé)
+// verre noir des grands fonds, avec une vraie profondeur (parallaxe) : en dessous, la lueur bleu nuit de la surface vers le
+// haut de l'arme et des caustiques très douces ; dans la masse, trois couches de neige marine qui dérivent, deux couches de
+// filaments bioluminescents turquoise qui ondulent, et sur les flancs des méduses qui pulsent (ombrelle translucide au
+// bord lumineux, canaux, gonades roses, tentacules) ; en surface, le verre poli renvoie le décor
+vec4 ncMeduse(vec2 u, vec2 c, float R, float t, float ph, float px) {
+    float pulse = 0.5 + 0.5 * sin(t * 1.8 + ph);
+    vec2 q = (u - c) / R;
+    q.y -= 0.12 * sin(t * 0.45 + ph);
+    q.x -= 0.05 * sin(t * 0.3 + ph * 2.0);
+    float pR = px / R;
+    float sx = 1.0 - 0.12 * pulse, sy = 0.7 + 0.12 * pulse;
+    vec2 b = vec2(q.x / sx, (q.y + 0.12) / sy);
+    float rB = length(b);
+    float scal = 0.05 * cos(q.x * 13.0 + ph);
+    float rimY = -0.12 + scal - 0.05 * pulse;
+    float dome = (1.0 - smoothstep(1.0 - pR, 1.0 + pR, rB)) * smoothstep(rimY - pR, rimY + pR, q.y);
+    float bord = smoothstep(0.55, 1.0, rB) * dome * 0.8 + ncTrait(q.y - rimY, 0.015, pR) * step(abs(q.x), sx) * 0.45;
+    float ang = atan(b.x, b.y + 0.12);
+    float canal = ncTrait(sin(ang * 4.0) * rB * 0.5, 0.012, pR) * dome * smoothstep(0.25, 0.6, rB);
+    // gonades : lueur rose diffuse au centre de l'ombrelle (quatre lobes à peine marqués, pas deux « yeux »)
+    float gon = exp(-pow(q.x / 0.42, 2.0) - pow((q.y - 0.08) / 0.16, 2.0)) * (0.75 + 0.25 * cos(q.x * 15.0)) * dome * 0.7;
+    // bras buccaux : quatre rubans froncés sous le centre
+    float bras = 0.0;
+    for (int k = 0; k < 4; k++) {
+        float fk = float(k);
+        float s = rimY - q.y;
+        float L = 1.1 + 0.3 * fk;
+        float xk = (fk - 1.5) * 0.12 + 0.14 * s * sin(s * 3.0 - t * 1.1 + fk * 2.0 + ph);
+        float wk = 0.07 * (1.0 - 0.5 * s / L) * (0.7 + 0.3 * sin(s * 18.0 + fk));
+        bras += step(0.0, s) * step(s, L) * (1.0 - smoothstep(wk - pR, wk + pR, abs(q.x - xk))) * (1.0 - s / L);
+    }
+    // tentacules : fils depuis le bord de l'ombrelle, qui ondulent
+    float ten = 0.0;
+    for (int k = 0; k < 9; k++) {
+        float fk = float(k);
+        float x0 = (fk / 8.0 - 0.5) * 1.75 * sx;
+        float L = 2.1 + 1.1 * hash(vec3(fk, ph, 3.0));
+        float s = rimY - q.y;
+        float xk = x0 * (1.0 - 0.12 * s) + 0.16 * s * sin(s * 2.3 - t * 1.25 + fk * 1.7 + ph);
+        float d = abs(q.x - xk);
+        float wk = 0.016 * (1.0 - 0.55 * s / L);
+        float a = step(0.0, s) * step(s, L) * (1.0 - s / L);
+        ten += a * (ncTrait(d, wk, pR) + 0.22 * exp(-d / 0.06));
+    }
+    vec3 c1 = hexc(0x7ff8ff), c2 = hexc(0xa98cff), c3 = hexc(0xff7ad6), c4 = hexc(0x3dffd8);
+    // halo de lumière autour de l'ombrelle (eau éclairée par la méduse)
+    float aura = exp(-max(rB - 0.9, 0.0) * 3.5) * smoothstep(rimY - 0.6, rimY + 0.1, q.y) * (1.0 - dome);
+    vec3 col = c1 * bord * 1.4 + mix(c1, c2, 0.55) * dome * 0.28 + c1 * canal * 0.6 + c3 * gon * 1.0
+             + mix(c2, c3, 0.3) * clamp(bras, 0.0, 1.0) * 0.45 + c4 * ten * 0.85 + mix(c1, c2, 0.4) * aura * 0.1;
+    float a = clamp(dome * 0.45 + ten + bord + bras * 0.4, 0.0, 1.0);
+    return vec4(col * (0.8 + 0.35 * pulse), a);
+}
+
+vec3 abysses(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.5;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    vec3 par = ncParallaxe(p);
+    // fond (couche la plus profonde) : bleu nuit, plus clair vers le haut de l'arme (lumière de la surface), caustiques
+    vec3 pD = p + par * 0.03;
+    float lumHaut = smoothstep(-0.1, 0.14, pD.y);
+    vec3 col = mix(hexc(0x010306), hexc(0x0a3044), lumHaut * 0.75 + 0.25 * fbm(pD * vec3(4.0, 7.0, 7.0) + vec3(0.0, 0.0, t * 0.03), 3));
+    vec3 qcs = pD * vec3(9.0, 14.0, 14.0) + vec3(t * 0.05, t * 0.03, -t * 0.04);
+    float caust = pow(1.0 - abs(2.0 * vnoise(qcs) - 1.0), 6.0) * pow(1.0 - abs(2.0 * vnoise(qcs * 1.7 + 5.0) - 1.0), 2.0) * lumHaut;
+    // rayons de lumière qui descendent de la surface, très doux
+    float rayons = pow(vnoise(vec3(pD.x * 14.0 + pD.y * 4.0, t * 0.12, pD.z * 3.0)), 3.0) * smoothstep(-0.12, 0.15, pD.y);
+    col += hexc(0x0f5a6a) * caust * 0.22 + hexc(0x0b3a4a) * rayons * 0.35;
+    em = hexc(0x06303c) * caust * 0.12 + hexc(0x062a36) * rayons * 0.2;
+    // neige marine : trois couches (les plus profondes plus petites, plus bleues, plus ternes)
+    for (int i = 0; i < 3; i++) {
+        float fi = float(i);
+        float d = 0.003 + 0.009 * fi + 0.004 * fi * fi;
+        vec3 qi = p + par * d + vec3(t * 0.002 * (1.0 + fi), t * (0.0025 - 0.0006 * fi), 0.0);
+        float pt = ncPoints(qi, 0.01 + 0.004 * fi, 0.0013 - 0.0002 * fi, px, t, 13.0 + fi * 7.0);
+        em += mix(hexc(0xbff8ff), hexc(0x3f9cff), fi * 0.5) * pt * (1.0 - 0.25 * fi) * 1.1;
+    }
+    // filaments bioluminescents (deux couches) : lignes de niveau d'un bruit lent qui ondule, découpées en brins
+    for (int i = 0; i < 2; i++) {
+        float fi = float(i);
+        float d = 0.007 + 0.014 * fi;
+        vec3 qi = p + par * d;
+        vec3 qq = qi * vec3(6.0, 11.0, 11.0) + vec3(fi * 7.3 + t * 0.045, t * 0.03, -t * 0.02);
+        float n1 = fbm(qq + 0.8 * vec3(vnoise(qq * 0.6 + vec3(t * 0.06)), vnoise(qq * 0.6 + vec3(3.0)), 0.0), 3);
+        float dd = ncDistIso(n1, 0.5, p);
+        float brins = smoothstep(0.36, 0.66, vnoise(qq * 1.2 + vec3(0.0, 0.0, t * 0.08)));
+        float puls = 0.6 + 0.4 * sin(t * 1.3 + qq.x * 3.0 + fi * 2.0);
+        float f = (ncTrait(dd, 0.0008, px) * 1.0 + 0.42 * exp(-dd / 0.0032)) * brins * puls * (1.0 - 0.35 * fi);
+        vec3 tq = mix(hexc(0x14f7d2), hexc(0x2aa8ff), fi * 0.6);
+        em += tq * f;
+        col += tq * f * 0.08;
+    }
+    // méduses : couche profonde, sur les flancs (repère (x, y) de l'arme : la même méduse vue des deux côtés), une par
+    // tranche de l'arme (une sur trois absente), tailles et rythmes différents ; trois voisines évaluées
+    vec3 pj = p + par * 0.02;
+    float flanc = smoothstep(0.55, 0.85, abs(fn.z));
+    vec4 md = vec4(0.0);
+    const float MC = 0.21;
+    float gx = (pj.x + 0.5) / MC;
+    float ic = floor(gx);
+    float iv = fract(gx) < 0.5 ? -1.0 : 1.0;
+    for (int k = 0; k <= 1; k++) {
+        float ci = ic + float(k) * iv;
+        vec3 hm = hash3(vec3(ci, 3.0, 8.0));
+        if (hm.x < 0.2) continue;
+        vec2 cm = vec2((ci + 0.35 + 0.3 * hm.y) * MC - 0.5, 0.012 + 0.02 * (hm.z - 0.5));
+        vec4 mk = ncMeduse(pj.xy, cm, 0.05 + 0.02 * hm.z, t, hm.y * 20.0, px);
+        md = vec4(md.rgb + mk.rgb, max(md.a, mk.a));
+    }
+    md *= flanc;
+    col = mix(col, col * 0.6, md.a * 0.3);
+    em += md.rgb;
+    // verre poli : reflet net et contrasté du décor
+    float ndv = facing(nv);
+    vec3 env = envWorld(reflWorld(nv), 0.015);
+    float F = 0.06 + 0.94 * pow(1.0 - ndv, 5.0);
+    col += env * env * 0.5 * F;
+    return col * reliefMetal(0.6);
+}
+#endif
+
 vec3 camoColor(int id, vec3 p, out vec3 em) {
     em = vec3(0.0);
 #if CAMO_ID == 1
@@ -3596,6 +4357,16 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
     return amethystGem(p, em);
 #elif CAMO_ID == 70
     return storm(p, em);
+#elif CAMO_ID == 80
+    return opale(p, em);
+#elif CAMO_ID == 81
+    return marbreNoir(p, em);
+#elif CAMO_ID == 82
+    return patine(p, em);
+#elif CAMO_ID == 83
+    return neon(p, em);
+#elif CAMO_ID == 84
+    return rubis(p, em);
 #elif CAMO_ID >= 200
     return skinSurface(p, em);
 #elif (CAMO_ID >= 50 && CAMO_ID < 70) || (CAMO_ID >= 100 && CAMO_ID < 200)
@@ -3673,7 +4444,8 @@ void main() {
     color.rgb += em;
     if (CamoReveal >= 0.0) {
         // apparition : derrière le front l'arme est faite ; devant, un hologramme sombre strié de lumière ; le front brille
-        vec3 rc = CamoId == 201 ? vec3(1.0, 0.78, 0.3) : vec3(0.35, 0.85, 1.0);
+        // front orange (201, Phénix 210) ou bleu ; aucun skin n'a d'apparition aujourd'hui (SkinReveal.has)
+        vec3 rc = CamoId == 201 || CamoId == 210 ? vec3(1.0, 0.78, 0.3) : vec3(0.35, 0.85, 1.0);
         float gx = pm.x + 0.5;
         float front = CamoReveal * 1.08 - 0.04;
         float d = gx - front;

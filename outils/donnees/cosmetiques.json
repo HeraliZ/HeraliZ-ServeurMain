@@ -66,6 +66,10 @@
    "rarity": "rare"
   },
   {
+   "item": "heralisz_camo:camo_patine",
+   "rarity": "rare"
+  },
+  {
    "item": "heralisz_camo:camo_gold",
    "rarity": "epic"
   },
@@ -134,6 +138,14 @@
    "rarity": "epic"
   },
   {
+   "item": "heralisz_camo:camo_opale",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_neon",
+   "rarity": "epic"
+  },
+  {
    "item": "heralisz_camo:camo_orion",
    "rarity": "legendary"
   },
@@ -166,11 +178,27 @@
    "rarity": "legendary"
   },
   {
+   "item": "heralisz_camo:camo_marbre_noir",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_rubis",
+   "rarity": "legendary"
+  },
+  {
    "item": "heralisz_camo:skinx_seraphin",
    "rarity": "mythic"
   },
   {
    "item": "heralisz_camo:skinx_chaines_enfer",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_phenix",
+   "rarity": "mythic"
+  },
+  {
+   "item": "heralisz_camo:skinx_abysses",
    "rarity": "mythic"
   }
  ],

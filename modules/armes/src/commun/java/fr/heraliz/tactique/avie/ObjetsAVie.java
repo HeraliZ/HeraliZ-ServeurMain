@@ -26,7 +26,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /**
  * Objets « à vie » (21/10, choix du propriétaire) : tous les couteaux (couteaux TaCZ et armes de mêlée de LR, toutes
- * avec skin) et les skins à vie (objets « Skin X · Séraphin » et « Skin X · Chaînes de l'Enfer »). Gardés à la mort,
+ * avec skin) et les skins à vie (objets « Skin X » : Séraphin, Chaînes de l'Enfer, Phénix et Abysses). Gardés à la mort,
  * jamais jetés par la touche de jet, et jetés depuis un inventaire seulement après « Jeter cet objet ? » Oui. Règles
  * décidées par le serveur (ObjetsAVieServeur) ; le joueur n'affiche que la question (EcranJeter). Canal
  * heraliz_tactique:a_vie, même version exigée des deux côtés.
@@ -106,9 +106,9 @@ public final class ObjetsAVie {
       }
    }
 
-   /** Skins à vie (pour le moment : Séraphin et Chaînes de l'Enfer). */
+   /** Skins à vie : les skins X (Séraphin, Chaînes de l'Enfer ; Phénix et Abysses depuis le 19/11). */
    public static boolean estSkinAVie(Camo camo) {
-      return camo == Camo.SERAPHIN || camo == Camo.CHAINES_ENFER;
+      return camo == Camo.SERAPHIN || camo == Camo.CHAINES_ENFER || camo == Camo.PHENIX || camo == Camo.ABYSSES;
    }
 
    // ------------------------------------------------------------------ « ne jamais détruire un objet à vie »

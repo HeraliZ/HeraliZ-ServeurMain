@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Compile et lie chaque programme camo du mod (camo.vsh + camo_<id>.fsh) avec un vrai compilateur OpenGL de bureau
-(#version 150, profil cœur), comme le jeu : une erreur ici serait un écran noir ou un plantage chez les joueurs.
+"""Compile et lie chaque programme camo du mod (camo.vsh + camo_<id>.fsh) et chaque effet 3D des skins (fx.vsh +
+fx_<id>.fsh) avec un vrai compilateur OpenGL de bureau (#version 150, profil cœur), comme le jeu : une erreur ici serait un
+écran noir ou un plantage chez les joueurs (un effet 3D qui ne compile pas ne s'affiche simplement pas).
 
     xvfb-run -a python3 verif_glsl.py            (machine sans écran, Mesa llvmpipe : pip install moderngl)
     python3 verif_glsl.py                        (PC avec écran)
@@ -43,16 +44,20 @@ def pretraiter(src):
 def main():
     ctx = moderngl.create_standalone_context(require=330)
     print("OpenGL :", ctx.info["GL_RENDERER"], ctx.info["GL_VERSION"])
-    vs = pretraiter((CORE / "camo.vsh").read_text(encoding="utf-8"))
-    fichiers = sorted(CORE.glob("camo_*.fsh"), key=lambda f: int(re.sub(r"\D", "", f.stem)))
     echecs = 0
-    for f in fichiers:
-        try:
-            ctx.program(vertex_shader=vs, fragment_shader=pretraiter(f.read_text(encoding="utf-8"))).release()
-        except Exception as e:
-            echecs += 1
-            print("ECHEC", f.name, str(e)[:3000])
-    print("%d / %d programmes compilés et liés" % (len(fichiers) - echecs, len(fichiers)))
+    total = 0
+    # camos (camo_<id>.fsh) puis effets 3D des skins (fx_<id>.fsh), chacun avec son shader de sommets
+    for vsh, motif in (("camo.vsh", "camo_*.fsh"), ("fx.vsh", "fx_*.fsh")):
+        vs = pretraiter((CORE / vsh).read_text(encoding="utf-8"))
+        fichiers = sorted(CORE.glob(motif), key=lambda f: int(re.sub(r"\D", "", f.stem)))
+        total += len(fichiers)
+        for f in fichiers:
+            try:
+                ctx.program(vertex_shader=vs, fragment_shader=pretraiter(f.read_text(encoding="utf-8"))).release()
+            except Exception as e:
+                echecs += 1
+                print("ECHEC", f.name, str(e)[:3000])
+    print("%d / %d programmes compilés et liés (camos et effets 3D)" % (total - echecs, total))
     sys.exit(1 if echecs else 0)
 
 

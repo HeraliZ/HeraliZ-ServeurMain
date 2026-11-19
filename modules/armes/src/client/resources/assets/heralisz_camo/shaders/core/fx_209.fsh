@@ -1,10 +1,10 @@
 #version 150
 #define FX_ID 209
-// fichier généré par tools/gen_camo_shaders.py, ne pas modifier
+// fichier généré par outils/generer_camos.py depuis outils/fx_gabarit.fsh (dossier du mod) : ne pas modifier ici
 
-// Effets 3D des skins HeralisZ (CamoFx). Gabarit : tools/gen_camo_shaders.py en tire un programme par skin (FX_ID).
-// Chaque sommet porte dans sa « couleur » la sorte d'élément (r), deux paramètres (g, b) et un fondu (a) ;
-// les vraies couleurs sont ici. La partie entre FX LIB BEGIN / END est aussi chargée par l'aperçu WebGL (tools/camo_preview).
+// Effets 3D des skins HeralisZ (CamoFx). Gabarit : outils/fx_gabarit.fsh, dont outils/generer_camos.py tire un programme par
+// effet (FX_ID, un fx_<id>.json par effet). Chaque sommet porte dans sa « couleur » la sorte d'élément (r), deux paramètres
+// (g, b) et un fondu (a) ; les vraies couleurs sont ici. La partie entre FX LIB BEGIN / END se lit aussi seule (aperçus).
 
 uniform float FxTime;
 uniform float FxFade;
@@ -186,6 +186,78 @@ vec4 fxInferno(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
 }
 #endif
 
+#if FX_ID == 210 || FX_ID == 211
+// lumière ajoutée (éléments additifs du Phénix et des Abysses) : couleur prémultipliée par son intensité, comme dans les
+// rendus validés (au-delà de 1, chaque canal sature : cœurs blancs des flammes) ; le fondu (FxFade, œil) s'applique ensuite
+// dans main ; rien à ajouter : fragment jeté
+vec4 fxAjout(vec3 col, float a) {
+    return vec4(col * a, a > 0.002 ? 1.0 : 0.0);
+}
+#endif
+
+// ------------------------------------------------------------------ 210 Phénix (19/11)
+#if FX_ID == 210
+// rampe de feu : 0 rouge sombre -> orange -> jaune -> 1 blanc chaud (la même que la surface du Phénix)
+vec3 phxFeu(float x) {
+    return mix(mix(hexc(0x3a0500), hexc(0xff4a00), smoothstep(0.0, 0.45, x)), mix(hexc(0xffb52a), hexc(0xfff3c8), smoothstep(0.72, 1.0, x)), smoothstep(0.4, 0.78, x));
+}
+vec4 fxPhenix(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
+    if (kind == 1) {
+        // plume de flamme : u en travers, v de la racine (0) à la pointe (1) ; silhouette effilée dont le bord brûle, flammes
+        // qui remontent vers la pointe ; cœur blanc-jaune à la racine, orange, pointes rouges qui se dissipent. prm.g : éclat
+        float y = uv.y;
+        float x = uv.x - 0.5;
+        float s = sd.x * 0.37;
+        float nz = fbm3(vec2(x * 5.0 + s * 7.1, y * 3.4 - t * 2.8 + s));
+        float nz2 = fbm3(vec2(x * 11.0 - s, y * 7.0 - t * 4.1));
+        float w = 0.5 * sin(PI * pow(clamp(y, 0.0, 1.0), 0.62)) * (0.62 + 0.55 * nz);
+        float xx = x + (nz - 0.5) * 0.3 * y;
+        float body = smoothstep(w, w * 0.25, abs(xx));
+        float tip = smoothstep(1.0, 0.55 + 0.3 * nz2, y);
+        float root = smoothstep(0.0, 0.07, y);
+        float rachis = exp(-pow(xx / 0.05, 2.0)) * (1.0 - y) * root;
+        float heat = clamp(0.95 - 0.75 * y + 0.35 * (nz2 - 0.5) + 0.25 * rachis - 0.35 * abs(xx) / max(w, 0.05), 0.0, 1.0);
+        return fxAjout(phxFeu(heat) * (1.0 + 0.6 * rachis), body * tip * root * (0.55 + 0.45 * heat) * (0.75 + 0.25 * prm.g) * prm.a);
+    }
+    vec2 d = uv * 2.0 - 1.0;
+    float r2 = dot(d, d);
+    if (kind == 2) {
+        // braise : point chaud qui scintille, petit halo ; prm.g : éclat
+        float fl = 0.65 + 0.35 * sin(t * 13.0 + sd.x * 3.7);
+        return fxAjout(phxFeu(0.72 + 0.28 * prm.g) * (exp(-r2 * 9.0) * 1.4 + exp(-r2 * 2.2) * 0.35), prm.g * fl * prm.a);
+    }
+    // lueur de chaleur au-dessus de l'arme
+    if (kind == 3) return fxAjout(phxFeu(0.55) * exp(-r2 * 2.5), prm.g * prm.a);
+    return vec4(0.0);
+}
+#endif
+
+// ------------------------------------------------------------------ 211 Abysses (19/11)
+#if FX_ID == 211
+vec4 fxAbysses(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
+    if (kind == 1) {
+        // filament bioluminescent (ruban : u de la racine (0) au bout (1), v en travers) : cœur fin, halo turquoise,
+        // pulsations qui descendent le long du filament ; prm.g : phase, prm.b : teinte
+        float x = (uv.y - 0.5) * 2.0;
+        float y = uv.x;
+        float core = exp(-x * x * 26.0);
+        float glow = exp(-x * x * 3.5);
+        float puls = pow(0.5 + 0.5 * sin((y * 3.2 - t * 0.9 + prm.g) * TAU), 6.0);
+        vec3 tq = mix(hexc(0x12f2d0), hexc(0x3fb8ff), 0.5 + 0.5 * sin(y * 4.0 + prm.b * 6.0));
+        vec3 col = tq * (glow * 0.45 + core * 0.9) + vec3(0.75, 1.0, 1.0) * core * puls * 0.9 + tq * glow * puls * 0.6;
+        return fxAjout(col, smoothstep(0.0, 0.08, y) * pow(1.0 - y, 0.7) * prm.a);
+    }
+    if (kind == 2) {
+        // plancton lumineux ; prm.g : éclat, prm.b : teinte (quelques-uns violets)
+        vec2 d = uv * 2.0 - 1.0;
+        float r2 = dot(d, d);
+        vec3 c = mix(hexc(0x6ff6ff), hexc(0x9d7bff), step(0.82, prm.b));
+        return fxAjout(c * (exp(-r2 * 10.0) * 1.3 + exp(-r2 * 2.5) * 0.3), prm.g * prm.a);
+    }
+    return vec4(0.0);
+}
+#endif
+
 
 
 
@@ -219,6 +291,10 @@ vec4 fxShade(int kind, vec4 prm, vec2 uv, vec3 n, vec3 v, vec2 sd, float t) {
     return fxInferno(kind, prm, uv, n, v, sd, t);
 #elif FX_ID == 70
     return fxStorm(kind, prm, uv, n, v, sd, t);
+#elif FX_ID == 210
+    return fxPhenix(kind, prm, uv, n, v, sd, t);
+#elif FX_ID == 211
+    return fxAbysses(kind, prm, uv, n, v, sd, t);
 #else
     return vec4(1.0, 0.0, 1.0, 1.0);
 #endif

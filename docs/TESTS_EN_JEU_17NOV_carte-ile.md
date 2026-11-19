@@ -316,3 +316,35 @@ Repris de l'ancien (petites pierres serrées en relief), seuls les endroits biza
 - [ ] Faces en biais (dessus du garde-main, chanfreins) : pierres rondes, plus de moucheté.
 - [ ] En bougeant la vue : ça brille sans grésiller ; de loin, pierres bombées qui scintillent pierre par pierre.
 - [ ] Les parties en or ne changent pas ; FPS pareils qu'avant avec le camo.
+
+## 17. Sept nouveaux camos (19/11, rendus validés par le propriétaire)
+
+Opale (Épique), Marbre noir (Légendaire), Patine (Rare), Néon (Épique, animé), Rubis (Légendaire) et deux skins X
+(Unique, avec effet 3D) : Phénix et Abysses. Tactique 2.58.0 : tout le monde doit avoir la nouvelle version (le launcher la
+donne). Pour les essais (staff) : onglet HeraliZ · Tactique, groupe Camos, ou `/give @s heralisz_camo:camo_opale` (puis
+`camo_marbre_noir`, `camo_patine`, `camo_neon`, `camo_rubis`, `skinx_phenix`, `skinx_abysses`). **Rien de tout cela n'a
+été testé en jeu** (rendus hors jeu seulement).
+- [ ] Les 7 objets : nom de la couleur de leur rareté (Patine bleu, Opale et Néon violet, Marbre noir et Rubis or, Phénix et
+      Abysses rouge), icône (losange pour les camos, cadre rouge pour les skins X), textes en français, anglais et russe.
+- [ ] Clic droit : le camo entre dans la collection à vie ; il se pose depuis l'onglet Skin de l'atelier d'arme.
+- [ ] En main et vu par un autre joueur, chaque camo ressemble aux planches validées : Opale (nacre, éclats de couleur qui
+      changent quand on tourne la tête), Marbre noir (veines blanches et veines d'or), Patine (cuivre, rivets,
+      vert-de-gris, coulures), Néon (pistes rose et cyan qui respirent), Rubis (pavé de rubis, or noir sur le reste).
+- [ ] Rubis comme le Diamant : facettes de près, rouge profond de loin, pas de grésillement en bougeant la vue, pas de
+      faces plates ni de traînées (crosse de la XM177).
+- [ ] Néon, Phénix et Abysses brillent la nuit (comme Lave ou Circuit).
+- [ ] Phénix : or en fusion qui coule vers la crosse ; deux ailes de flammes qui battent lentement, braises qui montent.
+      Abysses : verre noir avec méduses et filaments dans la masse ; filaments lumineux qui sortent du garde-main et du
+      canon et ondulent vers l'arrière, plancton autour de l'arme.
+- [ ] Vu par le porteur, ces effets ne sont qu'un soupçon (petites ailes, filaments discrets), comme le Séraphin : ils
+      disparaissent en visée et juste après un tir, le centre de l'écran reste dégagé.
+- [ ] Sur un sac (skin X posé depuis la collection) : Phénix = ailes de flammes en V derrière le dos, braises ; Abysses =
+      filaments qui pendent du bas du sac comme des tentacules, plancton. **Pas de rendu validé pour les sacs** : à
+      regarder en premier.
+- [ ] Phénix et Abysses sont des objets à vie (gardés à la mort, « Jeter cet objet ? » avant de les sortir de
+      l'inventaire), comme le Séraphin.
+- [ ] Caisse Camo, aperçu : Patine 3,25 %, Opale et Néon 0,71 %, Marbre noir et Rubis 0,50 %, Phénix et Abysses 0,75 % ;
+      les autres camos gardent leurs chances ; stickers et module StatTrak plus rares (13,3 % en tout au lieu de 20,5 %).
+- [ ] Caisse Événement, aperçu : Opale et Néon 0,59 %, Marbre noir et Rubis 1,13 %, Phénix et Abysses 1 % ; les autres
+      camos gardent leurs chances ; hérals 32,6 % en tout au lieu de 38 %.
+- [ ] FPS pareils qu'avec le Diamant ou le Séraphin : camo en main, et plusieurs joueurs avec Phénix ou Abysses autour.
