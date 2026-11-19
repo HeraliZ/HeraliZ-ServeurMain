@@ -544,7 +544,8 @@ Le panneau d'achat (chez tous les vendeurs : le Bâtisseur, Jacqueline, le Doyen
       clic sur « Acheter » : le panneau s'ouvre mais rien n'est acheté (« Confirmer » reste éteint une demi-seconde).
 - [ ] Après l'achat : le bandeau « Acheté : 500 × Brindilles (1 000 hérals) » ; le solde de l'écran baisse d'autant.
 - [ ] Un op change le prix de l'article au Registre pendant qu'un joueur a le panneau ouvert, puis le joueur confirme :
-      « Le prix de … vient de changer : rien n'a été acheté », et le panneau montre le nouveau prix.
+      « Le prix de … vient de changer : rien n'a été acheté », aucun hérals retiré ; l'écran montre le nouveau prix et le
+      panneau, rouvert, aussi.
 - [ ] En anglais et en russe : aucun texte ne dépasse du panneau.
 
 Le Passeur :
