@@ -12,9 +12,10 @@ La protection utile consiste à séparer les composants :
   (`private=false`), alors qu'il contient tout Spartan (détections serveur et leurs seuils, contrôles du jeu, Gardien,
   listes de `serveur/config/spartan-common.toml`), le code du site et les réglages du serveur. N'importe qui peut le lire, et
   tout compte GitHub peut télécharger les jars fabriqués gardés dans l'onglet Actions (paquets `mods-serveur` et
-  `test-mods-serveur` : le jar serveur de Spartan, toutes ses détections compilées). Aucune clé n'y est (secrets GitHub et
-  VM du site), mais un tricheur peut y étudier ce que Spartan cherche. Choix à faire par les propriétaires : voir
-  « Dépôt public » plus bas.
+  `test-mods-serveur` : le jar serveur de Spartan, toutes ses détections compilées). Les secrets sont dans GitHub et sur la
+  VM du site (recherche du 19/11 des formes courantes de clés et d'adresses de webhooks dans les fichiers du dépôt : rien
+  trouvé ; l'historique n'a pas été fouillé en entier), mais un tricheur peut y étudier ce que Spartan cherche. Choix à
+  faire par les propriétaires : voir « Dépôt public » plus bas.
 - L’obfuscation augmente le coût de lecture sans empêcher la copie ; vérifier sa compatibilité avec Forge et les mixins.
   Tant que les sources sont publiques, obfusquer le jar ne sert à rien.
 - Des liens temporaires ou téléchargements autorisés limitent la distribution initiale, pas la redistribution par un joueur autorisé.
