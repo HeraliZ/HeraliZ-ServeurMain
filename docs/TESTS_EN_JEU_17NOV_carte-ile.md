@@ -518,3 +518,99 @@ Plantages au mauvais moment (non provoqués : vérifier seulement que tout march
       clés du ClashWar en fin de tournoi : comme avant, une seule fois.
 - Pas encore corrigés (il faudrait changer la façon dont ces fichiers s'écrivent) : planque et coffre VIP, coffre du
   clan. Il faudrait un plantage du serveur dans la seconde qui suit la fermeture du coffre.
+
+## 25. Acheter avec la quantité, et le Passeur : armes et munitions (19/11)
+
+Demandes du propriétaire : un panneau de confirmation avant chaque achat, avec la quantité (« 500 brindilles, c'est 500
+clics ») ; et un PNJ qui vend des armes et des munitions, cher. Quêtes 1.23.0 : tout le monde doit avoir la nouvelle
+version (le launcher la donne ; un jeu plus ancien est refusé à la connexion). Maquette du panneau, **pas encore validée
+par le propriétaire** : `maquettes/achat_quantite/`. Prix et calculs : en tête de `outils/marchands.py`.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois : au spawn, se placer là où le Passeur doit se tenir, regarder dans la direction voulue, puis
+`/pnj creer passeur` (`/pnj deplacer passeur` pour le bouger). `/pnj liste` doit le montrer.
+
+Le panneau d'achat (chez tous les vendeurs : le Bâtisseur, Jacqueline, le Doyen, Jack, le Passeur) :
+- [ ] Clic sur « Acheter » : le panneau s'ouvre au milieu de l'écran (l'objet, son nom à la couleur de sa rareté, le prix à
+      l'unité), quantité 1. Rien n'est acheté tant qu'on n'a pas confirmé.
+- [ ] Taper 500 au clavier (le premier chiffre remplace le 1) : le total, le solde et « Après l'achat » suivent. Chez le
+      Bâtisseur, 500 brindilles = 1 000 hérals (2 l'unité pendant la bêta).
+- [ ] − et + (avec Maj : de 10 en 10), la molette, les flèches haut et bas ; pastilles ×1, ×10, une pile (×64 pour les
+      brindilles, ×60 pour les balles de 9 mm, ×36 en calibre 12) ou ×5 (une arme), et Max.
+- [ ] « Max » = ce que tes hérals paient, ou ce qui tient dans ton inventaire : la ligne sous la quantité dit lequel des
+      deux. Une quantité plus grande : ligne rouge, total en rouge, « Confirmer » éteint.
+- [ ] Inventaire presque plein : Max = ce qui tient vraiment ; acheter Max : tout rentre, rien au sol.
+- [ ] Échap ou « Annuler » : le panneau se ferme, rien n'est acheté. Entrée ou « Confirmer » : l'achat se fait. Double
+      clic sur « Acheter » : le panneau s'ouvre mais rien n'est acheté (« Confirmer » reste éteint une demi-seconde).
+- [ ] Après l'achat : le bandeau « Acheté : 500 × Brindilles (1 000 hérals) » ; le solde de l'écran baisse d'autant.
+- [ ] Un op change le prix de l'article au Registre pendant qu'un joueur a le panneau ouvert, puis le joueur confirme :
+      « Le prix de … vient de changer : rien n'a été acheté », aucun hérals retiré ; l'écran montre le nouveau prix et le
+      panneau, rouvert, aussi.
+- [ ] En anglais et en russe : aucun texte ne dépasse du panneau.
+
+Le Passeur :
+- [ ] Lui parler : « Le Passeur », « Armes et munitions », ses phrases en français, anglais et russe ; son apparence
+      (marinière bleu marine, collier de barbe, bottes de pluie).
+- [ ] « Voir ce que tu vends » : 24 armes (les 20 grises et vertes, puis 4 bleues : Mk 23, UMP-45, M870, SKS tactique) et
+      4 munitions (.45 ACP, 9 mm, calibre 12, 7,62 × 39), chaque nom à la couleur de sa rareté.
+- [ ] Prix pendant la bêta (prix des fichiers x 0,75) : pistolet gris 1 125, pistolet vert 2 250, pistolet-mitrailleur ou
+      fusil à pompe vert 3 000, Mk 23 5 250, UMP-45 et M870 6 750, SKS 7 500 ; balles : 9 mm et .45 ACP 8, calibre 12 11,
+      7,62 × 39 15.
+- [ ] Une arme achetée est neuve (100 %) et vide : la charger avec les balles achetées.
+- [ ] Revendre à Mila une arme achetée chez lui : environ 15 (grise), 30 (verte), 60 (bleue) ; la recycler : quelques
+      composants ou quelques hérals. Jamais plus d'un dixième de son prix.
+- [ ] Une arme grise ou verte trouvée sur la carte, revendue à Mila : payée comme avant, mais plus de points de saison ni
+      d'avancée de la quête du jour « Vendre » (un marchand la vend maintenant : règle du 25/10, acheter puis revendre ne
+      rapporte rien).
+- [ ] Sur la carte, en combat, à terre ou en match : il refuse, comme les autres marchands.
+
+## 26. Sacs : plus aucun défi ni apparence à débloquer (19/11)
+
+Choix du propriétaire : les sacs se trouvent seulement sur la carte, avec leur apparence ; rien à débloquer.
+`serveur/config/backpacked.server.toml` : `unlockAllCosmetics = true` (aucun défi suivi, aucun déblocage annoncé) et
+`disableCustomisation = true` (plus de bouton de personnalisation).
+- [ ] Ouvrir son sac : plus de bouton « Personnaliser » ; aucun message « sac débloqué » en jouant.
+- [ ] Un sac trouvé garde l'apparence avec laquelle il a été trouvé (tactique, randonnée, sport…), même sur le dos.
+- [ ] Les camos sur les sacs (table d'armurier) marchent comme avant.
+
+## 27. Corrections de l'audit du 19/11 (bugs de jeu)
+
+Noyau 1.1.4, Monde 1.3.3, Quêtes 1.23.1, CRac 1.38.6-beta, Tactique 2.59.3, Sacs 3.0.1-beta.4-heralisz27.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois en jeu (staff) :
+- [ ] **Plus de `/tpa` dans les deux bunkers** (on en sortait sans carte et on y faisait entrer son clan). Les zones sans
+      téléportation ne sont pas dans le dépôt : elles se règlent en jeu. Taper, de n'importe où :
+      - `/execute in minecraft:overworld positioned -254 64 147 run tpa zone ajouter 96 Grand Bois`
+      - `/execute in minecraft:overworld positioned 853 64 -998 run tpa zone ajouter 93 Pic`
+      - puis `/tpa zone liste` : les deux zones sont dans la liste.
+      Centre et rayon : ceux des deux bunkers dans `serveur/config/crac/zones_construction.json` (tout le bunker, plus
+      40 blocs autour). Le joueur qui tente un `/tpa` dedans lit le nom de la zone : un nom neutre, pour ne pas montrer
+      où sont les bunkers (ils ne sont plus sur la carte M). Pour le nom « Bunker des Bois » à la place, c'est la même
+      commande avec ce nom.
+- [ ] **Quête « La boîte noire »** : elle ne se finit que dans les caisses d'une zone de radiation. Au démarrage, le
+      journal du serveur ne doit avoir aucune ligne « QUÊTE IMPOSSIBLE » ; `/zones info` doit montrer « Zone irradiée de
+      Radio (radiation) ». Sinon : remettre cette zone dans `dayz_map/data/heraliz_zones.json` (la carte en île l'apporte
+      dans son propre fichier du même nom), puis `/recharger zones`.
+
+À tester :
+- [ ] **Extraction sous le feu** : un autre joueur tire sur celui qui s'extrait (ou le staff tape
+      `/combat marquer <joueur>` pendant le compte à rebours). À l'arrivée au spawn : plus d'« EN COMBAT »,
+      `/combat etat <joueur>` dit « libre », `/hdv` marche tout de suite. Quitter le jeu aussitôt et revenir : vivant, au
+      spawn, rien de perdu. Celui qui a tiré reste en combat, lui.
+- [ ] **Spawn sans mort** : au spawn, `/combat marquer <joueur>` (staff), puis le joueur quitte le jeu : à son retour,
+      vivant, rien de perdu, pas de message « déconnecté en plein combat ». Journal du serveur : « sans sanction (monde
+      du spawn) ».
+- [ ] **`/spawn` depuis sa base** : pendant le compte à rebours, tirer sur un autre joueur (ou `/combat marquer
+      <joueur>`) : pas de départ, message « Tu es en combat : /spawn dans … s. ». Hors combat : départ comme avant.
+- [ ] Quêtes : trois textes s'affichaient en clé brute ; ils sont écrits en français, anglais et russe (quête finie
+      mais hérals en attente ; vente refusée quand les hérals ne peuvent pas être versés ; pour le staff, dans
+      l'édition d'un marchand). Le dernier se voit facilement : ajouter un rachat plus cher que la moitié du prix de
+      vente d'un objet → « … se vend … hérals : il ne sera jamais racheté plus de … hérals (la moitié). »
+- [ ] Journal du démarrage : plus de « Couldn't load tag curios:ear_protection ».
+- [ ] Rien ne doit changer pour : les masques à gaz et tenues Hazmat dans les zones de gaz (motifs qui ne servaient à
+      rien retirés), le C4 de CRac sur les bases (`c4ThrowableIds` vidé : il visait un C4 qui n'existe plus), le verre
+      du spawn et des arènes (monde des anciens bunkers de clan retiré de la liste).
+
+Sans essai possible : après une erreur, la détection « à terre » des quêtes (marchands, recycleurs, étapes
+« exécuter ») réessaie toute seule (1 s, 2 s, 4 s… jusqu'à 5 min) au lieu de rester coupée jusqu'au redémarrage.

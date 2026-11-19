@@ -44,8 +44,9 @@ import java.util.UUID;
  *     seconde et par joueur, renvoi differe sinon ; le client decompte seul) ; <b>aucun message dans le chat</b> ;</li>
  *     <li>cle {@link CombatTag#CLE_JUSQUA} du {@code persistentData} tenue a jour (lue par les autres mods) ;</li>
  *     <li>deconnexion pendant le tag = mort (degats {@code heraliz_noyau:deconnexion_combat}) : le corps du mod corpse
- *     reste sur place ; ligne dans le journal du serveur ; jamais a l'arret du serveur ni pour un joueur en
- *     creatif/spectateur ; message unique a la reconnexion. Joueur a terre (Reanimation) : c'est Reanimation qui l'acheve,
+ *     reste sur place ; ligne dans le journal du serveur ; jamais a l'arret du serveur, ni pour un joueur en
+ *     creatif/spectateur, ni dans le monde du spawn ({@code heralisz:spawn}, sans PvP : 19/11) ; message unique a la
+ *     reconnexion. Joueur a terre (Reanimation) : c'est Reanimation qui l'acheve,
  *     avec notre type de degats (kill credite a celui qui l'a mis a terre). Notre ecouteur (HIGHEST) passe avant celui de
  *     Reanimation (« deconnexion a terre = mort ») : une seule mort, un seul corps ;</li>
  *     <li>deconnexion a terre SANS tag : Reanimation tue seul ({@code reanimation:disconnect}) ; message unique a la
@@ -75,6 +76,8 @@ public final class CombatService {
     public static final ResourceLocation REANIMATION_EXECUTION = new ResourceLocation("reanimation", "execution");
     /** Type de degats de Reanimation : deconnexion a terre. */
     public static final ResourceLocation REANIMATION_DECONNEXION = new ResourceLocation("reanimation", "disconnect");
+    /** Monde du spawn de HeraliZ Utils (sans PvP) : jamais de mort pour deconnexion en combat. */
+    static final ResourceLocation MONDE_SPAWN = new ResourceLocation("heralisz", "spawn");
     static final ResourceLocation COMBAT_LOG = new ResourceLocation("geckolib", "combat_log");
 
     /** Dernier envoi de l'indicateur (ms) par joueur. */
@@ -162,8 +165,8 @@ public final class CombatService {
 
     /**
      * Traitement d'une deconnexion (HIGHEST, avant les autres mods et avant la sauvegarde du joueur faite par
-     * {@code PlayerList.remove}) : joueur tague -> tue (corps laisse) et journalise, sauf arret du serveur, creatif ou
-     * spectateur, match, mort deja, ou regle desactivee. Rend vrai si le joueur a ete tue. 
+     * {@code PlayerList.remove}) : joueur tague -> tue (corps laisse) et journalise, sauf arret du serveur, monde du spawn,
+     * creatif ou spectateur, match, mort deja, ou regle desactivee. Rend vrai si le joueur a ete tue.
      */
     public static boolean surDeconnexion(ServerPlayer p) {
         UUID u = p.getUUID();
@@ -183,10 +186,14 @@ public final class CombatService {
         MinecraftServer s = p.getServer();
         String nom = p.getGameProfile().getName();
         boolean serveurArrete = arret || s == null || !s.isRunning();
-        if (serveurArrete || !NoyauConfig.vrai(NoyauConfig.MORT_DECONNEXION, true) || Matchs.enMatch(p) || p.isCreative()
+        // 19/11 (audit) : jamais dans le monde du spawn, sans PvP (un joueur extrait sous le feu y arrivait encore tague :
+        // mort et corps pillable au spawn s'il quittait le jeu juste apres)
+        boolean auSpawn = MONDE_SPAWN.equals(p.level().dimension().location());
+        if (serveurArrete || auSpawn || !NoyauConfig.vrai(NoyauConfig.MORT_DECONNEXION, true) || Matchs.enMatch(p) || p.isCreative()
                 || p.isSpectator() || p.isDeadOrDying()) {
             HeralizNoyau.LOG.info("[noyau] combat : {} deconnecte en combat ({} s) sans sanction ({})", nom, (reste + 999) / 1000,
-                    serveurArrete ? "arret du serveur" : p.isCreative() || p.isSpectator() ? "creatif/spectateur" : "regle");
+                    serveurArrete ? "arret du serveur" : auSpawn ? "monde du spawn"
+                            : p.isCreative() || p.isSpectator() ? "creatif/spectateur" : "regle");
             CombatTag.effacer(u);
             p.getPersistentData().remove(CombatTag.CLE_JUSQUA);
             return false;

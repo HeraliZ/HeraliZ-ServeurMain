@@ -132,6 +132,17 @@ public final class ZonesServeur {
         return n;
     }
 
+    /**
+     * 19/11 (audit ; lu par réflexion par heraliz_quetes au démarrage) : nombre de zones de ce genre (« gaz », « radiation »,
+     * « froid ») sur la carte. 0 : une étape de quête qui en demande une (la boîte noire de Varga, dans la zone irradiée de
+     * Radio) ne peut pas être finie.
+     */
+    public static int nombreZones(String genre) {
+        int n = 0;
+        for (Zone z : zones) if (z.genre().equals(genre)) n++;
+        return n;
+    }
+
     /** Envoie l'exposition au joueur seulement si elle a changé (avant : un paquet par joueur et par seconde, même à 0). */
     private static void envoyer(ServerPlayer p, Ambiance.Exposition x) {
         if (x.equals(ENVOYEE.get(p.getUUID()))) return;
