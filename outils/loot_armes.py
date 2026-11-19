@@ -189,16 +189,22 @@ IGNORES = RETIRES  # pour la simulation (le mod ignore ce qui manque)
 # pour 100 conteneurs, puis, par palier, (objet, quantité [min, max], part des piles) ; plus de valeur en haut.
 # 23/10 (choix du propriétaire) : seulement les capsules 1, 5 et 10, et assez dures à trouver : 1 conteneur sur 40 en
 # moyenne en contient (2,5 pour 100, tous paliers), la 1 courante, la 10 rare.
+# 19/11 (demande du propriétaire : « beaucoup trop dur d'en avoir », « que ce soit moins rare d'avoir 5-6 jetons bleus
+# dans un coffre ») : un conteneur T5 rapportait 0,15 capsule en moyenne (avant le réglage bêta) pour des échanges de la
+# caisse à 500 (sticker), 4 500 (clé de caisse) ou 6 000 (camo) capsules. Maintenant : des piles un peu plus souvent
+# (x 1,6 en T1 à x 3,2 en T7 : plus, elles prenaient la place des autres objets, -5 à -10 %) et surtout bien plus
+# grosses, la 10 (Rare, nom en bleu) en piles de 3 à 10 dès le T3 : environ 0,3 capsule par conteneur T1, 5,6 en T5,
+# 21 en T7, avant le réglage bêta (x 2,25 environ avec lui) ; les autres objets perdent 1 à 4 % de leur place.
 CAPSULE = "heralizcasino:"
-CAPSULES_POUR_100 = {t: 2.5 for t in range(1, 8)}
+CAPSULES_POUR_100 = {1: 4, 2: 4.5, 3: 5, 4: 5.5, 5: 6, 6: 6.5, 7: 8}
 CAPSULES = {
-    1: [("jeton_1", [1, 3], 1.0)],
-    2: [("jeton_1", [1, 4], 0.85), ("jeton_5", [1, 1], 0.15)],
-    3: [("jeton_1", [1, 4], 0.7), ("jeton_5", [1, 2], 0.25), ("jeton_10", [1, 1], 0.05)],
-    4: [("jeton_1", [2, 5], 0.6), ("jeton_5", [1, 2], 0.3), ("jeton_10", [1, 1], 0.1)],
-    5: [("jeton_1", [2, 5], 0.5), ("jeton_5", [1, 2], 0.35), ("jeton_10", [1, 1], 0.15)],
-    6: [("jeton_1", [3, 6], 0.4), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.2)],
-    7: [("jeton_1", [3, 8], 0.3), ("jeton_5", [1, 3], 0.4), ("jeton_10", [1, 2], 0.3)],
+    1: [("jeton_1", [2, 6], 0.85), ("jeton_5", [1, 2], 0.15)],
+    2: [("jeton_1", [3, 8], 0.6), ("jeton_5", [2, 4], 0.3), ("jeton_10", [2, 4], 0.1)],
+    3: [("jeton_1", [4, 10], 0.45), ("jeton_5", [2, 5], 0.35), ("jeton_10", [3, 5], 0.2)],
+    4: [("jeton_1", [5, 12], 0.35), ("jeton_5", [3, 6], 0.35), ("jeton_10", [3, 6], 0.3)],
+    5: [("jeton_1", [6, 14], 0.3), ("jeton_5", [3, 6], 0.35), ("jeton_10", [4, 7], 0.35)],
+    6: [("jeton_1", [8, 16], 0.25), ("jeton_5", [4, 8], 0.35), ("jeton_10", [5, 8], 0.4)],
+    7: [("jeton_1", [10, 20], 0.2), ("jeton_5", [5, 10], 0.35), ("jeton_10", [6, 10], 0.45)],
 }
 # kits de réparation de HeraliZ Utils (24/10, choix du propriétaire) : ils réparent les armes ET les armures (+15 / +35 /
 # +60 %). Nombre pour 100 conteneurs, puis part de chaque kit par palier (fortune, kit, armurier) ; plus de valeur en haut.
@@ -249,8 +255,8 @@ RARETES_IMPOSEES = {
     "crac:caisse_armes": "epique", "crac:coffre_fort": "legendaire",
     # Table d'armurier de TaCZ à poser dans sa base (31/10) : fabrication seulement (Table d'armurier, onglet Divers)
     "tacz:gun_smith_table": "legendaire",
-    # cartes d'accès entières (26/10) : même rareté que leurs fragments
-    "heralisz_bunker:keycard_green": "rare", "heralisz_bunker:keycard_blue": "epique", "heralisz_bunker:keycard_red": "legendaire",
+    # cartes d'accès entières (26/10) : même rareté que leurs fragments (19/11 : verte Épique, bleue et rouge Légendaires)
+    "heralisz_bunker:keycard_green": "epique", "heralisz_bunker:keycard_blue": "legendaire", "heralisz_bunker:keycard_red": "legendaire",
     # matières brutes de HeraliZ Récolte (16/11, choix du propriétaire, modules/recolte/A_FAIRE.md §3) : jamais dans le loot,
     # récoltées sur la carte ; bûche et pierre brute Commun, minerai de métal Peu commun, minerai de titane Rare (les outils
     # de la récolte : EXTRAS)
@@ -259,11 +265,15 @@ RARETES_IMPOSEES = {
 }
 # fragments des cartes d'accès de HeraliZ Bunker (24/10, demande du propriétaire) : 4 fragments numérotés par carte, les
 # 4 DIFFÉRENTS donnent la carte (grille 2 x 2 ou clic droit). Chaque numéro est tiré à part : on peut trouver plusieurs
-# fois le même, inutile sans les trois autres (voulu). Fragments de la carte verte Rare, bleue Épique, rouge Légendaire.
+# fois le même, inutile sans les trois autres (voulu). Fragments de la carte verte Épique, bleue et rouge Légendaires
+# (19/11, retour du propriétaire : « le fragment vert est affiché en bleu alors qu'on a presque autant de chances d'avoir
+# un objet légendaire » ; par conteneur ouvert, un fragment vert sort 0,8 % du temps, moins qu'un objet Légendaire en
+# T5 ; avant : vert Rare, bleu Épique). Même multiplicateur du réglage bêta pour Rare, Épique et Légendaire : leurs
+# chances ne changent pas (Unique, lui, serait exclu du réglage).
 # Nombre de fragments (tous numéros) pour 100 conteneurs ouverts (vrais conteneurs, pas des parts) ; plus rare quand la
 # carte est meilleure. Ajoutés aux tables sans changer les poids des autres objets (ajouter_fragments).
 FRAGMENT = "heralisz_bunker:keycard_fragment_"
-RARETE_FRAGMENTS = {"green": "rare", "blue": "epique", "red": "legendaire"}
+RARETE_FRAGMENTS = {"green": "epique", "blue": "legendaire", "red": "legendaire"}
 # 24/10 (choix du propriétaire) : environ 1 000 conteneurs ouverts pour une carte verte complète, 2 000 pour une bleue,
 # 4 500 pour une rouge (8,3 fragments en moyenne pour avoir les 4 numéros) ; une arme sort 10 à 50 fois pour 100
 FRAGMENTS_POUR_100 = {

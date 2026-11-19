@@ -465,3 +465,15 @@ change de carte : la recherche repart alors toute seule). **Rien de tout cela n'
       la couleur du palier.
 - [ ] Coffre T7 : seulement le badge « T7 » ; à droite, le compteur « à identifier » ne change pas.
 - [ ] Caisse de largage, planque, coffre VIP, coffre du clan : leur nom reste (ils n'ont pas de palier).
+
+## 23. Fragments de cartes et capsules du casino (19/11)
+
+Fragments : la couleur suit enfin leur vraie rareté (un fragment vert sort moins souvent qu'un objet Légendaire en T5).
+Vert : Épique (violet) ; bleu : Légendaire (or) ; rouge : Légendaire (or) ; les cartes entières aussi. Leurs chances de
+sortir ne changent pas.
+- [ ] Infobulle et nom d'un fragment vert : violet ; bleu et rouge : or ; carte verte violette, bleue et rouge en or.
+
+Capsules du casino : beaucoup plus de capsules dans les conteneurs, surtout en piles plus grosses (la 10, nom en bleu, en
+piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta : T1 0,3 (avant 0,07), T3 1,6 (0,2), T5 5,5
+(0,45), T6 10,7 (0,9), T7 21 (1,3). Les autres objets perdent 1 à 2,5 % de leur place.
+- [ ] Ouvrir une dizaine de conteneurs T4-T5 : des capsules dans 1 sur 8 environ, parfois une pile de 4 à 7 capsules de 10.

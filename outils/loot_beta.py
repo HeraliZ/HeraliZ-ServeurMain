@@ -22,8 +22,8 @@ Règles (les mêmes que LootBeta.java, à garder ensemble) :
 - plafonds : une rareté ne passe jamais devant celle d'en dessous (Épique <= Rare, Légendaire <= Épique), et les autres
   objets gardent au moins une part de leur place (1 / hausse du nombre d'objets de la table, entre 50 % et 90 %) :
   aucun objet ordinaire n'est plus rare qu'avant dans un conteneur ;
-- fragments de cartes d'accès des zombies (tirés à part) : chance x le multiplicateur de leur rareté (vert Rare, bleu
-  Épique, rouge Légendaire), plafond par jour inchangé.
+- fragments de cartes d'accès des zombies (tirés à part) : chance x le multiplicateur de leur rareté (vert Épique, bleu
+  et rouge Légendaires depuis le 19/11 ; même multiplicateur que Rare), plafond par jour inchangé.
 """
 import json
 import re
