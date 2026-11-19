@@ -68,15 +68,19 @@ public final class ChoixService {
         }
         int s = Math.max(1, Math.min(60, secondes));
         Session se = new Session(partie, kits, limites, s, quandFini);
-        List<ItemStack> apercus = new ArrayList<>(kits.size());
-        for (Kit k : kits) apercus.add(k.principale() == null ? ItemStack.EMPTY : fr.heraliz.clashwar.moteur.compat.Tacz.arme(k.principale()));
+        List<ItemStack> apercus = new ArrayList<>(kits.size()), apercus2 = new ArrayList<>(kits.size());
+        for (Kit k : kits) {
+            apercus.add(k.principale() == null ? ItemStack.EMPTY : fr.heraliz.clashwar.moteur.compat.Tacz.arme(k.principale()));
+            apercus2.add(k.secondaire() == null ? ItemStack.EMPTY : fr.heraliz.clashwar.moteur.compat.Tacz.arme(k.secondaire()));
+        }
         for (ServerPlayer p : joueurs) {
             Session ancienne = PAR_JOUEUR.remove(p.getUUID());
             if (ancienne != null) ancienne.joueurs.remove(p.getUUID());
             se.joueurs.add(p.getUUID());
             PAR_JOUEUR.put(p.getUUID(), se);
             Equipe eq = partie.equipeDe(p.getUUID());
-            MatchsNet.versJoueur(p, new PaquetsMoteur.ChoixOuvrirS2C(titre, s, eq == null ? 0x6FA8FF : eq.couleur(), se.kits, apercus, se.limites));
+            MatchsNet.versJoueur(p, new PaquetsMoteur.ChoixOuvrirS2C(titre, s, eq == null ? 0x6FA8FF : eq.couleur(), se.kits, apercus,
+                    apercus2, se.limites));
         }
         SESSIONS.add(se);
         diffuser(se);
@@ -150,7 +154,7 @@ public final class ChoixService {
         return n < max;
     }
 
-    /** Envoie a chaque joueur son choix et ceux de ses coequipiers. */
+    /** Envoie a chaque joueur son choix, ceux de ses coequipiers et les coequipiers qui n'ont pas encore choisi. */
     private static void diffuser(Session se) {
         MinecraftServer s = se.partie.serveur();
         for (UUID u : se.joueurs) {
@@ -172,8 +176,14 @@ public final class ChoixService {
             if (eq != null && !eq.contient(e.getKey())) continue;
             pris.add(new PaquetsMoteur.Pris(e.getValue().classe(), e.getValue().id(), Noms.nom(s, e.getKey())));
         }
+        // coequipiers de la session qui n'ont pas encore choisi (pied de l'ecran ; aucun coequipier = on joue seul)
+        List<String> attente = new ArrayList<>();
+        for (UUID v : se.joueurs) {
+            if (v.equals(u) || se.choix.containsKey(v) || (eq != null && !eq.contient(v))) continue;
+            attente.add(Noms.nom(s, v));
+        }
         Kit mon = se.choix.get(u);
-        return new PaquetsMoteur.ChoixEtatS2C(mon == null ? "" : mon.id(), pris, fermer);
+        return new PaquetsMoteur.ChoixEtatS2C(mon == null ? "" : mon.id(), pris, attente, fermer);
     }
 
     /** Echeances (appele a chaque tick serveur ; une session finit aussi quand tous ont choisi). */

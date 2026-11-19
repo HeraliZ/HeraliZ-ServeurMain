@@ -220,17 +220,22 @@ public final class CwPaquets {
         }
     }
 
-    /** Roles du joueur dans un match (bandeau, pastille du role). */
-    public static final int ROLE_AUCUN = 0, ROLE_ATTAQUE = 1, ROLE_DEFENSE = 2;
+    /** Phases d'une manche pour le tableau de score ({@link MatchHudS2C#phase}). */
+    public static final int PHASE_AUCUNE = 0, PHASE_CHOIX = 1, PHASE_PREPARATION = 2, PHASE_COMBAT = 3, PHASE_MORT_SUBITE = 4,
+            PHASE_PAUSE = 5;
 
     /**
-     * Bandeau d'un match de recherche et destruction du ClashWar (maquette 1 validee le 21/10) : tags, couleurs et
-     * manches gagnees des deux equipes, manches a gagner, manche en cours, role de ce joueur, temps restant (decompte
-     * chez le joueur ; -1 = aucun, bombe amorcee : le HUD de la bombe montre sa minuterie). Inactif = masquer.
+     * Tableau de score d'un match du ClashWar en haut de l'ecran (maquette validee le 19/11 : maquettes/clashwar/2b) : tag
+     * court, couleur, manches gagnees, joueurs en vie et engages de chaque equipe ; manches a gagner, manche en cours,
+     * phase de la manche ({@code PHASE_*}), temps restant et duree de la phase en secondes (decompte chez le joueur ;
+     * secondes -1 = aucun temps), equipe de ce joueur (0 = A, 1 = B, -1 = spectateur) et gagnant de la derniere manche
+     * jouee (0, 1, -1 = aucune). Inactif = masquer.
      */
-    public record MatchHudS2C(boolean actif, String tour, String tagA, int couleurA, int scoreA, String tagB, int couleurB, int scoreB,
-                              int gagnantes, int manche, int role, int secondes, boolean nouvelleManche) {
-        public static final MatchHudS2C AUCUN = new MatchHudS2C(false, "", "", 0, 0, "", 0, 0, 0, 0, ROLE_AUCUN, -1, false);
+    public record MatchHudS2C(boolean actif, String tour, String tagA, int couleurA, int scoreA, int vivantsA, int totalA,
+                              String tagB, int couleurB, int scoreB, int vivantsB, int totalB, int gagnantes, int manche,
+                              int phase, int secondes, int duree, int monEquipe, int dernierGagnant) {
+        public static final MatchHudS2C AUCUN = new MatchHudS2C(false, "", "", 0, 0, 0, 0, "", 0, 0, 0, 0, 0, 0, PHASE_AUCUNE,
+                -1, 0, -1, -1);
 
         public void write(FriendlyByteBuf buf) {
             buf.writeBoolean(actif);
@@ -239,20 +244,33 @@ public final class CwPaquets {
             buf.writeUtf(tagA, 24);
             buf.writeInt(couleurA);
             buf.writeByte(scoreA);
+            buf.writeByte(vivantsA);
+            buf.writeByte(totalA);
             buf.writeUtf(tagB, 24);
             buf.writeInt(couleurB);
             buf.writeByte(scoreB);
+            buf.writeByte(vivantsB);
+            buf.writeByte(totalB);
             buf.writeByte(gagnantes);
             buf.writeByte(manche);
-            buf.writeByte(role);
+            buf.writeByte(phase);
             buf.writeVarInt(secondes + 1);
-            buf.writeBoolean(nouvelleManche);
+            buf.writeVarInt(Math.max(0, duree));
+            buf.writeByte(monEquipe);
+            buf.writeByte(dernierGagnant);
         }
 
         public static MatchHudS2C read(FriendlyByteBuf buf) {
             if (!buf.readBoolean()) return AUCUN;
-            return new MatchHudS2C(true, buf.readUtf(48), buf.readUtf(24), buf.readInt(), buf.readByte(), buf.readUtf(24), buf.readInt(),
-                    buf.readByte(), buf.readByte(), buf.readByte(), buf.readByte(), buf.readVarInt() - 1, buf.readBoolean());
+            String tour = buf.readUtf(48), tagA = buf.readUtf(24);
+            int couleurA = buf.readInt(), scoreA = buf.readByte(), vivantsA = buf.readByte(), totalA = buf.readByte();
+            String tagB = buf.readUtf(24);
+            int couleurB = buf.readInt(), scoreB = buf.readByte(), vivantsB = buf.readByte(), totalB = buf.readByte();
+            int gagnantes = buf.readByte(), manche = buf.readByte(), phase = buf.readByte();
+            int secondes = buf.readVarInt() - 1, duree = buf.readVarInt();
+            int monEquipe = buf.readByte(), dernierGagnant = buf.readByte();
+            return new MatchHudS2C(true, tour, tagA, couleurA, scoreA, vivantsA, totalA, tagB, couleurB, scoreB, vivantsB, totalB,
+                    gagnantes, manche, phase, secondes, duree, monEquipe, dernierGagnant);
         }
 
         public static void handle(MatchHudS2C p, Supplier<NetworkEvent.Context> ctx) {

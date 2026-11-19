@@ -1,46 +1,81 @@
 package fr.heraliz.clashwar.tournoi.client;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import fr.heraliz.clashwar.HeralizClashWar;
+import fr.heraliz.clashwar.client.kit.TexteNet;
+import fr.heraliz.clashwar.moteur.client.MoteurClient;
 import fr.heraliz.clashwar.tournoi.net.CwPaquets;
+import fr.heraliz.noyau.client.kit.Bandeau;
+import fr.heraliz.noyau.client.kit.Formes;
+import fr.heraliz.noyau.client.kit.Palette;
+import fr.heraliz.noyau.client.kit.PoliceHud;
 import fr.heraliz.noyau.client.kit.TexteCentre;
 import fr.heraliz.noyau.client.kit.Ui;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.event.RenderGuiEvent;
+import org.joml.Matrix4f;
+
+import javax.annotation.Nullable;
 
 /**
- * HUD d'un match du ClashWar (maquettes 1 et 2 validees le 21/10), a l'echelle du joueur, au style des ecrans de clan :
+ * HUD d'un match du ClashWar, a l'echelle du joueur :
  * <ul>
- *     <li>bandeau en haut au centre (remplace celui du moteur) : couleur et tag de chaque equipe, une pastille par manche
- *     a gagner (pleine = gagnee), au milieu le temps de la manche et « MANCHE n · BO5 » ;</li>
- *     <li>pastille du role (attaque ou defense) dessous, les premieres secondes de chaque manche ;</li>
+ *     <li>tableau de score en haut au centre (maquette validee le 19/11 : maquettes/clashwar/2b ; remplace le bandeau du
+ *     moteur) : [plaque][score][temps et phase][score][plaque]. Plaque : trait de la couleur de l'equipe au bord, tag,
+ *     une barre par joueur (pleine = en vie). Case du score teintee de la couleur de l'equipe : chiffre, un trait par
+ *     manche a gagner (plein = gagnee). Milieu : temps restant, phase (« Choix de classe », « Preparation » en ambre,
+ *     « Manche 4 », « Mort subite » en rouge, « Manche a TAG » entre deux manches), barre fine de la phase ; temps en rouge
+ *     les 10 dernieres secondes du combat. Mon equipe a gauche (spectateur : equipe A a gauche) ;</li>
+ *     <li>en mort subite, hors de la zone : bandeau du noyau sous le tableau (distance au bord de la zone) ;</li>
  *     <li>panneau de fin de match : issue, score, gagnant de chaque manche, eliminations et morts des joueurs, suite et
  *     retour en salle.</li>
  * </ul>
- * Chaque texte est centre dans son conteneur ({@link TexteCentre} : largeur exacte, milieu des capitales). Textes
- * prepares a la reception (et une fois par seconde pour le temps), aucune allocation par image.
+ * Textes du tableau nets a leur vraie taille ({@link TexteNet}), prepares a la reception et a chaque changement de
+ * seconde ; formes envoyees au tampon puis un seul vidage, textes ensuite : aucune allocation par image.
  */
 public final class HudMatchCw {
     private HudMatchCw() {
     }
 
-    // ------------------------------------------------------------------ etat du bandeau
+    // ------------------------------------------------------------------ etat du tableau
     private static CwPaquets.MatchHudS2C hud = CwPaquets.MatchHudS2C.AUCUN;
     private static long recuMs;
-    private static int mancheVue = -1;
-    private static long debutMancheMs;
+    /** Mon equipe est B : les cotes sont echanges a l'affichage (mon equipe a gauche). */
+    private static boolean inverse;
 
-    private static final TexteCentre TAG_A = new TexteCentre(Ui.BOLD, 0.4f), TAG_B = new TexteCentre(Ui.BOLD, 0.4f);
-    private static final TexteCentre TEMPS = new TexteCentre(Ui.BOLD), MANCHE = new TexteCentre(Ui.SMALL, 1.0f);
-    private static final TexteCentre ROLE = new TexteCentre(Ui.BOLD, 1.0f), ROLE_AIDE = new TexteCentre(Ui.FONT);
+    /** Tableau : mesures en unites d'interface (maquette 2b). */
+    private static final float Y = 5f, H = 20f, WP_MIN = 28f, WS = 17f, WC_MIN = 46f, TRAIT = 1f, MARGE = 6f;
+    private static final float PIP_W = 2f, PIP_H = 4.5f, PIP_E = 1.5f, PIP_Y = 11.5f;
+    private static final float MARQ_W = 3f, MARQ_H = 1f, MARQ_E = 1f, MARQ_Y = 15.5f;
+    private static final float CY_TAG = 7f, CY_SCORE = 8.6f, CY_TEMPS = 7f, CY_PHASE = 13.6f, BARRE_Y = 17f, BARRE_H = 0.75f;
+    private static final int VERRE_ALPHA = 205, BORD_ALPHA = 20, TEINTE_ALPHA = 46, PISTE_ALPHA = 30, VIDE_ALPHA = 40, MARQ_VIDE = 46;
+    /** Couleurs (palette du noyau). */
+    private static final int TEXTE = Palette.TEXTE, ATTENUE = Bandeau.ATTENUE, MUTED = Palette.ATTENUE, ROUGE = Ui.DANGER,
+            AMBRE = Palette.ALERTE, BARRE = 0xD9DDE4;
+    /** Dernieres secondes du combat : le temps passe au rouge. */
+    private static final int FIN_COMBAT = 10;
+
+    private static final TexteNet TAG_G = TexteNet.hud(PoliceHud.MINI_GRAS), TAG_D = TexteNet.hud(PoliceHud.MINI_GRAS);
+    private static final TexteNet SCORE_G = TexteNet.ui(HeralizClashWar.id("ui_bold_13"), 13),
+            SCORE_D = TexteNet.ui(HeralizClashWar.id("ui_bold_13"), 13);
+    private static final TexteNet TEMPS = TexteNet.hud(PoliceHud.TEXTE_GRAS), PHASE = TexteNet.hud(PoliceHud.BANDEAU_TEXTE);
     private static int tempsMontre = Integer.MIN_VALUE;
+    /** Largeurs fixees a la reception : plaques au tag le plus large, milieu au libelle de phase le plus large. */
+    private static float wp = WP_MIN, wc = WC_MIN;
+    /** Couleurs du libelle, du temps et de la barre de la phase (fixees a la reception). */
+    private static int couleurPhase = ATTENUE, couleurTemps = TEXTE, couleurBarre = BARRE;
 
-    /** Bandeau : marges, tailles (pixels d'interface). */
-    private static final int Y = 5, H = 22, PAD = 7, ECART = 7, MILIEU_W = 50, PASTILLE = 4, ECART_PASTILLE = 2, CHIP_W = 3, CHIP_H = 11;
-    private static final float K_TAG = 0.85f, K_TEMPS = 1.15f, K_MANCHE = 0.62f, K_ROLE = 0.62f;
-    /** Pastille du role : duree d'affichage au debut d'une manche, fondu. */
-    private static final long ROLE_MS = 9000, FONDU_MS = 600;
+    // hors de la zone (mort subite)
+    private static final Bandeau HORS_ZONE = new Bandeau();
+    private static final long HORS_ZONE_MAJ_MS = 250;
+    private static int distanceMontree = Integer.MIN_VALUE;
+    private static long distanceMs;
+    private static boolean horsZoneVisible;
+    private static float horsZoneH;
 
     /** Vrai pendant un match du ClashWar (le bandeau du moteur est alors masque). */
     public static boolean actif() {
@@ -51,32 +86,95 @@ public final class HudMatchCw {
         hud = p;
         recuMs = Util.getMillis();
         if (!p.actif()) return;
-        TAG_A.texte(p.tagA());
-        TAG_B.texte(p.tagB());
-        MANCHE.texte(Component.translatable("clashwar.hud.manche_bo", p.manche(), p.gagnantes() * 2 - 1).getString());
-        if (p.manche() != mancheVue) {
-            mancheVue = p.manche();
-            debutMancheMs = recuMs;
-            fin = null;
-        }
-        if (p.role() == CwPaquets.ROLE_ATTAQUE) {
-            ROLE.texte(Component.translatable("clashwar.hud.attaque").getString());
-            ROLE_AIDE.texte(Component.translatable("clashwar.hud.attaque.aide").getString());
-        } else if (p.role() == CwPaquets.ROLE_DEFENSE) {
-            ROLE.texte(Component.translatable("clashwar.hud.defense").getString());
-            ROLE_AIDE.texte(Component.translatable("clashwar.hud.defense.aide").getString());
+        // un nouveau tableau : le panneau de fin d'un match precedent est fini
+        fin = null;
+        inverse = p.monEquipe() == 1;
+        TAG_G.texte(inverse ? p.tagB() : p.tagA());
+        TAG_D.texte(inverse ? p.tagA() : p.tagB());
+        SCORE_G.texte(Integer.toString(inverse ? p.scoreB() : p.scoreA()));
+        SCORE_D.texte(Integer.toString(inverse ? p.scoreA() : p.scoreB()));
+        PHASE.texte(libelle(p));
+        wp = (float) Math.max(WP_MIN, Math.ceil(Math.max(TAG_G.largeur(), TAG_D.largeur()) + 2 * MARGE));
+        // milieu : assez large pour tous les libelles du match, pour qu'il ne change pas de taille d'une phase a l'autre
+        float lw = PHASE.largeur();
+        lw = Math.max(lw, PHASE.mesurer(I18n.get("clashwar.hud.phase.choix")));
+        lw = Math.max(lw, PHASE.mesurer(I18n.get("clashwar.hud.phase.preparation")));
+        lw = Math.max(lw, PHASE.mesurer(I18n.get("clashwar.hud.phase.mort_subite")));
+        lw = Math.max(lw, PHASE.mesurer(I18n.get("clashwar.hud.phase.pause", p.tagA())));
+        lw = Math.max(lw, PHASE.mesurer(I18n.get("clashwar.hud.phase.pause", p.tagB())));
+        wc = (float) Math.max(WC_MIN, Math.ceil(lw + 8f));
+        switch (p.phase()) {
+            case CwPaquets.PHASE_PREPARATION -> {
+                couleurPhase = AMBRE;
+                couleurTemps = AMBRE;
+                couleurBarre = AMBRE;
+            }
+            case CwPaquets.PHASE_MORT_SUBITE -> {
+                couleurPhase = ROUGE;
+                couleurTemps = ROUGE;
+                couleurBarre = ROUGE;
+            }
+            case CwPaquets.PHASE_PAUSE -> {
+                couleurPhase = p.dernierGagnant() < 0 ? ATTENUE : Palette.clair(p.dernierGagnant() == 1 ? p.couleurB() : p.couleurA(), 0.3f);
+                couleurTemps = MUTED;
+                couleurBarre = MUTED;
+            }
+            default -> {
+                couleurPhase = ATTENUE;
+                couleurTemps = TEXTE;
+                couleurBarre = BARRE;
+            }
         }
         tempsMontre = Integer.MIN_VALUE;
+    }
+
+    /** Libelle de la phase de la manche. */
+    private static String libelle(CwPaquets.MatchHudS2C p) {
+        return switch (p.phase()) {
+            case CwPaquets.PHASE_CHOIX -> I18n.get("clashwar.hud.phase.choix");
+            case CwPaquets.PHASE_PREPARATION -> I18n.get("clashwar.hud.phase.preparation");
+            case CwPaquets.PHASE_MORT_SUBITE -> I18n.get("clashwar.hud.phase.mort_subite");
+            case CwPaquets.PHASE_PAUSE -> p.dernierGagnant() < 0 ? I18n.get("clashwar.hud.phase.manche", p.manche())
+                    : I18n.get("clashwar.hud.phase.pause", p.dernierGagnant() == 1 ? p.tagB() : p.tagA());
+            case CwPaquets.PHASE_COMBAT -> I18n.get("clashwar.hud.phase.manche", p.manche());
+            default -> "";
+        };
     }
 
     static void vider() {
         hud = CwPaquets.MatchHudS2C.AUCUN;
         fin = null;
-        mancheVue = -1;
+        horsZoneVisible = false;
+        distanceMontree = Integer.MIN_VALUE;
+    }
+
+    /**
+     * Score du match pour l'en-tete de l'ecran de choix de classe ({@code MoteurClient.score}) : mon equipe d'abord ;
+     * null hors match. Appele a la preparation de l'ecran, pas a chaque image.
+     */
+    @Nullable
+    public static MoteurClient.Score scorePourChoix() {
+        CwPaquets.MatchHudS2C p = hud;
+        if (!p.actif()) return null;
+        boolean b = p.monEquipe() == 1;
+        return new MoteurClient.Score(b ? p.tagB() : p.tagA(), b ? p.couleurB() : p.couleurA(), b ? p.scoreB() : p.scoreA(),
+                b ? p.tagA() : p.tagB(), b ? p.couleurA() : p.couleurB(), b ? p.scoreA() : p.scoreB());
+    }
+
+    /**
+     * Haut du fil des eliminations du moteur ({@code HudMoteur.eviterFil}) : -1 tant que sa ligne la plus large
+     * ({@code largeur}) reste a droite du tableau, sinon sous le tableau (et sous le bandeau « hors de la zone »).
+     */
+    public static int eviterFil(int w, int largeur) {
+        if (!hud.actif() || largeur <= 0) return -1;
+        float droite = w / 2f + (2 * wp + 2 * WS + wc) / 2f;
+        if (w - 6 - largeur >= droite + 4) return -1;
+        return Math.round(Y + H + 4 + (horsZoneVisible ? horsZoneH + 4 : 0));
     }
 
     // ------------------------------------------------------------------ rendu
     static void rendre(RenderGuiEvent.Post e) {
+        horsZoneVisible = false;
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null || mc.screen != null && !(mc.screen instanceof net.minecraft.client.gui.screens.ChatScreen)) return;
         GuiGraphics g = e.getGuiGraphics();
@@ -87,94 +185,97 @@ public final class HudMatchCw {
             return;
         }
         if (!hud.actif()) return;
-        dessinerBandeau(g, w, now);
-        dessinerRole(g, w, now);
+        dessinerTableau(g, w, now);
+        dessinerHorsZone(g, w, now, mc);
     }
 
-    private static void dessinerBandeau(GuiGraphics g, int w, long now) {
+    private static void dessinerTableau(GuiGraphics g, int w, long now) {
         CwPaquets.MatchHudS2C p = hud;
-        int n = Math.max(1, p.gagnantes());
-        int pastilles = n * PASTILLE + (n - 1) * ECART_PASTILLE;
-        float tagMax = Math.max(TAG_A.largeur(K_TAG), TAG_B.largeur(K_TAG));
-        // les deux cotes ont la meme largeur : le temps est exactement au milieu de l'ecran
-        int cote = Math.round(CHIP_W + 5 + tagMax + 6 + pastilles);
-        int total = PAD + cote + ECART + MILIEU_W + ECART + cote + PAD;
-        int x0 = w / 2 - total / 2;
-        Ui.glass(g, x0, Y, total, H, 150);
-        float cy = Y + H / 2f;
-        // equipe A (a gauche) : barre de couleur, tag, pastilles vers le milieu
-        int xa = x0 + PAD;
-        Ui.soft(g, xa, Math.round(cy - CHIP_H / 2f), CHIP_W, CHIP_H, Ui.argb(p.couleurA(), 255));
-        TAG_A.gauche(g, xa + CHIP_W + 5, cy, K_TAG, Ui.argb(Ui.TEXT, 255));
-        int pa = xa + cote - pastilles;
-        for (int i = 0; i < n; i++) pastille(g, pa + i * (PASTILLE + ECART_PASTILLE), cy, p.couleurA(), i < p.scoreA());
-        // milieu : temps (ou bombe) et manche
-        float mx = w / 2f;
-        int secs = secondes(now);
-        if (secs >= 0) {
-            if (secs != tempsMontre) {
-                tempsMontre = secs;
-                TEMPS.texte((secs / 60) + ":" + (secs % 60 < 10 ? "0" : "") + (secs % 60));
-            }
-            TEMPS.centre(g, mx, Y + 8.5f, K_TEMPS, Ui.argb(secs <= 10 ? Ui.DANGER : Ui.TEXT, 255));
-        } else {
-            if (tempsMontre != -1) {
-                tempsMontre = -1;
-                TEMPS.texte(Component.translatable("clashwar.hud.bombe").getString());
-            }
-            TEMPS.centre(g, mx, Y + 8.5f, 0.8f, Ui.argb(Ui.DANGER, 255));
+        float largeur = 2 * wp + 2 * WS + wc;
+        float x0 = Formes.caler(w / 2f - largeur / 2f), y = Y, cx = x0 + largeur / 2f;
+        int colG = inverse ? p.couleurB() : p.couleurA(), colD = inverse ? p.couleurA() : p.couleurB();
+        int scoreG = inverse ? p.scoreB() : p.scoreA(), scoreD = inverse ? p.scoreA() : p.scoreB();
+        int vivG = inverse ? p.vivantsB() : p.vivantsA(), vivD = inverse ? p.vivantsA() : p.vivantsB();
+        int totG = inverse ? p.totalB() : p.totalA(), totD = inverse ? p.totalA() : p.totalB();
+        // temps restant, decompte local depuis la reception
+        long ecoule = now - recuMs;
+        int secs = p.secondes() < 0 ? -1 : Math.max(0, p.secondes() - (int) (ecoule / 1000));
+        if (secs != tempsMontre) {
+            tempsMontre = secs;
+            TEMPS.texte(secs < 0 ? "" : (secs / 60) + ":" + (secs % 60 < 10 ? "0" : "") + (secs % 60));
         }
-        MANCHE.centre(g, mx, Y + 17f, K_MANCHE, Ui.argb(Ui.MUTED, 255));
-        // equipe B (a droite) : symetrique
-        int xb = x0 + total - PAD;
-        Ui.soft(g, xb - CHIP_W, Math.round(cy - CHIP_H / 2f), CHIP_W, CHIP_H, Ui.argb(p.couleurB(), 255));
-        TAG_B.droite(g, xb - CHIP_W - 5, cy, K_TAG, Ui.argb(Ui.TEXT, 255));
-        int pb = xb - cote;
-        for (int i = 0; i < n; i++) pastille(g, pb + i * (PASTILLE + ECART_PASTILLE), cy, p.couleurB(), n - 1 - i < p.scoreB());
+        boolean finCombat = p.phase() == CwPaquets.PHASE_COMBAT && secs >= 0 && secs <= FIN_COMBAT;
+        int ct = finCombat ? ROUGE : couleurTemps, cb = finCombat ? ROUGE : couleurBarre;
+        // formes
+        VertexConsumer vc = Formes.tampon(g);
+        Matrix4f m = g.pose().last().pose();
+        float px = Formes.pixel();
+        Formes.rect(vc, m, x0, y, x0 + largeur, y + H, Palette.argb(Palette.VERRE, VERRE_ALPHA));
+        Formes.bord(vc, m, x0, y, largeur, H, px, Palette.argb(0xFFFFFF, BORD_ALPHA));
+        float xa = x0 + wp, xb = x0 + wp + WS + wc;
+        Formes.rect(vc, m, xa, y + px, xa + WS, y + H - px, Palette.argb(colG, TEINTE_ALPHA));
+        Formes.rect(vc, m, xb, y + px, xb + WS, y + H - px, Palette.argb(colD, TEINTE_ALPHA));
+        Formes.rect(vc, m, x0, y, x0 + TRAIT, y + H, Palette.argb(colG, 255));
+        Formes.rect(vc, m, x0 + largeur - TRAIT, y, x0 + largeur, y + H, Palette.argb(colD, 255));
+        joueurs(vc, m, x0 + MARGE, y + PIP_Y, totG, vivG, colG, false);
+        joueurs(vc, m, x0 + largeur - MARGE, y + PIP_Y, totD, vivD, colD, true);
+        manches(vc, m, xa + WS / 2f, y + MARQ_Y, p.gagnantes(), scoreG, colG, false);
+        manches(vc, m, xb + WS / 2f, y + MARQ_Y, p.gagnantes(), scoreD, colD, true);
+        if (p.duree() > 0 && p.secondes() >= 0) {
+            float part = Math.max(0f, Math.min(1f, (p.secondes() * 1000f - ecoule) / (p.duree() * 1000f)));
+            float bx0 = cx - wc / 2f + 5f, bx1 = cx + wc / 2f - 5f;
+            Formes.rect(vc, m, bx0, y + BARRE_Y, bx1, y + BARRE_Y + BARRE_H, Palette.argb(0xFFFFFF, PISTE_ALPHA));
+            Formes.rect(vc, m, bx0, y + BARRE_Y, bx0 + (bx1 - bx0) * part, y + BARRE_Y + BARRE_H, Palette.argb(cb, 230));
+        }
+        g.flush();
+        // textes
+        TAG_G.ajouter(g, x0 + MARGE, y + CY_TAG, Palette.argb(TEXTE, 255), TexteNet.GAUCHE, true);
+        TAG_D.ajouter(g, x0 + largeur - MARGE, y + CY_TAG, Palette.argb(TEXTE, 255), TexteNet.DROITE, true);
+        SCORE_G.ajouter(g, xa + WS / 2f, y + CY_SCORE, Palette.argb(TEXTE, 255), TexteNet.CENTRE, true);
+        SCORE_D.ajouter(g, xb + WS / 2f, y + CY_SCORE, Palette.argb(TEXTE, 255), TexteNet.CENTRE, true);
+        TEMPS.ajouter(g, cx, y + CY_TEMPS, Palette.argb(ct, 255), TexteNet.CENTRE, true);
+        PHASE.ajouter(g, cx, y + CY_PHASE, Palette.argb(couleurPhase, 255), TexteNet.CENTRE, true);
+        g.flush();
     }
 
-    /** Temps restant decompte localement depuis la reception, -1 = aucun (bombe amorcee). */
-    private static int secondes(long now) {
-        if (hud.secondes() < 0) return -1;
-        return Math.max(0, hud.secondes() - (int) ((now - recuMs) / 1000));
-    }
-
-    /** Pastille ronde de 4 px centree verticalement sur cy : pleine (manche gagnee) ou creuse. */
-    private static void pastille(GuiGraphics g, int x, float cy, int rgb, boolean pleine) {
-        int y = Math.round(cy - PASTILLE / 2f);
-        if (pleine) {
-            g.fill(x + 1, y, x + 3, y + 4, Ui.argb(rgb, 255));
-            g.fill(x, y + 1, x + 4, y + 3, Ui.argb(rgb, 255));
-        } else {
-            int c = Ui.argb(rgb, 150);
-            g.fill(x + 1, y, x + 3, y + 1, c);
-            g.fill(x + 1, y + 3, x + 3, y + 4, c);
-            g.fill(x, y + 1, x + 1, y + 3, c);
-            g.fill(x + 3, y + 1, x + 4, y + 3, c);
+    /** Une barre par joueur engage, pleine = en vie, depuis le bord exterieur (droite : alignees vers la gauche depuis x). */
+    private static void joueurs(VertexConsumer vc, Matrix4f m, float x, float y, int total, int vivants, int rgb, boolean droite) {
+        int n = Math.min(8, Math.max(0, total));
+        int plein = Palette.argb(Palette.clair(rgb, 0.1f), 255), vide = Palette.argb(0xFFFFFF, VIDE_ALPHA);
+        for (int i = 0; i < n; i++) {
+            float bx = droite ? x - (i + 1) * PIP_W - i * PIP_E : x + i * (PIP_W + PIP_E);
+            Formes.rect(vc, m, bx, y, bx + PIP_W, y + PIP_H, i < vivants ? plein : vide);
         }
     }
 
-    /** Pastille du role sous le bandeau, les premieres secondes de la manche. */
-    private static void dessinerRole(GuiGraphics g, int w, long now) {
+    /** Un trait par manche a gagner sous le score, plein = gagnee (gauche : de gauche a droite ; droite : l'inverse). */
+    private static void manches(VertexConsumer vc, Matrix4f m, float cx, float y, int gagnantes, int score, int rgb, boolean inverse) {
+        int n = Math.min(9, Math.max(1, gagnantes));
+        float x0 = cx - (n * MARQ_W + (n - 1) * MARQ_E) / 2f;
+        int plein = Palette.argb(Palette.clair(rgb, 0.1f), 255), vide = Palette.argb(0xFFFFFF, MARQ_VIDE);
+        for (int i = 0; i < n; i++) {
+            float x = x0 + (inverse ? n - 1 - i : i) * (MARQ_W + MARQ_E);
+            Formes.rect(vc, m, x, y, x + MARQ_W, y + MARQ_H, i < score ? plein : vide);
+        }
+    }
+
+    /** Mort subite, joueur en vie hors de la zone : bandeau du noyau sous le tableau, distance au bord de la zone. */
+    private static void dessinerHorsZone(GuiGraphics g, int w, long now, Minecraft mc) {
         CwPaquets.MatchHudS2C p = hud;
-        if (p.role() == CwPaquets.ROLE_AUCUN) return;
-        long age = now - debutMancheMs;
-        if (age > ROLE_MS) return;
-        float a = Math.min(1f, Math.min(age / (float) FONDU_MS, (ROLE_MS - age) / (float) FONDU_MS));
-        if (a < 0.03f) return;
-        int couleur = p.role() == CwPaquets.ROLE_ATTAQUE ? Ui.AMBRE : Ui.ACCENT_NEUTRE;
-        float lr = ROLE.largeur(K_ROLE), la = ROLE_AIDE.largeur(K_ROLE);
-        int ph = 11, point = 3;
-        int pw = Math.round(8 + point + 5 + lr + 5 + la + 9);
-        int x = w / 2 - pw / 2, y = Y + H + 3;
-        float cy = y + ph / 2f;
-        Ui.soft(g, x, y, pw, ph, Ui.argb(Ui.VERRE, (int) (140 * a)));
-        Ui.softOutline(g, x + 1, y + 1, pw - 2, ph - 2, Ui.argb(couleur, (int) (90 * a)));
-        int px = x + 8, py = Math.round(cy - point / 2f);
-        g.fill(px, py, px + point, py + point, Ui.argb(couleur, (int) (255 * a)));
-        float tx = px + point + 5;
-        ROLE.gauche(g, tx, cy, K_ROLE, Ui.argb(Ui.TEXT, (int) (255 * a)));
-        ROLE_AIDE.gauche(g, tx + lr + 5, cy, K_ROLE, Ui.argb(0xB7BDC8, (int) (255 * a)));
+        if (p.phase() != CwPaquets.PHASE_MORT_SUBITE || p.monEquipe() < 0 || MoteurClient.spectateur() || !mc.player.isAlive()) return;
+        double d = CwHud.horsZone(mc.player.getX(), mc.player.getZ());
+        if (!(d > 0)) return;
+        int metres = (int) Math.ceil(d);
+        // texte refait au plus 4 fois par seconde (la distance change en courant)
+        if (metres != distanceMontree && (distanceMontree == Integer.MIN_VALUE || now - distanceMs >= HORS_ZONE_MAJ_MS)) {
+            distanceMontree = metres;
+            distanceMs = now;
+            HORS_ZONE.poser(I18n.get("clashwar.hud.hors_zone"), I18n.get("clashwar.hud.hors_zone.texte", metres), Bandeau.DANGER);
+        }
+        float bw = HORS_ZONE.largeur();
+        HORS_ZONE.dessiner(g, Formes.caler(w / 2f - bw / 2f), Y + H + 4, bw, 1f);
+        horsZoneVisible = true;
+        horsZoneH = HORS_ZONE.hauteur();
     }
 
     // ------------------------------------------------------------------ fin de match

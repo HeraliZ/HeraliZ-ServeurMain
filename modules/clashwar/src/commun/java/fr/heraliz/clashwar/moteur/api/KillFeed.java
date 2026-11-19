@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.Collection;
 
 /**
- * Fil des eliminations en haut a droite (« Vortex ▸ Dziga · AK-47 », MATCHS_SPEC §1.8) : 5 lignes au plus, 5 s
+ * Fil des eliminations en haut a droite (« Joueur 1 ▸ Joueur 2 · AK-47 », MATCHS_SPEC §1.8) : 5 lignes au plus, 5 s
  * chacune, fondu. Fil serveur.
  */
 public final class KillFeed {

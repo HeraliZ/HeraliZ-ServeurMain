@@ -64,6 +64,13 @@ public final class HudMoteur {
     public static java.util.function.IntUnaryOperator hautFil = h -> -1;
 
     /**
+     * Haut du fil des eliminations quand sa ligne la plus large ({@code largeur}, unites) viendrait sur le tableau d'un
+     * mode de jeu en haut au centre, pour un ecran de {@code w} unites ; -1 = pas de chevauchement (le fil reste en haut a
+     * droite). Branche par le mode (ClashWar : tableau de score du match).
+     */
+    public static java.util.function.IntBinaryOperator eviterFil = (w, largeur) -> -1;
+
+    /**
      * HUD compact (16/10, Matchs 0.11.0, duels : « les UI sont trop grosses, elles gênent pendant le combat ») : branché
      * par le mode de jeu qui le veut (vrai pendant un duel). Bandeau reduit ({@link #ECHELLE_COMPACTE}), annonces et
      * compte a rebours en petit, en haut de l'ecran sous le bandeau ({@link #Y_ANNONCE_COMPACTE}, jamais au milieu),
@@ -175,6 +182,9 @@ public final class HudMoteur {
         }
         int yFil = hautFil.applyAsInt(h);
         if (yFil < 0) yFil = 6;
+        // le fil reste en haut a droite ; il passe sous le tableau du mode seulement s'il viendrait dessus
+        int dessous = MoteurClient.fil().isEmpty() ? -1 : eviterFil.applyAsInt(w, largeurFil());
+        if (dessous >= 0) yFil = Math.max(yFil, dessous);
         dessinerFil(g, font, w, yFil, now);
         if (petit) {
             // bandeau du spectateur reduit autour du bas de l'ecran
@@ -549,6 +559,20 @@ public final class HudMoteur {
 
     private static final Rendu[] RENDUS = new Rendu[MoteurClient.FIL_MAX];
     private static final long FIL_DUREE = 5000, FIL_FONDU = 500;
+
+    /** Met en forme une ligne a son arrivee (sa largeur compte tout de suite pour {@link #eviterFil}). */
+    static void preparerLigne(KillFeed.Ligne l) {
+        rendu(l, Minecraft.getInstance().font);
+    }
+
+    /** Largeur de la ligne la plus large du fil (sans allocation). */
+    private static int largeurFil() {
+        int max = 0;
+        for (Rendu r : RENDUS) {
+            if (r != null && r.largeur > max && MoteurClient.fil().contains(r.ligne)) max = r.largeur;
+        }
+        return max;
+    }
 
     @Nullable
     private static Rendu rendu(KillFeed.Ligne l, Font font) {

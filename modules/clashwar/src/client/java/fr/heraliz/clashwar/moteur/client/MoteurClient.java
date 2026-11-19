@@ -27,6 +27,13 @@ public final class MoteurClient {
     /** Lignes gardees dans le fil des eliminations. */
     public static final int FIL_MAX = 5;
 
+    /** Score du match pour l'en-tete du choix de classe, mon equipe d'abord (tag, couleur, manches gagnees). */
+    public record Score(String tagMoi, int couleurMoi, int scoreMoi, String tagAutre, int couleurAutre, int scoreAutre) {
+    }
+
+    /** Score a montrer dans l'en-tete du choix de classe, branche par le mode de jeu (ClashWar) ; null = aucun. */
+    public static java.util.function.Supplier<Score> score = () -> null;
+
     @Nullable
     private static Hud.Bandeau bandeau;
     private static long bandeauRecuMs;
@@ -81,6 +88,8 @@ public final class MoteurClient {
         }
         FIL.addLast(l);
         FIL_MS.addLast(Util.getMillis());
+        // mise en forme a l'arrivee : la largeur de la ligne est connue avant son premier dessin
+        HudMoteur.preparerLigne(l);
         HudMoteur.sonElimination();
     }
 

@@ -161,11 +161,12 @@ public final class PaquetsMoteur {
 
     // ------------------------------------------------------------------ choix de classe
     /**
-     * Ouverture de l'ecran de choix de classe : titre, secondes, couleur d'equipe, kits proposes et leur apercu (arme
-     * principale, pile vide si indisponible), limites par classe et par equipe.
+     * Ouverture de l'ecran de choix de classe : ligne sous le titre (tour et manche), secondes, couleur d'equipe, kits
+     * proposes et leurs apercus (arme principale et arme secondaire, pile vide si indisponible ; 19/11 : la secondaire est
+     * montree aussi), limites par classe et par equipe.
      */
     public record ChoixOuvrirS2C(Component titre, int secondes, int couleur, List<Kit> kits, List<ItemStack> apercus,
-                                 Map<String, Integer> limites) {
+                                 List<ItemStack> apercus2, Map<String, Integer> limites) {
         public void write(FriendlyByteBuf buf) {
             buf.writeComponent(titre);
             buf.writeVarInt(secondes);
@@ -174,6 +175,7 @@ public final class PaquetsMoteur {
             for (int i = 0; i < kits.size(); i++) {
                 kits.get(i).write(buf);
                 buf.writeItem(i < apercus.size() ? apercus.get(i) : ItemStack.EMPTY);
+                buf.writeItem(i < apercus2.size() ? apercus2.get(i) : ItemStack.EMPTY);
             }
             buf.writeVarInt(limites.size());
             limites.forEach((k, v) -> {
@@ -187,15 +189,16 @@ public final class PaquetsMoteur {
             int s = buf.readVarInt(), c = buf.readInt();
             int n = Math.min(12, buf.readVarInt());
             List<Kit> kits = new ArrayList<>(n);
-            List<ItemStack> ap = new ArrayList<>(n);
+            List<ItemStack> ap = new ArrayList<>(n), ap2 = new ArrayList<>(n);
             for (int i = 0; i < n; i++) {
                 kits.add(Kit.read(buf));
                 ap.add(buf.readItem());
+                ap2.add(buf.readItem());
             }
             int nl = Math.min(16, buf.readVarInt());
             Map<String, Integer> lim = new LinkedHashMap<>();
             for (int i = 0; i < nl; i++) lim.put(buf.readUtf(32), buf.readVarInt());
-            return new ChoixOuvrirS2C(titre, s, c, kits, ap, lim);
+            return new ChoixOuvrirS2C(titre, s, c, kits, ap, ap2, lim);
         }
 
         public static void handle(ChoixOuvrirS2C p, Supplier<NetworkEvent.Context> ctx) {
@@ -209,17 +212,23 @@ public final class PaquetsMoteur {
     }
 
     /**
-     * Etat du choix : mon kit ("" = aucun), choix de mes coequipiers, fermeture (fin du choix : l'ecran se ferme).
+     * Etat du choix : mon kit ("" = aucun), choix de mes coequipiers, coequipiers qui n'ont pas encore choisi (noms ;
+     * 19/11, pied de l'ecran), fermeture (fin du choix : l'ecran se ferme). Sans coequipier du tout : on joue seul.
      */
-    public record ChoixEtatS2C(String monKit, List<Pris> pris, boolean fermer) {
+    public record ChoixEtatS2C(String monKit, List<Pris> pris, List<String> attente, boolean fermer) {
         public void write(FriendlyByteBuf buf) {
             buf.writeUtf(monKit, 96);
-            buf.writeVarInt(pris.size());
-            for (Pris p : pris) {
+            int n = Math.min(16, pris.size());
+            buf.writeVarInt(n);
+            for (int i = 0; i < n; i++) {
+                Pris p = pris.get(i);
                 buf.writeUtf(p.classe, 32);
                 buf.writeUtf(p.kit, 96);
                 buf.writeUtf(p.nom, 48);
             }
+            int m = Math.min(16, attente.size());
+            buf.writeVarInt(m);
+            for (int i = 0; i < m; i++) buf.writeUtf(attente.get(i), 48);
             buf.writeBoolean(fermer);
         }
 
@@ -228,7 +237,10 @@ public final class PaquetsMoteur {
             int n = Math.min(16, buf.readVarInt());
             List<Pris> l = new ArrayList<>(n);
             for (int i = 0; i < n; i++) l.add(new Pris(buf.readUtf(32), buf.readUtf(96), buf.readUtf(48)));
-            return new ChoixEtatS2C(mon, l, buf.readBoolean());
+            int m = Math.min(16, buf.readVarInt());
+            List<String> attente = new ArrayList<>(m);
+            for (int i = 0; i < m; i++) attente.add(buf.readUtf(48));
+            return new ChoixEtatS2C(mon, l, attente, buf.readBoolean());
         }
 
         public static void handle(ChoixEtatS2C p, Supplier<NetworkEvent.Context> ctx) {

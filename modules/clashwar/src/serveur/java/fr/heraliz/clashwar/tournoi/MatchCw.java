@@ -344,8 +344,11 @@ public final class MatchCw extends Partie {
         Kit defaut = Kits.get(CwConfig.get().kitDefaut);
         if (defaut != null && kits.remove(defaut)) kits.add(0, defaut);
         int s = CwConfig.get().choixSecondes;
-        bandeau(s, true);
-        ChoixClasse.ouvrir(this, joueurs, kits, CwConfig.get().limites, s, Component.translatable("clashwar.choix.titre", nomTour), this::finChoix);
+        bandeau();
+        // ligne sous le titre de l'écran de choix : « Quarts de finale · manche 4 sur 5 »
+        Component sous = Component.translatableWithFallback("clashwar.choix.sous_titre", "%s · manche %s sur %s", nomTour, manche,
+                CwConfig.get().manchesGagnantes * 2 - 1);
+        ChoixClasse.ouvrir(this, joueurs, kits, CwConfig.get().limites, s, sous, this::finChoix);
     }
 
     /** Remet en vie et place les joueurs connectés de l'équipe sur ses points d'apparition. */
@@ -414,13 +417,13 @@ public final class MatchCw extends Partie {
         phase(Phase.PREPARATION);
         int s = CwConfig.get().preparationSecondes;
         Annonces.compteARebours(joueursEnLigne(), s, Component.translatable("clashwar.annonce.preparation"));
-        bandeau(s, false);
+        bandeau();
     }
 
     private void debutCombat() {
         phase(Phase.COMBAT);
         for (ServerPlayer p : joueursEnLigne()) p.playNotifySound(CwSons.COMBAT.get(), SoundSource.MASTER, 1f, 1f);
-        bandeau(CwConfig.get().combatSecondes, false);
+        bandeau();
     }
 
     /** Fin du temps : la zone commence à se resserrer. */
@@ -430,7 +433,8 @@ public final class MatchCw extends Partie {
         MatchsNet.versJoueurs(joueurs, new CwPaquets.ZoneS2C(true, zoneX, zoneZ, zoneY, rayonDepart, rayonMin, CwConfig.get().mortSubiteSecondes * 20));
         Annonces.grande(joueurs, new Annonces.Annonce(Component.translatable("clashwar.annonce.mort_subite"),
                 Component.translatable("clashwar.annonce.mort_subite.sous"), 0xFF6B6B, CwSons.id(CwSons.ZONE), 60, Annonces.Style.DEFAITE));
-        bandeau(-1, false);
+        // 19/11 : temps avant la décision (avant : -1, le tableau de score affichait « BOMBE », reste de l'ancien mode)
+        bandeau();
     }
 
     /** Rayon courant de la zone. */
@@ -484,7 +488,7 @@ public final class MatchCw extends Partie {
                     gagne ? Annonces.Style.VICTOIRE : Annonces.Style.DEFAITE));
         }
         phase(Phase.ATTENTE);
-        bandeau(PAUSE_MANCHE / 20, false);
+        bandeau();
     }
 
     // ================================================================== événements du moteur
@@ -546,7 +550,7 @@ public final class MatchCw extends Partie {
         if (phase() != Phase.COMBAT && phase() != Phase.PROLONGATION) return;
         boolean a = ea.enVie(), b = eb.enVie();
         if (a && b) {
-            bandeau(phase() == Phase.COMBAT ? Math.max(0, CwConfig.get().combatSecondes - ticksPhase() / 20) : -1, false);
+            bandeau();
             return;
         }
         if (a) finManche(ea);
@@ -752,7 +756,7 @@ public final class MatchCw extends Partie {
         spectateurs.add(p.getUUID());
         MatchApi.rejoindre(p, this);
         Spectateur.suivre(p, this);
-        bandeau(-1, false);
+        bandeau();
         return true;
     }
 
@@ -778,19 +782,55 @@ public final class MatchCw extends Partie {
 
     // ================================================================== affichage
     /**
-     * Bandeau du ClashWar (pastilles des manches, temps) à chaque joueur et spectateur du match ; le bandeau du moteur
-     * est envoyé aussi (le joueur le masque quand celui du ClashWar est actif). {@code secondes} = -1 : pas de temps.
+     * Tableau de score du ClashWar (maquette validée le 19/11) à chaque joueur et spectateur du match : manches gagnées,
+     * joueurs en vie, phase de la manche, temps restant et durée de la phase, équipe du joueur, gagnant de la dernière
+     * manche. Le bandeau du moteur est envoyé aussi (le joueur le masque quand celui du ClashWar est actif). À renvoyer à
+     * chaque changement (phase, élimination, nouveau spectateur), pas à chaque tick : le joueur décompte seul.
      */
-    private void bandeau(int secondes, boolean nouvelleManche) {
+    private void bandeau() {
+        int duree = dureePhase();
+        int secondes = duree <= 0 ? -1 : Math.max(0, duree - ticksPhase() / 20);
         HudPartie.envoyer(this, Component.translatable("clashwar.hud.manche", nomTour, Math.max(1, manche)), secondes,
                 Component.translatable("clashwar.hud.contre", ta.libelle(), tb.libelle()));
         String tour = nomTour.getString();
-        int gagnantes = CwConfig.get().manchesGagnantes;
+        int gagnantes = CwConfig.get().manchesGagnantes, phase = phaseHud();
+        int dernier = manches.isEmpty() ? -1 : "b".equals(manches.get(manches.size() - 1)) ? 1 : 0;
         for (UUID u : MatchApi.joueursDe(this)) {
             ServerPlayer p = joueur(u);
             if (p == null) continue;
-            MatchsNet.versJoueur(p, new CwPaquets.MatchHudS2C(true, tour, ta.libelle(), ea.couleur(), ea.score(), tb.libelle(), eb.couleur(),
-                    eb.score(), gagnantes, Math.max(1, manche), CwPaquets.ROLE_AUCUN, secondes, nouvelleManche));
+            Equipe e = equipeDe(u);
+            int moi = e == ea ? 0 : e == eb ? 1 : -1;
+            MatchsNet.versJoueur(p, new CwPaquets.MatchHudS2C(true, tour, ta.court(), ea.couleur(), ea.score(), ea.nbVivants(), ea.taille(),
+                    tb.court(), eb.couleur(), eb.score(), eb.nbVivants(), eb.taille(), gagnantes, Math.max(1, manche), phase, secondes,
+                    duree, moi, dernier));
         }
+    }
+
+    /** Phase de la manche pour le tableau de score ({@code CwPaquets.PHASE_*}). */
+    private int phaseHud() {
+        return switch (phase()) {
+            case CHOIX -> CwPaquets.PHASE_CHOIX;
+            case PREPARATION -> CwPaquets.PHASE_PREPARATION;
+            case COMBAT -> CwPaquets.PHASE_COMBAT;
+            case PROLONGATION -> CwPaquets.PHASE_MORT_SUBITE;
+            case ATTENTE -> appele && manche > 0 ? CwPaquets.PHASE_PAUSE : CwPaquets.PHASE_AUCUNE;
+            default -> CwPaquets.PHASE_AUCUNE;
+        };
+    }
+
+    /**
+     * Durée de la phase en cours (s), 0 = sans temps : choix, préparation, combat, mort subite (resserrement de la zone
+     * puis temps limite avant la décision, comme {@link #tick}), pause entre deux manches.
+     */
+    private int dureePhase() {
+        CwConfig cfg = CwConfig.get();
+        return switch (phase()) {
+            case CHOIX -> cfg.choixSecondes;
+            case PREPARATION -> cfg.preparationSecondes;
+            case COMBAT -> cfg.combatSecondes;
+            case PROLONGATION -> cfg.mortSubiteSecondes + cfg.limiteSecondes;
+            case ATTENTE -> appele && manche > 0 ? PAUSE_MANCHE / 20 : 0;
+            default -> 0;
+        };
     }
 }

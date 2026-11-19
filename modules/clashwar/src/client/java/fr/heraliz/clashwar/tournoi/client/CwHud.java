@@ -91,6 +91,17 @@ public final class CwHud {
     }
 
     /**
+     * Distance (blocs) du point (x, z) au bord de la zone de mort subite, positive hors de la zone, avec le rayon courant
+     * (interpole comme la paroi dessinee) ; NaN sans zone. Sans allocation.
+     */
+    static double horsZone(double x, double z) {
+        if (!zoneActive) return Double.NaN;
+        float t = Math.min(1f, (Util.getMillis() - debutZone) / (duree * 50f));
+        double dx = x - zoneX, dz = z - zoneZ;
+        return Math.sqrt(dx * dx + dz * dz) - (r0 + (r1 - r0) * t);
+    }
+
+    /**
      * Bas (y, echelle du joueur) de la pile de toasts du ClashWar en haut a droite, 0 si elle est vide : les autres HUD
      * de ce coin (defis de duel) se placent dessous. Sans allocation.
      */

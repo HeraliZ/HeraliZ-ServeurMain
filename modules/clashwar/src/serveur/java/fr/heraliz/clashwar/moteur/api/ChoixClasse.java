@@ -13,9 +13,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
- * Ecran de choix de classe (MATCHS_SPEC §1.7, §2.4, §3) : cartes epurees (silhouette de l'arme, 3 jauges portee /
- * cadence / mobilite), limites par classe et par equipe affichees (« 1/1 SNIPER PRIS PAR VORTEX »), compte a rebours ;
- * choix par defaut a l'echeance. Toute regle est verifiee cote serveur (kit propose, limite de la classe dans
+ * Ecran de choix de classe (MATCHS_SPEC §1.7, §2.4, §3 ; maquette validee le 19/11, maquettes/clashwar/1a) : une carte
+ * par classe (image et nom des armes, objets propres a la classe, 3 jauges portee / cadence / mobilite, qui l'a prise
+ * dans l'equipe), objets communs a toutes les classes, compte a rebours ; choix par defaut a l'echeance. Toute regle est verifiee cote serveur (kit propose, limite de la classe dans
  * l'equipe du joueur : {@link Partie#equipeDe}). Fil serveur.
  * <p>Exemple ClashWar : {@code ChoixClasse.ouvrir(partie, partie.joueursEnLigne(), Kits.pourMode("clashwar"),
  * Map.of(Kit.CLASSE_SNIPER, 1, Kit.CLASSE_POMPE, 1), 10, titre, choix -> choix.forEach((u, k) ->
@@ -35,7 +35,7 @@ public final class ChoixClasse {
      *
      * @param limites  nombre maximal par classe ({@code Kit.CLASSE_*}) et par equipe ; classe absente = sans limite
      * @param secondes duree (1 a 60)
-     * @param titre    titre de l'ecran (« CLASHWAR · QUART DE FINALE »)
+     * @param titre    ligne sous le titre de l'ecran (« Quarts de finale · manche 4 sur 5 »)
      */
     public static void ouvrir(Partie partie, Collection<ServerPlayer> joueurs, List<Kit> kits, Map<String, Integer> limites,
                               int secondes, Component titre, Consumer<Map<UUID, Kit>> quandFini) {

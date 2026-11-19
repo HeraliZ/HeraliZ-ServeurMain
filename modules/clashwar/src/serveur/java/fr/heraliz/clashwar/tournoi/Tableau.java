@@ -54,6 +54,11 @@ public final class Tableau {
             return numeroVisible ? "[" + tag + "] " + numero : "[" + tag + "]";
         }
 
+        /** « NOVA » ou « NOVA 2 », sans crochets (tableau de score du match). */
+        public String court() {
+            return numeroVisible ? tag + " " + numero : tag;
+        }
+
         /** Nom d'un joueur de l'equipe (ou l'UUID abrege). */
         public String nom(UUID u) {
             String n = noms.get(u);

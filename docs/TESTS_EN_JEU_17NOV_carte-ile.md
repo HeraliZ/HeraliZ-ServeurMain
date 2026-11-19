@@ -264,3 +264,37 @@ il faut être en **survie** (en créatif, il ne riposte pas). Réglages : `serve
 - [ ] Annuler pendant le feu (`/event annuler helico`) : coffre et T6 encore fermés disparaissent.
 - [ ] Les deux T6 ne rejoignent pas la rotation du loot : après leur départ, aucun conteneur « fantôme » ne réapparaît au
       même endroit.
+
+## 14. Écrans du ClashWar (19/11)
+
+Maquettes validées : `maquettes/clashwar/` (1a : choix de classe, 2a et 2b : tableau de score). ClashWar 1.2.0 : tout le
+monde doit avoir la nouvelle version (le launcher la donne ; une ancienne version ne peut plus se connecter).
+
+Choix de classe, avant chaque manche :
+- [ ] Panneau au centre : « Choisis ta classe », dessous le tour et la manche (« Quarts de finale · manche 1 sur 5 »), à
+      droite le score du match (ton équipe d'abord) et un anneau avec les secondes (rouge à 3 s).
+- [ ] 5 cartes : nom, touche 1 à 5, rôle (« Polyvalent »…), image de l'arme, son nom (« Pistolet Mitrailleur Vector »
+      sur deux lignes), l'arme secondaire avec son vrai nom (« Glock 17 », « Deagle 50 », « HK-USP », plus en capitales),
+      les grenades en petit sur la carte Tactique, les jauges Portée / Cadence / Mobilité.
+- [ ] Sous les cartes, une seule fois, avec leurs images : « Toutes les classes ont aussi » tenue, dague, soins.
+- [ ] Clic ou touche : la carte prend la couleur de l'équipe, « Ton choix ». Un coéquipier prend le sniper : chez les
+      autres la carte Sniper est grisée, « Prise par … » en rouge, on ne peut plus la prendre. Une classe sans limite
+      prise par un coéquipier : « Choisie par … ».
+- [ ] En bas : « Encore à choisir : … » (coéquipiers qui n'ont pas choisi), « Sans choix à la fin : Assaut ». En 1 contre
+      1 : toutes les cartes « Libre ».
+- [ ] Écrit net, rien ne dépasse, en français, anglais et russe ; en fenêtre aussi.
+
+Tableau de score en haut, pendant les manches :
+- [ ] En haut au milieu : ton équipe à gauche (tag, une barre par joueur : pleine = en vie), le score en gros dans une
+      case de la couleur de l'équipe, 3 petits traits dessous (manches gagnées), le temps au milieu, une barre fine qui se
+      vide.
+- [ ] Préparation : « Préparation » et le temps en ambre. Combat : « Manche 2 »…, le temps passe au rouge les
+      10 dernières secondes.
+- [ ] Mort subite : « Mort subite » en rouge avec un vrai temps (plus jamais « BOMBE ») ; hors de la zone, un bandeau
+      rouge « Hors de la zone » sous le score avec la distance, qui part quand on revient dans la zone.
+- [ ] Entre deux manches : « Manche à … » de la couleur de l'équipe gagnante, score déjà à jour.
+- [ ] Une élimination : la barre du joueur se vide tout de suite, chez les deux équipes.
+- [ ] Un joueur de la salle qui regarde le match (`/clashwar regarder`) voit le même tableau, sans « BOMBE » ni temps qui
+      saute.
+- [ ] Le fil des éliminations reste en haut à droite ; s'il venait sur le tableau (longue ligne, grande échelle
+      d'interface), il passe dessous.
