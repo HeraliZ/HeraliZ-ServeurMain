@@ -317,6 +317,17 @@ Repris de l'ancien (petites pierres serrées en relief), seuls les endroits biza
 - [ ] En bougeant la vue : ça brille sans grésiller ; de loin, pierres bombées qui scintillent pierre par pierre.
 - [ ] Les parties en or ne changent pas ; FPS pareils qu'avant avec le camo.
 
+Tactique 2.59.8 (19/11, 2e correction : plus de « neige », toujours du diamant, sans or ajouté ; **pas testé en jeu**,
+rendus hors jeu seulement) :
+- [ ] SSG 08 en main (lunette, culasse, hausse, pontet) : des pierres nettes partout, plus de grisaille de vieille télé ;
+      en marchant, en visant, au recul : les pierres restent les mêmes d'une image à l'autre, ça brille sans neige.
+- [ ] AK-47 en visée : face arrière et bords nets ; les pierres collées à l'œil sont deux fois plus petites qu'avant.
+- [ ] Glock 18C, XM177, M200, AN-94 : les petites pièces sont couvertes de pierres nettes (sur une petite face, les
+      pierres sont posées pour elle, centrées : coupées aux arêtes, c'est normal).
+- [ ] Parties en or : les mêmes qu'avant (sur la M200, un fin trait d'or près du chargeur, pris à la pièce voisine sur la
+      texture, devient du diamant).
+- [ ] FPS pareils qu'avant : Diamant en main, et plusieurs joueurs avec le Diamant autour.
+
 ## 17. Sept nouveaux camos (19/11, rendus validés par le propriétaire)
 
 Opale (Épique), Marbre noir (Légendaire), Patine (Rare), Néon (Épique, animé), Rubis (Légendaire) et deux skins X

@@ -8,6 +8,10 @@ Ce qui diffère du jeu : la position sur l'arme vient des sommets (pas de la car
 pas de lumière du monde (plein jour), éclairage des entités de Minecraft. Les couleurs sont donc très proches, pas
 identiques : toujours dire au propriétaire que ce n'est pas testé en jeu.
 
+Sans carte de positions, le Diamond garde ici son calcul au pixel : son repère exact de chaque face (19/11, `quadUV`
+posé par `camo.vsh`, lu avec la carte) ne se voit qu'avec une carte de positions faite comme en jeu. `apercu.html` donne
+`quadUV` comme le jeu (coin du quad d'après l'ordre des sommets) pour que les shaders compilent.
+
 ## 1. Préparer des armes (une fois)
 
 ```

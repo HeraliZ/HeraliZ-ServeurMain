@@ -29,6 +29,9 @@ out vec2 texCoord0;
 out vec3 viewNormal;
 // position dans le repère de la vue : reflets en perspective des camos refaits (voir camo_gabarit.fsh)
 out vec3 viewPos;
+// position du point dans sa face (quad du modèle) : (-0.5, -0.5) au coin 0, (0.5, -0.5) au coin 1, (0.5, 0.5) au coin 2,
+// (-0.5, 0.5) au coin 3 ; interpolée, la même dans les deux triangles du quad (repère exact du Diamond, camo_gabarit.fsh)
+out vec2 quadUV;
 
 void main() {
     // même calcul qu'avant pour la position à l'écran (profondeur identique : décors et stickers posés dessus)
@@ -41,4 +44,7 @@ void main() {
     overlayColor = texelFetch(Sampler1, UV1, 0);
     texCoord0 = UV0;
     viewNormal = normalize(mat3(ModelViewMat) * Normal);
+    // rendu en quads (CamoRenderType : VertexFormat.Mode.QUADS) : 4 sommets à la suite par face, dans l'ordre du tour
+    int coin = gl_VertexID & 3;
+    quadUV = vec2(coin == 1 || coin == 2 ? 0.5 : -0.5, coin >= 2 ? 0.5 : -0.5);
 }

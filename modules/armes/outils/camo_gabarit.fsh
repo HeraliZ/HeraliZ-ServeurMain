@@ -36,6 +36,8 @@ in vec2 texCoord0;
 in vec3 viewNormal;
 // position du fragment dans le repère de la vue (reflets en perspective)
 in vec3 viewPos;
+// position exacte du fragment dans sa face (quad du modèle), de (-0.5, -0.5) au coin 0 à (0.5, 0.5) au coin 2 (camo.vsh)
+in vec2 quadUV;
 
 out vec4 fragColor;
 
@@ -3360,6 +3362,9 @@ float diamIsotropie(vec3 evx, vec3 evy, vec3 epx, vec3 epy) {
 // pas du pavé de secours, en pierres par unité de la vue : en vue joueur, un pixel du modèle TaCZ vaut 1/16 de bloc ; une
 // pierre tous les 0.3 pixel du modèle, comme le pavé de la carte (160 pierres par longueur) sur une arme de ~48 pixels
 const float DIAM_SECOURS = 16.0 / 0.3;
+// taille à l'écran (pixels par pierre) d'où le pavé passe en fondu à des pierres deux fois plus petites (pierres géantes
+// en visée) ; en vue normale, les pierres ne dépassent pas ~70 pixels
+const float DIAM_GEANT = 80.0;
 
 // repère de secours du pavé (unités de cellule) : coordonnées de texture de la face, redressées par leurs dérivées écran
 // (exactes) -> collées à l'arme, pierres rondes ; si la face n'en a pas (UV réduites à un point), position dans la vue
@@ -3377,46 +3382,162 @@ vec2 diamSecours(vec3 n, vec3 ex, vec3 ey, vec2 tx, vec2 ty, float det) {
     return vec2(dot(viewPos, T), dot(viewPos, cross(n, T))) * DIAM_SECOURS;
 }
 
-vec3 diamondCod(vec3 p, out vec3 em) {
-    float t = CamoTime;
-    NO_SHADE = 0.5;
-    vec3 nv = normalize(viewNormal);
-    // réseau hexagonal des pierres (voisines à distance 1) ; dérivées écran prises avant toute branche
-    vec3 fnl = faceNormal(p);
-    vec3 plan;
-    vec2 uvC = diamPlan(p, fnl, plan) * 160.0;
-    // là où la carte de positions ne suit pas la surface (UV réduites à un point, UV prises par plusieurs faces de formes
-    // différentes, faces ou bords de faces plus fins qu'un texel de la carte : un texel vaut environ deux pierres), le pavé
-    // est posé sur le repère de secours, avec les mêmes pierres
-    vec3 evx = dFdx(viewPos), evy = dFdy(viewPos);
-    vec2 tx = dFdx(texCoord0), ty = dFdy(texCoord0);
-    bool secours = diamIsotropie(evx, evy, dFdx(p), dFdy(p)) < 0.35;
-    vec2 uv0 = secours ? diamSecours(nv, evx, evy, tx, ty, tx.x * ty.y - ty.x * tx.y) : uvC;
-    plan = secours ? vec3(0.0) : vec3(plan.xy, 1.0 / (plan.z * (1.0 + plan.z)));
-    // pixels par pierre (direction la plus serrée) : pierre et relief dès ~2 pixels (fin), facettes, arêtes et griffes de ~7
-    // à ~14 pixels (facette) ; en dessous, la pierre devient bombée et lisse
-    float pps = 1.0 / max(max(length(dFdx(uv0)), length(dFdy(uv0))), 1e-4);
+// ------------------------------------------------------------------ Diamond, 2e correction du 19/11 : repère exact de chaque face
+// En jeu, la « neige » (grisaille de vieille télé, qui bouge dès que l'arme bouge) venait du repère de secours : la
+// coordonnée du pavé y était la coordonnée de texture multipliée par une échelle tirée des dérivées écran. Sur les faces
+// fines (UV de quelques dixièmes de pixel : lunette et culasse du SSG 08, bords de l'AK...), ces dérivées varient d'un bloc
+// de 2 x 2 pixels à l'autre (de l'ordre de 1/1000) ; multipliée par la coordonnée (des centaines de pierres), l'erreur
+// déplaçait le pavé de presque une pierre d'un bloc à l'autre : chaque bloc montrait un morceau de pavé au hasard, autre à
+// chaque image. Corrigé avec quadUV (camo.vsh) : position exacte du point dans sa face, de -0.5 à 0.5 le long de chaque
+// côté, la même dans les deux triangles du quad. Avec ses dérivées écran (constantes sur la face) :
+// - faces assez grandes sur la carte : position lue sur quatre texels de la face, pris à leur vraie place sur la face, et
+//   prolongée en ligne droite jusqu'aux bords : même pavé qu'avant au milieu des faces, juste jusqu'au bord (avant, la
+//   bande d'un texel le long des bords basculait d'un pixel à l'autre entre la carte et le repère de secours) ;
+// - faces trop fines pour la carte, ou dont les texels sont pris par une face d'une autre forme : pavé posé sur la face
+//   elle-même (centré, le long de ses côtés, à la taille du pavé de secours), collé à l'arme et net.
+// Le choix vaut pour toute la face : plus de bascule d'un repère à l'autre d'un pixel à l'autre.
+
+// axe de projection du plan du motif (le même que diamPlan) : 0 : x (motif zy), 1 : y (xz), 2 : z (xy)
+int diamAxe(vec3 n) {
+    vec3 a = abs(n) + vec3(0.0, 0.05, 0.1);
+    return a.x > a.y && a.x > a.z ? 0 : a.y > a.z ? 1 : 2;
+}
+
+vec2 diamSwz(vec3 v, int k) {
+    return k == 0 ? v.zy : k == 1 ? v.xz : v.xy;
+}
+
+// repère du pavé sur la face du fragment : uv (unités de cellule), ses dérivées écran (dux, duy), plan (diamRedresse) et
+// part (partie de l'arme, lue sur la face). Rend 0 : pavé de la carte, 1 : pavé posé sur la face, -1 : quadUV ne décrit pas
+// un quad de bloc (ordre des sommets inattendu) ou pas de carte -> calcul d'avant
+float diamFace(vec3 evx, vec3 evy, vec2 tx, vec2 ty, vec2 qx, vec2 qy,
+               out vec2 uv, out vec2 dux, out vec2 duy, out vec3 plan, out float part) {
+    uv = vec2(0.0);
+    dux = vec2(0.0);
+    duy = vec2(0.0);
+    plan = vec3(0.0);
+    part = PART;
+    float qd = qx.x * qy.y - qx.y * qy.x;
+    ivec2 nC = textureSize(Sampler3, 0);
+    if (abs(qd) < 1e-12 || nC.x < 2 || nC.y < 2) return -1.0;
+    float qi = 1.0 / qd;
+    // côtés de la face dans la vue (coin 0 -> coin 1, coin 1 -> coin 2) et sur la carte de positions (en texels)
+    vec3 fE = (evx * qy.y - evy * qx.y) * qi;
+    vec3 fF = (evy * qx.x - evx * qy.x) * qi;
+    vec2 kC = vec2(nC) / CamoUvRect.zw;
+    vec2 eu = (tx * qy.y - ty * qx.y) * qi * kC;
+    vec2 ev = (ty * qx.x - tx * qy.x) * qi * kC;
+    // une face de bloc a des UV en rectangle droit (chaque côté suit un axe de la texture) ; sinon : calcul d'avant
+    vec2 au = abs(eu), av = abs(ev);
+    float lu = max(au.x, au.y), lv = max(av.x, av.y);
+    if ((lu > 0.02 && min(au.x, au.y) > 0.05 * lu) || (lv > 0.02 && min(av.x, av.y) > 0.05 * lv)
+        || (lu > 0.02 && lv > 0.02 && (au.x > au.y) == (av.x > av.y))) return -1.0;
+    vec2 tC = (texCoord0 - CamoUvRect.xy) * kC;            // point sur la carte (texels)
+    vec2 fc = tC - quadUV.x * eu - quadUV.y * ev;          // centre de la face sur la carte
+    vec2 fd = 0.5 * (au + av);                             // demi-côtés
+    // texels écrits par la face (PosMap : de floor à ceil de son rectangle ; position du point de la face le plus proche
+    // du centre du texel, rabattue au bord) : deux par sens, pris à l'intérieur si la face est assez large (ceux du bord
+    // sont plus souvent repris par une voisine), sinon ceux du bord, à leur position rabattue (connue : le rectangle de la
+    // face l'est). Aux quatre coins de cette grille, ils doivent porter le même id de face (deux faces qui se touchent sur
+    // la carte n'ont jamais le même : un texel repris par une voisine est vu) et former un parallélogramme
+    vec2 lo = fc - fd, hi = fc + fd;
+    ivec2 ia = ivec2(ceil(lo - 0.48)), ib = ivec2(floor(hi - 0.52));     // centres dans la face
+    ivec2 ja = ivec2(floor(lo)), jb = ivec2(ceil(hi)) - 1;               // tous les texels de la face
+    ivec2 n2 = ib - ia;
+    ivec2 rentre = ivec2(greaterThanEqual(n2, ivec2(3)));
+    ia = clamp(ivec2(n2.x > 0 ? ia.x + rentre.x : ja.x, n2.y > 0 ? ia.y + rentre.y : ja.y), ivec2(0), nC - 1);
+    ib = clamp(ivec2(n2.x > 0 ? ib.x - rentre.x : jb.x, n2.y > 0 ? ib.y - rentre.y : jb.y), ivec2(0), nC - 1);
+    vec2 sa = clamp(vec2(ia) + 0.5, lo, hi), sb = clamp(vec2(ib) + 0.5, lo, hi);
+    if (all(greaterThan(sb - sa, vec2(0.6)))) {
+        vec4 ta = texelFetch(Sampler3, ia, 0);
+        vec4 tb = texelFetch(Sampler3, ivec2(ib.x, ia.y), 0);
+        vec4 tc = texelFetch(Sampler3, ivec2(ia.x, ib.y), 0);
+        vec4 td = texelFetch(Sampler3, ib, 0);
+        // position (repère de l'arme) par texel le long des deux axes de la carte, puis le long des côtés de la face
+        vec3 jx = (tb.xyz - ta.xyz) / (sb.x - sa.x);
+        vec3 jy = (tc.xyz - ta.xyz) / (sb.y - sa.y);
+        vec3 ecart = td.xyz - tb.xyz - tc.xyz + ta.xyz;
+        bool meme = abs(tb.a - ta.a) + abs(tc.a - ta.a) + abs(td.a - ta.a) < 0.003
+                 && dot(ecart, ecart) < 0.01 * (dot(tb.xyz - ta.xyz, tb.xyz - ta.xyz) + dot(tc.xyz - ta.xyz, tc.xyz - ta.xyz)) + 4e-6;
+        if (meme && diamIsotropie(fE, fF, jx * eu.x + jy * eu.y, jx * ev.x + jy * ev.y) >= 0.35) {
+            float ida = floor(ta.a * 0.5 + 0.01);
+            vec2 d = tC - sa;
+            vec3 pf = ta.xyz + jx * d.x + jy * d.y;
+            vec3 n = normalize(cross(jx, jy));
+            int k = diamAxe(n);
+            uv = diamSwz(pf, k) * 160.0;
+            dux = diamSwz(jx * (tx.x * kC.x) + jy * (tx.y * kC.y), k) * 160.0;
+            duy = diamSwz(jx * (ty.x * kC.x) + jy * (ty.y * kC.y), k) * 160.0;
+            float nz = abs(k == 0 ? n.x : k == 1 ? n.y : n.z);
+            plan = vec3(diamSwz(n, k), 1.0 / (nz * (1.0 + nz)));
+            part = clamp(ta.a - 2.0 * ida, 0.0, 1.0);
+            return 0.0;
+        }
+    }
+    // pavé posé sur la face : une pierre au centre, rangées le long du premier côté
+    vec2 L = vec2(length(fE), length(fF)) * DIAM_SECOURS;
+    uv = quadUV * L;
+    dux = qx * L;
+    duy = qy * L;
+    vec4 tm = texelFetch(Sampler3, clamp(ivec2(floor(fc)), ivec2(0), nC - 1), 0);
+    part = clamp(tm.a - 2.0 * floor(tm.a * 0.5 + 0.01), 0.0, 1.0);
+    return 1.0;
+}
+
+// calcul de la version en ligne le 19/11 (gardé si quadUV ne décrit pas la face) : carte de positions lue au pixel, repère
+// de secours (diamSecours) là où elle ne suit pas la surface ; mêmes valeurs, dérivées écran calculées (appelé dans une
+// branche, que la carte graphique saute quand aucun pixel n'en a besoin)
+void diamAncien(vec3 p, vec3 dpx, vec3 dpy, vec3 nv, vec3 ex, vec3 ey, vec2 tx, vec2 ty,
+                out vec2 uv, out vec2 dux, out vec2 duy, out vec3 plan) {
+    if (diamIsotropie(ex, ey, dpx, dpy) >= 0.35) {
+        vec3 n = cross(dpx, dpy);
+        float l = length(n);
+        n = l > 1e-12 ? n / l : vec3(0.0, 0.0, 1.0);
+        int k = diamAxe(n);
+        uv = diamSwz(p, k) * 160.0;
+        dux = diamSwz(dpx, k) * 160.0;
+        duy = diamSwz(dpy, k) * 160.0;
+        float nz = abs(k == 0 ? n.x : k == 1 ? n.y : n.z);
+        plan = vec3(diamSwz(n, k), 1.0 / (nz * (1.0 + nz)));
+        return;
+    }
+    plan = vec3(0.0);
+    float det = tx.x * ty.y - ty.x * tx.y;
+    if (abs(det) > 1e-9 * length(cross(ex, ey))) {
+        vec3 au = (ex * ty.y - ey * tx.y) / det;
+        vec3 av = (ey * tx.x - ex * ty.x) / det;
+        vec3 T = normalize(au);
+        vec3 B = normalize(cross(nv, T));
+        mat2 m = mat2(length(au), 0.0, dot(av, T), dot(av, B)) * DIAM_SECOURS;
+        uv = m * texCoord0;
+        dux = m * tx;
+        duy = m * ty;
+        return;
+    }
+    vec3 T = normalize(cross(nv, abs(nv.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+    vec3 B = cross(nv, T);
+    uv = vec2(dot(viewPos, T), dot(viewPos, B)) * DIAM_SECOURS;
+    dux = vec2(dot(ex, T), dot(ex, B)) * DIAM_SECOURS;
+    duy = vec2(dot(ey, T), dot(ey, B)) * DIAM_SECOURS;
+}
+
+// faceFrame, dérivées du motif données (uv calculé sans dFdx)
+mat3 faceFrameD(vec3 n, vec3 dp1, vec3 dp2, vec2 du1, vec2 du2) {
+    vec3 dp2perp = cross(dp2, n);
+    vec3 dp1perp = cross(n, dp1);
+    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
+    float im = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-24));
+    return mat3(T * im, B * im, n);
+}
+
+// pavé de pierres au point uv0 du réseau (unités de cellule ; pps : pixels par cellule) : couleur, et émission des
+// pierres (emP). Sorti de diamondCod le 19/11 (même calcul) pour le niveau fin des pierres géantes. Pierre et relief dès
+// ~2 pixels par pierre (fin), facettes, arêtes et griffes de ~7 à ~14 pixels (facette) ; en dessous, la pierre devient
+// bombée et lisse
+vec3 diamPave(vec2 uv0, float pps, mat3 tbn, vec3 plan, vec3 metal, vec3 n0, float t, out vec3 emP) {
     float fin = smoothstep(1.8, 4.0, pps);
     float facette = smoothstep(7.0, 14.0, pps);
-    mat3 tbn = faceFrame(nv, uv0);
-    // pavé sur le corps (codes 1.0 et 0.94 de la carte), pas sur les petites pièces ni les poignées en or (0.97, 0.985).
-    // La carte est en demi-précision : 0.94, 0.97 et 0.985 + 2 x id de face reviennent à 0.0025 près au plus -> seuils
-    // serrés, sans recouvrement
-    float m = (1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0)));
-    // or jaune (canon, chargeur, poignée, petites pièces) : surfaces très légèrement bombées ; calculé seulement là où il
-    // sert (pièces en or, transitions) ; sous le pavé, le serti presque caché par les pierres prend la normale de la face
-    float eclatOr = 0.0;
-    vec3 gold = vec3(0.0);
-    vec3 n0 = nv;
-    if (m < 0.999) {
-        n0 = normalize(nv + 0.16 * softWarp(p, 2.4));
-        gold = orJaune(n0, eclatOr);
-    }
-    if (m < 0.001) {
-        em = gold * eclatOr * 0.35;
-        return gold * reliefMetal(0.45);
-    }
-    vec3 metal = orBlanc(n0);
     // relief réel : on suit le regard sous la surface jusqu'au pavé (pierres en saillie, serti en creux)
     vec2 uv = fin > 0.0 ? mix(uv0, pavePom(uv0, transpose(tbn) * eyeDir(), plan), fin) : uv0;
     vec2 cid;
@@ -3495,10 +3616,13 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     vec2 bd = diamRedresse(gu - diamGriffe(gu), plan);
     float bead = length(bd);
     float rb = 0.085;
-    float bm = (1.0 - smoothstep(rb - aa, rb + aa, bead)) * facette;           // griffes : de près seulement
+    // griffes : de près seulement ; elles n'apparaissent qu'à partir d'environ 1,5 pixel de diamètre et leur reflet est
+    // large tant qu'elles sont petites (une bille d'un pixel au reflet en pointe clignotait quand l'arme bougeait)
+    float bm = (1.0 - smoothstep(rb - aa, rb + aa, bead)) * smoothstep(9.0, 16.0, pps);
     bd /= rb;
     vec3 nb = normalize(tbn * vec3(bd, sqrt(max(1.0 - dot(bd, bd), 0.0)) + 0.15));
-    float bl = 0.6 + 0.5 * max(dot(nb, lv), 0.0) + 0.9 * pow(max(dot(reflect(-lv, nb), -eyeDir()), 0.0), 30.0);
+    float bl = 0.6 + 0.5 * max(dot(nb, lv), 0.0)
+             + 0.9 * pow(max(dot(reflect(-lv, nb), -eyeDir()), 0.0), clamp(0.0083 * pps * pps, 3.0, 30.0));
     if (bm > 0.0) setting = mix(setting, orBlanc(nb) * bl, bm);
     vec3 pave = mix(setting, stone, inside);
     // de loin : argent scintillant (moyenne des pierres et du serti), un éclat par pierre qui varie lentement (plus d'une
@@ -3517,10 +3641,66 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     float wr = max(1.0 / 60.0, 0.8 * aa);                                   // rayons d'au moins un pixel
     float star = exp(-abs(gr.x) / wr) * exp(-abs(gr.y) * 5.5) + exp(-abs(gr.y) / wr) * exp(-abs(gr.x) * 5.5);
     star += exp(-rr * rr * 120.0);
-    vec3 col = mix(gold * reliefMetal(0.45), pave, clamp(m, 0.0, 1.0));
     // les pierres renvoient la lumière même à l'ombre : une part de leur éclat ne dépend pas de l'éclairage
-    em = (stone * 0.22 * inside + star * force * vec3(1.0, 0.98, 0.95) * 1.1) * clamp(m, 0.0, 1.0)
-       + gold * eclatOr * 0.35 * (1.0 - clamp(m, 0.0, 1.0));
+    emP = stone * 0.22 * inside + star * force * vec3(1.0, 0.98, 0.95) * 1.1;
+    return pave;
+}
+
+vec3 diamondCod(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.5;
+    vec3 nv = normalize(viewNormal);
+    // réseau hexagonal des pierres (voisines à distance 1) ; dérivées écran prises avant toute branche
+    vec3 evx = dFdx(viewPos), evy = dFdy(viewPos);
+    vec2 tx = dFdx(texCoord0), ty = dFdy(texCoord0);
+    vec2 qx = dFdx(quadUV), qy = dFdy(quadUV);
+    vec3 dpx = dFdx(p), dpy = dFdy(p);
+    vec2 uv0, dux, duy;
+    vec3 plan;
+    float partF;
+    // calcul d'avant (si quadUV ne décrit pas la face) : dans une branche, sans dérivée écran (ses dérivées sont calculées)
+    if (diamFace(evx, evy, tx, ty, qx, qy, uv0, dux, duy, plan, partF) < 0.0) {
+        diamAncien(p, dpx, dpy, nv, evx, evy, tx, ty, uv0, dux, duy, plan);
+        partF = PART;
+    }
+    // pixels par pierre (direction la plus serrée : détails effacés à temps de biais)
+    float pps = 1.0 / max(max(length(dux), length(duy)), 1e-4);
+    mat3 tbn = faceFrameD(nv, evx, evy, dux, duy);
+    // pavé sur le corps (codes 1.0 et 0.94 de la carte), pas sur les petites pièces ni les poignées en or (0.97, 0.985).
+    // La carte est en demi-précision : 0.94, 0.97 et 0.985 + 2 x id de face reviennent à 0.0025 près au plus -> seuils
+    // serrés, sans recouvrement. Partie lue au pixel (texel le plus proche) ou sur la face (diamFace) : le pavé l'emporte (au
+    // bord d'une face fine, le texel le plus proche est souvent celui d'une pièce voisine : traits d'or qui n'existent pas
+    // sur l'arme) ; jamais d'or de plus qu'avant
+    float m = max((1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0))),
+                  (1.0 - smoothstep(0.008, 0.02, abs(partF - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(partF - 1.0))));
+    // or jaune (canon, chargeur, poignée, petites pièces) : surfaces très légèrement bombées ; calculé seulement là où il
+    // sert (pièces en or, transitions) ; sous le pavé, le serti presque caché par les pierres prend la normale de la face
+    float eclatOr = 0.0;
+    vec3 gold = vec3(0.0);
+    vec3 n0 = nv;
+    if (m < 0.999) {
+        n0 = normalize(nv + 0.16 * softWarp(p, 2.4));
+        gold = orJaune(n0, eclatOr);
+    }
+    if (m < 0.001) {
+        em = gold * eclatOr * 0.35;
+        return gold * reliefMetal(0.45);
+    }
+    vec3 metal = orBlanc(n0);
+    // pierres géantes (en visée, face arrière collée à l'œil : plus de 100 pixels) : un pavé deux fois plus fin prend le
+    // relais en fondu, comme un niveau de mipmap ; vue normale (pierres d'au plus ~70 pixels) : rien ne change
+    float wf = smoothstep(DIAM_GEANT, DIAM_GEANT * 1.5, pps);
+    vec3 emP = vec3(0.0);
+    vec3 pave = vec3(0.0);
+    if (wf < 1.0) pave = diamPave(uv0, pps, tbn, plan, metal, n0, t, emP);
+    if (wf > 0.0) {
+        vec3 emF;
+        vec3 paveF = diamPave(uv0 * 2.0 + vec2(0.25, 0.0), pps * 0.5, tbn, plan, metal, n0, t, emF);
+        pave = mix(pave, paveF, wf);
+        emP = mix(emP, emF, wf);
+    }
+    vec3 col = mix(gold * reliefMetal(0.45), pave, clamp(m, 0.0, 1.0));
+    em = emP * clamp(m, 0.0, 1.0) + gold * eclatOr * 0.35 * (1.0 - clamp(m, 0.0, 1.0));
     return col;
 }
 

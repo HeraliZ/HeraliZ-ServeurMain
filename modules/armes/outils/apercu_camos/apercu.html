@@ -23,11 +23,17 @@ precision highp float;
 in vec3 aPos; in vec3 aNrm; in vec2 aUv; in vec3 aCam; in float aPart;
 uniform mat4 uProj; uniform mat4 uView; uniform mat3 IViewRotMat;
 out vec2 texCoord0; out vec4 vCam; out vec3 viewNormal; out vec4 vertexColor; out vec3 viewPos;
+out vec2 quadUV;
 void main() {
   vec4 vp = uView * vec4(aPos, 1.0);
   gl_Position = uProj * vp;
   viewPos = vp.xyz;
   texCoord0 = aUv;
+  // position dans la face, comme camo.vsh (jeu : coin du quad = gl_VertexID & 3) ; prep.py donne chaque quad en deux
+  // triangles (0, 1, 2) (0, 2, 3), 6 sommets à la suite
+  int s6 = gl_VertexID % 6;
+  int coin = s6 < 3 ? s6 : (s6 == 3 ? 0 : s6 - 2);
+  quadUV = vec2(coin == 1 || coin == 2 ? 0.5 : -0.5, coin >= 2 ? 0.5 : -0.5);
   vCam = vec4(aCam, aPart);
   viewNormal = normalize(mat3(uView) * aNrm);
   // éclairage des entités de Minecraft (minecraft_mix_light), lumières fixées dans le monde
@@ -65,7 +71,11 @@ uniform vec4 CamoUvRect;
 uniform mat3 IViewRotMat;
 uniform vec4 CamoAnchor;
 uniform int uMode;
+// carte de positions : pas de carte ici (la position vient des sommets) ; texture d'un texel, le Diamond garde alors son
+// calcul au pixel
+uniform highp sampler2D Sampler3;
 in vec2 texCoord0; in vec4 vCam; in vec3 viewNormal; in vec4 vertexColor; in vec3 viewPos;
+in vec2 quadUV;
 out vec4 fragColor;
 ${LIB}
 void main() {
@@ -278,6 +288,9 @@ async function rendre(nom, camo, o) {
   gl.uniform4f(u('CamoUvRect'), 0, 0, 1, 1);
   gl.uniform4f(u('CamoAnchor'), ...(o.anchor || arme.anchor));
   gl.uniform1i(u('uMode'), o.relief ? 1 : 0);
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, carteVide());
+  gl.uniform1i(u('Sampler3'), 1);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, arme.tex);
   gl.uniform1i(u('Sampler0'), 0);
@@ -285,6 +298,18 @@ async function rendre(nom, camo, o) {
   gl.drawArrays(gl.TRIANGLES, 0, arme.n);
   gl.finish();
   return cv.toDataURL('image/png');
+}
+// carte de positions vide (un texel) pour Sampler3 : l'aperçu n'en a pas, la position vient des sommets
+let CARTE_VIDE = null;
+function carteVide() {
+  if (!CARTE_VIDE) {
+    CARTE_VIDE = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, CARTE_VIDE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  }
+  return CARTE_VIDE;
 }
 window.apercu = {chargerLib, chargerArme, rendre};
 </script>
