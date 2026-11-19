@@ -777,3 +777,89 @@ Pas fait (pour plus tard) : véhicules rapides qui entrent dans une zone pas cha
 sont retenus) ; écriture des fichiers des joueurs en fond (seulement étalée sur 5 s, pour ne jamais lire un fichier pas
 encore écrit à la reconnexion) ; points d'intérêt (seulement mesurés) ; préchargement des classes des mods des autres
 auteurs.
+
+## 31. Lenteurs du serveur : ClashWar, loot, hélicoptère, zombies, clans (19/11)
+
+Suite de l'audit des lenteurs du 19/11 (points C3, C6, C7, C8, C10, C11, C13, C14) et deux bugs (épave de l'hélicoptère
+au redémarrage, heure du tableau du ClashWar). Le but : plus aucune alerte de blocage pendant un ClashWar, un collage
+WorldEdit de conteneurs ou une sauvegarde des clans. **Rien de tout cela n'a été testé en jeu** (pas de serveur ici) :
+pendant les essais, garder un œil sur les alertes de blocage du staff et sur `/diag etat`.
+Versions : Anticheat 2.12.2, Clans 3.17.4, ClashWar 1.3.3, Événements 1.3.2, Loot 0.20.5, Monde 1.3.5 (le launcher les
+donne aux joueurs ; le canal réseau du ClashWar change de version : un jeu qui n'a pas le nouveau ClashWar est refusé à
+la connexion).
+
+ClashWar : dépôts et retours du Coffre étalés, écrits en tâche de fond, arrivées préchargées
+- [ ] ClashWar à 2 équipes (clans différents) : à la clôture, les joueurs entrent en salle quelques-uns par tick (avant :
+      tous dans le même tick), l'inventaire n'est vidé qu'à ce moment. Journal du serveur : une ligne « coffre de …
+      depose » par joueur, puis « [matchs] coffres : N depot(s) fait(s), 0 rate(s) … ».
+- [ ] Pendant le dépôt (quelques ticks) : jeter un objet (Q) ne le fait pas tomber (il est dans le Coffre et revient à la
+      fin) ; pas de ramassage, de clic sur un bloc ni de commande. Le joueur ne prend aucun coup.
+- [ ] Fin du tournoi : chacun retrouve son inventaire et sa position d'avant, quelques joueurs par tick ; la salle ne se
+      ferme qu'après le dernier retour (30 s au plus). Clés de caisse données après le retour.
+- [ ] Se déconnecter pendant son dépôt (tout de suite après la clôture) : à la reconnexion, inventaire complet, aucun
+      objet en double, pas de dépôt qui traîne (`/clashwar coffre etat <joueur>` : rien).
+- [ ] Se déconnecter dans la salle puis revenir après la fin du tournoi : le Coffre est rendu (un instant après la
+      connexion), à la position d'avant, rien en double.
+- [ ] Arrêt brutal du serveur (kill) pendant un match : à la reconnexion, le Coffre est rendu, rien en double, rien de
+      perdu ; le kit du match a disparu.
+- [ ] Entrée en salle, appel d'un match, retour en salle, retour à la fin : plus de gel d'une seconde à la téléportation
+      (alertes de blocage du staff) ; `/diag etat`, ligne « Lenteurs (19/11) » : les « arrivées … attendues » montent
+      (les téléportations du ClashWar passent maintenant par le noyau, comme `/tp`). Le match peut démarrer jusqu'à 3 s
+      plus tard qu'avant.
+- [ ] `/clashwar regarder` par un joueur qui n'est pas du tournoi (au spawn) : son Coffre est déposé, il arrive en salle
+      puis regarde le match, comme avant.
+- [ ] Réglages de `serveur/heraliz_clashwar/clashwar.json` : `coffres_en_fond` (false = écriture sur le fil du serveur,
+      comme avant), `coffres_par_tick` (4) et `coffres_budget_ms` (6), `precharger_arrivees` (false = téléportations
+      immédiates, comme avant), `arenes_au_demarrage` (false). `/recharger clashwar` les relit.
+
+ClashWar : arènes posées à l'ouverture des inscriptions
+- [ ] Redémarrage : plus aucune arène posée au démarrage (journal : « poses interrompues (reprises a l'ouverture des
+      inscriptions) ») ; `/diag etat` : presque plus de tronçons chargés dans `heraliz_clashwar:arenes`.
+- [ ] Ouverture des inscriptions (ou `/clashwar lancer`) : journal « ouverture des inscriptions, … pose(s) reprise(s), …
+      carte(s) posee(s) d'avance » ; pendant la pose, peu de tronçons chargés dans le monde des arènes (avant : 2 746), et
+      plus de grand déchargement 30 s après.
+- [ ] Une carte posée : ses décors (cadres, supports) sont bien là, la salle et les arènes se jouent comme avant.
+
+ClashWar : récompenses (décision du propriétaire) et heure
+- [ ] Deux équipes d'un même clan seules : le tournoi se joue, mais ni primes ni clés ; le chat dit « Pas de primes ni de
+      clés pour ce ClashWar : 1 clan(s) différent(s) seulement, il en faut 3. » ; le podium affiche « Sans prime ».
+- [ ] Trois clans différents ou plus : primes versées ; un clan avec deux équipes sur le podium ne touche que la prime de
+      la meilleure (l'autre marche affiche « Une prime par clan »). Réglage `recompenses_clans_min` (3).
+- [ ] Les points de saison gardent leur règle (`saison_clans_min`).
+- [ ] Mettre l'heure du PC dans un autre fuseau (ou jouer depuis un PC russe) : le tableau du ClashWar et le panneau du
+      classement montrent la même heure que le chat (heure de Paris) ; le panneau du classement n'écrit plus l'heure deux
+      fois (« Prochain ClashWar : mercredi 20:30 · /clashwar »).
+
+Loot : collages WorldEdit de conteneurs et démarrage
+- [ ] Coller (`//paste`) un bâtiment avec des dizaines de conteneurs : beaucoup moins long qu'avant ; les conteneurs
+      rejoignent la zone de leur niveau la plus proche (ou en créent une), comme avant (`/heralizloot proche`).
+- [ ] Démarrage : plus d'alerte de blocage « RotationLoot.salleDe » ; les salles à carte se rechargent comme avant.
+- [ ] Vider des conteneurs, les reposer, casser et reposer un conteneur : le nombre d'actifs de la zone reste juste
+      (`/heralizloot zone <zone> info` : actifs + en attente = cible).
+
+Hélicoptère
+- [ ] Hélicoptère en vol loin de tout joueur (`/event helico lancer`, puis s'éloigner) : il continue de voler et de
+      tourner (il ne s'arrête jamais net au bord d'un tronçon) ; `/diag etat` : moins de tronçons chargés sur la carte
+      pendant son vol. Réglage `rayon_ticket` de `serveur/config/heraliz_evenements/helico.json` (2 ; 3 = comme avant).
+- [ ] Abattre l'hélicoptère, puis `/redemarrage` pendant le feu de l'épave : après le redémarrage, le coffre T7 (avec la
+      boîte noire) est toujours là, encore fermé (« Caisse en feu · s'ouvre dans … ») jusqu'à l'heure de fin du feu,
+      puis il s'ouvre ; les deux caisses T6 aussi. Avant : retirés au redémarrage, rien n'était donné.
+- [ ] Même essai avec un arrêt brutal (kill) : le coffre ne s'ouvre pas tout de suite au redémarrage.
+- [ ] `/event annuler helico` par le staff pendant le feu : coffre et caisses fermés retirés, comme avant.
+
+Zombies
+- [ ] `/zombies stats` : nouvelle ligne « Plafond : N monstres suivis a leur arrivee ; 0 oublie(s) au dernier recensement
+      complet … ». Le plafond des monstres de la carte et le peuplement marchent comme avant. Réglage
+      `plafond_par_arrivees` de `heraliz_zombies-server.toml` (false = toutes les entités parcourues chaque seconde, comme
+      avant).
+
+Clans
+- [ ] Sauvegarde des clans (chaque minute) : plus d'alerte de blocage « ClanStore.sauvegarder » ; après un redémarrage,
+      rien de perdu (banque, XP, statistiques, membres, journal).
+- [ ] Coffre du clan : déposer et prendre, fermer, redémarrer : le contenu est le bon, rien en double.
+
+Anticheat
+- [ ] Anti-ESP (Spartan) : marche comme avant ; plus d'alerte de blocage « VisibilityEngine.configureWorkers ».
+
+Pas fait (pour plus tard) : hélicoptère qui vole « sans tronçon » loin des joueurs (il garde un petit ticket) ; commandes
+du staff du Coffre (`/clashwar coffre …`), toujours tout de suite sur le fil du serveur ; bordure des arènes inchangée.

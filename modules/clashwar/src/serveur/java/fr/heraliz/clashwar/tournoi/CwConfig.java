@@ -68,11 +68,29 @@ public final class CwConfig {
      * copie ({@code SaisonVue}) : changer les deux ensemble.
      */
     public int saisonClansMin = 4;
+    /**
+     * Primes et cles (19/11, decision du proprietaire, audit de l'economie n° 1 : un clan seul touchait les primes en jouant
+     * contre lui-meme) : versees seulement si au moins tant de clans DIFFERENTS ont une equipe dans le tableau, et une seule
+     * prime par clan (sa meilleure place ; les places suivantes du meme clan n'ont rien). Les points de saison gardent leur
+     * propre minimum ({@link #saisonClansMin}).
+     */
+    public int recompensesClansMin = 3;
     /** Cle de caisse d'event donnee a chaque joueur de l'equipe gagnante (id d'objet, vide = aucune). */
     public String cleEvent = "heralizcrates:event_key";
     public int clesParJoueur = 1;
     /** Carte de la salle d'attente. */
     public String salle = "lobby_clashwar";
+    /**
+     * Coffre (19/11, audit des lenteurs C3) : depots ecrits sur le fil des coffres (faux : sur le fil serveur, comme avant),
+     * operations du Coffre (depots, confirmations, retours) au plus par tick, et temps au plus par tick (ms ; au moins une
+     * operation par tick).
+     */
+    public boolean coffresEnFond = true;
+    public int coffresParTick = 4, coffresBudgetMs = 6;
+    /** Teleportations du ClashWar : arrivee prechargee avant (faux : tout de suite, comme avant le 19/11). */
+    public boolean prechargerArrivees = true;
+    /** Arenes posees d'avance au demarrage du serveur (faux : seulement a l'ouverture des inscriptions, 19/11, audit C8). */
+    public boolean arenesAuDemarrage = false;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static CwConfig courant = new CwConfig();
@@ -122,8 +140,15 @@ public final class CwConfig {
             ecrireAtomique(f, GSON.toJson(c.toJson()));
         }
         courant = c;
+        // 19/11 : reglages du moteur (Coffre etale, arrivees prechargees, arenes posees a l'ouverture des inscriptions)
+        fr.heraliz.clashwar.moteur.coffre.Coffres.regler(c.coffresEnFond, c.coffresParTick, c.coffresBudgetMs);
+        fr.heraliz.clashwar.moteur.Arrivees.regler(c.prechargerArrivees);
+        fr.heraliz.clashwar.moteur.arenes.ArenesService.regler(c.arenesAuDemarrage);
         HeralizClashWar.LOG.info("[clashwar] reglages : jours {} a {}:{} ({}), rotation {}, format fixe {}", c.jours, c.heure,
                 String.format(Locale.ROOT, "%02d", c.minute), c.zone(), c.rotation, c.formatFixe);
+        HeralizClashWar.LOG.info("[clashwar] reglages : primes des {} clans, coffre {} ({} par tick, {} ms), arrivees prechargees {}, arenes au demarrage {}",
+                c.recompensesClansMin, c.coffresEnFond ? "en fond" : "sur le fil serveur", c.coffresParTick, c.coffresBudgetMs,
+                c.prechargerArrivees, c.arenesAuDemarrage);
     }
 
     private void lire(JsonObject o) {
@@ -191,13 +216,18 @@ public final class CwConfig {
             clesParJoueur = Math.max(0, r.has("cles_par_joueur") ? r.get("cles_par_joueur").getAsInt() : clesParJoueur);
         }
         saisonClansMin = Math.max(1, entier(o, "saison_clans_min", saisonClansMin));
+        recompensesClansMin = Math.max(1, entier(o, "recompenses_clans_min", recompensesClansMin));
         salle = chaine(o, "salle", salle);
+        coffresEnFond = booleen(o, "coffres_en_fond", coffresEnFond);
+        coffresParTick = Math.max(1, Math.min(64, entier(o, "coffres_par_tick", coffresParTick)));
+        coffresBudgetMs = Math.max(1, Math.min(40, entier(o, "coffres_budget_ms", coffresBudgetMs)));
+        prechargerArrivees = booleen(o, "precharger_arrivees", prechargerArrivees);
+        arenesAuDemarrage = booleen(o, "arenes_au_demarrage", arenesAuDemarrage);
     }
 
     private JsonObject toJson() {
         JsonObject o = new JsonObject();
-        o.addProperty("_aide", "ClashWar HeraliZ : jours (MONDAY..SUNDAY ou lundi..dimanche), heure HH:MM de depart, "
-                + "rotation des formats (1v1, 2v2, 3v3, 4v4), format_fixe vide = rotation ; /recharger clashwar pour relire.");
+        o.addProperty("_aide", AIDE);
         JsonArray j = new JsonArray();
         for (DayOfWeek d : jours) j.add(d.name());
         o.add("jours", j);
@@ -238,9 +268,26 @@ public final class CwConfig {
         rec.addProperty("cles_par_joueur", clesParJoueur);
         o.add("recompenses", rec);
         o.addProperty("saison_clans_min", saisonClansMin);
+        o.addProperty("recompenses_clans_min", recompensesClansMin);
         o.addProperty("salle", salle);
+        o.addProperty("coffres_en_fond", coffresEnFond);
+        o.addProperty("coffres_par_tick", coffresParTick);
+        o.addProperty("coffres_budget_ms", coffresBudgetMs);
+        o.addProperty("precharger_arrivees", prechargerArrivees);
+        o.addProperty("arenes_au_demarrage", arenesAuDemarrage);
         return o;
     }
+
+    /** Texte d'aide en tete du fichier (le JSON n'a pas de commentaires). */
+    static final String AIDE = "ClashWar HeraliZ : jours (MONDAY..SUNDAY ou lundi..dimanche), heure HH:MM de depart, "
+            + "rotation des formats (1v1, 2v2, 3v3, 4v4), format_fixe vide = rotation ; /recharger clashwar pour relire. "
+            + "recompenses_clans_min : primes et cles versees seulement si au moins tant de clans differents ont une equipe dans le "
+            + "tableau, une seule prime par clan (sa meilleure place) ; saison_clans_min : meme regle pour les points de saison. "
+            + "coffres_en_fond : depots du Coffre ecrits en tache de fond (false : sur le fil du serveur, comme avant) ; "
+            + "coffres_par_tick et coffres_budget_ms : depots et retours du Coffre au plus par tick, et temps au plus par tick (ms). "
+            + "precharger_arrivees : les teleportations du ClashWar attendent que l'arrivee soit chargee (3 s au plus ; false : tout "
+            + "de suite, comme avant). arenes_au_demarrage : arenes posees d'avance des le demarrage du serveur (false : seulement a "
+            + "l'ouverture des inscriptions).";
 
     // ------------------------------------------------------------------ aides
     @Nullable
@@ -263,6 +310,14 @@ public final class CwConfig {
     private static int entier(JsonObject o, String cle, int defaut) {
         try {
             return o.has(cle) ? o.get(cle).getAsInt() : defaut;
+        } catch (RuntimeException ex) {
+            return defaut;
+        }
+    }
+
+    private static boolean booleen(JsonObject o, String cle, boolean defaut) {
+        try {
+            return o.has(cle) ? o.get(cle).getAsBoolean() : defaut;
         } catch (RuntimeException ex) {
             return defaut;
         }

@@ -27,16 +27,20 @@ import java.util.UUID;
  * @param tours            rencontres par tour (tour 0 = premier tour)
  * @param champion         champion (edition finie) ou dernier champion connu, null = aucun
  * @param championEdition  edition du champion affiche
+ * @param fuseau           fuseau des heures du ClashWar (19/11 : celui du serveur, « Europe/Paris » par defaut) : le
+ *                         tableau les montre a la meme heure que le chat, pas a celle de la machine du joueur
  */
 public record VueTableau(int edition, String format, Etat etat, long finInscriptionMs, long prochaineMs, String prochainFormat,
                          int clansInscrits, int equipesInscrites, int tourCourant, List<Equipe> equipes, List<List<Rencontre>> tours,
-                         @Nullable Equipe champion, int championEdition) {
+                         @Nullable Equipe champion, int championEdition, String fuseau) {
     public static final int MAX_EQUIPES = 64, MAX_JOUEURS = 4;
+    /** Fuseau des heures du ClashWar quand le serveur n'en a pas donne. */
+    public static final String FUSEAU_DEFAUT = "Europe/Paris";
 
     public enum Etat { AUCUN, INSCRIPTION, PREPARATION, EN_COURS, TERMINE, ANNULE }
 
     /** Vue vide (aucune edition, rien de planifie). */
-    public static final VueTableau VIDE = new VueTableau(0, "", Etat.AUCUN, 0, 0, "", 0, 0, 0, List.of(), List.of(), null, 0);
+    public static final VueTableau VIDE = new VueTableau(0, "", Etat.AUCUN, 0, 0, "", 0, 0, 0, List.of(), List.of(), null, 0, FUSEAU_DEFAUT);
 
     /** Equipe affichee. */
     public record Equipe(String libelle, String tag, String nomClan, int couleur, Banniere banniere, List<String> joueurs,
@@ -139,6 +143,7 @@ public record VueTableau(int edition, String format, Etat etat, long finInscript
         buf.writeBoolean(champion != null);
         if (champion != null) champion.write(buf);
         buf.writeVarInt(championEdition);
+        buf.writeUtf(fuseau == null ? FUSEAU_DEFAUT : fuseau, 64);
     }
 
     public static VueTableau read(FriendlyByteBuf buf) {
@@ -160,8 +165,10 @@ public record VueTableau(int edition, String format, Etat etat, long finInscript
             tours.add(l);
         }
         Equipe champion = buf.readBoolean() ? Equipe.read(buf) : null;
+        int championEdition = buf.readVarInt();
+        String fuseau = buf.readUtf(64);
         return new VueTableau(edition, format, etat, fin, prochaine, prochainFormat, clans, eqIns, tour, equipes, tours, champion,
-                buf.readVarInt());
+                championEdition, fuseau);
     }
 
     /** Rencontre (tour, index) ou null. */

@@ -36,6 +36,8 @@ public final class Services {
 
         int arenesPreparer(MinecraftServer s, String carte, int nombre);
 
+        void arenesOuverture(MinecraftServer s, Collection<String> cartes);
+
         void arenesLiberer(Instance instance);
 
         void arenesQuandLiberee(Consumer<Instance> ecouteur);

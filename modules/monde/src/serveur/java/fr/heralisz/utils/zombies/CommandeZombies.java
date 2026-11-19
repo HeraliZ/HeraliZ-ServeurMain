@@ -73,6 +73,9 @@ public final class CommandeZombies {
                 IaZombies.suivis(), n[0], n[1], n[2], n[3]).withStyle(ChatFormatting.GOLD));
         ok(s, t("stats.peuplement", "Peuplement : %s zombies poses ; monstres sur la carte : %s ; secteurs entames : %s",
                 Peuplement.suivis(), PlafondZombies.total(), ReservesZombies.entames()));
+        int[] pz = PlafondZombies.suivi();
+        ok(s, t("stats.plafond", "Plafond : %s monstres suivis a leur arrivee ; %s oublie(s) au dernier recensement complet (%s depuis le demarrage)",
+                pz[0], pz[1], pz[2]));
         ok(s, t("stats.chemins", "Chemins depuis le demarrage : %s calcules, %s partages, %s refuses (budget)", ch[0], ch[1], ch[2]));
         ok(s, t("stats.directs", "Poursuites en ligne droite (sans calcul de chemin) : %s", ch[3]));
         ok(s, t("stats.chemins_temps", "Chemins gardes (cible loin ou hors d'atteinte) : %s ; refuses faute de temps : %s ; pire tick : %s ms de calcul",

@@ -8,6 +8,8 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +48,14 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
     private static volatile Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> INDEX = Map.of();
     /** Index des fichiers (position -> zone), tel que lu : sans les changements faits en jeu. */
     private static volatile Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> ORIGINE = Map.of();
+    /**
+     * Grille des conteneurs connus des zones (19/11, audit des lenteurs C6) : dimension -> case de {@link #RAYON} x
+     * {@link #RAYON} blocs (x, z) -> positions. Tenue avec {@link #INDEX} (lecture des fichiers, {@link #placer},
+     * {@link #enlever}, {@link #supprimer}) : {@link #rattacher} ne regarde que les 3 x 3 cases autour du point (avant : tous
+     * les conteneurs de toutes les zones du monde, pour CHAQUE conteneur posé, jusqu'à la moitié du temps d'un collage
+     * WorldEdit le 19/11). Fil serveur.
+     */
+    private static Map<ResourceKey<Level>, Long2ObjectOpenHashMap<LongOpenHashSet>> GRILLE = new HashMap<>();
     /** Un conteneur posé en jeu rejoint la zone de son niveau dont un conteneur est à moins de RAYON blocs. */
     static final int RAYON = 64;
 
@@ -252,9 +262,16 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
         }
         Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Zone>> origine = new HashMap<>();
         index.forEach((d, idx) -> origine.put(d, new Long2ObjectOpenHashMap<>(idx)));
+        Map<ResourceKey<Level>, Long2ObjectOpenHashMap<LongOpenHashSet>> grille = new HashMap<>();
+        index.forEach((d, idx) -> {
+            Long2ObjectOpenHashMap<LongOpenHashSet> g = new Long2ObjectOpenHashMap<>();
+            for (long k : idx.keySet()) g.computeIfAbsent(caseDe(k), c -> new LongOpenHashSet()).add(k);
+            grille.put(d, g);
+        });
         ZONES = zones;
         INDEX = index;
         ORIGINE = origine;
+        GRILLE = grille;
         version++;
         int nz = zones.values().stream().mapToInt(Map::size).sum();
         HeralizLoot.LOG.info("{} zones de loot, {} conteneurs{}{}{}", nz, total,
@@ -353,17 +370,51 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
     @Nullable
     static Zone rattacher(ResourceKey<Level> dim, long pos, String nom) {
         int niv = niveau(nom), x = BlockPos.getX(pos), y = BlockPos.getY(pos), z = BlockPos.getZ(pos);
+        Long2ObjectOpenHashMap<Zone> idx = INDEX.get(dim);
+        Long2ObjectOpenHashMap<LongOpenHashSet> g = GRILLE.get(dim);
+        if (idx == null || g == null) return null;
+        // 19/11 : seulement les conteneurs des 3 x 3 cases de RAYON blocs autour (tout conteneur à moins de RAYON blocs y
+        // est). Même choix qu'avant : la zone du conteneur le plus proche ; à égalité, celle qui vient en dernier par son
+        // identifiant (avant, les zones étaient parcourues dans cet ordre et la dernière à égalité l'emportait).
         Zone mieux = null;
         double dm = (double) RAYON * RAYON;
-        for (Zone zo : zones(dim).values()) {
-            if (zo.niveau != niv) continue;
-            double d = zo.distance2(x, y, z);
-            if (d <= dm) {
-                dm = d;
-                mieux = zo;
+        int cx = Math.floorDiv(x, RAYON), cz = Math.floorDiv(z, RAYON);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                LongOpenHashSet c = g.get(net.minecraft.world.level.ChunkPos.asLong(cx + dx, cz + dz));
+                if (c == null) continue;
+                LongIterator it = c.iterator();
+                while (it.hasNext()) {
+                    long k = it.nextLong();
+                    Zone zo = idx.get(k);
+                    if (zo == null || zo.niveau != niv) continue;
+                    double ex = BlockPos.getX(k) - x, ey = BlockPos.getY(k) - y, ez = BlockPos.getZ(k) - z;
+                    double d = ex * ex + ey * ey + ez * ez;
+                    if (d < dm || (d == dm && (mieux == null || zo.id.compareTo(mieux.id) > 0))) {
+                        dm = d;
+                        mieux = zo;
+                    }
+                }
             }
         }
         return mieux;
+    }
+
+    /** Case de la grille (cases de {@link #RAYON} blocs en x et z) d'une position. */
+    private static long caseDe(long pos) {
+        return net.minecraft.world.level.ChunkPos.asLong(Math.floorDiv(BlockPos.getX(pos), RAYON), Math.floorDiv(BlockPos.getZ(pos), RAYON));
+    }
+
+    private static void grilleAjouter(ResourceKey<Level> dim, long pos) {
+        GRILLE.computeIfAbsent(dim, d -> new Long2ObjectOpenHashMap<>()).computeIfAbsent(caseDe(pos), c -> new LongOpenHashSet()).add(pos);
+    }
+
+    private static void grilleRetirer(ResourceKey<Level> dim, long pos) {
+        Long2ObjectOpenHashMap<LongOpenHashSet> g = GRILLE.get(dim);
+        if (g == null) return;
+        long c = caseDe(pos);
+        LongOpenHashSet s = g.get(c);
+        if (s != null && s.remove(pos) && s.isEmpty()) g.remove(c);
     }
 
     /** Part d'actifs des zones de ce niveau dans les fichiers (celle de la plus grande), null si aucune n'en donne. */
@@ -395,7 +446,9 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
         Zone z = m == null ? null : m.remove(id);
         if (z == null) return;
         Long2ObjectOpenHashMap<Zone> idx = INDEX.get(dim);
-        for (int i = 0; i < z.taille() && idx != null; i++) idx.remove(z.position(i), z);
+        for (int i = 0; i < z.taille() && idx != null; i++) {
+            if (idx.remove(z.position(i), z)) grilleRetirer(dim, z.position(i));
+        }
     }
 
     /** Met le conteneur nom en pos dans la zone z (il quitte son ancienne zone s'il en change). */
@@ -405,14 +458,17 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
         Zone avant = idx.get(pos);
         if (avant != null && avant != z) avant.enlever(pos);
         z.poser(pos, nom);
-        idx.put(pos, z);
+        if (idx.put(pos, z) == null) grilleAjouter(z.dimension, pos);
     }
 
     /** Retire pos de sa zone. */
     static void enlever(ResourceKey<Level> dim, long pos) {
         Long2ObjectOpenHashMap<Zone> idx = INDEX.get(dim);
         Zone z = idx == null ? null : idx.remove(pos);
-        if (z != null) z.enlever(pos);
+        if (z != null) {
+            z.enlever(pos);
+            grilleRetirer(dim, pos);
+        }
     }
 
     /** Index position -> zone d'une dimension (lecture seule). */

@@ -387,7 +387,7 @@ public final class Quetes {
         }
         if (!change) return;
         ClanStore store = ClanStore.get();
-        if (store != null) store.marquerDirty();
+        if (store != null) store.marquerDirty(c);
         if (finie) Sync.marquer(c);
         else Sync.marquerLent(c);
     }
@@ -420,7 +420,7 @@ public final class Quetes {
         c.depotNetJour += delta;
         c.depotNetSemaine += delta;
         ClanStore store = ClanStore.get();
-        if (store != null) store.marquerDirty();
+        if (store != null) store.marquerDirty(c);
         boolean change = false, finie = false;
         for (int i = 0; i < 2; i++) {
             QueteEtat.Periode per = i == 0 ? QueteEtat.Periode.JOUR : QueteEtat.Periode.SEMAINE;

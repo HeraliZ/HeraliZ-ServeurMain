@@ -36,7 +36,8 @@ public final class PeintreClassement {
         espace(g, tr("clashwar.classement.mur.sur"), MARGE, 46, 0.95f, Ui.argb(0x9AA3B2, 255), 2.4f);
         TexteCentre.ecrire(g, lit(tr("clashwar.classement.mur.titre"), Ui.BOLD), MARGE, 76, 2.4f, Ui.argb(Ui.TEXT, 255), -1);
         if (c.prochaineMs() > 0) {
-            String prochain = tr("clashwar.classement.mur.prochain", PeintreTableau.date(c.prochaineMs()) + " " + PeintreTableau.heure(c.prochaineMs()));
+            // 19/11 : « mercredi 20:30 » (date() donne déjà l'heure : elle était écrite deux fois), à l'heure du serveur
+            String prochain = tr("clashwar.classement.mur.prochain", PeintreTableau.date(c.prochaineMs()));
             TexteCentre.ecrire(g, lit(prochain, Ui.FONT), L - MARGE, 78, 1.15f, Ui.argb(0x9AA3B2, 255), 1);
         }
         // titres des colonnes

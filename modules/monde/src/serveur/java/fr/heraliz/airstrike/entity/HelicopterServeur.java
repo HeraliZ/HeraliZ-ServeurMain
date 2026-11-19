@@ -86,9 +86,19 @@ import java.util.function.Function;
  * sauvegardé : au redémarrage, il n'est plus là.
  */
 public class HelicopterServeur extends Helicopter {
-    /** Garde chargés (7 × 7) et actifs (3 × 3) les tronçons autour de l'hélicoptère ; rafraîchi chaque seconde, expire seul. */
+    /** Garde chargés et actifs les tronçons autour de l'hélicoptère ; rafraîchi chaque seconde, expire seul. */
     public static final TicketType<Integer> TICKET = TicketType.create("airstrike_helico", Integer::compareTo, 300);
-    public static final int RAYON_TICKET = 3;
+    /**
+     * Rayon des tickets (19/11, audit des lenteurs, C10 ; avant : 3, soit 29 × 29 = 841 tronçons tenus et 9 tronçons
+     * d'entités actives autour de lui, même loin de tout joueur) : 2, le plus petit qui fait encore tourner une entité (son
+     * tronçon seul a ses entités actives ; 27 × 27 tronçons au plus, dont 5 × 5 complets). Avec ce rayon, le tronçon
+     * voisin vers lequel il vole reçoit aussi un ticket dès qu'il en approche ({@link #MARGE_VOISIN}) : il y est déjà actif
+     * quand il y entre (sans cela, il s'arrêterait net au bord de son tronçon). Réglage {@code rayon_ticket} de
+     * helico.json (3 : comme avant). Le départ ({@link Veille}) garde ce rayon.
+     */
+    public static final int RAYON_TICKET = 2;
+    /** À moins de tant de blocs du bord de son tronçon, en allant vers lui, le voisin reçoit le ticket (rayon 2 seulement). */
+    private static final double MARGE_VOISIN = 6.0;
     public static final ResourceKey<DamageType> DEGATS_TIR = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(AirstrikeMod.MODID, "helico"));
     public static final ResourceKey<DamageType> DEGATS_CRASH = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(AirstrikeMod.MODID, "helico_crash"));
     /**
@@ -136,8 +146,15 @@ public class HelicopterServeur extends Helicopter {
     private Function<UUID, UUID> clanDe;
     private String id = "";
     private boolean fini;
+    /**
+     * Tronçons qui ont son ticket (clés {@link ChunkPos#toLong}) : le sien, et jusqu'à trois voisins vers lesquels il vole ;
+     * {@link #rayonTenu} : rayon de ces tickets (gardé pour les rendre avec le même), {@link #cleTicket} : sa valeur.
+     */
+    private final long[] tenus = new long[4];
+    private final long[] voulus = new long[4];
+    private int nTenus, rayonTenu = RAYON_TICKET;
     @Nullable
-    private ChunkPos ticket;
+    private Integer cleTicket;
 
     private float pv = 1, pvMax = 1;
     private double vitesse;
@@ -213,8 +230,10 @@ public class HelicopterServeur extends Helicopter {
         if (!(ModEntities.HELICOPTER.get().create(level) instanceof HelicopterServeur h)) return null;
         h.preparer(level, id, r, clanDe, suivi, p, lacet);
         ChunkPos cp = h.chunkPosition();
-        level.getChunkSource().addRegionTicket(TICKET, cp, RAYON_TICKET, h.getId());
-        h.ticket = cp;
+        h.rayonTenu = Mth.clamp(r.rayonTicket, 2, 3);
+        level.getChunkSource().addRegionTicket(TICKET, cp, h.rayonTenu, h.cle());
+        h.tenus[0] = cp.toLong();
+        h.nTenus = 1;
         if (!level.addFreshEntity(h)) {
             h.relacherTicket();
             return null;
@@ -847,20 +866,63 @@ public class HelicopterServeur extends Helicopter {
                 entityData.get(ROULIS), sante()));
     }
 
+    /** Valeur des tickets de cet hélicoptère (son numéro d'entité, mis en boîte une seule fois). */
+    private Integer cle() {
+        Integer c = cleTicket;
+        if (c == null) cleTicket = c = getId();
+        return c;
+    }
+
+    /**
+     * Chaque tick : le ticket suit l'hélicoptère (19/11, audit C10). Rayon 2 : son tronçon, plus le voisin vers lequel il
+     * vole quand il est à moins de {@link #MARGE_VOISIN} blocs de ce bord (les deux, et le coin, près d'un coin), pour
+     * qu'il y soit déjà actif en entrant. Rayon 3 : son tronçon seulement (ses voisins sont déjà actifs). Tickets posés au
+     * changement, rafraîchis chaque seconde (ils expirent seuls sinon), rendus dès qu'ils ne servent plus. Allocations : un
+     * {@code ChunkPos} par ticket posé, rafraîchi ou rendu (quatre par seconde au plus).
+     */
     private void tenirTicket(ServerLevel level) {
-        ChunkPos cp = chunkPosition();
-        if (!cp.equals(ticket)) {
-            relacherTicket();
-            level.getChunkSource().addRegionTicket(TICKET, cp, RAYON_TICKET, getId());
-            ticket = cp;
-        } else if (tickCount % 20 == 0) {
-            level.getChunkSource().addRegionTicket(TICKET, cp, RAYON_TICKET, getId());   // rafraîchi (expire seul sinon)
+        double x = getX(), z = getZ();
+        int cx = Mth.floor(x) >> 4, cz = Mth.floor(z) >> 4;
+        int n = 0;
+        voulus[n++] = ChunkPos.asLong(cx, cz);
+        if (rayonTenu < 3) {
+            double vx = x - xo, vz = z - zo, fx = x - (cx << 4), fz = z - (cz << 4);
+            int sx = vx > 1e-4 && fx > 16 - MARGE_VOISIN ? 1 : vx < -1e-4 && fx < MARGE_VOISIN ? -1 : 0;
+            int sz = vz > 1e-4 && fz > 16 - MARGE_VOISIN ? 1 : vz < -1e-4 && fz < MARGE_VOISIN ? -1 : 0;
+            if (sx != 0) voulus[n++] = ChunkPos.asLong(cx + sx, cz);
+            if (sz != 0) voulus[n++] = ChunkPos.asLong(cx, cz + sz);
+            if (sx != 0 && sz != 0) voulus[n++] = ChunkPos.asLong(cx + sx, cz + sz);
+        }
+        // rendus : ceux qui ne servent plus
+        for (int i = 0; i < nTenus; ) {
+            if (!dans(voulus, n, tenus[i])) {
+                level.getChunkSource().removeRegionTicket(TICKET, new ChunkPos(tenus[i]), rayonTenu, cle());
+                tenus[i] = tenus[--nTenus];
+            } else {
+                i++;
+            }
+        }
+        // posés : les nouveaux tout de suite, les autres rafraîchis chaque seconde
+        boolean rafraichir = tickCount % 20 == 0;
+        for (int i = 0; i < n; i++) {
+            long k = voulus[i];
+            boolean tenu = dans(tenus, nTenus, k);
+            if (tenu && !rafraichir) continue;
+            level.getChunkSource().addRegionTicket(TICKET, new ChunkPos(k), rayonTenu, cle());
+            if (!tenu && nTenus < tenus.length) tenus[nTenus++] = k;
         }
     }
 
+    private static boolean dans(long[] t, int n, long k) {
+        for (int i = 0; i < n; i++) if (t[i] == k) return true;
+        return false;
+    }
+
     private void relacherTicket() {
-        if (ticket != null && level() instanceof ServerLevel sl) sl.getChunkSource().removeRegionTicket(TICKET, ticket, RAYON_TICKET, getId());
-        ticket = null;
+        if (nTenus > 0 && level() instanceof ServerLevel sl) {
+            for (int i = 0; i < nTenus; i++) sl.getChunkSource().removeRegionTicket(TICKET, new ChunkPos(tenus[i]), rayonTenu, cle());
+        }
+        nTenus = 0;
     }
 
     /** Fin sans épave (parti, durée maximale) : prévient le suivi puis retire l'entité. */

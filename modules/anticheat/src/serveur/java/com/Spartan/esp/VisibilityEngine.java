@@ -434,12 +434,22 @@ public final class VisibilityEngine {
         }
     }
 
-    /** Threads de calcul selon la config (0 = thread serveur, -1 = automatique). */
+    /** Dernière valeur du réglage {@code threads} vue, et nombre de fils qui en découle (-2 : pas encore calculé). */
+    private static int reglageThreads = -2, threadsVoulus;
+
+    /**
+     * Threads de calcul selon la config (0 = thread serveur, -1 = automatique). 19/11 (audit des lenteurs, C13) : le nombre
+     * de fils n'est recalculé que si le réglage change (chargement, relecture) ; avant, {@code availableProcessors()} était
+     * appelé à chaque tick (dans un conteneur, Java relit alors les fichiers cgroup quand son cache expire : jusqu'à 119 ms
+     * relevés le 18/11).
+     */
     private static void configureWorkers() {
-        int wanted = SpartanConfig.ESP_THREADS.get();
-        if (wanted < 0) {
-            wanted = Math.max(1, Math.min(4, Runtime.getRuntime().availableProcessors() / 4));
+        int reglage = SpartanConfig.ESP_THREADS.get();
+        if (reglage != reglageThreads) {
+            reglageThreads = reglage;
+            threadsVoulus = reglage < 0 ? Math.max(1, Math.min(4, Runtime.getRuntime().availableProcessors() / 4)) : reglage;
         }
+        int wanted = threadsVoulus;
         int current = workers == null ? 0 : workers.threads();
         if (wanted == current) {
             return;

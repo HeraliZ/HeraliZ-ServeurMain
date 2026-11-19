@@ -14,6 +14,7 @@ public final class ZombiesConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ARCTIQUE, PRISON, MILITAIRE, CONTAMINEES, REMPLACES, MUTANTS, INTERDITS;
     public static final ForgeConfigSpec.DoubleValue PART_HAZMAT;
     public static final ForgeConfigSpec.IntValue PLAFOND_CARTE, PLAFOND_LOCAL;
+    public static final ForgeConfigSpec.BooleanValue PLAFOND_PAR_ARRIVEES;
     // IA allégée (voir IaZombies)
     public static final ForgeConfigSpec.BooleanValue IA_ALLEGEE;
     public static final ForgeConfigSpec.DoubleValue IA_CHEMINS;
@@ -77,6 +78,10 @@ public final class ZombiesConfig {
         PLAFOND_LOCAL = b.comment("Monstres au plus dans un carre de 5 x 5 troncons (80 blocs) autour du point d'apparition ;",
                         "au-dela, pas d'apparition naturelle ici (plusieurs joueurs au meme endroit n'empilent plus les hordes). 0 : pas de plafond.")
                 .defineInRange("plafond_local", 0, 0, 10000);
+        PLAFOND_PAR_ARRIVEES = b.comment("Comptage des monstres de la carte pour ces plafonds (19/11, audit des lenteurs) : true = seulement les",
+                        "monstres suivis a leur arrivee et a leur depart, et un recensement complet de la carte une fois par minute en controle ;",
+                        "false = toutes les entites de la carte parcourues chaque seconde, comme avant (plus lent avec beaucoup d'entites).")
+                .define("plafond_par_arrivees", true);
         IA_ALLEGEE = b.comment("IA allegee des zombies HeraliZ (24/10) : ils ne cherchent plus de village la nuit, ne cherchent plus",
                         "d'oeufs de tortue a casser, ne visent plus villageois, golems ni tortues (seulement les joueurs, et ce qui les frappe).",
                         "false : IA du zombie de Minecraft complete.").define("ia_allegee", true);

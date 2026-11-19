@@ -86,7 +86,10 @@ public final class Tournois {
 
     static void tick(MinecraftServer s) {
         if (serveur != s) return;
-        if (courant != null && courant.actif()) courant.tick();
+        if (courant != null) {
+            if (courant.actif()) courant.tick();
+            else courant.apresFin();   // 19/11 : salle fermee apres les retours etales (rien a faire ensuite)
+        }
         int t = s.getTickCount();
         if (t % 20 == 0) planifier();
         if (t % 100 == 0) clesEnAttente(s);
@@ -151,9 +154,18 @@ public final class Tournois {
     static Tournoi ouvrir(Format format, long finMs, boolean simulation) {
         CwEtat.edition++;
         if (serveur != null) CwEtat.sauver(serveur);
+        // la salle de l'edition d'avant attendait encore des retours : fermee maintenant (elle ne serait plus suivie)
+        if (courant != null && !courant.actif()) courant.fermerSiBesoin();
         courant = new Tournoi(serveur, CwEtat.edition, format, finMs, simulation);
         HeralizClashWar.LOG.info("[clashwar] edition {} ouverte : format {}, cloture {}", CwEtat.edition, format.nom, heure(finMs));
-        if (!simulation) courant.annoncerOuverture();
+        if (!simulation) {
+            courant.annoncerOuverture();
+            // 19/11 (audit des lenteurs C8) : arenes posees d'avance maintenant (salle et cartes du format), plus au demarrage
+            List<String> cartes = new java.util.ArrayList<>();
+            cartes.add(CwConfig.get().salle);
+            for (fr.heraliz.clashwar.moteur.api.Carte c : fr.heraliz.clashwar.moteur.api.Arenes.cartesDeType(format.typeCarte)) cartes.add(c.id());
+            fr.heraliz.clashwar.moteur.api.Arenes.ouverture(cartes);
+        }
         marquerVue();
         return courant;
     }
@@ -192,7 +204,7 @@ public final class Tournois {
         }
         if (courant == null) {
             return new VueTableau(CwEtat.edition, "", VueTableau.Etat.AUCUN, 0, prochaine, prochainFormat, 0, 0, 0, List.of(), List.of(),
-                    dernier, dernierEdition);
+                    dernier, dernierEdition, cfg.zone().getId());
         }
         return courant.vue(prochaine, prochainFormat, dernier, dernierEdition);
     }

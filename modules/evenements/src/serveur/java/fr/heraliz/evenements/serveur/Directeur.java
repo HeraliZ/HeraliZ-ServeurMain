@@ -95,7 +95,12 @@ public final class Directeur {
     @SubscribeEvent
     public static void arret(ServerStoppingEvent e) {
         for (Evenement ev : EVENEMENTS.values()) {
-            if (ev.actif()) ev.annuler(e.getServer(), "arret du serveur");
+            if (!ev.actif()) continue;
+            try {
+                ev.arret(e.getServer());
+            } catch (RuntimeException ex) {
+                HeralizEvenements.LOG.error("[evenements] {} : arret en erreur", ev.id(), ex);
+            }
         }
         Etat.sauver();
     }

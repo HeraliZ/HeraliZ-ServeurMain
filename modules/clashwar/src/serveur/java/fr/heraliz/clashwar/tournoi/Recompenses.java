@@ -34,21 +34,36 @@ public final class Recompenses {
         CwConfig cfg = CwConfig.get();
         Tableau.EquipeT champion = tab.equipe(tab.champion());
         String edition = "#" + t.edition;
+        // clans differents qui ont une equipe dans le tableau
+        Set<UUID> clans = clans(tab);
+        // 19/11 (decision du proprietaire) : primes et cles seulement a partir de recompenses_clans_min clans differents
+        boolean primes = clans.size() >= cfg.recompensesClansMin;
+        if (!primes) {
+            HeralizClashWar.LOG.info("[clashwar] edition {} : {} clan(s) seulement, ni primes ni cles (au moins {})", t.edition, clans.size(),
+                    cfg.recompensesClansMin);
+            if (!t.simulation) {
+                Annonces.chat(t.serveur(), Component.translatableWithFallback("clashwar.chat.sans_recompense",
+                        "Pas de primes ni de clés pour ce ClashWar : %s clan(s) différent(s) seulement, il en faut %s.",
+                        clans.size(), cfg.recompensesClansMin).withStyle(net.minecraft.ChatFormatting.GRAY));
+            }
+        }
         if (ClansApi.disponible()) {
             // banque des clans
-            // podium : 1er, 2e, 3e (match pour la 3e place), 4e
+            // podium : 1er, 2e, 3e (match pour la 3e place), 4e ; une seule prime par clan (19/11), la meilleure
             int[] podium = tab.podium();
-            crediter(champion, cfg.recompenseVainqueur, "clashwar_victoire");
-            if (podium[1] >= 0) crediter(tab.equipe(podium[1]), cfg.recompenseFinaliste, "clashwar_finale");
-            if (podium[2] >= 0) crediter(tab.equipe(podium[2]), cfg.recompenseTroisieme, "clashwar_troisieme");
-            if (podium[3] >= 0) crediter(tab.equipe(podium[3]), cfg.recompenseDemi, "clashwar_demi");
+            long[] montants = primesParPlace(tab);
+            String[] motifs = {"clashwar_victoire", "clashwar_finale", "clashwar_troisieme", "clashwar_demi"};
+            for (int i = 0; i < podium.length && i < montants.length; i++) {
+                if (podium[i] >= 0 && montants[i] > 0) crediter(tab.equipe(podium[i]), montants[i], motifs[i]);
+                else if (podium[i] >= 0 && primes) {
+                    HeralizClashWar.LOG.info("[clashwar] {} : pas de prime ({}e place), son clan a deja la sienne", tab.equipe(podium[i]).libelle(), i + 1);
+                }
+            }
             for (int i = 0; i < podium.length; i++) {
                 if (podium[i] >= 0) CwClassement.place(tab.equipe(podium[i]), i + 1);
             }
             CwClassement.sauver(t.serveur());
             // stats et journal : une fois par clan participant
-            Set<UUID> clans = new LinkedHashSet<>();
-            for (Tableau.EquipeT e : tab.equipes()) clans.add(e.clan);
             for (UUID c : clans) {
                 boolean gagne = c.equals(champion.clan);
                 ClansApi.ajouterClashWar(c, gagne);
@@ -59,13 +74,44 @@ public final class Recompenses {
         } else {
             HeralizClashWar.LOG.warn("[clashwar] mod clans indisponible : ni banque ni stats");
         }
-        // cles de caisse (donnees au retour du Coffre)
-        if (cfg.clesParJoueur > 0 && !cfg.cleEvent.isBlank()) {
+        // cles de caisse (donnees au retour du Coffre), avec les primes seulement
+        if (primes && cfg.clesParJoueur > 0 && !cfg.cleEvent.isBlank()) {
             for (UUID u : champion.joueurs) {
                 if (!t.mannequins.contains(u)) CwEtat.CLES.merge(u, cfg.clesParJoueur, Integer::sum);
             }
             CwEtat.sauver(t.serveur());
         }
+    }
+
+    /** Clans differents qui ont une equipe dans le tableau (ordre des equipes). */
+    static Set<UUID> clans(Tableau tab) {
+        Set<UUID> clans = new LinkedHashSet<>();
+        for (Tableau.EquipeT e : tab.equipes()) clans.add(e.clan);
+        return clans;
+    }
+
+    /** Vrai si l'edition paie primes et cles : au moins {@code recompenses_clans_min} clans differents (19/11). */
+    static boolean avecPrimes(Tableau tab) {
+        return clans(tab).size() >= CwConfig.get().recompensesClansMin;
+    }
+
+    /**
+     * Prime de chaque place du podium (1er, 2e, 3e, 4e ; 0 = rien) : rien sous {@code recompenses_clans_min} clans
+     * differents, et une seule prime par clan, la meilleure (19/11, decision du proprietaire : un clan qui inscrit deux
+     * equipes ne touche pas deux primes). Lue aussi par la ceremonie du podium.
+     */
+    static long[] primesParPlace(Tableau tab) {
+        CwConfig cfg = CwConfig.get();
+        long[] bareme = {cfg.recompenseVainqueur, cfg.recompenseFinaliste, cfg.recompenseTroisieme, cfg.recompenseDemi};
+        long[] l = new long[bareme.length];
+        if (!avecPrimes(tab)) return l;
+        int[] podium = tab.podium();
+        Set<UUID> payes = new java.util.HashSet<>();
+        for (int i = 0; i < podium.length && i < l.length; i++) {
+            if (podium[i] < 0) continue;
+            if (payes.add(tab.equipe(podium[i]).clan)) l[i] = bareme[i];
+        }
+        return l;
     }
 
     /**
