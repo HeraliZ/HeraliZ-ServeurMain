@@ -1,5 +1,6 @@
 package com.Spartan.check.movement;
 
+import com.Spartan.check.movement.model.ArriveesTirs;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.world.phys.Vec3;
@@ -47,6 +48,8 @@ final class MoveInbox {
     private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final AtomicInteger size = new AtomicInteger();
     private volatile boolean overflowed;
+    /** Arrivées des tirs TaCZ (19/11, cadence réelle des tirs) : notées par le fil réseau, reprises par le fil du serveur. */
+    final ArriveesTirs tirs = new ArriveesTirs();
 
     void push(Event e) {
         if (size.incrementAndGet() > MAX_EVENTS) {

@@ -11,6 +11,7 @@ import com.Spartan.check.combat.AutoClickerCheck;
 import com.Spartan.check.combat.KillAuraCheck;
 import com.Spartan.check.combat.ReachCheck;
 import com.Spartan.check.combat.TirsTacz;
+import com.Spartan.check.interaction.InteractionCheck;
 import com.Spartan.check.movement.BadPacketsCheck;
 import com.Spartan.check.movement.FlyCheck;
 import com.Spartan.check.movement.IllegalEffectCheck;
@@ -61,9 +62,11 @@ public final class PartieServeur implements Partie {
         CheckManager.register(new NukerCheck());
         CheckManager.register(new FastBreakCheck());
         CheckManager.register(new IllegalEffectCheck());
-        // audit du 02/11 (point 14) : latence trafiquée, tirs TaCZ (alertes seulement)
+        // audit du 02/11 (point 14) : latence trafiquée, tirs TaCZ (alertes seulement ; 19/11 : rafales étalées)
         CheckManager.register(new LatenceCheck());
         CheckManager.register(new TirsTacz());
+        // 19/11 : conteneurs, caisses et joueurs à terre ouverts à travers un mur ou hors de portée, coups sur un joueur caché
+        CheckManager.register(new InteractionCheck());
 
         ModMessages.RECEPTION_SERVEUR.brancher(ReceptionServeur::recevoir);
         busMod.addListener(PartieServeur::imc);

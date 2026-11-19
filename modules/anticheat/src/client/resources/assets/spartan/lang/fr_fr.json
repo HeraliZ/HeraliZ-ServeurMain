@@ -1,5 +1,6 @@
 {
-  "spartan.expulsion.banni": "Vous êtes banni de ce serveur.\n\nRaison : %s\nDurée : %s",
+  "spartan.interaction.refus": "Tu ne vois pas ça d'ici.",
+  "spartan.expulsion.banni":"Vous êtes banni de ce serveur.\n\nRaison : %s\nDurée : %s",
   "spartan.expulsion.launcher": "Connexion refusée : lancez le jeu depuis le launcher HeraliZ.\n(Le jeu lancé autrement, ou depuis plus de 6 heures, n'est pas accepté.)\n\nTélécharger le launcher (Windows) :\n%s\nMac et Linux : page Launcher de heraliz.fr",
   "spartan.expulsion.version": "Votre version de Spartan n'est pas celle du serveur.\nRelancez le jeu depuis le launcher officiel pour la mettre à jour.",
   "spartan.expulsion.conformite": "Connexion refusée : ton jeu n'est pas identique au jeu officiel HeraliZ.\nFerme le jeu et relance-le depuis le launcher HeraliZ (il remet les fichiers officiels tout seul).",

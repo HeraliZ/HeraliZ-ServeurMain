@@ -940,3 +940,71 @@ avant. `outils/atlas_blocs.py --verifier` le signale (sans bloquer).
 Pas fait (décision du propriétaire, rendus à valider d'abord) : vraies versions allégées des 62 armes sans LOD,
 allègement plus fort des conteneurs HD, camos « cuits » dans une texture ; textures des armures, de la roue du Souffle du
 loup et de l'Olympia gardées à leur taille (vrai détail).
+
+## 33. Anticheat côté serveur : rafales de tirs, ouvertures à travers les murs, faux lag (19/11)
+
+Demande du propriétaire : « le plus possible côté serveur ». Ces protections marchent même contre un jeu entièrement
+modifié : le serveur ne croit que ce qu'il mesure lui-même (heure d'arrivée des paquets, murs entre le joueur et l'objet).
+**Rien de tout cela n'a été testé en jeu** (pas de serveur ici) : seuls les calculs ont été essayés hors du jeu (tests
+automatiques). Version : Anticheat 2.13.0 (le launcher la donne aux joueurs). Réglages dans
+`serveur/config/spartan-common.toml`, sections `[tirs]` et `[interactions]`, relus sans redémarrer.
+
+Ce qu'un tricheur pouvait faire avant, et ce qui se passe maintenant :
+- **Rafale de tirs** : un jeu modifié envoyait d'un coup 8 tirs d'un fusil (15 au minigun), datés comme s'ils étaient
+  partis à la bonne cadence : TaCZ les acceptait tous dans le même instant. Maintenant ces tirs partent quand même, mais
+  un par un, à la cadence de l'arme : la rafale ne sert plus à rien.
+- **Ouvrir à travers un mur** : Minecraft ne vérifie que la distance d'un clic droit (6 blocs). On pouvait vider un
+  conteneur d'une salle à carte depuis le couloir, sans carte, ou fouiller un joueur à terre derrière un mur. Maintenant
+  le clic ne fait rien et le joueur lit « Tu ne vois pas ça d'ici. ».
+- **Faux lag** : un jeu qui fait croire à un gros ping faisait reculer les cibles de TaCZ (jusqu'à 350 ms) et touchait un
+  joueur déjà caché. Maintenant TaCZ ne recule les cibles que du vrai ping mesuré par l'anticheat.
+- **Frapper un joueur caché** : un joueur que l'anticheat cache (derrière un mur) n'existe pas dans le jeu du tricheur ;
+  un coup ou un clic sur lui est donc fabriqué : refusé.
+
+Ce qu'une alerte donne au staff (salon Discord de l'anticheat, staff en jeu, `config/spartan/alerts.log`) :
+- « **Tirs** (VL 1) : 8 tirs arrivés d'un coup alors que leurs heures suivent la cadence de l'arme, étalés ou refusés
+  en 60 s (…) : rafale « rapid fire » par heures de tir trafiquées ? » ;
+- « **Interaction** (VL 1) : 3 interaction(s) impossible(s) refusée(s) en 10 min ; la dernière : ouvre heraliz_loot:…
+  (le conteneur) à travers un mur (3.2 blocs, aucune ligne de vue) ». Chaque refus, même seul, est aussi écrit dans
+  `config/spartan/interactions.log`.
+- `/spartan status <joueur>` : deux lignes de plus, « tirs : … cadence réelle : N tir(s) étalé(s) » et « interactions :
+  N refus dans les 10 dernières minutes ». Aucune sanction automatique : le staff regarde et décide.
+
+À vérifier (joueur honnête : rien ne doit changer) :
+- [ ] Tir en automatique, en rafale, au coup par coup, fusil à pompe, sniper, minigun, sur des cibles et sur un autre
+      joueur (serveur d'essai, deux comptes) : les armes tirent comme avant, aucune alerte « Tirs ».
+- [ ] Même chose en Wi-Fi chargé ou en partage de connexion 4G, et pendant une petite coupure (couper le Wi-Fi 1 s en
+      plein tir automatique) : aucune alerte « Tirs ». Au pire, juste après la coupure, deux ou trois balles partent une
+      fraction de seconde plus tard.
+- [ ] Journal du serveur au démarrage : « Cadence réelle des tirs TaCZ active ». Jamais « Cadence réelle des tirs
+      inactive : l'arrivée des tirs de TaCZ n'est jamais reconnue » (sinon : prévenir, TaCZ aurait changé).
+- [ ] Ouvrir des conteneurs partout (villes, bunkers, salles à carte avec la carte, coffres T7, caisse d'un largage, corps,
+      joueur à terre) : tout s'ouvre comme avant, y compris en courant, accroupi, allongé, en sautant, de biais, par une
+      porte ouverte, au-dessus d'une table, un conteneur de deux blocs (frigo) par son haut ou son bas.
+- [ ] Ouvrir un conteneur juste derrière une fenêtre en verre (sans l'ouvrir) : impossible, comme dans le jeu normal (le
+      jeu vise la vitre).
+- [ ] Salle à carte, porte fermée : se coller au mur ou à la porte depuis le couloir et cliquer droit vers un conteneur
+      qu'on ne voit pas (un jeu honnête vise le mur, rien ne se passe, comme avant). Avec un client de triche d'essai qui
+      ouvre à travers les murs : « Tu ne vois pas ça d'ici. », rien ne s'ouvre, alerte au 3e essai.
+- [ ] Monter dans un véhicule, en descendre, rouler, puis ouvrir un coffre : rien de bloqué.
+- [ ] Mode créatif ou spectateur (staff) : rien n'est jamais refusé.
+- [ ] `config/spartan/interactions.log` après une soirée de jeu normal : vide ou presque (une ligne isolée de temps en temps
+      peut venir d'un décalage du réseau ; plusieurs lignes du même joueur honnête : prévenir).
+- [ ] Combat au corps à corps et à l'arme près d'un mur et d'un coin de rue : coups et tirs comme avant.
+
+Si un souci apparaît, à couper tout de suite dans `config/spartan-common.toml` du Ptero (pris à chaud) :
+`[tirs] cadenceReelle = false` (TaCZ juge seul les tirs, comme avant), `[tirs] reculPingMesure = false`,
+`[interactions] enabled = false` (ou seulement `ligneDeVue = false`, `portee = false`, `entites = false`,
+`cibleCachee = false`).
+
+Pas fait, volontairement :
+- **Renvoi en arrière des tricheurs qui volent ou courent trop vite** (`[mitigation] movementSetback`) : toujours coupé
+  depuis le 11/10 (fausses alertes chez des joueurs honnêtes). Il ne faut le rallumer qu'après une semaine d'alertes de
+  mouvement relues sans aucune fausse alerte ; ces alertes ne sont pas visibles d'ici (elles sont sur le Ptero).
+- **Cacher les zombies et les objets derrière les murs** comme les joueurs : les zombies se font entendre de toute façon
+  (sons envoyés à leur place) et ça multiplierait le coût de l'anticheat. Le contenu des conteneurs, lui, ne part jamais
+  avant l'ouverture (T7 : « ? » tant que l'objet n'est pas identifié), seule leur place se voit (c'est la carte).
+- **Visée « silencieuse »** (tir dans une autre direction que celle de l'écran) : pas de règle sans fausses alertes
+  trouvée pour l'instant ; les alertes « tirs à la tête » et « coups secs » restent.
+- **Clics trop rapides dans l'inventaire** (prendre tout un coffre d'un coup) : Minecraft le fait déjà lui-même avec
+  Maj + double-clic ; une règle sur la vitesse des clics donnerait des alertes à tort.

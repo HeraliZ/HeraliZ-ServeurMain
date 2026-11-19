@@ -6,6 +6,7 @@ import com.Spartan.ban.PlayerRegistry;
 import com.Spartan.check.CheckManager;
 import com.Spartan.check.HandshakeMonitor;
 import com.Spartan.check.Mitigation;
+import com.Spartan.check.interaction.InteractionCheck;
 import com.Spartan.check.item.AntiDupe;
 import com.Spartan.check.movement.MovementEngine;
 import com.Spartan.config.SpartanConfig;
@@ -32,6 +33,7 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
@@ -85,6 +87,11 @@ public class SpartanEvents {
             event.setCanceled(true);
             return;
         }
+        // 19/11 : coup sur un joueur que son jeu n'a pas (caché par l'anti-ESP) : paquet fabriqué, refusé
+        if (InteractionCheck.coup(player, event.getTarget())) {
+            event.setCanceled(true);
+            return;
+        }
         boolean violation = CheckManager.onAttack(player, event.getTarget());
         if (violation && SpartanConfig.MITIGATE_COMBAT.get()) {
             event.setCanceled(true);
@@ -106,6 +113,26 @@ public class SpartanEvents {
         if (violation && SpartanConfig.MITIGATE_BLOCKS.get()) {
             event.setCanceled(true);
         }
+    }
+
+    /**
+     * 19/11 : ouverture d'un conteneur (loot, coffre, caisse…) à travers un mur ou hors de portée : refusée. Priorité basse :
+     * après les refus de CRac (claim d'un autre clan) et des autres mods ; un clic déjà refusé n'est pas revu.
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        InteractionCheck.clicBloc(event);
+    }
+
+    /** 19/11 : clic droit sur une entité (joueur à terre, caisse d'un largage…) à travers un mur : refusé, avant la fouille. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        InteractionCheck.clicEntite(event, event.getTarget());
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+        InteractionCheck.clicEntite(event, event.getTarget());
     }
 
     @SubscribeEvent
@@ -233,6 +260,8 @@ public class SpartanEvents {
         com.Spartan.integrity.Injection.tick(event.getServer());
         // Anti-ESP : lignes de vue entre joueurs, décisions d'envoi appliquées tout de suite.
         VisibilityEngine.tick(event.getServer());
+        // Cadence réelle des tirs (19/11) : tirs d'une rafale mis de côté dont l'heure est venue (rien presque toujours)
+        com.Spartan.check.combat.TirsTacz.jouerEtales(event.getServer());
         // Anti-duplication : un relevé de temps en temps (même numéro à deux endroits au même instant).
         AntiDupe.tick(event.getServer());
         // Contrôle d'intégrité (2.9.6) : reprend une analyse restée sans réponse (presque toujours : rien à faire)

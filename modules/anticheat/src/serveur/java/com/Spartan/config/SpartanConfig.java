@@ -171,6 +171,24 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.IntValue TIRS_REFUS_HORLOGE;
     public static final ForgeConfigSpec.IntValue TIRS_REFUS_SECONDES;
     public static final ForgeConfigSpec.BooleanValue TIRS_JOURNAL;
+    // cadence réelle des tirs et recul des hitbox (19/11)
+    public static final ForgeConfigSpec.BooleanValue TIRS_CADENCE;
+    public static final ForgeConfigSpec.IntValue TIRS_RAFALE_TOLERANCE;
+    public static final ForgeConfigSpec.IntValue TIRS_RAFALE_ATTENTE;
+    public static final ForgeConfigSpec.IntValue TIRS_RAFALE_ALERTE;
+    public static final ForgeConfigSpec.BooleanValue TIRS_RECUL_MESURE;
+
+    // --- interactions impossibles (19/11) ---
+    public static final ForgeConfigSpec.BooleanValue INTER_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue INTER_LIGNE;
+    public static final ForgeConfigSpec.BooleanValue INTER_PORTEE;
+    public static final ForgeConfigSpec.DoubleValue INTER_MARGE;
+    public static final ForgeConfigSpec.BooleanValue INTER_ENTITES;
+    public static final ForgeConfigSpec.BooleanValue INTER_CIBLE_CACHEE;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INTER_BLOCS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INTER_MULTI;
+    public static final ForgeConfigSpec.IntValue INTER_ALERTE;
+    public static final ForgeConfigSpec.IntValue INTER_FENETRE;
 
     // --- validation du jeu à la connexion ---
     public static final ForgeConfigSpec.BooleanValue VALIDATION_ENABLED;
@@ -629,6 +647,60 @@ public class SpartanConfig {
         TIRS_REFUS_SECONDES = b.comment("Fenêtre de comptage des tirs refusés (secondes).")
                 .defineInRange("refusalSeconds", 10, 2, 600);
         TIRS_JOURNAL = b.comment("Résumé de chaque session de tir dans config/spartan/tirs.log.").define("journal", true);
+        TIRS_CADENCE = b.comment("Cadence réelle (19/11) : TaCZ juge la cadence sur l'heure écrite par le jeu du joueur ; un jeu modifié",
+                        "envoyait d'un coup une rafale datée à la cadence de l'arme (jusqu'à 700 ms de tirs dans le même tick, 8 balles",
+                        "d'un fusil à 600 coups/min). Chaque tir est aussi daté par son arrivée sur le réseau : une rafale arrivée d'un",
+                        "coup est ÉTALÉE à la cadence de l'arme (tirs joués un peu plus tard, aucun perdu). Les à-coups du réseau",
+                        "(rafaleToleranceMs) et les tirs groupés par une coupure du réseau passent sans rien. false = TaCZ seul.")
+                .define("cadenceReelle", true);
+        TIRS_RAFALE_TOLERANCE = b.comment("Cadence réelle : avance (ms) que les heures des tirs peuvent prendre sur leur arrivée sans",
+                        "rien faire (à-coups du réseau). 150 = au plus 2 ou 3 tirs d'un coup au lieu de 8.")
+                .defineInRange("rafaleToleranceMs", 150, 50, 1000);
+        TIRS_RAFALE_ATTENTE = b.comment("Cadence réelle : un tir qui devrait attendre plus que ça (ms) pour suivre la cadence de l'arme",
+                        "est refusé (cadence soutenue plus rapide que l'arme). Un joueur honnête n'attend jamais plus de 200 ms.")
+                .defineInRange("rafaleAttenteMaxMs", 1000, 200, 5000);
+        TIRS_RAFALE_ALERTE = b.comment("Cadence réelle : tirs étalés ou refusés en 60 s avant l'alerte « Tirs » au staff.")
+                .defineInRange("rafaleAlerte", 8, 2, 1000);
+        TIRS_RECUL_MESURE = b.comment("Recul des hitbox (19/11) : TaCZ replace chaque cible là où elle était il y a « ping du tireur »",
+                        "(jusqu'à ServerHitboxLatencyMaxSaveMs de tacz-common.toml). Ce ping ne dépasse plus la latence mesurée par",
+                        "les transactions + 100 ms : un faux lag ne fait plus toucher un joueur déjà à couvert. Joueur honnête :",
+                        "rien ne change. Nécessite transactions.")
+                .define("reculPingMesure", true);
+        b.pop();
+
+        b.comment("Interactions impossibles pour un jeu honnête (19/11) : Minecraft ne vérifie que la distance d'un clic droit",
+                "(6 blocs), jamais ce qu'il y a entre le joueur et l'objet. Un jeu modifié ouvrait à travers un mur les",
+                "conteneurs du loot (salles à carte comprises, sans carte), les coffres T7, les caisses des largages, fouillait",
+                "un joueur à terre derrière un mur. Le serveur refait le rayon du jeu : le clic à travers un mur (seuls les blocs",
+                "avec une collision arrêtent le rayon) ou hors de portée ne fait rien (« Tu ne vois pas ça d'ici. »). Chaque",
+                "refus est noté dans config/spartan/interactions.log ; ALERTE « Interaction » au staff à partir de alerteApres",
+                "refus, jamais de sanction. Pas jugés : créatif, spectateur, passager d'un véhicule, juste après une",
+                "téléportation. Les bases de CRac gardent leur propre refus.")
+                .push("interactions");
+        INTER_ENABLED = b.comment("Active le contrôle des interactions.").define("enabled", true);
+        INTER_LIGNE = b.comment("Refuse l'ouverture quand aucune ligne de vue n'existe entre les yeux et l'objet.")
+                .define("ligneDeVue", true);
+        INTER_PORTEE = b.comment("Refuse l'ouverture au-delà de la portée du joueur (4,5 blocs pour un bloc, 3 pour une entité)",
+                        "+ margePortee.")
+                .define("portee", true);
+        INTER_MARGE = b.comment("Marge ajoutée à la portée (blocs) : les yeux du joueur vus par le serveur ont un tick de retard.")
+                .defineInRange("margePortee", 1.0, 0.3, 3.0);
+        INTER_ENTITES = b.comment("Contrôle aussi le clic droit sur une entité (joueur à terre, caisse d'un largage, véhicule…).")
+                .define("entites", true);
+        INTER_CIBLE_CACHEE = b.comment("Coup ou clic droit sur un joueur que l'anti-ESP cache à ce joueur depuis plus que son ping",
+                        "+ 300 ms (son jeu n'a pas ce joueur : paquet fabriqué) : refusé.")
+                .define("cibleCachee", true);
+        INTER_BLOCS = b.comment("Blocs contrôlés en plus de ceux qui ouvrent un écran (conteneurs, coffres) : « mod:* » ou",
+                        "identifiants exacts. Les conteneurs du loot T2-T6 n'ont pas d'écran à eux : ils sont dans cette liste.")
+                .defineList("blocs", List.of("heraliz_loot:*", "airstrike:*"), o -> o instanceof String);
+        INTER_MULTI = b.comment("Mods dont les objets occupent plusieurs blocs : les blocs d'un même objet ne se cachent pas l'un",
+                        "l'autre (conteneur de deux mètres, caisse longue).")
+                .defineList("multiBlocs", List.of("heraliz_loot"), o -> o instanceof String);
+        INTER_ALERTE = b.comment("Refus avant l'alerte au staff (dans fenetreMinutes). Un refus isolé (décalage du réseau) ne",
+                        "donne pas d'alerte.")
+                .defineInRange("alerteApres", 3, 1, 100);
+        INTER_FENETRE = b.comment("Fenêtre (minutes) dans laquelle les refus s'additionnent.")
+                .defineInRange("fenetreMinutes", 10, 1, 240);
         b.pop();
 
         b.comment("Validation du jeu à chaque connexion (demande du propriétaire, 27/10). Une fois le joueur vérifié (jeton",
@@ -1016,6 +1088,14 @@ public class SpartanConfig {
 
     public static List<String> getAllowedJavaAgents() {
         return lowerList(ALLOWED_JAVA_AGENTS);
+    }
+
+    public static List<String> getInteractionBlocs() {
+        return lowerList(INTER_BLOCS);
+    }
+
+    public static List<String> getInteractionMultiBlocs() {
+        return lowerList(INTER_MULTI);
     }
 
     /**

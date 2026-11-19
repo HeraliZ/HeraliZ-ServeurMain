@@ -37,6 +37,8 @@ public class SpartanMixinPlugin implements IMixinConfigPlugin {
         if (isLoaded("tacz")) {
             extra.add("TaczSoundMixin");
             extra.add("TaczTirMixin"); // tirs refusés par TaCZ (audit du 02/11, point 14)
+            extra.add("TaczCadenceMixin"); // cadence réelle des tirs : rafales envoyées d'un coup étalées (19/11)
+            extra.add("TaczReculMixin"); // recul des hitbox limité au ping mesuré (19/11)
         }
         return extra;
     }

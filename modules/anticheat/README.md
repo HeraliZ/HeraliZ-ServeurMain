@@ -16,8 +16,8 @@ Anticheat de HeraliZ.
 | 2 | **Build identique** au serveur, à la connexion | Mod Spartan modifié ou dépassé |
 | 3 | **Défi tournant** à intervalle aléatoire : chaque défi est différent | Mod Spartan modifié, bloqué ou désactivé en cours de partie |
 | 4 | **Contrôle d'intégrité silencieux** (à la connexion puis au hasard) : ce que le jeu a VRAIMENT chargé, + handshake obligatoire | JAR de cheat (même renommé), mods chargés en douce, Mixins qui modifient le rendu / le mouvement, agents Java, injection en cours de partie, code injecté, DLL, logiciels de triche |
-| 5 | **Détections serveur** : Fly, Speed (et vitesse soutenue), Reach, KillAura, AutoClicker, Nuker, FastBreak, effets illégaux, latence trafiquée, tirs TaCZ (têtes, coups secs, tirs refusés) | Toute triche qui se *voit* dans les actions, injectée ou non |
-| 6 | **Correction instantanée** : renvoi au sol, coup annulé, bloc non cassé, effet retiré | Le tricheur ne profite pas de sa triche, même une seconde |
+| 5 | **Détections serveur** : Fly, Speed (et vitesse soutenue), Reach, KillAura, AutoClicker, Nuker, FastBreak, effets illégaux, latence trafiquée, tirs TaCZ (têtes, coups secs, tirs refusés, rafales), interactions impossibles (à travers un mur, hors de portée, joueur caché) | Toute triche qui se *voit* dans les actions, injectée ou non |
+| 6 | **Correction instantanée** : renvoi au sol, coup annulé, bloc non cassé, effet retiré, rafale de tirs étalée à la cadence de l'arme, ouverture à travers un mur refusée, recul des hitbox limité au vrai ping | Le tricheur ne profite pas de sa triche, même une seconde |
 | 7 | **Ressources imposées** : packs de texture et shaders custom bloqués | Textures/shaders qui donnent un avantage (voir à travers les blocs, etc.) |
 | 8 | **JVM durcie** par le launcher (`-XX:+DisableAttachMechanism`) | Injecteurs qui s'attachent au jeu lancé |
 | 9 | **Anti-ESP serveur** : un joueur caché derrière un mur n'est plus envoyé au client | ESP, wallhack, radar, pseudos à travers les murs — même avec un client injecté indétectable |
@@ -287,6 +287,8 @@ rame n'envoie rien : il n'est jamais pris pour un tricheur.
 | **FastBreak** | Speedmine | Temps réel de minage comparé au temps attendu pour CE joueur (outil, enchantements, Célérité, eau…), plusieurs blocs de suite. |
 | **Duplication** | Objets copiés (exploit de duplication) | Chaque objet de valeur non empilable reçoit un numéro unique invisible ; un relevé périodique (inventaires, coffre de l'Ender, Curios, contenu des sacs, en une fois) repère un même numéro à deux endroits au même instant. Alerte seulement, rien n'est supprimé. |
 | **IllegalEffect** | « Se donne des effets » | Effet de niveau ou de durée impossible. Un client ne peut pas se donner un vrai effet : s'il en a un, c'est une commande ou une faille de mod → à investiguer en priorité. Staff ignoré. |
+| **Tirs** (rafales, 2.13.0) | « Rapid fire » par heures de tir trafiquées | TaCZ juge la cadence sur l'heure écrite par le jeu (à 300 ms près en avance, ~400 ms en retard) : une rafale envoyée d'un coup passait (8 balles d'un fusil à 600 coups/min dans le même tick). Chaque tir est aussi daté par son **arrivée sur le réseau** ; une rafale arrivée d'un coup est **étalée** à la cadence de l'arme (rien de perdu), une cadence soutenue plus rapide que l'arme est refusée. Tolérés : à-coups du réseau (150 ms), tirs groupés par une coupure (silence mesuré). Alerte après 8 tirs étalés en 60 s. Section `[tirs]`, voir 4 bis. |
+| **Interaction** (2.13.0) | Ouvrir à travers un mur ou de trop loin, toucher un joueur caché | Minecraft ne vérifie que la distance d'un clic droit (6 blocs), jamais ce qu'il y a entre le joueur et l'objet. Le serveur refait le rayon du jeu : conteneurs (loot, salles à carte, coffres T7, largages, tout bloc qui ouvre un écran), entités (joueur à terre, caisse…), portée de 4,5 blocs (3 pour une entité) + 1. Coup ou clic sur un joueur que l'anti-ESP cache à ce joueur : refusé (son jeu n'a pas ce joueur). Le clic refusé ne fait rien ; alerte après 3 refus en 10 min. Section `[interactions]`, voir 4 bis. |
 
 **Reculs, explosions et lag : les transactions.** Le serveur envoie à chaque
 joueur un ping vanilla par tick ; le client le traite dans l'ordre des paquets,
@@ -334,6 +336,37 @@ retardé par le réseau ne fait perdre aucun élan au joueur. Désactivable
 La boîte noire ne contient **que des données de jeu** déjà connues du serveur.
 La capture d'écran du joueur qui existait dans la 1.0.0 a été **supprimée**
 (donnée personnelle, illégale sans consentement).
+
+### 4 bis. Tirs et interactions jugés par le serveur (2.13.0, 19/11)
+
+Ce qui suit marche même contre un jeu entièrement modifié : le serveur ne croit que ce qu'il mesure lui-même.
+
+**Cadence réelle des tirs** (`[tirs] cadenceReelle`, `TirsTacz` + `CadenceTirs`, Mixin `TaczCadenceMixin`). L'observateur
+réseau de Spartan reconnaît chaque paquet de tir de TaCZ (canal `tacz:network`, message de tir de TaCZ 1.1.8 : 13 octets)
+et note son heure d'arrivée et le silence du réseau qui venait de finir (le jeu répond à un ping par tick : un trou de
+plus de 80 ms est une coupure). Juste avant que TaCZ juge la cadence, Spartan compare l'avance prise par les heures
+annoncées sur les heures d'arrivée (fenêtre de 600 ms) : au-delà de `rafaleToleranceMs` + la coupure, le tir est mis de
+côté et TaCZ le joue plus tard, à la cadence de l'arme, avec son heure recomptée du temps d'attente (TaCZ le juge comme à
+sa réception). Au-delà de `rafaleAttenteMaxMs`, refusé. Le tricheur perd sa rafale ; un joueur honnête n'est jamais retardé
+par les à-coups du réseau ni par une coupure (tests `CadenceTirsTest` : Wi-Fi chargé 40-180 ms, coupure de 380 ms, réseau
+qui se vide d'un coup : au pire quelques tirs 135 ms plus tard pendant 0,7 s). TaCZ d'une autre version : rien n'est
+reconnu, TaCZ juge seul (le journal le dit). Dans le journal de Tactique, un tir étalé apparaît comme « FORGE_EVENT_CANCEL »
+dans le bilan des tirs refusés : il n'est pas perdu, il part un peu plus tard.
+
+**Recul des hitbox au vrai ping** (`[tirs] reculPingMesure`, Mixin `TaczReculMixin`). TaCZ replace chaque cible à
+l'endroit où elle était il y a « ping du tireur » (keepalive, jusqu'à `ServerHitboxLatencyMaxSaveMs` = 350 ms) ; un faux
+lag gonflait ce ping pour toucher un joueur déjà à couvert. TaCZ lit maintenant la latence de Spartan : jamais plus que la
+latence mesurée par les transactions + 100 ms. Joueur honnête : la même qu'avant.
+
+**Interactions impossibles** (`[interactions]`, `InteractionCheck`). Clic droit sur un bloc protégé (qui ouvre un écran,
+ou de la liste `blocs` : tout le loot, les largages) ou sur une entité : un rayon des yeux vers le point visé par le jeu,
+puis le milieu, les faces et les coins de l'objet ; un seul libre suffit (seuls les blocs avec une collision arrêtent le
+rayon ; le bloc des yeux et les autres blocs du même objet ne comptent pas). Portée : 4,5 blocs (3 pour une entité) +
+`margePortee`. Coup ou clic sur un joueur que l'anti-ESP cache à cet observateur depuis plus que son ping + 300 ms et que
+Minecraft ne lui envoie plus : refusé (paquet fabriqué). Refus : le clic ne fait rien, « Tu ne vois pas ça d'ici. » dans la
+barre d'action, une ligne dans `config/spartan/interactions.log`, alerte « Interaction » après `alerteApres` refus en
+`fenetreMinutes`. Pas jugés : créatif, spectateur, passager, 3 s après une téléportation, bots. Les claims des bases CRac
+gardent leur propre refus (vérifié avant). `/spartan status <joueur>` : refus récents et tirs étalés.
 
 ## 5. Contrôle d'intégrité : repérer les JAR de cheat et les clients injectés
 
@@ -480,7 +513,14 @@ Le test est appelé sur le thread serveur ; il doit être rapide (résultat gard
 - Les **sons** restent positionnels : un tricheur peut toujours afficher d'où
   viennent les pas, les tirs et les voix qu'il entend (comme un joueur honnête
   avec un casque). Il ne voit plus personne de silencieux derrière un mur.
-- Les **coffres et le butin** (X-ray de conteneurs) ne sont pas encore cachés.
+- Les **coffres et le butin** : leur place se voit (ce sont des blocs de la carte, connus de tous), jamais leur
+  contenu : un conteneur T2-T6 n'a rien chez le joueur (tiré par le serveur à l'ouverture), un coffre T7 montre « ? »
+  tant que l'objet n'est pas identifié, un corps n'envoie son contenu qu'à l'ouverture. Depuis 2.13.0, les ouvrir à
+  travers un mur est refusé (section 4 bis). Les zombies ne sont pas cachés : ils se font entendre (sons envoyés à leur
+  place) et les cacher multiplierait le coût de l'anti-ESP (des centaines par joueur).
+- L'**équipement** des autres joueurs (armes en main, armure, sac) part avec ses données (munitions de l'arme, contenu
+  du sac s'il est synchronisé pour le rendu) : un client modifié peut le lire. Pas encore filtré (il faudrait trier ce
+  que chaque mod lit pour son rendu).
 - Mods client qui produisent des sons à partir des joueurs affichés (ex. Presence
   Footsteps) : un joueur caché n'en produit pas ; les pas vanilla restent audibles.
 - Sur les serveurs hybrides (Mohist, Arclight…), l'anti-ESP passe par Mixin ; si un
@@ -499,8 +539,10 @@ visible à travers vitres, fenêtres, barreaux, feuillages, portes, trappes, blo
 
 ## 7. Feuille de route
 
-- **Chest ESP** : ne pas envoyer au client les coffres et le butin qu'il ne peut
-  pas voir.
+- **Chest ESP** : la place des coffres reste connue (blocs de la carte) ; leur contenu ne part jamais avant l'ouverture,
+  et l'ouverture à travers un mur est refusée (2.13.0).
+- **Équipement des autres joueurs** : retirer des données envoyées ce que le rendu ne lit pas (munitions d'une arme,
+  contenu d'un sac).
 - **AutoHeal / AutoTotem** et détection d'anomalies d'items (dupe).
 - **Obfuscation du jar** (rendre la décompilation illisible) et nouvelles
   variantes de défi à chaque version.
@@ -628,6 +670,11 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.13.0 (19/11, demande du propriétaire : « le plus possible côté serveur »)** — **Cadence réelle des tirs** : une
+  rafale de tirs TaCZ envoyée d'un coup (heures trafiquées) est étalée à la cadence de l'arme. **Recul des hitbox au vrai
+  ping** (faux lag sans effet sur TaCZ). **Interactions impossibles** refusées : conteneurs, coffres, largages et joueurs à
+  terre à travers un mur ou hors de portée, coups et clics sur un joueur que l'anti-ESP cache. Section 4 bis ; réglages
+  `[tirs]` et `[interactions]` ; tests `CadenceTirsTest`, `ArriveesTirsTest`, `PointsDeVueTest`, `CompteurTest`.
 - **2.1.0 (HeraliZ)** — **Anti-duplication** (section `[antidupe]`). **Jeton du launcher HeraliZ** (6 h) et `tokenRequired` qui refuse la connexion sans jeton, même en détection silencieuse.
 - **2.0.0 (HeraliZ)** — **Coupé client / serveur** : le jar des joueurs ne contient plus aucune détection serveur ;
   le jar serveur embarque une copie du jar joueur pour les défis. **Défi lié au code réellement chargé** : en plus des

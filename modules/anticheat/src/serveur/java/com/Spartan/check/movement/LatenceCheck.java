@@ -30,6 +30,26 @@ public class LatenceCheck extends MovementCheck {
         return s == null || !SpartanConfig.TRANSACTIONS.get() ? l : s.effective(l);
     }
 
+    /**
+     * Latence dont TaCZ se sert pour remonter le temps des hitbox quand ce joueur tire (19/11, mixin TaczReculMixin sur
+     * HitboxHelper.getFixedBoundingBox, balles et explosions) : celle de Minecraft, jamais plus que la latence mesurée par
+     * les transactions + 100 ms ({@link #effective}). Un « faux lag » (réponses keepalive retenues pour remonter jusqu'à
+     * 350 ms dans le temps et toucher un joueur déjà à couvert) ne recule plus les hitbox que de son vrai ping. Joueur
+     * honnête : la même latence qu'avant (sa latence keepalive est toujours la plus petite). Fil du serveur.
+     */
+    public static int pourRecul(ServerPlayer tireur) {
+        appelsRecul++;
+        int l = Math.max(0, tireur.latency);
+        return SpartanConfig.TIRS_RECUL_MESURE.get() ? Math.min(l, effective(tireur)) : l;
+    }
+
+    /** Appels de TaCZ à {@link #pourRecul} depuis le démarrage (0 : le Mixin n'est pas branché, voir TirsTacz). */
+    private static long appelsRecul;
+
+    public static long appelsRecul() {
+        return appelsRecul;
+    }
+
     @Override
     public void onPong(ServerPlayer player, long sentNanos, long nanos) {
         SUIVIS.computeIfAbsent(player.getUUID(), u -> new LatenceSuivi()).pong(nanos - sentNanos);

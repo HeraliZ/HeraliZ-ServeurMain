@@ -147,6 +147,8 @@ public final class VisibilityEngine {
         SuiviCalcul.Episode suivi;
         /** Suivi à travers les murs : dernière fois vue à travers une porte, une trappe ou un bloc invisible. */
         long vuSuivi = NEVER;
+        /** Tick où la cible a cessé d'être envoyée (19/11, interactions sur un joueur caché), NEVER si envoyée. */
+        long cacheDepuis = NEVER;
 
         Pair(int observer, int target) {
             this.observer = observer;
@@ -216,6 +218,24 @@ public final class VisibilityEngine {
         return !pr.visible;
     }
 
+    /**
+     * Interactions (19/11) : l'anti-ESP cache {@code target} à {@code observer} depuis au moins {@code ticks} ticks, la
+     * décision est à jour (pas montrée faute de temps) et Minecraft ne lui envoie vraiment plus cette cible (suivi des
+     * entités) : le jeu de l'observateur n'a pas ce joueur, il ne peut ni le frapper ni cliquer dessus. Faux dans le doute.
+     * Thread serveur.
+     */
+    public static boolean cacheeConfirmee(ServerPlayer observer, ServerPlayer target, long ticks) {
+        if (!active || observer == target || !observer.server.isSameThread()) {
+            return false;
+        }
+        Pair pr = PAIRS.get(key(observer.getId(), target.getId()));
+        if (pr == null || pr.visible || pr.cacheDepuis == NEVER || tick - pr.cacheDepuis < ticks
+                || tick - pr.lastCheck > SpartanConfig.ESP_FAIL_OPEN_TICKS.get()) {
+            return false;
+        }
+        return Boolean.FALSE.equals(TrackerAccess.isSent(observer, target));
+    }
+
     /** Paire jamais vue (entrée dans la portée, connexion, téléportation) : décision immédiate. */
     private static Pair firstLook(ServerPlayer observer, ServerPlayer target) {
         lireReglages();
@@ -238,6 +258,9 @@ public final class VisibilityEngine {
             MAIN_VOXELS.reset();
             computeNow(pr, o, t);
             pr.visible = tick - pr.lastSeen <= SpartanConfig.ESP_HIDE_DELAY_TICKS.get();
+            if (!pr.visible) {
+                pr.cacheDepuis = tick;
+            }
         }
         PAIRS.put(key(o.id, t.id), pr);
         STATS.firstLooks++;
@@ -412,6 +435,7 @@ public final class VisibilityEngine {
                 CHANGED.add(pr);
                 if (!vis) {
                     STATS.hides++;
+                    pr.cacheDepuis = tick;
                 }
             }
             if (!pr.visible) {

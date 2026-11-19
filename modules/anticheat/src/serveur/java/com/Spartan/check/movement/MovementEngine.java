@@ -219,6 +219,16 @@ public final class MovementEngine {
         }
     }
 
+    /**
+     * Arrivée sur le réseau du tir TaCZ annoncé à {@code heure} par le jeu du joueur (19/11, cadence réelle des tirs) :
+     * {@code sortie} reçoit {arrivée (System.nanoTime), silence du réseau qui venait de finir (nanos)}. Faux si le tir n'a
+     * pas été vu passer (observateur absent, TaCZ d'une autre version). Fil du serveur.
+     */
+    public static boolean arriveeTir(UUID uuid, long heure, long[] sortie) {
+        MoveInbox inbox = INBOXES.get(uuid);
+        return inbox != null && inbox.tirs.prendre(heure, System.nanoTime(), sortie);
+    }
+
     /** Dernière position revendiquée par le client, ou null. */
     public static Vec3 lastClaim(UUID uuid) {
         State s = STATES.get(uuid);

@@ -1,5 +1,6 @@
 {
-  "spartan.expulsion.banni": "You are banned from this server.\n\nReason: %s\nDuration: %s",
+  "spartan.interaction.refus": "You can't see that from here.",
+  "spartan.expulsion.banni":"You are banned from this server.\n\nReason: %s\nDuration: %s",
   "spartan.expulsion.launcher": "Connection refused: launch the game from the HeraliZ launcher.\n(A game launched any other way, or more than 6 hours ago, is not accepted.)\n\nDownload the launcher (Windows):\n%s\nMac and Linux: Launcher page on heraliz.fr",
   "spartan.expulsion.version": "Your Spartan version does not match the server's.\nRestart the game from the official launcher to update it.",
   "spartan.expulsion.conformite": "Connection refused: your game is not identical to the official HeraliZ game.\nClose the game and start it again from the HeraliZ launcher (it restores the official files by itself).",
