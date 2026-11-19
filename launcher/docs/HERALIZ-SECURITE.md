@@ -114,8 +114,8 @@ Le dépôt GitHub est public (aucune bifurcation ni étoile au 19/11 : peu vu, m
 1. **Rendre le dépôt privé** (Settings → General → Danger Zone → Change visibility). Protège tout d'un coup (Spartan, site,
    réglages, jars de l'onglet Actions). Coût : les minutes d'Actions deviennent payantes au-delà du forfait. Relevé sur les
    30 jours avant le 19/11 : environ 975 exécutions et 5 000 minutes de machine (surtout « Serveur HeraliZ » ~2 500 et
-   « Contrôle de branche » ~1 500 ; le launcher Mac compte 10 fois ses ~95 minutes, Windows 2 fois ses ~145), soit environ
-   6 000 minutes comptées, pour 2 000 incluses (gratuit) ou 3 000 (GitHub Pro, environ 4 $ par mois) : au-delà, quelques
+   « Contrôle de branche » ~1 500 ; le launcher Mac compte 10 fois ses ~95 minutes, Windows 2 fois ses ~145), soit 6 000 à
+   7 000 minutes comptées, pour 2 000 incluses (gratuit) ou 3 000 (GitHub Pro, environ 4 $ par mois) : au-delà, quelques
    millièmes de dollar la minute Linux (prix à vérifier sur la page de facturation de GitHub), soit de l'ordre de 20 à
    40 $ par mois sans rien changer. Le stockage des paquets de l'onglet Actions devient aussi limité (0,5 à 2 Go selon le
    forfait ; aujourd'hui ~8 Go de paquets gardés) : garder moins de jours ou moins de paquets. Les jetons et les secrets ne
