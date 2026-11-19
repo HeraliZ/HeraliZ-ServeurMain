@@ -708,6 +708,8 @@ changement a son réglage dans `heraliz_noyau-server.toml` (à `true` = nouveau,
 dans `/diag etat` (ligne « Lenteurs (19/11) », puis « Écritures en fond » et « Préchauffage du démarrage »). **Rien n'a été
 testé en jeu** (pas de serveur ici) : tout est à vérifier ci-dessous. Après la mise à jour, garder un œil sur le journal
 les premiers jours : une ligne « [noyau] … impossible » ou une erreur de mixin au démarrage est à signaler.
+Versions : Noyau 1.1.5, Anticheat 2.12.1, Tactique 2.59.5, CRac 1.38.7-beta, Boutique 1.5.17, Bunker 0.14.6, Clans 3.17.3,
+ClashWar 1.3.2, Événements 1.3.1, Loot 0.20.4, Monde 1.3.4, Quêtes 1.23.3 (le launcher donne les nouvelles aux joueurs).
 
 Téléportations (plus de gel de 0,4 à 2,5 s quand l'arrivée n'est pas chargée)
 - [ ] `/tp` (staff) vers un endroit lointain de la carte, jamais visité depuis le démarrage : le message de Minecraft
