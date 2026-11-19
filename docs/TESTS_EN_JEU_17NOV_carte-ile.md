@@ -478,3 +478,43 @@ Capsules du casino : beaucoup plus de capsules dans les conteneurs, surtout en p
 piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta : T1 0,3 (avant 0,07), T3 1,6 (0,2), T5 5,5
 (0,45), T6 10,7 (0,9), T7 21 (1,3). Les autres objets perdent 1 à 2,5 % de leur place.
 - [ ] Ouvrir une dizaine de conteneurs T4-T5 : des capsules dans 1 sur 8 environ, parfois une pile de 4 à 7 capsules de 10.
+
+## 24. Duplications : correctifs de l'audit du 19/11
+
+Noyau 1.1.3, Quêtes 1.22.5, Boutique 1.5.16, Monde 1.3.2, CRac 1.38.5-beta, Tactique 2.59.1, ClashWar 1.3.1. Rien à
+voir de nouveau pour les joueurs. **Rien n'a été essayé en jeu.** Il faut le serveur d'essai, deux comptes et un op pour
+lancer un ClashWar. Nouvelle règle commune : rien de ce qui attend (objets gardés, récompenses, clés) n'arrive pendant un
+match, dans le monde des matchs, ni tant que l'inventaire est mis de côté par le ClashWar ; tout arrive après le retour.
+
+Recycleur du spawn (le plus grave : objets doublés à volonté pendant un tournoi) :
+- [ ] Poser des objets dans le recycleur, remplir son inventaire, fermer : le reste est « gardé ». Pendant un tournoi :
+      `/clashwar regarder`, se déconnecter, se reconnecter, `/clashwar quitter`, rouvrir tout de suite le recycleur
+      (moins de 5 s), attendre 10 s, le fermer : chaque objet une seule fois (avant : tout en double).
+- [ ] Même chose sans rouvrir le recycleur : les objets gardés reviennent seuls dans les 5 s après le retour.
+- [ ] Hors ClashWar : reconnexion et réapparition avec des objets gardés : rendus comme avant.
+
+Objets en attente pendant un ClashWar :
+- [ ] Atelier de réparation : arme posée, inventaire plein, fermer (« t'attend »). Partir au ClashWar : l'arme n'arrive
+      pas dans l'inventaire du match ; elle revient dans les 5 s après le retour. En match, un kit de réparation n'ouvre
+      pas l'atelier.
+- [ ] Objets du tutoriel qui attendaient une case, objets à vie gardés (inventaire plein), objets à vie d'une base
+      effacée : rien pendant le match ni à une reconnexion pendant le tournoi ; tout arrive après le retour.
+
+Tutoriel des bases :
+- [ ] Étape de l'entretien : mettre les planches du kit dans l'armoire, puis les reprendre (clic, Maj + clic, touches 1
+      à 9) ; « Quitter le tuto » : ces planches sont reprises avec le reste du kit (rien en plus dans l'inventaire rendu).
+- [ ] Étape de la caisse : poser la caisse en métal, la ramasser, finir ou quitter : la caisse est reprise aussi.
+- [ ] L'armoire d'une vraie base sur la carte : rien ne change (les planches reprises s'empilent avec les autres).
+
+Recycleur de la carte :
+- [ ] Machine restée vide plus de 20 min : y déposer 10 objets (5 s chacun), `/tp` à 1 000 blocs tout de suite (le
+      coin se décharge), attendre 10 s, revenir : environ 20 s après le dépôt, 4 à 6 objets recyclés, pas les 10 d'un
+      coup (avant : la machine rattrapait aussi le temps passé vide).
+
+Plantages au mauvais moment (non provoqués : vérifier seulement que tout marche comme avant) :
+- [ ] Recycler une pile au spawn : les hérals arrivent comme avant. `/diag profil` pendant que deux joueurs recyclent :
+      l'enregistrement des joueurs (`PlayerList.save`) reste petit.
+- [ ] Achat chez un marchand ; quête de Varga avec une étape « donner » (donner en deux fois) et une étape « payer » ;
+      clés du ClashWar en fin de tournoi : comme avant, une seule fois.
+- Pas encore corrigés (il faudrait changer la façon dont ces fichiers s'écrivent) : planque et coffre VIP, coffre du
+  clan. Il faudrait un plantage du serveur dans la seconde qui suit la fermeture du coffre.

@@ -474,6 +474,13 @@ final class Moteur {
                 int pris = prendre(p, e, a, voulu - a.progres);
                 a.progres += pris;
                 Donnees.sale(p.getUUID());
+                // 19/11 (audit des duplications, B3) : objets donnés = sortis du joueur : le joueur écrit sans eux d'abord, puis
+                // la progression (avant : progression sur le fil de fond sous 30 s, joueur à l'autosave ; un plantage entre les
+                // deux rendait les objets ET gardait la progression)
+                if (pris > 0) {
+                    Ponts.sauverJoueur(p);
+                    Donnees.ecrireMaintenant(p.getUUID());
+                }
                 if (a.progres < voulu) {
                     if (pris == 0) notif(p, Texte.cle("heraliz_quetes.notif.rien_a_donner", libelle(e)), 0xFF6B6B);
                     else notif(p, Texte.cle("heraliz_quetes.notif.donne", Texte.brut(a.progres), Texte.brut(voulu)), 0xE8C36A);
@@ -489,7 +496,13 @@ final class Moteur {
             }
             case "payer" -> {
                 long v = e.entier("herals", 0);
-                if (v <= 0 || Ponts.retirer(p.getUUID(), v, "quete:" + q.titre.francais())) return true;
+                if (v <= 0) return true;
+                if (Ponts.retirer(p.getUUID(), v, "quete:" + q.titre.francais())) {
+                    // 19/11 (audit des duplications, B3) : hérals sortis du compte écrits tout de suite, AVANT la progression
+                    // (écrite juste après par avancer) : un plantage ne rend plus les hérals avec l'étape payée
+                    Ponts.sauvegarderEconomie();
+                    return true;
+                }
                 notif(p, Texte.cle("heraliz_quetes.notif.pas_assez", Texte.brut(Ponts.nombre(v))), 0xFF6B6B);
                 return false;
             }

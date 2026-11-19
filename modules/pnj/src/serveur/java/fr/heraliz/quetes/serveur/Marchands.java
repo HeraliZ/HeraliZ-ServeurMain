@@ -175,6 +175,10 @@ final class Marchands {
         }
         // place vérifiée avant le paiement ; par sécurité, un reste attendrait de la place (jamais au sol)
         for (ItemStack s : lot) ObjetsARendre.donner(p, s);
+        // 19/11 (audit des duplications, B3) : hérals sortis du compte écrits d'abord, puis le joueur avec ses achats ; avant,
+        // si le joueur était écrit avant le compte (sous 60 s), un plantage rendait les hérals ET gardait l'achat
+        Ponts.sauvegarderEconomie();
+        Ponts.sauverJoueur(p);
         p.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.7F, 1.0F);
         Moteur.notif(p, Texte.cle("heraliz_quetes.notif.achete", Texte.brut(q), Ponts.texteObjet(modele),
                 Texte.brut(Ponts.nombre(total))), 0xE8C36A);

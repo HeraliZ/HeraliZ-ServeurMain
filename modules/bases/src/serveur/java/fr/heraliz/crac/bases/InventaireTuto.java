@@ -287,7 +287,11 @@ public final class InventaireTuto {
     /** Fichiers d'attente remplacés : effacés après l'enregistrement du joueur qui a la nouvelle marque. */
     private static final List<Path> ANCIENS = new ArrayList<>();
 
-    /** Toutes les secondes (Tutoriel.seconde) : objets en attente rendus dès qu'une case se libère. */
+    /**
+     * Toutes les secondes (Tutoriel.seconde) : objets en attente rendus dès qu'une case se libère. 19/11 (audit des
+     * duplications, M1) : jamais tant que le match tient l'inventaire ({@code Matchs.inventaireRetenu}) : ils étaient
+     * livrés dans l'inventaire du ClashWar et effacés au retour ; ils attendent le retour.
+     */
     static void seconde(MinecraftServer server) {
         if (EN_ATTENTE.isEmpty()) {
             return;
@@ -296,7 +300,8 @@ public final class InventaireTuto {
             ServerPlayer p = server.getPlayerList().getPlayer(u);
             if (p == null) {
                 EN_ATTENTE.remove(u);
-            } else if (p.isAlive() && !p.isSpectator() && !Tutoriel.occupe(server, u)) {
+            } else if (p.isAlive() && !p.isSpectator() && !Tutoriel.occupe(server, u)
+                && !fr.heraliz.noyau.api.Matchs.inventaireRetenu(p)) {
                 donnerAttente(p);
             }
         }

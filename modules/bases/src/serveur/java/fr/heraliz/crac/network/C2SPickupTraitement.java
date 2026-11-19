@@ -96,6 +96,11 @@ public final class C2SPickupTraitement {
 
         // read before forget(): a damaged placable keeps its HP in the item
         ItemStack drop = PlacableHpManager.pickupItem(level, target, pos);
+        // HeraliZ (19/11, audit des duplications B1) : ramassé dans le monde du tutoriel (caisse en métal du kit) : marqué
+        // comme le kit, repris à la fin (l'objet rendu est neuf : la caisse ressortait sans marque, gardée après le tutoriel)
+        if (fr.heraliz.crac.bases.MondeBases.estTuto(level) && !drop.isEmpty()) {
+            drop.getOrCreateTag().putBoolean(fr.heraliz.crac.bases.MondeBases.MARQUE_KIT_TUTO, true);
+        }
         PlacableHpManager.forget(level, target, pos);
         // both halves go without drops: the item below is the only one handed out
         MultiBlocks.remove(level, pos, false);

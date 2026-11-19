@@ -8,7 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -31,8 +30,6 @@ import java.util.UUID;
  */
 public class PendingRewards extends SavedData {
     private static final String NAME = "heralizcrates_pending";
-    /** Drapeau « en match » et marque du Coffre du ClashWar : cles de donnees partagees, lues sans dependance. */
-    private static final String DRAPEAU_MATCH = "heralisz:en_match", MARQUE_COFFRE = "HeralizClashWarDepot";
     private final Map<UUID, ListTag> pending = new HashMap<>();
     /** Objets qui attendent de la place dans l'inventaire de leur joueur (02/11). */
     private final Map<UUID, ListTag> objets = new HashMap<>();
@@ -117,12 +114,10 @@ public class PendingRewards extends SavedData {
      * Le ClashWar tient l'inventaire de ce joueur (15/11, audit n° 1) : en match (salle d'attente comprise), dans un monde
      * de ses arenes, ou inventaire mis de cote par son Coffre (marque posee au depart, retiree au retour ; elle couvre aussi
      * la reconnexion apres un plantage, avant que le Coffre soit rendu). Ce qui y serait livre serait efface au retour.
+     * 19/11 : la regle commune du noyau ({@code Matchs.inventaireRetenu}), la meme pour toutes les attentes du serveur.
      */
     public static boolean retenuParMatch(ServerPlayer p) {
-        if (fr.heraliz.noyau.api.Matchs.enMatch(p)) return true;
-        CompoundTag d = p.getPersistentData();
-        if (d.getBoolean(DRAPEAU_MATCH) || d.getCompound(Player.PERSISTED_NBT_TAG).contains(MARQUE_COFFRE)) return true;
-        return "heraliz_clashwar".equals(p.level().dimension().location().getNamespace());
+        return fr.heraliz.noyau.api.Matchs.inventaireRetenu(p);
     }
 
     /** Un objet en attente peut etre livre maintenant : vivant, pas spectateur, et pas retenu par le ClashWar. */

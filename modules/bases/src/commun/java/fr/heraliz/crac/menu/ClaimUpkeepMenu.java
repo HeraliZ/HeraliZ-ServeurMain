@@ -1,6 +1,7 @@
 package fr.heraliz.crac.menu;
 
 import fr.heraliz.crac.Config;
+import fr.heraliz.crac.bases.MondeBases;
 import fr.heraliz.crac.block.entity.ClaimBlockEntity;
 import fr.heraliz.crac.registry.ModMenus;
 import net.minecraft.core.BlockPos;
@@ -56,7 +57,7 @@ public class ClaimUpkeepMenu extends AbstractContainerMenu {
         super(ModMenus.CLAIM_UPKEEP.get(), id);
         this.be = be;
         this.pos = pos;
-        this.container = be == null ? new SimpleContainer(ClaimBlockEntity.SLOTS) : new StockContainer(be);
+        this.container = be == null ? new SimpleContainer(ClaimBlockEntity.SLOTS) : new StockContainer(be, MondeBases.estTuto(be.getLevel()));
         this.data = be == null ? new SimpleContainerData(DATA_COUNT) : new StockData(be);
         this.container.startOpen(playerInv.player);
 
@@ -207,12 +208,27 @@ public class ClaimUpkeepMenu extends AbstractContainerMenu {
         }
     }
 
-    /** The menu's view of the stock (server side): one stack per slot, changes applied to the counts. */
+    /**
+     * The menu's view of the stock (server side): one stack per slot, changes applied to the counts. HeraliZ (19/11, audit
+     * des duplications B1) : armoire du monde du tutoriel, tout ce qui sort du stock (case montrée comprise : échange,
+     * touches, Maj + clic) porte la marque du kit ({@link MondeBases#MARQUE_KIT_TUTO}) : le stock ne garde que l'objet et le
+     * nombre, et les planches du kit ressortaient neuves, gardées après le tutoriel.
+     */
     private static final class StockContainer implements Container {
         private final ClaimBlockEntity be;
+        private final boolean kitTuto;
 
-        StockContainer(ClaimBlockEntity be) {
+        StockContainer(ClaimBlockEntity be, boolean kitTuto) {
             this.be = be;
+            this.kitTuto = kitTuto;
+        }
+
+        /** Ce qui sort du stock d'une armoire du tutoriel : marqué comme le kit (repris à la fin). */
+        private ItemStack sortie(ItemStack s) {
+            if (this.kitTuto && !s.isEmpty()) {
+                s.getOrCreateTag().putBoolean(MondeBases.MARQUE_KIT_TUTO, true);
+            }
+            return s;
         }
 
         @Override
@@ -228,19 +244,19 @@ public class ClaimUpkeepMenu extends AbstractContainerMenu {
         @NotNull
         @Override
         public ItemStack getItem(int slot) {
-            return this.be.windowStack(slot);
+            return this.sortie(this.be.windowStack(slot));
         }
 
         @NotNull
         @Override
         public ItemStack removeItem(int slot, int amount) {
-            return this.be.withdraw(slot, amount);
+            return this.sortie(this.be.withdraw(slot, amount));
         }
 
         @NotNull
         @Override
         public ItemStack removeItemNoUpdate(int slot) {
-            return this.be.withdraw(slot, ClaimBlockEntity.WINDOW);
+            return this.sortie(this.be.withdraw(slot, ClaimBlockEntity.WINDOW));
         }
 
         @Override
