@@ -70,7 +70,26 @@ public final class ClanStore {
     private final java.util.LinkedHashSet<Long> donsUid = new java.util.LinkedHashSet<>();
     private static final int DONS_UID_MAX = 50_000;
     private boolean dirtyClans, dirtyJoueurs;
-    private int ticks;
+    /**
+     * Ticks depuis la dernière sauvegarde de la minute. 19/11 (audit des lenteurs C11) : part de la moitié, pour que cette
+     * sauvegarde ne tombe jamais sur le tick de la sauvegarde automatique du monde (toutes les 6 000 ticks ; avant, une
+     * fois sur cinq dans le même tick).
+     */
+    private int ticks = AUTOSAVE_TICKS / 2;
+    /**
+     * JSON de chaque clan gardé depuis sa dernière mise en JSON (19/11, audit des lenteurs C11 : l'arbre de TOUS les clans,
+     * journaux compris, était refait sur le fil serveur à chaque sauvegarde de la minute). Ne sont refaits que les clans
+     * changés ({@link #marquerDirty(Clan)}), plus un dixième des clans à chaque sauvegarde (tous en 10 min : filet pour un
+     * changement qui n'aurait pas été signalé) ; un changement signalé sans clan ({@link #marquerDirty()}), l'arrêt et les
+     * sauvegardes immédiates les refont tous, comme avant. Un arbre gardé n'est jamais modifié (lu par le fil d'écriture).
+     */
+    private final Map<UUID, JsonObject> jsonClans = new HashMap<>();
+    private final java.util.Set<UUID> clansSales = new java.util.HashSet<>();
+    private boolean tousSales = true;
+    private int sauvegardes;
+    private static final int TRANCHES = 10;
+    /** Dernière sauvegarde de clans.json : clans remis en JSON, clans repris tels quels (pour le staff, {@link #etatSauvegarde}). */
+    private int derniersRefaits, derniersRepris;
     /**
      * Journal d'ecriture (15/11) : numero du dernier changement mis au journal (repris de clans.json et du journal au
      * demarrage) et morceau courant ({@code clans.json.wal.<n>}, un nouveau a chaque releve complet de clans.json).
@@ -214,7 +233,8 @@ public final class ClanStore {
         clans.put(c.id, c);
         indexer(c);
         for (UUID u : c.membres.keySet()) lien(u).clan = c.id;
-        dirtyClans = dirtyJoueurs = true;
+        dirtyJoueurs = true;
+        marquerDirty(c);
     }
 
     /**
@@ -223,6 +243,8 @@ public final class ClanStore {
      */
     public void supprimer(Clan c) {
         clans.remove(c.id);
+        jsonClans.remove(c.id);
+        clansSales.remove(c.id);
         desindexer(c);
         for (UUID u : c.membres.keySet()) {
             LienJoueur l = lien(u);
@@ -238,7 +260,7 @@ public final class ClanStore {
         parTag.values().removeIf(x -> x == c);
         parNom.values().removeIf(x -> x == c);
         indexer(c);
-        dirtyClans = true;
+        marquerDirty(c);
     }
 
     private void indexer(Clan c) {
@@ -275,9 +297,25 @@ public final class ClanStore {
         dirtyClans = true;
     }
 
-    /** Signale une modification des clans (sauvegardee au prochain autosave). */
+    /**
+     * Signale une modification des clans (sauvegardee au prochain autosave) sans dire lesquels : tous seront remis en JSON.
+     * Quand on sait quel clan a changé, {@link #marquerDirty(Clan)} (19/11).
+     */
     public void marquerDirty() {
         dirtyClans = true;
+        tousSales = true;
+    }
+
+    /** Signale une modification de CE clan (19/11) : seul son JSON sera refait à la prochaine sauvegarde (null : tous). */
+    public void marquerDirty(@Nullable Clan c) {
+        dirtyClans = true;
+        if (c == null) tousSales = true;
+        else clansSales.add(c.id);
+    }
+
+    /** « 12 clans remis en JSON, 88 repris tels quels » à la dernière sauvegarde de clans.json (staff). */
+    public int[] etatSauvegarde() {
+        return new int[]{derniersRefaits, derniersRepris};
     }
 
     /** Signale une modification des liens joueurs. */
@@ -324,6 +362,9 @@ public final class ClanStore {
         parNom.clear();
         liens.clear();
         donsUid.clear();
+        jsonClans.clear();
+        clansSales.clear();
+        tousSales = true;
         lectureIncomplete = false;
         mutation = 0;
         morceau = 1;
@@ -510,10 +551,17 @@ public final class ClanStore {
     /** Meme chose ; {@code donUid} (non nul) : numero anti-copie de l'objet donne au clan (/clan don), garde avec lui. */
     public void sauvegarderClanMaintenant(Clan c, long donUid) {
         dirtyClans = true;
-        if (c == null) return;
+        if (c == null) {
+            tousSales = true;
+            return;
+        }
         JsonObject l = new JsonObject();
         l.addProperty("m", mutation + 1);
-        l.add("c", c.toJson());
+        JsonObject etat = c.toJson();
+        l.add("c", etat);
+        // 19/11 : ce JSON tout neuf resservira au prochain clans.json (jamais modifié ensuite)
+        jsonClans.put(c.id, etat);
+        clansSales.remove(c.id);
         if (donUid != 0) l.addProperty("don", donUid);
         Path f = morceau(morceau);
         try {
@@ -543,7 +591,23 @@ public final class ClanStore {
             // 15/11 : dernier changement du journal d'ecriture contenu dans ce releve (les lignes suivantes seront rejouees)
             root.addProperty("mutation", mutation);
             JsonArray a = new JsonArray();
-            for (Clan c : clans.values()) a.add(c.toJson());
+            // 19/11 (audit des lenteurs C11) : seuls les clans changes sont remis en JSON (plus une tranche de dix, en filet) ;
+            // les autres reprennent leur JSON garde, identique a ce qu'ils donneraient
+            boolean tous = force || tousSales;
+            int tranche = Math.floorMod(sauvegardes++, TRANCHES), refaits = 0;
+            for (Clan c : clans.values()) {
+                JsonObject j = tous || clansSales.contains(c.id) || Math.floorMod(c.id.hashCode(), TRANCHES) == tranche ? null : jsonClans.get(c.id);
+                if (j == null) {
+                    j = c.toJson();
+                    jsonClans.put(c.id, j);
+                    refaits++;
+                }
+                a.add(j);
+            }
+            clansSales.clear();
+            tousSales = false;
+            derniersRefaits = refaits;
+            derniersRepris = clans.size() - refaits;
             root.add("clans", a);
             JsonArray dons = new JsonArray();
             for (long uid : donsUid) dons.add(uid);
@@ -579,6 +643,7 @@ public final class ClanStore {
      */
     public void sauvegarderMaintenant() {
         dirtyClans = dirtyJoueurs = true;
+        tousSales = true;   // operation d'argent : tous les clans releves, comme avant le 19/11
         sauvegarder(false);
         EcrituresFond.attendre();
     }
@@ -589,6 +654,7 @@ public final class ClanStore {
      */
     public void sauvegarderClansMaintenant() {
         dirtyClans = true;
+        tousSales = true;   // operation d'argent : tous les clans releves, comme avant le 19/11
         sauvegarder(false);
         EcrituresFond.attendre();
     }
