@@ -4,7 +4,7 @@ const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 const crypto = require('node:crypto')
-const { ecarterJarsEnTrop, controlerJava, oublierJava, controlerEmpreintes } = require('../app/assets/js/integrite')
+const { ecarterJarsEnTrop, ecarterPacksAjoutes, controlerJava, oublierJava, controlerEmpreintes } = require('../app/assets/js/integrite')
 
 function dossierEssai() {
     return fs.mkdtempSync(path.join(os.tmpdir(), 'heraliz-integrite-'))
@@ -61,6 +61,60 @@ test('pas de dossier mods, nom de serveur douteux ou dossier mods remplacé par 
         lien(dehors, path.join(instances, 'heraliz', 'mods'))
         assert.deepEqual(ecarterJarsEnTrop({ dossierInstances: instances, serveur: 'heraliz' }).ecartes, [])
         assert.ok(fs.existsSync(path.join(dehors, 'perso.jar')))
+    } finally {
+        fs.rmSync(base, { recursive: true, force: true })
+    }
+})
+
+test('19/11 : packs de textures ajoutés par le joueur mis de côté, jamais ceux du pack signé ni les autres fichiers', () => {
+    const base = dossierEssai()
+    try {
+        const instance = path.join(base, 'instances', 'heraliz')
+        const packs = path.join(instance, 'resourcepacks')
+        const kiwi = path.join(instance, 'kiwipacks')
+        fs.mkdirSync(path.join(packs, 'Xray Eclate'), { recursive: true })
+        fs.writeFileSync(path.join(packs, 'Xray Eclate', 'pack.mcmeta'), '{}')
+        fs.writeFileSync(path.join(packs, 'Xray Ultimate.ZIP'), 'x')
+        fs.writeFileSync(path.join(packs, 'officiel.zip'), 'livré par le pack')
+        fs.writeFileSync(path.join(packs, 'lisez-moi.txt'), 'ignoré par le jeu')
+        fs.mkdirSync(kiwi)
+        fs.writeFileSync(path.join(kiwi, 'impose.zip'), 'y')
+        fs.mkdirSync(path.join(instance, 'mods'))
+        fs.writeFileSync(path.join(instance, 'options.txt'), 'resourcePacks:["vanilla","file/Xray Ultimate.ZIP"]')
+        const r = ecarterPacksAjoutes({ dossierInstances: path.join(base, 'instances'), serveur: 'heraliz',
+            fichiersPack: [path.join(packs, 'officiel.zip'), 42], maintenant: () => 7 })
+        assert.deepEqual(r.ecartes.sort(), ['kiwipacks/impose.zip', 'resourcepacks/Xray Eclate', 'resourcepacks/Xray Ultimate.ZIP'])
+        assert.deepEqual(r.erreurs, [])
+        assert.deepEqual(fs.readdirSync(packs).sort(), ['lisez-moi.txt', 'officiel.zip'])
+        assert.deepEqual(fs.readdirSync(kiwi), [])
+        const cote = path.join(instance, 'spartan', 'ecartes', '7')
+        assert.deepEqual(fs.readdirSync(path.join(cote, 'resourcepacks')).sort(), ['Xray Eclate', 'Xray Ultimate.ZIP'])
+        assert.ok(fs.existsSync(path.join(cote, 'resourcepacks', 'Xray Eclate', 'pack.mcmeta')), 'jamais effacé')
+        assert.deepEqual(fs.readdirSync(path.join(cote, 'kiwipacks')), ['impose.zip'])
+        // options.txt du joueur jamais réécrit (le jeu oublie seul un pack absent)
+        assert.equal(fs.readFileSync(path.join(instance, 'options.txt'), 'utf8'), 'resourcePacks:["vanilla","file/Xray Ultimate.ZIP"]')
+        // plus rien à mettre de côté au lancement suivant
+        assert.deepEqual(ecarterPacksAjoutes({ dossierInstances: path.join(base, 'instances'), serveur: 'heraliz',
+            fichiersPack: [path.join(packs, 'officiel.zip')] }).ecartes, [])
+    } finally {
+        fs.rmSync(base, { recursive: true, force: true })
+    }
+})
+
+test('19/11 : packs : sans dossier, nom de serveur douteux ou dossier remplacé par un lien, rien n’est touché', () => {
+    const base = dossierEssai()
+    try {
+        const instances = path.join(base, 'instances')
+        fs.mkdirSync(path.join(instances, 'heraliz'), { recursive: true })
+        assert.deepEqual(ecarterPacksAjoutes({ dossierInstances: instances, serveur: 'heraliz' }).ecartes, [])
+        assert.deepEqual(ecarterPacksAjoutes({ dossierInstances: instances, serveur: '../dehors' }).ecartes, [])
+        assert.deepEqual(ecarterPacksAjoutes({ dossierInstances: 42, serveur: 'heraliz' }).ecartes, [])
+        const dehors = path.join(base, 'dehors')
+        fs.mkdirSync(dehors)
+        fs.writeFileSync(path.join(dehors, 'perso.zip'), 'à ne jamais toucher')
+        lien(dehors, path.join(instances, 'heraliz', 'resourcepacks'))
+        assert.deepEqual(ecarterPacksAjoutes({ dossierInstances: instances, serveur: 'heraliz' }).ecartes, [])
+        assert.ok(fs.existsSync(path.join(dehors, 'perso.zip')))
     } finally {
         fs.rmSync(base, { recursive: true, force: true })
     }
