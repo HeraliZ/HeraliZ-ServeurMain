@@ -940,3 +940,55 @@ avant. `outils/atlas_blocs.py --verifier` le signale (sans bloquer).
 Pas fait (décision du propriétaire, rendus à valider d'abord) : vraies versions allégées des 62 armes sans LOD,
 allègement plus fort des conteneurs HD, camos « cuits » dans une texture ; textures des armures, de la roue du Souffle du
 loup et de l'Olympia gardées à leur taille (vrai détail).
+
+## 33. Anticheat et launcher : injection en cours de partie, launcher imité (19/11)
+
+Demande du propriétaire : « empêcher les injections, les modifications de client ». Ce qui change (le détail est dans
+`modules/anticheat/README.md`, « Audit du 19/11 », et `launcher/docs/HERALIZ-SECURITE.md`) :
+- dans le jeu, Spartan voit maintenant une classe du jeu ou de l'anticheat **modifiée en mémoire** après son chargement
+  (c'est ce que fait un client de triche injecté), et les **bibliothèques d'un agent Java ou d'un débogueur** chargées
+  dans le jeu (`instrument`, `jdwp`…) : expulsion, avec capture d'écran ;
+- le launcher regarde **depuis l'extérieur du jeu** ces mêmes bibliothèques (un jeu modifié ne peut pas les lui cacher)
+  et compare chaque jar du pack à son empreinte signée juste après le lancement ;
+- le serveur refuse un **launcher imité** qui réutilise sa clé (même clé pour deux comptes ou deux parties) ;
+- le launcher retire de nouvelles options et variables qui ouvrent une porte d'injection (contrôle à distance de Java,
+  `CLASSPATH`, dossiers de bibliothèques sur Mac) ; Electron passe en 44.11.3 (correctifs de sécurité).
+
+Ces règles sont nouvelles : elles sont **« en rodage »**. Si trois joueurs différents en déclenchent une en moins d'une
+heure, elle se coupe toute seule (alerte « Règle suspendue » au staff) : une erreur ne peut jamais expulser tout le monde.
+Versions : Anticheat **2.13.0** (avec la mise en ligne du serveur), launcher **1.17.0** (à publier ensuite : onglet
+Actions, « Launcher HeraliZ », « Run workflow », case **publier** ; pas fait). Les deux marchent avec l'ancienne version de
+l'autre. **Rien de tout cela n'a été testé en jeu** (aucun Minecraft ici) : seulement des tests automatiques.
+
+À tester (joueurs honnêtes : rien ne doit changer pour eux)
+- [ ] Windows, launcher 1.17.0 : se connecter, jouer 10 min avec Discord, Steam, OBS ou NVIDIA ouverts. « ✅ Jeu validé »
+      comme avant ; **aucune** alerte « Injection », « Règle suspendue », « Launcher … launcher imité » ni « Gardien :
+      bibliothèque(s) de Java chargée(s) DANS le jeu ».
+- [ ] Jouer normalement (inventaire, réglages vidéo, capture d'écran F2, capture demandée par le staff) : toujours aucune
+      alerte (Java charge alors des bibliothèques à lui, qui ne comptent pas).
+- [ ] Se déconnecter puis se reconnecter **sans fermer le jeu** : aucune alerte « launcher imité » (même partie = même clé,
+      c'est normal). Fermer le jeu, relancer depuis le launcher, se reconnecter : aucune alerte non plus.
+- [ ] Deux joueurs sur deux PC en même temps : aucune alerte.
+- [ ] Mac et Linux (AppImage, .deb), si quelqu'un en a un : connexion normale, « Jeu validé ».
+- [ ] `/spartan status <joueur>` : pas de ligne « règles en rodage suspendues ».
+- [ ] Ancien launcher (1.16.2) avec le nouveau serveur : connexion normale (rien ne change pour lui).
+
+Si quelque chose se passe mal
+- « Règle suspendue » : regarder les dernières alertes « Injection » des joueurs cités. Fausse alerte : retirer le motif
+  cité de `[injection] indices` dans `serveur/config/spartan-common.toml` (relu sans redémarrer).
+- Des joueurs honnêtes lisent « ce jeu n'a pas été lancé par le launcher HeraliZ officiel » : passer `preuveExigee` à
+  `"alerte"` dans `[gardien]` (sans redémarrer) et le signaler, pour correction.
+- Après une semaine sans « Règle suspendue » ni fausse alerte : on peut vider `rodage = []` (les règles restent, sans
+  disjoncteur), ou le laisser.
+
+À décider (propriétaire, détail et coûts dans `launcher/docs/HERALIZ-SECURITE.md`)
+1. **Le dépôt GitHub est public** : tout le code de l'anticheat (et du site) y est lisible, et les jars serveur de l'onglet
+   Actions téléchargeables. Le rendre privé ? (conseillé ; environ 20 à 40 $ par mois de minutes GitHub en plus, ou moins
+   en fabriquant moins souvent pour Mac).
+2. `requireHardenedJvm = true` ? Sans risque (tous les launchers mettent la protection, Windows, Mac et Linux), mais
+   n'ajoute qu'une alerte : le jeu sans protection est déjà refusé par le mode strict.
+3. Packs de textures ajoutés par le joueur (risque de X-ray) : aujourd'hui une alerte. Les refuser à la connexion, ou les
+   faire retirer par le launcher avant la partie ?
+4. Verrou d'Electron « intégrité de l'archive » (le launcher refuse de démarrer si on modifie son code) : à essayer d'abord
+   sur un PC Windows avec le launcher de l'onglet Actions, avant toute publication (s'il se trompait, le launcher ne
+   démarrerait plus du tout chez les joueurs).
