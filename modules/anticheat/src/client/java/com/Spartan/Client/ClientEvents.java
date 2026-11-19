@@ -39,6 +39,8 @@ public class ClientEvents {
     private static boolean wasConnected = false;
     private static boolean launchSent = false;
     private static boolean threadsReported = false;
+    /** Packs de ressources actifs envoyés au serveur (19/11 : renvoyés quand ils changent en cours de partie). */
+    private static java.util.List<String> packsEnvoyes = java.util.List.of();
     private static int ticks = 0;
 
     @SubscribeEvent
@@ -65,7 +67,8 @@ public class ClientEvents {
             threadsReported = false;
             ticks = 0;
             ModMessages.sendToServer(new BuildPacket(Fingerprint.buildId()));
-            ModMessages.sendToServer(new ResourcePackPacket(ResourcePackUtil.getActiveResourcePacks()));
+            packsEnvoyes = ResourcePackUtil.getActiveResourcePacks();
+            ModMessages.sendToServer(new ResourcePackPacket(packsEnvoyes));
             ModMessages.sendToServer(new ModsPacket(ModUtils.getActiveMods()));
             ModMessages.sendToServer(new TestPacket(ComponentInfo.getSystemUUID()));
             ModMessages.sendToServer(new TestPacket(ComponentInfo.getHWID()));
@@ -102,6 +105,13 @@ public class ClientEvents {
 
         if (++ticks % SCAN_INTERVAL_TICKS == 0) {
             scanThreads();
+            // 19/11 : packs de ressources changés en cours de partie (un pack activé après la connexion) : liste renvoyée,
+            // le serveur la juge comme celle de la connexion
+            java.util.List<String> packs = ResourcePackUtil.getActiveResourcePacks();
+            if (!packs.equals(packsEnvoyes)) {
+                packsEnvoyes = packs;
+                ModMessages.sendToServer(new ResourcePackPacket(packs));
+            }
         }
     }
 

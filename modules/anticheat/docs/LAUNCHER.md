@@ -127,5 +127,14 @@ d'intégrité ; le jeu calcule lui-même l'empreinte de ses mods. Ces murailles 
 à un vrai travail ; le filet final reste les **détections côté serveur** (mouvement, combat, tirs TaCZ, latence,
 anti-ESP), que le joueur ne peut pas falsifier.
 
-Le dépôt GitHub est **public** (constat du 19/11) : ce fichier, le code du launcher et celui de Spartan y sont lisibles
-par tous. Options et coûts : `launcher/docs/HERALIZ-SECURITE.md`, « Dépôt public ».
+Le dépôt GitHub est **public, par choix du propriétaire (19/11)** : ce fichier, le code du launcher et celui de Spartan y
+sont lisibles par tous. Détail : `launcher/docs/HERALIZ-SECURITE.md`, « Dépôt public ».
+
+## Packs de textures ajoutés par le joueur (19/11, launcher 1.18.0, Spartan 2.15.0)
+
+Interdits (décision du propriétaire). Avant la partie, le launcher met de côté ce que le joueur a ajouté dans les dossiers
+`resourcepacks` et `kiwipacks` du jeu (`integrite.js`, `ecarterPacksAjoutes` : archives .zip et dossiers, vers
+`spartan/ecartes/<date>/`, jamais effacés ; un fichier livré par le pack signé resterait en place). Le jeu envoie au
+serveur la liste des packs actifs à la connexion, puis à chaque changement ; un pack « file/… » (dossiers du joueur) hors
+de `allowedResourcePacks` refuse la connexion avec un message qui dit lequel retirer (`ReceptionServeur.packs`,
+`PacksJoueur`). Nos packs, ceux de Minecraft et des mods ne comptent jamais.
