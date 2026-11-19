@@ -128,7 +128,7 @@ public final class ConteneursEvenement extends SavedData {
         if (cb == null || cb.vehicule || !RotationLoot.avecLoot(cb) || face.getAxis().isVertical()) return false;
         long k = pos.asLong();
         ConteneursEvenement d = get(l);
-        if (d.conteneurs.containsKey(k) || !l.isLoaded(pos) || !l.getBlockState(pos).canBeReplaced()) return false;
+        if (d.conteneurs.containsKey(k) || !fr.heraliz.noyau.api.Troncons.charge(l, pos) || !l.getBlockState(pos).canBeReplaced()) return false;
         if (ZonesLoot.zoneDe(l.dimension(), k) != null) return false;
         if (!cb.placeLibre(l, pos, face, null) || !surLeSol(l, pos, face, cb)) return false;
         VoxelShape forme = cb.encombrement().outline(face, 0, 0, 0);
@@ -163,7 +163,7 @@ public final class ConteneursEvenement extends SavedData {
         for (long k : siens) {
             Conteneur c = d.conteneurs.get(k);
             BlockPos b = BlockPos.of(k);
-            if (l.isLoaded(b)) {
+            if (fr.heraliz.noyau.api.Troncons.charge(l, b)) {
                 d.conteneurs.remove(k);
                 if (l.getBlockState(b).getBlock() instanceof ConteneurBlock cb && cb.nom.equals(c.nom)) l.removeBlock(b, false);
             } else {
@@ -273,7 +273,7 @@ public final class ConteneursEvenement extends SavedData {
         boolean etoiles = ConfigLoot.etoiles() && !l.players().isEmpty();
         for (Conteneur c : d.conteneurs.values()) {
             BlockPos b = BlockPos.of(c.pos);
-            if (!l.isLoaded(b)) continue;
+            if (!fr.heraliz.noyau.api.Troncons.charge(l, b)) continue;
             BlockState st = l.getBlockState(b);
             if (!(st.getBlock() instanceof ConteneurBlock cb) || !cb.nom.equals(c.nom)) {
                 if (finis == null) finis = new LongArrayList();

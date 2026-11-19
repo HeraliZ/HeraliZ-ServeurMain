@@ -700,3 +700,77 @@ Cœur de clan, caisses, Mila :
       kit standard Épique. Caisse de vote : le cœur de clan est annoncé Légendaire (annoncé à tout le serveur).
 - [ ] Mila rachète maintenant les combinaisons intégrales trouvées (plongée, arctique, hazmat : 25 hérals ; renforcées :
       60) ; avant, elle les refusait.
+
+## 30. Lenteurs du serveur : téléportations, sauvegardes, démarrage, diagnostic (19/11)
+
+Audit des lenteurs du 19/11 (points C1, C2, C4, C5, C7, C9, C15, F2, F5, F7). Presque tout est dans le noyau ; chaque
+changement a son réglage dans `heraliz_noyau-server.toml` (à `true` = nouveau, à `false` = comme avant) et son compteur
+dans `/diag etat` (ligne « Lenteurs (19/11) », puis « Écritures en fond » et « Préchauffage du démarrage »). **Rien n'a été
+testé en jeu** (pas de serveur ici) : tout est à vérifier ci-dessous. Après la mise à jour, garder un œil sur le journal
+les premiers jours : une ligne « [noyau] … impossible » ou une erreur de mixin au démarrage est à signaler.
+Versions : Noyau 1.1.5, Anticheat 2.12.1, Tactique 2.59.5, CRac 1.38.7-beta, Boutique 1.5.17, Bunker 0.14.6, Clans 3.17.3,
+ClashWar 1.3.2, Événements 1.3.1, Loot 0.20.4, Monde 1.3.4, Quêtes 1.23.3 (le launcher donne les nouvelles aux joueurs).
+
+Téléportations (plus de gel de 0,4 à 2,5 s quand l'arrivée n'est pas chargée)
+- [ ] `/tp` (staff) vers un endroit lointain de la carte, jamais visité depuis le démarrage : le message de Minecraft
+      arrive tout de suite, un bandeau « Téléportation — l'arrivée se charge… » aussi, et le départ se fait une fraction de
+      seconde plus tard (3 s au plus). Pas de « [Diag] Blocage » juste après. Même chose avec `/tp <joueur> x y z` et un
+      `/tp` vers un joueur d'un autre monde.
+- [ ] `/tp` tout près (même zone) : départ tout de suite, sans bandeau, comme avant.
+- [ ] `/warp` (au spawn) vers un warp lointain : toujours 3 s sans bouger, puis départ ; `/tpa` accepté : départ comme
+      avant ; panneau du staff « Aller voir » / « Faire venir » ; `/zonevip tp`, `/carriere tp`, `/quete point tp`,
+      `/corps tp`, `/extraction tp` : départ normal, sans gel.
+- [ ] `/diag etat`, ligne « Lenteurs (19/11) » : « arrivées … attendues » et « /tp retardés » montent après ces essais ;
+      « délais de 3 s dépassés » reste à 0 ou presque (sinon le dire : le disque est lent).
+- [ ] Vol rapide en créatif ou en spectateur vers des zones jamais chargées : on peut être « retenu » une fraction de
+      seconde au bord d'une zone qui se charge (comme un petit élastique), mais le serveur ne gèle plus. Compteur
+      « mouvements refusés ». À pied ou en véhicule, en survie : jamais d'élastique.
+
+Sauvegarde automatique (toutes les 5 min)
+- [ ] Avec quelques joueurs, attendre une sauvegarde automatique : pas de « [Diag] Blocage » à ce moment-là. Compteurs :
+      « partie fml resservie », « réglages de génération », « fichiers data/ écrits en fond », « sauvegarde automatique
+      étalée : … tours, … joueurs par tranches » montent.
+- [ ] Après une sauvegarde : se déconnecter, se reconnecter : inventaire, sac, armes et position intacts. Ouvrir le coffre
+      du clan pendant une sauvegarde, y prendre un objet : un seul exemplaire (coffre ou inventaire), même après un
+      redémarrage.
+- [ ] Clans, banque, saison, quêtes, butin des zombies : rien ne change pour les joueurs (leurs écritures tombent
+      seulement à d'autres moments que la sauvegarde de Minecraft). Après un `/stop` propre : clans, comptes, quêtes,
+      territoires, corps, recycleurs, casino, coffres personnels et bases (CRac) sont tous là au redémarrage.
+- [ ] `/diag etat`, ligne « Écritures en fond » : des fichiers écrits, 0 échec ; les voies « loot », « clans », « quetes »,
+      « evenements », « casino », « crac », « coffres », « donnees », « level-dat » apparaissent au fil du temps.
+
+Grands déchargements et tronçons « pas prêts »
+- [ ] Après un gros `//replace` ou `//set` (serveur fermé, si possible), partir loin : plus de gel de 1 à 2 s une seconde
+      après. Compteur « grands déchargements bornés ».
+- [ ] Territoires des clans (drapeaux), cœurs de clan (scores, prise), salles à carte (portes), coffres T7 automatiques,
+      conteneurs des événements, étoiles du loot, pings, vitres du labo : tout marche comme avant. Compteur « attentes de
+      tronçon évitées ».
+- [ ] Anticheat (Spartan) : courir, sauter, tomber près du bord d'une zone qui se charge (arrivée de `/tp`, `/rtp`) : pas
+      de fausse alerte de mouvement, pas de gel. Les renvois de l'anticheat (sol sous les pieds) marchent toujours.
+
+Démarrage et premières fois
+- [ ] Pendant les 3 minutes qui suivent un redémarrage : pas de message « [Diag] Blocage » aux opérateurs ; les longs
+      ticks sont dans `diag/demarrage-<date>.txt` et le journal dit « [diag] démarrage : tick de … ms ».
+- [ ] Journal du démarrage : « [noyau] préchauffage : N classes des mods lues à l'avance … » (une vingtaine de secondes
+      après « Done »), puis « … classes de M plugins lues à l'avance … ». Ensuite : première connexion et premier
+      WorldEdit sans gel d'une seconde.
+- [ ] `/diag etat` : ligne « Préchauffage du démarrage » à « fait » pour les deux.
+
+Diagnostic
+- [ ] `/diag etat` : deux lignes « Java : … » et « Arguments de Java : … » (la vraie ligne de lancement de Java, à
+      comparer aux réglages demandés à l'hébergeur ; un argument qui ressemble à un mot de passe est masqué).
+- [ ] Un rapport `diag/blocage-*.txt` commence par la ligne « Relevés de la pile dès 50 ms du tick » et en a une
+      douzaine pour un tick de 120 ms ; les rapports d'un blocage de 300 ms et plus sont toujours écrits ; le dossier
+      `diag/` garde jusqu'à 60 rapports de blocage (les plus longs restent) et 20 de chaque autre sorte.
+- [ ] Ligne « points d'intérêt relus » : à relever après une soirée avec des joueurs (temps passé à relire les lits,
+      postes de villageois… à chaque tronçon lu) : décidera si on le coupe sur la carte.
+
+Réglages (section `[perf]`, à `false` pour revenir comme avant) : `arrivees_prechargees`, `tp_precharge`,
+`mouvements_troncons_prets`, `dechargements_forces_par_tick` (50 ; 0 = comme Minecraft), `registres_en_memoire`,
+`donnees_en_fond`, `joueurs_etales`, `entites_etalees`, `classes_prechargees`, `plugins_prechauffes` (liste vide = rien) ;
+section `[diag]` : `releves_des_ms` (50), `calme_demarrage_s` (180 ; 0 = alertes dès le démarrage).
+
+Pas fait (pour plus tard) : véhicules rapides qui entrent dans une zone pas chargée (seuls les joueurs à pied ou en vol
+sont retenus) ; écriture des fichiers des joueurs en fond (seulement étalée sur 5 s, pour ne jamais lire un fichier pas
+encore écrit à la reconnexion) ; points d'intérêt (seulement mesurés) ; préchargement des classes des mods des autres
+auteurs.

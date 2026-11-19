@@ -112,7 +112,7 @@ public final class CommandeCorps {
             return 0;
         }
         ServerLevel ou = CaptureMort.niveau(s.getServer(), f.dimension);
-        p.teleportTo(ou, f.x + 0.5, f.y + 0.2, f.z + 0.5, p.getYRot(), p.getXRot());
+        fr.heraliz.noyau.api.Arrivees.teleporter(p, ou, f.x + 0.5, f.y + 0.2, f.z + 0.5, p.getYRot(), p.getXRot());   // 19/11 : arrivée chargée d'abord
         dire(s, Component.translatable("commands.heraliz_corps.tp.ok", f.numero, f.nom).withStyle(ChatFormatting.GREEN));
         return 1;
     }

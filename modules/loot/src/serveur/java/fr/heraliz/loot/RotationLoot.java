@@ -941,7 +941,7 @@ public final class RotationLoot extends SavedData {
                         long k = liste.getLong(i);
                         if (p.distanceToSqr(BlockPos.getX(k) + 0.5, BlockPos.getY(k) + 0.5, BlockPos.getZ(k) + 0.5) > r2) continue;
                         BlockPos b = BlockPos.of(k);
-                        if (!l.isLoaded(b)) continue;
+                        if (!fr.heraliz.noyau.api.Troncons.charge(l, b)) continue;   // tronçon complet seulement (19/11)
                         Actif a = actifs.get(k);
                         // vidé (même encore ouvert par quelqu'un, ou en attente du passage de la rotation) : plus d'étoiles
                         if (a == null || (a.contenu != null && a.contenu.isEmpty())) continue;

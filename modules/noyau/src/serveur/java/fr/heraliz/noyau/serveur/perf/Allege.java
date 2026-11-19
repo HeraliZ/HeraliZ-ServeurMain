@@ -75,6 +75,26 @@ public final class Allege {
    public static long gelsEvites;
    public static long neigesEvitees;
 
+   // lenteurs du 18-19/11 (audit, points C1 à C9)
+   /** Arrivées (api.Arrivees) : prêtes tout de suite, attendues, ticks attendus (somme), délai de 3 s dépassé, abandonnées, remplacées. */
+   public static long arriveesToutDeSuite, arriveesAttendues, arriveesTicksAttendus, arriveesDelaiDepasse, arriveesAbandonnees, arriveesRemplacees;
+   /** Arrivées demandées d'avance (sans attente) ; /tp de Minecraft retardés jusqu'à l'arrivée prête. */
+   public static long arriveesPrechargees, tpRetardes;
+   /** Paquets de mouvement refusés : le joueur entrait dans un tronçon pas encore complet. */
+   public static long mouvementsRefuses;
+   /** Ticks où les déchargements forcés ont été bornés, et déchargements reportés au tick suivant (somme). */
+   public static long dechargementsBornes, dechargementsReportes;
+   /** Sauvegardes où la partie « fml » de level.dat et les réglages de génération ont été resservis. */
+   public static long fmlResservis, reglagesResservis;
+   /** Fichiers data/ (SavedData) écrits en fond. */
+   public static long donneesEnFond;
+   /** Sauvegarde automatique étalée : tours, joueurs écrits par tranches, joueurs écrits tout de suite (menu ouvert). */
+   public static long joueursTours, joueursEtales, joueursToutDeSuite;
+   /** Sauvegarde automatique étalée des entités : tours (par monde) et tranches. */
+   public static long entitesTours, entitesTranches;
+   /** Points d'intérêt relus à la lecture des tronçons (C9, mesure seulement) : étages, temps total et pire (ns). */
+   public static long poiSections, poiNanos, poiPireNanos;
+
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
       MinecraftForge.EVENT_BUS.addListener((ServerAboutToStartEvent e) -> {
@@ -88,6 +108,7 @@ public final class Allege {
             int tick = e.getServer().getTickCount();
             SuiviParTroncon.finDuTick(tick);
             TronconsActifs.finDuTick(tick);
+            SauvegardesEtalees.tick(e.getServer());
          }
       });
       MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
@@ -101,6 +122,8 @@ public final class Allege {
          PaquetsTroncons.finDuTick();
          SuiviParTroncon.vider();
          TronconsActifs.vider();
+         SauvegardesEtalees.vider();
+         MemoiresSauvegarde.oublier();
       });
    }
 
@@ -124,5 +147,22 @@ public final class Allege {
             sauvegardesTranches, sauvegardesTranches == 0 ? 0.0 : (double) sauvegardesRegardes / sauvegardesTranches, melangesEvites));
       s.append(String.format(Locale.ROOT, " ; contrôles de gel sautés %d, de neige au sol %d", gelsEvites, neigesEvitees));
       ligne.accept(s.append(String.format("%n")).toString());
+      StringBuilder l = new StringBuilder("Lenteurs (19/11) :");
+      l.append(String.format(Locale.ROOT, " arrivées prêtes tout de suite %d, attendues %d (%.1f ticks en moyenne, %d délais de 3 s dépassés, %d abandonnées,"
+                  + " %d remplacées), demandées d'avance %d, /tp retardés %d", arriveesToutDeSuite, arriveesAttendues,
+            arriveesAttendues == 0 ? 0.0 : (double) arriveesTicksAttendus / arriveesAttendues, arriveesDelaiDepasse, arriveesAbandonnees,
+            arriveesRemplacees, arriveesPrechargees, tpRetardes));
+      l.append(String.format(Locale.ROOT, " ; mouvements refusés (tronçon pas prêt) %d ; attentes de tronçon évitées (api.Troncons) %d",
+            mouvementsRefuses, fr.heraliz.noyau.api.Troncons.attentesEvitees));
+      l.append(String.format(Locale.ROOT, " ; grands déchargements bornés %d ticks (%d déchargements reportés)", dechargementsBornes, dechargementsReportes));
+      l.append(String.format(Locale.ROOT, " ; level.dat : partie fml resservie %d fois, réglages de génération %d fois ; fichiers data/ écrits en fond %d",
+            fmlResservis, reglagesResservis, donneesEnFond));
+      l.append(String.format(Locale.ROOT, " ; sauvegarde automatique étalée : %d tours, %d joueurs par tranches, %d tout de suite (menu ouvert), entités %d tours"
+            + " (%d tranches)", joueursTours, joueursEtales, joueursToutDeSuite, entitesTours, entitesTranches));
+      l.append(String.format(Locale.ROOT, " ; points d'intérêt relus à la lecture des tronçons : %d étages en %.0f ms (%.3f ms par étage, pire %.1f ms)",
+            poiSections, poiNanos / 1e6, poiSections == 0 ? 0.0 : poiNanos / 1e6 / poiSections, poiPireNanos / 1e6));
+      ligne.accept(l.append(String.format("%n")).toString());
+      ligne.accept(fr.heraliz.noyau.api.EcrituresFond.etat());
+      ligne.accept(Prechauffage.etat());
    }
 }

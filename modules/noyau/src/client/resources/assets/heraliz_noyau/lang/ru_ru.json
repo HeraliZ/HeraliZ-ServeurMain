@@ -55,5 +55,7 @@
   "noyau.redemarrage.secondes": "%s с",
   "heraliz.redemarrage.deconnexion": "Сервер перезапускается: игра скоро переподключится сама.",
   "noyau.verre.sur_toi": "При себе",
-  "noyau.verre.acces_rapide": "Быстрый доступ"
+  "noyau.verre.acces_rapide": "Быстрый доступ",
+  "noyau.arrivee.tp_titre": "Телепортация",
+  "noyau.arrivee.tp_texte": "Место прибытия загружается: отправка через мгновение (не более 3 с)."
 }

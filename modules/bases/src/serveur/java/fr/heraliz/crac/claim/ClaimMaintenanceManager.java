@@ -318,7 +318,9 @@ public final class ClaimMaintenanceManager {
         }
         int impayees = 0, usure = 0;
         int cout = 1;
-        if (level.isLoaded(anchor)) {
+        // HeraliZ (19/11, audit des lenteurs, C4) : armoire dans un tronçon complet seulement (jamais attendu, jamais retirée
+        // pour un tronçon encore en lecture)
+        if (fr.heraliz.noyau.api.Troncons.charge(level, anchor)) {
             Building b = m.claimed.get(anchor.asLong());
             ClaimBlockEntity be = reconcile(level, claim, b);
             if (be == null) {
@@ -403,7 +405,7 @@ public final class ClaimMaintenanceManager {
         ServerLevel level = m.level;
         PlacablePositionData ppd = PlacablePositionData.get(level);
         BlockPos pos = BlockPos.of(l);
-        if (!level.isLoaded(pos)) return;
+        if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) return;
         BlockState state = level.getBlockState(pos);
         if (!PlacableHpManager.isTracked(state)) {
             ppd.remove(pos);

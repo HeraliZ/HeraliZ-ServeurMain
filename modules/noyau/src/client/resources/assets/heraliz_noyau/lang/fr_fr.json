@@ -55,5 +55,7 @@
   "noyau.redemarrage.secondes": "%s s",
   "heraliz.redemarrage.deconnexion": "Redémarrage du serveur : ton jeu se reconnecte tout seul dans un instant.",
   "noyau.verre.sur_toi": "Sur toi",
-  "noyau.verre.acces_rapide": "Accès rapide"
+  "noyau.verre.acces_rapide": "Accès rapide",
+  "noyau.arrivee.tp_titre": "Téléportation",
+  "noyau.arrivee.tp_texte": "L'arrivée se charge : départ dans un instant (3 s au plus)."
 }

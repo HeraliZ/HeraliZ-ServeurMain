@@ -147,6 +147,7 @@ final class WarpsServeur {
             return refus(p, Component.translatableWithFallback("heraliz_grades.warp.reserve", "Warp réservé au grade %s et plus.", nomGrade(w.rang())));
         }
         ATTENTES.put(p.getUUID(), new Attente(w.id(), p.position(), p.getHealth(), ticks + DELAI_TICKS));
+        fr.heraliz.noyau.api.Arrivees.precharger(monde, w.pos().x, w.pos().z);   // 19/11 : l'arrivée se lit pendant les 3 s
         p.displayClientMessage(Component.translatableWithFallback("heraliz_grades.warp.attente", "Téléportation vers %s dans 3 s : ne bouge pas.", w.nom())
                 .withStyle(ChatFormatting.GOLD), true);
         return 1;
@@ -157,12 +158,18 @@ final class WarpsServeur {
         return 0;
     }
 
+    /**
+     * 19/11 (audit des lenteurs, C1) : départ dès que l'arrivée est chargée (préchargée pendant les 3 s d'attente, 3 s de
+     * plus au pire) ; avant, une arrivée pas chargée gelait tout le serveur 0,4 à 2,5 s.
+     */
     private static void teleporter(ServerPlayer p, ServerLevel monde, Warp w) {
-        if (p.isPassenger()) p.stopRiding();
-        p.teleportTo(monde, w.pos().x, w.pos().y, w.pos().z, w.yRot(), w.xRot());
-        p.setDeltaMovement(Vec3.ZERO);
-        p.hurtMarked = true;
-        p.displayClientMessage(Component.translatableWithFallback("heraliz_grades.warp.arrive", "Bienvenue : %s", w.nom()).withStyle(ChatFormatting.GOLD), true);
+        fr.heraliz.noyau.api.Arrivees.puis(p, monde, w.pos().x, w.pos().z, () -> {
+            if (p.isPassenger()) p.stopRiding();
+            p.teleportTo(monde, w.pos().x, w.pos().y, w.pos().z, w.yRot(), w.xRot());
+            p.setDeltaMovement(Vec3.ZERO);
+            p.hurtMarked = true;
+            p.displayClientMessage(Component.translatableWithFallback("heraliz_grades.warp.arrive", "Bienvenue : %s", w.nom()).withStyle(ChatFormatting.GOLD), true);
+        });
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {

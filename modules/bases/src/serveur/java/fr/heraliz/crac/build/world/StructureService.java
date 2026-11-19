@@ -163,10 +163,14 @@ public final class StructureService {
         return new ArrayList<>(out);
     }
 
-    /** Whether every block of the piece is in a loaded chunk (background systems skip the others). */
+    /**
+     * Whether every block of the piece is in a loaded chunk (background systems skip the others). HeraliZ (19/11, audit des
+     * lenteurs, C4) : tronçon complet seulement ({@code Troncons}), jamais un tronçon encore en lecture que le fil du serveur
+     * attendrait.
+     */
     public static boolean isLoaded(ServerLevel level, Piece p) {
         for (BlockPos pos : PieceIndex.blocksOf(p)) {
-            if (!level.isLoaded(pos)) {
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) {
                 return false;
             }
         }
@@ -527,7 +531,7 @@ public final class StructureService {
 
     private static void eraseBlocks(ServerLevel level, Piece p) {
         for (BlockPos pos : PieceIndex.blocksOf(p)) {
-            if (!level.isLoaded(pos)) continue;
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) continue;
             // a structure block being replaced (onBlockGone) already holds the new block: leave it alone
             if (!(level.getBlockState(pos).getBlock() instanceof StructureBlock)) continue;
             if (level.getBlockEntity(pos) instanceof StructureBlockEntity be) {
@@ -554,7 +558,7 @@ public final class StructureService {
      * libre et que personne n'y est. Sinon la moitié extérieure du mur continue de fermer le bord, comme avant.
      */
     public static void reboucher(ServerLevel level, BlockPos pos) {
-        if (!level.isLoaded(pos) || !new LevelEnv(level).isFree(pos)) {
+        if (!fr.heraliz.noyau.api.Troncons.charge(level, pos) || !new LevelEnv(level).isFree(pos)) {
             return;
         }
         StructureStore store = store(level);
@@ -590,7 +594,7 @@ public final class StructureService {
      * ({@link StructureIntegrity#queueRefill}). Faux si rien n'a changé.
      */
     public static boolean ceder(ServerLevel level, BlockPos pos) {
-        if (!level.isLoaded(pos) || !(level.getBlockState(pos).getBlock() instanceof StructureBlock)) {
+        if (!fr.heraliz.noyau.api.Troncons.charge(level, pos) || !(level.getBlockState(pos).getBlock() instanceof StructureBlock)) {
             return false;
         }
         StructureStore store = store(level);
@@ -636,7 +640,7 @@ public final class StructureService {
         StructureStore store = store(level);
         Occupant occ = Occupant.of(p);
         for (BlockPos pos : PieceIndex.blocksOf(p)) {
-            if (!level.isLoaded(pos)) continue;
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) continue;
             if (level.getBlockEntity(pos) instanceof StructureBlockEntity be) {
                 be.setOccupants(withOccupant(be.occupants(), occ));
                 syncFaces(level, pos, be);
@@ -646,7 +650,7 @@ public final class StructureService {
     }
 
     static void syncFaces(ServerLevel level, BlockPos pos, StructureBlockEntity be) {
-        if (!level.isLoaded(pos)) {
+        if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) {
             return;
         }
         BlockState cur = level.getBlockState(pos);
@@ -759,7 +763,7 @@ public final class StructureService {
     private static void dropResting(ServerLevel level, Piece surface) {
         for (BlockPos below : PieceIndex.blocksOf(surface)) {
             BlockPos pos = below.above();
-            if (!level.isLoaded(pos)) continue;
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) continue;
             BlockState s = level.getBlockState(pos);
             // (28/10) un coffre descendu sur un plancher à mi-bloc (Adosse.BAS) reste tant que ce plancher le porte
             // HeraliZ (03/11) : le sol doit rester sous toute la forme de l'objet (PlacableSupport)

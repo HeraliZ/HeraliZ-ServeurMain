@@ -75,13 +75,11 @@ public final class CoffresPersonnels {
      * Écriture du fichier des coffres sur un fil à part (25/10, audit des performances) : le fichier contient les coffres
      * de TOUS les joueurs ; l'écrire en entier, compressé, sur le fil serveur à chaque fermeture d'une planque gelait le
      * serveur d'autant plus qu'il y a de joueurs inscrits. Les données sont copiées sur le fil serveur, seule l'écriture
-     * part ailleurs, dans l'ordre (un seul fil) ; à l'arrêt du serveur, on attend qu'elle soit finie.
+     * part ailleurs, dans l'ordre (un seul fil) ; à l'arrêt du serveur, on attend qu'elle soit finie. 19/11 (audit des
+     * lenteurs, C2) : la voie « coffres » de l'écrivain en fond commun du noyau ({@code fr.heraliz.noyau.api.EcrituresFond}) ;
+     * avant, un fil à ces coffres. Seul le relevé le plus récent du fichier est écrit.
      */
-    private static final java.util.concurrent.ExecutorService ECRITURE = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "HeraliZ coffres personnels");
-        t.setDaemon(true);
-        return t;
-    });
+    private static final fr.heraliz.noyau.api.EcrituresFond.Voie ECRITURE = fr.heraliz.noyau.api.EcrituresFond.voie("coffres");
     private static volatile boolean arret;
 
     public static void init() {
@@ -377,13 +375,9 @@ public final class CoffresPersonnels {
             racine.put("data", this.save(new CompoundTag()));
             net.minecraft.nbt.NbtUtils.addCurrentDataVersion(racine);
             this.setDirty(false);
-            java.util.concurrent.Future<?> f = ECRITURE.submit(() -> ecrire(racine, fichier));
+            ECRITURE.ecrire(fichier.toPath(), () -> ecrire(racine, fichier));
             if (arret) {
-                try {
-                    f.get(30, java.util.concurrent.TimeUnit.SECONDS);
-                } catch (Exception ex) {
-                    HeraliszUtils.LOG.error("[coffres] écriture de fin non terminée", ex);
-                }
+                ECRITURE.attendre();   // arrêt du serveur : sur le disque avant de continuer
             }
         }
 

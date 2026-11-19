@@ -94,6 +94,8 @@ import java.util.stream.Stream;
 public final class ComptesStore {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private static final int AUTOSAVE_TICKS = 20 * 60;
+    /** 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau). */
+    private static final int DECALAGE_SAUVEGARDE = fr.heraliz.noyau.api.Etalement.decalage("clans.comptes", AUTOSAVE_TICKS);
     /** Delai de regroupement des sauvegardes « urgentes » (1,5 s). */
     private static final int DEBOUNCE_TICKS = 30;
     /** Rappel aux operateurs toutes les 5 min tant que la sauvegarde est bloquee. */
@@ -211,8 +213,7 @@ public final class ComptesStore {
             s.echeanceDebounce = 0;
             s.sauvegarder(false);
         }
-        if (++s.ticksAutosave >= AUTOSAVE_TICKS) {
-            s.ticksAutosave = 0;
+        if (fr.heraliz.noyau.api.Etalement.tour(e.getServer().getTickCount(), AUTOSAVE_TICKS, DECALAGE_SAUVEGARDE)) {
             s.sauvegarder(false);
         }
         if (s.chargementEchoue && ++s.ticksAlerte >= ALERTE_TICKS) {

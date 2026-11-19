@@ -1,7 +1,10 @@
 package com.Spartan.check.movement;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -165,7 +168,32 @@ public final class MovementEnv {
                 box.minY + 0.05, box.maxZ + 0.3));
     }
 
+    /** Marge des sondes autour de la hitbox : pistonNear l'élargit d'1 bloc, supportNear et roughNear de 0,3 à 0,35. */
+    private static final double MARGE_SONDES = 1.3;
+
+    /**
+     * Tous les tronçons que les sondes autour de la hitbox placée à {@code pos} peuvent toucher (hitbox élargie de
+     * {@value #MARGE_SONDES} bloc : 1 à 4 tronçons) sont COMPLETS (19/11, audit des lenteurs, C4). Avant : seul le tronçon
+     * du centre, et par {@code hasChunkAt}, qui dit aussi « chargé » pour un tronçon encore en lecture ; une sonde qui
+     * débordait sur le voisin (supportNear, pistonNear) le faisait alors attendre par le fil du serveur (658 ms le 18/11 à
+     * 23:14, 177 ms à 15:44). Faux : environnement inconnu, rien n'est jugé (comme avant pour le centre). Fil du serveur
+     * ({@code getChunkNow} ; ailleurs la réponse est toujours « inconnu »).
+     */
     public static boolean loaded(ServerPlayer p, Vec3 pos) {
-        return p.level().hasChunkAt(BlockPos.containing(pos));
+        if (!(p.level() instanceof ServerLevel sl)) {
+            return p.level().hasChunkAt(BlockPos.containing(pos));
+        }
+        double r = p.getBbWidth() / 2 + MARGE_SONDES;
+        int x0 = Mth.floor(pos.x - r) >> 4, x1 = Mth.floor(pos.x + r) >> 4;
+        int z0 = Mth.floor(pos.z - r) >> 4, z1 = Mth.floor(pos.z + r) >> 4;
+        ServerChunkCache c = sl.getChunkSource();
+        for (int cx = x0; cx <= x1; cx++) {
+            for (int cz = z0; cz <= z1; cz++) {
+                if (c.getChunkNow(cx, cz) == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

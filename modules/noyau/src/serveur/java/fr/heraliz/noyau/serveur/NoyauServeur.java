@@ -41,7 +41,10 @@ public final class NoyauServeur implements Partie {
       fr.heraliz.noyau.serveur.diag.Moniteur.enregistrer();
       fr.heraliz.noyau.serveur.diag.DiagClients.enregistrer();
       fr.heraliz.noyau.serveur.maintenance.Maintenance.enregistrer();
+      fr.heraliz.noyau.api.EcrituresFond.brancher();   // écrivain en fond commun à tous nos mods (19/11)
       fr.heraliz.noyau.serveur.perf.LevelDatFond.enregistrer();
+      fr.heraliz.noyau.serveur.perf.ArriveesServeur.enregistrer();   // téléportations sans gel, /tp compris (19/11)
+      fr.heraliz.noyau.serveur.perf.Prechauffage.enregistrer();   // classes des mods et des plugins lues à l'avance (19/11)
       fr.heraliz.noyau.serveur.perf.MondesSansSpawn.enregistrer();
       fr.heraliz.noyau.serveur.perf.TronconsForces.enregistrer();
       fr.heraliz.noyau.serveur.perf.Allege.enregistrer();

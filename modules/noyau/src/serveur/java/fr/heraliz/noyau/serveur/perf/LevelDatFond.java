@@ -2,6 +2,7 @@ package fr.heraliz.noyau.serveur.perf;
 
 import com.mojang.logging.LogUtils;
 import fr.heraliz.noyau.NoyauConfig;
+import fr.heraliz.noyau.api.EcrituresFond;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -16,26 +17,20 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * level.dat écrit à côté du fil serveur (27/10, perf) : à chaque sauvegarde automatique (toutes les 5 min), Minecraft
  * compressait et écrivait sur le fil serveur ce fichier de 400 Ko (registres de Forge compris), une bonne part du gel de
  * 100 à 200 ms mesuré serveur vide. Le contenu est toujours relevé par Minecraft sur le fil serveur (puis copié) ; seuls la
- * compression, l'écriture et le remplacement de level.dat (level.dat_old gardé, comme Minecraft) partent sur le fil
- * « HeraliZ-level-dat », un à la fois, dans l'ordre. Pendant l'arrêt du serveur, l'écriture se fait tout de suite, après
- * celles encore en file : rien n'est perdu à la fermeture. Branché par LevelDatEnFondMixin ;
- * {@code [perf] level_dat_en_fond = false} de heraliz_noyau-server.toml rend l'écriture de Minecraft.
+ * compression, l'écriture et le remplacement de level.dat (level.dat_old gardé, comme Minecraft) partent sur la voie
+ * « level-dat » de l'écrivain en fond du noyau (19/11 : avant, un fil à lui, « HeraliZ-level-dat »), un à la fois, dans
+ * l'ordre. Pendant l'arrêt du serveur, l'écriture se fait tout de suite, après celles encore en file : rien n'est perdu à la
+ * fermeture. Branché par LevelDatEnFondMixin ; {@code [perf] level_dat_en_fond = false} de heraliz_noyau-server.toml rend
+ * l'écriture de Minecraft.
  */
 public final class LevelDatFond {
    private static final Logger LOG = LogUtils.getLogger();
-   private static final ExecutorService FIL = Executors.newSingleThreadExecutor(r -> {
-      Thread t = new Thread(r, "HeraliZ-level-dat");
-      t.setDaemon(true);
-      return t;
-   });
+   private static final EcrituresFond.Voie VOIE = EcrituresFond.voie("level-dat");
    /** Contenu relevé par Minecraft en attendant le remplacement du fichier (même fil, même sauvegarde). */
    private static final ThreadLocal<Releve> RELEVE = new ThreadLocal<>();
    /** Première écriture à côté déjà notée dans le journal (fil d'écriture seulement). */
@@ -82,7 +77,29 @@ public final class LevelDatFond {
       CompoundTag c = new CompoundTag();
       for (String cle : contenu.getAllKeys()) {
          Tag t = contenu.get(cle);
-         if (t != null) c.put(cle, "fml".equals(cle) ? t : t.copy());
+         if (t == null) continue;
+         if ("fml".equals(cle)) {
+            c.put(cle, t);
+         } else if ("Data".equals(cle) && t instanceof CompoundTag donnees && MemoiresSauvegarde.reglagesTag() != null) {
+            c.put(cle, copieSaufReglages(donnees));
+         } else {
+            c.put(cle, t.copy());
+         }
+      }
+      return c;
+   }
+
+   /**
+    * 19/11 (audit des lenteurs, point C2) : « Data » recopié, sauf les réglages de génération quand ce sont ceux gardés par
+    * {@link MemoiresSauvegarde} (le même NBT à chaque sauvegarde, jamais modifié) : leur copie ({@code ListTag.copy}) était
+    * relevée sur le fil du serveur à 01:36:00 le 19/11.
+    */
+   private static CompoundTag copieSaufReglages(CompoundTag donnees) {
+      Tag garde = MemoiresSauvegarde.reglagesTag();
+      CompoundTag c = new CompoundTag();
+      for (String cle : donnees.getAllKeys()) {
+         Tag t = donnees.get(cle);
+         if (t != null) c.put(cle, t == garde ? t : t.copy());
       }
       return c;
    }
@@ -104,7 +121,7 @@ public final class LevelDatFond {
          }
          return false;
       }
-      FIL.execute(() -> {
+      VOIE.ajouter(cible.toPath(), () -> {
          try {
             long t = System.nanoTime();
             NbtIo.writeCompressed(r.contenu(), temporaire);
@@ -125,14 +142,8 @@ public final class LevelDatFond {
       return true;
    }
 
-   /** Attend la fin des écritures en file (arrêt du serveur, sauvegarde faite par Minecraft lui-même), 30 s au plus. */
+   /** Attend la fin des écritures en file (arrêt du serveur, sauvegarde faite par Minecraft lui-même), 60 s au plus. */
    public static void attendre() {
-      try {
-         FIL.submit(() -> { }).get(30, TimeUnit.SECONDS);
-      } catch (InterruptedException ex) {
-         Thread.currentThread().interrupt();
-      } catch (Exception ex) {
-         LOG.error("[noyau] écriture de level.dat pas terminée", ex);
-      }
+      VOIE.attendre();
    }
 }

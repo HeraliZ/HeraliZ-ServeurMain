@@ -459,14 +459,21 @@ final class TpaServeur {
         return 1;
     }
 
+    /**
+     * 19/11 (audit des lenteurs, C1) : par le noyau (api.Arrivees) : l'arrivée, autour d'un joueur, est presque toujours
+     * déjà chargée (départ tout de suite) ; sinon départ dès qu'elle l'est, 3 s au plus, à la place où est alors la cible.
+     */
     private static void teleporter(ServerPlayer p, ServerPlayer cible) {
-        if (p.isPassenger()) p.stopRiding();
-        p.teleportTo(cible.serverLevel(), cible.getX(), cible.getY(), cible.getZ(), cible.getYRot(), cible.getXRot());
-        p.setDeltaMovement(Vec3.ZERO);
-        p.hurtMarked = true;
-        if (!staff(p)) noterRecharge(p.getUUID(), recharge(p.getUUID()));
-        p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.arrive", "Téléporté vers %s.", cible.getDisplayName())
-                .withStyle(ChatFormatting.GOLD));
+        fr.heraliz.noyau.api.Arrivees.puis(p, cible.serverLevel(), cible.getX(), cible.getZ(), () -> {
+            if (cible.hasDisconnected()) return;   // partie entre-temps : rien ne part
+            if (p.isPassenger()) p.stopRiding();
+            p.teleportTo(cible.serverLevel(), cible.getX(), cible.getY(), cible.getZ(), cible.getYRot(), cible.getXRot());
+            p.setDeltaMovement(Vec3.ZERO);
+            p.hurtMarked = true;
+            if (!staff(p)) noterRecharge(p.getUUID(), recharge(p.getUUID()));
+            p.sendSystemMessage(Component.translatableWithFallback("heraliz_grades.tpa.arrive", "Téléporté vers %s.", cible.getDisplayName())
+                    .withStyle(ChatFormatting.GOLD));
+        });
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
