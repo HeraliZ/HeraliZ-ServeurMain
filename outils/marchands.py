@@ -21,11 +21,15 @@ plus de 50 % de P (Marchands.prixRachat de HeraliZ Quêtes : min(prix de la règ
 vendeurs, aussi pour les articles ajoutés en jeu au Registre), et le recycler ne rapporte pas plus : espérance des
 composants revendus (ou hérals « rien ») au plus P / 2 (Recyclage.tropRentable, même calcul).
 Le script refuse d'écrire si une revente ou un recyclage dépasse ces bornes sans que le serveur les plafonne.
+19/11 (audit de l'économie) : comme le serveur (SaisonQuetes.calculerVentes), un objet reçu par un échange compte pour
+P = 0 (jamais racheté), et le contrôle est fait deux fois : sans la bêta, puis avec l'économie de la bêta du fichier de
+réglages du loot (section [beta] de serveur/defaultconfigs/heraliz_loot-server.toml : prix d'achat, rachat, recycleur).
 Le Passeur (armes et munitions, 19/11) a une borne bien plus dure (controle_passeur) : revendu ou recyclé, un de ses
 articles ne rend jamais plus de PASSEUR_RENDU_MAX (10 %) du prix payé, avec et sans l'économie de la bêta.
 
     python outils/marchands.py             écrit les fichiers (après le contrôle)
-    python outils/marchands.py --controle  contrôle seulement les fichiers actuels (code 1 en cas d'erreur)
+    python outils/marchands.py --controle  contrôle seulement les fichiers actuels (code 1 en cas d'erreur ; lancé par
+                                           outils/verifier.py)
 """
 import json
 from pathlib import Path
@@ -80,9 +84,11 @@ MATERIAUX = [  # matériaux de construction du Bâtisseur (heraliz_composants), 
 JAMAIS_VENDUS = {"heraliz_recolte:hache_pioche"}
 # 16/11 (HeraliZ Récolte, maquettes/recolte/PROPOSITION.md §2, choix du propriétaire) : le Contremaître du spawn échange
 # les matières brutes récoltées sur la carte (arbres à abattre, gisements de pierre, de métal et de titane) contre les
-# matériaux des bases de CRac, ceux que vend le Bâtisseur (MATERIAUX). Troc seulement : ni hérals, ni rachat. Cher exprès :
-# un arbre (30 bûches) vaut 6 planches, un gisement de pierre (24 pierres brutes) 3 pierres taillées, un gisement de métal
-# (30 minerais de métal) 3 fragments de métal, un gisement de titane (16 minerais de titane) 2 métal renforcé.
+# matériaux des bases de CRac, ceux que vend le Bâtisseur (MATERIAUX). Troc seulement : ni hérals, ni rachat. Cher exprès.
+# 19/11 (barème de serveur/config/heraliz_recolte/recolte.json : deux fois plus d'arbres et de gisements, qui donnent
+# moins chacun) : un arbre (6 bûches) vaut 1,2 planche, un gisement de pierre (6 à 9 pierres brutes) un peu moins d'une
+# pierre taillée, un gisement de métal (4 à 8 minerais de métal) 0,6 fragment de métal, un gisement de titane (2 à 5
+# minerais de titane) 0,44 métal renforcé, en moyenne. Pas de plafond par jour (choix du propriétaire du 19/11).
 CONTREMAITRE = [  # (objet donné, nombre, objet reçu, nombre)
     ("heraliz_recolte:buche", 5, "heraliz_composants:planches", 1),
     ("heraliz_recolte:buche", 1, "heraliz_composants:brindilles", 5),
@@ -322,15 +328,82 @@ def prix_regle(marchand, objet, nbt, facteur=1.0):
     return 0
 
 
-def controle(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0):
-    """Revente et recyclage de chaque article vendu : refus (SystemExit) si l'un rapporte plus que la règle des 50 %."""
-    erreurs, notes = analyser(marchands, achat, rachat_f, recyclage, bavard=True)
-    for n in notes:
-        print("plafonné par le serveur : " + n)
+def facteurs_beta():
+    """(achat, rachat, recyclage) de l'économie de la bêta (19/11 : section [beta] de heraliz_loot-server.toml, lue par
+    outils/loot_beta.py, bornes de ConfigLoot), ou None quand la bêta est coupée (le serveur prend alors tout à 1)."""
+    import loot_beta
+    r = loot_beta.reglages()
+    if not r["actif"]:
+        return None
+    return (min(1.0, max(0.25, r["prix_achat"])), min(2.0, max(1.0, r["prix_rachat"])), min(3.0, max(1.0, r["recyclage"])))
+
+
+def controle(marchands, achat=None, rachat_f=None, recyclage=None):
+    """Revente et recyclage de chaque article vendu : refus (SystemExit) si l'un rapporte plus que la règle des 50 %.
+    19/11 : sans facteurs donnés, contrôle fait sans la bêta puis avec l'économie de la bêta (facteurs_beta)."""
+    if achat is None:
+        cas = [("sans la bêta", (1.0, 1.0, 1.0))]
+        beta = facteurs_beta()
+        if beta:
+            cas.append(("avec la bêta (achat x%g, rachat x%g, recycleur x%g)" % beta, beta))
+    else:
+        cas = [("", (achat, rachat_f or 1.0, recyclage or 1.0))]
+    erreurs, vues = [], set()
+    for nom, (fa, fr, fy) in cas:
+        if nom:
+            print(f"[marchands] {nom} :")
+        e, notes = analyser(marchands, fa, fr, fy, bavard=True)
+        for n in notes:
+            if n not in vues:
+                vues.add(n)
+                print("plafonné par le serveur : " + n)
+        erreurs += e
     for e in erreurs:
         print("ERREUR : " + e)
     if erreurs:
         raise SystemExit("Refusé : une revente ou un recyclage rapporterait plus que la règle des 50 % du prix d'achat.")
+
+
+def table_ventes(marchands, achat=1.0):
+    """Comme SaisonQuetes.calculerVentes du serveur : (objet, nbt) -> plus petit prix payé chez un vendeur (facteur
+    « achat » de la bêta compris : arrondi, 1 au moins) ; 19/11 : un objet reçu par un échange vaut 0 (jamais racheté ni
+    recyclé avec profit), même s'il est aussi vendu."""
+    ventes = {}
+    for m in marchands.values():
+        for e in m.get("echanges", []):
+            ventes[(e["recoit"]["objet"], e["recoit"].get("nbt", ""))] = 0
+    for m in marchands.values():
+        if m.get("type") == "rachat":
+            continue
+        for a in m.get("articles", []):
+            k = (a["objet"], a.get("nbt", ""))
+            p = a["prix"] if achat == 1.0 or a["prix"] <= 0 else max(1, arrondi(a["prix"] * achat))
+            ventes[k] = min(max(0, p), ventes.get(k, p))
+    return ventes
+
+
+def recus_par_echange(marchands):
+    """Objets reçus par un échange (19/11 : rachetés 0 par le serveur)."""
+    return {(e["recoit"]["objet"], e["recoit"].get("nbt", "")) for m in marchands.values() for e in m.get("echanges", [])}
+
+
+def meilleur_rachat(objet, nbt, racheteurs, ventes, rachat_f=1.0):
+    """Meilleur prix de rachat, comme Marchands.meilleurRachat du serveur : règle de chaque racheteur (facteur « rachat » de
+    la bêta compris), plafonnée à la moitié du plus petit prix payé chez un vendeur (objet vendu sans données : il vaut pour
+    toutes ; reçu par un échange : 0)."""
+    brut = max([prix_regle(m, objet, nbt, rachat_f) for m in racheteurs.values()] + [0])
+    achat = min([p for (o, n), p in ventes.items() if o == objet and (not n or n == nbt)], default=None)
+    return brut if achat is None or not plafond_serveur() else min(brut, achat // 2)
+
+
+_PLAFOND = []
+
+
+def plafond_serveur():
+    """Le serveur plafonne-t-il le rachat à la moitié du prix d'achat (Marchands.java) ? Lu une fois."""
+    if not _PLAFOND:
+        _PLAFOND.append("achat / 2" in MARCHANDS_JAVA.read_text(encoding="utf-8"))
+    return _PLAFOND[0]
 
 
 def controle_echanges(marchands):
@@ -379,21 +452,15 @@ def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
     achat (arrondi, 1 au moins), règles de rachat x rachat_f, chance et hérals « rien » du recycleur x recyclage."""
     plafond = "achat / 2" in MARCHANDS_JAVA.read_text(encoding="utf-8")
     recy_plafond = "tropRentable" in RECYCLAGE_JAVA.read_text(encoding="utf-8")
-    ventes = {}
-    for m in marchands.values():
-        if m.get("type") == "rachat":
-            continue
-        for a in m.get("articles", []):
-            k = (a["objet"], a.get("nbt", ""))
-            p = a["prix"] if achat == 1.0 or a["prix"] <= 0 else max(1, arrondi(a["prix"] * achat))
-            ventes[k] = min(p, ventes.get(k, p))
+    # 19/11 : objets reçus par un échange à 0 (SaisonQuetes.calculerVentes) ; il faut alors les fichiers de tous les
+    # marchands, troc compris
+    ventes = table_ventes(marchands, achat)
+    recus = recus_par_echange(marchands)
     racheteurs = {pid: m for pid, m in marchands.items() if m.get("type") == "rachat"}
 
     def rachat(objet, nbt):
         """Meilleur prix de rachat, plafond des 50 % compris (objet vendu sans données : il vaut pour toutes)."""
-        brut = max([prix_regle(m, objet, nbt, rachat_f) for m in racheteurs.values()] + [0])
-        achat = min([p for (o, n), p in ventes.items() if o == objet and (not n or n == nbt)], default=None)
-        return brut if achat is None or not plafond else min(brut, achat // 2)
+        return meilleur_rachat(objet, nbt, racheteurs, ventes, rachat_f)
 
     erreurs, notes = [], []
     for (objet, nbt), prix in sorted(ventes.items()):
@@ -401,7 +468,9 @@ def analyser(marchands, achat=1.0, rachat_f=1.0, recyclage=1.0, bavard=False):
             brut = prix_regle(m, objet, nbt, rachat_f)
             if brut * 2 <= prix:
                 continue
-            if plafond:
+            if plafond and (objet, nbt) in recus:
+                notes.append(f"{objet}{nbt} : reçu par un échange, règle de {pid} {brut} -> racheté 0")
+            elif plafond:
                 notes.append(f"{objet}{nbt} : vendu {prix}, règle de {pid} {brut} -> racheté {min(brut, prix // 2)} (plafond des 50 %)")
             else:
                 erreurs.append(f"{objet}{nbt} : vendu {prix}, {pid} le rachèterait {brut} (plus de 50 %)")
@@ -460,19 +529,12 @@ def rendus_articles(marchands, pid, achat=1.0, rachat_f=1.0, recyclage=1.0):
     paquet complet (composants revendus, ou hérals « rien »), chance et hérals x recyclage (Recyclage.tropRentable), divisée
     par la taille du paquet. Objet neuf (état 100 %)."""
     rec = json.loads(RECYCLAGE.read_text(encoding="utf-8"))
-    racheteurs = [m for m in marchands.values() if m.get("type") == "rachat"]
-    ventes = {}
-    for m in marchands.values():
-        if m.get("type") == "rachat":
-            continue
-        for a in m.get("articles", []):
-            p = a["prix"] if achat == 1.0 else max(1, arrondi(a["prix"] * achat))
-            ventes[(a["objet"], a.get("nbt", ""))] = min(p, ventes.get((a["objet"], a.get("nbt", "")), p))
+    racheteurs = {k: m for k, m in marchands.items() if m.get("type") == "rachat"}
+    # 19/11 : même table des ventes que le serveur (objets reçus par un échange à 0), comme analyser
+    ventes = table_ventes(marchands, achat)
 
     def revente(objet, nbt):
-        brut = max([prix_regle(m, objet, nbt, rachat_f) for m in racheteurs] + [0])
-        vendu = min([p for (o, n), p in ventes.items() if o == objet and (not n or n == nbt)], default=None)
-        return brut if vendu is None else min(brut, vendu // 2)
+        return meilleur_rachat(objet, nbt, racheteurs, ventes, rachat_f)
 
     chances = [rec["chance"], rec.get("profils", {}).get("carte", {}).get("chance", rec["chance"])]
     out = []
@@ -501,7 +563,6 @@ def controle_passeur(marchands, bavard=True):
     l'économie de la bêta (section [beta] de serveur/defaultconfigs/heraliz_loot-server.toml) quand elle est active."""
     import re
     import loot_armes as L
-    from loot_beta import reglages
     if "passeur" not in marchands:
         return
     erreurs = []
@@ -518,10 +579,9 @@ def controle_passeur(marchands, bavard=True):
             cout = cout_fabrication(m.group(2), mila)
             if cout and a["prix"] < MUNITIONS_FOIS_FABRICATION * cout:
                 erreurs.append(f"{m.group(2)} : {a['prix']} la balle, moins de {MUNITIONS_FOIS_FABRICATION:g} fois sa fabrication ({cout:.1f})")
-    b = reglages()
     jeux = [("fichiers", 1.0, 1.0, 1.0)]
-    if b.get("actif"):
-        jeux.append(("bêta", b["prix_achat"], b["prix_rachat"], b["recyclage"]))
+    if facteurs_beta():
+        jeux.append(("bêta",) + facteurs_beta())
     for nom, fa, fr, fy in jeux:
         pire = (0.0, "")
         for a, paye, revente, spawn, carte in rendus_articles(marchands, "passeur", fa, fr, fy):
@@ -563,14 +623,13 @@ def regle_recyclage(rec, objet, nbt):
 if __name__ == "__main__":
     import sys
     if "--controle" in sys.argv:
-        actuels, tous = {}, {}
+        # tous les marchands, troc compris (19/11 : un objet reçu par un échange compte pour un prix d'achat de 0)
+        tous = {}
         for f in sorted(PNJ.glob("*.json")):
             m = json.loads(f.read_text(encoding="utf-8")).get("marchand")
             if m:
                 tous[f.stem] = m
-            if m and m.get("type") in ("achat", "rachat"):
-                actuels[f.stem] = m
-        controle(actuels)
+        controle(tous)
         controle_echanges(tous)
         controle_jamais_vendus(tous)
         controle_matieres_brutes(tous)

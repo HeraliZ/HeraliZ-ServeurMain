@@ -164,7 +164,8 @@ DIVERS = [
 # coffres de base par rareté (27/10, validés par le propriétaire) : comme le reste, le niveau des composants suit la
 # rareté du coffre (I Commun, II Peu commun, III Rare, IV Épique) ; le coffre-fort (Légendaire) est une exception comme les
 # jumelles : composants IV et matériaux légendaires des bases (métal renforcé, fil à souder). La caisse en métal reste aussi
-# vendue 150 hérals par le Bâtisseur (outils/marchands.py). Raretés dans RARETES_IMPOSEES de outils/loot_armes.py.
+# vendue par le Bâtisseur (outils/marchands.py, MATERIAUX : 300 hérals, 225 pendant la bêta). Raretés dans
+# RARETES_IMPOSEES de outils/loot_armes.py.
 # 28/10 (demande du propriétaire) : coût de tous les coffres de base doublé (avant : caisse en métal 6 ferraille + 4 clous,
 # malle 8/8/2/3, casier 6/2/3/1, caisse à armes 8/4/2/2/1, coffre-fort 6/3/4/2/1).
 RANGEMENT = [

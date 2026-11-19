@@ -657,3 +657,43 @@ Jeu (après le redémarrage) :
 - [ ] Mise à jour de Mohist (build après le 20/07/2025) : seulement après un banc de charge et un essai.
 - [ ] WorldGuard : `/rg list` dans chaque monde ; si aucune région n'utilise de drapeau de mouvement (entry, exit,
       greeting, farewell, ceux de WorldGuardExtraFlags), demander à passer `use-player-move-event` à `false`.
+
+## 29. Économie : récolte, recycleur, cœur de clan, caisses (19/11)
+
+Récolte 1.1.2 et Quêtes 1.23.2. Les réglages sont relus sans redémarrer (`recolte.json` tout seul, `/recharger` pour le
+reste), mais la limite de 2 000 ressources par sorte demande la nouvelle Récolte (avec l'ancienne, 500 arbres au plus).
+**Rien de tout cela n'a été testé en jeu.**
+
+Récolte (choix du propriétaire : 2 fois plus d'arbres et de gisements, chacun donne environ 40 % de moins) :
+- [ ] `/recharger recolte` : « 720 arbres, 540 gisements de pierre, 240 de métal et 84 de titane à la fois » (avant :
+      360, 270, 120, 42). Les nouvelles places se remplissent petit à petit là où des joueurs passent ; pas de lag au
+      moment où le fichier est relu.
+- [ ] Un arbre abattu à la hache : 6 bûches en tout (5 pendant les coups, 1 quand il tombe), toujours 12 coups.
+- [ ] Gisements : pierre 6 à 9 pierres brutes, métal 4 à 8 minerais, titane 2 à 5 ; toujours 16, 20 et 24 coups. Avec
+      la hache-pioche de survie : moins de coups, et plus souvent le haut de la fourchette.
+- [ ] L'usure de la hache et de la pioche par coup ne change pas (elles s'usent donc un peu plus par bûche ou minerai).
+- [ ] Île arctique (zone de neige) : bien plus d'arbres et de gisements qu'ailleurs, plus serrés qu'avant (deux arbres
+      peuvent être à une vingtaine de blocs, deux gisements de métal à une quarantaine).
+- [ ] Le Contremaître ne dit plus que « le métal est compté chaque jour » (il n'y a pas de plafond par jour).
+
+Recycleur (armes et accessoires : en moyenne un peu moins que Mila, avec de la chance nettement plus) :
+- [ ] Aperçu d'une arme Commune (pistolet gris) : Canon II, Ressort II, Ferraille II, Ferraille, Kit de pièces ; d'une
+      Légendaire : Canon IV, Ressort IV, Ferraille IV, Kit de pièces IV. Jamais plus de 5 lignes.
+- [ ] Un viseur rend des batteries, une poignée du caoutchouc, un chargeur un ressort ; plus jamais de scotch ni de
+      circuit imprimé sur une arme ou un accessoire (ce sont des pièces des explosifs).
+- [ ] Recycler une dizaine d'armes Rares neuves : environ un tiers ne rend que 15 hérals, un tiers une pièce (20 ou 50
+      chez Mila), un tiers deux pièces (jusqu'à 100) ; Mila en donne 60 chacune.
+- [ ] Une conserve geckolib (haricots, pêches…) rend une ferraille ; une boisson ou des chips du plastique ; une batte ou
+      une machette 2 ferrailles, comme avant.
+- [ ] Un article acheté chez Jack ou le Passeur se recycle comme avant (aucun refus nouveau) ; le saucisson du Doyen
+      reste refusé (« rapporterait trop »).
+
+Cœur de clan, caisses, Mila :
+- [ ] Cœur de clan chez le Bâtisseur : nom et badge Légendaire (or) ; prix inchangé (3 750 hérals pendant la bêta).
+- [ ] Caisse Gemme : un couteau 1 étoile annoncé « Peu commun » arrive Peu commun (vert) dans l'inventaire ; 2 étoiles
+      Épique, 3 étoiles Légendaire, 4 étoiles Unique. Pareil dans la caisse Événement. Un couteau trouvé dans un coffre
+      T7 reste Unique.
+- [ ] Caisse des quêtes : fragment vert annoncé Épique, bleu Légendaire (annoncé à tout le serveur), kit de fortune Rare,
+      kit standard Épique. Caisse de vote : le cœur de clan est annoncé Légendaire (annoncé à tout le serveur).
+- [ ] Mila rachète maintenant les combinaisons intégrales trouvées (plongée, arctique, hazmat : 25 hérals ; renforcées :
+      60) ; avant, elle les refusait.
