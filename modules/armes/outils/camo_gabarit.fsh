@@ -479,15 +479,6 @@ vec3 darkMatterNuclear(vec3 p, out vec3 em) {
 // Rendu « métal » : la lame reflète un décor de studio qui dépend de l'orientation, avec une légère courbure simulée
 // le long et en travers de la lame -> les reflets glissent quand le couteau bouge, comme dans CS.
 float PART = 1.0;
-// gradient de la carte de positions au point dessiné, pris sur les quatre texels que posMap (main) lit déjà : variation de la
-// position pour une unité de texCoord0 en u (CARTE_DU) et en v (CARTE_DV), dans la face du texel le plus proche ; nul dans
-// un sens où cette face n'a pas deux texels voisins (UV plus fines qu'un texel). CARTE_OK = 0 : pas de carte (aperçu des
-// camos : position venue des sommets), les camos prennent alors les dérivées écran de la position
-vec3 CARTE_DU = vec3(0.0);
-vec3 CARTE_DV = vec3(0.0);
-float CARTE_OK = 0.0;
-// texels de la carte par unité de texCoord0 (taille de la carte rapportée à CamoUvRect)
-vec2 CARTE_N = vec2(0.0);
 // couleur de la texture d'origine au point dessiné (manches ornés : leurs motifs restent visibles sous la finition)
 vec3 BASE_COL = vec3(0.0);
 
@@ -3212,17 +3203,15 @@ vec3 amethystGem(vec3 p, out vec3 em) {
 // un réseau hexagonal régulier, facettes très contrastées (blanc / noir) avec un peu de feu, éclats en étoile qui
 // s'allument quand le joueur bouge (décor lié au monde) ; de loin, le pavé se fond en un argent scintillant.
 // Corrigé le 19/11 (en jeu : bruit de pixels en vue joueur, aplats et traînées par endroits), même pavé fin, même relief :
-// - faces où la carte de positions ne peut pas suivre la surface (UV réduites à un point ou plus fines qu'un texel de la
-//   carte, UV prises par plusieurs faces de formes différentes, dernier texel au bord des faces) : or jaune poli à la place
-//   du pavé, en fondu (diamNet ; 20/11, demande du propriétaire : le repère de secours de la veille y faisait de la
-//   « neige », des pierres géantes ou étirées) ;
+// - faces où la carte de positions ne peut pas suivre la surface (UV réduites à un point, UV prises par plusieurs faces de
+//   formes différentes, faces ou bords de faces plus fins qu'un texel de la carte) : le pavé y est posé sur un repère de
+//   secours (coordonnées de texture de la face redressées, à défaut la position dans la vue), mêmes pierres en relief, au
+//   lieu d'un aplat ou de traînées ;
 // - faces à 45° : plan du motif toujours le même (surf2d en changeait d'un pixel à l'autre : pierres en bruit) ; faces
 //   penchées : pierres rondes (rangées un peu plus espacées) au lieu de pierres étirées ;
 // - pierres petites à l'écran : facettes, arêtes, griffes et scintillement des facettes se fondent peu à peu en une pierre
 //   bombée (relief, reflet et éclat gardés, par pierre) ; plus de scintillement d'une facette à l'autre de loin ; rayons des
-//   éclats d'au moins un pixel ; parallaxe bornée de biais (les pierres ne s'étirent plus en pointes sur le dessus) ;
-//   en visée, sur la face collée à l'œil vue très de biais, plus de parallaxe (20/11 : pierres étalées en traînées),
-//   et or là où une pierre dépasse ~100 pixels dans les deux sens (20/11 : pierres géantes, face arrière de l'AK).
+//   éclats d'au moins un pixel ; parallaxe bornée de biais (les pierres ne s'étirent plus en pointes sur le dessus).
 
 // studio de bijoutier (or du Diamond) : grands panneaux lumineux verticaux tout autour, à hauteur d'yeux, sombres entre
 // eux ; fixés dans le monde comme le reste du décor : les faces de côté passent du clair au sombre quand on se retourne
@@ -3368,33 +3357,24 @@ float diamIsotropie(vec3 evx, vec3 evy, vec3 epx, vec3 epy) {
     return clamp(4.0 * (a * c - b * b) * (A * C - B * B) / max(tr * tr, 1e-12), 0.0, 1.0);
 }
 
-// le motif (pavé du Diamond, du Rubis ; panneaux, écailles, rouages) peut-il être net ici ? 1 là où la carte de positions
-// suit la surface (même étirement dans toutes les directions), 0 sinon, en fondu : UV d'une face réduites à un point ou plus
-// fines qu'un texel de la carte (petites pièces, et modèles aux UV en fractions de pixel : SSG 08, Glock…), dernier texel
-// au bord d'une face (la carte s'y aplatit), face qui prend les texels d'une autre. Là, le motif serait étiré, géant ou en
-// bruit de pixels (« neige » vue en jeu le 19/11) : le camo y met sa matière de fond (or du Diamond, or noir du Rubis…).
-// Mesuré sur le gradient de la carte (CARTE_DU, CARTE_DV : texels déjà lus, dérivées exactes des coordonnées de texture),
-// stable sur une face, plutôt que sur les dérivées écran de la position lue, qui sautent d'un bloc de 2 x 2 pixels à
-// l'autre sur ces faces (taches isolées). Le repère de secours du 19/11 (coordonnées de texture) faisait lui-même du bruit
-// sur ces faces (UV presque nulles : précision) et des pierres à la mauvaise taille : retiré.
-float diamNet(vec3 p) {
-    vec3 ex = dFdx(viewPos), ey = dFdy(viewPos);
-    vec3 px = dFdx(p), py = dFdy(p);
-    // là où un texel de la carte couvre moins de deux à quatre pixels, le défaut est plus fin que les pierres (elles passent
-    // alors en argent lisse) : pas d'or, qui y ferait des filets d'un pixel qui clignotent quand l'arme bouge. Face aux UV
-    // réduites à un point ou à une ligne (déterminant nul des coordonnées de texture), ou carte constante sur la face
-    // (gradient nul) : l'isotropie n'y mesure que du bruit d'arrondi, toujours or
-    float fort = 1.0, sain = 1.0;
-    if (CARTE_OK > 0.5) {
-        vec2 tx = dFdx(texCoord0), ty = dFdy(texCoord0);
-        px = CARTE_DU * tx.x + CARTE_DV * tx.y;
-        py = CARTE_DU * ty.x + CARTE_DV * ty.y;
-        vec2 txn = tx * CARTE_N, tyn = ty * CARTE_N;
-        fort = smoothstep(2.0, 4.0, 1.0 / max(max(length(txn), length(tyn)), 1e-6));
-        sain = smoothstep(1e-7, 1e-6, abs(txn.x * tyn.y - txn.y * tyn.x));
+// pas du pavé de secours, en pierres par unité de la vue : en vue joueur, un pixel du modèle TaCZ vaut 1/16 de bloc ; une
+// pierre tous les 0.3 pixel du modèle, comme le pavé de la carte (160 pierres par longueur) sur une arme de ~48 pixels
+const float DIAM_SECOURS = 16.0 / 0.3;
+
+// repère de secours du pavé (unités de cellule) : coordonnées de texture de la face, redressées par leurs dérivées écran
+// (exactes) -> collées à l'arme, pierres rondes ; si la face n'en a pas (UV réduites à un point), position dans la vue
+// projetée sur la face (elle peut alors glisser un peu quand l'arme bouge dans la vue)
+vec2 diamSecours(vec3 n, vec3 ex, vec3 ey, vec2 tx, vec2 ty, float det) {
+    if (abs(det) > 1e-9 * length(cross(ex, ey))) {
+        // déplacements dans la vue pour un pas de u et de v sur la face, puis repère orthonormé de la face (T le long de u)
+        vec3 au = (ex * ty.y - ey * tx.y) / det;
+        vec3 av = (ey * tx.x - ex * ty.x) / det;
+        vec3 T = normalize(au);
+        vec3 B = normalize(cross(n, T));
+        return vec2(texCoord0.x * length(au) + texCoord0.y * dot(av, T), texCoord0.y * dot(av, B)) * DIAM_SECOURS;
     }
-    sain *= smoothstep(1e-5, 1e-4, sqrt((dot(px, px) + dot(py, py)) / max(dot(ex, ex) + dot(ey, ey), 1e-30)));
-    return 1.0 - (1.0 - smoothstep(0.84, 0.92, diamIsotropie(ex, ey, px, py)) * sain) * max(fort, 1.0 - sain);
+    vec3 T = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+    return vec2(dot(viewPos, T), dot(viewPos, cross(n, T))) * DIAM_SECOURS;
 }
 
 vec3 diamondCod(vec3 p, out vec3 em) {
@@ -3405,24 +3385,24 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     vec3 fnl = faceNormal(p);
     vec3 plan;
     vec2 uvC = diamPlan(p, fnl, plan) * 160.0;
-    // pavé seulement là où il peut être net (diamNet) ; ailleurs, l'or du Diamond, en fondu
-    float net = diamNet(p);
-    vec2 uv0 = uvC;
-    plan = vec3(plan.xy, 1.0 / (plan.z * (1.0 + plan.z)));
+    // là où la carte de positions ne suit pas la surface (UV réduites à un point, UV prises par plusieurs faces de formes
+    // différentes, faces ou bords de faces plus fins qu'un texel de la carte : un texel vaut environ deux pierres), le pavé
+    // est posé sur le repère de secours, avec les mêmes pierres
+    vec3 evx = dFdx(viewPos), evy = dFdy(viewPos);
+    vec2 tx = dFdx(texCoord0), ty = dFdy(texCoord0);
+    bool secours = diamIsotropie(evx, evy, dFdx(p), dFdy(p)) < 0.35;
+    vec2 uv0 = secours ? diamSecours(nv, evx, evy, tx, ty, tx.x * ty.y - ty.x * tx.y) : uvC;
+    plan = secours ? vec3(0.0) : vec3(plan.xy, 1.0 / (plan.z * (1.0 + plan.z)));
     // pixels par pierre (direction la plus serrée) : pierre et relief dès ~2 pixels (fin), facettes, arêtes et griffes de ~7
     // à ~14 pixels (facette) ; en dessous, la pierre devient bombée et lisse
     float pps = 1.0 / max(max(length(dFdx(uv0)), length(dFdy(uv0))), 1e-4);
-    // pierre de plus de 80 à 120 pixels dans les deux sens (face vue de face, collée à l'œil en visée : pierres
-    // plusieurs fois plus grandes que le reste du pavé) : l'or du Diamond, en fondu. En vue normale, une pierre fait
-    // au plus ~70 pixels dans son petit sens : rien ne change
-    net *= 1.0 - smoothstep(80.0, 120.0, pps);
     float fin = smoothstep(1.8, 4.0, pps);
     float facette = smoothstep(7.0, 14.0, pps);
     mat3 tbn = faceFrame(nv, uv0);
     // pavé sur le corps (codes 1.0 et 0.94 de la carte), pas sur les petites pièces ni les poignées en or (0.97, 0.985).
     // La carte est en demi-précision : 0.94, 0.97 et 0.985 + 2 x id de face reviennent à 0.0025 près au plus -> seuils
-    // serrés, sans recouvrement ; or aussi là où le pavé ne peut pas être net (net)
-    float m = ((1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0)))) * net;
+    // serrés, sans recouvrement
+    float m = (1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0)));
     // or jaune (canon, chargeur, poignée, petites pièces) : surfaces très légèrement bombées ; calculé seulement là où il
     // sert (pièces en or, transitions) ; sous le pavé, le serti presque caché par les pierres prend la normale de la face
     float eclatOr = 0.0;
@@ -3438,12 +3418,7 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     }
     vec3 metal = orBlanc(n0);
     // relief réel : on suit le regard sous la surface jusqu'au pavé (pierres en saillie, serti en creux)
-    // (pierres de plus de ~100 pixels vues très de biais, en visée : la face collée à l'œil, parallaxe effacée, sinon les
-    // pierres s'étalent en traînées ; taille prise dans le sens le moins écrasé à l'écran ; en vue normale, rien ne change)
-    vec3 vt = transpose(tbn) * eyeDir();
-    float ppsG = 1.0 / max(min(length(dFdx(uv0)), length(dFdy(uv0))), 1e-4);
-    vt.xy *= mix(1.0, smoothstep(0.25, 0.5, -vt.z), smoothstep(70.0, 140.0, ppsG));
-    vec2 uv = fin > 0.0 ? mix(uv0, pavePom(uv0, vt, plan), fin) : uv0;
+    vec2 uv = fin > 0.0 ? mix(uv0, pavePom(uv0, transpose(tbn) * eyeDir(), plan), fin) : uv0;
     vec2 cid;
     vec2 gu = paveCell(uv, cid);
     vec2 g = diamRedresse(gu, plan);
@@ -3460,11 +3435,11 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     float ang = atan(g.y, g.x) - a0;
     float sec = floor(fract(ang / TAU) * 8.0);
     float am = a0 + (sec + 0.5) * (TAU / 8.0);
-    // contour octogonal de la table : max des produits scalaires de g par les 8 directions a0 + i 45°, soit rr par
-    // le cosinus de l'écart au plus proche multiple de 45° (la valeur de la boucle de 8 directions, sans ses 16 sinus
-    // et cosinus)
-    float s8 = ang / (TAU / 8.0);
-    float oct = rr * cos((s8 - floor(s8 + 0.5)) * (TAU / 8.0));
+    float oct = 0.0;
+    for (int i = 0; i < 8; i++) {
+        float a = a0 + float(i) * (TAU / 8.0);
+        oct = max(oct, dot(g, vec2(cos(a), sin(a))));
+    }
     float isTable = 1.0 - step(0.19, oct);
     // couronne : facettes en étoile (moitié intérieure) et facettes de ceinture (moitié extérieure), pentes différentes
     float outer = step(0.32, rr);
@@ -3580,8 +3555,8 @@ vec3 solid(int id, vec3 p, out vec3 em) {
 // Phénix 210 et Abysses 211 (skins X mythiques, animés : surfaces sous leurs effets 3D, appelées par skinSurface).
 // Entièrement procéduraux : aucune texture. Ils gardent le relief de l'arme et les reflets liés au monde des camos refaits
 // (CAMO_RELIEF). Repris du Diamond : diamPlan (plan du motif), diamIsotropie (la carte de positions suit-elle la
-// surface ?), diamNet (le motif peut-il être net ici ?) et, pour le Rubis, paveCell et diamRedresse. Cette partie n'est
-// compilée que dans les programmes de ces sept camos (les autres n'ont pas à la lire au chargement du jeu).
+// surface ?) et, pour le Rubis, paveCell, diamRedresse et diamSecours. Cette partie n'est compilée que dans les programmes
+// de ces sept camos (les autres n'ont pas à la lire au chargement du jeu).
 // Contre le bruit de pixels (vue joueur) : chaque détail a une taille minimale à l'écran ; un trait plus fin qu'un pixel
 // s'estompe (couverture) au lieu de clignoter ; un point lumineux garde son énergie en grossissant jusqu'à un pixel.
 // Outils communs aux deux lots du 19/11 (le 2e lot, plus bas, s'en sert aussi)
@@ -3998,8 +3973,8 @@ vec3 neon(vec3 p, out vec3 em) {
 // dans de l'or noir ; canon, chargeur, poignée et petites pièces en or noir poli. Même logique de niveaux de détail que le
 // Diamond refait le 18/11 (taille d'une pierre à l'écran) : facettes de près, pierre simple et nette à mi-distance, rouge
 // profond scintillant de loin ; jamais d'un pixel à l'autre. Les rubis rougeoient un peu à l'ombre (fluorescence).
-// Comme le Diamond corrigé le 19/11 et le 20/11 : là où le pavé ne peut pas être net (diamNet), l'or noir le remplace en
-// fondu ; pierres rondes sur les faces penchées (diamRedresse).
+// Comme le Diamond corrigé le 19/11 : là où la carte de positions ne suit pas la surface, le pavé est posé sur son repère
+// de secours (diamSecours), mêmes pierres, au lieu d'un aplat ; pierres rondes sur les faces penchées (diamRedresse).
 const float RB_ECHELLE = 88.0;
 const float RB_R = 0.46;
 
@@ -4035,15 +4010,17 @@ vec3 rubis(vec3 p, out vec3 em) {
     vec3 fnl = faceNormal(p);
     vec3 plan;
     vec2 uvC = diamPlan(p, fnl, plan) * RB_ECHELLE;
-    // pavé seulement là où il peut être net (diamNet) ; ailleurs, l'or noir, en fondu
-    float net = diamNet(p);
-    vec2 uv = uvC;
+    // là où la carte de positions ne suit pas la surface : repère de secours du Diamond (pierres à la même taille)
+    vec3 evx = dFdx(viewPos), evy = dFdy(viewPos);
+    vec2 tx = dFdx(texCoord0), ty = dFdy(texCoord0);
+    bool secours = diamIsotropie(evx, evy, dFdx(p), dFdy(p)) < 0.35;
+    vec2 uv = secours ? diamSecours(nv, evx, evy, tx, ty, tx.x * ty.y - ty.x * tx.y) * (RB_ECHELLE / 160.0) : uvC;
     // redressement des pierres (diamRedresse) : xy = part de la normale dans le plan du motif, z = 1 / (nz (1 + nz))
-    vec3 nm = vec3(plan.xy, 1.0 / (plan.z * (1.0 + plan.z)));
+    vec3 nm = secours ? vec3(0.0) : vec3(plan.xy, 1.0 / (plan.z * (1.0 + plan.z)));
     float pps = 1.0 / max(max(length(dFdx(uv)), length(dFdy(uv))), 1e-4);
     mat3 tbn = ncRepere(nv, uv);
     vec3 n0 = normalize(nv + 0.16 * softWarp(p, 2.4));
-    float m = clamp((1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0))), 0.0, 1.0) * net;
+    float m = clamp((1.0 - smoothstep(0.008, 0.02, abs(PART - 0.94))) + (1.0 - smoothstep(0.004, 0.009, abs(PART - 1.0))), 0.0, 1.0);
     vec3 noir = orNoir(n0);
     if (m < 0.001) {
         em = vec3(0.0);
@@ -4570,20 +4547,10 @@ float l2BordCol(float k) {
     return (k + 0.3 * (hash(vec3(k, 3.0, 1.0)) - 0.5)) * L2_LC;
 }
 
-// argent poli du cadre, sans stries : matière de fond du Dichroïque là où les panneaux ne peuvent pas être nets (diamNet)
-vec3 l2ArgentLisse(vec3 n) {
-    vec3 F0 = vec3(0.82, 0.84, 0.86);
-    vec3 F = F0 + (vec3(1.0) - F0) * pow(1.0 - facing(n), 5.0);
-    return (envWorld(reflWorld(n), 0.12) * F * 0.82 + F0 * 0.05) * vec3(0.96, 0.99, 1.0);
-}
-
 vec3 l2Dichroique(vec3 p, out vec3 em) {
     em = vec3(0.0);
     NO_SHADE = 0.4;
     vec3 nv = normalize(viewNormal);
-    // panneaux seulement là où ils peuvent être nets (diamNet) ; ailleurs, l'argent du cadre, en fondu
-    float net = diamNet(p);
-    if (net < 0.001) return l2ArgentLisse(nv) * reliefMetal(0.55);
     vec3 dpx = dFdx(p), dpy = dFdy(p), sx = dFdx(viewPos), sy = dFdy(viewPos);
     vec3 fn = faceNormal(p);
     float px = ncPx(p);
@@ -4660,10 +4627,6 @@ vec3 l2Dichroique(vec3 p, out vec3 em) {
         vec3 argent = (fr * 0.3333 * F * 0.82 + F0 * 0.05) * vec3(0.96, 0.99, 1.0) * (1.0 + 0.06 * strie);
         col += argent * (1.0 - verre);
     }
-    if (net < 0.999) {
-        col = mix(l2ArgentLisse(nv), col, net);
-        em *= net;
-    }
     return col * reliefMetal(0.55);
 }
 
@@ -4693,15 +4656,6 @@ vec3 l2NoirIrise(vec3 n) {
 vec3 l2Vipere(vec3 p, out vec3 em) {
     NO_SHADE = 0.45;
     vec3 nv = normalize(viewNormal);
-    // écailles seulement là où elles peuvent être nettes (diamNet) ; ailleurs, or poli lisse, en fondu
-    float net = diamNet(p);
-    float eclF = 0.0;
-    vec3 orLisse = vec3(0.0);
-    if (net < 0.999) orLisse = l2MetalJaune(nv, 0.03, 0.0, eclF);
-    if (net < 0.001) {
-        em = orLisse * eclF * 0.25;
-        return orLisse * reliefMetal(0.55);
-    }
     vec3 fn = faceNormal(p);
     float px = ncPx(p);
     float axe;
@@ -4763,10 +4717,6 @@ vec3 l2Vipere(vec3 p, out vec3 em) {
     col *= 1.0 - 0.45 * smoothstep(0.86, 0.995, bF) * fine;
     col *= 1.0 - 0.6 * ombre * fine;
     em = gold * ecl * 0.25 * (1.0 - wNoir) * (1.0 - ombre);
-    if (net < 0.999) {
-        col = mix(orLisse, col, net);
-        em = mix(orLisse * eclF * 0.25, em, net);
-    }
     return col * reliefMetal(0.55);
 }
 
@@ -4839,15 +4789,6 @@ vec3 l2Rouages(vec3 p, out vec3 em) {
     float t = CamoTime;
     NO_SHADE = 0.4;
     vec3 nv = normalize(viewNormal);
-    // roues seulement là où elles peuvent être nettes (diamNet) ; ailleurs, laiton poli lisse (le métal des roues), en fondu
-    float net = diamNet(p);
-    float eclF = 0.0;
-    vec3 laitonLisse = vec3(0.0);
-    if (net < 0.999) laitonLisse = l2MetalJaune(nv, 0.04, 1.0, eclF);
-    if (net < 0.001) {
-        em = laitonLisse * eclF * 0.15;
-        return laitonLisse * reliefMetal(0.5);
-    }
     vec3 fn = faceNormal(p);
     float px = ncPx(p);
     float axe;
@@ -4968,10 +4909,6 @@ vec3 l2Rouages(vec3 p, out vec3 em) {
         pig = mix(pig, rubis, rub);
         col = mix(col, pig, min(cov2, 1.0));
         em += rubis * rub * 0.1;
-    }
-    if (net < 0.999) {
-        col = mix(laitonLisse, col, net);
-        em = mix(laitonLisse * eclF * 0.15, em, net);
     }
     return col * reliefMetal(0.5);
 }
@@ -5167,25 +5104,13 @@ vec4 posMap(vec2 puv) {
     vec4 b = texelFetch(Sampler3, clamp(i0 + ivec2(1, 0), ivec2(0), hi), 0);
     vec4 c = texelFetch(Sampler3, clamp(i0 + ivec2(0, 1), ivec2(0), hi), 0);
     vec4 d = texelFetch(Sampler3, clamp(i0 + ivec2(1, 1), ivec2(0), hi), 0);
-    // texel le plus proche, départagé toujours du même côté (marge de 0.001 texel) : une face aux UV réduites à un point
-    // tombe pile entre deux texels, et les arrondis la faisaient passer d'un pixel à l'autre de la face voisine sur la
-    // texture à l'autre (position, partie et motif qui changent : « neige » sur les petites pièces)
-    vec4 n = f.y < 0.499 ? (f.x < 0.499 ? a : b) : (f.x < 0.499 ? c : d);
+    vec4 n = f.y < 0.5 ? (f.x < 0.5 ? a : b) : (f.x < 0.5 ? c : d);
     float id = floor(n.a * 0.5 + 0.01);
     float wa = (1.0 - f.x) * (1.0 - f.y) * step(abs(floor(a.a * 0.5 + 0.01) - id), 0.5);
     float wb = f.x * (1.0 - f.y) * step(abs(floor(b.a * 0.5 + 0.01) - id), 0.5);
     float wc = (1.0 - f.x) * f.y * step(abs(floor(c.a * 0.5 + 0.01) - id), 0.5);
     float wd = f.x * f.y * step(abs(floor(d.a * 0.5 + 0.01) - id), 0.5);
     vec3 p = (a.xyz * wa + b.xyz * wb + c.xyz * wc + d.xyz * wd) / max(wa + wb + wc + wd, 1e-5);
-    // gradient (voir CARTE_DU) : différences entre texels voisins de la même face, mêlées comme le filtrage bilinéaire ;
-    // sans les sauts que font les dérivées écran de p là où le choix des texels change (bords des faces)
-    float sa = step(abs(floor(a.a * 0.5 + 0.01) - id), 0.5), sb = step(abs(floor(b.a * 0.5 + 0.01) - id), 0.5);
-    float sc = step(abs(floor(c.a * 0.5 + 0.01) - id), 0.5), sd = step(abs(floor(d.a * 0.5 + 0.01) - id), 0.5);
-    float u1 = sa * sb * (1.001 - f.y), u2 = sc * sd * (f.y + 0.001);
-    float v1 = sa * sc * (1.001 - f.x), v2 = sb * sd * (f.x + 0.001);
-    CARTE_DU = ((b.xyz - a.xyz) * u1 + (d.xyz - c.xyz) * u2) / max(u1 + u2, 1e-6) * float(sz.x);
-    CARTE_DV = ((c.xyz - a.xyz) * v1 + (d.xyz - b.xyz) * v2) / max(v1 + v2, 1e-6) * float(sz.y);
-    CARTE_OK = 1.0;
     return vec4(p, clamp(n.a - 2.0 * id, 0.0, 1.0));
 }
 
@@ -5196,10 +5121,6 @@ void main() {
     }
     vec2 puv = (texCoord0 - CamoUvRect.xy) / CamoUvRect.zw;
     vec4 pm = posMap(puv);
-    // gradient de la carte par unité de texCoord0 (carte posée sur le rectangle CamoUvRect)
-    CARTE_DU /= CamoUvRect.z;
-    CARTE_DV /= CamoUvRect.w;
-    CARTE_N = vec2(textureSize(Sampler3, 0)) / CamoUvRect.zw;
     bool inRect = puv.x >= 0.0 && puv.y >= 0.0 && puv.x <= 1.0 && puv.y <= 1.0;
     vec3 em = vec3(0.0);
     vec4 color = base;
