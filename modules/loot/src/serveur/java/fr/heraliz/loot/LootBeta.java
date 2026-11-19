@@ -86,7 +86,25 @@ final class LootBeta {
     /** Chance d'un objet tiré à part (fragments des zombies) avec le réglage : x le multiplicateur de sa rareté, 1 au plus. */
     static double chance(double chance, ItemStack st) {
         if (chance <= 0 || !actif() || exclu(st)) return chance;
-        return Math.min(1, chance * multiplicateur(RaretesObjets.de(st)));
+        return Math.min(1, chance * multiplicateur(rareteReglage(st)));
+    }
+
+    /**
+     * Rareté qui compte pour le réglage. 19/11 (choix du propriétaire) : les fragments et la carte d'accès rouges sont
+     * Uniques (couleur), mais gardent les chances qu'ils avaient en Légendaire : un Unique est exclu du réglage (chances
+     * d'avant le réglage), eux comptent ici comme Légendaires (même multiplicateur, même plafond).
+     */
+    @Nullable
+    static Rarete rareteReglage(ItemStack st) {
+        Rarete r = RaretesObjets.de(st);
+        if (r == Rarete.UNIQUE && carteAcces(st)) return Rarete.LEGENDAIRE;
+        return r;
+    }
+
+    /** Fragment ou carte d'accès de HeraliZ Bunker ({@code heralisz_bunker:keycard*}). */
+    private static boolean carteAcces(ItemStack st) {
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(st.getItem());
+        return id != null && "heralisz_bunker".equals(id.getNamespace()) && id.getPath().startsWith("keycard");
     }
 
     /**
@@ -129,7 +147,7 @@ final class LootBeta {
                 continue;
             }
             ItemStack st = modele(e);
-            Rarete ra = RaretesObjets.de(st);
+            Rarete ra = rareteReglage(st);
             if (exclu(st, ra)) {
                 classe[i] = -2;
                 exclus += w[i];
@@ -222,7 +240,7 @@ final class LootBeta {
     }
 
     static boolean exclu(ItemStack st) {
-        return exclu(st, RaretesObjets.de(st));
+        return exclu(st, rareteReglage(st));
     }
 
     /** Uniques, objets à vie et liste « exclus » : chances jamais changées. */
@@ -278,7 +296,7 @@ final class LootBeta {
         for (int i = 0; i < objets.size(); i++) {
             TablesCoffres.Entree e = objets.get(i);
             if (e.item() == Items.AIR) continue;
-            Rarete ra = RaretesObjets.de(modele(e));
+            Rarete ra = rareteReglage(modele(e));
             int k = ra == Rarete.RARE ? 0 : ra == Rarete.EPIQUE ? 1 : ra == Rarete.LEGENDAIRE ? 2 : -1;
             if (k < 0) continue;
             out[k] += e.poids() / total;

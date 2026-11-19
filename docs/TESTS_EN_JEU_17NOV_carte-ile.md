@@ -469,9 +469,10 @@ change de carte : la recherche repart alors toute seule). **Rien de tout cela n'
 ## 23. Fragments de cartes et capsules du casino (19/11)
 
 Fragments : la couleur suit enfin leur vraie rareté (un fragment vert sort moins souvent qu'un objet Légendaire en T5).
-Vert : Épique (violet) ; bleu : Légendaire (or) ; rouge : Légendaire (or) ; les cartes entières aussi. Leurs chances de
-sortir ne changent pas.
-- [ ] Infobulle et nom d'un fragment vert : violet ; bleu et rouge : or ; carte verte violette, bleue et rouge en or.
+Vert : Épique (violet) ; bleu : Légendaire (or) ; rouge : Unique (rouge) ; les cartes entières aussi. Et toutes les
+chances x 1,18 (« 1 sur 1 000 -> 1 sur 850 ») : conteneurs et zombies ; le rouge garde le bonus du réglage bêta.
+- [ ] Infobulle et nom d'un fragment vert : violet ; bleu : or ; rouge : rouge ; pareil pour les cartes entières.
+- [ ] Coffre T7 : un fragment rouge s'identifie avec l'animation des Uniques.
 
 Capsules du casino : beaucoup plus de capsules dans les conteneurs, surtout en piles plus grosses (la 10, nom en bleu, en
 piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta : T1 0,3 (avant 0,07), T3 1,6 (0,2), T5 5,5

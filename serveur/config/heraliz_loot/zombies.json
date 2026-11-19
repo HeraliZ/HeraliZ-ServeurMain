@@ -26,10 +26,10 @@
   "kills_case_plein": 25,
   "kills_case_zero": 60,
   "fragments": {
-    "green": 0.004,
-    "blue": 0.0016,
-    "red": 0.000889
+    "green": 0.004706,
+    "blue": 0.001882,
+    "red": 0.001046
   },
   "fragments_max_jour": 6,
-  "_fragments": "chance par zombie compté d'un fragment de chaque couleur (numéro 1 à 4 au hasard), tirée à part de la table ; référence : 4 fragments (une carte) pour {'green': 1000, 'blue': 2500, 'red': 4500} zombies"
+  "_fragments": "chance par zombie compté d'un fragment de chaque couleur (numéro 1 à 4 au hasard), tirée à part de la table ; référence : 4 fragments (une carte) pour {'green': 850, 'blue': 2125, 'red': 3825} zombies"
 }

@@ -255,8 +255,8 @@ RARETES_IMPOSEES = {
     "crac:caisse_armes": "epique", "crac:coffre_fort": "legendaire",
     # Table d'armurier de TaCZ à poser dans sa base (31/10) : fabrication seulement (Table d'armurier, onglet Divers)
     "tacz:gun_smith_table": "legendaire",
-    # cartes d'accès entières (26/10) : même rareté que leurs fragments (19/11 : verte Épique, bleue et rouge Légendaires)
-    "heralisz_bunker:keycard_green": "epique", "heralisz_bunker:keycard_blue": "legendaire", "heralisz_bunker:keycard_red": "legendaire",
+    # cartes d'accès entières (26/10) : même rareté que leurs fragments (19/11 : verte Épique, bleue Légendaire, rouge Unique)
+    "heralisz_bunker:keycard_green": "epique", "heralisz_bunker:keycard_blue": "legendaire", "heralisz_bunker:keycard_red": "unique",
     # matières brutes de HeraliZ Récolte (16/11, choix du propriétaire, modules/recolte/A_FAIRE.md §3) : jamais dans le loot,
     # récoltées sur la carte ; bûche et pierre brute Commun, minerai de métal Peu commun, minerai de titane Rare (les outils
     # de la récolte : EXTRAS)
@@ -265,22 +265,26 @@ RARETES_IMPOSEES = {
 }
 # fragments des cartes d'accès de HeraliZ Bunker (24/10, demande du propriétaire) : 4 fragments numérotés par carte, les
 # 4 DIFFÉRENTS donnent la carte (grille 2 x 2 ou clic droit). Chaque numéro est tiré à part : on peut trouver plusieurs
-# fois le même, inutile sans les trois autres (voulu). Fragments de la carte verte Épique, bleue et rouge Légendaires
+# fois le même, inutile sans les trois autres (voulu). Fragments de la carte verte Épique, bleue Légendaire, rouge Unique
 # (19/11, retour du propriétaire : « le fragment vert est affiché en bleu alors qu'on a presque autant de chances d'avoir
 # un objet légendaire » ; par conteneur ouvert, un fragment vert sort 0,8 % du temps, moins qu'un objet Légendaire en
-# T5 ; avant : vert Rare, bleu Épique). Même multiplicateur du réglage bêta pour Rare, Épique et Légendaire : leurs
-# chances ne changent pas (Unique, lui, serait exclu du réglage).
+# T5 ; avant : vert Rare, bleu Épique, rouge Légendaire). Même multiplicateur du réglage bêta pour Rare, Épique et
+# Légendaire ; le rouge, Unique, compte comme Légendaire pour le réglage (LootBeta.rareteReglage) : rien ne change pour
+# leurs chances, sauf la hausse voulue ci-dessous (FRAGMENTS_POUR_100).
 # Nombre de fragments (tous numéros) pour 100 conteneurs ouverts (vrais conteneurs, pas des parts) ; plus rare quand la
 # carte est meilleure. Ajoutés aux tables sans changer les poids des autres objets (ajouter_fragments).
 FRAGMENT = "heralisz_bunker:keycard_fragment_"
-RARETE_FRAGMENTS = {"green": "epique", "blue": "legendaire", "red": "legendaire"}
+RARETE_FRAGMENTS = {"green": "epique", "blue": "legendaire", "red": "unique"}
 # 24/10 (choix du propriétaire) : environ 1 000 conteneurs ouverts pour une carte verte complète, 2 000 pour une bleue,
-# 4 500 pour une rouge (8,3 fragments en moyenne pour avoir les 4 numéros) ; une arme sort 10 à 50 fois pour 100
-FRAGMENTS_POUR_100 = {
+# 4 500 pour une rouge (8,3 fragments en moyenne pour avoir les 4 numéros) ; une arme sort 10 à 50 fois pour 100.
+# 19/11 (demande du propriétaire : « augmente un peu la proba de toutes les cartes, une chance sur 1 000 -> 1 sur 850, que
+# la 1re carte verte ne soit pas au bout de 3 jours ») : toutes les chances x 1 000 / 850 (850, 1 700 et 3 825 conteneurs).
+HAUSSE_FRAGMENTS = 1000 / 850
+FRAGMENTS_POUR_100 = {c: {t: round(v * HAUSSE_FRAGMENTS, 4) for t, v in p.items()} for c, p in {
     "green": {2: 0.7, 3: 0.85, 4: 0.9, 5: 0.8},
     "blue": {4: 0.35, 5: 0.42, 6: 0.5},
     "red": {5: 0.15, 6: 0.2, 7: 1.2},
-}
+}.items()}
 RARETES_IMPOSEES.update({f"{FRAGMENT}{c}_{n}": r for c, r in RARETE_FRAGMENTS.items() for n in range(1, 5)})
 # objets rares ajoutés comme les fragments (sans changer les poids des autres) : nombre pour 100 conteneurs ouverts par
 # palier, et rareté. 25/10 (choix du propriétaire) : la fusée d'extraction (Terminal d'extraction : ouvre une zone

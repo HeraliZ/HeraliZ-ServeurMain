@@ -89,6 +89,12 @@ def rarete(e):
     return RARETES["objets"].get(e["item"], RARETES.get("defaut"))
 
 
+def rarete_reglage(e):
+    """Comme LootBeta.rareteReglage : fragments et carte d'accès rouges Uniques (19/11) comptés comme Légendaires."""
+    r = rarete(e)
+    return "legendaire" if r == "unique" and e["item"].startswith("heralisz_bunker:keycard") else r
+
+
 def cles(e):
     """Identifiants comparés à la liste « exclus » : l'objet, et l'arme / l'accessoire / la munition / le soin."""
     out = [e["item"]]
@@ -100,7 +106,7 @@ def cles(e):
 
 
 def exclu(e, motifs):
-    if rarete(e) == "unique":
+    if rarete_reglage(e) == "unique":
         return True
     for k in cles(e):
         for m in motifs:
@@ -147,7 +153,7 @@ def poids_beta(table, r):
             classe.append("exclu")
             exclus += p
             continue
-        ra = rarete(e)
+        ra = rarete_reglage(e)
         if ra in m and m[ra] > 1:
             classe.append(ra)
             h[ra] += p
@@ -206,7 +212,7 @@ def parts(objets, w, motifs):
         if e["item"] == "minecraft:air":
             p["vide"] += x / tot
             continue
-        ra = rarete(e)
+        ra = rarete_reglage(e)
         if ra in p:
             p[ra] += x / tot
         if exclu(e, motifs):

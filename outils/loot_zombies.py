@@ -187,7 +187,8 @@ TABLES = {nom: mettre_a_l_echelle(TABLES[nom], *ECHELLE[nom]) for nom in TABLES}
 # Convention retenue (à valider) : « 1 carte pour N zombies » = 4 fragments pour N zombies sur l'ensemble du serveur
 # (assez de fragments pour exactement une carte, si les joueurs échangent leurs doubles). Un joueur seul qui n'échange
 # rien doit en moyenne trouver 8,33 fragments pour avoir les 4 numéros (25/3), donc environ deux fois plus de zombies.
-CARTES_POUR = {"green": 1000, "blue": 2500, "red": 4500}
+# 19/11 (demande du propriétaire : « une chance sur 1 000 -> 1 sur 850 ») : toutes les cartes x 850 / 1 000
+CARTES_POUR = {"green": 850, "blue": 2125, "red": 3825}
 FRAGMENTS_PAR_CARTE = 4
 # plafond par joueur et par jour (heure de Paris), toutes couleurs : au-delà, plus aucun fragment ce jour-là (farm)
 FRAGMENTS_MAX_JOUR = 6
