@@ -267,7 +267,7 @@ def economie(r, md):
 
     lignes = []
     for nom, pid in (("Jacqueline (soins)", "jacqueline"), ("Le Doyen (nourriture)", "doyen"), ("Jack (accessoires)", "jack"),
-                     ("Le Bâtisseur", "batisseur")):
+                     ("Le Bâtisseur", "batisseur"), ("Le Passeur (armes et munitions, 19/11)", "passeur")):
         prix = sorted({a["prix"] for a in pnj.get(pid, {}).get("articles", [])})
         if prix:
             lignes.append((nom, " / ".join(str(x) for x in prix), " / ".join(str(achat(x)) for x in prix)))

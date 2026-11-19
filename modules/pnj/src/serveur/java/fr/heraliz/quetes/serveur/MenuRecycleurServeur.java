@@ -59,6 +59,8 @@ final class MenuRecycleurServeur extends MenuRecycleur {
                 }
             }
         }
+        // 19/11 (audit C1) : la copie est maintenant dans les cases ; plus de rendu « après le match » à faire plus tard
+        GardeRecycleur.oublier(joueur.getUUID());
         // copie du contenu dans les données du joueur à chaque changement (déconnexion, plantage : rien ne se perd)
         ((SimpleContainer) entree).addListener(c -> GardeRecycleur.ecrire(joueur, entree, sortie));
         ((SimpleContainer) sortie).addListener(c -> GardeRecycleur.ecrire(joueur, entree, sortie));
@@ -195,7 +197,13 @@ final class MenuRecycleurServeur extends MenuRecycleur {
             if (!reste.isEmpty()) joueur.getInventory().placeItemBackInInventory(reste);
             composants += piece.getCount();
         }
-        if (t.herals() > 0 && Ponts.deposer(joueur.getUUID(), t.herals(), "Recycleur")) herals += t.herals();
+        if (t.herals() > 0) {
+            // 19/11 (audit des duplications, B3) : l'objet recyclé ne quitte que la copie gardée avec le joueur : le joueur
+            // est écrit sans lui AVANT les hérals (comme la vente à Mila). Avant, un plantage entre le compte (écrit sous 60 s)
+            // et le joueur (toutes les 5 min) rendait l'objet ET gardait les hérals.
+            Ponts.sauverJoueur(joueur);
+            if (Ponts.deposer(joueur.getUUID(), t.herals(), "Recycleur")) herals += t.herals();
+        }
         recycles += n;
         objetsQuete += Recyclage.objetsQuete(v, n);
         joueur.playNotifySound(t.pieces().isEmpty() ? SoundEvents.GRINDSTONE_USE : SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS,

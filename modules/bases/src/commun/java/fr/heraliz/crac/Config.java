@@ -391,7 +391,7 @@ public class Config {
         repairHpPerMinute = BUILDER.comment("HP regenerated per minute by each damaged piece.").defineInRange("repairHpPerMinute", 15, 1, 100000);
         BUILDER.pop();
         // Forge sends this file to every client at login: never put a secret in it.
-        BUILDER.comment("HeraliZ: where CRac works, combat tag, the HeraliZ C4 (heralisz_tactical) and the clans.").push("heraliz");
+        BUILDER.comment("HeraliZ: where CRac works, combat tag, C4 and the clans.").push("heraliz");
         blockedDimensions = BUILDER.comment(
                 "Dimensions where nothing of CRac can be placed (building pieces, Claim Block, sleeping bags) and where CRac",
                 "leaves explosions alone: the ClashWar arenas (02/11: the clan bunkers of heralisz_bases, removed, left the list)."
@@ -405,9 +405,11 @@ public class Config {
             .define("combatBlocksBuilding", true);
         heralizC4Ids = BUILDER.comment(
                 "ThrowableId of the heralisz_tactical explosives that count as a C4: the piece they are stuck to takes c4.damage",
-                "(like the CRac C4: 1 for wood, 2 for stone, 4 for sheet metal, 7 for armored) instead of a generic blast."
+                "(like the CRac C4: 1 for wood, 2 for stone, 4 for sheet metal, 7 for armored) instead of a generic blast.",
+                "Empty (19/11): heralisz_tactical has no C4 throwable any more; the C4 of the server is the CRac C4 (crac:c4),",
+                "which is always a C4 and needs nothing here."
             )
-            .defineList("c4ThrowableIds", List.of("heralisz_grenade:c4"), o -> o instanceof String s && !s.isBlank());
+            .defineListAllowEmpty("c4ThrowableIds", List.of(), o -> o instanceof String s && !s.isBlank());
         clansAccess = BUILDER.comment(
                 "If true and HeraliZ Clans is installed, the clan of a group's owner gets into its claim like the group itself,",
                 "each member by the BASE_* permissions of his rank (build, doors, chests, Claim Block)."
@@ -422,9 +424,10 @@ public class Config {
             )
             .define("cracRulesOutsideClaims", false);
         onlyC4Damages = BUILDER.comment(
-                "If true (HeraliZ), only C4 damage building pieces and placables: the HeraliZ C4 (c4ThrowableIds), the CRac C4",
-                "and the CRac Explosive Charge. Grenades, TNT and every other explosion, mobs (zombies), melee hits, tools, fire,",
-                "projectiles and vehicles do nothing to them, and other blasts break nothing inside claims.",
+                "If true (HeraliZ), only C4 damage building pieces and placables: the CRac C4 (crac:c4), the CRac Explosive",
+                "Charge and the heralisz_tactical explosives of c4ThrowableIds (none today). Grenades, TNT and every other",
+                "explosion, mobs (zombies), melee hits, tools, fire, projectiles and vehicles do nothing to them, and other blasts",
+                "break nothing inside claims.",
                 "Upkeep decay of the Claim Block (decay section) still applies."
             )
             .define("onlyC4Damages", true);

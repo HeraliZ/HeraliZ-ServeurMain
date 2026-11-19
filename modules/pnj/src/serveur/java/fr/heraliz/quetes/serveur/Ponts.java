@@ -143,6 +143,19 @@ final class Ponts {
         }
     }
 
+    /**
+     * Nombre de zones dangereuses de ce genre sur la carte (HeraliZ Décors, {@code ZonesServeur.nombreZones}, 19/11) ; -1 si
+     * on ne peut pas le savoir (mod absent ou trop ancien). Contrôle du démarrage seulement ({@link Moteur#verifierZonesDanger}).
+     */
+    static int nombreZones(String genre) {
+        try {
+            return Class.forName("fr.heraliz.decors.serveur.ZonesServeur").getMethod("nombreZones", String.class)
+                    .invoke(null, genre) instanceof Integer n ? n : -1;
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException ex) {
+            return -1;
+        }
+    }
+
     /** Prix d'achat chez un marchand avec l'économie de la bêta : prix x facteur « achat », arrondi, 1 héral au moins. */
     static long prixAchat(long prix) {
         if (prix <= 0) return prix;
@@ -395,15 +408,42 @@ final class Ponts {
 
     private static Method aTerre;
     private static boolean aTerreAbsent;
+    /** Après une erreur de lecture : pas de nouvel essai avant cette heure (ms) ; délai doublé à chaque erreur d'affilée. */
+    private static long aTerreReprise, aTerreDelai;
+    private static final long A_TERRE_DELAI_MIN = 1_000L, A_TERRE_DELAI_MAX = 300_000L;
 
+    /**
+     * Joueur à terre (Réanimation) : marchands, recycleurs, étapes « executer ». Réanimation absente (classe ou méthode
+     * introuvable) : jamais à terre, pour de bon. 19/11 (audit) : une erreur pendant la lecture ne coupe plus la détection
+     * jusqu'au redémarrage : nouvel essai après 1 s, puis 2, 4… (5 min au plus), délai remis à zéro dès qu'une lecture marche.
+     */
     static boolean aTerre(Entity e) {
-        if (aTerreAbsent) return false;
+        if (aTerreAbsent || e == null) return false;
+        if (aTerreReprise != 0 && System.currentTimeMillis() < aTerreReprise) return false;
+        Method m = aTerre;
+        if (m == null) {
+            try {
+                m = aTerre = Class.forName("fr.heraliz.reanimation.core.Downed").getMethod("isDowned", Entity.class);
+            } catch (ReflectiveOperationException | LinkageError | RuntimeException t) {
+                aTerreAbsent = true;
+                LOG.warn("[heraliz_quetes] Réanimation absente ou différente ({}) : personne n'est vu à terre (marchands, recycleurs, "
+                        + "étapes « executer »)", t.toString());
+                return false;
+            }
+        }
         try {
-            if (aTerre == null) aTerre = Class.forName("fr.heraliz.reanimation.core.Downed").getMethod("isDowned", Entity.class);
-            return (boolean) aTerre.invoke(null, e);
+            boolean r = (boolean) m.invoke(null, e);
+            if (aTerreDelai != 0) {
+                aTerreDelai = aTerreReprise = 0;
+                LOG.info("[heraliz_quetes] lecture « à terre » de Réanimation de nouveau en marche");
+            }
+            return r;
         } catch (Throwable t) {
-            aTerreAbsent = true;
-            LOG.warn("[heraliz_quetes] Réanimation absente ou différente ({}) : les étapes « executer » n'avanceront pas", t.toString());
+            aTerreDelai = aTerreDelai == 0 ? A_TERRE_DELAI_MIN : Math.min(A_TERRE_DELAI_MAX, aTerreDelai * 2);
+            aTerreReprise = System.currentTimeMillis() + aTerreDelai;
+            Throwable cause = t instanceof java.lang.reflect.InvocationTargetException && t.getCause() != null ? t.getCause() : t;
+            LOG.warn("[heraliz_quetes] lecture « à terre » de Réanimation en erreur ({}) : nouvel essai dans {} s", cause.toString(),
+                    aTerreDelai / 1000);
             return false;
         }
     }
