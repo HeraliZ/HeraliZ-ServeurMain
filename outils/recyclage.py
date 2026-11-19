@@ -108,6 +108,17 @@ ACCESSOIRES_BASES = {
     "muzzle": ("ferraille", "kit_pieces", "ferraille"),      # bouches : silencieux, freins, cache-flammes
 }
 ACCESSOIRE_BASES = ("ferraille", "kit_pieces", "ferraille")
+# sacs (backpacked) : tissu, tissu, scotch, caoutchouc au niveau de leur rareté, comme avant ; 19/11 (même règle du
+# propriétaire : en moyenne un peu moins que Mila) : un sac Légendaire rendait 1,13 fois Mila (135 contre 120, bêta
+# comprise), l'un de ses deux tissus est donc de niveau I (0,93 fois Mila au spawn) ; Commun à Épique : 0,5 à 0,7 fois
+SACS_PIECES = {
+    "commun": {"tissu": 2, "scotch": 1, "caoutchouc": 1},
+    "peu_commun": {"tissu": 2, "scotch": 1, "caoutchouc": 1},
+    "rare": {"tissu_ii": 2, "scotch_ii": 1, "caoutchouc_ii": 1},
+    "epique": {"tissu_iii": 2, "scotch_iii": 1, "caoutchouc_iii": 1},
+    "legendaire": {"tissu_iv": 1, "scotch_iv": 1, "caoutchouc_iv": 1, "tissu": 1},
+}
+SACS_PIECES["unique"] = SACS_PIECES["legendaire"]
 ESPERANCE_MILA = (0.85, 0.95)
 # composants des explosifs de raid de CRac (charge et C4, outils/crafts.py EXPLOSIFS), tous niveaux : jamais rendus par
 # une arme ou un accessoire (avant le 19/11, les accessoires en rendaient : scotch et circuits imprimés jusqu'au IV)
@@ -116,7 +127,6 @@ RAID = sorted({re.sub(r"_(ii|iii|iv)$", "", c) for _, _, compo in crafts.EXPLOSI
 # familles sans recette : (objet, clé NBT ou None, composants rendus de base, une unité par entrée). « * » en fin = préfixe
 FAMILLES = [
     ("heraliz_armory:*", None, ["tissu", "tissu", "scotch"]),
-    ("backpacked:*", None, ["tissu", "tissu", "scotch", "caoutchouc"]),
     ("heralisz_tactical:consumable", "ConsumableId", ["tissu", "alcool"]),
     ("heralisz_tactical:throwable", "ThrowableId", ["ferraille", "bocal_poudre"]),
     ("heralisz_heal:*", None, ["tissu", "alcool"]),  # 25/10 : soins sans recette (Bandage, Attelle…)
@@ -282,6 +292,8 @@ def construire():
         if cle:
             regle["cle"] = cle
         regles.append(regle)
+        if objet == "heraliz_armory:*":
+            regles.append({"objet": "backpacked:*", "rend_rarete": par_rarete(SACS_PIECES)})
     objet, cle, base, par = MUNITIONS
     regles.append({"objet": objet, "cle": cle, "par": par,
                    "rend_rarete": [[composant(b, rang) for b in base] for rang in range(6)]})
@@ -355,6 +367,9 @@ def controle(rec, bavard=True):
               if g in armes and armes[g].get("data") != "arkaniaz:knife_data"]
     objets += [("accessoires", "tacz:attachment", '{AttachmentId:"%s"}' % a, r)
                for a, r in sorted(ra["accessoires"].items())]
+    # 19/11 : sacs aussi (jamais plus que Mila en moyenne) ; leur scotch et leur tissu sont voulus, le bas de la fourchette
+    # ne les concerne pas (0,5 à 0,7 fois Mila sous le Légendaire)
+    objets += [("sacs", o, "", r) for o, r in sorted(ra["objets"].items()) if o.startswith("backpacked:")]
     erreurs, avert = [], []
     moyennes = {}
     for fam, objet, nbt, r in objets:
@@ -365,7 +380,7 @@ def controle(rec, bavard=True):
             continue
         rend = regle.get("rend") or regle["rend_rarete"][min(len(regle["rend_rarete"]) - 1, g)]
         raid = sorted({c for c in rend if re.sub(r"_(ii|iii|iv)$", "", c.split(":", 1)[1]) in RAID})
-        if raid:
+        if raid and fam != "sacs":
             erreurs.append("%s %s : composants des explosifs de raid (%s)" % (fam, nbt, ", ".join(raid)))
         if len(set(rend)) > 5:
             erreurs.append("%s %s : %d composants différents, l'aperçu du recycleur n'en montre que 5"
@@ -383,9 +398,9 @@ def controle(rec, bavard=True):
         if y > 1.0 + 1e-9:
             erreurs.append("%s %s (%s) : le recycleur de la carte rend %.1f en moyenne, plus que Mila (%d)"
                            % (fam, nbt, r, ev["carte"], mila))
-        if x < ESPERANCE_MILA[0] - 1e-9:
+        if x < ESPERANCE_MILA[0] - 1e-9 and fam != "sacs":
             avert.append("%s %s (%s) : %.2f fois Mila (sous %.2f)" % (fam, nbt, r, x, ESPERANCE_MILA[0]))
-    for fam in ("armes", "accessoires"):
+    for fam in ("armes", "accessoires", "sacs"):
         prec = None
         lignes = []
         for g in range(6):

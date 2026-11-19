@@ -194,23 +194,43 @@
       },
       {
         "objet": "tacz:ammo",
-        "nbt": "{AmmoId:\"tacz:9mm\"}",
-        "prix": 5
+        "nbt": "{AmmoId:\"tacz:45acp\"}",
+        "prix": 8
       },
       {
         "objet": "tacz:ammo",
-        "nbt": "{AmmoId:\"tacz:45acp\"}",
-        "prix": 7
+        "nbt": "{AmmoId:\"tacz:9mm\"}",
+        "prix": 8
       },
       {
         "objet": "tacz:ammo",
         "nbt": "{AmmoId:\"tacz:12g\"}",
-        "prix": 8
+        "prix": 40
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:50ae\"}",
+        "prix": 11
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:556x45\"}",
+        "prix": 11
       },
       {
         "objet": "tacz:ammo",
         "nbt": "{AmmoId:\"tacz:762x39\"}",
         "prix": 11
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:308\"}",
+        "prix": 60
+      },
+      {
+        "objet": "tacz:ammo",
+        "nbt": "{AmmoId:\"tacz:338\"}",
+        "prix": 60
       }
     ]
   }

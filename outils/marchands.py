@@ -123,14 +123,22 @@ ORDRE_GENRES = ["pistolet", "smg", "pompe", "fusil"]
 # MUNITIONS_HORS de outils/loot_armes.py) : environ 4 fois (3,8 à 4,7) leur fabrication la moins chère à la Table
 # d'armurier (9 mm : 2,2 hérals la balle en composants au prix de Mila), au moins MUNITIONS_FOIS_FABRICATION fois
 # (fabriquer reste la voie bon marché)
-# 19/11 (demande du propriétaire : « les balles un peu moins cher, entre 4 et 8 la balle ») : affichées pendant la bêta
-# (prix x 0,75, arrondi) 4 (9 mm), 5 (.45 ACP), 6 (12 gauge) et 8 (7,62 et le reste) ; avant 10 / 10 / 14 / 20.
-PRIX_MUNITIONS = {"tacz:9mm": 5, "tacz:45acp": 7, "tacz:12g": 8, "tacz:762x39": 11, "tacz:556x45": 11, "tacz:50ae": 11}
+# 19/11 : « entre 4 et 8 la balle », puis le même jour « sauf les balles de sniper, à 45 : moins on doit tirer de balles,
+# plus c'est cher ; le plus cher, sniper et fusil semi-automatique balle par balle, entre 25 et 50 ; pompe 30 ; pistolet
+# 6 » (demandes du propriétaire). Prix affichés pendant la bêta (prix x 0,75, arrondi) : 9 mm et .45 ACP (pistolets,
+# pistolets-mitrailleurs) 6 ; .50 AE (gros pistolets), 5,56 et 7,62 x 39 (fusils d'assaut, mitrailleuses, aussi le SKS :
+# le prix va avec le calibre, pas avec l'arme) 8 ; calibre 12 (pompes) 30 ; .308 (fusils de précision et fusils
+# semi-automatiques : SVD, M14, Mk 11, AR-10…) et .338 (AWP, M200) 45. Le Passeur vend toutes ces munitions, aussi celles
+# des armes qu'il ne vend pas (MUNITIONS_EN_PLUS) ; jamais les munitions spéciales du loot (40 mm, roquettes, .50 BMG :
+# MUNITIONS_HORS).
+PRIX_MUNITIONS = {"tacz:9mm": 8, "tacz:45acp": 8, "tacz:50ae": 11, "tacz:556x45": 11, "tacz:762x39": 11, "tacz:12g": 40,
+                  "tacz:308": 60, "tacz:338": 60}
+MUNITIONS_EN_PLUS = ["tacz:50ae", "tacz:556x45", "tacz:308", "tacz:338"]
 MUNITIONS_FOIS_FABRICATION = 2.0
 # acheter chez le Passeur puis revendre (Mila) ou recycler (spawn, carte) ne rend jamais plus que cette part du prix payé
 PASSEUR_RENDU_MAX = 0.10
-# munitions (19/11, à 4-8 hérals la balle) : Mila rachète toujours environ 0,5 à 1,2 héral la balle, soit 10 à 15 % du prix
-# pendant la bêta ; on y perd toujours plus de 80 %, aucune boucle : borne propre aux munitions
+# munitions (19/11, de 6 à 45 hérals la balle) : Mila rachète toujours environ 0,5 à 1,2 héral la balle, soit au plus 15 %
+# du prix pendant la bêta ; on y perd toujours plus de 80 %, aucune boucle : borne propre aux munitions
 PASSEUR_RENDU_MAX_MUNITIONS = 0.20
 RACHAT_VALEUR = {"commun": 2, "peu_commun": 8, "rare": 20, "epique": 50, "legendaire": 200, "mythique": 500}
 RACHAT_COMPOSANTS = RACHAT_VALEUR  # mêmes prix que les objets de valeur
@@ -218,7 +226,7 @@ def armes_passeur(bavard=False):
         if d.get("ammo"):
             calibres.add(d["ammo"])
     munitions = []
-    for aid in sorted(calibres):
+    for aid in sorted(calibres | set(MUNITIONS_EN_PLUS)):
         if aid in L.MUNITIONS_HORS:
             continue
         if aid not in PRIX_MUNITIONS:
