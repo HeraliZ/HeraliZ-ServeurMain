@@ -163,8 +163,7 @@ public final class MoteurLogique {
             }
             CONNEXIONS.clear();
         }
-        // 19/11 : arrivées préchargées des téléportations, puis dépôts et retours du Coffre étalés (rien sans travail en cours)
-        Arrivees.tick();
+        // 19/11 : dépôts et retours du Coffre étalés (rien sans travail en cours ; les arrivées attendent dans le noyau)
         Coffres.tick(s);
         GardeHorsMatch.tick(s);
         TAMPON.clear();

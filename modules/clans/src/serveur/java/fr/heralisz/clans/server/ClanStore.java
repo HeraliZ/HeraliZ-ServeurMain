@@ -73,12 +73,6 @@ public final class ClanStore {
     private static final int DONS_UID_MAX = 50_000;
     private boolean dirtyClans, dirtyJoueurs;
     /**
-     * Ticks depuis la dernière sauvegarde de la minute. 19/11 (audit des lenteurs C11) : part de la moitié, pour que cette
-     * sauvegarde ne tombe jamais sur le tick de la sauvegarde automatique du monde (toutes les 6 000 ticks ; avant, une
-     * fois sur cinq dans le même tick).
-     */
-    private int ticks = AUTOSAVE_TICKS / 2;
-    /**
      * JSON de chaque clan gardé depuis sa dernière mise en JSON (19/11, audit des lenteurs C11 : l'arbre de TOUS les clans,
      * journaux compris, était refait sur le fil serveur à chaque sauvegarde de la minute). Ne sont refaits que les clans
      * changés ({@link #marquerDirty(Clan)}), plus un dixième des clans à chaque sauvegarde (tous en 10 min : filet pour un
