@@ -3218,8 +3218,9 @@ vec3 amethystGem(vec3 p, out vec3 em) {
 //   penchées : pierres rondes (rangées un peu plus espacées) au lieu de pierres étirées ;
 // - pierres petites à l'écran : facettes, arêtes, griffes et scintillement des facettes se fondent peu à peu en une pierre
 //   bombée (relief, reflet et éclat gardés, par pierre) ; plus de scintillement d'une facette à l'autre de loin ; rayons des
-//   éclats d'au moins un pixel ; parallaxe bornée de biais (les pierres ne s'étirent plus en pointes sur le dessus) ; en
-//   visée, sur la face collée à l'œil vue très de biais, plus de parallaxe (20/11 : pierres étalées en traînées).
+//   éclats d'au moins un pixel ; parallaxe bornée de biais (les pierres ne s'étirent plus en pointes sur le dessus) ;
+//   en visée, sur la face collée à l'œil vue très de biais, plus de parallaxe (20/11 : pierres étalées en traînées),
+//   et or là où une pierre dépasse ~100 pixels dans les deux sens (20/11 : pierres géantes, face arrière de l'AK).
 
 // studio de bijoutier (or du Diamond) : grands panneaux lumineux verticaux tout autour, à hauteur d'yeux, sombres entre
 // eux ; fixés dans le monde comme le reste du décor : les faces de côté passent du clair au sombre quand on se retourne
@@ -3409,6 +3410,10 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     // pixels par pierre (direction la plus serrée) : pierre et relief dès ~2 pixels (fin), facettes, arêtes et griffes de ~7
     // à ~14 pixels (facette) ; en dessous, la pierre devient bombée et lisse
     float pps = 1.0 / max(max(length(dFdx(uv0)), length(dFdy(uv0))), 1e-4);
+    // pierre de plus de 80 à 120 pixels dans les deux sens (face vue de face, collée à l'œil en visée : pierres
+    // plusieurs fois plus grandes que le reste du pavé) : l'or du Diamond, en fondu. En vue normale, une pierre fait
+    // au plus ~70 pixels dans son petit sens : rien ne change
+    net *= 1.0 - smoothstep(80.0, 120.0, pps);
     float fin = smoothstep(1.8, 4.0, pps);
     float facette = smoothstep(7.0, 14.0, pps);
     mat3 tbn = faceFrame(nv, uv0);
@@ -3453,11 +3458,11 @@ vec3 diamondCod(vec3 p, out vec3 em) {
     float ang = atan(g.y, g.x) - a0;
     float sec = floor(fract(ang / TAU) * 8.0);
     float am = a0 + (sec + 0.5) * (TAU / 8.0);
-    float oct = 0.0;
-    for (int i = 0; i < 8; i++) {
-        float a = a0 + float(i) * (TAU / 8.0);
-        oct = max(oct, dot(g, vec2(cos(a), sin(a))));
-    }
+    // contour octogonal de la table : max des produits scalaires de g par les 8 directions a0 + i 45°, soit rr par
+    // le cosinus de l'écart au plus proche multiple de 45° (la valeur de la boucle de 8 directions, sans ses 16 sinus
+    // et cosinus)
+    float s8 = ang / (TAU / 8.0);
+    float oct = rr * cos((s8 - floor(s8 + 0.5)) * (TAU / 8.0));
     float isTable = 1.0 - step(0.19, oct);
     // couronne : facettes en étoile (moitié intérieure) et facettes de ceinture (moitié extérieure), pentes différentes
     float outer = step(0.32, rr);
