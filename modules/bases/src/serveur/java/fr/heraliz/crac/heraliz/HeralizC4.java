@@ -15,10 +15,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The C4 of the server: a {@code heralisz_tactical} sticky explosive whose item carries {@code ThrowableId}
- * {@code heralisz_grenade:c4} (list {@code heraliz.c4ThrowableIds}). Its blast is a {@code CustomExplosion} of radius 7.5
- * whose direct source is the stuck entity; read here without depending on that mod (reflection on its public methods,
- * NBT as a fallback, the way HeraliZ Bases reads it for its armour plating).
+ * A {@code heralisz_tactical} sticky explosive counted as a C4: its item carries a {@code ThrowableId} of the list
+ * {@code heraliz.c4ThrowableIds}. Its blast is a {@code CustomExplosion} whose direct source is the stuck entity; read
+ * here without depending on that mod (reflection on its public methods, NBT as a fallback, the way HeraliZ Bases reads it
+ * for its armour plating). 19/11: the list is empty, {@code heralisz_grenade:c4} is gone; the C4 of the server is the
+ * CRac C4 ({@code crac:c4}, {@code C4Entity}), which does its own damage.
  */
 public final class HeralizC4 {
     private static final String TACTICAL = "heralisz_tactical";

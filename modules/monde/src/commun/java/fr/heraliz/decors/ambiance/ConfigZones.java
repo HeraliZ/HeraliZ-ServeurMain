@@ -36,9 +36,10 @@ public final class ConfigZones {
         b.comment("Objets qui protègent de chaque zone : identifiants, * = n'importe quelle suite de lettres. Portés en armure, en",
                 "main gauche ou dans un emplacement Curios. Une nouvelle tenue de l'Armurerie s'ajoute ici, sans nouveau jar ;",
                 "relu tout seul quand le fichier change.").push("protections");
+        // 19/11 (audit) : « *respirator* » et « *gasmask* » retirés, aucun objet de l'Armurerie ne s'appelle ainsi (ses
+        // masques : gas_mask_*)
         PROTECTION_GAZ = b.comment("Zone de gaz.").defineListAllowEmpty("gaz", List.of("heraliz_armory:gas_mask_*",
-                "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit", "heraliz_armory:*respirator*",
-                "heraliz_armory:*gasmask*"), o -> o instanceof String);
+                "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"), o -> o instanceof String);
         PROTECTION_RADIATION = b.comment("Zone de radiation.").defineListAllowEmpty("radiation",
                 List.of("heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"), o -> o instanceof String);
         PROTECTION_FROID = b.comment("Zone de froid.").defineListAllowEmpty("froid",

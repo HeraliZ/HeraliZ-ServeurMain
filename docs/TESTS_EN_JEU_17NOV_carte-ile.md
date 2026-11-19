@@ -478,3 +478,45 @@ Capsules du casino : beaucoup plus de capsules dans les conteneurs, surtout en p
 piles de 3 à 10 dès le T3). En moyenne par conteneur, avant le réglage bêta : T1 0,3 (avant 0,07), T3 1,6 (0,2), T5 5,5
 (0,45), T6 10,7 (0,9), T7 21 (1,3). Les autres objets perdent 1 à 2,5 % de leur place.
 - [ ] Ouvrir une dizaine de conteneurs T4-T5 : des capsules dans 1 sur 8 environ, parfois une pile de 4 à 7 capsules de 10.
+
+## 24. Corrections de l'audit du 19/11 (bugs de jeu)
+
+Noyau 1.1.3, Monde 1.3.2, Quêtes 1.22.5, CRac 1.38.5-beta, Tactique 2.59.1, Sacs 3.0.1-beta.4-heralisz27.
+**Rien de tout cela n'a été testé en jeu.**
+
+À faire une fois en jeu (staff) :
+- [ ] **Plus de `/tpa` dans les deux bunkers** (on en sortait sans carte et on y faisait entrer son clan). Les zones sans
+      téléportation ne sont pas dans le dépôt : elles se règlent en jeu. Taper, de n'importe où :
+      - `/execute in minecraft:overworld positioned -254 64 147 run tpa zone ajouter 96 Grand Bois`
+      - `/execute in minecraft:overworld positioned 853 64 -998 run tpa zone ajouter 93 Pic`
+      - puis `/tpa zone liste` : les deux zones sont dans la liste.
+      Centre et rayon : ceux des deux bunkers dans `serveur/config/crac/zones_construction.json` (tout le bunker, plus
+      40 blocs autour). Le joueur qui tente un `/tpa` dedans lit le nom de la zone : un nom neutre, pour ne pas montrer
+      où sont les bunkers (ils ne sont plus sur la carte M). Pour le nom « Bunker des Bois » à la place, c'est la même
+      commande avec ce nom.
+- [ ] **Quête « La boîte noire »** : elle ne se finit que dans les caisses d'une zone de radiation. Au démarrage, le
+      journal du serveur ne doit avoir aucune ligne « QUÊTE IMPOSSIBLE » ; `/zones info` doit montrer « Zone irradiée de
+      Radio (radiation) ». Sinon : remettre cette zone dans `dayz_map/data/heraliz_zones.json` (la carte en île l'apporte
+      dans son propre fichier du même nom), puis `/recharger zones`.
+
+À tester :
+- [ ] **Extraction sous le feu** : un autre joueur tire sur celui qui s'extrait (ou le staff tape
+      `/combat marquer <joueur>` pendant le compte à rebours). À l'arrivée au spawn : plus d'« EN COMBAT »,
+      `/combat etat <joueur>` dit « libre », `/hdv` marche tout de suite. Quitter le jeu aussitôt et revenir : vivant, au
+      spawn, rien de perdu. Celui qui a tiré reste en combat, lui.
+- [ ] **Spawn sans mort** : au spawn, `/combat marquer <joueur>` (staff), puis le joueur quitte le jeu : à son retour,
+      vivant, rien de perdu, pas de message « déconnecté en plein combat ». Journal du serveur : « sans sanction (monde
+      du spawn) ».
+- [ ] **`/spawn` depuis sa base** : pendant le compte à rebours, tirer sur un autre joueur (ou `/combat marquer
+      <joueur>`) : pas de départ, message « Tu es en combat : /spawn dans … s. ». Hors combat : départ comme avant.
+- [ ] Quêtes : trois textes s'affichaient en clé brute ; ils sont écrits en français, anglais et russe (quête finie
+      mais hérals en attente ; vente refusée quand les hérals ne peuvent pas être versés ; pour le staff, dans
+      l'édition d'un marchand). Le dernier se voit facilement : ajouter un rachat plus cher que la moitié du prix de
+      vente d'un objet → « … se vend … hérals : il ne sera jamais racheté plus de … hérals (la moitié). »
+- [ ] Journal du démarrage : plus de « Couldn't load tag curios:ear_protection ».
+- [ ] Rien ne doit changer pour : les masques à gaz et tenues Hazmat dans les zones de gaz (motifs qui ne servaient à
+      rien retirés), le C4 de CRac sur les bases (`c4ThrowableIds` vidé : il visait un C4 qui n'existe plus), le verre
+      du spawn et des arènes (monde des anciens bunkers de clan retiré de la liste).
+
+Sans essai possible : après une erreur, la détection « à terre » des quêtes (marchands, recycleurs, étapes
+« exécuter ») réessaie toute seule (1 s, 2 s, 4 s… jusqu'à 5 min) au lieu de rester coupée jusqu'au redémarrage.

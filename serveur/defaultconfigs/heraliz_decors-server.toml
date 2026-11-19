@@ -20,7 +20,7 @@
 #relu tout seul quand le fichier change.
 [protections]
 	#Zone de gaz.
-	gaz = ["heraliz_armory:gas_mask_*", "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit", "heraliz_armory:*respirator*", "heraliz_armory:*gasmask*"]
+	gaz = ["heraliz_armory:gas_mask_*", "heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"]
 	#Zone de radiation.
 	radiation = ["heraliz_armory:hazmat_suit", "heraliz_armory:hazmat_renforce_suit"]
 	#Zone de froid.
