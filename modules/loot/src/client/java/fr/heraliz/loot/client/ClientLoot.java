@@ -62,6 +62,8 @@ public final class ClientLoot {
                 if (ancien != null) e.getModels().put(objet, new ModeleConteneur(ancien, nom, -Direction.NORTH.toYRot(), true));
             }
             HeralizLoot.LOG.info("{} vues de conteneurs remplacées par les modèles HD", n);
+            // maillages faits en fond tout de suite (une fois par lancement), plus à la première vue (audit du 19/11)
+            PreparationConteneurs.lancer();
         }
     }
 
