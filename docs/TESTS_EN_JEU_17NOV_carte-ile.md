@@ -308,3 +308,11 @@ mesures de DM Sans, dans toutes nos polices.
 - [ ] Zone de gaz (⚠) et froid (❄) : même chose.
 - [ ] Un message de clan ou de base avec ⚠ ou ☠ (Purge, prise du cœur, vague d'assaut) : symbole à la bonne hauteur.
 - [ ] En fenêtré et à une autre échelle d'interface : toujours net, rien ne bouge dans les écrans.
+
+## 16. Camo Diamant refait (19/11, rendus validés par le propriétaire)
+
+Repris de l'ancien (petites pierres serrées en relief), seuls les endroits bizarres sont corrigés.
+- [ ] XM177 en main : la crosse n'est plus rayée ni « plate », elle est couverte de pierres comme le reste.
+- [ ] Faces en biais (dessus du garde-main, chanfreins) : pierres rondes, plus de moucheté.
+- [ ] En bougeant la vue : ça brille sans grésiller ; de loin, pierres bombées qui scintillent pierre par pierre.
+- [ ] Les parties en or ne changent pas ; FPS pareils qu'avant avec le camo.
