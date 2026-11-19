@@ -83,7 +83,7 @@ public final class RaidBlocks {
                 return true;
             }
             cur = cur.above();
-            if (!level.isLoaded(cur) || !(level.getBlockState(cur).getBlock() instanceof Fallable)) {
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, cur) || !(level.getBlockState(cur).getBlock() instanceof Fallable)) {
                 return false;
             }
         }
@@ -108,7 +108,7 @@ public final class RaidBlocks {
         double r2 = radius * radius + 1.0E-6;
         List<BlockPos> broken = new ArrayList<>();
         for (BlockPos p : BlockPos.betweenClosed(center.offset(-r, -r, -r), center.offset(r, r, r))) {
-            if (center.distSqr(p) > r2 || !level.isLoaded(p)) continue;
+            if (center.distSqr(p) > r2 || !fr.heraliz.noyau.api.Troncons.charge(level, p)) continue;
             BlockPos pos = p.immutable();
             if (breakable(level, pos, level.getBlockState(pos)) && level.destroyBlock(pos, true)) {
                 broken.add(pos);

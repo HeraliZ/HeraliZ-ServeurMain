@@ -162,7 +162,7 @@ public final class PointsT7 extends SavedData {
 
     /** Le coffre d'un point a pu être cassé ou remplacé : on remet le point à jour. */
     private void verifier(ServerLevel l, Point p) {
-        if (p.present && l.isLoaded(p.pos) && !(l.getBlockEntity(p.pos) instanceof CoffreBlockEntityServeur be && p.nom.equals(be.point))) {
+        if (p.present && fr.heraliz.noyau.api.Troncons.charge(l, p.pos) && !(l.getBlockEntity(p.pos) instanceof CoffreBlockEntityServeur be && p.nom.equals(be.point))) {
             libere(l, p.nom, l.getGameTime());
         }
     }
@@ -172,7 +172,7 @@ public final class PointsT7 extends SavedData {
         long now = l.getGameTime();
         for (Point p : points.values()) {
             verifier(l, p);
-            if (p.auto && !p.present && now >= p.prochain && l.isLoaded(p.pos)) {
+            if (p.auto && !p.present && now >= p.prochain && fr.heraliz.noyau.api.Troncons.charge(l, p.pos)) {
                 if (apparaitre(l, p.pos, p.face, p.type, p.presence, p.nom)) {
                     p.present = true;
                     setDirty();

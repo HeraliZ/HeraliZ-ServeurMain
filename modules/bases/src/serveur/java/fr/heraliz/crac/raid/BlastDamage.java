@@ -53,7 +53,7 @@ public final class BlastDamage {
             StructureService.damage(level, p, damage, true);
             return true;
         }
-        if (level.isLoaded(pos) && isClaimedPlacable(level, pos, level.getBlockState(pos))) {
+        if (fr.heraliz.noyau.api.Troncons.charge(level, pos) && isClaimedPlacable(level, pos, level.getBlockState(pos))) {
             PlacableHpManager.damage(level, pos, damage);
             return true;
         }
@@ -289,7 +289,7 @@ public final class BlastDamage {
      */
     private static boolean reaches(ServerLevel level, Vec3 from, Vec3 to, Target target) {
         return BlockGetter.traverseBlocks(from, to, target, (t, pos) -> {
-            if (!level.isLoaded(pos)) {
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) {
                 return Boolean.FALSE;
             }
             BlockHitResult hit = level.getBlockState(pos).getCollisionShape(level, pos).clip(from, to, pos);

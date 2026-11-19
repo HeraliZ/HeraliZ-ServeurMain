@@ -56,6 +56,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class ClanStore {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final int AUTOSAVE_TICKS = 20 * 60;
+    /** 19/11 (audit des lenteurs, C2) : jamais sur le tick de la sauvegarde automatique de Minecraft (Etalement du noyau). */
+    private static final int DECALAGE_SAUVEGARDE = fr.heraliz.noyau.api.Etalement.decalage("clans.clans", AUTOSAVE_TICKS);
     private static ClanStore instance;
 
     private final Path dossier;
@@ -155,8 +157,7 @@ public final class ClanStore {
     @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || instance == null) return;
-        if (++instance.ticks >= AUTOSAVE_TICKS) {
-            instance.ticks = 0;
+        if (fr.heraliz.noyau.api.Etalement.tour(e.getServer().getTickCount(), AUTOSAVE_TICKS, DECALAGE_SAUVEGARDE)) {
             instance.sauvegarder(false);
         }
     }

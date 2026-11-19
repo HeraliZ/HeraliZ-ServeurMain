@@ -45,9 +45,10 @@ public final class Destination {
             z = ExtractionConfig.SPAWN_Z.get();
         }
 
+        // 19/11 (audit des lenteurs, C1) : point de secours, souvent loin : départ dès que l'arrivée est chargée (api.Arrivees
+        // du noyau, 3 s au plus) ; les points de CRac et du monde du spawn sont déjà gardés chargés
         player.stopRiding();
-        player.teleportTo(target, x, y, z, player.getYRot(), player.getXRot());
-        player.resetFallDistance();
+        fr.heraliz.noyau.api.Arrivees.teleporter(player, target, x, y, z, player.getYRot(), player.getXRot(), player::resetFallDistance);
     }
 
     private static java.lang.reflect.Method spawnCrac;

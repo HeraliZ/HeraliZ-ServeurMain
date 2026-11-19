@@ -273,7 +273,7 @@ public final class SallesMonde extends SavedData {
       if (s.seuils == null) {
          List<AABB> seuils = new ArrayList<>();
          for (BlockPos c : s.portes) {
-            if (!l.isLoaded(c)) return null;                           // recalculé quand la porte sera chargée
+            if (!pret(l, c)) return null;                              // recalculé quand la porte sera chargée
             if (l.getBlockEntity(c) instanceof DoorBlockEntity d) {
                AABB a = null;
                for (BlockPos p : KeycardDoors.parts(d)) a = a == null ? new AABB(p) : a.minmax(new AABB(p));
@@ -302,7 +302,15 @@ public final class SallesMonde extends SavedData {
    /** Les portes chargées de la salle réévaluent leur état (ouverte / fermée). */
    static void notifier(ServerLevel l, Salle s) {
       for (BlockPos c : s.portes) {
-         if (l.isLoaded(c) && l.getBlockEntity(c) instanceof DoorBlockEntity d) d.checkRedstonePower();
+         if (pret(l, c) && l.getBlockEntity(c) instanceof DoorBlockEntity d) d.checkRedstonePower();
       }
+   }
+
+   /**
+    * Tronçon du bloc complet (19/11, audit des lenteurs, C4) : {@code isLoaded} le dit aussi pendant sa lecture, et la
+    * lecture du bloc qui suit le faisait alors attendre par le fil du serveur. Fil du serveur ({@code getChunkNow}).
+    */
+   private static boolean pret(ServerLevel l, BlockPos c) {
+      return l.getChunkSource().getChunkNow(c.getX() >> 4, c.getZ() >> 4) != null;
    }
 }

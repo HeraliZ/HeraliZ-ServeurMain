@@ -306,7 +306,8 @@ public final class CarrieresServeur {
             ko(src, T.t("crac.carriere.inconnue", "Aucune carrière « %s ».", nom));
             return 0;
         }
-        p.teleportTo(l, z.centre().getX() + 0.5, z.centre().getY(), z.centre().getZ() + 0.5, p.getYRot(), p.getXRot());
+        // HeraliZ (19/11) : départ dès que l'arrivée est chargée (api.Arrivees du noyau, 3 s au plus)
+        fr.heraliz.noyau.api.Arrivees.teleporter(p, l, z.centre().getX() + 0.5, z.centre().getY(), z.centre().getZ() + 0.5, p.getYRot(), p.getXRot());
         return 1;
     }
 

@@ -37,13 +37,12 @@ public abstract class SafeSavedData extends SavedData {
     private boolean standIn;
     /**
      * Écritures en fond (25/10, perf) : une seule file, dans l'ordre d'arrivée, attendue à l'arrêt du serveur
-     * ({@link #attendreEcritures}). Seulement pour les données qui le demandent ({@link #ecritureEnFond}).
+     * ({@link #attendreEcritures}). HeraliZ (19/11, audit des lenteurs, C2) : la voie « crac » de l'écrivain en fond commun du
+     * noyau ({@code fr.heraliz.noyau.api.EcrituresFond}) ; avant, un fil à CRac. Les données qui le demandent
+     * ({@link #ecritureEnFond}) y vont toujours ; les autres aussi quand le réglage {@code [perf] donnees_en_fond} du noyau
+     * est vrai ({@link #enFondAvecCopie}), avec une copie du relevé.
      */
-    private static final java.util.concurrent.ExecutorService FOND = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "CRac-sauvegarde");
-        t.setDaemon(true);
-        return t;
-    });
+    private static final fr.heraliz.noyau.api.EcrituresFond.Voie FOND = fr.heraliz.noyau.api.EcrituresFond.voie("crac");
     /** Une écriture en fond a échoué : la donnée redevient « à sauver » à la sauvegarde suivante. */
     private final java.util.concurrent.atomic.AtomicBoolean echecFond = new java.util.concurrent.atomic.AtomicBoolean();
 
@@ -141,13 +140,18 @@ public abstract class SafeSavedData extends SavedData {
 
     /** Attend la fin des écritures en fond (arrêt du serveur), 60 s au plus. */
     public static void attendreEcritures() {
-        try {
-            FOND.submit(() -> { }).get(60, java.util.concurrent.TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException e) {
-            Crac.LOGGER.error("[CRac] Sauvegardes en fond pas terminées à l'arrêt", e);
-        }
+        FOND.attendre();
+    }
+
+    /**
+     * HeraliZ (19/11, audit des lenteurs, C2) : une donnée sans écriture en fond à elle part quand même en fond, avec une
+     * copie de son relevé (elle peut y glisser ses propres NBT et les changer ensuite), quand le réglage
+     * {@code [perf] donnees_en_fond} du noyau est vrai et que le serveur tourne (pendant l'arrêt : tout de suite, comme avant).
+     */
+    private static boolean enFondAvecCopie() {
+        net.minecraft.server.MinecraftServer srv = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        return fr.heraliz.noyau.NoyauConfig.donneesEnFond && srv != null && srv.isRunning() && srv.isSameThread()
+            && !fr.heraliz.noyau.api.EcrituresFond.arret();
     }
 
     @Override
@@ -167,21 +171,17 @@ public abstract class SafeSavedData extends SavedData {
             return;
         }
         NbtUtils.addCurrentDataVersion(root);
-        if (this.ecritureEnFond()) {
+        boolean fond = this.ecritureEnFond();
+        if (fond || enFondAvecCopie()) {
             // 25/10 (perf) : 12 000 pièces = ~5 Mo de NBT, ~140 ms de compression et d'écriture mesurés sur un PC, sur le
             // fil du serveur à chaque sauvegarde automatique ; seul le relevé (ci-dessus) reste sur le fil du serveur
+            CompoundTag aEcrire = fond ? root : root.copy();
             this.setDirty(false);
             Path path = file.toPath();
-            FOND.execute(() -> {
-                try {
-                    writeAtomically(root, path);
-                } catch (IOException | RuntimeException e) {
-                    this.echecFond.set(true);
-                    Crac.LOGGER.error("[CRac] Could not save {}", file, e);
-                }
-            });
+            FOND.ecrire(path, () -> writeAtomically(aEcrire, path), () -> this.echecFond.set(true));
             return;
         }
+        FOND.attendre(file.toPath());   // jamais une version plus ancienne écrite après celle-ci
         try {
             writeAtomically(root, file.toPath());
             this.setDirty(false);
