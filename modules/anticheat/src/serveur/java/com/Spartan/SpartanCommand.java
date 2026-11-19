@@ -69,7 +69,10 @@ public class SpartanCommand {
                                     String text = t.getName().getString() + "\n" + ChallengeManager.describe(t.getUUID())
                                             + "\n" + LauncherGate.describe(t.getUUID())
                                             + "\n" + com.Spartan.integrity.ValidationJeu.describe(t.getUUID())
-                                            + "\n" + MovementEngine.describe(t.getUUID());
+                                            + "\n" + MovementEngine.describe(t.getUUID())
+                                            + (com.Spartan.integrity.Injection.reglesSuspendues().isEmpty() ? ""
+                                            : "\nrègles en rodage suspendues depuis le démarrage (fausses alertes probables) : "
+                                            + String.join(", ", com.Spartan.integrity.Injection.reglesSuspendues()));
                                     ctx.getSource().sendSuccess(() -> Component.literal(text).withStyle(ChatFormatting.AQUA), false);
                                     return 1;
                                 })))

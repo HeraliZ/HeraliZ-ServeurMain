@@ -57,14 +57,26 @@ public final class ScanCollector {
         step(r, "modules", () -> ForgeCollector.modules(r, layers, c.modsDir()));
         step(r, "modlist", () -> ForgeCollector.loadedFiles(r));
         step(r, "mixins", () -> ForgeCollector.mixins(r, c.knownMixins(), c.referenceKnown(), c.watchClasses()));
+        // Les classes Mixin de Spartan ne se chargent pas directement (Mixin l'interdit) et
+        // celles de compatibilité dépendent de mods facultatifs : seules les autres sont jugées.
+        List<String> own = new ArrayList<>();
         step(r, "self", () -> {
-            // Les classes Mixin de Spartan ne se chargent pas directement (Mixin l'interdit) et
-            // celles de compatibilité dépendent de mods facultatifs : seules les autres sont jugées.
-            List<String> own = Fingerprint.classNames().stream()
+            own.addAll(Fingerprint.classNames().stream()
                     .filter(n -> !n.startsWith("com.Spartan.mixin.") && !n.startsWith("com.Spartan.esp.compat."))
-                    .toList();
+                    .toList());
             SelfCheck.collect(r, own, ScanCollector.class.getClassLoader());
             ForgeCollector.mixinsOnSpartan(r, own);
+        });
+        // 19/11 : classes de l'anticheat et classes sensibles du jeu (rendu, mouvement, réseau) redéfinies en mémoire après
+        // leur chargement (agent ou débogueur injecté) ; la veille du jeu les surveille ensuite toutes les 3 s
+        step(r, "memoire", () -> {
+            List<String> classes = new ArrayList<>(own);
+            for (String w : c.watchClasses()) {
+                if (!classes.contains(w)) {
+                    classes.add(w);
+                }
+            }
+            Veille.surveiller(Redefinitions.collect(r, classes, ScanCollector.class.getClassLoader()));
         });
 
         ThreadCollector.Origins origins = new ThreadCollector.Origins(known);

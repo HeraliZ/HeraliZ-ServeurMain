@@ -1,6 +1,7 @@
 package com.Spartan.integrity;
 
 import com.Spartan.Spartan;
+import com.Spartan.alert.AlertManager;
 import com.Spartan.capture.CaptureManager;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +33,9 @@ import net.minecraft.server.level.ServerPlayer;
  *   contrôle suivant, demandé aussitôt : une trace passagère d'un seul relevé n'expulse personne) ;</li>
  *   <li>réponse fausse au défi d'intégrité (Spartan du jeu modifié, dans son fichier ou en mémoire) ;</li>
  *   <li>Gardien du launcher : un programme de la liste {@code outils} ouvert sur le PC (injecteurs, éditeurs de mémoire).</li>
+ *   <li>(19/11, règles « en rodage », voir {@link Rodage}) bibliothèque d'agent Java ou de débogueur chargée dans le jeu
+ *   sans option de lancement (vue par le jeu ou, de l'extérieur, par le launcher), classe du jeu ou de l'anticheat
+ *   modifiée en mémoire après son chargement.</li>
  * </ul>
  * Restent des ALERTES (un logiciel honnête peut les produire : antivirus, overlays Discord / Steam / OBS / NVIDIA,
  * pilotes) : DLL au nom ou à l'emplacement douteux, overlay inconnu, threads sans nom, DLL chargée en cours de partie,
@@ -70,20 +75,27 @@ public final class Injection {
 
     /**
      * Verdict d'un contrôle d'intégrité : {@code expulser} (raison, ou null) ; {@code reverifier} : un indice « à
-     * confirmer » vu pour la première fois, un nouveau contrôle est demandé tout de suite.
+     * confirmer » vu pour la première fois, un nouveau contrôle est demandé tout de suite ; {@code suspendues} : règles en
+     * rodage que ce contrôle vient de suspendre (le staff doit être prévenu : {@link #annoncerSuspension}).
      */
-    public record Verdict(String expulser, boolean reverifier) {
+    public record Verdict(String expulser, boolean reverifier, List<String> suspendues) {
+        public Verdict(String expulser, boolean reverifier) {
+            this(expulser, reverifier, List.of());
+        }
     }
 
     private static final Verdict RIEN = new Verdict(null, false);
     /** Indices « à confirmer » vus au contrôle précédent (motif → heure), par joueur. */
     private static final Map<UUID, Map<String, Long>> A_CONFIRMER = new HashMap<>();
     private static final long CONFIRMATION_MS = 10 * 60_000L;
+    /** Règles en rodage (19/11) : coupées toutes seules si trop de joueurs différents les déclenchent (fausse alerte). */
+    private static final Rodage RODAGE = new Rodage();
 
     /**
      * Indices FORTS du contrôle qui valent une expulsion (liste {@code indices}). Ceux de {@code aConfirmer} (code natif
      * caché : une trace passagère est concevable, par exemple un module déchargé pendant le relevé) doivent être revus au
-     * contrôle suivant, demandé aussitôt.
+     * contrôle suivant, demandé aussitôt. Ceux de {@code rodage} (règles du 19/11, jamais essayées sur de vrais PC)
+     * passent par le disjoncteur {@link Rodage} ; une règle établie qui expulse déjà les emporte avec elle.
      */
     public static Verdict juger(UUID id, List<Finding> findings) {
         if (!actif()) {
@@ -91,8 +103,10 @@ public final class Injection {
         }
         List<? extends String> motifs = SpartanConfig.INJECTION_INDICES.get();
         List<? extends String> confirmer = SpartanConfig.INJECTION_A_CONFIRMER.get();
+        List<? extends String> rodage = SpartanConfig.INJECTION_RODAGE.get();
         List<String> certains = new ArrayList<>();
         Map<String, String> vus = new HashMap<>(); // motif à confirmer → texte
+        Map<String, String> enRodage = new LinkedHashMap<>(); // motif en rodage → texte
         for (Finding f : findings) {
             if (f.severity() != Finding.Severity.STRONG) {
                 continue;
@@ -102,8 +116,11 @@ public final class Injection {
             if (motif == null) {
                 continue;
             }
+            String regle = Rodage.motif(cle, rodage);
             if (motif(cle, confirmer) != null) {
                 vus.putIfAbsent(motif, f.text());
+            } else if (regle != null) {
+                enRodage.putIfAbsent(regle, f.text());
             } else {
                 certains.add(f.text());
             }
@@ -116,21 +133,78 @@ public final class Injection {
                 certains.add(v.getValue() + " (revu au contrôle suivant)");
             }
         }
+        List<String> suspendues = new ArrayList<>();
+        if (!certains.isEmpty()) {
+            certains.addAll(enRodage.values()); // expulsé de toute façon : le staff lit tout
+        } else {
+            for (Map.Entry<String, String> e : enRodage.entrySet()) {
+                switch (RODAGE.noter(e.getKey(), id, now, SpartanConfig.INJECTION_RODAGE_JOUEURS.get(),
+                        SpartanConfig.INJECTION_RODAGE_MINUTES.get() * 60_000L)) {
+                    case APPLIQUER -> certains.add(e.getValue() + " (règle en rodage)");
+                    case SUSPENDRE -> suspendues.add(e.getKey());
+                    case SUSPENDUE -> {
+                        // règle suspendue depuis le démarrage : l'alerte du contrôle suffit
+                    }
+                }
+            }
+        }
         if (!certains.isEmpty()) {
             A_CONFIRMER.remove(id);
             return new Verdict(String.join(" ; ", certains.subList(0, Math.min(3, certains.size())))
-                    + (certains.size() > 3 ? " (+" + (certains.size() - 3) + ")" : ""), false);
+                    + (certains.size() > 3 ? " (+" + (certains.size() - 3) + ")" : ""), false, suspendues);
         }
         if (vus.isEmpty()) {
             A_CONFIRMER.remove(id);
-            return RIEN;
+            return suspendues.isEmpty() ? RIEN : new Verdict(null, false, suspendues);
         }
         Map<String, Long> nouveau = new HashMap<>();
         for (String m : vus.keySet()) {
             nouveau.put(m, avant.getOrDefault(m, now));
         }
         A_CONFIRMER.put(id, nouveau);
-        return new Verdict(null, true);
+        return new Verdict(null, true, suspendues);
+    }
+
+    /**
+     * Une règle hors du contrôle d'intégrité (Gardien du launcher : bibliothèque vue dans le jeu, clé réutilisée) peut-elle
+     * agir sur ce joueur ? Vrai si elle n'est pas en rodage, ou si le disjoncteur la laisse passer. Le staff est prévenu
+     * quand ce joueur la suspend. Fil du serveur.
+     *
+     * @param cle clé de l'indice (« gardien:dll:instrument »…), comparée à la liste {@code rodage}
+     */
+    public static boolean rodageAutorise(ServerPlayer p, String cle) {
+        String regle = Rodage.motif(cle, SpartanConfig.INJECTION_RODAGE.get());
+        if (regle == null) {
+            return true;
+        }
+        Rodage.Decision d = RODAGE.noter(regle, p.getUUID(), System.currentTimeMillis(),
+                SpartanConfig.INJECTION_RODAGE_JOUEURS.get(), SpartanConfig.INJECTION_RODAGE_MINUTES.get() * 60_000L);
+        if (d == Rodage.Decision.SUSPENDRE) {
+            annoncerSuspension(p, List.of(regle));
+        }
+        return d == Rodage.Decision.APPLIQUER;
+    }
+
+    /** Règles en rodage suspendues depuis le démarrage du serveur (/spartan status). */
+    public static List<String> reglesSuspendues() {
+        return RODAGE.suspendues();
+    }
+
+    /**
+     * Le staff est prévenu qu'une règle en rodage vient d'être suspendue (fil du serveur) : trop de joueurs différents l'ont
+     * déclenchée, c'est probablement une fausse alerte. {@code p} : le joueur qui l'a déclenchée en dernier (pas expulsé).
+     */
+    public static void annoncerSuspension(ServerPlayer p, List<String> regles) {
+        for (String regle : regles) {
+            String texte = "la règle « " + regle + " » (nouvelle, en rodage) a été déclenchée par "
+                    + SpartanConfig.INJECTION_RODAGE_JOUEURS.get() + " joueurs différents en moins de "
+                    + SpartanConfig.INJECTION_RODAGE_MINUTES.get() + " min (dernier : " + p.getName().getString()
+                    + ", pas expulsé) : sans doute une fausse alerte. Elle ne fait plus qu'alerter jusqu'au prochain redémarrage."
+                    + " Regarder les dernières alertes « Injection » ; pour la couper pour de bon : retirer « " + regle
+                    + " » de [injection] indices dans spartan-common.toml.";
+            Spartan.LOGGER.warn("[Spartan] Règle suspendue : {}", texte);
+            AlertManager.info(p.server, "Règle suspendue", texte, AlertManager.COLOR_INFO);
+        }
     }
 
     /** Motif de la liste par lequel commence la clé (minuscules), ou null. */

@@ -106,6 +106,9 @@ public final class ConformiteStricte {
                 out.add("chargeur de classes remplacé : " + flag);
             } else if (f.equals("-djdk.attach.allowattachself")) {
                 out.add("le jeu s'autorise à s'injecter du code (allowAttachSelf)");
+            } else if (f.startsWith("-dcom.sun.management") || f.equals("-xx:+managementserver")) {
+                // 19/11 : JMX ouvert = un agent peut être chargé sans l'attache ; le launcher HeraliZ ne le met jamais
+                out.add("contrôle à distance de Java ouvert au lancement (" + flag + ") : porte pour injecter du code");
             } else if (f.startsWith("arg:--fml.") && !OPTIONS_LAUNCHER.contains(f)) {
                 out.add("option de lancement qui charge du code hors du launcher : " + flag.substring(4));
             }

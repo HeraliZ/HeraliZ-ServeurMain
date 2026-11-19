@@ -46,6 +46,33 @@ serveur, touches surveillées envoyées à la connexion) ; mode strict sans angl
 scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag analysés (alertes seulement, section
 `[tirs]` et `[checks]`, résumé des tirs dans `tirs.log`) ; outils d'essai retirés, `/sbaninfo` devenu `/banpc info`.
 
+**Audit du 19/11 (2.13.0, launcher 1.17.0) : l'injection qui contourne l'attache coupée.** Le launcher coupe l'attache
+(`DisableAttachMechanism`), mais une DLL injectée peut charger un agent Java elle-même, ou parler directement à Java
+(JVMTI), puis REDÉFINIR les classes déjà chargées (rendu, mouvement, réseau, ou Spartan lui-même). Désormais :
+- **classe redéfinie en mémoire** (`Redefinitions`) : Java compte chaque redéfinition dans la classe (champ caché
+  `classRedefinedCount`) ; Mixin et Forge modifient les classes AVANT leur chargement, donc ce compte vaut 0 dans un jeu
+  normal. Lu pour toutes les classes de Spartan et les classes sensibles du jeu (`scan.mixinWatchClasses`) : indice fort
+  `inject:redef:` ; la veille du jeu relit ces comptes toutes les 3 s (contrôle immédiat). Essayé sur Java 21 : 0 sans
+  agent, 1 et 2 après une redéfinition et deux retransformations par un agent ;
+- **bibliothèque d'agent ou de débogueur chargée dans le jeu sans option de lancement** (`instrument`, `jdwp`,
+  `dt_socket`, `dt_shmem` : indice fort `natif:agent:` ; `attach`, `management_agent`, `sawindbg`, `saproc` : soupçon
+  `natif:outil:`), même rangée dans le Java du jeu (avant : prise pour une bibliothèque normale de Java). La veille signale
+  leur apparition tout de suite (Windows ; Linux par `/proc/self/maps`, toutes les 30 s) ;
+- **vue de l'extérieur par le launcher** : le Gardien lit les bibliothèques du processus du jeu et envoie celles-ci dans sa
+  ligne signée (`dll.instrument`…), qu'un Spartan modifié ne peut pas cacher (`GardienBibliotheques`) ;
+- **contrôle à distance de Java (JMX)** ouvert au lancement (`-Dcom.sun.management.*`, `-XX:+ManagementServer`) : refusé
+  (mode strict) et expulsé (injection) ; `-XX:+AllowRedefinitionToAddDeleteMethods`, `-XX:Flags`, `-XX:VMOptionsFile` :
+  soupçon. Le launcher les retire des options du joueur ;
+- **launcher imité avec une clé fixe** (`GardienCles`) : la même clé du Gardien pour deux comptes ou deux jeux est refusée ;
+- **règles en rodage** (`Rodage`, `[injection] rodage`) : ces règles nouvelles n'ont jamais tourné sur de vrais PC. Si trois
+  joueurs DIFFÉRENTS en déclenchent une en moins d'une heure (`rodageJoueurs`, `rodageMinutes`), elle se suspend toute
+  seule jusqu'au redémarrage (alerte « Règle suspendue » au staff, `/spartan status` la cite) : une erreur ne peut jamais
+  expulser plus de deux joueurs honnêtes. Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
+  classes de Java. Tests : `RodageTest`, `GardienClesTest`, `MemoireTest`, `ScanAnalyzerTest`, `ConformiteStricteTest`.
+
+Le dépôt GitHub est **public** (constat du 19/11) : ce README et tout le code des détections y sont lisibles, et les jars
+de l'onglet Actions téléchargeables par tout compte GitHub. Options et coûts : `launcher/docs/HERALIZ-SECURITE.md`.
+
 **Alertes Discord (2.9.0)** : file d'envoi de 300 messages (sanctions et bans d'abord), 1 message par seconde et par
 webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur.
 L'état des webhooks (actif / absent) est écrit au démarrage dans le journal, `alerts.log` et le fil « Informations du
@@ -355,6 +382,8 @@ ne sent rien et ne voit rien.
 | Programme **attaché au jeu en cours de partie** | 🔴 | Signature d'un injecteur |
 | **Code d'origine inconnue** en cours d'exécution (piles de threads + thread de rendu échantillonné) | 🔴 | Un client injecté exécute des classes hors de tout module chargé normalement ; un ESP tourne à chaque image |
 | Anticheat modifié en mémoire (Mixin appliqué à Spartan) | 🔴 | Le cheat neutralise l'anticheat |
+| **Classe du jeu ou de Spartan redéfinie en mémoire** après son chargement (19/11) | 🔴 | Un agent injecté (DLL + JVMTI) détourne le rendu, le mouvement ou l'anticheat ; Mixin et Forge ne redéfinissent jamais une classe chargée |
+| **Bibliothèque d'agent Java ou de débogueur** chargée sans option de lancement (instrument, jdwp…, 19/11) | 🔴 | Agent ou débogueur injecté en cours de partie, malgré l'attache coupée ; vue aussi de l'extérieur par le launcher |
 | **Thread démarré hors de tout module** (Windows) | 🔴 | Code natif posé en mémoire par un injecteur, même quand la DLL est cachée (« manual map ») : aucune DLL chargée normalement ne contient son adresse de départ |
 | **Affichage détourné** (wglSwapBuffers / SwapBuffers) | 🔴 / 🟠 | Saut vers du code sans module (ESP / menu natif injecté) ou vers un module inconnu ; Discord, Steam, OBS, NVIDIA, RivaTuner… sont reconnus et ignorés |
 | Classe d'un cheat connu (`classProbes`) | 🔴 | Signatures gardées sur le serveur, jamais dans le jar |

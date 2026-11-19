@@ -94,6 +94,25 @@ public final class JvmCollector {
         if (lower.equals("-xx:+startattachlistener")) {
             return "-XX:+StartAttachListener";
         }
+        // 19/11 : contrôle à distance de Java (JMX) ouvert au lancement : il sait charger un agent dans le jeu SANS l'attache
+        // coupée par le launcher. Le nom de l'option seulement, jamais sa valeur (port, mot de passe, chemin d'un fichier).
+        if (lower.startsWith("-dcom.sun.management.")) {
+            String nom = beforeEquals(a);
+            return ScanReport.cut("-Dcom.sun.management." + nom.substring("-dcom.sun.management.".length()), 120);
+        }
+        if (lower.equals("-xx:+managementserver")) {
+            return "-XX:+ManagementServer";
+        }
+        if (lower.equals("-xx:+allowredefinitiontoadddeletemethods")) {
+            return "-XX:+AllowRedefinitionToAddDeleteMethods";
+        }
+        // options de Java lues dans un fichier, dont le contenu ne se voit pas ici (le launcher n'en met jamais)
+        if (lower.startsWith("-xx:flags=")) {
+            return "-XX:Flags";
+        }
+        if (lower.startsWith("-xx:vmoptionsfile=")) {
+            return "-XX:VMOptionsFile";
+        }
         return null;
     }
 

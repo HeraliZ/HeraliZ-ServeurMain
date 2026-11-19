@@ -373,4 +373,85 @@ class ScanAnalyzerTest {
         r.attachListener = true;
         assertEquals(Severity.STRONG, analyze(r).get(0).severity());
     }
+
+    // ------------------------------------------------------------------ 19/11 : injection qui contourne l'attache coupée
+
+    /** Jeu lancé par le launcher HeraliZ : aucun agent Java au lancement. */
+    private static ScanReport sansAgent() {
+        ScanReport r = ScanTestData.clean();
+        r.jvmFlags.clear();
+        r.files.removeIf(f -> f.origin().equals("agent"));
+        return r;
+    }
+
+    @Test
+    void bibliothequeDAgentOuDeDebogueurChargeeEnCoursDePartie() {
+        ScanReport r = sansAgent();
+        r.natives.add(new ScanReport.NativeEntry("instrument.dll", "%JAVA%/bin", ""));
+        r.natives.add(new ScanReport.NativeEntry("jdwp.dll", "%JAVA%/bin", ""));
+        r.natives.add(new ScanReport.NativeEntry("libdt_socket.so", "%JAVA%/lib", ""));
+        r.natives.add(new ScanReport.NativeEntry("attach.dll", "%JAVA%/bin", ""));
+        List<Finding> fs = ScanAnalyzer.analyze(r, null, null, ScanTestData.settings());
+        assertEquals(Severity.STRONG, find(fs, "natif:agent:instrument.dll").severity(), fs.toString());
+        assertTrue(find(fs, "natif:agent:instrument.dll").text().contains("agent Java"));
+        assertEquals(Severity.STRONG, find(fs, "natif:agent:jdwp.dll").severity());
+        assertEquals(Severity.STRONG, find(fs, "natif:agent:libdt_socket.so").severity());
+        assertEquals(Severity.SUSPECT, find(fs, "natif:outil:attach.dll").severity());
+        // même rangée hors du Java du jeu, une bibliothèque d'agent reste un indice fort
+        ScanReport t = sansAgent();
+        t.natives.add(new ScanReport.NativeEntry("INSTRUMENT.DLL", "%TEMP%/x", "dossier:temp"));
+        assertEquals(Severity.STRONG, find(ScanAnalyzer.analyze(t, null, null, ScanTestData.settings()),
+                "natif:agent:instrument.dll").severity());
+    }
+
+    @Test
+    void bibliothequesNormalesDuJavaDuJeuNeDisentRien() {
+        // Java charge ces bibliothèques à la demande (capture d'écran, polices, MXBeans de l'anticheat) : jamais un indice
+        ScanReport r = sansAgent();
+        for (String n : List.of("java.dll", "jimage.dll", "management.dll", "management_ext.dll", "javajpeg.dll", "awt.dll",
+                "fontmanager.dll", "net.dll", "nio.dll", "jsvml.dll", "verify.dll", "zip.dll")) {
+            r.natives.add(new ScanReport.NativeEntry(n, "%JAVA%/bin", ""));
+        }
+        List<Finding> fs = ScanAnalyzer.analyze(r, null, null, ScanTestData.settings());
+        assertTrue(fs.stream().noneMatch(f -> f.key().startsWith("natif:") || f.key().startsWith("dll:")), fs.toString());
+        // un agent ou un débogueur mis au LANCEMENT est jugé par son option, sans indice en double
+        ScanReport a = ScanTestData.clean(); // agent autorisé au lancement (authlib-injector)
+        a.natives.add(new ScanReport.NativeEntry("instrument.dll", "%JAVA%/bin", ""));
+        assertNull(find(ScanAnalyzer.analyze(a, null, null, ScanTestData.settings()), "natif:agent:"));
+        ScanReport d = sansAgent();
+        d.jvmFlags.add("-agentlib:jdwp");
+        d.natives.add(new ScanReport.NativeEntry("jdwp.dll", "%JAVA%/bin", ""));
+        List<Finding> fd = ScanAnalyzer.analyze(d, null, null, ScanTestData.settings());
+        assertNull(find(fd, "natif:agent:"));
+        assertEquals(Severity.STRONG, find(fd, "jvm:-agentlib:jdwp").severity());
+    }
+
+    @Test
+    void classeModifieeEnMemoireApresSonChargement() {
+        ScanReport r = sansAgent();
+        r.injection.add("redef|net.minecraft.client.renderer.LevelRenderer|2");
+        r.injection.add("redef|com.Spartan.scan.collect.ScanCollector|1");
+        r.injection.add("redef|net.minecraft.client.Minecraft|0");    // jamais redéfinie : rien
+        r.injection.add("redef|pas une classe!|3");                   // nom illisible : rien de cru
+        r.injection.add("redef|net.minecraft.world.entity.Entity|x"); // nombre illisible : rien
+        List<Finding> fs = ScanAnalyzer.analyze(r, null, null, ScanTestData.settings());
+        Finding rendu = find(fs, "inject:redef:net.minecraft.client.renderer.LevelRenderer");
+        assertEquals(Severity.STRONG, rendu.severity(), fs.toString());
+        assertTrue(rendu.text().contains("rendu du monde") && rendu.text().contains("2 fois"), rendu.text());
+        assertTrue(find(fs, "inject:redef:com.Spartan.").text().contains("de l'anticheat"));
+        assertEquals(2, fs.stream().filter(f -> f.key().startsWith("inject:redef:")).count(), fs.toString());
+    }
+
+    @Test
+    void controleADistanceDeJavaOuvertAuLancement() {
+        ScanReport r = sansAgent();
+        r.jvmFlags.addAll(List.of("-Dcom.sun.management.jmxremote.port", "-XX:+ManagementServer",
+                "-XX:+AllowRedefinitionToAddDeleteMethods", "-XX:Flags", "-XX:VMOptionsFile"));
+        List<Finding> fs = ScanAnalyzer.analyze(r, null, null, ScanTestData.settings());
+        assertEquals(Severity.STRONG, find(fs, "jvm:-dcom.sun.management.jmxremote.port").severity(), fs.toString());
+        assertEquals(Severity.STRONG, find(fs, "jvm:-xx:+managementserver").severity());
+        assertEquals(Severity.SUSPECT, find(fs, "jvm:-xx:+allowredefinitiontoadddeletemethods").severity());
+        assertEquals(Severity.SUSPECT, find(fs, "jvm:-xx:flags").severity());
+        assertEquals(Severity.SUSPECT, find(fs, "jvm:-xx:vmoptionsfile").severity());
+    }
 }
