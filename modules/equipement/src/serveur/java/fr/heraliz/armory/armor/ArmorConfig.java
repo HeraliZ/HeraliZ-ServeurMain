@@ -33,6 +33,8 @@ public final class ArmorConfig {
     public static final ForgeConfigSpec.BooleanValue LABO_VISION;
     /** 08/11 : petits chiffres des dégâts infligés à un autre joueur, montrés au tireur (cible.ChiffresJoueurs). */
     public static final ForgeConfigSpec.BooleanValue CHIFFRES_JOUEURS;
+    /** 20/11 (audit réseau) : contenu des sacs et équipements Curios envoyé seulement au porteur (curios.ContenuReserve). */
+    public static final ForgeConfigSpec.BooleanValue CONTENU_PORTEUR_SEUL;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -82,6 +84,12 @@ public final class ArmorConfig {
         CHIFFRES_JOUEURS = b.comment("Petits chiffres des degats : quand un joueur en touche un autre, il voit (lui seul) la vie que l'autre",
                         "a vraiment perdue, au-dessus de sa tete. false = coupe.")
                 .define("joueurs", true);
+        b.pop();
+        b.push("reseau");
+        CONTENU_PORTEUR_SEUL = b.comment("Contenu d'un sac porte (et de tout objet Curios qui en a un) : envoye seulement a son porteur.",
+                        "Les autres joueurs ne recoivent que l'apparence du sac (son contenu leur etait envoye a chaque changement",
+                        "et a chaque fois qu'ils voyaient le porteur arriver). false = comme avant.")
+                .define("contenu_porteur_seul", true);
         b.pop();
         SPEC = b.build();
     }

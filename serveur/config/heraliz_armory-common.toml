@@ -34,3 +34,9 @@
 	#Petits chiffres des degats : quand un joueur en touche un autre, il voit (lui seul) la vie que l'autre
 	#a vraiment perdue, au-dessus de sa tete. false = coupe.
 	joueurs = true
+
+[reseau]
+	#Contenu d'un sac porte (et de tout objet Curios qui en a un) : envoye seulement a son porteur.
+	#Les autres joueurs ne recoivent que l'apparence du sac (son contenu leur etait envoye a chaque changement
+	#et a chaque fois qu'ils voyaient le porteur arriver). false = comme avant.
+	contenu_porteur_seul = true

@@ -7,7 +7,7 @@ license="${mod_license}"
 # ---- heraliz_armory (ancien projet heraliz-armory, version 0.16.1)
 [[mods]]
 modId="heraliz_armory"
-version="0.16.1"
+version="0.16.2"
 displayName="HeraliZ Armurerie"
 authors="${mod_authors}"
 description='''Le mod de tenues du serveur HeraliZ : tenues et armures realistes en relief (casques, cagoules, gants, gilets...), combinaisons integrales (Hazmat, grand froid, plongee), ghillies, brassards, masques a gaz et objets event. Inventaire avec le panneau des equipements (Curios) toujours ouvert.'''
