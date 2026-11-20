@@ -1276,3 +1276,65 @@ Pas fait, volontairement
   priorité) : gardés tels quels, ils servent à attraper les tricheurs et ne se voient pas.
 - **Propositions du 19/11** (ImmediatelyFast, Dynamic FPS, MoreCulling) et **camos « cuits »** : toujours à votre
   décision, rien de neuf.
+
+## 37. Réseau, mémoire et disque : audit du 20/11
+
+Demande du propriétaire : « relancer un audit complet : vérifier que tout soit ultra optimisé ». Cette partie : le
+réseau (ce qui part vers chaque joueur), la mémoire, le disque et tous les réglages du dossier `serveur/`. Les deux autres
+parties de l'audit (ticks du serveur ; images par seconde chez les joueurs, section 36) ont leurs propres sections.
+Versions : Équipement **1.4.1** (Armurerie 0.16.2), Noyau **1.1.8**, Banc 1.2.2 (jamais livré). **Rien n'a été testé en
+jeu** (pas de serveur ici) : la fabrication, les contrôles et un démarrage d'essai sur GitHub seulement. Liste pour
+changer de machine : `docs/DEPLOIEMENT.md`, section 10.
+
+Ce qui a été mesuré (le 20/11, serveur en ligne et banc de charge) :
+- Java du Ptero : 16 Go, réglages de la section 8 de `docs/DEPLOIEMENT.md` bien en place (sauf `-Dfile.encoding=UTF-8`),
+  16 cœurs vus, machine de 62,8 Go. Mémoire vivante : 1 à 3 Go à vide, 3,5 Go au plus avec 100 bots (banc) : environ 5 Go
+  attendus à 150 joueurs. 16 Go suffisent largement.
+- Réseau (banc, 100 bots) : 19,5 Mbit/s en sortie (24 Ko/s par joueur, 24 000 paquets par seconde). À 150 joueurs : 35 à
+  50 Mbit/s en moyenne, le double dans les pics, plus la voix.
+
+Sacs : le contenu ne part plus chez les autres joueurs (Équipement 1.4.1)
+Avant, le serveur envoyait le sac porté d'un joueur avec **tout son contenu** à tous ceux qui le voient : à chaque objet
+rangé ou sorti, et à chaque fois qu'un joueur le voyait arriver (ou réapparaître derrière un mur). Un sac plein pèse
+plusieurs Ko : du réseau pour rien, et un jeu modifié pouvait lire ce que chacun transporte. Maintenant, le porteur
+reçoit toujours tout ; les autres seulement l'apparence du sac.
+- [ ] Deux joueurs A et B. A porte un sac bien rempli. B s'approche : il voit le sac sur le dos de A, avec le bon modèle,
+      la bonne couleur et le bon camo. A range et sort des objets : chez B, le sac ne change pas d'aspect et rien ne
+      clignote.
+- [ ] A survole son sac (case du dos, inventaire) : l'infobulle compte toujours ses objets ; sac non vide : le message
+      « vider le sac avant de l'enlever » est toujours là. A ouvre son sac : tout son contenu est là.
+- [ ] A meurt : son corps montre son sac ; à la fouille du corps, le survol du sac compte ses objets ; le contenu se
+      récupère comme avant.
+- [ ] Journal du démarrage du serveur : « [armurerie] contenu des sacs : envoyé seulement au porteur (actif) » ; puis,
+      une fois des joueurs connectés avec un sac, une seule ligne « premier envoi allégé pour les autres joueurs ». Si on
+      lit « paquets de Curios inattendus » : le dire (rien ne casse, mais l'allègement est coupé).
+- [ ] En cas de souci : `contenu_porteur_seul = false` dans la section `[reseau]` de `config/heraliz_armory-common.toml`
+      (relu tout seul en quelques secondes, sans redémarrer) : tout redevient comme avant.
+
+Diagnostic (Noyau 1.1.8)
+- [ ] `/diag etat` : la ligne « Java : … » finit par « ; processeur : <nom du processeur> ; encodage par défaut … ». Si
+      l'encodage n'est pas « UTF-8 », la ligne le dit : demander à l'hébergeur d'ajouter `-Dfile.encoding=UTF-8`.
+- [ ] Nouvelle ligne « Disque du serveur : … Go libres sur … Go » (avec « à surveiller » sous 10 %).
+- [ ] Un rapport de blocage pendant la sauvegarde automatique dit « toutes les 10 min » (plus « 5 min »).
+
+GitHub
+- [ ] « Lenteurs du serveur » (Run workflow) : nouvelle partie « Mémoire et disque du serveur » dans le résumé : pauses
+      du ramasse-miettes (nombre, moyenne, pire), mémoire gardée après chaque passage, place prise par dossier, nombre
+      de fichiers de joueurs. Toujours en lecture seule.
+- [ ] Prochain banc de charge : son rapport a une section « Réseau vers les bots, par sorte de paquet » (ce qui remplit
+      la bande passante : tronçons, mouvements, sons et balles de TaCZ, paquets de nos mods).
+
+Pas changé, à décider par le propriétaire (chiffres dans le compte rendu de l'audit) :
+- distance de vue 6 au spawn (`vues_par_monde`) : environ 120 tronçons de moins envoyés à chaque mort et chaque retour au
+  spawn (environ 40 % du réseau d'une arrivée) ;
+- `entity-broadcast-range-percentage` à 80 (server.properties) : zombies vus à 48 blocs au lieu de 60, balles, véhicules
+  et corps à 51 au lieu de 64 (les joueurs restent à 128) ; environ un tiers de paquets de mouvement en moins pour eux ;
+- `rate-limit=1000` dans le `server.properties` du Ptero (toujours à 0 le 20/11 ; proposé le 19/11) ;
+- `enable-query=false` (le launcher et le site ne s'en servent pas) ;
+- `connection-throttle` de `bukkit.yml` à 1000 (une seule connexion par seconde et par adresse ; aujourd'hui sans
+  limite) ;
+- mondes qui ne sont plus chargés, dans `dayz_map/dimensions` : environ 600 Mo sur 1,2 Go de monde (`crac/bases` et deux
+  vieilles copies `bases_ancien_…` des 16 et 21/10, `heralisz_matchs`, `heralisz_bases`). Au déménagement : les garder
+  dans une sauvegarde à part et ne pas les copier, ou tout copier (rien ne change en jeu). On ne touche jamais aux
+  fichiers du monde sans vous ;
+- `.bash_history` à la racine du Ptero (historique de commandes de 2025, peut contenir des mots de passe) : à supprimer.

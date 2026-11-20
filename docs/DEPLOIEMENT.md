@@ -3,7 +3,8 @@
 Écrit le 25/10 après l'audit, à partir de ce qui est réellement sur le Ptero aujourd'hui (lu en lecture seule).
 Il n'y a pas encore de mise en ligne automatique pour ce projet (étape 7) : tout se fait à la main, dans cet ordre.
 **Depuis le 26/10, la mise en ligne se fait par GitHub** (`docs/MISE_EN_LIGNE_GITHUB.md`) : cette liste reste pour une
-installation à la main et pour ce que GitHub ne fait pas (sections 6 à 9, ajoutées le 19/11 après l'audit des réglages).
+installation à la main et pour ce que GitHub ne fait pas (sections 6 à 9, ajoutées le 19/11 après l'audit des réglages ;
+section 10, 20/11 : changer de machine).
 
 ## 0. Avant tout
 
@@ -224,6 +225,14 @@ Vérifier après le changement :
 - après une mise à jour de Mohist ou une « Installation complète », le premier démarrage peut tourner sans ces réglages
   (Mohist installe Forge puis se relance tout seul) : redémarrer une seconde fois, puis revérifier `/diag`.
 
+**Lu sur le Ptero le 20/11** (`/diag`, « Lenteurs du serveur ») : la ligne ci-dessus est en place (16 Go fixes, réglages
+Aikar, 16 cœurs vus, machine de 64 Go, « Compressed Oops » actifs), avec deux différences : le journal du ramasse-miettes
+est à la racine du serveur (`gc.log`, plus détaillé : `-Xlog:gc*`, 5 fichiers de 20 Mo, lu par « Lenteurs du serveur »),
+et **`-Dfile.encoding=UTF-8` manque** (Java 17 prend alors l'encodage du système, qui n'est pas toujours UTF-8 dans un
+conteneur ; `/diag etat` dira lequel après la mise en ligne du Noyau 1.1.8 : s'il n'est pas UTF-8, l'ajouter).
+Mesuré : 29 pauses en 3 h 30 serveur presque vide, 25 à 50 ms d'habitude, 125 ms au pire hors démarrage ; aucune pause
+complète.
+
 **Processeur** : le jeu (le « tick ») tourne sur **un seul cœur** : c'est la vitesse d'un cœur qui compte, pas leur
 nombre. Celui du Ptero (Xeon E5-2690 v2, 2013) est environ 2 fois plus lent par cœur qu'un PC récent ; à 100 bots, sur les
 machines de GitHub (plus rapides), la marge sous 50 ms par tick est déjà mince. Pour 150 joueurs, demander une machine
@@ -271,3 +280,103 @@ en jeu le 19/11 (compte au redémarrage qui suit la mise en ligne) ; le banc ne 
   joueurs) : à garder seulement si un site de classement s'en sert ;
 - `player-idle-timeout` (aujourd'hui 0) : 20 ou 30 minutes libèrent la place et les tronçons d'un joueur parti de son
   écran.
+
+## 10. Nouvelle machine : liste à suivre (20/11)
+
+Pour passer le serveur sur une machine plus puissante. Une seule chose à la fois : pas de mise à jour de Mohist ni de
+gros changement de mods le même jour (si quelque chose ne va pas, on saura que c'est la machine).
+
+**Mesuré le 20/11** (serveur en ligne, « Lenteurs du serveur » ; banc de charge sur les machines de GitHub) : Java 17,
+16 Go donnés à Java, réglages de la section 8 en place, 16 cœurs vus, machine de 62,8 Go. Le serveur garde **1 à 3 Go** de
+mémoire vivante à vide, **3,5 Go au plus avec 100 bots** (environ 23 Mo par joueur, surtout les tronçons autour d'eux) : à
+150 joueurs, environ 5 Go. Réseau du banc : **19,5 Mbit/s en sortie pour 100 bots** (24 Ko/s par joueur, 24 000 paquets
+par seconde, compressés au cinquième).
+
+### Ce qu'il faut demander à l'hébergeur
+
+| Quoi | Minimum | Pourquoi |
+|---|---|---|
+| Processeur | récent, haute fréquence (environ 5 GHz en pointe : Ryzen 7000/9000, EPYC 4004/4005, Xeon récents), 8 cœurs réservés ou plus | le jeu tourne sur **un seul cœur** : c'est sa vitesse qui compte (section 8) ; les autres cœurs servent au réseau, à la compression, au ramasse-miettes, à l'anticheat, à la voix |
+| Mémoire du conteneur | **24 Go** (20 Go au strict minimum) | 16 Go pour Java + 3 à 4 Go que Java prend en plus + marge. Ce qui reste sur la machine sert au système à garder les fichiers du monde en mémoire (tronçons relus plus vite) : utile, mais à ne pas donner à Java |
+| Disque | **NVMe local** (pas un disque réseau), 50 Go libres de plus que la taille actuelle du serveur (le monde : 1,2 Go le 20/11, dont 600 Mo de mondes qui ne sont plus chargés ; le reste : « Lenteurs du serveur », partie « Mémoire et disque ») | chaque opération d'argent (banque du clan, hôtel des ventes) est écrite sur le disque AVANT d'être faite, sur le fil du jeu (protection contre les copies) ; chaque téléportation et chaque réapparition lisent des centaines de tronçons |
+| Réseau | **200 Mbit/s garantis en sortie** (1 Gbit/s idéal), protection anti-DDoS qui laisse passer l'UDP 24454 | prévu 35 à 50 Mbit/s en moyenne à 150 joueurs, le double dans les pics (arrivées en groupe, redémarrage, largage), plus la voix (5 à 15 Mbit/s) |
+| Ports | TCP **25565** (le jeu) et UDP **24454** (la voix de proximité) | dans Pterodactyl : une deuxième « allocation » 24454 sur la même adresse que le jeu. Rien d'autre (RCON est coupé ; le « query » UDP 25565 seulement si un site de classement le demande : le launcher et le site ne s'en servent pas) |
+| Base MySQL | une base pour LiteBans | les sanctions (bans, mutes) y sont gardées, pas dans le dossier du serveur |
+
+### Ligne Java (Java 17, comme aujourd'hui)
+
+Pour un conteneur de 24 Go (ou plus) : la ligne de la section 8, avec le journal du ramasse-miettes à la racine comme
+aujourd'hui (l'outil « Lenteurs du serveur » le lit là) et **`-Dfile.encoding=UTF-8`**, absent du Ptero actuel (sans
+lui, Java 17 prend l'encodage du système) :
+
+```
+java -Xms16G -Xmx16G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200
+     -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch
+     -XX:G1NewSizePercent=40 -XX:G1MaxNewSizePercent=50 -XX:G1HeapRegionSize=16M
+     -XX:G1ReservePercent=15 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4
+     -XX:InitiatingHeapOccupancyPercent=20 -XX:G1MixedGCLiveThresholdPercent=90
+     -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem
+     -XX:MaxTenuringThreshold=1 -Dfile.encoding=UTF-8
+     -Xlog:gc*:file=gc.log:time,uptime,level,tags:filecount=5,filesize=20M
+     -jar mohist-1.20.1-916-server.jar nogui
+```
+
+- Machine plus grosse (64 Go ou plus) : **garder 16 Go** pour Java. Plus ne sert à rien (le serveur en utilise 5) et
+  32 Go pile est pire (section 2). La mémoire en plus sert au système (fichiers du monde).
+- Conteneur de 16 Go seulement : `-Xms12G -Xmx12G` et les valeurs « 16 Go » de la section 8.
+- Rester sur Java 17 et G1 (Mohist 1.20.1, les plugins et nos mixins sont essayés avec lui).
+
+### Copier le serveur
+
+1. Prévenir les joueurs, puis arrêter le serveur proprement (`/stop` ou `redemarrage`, attendre la fin de la
+   sauvegarde). Faire une sauvegarde complète depuis le panel (onglet Backups) de l'ancienne machine.
+2. Copier **tout le dossier du serveur** vers la nouvelle machine (sauvegarde du panel restaurée, ou SFTP), sans rien
+   trier : le monde `dayz_map` (avec `dimensions/` : spawn, arènes, tutoriel), les dossiers de nos mods à la racine
+   (`heralisz_clans`, `heralisz_economie`, `heraliz_quetes`, `heraliz_grades`, `heraliz_crates`, `heralisz_camo`,
+   `heraliz_emote`, `heraliz_evenements` et surtout sa clé `objets.cle`, `heraliz_zombies`…), `config/` et
+   `defaultconfigs/`, `plugins/` avec leurs données (AuthMe : les mots de passe des joueurs ; LuckPerms : les grades ;
+   WorldGuard : les régions ; AzLink : le lien avec le site), `usercache.json`, `ops.json`, `whitelist.json`,
+   `banned-players.json`, `banned-ips.json`, `server.properties`, `bukkit.yml`, `spigot.yml`, `commands.yml`,
+   `mohist-config/`, `eula.txt`, le jar de Mohist et `libraries/`. Ne PAS copier `.bash_history` (à la racine du Ptero
+   depuis 2025 : un historique de commandes, qui peut contenir des mots de passe) : le supprimer ; les vieux guides
+   `.md` de la racine ne servent à rien. Mondes qui ne sont plus chargés (`dayz_map/dimensions/crac/bases` et ses deux
+   copies `bases_ancien_…`, `heralisz_matchs`, `heralisz_bases` : environ 600 Mo) : à vous de choisir de les copier ou de
+   les garder seulement dans la sauvegarde (rien ne change en jeu).
+3. **LiteBans** : exporter la base MySQL de l'ancienne machine (`s1_LiteBans`) et l'importer dans la nouvelle
+   (l'hébergeur sait le faire). Sinon l'historique des sanctions est perdu. Si son adresse n'est plus `127.0.0.1:3306`,
+   la changer dans `serveur/plugins/LiteBans/config.yml` (demander au développement).
+4. `server.properties` de la nouvelle machine : `server-ip` et `server-port` de la nouvelle allocation ; en profiter pour
+   `rate-limit=1000` (section 9, toujours à 0 sur le Ptero le 20/11).
+5. **Adresse `play.heraliz.fr`** : la veille, baisser la durée de cache (TTL) de l'enregistrement DNS à 5 minutes ; le
+   jour J, faire pointer l'enregistrement A (et SRV s'il y en a un) vers la nouvelle adresse. Le launcher et les jeux des
+   joueurs n'ont rien à changer.
+
+### Secrets de GitHub à changer (Settings → Environments, section 7 de `docs/MISE_EN_LIGNE_GITHUB.md`)
+
+- **`production`** : `PTERO_SFTP_HOST`, `PTERO_SFTP_PORT`, `PTERO_SFTP_USER`, `PTERO_SFTP_PASSWORD`, `PTERO_URL` (si le
+  panel change), `PTERO_SERVER_ID`, `PTERO_API_KEY` (nouvelle clé de l'API client du panel), `LITEBANS_DB_USER` et
+  `LITEBANS_DB_PASSWORD` (la nouvelle base).
+- **`lecture`** : `PTERO_SFTP_HOST`, `PTERO_SFTP_PORT`, et `PTERO_SFTP_USER` / `PTERO_SFTP_PASSWORD` d'un nouveau
+  sous-utilisateur **en lecture seule** sur le nouveau panel (« file.sftp », « file.read », « file.read-content »).
+- **Variable `PTERO_SFTP_EMPREINTE`** (onglet Variables) : la clé de la nouvelle machine. La première mise en ligne
+  s'arrête sur une erreur de clé d'hôte et son résumé donne les lignes à recopier (section 8 de
+  `docs/MISE_EN_LIGNE_GITHUB.md`).
+- Rien à changer pour le site, le launcher, Discord, Spartan, HeraliBot, TopServeurs.
+
+### Premières vérifications
+
+1. Journal du démarrage : « Done », aucune ligne `ERROR` de nos mods, et « [armurerie] contenu des sacs : envoyé
+   seulement au porteur (actif) ».
+2. `/diag etat` : « tas maximum 16384 Mo, réservé au départ 16384 Mo », le **nouveau processeur** (« processeur : … »),
+   « encodage par défaut UTF-8 », « Disque du serveur : … Go libres ».
+3. Voix : deux joueurs se parlent, puis `/voix stats` : les sessions « en UDP » = le nombre de joueurs connectés. Si
+   c'est 0, le port UDP 24454 est fermé (la voix passe alors par la connexion du jeu : elle marche, mais saccade quand le
+   jeu rame).
+4. Un ancien joueur se connecte avec son mot de passe (AuthMe) ; `/lp user <pseudo du staff> info` (grades) ; `/rg list`
+   dans chaque monde (WorldGuard) ; `/history <pseudo>` (LiteBans) ; un clan, sa banque, une quête, une base : tout est
+   là.
+5. GitHub : une mise en ligne « Serveur HeraliZ » verte ; « Lenteurs du serveur » lancé depuis `main` sans la case
+   profil : partie « Mémoire et disque du serveur » : pauses « Pause Young » de 20 à 50 ms, aucune au-dessus de 200 ms,
+   pas de « Pause Full ».
+6. Première soirée avec des joueurs : « Lenteurs du serveur » avec la case profil (2 minutes) ; la partie « Paquets » du
+   profil donne ce qui part vers les joueurs, par sorte (à comparer au banc).
