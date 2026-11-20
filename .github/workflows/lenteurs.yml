@@ -222,3 +222,117 @@ jobs:
             echo "===== PLANTAGE $(basename "$f") ====="; grep -m1 -A40 -E '^Description:' "$f" | masque | head -60
           done
           echo "Rien n'a été modifié sur le Ptero."
+
+      # 20/11 (audit réseau, mémoire et disque) : LECTURE SEULE, comme le reste. Le journal du ramasse-miettes (gc.log à la
+      # racine, écrit par l'option -Xlog:gc* de la ligne Java de l'hébergeur ; aucun joueur dedans) est résumé : pauses par
+      # sorte, mémoire gardée après chaque passage (une fuite la fait monter), vitesse d'allocation. Puis la place prise sur
+      # le disque par dossier (tailles seulement, jamais les noms des fichiers : les captures de l'anticheat sont rangées
+      # par pseudo) et le nombre de fichiers de joueurs du monde (un par joueur venu au moins une fois).
+      - name: Mémoire (ramasse-miettes) et disque (lecture seule)
+        run: |
+          R="$LFTP_SSH set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
+          masque() { sed -E -e 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g' \
+            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g'; }
+          mkdir -p gc
+          l "lcd gc; get /gc.log" > /dev/null 2>&1 || true
+          MONDE=$(sed -n 's/^level-name=//p' conf/server.properties 2>/dev/null | tr -d '\r' | tr -cd 'A-Za-z0-9_.-')
+          MONDE=${MONDE:-dayz_map}
+          # « du » parcourt tout le serveur par le SFTP (quelques minutes au plus) ; profondeur 1 à la racine, 2 dans le monde
+          timeout 900 lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
+            -e "$R du -k -d 1 /; du -k -d 1 /$MONDE; du -k -d 2 /$MONDE/dimensions; bye" > disque.txt 2>/dev/null || true
+          l "cls -l /" 2>/dev/null | grep -v '^d' > racine.txt || true
+          JOUEURS=$(l "cls -1 /$MONDE/playerdata/" 2>/dev/null | grep -c '\.dat$' || true)
+          {
+            echo "===== RAMASSE-MIETTES (gc.log du serveur, depuis son dernier démarrage) ====="
+            if [ -s gc/gc.log ]; then
+              echo "gc.log : $(du -h gc/gc.log | cut -f1)"
+              python3 -I - gc/gc.log <<'PY' || true
+          import re, sys, statistics
+          PAUSE = re.compile(r"\]\[(?P<up>[\d.]+)s\]\[\w+\s*\]\[(?P<tags>[^\]]*)\]\s+GC\((?P<n>\d+)\) (?P<sorte>Pause [A-Za-z]+(?: \([^)]*\))*?)"
+                             r"(?: \([^)]*\))? (?P<av>\d+)M->(?P<ap>\d+)M\((?P<tot>\d+)M\) (?P<ms>[\d.]+)ms")
+          CYCLE = re.compile(r"\]\[(?P<up>[\d.]+)s\].*GC\(\d+\) Concurrent Mark Cycle (?P<ms>[\d.]+)ms")
+          GEANTS = re.compile(r"Humongous regions: \d+->(\d+)")
+          pauses, cycles, init = [], [], []
+          geants = epuise = 0
+          with open(sys.argv[1], encoding="utf-8", errors="replace") as f:
+              for l in f:
+                  if "[gc,init" in l and len(init) < 20:
+                      init.append(l.split("] ", 1)[-1].strip())
+                  m = PAUSE.search(l)
+                  if m:
+                      pauses.append((float(m["up"]), m["sorte"], int(m["av"]), int(m["ap"]), int(m["tot"]), float(m["ms"])))
+                      continue
+                  m = CYCLE.search(l)
+                  if m:
+                      cycles.append(float(m["ms"]))
+                      continue
+                  m = GEANTS.search(l)
+                  if m:
+                      geants = max(geants, int(m.group(1)))
+                  if "To-space exhausted" in l or "Evacuation Failure" in l:
+                      epuise += 1
+          if not pauses:
+              print("aucune pause trouvée (gc.log vide ou d'un autre format)")
+              sys.exit(0)
+          def q(v, p):
+              v = sorted(v)
+              return v[min(len(v) - 1, int(round(p / 100 * (len(v) - 1))))]
+          debut, fin = pauses[0][0], pauses[-1][0]
+          duree = max(1.0, fin - debut)
+          print("Réglages lus au démarrage :")
+          for l in init:
+              print("  " + l)
+          print("Période : %.1f h de fonctionnement (de %.0f s à %.0f s après le démarrage), %d pauses" % (duree / 3600, debut, fin, len(pauses)))
+          sortes = {}
+          for p in pauses:
+              sortes.setdefault(re.sub(r" \((G1|System|Metadata|GCLocker|Allocation|WhiteBox)[^)]*\)", "", p[1]), []).append(p[5])
+          print("  %-36s %7s %9s %9s %9s %9s %10s" % ("sorte", "nombre", "moyenne", "médiane", "95 %", "pire", "total (s)"))
+          for cle, v in sorted(sortes.items(), key=lambda x: -sum(x[1])):
+              print("  %-36s %7d %7.1f ms %7.1f ms %7.1f ms %7.0f ms %10.1f" % (cle[:36], len(v), statistics.mean(v), q(v, 50), q(v, 95), max(v), sum(v) / 1000))
+          total = sum(p[5] for p in pauses) / 1000
+          print("Temps en pause : %.1f s sur %.1f h (%.2f %% du temps)" % (total, duree / 3600, 100 * total / duree))
+          apres = [p[3] for p in pauses if "Young" in p[1] or "Full" in p[1] or "Mixed" in p[1]]
+          if apres:
+              print("Mémoire gardée après un passage (Mo, sur %d Mo) : plus petite %d, médiane %d, plus grande %d" % (pauses[-1][4], min(apres), q(apres, 50), max(apres)))
+              print("  les 12 dernières : %s" % ", ".join(str(a) for a in apres[-12:]))
+              n4 = max(1, len(apres) // 4)
+              print("  médiane du premier quart %d Mo, du dernier quart %d Mo (une fuite fait monter la seconde)" % (q(apres[:n4], 50), q(apres[-n4:], 50)))
+          jeunes = [p for p in pauses if p[1].startswith("Pause Young")]
+          alloue, temps, pire = 0, 0.0, 0.0
+          for a, b in zip(jeunes, jeunes[1:]):
+              dt = b[0] - a[0]
+              if dt <= 0 or b[2] < a[3]:
+                  continue
+              alloue += b[2] - a[3]
+              temps += dt
+              pire = max(pire, (b[2] - a[3]) / dt)
+          if temps > 0:
+              print("Allocation : %.0f Mo/s en moyenne, %.0f Mo/s au plus (entre deux passages) ; un passage jeune toutes les %.1f s"
+                    % (alloue / temps, pire, duree / max(1, len(jeunes))))
+          longues = [p for p in pauses if p[5] >= 100]
+          print("Pauses de 100 ms et plus : %d" % len(longues))
+          for p in longues[-15:]:
+              print("  %8.0f s  %-60s %6.0f ms  (%d -> %d Mo)" % (p[0], p[1][:60], p[5], p[2], p[3]))
+          if cycles:
+              print("Marquages concurrents (à côté du jeu, sans pause) : %d, %.0f ms en moyenne" % (len(cycles), statistics.mean(cycles)))
+          print("Pauses complètes (Full GC) : %d ; évacuations ratées (To-space exhausted) : %d ; régions géantes au plus : %d"
+                % (sum(1 for p in pauses if "Full" in p[1]), epuise, geants))
+          PY
+            else
+              echo "gc.log absent à la racine du serveur (ligne Java sans -Xlog:gc*:file=gc.log)"
+            fi
+            echo "===== DISQUE : place prise par dossier (Ko, les plus gros d'abord) ====="
+            sort -t "$(printf '\t')" -k1,1nr disque.txt 2>/dev/null | masque | head -70
+            echo "===== DISQUE : fichiers de la racine (sans les dossiers) ====="
+            masque < racine.txt | head -40
+            echo "Fichiers de joueurs du monde (playerdata) : ${JOUEURS:-?}"
+          } > memoire_disque.txt
+          cat memoire_disque.txt
+          {
+            echo "## Mémoire et disque du serveur"
+            echo '```'
+            sed -n '/===== RAMASSE-MIETTES/,/===== DISQUE : fichiers/p' memoire_disque.txt | head -90
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Rien n'a été modifié sur le Ptero."

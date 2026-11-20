@@ -130,6 +130,7 @@ final class Mesure {
         cpuReleves = 0;
         CHARGES.set(0);
         NEUFS.set(0);
+        Reseau.viderSortes();
         long[] gc = gc();
         gcNbDebut = gc[0];
         gcMsDebut = gc[1];
@@ -425,6 +426,12 @@ final class Mesure {
         }
         t.append(String.format(Locale.ROOT, "Cibles pour 150 joueurs : %.1f morts, %.1f connexions, %.1f voyages par minute, combat %d %% du temps%s ; facteur des dégâts entre bots %.3f%n%n",
                 Rythmes.morts, Rythmes.connexions, Rythmes.voyages, Rythmes.combat, Rythmes.actif ? "" : " (rythmes coupés)", facteur));
+        if (Reseau.actif) {
+            // 20/11 (audit réseau) : ce qui part vers les bots, par sorte de paquet (les bots n'ont ni sac ni voix)
+            t.append("== Réseau vers les bots, par sorte de paquet ==\n");
+            Reseau.ecrireSortes(t, duree, Bots.nombre());
+            t.append('\n');
+        }
         t.append("== Monde ==\n");
         t.append(String.format(Locale.ROOT, "Au plus : %d entités, %d monstres, %d zombies HeraliZ, %d objets au sol, %d tronçons chargés, %d joueurs%n",
                 entitesMax, monstresMax, zombiesMax, objetsMax, tronconsMax, joueursMax));

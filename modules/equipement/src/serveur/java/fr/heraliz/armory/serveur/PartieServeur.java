@@ -5,6 +5,7 @@ import fr.heraliz.armory.cible.CibleEssaiServeur;
 import fr.heraliz.armory.cible.CiblesServeur;
 import fr.heraliz.armory.compat.GeckolibServeur;
 import fr.heraliz.armory.compat.TaczCompat;
+import fr.heraliz.armory.curios.ContenuReserve;
 import fr.heraliz.armory.curios.MajClicCurios;
 import fr.heraliz.armory.curios.MajClicCuriosServeur;
 import fr.heraliz.armory.entity.MannequinServeur;
@@ -54,5 +55,9 @@ public final class PartieServeur implements Partie {
         // geckolib222 (audit du 15/11) : message traduit au début d'une jambe cassée ou d'un saignement, liste des
         // irradiés vidée à la mort et au départ
         GeckolibServeur.brancher();
+        // 20/11 (audit réseau) : contenu des sacs portés envoyé seulement au porteur (CuriosContenuPorteurMixin) ; le
+        // journal du démarrage dit si les paquets de Curios sont bien ceux attendus
+        MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false,
+                net.minecraftforge.event.server.ServerStartedEvent.class, e -> ContenuReserve.verifier());
     }
 }

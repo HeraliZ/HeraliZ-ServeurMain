@@ -3,9 +3,10 @@ package fr.heraliz.grades.serveur;
 import fr.heraliz.grades.Grade;
 import fr.heraliz.grades.reseau.ReseauGrades;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.NetworkDirection;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,8 +55,12 @@ final class TabServeur {
         derniersVoyants = voyants;
         List<ReseauGrades.LigneTab> publiques = l.stream().filter(x -> !x.cache()).toList();
         ReseauGrades.InfosTab tout = new ReseauGrades.InfosTab(l), sansCaches = new ReseauGrades.InfosTab(publiques);
+        // 20/11 (audit réseau) : chaque version de la liste est mise en forme une seule fois (avant : une fois par joueur,
+        // 150 listes de 150 lignes sur le fil du serveur à chaque arrivée ou départ) ; la même si personne n'est caché
+        Packet<?> pourStaff = ReseauGrades.CANAL.toVanillaPacket(tout, NetworkDirection.PLAY_TO_CLIENT);
+        Packet<?> pourTous = publiques.size() == l.size() ? pourStaff : ReseauGrades.CANAL.toVanillaPacket(sansCaches, NetworkDirection.PLAY_TO_CLIENT);
         for (ServerPlayer p : srv.getPlayerList().getPlayers()) {
-            ReseauGrades.CANAL.send(PacketDistributor.PLAYER.with(() -> p), voyants.contains(p.getUUID()) ? tout : sansCaches);
+            p.connection.send(voyants.contains(p.getUUID()) ? pourStaff : pourTous);
         }
     }
 }
