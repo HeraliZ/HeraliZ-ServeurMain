@@ -171,6 +171,10 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue PERMISSIONS_SANS_PILE;
    /** Mohist : pile d'appels pas relevée à chaque permission refusée quand son journal de débogage est coupé. */
    public static volatile boolean permissionsSansPile = true;
+   public static final ForgeConfigSpec.ConfigValue<List<? extends String>> POI_SANS_RELECTURE;
+   public static final List<String> POI_SANS_RELECTURE_DEFAUT = List.of("minecraft:overworld");
+   /** Mondes dont les points d'intérêt ne sont pas relus (disque) à la lecture de chaque tronçon. */
+   public static volatile java.util.Set<String> poiSansRelecture = java.util.Set.copyOf(POI_SANS_RELECTURE_DEFAUT);
    public static final List<String> PLUGINS_PRECHAUFFES_DEFAUT = List.of("WorldEdit", "WorldGuard", "WorldGuardExtraFlags", "LuckPerms", "AuthMe", "LiteBans");
    public static final ForgeConfigSpec.IntValue DIAG_RELEVES_DES_MS;
    /** Le veilleur du diagnostic relève la pile dès ce temps de tick (ms), seul un tick plus long que le seuil fait un rapport. */
@@ -485,6 +489,12 @@ public final class NoyauConfig {
             "journal de débogage coupé ici (permissions.debug.console de mohist.yml). true = pile pas relevée tant que ce journal est",
             "coupé (les builds de Mohist d'après le 20/07/2025 font pareil). false : comme Mohist 916.")
             .define("permissions_sans_pile", true);
+      POI_SANS_RELECTURE = b.comment("Points d'intérêt (20/11, audit du tick ; mesurés depuis le 19/11) : à la lecture de chaque tronçon, Minecraft relit sur",
+            "le disque, EN ATTENDANT sur le fil du serveur, les « points d'intérêt » de chaque étage (lits et postes des villageois,",
+            "ruches, portails, paratonnerres) pour les comparer aux blocs (Ptero : jusqu'à 26 ms pour un tronçon ; banc : 84 ms).",
+            "Aucun de nos mods ne s'en sert, et la carte n'a ni villageois, ni abeilles, ni portails. Mondes de cette liste : pas",
+            "de relecture (les points d'intérêt gardés ne changent pas). Liste vide : comme Minecraft partout.")
+            .defineListAllowEmpty(List.of("poi_sans_relecture"), () -> POI_SANS_RELECTURE_DEFAUT, o -> o instanceof String);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -564,6 +574,7 @@ public final class NoyauConfig {
       apparitionsSansReleve = APPARITIONS_SANS_RELEVE.get();
       ticketsAEcheance = TICKETS_A_ECHEANCE.get();
       permissionsSansPile = PERMISSIONS_SANS_PILE.get();
+      poiSansRelecture = java.util.Set.copyOf(POI_SANS_RELECTURE.get());
       diagRelevesDesMs = DIAG_RELEVES_DES_MS.get();
       diagCalmeDemarrageS = DIAG_CALME_DEMARRAGE_S.get();
       ticsAleatoires = TICS_ALEATOIRES.get();

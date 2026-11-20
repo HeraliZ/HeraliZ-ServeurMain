@@ -94,6 +94,8 @@ public final class Allege {
    public static long entitesTours, entitesTranches;
    /** Points d'intérêt relus à la lecture des tronçons (C9, mesure seulement) : étages, temps total et pire (ns). */
    public static long poiSections, poiNanos, poiPireNanos;
+   /** Étages dont la relecture des points d'intérêt a été sautée (20/11, [perf] poi_sans_relecture). */
+   public static long poiSautes;
 
    // audit du tick (20/11)
    /** tickChunks « au repos » (par tranches) et comme Minecraft (pluie, règle...), par monde et par tick. */
@@ -170,8 +172,9 @@ public final class Allege {
             fmlResservis, reglagesResservis, donneesEnFond));
       l.append(String.format(Locale.ROOT, " ; sauvegarde automatique étalée : %d tours, %d joueurs par tranches, %d tout de suite (menu ouvert), entités %d tours"
             + " (%d tranches)", joueursTours, joueursEtales, joueursToutDeSuite, entitesTours, entitesTranches));
-      l.append(String.format(Locale.ROOT, " ; points d'intérêt relus à la lecture des tronçons : %d étages en %.0f ms (%.3f ms par étage, pire %.1f ms)",
-            poiSections, poiNanos / 1e6, poiSections == 0 ? 0.0 : poiNanos / 1e6 / poiSections, poiPireNanos / 1e6));
+      l.append(String.format(Locale.ROOT, " ; points d'intérêt relus à la lecture des tronçons : %d étages en %.0f ms (%.3f ms par étage, pire %.1f ms),"
+                  + " %d étages sans relecture", poiSections, poiNanos / 1e6, poiSections == 0 ? 0.0 : poiNanos / 1e6 / poiSections,
+            poiPireNanos / 1e6, poiSautes));
       ligne.accept(l.append(String.format("%n")).toString());
       ligne.accept(String.format(Locale.ROOT, "Tick (20/11) : tronçons au repos %d ticks de monde (%d comme Minecraft) : %.0f supports laissés et %.0f"
                   + " tronçons sautés par tick au repos, %d tics de blocs sautés ; relevés des apparitions évités %d ; revues des tickets"
