@@ -44,6 +44,8 @@ public final class ServeurQuetes implements Partie {
     @Override
     public void init(IEventBus busMod) {
         HeralizQuetes.PNJ_USINE.serveur(PnjServeur::new);
+        // PNJ présents dans les mondes (20/11, audit du tick) : cherchés là plutôt que parmi toutes les entités
+        PnjCharges.enregistrer();
         Baguette.SERVEUR = ServeurQuetes::baguette;
         Reseau.CHOIX.brancher(r -> Dialogues.choix(r.joueur(), r.message()));
         // bloc recycleur du spawn (25/10)

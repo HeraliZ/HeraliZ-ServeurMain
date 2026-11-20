@@ -33,6 +33,20 @@ public class PnjServeur extends Pnj {
         return InteractionResult.SUCCESS;
     }
 
+    /** Entrée dans un monde (tronçon chargé, apparition, changement de monde) : inscrit ({@link PnjCharges}). */
+    @Override
+    public void onAddedToWorld() {
+        super.onAddedToWorld();
+        PnjCharges.arrive(this);
+    }
+
+    /** Sortie d'un monde (tronçon déchargé, retrait, changement de monde) : désinscrit. */
+    @Override
+    public void onRemovedFromWorld() {
+        super.onRemovedFromWorld();
+        PnjCharges.part(this);
+    }
+
     @Override
     public void tick() {
         super.tick();

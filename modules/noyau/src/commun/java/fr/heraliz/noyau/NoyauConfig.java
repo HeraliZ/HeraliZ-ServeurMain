@@ -168,6 +168,9 @@ public final class NoyauConfig {
    public static final ForgeConfigSpec.BooleanValue TICKETS_A_ECHEANCE;
    /** Revue des tickets de chargement sautée tant qu'aucun ticket ne peut avoir fini son temps. */
    public static volatile boolean ticketsAEcheance = true;
+   public static final ForgeConfigSpec.BooleanValue PERMISSIONS_SANS_PILE;
+   /** Mohist : pile d'appels pas relevée à chaque permission refusée quand son journal de débogage est coupé. */
+   public static volatile boolean permissionsSansPile = true;
    public static final List<String> PLUGINS_PRECHAUFFES_DEFAUT = List.of("WorldEdit", "WorldGuard", "WorldGuardExtraFlags", "LuckPerms", "AuthMe", "LiteBans");
    public static final ForgeConfigSpec.IntValue DIAG_RELEVES_DES_MS;
    /** Le veilleur du diagnostic relève la pile dès ce temps de tick (ms), seul un tick plus long que le seuil fait un rapport. */
@@ -477,6 +480,11 @@ public final class NoyauConfig {
             "aucun n'a de durée. true = revue faite seulement au tick où un ticket peut avoir fini (mêmes tickets retirés, au même",
             "tick). false : à chaque tick, comme Minecraft.")
             .define("tickets_a_echeance", true);
+      PERMISSIONS_SANS_PILE = b.comment("Permissions refusées (20/11, audit du tick) : Mohist 916 relève toute la pile d'appels à chaque permission refusée",
+            "à un joueur (35 à 60 ms par mort, /spawn, extraction ou changement de monde : liste des commandes renvoyée), pour un",
+            "journal de débogage coupé ici (permissions.debug.console de mohist.yml). true = pile pas relevée tant que ce journal est",
+            "coupé (les builds de Mohist d'après le 20/07/2025 font pareil). false : comme Mohist 916.")
+            .define("permissions_sans_pile", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -555,6 +563,7 @@ public final class NoyauConfig {
       tronconsTranches = TRONCONS_TRANCHES.get();
       apparitionsSansReleve = APPARITIONS_SANS_RELEVE.get();
       ticketsAEcheance = TICKETS_A_ECHEANCE.get();
+      permissionsSansPile = PERMISSIONS_SANS_PILE.get();
       diagRelevesDesMs = DIAG_RELEVES_DES_MS.get();
       diagCalmeDemarrageS = DIAG_CALME_DEMARRAGE_S.get();
       ticsAleatoires = TICS_ALEATOIRES.get();

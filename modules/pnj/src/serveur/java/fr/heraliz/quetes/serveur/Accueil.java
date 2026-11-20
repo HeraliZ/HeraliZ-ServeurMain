@@ -513,11 +513,16 @@ final class Accueil {
         if (v != null) l.add(v.blockPosition().above(2));
     }
 
-    /** Le PNJ {@code id} le plus proche dans le monde du joueur (chargé), à moins de {@code portee} blocs, ou null. */
+    /**
+     * Le PNJ {@code id} le plus proche dans le monde du joueur (chargé), à moins de {@code portee} blocs, ou null. 20/11 (audit
+     * du tick) : parmi les PNJ inscrits ({@link PnjCharges}), plus parmi toutes les entités du monde.
+     */
     private static Pnj pnj(ServerPlayer p, String id, double portee) {
         Pnj best = null;
         double bd = portee * portee;
-        for (Pnj e : p.serverLevel().getEntities(HeralizQuetes.PNJ.get(), x -> id.equals(x.pnjId()))) {
+        for (int i = 0, n = PnjCharges.nombre(); i < n; i++) {
+            Pnj e = PnjCharges.pnj(i, p.serverLevel());
+            if (e == null || !id.equals(e.pnjId())) continue;
             double d = e.distanceToSqr(p);
             if (d < bd) {
                 bd = d;
@@ -531,7 +536,9 @@ final class Accueil {
     private static Pnj varga(ServerPlayer p) {
         Pnj best = null;
         double bd = Double.MAX_VALUE;
-        for (Pnj e : p.serverLevel().getEntities(HeralizQuetes.PNJ.get(), x -> PNJ.equals(x.pnjId()))) {
+        for (int i = 0, n = PnjCharges.nombre(); i < n; i++) {
+            Pnj e = PnjCharges.pnj(i, p.serverLevel());
+            if (e == null || !PNJ.equals(e.pnjId())) continue;
             double d = e.distanceToSqr(p);
             if (d < bd) {
                 bd = d;

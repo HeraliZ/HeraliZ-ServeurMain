@@ -175,9 +175,9 @@ public final class Allege {
       ligne.accept(l.append(String.format("%n")).toString());
       ligne.accept(String.format(Locale.ROOT, "Tick (20/11) : tronçons au repos %d ticks de monde (%d comme Minecraft) : %.0f supports laissés et %.0f"
                   + " tronçons sautés par tick au repos, %d tics de blocs sautés ; relevés des apparitions évités %d ; revues des tickets"
-                  + " sautées %d, faites %d%n", reposTicks, reposMinecraft, reposTicks == 0 ? 0.0 : (double) reposLaisses / reposTicks,
-            reposTicks == 0 ? 0.0 : (double) reposSautes / reposTicks, reposTicsSautes, relevesApparitionsEvites, revuesTicketsSautees,
-            revuesTicketsFaites));
+                  + " sautées %d, faites %d ; piles des permissions refusées évitées (Mohist) %d%n", reposTicks, reposMinecraft,
+            reposTicks == 0 ? 0.0 : (double) reposLaisses / reposTicks, reposTicks == 0 ? 0.0 : (double) reposSautes / reposTicks,
+            reposTicsSautes, relevesApparitionsEvites, revuesTicketsSautees, revuesTicketsFaites, PermissionsMohist.pilesEvitees));
       ligne.accept(fr.heraliz.noyau.api.EcrituresFond.etat());
       ligne.accept(Prechauffage.etat());
    }

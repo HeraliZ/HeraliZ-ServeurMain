@@ -251,6 +251,11 @@
 	#aucun n'a de durée. true = revue faite seulement au tick où un ticket peut avoir fini (mêmes tickets retirés, au même
 	#tick). false : à chaque tick, comme Minecraft.
 	tickets_a_echeance = true
+	#Permissions refusées (20/11, audit du tick) : Mohist 916 relève toute la pile d'appels à chaque permission refusée
+	#à un joueur (35 à 60 ms par mort, /spawn, extraction ou changement de monde : liste des commandes renvoyée), pour un
+	#journal de débogage coupé ici (permissions.debug.console de mohist.yml). true = pile pas relevée tant que ce journal est
+	#coupé (les builds de Mohist d'après le 20/07/2025 font pareil). false : comme Mohist 916.
+	permissions_sans_pile = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée
