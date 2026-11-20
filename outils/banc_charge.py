@@ -350,8 +350,11 @@ def installation_prevue(d, jar):
             encoding="utf-8", errors="replace").splitlines()
     except OSError:
         return True
-    # 20/11 : les builds récents de Mohist (995) y écrivent l'empreinte SHA-256 du jar au lieu du MD5
-    return len(lignes) < 2 or lignes[1].strip().lower() not in (md5(jar), sha256(jar))
+    # 20/11 : les builds récents de Mohist (995) y écrivent l'empreinte SHA-256 du jar au lieu du MD5 ; celle du 995
+    # (« 01fe8… ») n'a jamais été reconnue : sans doute écrite comme un nombre, sans ses zéros de tête ; comparée sans eux
+    # (et installer() voit aussi quand Mohist ne se relance pas)
+    vu = lignes[1].strip().lower().lstrip("0") if len(lignes) >= 2 else ""
+    return not vu or vu not in (md5(jar).lstrip("0"), sha256(jar).lstrip("0"))
 
 
 def environnement(java):
@@ -365,7 +368,10 @@ def environnement(java):
 
 def installer(a, d, jar, tas, journal):
     """Installation de Mohist à part (premier démarrage) : la machine Java lancée ici installe Forge puis relance le
-    serveur dans une autre ; on attend « Done » du serveur relancé, puis on l'arrête. Vrai si l'installation est faite."""
+    serveur dans une autre (916) ; on attend « Done » du serveur relancé, puis on l'arrête. Rend (installation faite,
+    relance à prévoir au prochain démarrage : None = selon installInfo).
+    20/11 : les builds récents (995) installent dans la MÊME machine Java, sans relance, et leur installInfo n'a plus
+    l'empreinte du jar : vu ici (pid du serveur = pid lancé), le serveur du banc sera lancé directement, avec tout son tas."""
     env = environnement(a.java)
     env["JDK_JAVA_OPTIONS"] = " ".join(["-Xmx%dM" % tas, "-Dheraliz.essai.sansAuthme=true", "-Dfile.encoding=UTF-8"])
     s = Serveur([a.java] + PARENT_LEGER + ["-jar", jar.name, "nogui"], d, journal, env)
@@ -373,8 +379,14 @@ def installer(a, d, jar, tas, journal):
     m = s.attendre(r"\]: Done \(", 0, a.attente_demarrage * 60)
     if not m:
         dire("installation de Mohist : « Done » jamais vu")
+    jv = (ligne_json(s, r"\[banc\] JVM", 0, 60) or {}) if m else {}
+    sans_relance = bool(jv) and jv.get("pid") == s.proc.pid
     s.arreter(120)
-    return not installation_prevue(d, jar)
+    if sans_relance:
+        dire("installation de Mohist : faite dans la machine Java lancée (pas de relance) ; le banc lancera le serveur "
+             "directement")
+        return True, False
+    return not installation_prevue(d, jar), None
 
 
 # ---------------------------------------------------------------------------------------------------------- banc
@@ -568,10 +580,12 @@ def banc(a):
         if installation_prevue(d, jar):
             etape("Mohist doit d'abord installer Forge (il se relancerait dans une autre machine Java, sans nos réglages) : "
                   "installation à part")
-            ok = installer(a, d, jar, tas, rapport / "installation.log")
+            ok, relance_vue = installer(a, d, jar, tas, rapport / "installation.log")
             res["installation"] = "faite à part" if ok else "PAS finie"
             etape("installation de Mohist %s" % res["installation"])
-        relance = installation_prevue(d, jar)
+        else:
+            relance_vue = None
+        relance = installation_prevue(d, jar) if relance_vue is None else relance_vue
         if relance:
             # rare : l'installation à part n'a pas abouti ; la première machine Java reste petite, le serveur a moins
             tas = max(2048, tas - 2048)

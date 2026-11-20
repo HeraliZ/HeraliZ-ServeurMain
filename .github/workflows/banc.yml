@@ -56,7 +56,7 @@ on:
         type: string
         default: "8/0.85/4/25"
       mohist:
-        description: "Mohist du banc : vide = celui du serveur (Release « base-serveur ») ; « ci » = dernier build de Mohist 1.20.1 (CodeMC) ou un numéro de build, pour l'essayer avant une mise à jour"
+        description: "Mohist du banc : vide = celui du serveur (Release « base-serveur ») ; « ci » = dernier build de Mohist 1.20.1 (site de Mohist) ou un numéro de build, pour l'essayer avant une mise à jour"
         type: string
         default: ""
   push:
@@ -245,7 +245,8 @@ jobs:
 
       - name: Bibliothèques de Mohist prêtes ?
         id: libs_pretes
-        if: always() && steps.libs.outputs.cache-hit != 'true'
+        # pas avec un Mohist d'essai (case « mohist ») : ses bibliothèques ne vont pas dans le cache de celui du serveur
+        if: always() && steps.libs.outputs.cache-hit != 'true' && env.MOHIST == ''
         run: |
           if [ -n "$(find "$BANC/libraries" -name '*.jar' -print -quit 2>/dev/null)" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; fi
 
