@@ -14,8 +14,8 @@ La protection utile consiste à séparer les composants :
   tout compte GitHub peut télécharger les jars fabriqués gardés dans l'onglet Actions (paquets `mods-serveur` et
   `test-mods-serveur` : le jar serveur de Spartan, toutes ses détections compilées). Les secrets sont dans GitHub et sur la
   VM du site (recherche du 19/11 des formes courantes de clés et d'adresses de webhooks dans les fichiers du dépôt : rien
-  trouvé ; l'historique n'a pas été fouillé en entier), mais un tricheur peut y étudier ce que Spartan cherche. Choix à
-  faire par les propriétaires : voir « Dépôt public » plus bas.
+  trouvé ; l'historique n'a pas été fouillé en entier), mais un tricheur peut y étudier ce que Spartan cherche. Le
+  propriétaire a décidé le 19/11 de garder le dépôt public : voir « Dépôt public » plus bas.
 - L’obfuscation augmente le coût de lecture sans empêcher la copie ; vérifier sa compatibilité avec Forge et les mixins.
   Tant que les sources sont publiques, obfusquer le jar ne sert à rien.
 - Des liens temporaires ou téléchargements autorisés limitent la distribution initiale, pas la redistribution par un joueur autorisé.
@@ -97,6 +97,20 @@ mêmes bibliothèques d'agent ou de débogueur sont des indices forts. Ces nouve
 joueurs différents les déclenchent en moins d'une heure, elles se suspendent toutes seules (alerte seulement) et le staff
 est prévenu, pour qu'une erreur n'expulse jamais tout le monde (`[injection] rodage`).
 
+**Launcher 1.18.0 (19/11, décisions du propriétaire)**, avec Spartan 2.15.0 :
+
+- **packs de textures ajoutés par le joueur interdits** (un pack de rayons X n'a pas besoin de modifier le jeu). Avant la
+  partie, le launcher met de côté ce que le joueur a ajouté dans les dossiers `resourcepacks` et `kiwipacks` du jeu
+  (archives .zip et dossiers, vers `spartan/ecartes/<date>/`, jamais effacés ; `integrite.js`, `ecarterPacksAjoutes`). Nos
+  packs sont rangés dans nos jars (`heraliz_interface:textures`, `heraliz_interface:herbe`, `heralisz_utils:terrain`),
+  ceux de Minecraft et des mods dans leurs jars : jamais touchés. Le mod d'interface retirait déjà ces packs de la
+  sélection au démarrage. Sur le serveur, un joueur qui a quand même un pack « file/… » actif (à la connexion, ou activé
+  en cours de partie : le jeu renvoie la liste quand elle change) est **refusé** avec un message clair qui dit lequel
+  retirer (français, anglais, russe ; jamais de ban). Réglage `[resources] refuseCustomResourcePacks`, mis en place par le
+  disjoncteur des règles en rodage (`packs:`) ;
+- `requireHardenedJvm = true` sur le serveur (alerte si un jeu tourne sans `DisableAttachMechanism`, déjà refusé par le
+  mode strict).
+
 ## Limites restantes
 
 **Tout ce qui tourne sur le PC du joueur peut mentir à un tricheur déterminé.** Un programme qui imite le launcher avec le
@@ -106,10 +120,15 @@ traces) peut répondre juste au défi et envoyer des contrôles « propres ». L
 faits et obligent à un vrai travail ; le filet final reste les détections du serveur (mouvement, combat, tirs, anti-ESP).
 Le dépôt public rend ce travail plus facile : voir ci-dessous.
 
-### Dépôt public (constat du 19/11, décision des propriétaires)
+### Dépôt public (constat du 19/11) : choix délibéré du propriétaire
 
-Le dépôt GitHub est public (aucune bifurcation ni étoile au 19/11 : peu vu, mais tout ce qui y a été publié peut avoir
-été copié). Options, de la plus sûre à la moins chère :
+**Décision du 19/11 : le dépôt RESTE PUBLIC, en connaissance de cause** (c'est le choix du propriétaire, pas un oubli). Le
+code de Spartan, du launcher et du site, les listes de `spartan-common.toml` et les jars de l'onglet Actions restent donc
+lisibles par tous ; les secrets, eux, ne sont jamais dans le dépôt (secrets GitHub, VM du site). Conséquence à garder en
+tête : chaque détection doit tenir même si le tricheur l'a lue (c'est pourquoi les règles qui comptent le plus jugent
+sur le serveur ou sur des faits que le jeu ne peut pas cacher). Si la décision change un jour, les options ci-dessous
+restent valables (aucune bifurcation ni étoile au 19/11 : peu vu, mais tout ce qui y a été publié peut avoir été copié).
+Options, de la plus sûre à la moins chère :
 
 1. **Rendre le dépôt privé** (Settings → General → Danger Zone → Change visibility). Protège tout d'un coup (Spartan, site,
    réglages, jars de l'onglet Actions). Coût : les minutes d'Actions deviennent payantes au-delà du forfait. Relevé sur les
@@ -129,8 +148,11 @@ Le dépôt GitHub est public (aucune bifurcation ni étoile au 19/11 : peu vu, m
    Discord. Une heure de travail, mais le code des détections reste lisible : protège peu.
 4. Obfusquer le jar joueur : inutile tant que les sources sont publiques.
 
-Recommandation : l'option 1 (la plus simple et la seule qui protège tout), en réduisant si besoin les fabrications Mac et
-la durée de garde des paquets.
+Recommandation donnée le 19/11 : l'option 1 (la plus simple et la seule qui protège tout), en réduisant si besoin les
+fabrications Mac et la durée de garde des paquets. Non retenue : le dépôt reste public (voir plus haut).
+
+Le verrou d'Electron « intégrité de l'archive » (`enableEmbeddedAsarIntegrityValidation`) reste **coupé** (décision du
+19/11) : pas encore essayé sur un vrai PC Windows ; s'il se trompait, le launcher ne démarrerait plus chez les joueurs.
 
 Pas de certificat de signature Windows (payant) : SmartScreen avertit au premier lancement de l'installateur. **Signature cryptographique des mises à jour du launcher et du pack de jeu : en place** (Ed25519, clé privée gardée hors de la VM dans un secret GitHub, clé publique dans le launcher qui refuse toute mise à jour ou tout pack non signé ; pack signé avec les empreintes SHA-256 de chaque fichier et la date de la signature depuis la 1.16.0 : `launcher/docs/HERALIZ-SIGNATURE.md`). HTTPS et les empreintes seuls n’empêchent pas un hébergeur compromis de publier ensemble un manifeste et des fichiers malveillants : d'où la signature.
 

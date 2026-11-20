@@ -33,7 +33,7 @@ Un mod joueur ajouté au serveur (dans `client/mods-tiers/`, `serveur/mods-tiers
 
 Les mods obligatoires restent obligatoires. Les mods optionnels suivent les valeurs par défaut du manifeste ; cette refonte n’inclut pas de sélecteur de mods optionnels. Les fichiers sont vérifiés à chaque lancement. Tout téléchargement est contrôlé avant traitement et lancement.
 
-Les modules strictement serveur ne doivent jamais apparaître dans la distribution client. Ne pas publier les sources et JAR serveur privés dans ce dépôt GitHub public. Constat du 19/11 : ce dépôt public contient pourtant Spartan (détections du serveur comprises) et l’onglet Actions garde ses jars serveur ; options et coûts dans `HERALIZ-SECURITE.md`, « Dépôt public ».
+Les modules strictement serveur ne doivent jamais apparaître dans la distribution client. Ne pas publier les sources et JAR serveur privés dans ce dépôt GitHub public. Constat du 19/11 : ce dépôt public contient pourtant Spartan (détections du serveur comprises) et l’onglet Actions garde ses jars serveur ; le propriétaire a choisi, le 19/11, de le garder public (options et coûts dans `HERALIZ-SECURITE.md`, « Dépôt public »).
 
 ## Authentification
 

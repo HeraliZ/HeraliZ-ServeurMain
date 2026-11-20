@@ -9,7 +9,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
-/** C->S : packs de ressources actifs (journalisés). Traité une fois par connexion. */
+/**
+ * C->S : packs de ressources actifs (journalisés), à la connexion puis à chaque changement (19/11). Un pack ajouté par le
+ * joueur (« file/… ») refuse la connexion (ReceptionServeur, PacksJoueur).
+ */
 public class ResourcePackPacket {
     private final List<String> resourcePacks;
 

@@ -174,6 +174,12 @@
 	#Le pack du serveur reste autorisé. Pour IMPOSER le pack du serveur, mettez aussi
 	#require-resource-pack=true dans server.properties.
 	blockCustomResourcePacks = true
+	#19/11 (décision du propriétaire) : true = un joueur qui a encore un pack de textures AJOUTÉ PAR LUI actif
+	#(dossiers resourcepacks / kiwipacks du jeu, « file/… ») est REFUSÉ à la connexion, avec un message clair qui
+	#lui dit lequel retirer (jamais de ban) ; false = alerte seulement. Jamais compté : le pack de base de
+	#Minecraft, les ressources des mods, nos packs rangés dans nos jars, celui du serveur. Le launcher 1.18.0 met
+	#ces packs de côté avant la partie. Mise en place prudente : règle « packs: » de [injection] rodage.
+	refuseCustomResourcePacks = true
 
 [bans]
 	#Alerte le staff quand un joueur se connecte avec l'IP d'un joueur banni (sans l'expulser).
@@ -240,7 +246,9 @@
 	#Exige que le jeu soit lancé avec les protections anti-injection
 	#(-XX:+DisableAttachMechanism). Le launcher officiel les ajoute : n'activer qu'une
 	#fois le launcher distribué, sinon tous les joueurs seraient signalés. Voir docs/LAUNCHER.md.
-	requireHardenedJvm = false
+	#HeraliZ (19/11, décision du propriétaire) : true. Tous les launchers (Windows, Mac, Linux) mettent la protection ;
+	#en détection silencieuse, un jeu sans elle donne une alerte (il est de toute façon refusé par strictOfficial).
+	requireHardenedJvm = true
 	#Intervalle maximum entre deux défis (secondes).
 	#Range: 10 ~ 7200
 	challengeMaxSeconds = 240
@@ -540,9 +548,10 @@
 	#DIFFÉRENTS les déclenchent en moins de rodageMinutes, la règle est suspendue (alerte seulement, plus
 	#d'expulsion) jusqu'au prochain redémarrage, et le staff est prévenu (« Règle suspendue ») : une règle qui se
 	#trompe n'expulse jamais plus de rodageJoueurs - 1 joueurs honnêtes. gardien:dll: = bibliothèque d'agent Java ou
-	#de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité).
+	#de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité) ;
+	#packs: = refus d'un joueur qui a un pack de textures ajouté par lui ([resources] refuseCustomResourcePacks).
 	#Vider la liste une fois les règles éprouvées (une semaine sans « Règle suspendue »).
-	rodage = ["natif:agent:", "inject:redef:", "gardien:dll:", "gardien:cle:"]
+	rodage = ["natif:agent:", "inject:redef:", "gardien:dll:", "gardien:cle:", "packs:"]
 	#Joueurs différents qui suspendent une règle en rodage (0 = disjoncteur coupé : la règle expulse toujours).
 	#Range: 0 ~ 1000
 	rodageJoueurs = 3

@@ -19,7 +19,7 @@ const { chargerClePublique, verifierPack } = require('./signature')
 const { CompteSite, erreurDiscord, verifierInscription } = require('./compte-site')
 const Spartan = require('./spartan')
 const { effacerDonneesJeu, retirerAnciennesVersions, cheminSur, effacerSansSuivre } = require('./effacement')
-const { ecarterJarsEnTrop, controlerJava, oublierJava, controlerEmpreintes } = require('./integrite')
+const { ecarterJarsEnTrop, ecarterPacksAjoutes, controlerJava, oublierJava, controlerEmpreintes } = require('./integrite')
 
 // Jeton du compte du site, chiffré par le système (Windows : lié à la session de l'utilisateur ; Mac : trousseau ;
 // Linux : GNOME Keyring ou KWallet). Sans vrai chiffrement disponible, il n'est pas gardé : il faudra se reconnecter
@@ -730,6 +730,16 @@ class LauncherService {
                     this.signalerIntegrite('jars_ecartes', `${r.ecartes.length} jar(s) : ` + r.ecartes.slice(0, 3).join(', '))
                 }
                 if (r.erreurs.length) console.warn('[HeraliZ/integrite] jars pas tous mis de côté', r.erreurs)
+            } catch (erreur) {
+                console.warn('[HeraliZ/integrite]', erreur?.message)
+            }
+            // packs de textures ajoutés par le joueur (19/11, interdits : le serveur refuse un joueur qui en a un d'actif) :
+            // mis de côté (integrite.js), jamais bloquant ; nos packs sont dans nos jars, jamais dans ces dossiers
+            try {
+                const r = ecarterPacksAjoutes({ dossierInstances: Config.getInstanceDirectory(), serveur: this.config.serverId,
+                    fichiersPack: fichiersDuPack(server.modules) })
+                if (r.ecartes.length) console.warn('[HeraliZ/integrite] packs de textures mis de côté :', r.ecartes.length)
+                if (r.erreurs.length) console.warn('[HeraliZ/integrite] packs de textures pas tous mis de côté', r.erreurs)
             } catch (erreur) {
                 console.warn('[HeraliZ/integrite]', erreur?.message)
             }
