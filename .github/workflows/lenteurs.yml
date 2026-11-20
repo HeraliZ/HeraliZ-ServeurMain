@@ -241,12 +241,22 @@ jobs:
           MONDE=${MONDE:-dayz_map}
           l "cls -l /" > racine_tout.txt 2>/dev/null || true
           grep -v '^d' racine_tout.txt > racine.txt || true
-          # dossiers de la racine (noms seulement), puis « du » dossier par dossier : le monde d'abord, libraries/ jamais (des
-          # milliers de dossiers) ; chaque résultat est écrit dès qu'il est prêt (un arrêt au bout de 10 min garde les premiers)
-          DOSSIERS=$(grep '^d' racine_tout.txt | tr -d '\r' | sed -e 's#/$##' -e 's#.*/##' | grep -v -x -E 'libraries|\.cache|cache|\.|\.\.' | tr -cd 'A-Za-z0-9_.\n-' | sort)
-          CMD="du -k -s /$MONDE/region; du -k -s /$MONDE/entities; du -k -s /$MONDE/poi; du -k -s /$MONDE/data; du -k -s /$MONDE/playerdata; du -k -d 2 /$MONDE/dimensions;"
-          for d in $DOSSIERS; do CMD="$CMD du -k -s /$d;"; done
-          timeout 600 lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $CMD bye" > disque.txt 2>/dev/null || true
+          # dossiers de la racine (noms seulement), puis « du » dossier par dossier, chacun dans sa propre connexion et avec sa
+          # propre limite (lftp ne rend sa sortie qu'à la fin : un seul « du » arrêté en cours ne donnait rien) ; le monde
+          # d'abord ; libraries/ et le monde entier jamais (trop de dossiers par le SFTP) ; 12 min au plus en tout
+          DOSSIERS=$(grep '^d' racine_tout.txt | tr -d '\r' | sed -e 's#/$##' -e 's#.*/##' | grep -v -x -E "libraries|\.cache|cache|\.|\.\.|$MONDE" | tr -cd 'A-Za-z0-9_.\n-' | sort)
+          fin=$(( $(date +%s) + 720 ))
+          : > disque.txt
+          for d in "$MONDE/region" "$MONDE/entities" "$MONDE/poi" "$MONDE/data" "$MONDE/playerdata" "$MONDE/dimensions" $DOSSIERS; do
+            [ "$(date +%s)" -lt "$fin" ] || { printf '?\t/%s (pas mesuré : temps écoulé)\n' "$d" >> disque.txt; continue; }
+            prof="-s"; [ "$d" = "$MONDE/dimensions" ] && prof="-d 2"
+            timeout 240 lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R du -k $prof /$d; bye" > du1.txt 2>/dev/null \
+              && cat du1.txt >> disque.txt || printf '?\t/%s (trop long, plus de 4 min)\n' "$d" >> disque.txt
+          done
+          # nos données : taille des fichiers du premier niveau de chaque dossier de mod (noms de fichiers de nos mods)
+          for d in $(printf '%s\n' $DOSSIERS | grep -E '^heral'); do
+            l "cls -l /$d/" 2>/dev/null | grep -v '^d' | awk '{print $5 "\t" $NF}' >> fichiers_mods.txt || true
+          done
           JOUEURS=$(l "cls -1 /$MONDE/playerdata/" 2>/dev/null | grep -c '\.dat$' || true)
           {
             echo "===== RAMASSE-MIETTES (gc.log du serveur, depuis son dernier démarrage) ====="
@@ -334,6 +344,8 @@ jobs:
             fi
             echo "===== DISQUE : place prise par dossier (Ko, les plus gros d'abord) ====="
             sort -t "$(printf '\t')" -k1,1nr disque.txt 2>/dev/null | masque | head -70
+            echo "===== DISQUE : plus gros fichiers des dossiers de nos mods (octets) ====="
+            sort -t "$(printf '\t')" -k1,1nr fichiers_mods.txt 2>/dev/null | masque | head -40
             echo "===== DISQUE : fichiers de la racine (sans les dossiers) ====="
             masque < racine.txt | head -40
             echo "Fichiers de joueurs du monde (playerdata) : ${JOUEURS:-?}"
