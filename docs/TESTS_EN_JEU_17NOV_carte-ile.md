@@ -1334,7 +1334,9 @@ Pas changé, à décider par le propriétaire (chiffres dans le compte rendu de 
 - `connection-throttle` de `bukkit.yml` à 1000 (une seule connexion par seconde et par adresse ; aujourd'hui sans
   limite) ;
 - mondes qui ne sont plus chargés, dans `dayz_map/dimensions` : environ 600 Mo sur 1,2 Go de monde (`crac/bases` et deux
-  vieilles copies `bases_ancien_…` des 16 et 21/10, `heralisz_matchs`, `heralisz_bases`). Au déménagement : les garder
-  dans une sauvegarde à part et ne pas les copier, ou tout copier (rien ne change en jeu). On ne touche jamais aux
-  fichiers du monde sans vous ;
+  vieilles copies `bases_ancien_…` des 16 et 21/10, `heralisz_matchs`, `heralisz_bases`) ; et plus de 8 Go de vieilles
+  copies à la racine du Ptero, que le serveur ne lit pas (`dayz_map_ancien_2026-10-11_00h46` : 5,9 Go, `dayz_map_echec_…`,
+  `tacz_backup`, `limitless_vehicle_backup`, `dynmap`, un dossier de 1,3 Go qui ne vient pas du serveur). Au
+  déménagement : les garder dans une sauvegarde à part et ne pas les copier, ou tout copier (rien ne change en jeu). On
+  ne touche jamais aux fichiers du monde sans vous ;
 - `.bash_history` à la racine du Ptero (historique de commandes de 2025, peut contenir des mots de passe) : à supprimer.

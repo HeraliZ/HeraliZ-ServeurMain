@@ -298,7 +298,7 @@ par seconde, compressés au cinquième).
 |---|---|---|
 | Processeur | récent, haute fréquence (environ 5 GHz en pointe : Ryzen 7000/9000, EPYC 4004/4005, Xeon récents), 8 cœurs réservés ou plus | le jeu tourne sur **un seul cœur** : c'est sa vitesse qui compte (section 8) ; les autres cœurs servent au réseau, à la compression, au ramasse-miettes, à l'anticheat, à la voix |
 | Mémoire du conteneur | **24 Go** (20 Go au strict minimum) | 16 Go pour Java + 3 à 4 Go que Java prend en plus + marge. Ce qui reste sur la machine sert au système à garder les fichiers du monde en mémoire (tronçons relus plus vite) : utile, mais à ne pas donner à Java |
-| Disque | **NVMe local** (pas un disque réseau), 50 Go libres de plus que la taille actuelle du serveur (le monde : 1,2 Go le 20/11, dont 600 Mo de mondes qui ne sont plus chargés ; le reste : « Lenteurs du serveur », partie « Mémoire et disque ») | chaque opération d'argent (banque du clan, hôtel des ventes) est écrite sur le disque AVANT d'être faite, sur le fil du jeu (protection contre les copies) ; chaque téléportation et chaque réapparition lisent des centaines de tronçons |
+| Disque | **NVMe local** (pas un disque réseau), 50 Go libres de plus que la taille actuelle du serveur (le 20/11 : monde 1,2 Go, dont 600 Mo de mondes qui ne sont plus chargés ; plus de 8 Go de vieilles copies à la racine, voir « Copier le serveur » ; le détail : « Lenteurs du serveur », partie « Mémoire et disque ») | chaque opération d'argent (banque du clan, hôtel des ventes) est écrite sur le disque AVANT d'être faite, sur le fil du jeu (protection contre les copies) ; chaque téléportation et chaque réapparition lisent des centaines de tronçons |
 | Réseau | **200 Mbit/s garantis en sortie** (1 Gbit/s idéal), protection anti-DDoS qui laisse passer l'UDP 24454 | prévu 35 à 50 Mbit/s en moyenne à 150 joueurs, le double dans les pics (arrivées en groupe, redémarrage, largage), plus la voix (5 à 15 Mbit/s) |
 | Ports | TCP **25565** (le jeu) et UDP **24454** (la voix de proximité) | dans Pterodactyl : une deuxième « allocation » 24454 sur la même adresse que le jeu. Rien d'autre (RCON est coupé ; le « query » UDP 25565 seulement si un site de classement le demande : le launcher et le site ne s'en servent pas) |
 | Base MySQL | une base pour LiteBans | les sanctions (bans, mutes) y sont gardées, pas dans le dossier du serveur |
@@ -330,8 +330,8 @@ java -Xms16G -Xmx16G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMill
 
 1. Prévenir les joueurs, puis arrêter le serveur proprement (`/stop` ou `redemarrage`, attendre la fin de la
    sauvegarde). Faire une sauvegarde complète depuis le panel (onglet Backups) de l'ancienne machine.
-2. Copier **tout le dossier du serveur** vers la nouvelle machine (sauvegarde du panel restaurée, ou SFTP), sans rien
-   trier : le monde `dayz_map` (avec `dimensions/` : spawn, arènes, tutoriel), les dossiers de nos mods à la racine
+2. Copier **tout le dossier du serveur** vers la nouvelle machine (sauvegarde du panel restaurée, ou SFTP), au moins :
+   le monde `dayz_map` (avec `dimensions/` : spawn, arènes, tutoriel), les dossiers de nos mods à la racine
    (`heralisz_clans`, `heralisz_economie`, `heraliz_quetes`, `heraliz_grades`, `heraliz_crates`, `heralisz_camo`,
    `heraliz_emote`, `heraliz_evenements` et surtout sa clé `objets.cle`, `heraliz_zombies`…), `config/` et
    `defaultconfigs/`, `plugins/` avec leurs données (AuthMe : les mots de passe des joueurs ; LuckPerms : les grades ;
@@ -341,7 +341,10 @@ java -Xms16G -Xmx16G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMill
    depuis 2025 : un historique de commandes, qui peut contenir des mots de passe) : le supprimer ; les vieux guides
    `.md` de la racine ne servent à rien. Mondes qui ne sont plus chargés (`dayz_map/dimensions/crac/bases` et ses deux
    copies `bases_ancien_…`, `heralisz_matchs`, `heralisz_bases` : environ 600 Mo) : à vous de choisir de les copier ou de
-   les garder seulement dans la sauvegarde (rien ne change en jeu).
+   les garder seulement dans la sauvegarde (rien ne change en jeu). Même choix pour les vieilles copies de la racine,
+   que le serveur ne lit pas : `dayz_map_ancien_2026-10-11_00h46` (5,9 Go, le monde du 11/10), `dayz_map_echec_…`
+   (250 Mo), `HeraliZ_ancien_…`, `tacz_backup`, `limitless_vehicle_backup`, `dynmap` (données d'un plugin de
+   carte qui n'est plus là, très nombreux fichiers), et un dossier de 1,3 Go qui ne vient pas du serveur (son nom n'est pas écrit ici, dépôt public).
 3. **LiteBans** : exporter la base MySQL de l'ancienne machine (`s1_LiteBans`) et l'importer dans la nouvelle
    (l'hébergeur sait le faire). Sinon l'historique des sanctions est perdu. Si son adresse n'est plus `127.0.0.1:3306`,
    la changer dans `serveur/plugins/LiteBans/config.yml` (demander au développement).
