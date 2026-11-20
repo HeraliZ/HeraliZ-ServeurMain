@@ -48,6 +48,14 @@ public final class ClientHandlers {
         ClientClans.setSaison(m);
     }
 
+    /** Profil d'un joueur (19/11, /profil et /stats) : l'ecran s'ouvre (il remplace un profil deja ouvert). */
+    public static void profil(Packets.ProfilS2C m) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        if (!(mc.screen instanceof fr.heralisz.clans.client.gui.EcranProfil)) fr.heralisz.clans.client.gui.kit.Ui.son(Sons.UI_OUVRIR, 0.7f);
+        mc.setScreen(new fr.heralisz.clans.client.gui.EcranProfil(m.vue()));
+    }
+
     /** Notice : son (si le serveur en demande un) + toast ; une ERREUR pendant la fondation va dans le bandeau de l'ecran. */
     public static void notice(Packets.NoticeS2C m) {
         HeraliszClans.LOG.debug("[clans] notice {} {}", m.genre(), m.args());

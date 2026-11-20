@@ -116,6 +116,15 @@ final class Donnees {
         return j;
     }
 
+    /**
+     * Progression d'un joueur, pour la lire seulement (19/11, profil des joueurs de HeraliZ Clans : {@link QuetesApi}) : celle
+     * en mémoire s'il est connu ici, sinon son fichier relu sans être gardé (un joueur hors ligne n'entre pas dans le cache).
+     */
+    static DJoueur lecture(UUID u) {
+        DJoueur j = CACHE.get(u);
+        return j != null ? j : lire(u);
+    }
+
     static void sale(UUID u) {
         SALES.add(u);
     }

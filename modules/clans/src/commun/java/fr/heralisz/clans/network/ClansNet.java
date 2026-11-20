@@ -34,7 +34,8 @@ public final class ClansNet {
      * 13 (15/11) : permission BASE_TP_ACCEPTER (bit 25) dans les masques des grades et des membres : un jeu plus ancien
      * l'effacerait en reglant les permissions d'un grade.
      */
-    private static final String VERSION = "13";
+    /** 14 (19/11) : profil des joueurs, /profil et /stats (ProfilS2C, en fin de liste). */
+    private static final String VERSION = "14";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -82,6 +83,8 @@ public final class ClansNet {
         // 11/11 : historique du clan, une page filtree par categorie a la demande de l'ecran du clan
         msg(Packets.HistoriqueC2S.class, c2s, Packets.HistoriqueC2S::write, Packets.HistoriqueC2S::read, Packets.HistoriqueC2S::handle);
         msg(Packets.HistoriqueS2C.class, s2c, Packets.HistoriqueS2C::write, Packets.HistoriqueS2C::read, Packets.HistoriqueS2C::handle);
+        // 19/11 : profil d'un joueur (/profil, /stats), l'ecran s'ouvre a la reception
+        msg(Packets.ProfilS2C.class, s2c, Packets.ProfilS2C::write, Packets.ProfilS2C::read, Packets.ProfilS2C::handle);
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {

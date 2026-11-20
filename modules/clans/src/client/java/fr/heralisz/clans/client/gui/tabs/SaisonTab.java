@@ -182,7 +182,7 @@ public final class SaisonTab extends Tab {
      * suffixe vient des fichiers de langue (gui.saison.rang.*), le choix de la forme suit la regle anglaise (la seule qui
      * distingue 1, 2, 3 et 11 a 13) ; le francais n'a que « premier » et « autre ».
      */
-    static String rang(int n) {
+    public static String rang(int n) {
         int unite = n % 10, centaine = n % 100;
         String forme = n == 1 ? "premier" : centaine >= 11 && centaine <= 13 ? "autre"
                 : unite == 1 ? "un" : unite == 2 ? "deux" : unite == 3 ? "trois" : "autre";

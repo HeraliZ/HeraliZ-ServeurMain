@@ -177,6 +177,32 @@ public final class KillsJoueurs {
         return version;
     }
 
+    // ------------------------------------------------------------------ profil des joueurs (19/11, /profil)
+    /** Kills de joueurs comptés pour ce joueur (0 s'il n'en a aucun). */
+    public static int kills(UUID joueur) {
+        Fiche f = FICHES.get(joueur);
+        return f == null ? 0 : f.kills;
+    }
+
+    /** Place du joueur au classement des kills (1 + ceux qui en ont plus) ; 0 s'il n'en a aucun. */
+    public static int rang(UUID joueur) {
+        int k = kills(joueur);
+        if (k <= 0) return 0;
+        int devant = 0;
+        for (Fiche f : FICHES.values()) if (f.kills > k) devant++;
+        return devant + 1;
+    }
+
+    /** Joueurs qui ont au moins un kill. */
+    public static int taille() {
+        return FICHES.size();
+    }
+
+    /** Chaque joueur compté et son dernier pseudo (premier démarrage des profils : leurs noms sont repris). */
+    public static void pourChaque(java.util.function.BiConsumer<UUID, String> action) {
+        for (Map.Entry<UUID, Fiche> x : FICHES.entrySet()) action.accept(x.getKey(), x.getValue().nom);
+    }
+
     /** Une ligne du classement : joueur, kills, dernier pseudo garde ici. */
     record Rang(UUID joueur, int kills, String nom) {
     }

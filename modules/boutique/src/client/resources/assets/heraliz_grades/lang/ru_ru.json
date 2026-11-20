@@ -1227,5 +1227,12 @@
   "message.heraliz_grades.hdv.attente": "Аукцион: вас ждут предметы или гералы (/hdv, вкладка «Мои продажи»).",
   "message.heraliz_grades.hdv.attente_spawn": "Аукцион: вас ждут предметы или гералы, заберите на спавне (/hdv).",
   "message.heraliz_grades.hdv.expire": "Аукцион: %s никто не купил, он ждёт в «Мои продажи».",
-  "message.heraliz_grades.hdv.taxe_payee": "Аукцион: сбор за выставление оплачен, %s гер. (не возвращается)."
+  "message.heraliz_grades.hdv.taxe_payee": "Аукцион: сбор за выставление оплачен, %s гер. (не возвращается).",
+  "message.heraliz_grades.argent.titre": "%s гералов",
+  "message.heraliz_grades.argent.titre_un": "%s герал",
+  "message.heraliz_grades.argent.compte": "на твоём счёте",
+  "message.heraliz_grades.argent.bourses": "Кошельки при тебе: %s (продай их Миле)",
+  "message.heraliz_grades.argent.capsules": "Капсулы: %s на счёте, %s при тебе",
+  "message.heraliz_grades.argent.pb": "Очки магазина: %s PB",
+  "message.heraliz_grades.argent.rien": "Гералы дают задания и Мила, на спавне"
 }

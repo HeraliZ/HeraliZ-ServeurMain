@@ -63,6 +63,19 @@ public final class GradesApi {
     }
 
     /**
+     * Grade affiché du joueur pour son profil (19/11, {@code /profil} de HeraliZ Clans, par réflexion) : {identifiant, nom
+     * français, anglais, russe, couleur en hexadécimal RRGGBB, famille (STAFF, BOUTIQUE, SPECIAL, BASE, SOUTIEN)}. Null hors
+     * d'un serveur démarré.
+     */
+    public static String[] gradeAfficheTextes(UUID joueur) {
+        RegistreGrades r = ServeurGrades.registre;
+        if (r == null || joueur == null) return null;
+        Grade g = r.affiche(joueur);
+        return new String[]{g.id, g.nomFr == null ? "" : g.nomFr, g.nomEn == null ? "" : g.nomEn, g.nomRu == null ? "" : g.nomRu,
+                String.format(java.util.Locale.ROOT, "%06X", g.couleur & 0xFFFFFF), g.type == null ? "" : g.type.name()};
+    }
+
+    /**
      * Vrai si le joueur est caché par vanish du staff (2.7.0) : à ne pas montrer aux joueurs qui ne sont pas du staff (listes,
      * comptes de joueurs en ligne). Lisible par réflexion par nos autres mods.
      */

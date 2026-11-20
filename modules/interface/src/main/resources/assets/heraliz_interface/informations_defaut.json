@@ -110,6 +110,18 @@
       "ru": "Твои деньги · /herals payer игрок сумма, /herals classement"
     },
     {
+      "commande": "/money",
+      "fr": "Tout ton argent d'un coup d'œil (aussi /argent) : hérals, bourses, capsules, PB",
+      "en": "All your money at a glance (also /argent): herals, purses, capsules, PB",
+      "ru": "Все твои деньги сразу (также /argent): гералы, кошельки, капсулы, PB"
+    },
+    {
+      "commande": "/profil",
+      "fr": "Tes statistiques (aussi /stats) · /profil pseudo : celles d'un autre joueur",
+      "en": "Your stats (also /stats) · /profil name: another player's",
+      "ru": "Твоя статистика (также /stats) · /profil ник — статистика другого игрока"
+    },
+    {
       "commande": "/extractions",
       "fr": "Les extractions ouvertes en ce moment",
       "en": "Extractions open right now",

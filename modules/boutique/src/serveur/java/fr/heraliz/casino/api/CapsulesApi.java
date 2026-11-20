@@ -6,8 +6,8 @@ import fr.heraliz.casino.economy.CompteCapsules;
 import java.util.UUID;
 
 /**
- * Compte de capsules des joueurs (27/10), pour les autres mods. Lue par reflexion par HeraliZ Quetes (/wipe) : ne jamais
- * renommer cette classe ni changer ces signatures. Fil serveur seulement.
+ * Compte de capsules des joueurs (27/10), pour les autres mods. Lue par reflexion par HeraliZ Quetes (/wipe) et HeraliZ
+ * Clans (profil des joueurs, 19/11) : ne jamais renommer cette classe ni changer ces signatures. Fil serveur seulement.
  */
 public final class CapsulesApi {
     private CapsulesApi() {
@@ -16,6 +16,13 @@ public final class CapsulesApi {
     /** Capsules sur le compte du joueur (0 si inconnu ou compte ferme). */
     public static long solde(UUID joueur) {
         return joueur == null ? 0 : CompteCapsules.solde(joueur);
+    }
+
+    /**
+     * Capsules dans l'inventaire du joueur (19/11 : {@code /money} et profil des joueurs de HeraliZ Clans, par réflexion).
+     */
+    public static long surLui(net.minecraft.world.entity.player.Player joueur) {
+        return joueur == null ? 0 : fr.heraliz.casino.economy.Chips.count(joueur);
     }
 
     /** Ajoute {@code n} capsules au compte (joueur en ligne ou non), ecrit tout de suite. Faux : rien n'a ete donne. */

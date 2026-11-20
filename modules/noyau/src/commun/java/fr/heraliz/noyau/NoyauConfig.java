@@ -20,12 +20,14 @@ public final class NoyauConfig {
    // 02/11 (audit point 32) : les commandes d'AuthMe passent maintenant par ces listes (événement Bukkit) : tout ce qu'il faut
    // pour se connecter y est (login, l, log, register, reg, captcha, totp, 2fa), sinon un joueur resté sur la carte ne
    // pourrait plus entrer son captcha ou son code de double authentification
+   // 19/11 (choix du propriétaire) : /money, /argent, /profil et /stats ne font que lire : permises partout, combat compris
    public static final List<String> COMMANDES_COMBAT_DEFAUT = List.of("login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
-         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "aide");
+         "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "aide", "money", "argent",
+         "profil", "stats");
    // 25/10 (tri des commandes) : /home remplace /sethome, /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny
    public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
          "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home",
-         "base", "purge", "coeur", "canal", "aide");
+         "base", "purge", "coeur", "canal", "aide", "money", "argent", "profil", "stats");
 
    public static final ForgeConfigSpec SPEC;
    public static final ForgeConfigSpec.IntValue TAG_COMBAT_S;

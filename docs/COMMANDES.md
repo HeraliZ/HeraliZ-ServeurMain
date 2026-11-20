@@ -1,7 +1,7 @@
 # Commandes du serveur (tri du 25/10, allégé le 02/11)
 
-**Nos mods : 77 commandes de premier niveau sur le serveur** (02/11, `/classement` le 03/11 ; plus `/diagclient` côté joueur et `/cracghost`, outil
-de développement jamais en production). Une commande = un système : les variantes sont des sous-commandes
+**Nos mods : 86 commandes de premier niveau sur le serveur** (inventaire du 19/11 ; `/classement` le 03/11, `/money`, `/argent`, `/profil` et
+`/stats` le 19/11 ; plus `/diagclient` côté joueur et `/cracghost`, outil de développement jamais en production). Une commande = un système : les variantes sont des sous-commandes
 (`/tpa accepter`, `/herals payer`…). Inventaire complet lu dans les sources : `python outils/commandes.py` (écrit
 `docs/COMMANDES_INVENTAIRE.md`).
 
@@ -18,6 +18,8 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/clan` | Clans | créer, inviter, banque, coffre, dons, améliorations, quitter |
 | `/saison` | Clans | points et classement de la saison des clans |
 | `/herals` (`payer <joueur> <montant>`, `classement`) | Clans | son argent, payer un joueur, les plus riches |
+| `/money` (aussi `/argent`) | Grades | (19/11) tout son argent dans un bandeau à droite de l'écran (6 s), jamais dans le chat : hérals du compte, bourses qu'on a sur soi (inventaire et sac porté, à revendre à Mila), capsules du casino (compte et inventaire), Points Boutique (si le site répond en 2 s ; solde gardé 1 min). Une ligne à 0 n'est pas montrée. Permise partout, même sur la carte et en combat |
+| `/profil [pseudo]` (aussi `/stats`) | Clans | (19/11) écran du profil : kills, morts, K/D, zombies tués, extractions, conteneurs, quêtes de Varga et titre, meilleure série de kills, plus longue vie sur la carte, morts contre un joueur, clan et saison, classements. Le sien : aussi son solde, ses bourses et ses capsules. Celui d'un autre joueur, connecté ou non : jamais son argent, ce qu'il porte ni où il est. Survie seulement (ni ClashWar, ni tutoriel des bases, ni bots) ; une demande par seconde ; permise partout. Compteurs dans `heralisz_clans/profils.json` (racine du serveur), remis à 0 par `/wipe` |
 | `/home` | CRac | du spawn, vers le home de la base de son clan (droit de clan, délai de 8 min partagé avec la réapparition à la base) ; base posée avant le 03/11 sans home posé : devant l'armoire |
 | `/sethome [nom]` | CRac | (03/11) poser le home de la base de son clan, là où l'on est : dans la zone de l'armoire, à un endroit sûr, droit « Gérer la base » ; un seul par base, le nouveau remplace l'ancien (nom de la commande : `Homes.COMMANDE_POSER`) |
 | `/rtp` | CRac | aller du spawn vers un point libre pour sa base |

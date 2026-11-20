@@ -12,6 +12,7 @@ import fr.heralisz.clans.model.SaisonLigne;
 import fr.heralisz.clans.model.TagVue;
 import fr.heralisz.clans.model.Texte;
 import fr.heralisz.clans.model.ZoneVue;
+import fr.heralisz.clans.profil.ProfilVue;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
@@ -823,6 +824,25 @@ public final class Packets {
             List<LigneHistorique> l = new ArrayList<>(n);
             for (int i = 0; i < n; i++) l.add(LigneHistorique.read(b));
             return new HistoriqueS2C(categorie, page, pages, total, l);
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(this);
+        }
+    }
+
+    // =================================================================== profil des joueurs
+    /**
+     * Profil d'un joueur (19/11, /profil et /stats, maquettes validées) : l'écran du profil s'ouvre à la réception. Le
+     * profil d'un autre joueur n'a ni son argent, ni ce qu'il a sur lui, ni l'endroit où il est ({@link ProfilVue}).
+     */
+    public record ProfilS2C(ProfilVue vue) {
+        void write(FriendlyByteBuf b) {
+            vue.write(b);
+        }
+
+        static ProfilS2C read(FriendlyByteBuf b) {
+            return new ProfilS2C(ProfilVue.read(b));
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {

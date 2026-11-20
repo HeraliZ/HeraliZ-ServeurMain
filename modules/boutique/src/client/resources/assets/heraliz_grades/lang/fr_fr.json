@@ -1227,5 +1227,12 @@
   "message.heraliz_grades.hdv.attente": "Hôtel des ventes : des objets ou des hérals t'attendent (/hdv, onglet « Mes ventes »).",
   "message.heraliz_grades.hdv.attente_spawn": "Hôtel des ventes : des objets ou des hérals t'attendent, à récupérer au spawn (/hdv).",
   "message.heraliz_grades.hdv.expire": "Hôtel des ventes : personne n'a acheté %s, il t'attend dans « Mes ventes ».",
-  "message.heraliz_grades.hdv.taxe_payee": "Hôtel des ventes : taxe de mise en vente payée, %s hérals (jamais rendue)."
+  "message.heraliz_grades.hdv.taxe_payee": "Hôtel des ventes : taxe de mise en vente payée, %s hérals (jamais rendue).",
+  "message.heraliz_grades.argent.titre": "%s hérals",
+  "message.heraliz_grades.argent.titre_un": "%s héral",
+  "message.heraliz_grades.argent.compte": "sur ton compte",
+  "message.heraliz_grades.argent.bourses": "Bourses sur toi : %s (à revendre à Mila)",
+  "message.heraliz_grades.argent.capsules": "Capsules : %s au compte, %s sur toi",
+  "message.heraliz_grades.argent.pb": "Points boutique : %s PB",
+  "message.heraliz_grades.argent.rien": "Les quêtes et Mila en rapportent, au spawn"
 }

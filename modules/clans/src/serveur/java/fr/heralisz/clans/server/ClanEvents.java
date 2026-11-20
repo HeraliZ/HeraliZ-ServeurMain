@@ -305,6 +305,12 @@ public final class ClanEvents {
         Entity src = tueur(e);
         // match (HeraliZ Matchs) : ni la mort ni le kill ne comptent
         if (ClansApi.enMatch(victime) || ClansApi.enMatch(src)) return;
+        // profil des joueurs (19/11, /profil) : memes regles que les statistiques des clans, avec ou sans clan (bots, tutoriel
+        // des bases et createur ecartes par Profils)
+        if (victime instanceof ServerPlayer joueurMort) fr.heralisz.clans.profil.Profils.mort(joueurMort, src);
+        else if (src instanceof ServerPlayer auteur && !estBoss(victime) && victime.getType().getCategory() == MobCategory.MONSTER) {
+            fr.heralisz.clans.profil.Profils.zombie(auteur);
+        }
         double[] pvp = saison(e, victime, src);
         if (victime instanceof ServerPlayer mort) {
             Clan c = store.clanDe(mort.getUUID());
@@ -329,6 +335,7 @@ public final class ClanEvents {
             // joueurs, avec ou sans clan (hologramme du spawn, 03/11), puis aux statistiques du clan
             if (!killJoueurValide(c, tueur, joueur, System.currentTimeMillis())) return;
             fr.heralisz.clans.classement.KillsJoueurs.ajouter(tueur.getUUID(), tueur.getGameProfile().getName());
+            fr.heralisz.clans.profil.Profils.kill(tueur);   // serie de kills du profil (19/11)
             if (m == null) return;
             m.stats.kills++;
             ClanService.ajouterXp(c, SourceXp.JOUEUR, ClansConfig.XP_KILL_JOUEUR.get(), tueur.getUUID());
@@ -488,6 +495,7 @@ public final class ClanEvents {
      */
     static void fouille(ServerPlayer p, net.minecraft.nbt.CompoundTag infos) {
         if (ClansApi.enMatch(p)) return;
+        fr.heralisz.clans.profil.Profils.conteneur(p);   // profil des joueurs (19/11), avec ou sans clan
         ClanStore store = ClanStore.get();
         if (store == null) return;
         Clan c = store.clanDe(p.getUUID());

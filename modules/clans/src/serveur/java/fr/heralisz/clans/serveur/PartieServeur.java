@@ -40,6 +40,9 @@ public final class PartieServeur implements Partie {
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.KillsJoueurs.class);
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.Hologrammes.class);
         MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.classement.ClassementCommandes.class);
+        // profil des joueurs (19/11) : compteurs de chaque joueur (apres KillsJoueurs), /profil et /stats
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.profil.Profils.class);
+        MinecraftForge.EVENT_BUS.register(fr.heralisz.clans.profil.ProfilCommandes.class);
 
         ClansRegistry.CAISSE_USINE.serveur(CaisseRavitaillementBlockServeur::new);
         ClansRegistry.CAISSE_PARACHUTE_USINE.serveur(CaisseParachuteEntityServeur::new);

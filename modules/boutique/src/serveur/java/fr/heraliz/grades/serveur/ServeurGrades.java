@@ -63,6 +63,8 @@ public final class ServeurGrades implements Partie {
         EditeurServeur.brancher();
         // Points Boutique (solde du compte du site) : /boutique, /trade, /pb
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> CommandesPb.enregistrer(e.getDispatcher()));
+        // 19/11 : /money et /argent (tout son argent dans un bandeau : hérals, bourses, capsules, PB)
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.RegisterCommandsEvent e) -> CommandeArgent.enregistrer(e.getDispatcher()));
         BoutiqueServeur.brancher();
         EchangeServeur.brancher();
         // hôtel des ventes (2.9.0) : /hdv au spawn, PNJ commissaire-priseur (HeraliZ Quêtes, HdvApi)
@@ -178,6 +180,7 @@ public final class ServeurGrades implements Partie {
         // 02/11 (audit mods-3 §13) : comptes de clés et de capsules gardés en mémoire seulement pour les joueurs connectés
         // (relus sur leur fichier, toujours à jour, à la prochaine opération)
         CommandesPb.oublier(e.getEntity().getUUID());
+        CommandeArgent.oublier(e.getEntity().getUUID());
         fr.heraliz.crates.cles.ComptesCles.oublier(e.getEntity().getUUID());
         fr.heraliz.casino.economy.CompteCapsules.oublier(e.getEntity().getUUID());
     }
