@@ -34,6 +34,12 @@ public class ZombieSurvieServeur extends ZombieSurvie {
         super(type, level);
     }
 
+    /** Orbes d'expérience à sa mort (20/11) : aucune si {@code [zombies] xp = false} ({@link ZombiesConfig#XP}). */
+    @Override
+    public int getExperienceReward() {
+        return ZombiesConfig.XP.get() ? super.getExperienceReward() : 0;
+    }
+
     @Override
     protected PathNavigation createNavigation(Level level) {
         return new NavigationZombie(this, level);

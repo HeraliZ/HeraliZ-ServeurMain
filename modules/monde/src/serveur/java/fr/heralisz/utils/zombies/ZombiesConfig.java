@@ -27,6 +27,8 @@ public final class ZombiesConfig {
     public static final ForgeConfigSpec.BooleanValue AWARENESS_RAPIDE;
     // ramassage des objets au sol par les monstres (voir IaZombies.ramassage)
     public static final ForgeConfigSpec.BooleanValue RAMASSAGE;
+    /** 20/11 (audit du tick) : orbes d'expérience à la mort d'un zombie HeraliZ ; relu à chaque mort. */
+    public static final ForgeConfigSpec.BooleanValue XP;
     // variétés (voir VarietesZombies)
     public static final ForgeConfigSpec.BooleanValue VARIETES;
     public static final ForgeConfigSpec.DoubleValue PART_COUREURS, PART_COSTAUDS, VIE_MARCHEUR, VIE_COUREUR, VIE_COSTAUD,
@@ -120,6 +122,10 @@ public final class ZombiesConfig {
         RAMASSAGE = b.comment("01/11 (choix du proprietaire) : false = aucun monstre ne ramasse plus les objets au sol (arme ou armure",
                         "d'un joueur mort ; une recherche d'objets en moins a chaque tick pour chacun). true : comme Minecraft (une partie",
                         "des zombies ramasse).").define("ramassage", false);
+        XP = b.comment("20/11 (audit du tick) : orbes d'experience lachees par un zombie HeraliZ tue par un joueur (5 points, en 2 ou 3",
+                        "orbes qui vivent jusqu'a 5 min ; au banc a 150 joueurs : ~100 orbes en meme temps, 0,8 ms par tick). L'experience",
+                        "ne sert a rien d'autre qu'a la barre d'experience. true : comme Minecraft. false : aucune orbe (a decider).")
+                .define("xp", true);
         b.pop();
         b.comment("Variétés des zombies HeraliZ (24/10, « des coureurs, des costauds, une belle variété, assez résistants ») :",
                 "tirées à leur première arrivée, gardées ensuite. Le reste des zombies est marcheur. Les rampants restent ceux de",
