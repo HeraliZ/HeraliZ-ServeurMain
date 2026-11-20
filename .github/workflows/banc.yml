@@ -188,17 +188,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$BANC"
-          # 20/11 : « ci » ou un numéro = un autre build de Mohist 1.20.1 (CI de Mohist sur CodeMC), seulement sur ce banc
+          # 20/11 : « ci » (dernier) ou un numéro = un autre build de Mohist 1.20.1 (site de Mohist, API v2), seulement sur ce banc
           M=$(printf '%s' "$MOHIST" | tr -cd 'a-z0-9')
           if [ "$M" = "ci" ] || printf '%s' "$M" | grep -qE '^[0-9]+$'; then
-            CI="https://ci.codemc.io/job/MohistMC/job/Mohist-1.20.1"
-            if [ "$M" = "ci" ]; then
-              N=$(curl -fsSL --retry 3 "$CI/lastSuccessfulBuild/api/json" | python3 -c 'import json,sys; print(int(json.load(sys.stdin)["number"]))')
-            else
-              N="$M"
+            API="https://mohistmc.com/api/v2/projects/mohist/1.20.1/builds"
+            curl -fsSL --retry 3 "$API" -o "$RUNNER_TEMP/builds_mohist.json" || true
+            N=$(python3 - "$RUNNER_TEMP/builds_mohist.json" "$M" <<'PY'
+          import json, sys
+          try:
+              d = json.load(open(sys.argv[1], encoding="utf-8"))
+          except Exception as e:
+              print("?", file=sys.stderr); sys.exit(0)
+          b = d.get("builds", d) if isinstance(d, dict) else d
+          nums = sorted(int(x.get("number", x.get("id", 0))) for x in b if isinstance(x, dict))
+          print(sys.argv[2] if sys.argv[2] != "ci" else (nums[-1] if nums else ""))
+          PY
+            )
+            if [ -z "$N" ]; then
+              echo "::error::liste des builds de Mohist illisible :"; head -c 600 "$RUNNER_TEMP/builds_mohist.json" || true; exit 1
             fi
-            curl -fL --retry 3 -o "$BANC/mohist-1.20.1-$N-server.jar" "$CI/$N/artifact/projects/mohist/build/libs/mohist-1.20.1-$N-server.jar"
-            echo "Mohist d'essai : build $N (CodeMC), sha256 $(sha256sum "$BANC/mohist-1.20.1-$N-server.jar" | cut -d' ' -f1)"
+            curl -fL --retry 3 -o "$BANC/mohist-1.20.1-$N-server.jar" "$API/$N/download"
+            echo "Mohist d'essai : build $N (site de Mohist), sha256 $(sha256sum "$BANC/mohist-1.20.1-$N-server.jar" | cut -d' ' -f1)"
           else
             JAR=$(cut -d' ' -f3 serveur/mohist.sha256)
             gh release download base-serveur --pattern "$JAR" --dir "$BANC" --clobber
