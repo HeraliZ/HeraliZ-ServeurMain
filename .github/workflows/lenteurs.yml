@@ -57,6 +57,7 @@ jobs:
             outils/hote_connu.sh
             outils/chemins.py
             outils/sans_secrets.py
+            outils/pseudos_a_masquer.py
             modules/*/src/*/java/
           sparse-checkout-cone-mode: false
 
@@ -151,6 +152,19 @@ jobs:
           l "find /libraries/net/minecraft/server/; find /libraries/de/oceanlabs/mcp/" > liste_noms.txt 2>/dev/null || true
           ls -la diag j c conf
 
+      # 20/11 (dépôt public) : les motifs de « masque » laissaient passer des pseudos dans d'autres formes de lignes
+      # (« [GRADE X: Set own game mode…] », « Rejecting … from X », lignes de nos mods et de l'anticheat). Liste des pseudos
+      # connus du serveur (caches de noms de Minecraft et de Forge, journaux rapatriés), JAMAIS affichée : chaque pseudo est
+      # remplacé par *** partout, en plus des motifs.
+      - name: Pseudos à masquer (jamais affichés)
+        run: |
+          R="$LFTP_SSH set net:max-retries 3; set net:timeout 30;"
+          l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
+          mkdir -p caches_noms
+          l "lcd caches_noms; get /usercache.json; get /usernamecache.json" > /dev/null 2>&1 || true
+          python3 -I outils/pseudos_a_masquer.py pseudos.sed caches_noms j
+          rm -rf caches_noms
+
       - name: Noms lisibles (méthodes de Minecraft, fichiers du dépôt)
         run: |
           ls diag/*.txt > /dev/null 2>&1 || { echo "aucun rapport"; exit 0; }
@@ -166,7 +180,9 @@ jobs:
             -e "s/(ServerPlayer|Player)\['[^']*'/\1['***'/g" -e 's/name=[A-Za-z0-9_]{2,16}/name=***/g' \
             -e 's/(UUID of player )[A-Za-z0-9_]{2,16}/\1***/g' -e 's/<[A-Za-z0-9_]{2,16}>/<***>/g' \
             -e 's/[A-Za-z0-9_]{2,16}( joined the game| left the game| lost connection|\[\/x\.x\.x\.x)/***\1/g' \
-            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g'; }
+            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g' | pseudos; }
+          # pseudos connus du serveur (étape « Pseudos à masquer ») : remplacés partout
+          pseudos() { if [ -s pseudos.sed ]; then sed -E -f pseudos.sed; else cat; fi; }
           echo "===== LISTE diag/ ====="; masque < liste_diag.txt | tail -80
           echo "===== LISTE logs/ ====="; masque < liste_logs.txt | tail -40
           echo "===== CORRESPONDANCES DES NOMS (libraries/ du serveur) ====="; grep -E 'mappings|mcp_config.*\.zip|\.tsrg' liste_noms.txt 2>/dev/null | head -20 || echo "aucune"
@@ -235,7 +251,8 @@ jobs:
           R="$LFTP_SSH set net:max-retries 3; set net:timeout 30;"
           l() { lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R $1; bye"; }
           masque() { sed -E -e 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g' \
-            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g'; }
+            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g' | pseudos; }
+          pseudos() { if [ -s pseudos.sed ]; then sed -E -f pseudos.sed; else cat; fi; }
           mkdir -p gc
           l "lcd gc; get /gc.log" > /dev/null 2>&1 || true
           MONDE=$(sed -n 's/^level-name=//p' conf/server.properties 2>/dev/null | tr -d '\r' | tr -cd 'A-Za-z0-9_.-')
