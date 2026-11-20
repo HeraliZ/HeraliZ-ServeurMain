@@ -1089,3 +1089,84 @@ Pas fait, volontairement :
 - **Tir annulé pour une visée forcée** : seulement une alerte (le staff juge) ; seule la rafale est corrigée d'office.
 - **Clics trop rapides dans l'inventaire** (prendre tout un coffre d'un coup) : Minecraft le fait déjà lui-même avec
   Maj + double-clic ; une règle sur la vitesse des clics donnerait des alertes à tort.
+
+## 35. /money et /profil : son argent et ses statistiques (19/11)
+
+Demande du propriétaire : « des commandes basiques : voir son argent avec /money, voir un panel avec son profil (kills,
+morts…) avec /stats ou /profil ». Maquettes validées le 19/11 (écran du profil, le sien et celui d'un autre joueur ;
+bandeau de /money). Vos réponses : `/profil pseudo` gardé, les deux commandes marchent partout (carte et combat
+compris : elles ne font que lire), les chiffres comptent depuis toujours (seul `/wipe` les remet à 0).
+**Rien de tout cela n'a été testé en jeu** (pas de serveur ici) : seuls la fabrication et les contrôles sont passés.
+Versions : Clans 3.18.0, Boutique 1.6.0, Quêtes 1.24.0, Noyau 1.1.7, Interface 2.0.15. Le canal des clans passe en
+version 14 : les joueurs doivent avoir les nouveaux jars (le launcher les donne).
+
+Ce qui est fait :
+- **`/money`** (ou **`/argent`**) : un bandeau en haut à droite pendant 6 s, rien dans le chat. En titre, les hérals du
+  compte ; dessous, seulement ce qui n'est pas à 0 : les bourses qu'on a sur soi (inventaire et sac à dos porté, à
+  revendre à Mila), les capsules du casino (compte et inventaire), les Points Boutique. Les PB viennent du site : le
+  bandeau les attend 2 s au plus (sinon il part sans la ligne des PB) ; le solde lu est gardé 1 minute. Tout à 0 : « Les
+  quêtes et Mila en rapportent, au spawn ». Un bandeau toutes les 2 s au plus (le précédent est encore là).
+- **`/profil`** (ou **`/stats`**) : l'écran du profil, dans le style des écrans du clan. En haut : tête, pseudo, grade de
+  la boutique, « Sur HeraliZ depuis le … · … h de jeu », et son solde (seulement le sien). À gauche : kills, morts, K/D,
+  zombies tués, extractions, conteneurs fouillés ; quêtes de Varga et dernier titre, meilleure série de kills sans
+  mourir, plus longue vie sur la carte, morts contre un joueur. À droite : son clan (grade, depuis quand, place dans la
+  saison), ses classements (kills, hérals, zombies : « 12e sur 1 240 »), et ce qu'il a sur lui (bourses, capsules).
+  Échap ou la croix ferment.
+- **`/profil pseudo`** : le profil d'un autre joueur, connecté ou non. Jamais son argent, ni ce qu'il porte, ni où il est,
+  ni son rang en hérals. Les suggestions de la commande ne montrent jamais le staff caché. Pseudo inconnu : « Aucun
+  joueur nommé « … » » au-dessus de la barre d'objets. Un profil par seconde au plus.
+- **Ce qui est compté** (pour tous les joueurs, avec ou sans clan) : les kills sont ceux du classement « Meilleurs
+  tueurs » (mêmes règles anti-triche : pas un camarade de clan, pas la même adresse, pas une victime tout juste
+  réapparue, pas le même joueur deux fois en 10 min) ; les morts, zombies et conteneurs comme les statistiques des clans
+  (une mise à terre n'est pas une mort) ; une extraction = arriver au spawn depuis la carte sans être mort (comme les
+  quêtes du jour) ; la « vie sur la carte » dure tant qu'on reste sur la carte sans mourir (une déconnexion la met en
+  pause, une mort ou un départ de la carte la termine). Jamais compté : ClashWar, tutoriel des bases, bots de charge,
+  zombies tués en créatif.
+- **Au premier démarrage** (fichier `heralisz_clans/profils.json` créé à la racine du serveur) : les kills de tout le monde
+  sont déjà là (depuis le 03/11) ; pour les membres d'un clan, les morts, zombies, conteneurs et temps de jeu de leur clan
+  sont repris (comptés depuis leur arrivée dans ce clan), une seule fois. Partent de 0 pour tout le monde : extractions,
+  séries, plus longue vie, morts contre un joueur ; et pour un joueur sans clan, aussi les morts, zombies, conteneurs et
+  le temps de jeu. « Sur HeraliZ depuis » : la date gardée par le serveur avec le joueur, sinon sa première connexion
+  après la mise à jour.
+- `/wipe joueur` et `/wipe tout` remettent son profil (ou tous) à 0 ; le pseudo et la date d'arrivée restent.
+- Les deux commandes sont dans l'écran Informations du menu Échap.
+
+À vérifier :
+- [ ] Au spawn, puis sur la carte, puis en combat (après avoir tapé un autre joueur), puis à terre : `/money`, `/argent`,
+      `/profil`, `/stats` marchent partout (jamais « seulement au spawn » ni « Impossible en combat »).
+- [ ] `/money` avec une bourse dans l'inventaire et une autre dans le sac à dos porté : la ligne « Bourses sur toi » fait
+      le total des deux. Sans bourse ni capsule ni PB : seulement « sur ton compte ». Nouveau compte à 0 : « 0 héral » et
+      « Les quêtes et Mila en rapportent, au spawn ». Taper `/money` 5 fois d'affilée : un seul bandeau.
+- [ ] Ligne des PB : un joueur qui a des PB les voit (ils doivent être les mêmes que `/pb`). Site des PB injoignable :
+      le bandeau arrive au bout de 2 s, sans la ligne des PB.
+- [ ] Le bandeau garde ses lignes (une par sorte d'argent) : aucune ligne coupée au milieu d'un nombre. En anglais et en
+      russe aussi.
+- [ ] `/profil` : l'écran s'ouvre, nets les textes, rien ne dépasse (fenêtre et plein écran, en français, en anglais, en
+      russe). Échap et la croix ferment ; le jeu ne se met pas en pause.
+- [ ] Tuer un zombie, fouiller un conteneur plein, s'extraire, mourir, tuer un joueur (deux comptes, pas du même clan,
+      pas la même adresse) : chaque chiffre monte de 1 au `/profil` suivant ; la meilleure série monte avec les kills et la
+      série repart de 0 à la mort.
+- [ ] Rester 5 min sur la carte puis rouvrir `/profil` : « Plus longue vie sur la carte » au moins 5 min ; se déconnecter
+      1 min sur la carte, revenir : le temps continue (sans la minute hors ligne) ; mourir : le record reste, la vie suivante
+      repart de 0.
+- [ ] Mourir à terre puis être achevé : une seule mort. Être relevé : pas de mort.
+- [ ] Match de ClashWar et tutoriel des bases : ni morts, ni kills, ni zombies comptés.
+- [ ] `/profil pseudo` d'un joueur connecté puis d'un joueur déconnecté : son profil, sans solde, sans « Sur toi », sans
+      rang en hérals, avec « Visible par tous ». Un pseudo qui n'existe pas : le message rouge au-dessus de la barre.
+      Un membre du staff caché n'apparaît pas dans les suggestions de `/profil` (Tab).
+- [ ] Un joueur sans clan : « Pas de clan » (et, sur son profil, l'aide `/clan`) ; un membre : son clan, son grade, sa place
+      dans la saison (« pas classé » sans cœur posé).
+- [ ] Après un redémarrage : tous les chiffres sont toujours là (fichier `heralisz_clans/profils.json`).
+- [ ] `/wipe` d'un compte d'essai : son profil repart de 0 (sauf le pseudo et la date d'arrivée).
+- [ ] Si une de ces commandes répond autre chose que nos écrans (une commande de Mohist du même nom) : prévenir.
+
+Si un souci apparaît : `/money`, `/argent`, `/profil` et `/stats` peuvent être retirées des listes du noyau
+(`commandes_permises` et `commandes_permises_combat` de `serveur/defaultconfigs/heraliz_noyau-server.toml`) pour ne plus
+marcher que hors de la carte et hors combat ; rien d'autre ne dépend d'elles.
+
+Pas fait, volontairement :
+- **Les statistiques de Minecraft** (temps de jeu, distance…) : elles ne sont plus enregistrées (perf, 25/10) ; le profil a
+  ses propres compteurs.
+- **Le profil depuis la carte du menu Échap** (clic sur sa carte) : seulement les commandes pour l'instant ; à ajouter si
+  vous le voulez.
+- **Le ClashWar et les points de saison d'un joueur** : le ClashWar et la saison sont comptés par clan, pas par joueur.
