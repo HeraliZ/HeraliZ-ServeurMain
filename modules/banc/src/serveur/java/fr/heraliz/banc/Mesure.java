@@ -431,6 +431,14 @@ final class Mesure {
             t.append("== Réseau vers les bots, par sorte de paquet ==\n");
             Reseau.ecrireSortes(t, duree, Bots.nombre());
             t.append('\n');
+            // 21/11 : tous les paquets des mods, et leur coût par arrivée ou départ (listes envoyées par différences)
+            t.append("== Réseau vers les bots : paquets des mods, par arrivée ou départ ==\n");
+            long evenements = 0;
+            for (int i : new int[]{Rythmes.CONNEXIONS, Rythmes.DECONNEXIONS}) {
+                evenements += Rythmes.COMPTES[i] - (i < rythmesDebut.length ? rythmesDebut[i] : 0);
+            }
+            Reseau.ecrireMods(t, duree, Bots.nombre(), evenements);
+            t.append('\n');
         }
         t.append("== Monde ==\n");
         t.append(String.format(Locale.ROOT, "Au plus : %d entités, %d monstres, %d zombies HeraliZ, %d objets au sol, %d tronçons chargés, %d joueurs%n",

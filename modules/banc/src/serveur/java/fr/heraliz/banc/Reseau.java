@@ -7,7 +7,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.BundlePacket;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.resources.ResourceLocation;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +33,9 @@ import java.util.zip.Deflater;
  * serveur. Coupé par {@code /bots reseau false} (paquets jetés comme avant).
  * <p>20/11 (audit réseau, mémoire et disque) : aussi compté par sorte de paquet (classe de Minecraft, ou canal du mod pour
  * les paquets des mods), pour savoir ce qui remplit la bande passante ; tableau dans le rapport de {@code /bots mesure}.</p>
+ * <p>21/11 (listes envoyées par différences) : un paquet de mod est compté avec le numéro de son message dans le canal
+ * (« canal #n », premier octet des données d'un canal de Forge), et un second tableau donne TOUS les paquets des mods avec
+ * leur coût par arrivée ou départ d'un bot (liste Tab, tags de clan, liste vocale…).</p>
  */
 final class Reseau {
     private Reseau() {
@@ -104,7 +109,7 @@ final class Reseau {
             sortie += taille((int) sortie);   // longueur de la trame
             NANOS.addAndGet(System.nanoTime() - t0);
             compter(n, sortie);
-            Sorte so = SORTES.computeIfAbsent(nom(p), k -> new Sorte());
+            Sorte so = SORTES.computeIfAbsent(nom(p, buf), k -> new Sorte());
             so.paquets.increment();
             so.bruts.add(n);
             so.sortants.add(sortie);
@@ -134,10 +139,28 @@ final class Reseau {
         return total;
     }
 
-    /** Sorte d'un paquet : canal pour les paquets des mods, sinon nom de la classe de Minecraft. */
-    private static String nom(Packet<?> p) {
-        if (p instanceof ClientboundCustomPayloadPacket c) return "custom_payload " + c.getIdentifier();
-        return NOMS.computeIfAbsent(p.getClass(), Class::getSimpleName);
+    /** Canal d'un mod : où commencent ses données dans le paquet mis en forme, et le nom de chaque numéro de message. */
+    private record Canal(int debut, String[] noms) {
+    }
+
+    private static final ConcurrentHashMap<ResourceLocation, Canal> CANAUX = new ConcurrentHashMap<>();
+
+    /**
+     * Sorte d'un paquet : nom de la classe de Minecraft, ou pour un paquet de mod son canal suivi du numéro du message
+     * (« custom_payload heraliz_grades:main #2 » : premier octet des données, que les canaux de Forge écrivent en tête).
+     * {@code buf} : le paquet mis en forme (numéro du paquet sur 1 octet, nom du canal, données).
+     */
+    private static String nom(Packet<?> p, ByteBuf buf) {
+        if (!(p instanceof ClientboundCustomPayloadPacket c)) return NOMS.computeIfAbsent(p.getClass(), Class::getSimpleName);
+        ResourceLocation id = c.getIdentifier();
+        Canal canal = CANAUX.computeIfAbsent(id, k -> {
+            int l = k.toString().getBytes(StandardCharsets.UTF_8).length;
+            return new Canal(1 + taille(l) + l, new String[257]);
+        });
+        int i = buf.writerIndex() > canal.debut() ? buf.getUnsignedByte(canal.debut()) : 256;
+        String n = canal.noms()[i];
+        if (n == null) canal.noms()[i] = n = i == 256 ? "custom_payload " + id : "custom_payload " + id + " #" + i;
+        return n;
     }
 
     /** Début d'une mesure : comptes par sorte remis à zéro. */
@@ -160,6 +183,29 @@ final class Reseau {
                     bots <= 0 ? 0 : out / 1024.0 / sec / bots, nb == 0 ? 0 : (double) so.bruts.sum() / nb, total == 0 ? 0 : 100.0 * out / total, l.get(i).getKey()));
         }
         if (l.size() > 30) t.append("  (").append(l.size() - 30).append(" autres sortes, plus légères)\n");
+    }
+
+    /**
+     * Tous les paquets des mods (21/11), même les plus légers, avec leur coût par arrivée ou départ d'un bot
+     * ({@code evenements} : connexions + déconnexions pendant la mesure) : ce que coûte à tous une arrivée ou un départ
+     * (liste Tab : heraliz_grades:main, tags de clan : heralisz_clans:main, liste vocale : caracrea:main).
+     */
+    static void ecrireMods(StringBuilder t, double secondes, int bots, long evenements) {
+        List<Map.Entry<String, Sorte>> l = new ArrayList<>();
+        for (Map.Entry<String, Sorte> e : SORTES.entrySet()) if (e.getKey().startsWith("custom_payload ")) l.add(e);
+        l.sort((a, b) -> Long.compare(b.getValue().sortants.sum(), a.getValue().sortants.sum()));
+        double sec = Math.max(0.001, secondes);
+        long ev = Math.max(1, evenements);
+        t.append(String.format(Locale.ROOT, "%d arrivées et départs de bots pendant la mesure ; %d bots%n", evenements, bots));
+        t.append(String.format(Locale.ROOT, "%10s %10s %10s %12s %12s  %s%n", "paquets/s", "Ko/s", "octets/p", "paquets/évt", "Ko/évt",
+                "canal #message (octets sortants, compression comprise ; évt = arrivée ou départ)"));
+        for (int i = 0; i < Math.min(60, l.size()); i++) {
+            Sorte so = l.get(i).getValue();
+            long nb = so.paquets.sum(), out = so.sortants.sum();
+            t.append(String.format(Locale.ROOT, "%10.1f %10.2f %10.0f %12.1f %12.2f  %s%n", nb / sec, out / 1024.0 / sec,
+                    nb == 0 ? 0 : (double) so.bruts.sum() / nb, (double) nb / ev, out / 1024.0 / ev, l.get(i).getKey().substring(15)));
+        }
+        if (l.size() > 60) t.append("  (").append(l.size() - 60).append(" autres, plus légers)\n");
     }
 
     private static int taille(int v) {
