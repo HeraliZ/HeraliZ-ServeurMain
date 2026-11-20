@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/g18c_geo",
   "texture": "arkaniaz:gun/uv/g18c",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/g18c_geo",
+    "texture": "arkaniaz:gun/uv/g18c"
+  },
   "slot": "arkaniaz:gun/slot/g18c",
   "hud": "arkaniaz:gun/hud/g18c",
   "animation": "arkaniaz:g18c",

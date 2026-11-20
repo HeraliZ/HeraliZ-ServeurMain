@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/python_geo",
   "texture": "arkaniaz:gun/uv/python",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/python_geo",
+    "texture": "arkaniaz:gun/uv/python"
+  },
   "hud": "arkaniaz:gun/hud/python_hud",
   "slot": "arkaniaz:gun/slot/python",
   "animation": "arkaniaz:python",

@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/m17_geo",
   "texture": "maxstuff:gun/uv/m17",
   "lod": {
-    "model": "maxstuff:gun/m17_geo",
+    "model": "maxstuff:gun/lod_hz/m17_geo",
     "texture": "maxstuff:gun/uv/m17"
   },
   "hud": "maxstuff:gun/hud/m17",

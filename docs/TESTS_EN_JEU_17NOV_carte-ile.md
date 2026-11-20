@@ -1497,3 +1497,25 @@ Pas fait, et pourquoi : la boucle des tronçons « au repos » regarde encore ch
 des blocs (gain incertain sur la vraie carte) ; le tick des joueurs et les balles de TaCZ (code d'autres auteurs) ; **aucun
 profil avec des joueurs sur le serveur en ligne** (personne pendant l'audit) : à lancer un soir chargé (« Lenteurs du
 serveur », case profil, 60 s).
+
+## 39. Décisions du propriétaire après l'audit du 20/11 (appliquées)
+
+Choix du 20/11 : vue 6 au spawn (la carte reste à 8), armes des autres joueurs allégées de loin, terrain adouci au loin,
+zombies sans boules d'expérience, zombies et petits objets suivis d'un peu moins loin. Interface 2.0.16 (le launcher la
+donne). **Rien n'a été testé en jeu.**
+
+- [ ] Spawn : on voit 6 tronçons autour de soi (96 blocs) ; sur la carte, toujours 8 (128 blocs). Mort, `/spawn` et
+      retour de la carte plus rapides à charger.
+- [ ] Armes des autres joueurs (`outils/lod_armes.py --installer`, 66 versions allégées, 123 fiches) : à 30 et 60 blocs,
+      aucune différence ; à 10 blocs, quelques points en moins ; de près en 3e personne (F5), les petits détails (vis,
+      rainures) disparaissent : c'est voulu. Sa propre arme en 1re personne ne change pas. Images :
+      `maquettes/fps_20nov/armes_lod_*.png`.
+- [ ] Terrain au loin (`outils/mipmaps.py --corriger` : 3 images du mod de meubles retaillées dans notre pack) : le sol ne
+      scintille plus en marchant ; il est plus doux et un peu plus flou au loin (profil Performance : 2 niveaux, Équilibré
+      et Qualité : 4). À surveiller : des traits entre les blocs au loin (comme le 18/11 avec le filtrage anisotrope) ;
+      dans le journal du jeu, plus de ligne « limits mip level ». Images : `maquettes/fps_20nov/mipmaps_*`.
+- [ ] Zombies tués : plus aucune boule d'expérience (`[zombies] xp = false` de heraliz_zombies-server.toml).
+- [ ] Portées de suivi de `spigot.yml` x 0,8 (même effet que `entity-broadcast-range-percentage=80`, que la mise en ligne
+      ne peut pas poser) : zombies vus à 48 blocs au lieu de 60, balles, véhicules et corps à 51 au lieu de 64, objets au
+      sol à 13 au lieu de 16, animaux à 40, hologrammes et affichages à 48 ; les joueurs ne changent pas (128, limité par la
+      vue). Un zombie apparaît donc un peu plus près : à vérifier qu'il ne « surgit » pas trop près en forêt.

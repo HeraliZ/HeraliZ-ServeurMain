@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/galilace_geo",
   "texture": "arkaniaz:gun/uv/galilace",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/galilace_geo",
+    "texture": "arkaniaz:gun/uv/galilace"
+  },
   "slot": "arkaniaz:gun/slot/galilace",
   "hud": "arkaniaz:gun/hud/galilace",
   "animation": "arkaniaz:galilace",

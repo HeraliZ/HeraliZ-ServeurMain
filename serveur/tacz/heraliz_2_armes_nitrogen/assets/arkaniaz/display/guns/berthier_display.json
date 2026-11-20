@@ -2,8 +2,8 @@
   "model": "arkaniaz:gun/berthier_geo",
   "texture": "arkaniaz:gun/uv/berthier",
   "lod": {
-    "model": "arkaniaz:gun/lod/berthier",
-    "texture": "arkaniaz:gun/lod/berthier"
+    "model": "arkaniaz:gun/lod_hz/berthier_geo",
+    "texture": "arkaniaz:gun/uv/berthier"
   },
   "hud": "arkaniaz:gun/hud/berthier",
   "slot": "arkaniaz:gun/slot/berthier",

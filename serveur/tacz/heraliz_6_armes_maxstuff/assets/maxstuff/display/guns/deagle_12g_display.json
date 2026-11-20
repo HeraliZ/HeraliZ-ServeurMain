@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/deagle_12g_geo",
   "texture": "maxstuff:gun/uv/deagle_12g",
   "lod": {
-    "model": "maxstuff:gun/deagle_12g_geo",
+    "model": "maxstuff:gun/lod_hz/deagle_12g_geo",
     "texture": "maxstuff:gun/uv/deagle_12g"
   },
   "hud": "tacz:gun/hud/deagle",

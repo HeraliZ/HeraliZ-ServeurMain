@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/hk417_geo",
   "texture": "maxstuff:gun/uv/hk417",
   "lod": {
-    "model": "maxstuff:gun/hk417_geo",
+    "model": "maxstuff:gun/lod_hz/hk417_geo",
     "texture": "maxstuff:gun/uv/hk417"
   },
   "hud": "maxstuff:gun/hud/hk417",

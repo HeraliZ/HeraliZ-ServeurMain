@@ -1,6 +1,10 @@
 {
   "model": "heraliz_fuse:gun/ro635v3_geo",
   "texture": "heraliz_fuse:gun/uv/ro635v3",
+  "lod": {
+    "model": "heraliz_fuse:gun/lod_hz/ro635v3_geo",
+    "texture": "heraliz_fuse:gun/uv/ro635v3"
+  },
   "hud": "heraliz_fuse:gun/hud/ro635v3",
   "slot": "heraliz_fuse:gun/slot/ro635v3",
   "animation": "heraliz_fuse:ro635v3",

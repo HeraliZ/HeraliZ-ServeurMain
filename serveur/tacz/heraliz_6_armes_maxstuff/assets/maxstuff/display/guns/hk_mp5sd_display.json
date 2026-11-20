@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/hk_mp5sd_geo",
   "texture": "maxstuff:gun/uv/hk_mp5sd",
   "lod": {
-    "model": "maxstuff:gun/hk_mp5sd_geo",
+    "model": "maxstuff:gun/lod_hz/hk_mp5sd_geo",
     "texture": "maxstuff:gun/uv/hk_mp5sd"
   },
   "hud": "maxstuff:gun/hud/hk_mp5sd",

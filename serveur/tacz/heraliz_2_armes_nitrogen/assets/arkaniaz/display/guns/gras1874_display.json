@@ -2,8 +2,8 @@
   "model": "arkaniaz:gun/gras1874_geo",
   "texture": "arkaniaz:gun/uv/gras1874",
   "lod": {
-    "model": "arkaniaz:gun/lod/gras1874",
-    "texture": "arkaniaz:gun/lod/gras1874"
+    "model": "arkaniaz:gun/lod_hz/gras1874_geo",
+    "texture": "arkaniaz:gun/uv/gras1874"
   },
   "hud": "arkaniaz:gun/hud/gras1874",
   "slot": "arkaniaz:gun/slot/gras1874",

@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/scar_pdw_geo",
   "texture": "maxstuff:gun/uv/scar_pdw",
   "lod": {
-    "model": "maxstuff:gun/scar_pdw_geo",
+    "model": "maxstuff:gun/lod_hz/scar_pdw_geo",
     "texture": "maxstuff:gun/uv/scar_pdw"
   },
   "hud": "maxstuff:gun/hud/scar_pdw",

@@ -75,8 +75,9 @@
 	ramassage = false
 	#20/11 (audit du tick) : orbes d'experience lachees par un zombie HeraliZ tue par un joueur (5 points, en 2 ou 3
 	#orbes qui vivent jusqu'a 5 min ; au banc a 150 joueurs : ~100 orbes en meme temps, 0,8 ms par tick). L'experience
-	#ne sert a rien d'autre qu'a la barre d'experience. true : comme Minecraft. false : aucune orbe (a decider).
-	xp = true
+	#ne sert a rien d'autre qu'a la barre d'experience. true : comme Minecraft. false : aucune orbe (choix du
+	#proprietaire, 20/11).
+	xp = false
 
 #Varietes des zombies HeraliZ, tirees a leur premiere arrivee. Le reste des zombies est marcheur.
 [varietes]

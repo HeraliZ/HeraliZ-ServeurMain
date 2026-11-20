@@ -5,7 +5,7 @@
   "texture": "maxstuff:gun/uv/aks74u",
   // 低模
   "lod": {
-    "model": "maxstuff:gun/aks74u_geo",
+    "model": "maxstuff:gun/lod_hz/aks74u_geo",
     "texture": "maxstuff:gun/uv/aks74u"
   },
   // GUI/HUD 界面的 2D 材质，在包目录下的 textures 文件夹中寻找，可为空，若为空，则对应位置不会渲染

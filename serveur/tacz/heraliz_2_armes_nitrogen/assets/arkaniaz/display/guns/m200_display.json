@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/m200_geo",
   "texture": "arkaniaz:gun/uv/m200",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/m200_geo",
+    "texture": "arkaniaz:gun/uv/m200"
+  },
   "hud": "arkaniaz:gun/hud/m200_hud",
   "slot": "arkaniaz:gun/slot/m200",
   "animation": "arkaniaz:m200",

@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/dragonuv_svd_geo",
   "texture": "maxstuff:gun/uv/dragonuv_svd",
   "lod": {
-    "model": "maxstuff:gun/dragonuv_svd_geo",
+    "model": "maxstuff:gun/lod_hz/dragonuv_svd_geo",
     "texture": "maxstuff:gun/uv/dragonuv_svd"
   },
   "hud": "maxstuff:gun/hud/dragonuv_svd",

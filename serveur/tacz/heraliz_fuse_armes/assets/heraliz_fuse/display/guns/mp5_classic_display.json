@@ -1,6 +1,10 @@
 {
   "model": "heraliz_fuse:gun/mp5_classic_geo",
   "texture": "heraliz_fuse:gun/uv/mp5_classic",
+  "lod": {
+    "model": "heraliz_fuse:gun/lod_hz/mp5_classic_geo",
+    "texture": "heraliz_fuse:gun/uv/mp5_classic"
+  },
   "hud": "heraliz_fuse:gun/hud/mp5_classic",
   "slot": "heraliz_fuse:gun/slot/mp5_classic",
   "animation": "heraliz_fuse:mp5_classic",

@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/negev_geo",
   "texture": "arkaniaz:gun/uv/negev",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/negev_geo",
+    "texture": "arkaniaz:gun/uv/negev"
+  },
   "slot": "arkaniaz:gun/slot/negev",
   "hud": "arkaniaz:gun/hud/negev",
   "animation": "arkaniaz:negev",

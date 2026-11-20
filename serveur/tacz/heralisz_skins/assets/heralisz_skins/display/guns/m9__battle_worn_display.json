@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/m9_rusted_geo",
   "texture": "arkaniaz:gun/uv/m9_rusted",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/m9_rusted_geo",
+    "texture": "arkaniaz:gun/uv/m9_rusted"
+  },
   "hud": "arkaniaz:gun/hud/m9",
   "slot": "heralisz_skins:gun/slot/m9__battle_worn",
   "animation": "arkaniaz:m9",

@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/mg3_geo",
   "texture": "arkaniaz:gun/uv/mg3",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/mg3_geo",
+    "texture": "arkaniaz:gun/uv/mg3"
+  },
   "slot": "arkaniaz:gun/slot/mg3",
   "hud": "arkaniaz:gun/hud/mg3",
   "animation": "arkaniaz:mg3",

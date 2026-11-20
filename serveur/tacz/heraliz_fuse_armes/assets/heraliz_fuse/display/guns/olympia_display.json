@@ -1,6 +1,10 @@
 {
   "model": "heraliz_fuse:gun/olympia_geo",
   "texture": "heraliz_fuse:gun/uv/olympia_texture",
+  "lod": {
+    "model": "heraliz_fuse:gun/lod_hz/olympia_geo",
+    "texture": "heraliz_fuse:gun/uv/olympia_texture"
+  },
   "hud": "heraliz_fuse:gun/hud/olympia_hud",
   "slot": "heraliz_fuse:gun/slot/olympia_slot",
   "animation": "heraliz_fuse:olympia",

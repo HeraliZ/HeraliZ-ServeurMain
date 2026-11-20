@@ -1,6 +1,10 @@
 {
   "model": "heraliz_fuse:gun/stakeout_geo",
   "texture": "heraliz_fuse:gun/uv/stakeout_texture",
+  "lod": {
+    "model": "heraliz_fuse:gun/lod_hz/stakeout_geo",
+    "texture": "heraliz_fuse:gun/uv/stakeout_texture"
+  },
   "hud": "heraliz_fuse:gun/hud/stakeout_hud",
   "slot": "heraliz_fuse:gun/slot/stakeout_slot",
   "ammo_count_style": "normal",

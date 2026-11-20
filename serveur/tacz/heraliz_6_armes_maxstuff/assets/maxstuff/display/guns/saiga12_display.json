@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/saiga12_geo",
   "texture": "maxstuff:gun/uv/saiga12",
   "lod": {
-    "model": "maxstuff:gun/saiga12_geo",
+    "model": "maxstuff:gun/lod_hz/saiga12_geo",
     "texture": "maxstuff:gun/uv/saiga12"
   },
   "hud": "maxstuff:gun/hud/saiga12",

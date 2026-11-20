@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/rpk_74m_geo",
   "texture": "maxstuff:gun/uv/rpk_74m",
   "lod": {
-    "model": "maxstuff:gun/rpk_74m_geo",
+    "model": "maxstuff:gun/lod_hz/rpk_74m_geo",
     "texture": "maxstuff:gun/uv/rpk_74m"
   },
   "hud": "maxstuff:gun/hud/rpk_74",

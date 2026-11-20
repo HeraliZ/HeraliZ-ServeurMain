@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/gm6_geo",
   "texture": "arkaniaz:gun/uv/gm6",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/gm6_geo",
+    "texture": "arkaniaz:gun/uv/gm6"
+  },
   "hud": "arkaniaz:gun/hud/gm6_hud",
   "slot": "arkaniaz:gun/slot/gm6",
   "animation": "arkaniaz:gm6",

@@ -2,8 +2,8 @@
   "model": "arkaniaz:gun/luger1906_geo",
   "texture": "arkaniaz:gun/uv/luger1906",
   "lod": {
-    "model": "arkaniaz:gun/lod/luger1906",
-    "texture": "arkaniaz:gun/lod/luger1906"
+    "model": "arkaniaz:gun/lod_hz/luger1906_geo",
+    "texture": "arkaniaz:gun/uv/luger1906"
   },
   "hud": "arkaniaz:gun/hud/luger1906",
   "slot": "arkaniaz:gun/slot/luger1906",

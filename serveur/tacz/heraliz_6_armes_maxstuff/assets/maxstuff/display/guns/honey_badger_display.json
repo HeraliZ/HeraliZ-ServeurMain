@@ -2,8 +2,8 @@
   "model": "maxstuff:gun/honey_badger_geo",
   "texture": "maxstuff:gun/uv/honey_badger",
   "lod": {
-    "model": "maxstuff:gun/lod/honey_badger",
-    "texture": "maxstuff:gun/lod/honey_badger"
+    "model": "maxstuff:gun/lod_hz/honey_badger_geo",
+    "texture": "maxstuff:gun/uv/honey_badger"
   },
   "hud": "maxstuff:gun/hud/honey_badger",
   "slot": "maxstuff:gun/slot/honey_badger",

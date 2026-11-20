@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/pkp_geo",
   "texture": "arkaniaz:gun/uv/pkp",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/pkp_geo",
+    "texture": "arkaniaz:gun/uv/pkp"
+  },
   "hud": "arkaniaz:gun/hud/pkp_hud",
   "slot": "arkaniaz:gun/slot/pkp",
   "animation": "arkaniaz:pkp",

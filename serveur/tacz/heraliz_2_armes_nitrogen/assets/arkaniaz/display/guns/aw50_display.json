@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/aw50_geo",
   "texture": "arkaniaz:gun/uv/aw50",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/aw50_geo",
+    "texture": "arkaniaz:gun/uv/aw50"
+  },
   "hud": "arkaniaz:gun/hud/aw50_hud",
   "slot": "arkaniaz:gun/slot/aw50",
   "animation": "arkaniaz:aw50",

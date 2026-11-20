@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/usp_geo",
   "texture": "arkaniaz:gun/uv/usp",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/usp_geo",
+    "texture": "arkaniaz:gun/uv/usp"
+  },
   "slot": "arkaniaz:gun/slot/usp",
   "hud": "arkaniaz:gun/hud/usp",
   "animation": "arkaniaz:usp",

@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/butterfly_knife_asiimov_geo",
   "texture": "arkaniaz:gun/uv/butterfly_knife_asiimov",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/butterfly_knife_asiimov_geo",
+    "texture": "arkaniaz:gun/uv/butterfly_knife_asiimov"
+  },
   "hud": "arkaniaz:gun/hud/butterfly_knife",
   "slot": "heralisz_skins:gun/slot/butterfly__scorched",
   "animation": "arkaniaz:butterfly_knife",

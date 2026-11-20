@@ -1,6 +1,10 @@
 {
     "model": "arkaniaz:gun/sr_2m_geo",
     "texture": "arkaniaz:gun/uv/sr_2m",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/sr_2m_geo",
+    "texture": "arkaniaz:gun/uv/sr_2m"
+  },
     "slot": "arkaniaz:gun/slot/sr_2m",
     "third_person_animation": "default",
     "hud": "arkaniaz:gun/hud/sr_2m",

@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/p250_geo",
   "texture": "arkaniaz:gun/uv/p250",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/p250_geo",
+    "texture": "arkaniaz:gun/uv/p250"
+  },
   "slot": "arkaniaz:gun/slot/p250",
   "hud": "arkaniaz:gun/hud/p250",
   "animation": "arkaniaz:p250",

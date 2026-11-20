@@ -2,7 +2,7 @@
   "model": "arkaniaz:gun/mod2_geo",
   "texture": "arkaniaz:gun/uv/mod2",
   "lod": {
-    "model": "arkaniaz:gun/mod2",
+    "model": "arkaniaz:gun/lod_hz/mod2_geo",
     "texture": "arkaniaz:gun/uv/mod2"
   },
   "hud": "arkaniaz:gun/hud/mod2",

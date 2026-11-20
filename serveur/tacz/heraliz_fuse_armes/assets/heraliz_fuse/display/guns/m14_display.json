@@ -1,6 +1,10 @@
 {
   "model": "heraliz_fuse:gun/m14_geo",
   "texture": "heraliz_fuse:gun/uv/m14_texture",
+  "lod": {
+    "model": "heraliz_fuse:gun/lod_hz/m14_geo",
+    "texture": "heraliz_fuse:gun/uv/m14_texture"
+  },
   "hud": "heraliz_fuse:gun/hud/m14_hud",
   "slot": "heraliz_fuse:gun/slot/m14_slot",
   "animation": "heraliz_fuse:m14",

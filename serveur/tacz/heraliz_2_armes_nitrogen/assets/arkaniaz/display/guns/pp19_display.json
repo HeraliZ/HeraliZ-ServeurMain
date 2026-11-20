@@ -1,6 +1,10 @@
 {
     "model": "arkaniaz:gun/pp19_geo",
     "texture": "arkaniaz:gun/uv/pp19",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/pp19_geo",
+    "texture": "arkaniaz:gun/uv/pp19"
+  },
     "hud": "arkaniaz:gun/hud/pp19_hud",
     "slot": "arkaniaz:gun/slot/pp19",
     "animation": "arkaniaz:pp19",

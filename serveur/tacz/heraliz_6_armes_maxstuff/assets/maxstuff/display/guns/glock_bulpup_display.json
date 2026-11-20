@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/glock_bulpup_geo",
   "texture": "maxstuff:gun/uv/glock_bulpup",
   "lod": {
-    "model": "maxstuff:gun/glock_bulpup_geo",
+    "model": "maxstuff:gun/lod_hz/glock_bulpup_geo",
     "texture": "maxstuff:gun/uv/glock_bulpup"
   },
   "hud": "maxstuff:gun/hud/glock_bulpup",

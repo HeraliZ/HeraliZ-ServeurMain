@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/ar57_geo",
   "texture": "maxstuff:gun/uv/ar57",
   "lod": {
-    "model": "maxstuff:gun/ar57_geo",
+    "model": "maxstuff:gun/lod_hz/ar57_geo",
     "texture": "maxstuff:gun/uv/ar57"
   },
   "hud": "maxstuff:gun/hud/ar57",

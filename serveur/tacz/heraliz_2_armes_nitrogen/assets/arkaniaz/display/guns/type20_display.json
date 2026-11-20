@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/type20_geo",
   "texture": "arkaniaz:gun/uv/type20",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/type20_geo",
+    "texture": "arkaniaz:gun/uv/type20"
+  },
   "slot": "arkaniaz:gun/slot/type20",
   "hud": "arkaniaz:gun/hud/type20",
   "animation": "arkaniaz:type20",

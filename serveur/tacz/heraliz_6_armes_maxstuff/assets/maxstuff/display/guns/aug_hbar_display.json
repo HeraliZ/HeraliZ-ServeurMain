@@ -2,7 +2,7 @@
   "model": "maxstuff:gun/aug_hbar_geo",
   "texture": "maxstuff:gun/uv/aug_hbar",
   "lod": {
-    "model": "maxstuff:gun/aug_hbar_geo",
+    "model": "maxstuff:gun/lod_hz/aug_hbar_geo",
     "texture": "maxstuff:gun/uv/aug_hbar"
   },
   "hud": "maxstuff:gun/hud/aug_hbar",

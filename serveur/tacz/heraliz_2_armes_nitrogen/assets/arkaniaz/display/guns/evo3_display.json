@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/evo3_geo",
   "texture": "arkaniaz:gun/uv/evo3",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/evo3_geo",
+    "texture": "arkaniaz:gun/uv/evo3"
+  },
   "slot": "arkaniaz:gun/slot/evo3",
   "hud": "arkaniaz:gun/hud/evo3",
   "animation": "arkaniaz:evo3",

@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/t_knife_geo",
   "texture": "arkaniaz:gun/uv/t_knife",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/t_knife_geo",
+    "texture": "arkaniaz:gun/uv/t_knife"
+  },
   "hud": "arkaniaz:gun/hud/t_knife",
   "slot": "heralisz_skins:gun/slot/t_knife__red_splatter",
   "animation": "arkaniaz:t_knife",

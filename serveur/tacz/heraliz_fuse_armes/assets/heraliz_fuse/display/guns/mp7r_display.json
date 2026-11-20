@@ -1,6 +1,10 @@
 {
   "model": "heraliz_fuse:gun/mp7r_geo",
   "texture": "heraliz_fuse:gun/uv/mp7r",
+  "lod": {
+    "model": "heraliz_fuse:gun/lod_hz/mp7r_geo",
+    "texture": "heraliz_fuse:gun/uv/mp7r"
+  },
   "hud": "heraliz_fuse:gun/hud/mp7r",
   "slot": "heraliz_fuse:gun/slot/mp7r",
   "animation": "heraliz_fuse:mp7r",

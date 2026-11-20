@@ -2,7 +2,7 @@
   "model": "arkaniaz_custom:gun/vectorhy_geo",
   "texture": "arkaniaz_custom:gun/uv/vectorhy",
   "lod": {
-    "model": "arkaniaz_custom:gun/vectorhy_geo",
+    "model": "arkaniaz_custom:gun/lod_hz/vectorhy_geo",
     "texture": "arkaniaz_custom:gun/uv/vectorhy"
   },
   "hud": "arkaniaz_custom:gun/hud/vectorhy_hud",

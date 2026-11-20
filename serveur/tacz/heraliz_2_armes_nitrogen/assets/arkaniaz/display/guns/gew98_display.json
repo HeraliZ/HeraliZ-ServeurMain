@@ -2,8 +2,8 @@
   "model": "arkaniaz:gun/gew98_geo",
   "texture": "arkaniaz:gun/uv/gew98",
   "lod": {
-    "model": "arkaniaz:gun/lod/gew98",
-    "texture": "arkaniaz:gun/lod/gew98"
+    "model": "arkaniaz:gun/lod_hz/gew98_geo",
+    "texture": "arkaniaz:gun/uv/gew98"
   },
   "hud": "arkaniaz:gun/hud/gew98",
   "slot": "arkaniaz:gun/slot/gew98",

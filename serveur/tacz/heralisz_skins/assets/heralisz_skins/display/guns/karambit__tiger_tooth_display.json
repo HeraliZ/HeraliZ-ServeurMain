@@ -1,6 +1,10 @@
 {
   "model": "arkaniaz:gun/karambit_fade_geo",
   "texture": "arkaniaz:gun/uv/karambit_fade",
+  "lod": {
+    "model": "arkaniaz:gun/lod_hz/karambit_fade_geo",
+    "texture": "arkaniaz:gun/uv/karambit_fade"
+  },
   "hud": "arkaniaz:gun/hud/karambit",
   "slot": "heralisz_skins:gun/slot/karambit__tiger_tooth",
   "animation": "arkaniaz:karambit",
