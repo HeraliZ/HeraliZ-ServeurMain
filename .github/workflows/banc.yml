@@ -188,27 +188,44 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$BANC"
-          # 20/11 : « ci » (dernier) ou un numéro = un autre build de Mohist 1.20.1 (site de Mohist, API v2), seulement sur ce banc
+          # 20/11 : « ci » (dernier) ou un numéro = un autre build de Mohist 1.20.1 (site de Mohist), seulement sur ce banc ;
+          # l'API v2 du site répond 410 (retirée) : plusieurs adresses essayées, la première qui donne une liste de builds
           M=$(printf '%s' "$MOHIST" | tr -cd 'a-z0-9')
           if [ "$M" = "ci" ] || printf '%s' "$M" | grep -qE '^[0-9]+$'; then
-            API="https://mohistmc.com/api/v2/projects/mohist/1.20.1/builds"
-            curl -fsSL --retry 3 "$API" -o "$RUNNER_TEMP/builds_mohist.json" || true
-            N=$(python3 - "$RUNNER_TEMP/builds_mohist.json" "$M" <<'PY'
+            OK=""
+            for API in "https://api.mohistmc.com/project/mohist/1.20.1/builds" \
+                       "https://api.mohistmc.com/projects/mohist/1.20.1/builds" \
+                       "https://mohistmc.com/api/v3/projects/mohist/1.20.1/builds" \
+                       "https://api.mohistmc.com/api/v2/projects/mohist/1.20.1/builds"; do
+              CODE=$(curl -sSL --retry 2 -o "$RUNNER_TEMP/builds_mohist.json" -w '%{http_code}' "$API" || echo erreur)
+              echo "$API -> $CODE : $(head -c 300 "$RUNNER_TEMP/builds_mohist.json" 2>/dev/null | tr -d '\n')"
+              if [ "$CODE" = "200" ]; then OK="$API"; break; fi
+            done
+            [ -n "$OK" ] || { echo "::error::aucune liste de builds de Mohist joignable"; exit 1; }
+            R=$(python3 - "$RUNNER_TEMP/builds_mohist.json" "$M" "$OK" <<'PY'
           import json, sys
-          try:
-              d = json.load(open(sys.argv[1], encoding="utf-8"))
-          except Exception as e:
-              print("?", file=sys.stderr); sys.exit(0)
-          b = d.get("builds", d) if isinstance(d, dict) else d
-          nums = sorted(int(x.get("number", x.get("id", 0))) for x in b if isinstance(x, dict))
-          print(sys.argv[2] if sys.argv[2] != "ci" else (nums[-1] if nums else ""))
+          d = json.load(open(sys.argv[1], encoding="utf-8"))
+          b = d.get("builds", d.get("data", d)) if isinstance(d, dict) else d
+          b = [x for x in b if isinstance(x, dict)]
+          def num(x):
+              for k in ("number", "build_number", "buildNumber", "id", "build"):
+                  try:
+                      return int(x[k])
+                  except (KeyError, TypeError, ValueError):
+                      pass
+              return -1
+          b.sort(key=num)
+          x = b[-1] if sys.argv[2] == "ci" else next((y for y in b if num(y) == int(sys.argv[2])), None)
+          if x is None:
+              sys.exit(1)
+          url = next((x[k] for k in ("url", "download", "downloadUrl", "download_url", "file") if isinstance(x.get(k), str)
+                      and x[k].startswith("http")), sys.argv[3] + "/" + str(num(x)) + "/download")
+          print(num(x), url)
           PY
-            )
-            if [ -z "$N" ]; then
-              echo "::error::liste des builds de Mohist illisible :"; head -c 600 "$RUNNER_TEMP/builds_mohist.json" || true; exit 1
-            fi
-            curl -fL --retry 3 -o "$BANC/mohist-1.20.1-$N-server.jar" "$API/$N/download"
-            echo "Mohist d'essai : build $N (site de Mohist), sha256 $(sha256sum "$BANC/mohist-1.20.1-$N-server.jar" | cut -d' ' -f1)"
+            ) || { echo "::error::liste des builds de Mohist illisible"; exit 1; }
+            N=${R%% *}; URL=${R#* }
+            curl -fL --retry 3 -o "$BANC/mohist-1.20.1-$N-server.jar" "$URL"
+            echo "Mohist d'essai : build $N ($URL), sha256 $(sha256sum "$BANC/mohist-1.20.1-$N-server.jar" | cut -d' ' -f1)"
           else
             JAR=$(cut -d' ' -f3 serveur/mohist.sha256)
             gh release download base-serveur --pattern "$JAR" --dir "$BANC" --clobber
