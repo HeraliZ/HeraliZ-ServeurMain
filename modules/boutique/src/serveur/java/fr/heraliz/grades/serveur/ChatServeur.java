@@ -10,7 +10,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
@@ -105,7 +104,10 @@ final class ChatServeur {
         ChatFormatting f = code == null || code.length() < 2 ? null : ChatFormatting.getByCode(code.charAt(1));
         int couleur = f != null && f.getColor() != null ? f.getColor() : 0;
         ReseauChat.Ligne l = new ReseauChat.Ligne(canal, p.getUUID(), p.getDisplayName(), m, couleur);
-        for (ServerPlayer x : lecteurs) ReseauChat.CANAL.send(PacketDistributor.PLAYER.with(() -> x), l);
+        // 20/11 (audit réseau) : la ligne est mise en forme une seule fois pour tous ses lecteurs (avant : une fois par
+        // lecteur, jusqu'à 150 fois sur le fil du serveur pour un message du chat global)
+        net.minecraft.network.protocol.Packet<?> paquet = ReseauChat.CANAL.toVanillaPacket(l, net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT);
+        for (ServerPlayer x : lecteurs) x.connection.send(paquet);
         LOG.info("[chat] [{}] {} : {}", canal == ReseauChat.GLOBAL ? "global" : "proximité", p.getGameProfile().getName(), m);
         // 03/11 (retour du propriétaire) : plus aucun « Personne à moins de 48 blocs ne t'a lu » : le message disait s'il y
         // avait quelqu'un à portée (trop fort pour repérer les joueurs autour). Le message part, rien d'autre.

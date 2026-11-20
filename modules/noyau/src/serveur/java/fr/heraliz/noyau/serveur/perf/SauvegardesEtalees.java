@@ -137,7 +137,7 @@ public final class SauvegardesEtalees implements ObjectIterator<ChunkHolder> {
 
    /** Pour un rapport de blocage : la sauvegarde automatique a eu lieu pendant ce tick, ou un tour étalé est en cours ; sinon null. */
    public static String dansCeTick(int tick) {
-      if (tick == tickAuto) return "Sauvegarde automatique de Minecraft pendant ce tick (toutes les 5 min)";
+      if (tick == tickAuto) return "Sauvegarde automatique de Minecraft pendant ce tick (ticks-per.autosave de bukkit.yml : toutes les 10 min depuis le 19/11)";
       if (!JOUEURS.isEmpty() || !ENTITES.isEmpty()) {
          return "Sauvegarde automatique étalée en cours (" + JOUEURS.size() + " joueurs et " + ENTITES.size() + " mondes d'entités à finir)";
       }

@@ -367,6 +367,8 @@ public final class Diag {
         long utilisee = (r.totalMemory() - r.freeMemory()) >> 20;
         ligne.accept(String.format(Locale.ROOT, "Mémoire : %d / %d Mo%n", utilisee, r.maxMemory() >> 20));
         jvm(ligne);
+        String d = disque(srv);
+        if (!d.isEmpty()) ligne.accept(d);
         ligne.accept(String.format(Locale.ROOT, "Ticks (derniers %d) : %.1f ms en moyenne, médiane %.1f, 95 %% %.1f, 99 %% %.1f, max %.0f ms, %s TPS%n",
                 ticksNb, msMoyen(), msCentile(50), msCentile(95), msCentile(99), msMax(), tps()));
         ligne.accept("  objectifs : moyenne <= 30 ms, 95 % <= 40 ms, 99 % < 50 ms\n");
@@ -442,6 +444,13 @@ public final class Diag {
         } catch (Throwable ignore) {
             // machine Java sans ces mesures : rien de plus
         }
+        // 20/11 (audit réseau, mémoire et disque, « nouvelle machine ») : le processeur réellement vu, et l'encodage par
+        // défaut de Java (Java 17 prend celui du système : sans -Dfile.encoding=UTF-8, souvent ASCII dans un conteneur)
+        String processeur = processeur();
+        if (processeur != null) s.append(" ; processeur : ").append(processeur);
+        String encodage = java.nio.charset.Charset.defaultCharset().name();
+        s.append(" ; encodage par défaut ").append(encodage);
+        if (!"UTF-8".equalsIgnoreCase(encodage)) s.append(" (ajouter -Dfile.encoding=UTF-8 à la ligne de Java)");
         s.append('\n');
         StringBuilder a = new StringBuilder("Arguments de Java :");
         for (String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
@@ -451,6 +460,37 @@ public final class Diag {
         }
         if (System.getenv("JDK_JAVA_OPTIONS") != null) a.append(" (JDK_JAVA_OPTIONS donné aussi)");
         return s.append(a).append('\n').toString();
+    }
+
+    /** Nom du processeur (Linux : premier « model name » de /proc/cpuinfo) ; null ailleurs ou illisible. Une fois. */
+    private static String processeur() {
+        try (Stream<String> l = Files.lines(Path.of("/proc/cpuinfo"), StandardCharsets.US_ASCII)) {
+            return l.filter(x -> x.startsWith("model name")).map(x -> x.substring(x.indexOf(':') + 1).trim().replaceAll("\\s+", " "))
+                    .filter(x -> !x.isEmpty()).findFirst().orElse(null);
+        } catch (Exception | Error e) {
+            return null;
+        }
+    }
+
+    private static volatile String disque;
+    private static volatile long disqueLu;
+
+    /** Place libre sur le disque du serveur (relue au plus une fois par minute : un appel système, rien d'autre). */
+    private static String disque(MinecraftServer srv) {
+        long maintenant = System.currentTimeMillis();
+        String d = disque;
+        if (d != null && maintenant - disqueLu < 60_000L) return d;
+        try {
+            java.nio.file.FileStore fs = Files.getFileStore(srv.getServerDirectory().toPath());
+            long libre = fs.getUsableSpace(), total = fs.getTotalSpace();
+            d = String.format(Locale.ROOT, "Disque du serveur : %.1f Go libres sur %.1f Go%s%n", libre / 1073741824.0, total / 1073741824.0,
+                    total > 0 && libre < total / 10 ? " (moins de 10 % : à surveiller)" : "");
+        } catch (Exception e) {
+            d = "";
+        }
+        disque = d;
+        disqueLu = maintenant;
+        return d;
     }
 
     // ------------------------------------------------------------------ fichiers
