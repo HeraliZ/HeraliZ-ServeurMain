@@ -310,7 +310,7 @@ final class SurnomsServeur {
             return 0;
         }
         ServeurGrades.rafraichir(p);
-        TabServeur.maj(p.server, true);
+        TabServeur.marquer();
         p.sendSystemMessage(msg("nick.ok", "Ton surnom est maintenant ~%s.", s));
         return 1;
     }
@@ -338,7 +338,7 @@ final class SurnomsServeur {
             return 0;
         }
         ServeurGrades.rafraichir(p);
-        TabServeur.maj(p.server, true);
+        TabServeur.marquer();
         p.sendSystemMessage(msg("nick.reset", "Surnom retiré : ton vrai pseudo est de nouveau affiché."));
         return 1;
     }

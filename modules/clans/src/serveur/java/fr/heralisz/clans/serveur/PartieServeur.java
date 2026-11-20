@@ -73,6 +73,8 @@ public final class PartieServeur implements Partie {
             else if (m instanceof Packets.CarteDemandeC2S) Territoires.carte(p);
             else if (m instanceof Packets.AmeliorerC2S x) ServerHandlers.ameliorer(p, x);
             else if (m instanceof Packets.HistoriqueC2S x) fr.heralisz.clans.historique.Historique.page(p, x.categorie(), x.page());
+            // 21/11 : une difference des tags manquait chez ce joueur (table complete, une fois toutes les 5 s au plus)
+            else if (m instanceof Packets.TagsDemandeC2S) fr.heralisz.clans.server.Sync.demandeTags(p);
         });
     }
 }

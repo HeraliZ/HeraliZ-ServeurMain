@@ -41,7 +41,13 @@ public final class ClientHandlers {
     }
 
     public static void tags(Packets.TagsS2C m) {
-        ClientClans.setTags(m.tags());
+        ClientClans.tagsComplets(m.version(), m.tags());
+    }
+
+    /** Difference des tags (21/11) : si une difference manque, la table complete est redemandee (5 s entre deux demandes). */
+    public static void tagsDelta(Packets.TagsDeltaS2C m) {
+        if (ClientClans.tagsDelta(m.version(), m.retires(), m.changes())) return;
+        if (ClientClans.demanderTags(System.currentTimeMillis())) fr.heralisz.clans.network.ClansNet.toServer(new Packets.TagsDemandeC2S());
     }
 
     public static void saison(Packets.SaisonS2C m) {

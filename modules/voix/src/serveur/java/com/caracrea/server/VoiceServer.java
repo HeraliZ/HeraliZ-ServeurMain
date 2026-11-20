@@ -10,6 +10,7 @@ import com.caracrea.network.CaraCreaNetwork;
 import com.caracrea.network.CaraCreaNetwork.GroupAction;
 import com.caracrea.network.CaraCreaNetwork.GroupInfo;
 import com.caracrea.network.CaraCreaNetwork.PlayerVoice;
+import com.caracrea.network.Synchro;
 import com.caracrea.voice.net.TokenBucket;
 import com.caracrea.voice.net.UdpVoiceServer;
 import com.caracrea.voice.net.VoiceProtocol;
@@ -31,6 +32,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -249,6 +251,8 @@ public final class VoiceServer {
             remove(m);
         }
         leave(player.getUUID());
+        // 21/11 : à son retour, il recevra la liste vocale complète
+        ROSTER.depart(player.getUUID());
         rosterDirty = true;
     }
 
@@ -335,6 +339,8 @@ public final class VoiceServer {
         stopUdp();
         GROUPS.clear();
         MEMBER_OF.clear();
+        // 21/11 : au retour de la voix, tout le monde reçoit la liste complète
+        forgetRoster();
     }
 
     private static void startUdp(MinecraftServer s) {
@@ -538,21 +544,81 @@ public final class VoiceServer {
         rosterDirty = true;
     }
 
-    /** Everyone gets the groups and voice states (a few bytes per player, only when something changed, at most once a tick). */
+    /*
+     * Liste vocale par différences (21/11, décision du propriétaire après l'audit réseau du 20/11). Avant, la liste
+     * COMPLÈTE (tous les groupes, tous les joueurs) partait à tous à chaque arrivée, départ ou changement d'état (à 150
+     * joueurs : 150 listes de 150 joueurs). Maintenant : la liste complète au joueur qui arrive (ou qui la redemande),
+     * seulement ce qui change aux autres, numéroté (Synchro), au même rythme qu'avant (au plus 2 fois par seconde, tous
+     * les changements de ce moment en un envoi) ; rien ne part si rien ne change. Fil du serveur.
+     */
+    /**
+     * Dernière liste envoyée, son numéro et les joueurs qui l'ont : une seule liste numérotée, les groupes (clé : leur
+     * numéro) puis les joueurs (clé : leur UUID) ; une seule vue (tout le monde voit la même liste).
+     */
+    private static final Synchro.Diffuseur<UUID, Object, Object> ROSTER = new Synchro.Diffuseur<>(x -> true);
+
+    /** Oublie la liste envoyée : tout le monde la recevra complète (voix coupée puis rallumée, arrêt). */
+    private static void forgetRoster() {
+        ROSTER.vider();
+    }
+
+    /** Une différence manquait chez ce joueur : liste complète au prochain envoi (au plus une fois toutes les 5 s). */
+    public static void rosterRequest(ServerPlayer player) {
+        if (active && ROSTER.demande(player.getUUID(), System.currentTimeMillis())) {
+            rosterDirty = true;
+        }
+    }
+
+    /**
+     * The groups and voice states (a few bytes per player, only when something changed, at most twice a second) : complete
+     * to the players who do not have them yet, only what changed to the others (21/11).
+     */
     private static void sendRoster(MinecraftServer s) {
         rosterDirty = false;
         if (!active) {
             return;
         }
-        List<GroupInfo> groups = new ArrayList<>();
+        Map<Object, Object> roster = new LinkedHashMap<>();
         for (Group group : GROUPS.values()) {
-            groups.add(new GroupInfo(group.id, group.name, group.type, !group.password.isEmpty()));
+            roster.put(group.id, new GroupInfo(group.id, group.name, group.type, !group.password.isEmpty()));
         }
-        List<PlayerVoice> players = new ArrayList<>();
         for (Member m : ORDER) {
-            players.add(new PlayerVoice(m.uuid, m.voiceId, m.disabled, m.selfMuted, m.adminMuted || m.silenced, MEMBER_OF.getOrDefault(m.uuid, 0)));
+            roster.put(m.uuid, new PlayerVoice(m.uuid, m.voiceId, m.disabled, m.selfMuted, m.adminMuted || m.silenced, MEMBER_OF.getOrDefault(m.uuid, 0)));
         }
-        CaraCreaNetwork.sendToAll(new CaraCreaNetwork.VoiceRoster(groups, players));
+        // each packet is encoded once ([0] complete, [1] what changed), and only if someone gets it
+        Packet<?>[] packets = new Packet<?>[2];
+        ROSTER.<ServerPlayer>publier(roster, s.getPlayerList().getPlayers(), ServerPlayer::getUUID, p -> 0,
+                new Synchro.Envoi<ServerPlayer, Object, Object>() {
+                    @Override
+                    public void complet(ServerPlayer player, int vue, int version, Map<Object, Object> table) {
+                        if (packets[0] == null) {
+                            packets[0] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRoster(version,
+                                    only(table.values(), GroupInfo.class), only(table.values(), PlayerVoice.class)), NetworkDirection.PLAY_TO_CLIENT);
+                        }
+                        player.connection.send(packets[0]);
+                    }
+
+                    @Override
+                    public void difference(ServerPlayer player, int vue, int version, Synchro.Diff<Object, Object> d) {
+                        if (packets[1] == null) {
+                            packets[1] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRosterDelta(version,
+                                    only(d.retires(), Integer.class), only(d.changes().values(), GroupInfo.class), only(d.retires(), UUID.class),
+                                    only(d.changes().values(), PlayerVoice.class)), NetworkDirection.PLAY_TO_CLIENT);
+                        }
+                        player.connection.send(packets[1]);
+                    }
+                });
+    }
+
+    /** The entries of one kind in the roster (groups by their number, players by their UUID). */
+    private static <T> List<T> only(Collection<?> all, Class<T> type) {
+        List<T> out = new ArrayList<>();
+        for (Object o : all) {
+            if (type.isInstance(o)) {
+                out.add(type.cast(o));
+            }
+        }
+        return out;
     }
 
     // ------------------------------------------------------------------ from the clients (server thread)

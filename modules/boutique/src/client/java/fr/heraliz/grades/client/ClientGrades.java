@@ -11,6 +11,9 @@ public final class ClientGrades implements Partie {
    public void init(IEventBus busMod) {
       ReseauGrades.RECEPTION_CLIENT.brancher(EcranKits::recevoir);
       ReseauGrades.RECEPTION_TAB.brancher(TabHeraliz::recevoir);
+      // 21/11 : tab par différences ; liste oubliée en quittant le serveur
+      ReseauGrades.RECEPTION_TAB_DELTA.brancher(TabHeraliz::recevoirDelta);
+      MinecraftForge.EVENT_BUS.addListener(TabHeraliz::deconnexion);
       ReseauGrades.RECEPTION_WARPS.brancher(EcranWarps::recevoir);
       // grades réglés en jeu (2.0.0) : définitions du serveur, éditeur des op
       fr.heraliz.grades.Grade.LANGUE = () -> net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected();

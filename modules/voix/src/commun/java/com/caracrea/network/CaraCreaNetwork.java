@@ -39,9 +39,10 @@ public final class CaraCreaNetwork {
 
     // 4 (1.0.1): CloseCreator added. 5 (1.1.0): voice over UDP (session key in VoiceConfig), voice numbers, flags,
     // positions, OpenVoiceSettings. 6 (1.5.0) : mode de voix (chuchoter / parler / crier, drapeau F_SHOUT), portée du cri
-    // dans VoiceConfig, « couper tout le monde » dans VoiceStateUp. Un client d'une autre version est refusé à la
-    // connexion par Forge (canal incompatible) au lieu de mal lire ces paquets.
-    private static final String PROTOCOL = "6";
+    // dans VoiceConfig, « couper tout le monde » dans VoiceStateUp. 7 (1.7.0, 21/11) : liste vocale par différences
+    // numérotées (version en tête de VoiceRoster, VoiceRosterDelta et VoiceRosterRequest en fin de liste). Un client d'une
+    // autre version est refusé à la connexion par Forge (canal incompatible) au lieu de mal lire ces paquets.
+    private static final String PROTOCOL = "7";
 
     /** Name of the channel: {@code server.VoiceInbound} recognises the voice frames by it. */
     public static final ResourceLocation NAME = new ResourceLocation(CaraCrea.MOD_ID, "main");
@@ -91,6 +92,13 @@ public final class CaraCreaNetwork {
         CHANNEL.messageBuilder(OpenVoiceSettings.class, 11, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(OpenVoiceSettings::encode).decoder(OpenVoiceSettings::decode)
                 .consumerMainThread(OpenVoiceSettings::handle).add();
+        // 7 (21/11) : liste vocale par différences
+        CHANNEL.messageBuilder(VoiceRosterDelta.class, 12, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(VoiceRosterDelta::encode).decoder(VoiceRosterDelta::decode)
+                .consumerMainThread(VoiceRosterDelta::handle).add();
+        CHANNEL.messageBuilder(VoiceRosterRequest.class, 13, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(VoiceRosterRequest::encode).decoder(VoiceRosterRequest::decode)
+                .consumerMainThread(VoiceRosterRequest::handle).add();
     }
 
     public static void sendTo(ServerPlayer player, Object message) {
@@ -354,46 +362,137 @@ public final class CaraCreaNetwork {
     public record PlayerVoice(UUID player, int voiceId, boolean disabled, boolean muted, boolean adminMuted, int group) {
     }
 
-    /** Server to client: the groups and everyone's voice state, sent again whenever they change. */
-    public record VoiceRoster(List<GroupInfo> groups, List<PlayerVoice> players) {
+    /**
+     * Server to client: the groups and everyone's voice state, COMPLETE. 21/11 (protocole 7) : envoyée seulement au joueur
+     * qui arrive (ou qui la redemande), numérotée ({@code version}) ; les autres reçoivent les différences
+     * ({@link VoiceRosterDelta}).
+     */
+    public record VoiceRoster(int version, List<GroupInfo> groups, List<PlayerVoice> players) {
         void encode(FriendlyByteBuf buf) {
-            buf.writeVarInt(groups.size());
-            for (GroupInfo group : groups) {
-                buf.writeVarInt(group.id());
-                buf.writeUtf(group.name(), 32);
-                buf.writeByte(group.type());
-                buf.writeBoolean(group.locked());
-            }
-            buf.writeVarInt(players.size());
-            for (PlayerVoice player : players) {
-                buf.writeUUID(player.player());
-                buf.writeVarInt(player.voiceId());
-                buf.writeByte((player.disabled() ? 1 : 0) | (player.muted() ? 2 : 0) | (player.adminMuted() ? 4 : 0));
-                buf.writeVarInt(player.group());
-            }
+            buf.writeVarInt(version);
+            writeGroups(buf, groups);
+            writePlayers(buf, players);
         }
 
         static VoiceRoster decode(FriendlyByteBuf buf) {
-            int groupCount = Math.min(buf.readVarInt(), 1024);
-            List<GroupInfo> groups = new ArrayList<>(groupCount);
-            for (int i = 0; i < groupCount; i++) {
-                groups.add(new GroupInfo(buf.readVarInt(), buf.readUtf(32), buf.readByte(), buf.readBoolean()));
-            }
-            int playerCount = Math.min(buf.readVarInt(), 4096);
-            List<PlayerVoice> players = new ArrayList<>(playerCount);
-            for (int i = 0; i < playerCount; i++) {
-                UUID id = buf.readUUID();
-                int voiceId = buf.readVarInt();
-                int flags = buf.readByte();
-                players.add(new PlayerVoice(id, voiceId, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0, buf.readVarInt()));
-            }
-            return new VoiceRoster(groups, players);
+            int version = buf.readVarInt();
+            List<GroupInfo> groups = readGroups(buf);
+            return new VoiceRoster(version, groups, readPlayers(buf));
         }
 
         void handle(Supplier<NetworkEvent.Context> context) {
             RECEPTION_CLIENT.accept(this);
             context.get().setPacketHandled(true);
         }
+    }
+
+    /**
+     * Server to client (21/11) : ce qui change dans la liste vocale : groupes retirés, groupes ajoutés ou changés, joueurs
+     * retirés (partis), joueurs ajoutés ou changés. {@code version} = celle de l'envoi précédent + 1 : sinon le joueur
+     * ignore et redemande la liste complète ({@link VoiceRosterRequest}).
+     */
+    public record VoiceRosterDelta(int version, List<Integer> removedGroups, List<GroupInfo> groups, List<UUID> removedPlayers,
+                                   List<PlayerVoice> players) {
+        void encode(FriendlyByteBuf buf) {
+            buf.writeVarInt(version);
+            int n = Math.min(removedGroups.size(), 1024);
+            buf.writeVarInt(n);
+            for (int i = 0; i < n; i++) {
+                buf.writeVarInt(removedGroups.get(i));
+            }
+            writeGroups(buf, groups);
+            n = Math.min(removedPlayers.size(), 4096);
+            buf.writeVarInt(n);
+            for (int i = 0; i < n; i++) {
+                buf.writeUUID(removedPlayers.get(i));
+            }
+            writePlayers(buf, players);
+        }
+
+        static VoiceRosterDelta decode(FriendlyByteBuf buf) {
+            int version = buf.readVarInt();
+            int n = Math.min(buf.readVarInt(), 1024);
+            List<Integer> removedGroups = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                removedGroups.add(buf.readVarInt());
+            }
+            List<GroupInfo> groups = readGroups(buf);
+            n = Math.min(buf.readVarInt(), 4096);
+            List<UUID> removedPlayers = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                removedPlayers.add(buf.readUUID());
+            }
+            return new VoiceRosterDelta(version, removedGroups, groups, removedPlayers, readPlayers(buf));
+        }
+
+        void handle(Supplier<NetworkEvent.Context> context) {
+            RECEPTION_CLIENT.accept(this);
+            context.get().setPacketHandled(true);
+        }
+    }
+
+    /**
+     * Client to server (21/11) : une différence de la liste vocale manquait, le joueur demande la liste complète (le
+     * serveur en accepte une toutes les 5 s par joueur).
+     */
+    public record VoiceRosterRequest() {
+        void encode(FriendlyByteBuf buf) {
+        }
+
+        static VoiceRosterRequest decode(FriendlyByteBuf buf) {
+            return new VoiceRosterRequest();
+        }
+
+        void handle(Supplier<NetworkEvent.Context> context) {
+            ServerPlayer player = context.get().getSender();
+            if (player != null) RECEPTION_SERVEUR.accept(new Recu(player, this));
+            context.get().setPacketHandled(true);
+        }
+    }
+
+    private static void writeGroups(FriendlyByteBuf buf, List<GroupInfo> groups) {
+        int n = Math.min(groups.size(), 1024);
+        buf.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            GroupInfo group = groups.get(i);
+            buf.writeVarInt(group.id());
+            buf.writeUtf(group.name(), 32);
+            buf.writeByte(group.type());
+            buf.writeBoolean(group.locked());
+        }
+    }
+
+    private static List<GroupInfo> readGroups(FriendlyByteBuf buf) {
+        int groupCount = Math.min(buf.readVarInt(), 1024);
+        List<GroupInfo> groups = new ArrayList<>(groupCount);
+        for (int i = 0; i < groupCount; i++) {
+            groups.add(new GroupInfo(buf.readVarInt(), buf.readUtf(32), buf.readByte(), buf.readBoolean()));
+        }
+        return groups;
+    }
+
+    private static void writePlayers(FriendlyByteBuf buf, List<PlayerVoice> players) {
+        int n = Math.min(players.size(), 4096);
+        buf.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            PlayerVoice player = players.get(i);
+            buf.writeUUID(player.player());
+            buf.writeVarInt(player.voiceId());
+            buf.writeByte((player.disabled() ? 1 : 0) | (player.muted() ? 2 : 0) | (player.adminMuted() ? 4 : 0));
+            buf.writeVarInt(player.group());
+        }
+    }
+
+    private static List<PlayerVoice> readPlayers(FriendlyByteBuf buf) {
+        int playerCount = Math.min(buf.readVarInt(), 4096);
+        List<PlayerVoice> players = new ArrayList<>(playerCount);
+        for (int i = 0; i < playerCount; i++) {
+            UUID id = buf.readUUID();
+            int voiceId = buf.readVarInt();
+            int flags = buf.readByte();
+            players.add(new PlayerVoice(id, voiceId, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0, buf.readVarInt()));
+        }
+        return players;
     }
 
     /** Client to server: create, join or leave a voice group. */

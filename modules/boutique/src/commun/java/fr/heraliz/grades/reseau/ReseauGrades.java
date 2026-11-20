@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Canal réseau de HeraliZ Grades (protocole 7 depuis le 25/10 : ancien panneau admin retiré, remplacé par le panel du staff, canal
+ * Canal réseau de HeraliZ Grades (protocole 8 depuis le 21/11 : tab envoyé par différences numérotées, {@link Synchro} ;
+ * 7 depuis le 25/10 : ancien panneau admin retiré, remplacé par le panel du staff, canal
  * {@link ReseauStaff} ; 6 : joueurs cachés du staff dans le tab ; 5 : surnom dans le tab) : menu /kit, menu /warp, tab (grades et clans des joueurs connectés),
  * définitions des grades (2.0.0) et éditeur des grades des op. Le serveur envoie l'état des kits (contenu, recharge) ; le
  * joueur ne peut que DEMANDER un kit par son identifiant : grade, recharge, place et contenu sont décidés et vérifiés par
@@ -25,7 +26,7 @@ public final class ReseauGrades {
     private ReseauGrades() {
     }
 
-    private static final String VERSION = "7";
+    private static final String VERSION = "8";
     public static final SimpleChannel CANAL = NetworkRegistry.newSimpleChannel(new ResourceLocation(HeralizGrades.MODID, "main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -36,6 +37,10 @@ public final class ReseauGrades {
     public static final Crochet<EtatKits> RECEPTION_CLIENT = new Crochet<>();
     /** Infos du tab reçues par le joueur : branchées par la partie client (nouveau tab). */
     public static final Crochet<InfosTab> RECEPTION_TAB = new Crochet<>();
+    /** Différence du tab reçue par le joueur (21/11) : branchée par la partie client. */
+    public static final Crochet<DeltaTab> RECEPTION_TAB_DELTA = new Crochet<>();
+    /** Demande d'un envoi complet du tab reçue par le serveur, avec le joueur qui l'envoie : branchée par la partie serveur. */
+    public static final Crochet<ServerPlayer> RECEPTION_TAB_DEMANDE = new Crochet<>();
     /** Menu des warps reçu par le joueur : branché par la partie client. */
     public static final Crochet<EtatWarps> RECEPTION_WARPS = new Crochet<>();
     /** Demande d'un warp reçue par le serveur : branchée par la partie serveur. */
@@ -65,10 +70,23 @@ public final class ReseauGrades {
     }
 
     /**
-     * Grades et clans des joueurs connectés (serveur -> chaque joueur), renvoyés quand quelque chose change ; un joueur
-     * caché par /vanish n'est envoyé qu'au staff (marqué {@code cache}).
+     * Grades et clans des joueurs connectés, liste COMPLÈTE (serveur -> un joueur) : à son arrivée, quand il entre dans le
+     * staff ou en sort, ou à sa demande ; un joueur caché par /vanish n'est envoyé qu'au staff (marqué {@code cache}).
+     * {@code version} : numéro de la liste de sa vue (staff ou autres), suivi par les différences ({@link DeltaTab}).
      */
-    public record InfosTab(List<LigneTab> lignes) {
+    public record InfosTab(int version, List<LigneTab> lignes) {
+    }
+
+    /**
+     * Ce qui change dans le tab (serveur -> joueurs qui ont la liste, 21/11) : lignes retirées (départ, ou joueur caché
+     * pour cette vue), lignes ajoutées ou changées. {@code version} = celle de l'envoi précédent de la vue + 1 : sinon le
+     * joueur ignore la différence et redemande la liste complète ({@link DemandeTab}).
+     */
+    public record DeltaTab(int version, List<UUID> retires, List<LigneTab> changes) {
+    }
+
+    /** Une différence du tab manquait chez le joueur : il demande la liste complète (joueur -> serveur, 5 s entre deux). */
+    public record DemandeTab() {
     }
 
     /** Demande d'un kit (joueur -> serveur). */
@@ -143,24 +161,10 @@ public final class ReseauGrades {
                 .add();
         CANAL.messageBuilder(InfosTab.class, 2, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder((m, b) -> {
-                    int n = Math.min(m.lignes().size(), MAX_LIGNES);
-                    b.writeVarInt(n);
-                    for (int i = 0; i < n; i++) {
-                        LigneTab l = m.lignes().get(i);
-                        b.writeUUID(l.uuid());
-                        b.writeUtf(l.grade(), MAX_ID);
-                        b.writeUtf(l.clan(), MAX_ID);
-                        b.writeInt(l.couleurClan());
-                        b.writeUtf(l.surnom(), MAX_ID);
-                        b.writeBoolean(l.cache());
-                    }
+                    b.writeVarInt(m.version());
+                    ecrireLignes(b, m.lignes());
                 })
-                .decoder(b -> {
-                    int n = Math.min(b.readVarInt(), MAX_LIGNES);
-                    List<LigneTab> lignes = new ArrayList<>(n);
-                    for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt(), b.readUtf(MAX_ID), b.readBoolean()));
-                    return new InfosTab(lignes);
-                })
+                .decoder(b -> new InfosTab(b.readVarInt(), lireLignes(b)))
                 .consumerMainThread((m, ctx) -> {
                     RECEPTION_TAB.accept(m);
                     ctx.get().setPacketHandled(true);
@@ -208,6 +212,59 @@ public final class ReseauGrades {
                     ctx.get().setPacketHandled(true);
                 })
                 .add();
+        // 21/11 : tab par différences (protocole 8)
+        CANAL.messageBuilder(DeltaTab.class, 8, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((m, b) -> {
+                    b.writeVarInt(m.version());
+                    int n = Math.min(m.retires().size(), MAX_LIGNES);
+                    b.writeVarInt(n);
+                    for (int i = 0; i < n; i++) b.writeUUID(m.retires().get(i));
+                    ecrireLignes(b, m.changes());
+                })
+                .decoder(b -> {
+                    int version = b.readVarInt();
+                    int n = Math.min(b.readVarInt(), MAX_LIGNES);
+                    List<UUID> retires = new ArrayList<>(n);
+                    for (int i = 0; i < n; i++) retires.add(b.readUUID());
+                    return new DeltaTab(version, retires, lireLignes(b));
+                })
+                .consumerMainThread((m, ctx) -> {
+                    RECEPTION_TAB_DELTA.accept(m);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+        CANAL.messageBuilder(DemandeTab.class, 9, NetworkDirection.PLAY_TO_SERVER)
+                .encoder((m, b) -> {
+                })
+                .decoder(b -> new DemandeTab())
+                .consumerMainThread((m, ctx) -> {
+                    ServerPlayer p = ctx.get().getSender();
+                    if (p != null) RECEPTION_TAB_DEMANDE.accept(p);
+                    ctx.get().setPacketHandled(true);
+                })
+                .add();
+    }
+
+    /** Lignes du tab (envoi complet ou différence) : 500 au plus à la lecture. */
+    private static void ecrireLignes(FriendlyByteBuf b, List<LigneTab> lignes) {
+        int n = Math.min(lignes.size(), MAX_LIGNES);
+        b.writeVarInt(n);
+        for (int i = 0; i < n; i++) {
+            LigneTab l = lignes.get(i);
+            b.writeUUID(l.uuid());
+            b.writeUtf(l.grade(), MAX_ID);
+            b.writeUtf(l.clan(), MAX_ID);
+            b.writeInt(l.couleurClan());
+            b.writeUtf(l.surnom(), MAX_ID);
+            b.writeBoolean(l.cache());
+        }
+    }
+
+    private static List<LigneTab> lireLignes(FriendlyByteBuf b) {
+        int n = Math.min(b.readVarInt(), MAX_LIGNES);
+        List<LigneTab> lignes = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) lignes.add(new LigneTab(b.readUUID(), b.readUtf(MAX_ID), b.readUtf(MAX_ID), b.readInt(), b.readUtf(MAX_ID), b.readBoolean()));
+        return lignes;
     }
 
     private static final int MAX_KITS_EDITEUR = 128, MAX_MEMBRES = 1000, MAX_NOM_KIT = 32;

@@ -151,8 +151,9 @@ public final class ClanEvents {
             Sync.marquer(c); // les autres voient le point vert
         }
         Sync.envoyerEtat(p);
-        if (c != null) Sync.diffuserTags(c, null);
-        else ClansNet.toPlayer(p, new Packets.TagsS2C(Sync.tableTags(null)));
+        // 21/11 : table des tags complete pour lui seul et son tag aux autres en difference, a la fin du tick (avant : la
+        // table complete a tous, et la liste Tab de tous ses membres en ligne rafraichie alors qu'elle ne change pas)
+        Sync.arriveeTags(p);
         // 03/11 : bareme de /clan don pour l'infobulle des objets de valeur (avec ou sans clan)
         ClansNet.toPlayer(p, XpClan.paquetDons());
         if (avisCourbe) {
@@ -201,16 +202,17 @@ public final class ClanEvents {
         ClanStore store = ClanStore.get();
         if (store == null) return;
         Clan c = store.clanDe(u);
+        // 21/11 : son tag retire chez les autres en difference, a la fin du tick (il n'est alors plus dans la liste des
+        // joueurs) ; rien pendant l'arret (tout le monde part)
+        Sync.departTags(u, c != null && !arret);
         if (c == null) return;
         Membre m = c.membre(u);
         if (m != null) {
             m.vuLe = System.currentTimeMillis();
             store.marquerDirty(c);
         }
-        if (arret) return; // tout le monde part : pas n² tables de tags
+        if (arret) return;
         Sync.marquer(c);
-        // la liste des joueurs contient encore le partant : on l'exclut explicitement
-        Sync.diffuserTags(null, u);
     }
 
     // ------------------------------------------------------------------ liste Tab et chat

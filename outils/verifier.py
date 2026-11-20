@@ -42,6 +42,9 @@ Contrôles :
                        ni invisible (outils/verif_accessoires.py ; défauts acceptés listés dans l'outil) ;
   - polices          : une seule copie des polices DM Sans, Onest et Oswald, dans le noyau ; les polices des modules la
                        citent (outils/polices_partagees.py --verifier) ;
+  - synchro          : listes envoyées par différences (liste Tab, tags de clan, liste vocale, 21/11) : les trois copies
+                       de Synchro.java identiques et l'essai hors du jeu juste (outils/verif_synchro.py ; essai sauté sans
+                       javac) ;
   - authme           : aucun pseudo sans mot de passe (UnrestrictedName vide) dans l'AuthMe du serveur en jeu
                        (serveur/plugins/AuthMe/config.yml ; les bots du banc n'y sont que dans son serveur d'essai) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
@@ -388,6 +391,15 @@ def main():
             if "PROBLÈME" in l:
                 print(l.strip())
         print("[polices] relancer : python outils/polices_partagees.py")
+        erreurs += 1
+    # listes envoyées par différences (21/11) : une copie de Synchro changée sans les autres, ou une liste qui pourrait rester
+    # fausse chez un joueur, ou un joueur caché envoyé hors du staff, est refusée ici (essai hors du jeu, javac présent)
+    code, out = lancer([str(O / "verif_synchro.py")])
+    for l in out.splitlines():
+        if "ERREUR" in l or "absent" in l or "      " in l[:6]:
+            print(l.rstrip())
+    if code != 0:
+        print("[synchro] détail : python outils/verif_synchro.py")
         erreurs += 1
     # AuthMe du serveur en jeu : aucun pseudo sans mot de passe (19/11 : les bots du banc y étaient, HzBot001 à HzBot200)
     libres = pseudos_sans_mot_de_passe()

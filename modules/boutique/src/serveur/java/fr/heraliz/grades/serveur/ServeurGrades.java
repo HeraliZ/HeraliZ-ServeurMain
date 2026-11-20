@@ -52,6 +52,8 @@ public final class ServeurGrades implements Partie {
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(ServeurGrades::tick);
         ReseauGrades.RECEPTION_SERVEUR.brancher(KitsServeur::demande);
+        // 21/11 : tab par différences ; un joueur à qui une différence manque redemande la liste complète
+        ReseauGrades.RECEPTION_TAB_DEMANDE.brancher(TabServeur::demande);
         // zones VIP délimitées par le staff (/zonevip), réservées aux grades de la boutique
         ZonesVip.brancher();
         // warps : menu /warp, seulement depuis le spawn
@@ -159,7 +161,8 @@ public final class ServeurGrades implements Partie {
         // joueurs cachés (vanish du staff) : retirés tout de suite chez celui qui arrive, et lui caché s'il l'est
         VanishServeur.connexion(p);
         rafraichir(p);
-        TabServeur.maj(p.server, true);
+        // 21/11 : liste complète pour lui seul, sa ligne aux autres (fin du tick, avec les autres arrivées du tick)
+        TabServeur.connexion(p);
         // objets d'un échange conclu pendant son absence
         EchangeServeur.connexion(p);
         // hôtel des ventes : ventes interrompues par un arrêt, objets achetés en attente
@@ -177,6 +180,8 @@ public final class ServeurGrades implements Partie {
         EchangeServeur.deconnexion(e.getEntity().getUUID());
         HdvServeur.deconnexion(e.getEntity().getUUID());
         VanishServeur.deconnexion(e.getEntity().getUUID());
+        // 21/11 : sa ligne du tab retirée chez les autres à la fin du tick (avant : au contrôle suivant, liste complète à tous)
+        TabServeur.deconnexion(e.getEntity().getUUID());
         // 02/11 (audit mods-3 §13) : comptes de clés et de capsules gardés en mémoire seulement pour les joueurs connectés
         // (relus sur leur fichier, toujours à jour, à la prochaine opération)
         CommandesPb.oublier(e.getEntity().getUUID());
@@ -186,17 +191,25 @@ public final class ServeurGrades implements Partie {
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
-        if (e.phase != TickEvent.Phase.END || registre == null || ++ticks % 40 != 0) return;
+        if (e.phase != TickEvent.Phase.END || registre == null) return;
+        if (++ticks % 40 != 0) {
+            // 21/11 : tab, changements signalés pendant ce tick (arrivées, départs, grades, surnoms, vanish) en un envoi ;
+            // rien du tout si rien n'a été signalé
+            TabServeur.tick(e.getServer(), false);
+            return;
+        }
         if (ticks % 200 == 0) KitsServeur.relireSiChange();
         if (ticks % 120 == 0) LienDiscord.suivre();
         VanishServeur.appliquer(e.getServer());
-        TabServeur.maj(e.getServer(), false);
+        // contrôle toutes les 2 s : tout est relu (grade expiré, clan, connexion AuthMe du staff), seul ce qui change part
+        TabServeur.tick(e.getServer(), true);
         MinecraftServer srv = e.getServer();
         if (ticks % 1200 == 0) {
             for (java.util.UUID u : registre.expirer()) {
                 ServerPlayer p = srv.getPlayerList().getPlayer(u);
                 if (p == null) continue;
                 rafraichir(p);
+                TabServeur.marquer();   // son grade dans le tab : au tick suivant (le contrôle de ce tick est passé)
                 // commandes réservées aux grades (/avantages nick…) remises à jour chez le joueur
                 srv.getCommands().sendCommands(p);
                 // 25/10 (audit) : un grade en réserve qui démarre n'est plus annoncé comme « terminé, à racheter »

@@ -34,6 +34,9 @@ public final class PartieServeur implements Partie {
             VoiceServer.clientState(player, s);
         } else if (paquet instanceof CaraCreaNetwork.GroupAction g) {
             VoiceServer.groupAction(player, g);
+        } else if (paquet instanceof CaraCreaNetwork.VoiceRosterRequest) {
+            // 21/11 : une différence de la liste vocale manquait chez ce joueur
+            VoiceServer.rosterRequest(player);
         }
     }
 }

@@ -31,6 +31,8 @@ public final class PartieClient implements Partie {
             ClientPacketHandler.openVoiceSettings(o);
         } else if (paquet instanceof CaraCreaNetwork.VoiceRoster r) {
             ClientPacketHandler.roster(r);
+        } else if (paquet instanceof CaraCreaNetwork.VoiceRosterDelta d) {
+            ClientPacketHandler.rosterDelta(d);
         }
     }
 }

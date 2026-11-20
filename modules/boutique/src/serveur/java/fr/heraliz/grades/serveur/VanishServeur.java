@@ -182,7 +182,7 @@ public final class VanishServeur {
         else CACHES.remove(p.getUUID());
         sauver();
         appliquer(p.server);
-        TabServeur.maj(p.server, true);
+        TabServeur.marquer();
         ServeurGrades.registreJournal(p.getGameProfile().getName() + " | vanish | " + (cache ? "caché" : "visible"));
         p.sendSystemMessage(cache
                 ? msg("vanish_on", "Tu es caché : seul le staff connecté te voit (tab, monde, nom).").copy().withStyle(ChatFormatting.GRAY)
@@ -275,7 +275,7 @@ public final class VanishServeur {
         }
         if (change) {
             sauver();
-            TabServeur.maj(joueurs.isEmpty() ? null : joueurs.get(0).server, true);
+            TabServeur.marquer();
         }
     }
 

@@ -35,7 +35,11 @@ public final class ClansNet {
      * l'effacerait en reglant les permissions d'un grade.
      */
     /** 14 (19/11) : profil des joueurs, /profil et /stats (ProfilS2C, en fin de liste). */
-    private static final String VERSION = "14";
+    /**
+     * 15 (21/11) : tags des joueurs par differences numerotees (version en tete de TagsS2C, TagsDeltaS2C et
+     * TagsDemandeC2S en fin de liste) : la table complete ne part plus a tous a chaque arrivee ou depart.
+     */
+    private static final String VERSION = "15";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(HeraliszClans.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -85,6 +89,9 @@ public final class ClansNet {
         msg(Packets.HistoriqueS2C.class, s2c, Packets.HistoriqueS2C::write, Packets.HistoriqueS2C::read, Packets.HistoriqueS2C::handle);
         // 19/11 : profil d'un joueur (/profil, /stats), l'ecran s'ouvre a la reception
         msg(Packets.ProfilS2C.class, s2c, Packets.ProfilS2C::write, Packets.ProfilS2C::read, Packets.ProfilS2C::handle);
+        // 21/11 : tags des joueurs par differences (canal 15)
+        msg(Packets.TagsDeltaS2C.class, s2c, Packets.TagsDeltaS2C::write, Packets.TagsDeltaS2C::read, Packets.TagsDeltaS2C::handle);
+        msg(Packets.TagsDemandeC2S.class, c2s, Packets.TagsDemandeC2S::write, Packets.TagsDemandeC2S::read, Packets.TagsDemandeC2S::handle);
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {

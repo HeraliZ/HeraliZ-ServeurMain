@@ -100,26 +100,70 @@ public final class Packets {
         }
     }
 
-    /** Tags de tous les joueurs en ligne (remplace la table ; un joueur absent n'a pas de clan). */
-    public record TagsS2C(Map<UUID, TagVue> tags) {
+    /**
+     * Tags de tous les joueurs en ligne, table COMPLETE (remplace la table ; un joueur absent n'a pas de clan). 21/11 :
+     * envoyee seulement au joueur qui arrive (ou qui la redemande), numerotee ({@code version}) ; les autres recoivent les
+     * differences ({@link TagsDeltaS2C}).
+     */
+    public record TagsS2C(int version, Map<UUID, TagVue> tags) {
         void write(FriendlyByteBuf b) {
-            b.writeVarInt(tags.size());
-            for (Map.Entry<UUID, TagVue> e : tags.entrySet()) {
-                b.writeUUID(e.getKey());
-                e.getValue().write(b);
-            }
+            b.writeVarInt(version);
+            ecrireTags(b, tags);
         }
 
         static TagsS2C read(FriendlyByteBuf b) {
-            int n = Math.min(1024, b.readVarInt());
-            Map<UUID, TagVue> m = new HashMap<>(n * 2);
-            for (int i = 0; i < n; i++) m.put(b.readUUID(), TagVue.read(b));
-            return new TagsS2C(m);
+            int version = b.readVarInt();
+            return new TagsS2C(version, lireTags(b));
         }
 
         void handle(Supplier<NetworkEvent.Context> ctx) {
             RECEPTION_CLIENT.accept(this);
         }
+    }
+
+    /**
+     * Ce qui change dans la table des tags (21/11) : joueurs retires (partis, ou sans clan maintenant), tags ajoutes ou
+     * changes. {@code version} = celle de l'envoi precedent + 1 : sinon le joueur ignore et redemande la table complete
+     * ({@link TagsDemandeC2S}).
+     */
+    public record TagsDeltaS2C(int version, List<UUID> retires, Map<UUID, TagVue> changes) {
+        void write(FriendlyByteBuf b) {
+            b.writeVarInt(version);
+            int n = Math.min(1024, retires.size());
+            b.writeVarInt(n);
+            for (int i = 0; i < n; i++) b.writeUUID(retires.get(i));
+            ecrireTags(b, changes);
+        }
+
+        static TagsDeltaS2C read(FriendlyByteBuf b) {
+            int version = b.readVarInt();
+            int n = Math.min(1024, b.readVarInt());
+            List<UUID> retires = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) retires.add(b.readUUID());
+            return new TagsDeltaS2C(version, retires, lireTags(b));
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            RECEPTION_CLIENT.accept(this);
+        }
+    }
+
+    private static void ecrireTags(FriendlyByteBuf b, Map<UUID, TagVue> tags) {
+        int n = Math.min(1024, tags.size());
+        b.writeVarInt(n);
+        int i = 0;
+        for (Map.Entry<UUID, TagVue> e : tags.entrySet()) {
+            if (i++ >= n) break;
+            b.writeUUID(e.getKey());
+            e.getValue().write(b);
+        }
+    }
+
+    private static Map<UUID, TagVue> lireTags(FriendlyByteBuf b) {
+        int n = Math.min(1024, b.readVarInt());
+        Map<UUID, TagVue> m = new HashMap<>(n * 2);
+        for (int i = 0; i < n; i++) m.put(b.readUUID(), TagVue.read(b));
+        return m;
     }
 
     /**
@@ -847,6 +891,24 @@ public final class Packets {
 
         void handle(Supplier<NetworkEvent.Context> ctx) {
             RECEPTION_CLIENT.accept(this);
+        }
+    }
+
+    /**
+     * Une difference des tags manquait chez le joueur (21/11) : il demande la table complete. Le serveur en accepte une
+     * toutes les 5 s par joueur ; sans message « trop vite » (demande automatique, pas une action du joueur).
+     */
+    public record TagsDemandeC2S() {
+        void write(FriendlyByteBuf b) {
+        }
+
+        static TagsDemandeC2S read(FriendlyByteBuf b) {
+            return new TagsDemandeC2S();
+        }
+
+        void handle(Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer p = sender(ctx);
+            if (p != null) RECEPTION_SERVEUR.accept(new Recu(p, this));
         }
     }
 }

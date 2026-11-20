@@ -14,9 +14,12 @@ import fr.heralisz.clans.model.ReglagesPerms;
 import fr.heralisz.clans.model.TagVue;
 import fr.heralisz.clans.network.ClansNet;
 import fr.heralisz.clans.network.Packets;
+import fr.heralisz.clans.network.Synchro;
 import fr.heralisz.clans.territory.Territoires;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
@@ -25,6 +28,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +77,8 @@ public final class Sync {
         SALES_LENTS.clear();
         DERNIER_ENVOI.clear();
         ECRANS.clear();
+        TAGS.vider();
+        tagsSales = false;
     }
 
     // ------------------------------------------------------------------ ecrans ouverts
@@ -106,12 +112,17 @@ public final class Sync {
         if (c != null) SALES_LENTS.add(c.id);
     }
 
-    /** Appele a chaque tick serveur (fin) : envoie les snapshots des clans sales dont la cadence est ecoulee. */
+    /**
+     * Appele a chaque tick serveur (fin) : differences des tags du tick (21/11), puis snapshots des clans sales dont la
+     * cadence est ecoulee.
+     */
     static void tick() {
-        if (SALES.isEmpty() && SALES_LENTS.isEmpty()) return;
+        if (SALES.isEmpty() && SALES_LENTS.isEmpty() && !tagsSales) return;
         ClanStore store = ClanStore.get();
         MinecraftServer server = serveur();
         if (store == null || server == null) return;
+        tickTags(server);
+        if (SALES.isEmpty() && SALES_LENTS.isEmpty()) return;
         long now = System.currentTimeMillis();
         vider(SALES, CADENCE_MS, false, store, server, now);
         vider(SALES_LENTS, CADENCE_LENTE_MS, true, store, server, now);
@@ -232,9 +243,20 @@ public final class Sync {
     }
 
     // ------------------------------------------------------------------ tags
-    /** Table des tags de tous les joueurs en ligne (sauf « exclure », joueur en train de partir). */
+    /*
+     * 21/11 (decision du proprietaire apres l'audit reseau du 20/11) : seulement ce qui change. Avant, la table COMPLETE
+     * des tags partait a tous les joueurs a chaque arrivee ou depart d'un membre de clan et a chaque changement de tag ou
+     * de banniere (a 150 joueurs : 150 tables de 150 tags). Maintenant : la table complete au joueur qui arrive (ou qui la
+     * redemande), puis des differences numerotees (Synchro) a ceux qui l'ont deja ; les changements d'un meme tick partent
+     * en un envoi, a la fin du tick ; rien ne part si rien ne change.
+     */
+    /** Derniere table envoyee (joueur en ligne -> tag), son numero, et les joueurs qui l'ont (une seule vue : tout le monde). */
+    private static final Synchro.Diffuseur<UUID, UUID, TagVue> TAGS = new Synchro.Diffuseur<>(t -> true);
+    private static boolean tagsSales;
+
+    /** Table des tags de tous les joueurs en ligne (sauf « exclure », joueur en train de partir), dans l'ordre des joueurs. */
     public static Map<UUID, TagVue> tableTags(@Nullable UUID exclure) {
-        Map<UUID, TagVue> m = new HashMap<>();
+        Map<UUID, TagVue> m = new LinkedHashMap<>();
         ClanStore store = ClanStore.get();
         MinecraftServer server = serveur();
         if (store == null || server == null) return m;
@@ -247,19 +269,63 @@ public final class Sync {
     }
 
     /**
-     * Diffuse la table des tags a tout le monde et rafraichit la liste Tab des membres en ligne du clan donne (null :
-     * aucun rafraichissement, par exemple a la deconnexion, pour ne pas envoyer n² paquets).
+     * Un tag a pu changer (clan cree, rejoint, quitte, dissous, tag ou banniere modifies) : la table est relue a la fin du
+     * tick et seules les differences partent ; rafraichit aussi la liste Tab des membres en ligne du clan donne (null :
+     * aucun rafraichissement).
      */
     public static void diffuserTags(@Nullable Clan clanChange, @Nullable UUID exclure) {
         MinecraftServer server = serveur();
         if (server == null) return;
-        Packets.TagsS2C paquet = new Packets.TagsS2C(tableTags(exclure));
-        ClansNet.toAll(paquet);
+        tagsSales = true;
         if (clanChange == null) return;
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             if (p.getUUID().equals(exclure)) continue;
             if (clanChange.estMembre(p.getUUID())) p.refreshTabListName();
         }
+    }
+
+    /** Arrivee : table complete pour lui a la fin du tick ; son tag (s'il a un clan) part aux autres en difference. */
+    static void arriveeTags(ServerPlayer p) {
+        TAGS.complet(p.getUUID());
+        tagsSales = true;
+    }
+
+    /** Depart : son tag est retire chez les autres a la fin du tick (s'il en avait un ; sinon rien ne part). */
+    static void departTags(UUID joueur, boolean avaitUnClan) {
+        TAGS.depart(joueur);
+        if (avaitUnClan) tagsSales = true;
+    }
+
+    /** Une difference manquait chez ce joueur : table complete a la fin du tick (au plus une fois toutes les 5 s). */
+    public static void demandeTags(ServerPlayer p) {
+        if (TAGS.demande(p.getUUID(), System.currentTimeMillis())) tagsSales = true;
+    }
+
+    /** Fin du tick : rien si rien n'a ete signale ; sinon la table est relue et seul ce qui change part. */
+    private static void tickTags(MinecraftServer server) {
+        if (!tagsSales) return;
+        tagsSales = false;
+        // chaque paquet est mis en forme une seule fois ([0] table complete, [1] difference), et seulement s'il part
+        Packet<?>[] paquets = new Packet<?>[2];
+        TAGS.<ServerPlayer>publier(tableTags(null), server.getPlayerList().getPlayers(), ServerPlayer::getUUID, p -> 0,
+                new Synchro.Envoi<ServerPlayer, UUID, TagVue>() {
+                    @Override
+                    public void complet(ServerPlayer p, int vue, int version, Map<UUID, TagVue> table) {
+                        if (paquets[0] == null) {
+                            paquets[0] = ClansNet.CHANNEL.toVanillaPacket(new Packets.TagsS2C(version, table), NetworkDirection.PLAY_TO_CLIENT);
+                        }
+                        p.connection.send(paquets[0]);
+                    }
+
+                    @Override
+                    public void difference(ServerPlayer p, int vue, int version, Synchro.Diff<UUID, TagVue> d) {
+                        if (paquets[1] == null) {
+                            paquets[1] = ClansNet.CHANNEL.toVanillaPacket(new Packets.TagsDeltaS2C(version, d.retires(), d.changes()),
+                                    NetworkDirection.PLAY_TO_CLIENT);
+                        }
+                        p.connection.send(paquets[1]);
+                    }
+                });
     }
 
     /** Variante : rafraichit aussi la liste Tab d'un joueur precis (qui vient de quitter un clan). */

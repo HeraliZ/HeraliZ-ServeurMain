@@ -7,6 +7,7 @@ import com.caracrea.client.gui.VoiceVolumesScreen;
 import com.caracrea.network.CaraCreaNetwork;
 import com.caracrea.network.CaraCreaNetwork.GroupInfo;
 import com.caracrea.network.CaraCreaNetwork.PlayerVoice;
+import com.caracrea.network.Synchro;
 import com.caracrea.voice.VoiceActivity;
 import com.caracrea.voice.VoiceGate;
 import com.caracrea.voice.net.VoiceProtocol;
@@ -26,6 +27,8 @@ import net.minecraftforge.fml.ModList;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,21 +180,67 @@ public final class VoiceClient {
         }
     }
 
+    // Liste vocale reçue (21/11) : complète à l'arrivée, puis différences numérotées (Synchro). Main thread only.
+    private static final Map<Integer, GroupInfo> ROSTER_GROUPS = new HashMap<>();
+    private static final Map<UUID, PlayerVoice> ROSTER_PLAYERS = new HashMap<>();
+    private static final Synchro.Suite ROSTER = new Synchro.Suite();
+
+    /** Main thread: the complete roster (on joining, or once asked again). */
     public static void roster(CaraCreaNetwork.VoiceRoster roster) {
-        groups = List.copyOf(roster.groups());
-        Map<UUID, PlayerVoice> map = new HashMap<>();
-        int max = 0;
+        ROSTER_GROUPS.clear();
+        for (GroupInfo group : roster.groups()) {
+            ROSTER_GROUPS.put(group.id(), group);
+        }
+        ROSTER_PLAYERS.clear();
         for (PlayerVoice voice : roster.players()) {
-            map.put(voice.player(), voice);
+            ROSTER_PLAYERS.put(voice.player(), voice);
+        }
+        ROSTER.complet(roster.version());
+        publishRoster();
+    }
+
+    /**
+     * Main thread: what changed in the roster (21/11). If one change is missing, the roster waits for the complete one,
+     * asked again from the server (at most once every 5 s).
+     */
+    public static void rosterDelta(CaraCreaNetwork.VoiceRosterDelta delta) {
+        if (!ROSTER.suivante(delta.version())) {
+            if (ROSTER.demander(System.currentTimeMillis())) {
+                CaraCreaNetwork.CHANNEL.sendToServer(new CaraCreaNetwork.VoiceRosterRequest());
+            }
+            return;
+        }
+        for (Integer id : delta.removedGroups()) {
+            ROSTER_GROUPS.remove(id);
+        }
+        for (GroupInfo group : delta.groups()) {
+            ROSTER_GROUPS.put(group.id(), group);
+        }
+        for (UUID player : delta.removedPlayers()) {
+            ROSTER_PLAYERS.remove(player);
+        }
+        for (PlayerVoice voice : delta.players()) {
+            ROSTER_PLAYERS.put(voice.player(), voice);
+        }
+        publishRoster();
+    }
+
+    /** What the screens and the voice threads read: groups (in creation order, as on the server), states, voice numbers. */
+    private static void publishRoster() {
+        List<GroupInfo> list = new ArrayList<>(ROSTER_GROUPS.values());
+        list.sort(Comparator.comparingInt(GroupInfo::id));
+        groups = List.copyOf(list);
+        int max = 0;
+        for (PlayerVoice voice : ROSTER_PLAYERS.values()) {
             max = Math.max(max, voice.voiceId());
         }
         UUID[] ids = new UUID[Math.min(65536, max + 1)];
-        for (PlayerVoice voice : roster.players()) {
+        for (PlayerVoice voice : ROSTER_PLAYERS.values()) {
             if (voice.voiceId() >= 0 && voice.voiceId() < ids.length) {
                 ids[voice.voiceId()] = voice.player();
             }
         }
-        states = map;
+        states = new HashMap<>(ROSTER_PLAYERS);
         byVoiceId = ids;
     }
 
@@ -680,5 +729,8 @@ public final class VoiceClient {
         groups = List.of();
         states = Map.of();
         byVoiceId = new UUID[0];
+        ROSTER_GROUPS.clear();
+        ROSTER_PLAYERS.clear();
+        ROSTER.oublier();
     }
 }

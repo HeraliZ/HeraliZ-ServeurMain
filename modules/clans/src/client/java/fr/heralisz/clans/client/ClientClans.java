@@ -18,6 +18,7 @@ import fr.heralisz.clans.model.Stats;
 import fr.heralisz.clans.model.TagVue;
 import fr.heralisz.clans.model.ZoneVue;
 import fr.heralisz.clans.network.Packets;
+import fr.heralisz.clans.network.Synchro;
 import net.minecraft.client.Minecraft;
 
 import javax.annotation.Nullable;
@@ -182,6 +183,32 @@ public final class ClientClans {
         tags = t == null ? Map.of() : Map.copyOf(t);
     }
 
+    /** Suite des envois des tags (21/11) : table complete a l'arrivee, puis differences numerotees. */
+    private static final Synchro.Suite SUITE_TAGS = new Synchro.Suite();
+
+    /** Table complete des tags envoyee par le serveur (arrivee, ou reponse a une demande). */
+    public static void tagsComplets(int version, Map<UUID, TagVue> t) {
+        setTags(t);
+        SUITE_TAGS.complet(version);
+    }
+
+    /**
+     * Difference des tags (21/11) : vrai si elle suit la precedente (appliquee) ; faux si une difference manque : la table
+     * attend la table complete ({@link #demanderTags}).
+     */
+    public static boolean tagsDelta(int version, List<UUID> retires, Map<UUID, TagVue> changes) {
+        if (!SUITE_TAGS.suivante(version)) return false;
+        Map<UUID, TagVue> t = new HashMap<>(tags);
+        Synchro.appliquer(t, retires, changes);
+        tags = Map.copyOf(t);
+        return true;
+    }
+
+    /** Vrai s'il faut demander la table complete maintenant (pas a jour, aucune demande depuis 5 s). */
+    public static boolean demanderTags(long maintenantMs) {
+        return SUITE_TAGS.demander(maintenantMs);
+    }
+
     public static void setSaison(@Nullable Packets.SaisonS2C s) {
         saison = s;
         versionSaison++;
@@ -206,6 +233,7 @@ public final class ClientClans {
         IconeClan.vider();
         invitations = List.of();
         tags = Map.of();
+        SUITE_TAGS.oublier();
         saison = null;
         historique = null;
         hudZone = null;

@@ -589,7 +589,7 @@ final class PanelStaff {
                 cible.sendSystemMessage(retirer
                         ? Component.translatableWithFallback("message.heraliz_grades.perdu", "Tu n'as plus le grade %s.", g.nom())
                         : Component.translatableWithFallback("message.heraliz_grades.recu", "Tu as reçu le grade %s.", g.nom()));
-                TabServeur.maj(p.server, true);
+                TabServeur.marquer();
                 return Resultat.ok((retirer ? "-" : "+") + g.id);
             }
             case DEJA -> {

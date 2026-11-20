@@ -27,6 +27,11 @@ public final class ClientPacketHandler {
         VoiceClient.roster(packet);
     }
 
+    /** What changed in the roster (21/11). */
+    public static void rosterDelta(CaraCreaNetwork.VoiceRosterDelta packet) {
+        VoiceClient.rosterDelta(packet);
+    }
+
     /** Network thread: a voice frame through the game connection (the UDP channel is blocked or not offered). */
     public static void voice(CaraCreaNetwork.VoiceDown packet) {
         VoiceClient.receiveTcp(packet);

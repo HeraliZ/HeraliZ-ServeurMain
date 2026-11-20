@@ -135,7 +135,7 @@ final class EditeurServeur {
             ServeurGrades.rafraichir(j);
             if (arbre) p.server.getCommands().sendCommands(j);
         }
-        TabServeur.maj(p.server, true);
+        TabServeur.marquer();
         ouvrir(p, false, reponse.getString());
     }
 

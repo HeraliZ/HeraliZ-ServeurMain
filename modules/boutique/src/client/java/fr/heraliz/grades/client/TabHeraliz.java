@@ -3,12 +3,14 @@ package fr.heraliz.grades.client;
 import fr.heraliz.grades.Grade;
 import fr.heraliz.grades.client.kit.Ui;
 import fr.heraliz.grades.reseau.ReseauGrades;
+import fr.heraliz.grades.reseau.Synchro;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 
@@ -40,9 +42,35 @@ public final class TabHeraliz {
     private TabHeraliz() {
     }
 
+    /** Suite des envois du serveur (21/11) : liste complète à l'arrivée, puis différences numérotées. */
+    private static final Synchro.Suite SUITE = new Synchro.Suite();
+
+    /** Liste complète (arrivée, entrée dans le staff ou sortie, ou réponse à une demande) : elle remplace tout. */
     static void recevoir(ReseauGrades.InfosTab t) {
         INFOS.clear();
         for (ReseauGrades.LigneTab l : t.lignes()) INFOS.put(l.uuid(), l);
+        SUITE.complet(t.version());
+        versionInfos++;
+    }
+
+    /**
+     * Différence (21/11) : appliquée si elle suit la précédente ; sinon une différence manque : la liste attend la liste
+     * complète, demandée au serveur (au plus une demande toutes les 5 s).
+     */
+    static void recevoirDelta(ReseauGrades.DeltaTab d) {
+        if (!SUITE.suivante(d.version())) {
+            if (SUITE.demander(System.currentTimeMillis())) ReseauGrades.CANAL.sendToServer(new ReseauGrades.DemandeTab());
+            return;
+        }
+        for (UUID u : d.retires()) INFOS.remove(u);
+        for (ReseauGrades.LigneTab l : d.changes()) INFOS.put(l.uuid(), l);
+        versionInfos++;
+    }
+
+    /** Départ du serveur : la liste d'un serveur ne sert jamais sur le suivant. */
+    static void deconnexion(ClientPlayerNetworkEvent.LoggingOut e) {
+        INFOS.clear();
+        SUITE.oublier();
         versionInfos++;
     }
 
