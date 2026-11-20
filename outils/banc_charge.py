@@ -536,7 +536,7 @@ def banc(a):
     ry = rythmes(a.rythmes)
     regles = regles_jeu(a.regles)
     info = {"bots": bots, "tuto": tuto, "groupes": len(groupes), "chauffe_min": a.chauffe, "secondes": secondes,
-            "tas_mo": tas, "coeurs": os.cpu_count(), "diag": a.diag, "scenario": a.scenario,
+            "tas_mo": tas, "coeurs": os.cpu_count(), "diag": a.diag, "scenario": a.scenario, "mohist": jar.name,
             "rythmes": list(ry) if ry else None, "regles": regles, "ab": bool(a.ab and regles)}
     try:
         info.update(json.loads((d / "banc.json").read_text(encoding="utf-8")))
@@ -886,6 +886,8 @@ def finir(a, d, rapport, res, serveur, gc_log):
                 info.get("graine"), info["tuto"], info["groupes"]))
     if os.environ.get("GITHUB_SHA"):
         o.append("Commit : `%s` (branche `%s`)" % (os.environ["GITHUB_SHA"][:10], os.environ.get("GITHUB_REF_NAME", "?")))
+    if info.get("mohist"):
+        o.append("Mohist : `%s`" % info["mohist"])
     o.append("")
     if res.get("echec"):
         o += ["**Échec : %s.** Voir le journal complet (artefact, console.log)." % res["echec"], ""]
