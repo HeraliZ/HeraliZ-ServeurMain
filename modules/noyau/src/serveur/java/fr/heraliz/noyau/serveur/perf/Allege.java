@@ -95,6 +95,17 @@ public final class Allege {
    /** Points d'intérêt relus à la lecture des tronçons (C9, mesure seulement) : étages, temps total et pire (ns). */
    public static long poiSections, poiNanos, poiPireNanos;
 
+   // audit du tick (20/11)
+   /** tickChunks « au repos » (par tranches) et comme Minecraft (pluie, règle...), par monde et par tick. */
+   public static long reposTicks, reposMinecraft;
+   /** Au repos : supports laissés de côté par la liste (ni de la tranche, ni de changement à envoyer), tronçons sautés par
+    * Minecraft (hors tranche), tics de blocs sautés (tranche). */
+   public static long reposLaisses, reposSautes, reposTicsSautes;
+   /** Relevés des créatures pour les apparitions naturelles sautés (doMobSpawning à faux). */
+   public static long relevesApparitionsEvites;
+   /** Revues des tickets de chargement sautées (aucun ticket ne pouvait avoir fini) et faites. */
+   public static long revuesTicketsSautees, revuesTicketsFaites;
+
    /** Une fois, par la partie serveur : début et arrêt du serveur, fin de tick, monde déchargé. */
    public static void enregistrer() {
       MinecraftForge.EVENT_BUS.addListener((ServerAboutToStartEvent e) -> {
@@ -162,6 +173,11 @@ public final class Allege {
       l.append(String.format(Locale.ROOT, " ; points d'intérêt relus à la lecture des tronçons : %d étages en %.0f ms (%.3f ms par étage, pire %.1f ms)",
             poiSections, poiNanos / 1e6, poiSections == 0 ? 0.0 : poiNanos / 1e6 / poiSections, poiPireNanos / 1e6));
       ligne.accept(l.append(String.format("%n")).toString());
+      ligne.accept(String.format(Locale.ROOT, "Tick (20/11) : tronçons au repos %d ticks de monde (%d comme Minecraft) : %.0f supports laissés et %.0f"
+                  + " tronçons sautés par tick au repos, %d tics de blocs sautés ; relevés des apparitions évités %d ; revues des tickets"
+                  + " sautées %d, faites %d%n", reposTicks, reposMinecraft, reposTicks == 0 ? 0.0 : (double) reposLaisses / reposTicks,
+            reposTicks == 0 ? 0.0 : (double) reposSautes / reposTicks, reposTicsSautes, relevesApparitionsEvites, revuesTicketsSautees,
+            revuesTicketsFaites));
       ligne.accept(fr.heraliz.noyau.api.EcrituresFond.etat());
       ligne.accept(Prechauffage.etat());
    }

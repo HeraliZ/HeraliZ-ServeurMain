@@ -158,6 +158,16 @@ public final class NoyauConfig {
    /** Classes de nos mods chargées à l'avance, sur un fil à part, après le démarrage. */
    public static volatile boolean classesPrechargees = true;
    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PLUGINS_PRECHAUFFES;
+   // Audit du tick (20/11) : lus par la partie serveur seulement (mixins de heraliz_noyau_allege.mixins.json)
+   public static final ForgeConfigSpec.IntValue TRONCONS_TRANCHES;
+   /** tickChunks « au repos » : chaque tronçon qui tourne vu une fois tous les N ticks (1 : à chaque tick, comme Minecraft). */
+   public static volatile int tronconsTranches = 20;
+   public static final ForgeConfigSpec.BooleanValue APPARITIONS_SANS_RELEVE;
+   /** Relevé des créatures pour les apparitions naturelles sauté quand doMobSpawning est à faux. */
+   public static volatile boolean apparitionsSansReleve = true;
+   public static final ForgeConfigSpec.BooleanValue TICKETS_A_ECHEANCE;
+   /** Revue des tickets de chargement sautée tant qu'aucun ticket ne peut avoir fini son temps. */
+   public static volatile boolean ticketsAEcheance = true;
    public static final List<String> PLUGINS_PRECHAUFFES_DEFAUT = List.of("WorldEdit", "WorldGuard", "WorldGuardExtraFlags", "LuckPerms", "AuthMe", "LiteBans");
    public static final ForgeConfigSpec.IntValue DIAG_RELEVES_DES_MS;
    /** Le veilleur du diagnostic relève la pile dès ce temps de tick (ms), seul un tick plus long que le seuil fait un rapport. */
@@ -450,6 +460,23 @@ public final class NoyauConfig {
             "« Done » : Mohist les traduit alors avant l'arrivée des joueurs (1,4 s de gel à la première connexion, 0,2 à 0,8 s au",
             "premier WorldEdit, le 18/11). Liste vide : rien.")
             .defineListAllowEmpty(List.of("plugins_prechauffes"), () -> PLUGINS_PRECHAUFFES_DEFAUT, o -> o instanceof String);
+      TRONCONS_TRANCHES = b.comment("Tronçons qui tournent (20/11, audit du tick : 7,8 ms par tick à 100 joueurs) : à chaque tick, Minecraft passe sur chaque",
+            "tronçon autour des joueurs (temps passé, tics de blocs, foudre, glace, neige). Quand rien ne peut y arriver (tics aléatoires",
+            "à 0, doMobSpawning à faux, pas de pluie, gel_eau à false), seul compte le temps passé par les joueurs (difficulté locale) :",
+            "chaque tronçon n'est alors vu qu'une fois tous les N ticks, avec N ticks de temps d'un coup (même total). Les blocs changés",
+            "partent toujours aux joueurs à chaque tick. Dès qu'il pleut ou qu'une règle change : chaque tick, comme Minecraft.",
+            "1 : chaque tick, comme Minecraft.")
+            .defineInRange("troncons_tranches", 20, 1, 200);
+      APPARITIONS_SANS_RELEVE = b.comment("Apparitions naturelles (20/11, audit du tick : 0,7 ms par tick à 100 joueurs) : à chaque tick, Minecraft compte toutes",
+            "les créatures du monde et cherche les joueurs proches de chaque monstre, pour ses apparitions naturelles. true = sauté dans",
+            "un monde où la règle doMobSpawning est à faux (rien n'apparaît : le compte ne sert à rien ; les zombies viennent du",
+            "peuplement). false : à chaque tick, comme Minecraft.")
+            .define("apparitions_sans_releve", true);
+      TICKETS_A_ECHEANCE = b.comment("Tickets de chargement (20/11, audit du tick : 0,5 ms par tick à 100 joueurs) : à chaque tick, Minecraft passe en revue",
+            "tous les tickets du monde (un par tronçon vu par un joueur) pour retirer ceux qui ont fini leur temps, alors que presque",
+            "aucun n'a de durée. true = revue faite seulement au tick où un ticket peut avoir fini (mêmes tickets retirés, au même",
+            "tick). false : à chaque tick, comme Minecraft.")
+            .define("tickets_a_echeance", true);
       b.pop();
       b.push("monde");
       TICS_ALEATOIRES = b.comment("Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée",
@@ -525,6 +552,9 @@ public final class NoyauConfig {
       joueursEtales = JOUEURS_ETALES.get();
       entitesEtalees = ENTITES_ETALEES.get();
       classesPrechargees = CLASSES_PRECHARGEES.get();
+      tronconsTranches = TRONCONS_TRANCHES.get();
+      apparitionsSansReleve = APPARITIONS_SANS_RELEVE.get();
+      ticketsAEcheance = TICKETS_A_ECHEANCE.get();
       diagRelevesDesMs = DIAG_RELEVES_DES_MS.get();
       diagCalmeDemarrageS = DIAG_CALME_DEMARRAGE_S.get();
       ticsAleatoires = TICS_ALEATOIRES.get();

@@ -2,12 +2,14 @@ package fr.heraliz.noyau.serveur.perf;
 
 import com.mojang.logging.LogUtils;
 import fr.heraliz.noyau.NoyauConfig;
+import fr.heraliz.noyau.serveur.allege.ChangementsAcces;
 import fr.heraliz.noyau.serveur.allege.TronconsAcces;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.FullChunkStatus;
+import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -94,25 +96,48 @@ public final class TronconsActifs {
       return new Visibles(a, actifs.iterator());
    }
 
+   /**
+    * 20/11 ({@link TronconsRepos}) : quand le monde est « au repos » pendant ce tick, seuls les supports de la tranche du tick
+    * et ceux qui ont encore des blocs ou de la lumière à envoyer aux joueurs sont rendus : pour les autres, Minecraft ne ferait
+    * rien (tronçon sauté par la tranche, envoi vide). Les envois restent donc faits à chaque tick, comme avant.
+    */
    private static final class Visibles implements Iterator<ChunkHolder> {
       private final TronconsAcces carte;
       private final Iterator<ChunkHolder> it;
+      private final boolean repos;
       private ChunkHolder suivant;
 
       Visibles(TronconsAcces carte, Iterator<ChunkHolder> it) {
          this.carte = carte;
          this.it = it;
+         this.repos = TronconsRepos.repos();
          this.suivant = avancer();
       }
 
       private ChunkHolder avancer() {
          while (it.hasNext()) {
             ChunkHolder h = it.next();
+            if (repos && !utile(h)) {
+               Allege.reposLaisses++;
+               continue;
+            }
             if (carte.heraliz$visible(h.getPos().toLong()) == h) {
                return h;
             }
          }
          return null;
+      }
+
+      /** Au repos : support de la tranche du tick, ou qui a des changements à envoyer (accès absent : toujours). */
+      private static boolean utile(ChunkHolder h) {
+         ChunkPos p = h.getPos();
+         if (TronconsRepos.dansLaTranche(p.x, p.z)) {
+            return true;
+         }
+         if (!((Object) h instanceof ChangementsAcces c)) {
+            return true;
+         }
+         return c.heraliz$blocsChanges() || !c.heraliz$lumiereCiel().isEmpty() || !c.heraliz$lumiereBlocs().isEmpty();
       }
 
       @Override

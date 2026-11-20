@@ -42,7 +42,11 @@
     "JoueursAcces",
     "JoueursEtalesMixin",
     "EntitesEtaleesMixin",
-    "PoiMesureMixin"
+    "PoiMesureMixin",
+    "ChangementsAcces",
+    "TronconsReposMixin",
+    "TicketAcces",
+    "TicketsEcheanceMixin"
   ],
   "injectors": {
     "defaultRequire": 0

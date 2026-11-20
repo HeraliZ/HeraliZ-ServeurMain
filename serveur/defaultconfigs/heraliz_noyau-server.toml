@@ -233,6 +233,24 @@
 	#« Done » : Mohist les traduit alors avant l'arrivée des joueurs (1,4 s de gel à la première connexion, 0,2 à 0,8 s au
 	#premier WorldEdit, le 18/11). Liste vide : rien.
 	plugins_prechauffes = ["WorldEdit", "WorldGuard", "WorldGuardExtraFlags", "LuckPerms", "AuthMe", "LiteBans"]
+	#Tronçons qui tournent (20/11, audit du tick : 7,8 ms par tick à 100 joueurs) : à chaque tick, Minecraft passe sur chaque
+	#tronçon autour des joueurs (temps passé, tics de blocs, foudre, glace, neige). Quand rien ne peut y arriver (tics aléatoires
+	#à 0, doMobSpawning à faux, pas de pluie, gel_eau à false), seul compte le temps passé par les joueurs (difficulté locale) :
+	#chaque tronçon n'est alors vu qu'une fois tous les N ticks, avec N ticks de temps d'un coup (même total). Les blocs changés
+	#partent toujours aux joueurs à chaque tick. Dès qu'il pleut ou qu'une règle change : chaque tick, comme Minecraft.
+	#1 : chaque tick, comme Minecraft.
+	#Range: 1 ~ 200
+	troncons_tranches = 20
+	#Apparitions naturelles (20/11, audit du tick : 0,7 ms par tick à 100 joueurs) : à chaque tick, Minecraft compte toutes
+	#les créatures du monde et cherche les joueurs proches de chaque monstre, pour ses apparitions naturelles. true = sauté dans
+	#un monde où la règle doMobSpawning est à faux (rien n'apparaît : le compte ne sert à rien ; les zombies viennent du
+	#peuplement). false : à chaque tick, comme Minecraft.
+	apparitions_sans_releve = true
+	#Tickets de chargement (20/11, audit du tick : 0,5 ms par tick à 100 joueurs) : à chaque tick, Minecraft passe en revue
+	#tous les tickets du monde (un par tronçon vu par un joueur) pour retirer ceux qui ont fini leur temps, alors que presque
+	#aucun n'a de durée. true = revue faite seulement au tick où un ticket peut avoir fini (mêmes tickets retirés, au même
+	#tick). false : à chaque tick, comme Minecraft.
+	tickets_a_echeance = true
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée

@@ -380,6 +380,14 @@ public final class Bots {
     private static int gamerule(CommandContext<CommandSourceStack> x) {
         String nom = StringArgumentType.getString(x, "regle"), val = StringArgumentType.getString(x, "valeur");
         MinecraftServer srv = x.getSource().getServer();
+        // essais A/B du banc (20/11) : « vue N » (distance de vue du serveur, à chaud) et « perf.<réglage> valeur » (réglage
+        // du noyau, NoyauConfig, pour ce démarrage seulement) passent par le même chemin que les règles de jeu
+        if (nom.equals("vue") || nom.startsWith("perf.")) {
+            String r = nom.equals("vue") ? vue(srv, val) : reglageNoyau(nom.substring(5), val);
+            HeralizBanc.LOG.info("[banc] GAMERULE {} {} : {}", nom, val, r);
+            ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", nom, r);
+            return r.startsWith("?") ? 0 : 1;
+        }
         StringBuilder lu = new StringBuilder();
         int faits = 0, mondes = 0;
         for (ServerLevel l : srv.getAllLevels()) {
@@ -391,6 +399,42 @@ public final class Bots {
         HeralizBanc.LOG.info("[banc] GAMERULE {} {} : {} monde(s) sur {} ({})", nom, val, faits, mondes, lu);
         ok(x, "heralisz_utils.bots.reglage", "Réglage des bots : %s = %s", nom, lu.toString());
         return faits;
+    }
+
+    /** Distance de vue du serveur changée à chaud (comme heraliz_distances au démarrage) ; le tutoriel garde sa vue de 4. */
+    private static String vue(MinecraftServer srv, String val) {
+        int n;
+        try {
+            n = Math.max(2, Math.min(32, Integer.parseInt(val)));
+        } catch (NumberFormatException e) {
+            return "? vue illisible : " + val;
+        }
+        int avant = srv.getPlayerList().getViewDistance();
+        srv.getPlayerList().setViewDistance(n);
+        for (ServerLevel l : srv.getAllLevels()) {
+            if (l.dimension().location().toString().equals("crac:tuto")) {
+                l.getChunkSource().setViewDistance(Math.min(n, 4));
+            }
+        }
+        return "vue " + avant + " -> " + n + " (crac:tuto " + Math.min(n, 4) + ")";
+    }
+
+    /** Réglage du noyau (champ public de NoyauConfig, booléen ou entier) changé pour ce démarrage seulement. */
+    private static String reglageNoyau(String champ, String val) {
+        try {
+            Field f = Class.forName("fr.heraliz.noyau.NoyauConfig").getField(champ);
+            Object avant = f.get(null);
+            if (f.getType() == boolean.class) {
+                f.setBoolean(null, Boolean.parseBoolean(val));
+            } else if (f.getType() == int.class) {
+                f.setInt(null, Integer.parseInt(val));
+            } else {
+                return "? type non pris : " + f.getType().getSimpleName();
+            }
+            return champ + " " + avant + " -> " + f.get(null);
+        } catch (ReflectiveOperationException | NumberFormatException e) {
+            return "? " + champ + " : " + e;
+        }
     }
 
     private static String lire(ServerLevel l, String nom) {

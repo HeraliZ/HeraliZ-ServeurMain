@@ -435,11 +435,13 @@ def nouveaux_rapports(diag, apres, avant=None):
 
 
 def regles_jeu(texte):
-    """« randomTickSpeed 0; doFireTick false » -> [("randomTickSpeed", "0"), ("doFireTick", "false")]."""
+    """« randomTickSpeed 0; doFireTick false » -> [("randomTickSpeed", "0"), ("doFireTick", "false")].
+    20/11 : aussi « vue 6 » (distance de vue du serveur, à chaud) et « perf.tronconsTranches 1 » (réglage du noyau,
+    NoyauConfig, pour ce démarrage) : le module banc les applique par /bots gamerule, comme les règles de jeu."""
     out = []
     for x in (texte or "").split(";"):
         p = x.split()
-        if len(p) == 2 and re.fullmatch(r"[A-Za-z_]+", p[0]) and re.fullmatch(r"[A-Za-z0-9_.-]+", p[1]):
+        if len(p) == 2 and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", p[0]) and re.fullmatch(r"[A-Za-z0-9_.-]+", p[1]):
             out.append((p[0], p[1]))
         elif x.strip():
             dire("règle ignorée (« nom valeur » attendu) : %s" % x.strip())
@@ -683,7 +685,8 @@ def banc(a):
             for (k, v) in regles:
                 c("bots gamerule %s %s" % (k, v))
             serveur.attendre(r"\[banc\] GAMERULE", i, 30)
-            time.sleep(20)
+            # une distance de vue changée décharge ou charge des milliers de tronçons : 60 s pour que ça se tasse
+            time.sleep(60 if any(k == "vue" for (k, _) in regles) else 20)
             mesurer(a, serveur, d, secondes, "B (avec les règles)", res, c)
         else:
             mesurer(a, serveur, d, secondes, "mesure", res, c)
@@ -837,6 +840,18 @@ def table_mesure(o, titre, j, r_mesure, pauses):
           "- Processeur (Java, %s cœurs = 100 %%) : %s %% en moyenne, %s %% au plus" % (j.get("coeurs"), j.get("cpu_moyen_pct"), j.get("cpu_max_pct")), ""]
 
 
+def processeur():
+    """Modèle du processeur (20/11) : les machines de GitHub changent d'un banc à l'autre, d'où des écarts sans lien avec
+    le code ; « » si illisible (Windows)."""
+    try:
+        for l in Path("/proc/cpuinfo").read_text(encoding="utf-8", errors="replace").splitlines():
+            if l.lower().startswith("model name"):
+                return " (%s)" % l.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return ""
+
+
 def finir(a, d, rapport, res, serveur, gc_log):
     lignes = serveur.depuis(0) if serveur else []
     i_done = res.get("ligne_done", len(lignes))
@@ -866,8 +881,8 @@ def finir(a, d, rapport, res, serveur, gc_log):
     o = ["## Banc de charge HeraliZ — %s bots, %s min de mesure%s" % (
         info["bots"], round(info["secondes"] / 60, 1), "" if info.get("scenario", "normal") == "normal" else
         ", scénario « %s »" % info["scenario"]), ""]
-    o.append("Machine : %s cœurs · monde %s %s, graine %s · %d bots dans le tutoriel, %d groupes sur la carte"
-             % (info.get("coeurs"), info.get("monde", "?"), "plat" if info.get("plat") else "normal",
+    o.append("Machine : %s cœurs%s · monde %s %s, graine %s · %d bots dans le tutoriel, %d groupes sur la carte"
+             % (info.get("coeurs"), processeur(), info.get("monde", "?"), "plat" if info.get("plat") else "normal",
                 info.get("graine"), info["tuto"], info["groupes"]))
     if os.environ.get("GITHUB_SHA"):
         o.append("Commit : `%s` (branche `%s`)" % (os.environ["GITHUB_SHA"][:10], os.environ.get("GITHUB_REF_NAME", "?")))
