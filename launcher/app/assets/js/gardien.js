@@ -16,6 +16,8 @@
  *    Linux : /proc) : seules celles d'agent Java ou de débogueur de Java (instrument, jdwp…) partent, en « dll.nom » parmi
  *    les outils ; un jeu modifié ne peut pas les cacher au launcher ;
  *  - le jeu lui-même toujours là (même numéro de processus).
+ * (20/11, launcher 1.18.1) Les programmes qu'il lance pour ça (tasklist, PowerShell, ps) tournent en priorité basse, un
+ * PowerShell à la fois : le jeu garde le processeur (prioriteBasse).
  * Le résultat est écrit dans <dossier du jeu>/spartan/gardien.txt (une ligne, puis sa signature) ; le jeu le transmet tel
  * quel au serveur, qui le vérifie et juge (alerte au staff). Un launcher fermé de force arrête les rapports : « Gardien
  * muet ».
@@ -35,6 +37,7 @@
 
 const crypto = require('crypto')
 const fs = require('fs')
+const os = require('os')
 const path = require('path')
 const { execFile: execFileCb } = require('child_process')
 
@@ -96,9 +99,28 @@ const comparable = chemin => {
     return process.platform === 'win32' || process.platform === 'darwin' ? p.toLowerCase() : p
 }
 
-function execFile(cmd, args, options) {
+/**
+ * Programme lancé par le Gardien (tasklist, PowerShell, ps) : priorité « en dessous de la normale » (audit des images par
+ * seconde du 20/11). Sous Windows, chaque rapport démarre un PowerShell (titres des fenêtres), et un sur trois un second
+ * (bibliothèques du jeu) : quelques centaines de millisecondes de calcul chacun, plus d'une seconde sur un petit PC, toutes
+ * les 10 à 20 s pendant la partie. Plus bas que le jeu, ils ne lui prennent plus le processeur quand il en a besoin
+ * (le système leur laisse le temps libre ; jamais affamés : Windows relance un programme qui attend trop). Jamais
+ * bloquant : un programme déjà fini ou un refus du système ne change rien.
+ */
+function prioriteBasse(pid, regler = os.setPriority) {
+    if (!Number.isInteger(pid) || pid <= 0) return false
+    try {
+        regler(pid, os.constants.priority.PRIORITY_BELOW_NORMAL)
+        return true
+    } catch {
+        return false
+    }
+}
+
+function execFile(cmd, args, options, lancer = execFileCb, baisser = prioriteBasse) {
     return new Promise((resolve, reject) => {
-        execFileCb(cmd, args, { maxBuffer: 16 * 1024 * 1024, ...options }, (err, stdout) => err ? reject(err) : resolve(String(stdout)))
+        const enfant = lancer(cmd, args, { maxBuffer: 16 * 1024 * 1024, ...options }, (err, stdout) => err ? reject(err) : resolve(String(stdout)))
+        baisser(enfant?.pid)
     })
 }
 
@@ -504,11 +526,12 @@ class Gardien {
     }
 
     async rapport() {
-        // 19/11 : bibliothèques du processus du jeu relues un rapport sur trois (et au premier), en même temps que la liste
-        // des programmes ; une lecture impossible ne dit rien
+        // 19/11 : bibliothèques du processus du jeu relues un rapport sur trois (et au premier) ; une lecture impossible ne
+        // dit rien. 20/11 : APRÈS la liste des programmes, plus en même temps (sous Windows, deux PowerShell à la fois
+        // prenaient deux cœurs au jeu sur un petit PC ; le rapport part une seconde plus tard, rien d'autre ne change)
         const relire = this.modules !== null && this.tours++ % TOURS_MODULES === 0
-        const [liste, modules] = await Promise.all([this.lister(),
-            relire ? Promise.resolve().then(() => this.modules(this.pid)).catch(() => null) : null])
+        const liste = await this.lister()
+        const modules = relire ? await Promise.resolve().then(() => this.modules(this.pid)).catch(() => null) : null
         for (const b of bibliothequesJava(modules)) this.bibliotheques.add(b)
         // les bibliothèques d'abord : la liste des outils est bornée (outilsTexte)
         const outils = [...this.bibliotheques].map(b => 'dll.' + b)
@@ -569,5 +592,5 @@ class Gardien {
 
 module.exports = {
     Gardien, outilsTrouves, champsCsv, versionPreuve, programmes, outilsInterdits, nomsTasklist, titresPowershell,
-    modulesJeu, bibliothequesJava, nomsMaps, nomsTasklistModules, OUTILS, TITRES, OUTILS_INTERDITS
+    modulesJeu, bibliothequesJava, nomsMaps, nomsTasklistModules, execFile, prioriteBasse, OUTILS, TITRES, OUTILS_INTERDITS
 }
