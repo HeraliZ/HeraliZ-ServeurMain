@@ -326,6 +326,14 @@ def md5(fichier):
     return h.hexdigest()
 
 
+def sha256(fichier):
+    h = hashlib.sha256()
+    with open(fichier, "rb") as f:
+        for bloc in iter(lambda: f.read(1 << 20), b""):
+            h.update(bloc)
+    return h.hexdigest()
+
+
 def installation_prevue(d, jar):
     """Mohist va-t-il installer Forge (et donc se relancer dans une autre machine Java) ? Comme son lanceur
     (MohistMCStart, v_1_20_1$Install, Action.checkDependencies) : seulement si mohist.yml ne dit pas
@@ -342,7 +350,8 @@ def installation_prevue(d, jar):
             encoding="utf-8", errors="replace").splitlines()
     except OSError:
         return True
-    return len(lignes) < 2 or lignes[1].strip().lower() != md5(jar)
+    # 20/11 : les builds récents de Mohist (995) y écrivent l'empreinte SHA-256 du jar au lieu du MD5
+    return len(lignes) < 2 or lignes[1].strip().lower() not in (md5(jar), sha256(jar))
 
 
 def environnement(java):
