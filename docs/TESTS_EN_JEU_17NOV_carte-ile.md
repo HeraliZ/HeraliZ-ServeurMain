@@ -1388,8 +1388,8 @@ ligne. Versions : Noyau **1.1.9**, Quêtes **1.24.1**, Monde **1.3.8** (le launc
   et 35,1 ms à 150 bots sur deux machines du même modèle. Seuls les essais A/B (deux mesures dans le même serveur)
   comparent vraiment. Pour mémoire (100 bots) : 20,8 ms le 12/11 (bots deux fois moins actifs), 33,7 ms le 19/11, 31,1 ms
   le 20/11 avant ces corrections, 22,4 ms après. Code final de la branche (avec les corrections des trois audits du 20/11),
-  100 bots, sur une machine plus lente (EPYC 7763) : 27,3 ms en moyenne, 95 % à 38,0 ms ; les compteurs du noyau montrent
-  chaque correction en marche.
+  100 bots : 23,7 ms en moyenne (95 % à 35,8 ms) sur une EPYC 9V74, 27,3 ms (95 % à 38,0 ms) sur une machine plus lente
+  (EPYC 7763) ; les compteurs du noyau montrent chaque correction en marche.
 
 ### Ce qui change
 
