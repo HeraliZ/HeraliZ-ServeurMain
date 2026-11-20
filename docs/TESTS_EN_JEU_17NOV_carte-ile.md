@@ -1319,8 +1319,16 @@ Diagnostic (Noyau 1.1.8)
 
 GitHub
 - [ ] « Lenteurs du serveur » (Run workflow) : nouvelle partie « Mémoire et disque du serveur » dans le résumé : pauses
-      du ramasse-miettes (nombre, moyenne, pire), mémoire gardée après chaque passage, place prise par dossier, nombre
-      de fichiers de joueurs. Toujours en lecture seule.
+      du ramasse-miettes (nombre, moyenne, pire), mémoire vivante, place prise par dossier (seuls les noms de dossiers
+      connus ; les autres : « autre dossier n° … »), nombre de fichiers de joueurs. Toujours en lecture seule.
+- [ ] **Pseudos** (dépôt public : les journaux des tâches se lisent par tous) : avant ce correctif, « Lenteurs du serveur »
+      et « Journaux du serveur » laissaient passer des pseudos dans certaines lignes (retour d'une commande du staff
+      « [GRADE pseudo: …] », « Rejecting … from pseudo », lignes de la saison et de l'anticheat). Maintenant, tous les
+      pseudos connus du serveur sont remplacés par *** partout (165 le 20/11 ; la liste n'est jamais affichée). Vérifier
+      dans le journal d'une tâche : la ligne « pseudos à masquer : … », et aucun pseudo lisible.
+- [ ] À faire par le propriétaire : supprimer les anciennes tâches « Lenteurs du serveur » et « Journaux du serveur »
+      d'avant le 20/11 16 h 18 (onglet Actions, chaque tâche, « … » puis « Delete workflow run ») : leurs journaux
+      peuvent contenir des pseudos. Celles de cet audit sont déjà supprimées.
 - [ ] Prochain banc de charge : son rapport a une section « Réseau vers les bots, par sorte de paquet » (ce qui remplit
       la bande passante : tronçons, mouvements, sons et balles de TaCZ, paquets de nos mods).
 
