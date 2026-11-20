@@ -239,11 +239,14 @@ machines de GitHub (plus rapides), la marge sous 50 ms par tick est déjà mince
 récente à haute fréquence (2022 ou plus, environ 5 GHz en pointe : Ryzen 7000/9000, EPYC 4004, Xeon récents), des cœurs
 réservés (pas partagés) et un disque NVMe.
 
-**Mohist** : le build 916 relève toute la pile d'appels à chaque permission refusée (35 à 60 ms par mort, `/spawn`,
-extraction ou changement de monde). Les builds après le 20/07/2025 ne le font plus. Mise à jour à faire **après un banc
-de charge et un essai** (nouveau jar dans la Release « base-serveur » et `serveur/mohist.sha256`, puis « Installation
-complète » et deux redémarrages). En attendant, LuckPerms ne renvoie plus toute la liste des commandes à chaque
-changement de droits (`update-client-command-list: false`, 19/11).
+**Mohist** : le build 916 relevait toute la pile d'appels à chaque permission refusée (35 à 60 ms par mort, `/spawn`,
+extraction ou changement de monde). Depuis le Noyau 1.1.9 (20/11, réglage `[perf] permissions_sans_pile`), il ne le fait
+plus tant que son journal de débogage est coupé, comme les builds d'après le 20/07/2025 ; LuckPerms ne renvoie plus non
+plus toute la liste des commandes à chaque changement de droits (`update-client-command-list: false`, 19/11). Une mise à
+jour de Mohist n'est donc plus pressée (le 995, dernier build, essayé au banc de charge le 20/11 avec le champ
+« mohist » : rien de cassé, pas de gain visible ; section 38 de `docs/TESTS_EN_JEU_17NOV_carte-ile.md`) : **pas le jour
+du déménagement** (section 10) ; plus tard, après un démarrage d'essai (nouveau jar dans la Release « base-serveur » et
+`serveur/mohist.sha256`, puis « Installation complète » et deux redémarrages).
 
 ## 9. Limites des paquets et des connexions (19/11)
 

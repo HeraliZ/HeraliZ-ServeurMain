@@ -1348,3 +1348,152 @@ Pas changé, à décider par le propriétaire (chiffres dans le compte rendu de 
   déménagement : les garder dans une sauvegarde à part et ne pas les copier, ou tout copier (rien ne change en jeu). On
   ne touche jamais aux fichiers du monde sans vous ;
 - `.bash_history` à la racine du Ptero (historique de commandes de 2025, peut contenir des mots de passe) : à supprimer.
+
+## 38. Calcul du serveur à chaque tick : audit du 20/11 pour 150 joueurs
+
+Demande du propriétaire : « relancer un audit complet : vérifier que tout soit ultra optimisé », avant le passage sur une
+machine plus puissante et 150 joueurs. Cette partie : le **temps de calcul de chaque tick** du serveur (20 ticks par
+seconde, 50 ms au plus chacun), mod par mod (images par seconde des joueurs : section 36 ; réseau, mémoire et disque :
+section 37). **Rien de tout cela n'a été testé en jeu** : mesures sur le banc de charge (bots sur les machines de
+GitHub, dans un monde généré : ni la vraie carte ni ses milliers de conteneurs) et lecture des rapports du serveur en
+ligne. Versions : Noyau **1.1.9**, Quêtes **1.24.1**, Monde **1.3.8** (le launcher les donne aux joueurs) ; Banc 1.2.3
+(jamais livré).
+
+### Ce que disent les mesures
+
+- **Serveur en ligne** (depuis la mise à jour du 20/11 à 12 h 22, heure française ; 0 ou 1 joueur) : trois rapports de
+  blocage seulement : la première sauvegarde automatique après le démarrage (101 ms, attendu), la première connexion de
+  la journée (692 ms : classes lues, LuckPerms, succès et liste des commandes) et ce même joueur qui avance sur la carte
+  (342 ms : tronçons lus en attendant le disque, dont la relecture des « points d'intérêt », corrigée ci-dessous). Profil
+  d'une minute à 16 h 44 : 0,8 ms par tick, rien de lourd dans nos mods sur la vraie carte. Depuis les correctifs du
+  19/11, plus aucun rapport de `/tp` ni de ClashWar, mais presque personne n'a joué : ça ne prouve rien pour 150 joueurs,
+  seul le banc le dit.
+- **Banc à 150 bots, dans le même serveur** (essai A/B : les nouveaux réglages, puis coupés, comme dans la version en
+  ligne) :
+
+  | ms par tick (150 bots) | moyenne | 95 % | 99 % | ticks de plus de 50 ms en 5 min |
+  |---|---|---|---|---|
+  | comme la version en ligne | 33,7 | 43,6 | 69,6 | 158 |
+  | avec les corrections | **27,8** | **37,4** | **59,0** | **114** |
+
+  Soit **−5,9 ms par tick (−17 %)**, venus de Minecraft lui-même (le passage sur les tronçons autour des joueurs :
+  5,9 → 1 ms ; la revue des tickets et le relevé des apparitions : 1,2 → 0 ms). Le gain est plutôt sous-estimé : dans
+  ces essais, la mesure faite en second (ici « comme la version en ligne ») est un peu avantagée. À 100 bots, avec tout :
+  **22,4 ms** en moyenne, 95 % à 29,3 ms, 99 % à 45 ms, aucun tick de plus de 100 ms : les trois objectifs (30 / 40 /
+  50 ms) sont atteints. À 150 bots, la moyenne et le 95 % sont atteints, pas encore le 99 % (pointes des morts, des
+  connexions et des écritures de tronçons).
+- **Changer de monde** (mort, `/spawn`, extraction) coûte environ **moitié moins** au banc, grâce au point 4 ci-dessous
+  (6 extractions d'un coup : 69 → 28 ms ; 10 `/spawn` d'un coup : 102 → 55 ms).
+- **Attention aux chiffres d'un banc à l'autre** : la machine de GitHub change à chaque banc ; le même code a donné 27,8
+  et 35,1 ms à 150 bots sur deux machines du même modèle. Seuls les essais A/B (deux mesures dans le même serveur)
+  comparent vraiment. Pour mémoire (100 bots) : 20,8 ms le 12/11 (bots deux fois moins actifs), 33,7 ms le 19/11, 31,1 ms
+  le 20/11 avant ces corrections, 22,4 ms après. Code final de la branche (avec les corrections des trois audits du 20/11),
+  100 bots, sur une machine plus lente (EPYC 7763) : 27,3 ms en moyenne, 95 % à 38,0 ms ; les compteurs du noyau montrent
+  chaque correction en marche.
+
+### Ce qui change
+
+1. **Tronçons autour des joueurs « au repos »** (Noyau) : à chaque tick, Minecraft passait sur chacun des milliers de
+   tronçons autour des joueurs (temps qu'y passent les joueurs, tics de blocs, foudre, glace, neige). Sur nos mondes,
+   rien de tout cela ne peut arriver tant qu'il ne pleut pas (tics aléatoires à 0, pas d'apparitions de Minecraft, eau
+   qui ne gèle pas) : chaque tronçon n'est alors vu qu'une fois par seconde, avec une seconde de temps d'un coup (même
+   total : il ne sert qu'à la difficulté de l'endroit). Les blocs qui changent partent toujours aux joueurs **à chaque
+   tick**. Dès qu'il pleut : comme avant. Réglage `troncons_tranches` (20 ; 1 = comme avant).
+2. **Relevé des apparitions** (Noyau) : à chaque tick, Minecraft comptait toutes les créatures du monde et cherchait les
+   joueurs proches de chaque monstre, pour des apparitions naturelles coupées ici (les zombies viennent du peuplement) :
+   sauté. Réglage `apparitions_sans_releve`.
+3. **Revue des tickets de chargement** (Noyau) : à chaque tick, Minecraft passait en revue les ~6 000 tickets de la carte
+   (un par tronçon vu par un joueur) pour retirer ceux qui ont fini leur temps ; presque aucun n'en a. La revue ne se fait
+   plus qu'au tick où un ticket peut finir (mêmes tickets retirés, au même tick : 94 % des revues sautées au banc).
+   Réglage `tickets_a_echeance`.
+4. **Permissions refusées sous Mohist** (Noyau, jar de Mohist intact) : à chaque changement de monde, la liste des
+   commandes est renvoyée au joueur, et Mohist 916 relevait toute la pile d'appels pour chaque commande refusée (des
+   centaines), pour un journal de débogage coupé. Plus relevée tant que ce journal est coupé (les builds de Mohist
+   d'après juillet 2025 font pareil). Réglage `permissions_sans_pile`.
+5. **Points d'intérêt sur la carte** (Noyau) : à la lecture de chaque tronçon, Minecraft relisait sur le disque, en
+   attendant, les « points d'intérêt » (lits et postes des villageois, ruches, portails) : jusqu'à 26 ms pour un seul
+   tronçon sur le Ptero le 20/11, 84 ms au banc. Aucun de nos mods ne s'en sert et la carte n'en a pas : sauté sur la
+   carte (76 % des relectures au banc). Réglage `poi_sans_relecture` (liste des mondes ; vide = comme avant).
+6. **PNJ des quêtes** (Quêtes) : les repères des nouveaux joueurs (lueur vers le guide puis Varga), le rappel « tape
+   /spawn » et la présentation du Bâtisseur cherchaient leur PNJ parmi toutes les entités de la carte (1 500 à 150
+   joueurs), plusieurs fois par seconde ; ils le cherchent maintenant parmi la dizaine de PNJ.
+7. **Banc de charge** : essais A/B de la distance de vue et des réglages du noyau dans le même serveur, modèle du
+   processeur dans le résumé, essai d'un autre build de Mohist (champ « mohist » : `ci` = le dernier).
+
+Réglage ajouté **sans rien changer** tant que vous ne décidez pas : `xp` dans `heraliz_zombies-server.toml` (décision 3).
+
+### À vérifier en jeu (rien de cela n'a été essayé)
+
+- [ ] `/diag etat`, ligne « Tick (20/11) » : « tronçons au repos » monte vite, « comme Minecraft » reste petit (sauf
+      pendant la pluie) ; « relevés des apparitions évités » et « revues des tickets sautées » montent ; « piles des
+      permissions refusées évitées (Mohist) » monte après une mort ou un `/spawn`. Ligne « Lenteurs (19/11) » :
+      « étages sans relecture » monte quand on se promène sur la carte.
+- [ ] Les autres joueurs voient **tout de suite** ce qui change : blocs cassés et posés, portes et trappes, explosions de
+      grenades, pose d'une base (CRac), lampes allumées et éteintes, conteneurs du loot qui apparaissent.
+- [ ] Pendant la pluie (`/weather rain`, puis `/weather clear`) : rien ne change pour les joueurs ; « comme Minecraft »
+      monte pendant la pluie, puis s'arrête.
+- [ ] Zombies du peuplement, renforts et vagues des drapeaux : comme avant.
+- [ ] Après une mort, un `/spawn`, une extraction : la complétion des commandes dans le chat montre les mêmes commandes
+      qu'avant (seulement celles permises au joueur).
+- [ ] Nouveau joueur : lueur vers le guide puis vers Varga, rappel « tape /spawn » et présentation du Bâtisseur comme
+      avant.
+- [ ] Se promener loin sur la carte : plus de rapport de blocage « SectionStorage.readColumn » ni
+      « checkConsistencyWithBlocks ».
+
+Si un souci apparaît : dans `serveur/defaultconfigs/heraliz_noyau-server.toml`, section `[perf]` (pris au redémarrage),
+`troncons_tranches = 1`, `apparitions_sans_releve = false`, `tickets_a_echeance = false`, `permissions_sans_pile = false`,
+`poi_sans_relecture = []` : chacun revient exactement à Minecraft (ou à Mohist) pour ce point seulement.
+
+### Décisions pour vous
+
+1. **Distance de vue** (aujourd'hui 8 dans `heraliz_distances-server.toml` ; pas changée). Mesuré à 150 bots, avec les
+   corrections, chaque essai dans un même serveur :
+
+   | essai (150 bots) | avant | après | écart |
+   |---|---|---|---|
+   | 8 → 7 | 35,1 ms | 30,0 ms | −5,1 ms (−15 %) |
+   | 8 → 6 | 36,7 ms | 32,7 ms | −4,0 ms (−11 %) |
+   | 7 → 6 | 38,9 ms | 34,2 ms | −4,7 ms (−12 %) |
+
+   Ces trois essais se recoupent mal (la mesure faite en second est un peu avantagée) ; d'après le détail des profils,
+   compter **environ 3 ms par cran** à 150 joueurs (envoi des tronçons, suivi des entités, ticks de l'eau), et moins de
+   travail sur les autres cœurs (−6 points de processeur). Les tronçons gardés en mémoire baissent peu (ceux du bord de la
+   vue restent chargés à moitié) ; ce qui part sur le réseau à chaque arrivée baisse beaucoup (section 37). Avec les
+   corrections, 150 bots à 8 font 28 à 37 ms en moyenne selon la machine de GitHub (objectif : 30) : **7 donne de la
+   marge** pour les soirs chargés (les joueurs voient à 112 blocs au lieu de 128) ; 6 en donne encore un peu (96 blocs).
+   Une machine plus rapide par cœur (section 10 de `docs/DEPLOIEMENT.md`) en donne aussi, sans rien changer pour les
+   joueurs.
+2. **Mise à jour de Mohist** (916 aujourd'hui ; le dernier est le **995**, du 12/11/2026). Son seul gain connu pour le
+   tick (la pile relevée aux permissions refusées) est maintenant obtenu sur le 916 (point 4). Au banc (100 bots, même
+   code, champ « mohist »), le 995 démarre et fait tourner tous nos mods et plugins **sans aucune erreur** (mêmes
+   avertissements au démarrage que le 916, même mémoire) : 28,9 ms en moyenne, 95 % à 39,6 ms, 99 % à 55,9 ms, aucun
+   tick de plus de 100 ms ; le 916 avec le même code : 27,3 ms, 38,0 et 56,2 ms. Les deux bancs ont tourné sur des
+   machines différentes : pas de gain visible, pas de perte non plus. Conseil : **pas avant le déménagement** (une seule
+   chose à la fois, section 10 de `docs/DEPLOIEMENT.md`) ; plus tard, si vous le voulez, après un démarrage d'essai
+   (nouveau jar dans la Release « base-serveur », son empreinte, donnée par le site de Mohist, dans
+   `serveur/mohist.sha256`), puis en surveillant WorldEdit, les plugins et la voix les premiers jours.
+3. **Expérience des zombies** : un zombie tué lâche 2 ou 3 orbes d'expérience, qui vivent jusqu'à 5 minutes : ~100 orbes
+   en même temps au banc à 150 joueurs, **0,8 ms par tick** (3 %). L'expérience ne sert qu'à la barre d'expérience.
+   `xp = false` dans `heraliz_zombies-server.toml` les coupe (aujourd'hui `true`, comme avant).
+
+### Ce qui reste, le plus lourd d'abord (banc à 150 bots, après les corrections)
+
+1. Le tick des joueurs eux-mêmes (déplacements, collisions, eau, armes TaCZ, Curios) : ~7,5 ms, à peu près fixe par
+   joueur : c'est la vitesse d'**un** cœur du processeur qui compte (section 10 de `docs/DEPLOIEMENT.md`).
+2. Suivi des entités par les joueurs et envoi de leurs mouvements : ~3 à 4 ms (allégé le 01/11).
+3. Écriture des tronçons quittés ou changés, sur le fil du serveur : ~2,5 ms. Au banc, des tronçons sont réécrits sans
+   cesse (dans le tutoriel des bases, ~60 par seconde pour 15 joueurs) : la cause reste à trouver (un compteur à ajouter).
+4. Entités : orbes d'expérience 0,8 ms (décision 3), balles de TaCZ 0,7 ms (55 µs chacune), zombies 0,5 ms.
+5. Ticks programmés des blocs (eau, lave) : ~1 ms au banc (monde généré ; inconnu sur la vraie carte).
+6. Anticheat : 0,8 ms au banc, mais les bots n'y sont pas observateurs : avec 150 vrais joueurs l'anti-ESP aura plus de
+   paires à suivre (estimation : 1 à 2 ms ; ses lignes de vue sont déjà calculées sur d'autres cœurs). Ses contrôles du
+   19/11 (cadence des tirs, ouvertures à travers les murs, visée forcée) ne coûtent qu'au tir ou au clic : quelques
+   microsecondes chacun, rien à chaque tick.
+7. Pointes : un groupe qui change de monde d'un coup (6 extractions, 10 `/spawn`) coûte encore 75 à 380 ms au banc
+   (tronçons de l'arrivée, sac et Curios renvoyés) ; une mort ou une connexion seule, 50 à 130 ms.
+
+Pas fait, et pourquoi : la boucle des tronçons « au repos » regarde encore chaque tronçon une fois par tick (~0,5 ms à
+150 bots ; une liste par tranche ferait mieux, mais un oubli retarderait l'envoi d'un bloc changé) ; les ticks programmés
+des blocs (gain incertain sur la vraie carte) ; le tick des joueurs et les balles de TaCZ (code d'autres auteurs) ; **aucun
+profil avec des joueurs sur le serveur en ligne** (personne pendant l'audit) : à lancer un soir chargé (« Lenteurs du
+serveur », case profil, 60 s).
