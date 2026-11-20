@@ -72,8 +72,15 @@ public final class TronconsRepos {
       return false;
    }
 
-   /** Temps passé à ajouter au tronçon : N ticks d'un coup pour un tronçon de la tranche (vu une fois tous les N ticks). */
+   /**
+    * Temps passé à ajouter au tronçon : N ticks d'un coup pour un tronçon de la tranche (vu une fois tous les N ticks). Hors
+    * de sa tranche, seul un tronçon à tics forcés par Forge ({@code shouldForceTicks}) arrive ici : rien ce tick, il reçoit
+    * ses N ticks avec sa tranche (même total qu'avec Minecraft).
+    */
    public static long duree(ChunkPos pos, long minecraft) {
-      return repos && trancheDe(pos.x, pos.z, tranches) == tranche ? minecraft * tranches : minecraft;
+      if (!repos) {
+         return minecraft;
+      }
+      return trancheDe(pos.x, pos.z, tranches) == tranche ? minecraft * tranches : 0L;
    }
 }
