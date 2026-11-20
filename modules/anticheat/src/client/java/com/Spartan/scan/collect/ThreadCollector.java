@@ -55,6 +55,31 @@ public final class ThreadCollector {
         }
     }
 
+    /**
+     * Tous les threads vivants, SANS leurs piles (20/11) : simple parcours des groupes de threads, aucune opération de la
+     * JVM. {@code Thread.getAllStackTraces()} arrête tous les threads du jeu, rendu compris, le temps de relever toutes les
+     * piles (1 à 5 ms avec une centaine de threads) : il ne sert qu'à l'étape qui lit les piles.
+     */
+    public static List<Thread> fils() {
+        ThreadGroup racine = Thread.currentThread().getThreadGroup();
+        while (racine.getParent() != null) {
+            racine = racine.getParent();
+        }
+        Thread[] tampon = new Thread[Math.max(64, racine.activeCount() * 2)];
+        int n = racine.enumerate(tampon, true);
+        while (n >= tampon.length) {
+            tampon = new Thread[tampon.length * 2];
+            n = racine.enumerate(tampon, true);
+        }
+        List<Thread> out = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            if (tampon[i] != null) {
+                out.add(tampon[i]);
+            }
+        }
+        return out;
+    }
+
     /** Instantané de tous les threads. */
     public static void collect(ScanReport r, Map<Thread, StackTraceElement[]> stacks, Origins origins) {
         Set<String> names = new TreeSet<>();

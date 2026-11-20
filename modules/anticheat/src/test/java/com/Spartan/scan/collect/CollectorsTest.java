@@ -168,4 +168,27 @@ class CollectorsTest {
                 "/home/jean/.minecraft", "/home/jean", false);
         assertEquals("%USERPROFILE%/stuff", home.shown());
     }
+
+    @Test
+    void threadsListedWithoutTheirStacks() throws Exception {
+        // 20/11 : la recherche des chargeurs de classes lit la liste des threads sans relever leurs piles
+        java.util.concurrent.CountDownLatch fin = new java.util.concurrent.CountDownLatch(1);
+        Thread t = new Thread(() -> {
+            try {
+                fin.await();
+            } catch (InterruptedException ignored) {
+            }
+        }, "fil-de-test");
+        t.start();
+        try {
+            List<Thread> fils = ThreadCollector.fils();
+            assertTrue(fils.contains(Thread.currentThread()));
+            assertTrue(fils.contains(t));
+            assertFalse(fils.contains(null));
+            assertEquals(fils.size(), new java.util.HashSet<>(fils).size(), "chaque thread une seule fois");
+        } finally {
+            fin.countDown();
+            t.join();
+        }
+    }
 }

@@ -121,7 +121,8 @@ public final class ScanCollector {
         todo.add(game != null ? game.getContextClassLoader() : null);
         todo.add(ScanCollector.class.getClassLoader());
         todo.add(ClassLoader.getSystemClassLoader());
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
+        // 20/11 : les threads sans leurs piles (le relevé des piles de l'étape « threads » arrêtait tout le jeu une 2e fois)
+        for (Thread t : ThreadCollector.fils()) {
             todo.add(t.getContextClassLoader());
         }
         for (int i = 0; i < todo.size() && chargeurs.size() < 256; i++) {

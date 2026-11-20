@@ -716,6 +716,11 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.15.1 (20/11, audit des images par seconde)** — Rien ne change pour les détections. Côté joueur : le rapport du
+  Gardien du launcher (`spartan/gardien.txt`, toutes les 15 s) et le défi (`gardien-defi.txt`) sont lus et écrits sur un
+  fil à part (`Spartan-Gardien`), plus sur le fil du jeu qui dessine les images ; le contrôle complet ne relève plus deux
+  fois les piles de tous les threads (la recherche des chargeurs de classes prend la liste des threads sans leurs piles :
+  une pause de 1 à 5 ms de tout le jeu en moins par contrôle). Tests `GardienFichierTest`, `CollectorsTest`.
 - **2.14.0 (19/11, demande du propriétaire : « le plus possible côté serveur »)** — **Cadence réelle des tirs** : une
   rafale de tirs TaCZ envoyée d'un coup (heures trafiquées) est étalée à la cadence de l'arme. **Recul des hitbox au vrai
   ping** (faux lag sans effet sur TaCZ). **Interactions impossibles** refusées : conteneurs, coffres, largages et joueurs à
