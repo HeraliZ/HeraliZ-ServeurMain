@@ -111,6 +111,11 @@ est prévenu, pour qu'une erreur n'expulse jamais tout le monde (`[injection] ro
 - `requireHardenedJvm = true` sur le serveur (alerte si un jeu tourne sans `DisableAttachMechanism`, déjà refusé par le
   mode strict).
 
+**Launcher 1.18.1 (20/11, audit des images par seconde)** : rien ne change pour la sécurité (mêmes contrôles, même
+fréquence, mêmes rapports). Les programmes que le Gardien lance pendant la partie (tasklist, PowerShell, ps) tournent en
+priorité « en dessous de la normale », et la lecture des bibliothèques du jeu attend la fin de la liste des programmes :
+jamais deux PowerShell à la fois. Sur un petit PC, ils ne prennent plus le processeur au jeu toutes les 10 à 20 s.
+
 ## Limites restantes
 
 **Tout ce qui tourne sur le PC du joueur peut mentir à un tricheur déterminé.** Un programme qui imite le launcher avec le

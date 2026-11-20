@@ -1170,3 +1170,173 @@ Pas fait, volontairement :
 - **Le profil depuis la carte du menu Échap** (clic sur sa carte) : seulement les commandes pour l'instant ; à ajouter si
   vous le voulez.
 - **Le ClashWar et les points de saison d'un joueur** : le ClashWar et la saison sont comptés par clan, pas par joueur.
+
+## 36. Images par seconde chez les joueurs : audit du 20/11, corrections et deux décisions
+
+Demande du propriétaire : « relancer un audit complet : vérifier que tout soit ultra optimisé ». Cette partie couvre le
+**PC des joueurs** : images par seconde, à-coups, mémoire, processeur ; tout ce que nos mods dessinent, les mods des
+autres auteurs, la partie joueur de l'anticheat et le launcher pendant la partie. **Rien de tout cela n'a été testé en
+jeu ni sur une vraie carte graphique** : les chiffres viennent de mesures faites ici sans jeu (petits programmes qui
+refont le même calcul) et du code. Versions : Voix **1.6.9**, Anticheat **2.15.1** (le launcher les donne aux joueurs ;
+jar joueur et jar serveur partent ensemble), launcher **1.18.1** (fabriqué, **pas publié**).
+
+Ce qui pèse le plus chez un joueur, du plus lourd au plus léger :
+1. **Les armes des autres joueurs** : 123 fiches d'armes (66 modèles) n'ont pas de version allégée ; TaCZ dessine alors
+   l'arme complète, cube par cube, à chaque image (≈ 480 cubes en moyenne, jusqu'à 1 640 ; une version allégée : 40 à
+   80). Mesuré ici : 0,35 ms par arme complète et par image (0,8 ms pour la plus lourde), 0,07 à 0,1 ms allégée ; au
+   spawn avec 20 joueurs armés à l'écran, ≈ 4 ms par image ici, 9 à 12 ms sur un petit processeur. **Décision A**
+   plus bas.
+2. **La liste Tab peignait le corps 3D de tous les joueurs en ligne** : corrigé (Voix 1.6.9), ≈ 120 Mo de mémoire
+   graphique en moins avec 150 joueurs en ligne.
+3. **Les cartes de position des camos** : jusqu'à 256 Mo de mémoire graphique dans une longue partie (une par modèle
+   d'arme vu avec un camo, gardées jusqu'au rechargement des textures). Pas changé (voir « Pas fait »).
+4. **Le launcher pendant la partie** : son anticheat (le Gardien) lance un PowerShell toutes les 10 à 20 s, et deux à
+   la fois une fois sur trois : corrigé (launcher 1.18.1, priorité basse, jamais deux à la fois).
+5. **Le sol au loin sans mipmaps** : il fourmille quand on bouge. **Décision B** plus bas.
+6. **L'anticheat dans le jeu** : un fichier lu sur le fil du rendu toutes les 15 s, et une pause de tout le jeu de trop
+   à chaque contrôle : corrigé (Anticheat 2.15.1).
+7. **Mémoire Java** : le préchauffage des armes du 19/11 garde ≈ 82 Mo de modèles (et non 40 comme écrit le 19/11 ;
+   26 Mo sont des copies du même couteau, une par skin) ; ≈ 30 Mo avec la décision A. Les conteneurs HD : ≈ 41 Mo.
+   Rien de gênant avec 4 à 6 Go donnés au jeu.
+8. Le reste a été relu et va bien : écrans neufs (/profil, marchands), HUD, lampes et réglette du casino, camo Diamant
+   (+7 à 10 % du coût de son camo seul), préchauffage des armes et des conteneurs, veille de l'anticheat (toutes les 3 s,
+   fil de basse priorité), mods des autres auteurs (réglages de TaCZ, Embeddium, interface des véhicules).
+
+Corps des joueurs (Voix 1.6.9)
+- [ ] Serveur plein (ou deux comptes) : appuyer sur Tab : les têtes de tous les joueurs s'affichent comme avant.
+- [ ] Un joueur qu'on n'a vu que dans la liste Tab arrive près de soi : son corps est gris une image ou deux, puis
+      peint (comme aujourd'hui pour un joueur jamais vu) ; ensuite il cligne des yeux et parle comme avant.
+- [ ] Créateur de personnage : l'aperçu apparaît directement peint (jamais gris), et change à chaque réglage.
+- [ ] HUD de la voix (groupe) et écran des volumes : têtes comme avant.
+
+Anticheat 2.15.1 (rien ne doit changer pour un joueur honnête)
+- [ ] Partie de 15 min lancée depuis le launcher : « ✅ Jeu validé », aucune alerte « Gardien muet » ni « lecture » ;
+      `/spartan status <joueur>` comme avant.
+- [ ] Contrôles complets (toutes les 1 min 30 à 4 min) : toujours reçus (rapport du contrôle d'intégrité dans
+      `/spartan status`), aucune alerte nouvelle.
+
+Launcher 1.18.1 (à publier quand vous voulez : onglet Actions, « Launcher HeraliZ », « Run workflow », case **publier**)
+- [ ] Windows : pendant une partie, Gestionnaire des tâches, onglet Détails : les `powershell.exe` qui apparaissent un
+      instant toutes les 10 à 20 s sont en priorité « Inférieure à la normale », et jamais deux en même temps.
+- [ ] La partie est validée comme avant (« ✅ Jeu validé »), aucune alerte « Gardien » au staff.
+
+**Comment mesurer les images par seconde en jeu** (pour tout ce qui précède et les deux décisions)
+1. En jeu, taper `/diagclient 30` : le jeu enregistre pendant 30 secondes (jouer normalement pendant ce temps).
+2. Le rapport est écrit dans le dossier `diag/` du jeu (`client-<date>.txt`). Le staff peut aussi le demander à
+   distance : `/diag client <joueur> 30` (le joueur est prévenu, le rapport arrive sur le serveur).
+3. À lire dans le rapport : la 1re ligne « … FPS en moyenne, 1 % le plus lent : … FPS » (le 2e chiffre, c'est ce qu'on
+   ressent comme des saccades) ; « images de plus de 50 ms » (les à-coups) ; puis « temps de dessin par type
+   d'entité » : la ligne `minecraft:player` donne le coût des joueurs (et de leurs armes) par image.
+4. Toujours comparer au même endroit, à la même heure de jeu, avec le même profil graphique : par exemple au spawn
+   avec du monde, au centre d'une ville, et en forêt en marchant. Faire la mesure avant puis après un changement.
+
+**Décision A : versions allégées des armes vues chez les autres joueurs** (prêt, pas appliqué)
+- Images : `maquettes/fps_20nov/armes_lod_resume.png` (8 armes à 10, 30 et 60 blocs), `armes_lod_stakeout.png` et
+  `armes_lod_mod2.png` (de près aussi). Gauche : l'arme d'aujourd'hui ; droite : la version allégée. Chaque carré de
+  l'image agrandie est un point de l'écran (écran 1920 x 1080).
+- Ce qui change : l'outil retire les petits cubes (vis, rivets, rainures, lettrages) ; la forme, les couleurs et la
+  texture restent. À 30 et 60 blocs : aucune différence visible. À 10 blocs : quelques points diffèrent. De près
+  (3 blocs, dans la main d'un autre joueur ou la sienne en vue F5) : on voit qu'il manque des détails.
+- Gain : 59 300 cubes -> 19 400 pour ces armes (-67 %), soit 3 à 4 fois moins de calcul par arme d'un autre joueur ;
+  ≈ 53 Mo de mémoire Java en moins. Les armes en main (vue normale) ne changent jamais.
+- Option (à côté) : TaCZ peut garder le modèle complet à moins de N blocs (`GunLodRenderDistance`, réglage du jeu de
+  chaque joueur, aujourd'hui 0 = version allégée à toute distance en vue de dehors, déjà le cas des 60 armes qui en ont
+  une). Avec N = 8 : plus beau de près, mais plus cher au spawn où tout le monde est serré.
+- Pour l'appliquer : `python outils/lod_armes.py --installer` (écrit les versions allégées dans les gunpacks et les relie
+  aux fiches), puis `python outils/verifier.py`, fabriquer et mettre en ligne comme d'habitude. `python outils/lod_armes.py`
+  liste ce qui changerait, `--apercu <dossier>` refait les images. À relancer après l'ajout d'une arme ou d'un skin.
+
+**Décision B : mipmaps du sol** (prêt, pas appliqué)
+- Aujourd'hui, la grande texture des blocs n'a aucune mipmap (trois vieilles images de menus de cfm les coupent pour
+  tout le terrain, voir section 32). Les mipmaps, ce sont des versions réduites de chaque texture que la carte graphique
+  prend pour ce qui est loin.
+- Images : `maquettes/fps_20nov/mipmaps_sans.png` (aujourd'hui), `mipmaps_mip2.png` (avec, profil Performance),
+  `mipmaps_mip4.png` (avec, profils Équilibré et Qualité), `mipmaps_loin_zoom.png` (le sol de 10 à 90 blocs agrandi), et
+  `mipmaps_fourmillement.gif` (en marchant). Rendus hors du jeu avec nos textures (herbe de la carte et ses variantes,
+  gravier) et la même façon de lire les textures que la carte graphique.
+- Ce qui change : le sol au loin ne fourmille plus en marchant : d'une image à l'autre, 45 % des points du sol entre 10
+  et 90 blocs changent de couleur aujourd'hui, 8 % avec 2 niveaux, 3 % avec 4 (`mipmaps_mesures.txt`). En échange, il
+  est plus flou et plus « lissé » au-delà de 15 à 20 blocs, et les petits détails peints sur l'herbe (fleurs, cailloux)
+  s'effacent au loin. Avec 4 niveaux (Équilibré, Qualité), plus lisse encore qu'avec 2 (Performance).
+- Coût : ≈ 84 Mo de mémoire graphique en plus (Performance), ≈ 89 Mo (Équilibré, Qualité) ; la grande texture reste
+  en 8192 x 8192 (vérifié avec `outils/atlas_blocs.py --mip 4`). Démarrage un peu plus long (fabrication des mipmaps).
+- Gain : surtout l'image plus calme ; petit gain de vitesse possible sur les petites cartes graphiques en ville (les
+  grandes textures des conteneurs et des meubles lues de loin), pas mesurable ici.
+- À surveiller si vous dites oui : des traits entre les blocs vus de loin (comme avec le filtrage anisotrope le 18/11).
+- Pour l'appliquer : `python outils/mipmaps.py --corriger` (pose 3 copies retaillées des images de cfm dans notre pack ;
+  jar de cfm intact), puis fabriquer et mettre en ligne. Les profils gardent leurs réglages (2 ou 4 niveaux).
+  `python outils/apercu_mipmaps.py <dossier>` refait les images.
+
+Pas fait, volontairement
+- **Cartes de position des camos** (jusqu'à 256 Mo de mémoire graphique) : on pourrait libérer celles d'armes pas vues
+  depuis 10 minutes, mais le camo disparaîtrait quelques images quand l'arme revient. À décider si des joueurs avec une
+  petite carte graphique se plaignent de saccades après une longue partie.
+- **Les relevés de la pile du rendu par l'anticheat** pendant un contrôle (40 par contrôle, chacun une toute petite pause
+  avec Java 17) et la **veille de l'anticheat** sous Windows (liste de tous les fils du PC toutes les 3 s, fil de basse
+  priorité) : gardés tels quels, ils servent à attraper les tricheurs et ne se voient pas.
+- **Propositions du 19/11** (ImmediatelyFast, Dynamic FPS, MoreCulling) et **camos « cuits »** : toujours à votre
+  décision, rien de neuf.
+
+## 37. Réseau, mémoire et disque : audit du 20/11
+
+Demande du propriétaire : « relancer un audit complet : vérifier que tout soit ultra optimisé ». Cette partie : le
+réseau (ce qui part vers chaque joueur), la mémoire, le disque et tous les réglages du dossier `serveur/`. Les deux autres
+parties de l'audit (ticks du serveur ; images par seconde chez les joueurs, section 36) ont leurs propres sections.
+Versions : Équipement **1.4.1** (Armurerie 0.16.2), Noyau **1.1.8**, Banc 1.2.2 (jamais livré). **Rien n'a été testé en
+jeu** (pas de serveur ici) : la fabrication, les contrôles et un démarrage d'essai sur GitHub seulement. Liste pour
+changer de machine : `docs/DEPLOIEMENT.md`, section 10.
+
+Ce qui a été mesuré (le 20/11, serveur en ligne et banc de charge) :
+- Java du Ptero : 16 Go, réglages de la section 8 de `docs/DEPLOIEMENT.md` bien en place (sauf `-Dfile.encoding=UTF-8`),
+  16 cœurs vus, machine de 62,8 Go. Mémoire vivante : 1 à 3 Go à vide, 3,5 Go au plus avec 100 bots (banc) : environ 5 Go
+  attendus à 150 joueurs. 16 Go suffisent largement.
+- Réseau (banc, 100 bots) : 19,5 Mbit/s en sortie (24 Ko/s par joueur, 24 000 paquets par seconde). À 150 joueurs : 35 à
+  50 Mbit/s en moyenne, le double dans les pics, plus la voix.
+
+Sacs : le contenu ne part plus chez les autres joueurs (Équipement 1.4.1)
+Avant, le serveur envoyait le sac porté d'un joueur avec **tout son contenu** à tous ceux qui le voient : à chaque objet
+rangé ou sorti, et à chaque fois qu'un joueur le voyait arriver (ou réapparaître derrière un mur). Un sac plein pèse
+plusieurs Ko : du réseau pour rien, et un jeu modifié pouvait lire ce que chacun transporte. Maintenant, le porteur
+reçoit toujours tout ; les autres seulement l'apparence du sac.
+- [ ] Deux joueurs A et B. A porte un sac bien rempli. B s'approche : il voit le sac sur le dos de A, avec le bon modèle,
+      la bonne couleur et le bon camo. A range et sort des objets : chez B, le sac ne change pas d'aspect et rien ne
+      clignote.
+- [ ] A survole son sac (case du dos, inventaire) : l'infobulle compte toujours ses objets ; sac non vide : le message
+      « vider le sac avant de l'enlever » est toujours là. A ouvre son sac : tout son contenu est là.
+- [ ] A meurt : son corps montre son sac ; à la fouille du corps, le survol du sac compte ses objets ; le contenu se
+      récupère comme avant.
+- [ ] Journal du démarrage du serveur : « [armurerie] contenu des sacs : envoyé seulement au porteur (actif) » ; puis,
+      une fois des joueurs connectés avec un sac, une seule ligne « premier envoi allégé pour les autres joueurs ». Si on
+      lit « paquets de Curios inattendus » : le dire (rien ne casse, mais l'allègement est coupé).
+- [ ] En cas de souci : `contenu_porteur_seul = false` dans la section `[reseau]` de `config/heraliz_armory-common.toml`
+      (relu tout seul en quelques secondes, sans redémarrer) : tout redevient comme avant.
+
+Diagnostic (Noyau 1.1.8)
+- [ ] `/diag etat` : la ligne « Java : … » finit par « ; processeur : <nom du processeur> ; encodage par défaut … ». Si
+      l'encodage n'est pas « UTF-8 », la ligne le dit : demander à l'hébergeur d'ajouter `-Dfile.encoding=UTF-8`.
+- [ ] Nouvelle ligne « Disque du serveur : … Go libres sur … Go » (avec « à surveiller » sous 10 %).
+- [ ] Un rapport de blocage pendant la sauvegarde automatique dit « toutes les 10 min » (plus « 5 min »).
+
+GitHub
+- [ ] « Lenteurs du serveur » (Run workflow) : nouvelle partie « Mémoire et disque du serveur » dans le résumé : pauses
+      du ramasse-miettes (nombre, moyenne, pire), mémoire gardée après chaque passage, place prise par dossier, nombre
+      de fichiers de joueurs. Toujours en lecture seule.
+- [ ] Prochain banc de charge : son rapport a une section « Réseau vers les bots, par sorte de paquet » (ce qui remplit
+      la bande passante : tronçons, mouvements, sons et balles de TaCZ, paquets de nos mods).
+
+Pas changé, à décider par le propriétaire (chiffres dans le compte rendu de l'audit) :
+- distance de vue 6 au spawn (`vues_par_monde`) : environ 120 tronçons de moins envoyés à chaque mort et chaque retour au
+  spawn (environ 40 % du réseau d'une arrivée) ;
+- `entity-broadcast-range-percentage` à 80 (server.properties) : zombies vus à 48 blocs au lieu de 60, balles, véhicules
+  et corps à 51 au lieu de 64 (les joueurs restent à 128) ; environ un tiers de paquets de mouvement en moins pour eux ;
+- `rate-limit=1000` dans le `server.properties` du Ptero (toujours à 0 le 20/11 ; proposé le 19/11) ;
+- `enable-query=false` (le launcher et le site ne s'en servent pas) ;
+- `connection-throttle` de `bukkit.yml` à 1000 (une seule connexion par seconde et par adresse ; aujourd'hui sans
+  limite) ;
+- mondes qui ne sont plus chargés, dans `dayz_map/dimensions` : environ 600 Mo sur 1,2 Go de monde (`crac/bases` et deux
+  vieilles copies `bases_ancien_…` des 16 et 21/10, `heralisz_matchs`, `heralisz_bases`) ; et plus de 8 Go de vieilles
+  copies à la racine du Ptero, que le serveur ne lit pas (`dayz_map_ancien_2026-10-11_00h46` : 5,9 Go, `dayz_map_echec_…`,
+  `tacz_backup`, `limitless_vehicle_backup`, `dynmap`, un dossier de 1,3 Go qui ne vient pas du serveur). Au
+  déménagement : les garder dans une sauvegarde à part et ne pas les copier, ou tout copier (rien ne change en jeu). On
+  ne touche jamais aux fichiers du monde sans vous ;
+- `.bash_history` à la racine du Ptero (historique de commandes de 2025, peut contenir des mots de passe) : à supprimer.

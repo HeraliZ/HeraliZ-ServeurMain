@@ -37,6 +37,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * just upload one of them: no painting ever happens during gameplay. Those
  * states are only prepared for the players close enough to be animated,
  * after every skin around is painted, and freed when they stay away.
+ *
+ * <p>The atlas of the 3D body is only painted for the players actually drawn
+ * in the world (and the creator's preview): a player only seen in the tab
+ * list, the voice HUD or a menu gets the skin alone. On a full server (150
+ * players online, most of them far away) that saves about 1 MB of video
+ * memory and 7 to 10 ms of painting per player never met (audit of 20/11).
  */
 public final class CompositeSkins {
     private static final Map<UUID, Entry> ENTRIES = new HashMap<>();
@@ -69,6 +75,10 @@ public final class CompositeSkins {
         Appearance appearance;
         FaceState state = FaceState.NEUTRAL;
         boolean painted;
+        /** Whether the 3D body atlas is needed: the player is drawn in the world, or is the creator's preview. */
+        boolean detailWanted;
+        /** Whether the 3D body atlas holds a painted look (until then the placeholder is drawn). */
+        boolean detailPainted;
         /** Whether the face states are needed (the player is close enough to be animated). */
         boolean facesWanted;
         /** Look version whose face states are being painted, 0 if none. */
@@ -111,13 +121,22 @@ public final class CompositeSkins {
         }
     }
 
-    private static Entry entry(UUID uuid) {
+    /**
+     * The entry of a player, created (and painted) on first use. {@code detail}: the caller draws the 3D body, whose
+     * atlas is then painted too (once wanted, it stays wanted for as long as the entry lives).
+     */
+    private static Entry entry(UUID uuid, boolean detail) {
         Entry entry = ENTRIES.get(uuid);
         if (entry == null) {
             entry = new Entry(uuid);
             entry.appearance = ClientAppearances.resolve(uuid);
+            entry.detailWanted = detail || ClientAppearances.isPreview(uuid);
             ENTRIES.put(uuid, entry);
             schedule(entry);
+        } else if (detail && !entry.detailWanted) {
+            // listed (tab list, voice HUD, a menu) before being met in the world: only the atlas is left to paint
+            entry.detailWanted = true;
+            scheduleDetail(entry);
         }
         return entry;
     }
@@ -127,45 +146,55 @@ public final class CompositeSkins {
         if (uuid == null || !RenderSystem.isOnRenderThread()) {
             return placeholderSkin();
         }
-        Entry entry = entry(uuid);
+        Entry entry = entry(uuid, false);
         return entry.painted ? entry.skinLocation : placeholderSkin();
     }
 
-    /** The atlas of a player's 3D body (a placeholder until painted). */
+    /** The atlas of a player's 3D body (a placeholder until painted). Only called for players drawn in the world. */
     public static ResourceLocation detailFor(UUID uuid) {
         if (uuid == null || !RenderSystem.isOnRenderThread()) {
             return placeholderDetail();
         }
-        Entry entry = entry(uuid);
-        return entry.painted ? entry.detailLocation : placeholderDetail();
+        Entry entry = entry(uuid, true);
+        return entry.detailPainted ? entry.detailLocation : placeholderDetail();
     }
 
     private static ExecutorService executor(Entry entry) {
         return ClientAppearances.isPreview(entry.uuid) ? PREVIEW : PLAYERS;
     }
 
-    /** Paints the entry's look in the background; its face states follow if they are wanted. */
+    /**
+     * Paints the entry's look in the background (the 3D body atlas only if it is wanted); its face states follow if
+     * they are wanted.
+     */
     private static void schedule(Entry entry) {
         int version = entry.wanted.incrementAndGet();
         Appearance appearance = entry.appearance;
+        boolean withDetail = entry.detailWanted;
         Minecraft mc = Minecraft.getInstance();
         executor(entry).execute(() -> {
             if (entry.wanted.get() != version) {
                 return; // a newer look is already waiting
             }
             try {
-                SkinPainter.Painted painted = SkinPainter.paint(appearance, FaceState.NEUTRAL);
-                NativeImage skin = toImage(painted.skin().pixels(), Canvas.SKIN_SIZE, Canvas.SKIN_SIZE);
-                NativeImage detail = toImage(painted.detail().pixels(), Canvas.DETAIL_SIZE, Canvas.DETAIL_SIZE);
+                NativeImage skin = toImage(SkinPainter.paintSkin(appearance, FaceState.NEUTRAL).pixels(), Canvas.SKIN_SIZE,
+                        Canvas.SKIN_SIZE);
+                NativeImage detail = withDetail ? toImage(SkinPainter.paintDetail(appearance, FaceState.NEUTRAL).pixels(),
+                        Canvas.DETAIL_SIZE, Canvas.DETAIL_SIZE) : null;
                 mc.execute(() -> {
                     if (!entry.wants(version)) {
                         skin.close();
-                        detail.close();
+                        if (detail != null) {
+                            detail.close();
+                        }
                         return;
                     }
                     entry.skin.setPixels(skin);
                     entry.skin.upload();
-                    entry.detail.upload(detail);
+                    if (detail != null) {
+                        entry.detail.upload(detail);
+                        entry.detailPainted = true;
+                    }
                     entry.closeFaces();
                     entry.facesPainting = 0;
                     entry.shownFace = SkinPainter.index(FaceState.NEUTRAL);
@@ -176,6 +205,42 @@ public final class CompositeSkins {
                 });
             } catch (RuntimeException e) {
                 CaraCrea.LOGGER.error("Could not paint {}", appearance, e);
+            }
+        });
+    }
+
+    /**
+     * Paints only the 3D body atlas of the entry's current look (its skin is painted or on its way): a player first
+     * listed, now drawn in the world. Queued behind the paint job of that look, if one is waiting; a newer look
+     * makes it give up (that look's own job paints the atlas, now wanted).
+     */
+    private static void scheduleDetail(Entry entry) {
+        int version = entry.wanted.get();
+        Appearance appearance = entry.appearance;
+        Minecraft mc = Minecraft.getInstance();
+        executor(entry).execute(() -> {
+            if (entry.wanted.get() != version) {
+                return;
+            }
+            try {
+                NativeImage detail = toImage(SkinPainter.paintDetail(appearance, FaceState.NEUTRAL).pixels(), Canvas.DETAIL_SIZE,
+                        Canvas.DETAIL_SIZE);
+                mc.execute(() -> {
+                    if (!entry.wants(version)) {
+                        detail.close();
+                        return;
+                    }
+                    entry.detail.upload(detail);
+                    entry.detailPainted = true;
+                    // the atlas was painted with the resting face: the face shown on the skin goes on the 3D head too
+                    int index = entry.shownFace;
+                    if (entry.hdFaces != null && index >= 0 && index != SkinPainter.index(FaceState.NEUTRAL)) {
+                        Rect hd = SkinPainter.hdFaceRect();
+                        entry.detail.uploadRegion(entry.hdFaces[index], hd.x(), hd.y());
+                    }
+                });
+            } catch (RuntimeException e) {
+                CaraCrea.LOGGER.error("Could not paint the body of {}", appearance, e);
             }
         });
     }
@@ -311,7 +376,8 @@ public final class CompositeSkins {
         if (uuid == null || !RenderSystem.isOnRenderThread()) {
             return false;
         }
-        return entry(uuid).painted;
+        Entry entry = entry(uuid, false);
+        return entry.painted && (!entry.detailWanted || entry.detailPainted);
     }
 
     /** Current face state of a player, if their skin exists. */

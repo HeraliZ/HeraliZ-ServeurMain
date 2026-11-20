@@ -1,0 +1,3 @@
+Aujourd'hui : sans mipmaps : 45 % des points du loin changent de couleur d'une image à l'autre en marchant
+Mipmaps 2 niveaux (profil Performance) : 8 % des points du loin changent de couleur d'une image à l'autre en marchant
+Mipmaps 4 niveaux (profils Équilibré et Qualité) : 3 % des points du loin changent de couleur d'une image à l'autre en marchant

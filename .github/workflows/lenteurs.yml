@@ -225,9 +225,11 @@ jobs:
 
       # 20/11 (audit réseau, mémoire et disque) : LECTURE SEULE, comme le reste. Le journal du ramasse-miettes (gc.log à la
       # racine, écrit par l'option -Xlog:gc* de la ligne Java de l'hébergeur ; aucun joueur dedans) est résumé : pauses par
-      # sorte, mémoire gardée après chaque passage (une fuite la fait monter), vitesse d'allocation. Puis la place prise sur
-      # le disque par dossier (tailles seulement, jamais les noms des fichiers : les captures de l'anticheat sont rangées
-      # par pseudo) et le nombre de fichiers de joueurs du monde (un par joueur venu au moins une fois).
+      # sorte, mémoire vivante (après les passages qui vident aussi la vieille mémoire), vitesse d'allocation. Puis la place
+      # prise sur le disque par dossier (tailles seulement ; dépôt public : jamais de nom de fichier, et seuls les noms de
+      # dossiers connus de la racine sont écrits, un dossier peut porter le nom d'une personne ; « du » de tout le serveur
+      # par le SFTP : plus de 15 min, libraries/ n'est pas compté) et le nombre de fichiers de joueurs du monde (un par
+      # joueur venu au moins une fois).
       - name: Mémoire (ramasse-miettes) et disque (lecture seule)
         run: |
           R="$LFTP_SSH set net:max-retries 3; set net:timeout 30;"
@@ -238,10 +240,35 @@ jobs:
           l "lcd gc; get /gc.log" > /dev/null 2>&1 || true
           MONDE=$(sed -n 's/^level-name=//p' conf/server.properties 2>/dev/null | tr -d '\r' | tr -cd 'A-Za-z0-9_.-')
           MONDE=${MONDE:-dayz_map}
-          # « du » parcourt tout le serveur par le SFTP (quelques minutes au plus) ; profondeur 1 à la racine, 2 dans le monde
-          timeout 900 lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" \
-            -e "$R du -k -d 1 /; du -k -d 1 /$MONDE; du -k -d 2 /$MONDE/dimensions; bye" > disque.txt 2>/dev/null || true
-          l "cls -l /" 2>/dev/null | grep -v '^d' > racine.txt || true
+          l "cls -l /" > racine_tout.txt 2>/dev/null || true
+          grep -v '^d' racine_tout.txt > racine.txt || true
+          # dossiers de la racine (noms seulement), puis « du » dossier par dossier, chacun dans sa propre connexion et avec sa
+          # propre limite (lftp ne rend sa sortie qu'à la fin : un seul « du » arrêté en cours ne donnait rien) ; le monde
+          # d'abord ; libraries/ et le monde entier jamais (trop de dossiers par le SFTP) ; 12 min au plus en tout
+          DOSSIERS=$(grep '^d' racine_tout.txt | tr -d '\r' | sed -e 's#/$##' -e 's#.*/##' | grep -v -x -E "libraries|\.cache|cache|\.|\.\.|$MONDE" | tr -cd 'A-Za-z0-9_.\n-' | sort)
+          # noms qu'on peut écrire (monde, nos mods, Minecraft, Forge, plugins) ; les autres : « autre dossier n° k »
+          CONNUS='^(dayz_map[A-Za-z0-9_-]*|heral[a-z_]*|crac|config|defaultconfigs|mods|plugins|logs|diag|crash-reports|screenshots|tacz[a-z_]*|mohist-config|dynmap|databases|generated_datapacks|limitless_vehicle[a-z_]*|modernfix|emotes|world[a-z_]*|sources|\.[a-z]+)$'
+          k=0; : > noms.txt
+          for d in $DOSSIERS; do
+            if printf '%s' "$d" | grep -q -E "$CONNUS"; then printf '%s\t%s\n' "$d" "$d" >> noms.txt; else k=$((k+1)); printf '%s\tautre dossier n° %s\n' "$d" "$k" >> noms.txt; fi
+          done
+          # nos dossiers d'abord (petits, et ce sont nos données), puis les autres
+          DOSSIERS="$(printf '%s\n' $DOSSIERS | grep -E '^heral') $(printf '%s\n' $DOSSIERS | grep -v -E '^heral')"
+          fin=$(( $(date +%s) + 720 ))
+          : > disque.txt
+          for d in "$MONDE/region" "$MONDE/entities" "$MONDE/poi" "$MONDE/data" "$MONDE/playerdata" "$MONDE/dimensions" $DOSSIERS; do
+            [ "$(date +%s)" -lt "$fin" ] || { printf '?\t/%s (pas mesuré : temps écoulé)\n' "$d" >> disque.txt; continue; }
+            prof="-s"; [ "$d" = "$MONDE/dimensions" ] && prof="-d 2"
+            timeout 240 lftp -u "$PTERO_SFTP_USER,$PTERO_SFTP_PASSWORD" -p "$PTERO_PORT" "sftp://$PTERO_HOTE" -e "$R du -k $prof /$d; bye" > du1.txt 2>/dev/null \
+              && cat du1.txt >> disque.txt || printf '?\t/%s (trop long, plus de 4 min)\n' "$d" >> disque.txt
+          done
+          # chemins écrits : le premier dossier remplacé par son nom affichable (noms.txt), rien d'autre
+          awk -F '\t' 'NR==FNR { nom[$1]=$2; next } { split($2, p, "/"); r=p[2]; sub(/ .*/, "", r); if (r in nom) { sub("^/" r, "/" nom[r], $2) } else if (r != "'"$MONDE"'") { $2="/(dossier)" } print $1 "\t" $2 }' \
+            noms.txt disque.txt > disque_affiche.txt 2>/dev/null || true
+          # nos données : nombre et taille des fichiers du premier niveau de chaque dossier de mod (aucun nom de fichier)
+          for d in $(printf '%s\n' $DOSSIERS | grep -E '^heral'); do
+            l "cls -l /$d/" 2>/dev/null | grep -v '^d' | awk -v d="$d" '{n++; t+=$5; if ($5>m) m=$5} END {printf "%d\t/%s : %d fichiers, le plus gros %d octets\n", t, d, n, m}' >> fichiers_mods.txt || true
+          done
           JOUEURS=$(l "cls -1 /$MONDE/playerdata/" 2>/dev/null | grep -c '\.dat$' || true)
           {
             echo "===== RAMASSE-MIETTES (gc.log du serveur, depuis son dernier démarrage) ====="
@@ -292,12 +319,17 @@ jobs:
               print("  %-36s %7d %7.1f ms %7.1f ms %7.1f ms %7.0f ms %10.1f" % (cle[:36], len(v), statistics.mean(v), q(v, 50), q(v, 95), max(v), sum(v) / 1000))
           total = sum(p[5] for p in pauses) / 1000
           print("Temps en pause : %.1f s sur %.1f h (%.2f %% du temps)" % (total, duree / 3600, 100 * total / duree))
-          apres = [p[3] for p in pauses if "Young" in p[1] or "Full" in p[1] or "Mixed" in p[1]]
+          apres = [p[3] for p in pauses if p[1].startswith("Pause Young") or "Full" in p[1]]
           if apres:
-              print("Mémoire gardée après un passage (Mo, sur %d Mo) : plus petite %d, médiane %d, plus grande %d" % (pauses[-1][4], min(apres), q(apres, 50), max(apres)))
+              print("Après un passage jeune (Mo, sur %d Mo ; la vieille mémoire comprise, qui ne baisse qu'aux passages mixtes) : plus petite %d, médiane %d, plus grande %d" % (pauses[-1][4], min(apres), q(apres, 50), max(apres)))
               print("  les 12 dernières : %s" % ", ".join(str(a) for a in apres[-12:]))
-              n4 = max(1, len(apres) // 4)
-              print("  médiane du premier quart %d Mo, du dernier quart %d Mo (une fuite fait monter la seconde)" % (q(apres[:n4], 50), q(apres[-n4:], 50)))
+          vivante = [(p[0], p[3]) for p in pauses if "Mixed" in p[1] or "Full" in p[1]]
+          if vivante:
+              print("Mémoire vivante (après les passages mixtes ou complets, %d) : plus petite %d Mo, plus grande %d Mo ; les dernières : %s"
+                    % (len(vivante), min(v for _, v in vivante), max(v for _, v in vivante), ", ".join("%d Mo à %.1f h" % (v, t / 3600) for t, v in vivante[-6:])))
+              print("  (une fuite : ces valeurs montent d'heure en heure avec le même nombre de joueurs)")
+          else:
+              print("Mémoire vivante : aucun passage mixte (la vieille mémoire n'a pas encore atteint le seuil de 20 % du tas)")
           jeunes = [p for p in pauses if p[1].startswith("Pause Young")]
           alloue, temps, pire = 0, 0.0, 0.0
           for a, b in zip(jeunes, jeunes[1:]):
@@ -323,7 +355,9 @@ jobs:
               echo "gc.log absent à la racine du serveur (ligne Java sans -Xlog:gc*:file=gc.log)"
             fi
             echo "===== DISQUE : place prise par dossier (Ko, les plus gros d'abord) ====="
-            sort -t "$(printf '\t')" -k1,1nr disque.txt 2>/dev/null | masque | head -70
+            sort -t "$(printf '\t')" -k1,1nr disque_affiche.txt 2>/dev/null | masque | head -70
+            echo "===== DISQUE : fichiers du premier niveau des dossiers de nos mods (octets en tout) ====="
+            sort -t "$(printf '\t')" -k1,1nr fichiers_mods.txt 2>/dev/null | masque | head -40
             echo "===== DISQUE : fichiers de la racine (sans les dossiers) ====="
             masque < racine.txt | head -40
             echo "Fichiers de joueurs du monde (playerdata) : ${JOUEURS:-?}"

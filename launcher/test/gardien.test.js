@@ -7,7 +7,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { Gardien, outilsTrouves, champsCsv, programmes, outilsInterdits, modulesJeu, bibliothequesJava, nomsMaps,
-    nomsTasklistModules } = require('../app/assets/js/gardien')
+    nomsTasklistModules, execFile, prioriteBasse } = require('../app/assets/js/gardien')
 const { environnementJeu } = require('../app/assets/js/spartan')
 
 function dossier() {
@@ -270,4 +270,59 @@ test('rapport : un outil vu seulement dans un titre de fenêtre est marqué « .
         ['cheat engine.titre'])
     assert.deepStrictEqual(outilsTrouves(['cheatengine-x86_64.exe'], [{ nom: 'cheatengine-x86_64', titre: 'Cheat Engine 7.5' }], true),
         ['cheat engine', 'cheatengine'])
+})
+
+// ------------------------------------------------------------------ 20/11 : le Gardien ne prend plus le processeur au jeu
+
+test('programmes du Gardien en priorité basse (en dessous du jeu), jamais bloquant', async () => {
+    const reglages = []
+    assert.strictEqual(prioriteBasse(4242, (pid, p) => reglages.push([pid, p])), true)
+    assert.deepStrictEqual(reglages, [[4242, os.constants.priority.PRIORITY_BELOW_NORMAL]])
+    // numéro absent (programme pas lancé) ou refus du système : rien, jamais d'erreur
+    assert.strictEqual(prioriteBasse(undefined, () => { throw new Error('jamais appelé') }), false)
+    assert.strictEqual(prioriteBasse(0, () => { throw new Error('jamais appelé') }), false)
+    assert.strictEqual(prioriteBasse(77, () => { throw new Error('ESRCH') }), false)
+    // chaque programme lancé passe par là, et sa sortie revient comme avant
+    const baisses = []
+    const lancer = (cmd, args, options, fin) => {
+        assert.strictEqual(options.windowsHide, true)
+        assert.strictEqual(options.maxBuffer, 16 * 1024 * 1024)
+        setImmediate(() => fin(null, 'sortie ' + cmd))
+        return { pid: 31 }
+    }
+    assert.strictEqual(await execFile('tasklist', ['/FO', 'CSV'], { windowsHide: true }, lancer, pid => baisses.push(pid)),
+        'sortie tasklist')
+    assert.deepStrictEqual(baisses, [31])
+    const rate = (cmd, args, options, fin) => { setImmediate(() => fin(new Error('ETIMEDOUT'))); return { pid: 32 } }
+    await assert.rejects(execFile('powershell.exe', [], {}, rate, pid => baisses.push(pid)), /ETIMEDOUT/)
+    assert.deepStrictEqual(baisses, [31, 32])
+})
+
+test('rapport : bibliothèques du jeu lues APRÈS la liste des programmes (jamais deux PowerShell à la fois)', async () => {
+    const ordre = []
+    let listeFinie = false
+    const g = new Gardien({ dossierJeu: dossier(), pid: 4242, cles: Gardien.nouvellesCles(2), maintenant: () => 1000,
+        lister: async () => {
+            ordre.push('liste')
+            await new Promise(r => setTimeout(r, 20))
+            listeFinie = true
+            return { noms: ['javaw.exe'], titres: [] }
+        },
+        modules: async () => {
+            ordre.push(listeFinie ? 'bibliothèques après' : 'bibliothèques pendant')
+            return ['ntdll.dll', 'jdwp.dll']
+        } })
+    assert.strictEqual(await g.rapport(), 'v2|1|1000|4242|-|ok|dll.jdwp|0')
+    assert.deepStrictEqual(ordre, ['liste', 'bibliothèques après'])
+    // la liste en erreur : le rapport échoue comme avant (le tour suivant réessaie), sans lire les bibliothèques
+    const g2 = new Gardien({ dossierJeu: dossier(), pid: 1, cles: Gardien.nouvellesCles(2), maintenant: () => 1,
+        lister: async () => { throw new Error('x') },
+        modules: async () => {
+            ordre.push('lu')
+            return []
+        } })
+    await assert.rejects(g2.rapport(), /x/)
+    assert.deepStrictEqual(ordre, ['liste', 'bibliothèques après'])
+    g.arreter()
+    g2.arreter()
 })
