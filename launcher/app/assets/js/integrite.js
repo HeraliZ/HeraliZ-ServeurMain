@@ -7,7 +7,9 @@
 //    du joueur) ;
 //  - Java du jeu : empreinte de ses programmes, bibliothèques et classes, relevée quand il est installé ; un fichier
 //    changé ou ajouté (une bibliothèque glissée dans son dossier serait chargée par le jeu) : ce Java n'est plus utilisé
-//    et le launcher en retélécharge un propre.
+//    et le launcher en retélécharge un propre ;
+//  - (19/11) packs de textures ajoutés par le joueur (dossiers resourcepacks et kiwipacks du jeu) : mis de côté, comme les
+//    jars en trop (ecarterPacksAjoutes).
 // Jamais rien hors des dossiers du launcher ; les liens ne sont jamais suivis (comme effacement.js).
 
 const crypto = require('node:crypto')
@@ -49,6 +51,51 @@ function ecarterJarsEnTrop({ dossierInstances, serveur, maintenant = Date.now })
             resultat.ecartes.push(nom)
         } catch (erreur) {
             resultat.erreurs.push(erreur?.code || 'ERREUR')
+        }
+    }
+    return resultat
+}
+
+// Packs de textures ajoutés par le joueur (19/11, décision du propriétaire : interdits, le serveur refuse un joueur qui en a
+// un d'actif) : le jeu les charge depuis <jeu>/resourcepacks (et <jeu>/kiwipacks, packs que Kiwi impose sans qu'on puisse
+// les retirer) sous le nom « file/… ». Mis de côté avant la partie dans <jeu>/spartan/ecartes/<date>/<dossier>/, jamais
+// effacés (ce sont des fichiers du joueur). Nos packs sont rangés dans nos jars (heraliz_interface, monde), ceux de
+// Minecraft et des mods dans leurs jars : ils ne sont jamais dans ces dossiers. Un fichier que le pack signé y mettrait
+// (fichiersPack) reste en place.
+const DOSSIERS_PACKS = ['resourcepacks', 'kiwipacks']
+
+/**
+ * Met de côté les packs ajoutés par le joueur (archives .zip et dossiers, seuls chargés par le jeu ; un lien : seul le
+ * lien part). Rend { ecartes: ['resourcepacks/nom', …], erreurs: [codes] }. Un dossier remplacé par un lien : pas touché.
+ */
+function ecarterPacksAjoutes({ dossierInstances, serveur, fichiersPack = [], maintenant = Date.now }) {
+    const resultat = { ecartes: [], erreurs: [] }
+    if (typeof serveur !== 'string' || !/^[\w.-]+$/.test(serveur) || typeof dossierInstances !== 'string') return resultat
+    const instance = path.join(dossierInstances, serveur)
+    const duPack = new Set((Array.isArray(fichiersPack) ? fichiersPack : []).filter(f => typeof f === 'string')
+        .map(f => comparable(path.resolve(f))))
+    const date = String(maintenant())
+    for (const nomDossier of DOSSIERS_PACKS) {
+        const dossier = path.join(instance, nomDossier)
+        let infos
+        try { infos = fs.lstatSync(dossier) } catch { continue }
+        if (!infos.isDirectory() || infos.isSymbolicLink()) continue
+        let noms
+        try { noms = fs.readdirSync(dossier) } catch (erreur) { resultat.erreurs.push(erreur?.code || 'ERREUR'); continue }
+        for (const nom of noms) {
+            const source = path.join(dossier, nom)
+            if (duPack.has(comparable(path.resolve(source)))) continue
+            try {
+                const st = fs.lstatSync(source)
+                if (st.isSymbolicLink()) { fs.unlinkSync(source); resultat.ecartes.push(nomDossier + '/' + nom); continue }
+                if (!(st.isDirectory() || (st.isFile() && /\.zip$/i.test(nom))) || !dans(instance, source)) continue
+                const cote = path.join(instance, 'spartan', 'ecartes', date, nomDossier)
+                fs.mkdirSync(cote, { recursive: true })
+                fs.renameSync(source, path.join(cote, nom))
+                resultat.ecartes.push(nomDossier + '/' + nom)
+            } catch (erreur) {
+                resultat.erreurs.push(erreur?.code || 'ERREUR')
+            }
         }
     }
     return resultat
@@ -145,4 +192,4 @@ function oublierJava(racine, fichierReleve) {
     } catch { /* relevé laissé : sera repris au prochain contrôle */ }
 }
 
-module.exports = { ecarterJarsEnTrop, controlerJava, oublierJava, empreintesJava, controlerEmpreintes, dans }
+module.exports = { ecarterJarsEnTrop, ecarterPacksAjoutes, controlerJava, oublierJava, empreintesJava, controlerEmpreintes, dans }

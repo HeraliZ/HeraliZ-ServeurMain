@@ -2,7 +2,7 @@
 # ms : les rapports du diagnostic du noyau (dossier diag/ à la racine du serveur : profils façon spark, un rapport par
 # blocage, avec le mod, le fichier et la ligne en cause), les lignes « Can't keep up » et ce qui les précède dans les
 # journaux, les rapports de plantage et quelques réglages qui jouent sur les perfs. Noms des
-# méthodes de Minecraft et chemins de nos fichiers rendus lisibles (outils/diag_noms.py). Adresses IP masquées, rien n'est
+# méthodes de Minecraft et chemins de nos fichiers rendus lisibles (outils/diag_noms.py). Adresses IP et pseudos masqués, rien n'est
 # écrit, renommé ni supprimé sur le Ptero (jamais « get -E », qui efface le fichier lu).
 # Case « profil » (jamais cochée par défaut) : AVANT de lire, lance « diag profil <secondes> <intervalle> » par la console
 # du panel (API client Pterodactyl, comme le redémarrage de serveur.yml), attend la fin du profil et son rapport ; c'est la
@@ -159,7 +159,14 @@ jobs:
 
       - name: Contenu (journal de la tâche)
         run: |
-          masque() { sed -E 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g; s/(password|passwd|secret|token|key)([=: ]+)[^ ]+/\1\2***/Ig'; }
+          # adresses IP, mots de passe et clés, pseudos et identifiants des joueurs masqués (dépôt public : ce journal se lit
+          # par tous ; mêmes règles pour les pseudos que « Journaux du serveur »)
+          masque() { sed -E -e 's/[0-9]{1,3}(\.[0-9]{1,3}){3}/x.x.x.x/g' \
+            -e 's/(password|passwd|secret|token|key)([=: ]+)[^ ]+/\1\2***/Ig' \
+            -e "s/(ServerPlayer|Player)\['[^']*'/\1['***'/g" -e 's/name=[A-Za-z0-9_]{2,16}/name=***/g' \
+            -e 's/(UUID of player )[A-Za-z0-9_]{2,16}/\1***/g' -e 's/<[A-Za-z0-9_]{2,16}>/<***>/g' \
+            -e 's/[A-Za-z0-9_]{2,16}( joined the game| left the game| lost connection|\[\/x\.x\.x\.x)/***\1/g' \
+            -e 's/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/uuid/g'; }
           echo "===== LISTE diag/ ====="; masque < liste_diag.txt | tail -80
           echo "===== LISTE logs/ ====="; masque < liste_logs.txt | tail -40
           echo "===== CORRESPONDANCES DES NOMS (libraries/ du serveur) ====="; grep -E 'mappings|mcp_config.*\.zip|\.tsrg' liste_noms.txt 2>/dev/null | head -20 || echo "aucune"

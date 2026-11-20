@@ -70,8 +70,17 @@ scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag anal
   expulser plus de deux joueurs honnêtes. Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
   classes de Java. Tests : `RodageTest`, `GardienClesTest`, `MemoireTest`, `ScanAnalyzerTest`, `ConformiteStricteTest`.
 
-Le dépôt GitHub est **public** (constat du 19/11) : ce README et tout le code des détections y sont lisibles, et les jars
-de l'onglet Actions téléchargeables par tout compte GitHub. Options et coûts : `launcher/docs/HERALIZ-SECURITE.md`.
+**Décisions du propriétaire du 19/11 (2.15.0, launcher 1.18.0)** :
+- **packs de textures ajoutés par le joueur interdits** : un joueur qui a un pack « file/… » actif (dossiers
+  `resourcepacks` / `kiwipacks` du jeu), à la connexion ou activé en cours de partie (le jeu renvoie la liste quand elle
+  change), est refusé avec un message clair qui dit lequel retirer (trois langues, jamais de ban ; `PacksJoueur`,
+  `[resources] refuseCustomResourcePacks`, règle en rodage `packs:`). Jamais comptés : `vanilla`, `mod_resources` et
+  `mod:…`, nos packs (`heraliz_interface:textures`, `heraliz_interface:herbe`, `heralisz_utils:terrain`),
+  `tacz_resources`, les packs des véhicules, `server`. Le launcher 1.18.0 met ces packs de côté avant la partie, et le mod
+  d'interface les retirait déjà de la sélection au démarrage. Tests : `PacksJoueurTest` ;
+- `requireHardenedJvm = true` (alerte ; un jeu sans `DisableAttachMechanism` est déjà refusé par le mode strict) ;
+- le dépôt GitHub **reste public, par choix** : ce README et tout le code des détections y sont lisibles, et les jars de
+  l'onglet Actions téléchargeables par tout compte GitHub. Détail : `launcher/docs/HERALIZ-SECURITE.md`.
 
 **Alertes Discord (2.9.0)** : file d'envoi de 300 messages (sanctions et bans d'abord), 1 message par seconde et par
 webhook, attente demandée par Discord (HTTP 429) respectée ; une erreur de Discord ne coupe plus les fils par joueur.
@@ -338,7 +347,7 @@ retardé par le réseau ne fait perdre aucun élan au joueur. Désactivable
 | **Launcher** | Jeton du launcher absent / invalide / pour un autre pseudo / expiré, ou mods chargés différents de ceux vérifiés par le launcher. |
 | **ClientIntegrity** | Agent Java non autorisé chargé dans le jeu, ou threads anonymes (traces d'injecteurs). |
 | **ModScan** | Mod interdit dans la liste des mods déclarée par le client. |
-| **ResourcePack** | Pack de texture ajouté par le joueur (au-delà de ceux du serveur et du jeu). |
+| **ResourcePack** | Pack de texture ajouté par le joueur (au-delà de ceux du serveur et du jeu). Depuis le 19/11 (2.15.0) : connexion refusée, avec le nom du pack à retirer (`refuseCustomResourcePacks`). |
 | **Shaders** | Shaderpack actif (Iris/Oculus/OptiFine), si non autorisé. |
 | **JvmHardening** | Jeu lancé sans les protections anti-injection (si `requireHardenedJvm`). |
 | **Ban matériel** | Identifiant de la carte mère / HWID d'un PC banni (voir section 3). |

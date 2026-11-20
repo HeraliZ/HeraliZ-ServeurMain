@@ -70,6 +70,10 @@ public final class ReceptionServeur {
                 if (p instanceof GardienPacket) {
                     l.removeIf(o -> o instanceof GardienPacket);
                 }
+                // liste des packs de ressources (renvoyée à chaque changement depuis le 19/11) : seule la dernière compte
+                if (p instanceof ResourcePackPacket) {
+                    l.removeIf(o -> o instanceof ResourcePackPacket);
+                }
                 if (l.size() < 16) l.add(p);
             }
             return;
@@ -268,8 +272,10 @@ public final class ReceptionServeur {
         long dernierResume;
     }
 
+    /** Déconnexion : appuis comptés et dernière liste de packs de ressources du joueur oubliés. */
     public static void oublierTouches(java.util.UUID id) {
         TOUCHES.remove(id);
+        PACKS.remove(id);
     }
 
     /** Touche d'ouverture des menus de triche (code GLFW, parmi {@code integrity.touchesSurveillees}). */
@@ -361,32 +367,54 @@ public final class ReceptionServeur {
         }
     }
 
-    /** Packs de ressources actifs (journalisés) : un pack ajouté par le joueur (« file/… ») est signalé. */
+    /** Dernière liste de packs de ressources reçue par joueur, et nombre de listes reçues pendant la connexion. */
+    private record Packs(List<String> liste, int envois) {
+    }
+
+    private static final java.util.Map<java.util.UUID, Packs> PACKS = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Au-delà, les listes suivantes d'une même connexion sont ignorées (un jeu modifié qui en enverrait sans fin). */
+    private static final int PACKS_MAX_ENVOIS = 100;
+
+    /**
+     * Packs de ressources actifs (journalisés), à la connexion puis à chaque changement (19/11 : le jeu renvoie la liste
+     * quand elle change). Un pack ajouté par le joueur (« file/… », {@link com.Spartan.integrity.PacksJoueur}) : alerte, et
+     * connexion REFUSÉE avec un message clair si {@code refuseCustomResourcePacks} (décision du propriétaire du 19/11 :
+     * interdits, comme un jar en plus). Règle d'accès, pas une accusation de triche : jamais de ban. Mise en place prudente
+     * par le disjoncteur des règles en rodage ({@code packs:} de {@code [injection] rodage}).
+     */
     private static void packs(ServerPlayer player, ResourcePackPacket rp) {
-        if (!PacketGuard.firstTime(player.getUUID(), "resourcepacks")) {
+        java.util.UUID uuid = player.getUUID();
+        List<String> resourcePacks = rp.resourcePacks();
+        Packs avant = PACKS.get(uuid);
+        if (avant != null && (avant.envois() >= PACKS_MAX_ENVOIS || avant.liste().equals(resourcePacks))) {
             return;
         }
-        List<String> resourcePacks = rp.resourcePacks();
-        Spartan.LOGGER.info("[Spartan] Packs de ressources de {} : {}", player.getName().getString(),
-                String.join(", ", resourcePacks));
+        PACKS.put(uuid, new Packs(List.copyOf(resourcePacks), avant == null ? 1 : avant.envois() + 1));
+        Spartan.LOGGER.info("[Spartan] Packs de ressources de {}{} : {}", player.getName().getString(),
+                avant == null ? "" : " (changement)", String.join(", ", resourcePacks));
         if (!SpartanConfig.BLOCK_RESOURCE_PACKS.get()) {
             return;
         }
-        // Les packs du jeu (vanilla, mod_resources) et ceux imposés par les mods (heraliz_interface) ne comptent pas.
-        List<String> allowed = SpartanConfig.getAllowedResourcePacks();
-        List<String> custom = new ArrayList<>();
-        for (String pack : resourcePacks) {
-            String id = pack.toLowerCase(Locale.ROOT);
-            if (id.startsWith("file/") && !allowed.contains(id)) {
-                custom.add(pack.substring(5));
-            }
+        // Les packs du jeu (vanilla, mod_resources), ceux de nos jars et des mods (heraliz_interface, TaCZ…) et celui du
+        // serveur ne comptent jamais : seuls les packs des dossiers du joueur (« file/… »)
+        List<String> ajoutes = com.Spartan.integrity.PacksJoueur.ajoutes(resourcePacks, SpartanConfig.getAllowedResourcePacks());
+        if (ajoutes.isEmpty()) {
+            return;
         }
-        if (!custom.isEmpty()) {
-            CheckManager.flag("ResourcePack", player, "pack(s) de texture non autorisé(s) : " + String.join(", ", custom));
-            if (SpartanConfig.mayKickForClientSignal()) {
-                player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.packs",
-                        "Les packs de ressources personnalisés sont interdits. Retirez-les (dossier resourcepacks)."));
-            }
+        String liste = com.Spartan.integrity.PacksJoueur.liste(ajoutes);
+        boolean refuser = SpartanConfig.REFUSE_RESOURCE_PACKS.get()
+                && com.Spartan.integrity.Injection.rodageAutorise(player, "packs:joueur");
+        CheckManager.flag("ResourcePack", player, (refuser ? "connexion refusée : " : "")
+                + "pack(s) de textures ajouté(s) par le joueur : " + liste);
+        if (refuser) {
+            Spartan.LOGGER.info("[Spartan] {} refusé : pack(s) de textures ajouté(s) ({}).", player.getName().getString(), liste);
+            player.connection.disconnect(Component.translatableWithFallback("spartan.refus.packs",
+                    "Connexion refusée : les packs de textures ajoutés par le joueur sont interdits sur HeraliZ.\n"
+                            + "Pack(s) à retirer : %s\n\nFerme le jeu et relance-le depuis le launcher HeraliZ : il les met"
+                            + " de côté tout seul (dossier resourcepacks du jeu).", liste));
+        } else if (SpartanConfig.mayKickForClientSignal()) {
+            player.connection.disconnect(Component.translatableWithFallback("spartan.expulsion.packs",
+                    "Les packs de ressources personnalisés sont interdits. Retirez-les (dossier resourcepacks)."));
         }
     }
 }

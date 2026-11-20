@@ -125,6 +125,7 @@ public class SpartanConfig {
 
     // --- ressources (packs de texture / shaders) ---
     public static final ForgeConfigSpec.BooleanValue BLOCK_RESOURCE_PACKS;
+    public static final ForgeConfigSpec.BooleanValue REFUSE_RESOURCE_PACKS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ALLOWED_RESOURCE_PACKS;
     public static final ForgeConfigSpec.BooleanValue BLOCK_SHADERS;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ALLOWED_SHADERPACKS;
@@ -632,9 +633,10 @@ public class SpartanConfig {
                 "DIFFÉRENTS les déclenchent en moins de rodageMinutes, la règle est suspendue (alerte seulement, plus",
                 "d'expulsion) jusqu'au prochain redémarrage, et le staff est prévenu (« Règle suspendue ») : une règle qui se",
                 "trompe n'expulse jamais plus de rodageJoueurs - 1 joueurs honnêtes. gardien:dll: = bibliothèque d'agent Java ou",
-                "de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité).",
+                "de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité) ;",
+                "packs: = refus d'un joueur qui a un pack de textures ajouté par lui ([resources] refuseCustomResourcePacks).",
                 "Vider la liste une fois les règles éprouvées (une semaine sans « Règle suspendue »).")
-                .defineList("rodage", List.of("natif:agent:", "inject:redef:", "gardien:dll:", "gardien:cle:"),
+                .defineList("rodage", List.of("natif:agent:", "inject:redef:", "gardien:dll:", "gardien:cle:", "packs:"),
                         o -> o instanceof String);
         INJECTION_RODAGE_JOUEURS = b.comment(
                 "Joueurs différents qui suspendent une règle en rodage (0 = disjoncteur coupé : la règle expulse toujours).")
@@ -794,6 +796,13 @@ public class SpartanConfig {
                 "Le pack du serveur reste autorisé. Pour IMPOSER le pack du serveur, mettez aussi",
                 "require-resource-pack=true dans server.properties.")
                 .define("blockCustomResourcePacks", true);
+        REFUSE_RESOURCE_PACKS = b.comment(
+                "19/11 (décision du propriétaire) : true = un joueur qui a encore un pack de textures AJOUTÉ PAR LUI actif",
+                "(dossiers resourcepacks / kiwipacks du jeu, « file/… ») est REFUSÉ à la connexion, avec un message clair qui",
+                "lui dit lequel retirer (jamais de ban) ; false = alerte seulement. Jamais compté : le pack de base de",
+                "Minecraft, les ressources des mods, nos packs rangés dans nos jars, celui du serveur. Le launcher 1.18.0 met",
+                "ces packs de côté avant la partie. Mise en place prudente : règle « packs: » de [injection] rodage.")
+                .define("refuseCustomResourcePacks", true);
         ALLOWED_RESOURCE_PACKS = b.comment("Packs de ressources autorisés en plus de ceux du serveur et du jeu.")
                 .defineList("allowedResourcePacks", List.of(), o -> o instanceof String);
         BLOCK_SHADERS = b.comment(
