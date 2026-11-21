@@ -226,13 +226,16 @@ jobs:
             echo "===== JOURNAL $(basename "$f") : diag / moniteur ====="
             printf '%s\n' "$txt" | grep -E '\[(diag|moniteur)\]|Tick #|lasted' | grep -v -E 'password|login|register' | masque | tail -200
             echo "===== JOURNAL $(basename "$f") : commandes jouées (heure et nom, les 300 dernières) ====="
-            # seulement l'heure et le mot de la commande (ni pseudo, ni arguments : pas de mot de passe ni de message privé)
-            printf '%s\n' "$txt" | grep -E 'issued server command' | sed -E 's/^\[([^]]*)\].*issued server command: *(\/[^ ]*).*/\1 \2/' | grep -E ' /[^ ]*$' | tail -300
+            # seulement l'heure et le mot de la commande (ni pseudo, ni arguments : pas de mot de passe ni de message privé) ;
+            # 21/11 (audit de validation) : seulement les commandes vues au moins 3 fois dans ce journal (un mot de passe tapé
+            # une fois par erreur comme une commande, « /motdepasse », n'apparaît jamais dans ce journal public)
+            printf '%s\n' "$txt" | grep -E 'issued server command' | sed -E 's/^\[([^]]*)\].*issued server command: *(\/[^ ]*).*/\1 \2/' | grep -E ' /[^ ]*$' > commandes.txt || true
+            awk 'NR==FNR { n[tolower($2)]++; next } n[tolower($2)] >= 3' commandes.txt commandes.txt | tail -300
             echo "===== JOURNAL $(basename "$f") : 30 lignes avant chaque retard de 2 s et plus ====="
-            printf '%s\n' "$txt" | grep -v -E '/DEBUG\]|\[DEBUG\]' | grep -E -B30 "Can't keep up.*Running ([2-9][0-9]{3}|[0-9]{5,})ms" | grep -v -E 'password|login|register' | masque | tail -400
+            printf '%s\n' "$txt" | grep -v -E '/DEBUG\]|\[DEBUG\]' | grep -E -B30 "Can't keep up.*Running ([2-9][0-9]{3}|[0-9]{5,})ms" | grep -v -E 'password|login|register' | grep -v -i -E '\[chat\]|issued server command|: <[^>]+> |\] <[^>]+> ' | masque | tail -400
             echo "===== JOURNAL $(basename "$f") : erreurs ====="
             apres_demarrage | grep -v -E '/DEBUG\]|\[DEBUG\]' | grep -E -B1 -A12 'Exception|Error:|\bat fr\.heral|\bat com\.(heraliz|Spartan|caracrea)' \
-              | grep -v -E 'password|login|register' | masque | grep -v -E '^\s+at (java\.|jdk\.|net\.minecraftforge\.eventbus|cpw\.)' | head -400
+              | grep -v -E 'password|login|register' | grep -v -i -E '\[chat\]|issued server command|: <[^>]+> |\] <[^>]+> ' | masque | grep -v -E '^\s+at (java\.|jdk\.|net\.minecraftforge\.eventbus|cpw\.)' | head -400
             echo "===== JOURNAL $(basename "$f") : avertissements les plus fréquents ====="
             apres_demarrage | grep -E '/WARN\]|\[WARN\]|/ERROR\]|\[ERROR\]' | sed -E 's/^\[[^]]*\] *//; s/[0-9]+/N/g' | sort | uniq -c | sort -rn | masque | head -60
           done

@@ -113,11 +113,12 @@ jobs:
               txt=$(apres_demarrage)
               echo "## Erreurs Java dans $(basename "$f")"; echo '```'
               printf '%s\n' "$txt" | grep -E -B2 -A25 'Exception|Error:|\bat fr\.|\bat com\.(heraliz|Spartan|caracrea)' \
-                | grep -v -E 'password|login|register' | masque | grep -v -E '^\s+at (java\.|jdk\.|net\.minecraftforge\.eventbus|cpw\.)' | head -500
+                | grep -v -E 'password|login|register' | grep -v -i -E '\[chat\]|issued server command|: <[^>]+> |\] <[^>]+> ' | masque | grep -v -E '^\s+at (java\.|jdk\.|net\.minecraftforge\.eventbus|cpw\.)' | head -500
               echo '```'
               if [ -n "$FILTRE" ]; then
                 echo "### Lignes avec « $FILTRE »"; echo '```'
-                printf '%s\n' "$txt" | grep -i -F -- "$FILTRE" | grep -v -E 'password|login|register' | masque | tail -100
+                # 21/11 (audit de validation) : jamais le chat, les messages privés ni les commandes tapées (journal public)
+                printf '%s\n' "$txt" | grep -i -F -- "$FILTRE" | grep -v -E 'password|login|register' | grep -v -i -E '\[chat\]|issued server command|: <[^>]+> |\] <[^>]+> ' | masque | tail -100
                 echo '```'
               fi
             done

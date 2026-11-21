@@ -2117,3 +2117,35 @@ Fait :
       tirs depuis le quai et de loin : comme avant.
 
 Pas testé : tout en jeu (fabrication, contrôles et démarrage d'essai sur GitHub seulement).
+
+## 51. Audit de validation du 21/11 au soir (10 nouveaux relecteurs)
+
+Après la mise en ligne de 17 h 43 (heure UTC), demande du propriétaire : « refaire un audit bien profond et complet pour
+bien tout valider ». Tous les changements du jour sont validés ; corrections et propositions : synthèse
+`docs/audit_global_21nov/validation/LISEZMOI.md` (un compte rendu par partie dans le même dossier). Versions : Boutique
+1.7.4, Monde 1.3.12, CRac 1.38.11-beta, Clans 3.19.4, Loot 0.20.9, Bunker 0.14.9, ClashWar 1.3.9, Spartan 2.15.6,
+Noyau 1.1.12 ; aucun canal réseau changé par cette relecture. Journaux publics de GitHub sans chat, messages privés ni
+commandes tapées.
+
+À tester en jeu :
+- [ ] **`/tpa`** : une demande normale marche ; demander un joueur puis un autre pendant l'attente : une seule
+      téléportation, la deuxième attend la recharge.
+- [ ] **Boutique et `/trade` en PB** avec un solde trop bas : « solde insuffisant » tout de suite (plus « site
+      injoignable ») ; au `/trade`, les objets reviennent aussitôt.
+- [ ] **Clic gauche et casse de blocs** en survie, échelle de raid, carrière : comme avant. `/base effacer` et fin du
+      tutoriel : seule l'armoire disparaît, jamais un bloc de la carte.
+- [ ] **Hélicoptère abattu** près des joueurs puis loin : l'épave tombe au bon endroit, ses 2 conteneurs T6 s'ouvrent et
+      disparaissent à leur heure, aucune alerte « [Diag] Blocage ».
+- [ ] **Salle à carte** : se reconnecter dedans : on ressort devant la porte et elle est déjà fermée. Passage d'une carte :
+      même geste qu'avant, vu par un autre joueur.
+- [ ] **ClashWar** : départ avec un inventaire plein et un sac plein ; mourir puis réapparaître pendant l'attente du
+      retour : tout revient. Coffre du clan pris juste au départ : rien ne disparaît au retour.
+- [ ] **Connexion** : se déconnecter et revenir aussitôt avec le même compte : « Jeu validé » comme d'habitude.
+- [ ] **Noyau** : actions du panneau du staff (ban PC, jour, largage) comme ce midi ; un panneau en bois « /spawn » posé
+      par le staff : refusé en combat et sur la carte (comme avant le 21/11) ; `/redemarrage 5` puis `/redemarrage
+      annuler` : rien ne redémarre.
+- [ ] **Skins, étape 1** : `/camos dessins` (op) : bandeau « 79 programmes prêts » ; dans le journal du serveur « 167
+      fichiers (698 Ko) compressés en 88 Ko » ; skins identiques en main, dans l'atelier et dans l'inventaire.
+
+Pas testé : tout en jeu (fabrication, contrôles et démarrage d'essai sur GitHub seulement ; démarrage « mixins
+stricts » allé jusqu'au bout côté serveur).
