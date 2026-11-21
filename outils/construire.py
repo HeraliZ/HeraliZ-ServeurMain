@@ -5,7 +5,9 @@
                                                      (tout passe par la fabrication unique : gradlew à la racine)
     python outils/construire.py --sans-build         ne fabrique rien, range seulement les jars déjà dans build/libs
     python outils/construire.py --si-change          ne refabrique que les mods dont les sources ont changé depuis leur
-                                                     dernière fabrication (empreinte dans build/libs/.empreinte)
+                                                     dernière fabrication (empreinte dans build/libs/.empreinte), puis
+                                                     ceux qui en dépendent et dont un appel vers eux ne trouve plus sa
+                                                     cible (voir dependants_casses)
 
 Résultat (dossier livraison/, jamais dans Git) :
     livraison/mods serveur/   -> mods/ du Ptero      (mods tiers + nos jars -serveur)
@@ -89,6 +91,117 @@ def empreinte(p):
 def a_jour(p):
     e = p / "build" / "libs" / ".empreinte"
     return e.exists() and e.read_text().strip() == empreinte(p) and all(j.exists() for j in jars(p).values())
+
+
+# 21/11 (validation v9, a9 n° 1, choix du propriétaire) : avec --si-change, un mod gardé (sources inchangées) qui dépend
+# d'un mod refait gardait son jar fabriqué avec l'ANCIENNE version de celui-ci : une fonction retirée ou changée du noyau
+# ne se voyait qu'en jeu. Après la fabrication, chaque appel des jars gardés vers un mod refait (classe, méthode, champ,
+# côté par côté) est cherché dans ses nouveaux jars ; un mod gardé dont un appel ne trouve plus sa cible est refait lui
+# aussi : la compilation dit l'erreur (fabrication refusée), ou son jar suit la nouvelle version. Les autres restent tels
+# quels (rien de plus à télécharger pour les joueurs).
+RE_DEPENDANCE = re.compile(r"project\(\s*(?:path:\s*)?['\"]:([\w-]+)['\"]")
+# méthodes que toute classe tient de java.lang.Object (et d'Enum pour une énumération) : jamais dans ses propres membres
+METHODES_OBJET = {"toString", "hashCode", "equals", "getClass", "notify", "notifyAll", "wait", "clone", "finalize"}
+METHODES_ENUM = METHODES_OBJET | {"name", "ordinal", "compareTo", "valueOf", "getDeclaringClass", "describeConstable"}
+
+
+def dependances(p):
+    """Modules dont ce module dépend à la fabrication (« project(path: ':x', ...) » de son build.gradle)."""
+    return set(RE_DEPENDANCE.findall((p / "build.gradle").read_text(encoding="utf-8"))) - {p.name}
+
+
+def _classes(jar, Classe, profond, filtre=None):
+    """Classes d'un jar (nom interne -> Classe) ; filtre : octets cherchés avant de lire une classe (lecture plus courte)."""
+    out = {}
+    with zipfile.ZipFile(jar) as z:
+        for n in z.namelist():
+            if not n.endswith(".class") or n.startswith("META-INF/"):
+                continue
+            data = z.read(n)
+            if filtre and not any(f in data for f in filtre):
+                continue
+            try:
+                out[n[:-6]] = Classe(data, profond)
+            except Exception:   # classe illisible pour ce petit lecteur : pas jugée (jamais une erreur de fabrication)
+                continue
+    return out
+
+
+def _trouve(classes, nom, membre, desc, vus):
+    """Le membre (nom, descripteur) est-il dans cette classe du jar ou ses ascendants ? Ascendant hors du jar : Object et
+    Enum par leurs méthodes connues, une classe de Minecraft, de Forge ou d'un autre auteur est supposée l'avoir."""
+    if nom in vus:
+        return False
+    vus.add(nom)
+    c = classes.get(nom)
+    if c is None:
+        if nom in ("java/lang/Object", "java/lang/Record"):
+            return membre in METHODES_OBJET
+        if nom == "java/lang/Enum":
+            return membre in METHODES_ENUM
+        return True
+    if (membre, desc) in c.membres:
+        return True
+    return any(x and _trouve(classes, x, membre, desc, vus) for x in [c.mere] + list(c.interfaces))
+
+
+def appels_casses(garde, refait):
+    """Appels des jars du module gardé vers les classes du module refait qui ne trouvent plus leur cible dans ses nouveaux
+    jars, côté par côté : textes « côté : classe.membre descripteur ». None si le contrôle est impossible ici."""
+    try:
+        from verif_split import Classe
+    except Exception as ex:   # Python trop ancien (tomllib) ou outil absent : contrôle sauté, jamais bloquant
+        print("[construire] appels des mods gardés non contrôlés (%s)" % ex)
+        return None
+    jg, jr = jars(garde), jars(refait)
+    if not all(j.exists() for j in list(jg.values()) + list(jr.values())):
+        return None
+    a_lui = set()
+    for j in jr.values():
+        with zipfile.ZipFile(j) as z:
+            a_lui |= {n[:-6] for n in z.namelist() if n.endswith(".class") and not n.startswith("META-INF/")}
+    if not a_lui:
+        return []
+    paquets = sorted({n.rsplit("/", 1)[0].encode() + b"/" for n in a_lui if "/" in n})
+    casses = set()
+    for cote, j in jg.items():
+        cible = jr.get(cote) or jr.get("complet") or jr.get("seul")
+        if cible is None:
+            continue
+        siennes = _classes(cible, Classe, False)
+        dependant = _classes(j, Classe, True, paquets)
+        for c in dependant.values():
+            for genre, cl, nm, ds in c.refs:
+                base = cl.lstrip("[")
+                base = base[1:-1] if base.startswith("L") and base.endswith(";") else base
+                if base not in a_lui or base in dependant:
+                    continue
+                if base not in siennes:
+                    casses.add("%s : classe %s absente" % (cote, base))
+                elif genre != "classe" and not _trouve(siennes, base, nm, ds, set()):
+                    casses.add("%s : %s %s.%s%s absent(e)" % (cote, genre, base, nm, ds))
+    return sorted(casses)
+
+
+def dependants_casses(refaits, gardes):
+    """Parmi les modules gardés, ceux qui dépendent d'un module refait et dont un appel vers lui ne trouve plus sa cible."""
+    noms = {p.name for p in refaits}
+    a_refaire, vus = [], 0
+    for g in gardes:
+        for nom in sorted(dependances(g) & noms):
+            casses = appels_casses(g, chemins.MODS / nom)
+            if casses is None:
+                continue
+            vus += 1
+            if casses:
+                print("[construire] %s : %d appel(s) vers %s sans cible dans ses nouveaux jars (ex. %s) : refait aussi"
+                      % (g.name, len(casses), nom, casses[0]))
+                a_refaire.append(g)
+                break
+    if vus:
+        print("[construire] appels des mods gardés vers les mods refaits : %d lien(s) relu(s), %d mod(s) à refaire"
+              % (vus, len(a_refaire)))
+    return a_refaire
 
 
 def env():
@@ -430,11 +543,16 @@ def _main():
         for p in choisis:
             if not p.is_dir():
                 raise SystemExit("module inconnu : %s" % p)
+        gardes = []
         if "--si-change" in sys.argv:
             for p in [p for p in choisis if a_jour(p)]:
                 print("[construire] %s : inchangé" % p.name)
                 choisis.remove(p)
+                gardes.append(p)
         ok = fabriquer(choisis) and ok
+        # mods gardés qui dépendent d'un mod refait : refaits aussi si un de leurs appels vers lui ne trouve plus sa cible
+        if ok and choisis and gardes:
+            ok = fabriquer(dependants_casses(choisis, gardes)) and ok
     ok = ranger() and ok
     sys.exit(0 if ok else 1)
 

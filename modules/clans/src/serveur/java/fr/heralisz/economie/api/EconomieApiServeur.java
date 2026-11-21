@@ -94,6 +94,9 @@ public final class EconomieApiServeur implements EconomieApi.Moteur {
             HeraliszEconomie.LOG.warn("[economie] depot de {} pour {} ignore : plafond atteint", montant, joueur);
             return;
         }
+        // 21/11 (validation de l'audit) : un depot coupe au plafond est dit au journal (le staff peut rendre la difference) ;
+        // les appelants qui prennent quelque chose en echange (Mila, quetes, recycleurs) regardent la place avant
+        if (montant > place) HeraliszEconomie.LOG.warn("[economie] depot de {} pour {} coupe a {} : plafond atteint", montant, joueur, place);
         appliquer(s, c, Math.min(montant, place), motif, null);
     }
 

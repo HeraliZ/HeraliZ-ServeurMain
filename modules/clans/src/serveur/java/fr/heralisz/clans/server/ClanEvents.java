@@ -146,7 +146,7 @@ public final class ClanEvents {
                 avisCourbe = c.niveauAvantCourbe > 1 && c.courbeLe > 0 && m.vuLe < c.courbeLe;
                 m.dernierNom = nom;
                 // 21/11 (staff caché) : « vu le » et temps de jeu d'avant cette partie, montrés à son clan s'il est caché
-                Sync.debutSession(p.getUUID(), m.vuLe, m.stats.tempsJeuTicks);
+                Sync.debutSession(p.getUUID(), m.vuLe, m.stats.tempsJeuTicks, now);
                 m.vuLe = now;
                 store.marquerDirty(c);
             }

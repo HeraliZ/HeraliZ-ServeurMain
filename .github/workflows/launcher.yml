@@ -236,9 +236,11 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
 
-      # paquet installé AVANT l'étape qui a les secrets (version figée)
+      # paquets installés AVANT l'étape qui a les secrets : paramiko et toutes ses dépendances à versions et empreintes
+      # figées (21/11, validation v9 : avant, seule la version de paramiko l'était ; outils/requis_sftp.txt)
       - name: Client SFTP
-        run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+        run: |
+          python -m pip install --quiet --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes -r ../outils/requis_sftp.txt
 
       # Le launcher 1.16.0 et plus n'accepte que le pack signé en v2 (empreintes SHA-256 et date, audit du 02/11) : sans
       # elle en ligne, il refuserait le pack et personne ne pourrait jouer. Le site dit s'il la sert (pack_v2).
@@ -304,9 +306,11 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
 
-      # paquet installé AVANT l'étape qui a les secrets (version figée)
+      # paquets installés AVANT l'étape qui a les secrets : paramiko et toutes ses dépendances à versions et empreintes
+      # figées (21/11, validation v9 : avant, seule la version de paramiko l'était ; outils/requis_sftp.txt)
       - name: Client SFTP
-        run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+        run: |
+          python -m pip install --quiet --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes -r ../outils/requis_sftp.txt
 
       # Le launcher 1.16.0 et plus n'accepte que le pack signé en v2 (empreintes SHA-256 et date, audit du 02/11) : sans
       # elle en ligne, il refuserait le pack et personne ne pourrait jouer. Le site dit s'il la sert (pack_v2).
@@ -371,9 +375,11 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
 
-      # paquet installé AVANT l'étape qui a les secrets (version figée)
+      # paquets installés AVANT l'étape qui a les secrets : paramiko et toutes ses dépendances à versions et empreintes
+      # figées (21/11, validation v9 : avant, seule la version de paramiko l'était ; outils/requis_sftp.txt)
       - name: Client SFTP
-        run: python -m pip install --quiet --disable-pip-version-check paramiko==5.0.0
+        run: |
+          python -m pip install --quiet --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes -r ../outils/requis_sftp.txt
 
       # Le launcher 1.16.0 et plus n'accepte que le pack signé en v2 (empreintes SHA-256 et date, audit du 02/11) : sans
       # elle en ligne, il refuserait le pack et personne ne pourrait jouer. Le site dit s'il la sert (pack_v2).

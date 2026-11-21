@@ -247,6 +247,7 @@ public final class VoiceServer {
         VoiceMutes.unload();
         GROUPS.clear();
         MEMBER_OF.clear();
+        ESSAIS_MDP.clear();
         server = null;
     }
 
@@ -423,6 +424,9 @@ public final class VoiceServer {
             switched = true;
         }
         VoiceMutes.tick();
+        if (s.getTickCount() % ESSAIS_PURGE_TICKS == 0) {
+            purgerEssais(System.currentTimeMillis());
+        }
         CaraCreaConfig.Server c = CaraCreaConfig.SERVER;
         VoiceRouting.Rules current = rules;
         float range = c.voiceRange.get().floatValue();
@@ -610,13 +614,33 @@ public final class VoiceServer {
      * Dernière liste envoyée, son numéro et les joueurs qui l'ont : une seule liste numérotée, les groupes (clé : leur
      * numéro) puis les joueurs (clé : leur UUID). Deux vues (21/11, choix du propriétaire, comme le tab de HeraliZ Grades) :
      * le staff qui voit les cachés reçoit tout ; les autres jamais la ligne d'un membre du staff caché ({@link HiddenVoice},
-     * gardée côté serveur seulement).
+     * gardée côté serveur seulement), ni le groupe vocal où il n'y a que des cachés ({@link HiddenGroup}, fin du 21/11 :
+     * staff caché partout).
      */
     private static final int ROSTER_STAFF = 0, ROSTER_PUBLIC = 1;
-    private static final Synchro.Diffuseur<UUID, Object, Object> ROSTER = new Synchro.Diffuseur<>(x -> true, x -> !(x instanceof HiddenVoice));
+    private static final Synchro.Diffuseur<UUID, Object, Object> ROSTER = new Synchro.Diffuseur<>(x -> true,
+            x -> !(x instanceof HiddenVoice) && !(x instanceof HiddenGroup));
 
     /** Ligne vocale d'un membre du staff caché : envoyée telle quelle au staff seulement. */
     private record HiddenVoice(PlayerVoice voice) {
+    }
+
+    /** Groupe vocal dont tous les membres sont du staff caché : envoyé tel quel au staff seulement. */
+    private record HiddenGroup(GroupInfo group) {
+    }
+
+    /** Groupe dont tous les membres sont du staff caché (vu seulement par le staff, comme eux). Fil du serveur. */
+    private static boolean hiddenGroup(Group group) {
+        if (group.members.isEmpty()) {
+            return false;
+        }
+        for (UUID id : group.members) {
+            Member m = MEMBERS.get(id);
+            if (m == null || !m.hidden) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Oublie la liste envoyée : tout le monde la recevra complète (voix coupée puis rallumée, arrêt). */
@@ -642,7 +666,8 @@ public final class VoiceServer {
         }
         Map<Object, Object> roster = new LinkedHashMap<>();
         for (Group group : GROUPS.values()) {
-            roster.put(group.id, new GroupInfo(group.id, group.name, group.type, !group.password.isEmpty()));
+            GroupInfo info = new GroupInfo(group.id, group.name, group.type, !group.password.isEmpty());
+            roster.put(group.id, hiddenGroup(group) ? new HiddenGroup(info) : info);
         }
         boolean anyHidden = false;
         for (Member m : ORDER) {
@@ -662,7 +687,7 @@ public final class VoiceServer {
                         int i = vue * 2;
                         if (packets[i] == null) {
                             packets[i] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRoster(version,
-                                    only(table.values(), GroupInfo.class), voices(table.values())), NetworkDirection.PLAY_TO_CLIENT);
+                                    groups(table.values()), voices(table.values())), NetworkDirection.PLAY_TO_CLIENT);
                         }
                         player.connection.send(packets[i]);
                     }
@@ -672,7 +697,7 @@ public final class VoiceServer {
                         int i = vue * 2 + 1;
                         if (packets[i] == null) {
                             packets[i] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRosterDelta(version,
-                                    only(d.retires(), Integer.class), only(d.changes().values(), GroupInfo.class), only(d.retires(), UUID.class),
+                                    only(d.retires(), Integer.class), groups(d.changes().values()), only(d.retires(), UUID.class),
                                     voices(d.changes().values())), NetworkDirection.PLAY_TO_CLIENT);
                         }
                         player.connection.send(packets[i]);
@@ -684,6 +709,19 @@ public final class VoiceServer {
     private static boolean seesHidden(ServerPlayer p) {
         Member m = MEMBERS.get(p.getUUID());
         return m != null ? m.seesHidden : HeralizVoiceCompat.seesHidden(p);
+    }
+
+    /** The groups of the roster, groups of hidden staff only included as they are (staff view only reaches them). */
+    private static List<GroupInfo> groups(Collection<?> all) {
+        List<GroupInfo> out = new ArrayList<>();
+        for (Object o : all) {
+            if (o instanceof GroupInfo g) {
+                out.add(g);
+            } else if (o instanceof HiddenGroup h) {
+                out.add(h.group());
+            }
+        }
+        return out;
     }
 
     /** The players' voice lines of the roster, hidden staff lines included as they are (staff view only reaches them). */
@@ -735,6 +773,19 @@ public final class VoiceServer {
     /** Mauvais mots de passe de groupe par joueur : {nombre, début de la minute en cours (ou de l'attente)}. */
     private static final Map<UUID, long[]> ESSAIS_MDP = new java.util.concurrent.ConcurrentHashMap<>();
     private static final int ESSAIS_MAX = 5;
+    private static final long ESSAIS_FENETRE_MS = 60_000L;
+    /** Une fois par minute (fin du 21/11) : les entrées de plus d'une minute ne servent plus (la suivante repartirait de 0). */
+    private static final int ESSAIS_PURGE_TICKS = 1200;
+
+    /**
+     * Retire les essais de mot de passe finis depuis plus d'une minute (fin du 21/11, audit a8 P9 : avant, une entrée par
+     * joueur qui s'était trompé restait jusqu'au redémarrage). Même effet pour les joueurs : une entrée de plus d'une minute
+     * repartait déjà de zéro au prochain essai ; une attente en cours (5 erreurs) est gardée, même après une reconnexion.
+     * Fil du serveur.
+     */
+    static void purgerEssais(long now) {
+        ESSAIS_MDP.values().removeIf(e -> now - e[1] > ESSAIS_FENETRE_MS);
+    }
 
     public static void groupAction(ServerPlayer player, GroupAction action) {
         if (!active) {
@@ -767,7 +818,8 @@ public final class VoiceServer {
             }
             case GroupAction.JOIN -> {
                 Group group = GROUPS.get(action.group());
-                if (group == null || !CaraCreaConfig.SERVER.allowGroups.get()) {
+                // fin du 21/11 : le groupe du staff caché n'existe pas pour qui ne voit pas les cachés (staff caché partout)
+                if (group == null || !CaraCreaConfig.SERVER.allowGroups.get() || hiddenGroup(group) && !seesHidden(player)) {
                     return;
                 }
                 if (!group.password.isEmpty()) {
@@ -775,7 +827,7 @@ public final class VoiceServer {
                     // modifié devinait le mot de passe d'un groupe en en essayant des milliers par seconde
                     long now = System.currentTimeMillis();
                     long[] essais = ESSAIS_MDP.computeIfAbsent(uuid, u -> new long[2]);
-                    if (now - essais[1] > 60_000L) {
+                    if (now - essais[1] > ESSAIS_FENETRE_MS) {
                         essais[0] = 0;
                         essais[1] = now;
                     }
@@ -822,10 +874,14 @@ public final class VoiceServer {
 
     // ------------------------------------------------------------------ relay (voice threads)
 
-    /** A frame from the game connection (network thread of the speaker's connection, see {@link VoiceInbound}). */
+    /**
+     * A frame from the game connection (network thread of the speaker's connection, see {@link VoiceInbound}). 21/11 (fin
+     * de la validation) : jetée tout de suite tant que le joueur n'a pas fait son /login (elle n'est plus gardée par la
+     * porte de Spartan, ni rejouée après le /login).
+     */
     public static void relayTcp(UUID speaker, int sequence, int flags, byte[] data, int off, int len) {
         Member m = MEMBERS.get(speaker);
-        if (m == null || len <= 0 || len > VoiceProtocol.MAX_OPUS || !m.tcpLimit.take()) {
+        if (m == null || !m.loggedIn || len <= 0 || len > VoiceProtocol.MAX_OPUS || !m.tcpLimit.take()) {
             return;
         }
         relay(m, flags & VoiceProtocol.UP_FLAGS, sequence, data, off, len);

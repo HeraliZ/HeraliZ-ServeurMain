@@ -17,4 +17,9 @@ Modifications HeraliZ (2026-10-13) :
 - Le coup de mêlée sur une cible (`IMeleeWeapon.performAttack`) est sorti dans `IMeleeWeapon.attackTarget`, sans
   changement, pour donner les mêmes coups aux couteaux TaCZ ; réglages des couteaux dans la config serveur (`[couteaux]`).
 
+Modifications HeraliZ (2026-11-21) :
+- Demande de coup de mêlée qui vise trop de cibles (`CMeleeAttackRequest`, seul un jeu modifié l'envoie) : toujours
+  refusée, mais notée au journal au plus une fois toutes les 30 s par joueur, avec le nombre de demandes semblables
+  ignorées depuis (avant : une ligne par demande).
+
 Sources obtenues en décompilant le jar désobfusqué (Vineflower 1.12), voir `tools/fork_tactical.py`.

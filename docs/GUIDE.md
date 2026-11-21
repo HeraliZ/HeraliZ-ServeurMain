@@ -147,11 +147,16 @@ d'écrire du code qui tourne en boucle, vérifier :
 
 ```
 python outils/construire.py               tous les modules (sans nom) ou ceux donnés
+python outils/construire.py --si-change   seulement les mods changés, plus ceux qui en dépendent et dont un appel vers
+                                          eux ne trouve plus sa cible (21/11 : une fonction retirée se voit à la fabrication)
 python outils/verifier.py                 tous les contrôles, 0 problème exigé
 python outils/demarrage_essai.py <dossier>   le serveur fabriqué démarre-t-il ? (jar de Mohist posé dans le dossier)
 ```
 Le démarrage d'essai est aussi fait par GitHub avant chaque mise en ligne (19/11 : sans « Done », rien n'est envoyé au
 Ptero ; `docs/DEPLOIEMENT.md` §6).
+Contrôle des noms perso de `verifier.py` (fichier `outils/noms_interdits.txt`, secret `NOMS_INTERDITS` sur GitHub) :
+**sauté par choix du propriétaire** (21/11 : la liste ne sera pas créée). Il remarcherait tout seul avec le fichier ou le
+secret.
 Résultat dans `livraison/` : `mods serveur/` (Ptero), `mods client/` (joueurs), `mods solo/`, `plugins/`,
 `banc/` (bots de charge, **seulement le temps d'un test**), `spartan/officiel.json`.
 

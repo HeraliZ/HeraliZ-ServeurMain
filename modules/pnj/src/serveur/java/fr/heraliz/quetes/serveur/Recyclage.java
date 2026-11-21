@@ -411,6 +411,9 @@ final class Recyclage {
             Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur_carte.indisponible"), 0xFF6B6B);
             return;
         }
+        // 21/11 (validation de l'audit) : économie indisponible : la machine ne recycle plus (RecycleurCarteEntiteServeur.enPause),
+        // mais s'ouvre pour reprendre ses objets
+        if (!Ponts.economie()) Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur_carte.economie"), 0xFF6B6B);
         p.openMenu(new SimpleMenuProvider((id, inv, pl) -> new MenuRecycleurCarteServeur(id, inv, m),
                 Component.translatableWithFallback("heraliz_quetes.recycleur_carte.titre", "Recycleur de terrain")));
     }
@@ -418,6 +421,12 @@ final class Recyclage {
     private static void ouvrir(ServerPlayer p, java.util.function.Predicate<Player> valide) {
         if (etat.exactes.isEmpty() && etat.larges.isEmpty()) {
             Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.ferme"), 0xFF6B6B);
+            return;
+        }
+        // 21/11 (validation de l'audit) : économie indisponible (fichier des comptes illisible) : le recycleur ne s'ouvre pas,
+        // sinon il recyclerait sans verser sa part en hérals
+        if (!Ponts.economie()) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.recycleur.economie"), 0xFF6B6B);
             return;
         }
         p.openMenu(new SimpleMenuProvider((id, inv, pl) -> new MenuRecycleurServeur(id, inv, valide),

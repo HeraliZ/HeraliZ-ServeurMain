@@ -476,6 +476,13 @@ final class Commandes {
     }
 
     private static int finir(CommandContext<CommandSourceStack> c, ServerPlayer p, String cle) {
+        // 21/11 (validation de l'audit, choix du propriétaire) : finir donne la récompense (hérals) : op 4 connecté sur AuthMe,
+        // ou la console, comme /bourse donner et /quete reset
+        if (c.getSource().getEntity() instanceof ServerPlayer staff && !Ponts.authentifie(staff)) {
+            c.getSource().sendFailure(Component.translatableWithFallback("heraliz_quetes.bourse.cmd.login",
+                    "Connecte-toi d'abord avec /login."));
+            return 0;
+        }
         Donnees.DActive a = Donnees.de(p.getUUID()).actives.get(cle);
         Defs.Quete q = a == null ? null : Moteur.def(a);
         if (q == null) return erreur(c, "heraliz_quetes.cmd.pas_en_cours", "Pas de quête en cours « %s » (voir /quete joueur).", cle);

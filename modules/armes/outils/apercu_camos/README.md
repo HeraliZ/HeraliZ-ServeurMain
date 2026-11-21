@@ -47,7 +47,7 @@ NODE_PATH=$(npm root -g) node rendre.js travaux.json
 
 ```json
 {"donnees": "/tmp/armes", "armes": ["xm177"],
- "passes": [{"shader": "../../src/client/resources/assets/heralisz_camo/shaders/core/camo_1.fsh",
+ "passes": [{"shader": "../../dessins/heralisz_camo/shaders/core/camo_1.fsh",
              "rendus": [{"arme": "xm177", "camo": 1, "vue": "orbite", "yaw": 80, "pitch": 10, "zoom": 1.3,
                          "w": 1280, "h": 720, "temps": 2.0, "sortie": "gold.png"}]}]}
 ```

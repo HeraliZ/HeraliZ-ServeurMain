@@ -11,6 +11,8 @@ import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -25,11 +27,13 @@ import java.util.Set;
 import java.util.SortedMap;
 
 /**
- * Copie des dessins des skins reçue du serveur (21/11, docs/SKINS_PROTEGES.md, étape 1), gardée en mémoire seulement :
- * jamais écrite sur le disque. À la réception (fil du réseau), les morceaux sont seulement mis bout à bout : rien n'est
- * décompressé ni compilé, le jeu continue de dessiner avec les dessins de son jar. La copie n'est ouverte (décompressée,
- * empreinte vérifiée) que sur demande du staff ({@code /camos dessins} : {@link CamoShaders#refaireDepuisServeur}), puis
- * sert de source aux programmes des skins par un {@link ResourceProvider} en mémoire ({@link #fournisseur}).
+ * Copie des dessins des skins reçue du serveur (21/11, docs/SKINS_PROTEGES.md), gardée en mémoire seulement : jamais écrite
+ * sur le disque. À la réception (fil du réseau), les morceaux sont seulement mis bout à bout ; quand la copie est complète,
+ * le fil du rendu fabrique les programmes des skins depuis elle ({@link CamoShaders}, étape 2 : le jar des joueurs n'a plus
+ * aucun dessin). Ouverture (décompression, empreinte annoncée par le serveur vérifiée) une seule fois par copie, et pas de
+ * nouveau à une reconnexion qui apporte la même copie. Source des programmes : un {@link ResourceProvider} en mémoire
+ * ({@link #fournisseur}). Rien reçu {@value #ATTENTE_MS} ms après l'arrivée sur un serveur : une ligne au journal (les skins
+ * restent sans effet, ou gardent les dessins reçus plus tôt dans la session).
  */
 public final class DessinsRecus {
    private static final Logger LOG = LogUtils.getLogger();
@@ -53,6 +57,14 @@ public final class DessinsRecus {
    private static Copie ouverte;
    @Nullable
    private static volatile Map<ResourceLocation, byte[]> fichiers;
+
+   // connexion en cours (fil du jeu) : heure d'arrivée sur le serveur, absence de copie déjà notée ; copie reçue pendant
+   // cette connexion (fil du réseau, remis à faux au départ : la copie peut arriver avant que le jeu voie l'arrivée)
+   private static long arriveA = -1L;
+   private static boolean absenceNotee;
+   private static volatile boolean recueCetteConnexion;
+   /** Attente de la copie après l'arrivée sur un serveur avant de noter son absence au journal (ms). */
+   static final long ATTENTE_MS = 30_000L;
 
    /** « Pack » des fichiers de la copie : seulement la source des ressources données au compilateur (nom des erreurs). */
    private static final PackResources PACK = new PackCopie();
@@ -95,14 +107,24 @@ public final class DessinsRecus {
       int n = morceaux.length;
       morceaux = null;
       copie = new Copie(tout, p.fichiers(), p.brut(), p.empreinte(), n);
+      recueCetteConnexion = true;
       LOG.info("[Camos] dessins des skins reçus du serveur : {} fichiers, {} Ko ({} Ko compressés, {} paquet(s)), empreinte {} ;"
             + " gardés en mémoire seulement", p.fichiers(), DessinsCopie.ko(p.brut()), DessinsCopie.ko(total), n,
          p.empreinte().length() > 12 ? p.empreinte().substring(0, 12) : p.empreinte());
+      // étape 2 : les programmes des skins sont fabriqués depuis cette copie, sur le fil du rendu
+      CamoShaders.copieRecue();
    }
 
    /** Vrai si une copie complète a été reçue du serveur. */
    static boolean recue() {
       return copie != null;
+   }
+
+   /** Empreinte que le serveur annonce pour la dernière copie complète reçue ; null : aucune. */
+   @Nullable
+   static String empreinteAnnoncee() {
+      Copie c = copie;
+      return c == null ? null : c.empreinte();
    }
 
    /**
@@ -116,6 +138,11 @@ public final class DessinsRecus {
          return null;
       }
       if (c == ouverte) {
+         return fichiers;
+      }
+      // reconnexion au même serveur : même copie annoncée, déjà ouverte et vérifiée : rien à refaire
+      if (ouverte != null && fichiers != null && c.empreinte().equals(ouverte.empreinte())) {
+         ouverte = c;
          return fichiers;
       }
       ouverte = c;
@@ -132,14 +159,39 @@ public final class DessinsRecus {
          }
          fichiers = Map.copyOf(m);
       } catch (IOException | RuntimeException ex) {
-         LOG.error("[Camos] copie des dessins des skins illisible ({}) : les dessins du jeu restent en place", ex.toString());
+         LOG.error("[Camos] copie des dessins des skins illisible ({}) : rien n'est refait (skins sans effet, ou dessins reçus"
+            + " plus tôt gardés)", ex.toString());
       }
       return fichiers;
    }
 
+   /** Arrivée sur un serveur (fil du jeu, bus de Forge, branché par PartieClient). */
+   static void arrivee(ClientPlayerNetworkEvent.LoggingIn e) {
+      arriveA = System.currentTimeMillis();
+      absenceNotee = false;
+   }
+
+   /** Départ du serveur (fil du jeu) : la connexion suivante doit recevoir sa propre copie. */
+   static void depart(ClientPlayerNetworkEvent.LoggingOut e) {
+      arriveA = -1L;
+      recueCetteConnexion = false;
+   }
+
+   /** Chaque tick du jeu : {@value #ATTENTE_MS} ms après l'arrivée sans copie reçue, une ligne au journal (une fois). */
+   static void tick(TickEvent.ClientTickEvent e) {
+      if (e.phase != TickEvent.Phase.END || arriveA < 0L || absenceNotee || recueCetteConnexion
+         || System.currentTimeMillis() - arriveA < ATTENTE_MS) {
+         return;
+      }
+      absenceNotee = true;
+      LOG.warn("[Camos] aucun dessin des skins reçu de ce serveur {} s après l'arrivée : {}", ATTENTE_MS / 1000L,
+         copie == null ? "les skins s'affichent sans effet" : "les skins gardent les dessins reçus plus tôt dans la session");
+   }
+
    /**
-    * Ressources pour la compilation des programmes des skins : nos dessins viennent seulement de la copie (comme à
-    * l'étape 2, où ils ne seront plus dans le jar) ; le reste (includes de Minecraft : fog.glsl, light.glsl) vient du jeu.
+    * Ressources pour la compilation des programmes des skins : nos dessins viennent seulement de la copie (étape 2 : ils ne
+    * sont plus dans le jar ; un pack de ressources ne peut pas les remplacer) ; le reste (includes de Minecraft : fog.glsl,
+    * light.glsl) vient du jeu.
     */
    static ResourceProvider fournisseur(Map<ResourceLocation, byte[]> f, ResourceProvider jeu) {
       return rl -> {

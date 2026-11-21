@@ -101,7 +101,8 @@ Remarques (aucun effet en jeu aujourd'hui, rien de changé) :
   fichier est maintenant sur le disque avant le coffre » : presque toujours vrai, mais l'écriture du coffre, partie la
   première, peut finir avant. Un plantage du serveur dans ces quelques millisecondes redéposerait le kit de départ (plan,
   marteau, armoire, brindilles) une 2e fois. Risque négligeable ; le corriger demanderait de réordonner ce dépôt
-  (« au pire perdu » au lieu de « au pire en double ») : pas conseillé sans besoin.
+  (« au pire perdu » au lieu de « au pire en double ») : pas conseillé sans besoin. **Fermé le soir même pour le premier
+  dépôt** (choix du propriétaire, voir « Fin du 21/11 » en bas).
 - **R2. Deux cabanes d'essai d'un même clan** : l'usure et la réparation de la passe d'entretien sont notées par clan
   (`claim/ClaimMaintenanceManager.java` l. 351-352), donc les deux cabanes suivent l'état de la dernière vue. Sans effet :
   les pièces de moins de 30 min ne s'usent jamais (`graceMinutes`) et un tutoriel dure moins.
@@ -152,3 +153,58 @@ Changements du jour (rappel de `a3`, toujours à faire) : tutoriel à deux d'un 
 puis « À la base », onglet Accès en tapant vite, `/wipe serveur` sur le serveur d'essai.
 
 Pas testé : tout en jeu (fabrication et contrôles sur GitHub seulement).
+
+---
+
+## Fin du 21/11 (choix du propriétaire : « tout lançable et terminé à 100 % »)
+
+En ligne au départ : `main` = `1607d9655`, CRac 1.38.11-beta. Fait sur la branche de travail : **CRac 1.38.12-beta** (le
+launcher donne le nouveau jar ; aucun canal réseau ne change : un jeu en 1.38.11 se connecte toujours). **Rien n'a été
+testé en jeu** : relecture, contrôle de la syntaxe Java, `outils/verifier_langues.py` et `outils/verif_reflexion.py`
+(0 erreur), puis la fabrication et les contrôles sur GitHub.
+
+### 1. `/base effacer <chef>` : seulement les cabanes d'essai du joueur visé (a3 n° 1)
+
+En simple : la commande du staff efface la base du clan sur la carte. Au tutoriel, elle prenait « l'armoire du clan »,
+qui pouvait être la cabane d'essai d'un autre membre en plein tutoriel (effacée sous ses yeux, son tutoriel cassé).
+Maintenant, au tutoriel, elle n'efface que les cabanes dont les pièces sont au joueur visé, comme la fin du tutoriel et
+`/wipe <joueur>`. Rien ne change sur la carte. `bases/EffacerBase.java` l. 110-130.
+
+### 2. `/home` et `/rtp` : combat et « à terre » revus au moment du départ (a3 n° 4, v9 n° 4)
+
+En simple : `/home` et `/rtp` demandent de rester immobile quelques secondes, puis attendent au besoin que l'arrivée soit
+chargée (« Préparation de l'arrivée… »). Seul un coup reçu annulait le départ : un joueur qui tirait sans bouger partait
+encore en combat. Maintenant, au moment même du départ, après le compte à rebours ET cette attente, un joueur en combat
+ou à terre ne part pas, avec le message de toutes les commandes refusées en combat (celui du noyau : « Impossible en
+combat · 12 s » au-dessus de la barre d'objets, « Impossible à terre. » dans le chat, dans les trois langues). Rien n'est
+compté : ni le délai partagé du `/home`, ni la recharge du `/rtp`. Le staff part comme pour `/spawn`.
+`bases/Deplacements.java` l. 125-149 (`refusAuDepart`, mêmes lectures que le noyau : `CombatTag`, `ATerre`) et l. 201,
+`bases/Homes.java` l. 114. L'écran de mort « À la base » n'est pas concerné (la mort efface le tag de combat).
+
+### 3. R1, kit de la première base : fermé pour le premier dépôt
+
+En simple : le kit (plan, marteau, armoire, brindilles) est maintenant noté « rangé » sur le disque AVANT d'entrer dans
+le coffre du clan. Un plantage du serveur à ce moment précis peut au pire faire perdre ce kit (le Bâtisseur vend
+l'armoire), jamais le donner deux fois. Une erreur pendant le dépôt (rien de rangé) le remet « à ranger », nouvel essai
+plus tard, comme avant. `heraliz/BasesClans.java` l. 654-675.
+
+Laissé noté : le reste d'un kit qui n'est pas entré (coffre du clan plein au premier dépôt, rare) est redéposé plus tard
+dans l'ordre d'avant (fenêtre de quelques millisecondes). Le noter avant chaque essai réécrirait ce fichier toutes les
+5 s tant que le coffre reste plein : pas fait.
+
+### À tester en jeu
+
+- [ ] Deux comptes A (chef) et B du même clan ; B fait le tutoriel ; un op tape `/base effacer A` : la base du clan sur la
+      carte disparaît ; la cabane d'essai de B reste, il finit son tutoriel. Variante : A aussi au tutoriel : sa cabane
+      d'essai part, celle de B reste.
+- [ ] Au spawn, `/home` (base avec un home) : arrivée à la base comme avant. Pendant le compte à rebours, se faire mettre
+      en combat sans bouger (un op tape `/combat marquer <joueur>`) : au départ, « Impossible en combat · N s », pas de
+      téléportation ; après `/combat effacer <joueur>`, un nouveau `/home` part normalement (délai du `/home` pas compté).
+- [ ] Même essai avec `/rtp` : refusé en combat, la recharge du `/rtp` n'est pas comptée ; hors combat, arrivée sur la
+      carte comme avant.
+- [ ] Staff en créatif : `/home` et `/rtp` partent comme avant.
+- [ ] Nouveau clan (serveur d'essai) : 30 s après la création (chef hors du tutoriel), le kit de la première base est dans
+      le coffre du clan, une seule fois ; après un redémarrage, il n'est pas redéposé.
+- [ ] Journal du serveur : aucune erreur de `crac`.
+
+Pas testé : tout en jeu.

@@ -1,0 +1,29 @@
+# Bibliothèques du client SFTP de la publication du launcher (launcher/ci/publier.py ; jobs publier_* de
+# .github/workflows/launcher.yml, ceux qui ont la clé de signature du launcher et le mot de passe de la VM du site).
+# Versions et empreintes figées le 21/11 (validation v9, audit a9 n° 2) : pip refuse tout autre fichier (--require-hashes,
+# roues seulement avec --only-binary=:all:, --no-deps : toutes les dépendances sont dans cette liste). Empreintes vérifiées
+# contre celles publiées par pypi.org (roues Linux x86_64 pour le Python 3.12 des jobs, plusieurs variantes de manylinux).
+# Pour changer de version : refaire toute la liste (pip download paramiko==X --only-binary=:all: dans un Python 3.12, puis
+# les empreintes de pypi.org, onglet « Download files »).
+paramiko==5.0.0 --hash=sha256:b7044611c30140d9a75261653210e2002977b71a0497ff3ba0d98d7edbf62f7c
+bcrypt==5.0.0 \
+    --hash=sha256:611f0a17aa4a25a69362dcc299fda5c8a3d4f160e2abb3831041feb77393a14a \
+    --hash=sha256:f8429e1c410b4073944f03bd778a9e066e7fad723564a52ff91841d278dfc822 \
+    --hash=sha256:7aeef54b60ceddb6f30ee3db090351ecf0d40ec6e2abf41430997407a46d2254 \
+    --hash=sha256:89042e61b5e808b67daf24a434d89bab164d4de1746b37a8d173b6b14f3db9ff \
+    --hash=sha256:0c8e093ea2532601a6f686edbc2c6b2ec24131ff5c52f7610dd64fa4553b5464 \
+    --hash=sha256:560ddb6ec730386e7b3b26b8b4c88197aaed924430e7b74666a586ac997249ef
+cryptography==50.0.2 \
+    --hash=sha256:9dab55f57c74c3cad24c323bacbbd04be4705ba6eb0d92e920b1fc4837ed5079 \
+    --hash=sha256:4061c0079120205fb760c58acab6443e217307dcf05e3702cf970e0689972856 \
+    --hash=sha256:630ebfea3bf689d075f82316324ff7433dc447fe6bc1bfc76524b74b4a9567d2 \
+    --hash=sha256:1981f1db4630889b9ef7803fadef12b056f428cb6b85c27ba57b774793b6093c \
+    --hash=sha256:f21e8a22c8605750c7af886bab299a363721264061b4ac0a30efb73cfd58efc5 \
+    --hash=sha256:ee247f5c245c9a2fe7c8e2214e295918838e44e00a45a6718451e4004219e767
+pynacl==1.6.2 \
+    --hash=sha256:c8a231e36ec2cab018c4ad4358c386e36eede0319a0c41fed24f840b1dac59f6 \
+    --hash=sha256:8a66d6fb6ae7661c58995f9c6435bda2b1e68b54b598a6a10247bfcdadac996c \
+    --hash=sha256:22de65bb9010a725b0dac248f353bb072969c94fa8d6b1f34b87d7953cf7bbe4
+cffi==2.1.1 --hash=sha256:c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf
+pycparser==3.12 --hash=sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e
+invoke==3.0.3 --hash=sha256:f11327165e5cbb89b2ad1d88d3292b5113332c43b8553b494da435d6ec6f5053

@@ -261,6 +261,7 @@ final class PanelEconomie {
                     if (r == null) fiche(s, m, false, "eco_pb_injoignable");
                     else if (r.code() == 200 && r.nombre("solde") >= 0) fiche(s, m, true, "eco_solde", nom, nombre(r.nombre("solde")), unite(op, option));
                     else if ("compte_inconnu".equals(r.raison())) fiche(s, m, false, "eco_pb_compte", nom);
+                    else if (r.code() >= 500) fiche(s, m, false, "eco_pb_erreur_site", String.valueOf(r.code()));   // 21/11 : pas un refus
                     else fiche(s, m, false, "eco_pb_refus", r.raison());
                 });
             }
@@ -403,6 +404,14 @@ final class PanelEconomie {
             if (r.ok()) {
                 long solde = r.nombre("solde");
                 pbFait(srv, s, staff, m, a, cible, retirer, n, motif, ref, solde >= 0 ? nombre(solde) : "?");
+                return;
+            }
+            // 21/11 (choix du propriétaire) : erreur du site (500, 503…) : il a répondu, mais rien ne dit si l'opération est
+            // faite ou non (avant : « Refusé par le site : rien n'a été fait », peut-être faux)
+            if (r.code() >= 500) {
+                LOG.warn("[grades] onglet Économie : PB {} {} pour {} : erreur {} du site, résultat incertain ({})", retirer ? "-" : "+", n, cible,
+                        r.code(), ref);
+                refus(s, "eco_pb_erreur_site", String.valueOf(r.code()));
                 return;
             }
             switch (r.raison()) {

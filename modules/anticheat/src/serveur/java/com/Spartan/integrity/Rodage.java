@@ -25,7 +25,8 @@ import java.util.Set;
  * aucun pendant la suspension.
  *
  * <p>21/11 (renforcé, choix du propriétaire) : on compte des PC, plus des comptes. Un PC = ses clés : le compte, le bloc
- * d'adresses IP ({@link #blocIp}) et les identifiants matériels envoyés par le jeu. Deux déclenchements qui partagent une
+ * d'adresses IP ({@link #blocIp}), les identifiants matériels envoyés par le jeu et (fin du 21/11) la clé du Gardien du
+ * lancement, prouvée par le jeton du site. Deux déclenchements qui partagent une
  * clé viennent du même PC : plusieurs comptes sur un PC, ou plusieurs PC derrière la même connexion, ne comptent qu'une
  * fois. Un PC qui a déjà fait suspendre une règle ne la coupe plus seul jusqu'au redémarrage : il compte encore, mais il
  * faut au moins un PC nouveau parmi les {@code seuil}. Les mêmes PC ne peuvent donc pas la couper à chaque remise en
@@ -128,7 +129,8 @@ public final class Rodage {
     /**
      * Un PC déclenche la règle (motif de {@link #motif}).
      *
-     * @param pc        clés du PC (« compte:… », « ip4:… », « pc:… ») ; aucune clé : tous les PC sans clé ensemble
+     * @param pc        clés du PC (« compte:… », « ip4:… », « pc:… », « gardien:… ») ; aucune clé : tous les PC sans
+     *                  clé ensemble
      * @param seuil     PC différents qui suspendent la règle (0 ou moins : disjoncteur coupé, toujours APPLIQUER)
      * @param fenetreMs durée pendant laquelle on les compte
      */

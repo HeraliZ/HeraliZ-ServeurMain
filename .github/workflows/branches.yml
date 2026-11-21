@@ -79,8 +79,9 @@ jobs:
           retention-days: 3
 
   # Contrôles (GeckoLib, noms perso, langues, économie...) sur les jars de « fabrication », dans une machine neuve où
-  # Gradle n'a jamais tourné (21/11, audit) : le seul secret de ce workflow (NOMS_INTERDITS, liste des noms perso) n'arrive
-  # que dans l'étape qui écrit son fichier. Même ordre que la mise en ligne (job « serveur » de serveur.yml).
+  # Gradle n'a jamais tourné (21/11, audit) : le seul secret de ce workflow (NOMS_INTERDITS, liste des noms perso ; pas
+  # créé, choix du propriétaire du 21/11 : contrôle sauté) n'arrive que dans l'étape qui écrit son fichier. Même ordre que
+  # la mise en ligne (job « controles » de serveur.yml).
   controles:
     needs: fabrication
     runs-on: ubuntu-latest
@@ -129,7 +130,9 @@ jobs:
           if [ -n "$NOMS_INTERDITS" ]; then
             printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
           else
-            echo "::warning::Secret NOMS_INTERDITS absent : contrôle des noms perso sauté (docs/MISE_EN_LIGNE_GITHUB.md, section 7)."
+            # 21/11 : le propriétaire ne crée pas ce secret (son choix) : simple note, pas un avertissement ; le contrôle
+            # remarche tout seul si le secret existe un jour
+            echo "Contrôle des noms perso sauté : pas de secret NOMS_INTERDITS (choix du propriétaire du 21/11)."
           fi
 
       - name: Contrôles (GeckoLib, noms perso, langues)

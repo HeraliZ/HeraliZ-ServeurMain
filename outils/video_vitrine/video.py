@@ -32,8 +32,9 @@ DEPOT = Path(__file__).resolve().parents[2]
 ICI = Path(__file__).resolve().parent
 TRAVAIL = DEPOT / "build" / "video_vitrine"
 APERCU = DEPOT / "modules" / "armes" / "outils" / "apercu_camos"
-SHADERS = DEPOT / "modules" / "armes" / "src" / "client" / "resources" / "assets" / "heralisz_camo" / "shaders" / "core"
-INCLUS = DEPOT / "modules" / "armes" / "src" / "client" / "resources" / "assets" / "minecraft" / "shaders" / "include"
+# dessins des skins hors des assets du jeu (étape 2 des skins protégés, 21/11, docs/SKINS_PROTEGES.md)
+SHADERS = DEPOT / "modules" / "armes" / "dessins" / "heralisz_camo" / "shaders" / "core"
+INCLUS = DEPOT / "modules" / "armes" / "dessins" / "minecraft" / "shaders" / "include"
 POLICES = DEPOT / "modules" / "noyau" / "src" / "client" / "resources" / "assets" / "heraliz_noyau" / "font"
 LOGO = DEPOT / "launcher" / "app" / "assets" / "images" / "heraliz-logo.png"
 
@@ -160,8 +161,10 @@ def preparer():
     (TRAVAIL / "vitrine.html").write_text(page, encoding="utf-8")
     js = (APERCU / "rendre.js").read_text(encoding="utf-8")
     js = js.replace("'apercu.html'", "'vitrine.html'").replace("/apercu.html`", "/vitrine.html`")
-    js = js.replace("path.join(__dirname, '../../src/client/resources/assets/minecraft/shaders/include/heralisz_camo.glsl')",
-                    json.dumps(str(INCLUS / "heralisz_camo.glsl")))
+    inclus_js = "path.join(__dirname, '../../dessins/minecraft/shaders/include/heralisz_camo.glsl')"
+    if js.count(inclus_js) != 1:
+        raise SystemExit("rendre.js a changé : adapter preparer() de video.py (chemin de heralisz_camo.glsl)")
+    js = js.replace(inclus_js, json.dumps(str(INCLUS / "heralisz_camo.glsl")))
     if "vitrine.html" not in js or "heralisz_camo.glsl" not in js:
         raise SystemExit("rendre.js a changé : adapter preparer() de video.py")
     (TRAVAIL / "rendre_vitrine.js").write_text(js, encoding="utf-8")

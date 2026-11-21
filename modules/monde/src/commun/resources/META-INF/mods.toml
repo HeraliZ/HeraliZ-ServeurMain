@@ -67,7 +67,8 @@ description='''Pings du serveur HeraliZ (remplace Ping Wheel) : appui bref pour 
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-# liens doux : les pings vont au clan (heralisz_clans) et, en match, a l'equipe (noyau : heraliz_noyau)
+# lien doux : les pings vont au clan (heralisz_clans) ; noyau obligatoire (21/11, validation de l'audit) : equipe en
+# match, et le serveur lit la ligne de vue avec ses troncons complets (Troncons, noyau 1.1.5 ou plus)
 [[dependencies.heraliz_ping]]
     modId="heralisz_clans"
     mandatory=false
@@ -76,8 +77,8 @@ description='''Pings du serveur HeraliZ (remplace Ping Wheel) : appui bref pour 
     side="BOTH"
 [[dependencies.heraliz_ping]]
     modId="heraliz_noyau"
-    mandatory=false
-    versionRange="[1.0.0,)"
+    mandatory=true
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
 
@@ -168,11 +169,11 @@ description='''Usure des armes TaCZ du serveur HeraliZ (remplace Gun Durability)
     versionRange="[1.1,)"
     ordering="AFTER"
     side="BOTH"
-# Noyau HeraliZ : kit des HUD (indicateur de l'arme en main ; refonte du 25/10), toujours installé
+# Noyau HeraliZ : kit des HUD (indicateur de l'arme en main ; refonte du 25/10), toujours installé ; 1.1.5 ou plus (21/11)
 [[dependencies.heraliz_usure]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.0,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
 
@@ -288,11 +289,11 @@ description='''Fusée d'extraction : tiens la zone pendant 1:30 à ciel ouvert p
     ordering="NONE"
     side="BOTH"
 # Noyau HeraliZ : dessin commun des zones chez le joueur (cercle de la zone d'extraction ; 03/11) ; le serveur s'en
-# sert aussi (audit du 21/11 : déclaré des deux côtés)
+# sert aussi (audit du 21/11 : déclaré des deux côtés ; 1.1.5 ou plus)
 [[dependencies.heraliz_extraction]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.16,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
 

@@ -15,7 +15,8 @@ from pathlib import Path
 
 import moderngl
 
-CORE = Path(__file__).resolve().parents[2] / "src" / "client" / "resources" / "assets" / "heralisz_camo" / "shaders" / "core"
+# dessins des skins hors des assets du jeu (étape 2 des skins protégés, 21/11)
+CORE = Path(__file__).resolve().parents[2] / "dessins" / "heralisz_camo" / "shaders" / "core"
 
 IMPORTS = {
     "fog.glsl": """
@@ -29,7 +30,7 @@ vec4 minecraft_mix_light(vec3 l0, vec3 l1, vec3 n, vec4 c) { return vec4(c.rgb *
 
 
 # code commun des camos (outils/generer_camos.py) : vrai fichier, inclus comme le fait Minecraft
-INCLUS = Path(__file__).resolve().parents[2] / "src" / "client" / "resources" / "assets" / "minecraft" / "shaders" / "include"
+INCLUS = Path(__file__).resolve().parents[2] / "dessins" / "minecraft" / "shaders" / "include"
 
 
 def pretraiter(src):

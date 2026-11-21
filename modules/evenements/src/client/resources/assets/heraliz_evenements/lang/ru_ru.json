@@ -24,6 +24,7 @@
   "heraliz_evenements.agenda.en_cours": "Сейчас идёт: %s",
   "heraliz_evenements.agenda.aucun": "В ближайшие 24 часа ивентов нет.",
   "heraliz_evenements.agenda.prochains": "Ближайшие ивенты: %s",
+  "heraliz_evenements.cmd.login": "Сначала войди с помощью /login.",
   "item.heraliz_evenements.dossier_classe": "Секретное досье",
   "item.heraliz_evenements.mallette_scellee": "Опечатанный кейс",
   "item.heraliz_evenements.disque_dur_militaire": "Военный жёсткий диск",
