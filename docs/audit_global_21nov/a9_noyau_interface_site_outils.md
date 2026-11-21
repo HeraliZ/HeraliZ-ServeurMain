@@ -63,20 +63,25 @@ code par l'étape qui écrit dans le dépôt. Maintenant, ce numéro est réduit
 Pour les développeurs : `.github/workflows/mods_tiers.yml` l. 75-83. Note : changer ce fichier la lance sur la branche
 avec ses valeurs par défaut (Embeddium, joueurs) ; elle a tourné le 21/11 : déjà à jour, rien d'enregistré.
 
-### 3. Actions du panneau du staff refusées sur la carte et en combat (moyen) — commit `0d6f9ce5`
+### 3. Actions du panneau du staff refusées sur la carte et en combat (moyen) — commits `0d6f9ce5` et `66233ddf`
 
 En simple : certaines actions du panneau du staff (touche P) passent par une commande jouée au nom du membre du staff,
 avec les droits d'un admin : **ban PC**, jour et nuit, largage, frappe aérienne, rotation des extractions, redémarrage,
 recharger, diagnostic. Le noyau les prenait pour une commande tapée : un membre du staff **sans op**, en survie **sur la
 carte**, ou n'importe quel staff **en combat**, voyait « /banpc : seulement au spawn, pas sur la carte » et l'action
 ratait (un tricheur pas banni tout de suite). Maintenant, une commande jouée par le code avec plus de droits que le joueur
-n'est plus jugée par les règles du combat, à terre et de la carte. Les commandes tapées par les joueurs (plugins compris)
-gardent exactement les mêmes règles : elles ont toujours les droits du joueur lui-même.
+**dès son départ** n'est plus jugée par les règles du combat, à terre et de la carte. Les commandes tapées par les joueurs
+(plugins compris) gardent exactement les mêmes règles : elles partent toujours avec les droits du joueur lui-même. Les
+commandes que le Fondateur donne à un grade du staff (onglet « Commandes du Fondateur ») restent elles aussi refusées en
+combat, à terre et sur la carte, comme prévu par la boutique.
 
-Pour les développeurs : `modules/noyau/.../serveur/combat/CombatService.java` l. 297-318 (`elevee` : la source a un
-niveau que le joueur n'a pas ; hors de `canUse`, `CommandSourceStack.hasPermission` ne lit que son niveau, Mohist
-compris). Seule source concernée aujourd'hui : `PanelStaff.commandeStaff` (boutique, `withPermission(4)`). Un op 4 reste
-soumis à la règle du combat (`operateurs_exemptes = false`, votre choix), comme pour ce qu'il tape.
+Pour les développeurs : `modules/noyau/.../serveur/combat/CombatService.java` l. 97-98 et 299-331. La source est lue à
+`HIGHEST` (`sourceAuDepart`, avant tout autre écouteur), parce que `CommandesDonnees` (boutique) relit une commande
+donnée au staff avec `withPermission` à la même priorité `HIGH` que notre refus et compte sur lui ensuite (l'ordre entre
+les deux n'est pas garanti). `elevee` : la source a un niveau que le joueur n'a pas ; hors de `canUse`,
+`CommandSourceStack.hasPermission` ne lit que son niveau. Seule source concernée aujourd'hui : `PanelStaff.commandeStaff`
+(boutique, `withPermission(4)`). Un op 4 reste soumis à la règle du combat (`operateurs_exemptes = false`, votre choix),
+comme pour ce qu'il tape. Dans un match du ClashWar, ses propres règles s'appliquent toujours.
 
 ### 4. `/redemarrage` avec un code de sortie : arrêt net possible avant la fin des sauvegardes (petit) — commit `e11e9867`
 
@@ -176,6 +181,8 @@ Pour les développeurs : `outils/commandes_serveur.py` l. 70-74.
 - [ ] Le même, juste après avoir pris un coup d'un autre joueur (tag de combat) : mêmes actions, elles se font.
 - [ ] Un joueur normal sur la carte : `/spawn`, `/warp` toujours refusés ; en combat : `/home` refusé, `/msg` permis
       (rien ne change pour les joueurs).
+- [ ] Une commande donnée à un grade du staff par le Fondateur (par exemple `/tp`), tapée par ce membre du staff en
+      combat ou sur la carte en survie : toujours refusée, comme avant.
 - [ ] `/redemarrage 1` : compte à rebours, sauvegarde, reconnexion automatique, comme avant (code de sortie à 0).
 - [ ] GitHub, onglet Actions, « Contrôle de branche » : trois jobs (« fabrication », « controles », « images »), tous verts ;
       tant que le secret `NOMS_INTERDITS` manque, un avertissement jaune le dit. Une fois réglé : l'étape « Noms
