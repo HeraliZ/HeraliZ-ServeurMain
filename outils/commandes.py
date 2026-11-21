@@ -26,7 +26,12 @@ PAS_LIVRES = {"banc", "capture", "events"}
 
 RE_REGISTER = re.compile(r"\.register\(")
 RE_LIT = re.compile(r'(?:Commands\.)?(?:literal|lit)\("([a-z0-9_]+)"\)')
-RE_PERM = re.compile(r"hasPermission\((\d)\)")
+RE_PERM = re.compile(r"hasPermissions?\((\d)\)")
+# 21/11 (audit des commandes) : entrée gardée par une règle du mod (« .requires(ZonesVip::droit) », droit de grade,
+# console seulement…) sans hasPermission : avant, comptée « tous » (/zonevip, /warp set, /grade donner…). « Joueur
+# seulement » (isPlayer) n'est pas un droit.
+RE_DROIT = re.compile(r"\.requires\((?!\s*(?:CommandSourceStack::isPlayer|\w+\s*->\s*\w+\.isPlayer\(\))\s*\))")
+DROIT = 5
 RE_IDENT = re.compile(r"\s*([A-Za-z_]\w*)\s*[).]")
 
 
@@ -69,7 +74,7 @@ def sous_commandes(c, bloc, nom, essai=False):
         fin = bloc.find("\n", s.end())
         ligne = bloc[s.start(): fin if fin > 0 else len(bloc)]
         ps = RE_PERM.search(ligne)
-        niv = int(ps.group(1)) if ps else None
+        niv = int(ps.group(1)) if ps else DROIT if RE_DROIT.search(ligne) else None
         cle = s.group(1) + (" (banc d'essai)" if essai else "")
         ancien = c["sous"].get(cle, "absent")
         c["sous"][cle] = niv if ancien == "absent" or ancien is None else ancien
@@ -138,9 +143,13 @@ def lire():
             c["modules"].add(module + (" (joueur)" if cote == "client" else ""))
             c["fichiers"].add(f.relative_to(RACINE).as_posix())
             entete = bloc[premier.end(): premier.end() + 120]
-            p = RE_PERM.search(entete.split(".then(")[0])
+            tete = entete.split(".then(")[0]
+            p = RE_PERM.search(tete)
             if p and (c["perm"] is None or int(p.group(1)) < c["perm"]):
                 c["perm"] = int(p.group(1))
+            elif not p and RE_DROIT.search(tete):
+                if c["perm"] is None:
+                    c["perm"] = DROIT
             elif not p and not essai and premier.start() < 60:
                 c["ouverte"] = True
             sous_commandes(c, bloc, nom, essai)
@@ -151,7 +160,8 @@ def lire():
 
 
 def qui(perm):
-    return {None: "tous", 0: "tous", 1: "op 1", 2: "staff (op 2)", 3: "op 3", 4: "op 4"}.get(perm, str(perm))
+    return {None: "tous", 0: "tous", 1: "op 1", 2: "staff (op 2)", 3: "op 3", 4: "op 4",
+            DROIT: "réservé (droit du mod)"}.get(perm, str(perm))
 
 
 def livree(c):
@@ -164,7 +174,8 @@ def tableau(cmds):
     lignes = ["# Inventaire des commandes (écrit par outils/commandes.py)", "",
               "Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — "
               "et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la "
-              "commande (une sous-commande ou le code peut en demander une).", "",
+              "commande (une sous-commande ou le code peut en demander une) ; « réservé (droit du mod) » = entrée gardée "
+              "par une règle du mod (grade du staff, droit de l'éditeur, console…) plutôt que par un niveau d'op.", "",
               f"**{len(livrees)} commandes de premier niveau sur le serveur, "
               f"{sum(len(c['sous']) for c in livrees.values())} sous-commandes repérées** "
               f"(plus {len(a_part)} dans des modules jamais livrés avec le serveur normal : "

@@ -1,6 +1,6 @@
 # Inventaire des commandes (écrit par outils/commandes.py)
 
-Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une).
+Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une) ; « réservé (droit du mod) » = entrée gardée par une règle du mod (grade du staff, droit de l'éditeur, console…) plutôt que par un niveau d'op.
 
 **87 commandes de premier niveau sur le serveur, 369 sous-commandes repérées** (plus 2 dans des modules jamais livrés avec le serveur normal : /boss, /bots).
 
@@ -13,7 +13,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/avantages` | boutique | tous | couleur, nick, qui, reset |
 | `/banpc` | anticheat | staff (op 2) | info |
 | `/base` | bases | tous | abandonner, confirmer, effacer (op 4), info |
-| `/bon` | boutique | tous | editeur |
+| `/bon` | boutique | réservé (droit du mod) | editeur |
 | `/boss` | events (pas livré) | staff (op 2) | arene, decors, eveil, labo, mammouth, mere, n07, peste, reset, salle, station, sylvorn, vitrine |
 | `/bots` | banc (pas livré) | op 4 | action, camp, commandes, etat, frappes, gamerule, joueurs, jvm, lancer, mesure, off, pic, pregenerer, reseau, retirer, rythmes, scenario, stop, troncons, zone |
 | `/bourse` | pnj | staff (op 2) | donner, info |
@@ -45,7 +45,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/event` | evenements | tous | ajouter, annuler (op 4), avec_points, lancer (op 4), liste, objet (op 4), point (op 4), retirer |
 | `/extraction` | monde | staff (op 2) | close, create, label, list, mode, next, open, remove, rotation, tp |
 | `/extractions` | monde | tous |  |
-| `/grade` | boutique | tous | acheter, donner, editeur, liste, registre, retirer, voir |
+| `/grade` | boutique | réservé (droit du mod) | acheter, donner, editeur, liste, registre, retirer, voir |
 | `/guide` | pnj | staff (op 2) | point, points, retirer, visite |
 | `/hdv` | boutique | tous |  |
 | `/heraliz` | boutique | tous | cles (staff (op 2)), edit (staff (op 2)), editor (staff (op 2)), fichier, givecrate (op 4), givekey (op 4), interface (op 4), keyall (op 4), loot (staff (op 2)), preview, retirer (op 4), voir |
@@ -54,10 +54,10 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/home` | bases | tous |  |
 | `/inspecter` | monde | op 4 | base, coffres, inventaire, sac |
 | `/journalieres` | pnj | tous | avancer (banc d'essai), essai (banc d'essai) (op 4), forcer (banc d'essai), minuit (banc d'essai), remettre (staff (op 2)), voir (staff (op 2)) |
-| `/kit` | boutique | tous | reset |
+| `/kit` | boutique | tous | reset (réservé (droit du mod)) |
 | `/marchand` | pnj | op 4 | confirmer, editer, nom, nouveau, registre, role, supprimer |
 | `/money` | boutique | tous |  |
-| `/pb` | boutique | tous | stats, voir |
+| `/pb` | boutique | tous | stats (op 4), voir (réservé (droit du mod)) |
 | `/perso` | voix | tous | open, random, reset |
 | `/pnj` | pnj | staff (op 2) | apparence, aucune, bras, creer, deplacer, fichier, fins, larges, liste, moi, retirer, skin |
 | `/profil` | clans | tous |  |
@@ -77,7 +77,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/sethome` | bases | tous |  |
 | `/spartan` | anticheat | staff (op 2) | add (op 3), capture, checks, clear (op 3), esp, info, learn (op 3), reference, report, scan, setback, status, suspects, vl |
 | `/spawn` | bases | tous | definir (staff (op 2)), effacer (staff (op 2)), voir (staff (op 2)) |
-| `/staff` | boutique | tous | panel |
+| `/staff` | boutique | réservé (droit du mod) | panel |
 | `/stats` | clans | tous |  |
 | `/suicide` | monde | tous |  |
 | `/territoire` | clans | staff (op 2) | capturer, creer, deplacer, difficulte, drapeau, en, est, info, liste, nord, ouest, ravitailler, reset, sud, supprimer, valeur |
@@ -90,8 +90,8 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/vehicules` | monde | staff (op 2) | donner, liste |
 | `/vitres` | armes | op 4 | pourquoi |
 | `/voix` | voix | tous | info, mute, mutes, stats, unmute |
-| `/warp` | boutique | tous | del, description, icone, liste, nom, set |
+| `/warp` | boutique | tous | del (réservé (droit du mod)), description (réservé (droit du mod)), icone (réservé (droit du mod)), liste (réservé (droit du mod)), nom (réservé (droit du mod)), set (réservé (droit du mod)) |
 | `/wipe` | pnj | op 4 | confirmer |
 | `/zombies` | monde | staff (op 2) | ajouter, liste, reserves, retirer, stats, zone |
 | `/zones` | monde | staff (op 2) | info |
-| `/zonevip` | boutique | tous | baguette, coin1, coin2, creer, liste, retirer, tp, voir |
+| `/zonevip` | boutique | réservé (droit du mod) | baguette, coin1, coin2, creer, liste, retirer, tp, voir |
