@@ -351,7 +351,8 @@ public final class Protections {
         }
         for (Claim c : new ArrayList<>(ClaimData.get(bases).all())) {
             BlockPos a = c.anchor();
-            if (!bases.isLoaded(a)) {
+            // 21/11 (audit) : tronçon complet seulement (Troncons, comme le reste des bases depuis le 19/11)
+            if (!fr.heraliz.noyau.api.Troncons.charge(bases, a)) {
                 continue;
             }
             List<Display.TextDisplay> ex = bases.getEntitiesOfClass(Display.TextDisplay.class, new AABB(a).inflate(4, 64, 4),

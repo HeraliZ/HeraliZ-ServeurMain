@@ -3,6 +3,7 @@ package com.Spartan.util;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,15 @@ class NetUtilTest {
         assertTrue(NetUtil.isPublicAddress(v4(82, 64, 12, 3)));
         assertTrue(NetUtil.isPublicAddress(v4(100, 128, 0, 1))); // juste après le NAT d'opérateur
         assertTrue(NetUtil.isPublicAddress(v6(0x2a01, 0x0e0a)));
+    }
+
+    @Test
+    void ipv4EcriteEnIpv6JugeeCommeLIpv4() throws UnknownHostException {
+        byte[] passerelle = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0xff, (byte) 0xff, (byte) 172, 18, 0, 1};
+        byte[] publique = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0xff, (byte) 0xff, 82, 64, 12, 3};
+        // gardée en IPv6 (sans conversion de Java) : la passerelle Docker reste une adresse partagée
+        assertFalse(NetUtil.isPublicAddress(Inet6Address.getByAddress(null, passerelle, -1)));
+        assertTrue(NetUtil.isPublicAddress(Inet6Address.getByAddress(null, publique, -1)));
     }
 
     @Test

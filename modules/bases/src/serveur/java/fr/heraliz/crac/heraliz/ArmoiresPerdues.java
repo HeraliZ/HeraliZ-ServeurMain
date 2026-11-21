@@ -211,6 +211,11 @@ public final class ArmoiresPerdues extends SafeSavedData {
      * le home de la base a été rendu.
      */
     public static boolean armoirePosee(ServerLevel level, ServerPlayer poseur, UUID groupe, BlockPos pos) {
+        // 21/11 (audit) : l'armoire d'essai d'un membre au tutoriel des bases ne compte pas (avant, elle mettait fin aux 24 h
+        // de la base raidée de son clan, sur la carte)
+        if (fr.heraliz.crac.bases.MondeBases.estTuto(level)) {
+            return false;
+        }
         MinecraftServer server = level.getServer();
         ArmoiresPerdues d = get(server);
         Reservation r = d.parGroupe.remove(groupe);

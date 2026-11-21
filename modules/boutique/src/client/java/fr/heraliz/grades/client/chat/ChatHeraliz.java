@@ -213,9 +213,27 @@ public final class ChatHeraliz {
         return v != ChatVisiblity.SYSTEM || l.canal == INFO || l.canal == MP;
     }
 
+    /**
+     * Texte de la pastille de chaque canal, dans la langue du jeu (21/11, audit des images par seconde) : avant, traduit et
+     * mis en capitales deux fois par ligne affichée, à chaque image ; maintenant refait seulement quand la langue change.
+     */
+    private static final String[] TEXTE_TAG = new String[TAG.length];
+    private static String langueTags;
+
+    static String texteTag(int c) {
+        String langue = Minecraft.getInstance().getLanguageManager().getSelected();
+        if (langueTags == null || !langueTags.equals(langue)) {
+            for (int i = 0; i < TAG.length; i++) {
+                TEXTE_TAG[i] = Component.translatable("gui.heraliz_grades.chat.tag." + TAG[i]).getString().toUpperCase(Locale.ROOT);
+            }
+            langueTags = langue;
+        }
+        return TEXTE_TAG[c];
+    }
+
     /** Pastille du canal ; rend sa largeur (avec l'écart qui suit). */
     static float pastille(GuiGraphics g, Font f, int c, float x, float cy, float alpha) {
-        String s = Component.translatable("gui.heraliz_grades.chat.tag." + TAG[c]).getString().toUpperCase(Locale.ROOT);
+        String s = texteTag(c);
         float tw = Trace.largeur(f, s, MICRO);
         Trace.rect(g, x, cy - 4, x + tw + 6, cy + 4, a(0, 120 * alpha));
         Trace.c(g, f, s, x + (tw + 6) / 2, cy, MICRO, a(COULEUR_CANAL[c], 255 * alpha), 0);
@@ -244,7 +262,7 @@ public final class ChatHeraliz {
             if (age > VIE_MS) break;
             if (!visible(l)) continue;
             float alpha = opacite * Math.min(1, (VIE_MS - age) / (float) FONDU_MS);
-            float decal = Trace.largeur(f, Component.translatable("gui.heraliz_grades.chat.tag." + TAG[l.canal]).getString().toUpperCase(Locale.ROOT), MICRO) + 10;
+            float decal = Trace.largeur(f, texteTag(l.canal), MICRO) + 10;
             List<FormattedCharSequence> rs = l.rangs(f, (int) (largeur - decal));
             for (int i = rs.size() - 1; i >= 0 && rangs < LIGNES_FERME; i--) {
                 float y = cy - rangs * H;
@@ -267,7 +285,7 @@ public final class ChatHeraliz {
         while (it.hasNext()) {
             Ligne l = it.next();
             if (!visible(l)) continue;
-            float decal = Trace.largeur(f, Component.translatable("gui.heraliz_grades.chat.tag." + TAG[l.canal]).getString().toUpperCase(Locale.ROOT), MICRO) + 10;
+            float decal = Trace.largeur(f, texteTag(l.canal), MICRO) + 10;
             List<FormattedCharSequence> rs = l.rangs(f, (int) (largeur - decal - 8));
             for (int i = rs.size() - 1; i >= 0; i--) {
                 int k = n - defil;
