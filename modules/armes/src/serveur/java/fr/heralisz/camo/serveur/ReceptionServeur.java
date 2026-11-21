@@ -1,7 +1,6 @@
 package fr.heralisz.camo.serveur;
 
 import com.tacz.guns.api.item.IGun;
-import fr.heralisz.camo.CamoData;
 import fr.heralisz.camo.decor.DecorData;
 import fr.heralisz.camo.decor.DecorItems;
 import fr.heralisz.camo.item.CamoItem;
@@ -24,27 +23,27 @@ import static fr.heralisz.camo.network.DecorPacket.SCRAPE_STICKER;
 import static fr.heralisz.camo.network.DecorPacket.SET_STATTRACK;
 
 /**
- * Partie SERVEUR des paquets client -> serveur de heralisz_camo (docs/METHODE_CLIENT_SERVEUR.md §6) : appliquer un camo sur
- * l'arme tenue (définitif), poser / déplacer / gratter les stickers et le module StatTrack. Code d'origine des
- * méthodes handle des paquets (tout est revérifié ici), avec « p.champ » devenu « p.champ() ».
+ * Partie SERVEUR des paquets client -> serveur de heralisz_camo (docs/METHODE_CLIENT_SERVEUR.md §6) : poser sur l'arme tenue
+ * le camo d'un objet de l'inventaire (depuis le 21/11 : il entre dans la collection à vie du joueur et se pose depuis elle,
+ * CamosAVie.poserObjet), poser / déplacer / gratter les stickers et le module StatTrack. Code d'origine des méthodes handle
+ * des paquets (tout est revérifié ici), avec « p.champ » devenu « p.champ() ». Une action au plus toutes les 0,15 s par
+ * joueur (Cadence, 21/11).
  */
 public final class ReceptionServeur {
    private ReceptionServeur() {
    }
 
-   // ApplyCamoPacket.handle (d'origine)
+   // ApplyCamoPacket.handle (d'origine ; 21/11 : le camo de l'objet est lié au joueur, comme ceux de la collection)
    static void appliquerCamo(CamoNetwork.Recu<ApplyCamoPacket> r) {
       ApplyCamoPacket p = r.paquet();
       ServerPlayer player = r.joueur();
-      if (player == null || p.camoSlot() < 0 || p.camoSlot() >= player.getInventory().getContainerSize()) {
+      if (player == null || !player.isAlive() || player.isSpectator() || p.camoSlot() < 0
+         || p.camoSlot() >= player.getInventory().getContainerSize() || !Cadence.permis(player)) {
          return;
       }
       ItemStack gun = player.getMainHandItem();
       if (IGun.getIGunOrNull(gun) == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun)) {
          return; // pas une arme, ou un couteau (jamais modifié, 21/10)
-      }
-      if (CamoData.get(gun) != null && CamoData.owner(gun) == null) {
-         return; // déjà un camo définitif (un camo à vie, lui, peut être remplacé)
       }
       ItemStack camoStack = player.getInventory().getItem(p.camoSlot());
       if (!(camoStack.getItem() instanceof CamoItem item)) {
@@ -57,26 +56,17 @@ public final class ReceptionServeur {
             .withStyle(ChatFormatting.GOLD), true);
          return;
       }
-      if (!item.camo().fits(IGun.getIGunOrNull(gun).getGunId(gun))) {
-         player.displayClientMessage(Component.translatable("msg.heralisz_camo.wrong_gun",
-            Component.translatable("item.heralisz_camo.camo.gun." + item.camo().id)).withStyle(ChatFormatting.RED), true);
-         return; // skin de boss réservé à une autre arme
-      }
-      CamosAVie.liberer(player, gun);
-      CamoData.set(gun, item.camo());
-      camoStack.shrink(1);
-      player.getInventory().setChanged();
-      player.inventoryMenu.broadcastChanges();
-      player.level().playSound(null, player.blockPosition(), SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.2F);
-      player.displayClientMessage(Component.translatable("msg.heralisz_camo.applied",
-         Component.translatable(item.camo().nameKey()).withStyle(item.camo().tier::nom)).withStyle(ChatFormatting.GRAY), true);
+      // 21/11 (demande du propriétaire : « les skins d'armes comme les skins de couteau, pour qu'on ne puisse pas les voler ») :
+      // plus de camo définitif qui suit l'arme. L'objet entre dans la collection du joueur (consommé seulement s'il n'y était
+      // pas encore) et le camo se pose depuis elle, avec ses règles ; tous les refus sont vus avant de toucher à l'objet.
+      CamosAVie.poserObjet(player, camoStack, item.camo());
    }
 
    // DecorPacket.handle (d'origine)
    static void decor(CamoNetwork.Recu<DecorPacket> r) {
       DecorPacket p = r.paquet();
       ServerPlayer player = r.joueur();
-      if (player == null) return;
+      if (player == null || !Cadence.permis(player)) return;
       ItemStack gun = player.getMainHandItem();
       if (IGun.getIGunOrNull(gun) == null) return;
       // un couteau ne se modifie pas (21/10, choix du propriétaire) : ni sticker, ni StatTrak

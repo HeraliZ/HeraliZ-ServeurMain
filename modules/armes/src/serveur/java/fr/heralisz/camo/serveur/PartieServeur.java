@@ -31,7 +31,12 @@ public final class PartieServeur implements Partie {
       CamoItem.AJOUTER_COLLECTION = CamosAVie::ajouter;
 
       MinecraftForge.EVENT_BUS.addListener((ServerStartingEvent e) -> CollectionCamos.charger(e.getServer()));
-      MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> CollectionCamos.arreter());
+      MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> {
+         CollectionCamos.arreter();
+         Cadence.vider();
+      });
+      // cadence des actions des camos et des stickers (21/11) : rien ne reste d'un joueur parti
+      MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> Cadence.oublier(e.getEntity().getUUID()));
       MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
          if (e.phase == TickEvent.Phase.END) {
             CollectionCamos.tick();

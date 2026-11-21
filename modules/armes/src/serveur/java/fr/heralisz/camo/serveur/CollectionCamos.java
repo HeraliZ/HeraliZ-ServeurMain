@@ -30,6 +30,10 @@ import java.util.UUID;
  * survivent au changement de carte). uuid → {camos: [ids], recharges: {id: fin du délai (ms)}, jetons: {id: jeton de
  * pose}}. Un id inconnu (camo retiré du catalogue) est gardé tel quel dans le fichier : rien de payé n'est jamais effacé.
  * Écriture atomique (fichier temporaire puis renommage), une seconde après chaque changement et à l'arrêt. Fil serveur.
+ * <p>21/11 (audit, choix du propriétaire) : le relevé est fait sur le fil du serveur (un arbre JSON neuf, jamais partagé),
+ * la mise en texte et l'écriture partent sur l'écrivain en fond du noyau ({@code EcrituresFond}, voie « camos ») : avant,
+ * tout le fichier (tous les joueurs) était mis en texte et écrit pendant le tick, une seconde après chaque changement
+ * (chaque mort avec un camo à vie comprise). À l'arrêt et au wipe, l'écriture est attendue.</p>
  * <p>Fichier illisible au démarrage (audit du 02/11, point 30) : il n'est JAMAIS réécrit tant que le serveur tourne
  * (avant : le premier camo ajouté écrivait une liste presque vide à sa place, et au redémarrage suivant, le fichier
  * redevenu « lisible », tous les camos à vie posés étaient retirés des armes). Copie datée à côté
@@ -57,7 +61,8 @@ final class CollectionCamos {
    private static final Map<UUID, Joueur> JOUEURS = new HashMap<>();
    @Nullable
    private static Path fichier;
-   private static boolean modifie;
+   /** Changements pas encore sur le disque (remis à vrai par le fil d'écriture si l'écriture rate). */
+   private static volatile boolean modifie;
    private static int ticksAvantSauvegarde = -1;
    /** Faux si le fichier était illisible au démarrage : les armes des propriétaires ne sont alors jamais dépouillées. */
    private static boolean fiable = true;
@@ -72,6 +77,8 @@ final class CollectionCamos {
    static void charger(MinecraftServer server) {
       Path dossier = server.getServerDirectory().toPath().resolve("heralisz_camo");
       fichier = dossier.resolve("collections.json");
+      // une écriture encore en cours d'une session d'avant (même programme) : attendue avant de relire
+      fr.heraliz.noyau.api.EcrituresFond.voie(VOIE).attendre(fichier);
       JOUEURS.clear();
       modifie = false;
       ticksAvantSauvegarde = -1;
@@ -145,6 +152,8 @@ final class CollectionCamos {
 
    static void arreter() {
       if (fichier != null && modifie) sauvegarder();
+      // arrêt : la dernière écriture est attendue (l'écrivain du noyau attend aussi tout à la fin du programme)
+      fr.heraliz.noyau.api.EcrituresFond.voie(VOIE).attendre();
       fichier = null;
       JOUEURS.clear();
    }
@@ -154,6 +163,9 @@ final class CollectionCamos {
       modifie = true;
       if (ticksAvantSauvegarde < 0) ticksAvantSauvegarde = DELAI_SAUVEGARDE_TICKS;
    }
+
+   /** Voie de l'écrivain en fond du noyau (une écriture à la fois, dans l'ordre ; /diag etat la montre). */
+   private static final String VOIE = "camos";
 
    private static void sauvegarder() {
       if (fichier == null) return;
@@ -186,18 +198,21 @@ final class CollectionCamos {
          joueurs.add(e.getKey().toString(), o);
       }
       racine.add("joueurs", joueurs);
+      // le relevé est complet : la mise en texte et l'écriture partent en fond (écriture ratée : modifie repasse à vrai,
+      // le fichier est réécrit au prochain changement ou à l'arrêt, comme avant)
+      modifie = false;
+      fr.heraliz.noyau.api.EcrituresFond.voie(VOIE).ecrire(cible, () -> ecrire(cible, racine), () -> modifie = true);
+   }
+
+   /** Sur le fil d'écriture : texte, fichier temporaire à côté, puis remplacement (jamais un fichier à moitié écrit). */
+   private static void ecrire(Path cible, JsonObject racine) throws IOException {
       Path tmp = cible.resolveSibling(cible.getFileName() + ".tmp");
+      Files.createDirectories(cible.getParent());
+      Files.writeString(tmp, GSON.toJson(racine), StandardCharsets.UTF_8);
       try {
-         Files.createDirectories(cible.getParent());
-         Files.writeString(tmp, GSON.toJson(racine), StandardCharsets.UTF_8);
-         try {
-            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-         } catch (IOException atomique) {
-            Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING);
-         }
-         modifie = false;
-      } catch (IOException e) {
-         LOG.error("[Camos] sauvegarde impossible : {}", cible, e);
+         Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+      } catch (IOException atomique) {
+         Files.move(tmp, cible, StandardCopyOption.REPLACE_EXISTING);
       }
    }
 
@@ -243,6 +258,8 @@ final class CollectionCamos {
       if (n > 0) {
          modifie = true;
          sauvegarder();
+         // wipe : le fichier doit être réécrit tout de suite (attendu ici, sur le fil du serveur, comme avant)
+         fr.heraliz.noyau.api.EcrituresFond.voie(VOIE).attendre();
       }
       LOG.warn("[Camos] wipe de la réouverture : {} collection(s) de camos à vie effacée(s)", n);
       return n;
