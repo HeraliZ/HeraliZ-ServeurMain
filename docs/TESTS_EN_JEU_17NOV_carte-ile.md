@@ -2125,7 +2125,9 @@ bien tout valider ». Tous les changements du jour sont validés ; corrections e
 `docs/audit_global_21nov/validation/LISEZMOI.md` (un compte rendu par partie dans le même dossier). Versions : Boutique
 1.7.4, Monde 1.3.12, CRac 1.38.11-beta, Clans 3.19.4, Loot 0.20.9, Bunker 0.14.9, ClashWar 1.3.9, Spartan 2.15.6,
 Noyau 1.1.12 ; aucun canal réseau changé par cette relecture. Journaux publics de GitHub sans chat, messages privés ni
-commandes tapées.
+commandes tapées. **Mis en ligne à 19 h 09 (heure UTC)**, puis à 19 h 29 les choix du propriétaire : `/camos ajouter` et
+`/camos retirer` à l'op 4 (Armes 2.59.13), `/quete reset` à l'op 4 avec `/login` (Quêtes 1.24.6), contrôles de la mise en
+ligne dans un job sans aucun secret (empreinte de JOML vérifiée). Les deux fois : aucune erreur Java au démarrage.
 
 À tester en jeu :
 - [ ] **`/tpa`** : une demande normale marche ; demander un joueur puis un autre pendant l'attente : une seule
@@ -2146,6 +2148,8 @@ commandes tapées.
       annuler` : rien ne redémarre.
 - [ ] **Skins, étape 1** : `/camos dessins` (op) : bandeau « 79 programmes prêts » ; dans le journal du serveur « 167
       fichiers (698 Ko) compressés en 88 Ko » ; skins identiques en main, dans l'atelier et dans l'inventaire.
+- [ ] **Op 2 (pas op 4)** : `/camos ajouter`, `/camos retirer` et `/quete reset` ne sont plus proposées ; `/camos voir`
+      et `/camos dessins` marchent. Op 4 connecté : les trois marchent (`/quete reset` demande d'abord le `/login`).
 
 Pas testé : tout en jeu (fabrication, contrôles et démarrage d'essai sur GitHub seulement ; démarrage « mixins
 stricts » allé jusqu'au bout côté serveur).
