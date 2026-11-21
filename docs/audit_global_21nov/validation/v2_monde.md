@@ -41,8 +41,8 @@ réseau ne change : un jeu de joueur d'avant se connecte toujours (le launcher d
 
 **`e902c9892` — roquettes** (`modules/monde/src/serveur/java/fr/heraliz/airstrike/helico/Roquettes.java` l. 135-142).
 Avant le rayon de vol du tick, tous les tronçons entre le point de départ et le point d'arrivée du tick doivent être
-complets (`Troncons.zone`, 1 à 4 tronçons : une roquette fait 2 blocs par tick avec le réglage par défaut) ; le contrôle « chargé » d'avant reste (il
-refuse aussi une roquette sortie par le haut ou le bas du monde). Au plus 32 roquettes en vol : au plus 128 coups d'œil
+complets (`Troncons.zone`, 1 à 4 tronçons : une roquette fait 2 blocs par tick avec le réglage par défaut) ; le
+contrôle « chargé » d'avant reste (il refuse aussi une roquette sortie par le haut ou le bas du monde). Au plus 32 roquettes en vol : au plus 128 coups d'œil
 par tick, sans rien charger. Rien ne change près des joueurs (leurs tronçons sont complets) ; une roquette qui manque
 sa cible et file au loin disparaît au bord de la zone prête, comme avant au bord de la zone chargée. Le calcul de
 l'explosion (part du corps visible) ne regarde que quelques blocs autour d'un joueur : tronçons prêts.
@@ -57,7 +57,7 @@ l'explosion (part du corps visible) ne regarde que quelques blocs autour d'un jo
   suivant, 16 blocs plus loin). Montée à 0,25 bloc par tick au plus : même marge qu'avant pour les collines.
 - *Frappes aériennes, relief sous l'avion* (`strike/StrikePlanner.java` l. 36-43) : tronçon pas prêt = hauteur de secours,
   comme un tronçon absent. Pour les jumelles, le tronçon de la cible est déjà complet (contrôle suivant) ; pour le largage
-  public, la cible est le point posé par le staff (sa hauteur sert de secours). Le repère de la cible
+  public, la cible est un sol déjà relevé par le module des événements (sa hauteur sert de secours). Le repère de la cible
   (`StrikeManager.java` l. 94) passe par la même fonction : sans attente.
 - *Ping posé depuis la carte M* (`ping/server/PingService.java` l. 217-222) : coordonnées du joueur arrondies, finies et
   dans la bordure (l. 212-216) ; hauteur du sol seulement si le tronçon est complet, sinon celle du joueur. Même cadence
@@ -208,6 +208,12 @@ Limitless Vehicle 0.5.10 (`WheeledVehicle.tickMove` et sa constante 0,01, `Clien
 (`ZAUtil.getSenseNearEntity`) : toutes présentes ; le jar des véhicules de compilation (`libs/`) est identique à celui du
 serveur. Les injections dans les mods des autres auteurs sont facultatives (`require = 0` : une autre version ne bloque
 pas le démarrage) ; celles dans Minecraft lui-même (chemins des zombies, train et zombies chez le joueur) sont obligatoires.
+Confirmé aussi par le démarrage d'essai « mixins stricts » lancé sur GitHub ce soir avec le jar `heraliz_monde-1.3.12`
+(Mohist 916, toutes les injections qui ratent comptées comme des erreurs) : les trois configurations du serveur de cette
+zone s'appliquent en entier (chemins 1 / 1, cibles 1 / 1, mods des autres auteurs 7 / 7) ; la seule injection ratée de ce
+démarrage est dans le noyau (hors de cette zone). Le démarrage normal de la même version est réussi. Au démarrage, le
+premier tick (154 ms) compte environ un tiers de HeraliZ Utils (lecture du réseau ferré, villes des zombies) : une seule
+fois, au démarrage.
 
 **Commandes** : toutes celles du staff demandent la permission 2 (4 pour `/inspecter`) ; celles des joueurs (`/suicide`,
 `/canal`, `/extractions`, `/cinematique`) vérifient combat, à terre, spawn, délai.
