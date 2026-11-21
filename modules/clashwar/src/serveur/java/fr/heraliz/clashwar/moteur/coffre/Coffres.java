@@ -198,10 +198,28 @@ public final class Coffres {
      * l'inventaire (armure et main gauche comprises) et objets des Curios (sac porte compris). Pendant l'ecriture, le joueur
      * fige pouvait encore deplacer des objets : clics de son inventaire (vers la grille 2 x 2 ou le curseur, que le vidage ne
      * touche pas, rendus au retour), paquets d'ecrans restes valables (marchands, coffre du clan, compte de capsules...).
-     * Ces objets etaient alors a la fois dans le depot et ailleurs. Seuls l'objet et le nombre sont compares (les donnees
-     * d'un objet peuvent changer seules).
+     * Ces objets etaient alors a la fois dans le depot et ailleurs. Sont compares l'objet, le nombre et les seules donnees
+     * qui font d'un meme objet un autre article ({@link #VARIANTES} : une arme vendue puis une autre du meme objet achetee
+     * dans la meme case ne passe pas) ; pas les autres donnees, qui peuvent changer seules (munitions, usure...).
      */
-    private record Releve(Item[] objets, int[] nombres, Map<Item, Integer> curios) {
+    private record Releve(Item[] objets, int[] nombres, String[] variantes, Map<Item, Integer> curios) {
+    }
+
+    /** Donnees qui font d'un meme objet un autre article : arme, munition, accessoire, soin, ration (articles des marchands). */
+    private static final String[] VARIANTES = {"GunId", "AmmoId", "AttachmentId", "ConsumableId", "FoodState"};
+
+    /** Les {@link #VARIANTES} de cet objet, "" s'il n'en a aucune. */
+    private static String variante(ItemStack s) {
+        CompoundTag t = s.getTag();
+        if (t == null) return "";
+        StringBuilder b = null;
+        for (String k : VARIANTES) {
+            Tag v = t.get(k);
+            if (v == null) continue;
+            if (b == null) b = new StringBuilder();
+            b.append(k).append('=').append(v.getAsString()).append(';');
+        }
+        return b == null ? "" : b.toString();
     }
 
     /** Releve de ce que le joueur tient maintenant (fil serveur). */
@@ -210,22 +228,24 @@ public final class Coffres {
         int n = inv.getContainerSize();
         Item[] objets = new Item[n];
         int[] nombres = new int[n];
+        String[] variantes = new String[n];
         for (int i = 0; i < n; i++) {
             ItemStack s = inv.getItem(i);
             if (s.isEmpty()) continue;
             objets[i] = s.getItem();
             nombres[i] = s.getCount();
+            variantes[i] = variante(s);
         }
         Map<Item, Integer> curios = new HashMap<>();
         for (ItemStack s : Compat.piecesCurios(p)) {
             if (!s.isEmpty()) curios.merge(s.getItem(), s.getCount(), Integer::sum);
         }
-        return new Releve(objets, nombres, curios);
+        return new Releve(objets, nombres, variantes, curios);
     }
 
     /**
-     * Le joueur tient-il exactement ce qui a ete releve (meme objet et meme nombre dans chaque case, memes Curios), sans
-     * rien au curseur ni dans la grille 2 x 2 (vides depuis le releve) ?
+     * Le joueur tient-il exactement ce qui a ete releve (meme objet, meme nombre et memes variantes dans chaque case, memes
+     * Curios), sans rien au curseur ni dans la grille 2 x 2 (vides depuis le releve) ?
      */
     private static boolean inchange(ServerPlayer p, Releve r) {
         if (!p.containerMenu.getCarried().isEmpty() || !p.inventoryMenu.getCarried().isEmpty()) return false;
@@ -235,7 +255,7 @@ public final class Coffres {
         }
         Releve maintenant = releve(p);
         return Arrays.equals(r.objets(), maintenant.objets()) && Arrays.equals(r.nombres(), maintenant.nombres())
-                && r.curios().equals(maintenant.curios());
+                && Arrays.equals(r.variantes(), maintenant.variantes()) && r.curios().equals(maintenant.curios());
     }
 
     /** Un retour demande : fichier lu d'avance, arrivee prechargee, puis rendu a son tour. */
