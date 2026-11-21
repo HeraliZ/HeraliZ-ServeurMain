@@ -29,6 +29,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -173,16 +174,23 @@ public final class KeycardSwipes {
 
    // ------------------------------------------------------------------ bras droit et tête qui visent la carte
    static final class AimLayer implements IAnimation {
-      private final AbstractClientPlayer player;
+      /**
+       * 21/11 (validation) : référence faible. Ce calque est la valeur de LAYERS, une table faible par joueur : en le
+       * tenant en dur, il gardait sa clé pour toujours (règle des WeakHashMap). Chaque joueur qui avait passé une carte à
+       * côté restait en mémoire, et avec lui tout son monde (tronçons, entités) après un passage carte / spawn, une mort ou
+       * une reconnexion. Le joueur vivant garde ce calque dans ses animations : rien ne change pour l'animation.
+       */
+      private final WeakReference<AbstractClientPlayer> player;
       private float partial;
 
       AimLayer(AbstractClientPlayer player) {
-         this.player = player;
+         this.player = new WeakReference<>(player);
       }
 
       @Override
       public boolean isActive() {
-         return of(this.player) != null;
+         AbstractClientPlayer p = this.player.get();
+         return p != null && of(p) != null;
       }
 
       @Override
@@ -192,22 +200,23 @@ public final class KeycardSwipes {
 
       @Override
       public Vec3f get3DTransform(String part, TransformType type, float tickDelta, Vec3f value0) {
-         Swipe s = of(this.player);
+         AbstractClientPlayer p = this.player.get();
+         Swipe s = p == null ? null : of(p);
          if (s == null || type != TransformType.ROTATION || !(part.equals("rightArm") || part.equals("head"))) {
             return value0;
          }
-         float t = time(this.player, s, this.partial);
+         float t = time(p, s, this.partial);
          float w = ease(0, 5, t) * (1.0F - ease(T_BACK - 4, T_BACK + 2, t));
-         Vec3 fw = bodyForward(this.player), right = bodyRight(this.player);
-         Vec3 base = this.player.getPosition(this.partial);
+         Vec3 fw = bodyForward(p), right = bodyRight(p);
+         Vec3 base = p.getPosition(this.partial);
          Vec3 target;
          Vec3 from;
          if (part.equals("rightArm")) {
             from = base.add(0, 1.375 * 0.9375, 0).add(right.scale(0.31));      // épaule droite
-            target = grip(this.player, s, t);
+            target = grip(p, s, t);
          } else {
-            from = base.add(0, this.player.getEyeHeight(), 0);
-            target = cardCenter(this.player, s, t);
+            from = base.add(0, p.getEyeHeight(), 0);
+            target = cardCenter(p, s, t);
          }
          Vec3 d = target.subtract(from);
          double f = d.dot(fw), u = d.y, l = d.dot(right);

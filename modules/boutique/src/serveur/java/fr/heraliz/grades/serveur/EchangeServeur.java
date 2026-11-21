@@ -487,9 +487,11 @@ public final class EchangeServeur {
         s.phase = 2;
         envoyer(s);
         Pb.transfert(v.ref, v.de, v.vers, v.montant, r -> {
-            if (r == null || r.code() != 200) {
+            // 21/11 (validation de l'audit) : le site refuse par 404, 409 ou 422 (Pb.Reponse#refusClair), jamais par 200 ;
+            // avant, un solde insuffisant passait pour un site muet : objets gardés en dépôt au moins 2 min, « injoignable »
+            if (r == null || (r.code() != 200 && !r.refusClair())) {
                 // site muet ou en erreur (500, 503…) : on ne sait pas si les PB sont partis ; le dépôt attend, revérifié
-                // toutes les 30 s (reprendre) ; seul un refus clair du site (200 et ok faux) rend les objets
+                // toutes les 30 s (reprendre) ; seul un refus clair du site (« ok » faux : 404, 409, 422) rend les objets
                 v.etat = "verifier";
                 sauver();
                 fermer(s, 4, "injoignable");
