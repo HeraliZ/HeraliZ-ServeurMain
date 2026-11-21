@@ -160,7 +160,9 @@ public final class DesignatorLogic {
         Vec3 eye = player.getEyePosition();
         double dist = eye.distanceTo(target);
         int maxRange = AirstrikeConfig.MAX_RANGE.get();
-        if (dist > maxRange + 4 || !level.isLoaded(BlockPos.containing(target))) {
+        // 21/11 (audit) : tronçon de la cible COMPLET (Troncons du noyau) : isLoaded répond « oui » pendant sa lecture, et le
+        // rayon de vue qui suit faisait alors attendre cette lecture par le fil du serveur (cible envoyée par le jeu du joueur)
+        if (dist > maxRange + 4 || !fr.heraliz.noyau.api.Troncons.charge(level, BlockPos.containing(target))) {
             deny(player, "msg.airstrike.out_of_range", maxRange);
             return;
         }

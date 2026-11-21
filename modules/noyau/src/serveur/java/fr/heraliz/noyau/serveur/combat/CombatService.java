@@ -94,6 +94,8 @@ public final class CombatService {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, CombatService::deconnexion);
         MinecraftForge.EVENT_BUS.addListener(CombatService::connexion);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, CombatService::mort);
+        // avant tout autre écouteur : la source de la commande telle qu'elle est partie (voir departEleve)
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, true, CombatService::sourceAuDepart);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, CombatService::commande);
         MinecraftForge.EVENT_BUS.addListener((ServerStartingEvent e) -> arret = false);
         MinecraftForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> arret = true);
@@ -298,18 +300,29 @@ public final class CombatService {
         var ctx = e.getParseResults().getContext();
         if (!(ctx.getSource().getEntity() instanceof ServerPlayer p)) return;
         Refus r = refus(p, racine(e.getParseResults().getReader().getString()));
-        if (r == null || elevee(ctx.getSource(), p)) return;
+        if (r == null || e == departEleve) return;
         e.setCanceled(true);
         r.prevenir(p);
     }
 
     /**
-     * 21/11 (audit) : commande jouée par le CODE au nom du joueur, avec plus de droits que les siens (panneau du staff :
-     * ban PC, cycle, largage, frappe, redémarrage, recharger, diag…, {@code withPermission(4)}) : c'est une action décidée
-     * par le serveur, pas une commande tapée (une commande tapée a toujours les droits du joueur lui-même, celles des
-     * plugins comprises) ; les règles du combat, à terre et de la carte ne la jugent pas. Avant, un membre du staff sans op,
-     * en survie sur la carte ou en combat, ne pouvait pas bannir un PC depuis le panneau (« seulement au spawn »).
+     * 21/11 (audit) : commande jouée par le CODE au nom du joueur, avec plus de droits que les siens dès son départ (panneau
+     * du staff : ban PC, cycle, largage, frappe, redémarrage, recharger, diag…, {@code withPermission(4)}) : c'est une action
+     * décidée par le serveur, pas une commande tapée (une commande tapée part toujours avec les droits du joueur lui-même,
+     * celles des plugins comprises) ; les règles du combat, à terre et de la carte ne la jugent pas. Avant, un membre du
+     * staff sans op, en survie sur la carte ou en combat, ne pouvait pas bannir un PC depuis le panneau (« seulement au
+     * spawn »). La source est lue AVANT tout autre écouteur ({@code HIGHEST}) : une commande tapée qu'un autre mod relit avec
+     * plus de droits (commandes données à un grade du staff, {@code CommandesDonnees} de la boutique, même priorité que nous)
+     * reste jugée comme avant. Pas vue au départ (autre fil, autre commande entre-temps) : jugée comme avant.
      */
+    @javax.annotation.Nullable
+    private static volatile CommandEvent departEleve;
+
+    private static void sourceAuDepart(CommandEvent e) {
+        var source = e.getParseResults().getContext().getSource();
+        departEleve = source.getEntity() instanceof ServerPlayer p && elevee(source, p) ? e : null;
+    }
+
     private static boolean elevee(net.minecraft.commands.CommandSourceStack source, ServerPlayer p) {
         for (int niveau = 4; niveau >= 1; niveau--) {
             if (source.hasPermission(niveau) && !p.hasPermissions(niveau)) return true;
