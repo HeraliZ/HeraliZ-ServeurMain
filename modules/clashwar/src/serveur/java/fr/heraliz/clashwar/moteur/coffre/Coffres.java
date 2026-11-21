@@ -198,10 +198,17 @@ public final class Coffres {
      * Ce que le joueur tient au releve de l'instantane (21/11, audit des duplications) : objet, nombre et variantes
      * ({@link #VARIANTES}) de chaque case de l'inventaire (armure et main gauche comprises), objets des Curios (sac porte
      * compris). Revu a la confirmation ({@link #inchange}) : le joueur n'est vide que s'il tient encore exactement
-     * l'instantane, sinon le depot est refait. Les autres donnees d'un objet ne sont pas comparees : elles peuvent changer
-     * seules (munitions, usure...).
+     * l'instantane, sinon le depot est refait.
+     * <p>21/11 (choix du proprietaire : verification plus stricte) : au releve du depot, chaque case de l'inventaire et
+     * chaque piece des Curios est aussi gardee telle quelle ({@code piles}, le meme objet) et en copie ({@code copies}). A
+     * la confirmation, une case qui ne tient plus le MEME objet doit en tenir un aux donnees exactement identiques
+     * (accessoires, skin, usure, contenu...) : un echange contre un objet du meme type mais d'une autre valeur est vu. Un
+     * objet seulement modifie sur place (arme qui tire, usure qui baisse, sac qui reecrit son contenu) reste accepte. Ces
+     * quatre champs sont nuls pour le releve fait a la confirmation.
      */
-    private record Releve(Item[] objets, int[] nombres, String[] variantes, Map<Item, Integer> curios) {
+    private record Releve(Item[] objets, int[] nombres, String[] variantes, Map<Item, Integer> curios,
+                          @Nullable ItemStack[] piles, @Nullable ItemStack[] copies,
+                          @Nullable List<ItemStack> piecesCurios, @Nullable List<ItemStack> copiesCurios) {
     }
 
     /** Donnees qui font d'un meme objet un autre article : arme, munition, accessoire, soin, ration (articles des marchands). */
@@ -221,28 +228,43 @@ public final class Coffres {
         return b == null ? "" : b.toString();
     }
 
-    /** Releve de ce que le joueur tient maintenant (fil serveur). */
-    private static Releve releve(ServerPlayer p) {
+    /**
+     * Releve de ce que le joueur tient maintenant (fil serveur) ; {@code empreinte} : garder aussi chaque objet et sa copie
+     * (releve du depot ; pas pour celui de la confirmation, qui ne sert qu'a comparer).
+     */
+    private static Releve releve(ServerPlayer p, boolean empreinte) {
         Inventory inv = p.getInventory();
         int n = inv.getContainerSize();
         Item[] objets = new Item[n];
         int[] nombres = new int[n];
         String[] variantes = new String[n];
         Map<Item, Integer> curios = new HashMap<>();
+        ItemStack[] piles = empreinte ? new ItemStack[n] : null;
+        ItemStack[] copies = empreinte ? new ItemStack[n] : null;
         for (int i = 0; i < n; i++) {
             ItemStack s = inv.getItem(i);
+            if (piles != null && copies != null) {
+                piles[i] = s;
+                copies[i] = s.copy();
+            }
             if (s.isEmpty()) continue;
             objets[i] = s.getItem();
             nombres[i] = s.getCount();
             variantes[i] = variante(s);
             contenu(s, curios);
         }
+        List<ItemStack> piecesCurios = empreinte ? new ArrayList<>() : null;
+        List<ItemStack> copiesCurios = empreinte ? new ArrayList<>() : null;
         for (ItemStack s : Compat.piecesCurios(p)) {
             if (s.isEmpty()) continue;
+            if (piecesCurios != null && copiesCurios != null) {
+                piecesCurios.add(s);
+                copiesCurios.add(s.copy());
+            }
             curios.merge(s.getItem(), s.getCount(), Integer::sum);
             contenu(s, curios);
         }
-        return new Releve(objets, nombres, variantes, curios);
+        return new Releve(objets, nombres, variantes, curios, piles, copies, piecesCurios, copiesCurios);
     }
 
     /**
@@ -265,7 +287,8 @@ public final class Coffres {
 
     /**
      * Le joueur tient-il exactement ce qui a ete releve (meme objet, meme nombre et memes variantes dans chaque case, memes
-     * Curios), sans rien au curseur ni dans la grille 2 x 2 (vides depuis le releve) ?
+     * Curios), sans rien au curseur ni dans la grille 2 x 2 (vides depuis le releve) ? 21/11 (choix du proprietaire) : et
+     * chaque case, chaque piece des Curios, tient-elle le meme objet qu'au releve, ou un objet aux donnees identiques ?
      */
     private static boolean inchange(ServerPlayer p, Releve r) {
         if (!p.containerMenu.getCarried().isEmpty() || !p.inventoryMenu.getCarried().isEmpty()) return false;
@@ -273,9 +296,40 @@ public final class Coffres {
         for (int i = 0; i < grille.getContainerSize(); i++) {
             if (!grille.getItem(i).isEmpty()) return false;
         }
-        Releve maintenant = releve(p);
-        return Arrays.equals(r.objets(), maintenant.objets()) && Arrays.equals(r.nombres(), maintenant.nombres())
-                && Arrays.equals(r.variantes(), maintenant.variantes()) && r.curios().equals(maintenant.curios());
+        Releve maintenant = releve(p, false);
+        if (!Arrays.equals(r.objets(), maintenant.objets()) || !Arrays.equals(r.nombres(), maintenant.nombres())
+                || !Arrays.equals(r.variantes(), maintenant.variantes()) || !r.curios().equals(maintenant.curios())) {
+            return false;
+        }
+        ItemStack[] piles = r.piles(), copies = r.copies();
+        if (piles != null && copies != null) {
+            Inventory inv = p.getInventory();
+            int n = Math.min(piles.length, inv.getContainerSize());
+            for (int i = 0; i < n; i++) {
+                if (!meme(inv.getItem(i), piles[i], copies[i])) return false;
+            }
+        }
+        List<ItemStack> pieces = r.piecesCurios(), copiesCurios = r.copiesCurios();
+        if (pieces != null && copiesCurios != null) {
+            int k = 0;
+            for (ItemStack s : Compat.piecesCurios(p)) {
+                if (s.isEmpty()) continue;
+                if (k >= pieces.size() || !meme(s, pieces.get(k), copiesCurios.get(k))) return false;
+                k++;
+            }
+            if (k != pieces.size()) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Le meme objet qu'au releve (modifie sur place ou non), ou un autre objet aux donnees exactement identiques : meme
+     * objet, meme nombre, memes donnees et capacites ({@link ItemStack#matches}). 21/11 (choix du proprietaire).
+     */
+    private static boolean meme(ItemStack s, @Nullable ItemStack avant, @Nullable ItemStack copie) {
+        if (s == avant) return true;
+        if (copie == null || copie.isEmpty()) return s.isEmpty();
+        return ItemStack.matches(s, copie);
     }
 
     /** Un retour demande : fichier lu d'avance, arrivee prechargee, puis rendu a son tour. */
@@ -541,18 +595,32 @@ public final class Coffres {
             finDepot(d.fini(), u, false);
             return;
         }
-        // refus revu au moment du releve (le joueur a pu etre tague ou tomber depuis sa demande)
-        DEPOSANTS.remove(u);
-        Coffre.Refus r = refus(p);
-        DEPOSANTS.add(u);
-        if (r != null) {
-            HeralizClashWar.LOG.info("[matchs] coffre refuse pour {} ({}) : {}", p.getGameProfile().getName(), raison, r);
-            finDepot(d.fini(), u, false);
-            return;
-        }
-        // 0. passager d'un vehicule (train compris) : il descend, et l'instantane prend SA position, pas celle du vehicule
-        if (!Descente.forcer(p)) {
-            HeralizClashWar.LOG.info("[matchs] coffre refuse pour {} ({}) : {}", p.getGameProfile().getName(), raison, Coffre.Refus.VEHICULE);
+        // 21/11 (choix du proprietaire) : une erreur d'un autre mod a n'importe quelle etape du depot est attrapee : le
+        // joueur reste intact (rien n'est vide, ce qui a ete mis a part lui est rendu), rien n'est perdu ni copie, une ligne
+        // au journal ; avant, elle arretait le tick du serveur (plantage)
+        try {
+            // refus revu au moment du releve (le joueur a pu etre tague ou tomber depuis sa demande)
+            DEPOSANTS.remove(u);
+            Coffre.Refus r;
+            try {
+                r = refus(p);
+            } finally {
+                DEPOSANTS.add(u);
+            }
+            if (r != null) {
+                HeralizClashWar.LOG.info("[matchs] coffre refuse pour {} ({}) : {}", p.getGameProfile().getName(), raison, r);
+                finDepot(d.fini(), u, false);
+                return;
+            }
+            // 0. passager d'un vehicule (train compris) : il descend, et l'instantane prend SA position, pas celle du vehicule
+            if (!Descente.forcer(p)) {
+                HeralizClashWar.LOG.info("[matchs] coffre refuse pour {} ({}) : {}", p.getGameProfile().getName(), raison, Coffre.Refus.VEHICULE);
+                finDepot(d.fini(), u, false);
+                return;
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            // rien n'a encore ete pris ni change
+            erreur(p, "avant le releve", ex);
             finDepot(d.fini(), u, false);
             return;
         }
@@ -560,56 +628,113 @@ public final class Coffres {
         //    audit point 8 : la fermeture de l'ecran les rendait a l'inventaire, ou les jetait au sol s'il etait plein ;
         //    un objet a vie etait alors mis de cote par Tactique, rendu dans l'inventaire du match et efface a la fin)
         List<ItemStack> aCote = horsInventaire(p);
-        // puis fermer le conteneur ouvert : son contenu revient dans l'inventaire ; ce qui n'y tient pas (et tomberait au
-        // sol) est garde avec les objets a cote (15/11)
-        capture = p;
-        captures = aCote;
+        Depot depot;
+        long ns = -1L;
         try {
-            p.closeContainer();
-        } finally {
+            // puis fermer le conteneur ouvert : son contenu revient dans l'inventaire ; ce qui n'y tient pas (et tomberait au
+            // sol) est garde avec les objets a cote (15/11)
+            capture = p;
+            captures = aCote;
+            try {
+                p.closeContainer();
+            } finally {
+                capture = null;
+                captures = null;
+            }
+            // 2. forcer l'ecriture du sac (mixin addAdditionalSaveData de backpacked) : la copie brute sert aussi d'enquete
+            CompoundTag brut = p.saveWithoutId(new CompoundTag());
+            // 3. instantane
+            CompoundTag t = instantane(p, raison, brut);
+            Releve releve = releve(p, true);
+            long numero = nouveauNumero();
+            t.putLong("numero", numero);
+            if (!aCote.isEmpty()) {
+                ListTag l = new ListTag();
+                for (ItemStack s : aCote) l.add(s.save(new CompoundTag()));
+                t.put("a_cote", l);
+            }
+            // 4. disque (atomique, verifie) AVANT toute modification du joueur
+            Path f = Coffre.fichier(u);
+            if (f == null) {
+                depot = null;
+            } else if (!fond) {
+                ns = ecrireMesure(f, t);
+                depot = new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai());
+            } else {
+                // 19/11 : le releve part sur le fil des coffres ; copie complete (aucune donnee qu'un autre mod pourrait encore
+                // modifier) ; fil indisponible : ecrit tout de suite, comme sans ecriture en fond
+                CompoundTag copie = t.copy();
+                Future<Long> ecrit;
+                try {
+                    ecrit = FIL.submit(() -> ecrireMesure(f, copie));
+                } catch (RejectedExecutionException ex) {
+                    ecrit = null;
+                    ns = ecrireMesure(f, t);
+                }
+                depot = new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai());
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            // erreur pendant le releve (fermeture d'un ecran, sauvegarde du joueur...) : rien n'a ete vide ; ce qui a ete mis a
+            // part lui est rendu, aucun fichier n'est ecrit
             capture = null;
             captures = null;
-        }
-        // 2. forcer l'ecriture du sac (mixin addAdditionalSaveData de backpacked) : la copie brute sert aussi d'enquete
-        CompoundTag brut = p.saveWithoutId(new CompoundTag());
-        // 3. instantane
-        CompoundTag t = instantane(p, raison, brut);
-        Releve releve = releve(p);
-        long numero = nouveauNumero();
-        t.putLong("numero", numero);
-        if (!aCote.isEmpty()) {
-            ListTag l = new ListTag();
-            for (ItemStack s : aCote) l.add(s.save(new CompoundTag()));
-            t.put("a_cote", l);
-        }
-        // 4. disque (atomique, verifie) AVANT toute modification du joueur
-        Path f = Coffre.fichier(u);
-        if (f == null) {
-            HeralizClashWar.LOG.error("[matchs] coffre de {} NON ecrit : joueur laisse intact", p.getGameProfile().getName());
-            rendreACote(p, aCote);
+            erreur(p, "pendant le releve", ex);
+            rendreSansRisque(p, aCote);
             finDepot(d.fini(), u, false);
             return;
         }
-        if (!fond) {
-            long ns = ecrireMesure(f, t);
-            confirmer(new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai()), ns);
+        if (depot == null) {
+            HeralizClashWar.LOG.error("[matchs] coffre de {} NON ecrit : joueur laisse intact", p.getGameProfile().getName());
+            rendreSansRisque(p, aCote);
+            finDepot(d.fini(), u, false);
             return;
         }
-        // 19/11 : le releve part sur le fil des coffres ; copie complete (aucune donnee qu'un autre mod pourrait encore modifier)
-        CompoundTag copie = t.copy();
-        Future<Long> ecrit;
-        try {
-            ecrit = FIL.submit(() -> ecrireMesure(f, copie));
-        } catch (RejectedExecutionException ex) {
-            long ns = ecrireMesure(f, t);
-            confirmer(new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai()), ns);
+        if (depot.ecrit == null) {
+            // ecrit tout de suite (sans ecriture en fond, ou fil des coffres indisponible) : confirme maintenant
+            confirmer(depot, ns);
             return;
         }
         // 21/11 (audit des duplications) : la marque n'est plus posee ici mais a la confirmation, avec le vidage. Enregistre
         // pendant l'ecriture (deconnexion, sauvegarde automatique), il l'est avec tout son inventaire et sans marque : apres un
         // plantage, ce fichier ne lui est jamais rendu (enquete), il garde ce qu'il avait. Ce qui change chez lui pendant
         // l'ecriture est vu a la confirmation ({@link #inchange}) : depot refait.
-        EN_ECRITURE.put(u, new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai()));
+        EN_ECRITURE.put(u, depot);
+    }
+
+    /** 21/11 (choix du proprietaire) : erreur d'un autre mod pendant un depot, notee (joueur, etape, erreur complete). */
+    private static void erreur(ServerPlayer p, String quand, Throwable ex) {
+        HeralizClashWar.LOG.error("[matchs] coffre de {} : erreur d'un autre mod {}, depot refuse, joueur laisse intact",
+                p.getGameProfile().getName(), quand, ex);
+    }
+
+    /**
+     * Comme {@link #rendreACote}, sans jamais laisser passer l'erreur d'un autre mod (21/11, choix du proprietaire) : ce qui
+     * n'a peut-etre pas ete rendu est note au journal, objet par objet, pour le staff.
+     */
+    private static void rendreSansRisque(ServerPlayer p, List<ItemStack> objets) {
+        try {
+            rendreACote(p, objets);
+        } catch (RuntimeException | LinkageError ex) {
+            HeralizClashWar.LOG.error("[matchs] {} : objets mis a part peut-etre pas tous rendus (erreur d'un autre mod), a verifier",
+                    p.getGameProfile().getName(), ex);
+            for (ItemStack s : objets) {
+                if (s.isEmpty()) continue;
+                HeralizClashWar.LOG.error("[matchs] {} : a verifier : {} x{}", p.getGameProfile().getName(),
+                        net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(s.getItem()), s.getCount());
+            }
+        }
+    }
+
+    /**
+     * Dernier filet (21/11, choix du proprietaire) : une erreur qui sortirait encore d'un depot n'arrete jamais le tick du
+     * serveur ; elle est notee et le joueur n'est plus bloque. Le fichier et la marque restent tels quels : rendu a sa
+     * prochaine connexion s'il a ete vide et marque, jamais rendu (enquete) sinon ; jamais deux fois.
+     */
+    private static void erreurImprevue(ServerPlayer p, @Nullable Consumer<Boolean> fini, Throwable ex) {
+        HeralizClashWar.LOG.error("[matchs] coffre de {} : erreur imprevue pendant le depot, a verifier (/clashwar coffre etat)",
+                p.getGameProfile().getName(), ex);
+        UUID u = p.getUUID();
+        if (DEPOSANTS.contains(u)) finDepot(fini, u, false);
     }
 
     /**
@@ -638,7 +763,7 @@ public final class Coffres {
         ServerPlayer p = d.joueur;
         List<ItemStack> l = new ArrayList<>(d.aCote);
         l.addAll(d.retenus);
-        rendreACote(p, l);
+        rendreSansRisque(p, l);
         if (marque(p) == d.numero) marquer(p, 0L);
     }
 
@@ -675,7 +800,20 @@ public final class Coffres {
         // 21/11 (audit des duplications) : ce qu'il tient n'est plus exactement l'instantane : rien n'est vide ; ce depot est
         // defait (fichier efface : jamais rendu ; objets mis a part rendus) puis refait a neuf, au plus ESSAIS_MAX fois
         // (ensuite : refuse, joueur intact)
-        if (!inchange(p, d.releve)) {
+        boolean pareil;
+        try {
+            pareil = inchange(p, d.releve);
+        } catch (RuntimeException | LinkageError ex) {
+            // 21/11 (choix du proprietaire) : erreur d'un autre mod pendant la verification : rien n'est vide ; ce fichier
+            // n'est jamais rendu (efface), ce qui a ete mis a part lui est rendu
+            erreur(p, "pendant la verification", ex);
+            effacer(d.fichier, "erreur pendant la verification");
+            defaire(d);
+            depotsRates++;
+            finDepot(d.fini, u, false);
+            return;
+        }
+        if (!pareil) {
             effacer(d.fichier, "inventaire change pendant l'ecriture");
             defaire(d);
             depotsRates++;
@@ -693,11 +831,21 @@ public final class Coffres {
         // 5. seulement maintenant : vidage (malus d'ArkaniaZ compris : tous les effets partent), marque du depot, joueur
         //    enregistre tout de suite (15/11, audit M4 : un plantage avant la sauvegarde automatique rendait le depot a un
         //    joueur qui avait encore tout)
-        vider(p);
-        CombatTag.effacer(u);
+        if (!viderObjets(p)) {
+            // 21/11 (choix du proprietaire) : des Curios ne se vident pas (erreur de Curios ou d'un autre mod) : ils
+            // existeraient en double ; le joueur est remis exactement comme au releve, le depot est refuse
+            remettre(p, d);
+            depotsRates++;
+            finDepot(d.fini, u, false);
+            return;
+        }
+        // 21/11 : la marque est posee tout de suite apres le vidage, avant tout autre appel : quoi qu'il arrive ensuite (erreur
+        // d'un autre mod), ce depot lui sera rendu ; le reste (effets, sante, tag de combat) ne touche a aucun objet
         marquer(p, d.numero);
         CompoundTag t = d.instantane;
         POSITIONS.put(u, new Position(t.getString("dim"), t.getDouble("x"), t.getDouble("z")));
+        remettreEnForme(p);
+        sansErreur(p, "tag de combat", () -> CombatTag.effacer(u));
         if (!sauverJoueur(p)) {
             HeralizClashWar.LOG.error("[matchs] {} vide mais pas enregistre : sa marque le sera avec sa prochaine sauvegarde",
                     p.getGameProfile().getName());
@@ -738,7 +886,7 @@ public final class Coffres {
         if (fini == null) return;
         try {
             fini.accept(ok);
-        } catch (RuntimeException ex) {
+        } catch (RuntimeException | LinkageError ex) {
             HeralizClashWar.LOG.error("[matchs] suite du coffre de {} en erreur", u, ex);
         }
     }
@@ -778,21 +926,77 @@ public final class Coffres {
         return t;
     }
 
-    /** Vidage apres depot : inventaire, Curios, effets, recharges tactiques, sante et faim pleines. */
-    private static void vider(ServerPlayer p) {
+    /**
+     * Vidage des objets apres depot : inventaire et Curios. Rend faux si des Curios n'ont pas pu etre vides (erreur de
+     * Curios ou d'un autre mod, 21/11) : le depot ne doit alors pas se faire (ces objets existeraient en double).
+     */
+    private static boolean viderObjets(ServerPlayer p) {
         p.getInventory().clearContent();
         Compat.viderCurios(p);
-        p.removeAllEffects();
-        p.setHealth(p.getMaxHealth());
-        p.setAbsorptionAmount(0);
-        p.getFoodData().setFoodLevel(20);
-        p.getFoodData().setSaturation(5f);
-        p.getFoodData().setExhaustion(0f);
-        Tactical.zeroRecharges(p);
-        p.clearFire();
-        p.fallDistance = 0;
-        p.setGameMode(GameType.SURVIVAL);
-        p.inventoryMenu.broadcastChanges();
+        return Compat.piecesCurios(p).isEmpty();
+    }
+
+    /**
+     * Apres le vidage : effets, sante et faim pleines, recharges tactiques, feu, mode Survie. Aucun objet n'y est touche :
+     * une erreur d'un autre mod est notee et n'arrete pas le depot (21/11, choix du proprietaire).
+     */
+    private static void remettreEnForme(ServerPlayer p) {
+        sansErreur(p, "effets", p::removeAllEffects);
+        sansErreur(p, "sante et faim", () -> {
+            p.setHealth(p.getMaxHealth());
+            p.setAbsorptionAmount(0);
+            p.getFoodData().setFoodLevel(20);
+            p.getFoodData().setSaturation(5f);
+            p.getFoodData().setExhaustion(0f);
+        });
+        sansErreur(p, "recharges tactiques", () -> Tactical.zeroRecharges(p));
+        sansErreur(p, "feu et mode de jeu", () -> {
+            p.clearFire();
+            p.fallDistance = 0;
+            p.setGameMode(GameType.SURVIVAL);
+        });
+        sansErreur(p, "envoi de l'inventaire", p.inventoryMenu::broadcastChanges);
+    }
+
+    /** Fait {@code action} ; une erreur d'un autre mod est notee et n'arrete pas le depot deja fait (21/11). */
+    private static void sansErreur(ServerPlayer p, String quoi, Runnable action) {
+        try {
+            action.run();
+        } catch (RuntimeException | LinkageError ex) {
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : {} en erreur (autre mod), depot fait quand meme", p.getGameProfile().getName(),
+                    quoi, ex);
+        }
+    }
+
+    /**
+     * Curios impossibles a vider (21/11, choix du proprietaire) : le joueur est remis exactement comme au releve d'apres
+     * l'instantane (inventaire et Curios ; il le tenait encore a l'identique, {@link #inchange}), ce qui a ete mis a part
+     * lui est rendu, et le fichier est efface (jamais rendu). Si ses Curios ne se rechargent pas non plus, le fichier est
+     * garde en enquete ({@code coffres/enquete}) pour le staff : rien n'est perdu.
+     */
+    private static void remettre(ServerPlayer p, Depot d) {
+        CompoundTag t = d.instantane;
+        boolean ok = true;
+        try {
+            Inventory inv = p.getInventory();
+            inv.load(t.getList("inventaire", Tag.TAG_COMPOUND));
+            inv.selected = Math.max(0, Math.min(8, t.getInt("selection")));
+            if (t.contains("curios")) ok = Compat.chargerCurios(p, t.getList("curios", Tag.TAG_COMPOUND));
+            p.inventoryMenu.broadcastChanges();
+        } catch (RuntimeException | LinkageError ex) {
+            ok = false;
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : remise comme au releve en erreur", p.getGameProfile().getName(), ex);
+        }
+        defaire(d);
+        if (ok) {
+            effacer(d.fichier, "Curios impossibles a vider : joueur remis comme au releve");
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : Curios impossibles a vider, joueur remis comme au releve, depot refuse",
+                    p.getGameProfile().getName());
+        } else {
+            enquete(d.fichier, "remise");
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : Curios impossibles a vider ni a recharger : fichier garde dans coffres/enquete, a verifier par le staff",
+                    p.getGameProfile().getName());
+        }
     }
 
     // ------------------------------------------------------------------ restauration
@@ -1117,7 +1321,11 @@ public final class Coffres {
             // hors de la boucle : la suite d'un depot peut en demander d'autres
             for (int i = 0; i < FINIS.size(); i++) {
                 Depot d = FINIS.get(i);
-                confirmer(d, resultat(d.ecrit));
+                try {
+                    confirmer(d, resultat(d.ecrit));
+                } catch (RuntimeException | LinkageError ex) {
+                    erreurImprevue(d.joueur, d.fini, ex);
+                }
             }
             FINIS.clear();
         }
@@ -1132,7 +1340,12 @@ public final class Coffres {
         }
         // 3. nouveaux depots (releve sur le fil serveur, ecriture en fond)
         while (!DEMANDES.isEmpty() && faits < parTick && EN_ECRITURE.size() < MAX_EN_ECRITURE && (faits == 0 || System.nanoTime() < fin)) {
-            commencer(DEMANDES.pollFirst(), enFond);
+            Demande dm = DEMANDES.pollFirst();
+            try {
+                commencer(dm, enFond);
+            } catch (RuntimeException | LinkageError ex) {
+                erreurImprevue(dm.joueur(), dm.fini(), ex);
+            }
             faits++;
         }
         // 4. retours prets (lecture finie, arrivee chargee ou attendue assez longtemps), dans l'ordre des demandes
