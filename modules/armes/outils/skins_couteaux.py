@@ -29,7 +29,8 @@ from pathlib import Path
 MOD = Path(__file__).resolve().parent.parent
 OUTILS = MOD / "outils"
 GABARIT = OUTILS / "camo_gabarit.fsh"
-CORE = MOD / "src" / "client" / "resources" / "assets" / "heralisz_camo" / "shaders" / "core"
+# programmes des skins : hors des assets du jeu depuis l'étape 2 des skins protégés (21/11, docs/SKINS_PROTEGES.md)
+CORE = MOD / "dessins" / "heralisz_camo" / "shaders" / "core"
 
 # paliers de beauté, du plus courant au plus rare : (id, nom affiché, code couleur du nom)
 PALIERS = {

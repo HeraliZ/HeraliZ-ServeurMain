@@ -157,3 +157,79 @@ dire : il faudra alors que l'hébergeur transmette la vraie adresse des joueurs.
       des quêtes et onglet Saison, staff caché, `/bourse donner`.
 
 Pas testé : tout en jeu (aucune compilation ici : fabrication et contrôles sur GitHub seulement).
+
+---
+
+## Fin du 21/11 (choix du propriétaire : « tout lançable et terminé à 100 % »)
+
+En ligne avant ce lot : `main` = `1607d9655` (Clans 3.19.4 ; Quêtes 1.24.6, où une autre relecture a déjà mis
+`/quete reset` à l'op 4 + `/login`, ma proposition P2). Fait ici, commit `5ce3a6ded` : **Clans 3.19.5, Quêtes 1.24.7,
+Événements 1.3.4** (le launcher donne les nouveaux jars ; aucun canal réseau ne change ; chaque texte nouveau est en
+français, anglais et russe). Les captures du staff **gardent** leurs points de saison (décision du propriétaire : rien
+changé). **Rien n'a été testé en jeu.**
+
+### Ce qui a changé
+
+1. **`/event objet` et `/quete finir` demandent le `/login` (P1).** Ces deux commandes d'op 4 créent des hérals (objet
+   d'essai revendu à Mila, récompense d'une quête) : même règle que `/eco donner`, `/bourse donner` et `/quete reset`,
+   op 4 connecté sur AuthMe (ou la console pour `/quete finir`). Refus : « Connecte-toi d'abord avec /login. ».
+   Code : `modules/evenements/.../serveur/Commandes.java` l. 145, `Outils.authentifie` l. 258 ; `modules/pnj/.../serveur/
+   Commandes.java` l. 478. `docs/COMMANDES.md` mis à jour.
+2. **Écran des quêtes du jour : 4 demandes par seconde au plus (P3)**, comme le journal des quêtes ; compté à part du
+   journal ; la fermeture de l'écran passe toujours (la remise d'une récompense en attente se fait).
+   Code : `ServeurQuetes.java` l. 71-75 et 136-151.
+3. **Coffre du clan : la fermeture n'enregistre le joueur que s'il a bougé quelque chose (P4).** Ouvrir puis refermer
+   sans rien déposer ni prendre n'écrit plus son fichier sur le fil du serveur ; un dépôt ou un retrait est enregistré
+   comme avant (joueur puis coffre). Code : `CoffreClan.java` l. 192-199.
+4. **Économie « indisponible » (fichier des comptes illisible) : les recycleurs ne recyclent plus (P5).** Celui du spawn
+   (bloc et PNJ) ne s'ouvre pas : « Recycleur à l'arrêt : les hérals ne peuvent pas être versés pour l'instant. Reviens
+   un peu plus tard. » ; s'il est déjà ouvert, il attend au bout de la barre sans rien prendre. Celui de la carte attend
+   aussi, mais s'ouvre pour qu'on reprenne ses objets, avec « Recyclage en pause… ». Code : `Recyclage.java` l. 416 et
+   428 ; `MenuRecycleurServeur.java` l. 117-150 ; `RecycleurCarteEntiteServeur.java` l. 424 et 461.
+5. **Annulation d'un événement qui rate (P6)** : la pile d'appels est écrite une fois, puis une ligne au plus par minute
+   (nouvel essai d'annulation chaque minute) ; l'événement cassé ne tourne plus. Avant : deux erreurs par seconde.
+   Code : `Directeur.java` l. 112-130 et 147-173.
+6. **Staff caché qui rejoint un clan pendant sa partie (a5 P5).** Son arrivée n'est annoncée dans le chat qu'aux membres
+   qui voient les cachés (staff connecté) ; pour les autres il reste « hors ligne » (vu pour la dernière fois à son arrivée,
+   temps de jeu 0) et la ligne « X a rejoint » est retirée du journal du clan qu'ils reçoivent (elle revient quand il se
+   montre ou se déconnecte). À noter : `/clan info` ne montre aucun temps de jeu (kills, K/D, territoires, âge du clan) ;
+   le seul temps de jeu visible est celui de chaque membre dans l'écran du clan, déjà figé à sa valeur d'avant la partie
+   depuis ce matin, et maintenant aussi pour un caché arrivé pendant sa partie. Code : `ClanService.repondre` l. 511-528 ;
+   `Sync.java` l. 103 (`debutSession`, heure de début gardée) et l. 502 (`sansArrivees`) ; `ClanEvents.java` l. 149.
+7. **Plafond de 10 000 000 hérals (a5 P6) : plus jamais d'objet pris sans tout payer.**
+   - Mila : le total de la vente est compté d'abord, sans rien changer ; s'il ne tient pas sur le compte, rien n'est
+     pris : « Vente refusée : ton compte dépasserait son plafond (10 000 000 hérals). Vends moins d'objets. Rien n'a été
+     pris. » (`Marchands.java` l. 270 et 341).
+   - Quête de Varga : elle attend, comme quand l'économie est indisponible (« … dépense un peu, puis reviens la rendre »,
+     `Moteur.java` l. 222-233).
+   - Recycleurs : ils attendent quand la part en hérals ne tiendrait pas sur le compte (spawn : compte du joueur ; carte :
+     seulement si les bourses sont bloquées, sinon les hérals vont dans la bourse de la machine).
+   - Bourses : une bourse pleine ne reçoit plus rien (une neuve est faite) et deux bourses dont la somme dépasserait le
+     plafond ne se fusionnent plus ; avant, le surplus disparaissait (`Bourses.java` l. 281 et 382).
+   - Tout dépôt coupé au plafond est maintenant écrit dans le journal du serveur (`EconomieApiServeur.java` l. 99) : le
+     staff peut rendre la différence. Les autres modules (hôtel des ventes, casino, ClashWar…) gardent leur façon de
+     faire (hors de cette zone) ; la banque du clan, `/herals payer`, `/eco` et la dissolution vérifiaient déjà la place.
+   - Outils communs : `Ponts.plafond` et `Ponts.place` (l. 295 et 318, par réflexion sur `EconomieApi.maxSolde`).
+8. **`mods.toml`** : noyau 1.1.5 au moins pour les clans (l. 91), les événements (l. 30) et les quêtes (l. 30) (relevé de
+   la relecture v10 : tronçons prêts, inventaire tenu par un match).
+
+Contrôles ici : `outils/verif_reflexion.py` (clans, quêtes, événements : 0 erreur ; `EconomieApi.maxSolde()` et
+`GradesApi.authentifie(ServerPlayer)` trouvés), `outils/verifier_langues.py` (0 erreur), textes des quêtes refaits par
+`modules/pnj/outils/langues.py`, inventaire des commandes inchangé (`outils/commandes.py`).
+
+### À tester en jeu (Fin du 21/11)
+
+- [ ] `/event objet dossier_classe` et `/quete finir <joueur> <quête>` : op 4 après `/login`, ça marche ; avant le
+      `/login` (si AuthMe laisse passer la commande), refus « Connecte-toi d'abord avec /login. ».
+- [ ] Quêtes du jour : ouvrir, choisir, accepter, livrer, tirer, fermer en cliquant vite : tout répond ; la récompense
+      tirée arrive bien à la fermeture.
+- [ ] Coffre du clan : ouvrir et refermer sans rien bouger, puis déposer et prendre : contenu juste après un redémarrage.
+- [ ] Recycleurs, marchands et quêtes comme avant quand l'économie va bien. (Serveur d'essai seulement : avec une copie
+      abîmée de `comptes.json`, le recycleur du spawn refuse de s'ouvrir avec le message, celui de la carte s'ouvre avec
+      « Recyclage en pause » et ne recycle pas ; après `/recharger herals` réussi, tout repart.)
+- [ ] Plafond (serveur d'essai, `/eco definir <joueur> 9999990`) : vendre à Mila pour plus de 10 hérals → refusé, rien
+      n'est pris ; vendre pour 10 hérals ou moins → passe ; rendre une quête qui paie plus → elle attend avec le message.
+- [ ] Staff caché (S, staff caché ; C, joueur du clan hors du staff) : S rejoint le clan de C par une invitation : C ne lit
+      aucun « S a rejoint le clan » ; dans l'écran du clan, S est hors ligne et la ligne « S a rejoint » n'est pas dans
+      l'activité ; un autre staff du clan voit tout. S se montre : la ligne revient (au plus quelques secondes).
+- [ ] Démarrage du serveur : aucune ligne « dépendance manquante » pour le noyau.

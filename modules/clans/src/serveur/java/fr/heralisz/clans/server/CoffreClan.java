@@ -191,8 +191,10 @@ public final class CoffreClan {
         @Override
         public void removed(Player p) {
             super.removed(p);
+            // 21/11 (validation de l'audit) : seulement si ce joueur a déposé ou pris quelque chose (ses cases du coffre l'ont
+            // noté, Case.setChanged) ; ouvrir puis refermer sans rien bouger n'écrit plus son fichier de joueur
+            if (!TOUCHES.contains(p.getUUID())) return;
             sale = true;
-            TOUCHES.add(p.getUUID());
             sauvegarder(); // joueur puis coffre, tout de suite : un plantage ne laisse jamais l'objet aux deux endroits
         }
 

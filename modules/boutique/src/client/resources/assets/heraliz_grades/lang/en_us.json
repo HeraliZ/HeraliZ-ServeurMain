@@ -809,6 +809,7 @@
   "heraliz_grades.staff.msg.eco_pb_inactif": "Shop Points are not linked to the website (missing key): nothing was done.",
   "heraliz_grades.staff.msg.eco_pb_injoignable": "The website does not answer: nothing was done.",
   "heraliz_grades.staff.msg.eco_pb_incertain": "The website does not answer: check the balance before trying again (it may be done).",
+  "heraliz_grades.staff.msg.eco_pb_erreur_site": "Website error (%s): result uncertain, check on the website before trying again.",
   "heraliz_grades.staff.msg.eco_pb_compte": "No website account named %s.",
   "heraliz_grades.staff.msg.eco_pb_plafond": "Refused by the website: %s PB at most at once.",
   "heraliz_grades.staff.msg.eco_pb_plafond_jour": "Refused by the website: %1$s PB already given in 24 h (cap %2$s).",

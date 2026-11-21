@@ -149,3 +149,57 @@ du loot à surveiller un soir chargé avec `/diag profil`.
 
 Pas testé : tout en jeu ; la mémoire du jeu après des passages de carte n'a pas été mesurée (`/diag client` sur un soir
 chargé le montrerait).
+
+---
+
+## Fin du 21/11 (demande du propriétaire : « tout lançable et terminé à 100 % »)
+
+Propositions encore ouvertes revues (celles de `../a6_loot_bunker.md` et celle de ce compte rendu) : celles qui sont sûres
+et ne demandent aucun essai en jeu sont faites, les autres restent notées. **Loot 0.20.10**, commit `b3258e80f` ; Bunker
+inchangé (0.14.9, en ligne) ; aucun canal réseau ne change. Rien n'a été testé en jeu. « Contrôle de branche » avec
+ce commit (`19008fffa`) : **réussi** (fabrication, contrôles et images).
+
+### Fait
+
+1. **Version minimale du noyau dans le loot (P1 ci-dessus)** : le loot demande maintenant le noyau **1.1.5** au moins
+   (avant : 1.0.19). C'est la version qui a apporté les morceaux du noyau dont la partie serveur du loot se sert
+   (`Troncons`, `Etalement`, `EcrituresFond`, le 19/11, jamais changés depuis) ; en ligne : noyau 1.1.12. Avec un noyau
+   trop vieux, le serveur refuse de démarrer avec un message clair au lieu de planter au premier tick.
+   `modules/loot/src/commun/resources/META-INF/mods.toml` l. 28-35.
+2. **Revue des conteneurs entamés étalée sur la seconde (a6, proposition n° 3, première moitié)** : en simple, une fois
+   par seconde le serveur regarde les conteneurs déjà fouillés (vidés sans fermer l'écran proprement, ou laissés avec des
+   objets) pour les rendre à la rotation ou les recycler au bout de 5 min sans personne. Avant, tous dans le même tick
+   (environ 0,3 ms d'un coup à 150 joueurs, d'après le calcul) ; maintenant chacun à son tick, toujours une fois par
+   seconde : même délai, mêmes règles (objet à vie jamais détruit, salle à carte jamais recyclée, conteneur regardé jamais
+   touché). Le rythme de la rotation ne change pas.
+   `modules/loot/src/serveur/java/fr/heraliz/loot/RotationLoot.java` l. 159-166 (rangées par tick), l. 429-445 (`tire`,
+   `tickDeRevue`), l. 459 (retrait), l. 992-1047 (`entamesTick`) ; `LootServeur.java` l. 90.
+3. **Borne de départ et conteneurs posés en jeu** (connu depuis la section 44 de la fiche des essais) : un conteneur de
+   loot posé en jeu est évité tout de suite par la borne de départ (avant : seulement après un redémarrage). Un conteneur
+   retiré reste évité jusqu'à la prochaine lecture des zones (la borne l'évite un peu trop : sans danger).
+   `modules/loot/src/serveur/java/fr/heraliz/loot/ZonesLoot.java` l. 455-477 (`tronconAjouter`).
+4. **Petit plus** : le bruit de fermeture d'un écran de fouille fermé de loin (après une téléportation) ne lit plus jamais
+   un morceau de carte pas encore complet (le serveur l'attendait pour un son).
+   `RotationLoot.java` l. 1465-1468, `ConteneursEvenement.java` l. 446-448.
+
+### Laissé noté (demande un essai en jeu ou une vérification sur la carte)
+
+- **Porte HBM « transition seal »** (a6 n° 1) : vérifier sur la carte qu'aucune n'est posée. Si une l'est : la remplacer
+  par une autre porte, ou retoucher le code de HBM (relire son alimentation seulement quand un bloc voisin change), à
+  essayer en jeu.
+- **Rendu des portes de HBM** (a6 n° 2 : noms de cache refaits à chaque image) : seulement avec un essai des portes en jeu
+  (ouverture, skins, shaders), le gain est faible.
+- **Relevé des objets de la rotation à chaque sauvegarde automatique** (a6 n° 3, seconde moitié) : le garder en mémoire
+  entre deux sauvegardes demanderait de suivre chaque changement de chaque objet ; un seul oubli ferait revenir un objet
+  déjà pris après un redémarrage (une duplication). À faire seulement si `/diag profil` un soir chargé le montre.
+
+### À tester en jeu (en plus de la liste ci-dessus)
+
+- [ ] **Conteneur entamé** : fouiller un conteneur, en laisser une partie, s'éloigner : 5 min après, il est vide et un
+      autre se remplit plus tard (comme avant). Le vider en entier : il redevient vide tout de suite après la fermeture.
+      Une salle à carte garde ses restes jusqu'à sa recharge.
+- [ ] **Borne de départ** (staff) : poser un conteneur de loot loin de toute zone, puis plusieurs départs par la borne
+      dans ce coin : aucun joueur posé juste à côté.
+- [ ] **Démarrage du serveur** : aucune erreur « heraliz_noyau » dans le journal (dépendance du loot satisfaite).
+
+Pas testé : tout en jeu (fabrication et contrôles sur GitHub seulement).

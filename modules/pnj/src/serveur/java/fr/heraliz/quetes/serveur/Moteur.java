@@ -219,6 +219,17 @@ final class Moteur {
             envoyerSuivi(p);
             return;
         }
+        // 21/11 (validation de l'audit) : compte au plafond (10 000 000 hérals) : la quête attend aussi ; avant, l'économie
+        // coupait les hérals sans rien dire et la quête était finie pour toujours
+        if (q.recompense.herals > 0 && herals(q.recompense) > Ponts.place(p.getUUID())) {
+            a.aRendre = true;
+            a.etape = q.etapes.size();
+            Donnees.sale(p.getUUID());
+            notif(p, Texte.cle("heraliz_quetes.notif.recompense_plafond", Texte.brut(Ponts.nombre(Math.max(0, Ponts.plafond())))), 0xFF6B6B);
+            sauver(p);
+            envoyerSuivi(p);
+            return;
+        }
         Donnees.DJoueur j = Donnees.de(p.getUUID());
         Donnees.DPnj dp = j.pnj(a.pnj);
         j.actives.remove(a.cle);

@@ -117,9 +117,10 @@ jobs:
   # propriétaire) : verifier.py fait tourner du code d'autres auteurs (JOML, lancé par Java pour les conteneurs allégés du
   # loot) ; avant, il tournait dans le job « serveur », sur la machine qui a les secrets du Ptero. Comme le job
   # « controles » de branches.yml : machine neuve, jars repris du cache jars-<commit> du job « fabriquer », seul le secret
-  # NOMS_INTERDITS (liste des noms perso, secret du DÉPÔT : pas d'environnement ici) donné à l'étape qui écrit son
-  # fichier, JOML téléchargé avec son empreinte vérifiée. Il tourne en même temps que le démarrage d'essai ; le job
-  # « serveur » en dépend : un contrôle raté, rien n'est envoyé au Ptero (comme avant).
+  # NOMS_INTERDITS (liste des noms perso, secret du DÉPÔT : pas d'environnement ici ; pas créé, choix du propriétaire du
+  # 21/11 : contrôle sauté) donné à l'étape qui écrit son fichier, JOML téléchargé avec son empreinte vérifiée. Il tourne
+  # en même temps que le démarrage d'essai ; le job « serveur » en dépend : un contrôle raté, rien n'est envoyé au Ptero
+  # (comme avant).
   controles:
     needs: fabriquer
     runs-on: ubuntu-latest
@@ -160,7 +161,8 @@ jobs:
           curl -fsSL --retry 3 -o "$RUNNER_TEMP/joml/joml-1.10.5.jar" https://repo1.maven.org/maven2/org/joml/joml/1.10.5/joml-1.10.5.jar
           echo "cac9f22f83a7aa33eebda73c16ff5261e3cb4911b6bafcf4c79ea486099d0c9a  $RUNNER_TEMP/joml/joml-1.10.5.jar" | sha256sum -c -
 
-      # liste des noms perso interdits (un par ligne), gardée dans un secret du dépôt : jamais écrite dans le dépôt
+      # liste des noms perso interdits (un par ligne), gardée dans un secret du dépôt s'il existe (pas créé : choix du
+      # propriétaire du 21/11) : jamais écrite dans le dépôt
       - name: Noms interdits
         env:
           NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
@@ -168,7 +170,9 @@ jobs:
           if [ -n "$NOMS_INTERDITS" ]; then
             printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
           else
-            echo "::warning::Secret NOMS_INTERDITS absent : contrôle des noms perso sauté (docs/MISE_EN_LIGNE_GITHUB.md, section 7)."
+            # 21/11 : le propriétaire ne crée pas ce secret (son choix) : simple note, pas un avertissement ; le contrôle
+            # remarche tout seul si le secret existe un jour
+            echo "Contrôle des noms perso sauté : pas de secret NOMS_INTERDITS (choix du propriétaire du 21/11)."
           fi
 
       - name: Contrôles (GeckoLib, noms perso, langues)

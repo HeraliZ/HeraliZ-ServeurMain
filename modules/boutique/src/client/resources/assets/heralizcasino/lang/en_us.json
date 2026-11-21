@@ -91,6 +91,7 @@
   "message.heralizcasino.admin_saved": "Settings saved: %s.",
   "message.heralizcasino.admin_lights_saved": "Machine lighting saved: placed machines update within a second.",
   "message.heralizcasino.admin_saved_rtp": "Settings saved: %s (RTP %s %%).",
+  "message.heralizcasino.admin_niveau4": "Cashier and machine settings: logged-in level 4 operators only.",
   "overlay.heralizcasino.win": "WIN!",
   "overlay.heralizcasino.big": "BIG WIN!",
   "overlay.heralizcasino.jackpot": "JACKPOT!",

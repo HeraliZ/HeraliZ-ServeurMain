@@ -141,6 +141,11 @@ public final class Commandes {
 
     private static int objet(CommandContext<CommandSourceStack> c) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = c.getSource().getPlayerOrException();
+        // 21/11 (validation de l'audit) : l'objet se revend en hérals chez Mila : op 4 connecté sur AuthMe (comme /eco donner)
+        if (!Outils.authentifie(p)) {
+            c.getSource().sendFailure(Outils.t("heraliz_evenements.cmd.login", "Connecte-toi d'abord avec /login."));
+            return 0;
+        }
         String type = StringArgumentType.getString(c, "type");
         if (!fr.heraliz.evenements.objets.ObjetsEvenement.IDS.contains(type)) return echec(c.getSource(), "Objet inconnu : " + type + ".");
         net.minecraft.world.item.ItemStack s = ObjetsServeur.creerType(type, "staff:" + p.getGameProfile().getName());

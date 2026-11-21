@@ -29,9 +29,11 @@ de Mohist) ne change pas.
 ## 3. Ce que GitHub fait tout seul (onglet Actions, « Serveur HeraliZ »)
 
 - Fabrique tous les modules (la première fois : environ 30 à 60 min).
-- Contrôles (GeckoLib, langues, noms interdits, aucun pseudo sans mot de passe dans AuthMe), dans un job à part sans
-  aucun secret de production (21/11) : seul le secret du dépôt `NOMS_INTERDITS` y est donné, et la bibliothèque JOML
-  (lancée par un contrôle) est refusée si son empreinte change. Un contrôle raté : **rien n'est envoyé au Ptero**.
+- Contrôles (GeckoLib, langues, aucun pseudo sans mot de passe dans AuthMe), dans un job à part sans aucun secret de
+  production (21/11) ; la bibliothèque JOML (lancée par un contrôle) est refusée si son empreinte change. Un contrôle
+  raté : **rien n'est envoyé au Ptero**. Le contrôle des noms perso est **sauté par choix du propriétaire** (21/11 : le
+  secret `NOMS_INTERDITS` ne sera pas créé ; une simple note le dit dans le journal). Il remarcherait tout seul si ce
+  secret était créé un jour, au niveau du dépôt.
 - **Démarrage d'essai** (19/11) : le serveur fabriqué (nos jars, les plugins et les réglages du dépôt, le même Mohist,
   un monde plat neuf, aucun secret) démarre sur une machine de GitHub. Sans « Done », ou avec un mixin qui ne s'applique
   pas ou un plantage dans son journal, **rien n'est envoyé au Ptero** (raison dans le résumé, partie « Démarrage
@@ -148,9 +150,9 @@ dépôt). Le réglage, à faire une fois (Settings du dépôt, compte propriéta
    « file.sftp », « file.read » et « file.read-content »). Pas de `PTERO_API_KEY` ici : depuis une branche,
    « Enquête Spartan » lit les rapports déjà là sans lancer de contrôle, et « Lenteurs » ne lance pas de profil.
 3. **Settings → Secrets and variables → Actions → Repository secrets** : **supprimer** les secrets recopiés aux étapes
-   1 et 2 (sinon ils restent lisibles depuis n'importe quelle branche). **Garder** au niveau du dépôt seulement
-   `NOMS_INTERDITS` (contrôles des branches de travail et de la mise en ligne : leurs jobs « controles » n'ont pas
-   d'environnement, ils ne voient que les secrets du dépôt ; 21/11).
+   1 et 2 (sinon ils restent lisibles depuis n'importe quelle branche). Aucun secret à garder au niveau du dépôt :
+   `NOMS_INTERDITS` (liste des noms perso) n'est pas créé, choix du propriétaire du 21/11, et le contrôle des noms perso
+   est sauté. S'il l'était un jour, ce serait au niveau du dépôt (les jobs « controles » n'ont pas d'environnement).
 4. Vérifier : envoyer quelque chose sur `main` → « Serveur HeraliZ » vert ; « Site HeraliZ » → Run workflow →
    `verifier` → vert.
 

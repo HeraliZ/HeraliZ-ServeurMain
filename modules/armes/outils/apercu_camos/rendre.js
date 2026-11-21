@@ -44,7 +44,7 @@ const serveur = http.createServer((req, res) => {
   for (const passe of travaux.passes) {
     // camo_<id>.fsh n'a plus que son numéro : le code commun est inclus (outils/generer_camos.py)
     const texte = fs.readFileSync(passe.shader, 'utf8').replace('#moj_import <heralisz_camo.glsl>', () =>
-      fs.readFileSync(path.join(__dirname, '../../src/client/resources/assets/minecraft/shaders/include/heralisz_camo.glsl'), 'utf8'));
+      fs.readFileSync(path.join(__dirname, '../../dessins/minecraft/shaders/include/heralisz_camo.glsl'), 'utf8'));
     await page.evaluate(([t, d, a]) => window.apercu.chargerLib(t, d, a), [texte, passe.defines || '', !!passe.ancien]);
     for (const r of passe.rendus) {
       try {

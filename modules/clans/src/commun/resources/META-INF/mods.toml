@@ -84,11 +84,11 @@ description='''Clans du serveur HeraliZ : création avec bannière personnalisé
     ordering="AFTER"
     side="BOTH"
 # Noyau HeraliZ : dessin commun des zones chez le joueur (cercles de capture des drapeaux ; 03/11) ; le serveur s'en
-# sert aussi (audit du 21/11 : déclaré des deux côtés)
+# sert aussi (audit du 21/11 : déclaré des deux côtés ; 1.1.5 au moins : tronçons prêts, inventaire tenu par un match)
 [[dependencies.heralisz_clans]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.19,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
 

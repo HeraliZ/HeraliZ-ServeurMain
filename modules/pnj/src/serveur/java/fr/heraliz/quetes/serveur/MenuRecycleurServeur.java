@@ -1,5 +1,6 @@
 package fr.heraliz.quetes.serveur;
 
+import fr.heraliz.quetes.Texte;
 import fr.heraliz.quetes.bloc.MenuRecycleur;
 import fr.heraliz.quetes.reseau.Reseau;
 import net.minecraft.server.level.ServerPlayer;
@@ -113,10 +114,36 @@ final class MenuRecycleurServeur extends MenuRecycleur {
         }
         donnees.set(D_ETAT, EN_COURS);
         if (++progres >= total) {
-            recycler(i);
-            progres = 0;
+            Texte pause = pause(i);
+            if (pause == null) {
+                pauseDite = false;
+                recycler(i);
+                progres = 0;
+            } else {
+                // 21/11 (validation de l'audit) : en attente au bout de la barre, rien n'est pris ; dit une fois
+                progres = total;
+                if (!pauseDite) Moteur.notif(joueur, pause, 0xFF6B6B);
+                pauseDite = true;
+            }
         }
         donnees.set(D_PROGRES, progres * 1000 / total);
+    }
+
+    /** Le recycleur attend déjà (message dit une fois par attente). */
+    private boolean pauseDite;
+
+    /**
+     * Pourquoi la case {@code i} ne se recycle pas maintenant, ou null (21/11, validation de l'audit) : jamais un objet pris
+     * sans sa part en hérals. Économie indisponible (fichier des comptes illisible), ou compte trop près de son plafond pour
+     * les hérals que ce tirage peut donner (l'économie les couperait sans rien dire).
+     */
+    private Texte pause(int i) {
+        if (!Ponts.economie()) return Texte.cle("heraliz_quetes.recycleur.economie");
+        long h = verdicts[i].herals();
+        if (h > 0 && Ponts.place(joueur.getUUID()) < h) {
+            return Texte.cle("heraliz_quetes.recycleur.compte_plein", Texte.brut(Ponts.nombre(Math.max(0, Ponts.plafond()))));
+        }
+        return null;
     }
 
     /** La case en cours si elle se recycle encore, sinon la première qui se recycle (-1 : aucune). */

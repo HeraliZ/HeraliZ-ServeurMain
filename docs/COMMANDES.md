@@ -64,8 +64,9 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/bon` | Grades | éditeur des bons (op) |
 | `/staff panel` | Grades | modération (panel : touche P, actions selon le grade du staff ; « Se cacher » et « Cacher son nom » y sont des boutons, ex-`/staff vanish` et `/staff nametag`) ; onglet « Commandes du Fondateur » (28/10) : le Fondateur donne une commande précise à un grade du staff (`heraliz_grades/commandes_staff.json`, appliqué par le serveur) |
 | `/zonevip` | Grades | zones VIP |
-| `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête ; `/quete finir` : op 4 ; `/quete donner` : seulement avec le banc d'essai |
+| `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête ; `/quete finir` et `/quete reset` : op 4 connecté sur AuthMe ou console (21/11, comme `/eco donner`) ; `/quete donner` : seulement avec le banc d'essai |
 | `/bourse` (`info`, `donner <joueur> <hérals>`) | Quêtes | (18/11) bourses de hérals : bourses valables et leur total (op 2), en donner une (essais, dédommagement ; 21/11 : op 4 connecté sur AuthMe ou console, comme `/eco donner`) |
+| `/event` (`lancer`, `annuler`, `point`, `objet`, `helico`) | Événements | événements de la carte (op 4 ; `/event` seul : l'agenda des 24 h, pour tous) ; `objet <type>` : objet d'événement d'essai, revendu à Mila en hérals sans points (21/11 : op 4 connecté sur AuthMe) |
 | `/guide` (`point`, `retirer`, `points`, `visite`) | Quêtes | (28/10) points de la visite du Guide (casino, armurier, coffre, caisses, borne, recycleur) ; `visite` : la faire soi-même (op 2) |
 | `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur ; `/wipe reouverture` (05/11) : tous sauf Fondateurs et Admins, contenu à vie compris (PB, clés de vote, clés achetées et grades gardés), 3 codes comme `/wipe tout` |
 | `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection d'une base donnée à la main par le staff (plus aucune protection automatique depuis le 27/10 et le 31/10), carrières |

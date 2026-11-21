@@ -22,11 +22,12 @@ description='''Événements de la carte (largage public…), lancés par le Dire
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-# Noyau HeraliZ : écritures en fond (EcrituresFond), appelé directement par le serveur ; déclaré à l'audit du 21/11.
+# Noyau HeraliZ : écritures en fond (EcrituresFond), appelé directement par le serveur ; déclaré à l'audit du 21/11
+# (1.1.5 au moins, comme les autres modules qui appellent le noyau directement).
 [[dependencies.heraliz_evenements]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.1.0,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_evenements]]

@@ -186,6 +186,7 @@ public final class ServeurGrades implements Partie {
         // (relus sur leur fichier, toujours à jour, à la prochaine opération)
         CommandesPb.oublier(e.getEntity().getUUID());
         CommandeArgent.oublier(e.getEntity().getUUID());
+        BoutiqueServeur.oublier(e.getEntity().getUUID());
         fr.heraliz.crates.cles.ComptesCles.oublier(e.getEntity().getUUID());
         fr.heraliz.casino.economy.CompteCapsules.oublier(e.getEntity().getUUID());
     }
