@@ -687,8 +687,11 @@ public final class BasesClans extends SafeSavedData {
                 // matériel, armoire comprise). 25/10 : seulement ce fichier (avant : toutes les données du monde, loot
                 // et coffres compris, d'un coup sur le fil serveur). 25/10 (2e passe) : APRÈS la mise à jour de ce qui
                 // reste à ranger (avant, le fichier était écrit avant et marqué propre : un plantage redéposait le reste
-                // déjà rangé, ou perdait ce qui n'était pas entré)
-                d.save(SafeSavedData.dataFile(server.overworld(), ID).toFile());
+                // déjà rangé, ou perdait ce qui n'était pas entré). 21/11 (audit) : vraiment tout de suite (sauverMaintenant) ;
+                // save(File) part en fond depuis le 19/11 ([perf] donnees_en_fond du noyau), en même temps que le coffre du
+                // clan sur un autre fil : un plantage entre les deux pouvait redéposer le matériel. Ce fichier est maintenant
+                // sur le disque avant le coffre : un plantage peut au pire perdre ce matériel, jamais le copier.
+                d.sauverMaintenant(SafeSavedData.dataFile(server.overworld(), ID).toFile());
                 if (!premier) {
                     continue;
                 }

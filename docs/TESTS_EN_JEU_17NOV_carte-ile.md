@@ -1602,3 +1602,48 @@ répare.
 Pas changé (à décider par le propriétaire) : la table des tags de clan et la liste vocale contiennent toujours un staff
 caché, comme avant (rien à l'écran, mais un jeu modifié pourrait voir qu'il est connecté). Les retirer pour les joueurs
 hors du staff est possible ensuite (même méthode que le tab).
+
+## 41. Audit du 21/11 : clans, boutique, PNJ, interface, voix, bases, emotes (relecture du code)
+
+Demande du propriétaire : « refais un audit complet […] que tout soit clean, sans aucun bug ». Cette partie : relecture
+du code des clans (profil, hérals, saison, territoires), de la boutique (grades, casino, caisses, `/money`), des PNJ
+(quêtes, marchands, achat avec quantité, Passeur, recycleurs, bourses), de l'interface, de la voix, des bases et des
+emotes, surtout ce qui a changé depuis le 17/11. Versions : Quêtes **1.24.2**, CRac **1.38.8-beta** (le launcher les
+donne ; rien ne change entre le jeu et le serveur). **Rien n'a été testé en jeu** : la fabrication et les contrôles sur
+GitHub seulement. Les deux corrections ne se voient pas en jouant : elles servent en cas de plantage ou de disque plein.
+
+Corrigé :
+- **Progression des quêtes de Varga** : si le disque du serveur était plein au moment d'enregistrer la progression d'un
+  joueur, un fichier à moitié écrit prenait la place du bon. À la connexion suivante, le fichier illisible était mis de
+  côté et le joueur repartait de zéro (quêtes à refaire, et leurs récompenses à toucher une deuxième fois). Maintenant
+  le bon fichier reste, l'erreur est notée dans le journal du serveur et la progression est réenregistrée 30 s plus tard
+  (et à l'arrêt).
+- **Objets à vie rendus par une base** (coffre détruit, base effacée, inventaire plein) : le fichier qui les garde doit
+  être enregistré AVANT le joueur. Depuis le 19/11 (écritures en fond du noyau), le joueur était enregistré le premier :
+  un plantage juste à ce moment pouvait rendre l'objet à vie une deuxième fois. Même chose pour le matériel de la
+  première base rangé dans le coffre du clan : il pouvait être rangé deux fois. Les deux fichiers sont de nouveau écrits
+  tout de suite, dans le bon ordre (au pire un plantage perd le matériel, il ne le copie jamais).
+
+À vérifier (comme avant, rien de nouveau à l'écran) :
+- [ ] Quêtes : finir une étape, se déconnecter, se reconnecter : la progression est là. `/diag etat` : aucune ligne
+      « écriture … impossible » de la voie « quetes ».
+- [ ] Objets à vie : un objet à vie dans un coffre d'une base, `/base effacer` (ou casser le coffre en créatif), inventaire
+      plein puis une case libre : l'objet revient une seule fois ; après un redémarrage, il n'est pas rendu de nouveau.
+- [ ] Nouveau clan : après 30 s, le matériel de la première base est dans le coffre du clan, une seule fois (aussi après
+      un redémarrage).
+
+Relu sans rien à corriger (rien n'a changé) : profil et `/money` (compteurs, droits, ce qu'on voit d'un autre joueur),
+bourses de hérals (registre, revente à Mila, recycleur de la carte : aucune copie possible), panneau d'achat avec la
+quantité (prix et place revérifiés par le serveur), quitter le tutoriel, banque du clan, `/herals payer`, sauvegarde
+des clans par morceaux, paquets reçus des joueurs (tous traités par le serveur, bornés), textes français, anglais et
+russe (tous présents), listes gardées en mémoire (vidées au départ des joueurs).
+
+Remarques, à décider par le propriétaire (rien n'est changé) :
+- Panneau d'achat : si le staff retire un article d'un marchand au Registre pendant qu'un joueur a le panneau ouvert,
+  l'article suivant prend sa place ; s'il a le même prix (deux armes à 1 125 chez le Passeur), la confirmation achète
+  l'autre article. Très rare (le staff modifie pendant un achat). Correctif possible : le serveur vérifie aussi l'objet.
+- `/tpa` : depuis le 19/11, le départ attend que l'arrivée soit chargée (presque toujours tout de suite, 3 s au plus). Ce
+  qui est revu au départ : seulement que la cible est toujours connectée ; un joueur touché pendant cette attente part
+  quand même. Très rare (l'arrivée autour d'un joueur est déjà chargée).
+- Conversion des anciennes clés de la planque (une seule fois par joueur) : la planque et le compte de clés sont écrits
+  sur deux fils différents ; un plantage juste à ce moment peut doubler ces clés. Très rare, une fois par joueur.

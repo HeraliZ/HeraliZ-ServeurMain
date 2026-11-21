@@ -223,8 +223,10 @@ public final class ObjetsAVieBases extends SafeSavedData {
         }
         d.setDirty();
         if (sorti) {
-            // objet sorti d'un stockage : le stockage d'abord sur le disque, le joueur ensuite
-            d.save(SafeSavedData.dataFile(p.server.overworld(), ID).toFile());
+            // objet sorti d'un stockage : le stockage d'abord sur le disque, le joueur ensuite. 21/11 (audit) : tout de suite
+            // (sauverMaintenant) ; save(File) part en fond depuis le 19/11 ([perf] donnees_en_fond du noyau) : le joueur
+            // était écrit AVANT le stockage, et un plantage entre les deux rendait l'objet à vie une 2e fois
+            d.sauverMaintenant(SafeSavedData.dataFile(p.server.overworld(), ID).toFile());
             InventaireTuto.sauver(p);
         }
         if (rendus > 0) {
