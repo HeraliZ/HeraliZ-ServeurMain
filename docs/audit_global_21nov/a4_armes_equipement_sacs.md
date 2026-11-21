@@ -96,11 +96,12 @@ coffres). Elle est faite une fois par camo. `modules/armes/src/client/java/fr/he
    (centaines de joueurs), ce sera quelques millisecondes d'un coup, au plus une fois par seconde. Proposition : passer
    cette écriture sur l'écrivain en fond du noyau (`EcrituresFond`, comme les clans et le loot). Risque faible, gain
    seulement le jour où le fichier est gros. Avant de décider : regarder la taille de ce fichier sur le Ptero.
+   **Choisi et fait le 21/11** : voir « Suite du 21/11 » à la fin.
 2. **Aucune limite de cadence sur les paquets des camos et des stickers** (`ReceptionServeur.decor` l. 76,
    `ReceptionServeur.appliquerCamo` l. 36, `CamosAVie.recevoir` l. 115). Tout est revérifié par le serveur (aucun gain
    possible), mais un jeu modifié peut les envoyer en rafale : chaque paquet réécrit l'arme et joue un son aux joueurs
    proches (bruit en boucle). Proposition : une action au plus toutes les 0,15 s par joueur (invisible pour un joueur
-   normal, qui clique). Risque très faible.
+   normal, qui clique). Risque très faible. **Choisi et fait le 21/11** : voir « Suite du 21/11 » à la fin.
 3. **Objet à vie rangé dans un coffre, puis plantage du serveur** (`ObjetsAVieServeur.ranger` l. 361 et `reponse`
    l. 379). Pendant la question « Ranger cet objet ici ? », l'objet est gardé dans les données du joueur. Si le serveur
    plante juste après le « Oui », au mauvais moment (le coffre déjà enregistré, le joueur pas encore), l'objet pourrait
@@ -204,3 +205,82 @@ Survie, ClashWar, Clans, Interface et Noyau existent avec la même signature (`O
 - [ ] **Sac avec un camo** dans l'inventaire : la petite pastille du camo en bas à droite de l'icône, comme avant.
 
 Pas testé en jeu : rien de ce document.
+
+---
+
+## Suite du 21/11 (choix du propriétaire)
+
+Le propriétaire a choisi le 21/11 : les skins d'armes comme les skins de couteau (« pour que les gens ne puissent pas les
+voler, sans perte de qualité et sans lag »), et les propositions 1 et 2 ci-dessus. Fait sur `carte-ile-reglages` : commit
+`dec61480` (fusion `3fd34711`), **Armes 2.59.10** (2.59.9 était en ligne). Contrôle de branche sur GitHub vert pour
+`3fd34711` (fabrication « armes : OK », contrôles et images verts).
+
+### 1. Skins d'armes impossibles à voler (demande du propriétaire)
+
+Avant : un objet camo posé depuis l'onglet Camo de l'atelier (ou l'onglet Skin de secours de TaCZ) devenait un camo
+**définitif** qui suivait l'arme : ramassée sur un corps, volée ou donnée, l'arme le gardait.
+
+Maintenant (`CamosAVie.poserObjet`, appelé par `ReceptionServeur.appliquerCamo`) :
+- l'objet entre d'abord dans la **collection à vie** du joueur. Il n'est utilisé que si ce camo n'y était pas encore ;
+  déjà dans la collection, l'objet reste dans l'inventaire. En créatif, il n'est jamais utilisé (comme pour le clic
+  droit) ;
+- puis le camo se pose depuis la collection, avec exactement les règles des camos à vie : lié au joueur, sur une seule
+  arme à la fois, retiré dans la seconde si l'arme passe à un autre joueur, retiré à la mort (délai de 15 min avant de
+  pouvoir le remettre) ;
+- tous les refus sont vus **avant** de toucher à l'objet (aucun objet perdu sur un refus) : en match, à terre, pas une
+  arme ou un couteau, arme qui ne lui va pas, ancien camo définitif sur l'arme, délai après une mort, camo déjà posé sur
+  cette arme. Un skin à vie reste refusé depuis l'objet, comme avant ;
+- message « X ajouté à ta collection à vie et posé sur l'arme » quand le camo vient d'entrer dans la collection,
+  « Camo à vie X appliqué » sinon.
+
+Écrans : même rendu, seuls les textes et l'état du bouton changent. Le bouton « Appliquer » d'un objet est grisé pendant
+le délai après une mort et quand ce camo est déjà sur l'arme, comme pour la collection. Bandeau de l'aperçu : « Rejoint
+ta collection à vie · l'objet est utilisé. » ou « Déjà dans ta collection · l'objet est gardé. ». Infobulle de l'objet
+camo : « Clic droit ou posé sur une arme : ajouté à ta collection à vie ». Onglet Skin de secours : « Dans ton
+inventaire · à vie » et « Appliquer X (à vie) ». Infobulle d'une carte : « Objet : une fois posé, il rejoint ta
+collection à vie. ». Textes en français, anglais et russe (mesurés : le bandeau tient toujours sur deux lignes). Le
+cadenas de l'aperçu d'un objet est gardé (aucun changement de rendu).
+
+Pas touché : les camos définitifs **déjà posés** sur des armes (leur propriétaire est inconnu : ils restent tels quels,
+avec leur étiquette « Définitif », et rien ne se pose par-dessus, comme avant) ; les skins à vie ; les couteaux ; les
+camos de sacs (toujours définitifs) ; les stickers et le StatTrack ; les identifiants (objets, clés `HeraliszCamo…` des
+armes, paquets).
+
+### 2. Collection des camos à vie écrite en fond (proposition 1)
+
+`CollectionCamos.sauvegarder()` : le relevé (un arbre JSON neuf) est toujours fait sur le fil du serveur, mais la mise en
+texte et l'écriture partent sur l'écrivain en fond du noyau (`EcrituresFond`, voie « camos », visible dans `/diag etat`).
+Même écriture sûre : fichier `.tmp` à côté, puis remplacement. Fichier illisible au démarrage : toujours jamais réécrit
+(la session va dans le fichier de secours, comme avant). Écriture ratée : réécrite au prochain changement ou à l'arrêt.
+L'écriture est attendue à l'arrêt du serveur et au wipe de la réouverture ; au démarrage, une écriture encore en cours est
+attendue avant de relire le fichier.
+
+### 3. Cadence des camos et des stickers (proposition 2)
+
+`Cadence` (nouveau, `fr.heralisz.camo.serveur`) : une action au plus toutes les 0,15 s par joueur pour poser ou retirer
+un camo (objet ou collection), poser, déplacer ou gratter un sticker, poser ou déplacer le StatTrack. Une action plus
+rapprochée est ignorée sans message : un joueur normal clique une fois puis l'écran se refait, il n'arrive jamais si
+vite. Rien ne reste d'un joueur parti (oublié à la déconnexion et à l'arrêt).
+
+### À tester en jeu (suite du 21/11)
+
+- [ ] **Objet camo nouveau** (pas encore dans la collection), arme en main, atelier → onglet Camo → choisir l'objet →
+      « Appliquer » : le camo est sur l'arme, l'objet a quitté l'inventaire, le camo est maintenant dans la collection,
+      message « … ajouté à ta collection à vie et posé sur l'arme ».
+- [ ] **Objet camo déjà dans la collection** : le bandeau dit « Déjà dans ta collection · l'objet est gardé. » ;
+      « Appliquer » pose le camo et l'objet **reste** dans l'inventaire.
+- [ ] **Vol** : poser un camo depuis un objet, puis jeter ou donner l'arme à un autre joueur : chez lui, l'arme perd le
+      camo dans la seconde. Mourir avec : le camo quitte l'arme sur le corps, « Appliquer » reste grisé 15 min (même
+      avec un autre objet du même camo), puis remarche.
+- [ ] **Refus sans perte** : en match ClashWar, à terre, sur une arme qui porte un ancien camo définitif : rien n'est
+      posé et l'objet reste dans l'inventaire.
+- [ ] **Anciens camos définitifs** : une arme qui en portait un avant la mise à jour le garde (étiquette « Définitif »),
+      même passée à un autre joueur.
+- [ ] **Clic droit** sur un objet camo : ajouté à la collection comme avant ; infobulle avec la nouvelle ligne.
+- [ ] **Couteaux, skins à vie, sacs camouflés, stickers, StatTrack** : comme avant ; poser, déplacer et gratter des
+      stickers à un rythme normal : aucun clic perdu.
+- [ ] **Redémarrage** : après avoir ajouté et posé des camos, redémarrer le serveur : la collection est toujours là ;
+      `/diag etat` montre la voie « camos » dans les écritures en fond.
+- [ ] Les mêmes écrans en anglais et en russe.
+
+Pas testé en jeu : rien de cette suite (ni l'atelier, ni la collection, ni les messages, ni les traductions).
