@@ -68,6 +68,13 @@ public final class VanishServeur {
     private static final Set<UUID> SANS_NOM = ConcurrentHashMap.newKeySet();
     /** Pour chaque voyant connecté : les joueurs qu'on lui cache en ce moment. */
     private static final Map<UUID, Set<UUID>> MASQUES = new HashMap<>();
+    /**
+     * Réponses permises à un membre du staff caché (21/11, choix du propriétaire) : joueur hors du staff -> (membre du staff
+     * caché qui lui a écrit lui-même par /msg, /tell ou /w -> fin de la fenêtre, ms). Ce joueur seul peut lui répondre
+     * pendant {@link #REPONSE_MS} ; oublié à la déconnexion de l'un des deux et quand le staff se montre ou se recache.
+     */
+    private static final Map<UUID, Map<UUID, Long>> REPONSES = new HashMap<>();
+    private static final long REPONSE_MS = 5 * 60_000L;
     private static Path fichier;
 
     private VanishServeur() {
@@ -123,6 +130,7 @@ public final class VanishServeur {
         CACHES.clear();
         SANS_NOM.clear();
         MASQUES.clear();
+        REPONSES.clear();
         if (!Files.exists(fichier)) return;
         try {
             JsonObject o = JsonParser.parseString(Files.readString(fichier, StandardCharsets.UTF_8)).getAsJsonObject();
@@ -171,6 +179,7 @@ public final class VanishServeur {
         CACHES.clear();
         SANS_NOM.clear();
         MASQUES.clear();
+        REPONSES.clear();
         fichier = null;
     }
 
@@ -183,6 +192,8 @@ public final class VanishServeur {
     static void basculerCache(ServerPlayer p, boolean cache) {
         if (cache) CACHES.add(p.getUUID());
         else CACHES.remove(p.getUUID());
+        // 21/11 : il se montre ou se recache : les joueurs à qui il avait écrit caché ne gardent pas leur droit de réponse
+        oublierReponses(p.getUUID());
         sauver();
         appliquer(p.server);
         TabServeur.marquer();
@@ -215,6 +226,9 @@ public final class VanishServeur {
     static void deconnexion(UUID joueur) {
         MASQUES.remove(joueur);
         for (Set<UUID> s : MASQUES.values()) s.remove(joueur);
+        // 21/11 : fenêtres de réponse oubliées au départ de l'un des deux (joueur qui pouvait répondre, ou staff caché)
+        REPONSES.remove(joueur);
+        oublierReponses(joueur);
     }
 
     /**
@@ -271,6 +285,7 @@ public final class VanishServeur {
             if (!CACHES.contains(u) && !SANS_NOM.contains(u)) continue;
             if (p.hasPermissions(4) || r.staffAuMoins(u, fr.heraliz.grades.Grade.GUIDE)) continue;
             boolean etaitCache = CACHES.remove(u);
+            if (etaitCache) oublierReponses(u);
             SANS_NOM.remove(u);
             change = true;
             ServeurGrades.registreJournal(p.getGameProfile().getName() + " | vanish | visible (plus du staff)");
@@ -326,6 +341,9 @@ public final class VanishServeur {
      * « Tu chuchotes à … » disait qu'il était connecté. Le staff connecté garde l'accès ; {@code /r} du noyau passe par
      * {@code /msg} : même règle. Les noms proposés par la touche Tab viennent de la liste Tab du joueur, d'où le caché est
      * déjà retiré. Après les règles du noyau (combat, carte : elles répondent d'abord) ; rien à faire sans caché.
+     * <p>Suite (21/11, choix du propriétaire) : quand le membre du staff caché écrit lui-même à un joueur, CE joueur seul
+     * peut lui répondre pendant 5 min ({@link #REPONSES}). Seule une commande complète est jugée : une commande incomplète
+     * ({@code /msg Pseudo} sans message) reçoit la réponse de Minecraft, la même pour un absent et pour un caché.
      */
     private static void messagePrive(net.minecraftforge.event.CommandEvent e) {
         if (CACHES.isEmpty()) return;
@@ -338,26 +356,70 @@ public final class VanishServeur {
         int deuxPoints = racine.indexOf(':');
         if (deuxPoints >= 0) racine = racine.substring(deuxPoints + 1);
         if (!MESSAGES_PRIVES.contains(racine)) return;
-        if (!(pr.getContext().getSource().getEntity() instanceof ServerPlayer de) || voitLesCaches(de)) return;
-        // /tell et /w renvoient vers /msg : les destinataires sont dans le contexte qui suit la redirection
-        for (com.mojang.brigadier.context.CommandContextBuilder<CommandSourceStack> c = pr.getContext(); c != null; c = c.getChild()) {
-            if (!c.getArguments().containsKey("targets")) continue;
-            java.util.Collection<ServerPlayer> cibles;
-            try {
-                cibles = net.minecraft.commands.arguments.EntityArgument.getPlayers(c.build(entree), "targets");
-            } catch (Exception ex) {
-                return;   // personne de trouvé ou commande incomplète : Minecraft répond lui-même
-            }
+        if (!(pr.getContext().getSource().getEntity() instanceof ServerPlayer de)) return;
+        boolean voit = voitLesCaches(de);
+        // staff qui n'est pas caché lui-même : rien à refuser ni à noter
+        if (voit && !CACHES.contains(de.getUUID())) return;
+        java.util.Collection<ServerPlayer> cibles = destinataires(pr, entree);
+        if (cibles == null) return;   // commande incomplète ou personne de trouvé : Minecraft répond lui-même
+        if (voit) {
+            // un membre du staff caché écrit lui-même : chaque joueur hors du staff visé peut lui répondre 5 min
+            long fin = System.currentTimeMillis() + REPONSE_MS;
             for (ServerPlayer x : cibles) {
-                if (x != de && CACHES.contains(x.getUUID())) {
-                    e.setCanceled(true);
-                    // la réponse de Minecraft pour un joueur absent, telle quelle (Commands.performCommand, sendFailure)
-                    de.sendSystemMessage(Component.empty().append(Component.translatable("argument.entity.notfound.player"))
-                            .withStyle(ChatFormatting.RED));
-                    return;
-                }
+                if (x != de && !voitLesCaches(x)) REPONSES.computeIfAbsent(x.getUUID(), k -> new HashMap<>()).put(de.getUUID(), fin);
             }
             return;
+        }
+        for (ServerPlayer x : cibles) {
+            if (x != de && CACHES.contains(x.getUUID()) && !peutRepondre(de.getUUID(), x.getUUID())) {
+                e.setCanceled(true);
+                // la réponse de Minecraft pour un joueur absent, telle quelle (Commands.performCommand, sendFailure)
+                de.sendSystemMessage(Component.empty().append(Component.translatable("argument.entity.notfound.player"))
+                        .withStyle(ChatFormatting.RED));
+                return;
+            }
+        }
+    }
+
+    /**
+     * Destinataires d'une commande de message privé COMPLÈTE (lue jusqu'au bout, avec son message), comme Minecraft les
+     * trouverait ; null si la commande est incomplète ou si personne n'est trouvé (Minecraft répond alors lui-même). /tell
+     * et /w renvoient vers /msg : les destinataires sont dans le contexte qui suit la redirection.
+     */
+    @javax.annotation.Nullable
+    private static java.util.Collection<ServerPlayer> destinataires(com.mojang.brigadier.ParseResults<CommandSourceStack> pr, String entree) {
+        if (!pr.getExceptions().isEmpty() || pr.getReader().canRead()) return null;
+        com.mojang.brigadier.context.CommandContextBuilder<CommandSourceStack> derniere = pr.getContext();
+        while (derniere.getChild() != null) derniere = derniere.getChild();
+        if (derniere.getCommand() == null) return null;
+        for (com.mojang.brigadier.context.CommandContextBuilder<CommandSourceStack> c = pr.getContext(); c != null; c = c.getChild()) {
+            if (!c.getArguments().containsKey("targets")) continue;
+            try {
+                return net.minecraft.commands.arguments.EntityArgument.getPlayers(c.build(entree), "targets");
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /** Le membre du staff caché {@code staff} a écrit à {@code joueur} il y a moins de 5 min (fenêtre de réponse ouverte). */
+    private static boolean peutRepondre(UUID joueur, UUID staff) {
+        Map<UUID, Long> m = REPONSES.get(joueur);
+        Long fin = m == null ? null : m.get(staff);
+        if (fin == null) return false;
+        if (fin > System.currentTimeMillis()) return true;
+        m.remove(staff);
+        if (m.isEmpty()) REPONSES.remove(joueur);
+        return false;
+    }
+
+    /** Fenêtres de réponse ouvertes par ce membre du staff (il se montre, se recache, n'est plus du staff ou part). */
+    private static void oublierReponses(UUID staff) {
+        for (java.util.Iterator<Map<UUID, Long>> it = REPONSES.values().iterator(); it.hasNext(); ) {
+            Map<UUID, Long> m = it.next();
+            m.remove(staff);
+            if (m.isEmpty()) it.remove();
         }
     }
 
