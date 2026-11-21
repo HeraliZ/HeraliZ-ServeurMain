@@ -81,3 +81,28 @@ jobs:
             livraison/mods client/*-client.jar
             livraison/mods client/heraliz_interface-*.jar
           retention-days: 3
+
+  # Contrôles d'images (21/11, choix du propriétaire) : logos des icônes, icônes des accessoires, chargeurs 3D,
+  # accessoires tenus en main, placement des accessoires sur les armes. Ils lisent les images avec numpy et Pillow (code
+  # d'autres auteurs) : installés ici, dans un job À PART sans aucun secret, versions et empreintes figées
+  # (outils/requis_images.txt, roues seulement). En même temps que la fabrication : aucune attente de plus.
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: numpy et Pillow (versions figées)
+        run: |
+          python -m pip install --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes -r outils/requis_images.txt
+
+      - name: Contrôles d'images
+        run: python outils/verifier.py --images

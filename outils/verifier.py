@@ -4,6 +4,7 @@
     python outils/verifier.py events bases        seulement ceux-là
     python outils/verifier.py --rapide            sans verif_reobf
     python outils/verifier.py --sans-split        sans verif_split (machine sans Minecraft en noms SRG, ex. GitHub)
+    python outils/verifier.py --images            seulement les contrôles d'images (numpy et Pillow ; ni jars ni secrets)
 
 Contrôles :
   - verif_split      : séparation client / serveur de chaque mod coupé (besoin de outils/chemins_local.json : Minecraft
@@ -146,9 +147,90 @@ def noms_interdits():
     return re.compile("(?i)(%s)" % "|".join(re.escape(m) for m in mots)) if mots else None
 
 
+def controles_images(choisis):
+    """Contrôles qui lisent les images avec numpy et Pillow (logos, icônes des accessoires, chargeurs 3D, accessoires
+    tenus en main, placement des accessoires) ; sans ces bibliothèques, sautés. Rend le nombre de problèmes. Sur GitHub :
+    job « images » de branches.yml (21/11), sans aucun secret, avec numpy et Pillow figés (outils/requis_images.txt)."""
+    erreurs = 0
+    # logo « M » de Max Stuff retiré des icônes (choix du propriétaire, 11/10) : un gunpack remis à neuf le ramènerait.
+    # L'outil lit les images avec numpy et Pillow : sans eux (machines de GitHub), contrôle sauté comme verif_reobf.
+    import importlib.util
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[logos] numpy ou Pillow absent : contrôle des logos sauté (à faire sur un PC)")
+        code = 0
+    else:
+        code, out = lancer([str(O / "icones_sans_logo.py"), "--verifier"])
+    if code != 0:
+        for l in out.splitlines():
+            if l.startswith("[logos]"):
+                print(l.strip())
+        print("[logos] relancer : python outils/icones_sans_logo.py")
+        erreurs += 1
+    # icônes « carte » des accessoires à la couleur de leur rareté (retour du propriétaire du 11/11) : une rareté changée
+    # dans raretes.json ou un gunpack ajouté demande de les refaire. numpy et Pillow : sans eux, sauté comme les logos.
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[icones] numpy ou Pillow absent : couleur des icônes d'accessoires non contrôlée (à faire sur un PC)")
+    else:
+        code, out = lancer([str(O / "icones_accessoires.py"), "--verifier"])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[icones]") and "carte(s) d'accessoire" not in l:
+                    print(l.strip())
+            print("[icones] relancer : python outils/icones_accessoires.py")
+            erreurs += 1
+    # chargeurs en 3D (retour du propriétaire du 11/11, point 2b) : modèles pris dans les armes, affichages et icônes
+    # écrits par outils/accessoires_3d.py ; un gunpack mis à jour demande de les refaire. numpy et Pillow : sans eux, sauté.
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[3d] numpy ou Pillow absent : chargeurs 3D non contrôlés (à faire sur un PC)")
+    else:
+        code, out = lancer([str(O / "accessoires_3d.py"), "--verifier"])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[3d]") and "fichier(s)" not in l:
+                    print(l.strip())
+            print("[3d] relancer : python outils/accessoires_3d.py --installer, puis "
+                  "python modules/armes/outils/accessoires_en_main.py")
+            erreurs += 1
+    # accessoires TaCZ tenus en main (silencieux, bipieds qui sortaient de l'écran, retour du propriétaire du 11/11) : la
+    # table du module armes suit les modèles des gunpacks ; numpy et Pillow : sans eux, sauté comme les logos
+    if any(p.name == "armes" for p in choisis):
+        if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+            print("[en_main] numpy ou Pillow absent : table des accessoires tenus en main non contrôlée (à faire sur un PC)")
+        else:
+            code, out = lancer([str(chemins.MODS / "armes" / "outils" / "accessoires_en_main.py"), "--verifier"])
+            if code != 0:
+                for l in out.splitlines():
+                    if "pas à jour" in l:
+                        print(l.strip())
+                print("[en_main] puis refabriquer le module armes (jar des joueurs)")
+                erreurs += 1
+    # placement de chaque accessoire sur chaque arme (ni flottant, ni traversant, ni invisible) : un gunpack ajouté ou
+    # changé peut en déplacer. Calcul avec numpy et Pillow (textures) : sans eux, sauté comme les logos.
+    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+        print("[verif_accessoires] numpy ou Pillow absent : placement des accessoires non contrôlé (à faire sur un PC)")
+    else:
+        code, out = lancer([str(O / "verif_accessoires.py")])
+        if code != 0:
+            for l in out.splitlines():
+                if l.startswith("[verif_accessoires]") and "problème(s)" not in l:
+                    print(l.strip())
+            print("[verif_accessoires] détail et images : python outils/verif_accessoires.py --rapport --images")
+            erreurs += 1
+    return erreurs
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     choisis = [chemins.MODS / a for a in args] if args else construire.projets()
+    if "--images" in sys.argv:
+        # seulement les contrôles d'images (21/11) : ni jars ni secrets nécessaires
+        import importlib.util
+        if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
+            print("[images] numpy ou Pillow absent : rien à contrôler (python -m pip install -r outils/requis_images.txt)")
+            sys.exit(1)
+        n = controles_images(choisis)
+        print("[verifier] contrôles d'images : %d problème(s)" % n)
+        sys.exit(1 if n else 0)
     # dépendances cherchées du même côté que le jar contrôlé (un -serveur a besoin des classes serveur des autres mods)
     dossier_mods = {"client": chemins.LIVRAISON / "mods client", "serveur": chemins.LIVRAISON / "mods serveur",
                     "complet": chemins.LIVRAISON / "mods solo"}
@@ -336,70 +418,7 @@ def main():
         if not vues:
             print("[lod_armes] " + out[-500:])
         erreurs += 1
-    # logo « M » de Max Stuff retiré des icônes (choix du propriétaire, 11/10) : un gunpack remis à neuf le ramènerait.
-    # L'outil lit les images avec numpy et Pillow : sans eux (machines de GitHub), contrôle sauté comme verif_reobf.
-    import importlib.util
-    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
-        print("[logos] numpy ou Pillow absent : contrôle des logos sauté (à faire sur un PC)")
-        code = 0
-    else:
-        code, out = lancer([str(O / "icones_sans_logo.py"), "--verifier"])
-    if code != 0:
-        for l in out.splitlines():
-            if l.startswith("[logos]"):
-                print(l.strip())
-        print("[logos] relancer : python outils/icones_sans_logo.py")
-        erreurs += 1
-    # icônes « carte » des accessoires à la couleur de leur rareté (retour du propriétaire du 11/11) : une rareté changée
-    # dans raretes.json ou un gunpack ajouté demande de les refaire. numpy et Pillow : sans eux, sauté comme les logos.
-    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
-        print("[icones] numpy ou Pillow absent : couleur des icônes d'accessoires non contrôlée (à faire sur un PC)")
-    else:
-        code, out = lancer([str(O / "icones_accessoires.py"), "--verifier"])
-        if code != 0:
-            for l in out.splitlines():
-                if l.startswith("[icones]") and "carte(s) d'accessoire" not in l:
-                    print(l.strip())
-            print("[icones] relancer : python outils/icones_accessoires.py")
-            erreurs += 1
-    # chargeurs en 3D (retour du propriétaire du 11/11, point 2b) : modèles pris dans les armes, affichages et icônes
-    # écrits par outils/accessoires_3d.py ; un gunpack mis à jour demande de les refaire. numpy et Pillow : sans eux, sauté.
-    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
-        print("[3d] numpy ou Pillow absent : chargeurs 3D non contrôlés (à faire sur un PC)")
-    else:
-        code, out = lancer([str(O / "accessoires_3d.py"), "--verifier"])
-        if code != 0:
-            for l in out.splitlines():
-                if l.startswith("[3d]") and "fichier(s)" not in l:
-                    print(l.strip())
-            print("[3d] relancer : python outils/accessoires_3d.py --installer, puis "
-                  "python modules/armes/outils/accessoires_en_main.py")
-            erreurs += 1
-    # accessoires TaCZ tenus en main (silencieux, bipieds qui sortaient de l'écran, retour du propriétaire du 11/11) : la
-    # table du module armes suit les modèles des gunpacks ; numpy et Pillow : sans eux, sauté comme les logos
-    if any(p.name == "armes" for p in choisis):
-        if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
-            print("[en_main] numpy ou Pillow absent : table des accessoires tenus en main non contrôlée (à faire sur un PC)")
-        else:
-            code, out = lancer([str(chemins.MODS / "armes" / "outils" / "accessoires_en_main.py"), "--verifier"])
-            if code != 0:
-                for l in out.splitlines():
-                    if "pas à jour" in l:
-                        print(l.strip())
-                print("[en_main] puis refabriquer le module armes (jar des joueurs)")
-                erreurs += 1
-    # placement de chaque accessoire sur chaque arme (ni flottant, ni traversant, ni invisible) : un gunpack ajouté ou
-    # changé peut en déplacer. Calcul avec numpy et Pillow (textures) : sans eux, sauté comme les logos.
-    if not (importlib.util.find_spec("numpy") and importlib.util.find_spec("PIL")):
-        print("[verif_accessoires] numpy ou Pillow absent : placement des accessoires non contrôlé (à faire sur un PC)")
-    else:
-        code, out = lancer([str(O / "verif_accessoires.py")])
-        if code != 0:
-            for l in out.splitlines():
-                if l.startswith("[verif_accessoires]") and "problème(s)" not in l:
-                    print(l.strip())
-            print("[verif_accessoires] détail et images : python outils/verif_accessoires.py --rapport --images")
-            erreurs += 1
+    erreurs += controles_images(choisis)
     # polices partagées (audit du 02/11, point 37) : un module qui recopie DM Sans (ancien kit, nouvelle police) la
     # renverrait dans le jar des joueurs autant de fois
     code, out = lancer([str(O / "polices_partagees.py"), "--verifier"])

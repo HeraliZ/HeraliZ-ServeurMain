@@ -1983,3 +1983,22 @@ Le tab ne montrait déjà plus un membre du staff caché aux joueurs. Le reste s
 - [ ] Personne de caché : tags, liste vocale, voix, écran et carte du clan comme avant.
 
 Pas testé : tout en jeu (aucune compilation ici : contrôle de la branche sur GitHub).
+
+## 48. Améliorations choisies le 21/11 : spawn et tutoriel allégés, contrôles d'images sur GitHub
+
+- **Spawn et tutoriel allégés** : la relecture des « points d'intérêt » (lits et postes de villageois, ruches, portails)
+  est aussi sautée dans le monde du spawn et celui du tutoriel des bases (`poi_sans_relecture` de
+  `serveur/defaultconfigs/heraliz_noyau-server.toml`, la carte l'avait déjà depuis le 20/11). Aucun de nos mods ne s'en
+  sert. Au banc : jusqu'à 105 ms pour un seul étage, 1,7 s en tout. Réglage seulement (rien à télécharger pour les
+  joueurs) ; retour en arrière : retirer les deux mondes de la liste.
+- **Contrôles d'images sur GitHub** : les 5 contrôles qui lisent les images (logo « M » des icônes, icônes des
+  accessoires, chargeurs 3D, accessoires tenus en main, placement des accessoires sur les armes) tournent maintenant à
+  chaque envoi d'une branche (job « images » du « Contrôle de branche », en même temps que la fabrication). numpy et
+  Pillow y sont installés à des versions et empreintes figées (`outils/requis_images.txt`), dans un job sans aucun secret.
+  Sur un PC : `python outils/verifier.py --images` (seulement ces contrôles, sans fabriquer). La mise en ligne (`main`) ne
+  les refait pas : la branche les a déjà passés.
+
+À vérifier en jeu :
+- [ ] Spawn et tutoriel des bases : rien ne change (PNJ, lits, portes, construction du tutoriel).
+
+Pas testé : tout en jeu.

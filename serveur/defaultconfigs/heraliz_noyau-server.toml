@@ -261,7 +261,7 @@
 	#ruches, portails, paratonnerres) pour les comparer aux blocs (Ptero : jusqu'à 26 ms pour un tronçon ; banc : 84 ms).
 	#Aucun de nos mods ne s'en sert, et la carte n'a ni villageois, ni abeilles, ni portails. Mondes de cette liste : pas
 	#de relecture (les points d'intérêt gardés ne changent pas). Liste vide : comme Minecraft partout.
-	poi_sans_relecture = ["minecraft:overworld"]
+	poi_sans_relecture = ["minecraft:overworld", "heralisz:spawn", "crac:tuto"]
 
 [monde]
 	#Tics aléatoires (01/11, choix du propriétaire : carte figée) : gamerule randomTickSpeed de CHAQUE monde, réglée
