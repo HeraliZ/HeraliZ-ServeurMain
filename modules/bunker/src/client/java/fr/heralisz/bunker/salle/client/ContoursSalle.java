@@ -44,6 +44,16 @@ public final class ContoursSalle {
       }
    }
 
+   /**
+    * Monde du jeu fermé (changement de monde, déconnexion ; 21/11, validation) : plus rien de lui n'est gardé. Avant, le
+    * monde quitté restait en mémoire chez le staff qui avait tenu la baguette, jusqu'au prochain contour reçu.
+    */
+   public static void oublier() {
+      niveau = null;
+      baguette = List.of();
+      voir = List.of();
+   }
+
    public static void rendu(RenderLevelStageEvent e) {
       if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
       Minecraft mc = Minecraft.getInstance();
