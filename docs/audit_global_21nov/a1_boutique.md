@@ -170,3 +170,34 @@ raretés des caisses (§45).
 - [ ] Journal du serveur : aucune erreur nouvelle de `heraliz_grades`, `heralizcasino` ou `heralizcrates`.
 
 Pas testé : tout en jeu (aucune compilation ici : fabrication et contrôles sur GitHub seulement).
+
+## Suite du 21/11 (choix du propriétaire)
+
+Choix « Allègements du serveur » : propositions n° 4 et n° 5 faites (Boutique **1.7.3**, rien ne change pour les jeux des
+joueurs). N° 6 : dépendance du mod des grades à l'économie et aux clans déclarée côté serveur par la coordination
+(commit f324509e). N° 1, 2 et 3 : rien ne change.
+
+Fait, dans le commit **3a2a69b4** :
+- **`/kit` n'attend plus le bot Discord.** Le menu s'ouvre tout de suite avec le dernier tag Soutien connu. HeraliBot n'est
+  réinterrogé qu'une fois par minute au plus et par joueur ; si sa réponse change le tag (tag ajouté ou retiré), le menu
+  ouvert se met à jour tout seul. Bot arrêté ou lent : plus aucune attente (avant : 5 à 8 s). Le tout premier `/kit` après
+  la connexion d'un joueur Soutien montre ses kits Soutien verrouillés un court instant, le temps de la réponse du bot.
+  `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/LienDiscord.java` (`verifierSoutien`, `SOUTIEN_DEMANDE`) ;
+  `KitsServeur.java` (commande `/kit`).
+- **`/avantages nick` ne relit plus `usercache.json` à chaque essai.** Les pseudos de ce fichier (1 000 au plus) sont
+  gardés en mémoire tant que le fichier ne change pas (sa date est déjà relevée toutes les 5 s sur un fil à part) ; quand
+  il change, ils sont relus sur ce même fil, jamais sur celui du serveur ; ils sont préchargés au démarrage. La règle ne
+  change pas : un surnom qui est le pseudo d'un autre joueur connu reste refusé.
+  `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/SurnomsServeur.java` (`pseudosConnus`, `relireUsercache`) ;
+  `DatesFichiers.java` (`enFond`).
+
+À tester en jeu :
+- [ ] Bot Discord en marche, joueur qui porte le tag Soutien : `/kit` ouvre le menu tout de suite, les kits Soutien sont
+      pris normalement. Retirer le tag sur Discord : au plus une minute plus tard, `/kit` les montre verrouillés.
+- [ ] Bot Discord arrêté : `/kit` ouvre le menu tout de suite (avant : plusieurs secondes d'attente).
+- [ ] `/avantages nick <pseudo d'un joueur déjà venu mais déconnecté>` (Traqueur ou Roi de la Zone) : « Ce surnom est
+      déjà pris » ; un surnom libre est accepté ; un joueur tout juste arrivé pour la première fois : son pseudo est refusé
+      comme surnom quelques secondes plus tard au plus.
+- [ ] Journal du serveur au démarrage : pas de ligne « usercache.json illisible pour /avantages nick ».
+
+Pas testé : tout en jeu (fabrication et contrôles sur GitHub seulement).
