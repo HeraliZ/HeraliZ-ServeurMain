@@ -115,7 +115,13 @@ public final class Directeur {
                 ev.seconde(server);
             } catch (RuntimeException ex) {
                 HeralizEvenements.LOG.error("[evenements] {} en erreur : annule", ev.id(), ex);
-                ev.annuler(server, "erreur");
+                // 21/11 (audit) : l'annulation elle-même peut buter sur le même état cassé ; son erreur ne doit jamais sortir
+                // du tick du serveur (elle arrêterait tout le serveur), comme à l'arrêt (méthode arret ci-dessus)
+                try {
+                    ev.annuler(server, "erreur");
+                } catch (RuntimeException ex2) {
+                    HeralizEvenements.LOG.error("[evenements] {} : annulation en erreur", ev.id(), ex2);
+                }
             }
         }
         long minute = System.currentTimeMillis() / 60_000L;
@@ -259,7 +265,7 @@ public final class Directeur {
                     Outils.journal("planning : " + c.evenement() + " pas tire au sort, prochain a " + heure(Etat.prochain(c.evenement())));
                     continue;
                 }
-                String refus = lancer(server, c.evenement(), true, "planning", c.joueursMin());
+                String refus = lancerDuPlanning(server, c);
                 // 27/10 (règle du propriétaire : « pas de nouvel essai rapproché ») : parti ou refusé, l'attente repart pour un
                 // intervalle entier, comme s'il avait eu lieu ; au prochain passage, il part si les conditions sont remplies
                 Etat.prochain(c.evenement(), maintenant + c.intervalleMs());
@@ -275,12 +281,26 @@ public final class Directeur {
                 Outils.journal("planning : " + c.evenement() + " de " + minute + " pas tire au sort");
                 continue;
             }
-            String refus = lancer(server, c.evenement(), true, "planning", c.joueursMin());
+            String refus = lancerDuPlanning(server, c);
             if (refus != null) {
                 long suivant = creneauSuivant(c, now);
                 Outils.journal("planning : " + c.evenement() + " de " + minute + " pas lance (" + refus + "), prochain essai "
                         + (suivant > 0 ? "a " + heure(suivant) + " (creneau suivant)" : ": aucun creneau dans les 7 jours"));
             }
+        }
+    }
+
+    /**
+     * Départ demandé par le planning (21/11, audit) : une erreur pendant le lancement (lieu, tronçons, autre mod) est notée
+     * et compte comme un refus (l'attente repart normalement) ; elle ne sort jamais du tick du serveur, qui s'arrêterait.
+     */
+    @Nullable
+    private static String lancerDuPlanning(MinecraftServer server, Creneau c) {
+        try {
+            return lancer(server, c.evenement(), true, "planning", c.joueursMin());
+        } catch (RuntimeException ex) {
+            HeralizEvenements.LOG.error("[evenements] {} : lancement par le planning en erreur", c.evenement(), ex);
+            return "erreur au lancement : " + ex;
         }
     }
 

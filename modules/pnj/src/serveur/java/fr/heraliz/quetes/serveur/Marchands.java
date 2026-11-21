@@ -42,10 +42,34 @@ final class Marchands {
 
     static void oublier(UUID u) {
         OUVERTS.remove(u);
+        CADENCE.remove(u);
     }
 
     static void vider() {
         OUVERTS.clear();
+        CADENCE.clear();
+    }
+
+    /**
+     * Au plus {@value #OPERATIONS_PAR_SECONDE} achats, ventes ou échanges par seconde et par joueur (21/11, audit) : chacun
+     * écrit le joueur, et souvent les comptes, sur le disque, sur le fil du serveur ; un jeu modifié qui en envoyait des
+     * dizaines par seconde (une brindille à la fois) faisait ramer tout le serveur. Comme le recycleur de la carte (4 clics
+     * par seconde) et la banque du clan. Le panneau d'achat n'en envoie jamais plus de deux par seconde ; une demande en
+     * trop est ignorée (rien n'est pris ni donné, l'écran garde l'état du serveur).
+     */
+    private static final int OPERATIONS_PAR_SECONDE = 4;
+    /** Joueur -> {début de la fenêtre d'une seconde (ms), opérations dans cette fenêtre}. */
+    private static final Map<UUID, long[]> CADENCE = new HashMap<>();
+
+    /** Cette opération passe la cadence (comptée même si elle est ensuite refusée pour une autre raison). */
+    static boolean cadence(ServerPlayer p) {
+        long t = System.currentTimeMillis();
+        long[] c = CADENCE.computeIfAbsent(p.getUUID(), k -> new long[2]);
+        if (t - c[0] >= 1000 || t < c[0]) {
+            c[0] = t;
+            c[1] = 0;
+        }
+        return ++c[1] <= OPERATIONS_PAR_SECONDE;
     }
 
     private static final String CLE_COMBAT = "heralisz:combat_jusqua", DRAPEAU_MATCH = "heralisz:en_match";
@@ -159,6 +183,7 @@ final class Marchands {
      * Les marchands n'ont ni stock ni limite par jour : rien d'autre à compter.
      */
     static void achat(ServerPlayer p, Reseau.Achat a) {
+        if (!cadence(p)) return;
         Defs.Pnj def = verifier(p, a.entite());
         if (def == null || def.marchand.rachat || def.marchand.troc || a.index() < 0 || a.index() >= def.marchand.articles.size()) return;
         if (a.quantite() < 1 || a.quantite() > Reseau.ACHAT_MAX) return;
@@ -223,6 +248,7 @@ final class Marchands {
     }
 
     static void vente(ServerPlayer p, Reseau.Vente v) {
+        if (!cadence(p)) return;
         Defs.Pnj def = verifier(p, v.entite());
         if (def == null || !def.marchand.rachat || def.marchand.troc) return;
         Texte refus = empechement(p);

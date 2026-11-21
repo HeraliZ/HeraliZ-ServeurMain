@@ -64,6 +64,9 @@ public final class Maintenance {
             if (codeSortie == 0) return;
             int code = codeSortie;
             Thread t = new Thread(() -> {
+                // 21/11 (audit) : les écritures en fond (clans, quêtes, bases, level.dat…) finissent d'abord (60 s au plus par
+                // voie) ; avant, l'arrêt net de Java 3 s après pouvait couper la dernière sauvegarde d'un module
+                fr.heraliz.noyau.api.EcrituresFond.attendreTout();
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException ignore) {
