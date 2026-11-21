@@ -245,6 +245,14 @@ Fait (Noyau 1.1.13, rien d'autre à monter : les autres changements sont dans le
    option passée à nos scripts existe dans le script. Trouvé et corrigé au passage : une erreur de YAML dans ma propre
    modification de `launcher.yml` (avant l'envoi). Aucune tâche qui écrit sur le Ptero ou publie n'a été lancée.
 
+Vu sur GitHub (21/11, soir) : « Contrôle de branche » vert avec ces changements ; à la fabrication, le noyau 1.1.13 refait
+et « appels des mods gardés vers les mods refaits : 9 lien(s) relu(s), 0 mod(s) à refaire » (aucune fausse alerte) ;
+démarrage d'essai « mixins stricts » (Run workflow, sans secret) : « Done », **0 injection ratée** dans nos mods et chez
+les autres auteurs, 111 mixins essayés sur 111 (les 2 « cibles absentes » sont des mixins facultatifs d'autres auteurs :
+une classe du jeu des joueurs et un mod absent) ; « Lenteurs du serveur » (lecture seule, depuis la branche) : fichiers de
+la racine écrits seulement par leurs noms connus, « 12 autre(s) fichier(s) » comptés (une 1re version n'écrivait aucun nom
+connu, corrigée).
+
 À vérifier à la prochaine mise en ligne : « Contrôle de branche » et « Serveur HeraliZ » verts ; `launcher.yml` ayant
 changé, « Launcher HeraliZ » fabrique le launcher sur `main` (sans le publier : la publication reste un « Run workflow »
 avec la case `publier`) ; à la prochaine publication du launcher, l'étape « Client SFTP » installe la liste figée.
