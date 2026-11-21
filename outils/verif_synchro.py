@@ -54,6 +54,13 @@ def controle():
     if not javac or not java:
         print("[synchro] javac ou java absent : essai hors du jeu sauté (copies contrôlées : %d problème(s))" % erreurs)
         return erreurs
+    v = subprocess.run([javac, "-version"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    m = re.search(r"javac (\d+)(?:\.(\d+))?", v.stdout + v.stderr)
+    majeure = 0 if not m else int(m.group(2)) if m.group(1) == "1" and m.group(2) else int(m.group(1))
+    if majeure < 17:
+        print("[synchro] javac %s trop ancien (17 ou plus) : essai hors du jeu sauté (copies contrôlées : %d problème(s))"
+              % (majeure or "?", erreurs))
+        return erreurs
     tmp = Path(tempfile.mkdtemp(prefix="hz_synchro_"))
     try:
         r = subprocess.run([javac, "-encoding", "UTF-8", "--release", "17", "-nowarn", "-d", str(tmp)]

@@ -1519,3 +1519,86 @@ donne). **Rien n'a été testé en jeu.**
       ne peut pas poser) : zombies vus à 48 blocs au lieu de 60, balles, véhicules et corps à 51 au lieu de 64, objets au
       sol à 13 au lieu de 16, animaux à 40, hologrammes et affichages à 48 ; les joueurs ne changent pas (128, limité par la
       vue). Un zombie apparaît donc un peu plus près : à vérifier qu'il ne « surgit » pas trop près en forêt.
+
+## 40. Liste Tab, tags de clan et liste vocale : seulement ce qui change (21/11)
+
+Décision du propriétaire après l'audit réseau du 20/11 (section 37). Trois listes partaient **complètes, à tous les
+joueurs**, à chaque arrivée, départ, changement de grade, de tag de clan ou de surnom : la liste Tab (grade, tag de clan
+et surnom de chaque joueur connecté), la table des tags de clan et la liste vocale (micro coupé, voix coupée, groupes de
+voix). Maintenant, celui qui arrive reçoit les listes complètes (pour lui seul) et les autres seulement ce qui change
+(« ce joueur ajouté », « celui-là retiré », « son grade a changé »). Versions : Boutique **1.7.0** (Grades 2.11.0), Clans
+**3.19.0**, Voix **1.7.0**, données par le launcher ; **un jeu pas à jour est refusé à la connexion** (normal : le
+launcher met les jars à jour). Banc 1.2.4 (jamais livré). **Rien n'a été testé en jeu** : la fabrication, les contrôles,
+un essai hors du jeu, le banc de charge et un démarrage d'essai sur GitHub seulement.
+
+Ce que ça change, octets réellement envoyés (compression comprise) :
+
+| à 150 joueurs | avant | après |
+|---|---|---|
+| une arrivée | 1,35 Mo | 33 Ko |
+| un départ | 1,33 Mo | 19 Ko |
+| un grade changé | 0,56 Mo | 10 Ko |
+| un staff qui se cache | 0,56 Mo | 7 Ko |
+| tag d'un clan changé (14 membres en ligne) | 0,92 Mo | 117 Ko |
+| vague de 150 reconnexions après un redémarrage | 70,5 Mo | 2,3 Mo |
+
+À 50 joueurs : une arrivée 170 Ko → 11 Ko, la vague 3 Mo → 0,3 Mo ; à 100 joueurs : 625 Ko → 22 Ko, la vague 22 Mo
+→ 1 Mo. Calcul fait sur les paquets eux-mêmes, avec des joueurs réalistes (75 % dans un clan, quelques surnoms et
+grades de la boutique) : `python outils/verif_synchro.py --tailles`.
+
+Banc de charge (150 bots, une arrivée ou un départ toutes les 5 s environ pendant 5 min ; les bots n'ont ni clan, ni
+grade, ni surnom : leurs lignes sont plus petites que celles de vrais joueurs) :
+
+| pour une arrivée ou un départ | avant | après |
+|---|---|---|
+| liste Tab | 213 listes complètes, 565 Ko | 0,5 liste complète (celui qui arrive) + 148 différences de 50 octets, 9 Ko |
+| liste vocale | 150 listes complètes, 411 Ko | 0,5 liste complète + 148 différences de 39 octets, 7 Ko |
+| total | **976 Ko** | **16 Ko** (60 fois moins) |
+
+Avant, chaque mort renvoyait aussi la liste Tab complète à tout le monde (le joueur qui réapparaît change de place dans
+la liste de Minecraft) : c'est fini, rien ne part si rien n'a changé. Le second banc est tombé sur une machine de GitHub
+plus lente (EPYC 7763 au lieu d'un Xeon 6975P-C) : tous ses temps de tick sont environ 1,8 fois plus longs, mais la part
+de chaque mod est la même, et nos trois mods restent sous 0,2 ms par tick.
+
+Comment ça marche (pour comprendre ce qu'on voit) :
+- chaque liste a un numéro ; chaque changement envoyé porte le numéro suivant. Un jeu qui voit un numéro sauté (un
+  paquet perdu, ce qui ne doit jamais arriver) ignore la suite et redemande la liste complète au serveur dès le
+  changement suivant, au plus une fois toutes les 5 s : une liste fausse ne reste pas ;
+- les changements d'un même tick partent ensemble, à la fin du tick ; le contrôle du tab toutes les 2 s relit tout
+  (grade qui finit, tag de clan…) mais n'envoie que ce qui a changé ; rien ne part si rien ne change ;
+- joueur caché (vanish) : rien ne change pour le joueur, le staff le voit toujours « (caché) », les autres ne le
+  reçoivent jamais (ni à son arrivée, ni quand il se cache : il leur est seulement « retiré ») ;
+- à l'arrivée d'un membre d'un clan, la liste Tab des autres membres n'est plus renvoyée (elle ne change pas).
+
+À vérifier en jeu (au moins 3 joueurs A, B et C, et un membre du staff S) :
+- [ ] Tab tenu, chez chacun : tout le monde est là, avec le bon grade, le bon tag de clan (bonne couleur) et le bon
+      surnom ; l'icône de voix de chacun est la bonne.
+- [ ] C se connecte : il apparaît chez A et B avec son grade et son tag en moins d'une seconde ; chez C, la liste est
+      complète dès l'arrivée.
+- [ ] C se déconnecte : il disparaît chez A et B ; il revient : il réapparaît, avec son grade et son tag.
+- [ ] Le grade de B change (panel du staff, `/grade`, grade de la boutique qui commence ou finit) : chez A et C, son grade
+      suit dans les 2 s.
+- [ ] B prend un surnom (`/avantages nick`), puis le retire : le tab de A suit.
+- [ ] Clans : B rejoint un clan, le quitte, est exclu ; le clan change de tag ou de bannière ; le clan est dissous : le
+      tag de B dans le tab de A suit dans les 2 s.
+- [ ] Vanish : S se cache (« Se cacher » du panel) : il disparaît du tab de A et B, un autre staff le voit « (caché) » ;
+      S se montre : il revient chez tous. S caché se déconnecte puis revient : A et B ne le voient pas dans le tab
+      (comme avant). Un staff qui se connecte voit les cachés seulement après son `/login` (comme avant).
+- [ ] Voix : A parle, B l'entend ; C arrive et parle aussitôt : A l'entend, sous le bon nom ; micro coupé de B : l'icône
+      suit chez A ; groupes de voix (créer, rejoindre, quitter) : la liste des groupes suit chez les autres.
+- [ ] Après un redémarrage, quand tout le monde revient : tab, tags et voix justes chez tous.
+- [ ] Journal du serveur : aucune erreur de `heraliz_grades`, `heralisz_clans` ou `caracrea` à l'arrivée des joueurs.
+- [ ] Un jeu pas à jour (ancien jar) est refusé à la connexion : normal, comme à chaque changement de protocole.
+
+En cas de souci (une ligne fausse dans le tab) : se déconnecter et revenir répare tout (liste complète à l'arrivée). Le
+dire avec l'heure et ce qui venait de se passer (arrivée, grade, vanish…).
+
+Contrôle à chaque fabrication (GitHub compris) : `outils/verifier.py` lance `outils/verif_synchro.py`, qui vérifie que
+les trois copies de la classe `Synchro` (Grades, Clans, CaraCrea) sont identiques et fait tourner un essai hors du jeu :
+16 000 ticks d'arrivées, départs, grades, tags, joueurs cachés et staff, sans perte puis avec 2 % et 20 % de paquets
+perdus. Sans perte, chaque liste est toujours juste ; jamais une ligne cachée hors du staff ; avec des pertes, tout se
+répare.
+
+Pas changé (à décider par le propriétaire) : la table des tags de clan et la liste vocale contiennent toujours un staff
+caché, comme avant (rien à l'écran, mais un jeu modifié pourrait voir qu'il est connecté). Les retirer pour les joueurs
+hors du staff est possible ensuite (même méthode que le tab).

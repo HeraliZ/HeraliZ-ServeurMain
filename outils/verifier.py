@@ -396,7 +396,7 @@ def main():
     # fausse chez un joueur, ou un joueur caché envoyé hors du staff, est refusée ici (essai hors du jeu, javac présent)
     code, out = lancer([str(O / "verif_synchro.py")])
     for l in out.splitlines():
-        if "ERREUR" in l or "absent" in l or "      " in l[:6]:
+        if "ERREUR" in l or "absent" in l or "erreur(s)" in l or "      " in l[:6]:
             print(l.rstrip())
     if code != 0:
         print("[synchro] détail : python outils/verif_synchro.py")
