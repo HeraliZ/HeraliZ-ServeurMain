@@ -145,6 +145,7 @@ Corrigé ici (CRac 1.38.11-beta) :
 - [ ] Carrière du monde des bases : ses blocs se cassent toujours ; armoire de sa base : se casse (gérer la base).
 - [ ] Staff en créatif : casse toujours d'un clic, pièces comprises.
 - [ ] `/base effacer <chef>` sur le serveur d'essai : la base et son armoire disparaissent, la carte autour reste.
+- [ ] Fin du tutoriel des bases, et « Quitter le tuto » : la cabane d'essai disparaît, armoire comprise, comme avant.
 - [ ] Journal du serveur : aucune erreur de `crac` ; `/diag etat` : rien de nouveau.
 
 Changements du jour (rappel de `a3`, toujours à faire) : tutoriel à deux d'un même clan, échelle de raid à la main, mort
