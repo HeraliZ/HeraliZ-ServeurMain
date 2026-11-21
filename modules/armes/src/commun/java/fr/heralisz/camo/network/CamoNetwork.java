@@ -9,8 +9,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.Optional;
 
 public final class CamoNetwork {
-   /** 3 : collection de camos à vie (paquets 2 et 3). */
-   private static final String VERSION = "3";
+   /** 3 : collection de camos à vie (paquets 2 et 3). 4 (21/11) : copie des dessins des skins envoyée par le serveur (4 à 6). */
+   private static final String VERSION = "4";
    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
       new ResourceLocation(HeraliszCamo.MODID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -23,6 +23,13 @@ public final class CamoNetwork {
          CollectionSyncPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
       CHANNEL.registerMessage(3, CollectionCamoPacket.class, CollectionCamoPacket::encode, CollectionCamoPacket::decode,
          CollectionCamoPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+      // dessins des skins (21/11, docs/SKINS_PROTEGES.md, étape 1)
+      CHANNEL.registerMessage(4, DessinsPacket.class, DessinsPacket::encode, DessinsPacket::decode, DessinsPacket::handle,
+         Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+      CHANNEL.registerMessage(5, DessinsRefairePacket.class, DessinsRefairePacket::encode, DessinsRefairePacket::decode,
+         DessinsRefairePacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+      CHANNEL.registerMessage(6, DessinsBilanPacket.class, DessinsBilanPacket::encode, DessinsBilanPacket::decode,
+         DessinsBilanPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
    }
 
    /**

@@ -24,7 +24,9 @@ import java.util.List;
  *    <li>{@code voir <joueur>} : ses camos et les délais en cours ;</li>
  *    <li>{@code ajouter <joueur> <camo|tous>} : livraison directe (boutique), sans objet ;</li>
  *    <li>{@code retirer <joueur> <camo>} : le camo quitte la collection (et son arme) ;</li>
- *    <li>{@code recharge <joueur>} : efface ses délais après une mort.</li>
+ *    <li>{@code recharge <joueur>} : efface ses délais après une mort ;</li>
+ *    <li>{@code dessins} (21/11, docs/SKINS_PROTEGES.md) : le jeu de celui qui la tape refait tous les programmes des skins
+ *    depuis la copie reçue du serveur à sa connexion, puis montre un bandeau (programmes prêts, durée).</li>
  * </ul>
  */
 final class CommandeCamos {
@@ -49,7 +51,8 @@ final class CommandeCamos {
          .then(Commands.literal("retirer").then(Commands.argument("joueur", EntityArgument.player())
             .then(Commands.argument("camo", StringArgumentType.word()).suggests(CAMOS).executes(CommandeCamos::retirer))))
          .then(Commands.literal("recharge").then(Commands.argument("joueur", EntityArgument.player())
-            .executes(c -> recharge(c.getSource(), EntityArgument.getPlayer(c, "joueur"))))));
+            .executes(c -> recharge(c.getSource(), EntityArgument.getPlayer(c, "joueur")))))
+         .then(Commands.literal("dessins").executes(c -> DessinsServeur.refaire(c.getSource(), c.getSource().getPlayerOrException()))));
    }
 
    private static int voir(CommandSourceStack s, ServerPlayer p) {

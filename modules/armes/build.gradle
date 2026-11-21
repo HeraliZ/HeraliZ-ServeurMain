@@ -100,6 +100,20 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
+// Dessins des skins (21/11, docs/SKINS_PROTEGES.md, étape 1) : les sources des programmes des camos, des effets 3D et des
+// finitions des couteaux (shaders camo* et fx* de heralisz_camo, et l'include heralisz_camo.glsl qu'ils importent ; pas le
+// sticker) restent à UN seul endroit, src/client/resources/assets/. La fabrication en met aussi une copie dans les jars
+// -serveur et -complet, hors des assets (heralisz_camo_dessins/<espace>/<chemin>) : le serveur l'envoie aux joueurs à leur
+// connexion (fr.heralisz.camo.serveur.DessinsServeur). Le jar -client garde les siens tant que l'étape 2 n'est pas faite.
+tasks.named('processServeurResources', ProcessResources).configure {
+    from('src/client/resources/assets') {
+        include 'heralisz_camo/shaders/core/camo.vsh', 'heralisz_camo/shaders/core/camo_*.fsh', 'heralisz_camo/shaders/core/camo_*.json'
+        include 'heralisz_camo/shaders/core/fx.vsh', 'heralisz_camo/shaders/core/fx_*.fsh', 'heralisz_camo/shaders/core/fx_*.json'
+        include 'minecraft/shaders/include/heralisz_camo.glsl'
+        into 'heralisz_camo_dessins'
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.compilerArgs += ['-Xlint:-removal', '-Xlint:-deprecation', '-Xmaxerrs', '1000']
