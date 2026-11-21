@@ -90,9 +90,9 @@ Le contenu des dessins n'est jamais écrit dans les journaux : seulement des nom
    - `modules/armes/outils/apercu_camos` : `verif_glsl.py` (`CORE`, `INCLUS`), `rendre.js` (chemin de
      `heralisz_camo.glsl`), `README.md` (exemples de passes) ;
    - `outils/video_vitrine/video.py` (`SHADERS`, `INCLUS`, et le chemin remplacé dans `rendre.js`) ;
-   - `outils/verifier.py` : nouveau contrôle « aucun dessin de skin dans le jar des joueurs » (le jar -client ne contient
-     ni `camo_*`, ni `fx_*`, ni `heralisz_camo.glsl` ; le jar -serveur contient `heralisz_camo_dessins/` avec un
-     programme par fichier `camo_<n>.json` et `fx_<n>.json` du dossier des sources) ;
+   - `outils/verifier.py` : le contrôle « dessins » (déjà là pour les jars -serveur et -complet) lit les sources dans le
+     nouveau dossier, et vérifie en plus qu'aucun dessin n'est resté dans le jar des joueurs (le jar -client ne contient
+     ni `camo_*`, ni `fx_*`, ni `heralisz_camo.glsl`) ;
    - `outils/textures_inutiles.py` lit aussi les `.fsh`, `.vsh` et `.glsl` : lui donner le nouveau dossier.
 6. **Versions.** Monter la version d'Armes. Les paquets ne changent pas : la version du canal des camos (4) peut rester ;
    un jeu de l'étape 2 sur un serveur de l'étape 1 marche aussi (ce serveur envoie déjà la copie).
@@ -126,7 +126,8 @@ Le contenu des dessins n'est jamais écrit dans les journaux : seulement des nom
   `heralisz_camo_dessins/<espace>/<chemin>` (hors des assets : jamais lue comme une ressource du jeu). Fichiers pris :
   `heralisz_camo/shaders/core/camo.vsh`, `camo_*.fsh`, `camo_*.json`, `fx.vsh`, `fx_*.fsh`, `fx_*.json` et
   `minecraft/shaders/include/heralisz_camo.glsl` (ce qu'ils importent d'autre, `fog.glsl` et `light.glsl`, est à
-  Minecraft). Pas le sticker.
+  Minecraft). Pas le sticker. Le contrôle « dessins » de `outils/verifier.py` vérifie que la copie des jars -serveur et
+  -complet est exactement la liste des sources.
 - **Format** (`fr.heralisz.camo.DessinsCopie`, commun) : fichiers « espace:chemin » → octets dans l'ordre du tri,
   compressés en Deflate, découpés en morceaux de 900 000 octets au plus (limite d'un paquet vers un joueur : 1 Mo), 32
   morceaux au plus ; empreinte SHA-256 des noms, tailles et octets ; lecture bornée (4 096 fichiers, 32 Mo).

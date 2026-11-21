@@ -54,6 +54,9 @@ Contrôles :
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement), et chaque
                        clé citée par le code de TOUS les modules présente et appelée avec assez de valeurs (21/11) ;
+  - dessins         : copie des dessins des skins (shaders camo* et fx* de heralisz_camo, et heralisz_camo.glsl) dans
+                       les jars -serveur et -complet d'armes, identique à la liste des sources (21/11,
+                       docs/SKINS_PROTEGES.md : le serveur l'envoie aux joueurs) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
                        dans nos sources ni dans nos jars.
 Code de sortie 1 au moindre problème.
@@ -145,6 +148,32 @@ def noms_interdits():
         return None
     mots = [l.strip() for l in f.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")]
     return re.compile("(?i)(%s)" % "|".join(re.escape(m) for m in mots)) if mots else None
+
+
+def controle_dessins():
+    """Copie des dessins des skins dans les jars -serveur et -complet d'armes : exactement les fichiers des sources
+    (docs/SKINS_PROTEGES.md, étape 1 ; même choix que processServeurResources de modules/armes/build.gradle)."""
+    actifs = chemins.MODS / "armes" / "src" / "client" / "resources" / "assets"
+    attendus = {"heralisz_camo_dessins/heralisz_camo/shaders/core/" + f.name
+                for f in (actifs / "heralisz_camo" / "shaders" / "core").iterdir()
+                if re.fullmatch(r"(camo|fx)(_\d+\.(fsh|json)|\.vsh)", f.name)}
+    attendus.add("heralisz_camo_dessins/minecraft/shaders/include/heralisz_camo.glsl")
+    erreurs = 0
+    jars = construire.jars(chemins.MODS / "armes")
+    for cote in ("serveur", "complet"):
+        j = jars.get(cote)
+        if not j or not j.exists():
+            continue
+        with zipfile.ZipFile(j) as z:
+            vus = {n for n in z.namelist() if n.startswith("heralisz_camo_dessins/") and not n.endswith("/")}
+        manque, en_trop = sorted(attendus - vus), sorted(vus - attendus)
+        if manque or en_trop:
+            print("[dessins]    %s : copie des dessins des skins différente des sources (%d manquant(s) %s, %d en trop %s)"
+                  % (j.name, len(manque), manque[:3], len(en_trop), en_trop[:3]))
+            erreurs += 1
+        else:
+            print("[dessins]    %s : %d fichiers des dessins des skins, comme les sources" % (j.name, len(vus)))
+    return erreurs
 
 
 def controles_images(choisis):
@@ -317,6 +346,9 @@ def main():
                     print("[livraison]   %s/%s différent du jar fabriqué : relancer outils/construire.py --sans-build"
                           % (c.parent.name, j.name))
                     erreurs += 1
+    # dessins des skins (21/11, docs/SKINS_PROTEGES.md) : copie complète dans les jars -serveur et -complet d'armes
+    if any(p.name == "armes" for p in choisis):
+        erreurs += controle_dessins()
     # conteneurs allégés (loot) : les données écrites par lod_props.py doivent suivre les modèles, sinon le jeu garde
     # les modèles changés moins allégés (pas d'erreur visible, seulement moins d'images par seconde)
     if any(p.name == "loot" for p in choisis) and shutil.which("javac"):
