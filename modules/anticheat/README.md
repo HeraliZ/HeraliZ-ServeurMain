@@ -716,6 +716,11 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.15.2 (21/11, audit du serveur en ligne)** — `requireHardenedJvm` ne signale plus que l'attache ouverte (jeu sans
+  `-XX:+DisableAttachMechanism`, comme le mode strict). Constat dans le journal du 20/11 : un joueur du launcher, normal,
+  signalé « JvmHardening (VL 1) : … agents dynamiques autorisés ». `-XX:+EnableDynamicAgentLoading` vaut `true` par défaut
+  aussi en Java 17 (la sonde du jeu la croyait réservée à Java 21) et le launcher ne coupe que l'attache : chaque joueur
+  était signalé à chaque connexion (staff en jeu, Discord). Côté serveur seulement (`JvmDurcie`, test `JvmDurcieTest`).
 - **2.15.1 (20/11, audit des images par seconde)** — Rien ne change pour les détections. Côté joueur : le rapport du
   Gardien du launcher (`spartan/gardien.txt`, toutes les 15 s) et le défi (`gardien-defi.txt`) sont lus et écrits sur un
   fil à part (`Spartan-Gardien`), plus sur le fil du jeu qui dessine les images ; le contrôle complet ne relève plus deux

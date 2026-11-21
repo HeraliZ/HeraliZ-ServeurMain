@@ -228,7 +228,9 @@ public final class ReceptionServeur {
             }
             case "thread" -> CheckManager.flag("ClientIntegrity", player, "threads anonymes : " + safeDetail);
             case "jvm" -> {
-                if (SpartanConfig.REQUIRE_HARDENED_JVM.get()) {
+                // 21/11 : seule l'attache ouverte est signalée (JvmDurcie) : « agents dynamiques autorisés » vaut pour
+                // tout jeu en Java 17, launcher officiel compris (chaque joueur était signalé à chaque connexion)
+                if (SpartanConfig.REQUIRE_HARDENED_JVM.get() && com.Spartan.integrity.JvmDurcie.attacheOuverte(lower)) {
                     CheckManager.flag("JvmHardening", player,
                             "protections anti-injection manquantes (" + safeDetail + ") : lancez le jeu via le launcher officiel");
                     if (SpartanConfig.mayKickForClientSignal()) {
