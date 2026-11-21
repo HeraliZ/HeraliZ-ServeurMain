@@ -15,8 +15,8 @@ chez les joueurs.
 les contrôles sur GitHub. Versions : **Clans 3.19.2**, **Quêtes 1.24.4**, **Événements 1.3.3** (le launcher les donne aux
 joueurs ; aucun canal réseau ne change, jeu et serveur restent compatibles). Récolte : rien à changer.
 
-En bref : **11 points trouvés**, aucun grave (aucune duplication d'objets ni d'argent trouvée, aucun plantage courant) :
-5 corrigés (4 moyens, 1 petit), 6 à décider (1 moyen, 5 petits).
+En bref : **12 points trouvés**, aucun grave (aucune duplication d'objets ni d'argent trouvée, aucun plantage courant) :
+6 corrigés (4 moyens, 2 petits), 6 à décider (1 moyen, 5 petits).
 
 ---
 
@@ -85,6 +85,16 @@ un refus (l'attente repart normalement, comme la règle du 27/10).
 
 Pour les développeurs : `modules/evenements/src/serveur/java/fr/heraliz/evenements/serveur/Directeur.java` l. 114-124
 (`annuler` protégé) et l. 268, 284, 292-305 (`lancerDuPlanning`).
+
+### 6. Panneau de zone : plus de textes refaits à chaque image (petit, images par seconde) — commit `5ce63148`
+
+En simple : tant qu'un joueur est dans une zone de territoire, le petit panneau en haut à gauche traduisait et mettait en
+forme trois ou quatre textes à chaque image (à qui est la zone, le drapeau, l'état de la capture), puis les comparait à
+ceux déjà affichés. Ils ne sont maintenant refaits qu'à l'arrivée d'un nouvel état de la zone (le serveur ne l'envoie que
+s'il change), quand on change de clan ou de langue. Rien ne change à l'écran.
+
+Pour les développeurs : `modules/clans/src/client/java/fr/heralisz/clans/client/gui/hud/ClanHud.java` l. 112-140
+(`barreZone` : cache par paquet `TerritoireHudS2C`, clan et langue ; `preparer` pour les textes et la barre).
 
 ---
 
@@ -205,5 +215,7 @@ d'essais), panneau d'achat quand le staff retire un article pendant l'achat (sec
 - [ ] Marchands : acheter, vendre et échanger normalement, aussi vite que possible à la souris : tout passe. Rien
       n'est perdu ni donné en double.
 - [ ] Événements : largage du planning et `/event lancer largage` comme avant ; journal du serveur sans erreur.
+- [ ] Territoires : entrer dans une zone, capturer, contester, être protégé : le panneau en haut à gauche suit comme avant
+      (pourcentage, « Protégée 1 h 52 », « drapeau à 45 m ») ; changer la langue du jeu dans une zone : le panneau suit.
 
 Pas testé : tout en jeu (aucune compilation ici : contrôle de la branche sur GitHub).

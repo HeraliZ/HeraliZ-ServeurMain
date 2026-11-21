@@ -98,6 +98,12 @@ Tout dans le commit **81e66a6f**.
    délai entre deux essais. Petit à-coup (quelques millisecondes) ; réservé aux grades Traqueur et Roi de la Zone.
    Proposition : garder la liste en mémoire tant que le fichier ne change pas.
    `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/SurnomsServeur.java` l.213-246.
+6. **Dépendance pas annoncée (faible).** Le mod des grades appelle directement l'économie et les clans (hôtel des ventes,
+   `/money`, onglet Économie du panel, chat de clan), mais son `mods.toml` ne demande que le noyau. Le serveur a toujours le
+   jar des clans, donc rien ne se voit aujourd'hui ; sans lui, le serveur planterait au premier tick au lieu de refuser de
+   démarrer avec un message clair. Proposition : déclarer `heralisz_economie` obligatoire pour `heraliz_grades` (à faire
+   avec une fabrication des jars joueurs et serveur, et un essai de démarrage).
+   `modules/boutique/src/commun/resources/META-INF/mods.toml` l.27-33.
 
 ## Vérifié sans problème
 
