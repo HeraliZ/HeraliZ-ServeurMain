@@ -222,35 +222,56 @@ public final class Profils {
         if (v != 0) o.addProperty(cle, v);
     }
 
-    /** Relevé sur le fil serveur (arbre JSON neuf), texte et écriture sur le fil d'écriture des clans. */
+    /** Clés des chiffres d'une fiche dans le fichier, dans l'ordre du relevé ({@link #sauvegarder}). */
+    private static final String[] CLES = {"depuis", "temps", "morts", "morts_joueur", "zombies", "extractions", "conteneurs", "serie",
+            "serie_max", "vie", "vie_max"};
+
+    /**
+     * Relevé sur le fil serveur : une simple copie des chiffres de chaque fiche (21/11, audit : avant, l'arbre JSON de toutes
+     * les fiches, une par joueur connu, était refait ici à chaque minute où un chiffre avait changé, c'est-à-dire toujours en
+     * jeu) ; mise en JSON, texte et écriture sur le fil d'écriture des clans, dans l'ordre (seul le relevé le plus récent
+     * d'un même fichier est écrit). Même fichier qu'avant. À l'arrêt, l'écrivain attend cette écriture : rien n'est perdu.
+     */
     private static void sauvegarder() {
         Path f = fichier;
         if (f == null) return;
-        JsonObject joueurs = new JsonObject();
+        int n = FICHES.size(), champs = CLES.length;
+        UUID[] ids = new UUID[n];
+        String[] noms = new String[n];
+        long[] chiffres = new long[n * champs];
+        int i = 0;
         for (Map.Entry<UUID, Fiche> x : FICHES.entrySet()) {
             Fiche fi = x.getValue();
-            JsonObject o = new JsonObject();
-            if (!fi.nom.isEmpty()) o.addProperty("nom", fi.nom);
-            ajouter(o, "depuis", fi.depuis);
-            ajouter(o, "temps", fi.tempsMs);
-            ajouter(o, "morts", fi.morts);
-            ajouter(o, "morts_joueur", fi.mortsJoueur);
-            ajouter(o, "zombies", fi.zombies);
-            ajouter(o, "extractions", fi.extractions);
-            ajouter(o, "conteneurs", fi.conteneurs);
-            ajouter(o, "serie", fi.serie);
-            ajouter(o, "serie_max", fi.serieMax);
-            ajouter(o, "vie", fi.vieMs);
-            ajouter(o, "vie_max", fi.vieMaxMs);
-            joueurs.add(x.getKey().toString(), o);
+            ids[i] = x.getKey();
+            noms[i] = fi.nom;
+            int k = i * champs;
+            chiffres[k] = fi.depuis;
+            chiffres[k + 1] = fi.tempsMs;
+            chiffres[k + 2] = fi.morts;
+            chiffres[k + 3] = fi.mortsJoueur;
+            chiffres[k + 4] = fi.zombies;
+            chiffres[k + 5] = fi.extractions;
+            chiffres[k + 6] = fi.conteneurs;
+            chiffres[k + 7] = fi.serie;
+            chiffres[k + 8] = fi.serieMax;
+            chiffres[k + 9] = fi.vieMs;
+            chiffres[k + 10] = fi.vieMaxMs;
+            i++;
         }
-        JsonObject racine = new JsonObject();
-        racine.addProperty("version", 1);
-        // les statistiques des clans ont été reprises une fois (premier démarrage) : jamais une deuxième
-        racine.addProperty("reprise", true);
-        racine.add("joueurs", joueurs);
         sale = false;
         EcrituresFond.ecrire(f, () -> {
+            JsonObject joueurs = new JsonObject();
+            for (int j = 0; j < n; j++) {
+                JsonObject o = new JsonObject();
+                if (!noms[j].isEmpty()) o.addProperty("nom", noms[j]);
+                for (int c = 0; c < champs; c++) ajouter(o, CLES[c], chiffres[j * champs + c]);
+                joueurs.add(ids[j].toString(), o);
+            }
+            JsonObject racine = new JsonObject();
+            racine.addProperty("version", 1);
+            // les statistiques des clans ont été reprises une fois (premier démarrage) : jamais une deuxième
+            racine.addProperty("reprise", true);
+            racine.add("joueurs", joueurs);
             Files.createDirectories(f.getParent());
             Path tmp = f.resolveSibling(f.getFileName() + ".tmp");
             Files.writeString(tmp, GSON.toJson(racine), StandardCharsets.UTF_8);

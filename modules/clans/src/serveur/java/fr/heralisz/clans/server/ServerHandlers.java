@@ -41,6 +41,23 @@ public final class ServerHandlers {
     /** Oublie un joueur (deconnexion). */
     static void oublier(UUID joueur) {
         DERNIERE_ACTION.remove(joueur);
+        DERNIER_CLASSEMENT.remove(joueur);
+    }
+
+    /**
+     * 21/11 (audit) : l'ecran de la saison (classement et bareme, refaits a chaque demande) au plus une fois par seconde et
+     * par joueur, en plus de la cadence commune. L'onglet Saison ne le redemande que toutes les 2 s ; une demande en trop
+     * est ignoree sans message (le joueur garde l'ecran recu juste avant).
+     */
+    private static final Map<UUID, Long> DERNIER_CLASSEMENT = new HashMap<>();
+    private static final long CLASSEMENT_MS = 1000;
+
+    private static boolean classementOk(ServerPlayer p) {
+        long now = System.currentTimeMillis();
+        Long last = DERNIER_CLASSEMENT.get(p.getUUID());
+        if (last != null && now - last >= 0 && now - last < CLASSEMENT_MS) return false;
+        DERNIER_CLASSEMENT.put(p.getUUID(), now);
+        return true;
     }
 
     /** Message d'erreur : chat (gris) + toast ERREUR. */
@@ -177,7 +194,9 @@ public final class ServerHandlers {
             }
             case QUITTER -> ClanService.quitter(p);
             case DISSOUDRE -> ClanService.dissoudre(p);
-            case CLASSEMENT -> ClansNet.toPlayer(p, fr.heralisz.clans.saison.SaisonVue.pour(p));
+            case CLASSEMENT -> {
+                if (classementOk(p)) ClansNet.toPlayer(p, fr.heralisz.clans.saison.SaisonVue.pour(p));
+            }
             case CHAT_BASCULE -> ClanService.chatBascule(p);
             case COFFRE -> CoffreClan.ouvrir(p);
             default -> {
