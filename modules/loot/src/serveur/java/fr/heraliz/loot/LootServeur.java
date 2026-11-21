@@ -78,7 +78,8 @@ public final class LootServeur {
         RaretesServeur.brancher();
         // toutes les secondes : réapparitions des coffres T7 ; rotation du loot (réapparitions) ; conteneurs des événements
         // (retrait, étoiles ; rien sans eux) ; chaque tick : les étoiles d'un joueur sur 20 (01/11 : avant, celles de tous
-        // les joueurs dans le même tick)
+        // les joueurs dans le même tick) et les conteneurs entamés dont c'est le tour (21/11 : avant, tous d'un coup chaque
+        // seconde ; chacun est toujours revu une fois par seconde)
         MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent e) -> {
             if (e.phase == TickEvent.Phase.END && e.level instanceof ServerLevel sl) {
                 if (sl.getGameTime() % 20 == 0) {
@@ -86,6 +87,7 @@ public final class LootServeur {
                     RotationLoot.tick(sl);
                     ConteneursEvenement.tick(sl);
                 }
+                RotationLoot.entamesTick(sl);
                 RotationLoot.etoilesTick(sl);
             }
         });

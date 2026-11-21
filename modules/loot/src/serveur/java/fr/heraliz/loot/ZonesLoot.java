@@ -458,7 +458,22 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
         Zone avant = idx.get(pos);
         if (avant != null && avant != z) avant.enlever(pos);
         z.poser(pos, nom);
-        if (idx.put(pos, z) == null) grilleAjouter(z.dimension, pos);
+        if (idx.put(pos, z) == null) {
+            grilleAjouter(z.dimension, pos);
+            tronconAjouter(z.dimension, pos);
+        }
+    }
+
+    /**
+     * 21/11 (fin de la validation de l'audit) : un conteneur posé en jeu est évité tout de suite par la borne de départ
+     * ({@link #conteneurPres}) ; avant, seulement après un redémarrage (ses tronçons n'étaient refaits qu'à la lecture
+     * des zones). Tronçons pas encore relevés : ils le seront en entier au prochain appel. Un conteneur retiré garde son
+     * tronçon jusqu'à la prochaine lecture des zones (la borne l'évite un peu trop : sans danger).
+     */
+    private static void tronconAjouter(ResourceKey<Level> dim, long pos) {
+        if (versionTroncons != version) return;
+        TRONCONS.computeIfAbsent(dim, d -> new LongOpenHashSet())
+                .add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(pos) >> 4, BlockPos.getZ(pos) >> 4));
     }
 
     /** Retire pos de sa zone. */
