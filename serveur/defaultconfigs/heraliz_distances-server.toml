@@ -3,7 +3,7 @@
 [distances]
 	# Distance de vue, en tronçons de 16 blocs. 8 = 128 blocs (choix du propriétaire, 24/10 : serveur et joueurs).
 	vue = 8
-	# Distance de simulation, en tronçons (server.properties : 5).
+	# Distance de simulation, en tronçons. 0 : celle du server.properties (4 sur le Ptero, relu le 02/11).
 	simulation = 0
 	# Vue plus courte pour certains mondes seulement, « monde=tronçons ». 01/11 (choix du propriétaire) : 4 dans le
 	# tutoriel des bases (chaque joueur y est seul sur sa parcelle). 20/11 (choix du propriétaire, audit) : 6 au spawn
