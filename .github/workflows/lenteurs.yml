@@ -388,6 +388,7 @@ jobs:
             tr -d '\r' < racine.txt | awk '
               BEGIN { split("server.properties eula.txt gc.log bukkit.yml spigot.yml commands.yml help.yml permissions.yml wepif.yml ops.json whitelist.json banned-players.json banned-ips.json usercache.json usernamecache.json user_jvm_args.txt run.sh start.sh", c, " "); for (i in c) connu[c[i]] = 1 }
               NF >= 9 { n = $9; for (i = 10; i <= NF; i++) n = n " " $i
+                sub(/^.*\//, "", n)   # « cls -l / » écrit le chemin entier (/server.properties) : le nom seul
                 if ((n in connu) || n ~ /^mohist-[0-9.]+-[0-9]+-server\.jar$/ || n ~ /^hs_err_pid[0-9]+\.log$/) printf "%s\t%s\n", $5, n
                 else { k++; t += $5 } }
               END { printf "%d autre(s) fichier(s), %d octets en tout (noms pas écrits)\n", k, t }' | head -40
