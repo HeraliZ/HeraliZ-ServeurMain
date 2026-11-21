@@ -41,8 +41,11 @@ public final class HeralizC4 {
     /** The stuck C4 entity behind this blast, or null when the blast is something else. */
     @Nullable
     public static Entity c4Of(Explosion explosion) {
+        List<? extends String> ids = Config.SPEC.isLoaded() ? Config.heralizC4Ids.get() : List.of();
         Entity e = explosion.getDirectSourceEntity();
-        if (e == null) {
+        // HeraliZ (21/11, audit) : liste vide (depuis le 19/11) : aucune grenade ne peut être un C4, rien à lire. Avant, chaque
+        // explosion d'une grenade de heralisz_tactical relisait son objet, au besoin en enregistrant toute l'entité en NBT
+        if (e == null || ids.isEmpty()) {
             return null;
         }
         ResourceLocation type = ForgeRegistries.ENTITY_TYPES.getKey(e.getType());
@@ -53,7 +56,6 @@ public final class HeralizC4 {
         if (id == null) {
             return null;
         }
-        List<? extends String> ids = Config.heralizC4Ids.get();
         for (String s : ids) {
             if (s.trim().equalsIgnoreCase(id)) {
                 return e;

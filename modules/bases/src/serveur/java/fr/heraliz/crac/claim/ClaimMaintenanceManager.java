@@ -337,7 +337,12 @@ public final class ClaimMaintenanceManager {
             impayees = m.decayOn ? vides : 0;
             usure = be.majManque(impayees, m.ecartMs, m.delaiMs);
             be.majEcran();   // écran de l'armoire : entretien demandé et temps restant (délai compris)
-            warnUpkeep(server, claim.groupId(), usure != 0 ? USURE : impayees != 0 ? VIDE : PAYE, be.upkeepMinutes());
+            // HeraliZ (21/11, audit) : rien dans le chat pour une cabane d'essai du tutoriel (Varga guide l'entretien) : ces
+            // messages partaient à tout le clan (« l'armoire de ta base n'a plus d'entretien »), et deux cabanes d'essai d'un
+            // même clan les auraient alternés chaque minute
+            if (!fr.heraliz.crac.bases.MondeBases.estTuto(level)) {
+                warnUpkeep(server, claim.groupId(), usure != 0 ? USURE : impayees != 0 ? VIDE : PAYE, be.upkeepMinutes());
+            }
         }
         if (m.decayOn && isInactive(server, claim.groupId())) {
             impayees = TOUT;

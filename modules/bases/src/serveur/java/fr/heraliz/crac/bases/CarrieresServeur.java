@@ -140,8 +140,9 @@ public final class CarrieresServeur {
                 break;
             }
             vus++;
-            if (!level.isLoaded(r.pos())) {
-                // tronçon pas chargé : on attend qu'il le soit (jamais de chargement pour ça)
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, r.pos())) {
+                // tronçon pas chargé : on attend qu'il le soit (jamais de chargement pour ça). 21/11 (audit) : complet
+                // seulement (Troncons) : isLoaded dit vrai pour un tronçon encore en lecture, que le fil du serveur attendrait
                 d.repousserPremier(now + 30_000L);
                 continue;
             }

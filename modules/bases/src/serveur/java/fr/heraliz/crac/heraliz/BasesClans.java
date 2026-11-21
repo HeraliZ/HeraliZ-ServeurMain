@@ -242,25 +242,31 @@ public final class BasesClans extends SafeSavedData {
         java.util.List<Claim> essais = new java.util.ArrayList<>();
         ServerLevel tuto = server.getLevel(fr.heraliz.crac.bases.MondeBases.TUTO);
         for (ServerLevel level : server.getAllLevels()) {
-            Claim c = ClaimData.get(level).getByGroup(gid);
-            if (c == null) {
-                continue;
+            // 21/11 (audit) : toutes les armoires du groupe dans ce monde : au tutoriel, chaque membre du clan qui y bâtit sa
+            // cabane d'essai a la sienne (avant : seulement la dernière posée, les autres restaient au groupe disparu)
+            java.util.List<Claim> duGroupe = new java.util.ArrayList<>();
+            for (Claim x : ClaimData.get(level).all()) {
+                if (gid.equals(x.groupId())) {
+                    duGroupe.add(x);
+                }
             }
-            if (level == tuto) {
-                // cabane d'essai du tutoriel (1.21.0) : gardée, passée plus bas au groupe à son nom (sinon le chef reste
-                // coincé à l'étape de l'armoire, son armoire disparue)
-                ClaimManager.removeByAnchor(level, c.anchor());
-                essais.add(c);
-                continue;
+            for (Claim c : duGroupe) {
+                if (level == tuto) {
+                    // cabane d'essai du tutoriel (1.21.0) : gardée, passée plus bas au groupe à son nom (sinon le chef reste
+                    // coincé à l'étape de l'armoire, son armoire disparue)
+                    ClaimManager.removeByAnchor(level, c.anchor());
+                    essais.add(c);
+                    continue;
+                }
+                BlockPos a = c.anchor();
+                // 25/10 (décision du propriétaire) : l'armoire part sans rien faire tomber. Avant, releaseClaim la cassait
+                // avec destroyBlock(…, true) : l'armoire et tout son stock de planches tombaient au sol.
+                ClaimManager.removeByAnchor(level, a);
+                ClaimManager.retirerArmoireSansRien(level, a);
+                fr.heraliz.crac.bases.Protections.majTextes(server);
+                C2SRequestNearbyClaimsTraitement.pushAll(level);
+                Crac.LOGGER.info("[CRac] clan {} dissous : armoire de sa base retirée en {} {}, base libre", clan, level.dimension().location(), a);
             }
-            BlockPos a = c.anchor();
-            // 25/10 (décision du propriétaire) : l'armoire part sans rien faire tomber. Avant, releaseClaim la cassait
-            // avec destroyBlock(…, true) : l'armoire et tout son stock de planches tombaient au sol.
-            ClaimManager.removeByAnchor(level, a);
-            ClaimManager.retirerArmoireSansRien(level, a);
-            fr.heraliz.crac.bases.Protections.majTextes(server);
-            C2SRequestNearbyClaimsTraitement.pushAll(level);
-            Crac.LOGGER.info("[CRac] clan {} dissous : armoire de sa base retirée en {} {}, base libre", clan, level.dimension().location(), a);
         }
         GroupData data = GroupData.get(server);
         Group g = data.getById(gid);
@@ -269,7 +275,9 @@ public final class BasesClans extends SafeSavedData {
         }
         for (Claim c : essais) {
             BlockPos a = c.anchor();
-            fr.heraliz.crac.build.model.Building b = fr.heraliz.crac.build.world.StructureService.buildingOfClaim(tuto, a);
+            // 21/11 (audit) : la cabane sous l'armoire (son siège) ; son lien au claim, lui, vient d'être retiré avec le claim
+            // (avant : buildingOfClaim ne la trouvait donc jamais, et l'armoire d'essai partait toujours)
+            fr.heraliz.crac.build.model.Building b = ClaimManager.buildingUnder(tuto, a);
             ServerPlayer poseur = null;
             if (b != null) {
                 for (fr.heraliz.crac.build.model.Piece x : fr.heraliz.crac.build.world.StructureStore.get(tuto).piecesOf(b)) {
