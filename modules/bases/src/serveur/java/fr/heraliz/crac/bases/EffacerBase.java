@@ -144,7 +144,11 @@ final class EffacerBase {
                 level.removeBlock(a.above(), false);
             }
             level.removeBlock(a, false);
-            ClaimManager.releaseClaim(level, c.groupId());
+            // HeraliZ (21/11, audit) : le claim de CETTE armoire seulement (au tutoriel, deux membres d'un même clan ont chacun
+            // la leur sous le groupe du clan : « le claim du groupe » cassait l'armoire de l'autre cabane, avec son stock)
+            if (ClaimManager.getByAnchor(level, a) != null) {
+                ClaimManager.removeByAnchor(level, a);
+            }
             AccesBase.get(server).effacer(c.groupId());   // accès donnés dans l'armoire
             C2SRequestNearbyClaimsTraitement.pushAll(level);
             ramasser(level, min, max, joueur);
