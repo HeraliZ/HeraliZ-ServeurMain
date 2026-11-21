@@ -177,7 +177,9 @@ final class Commandes {
                 .then(Commands.literal("finir").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
                         .then(Commands.argument("cle", StringArgumentType.greedyString())
                                 .executes(c -> finir(c, EntityArgument.getPlayer(c, "joueur"), StringArgumentType.getString(c, "cle"))))))
-                .then(Commands.literal("reset").then(Commands.argument("joueur", EntityArgument.player())
+                // 21/11 (audit de validation, choix du propriétaire) : remettre à zéro laisse refaire les quêtes de Varga et
+                // toucher de nouveau leurs hérals et points de saison : op 4 connecté sur AuthMe (comme /bourse donner)
+                .then(Commands.literal("reset").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
                         .executes(c -> reset(c, EntityArgument.getPlayer(c, "joueur"))))));
         // 02/11 (audit point 36) : donner une quête (que /quete finir termine aussitôt avec sa récompense) est un outil d'essai :
         // seulement avec le banc (heraliz_banc, serveur d'essai ; scripts de capture). Ajouté au /quete existant.
@@ -661,6 +663,11 @@ final class Commandes {
     }
 
     private static int reset(CommandContext<CommandSourceStack> c, ServerPlayer p) {
+        if (c.getSource().getEntity() instanceof ServerPlayer staff && !Ponts.authentifie(staff)) {
+            c.getSource().sendFailure(Component.translatableWithFallback("heraliz_quetes.bourse.cmd.login",
+                    "Connecte-toi d'abord avec /login."));
+            return 0;
+        }
         resetQuetes(p);
         dire(c, "heraliz_quetes.cmd.reset", "Progression des quêtes de %s remise à zéro.", p.getGameProfile().getName());
         return 1;
