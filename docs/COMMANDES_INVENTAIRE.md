@@ -16,7 +16,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/bon` | boutique | réservé (droit du mod) | editeur |
 | `/boss` | events (pas livré) | staff (op 2) | arene, decors, eveil, labo, mammouth, mere, n07, peste, reset, salle, station, sylvorn, vitrine |
 | `/bots` | banc (pas livré) | op 4 | action, camp, commandes, etat, frappes, gamerule, joueurs, jvm, lancer, mesure, off, pic, pregenerer, reseau, retirer, rythmes, scenario, stop, troncons, zone |
-| `/bourse` | pnj | staff (op 2) | donner, info |
+| `/bourse` | pnj | staff (op 2) | donner (op 4), info |
 | `/boutique` | boutique | tous | abonnement |
 | `/brume` | monde | staff (op 2) | auto, info |
 | `/camos` | armes | staff (op 2) | ajouter, recharge, retirer, voir |

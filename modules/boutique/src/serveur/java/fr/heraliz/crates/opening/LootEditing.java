@@ -29,8 +29,13 @@ public final class LootEditing {
 
     public static final int MAX_WEIGHT = 1_000_000, MAX_COUNT = fr.heraliz.crates.block.CrateAnim.EDITEUR_MAX_COUNT;
 
+    /**
+     * Operateur (niveau 2) connecte sur AuthMe. 21/11 (audit) : serveur cracke, un pseudo d'op ne vaut rien avant le
+     * /login et AuthMe ne filtre pas les paquets des mods : avant, un joueur venu sous le pseudo d'un op, sans son mot de
+     * passe, pouvait reecrire le butin d'une caisse avec un jeu modifie (paquet de l'editeur).
+     */
     public static boolean allowed(ServerPlayer player) {
-        return player.hasPermissions(2);
+        return player.hasPermissions(2) && fr.heraliz.grades.serveur.GradesApi.authentifie(player);
     }
 
     public static void open(ServerPlayer player, CrateType type) {

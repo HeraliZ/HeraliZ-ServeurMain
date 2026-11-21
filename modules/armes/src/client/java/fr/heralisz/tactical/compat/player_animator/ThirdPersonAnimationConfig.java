@@ -14,10 +14,25 @@ public class ThirdPersonAnimationConfig {
    private Map<String, Object> upper = new HashMap<>();
    @SerializedName("lower")
    private Map<String, Object> lower = new HashMap<>();
+   /**
+    * HeraliZ (21/11, opti) : identifiant lu une seule fois. Avant, une ResourceLocation neuve (texte relu et vérifié)
+    * trois fois par image et par joueur visible avec une arme de mêlée (IdleAnimationHandler). transient : jamais lu
+    * ni écrit par Gson.
+    */
+   @Nullable
+   private transient ResourceLocation animationPathLu;
 
    @Nullable
    public ResourceLocation getAnimationPath() {
-      return this.animationPath == null ? null : new ResourceLocation(this.animationPath);
+      if (this.animationPath == null) {
+         return null;
+      }
+      ResourceLocation lu = this.animationPathLu;
+      if (lu == null) {
+         lu = new ResourceLocation(this.animationPath);
+         this.animationPathLu = lu;
+      }
+      return lu;
    }
 
    @Nullable

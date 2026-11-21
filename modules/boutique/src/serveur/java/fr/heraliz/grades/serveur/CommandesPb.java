@@ -130,7 +130,9 @@ final class CommandesPb {
 
     private static void repondre(CommandSourceStack s, Pb.Reponse r, String ok) {
         if (r == null) s.sendFailure(Component.literal("Site injoignable (ou clé des PB absente) : rien n'a été fait."));
-        else if (!r.ok() && r.code() != 200) s.sendFailure(Component.literal("Refusé par le site : " + r.raison()));
+        // 21/11 (audit, A179 du 26/10) : un refus clair du site (code 200, « ok » faux : solde insuffisant, compte inconnu…)
+        // s'affichait comme une réussite (« retirer … PB à … -> solde -1 »)
+        else if (!r.ok()) s.sendFailure(Component.literal("Refusé par le site : " + (r.raison().isEmpty() ? "code " + r.code() : r.raison())));
         else s.sendSuccess(() -> Component.literal(ok), false);
     }
 
