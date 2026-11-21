@@ -69,7 +69,8 @@ scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag anal
   seule (alerte « Règle suspendue » au staff, `/spartan status` la cite avec le temps restant) puis se remet en service au
   bout d'une heure (`rodageRepriseMinutes`, alerte « Règle remise en service » ; 0 = jusqu'au redémarrage) : une erreur ne
   peut jamais expulser plus de deux PC honnêtes d'affilée. Depuis le 21/11 (2.15.3), on compte des PC et plus des comptes :
-  un PC = son compte, son bloc d'adresses IP (/24, IPv6 /48) et ses identifiants matériels ; plusieurs comptes sur un même
+  un PC = son compte, son bloc d'adresses IP (/24, IPv6 /48 ; adresse publique seulement depuis la 2.15.4 : une passerelle
+  Docker ou un proxy, commune à tous les joueurs, ne compte pas) et ses identifiants matériels ; plusieurs comptes sur un même
   PC ou derrière la même connexion ne comptent qu'une fois, et un PC qui a déjà coupé une règle ne compte plus pour elle
   jusqu'au redémarrage (les mêmes PC ne peuvent pas la couper à chaque remise en service). Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
   classes de Java. Tests : `RodageTest`, `GardienClesTest`, `MemoireTest`, `ScanAnalyzerTest`, `ConformiteStricteTest`.
@@ -720,6 +721,12 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.15.4 (21/11, audit global)** — Disjoncteur des règles en rodage : seule une adresse IP publique compte pour
+  reconnaître un PC (comme les bans). Derrière Docker / Pterodactyl (passerelle 172.x), un proxy ou en local, tous les
+  joueurs arrivent avec la même adresse : ils devenaient un seul « PC » et une règle qui se trompe n'aurait jamais été
+  suspendue. Les identifiants matériels reçus avant le `/login` sont traités avant les packs de textures (le PC est
+  connu de la règle `packs:`). Les alertes du staff en jeu ne vont qu'au staff vérifié (jeton du launcher et `/login`) :
+  un jeu lancé sous le pseudo d'un op ne les lit plus. Côté serveur seulement. Test `NetUtilTest`.
 - **2.15.2 (21/11, audit du serveur en ligne)** — `requireHardenedJvm` ne signale plus que l'attache ouverte (jeu sans
   `-XX:+DisableAttachMechanism`, comme le mode strict). Constat dans le journal du 20/11 : un joueur du launcher, normal,
   signalé « JvmHardening (VL 1) : … agents dynamiques autorisés ». `-XX:+EnableDynamicAgentLoading` vaut `true` par défaut

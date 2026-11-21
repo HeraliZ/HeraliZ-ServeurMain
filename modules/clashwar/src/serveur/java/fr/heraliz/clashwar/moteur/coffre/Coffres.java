@@ -38,6 +38,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -342,6 +343,7 @@ public final class Coffres {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, Coffres::frappe);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, Coffres::touche);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, Coffres::commande);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, Coffres::ecran);
         // files visibles dans /diag fuites (moniteur des listes du noyau)
         fr.heraliz.noyau.api.Fuites.surveiller("clashwar.coffres_en_cours", () -> DEMANDES.size() + EN_ECRITURE.size() + RETOURS.size());
     }
@@ -420,6 +422,20 @@ public final class Coffres {
     /** Fige : il ne prend aucun coup (une mort ferait tomber ce qui est deja dans l'instantane). */
     private static void touche(LivingAttackEvent e) {
         if (e.getEntity() instanceof Player p && fige(p)) e.setCanceled(true);
+    }
+
+    /**
+     * 21/11 (audit a7) : un ecran qui s'ouvre pendant l'ecriture du depot (joueur fige) est referme aussitot : coffre du
+     * clan ouvert depuis l'ecran du clan, sac ouvert par sa touche, tout menu ouvert par un paquet et non par un clic sur un
+     * bloc ou une entite (ceux-la sont deja refuses). Le joueur fige n'echange ainsi rien avec un autre conteneur : la
+     * verification de la confirmation ({@link #inchange}) ne voit que l'objet, le nombre et les variantes de chaque case,
+     * pas l'echange d'un objet contre un autre du meme type (arme avec ses accessoires et son skin contre la meme arme nue,
+     * piece d'armure neuve contre une usee) : l'objet de valeur revenait en double avec le depot.
+     */
+    private static void ecran(PlayerContainerEvent.Open e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || !fige(p) || p.containerMenu == p.inventoryMenu) return;
+        HeralizClashWar.LOG.warn("[matchs] {} : ecran ouvert pendant l'ecriture de son depot, referme", p.getGameProfile().getName());
+        p.closeContainer();
     }
 
     /** Depot ou retour en cours : aucune commande (quelques ticks au plus). */
@@ -594,6 +610,27 @@ public final class Coffres {
         // plantage, ce fichier ne lui est jamais rendu (enquete), il garde ce qu'il avait. Ce qui change chez lui pendant
         // l'ecriture est vu a la confirmation ({@link #inchange}) : depot refait.
         EN_ECRITURE.put(u, new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai()));
+    }
+
+    /**
+     * 21/11 (audit a7) : deconnexion pendant l'ecriture de son depot (PlayerLoggedOutEvent, AVANT que Minecraft n'enregistre
+     * le joueur ; arret du serveur compris) : ce qui a ete pris a part (souris, grille 2 x 2, objets laches pendant
+     * l'ecriture) lui est rendu tout de suite, dans l'inventaire (sinon a ses pieds, comme Minecraft le fait pour la souris
+     * et la grille). Avant, il etait enregistre sans eux, puis le fichier du depot, qui les gardait, etait efface : perdus.
+     * Le depot est abandonne (fichier efface des la fin de l'ecriture), rien d'autre ne change pour lui.
+     */
+    public static void deconnexion(ServerPlayer p) {
+        if (EN_ECRITURE.isEmpty()) return;
+        UUID u = p.getUUID();
+        Depot d = EN_ECRITURE.get(u);
+        if (d == null || d.joueur != p) return;
+        EN_ECRITURE.remove(u);
+        ABANDONNES.add(d);
+        depotsRates++;
+        defaire(d);
+        HeralizClashWar.LOG.warn("[matchs] coffre de {} pas fait : deconnexion pendant l'ecriture (objets mis a part rendus, rien n'a change pour lui)",
+                p.getGameProfile().getName());
+        finDepot(d.fini, u, false);
     }
 
     /** Depot rate ou abandonne alors que le joueur est la : objets pris a part rendus, marque retiree. */
@@ -808,6 +845,12 @@ public final class Coffres {
 
     /** Comme {@link #rendre(ServerPlayer)}, avec le depot deja lu (lecture d'avance du retour etale), null : lu ici. */
     private static boolean rendre(ServerPlayer p, @Nullable CompoundTag dejaLu) {
+        // 21/11 (audit a7) : jamais a un joueur mort (ecran de mort) : ce qui lui serait rendu disparaitrait a sa reapparition
+        // (Minecraft ne garde pas l'inventaire) ; le depot reste sur le disque, rendu apres sa reapparition (MoteurLogique)
+        if (p.isDeadOrDying()) {
+            HeralizClashWar.LOG.warn("[matchs] coffre de {} pas rendu : joueur mort (rendu a sa reapparition)", p.getGameProfile().getName());
+            return false;
+        }
         // une arrivee en attente (salle, arene) ne doit pas le ramener apres son retour
         Arrivees.oublier(p.getUUID());
         Path f = Coffre.fichier(p.getUUID());
@@ -839,6 +882,13 @@ public final class Coffres {
             oublierMarque(p);
             return false;
         }
+        // 21/11 (audit a7) : a terre (Reanimation ; hors match seulement : reconnexion apres un plantage, garde hors match),
+        // il est d'abord releve. Sinon celui qui le fouillait prenait l'inventaire rendu, et la teleportation vers un autre
+        // monde, refusee a un joueur a terre, le laissait dans le monde des arenes, ou il se vidait de son sang avec tout ce
+        // qui venait de lui etre rendu.
+        if (ATerre.aTerre(p) && ATerre.relever(p)) {
+            HeralizClashWar.LOG.warn("[matchs] {} etait a terre au retour de son coffre : releve d'abord", p.getGameProfile().getName());
+        }
         // objets a vie arrives dans l'inventaire du match sans en etre des prets, et ce qui est au curseur ou dans la
         // grille 2 x 2 (sauf les prets du match) : pris a part avant le vidage, rendus apres (02/11, audit point 8)
         List<ItemStack> sauves = sauverAvantVidage(p);
@@ -858,10 +908,9 @@ public final class Coffres {
             ListTag c = t.getList("curios", Tag.TAG_COMPOUND);
             curiosOk = Compat.chargerCurios(p, c) || c.isEmpty();
         }
-        // objets tenus hors de l'inventaire au depot, puis ceux sauves du match
+        // objets tenus hors de l'inventaire au depot, puis ceux sauves du match (rendus apres la teleportation)
         ListTag ac = t.getList("a_cote", Tag.TAG_COMPOUND);
         for (int i = 0; i < ac.size(); i++) sauves.add(ItemStack.of(ac.getCompound(i)));
-        rendreACote(p, sauves);
         GameType mode = GameType.byId(t.getInt("mode"));
         p.setGameMode(mode);
         p.experienceProgress = t.getFloat("xpProgres");
@@ -871,6 +920,9 @@ public final class Coffres {
         p.clearFire();
         p.fallDistance = 0;
         teleporter(p, t);
+        // 21/11 (audit a7) : APRES la teleportation : ce qui ne tient ni dans l'inventaire, ni dans la grille 2 x 2, ni au
+        // curseur tombe a ses pieds a l'arrivee (avant : dans le monde des arenes, perdu pour lui)
+        rendreACote(p, sauves);
         // effets APRES la teleportation : ServerPlayer.teleportTo vers une autre dimension envoie un paquet de reapparition
         // qui vide les effets cote client sans les renvoyer (le serveur les avait, le client ne les affichait plus)
         ListTag effets = t.getList("effets", Tag.TAG_COMPOUND);

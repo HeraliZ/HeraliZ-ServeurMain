@@ -105,6 +105,12 @@ public final class EchelleServeur {
         if (e.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START || p.isSpectator()) {
             return;
         }
+        // HeraliZ (21/11, audit) : un coup ne compte qu'à portée de main (Forge envoie cet événement avant le contrôle de
+        // distance de Minecraft : un jeu modifié abîmait une échelle de loin)
+        double portee = p.getBlockReach() + 1.0;
+        if (p.getEyePosition().distanceToSqr(Vec3.atCenterOf(e.getPos())) > portee * portee) {
+            return;
+        }
         long t = level.getGameTime();
         Long avant = DERNIER.get(p.getUUID());
         if (avant != null && t - avant < ECART_MIN) {

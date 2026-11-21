@@ -181,7 +181,8 @@ public final class BordureArenes {
         TAMPON.clear();
         for (int i = 0; i < joueurs.size(); i++) {
             ServerPlayer p = joueurs.get(i);
-            if (p.isSpectator() || p.isCreative() || b.isWithinBounds(p.getBoundingBox())) continue;
+            // 21/11 (audit a7) : pas un joueur mort (ecran de mort) : son Coffre ne lui est rendu qu'a sa reapparition
+            if (p.isSpectator() || p.isCreative() || p.isDeadOrDying() || b.isWithinBounds(p.getBoundingBox())) continue;
             TAMPON.add(p);
         }
         for (int i = 0; i < TAMPON.size(); i++) {

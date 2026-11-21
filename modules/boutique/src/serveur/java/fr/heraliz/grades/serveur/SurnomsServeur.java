@@ -352,7 +352,8 @@ final class SurnomsServeur {
             ServerPlayer o = src.getServer().getPlayerList().getPlayer(e.getKey());
             String vrai = o != null ? o.getGameProfile().getName() : NOMS.getOrDefault(e.getKey(), "?");
             String surnom = e.getValue();
-            src.sendSuccess(() -> msg("nick.qui", "~%1$s est %2$s.", surnom, vrai), false);
+            // 21/11 (audit) : directement au joueur (sendSuccess est caché aux joueurs par sendCommandFeedback = false)
+            CommandesGrades.repondre(src, msg("nick.qui", "~%1$s est %2$s.", surnom, vrai));
             return 1;
         }
         String cherche = s;
