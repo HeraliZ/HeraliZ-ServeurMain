@@ -19,7 +19,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/bourse` | pnj | staff (op 2) | donner (op 4), info |
 | `/boutique` | boutique | tous | abonnement |
 | `/brume` | monde | staff (op 2) | auto, info |
-| `/camos` | armes | staff (op 2) | ajouter, dessins, recharge, retirer, voir |
+| `/camos` | armes | staff (op 2) | ajouter (op 4), dessins, recharge, retirer (op 4), voir |
 | `/canal` | monde | tous | aide, clan |
 | `/capsules` | boutique | tous | deposer, retirer |
 | `/carriere` | bases | staff (op 2) | creer, liste, regenerer, retirer, tp |
@@ -63,7 +63,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/profil` | clans | tous |  |
 | `/protection` | bases | staff (op 2) | donner, retirer, voir |
 | `/purge` | bases | staff (op 2) | arreter (op 4), forcer (op 4) |
-| `/quete` | pnj | staff (op 2) | ajouter, baguette, confirmer, donner (banc d'essai), finir (op 4), joueur, nom, point, points, reset, retirer, tp, vider_carte (op 4) |
+| `/quete` | pnj | staff (op 2) | ajouter, baguette, confirmer, donner (banc d'essai), finir (op 4), joueur, nom, point, points, reset (op 4), retirer, tp, vider_carte (op 4) |
 | `/quetes` | pnj | tous |  |
 | `/r` | noyau | tous |  |
 | `/rarete` | loot | staff (op 2) | aucune, defaut, effacer, voir |

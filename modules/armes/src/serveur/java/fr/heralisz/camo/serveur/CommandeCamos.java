@@ -46,9 +46,11 @@ final class CommandeCamos {
       d.register(Commands.literal("camos").requires(s -> s.hasPermission(2))
          .then(Commands.literal("voir").then(Commands.argument("joueur", EntityArgument.player())
             .executes(c -> voir(c.getSource(), EntityArgument.getPlayer(c, "joueur")))))
-         .then(Commands.literal("ajouter").then(Commands.argument("joueur", EntityArgument.player())
+         // 21/11 (audit de validation, choix du propriétaire) : ajouter et retirer des camos à vie (dont ceux vendus en
+         // boutique) réservés à l'op 4, comme /eco donner ; voir, recharge et dessins restent à l'op 2
+         .then(Commands.literal("ajouter").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
             .then(Commands.argument("camo", StringArgumentType.word()).suggests(CAMOS).executes(CommandeCamos::ajouter))))
-         .then(Commands.literal("retirer").then(Commands.argument("joueur", EntityArgument.player())
+         .then(Commands.literal("retirer").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
             .then(Commands.argument("camo", StringArgumentType.word()).suggests(CAMOS).executes(CommandeCamos::retirer))))
          .then(Commands.literal("recharge").then(Commands.argument("joueur", EntityArgument.player())
             .executes(c -> recharge(c.getSource(), EntityArgument.getPlayer(c, "joueur")))))
