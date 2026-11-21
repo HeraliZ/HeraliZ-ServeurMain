@@ -82,6 +82,29 @@ public final class KeycardDoors {
       return false;
    }
 
+   /**
+    * 21/11 (audit) : les tronçons de la porte et de ses lecteurs ({@link #readerGranted} : ses pièces et READER_RANGE
+    * autour) sont-ils tous complets ? Sinon, lire un de leurs blocs ferait attendre au fil du serveur la fin de leur
+    * chargement (et tout le travail de chargement en file pendant ce temps) : porte d'une salle à carte au bord de la vue
+    * d'un joueur, son lecteur juste à côté dans un tronçon encore en lecture. Ne charge rien, n'attend rien.
+    */
+   public static boolean lecteursPrets(Level level, List<BlockPos> parts) {
+      if (parts.isEmpty()) return false;
+      int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
+      for (BlockPos p : parts) {
+         x0 = Math.min(x0, p.getX());
+         z0 = Math.min(z0, p.getZ());
+         x1 = Math.max(x1, p.getX());
+         z1 = Math.max(z1, p.getZ());
+      }
+      for (int cx = (x0 - READER_RANGE) >> 4; cx <= (x1 + READER_RANGE) >> 4; cx++) {
+         for (int cz = (z0 - READER_RANGE) >> 4; cz <= (z1 + READER_RANGE) >> 4; cz++) {
+            if (level.getChunkSource().getChunkNow(cx, cz) == null) return false;
+         }
+      }
+      return true;
+   }
+
    /** Lecteurs (toutes couleurs, actifs ou non) à portée d'une des pièces de la porte : pour le staff (/salle bunker). */
    public static int lecteursAPortee(Level level, List<BlockPos> parts) {
       if (parts.isEmpty()) return 0;
