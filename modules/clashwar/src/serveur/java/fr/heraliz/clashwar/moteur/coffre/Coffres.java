@@ -227,18 +227,39 @@ public final class Coffres {
         Item[] objets = new Item[n];
         int[] nombres = new int[n];
         String[] variantes = new String[n];
+        Map<Item, Integer> curios = new HashMap<>();
         for (int i = 0; i < n; i++) {
             ItemStack s = inv.getItem(i);
             if (s.isEmpty()) continue;
             objets[i] = s.getItem();
             nombres[i] = s.getCount();
             variantes[i] = variante(s);
+            contenu(s, curios);
         }
-        Map<Item, Integer> curios = new HashMap<>();
         for (ItemStack s : Compat.piecesCurios(p)) {
-            if (!s.isEmpty()) curios.merge(s.getItem(), s.getCount(), Integer::sum);
+            if (s.isEmpty()) continue;
+            curios.merge(s.getItem(), s.getCount(), Integer::sum);
+            contenu(s, curios);
         }
         return new Releve(objets, nombres, variantes, curios);
+    }
+
+    /**
+     * Objets ranges DANS un sac (21/11, audit du code) : HeraliZ Sacs les ecrit dans l'objet sac a chaque changement (liste
+     * « Items »), comptes avec les Curios. Sans eux, un objet sorti du sac porte pendant l'ecriture puis range ailleurs
+     * (coffre du clan, marchand...) laissait chaque case et chaque Curios identiques : il revenait en double avec le depot.
+     */
+    private static void contenu(ItemStack sac, Map<Item, Integer> compte) {
+        CompoundTag t = sac.getTag();
+        if (t == null || !t.contains("Items", Tag.TAG_LIST)) return;
+        ListTag l = t.getList("Items", Tag.TAG_COMPOUND);
+        for (int i = 0; i < l.size(); i++) {
+            CompoundTag o = l.getCompound(i);
+            ResourceLocation id = ResourceLocation.tryParse(o.getString("id"));
+            Item it = id == null ? null : net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(id);
+            int nombre = o.getByte("Count");
+            if (it != null && it != net.minecraft.world.item.Items.AIR && nombre > 0) compte.merge(it, nombre, Integer::sum);
+        }
     }
 
     /**
