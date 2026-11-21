@@ -443,7 +443,9 @@ public final class ConteneursEvenement extends SavedData {
             Conteneur c = etat.conteneurs.get(pos);
             if (c == null || c.inv != this || etat.niveau == null || etat.regarde(this, p)) return;
             BlockPos b = BlockPos.of(pos);
-            RotationLoot.son(etat.niveau, b, etat.niveau.getBlockState(b), false);
+            // 21/11 (fin de la validation) : bruit seulement si le tronçon est complet (jamais d'attente pour un son)
+            BlockState st = fr.heraliz.noyau.api.Troncons.etat(etat.niveau, b);
+            if (st != null) RotationLoot.son(etat.niveau, b, st, false);
         }
     }
 

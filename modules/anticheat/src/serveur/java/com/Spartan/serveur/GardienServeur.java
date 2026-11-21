@@ -89,6 +89,15 @@ public final class GardienServeur {
     }
 
     /**
+     * Clé du Gardien de cette connexion, prouvée par le jeton du site (null sinon) : un signe de plus d'un même PC pour le
+     * disjoncteur des règles en rodage (fin du 21/11, {@link com.Spartan.integrity.Injection}). Le vrai launcher en tire
+     * une neuve à chaque lancement : deux joueurs ne la partagent jamais.
+     */
+    public static String clePc(UUID id) {
+        return CLE_JOUEUR.get(id);
+    }
+
+    /**
      * Clé du Gardien de cette connexion, d'après le jeton de lancement (fil du serveur, LauncherGate) : {@code cle} est
      * la clé publique annoncée par le jeu, déjà comparée à l'engagement du jeton quand {@code lien} vaut PROUVE.
      */

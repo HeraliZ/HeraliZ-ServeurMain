@@ -70,7 +70,8 @@ scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag anal
   bout d'une heure (`rodageRepriseMinutes`, alerte « Règle remise en service » ; 0 = jusqu'au redémarrage) : une erreur ne
   peut jamais expulser plus de deux PC nouveaux d'affilée. Depuis le 21/11 (2.15.3), on compte des PC et plus des comptes :
   un PC = son compte, son bloc d'adresses IP (/24, IPv6 /48 ; adresse publique seulement depuis la 2.15.4 : une passerelle
-  Docker ou un proxy, commune à tous les joueurs, ne compte pas) et ses identifiants matériels ; plusieurs comptes sur un même
+  Docker ou un proxy, commune à tous les joueurs, ne compte pas), ses identifiants matériels et, depuis la 2.15.7, la clé du
+  Gardien de son lancement (neuve à chaque lancement du vrai launcher) ; plusieurs comptes sur un même
   PC ou derrière la même connexion ne comptent qu'une fois, et un PC qui a déjà coupé une règle ne la coupe plus seul
   jusqu'au redémarrage : il faut au moins un PC nouveau parmi les trois (les mêmes PC ne peuvent pas la couper à chaque
   remise en service ; seuls, ils restent expulsés ; depuis la 2.15.5, une fausse alerte qui touche aussi d'autres PC se
@@ -723,6 +724,11 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.15.7 (21/11, fin de la validation)** — Disjoncteur des règles en rodage : la clé du Gardien du lancement (prouvée
+  par le jeton du site) est un signe de plus d'un même PC ; le vrai launcher en tire une neuve à chaque lancement, donc rien
+  ne change pour les joueurs honnêtes, et des comptes qui partagent une clé fixe ne comptent qu'une fois, même avant le
+  `/login` (test `RodageTest`). Côté joueur : la réponse au défi d'intégrité est calculée sur un fil à part, plus sur le
+  fil du jeu qui dessine les images (même réponse ; jar joueur et jar serveur de la même fabrication, comme toujours).
 - **2.15.6 (21/11, validation de l'audit)** — Les paquets d'arrivée (identifiants matériels, liste des mods, packs de
   textures, numéro de version) d'une connexion qui part avant d'être vérifiée (jeton du launcher et `/login`) sont oubliés
   à sa déconnexion : ils ne sont plus jamais traités pour la connexion suivante du même compte, même acceptée dans le même
