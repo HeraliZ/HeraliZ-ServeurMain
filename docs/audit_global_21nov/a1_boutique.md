@@ -20,7 +20,7 @@ Gravité : **important** (faille ou réponse manquante qui touche les joueurs), 
 
 ## Corrigé
 
-Tout dans le même commit (voir le haut de l'historique de la branche, message « Audit du 21/11 (boutique) »).
+Tout dans le commit **81e66a6f**.
 
 1. **Caisse du casino : une commande de la console pouvait venir d'un joueur (important, sécurité).** La caisse a des
    « encaissements » : une commande jouée par la console du serveur (donner un grade à la journée, une émote…). La
