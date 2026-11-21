@@ -209,7 +209,8 @@ public final class Territoires {
             int enLigne = 0;
             for (UUID m : mien.membres.keySet()) {
                 ServerPlayer d = server.getPlayerList().getPlayer(m);
-                if (d == null) continue;
+                // staff cache (21/11) : ni compte en ligne ni montre sur la carte de qui ne voit pas les caches
+                if (d == null || !fr.heralisz.clans.server.PontVanish.visible(p, m)) continue;
                 enLigne++;
                 if (!ici || d == p || d.level() != p.level() || !d.isAlive() || d.isSpectator() || fr.heralisz.clans.api.ClansApi.enMatch(d)) continue;
                 allies.add(new fr.heralisz.clans.api.CarteApi.Allie(d.getGameProfile().getName(), d.getX(), d.getZ()));

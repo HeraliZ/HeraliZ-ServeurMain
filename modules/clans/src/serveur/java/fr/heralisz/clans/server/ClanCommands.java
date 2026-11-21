@@ -292,7 +292,12 @@ public final class ClanCommands {
         }
         CommandSourceStack src = ctx.getSource();
         Stats t = c.totaux();
-        int enLigne = ClanService.membresEnLigne(c).size();
+        // staff cache (21/11) : pas compte pour qui ne voit pas les caches (/clan info d'un autre clan compris)
+        ServerPlayer moi = src.getEntity() instanceof ServerPlayer sp ? sp : null;
+        int enLigne = 0;
+        for (ServerPlayer m : ClanService.membresEnLigne(c)) {
+            if (PontVanish.visible(moi, m.getUUID())) enLigne++;
+        }
         long now = System.currentTimeMillis();
         Reponses.ok(src, ClanService.prefixe(c).append(Component.translatable("msg.info.titre", c.nom, c.niveau, c.xp, Niveaux.xpPour(c.niveau))));
         Reponses.ligne(src, Component.translatable("msg.info.membres", ClanService.nomDe(c.chef), c.membres.size(), c.membresMax(), enLigne));

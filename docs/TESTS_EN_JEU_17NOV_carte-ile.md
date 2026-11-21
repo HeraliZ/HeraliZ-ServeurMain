@@ -1965,6 +1965,9 @@ Le tab ne montrait déjà plus un membre du staff caché aux joueurs. Le reste s
   l'entendaient). Lui entend toujours tout le monde.
 - **`/profil <pseudo>`** d'un caché, vu par un joueur hors du staff : comme un joueur hors ligne (temps de jeu et plus
   longue vie sans la partie en cours : ils ne montent plus pendant qu'il est connecté).
+- **Son clan** : pour les membres de son clan hors du staff, il est « hors ligne » dans l'écran du clan, absent de la
+  carte (touche M : ni sa position ni le compte des membres en ligne), et `/clan info` ne le compte pas en ligne (pour
+  tous les joueurs, aussi la fiche d'un autre clan).
 - Personne de caché : rien ne change, une seule liste pour tous.
 - Essai hors du jeu du tri des voix (`VoiceRouting`) : un caché qui parle n'est entendu que par le staff ; un joueur qui
   parle est entendu de tous, caché compris.
@@ -1974,8 +1977,9 @@ Le tab ne montrait déjà plus un membre du staff caché aux joueurs. Le reste s
       côté de A : A n'entend rien, B l'entend.
 - [ ] S se montre : sa voix revient chez A (2 s au plus), son tag de clan aussi (tab, au-dessus de sa tête).
 - [ ] S caché : A tape `/profil S` deux fois à une minute d'écart : le temps de jeu ne bouge pas. B le voit bouger.
-- [ ] Personne de caché : tags, liste vocale et voix comme avant.
-
-Reste (pas demandé, à décider) : les membres du clan d'un caché le voient toujours « en ligne » dans l'écran du clan.
+- [ ] S caché, C = joueur du clan de S : dans l'écran du clan, S est « hors ligne » ; sur la carte (M), S n'apparaît
+      pas et le nombre de membres en ligne ne le compte pas ; `/clan info` (C ou un autre joueur) ne le compte pas.
+      S se montre : tout revient (au plus quelques secondes).
+- [ ] Personne de caché : tags, liste vocale, voix, écran et carte du clan comme avant.
 
 Pas testé : tout en jeu (aucune compilation ici : contrôle de la branche sur GitHub).

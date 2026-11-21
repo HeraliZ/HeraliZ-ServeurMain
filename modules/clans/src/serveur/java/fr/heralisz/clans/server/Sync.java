@@ -383,15 +383,18 @@ public final class Sync {
     /** Partie du snapshot commune a tous les destinataires. */
     private record Base(List<ClanSnapshot.MembreVue> membres, EnumMap<Grade, Integer> perms, String symbole, long cdNom, long cdTag,
                         long cdDesc, long cdBan, List<ClanSnapshot.TerritoireVue> territoires, long resetJour, long resetSemaine, long now,
-                        Map<UUID, ReglagesPerms> reglages) {
+                        Map<UUID, ReglagesPerms> reglages, Set<UUID> caches) {
     }
 
     private static Base base(Clan c, MinecraftServer server, long now) {
         Economie eco = Economie.active();
         boolean ecoOk = eco.disponible();
         List<ClanSnapshot.MembreVue> membres = new ArrayList<>(c.membres.size());
+        // membres du staff caches (vanish), en ligne : montres hors ligne a qui ne voit pas les caches (21/11, dans « pour »)
+        Set<UUID> caches = new HashSet<>();
         for (Membre m : c.membres.values()) {
             boolean enLigne = server.getPlayerList().getPlayer(m.uuid) != null;
+            if (enLigne && PontVanish.cache(m.uuid)) caches.add(m.uuid);
             membres.add(ClanSnapshot.MembreVue.de(m, enLigne, ecoOk ? eco.solde(m.uuid) : 0));
         }
         EnumMap<Grade, Integer> perms = new EnumMap<>(Grade.class);
@@ -407,7 +410,7 @@ public final class Sync {
         if (symbole.length() > 8) symbole = symbole.substring(0, 8);
         return new Base(membres, perms, symbole, reste(c.dernierChgtNom, cooldown, now), reste(c.dernierChgtTag, cooldown, now),
                 reste(c.dernierChgtDesc, cooldown, now), reste(c.dernierChgtBanniere, cooldown, now), Territoires.tenusPar(c.id),
-                Math.max(0, c.prochainResetJour - now), Math.max(0, c.prochainResetSemaine - now), now, reglages);
+                Math.max(0, c.prochainResetJour - now), Math.max(0, c.prochainResetSemaine - now), now, reglages, caches);
     }
 
     private static long reste(long dernier, long cooldown, long now) {
@@ -432,8 +435,18 @@ public final class Sync {
             ReglagesPerms miens = b.reglages.get(u);
             reglages = miens == null ? Map.of() : Map.of(u, miens);
         }
+        List<ClanSnapshot.MembreVue> membres = b.membres;
+        if (!b.caches.isEmpty() && !PontVanish.voitLesCaches(p)) {
+            // staff cache (21/11) : hors ligne pour les autres membres du clan qui ne voient pas les caches
+            membres = new ArrayList<>(b.membres.size());
+            for (ClanSnapshot.MembreVue m : b.membres) {
+                membres.add(b.caches.contains(m.uuid()) && !m.uuid().equals(u)
+                        ? new ClanSnapshot.MembreVue(m.uuid(), m.nom(), m.grade(), m.rejointLe(), m.vuLe(), m.stats(), false, m.solde())
+                        : m);
+            }
+        }
         return new ClanSnapshot(c.id, c.tag, c.nom, c.description, c.banniere, c.chef, c.creeLe, c.banque, c.niveau, c.xp,
-                Niveaux.xpPour(c.niveau), c.membresMax(), c.territoiresMax(), b.membres, b.perms,
+                Niveaux.xpPour(c.niveau), c.membresMax(), c.territoiresMax(), membres, b.perms,
                 u, g, monSolde, b.symbole, b.cdNom, b.cdTag, b.cdDesc, b.cdBan, journalBanque, c.quetesJour, c.quetesSemaine,
                 b.resetJour, b.resetSemaine, terr, c.journal, b.now, reglages);
     }

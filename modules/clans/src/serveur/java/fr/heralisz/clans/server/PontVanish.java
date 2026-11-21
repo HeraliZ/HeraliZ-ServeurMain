@@ -47,6 +47,11 @@ public final class PontVanish {
         return pret() && vrai(voit, joueur);
     }
 
+    /** {@code voyant} peut-il voir {@code cible} en ligne (pas caché, lui-même, staff, ou la console : null) ? */
+    public static boolean visible(@Nullable ServerPlayer voyant, UUID cible) {
+        return voyant == null || voyant.getUUID().equals(cible) || !cache(cible) || voitLesCaches(voyant);
+    }
+
     private static boolean vrai(@Nullable Method m, Object arg) {
         if (m == null) return false;
         try {
