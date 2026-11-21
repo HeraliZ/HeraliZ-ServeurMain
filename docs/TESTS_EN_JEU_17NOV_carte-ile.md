@@ -1647,3 +1647,46 @@ Remarques, à décider par le propriétaire (rien n'est changé) :
   quand même. Très rare (l'arrivée autour d'un joueur est déjà chargée).
 - Conversion des anciennes clés de la planque (une seule fois par joueur) : la planque et le compte de clés sont écrits
   sur deux fils différents ; un plantage juste à ce moment peut doubler ces clés. Très rare, une fois par joueur.
+
+## 42. Audit du 21/11 : duplications et argent
+
+Demande du propriétaire : « que tout soit clean, sans aucun bug ». Cette partie : tout ce qui crée, déplace ou détruit
+des objets ou de l'argent (hérals, bourses, capsules, clés), surtout ce qui a changé depuis le 19/11 (achat avec la
+quantité, Passeur, recycleurs, sacs, bourses, `/money`, dépôts du ClashWar écrits en fond, sauvegardes étalées).
+Versions : ClashWar **1.3.4**, Quêtes **1.24.3** (rien ne change entre le jeu et le serveur ; rien de nouveau à l'écran).
+**Rien n'a été testé en jeu** : la fabrication et les contrôles sur GitHub seulement.
+
+Corrigé :
+- **Inventaire mis de côté par le ClashWar** (inscrits au départ d'un tournoi, et `/clashwar regarder`) : depuis le 19/11,
+  le dépôt s'écrit en fond et le joueur attend un instant. Au moment de vider son inventaire, le serveur vérifie
+  maintenant qu'il tient exactement ce qui a été mis de côté ; sinon rien n'est vidé et le dépôt est refait (au plus
+  5 fois, puis refusé avec le message habituel, inventaire intact). La marque du dépôt n'est plus posée qu'à ce moment-là.
+- **Marchands, Mila, échanges, recycleur du spawn, quêtes du jour et étape « donner » de Varga** : refusés tant que
+  l'inventaire est mis de côté par le ClashWar (même message qu'en match).
+
+À vérifier en jeu (un op pour lancer un ClashWar, 4 comptes) :
+- [ ] Départ d'un tournoi, inventaires bien remplis (armes, sac porté, objet tenu à la souris au moment du départ) :
+      chacun entre en salle ; au retour, l'inventaire est exactement celui d'avant, ni en double ni en moins.
+- [ ] `/clashwar regarder`, puis `/clashwar quitter`, plusieurs fois de suite : même chose à chaque retour.
+- [ ] Journal du serveur au départ : normalement aucune ligne « objets deplaces pendant l'ecriture ». S'il y en a pour
+      des joueurs qui ne touchaient à rien, le dire (un objet qui change tout seul dans l'inventaire ferait attendre).
+- [ ] Hors ClashWar : Mila, les marchands, le Passeur, les échanges, le recycleur du spawn, Varga et les quêtes du jour
+      marchent comme avant.
+
+Contrôles de l'économie (passés le 21/11, sans et avec la bêta) : `python outils/marchands.py --controle` (aucune revente
+ni aucun recyclage au-dessus de 50 % du prix, Passeur sous 10 % pour une arme et 20 % pour des balles),
+`python outils/recyclage.py --verifier` (recycleur un peu sous les prix de Mila).
+
+Relu sans rien à corriger : achat avec la quantité (quantité 1 à 2 304, prix revérifié, place vérifiée avant de payer,
+prix 0 refusé), revente à Mila (cases dédoublonnées), échanges (calcul sur une copie), bourses de hérals (registre :
+une copie ne paie jamais), recycleur de la carte (contenu partagé, chaque clic écrit dans l'ordre), hôtel des ventes,
+compte de capsules, caisses et clés, sacs pleins refusés partout où ils seraient détruits, contenu des sacs caché aux
+autres joueurs (copie, jamais l'objet du serveur), refus de l'anticheat, `/money` et `/profil` (lecture seule).
+
+Pas corrigé (seulement en cas de plantage du serveur à un instant précis ; à décider) :
+- objets et capsules en attente (caisses, casino) : leur fichier n'est pas écrit au moment même de la remise (en fond
+  depuis le 19/11 pour les caisses, à la sauvegarde automatique pour le casino) ; un plantage juste après une remise
+  pourrait la redonner ;
+- sauvegarde automatique étalée sur 5 s (joueurs, entités) : un objet sorti d'un corps ou d'un conteneur de loot pendant
+  ces 5 s pourrait revenir après un plantage avant la sauvegarde suivante ;
+- coffre du clan et planque (déjà noté le 19/11) : un objet sorti juste avant un plantage peut revenir.
