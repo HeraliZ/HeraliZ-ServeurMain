@@ -181,6 +181,36 @@ public abstract class SafeSavedData extends SavedData {
             FOND.ecrire(path, () -> writeAtomically(aEcrire, path), () -> this.echecFond.set(true));
             return;
         }
+        ecrireMaintenant(root, file);
+    }
+
+    /**
+     * HeraliZ (21/11, audit) : écrit cette donnée TOUT DE SUITE, sur le fil du serveur, jamais en fond, quand un ordre
+     * d'écriture doit tenir (objet sorti d'un stockage : le stockage sur le disque AVANT le joueur, sinon un plantage entre
+     * les deux rend l'objet une 2e fois). {@link #save(File)} part en fond quand le réglage {@code [perf] donnees_en_fond}
+     * du noyau est vrai (19/11) : l'ordre voulu par l'appelant n'y tenait plus. Rien si la donnée n'a pas changé ou si son
+     * fichier est protégé ; écriture ratée : la donnée reste « à sauver » (nouvel essai à la sauvegarde suivante).
+     */
+    public void sauverMaintenant(@NotNull File file) {
+        if (this.echecFond.getAndSet(false)) {
+            this.setDirty(true);
+        }
+        if (!this.isDirty() || this.writeProtected) {
+            return;
+        }
+        CompoundTag root = new CompoundTag();
+        try {
+            root.put("data", this.save(new CompoundTag()));
+        } catch (RuntimeException e) {
+            Crac.LOGGER.error("[CRac] relevé de {} impossible, fichier précédent gardé", file, e);
+            return;
+        }
+        NbtUtils.addCurrentDataVersion(root);
+        ecrireMaintenant(root, file);
+    }
+
+    /** Sur ce fil, après les écritures de ce fichier encore en file (jamais une version plus ancienne écrite après). */
+    private void ecrireMaintenant(CompoundTag root, File file) {
         FOND.attendre(file.toPath());   // jamais une version plus ancienne écrite après celle-ci
         try {
             writeAtomically(root, file.toPath());

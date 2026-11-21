@@ -86,6 +86,11 @@ final class Donnees {
     private static Path dossier;
     private static final Map<UUID, DJoueur> CACHE = new HashMap<>();
     private static final Set<UUID> SALES = new LinkedHashSet<>();
+    /**
+     * 21/11 (audit) : écritures ratées sur le fil d'écriture (disque plein...) : ces joueurs redeviennent « à écrire » à la
+     * sauvegarde suivante (toutes les 30 s, et à l'arrêt), tant que leur progression est en mémoire.
+     */
+    private static final Set<UUID> ECHECS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private Donnees() {
     }
@@ -99,12 +104,14 @@ final class Donnees {
         }
         CACHE.clear();
         SALES.clear();
+        ECHECS.clear();
     }
 
     static void arreter() {
         toutEcrire();
         CACHE.clear();
         SALES.clear();
+        ECHECS.clear();
         dossier = null;
     }
 
@@ -142,6 +149,10 @@ final class Donnees {
     }
 
     static void toutEcrire() {
+        for (UUID u : ECHECS) {
+            ECHECS.remove(u);
+            if (CACHE.containsKey(u)) SALES.add(u);
+        }
         for (UUID u : new ArrayList<>(SALES)) ecrire(u);
     }
 
@@ -184,7 +195,14 @@ final class Donnees {
         }
     }
 
-    /** Texte relevé ici (fil du serveur), écrit sur le fil des quêtes (01/11) : même fichier, même contenu qu'avant. */
+    /**
+     * Texte relevé ici (fil du serveur), écrit sur le fil des quêtes (01/11) : même fichier, même contenu qu'avant.
+     * 21/11 (audit) : le fichier à côté n'est mis à la place que s'il a été écrit en entier. Avant, une écriture ratée
+     * (disque plein) le mettait quand même à la place de la bonne progression, à moitié écrit : illisible à la connexion
+     * suivante, il était mis de côté et le joueur repartait de zéro (quêtes de Varga à refaire, donc à payer de nouveau).
+     * Écriture ratée : la progression d'avant reste sur le disque, l'erreur est dans le journal du serveur (écrivain en
+     * fond du noyau) et le joueur est de nouveau « à écrire » ({@link #ECHECS}).
+     */
     private static void ecrire(UUID u) {
         SALES.remove(u);
         DJoueur j = CACHE.get(u);
@@ -194,12 +212,25 @@ final class Donnees {
         EcrituresFond.ecrire(f, () -> {
             try {
                 Files.writeString(tmp, texte, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                // à moitié écrit : jamais mis à la place de la progression d'avant
+                ECHECS.add(u);
+                try {
+                    Files.deleteIfExists(tmp);
+                } catch (IOException ignore) {
+                    // il sera écrasé par la prochaine écriture
+                }
+                throw ex;
+            }
+            try {
                 Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } catch (IOException ex) {
+                // renommage atomique impossible ici : le fichier, écrit en entier, est mis à la place autrement
                 try {
                     Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException ex2) {
-                    LOG.error("[heraliz_quetes] écriture de {} : {}", f, ex2.getMessage());
+                    ECHECS.add(u);
+                    throw ex2;
                 }
             }
         });
