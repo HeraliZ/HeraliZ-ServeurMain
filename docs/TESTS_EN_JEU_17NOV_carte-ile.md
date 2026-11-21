@@ -1690,3 +1690,47 @@ Pas corrigé (seulement en cas de plantage du serveur à un instant précis ; à
 - sauvegarde automatique étalée sur 5 s (joueurs, entités) : un objet sorti d'un corps ou d'un conteneur de loot pendant
   ces 5 s pourrait revenir après un plantage avant la sauvegarde suivante ;
 - coffre du clan et planque (déjà noté le 19/11) : un objet sorti juste avant un plantage peut revenir.
+
+## 43. Audit du 21/11 : armes, équipement, sacs, anticheat, launcher, outils et tâches GitHub (relecture du code)
+
+Corrigé :
+- **Armes vues de loin (versions allégées du 20/11)** : un contrôle vérifie maintenant, à chaque fabrication (GitHub
+  compris), que chaque arme a sa version allégée et qu'elle suit le vrai modèle de l'arme. Avant, une arme mise à jour
+  dans un gunpack gardait pour toujours la version allégée de l'ancien modèle (pièces mal placées chez les autres
+  joueurs), sans aucune alerte, et `--installer` ne la refaisait jamais. Si le contrôle se plaint un jour :
+  `python outils/lod_armes.py --installer`. Rien ne change dans le jeu aujourd'hui : tout était déjà à jour.
+
+Vérifié le 21/11, sans rien à corriger :
+- les 123 armes reliées à une version allégée : chaque fichier existe, avec sa texture ; les accessoires (viseurs,
+  silencieux) restent dessinés sur la version allégée (d'après le code de TaCZ : mêmes repères) ;
+- les 79 programmes des camos et effets (Diamant compris) se compilent avec un vrai compilateur OpenGL ;
+- les outils qui écrivent des fichiers (loot des armes et des zombies, caisses, marchands, recycleur, Table d'armurier,
+  mipmaps, grande texture des blocs, versions allégées) : relancés, leurs fichiers étaient déjà à jour ; tous leurs
+  contrôles passent, y compris ceux que GitHub saute (icônes, chargeurs 3D, accessoires en main, placement des
+  accessoires) ;
+- sacs portés : leur contenu ne part plus qu'au porteur (vérifié dans le jar de Curios : les bons envois sont visés) ;
+- anticheat : les nouvelles règles visent bien les méthodes de TaCZ 1.1.8 (vérifié dans son jar) ; relu sans trouver de
+  cas où un joueur honnête serait expulsé (packs de textures, bibliothèques d'agent, clés du Gardien, ouvertures à
+  travers les murs, tirs) ;
+- launcher 1.18.1 : 63 tests passés (Gardien, intégrité, Spartan, effacement, signature, sécurité).
+
+À vérifier en jeu (2 joueurs A et B) :
+- [ ] A regarde B tenir plusieurs armes (fusil avec viseur et silencieux, pistolet, couteau), de près puis à 20 blocs :
+      l'arme est bien dans la main, les accessoires sont à leur place, rien ne flotte.
+
+À décider (propositions, rien n'a été changé) :
+1. **Règles « en rodage » de l'anticheat** : si 3 comptes différents déclenchent la même règle en une heure, elle se
+   coupe pour tout le serveur jusqu'au redémarrage. Un tricheur avec 3 comptes pourrait la couper exprès. Proposition :
+   compter des PC différents plutôt que des comptes, et vider la liste « rodage » après une semaine sans « Règle
+   suspendue » (comme prévu).
+2. **Tirs étalés par l'anticheat** (très rare chez un joueur honnête) : le tir mis de côté part dans la direction où le
+   joueur vise au moment où il est rejoué, et le tir normal qui suit peut être refusé une fois par TaCZ. Effet minime ;
+   à revoir si des joueurs parlent de « balles perdues ».
+3. **Contrôles sautés sur GitHub** (icônes, chargeurs 3D, accessoires en main, placement des accessoires) : il leur
+   manque deux bibliothèques (numpy et Pillow). Les installer dans les tâches GitHub ajouterait environ une minute par
+   fabrication.
+4. **Dépôt public** : les tâches « Lenteurs » et « Journaux » ne masquent pas les adresses IPv6, « Lenteurs » écrit les
+   noms des fichiers de la racine du serveur, et « Enquête Spartan » écrit le pseudo du joueur contrôlé dans son journal.
+   Proposition : les masquer aussi.
+
+Pas testé en jeu : rien de cette section (relecture du code et outils seulement).
