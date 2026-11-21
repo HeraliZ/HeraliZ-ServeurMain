@@ -80,7 +80,8 @@ public class EcranInscription extends Screen {
     private Hold retirerClan, meRetirer;
 
     public EcranInscription(CwPaquets.InscriptionS2C p) {
-        super(Component.translatable("clashwar.inscription.titre"));
+        // titre lu par le narrateur : avec son numero d'edition (sans lui, le texte brut "ClashWar #%s")
+        super(Component.translatable("clashwar.inscription.titre", p.edition()));
         this.donnees = p;
         appliquer(p, true);
     }

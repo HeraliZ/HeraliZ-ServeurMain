@@ -55,7 +55,7 @@ final class Marchands {
      * /boutique et /trade de HeraliZ Grades) : en match, en combat, à terre, pendant le tutoriel des bases, et sur la carte
      * (overworld) en survie : les marchands ne servent qu'au spawn. Créatif (staff qui essaie) : jamais bloqué. 21/11 (audit
      * des duplications) : « en match » compte aussi un inventaire mis de côté par le ClashWar (marque de son Coffre, règle
-     * commune du noyau) : ce qui serait vendu ou donné reviendrait avec le dépôt, ce qui serait acheté serait effacé.
+     * commune du noyau).
      */
     static Texte empechement(ServerPlayer p) {
         if (p.isCreative()) return null;

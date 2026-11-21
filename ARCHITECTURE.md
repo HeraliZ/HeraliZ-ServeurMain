@@ -99,7 +99,8 @@ Ce qu'on peut faire, et ce qu'on ne peut pas faire :
 
 ## 4. Performances
 
-**Distance de vue :** bloquée à **8** (serveur + curseur des joueurs plafonné à 8), simulation à 6.
+**Distance de vue :** bloquée à **8** sur la carte (serveur + curseur des joueurs plafonné à 8), 6 au spawn et 4 dans le
+tutoriel des bases (`heraliz_distances-server.toml`) ; simulation à 4 (celle du `server.properties` du Ptero, relu le 02/11).
 
 **Props (LOD) :**
 - Aujourd'hui, les conteneurs de loot sont dessinés **à chaque image**, un par un (231 000 faces pour 246
