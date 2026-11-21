@@ -88,6 +88,17 @@ public final class Pb {
             return corps.has("reason") ? corps.get("reason").getAsString() : "";
         }
 
+        /**
+         * Refus clair (21/11, validation de l'audit) : le site a lu la demande et n'a RIEN fait pour cette référence (compte
+         * inconnu 404, solde insuffisant ou plafond 409, demande invalide 422, avec « ok » faux). C'est ainsi que le site
+         * refuse (PbController de l'extension HeraliZ), jamais par un code 200 : comme l'hôtel des ventes, la boutique et
+         * /trade le prennent pour un refus, pas pour un site muet (avant : « site injoignable » et objets d'un échange
+         * gardés en dépôt au moins 2 min). Un 500, un 503 ou une réponse perdue restent « on ne sait pas ».
+         */
+        public boolean refusClair() {
+            return !ok() && (code == 404 || code == 409 || code == 422);
+        }
+
         public long nombre(String champ) {
             return corps.has(champ) && !corps.get(champ).isJsonNull() ? corps.get(champ).getAsLong() : -1;
         }

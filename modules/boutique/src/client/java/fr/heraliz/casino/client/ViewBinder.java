@@ -266,12 +266,15 @@ public final class ViewBinder {
     }
 
     // ---- tableau des taux de la caisse (noms des objets traduits), recalcule quand la config ou la langue change
-    private static String ratesKey;
+    private static String ratesLangue, ratesJson;
     private static String[] ratesCache = new String[0];
 
     private static String[] rates() {
-        String key = Minecraft.getInstance().getLanguageManager().getSelected() + "|" + CasinoConfig.json();
-        if (key.equals(ratesKey)) return ratesCache;
+        // 21/11 (validation de l'audit, images par seconde) : langue et réglages comparés tels quels, les réglages par
+        // identité (chaque nouvelle config arrive dans un nouveau texte) ; avant, la langue et tout le texte des réglages
+        // (environ 18 Ko) étaient recollés puis comparés à chaque image, pour chaque caisse du casino à l'écran
+        String langue = Minecraft.getInstance().getLanguageManager().getSelected(), json = CasinoConfig.json();
+        if (json == ratesJson && java.util.Objects.equals(langue, ratesLangue)) return ratesCache;
         java.util.List<String> lines = new java.util.ArrayList<>();
         CasinoConfig.Cashier c = CasinoConfig.get().caisse;
         // en tete : le change avec les herals, la monnaie du serveur (mod HeraliZ Economie) : « 1 héral = 1 jeton »
@@ -291,7 +294,8 @@ public final class ViewBinder {
             lines.add(I18n.get("heralizcasino.caisse.commande", String.valueOf(e.jetons), String.valueOf(e.montant), e.nom));
         }
         ratesCache = lines.toArray(new String[0]);
-        ratesKey = key;
+        ratesLangue = langue;
+        ratesJson = json;
         return ratesCache;
     }
 

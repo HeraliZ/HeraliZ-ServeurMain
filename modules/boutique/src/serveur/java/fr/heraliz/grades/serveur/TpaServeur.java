@@ -178,6 +178,16 @@ final class TpaServeur {
         return null;
     }
 
+    /**
+     * Recharge du /tpa pas finie (null : il peut partir). 21/11 (validation de l'audit) : revue aussi à l'acceptation et au
+     * départ, plus seulement à la demande. Avant, une demande envoyée pendant l'attente d'une autre téléportation (recharge
+     * pas encore posée), puis acceptée après l'arrivée, faisait repartir le joueur sans attendre sa recharge.
+     */
+    private static Component rechargeEnCours(ServerPlayer p) {
+        long reste = reste(p.getUUID());
+        return reste > 0 ? Component.translatableWithFallback("heraliz_grades.tpa.recharge", "Prochaine téléportation dans %s.", duree(reste)) : null;
+    }
+
     /** Raison qui empêche d'arriver chez ce joueur, ou null. */
     private static Component empechementCible(ServerPlayer cible) {
         if (enMatch(cible)) return Component.translatableWithFallback("heraliz_grades.tpa.cible_match", "%s est en match.", cible.getDisplayName());
@@ -433,6 +443,7 @@ final class TpaServeur {
                     "Tu es dans la base de ton clan sans le droit « Accepter un /tpa dans la base » : personne ne peut t'y rejoindre. Sors de la base pour accepter."));
         }
         Component non = empechement(p);
+        if (non == null && !staff(p)) non = rechargeEnCours(p);
         if (non != null) {
             refus(p, non);
             return refus(cible, Component.translatableWithFallback("heraliz_grades.tpa.impossible", "%s ne peut pas venir pour le moment.", p.getDisplayName()));
@@ -502,6 +513,7 @@ final class TpaServeur {
             if (ticks < a.fin()) return false;
             Component non = empechement(p);
             if (non == null && !staff(p)) non = empechementCible(cible);
+            if (non == null && !staff(p)) non = rechargeEnCours(p);
             // 15/11 (audit C1) : celui qui accueille est entré entre-temps dans la base de son clan sans le droit d'y faire
             // venir quelqu'un : rien ne part, les deux le savent
             if (non == null && !staff(p) && tpaRefuseeDansBase(cible)) {
