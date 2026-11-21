@@ -45,9 +45,10 @@ Tout dans le commit **5f5721dc**.
    case, à chaque image : une boîte de munitions de TaCZ fabriquait un texte neuf (« tacz:ammo_box/1 »), et un objet d'un
    coffre T7 copiait la liste des raretés. Maintenant : textes faits une fois, liste partagée. Même couleur partout.
    `modules/loot/src/commun/java/fr/heraliz/loot/RaretesObjets.java` l.137-146 ; `Rarete.java` l.89-99 (`lire`).
-6. **Raretés lues avec la langue du PC (faible).** Les valeurs de `raretes.json` étaient mises en minuscules selon la
-   langue du système (un serveur en turc lisait mal « EPIQUE »). Maintenant : toujours la même règle (`Locale.ROOT`).
-   `modules/loot/src/serveur/java/fr/heraliz/loot/RaretesServeur.java` l.96.
+6. **Raretés mises en minuscules selon la langue du système (faible, robustesse).** Les valeurs de `raretes.json` étaient
+   mises en minuscules avec la règle de la langue du système (en turc, « EPIQUE » devenait « epıque ») ; sans effet visible
+   aujourd'hui (la relecture ne regarde pas les majuscules), mais maintenant toujours la même règle (`Locale.ROOT`), comme
+   le reste du code. `modules/loot/src/serveur/java/fr/heraliz/loot/RaretesServeur.java` l.96.
 
 ## À décider par le propriétaire
 
