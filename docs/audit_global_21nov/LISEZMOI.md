@@ -113,3 +113,17 @@ de la dernière version (`f545589a`) est réussi, sans erreur nouvelle.
 
 Outils ajoutés (branchés nulle part pour l'instant) : `outils/verif_reflexion.py` (réflexion et liens entre modules,
 environ 20 s) et `outils/verif_mixins.py` (configurations, manifestes, cibles des autres auteurs, conflits).
+
+## Suite du 21/11 : choix du propriétaire
+
+Mis en ligne le 21/11 à 14 h 22 (heure UTC) : tout ce qui précède. Décisions : lettres nettes **non** ; captures du staff
+**gardent** leurs points ; contrôles GitHub en plus : non. Faits ensuite, sur la branche (essais : section 50 de
+`docs/TESTS_EN_JEU_17NOV_carte-ile.md`) :
+- **sécurités en plus** : Coffre du ClashWar encore plus strict et à l'abri des erreurs des autres mods (a7 A et C,
+  ClashWar 1.3.8) ; pas de voix avant le `/login` (a8 P4, CaraCrea 1.7.2) ; recycleur de la carte jamais en double après
+  une écriture ratée (a5 P2) ; limites de cadence : camos et stickers (a4 n° 2), journal des quêtes et saison (a5 P4),
+  deux paquets des bases (a3 n° 7) ;
+- **allègements** : `profils.json` (a5 P3), collection des camos (a4 n° 1), `/kit` (a1 n° 4), `/avantages nick`
+  (a1 n° 5), usure (a2 n° 4), train (a2 n° 6) ;
+- **demande nouvelle** : skins d'armes impossibles à voler (Armes 2.59.10, voir `a4_armes_equipement_sacs.md`).
+

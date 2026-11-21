@@ -2069,3 +2069,53 @@ Corrigé (le détail, les fichiers et les lignes sont dans chaque compte rendu) 
 
 Pas testé : tout en jeu ; rien de mesuré avec 150 vrais joueurs (aucune compilation ici : fabrication, contrôles et
 démarrage d'essai sur GitHub).
+
+## 50. Suite de l'audit du 21/11 : choix du propriétaire (sécurités en plus, allègements, skins d'armes)
+
+L'audit de la section 49 est en ligne depuis le 21/11 à 14 h 22 (heure UTC ; serveur prêt, aucune erreur Java dans le
+journal). Décisions du propriétaire : lettres nettes de l'interface **non** (« les lettres sont déjà bien plus nettes ») ;
+captures de territoire du staff : **gardent** leurs points de saison ; contrôles GitHub en plus : non. Choisis : sécurités
+en plus, allègements du serveur, et une demande nouvelle : les skins d'armes impossibles à voler, comme ceux des couteaux.
+Détail dans chaque compte rendu de `docs/audit_global_21nov/`, section « Suite du 21/11 ».
+
+Fait :
+- **Armes 2.59.10, skins d'armes impossibles à voler** : un objet camo posé sur une arme (onglet Camo de l'atelier) entre
+  d'abord dans la collection à vie du joueur (l'objet n'est consommé que si ce camo n'y était pas encore), puis se pose
+  depuis elle : lié au joueur, perdu dans la seconde par une arme qui change de mains, retiré à la mort (15 min avant de
+  le remettre), une seule arme à la fois par camo. Tous les refus sont vus avant de toucher à l'objet. Les camos
+  définitifs déjà posés avant restent sur leurs armes (on ne sait pas à qui ils sont). Aucun changement de rendu. Aussi :
+  collection écrite en fond, une action de camo ou de sticker toutes les 0,15 s au plus.
+- **ClashWar 1.3.8** : au départ, chaque objet est comparé en entier (accessoires, skin, usure, contenu du sac) ; une
+  erreur d'un autre mod pendant un dépôt laisse le joueur intact, le serveur ne plante plus.
+- **Voix (CaraCrea 1.7.2)** : avant le `/login`, un joueur ne parle pas, n'entend personne et ne touche pas aux groupes.
+- **Quêtes 1.24.5** : recycleur de la carte jamais en double après une écriture ratée (il se ferme et réessaie) ;
+  journal des quêtes à 4 demandes par seconde au plus. **Clans 3.19.3** : `profils.json` écrit en fond ; écran de la
+  saison une fois par seconde au plus.
+- **CRac 1.38.10-beta** : limite de cadence pour « À la base » à la mort et pour l'onglet Accès de l'armoire.
+- **Boutique 1.7.3** : `/kit` s'ouvre sans attendre le bot Discord ; `/avantages nick` ne relit plus `usercache.json` à
+  chaque essai.
+- **Monde 1.3.11** : l'usure ne regarde plus son fichier de réglages depuis le fil du serveur (prise en compte d'un
+  changement à la main en moins de 10 s) ; le train ne refait plus l'horaire des rames pour chaque balle lointaine.
+
+À tester en jeu :
+- [ ] **Skins** : un objet camo pas encore dans la collection, posé depuis l'atelier : le camo est sur l'arme, l'objet a
+      disparu, le camo est dans la collection. Le même objet une deuxième fois : il reste dans l'inventaire.
+- [ ] **Skins** : l'arme donnée ou jetée à un autre joueur perd le camo chez lui ; après une mort, « Appliquer » reste
+      grisé 15 min, même avec un autre objet du même camo ; en match ou à terre : refusé, l'objet reste.
+- [ ] **Skins** : un ancien camo définitif reste sur son arme ; couteaux, skins à vie, sacs, stickers et StatTrak comme
+      avant ; après un redémarrage, la collection est toujours là.
+- [ ] **ClashWar** : départ avec un fusil équipé, un sac plein et des Curios : chacun entre en salle du premier coup, tout
+      revient exactement une fois ; journal sans « inventaire change pendant l'ecriture » ni « erreur d'un autre mod ».
+- [ ] **Voix** : avant le `/login`, le nouveau venu n'est pas entendu et n'entend rien ; juste après, tout marche ; les
+      joueurs déjà connectés ne voient aucune différence.
+- [ ] **Recycleur de la carte** : déposer, recycler, reprendre, redémarrer : comme avant.
+- [ ] **`/profil`** : les chiffres restent justes après un redémarrage ; journal des quêtes (J) et onglet Saison : comme
+      avant, même en cliquant vite.
+- [ ] **Bases** : mourir puis « À la base » : retour du premier coup ; onglet Accès : taper vite un nom, ajouter et retirer
+      plusieurs joueurs : tout passe.
+- [ ] **`/kit`** avec le bot Discord en marche, puis arrêté : le menu s'ouvre tout de suite. **`/avantages nick`** avec
+      le pseudo d'un autre joueur : refusé.
+- [ ] **Usure** : changer une valeur à la main : « [usure] reglages relus » dans la console en moins de 10 s. **Train** :
+      tirs depuis le quai et de loin : comme avant.
+
+Pas testé : tout en jeu (fabrication, contrôles et démarrage d'essai sur GitHub seulement).
