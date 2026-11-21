@@ -298,9 +298,23 @@ public final class CombatService {
         var ctx = e.getParseResults().getContext();
         if (!(ctx.getSource().getEntity() instanceof ServerPlayer p)) return;
         Refus r = refus(p, racine(e.getParseResults().getReader().getString()));
-        if (r == null) return;
+        if (r == null || elevee(ctx.getSource(), p)) return;
         e.setCanceled(true);
         r.prevenir(p);
+    }
+
+    /**
+     * 21/11 (audit) : commande jouée par le CODE au nom du joueur, avec plus de droits que les siens (panneau du staff :
+     * ban PC, cycle, largage, frappe, redémarrage, recharger, diag…, {@code withPermission(4)}) : c'est une action décidée
+     * par le serveur, pas une commande tapée (une commande tapée a toujours les droits du joueur lui-même, celles des
+     * plugins comprises) ; les règles du combat, à terre et de la carte ne la jugent pas. Avant, un membre du staff sans op,
+     * en survie sur la carte ou en combat, ne pouvait pas bannir un PC depuis le panneau (« seulement au spawn »).
+     */
+    private static boolean elevee(net.minecraft.commands.CommandSourceStack source, ServerPlayer p) {
+        for (int niveau = 4; niveau >= 1; niveau--) {
+            if (source.hasPermission(niveau) && !p.hasPermissions(niveau)) return true;
+        }
+        return false;
     }
 
     /**
