@@ -388,6 +388,9 @@ public final class DownedManagerServeur {
             s.dying = false;
             if (e.isAlive() && !(e.getHealth() <= 0.0F)) {
                stand(s);
+               // 21/11 (validation v7) : plus a terre (mort refusee par un autre mod) : dit a ceux qui le voient, comme pour
+               // toute autre fin d'etat (avant : ils le voyaient encore allonge jusqu'au prochain envoi)
+               sync(e, 0);
             } else {
                forget(s);
             }
@@ -941,8 +944,13 @@ public final class DownedManagerServeur {
       }
    }
 
+   /**
+    * Un joueur sort de la vue d'un autre : son etat (a terre, fouille, reanimation, execution) est remis a zero chez celui-ci.
+    * 21/11 (validation v7, a7 E) : seulement s'il en a un ; sinon il n'y a rien a effacer (chaque changement d'etat est
+    * envoye a tous ceux qui le voient, {@link #sync}) : plus de petit paquet pour rien a chaque sortie de vue.
+    */
    public static void onStopTracking(ServerPlayer tracker, Entity target) {
-      if (target instanceof LivingEntity living && canBeDowned(living)) {
+      if (target instanceof LivingEntity living && canBeDowned(living) && flags(living) != 0) {
          Network.sendTo(tracker, new SyncPacket(target.getId(), 0, -1, 0, 0, 0, 0, 0, 0));
       }
    }

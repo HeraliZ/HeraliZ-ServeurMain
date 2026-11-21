@@ -547,8 +547,9 @@
 	#Règles « en rodage » (19/11) : jamais essayées sur de vrais PC de joueurs. Disjoncteur : si rodageJoueurs PC
 	#DIFFÉRENTS les déclenchent en moins de rodageMinutes, la règle est suspendue (alerte seulement, plus
 	#d'expulsion) pendant rodageRepriseMinutes, puis remise en service toute seule ; le staff est prévenu les deux
-	#fois (« Règle suspendue », « Règle remise en service »). Un PC = son compte, son bloc d'adresses IP et ses
-	#identifiants matériels : plusieurs comptes sur un PC, ou plusieurs PC derrière la même connexion, comptent pour
+	#fois (« Règle suspendue », « Règle remise en service »). Un PC = son compte, son bloc d'adresses IP, ses
+	#identifiants matériels et la clé du Gardien de son lancement : plusieurs comptes sur un PC, ou plusieurs PC
+	#derrière la même connexion, comptent pour
 	#un ; un PC qui a déjà coupé une règle ne la coupe plus seul (jusqu'au redémarrage) : il faut au moins un PC
 	#nouveau parmi les rodageJoueurs ; seuls, les mêmes PC restent expulsés. Une règle qui se trompe n'expulse
 	#jamais plus de rodageJoueurs - 1 PC nouveaux d'affilée. gardien:dll: = bibliothèque d'agent Java ou

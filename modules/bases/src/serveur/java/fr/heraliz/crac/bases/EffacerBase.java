@@ -83,7 +83,8 @@ final class EffacerBase {
 
     /**
      * Efface la base du joueur (claim de son groupe et ses bâtiments sans claim) dans tous les mondes, ou dans le seul
-     * monde {@code seul} (fin du tutoriel : la cabane d'essai, jamais la vraie base du clan sur la carte). {pièces, claims}.
+     * monde {@code seul} (fin du tutoriel : la cabane d'essai, jamais la vraie base du clan sur la carte). Dans le monde du
+     * tutoriel, toujours ses seules cabanes d'essai (21/11), jamais celle d'un autre membre du clan. {pièces, claims}.
      */
     static int[] effacerDans(MinecraftServer server, UUID joueur, @org.jetbrains.annotations.Nullable ServerLevel seul) {
         return effacerDans(server, joueur, seul, null);
@@ -106,13 +107,16 @@ final class EffacerBase {
             if (seul != null && level != seul) {
                 continue;
             }
-            // monde du tutoriel : seulement les armoires posées sur SES pièces (deux membres d'un clan peuvent y être)
-            Claim cg = g == null || seul != null ? null : ClaimData.get(level).getByGroup(g.id());
+            // monde du tutoriel : seulement les armoires posées sur SES pièces (deux membres d'un clan peuvent y être). 21/11
+            // (fin de la validation, a3 n° 1) : aussi pour /base effacer <chef>, qui passe par tous les mondes : avant, il
+            // prenait au tutoriel « l'armoire du groupe », parfois la cabane d'essai d'un autre membre du clan en plein tutoriel
+            boolean parPieces = seul != null || MondeBases.estTuto(level);
+            Claim cg = g == null || parPieces ? null : ClaimData.get(level).getByGroup(g.id());
             if (cg != null) {
                 aEffacer.add(cg);
                 mondes.add(level);
             }
-            if (seul != null) {
+            if (parPieces) {
                 for (Claim c : new ArrayList<>(ClaimData.get(level).all())) {
                     if (c == cg) {
                         continue;
