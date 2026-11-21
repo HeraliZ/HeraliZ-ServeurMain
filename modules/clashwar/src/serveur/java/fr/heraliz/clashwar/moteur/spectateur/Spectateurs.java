@@ -11,6 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -190,6 +191,21 @@ public final class Spectateurs {
             if (p == null || inst == null) continue;
             if (p.level() != inst.niveau() || !inst.contient(p.getX(), p.getY(), p.getZ())) ramener(p, e.partie);
         }
+    }
+
+    /**
+     * 21/11 (audit a7) : un spectateur d'un match (mode spectateur de Minecraft) ne part vers aucun autre monde que ceux
+     * des matchs. Le menu des spectateurs de Minecraft (touches 1 a 9, « se teleporter vers un joueur ») envoie vers
+     * n'importe quel joueur connecte, meme sur la carte : {@link #tick} le ramenait ensuite, mais il avait deja vu l'endroit
+     * et les joueurs autour (une base, la position d'un clan). Le staff (niveau 2) n'est pas concerne ; les retours du
+     * Coffre detachent le spectateur ({@link #arreter}) avant de le teleporter. Fil serveur.
+     */
+    public static void voyage(EntityTravelToDimensionEvent e) {
+        if (ETATS.isEmpty() || !(e.getEntity() instanceof ServerPlayer p)) return;
+        Etat etat = ETATS.get(p.getUUID());
+        if (etat == null || p.hasPermissions(2) || MatchApi.partieDe(p) != etat.partie) return;
+        if (fr.heraliz.clashwar.HeralizClashWar.MODID.equals(e.getDimension().location().getNamespace())) return;
+        e.setCanceled(true);
     }
 
     /** Deconnexion : l'etat est garde (la partie decide) mais la camera est rendue. */

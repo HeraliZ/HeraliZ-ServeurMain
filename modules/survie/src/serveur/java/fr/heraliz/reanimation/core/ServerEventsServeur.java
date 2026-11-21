@@ -4,6 +4,7 @@ import fr.heraliz.reanimation.ReanimationConfig;
 import fr.heraliz.reanimation.command.ReanimationCommand;
 import fr.heraliz.reanimation.execution.ExecutionUnlocks;
 import fr.heraliz.reanimation.execution.Executions;
+import fr.heraliz.reanimation.network.ActionPacketServeur;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
@@ -157,6 +158,7 @@ public final class ServerEventsServeur {
    public static void onLogout(PlayerLoggedOutEvent event) {
       if (event.getEntity() instanceof ServerPlayer p) {
          DownedManagerServeur.onLogout(p);
+         ActionPacketServeur.oublier(p.getUUID());
       }
    }
 
@@ -187,5 +189,6 @@ public final class ServerEventsServeur {
    @SubscribeEvent
    public static void onStopped(ServerStoppedEvent event) {
       DownedManagerServeur.clearAll();
+      ActionPacketServeur.vider();
    }
 }

@@ -72,6 +72,9 @@ public final class MoteurLogique {
         MinecraftForge.EVENT_BUS.addListener(MoteurLogique::arret);
         MinecraftForge.EVENT_BUS.addListener(MoteurLogique::connexion);
         MinecraftForge.EVENT_BUS.addListener(MoteurLogique::deconnexion);
+        MinecraftForge.EVENT_BUS.addListener(MoteurLogique::reapparition);
+        // 21/11 (audit a7) : spectateur d'un match jamais teleporte vers un autre monde (menu des spectateurs de Minecraft)
+        MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.HIGHEST, Spectateurs::voyage);
         CombatEvents.enregistrer();
         brancherNoyau();
         Descente.enregistrer();
@@ -200,10 +203,23 @@ public final class MoteurLogique {
         if (e.getEntity() instanceof ServerPlayer p) CONNEXIONS.add(p.getUUID());
     }
 
+    /**
+     * 21/11 (audit a7) : reapparition apres une mort avec un depot encore sur le disque (le Coffre n'est jamais rendu a un
+     * joueur mort : Coffres.rendre) : il est rendu au tick suivant, comme a une connexion. Rien pour les autres joueurs.
+     */
+    private static void reapparition(PlayerEvent.PlayerRespawnEvent e) {
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        UUID u = p.getUUID();
+        if (CONNEXIONS.contains(u) || Coffres.enCours(u) || !fr.heraliz.clashwar.moteur.api.Coffre.aUnDepot(u)) return;
+        CONNEXIONS.add(u);
+    }
+
     private static void deconnexion(PlayerEvent.PlayerLoggedOutEvent e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         UUID u = p.getUUID();
         CONNEXIONS.remove(u);
+        // 21/11 (audit a7) : depot en ecriture : objets mis a part rendus avant que Minecraft n'enregistre le joueur
+        Coffres.deconnexion(p);
         Partie partie = MatchApi.partieDe(u);
         if (partie != null && partie.phase() != Partie.Phase.TERMINEE) {
             try {
