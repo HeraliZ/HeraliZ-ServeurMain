@@ -2037,7 +2037,11 @@ Corrigé (le détail, les fichiers et les lignes sont dans chaque compte rendu) 
 - **Spartan 2.15.5** : disjoncteur par adresse publique seulement ; identifiants matériels lus avant les packs ; alertes en
   jeu au staff vérifié ; IPv4 écrite en IPv6 ; les PC qui ont coupé une règle comptent de nouveau avec un PC nouveau.
 - **Noyau 1.1.11** : actions du panneau du staff jugées comme des actions du serveur (pas les commandes tapées) ; arrêt
-  avec code de sortie qui attend les écritures. **GitHub** : fabrication sans aucun secret (contrôles dans un job à
+  avec code de sortie qui attend les écritures.
+- **Liens entre les mods** (relecture a10) : noyau déclaré des deux côtés (clans, extraction, armory 1.4.2, loot) ;
+  Événements → noyau et Grades → Économie et Clans (serveur) déclarés ; sous-mods du monde moins stricts sur le numéro
+  de heralisz_utils. **Pas changé (décision du propriétaire)** : les lettres nettes de l'interface du 03/11 n'ont jamais
+  été chargées chez les joueurs (oubli dans le manifeste du jar). **GitHub** : fabrication sans aucun secret (contrôles dans un job à
   part) ; version Modrinth nettoyée ; IPv6 masquées dans les résumés publics.
 
 À tester en jeu (les plus importants ; le reste dans chaque compte rendu) :
@@ -2061,7 +2065,7 @@ Corrigé (le détail, les fichiers et les lignes sont dans chaque compte rendu) 
       « backpacked ».
 - [ ] **Connexion** par le launcher : « Jeu validé », aucune alerte « Règle suspendue » ; un op reçoit les alertes Spartan
       après son `/login`.
-- [ ] **Journal du serveur** au démarrage et après une heure : aucune erreur nouvelle.
+- [ ] **Journal du serveur** au démarrage et après une heure : aucune erreur nouvelle, aucune « dépendance manquante ».
 
 Pas testé : tout en jeu ; rien de mesuré avec 150 vrais joueurs (aucune compilation ici : fabrication, contrôles et
 démarrage d'essai sur GitHub).

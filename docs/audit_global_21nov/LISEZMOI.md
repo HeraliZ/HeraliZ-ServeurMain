@@ -18,7 +18,7 @@ sur GitHub (« Contrôle de branche »), les essais en jeu sont dans `docs/TESTS
 | Réanimation et ClashWar | `a7_survie_clashwar.md` | 10 (1 grave) | 6 | ClashWar 1.3.7, Réanimation 1.16.14 |
 | Anticheat, voix, launcher | `a8_anticheat_voix_launcher.md` | 3 (+1, voir plus bas) | 9 | Spartan 2.15.5 (launcher inchangé) |
 | Noyau, interface, emotes, site, GitHub, outils | `a9_noyau_interface_site_outils.md` | 5 | 4 (+1 réglage à faire) | Noyau 1.1.11 (site inchangé) |
-| Liens entre les mods | `a10_dependances.md` | (relecture seule) | voir son compte rendu | — |
+| Liens entre les mods | `a10_dependances.md` | relecture seule : 1 important et 4 petits, appliqués ensuite (`f324509e`) sauf un | 2 | Équipement 1.4.2 |
 
 Aucun canal réseau n'a changé : un jeu de joueur d'avant se connecte toujours (les jars des joueurs suivent comme
 d'habitude à la mise en ligne). Ni le launcher ni le site n'ont besoin d'être republiés.
@@ -81,9 +81,28 @@ Chaque compte rendu détaille ses propositions (risque, gain, fichiers). Regroup
   écrite pendant le tick (a4 n° 1) ; `/kit` qui interroge le bot à chaque ouverture (a1 n° 4) ; `/avantages nick` qui
   relit `usercache.json` (a1 n° 5) ; date du fichier de l'usure (a2 n° 4) ; balles et horaire du train (a2 n° 6) ;
   défi d'intégrité calculé sur le fil de l'image chez le joueur (a8 P7, jar des joueurs).
-- **Dépendances déclarées** (aucun effet aujourd'hui, message clair si un jar manque) : voir `a10_dependances.md`
-  et a1 n° 6, a4 n° 5, a6 (noyau `side="BOTH"`).
+- **Lettres nettes de l'interface** (a10 n° 1) : voir ci-dessous.
+- **Contrôles de GitHub** : brancher `outils/verif_reflexion.py` et `outils/verif_mixins.py` (a10) sur chaque envoi
+  d'une branche ; version minimale du noyau dans les armes (a4 n° 5).
 
 ## Liens entre les mods (a10)
 
-Voir `a10_dependances.md`.
+Relecture de tous les liens entre nos mods et avec ceux des autres auteurs (`a10_dependances.md`) : 808 appels par
+réflexion (613 exacts, 33 vers des mods facultatifs absents et protégés, le reste non vérifiable d'ici), 3 552 liens directs
+entre modules (tous du bon côté), 36 configurations de mixins et 420 injections (209 cibles d'autres auteurs exactes, cibles
+serveur comparées à Mohist 916), 44 canaux réseau (tous enregistrés dans le code commun, les 63 paquets venus des joueurs
+ont tous une borne), 17 clés de données partagées (même nom, même type partout).
+
+Appliqué ensuite (`f324509e`) : noyau déclaré des deux côtés (clans, extraction, armory, loot) ; dépendances qui
+manquaient (Événements → noyau ; Grades → Économie et Clans, côté serveur) ; sous-mods du monde qui acceptent
+heralisz_utils 2.26 et plus ; ModernFix « remove_spawn_chunks » coupé noir sur blanc ; démarrage d'essai « mixins
+stricts » (case de « Run workflow ») qui fait une erreur de chaque injection de mixin sans cible, même celles qui ratent
+sans rien dire (187 dans nos mods).
+
+**Pas appliqué, décision du propriétaire : les lettres nettes de l'interface (03/11) n'ont jamais marché chez les
+joueurs.** Leur configuration de mixins n'est pas dans le manifeste du jar (`modules/interface/build.gradle` l.56) :
+le jeu ne la charge pas, sans rien dire. L'activer change l'écriture de tous les textes chez tous les joueurs, un rendu
+que personne n'a jamais vu en vrai (le code se coupe tout seul en cas d'erreur, « Lettres nettes coupées »).
+
+Outils ajoutés (branchés nulle part pour l'instant) : `outils/verif_reflexion.py` (réflexion et liens entre modules,
+environ 20 s) et `outils/verif_mixins.py` (configurations, manifestes, cibles des autres auteurs, conflits).
