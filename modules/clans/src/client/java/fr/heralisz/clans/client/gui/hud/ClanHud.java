@@ -61,6 +61,7 @@ public final class ClanHud {
     /** Deconnexion : rien a garder ici (les bandeaux sont vides par le noyau). */
     public static void vider() {
         ZONE_CLE[0] = null;
+        dernierEtat = null;
     }
 
     @SubscribeEvent
@@ -111,8 +112,32 @@ public final class ClanHud {
     private static void barreZone(GuiGraphics g) {
         Packets.TerritoireHudS2C z = ClientClans.hudZone();
         if (z == null) return;
-        EtatZone e = z.etat();
         boolean mienne = ClientClans.snapshot() != null && !z.proprioTag().isEmpty() && ClientClans.snapshot().tag().equalsIgnoreCase(z.proprioTag());
+        // 21/11 (audit) : les textes ne sont refaits qu'à l'arrivée d'un nouvel état de la zone (le serveur ne l'envoie que
+        // s'il change), d'un autre clan ou d'une autre langue ; avant, trois ou quatre textes traduits et mis en forme à
+        // chaque image, puis comparés, tant que le joueur était dans une zone
+        String langue = Minecraft.getInstance().getLanguageManager().getSelected();
+        if (z != dernierEtat || mienne != dernierMienne || !langue.equals(derniereLangue)) {
+            dernierEtat = z;
+            dernierMienne = mienne;
+            derniereLangue = langue;
+            preparer(z, mienne);
+        }
+        ZONE.accent(z.proprioTag().isEmpty() ? Ui.ACCENT_NEUTRE : z.couleur()).barre(ratioZone, couleurZone);
+        ZONE.dessiner(g, 5f, 5f + hauteurPurge(), ZONE.largeur(), 1f);
+    }
+
+    /** État de la zone (paquet du serveur), clan et langue des textes posés dans le panneau. */
+    private static Packets.TerritoireHudS2C dernierEtat;
+    private static boolean dernierMienne;
+    private static String derniereLangue = "";
+    /** Barre fine du panneau : avancement (-1 : aucune) et couleur. */
+    private static float ratioZone = -1f;
+    private static int couleurZone = Ui.MUTED;
+
+    /** Textes et barre du panneau pour cet état de la zone (seulement quand il change). */
+    private static void preparer(Packets.TerritoireHudS2C z, boolean mienne) {
+        EtatZone e = z.etat();
         // a qui est la zone
         String proprio;
         if (z.proprioTag().isEmpty()) proprio = Component.translatable("gui.hud.zone_libre").getString();
@@ -171,7 +196,7 @@ public final class ClanHud {
             if (etat != null) ZONE.ligne(1, etat, Ui.mix(couleur, 0xFFFFFF, 0.2f));
             else ZONE.lignes(1);
         }
-        ZONE.accent(z.proprioTag().isEmpty() ? Ui.ACCENT_NEUTRE : z.couleur()).barre(ratio, couleur);
-        ZONE.dessiner(g, 5f, 5f + hauteurPurge(), ZONE.largeur(), 1f);
+        ratioZone = ratio;
+        couleurZone = couleur;
     }
 }

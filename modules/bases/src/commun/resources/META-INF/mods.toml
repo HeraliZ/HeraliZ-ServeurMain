@@ -32,13 +32,14 @@ description='''Construction de base facon Rust (plan, marteau, tiers, Claim Bloc
     ordering="NONE"
     side="BOTH"
 
-# Noyau HeraliZ : dessin commun des zones chez le joueur (zones interdites, limites des bases ; 03/11)
+# Noyau HeraliZ : dessin commun des zones chez le joueur (zones interdites, limites des bases ; 03/11). 21/11 (audit) :
+# aussi au serveur (tronçons prêts, arrivées, écritures en fond, matchs : noyau 1.1.5 du 19/11), avant : joueur seulement
 [[dependencies.crac]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.19,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
-    side="CLIENT"
+    side="BOTH"
 
 [[dependencies.crac]]
     modId="heralisz_clans"
