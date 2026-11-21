@@ -53,8 +53,13 @@ public final class ServeurQuetes implements Partie {
         // recycleur de la carte (31/10) : contenu partagé, gardé hors du monde par sa version serveur
         HeralizQuetes.RECYCLEUR_CARTE_USINE.serveur(RecycleurCarteEntiteServeur::new);
         fr.heraliz.quetes.bloc.RecycleurCarte.OUVRIR_CARTE.brancher(o -> Recyclage.ouvrirCarte(o.joueur(), o.pos()));
-        Reseau.DEMANDE_JOURNAL.brancher(r -> Moteur.envoyerJournal(r.joueur(), r.message().ouvrir()));
-        Reseau.ACTION.brancher(r -> action(r.joueur(), r.message()));
+        // 21/11 (audit) : journal et actions du journal, 4 demandes par seconde au plus (chacune refait et renvoie le journal)
+        Reseau.DEMANDE_JOURNAL.brancher(r -> {
+            if (demandeOk(r.joueur())) Moteur.envoyerJournal(r.joueur(), r.message().ouvrir());
+        });
+        Reseau.ACTION.brancher(r -> {
+            if (demandeOk(r.joueur())) action(r.joueur(), r.message());
+        });
         Reseau.ACHAT.brancher(r -> Marchands.achat(r.joueur(), r.message()));
         Reseau.VENTE.brancher(r -> Marchands.vente(r.joueur(), r.message()));
         Reseau.MODIF.brancher(r -> EditionMarchands.modif(r.joueur(), r.message()));
@@ -117,7 +122,29 @@ public final class ServeurQuetes implements Partie {
     /** Zones dangereuses demandées par les quêtes, contrôlées au premier tick (HeraliZ Décors les lit au même démarrage). */
     private static boolean zonesAVerifier;
 
+    /**
+     * 21/11 (audit) : demandes du journal des quêtes et actions du journal (suivre, abandonner, visite du Guide), au plus
+     * {@value #DEMANDES_PAR_SECONDE} par seconde et par joueur. Chacune refait et renvoie le journal ; un jeu modifié pouvait
+     * en envoyer en boucle. Un joueur normal n'en envoie jamais autant (touche J, boutons, Espace pendant la visite) ; une
+     * demande en trop est ignorée (rien ne change).
+     */
+    private static final int DEMANDES_PAR_SECONDE = 4;
+    /** Joueur -> {début de la fenêtre d'une seconde (ms), demandes dans cette fenêtre}. */
+    private static final Map<UUID, long[]> DEMANDES = new HashMap<>();
+
+    private static boolean demandeOk(ServerPlayer p) {
+        long t = System.currentTimeMillis();
+        long[] c = DEMANDES.computeIfAbsent(p.getUUID(), k -> new long[2]);
+        if (t - c[0] >= 1000 || t < c[0]) {
+            c[0] = t;
+            c[1] = 0;
+        }
+        return ++c[1] <= DEMANDES_PAR_SECONDE;
+    }
+
     private static void arret(ServerStoppingEvent e) {
+        // 21/11 : dernier essai d'écrire les recycleurs de la carte dont l'écriture avait raté
+        RecycleurCarteEntiteServeur.arret();
         Donnees.arreter();
         Dialogues.vider();
         Marchands.vider();
@@ -126,6 +153,7 @@ public final class ServeurQuetes implements Partie {
         ObjetsARendre.vider();
         GardeRecycleur.vider();
         LUEURS.clear();
+        DEMANDES.clear();
     }
 
     private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
@@ -144,6 +172,7 @@ public final class ServeurQuetes implements Partie {
         if (Moteur.serveur == null) return;
         Dialogues.oublier(e.getEntity().getUUID());
         LUEURS.remove(e.getEntity().getUUID());
+        DEMANDES.remove(e.getEntity().getUUID());
         A_TERRE_A_LA_MORT.remove(e.getEntity().getUUID());
         Moteur.oublier(e.getEntity().getUUID());
         Marchands.oublier(e.getEntity().getUUID());
@@ -242,6 +271,7 @@ public final class ServeurQuetes implements Partie {
         WipeServeur.tick(e.getServer());
         ObjetsARendre.tick(e.getServer());
         GardeRecycleur.tick(e.getServer());
+        RecycleurCarteEntiteServeur.reessayerEcritures(e.getServer());   // 21/11 : rien tant qu'aucune écriture n'a raté
         if (ticks % 20 == 11) Journalieres.tick(e.getServer());
         if (fr.heraliz.noyau.api.Etalement.tour(++ticks, 600, DECALAGE_ECRITURE)) Donnees.toutEcrire();
     }
