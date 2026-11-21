@@ -49,6 +49,11 @@ public final class UnlockManagerServeur {
    }
 
    private static void onServerTick(MinecraftServer server) {
+      if (!UnlockManager.instance().testForCompletion.isEmpty() && !UnlockManager.defisSuivis()) {
+         // HeraliZ (21/11) : rien a debloquer (unlockAllCosmetics) : la file est videe sans relire les defis
+         UnlockManager.instance().testForCompletion.clear();
+         return;
+      }
       if (!UnlockManager.instance().testForCompletion.isEmpty()) {
          for (ServerPlayer player : UnlockManager.instance().testForCompletion) {
             // HeraliZ (perf, 01/11) : « fini ? » (un nombre comparé) avant « déjà débloqué ? » (une recherche) ; ce test est
