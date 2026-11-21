@@ -15,6 +15,8 @@ données, aucune duplication trouvée. **Site : rien n'a changé, aucune mise en
 
 Versions : **Noyau 1.1.12** (seul le jar du serveur change vraiment ; le launcher donnera le nouveau jar aux joueurs,
 aucun canal réseau ne change). La correction de `serveur.yml` ne sert qu'à la prochaine mise en ligne sur `main`.
+Sur GitHub : « Contrôle de branche » vert sur `7fc16a9a3` (qui contient ces corrections : fabrication, contrôles, images) ;
+démarrage d'essai réussi avec le Noyau 1.1.12 (`f02b58599` : « Done » en 54 s, arrêt propre).
 
 ---
 
