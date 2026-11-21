@@ -130,6 +130,8 @@ public final class ConteneursEvenement extends SavedData {
         ConteneursEvenement d = get(l);
         if (d.conteneurs.containsKey(k) || !fr.heraliz.noyau.api.Troncons.charge(l, pos) || !l.getBlockState(pos).canBeReplaced()) return false;
         if (ZonesLoot.zoneDe(l.dimension(), k) != null) return false;
+        // 21/11 (validation) : toutes ses cases (et le sol dessous) dans des tronçons complets, sinon une autre place
+        if (!casesPretes(l, pos, face, cb)) return false;
         if (!cb.placeLibre(l, pos, face, null) || !surLeSol(l, pos, face, cb)) return false;
         VoxelShape forme = cb.encombrement().outline(face, 0, 0, 0);
         AABB boite = forme.isEmpty() ? new AABB(pos) : forme.bounds().move(pos.getX(), pos.getY(), pos.getZ());
@@ -163,9 +165,13 @@ public final class ConteneursEvenement extends SavedData {
         for (long k : siens) {
             Conteneur c = d.conteneurs.get(k);
             BlockPos b = BlockPos.of(k);
-            if (fr.heraliz.noyau.api.Troncons.charge(l, b)) {
+            BlockState st = fr.heraliz.noyau.api.Troncons.etat(l, b);
+            ConteneurBlock sien = st != null && st.getBlock() instanceof ConteneurBlock cb && cb.nom.equals(c.nom) ? cb : null;
+            // 21/11 (validation) : retiré tout de suite seulement si toutes ses cases sont dans des tronçons complets (le
+            // retrait lit et efface aussi les cases voisines) ; sinon par le tick, dès qu'elles le sont
+            if (st != null && (sien == null || casesPretes(l, b, st.getValue(HorizontalDirectionalBlock.FACING), sien))) {
                 d.conteneurs.remove(k);
-                if (l.getBlockState(b).getBlock() instanceof ConteneurBlock cb && cb.nom.equals(c.nom)) l.removeBlock(b, false);
+                if (sien != null) l.removeBlock(b, false);
             } else {
                 c.expire = now;
             }
@@ -283,6 +289,9 @@ public final class ConteneursEvenement extends SavedData {
             if (c.genere && c.inv.isEmpty()) c.expire = Math.min(c.expire, now + CoffreBlockEntityServeur.SURSIS_VIDE);
             boolean occupe = d.regarde(c.inv, null);
             if (now >= c.expire && (!occupe || now >= c.expire + CoffreBlockEntityServeur.SURSIS_SPECTATEUR)) {
+                // 21/11 (validation) : son retrait lit et efface aussi ses cases voisines ; une case dans un tronçon encore
+                // en lecture (conteneur à cheval, joueur qui arrive de loin) faisait attendre le serveur : à la seconde suivante
+                if (!casesPretes(l, b, st.getValue(HorizontalDirectionalBlock.FACING), cb)) continue;
                 if (finis == null) finis = new LongArrayList();
                 finis.add(c.pos);
                 continue;
@@ -436,6 +445,21 @@ public final class ConteneursEvenement extends SavedData {
             BlockPos b = BlockPos.of(pos);
             RotationLoot.son(etat.niveau, b, etat.niveau.getBlockState(b), false);
         }
+    }
+
+    /**
+     * 21/11 (validation) : les tronçons de TOUTES les cases du conteneur (posé en {@code pos}, face avant vers {@code face})
+     * sont complets, comme pour les coffres T7 ({@code PointsT7.pret}). Un conteneur de plusieurs blocs (12 des 49 T6)
+     * peut déborder sur le tronçon voisin : le poser ou le retirer lit et change aussi ses cases et le sol dessous (mêmes
+     * colonnes) ; dans un tronçon encore en lecture, le fil du serveur attendait la fin de sa lecture. Ne charge rien,
+     * n'attend rien.
+     */
+    private static boolean casesPretes(ServerLevel l, BlockPos pos, Direction face, ConteneurBlock cb) {
+        for (int[] c : cb.encombrement().cells) {
+            int[] w = Encombrement.rotateCell(c[0], c[1], c[2], face);
+            if (fr.heraliz.noyau.api.Troncons.pret(l, (pos.getX() + w[0]) >> 4, (pos.getZ() + w[2]) >> 4) == null) return false;
+        }
+        return true;
     }
 
     /** Chaque case du bas du conteneur repose sur un bloc solide (aucun coin dans le vide). */
