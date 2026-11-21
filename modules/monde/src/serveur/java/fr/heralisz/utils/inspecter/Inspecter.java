@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
 /**
@@ -45,7 +46,9 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
  *    <li>{@code sac} : contenu du sac à dos porté ;</li>
  *    <li>{@code coffres} : planque, coffre VIP (CoffresPersonnels) et coffre de l'Ender ;</li>
  *    <li>{@code base} : tout ce que contiennent les conteneurs de sa base CRac (claim de son groupe), d'un coup, conteneur
- *    par conteneur (chaque groupe commence par le bloc du conteneur et ses coordonnées), page par page.</li>
+ *    par conteneur (chaque groupe commence par le bloc du conteneur et ses coordonnées), page par page. 21/11 : les
+ *    tronçons de la base pas encore chargés sont lus par Minecraft en tâche de fond, la vue s'ouvre quand ils sont prêts
+ *    (10 s au plus) ; jamais lus d'un coup par le fil du serveur.</li>
  * </ul>
  * Écrans de coffre de Minecraft (rien à installer chez les joueurs). Les objets sont toujours ceux d'origine (déplacés,
  * jamais copiés). Rien testé en jeu.
@@ -61,6 +64,9 @@ public final class Inspecter {
         MinecraftForge.EVENT_BUS.addListener(Inspecter::commandes);
         MinecraftForge.EVENT_BUS.addListener(Inspecter::connexion);
         MinecraftForge.EVENT_BUS.addListener(Inspecter::deconnexion);
+        // 21/11 : vues « base » en attente de leurs tronçons (rien à faire sans demande)
+        MinecraftForge.EVENT_BUS.addListener(Inspecter::tick);
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) -> BASES_EN_ATTENTE.clear());
     }
 
     // ------------------------------------------------------------------ commande
@@ -152,6 +158,7 @@ public final class Inspecter {
     // ------------------------------------------------------------------ vues
 
     private static void ouvrir(ServerPlayer staff, Cible c, Vue vue, Component titre, Runnable entretien) {
+        BASES_EN_ATTENTE.remove(staff.getUUID());                     // une autre vue ouverte : la vue « base » attendue ne s'ouvrira pas
         staff.openMenu(new SimpleMenuProvider((id, inv, p) -> new MenuInspection(id, inv, c, vue, entretien), titre));
     }
 
@@ -282,9 +289,95 @@ public final class Inspecter {
         }
         Runnable garder = () -> morceaux.forEach(m -> l.getChunkSource().addRegionTicket(TICKET, m, 1, m));
         garder.run();
-        List<BlockEntity> conteneurs = new ArrayList<>();
+        int manquants = manquants(l, morceaux);
+        if (manquants == 0) {
+            BASES_EN_ATTENTE.remove(staff.getUUID());
+            afficherBase(staff, c, l, centre, r, ry, morceaux, garder);
+            return;
+        }
+        // 21/11 (validation de l'audit, choix du propriétaire) : morceaux de la base pas encore chargés : Minecraft les lit en
+        // tâche de fond (tickets ci-dessus), la vue s'ouvre dès qu'ils sont tous prêts (10 s au plus, tick). Avant, ils
+        // étaient lus d'un coup par le fil du serveur : une base loin de tout joueur, des dizaines de tronçons, jusqu'à une
+        // seconde de gel pour tout le monde
+        BASES_EN_ATTENTE.put(staff.getUUID(), new DemandeBase(c.uuid, c.nom, l, centre, r, ry, morceaux, garder,
+                staff.server.getTickCount() + ATTENTE_BASE));
+        dire(staff, Component.translatableWithFallback("heralisz_utils.inspecter.base_chargement",
+                "Base de %s : %s morceau(x) de carte à charger, la vue s'ouvre dès qu'ils sont prêts (10 s au plus).", c.nom,
+                String.valueOf(manquants)).withStyle(ChatFormatting.GRAY));
+    }
+
+    /** Vue « base » demandée, en attente des tronçons de la base (21/11) : cible, zone, tronçons, entretien, limite (tick). */
+    private record DemandeBase(UUID cible, String nom, ServerLevel l, BlockPos centre, int r, int ry, List<ChunkPos> morceaux,
+                               Runnable garder, int limite) {
+    }
+
+    /** Une demande de vue « base » au plus par membre du staff ; fil serveur. */
+    private static final java.util.Map<UUID, DemandeBase> BASES_EN_ATTENTE = new java.util.HashMap<>();
+    /** Au plus tant de ticks d'attente des tronçons d'une base (10 s) : ensuite, la vue s'ouvre avec ceux qui sont prêts. */
+    private static final int ATTENTE_BASE = 10 * 20;
+
+    /** Tronçons de la base pas encore complets (sans rien charger ni attendre). */
+    private static int manquants(ServerLevel l, List<ChunkPos> morceaux) {
+        int n = 0;
         for (ChunkPos m : morceaux) {
-            LevelChunk ch = l.getChunk(m.x, m.z);
+            if (fr.heraliz.noyau.api.Troncons.pret(l, m.x, m.z) == null) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** Toutes les 5 ticks, seulement avec une demande en attente : vue ouverte quand la base est prête (ou au bout de 10 s). */
+    private static void tick(TickEvent.ServerTickEvent e) {
+        if (e.phase != TickEvent.Phase.END || BASES_EN_ATTENTE.isEmpty()) {
+            return;
+        }
+        MinecraftServer srv = e.getServer();
+        int maintenant = srv.getTickCount();
+        if (maintenant % 5 != 0) {
+            return;
+        }
+        List<Runnable> ouvrir = new ArrayList<>();
+        for (java.util.Iterator<java.util.Map.Entry<UUID, DemandeBase>> it = BASES_EN_ATTENTE.entrySet().iterator(); it.hasNext(); ) {
+            java.util.Map.Entry<UUID, DemandeBase> en = it.next();
+            DemandeBase d = en.getValue();
+            ServerPlayer staff = srv.getPlayerList().getPlayer(en.getKey());
+            if (staff == null) {
+                it.remove();
+                continue;
+            }
+            if (maintenant < d.limite() && manquants(d.l(), d.morceaux()) > 0) {
+                continue;
+            }
+            it.remove();
+            ouvrir.add(() -> {
+                // copie du joueur reprise maintenant : il a pu se connecter ou se déconnecter pendant l'attente
+                Cible c = Cible.obtenir(srv, new GameProfile(d.cible(), d.nom()));
+                if (c == null || !c.valide()) {
+                    dire(staff, Component.translatableWithFallback("heralisz_utils.inspecter.inconnu",
+                            "Aucun joueur « %s » dans ce monde.", d.nom()).withStyle(ChatFormatting.RED));
+                    return;
+                }
+                afficherBase(staff, c, d.l(), d.centre(), d.r(), d.ry(), d.morceaux(), d.garder());
+            });
+        }
+        ouvrir.forEach(Runnable::run);                                 // après le parcours : la liste n'est plus touchée
+    }
+
+    /**
+     * La vue « base » : les conteneurs des tronçons COMPLETS de la zone (jamais un tronçon lu ni attendu par le fil du
+     * serveur) ; s'il en manque encore, le staff est prévenu (leurs conteneurs ne sont pas dans la vue).
+     */
+    private static void afficherBase(ServerPlayer staff, Cible c, ServerLevel l, BlockPos centre, int r, int ry, List<ChunkPos> morceaux,
+                                     Runnable garder) {
+        List<BlockEntity> conteneurs = new ArrayList<>();
+        int manquants = 0;
+        for (ChunkPos m : morceaux) {
+            LevelChunk ch = fr.heraliz.noyau.api.Troncons.pret(l, m.x, m.z);
+            if (ch == null) {
+                manquants++;
+                continue;
+            }
             for (BlockEntity be : ch.getBlockEntities().values()) {
                 BlockPos p = be.getBlockPos();
                 if (be instanceof Container && Math.abs(p.getX() - centre.getX()) <= r && Math.abs(p.getZ() - centre.getZ()) <= r
@@ -313,7 +406,11 @@ public final class Inspecter {
                 contenu.add(null);
             }
         }
-        if (conteneurs.isEmpty()) {
+        if (manquants > 0) {
+            dire(staff, Component.translatableWithFallback("heralisz_utils.inspecter.base_incomplete",
+                    "Base de %s : %s morceau(x) de carte toujours pas chargé(s) : leurs conteneurs ne sont pas dans la vue. Relance-la dans quelques secondes.",
+                    c.nom, String.valueOf(manquants)).withStyle(ChatFormatting.YELLOW));
+        } else if (conteneurs.isEmpty()) {
             dire(staff, Component.translatableWithFallback("heralisz_utils.inspecter.base_vide", "Aucun conteneur dans la base de %s.", c.nom)
                     .withStyle(ChatFormatting.GRAY));
         }

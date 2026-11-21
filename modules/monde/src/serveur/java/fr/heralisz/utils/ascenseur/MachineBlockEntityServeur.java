@@ -147,11 +147,27 @@ public class MachineBlockEntityServeur extends MachineBlockEntity {
         }
     }
 
-    /** Machine d'un panneau d'appel (au-dessus de lui, à moins de 5 blocs de l'axe), ou null. */
+    /**
+     * Panneaux d'appel sans machine trouvée (21/11, validation de l'audit) : position -> heure de jeu jusqu'à laquelle on
+     * ne la cherche plus. Sans ça, un panneau mal posé relisait jusqu'à 26 000 cases au-dessus de lui à chaque clic.
+     */
+    private static final Map<BlockPos, Long> SANS_MACHINE = new ConcurrentHashMap<>();
+    /** Un panneau sans machine n'est recherché qu'une fois par tant de ticks (5 s). */
+    private static final long OUBLI_SANS_MACHINE = 100;
+
+    /**
+     * Machine d'un panneau d'appel (au-dessus de lui, à moins de 5 blocs de l'axe), ou null. Pas de machine : rien n'est
+     * relu pour ce panneau pendant 5 s (une machine posée ensuite se signale d'elle-même par son relevé des paliers).
+     */
     static MachineBlockEntityServeur trouver(Level l, BlockPos palier) {
         BlockPos connue = MACHINE_DU_PALIER.get(palier);
         if (connue != null && l.getBlockEntity(connue) instanceof MachineBlockEntityServeur m) {
             return m;
+        }
+        long maintenant = l.getGameTime();
+        Long jusqua = SANS_MACHINE.get(palier);
+        if (jusqua != null && maintenant < jusqua) {
+            return null;
         }
         BlockPos.MutableBlockPos q = new BlockPos.MutableBlockPos();
         for (int y = palier.getY() + 1; y <= Math.min(l.getMaxBuildHeight() - 1, palier.getY() + 220); y++) {
@@ -160,11 +176,16 @@ public class MachineBlockEntityServeur extends MachineBlockEntity {
                     if (l.getBlockEntity(q.set(palier.getX() + dx, y, palier.getZ() + dz)) instanceof MachineBlockEntityServeur m) {
                         m.scanner(l);
                         MACHINE_DU_PALIER.put(palier, m.worldPosition);
+                        SANS_MACHINE.remove(palier);
                         return m;
                     }
                 }
             }
         }
+        if (SANS_MACHINE.size() >= 256) {
+            SANS_MACHINE.values().removeIf(t -> t <= maintenant);            // jamais plus de quelques panneaux gardés
+        }
+        SANS_MACHINE.put(palier.immutable(), maintenant + OUBLI_SANS_MACHINE);
         return null;
     }
 

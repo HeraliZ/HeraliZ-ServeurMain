@@ -79,8 +79,8 @@ import org.joml.Vector3f;
  * <li>Départ : clic sur la borne (au spawn), délai réglable (le joueur doit rester là : s'il s'éloigne, est blessé ou
  * change de monde, c'est annulé) pendant lequel un point d'arrivée sûr est cherché : un point tiré à la fois, contrôlé
  * une fois son tronçon chargé par Minecraft en tâche de fond (01/11 ; avant, ce tronçon était lu sur le disque par le fil
- * du serveur, un par tick : une saccade à chaque essai) ; puis vraie téléportation (teleportTo : suivie par Spartan),
- * fondu au noir et protection de quelques secondes à l'arrivée.</li>
+ * du serveur, un par tick : une saccade à chaque essai) ; pas prêt en 2 s : abandonné, un autre est tiré (21/11) ; puis
+ * vraie téléportation (teleportTo : suivie par Spartan), fondu au noir et protection de quelques secondes à l'arrivée.</li>
  * <li>Points d'arrivée : points exacts et zones (disques) posés par le staff (/depart point, /depart zone), tirés au
  * hasard ; dans une zone (ou dans toute la bordure de la carte si rien n'est posé), un sol de la liste « sols » avec le
  * ciel au-dessus (jamais un toit, l'eau, l'intérieur d'un bâtiment ni sous un arbre), hors des zones dangereuses de
@@ -108,19 +108,28 @@ public final class DepartServeur {
         final int debut, fin;
         int essais;
         Arrivee trouvee;
-        /** Point tiré dont le tronçon se charge en tâche de fond, et le tick où on le contrôle quoi qu'il arrive. */
+        /** Point tiré dont le tronçon se charge en tâche de fond, et le tick où il est abandonné s'il n'est toujours pas
+         *  prêt (21/11 ; dernier recours : contrôlé quand même, voir ATTENTE_TIRAGE). */
         Tirage tirage;
         int tirageLimite;
         /** Tick où le point d'arrivée a été trouvé (attente de ses tronçons comptée à partir de là ou de la fin). */
         int trouveeA;
+        /**
+         * Départ imposé par le staff ({@code /depart joueur}, 21/11) : ni un pas ni une blessure ne l'annulent (le joueur ne
+         * l'a pas demandé, il peut bouger) ; la mort et un changement de monde, si.
+         */
+        final boolean force;
+        /** Le dernier recours de {@link #RECHERCHE_MAX} a déjà servi (une seule fois par départ, 21/11). */
+        boolean recours;
 
-        EnCours(ResourceKey<Level> monde, Vec3 depart, int debut, int fin, int essais) {
+        EnCours(ResourceKey<Level> monde, Vec3 depart, int debut, int fin, int essais, boolean force) {
             this.monde = monde;
             this.depart = depart;
             this.avant = depart;
             this.debut = debut;
             this.fin = fin;
             this.essais = essais;
+            this.force = force;
         }
     }
 
@@ -133,8 +142,23 @@ public final class DepartServeur {
      */
     private record Tirage(boolean point, double x, double y, double z, float lacet, String origine, int cx, int cz) {}
 
-    /** Au plus tant de ticks d'attente du tronçon d'un point tiré ; passé ce délai, il est contrôlé comme avant. */
+    /**
+     * Au plus tant de ticks d'attente du tronçon d'un point tiré. 21/11 (validation de l'audit, choix du propriétaire) :
+     * passé ce délai, le point est abandonné et un autre est tiré (avant : contrôlé quand même, et le fil du serveur lisait
+     * alors ce tronçon lui-même, de 50 à 300 ms de gel, justement quand le serveur était déjà très chargé). Dernier recours
+     * ({@link #RECHERCHE_MAX}, dernier essai) : contrôlé comme avant, pour que le joueur parte toujours.
+     */
     private static final int ATTENTE_TIRAGE = 40;
+    /**
+     * Dernier recours (ticks) : tant de temps après la fin du compte à rebours sans point d'arrivée, le prochain point tiré
+     * est contrôlé même si son tronçon n'est pas encore prêt (comme avant le 21/11), une seule fois par départ ; le dernier
+     * essai aussi : au plus deux tronçons lus par le fil du serveur pour un départ (avant : un par essai, 60 au plus).
+     */
+    private static final int RECHERCHE_MAX = 15 * 20;
+    /** Points contrôlés au plus par tick, tous départs confondus (21/11 : {@code /depart joueur} de tout un groupe). */
+    private static final int CONTROLES_PAR_TICK = 8;
+    /** Points abandonnés faute de tronçon prêt, et contrôlés en dernier recours, depuis le démarrage ({@code /depart info}). */
+    private static int abandons, derniersRecours;
     /**
      * Après le compte à rebours, au plus tant de ticks d'attente des tronçons d'arrivée (3 s, comme {@code Prechargement}) ;
      * le joueur reste surveillé pendant ce temps (02/11, audit mods-2 §15).
@@ -233,18 +257,12 @@ public final class DepartServeur {
         int delai = DepartConfig.lire(DepartConfig.DELAI) * 20;
         int essais = DepartConfig.lire(DepartConfig.ESSAIS);
         ici.playSound(null, borne, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.7f, 1.2f);
-        if (delai <= 0) {
-            Arrivee a = chercher(carte, sp, essais);
-            if (a == null) {
-                echec(sp);
-            } else {
-                // tronçons d'arrivée chargés en tâche de fond d'abord (01/11 : 220 à 330 ms de gel à chaque départ)
-                Prechargement.puis(sp, carte, a.x(), a.z(), () -> partir(sp, carte, a));
-            }
-            return;
+        // 21/11 : sans délai réglé, même recherche que pendant un délai (un point tiré à la fois, tronçon lu en tâche de
+        // fond) ; avant, jusqu'à « essais » tronçons lus d'un coup par le fil du serveur
+        EN_COURS.put(sp.getUUID(), new EnCours(ici.dimension(), sp.position(), maintenant, maintenant + Math.max(0, delai), essais, false));
+        if (delai > 0) {
+            sp.displayClientMessage(t("compte", "Départ dans %s s : ne bouge pas.", String.valueOf(delai / 20)), true);
         }
-        EN_COURS.put(sp.getUUID(), new EnCours(ici.dimension(), sp.position(), maintenant, maintenant + delai, essais));
-        sp.displayClientMessage(t("compte", "Départ dans %s s : ne bouge pas.", String.valueOf(delai / 20)), true);
     }
 
     private static void tick(TickEvent.ServerTickEvent e) {
@@ -263,6 +281,7 @@ public final class DepartServeur {
         double bouger = DepartConfig.lire(DepartConfig.BOUGER);
         ServerLevel carte = carte(server);
         List<Runnable> apres = new ArrayList<>();                 // téléportations après le parcours de la liste
+        int controles = 0;
         for (Iterator<Map.Entry<UUID, EnCours>> it = EN_COURS.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<UUID, EnCours> en = it.next();
             EnCours d = en.getValue();
@@ -273,13 +292,13 @@ public final class DepartServeur {
             }
             // poussé par un autre joueur collé à lui : ce déplacement-là ne compte pas (2.22.0, demande du propriétaire)
             Vec3 ici0 = sp.position();
-            if (pousse(sp)) {
+            if (!d.force && pousse(sp)) {
                 d.depart = d.depart.add(ici0.x - d.avant.x, 0, ici0.z - d.avant.z);
             }
             d.avant = ici0;
             double dx = sp.getX() - d.depart.x, dz = sp.getZ() - d.depart.z;
-            if (sp.isDeadOrDying() || sp.level().dimension() != d.monde || dx * dx + dz * dz > bouger * bouger
-                    || Math.abs(sp.getY() - d.depart.y) > bouger + 1) {
+            boolean bouge = !d.force && (dx * dx + dz * dz > bouger * bouger || Math.abs(sp.getY() - d.depart.y) > bouger + 1);
+            if (sp.isDeadOrDying() || sp.level().dimension() != d.monde || bouge) {
                 it.remove();
                 sp.displayClientMessage(t("annule", "Départ annulé : tu as bougé."), true);
                 continue;
@@ -298,14 +317,31 @@ public final class DepartServeur {
                     }
                 }
             }
-            if (d.tirage != null && (charge(carte, d.tirage) || maintenant >= d.tirageLimite)) {
-                Tirage t = d.tirage;
-                d.tirage = null;
-                d.trouvee = controler(carte, sp, t, sp.getRandom());
-                d.trouveeA = maintenant;
-                if (d.trouvee != null) {
-                    // pendant le compte à rebours, Minecraft charge les tronçons d'arrivée en tâche de fond (01/11)
-                    Prechargement.precharger(carte, d.trouvee.x(), d.trouvee.z());
+            if (d.tirage != null) {
+                boolean pret = charge(carte, d.tirage), delaiPasse = maintenant >= d.tirageLimite;
+                // 21/11 (validation de l'audit, choix du propriétaire) : tronçon pas prêt au bout de l'attente : le point est
+                // abandonné et un autre sera tiré au tick suivant, sans rien lire sur le fil du serveur. Dernier recours, pour
+                // que le joueur parte toujours : dernier essai, ou plus de RECHERCHE_MAX ticks après la fin du compte à
+                // rebours (une fois) : contrôlé comme avant (le fil du serveur lit alors ce seul tronçon). Au plus
+                // CONTROLES_PAR_TICK points contrôlés par tick (les autres attendent le tick suivant)
+                boolean dernierRecours = !pret && delaiPasse && (d.essais <= 0 || !d.recours && maintenant - d.fin >= RECHERCHE_MAX);
+                if ((pret || dernierRecours) && controles < CONTROLES_PAR_TICK) {
+                    Tirage t = d.tirage;
+                    d.tirage = null;
+                    controles++;
+                    if (dernierRecours) {
+                        derniersRecours++;
+                        d.recours = true;
+                    }
+                    d.trouvee = controler(carte, sp, t, sp.getRandom());
+                    d.trouveeA = maintenant;
+                    if (d.trouvee != null) {
+                        // pendant le compte à rebours, Minecraft charge les tronçons d'arrivée en tâche de fond (01/11)
+                        Prechargement.precharger(carte, d.trouvee.x(), d.trouvee.z());
+                    }
+                } else if (!pret && !dernierRecours && delaiPasse) {
+                    d.tirage = null;
+                    abandons++;
                 }
             }
             int reste = d.fin - maintenant;
@@ -419,7 +455,10 @@ public final class DepartServeur {
     }
 
     // ---------------------------------------------------------------------------------------------- points d'arrivée
-    /** Jusqu'à n essais d'un coup (commandes du staff, délai nul). */
+    /**
+     * Jusqu'à n essais d'un coup, tronçons lus sur le fil du serveur : seulement {@code /depart essai} (staff, un seul
+     * point, pour un essai). La borne et {@code /depart joueur} cherchent un point par tick, en tâche de fond (21/11).
+     */
     public static Arrivee chercher(ServerLevel carte, ServerPlayer pour, int n) {
         RandomSource r = carte.getRandom();
         for (int i = 0; i < n; i++) {
@@ -744,9 +783,14 @@ public final class DepartServeur {
         }
     }
 
-    /** Blessé pendant le délai : départ annulé. */
+    /** Blessé pendant le délai : départ annulé (sauf départ imposé par le staff, 21/11). */
     private static void blesse(LivingHurtEvent e) {
-        if (e.getEntity() instanceof ServerPlayer sp && EN_COURS.remove(sp.getUUID()) != null) {
+        if (!(e.getEntity() instanceof ServerPlayer sp)) {
+            return;
+        }
+        EnCours d = EN_COURS.get(sp.getUUID());
+        if (d != null && !d.force) {
+            EN_COURS.remove(sp.getUUID());
             sp.displayClientMessage(t("annule_blesse", "Départ annulé : tu as été blessé."), true);
         }
     }
@@ -973,19 +1017,18 @@ public final class DepartServeur {
         if (c == null) {
             return 0;
         }
-        int n = 0;
+        // 21/11 (validation de l'audit) : chaque joueur part par la même recherche que la borne (un point tiré à la fois,
+        // tronçon lu en tâche de fond), sans compte à rebours ni condition de ne pas bouger ; avant, la recherche de tous
+        // les joueurs visés se faisait d'un coup, en lisant leurs tronçons sur le fil du serveur (des secondes de gel pour
+        // tout un groupe)
+        int n = 0, maintenant = ctx.getSource().getServer().getTickCount(), essais = DepartConfig.lire(DepartConfig.ESSAIS);
         for (ServerPlayer sp : EntityArgument.getPlayers(ctx, "cibles")) {
-            Arrivee a = chercher(c, sp, DepartConfig.lire(DepartConfig.ESSAIS));
-            if (a == null) {
-                echec(sp);
-                continue;
-            }
-            EN_COURS.remove(sp.getUUID());
-            partir(sp, c, a);
+            EN_COURS.put(sp.getUUID(), new EnCours(sp.level().dimension(), sp.position(), maintenant, maintenant, essais, true));
             n++;
         }
         int total = n;
-        ctx.getSource().sendSuccess(() -> t("envoyes", "%s joueur(s) envoyé(s) sur la carte.", String.valueOf(total)), true);
+        ctx.getSource().sendSuccess(() -> t("en_route", "%s joueur(s) en route vers la carte : chacun part dès que son point d'arrivée est prêt.",
+                String.valueOf(total)), true);
         return n;
     }
 
@@ -1008,6 +1051,8 @@ public final class DepartServeur {
         s.append("\n").append(t("info_regles", "Délai %s s, aucun joueur à moins de %s blocs, protection %s s à l'arrivée.",
                 String.valueOf(DepartConfig.lire(DepartConfig.DELAI)), String.valueOf(DepartConfig.lire(DepartConfig.DISTANCE_JOUEURS)),
                 String.valueOf(DepartConfig.lire(DepartConfig.PROTECTION))));
+        s.append("\n").append(t("info_recherche", "Depuis le démarrage : %s point(s) abandonné(s) (terrain pas encore chargé), %s contrôlé(s) en dernier recours.",
+                String.valueOf(abandons), String.valueOf(derniersRecours)));
         src.sendSuccess(() -> s, false);
         return 1;
     }
