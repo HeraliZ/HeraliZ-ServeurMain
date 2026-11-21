@@ -9,7 +9,7 @@ jour et du pack, jeton, effacement après un ban). Aussi : ce que les autres mod
 réflexion, messages entre mods) et les cibles des Mixins sur TaCZ 1.1.8 (vérifiées dans son jar avec `javap`).
 
 **Rien n'a été testé en jeu** (pas de jeu ici). Fait hors du jeu : relecture du code, essais Java purs (`RodageTest`,
-nouveau `NetUtilTest` : 16 essais passés), essais du launcher (125 sur 126 passés ; le dernier, `emballage.test.js`, a
+nouveau `NetUtilTest` : 17 essais passés), essais du launcher (125 sur 126 passés ; le dernier, `emballage.test.js`, a
 besoin des outils de fabrication d'Electron, absents ici), puis la fabrication et les contrôles sur GitHub.
 
 Version : **Anticheat 2.15.4** (côté serveur seulement : le jeu des joueurs ne change pas ; le launcher donne le nouveau
@@ -20,7 +20,7 @@ ni duplication trouvés, aucun paquet des joueurs accepté sans contrôle.
 
 ---
 
-## Corrigé (commit `217d1161`)
+## Corrigé (commits `217d1161` et `634cbd00`)
 
 ### 1. Disjoncteur des règles en rodage : tous les joueurs pouvaient compter pour un seul PC (moyen)
 
@@ -41,7 +41,8 @@ Pour les développeurs :
 - `modules/anticheat/src/serveur/java/com/Spartan/integrity/Injection.java` l. 229-245 (`pc`) : le bloc d'adresses
   seulement si `NetUtil.isPublicAddress(...)` ;
 - `modules/anticheat/src/serveur/java/com/Spartan/util/NetUtil.java` : `isPublicAddress(InetAddress)` (même règle que
-  `isPublicIp(String)`, qui l'appelle) ; test `src/test/java/com/Spartan/util/NetUtilTest.java`.
+  `isPublicIp(String)`, qui l'appelle ; une IPv4 écrite en IPv6, `::ffff:a.b.c.d`, est jugée comme l'IPv4 qu'elle
+  contient, commit `634cbd00`) ; test `src/test/java/com/Spartan/util/NetUtilTest.java`.
 
 ### 2. Packs de textures : le PC n'était pas encore connu quand la règle jugeait (petit)
 
@@ -103,9 +104,10 @@ prix du choix « plusieurs PC derrière la même connexion = un seul » ; à gar
 
 La voix démarre dès l'arrivée, avant le jeton du launcher et le `/login`. Par la voie UDP (la normale), un jeu lancé sous
 le pseudo d'un autre joueur peut donc parler en son nom pendant les quelques secondes avant son refus (près du point
-d'arrivée). Proposition : pas de voix (ni parler ni entendre) tant que le joueur n'est pas vérifié, lu comme le staff caché
-(`GradesApi.authentifie`, toutes les 10 ticks). Code : `modules/voix/src/serveur/java/com/caracrea/server/VoiceServer.java` `vanish()` l. 511 et `snapshot()`
-l. 446 (drapeau `TALK`).
+d'arrivée). Proposition : pas de voix (ni parler ni entendre) tant que le joueur n'a pas fait son `/login` (CaraCrea
+sait déjà lire AuthMe pour le créateur de personnage : `LoginCheck.loggedIn`, à relire toutes les 10 ticks comme le
+staff caché). Code : `modules/voix/src/serveur/java/com/caracrea/server/VoiceServer.java` `vanish()` l. 511 et
+`snapshot()` l. 446 (drapeau `TALK`).
 
 ### P5. Alertes (petit) : un membre du staff visé voit sa propre alerte
 

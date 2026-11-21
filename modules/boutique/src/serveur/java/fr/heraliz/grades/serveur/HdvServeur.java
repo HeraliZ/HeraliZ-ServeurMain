@@ -927,7 +927,10 @@ public final class HdvServeur {
         resoudre(p);
         OUVERTS.add(p.getUUID());
         etat(p, true, "", false);
-        rafraichirSoldePb(p, true);
+        // 21/11 (audit) : à l'ouverture, au plus une demande au site toutes les 5 s (avant : une à chaque ouverture ; le PNJ
+        // commissaire-priseur se clique sans limite, et le site limite tout le serveur, une seule adresse) ; le solde connu
+        // est montré tout de suite, et il est toujours relu après un achat ou un versement en PB
+        rafraichirSoldePb(p, false);
         livrerEnAttente(p, false);
         return 1;
     }

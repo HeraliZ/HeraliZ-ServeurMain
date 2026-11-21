@@ -99,7 +99,9 @@ public final class BlastDamage {
         Map<Long, Target> pieces = new LinkedHashMap<>();
         Map<BlockPos, Target> placables = new LinkedHashMap<>();
         for (BlockPos c : cells) {
-            if (!level.isLoaded(c)) continue;
+            // HeraliZ (21/11, audit) : tronçon complet seulement (Troncons, comme le reste depuis le 19/11) : isLoaded dit
+            // vrai pour un tronçon encore en lecture, dont la lecture du bloc ci-dessous ferait attendre le fil du serveur
+            if (!fr.heraliz.noyau.api.Troncons.charge(level, c)) continue;
             double d = center.distSqr(c);
             List<Piece> occ = store.index.occupants(c);
             if (!occ.isEmpty()) {

@@ -21,12 +21,19 @@ import org.jetbrains.annotations.NotNull;
 
 public class ClaimData extends SafeSavedData {
     public static final String ID = "crac_claims";
+    /**
+     * Le claim de chaque groupe ({@link #getByGroup}). HeraliZ (21/11, audit) : un groupe peut tenir plusieurs claims dans un
+     * monde, celui du tutoriel des bases (deux membres d'un même clan y bâtissent chacun leur cabane d'essai, sous le groupe
+     * du clan) : ici le dernier posé, les autres seulement dans {@link #byAnchor}. Avant, le premier disparaissait de la
+     * zone protégée (sa caisse refusée : tutoriel bloqué), de la sauvegarde et de l'effacement de fin du tutoriel.
+     */
     private final Map<UUID, Claim> byGroup = new HashMap<>();
+    /** Tous les claims, par Claim Block : la liste qui compte ({@link #all}, {@link #getAt}, sauvegarde). */
     private final Map<Long, Claim> byAnchor = new HashMap<>();
     /** Entries that could not be read: written back unchanged instead of being lost at the next save. */
     private final List<CompoundTag> unreadable = new ArrayList<>();
     /**
-     * HeraliZ (01/11, perf) : les claims de {@link #byGroup} rangés par case de {@value #CELL} blocs de leur Claim Block, pour
+     * HeraliZ (01/11, perf) : les claims ({@link #byAnchor}) rangés par case de {@value #CELL} blocs de leur Claim Block, pour
      * {@link #getAt} (avant : tous les claims parcourus à chaque appel, pour chaque bloc d'une explosion, chaque apparition
      * de zombie, chaque objet posé...). Refait au premier appel après un changement des claims ({@link #changes}).
      */
@@ -60,7 +67,7 @@ public class ClaimData extends SafeSavedData {
         if (data == null) {
             return Files.exists(dataFile(level, ID));
         }
-        return !data.byGroup.isEmpty() || !data.unreadable.isEmpty();
+        return !data.byAnchor.isEmpty() || !data.unreadable.isEmpty();
     }
 
     /** False when some entries were kept unread: a building may be linked to one of those claims. */
@@ -84,8 +91,9 @@ public class ClaimData extends SafeSavedData {
         return this.byAnchor.get(anchor.asLong());
     }
 
+    /** Tous les claims du monde (plusieurs d'un même groupe au tutoriel des bases, voir {@link #byGroup}). */
     public Collection<Claim> all() {
-        return Collections.unmodifiableCollection(this.byGroup.values());
+        return Collections.unmodifiableCollection(this.byAnchor.values());
     }
 
     /**
@@ -93,7 +101,7 @@ public class ClaimData extends SafeSavedData {
      * Claim Block then wins (ties by position), never the map's iteration order.
      */
     public Claim getAt(ServerLevel level, BlockPos pos) {
-        if (this.byGroup.isEmpty()) {
+        if (this.byAnchor.isEmpty()) {
             return null;
         }
         if (this.indexedAt != this.changes) {
@@ -134,7 +142,7 @@ public class ClaimData extends SafeSavedData {
 
     private void index() {
         this.byCell.clear();
-        for (Claim c : this.byGroup.values()) {
+        for (Claim c : this.byAnchor.values()) {
             long k = cellKey(Math.floorDiv(c.anchor().getX(), CELL), Math.floorDiv(c.anchor().getZ(), CELL));
             this.byCell.computeIfAbsent(k, kk -> new ArrayList<>(2)).add(c);
         }
@@ -142,18 +150,25 @@ public class ClaimData extends SafeSavedData {
     }
 
     public void add(Claim c) {
+        Claim avant = this.byAnchor.put(c.anchor().asLong(), c);
+        if (avant != null && avant != c) {
+            this.oublierDuGroupe(avant);   // un autre claim tenait ce Claim Block : son groupe ne le garde pas
+        }
         this.byGroup.put(c.groupId(), c);
-        this.byAnchor.put(c.anchor().asLong(), c);
         this.changes++;
         this.setDirty();
     }
 
+    /**
+     * Retire le claim de ce Claim Block, et seulement lui. HeraliZ (21/11, audit) : son groupe garde un autre de ses claims
+     * s'il en a un (tutoriel des bases) ; avant, le groupe perdait ici le claim d'une autre cabane d'essai.
+     */
     public boolean removeByAnchor(BlockPos anchor) {
         Claim c = this.byAnchor.remove(anchor.asLong());
         if (c == null) {
             return false;
         } else {
-            this.byGroup.remove(c.groupId());
+            this.oublierDuGroupe(c);
             this.changes++;
             this.setDirty();
             return true;
@@ -161,14 +176,31 @@ public class ClaimData extends SafeSavedData {
     }
 
     public boolean removeByGroup(UUID groupId) {
-        Claim c = this.byGroup.remove(groupId);
+        Claim c = this.byGroup.get(groupId);
         if (c == null) {
             return false;
-        } else {
-            this.byAnchor.remove(c.anchor().asLong());
-            this.changes++;
-            this.setDirty();
-            return true;
+        }
+        if (this.byAnchor.get(c.anchor().asLong()) == c) {
+            return this.removeByAnchor(c.anchor());
+        }
+        // (ne doit pas arriver) le groupe gardait un claim qui n'est plus à sa place
+        this.oublierDuGroupe(c);
+        this.changes++;
+        this.setDirty();
+        return true;
+    }
+
+    /** {@code c} n'est plus un claim : son groupe passe à un autre de ses claims s'il en a un (tutoriel), sinon à aucun. */
+    private void oublierDuGroupe(Claim c) {
+        if (this.byGroup.get(c.groupId()) != c) {
+            return;   // le groupe tient un autre de ses claims : rien ne change pour lui
+        }
+        this.byGroup.remove(c.groupId());
+        for (Claim autre : this.byAnchor.values()) {
+            if (autre != c && autre.groupId().equals(c.groupId())) {
+                this.byGroup.put(c.groupId(), autre);
+                return;
+            }
         }
     }
 
@@ -200,7 +232,8 @@ public class ClaimData extends SafeSavedData {
     public CompoundTag save(@NotNull CompoundTag tag) {
         ListTag list = new ListTag();
 
-        for (Claim c : this.byGroup.values()) {
+        // tous les claims (21/11 : avant, un seul par groupe ; le claim de la première cabane d'essai d'un clan se perdait)
+        for (Claim c : this.byAnchor.values()) {
             list.add(c.save());
         }
 

@@ -70,9 +70,18 @@ public final class WipeBases {
                 pieces += EffacerBase.retirer(level, tout);
                 poses += AdminManager.removePlacables(level, min, max);
                 terrain(level, min, max);
-                level.removeBlock(a.above(), false);
-                level.removeBlock(a, false);
-                ClaimManager.releaseClaim(level, c.groupId());
+                // 21/11 (audit) : seulement la case du haut de l'armoire (avant : tout bloc au-dessus de son emplacement, même
+                // un bloc de la carte quand l'armoire n'était plus là)
+                if (level.getBlockState(a.above()).getBlock() instanceof fr.heraliz.crac.block.ClaimBlockHaut) {
+                    level.removeBlock(a.above(), false);
+                }
+                if (level.getBlockState(a).getBlock() instanceof fr.heraliz.crac.block.ClaimBlock) {
+                    level.removeBlock(a, false);
+                }
+                // 21/11 (audit) : le claim de cette armoire, pas « celui du groupe » (au tutoriel, un groupe en tient plusieurs)
+                if (ClaimManager.getByAnchor(level, a) != null) {
+                    ClaimManager.removeByAnchor(level, a);
+                }
                 EffacerBase.ramasser(level, min, max, proprio);
                 claims++;
             }
