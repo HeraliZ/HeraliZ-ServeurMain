@@ -117,7 +117,8 @@ environ 20 s) et `outils/verif_mixins.py` (configurations, manifestes, cibles de
 ## Suite du 21/11 : choix du propriétaire
 
 Mis en ligne le 21/11 à 14 h 22 (heure UTC) : tout ce qui précède. Décisions : lettres nettes **non** ; captures du staff
-**gardent** leurs points ; contrôles GitHub en plus : non. Faits ensuite, sur la branche (essais : section 50 de
+**gardent** leurs points ; contrôles GitHub en plus : non. Faits ensuite et mis en ligne le 21/11 à 15 h 34 (heure UTC ;
+aucune erreur Java au démarrage ; essais : section 50 de
 `docs/TESTS_EN_JEU_17NOV_carte-ile.md`) :
 - **sécurités en plus** : Coffre du ClashWar encore plus strict et à l'abri des erreurs des autres mods (a7 A et C,
   ClashWar 1.3.8) ; pas de voix avant le `/login` (a8 P4, CaraCrea 1.7.2) ; recycleur de la carte jamais en double après

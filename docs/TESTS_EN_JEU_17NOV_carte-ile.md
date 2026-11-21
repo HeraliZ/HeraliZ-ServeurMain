@@ -2076,7 +2076,8 @@ L'audit de la section 49 est en ligne depuis le 21/11 à 14 h 22 (heure UTC ; se
 journal). Décisions du propriétaire : lettres nettes de l'interface **non** (« les lettres sont déjà bien plus nettes ») ;
 captures de territoire du staff : **gardent** leurs points de saison ; contrôles GitHub en plus : non. Choisis : sécurités
 en plus, allègements du serveur, et une demande nouvelle : les skins d'armes impossibles à voler, comme ceux des couteaux.
-Détail dans chaque compte rendu de `docs/audit_global_21nov/`, section « Suite du 21/11 ».
+Détail dans chaque compte rendu de `docs/audit_global_21nov/`, section « Suite du 21/11 ». **Mis en ligne le 21/11 à
+15 h 34 (heure UTC)** : serveur prêt à 15 h 36, aucune erreur Java dans le journal.
 
 Fait :
 - **Armes 2.59.10, skins d'armes impossibles à voler** : un objet camo posé sur une arme (onglet Camo de l'atelier) entre
