@@ -22,5 +22,8 @@ Modifications (ArkaniaZ puis HeralisZ) :
 - 2026-11-15 (heralisz25) : le contenu du sac gardé en mémoire par le joueur est oublié dès que le sac n'est plus sur le
   dos, et dès que la liste « Items » de l'objet a été remplacée ailleurs (`PlayerMixin`, `BackpackInventory.aJour`) :
   le même sac revenu sur le dos ne reprend plus un ancien contenu.
+- 2026-11-21 (heralisz28) : défis de déblocage plus suivis quand tout est débloqué (`unlockAllCosmetics`,
+  `UnlockManager.defisSuivis`) ; reliquats ArkaniaZ retirés (clé et adresse d'un ancien serveur, contrôle d'adresse au
+  démarrage jamais branché : `ServerStartingEventHandler`).
 
 Sources obtenues en décompilant le jar du serveur (Vineflower 1.12), voir `tools/fork_backpacked.py`.

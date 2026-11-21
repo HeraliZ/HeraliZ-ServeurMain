@@ -17,11 +17,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Fabrication SANS AUCUN secret (21/11, audit : comme le job « fabriquer » de serveur.yml) : avant, le secret
+  # NOMS_INTERDITS était dans l'environnement de tout ce job, donc de Gradle et de ses dépendances (code d'autres auteurs),
+  # et son fichier était écrit pendant que le démon Gradle tournait encore (il ne s'arrête qu'à la fin du job). Les jars
+  # passent au job « controles » par le cache jars-<commit>.
   fabrication:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
-      NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v4
@@ -53,14 +56,7 @@ jobs:
           restore-keys: jars-
 
       - name: Fabriquer les mods modifiés
-        run: python outils/construire.py --si-change
-
-      - name: Noms interdits
-        if: env.NOMS_INTERDITS != ''
-        run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
-
-      - name: Contrôles (GeckoLib, noms perso, langues)
-        run: python outils/verifier.py --sans-split
+        run: python outils/sans_secrets.py python outils/construire.py --si-change
 
       # copies à télécharger dans l'onglet Actions : un quota d'artefacts plein (« Artifact storage quota has been
       # hit ») ne doit pas bloquer la suite
@@ -81,6 +77,53 @@ jobs:
             livraison/mods client/*-client.jar
             livraison/mods client/heraliz_interface-*.jar
           retention-days: 3
+
+  # Contrôles (GeckoLib, noms perso, langues, économie...) sur les jars de « fabrication », dans une machine neuve où
+  # Gradle n'a jamais tourné (21/11, audit) : le seul secret de ce workflow (NOMS_INTERDITS, liste des noms perso) n'arrive
+  # que dans l'étape qui écrit son fichier. Même ordre que la mise en ligne (job « serveur » de serveur.yml).
+  controles:
+    needs: fabrication
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # javac : essais hors du jeu de certains contrôles (conteneurs allégés, listes envoyées par différences), comme avant
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Jars fabriqués (cache du job « fabrication »)
+        uses: actions/cache/restore@v4
+        with:
+          path: modules/*/build/libs
+          key: jars-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Ranger les jars fabriqués
+        run: python outils/construire.py --sans-build
+
+      - name: Noms interdits
+        env:
+          NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
+        run: |
+          if [ -n "$NOMS_INTERDITS" ]; then
+            printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
+          else
+            echo "::warning::Secret NOMS_INTERDITS absent : contrôle des noms perso sauté (docs/MISE_EN_LIGNE_GITHUB.md, section 7)."
+          fi
+
+      - name: Contrôles (GeckoLib, noms perso, langues)
+        run: python outils/verifier.py --sans-split
 
   # Contrôles d'images (21/11, choix du propriétaire) : logos des icônes, icônes des accessoires, chargeurs 3D,
   # accessoires tenus en main, placement des accessoires sur les armes. Ils lisent les images avec numpy et Pillow (code

@@ -197,14 +197,19 @@ public final class BagCamo {
     * sur le sac porté ; la pastille dit qu'il y en a un).
     */
    public static final class Badge implements net.minecraftforge.client.IItemDecorator {
+      /** Image de chaque camo, faite une fois (21/11, opti : avant, une adresse neuve par sac affiché et par image). */
+      private static final java.util.Map<Camo, ResourceLocation> IMAGES = new java.util.EnumMap<>(Camo.class);
+
       @Override
       public boolean render(net.minecraft.client.gui.GuiGraphics g, net.minecraft.client.gui.Font font, ItemStack stack, int x, int y) {
          Camo camo = CamoData.get(stack);
          if (camo == null) return false;
+         ResourceLocation image = IMAGES.computeIfAbsent(camo,
+            c -> new ResourceLocation("heralisz_camo", "textures/item/" + (c.isSkinX() ? "skinx_" : "camo_") + c.id + ".png"));
          g.pose().pushPose();
          g.pose().translate(0, 0, 250);
          g.fill(x + 8, y + 8, x + 17, y + 17, 0xE0101014);
-         g.blit(new ResourceLocation("heralisz_camo", "textures/item/" + (camo.isSkinX() ? "skinx_" : "camo_") + camo.id + ".png"), x + 9, y + 9, 0,
+         g.blit(image, x + 9, y + 9, 0,
             0, 7, 7, 7, 7);
          g.pose().popPose();
          return false;
