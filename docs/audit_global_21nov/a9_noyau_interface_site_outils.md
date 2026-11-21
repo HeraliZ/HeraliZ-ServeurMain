@@ -12,7 +12,8 @@ YAML), lecture des journaux publics des tâches GitHub, puis la fabrication et l
 **Noyau 1.1.11** (seul le jar du serveur change vraiment ; le launcher donnera le nouveau jar aux joueurs, aucun canal
 réseau ne change). **Site : rien n'a changé, aucune mise en ligne du site à faire.**
 
-En bref : 5 points corrigés (3 moyens, 2 petits), 1 réglage à faire par vous (important), 5 propositions à décider.
+En bref : 5 points corrigés (3 moyens, 2 petits), 1 réglage à faire par vous (important), 4 propositions à décider et
+une remarque pour les développeurs.
 Aucun bug grave trouvé : pas de plantage, pas de duplication, pas de fuite de mot de passe, pas de faille sur le site.
 
 ---
@@ -22,10 +23,10 @@ Aucun bug grave trouvé : pas de plantage, pas de duplication, pas de fuite de m
 ### Le contrôle des « noms perso » ne tourne jamais sur GitHub
 
 En simple : la règle n° 3 du projet (aucun prénom, pseudo, mail… dans le code) est contrôlée par `outils/verifier.py`
-avec une liste de mots interdits, donnée à GitHub par le secret **`NOMS_INTERDITS`**. Ce secret n'existe pas : dans les
-journaux des tâches (branche et `main`), l'étape « Noms interdits » est sautée et le contrôle écrit
-« outils/noms_interdits.txt absent : contrôle des noms perso sauté ». Depuis toujours, ce contrôle ne s'est donc fait
-que sur un PC qui a ce fichier.
+avec une liste de mots interdits, donnée à GitHub par le secret **`NOMS_INTERDITS`**. Ce secret est absent (ou vide) :
+dans les journaux des dernières tâches du 21/11 (branche de travail et mise en ligne sur `main`), l'étape « Noms
+interdits » est sautée et le contrôle écrit « outils/noms_interdits.txt absent : contrôle des noms perso sauté ». Ce
+contrôle ne se fait donc aujourd'hui que sur un PC qui a ce fichier.
 
 À faire : GitHub → Settings → Secrets and variables → Actions → **New repository secret** → nom `NOMS_INTERDITS`,
 valeur : les mots interdits (prénoms, anciens pseudos, mails…), un par ligne. Au niveau du **dépôt** (comme le dit
@@ -108,9 +109,10 @@ Pour les développeurs : `outils/commandes_serveur.py` l. 70-74.
    le noyau (ou les clans, la voix, le monde…) change une fonction utilisée par un autre mod, cet autre mod garde son jar
    fabriqué avec l'ancienne version : une fonction retirée ou renommée ne se voit qu'en jeu (ou au démarrage d'essai si
    elle sert au démarrage). La règle « ne jamais renommer » rend ce cas rare, pas impossible (12 modules dépendent du
-   noyau à la fabrication). Choix : (a) refaire aussi les mods qui en dépendent (sûr ; une fabrication plus longue à chaque changement
-   du noyau, presque tout est refait) ; (b) un contrôle rapide qui vérifie que chaque appel des jars gardés existe encore
-   dans les jars refaits (l'outil `outils/verif_dependants.py` existe déjà, pas branché) ; (c) ne rien changer.
+   noyau à la fabrication). Choix : (a) refaire aussi les mods qui en dépendent (sûr ; une fabrication plus longue à
+   chaque changement du noyau, presque tout est refait) ; (b) un contrôle rapide qui vérifie que chaque appel des jars
+   gardés existe encore dans les jars refaits (l'outil `outils/verif_dependants.py` existe déjà, pas branché) ; (c) ne
+   rien changer.
 2. **Publication du launcher : paquet Python sans empreintes là où sont les clés** (petit). Les trois jobs de mise en
    ligne de `launcher.yml` (l. 241, 309, 376) installent `paramiko` (et, sans version figée, ses bibliothèques) dans le
    job qui a la clé de signature du launcher et le mot de passe de la VM. Proposition : versions et empreintes figées
