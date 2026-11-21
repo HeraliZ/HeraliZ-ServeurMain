@@ -1904,8 +1904,11 @@ chaque banc du 21/11 est comparé à celui du 20/11 tombé sur le même processe
 | **21/11, branche (avant les derniers envois des audits), EPYC 9V74, vue 8 (spawn 6)** | **31,4** | **44,2** | **60,6** | 166 | **169** |
 | 20/11, processeur EPYC 7763, vue 7 | 38,9 | 50,7 | 66,4 | 194 | 341 |
 | 21/11, version en ligne (`main`), EPYC 7763 (le plus lent), vue 8 (spawn 6) | 38,6 | 53,2 | 73,9 | 256 | 426 |
+| 21/11, branche finale (avec cette section), Xeon Platinum 8573C, vue 8 (spawn 6) | 37,2 | 49,2 | 69,9 | 131 | 271 |
 
-- Même processeur, même vue : **−5,3 ms par tick (−14 %)** et 40 % de ticks lents en moins. La version en ligne, sur la
+- Même processeur, même vue : **−5,3 ms par tick (−14 %)** et 40 % de ticks lents en moins. La branche finale est tombée
+  sur un processeur sans banc à 150 bots le 20/11 (à 100 bots : 28,9 ms, contre 27,3 sur l'EPYC 7763) : aucune perte
+  visible après les derniers correctifs des audits, chaque mod garde sa part. La version en ligne, sur la
   machine la plus lente et à la vue 8, fait comme le 20/11 à la vue 7 (un cran plus court) : mieux, à vue égale. Prudence :
   deux bancs sur le même processeur peuvent encore différer de 20 % (section 38).
 - Part de chaque mod (branche, EPYC 9V74 ; entre parenthèses le 20/11, même processeur) : Minecraft 9,5 ms (10,8), bots
