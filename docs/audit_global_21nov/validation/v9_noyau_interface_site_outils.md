@@ -76,11 +76,14 @@ secrets de la mise en ligne dans son environnement (mot de passe SFTP et clé AP
 Maven Central) et le fait tourner avec Java. Le journal de la mise en ligne de 17 h 37 le confirme (contrôle fait, secrets
 présents dans l'étape). Le risque réel est faible (Maven Central ne change jamais un fichier publié), mais la règle
 n'était pas tenue. Maintenant, les secrets sont vidés pour cette seule étape ; la liste des noms perso est lue dans son
-fichier, comme avant ; rien d'autre ne change.
+fichier, comme avant ; rien d'autre ne change. C'est la protection simple (un code qui lit les variables de son
+environnement, le cas le plus courant, ne trouve plus rien) ; la séparation complète est une proposition plus bas.
 
-Pour les développeurs : `.github/workflows/serveur.yml` l. 198-217 (`env:` de l'étape, chaque secret du job à `""` : la
-valeur de l'étape remplace celle du job, donc ni le shell de l'étape ni ses enfants ne les ont, même par `/proc`). JOML :
-`modules/loot/outils/lod_props.py` l. 60-71 (`joml()`, sans empreinte contrôlée), lancé par `outils/verifier.py` l. 354-361.
+Pour les développeurs : `.github/workflows/serveur.yml` l. 198-218 (`env:` de l'étape, chaque secret du job à `""` : la
+valeur de l'étape remplace celle du job, donc ni le shell de l'étape ni ses enfants ne les ont dans leur environnement).
+Limite : sur une machine de GitHub, un code malveillant a `sudo` et pourrait lire la mémoire du programme de GitHub qui
+garde les secrets du job ; seul un job à part (proposition 1) l'empêche. JOML : `modules/loot/outils/lod_props.py`
+l. 60-71 (`joml()`, sans empreinte contrôlée), lancé par `outils/verifier.py` l. 354-361.
 
 ### 3. `/redemarrage annuler` gardait le code de sortie du redémarrage annulé (petit) — commit `69a02729a`
 
@@ -96,19 +99,28 @@ fil à part, après la sauvegarde du monde.
 
 ## À décider par le propriétaire (rien n'est changé)
 
-1. **Empreinte de JOML** (petit, sécurité). Dans le « Contrôle de branche » (job « controles »), JOML tourne pendant que
-   le fichier des noms perso est sur le disque (dès que le secret `NOMS_INTERDITS` sera réglé). Proposition : contrôler
-   l'empreinte du fichier téléchargé dans `lod_props.py` (SHA-256 de `joml-1.10.5.jar` :
+1. **Contrôles de la mise en ligne dans un job à part, et empreinte de JOML** (petit, sécurité). (a) Mettre l'étape
+   « Contrôles » de `serveur.yml` dans un job sans aucun secret (comme le job « controles » de `branches.yml`), dont le
+   job « serveur » dépendrait : séparation complète, sans minute de plus (il tourne pendant le démarrage d'essai). Pas
+   fait ici : c'est la structure de la mise en ligne, à changer avec une mise en ligne surveillée. (b) Dans le « Contrôle
+   de branche », JOML tourne pendant que le fichier des noms perso est sur le disque (dès que le secret `NOMS_INTERDITS`
+   sera réglé) : contrôler l'empreinte du fichier téléchargé dans `lod_props.py` (SHA-256 de `joml-1.10.5.jar` :
    `cac9f22f83a7aa33eebda73c16ff5261e3cb4911b6bafcf4c79ea486099d0c9a`, vérifiée ici contre l'empreinte publiée par Maven
    Central), comme numpy et Pillow dans `outils/requis_images.txt`. Pas fait ici : ce fichier est dans le module loot, et
    le changer refait le jar de loot (version à monter).
-2. **Mot de passe tapé par erreur comme une commande** (petit, journaux publics). Si un joueur tape son mot de passe
+2. **Journal public de « Lenteurs » : mot de passe tapé par erreur, messages privés** (petit, à moyen pour la vie privée).
+   Si un joueur tape son mot de passe
    précédé d'un « / » (par exemple `/monmotdepasse` au lieu de `/login monmotdepasse`), ce premier mot est gardé tel quel :
-   dans le journal du serveur (« issued server command »), que la tâche « Lenteurs du serveur » recopie dans son journal
-   public (partie « commandes jouées », `.github/workflows/lenteurs.yml` l. 230), et dans les rapports du diagnostic
-   (`DernieresCommandes.debut`, `modules/noyau/.../diag/DernieresCommandes.java` l. 103), recopiés aussi. Peu probable, mais
-   le dépôt est public. Proposition : n'y écrire que les commandes connues du serveur (les autres : « /? »), ou retirer
-   cette partie du journal public.
+   dans le journal du serveur (« issued server command », écrit par Mohist avant qu'AuthMe voie la commande ; AuthMe ne
+   cache que les lignes de ses propres commandes comme `/login`), que la tâche « Lenteurs du serveur » recopie dans son
+   journal public (parties « commandes jouées » et « 30 lignes avant chaque retard », `.github/workflows/lenteurs.yml`
+   l. 230 et 232), et dans les rapports du diagnostic (`DernieresCommandes.debut`,
+   `modules/noyau/.../diag/DernieresCommandes.java` l. 103), recopiés aussi. Peu probable, mais le dépôt est public. Même
+   partie « 30 lignes avant chaque retard » : les lignes de commandes y sont entières, donc le texte des messages privés
+   (`/msg <pseudo> <message>` : pseudos masqués, message lisible ; `log: true` de `serveur/spigot.yml` écrit chaque
+   commande en entier), et le texte du chat s'il est écrit dans le journal. Proposition : dans ces parties, ne
+   garder que les commandes connues du serveur, sans leurs arguments (les autres : « /? »), et pas le texte du chat ; ou
+   retirer ces parties du journal public.
 3. **Staff op 4 en combat** (petit, règle). Le choix de ce midi garde les règles du combat pour un op 4 : un Admin ou le
    Fondateur op 4 qui vient de prendre un coup ne peut pas lancer « Ban PC », « Jour » ou « Largage » depuis le panneau
    pendant 15 s (« Impossible en combat »), alors qu'un Guide sans op le peut. Proposition : dispenser toutes les actions
