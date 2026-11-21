@@ -29,7 +29,7 @@ prendre, seulement 3 remarques sans effet en jeu. Aucune duplication d'objets tr
 | `06449bbf5` | Objets à vie rendus et matériel de la première base : le stockage écrit sur le disque avant le joueur (`SafeSavedData.sauverMaintenant`) | **OK**. `sauverMaintenant` (`data/SafeSavedData.java` l. 194-222) relève et écrit tout de suite, sur le fil du serveur, après les écritures en file du même fichier (jamais une version plus ancienne par-dessus) ; écriture ratée : la donnée reste « à sauver ». Objets à vie (`bases/ObjetsAVieBases.java` l. 225-231) : fichier écrit, puis le joueur : bon ordre. Matériel de la première base : voir la remarque R1 (ordre presque toujours bon, une fenêtre de quelques millisecondes reste ; au pire un kit de départ en double après un plantage à ce moment précis). |
 | `a47ec9766` | Armoires gardées une par une (`ClaimData`), effacements par armoire, tutoriel à deux d'un même clan, tronçons prêts, C4 de Tactique, noyau déclaré au serveur | **OK**, détail plus bas. |
 | `8cb1e198f` | Échelle de raid abîmée seulement à portée de main | **OK** (`placable/EchelleServeur.java` l. 114-119). Même mesure que Forge (yeux → centre du bloc, portée + 1 bloc, Forge prend + 1,5) : un vrai coup est au plus à 5,4 blocs, la limite est 5,5. Mais le bloc visé était lu AVANT ce contrôle : corrigé, voir « Corrigé » n° 1. |
-| `b37753d9e` | Cadence côté serveur : écran de mort « À la base » (2 d'un coup puis 1 / 0,5 s), onglet Accès (8 puis 8 / s) | **OK**. Essai hors du jeu de `allowBurst` (`network/PacketThrottle.java` l. 36-49) : un flot de 1 000 paquets par seconde pendant 10 s n'en laisse passer que 88 ; un joueur normal (recherche toutes les 250 ms, 3 clics d'un coup) n'est jamais arrêté ; l'horloge utilisée ne recule jamais. Oublié au départ du joueur et à l'arrêt. |
+| `b37753d9e` | Cadence côté serveur : écran de mort « À la base » (2 d'un coup puis 1 / 0,5 s), onglet Accès (8 puis 8 / s) | **OK**. Essai hors du jeu de `allowBurst` (`network/PacketThrottle.java` l. 36-49) : un flot de 1 000 paquets par seconde pendant 10 s n'en laisse passer que 87 (8 d'un coup, puis 8 par seconde) ; un joueur normal (recherche toutes les 250 ms, 3 clics d'un coup) n'est jamais arrêté ; l'horloge utilisée ne recule jamais. Oublié au départ du joueur et à l'arrêt. |
 
 ### Le changement risqué : les armoires gardées une par une (`claim/ClaimData.java`)
 
@@ -97,8 +97,8 @@ Rien de nouveau à décider. Les propositions de `a3` non retenues restent des p
 
 Remarques (aucun effet en jeu aujourd'hui, rien de changé) :
 - **R1. Matériel de la première base** (`heraliz/BasesClans.java` l. 657 puis 702) : le coffre du clan reçoit le kit, son
-  fichier part en écriture sur un autre fil, puis le fichier des bases est écrit tout de suite. Le commentaire dit « le
-  fichier des bases est sur le disque avant le coffre » : presque toujours vrai, mais l'écriture du coffre, partie la
+  fichier part en écriture sur un autre fil, puis le fichier des bases est écrit tout de suite. Le commentaire dit « Ce
+  fichier est maintenant sur le disque avant le coffre » : presque toujours vrai, mais l'écriture du coffre, partie la
   première, peut finir avant. Un plantage du serveur dans ces quelques millisecondes redéposerait le kit de départ (plan,
   marteau, armoire, brindilles) une 2e fois. Risque négligeable ; le corriger demanderait de réordonner ce dépôt
   (« au pire perdu » au lieu de « au pire en double ») : pas conseillé sans besoin.
@@ -114,8 +114,8 @@ Remarques (aucun effet en jeu aujourd'hui, rien de changé) :
 
 ## Vérifié sans problème
 
-- **Paquets des joueurs** (11) : tous repris sur le fil du serveur, avec distance, tronçon chargé, vue, droits du clan et
-  cadence ; listes et textes bornés au décodage ; groupes et invitations refusés pour les bases des clans.
+- **Paquets des joueurs** (11) : tous repris sur le fil du serveur, chacun avec les contrôles qui le concernent (distance,
+  tronçon chargé, vue, droits du clan) et une cadence ; listes et textes bornés au décodage ; groupes et invitations refusés pour les bases des clans.
 - **Duplications** : stock de l'armoire relu clic par clic (prise, dépôt, échange avec un objet marqué, touches 1 à 9,
   Maj + clic, armoire pleine : le compte tient toujours), entonnoirs, ramassage d'un objet posé (refusé s'il contient
   quelque chose), déplacement de l'armoire (stock vidé avant le retrait, un autre écran ouvert dessus ne peut rien en
@@ -129,6 +129,9 @@ Remarques (aucun effet en jeu aujourd'hui, rien de changé) :
   mis de côté, jamais écrasé).
 - **Liens** : `mods.toml` (noyau 1.1.5+ des deux côtés, Clans facultatif) ; appels par réflexion des autres mods vers CRac
   et de CRac vers eux : 0 erreur.
+- **Mixins de CRac** : au démarrage d'essai « mixins stricts » lancé sur GitHub ce soir (21/11, 18 h 13 UTC, branche juste
+  avant ce correctif, qui ne touche aucun mixin), aucune injection de CRac ratée sur Mohist (la seule ratée est dans le
+  noyau, hors de cette zone).
 - **Affichage chez les joueurs** (survol) : rendus des échelles, coffres, armoire, cœur, zones et fantômes sortis tout de
   suite quand il n'y a rien à montrer (déjà relus par les audits d'images des 19 et 20/11).
 
@@ -142,6 +145,7 @@ Corrigé ici (CRac 1.38.11-beta) :
 - [ ] Carrière du monde des bases : ses blocs se cassent toujours ; armoire de sa base : se casse (gérer la base).
 - [ ] Staff en créatif : casse toujours d'un clic, pièces comprises.
 - [ ] `/base effacer <chef>` sur le serveur d'essai : la base et son armoire disparaissent, la carte autour reste.
+- [ ] Fin du tutoriel des bases, et « Quitter le tuto » : la cabane d'essai disparaît, armoire comprise, comme avant.
 - [ ] Journal du serveur : aucune erreur de `crac` ; `/diag etat` : rien de nouveau.
 
 Changements du jour (rappel de `a3`, toujours à faire) : tutoriel à deux d'un même clan, échelle de raid à la main, mort

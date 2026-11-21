@@ -44,6 +44,11 @@ serveur/config :
   - perf.reduce_blockstate_cache_rebuilds (ModernFix, essai n° 20 du 21/11) ;
   - bugfix.forge_vehicle_packets (ModernFix, essai n° 24 du 21/11 : la redirection de movePlayerUsingPositionRider dans
     ServerGamePacketListenerImpl ne trouve pas son appel, que Mohist réécrit).
+Résultat attendu (essai n° 28 du 21/11, rapport docs/audit_global_21nov/validation/v10_dependances_mixins.md) : nos 111
+mixins du serveur (plus 4 ajoutés par le plugin de Spartan) tous essayés, une seule injection ratée, voulue :
+heraliz_noyau_allege ReglagesGenerationMixin.heraliz$encoderUneFoisDimensions (2e forme de WorldGenSettings.encode, celle
+« dimensions » que Bukkit pourrait appeler ; la forme de Minecraft, utilisée par Mohist 916, s'applique), et sa classe
+PrimaryLevelData signalée une 2e fois par l'audit (suite de l'injection ratée). Tout autre échec est nouveau.
 """
 import argparse
 import io
@@ -88,6 +93,7 @@ OPTIONS_STRICTES = ("-Dmixin.debug.countInjections=true", "-Dmixin.env.ignoreReq
 MODERNFIX_COUPES = ("perf.reduce_blockstate_cache_rebuilds", "bugfix.forge_vehicle_packets")
 # lignes de Mixin lues par rapport_strict()
 ECHEC_MIXIN = re.compile(r"Mixin (apply|prepare)(?: for mod \S+)? failed (.+?): ((?:[\w$]+\.)+[\w$]*(?:Exception|Error)) ?(.*)$")
+FORCE_CHARGE = re.compile(r"Force-loading class (\S+)")
 FORCE_RATE = re.compile(r"Could not force-load (\S+)")
 CIBLE_ABSENTE = re.compile(r"@Mixin target (\S+) was not found (\S+?\.json):(\S+)")
 MIXING = re.compile(r"Mixing (\S+) from (\S+) into (\S+)")
@@ -295,7 +301,11 @@ def rapport_strict(d, lignes):
     « Mixing X from config into cible », écrit au niveau DEBUG par Mixin)."""
     nous, autres = configs_mixins(d)
     echecs, forces, absentes = [], [], []
+    audit = 0   # classes chargées par l'audit de ModernFix (preuve qu'il a tourné)
     for k, l in enumerate(lignes):
+        if FORCE_CHARGE.search(l):
+            audit += 1
+            continue
         m = ECHEC_MIXIN.search(l)
         if m:
             ctx = m.group(2)
@@ -332,9 +342,15 @@ def rapport_strict(d, lignes):
     plugins = sum(len(set(appliques.get(c, {})) - set(xs)) for c, (_, xs) in nous.items())
     jamais = [(c, x) for c, (_, xs) in sorted(nous.items()) for x in xs
               if x not in appliques.get(c, {}) and (c, x) not in rates_nous]
+    # une classe visée par un mixin raté reste « pas traitée » pour sa config : l'audit la redemande, elle est déjà chargée
+    # (« Could not force-load ... already classloaded ») ; seules les autres disent qu'un mixin n'a jamais pu s'appliquer
+    cibles_ratees = {e[3] for e in echecs if e[3]}
+    forces = [(c, r, c in cibles_ratees) for c, r in forces]
     resume = ["", "**Mixins stricts** : %d injection(s) ratée(s) dans nos mods, %d chez les autres auteurs ; %d classe(s) "
-              "visée(s) pas transformée(s) (« Could not force-load ») ; %d cible(s) absente(s) dans nos configs." % (
-                  len(a_nous), len(echecs) - len(a_nous), len(forces), sum(1 for x in absentes if x[0]))]
+              "visée(s) pas transformée(s) (« Could not force-load », dont %d seulement à cause d'une injection ratée "
+              "ci-dessous) ; %d cible(s) absente(s) dans nos configs ; %d classe(s) chargée(s) par l'audit de ModernFix." % (
+                  len(a_nous), len(echecs) - len(a_nous), len(forces), sum(1 for f in forces if f[2]),
+                  sum(1 for x in absentes if x[0]), audit)]
     resume.append("- Nos mixins : %d configs, %d mixins listés pour un serveur ; %s." % (
         len(nous), listes, ("%d essayés pendant ce démarrage (logs/debug.log ; plus %d ajoutés par le plugin d'une config), "
                             "%d jamais essayés" % (vus, plugins, len(jamais))) if lu
@@ -351,8 +367,10 @@ def rapport_strict(d, lignes):
                                                         " -> " + e[3] if e[3] else "", e[5],
                                                         nous[e[1]][0] if e[0] else autres.get(e[1], "?")))
         detail.append("         " + e[6][:1500])
-    detail.append("--- MIXINS STRICTS : classes visées pas transformées (« Could not force-load », %d) ---" % len(forces))
-    detail += ["  %s : %s" % f for f in forces]
+    detail.append("--- MIXINS STRICTS : classes visées pas transformées (« Could not force-load », %d ; audit de ModernFix : "
+                  "%d classe(s) chargée(s)) ---" % (len(forces), audit))
+    detail += ["  %s : %s%s" % (c, r, " (suite de l'injection ratée sur cette classe)" if suite else "")
+               for c, r, suite in forces]
     detail.append("--- MIXINS STRICTS : cibles absentes (%d) ---" % len(absentes))
     detail += ["  %s %s:%s -> %s" % ("NOUS  " if x[0] else "autres", x[1], x[2], x[3]) for x in absentes]
     detail.append("--- MIXINS STRICTS : nos mixins jamais appliqués pendant ce démarrage (%d ; classe visée jamais chargée, "
