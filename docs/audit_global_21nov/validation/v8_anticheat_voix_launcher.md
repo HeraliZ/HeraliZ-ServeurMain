@@ -17,6 +17,10 @@ Aussi : ce que les autres mods appellent dans cette zone (réflexion, messages e
 - cibles des Mixins de Spartan sur `tacz-1.20.1-1.1.8-hotfix.jar` (le même que sur le serveur) relues avec `javap` : toutes
   présentes.
 
+Sur GitHub, avec la correction (`7fc16a9a3`) : « Contrôle de branche » réussi (fabrication, contrôles, images) et
+démarrage d'essai normal réussi. Dans son journal, Forge ne remet que les commentaires de `spartan-common.toml` (valeurs
+inchangées) : déjà le cas avant le 21/11, sans effet.
+
 En bref : les **9 changements du jour** de la zone font ce qu'ils disent, sans régression trouvée ; **1 défaut corrigé**
 (Anticheat 2.15.6, sécurité, cas rare) ; **4 propositions** nouvelles, petites ; les propositions de la première relecture
 que le propriétaire n'a pas choisies restent des propositions. Voix : aucun changement. Launcher : aucun changement,
@@ -32,7 +36,7 @@ textes). La liste vocale par différences est datée du 20/11 à 23 h 58 (heure 
 | Commit | Ce qu'il fait | Verdict |
 |---|---|---|
 | `264894b1a` (Voix 1.7.0) | Liste vocale par différences numérotées | **OK**. Liste complète seulement à l'arrivée, au changement de vue ou sur demande ; numéro par vue ; un joueur à qui une différence manque redemande la liste, une fois toutes les 5 s au plus, et le serveur n'en accepte pas plus (`Synchro.java`, `VoiceClient.java` l. 183-247, `VoiceServer.java` l. 615-681). Tailles bornées au décodage (1 024 groupes, 4 096 joueurs). Essai hors du jeu : 16 000 ticks, 0 erreur, aussi avec 2 % et 20 % de pertes. |
-| `5de420dbc` (Spartan 2.15.2) | Plus d'alerte « JvmHardening » pour chaque joueur du launcher | **OK**. Seule l'attache ouverte est signalée (`JvmDurcie.java` l. 22-24, `ReceptionServeur.java` l. 235-246) ; les textes envoyés par le jeu sont bien « attach activé » et « agents dynamiques autorisés » (`JvmProbe.java` l. 31-37). Le mode strict exigeait déjà la même chose. |
+| `5de420dbc` (Spartan 2.15.2) | Plus d'alerte « JvmHardening » pour chaque joueur du launcher | **OK**. Seule l'attache ouverte est signalée (`JvmDurcie.java` l. 22-25, `ReceptionServeur.java` l. 235-246) ; les textes envoyés par le jeu sont bien « attach activé » et « agents dynamiques autorisés » (`JvmProbe.java` l. 31-37). Le mode strict exigeait déjà la même chose. |
 | `6eb1ad756` | Commentaire de `JvmDurcie` précisé | **OK** (aucun code changé). |
 | `03e6801a2` (Spartan 2.15.3) | Disjoncteur compté en PC, remise en service au bout d'une heure | **OK**. Logique relue cas par cas (`Rodage.java` l. 135-201) : PC fusionnés quand ils partagent une clé, fenêtre d'une heure, plafond de 64 clés, tout sur le fil du serveur. Les deux défauts de ce commit ont été corrigés le jour même (adresse publique seulement, PC qui comptent de nouveau). Réglage `rodageRepriseMinutes = 60` présent dans `serveur/config/spartan-common.toml`. |
 | `a1490b67b` (Voix 1.7.1, partie voix) | Staff caché : voix réservée au staff, absent de la liste vocale des joueurs | **OK**. Un caché n'est entendu que du staff, crochets des autres mods compris (`VoiceRouting.java` l. 151, `VoiceServer.java` l. 1009-1013) ; jamais sa ligne dans la vue des joueurs. « Voit les cachés » exige le `/login` (`GradesApi.voitLesCaches` → `VanishServeur.java` l. 108-111 de la boutique) : un jeu lancé sous le pseudo d'un staff ne voit rien. |
