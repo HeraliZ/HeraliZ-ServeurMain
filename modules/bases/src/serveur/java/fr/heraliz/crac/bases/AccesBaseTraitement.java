@@ -65,6 +65,13 @@ public final class AccesBaseTraitement {
         if (m.action() == null) {
             return;
         }
+        // 21/11 (choix du propriétaire « sécurités en plus ») : onglet Accès (ouvrir, chercher, donner, retirer) : 8 demandes
+        // d'un coup au plus, puis 8 par seconde. Le jeu envoie une recherche 1/4 s après la dernière lettre tapée (ou à
+        // Entrée) et une demande par clic : un joueur normal n'est jamais arrêté. L'onglet Entretien garde sa propre limite.
+        if (m.action() != C2SAccesBase.Action.ENTRETIEN
+            && !fr.heraliz.crac.network.PacketThrottle.allowBurst(p, fr.heraliz.crac.network.PacketThrottle.Kind.ACCES, 125L, 8)) {
+            return;
+        }
         ServerLevel level = p.serverLevel();
         BlockPos pos = m.pos();
         if (!level.isLoaded(pos) || p.distanceToSqr(pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5) > PORTEE * PORTEE) {

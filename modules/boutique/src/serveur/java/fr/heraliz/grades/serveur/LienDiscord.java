@@ -64,6 +64,9 @@ final class LienDiscord {
     private static final Map<UUID, Long> DERNIER = new HashMap<>();
     /** Joueurs qui portent le tag HeraliZ sur Discord (rôle Soutien, compte lié), d'après HeraliBot. */
     private static final Map<UUID, Boolean> SOUTIENS = new HashMap<>();
+    /** Dernière question à HeraliBot sur le tag de chaque joueur (heure, ms) : une par minute au plus (21/11). */
+    private static final Map<UUID, Long> SOUTIEN_DEMANDE = new HashMap<>();
+    private static final long SOUTIEN_ECART_MS = 60_000;
 
     private LienDiscord() {
     }
@@ -75,6 +78,7 @@ final class LienDiscord {
         CODES.clear();
         DERNIER.clear();
         SOUTIENS.clear();
+        SOUTIEN_DEMANDE.clear();
         Path f = FMLPaths.CONFIGDIR.get().resolve("heraliz_grades").resolve("lien.json");
         try {
             if (Files.exists(f)) {
@@ -94,6 +98,7 @@ final class LienDiscord {
     static void arreter() {
         serveur = null;
         SOUTIENS.clear();
+        SOUTIEN_DEMANDE.clear();
         CODES.clear();
         DERNIER.clear();
     }
@@ -101,6 +106,7 @@ final class LienDiscord {
     static void oublier(UUID uuid) {
         CODES.remove(uuid);
         SOUTIENS.remove(uuid);
+        SOUTIEN_DEMANDE.remove(uuid);
     }
 
     /** Vrai si le joueur porte le tag HeraliZ sur Discord (dernière réponse de HeraliBot). */
@@ -108,15 +114,25 @@ final class LienDiscord {
         return Boolean.TRUE.equals(SOUTIENS.get(uuid));
     }
 
-    /** Redemande à HeraliBot si le joueur porte le tag, puis lance la suite (sur le fil serveur, même si le bot ne répond pas). */
-    static void verifierSoutien(UUID uuid, Runnable suite) {
-        if (!actif()) {
-            suite.run();
-            return;
-        }
+    /**
+     * Tag Soutien pour {@code /kit} (21/11, choix du propriétaire, audit a1) : {@code suite} (ouvrir le menu) part TOUT DE
+     * SUITE avec la dernière réponse connue de HeraliBot ; le bot n'est réinterrogé qu'une fois par minute au plus et par
+     * joueur ; si sa réponse change le tag, {@code siChange} remet le menu à jour (fil serveur). Bot arrêté ou lent : rien
+     * n'attend. Avant : chaque /kit l'interrogeait et le menu attendait sa réponse (5 à 8 s quand le bot était arrêté).
+     */
+    static void verifierSoutien(UUID uuid, Runnable suite, Runnable siChange) {
+        suite.run();
+        if (!actif()) return;
+        long maintenant = System.currentTimeMillis();
+        Long avant = SOUTIEN_DEMANDE.get(uuid);
+        if (avant != null && maintenant - avant >= 0 && maintenant - avant < SOUTIEN_ECART_MS) return;
+        SOUTIEN_DEMANDE.put(uuid, maintenant);
+        boolean etait = estSoutien(uuid);
         appeler("GET", "/mc/soutien/" + uuid, null, r -> {
-            if (r != null && r.has("soutien")) SOUTIENS.put(uuid, r.get("soutien").getAsBoolean());
-            suite.run();
+            // joueur parti entre-temps : rien n'est gardé pour lui (tout est oublié à la déconnexion)
+            if (r == null || !r.has("soutien") || serveur == null || serveur.getPlayerList().getPlayer(uuid) == null) return;
+            SOUTIENS.put(uuid, r.get("soutien").getAsBoolean());
+            if (estSoutien(uuid) != etait) siChange.run();
         });
     }
 

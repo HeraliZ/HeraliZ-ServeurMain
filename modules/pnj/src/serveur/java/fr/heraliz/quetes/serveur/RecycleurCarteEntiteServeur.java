@@ -28,8 +28,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -68,9 +70,12 @@ import java.util.stream.Stream;
  * un plantage entre les deux perd au pire un gain, il ne copie rien) ;</li>
  * <li>machine cassée par le staff : contenu au sol, puis fichier effacé.</li>
  * </ul>
- * Un fichier illisible n'est jamais écrasé : la machine reste fermée (journal du serveur). Une écriture ratée ferme aussi
- * la machine jusqu'au redémarrage. Les clics sont traités un par un par le serveur : deux joueurs sur la même case, un
- * seul l'obtient.
+ * Un fichier illisible n'est jamais écrasé : la machine reste fermée (journal du serveur). Une écriture ratée (disque
+ * plein...) ferme aussi la machine ; 21/11 (audit) : mieux vaut perdre que copier, l'ancien fichier (d'avant ce changement :
+ * il pouvait encore contenir un objet qu'un joueur venait de reprendre, revenu en double après un redémarrage) est effacé
+ * tout de suite, puis l'écriture est réessayée toutes les 5 s, au déchargement du tronçon et à l'arrêt du serveur ; dès
+ * qu'elle passe, la machine rouvre. Un plantage avant fait perdre le contenu de la machine, jamais un objet en double.
+ * Les clics sont traités un par un par le serveur : deux joueurs sur la même case, un seul l'obtient.
  */
 public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
     private static final Logger LOG = LogUtils.getLogger();
@@ -86,6 +91,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
     private static final float BRUIT_VOLUME = 1.5F;
     /** Machines chargées (monde + position), pour {@code /wipe tout}. */
     private static final Map<String, RecycleurCarteEntiteServeur> CHARGEES = new HashMap<>();
+    /** Machines dont la dernière écriture a raté (21/11) : réessayées toutes les 5 s ({@link #reessayerEcritures}). */
+    private static final Set<RecycleurCarteEntiteServeur> A_REECRIRE = new HashSet<>();
 
     final SimpleContainer entree = new SimpleContainer(ENTREES), sortie = new SimpleContainer(SORTIES);
     /** Qui a déposé l'objet de chaque case « à recycler » (ses hérals « rien »), ou null. */
@@ -94,7 +101,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
     final List<MenuRecycleurCarteServeur> vues = new ArrayList<>(2);
     private int enCours = -1, progres;
     private long dernierTick;
-    private boolean charge, retiree, bloquee;
+    /** {@code bloquee} : fichier illisible au chargement (jamais écrit) ; {@code ecritureRatee} : dernière écriture ratée (21/11). */
+    private boolean charge, retiree, bloquee, ecritureRatee;
     /** Données montrées par les écrans (lues par {@link MenuRecycleurCarteServeur}). */
     int dEtat = MenuRecycleur.VIDE, dAttente, dCase = -1, dDixiemes, dProgres;
     /** Verdicts des cases « à recycler », refaits quand une case change ou que les règles sont relues. */
@@ -131,7 +139,25 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
     public void setRemoved() {
         super.setRemoved();
         if (level instanceof ServerLevel) CHARGEES.remove(cle(), this);
+        A_REECRIRE.remove(this);
     }
+
+    /**
+     * Tronçon déchargé (21/11) : dernière chance d'écrire une machine dont l'écriture avait raté ; sinon son ancien fichier
+     * reste effacé ({@link #ecrire}) : au retour du tronçon, elle est vide plutôt qu'avec un objet déjà repris.
+     */
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        enDechargement = true;
+        if (ecritureRatee && level instanceof ServerLevel && ecrire()) {
+            LOG.info("[heraliz_quetes] recycleur de la carte {} : écriture enfin passée au déchargement du tronçon", worldPosition);
+        }
+        A_REECRIRE.remove(this);
+    }
+
+    /** Son tronçon se décharge (plus aucun bloc changé par {@link #reprendre}). */
+    private boolean enDechargement;
 
     private String cle() {
         return level.dimension().location() + "|" + worldPosition.asLong();
@@ -198,14 +224,17 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
 
     /**
      * Écrit tout le contenu d'un coup (fichier temporaire puis remplacement) ; machine vide : fichier effacé. Faux (et
-     * machine fermée) si c'est impossible.
+     * machine fermée) si c'est impossible : l'ancien fichier est alors effacé (mieux vaut perdre que copier) et l'écriture
+     * réessayée plus tard ({@link #reessayerEcritures}) ; une écriture qui passe enfin rouvre la machine.
      */
     private boolean ecrire() {
         if (bloquee || retiree || !(level instanceof ServerLevel)) return false;
         Path f = fichier();
+        Path tmp = f.resolveSibling(f.getFileName() + ".tmp");
         try {
             if (vide()) {
                 Files.deleteIfExists(f);
+                ecritureReussie();
                 return true;
             }
             Files.createDirectories(f.getParent());
@@ -225,17 +254,75 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
             t.putInt("enCours", enCours);
             t.putInt("progres", progres);
             t.putLong("tick", dernierTick);
-            Path tmp = f.resolveSibling(f.getFileName() + ".tmp");
             NbtIo.writeCompressed(t, tmp.toFile());
             Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            ecritureReussie();
             return true;
         } catch (IOException | RuntimeException ex) {
-            bloquee = true;
-            LOG.error("[heraliz_quetes] recycleur de la carte {} : écriture de {} impossible ({}), machine fermée jusqu'au redémarrage",
-                    worldPosition, f, ex.toString());
+            boolean premiere = !ecritureRatee;
+            ecritureRatee = true;
+            A_REECRIRE.add(this);
+            // 21/11 (audit) : l'ancien fichier date d'avant ce changement ; s'il restait, un objet qu'un joueur vient de reprendre
+            // reviendrait en double après un redémarrage. Il est effacé (un effacement passe même disque plein) : un plantage
+            // avant la prochaine écriture réussie fait perdre le contenu de la machine, jamais un objet en double.
+            effacer(tmp, premiere);   // le temporaire n'est jamais relu : sans danger s'il reste
+            boolean efface = effacer(f, premiere);
+            if (premiere) {
+                LOG.error("[heraliz_quetes] recycleur de la carte {} : écriture de {} impossible ({}) ; machine fermée, ancien fichier {}, "
+                        + "nouvel essai toutes les 5 s", worldPosition, f, ex.toString(), efface ? "effacé" : "PAS effacé");
+            }
             reprendre();
             return false;
         }
+    }
+
+    /** Une écriture est passée : une machine fermée par une écriture ratée rouvre (le joueur la retrouve telle quelle). */
+    private void ecritureReussie() {
+        if (!ecritureRatee) return;
+        ecritureRatee = false;
+        A_REECRIRE.remove(this);
+        LOG.info("[heraliz_quetes] recycleur de la carte {} : écriture de nouveau possible, machine rouverte", worldPosition);
+    }
+
+    /**
+     * Efface un fichier ; faux si c'est impossible. Une ligne au journal si {@code dire} (première écriture ratée : les
+     * nouveaux essais toutes les 5 s ne la répètent pas).
+     */
+    private boolean effacer(Path f, boolean dire) {
+        try {
+            Files.deleteIfExists(f);
+            return true;
+        } catch (IOException | RuntimeException ex) {
+            if (dire) {
+                LOG.error("[heraliz_quetes] recycleur de la carte {} : fichier {} impossible à effacer ({})", worldPosition, f, ex.toString());
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Toutes les 5 s, seulement s'il y en a (21/11) : machines dont l'écriture avait raté, réécrites avec ce qu'elles
+     * contiennent (sur le disque, l'ancien fichier a déjà été effacé). Celles qui ne sont plus dans le monde sont oubliées.
+     */
+    static void reessayerEcritures(MinecraftServer srv) {
+        if (A_REECRIRE.isEmpty() || srv.getTickCount() % 100 != 37) return;
+        for (RecycleurCarteEntiteServeur m : new ArrayList<>(A_REECRIRE)) {
+            if (m.isRemoved() || m.retiree || !(m.level instanceof ServerLevel)) {
+                A_REECRIRE.remove(m);
+                continue;
+            }
+            if (m.ecrire()) m.reprendre();
+        }
+    }
+
+    /** Arrêt du serveur (21/11) : dernier essai d'écrire les machines dont l'écriture avait raté (sinon vides au retour). */
+    static void arret() {
+        for (RecycleurCarteEntiteServeur m : new ArrayList<>(A_REECRIRE)) {
+            if (!m.isRemoved() && !m.retiree && m.level instanceof ServerLevel && m.ecrire()) {
+                LOG.info("[heraliz_quetes] recycleur de la carte {} : écriture enfin passée à l'arrêt du serveur", m.worldPosition);
+            }
+        }
+        A_REECRIRE.clear();
     }
 
     private boolean vide() {
@@ -254,7 +341,12 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
 
     /** La machine peut être ouverte (pas cassée, fichier lisible, dernière écriture réussie). */
     boolean utilisable() {
-        return !retiree && !bloquee && !isRemoved() && level instanceof ServerLevel;
+        return !retiree && !ferme() && !isRemoved() && level instanceof ServerLevel;
+    }
+
+    /** Machine fermée : fichier illisible, ou dernière écriture ratée (en attendant qu'elle passe). */
+    private boolean ferme() {
+        return bloquee || ecritureRatee;
     }
 
     // ------------------------------------------------------------------ clics (écran)
@@ -309,7 +401,7 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
 
     /** Avance de {@code ticks} (1 en temps normal, plus après un tronçon déchargé) ; écrit et paie si un objet est fini. */
     private void avancer(int ticks) {
-        if (bloquee) {
+        if (ferme()) {
             reprendre();
             return;
         }
@@ -338,7 +430,7 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         if (paiements != null && ecrire()) payer(paiements);
         reprendre();
         // en marche (pas de bruit pendant un rattrapage : tronçon qui revient de déchargé)
-        if (ticks == 1 && !bloquee && enCours >= 0 && (level.getGameTime() + worldPosition.hashCode()) % BRUIT_TICKS == 0) {
+        if (ticks == 1 && !ferme() && enCours >= 0 && (level.getGameTime() + worldPosition.hashCode()) % BRUIT_TICKS == 0) {
             BlockState s = level.getBlockState(worldPosition);
             if (s.getBlock() instanceof RecycleurCarte && s.getValue(RecycleurCarte.MARCHE)) {
                 level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, BRUIT_VOLUME,
@@ -411,14 +503,15 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
 
     /** Remet en marche (ou arrête) selon le contenu, et met à jour ce que montrent les écrans. */
     void reprendre() {
-        if (!(level instanceof ServerLevel) || retiree || isRemoved()) return;
+        // 21/11 : jamais pendant le déchargement de son tronçon (pas de bloc changé dans un tronçon qui part)
+        if (!(level instanceof ServerLevel) || retiree || isRemoved() || enDechargement) return;
         verdicts();
         int i = choisir();
         boolean plein = i >= 0 && casesLibres() < Recyclage.maxPieces();
-        boolean marche = !bloquee && i >= 0 && !plein;
+        boolean marche = !ferme() && i >= 0 && !plein;
         int total = duree(i);
         dDixiemes = total / 2;
-        if (i < 0 || bloquee) {
+        if (i < 0 || ferme()) {
             dCase = -1;
             dProgres = 0;
             dAttente = 0;
@@ -528,6 +621,7 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         java.util.Arrays.fill(deposants, null);
         retiree = true;
         CHARGEES.remove(cle(), this);
+        A_REECRIRE.remove(this);
         // 19/11 : son repère quitte la carte du monde
         Ponts.repereCarte((ServerLevel) level, worldPosition, false);
         if (!bloquee) {
