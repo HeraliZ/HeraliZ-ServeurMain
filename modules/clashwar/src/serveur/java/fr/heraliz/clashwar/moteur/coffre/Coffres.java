@@ -26,6 +26,7 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -54,6 +55,7 @@ import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -105,7 +107,9 @@ import java.util.function.Consumer;
  *   verifie sur le fil des coffres. Le joueur est FIGE pendant ce temps (rien ne sort ni n'entre dans son inventaire : objet
  *   lache retenu, ramassage, clics, utilisation d'objet, coups et commandes refuses) ; il n'est vide que quand le fil a
  *   confirme l'ecriture (« disque avant toute modification » tient toujours). Ecriture ratee : rien n'est change. Parti
- *   avant la confirmation : jamais vide, il est enregistre avec tout ; le fichier est efface.</li>
+ *   avant la confirmation : jamais vide, il est enregistre avec tout ; le fichier est efface. 21/11 (audit des
+ *   duplications) : a la confirmation, ce qu'il tient doit etre exactement le releve ({@link #inchange}) ; sinon (objet
+ *   deplace pendant l'ecriture par un clic d'inventaire ou un paquet d'ecran) le depot est defait et refait a neuf.</li>
  *   <li>{@link #rendrePuis} : le fichier est lu d'avance sur le fil des coffres, l'arrivee est prechargee
  *   ({@link Arrivees}), puis {@link #rendre} se fait a son tour, dans la meme limite par tick.</li>
  * </ul>
@@ -149,9 +153,12 @@ public final class Coffres {
     private static int parTick = 4;
     private static long budgetNs = 6_000_000L;
 
-    /** Un depot demande, pas encore commence (releve a son tour). */
-    private record Demande(ServerPlayer joueur, String raison, Consumer<Boolean> fini) {
+    /** Un depot demande, pas encore commence (releve a son tour) ; {@code essai} : 0, puis 1, 2... s'il est refait. */
+    private record Demande(ServerPlayer joueur, String raison, Consumer<Boolean> fini, int essai) {
     }
+
+    /** Un depot refait parce que le joueur a deplace des objets pendant son ecriture : au plus ce nombre d'essais. */
+    private static final int ESSAIS_MAX = 5;
 
     /** Un depot releve, en ecriture sur le fil des coffres ; son joueur est fige jusqu'a la confirmation. */
     private static final class Depot {
@@ -166,9 +173,12 @@ public final class Coffres {
         final Future<Long> ecrit;
         final Consumer<Boolean> fini;
         final int depuis;
+        /** Ce que le joueur tenait au releve (21/11) : revu a la confirmation. */
+        final Releve releve;
+        final int essai;
 
         Depot(ServerPlayer joueur, String raison, long numero, CompoundTag instantane, List<ItemStack> aCote, Path fichier, Future<Long> ecrit,
-              Consumer<Boolean> fini, int depuis) {
+              Consumer<Boolean> fini, int depuis, Releve releve, int essai) {
             this.joueur = joueur;
             this.raison = raison;
             this.numero = numero;
@@ -178,7 +188,54 @@ public final class Coffres {
             this.ecrit = ecrit;
             this.fini = fini;
             this.depuis = depuis;
+            this.releve = releve;
+            this.essai = essai;
         }
+    }
+
+    /**
+     * Ce que le joueur tient au releve de l'instantane (21/11, audit des duplications) : objet et nombre de chaque case de
+     * l'inventaire (armure et main gauche comprises) et objets des Curios (sac porte compris). Pendant l'ecriture, le joueur
+     * fige pouvait encore deplacer des objets : clics de son inventaire (vers la grille 2 x 2 ou le curseur, que le vidage ne
+     * touche pas, rendus au retour), paquets d'ecrans restes valables (marchands, coffre du clan, compte de capsules...).
+     * Ces objets etaient alors a la fois dans le depot et ailleurs. Seuls l'objet et le nombre sont compares (les donnees
+     * d'un objet peuvent changer seules).
+     */
+    private record Releve(Item[] objets, int[] nombres, Map<Item, Integer> curios) {
+    }
+
+    /** Releve de ce que le joueur tient maintenant (fil serveur). */
+    private static Releve releve(ServerPlayer p) {
+        Inventory inv = p.getInventory();
+        int n = inv.getContainerSize();
+        Item[] objets = new Item[n];
+        int[] nombres = new int[n];
+        for (int i = 0; i < n; i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.isEmpty()) continue;
+            objets[i] = s.getItem();
+            nombres[i] = s.getCount();
+        }
+        Map<Item, Integer> curios = new HashMap<>();
+        for (ItemStack s : Compat.piecesCurios(p)) {
+            if (!s.isEmpty()) curios.merge(s.getItem(), s.getCount(), Integer::sum);
+        }
+        return new Releve(objets, nombres, curios);
+    }
+
+    /**
+     * Le joueur tient-il exactement ce qui a ete releve (meme objet et meme nombre dans chaque case, memes Curios), sans
+     * rien au curseur ni dans la grille 2 x 2 (vides depuis le releve) ?
+     */
+    private static boolean inchange(ServerPlayer p, Releve r) {
+        if (!p.containerMenu.getCarried().isEmpty() || !p.inventoryMenu.getCarried().isEmpty()) return false;
+        CraftingContainer grille = p.inventoryMenu.getCraftSlots();
+        for (int i = 0; i < grille.getContainerSize(); i++) {
+            if (!grille.getItem(i).isEmpty()) return false;
+        }
+        Releve maintenant = releve(p);
+        return Arrays.equals(r.objets(), maintenant.objets()) && Arrays.equals(r.nombres(), maintenant.nombres())
+                && r.curios().equals(maintenant.curios());
     }
 
     /** Un retour demande : fichier lu d'avance, arrivee prechargee, puis rendu a son tour. */
@@ -396,7 +453,7 @@ public final class Coffres {
             return false;
         }
         boolean[] ok = {false};
-        commencer(new Demande(p, raison, b -> ok[0] = b), false);
+        commencer(new Demande(p, raison, b -> ok[0] = b, 0), false);
         return ok[0];
     }
 
@@ -413,7 +470,7 @@ public final class Coffres {
             return r;
         }
         DEPOSANTS.add(p.getUUID());
-        DEMANDES.addLast(new Demande(p, raison, fini));
+        DEMANDES.addLast(new Demande(p, raison, fini, 0));
         return null;
     }
 
@@ -462,6 +519,7 @@ public final class Coffres {
         CompoundTag brut = p.saveWithoutId(new CompoundTag());
         // 3. instantane
         CompoundTag t = instantane(p, raison, brut);
+        Releve releve = releve(p);
         long numero = nouveauNumero();
         t.putLong("numero", numero);
         if (!aCote.isEmpty()) {
@@ -479,7 +537,7 @@ public final class Coffres {
         }
         if (!fond) {
             long ns = ecrireMesure(f, t);
-            confirmer(new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks), ns);
+            confirmer(new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai()), ns);
             return;
         }
         // 19/11 : le releve part sur le fil des coffres ; copie complete (aucune donnee qu'un autre mod pourrait encore modifier)
@@ -489,15 +547,15 @@ public final class Coffres {
             ecrit = FIL.submit(() -> ecrireMesure(f, copie));
         } catch (RejectedExecutionException ex) {
             long ns = ecrireMesure(f, t);
-            confirmer(new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks), ns);
+            confirmer(new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai()), ns);
             return;
         }
-        // marque posee des maintenant (l'instantane est deja pris) : aucun objet en attente ne lui est livre pendant l'ecriture
-        // (HeraliZ Boutique et Quetes lisent la marque) ; enregistre avec elle et avec tout son inventaire (deconnexion,
-        // sauvegarde automatique), il retrouve le meme contenu par le depot (ou sans lui, la marque est oubliee) : ni double
-        // ni perte. Retiree si le depot rate.
-        marquer(p, numero);
-        EN_ECRITURE.put(u, new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks));
+        // 21/11 (audit des duplications) : la marque n'est plus posee ici mais a la confirmation, avec le vidage. Enregistre
+        // pendant l'ecriture (deconnexion, sauvegarde automatique), il l'est avec tout son inventaire et sans marque : apres un
+        // plantage, ce fichier n'est jamais rendu (enquete), il garde ce qu'il avait. Avant, la marque posee ici faisait rendre
+        // le depot a un joueur qui avait encore tout, et ce qu'il glissait dans sa grille 2 x 2 avant le retour revenait en
+        // double. Un objet livre ou deplace pendant l'ecriture est vu a la confirmation ({@link #inchange}) : depot refait.
+        EN_ECRITURE.put(u, new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai()));
     }
 
     /** Depot rate ou abandonne alors que le joueur est la : objets pris a part rendus, marque retiree. */
@@ -523,8 +581,8 @@ public final class Coffres {
             ecritureMaxNs = Math.max(ecritureMaxNs, ns);
         }
         if (!present(p)) {
-            // parti (deconnexion, mort) avant la confirmation : jamais vide, il a ete enregistre avec tout (et peut-etre la
-            // marque, oubliee a sa reconnexion faute de fichier) ; ce fichier ne doit jamais lui etre rendu en plus
+            // parti (deconnexion, mort) avant la confirmation : jamais vide, il a ete enregistre avec tout et sans marque (21/11 :
+            // elle n'est posee qu'au vidage) ; ce fichier ne doit jamais lui etre rendu en plus
             if (ok) effacer(d.fichier, "depot d'un joueur parti avant la fin de son ecriture");
             HeralizClashWar.LOG.warn("[matchs] coffre de {} pas fait : joueur parti pendant l'ecriture (rien n'a change pour lui)",
                     p.getGameProfile().getName());
@@ -536,6 +594,24 @@ public final class Coffres {
             HeralizClashWar.LOG.error("[matchs] coffre de {} NON ecrit : joueur laisse intact", p.getGameProfile().getName());
             defaire(d);
             depotsRates++;
+            finDepot(d.fini, u, false);
+            return;
+        }
+        // 21/11 (audit des duplications) : ce qu'il tient n'est plus l'instantane (objet deplace pendant l'ecriture : grille
+        // 2 x 2, curseur, ecran d'un autre mod) : rien n'est vide ; ce depot est defait (fichier efface : jamais rendu ; objets
+        // mis a part rendus) puis refait a neuf, au plus ESSAIS_MAX fois (ensuite : refuse, joueur intact)
+        if (!inchange(p, d.releve)) {
+            effacer(d.fichier, "le joueur a deplace des objets pendant l'ecriture");
+            defaire(d);
+            depotsRates++;
+            if (d.essai + 1 < ESSAIS_MAX) {
+                HeralizClashWar.LOG.warn("[matchs] coffre de {} : objets deplaces pendant l'ecriture, depot refait (essai {})",
+                        p.getGameProfile().getName(), d.essai + 2);
+                DEMANDES.addFirst(new Demande(p, d.raison, d.fini, d.essai + 1));
+                return;   // toujours deposant : ni commandes ni ramassage jusqu'au nouveau releve
+            }
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : objets deplaces pendant chacune des {} ecritures, depot refuse (joueur laisse intact)",
+                    p.getGameProfile().getName(), ESSAIS_MAX);
             finDepot(d.fini, u, false);
             return;
         }

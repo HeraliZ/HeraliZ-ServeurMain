@@ -1602,3 +1602,91 @@ répare.
 Pas changé (à décider par le propriétaire) : la table des tags de clan et la liste vocale contiennent toujours un staff
 caché, comme avant (rien à l'écran, mais un jeu modifié pourrait voir qu'il est connecté). Les retirer pour les joueurs
 hors du staff est possible ensuite (même méthode que le tab).
+
+## 41. Audit du 21/11 : clans, boutique, PNJ, interface, voix, bases, emotes (relecture du code)
+
+Demande du propriétaire : « refais un audit complet […] que tout soit clean, sans aucun bug ». Cette partie : relecture
+du code des clans (profil, hérals, saison, territoires), de la boutique (grades, casino, caisses, `/money`), des PNJ
+(quêtes, marchands, achat avec quantité, Passeur, recycleurs, bourses), de l'interface, de la voix, des bases et des
+emotes, surtout ce qui a changé depuis le 17/11. Versions : Quêtes **1.24.2**, CRac **1.38.8-beta** (le launcher les
+donne ; rien ne change entre le jeu et le serveur). **Rien n'a été testé en jeu** : la fabrication et les contrôles sur
+GitHub seulement. Les deux corrections ne se voient pas en jouant : elles servent en cas de plantage ou de disque plein.
+
+Corrigé :
+- **Progression des quêtes de Varga** : si le disque du serveur était plein au moment d'enregistrer la progression d'un
+  joueur, un fichier à moitié écrit prenait la place du bon. À la connexion suivante, le fichier illisible était mis de
+  côté et le joueur repartait de zéro (quêtes à refaire, et leurs récompenses à toucher une deuxième fois). Maintenant
+  le bon fichier reste, l'erreur est notée dans le journal du serveur et la progression est réenregistrée 30 s plus tard
+  (et à l'arrêt).
+- **Objets à vie rendus par une base** (coffre détruit, base effacée, inventaire plein) : le fichier qui les garde doit
+  être enregistré AVANT le joueur. Depuis le 19/11 (écritures en fond du noyau), le joueur était enregistré le premier :
+  un plantage juste à ce moment pouvait rendre l'objet à vie une deuxième fois. Même chose pour le matériel de la
+  première base rangé dans le coffre du clan : il pouvait être rangé deux fois. Les deux fichiers sont de nouveau écrits
+  tout de suite, dans le bon ordre (au pire un plantage perd le matériel, il ne le copie jamais).
+
+À vérifier (comme avant, rien de nouveau à l'écran) :
+- [ ] Quêtes : finir une étape, se déconnecter, se reconnecter : la progression est là. `/diag etat` : aucune ligne
+      « écriture … impossible » de la voie « quetes ».
+- [ ] Objets à vie : un objet à vie dans un coffre d'une base, `/base effacer` (ou casser le coffre en créatif), inventaire
+      plein puis une case libre : l'objet revient une seule fois ; après un redémarrage, il n'est pas rendu de nouveau.
+- [ ] Nouveau clan : après 30 s, le matériel de la première base est dans le coffre du clan, une seule fois (aussi après
+      un redémarrage).
+
+Relu sans rien à corriger (rien n'a changé) : profil et `/money` (compteurs, droits, ce qu'on voit d'un autre joueur),
+bourses de hérals (registre, revente à Mila, recycleur de la carte : aucune copie possible), panneau d'achat avec la
+quantité (prix et place revérifiés par le serveur), quitter le tutoriel, banque du clan, `/herals payer`, sauvegarde
+des clans par morceaux, paquets reçus des joueurs (tous traités par le serveur, bornés), textes français, anglais et
+russe (tous présents), listes gardées en mémoire (vidées au départ des joueurs).
+
+Remarques, à décider par le propriétaire (rien n'est changé) :
+- Panneau d'achat : si le staff retire un article d'un marchand au Registre pendant qu'un joueur a le panneau ouvert,
+  l'article suivant prend sa place ; s'il a le même prix (deux armes à 1 125 chez le Passeur), la confirmation achète
+  l'autre article. Très rare (le staff modifie pendant un achat). Correctif possible : le serveur vérifie aussi l'objet.
+- `/tpa` : depuis le 19/11, le départ attend que l'arrivée soit chargée (presque toujours tout de suite, 3 s au plus). Ce
+  qui est revu au départ : seulement que la cible est toujours connectée ; un joueur touché pendant cette attente part
+  quand même. Très rare (l'arrivée autour d'un joueur est déjà chargée).
+- Conversion des anciennes clés de la planque (une seule fois par joueur) : la planque et le compte de clés sont écrits
+  sur deux fils différents ; un plantage juste à ce moment peut doubler ces clés. Très rare, une fois par joueur.
+
+## 42. Audit du 21/11 : duplications et argent
+
+Demande du propriétaire : « que tout soit clean, sans aucun bug ». Cette partie : tout ce qui crée, déplace ou détruit
+des objets ou de l'argent (hérals, bourses, capsules, clés), surtout ce qui a changé depuis le 19/11 (achat avec la
+quantité, Passeur, recycleurs, sacs, bourses, `/money`, dépôts du ClashWar écrits en fond, sauvegardes étalées).
+Versions : ClashWar **1.3.4**, Quêtes **1.24.3** (rien ne change entre le jeu et le serveur ; rien de nouveau à l'écran).
+**Rien n'a été testé en jeu** : la fabrication et les contrôles sur GitHub seulement.
+
+Corrigé :
+- **Inventaire mis de côté par le ClashWar** (inscrits au départ d'un tournoi, et `/clashwar regarder`) : depuis le 19/11,
+  le dépôt s'écrit en fond et le joueur attend un instant. Au moment de vider son inventaire, le serveur vérifie
+  maintenant qu'il tient exactement ce qui a été mis de côté ; sinon rien n'est vidé et le dépôt est refait (au plus
+  5 fois, puis refusé avec le message habituel, inventaire intact). La marque du dépôt n'est plus posée qu'à ce moment-là.
+- **Marchands, Mila, échanges, recycleur du spawn, quêtes du jour et étape « donner » de Varga** : refusés tant que
+  l'inventaire est mis de côté par le ClashWar (même message qu'en match).
+
+À vérifier en jeu (un op pour lancer un ClashWar, 4 comptes) :
+- [ ] Départ d'un tournoi, inventaires bien remplis (armes, sac porté, objet tenu à la souris au moment du départ) :
+      chacun entre en salle ; au retour, l'inventaire est exactement celui d'avant, ni en double ni en moins.
+- [ ] `/clashwar regarder`, puis `/clashwar quitter`, plusieurs fois de suite : même chose à chaque retour.
+- [ ] Journal du serveur au départ : normalement aucune ligne « objets deplaces pendant l'ecriture ». S'il y en a pour
+      des joueurs qui ne touchaient à rien, le dire (un objet qui change tout seul dans l'inventaire ferait attendre).
+- [ ] Hors ClashWar : Mila, les marchands, le Passeur, les échanges, le recycleur du spawn, Varga et les quêtes du jour
+      marchent comme avant.
+
+Contrôles de l'économie (passés le 21/11, sans et avec la bêta) : `python outils/marchands.py --controle` (aucune revente
+ni aucun recyclage au-dessus de 50 % du prix, Passeur sous 10 % pour une arme et 20 % pour des balles),
+`python outils/recyclage.py --verifier` (recycleur un peu sous les prix de Mila).
+
+Relu sans rien à corriger : achat avec la quantité (quantité 1 à 2 304, prix revérifié, place vérifiée avant de payer,
+prix 0 refusé), revente à Mila (cases dédoublonnées), échanges (calcul sur une copie), bourses de hérals (registre :
+une copie ne paie jamais), recycleur de la carte (contenu partagé, chaque clic écrit dans l'ordre), hôtel des ventes,
+compte de capsules, caisses et clés, sacs pleins refusés partout où ils seraient détruits, contenu des sacs caché aux
+autres joueurs (copie, jamais l'objet du serveur), refus de l'anticheat, `/money` et `/profil` (lecture seule).
+
+Pas corrigé (seulement en cas de plantage du serveur à un instant précis ; à décider) :
+- objets et capsules en attente (caisses, casino) : leur fichier n'est pas écrit au moment même de la remise (en fond
+  depuis le 19/11 pour les caisses, à la sauvegarde automatique pour le casino) ; un plantage juste après une remise
+  pourrait la redonner ;
+- sauvegarde automatique étalée sur 5 s (joueurs, entités) : un objet sorti d'un corps ou d'un conteneur de loot pendant
+  ces 5 s pourrait revenir après un plantage avant la sauvegarde suivante ;
+- coffre du clan et planque (déjà noté le 19/11) : un objet sorti juste avant un plantage peut revenir.
