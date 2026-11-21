@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.level.ClipContext;
@@ -131,7 +132,11 @@ public final class Roquettes {
     private static boolean avancer(Roquette q) {
         ServerLevel level = q.level;
         Vec3 de = new Vec3(q.x, q.y, q.z), vers = new Vec3(q.x + q.vx, q.y + q.vy, q.z + q.vz);
-        if (!level.isLoaded(BlockPos.containing(vers))) {
+        // 21/11 (audit du code) : en plus, tronçons COMPLETS du trajet de ce tick (Troncons du noyau) ; isLoaded répond « oui »
+        // pendant la lecture d'un tronçon (bord de la vue d'un joueur qui avance, ticket tout juste posé) et le clip qui suit
+        // faisait alors attendre cette lecture par le fil du serveur
+        if (!level.isLoaded(BlockPos.containing(vers))
+                || !fr.heraliz.noyau.api.Troncons.zone(level, Mth.floor(de.x), Mth.floor(de.z), Mth.floor(vers.x), Mth.floor(vers.z))) {
             fin(q);   // sortie de la zone chargée : jamais de chargement pour une roquette
             return true;
         }

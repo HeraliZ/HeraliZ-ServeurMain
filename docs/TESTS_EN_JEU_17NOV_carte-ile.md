@@ -1690,3 +1690,42 @@ Pas corrigé (seulement en cas de plantage du serveur à un instant précis ; à
 - sauvegarde automatique étalée sur 5 s (joueurs, entités) : un objet sorti d'un corps ou d'un conteneur de loot pendant
   ces 5 s pourrait revenir après un plantage avant la sauvegarde suivante ;
 - coffre du clan et planque (déjà noté le 19/11) : un objet sorti juste avant un plantage peut revenir.
+
+## 43. Audit du 21/11 : noyau, monde, loot, événements, ClashWar, réanimation, bunker (relecture du code)
+
+Dernière relecture demandée par le propriétaire, sur ce qui a changé depuis le 17/11 dans ces modules : écritures en fond
+du noyau, arrivées préchargées et `/tp`, tronçons « au repos », tickets, sauvegardes étalées, fichiers `data/` en fond,
+mixins du 19 et du 20/11, Coffre du ClashWar, loot (C6, C7, conteneurs d'événement), hélicoptère et épave, plafond des
+zombies, repères des recycleurs, portes de bunker et salles à carte. Version : Monde **1.3.9** (le launcher la donne).
+**Rien n'a été testé en jeu.**
+
+Contrôle fait hors du jeu : chaque mixin du noyau, du monde, du loot, de la réanimation et du bunker a été comparé aux
+vraies classes de Mohist 916 (celles que le serveur charge) : toutes les méthodes visées et tous les appels visés
+existent. Seules exceptions, attendues : la 2e forme des réglages de génération (prévue facultative) et les mixins qui
+visent des mods d'autres auteurs (TaCZ, véhicules, Curios…, vérifiés au démarrage d'essai). Aucun réglage `[perf]` ne
+« rate » donc en silence sur le serveur en ligne.
+
+Corrigé :
+- **Roquettes de l'hélicoptère** (Monde 1.3.9) : une roquette qui entrait dans un morceau de carte encore en lecture
+  (bord de la vue d'un joueur qui avance) faisait attendre cette lecture par tout le serveur (petit gel possible pendant
+  un combat contre l'hélicoptère). Elle s'arrête maintenant là, comme au bord de la carte chargée.
+
+À vérifier en jeu :
+- [ ] Hélicoptère : ses salves de roquettes touchent et explosent comme avant ; aucune alerte « [Diag] Blocage » pendant
+      un combat contre lui.
+
+Déjà corrigé par l'audit des duplications (section 42), confirmé par cette relecture : le dépôt du ClashWar pendant son
+écriture en fond (écran déjà ouvert : marchand, coffre du clan, distributeur de capsules).
+
+Proposé (pas fait, à décider) :
+- Coffre du ClashWar : la vérification de la section 42 regarde chaque case de l'inventaire et la liste des Curios
+  (objet et nombre), pas le **contenu du sac porté**. Un jeu modifié qui, pendant les quelques ticks de l'écriture,
+  sortirait des objets du sac puis les rangerait ailleurs (coffre du clan) aurait encore un double au retour. Correction
+  simple : compter aussi les objets rangés dans le sac (après l'avoir écrit dans son objet).
+- Écrivain en fond du noyau : 2 fils pour tous les modules. Pendant la sauvegarde automatique, une opération qui doit
+  attendre son fichier (argent des clans, quête payée, numéro d'événement) peut attendre derrière les gros fichiers des
+  autres (loot, bases, `data/`) : quelques dixièmes de seconde au plus, rarement. À décider : 3 ou 4 fils, ou chaque
+  module à son tour, un fichier à la fois.
+- Petits : `[perf] arrivees_prechargees = false` laisse encore les tickets de préchargement (sans effet gênant) ; la
+  borne de départ ne voit les conteneurs de loot posés en jeu qu'après un redémarrage ; le message « tables de loot
+  relues » (staff) n'a pas de traduction (texte français partout).
