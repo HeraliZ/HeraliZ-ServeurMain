@@ -68,7 +68,7 @@ Pour les développeurs : `modules/anticheat/src/serveur/java/com/Spartan/serveur
 
 ## À décider par le propriétaire
 
-### P1. Voix par la connexion du jeu avant le `/login` : gardée dans la file de Spartan (petit)
+### P1. Voix par la connexion du jeu avant le `/login` : gardée dans la file de Spartan (petit) — fait, voir « Fin du 21/11 »
 
 Un joueur dont la voix ne passe pas par l'UDP (réseau qui le bloque : il passe tout seul par la connexion du jeu) et qui
 parle pendant qu'il tape son `/login` : ses morceaux de voix sont retenus par la porte de Spartan avec les autres paquets
@@ -82,7 +82,7 @@ sont pas concernés.
 Code : `modules/voix/src/serveur/java/com/caracrea/server/VoiceInbound.java` l. 34-48 (posé devant `packet_handler`, donc
 après la porte), `modules/anticheat/src/serveur/java/com/Spartan/integrity/PorteJoueurs.java` l. 37, 181-217.
 
-### P2. Voix : après une seule erreur de lecture d'AuthMe, plus de contrôle du `/login` jusqu'au redémarrage (tout petit)
+### P2. Voix : après une seule erreur de lecture d'AuthMe, plus de contrôle du `/login` jusqu'au redémarrage (tout petit) — fait, voir « Fin du 21/11 »
 
 C'est voulu « ouvert dans le doute » (le créateur de personnage ne doit jamais rester bloqué) ; mais une seule erreur,
 même passagère, coupe la règle « pas de voix avant le `/login` » jusqu'au redémarrage, sans le dire au staff. Spartan, lui,
@@ -110,7 +110,8 @@ launcher est republié pour autre chose. Code : `launcher/app/assets/js/gardien.
 P2 (clé du Gardien comme signe d'un même PC), P3 (bloc d'adresses et forfaits mobiles), P5 (un staff visé voit sa propre
 alerte), P6 (coût réel de l'anticheat à 150 joueurs jamais mesuré), P7 (défi d'intégrité calculé sur le fil de l'image
 chez le joueur), P8 (groupe vocal d'un staff caché visible), P9 (essais de mot de passe des groupes jamais oubliés), P10
-(registre des joueurs écrit une fois par heure) : détail dans `../a8_anticheat_voix_launcher.md`, rien de changé.
+(registre des joueurs écrit une fois par heure) : détail dans `../a8_anticheat_voix_launcher.md`. **P2, P7, P8 et P9 faits
+ensuite** (« Fin du 21/11 » ci-dessous).
 
 ---
 
@@ -163,3 +164,83 @@ chez le joueur), P8 (groupe vocal d'un staff caché visible), P9 (essais de mot 
 - [ ] Journal du serveur au démarrage et après une heure : aucune erreur de `spartan` ni de `caracrea`.
 
 Pas testé : tout ce qui précède, en jeu (aucun Minecraft ici) ; rien de mesuré avec 150 vrais joueurs.
+
+---
+
+## Fin du 21/11 (demande du propriétaire : « tout lançable et terminé à 100 % »)
+
+En ligne avant cette suite : `main` = `1607d9655` (Spartan 2.15.6, CaraCrea 1.7.2). Versions de cette suite :
+**Spartan 2.15.7** (commit `4dcf8e70b`) et **CaraCrea 1.7.3** (commit `f9620e309`). **Rien n'a été testé en jeu.**
+
+**Jar des joueurs** : celui de **Spartan change** (point 6 : le calcul du défi a changé de fil chez le joueur). Comme à
+chaque version de Spartan, le jar des joueurs et celui du serveur viennent de la même fabrication et le launcher donne le
+nouveau ; un jeu resté sur l'ancien est refusé avec la consigne de relancer le launcher. Celui de **CaraCrea ne change que
+par son numéro** (tout le reste est côté serveur, même canal de la voix).
+
+### Fait
+
+1. **Voix d'avant le `/login` (P1 ci-dessus)** — CaraCrea 1.7.3. En simple : pour un joueur dont la voix passe par la
+   connexion du jeu (UDP bloqué), la voix est maintenant lue avant la porte de Spartan et jetée tant qu'il n'a pas fait son
+   `/login`, exactement comme par l'UDP. Elle ne prend plus de place dans la file de la porte (les paquets des autres mods ne
+   sont plus jetés à cause d'elle) et rien n'est rejoué après le `/login`. Les autres paquets de la voix (réglages, groupes)
+   passent toujours par la porte. Pour les développeurs : `VoiceInbound.java` l. 22-30 et 50 (posé devant `spartan_porte`
+   quand il est là, sinon devant `packet_handler` comme avant) ; `VoiceServer.java` l. 877-887 (`relayTcp` : jetée sans
+   `/login`).
+2. **AuthMe illisible dans la voix (P2 ci-dessus)** — CaraCrea 1.7.3. Une erreur de lecture d'AuthMe ne coupe plus la
+   règle « pas de voix avant le `/login` » jusqu'au redémarrage : AuthMe est relu une minute plus tard (ouvert dans le doute
+   entre-temps, comme avant, pour que le créateur de personnage ne bloque jamais personne) ; pareil si son API n'est pas
+   encore prête ou s'il est coupé. Une ligne dans le journal à la première panne et quand il redevient lisible, jamais une
+   par minute. `LoginCheck.java` l. 15-60 et 110-118.
+3. **Groupe vocal du staff caché (a8 P8, staff caché partout)** — CaraCrea 1.7.3. Un groupe où il n'y a que du staff caché
+   n'est plus dans la liste des groupes des joueurs hors du staff (le staff le voit toujours) ; pour eux il n'existe pas :
+   le rejoindre ne fait rien. Dès qu'un membre visible y est, ou que le staff se montre, le groupe réapparaît (au plus une
+   seconde). `VoiceServer.java` l. 614-645 (`HiddenGroup`, `hiddenGroup`), 668-672, 714-725 et 820-824.
+4. **Essais de mot de passe des groupes (a8 P9)** — CaraCrea 1.7.3. Une fois par minute, les entrées de plus d'une minute
+   sont retirées (elles repartaient déjà de zéro au prochain essai) : la table ne grossit plus jusqu'au redémarrage. Une
+   attente en cours (5 erreurs, une minute) est gardée, même si le joueur se reconnecte. `VoiceServer.java` l. 427-429 et
+   773-788.
+5. **Clé du Gardien comme signe d'un même PC (a8 P2)** — Spartan 2.15.7. Pour le disjoncteur des règles en rodage, un PC =
+   son compte, son bloc d'adresses, ses identifiants matériels **et la clé du Gardien de son lancement** (prouvée par le
+   jeton du site). Sûr : le vrai launcher en tire une neuve à chaque lancement, deux PC honnêtes ne la partagent jamais (rien
+   ne change pour eux, une fausse alerte se coupe toujours au 3e PC) ; des comptes qui partagent une clé fixe ne comptent
+   qu'une fois, même avant le `/login` (règle « clé réutilisée », jugée sans identifiant matériel). Valable pour toutes les
+   règles en rodage (même raison). `Injection.java` l. 226-241, `GardienServeur.java` l. 90-98 (`clePc`), texte du réglage
+   `[injection] rodage` (`SpartanConfig.java` et `serveur/config/spartan-common.toml`), README ; essai
+   `RodageTest.desComptesQuiPartagentUneCleDuGardienNeComptentQuUneFois` (17 essais).
+6. **Défi d'intégrité hors du fil de l'image chez le joueur (a8 P7)** — Spartan 2.15.7. La réponse au défi (empreinte et
+   forme de toutes les classes de Spartan, quelques millisecondes toutes les 1 à 4 minutes) est calculée sur un fil à part
+   au lieu du fil qui dessine les images ; la réponse part ensuite du fil du jeu, comme avant. Sûr côté fils : mêmes
+   opérations que le contrôle d'intégrité, qui les fait déjà sur son propre fil (classes lues sans être initialisées,
+   lecture des membres par réflexion) ; les tables de l'empreinte sont protégées (`synchronized`) ; un défi après l'autre,
+   dans l'ordre ; même réponse (le serveur ne voit aucune différence). `PartieClient.java` l. 23-71.
+
+### Pas fait (choix du propriétaire)
+
+a8 P3 (bloc d'adresses /24), a8 P5 (un staff visé voit sa propre alerte), P4 ci-dessus (deux PowerShell du launcher) :
+**pas de publication du launcher**. Restent des mesures ou de petites propositions : a8 P6 et P3 ci-dessus (à mesurer avec
+`/diag profil` un soir chargé), a8 P10 (registre écrit une fois par heure).
+
+### Contrôles hors du jeu
+
+Essais Java purs de l'anticheat : **149 passés** (dont `RodageTest` 17) ; launcher : **129 sur 129** (inchangé, identique à
+`main`) ; `outils/verif_synchro.py` et `outils/verif_reflexion.py` : 0 erreur.
+
+Sur GitHub, avec ces deux versions (`19008fffa`) : « Contrôle de branche » réussi (fabrication, contrôles, images) et
+démarrage d'essai réussi (serveur prêt en 24 s ; Forge ne remet toujours que les commentaires de `spartan-common.toml`,
+valeurs inchangées, comme avant le 21/11).
+
+### À tester en jeu (rien de cette suite n'a été testé)
+
+- [ ] Connexion normale par le launcher : « ✅ Jeu validé » comme avant (le launcher donne le nouveau Spartan) ; après
+      10 minutes de jeu, aucune alerte « Integrity » ni « Conformité » ; aucune saccade nouvelle toutes les 1 à 4 minutes.
+- [ ] Voix d'un joueur dont l'UDP est bloqué (réglages de la voix : « connexion du jeu ») : il parle pendant son `/login` ;
+      personne ne l'entend avant, rien d'ancien n'est rejoué juste après ; après le `/login`, la voix marche tout de suite et
+      les autres mods aussi (tab, chat, interface, armes).
+- [ ] Staff caché S seul dans un groupe vocal : un joueur A hors du staff ne voit pas ce groupe dans la liste des groupes ;
+      un autre staff B le voit. S se montre : le groupe apparaît chez A (au plus une seconde).
+- [ ] Groupe avec mot de passe : 5 erreurs, attente d'une minute, puis le bon mot de passe marche.
+- [ ] Journal du serveur au premier joueur : « AuthMe found: the first-join creator and the voice wait for /login » ;
+      aucune erreur de `spartan` ni de `caracrea`.
+- [ ] `/spartan status <joueur>` : rien de nouveau tant qu'aucune règle n'est suspendue.
+
+Pas testé : tout ce qui précède, en jeu (aucun Minecraft ici).
