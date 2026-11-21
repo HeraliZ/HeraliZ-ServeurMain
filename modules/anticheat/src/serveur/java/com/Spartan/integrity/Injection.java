@@ -225,10 +225,19 @@ public final class Injection {
      * Docker / Pterodactyl (passerelle 172.x), un proxy anti-DDoS ou en local, tous les joueurs arrivent avec la même
      * adresse ; son bloc faisait d'eux un seul « PC » et le disjoncteur ne sautait plus jamais (une règle qui se trompe
      * aurait expulsé tout le monde).
+     *
+     * <p>Fin du 21/11 (audit a8 P2) : aussi la clé du Gardien du lancement, prouvée par le jeton du site
+     * ({@link com.Spartan.serveur.GardienServeur#clePc}). Le vrai launcher en tire une neuve à chaque lancement : deux PC
+     * honnêtes ne la partagent jamais (rien ne change pour eux) ; des comptes qui partagent une clé fixe ne comptent qu'une
+     * fois, même sans identifiant matériel (règle « clé réutilisée », jugée avant le /login).
      */
     static Set<String> pc(ServerPlayer p) {
         Set<String> cles = new HashSet<>();
         cles.add("compte:" + p.getUUID());
+        String cleGardien = com.Spartan.serveur.GardienServeur.clePc(p.getUUID());
+        if (cleGardien != null && !cleGardien.isBlank()) {
+            cles.add("gardien:" + cleGardien);
+        }
         try {
             if (p.connection != null && p.connection.connection.getRemoteAddress() instanceof InetSocketAddress a
                     && NetUtil.isPublicAddress(a.getAddress())) {

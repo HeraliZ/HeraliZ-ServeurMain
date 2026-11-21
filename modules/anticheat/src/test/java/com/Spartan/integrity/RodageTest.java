@@ -80,6 +80,24 @@ class RodageTest {
     }
 
     @Test
+    void desComptesQuiPartagentUneCleDuGardienNeComptentQuUneFois() {
+        // fin du 21/11 (audit a8 P2) : règle « clé du Gardien réutilisée », jugée avant le /login, donc sans identifiant
+        // matériel : un launcher imité avec une clé fixe, un compte et une connexion différents à chaque fois, reste un PC
+        String regle = "gardien:cle:";
+        Rodage r = new Rodage();
+        for (int i = 0; i < 10; i++) {
+            Set<String> alt = Set.of("compte:alt" + i, "ip4:8.8." + i, "gardien:cle-fixe");
+            assertEquals(Decision.APPLIQUER, r.noter(regle, alt, i * 1_000L, 3, HEURE));
+        }
+        assertFalse(r.suspendue(regle));
+        // le vrai launcher tire une clé neuve à chaque lancement : trois PC différents comptent toujours pour trois
+        Rodage h = new Rodage();
+        assertEquals(Decision.APPLIQUER, h.noter(regle, Set.of("compte:a", "ip4:1.1.1", "gardien:k1"), 0, 3, HEURE));
+        assertEquals(Decision.APPLIQUER, h.noter(regle, Set.of("compte:b", "ip4:2.2.2", "gardien:k2"), 1_000, 3, HEURE));
+        assertEquals(Decision.SUSPENDRE, h.noter(regle, Set.of("compte:c", "ip4:3.3.3", "gardien:k3"), 2_000, 3, HEURE));
+    }
+
+    @Test
     void unDeclenchementQuiReliDeuxPcLesFusionne() {
         Rodage r = new Rodage();
         assertEquals(Decision.APPLIQUER, r.noter(REGLE, A, 0, 3, HEURE));
