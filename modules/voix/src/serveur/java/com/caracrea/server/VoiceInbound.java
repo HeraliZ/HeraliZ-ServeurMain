@@ -18,9 +18,16 @@ import net.minecraft.server.level.ServerPlayer;
  * Bukkit rule that every custom payload waits for the server thread: the voice would then be relayed once
  * per tick, in bursts, and stop whenever the server lags. Reading the frames here keeps the relay on the
  * network threads on both servers, as designed. Every other packet goes on unchanged.
+ *
+ * <p>21/11 (fin de la validation) : posé devant la porte de Spartan quand elle est là ({@value #PORTE_SPARTAN}). La porte
+ * retient les paquets des mods jusqu'au /login (128 au plus) ; la voix d'avant le /login y prenait des places (les
+ * paquets des autres mods arrivés ensuite étaient jetés) et repartait après le /login. Maintenant la voix est lue ici
+ * d'abord, et jetée tant que le joueur n'a pas fait son /login ({@link VoiceServer#relayTcp}) : comme par l'UDP.
  */
 final class VoiceInbound extends ChannelInboundHandlerAdapter {
     static final String NAME = "caracrea_voice";
+    /** Nom du filtre « porte des paquets » de Spartan (com.Spartan.integrity.PorteJoueurs), s'il est installé. */
+    static final String PORTE_SPARTAN = "spartan_porte";
     private static boolean warned;
 
     /** Only the UUID: a respawn replaces the ServerPlayer object, the connection stays. */
@@ -30,14 +37,18 @@ final class VoiceInbound extends ChannelInboundHandlerAdapter {
         this.player = player.getUUID();
     }
 
-    /** Server thread, on login: inserts the handler just before the game's packet handler. */
+    /**
+     * Server thread, on login: inserts the handler just before Spartan's gate when there is one (21/11), otherwise just
+     * before the game's packet handler.
+     */
     static void install(ServerPlayer player) {
         try {
             Channel channel = player.connection.connection.channel();
             if (channel == null || channel.pipeline().get(NAME) != null) {
                 return;
             }
-            channel.pipeline().addBefore("packet_handler", NAME, new VoiceInbound(player));
+            String before = channel.pipeline().get(PORTE_SPARTAN) != null ? PORTE_SPARTAN : "packet_handler";
+            channel.pipeline().addBefore(before, NAME, new VoiceInbound(player));
         } catch (RuntimeException e) {
             // Unusual pipeline (a proxy plugin renamed the handler): the voice still works through Forge, tick-bound on Mohist.
             if (!warned) {

@@ -76,6 +76,9 @@ public final class VanishServeur {
     static void brancher() {
         MinecraftForge.EVENT_BUS.addListener(VanishServeur::suivi);
         MinecraftForge.EVENT_BUS.addListener(VanishServeur::cible);
+        // 21/11 (décision du propriétaire : « le cacher partout ») : /msg, /tell, /w vers un caché, comme vers un absent
+        MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.NORMAL, false,
+                net.minecraftforge.event.CommandEvent.class, VanishServeur::messagePrive);
         MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStartedEvent e) -> PontBukkit.brancherConnexions(VanishServeur::cache));
     }
 
@@ -311,6 +314,51 @@ public final class VanishServeur {
     /** Les créatures ne prennent pas un joueur caché pour cible. */
     private static void cible(LivingChangeTargetEvent e) {
         if (e.getNewTarget() instanceof ServerPlayer p && CACHES.contains(p.getUUID())) e.setCanceled(true);
+    }
+
+    /** Messages privés de Minecraft (et leurs autres noms) ; /teammsg et /tm sont retirées par le noyau. */
+    private static final Set<String> MESSAGES_PRIVES = Set.of("msg", "tell", "w");
+
+    /**
+     * 21/11 (décision du propriétaire : « le cacher partout ») : {@code /msg}, {@code /tell} et {@code /w} de Minecraft vers
+     * un membre du staff caché, tapées par un joueur qui ne voit pas le staff caché, reçoivent la réponse de Minecraft pour
+     * un joueur absent (« Aucun joueur n'a été trouvé », en rouge) et rien n'est envoyé. Avant, le message partait et
+     * « Tu chuchotes à … » disait qu'il était connecté. Le staff connecté garde l'accès ; {@code /r} du noyau passe par
+     * {@code /msg} : même règle. Les noms proposés par la touche Tab viennent de la liste Tab du joueur, d'où le caché est
+     * déjà retiré. Après les règles du noyau (combat, carte : elles répondent d'abord) ; rien à faire sans caché.
+     */
+    private static void messagePrive(net.minecraftforge.event.CommandEvent e) {
+        if (CACHES.isEmpty()) return;
+        com.mojang.brigadier.ParseResults<CommandSourceStack> pr = e.getParseResults();
+        String entree = pr.getReader().getString();
+        String brut = entree.strip();
+        if (brut.startsWith("/")) brut = brut.substring(1);
+        int espace = brut.indexOf(' ');
+        String racine = (espace < 0 ? brut : brut.substring(0, espace)).toLowerCase(java.util.Locale.ROOT);
+        int deuxPoints = racine.indexOf(':');
+        if (deuxPoints >= 0) racine = racine.substring(deuxPoints + 1);
+        if (!MESSAGES_PRIVES.contains(racine)) return;
+        if (!(pr.getContext().getSource().getEntity() instanceof ServerPlayer de) || voitLesCaches(de)) return;
+        // /tell et /w renvoient vers /msg : les destinataires sont dans le contexte qui suit la redirection
+        for (com.mojang.brigadier.context.CommandContextBuilder<CommandSourceStack> c = pr.getContext(); c != null; c = c.getChild()) {
+            if (!c.getArguments().containsKey("targets")) continue;
+            java.util.Collection<ServerPlayer> cibles;
+            try {
+                cibles = net.minecraft.commands.arguments.EntityArgument.getPlayers(c.build(entree), "targets");
+            } catch (Exception ex) {
+                return;   // personne de trouvé ou commande incomplète : Minecraft répond lui-même
+            }
+            for (ServerPlayer x : cibles) {
+                if (x != de && CACHES.contains(x.getUUID())) {
+                    e.setCanceled(true);
+                    // la réponse de Minecraft pour un joueur absent, telle quelle (Commands.performCommand, sendFailure)
+                    de.sendSystemMessage(Component.empty().append(Component.translatable("argument.entity.notfound.player"))
+                            .withStyle(ChatFormatting.RED));
+                    return;
+                }
+            }
+            return;
+        }
     }
 
     /**

@@ -300,9 +300,25 @@ public final class CombatService {
         var ctx = e.getParseResults().getContext();
         if (!(ctx.getSource().getEntity() instanceof ServerPlayer p)) return;
         Refus r = refus(p, racine(e.getParseResults().getReader().getString()));
-        if (r == null || e == departEleve) return;
+        if (r == null || e == departEleve || actionDuPanneau(ctx.getSource(), p)) return;
         e.setCanceled(true);
         r.prevenir(p);
+    }
+
+    /** Méthode du panneau du staff (boutique) qui joue ses actions en commande : {@code PanelStaff.commandeStaff}. */
+    private static final String PANNEAU = "fr.heraliz.grades.serveur.PanelStaff", PANNEAU_METHODE = "commandeStaff";
+    private static final StackWalker PILE = StackWalker.getInstance();
+
+    /**
+     * 21/11 (validation, choix du propriétaire) : action du panneau du staff jouée pour un staff op 4 lui-même. Sa source a
+     * déjà le niveau 4, le sien : {@link #elevee} ne la distingue pas d'une commande qu'il tape. Elle est reconnue à la pile
+     * d'appels, où {@code PanelStaff.commandeStaff} la joue ; une commande tapée (paquet du chat) ou celle d'un panneau en
+     * bois (niveau 2) n'y passe jamais. Regardé seulement pour une commande qui serait refusée, d'un op 4. Classe ou méthode
+     * renommée : plus reconnue, l'action est jugée comme une commande tapée (comme avant).
+     */
+    private static boolean actionDuPanneau(net.minecraft.commands.CommandSourceStack source, ServerPlayer p) {
+        if (!p.hasPermissions(4) || !source.hasPermission(4)) return false;
+        return PILE.walk(s -> s.anyMatch(f -> PANNEAU_METHODE.equals(f.getMethodName()) && PANNEAU.equals(f.getClassName())));
     }
 
     /**

@@ -508,6 +508,10 @@ public final class ClanService {
         c.invitations.remove(inv);
         c.membres.put(u, new Membre(u, nom, Grade.RECRUE, now, now, null));
         c.ajouterEvenement(new Evenement(now, Evenement.Genre.ARRIVEE, nom));
+        // 21/11 (validation de l'audit, staff caché « partout ») : arrivée pendant la partie ; un caché reste « hors ligne »
+        // pour les membres qui ne voient pas les cachés (vu à son arrivée, temps de jeu 0, arrivée retirée de leur journal)
+        Sync.debutSession(u, now, 0, now);
+        boolean cache = PontVanish.cache(u);
         LienJoueur l = s.lien(u);
         l.clan = c.id;
         l.chatClan = false;
@@ -515,7 +519,13 @@ public final class ClanService {
         s.marquerDirtyJoueurs();
         for (Clan autre : s.tous()) if (autre != c && autre.retirerInvitation(u)) s.marquerDirty();
         changement(c);
-        diffuserChat(c, "msg.rejoint", nom);
+        if (cache) {
+            // annoncée seulement à ceux qui voient les cachés (staff connecté) et à lui-même
+            Component rejoint = prefixe(c).append(Component.translatable("msg.rejoint", nom));
+            for (ServerPlayer m : membresEnLigne(c)) if (PontVanish.visible(m, u)) m.sendSystemMessage(rejoint);
+        } else {
+            diffuserChat(c, "msg.rejoint", nom);
+        }
         info(p, "msg.bienvenue", c.tag, c.nom);
         Sync.envoyerEtat(p);
         Sync.diffuserTags(c, null);

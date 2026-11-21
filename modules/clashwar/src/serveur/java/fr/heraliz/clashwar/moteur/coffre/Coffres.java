@@ -154,8 +154,11 @@ public final class Coffres {
     private static int parTick = 4;
     private static long budgetNs = 6_000_000L;
 
-    /** Un depot demande, pas encore commence (releve a son tour) ; {@code essai} : 0, puis 1, 2... s'il est refait. */
-    private record Demande(ServerPlayer joueur, String raison, Consumer<Boolean> fini, int essai) {
+    /**
+     * Un depot demande, pas encore commence (releve a son tour) ; {@code essai} : 0, puis 1, 2... s'il est refait ;
+     * {@code immediat} : depot tout de suite ({@link #deposer}), jamais remis en file (21/11, validation v7).
+     */
+    private record Demande(ServerPlayer joueur, String raison, Consumer<Boolean> fini, int essai, boolean immediat) {
     }
 
     /** Un depot refait parce que l'inventaire a change pendant son ecriture : au plus ce nombre d'essais. */
@@ -181,9 +184,11 @@ public final class Coffres {
         /** Ce que le joueur tenait au releve (21/11) : revu a la confirmation. */
         final Releve releve;
         final int essai;
+        /** Depot tout de suite ({@link #deposer}) : refuse, jamais remis en file, si l'inventaire a change. */
+        final boolean immediat;
 
         Depot(ServerPlayer joueur, String raison, long numero, CompoundTag instantane, List<ItemStack> aCote, Path fichier, Future<Long> ecrit,
-              Consumer<Boolean> fini, int depuis, Releve releve, int essai) {
+              Consumer<Boolean> fini, int depuis, Releve releve, int essai, boolean immediat) {
             this.joueur = joueur;
             this.raison = raison;
             this.numero = numero;
@@ -195,6 +200,7 @@ public final class Coffres {
             this.depuis = depuis;
             this.releve = releve;
             this.essai = essai;
+            this.immediat = immediat;
         }
     }
 
@@ -410,7 +416,7 @@ public final class Coffres {
      * Objet que Minecraft fait tomber pendant la fermeture de l'ecran du depot (inventaire plein : cases d'un atelier,
      * d'une enclume...) : garde dans le depot avec les objets « a cote », jamais au sol. 19/11 : objet lache par un joueur
      * dont le depot s'ecrit (fige) : retenu ; 21/11 (validation v7) : le depot est alors refait et l'objet lui est rendu
-     * ({@link #confirmer}).
+     * ({@link #confirmer}). Meme garde au retour, pendant la fermeture de l'ecran ouvert ({@link #sauverAvantVidage}).
      */
     private static void lache(ItemTossEvent e) {
         Player joueur = e.getPlayer();
@@ -421,7 +427,7 @@ public final class Coffres {
             if (s.isEmpty()) return;
             l.add(s.copy());
             e.setCanceled(true);
-            HeralizClashWar.LOG.info("[matchs] {} : {} x{} garde dans le depot (il serait tombe a la fermeture de l'ecran)",
+            HeralizClashWar.LOG.info("[matchs] {} : {} x{} garde a part (il serait tombe a la fermeture de l'ecran)",
                     p.getGameProfile().getName(), s.getHoverName().getString(), s.getCount());
             return;
         }
@@ -567,7 +573,7 @@ public final class Coffres {
             return false;
         }
         boolean[] ok = {false};
-        commencer(new Demande(p, raison, b -> ok[0] = b, 0), false);
+        commencer(new Demande(p, raison, b -> ok[0] = b, 0, true), false);
         return ok[0];
     }
 
@@ -584,7 +590,7 @@ public final class Coffres {
             return r;
         }
         DEPOSANTS.add(p.getUUID());
-        DEMANDES.addLast(new Demande(p, raison, fini, 0));
+        DEMANDES.addLast(new Demande(p, raison, fini, 0, false));
         return null;
     }
 
@@ -662,9 +668,15 @@ public final class Coffres {
             Path f = Coffre.fichier(u);
             if (f == null) {
                 depot = null;
+            } else if (!t.contains("curios") && releve.piecesCurios() != null && !releve.piecesCurios().isEmpty()) {
+                // 21/11 (validation v7, securite en plus) : des Curios portes mais absents de l'instantane (leur sauvegarde a
+                // echoue) seraient vides sans etre dans le depot : depot refuse, rien n'est ecrit, joueur intact
+                HeralizClashWar.LOG.error("[matchs] coffre de {} : {} Curios portes mais absents de l'instantane (sauvegarde de Curios en erreur)",
+                        p.getGameProfile().getName(), releve.piecesCurios().size());
+                depot = null;
             } else if (!fond) {
                 ns = ecrireMesure(f, t);
-                depot = new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai());
+                depot = new Depot(p, raison, numero, t, aCote, f, null, d.fini(), ticks, releve, d.essai(), d.immediat());
             } else {
                 // 19/11 : le releve part sur le fil des coffres ; copie complete (aucune donnee qu'un autre mod pourrait encore
                 // modifier) ; fil indisponible : ecrit tout de suite, comme sans ecriture en fond
@@ -676,7 +688,7 @@ public final class Coffres {
                     ecrit = null;
                     ns = ecrireMesure(f, t);
                 }
-                depot = new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai());
+                depot = new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai(), d.immediat());
             }
         } catch (RuntimeException | LinkageError ex) {
             // erreur pendant le releve (fermeture d'un ecran, sauvegarde du joueur...) : rien n'a ete vide ; ce qui a ete mis a
@@ -824,14 +836,21 @@ public final class Coffres {
             effacer(d.fichier, "inventaire change pendant l'ecriture");
             defaire(d);
             depotsRates++;
-            if (d.essai + 1 < ESSAIS_MAX) {
+            // 21/11 (validation v7) : pas pour un depot immediat ({@link #deposer}) : il repondrait « pas fait » alors que le
+            // depot se ferait plus tard ; il est refuse (joueur intact), l'appelant peut le redemander
+            if (!d.immediat && d.essai + 1 < ESSAIS_MAX) {
                 HeralizClashWar.LOG.warn("[matchs] coffre de {} : inventaire change pendant l'ecriture, depot refait (essai {})",
                         p.getGameProfile().getName(), d.essai + 2);
-                DEMANDES.addFirst(new Demande(p, d.raison, d.fini, d.essai + 1));
+                DEMANDES.addFirst(new Demande(p, d.raison, d.fini, d.essai + 1, false));
                 return;   // toujours deposant : ni commandes ni ramassage jusqu'au nouveau releve
             }
-            HeralizClashWar.LOG.error("[matchs] coffre de {} : inventaire change pendant chacune des {} ecritures, depot refuse (joueur laisse intact)",
-                    p.getGameProfile().getName(), ESSAIS_MAX);
+            if (d.immediat) {
+                HeralizClashWar.LOG.error("[matchs] coffre de {} : inventaire change pendant l'ecriture (depot immediat), depot refuse (joueur laisse intact)",
+                        p.getGameProfile().getName());
+            } else {
+                HeralizClashWar.LOG.error("[matchs] coffre de {} : inventaire change pendant chacune des {} ecritures, depot refuse (joueur laisse intact)",
+                        p.getGameProfile().getName(), ESSAIS_MAX);
+            }
             finDepot(d.fini, u, false);
             return;
         }
@@ -1112,9 +1131,9 @@ public final class Coffres {
             HeralizClashWar.LOG.warn("[matchs] {} etait a terre au retour de son coffre : releve d'abord", p.getGameProfile().getName());
         }
         // objets a vie arrives dans l'inventaire du match sans en etre des prets, et ce qui est au curseur ou dans la
-        // grille 2 x 2 (sauf les prets du match) : pris a part avant le vidage, rendus apres (02/11, audit point 8)
+        // grille 2 x 2 (sauf les prets du match) : pris a part avant le vidage, rendus apres (02/11, audit point 8) ; l'ecran
+        // ouvert est ferme pendant cette mise a part (21/11, validation v7, P1 : avant, apres elle)
         List<ItemStack> sauves = sauverAvantVidage(p);
-        p.closeContainer();
         Descente.forcer(p);
         detacher(p);
         // vider
@@ -1209,11 +1228,27 @@ public final class Coffres {
     /**
      * Avant le vidage du retour : les objets a vie de l'inventaire qui ne sont pas des prets du match, et tout ce qui est
      * au curseur ou dans la grille 2 x 2 (les prets du match y sont jetes, comme ceux de l'inventaire). Rendus apres.
+     * <p>21/11 (validation v7, P1) : l'ecran ouvert est ferme entre les deux (curseur pris d'abord, comme avant). Ce qu'il
+     * tenait (grille d'un etabli...) revient dans l'inventaire AVANT la mise a part des objets a vie : avant, la fermeture
+     * venait apres, et un objet a vie laisse dans cette grille revenait dans l'inventaire juste avant qu'il soit vide. Ce qui
+     * ne tient pas dans l'inventaire est garde a part comme le curseur (au lieu de tomber dans l'arene), sauf les prets.
      */
     private static List<ItemStack> sauverAvantVidage(ServerPlayer p) {
         List<ItemStack> l = new ArrayList<>();
         for (ItemStack s : horsInventaire(p)) {
             if (!Equipement.estPrete(s)) l.add(s);
+        }
+        List<ItemStack> tombes = new ArrayList<>(0);
+        capture = p;
+        captures = tombes;
+        try {
+            p.closeContainer();
+        } finally {
+            capture = null;
+            captures = null;
+        }
+        for (ItemStack s : tombes) {
+            if (!s.isEmpty() && !Equipement.estPrete(s)) l.add(s);
         }
         Inventory inv = p.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {

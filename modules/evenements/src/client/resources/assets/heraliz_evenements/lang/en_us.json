@@ -24,6 +24,7 @@
   "heraliz_evenements.agenda.en_cours": "In progress: %s",
   "heraliz_evenements.agenda.aucun": "No event planned in the next 24 hours.",
   "heraliz_evenements.agenda.prochains": "Upcoming events: %s",
+  "heraliz_evenements.cmd.login": "Log in first with /login.",
   "item.heraliz_evenements.dossier_classe": "Classified file",
   "item.heraliz_evenements.mallette_scellee": "Sealed briefcase",
   "item.heraliz_evenements.disque_dur_militaire": "Military hard drive",

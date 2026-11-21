@@ -122,6 +122,32 @@ public final class Deplacements {
         return false;
     }
 
+    /**
+     * HeraliZ (21/11, fin de la validation : a3 n° 4, v9 n° 4) : revu au moment même du départ de /home et /rtp, donc après
+     * le compte à rebours ET l'attente du chargement de l'arrivée (« Préparation de l'arrivée… ») : en combat ou à terre, le
+     * départ est refusé. Avant, seul un coup reçu l'annulait : qui tirait sans bouger partait encore en combat. Même règle et
+     * même message que le noyau pour une commande tapée en combat ou à terre ({@code CombatTag}, {@code ATerre} ; textes
+     * {@code noyau.combat.commande_refusee} dans la barre, {@code noyau.combat.commande_refusee_a_terre} dans le chat). Le
+     * staff (permission 2) part, comme pour /spawn. Vrai : départ refusé (rien n'est compté : ni délai, ni recharge).
+     */
+    static boolean refusAuDepart(ServerPlayer p) {
+        if (staff(p)) {
+            return false;
+        }
+        long reste = fr.heraliz.noyau.api.CombatTag.restantMs(p);
+        if (reste > 0) {
+            p.displayClientMessage(Component.translatableWithFallback("noyau.combat.commande_refusee", "Impossible en combat · %s s",
+                (reste + 999) / 1000).withStyle(s -> s.withColor(0xFF8A8A)), true);
+            return true;
+        }
+        if (fr.heraliz.noyau.api.ATerre.aTerreReanimation(p)) {
+            p.sendSystemMessage(Component.translatableWithFallback("noyau.combat.commande_refusee_a_terre", "Impossible à terre.")
+                .withStyle(s -> s.withColor(0xFF8A8A)));
+            return true;
+        }
+        return false;
+    }
+
     /** Drapeau de HeraliZ Matchs posé pendant un match ({@code MatchApi.DRAPEAU_EN_MATCH}). */
     static final String EN_MATCH = "heralisz:en_match";
 
@@ -171,6 +197,10 @@ public final class Deplacements {
     }
 
     private static void partirZone(ServerPlayer p, long[] points) {
+        // 21/11 (fin de la validation) : combat et « à terre » revus au départ, après l'attente de l'arrivée (refusAuDepart)
+        if (refusAuDepart(p)) {
+            return;
+        }
         ServerLevel bases = p.server.getLevel(MondeBases.BASES);
         if (bases == null) {
             return;

@@ -66,10 +66,11 @@ public final class ServeurQuetes implements Partie {
         Reseau.TROC.brancher(r -> Echanges.troc(r.joueur(), r.message()));
         Reseau.AJOUT_ECHANGE.brancher(r -> EditionMarchands.ajoutEchange(r.joueur(), r.message()));
         Reseau.CODE.brancher(r -> Moteur.code(r.joueur(), r.message().point(), r.message().code()));
-        // quêtes du jour (26/10) ; 6 = écran fermé (la remise en attente se fait tout de suite)
+        // quêtes du jour (26/10) ; 6 = écran fermé (la remise en attente se fait tout de suite). 21/11 (validation de l'audit) :
+        // 4 demandes par seconde au plus, comme le journal (chacune refait et renvoie l'écran) ; la fermeture passe toujours
         Reseau.JOUR_ACTION.brancher(r -> {
             if (r.message().type() == 6) Journalieres.ferme(r.joueur());
-            else Journalieres.action(r.joueur(), r.message());
+            else if (cadence(DEMANDES_JOUR, r.joueur())) Journalieres.action(r.joueur(), r.message());
         });
 
         // progressions des joueurs écrites sur un fil à part (01/11), attendues à l'arrêt du serveur
@@ -132,9 +133,16 @@ public final class ServeurQuetes implements Partie {
     /** Joueur -> {début de la fenêtre d'une seconde (ms), demandes dans cette fenêtre}. */
     private static final Map<UUID, long[]> DEMANDES = new HashMap<>();
 
+    /** Écran des quêtes du jour (21/11, validation) : même cadence, compte à part (le journal n'en prend rien). */
+    private static final Map<UUID, long[]> DEMANDES_JOUR = new HashMap<>();
+
     private static boolean demandeOk(ServerPlayer p) {
+        return cadence(DEMANDES, p);
+    }
+
+    private static boolean cadence(Map<UUID, long[]> demandes, ServerPlayer p) {
         long t = System.currentTimeMillis();
-        long[] c = DEMANDES.computeIfAbsent(p.getUUID(), k -> new long[2]);
+        long[] c = demandes.computeIfAbsent(p.getUUID(), k -> new long[2]);
         if (t - c[0] >= 1000 || t < c[0]) {
             c[0] = t;
             c[1] = 0;
@@ -154,6 +162,7 @@ public final class ServeurQuetes implements Partie {
         GardeRecycleur.vider();
         LUEURS.clear();
         DEMANDES.clear();
+        DEMANDES_JOUR.clear();
     }
 
     private static void connexion(PlayerEvent.PlayerLoggedInEvent e) {
@@ -173,6 +182,7 @@ public final class ServeurQuetes implements Partie {
         Dialogues.oublier(e.getEntity().getUUID());
         LUEURS.remove(e.getEntity().getUUID());
         DEMANDES.remove(e.getEntity().getUUID());
+        DEMANDES_JOUR.remove(e.getEntity().getUUID());
         A_TERRE_A_LA_MORT.remove(e.getEntity().getUUID());
         Moteur.oublier(e.getEntity().getUUID());
         Marchands.oublier(e.getEntity().getUUID());

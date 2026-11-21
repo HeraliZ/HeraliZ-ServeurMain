@@ -26,6 +26,9 @@ proposition D du premier audit (Mohist et le menu des spectateurs) est **vérifi
 marche (reste l'essai en jeu). Versions : **ClashWar 1.3.9** (seul le jar du serveur change vraiment ; aucun canal réseau
 ni texte affiché ne change : un jeu en 1.3.8 se connecte toujours), **Réanimation 1.16.14** inchangée.
 
+Le soir (choix du propriétaire) : les 4 propositions, la proposition E du premier audit et la version minimale du noyau
+sont faites (**ClashWar 1.3.10**, **Réanimation 1.16.15**) : voir « Fin du 21/11 » en bas.
+
 ---
 
 ## Changements du jour validés
@@ -101,7 +104,7 @@ relu au moment du retour. Développeurs : `Coffres.java` l. 1374-1384.
 
 ---
 
-## À décider par le propriétaire (rien n'a été changé)
+## À décider par le propriétaire (proposé l'après-midi ; tout fait le soir : voir « Fin du 21/11 » en bas)
 
 **P1. Retour : fermer l'écran ouvert avant de mettre de côté la souris et les objets à vie (petit).** Au retour, le
 serveur met de côté ce qui est à la souris et les objets à vie, PUIS ferme l'écran ouvert (`Coffres.java` l. 1116-1117) :
@@ -109,22 +112,26 @@ un objet à vie laissé dans la grille d'un autre écran ouvert à cet instant (
 l'inventaire juste avant qu'il soit vidé, donc perdu. Cas presque impossible (un objet à vie arrive en match seulement
 après une question « Jeter cet objet ? » restée ouverte). Risque du changement : faible (inverser deux lignes et garder ce
 qui tomberait). À faire seulement si vous voulez fermer ce cas.
+**Fait le 21/11 : voir « Fin du 21/11 » en bas.**
 
 **P2. Dépôt immédiat (`Coffre.deposer`, `Coffres.java` l. 563 : API gardée, appelée par aucun mod ni outil aujourd'hui).**
 S'il trouve un inventaire changé, il remet le dépôt en file (l. 830) tout en répondant « pas fait » : le dépôt pourrait
 alors se faire plus tard sans que l'appelant le sache. En pratique impossible (le dépôt immédiat relève et vérifie dans le
 même tick). Proposition : dans ce chemin, refuser au lieu de remettre en file, si un jour il sert. Rien ne presse.
+**Fait le 21/11 : voir « Fin du 21/11 » en bas.**
 
 **P3. Instantané sans Curios (sécurité en plus, comme A et C du premier audit).** Si Curios n'arrivait pas à écrire ses
 emplacements dans le dépôt alors qu'il sait les vider, ils seraient perdus (`Coffres.java` l. 923, l'erreur est avalée par
 `Compat.sauverCurios`). Aujourd'hui, ce cas ne peut pas arriver seul : l'enregistrement complet du joueur, fait juste
 avant, passe par les mêmes objets et échoue d'abord (dépôt refusé, joueur intact). Proposition : refuser le dépôt quand
 les Curios ont des objets mais ne sont pas dans l'instantané. Gain très faible.
+**Fait le 21/11 : voir « Fin du 21/11 » en bas.**
 
 **P4. Paquet de la réanimation, choix et liste des exécutions (actions 3 et 4,
 `ActionPacketServeur.java` l. 47 et 57) sans limite de cadence.** Chacun renvoie un petit paquet au joueur ; un jeu modifié
 peut en envoyer beaucoup, sans effet sur les autres joueurs. Même famille que la proposition E du premier audit (restée
 ouverte) : à faire avec elle si vous la choisissez.
+**Fait le 21/11, avec E : voir « Fin du 21/11 » en bas.**
 
 Pour le noyau (relu sans le changer, autre relecteur) : `Matchs.inventaireRetenu` ne voit pas un dépôt du Coffre en cours
 d'écriture (1-2 ticks) depuis le déplacement de la marque ce matin. Avec le correctif n° 1, plus rien n'est perdu (le dépôt
@@ -218,3 +225,50 @@ et le champ `simulation` (événements), `Coffre.aUnDepot` (inspecter), `WipeCla
 
 Pas testable à la main : les cas corrigés n° 1 à 3 demandent un instant de 1 à 2 ticks ou un disque très lent ; ils sont
 seulement relus dans le code.
+
+---
+
+## Fin du 21/11 (choix du propriétaire : « que tout soit lançable et terminé à 100 % »)
+
+Faites, dans le commit `d0fd5a29b` : **ClashWar 1.3.10**, **Réanimation 1.16.15**. Aucun canal réseau ni texte affiché ne
+change : un jeu d'avant se connecte toujours. La règle du 15/11 (un joueur déconnecté pendant les dépôts : son équipe
+joue sans lui) reste comme avant. **Rien n'a été testé en jeu.**
+
+1. **P1, retour du Coffre : l'écran ouvert est fermé avant la mise de côté.** En simple : au retour, ce qu'un écran ouvert
+   tenait (la grille d'un établi d'une arène, par exemple) revient d'abord dans l'inventaire, puis les objets à vie sont
+   mis de côté ; avant, l'écran était fermé après, et un objet à vie laissé dans cette grille était effacé avec
+   l'inventaire du match. Ce qui ne tient pas dans l'inventaire est gardé à part, comme ce qui est à la souris, au lieu de
+   tomber dans l'arène (les objets prêtés du match restent effacés). La souris est toujours prise en premier, comme avant.
+   Développeurs : `sauverAvantVidage`, `Coffres.java` l. 1236 (même garde qu'au dépôt, `capture`) ; `rendre` ne ferme plus
+   l'écran après (l. 1136).
+2. **P3, Curios absents de l'instantané : dépôt refusé.** Si des Curios sont portés mais que leur sauvegarde dans le dépôt a
+   échoué, rien n'est écrit et le joueur garde tout (journal « Curios portes mais absents de l'instantane »). Aujourd'hui
+   ce cas ne peut pas arriver seul : c'est une sécurité en plus. Développeurs : `commencer`, `Coffres.java` l. 671-676.
+3. **P4, réanimation : cadence du menu des exécutions.** Côté serveur, au plus un choix d'exécution toutes les 150 ms et
+   une liste toutes les 250 ms (un vrai clic sur « Équiper » ou une vraie ouverture du menu ne vont jamais aussi vite) ;
+   oubliées à la déconnexion et à l'arrêt. Développeurs : `ActionPacketServeur.java` l. 26-33, 65 et 79.
+4. **P2, dépôt immédiat (`Coffre.deposer`) : refusé au lieu d'être remis en file.** S'il trouve un inventaire changé, il
+   est refusé (joueur intact) et répond « pas fait », ce qui est alors vrai. Le tournoi garde ses 5 essais. Développeurs :
+   `Demande.immediat` et `Depot.immediat` (`Coffres.java` l. 161 et 188), `confirmer` l. 841.
+5. **a7 E, petits envois en trop :**
+   - quand un joueur sort de la vue d'un autre, cet autre ne reçoit plus le paquet « plus à terre » si le premier n'a aucun
+     état (à terre, fouille, réanimation, exécution) : il n'y avait rien à effacer, puisque chaque fin d'état est déjà
+     envoyée à tous ceux qui le voient. La seule fin d'état qui ne les prévenait pas (mort refusée par un autre mod) le
+     fait maintenant : ce joueur était montré allongé jusqu'au prochain envoi. Développeurs : `DownedManagerServeur.java`
+     l. 953 (`onStopTracking`) et l. 393 (`kill`) ;
+   - spectateurs du ClashWar : au plus un changement de cible toutes les 80 ms (`Spectateurs.changer`, l. 88-101).
+6. **mods.toml de ClashWar : noyau 1.1.5 au moins** (`modules/clashwar/src/commun/resources/META-INF/mods.toml` l. 45,
+   relevé de la validation v10) : ClashWar appelle des fonctions du noyau de cette version ; le serveur et les joueurs ont
+   la 1.1.12.
+
+Il ne reste plus rien d'ouvert dans cette zone, à part les essais en jeu.
+
+### À tester en jeu (en plus de la liste plus haut)
+
+- [ ] **Retour du Coffre** avec un écran ouvert au moment du retour (fin d'un match, `/clashwar quitter`) : rien ne
+      tombe, tout revient exactement une fois ; un objet à vie laissé dans l'écran revient au joueur.
+- [ ] **Menu des exécutions** (touche =) : ouvrir, choisir une exécution, « Équiper », refermer, rouvrir : tout marche comme
+      avant.
+- [ ] **Joueurs à terre vus de loin** : un joueur à terre qui sort de la vue puis revient est bien montré allongé ; relevé
+      pendant qu'il était hors de vue, il est bien debout quand il revient.
+- [ ] **Spectateur** : flèches gauche / droite, plusieurs appuis rapides : la caméra change à chaque appui.

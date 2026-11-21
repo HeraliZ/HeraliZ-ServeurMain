@@ -651,12 +651,26 @@ public final class BasesClans extends SafeSavedData {
                         continue;
                     }
                     kit = fr.heraliz.crac.bases.Tutoriel.kitPremiereBase();
+                    // 21/11 (fin de la validation, R1) : le kit est noté « rangé » sur le disque AVANT d'entrer dans le coffre du
+                    // clan, dont le fichier part en écriture sur un fil de Clans : un plantage entre les deux peut au pire le
+                    // perdre, jamais le ranger deux fois. Avant, ce fichier n'était écrit qu'après le dépôt, et l'écriture du
+                    // coffre, partie la première, pouvait finir avant lui (quelques millisecondes)
+                    d.kits.add(info.id());
+                    d.attenteKit.remove(info.id());
+                    d.setDirty();
+                    d.sauverMaintenant(SafeSavedData.dataFile(server.overworld(), ID).toFile());
                 }
                 Object reste;
                 try {
                     reste = deposer.invoke(null, info.id(), copie(kit));
                 } catch (ReflectiveOperationException | RuntimeException e) {
                     Crac.LOGGER.error("[CRac] coffre du clan [{}] : matériel de la première base non rangé", info.tag(), e);
+                    if (premier) {
+                        // dépôt refusé par une erreur : le kit redevient « à ranger », nouvel essai plus tard (comme avant)
+                        d.kits.remove(info.id());
+                        d.setDirty();
+                        d.sauverMaintenant(SafeSavedData.dataFile(server.overworld(), ID).toFile());
+                    }
                     continue;
                 }
                 java.util.List<net.minecraft.world.item.ItemStack> restant = new java.util.ArrayList<>();
@@ -697,8 +711,11 @@ public final class BasesClans extends SafeSavedData {
                 // reste à ranger (avant, le fichier était écrit avant et marqué propre : un plantage redéposait le reste
                 // déjà rangé, ou perdait ce qui n'était pas entré). 21/11 (audit) : vraiment tout de suite (sauverMaintenant) ;
                 // save(File) part en fond depuis le 19/11 ([perf] donnees_en_fond du noyau), en même temps que le coffre du
-                // clan sur un autre fil : un plantage entre les deux pouvait redéposer le matériel. Ce fichier est maintenant
-                // sur le disque avant le coffre : un plantage peut au pire perdre ce matériel, jamais le copier.
+                // clan sur un autre fil : un plantage entre les deux pouvait redéposer le matériel. 21/11 (fin de la
+                // validation, R1) : au premier dépôt, le kit est déjà noté rangé AVANT le dépôt (plus haut) ; ici, seulement
+                // ce qui n'est pas entré (perdu au pire par un plantage, jamais copié) et le rappel au chef. Le reste redéposé
+                // plus tard (coffre plein au premier dépôt, rare) garde l'ordre d'avant : le noter avant chaque essai
+                // réécrirait ce fichier toutes les 5 s tant que le coffre reste plein.
                 d.sauverMaintenant(SafeSavedData.dataFile(server.overworld(), ID).toFile());
                 if (!premier) {
                     continue;
