@@ -137,8 +137,13 @@ public final class RaretesObjets {
     static String boite(ItemStack st) {
         if (st.getItem() != boiteTacz()) return null;
         CompoundTag t = st.getTag();
-        return "tacz:ammo_box/" + (t == null ? 0 : t.getInt("Level"));
+        int niveau = t == null ? 0 : t.getInt("Level");
+        // 21/11 (audit) : clés faites une fois (avant : un texte neuf pour chaque boîte, à chaque case et à chaque image)
+        return niveau >= 0 && niveau < CLES_BOITES.length ? CLES_BOITES[niveau] : "tacz:ammo_box/" + niveau;
     }
+
+    /** Clés des boîtes de fer, d'or et de diamant (et d'un niveau de plus, par prudence). */
+    private static final String[] CLES_BOITES = {"tacz:ammo_box/0", "tacz:ammo_box/1", "tacz:ammo_box/2", "tacz:ammo_box/3"};
 
     private static final ResourceLocation BOITE_TACZ = new ResourceLocation("tacz", "ammo_box");
 

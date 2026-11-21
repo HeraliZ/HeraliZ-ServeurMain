@@ -145,6 +145,8 @@ public final class ClanEvents {
                 // 31/10 : premiere connexion depuis le passage du clan sur la nouvelle courbe des niveaux : il le sait
                 avisCourbe = c.niveauAvantCourbe > 1 && c.courbeLe > 0 && m.vuLe < c.courbeLe;
                 m.dernierNom = nom;
+                // 21/11 (staff caché) : « vu le » et temps de jeu d'avant cette partie, montrés à son clan s'il est caché
+                Sync.debutSession(p.getUUID(), m.vuLe, m.stats.tempsJeuTicks);
                 m.vuLe = now;
                 store.marquerDirty(c);
             }
@@ -195,6 +197,7 @@ public final class ClanEvents {
         ServerHandlers.oublier(u);
         ClanService.oublier(u);
         Sync.ecranFerme(u);
+        Sync.finSession(u);
         POS.remove(u);
         KILLS_RECENTS.remove(u);
         REAPPARU.remove(u);

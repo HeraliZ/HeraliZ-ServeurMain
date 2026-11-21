@@ -97,6 +97,7 @@
   "heraliz_quetes.bourse.cmd.info": "Bourses valables : %s, pour %s hérals en tout.",
   "heraliz_quetes.bourse.cmd.bloquees": "Bourses BLOQUÉES (registre illisible ou écriture ratée) : voir le journal du serveur.",
   "heraliz_quetes.bourse.cmd.donnee": "Bourse de %s hérals donnée à %s.",
+  "heraliz_quetes.bourse.cmd.login": "Connecte-toi d'abord avec /login.",
   "heraliz_quetes.dialogue.echanger": "Faire un échange",
   "heraliz_quetes.marchand.regle.match": "Impossible pendant un match.",
   "heraliz_quetes.marchand.regle.combat": "Impossible en combat.",

@@ -2,6 +2,7 @@ package com.Spartan.alert;
 
 import com.Spartan.Spartan;
 import com.Spartan.config.SpartanConfig;
+import com.Spartan.integrity.PorteJoueurs;
 import com.Spartan.util.AsyncIO;
 import com.Spartan.util.Text;
 import java.io.File;
@@ -27,6 +28,15 @@ public class AlertManager {
     private AlertManager() {
     }
 
+    /**
+     * Staff en jeu qui reçoit les alertes : op 2 ou plus ET vérifié (jeton du launcher + /login AuthMe,
+     * {@link PorteJoueurs#estVerifie}). Audit du 21/11 : serveur sans comptes Mojang, un jeu lancé sous le pseudo d'un op
+     * recevait les alertes du staff (pseudos, détections, comptes liés) pendant les secondes avant son refus.
+     */
+    public static boolean staffEnJeu(ServerPlayer p) {
+        return p.hasPermissions(2) && PorteJoueurs.estVerifie(p.getUUID());
+    }
+
     public static void dispatch(ServerPlayer player, String check, int vl, String details, String evidenceFile) {
         String playerName = Text.oneLine(player.getName().getString());
         check = Text.oneLine(check);
@@ -44,7 +54,7 @@ public class AlertManager {
                     .append(Component.literal(details == null || details.isBlank() ? "" : " | " + details)
                             .withStyle(ChatFormatting.GRAY));
             for (ServerPlayer staff : player.server.getPlayerList().getPlayers()) {
-                if (staff.hasPermissions(2)) {
+                if (staffEnJeu(staff)) {
                     staff.sendSystemMessage(msg);
                 }
             }
@@ -75,7 +85,7 @@ public class AlertManager {
                     .append(Component.literal(title + " — ").withStyle(ChatFormatting.AQUA))
                     .append(Component.literal(message).withStyle(ChatFormatting.GRAY));
             for (ServerPlayer staff : server.getPlayerList().getPlayers()) {
-                if (staff.hasPermissions(2)) {
+                if (staffEnJeu(staff)) {
                     staff.sendSystemMessage(msg);
                 }
             }

@@ -93,7 +93,7 @@ public final class RaretesServeur {
                 if (!o.has(s.cle) || !o.get(s.cle).isJsonObject()) continue;
                 for (Map.Entry<String, JsonElement> e : o.getAsJsonObject(s.cle).entrySet()) {
                     String v = e.getValue().getAsString();
-                    if (v.equalsIgnoreCase(AUCUNE) || Rarete.lire(v) != null) fi.parSorte().get(s).put(e.getKey(), v.toLowerCase());
+                    if (v.equalsIgnoreCase(AUCUNE) || Rarete.lire(v) != null) fi.parSorte().get(s).put(e.getKey(), v.toLowerCase(java.util.Locale.ROOT));
                     else HeralizLoot.LOG.warn("{} : rareté inconnue « {} » pour {}", f.getFileName(), v, e.getKey());
                 }
             }

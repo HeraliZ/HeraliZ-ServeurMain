@@ -72,7 +72,10 @@ public final class EconomieApi {
     }
 
     // ------------------------------------------------------------------ etat
-    /** Vrai si le serveur tourne et que l'on est sur son fil : les autres methodes peuvent etre appelees. */
+    /**
+     * Vrai si le serveur tourne et que l'on est sur son fil : les autres methodes peuvent etre appelees. 21/11 : faux aussi
+     * tant que le fichier des comptes n'a pas pu etre lu au demarrage (sauvegarde bloquee) : rien ne doit alors se payer.
+     */
     public static boolean disponible() {
         Moteur m = moteur;
         return m != null && m.disponible();

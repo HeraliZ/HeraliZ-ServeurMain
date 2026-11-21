@@ -137,7 +137,8 @@ public class PlayerMixin implements BackpackedInventoryAccess {
    @Unique
    private void backpacked$PlayerTravelEvent(double dx, double dy, double dz, MovementType type) {
       Player player = (Player)(Object)this;
-      if (!player.level().isClientSide()) {
+      // HeraliZ (21/11) : rien a debloquer (unlockAllCosmetics) : plus d'evenement de defi a chaque pas de chaque joueur
+      if (!player.level().isClientSide() && com.mrcrayfish.backpacked.data.unlock.UnlockManager.defisSuivis()) {
          double distanceSquared = dx * dx + dy * dy + dz * dz;
          ((PlayerTravel)BackpackedEvents.PLAYER_TRAVEL.post()).handle((ServerPlayer)player, distanceSquared, type);
       }

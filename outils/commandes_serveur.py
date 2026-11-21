@@ -68,7 +68,10 @@ def lire_lot(nom):
 
 
 def masque(t):
-    return re.sub(r"\b\d{1,3}(\.\d{1,3}){3}\b", "x.x.x.x", t)
+    # 21/11 (audit, dépôt public) : adresses IPv6 masquées aussi, mêmes motifs que « Journaux » et « Lenteurs du serveur »
+    t = re.sub(r"\b\d{1,3}(\.\d{1,3}){3}\b", "x.x.x.x", t)
+    t = re.sub(r"([0-9a-fA-F]{1,4}:){4,7}[0-9a-fA-F]{1,4}", "x:x:x:x", t)
+    return re.sub(r"[0-9a-fA-F]{1,4}(:[0-9a-fA-F]{1,4})+::([0-9a-fA-F]{1,4}(:[0-9a-fA-F]{1,4})*)?", "x:x::x", t)
 
 
 def reponses(texte, nb):
