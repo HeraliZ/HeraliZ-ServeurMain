@@ -1782,8 +1782,8 @@ Proposé (pas fait, à décider) :
 Dernière vérification demandée par le propriétaire (« que tout soit clean, sans aucun bug ») sur ce qui n'est pas du
 code mais casse le jeu si c'est faux : textes en trois langues, images et sons cités, objets cités par le loot, les
 marchands, les quêtes et les caisses, raretés, commandes, réglages, démarrage du serveur. Versions : Loot **0.20.7**,
-Noyau **1.1.10** (avec ClashWar, voir plus bas ; le launcher les donne). **Rien n'a été testé en jeu** : contrôles hors du
-jeu, fabrication et démarrage d'essai sur GitHub seulement.
+Noyau **1.1.10**, Interface **2.0.17** (avec ClashWar, voir plus bas ; le launcher les donne). **Rien n'a été testé en
+jeu** : contrôles hors du jeu, fabrication et démarrage d'essai sur GitHub seulement.
 
 Vérifié, rien à corriger :
 - **Textes** : les trois langues ont les mêmes textes et les mêmes paramètres ; aucun texte anglais resté en français,
@@ -1817,6 +1817,8 @@ Corrigé :
   des commandes la compte enfin (87 commandes) ; `docs/COMMANDES.md` a aussi `/aide`, `/bourse`, `/guide`, `/cycle` et
   `/recolte`, qui y manquaient.
 - **Commentaires faux** : distance de simulation (le réglage disait « 5 », c'est 4 sur le Ptero) et `ARCHITECTURE.md`.
+- **Hautes herbes du pack « herbe »** : sur 7 701 fichiers de données relus, un seul était mal écrit (une accolade de
+  trop). Le jeu le lisait quand même ; corrigé, rien ne change à l'écran (Interface 2.0.17).
 - **Contrôles ajoutés** (ils tournent sur GitHub à chaque envoi) : chaque texte cité par le code de TOUS les modules doit
   exister (avant : seulement CRac et les Quêtes) et recevoir assez de valeurs ; le démarrage d'essai montre maintenant
   aussi les avertissements du serveur et, clé par clé, chaque réglage que Forge corrige (un réglage ignoré se voit).
