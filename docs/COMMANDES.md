@@ -1,6 +1,6 @@
 # Commandes du serveur (tri du 25/10, allégé le 02/11)
 
-**Nos mods : 86 commandes de premier niveau sur le serveur** (inventaire du 19/11 ; `/classement` le 03/11, `/money`, `/argent`, `/profil` et
+**Nos mods : 87 commandes de premier niveau sur le serveur** (inventaire du 21/11 : `/sethome`, là depuis le 03/11, n'y était pas compté, son nom étant rangé dans une constante ; `/classement` le 03/11, `/money`, `/argent`, `/profil` et
 `/stats` le 19/11 ; plus `/diagclient` côté joueur et `/cracghost`, outil de développement jamais en production). Une commande = un système : les variantes sont des sous-commandes
 (`/tpa accepter`, `/herals payer`…). Inventaire complet lu dans les sources : `python outils/commandes.py` (écrit
 `docs/COMMANDES_INVENTAIRE.md`).
@@ -43,6 +43,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/canal` (`<nom>`, `clan`, `aide` ; `admin` : staff) | Utils | canal des pings (02/11 : ancien `/ping canal`, caché par le `/ping` de Mohist) : ton clan par défaut ; `/canal <nom>` (2 à 16 lettres ou chiffres) rejoint un canal à part, partagé avec tous ceux qui tapent le même nom (16 connectés au plus) ; `/canal` montre le tien et qui y est ; `/canal clan` ramène à ton clan ; `/canal aide` : l'aide des pings. Un ping ne va qu'aux joueurs du même canal et du même monde (en match : ton équipe). Les membres du canal sont prévenus des arrivées et des départs. Gardé après déconnexion et redémarrage (`heraliz_ping/canaux.json` à la racine du serveur). Permis sur la carte (`canal` dans `commandes_permises` du noyau) |
 | `/perso` | CaraCrea | créateur de personnage (au spawn seulement) ; staff : `open`, `random`, `reset <joueurs>` (ancien `/caracrea`) |
 | `/quetes` | Quêtes | journal des quêtes (touche J) |
+| `/aide <ton problème>` | Grades | (03/11) appeler le staff : le message part au staff connecté et sur le salon Discord du staff, avec le pseudo, le monde et la position ; une fois par minute, 200 caractères au plus ; permise pendant le tutoriel des bases, en combat et sur la carte |
 | `/journalieres` | Quêtes | quêtes du jour (aussi le bouton « Quêtes du jour » du journal, touche libre dans les options) : choisir une difficulté par jour, une quête parmi trois, puis un tirage de récompense par réussite (26/10) |
 | `/clashwar` | ClashWar | inscription, tableau, regarder un match, revenir en salle |
 | `/heraliz` | Caisses | aperçu des caisses ; staff : `givekey` (clés ajoutées au compte du joueur, plus d'objet depuis le 25/10), `cles voir <joueur>`, `cles retirer <joueurs> <caisse> <nombre>` |
@@ -64,6 +65,8 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/staff panel` | Grades | modération (panel : touche P, actions selon le grade du staff ; « Se cacher » et « Cacher son nom » y sont des boutons, ex-`/staff vanish` et `/staff nametag`) ; onglet « Commandes du Fondateur » (28/10) : le Fondateur donne une commande précise à un grade du staff (`heraliz_grades/commandes_staff.json`, appliqué par le serveur) |
 | `/zonevip` | Grades | zones VIP |
 | `/marchand`, `/pnj`, `/quete` | Quêtes | marchands, PNJ, points de quête ; `/quete finir` : op 4 ; `/quete donner` : seulement avec le banc d'essai |
+| `/bourse` (`info`, `donner <joueur> <hérals>`) | Quêtes | (18/11) bourses de hérals : bourses valables et leur total, en donner une (essais, dédommagement) (op 2) |
+| `/guide` (`point`, `retirer`, `points`, `visite`) | Quêtes | (28/10) points de la visite du Guide (casino, armurier, coffre, caisses, borne, recycleur) ; `visite` : la faire soi-même (op 2) |
 | `/wipe` | Quêtes | remise à zéro d'un joueur ou du serveur ; `/wipe reouverture` (05/11) : tous sauf Fondateurs et Admins, contenu à vie compris (PB, clés de vote, clés achetées et grades gardés), 3 codes comme `/wipe tout` |
 | `/tuto`, `/protection`, `/carriere` | CRac | tutoriel des bases, protection d'une base donnée à la main par le staff (plus aucune protection automatique depuis le 27/10 et le 31/10), carrières |
 | `/cracbuild` | CRac | outils de construction (`showcase`, `essai`, `clear`, `tier`, `damage`, `doors`) : op 4 (02/11, `clear` efface des bases) |
@@ -71,6 +74,8 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/depart`, `/carte`, `/train`, `/cinematique` | Utils | borne de départ, lieux de la carte, train, cinématique ; `/carte recycleurs` (19/11) : recycleurs de la carte repérés tout seuls (liste, clic = téléportation proposée), `/carte recycleurs chercher` relance leur recherche dans tous les tronçons enregistrés |
 | `/corps`, `/usure`, `/vehicules` (op 2 depuis le 02/11), `/inspecter` | Utils | cadavres, usure des armes, véhicules, inventaire d'un joueur |
 | `/zombies` (`stats`, `reserves`, `zone`) | Utils | zombies HeraliZ (02/11 : `banc` retiré) |
+| `/cycle` (`info`, `jour`, `nuit`, `heure <hh:mm>`, `pause`, `reprendre`) | Utils | cycle du jour et de la nuit de la carte (op 2) |
+| `/recolte` (`info`, `placer <type>`, `retirer`, `vider`) | Récolte | ressources à récolter de la carte (arbres, pierre, métal, rare) : en poser une là où l'on est, retirer la plus proche (sa place repart ailleurs), `vider` : toutes les places tirées de nouveau ; réglages `config/heraliz_recolte/recolte.json`, `/recharger recolte` (op 2) |
 | `/vitres` (op 4), `/camos`, `/armurier` | Tactique | vitres cassables (diagnostic), camos à vie, recettes de la Table d'armurier |
 | `/heralizloot`, `/rarete` | Loot | conteneurs, zones de loot, raretés ; `/heralizloot zombies stats` (butin des zombies : kills, objets, fragments, cases chaudes), `zombies joueur <joueur>` (ses kills de l'heure, sa chance de butin, ses fragments du jour) (26/10) ; `zombies simuler <n> [militaire]` (tire n fois la table) : seulement avec le banc d'essai (02/11) |
 | `/journalieres voir <joueur>`, `remettre <joueur>` (op 2) ; `essai <joueur> forcer\|avancer\|minuit` (op 4, seulement avec le banc d'essai) | Quêtes | état des quêtes du jour d'un joueur, remise d'une récompense restée en attente ; essais : quête forcée, progression ajoutée, minuit simulé (noté au journal `heraliz_quetes/journalieres.log`) |

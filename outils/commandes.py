@@ -75,13 +75,36 @@ def sous_commandes(c, bloc, nom, essai=False):
         c["sous"][cle] = niv if ancien == "absent" or ancien is None else ancien
 
 
+RE_CONSTANTE = re.compile(r'static\s+final\s+String\s+([A-Z][A-Z0-9_]*)\s*=\s*"([a-z0-9_]+)"\s*;')
+RE_LIT_CONSTANTE = re.compile(r'Commands\.literal\((?:([A-Z]\w*)\.)?([A-Z][A-Z0-9_]*)\)')
+
+
+def constantes():
+    """Noms de commande rangés dans une constante (« static final String COMMANDE_POSER = "sethome"; ») : 21/11, l'outil
+    ne voyait pas « Commands.literal(COMMANDE_POSER) » (/sethome de CRac, sous-commandes de /event et /canal)."""
+    par_classe = {}
+    for f in sorted(RACINE.glob("modules/*/src/**/*.java")):
+        for nom, valeur in RE_CONSTANTE.findall(f.read_text(encoding="utf-8", errors="ignore")):
+            par_classe.setdefault(f.stem, {})[nom] = valeur
+    return par_classe
+
+
+def avec_constantes(t, classe, par_classe):
+    """Le texte d'un fichier où « Commands.literal(CONSTANTE) » devient « Commands.literal("valeur") »."""
+    def remplacer(m):
+        valeur = par_classe.get(m.group(1) or classe, {}).get(m.group(2))
+        return 'Commands.literal("%s")' % valeur if valeur else m.group(0)
+    return RE_LIT_CONSTANTE.sub(remplacer, t)
+
+
 def lire():
     cmds = defaultdict(lambda: {"modules": set(), "fichiers": set(), "perm": None, "sous": {}})
+    par_classe = constantes()
     for f in sorted(RACINE.glob("modules/*/src/**/*.java")):
         parts = f.relative_to(RACINE / "modules").parts
         if parts[1] == "build" or parts[0] == "_gabarit":   # fabrication de Gradle, gabarit (jamais un dossier « build » du code)
             continue
-        t = f.read_text(encoding="utf-8", errors="ignore")
+        t = avec_constantes(f.read_text(encoding="utf-8", errors="ignore"), f.stem, par_classe)
         if ".register(" not in t or ("literal(" not in t and "lit(" not in t):
             continue
         module = f.relative_to(RACINE / "modules").parts[0]

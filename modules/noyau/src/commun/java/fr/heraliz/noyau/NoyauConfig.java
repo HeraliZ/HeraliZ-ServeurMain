@@ -24,10 +24,12 @@ public final class NoyauConfig {
    public static final List<String> COMMANDES_COMBAT_DEFAUT = List.of("login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
          "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "aide", "money", "argent",
          "profil", "stats");
-   // 25/10 (tri des commandes) : /home remplace /sethome, /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny
+   // 25/10 (tri des commandes) : /home remplace /delhome, /homes ; /tpa remplace /tpaccept, /tpdeny. 03/11 : /sethome revient
+   // (CRac, Homes.COMMANDE_POSER : poser le home de la base de son clan), permise sur la carte ; 21/11 (audit des réglages) :
+   // ajoutée ici aussi, elle n'était que dans le fichier de réglages du dépôt
    public static final List<String> COMMANDES_CARTE_DEFAUT = List.of("tpa", "login", "register", "l", "log", "reg", "captcha", "totp", "2fa",
          "msg", "tell", "w", "r", "me", "quetes", "journalieres", "pb", "saison", "extractions", "event", "clan", "suicide", "home",
-         "base", "purge", "coeur", "canal", "aide", "money", "argent", "profil", "stats");
+         "sethome", "base", "purge", "coeur", "canal", "aide", "money", "argent", "profil", "stats");
 
    public static final ForgeConfigSpec SPEC;
    public static final ForgeConfigSpec.IntValue TAG_COMBAT_S;

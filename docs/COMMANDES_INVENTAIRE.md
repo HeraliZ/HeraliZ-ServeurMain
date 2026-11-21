@@ -2,7 +2,7 @@
 
 Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPerms, WorldEdit, WorldGuard — et Minecraft lui-même ne sont pas comptés). « tous » = aucune permission demandée à l'entrée de la commande (une sous-commande ou le code peut en demander une).
 
-**86 commandes de premier niveau sur le serveur, 368 sous-commandes repérées** (plus 2 dans des modules jamais livrés avec le serveur normal : /boss, /bots).
+**87 commandes de premier niveau sur le serveur, 369 sous-commandes repérées** (plus 2 dans des modules jamais livrés avec le serveur normal : /boss, /bots).
 
 | Commande | Module | Entrée | Sous-commandes (niveau si différent) |
 |---|---|---|---|
@@ -20,7 +20,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/boutique` | boutique | tous | abonnement |
 | `/brume` | monde | staff (op 2) | auto, info |
 | `/camos` | armes | staff (op 2) | ajouter, recharge, retirer, voir |
-| `/canal` | monde | tous | aide |
+| `/canal` | monde | tous | aide, clan |
 | `/capsules` | boutique | tous | deposer, retirer |
 | `/carriere` | bases | staff (op 2) | creer, liste, regenerer, retirer, tp |
 | `/carte` | monde | staff (op 2) | ajouter, chercher, lieu, liste, nom, recycleurs, retirer |
@@ -74,6 +74,7 @@ Lu dans les sources de modules/ (les plugins Bukkit — AuthMe, LiteBans, LuckPe
 | `/rtp` | bases | tous |  |
 | `/saison` | clans | tous | annuler, classement, confirmer, fin (op 4), journal (op 4), points (op 4), reset (op 4) |
 | `/salle` | bunker | staff (op 2) | ajouter, baguette, bleue, bunker, creer, delier, effacer, lier, liste, recharger, redefinir, retirer, rouge, selection, verte, voir |
+| `/sethome` | bases | tous |  |
 | `/spartan` | anticheat | staff (op 2) | add (op 3), capture, checks, clear (op 3), esp, info, learn (op 3), reference, report, scan, setback, status, suspects, vl |
 | `/spawn` | bases | tous | definir (staff (op 2)), effacer (staff (op 2)), voir (staff (op 2)) |
 | `/staff` | boutique | tous | panel |
