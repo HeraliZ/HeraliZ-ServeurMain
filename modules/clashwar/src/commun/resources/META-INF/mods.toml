@@ -42,6 +42,6 @@ description='''ClashWar, le tournoi des clans du serveur HeraliZ : elimination a
 [[dependencies.heraliz_clashwar]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.0,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
