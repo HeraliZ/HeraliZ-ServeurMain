@@ -757,9 +757,9 @@ public final class ScanManager {
             return;
         }
         // Injection (03/11) : traces certaines d'un code étranger dans le jeu = alerte + expulsion, quel que soit le mode
-        com.Spartan.integrity.Injection.Verdict injection = com.Spartan.integrity.Injection.juger(p.getUUID(), findings);
+        com.Spartan.integrity.Injection.Verdict injection = com.Spartan.integrity.Injection.juger(p, findings);
         if (!injection.suspendues().isEmpty()) {
-            // 19/11 : règle en rodage déclenchée par trop de joueurs différents (fausse alerte probable) : le staff le sait
+            // 19/11 : règle en rodage déclenchée par trop de PC différents (fausse alerte probable) : le staff le sait
             com.Spartan.integrity.Injection.annoncerSuspension(p, injection.suspendues());
         }
         if (injection.expulser() != null) {

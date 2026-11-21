@@ -6,6 +6,8 @@ import com.Spartan.capture.CaptureManager;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
 import com.Spartan.scan.Finding;
+import com.Spartan.util.PacketGuard;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +37,7 @@ import net.minecraft.server.level.ServerPlayer;
  *   <li>Gardien du launcher : un programme de la liste {@code outils} ouvert sur le PC (injecteurs, éditeurs de mémoire).</li>
  *   <li>(19/11, règles « en rodage », voir {@link Rodage}) bibliothèque d'agent Java ou de débogueur chargée dans le jeu
  *   sans option de lancement (vue par le jeu ou, de l'extérieur, par le launcher), classe du jeu ou de l'anticheat
- *   modifiée en mémoire après son chargement.</li>
+ *   modifiée en mémoire après son chargement. Disjoncteur compté en PC (21/11), remise en service toute seule.</li>
  * </ul>
  * Restent des ALERTES (un logiciel honnête peut les produire : antivirus, overlays Discord / Steam / OBS / NVIDIA,
  * pilotes) : DLL au nom ou à l'emplacement douteux, overlay inconnu, threads sans nom, DLL chargée en cours de partie,
@@ -88,8 +90,13 @@ public final class Injection {
     /** Indices « à confirmer » vus au contrôle précédent (motif → heure), par joueur. */
     private static final Map<UUID, Map<String, Long>> A_CONFIRMER = new HashMap<>();
     private static final long CONFIRMATION_MS = 10 * 60_000L;
-    /** Règles en rodage (19/11) : coupées toutes seules si trop de joueurs différents les déclenchent (fausse alerte). */
+    /**
+     * Règles en rodage (19/11) : coupées toutes seules si trop de PC différents les déclenchent (fausse alerte), remises en
+     * service au bout de {@code rodageRepriseMinutes} (21/11).
+     */
     private static final Rodage RODAGE = new Rodage();
+    /** Prochain coup d'œil aux règles suspendues (remise en service) : toutes les 10 s au plus. */
+    private static long prochaineReprise;
 
     /**
      * Indices FORTS du contrôle qui valent une expulsion (liste {@code indices}). Ceux de {@code aConfirmer} (code natif
@@ -97,10 +104,11 @@ public final class Injection {
      * contrôle suivant, demandé aussitôt. Ceux de {@code rodage} (règles du 19/11, jamais essayées sur de vrais PC)
      * passent par le disjoncteur {@link Rodage} ; une règle établie qui expulse déjà les emporte avec elle.
      */
-    public static Verdict juger(UUID id, List<Finding> findings) {
+    public static Verdict juger(ServerPlayer p, List<Finding> findings) {
         if (!actif()) {
             return RIEN;
         }
+        UUID id = p.getUUID();
         List<? extends String> motifs = SpartanConfig.INJECTION_INDICES.get();
         List<? extends String> confirmer = SpartanConfig.INJECTION_A_CONFIRMER.get();
         List<? extends String> rodage = SpartanConfig.INJECTION_RODAGE.get();
@@ -136,14 +144,15 @@ public final class Injection {
         List<String> suspendues = new ArrayList<>();
         if (!certains.isEmpty()) {
             certains.addAll(enRodage.values()); // expulsé de toute façon : le staff lit tout
-        } else {
+        } else if (!enRodage.isEmpty()) {
+            Set<String> pc = pc(p);
             for (Map.Entry<String, String> e : enRodage.entrySet()) {
-                switch (RODAGE.noter(e.getKey(), id, now, SpartanConfig.INJECTION_RODAGE_JOUEURS.get(),
+                switch (RODAGE.noter(e.getKey(), pc, now, SpartanConfig.INJECTION_RODAGE_JOUEURS.get(),
                         SpartanConfig.INJECTION_RODAGE_MINUTES.get() * 60_000L)) {
                     case APPLIQUER -> certains.add(e.getValue() + " (règle en rodage)");
                     case SUSPENDRE -> suspendues.add(e.getKey());
                     case SUSPENDUE -> {
-                        // règle suspendue depuis le démarrage : l'alerte du contrôle suffit
+                        // règle suspendue en ce moment : l'alerte du contrôle suffit
                     }
                 }
             }
@@ -177,7 +186,7 @@ public final class Injection {
         if (regle == null) {
             return true;
         }
-        Rodage.Decision d = RODAGE.noter(regle, p.getUUID(), System.currentTimeMillis(),
+        Rodage.Decision d = RODAGE.noter(regle, pc(p), System.currentTimeMillis(),
                 SpartanConfig.INJECTION_RODAGE_JOUEURS.get(), SpartanConfig.INJECTION_RODAGE_MINUTES.get() * 60_000L);
         if (d == Rodage.Decision.SUSPENDRE) {
             annoncerSuspension(p, List.of(regle));
@@ -185,25 +194,84 @@ public final class Injection {
         return d == Rodage.Decision.APPLIQUER;
     }
 
-    /** Règles en rodage suspendues depuis le démarrage du serveur (/spartan status). */
+    /** Règles en rodage suspendues en ce moment (/spartan status). */
     public static List<String> reglesSuspendues() {
         return RODAGE.suspendues();
     }
 
+    /** Règles en rodage suspendues et temps avant leur remise en service, pour /spartan status ; vide si aucune. */
+    public static String decrireSuspendues() {
+        List<String> regles = RODAGE.suspendues();
+        if (regles.isEmpty()) {
+            return "";
+        }
+        long now = System.currentTimeMillis();
+        long repriseMs = SpartanConfig.INJECTION_RODAGE_REPRISE.get() * 60_000L;
+        List<String> lignes = new ArrayList<>();
+        for (String r : regles) {
+            long depuis = RODAGE.depuis(r);
+            lignes.add(repriseMs <= 0 || depuis < 0 ? r + " (jusqu'au redémarrage)"
+                    : r + " (remise en service dans " + Math.max(1, (depuis + repriseMs - now + 59_999L) / 60_000L) + " min)");
+        }
+        return "règles en rodage suspendues (fausses alertes probables) : " + String.join(", ", lignes);
+    }
+
     /**
-     * Le staff est prévenu qu'une règle en rodage vient d'être suspendue (fil du serveur) : trop de joueurs différents l'ont
+     * Clés du PC d'un joueur pour le disjoncteur (21/11) : son compte, le bloc d'adresses IP de sa connexion et les
+     * identifiants matériels envoyés par son jeu pendant cette connexion. Fil du serveur.
+     */
+    static Set<String> pc(ServerPlayer p) {
+        Set<String> cles = new HashSet<>();
+        cles.add("compte:" + p.getUUID());
+        try {
+            if (p.connection != null && p.connection.connection.getRemoteAddress() instanceof InetSocketAddress a
+                    && a.getAddress() != null) {
+                String bloc = Rodage.blocIp(a.getAddress().getAddress());
+                if (bloc != null) {
+                    cles.add(bloc);
+                }
+            }
+        } catch (RuntimeException e) {
+            // adresse illisible : le compte et le matériel suffisent
+        }
+        for (String s : PacketGuard.serials(p.getUUID())) {
+            cles.add("pc:" + s.toLowerCase(Locale.ROOT));
+        }
+        return cles;
+    }
+
+    /**
+     * Le staff est prévenu qu'une règle en rodage vient d'être suspendue (fil du serveur) : trop de PC différents l'ont
      * déclenchée, c'est probablement une fausse alerte. {@code p} : le joueur qui l'a déclenchée en dernier (pas expulsé).
      */
     public static void annoncerSuspension(ServerPlayer p, List<String> regles) {
+        long reprise = SpartanConfig.INJECTION_RODAGE_REPRISE.get();
         for (String regle : regles) {
             String texte = "la règle « " + regle + " » (nouvelle, en rodage) a été déclenchée par "
-                    + SpartanConfig.INJECTION_RODAGE_JOUEURS.get() + " joueurs différents en moins de "
+                    + SpartanConfig.INJECTION_RODAGE_JOUEURS.get() + " PC différents en moins de "
                     + SpartanConfig.INJECTION_RODAGE_MINUTES.get() + " min (dernier : " + p.getName().getString()
-                    + ", pas expulsé) : sans doute une fausse alerte. Elle ne fait plus qu'alerter jusqu'au prochain redémarrage."
+                    + ", pas expulsé) : sans doute une fausse alerte. Elle ne fait plus qu'alerter "
+                    + (reprise > 0 ? "pendant " + reprise + " min, puis se remet en service toute seule (les PC qui l'ont"
+                    + " coupée ne comptent plus pour elle)." : "jusqu'au prochain redémarrage.")
                     + " Regarder les dernières alertes « Injection » ; pour la couper pour de bon : retirer « " + regle
                     + " » de [injection] indices dans spartan-common.toml.";
             Spartan.LOGGER.warn("[Spartan] Règle suspendue : {}", texte);
             AlertManager.info(p.server, "Règle suspendue", texte, AlertManager.COLOR_INFO);
+        }
+    }
+
+    /** Toutes les 10 s au plus, tant qu'une règle est suspendue : remise en service au bout de rodageRepriseMinutes. */
+    private static void reprises(MinecraftServer server) {
+        long now = System.currentTimeMillis();
+        if (now < prochaineReprise) {
+            return;
+        }
+        prochaineReprise = now + 10_000L;
+        for (String regle : RODAGE.reprendre(now, SpartanConfig.INJECTION_RODAGE_REPRISE.get() * 60_000L)) {
+            String texte = "la règle « " + regle + " » (en rodage) est de nouveau en service : elle expulse à nouveau. Si"
+                    + " elle se trompe encore, elle se suspendra encore (les PC qui l'ont déjà coupée ne comptent plus).";
+            Spartan.LOGGER.warn("[Spartan] Règle remise en service : {}", texte);
+            AlertManager.info(server, "Règle remise en service", texte, AlertManager.COLOR_INFO);
         }
     }
 
@@ -261,6 +329,9 @@ public final class Injection {
 
     /** Fin de chaque tick serveur : expulsions dont la capture a eu le temps d'arriver. Rien à faire presque toujours. */
     public static void tick(MinecraftServer server) {
+        if (RODAGE.desSuspendues()) {
+            reprises(server);
+        }
         if (EN_ATTENTE.isEmpty()) {
             return;
         }

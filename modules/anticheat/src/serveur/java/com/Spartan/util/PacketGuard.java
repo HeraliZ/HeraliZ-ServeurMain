@@ -36,6 +36,12 @@ public final class PacketGuard {
         return acceptBounded(SERIALS, uuid, serial, MAX_SERIALS_PER_CONNECTION);
     }
 
+    /** Identifiants matériels acceptés pendant cette connexion (copie ; vide si aucun). */
+    public static Set<String> serials(UUID uuid) {
+        Set<String> set = SERIALS.get(uuid);
+        return set == null ? Set.of() : Set.copyOf(set);
+    }
+
     /** Accepte un signalement client s'il est nouveau et sous le plafond par connexion. */
     public static boolean allowReport(UUID uuid, String key) {
         return acceptBounded(REPORTS, uuid, key, MAX_REPORTS_PER_CONNECTION);

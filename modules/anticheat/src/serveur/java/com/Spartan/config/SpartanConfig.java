@@ -227,6 +227,7 @@ public class SpartanConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INJECTION_RODAGE;
     public static final ForgeConfigSpec.IntValue INJECTION_RODAGE_JOUEURS;
     public static final ForgeConfigSpec.IntValue INJECTION_RODAGE_MINUTES;
+    public static final ForgeConfigSpec.IntValue INJECTION_RODAGE_REPRISE;
 
     // --- suivi à travers les murs (03/11) ---
     public static final ForgeConfigSpec.BooleanValue SUIVI_ENABLED;
@@ -629,20 +630,26 @@ public class SpartanConfig {
                 .defineList("outils", List.of("cheatengine", "cheat engine", "extremeinjector", "extreme injector", "xenos",
                         "ghinjector", "gh injector", "dllinjector", "kdmapper", "artmoney", "squalr"), o -> o instanceof String);
         INJECTION_RODAGE = b.comment(
-                "Règles « en rodage » (19/11) : jamais essayées sur de vrais PC de joueurs. Disjoncteur : si rodageJoueurs joueurs",
+                "Règles « en rodage » (19/11) : jamais essayées sur de vrais PC de joueurs. Disjoncteur : si rodageJoueurs PC",
                 "DIFFÉRENTS les déclenchent en moins de rodageMinutes, la règle est suspendue (alerte seulement, plus",
-                "d'expulsion) jusqu'au prochain redémarrage, et le staff est prévenu (« Règle suspendue ») : une règle qui se",
-                "trompe n'expulse jamais plus de rodageJoueurs - 1 joueurs honnêtes. gardien:dll: = bibliothèque d'agent Java ou",
+                "d'expulsion) pendant rodageRepriseMinutes, puis remise en service toute seule ; le staff est prévenu les deux",
+                "fois (« Règle suspendue », « Règle remise en service »). Un PC = son compte, son bloc d'adresses IP et ses",
+                "identifiants matériels : plusieurs comptes sur un PC, ou plusieurs PC derrière la même connexion, comptent pour",
+                "un ; un PC qui a déjà coupé une règle ne compte plus pour elle jusqu'au redémarrage. Une règle qui se trompe",
+                "n'expulse jamais plus de rodageJoueurs - 1 PC honnêtes d'affilée. gardien:dll: = bibliothèque d'agent Java ou",
                 "de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité) ;",
                 "packs: = refus d'un joueur qui a un pack de textures ajouté par lui ([resources] refuseCustomResourcePacks).",
                 "Vider la liste une fois les règles éprouvées (une semaine sans « Règle suspendue »).")
                 .defineList("rodage", List.of("natif:agent:", "inject:redef:", "gardien:dll:", "gardien:cle:", "packs:"),
                         o -> o instanceof String);
         INJECTION_RODAGE_JOUEURS = b.comment(
-                "Joueurs différents qui suspendent une règle en rodage (0 = disjoncteur coupé : la règle expulse toujours).")
+                "PC différents qui suspendent une règle en rodage (0 = disjoncteur coupé : la règle expulse toujours).")
                 .defineInRange("rodageJoueurs", 3, 0, 1000);
-        INJECTION_RODAGE_MINUTES = b.comment("Durée pendant laquelle ces joueurs sont comptés (minutes).")
+        INJECTION_RODAGE_MINUTES = b.comment("Durée pendant laquelle ces PC sont comptés (minutes).")
                 .defineInRange("rodageMinutes", 60, 1, 10080);
+        INJECTION_RODAGE_REPRISE = b.comment(
+                "Minutes avant qu'une règle suspendue se remette en service toute seule (0 = suspendue jusqu'au redémarrage).")
+                .defineInRange("rodageRepriseMinutes", 60, 0, 10080);
         b.pop();
 
         b.comment("Tirs TaCZ analysés par le serveur (audit du 02/11, point 14) : seuls les tirs qui touchent un JOUEUR comptent",

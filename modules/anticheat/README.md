@@ -65,9 +65,13 @@ scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag anal
   soupçon. Le launcher les retire des options du joueur ;
 - **launcher imité avec une clé fixe** (`GardienCles`) : la même clé du Gardien pour deux comptes ou deux jeux est refusée ;
 - **règles en rodage** (`Rodage`, `[injection] rodage`) : ces règles nouvelles n'ont jamais tourné sur de vrais PC. Si trois
-  joueurs DIFFÉRENTS en déclenchent une en moins d'une heure (`rodageJoueurs`, `rodageMinutes`), elle se suspend toute
-  seule jusqu'au redémarrage (alerte « Règle suspendue » au staff, `/spartan status` la cite) : une erreur ne peut jamais
-  expulser plus de deux joueurs honnêtes. Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
+  PC DIFFÉRENTS en déclenchent une en moins d'une heure (`rodageJoueurs`, `rodageMinutes`), elle se suspend toute
+  seule (alerte « Règle suspendue » au staff, `/spartan status` la cite avec le temps restant) puis se remet en service au
+  bout d'une heure (`rodageRepriseMinutes`, alerte « Règle remise en service » ; 0 = jusqu'au redémarrage) : une erreur ne
+  peut jamais expulser plus de deux PC honnêtes d'affilée. Depuis le 21/11 (2.15.3), on compte des PC et plus des comptes :
+  un PC = son compte, son bloc d'adresses IP (/24, IPv6 /48) et ses identifiants matériels ; plusieurs comptes sur un même
+  PC ou derrière la même connexion ne comptent qu'une fois, et un PC qui a déjà coupé une règle ne compte plus pour elle
+  jusqu'au redémarrage (les mêmes PC ne peuvent pas la couper à chaque remise en service). Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
   classes de Java. Tests : `RodageTest`, `GardienClesTest`, `MemoireTest`, `ScanAnalyzerTest`, `ConformiteStricteTest`.
 
 **Décisions du propriétaire du 19/11 (2.15.0, launcher 1.18.0)** :
