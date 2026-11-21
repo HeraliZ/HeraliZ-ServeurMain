@@ -19,8 +19,10 @@ secret, monde plat neuf, jeté après. Marche aussi sur un PC avec Java 17 (apr�
    si l'installation l'arrête avant) ; puis --apres secondes à vide, puis « stop ».
 Refus (code 1) : « Done » jamais vu en --attente minutes, serveur arrêté avant « Done » ou pendant les secondes à vide,
 ou une ligne fatale, même après « Done » (mixin qui ne s'applique pas, chargement des mods raté, plantage). Seulement
-signalé : les lignes d'erreur habituelles des mods, un arrêt lent ou forcé. Résumé dans le résumé de la tâche GitHub
-($GITHUB_STEP_SUMMARY) ; journal complet et resume.md dans --rapport.
+signalé : les lignes d'erreur habituelles des mods, les avertissements (réglage hors bornes remis à sa valeur par
+défaut, réglage disparu...), un arrêt lent ou forcé. Résumé dans le résumé de la tâche GitHub ($GITHUB_STEP_SUMMARY) ;
+chaque sorte d'erreur et d'avertissement avec sa première ligne dans le journal de la tâche ; journal complet et
+resume.md dans --rapport.
 """
 import argparse
 import os
@@ -49,6 +51,9 @@ FATALES = re.compile(
     r"ModLoadingException|Encountered an unexpected exception|Exception in server tick loop|"
     r"---- Minecraft Crash Report ----|Failed to start the minecraft server|FAILED TO BIND TO PORT")
 ERREUR = re.compile(r"[/ ](ERROR|FATAL)\]")
+# avertissements (audit du 21/11) : réglage hors bornes remis à sa valeur par défaut par Forge (« Incorrect key ... was
+# corrected »), réglage qui n'existe plus, mixin d'un autre mod sans sa cible... ; comptés comme les erreurs
+AVERT = re.compile(r"[/ ]WARN\]")
 DONE = r"\]: Done \(([\d.,]+)s\)"
 
 
@@ -182,6 +187,7 @@ def finir(a, res, serveur, rapport):
     if fatales and not res["echec"]:
         res["echec"] = "ligne fatale dans le journal (le serveur a démarré, mais sans une partie de son code)"
     erreurs = Counter(essentiel(l) for l in lignes if ERREUR.search(l))
+    avertis = Counter(essentiel(l) for l in lignes if AVERT.search(l))
     arret_propre = res.get("code_sortie") == 0 and any("Stopping server" in l or "Stopping the server" in l for l in lignes)
     ok = not res["echec"]
     o = ["### Démarrage d'essai (avant l'envoi au Ptero)", ""]
@@ -206,9 +212,27 @@ def finir(a, res, serveur, rapport):
             sum(erreurs.values()), len(erreurs)), "", "```"]
         o += ["%4d  %s" % (n, e) for e, n in erreurs.most_common(12)]
         o.append("```")
+    if avertis:
+        o += ["", "Avertissements du journal (%d, %d sortes ; les %d plus fréquents, liste complète dans le journal de la tâche) :"
+              % (sum(avertis.values()), len(avertis), min(25, len(avertis))), "", "```"]
+        o += ["%4d  %s" % (n, e) for e, n in avertis.most_common(25)]
+        o.append("```")
     texte = "\n".join(o) + "\n"
     (rapport / "resume.md").write_text(texte, encoding="utf-8")
     print(texte)
+    # toutes les sortes d'erreurs et d'avertissements, chacune avec sa première ligne entière (audit du 21/11 : seules
+    # les 12 erreurs les plus fréquentes étaient visibles, aucun avertissement ; un réglage hors bornes remis à sa valeur
+    # par défaut par Forge ne se voyait nulle part)
+    for titre, rx, compte in (("ERREURS", ERREUR, erreurs), ("AVERTISSEMENTS", AVERT, avertis)):
+        if not compte:
+            continue
+        exemple = {}
+        for l in lignes:
+            if rx.search(l):
+                exemple.setdefault(essentiel(l), l)
+        print("--- %s : %d sortes (nombre, première ligne) ---" % (titre, len(compte)))
+        for e, n in compte.most_common(300):
+            print("%4d  %s" % (n, exemple.get(e, e)[:400]))
     if not ok:
         print("--- 80 dernières lignes du journal du serveur ---")
         for l in lignes[-80:]:
