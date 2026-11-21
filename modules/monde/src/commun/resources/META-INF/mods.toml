@@ -52,7 +52,7 @@ description='''Pings du serveur HeraliZ (remplace Ping Wheel) : appui bref pour 
 [[dependencies.heraliz_ping]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.1]"
+    versionRange="[2.26,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_ping]]
@@ -90,7 +90,7 @@ description='''Corps des joueurs morts (remplace le mod corpse) : tout l'inventa
 [[dependencies.heraliz_corps]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.1]"
+    versionRange="[2.26,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_corps]]
@@ -146,7 +146,7 @@ description='''Usure des armes TaCZ du serveur HeraliZ (remplace Gun Durability)
 [[dependencies.heraliz_usure]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.1]"
+    versionRange="[2.26,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_usure]]
@@ -185,7 +185,7 @@ description='''Vehicules du serveur HeraliZ (repris de Fuse) : buggy MRZR4, moto
 [[dependencies.heraliz_vehicules]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.1]"
+    versionRange="[2.26,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_vehicules]]
@@ -217,7 +217,7 @@ description='''Carte du monde du serveur HeraliZ (touche M) : vue satellite ou r
 [[dependencies.heraliz_carte]]
     modId="heralisz_utils"
     mandatory=true
-    versionRange="[2.26.1]"
+    versionRange="[2.26,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.heraliz_carte]]
@@ -287,13 +287,14 @@ description='''Fusée d'extraction : tiens la zone pendant 1:30 à ciel ouvert p
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-# Noyau HeraliZ : dessin commun des zones chez le joueur (cercle de la zone d'extraction ; 03/11)
+# Noyau HeraliZ : dessin commun des zones chez le joueur (cercle de la zone d'extraction ; 03/11) ; le serveur s'en
+# sert aussi (audit du 21/11 : déclaré des deux côtés)
 [[dependencies.heraliz_extraction]]
     modId="heraliz_noyau"
     mandatory=true
     versionRange="[1.0.16,)"
     ordering="AFTER"
-    side="CLIENT"
+    side="BOTH"
 
 # ---- airstrike (ancien projet airstrike, version 1.9.1)
 [[mods]]

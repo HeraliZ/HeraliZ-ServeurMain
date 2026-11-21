@@ -51,13 +51,14 @@ description='''Le mod de tenues du serveur HeraliZ : tenues et armures realistes
     ordering="AFTER"
     side="BOTH"
 
-# Noyau HeraliZ : kit des ecrans en verre et effets (inventaire D1, 14/11) ; charge avant nous.
+# Noyau HeraliZ : kit des ecrans en verre et effets (inventaire D1, 14/11) ; charge avant nous. Le serveur s'en sert
+# aussi (audit du 21/11 : declare des deux cotes).
 [[dependencies.heraliz_armory]]
     modId="heraliz_noyau"
     mandatory=true
     versionRange="[1.0.19,)"
     ordering="AFTER"
-    side="CLIENT"
+    side="BOTH"
 
 # TaCZ : facultatif (tirs a la tete : seules les pieces de tete protegent).
 [[dependencies.heraliz_armory]]

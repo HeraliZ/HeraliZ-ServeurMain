@@ -32,6 +32,22 @@ description='''Grades HeraliZ (staff, boutique, Survivant), préfixes, commandes
     ordering="AFTER"
     side="BOTH"
 
+# HeraliZ Économie et HeraliZ Clans (jar des clans) : appelés directement par le serveur (hôtel des ventes, /money,
+# onglet Économie du panel). Déclarés à l'audit du 21/11 : sans ce jar, le serveur refuse de démarrer avec un message
+# clair au lieu de planter au premier tick. Côté serveur seulement ; ordre de chargement inchangé.
+[[dependencies.heraliz_grades]]
+    modId="heralisz_economie"
+    mandatory=true
+    versionRange="[0,)"
+    ordering="NONE"
+    side="SERVER"
+[[dependencies.heraliz_grades]]
+    modId="heralisz_clans"
+    mandatory=true
+    versionRange="[0,)"
+    ordering="NONE"
+    side="SERVER"
+
 # ---- un bloc par mod fusionné (modId D'ORIGINE), par exemple :
 # [[mods]]
 # modId="heralisz_melee"

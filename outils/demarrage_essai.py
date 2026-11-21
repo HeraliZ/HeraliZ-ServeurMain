@@ -7,7 +7,7 @@ HeraliZ », job « demarrage » : .github/workflows/demarrage.yml) n'envoie RIEN
 secret, monde plat neuf, jeté après. Marche aussi sur un PC avec Java 17 (après python outils/construire.py).
 
     python outils/demarrage_essai.py <dossier> [--attente 12] [--apres 20] [--memoire 6144] [--java java]
-                                     [--rapport <dossier>]
+                                     [--rapport <dossier>] [--mixins-stricts]
 
 1. serveur d'essai fait par outils/serveur_local.py <dossier> (SANS le banc : les jars du Ptero) ; le jar de Mohist
    (mohist-*.jar, Release « base-serveur ») est à poser dans le dossier ;
@@ -23,6 +23,10 @@ signalé : les lignes d'erreur habituelles des mods, les avertissements (réglag
 défaut, réglage disparu...), un arrêt lent ou forcé. Résumé dans le résumé de la tâche GitHub ($GITHUB_STEP_SUMMARY) ;
 chaque sorte d'erreur et d'avertissement avec sa première ligne dans le journal de la tâche ; journal complet et
 resume.md dans --rapport.
+
+--mixins-stricts (diagnostic, audit du 21/11 ; jamais pour une mise en ligne) : -Dmixin.debug.countInjections=true, toute
+injection de mixin qui ne trouve pas sa cible devient une erreur, même celles marquées « require 0 » qui ratent sans rien
+dire d'habitude (187 dans nos mods, plus celles des autres auteurs).
 """
 import argparse
 import os
@@ -121,7 +125,9 @@ def lancer(a, d):
     env = banc_charge.environnement(a.java)
     # reprises par toute machine Java lancée par « java » : celle que Mohist relance après son installation comprise
     env["JDK_JAVA_OPTIONS"] = "-Xmx%dM -Dfile.encoding=UTF-8" % tas
-    res = {"jar": jar.name, "tas": tas, "echec": None, "essais": 0}
+    if a.mixins_stricts:
+        env["JDK_JAVA_OPTIONS"] += " -Dmixin.debug.countInjections=true"
+    res = {"jar": jar.name, "tas": tas, "echec": None, "essais": 0, "stricts": a.mixins_stricts}
     t0 = time.time()
     fin_max = t0 + a.attente * 60
     serveur = None
@@ -219,6 +225,10 @@ def finir(a, res, serveur, rapport, d=None):
     o = ["### Démarrage d'essai (avant l'envoi au Ptero)", ""]
     o.append("- Serveur : nos jars de `livraison/mods serveur`, les plugins et les réglages du dépôt, %s, mémoire de Java "
              "%s Mo au plus, monde plat neuf (rien du Ptero, aucun secret)." % (res["jar"], res["tas"]))
+    if res.get("stricts"):
+        o.append("- **Mixins stricts** (diagnostic, `-Dmixin.debug.countInjections=true`) : toute injection qui ne trouve pas "
+                 "sa cible est une erreur, même celles qui ratent d'habitude sans rien dire. Un refus ici ne dit rien de la "
+                 "mise en ligne : lire les lignes d'erreur.")
     if ok:
         o.append("- **Réussi** : « Done » en %s s (%s s pour Minecraft)%s, puis %d s à vide sans arrêt."
                  % (res.get("done_s"), res.get("done_mc_s"), " après un second lancement (installation de Mohist)"
@@ -297,6 +307,8 @@ def main():
     p.add_argument("--java", default="java", help="Java 17 à utiliser (défaut : celui du PATH)")
     p.add_argument("--graine", type=int, default=GRAINE)
     p.add_argument("--rapport", default=None, help="dossier du journal complet et de resume.md")
+    p.add_argument("--mixins-stricts", action="store_true",
+                   help="diagnostic : toute injection de mixin sans cible devient une erreur (jamais pour une mise en ligne)")
     a = p.parse_args()
     d = Path(a.dossier).resolve()
     d.mkdir(parents=True, exist_ok=True)

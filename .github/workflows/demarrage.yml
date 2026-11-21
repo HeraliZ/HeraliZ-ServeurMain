@@ -5,7 +5,8 @@
 # travail qui change ce fichier ou outils/demarrage_essai.py (les mods changés sont alors fabriqués ici).
 # AUCUN secret dans ce workflow : jars, plugins et réglages du dépôt, Mohist de la Release « base-serveur », monde plat
 # neuf, jeté après (outils/demarrage_essai.py). Résultat dans le résumé de la tâche ; journal complet en artefact si ça
-# échoue.
+# échoue. Case « mixins_stricts » (Run workflow seulement, audit du 21/11) : diagnostic où toute injection de mixin qui ne
+# trouve pas sa cible devient une erreur, même celles qui ratent d'habitude sans rien dire ; jamais pour une mise en ligne.
 name: Démarrage d'essai
 
 on:
@@ -16,6 +17,11 @@ on:
         type: boolean
         default: false
   workflow_dispatch:
+    inputs:
+      mixins_stricts:
+        description: "Diagnostic : toute injection de mixin sans cible devient une erreur (jamais pour une mise en ligne)"
+        type: boolean
+        default: false
   push:
     branches-ignore: [main]
     paths: [".github/workflows/demarrage.yml", "outils/demarrage_essai.py"]
@@ -103,7 +109,7 @@ jobs:
       # le serveur fait tourner du code d'autres auteurs (mods, plugins) : aucun jeton dans son environnement
       - name: Démarrage d'essai (jusqu'à « Done », 20 s à vide, arrêt)
         timeout-minutes: 18
-        run: python outils/sans_secrets.py python outils/demarrage_essai.py "$ESSAI" --rapport "$RUNNER_TEMP/demarrage"
+        run: python outils/sans_secrets.py python outils/demarrage_essai.py "$ESSAI" --rapport "$RUNNER_TEMP/demarrage" ${{ inputs.mixins_stricts && '--mixins-stricts' || '' }}
 
       - name: Bibliothèques de Mohist prêtes ?
         id: libs_pretes

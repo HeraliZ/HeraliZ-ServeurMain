@@ -25,10 +25,11 @@ description='''Loot de HeraliZ : conteneurs de loot par tiers (T1 commun à T7 u
     ordering="NONE"
     side="BOTH"
 
-# Noyau HeraliZ : kit des écrans en verre (fouille et coffres de base, 14/11) ; chargé avant nous.
+# Noyau HeraliZ : kit des écrans en verre (fouille et coffres de base, 14/11) ; chargé avant nous. Le serveur s'en
+# sert aussi (audit du 21/11 : déclaré des deux côtés).
 [[dependencies.heraliz_loot]]
     modId="heraliz_noyau"
     mandatory=true
     versionRange="[1.0.19,)"
     ordering="AFTER"
-    side="CLIENT"
+    side="BOTH"
