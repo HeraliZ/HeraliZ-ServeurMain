@@ -16,9 +16,10 @@ cible lue par réflexion dans les autres modules, puis la fabrication et les con
 
 Gravité : **moyen** (lag possible pour tout le serveur, sans perte d'objet), **faible** (petit coût ou cas très rare).
 
-En bref : 6 points corrigés (1 moyen, 5 faibles), tous de la même famille ; 8 propositions à décider. **Aucun bug grave
-trouvé** : pas de plantage, pas de duplication d'objet, pas de trou dans les droits des commandes, et chaque paquet envoyé
-par le jeu d'un joueur est revérifié par le serveur.
+En bref : 6 points corrigés (1 moyen, 5 faibles), tous de la même famille ; 8 propositions à décider (n° 4 et n° 6
+choisies et faites ensuite : section « Suite du 21/11 », Monde 1.3.11). **Aucun bug grave trouvé** : pas de plantage,
+pas de duplication d'objet, pas de trou dans les droits des commandes, et chaque paquet envoyé par le jeu d'un joueur
+est revérifié par le serveur.
 
 ---
 
@@ -97,7 +98,7 @@ rien ne change pour eux.
    l'usure demande encore la date au disque lui-même
    (`modules/monde/src/serveur/java/fr/heraliz/usure/ReglesServeur.java` l.67). Un seul coup d'œil toutes les 2 s, presque
    toujours instantané ; seulement si le disque du Ptero est très occupé. Proposition : passer par le même fil (petit
-   changement, à essayer avec `/usure config`).
+   changement, à essayer avec `/usure config`). **Choisi et fait le 21/11** : voir « Suite du 21/11 » en bas.
 5. **Zombies dans une ville pleine de joueurs : test « personne ne voit l'endroit » (à surveiller).** Avant de poser un
    zombie, le serveur lance un rayon depuis les yeux de chaque joueur à moins de 96 blocs qui regarde vers le point
    (`modules/monde/src/serveur/java/fr/heralisz/utils/zombies/Peuplement.java` l.326-340). Avec 30 joueurs dans la même
@@ -108,7 +109,7 @@ rien ne change pour eux.
    (`modules/monde/src/serveur/java/fr/heralisz/utils/train/BallesTrain.java` l.142-186), même à l'autre bout de la carte :
    quelques microsecondes par balle (environ 3 % du coût d'une balle de TaCZ elle-même). Proposition : écarter d'abord, par
    une seule distance au centre de chaque rame calculée une fois par tick, les balles à plus de 105 blocs (résultat
-   identique). Gain petit.
+   identique). Gain petit. **Choisi et fait le 21/11** : voir « Suite du 21/11 » en bas.
 7. **Ascenseur : panneau d'appel sans machine (très faible).** Un panneau dont la machine n'est pas trouvée relit jusqu'à
    26 000 cases au-dessus de lui à chaque clic
    (`modules/monde/src/serveur/java/fr/heralisz/utils/ascenseur/MachineBlockEntityServeur.java` l.151-169). Seulement pour
@@ -204,3 +205,57 @@ Rien de cette section n'a été essayé (pas de jeu ici).
 - [ ] Lampes rouges d'un bunker, après un redémarrage : la pièce est éclairée comme avant.
 
 Pas testé : tout ce qui précède en jeu ; aucune mesure sur le serveur en ligne avec des joueurs.
+
+---
+
+## Suite du 21/11 (choix du propriétaire)
+
+Le propriétaire a choisi « Allègements du serveur » : les propositions n° 4 et n° 6 de « À décider ». Les autres ne
+changent pas. Tout est dans le commit **`3f1e792c`** (Monde 1.3.11, après Monde 1.3.10 mis en ligne). Comme avant, seul
+le jar du serveur change vraiment, et aucun canal réseau ne change.
+
+### Fait
+
+1. **Usure des armes : plus de coup d'œil au disque toutes les 2 s sur le fil du serveur** (proposition n° 4,
+   `modules/monde/src/serveur/java/fr/heraliz/usure/ReglesServeur.java`). La date du fichier
+   `serverconfig/heraliz_usure-server.toml` est maintenant relevée par le fil à part du module (`DatesFichiers`, toutes
+   les 5 s), comme pour les villes, les zones et les zones VIP. Le fil du serveur ne lit plus que cette date gardée en
+   mémoire. Quand elle a changé, il demande la date au disque une seule fois, juste avant de lire le fichier : si le
+   fichier a encore bougé, il attend. Un fichier en cours d'enregistrement n'est donc toujours jamais lu à moitié (même
+   garantie qu'avant).
+   - Ce qui change pour vous : un changement fait **à la main** dans le fichier est pris en compte en **2 à 9 s** (avant :
+     2 à 4 s ; environ 5 s en moyenne). L'écran `/usure config` applique toujours tout de suite.
+   - Contrôle hors jeu : simulation de 20 000 suites d'enregistrements (à la main, courts ou longs, et par l'écran) avec
+     l'ancienne et la nouvelle façon. Aucune lecture d'un fichier à moitié enregistré, la dernière version est toujours
+     lue. Sans changement, le fil du serveur ne touche plus du tout le disque pour ce fichier (avant : environ 1 800 fois
+     par heure).
+2. **Train : les balles loin des deux rames sont écartées tout de suite** (proposition n° 6,
+   `modules/monde/src/serveur/java/fr/heralisz/utils/train/BallesTrain.java`). Une fois par tick, le serveur note le
+   milieu de chaque rame. Une balle à plus de 104,8 blocs de ce milieu est écartée par un seul calcul de distance, sans
+   refaire l'horaire des deux rames. Les autres balles sont traitées exactement comme avant.
+   - **Même résultat qu'avant.** Le test d'avant ne retenait déjà que les balles à moins de 88,8 blocs du milieu de la
+     rame, au moment du tir compensé (jusqu'à une seconde plus tôt, à cause du ping du tireur). En une seconde, la rame
+     roule au plus à 15 blocs par seconde.
+   - Contrôle hors jeu : sur les trois réseaux du jar (`reseau`, `reseau_v2`, `reseau_v3`), sur tout l'horaire, tick par
+     tick, le milieu d'une rame bouge d'au plus 14,25 blocs pendant ce temps. Il reste 1,75 bloc de marge.
+
+Vérifié avant l'envoi :
+- les deux fichiers n'ont aucune faute de syntaxe ;
+- `outils/verifier.py`, partie sources, ne trouve rien : synchronisation 0 erreur, langues 0 erreur ;
+- la fabrication complète et les contrôles des jars sont faits par GitHub, sur la branche.
+
+### À tester en jeu
+
+Rien n'a été essayé en jeu (pas de jeu ici).
+
+- [ ] Usure : sur le Ptero, changer une valeur à la main dans `serverconfig/heraliz_usure-server.toml` (par exemple une
+      usure par tir) et enregistrer. Dans les 10 s, la console écrit « [usure] reglages relus » et la nouvelle valeur
+      s'applique en jeu. Avec une faute de frappe dans le fichier : un seul avertissement « illisible », les anciens
+      réglages sont gardés (comme avant).
+- [ ] Usure : `/usure config`, changer une valeur, enregistrer. Elle s'applique tout de suite, et la console n'écrit pas
+      ensuite « reglages relus » pour ce même enregistrement.
+- [ ] Train en service : tirer sur une voiture depuis le quai, depuis une autre voiture et depuis loin (fusil à lunette,
+      100 à 150 blocs). Impacts, vitres cassées et passagers touchés comme avant.
+- [ ] Train : tirer loin du train pendant qu'il roule. Rien ne change pour les balles ni pour les cibles.
+
+Pas testé : tout ce qui précède en jeu ; aucune mesure sur le serveur en ligne.
