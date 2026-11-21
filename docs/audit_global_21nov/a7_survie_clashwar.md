@@ -115,7 +115,8 @@ téléportation d'un mort) ; il est traité à sa réapparition.
 un objet pendant l'écriture. On pourrait quand même comparer aussi toutes les données d'un objet quand ce n'est plus le
 même objet dans la case (un objet seulement modifié sur place, comme une arme qui tire, reste accepté). Bénéfice :
 protège contre un moyen encore inconnu. Risque : si un mod remplace un objet tout seul pendant ces 1-2 ticks, le dépôt
-est refait (au plus 5 fois, puis refusé, inventaire intact). Je conseille de le faire.
+est refait (au plus 5 fois, puis refusé, inventaire intact). Je conseille de le faire. **Fait le 21/11 (choix du
+propriétaire) : voir « Suite du 21/11 » en bas.**
 
 **B. Déconnexion pendant les dépôts du départ.** Règle du 15/11 : « un inscrit qui se déconnecte avant l'entrée dans la
 salle retire son équipe ». Pendant les quelques secondes des dépôts, l'équipe partait déjà quand même, sans lui (seul le
@@ -125,6 +126,8 @@ message disait le contraire, corrigé au point 8). Voulez-vous que l'équipe ent
 **C. Erreur d'un autre mod pendant un dépôt.** Si un autre mod plantait pendant le dépôt (fermeture d'un écran,
 sauvegarde du joueur), l'erreur arrêterait le tick du serveur (plantage). Ces actions sont celles que Minecraft fait à
 chaque sauvegarde : c'est très peu probable. Proposition : attraper l'erreur, la noter et laisser le joueur intact.
+**Fait le 21/11 (choix du propriétaire) : voir « Suite du 21/11 » en bas.** B reste comme aujourd'hui (l'équipe joue
+sans lui).
 
 **D. Mohist et les changements de monde.** Le point 5 (et, déjà avant, la règle « un joueur à terre ne change pas de
 monde » de la réanimation) s'appuie sur l'événement de voyage de Forge. Sur Mohist, une téléportation d'un monde à
@@ -218,3 +221,47 @@ les temps de recharge de Tactique, et l'API de TaCZ 1.1.8 (`GunItemBuilder`, `Ti
       et réappuyer aussitôt : marche aussi. Fouille et réanimation : comme avant.
 - [ ] `/wipe` d'un joueur en plein ClashWar qui tenait un objet à vie à la souris au départ : l'objet à vie est gardé.
 - [ ] Hors ClashWar : rien ne change (coffre du clan, sac, marchands, morts et réapparitions).
+
+---
+
+## Suite du 21/11 (choix du propriétaire : « sécurités en plus »)
+
+Le propriétaire a choisi les propositions A et C ; B reste comme aujourd'hui. Version : **ClashWar 1.3.8** (seul le jar
+du serveur change vraiment ; aucun canal réseau ne change). **Rien n'a été testé en jeu.**
+
+### Fait (commit `3f7f330e`)
+
+**A. Vérification plus stricte du dépôt.** En simple : au moment où le serveur note l'inventaire d'un joueur qui part
+au ClashWar, il garde maintenant aussi chaque objet lui-même et une copie de ses données (accessoires, skin, usure,
+contenu du sac…). Au moment de vider le joueur, si une case ne tient plus **le même objet**, celui qui est là doit avoir
+exactement les mêmes données ; sinon le dépôt est refait, comme quand l'inventaire change. Un objet seulement modifié
+sur place (une arme qui tire, un sac qui réécrit son contenu) reste accepté. Avec le correctif du matin (écrans refermés
+pendant l'écriture), un échange contre un objet du même type mais d'une autre valeur ne peut plus passer, même par un
+moyen encore inconnu.
+Développeurs : `Coffres.Releve` (champs `piles`, `copies`, `piecesCurios`, `copiesCurios`, `Coffres.java:209`),
+`releve(p, true)` au relevé (ligne 235), `inchange` (ligne 293) et `meme` (ligne 329, `ItemStack.matches`).
+
+**C. Erreur d'un autre mod pendant un dépôt.** En simple : si un autre mod plante pendant un dépôt (vérifications,
+descente d'un véhicule, fermeture d'un écran, relevé, sauvegarde, vidage), l'erreur est attrapée : le joueur reste
+intact (rien n'est vidé, ce qui était à la souris ou dans la grille 2 x 2 lui est rendu), aucun fichier ne lui sera
+rendu en plus, une ligne au journal, et le serveur continue (avant : son tick s'arrêtait, donc plantage). Deux sécurités
+de plus dans la même idée :
+- la marque du dépôt est posée **juste après** le vidage, avant tout autre appel : une erreur ensuite (effets, santé,
+  mode de jeu, tag de combat) ne peut plus faire perdre le dépôt déjà fait (avant, une erreur à ce moment-là laissait le
+  joueur vide et sans marque : son dépôt n'aurait jamais été rendu automatiquement) ;
+- si des Curios ne se vident pas (erreur de Curios), le joueur est remis exactement comme au relevé et le dépôt est
+  refusé : avant, ces Curios seraient restés sur lui **et** dans le dépôt (en double au retour).
+Les retours du Coffre ne sont pas concernés (une erreur au milieu d'un retour arrête toujours le serveur : c'est plus
+sûr qu'un retour à moitié fait).
+Développeurs : `commencer` (`Coffres.java:590`), `erreur` (705), `rendreSansRisque` (714), `erreurImprevue` (733, dernier
+filet dans `Coffres.tick` : lignes 1327 et 1347), `confirmer` (775 ; marque ligne 844), `viderObjets` (933),
+`remettreEnForme` et `sansErreur` (943 et 962), `remettre` (977).
+
+### À tester en jeu (un op, 2 à 4 comptes)
+
+- [ ] Départ d'un ClashWar et `/clashwar regarder` avec des armes équipées (lunette, silencieux, skin), un sac plein et
+      des Curios (gilet, masque) : chacun entre en salle **du premier coup**. Dans le journal du serveur, aucune ligne
+      « inventaire change pendant l'ecriture » ni « erreur d'un autre mod » pour un joueur qui ne touchait à rien (s'il y
+      en a, le dire : un mod changerait un objet tout seul).
+- [ ] Au retour : chaque objet exactement une fois, avec ses accessoires, son skin, son usure et le contenu du sac.
+- [ ] Hors ClashWar : rien ne change.

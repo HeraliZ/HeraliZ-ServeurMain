@@ -42,6 +42,18 @@ final class DatesFichiers {
         return d;
     }
 
+    /**
+     * Petite lecture de fichier hors du fil du serveur, sur ce même fil (21/11 : pseudos de {@code usercache.json} pour
+     * {@code /avantages nick}, {@link SurnomsServeur}).
+     */
+    static void enFond(Runnable travail) {
+        try {
+            FIL.execute(travail);
+        } catch (java.util.concurrent.RejectedExecutionException ex) {
+            travail.run();
+        }
+    }
+
     private static long lire(Path f) {
         try {
             return Files.exists(f) ? Files.getLastModifiedTime(f).toMillis() : 0L;

@@ -203,3 +203,52 @@ compte et l'IP. Toutes les 10 minutes coûterait une copie du registre de plus (
 
 Pas testé : tout ce qui précède, en jeu (aucun Minecraft ici) ; vrai serveur derrière Docker (les adresses vues par le
 Ptero n'ont pas été relues pour cette partie).
+
+---
+
+## Suite du 21/11 (choix du propriétaire : « Sécurités en plus »)
+
+Mise en ligne faite avant cette suite (`main` = `6635b5b1` : Spartan 2.15.5, voix 1.7.1). Version de cette suite :
+**Voix 1.7.2**. **Rien n'a été testé en jeu.**
+
+### Fait : pas de voix avant le `/login` (proposition P4) — commit `0dc735cb`
+
+En simple : le serveur n'a pas de comptes Mojang. Avant, la voix démarrait dès l'arrivée, avant le `/login` d'AuthMe :
+quelqu'un qui se connectait avec le pseudo d'un autre joueur pouvait parler en son nom (et entendre les joueurs autour)
+pendant les secondes avant d'être refusé. Maintenant, tant qu'un joueur n'a pas fait son `/login` :
+- personne ne l'entend (même en appuyant sur la touche pour parler, en chuchotant ou en criant) ;
+- il n'entend personne ;
+- c'est vrai aussi dans les groupes vocaux, et il ne peut ni créer, ni rejoindre, ni quitter un groupe.
+
+Juste après le `/login`, la voix marche (au plus un dixième de seconde plus tard). Un `/logout` d'AuthMe la recoupe dans
+la seconde. Pour un joueur connecté, rien ne change. Sans AuthMe (serveur d'essai, solo) : comme avant (dans le doute,
+le joueur compte comme connecté).
+
+Jar des joueurs : il ne change que par son numéro de version (le canal de la voix reste le même : un jeu 1.7.1 est
+toujours accepté) ; le launcher donne le nouveau comme d'habitude. Le changement est côté serveur.
+
+Pour les développeurs : `modules/voix/src/serveur/java/com/caracrea/server/VoiceServer.java`
+- `Member.loggedIn` : lu à l'arrivée (`join`) par `LoginCheck.loggedIn` (déjà utilisé par le créateur de personnage),
+  puis relu dans `snapshot()` tous les 2 ticks tant qu'il manque, une fois par seconde ensuite (étalé par numéro de voix) ;
+- `snapshot()` : sans `/login`, pas de drapeau `TALK` et drapeau `DEAF` ; le tri des voix (`VoiceRouting`, crochets des
+  autres mods `ApiView.add`) n'a donc rien à changer ; aucun événement « parle » pour lui ;
+- `groupAction()` : refusé sans `/login`.
+- Vérifié hors du jeu : le tri des voix avec ces drapeaux (joueur pas connecté : entendu par personne, même en criant ;
+  n'entend ni à côté ni dans son groupe ; une fois connecté, tout comme avant).
+
+### Corrigé par le coordinateur : proposition P1 — commit `62fbb244` (Spartan 2.15.5, déjà en ligne)
+
+Après la remise en service d'une règle en rodage, les PC qui l'avaient coupée comptent de nouveau, mais ne la recoupent
+pas seuls : il faut au moins un PC nouveau parmi les trois. Des joueurs honnêtes ne restent donc plus bloqués jusqu'au
+redémarrage.
+
+### À tester en jeu (rien de cette suite n'a été testé)
+
+- [ ] Arrivée d'un joueur A près de B (déjà connecté) : avant le `/login` de A, B n'entend pas A (A appuie sur la touche
+      pour parler) et A n'entend pas B ; A ne peut ni créer ni rejoindre un groupe vocal.
+- [ ] A fait son `/login` : la voix marche tout de suite dans les deux sens, groupes compris.
+- [ ] Joueurs déjà connectés : rien ne change (proximité, chuchoter, crier, groupes, voix coupée par le staff, staff caché).
+- [ ] Si AuthMe sert au `/logout` : après un `/logout`, la voix de ce joueur se coupe dans la seconde et revient au
+      `/login`.
+- [ ] Serveur d'essai sans AuthMe : la voix marche dès l'arrivée, comme avant.
+- [ ] Journal du serveur : aucune erreur de `caracrea` à l'arrivée des joueurs.
