@@ -115,6 +115,9 @@ public final class VoiceServer {
         volatile boolean ended;
         volatile boolean lastWhisper;
         volatile boolean lastShout;
+        /** Hidden staff member (vanish) / sees the hidden staff: read every 10 ticks on the server thread (21/11). */
+        volatile boolean hidden;
+        volatile boolean seesHidden;
         // Server thread.
         boolean talking;
         String lastTransport;
@@ -423,6 +426,9 @@ public final class VoiceServer {
                     c.matchTeamOnly.get(), c.matchSpectatorsTogether.get(), c.downedMuffled.get());
         }
         long now = System.nanoTime();
+        if (s.getTickCount() % ROSTER_TICKS == 0) {
+            vanish();
+        }
         snapshot(s, now);
         events(now);
         if (rosterDirty && s.getTickCount() - lastRosterTick >= ROSTER_TICKS) {
@@ -476,6 +482,12 @@ public final class VoiceServer {
             if (HeralizVoiceCompat.downed(player)) {
                 flags |= DOWNED;
             }
+            if (m.hidden) {
+                flags |= HIDDEN;
+            }
+            if (m.seesHidden) {
+                flags |= SEES_HIDDEN;
+            }
             snap.set(n, m, m.uuid, m.voiceId, levelId(player.level().dimension()), player.getX(), player.getEyeY(), player.getZ(), flags);
             HeralizVoiceCompat.match(player, snap, n);
             groupOf(m, snap, n);
@@ -489,6 +501,31 @@ public final class VoiceServer {
         snap.count = n;
         snap.tick = s.getTickCount();
         SNAPSHOTS.publish(snap);
+    }
+
+    /**
+     * Every 10 ticks (21/11, owner's choice): who is a hidden staff member (vanish of HeraliZ Grades) and who sees them.
+     * A hidden member is kept out of the roster of everyone else and heard by the staff only ({@link VoiceRouting}). When
+     * nobody is hidden, nobody is asked whether they are staff. A change refreshes the roster.
+     */
+    private static void vanish() {
+        boolean any = false;
+        for (Member m : ORDER) {
+            boolean h = !m.simulated && HeralizVoiceCompat.hidden(m.uuid);
+            if (h != m.hidden) {
+                m.hidden = h;
+                rosterDirty = true;
+            }
+            any |= h;
+        }
+        for (Member m : ORDER) {
+            ServerPlayer player = m.player;
+            boolean sees = any && !m.simulated && player != null && HeralizVoiceCompat.seesHidden(player);
+            if (sees != m.seesHidden) {
+                m.seesHidden = sees;
+                rosterDirty = true;
+            }
+        }
     }
 
     /** Group and imposed range of entry {@code n}. */
@@ -553,9 +590,16 @@ public final class VoiceServer {
      */
     /**
      * Dernière liste envoyée, son numéro et les joueurs qui l'ont : une seule liste numérotée, les groupes (clé : leur
-     * numéro) puis les joueurs (clé : leur UUID) ; une seule vue (tout le monde voit la même liste).
+     * numéro) puis les joueurs (clé : leur UUID). Deux vues (21/11, choix du propriétaire, comme le tab de HeraliZ Grades) :
+     * le staff qui voit les cachés reçoit tout ; les autres jamais la ligne d'un membre du staff caché ({@link HiddenVoice},
+     * gardée côté serveur seulement).
      */
-    private static final Synchro.Diffuseur<UUID, Object, Object> ROSTER = new Synchro.Diffuseur<>(x -> true);
+    private static final int ROSTER_STAFF = 0, ROSTER_PUBLIC = 1;
+    private static final Synchro.Diffuseur<UUID, Object, Object> ROSTER = new Synchro.Diffuseur<>(x -> true, x -> !(x instanceof HiddenVoice));
+
+    /** Ligne vocale d'un membre du staff caché : envoyée telle quelle au staff seulement. */
+    private record HiddenVoice(PlayerVoice voice) {
+    }
 
     /** Oublie la liste envoyée : tout le monde la recevra complète (voix coupée puis rallumée, arrêt). */
     private static void forgetRoster() {
@@ -582,32 +626,59 @@ public final class VoiceServer {
         for (Group group : GROUPS.values()) {
             roster.put(group.id, new GroupInfo(group.id, group.name, group.type, !group.password.isEmpty()));
         }
+        boolean anyHidden = false;
         for (Member m : ORDER) {
-            roster.put(m.uuid, new PlayerVoice(m.uuid, m.voiceId, m.disabled, m.selfMuted, m.adminMuted || m.silenced, MEMBER_OF.getOrDefault(m.uuid, 0)));
+            PlayerVoice v = new PlayerVoice(m.uuid, m.voiceId, m.disabled, m.selfMuted, m.adminMuted || m.silenced, MEMBER_OF.getOrDefault(m.uuid, 0));
+            roster.put(m.uuid, m.hidden ? new HiddenVoice(v) : v);
+            anyHidden |= m.hidden;
         }
-        // each packet is encoded once ([0] complete, [1] what changed), and only if someone gets it
-        Packet<?>[] packets = new Packet<?>[2];
-        ROSTER.<ServerPlayer>publier(roster, s.getPlayerList().getPlayers(), ServerPlayer::getUUID, p -> 0,
+        // nobody hidden: one view for everyone, nobody asked whether they are staff
+        boolean hidden = anyHidden;
+        // each packet is encoded once per view ([view * 2] complete, [view * 2 + 1] what changed), and only if someone gets it
+        Packet<?>[] packets = new Packet<?>[4];
+        ROSTER.<ServerPlayer>publier(roster, s.getPlayerList().getPlayers(), ServerPlayer::getUUID,
+                p -> hidden && seesHidden(p) ? ROSTER_STAFF : ROSTER_PUBLIC,
                 new Synchro.Envoi<ServerPlayer, Object, Object>() {
                     @Override
                     public void complet(ServerPlayer player, int vue, int version, Map<Object, Object> table) {
-                        if (packets[0] == null) {
-                            packets[0] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRoster(version,
-                                    only(table.values(), GroupInfo.class), only(table.values(), PlayerVoice.class)), NetworkDirection.PLAY_TO_CLIENT);
+                        int i = vue * 2;
+                        if (packets[i] == null) {
+                            packets[i] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRoster(version,
+                                    only(table.values(), GroupInfo.class), voices(table.values())), NetworkDirection.PLAY_TO_CLIENT);
                         }
-                        player.connection.send(packets[0]);
+                        player.connection.send(packets[i]);
                     }
 
                     @Override
                     public void difference(ServerPlayer player, int vue, int version, Synchro.Diff<Object, Object> d) {
-                        if (packets[1] == null) {
-                            packets[1] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRosterDelta(version,
+                        int i = vue * 2 + 1;
+                        if (packets[i] == null) {
+                            packets[i] = CaraCreaNetwork.CHANNEL.toVanillaPacket(new CaraCreaNetwork.VoiceRosterDelta(version,
                                     only(d.retires(), Integer.class), only(d.changes().values(), GroupInfo.class), only(d.retires(), UUID.class),
-                                    only(d.changes().values(), PlayerVoice.class)), NetworkDirection.PLAY_TO_CLIENT);
+                                    voices(d.changes().values())), NetworkDirection.PLAY_TO_CLIENT);
                         }
-                        player.connection.send(packets[1]);
+                        player.connection.send(packets[i]);
                     }
                 });
+    }
+
+    /** Sees the hidden staff (the flag read every 10 ticks; a player without voice asks HeraliZ Grades). */
+    private static boolean seesHidden(ServerPlayer p) {
+        Member m = MEMBERS.get(p.getUUID());
+        return m != null ? m.seesHidden : HeralizVoiceCompat.seesHidden(p);
+    }
+
+    /** The players' voice lines of the roster, hidden staff lines included as they are (staff view only reaches them). */
+    private static List<PlayerVoice> voices(Collection<?> all) {
+        List<PlayerVoice> out = new ArrayList<>();
+        for (Object o : all) {
+            if (o instanceof PlayerVoice v) {
+                out.add(v);
+            } else if (o instanceof HiddenVoice h) {
+                out.add(h.voice());
+            }
+        }
+        return out;
     }
 
     /** The entries of one kind in the roster (groups by their number, players by their UUID). */
@@ -915,7 +986,8 @@ public final class VoiceServer {
         @Override
         public boolean add(UUID listener, int effects) {
             int l = s.indexOf(listener);
-            if (l < 0 || l == speaker || (s.flags[l] & DEAF) != 0 || (s.flags[l] & REACHABLE) == 0) {
+            if (l < 0 || l == speaker || (s.flags[l] & DEAF) != 0 || (s.flags[l] & REACHABLE) == 0
+                    || (s.flags[speaker] & HIDDEN) != 0 && (s.flags[l] & SEES_HIDDEN) == 0) {
                 return false;
             }
             out.add(l, (effects & (NO_POSITION | RADIO | MUFFLED)) | VoiceProtocol.flag(mode));

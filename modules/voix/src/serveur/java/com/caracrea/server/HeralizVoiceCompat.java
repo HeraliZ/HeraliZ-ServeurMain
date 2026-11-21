@@ -19,7 +19,9 @@ import java.util.UUID;
  *   <li>matches (HeraliZ core, {@code fr.heraliz.noyau.api.Matchs}): {@code partie(UUID)}, {@code equipe(UUID)},
  *   {@code spectateur(UUID)} — the match, team and whether the player spectates it. Without the API: the {@code heralisz:en_match} flag (one shared match per dimension, spectator game
  *   mode = spectator of the match);</li>
- *   <li>downed players (Reanimation), through {@link Busy#downed}.</li>
+ *   <li>downed players (Reanimation), through {@link Busy#downed};</li>
+ *   <li>hidden staff (vanish of HeraliZ Grades, {@code fr.heraliz.grades.serveur.GradesApi}): {@code cache(UUID)} and
+ *   {@code voitLesCaches(ServerPlayer)} (21/11). Without the API: nobody is hidden.</li>
  * </ul>
  */
 final class HeralizVoiceCompat {
@@ -108,5 +110,52 @@ final class HeralizVoiceCompat {
 
     static boolean downed(ServerPlayer player) {
         return Busy.downed(player);
+    }
+
+    private static boolean vanishLooked;
+    private static java.lang.reflect.Method hidden;
+    private static java.lang.reflect.Method seesHidden;
+
+    private static boolean vanish() {
+        if (!vanishLooked) {
+            vanishLooked = true;
+            if (ModList.get().isLoaded("heraliz_grades")) {
+                try {
+                    Class<?> api = Class.forName("fr.heraliz.grades.serveur.GradesApi");
+                    hidden = api.getMethod("cache", UUID.class);
+                    seesHidden = api.getMethod("voitLesCaches", ServerPlayer.class);
+                    CaraCrea.LOGGER.info("Voice chat: HeraliZ vanish found, hidden staff kept out of the players' roster");
+                } catch (ReflectiveOperationException | LinkageError e) {
+                    hidden = null;
+                    seesHidden = null;
+                    CaraCrea.LOGGER.warn("Voice chat: HeraliZ grades found but not its vanish API ({}); nobody is hidden", e.toString());
+                }
+            }
+        }
+        return hidden != null && seesHidden != null;
+    }
+
+    /** Hidden staff member (vanish): kept out of the roster of the players who do not see hidden staff, heard by staff only. */
+    static boolean hidden(UUID player) {
+        if (!vanish()) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(hidden.invoke(null, player));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** Sees the hidden staff (staff logged in). */
+    static boolean seesHidden(ServerPlayer player) {
+        if (!vanish()) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(seesHidden.invoke(null, player));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
     }
 }

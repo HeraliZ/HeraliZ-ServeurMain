@@ -84,6 +84,15 @@ public final class GradesApi {
     }
 
     /**
+     * Vrai si ce joueur voit le staff caché (21/11 : staff connecté sur AuthMe, comme pour le tab) : seuls ceux-là reçoivent
+     * la ligne d'un caché dans les listes de nos autres mods (tags des clans, liste vocale de CaraCrea) et entendent sa
+     * voix. Lisible par réflexion par nos autres mods.
+     */
+    public static boolean voitLesCaches(ServerPlayer joueur) {
+        return joueur != null && VanishServeur.voitLesCaches(joueur);
+    }
+
+    /**
      * Vrai si le joueur est connecté sur AuthMe (serveur cracké ; toujours vrai sinon). AuthMe injoignable : faux. Sert aux
      * commandes réservées (par exemple /inspecter de HeraliZ Utils) : un pseudo d'op ne vaut rien avant le /login.
      */

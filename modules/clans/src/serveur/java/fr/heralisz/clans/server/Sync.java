@@ -117,10 +117,15 @@ public final class Sync {
      * cadence est ecoulee.
      */
     static void tick() {
-        if (SALES.isEmpty() && SALES_LENTS.isEmpty() && !tagsSales) return;
+        // toutes les 2 s (21/11) : la table des tags est relue (staff qui se cache ou se montre, staff qui se connecte) ;
+        // rien ne part si rien n'a change
+        boolean controle = ++tickControle >= 40;
+        if (controle) tickControle = 0;
+        if (SALES.isEmpty() && SALES_LENTS.isEmpty() && !tagsSales && !controle) return;
         ClanStore store = ClanStore.get();
         MinecraftServer server = serveur();
         if (store == null || server == null) return;
+        if (controle) tagsSales = true;
         tickTags(server);
         if (SALES.isEmpty() && SALES_LENTS.isEmpty()) return;
         long now = System.currentTimeMillis();
@@ -250,9 +255,19 @@ public final class Sync {
      * redemande), puis des differences numerotees (Synchro) a ceux qui l'ont deja ; les changements d'un meme tick partent
      * en un envoi, a la fin du tick ; rien ne part si rien ne change.
      */
-    /** Derniere table envoyee (joueur en ligne -> tag), son numero, et les joueurs qui l'ont (une seule vue : tout le monde). */
-    private static final Synchro.Diffuseur<UUID, UUID, TagVue> TAGS = new Synchro.Diffuseur<>(t -> true);
+    /*
+     * 21/11 (choix du proprietaire) : deux vues, comme le tab de HeraliZ Grades. Le staff qui voit les caches recoit tout ;
+     * les autres jamais le tag d'un membre du staff cache (vanish) : un jeu modifie ne peut pas y lire qu'il est connecte.
+     */
+    private static final int TAGS_STAFF = 0, TAGS_PUBLIC = 1;
+    /** Ligne de la table cote serveur : le tag envoye et si le joueur est cache (jamais envoye). */
+    private record TagLigne(TagVue vue, boolean cache) {
+    }
+
+    /** Derniere table envoyee (joueur en ligne -> tag), son numero par vue, et les joueurs qui l'ont. */
+    private static final Synchro.Diffuseur<UUID, UUID, TagLigne> TAGS = new Synchro.Diffuseur<>(t -> true, t -> !t.cache());
     private static boolean tagsSales;
+    private static int tickControle;
 
     /** Table des tags de tous les joueurs en ligne (sauf « exclure », joueur en train de partir), dans l'ordre des joueurs. */
     public static Map<UUID, TagVue> tableTags(@Nullable UUID exclure) {
@@ -301,29 +316,59 @@ public final class Sync {
         if (TAGS.demande(p.getUUID(), System.currentTimeMillis())) tagsSales = true;
     }
 
+    /** Table des tags cote serveur : comme {@link #tableTags}, avec le staff cache marque (21/11). */
+    private static Map<UUID, TagLigne> lignesTags() {
+        Map<UUID, TagLigne> m = new LinkedHashMap<>();
+        for (Map.Entry<UUID, TagVue> e : tableTags(null).entrySet()) {
+            m.put(e.getKey(), new TagLigne(e.getValue(), PontVanish.cache(e.getKey())));
+        }
+        return m;
+    }
+
+    /** Les tags envoyes d'une partie de la table (sans la marque « cache »). */
+    private static Map<UUID, TagVue> tagsEnvoyes(Map<UUID, TagLigne> lignes) {
+        Map<UUID, TagVue> m = new LinkedHashMap<>();
+        for (Map.Entry<UUID, TagLigne> e : lignes.entrySet()) m.put(e.getKey(), e.getValue().vue());
+        return m;
+    }
+
     /** Fin du tick : rien si rien n'a ete signale ; sinon la table est relue et seul ce qui change part. */
     private static void tickTags(MinecraftServer server) {
         if (!tagsSales) return;
         tagsSales = false;
-        // chaque paquet est mis en forme une seule fois ([0] table complete, [1] difference), et seulement s'il part
-        Packet<?>[] paquets = new Packet<?>[2];
-        TAGS.<ServerPlayer>publier(tableTags(null), server.getPlayerList().getPlayers(), ServerPlayer::getUUID, p -> 0,
-                new Synchro.Envoi<ServerPlayer, UUID, TagVue>() {
+        Map<UUID, TagLigne> table = lignesTags();
+        boolean desCaches = false;
+        for (TagLigne l : table.values()) {
+            if (l.cache()) {
+                desCaches = true;
+                break;
+            }
+        }
+        // personne de cache : une seule vue pour tous, sans demander a chaque joueur s'il est du staff
+        boolean caches = desCaches;
+        // chaque paquet est mis en forme une seule fois par vue ([vue * 2] table complete, [vue * 2 + 1] difference)
+        Packet<?>[] paquets = new Packet<?>[4];
+        TAGS.<ServerPlayer>publier(table, server.getPlayerList().getPlayers(), ServerPlayer::getUUID,
+                p -> caches && PontVanish.voitLesCaches(p) ? TAGS_STAFF : TAGS_PUBLIC,
+                new Synchro.Envoi<ServerPlayer, UUID, TagLigne>() {
                     @Override
-                    public void complet(ServerPlayer p, int vue, int version, Map<UUID, TagVue> table) {
-                        if (paquets[0] == null) {
-                            paquets[0] = ClansNet.CHANNEL.toVanillaPacket(new Packets.TagsS2C(version, table), NetworkDirection.PLAY_TO_CLIENT);
+                    public void complet(ServerPlayer p, int vue, int version, Map<UUID, TagLigne> lignes) {
+                        int i = vue * 2;
+                        if (paquets[i] == null) {
+                            paquets[i] = ClansNet.CHANNEL.toVanillaPacket(new Packets.TagsS2C(version, tagsEnvoyes(lignes)),
+                                    NetworkDirection.PLAY_TO_CLIENT);
                         }
-                        p.connection.send(paquets[0]);
+                        p.connection.send(paquets[i]);
                     }
 
                     @Override
-                    public void difference(ServerPlayer p, int vue, int version, Synchro.Diff<UUID, TagVue> d) {
-                        if (paquets[1] == null) {
-                            paquets[1] = ClansNet.CHANNEL.toVanillaPacket(new Packets.TagsDeltaS2C(version, d.retires(), d.changes()),
-                                    NetworkDirection.PLAY_TO_CLIENT);
+                    public void difference(ServerPlayer p, int vue, int version, Synchro.Diff<UUID, TagLigne> d) {
+                        int i = vue * 2 + 1;
+                        if (paquets[i] == null) {
+                            paquets[i] = ClansNet.CHANNEL.toVanillaPacket(new Packets.TagsDeltaS2C(version, d.retires(),
+                                    tagsEnvoyes(d.changes())), NetworkDirection.PLAY_TO_CLIENT);
                         }
-                        p.connection.send(paquets[1]);
+                        p.connection.send(paquets[i]);
                     }
                 });
     }

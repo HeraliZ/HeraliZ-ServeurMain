@@ -1602,6 +1602,7 @@ répare.
 Pas changé (à décider par le propriétaire) : la table des tags de clan et la liste vocale contiennent toujours un staff
 caché, comme avant (rien à l'écran, mais un jeu modifié pourrait voir qu'il est connecté). Les retirer pour les joueurs
 hors du staff est possible ensuite (même méthode que le tab).
+Fait le 21/11 (décision du propriétaire) : section 47.
 
 ## 41. Audit du 21/11 : clans, boutique, PNJ, interface, voix, bases, emotes (relecture du code)
 
@@ -1932,3 +1933,49 @@ chaque banc du 21/11 est comparé à celui du 20/11 tombé sur le même processe
 
 Pas testé : tout en jeu ; aucun profil du serveur en ligne avec des joueurs (personne cette nuit) ; le banc n'est pas la
 vraie carte (ni ses conteneurs, ni ses villes).
+
+## 47. Décisions du 21/11 : anticheat renforcé, staff caché partout
+
+### Règles en rodage de l'anticheat (Spartan 2.15.3)
+
+Les règles nouvelles du 19/11 (agent ou débogueur injecté, classe modifiée en mémoire, launcher imité, packs de textures
+ajoutés) ont un « disjoncteur » : si trois PC différents les déclenchent en moins d'une heure, c'est sans doute une
+fausse alerte, la règle se suspend (alerte seulement) et le staff est prévenu.
+- **On compte des PC, plus des comptes** : un PC = son compte, sa connexion internet (bloc d'adresses /24, IPv6 /48) et
+  les identifiants matériels envoyés par son jeu. Un tricheur avec dix comptes sur son PC, ou plusieurs PC derrière la
+  même box, ne compte qu'une fois : il ne peut plus couper la règle tout seul.
+- **Remise en service toute seule au bout d'une heure** (`rodageRepriseMinutes = 60`, section `[injection]` de
+  `serveur/config/spartan-common.toml` ; 0 = suspendue jusqu'au redémarrage, comme avant) : alerte « Règle remise en
+  service » au staff ; `/spartan status <joueur>` donne le temps restant.
+- Un PC qui a déjà fait suspendre une règle ne compte plus pour elle jusqu'au redémarrage (il reste expulsé quand elle
+  est en service) : les mêmes PC ne peuvent pas la couper à chaque remise en service.
+- Essais hors du jeu : `RodageTest`, 13 essais, tous passés.
+
+À tester en jeu :
+- [ ] Rien ne change pour un joueur normal : aucune expulsion, aucune alerte « Règle suspendue ».
+- [ ] `/spartan status <joueur>` : pas de ligne « règles en rodage suspendues » tant que rien n'est suspendu.
+
+### Staff caché (vanish) : tags de clan, liste vocale, profil (Boutique 1.7.1, Clans 3.19.1, Voix 1.7.1)
+
+Le tab ne montrait déjà plus un membre du staff caché aux joueurs. Le reste suit maintenant la même règle :
+- **Tags de clan** : deux listes, comme le tab. Les joueurs hors du staff ne reçoivent plus jamais le tag d'un caché (un
+  jeu modifié ne peut plus y lire qu'il est connecté). Relu toutes les 2 s (se cacher, se montrer, staff qui se
+  connecte) ; rien ne part si rien ne change.
+- **Liste vocale** : pareil. En plus, la voix d'un caché n'est envoyée qu'au staff (avant : les joueurs proches
+  l'entendaient). Lui entend toujours tout le monde.
+- **`/profil <pseudo>`** d'un caché, vu par un joueur hors du staff : comme un joueur hors ligne (temps de jeu et plus
+  longue vie sans la partie en cours : ils ne montent plus pendant qu'il est connecté).
+- Personne de caché : rien ne change, une seule liste pour tous.
+- Essai hors du jeu du tri des voix (`VoiceRouting`) : un caché qui parle n'est entendu que par le staff ; un joueur qui
+  parle est entendu de tous, caché compris.
+
+À tester en jeu (S = staff dans un clan, A = joueur hors du staff, B = autre staff) :
+- [ ] S se cache (« Se cacher » du panel) : rien ne change à l'écran de A (S n'était déjà plus dans son tab) ; S parle à
+      côté de A : A n'entend rien, B l'entend.
+- [ ] S se montre : sa voix revient chez A (2 s au plus), son tag de clan aussi (tab, au-dessus de sa tête).
+- [ ] S caché : A tape `/profil S` deux fois à une minute d'écart : le temps de jeu ne bouge pas. B le voit bouger.
+- [ ] Personne de caché : tags, liste vocale et voix comme avant.
+
+Reste (pas demandé, à décider) : les membres du clan d'un caché le voient toujours « en ligne » dans l'écran du clan.
+
+Pas testé : tout en jeu (aucune compilation ici : contrôle de la branche sur GitHub).

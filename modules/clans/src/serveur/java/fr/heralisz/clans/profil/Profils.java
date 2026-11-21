@@ -304,6 +304,18 @@ public final class Profils {
         return s == null ? t : t + Math.max(0L, now - s.debut);
     }
 
+    /** Temps de jeu sans la partie en cours (ms) : profil d'un staff caché vu par un joueur (21/11). */
+    static long tempsJeuSansSession(UUID u) {
+        Fiche f = FICHES.get(u);
+        return f == null ? 0 : f.tempsMs;
+    }
+
+    /** Plus longue présence d'affilée sur la carte, sans la partie en cours (ms) : staff caché (21/11). */
+    static long vieMaxSansSession(UUID u) {
+        Fiche f = FICHES.get(u);
+        return f == null ? 0 : Math.max(f.vieMaxMs, f.vieMs);
+    }
+
     /** Plus longue présence d'affilée sur la carte, vie en cours comprise (ms). */
     static long vieMax(UUID u, long now) {
         Fiche f = FICHES.get(u);

@@ -14,7 +14,8 @@ import static com.caracrea.voice.net.VoiceSnapshot.*;
  * <ol>
  *   <li>The speaker must be allowed to talk (alive, not muted) and, as a spectator outside a match, the spectator
  *   rule must let them.</li>
- *   <li>Listeners who turned their voice chat off, or cannot receive, are skipped.</li>
+ *   <li>Listeners who turned their voice chat off, or cannot receive, are skipped. A hidden staff member (vanish,
+ *   {@code HIDDEN}) is heard only by those who see the hidden staff ({@code SEES_HIDDEN}), wherever they are.</li>
  *   <li>Matches: with {@code isolateMatches}, only players of the same match hear each other; inside a match, voice
  *   groups do not apply, spectators of the match only hear (and are heard by) spectators of the match, from anywhere
  *   in it, and {@code teamOnly} keeps each team to itself.</li>
@@ -139,6 +140,7 @@ public final class VoiceRouting {
         double rangeSq = (double) range * range;
         int base = VoiceProtocol.flag(mode) | ((f & DOWNED) != 0 && rules.downedMuffled() ? F_MUFFLED : 0);
         boolean matchSpectator = (f & MATCH_SPECTATOR) != 0;
+        boolean hidden = (f & HIDDEN) != 0;
         int group = rules.groups() ? s.group[from] : 0;
         int groupType = s.groupType[from];
         for (int l = 0; l < s.count; l++) {
@@ -146,7 +148,7 @@ public final class VoiceRouting {
                 continue;
             }
             int lf = s.flags[l];
-            if ((lf & DEAF) != 0 || (lf & REACHABLE) == 0) {
+            if ((lf & DEAF) != 0 || (lf & REACHABLE) == 0 || hidden && (lf & SEES_HIDDEN) == 0) {
                 continue;
             }
             int listenerMatch = s.match[l];

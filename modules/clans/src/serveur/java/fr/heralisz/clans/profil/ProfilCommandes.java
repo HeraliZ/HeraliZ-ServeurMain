@@ -148,9 +148,13 @@ public final class ProfilCommandes {
             }
         }
 
+        // staff caché (21/11) : pour qui ne voit pas les cachés, son profil est celui d'un joueur hors ligne (temps de jeu et
+        // plus longue vie sans la partie en cours : ils ne montent pas pendant qu'il est connecté)
+        boolean horsLigne = !moi && enLigne != null && fr.heralisz.clans.server.PontVanish.cache(cible)
+                && !fr.heralisz.clans.server.PontVanish.voitLesCaches(demandeur);
         ProfilVue.Compteurs c = new ProfilVue.Compteurs(KillsJoueurs.kills(cible), f == null ? 0 : f.morts, f == null ? 0 : f.mortsJoueur,
                 f == null ? 0 : f.zombies, f == null ? 0 : f.extractions, f == null ? 0 : f.conteneurs, f == null ? 0 : f.serieMax,
-                Profils.vieMax(cible, now));
+                horsLigne ? Profils.vieMaxSansSession(cible) : Profils.vieMax(cible, now));
 
         int quetes = -1;
         ProfilVue.Noms titre = ProfilVue.Noms.VIDE;
@@ -182,7 +186,8 @@ public final class ProfilCommandes {
             surLui = new ProfilVue.SurLui(b == null ? -1 : b[0], b == null ? 0 : (int) b[1], PontsProfil.capsulesCompte(cible),
                     PontsProfil.capsulesSurLui(demandeur));
         }
-        return new ProfilVue(cible, pseudo, moi, grade, couleur, f == null ? 0 : f.depuis, Profils.tempsJeu(cible, now),
+        return new ProfilVue(cible, pseudo, moi, grade, couleur, f == null ? 0 : f.depuis,
+                horsLigne ? Profils.tempsJeuSansSession(cible) : Profils.tempsJeu(cible, now),
                 moi ? EconomieApi.solde(cible) : -1, c, quetes, titre, clan(cible), rangs, surLui);
     }
 

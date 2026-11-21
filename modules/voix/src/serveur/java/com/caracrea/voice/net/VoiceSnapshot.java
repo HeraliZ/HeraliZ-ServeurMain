@@ -21,6 +21,10 @@ public final class VoiceSnapshot {
     public static final int DOWNED = 32;
     /** Has a working way to receive voices (UDP bound, or the game connection). */
     public static final int REACHABLE = 64;
+    /** Hidden staff member (vanish of HeraliZ Grades, 21/11): heard only by {@link #SEES_HIDDEN} listeners. */
+    public static final int HIDDEN = 128;
+    /** Sees the hidden staff (staff logged in): the only listeners of a {@link #HIDDEN} speaker. */
+    public static final int SEES_HIDDEN = 256;
 
     public int count;
     public Object[] member;
