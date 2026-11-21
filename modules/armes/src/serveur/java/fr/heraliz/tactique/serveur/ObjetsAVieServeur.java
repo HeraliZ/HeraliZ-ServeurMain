@@ -137,6 +137,19 @@ public final class ObjetsAVieServeur {
    static final Set<String> CONTENANTS_TEMPORAIRES = Set.of(
       "fr.heralisz.clans.territory.CaisseRavitaillementBlockEntity",
       "fr.heraliz.airstrike.block.SupplyCrateBlockEntity");
+   /**
+    * Le contenant est-il une de ces caisses, ou une classe qui en hérite ? Audit du 21/11 : côté serveur, la caisse de
+    * largage est {@code SupplyCrateBlockEntityServeur} (classe fille) ; son nom exact ne correspondait jamais.
+    */
+   private static final ClassValue<Boolean> TEMPORAIRE = new ClassValue<>() {
+      @Override
+      protected Boolean computeValue(Class<?> type) {
+         for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            if (CONTENANTS_TEMPORAIRES.contains(c.getName())) return true;
+         }
+         return false;
+      }
+   };
    /** Écrans de Curios : comme l'inventaire, ils ne montrent que les affaires du joueur (jamais de question). */
    private static final ClassValue<Boolean> ECRAN_CURIOS = new ClassValue<>() {
       @Override
@@ -335,7 +348,7 @@ public final class ObjetsAVieServeur {
          // contenant qui ne rend rien (ou rend une copie) : l'objet y reste, rien n'est copié
          if (objet.isEmpty() || reste >= avant) continue;
          partis -= objet.getCount();
-         if (CONTENANTS_TEMPORAIRES.contains(slot.container.getClass().getName())) {
+         if (TEMPORAIRE.get(slot.container.getClass())) {
             rendre(p, objet, false);
             temporaire = true;
          } else if (!question) {
