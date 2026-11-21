@@ -157,6 +157,13 @@ public final class RotationLoot extends SavedData {
     final Set<String> sallesOuvertes = new java.util.TreeSet<>();
     /** Actifs dont le contenu est tiré. */
     private final LongOpenHashSet tires = new LongOpenHashSet();
+    /**
+     * Les mêmes, rangés par tick de revue dans la seconde (21/11, fin de la validation de l'audit : revue des conteneurs
+     * entamés étalée sur les 20 ticks, {@link #entamesTick}) : chacun est revu une fois par seconde comme avant, à son
+     * tick. Tenus avec {@link #tires} ({@link #tire} à la première ouverture et à la lecture du fichier, retrait avec
+     * l'actif : {@link #retirerActif}).
+     */
+    private final LongOpenHashSet[] tiresParTick = tranches();
     /** Actifs entamés (fouillés, laissés avec des objets) -> heure (ticks) depuis laquelle personne n'y regarde ; en
      *  mémoire seulement (après un redémarrage, le délai repart du premier passage). */
     private final Long2LongOpenHashMap entames = new Long2LongOpenHashMap();
@@ -213,7 +220,7 @@ public final class RotationLoot extends SavedData {
                 Inventaire inv = new Inventaire(r, k);
                 ContainerHelper.loadAllItems(c, inv.objets);
                 a.contenu = inv;
-                r.tires.add(k);
+                r.tire(k);
             }
             r.actifs.put(k, a);
             r.indexer(k);
@@ -419,6 +426,23 @@ public final class RotationLoot extends SavedData {
         parSecteur.computeIfAbsent(secteur(k), s -> new LongArrayList()).add(k);
     }
 
+    /** Les 20 rangées de {@link #tiresParTick}, vides. */
+    private static LongOpenHashSet[] tranches() {
+        LongOpenHashSet[] t = new LongOpenHashSet[20];
+        for (int i = 0; i < t.length; i++) t[i] = new LongOpenHashSet();
+        return t;
+    }
+
+    /** Tick (0 à 19) de la revue d'un conteneur entamé dans chaque seconde, d'après sa position : bien mêlés. */
+    private static int tickDeRevue(long k) {
+        return (int) Math.floorMod(it.unimi.dsi.fastutil.HashCommon.mix(k), 20L);
+    }
+
+    /** Le contenu de l'actif en k vient d'être tiré (ou relu) : il entre dans la revue des conteneurs entamés. */
+    private void tire(long k) {
+        if (tires.add(k)) tiresParTick[tickDeRevue(k)].add(k);
+    }
+
     private void ajouterActif(long k, Actif a) {
         Actif avant = actifs.put(k, a);
         if (avant == null) indexer(k);
@@ -432,7 +456,7 @@ public final class RotationLoot extends SavedData {
         Actif a = actifs.remove(k);
         if (a == null) return null;
         compterActif(a.zone, -1);
-        tires.remove(k);
+        if (tires.remove(k)) tiresParTick[tickDeRevue(k)].remove(k);
         entames.remove(k);
         long s = secteur(k);
         LongArrayList l = parSecteur.get(s);
@@ -961,49 +985,65 @@ public final class RotationLoot extends SavedData {
             }
             if (!dues.isEmpty()) e.setDirty();
         }
-        if (!e.tires.isEmpty()) {                                       // vidés sans fermeture propre (déconnexion...)
-            Set<Container> vus = Collections.newSetFromMap(new IdentityHashMap<>());
-            for (ServerPlayer p : l.players()) {
-                if (p.containerMenu instanceof ChestMenu cm) vus.add(cm.getContainer());
-            }
-            // 24/10 (choix du propriétaire) : un conteneur fouillé puis laissé avec des objets est recyclé au bout de
-            // restes_secondes sans personne dedans (vidé, un autre se remplit après le délai) : plus de conteneurs
-            // « morts » qui gardent leurs restes et la place d'un conteneur plein
-            long restes = ConfigLoot.restesTicks(), now = l.getGameTime();
-            LongArrayList vides = new LongArrayList(), recycles = new LongArrayList();
-            for (long k : e.tires) {
-                Actif a = e.actifs.get(k);
-                if (a == null || a.contenu == null) continue;
-                if (vus.contains(a.contenu)) {
-                    e.entames.remove(k);                                // fouille en cours : le délai repartira à la fermeture
-                } else if (a.contenu.isEmpty()) {
-                    vides.add(k);
-                } else if (restes > 0 && !estSalle(a.zone)) {          // une salle à carte garde tout jusqu'à sa recharge
-                    long depuis = e.entames.get(k);
-                    if (depuis < 0) e.entames.put(k, now);
-                    else if (now - depuis >= restes) recycles.add(k);
-                }
-            }
-            for (long k : recycles) {
-                Actif a = e.actifs.get(k);
-                if (a == null || a.contenu == null) continue;
-                // 02/11 (audit n° 8 et 18) : un objet à vie n'est jamais détruit ; rangé là avant que les conteneurs
-                // refusent tout dépôt, il y reste (le conteneur garde ses restes) jusqu'à ce que quelqu'un le prenne
-                if (contientAVie(a.contenu)) {
-                    e.entames.remove(k);
-                    if (GARDES_A_VIE.add(k)) {
-                        HeralizLoot.LOG.warn("Rotation : {} en {} (zone {}) garde ses restes : objet à vie dedans, jamais détruit",
-                                a.nom, BlockPos.of(k).toShortString(), a.zone);
-                    }
-                    continue;
-                }
-                HeralizLoot.LOG.debug("Rotation : {} en {} (zone {}) recyclé avec ses restes", a.nom, BlockPos.of(k).toShortString(), a.zone);
-                a.contenu.clearContent();
-                e.vider(k);
-            }
-            for (long k : vides) e.vider(k);
+        // conteneurs entamés : chaque tick, ceux dont c'est le tour (entamesTick, 21/11) ; étoiles : chaque tick, pour un
+        // joueur sur 20 (etoilesTick)
+    }
+
+    // ------------------------------------------------------------------------------------------ conteneurs entamés
+    /**
+     * Chaque tick (21/11, fin de la validation de l'audit ; avant : tous d'un coup une fois par seconde, dans {@link #tick}) :
+     * les conteneurs entamés dont c'est le tour ({@link #tiresParTick}), chacun revu une fois par seconde comme avant.
+     * Même règle, même rythme : vidé sans fermeture propre (déconnexion...), il redevient inactif ; laissé avec des objets,
+     * il est recyclé au bout de restes_secondes sans personne dedans. Rien à faire : sort tout de suite.
+     */
+    static void entamesTick(ServerLevel l) {
+        RotationLoot e = get(l);
+        if (e.tires.isEmpty()) return;
+        e.aJour(l);
+        LongOpenHashSet tour = e.tiresParTick[(int) (l.getGameTime() % 20)];
+        if (tour.isEmpty()) return;
+        Set<Container> vus = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (ServerPlayer p : l.players()) {
+            if (p.containerMenu instanceof ChestMenu cm) vus.add(cm.getContainer());
         }
-        // étoiles : chaque tick, pour un joueur sur 20 (etoilesTick)
+        // 24/10 (choix du propriétaire) : un conteneur fouillé puis laissé avec des objets est recyclé au bout de
+        // restes_secondes sans personne dedans (vidé, un autre se remplit après le délai) : plus de conteneurs
+        // « morts » qui gardent leurs restes et la place d'un conteneur plein
+        long restes = ConfigLoot.restesTicks(), now = l.getGameTime();
+        LongArrayList vides = new LongArrayList(), recycles = new LongArrayList();
+        it.unimi.dsi.fastutil.longs.LongIterator suite = tour.iterator();
+        while (suite.hasNext()) {
+            long k = suite.nextLong();
+            Actif a = e.actifs.get(k);
+            if (a == null || a.contenu == null) continue;
+            if (vus.contains(a.contenu)) {
+                e.entames.remove(k);                                    // fouille en cours : le délai repartira à la fermeture
+            } else if (a.contenu.isEmpty()) {
+                vides.add(k);
+            } else if (restes > 0 && !estSalle(a.zone)) {              // une salle à carte garde tout jusqu'à sa recharge
+                long depuis = e.entames.get(k);
+                if (depuis < 0) e.entames.put(k, now);
+                else if (now - depuis >= restes) recycles.add(k);
+            }
+        }
+        for (long k : recycles) {
+            Actif a = e.actifs.get(k);
+            if (a == null || a.contenu == null) continue;
+            // 02/11 (audit n° 8 et 18) : un objet à vie n'est jamais détruit ; rangé là avant que les conteneurs
+            // refusent tout dépôt, il y reste (le conteneur garde ses restes) jusqu'à ce que quelqu'un le prenne
+            if (contientAVie(a.contenu)) {
+                e.entames.remove(k);
+                if (GARDES_A_VIE.add(k)) {
+                    HeralizLoot.LOG.warn("Rotation : {} en {} (zone {}) garde ses restes : objet à vie dedans, jamais détruit",
+                            a.nom, BlockPos.of(k).toShortString(), a.zone);
+                }
+                continue;
+            }
+            HeralizLoot.LOG.debug("Rotation : {} en {} (zone {}) recyclé avec ses restes", a.nom, BlockPos.of(k).toShortString(), a.zone);
+            a.contenu.clearContent();
+            e.vider(k);
+        }
+        for (long k : vides) e.vider(k);
     }
 
     // ------------------------------------------------------------------------------------------ étoiles
@@ -1169,7 +1209,7 @@ public final class RotationLoot extends SavedData {
                 if (s != null) nomLoot = ConfigLoot.nomPourSalle(cb.nom, s.couleur());
             }
             a.contenu = e.remplir(k, nomLoot, l.random, bonus);
-            e.tires.add(k);
+            e.tire(k);
             e.setDirty();
             BonusLoot.annoncer(p, bonus);
             // un conteneur tiré vide ne compte ni pour la saison ni pour les quêtes (« fouiller N conteneurs », 03/11)
@@ -1422,7 +1462,10 @@ public final class RotationLoot extends SavedData {
         public void stopOpen(Player p) {
             Actif a = etat.actifs.get(pos);
             if (a == null || a.contenu != this || etat.niveau == null || etat.regarde(this, p)) return;
-            son(etat.niveau, BlockPos.of(pos), etat.niveau.getBlockState(BlockPos.of(pos)), false);
+            // 21/11 (fin de la validation) : bruit de fermeture seulement si le tronçon du conteneur est complet (écran fermé
+            // de loin, après une téléportation : le lire faisait attendre le serveur pour un son)
+            BlockState st = fr.heraliz.noyau.api.Troncons.etat(etat.niveau, BlockPos.of(pos));
+            if (st != null) son(etat.niveau, BlockPos.of(pos), st, false);
             if (isEmpty()) etat.vider(pos);
         }
     }
