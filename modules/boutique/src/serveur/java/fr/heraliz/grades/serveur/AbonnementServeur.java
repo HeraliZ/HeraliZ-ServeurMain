@@ -108,7 +108,8 @@ final class AbonnementServeur {
                 lignes.add(msg("ligne", "%1$s. %2$s (%3$s)", String.valueOf(i++), e.getKey().nom(), d).withStyle(ChatFormatting.WHITE));
             }
         }
-        for (Component l : lignes) s.sendSuccess(() -> l, false);
+        // 21/11 (audit) : directement au joueur (sendSuccess est caché aux joueurs par sendCommandFeedback = false)
+        for (Component l : lignes) CommandesGrades.repondre(s, l);
         return 1;
     }
 }

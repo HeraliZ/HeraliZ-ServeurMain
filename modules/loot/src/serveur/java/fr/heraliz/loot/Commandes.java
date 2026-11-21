@@ -207,15 +207,26 @@ final class Commandes {
     private static int reinit(CommandSourceStack s, int r) {
         ServerLevel l = s.getLevel();
         BlockPos o = BlockPos.containing(s.getPosition());
-        int n = 0;
-        for (BlockPos p : BlockPos.betweenClosed(o.offset(-r, -r, -r), o.offset(r, r, r))) {
-            if (l.getBlockEntity(p) instanceof CoffreBlockEntityServeur be) {
-                be.reinitialiser();
-                n++;
+        // 21/11 (audit) : les coffres des tronçons déjà chargés, lus dans leurs entités de bloc. Avant : chaque bloc du cube
+        // (jusqu'à 257 x 257 x 257 au rayon 128), et chaque tronçon pas chargé lu, voire créé, sur le fil du serveur (gel de
+        // plusieurs secondes). Le staff tape la commande à côté des coffres : leurs tronçons sont chargés.
+        java.util.List<CoffreBlockEntityServeur> coffres = new java.util.ArrayList<>();
+        for (int cx = (o.getX() - r) >> 4; cx <= (o.getX() + r) >> 4; cx++) {
+            for (int cz = (o.getZ() - r) >> 4; cz <= (o.getZ() + r) >> 4; cz++) {
+                net.minecraft.world.level.chunk.LevelChunk ch = l.getChunkSource().getChunkNow(cx, cz);
+                if (ch == null) continue;
+                for (net.minecraft.world.level.block.entity.BlockEntity be : ch.getBlockEntities().values()) {
+                    BlockPos p = be.getBlockPos();
+                    if (be instanceof CoffreBlockEntityServeur c && Math.abs(p.getX() - o.getX()) <= r
+                            && Math.abs(p.getY() - o.getY()) <= r && Math.abs(p.getZ() - o.getZ()) <= r) {
+                        coffres.add(c);
+                    }
+                }
             }
         }
-        int fin = n;
+        for (CoffreBlockEntityServeur c : coffres) c.reinitialiser();
+        int fin = coffres.size();
         s.sendSuccess(() -> Component.translatableWithFallback("heraliz_loot.cmd.reinitialise", "%s coffre(s) remis à neuf", fin), true);
-        return n;
+        return fin;
     }
 }

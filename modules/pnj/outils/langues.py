@@ -172,6 +172,8 @@ TEXTES = {
                                            "Purses BLOCKED (unreadable registry or failed write): see the server log.",
                                            "Кошельки ЗАБЛОКИРОВАНЫ (реестр не читается или запись не удалась): см. журнал сервера."),
     "heraliz_quetes.bourse.cmd.donnee": ("Bourse de %s hérals donnée à %s.", "Purse of %s herals given to %s.", "Кошелёк на %s гералов выдан игроку %s."),
+    # 21/11 (audit) : /bourse donner crée de l'argent : op 4 connecté sur AuthMe, comme /eco donner
+    "heraliz_quetes.bourse.cmd.login": ("Connecte-toi d'abord avec /login.", "Log in first with /login.", "Сначала войди с помощью /login."),
     "heraliz_quetes.dialogue.echanger": ("Faire un échange", "Make a trade", "Обменяться"),
     "heraliz_quetes.marchand.regle.match": ("Impossible pendant un match.", "Not possible during a match.", "Нельзя во время матча."),
     "heraliz_quetes.marchand.regle.combat": ("Impossible en combat.", "Not possible in combat.", "Нельзя в бою."),

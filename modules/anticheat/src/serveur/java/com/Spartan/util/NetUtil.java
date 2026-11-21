@@ -22,8 +22,24 @@ public final class NetUtil {
         if (ip == null || !InetAddresses.isInetAddress(ip)) {
             return false;
         }
-        InetAddress a = InetAddresses.forString(ip);
-        if (a.isLoopbackAddress() || a.isSiteLocalAddress() || a.isLinkLocalAddress()
+        return isPublicAddress(InetAddresses.forString(ip));
+    }
+
+    /**
+     * Même règle que {@link #isPublicIp(String)}, pour une adresse déjà lue (adresse de la connexion d'un joueur). Faux
+     * pour null (adresse inconnue).
+     */
+    public static boolean isPublicAddress(InetAddress a) {
+        if (a instanceof Inet6Address v6 && ipv4EnIpv6(v6.getAddress())) {
+            // IPv4 écrite en IPv6 (::ffff:a.b.c.d) gardée telle quelle par la connexion : jugée comme l'IPv4
+            byte[] b = v6.getAddress();
+            try {
+                return isPublicAddress(InetAddress.getByAddress(java.util.Arrays.copyOfRange(b, 12, 16)));
+            } catch (java.net.UnknownHostException e) {
+                return false;
+            }
+        }
+        if (a == null || a.isLoopbackAddress() || a.isSiteLocalAddress() || a.isLinkLocalAddress()
                 || a.isAnyLocalAddress() || a.isMulticastAddress()) {
             return false;
         }
@@ -37,6 +53,19 @@ public final class NetUtil {
         if (a instanceof Inet6Address) {
             // fc00::/7 : adresses uniques locales (équivalent des réseaux privés).
             return (b[0] & 0xFE) != 0xFC;
+        }
+        return true;
+    }
+
+    /** Octets d'une IPv4 écrite en IPv6 (::ffff:a.b.c.d) ? */
+    private static boolean ipv4EnIpv6(byte[] b) {
+        if (b.length != 16 || (b[10] & 0xFF) != 0xFF || (b[11] & 0xFF) != 0xFF) {
+            return false;
+        }
+        for (int i = 0; i < 10; i++) {
+            if (b[i] != 0) {
+                return false;
+            }
         }
         return true;
     }

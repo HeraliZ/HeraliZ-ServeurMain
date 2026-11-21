@@ -183,7 +183,7 @@ public final class CaptureManager {
                 .append(Component.literal(" — capture d'écran reçue (" + raison + ") : screenshots/" + dossier + "/"
                         + fichier).withStyle(ChatFormatting.GRAY));
         for (ServerPlayer staff : p.server.getPlayerList().getPlayers()) {
-            if (staff.hasPermissions(2)) {
+            if (AlertManager.staffEnJeu(staff)) {
                 staff.sendSystemMessage(msg);
             }
         }

@@ -46,6 +46,17 @@ final class CommandesGrades {
         return s.getEntity() == null && s.hasPermission(4) && !"Rcon".equals(s.getTextName()) && s.getServer().isDedicatedServer();
     }
 
+    /**
+     * Réponse d'une commande (21/11, audit) : le monde garde la règle {@code sendCommandFeedback = false}, qui cache aux
+     * joueurs qui ne sont pas op toutes les réponses « réussi » ({@code sendSuccess}) : {@code /boutique abonnement},
+     * {@code /avantages nick qui}, {@code /grade voir} d'un Helpeur… ne répondaient rien. À un joueur, la réponse part
+     * directement ; à la console, comme avant.
+     */
+    static void repondre(CommandSourceStack s, Component c) {
+        if (s.getEntity() instanceof ServerPlayer p) p.sendSystemMessage(c);
+        else s.sendSuccess(() -> c, false);
+    }
+
     /** Joueur du staff d'au moins ce grade, connecté sur AuthMe. */
     static boolean staff(CommandSourceStack s, Grade min) {
         RegistreGrades r = ServeurGrades.registre;
@@ -214,8 +225,8 @@ final class CommandesGrades {
         Map.Entry<UUID, String> cible = trouver(s.getServer(), nom);
         RegistreGrades.Fiche f = r == null || cible == null ? null : r.fiche(cible.getKey());
         String pseudo = cible != null ? cible.getValue() : nom;
-        s.sendSuccess(() -> msg("voir2", "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s", pseudo, ouAucun(f == null ? null : f.staff()),
-                ouAucun(f == null ? null : f.boutique()), speciaux(f)), false);
+        repondre(s, msg("voir2", "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s", pseudo, ouAucun(f == null ? null : f.staff()),
+                ouAucun(f == null ? null : f.boutique()), speciaux(f)));
         return 1;
     }
 
@@ -223,14 +234,14 @@ final class CommandesGrades {
         CommandSourceStack s = c.getSource();
         RegistreGrades r = ServeurGrades.registre;
         if (r == null || r.tous().isEmpty()) {
-            s.sendSuccess(() -> msg("liste_vide", "Aucun joueur gradé : tout le monde est Survivant."), false);
+            repondre(s, msg("liste_vide", "Aucun joueur gradé : tout le monde est Survivant."));
             return 1;
         }
         var tous = r.tous();
-        s.sendSuccess(() -> msg("liste", "Joueurs gradés (%s) :", String.valueOf(tous.size())), false);
+        repondre(s, msg("liste", "Joueurs gradés (%s) :", String.valueOf(tous.size())));
         for (Map.Entry<UUID, RegistreGrades.Fiche> e : tous) {
             RegistreGrades.Fiche f = e.getValue();
-            s.sendSuccess(() -> msg("voir2", "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s", f.nom(), ouAucun(f.staff()), ouAucun(f.boutique()), speciaux(f)), false);
+            repondre(s, msg("voir2", "%1$s : staff %2$s, boutique %3$s, spéciaux %4$s", f.nom(), ouAucun(f.staff()), ouAucun(f.boutique()), speciaux(f)));
         }
         return 1;
     }

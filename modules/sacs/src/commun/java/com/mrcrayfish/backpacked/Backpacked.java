@@ -26,8 +26,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class Backpacked {
    public static final EnchantmentCategory ENCHANTMENT_TYPE = EnchantmentCategory.create("backpack", item -> item instanceof BackpackItem);
    private static boolean controllableLoaded = false;
-   private static final String EXPECTED_SERVER_KEY = "e35X9xKSmfqK9mQW6852ec6JQx";
-   private static final String KEY_URL = "https://launcher.arkaniaz.fr/server/server_key.php";
 
    public Backpacked() {
       IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();

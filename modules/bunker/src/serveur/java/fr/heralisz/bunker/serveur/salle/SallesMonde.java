@@ -299,10 +299,17 @@ public final class SallesMonde extends SavedData {
       return false;
    }
 
-   /** Les portes chargées de la salle réévaluent leur état (ouverte / fermée). */
+   /**
+    * Les portes chargées de la salle réévaluent leur état (ouverte / fermée). 21/11 (audit) : seulement si les tronçons de
+    * la porte ET de ses lecteurs sont complets ({@link KeycardDoors#lecteursPrets}) : une porte au bord de la vue d'un
+    * joueur faisait lire ses lecteurs dans un tronçon voisin encore en lecture, et le serveur l'attendait (toutes les 5 s).
+    * Une porte passée ici est revue au plus 5 s plus tard (revoir de {@link #tick}).
+    */
    static void notifier(ServerLevel l, Salle s) {
       for (BlockPos c : s.portes) {
-         if (pret(l, c) && l.getBlockEntity(c) instanceof DoorBlockEntity d) d.checkRedstonePower();
+         if (pret(l, c) && l.getBlockEntity(c) instanceof DoorBlockEntity d && KeycardDoors.lecteursPrets(l, KeycardDoors.parts(d))) {
+            d.checkRedstonePower();
+         }
       }
    }
 

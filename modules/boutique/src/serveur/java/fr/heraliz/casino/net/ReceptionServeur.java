@@ -29,9 +29,19 @@ public final class ReceptionServeur {
         else if (m instanceof ZonePayPacket x) zonePay(p, x);
     }
 
-    /** Tablette du Directeur : nouveaux reglages d'une machine. Reserve aux operateurs (niveau 2), verifie ici. */
+    /**
+     * Operateur (niveau 2) connecte sur AuthMe. 21/11 (audit) : le serveur est en mode cracke, un pseudo d'op ne vaut rien
+     * avant le /login, et AuthMe ne filtre pas les paquets des mods : avant, un joueur venu sous le pseudo d'un op, sans son
+     * mot de passe, pouvait regler les machines et la caisse avec un jeu modifie (comme les commandes du casino depuis le
+     * 15/11, audit n° 3).
+     */
+    private static boolean operateur(ServerPlayer player) {
+        return player.hasPermissions(2) && fr.heraliz.grades.serveur.GradesApi.authentifie(player);
+    }
+
+    /** Tablette du Directeur : nouveaux reglages d'une machine. Reserve aux operateurs (niveau 2) connectes, verifie ici. */
     static void adminConfig(ServerPlayer player, AdminConfigPacket p) {
-        if (!player.hasPermissions(2)) {
+        if (!operateur(player)) {
             player.displayClientMessage(Component.translatable("message.heralizcasino.admin_only").withStyle(ChatFormatting.RED), true);
             return;
         }
@@ -71,7 +81,7 @@ public final class ReceptionServeur {
 
     /** Un operateur demande les statistiques. */
     static void adminStats(ServerPlayer player, AdminStatsPacket.Request p) {
-        if (!player.hasPermissions(2) || player.getServer() == null) return;
+        if (!operateur(player) || player.getServer() == null) return;
         String json = CasinoStats.get(player.getServer()).export(player.getServer()).toString();
         CasinoNet.sendTo(player, new AdminStatsPacket(json));
     }

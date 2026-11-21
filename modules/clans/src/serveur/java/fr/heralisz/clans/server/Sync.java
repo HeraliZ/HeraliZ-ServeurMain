@@ -79,6 +79,27 @@ public final class Sync {
         ECRANS.clear();
         TAGS.vider();
         tagsSales = false;
+        AVANT_SESSION.clear();
+    }
+
+    // ------------------------------------------------------------------ partie en cours (staff cache)
+    /**
+     * « Vu le » et temps de jeu de chaque membre connecte tels qu'ils etaient avant sa partie en cours (21/11, audit) : un
+     * membre du staff cache est montre hors ligne a son clan ({@link #pour}), mais son « vu le » etait remis a l'heure a sa
+     * connexion puis chaque minute, et son temps de jeu montait chaque seconde : l'ecran du clan disait « hors ligne · vu
+     * il y a moins d'une minute », donc qu'il etait la. Ce clan voit maintenant ses valeurs d'avant la partie, comme un
+     * joueur hors ligne (meme regle que son profil). Rien ne change dans les donnees du clan. Retire a la deconnexion.
+     */
+    private static final Map<UUID, long[]> AVANT_SESSION = new HashMap<>();
+
+    /** Connexion d'un membre (avant la mise a jour de son « vu le ») : ses valeurs d'avant cette partie. */
+    static void debutSession(UUID joueur, long vuLe, long tempsJeuTicks) {
+        AVANT_SESSION.put(joueur, new long[]{vuLe, tempsJeuTicks});
+    }
+
+    /** Deconnexion : plus rien a montrer a sa place. */
+    static void finSession(UUID joueur) {
+        AVANT_SESSION.remove(joueur);
     }
 
     // ------------------------------------------------------------------ ecrans ouverts
@@ -440,9 +461,19 @@ public final class Sync {
             // staff cache (21/11) : hors ligne pour les autres membres du clan qui ne voient pas les caches
             membres = new ArrayList<>(b.membres.size());
             for (ClanSnapshot.MembreVue m : b.membres) {
-                membres.add(b.caches.contains(m.uuid()) && !m.uuid().equals(u)
-                        ? new ClanSnapshot.MembreVue(m.uuid(), m.nom(), m.grade(), m.rejointLe(), m.vuLe(), m.stats(), false, m.solde())
-                        : m);
+                if (!b.caches.contains(m.uuid()) || m.uuid().equals(u)) {
+                    membres.add(m);
+                    continue;
+                }
+                // 21/11 (audit) : comme hors ligne jusqu'au bout : « vu le » et temps de jeu d'avant sa partie en cours
+                long[] avant = AVANT_SESSION.get(m.uuid());
+                fr.heralisz.clans.model.Stats st = m.stats();
+                if (avant != null) {
+                    st = st.copie();
+                    st.tempsJeuTicks = Math.min(st.tempsJeuTicks, avant[1]);
+                }
+                membres.add(new ClanSnapshot.MembreVue(m.uuid(), m.nom(), m.grade(), m.rejointLe(), avant != null ? avant[0] : m.vuLe(), st,
+                        false, m.solde()));
             }
         }
         return new ClanSnapshot(c.id, c.tag, c.nom, c.description, c.banniere, c.chef, c.creeLe, c.banque, c.niveau, c.xp,
