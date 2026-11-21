@@ -258,7 +258,9 @@ public final class VoyageursServeur {
             h.reseau.point(g.s() + d, c);
             Vec3 q = new Vec3(c[0] + nx * (Voyageurs.VW + 1.25), g.yQuai() + 0.02, c[2] + nz * (Voyageurs.VW + 1.25));
             if (milieu == null) milieu = q;
-            if (!v.level().hasChunkAt(net.minecraft.core.BlockPos.containing(q))) return milieu;
+            // 21/11 (audit) : tronçon complet seulement (Troncons du noyau) : hasChunkAt répond « oui » pendant la lecture
+            // d'un tronçon (quai lointain de la gare suivante), et posable l'aurait attendue sur le fil du serveur
+            if (!fr.heraliz.noyau.api.Troncons.charge(v.level(), net.minecraft.core.BlockPos.containing(q))) return milieu;
             Vec3 ok = posable(v.level(), e, q, 1.5, 3.0);
             if (ok != null) return ok;
         }
@@ -270,7 +272,7 @@ public final class VoyageursServeur {
     private static Vec3 posable(net.minecraft.world.level.Level lvl, net.minecraft.world.entity.LivingEntity e, Vec3 p, double haut,
                                 double bas) {
         net.minecraft.core.BlockPos b0 = net.minecraft.core.BlockPos.containing(p);
-        if (!lvl.hasChunkAt(b0)) return null;
+        if (!fr.heraliz.noyau.api.Troncons.charge(lvl, b0)) return null;           // tronçon complet seulement (21/11)
         for (int y = (int) Math.floor(p.y + haut); y >= (int) Math.floor(p.y - bas); y--) {
             net.minecraft.core.BlockPos pied = new net.minecraft.core.BlockPos(b0.getX(), y, b0.getZ());
             net.minecraft.core.BlockPos sous = pied.below();

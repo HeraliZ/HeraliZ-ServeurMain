@@ -35,7 +35,10 @@ public final class StrikePlanner {
 
     public static double groundY(ServerLevel level, double x, double z, double fallback) {
         int bx = Mth.floor(x), bz = Mth.floor(z);
-        if (!level.hasChunk(bx >> 4, bz >> 4)) return fallback;
+        // 21/11 (audit) : tronçon complet seulement (Troncons du noyau) : hasChunk répond « oui » pendant la lecture d'un
+        // tronçon, et getHeight faisait alors attendre cette lecture par le fil du serveur (trajet de l'avion relevé sur
+        // 600 blocs à chaque frappe) ; un tronçon pas prêt compte comme un tronçon absent
+        if (fr.heraliz.noyau.api.Troncons.pret(level, bx >> 4, bz >> 4) == null) return fallback;
         return level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz);
     }
 
