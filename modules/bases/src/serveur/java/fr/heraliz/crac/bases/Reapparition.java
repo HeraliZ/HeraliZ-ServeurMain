@@ -52,8 +52,11 @@ public final class Reapparition {
     public static void traiter(C2SReapparition m, Supplier<Context> ctx) {
         ServerPlayer p = ctx.get().getSender();
         ctx.get().enqueueWork(() -> {
-            // le choix ne compte que pour un joueur mort, juste avant sa demande de réapparition
-            if (p != null && !p.isAlive()) {
+            // le choix ne compte que pour un joueur mort, juste avant sa demande de réapparition. 21/11 (choix du propriétaire
+            // « sécurités en plus ») : deux d'un coup au plus, puis un par demi-seconde ; l'écran de mort n'en envoie qu'un
+            // (boutons actifs après 1 s, une seule fois par écran) : un joueur normal n'est jamais arrêté
+            if (p != null && !p.isAlive()
+                && fr.heraliz.crac.network.PacketThrottle.allowBurst(p, fr.heraliz.crac.network.PacketThrottle.Kind.REAPPARITION, 500L, 2)) {
                 CHOIX.put(p.getUUID(), m.base());
                 if (m.base()) {
                     TeleportBase.precharger(p, 1);   // ticket de 30 s rafraîchi (long arrêt sur l'écran de mort)
