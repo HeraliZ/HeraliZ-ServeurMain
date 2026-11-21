@@ -97,6 +97,7 @@
   "heraliz_quetes.bourse.cmd.info": "Действующих кошельков: %s, всего %s гералов.",
   "heraliz_quetes.bourse.cmd.bloquees": "Кошельки ЗАБЛОКИРОВАНЫ (реестр не читается или запись не удалась): см. журнал сервера.",
   "heraliz_quetes.bourse.cmd.donnee": "Кошелёк на %s гералов выдан игроку %s.",
+  "heraliz_quetes.bourse.cmd.login": "Сначала войди с помощью /login.",
   "heraliz_quetes.dialogue.echanger": "Обменяться",
   "heraliz_quetes.marchand.regle.match": "Нельзя во время матча.",
   "heraliz_quetes.marchand.regle.combat": "Нельзя в бою.",

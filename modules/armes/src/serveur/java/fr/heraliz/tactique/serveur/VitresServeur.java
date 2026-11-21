@@ -403,8 +403,12 @@ public final class VitresServeur {
             continue;
          }
          BlockPos pos = BlockPos.of(en.getKey());
-         if (!level.isLoaded(pos)) {
-            if (chargements[0] <= 0) {
+         boolean peutCharger = chargements[0] > 0;
+         // 21/11 (audit) : tronçon complet seulement (Troncons du noyau, comme toucheEau). isLoaded dit « chargé » aussi
+         // pendant la lecture du tronçon (joueur qui arrive) : le getBlockState qui suit attendait alors la fin de cette
+         // lecture sur le fil du serveur (gel possible à chaque passe). En jeu, la vitre attend la passe suivante.
+         if (!fr.heraliz.noyau.api.Troncons.charge(level, pos)) {
+            if (!peutCharger) {
                continue;
             }
             chargements[0]--;
@@ -416,7 +420,7 @@ public final class VitresServeur {
             if (v.trou().isAir() && quelquUnDedans(level, pos)) {
                continue;
             }
-            reposer(level, pos, v.etat());
+            reposer(level, pos, v.etat(), peutCharger);
          } else if (!ici.isAir() && ici.canBeReplaced()) {
             // feu, neige, eau qui coule, herbe... : on attend que la place se libère
             continue;
@@ -452,6 +456,10 @@ public final class VitresServeur {
             continue;
          }
          BlockPos voisin = pos.relative(cote);
+         // 21/11 : voisine dans un tronçon pas encore complet (bord de la vue) : laissée telle quelle, rien n'est attendu
+         if (!fr.heraliz.noyau.api.Troncons.charge(level, voisin)) {
+            continue;
+         }
          BlockState v = level.getBlockState(voisin);
          if (raccordee(v, cote.getOpposite())) {
             level.setBlock(voisin, v.setValue(raccord(cote.getOpposite()), false), DRAPEAUX);
@@ -463,12 +471,19 @@ public final class VitresServeur {
     * Repose une vitre : son état d'avant la casse, raccordée aux vitres fines voisines comme le ferait le jeu (vers une
     * vitre fine ou des barreaux : raccordée, et eux à elle ; vers une case vide, une vitre voisine encore cassée : pas de
     * raccord). Vers les autres blocs (murs, blocs pleins), les raccords d'avant la casse sont gardés tels quels.
+    * {@code peutCharger} faux (en jeu, 21/11) : une voisine dans un tronçon pas encore complet n'est ni lue ni changée
+    * (raccord d'avant la casse gardé de ce côté) : le fil du serveur n'attend jamais un tronçon. Vrai au démarrage
+    * (tronçons chargés exprès, comme avant).
     */
-   private static void reposer(ServerLevel level, BlockPos pos, BlockState etat) {
+   private static void reposer(ServerLevel level, BlockPos pos, BlockState etat, boolean peutCharger) {
       BlockState propre = etat;
       if (etat.getBlock() instanceof IronBarsBlock) {
          for (Direction cote : Direction.Plane.HORIZONTAL) {
-            BlockState v = level.getBlockState(pos.relative(cote));
+            BlockPos voisin = pos.relative(cote);
+            if (!peutCharger && !fr.heraliz.noyau.api.Troncons.charge(level, voisin)) {
+               continue;
+            }
+            BlockState v = level.getBlockState(voisin);
             if (v.getBlock() instanceof IronBarsBlock) {
                propre = propre.setValue(raccord(cote), true);
             } else if (v.isAir()) {
@@ -482,6 +497,9 @@ public final class VitresServeur {
       }
       for (Direction cote : Direction.Plane.HORIZONTAL) {
          BlockPos voisin = pos.relative(cote);
+         if (!peutCharger && !fr.heraliz.noyau.api.Troncons.charge(level, voisin)) {
+            continue;
+         }
          BlockState v = level.getBlockState(voisin);
          if (v.getBlock() instanceof IronBarsBlock && !raccordee(v, cote.getOpposite())) {
             level.setBlock(voisin, v.setValue(raccord(cote.getOpposite()), true), DRAPEAUX);
