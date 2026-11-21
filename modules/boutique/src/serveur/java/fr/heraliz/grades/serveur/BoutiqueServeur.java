@@ -62,6 +62,13 @@ final class BoutiqueServeur {
     private static final List<Article> ARTICLES = new ArrayList<>();
     private static final Map<String, EnCours> EN_COURS = new LinkedHashMap<>();
     private static final Set<UUID> OCCUPES = new HashSet<>();
+    /**
+     * Dernier solde de PB de l'écran de la boutique, par joueur : {solde (-1 : inconnu), heure de la dernière demande au site
+     * ou de la dernière réponse d'un achat (ms)}. 21/11 (choix du propriétaire, comme l'hôtel des ventes) : au plus une
+     * demande au site toutes les 5 s par joueur (le site limite tout le serveur, une seule adresse). Oublié au départ.
+     */
+    private static final Map<UUID, long[]> SOLDES = new java.util.HashMap<>();
+    private static final long SOLDE_GARDE_MS = 5000;
     private static Path fichierArticles, fichierEnCours, dossier;
     private static long dateArticles = -1;
     private static MinecraftServer serveur;
@@ -83,6 +90,7 @@ final class BoutiqueServeur {
         relireSiChange();
         EN_COURS.clear();
         OCCUPES.clear();
+        SOLDES.clear();
         try {
             if (Files.exists(fichierEnCours)) {
                 for (JsonElement e : JsonParser.parseString(Files.readString(fichierEnCours, StandardCharsets.UTF_8)).getAsJsonArray()) {
@@ -104,6 +112,18 @@ final class BoutiqueServeur {
     static void arreter() {
         serveur = null;
         OCCUPES.clear();
+        SOLDES.clear();
+    }
+
+    /** Départ du joueur : son dernier solde n'est plus gardé (21/11). */
+    static void oublier(UUID joueur) {
+        SOLDES.remove(joueur);
+    }
+
+    /** Solde connu après une réponse du site à un achat (-1 : inconnu, la prochaine ouverture redemande au site). */
+    private static void noterSolde(UUID joueur, long solde) {
+        if (solde >= 0) SOLDES.put(joueur, new long[]{solde, System.currentTimeMillis()});
+        else SOLDES.remove(joueur);
     }
 
     static void tick() {
@@ -169,7 +189,10 @@ final class BoutiqueServeur {
     }
 
     // ------------------------------------------------------------------ écran
-    /** /boutique : demande le solde au site, puis ouvre l'écran (solde inconnu = -1 si le site ne répond pas). */
+    /**
+     * /boutique : demande le solde au site, puis ouvre l'écran (solde inconnu = -1 si le site ne répond pas) ; moins de 5 s
+     * après la dernière demande, ouvre tout de suite avec le dernier solde connu (21/11, {@link #SOLDES}).
+     */
     static int ouvrir(ServerPlayer p) {
         if (!PontBukkit.authentifie(p)) {
             p.sendSystemMessage(Component.translatableWithFallback("message.heraliz_grades.kit.connexion", "Connecte-toi d'abord avec /login."));
@@ -184,9 +207,22 @@ final class BoutiqueServeur {
         // onglets « Clés » et « Mes clés » : ses clés (sur son compte depuis le 25/10) arrivent avant l'écran
         fr.heraliz.crates.cles.MigrationCles.convertir(p);
         fr.heraliz.crates.api.ClesApi.envoyer(p);
+        // 21/11 (choix du propriétaire, comme l'hôtel des ventes) : au plus une demande au site toutes les 5 s par joueur ;
+        // rouvert entre-temps, l'écran s'ouvre tout de suite avec le dernier solde connu (relu après chaque achat)
+        long maintenant = System.currentTimeMillis();
+        long[] connu = SOLDES.get(u);
+        if (connu != null && maintenant - connu[1] >= 0 && maintenant - connu[1] < SOLDE_GARDE_MS) {
+            envoyer(p, true, connu[0], "", false);
+            return 1;
+        }
+        long[] demande = {connu == null ? -1 : connu[0], maintenant};
+        SOLDES.put(u, demande);
         Pb.solde(p.getGameProfile().getName(), r -> {
+            long solde = r != null && r.code() == 200 ? r.nombre("solde") : -1;
+            // réponse d'une demande plus récente ou d'un achat déjà arrivée : elle n'est pas écrasée
+            if (solde >= 0 && SOLDES.get(u) == demande) demande[0] = solde;
             ServerPlayer j = serveur == null ? null : serveur.getPlayerList().getPlayer(u);
-            if (j != null) envoyer(j, true, r != null && r.code() == 200 ? r.nombre("solde") : -1, "", false);
+            if (j != null) envoyer(j, true, solde, "", false);
         });
         return 1;
     }
@@ -249,10 +285,12 @@ final class BoutiqueServeur {
                 EN_COURS.remove(c.ref);
                 sauver();
                 OCCUPES.remove(u);
+                noterSolde(u, r.corps().has("solde") ? r.nombre("solde") : -1);
                 if (j != null) envoyer(j, false, r.corps().has("solde") ? r.nombre("solde") : -1, "solde_insuffisant".equals(r.raison()) ? "solde" : "refuse", false);
                 return;
             }
             long solde = r.nombre("solde");
+            noterSolde(u, solde);
             int faites = j == null ? 0 : livrer(a, c.joueur);
             boolean livre = faites == a.commandes().size();
             if (!livre && faites > 0) {
@@ -289,6 +327,7 @@ final class BoutiqueServeur {
                 sauver();
                 rembourser(c, () -> {
                     OCCUPES.remove(u);
+                    noterSolde(u, -1);   // remboursé (ou pas encore) : solde relu à la prochaine ouverture
                     ServerPlayer k = serveur == null ? null : serveur.getPlayerList().getPlayer(u);
                     if (k != null) envoyer(k, false, -1, "rembourse", false);
                 });
