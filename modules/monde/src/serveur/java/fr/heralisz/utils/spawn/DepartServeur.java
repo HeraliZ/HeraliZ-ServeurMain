@@ -155,7 +155,10 @@ public final class DepartServeur {
      * essai aussi : au plus deux tronçons lus par le fil du serveur pour un départ (avant : un par essai, 60 au plus).
      */
     private static final int RECHERCHE_MAX = 15 * 20;
-    /** Points contrôlés au plus par tick, tous départs confondus (21/11 : {@code /depart joueur} de tout un groupe). */
+    /**
+     * Points contrôlés au plus par tick, tous départs confondus (21/11 : {@code /depart joueur} de tout un groupe), dont un
+     * seul en dernier recours (tronçon lu par le fil du serveur).
+     */
     private static final int CONTROLES_PAR_TICK = 8;
     /** Points abandonnés faute de tronçon prêt, et contrôlés en dernier recours, depuis le démarrage ({@code /depart info}). */
     private static int abandons, derniersRecours;
@@ -282,6 +285,7 @@ public final class DepartServeur {
         ServerLevel carte = carte(server);
         List<Runnable> apres = new ArrayList<>();                 // téléportations après le parcours de la liste
         int controles = 0;
+        boolean recoursCeTick = false;
         for (Iterator<Map.Entry<UUID, EnCours>> it = EN_COURS.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<UUID, EnCours> en = it.next();
             EnCours d = en.getValue();
@@ -323,15 +327,17 @@ public final class DepartServeur {
                 // abandonné et un autre sera tiré au tick suivant, sans rien lire sur le fil du serveur. Dernier recours, pour
                 // que le joueur parte toujours : dernier essai, ou plus de RECHERCHE_MAX ticks après la fin du compte à
                 // rebours (une fois) : contrôlé comme avant (le fil du serveur lit alors ce seul tronçon). Au plus
-                // CONTROLES_PAR_TICK points contrôlés par tick (les autres attendent le tick suivant)
+                // CONTROLES_PAR_TICK points contrôlés par tick, dont un seul en dernier recours, tous départs confondus (les
+                // autres attendent le tick suivant : jamais plusieurs tronçons lus d'un coup par le fil du serveur)
                 boolean dernierRecours = !pret && delaiPasse && (d.essais <= 0 || !d.recours && maintenant - d.fin >= RECHERCHE_MAX);
-                if ((pret || dernierRecours) && controles < CONTROLES_PAR_TICK) {
+                if (controles < CONTROLES_PAR_TICK && (pret || (dernierRecours && !recoursCeTick))) {
                     Tirage t = d.tirage;
                     d.tirage = null;
                     controles++;
                     if (dernierRecours) {
                         derniersRecours++;
                         d.recours = true;
+                        recoursCeTick = true;
                     }
                     d.trouvee = controler(carte, sp, t, sp.getRandom());
                     d.trouveeA = maintenant;
