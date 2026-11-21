@@ -104,5 +104,12 @@ joueurs.** Leur configuration de mixins n'est pas dans le manifeste du jar (`mod
 le jeu ne la charge pas, sans rien dire. L'activer change l'écriture de tous les textes chez tous les joueurs, un rendu
 que personne n'a jamais vu en vrai (le code se coupe tout seul en cas d'erreur, « Lettres nettes coupées »).
 
+Démarrage « mixins stricts » essayé trois fois sur GitHub : il s'arrête chaque fois sur une injection de **ModernFix**
+(autre auteur) qui ne trouve pas sa cible sur Mohist (« reduce_blockstate_cache_rebuilds », puis
+« bugfix.forge_vehicle_packets »). Elles ratent aussi sur le serveur en ligne, sans rien dire et sans danger (ces deux
+réglages de ModernFix ne font rien chez nous). Nos propres injections n'ont donc pas pu être passées en revue de cette
+façon ; prochaine étape possible : une fabrication d'essai où seules nos configurations sont strictes. Le démarrage normal
+de la dernière version (`f545589a`) est réussi, sans erreur nouvelle.
+
 Outils ajoutés (branchés nulle part pour l'instant) : `outils/verif_reflexion.py` (réflexion et liens entre modules,
 environ 20 s) et `outils/verif_mixins.py` (configurations, manifestes, cibles des autres auteurs, conflits).
