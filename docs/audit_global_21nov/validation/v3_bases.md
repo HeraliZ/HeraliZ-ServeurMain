@@ -129,6 +129,9 @@ Remarques (aucun effet en jeu aujourd'hui, rien de changé) :
   mis de côté, jamais écrasé).
 - **Liens** : `mods.toml` (noyau 1.1.5+ des deux côtés, Clans facultatif) ; appels par réflexion des autres mods vers CRac
   et de CRac vers eux : 0 erreur.
+- **Mixins de CRac** : au démarrage d'essai « mixins stricts » lancé sur GitHub ce soir (21/11, 18 h 13 UTC, branche juste
+  avant ce correctif, qui ne touche aucun mixin), aucune injection de CRac ratée sur Mohist (la seule ratée est dans le
+  noyau, hors de cette zone).
 - **Affichage chez les joueurs** (survol) : rendus des échelles, coffres, armoire, cœur, zones et fantômes sortis tout de
   suite quand il n'y a rien à montrer (déjà relus par les audits d'images des 19 et 20/11).
 
