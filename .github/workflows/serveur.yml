@@ -42,8 +42,8 @@ concurrency:
 jobs:
   # Fabrication des mods dans un job À PART, sans aucun secret : Gradle et ses dépendances (code d'autres auteurs) ne
   # peuvent ni lire un secret dans leur environnement, ni dans celui d'un processus parent (/proc/<pid>/environ), ni dans
-  # un fichier écrit plus tard (le démon Gradle ne survit pas au job). Les jars passent au job « serveur » par le cache
-  # jars-<commit> (pas d'artefact : leur quota de stockage peut être plein).
+  # un fichier écrit plus tard (le démon Gradle ne survit pas au job). Les jars passent aux jobs « controles » et « serveur »
+  # par le cache jars-<commit> (pas d'artefact : leur quota de stockage peut être plein).
   fabriquer:
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -113,10 +113,74 @@ jobs:
     with:
       deja_fabrique: true
 
+  # Contrôles de la mise en ligne dans un job À PART, SANS AUCUN secret de production (21/11, validation, choix du
+  # propriétaire) : verifier.py fait tourner du code d'autres auteurs (JOML, lancé par Java pour les conteneurs allégés du
+  # loot) ; avant, il tournait dans le job « serveur », sur la machine qui a les secrets du Ptero. Comme le job
+  # « controles » de branches.yml : machine neuve, jars repris du cache jars-<commit> du job « fabriquer », seul le secret
+  # NOMS_INTERDITS (liste des noms perso, secret du DÉPÔT : pas d'environnement ici) donné à l'étape qui écrit son
+  # fichier, JOML téléchargé avec son empreinte vérifiée. Il tourne en même temps que le démarrage d'essai ; le job
+  # « serveur » en dépend : un contrôle raté, rien n'est envoyé au Ptero (comme avant).
+  controles:
+    needs: fabriquer
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # javac : essais hors du jeu de certains contrôles (conteneurs allégés, listes envoyées par différences)
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Jars fabriqués (cache du job « fabriquer »)
+        uses: actions/cache/restore@v4
+        with:
+          path: modules/*/build/libs
+          key: jars-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Ranger les jars fabriqués
+        run: python outils/construire.py --sans-build
+
+      # JOML (bibliothèque d'un autre auteur, lancée par modules/loot/outils/lod_props.py, qui la prend par JOML_JAR au lieu
+      # de la télécharger lui-même) : téléchargée ici depuis Maven Central et refusée si son empreinte SHA-256 n'est pas
+      # celle-ci (vérifiée le 21/11 contre celle que publie Maven Central). Refusée : le job échoue, rien n'est envoyé.
+      - name: JOML (empreinte vérifiée)
+        run: |
+          mkdir -p "$RUNNER_TEMP/joml"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/joml/joml-1.10.5.jar" https://repo1.maven.org/maven2/org/joml/joml/1.10.5/joml-1.10.5.jar
+          echo "cac9f22f83a7aa33eebda73c16ff5261e3cb4911b6bafcf4c79ea486099d0c9a  $RUNNER_TEMP/joml/joml-1.10.5.jar" | sha256sum -c -
+
+      # liste des noms perso interdits (un par ligne), gardée dans un secret du dépôt : jamais écrite dans le dépôt
+      - name: Noms interdits
+        env:
+          NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
+        run: |
+          if [ -n "$NOMS_INTERDITS" ]; then
+            printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
+          else
+            echo "::warning::Secret NOMS_INTERDITS absent : contrôle des noms perso sauté (docs/MISE_EN_LIGNE_GITHUB.md, section 7)."
+          fi
+
+      - name: Contrôles (GeckoLib, noms perso, langues)
+        env:
+          JOML_JAR: ${{ runner.temp }}/joml/joml-1.10.5.jar
+        run: python outils/verifier.py --sans-split
+
   serveur:
-    needs: [fabriquer, demarrage]
-    # démarrage d'essai réussi, ou sauté par la case « sans_demarrage_essai » (et seulement par elle)
-    if: ${{ !cancelled() && needs.fabriquer.result == 'success' && (needs.demarrage.result == 'success' || (needs.demarrage.result == 'skipped' && github.event_name == 'workflow_dispatch' && inputs.sans_demarrage_essai)) }}
+    needs: [fabriquer, demarrage, controles]
+    # contrôles réussis (job « controles »), et démarrage d'essai réussi ou sauté par la case « sans_demarrage_essai » (et
+    # seulement par elle)
+    if: ${{ !cancelled() && needs.fabriquer.result == 'success' && needs.controles.result == 'success' && (needs.demarrage.result == 'success' || (needs.demarrage.result == 'skipped' && github.event_name == 'workflow_dispatch' && inputs.sans_demarrage_essai)) }}
     runs-on: ubuntu-latest
     # Secrets de mise en ligne : environnement GitHub « production », réservé à main (audit du 02/11, point 15 ;
     # réglage du propriétaire : docs/MISE_EN_LIGNE_GITHUB.md, section 7)
@@ -133,7 +197,6 @@ jobs:
       PTERO_URL: ${{ secrets.PTERO_URL }}
       PTERO_SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
       PTERO_API_KEY: ${{ secrets.PTERO_API_KEY }}
-      NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
       SPARTAN_DISCORD_ALERTES: ${{ secrets.SPARTAN_DISCORD_ALERTES }}
       SPARTAN_DISCORD_SANCTIONS: ${{ secrets.SPARTAN_DISCORD_SANCTIONS }}
       LITEBANS_DB_USER: ${{ secrets.LITEBANS_DB_USER }}
@@ -190,32 +253,7 @@ jobs:
         id: pack
         run: echo "pack=${{ env.SITE_PRET == 'true' && env.PTERO_SFTP_HOST != '' }}" >> "$GITHUB_OUTPUT"
 
-      # liste des noms perso interdits (un par ligne), gardée dans un secret : jamais écrite dans le dépôt
-      - name: Noms interdits
-        if: env.NOMS_INTERDITS != ''
-        run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
-
-      # 21/11 (validation) : les contrôles font tourner du code d'autres auteurs (JOML, téléchargé depuis Maven Central par
-      # modules/loot/outils/lod_props.py, lancé par Java) : les secrets du job sont vidés pour cette étape seulement (ils ne
-      # sont plus dans l'environnement de sa machine Java ni de rien de ce qu'elle lance ; une séparation complète demande
-      # un job à part, comme « controles » de branches.yml). La liste des noms perso est lue dans son fichier.
-      - name: Contrôles (GeckoLib, noms perso, langues)
-        env:
-          PTERO_SFTP_HOST: ""
-          PTERO_SFTP_PORT: ""
-          PTERO_SFTP_USER: ""
-          PTERO_SFTP_PASSWORD: ""
-          PTERO_URL: ""
-          PTERO_SERVER_ID: ""
-          PTERO_API_KEY: ""
-          NOMS_INTERDITS: ""
-          SPARTAN_DISCORD_ALERTES: ""
-          SPARTAN_DISCORD_SANCTIONS: ""
-          LITEBANS_DB_USER: ""
-          LITEBANS_DB_PASSWORD: ""
-          HERALIBOT_LIEN_URL: ""
-          HERALIBOT_LIEN_CLE: ""
-        run: python outils/verifier.py --sans-split
+      # contrôles (GeckoLib, noms perso, langues) : job « controles », sans aucun secret (21/11, validation)
 
       # clé des jetons de lancement du jeu : créée sur la VM du site (site/vm/theme.sh), qui signe les jetons pour le
       # compte connecté au launcher ; lue ici à chaque envoi pour que Spartan les vérifie. Jamais dans le dépôt, ni dans

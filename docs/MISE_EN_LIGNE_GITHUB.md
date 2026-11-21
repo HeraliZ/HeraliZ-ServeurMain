@@ -29,7 +29,9 @@ de Mohist) ne change pas.
 ## 3. Ce que GitHub fait tout seul (onglet Actions, « Serveur HeraliZ »)
 
 - Fabrique tous les modules (la première fois : environ 30 à 60 min).
-- Contrôles (GeckoLib, langues, noms interdits, aucun pseudo sans mot de passe dans AuthMe).
+- Contrôles (GeckoLib, langues, noms interdits, aucun pseudo sans mot de passe dans AuthMe), dans un job à part sans
+  aucun secret de production (21/11) : seul le secret du dépôt `NOMS_INTERDITS` y est donné, et la bibliothèque JOML
+  (lancée par un contrôle) est refusée si son empreinte change. Un contrôle raté : **rien n'est envoyé au Ptero**.
 - **Démarrage d'essai** (19/11) : le serveur fabriqué (nos jars, les plugins et les réglages du dépôt, le même Mohist,
   un monde plat neuf, aucun secret) démarre sur une machine de GitHub. Sans « Done », ou avec un mixin qui ne s'applique
   pas ou un plantage dans son journal, **rien n'est envoyé au Ptero** (raison dans le résumé, partie « Démarrage
@@ -147,7 +149,8 @@ dépôt). Le réglage, à faire une fois (Settings du dépôt, compte propriéta
    « Enquête Spartan » lit les rapports déjà là sans lancer de contrôle, et « Lenteurs » ne lance pas de profil.
 3. **Settings → Secrets and variables → Actions → Repository secrets** : **supprimer** les secrets recopiés aux étapes
    1 et 2 (sinon ils restent lisibles depuis n'importe quelle branche). **Garder** au niveau du dépôt seulement
-   `NOMS_INTERDITS` (contrôle des branches de travail).
+   `NOMS_INTERDITS` (contrôles des branches de travail et de la mise en ligne : leurs jobs « controles » n'ont pas
+   d'environnement, ils ne voient que les secrets du dépôt ; 21/11).
 4. Vérifier : envoyer quelque chose sur `main` → « Serveur HeraliZ » vert ; « Site HeraliZ » → Run workflow →
    `verifier` → vert.
 

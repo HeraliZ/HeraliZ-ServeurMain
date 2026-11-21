@@ -112,6 +112,16 @@ jobs:
       - name: Ranger les jars fabriqués
         run: python outils/construire.py --sans-build
 
+      # JOML (bibliothèque d'un autre auteur, lancée par modules/loot/outils/lod_props.py, qui la prend par JOML_JAR au lieu
+      # de la télécharger lui-même) : téléchargée ici depuis Maven Central et refusée si son empreinte SHA-256 n'est pas
+      # celle-ci (21/11, validation : elle tourne pendant que le fichier des noms perso est sur le disque). Même étape dans
+      # le job « controles » de serveur.yml.
+      - name: JOML (empreinte vérifiée)
+        run: |
+          mkdir -p "$RUNNER_TEMP/joml"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/joml/joml-1.10.5.jar" https://repo1.maven.org/maven2/org/joml/joml/1.10.5/joml-1.10.5.jar
+          echo "cac9f22f83a7aa33eebda73c16ff5261e3cb4911b6bafcf4c79ea486099d0c9a  $RUNNER_TEMP/joml/joml-1.10.5.jar" | sha256sum -c -
+
       - name: Noms interdits
         env:
           NOMS_INTERDITS: ${{ secrets.NOMS_INTERDITS }}
@@ -123,6 +133,8 @@ jobs:
           fi
 
       - name: Contrôles (GeckoLib, noms perso, langues)
+        env:
+          JOML_JAR: ${{ runner.temp }}/joml/joml-1.10.5.jar
         run: python outils/verifier.py --sans-split
 
   # Contrôles d'images (21/11, choix du propriétaire) : logos des icônes, icônes des accessoires, chargeurs 3D,

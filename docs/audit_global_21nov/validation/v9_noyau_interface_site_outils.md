@@ -101,7 +101,8 @@ fil à part, après la sauvegarde du monde.
 
 ## À décider par le propriétaire (rien n'est changé)
 
-1. **Contrôles de la mise en ligne dans un job à part, et empreinte de JOML** (petit, sécurité). (a) Mettre l'étape
+1. **Contrôles de la mise en ligne dans un job à part, et empreinte de JOML** (petit, sécurité ; **fait ensuite, voir
+   « Suite »**). (a) Mettre l'étape
    « Contrôles » de `serveur.yml` dans un job sans aucun secret (comme le job « controles » de `branches.yml`), dont le
    job « serveur » dépendrait : séparation complète, sans minute de plus (il tourne pendant le démarrage d'essai). Pas
    fait ici : c'est la structure de la mise en ligne, à changer avec une mise en ligne surveillée. (b) Dans le « Contrôle
@@ -190,8 +191,22 @@ fil à part, après la sauvegarde du monde.
 - [ ] S'il existe un panneau (bloc) qui joue une commande au clic (au spawn par exemple) : le cliquer en combat →
       « Impossible en combat », comme avant le 21/11 ; hors combat, il marche comme avant.
 - [ ] `/redemarrage 5` puis `/redemarrage annuler` : message « annulé » ; un arrêt normal plus tard reste un arrêt normal.
-- [ ] GitHub, prochaine mise en ligne sur `main` : tout est vert ; dans le journal de l'étape « Contrôles », les lignes
-      `PTERO_SFTP_PASSWORD:`, `PTERO_API_KEY:`… sont vides (sans `***`) ; les étapes suivantes (SFTP, redémarrage) marchent
-      comme avant.
+- [ ] GitHub, prochaine mise en ligne sur `main` (voir « Suite » plus bas) : un job « controles » de plus, vert, en même
+      temps que le démarrage d'essai ; son journal ne montre aucun secret du Ptero (seulement `NOMS_INTERDITS`, et un
+      avertissement tant qu'il manque) ; son étape « JOML (empreinte vérifiée) » dit « OK » ; le job « serveur » part
+      ensuite et marche comme avant (SFTP, redémarrage, pack du launcher).
 
 Pas testé : tout ce qui précède (aucun jeu ni serveur ici).
+
+---
+
+## Suite (21/11, choix du propriétaire : proposition n° 1 « Oui »)
+
+Fait : les contrôles de la mise en ligne sont dans un job à part, `controles`, sans aucun secret de production (machine
+neuve, jars repris du cache `jars-<commit>`, seul le secret du dépôt `NOMS_INTERDITS`, avertissement s'il manque) ; le job
+`serveur` en dépend (`needs` et `if`) : un contrôle raté, rien n'est envoyé au Ptero, comme avant. JOML est téléchargé
+par le workflow et refusé si son empreinte SHA-256 change (`cac9f22f…0c9a`), dans `serveur.yml` et dans `branches.yml` ;
+`lod_props.py` le prend par `JOML_JAR` (module loot inchangé, pas de version à monter). Rien d'autre ne change dans la
+mise en ligne. `serveur.yml` ne tourne que sur `main` : il ne sera essayé qu'à la prochaine mise en ligne. Le secret
+`NOMS_INTERDITS` doit être un secret du DÉPÔT (le job `controles` n'a pas d'environnement), comme le dit
+`docs/MISE_EN_LIGNE_GITHUB.md` (sections 3 et 7, mises à jour).
