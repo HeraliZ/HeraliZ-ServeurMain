@@ -152,7 +152,8 @@ Pour les développeurs : `outils/commandes_serveur.py` l. 70-74.
   `heralisz:en_match`, `HeraliszMatch` inchangées.
 - **Interface et emotes** (joueurs) : pas de travail lourd à chaque image relevé ; reconnexion automatique seulement sur
   le message du redémarrage ; emotes : le serveur transmet toujours sa copie officielle de l'animation, refuse une emote
-  verrouillée, en combat, à terre ou en match ; aucun paquet reçu des joueurs sur le canal des emotes.
+  verrouillée, en combat, à terre ou en match ; le canal HeraliZ des emotes ne reçoit rien des joueurs (celui
+  d'Emotecraft passe par ce filtre du serveur, `ServerEmotePlayMixin`, dont le branchement est vérifié au démarrage).
 - **Site** (extension HeraliZ) : Points Boutique signés (HMAC, horodatage à 2 min, une signature ne sert qu'une fois,
   référence unique, plafonds de création), jetons de jeu et liens du pack signés, comptes du launcher (jeton d'Azuriom,
   limites par adresse, adresse IP jamais lue dans un en-tête), Discord (état de connexion dans la session, lien à usage
