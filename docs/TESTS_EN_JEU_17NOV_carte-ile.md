@@ -1948,8 +1948,10 @@ fausse alerte, la règle se suspend (alerte seulement) et le staff est prévenu.
   `serveur/config/spartan-common.toml` ; 0 = suspendue jusqu'au redémarrage, comme avant) : alerte « Règle remise en
   service » au staff ; `/spartan status <joueur>` donne le temps restant.
 - Un PC qui a déjà fait suspendre une règle ne compte plus pour elle jusqu'au redémarrage (il reste expulsé quand elle
-  est en service) : les mêmes PC ne peuvent pas la couper à chaque remise en service.
-- Essais hors du jeu : `RodageTest`, 13 essais, tous passés.
+  est en service) : les mêmes PC ne peuvent pas la couper à chaque remise en service. **Changé par l'audit du 21/11
+  (section 49, Spartan 2.15.5)** : ils comptent encore mais ne la coupent plus seuls (il faut au moins un PC nouveau) ;
+  avant, ils restaient expulsés à chaque connexion même quand la fausse alerte touchait d'autres PC.
+- Essais hors du jeu : `RodageTest`, 13 essais, tous passés (16 depuis la section 49).
 
 À tester en jeu :
 - [ ] Rien ne change pour un joueur normal : aucune expulsion, aucune alerte « Règle suspendue ».
@@ -2002,3 +2004,64 @@ Pas testé : tout en jeu (aucune compilation ici : contrôle de la branche sur G
 - [ ] Spawn et tutoriel des bases : rien ne change (PNJ, lits, portes, construction du tutoriel).
 
 Pas testé : tout en jeu.
+
+## 49. Audit global profond du 21/11 : tout le serveur relu (10 relectures)
+
+Demandé par le propriétaire : relire tous les mods et tout le code, les liens entre mods, les lenteurs possibles. Dix
+relectures en parallèle, une par partie. Synthèse : `docs/audit_global_21nov/LISEZMOI.md` ; un compte rendu par partie
+dans le même dossier (avec la liste complète des essais). Aucun canal réseau changé ; launcher et site inchangés.
+
+Corrigé (le détail, les fichiers et les lignes sont dans chaque compte rendu) :
+- **ClashWar 1.3.7** : écran ouvert pendant l'écriture d'un dépôt refermé (duplication d'une arme équipée) ; souris et
+  grille 2 x 2 rendues à la déconnexion ; Coffre jamais rendu à un mort (attend la réapparition) ni à un joueur à terre
+  (relevé d'abord) ; spectateur bloqué dans le monde des arènes ; ce qui ne tient pas tombe à l'arrivée ; `/wipe` garde
+  l'objet tenu à la souris ; plus d'« équipe retirée » à tort. **Réanimation 1.16.14** : exécutions limitées à une toutes
+  les 400 ms ; garde hors match et bordure laissent un mort tranquille.
+- **Boutique 1.7.2** : encaissements de la caisse du casino toujours ceux du serveur ; tablette et éditeur des caisses :
+  op ET `/login` ; `/boutique abonnement`, `/avantages nick qui`, `/grade voir`, `/grade liste` répondent aux non-op ;
+  hôtel des ventes : solde demandé au site 1 fois / 5 s ; `pb retirer` refusé affiché comme refusé ; objet donné à un mort
+  rendu après la réapparition ; pastilles du chat sans calcul à chaque image.
+- **CRac 1.38.9-beta** : armoires gardées une par une (tutoriel à deux d'un même clan) ; armoire d'essai gardée si le clan
+  est dissous ; tutoriel sans effet sur la réservation d'une base raidée ni sur les messages d'entretien du clan ; échelle
+  de raid frappée seulement à portée de main ; trois tests de tronçon qui faisaient attendre le serveur ; dépendance au
+  noyau déclarée au serveur.
+- **Monde 1.3.10** : hélicoptère, frappes, ping, jumelles, quai du train, lampes : plus d'attente d'un tronçon en lecture.
+- **Armes 2.59.9** : vitres qui repoussent sans attendre un tronçon ; objet à vie refusé dans la caisse de largage posée
+  en bloc (aussi côté serveur) ; petites économies d'images. **Sacs heralisz28** : défis de déblocage coupés (tout est
+  débloqué) ; reliquats d'un ancien serveur retirés.
+- **Clans 3.19.2, Quêtes 1.24.4, Événements 1.3.3** : `/bourse donner` en op 4 connecté ; économie « indisponible » si le
+  fichier des comptes est illisible ; staff caché sans « vu à l'instant » pour son clan ; erreur du Directeur
+  d'événements notée au lieu d'arrêter le serveur ; marchands à 4 opérations / s ; panneau de zone des territoires.
+- **Loot 0.20.8, Bunker 0.14.8** : fouille arme en main 1 / tick ; `/heralizloot reinitialiser 128` sans gel ; portes des
+  salles à carte et coffres T7 sans attente d'un tronçon ; couleurs de rareté sans calcul à chaque case.
+- **Spartan 2.15.5** : disjoncteur par adresse publique seulement ; identifiants matériels lus avant les packs ; alertes en
+  jeu au staff vérifié ; IPv4 écrite en IPv6 ; les PC qui ont coupé une règle comptent de nouveau avec un PC nouveau.
+- **Noyau 1.1.11** : actions du panneau du staff jugées comme des actions du serveur (pas les commandes tapées) ; arrêt
+  avec code de sortie qui attend les écritures. **GitHub** : fabrication sans aucun secret (contrôles dans un job à
+  part) ; version Modrinth nettoyée ; IPv6 masquées dans les résumés publics.
+
+À tester en jeu (les plus importants ; le reste dans chaque compte rendu) :
+- [ ] **ClashWar** : départ avec un fusil équipé (lunette, silencieux, skin), un sac plein et un objet à la souris ; à la
+      clôture, tout revient exactement une fois. Quitter le jeu juste à la clôture avec un objet à la souris : il revient.
+- [ ] **ClashWar, spectateur** éliminé : touches 1 à 9, « se téléporter » vers un joueur de la carte : rien ne doit se
+      passer (si ça marche, le dire). Un op peut toujours.
+- [ ] **Tutoriel des bases** à deux comptes du même clan, à quelques secondes d'écart : chacun finit, cabanes effacées ;
+      un troisième arrive sur une parcelle vide ; le reste du clan ne reçoit aucun message d'entretien.
+- [ ] **Casino** (op connecté) : tablette, page de la caisse, achat d'un encaissement à la caisse : il est donné.
+- [ ] **Joueur sans op** : `/boutique abonnement` affiche son grade et le temps restant ; Helpeur : `/grade voir`.
+- [ ] **`/bourse donner`** : op 4 connecté et console seulement.
+- [ ] **Staff sans op** en survie sur la carte, en combat : panneau → « Ban PC » d'un compte d'essai, « Jour »,
+      « Largage » : fait. Un joueur normal : `/spawn`, `/warp` toujours refusés sur la carte, `/home` refusé en combat.
+- [ ] **Hélicoptère** (`/event helico lancer`), frappe aérienne, largage public : vols à la bonne hauteur, aucune alerte
+      « [Diag] Blocage » ; ping posé loin depuis la carte M ; déconnexion à bord du train puis reconnexion : sur le quai.
+- [ ] **Vitres** cassées : elles repoussent au bout de 5 min ; revenir en courant dans un coin plein de vitres cassées :
+      aucune alerte « [Diag] Blocage ». **Salle à carte** approchée depuis 200 blocs : pas d'alerte non plus.
+- [ ] **Fouille** arme en main en cliquant vite : s'ouvre comme avant ; **marchands** : acheter, vendre vite : tout passe.
+- [ ] **Sacs** : ouvrir, ranger, Maj + clic, sac dans un coffre : comme avant ; démarrage du serveur sans erreur
+      « backpacked ».
+- [ ] **Connexion** par le launcher : « Jeu validé », aucune alerte « Règle suspendue » ; un op reçoit les alertes Spartan
+      après son `/login`.
+- [ ] **Journal du serveur** au démarrage et après une heure : aucune erreur nouvelle.
+
+Pas testé : tout en jeu ; rien de mesuré avec 150 vrais joueurs (aucune compilation ici : fabrication, contrôles et
+démarrage d'essai sur GitHub).
