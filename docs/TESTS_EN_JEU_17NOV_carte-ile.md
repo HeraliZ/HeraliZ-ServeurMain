@@ -1776,3 +1776,73 @@ Proposé (pas fait, à décider) :
   module à son tour, un fichier à la fois.
 - Petits : `[perf] arrivees_prechargees = false` laisse encore les tickets de préchargement (sans effet gênant) ; la
   borne de départ ne voit les conteneurs de loot posés en jeu qu'après un redémarrage.
+
+## 45. Audit du 21/11 : textes, données, réglages, commandes et démarrage du serveur
+
+Dernière vérification demandée par le propriétaire (« que tout soit clean, sans aucun bug ») sur ce qui n'est pas du
+code mais casse le jeu si c'est faux : textes en trois langues, images et sons cités, objets cités par le loot, les
+marchands, les quêtes et les caisses, raretés, commandes, réglages, démarrage du serveur. Versions : Loot **0.20.7**,
+Noyau **1.1.10** (avec ClashWar, voir plus bas ; le launcher les donne). **Rien n'a été testé en jeu** : contrôles hors du
+jeu, fabrication et démarrage d'essai sur GitHub seulement.
+
+Vérifié, rien à corriger :
+- **Textes** : les trois langues ont les mêmes textes et les mêmes paramètres ; aucun texte anglais resté en français,
+  aucun russe resté en anglais (seuls des noms propres : ClashWar, Discord, Pepsi…). Les textes russes plus longs (onglets,
+  pastilles de l'Atelier) sont coupés proprement par les écrans (« +2 », infobulle).
+- **Objets cités par les données** (loot, marchands, quêtes, caisses, recycleur, raretés, recettes, établis) : tous
+  existent, armes, accessoires et munitions des gunpacks compris. Tous les générateurs (`loot_armes.py`,
+  `marchands.py`, `caisses.py`, `recyclage.py`, `quetes_journalieres.py`, `loot_zombies.py`, `crafts.py`,
+  `equilibrage_armes.py`, langues des PNJ…) relancés : ils réécrivent exactement les fichiers du dépôt (personne n'a
+  retouché un fichier à la main). Tous les contrôles d'économie passent.
+- **Images et modèles** : tous les modèles et images cités par nos blocs et objets existent ; mipmaps et grande texture
+  des blocs bons (94 % de sa taille maximale : une grosse image de bloc en plus peut la faire déborder, le contrôle le
+  dirait) ; armes allégées de loin à jour.
+- **Réglages** : au démarrage d'essai, Forge n'a refusé **aucune** valeur (pas de valeur hors bornes ni du mauvais type)
+  et aucun réglage du dépôt n'est un réglage disparu. Les fichiers « corrigés » au démarrage le sont seulement parce
+  qu'ils ont nos longs commentaires (Forge remet les siens) ou parce que des réglages y manquent exprès (le code garde
+  alors sa valeur par défaut : loot, spawn, véhicules, armures).
+- **Commandes permises sur la carte et en combat** : chacune existe. **Écran Informations** : les commandes et touches
+  qu'il montre existent (K pour le clan, J pour les quêtes).
+
+Corrigé :
+- **Couteaux** : une mise à mort au couteau (M9, Karambit, Butterfly, couteaux CT et T) ne faisait aucun son : leurs 61
+  fiches citaient un son qui n'existe pas. Elles citent maintenant le son de coup de couteau du pack. Le launcher
+  redonne les gunpacks à la prochaine mise en ligne.
+- **`/recharger loot`** : son message n'avait de texte dans aucune langue (le staff anglais ou russe le lisait en
+  français). Textes ajoutés (Loot 0.20.7).
+- **Écran d'inscription du ClashWar** : son titre lu par le narrateur était « ClashWar #%s » (texte cassé) ; il a son
+  numéro d'édition (livré avec ClashWar 1.3.6).
+- **`/sethome`** : la liste des commandes permises sur la carte écrite dans le code ne l'avait pas (seul le fichier de
+  réglages l'avait) : sans ce fichier, `/sethome` aurait été refusée sur la carte. Ajoutée (Noyau 1.1.10). L'inventaire
+  des commandes la compte enfin (87 commandes) ; `docs/COMMANDES.md` a aussi `/aide`, `/bourse`, `/guide`, `/cycle` et
+  `/recolte`, qui y manquaient.
+- **Commentaires faux** : distance de simulation (le réglage disait « 5 », c'est 4 sur le Ptero) et `ARCHITECTURE.md`.
+- **Contrôles ajoutés** (ils tournent sur GitHub à chaque envoi) : chaque texte cité par le code de TOUS les modules doit
+  exister (avant : seulement CRac et les Quêtes) et recevoir assez de valeurs ; le démarrage d'essai montre maintenant
+  aussi les avertissements du serveur et, clé par clé, chaque réglage que Forge corrige (un réglage ignoré se voit).
+
+Lignes d'erreur du démarrage d'essai, toutes connues et sans danger :
+- 8 « Not found model file: ywzj_vehicle:… » : le mod des véhicules (autre auteur) cherche ses modèles côté serveur ;
+  ils sont bien dans le jar et s'affichent chez les joueurs.
+- 4 « face / ear_protection is not a registered slot type » : fichiers de cases Curios en trop (GeckoLib d'un autre
+  auteur et nos sacs) pour des cases qui n'existent pas ; ignorés. Les cases des joueurs restent celles de HeraliZ.
+- 1 « No key layers » : vient du monde plat de l'essai, pas du serveur en ligne.
+- Avertissements : mixins d'autres mods pour des mods absents (Create) ou pour le jeu des joueurs, mode hors ligne
+  (AuthMe), plugins ; et deux qui ne viennent que du monde neuf de l'essai (quête « La boîte noire » sans zone de
+  radiation, bordure du monde pour la récolte) : le journal du serveur en ligne ne les a pas.
+
+À vérifier en jeu :
+- [ ] Tuer un zombie ou un joueur avec un couteau (M9, Karambit, Butterfly, CT, T) : on entend le coup de couteau.
+- [ ] `/recharger loot` (staff) : le message « N tables de loot relues. » s'affiche dans la langue du jeu.
+- [ ] `/sethome` sur la carte (droit « Gérer la base ») : acceptée comme avant.
+
+Proposé (pas fait, à décider) :
+- **Couleurs des raretés des caisses** : l'écran des caisses a ses propres teintes (gris, vert, bleu, violet et or un peu
+  différents de ceux des objets) ; seul « Unique » a été aligné le 14/11. Les aligner sur celles du loot : rendus à
+  valider d'abord (règle des visuels).
+- **MAtmos et TCTcore sur le serveur** : ce sont des sons d'ambiance joués chez les joueurs ; le serveur les charge pour
+  rien (22 Mo de jar). Les retirer du serveur seulement : à essayer d'abord sur le serveur d'essai (un joueur qui les a
+  doit toujours pouvoir entrer).
+- **Fichiers de cases Curios en trop** : les retirer ferait disparaître 4 lignes d'erreur, mais l'ordre de lecture de
+  Curios changerait ; aujourd'hui le bon fichier de HeraliZ passe en dernier (vérifié). À ne faire qu'avec un essai en
+  jeu des cases d'équipement.
