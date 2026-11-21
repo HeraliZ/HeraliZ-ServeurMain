@@ -549,8 +549,9 @@
 	#d'expulsion) pendant rodageRepriseMinutes, puis remise en service toute seule ; le staff est prévenu les deux
 	#fois (« Règle suspendue », « Règle remise en service »). Un PC = son compte, son bloc d'adresses IP et ses
 	#identifiants matériels : plusieurs comptes sur un PC, ou plusieurs PC derrière la même connexion, comptent pour
-	#un ; un PC qui a déjà coupé une règle ne compte plus pour elle jusqu'au redémarrage. Une règle qui se trompe
-	#n'expulse jamais plus de rodageJoueurs - 1 PC honnêtes d'affilée. gardien:dll: = bibliothèque d'agent Java ou
+	#un ; un PC qui a déjà coupé une règle ne la coupe plus seul (jusqu'au redémarrage) : il faut au moins un PC
+	#nouveau parmi les rodageJoueurs ; seuls, les mêmes PC restent expulsés. Une règle qui se trompe n'expulse
+	#jamais plus de rodageJoueurs - 1 PC nouveaux d'affilée. gardien:dll: = bibliothèque d'agent Java ou
 	#de débogueur vue DANS le jeu par le launcher ; gardien:cle: = clé du Gardien réutilisée (launcher imité) ;
 	#packs: = refus d'un joueur qui a un pack de textures ajouté par lui ([resources] refuseCustomResourcePacks).
 	#Vider la liste une fois les règles éprouvées (une semaine sans « Règle suspendue »).

@@ -258,7 +258,7 @@ public final class Injection {
                     + SpartanConfig.INJECTION_RODAGE_MINUTES.get() + " min (dernier : " + p.getName().getString()
                     + ", pas expulsé) : sans doute une fausse alerte. Elle ne fait plus qu'alerter "
                     + (reprise > 0 ? "pendant " + reprise + " min, puis se remet en service toute seule (les PC qui l'ont"
-                    + " coupée ne comptent plus pour elle)." : "jusqu'au prochain redémarrage.")
+                    + " coupée ne pourront plus la couper seuls)." : "jusqu'au prochain redémarrage.")
                     + " Regarder les dernières alertes « Injection » ; pour la couper pour de bon : retirer « " + regle
                     + " » de [injection] indices dans spartan-common.toml.";
             Spartan.LOGGER.warn("[Spartan] Règle suspendue : {}", texte);
@@ -275,7 +275,8 @@ public final class Injection {
         prochaineReprise = now + 10_000L;
         for (String regle : RODAGE.reprendre(now, SpartanConfig.INJECTION_RODAGE_REPRISE.get() * 60_000L)) {
             String texte = "la règle « " + regle + " » (en rodage) est de nouveau en service : elle expulse à nouveau. Si"
-                    + " elle se trompe encore, elle se suspendra encore (les PC qui l'ont déjà coupée ne comptent plus).";
+                    + " elle se trompe encore, elle se suspendra encore dès qu'un PC nouveau la déclenche (les PC qui l'ont"
+                    + " déjà coupée ne la coupent plus seuls : s'ils sont seuls à la déclencher, ils restent expulsés).";
             Spartan.LOGGER.warn("[Spartan] Règle remise en service : {}", texte);
             AlertManager.info(server, "Règle remise en service", texte, AlertManager.COLOR_INFO);
         }

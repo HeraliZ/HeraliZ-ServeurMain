@@ -27,8 +27,12 @@ import java.util.Set;
  * <p>21/11 (renforcé, choix du propriétaire) : on compte des PC, plus des comptes. Un PC = ses clés : le compte, le bloc
  * d'adresses IP ({@link #blocIp}) et les identifiants matériels envoyés par le jeu. Deux déclenchements qui partagent une
  * clé viennent du même PC : plusieurs comptes sur un PC, ou plusieurs PC derrière la même connexion, ne comptent qu'une
- * fois. Un PC qui a déjà fait suspendre une règle ne compte plus pour elle jusqu'au redémarrage (il reste expulsé quand
- * elle est en service) : les mêmes PC ne peuvent pas la couper à chaque remise en service.
+ * fois. Un PC qui a déjà fait suspendre une règle ne la coupe plus seul jusqu'au redémarrage : il compte encore, mais il
+ * faut au moins un PC nouveau parmi les {@code seuil}. Les mêmes PC ne peuvent donc pas la couper à chaque remise en
+ * service (ils restent expulsés tant qu'ils sont seuls à la déclencher) ; une règle qui se trompe touche aussi d'autres
+ * PC et se recoupe au premier nouveau : au plus {@code seuil - 1} PC nouveaux expulsés à tort à chaque fois. (Audit du
+ * 21/11 : avant, ces PC ne comptaient plus du tout ; ils étaient expulsés à chaque connexion jusqu'au redémarrage, même
+ * quand la règle touchait d'autres PC.)
  *
  * <p>Java pur (testé hors du jeu). Appelé sur le fil du serveur ; synchronisé par prudence.
  */
@@ -46,10 +50,11 @@ public final class Rodage {
     /** Clés gardées au plus pour un même PC (un jeu modifié peut changer d'identifiant matériel à chaque connexion). */
     static final int MAX_CLES = 64;
 
-    /** Un PC qui a déclenché la règle : ses clés et l'heure de la dernière fois. */
+    /** Un PC qui a déclenché la règle : ses clés, l'heure de la dernière fois, et s'il l'a déjà fait suspendre. */
     private static final class Pc {
         final Set<String> cles;
         long quand;
+        boolean ancien;
 
         Pc(Set<String> cles, long quand) {
             this.cles = cles;
@@ -146,9 +151,7 @@ public final class Rodage {
             cles.add("inconnu");
         }
         Set<String> deja = dejaComptes.get(regle);
-        if (deja != null && !Collections.disjoint(deja, cles)) {
-            return Decision.APPLIQUER; // ce PC a déjà fait suspendre la règle : il ne la coupe pas une deuxième fois
-        }
+        boolean ancien = deja != null && !Collections.disjoint(deja, cles); // il a déjà fait suspendre la règle
         List<Pc> d = touches.computeIfAbsent(regle, k -> new ArrayList<>());
         d.removeIf(t -> maintenant - t.quand > fenetreMs);
         Pc meme = null;
@@ -161,16 +164,20 @@ public final class Rodage {
                 meme = t;
             } else {
                 ajouter(meme.cles, t.cles); // ce déclenchement relie deux PC notés à part : c'était le même
+                meme.ancien |= t.ancien;
                 it.remove();
             }
         }
         if (meme == null) {
-            d.add(new Pc(cles, maintenant));
+            meme = new Pc(cles, maintenant);
+            d.add(meme);
         } else {
             ajouter(meme.cles, cles);
             meme.quand = maintenant;
         }
-        if (d.size() >= seuil) {
+        meme.ancien |= ancien;
+        // les PC qui l'ont déjà fait suspendre ne la coupent plus seuls : il en faut au moins un nouveau
+        if (d.size() >= seuil && unNouveau(d)) {
             suspendues.put(regle, maintenant);
             desSuspendues = true;
             Set<String> dj = dejaComptes.computeIfAbsent(regle, k -> new HashSet<>());
@@ -181,6 +188,16 @@ public final class Rodage {
             return Decision.SUSPENDRE;
         }
         return Decision.APPLIQUER;
+    }
+
+    /** Au moins un PC qui n'a encore jamais fait suspendre la règle. */
+    private static boolean unNouveau(List<Pc> d) {
+        for (Pc t : d) {
+            if (!t.ancien) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void ajouter(Set<String> dans, Set<String> cles) {

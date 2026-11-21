@@ -68,11 +68,13 @@ scanner coupé en cours de partie ; tirs TaCZ, vitesse soutenue et faux lag anal
   PC DIFFÉRENTS en déclenchent une en moins d'une heure (`rodageJoueurs`, `rodageMinutes`), elle se suspend toute
   seule (alerte « Règle suspendue » au staff, `/spartan status` la cite avec le temps restant) puis se remet en service au
   bout d'une heure (`rodageRepriseMinutes`, alerte « Règle remise en service » ; 0 = jusqu'au redémarrage) : une erreur ne
-  peut jamais expulser plus de deux PC honnêtes d'affilée. Depuis le 21/11 (2.15.3), on compte des PC et plus des comptes :
+  peut jamais expulser plus de deux PC nouveaux d'affilée. Depuis le 21/11 (2.15.3), on compte des PC et plus des comptes :
   un PC = son compte, son bloc d'adresses IP (/24, IPv6 /48 ; adresse publique seulement depuis la 2.15.4 : une passerelle
   Docker ou un proxy, commune à tous les joueurs, ne compte pas) et ses identifiants matériels ; plusieurs comptes sur un même
-  PC ou derrière la même connexion ne comptent qu'une fois, et un PC qui a déjà coupé une règle ne compte plus pour elle
-  jusqu'au redémarrage (les mêmes PC ne peuvent pas la couper à chaque remise en service). Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
+  PC ou derrière la même connexion ne comptent qu'une fois, et un PC qui a déjà coupé une règle ne la coupe plus seul
+  jusqu'au redémarrage : il faut au moins un PC nouveau parmi les trois (les mêmes PC ne peuvent pas la couper à chaque
+  remise en service ; seuls, ils restent expulsés ; depuis la 2.15.5, une fausse alerte qui touche aussi d'autres PC se
+  recoupe au premier nouveau, avant ces PC restaient expulsés jusqu'au redémarrage). Aucun overlay ni antivirus ne porte ces noms de bibliothèques ni ne redéfinit des
   classes de Java. Tests : `RodageTest`, `GardienClesTest`, `MemoireTest`, `ScanAnalyzerTest`, `ConformiteStricteTest`.
 
 **Décisions du propriétaire du 19/11 (2.15.0, launcher 1.18.0)** :

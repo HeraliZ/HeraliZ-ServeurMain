@@ -117,23 +117,68 @@ class RodageTest {
         assertEquals(Decision.APPLIQUER, r.noter(REGLE, D, 3_000 + HEURE, 3, HEURE));
     }
 
-    @Test
-    void lesPcQuiOntCoupeLaRegleNePeuventPasLaCouperUneDeuxiemeFois() {
-        Rodage r = new Rodage();
+    /** A, B et C coupent la règle, puis elle se remet en service ; rend l'heure juste après. */
+    private static long coupeeParABCPuisReprise(Rodage r) {
         r.noter(REGLE, A, 0, 3, HEURE);
         r.noter(REGLE, B, 1_000, 3, HEURE);
         assertEquals(Decision.SUSPENDRE, r.noter(REGLE, C, 2_000, 3, HEURE));
-        r.reprendre(2_000 + HEURE, HEURE);
-        long t = 3_000 + HEURE;
-        // les mêmes trois PC (même un autre compte sur l'un d'eux) : toujours expulsés, jamais comptés
+        assertEquals(List.of(REGLE), r.reprendre(2_000 + HEURE, HEURE));
+        return 3_000 + HEURE;
+    }
+
+    @Test
+    void lesPcQuiOntCoupeLaRegleNePeuventPasLaCouperSeuls() {
+        Rodage r = new Rodage();
+        long t = coupeeParABCPuisReprise(r);
+        // les mêmes trois PC (même un autre compte sur l'un d'eux), seuls : toujours expulsés, jamais de nouvelle coupure
+        for (int i = 0; i < 5; i++) {
+            assertEquals(Decision.APPLIQUER, r.noter(REGLE, A, t + i * 10, 3, HEURE));
+            assertEquals(Decision.APPLIQUER, r.noter(REGLE, B, t + i * 10 + 1, 3, HEURE));
+            assertEquals(Decision.APPLIQUER, r.noter(REGLE, Set.of("compte:autre", "pc:m3"), t + i * 10 + 2, 3, HEURE));
+        }
+        // un compte de plus derrière l'adresse de A : c'est encore A, pas un PC nouveau
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, Set.of("compte:alt", "ip4:1.1.1", "pc:x"), t + 100, 3, HEURE));
+        assertFalse(r.suspendue(REGLE));
+    }
+
+    @Test
+    void unPcNouveauAvecLesAnciensLaCoupeDeNouveau() {
+        // audit du 21/11 : une fausse alerte qui touche les PC qui l'ont coupée ET d'autres se recoupe au premier nouveau
+        // (avant, A et B restaient expulsés à chaque connexion jusqu'au redémarrage)
+        Rodage r = new Rodage();
+        long t = coupeeParABCPuisReprise(r);
         assertEquals(Decision.APPLIQUER, r.noter(REGLE, A, t, 3, HEURE));
         assertEquals(Decision.APPLIQUER, r.noter(REGLE, B, t + 1, 3, HEURE));
-        assertEquals(Decision.APPLIQUER, r.noter(REGLE, Set.of("compte:autre", "pc:m3"), t + 2, 3, HEURE));
+        assertEquals(Decision.SUSPENDRE, r.noter(REGLE, D, t + 2, 3, HEURE)); // D n'est pas expulsé
+        assertTrue(r.suspendue(REGLE));
+        assertEquals(Decision.SUSPENDUE, r.noter(REGLE, A, t + 3, 3, HEURE)); // A n'est plus expulsé non plus
+    }
+
+    @Test
+    void desPcNouveauxSeulsLaCoupentAuSeuil() {
+        Rodage r = new Rodage();
+        long t = coupeeParABCPuisReprise(r);
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, D, t, 3, HEURE));
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, E, t + 1, 3, HEURE));
+        assertEquals(Decision.SUSPENDRE, r.noter(REGLE, F, t + 2, 3, HEURE));
+        // deuxième remise en service : D, E et F ne la coupent plus seuls non plus
+        assertEquals(List.of(REGLE), r.reprendre(t + 2 + HEURE, HEURE));
+        long u = t + 3 + HEURE;
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, D, u, 3, HEURE));
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, A, u + 1, 3, HEURE));
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, F, u + 2, 3, HEURE));
         assertFalse(r.suspendue(REGLE));
-        // une vraie fausse alerte touche de nouveaux PC : suspendue à nouveau au 3e
-        assertEquals(Decision.APPLIQUER, r.noter(REGLE, D, t + 3, 3, HEURE));
-        assertEquals(Decision.APPLIQUER, r.noter(REGLE, E, t + 4, 3, HEURE));
-        assertEquals(Decision.SUSPENDRE, r.noter(REGLE, F, t + 5, 3, HEURE));
+    }
+
+    @Test
+    void lesAnciensSortentDeLaFenetreCommeLesAutres() {
+        Rodage r = new Rodage();
+        long t = coupeeParABCPuisReprise(r);
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, A, t, 3, HEURE));
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, B, t + 1, 3, HEURE));
+        // plus d'une heure après : A et B ne comptent plus, D n'est que le 1er
+        assertEquals(Decision.APPLIQUER, r.noter(REGLE, D, t + 2 + HEURE, 3, HEURE));
+        assertFalse(r.suspendue(REGLE));
     }
 
     @Test
