@@ -139,6 +139,7 @@ tard. Aucun effet aujourd'hui.
    (`bases/Reapparition.java` l.52, seulement mort) et la recherche de l'onglet Accès de l'armoire
    (`bases/AccesBaseTraitement.java` l.95, déjà espacée par le jeu du joueur) n'ont pas de limite côté serveur ; chaque
    paquet coûte peu. Une limite (comme les autres paquets de CRac) se pose en quelques lignes si besoin.
+   **Fait le 21/11 (choix du propriétaire) : voir « Suite du 21/11 » en bas.**
 
 ---
 
@@ -212,3 +213,37 @@ Bases sur la carte (rien ne doit changer) :
 - [ ] Journal du serveur au démarrage : aucune erreur de dépendance pour `crac` ; `/diag etat` : rien de nouveau.
 
 Pas testé : tout en jeu ; seule la fabrication et les contrôles de GitHub sont faits sur ces changements.
+
+---
+
+## Suite du 21/11 (choix du propriétaire)
+
+Choix « Sécurités en plus » : seulement la proposition n° 7 (les autres ne changent pas). Commit **b37753d9e**, CRac
+**1.38.10-beta** (le launcher donne le nouveau jar ; aucun canal réseau ne change : un jeu en 1.38.9 se connecte
+toujours). **Rien n'a été testé en jeu** : un essai hors du jeu des calculs de la cadence (rafales, flot d'un jeu
+modifié, joueur normal), puis la fabrication et les contrôles sur GitHub.
+
+### Fait
+
+En simple : les deux demandes que le jeu du joueur envoie à CRac sans limite côté serveur en ont une maintenant. Chacune
+garde une petite réserve (quelques demandes d'un coup sont toujours acceptées), puis une cadence fixe : un joueur normal
+n'atteint jamais la limite, un jeu modifié qui en envoie des milliers par seconde est ramené à cette cadence (le surplus
+est ignoré, sans message).
+- **Écran de mort, « Au camp » / « À la base »** : 2 d'un coup, puis 1 par demi-seconde. L'écran n'en envoie qu'un par
+  mort (ses boutons s'allument après 1 s, une seule fois). `bases/Reapparition.java` l.55-59.
+- **Onglet Accès de l'armoire** (ouvrir l'onglet, chercher un joueur, donner ou retirer un accès) : 8 d'un coup, puis 8 par
+  seconde. Le jeu envoie une recherche un quart de seconde après la dernière lettre tapée (ou tout de suite avec Entrée) et
+  une demande par clic. L'onglet Entretien garde sa limite d'une par seconde. `bases/AccesBaseTraitement.java` l.68-74.
+- La réserve et la cadence : `network/PacketThrottle.java` l.30-49 (`allowBurst`), oubliées au départ du joueur et à
+  l'arrêt du serveur.
+
+### À tester en jeu
+
+- [ ] Mourir, attendre que les boutons s'allument, cliquer « À la base » (base avec un home, délai fini) : réapparition à
+      la base, comme avant. Mourir de nouveau, cliquer « Au camp » : réapparition au camp, comme avant.
+- [ ] Mourir deux fois de suite rapidement (le plus vite possible) : chaque fois, le choix fait est bien suivi.
+- [ ] Armoire de sa base, onglet Accès : taper un pseudo lettre par lettre, effacer, retaper, appuyer sur Entrée plusieurs
+      fois : la liste des joueurs trouvés suit toujours le texte tapé.
+- [ ] Onglet Accès : passer plusieurs fois et vite de l'onglet Entretien à l'onglet Accès : chaque onglet s'ouvre comme
+      avant.
+- [ ] Journal du serveur : aucune erreur de `crac` pendant ces essais.
