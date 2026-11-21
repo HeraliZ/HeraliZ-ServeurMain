@@ -22,8 +22,15 @@ public final class NetUtil {
         if (ip == null || !InetAddresses.isInetAddress(ip)) {
             return false;
         }
-        InetAddress a = InetAddresses.forString(ip);
-        if (a.isLoopbackAddress() || a.isSiteLocalAddress() || a.isLinkLocalAddress()
+        return isPublicAddress(InetAddresses.forString(ip));
+    }
+
+    /**
+     * Même règle que {@link #isPublicIp(String)}, pour une adresse déjà lue (adresse de la connexion d'un joueur). Faux
+     * pour null (adresse inconnue).
+     */
+    public static boolean isPublicAddress(InetAddress a) {
+        if (a == null || a.isLoopbackAddress() || a.isSiteLocalAddress() || a.isLinkLocalAddress()
                 || a.isAnyLocalAddress() || a.isMulticastAddress()) {
             return false;
         }

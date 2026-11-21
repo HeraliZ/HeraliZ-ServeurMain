@@ -6,6 +6,7 @@ import com.Spartan.capture.CaptureManager;
 import com.Spartan.check.CheckManager;
 import com.Spartan.config.SpartanConfig;
 import com.Spartan.scan.Finding;
+import com.Spartan.util.NetUtil;
 import com.Spartan.util.PacketGuard;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -219,13 +220,18 @@ public final class Injection {
     /**
      * Clés du PC d'un joueur pour le disjoncteur (21/11) : son compte, le bloc d'adresses IP de sa connexion et les
      * identifiants matériels envoyés par son jeu pendant cette connexion. Fil du serveur.
+     *
+     * <p>Seulement une adresse PUBLIQUE (audit du 21/11, comme les bans : {@link NetUtil#isPublicAddress}) : derrière
+     * Docker / Pterodactyl (passerelle 172.x), un proxy anti-DDoS ou en local, tous les joueurs arrivent avec la même
+     * adresse ; son bloc faisait d'eux un seul « PC » et le disjoncteur ne sautait plus jamais (une règle qui se trompe
+     * aurait expulsé tout le monde).
      */
     static Set<String> pc(ServerPlayer p) {
         Set<String> cles = new HashSet<>();
         cles.add("compte:" + p.getUUID());
         try {
             if (p.connection != null && p.connection.connection.getRemoteAddress() instanceof InetSocketAddress a
-                    && a.getAddress() != null) {
+                    && NetUtil.isPublicAddress(a.getAddress())) {
                 String bloc = Rodage.blocIp(a.getAddress().getAddress());
                 if (bloc != null) {
                     cles.add(bloc);
