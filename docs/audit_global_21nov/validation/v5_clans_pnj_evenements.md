@@ -64,8 +64,8 @@ Rien de grave ; à choisir ou à laisser tel quel.
 `/event objet <type>` donne un objet d'événement d'essai (Mila le rachète 120 à 700 hérals, sans points) et
 `/quete finir <joueur> <quête>` finit une quête avec sa récompense. Votre règle du 28/10 pour créer de l'argent est
 « op 4 connecté sur AuthMe, ou la console » (déjà appliquée à `/eco donner` et, depuis ce matin, à `/bourse donner`).
-Aujourd'hui AuthMe bloque déjà toutes les commandes tapées avant le `/login` (le noyau les fait toutes passer par
-l'événement de Bukkit) : ce serait seulement une deuxième serrure. Proposition : même contrôle que `/bourse donner`
+Aujourd'hui, sur Mohist, toute commande tapée passe d'abord par l'événement de Bukkit qu'AuthMe bloque avant le `/login`
+(voir `CommandesBukkit` du noyau) : ce serait seulement une deuxième serrure. Proposition : même contrôle que `/bourse donner`
 (un texte nouveau dans les 3 langues). Code : `modules/evenements/.../serveur/Commandes.java` l. 53 et 142 ;
 `modules/pnj/.../serveur/Commandes.java` l. 177 et 476.
 

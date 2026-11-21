@@ -74,6 +74,7 @@ public final class PartieClient implements Partie {
       MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload e) -> {
          if (e.getLevel().isClientSide()) {
             viderPortes();
+            ContoursSalle.oublier();   // 21/11 (validation) : le monde quitté ne reste plus en mémoire chez le staff
          }
       });
       MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> viderPortes());

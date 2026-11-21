@@ -279,10 +279,15 @@ public final class ReceptionServeur {
         long dernierResume;
     }
 
-    /** Déconnexion : appuis comptés et dernière liste de packs de ressources du joueur oubliés. */
+    /**
+     * Déconnexion : appuis comptés, dernière liste de packs de ressources et paquets d'arrivée en attente du joueur
+     * oubliés. Validation du 21/11 : la file d'arrivée d'une connexion qui part sans avoir été vérifiée part avec elle
+     * (avant : vidée seulement à la fin du tick, elle pouvait passer à une nouvelle connexion du même compte).
+     */
     public static void oublierTouches(java.util.UUID id) {
         TOUCHES.remove(id);
         PACKS.remove(id);
+        ATTENTE.remove(id);
     }
 
     /** Touche d'ouverture des menus de triche (code GLFW, parmi {@code integrity.touchesSurveillees}). */
