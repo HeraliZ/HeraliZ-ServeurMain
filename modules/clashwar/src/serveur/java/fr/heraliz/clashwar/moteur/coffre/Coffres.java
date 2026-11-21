@@ -108,8 +108,8 @@ import java.util.function.Consumer;
  *   lache retenu, ramassage, clics, utilisation d'objet, coups et commandes refuses) ; il n'est vide que quand le fil a
  *   confirme l'ecriture (« disque avant toute modification » tient toujours). Ecriture ratee : rien n'est change. Parti
  *   avant la confirmation : jamais vide, il est enregistre avec tout ; le fichier est efface. 21/11 (audit des
- *   duplications) : a la confirmation, ce qu'il tient doit etre exactement le releve ({@link #inchange}) ; sinon (objet
- *   deplace pendant l'ecriture par un clic d'inventaire ou un paquet d'ecran) le depot est defait et refait a neuf.</li>
+ *   duplications) : a la confirmation, ce qu'il tient doit etre exactement le releve ({@link #inchange}) ; sinon le depot
+ *   est defait et refait a neuf.</li>
  *   <li>{@link #rendrePuis} : le fichier est lu d'avance sur le fil des coffres, l'arrivee est prechargee
  *   ({@link Arrivees}), puis {@link #rendre} se fait a son tour, dans la meme limite par tick.</li>
  * </ul>
@@ -157,7 +157,7 @@ public final class Coffres {
     private record Demande(ServerPlayer joueur, String raison, Consumer<Boolean> fini, int essai) {
     }
 
-    /** Un depot refait parce que le joueur a deplace des objets pendant son ecriture : au plus ce nombre d'essais. */
+    /** Un depot refait parce que l'inventaire a change pendant son ecriture : au plus ce nombre d'essais. */
     private static final int ESSAIS_MAX = 5;
 
     /** Un depot releve, en ecriture sur le fil des coffres ; son joueur est fige jusqu'a la confirmation. */
@@ -194,13 +194,11 @@ public final class Coffres {
     }
 
     /**
-     * Ce que le joueur tient au releve de l'instantane (21/11, audit des duplications) : objet et nombre de chaque case de
-     * l'inventaire (armure et main gauche comprises) et objets des Curios (sac porte compris). Pendant l'ecriture, le joueur
-     * fige pouvait encore deplacer des objets : clics de son inventaire (vers la grille 2 x 2 ou le curseur, que le vidage ne
-     * touche pas, rendus au retour), paquets d'ecrans restes valables (marchands, coffre du clan, compte de capsules...).
-     * Ces objets etaient alors a la fois dans le depot et ailleurs. Sont compares l'objet, le nombre et les seules donnees
-     * qui font d'un meme objet un autre article ({@link #VARIANTES} : une arme vendue puis une autre du meme objet achetee
-     * dans la meme case ne passe pas) ; pas les autres donnees, qui peuvent changer seules (munitions, usure...).
+     * Ce que le joueur tient au releve de l'instantane (21/11, audit des duplications) : objet, nombre et variantes
+     * ({@link #VARIANTES}) de chaque case de l'inventaire (armure et main gauche comprises), objets des Curios (sac porte
+     * compris). Revu a la confirmation ({@link #inchange}) : le joueur n'est vide que s'il tient encore exactement
+     * l'instantane, sinon le depot est refait. Les autres donnees d'un objet ne sont pas comparees : elles peuvent changer
+     * seules (munitions, usure...).
      */
     private record Releve(Item[] objets, int[] nombres, String[] variantes, Map<Item, Integer> curios) {
     }
@@ -572,9 +570,8 @@ public final class Coffres {
         }
         // 21/11 (audit des duplications) : la marque n'est plus posee ici mais a la confirmation, avec le vidage. Enregistre
         // pendant l'ecriture (deconnexion, sauvegarde automatique), il l'est avec tout son inventaire et sans marque : apres un
-        // plantage, ce fichier n'est jamais rendu (enquete), il garde ce qu'il avait. Avant, la marque posee ici faisait rendre
-        // le depot a un joueur qui avait encore tout, et ce qu'il glissait dans sa grille 2 x 2 avant le retour revenait en
-        // double. Un objet livre ou deplace pendant l'ecriture est vu a la confirmation ({@link #inchange}) : depot refait.
+        // plantage, ce fichier ne lui est jamais rendu (enquete), il garde ce qu'il avait. Ce qui change chez lui pendant
+        // l'ecriture est vu a la confirmation ({@link #inchange}) : depot refait.
         EN_ECRITURE.put(u, new Depot(p, raison, numero, t, aCote, f, ecrit, d.fini(), ticks, releve, d.essai()));
     }
 
@@ -617,20 +614,20 @@ public final class Coffres {
             finDepot(d.fini, u, false);
             return;
         }
-        // 21/11 (audit des duplications) : ce qu'il tient n'est plus l'instantane (objet deplace pendant l'ecriture : grille
-        // 2 x 2, curseur, ecran d'un autre mod) : rien n'est vide ; ce depot est defait (fichier efface : jamais rendu ; objets
-        // mis a part rendus) puis refait a neuf, au plus ESSAIS_MAX fois (ensuite : refuse, joueur intact)
+        // 21/11 (audit des duplications) : ce qu'il tient n'est plus exactement l'instantane : rien n'est vide ; ce depot est
+        // defait (fichier efface : jamais rendu ; objets mis a part rendus) puis refait a neuf, au plus ESSAIS_MAX fois
+        // (ensuite : refuse, joueur intact)
         if (!inchange(p, d.releve)) {
-            effacer(d.fichier, "le joueur a deplace des objets pendant l'ecriture");
+            effacer(d.fichier, "inventaire change pendant l'ecriture");
             defaire(d);
             depotsRates++;
             if (d.essai + 1 < ESSAIS_MAX) {
-                HeralizClashWar.LOG.warn("[matchs] coffre de {} : objets deplaces pendant l'ecriture, depot refait (essai {})",
+                HeralizClashWar.LOG.warn("[matchs] coffre de {} : inventaire change pendant l'ecriture, depot refait (essai {})",
                         p.getGameProfile().getName(), d.essai + 2);
                 DEMANDES.addFirst(new Demande(p, d.raison, d.fini, d.essai + 1));
                 return;   // toujours deposant : ni commandes ni ramassage jusqu'au nouveau releve
             }
-            HeralizClashWar.LOG.error("[matchs] coffre de {} : objets deplaces pendant chacune des {} ecritures, depot refuse (joueur laisse intact)",
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : inventaire change pendant chacune des {} ecritures, depot refuse (joueur laisse intact)",
                     p.getGameProfile().getName(), ESSAIS_MAX);
             finDepot(d.fini, u, false);
             return;

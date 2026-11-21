@@ -1657,10 +1657,10 @@ Versions : ClashWar **1.3.4**, Quêtes **1.24.3** (rien ne change entre le jeu e
 **Rien n'a été testé en jeu** : la fabrication et les contrôles sur GitHub seulement.
 
 Corrigé :
-- **Inventaire mis de côté par le ClashWar** (inscrits au départ d'un tournoi, et `/clashwar regarder`) : depuis le 19/11,
-  le dépôt s'écrit en fond et le joueur attend un instant. Au moment de vider son inventaire, le serveur vérifie
-  maintenant qu'il tient exactement ce qui a été mis de côté ; sinon rien n'est vidé et le dépôt est refait (au plus
-  5 fois, puis refusé avec le message habituel, inventaire intact). La marque du dépôt n'est plus posée qu'à ce moment-là.
+- **Inventaire mis de côté par le ClashWar** (inscrits au départ d'un tournoi, et `/clashwar regarder`) : au moment de
+  vider l'inventaire, le serveur vérifie qu'il correspond exactement à ce qui a été mis de côté ; sinon rien n'est vidé
+  et le dépôt est refait (au plus 5 fois, puis refusé avec le message habituel, inventaire intact). La marque du dépôt
+  n'est plus posée qu'à ce moment-là.
 - **Marchands, Mila, échanges, recycleur du spawn, quêtes du jour et étape « donner » de Varga** : refusés tant que
   l'inventaire est mis de côté par le ClashWar (même message qu'en match).
 
@@ -1668,7 +1668,7 @@ Corrigé :
 - [ ] Départ d'un tournoi, inventaires bien remplis (armes, sac porté, objet tenu à la souris au moment du départ) :
       chacun entre en salle ; au retour, l'inventaire est exactement celui d'avant, ni en double ni en moins.
 - [ ] `/clashwar regarder`, puis `/clashwar quitter`, plusieurs fois de suite : même chose à chaque retour.
-- [ ] Journal du serveur au départ : normalement aucune ligne « objets deplaces pendant l'ecriture ». S'il y en a pour
+- [ ] Journal du serveur au départ : normalement aucune ligne « inventaire change pendant l'ecriture ». S'il y en a pour
       des joueurs qui ne touchaient à rien, le dire (un objet qui change tout seul dans l'inventaire ferait attendre).
 - [ ] Hors ClashWar : Mila, les marchands, le Passeur, les échanges, le recycleur du spawn, Varga et les quêtes du jour
       marchent comme avant.
@@ -1690,3 +1690,47 @@ Pas corrigé (seulement en cas de plantage du serveur à un instant précis ; à
 - sauvegarde automatique étalée sur 5 s (joueurs, entités) : un objet sorti d'un corps ou d'un conteneur de loot pendant
   ces 5 s pourrait revenir après un plantage avant la sauvegarde suivante ;
 - coffre du clan et planque (déjà noté le 19/11) : un objet sorti juste avant un plantage peut revenir.
+
+## 43. Audit du 21/11 : armes, équipement, sacs, anticheat, launcher, outils et tâches GitHub (relecture du code)
+
+Corrigé :
+- **Armes vues de loin (versions allégées du 20/11)** : un contrôle vérifie maintenant, à chaque fabrication (GitHub
+  compris), que chaque arme a sa version allégée et qu'elle suit le vrai modèle de l'arme. Avant, une arme mise à jour
+  dans un gunpack gardait pour toujours la version allégée de l'ancien modèle (pièces mal placées chez les autres
+  joueurs), sans aucune alerte, et `--installer` ne la refaisait jamais. Si le contrôle se plaint un jour :
+  `python outils/lod_armes.py --installer`. Rien ne change dans le jeu aujourd'hui : tout était déjà à jour.
+
+Vérifié le 21/11, sans rien à corriger :
+- les 123 armes reliées à une version allégée : chaque fichier existe, avec sa texture ; les accessoires (viseurs,
+  silencieux) restent dessinés sur la version allégée (d'après le code de TaCZ : mêmes repères) ;
+- les 79 programmes des camos et effets (Diamant compris) se compilent avec un vrai compilateur OpenGL ;
+- les outils qui écrivent des fichiers (loot des armes et des zombies, caisses, marchands, recycleur, Table d'armurier,
+  mipmaps, grande texture des blocs, versions allégées) : relancés, leurs fichiers étaient déjà à jour ; tous leurs
+  contrôles passent, y compris ceux que GitHub saute (icônes, chargeurs 3D, accessoires en main, placement des
+  accessoires) ;
+- sacs portés : leur contenu ne part plus qu'au porteur (vérifié dans le jar de Curios : les bons envois sont visés) ;
+- anticheat : les nouvelles règles visent bien les méthodes de TaCZ 1.1.8 (vérifié dans son jar) ; relu sans trouver de
+  cas où un joueur honnête serait expulsé (packs de textures, bibliothèques d'agent, clés du Gardien, ouvertures à
+  travers les murs, tirs) ;
+- launcher 1.18.1 : 63 tests passés (Gardien, intégrité, Spartan, effacement, signature, sécurité).
+
+À vérifier en jeu (2 joueurs A et B) :
+- [ ] A regarde B tenir plusieurs armes (fusil avec viseur et silencieux, pistolet, couteau), de près puis à 20 blocs :
+      l'arme est bien dans la main, les accessoires sont à leur place, rien ne flotte.
+
+À décider (propositions, rien n'a été changé) :
+1. **Règles « en rodage » de l'anticheat** : si 3 comptes différents déclenchent la même règle en une heure, elle se
+   coupe pour tout le serveur jusqu'au redémarrage. Un tricheur avec 3 comptes pourrait la couper exprès. Proposition :
+   compter des PC différents plutôt que des comptes, et vider la liste « rodage » après une semaine sans « Règle
+   suspendue » (comme prévu).
+2. **Tirs étalés par l'anticheat** (très rare chez un joueur honnête) : le tir mis de côté part dans la direction où le
+   joueur vise au moment où il est rejoué, et le tir normal qui suit peut être refusé une fois par TaCZ. Effet minime ;
+   à revoir si des joueurs parlent de « balles perdues ».
+3. **Contrôles sautés sur GitHub** (icônes, chargeurs 3D, accessoires en main, placement des accessoires) : il leur
+   manque deux bibliothèques (numpy et Pillow). Les installer dans les tâches GitHub ajouterait environ une minute par
+   fabrication.
+4. **Dépôt public** : les tâches « Lenteurs » et « Journaux » ne masquent pas les adresses IPv6, « Lenteurs » écrit les
+   noms des fichiers de la racine du serveur, et « Enquête Spartan » écrit le pseudo du joueur contrôlé dans son journal.
+   Proposition : les masquer aussi.
+
+Pas testé en jeu : rien de cette section (relecture du code et outils seulement).
