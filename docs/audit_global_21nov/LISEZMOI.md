@@ -59,8 +59,12 @@ en bloc côté serveur (le nom de classe ne correspondait jamais, `bb4da7c1`) ; 
 - **Créer le secret `NOMS_INTERDITS`** sur GitHub (Settings → Secrets and variables → Actions, un mot par ligne : les
   prénoms et pseudos qui ne doivent jamais apparaître dans le code ; `docs/MISE_EN_LIGNE_GITHUB.md` §7). Il manque
   aujourd'hui : le contrôle de la règle n° 3 est sauté à chaque envoi.
-- **Alerte de sécurité GitHub (Dependabot n° 22, gravité moyenne)** sur la branche principale : à regarder dans l'onglet
-  Security du dépôt (une bibliothèque d'un outil a une faille connue ; aucun détail lisible d'ici).
+- ~~**Alerte de sécurité GitHub (Dependabot n° 22, gravité moyenne)**~~ : **réglée le 21/11 au soir**. C'était
+  `minimatch` (GHSA-g3hv-75wg-m249, lenteur possible sur un motif de fichiers piégé) dans l'outil qui fabrique le
+  launcher sur GitHub (electron-builder) : rien dans le launcher des joueurs ni sur le serveur, et les motifs sont les
+  nôtres. Aucune version d'electron-builder ne la corrige encore : `overrides` de `launcher/package.json` fait prendre la
+  version corrigée (11.0.9) aux seules copies touchées ; tri des fichiers du launcher comparé à l'ancienne version (0 écart
+  sur 147 491 essais), tests et relecture du launcher, fabrication d'essai Windows, Mac et Linux (sans publier).
 - **Sur la carte** : vérifier qu'aucune porte HBM « transition seal » n'est posée (elle relirait 600 blocs à chaque
   tick) ; dans `ops.json` du Ptero, qui est op 2 ou 3 (voir la question de la tablette du casino).
 - **Un soir chargé** : `/diag profil` pour mesurer l'anticheat (anti-ESP), la rotation du loot et le placement des zombies

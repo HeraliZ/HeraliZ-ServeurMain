@@ -2187,5 +2187,9 @@ copie que pour un jar pris chez un joueur, pas pour qui lit le dépôt.
 - [ ] **Voix** : un joueur qui arrive n'est entendu qu'après son `/login`, même avec l'UDP bloqué.
 - [ ] **Démarrage du serveur** : une seule erreur « face / ear_protection » de chaque (elle vient d'un mod d'un autre
       auteur), aucune autre erreur nouvelle.
+- [ ] **Launcher** (à la prochaine publication seulement) : l'alerte de sécurité GitHub n° 22 est réglée dans l'outil qui
+      le fabrique (`minimatch` 11.0.9, rien ne change pour les joueurs) ; après « publier », installer et lancer le launcher
+      sur Windows (et Mac si possible) : mêmes fichiers, connexion et lancement du jeu comme avant.
 
-Pas testé : tout en jeu (fabrication, contrôles et démarrages d'essai, normal et « mixins stricts », sur GitHub).
+Pas testé : tout en jeu (fabrication, contrôles et démarrages d'essai, normal et « mixins stricts », sur GitHub). Launcher :
+tests, relecture et fabrication d'essai sur GitHub seulement, jamais installé ni lancé.

@@ -75,5 +75,6 @@ section 52 de la fiche). Restent volontairement : les décisions du propriétair
 lettres nettes, règles de /trade et du ClashWar), et ce qui demande un essai en jeu ou un regard sur la carte (ligne de vue
 des échelles, rendu des portes HBM, porte « transition seal »), plus les mesures d'un soir chargé (`/diag profil`).
 Démarrage « mixins stricts » : 0 injection ratée côté serveur. Skins protégés : étape 2 faite (dessins hors du jar des
-joueurs) ; le dépôt étant public, leurs sources y restent lisibles.
+joueurs) ; le dépôt étant public, leurs sources y restent lisibles. Alerte de sécurité GitHub n° 22 (`minimatch`, dans
+l'outil qui fabrique le launcher) : réglée (détail dans `../LISEZMOI.md`, « À faire par le propriétaire »).
 
