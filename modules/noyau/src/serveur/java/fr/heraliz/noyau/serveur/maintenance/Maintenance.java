@@ -149,6 +149,9 @@ public final class Maintenance {
     private static int annuler(CommandContext<CommandSourceStack> c) {
         if (fin < 0) return 0;
         fin = -1;
+        // 21/11 (validation) : un redémarrage annulé ne garde pas son code de sortie (un /stop plus tard aurait arrêté Java
+        // net avec ce code, et le panel aurait relancé le serveur)
+        codeSortie = 0;
         Component t = Component.translatableWithFallback("noyau.redemarrage.annule", "Le redémarrage du serveur est annulé.").withStyle(ChatFormatting.GREEN);
         c.getSource().getServer().getPlayerList().broadcastSystemMessage(t, false);
         LOG.info("[redemarrage] annulé");

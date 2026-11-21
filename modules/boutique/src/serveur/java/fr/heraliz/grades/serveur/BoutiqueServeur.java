@@ -232,11 +232,13 @@ final class BoutiqueServeur {
         }
         Pb.debiter(c.ref, c.joueur, c.prix, "boutique:" + a.id(), r -> {
             ServerPlayer j = serveur == null ? null : serveur.getPlayerList().getPlayer(u);
-            if (r == null || r.code() != 200) {
+            // 21/11 (validation de l'audit) : le site refuse par 404, 409 ou 422 (Pb.Reponse#refusClair), jamais par 200 :
+            // un solde insuffisant n'est plus pris pour un site muet (« site injoignable », achat gardé 2 min pour rien)
+            if (r == null || (r.code() != 200 && !r.refusClair())) {
                 // site injoignable ou en erreur (500, 503… : 02/11, audit point 21 ; avant, une erreur du site était prise
                 // pour un refus et l'achat oublié, sans trace ni remboursement) : on ne sait pas si le débit a eu lieu ;
                 // l'achat reste noté et repris plus tard (statut demandé au site, remboursé s'il a eu lieu). Seul un refus
-                // clair du site (200 et ok faux) l'annule, comme pour /trade et l'hôtel des ventes.
+                // clair du site (« ok » faux : 404, 409, 422) l'annule, comme pour /trade et l'hôtel des ventes.
                 if (r != null) journal("ERREUR DU SITE " + r.code() + " " + c.joueur + " " + a.id() + " " + a.prix() + " PB (" + c.ref
                         + ") : achat gardé, statut redemandé au site");
                 OCCUPES.remove(u);
