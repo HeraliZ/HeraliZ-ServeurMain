@@ -20,7 +20,8 @@ import java.util.UUID;
  * Pour {@code /wipe} (HeraliZ Quetes, par reflexion : ne jamais renommer la classe ni changer la signature de
  * {@link #vider}) : un joueur en match a son vrai inventaire dans son coffre de match
  * ({@code heraliz_clashwar/coffres/<uuid>.dat}), qui lui serait rendu apres la remise a zero. {@link #vider} rend tous
- * les objets de ce depot (inventaire et Curios, sans descendre dans le contenu des objets : un sac garde le sien) et
+ * les objets de ce depot (inventaire, Curios et objets tenus a cote, sans descendre dans le contenu des objets : un sac
+ * garde le sien) et
  * supprime le fichier : a la reconnexion, plus rien n'est rendu (objets pretes purges comme d'habitude). Fil serveur.
  */
 public final class WipeClashWar {
@@ -36,6 +37,9 @@ public final class WipeClashWar {
         if (t != null) {
             collecter(t.get("inventaire"), objets);
             collecter(t.get("curios"), objets);
+            // 21/11 (audit a7) : objets tenus a la souris ou dans la grille 2 x 2 au moment du depot (« a_cote ») : a lui
+            // aussi (avant : oublies, un objet a vie tenu a la souris au depart du tournoi disparaissait au wipe)
+            collecter(t.get("a_cote"), objets);
         }
         try {
             Files.deleteIfExists(f);

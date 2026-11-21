@@ -215,7 +215,9 @@ public final class PingService {
             return;
         }
         BlockPos colonne = BlockPos.containing(x, 0, z);
-        double y = niveau.hasChunkAt(colonne)
+        // 21/11 (audit) : tronçon COMPLET seulement (Troncons du noyau) : hasChunkAt répond « oui » pendant la lecture d'un
+        // tronçon (bord de la vue d'un autre joueur), et getHeight faisait alors attendre cette lecture par le fil du serveur
+        double y = fr.heraliz.noyau.api.Troncons.charge(niveau, colonne)
                 ? niveau.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, colonne.getX(), colonne.getZ()) + 0.05
                 : p.getY();
         long bloc = BlockPos.containing(x, y - 0.5, z).asLong();
