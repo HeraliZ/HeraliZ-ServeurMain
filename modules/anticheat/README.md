@@ -723,6 +723,10 @@ suspect, et l'enregistrer dans `Spartan.java` avec `CheckManager.register(...)`.
 
 ## 10. Historique
 
+- **2.15.6 (21/11, validation de l'audit)** — Les paquets d'arrivée (identifiants matériels, liste des mods, packs de
+  textures, numéro de version) d'une connexion qui part avant d'être vérifiée (jeton du launcher et `/login`) sont oubliés
+  à sa déconnexion : ils ne sont plus jamais traités pour la connexion suivante du même compte, même acceptée dans le même
+  tick. Côté serveur seulement.
 - **2.15.4 (21/11, audit global)** — Disjoncteur des règles en rodage : seule une adresse IP publique compte pour
   reconnaître un PC (comme les bans). Derrière Docker / Pterodactyl (passerelle 172.x), un proxy ou en local, tous les
   joueurs arrivent avec la même adresse : ils devenaient un seul « PC » et une règle qui se trompe n'aurait jamais été

@@ -33,7 +33,7 @@ import java.util.List;
  * toujours à un endroit où l'on va à pied) et où il ne patrouille pas. Le point visé est la position au moment de la
  * destruction, un peu en avant ; s'il ne passe pas, on cherche autour, du plus près au plus loin (tous les 4 blocs jusqu'à
  * {@code recherche_proche}, puis tous les 8 jusqu'à {@code recherche_loin}). Un point passe si, sur 9 × 9 blocs (un relevé
- * tous les 2 blocs) : tronçons déjà chargés (la recherche ne charge jamais rien), sol naturel (étiquette
+ * tous les 2 blocs) : tronçons déjà complets (la recherche ne charge et n'attend jamais rien), sol naturel (étiquette
  * {@code airstrike:sol_crash} : terre, sable, pierre, gravier, neige… jamais de matériau de toit), aucun liquide, aucun
  * feuillage au-dessus, au plus 3 blocs d'écart de hauteur ; du plein sous la surface (3 blocs, au centre et aux 4 coins :
  * pas un toit de terre au-dessus d'une pièce) ; la surface à ±3 blocs de la hauteur médiane d'un anneau à 12 blocs (pas
@@ -118,8 +118,10 @@ public final class PointCrash {
     private static int sol(ServerLevel level, int x, int z, HelicoApi.Reglages r, BlockPos.MutableBlockPos m) {
         WorldBorder b = level.getWorldBorder();
         if (!b.isWithinBounds(x - ANNEAU, z - ANNEAU) || !b.isWithinBounds(x + ANNEAU, z + ANNEAU)) return Integer.MIN_VALUE;
-        if (!charge(level, x - ANNEAU, z - ANNEAU) || !charge(level, x + ANNEAU, z + ANNEAU)
-                || !charge(level, x - ANNEAU, z + ANNEAU) || !charge(level, x + ANNEAU, z - ANNEAU)) return Integer.MIN_VALUE;
+        // 21/11 (validation de l'audit) : TOUS les tronçons du carré de 25 x 25 blocs complets (Troncons du noyau), pas
+        // seulement ceux des 4 coins : un carré à cheval sur 3 tronçons en a un au milieu que les coins ne voient pas ; encore
+        // en lecture, les relevés du centre (hauteurs, blocs) faisaient attendre cette lecture par le fil du serveur
+        if (!fr.heraliz.noyau.api.Troncons.zone(level, x - ANNEAU, z - ANNEAU, x + ANNEAU, z + ANNEAU)) return Integer.MIN_VALUE;
         if (interdit(level, x, z, r)) return Integer.MIN_VALUE;
         int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, centre = 0;
         // le centre d'abord : la plupart des points sont refusés dès ce relevé
