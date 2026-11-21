@@ -105,6 +105,28 @@ public final class KeycardDoors {
       return true;
    }
 
+   /**
+    * 21/11 (validation) : charge les tronçons que regarde {@link #lecteursPrets} (pièces de la porte et READER_RANGE autour),
+    * en attendant leur lecture s'il le faut. Seulement là où c'est voulu et rare : reconnexion d'un joueur dans une salle à
+    * carte (SortieSalles), pour que la porte se referme tout de suite derrière lui, comme avant ; sinon, tronçon d'un
+    * lecteur pas encore chargé à la connexion, elle restait ouverte jusqu'à 5 s devant lui.
+    */
+   public static void chargerLecteurs(Level level, List<BlockPos> parts) {
+      if (parts.isEmpty()) return;
+      int x0 = Integer.MAX_VALUE, z0 = Integer.MAX_VALUE, x1 = Integer.MIN_VALUE, z1 = Integer.MIN_VALUE;
+      for (BlockPos p : parts) {
+         x0 = Math.min(x0, p.getX());
+         z0 = Math.min(z0, p.getZ());
+         x1 = Math.max(x1, p.getX());
+         z1 = Math.max(z1, p.getZ());
+      }
+      for (int cx = (x0 - READER_RANGE) >> 4; cx <= (x1 + READER_RANGE) >> 4; cx++) {
+         for (int cz = (z0 - READER_RANGE) >> 4; cz <= (z1 + READER_RANGE) >> 4; cz++) {
+            level.getChunk(cx, cz);
+         }
+      }
+   }
+
    /** Lecteurs (toutes couleurs, actifs ou non) à portée d'une des pièces de la porte : pour le staff (/salle bunker). */
    public static int lecteursAPortee(Level level, List<BlockPos> parts) {
       if (parts.isEmpty()) return 0;
