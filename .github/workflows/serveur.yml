@@ -195,7 +195,25 @@ jobs:
         if: env.NOMS_INTERDITS != ''
         run: printf '%s\n' "$NOMS_INTERDITS" > outils/noms_interdits.txt
 
+      # 21/11 (validation) : les contrôles font tourner du code d'autres auteurs (JOML, téléchargé depuis Maven Central par
+      # modules/loot/outils/lod_props.py, lancé par Java) : les secrets du job sont vidés pour cette étape seulement (sa
+      # machine Java et tout ce qu'elle lance ne les voient pas). La liste des noms perso est lue dans son fichier.
       - name: Contrôles (GeckoLib, noms perso, langues)
+        env:
+          PTERO_SFTP_HOST: ""
+          PTERO_SFTP_PORT: ""
+          PTERO_SFTP_USER: ""
+          PTERO_SFTP_PASSWORD: ""
+          PTERO_URL: ""
+          PTERO_SERVER_ID: ""
+          PTERO_API_KEY: ""
+          NOMS_INTERDITS: ""
+          SPARTAN_DISCORD_ALERTES: ""
+          SPARTAN_DISCORD_SANCTIONS: ""
+          LITEBANS_DB_USER: ""
+          LITEBANS_DB_PASSWORD: ""
+          HERALIBOT_LIEN_URL: ""
+          HERALIBOT_LIEN_CLE: ""
         run: python outils/verifier.py --sans-split
 
       # clé des jetons de lancement du jeu : créée sur la VM du site (site/vm/theme.sh), qui signe les jetons pour le
