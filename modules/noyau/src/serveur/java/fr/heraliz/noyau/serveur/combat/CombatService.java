@@ -323,11 +323,14 @@ public final class CombatService {
         departEleve = source.getEntity() instanceof ServerPlayer p && elevee(source, p) ? e : null;
     }
 
+    /**
+     * Partie avec le niveau 4 (celui des actions du panneau du staff) alors que le joueur ne l'a pas. 21/11 (validation) :
+     * seul le niveau 4 compte. Un panneau (bloc) qui porte une commande au clic la joue au nom du joueur qui clique, avec le
+     * niveau 2 que Minecraft donne à tout panneau ({@code SignBlockEntity.createCommandSourceStack}) : elle reste jugée comme
+     * avant (sinon un /spawn, /home… posé sur un panneau de la carte échappait aux règles du combat, à terre et de la carte).
+     */
     private static boolean elevee(net.minecraft.commands.CommandSourceStack source, ServerPlayer p) {
-        for (int niveau = 4; niveau >= 1; niveau--) {
-            if (source.hasPermission(niveau) && !p.hasPermissions(niveau)) return true;
-        }
-        return false;
+        return source.hasPermission(4) && !p.hasPermissions(4);
     }
 
     /**
