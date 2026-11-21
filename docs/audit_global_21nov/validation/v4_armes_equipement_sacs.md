@@ -17,6 +17,9 @@ Une seule inexactitude, dans la fiche `docs/SKINS_PROTEGES.md` (les nombres que 
 corrigée. **Aucun code changé**, donc aucune version à monter : Armes **2.59.12**, Équipement **1.4.2**, Sacs
 **3.0.1-beta.4-heralisz28** restent ceux qui sont en ligne ; rien à télécharger de plus pour les joueurs.
 
+**Suite du soir** (demande du propriétaire, section « Fin du 21/11 » en bas) : étape 2 des skins protégés et petites
+corrections, **Armes 2.59.14** et **Sacs 3.0.1-beta.4-heralisz29**, contrôle de branche vert.
+
 **Rien n'a été testé en jeu** (pas de jeu ici) : relecture du code, essais hors du jeu (voir « Vérifié sans problème »),
 journaux du serveur en ligne lus par la tâche GitHub « Journaux du serveur », contrôles de GitHub.
 
@@ -168,3 +171,90 @@ gros chargeurs n° 7) : rien de nouveau à leur sujet.
       jeu ») : vitres, sacs, arme de mêlée en 3e personne, pastille du camo d'un sac.
 
 Pas testé en jeu : rien de ce document (relecture, essais hors du jeu et contrôles de GitHub seulement).
+
+## Fin du 21/11 (demande du propriétaire : « tout lançable et terminé à 100 % »)
+
+Point de départ : en ligne, `main` = `1607d9655` (Armes 2.59.13 : `/camos ajouter` et `/camos retirer` déjà passés à
+l'op 4 par le coordinateur, c'était ma proposition n° 1). Fait ensuite sur `carte-ile-reglages` : **Armes 2.59.14**,
+**Sacs 3.0.1-beta.4-heralisz29**. Contrôle de branche de GitHub **vert** pour `19008fffa` (run 44950624530 : fabrication,
+contrôles et images ; le nouveau contrôle « dessins » est passé sur les vrais jars).
+
+### 1. Skins protégés, étape 2 (`cdba3098b`, Armes 2.59.14)
+
+En simple : le jar que les joueurs téléchargent **n'a plus aucun dessin des skins** (vérifié sur le jar fabriqué par
+GitHub). Le serveur en envoie une copie à chaque connexion (étape 1, en ligne depuis 17 h 43) et le jeu fabrique ses
+programmes depuis elle, tout seul, juste après la connexion. Le rendu est le même qu'avant (mêmes programmes). Détail
+complet, ce qu'un joueur voit et limites : `docs/SKINS_PROTEGES.md`.
+
+- **Sources** : `modules/armes/dessins/` (161 fichiers déplacés avec Git, un seul exemplaire), hors des assets ; le
+  sticker reste dans le jar des joueurs. `modules/armes/build.gradle` : la copie des jars -serveur et -complet part de ce
+  dossier.
+- **Fabrication chez le joueur** (`CamoShaders`) : quand la copie est complète (`DessinsRecus.morceau`), le fil du rendu
+  décide (`fabriquerDepuisCopie`) ; les 79 programmes sont compilés un par un au début de chaque image (25 ms au plus par
+  image, au moins un programme : l'écran de chargement reste vivant au lieu d'un gel de plusieurs secondes), rien pendant
+  un écran de rechargement des ressources ; à la fin, icônes 3D vidées et une ligne au journal. Une seule fois par copie :
+  une reconnexion qui apporte la même empreinte, ou un F3+T sans changement, ne refait rien (et la copie n'est pas
+  redécompressée). Démarrage du jeu sans copie : aucun programme, une seule ligne au journal (avant le déplacement, il y
+  aurait eu une erreur par programme absent). Rien reçu 30 s après l'arrivée sur un serveur : une ligne au journal. Copie
+  abîmée ou programme qui ne se fabrique pas : skin sans effet, jamais de plantage. `/camos dessins` refait tout pour le
+  staff (bandeau et résultat au serveur, comme à l'étape 1). Textes des deux bandeaux d'erreur du staff remis au vrai
+  (fr, en, ru : « les skins restent sans effet », « rien n'est refait » ; plus de « dessins du jeu »).
+- **Outils** : `generer_camos.py` (chemins ; relancé : seule la ligne de commentaire des 73 `camo_<n>.fsh` change,
+  l'include et les effets sont identiques), `skins_couteaux.py`, `apercu_camos` (`verif_glsl.py`, `rendre.js`,
+  `README.md`), `outils/video_vitrine/video.py` (et un contrôle si `rendre.js` change encore), `outils/textures_inutiles.py`
+  (lit aussi `modules/<m>/dessins/`). Contrôle « dessins » de `outils/verifier.py` : copie des jars -serveur et -complet
+  = le dossier des sources, et aucun `camo*`, `fx*` ni `heralisz_camo.glsl` dans les assets des jars -client et -complet
+  (le sticker y reste).
+- **Paquets** : rien ne change (canal des camos en version 4). Côté réseau, un jeu 2.59.12 ou 2.59.13 sur un serveur
+  2.59.14 marche encore (il garde ses dessins), un jeu 2.59.14 sur un serveur 2.59.12 ou 2.59.13 aussi (ce serveur envoie
+  déjà la copie) ; en pratique, Spartan n'accepte que les jars de la même fabrication que le serveur.
+- **À savoir (limite, important)** : le dépôt GitHub est **public** ; les sources des dessins y restent lisibles par tout
+  le monde (`modules/armes/dessins/`, et leurs modèles `modules/armes/outils/camo_gabarit.fsh` et `fx_gabarit.fsh`).
+  La protection contre la copie ne vaut vraiment que si le dépôt passe en privé : **à décider par le propriétaire**.
+
+### 2. Sacs : deux cases Curios inutiles retirées (`441d0cd86`, Sacs heralisz29)
+
+`modules/sacs/src/serveur/resources/data/backpacked/curios/entities/ear_protection.json` et `face.json` retirés : ces
+cases n'ont jamais existé (aucun mod ne les définit), Curios écrivait deux erreurs à chaque démarrage. Vérifié : rien ne
+s'en sert (les listes des combinaisons d'Équipement qui citent « face » et « ear_protection » ne regardent que les cases
+existantes ; les listes d'objets `data/curios/tags/items/…` restent). Aucun changement en jeu. Noté dans
+`modules/sacs/NOTICE.md` (LGPL).
+
+### 3. Mêlée : journal limité (`cdba3098b`)
+
+`CMeleeAttackRequest` (code de LR Tactical, GPL) : une demande qui vise trop de cibles (seul un jeu modifié en envoie)
+est toujours refusée, mais n'écrit plus qu'une ligne au journal toutes les 30 s par joueur, avec le nombre de demandes
+semblables ignorées depuis (avant : une ligne par demande). Carte à clés faibles : un joueur parti est oublié tout seul.
+Noté dans `META-INF/heralisz_tactical-NOTICE.md`.
+
+### 4. Version minimale du noyau (`cdba3098b`)
+
+`modules/armes/src/commun/resources/META-INF/mods.toml` : noyau `[1.1.5,)` au lieu de `[1.0.6,)` (relevé de v10 : les
+armes se servent depuis le 19/11 des tronçons complets, des écritures en fond et de l'inventaire retenu par un match,
+apparus dans le noyau 1.1.5). Le noyau en ligne est en 1.1.12 : rien ne change, sauf un refus clair au lieu d'un
+plantage si un jour un vieux noyau traînait.
+
+### Essais hors du jeu
+
+- Contrôle « dessins » essayé sur de faux jars : bons jars 0 erreur ; un dessin resté dans le jar des joueurs : 1
+  erreur ; copie incomplète : 1 erreur. Puis sur les vrais jars de GitHub : 161 fichiers dans -serveur et -complet, aucun
+  dessin dans les assets de -client et -complet.
+- Copie de l'étape 2 recalculée : 161 dessins, 167 fichiers avec les mentions de la livraison, 698 Ko, 87 Ko compressés.
+- Chemins de tous les outils vérifiés (dossiers et fichiers trouvés), syntaxe des 5 outils Python et des 4 fichiers Java
+  changés analysée (`javac`) ; la fabrication complète est celle de GitHub (verte).
+
+### À tester en jeu (avant de mettre l'étape 2 en ligne)
+
+- [ ] **Premier lancement, puis connexion** (jeu et serveur 2.59.14) : les skins apparaissent pendant ou juste après
+      l'écran de chargement, puis le rendu est identique à avant : camo animé (Dark Matter), effets 3D (Tempête, Séraphin,
+      Prisme), finitions de couteaux (Doppler, Fade), sac camouflé ; en main, en 3e personne, dans l'atelier, sur les
+      icônes de l'inventaire. Journal du jeu : « fabriqués depuis la copie du serveur : 79 programmes prêts, 0 en échec ».
+- [ ] **Déconnexion puis reconnexion** : « même copie que celle déjà en place, rien à refaire ». **F3+T** : rien de
+      refait, pas de gel.
+- [ ] **`/camos dessins`** (staff) : bandeau « 79 programmes prêts… · … ms » ; même résultat dans le journal du serveur.
+- [ ] **Monde solo d'essai** (jars -complet) : mêmes skins.
+- [ ] **Démarrage du serveur** : plus d'erreur « ear_protection / face is not a registered slot type! » ; cases Curios des
+      joueurs inchangées (sac, ceinture, mains, corps, bracelet, collier, bague, charme).
+- [ ] **Mêlée** : coups normaux comme avant (rien ne change pour un jeu normal).
+
+Pas testé en jeu : rien de cette section (relecture, essais hors du jeu, fabrication et contrôles de GitHub seulement).

@@ -28,7 +28,9 @@ Les skins de couteau, eux, étaient déjà protégés d'une autre façon : leurs
   l'atelier, sur les icônes de l'inventaire (refaites toutes seules à la fin) et sur les sacs.
 - Reconnexion au même serveur : rien n'est refait (même copie). F3+T : rien n'est refait si rien n'a changé.
 - Menu principal, avant toute connexion : les skins n'ont pas d'effet (on n'y voit pas d'armes skinnées de toute façon).
-- Monde solo : le serveur intégré envoie lui aussi la copie (jar -complet), les skins marchent comme sur le serveur.
+- Monde solo d'essai (jars -complet de `livraison/mods solo/`, jamais donnés aux joueurs) : le serveur intégré envoie
+  lui aussi la copie, les skins marchent comme sur le serveur. Avec les jars des joueurs (-client), un monde solo n'a de
+  toute façon pas la partie serveur de nos mods : skins sans effet.
 - Si rien n'arrive ou si la copie est abîmée : le skin s'affiche **sans effet** (l'arme est dessinée sans son skin),
   jamais de plantage, une ligne dans le journal du jeu (voir plus bas).
 
@@ -60,7 +62,7 @@ possible un sac camouflé.
 4. **`/camos dessins`** (staff, op 2) : le jeu refait tous les programmes depuis la copie, comme à la connexion ; un
    bandeau à droite donne « Dessins des skins — 79 programmes prêts depuis la copie du serveur · … ms » (le temps de
    compilation sur ce PC). Le même résultat arrive dans le journal du serveur.
-5. **Monde solo** : mêmes skins qu'en ligne.
+5. **Monde solo d'essai** (jars -complet) : mêmes skins qu'en ligne.
 6. Envoyer le journal du jeu (`logs/latest.log`) si quelque chose cloche.
 
 Ce qu'il ne faut pas voir :
@@ -146,5 +148,6 @@ mentions. Le contrôle « dessins » de `outils/verifier.py` regarde les jars fa
   includes de Minecraft » n'a pas changé, sinon tout est refait d'un coup pendant le rechargement. `get()` / `fx()` nuls :
   chaque rendu dessine l'arme sans skin (`BedrockGunModelMixin`, `BagCamo`, `MeleeCamo`, `IconesArmes`,
   `PrechauffageCamo`, `CamoFx`).
-- **Compatibilité** : un jeu de l'étape 2 sur un serveur de l'étape 1 marche (ce serveur envoie déjà la copie) ; un jeu
-  de l'étape 1 sur un serveur de l'étape 2 aussi (il garde ses dessins du jar).
+- **Compatibilité** (côté réseau) : un jeu de l'étape 2 sur un serveur de l'étape 1 marche (ce serveur envoie déjà la
+  copie) ; un jeu de l'étape 1 sur un serveur de l'étape 2 aussi (il garde ses dessins du jar). En pratique, Spartan
+  n'accepte que les jars de la même fabrication que le serveur.
