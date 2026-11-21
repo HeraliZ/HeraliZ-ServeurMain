@@ -484,7 +484,9 @@ public final class Tournoi {
                 ClansApi.infos(ins.clan).ifPresent(info -> majClan(info, null, "", false));
                 Tournois.marquerVue();
             }
-        } else if (etat == Etat.PREPARATION) {
+        } else if (etat == Etat.PREPARATION && !departFait) {
+            // 21/11 (audit a7) : seulement avant le depart vers la salle ; une fois les depots lances, l'equipe part sans lui
+            // (son depot ne se fait pas) : avant, ses coequipiers lisaient « equipe retiree du ClashWar » et jouaient quand meme
             for (Iterator<Tableau.EquipeT> it = provisoires.iterator(); it.hasNext(); ) {
                 Tableau.EquipeT e = it.next();
                 if (!e.joueurs.contains(u)) continue;
