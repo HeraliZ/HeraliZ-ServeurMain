@@ -89,7 +89,9 @@ public enum Rarete {
     public static Rarete lire(String id) {
         if (id == null) return null;
         if (id.equalsIgnoreCase("mythique")) return UNIQUE;
-        for (Rarete r : values()) {
+        // 21/11 (audit) : TOUTES plutôt que values() (une copie du tableau à chaque appel : objets des coffres T7, pour chaque
+        // case à chaque image)
+        for (Rarete r : TOUTES) {
             if (r.id.equalsIgnoreCase(id)) {
                 return r;
             }
