@@ -13,9 +13,10 @@ skins de couteau, eux, sont déjà protégés d'une autre façon : leurs fiches 
 **La solution, en deux étapes.**
 
 1. **Étape 1 (faite, invisible pour les joueurs).** Le serveur a sa propre copie des dessins. À chaque connexion, il
-   l'envoie au jeu du joueur : 161 fichiers, 87 Ko une fois compressés, en un seul paquet. Le jeu la garde **en mémoire
-   seulement**, jamais sur le disque, et **ne s'en sert pas** : il continue de dessiner avec les dessins de son jar. Pour
-   les joueurs, rien ne change (rien de compilé en plus, pas de lag).
+   l'envoie au jeu du joueur : 161 dessins (167 fichiers avec les mentions de licence que la livraison ajoute dans
+   chaque dossier de nos jars, ignorées par le jeu), 88 Ko une fois compressés, en un seul paquet. Le jeu la garde **en
+   mémoire seulement**, jamais sur le disque, et **ne s'en sert pas** : il continue de dessiner avec les dessins de son
+   jar. Pour les joueurs, rien ne change (rien de compilé en plus, pas de lag).
 2. **Étape 2 (à faire après l'essai).** On retire les dessins du jar des joueurs. Le jeu les fabrique depuis la copie
    reçue, une fois, pendant l'écran de connexion. Même qualité, pas de lag en jeu, une connexion de quelques secondes
    plus longue.
@@ -51,18 +52,24 @@ Ce qu'il ne faut pas voir :
   les dessins de son jar).
 
 Lignes attendues dans le journal du jeu (`logs/latest.log`) :
-- à la connexion : `[Camos] dessins des skins reçus du serveur : 161 fichiers, 693 Ko (87 Ko compressés, 1 paquet(s)), empreinte … ; gardés en mémoire seulement` ;
+- à la connexion : `[Camos] dessins des skins reçus du serveur : 167 fichiers, 698 Ko (88 Ko compressés, 1 paquet(s)), empreinte … ; gardés en mémoire seulement` ;
 - après la commande : `[Camos] dessins des skins refaits depuis la copie du serveur : 79 programmes prêts, 0 en échec, … ms` ;
 - au F3+T : `Shaders des camos inchangés : 79 programmes gardés, rien recompilé`.
 
 Lignes attendues dans le journal du serveur :
-- au démarrage : `[Camos] dessins des skins : 161 fichiers (693 Ko) compressés en 87 Ko, 1 paquet(s) par joueur, empreinte …, … ms` ;
-- à chaque connexion : `[Camos] dessins des skins envoyés à <pseudo> : 87 Ko en 1 paquet(s)` ;
+- au démarrage : `[Camos] dessins des skins : 167 fichiers (698 Ko) compressés en 88 Ko, 1 paquet(s) par joueur, empreinte …, … ms` ;
+- à chaque connexion : `[Camos] dessins des skins envoyés à <pseudo> : 88 Ko en 1 paquet(s)` ;
 - à la commande : `[Camos] /camos dessins : le jeu de <pseudo> refait ses programmes des skins depuis la copie du serveur` ;
 - puis le résultat renvoyé par son jeu : `[Camos] /camos dessins chez <pseudo> : 79 programmes prêts, 0 en échec, … ms`
   (le propriétaire peut donc lire le résultat sans demander le journal du jeu).
 
 Le contenu des dessins n'est jamais écrit dans les journaux : seulement des nombres, des tailles et une empreinte.
+
+Pourquoi 167 fichiers et pas 161 (validation du 21/11, journal du Ptero de 17 h 45) : la livraison
+(`outils/construire.py`, `marquer`) pose la mention de licence `LISEZ-MOI-HeraliZ.txt` dans chaque dossier de nos jars,
+donc aussi dans les 6 sous-dossiers de la copie. Le serveur les envoie avec les dessins (5 Ko, 1 Ko compressé) ; le jeu
+les ignore (leur nom, avec des majuscules, n'est pas un nom de ressource valable). Rien d'anormal : 161 dessins + 6
+mentions. Le contrôle « dessins » de `outils/verifier.py` regarde les jars fabriqués, avant cette mention.
 
 ## Étape 2 : la liste exacte (pas encore faite)
 
@@ -113,8 +120,8 @@ Le contenu des dessins n'est jamais écrit dans les journaux : seulement des nom
 
 ## Coût
 
-- **Étape 1** : 87 Ko envoyés à chaque connexion (un paquet), environ 0,1 Mo de mémoire chez le joueur. Au démarrage du
-  serveur, lecture et compression une seule fois (33 ms mesurées hors jeu). Rien d'autre.
+- **Étape 1** : 88 Ko envoyés à chaque connexion (un paquet), environ 0,1 Mo de mémoire chez le joueur. Au démarrage du
+  serveur, lecture et compression une seule fois (33 ms mesurées hors jeu, 132 ms sur le Ptero le 21/11). Rien d'autre.
 - **Étape 2** : en plus, la fabrication des 79 programmes à chaque connexion, pendant l'écran de connexion : le temps
   affiché par le bandeau de l'essai (quelques secondes au plus selon le PC). Ensuite aucun coût en jeu : ce sont
   exactement les mêmes programmes qu'aujourd'hui. Environ 0,7 Mo de mémoire (copie ouverte).
