@@ -55,6 +55,10 @@ public class ServerPlayerGameModeMixin {
       locals = LocalCapture.CAPTURE_FAILHARD
    )
    private void backpacked$OnBlockMined(BlockPos pos, CallbackInfoReturnable<Boolean> cir, BlockState state) {
+      // HeraliZ (21/11) : rien a debloquer (unlockAllCosmetics) : aucun defi a tester sur ce bloc
+      if (!com.mrcrayfish.backpacked.data.unlock.UnlockManager.defisSuivis()) {
+         return;
+      }
       this.backpacked$capturedMinedBlock = state;
       this.backpacked$capturedMinedItem = this.player.getMainHandItem();
       if (((MinedBlock.CaptureTag)BackpackedEvents.MINED_BLOCK_CAPTURE_TAG.post())
@@ -92,6 +96,11 @@ public class ServerPlayerGameModeMixin {
    private void backpacked$OnUse(
       ServerPlayer player, Level level, ItemStack stack, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir
    ) {
+      // HeraliZ (21/11) : rien a debloquer (unlockAllCosmetics) : plus de copie de l'objet tenu ni de test des defis a
+      // chaque clic sur un bloc
+      if (!com.mrcrayfish.backpacked.data.unlock.UnlockManager.defisSuivis()) {
+         return;
+      }
       this.backpacked$capturedUseState = level.getBlockState(result.getBlockPos());
       this.backpacked$capturedUseItem = stack.copy();
       if (((InteractedWithBlock.CaptureTag)BackpackedEvents.INTERACTED_WITH_BLOCK_CAPTURE_TAG.post())
