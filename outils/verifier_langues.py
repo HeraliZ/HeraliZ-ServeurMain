@@ -15,10 +15,21 @@ CLES_DU_CODE, chaque clé écrite en toutes lettres dans le Java (« "crac.build
 référence, et un appel de traduction (translatable, translatableWithFallback, Txt.k / red / green…, T.t) ne doit pas
 donner moins d'arguments que le texte n'a de %s : Minecraft montre sinon le texte cassé. Les essais (src/essais) et les
 débuts de clé complétés dans le code (« "crac.mort.raison." + n ») ne sont pas vus.
+
+Tous les modules (21/11, audit des données) : chaque clé donnée en toutes lettres à un appel de traduction
+(Component.translatable, translatableWithFallback, I18n.get / exists, Language.getOrDefault, et les petites méthodes
+« t / tr / texte (String cle, ...) » qui ajoutent un préfixe : « "gui.heraliz_interface." + cle ») est cherchée dans les
+textes RÉUNIS de tous nos jars, des mods des autres auteurs (serveur/mods-tiers, client/mods-tiers) et de Minecraft
+(en_us du pack « textures ») : chez le joueur, tous les fichiers de langue ne font qu'un. Absente des trois langues :
+erreur (le joueur voit la clé brute, ou le texte français de secours en anglais et en russe) ; absente d'une langue
+seulement : avertissement. Un appel avec moins d'arguments que le texte n'a de %s (« new Object[]{a, b} » compté
+comme deux, « %1$s » deux fois comme un seul) : erreur.
 """
+import io
 import json
 import re
 import sys
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -120,6 +131,184 @@ def cles_du_code(projet, textes):
     return erreurs, avertissements
 
 
+# ------------------------------------------------------------------------------------------------ tous les modules
+JAMAIS_LIVRES = ("_gabarit", "capture", "banc")
+# code des autres auteurs dans nos jars (outils/construire.py, DOSSIERS_TIERS) : un défaut y est seulement signalé (on ne
+# change pas leur code pour un texte ; ex. Backpacked cite « backpacked.backpack.wandering_bag », son texte s'appelle
+# « backpack.backpacked.wandering_bag » : nom du sac des marchands ambulants, absents de la carte)
+CODE_TIERS = ("com/mrcrayfish/", "com/hbm/", "dev/kosmx/", "io/github/kosmx/", "org/concentus/")
+VANILLE = ROOT / "modules/interface/src/main/resources/resourcepacks/textures/assets/minecraft/lang/en_us.json"
+# méthode NOM(String cle, ...) : son corps appelle une traduction, avec ou sans préfixe « "gui.x." + cle »
+DECLARATION = re.compile(r"(?:static|public|private|protected)[^;{=()]*?\b([a-zA-Z_]\w*)\(\s*(?:final\s+)?String\s+(\w+)"
+                         r"\s*(,\s*(?:final\s+)?String\s+\w+)?[^)]*\)\s*(?:throws[^{]*)?\{")
+# appel avec une clé en toutes lettres, complète (suivie de « , » ou « ) ») : Classe.nom("cle" ou nom("cle"
+APPEL_CLE = re.compile(r'(?:\b([A-Z]\w*)\.)?(?<!\w)([a-zA-Z_]\w*)\(\s*"([a-z0-9_]+(?:\.[A-Za-z0-9_\-]+)*)"\s*(?=[,)])')
+
+
+def textes_reunis():
+    """Textes de tous nos jars, des autres auteurs et de Minecraft : (clés par langue, texte de référence par clé)."""
+    cles = {code: set() for code in LANGUES}
+    ref = {}
+    for f in sorted(ROOT.glob("modules/*/src/*/resources/assets/*/lang/*.json")):
+        if f.relative_to(ROOT).parts[1] in JAMAIS_LIVRES or f.stem not in LANGUES:
+            continue
+        d = lire([f])
+        cles[f.stem].update(d)
+        for k, v in d.items():
+            if isinstance(v, str) and (f.stem == "fr_fr" or k not in ref):
+                ref[k] = v
+    autres = set()
+    if VANILLE.exists():
+        d = lire([VANILLE])
+        autres.update(d)
+        for k, v in d.items():
+            ref.setdefault(k, v)
+
+    def jar(z):
+        for n in z.namelist():
+            m = re.match(r"assets/[^/]+/lang/(\w+)\.json$", n)
+            if m and m.group(1) in LANGUES:
+                try:
+                    d = json.loads(z.read(n).decode("utf-8", "replace"))
+                except ValueError:
+                    continue
+                autres.update(d)
+                for k, v in d.items():
+                    if isinstance(v, str):
+                        ref.setdefault(k, v)
+            elif n.startswith("META-INF/jarjar/") and n.endswith(".jar"):
+                jar(zipfile.ZipFile(io.BytesIO(z.read(n))))
+    for j in sorted(ROOT.glob("serveur/mods-tiers/*.jar")) + sorted(ROOT.glob("client/mods-tiers/*.jar")):
+        with zipfile.ZipFile(j) as z:
+            jar(z)
+    for code in LANGUES:
+        cles[code] |= autres
+    return cles, ref
+
+
+def arguments(src, i):
+    """Arguments (texte brut) d'un appel, i juste après le premier ; None si la fin de l'appel n'est pas trouvée."""
+    out, prof, cur, chaine = [], 0, "", None
+    while i < len(src):
+        c = src[i]
+        if chaine:
+            cur += c
+            if c == "\\" and i + 1 < len(src):
+                cur += src[i + 1]
+                i += 2
+                continue
+            if c == chaine:
+                chaine = None
+        elif c in "\"'":
+            chaine = c
+            cur += c
+        elif c in "([{":
+            prof += 1
+            cur += c
+        elif c in ")]}":
+            if prof == 0:
+                if cur.strip():
+                    out.append(cur.strip())
+                return out
+            prof -= 1
+            cur += c
+        elif c == "," and prof == 0:
+            if cur.strip():
+                out.append(cur.strip())
+            cur = ""
+        else:
+            cur += c
+        i += 1
+    return None
+
+
+def compter(args):
+    """Nombre d'arguments donnés au texte (« new Object[]{a, b} » : deux) ; -1 : tableau passé tel quel, inconnu."""
+    if len(args) == 1:
+        m = re.match(r"new\s+Object\s*\[\s*\]\s*\{(.*)\}$", args[0], re.S)
+        if m:
+            dedans = arguments(m.group(1) + ")", 0)
+            return len(dedans) if dedans is not None else -1
+        if re.match(r"^\w+$", args[0]) and args[0] in ("args", "a", "arguments", "params", "parametres", "valeurs"):
+            return -1
+    return len(args)
+
+
+def attendus(texte):
+    """Arguments demandés par un texte : %s comptés un par un, %1$s par leur plus grand numéro."""
+    n, plus_grand = 0, 0
+    for m in re.finditer(r"%(?:(\d+)\$)?[-#+0,(]*\d*(?:\.\d+)?([sdfxXbcoeEgGn%])", texte):
+        if m.group(2) == "%":
+            continue
+        if m.group(1):
+            plus_grand = max(plus_grand, int(m.group(1)))
+        else:
+            n += 1
+    return max(n, plus_grand)
+
+
+def cles_tous_modules(projets, textes, ref):
+    """Clés des appels de traduction de ces projets contre les textes réunis ; rend (erreurs, avertissements)."""
+    erreurs, avertissements = [], []
+    sources = {}
+    enveloppes = {}   # (classe, méthode) -> (préfixe, texte de secours en 2e argument)
+    for f in sorted(ROOT.glob("modules/*/src/*/java/**/*.java")):
+        p = f.relative_to(ROOT).parts
+        if p[1] in JAMAIS_LIVRES or p[3] == "essais":
+            continue
+        src = f.read_text(encoding="utf-8", errors="replace")
+        if p[1] in projets:
+            sources[f] = src
+        for m in DECLARATION.finditer(src):
+            nom, param, secours = m.group(1), m.group(2), m.group(3)
+            corps = src[m.end():m.end() + 400]
+            if "\n    }" in corps:
+                corps = corps[:corps.index("\n    }")]
+            mp = re.search(r'"([a-z0-9_]+(?:\.[a-z0-9_]+)*\.)"\s*\+\s*' + re.escape(param) + r"\b", corps)
+            if mp and re.search(r"translatable|I18n|Language|\btr\(|TexteClient|\bt\(", corps):
+                enveloppes[(f.stem, nom)] = (mp.group(1), bool(secours))
+            elif re.search(r"(translatable(WithFallback)?|I18n\.get)\(\s*" + re.escape(param) + r"\b", corps):
+                enveloppes.setdefault((f.stem, nom), ("", bool(secours)))
+    for f, src in sources.items():
+        rel = f.relative_to(ROOT)
+        tiers = "/".join(rel.parts[5:]).startswith(CODE_TIERS)
+        erreurs_ici = avertissements if tiers else erreurs
+        for m in APPEL_CLE.finditer(src):
+            classe, meth, cle = m.group(1), m.group(2), m.group(3)
+            if meth in ("translatable", "translatableWithFallback"):
+                prefixe, secours = "", meth == "translatableWithFallback"
+            elif classe == "I18n" and meth in ("get", "exists"):
+                prefixe, secours = "", False
+            elif meth == "getOrDefault" and "Language" in src[max(0, m.start() - 40):m.start()]:
+                prefixe, secours = "", False
+            elif (classe or f.stem, meth) in enveloppes:
+                prefixe, secours = enveloppes[(classe or f.stem, meth)]
+            else:
+                continue
+            cle = prefixe + cle
+            if "." not in cle or cle.endswith((".", "_")):
+                continue
+            ligne = src.count("\n", 0, m.start()) + 1
+            absente = [code for code in LANGUES if cle not in textes[code]]
+            if len(absente) == len(LANGUES):
+                erreurs_ici.append("%s:%d : %s(\"%s\") : clé absente des trois langues (%s)" % (
+                    rel, ligne, meth, cle, "texte français de secours pour tous" if secours else "le joueur verrait la clé brute"))
+                continue
+            if absente:
+                avertissements.append("%s:%d : clé %s absente de %s" % (rel, ligne, cle, ", ".join(absente)))
+            texte = ref.get(cle)
+            a = arguments(src, m.end())
+            if not isinstance(texte, str) or a is None:
+                continue
+            if secours and a and a[0].startswith('"'):
+                a = a[1:]   # texte français de secours, pas un argument
+            n = compter(a)
+            if 0 <= n < attendus(texte):
+                erreurs_ici.append("%s:%d : %s(\"%s\") : %d argument(s) pour %d %%s (texte cassé en jeu : %r)" % (
+                    rel, ligne, meth, cle, n, attendus(texte), texte[:60]))
+    return erreurs, avertissements
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     strict = "--strict" in sys.argv
@@ -160,6 +349,11 @@ def main():
             e, a = cles_du_code(projet, textes)
             erreurs += e
             avertissements += a
+    # clés des appels de traduction de tous les modules, contre les textes réunis de tous les jars (21/11)
+    textes, ref = textes_reunis()
+    e, a = cles_tous_modules(set(projets), textes, ref)
+    erreurs += [x for x in e if x not in erreurs]
+    avertissements += [x for x in a if x not in avertissements]
     for a in avertissements:
         print("[langues] avertissement :", a)
     for e in erreurs:

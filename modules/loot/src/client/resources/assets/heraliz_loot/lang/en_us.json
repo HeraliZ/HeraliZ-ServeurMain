@@ -466,6 +466,7 @@
   "heraliz_loot.duree.min": "%1$s min %2$s s",
   "heraliz_loot.duree.s": "%s s",
   "heraliz_loot.cmd.reinitialise": "%s crate(s) reset",
+  "heraliz_loot.cmd.tables": "%s loot tables reloaded.",
   "heraliz_loot.cmd.type_inconnu": "Unknown type",
   "heraliz_loot.cmd.place_prise": "Spot taken",
   "heraliz_loot.cmd.point.rien": "Nothing spawned (unknown point, crate already there or spot taken)",

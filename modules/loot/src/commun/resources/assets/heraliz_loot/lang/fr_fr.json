@@ -466,6 +466,7 @@
  "heraliz_loot.duree.min": "%1$s min %2$s s",
  "heraliz_loot.duree.s": "%s s",
  "heraliz_loot.cmd.reinitialise": "%s coffre(s) remis à neuf",
+ "heraliz_loot.cmd.tables": "%s tables de loot relues.",
  "heraliz_loot.cmd.type_inconnu": "Type inconnu",
  "heraliz_loot.cmd.place_prise": "Place prise",
  "heraliz_loot.cmd.point.rien": "Rien n'apparaît (point inconnu, coffre déjà là ou place prise)",
