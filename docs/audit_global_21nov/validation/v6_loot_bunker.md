@@ -18,6 +18,8 @@ En bref : les **3 commits du jour** de la zone font ce qu'ils disent ; l'un d'eu
 salle à carte qui pouvait rester ouverte quelques secondes à la reconnexion), corrigé ; **2 autres défauts corrigés**
 (fuite de mémoire chez les joueurs, petit gel rare des conteneurs de l'épave). Versions : **Loot 0.20.9, Bunker 0.14.9**
 (le launcher les donne ; aucun canal réseau ne change : un jeu pas à jour entre encore). Aucune duplication trouvée.
+« Contrôle de branche » sur GitHub avec ces corrections (commit `7fc16a9a3`) : **réussi** (loot et bunker fabriqués,
+`verifier.py` : 0 problème).
 
 ---
 
