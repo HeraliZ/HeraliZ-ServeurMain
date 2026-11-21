@@ -97,6 +97,7 @@
   "heraliz_quetes.bourse.cmd.info": "Valid purses: %s, %s herals in total.",
   "heraliz_quetes.bourse.cmd.bloquees": "Purses BLOCKED (unreadable registry or failed write): see the server log.",
   "heraliz_quetes.bourse.cmd.donnee": "Purse of %s herals given to %s.",
+  "heraliz_quetes.bourse.cmd.login": "Log in first with /login.",
   "heraliz_quetes.dialogue.echanger": "Make a trade",
   "heraliz_quetes.marchand.regle.match": "Not possible during a match.",
   "heraliz_quetes.marchand.regle.combat": "Not possible in combat.",

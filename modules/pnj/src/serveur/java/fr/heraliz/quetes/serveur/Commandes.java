@@ -60,7 +60,9 @@ final class Commandes {
             Moteur.envoyerJournal(c.getSource().getPlayerOrException(), true);
             return 1;
         }));
-        // bourses de hérals (18/11) : le staff voit le registre et peut en donner une (essais, dédommagement)
+        // bourses de hérals (18/11) : le staff voit le registre et peut en donner une (essais, dédommagement). 21/11 (audit) :
+        // « donner » crée de l'argent, donc mêmes règles que /eco donner (28/10) : op 4 connecté sur AuthMe, ou la console
+        // (avant : op 2, une bourse de 1 000 000 hérals à chaque commande)
         d.register(Commands.literal("bourse").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("info").executes(c -> {
                     long[] i = Bourses.info();
@@ -71,8 +73,13 @@ final class Commandes {
                                     i[0], Ponts.nombre(i[1])), false);
                     return 1;
                 }))
-                .then(Commands.literal("donner").then(Commands.argument("joueur", EntityArgument.player())
+                .then(Commands.literal("donner").requires(s -> s.hasPermission(4)).then(Commands.argument("joueur", EntityArgument.player())
                         .then(Commands.argument("herals", com.mojang.brigadier.arguments.LongArgumentType.longArg(1, 1_000_000)).executes(c -> {
+                            if (c.getSource().getEntity() instanceof ServerPlayer staff && !Ponts.authentifie(staff)) {
+                                c.getSource().sendFailure(Component.translatableWithFallback("heraliz_quetes.bourse.cmd.login",
+                                        "Connecte-toi d'abord avec /login."));
+                                return 0;
+                            }
                             ServerPlayer p = EntityArgument.getPlayer(c, "joueur");
                             long n = com.mojang.brigadier.arguments.LongArgumentType.getLong(c, "herals");
                             if (Bourses.donner(p, n, c.getSource().getTextName()) == null) {

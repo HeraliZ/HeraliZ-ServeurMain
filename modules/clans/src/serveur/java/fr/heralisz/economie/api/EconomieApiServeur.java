@@ -29,11 +29,18 @@ public final class EconomieApiServeur implements EconomieApi.Moteur {
     }
 
     // ------------------------------------------------------------------ etat
-    /** Vrai si le serveur tourne et que l'on est sur son fil : les autres methodes peuvent etre appelees. */
+    /**
+     * Vrai si le serveur tourne et que l'on est sur son fil : les autres methodes peuvent etre appelees. 21/11 (audit) :
+     * faux aussi tant que comptes.json n'a pas pu etre lu au demarrage (sauvegarde bloquee, comptes partis de zero en
+     * memoire) : rien de ce qui se paierait alors ne serait jamais ecrit, et la relecture apres reparation
+     * ({@code /recharger herals}) l'effacerait. Avant, la vente a Mila, un retrait de la banque du clan ou une quete payee
+     * passaient quand meme : objets ou banque partis pour de bon, herals perdus a la relecture. Maintenant ces operations
+     * refusent (« economie indisponible »), comme sans le mod, jusqu'a la relecture ou {@code /eco sauvegarder --forcer}.
+     */
     @Override
     public boolean disponible() {
         ComptesStore s = ComptesStore.get();
-        return s != null && s.server().isSameThread();
+        return s != null && s.server().isSameThread() && !s.chargementEchoue();
     }
 
     // ------------------------------------------------------------------ lecture
