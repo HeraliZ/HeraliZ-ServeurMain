@@ -1849,3 +1849,83 @@ Proposé (pas fait, à décider) :
 - **Fichiers de cases Curios en trop** : les retirer ferait disparaître 4 lignes d'erreur, mais l'ordre de lecture de
   Curios changerait ; aujourd'hui le bon fichier de HeraliZ passe en dernier (vérifié). À ne faire qu'avec un essai en
   jeu des cases d'équipement.
+
+## 46. Serveur en ligne et banc final : audit du 21/11
+
+Demande du propriétaire : « que tout soit clean, sans aucun bug, fonctionnel à 100 % et opti ». Cette partie : le
+serveur en ligne depuis la mise à jour du 21/11 à 0 h 41 (et la tendance depuis le 19/11), lu en lecture seule par
+« Journaux du serveur » et « Lenteurs du serveur », puis un dernier banc de charge à 150 bots. Version : Anticheat
+**2.15.2** (le launcher la donne). **Rien n'a été testé en jeu.**
+
+### Le serveur en ligne (lu le 21/11 vers 1 h 30, heure française)
+
+| quoi | constat | à faire ? |
+|---|---|---|
+| Joueurs | aucun connecté depuis le redémarrage de 0 h 41 | pas de profil lancé (il en faut avec des joueurs) : à lancer un soir chargé (« Lenteurs du serveur », case profil, 60 s) |
+| Erreurs Java | aucune depuis le redémarrage ; le 20/11 : seulement des jeux sans Forge refusés (normal) | non |
+| Plantages | aucun depuis le 28/10 (4 vieux rapports d'octobre et de 2025) | non |
+| Blocages | 1 seul : la première sauvegarde automatique, 10 min après le démarrage (174 ms : Forge écrit la liste de tous les objets dans level.dat, une fois par démarrage, ensuite resservie) ; 4 ticks lents pendant le démarrage (pas d'alerte, normal) | non |
+| Tendance | rapports de blocage : 38 le 19/11 avant les correctifs de l'après-midi (`/spawn`, `/rtp` jusqu'à 1,5 s), 2 du 19/11 au soir au 20/11 midi, 3 le 20/11, 1 depuis le 21/11 ; mais presque personne n'a joué : ça ne dit rien pour 150 joueurs | non |
+| Avertissements | LiteBans (dépendance pas déclarée, sans effet), ModernFix (temps de démarrage), « Invalid statistic » (statistiques d'objets d'anciens mods dans le fichier d'un joueur, sans effet) | non |
+| Anticheat | aucune règle « en rodage » suspendue (le disjoncteur n'a jamais sauté), aucune expulsion, aucun pack refusé, aucune alerte de tirs ou d'ouverture à travers un mur depuis le 19/11 (peu de parties) ; **une fausse alerte « JvmHardening »**, corrigée ci-dessous | corrigé (2.15.2) |
+| Mémoire | 16 Go ; 2,7 Go vraiment utilisés après le démarrage (comme le 20/11) ; aucune pause complète ; les 3 pauses de plus de 200 ms sont dans les 2 minutes du démarrage | non |
+| Disque | 27,1 Go libres sur 147,4 Go ; rien n'a grossi depuis le 20/11 ; les vieilles copies de plus de 8 Go sont toujours là (section 37) | décision du propriétaire (section 37) |
+
+Décisions du 20/11, bien en place sur le serveur : vue 6 au spawn (journal : « distance de vue de heralisz:spawn : 6
+tronçons »), carte à 8 ; portées de suivi x 0,8 (`spigot.yml`) ; sauvegarde automatique toutes les 10 min (`bukkit.yml`) ;
+réglages `[perf]` du noyau en marche (compteurs de `/diag etat` : tronçons au repos, relevés des apparitions et revues des
+tickets sautés, 15 000 étages de la carte sans relecture des points d'intérêt). Zombies sans boules d'expérience :
+réglage copié à la mise en ligne, et au banc il n'en reste presque plus (12 au lieu d'environ 100).
+
+### Anticheat 2.15.2 : plus de fausse alerte « JvmHardening »
+
+Dans le journal du 20/11, un joueur normal, venu par le launcher, est signalé « JvmHardening (VL 1) : protections
+anti-injection manquantes (agents dynamiques autorisés) : lancez le jeu via le launcher officiel ». Ce n'était pas un
+tricheur : depuis la 2.15.0 (`requireHardenedJvm = true`), **chaque joueur du launcher** recevait cette alerte à chaque
+connexion (message au staff en jeu, ligne dans `alerts.log`, message Discord). Le jeu croyait qu'un réglage de Java
+(`EnableDynamicAgentLoading`) n'existait qu'à partir de Java 21 ; il existe aussi en Java 17, celui du launcher. À
+l'ouverture, les vraies alertes seraient passées derrière des centaines de fausses (Discord : un message par seconde au
+plus), et le staff aurait pu croire à de la triche. Aucune expulsion tant que `alertOnly = true`.
+
+Maintenant, seul un jeu lancé sans la protection du launcher (« attach activé ») est signalé, comme le mode strict.
+Correction côté serveur seulement.
+
+- [ ] Se connecter avec le launcher : aucune alerte « JvmHardening » chez le staff, ni sur Discord, ni dans `alerts.log`.
+- [ ] `/spartan status <joueur>` : rien de nouveau ; les autres alertes (Launcher, ResourcePack, Injection…) comme avant.
+
+### Banc final (150 bots, 5 min de mesure, monde généré)
+
+La vitesse des machines de GitHub change d'un banc à l'autre (jusqu'à 1,8 fois entre deux modèles de processeur) :
+chaque banc du 21/11 est comparé à celui du 20/11 tombé sur le même processeur.
+
+| ms par tick (150 bots) | moyenne | 95 % | 99 % | pire | ticks de plus de 50 ms |
+|---|---|---|---|---|---|
+| 20/11, processeur EPYC 9V74, vue 8 | 36,7 | 49,3 | 75,0 | 169 | 280 |
+| **21/11, branche (avant les derniers envois des audits), EPYC 9V74, vue 8 (spawn 6)** | **31,4** | **44,2** | **60,6** | 166 | **169** |
+| 20/11, processeur EPYC 7763, vue 7 | 38,9 | 50,7 | 66,4 | 194 | 341 |
+| 21/11, version en ligne (`main`), EPYC 7763 (le plus lent), vue 8 (spawn 6) | 38,6 | 53,2 | 73,9 | 256 | 426 |
+
+- Même processeur, même vue : **−5,3 ms par tick (−14 %)** et 40 % de ticks lents en moins. La version en ligne, sur la
+  machine la plus lente et à la vue 8, fait comme le 20/11 à la vue 7 (un cran plus court) : mieux, à vue égale. Prudence :
+  deux bancs sur le même processeur peuvent encore différer de 20 % (section 38).
+- Part de chaque mod (branche, EPYC 9V74 ; entre parenthèses le 20/11, même processeur) : Minecraft 9,5 ms (10,8), bots
+  du banc 8,8 (9,5), Noyau 3,7 (4,4), TaCZ 2,3 (2,8), anticheat 1,4 (1,9), ModernFix 0,9 (1,2), Curios 0,7 (0,8), Monde 0,6
+  (0,8), CRac 0,4 (0,5) ; tous les autres sous 0,35 ms.
+- Boules d'expérience : 12 au lieu d'une centaine (décision du 20/11, 0,2 ms au lieu de 0,8). Mémoire gardée : 3,7 Go
+  (comme le 20/11). 20 TPS, aucun « Can't keep up ». Les pires ticks viennent des bots eux-mêmes (connexion d'un bot,
+  relevés du banc) : rien de nouveau dans nos mods.
+- Objectifs (30 / 40 / 50 ms) : pas encore atteints à 150 bots sur ces machines de 4 cœurs, mais plus près que le 20/11.
+  Le plus gros gain restant : une machine plus rapide par cœur (section 10 de `docs/DEPLOIEMENT.md`).
+
+### Remarques (rien n'est changé, à décider)
+
+- Points d'intérêt : la relecture n'est sautée que sur la carte. Au banc, les autres mondes (tutoriel des bases, spawn)
+  en relisent encore : 1,7 s en tout pendant le banc, jusqu'à 105 ms pour un seul étage. Ajouter `"crac:tuto"` et
+  `"heralisz:spawn"` à `poi_sans_relecture` (section `[perf]` de `heraliz_noyau-server.toml`) les supprimerait (aucun de
+  nos mods ne lit ces points d'intérêt). Gain petit, surtout à l'ouverture (nouveaux joueurs dans le tutoriel).
+- Launcher : il pourrait couper aussi `EnableDynamicAgentLoading` (accepté par Java 17, vérifié) : une protection de
+  plus, à la prochaine version du launcher. Son commentaire qui dit le contraire est faux.
+- La première sauvegarde automatique après chaque démarrage coûte 100 à 175 ms (une seule fois) : sans gravité.
+
+Pas testé : tout en jeu ; aucun profil du serveur en ligne avec des joueurs (personne cette nuit) ; le banc n'est pas la
+vraie carte (ni ses conteneurs, ni ses villes).
