@@ -162,7 +162,7 @@ Fait :
    code, elles sont faites par le jeu du joueur à partir de sa liste Tab, d'où le staff caché est déjà retiré (Bukkit
    `hidePlayer`, ou paquet « joueur retiré » sans Bukkit) : rien à changer. `/list` ne répond rien aux joueurs qui ne
    sont pas op (règle du monde `sendCommandFeedback = false`).
-   `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/VanishServeur.java` l.79-81, l.319-362 (`messagePrive`).
+   `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/VanishServeur.java` (`brancher`, `messagePrive`).
 3. **`/boutique`** (proposition n° 1 de cette validation) : le solde de PB est demandé au site au plus une fois toutes les
    5 s par joueur ; rouvert entre-temps, l'écran s'ouvre tout de suite avec le dernier solde connu, relu après chaque
    achat (débit, refus avec solde, remboursement). Oublié à la déconnexion.
@@ -178,13 +178,14 @@ Fait :
    que tous les jars partent ensemble ; un vieux noyau laissé seul donnerait un message clair au démarrage au lieu d'un
    plantage au premier appel. `modules/boutique/src/commun/resources/META-INF/mods.toml`.
 
-Pas fait (choix du propriétaire) : `/trade`, `/kit` à 16 kits, `/heraliz loot fichier`.
+6. **Réponse au staff caché** (suite choisie par le propriétaire, commit `b6c7464a8`) : quand un membre
+   du staff caché écrit lui-même à un joueur (`/msg`, `/tell`, `/w`), CE joueur seul peut lui répondre pendant 5 min
+   (`/r`, `/msg`, `/tell`, `/w`) ; les autres joueurs hors du staff reçoivent toujours « Aucun joueur n'a été trouvé ».
+   Fenêtre oubliée à la déconnexion de l'un des deux et quand le staff se montre ou se recache ; rien d'autre ne change
+   (aucune trace du caché dans le Tab). Une commande incomplète (`/msg Pseudo` sans message) reçoit la réponse de
+   Minecraft, la même pour un absent et pour un caché. `VanishServeur.java` (`messagePrive`, `REPONSES`).
 
-Remarque, à décider si besoin : un membre du staff caché qui écrit lui-même à un joueur par `/msg` se montre à ce joueur,
-mais le joueur ne peut pas lui répondre (« Aucun joueur n'a été trouvé », comme demandé : le caché est absent pour les
-joueurs). Si vous voulez qu'un joueur puisse répondre pendant quelques minutes au staff caché qui lui a écrit le premier,
-c'est un petit ajout ; pour parler à un joueur sans se montrer, le bouton « Message » du panel (« [Staff] … ») reste le
-moyen prévu.
+Pas fait (choix du propriétaire) : `/trade`, `/kit` à 16 kits, `/heraliz loot fichier`.
 
 Contrôles faits ici : `outils/verifier_langues.py` (0 erreur), relecture ; aucune compilation ici (fabrication et
 contrôles sur GitHub).
@@ -198,6 +199,9 @@ contrôles sur GitHub).
       `/w S salut` : « Aucun joueur n'a été trouvé » en rouge, exactement comme `/msg <pseudo d'un absent>` ; S ne reçoit
       rien. B tape `/msg S salut` : S le reçoit. A tape `/msg ` puis Tab : le pseudo de S n'est pas proposé. S se montre :
       `/msg S` de A marche de nouveau.
+- [ ] **Réponse au staff caché** : S caché écrit `/msg A bonjour` ; A répond par `/r` puis `/msg S` : S reçoit les deux ;
+      C (autre joueur hors du staff) tape `/msg S` : « Aucun joueur n'a été trouvé ». Au bout de 5 min, ou si S se montre
+      puis se recache, ou si l'un des deux se déconnecte : A reçoit de nouveau « Aucun joueur n'a été trouvé ».
 - [ ] **`/boutique`** : ouvrir, fermer, rouvrir aussitôt : le solde s'affiche tout de suite ; acheter un article : le
       solde suit ; rouvrir 10 s plus tard : solde relu.
 - [ ] **Onglet Économie** (Fondateur) : donner ou retirer des PB, voir un solde : comme avant (si le site renvoie une
