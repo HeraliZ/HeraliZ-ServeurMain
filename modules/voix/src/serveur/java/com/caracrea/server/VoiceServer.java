@@ -60,6 +60,11 @@ import static com.caracrea.voice.net.VoiceSnapshot.*;
  * <p>Groups work like the usual voice chat mod's: members hear each other from anywhere. In a <i>normal</i> group, what
  * members say stays in the group, and they still hear the players around them; in an <i>open</i> group, the players
  * around them also hear them; in an <i>isolated</i> group, members only hear each other.
+ *
+ * <p>21/11 (choix du propriétaire) : pas de voix avant le /login d'AuthMe (serveur cracké). Tant qu'il n'est pas
+ * connecté, un joueur ne parle à personne et n'entend personne (drapeaux {@code TALK} et {@code DEAF} de l'instantané),
+ * groupes compris, et ne crée, ne rejoint ni ne quitte aucun groupe : un jeu lancé sous le pseudo d'un autre ne parle pas
+ * en son nom. Sans AuthMe (serveur d'essai, solo) : comme avant ({@link LoginCheck}, ouvert dans le doute).
  */
 public final class VoiceServer {
     public static final int NORMAL = VoiceRouting.GROUP_NORMAL;
@@ -118,6 +123,13 @@ public final class VoiceServer {
         /** Hidden staff member (vanish) / sees the hidden staff: read every 10 ticks on the server thread (21/11). */
         volatile boolean hidden;
         volatile boolean seesHidden;
+        /**
+         * A fait son /login d'AuthMe (21/11, choix du propriétaire) : sinon il ne parle à personne et n'entend personne,
+         * groupes compris (un jeu lancé sous le pseudo d'un autre ne parle pas en son nom). Toujours vrai sans AuthMe
+         * ({@link LoginCheck}). Lu à l'arrivée puis relu par {@code snapshot()} : tous les 2 ticks avant le /login (la voix
+         * part aussitôt après), toutes les secondes ensuite (/logout d'AuthMe).
+         */
+        volatile boolean loggedIn;
         // Server thread.
         boolean talking;
         String lastTransport;
@@ -266,6 +278,7 @@ public final class VoiceServer {
         }
         Member m = create(player.getUUID(), player.getGameProfile().getName(), false);
         m.player = player;
+        m.loggedIn = LoginCheck.loggedIn(player);
         CaraCreaNetwork.sendTo(player, configFor(m));
         VoiceInbound.install(player);
     }
@@ -447,6 +460,7 @@ public final class VoiceServer {
         VoiceSnapshot snap = SNAPSHOTS.back();
         snap.ensure(ORDER.size());
         int n = 0;
+        int tick = s.getTickCount();
         for (Member m : ORDER) {
             if (m.simulated) {
                 UdpVoiceServer.Peer peer = m.peer;
@@ -461,16 +475,20 @@ public final class VoiceServer {
                 continue;
             }
             m.player = player;
+            // /login d'AuthMe (21/11) : relu tous les 2 ticks tant qu'il manque, puis une fois par seconde (étalé)
+            if (m.loggedIn ? (tick + m.voiceId) % 20 == 0 : tick % 2 == 0) {
+                m.loggedIn = LoginCheck.loggedIn(player);
+            }
             boolean muted = VoiceMutes.isMuted(m.uuid);
             if (muted != m.adminMuted) {
                 m.adminMuted = muted;
                 rosterDirty = true;
             }
             int flags = REACHABLE;
-            if (player.isAlive() && !muted && !m.silenced) {
+            if (player.isAlive() && !muted && !m.silenced && m.loggedIn) {
                 flags |= TALK;
             }
-            if (m.disabled || m.deafened || m.selfDeafened) {
+            if (m.disabled || m.deafened || m.selfDeafened || !m.loggedIn) {
                 flags |= DEAF;
             }
             if (player.isCrouching()) {
@@ -720,6 +738,10 @@ public final class VoiceServer {
 
     public static void groupAction(ServerPlayer player, GroupAction action) {
         if (!active) {
+            return;
+        }
+        // 21/11 (choix du propriétaire) : aucun groupe (créer, rejoindre, quitter) avant le /login d'AuthMe
+        if (!LoginCheck.loggedIn(player)) {
             return;
         }
         UUID uuid = player.getUUID();
