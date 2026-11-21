@@ -94,6 +94,12 @@ public final class EchelleServeur {
         if (!(e.getEntity() instanceof ServerPlayer p) || !(p.level() instanceof ServerLevel level)) {
             return;
         }
+        // HeraliZ (21/11, validation) : ce gestionnaire reçoit aussi les clics déjà annulés (CasseBlocs) : un bloc nommé de
+        // loin par un jeu modifié, dans un tronçon pas complet, n'est jamais lu (sa lecture chargeait le tronçon sur le fil
+        // du serveur) ; un vrai joueur ne vise que des blocs tout près de lui
+        if (!fr.heraliz.noyau.api.Troncons.charge(level, e.getPos())) {
+            return;
+        }
         BlockState s = level.getBlockState(e.getPos());
         if (!(s.getBlock() instanceof EchelleBlock)) {
             return;
