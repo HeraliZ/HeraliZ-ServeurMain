@@ -87,6 +87,7 @@ public final class Directeur {
         ObjetsServeur.charger(dossier);
         charger();
         FAITS.clear();
+        ANNULATIONS_RATEES.clear();
         jourFaits = "";
         ticks = 0;
         derniereMinute = 0;
@@ -109,19 +110,23 @@ public final class Directeur {
     public static void tick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || e.getServer() == null || ++ticks % 20 != 0) return;
         MinecraftServer server = e.getServer();
+        long maintenant = System.currentTimeMillis();
         for (Evenement ev : EVENEMENTS.values()) {
-            if (!ev.actif()) continue;
+            if (!ev.actif()) {
+                ANNULATIONS_RATEES.remove(ev.id());
+                continue;
+            }
+            Long ratee = ANNULATIONS_RATEES.get(ev.id());
+            if (ratee != null) {
+                // 21/11 (validation de l'audit) : son annulation a raté (état cassé) : il ne tourne plus ; nouvel essai
+                // d'annulation une fois par minute, une ligne au journal à chaque essai raté (avant : deux erreurs par seconde)
+                if (maintenant - ratee >= 60_000L) annulerApresErreur(server, ev, null, maintenant);
+                continue;
+            }
             try {
                 ev.seconde(server);
             } catch (RuntimeException ex) {
-                HeralizEvenements.LOG.error("[evenements] {} en erreur : annule", ev.id(), ex);
-                // 21/11 (audit) : l'annulation elle-même peut buter sur le même état cassé ; son erreur ne doit jamais sortir
-                // du tick du serveur (elle arrêterait tout le serveur), comme à l'arrêt (méthode arret ci-dessus)
-                try {
-                    ev.annuler(server, "erreur");
-                } catch (RuntimeException ex2) {
-                    HeralizEvenements.LOG.error("[evenements] {} : annulation en erreur", ev.id(), ex2);
-                }
+                annulerApresErreur(server, ev, ex, maintenant);
             }
         }
         long minute = System.currentTimeMillis() / 60_000L;
@@ -136,6 +141,33 @@ public final class Directeur {
                 }
             }
             planning(server);
+        }
+    }
+
+    /** Événements dont l'annulation après une erreur a raté : heure (ms) du dernier essai (21/11, validation de l'audit). */
+    private static final Map<String, Long> ANNULATIONS_RATEES = new java.util.HashMap<>();
+
+    /**
+     * Un événement en erreur est annulé (21/11, audit) ; l'annulation elle-même peut buter sur le même état cassé : son
+     * erreur ne sort jamais du tick du serveur (elle arrêterait tout le serveur), comme à l'arrêt (méthode arret ci-dessus).
+     * 21/11 (validation) : ratée, l'événement ne tourne plus et l'annulation est réessayée une fois par minute
+     * ({@link #ANNULATIONS_RATEES}) : la pile d'appels est écrite la première fois, une ligne ensuite.
+     */
+    private static void annulerApresErreur(MinecraftServer server, Evenement ev, @Nullable RuntimeException cause, long maintenant) {
+        boolean premiere = !ANNULATIONS_RATEES.containsKey(ev.id());
+        if (cause != null) HeralizEvenements.LOG.error("[evenements] {} en erreur : annule", ev.id(), cause);
+        try {
+            ev.annuler(server, "erreur");
+            if (!premiere) HeralizEvenements.LOG.info("[evenements] {} : annulation enfin passee", ev.id());
+            ANNULATIONS_RATEES.remove(ev.id());
+        } catch (RuntimeException ex2) {
+            ANNULATIONS_RATEES.put(ev.id(), maintenant);
+            if (premiere) {
+                HeralizEvenements.LOG.error("[evenements] {} : annulation en erreur ; l'evenement ne tourne plus, nouvel essai chaque minute",
+                        ev.id(), ex2);
+            } else {
+                HeralizEvenements.LOG.error("[evenements] {} : annulation toujours en erreur ({})", ev.id(), ex2.toString());
+            }
         }
     }
 

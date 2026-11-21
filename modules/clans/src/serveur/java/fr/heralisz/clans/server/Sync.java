@@ -3,6 +3,7 @@ package fr.heralisz.clans.server;
 import fr.heralisz.clans.ClansConfig;
 import fr.heralisz.clans.model.Clan;
 import fr.heralisz.clans.model.ClanSnapshot;
+import fr.heralisz.clans.model.Evenement;
 import fr.heralisz.clans.model.Grade;
 import fr.heralisz.clans.model.Invitation;
 import fr.heralisz.clans.model.InvitationVue;
@@ -89,12 +90,18 @@ public final class Sync {
      * connexion puis chaque minute, et son temps de jeu montait chaque seconde : l'ecran du clan disait « hors ligne · vu
      * il y a moins d'une minute », donc qu'il etait la. Ce clan voit maintenant ses valeurs d'avant la partie, comme un
      * joueur hors ligne (meme regle que son profil). Rien ne change dans les donnees du clan. Retire a la deconnexion.
+     * <p>21/11 (validation de l'audit) : {« vu le », temps de jeu, debut de la partie} ; aussi pour un joueur qui rejoint un
+     * clan pendant sa partie (vu pour la derniere fois a son arrivee, temps de jeu 0) : un cache qui rejoint reste « hors
+     * ligne », et son arrivee de cette partie est retiree du journal envoye aux membres qui ne voient pas les caches.
      */
     private static final Map<UUID, long[]> AVANT_SESSION = new HashMap<>();
 
-    /** Connexion d'un membre (avant la mise a jour de son « vu le ») : ses valeurs d'avant cette partie. */
-    static void debutSession(UUID joueur, long vuLe, long tempsJeuTicks) {
-        AVANT_SESSION.put(joueur, new long[]{vuLe, tempsJeuTicks});
+    /**
+     * Connexion d'un membre (avant la mise a jour de son « vu le »), ou arrivee dans un clan pendant la partie : ses valeurs
+     * d'avant, et l'heure ({@code debut}) a partir de laquelle son arrivee dans le journal est de cette partie.
+     */
+    static void debutSession(UUID joueur, long vuLe, long tempsJeuTicks, long debut) {
+        AVANT_SESSION.put(joueur, new long[]{vuLe, tempsJeuTicks, debut});
     }
 
     /** Deconnexion : plus rien a montrer a sa place. */
@@ -457,9 +464,11 @@ public final class Sync {
             reglages = miens == null ? Map.of() : Map.of(u, miens);
         }
         List<ClanSnapshot.MembreVue> membres = b.membres;
+        List<Evenement> journal = c.journal;
         if (!b.caches.isEmpty() && !PontVanish.voitLesCaches(p)) {
             // staff cache (21/11) : hors ligne pour les autres membres du clan qui ne voient pas les caches
             membres = new ArrayList<>(b.membres.size());
+            Map<String, Long> arrivees = null;
             for (ClanSnapshot.MembreVue m : b.membres) {
                 if (!b.caches.contains(m.uuid()) || m.uuid().equals(u)) {
                     membres.add(m);
@@ -471,14 +480,34 @@ public final class Sync {
                 if (avant != null) {
                     st = st.copie();
                     st.tempsJeuTicks = Math.min(st.tempsJeuTicks, avant[1]);
+                    if (arrivees == null) arrivees = new HashMap<>(2);
+                    arrivees.put(m.nom(), avant[2]);
                 }
                 membres.add(new ClanSnapshot.MembreVue(m.uuid(), m.nom(), m.grade(), m.rejointLe(), avant != null ? avant[0] : m.vuLe(), st,
                         false, m.solde()));
             }
+            if (arrivees != null) journal = sansArrivees(c.journal, arrivees);
         }
         return new ClanSnapshot(c.id, c.tag, c.nom, c.description, c.banniere, c.chef, c.creeLe, c.banque, c.niveau, c.xp,
                 Niveaux.xpPour(c.niveau), c.membresMax(), c.territoiresMax(), membres, b.perms,
                 u, g, monSolde, b.symbole, b.cdNom, b.cdTag, b.cdDesc, b.cdBan, journalBanque, c.quetesJour, c.quetesSemaine,
-                b.resetJour, b.resetSemaine, terr, c.journal, b.now, reglages);
+                b.resetJour, b.resetSemaine, terr, journal, b.now, reglages);
+    }
+
+    /**
+     * Journal du clan sans l'arrivee d'un membre du staff cache pendant sa partie en cours (21/11, validation de l'audit) :
+     * {@code arrivees} = son nom -> debut de sa partie ({@link #AVANT_SESSION}). Les membres qui ne voient pas les caches ne
+     * lisent pas qu'il vient de rejoindre le clan (donc qu'il est connecte) ; la ligne revient quand il se montre ou part.
+     */
+    private static List<Evenement> sansArrivees(List<Evenement> journal, Map<String, Long> arrivees) {
+        List<Evenement> l = null;
+        for (int i = 0; i < journal.size(); i++) {
+            Evenement e = journal.get(i);
+            Long debut = e.genre() == Evenement.Genre.ARRIVEE && !e.args().isEmpty() ? arrivees.get(e.args().get(0)) : null;
+            boolean tu = debut != null && e.quand() >= debut;
+            if (tu && l == null) l = new ArrayList<>(journal.subList(0, i));
+            else if (!tu && l != null) l.add(e);
+        }
+        return l == null ? journal : l;
     }
 }

@@ -420,6 +420,11 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
             progres += pas;
             budget -= pas;
             if (progres < total) break;
+            // 21/11 (validation de l'audit) : jamais un objet recyclé sans sa part en hérals : en attente au bout de la barre
+            if (enPause(i)) {
+                progres = total;
+                break;
+            }
             Paiement pa = recycler(i);
             progres = 0;
             if (pa == null) break;
@@ -445,6 +450,18 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
      * machine, qui contient maintenant {@code bourse}).
      */
     private record Paiement(UUID deposant, int objets, long herals, long enBourse, long bourse) {
+    }
+
+    /**
+     * La case {@code i} attend au lieu de se recycler (21/11, validation de l'audit) : économie indisponible (fichier des
+     * comptes illisible ; l'écran le dit à l'ouverture, {@link Recyclage#ouvrirCarte}), ou bourses bloquées (les hérals iraient
+     * sur le compte) et compte du déposant trop près de son plafond (l'économie les couperait sans rien dire). Les objets
+     * restent dans la machine, on peut les reprendre.
+     */
+    private boolean enPause(int i) {
+        if (!Ponts.economie()) return true;
+        long h = verdicts[i].herals();
+        return h > 0 && deposants[i] != null && !Bourses.pret() && Ponts.place(deposants[i]) < h;
     }
 
     /** Dernier message « dans la bourse du recycleur » de chaque déposant (tick du jeu) : un toutes les 20 s au plus. */

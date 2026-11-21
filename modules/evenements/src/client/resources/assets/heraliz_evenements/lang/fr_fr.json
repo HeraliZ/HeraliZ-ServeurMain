@@ -24,6 +24,7 @@
   "heraliz_evenements.agenda.en_cours": "En cours : %s",
   "heraliz_evenements.agenda.aucun": "Aucun événement prévu dans les 24 prochaines heures.",
   "heraliz_evenements.agenda.prochains": "Prochains événements : %s",
+  "heraliz_evenements.cmd.login": "Connecte-toi d'abord avec /login.",
   "item.heraliz_evenements.dossier_classe": "Dossier classé",
   "item.heraliz_evenements.mallette_scellee": "Mallette scellée",
   "item.heraliz_evenements.disque_dur_militaire": "Disque dur militaire",

@@ -288,6 +288,43 @@ final class Ponts {
         }
     }
 
+    private static java.lang.reflect.Method mMax;
+    private static boolean mMaxCherche;
+
+    /** Plafond d'un compte de l'économie ({@code EconomieApi.maxSolde}, 10 000 000 hérals à l'origine) ; -1 s'il ne se lit pas. */
+    static long plafond() {
+        if (!mMaxCherche) {
+            mMaxCherche = true;
+            Class<?> c = eco();
+            try {
+                mMax = c == null ? null : c.getMethod("maxSolde");
+            } catch (Throwable t) {
+                mMax = null;
+            }
+        }
+        if (mMax == null) return -1;
+        try {
+            return (long) mMax.invoke(null);
+        } catch (Throwable t) {
+            return -1;
+        }
+    }
+
+    /**
+     * Ce que le compte de ce joueur peut encore recevoir avant le plafond (21/11, validation de l'audit : l'économie coupe
+     * sans rien dire un dépôt qui le dépasserait ; Mila, les quêtes et les recycleurs regardent donc la place AVANT de
+     * prendre quoi que ce soit). Long.MAX_VALUE si l'économie ne le dit pas (absente : rien n'est versé de toute façon).
+     */
+    static long place(UUID joueur) {
+        long max = plafond();
+        if (max < 0 || !methodes()) return Long.MAX_VALUE;
+        try {
+            return Math.max(0L, max - (long) mSolde.invoke(null, joueur));
+        } catch (Throwable t) {
+            return Long.MAX_VALUE;
+        }
+    }
+
     /** « 1 500 » (séparateur des milliers du serveur). */
     static String nombre(long v) {
         String s = Long.toString(Math.abs(v));

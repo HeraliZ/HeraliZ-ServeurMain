@@ -275,7 +275,11 @@ public final class Bourses {
         UUID id = Bourse.id(s);
         Long plafond = id == null ? null : PLAFONDS.get(id);
         if (plafond == null) return false;
-        long v = Math.min(MAX, Math.min(Bourse.herals(s), plafond) + n);
+        // 21/11 (validation de l'audit) : une bourse pleine (10 000 000 hérals) ne reçoit plus rien (avant : le surplus était
+        // coupé sans rien dire) ; l'appelant en fait une neuve
+        long base = Math.min(Bourse.herals(s), plafond);
+        if (base + n > MAX) return false;
+        long v = base + n;
         if (!poser(id, v)) return false;
         Bourse.montant(s, v);
         return true;
@@ -374,7 +378,9 @@ public final class Bourses {
         Long pa = PLAFONDS.get(a), pb = PLAFONDS.get(b);
         if (pa == null || pb == null) return false;
         long va = Math.min(Bourse.herals(dans), pa), vb = Math.min(Bourse.herals(versee), pb);
-        long total = Math.min(MAX, va + vb);
+        // 21/11 (validation de l'audit) : au-delà du plafond d'une bourse, pas de fusion (avant : le surplus disparaissait)
+        if (va + vb > MAX) return false;
+        long total = va + vb;
         if (!poser(a, total)) return false;
         if (!effacer(b)) return false;   // bloqué : rien ne change dans le monde, les deux bourses gardent leur valeur
         Bourse.montant(dans, total);
