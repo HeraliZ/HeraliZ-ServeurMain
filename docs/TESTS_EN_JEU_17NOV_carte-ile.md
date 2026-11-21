@@ -1657,10 +1657,10 @@ Versions : ClashWar **1.3.4**, Quêtes **1.24.3** (rien ne change entre le jeu e
 **Rien n'a été testé en jeu** : la fabrication et les contrôles sur GitHub seulement.
 
 Corrigé :
-- **Inventaire mis de côté par le ClashWar** (inscrits au départ d'un tournoi, et `/clashwar regarder`) : depuis le 19/11,
-  le dépôt s'écrit en fond et le joueur attend un instant. Au moment de vider son inventaire, le serveur vérifie
-  maintenant qu'il tient exactement ce qui a été mis de côté ; sinon rien n'est vidé et le dépôt est refait (au plus
-  5 fois, puis refusé avec le message habituel, inventaire intact). La marque du dépôt n'est plus posée qu'à ce moment-là.
+- **Inventaire mis de côté par le ClashWar** (inscrits au départ d'un tournoi, et `/clashwar regarder`) : au moment de
+  vider l'inventaire, le serveur vérifie qu'il correspond exactement à ce qui a été mis de côté ; sinon rien n'est vidé
+  et le dépôt est refait (au plus 5 fois, puis refusé avec le message habituel, inventaire intact). La marque du dépôt
+  n'est plus posée qu'à ce moment-là.
 - **Marchands, Mila, échanges, recycleur du spawn, quêtes du jour et étape « donner » de Varga** : refusés tant que
   l'inventaire est mis de côté par le ClashWar (même message qu'en match).
 
@@ -1668,7 +1668,7 @@ Corrigé :
 - [ ] Départ d'un tournoi, inventaires bien remplis (armes, sac porté, objet tenu à la souris au moment du départ) :
       chacun entre en salle ; au retour, l'inventaire est exactement celui d'avant, ni en double ni en moins.
 - [ ] `/clashwar regarder`, puis `/clashwar quitter`, plusieurs fois de suite : même chose à chaque retour.
-- [ ] Journal du serveur au départ : normalement aucune ligne « objets deplaces pendant l'ecriture ». S'il y en a pour
+- [ ] Journal du serveur au départ : normalement aucune ligne « inventaire change pendant l'ecriture ». S'il y en a pour
       des joueurs qui ne touchaient à rien, le dire (un objet qui change tout seul dans l'inventaire ferait attendre).
 - [ ] Hors ClashWar : Mila, les marchands, le Passeur, les échanges, le recycleur du spawn, Varga et les quêtes du jour
       marchent comme avant.
