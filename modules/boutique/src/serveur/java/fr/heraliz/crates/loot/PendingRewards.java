@@ -89,7 +89,10 @@ public class PendingRewards extends SavedData {
         if (s == null || s.isEmpty()) return;
         // 15/11 : en match (ou inventaire mis de cote par le ClashWar), jamais dans l'inventaire du match : il attend
         boolean enMatch = retenuParMatch(p);
-        if (!enMatch) {
+        // 21/11 (audit) : joueur mort (ecran de mort) : son inventaire ne le suit pas a la reapparition, l'objet y serait
+        // perdu (fin de la roue d'une caisse, bon rendu...) ; il attend ici et lui est rendu une fois en vie (rendre)
+        boolean mort = !p.isAlive();
+        if (!enMatch && !mort) {
             p.getInventory().add(s);
             p.getInventory().setChanged();
         }
@@ -98,7 +101,9 @@ public class PendingRewards extends SavedData {
         a.objets.computeIfAbsent(p.getUUID(), k -> new ListTag()).add(s.save(new CompoundTag()));
         a.sauverMaintenant(p.server);
         fr.heraliz.crates.HeralizCrates.LOGGER.info("[HeralizCrates] {} : {} x{} garde pour {} (rendu des que possible)",
-                enMatch ? "en match" : "inventaire plein", s.getHoverName().getString(), s.getCount(), p.getGameProfile().getName());
+                enMatch ? "en match" : mort ? "joueur mort" : "inventaire plein", s.getHoverName().getString(), s.getCount(), p.getGameProfile().getName());
+        // mort : pas de message, « Objets qui t'attendaient remis dans ton inventaire » arrive apres la reapparition
+        if (mort) return;
         if (enMatch) {
             p.sendSystemMessage(Component.translatableWithFallback("message.heralizcrates.attente_match",
                     "En match : %s t'attend ; il te sera donné à ton retour.", fr.heraliz.noyau.api.NomsObjets.nom(s))

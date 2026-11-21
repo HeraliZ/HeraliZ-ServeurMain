@@ -67,7 +67,7 @@ public final class CasinoConfigServeur {
         switch (t) {
             case CAISSE -> {
                 CasinoConfig.Cashier recue = CasinoConfig.GSON.fromJson(json, CasinoConfig.Cashier.class);
-                if (recue != null) garderCommandes(recue, s.caisse);
+                if (recue != null) garderEncaissements(recue, s.caisse);
                 s.caisse = recue;
             }
             case ROTTEN -> s.rotten = CasinoConfig.GSON.fromJson(json, RottenRules.class);
@@ -90,29 +90,15 @@ public final class CasinoConfigServeur {
     }
 
     /**
-     * Tablette du Directeur, page de la caisse : la copie des joueurs (operateurs compris) n'a pas les commandes des
-     * encaissements (remplacees par CommandExchange.COMMANDE_CACHEE, audit du 02/11, point 11). Chaque commande cachee
-     * reprend celle du serveur : encaissement du meme nom, sinon a la meme place ; introuvable : vide (desactive).
+     * Tablette du Directeur, page de la caisse : les encaissements par commande (commandes jouees par la console) ne viennent
+     * JAMAIS d'un joueur. La copie des joueurs (operateurs compris) n'a pas leurs commandes (remplacees par
+     * CommandExchange.COMMANDE_CACHEE, audit du 02/11, point 11) et la tablette ne les regle pas : ceux du serveur sont
+     * gardes tels quels (nom, commande, prix et montant ; ils se reglent dans casino.json). 21/11 (audit) : avant, seule une
+     * commande « cachee » reprenait celle du serveur ; toute autre commande envoyee par un jeu modifie etait gardee, puis
+     * jouee par la console (tous les droits) a chaque encaissement a la caisse.
      */
-    static void garderCommandes(CasinoConfig.Cashier recue, CasinoConfig.Cashier actuelle) {
-        if (recue.encaissements == null) return;
-        java.util.List<CasinoConfig.CommandExchange> serveur = actuelle == null || actuelle.encaissements == null
-                ? java.util.List.of() : actuelle.encaissements;
-        java.util.Set<CasinoConfig.CommandExchange> prises = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        for (int i = 0; i < recue.encaissements.size(); i++) {
-            CasinoConfig.CommandExchange e = recue.encaissements.get(i);
-            if (e == null || !CasinoConfig.CommandExchange.COMMANDE_CACHEE.equals(e.commande)) continue;
-            CasinoConfig.CommandExchange trouvee = null;
-            for (CasinoConfig.CommandExchange x : serveur) {
-                if (x != null && !prises.contains(x) && java.util.Objects.equals(x.nom, e.nom)) {
-                    trouvee = x;
-                    break;
-                }
-            }
-            if (trouvee == null && i < serveur.size() && serveur.get(i) != null && !prises.contains(serveur.get(i))) trouvee = serveur.get(i);
-            if (trouvee != null) prises.add(trouvee);
-            e.commande = trouvee == null ? "" : trouvee.commande;
-        }
+    static void garderEncaissements(CasinoConfig.Cashier recue, CasinoConfig.Cashier actuelle) {
+        recue.encaissements = actuelle == null || actuelle.encaissements == null ? new java.util.ArrayList<>() : actuelle.encaissements;
     }
 
     private static String sourceJoueurs, jsonJoueurs;
