@@ -471,6 +471,12 @@ final class Moteur {
         int voulu = e.nombre();
         switch (e.type) {
             case "donner" -> {
+                // 21/11 (audit des duplications) : rien n'est donné tant que l'inventaire est mis de côté par le ClashWar (il
+                // reviendrait entier avec le dépôt), comme chez les marchands
+                if (ObjetsARendre.retenuParMatch(p)) {
+                    notif(p, Texte.cle("heraliz_quetes.marchand.regle.match"), 0xFF6B6B);
+                    return false;
+                }
                 int pris = prendre(p, e, a, voulu - a.progres);
                 a.progres += pris;
                 Donnees.sale(p.getUUID());

@@ -53,11 +53,14 @@ final class Marchands {
     /**
      * Ce qui empêche ce joueur de commercer maintenant (achat, vente, échange), ou null (Quêtes 1.11.0, mêmes règles que
      * /boutique et /trade de HeraliZ Grades) : en match, en combat, à terre, pendant le tutoriel des bases, et sur la carte
-     * (overworld) en survie : les marchands ne servent qu'au spawn. Créatif (staff qui essaie) : jamais bloqué.
+     * (overworld) en survie : les marchands ne servent qu'au spawn. Créatif (staff qui essaie) : jamais bloqué. 21/11 (audit
+     * des duplications) : « en match » compte aussi un inventaire mis de côté par le ClashWar (marque de son Coffre, règle
+     * commune du noyau) : ce qui serait vendu ou donné reviendrait avec le dépôt, ce qui serait acheté serait effacé.
      */
     static Texte empechement(ServerPlayer p) {
         if (p.isCreative()) return null;
-        if (p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heraliz_clashwar")) {
+        if (p.getPersistentData().getBoolean(DRAPEAU_MATCH) || p.level().dimension().location().getNamespace().equals("heraliz_clashwar")
+                || ObjetsARendre.retenuParMatch(p)) {
             return Texte.cle("heraliz_quetes.marchand.regle.match");
         }
         if (p.getPersistentData().getLong(CLE_COMBAT) > System.currentTimeMillis()) return Texte.cle("heraliz_quetes.marchand.regle.combat");
