@@ -25,5 +25,9 @@ Modifications (ArkaniaZ puis HeralisZ) :
 - 2026-11-21 (heralisz28) : défis de déblocage plus suivis quand tout est débloqué (`unlockAllCosmetics`,
   `UnlockManager.defisSuivis`) ; reliquats ArkaniaZ retirés (clé et adresse d'un ancien serveur, contrôle d'adresse au
   démarrage jamais branché : `ServerStartingEventHandler`).
+- 2026-11-21 (heralisz29) : retirés `data/backpacked/curios/entities/ear_protection.json` et `face.json`, qui donnaient
+  aux joueurs des cases Curios « ear_protection » et « face » que rien ne définit : Curios les ignorait et écrivait deux
+  erreurs à chaque démarrage (« … is not a registered slot type! »). Aucun changement en jeu (ces cases n'ont jamais
+  existé) ; les listes d'objets `data/curios/tags/items/ear_protection.json` et `face.json` restent.
 
 Sources obtenues en décompilant le jar du serveur (Vineflower 1.12), voir `tools/fork_backpacked.py`.
