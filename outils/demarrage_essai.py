@@ -175,10 +175,30 @@ def lancer(a, d):
         t = time.time()
         res["code_sortie"] = serveur.arreter(120) if serveur else None
         res["arret_s"] = round(time.time() - t)
-    return finir(a, res, serveur, rapport)
+    return finir(a, res, serveur, rapport, d)
 
 
-def finir(a, res, serveur, rapport):
+def reglages_corriges(d):
+    """Réglages remis en ordre par Forge, clé par clé (logs/debug.log : Forge n'écrit ce détail qu'en DEBUG ; la console ne
+    dit que « Configuration file ... is not correct »). Rend [(fichier, [lignes « clé : avant -> après »])]."""
+    f = d / "logs" / "debug.log"
+    if not f.exists():
+        return None
+    res, courant = [], None
+    for l in f.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = re.search(r"Configuration file (.+?) is not correct\. Correcting", l)
+        if m:
+            nom = re.sub(r"^.*?[/\\](config|serverconfig)[/\\]", r"\1/", m.group(1))
+            courant = (nom, [])
+            res.append(courant)
+            continue
+        m = re.search(r"Incorrect key (\S+) was corrected from (.*?) to its default, (.*?)\. ?(This seems to be an error\.)?\s*$", l)
+        if m and courant is not None:
+            courant[1].append("%s : %s -> %s" % (m.group(1), m.group(2)[:120], m.group(3)[:120]))
+    return res
+
+
+def finir(a, res, serveur, rapport, d=None):
     lignes = serveur.depuis(0) if serveur else []
     fatales = []
     for k, l in enumerate(lignes):
@@ -216,6 +236,19 @@ def finir(a, res, serveur, rapport):
         o += ["", "Avertissements du journal (%d, %d sortes ; les %d plus fréquents, liste complète dans le journal de la tâche) :"
               % (sum(avertis.values()), len(avertis), min(25, len(avertis))), "", "```"]
         o += ["%4d  %s" % (n, e) for e, n in avertis.most_common(25)]
+        o.append("```")
+    corriges = reglages_corriges(d) if d else None
+    if corriges:
+        # « null » avant : clé absente du fichier, ajoutée avec sa valeur par défaut ; « null » après : clé qui n'existe plus
+        # dans le code, retirée ; sinon : valeur hors bornes ou du mauvais type, REMPLACÉE par la valeur par défaut
+        o += ["", "Réglages corrigés par Forge au démarrage (%d fichier(s) ; « null -> x » : clé ajoutée avec sa valeur par "
+              "défaut ; « x -> null » : clé qui n'existe plus ; sinon valeur refusée, remplacée par la valeur par défaut) :"
+              % len(corriges), "", "```"]
+        for nom, cles in corriges:
+            o.append("%s (%d clé(s))" % (nom, len(cles)))
+            o += ["    " + c for c in cles[:40]]
+            if len(cles) > 40:
+                o.append("    ... et %d autre(s)" % (len(cles) - 40))
         o.append("```")
     texte = "\n".join(o) + "\n"
     (rapport / "resume.md").write_text(texte, encoding="utf-8")
