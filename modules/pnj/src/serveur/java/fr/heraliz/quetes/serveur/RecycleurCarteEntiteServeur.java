@@ -265,7 +265,8 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
             // 21/11 (audit) : l'ancien fichier date d'avant ce changement ; s'il restait, un objet qu'un joueur vient de reprendre
             // reviendrait en double après un redémarrage. Il est effacé (un effacement passe même disque plein) : un plantage
             // avant la prochaine écriture réussie fait perdre le contenu de la machine, jamais un objet en double.
-            boolean efface = effacer(tmp) & effacer(f);
+            effacer(tmp, premiere);   // le temporaire n'est jamais relu : sans danger s'il reste
+            boolean efface = effacer(f, premiere);
             if (premiere) {
                 LOG.error("[heraliz_quetes] recycleur de la carte {} : écriture de {} impossible ({}) ; machine fermée, ancien fichier {}, "
                         + "nouvel essai toutes les 5 s", worldPosition, f, ex.toString(), efface ? "effacé" : "PAS effacé");
@@ -283,13 +284,18 @@ public final class RecycleurCarteEntiteServeur extends RecycleurCarteEntite {
         LOG.info("[heraliz_quetes] recycleur de la carte {} : écriture de nouveau possible, machine rouverte", worldPosition);
     }
 
-    /** Efface un fichier ; faux (et une ligne au journal) si c'est impossible. */
-    private boolean effacer(Path f) {
+    /**
+     * Efface un fichier ; faux si c'est impossible. Une ligne au journal si {@code dire} (première écriture ratée : les
+     * nouveaux essais toutes les 5 s ne la répètent pas).
+     */
+    private boolean effacer(Path f, boolean dire) {
         try {
             Files.deleteIfExists(f);
             return true;
         } catch (IOException | RuntimeException ex) {
-            LOG.error("[heraliz_quetes] recycleur de la carte {} : fichier {} impossible à effacer ({})", worldPosition, f, ex.toString());
+            if (dire) {
+                LOG.error("[heraliz_quetes] recycleur de la carte {} : fichier {} impossible à effacer ({})", worldPosition, f, ex.toString());
+            }
             return false;
         }
     }
