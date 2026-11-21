@@ -13,6 +13,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent.Context;
 
 public record CMeleeAttackRequest(MeleeAction action, int actionCount, int[] entityIds) {
+   /**
+    * HeraliZ (21/11, validation) : un paquet qui vise trop de cibles (seul un jeu modifié en envoie) n'est noté au journal
+    * qu'une fois toutes les {@value #JOURNAL_MS} ms par joueur, avec le nombre de paquets semblables ignorés depuis la ligne
+    * d'avant (avant : une ligne par paquet, le journal pouvait grossir sans fin). Fil du serveur seulement ; un joueur parti
+    * est oublié tout seul (clé faible).
+    */
+   private static final long JOURNAL_MS = 30_000L;
+   private static final java.util.Map<ServerPlayer, long[]> JOURNAL = new java.util.WeakHashMap<>();
+
    public CMeleeAttackRequest(MeleeAction action, int actionCount, List<Entity> entities) {
       this(action, actionCount, toList(entities));
    }
@@ -42,8 +51,17 @@ public record CMeleeAttackRequest(MeleeAction action, int actionCount, int[] ent
                ServerPlayer player = context.getSender();
                if (player != null) {
                   if (message.entityIds.length > (Integer)ServerConfig.MELEE_MAX_TARGET_PER_PACKET.get()) {
-                     HeraliszTactical.LOGGER
-                        .info("Player {} tried to attack too many entities at once: {}! Ignoring.", player.getName().getString(), message.entityIds.length);
+                     long maintenant = System.currentTimeMillis();
+                     long[] note = JOURNAL.computeIfAbsent(player, p -> new long[2]);
+                     if (maintenant - note[0] >= JOURNAL_MS) {
+                        HeraliszTactical.LOGGER
+                           .info("Player {} tried to attack too many entities at once: {}! Ignoring.{}", player.getName().getString(), message.entityIds.length,
+                              note[1] > 0L ? " (" + note[1] + " similar packet(s) ignored since the previous line)" : "");
+                        note[0] = maintenant;
+                        note[1] = 0L;
+                     } else {
+                        note[1]++;
+                     }
                   } else {
                      List<Entity> entities = new ArrayList<>();
 

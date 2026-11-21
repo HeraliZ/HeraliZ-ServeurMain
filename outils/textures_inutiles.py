@@ -219,6 +219,9 @@ def lire_corpus():
     for m in sorted((DEPOT / "modules").iterdir()):
         if (m / "src").is_dir():
             c.ajouter_dossier(m / "src", "modules/" + m.name + "/src")
+        # dessins des skins (armes) : hors des assets du jeu depuis l'étape 2 des skins protégés (21/11)
+        if (m / "dessins").is_dir():
+            c.ajouter_dossier(m / "dessins", "modules/" + m.name + "/dessins")
     if (DEPOT / "serveur" / "tacz").is_dir():
         c.ajouter_dossier(DEPOT / "serveur" / "tacz", "serveur/tacz")
     return c

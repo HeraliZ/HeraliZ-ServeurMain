@@ -54,9 +54,10 @@ Contrôles :
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
                        (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement), et chaque
                        clé citée par le code de TOUS les modules présente et appelée avec assez de valeurs (21/11) ;
-  - dessins         : copie des dessins des skins (shaders camo* et fx* de heralisz_camo, et heralisz_camo.glsl) dans
-                       les jars -serveur et -complet d'armes, identique à la liste des sources (21/11,
-                       docs/SKINS_PROTEGES.md : le serveur l'envoie aux joueurs) ;
+  - dessins         : dessins des skins (shaders camo* et fx* de heralisz_camo, et heralisz_camo.glsl ; 21/11,
+                       docs/SKINS_PROTEGES.md) : la copie des jars -serveur et -complet d'armes est exactement le dossier
+                       des sources modules/armes/dessins/ (le serveur l'envoie aux joueurs) ; étape 2 : aucun dessin dans
+                       les assets du jar des joueurs (-client) ni du jar -complet, le sticker y reste ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
                        dans nos sources ni dans nos jars.
 Code de sortie 1 au moindre problème.
@@ -151,14 +152,16 @@ def noms_interdits():
 
 
 def controle_dessins():
-    """Copie des dessins des skins dans les jars -serveur et -complet d'armes : exactement les fichiers des sources
-    (docs/SKINS_PROTEGES.md, étape 1 ; même choix que processServeurResources de modules/armes/build.gradle)."""
-    actifs = chemins.MODS / "armes" / "src" / "client" / "resources" / "assets"
-    attendus = {"heralisz_camo_dessins/heralisz_camo/shaders/core/" + f.name
-                for f in (actifs / "heralisz_camo" / "shaders" / "core").iterdir()
-                if re.fullmatch(r"(camo|fx)(_\d+\.(fsh|json)|\.vsh)", f.name)}
-    attendus.add("heralisz_camo_dessins/minecraft/shaders/include/heralisz_camo.glsl")
+    """Dessins des skins (docs/SKINS_PROTEGES.md, étape 2 du 21/11) : la copie des jars -serveur et -complet d'armes est
+    exactement le dossier des sources modules/armes/dessins/ (comme processServeurResources de modules/armes/build.gradle),
+    et aucun dessin n'est resté dans les assets du jar des joueurs (-client) ni du jar -complet : ni camo*, ni fx* dans
+    heralisz_camo/shaders/core, ni heralisz_camo.glsl. Le sticker, lui, reste dans les assets."""
+    dessins = chemins.MODS / "armes" / "dessins"
+    attendus = {"heralisz_camo_dessins/" + f.relative_to(dessins).as_posix() for f in dessins.rglob("*") if f.is_file()}
     erreurs = 0
+    if not any(re.fullmatch(r"heralisz_camo_dessins/heralisz_camo/shaders/core/camo_\d+\.fsh", n) for n in attendus):
+        print("[dessins]    modules/armes/dessins/ : aucun programme de camo (camo_<n>.fsh) : rien à envoyer aux joueurs")
+        erreurs += 1
     jars = construire.jars(chemins.MODS / "armes")
     for cote in ("serveur", "complet"):
         j = jars.get(cote)
@@ -173,6 +176,24 @@ def controle_dessins():
             erreurs += 1
         else:
             print("[dessins]    %s : %d fichiers des dessins des skins, comme les sources" % (j.name, len(vus)))
+    # étape 2 : plus aucun dessin dans les assets (le jeu les reçoit du serveur) ; le sticker y reste
+    interdits = re.compile(r"assets/heralisz_camo/shaders/core/(camo|fx)[^/]*|assets/minecraft/shaders/include/heralisz_camo\.glsl")
+    for cote in ("client", "complet"):
+        j = jars.get(cote)
+        if not j or not j.exists():
+            continue
+        with zipfile.ZipFile(j) as z:
+            noms = z.namelist()
+        restes = sorted(n for n in noms if interdits.fullmatch(n))
+        if restes:
+            print("[dessins]    %s : %d dessin(s) des skins encore dans les assets %s : ils ne vont que dans la copie du serveur"
+                  % (j.name, len(restes), restes[:3]))
+            erreurs += 1
+        elif "assets/heralisz_camo/shaders/core/sticker.json" not in noms:
+            print("[dessins]    %s : le programme du sticker manque dans les assets (il reste dans le jar des joueurs)" % j.name)
+            erreurs += 1
+        else:
+            print("[dessins]    %s : aucun dessin des skins dans les assets (sticker gardé)" % j.name)
     return erreurs
 
 

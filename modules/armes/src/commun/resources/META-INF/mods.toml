@@ -27,11 +27,13 @@ description='''Mod porteur du jar fusionné HeraliZ Tactique : pont client / ser
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-# Noyau HeraliZ : kit des HUD (anneau des soins et des grenades ; refonte du 25/10), toujours installé ; 1.0.6 : portes visées (api/Portes)
+# Noyau HeraliZ : kit des HUD (anneau des soins et des grenades ; refonte du 25/10), toujours installé ; 1.0.6 : portes visées
+# (api/Portes) ; 1.1.5 (21/11, validation) : outils du noyau dont les armes se servent depuis (tronçons complets, écritures
+# en fond, inventaire retenu par un match) : avec un noyau plus vieux, refus clair au chargement au lieu d'un plantage
 [[dependencies.heraliz_tactique]]
     modId="heraliz_noyau"
     mandatory=true
-    versionRange="[1.0.6,)"
+    versionRange="[1.1.5,)"
     ordering="AFTER"
     side="BOTH"
 

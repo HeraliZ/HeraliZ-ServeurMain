@@ -6,9 +6,12 @@
 Tout le code des camos est dans outils/camo_gabarit.fsh. Chaque camo a son propre programme camo_<id>.fsh, pour que la
 carte graphique ne compile que la branche de ce camo (petits shaders rapides) : « #define CAMO_ID <id> » puis
 « #moj_import <heralisz_camo.glsl> ». Le code commun (le gabarit sans ses deux premières lignes) n'existe qu'en UN
-exemplaire, assets/minecraft/shaders/include/heralisz_camo.glsl, que Minecraft recopie à la compilation de chaque
-programme (même chemin que son fog.glsl) : même programme compilé qu'avant, mais ~190 Ko dans le jar au lieu de ~13 Mo
-(audit du 02/11, mineur 11 : des dizaines de copies de 191 Ko qui ne différaient que d'une ligne).
+exemplaire, minecraft:shaders/include/heralisz_camo.glsl, que Minecraft recopie à la compilation de chaque programme (même
+chemin que son fog.glsl) : même programme compilé qu'avant, mais ~190 Ko au lieu de ~13 Mo (audit du 02/11, mineur 11 :
+des dizaines de copies de 191 Ko qui ne différaient que d'une ligne).
+21/11 (étape 2 des skins protégés, docs/SKINS_PROTEGES.md) : ces fichiers sont dans modules/armes/dessins/<espace>/<chemin>,
+hors des assets du jeu : jamais dans le jar des joueurs, seulement dans les jars -serveur et -complet (le serveur en envoie
+une copie aux joueurs, qui fabriquent leurs programmes depuis elle).
 La liste des camos est celle des fichiers camo_<id>.json déjà présents ; pour un nouveau camo, copier un camo_<id>.json en
 changeant son « fragment », puis relancer ce script. Les fichiers produits vont dans Git avec le reste des sources.
 
@@ -25,15 +28,17 @@ from pathlib import Path
 
 MOD = Path(__file__).resolve().parent.parent
 GABARIT = MOD / "outils" / "camo_gabarit.fsh"
-CORE = MOD / "src" / "client" / "resources" / "assets" / "heralisz_camo" / "shaders" / "core"
+# dessins des skins (étape 2, 21/11) : hors des assets du jeu, envoyés par le serveur (docs/SKINS_PROTEGES.md)
+DESSINS = MOD / "dessins"
+CORE = DESSINS / "heralisz_camo" / "shaders" / "core"
 # code commun, inclus par « #moj_import <heralisz_camo.glsl> » (Minecraft cherche dans minecraft:shaders/include/)
-INCLUS = MOD / "src" / "client" / "resources" / "assets" / "minecraft" / "shaders" / "include" / "heralisz_camo.glsl"
+INCLUS = DESSINS / "minecraft" / "shaders" / "include" / "heralisz_camo.glsl"
 ENTETE = "#version 150\n#define CAMO_ID @CAMO_ID@\n"
 GABARIT_FX = MOD / "outils" / "fx_gabarit.fsh"
 ENTETE_FX = "#version 150\n#define FX_ID @FX_ID@\n"
 PROGRAMME = ("#version 150\n#define CAMO_ID %d\n"
              "// fichier généré par outils/generer_camos.py depuis outils/camo_gabarit.fsh (dossier du mod) : ne pas modifier ici.\n"
-             "// Le code des camos est dans assets/minecraft/shaders/include/heralisz_camo.glsl (un seul exemplaire).\n"
+             "// Le code des camos est dans minecraft:shaders/include/heralisz_camo.glsl (un seul exemplaire).\n"
              "#moj_import <heralisz_camo.glsl>\n")
 
 
