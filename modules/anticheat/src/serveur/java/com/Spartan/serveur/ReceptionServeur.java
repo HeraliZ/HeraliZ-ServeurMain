@@ -133,7 +133,12 @@ public final class ReceptionServeur {
                 it.remove();
             } else if (com.Spartan.integrity.PorteJoueurs.estVerifie(p.getUUID())) {
                 it.remove();
-                for (Object paquet : en.getValue()) traiter(p, paquet);
+                // audit du 21/11 : identifiants matériels d'abord (le jeu les envoie après ses packs de textures) : un PC
+                // banni part avant le reste, et le disjoncteur des règles en rodage (packs de textures) connaît le PC
+                for (Object paquet : en.getValue()) if (paquet instanceof TestPacket) traiter(p, paquet);
+                for (Object paquet : en.getValue()) {
+                    if (!(paquet instanceof TestPacket) && !p.hasDisconnected()) traiter(p, paquet);
+                }
             }
         }
     }

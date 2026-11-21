@@ -33,6 +33,13 @@ final class FouilleServeur {
             new ResourceLocation("airstrike", "supply_crate"));
     /** Portée au plus, des yeux au point le plus proche (portée de Minecraft 4,5 en survie + marge réseau). */
     private static final double PORTEE = 6.0;
+    /**
+     * Tick du serveur de la dernière demande de chaque joueur (21/11, audit) : une demande par tick au plus. Un jeu honnête
+     * n'en envoie qu'une par clic (ou une tous les 4 ticks, touche tenue) ; un jeu modifié qui en envoyait des centaines
+     * d'un coup faisait refaire, pour chacune, les règles des autres mods et les rayons de l'anticheat sur le fil du
+     * serveur. Fil du serveur seulement ; un joueur parti est oublié tout seul (table faible).
+     */
+    private static final java.util.Map<ServerPlayer, Integer> DERNIERE = new java.util.WeakHashMap<>();
 
     private FouilleServeur() {
     }
@@ -43,6 +50,9 @@ final class FouilleServeur {
 
     private static void recevoir(ReseauLoot.Demande d) {
         ServerPlayer sp = d.joueur();
+        int tick = sp.server.getTickCount();
+        Integer avant = DERNIERE.put(sp, tick);
+        if (avant != null && avant == tick) return;
         if (sp.isSpectator() || !sp.isAlive() || sp.containerMenu != sp.inventoryMenu) return;
         if (sp.getMainHandItem().isEmpty()) return; // main vide : le clic ordinaire marche déjà
         sp.resetLastActionTime();

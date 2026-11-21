@@ -851,7 +851,7 @@ public final class ScanManager {
                 .append(Component.literal(" — " + count + " (" + Text.oneLine(firstText(findings)) + ") — /spartan report "
                         + s.name).withStyle(ChatFormatting.GRAY));
         for (ServerPlayer staff : p.server.getPlayerList().getPlayers()) {
-            if (staff.hasPermissions(2) && staff != p) {
+            if (com.Spartan.alert.AlertManager.staffEnJeu(staff) && staff != p) {
                 staff.sendSystemMessage(msg);
             }
         }

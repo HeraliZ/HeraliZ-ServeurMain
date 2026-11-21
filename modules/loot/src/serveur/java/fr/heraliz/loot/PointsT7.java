@@ -172,13 +172,32 @@ public final class PointsT7 extends SavedData {
         long now = l.getGameTime();
         for (Point p : points.values()) {
             verifier(l, p);
-            if (p.auto && !p.present && now >= p.prochain && fr.heraliz.noyau.api.Troncons.charge(l, p.pos)) {
+            if (p.auto && !p.present && now >= p.prochain && pret(l, p)) {
                 if (apparaitre(l, p.pos, p.face, p.type, p.presence, p.nom)) {
                     p.present = true;
                     setDirty();
                 }
             }
         }
+    }
+
+    /**
+     * 21/11 (audit) : les tronçons de TOUTES les cases du coffre sont complets (coffre d'armes de deux blocs, largage de
+     * 2 x 2 : une case peut tomber dans le tronçon voisin). Avant, seul celui du bloc principal était regardé : la pose
+     * lisait puis posait les cases voisines, et le serveur attendait la fin de la lecture du tronçon voisin. Le coffre
+     * apparaît alors au passage suivant (chaque seconde).
+     */
+    private static boolean pret(ServerLevel l, Point p) {
+        if (!fr.heraliz.noyau.api.Troncons.charge(l, p.pos)) return false;
+        for (var r : HeralizLoot.COFFRES) {
+            if (!(r.get() instanceof CoffreBlock cb) || !cb.type.nom.equals(p.type)) continue;
+            for (int[] c : cb.encombrement().cells) {
+                int[] w = Encombrement.rotateCell(c[0], c[1], c[2], p.face);
+                if (!fr.heraliz.noyau.api.Troncons.charge(l, p.pos.offset(w[0], w[1], w[2]))) return false;
+            }
+            return true;
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------------------------------ gestion (commandes)

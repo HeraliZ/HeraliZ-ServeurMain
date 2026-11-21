@@ -175,6 +175,8 @@ final class Echanges {
 
     // ------------------------------------------------------------------ faire un échange
     static void troc(ServerPlayer p, Reseau.Troc t) {
+        // 21/11 (audit) : même cadence que les achats et les ventes (chaque échange écrit le joueur sur le disque)
+        if (!Marchands.cadence(p)) return;
         Defs.Pnj def = Marchands.verifier(p, t.entite());
         if (def == null || t.index() < 0 || t.index() >= def.marchand.echanges.size()) return;
         Texte refus = Marchands.empechement(p);
