@@ -180,7 +180,9 @@ def lancer(a, d):
 
 def reglages_corriges(d):
     """Réglages remis en ordre par Forge, clé par clé (logs/debug.log : Forge n'écrit ce détail qu'en DEBUG ; la console ne
-    dit que « Configuration file ... is not correct »). Rend [(fichier, [lignes « clé : avant -> après »])]."""
+    dit que « Configuration file ... is not correct »). Rend [(fichier, [lignes « clé : avant -> après »], nombre de
+    commentaires remis)] : un fichier peut n'être « corrigé » que pour ses commentaires (nos longues notes, que Forge
+    remplace par celles du code ; les valeurs ne changent pas)."""
     f = d / "logs" / "debug.log"
     if not f.exists():
         return None
@@ -189,12 +191,16 @@ def reglages_corriges(d):
         m = re.search(r"Configuration file (.+?) is not correct\. Correcting", l)
         if m:
             nom = re.sub(r"^.*?[/\\](config|serverconfig)[/\\]", r"\1/", m.group(1))
-            courant = (nom, [])
+            courant = [nom, [], 0]
             res.append(courant)
             continue
+        if courant is None:
+            continue
         m = re.search(r"Incorrect key (\S+) was corrected from (.*?) to its default, (.*?)\. ?(This seems to be an error\.)?\s*$", l)
-        if m and courant is not None:
+        if m:
             courant[1].append("%s : %s -> %s" % (m.group(1), m.group(2)[:120], m.group(3)[:120]))
+        elif re.search(r"The comment on key \S+ does not match the spec", l):
+            courant[2] += 1
     return res
 
 
@@ -238,18 +244,22 @@ def finir(a, res, serveur, rapport, d=None):
         o += ["%4d  %s" % (n, e) for e, n in avertis.most_common(25)]
         o.append("```")
     corriges = reglages_corriges(d) if d else None
-    if corriges:
+    avec_cles = [c for c in corriges if c[1]] if corriges else []
+    if avec_cles:
         # « null » avant : clé absente du fichier, ajoutée avec sa valeur par défaut ; « null » après : clé qui n'existe plus
         # dans le code, retirée ; sinon : valeur hors bornes ou du mauvais type, REMPLACÉE par la valeur par défaut
         o += ["", "Réglages corrigés par Forge au démarrage (%d fichier(s) ; « null -> x » : clé ajoutée avec sa valeur par "
               "défaut ; « x -> null » : clé qui n'existe plus ; sinon valeur refusée, remplacée par la valeur par défaut) :"
-              % len(corriges), "", "```"]
-        for nom, cles in corriges:
+              % len(avec_cles), "", "```"]
+        for nom, cles, _ in avec_cles:
             o.append("%s (%d clé(s))" % (nom, len(cles)))
             o += ["    " + c for c in cles[:40]]
             if len(cles) > 40:
                 o.append("    ... et %d autre(s)" % (len(cles) - 40))
         o.append("```")
+    commentaires = [c[0] for c in corriges if not c[1]] if corriges else []
+    if commentaires:
+        o += ["", "Fichiers dont Forge n'a remis que les commentaires (valeurs inchangées) : %s." % ", ".join(commentaires)]
     texte = "\n".join(o) + "\n"
     (rapport / "resume.md").write_text(texte, encoding="utf-8")
     print(texte)

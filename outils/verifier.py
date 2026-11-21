@@ -51,7 +51,8 @@ Contrôles :
   - authme           : aucun pseudo sans mot de passe (UnrestrictedName vide) dans l'AuthMe du serveur en jeu
                        (serveur/plugins/AuthMe/config.yml ; les bots du banc n'y sont que dans son serveur d'essai) ;
   - langues          : textes français, anglais et russe avec les mêmes paramètres et codes couleur
-                       (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement) ;
+                       (outils/verifier_langues.py ; un texte pas encore traduit n'est qu'un avertissement), et chaque
+                       clé citée par le code de TOUS les modules présente et appelée avec assez de valeurs (21/11) ;
   - noms perso      : aucun mot de outils/noms_interdits.txt (prénoms, anciens pseudos…, un par ligne, fichier hors Git)
                        dans nos sources ni dans nos jars.
 Code de sortie 1 au moindre problème.
