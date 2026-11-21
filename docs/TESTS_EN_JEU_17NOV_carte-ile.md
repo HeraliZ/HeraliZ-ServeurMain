@@ -2080,12 +2080,12 @@ Détail dans chaque compte rendu de `docs/audit_global_21nov/`, section « Suite
 15 h 34 (heure UTC)** : serveur prêt à 15 h 36, aucune erreur Java dans le journal.
 
 Fait :
-- **Armes 2.59.10, skins d'armes impossibles à voler** : un objet camo posé sur une arme (onglet Camo de l'atelier) entre
-  d'abord dans la collection à vie du joueur (l'objet n'est consommé que si ce camo n'y était pas encore), puis se pose
-  depuis elle : lié au joueur, perdu dans la seconde par une arme qui change de mains, retiré à la mort (15 min avant de
-  le remettre), une seule arme à la fois par camo. Tous les refus sont vus avant de toucher à l'objet. Les camos
-  définitifs déjà posés avant restent sur leurs armes (on ne sait pas à qui ils sont). Aucun changement de rendu. Aussi :
-  collection écrite en fond, une action de camo ou de sticker toutes les 0,15 s au plus.
+- **Armes 2.59.10, skins d'armes impossibles à voler** : un objet camo posé sur une arme entrait d'abord dans la
+  collection à vie du joueur, puis se posait depuis elle (lié au joueur). **Retiré le 21/11 au soir (Armes 2.59.11) :
+  malentendu, le propriétaire demandait si les skins d'armes pouvaient être protégés contre le vol de nos fichiers jar,
+  comme ceux des couteaux, pas un changement en jeu. Les skins marchent de nouveau en jeu exactement comme avant** (un
+  objet posé reste définitif sur l'arme). Gardé : collection écrite en fond, une action de camo ou de sticker toutes les
+  0,15 s au plus (rien ne change pour les joueurs).
 - **ClashWar 1.3.8** : au départ, chaque objet est comparé en entier (accessoires, skin, usure, contenu du sac) ; une
   erreur d'un autre mod pendant un dépôt laisse le joueur intact, le serveur ne plante plus.
 - **Voix (CaraCrea 1.7.2)** : avant le `/login`, un joueur ne parle pas, n'entend personne et ne touche pas aux groupes.
@@ -2099,12 +2099,9 @@ Fait :
   changement à la main en moins de 10 s) ; le train ne refait plus l'horaire des rames pour chaque balle lointaine.
 
 À tester en jeu :
-- [ ] **Skins** : un objet camo pas encore dans la collection, posé depuis l'atelier : le camo est sur l'arme, l'objet a
-      disparu, le camo est dans la collection. Le même objet une deuxième fois : il reste dans l'inventaire.
-- [ ] **Skins** : l'arme donnée ou jetée à un autre joueur perd le camo chez lui ; après une mort, « Appliquer » reste
-      grisé 15 min, même avec un autre objet du même camo ; en match ou à terre : refusé, l'objet reste.
-- [ ] **Skins** : un ancien camo définitif reste sur son arme ; couteaux, skins à vie, sacs, stickers et StatTrak comme
-      avant ; après un redémarrage, la collection est toujours là.
+- [ ] **Skins (Armes 2.59.11, retour comme avant)** : un objet camo posé depuis l'atelier est définitif sur l'arme et
+      l'objet est utilisé (comme avant le 21/11) ; un camo de la collection se pose et se retire comme avant ; couteaux,
+      skins à vie, sacs, stickers et StatTrak comme avant ; après un redémarrage, la collection est toujours là.
 - [ ] **ClashWar** : départ avec un fusil équipé, un sac plein et des Curios : chacun entre en salle du premier coup, tout
       revient exactement une fois ; journal sans « inventaire change pendant l'ecriture » ni « erreur d'un autre mod ».
 - [ ] **Voix** : avant le `/login`, le nouveau venu n'est pas entendu et n'entend rien ; juste après, tout marche ; les

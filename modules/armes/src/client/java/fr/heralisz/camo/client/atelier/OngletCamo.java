@@ -37,9 +37,7 @@ import java.util.UUID;
  * Onglet Camo : à gauche le camo de l'arme et ce que veulent dire « à vie » et « objet » ; à droite les camos du joueur
  * en cartes (l'arme photographiée avec le camo), collection à vie ou objets de l'inventaire ; en bas, l'aperçu choisi à
  * confirmer. Un clic montre le camo sur l'arme (aperçu, chez le joueur seulement) ; « Appliquer » l'envoie au serveur, qui
- * revérifie tout (possession, délai après une mort, arme compatible, camo définitif d'avant le 21/11). Depuis le 21/11, un
- * objet camo posé entre dans la collection à vie (l'objet n'est utilisé que s'il n'y était pas) : même délai après une mort
- * qu'un camo de la collection.
+ * revérifie tout (possession, délai après une mort, arme compatible, camo définitif).
  * <p>
  * 18/11 (moins de texte) : à gauche plus que le camo de l'arme (plus de légende « à vie » / « objet », ni de phrase
  * « Choisis un camo à droite » ou « ce camo est définitif » : la pastille le dit) ; à droite plus de pied d'aide ni de
@@ -195,9 +193,7 @@ final class OngletCamo implements AtelierArme.Partie {
       int aw = 76, nw = 62;
       HzButton appliquer = new HzButton(this.bx + this.bw - 12 - aw, this.by + 11, aw, 18, AtelierArme.trc("appliquer"), Ui.OR, this::appliquer)
          .look(HzButton.Look.PRIMARY);
-      // 21/11 : un objet posé passe par la collection : même délai après une mort, rien à faire s'il est déjà sur l'arme
-      appliquer.active = (this.apercuVie || this.apercuSlot >= 0) && CollectionVue.rechargeRestanteMs(c) <= 0
-         && !(this.aMoi && this.courant == c);
+      appliquer.active = this.apercuVie ? CollectionVue.rechargeRestanteMs(c) <= 0 && !(this.aMoi && this.courant == c) : this.apercuSlot >= 0;
       HzButton annuler = new HzButton(this.bx + this.bw - 12 - aw - 6 - nw, this.by + 11, nw, 18, AtelierArme.trc("annuler"), Ui.accent(), this::annuler);
       this.a.ajouter(annuler);
       this.a.ajouter(appliquer);
@@ -244,7 +240,7 @@ final class OngletCamo implements AtelierArme.Partie {
          if (CollectionVue.rechargeRestanteMs(c) > 0) return;
          CamoNetwork.CHANNEL.sendToServer(new CollectionCamoPacket(CollectionCamoPacket.APPLIQUER, c.id));
       } else {
-         if (this.apercuSlot < 0 || CollectionVue.rechargeRestanteMs(c) > 0) return;
+         if (this.apercuSlot < 0) return;
          CamoNetwork.CHANNEL.sendToServer(new ApplyCamoPacket(this.apercuSlot));
       }
       p.playSound(SoundEvents.SMITHING_TABLE_USE, 0.8F, 1.2F);
@@ -420,18 +416,17 @@ final class OngletCamo implements AtelierArme.Partie {
          .append(Ui.lit(Component.translatable(c.nameKey()).getString(), Ui.BOLD).withStyle(st -> st.withColor(couleurTier(c.tier))))
          .append(Ui.lit(" · " + AtelierArme.tr(this.apercuVie ? "a_vie_min" : "objet_min"), Ui.FONT));
       g.drawString(font, ligne, tx, this.by + 8, Ui.argb(Ui.TEXT, 255), false);
-      // 21/11 : un objet passe par la collection à vie : même délai, et l'objet n'est utilisé que s'il n'y est pas déjà
-      long reste = CollectionVue.rechargeRestanteMs(c);
+      long reste = this.apercuVie ? CollectionVue.rechargeRestanteMs(c) : 0L;
       Component sous;
       int couleur = Ui.MUTED;
-      if (this.aMoi && this.courant == c) {
+      if (this.apercuVie && this.aMoi && this.courant == c) {
          sous = AtelierArme.trc("deja");
          couleur = Ui.OK;
       } else if (reste > 0) {
          sous = AtelierArme.trc("attente", minutes(reste));
          couleur = Ui.DANGER;
       } else {
-         sous = AtelierArme.trc(this.apercuVie ? "apercu_vie" : CollectionVue.possede(c) ? "apercu_objet_possede" : "apercu_objet");
+         sous = AtelierArme.trc(this.apercuVie ? "apercu_vie" : "apercu_objet");
       }
       Dessins.paragraphe(g, font, Ui.in(sous, Ui.SMALL), tx, this.by + 20, textW, Ui.argb(couleur, 255), 9);
    }

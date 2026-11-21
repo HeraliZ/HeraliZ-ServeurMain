@@ -17,12 +17,8 @@ import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
- * Objet camo. Clic droit : le camo entre dans la collection à vie du joueur et l'objet est consommé (déjà possédé : message,
- * rien de consommé). Posé sur l'arme depuis l'onglet Camo de l'atelier ou l'onglet Skin de secours (21/11, demande du
- * propriétaire : les skins d'armes comme ceux des couteaux, impossibles à voler) : il entre aussi dans la collection
- * (consommé seulement s'il n'y était pas encore), puis il se pose comme un camo de la collection : lié au joueur, une arme
- * à la fois, perdu par l'arme qui change de main ou à la mort (fr.heralisz.camo.serveur.CamosAVie.poserObjet). Avant, il
- * devenait un camo définitif qui suivait l'arme.
+ * Objet camo : posé depuis l'onglet Skin du menu de modification, il est définitif sur l'arme. Clic droit : le camo entre
+ * dans la collection à vie du joueur et l'objet est consommé (déjà possédé : message, rien de consommé).
  */
 public class CamoItem extends Item {
    /**
@@ -77,8 +73,7 @@ public class CamoItem extends Item {
     * Infobulle (03/11, choix du propriétaire : « pas de description, nom + rareté + une ligne simple ») : le nom (couleur
     * de la rareté), la rareté, l'arme réservée s'il y en a une (aucun camo aujourd'hui), puis « Clic droit : ajoute à la
     * collection à vie ». 14/11 (retour du propriétaire : « juste une fois le petit encadré avec écrit EPIC ») : la rareté
-    * est le badge (Camo.Tier.badge), plus le mot « Épique ». 21/11 : la ligne dit aussi qu'un camo posé sur une arme
-    * rejoint la collection (« Clic droit ou posé sur une arme : ajouté à ta collection à vie »).
+    * est le badge (Camo.Tier.badge), plus le mot « Épique ».
     */
    @Override
    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {

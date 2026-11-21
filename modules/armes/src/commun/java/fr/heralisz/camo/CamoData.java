@@ -7,11 +7,10 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
- * Le camo est une simple étiquette NBT sur l'arme. Posé depuis la collection à vie d'un joueur (et, depuis le 21/11, depuis
- * un objet camo, qui passe d'abord par la collection), il porte aussi son propriétaire et un jeton de pose : il ne vaut que
- * sur UNE arme de ce joueur à la fois, s'en va s'il meurt avec ou si l'arme passe à un autre joueur (règles côté serveur :
- * fr.heralisz.camo.serveur.CamosAVie). Sans propriétaire : camo « définitif » qui suit l'arme (ramassée, échangée,
- * lootée) ; seuls les camos d'armes posés avant le 21/11 le sont encore (gardés tels quels), et les camos des sacs.
+ * Le camo est une simple étiquette NBT sur l'arme. Posé depuis un objet camo, il est définitif et suit l'arme (ramassée,
+ * échangée, lootée). Posé depuis la collection à vie d'un joueur, il porte aussi son propriétaire et un jeton de pose : il
+ * ne vaut que sur UNE arme de ce joueur à la fois, s'en va s'il meurt avec ou si l'arme passe à un autre joueur (règles
+ * côté serveur : fr.heralisz.camo.serveur.CamosAVie).
  */
 public final class CamoData {
    public static final String KEY = "HeraliszCamo";
@@ -26,10 +25,7 @@ public final class CamoData {
       return tag != null && tag.contains(KEY) ? Camo.byId(tag.getString(KEY)) : null;
    }
 
-   /**
-    * Camo sans propriétaire (définitif) : remplace un éventuel camo à vie. Sacs (CamoBagRecipe) et aperçus chez le joueur ;
-    * plus jamais posé sur une arme depuis le 21/11 (un objet camo passe par la collection à vie).
-    */
+   /** Camo définitif (posé depuis un objet camo) : remplace un éventuel camo à vie. */
    public static void set(ItemStack stack, Camo camo) {
       CompoundTag tag = stack.getOrCreateTag();
       tag.putString(KEY, camo.id);

@@ -43,15 +43,10 @@ import javax.annotation.Nullable;
  *    <li>Onglet Skin : un camo de la collection se pose sur l'arme tenue. Il ne vaut que sur UNE arme à la fois (jeton de
  *    pose : le poser ailleurs l'enlève de l'ancienne arme) et seulement entre les mains de son propriétaire : une arme qui
  *    passe à un autre joueur (ramassée, volée, donnée) le perd dans la seconde.</li>
- *    <li>Objet camo posé depuis l'onglet Skin (21/11, demande du propriétaire : « les skins d'armes comme les skins de
- *    couteau, pour que les gens ne puissent pas les voler ») : il entre d'abord dans la collection (l'objet n'est consommé
- *    que s'il n'y était pas encore), puis il est posé depuis la collection, avec les mêmes règles ({@link #poserObjet}).
- *    Avant, il devenait un camo définitif qui suivait l'arme et se volait avec elle.</li>
  *    <li>Mort avec l'arme (mort définitive, pas la mise à terre ni un match) : le camo quitte l'arme avant qu'elle tombe
  *    sur le corps, et le joueur doit attendre {@link #rechargeMs()} avant de pouvoir le remettre.</li>
  * </ul>
- * Les camos définitifs posés avant le 21/11 restent sur leurs armes tels quels (leur propriétaire n'est pas connu) : rien ne
- * se pose plus par-dessus. Les camos des sacs ne passent pas par ici.
+ * Un camo posé depuis un objet reste définitif sur l'arme (ReceptionServeur), comme avant.
  */
 public final class CamosAVie {
    /**
@@ -119,7 +114,7 @@ public final class CamosAVie {
    // ------------------------------------------------------------------ onglet Skin
    static void recevoir(CamoNetwork.Recu<CollectionCamoPacket> r) {
       ServerPlayer p = r.joueur();
-      if (p == null || !p.isAlive() || p.isSpectator() || !Cadence.permis(p)) return;
+      if (p == null || !p.isAlive() || p.isSpectator() || !Cadence.permis(p)) return; // une action toutes les 0,15 s (21/11)
       CollectionCamoPacket m = r.paquet();
       if (m.action() == CollectionCamoPacket.APPLIQUER) {
          Camo camo = Camo.byId(m.camo());
@@ -130,70 +125,31 @@ public final class CamosAVie {
    }
 
    private static void appliquer(ServerPlayer p, Camo camo) {
-      CollectionCamos.Joueur j = CollectionCamos.trouver(p.getUUID());
-      ItemStack gun = armePourPoser(p, camo, j, false);
-      if (gun != null && j != null) poser(p, gun, camo, j, false);
-   }
-
-   /**
-    * Objet camo posé depuis l'onglet Skin (ReceptionServeur, 21/11) : mêmes refus que la collection, tous vus AVANT de
-    * toucher à l'objet (aucun objet perdu sur un refus) ; puis il entre dans la collection (consommé seulement s'il n'y
-    * était pas encore, jamais en créatif, comme le clic droit) et il est posé depuis elle : lié au joueur, comme un camo
-    * de la collection.
-    */
-   static void poserObjet(ServerPlayer p, ItemStack objet, Camo camo) {
-      CollectionCamos.Joueur deja = CollectionCamos.trouver(p.getUUID());
-      ItemStack gun = armePourPoser(p, camo, deja, true);
-      if (gun == null) return;
-      if (deja != null && dejaDessus(p, gun, camo, deja)) return; // déjà posé sur cette arme : rien à faire, l'objet reste
-      CollectionCamos.Joueur j = CollectionCamos.get(p.getUUID());
-      boolean nouveau = j.camos.add(camo);
-      if (nouveau && !p.getAbilities().instabuild) objet.shrink(1);
-      poser(p, gun, camo, j, nouveau);
-      if (nouveau) envoyer(p); // sa collection a changé : l'onglet Skin la montre tout de suite
-   }
-
-   /**
-    * Refus de la pose d'un camo à vie sur l'arme tenue (avec leur message) : en match ou à terre, pas une arme (ou un
-    * couteau), camo pas dans la collection ({@code depuisObjet} faux), arme qui ne lui va pas, camo définitif déjà sur
-    * l'arme, délai après une mort. Renvoie l'arme si la pose est permise, sinon null.
-    */
-   @Nullable
-   private static ItemStack armePourPoser(ServerPlayer p, Camo camo, @Nullable CollectionCamos.Joueur j, boolean depuisObjet) {
-      if (refuse(p)) return null;
+      if (refuse(p)) return;
       ItemStack gun = p.getMainHandItem();
       IGun iGun = IGun.getIGunOrNull(gun);
-      if (iGun == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun)) return null;
-      if (!depuisObjet && (j == null || !j.camos.contains(camo))) return null; // pas dans sa collection (client en retard ou trafiqué)
+      if (iGun == null || KnifeSkins.of(gun) != null || fr.heraliz.tactique.onglets.Couteaux.estCouteau(gun)) return;
+      UUID u = p.getUUID();
+      CollectionCamos.Joueur j = CollectionCamos.trouver(u);
+      if (j == null || !j.camos.contains(camo)) return; // pas dans sa collection (client en retard ou trafiqué)
       if (!camo.fits(iGun.getGunId(gun))) {
          p.displayClientMessage(Component.translatable("msg.heralisz_camo.wrong_gun",
             Component.translatable("item.heralisz_camo.camo.gun." + camo.id)).withStyle(ChatFormatting.RED), true);
-         return null;
+         return;
       }
-      if (CamoData.get(gun) != null && CamoData.owner(gun) == null) {
-         p.displayClientMessage(Component.translatable("msg.heralisz_camo.permanent_on").withStyle(ChatFormatting.RED), true);
-         return null; // camo définitif d'avant le 21/11 : il reste
-      }
-      long reste = j == null ? 0L : j.recharges.getOrDefault(camo, 0L) - System.currentTimeMillis();
-      if (reste > 0) {
-         p.displayClientMessage(Component.translatable("msg.heralisz_camo.cooldown", nom(camo), minutes(reste)).withStyle(ChatFormatting.RED), true);
-         return null;
-      }
-      return gun;
-   }
-
-   /** Ce camo de sa collection est déjà posé, valable, sur cette arme. */
-   private static boolean dejaDessus(ServerPlayer p, ItemStack gun, Camo camo, CollectionCamos.Joueur j) {
-      return CamoData.get(gun) == camo && p.getUUID().equals(CamoData.owner(gun)) && valide(j, camo, CamoData.token(gun));
-   }
-
-   /** Pose sur l'arme (tous les refus déjà vus) : jeton neuf, l'ancienne arme qui le portait le perd. */
-   private static void poser(ServerPlayer p, ItemStack gun, Camo camo, CollectionCamos.Joueur j, boolean nouveau) {
-      UUID u = p.getUUID();
       Camo actuel = CamoData.get(gun);
       UUID proprio = CamoData.owner(gun);
+      if (actuel != null && proprio == null) {
+         p.displayClientMessage(Component.translatable("msg.heralisz_camo.permanent_on").withStyle(ChatFormatting.RED), true);
+         return; // camo définitif (posé depuis un objet)
+      }
+      long reste = j.recharges.getOrDefault(camo, 0L) - System.currentTimeMillis();
+      if (reste > 0) {
+         p.displayClientMessage(Component.translatable("msg.heralisz_camo.cooldown", nom(camo), minutes(reste)).withStyle(ChatFormatting.RED), true);
+         return;
+      }
       j.recharges.remove(camo);
-      if (dejaDessus(p, gun, camo, j)) return;
+      if (actuel == camo && u.equals(proprio) && valide(j, camo, CamoData.token(gun))) return; // déjà dessus
       if (actuel != null && u.equals(proprio) && valide(j, actuel, CamoData.token(gun))) {
          j.jetons.remove(actuel); // l'autre camo à vie de cette arme redevient libre
       }
@@ -205,10 +161,7 @@ public final class CamosAVie {
       p.getInventory().setChanged();
       p.inventoryMenu.broadcastChanges();
       p.level().playSound(null, p.blockPosition(), SoundEvents.SMITHING_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.2F);
-      p.displayClientMessage((nouveau
-         ? Component.translatableWithFallback("msg.heralisz_camo.collected_applied", "%s ajouté à ta collection à vie et posé sur l'arme",
-            nom(camo))
-         : Component.translatable("msg.heralisz_camo.applied_life", nom(camo))).withStyle(ChatFormatting.GRAY), true);
+      p.displayClientMessage(Component.translatable("msg.heralisz_camo.applied_life", nom(camo)).withStyle(ChatFormatting.GRAY), true);
    }
 
    private static void retirer(ServerPlayer p) {
@@ -235,6 +188,20 @@ public final class CamosAVie {
          return true;
       }
       return Compat.aTerre(p);
+   }
+
+   /**
+    * Un camo définitif (objet) remplace le camo à vie que l'arme portait : s'il était au joueur, son camo redevient libre.
+    * Appelé par ReceptionServeur avant de poser le camo de l'objet.
+    */
+   static void liberer(ServerPlayer p, ItemStack gun) {
+      Camo actuel = CamoData.get(gun);
+      if (actuel == null || !p.getUUID().equals(CamoData.owner(gun))) return;
+      CollectionCamos.Joueur j = CollectionCamos.trouver(p.getUUID());
+      if (j != null && valide(j, actuel, CamoData.token(gun))) {
+         j.jetons.remove(actuel);
+         CollectionCamos.changer();
+      }
    }
 
    // ------------------------------------------------------------------ mort

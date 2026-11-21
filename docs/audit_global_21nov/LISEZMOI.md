@@ -126,5 +126,7 @@ aucune erreur Java au démarrage ; essais : section 50 de
   deux paquets des bases (a3 n° 7) ;
 - **allègements** : `profils.json` (a5 P3), collection des camos (a4 n° 1), `/kit` (a1 n° 4), `/avantages nick`
   (a1 n° 5), usure (a2 n° 4), train (a2 n° 6) ;
-- **demande nouvelle** : skins d'armes impossibles à voler (Armes 2.59.10, voir `a4_armes_equipement_sacs.md`).
+- **demande nouvelle** : skins d'armes impossibles à voler en jeu (Armes 2.59.10) : **retiré le soir même (Armes
+  2.59.11)**, malentendu : la question portait sur la protection des fichiers des skins contre le vol de nos jars, pas
+  sur le jeu. Les skins marchent en jeu comme avant ; la collection écrite en fond et la cadence restent.
 

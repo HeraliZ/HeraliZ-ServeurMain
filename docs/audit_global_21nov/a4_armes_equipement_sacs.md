@@ -284,3 +284,13 @@ vite. Rien ne reste d'un joueur parti (oublié à la déconnexion et à l'arrêt
 - [ ] Les mêmes écrans en anglais et en russe.
 
 Pas testé en jeu : rien de cette suite (ni l'atelier, ni la collection, ni les messages, ni les traductions).
+
+### Retour en arrière du soir (Armes 2.59.11)
+
+Malentendu sur la demande des skins : le propriétaire demandait si les skins d'armes pouvaient être protégés contre le vol
+de nos fichiers jar, comme ceux des couteaux (dont les définitions ne sont que sur le serveur), pas un changement en jeu.
+Le passage des objets camo par la collection est donc retiré : `CamosAVie.java`, `ReceptionServeur.java`, `CamoData.java`,
+`CamoItem.java`, `OngletCamo.java`, `RefitSkinTab.java` et les textes fr/en/ru sont revenus à leur état d'avant
+`dec614808`, en gardant seulement la cadence (`Cadence.permis`). La collection écrite en fond (`CollectionCamos`) et la
+cadence des camos et stickers restent. Les camos posés depuis la collection entre 15 h 34 et le retour restent des camos
+à vie (comme un clic droit sur l'objet : rien n'est perdu).

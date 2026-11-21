@@ -39,10 +39,9 @@ import java.util.function.Consumer;
 
 /**
  * Onglet « Skin » ajouté au menu de modification TaCZ : à gauche des emplacements d'accessoires.
- * Ouvert, il montre deux rangées de cases : les camos de l'inventaire (objets : posés, ils entrent dans la collection à vie,
- * 21/11) et la collection à vie du joueur (CollectionVue). Un clic = aperçu sur l'arme, puis bouton « Appliquer ». Un camo
- * à vie ne se remet pas pendant le délai qui suit une mort avec l'arme (case grisée, minutes restantes), qu'il vienne de la
- * collection ou d'un objet. Le serveur revérifie tout.
+ * Ouvert, il montre deux rangées de cases : les camos de l'inventaire (posés depuis l'objet : définitifs) et la collection
+ * à vie du joueur (CollectionVue). Un clic = aperçu sur l'arme, puis bouton « Appliquer ». Un camo à vie ne se remet pas
+ * pendant le délai qui suit une mort avec l'arme (case grisée, minutes restantes). Le serveur revérifie tout.
  */
 public final class RefitSkinTab {
    public static boolean open;
@@ -109,20 +108,13 @@ public final class RefitSkinTab {
          b.active = reste <= 0 && !(aMoi && current == camo);
          add.accept(b);
       } else if (preview != null && previewSlot >= 0) {
-         // 21/11 : l'objet entre dans la collection à vie, puis se pose depuis elle : même délai après une mort, et rien à
-         // faire s'il est déjà sur cette arme (le serveur revérifie tout)
-         long reste = CollectionVue.rechargeRestanteMs(preview);
-         Component msg = reste > 0
-            ? Component.translatable("gui.heralisz_camo.cooldown", nom(preview), minutes(reste))
-            : Component.translatable("gui.heralisz_camo.apply", nom(preview));
-         Button b = Button.builder(msg, btn -> {
+         Component msg = Component.translatable("gui.heralisz_camo.apply", nom(preview));
+         add.accept(Button.builder(msg, b -> {
             CamoNetwork.CHANNEL.sendToServer(new ApplyCamoPacket(previewSlot));
             player.playSound(SoundEvents.SMITHING_TABLE_USE, 0.8F, 1.2F);
             preview = null;
             previewSlot = -1;
-         }).bounds(screen.width - 250, 30, 238, 16).build();
-         b.active = reste <= 0 && !(aMoi && current == preview);
-         add.accept(b);
+         }).bounds(screen.width - 250, 30, 238, 16).build());
       } else if (aMoi) {
          add.accept(new Label(screen.width - 320, 34, right - 64, Component.translatable("gui.heralisz_camo.life_on",
             Component.translatable(current.nameKey()).withStyle(current.tier::nom).withStyle(ChatFormatting.BOLD))));
@@ -132,7 +124,7 @@ public final class RefitSkinTab {
          }).bounds(right - 60, 30, 60, 16).build());
       }
 
-      // camos de l'inventaire (objets : posés, ils entrent dans la collection à vie, 21/11)
+      // camos de l'inventaire (définitifs)
       int y = 52;
       add.accept(new Label(gridX - 120, y, right, Component.translatable("gui.heralisz_camo.section_inventory").withStyle(s -> s.withColor(GRIS_TEXTE))));
       y += 12;
@@ -278,7 +270,7 @@ public final class RefitSkinTab {
       }
    }
 
-   /** Camo de l'inventaire (objet) : posé, il entre dans la collection à vie du joueur (21/11). */
+   /** Camo de l'inventaire (objet) : posé, il est définitif. */
    private static final class CamoSlot extends AbstractButton {
       private final int slot;
       private final Inventory inv;
