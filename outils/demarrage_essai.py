@@ -26,7 +26,9 @@ resume.md dans --rapport.
 
 --mixins-stricts (diagnostic, audit du 21/11 ; jamais pour une mise en ligne) : -Dmixin.debug.countInjections=true, toute
 injection de mixin qui ne trouve pas sa cible devient une erreur, même celles marquées « require 0 » qui ratent sans rien
-dire d'habitude (187 dans nos mods, plus celles des autres auteurs).
+dire d'habitude (187 dans nos mods, plus celles des autres auteurs) ; avec -Dmixin.ignoreRequired=true, chacune est notée
+dans le journal (« Mixin ... failed ») au lieu d'arrêter le serveur sur la première (ModernFix en a une qui rate sur
+Mohist) : la liste complète en un seul démarrage.
 """
 import argparse
 import os
@@ -126,7 +128,7 @@ def lancer(a, d):
     # reprises par toute machine Java lancée par « java » : celle que Mohist relance après son installation comprise
     env["JDK_JAVA_OPTIONS"] = "-Xmx%dM -Dfile.encoding=UTF-8" % tas
     if a.mixins_stricts:
-        env["JDK_JAVA_OPTIONS"] += " -Dmixin.debug.countInjections=true"
+        env["JDK_JAVA_OPTIONS"] += " -Dmixin.debug.countInjections=true -Dmixin.ignoreRequired=true"
     res = {"jar": jar.name, "tas": tas, "echec": None, "essais": 0, "stricts": a.mixins_stricts}
     t0 = time.time()
     fin_max = t0 + a.attente * 60
@@ -226,9 +228,10 @@ def finir(a, res, serveur, rapport, d=None):
     o.append("- Serveur : nos jars de `livraison/mods serveur`, les plugins et les réglages du dépôt, %s, mémoire de Java "
              "%s Mo au plus, monde plat neuf (rien du Ptero, aucun secret)." % (res["jar"], res["tas"]))
     if res.get("stricts"):
-        o.append("- **Mixins stricts** (diagnostic, `-Dmixin.debug.countInjections=true`) : toute injection qui ne trouve pas "
-                 "sa cible est une erreur, même celles qui ratent d'habitude sans rien dire. Un refus ici ne dit rien de la "
-                 "mise en ligne : lire les lignes d'erreur.")
+        o.append("- **Mixins stricts** (diagnostic, `-Dmixin.debug.countInjections=true -Dmixin.ignoreRequired=true`) : "
+                 "toute injection qui ne trouve pas sa cible est notée (« Mixin ... failed »), même celles qui ratent "
+                 "d'habitude sans rien dire. Un refus ici ne dit rien de la mise en ligne : lire les lignes d'erreur et "
+                 "d'avertissement.")
     if ok:
         o.append("- **Réussi** : « Done » en %s s (%s s pour Minecraft)%s, puis %d s à vide sans arrêt."
                  % (res.get("done_s"), res.get("done_mc_s"), " après un second lancement (installation de Mohist)"
