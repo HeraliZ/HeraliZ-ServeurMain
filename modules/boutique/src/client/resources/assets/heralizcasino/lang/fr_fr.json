@@ -91,6 +91,7 @@
   "message.heralizcasino.admin_saved": "Réglages enregistrés : %s.",
   "message.heralizcasino.admin_lights_saved": "Lumière des machines enregistrée : les machines posées suivent dans la seconde.",
   "message.heralizcasino.admin_saved_rtp": "Réglages enregistrés : %s (redistribution %s %%).",
+  "message.heralizcasino.admin_niveau4": "Caisse et réglages des machines : réservés aux opérateurs de niveau 4 connectés.",
   "overlay.heralizcasino.win": "GAGNÉ !",
   "overlay.heralizcasino.big": "GROS GAIN !",
   "overlay.heralizcasino.jackpot": "JACKPOT !",

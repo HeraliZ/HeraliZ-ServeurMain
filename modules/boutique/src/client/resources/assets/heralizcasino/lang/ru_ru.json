@@ -91,6 +91,7 @@
   "message.heralizcasino.admin_saved": "Настройки сохранены: %s.",
   "message.heralizcasino.admin_lights_saved": "Освещение автоматов сохранено: установленные автоматы обновятся за секунду.",
   "message.heralizcasino.admin_saved_rtp": "Настройки сохранены: %s (возврат %s %%).",
+  "message.heralizcasino.admin_niveau4": "Касса и настройки автоматов: только для операторов 4-го уровня, вошедших в аккаунт.",
   "overlay.heralizcasino.win": "ВЫИГРЫШ!",
   "overlay.heralizcasino.big": "КРУПНЫЙ ВЫИГРЫШ!",
   "overlay.heralizcasino.jackpot": "ДЖЕКПОТ!",

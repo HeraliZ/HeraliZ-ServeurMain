@@ -809,6 +809,7 @@
   "heraliz_grades.staff.msg.eco_pb_inactif": "Points Boutique pas reliés au site (clé absente) : rien n’a été fait.",
   "heraliz_grades.staff.msg.eco_pb_injoignable": "Le site ne répond pas : rien n’a été fait.",
   "heraliz_grades.staff.msg.eco_pb_incertain": "Le site ne répond pas : regarde le solde avant de recommencer (c’est peut-être fait).",
+  "heraliz_grades.staff.msg.eco_pb_erreur_site": "Erreur du site (%s) : résultat incertain, vérifie sur le site avant de recommencer.",
   "heraliz_grades.staff.msg.eco_pb_compte": "Pas de compte sur le site au nom de %s.",
   "heraliz_grades.staff.msg.eco_pb_plafond": "Refusé par le site : %s PB au plus d’un coup.",
   "heraliz_grades.staff.msg.eco_pb_plafond_jour": "Refusé par le site : %1$s PB déjà donnés en 24 h (plafond %2$s).",

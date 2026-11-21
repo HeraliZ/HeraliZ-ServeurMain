@@ -39,7 +39,10 @@ public final class ReceptionServeur {
         return player.hasPermissions(2) && fr.heraliz.grades.serveur.GradesApi.authentifie(player);
     }
 
-    /** Tablette du Directeur : nouveaux reglages d'une machine. Reserve aux operateurs (niveau 2) connectes, verifie ici. */
+    /**
+     * Tablette du Directeur : nouveaux reglages d'une machine (operateur de niveau 4 connecte) ou lumiere des machines
+     * (niveau 2 connecte), verifies ici.
+     */
     static void adminConfig(ServerPlayer player, AdminConfigPacket p) {
         if (!operateur(player)) {
             player.displayClientMessage(Component.translatable("message.heralizcasino.admin_only").withStyle(ChatFormatting.RED), true);
@@ -61,6 +64,16 @@ public final class ReceptionServeur {
         }
         MachineType t = MachineType.byId(p.machine());
         if (t == null) return;
+        // 21/11 (choix du proprietaire, proposition n° 1 de l'audit a1) : la page de la caisse (objets et prix du change,
+        // entree du casino) et les reglages des machines (probabilites, gains, mises) creent en pratique des capsules et
+        // des objets : operateur de niveau 4 connecte, comme /casino jetons donner ou /eco donner. Lumieres et
+        // statistiques : niveau 2 connecte, comme avant.
+        if (!player.hasPermissions(4)) {
+            HeralizCasino.LOGGER.info("[HeralizCasino] Reglages de {} refuses a {} (operateur de niveau 4 seulement)", t.id, player.getGameProfile().getName());
+            player.displayClientMessage(Component.translatableWithFallback("message.heralizcasino.admin_niveau4",
+                    "Caisse et réglages des machines : réservés aux opérateurs de niveau 4 connectés.").withStyle(ChatFormatting.RED), false);
+            return;
+        }
         try {
             CasinoConfigServeur.applySection(t, p.json());
         } catch (Exception e) {

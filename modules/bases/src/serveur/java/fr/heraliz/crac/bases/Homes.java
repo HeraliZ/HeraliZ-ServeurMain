@@ -110,6 +110,10 @@ public final class Homes {
     }
 
     private static void partir(ServerPlayer p) {
+        // 21/11 (fin de la validation) : combat et « à terre » revus au départ, après l'attente de l'arrivée (comme /spawn)
+        if (Deplacements.refusAuDepart(p)) {
+            return;
+        }
         Claim c = TeleportBase.base(p);
         int r = TeleportBase.teleporter(p);
         boolean pose = c != null && c.home() != null;

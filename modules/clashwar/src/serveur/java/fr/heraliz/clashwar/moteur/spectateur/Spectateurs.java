@@ -38,6 +38,8 @@ public final class Spectateurs {
         UUID cible;
         int envoye = -1;
         String nomEnvoye = "";
+        /** Dernier changement de cible demande par le joueur (ms, {@link #changer}). */
+        long dernierChangement;
 
         Etat(Partie partie, GameType avant) {
             this.partie = partie;
@@ -82,10 +84,20 @@ public final class Spectateurs {
         MatchsNet.versJoueur(p, new PaquetsMoteur.SpectateurS2C(false, "", 0, 0));
     }
 
-    /** Joueur suivant (+1) ou precedent (-1) ; demande du client (revalidee : le joueur doit etre spectateur). */
+    /** Ecart minimal (ms) entre deux changements de cible demandes par un spectateur (21/11, validation v7, a7 E). */
+    private static final long CADENCE_CHANGER_MS = 80L;
+
+    /**
+     * Joueur suivant (+1) ou precedent (-1) ; demande du client (revalidee : le joueur doit etre spectateur). 21/11
+     * (validation v7, a7 E) : au plus un changement toutes les 80 ms (un appui sur une fleche, jamais aussi rapide) ; un jeu
+     * modifie ne fait plus changer la camera et renvoyer le bandeau a chaque paquet.
+     */
     public static void changer(ServerPlayer p, int sens) {
         Etat e = ETATS.get(p.getUUID());
         if (e == null) return;
+        long maintenant = System.currentTimeMillis();
+        if (maintenant - e.dernierChangement < CADENCE_CHANGER_MS) return;
+        e.dernierChangement = maintenant;
         choisir(p, e, sens >= 0 ? 1 : -1);
     }
 

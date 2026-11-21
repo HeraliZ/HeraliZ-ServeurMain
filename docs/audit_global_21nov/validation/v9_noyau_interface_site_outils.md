@@ -136,9 +136,8 @@ fil à part, après la sauvegarde du monde.
 
 ## À faire par vous
 
-- **Secret `NOMS_INTERDITS`** : toujours absent (journal de la mise en ligne de 17 h 37 : « contrôle des noms perso
-  sauté »). GitHub → Settings → Secrets and variables → Actions → New repository secret (`docs/MISE_EN_LIGNE_GITHUB.md`,
-  section 7).
+- ~~Secret `NOMS_INTERDITS`~~ : **décision du propriétaire (21/11, soir) : il ne sera pas créé**. Le contrôle des noms
+  perso est sauté par choix (simple note dans le journal, plus d'avertissement) ; voir « Fin du 21/11 ».
 - À savoir : dans l'environnement « production », les secrets `SPARTAN_DISCORD_SANCTIONS`, `LITEBANS_DB_USER`,
   `LITEBANS_DB_PASSWORD`, `HERALIBOT_LIEN_URL` et `HERALIBOT_LIEN_CLE` sont vides (même journal). Si c'est voulu (LiteBans
   en base locale, lien Discord avec HeraliBot coupé, pas de salon des sanctions), rien à faire.
@@ -210,3 +209,44 @@ par le workflow et refusé si son empreinte SHA-256 change (`cac9f22f…0c9a`), 
 mise en ligne. `serveur.yml` ne tourne que sur `main` : il ne sera essayé qu'à la prochaine mise en ligne. Le secret
 `NOMS_INTERDITS` doit être un secret du DÉPÔT (le job `controles` n'a pas d'environnement), comme le dit
 `docs/MISE_EN_LIGNE_GITHUB.md` (sections 3 et 7, mises à jour).
+
+---
+
+## Fin du 21/11 (choix du propriétaire : « tout lançable et terminé à 100 % »)
+
+Fait (Noyau 1.1.13, rien d'autre à monter : les autres changements sont dans les tâches GitHub et les outils) :
+
+1. **Noms perso** : le secret `NOMS_INTERDITS` ne sera jamais créé (décision du propriétaire). Dans `branches.yml` et
+   `serveur.yml`, son absence n'est plus un avertissement jaune mais une simple ligne dans le journal ; le contrôle reste
+   et remarcherait tout seul avec le secret. `docs/MISE_EN_LIGNE_GITHUB.md` (sections 3 et 7) et `docs/GUIDE.md`
+   (section 7) le disent ; plus rien « à faire par le propriétaire ».
+2. **Démarrage « mixins stricts » sans injection ratée** : `expect = 0` sur la 2e redirection de
+   `ReglagesGenerationMixin` (`modules/noyau/.../allege/ReglagesGenerationMixin.java` l. 35), qui ne trouve jamais rien sur
+   Mohist 916, exprès (relevé de v10). En ligne : rien ne change.
+3. **Staff op 4 en combat** : les actions du panneau du staff passent aussi pour un op 4 qui vient de prendre un coup (ban
+   PC, jour, largage…), comme pour un Guide. Reconnues à la pile d'appels (`PanelStaff.commandeStaff` de la boutique les
+   joue ; `CombatService.actionDuPanneau`, `modules/noyau/.../combat/CombatService.java` l. 303 et 308-322), regardée seulement
+   pour une commande d'un op 4 qui serait refusée. Une commande tapée ou un panneau en bois n'y passent jamais : jugés
+   comme avant. Classe ou méthode renommée un jour : plus reconnue, l'action est jugée comme une commande tapée.
+4. **Fabrication des mods qui dépendent d'un mod changé** (a9 n° 1) : `construire.py --si-change` relit, après la
+   fabrication, chaque appel des jars gardés vers un mod refait (classe, méthode, champ, côté par côté) ; un mod gardé dont
+   un appel ne trouve plus sa cible est refait aussi (`dependants_casses`, `outils/construire.py`) : une fonction retirée
+   ou changée du noyau fait échouer la fabrication au lieu de planter en jeu. Les autres mods gardés restent tels quels
+   (rien de plus à télécharger pour les joueurs). Essayé hors du jeu sur de petits jars : fonction retirée et signature
+   changée trouvées, méthodes héritées, d'Object, d'Enum et des records bien vues.
+5. **Publication du launcher** (a9 n° 2) : `paramiko` et toutes ses dépendances installés à versions et empreintes figées
+   (`outils/requis_sftp.txt`, empreintes vérifiées contre pypi.org ; installé et contrôlé ici dans un Python 3.12 neuf),
+   dans les trois jobs `publier_*` de `launcher.yml`.
+6. **« Lenteurs du serveur »** (a9 n° 4) : les fichiers de la racine du Ptero ne sont plus écrits par leur nom dans le
+   journal public, sauf les noms connus (server.properties, gc.log, jar de Mohist…) ; les autres sont comptés avec leur
+   taille.
+7. **Chaque tâche GitHub** relue : les 12 fichiers de `.github/workflows` ont un YAML lisible, chaque entrée citée est
+   déclarée, chaque `needs`, sortie et `steps.<id>` existe, chaque script et chemin du dépôt appelé existe, et chaque
+   option passée à nos scripts existe dans le script. Trouvé et corrigé au passage : une erreur de YAML dans ma propre
+   modification de `launcher.yml` (avant l'envoi). Aucune tâche qui écrit sur le Ptero ou publie n'a été lancée.
+
+À vérifier à la prochaine mise en ligne : « Contrôle de branche » et « Serveur HeraliZ » verts ; `launcher.yml` ayant
+changé, « Launcher HeraliZ » fabrique le launcher sur `main` (sans le publier : la publication reste un « Run workflow »
+avec la case `publier`) ; à la prochaine publication du launcher, l'étape « Client SFTP » installe la liste figée.
+Rien testé en jeu : staff op 4 en combat → panneau (P) → « Ban PC » d'un compte d'essai, « Jour » : l'action se fait ;
+le même op 4 qui tape `/spawn` en combat : refusé comme avant.

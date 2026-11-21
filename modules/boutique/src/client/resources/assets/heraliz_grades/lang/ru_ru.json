@@ -809,6 +809,7 @@
   "heraliz_grades.staff.msg.eco_pb_inactif": "Очки магазина не связаны с сайтом (нет ключа): ничего не сделано.",
   "heraliz_grades.staff.msg.eco_pb_injoignable": "Сайт не отвечает: ничего не сделано.",
   "heraliz_grades.staff.msg.eco_pb_incertain": "Сайт не отвечает: проверь баланс, прежде чем повторять (возможно, уже сделано).",
+  "heraliz_grades.staff.msg.eco_pb_erreur_site": "Ошибка сайта (%s): результат неизвестен, проверь на сайте, прежде чем повторять.",
   "heraliz_grades.staff.msg.eco_pb_compte": "На сайте нет аккаунта %s.",
   "heraliz_grades.staff.msg.eco_pb_plafond": "Сайт отказал: не больше %s PB за раз.",
   "heraliz_grades.staff.msg.eco_pb_plafond_jour": "Сайт отказал: за 24 ч уже выдано %1$s PB (предел %2$s).",

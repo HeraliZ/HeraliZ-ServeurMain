@@ -19,6 +19,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * entrées changent (options du monde, registre des dimensions). Deux formes : celle de Minecraft (registres du serveur) et
  * celle que Bukkit peut utiliser (dimensions données) ; chacune facultative (require = 0). Réglage
  * {@code [perf] registres_en_memoire} coupé : comme Minecraft.
+ * <p>21/11 (validation) : Mohist 916 garde l'appel de Minecraft (1re forme) ; la 2e ne trouve donc rien, c'est voulu :
+ * {@code expect = 0}, pour qu'un démarrage d'essai « mixins stricts » ({@code -Dmixin.debug.countInjections}) ne la
+ * compte pas comme ratée.
  */
 @Mixin(PrimaryLevelData.class)
 public abstract class ReglagesGenerationMixin {
@@ -29,7 +32,7 @@ public abstract class ReglagesGenerationMixin {
             () -> WorldGenSettings.encode(ops, options, registres));
    }
 
-   @Redirect(method = "setTagData", at = @At(value = "INVOKE",
+   @Redirect(method = "setTagData", expect = 0, at = @At(value = "INVOKE",
          target = "Lnet/minecraft/world/level/levelgen/WorldGenSettings;encode(Lcom/mojang/serialization/DynamicOps;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/levelgen/WorldDimensions;)Lcom/mojang/serialization/DataResult;"))
    private <T> DataResult<T> heraliz$encoderUneFoisDimensions(DynamicOps<T> ops, WorldOptions options, WorldDimensions dimensions) {
       return MemoiresSauvegarde.reglages(options, dimensions.dimensions(), () -> WorldGenSettings.encode(ops, options, dimensions));
