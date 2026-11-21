@@ -62,7 +62,18 @@ bonnes**. À confirmer par le propriétaire.
 
 ## À faire par le propriétaire
 
-- Créer le secret GitHub `NOMS_INTERDITS` (toujours absent).
+- (Le secret `NOMS_INTERDITS` ne sera pas créé : choix du propriétaire ; le contrôle des noms perso est sauté, simple note.)
 - Secrets de l'environnement « production » vides : `SPARTAN_DISCORD_SANCTIONS`, `LITEBANS_DB_*`, `HERALIBOT_LIEN_*`
   (rien à faire si c'est voulu).
 - Confirmer qu'on a déjà eu plus de 5 joueurs connectés en même temps (voir plus haut).
+
+## Fin du 21/11 : tout ce qui restait ouvert
+
+À la demande du propriétaire (« fais en sorte que tout soit lançable et terminé à 100 % »), les propositions encore
+ouvertes ont été faites par les relecteurs de chaque partie (section « Fin du 21/11 » de chaque compte rendu ; essais :
+section 52 de la fiche). Restent volontairement : les décisions du propriétaire (captures du staff avec leurs points, pas de
+lettres nettes, règles de /trade et du ClashWar), et ce qui demande un essai en jeu ou un regard sur la carte (ligne de vue
+des échelles, rendu des portes HBM, porte « transition seal »), plus les mesures d'un soir chargé (`/diag profil`).
+Démarrage « mixins stricts » : 0 injection ratée côté serveur. Skins protégés : étape 2 faite (dessins hors du jar des
+joueurs) ; le dépôt étant public, leurs sources y restent lisibles.
+

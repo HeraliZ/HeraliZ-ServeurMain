@@ -2153,3 +2153,39 @@ ligne dans un job sans aucun secret (empreinte de JOML vérifiée). Les deux foi
 
 Pas testé : tout en jeu (fabrication, contrôles et démarrage d'essai sur GitHub seulement ; démarrage « mixins
 stricts » allé jusqu'au bout côté serveur).
+
+## 52. Fin du 21/11 : tout ce qui restait ouvert, terminé (demande du propriétaire)
+
+Demande du propriétaire : « je ne créerai pas NOMS_INTERDITS, fais en sorte que tout soit lançable et terminé à 100 % ».
+Les propositions encore ouvertes des deux audits ont été faites, sauf ce que le propriétaire a tranché (captures du staff
+avec leurs points, pas de lettres nettes, règles de jeu de /trade et du ClashWar inchangées) et ce qui demande un essai en
+jeu ou un regard sur la carte (ligne de vue des échelles, rendu des portes HBM, porte « transition seal »). Détail : section
+« Fin du 21/11 » de chaque compte rendu de `docs/audit_global_21nov/validation/`. Le contrôle des noms perso est sauté par
+choix du propriétaire (simple note dans les tâches GitHub). Démarrage « mixins stricts » : 0 injection ratée (111 mixins
+essayés sur 111 côté serveur). Versions : Noyau 1.1.13, Armes 2.59.14, Sacs heralisz29, Boutique 1.7.5, Monde 1.3.13, CRac
+1.38.12-beta, Clans 3.19.5, Quêtes 1.24.7, Événements 1.3.4, Loot 0.20.10, ClashWar 1.3.10, Réanimation 1.16.15, Spartan
+2.15.7 (jar des joueurs changé : défi d'intégrité hors du fil de l'image), CaraCrea 1.7.3.
+
+À savoir : le dépôt GitHub est public. Les dessins des skins ne sont plus dans le jar des joueurs (étape 2), mais leurs
+sources restent lisibles dans le dépôt (comme tout le code et les fiches des couteaux) : la protection ne vaut contre la
+copie que pour un jar pris chez un joueur, pas pour qui lit le dépôt.
+
+À tester en jeu (les plus importants ; le reste dans chaque compte rendu) :
+- [ ] **Skins (étape 2)** : premier lancement après la mise à jour, connexion : les skins (camos animés, effets 3D,
+      couteaux Doppler/Fade, sac camouflé) apparaissent pendant ou juste après l'écran de chargement, identiques en main,
+      en 3e personne, dans l'atelier et sur les icônes ; journal du jeu « 79 programmes prêts, 0 en échec ».
+      Déconnexion, reconnexion, F3+T : rien n'est refait.
+- [ ] **Staff caché** : un joueur hors du staff qui fait `/msg <caché>` : « Aucun joueur n'a été trouvé » ; le caché écrit à
+      un joueur : ce joueur peut lui répondre pendant 5 min (`/r`), pas les autres. Groupe vocal d'un caché : invisible.
+- [ ] **Casino** : un op 2 ne peut plus enregistrer la page de la caisse ni les gains de la tablette ; un op 4 connecté oui.
+- [ ] **Hérals** : vendre à Mila avec un compte presque au plafond (10 millions) : vente refusée, rien n'est pris.
+- [ ] **Bases** : `/home` et `/rtp` refusés si on entre en combat pendant l'attente, sans perdre la recharge ;
+      `/base effacer <chef>` laisse la cabane d'essai d'un autre membre en plein tutoriel.
+- [ ] **Borne de départ** : départs normaux, et beaucoup de départs en même temps (`/depart info`).
+- [ ] **ClashWar** : retour du Coffre avec un écran ouvert : rien ne se perd ; menu des exécutions comme avant.
+- [ ] **Staff op 4 en combat** : panneau → « Ban PC », « Jour » : se fait ; `/spawn` tapé en combat : toujours refusé.
+- [ ] **Voix** : un joueur qui arrive n'est entendu qu'après son `/login`, même avec l'UDP bloqué.
+- [ ] **Démarrage du serveur** : une seule erreur « face / ear_protection » de chaque (elle vient d'un mod d'un autre
+      auteur), aucune autre erreur nouvelle.
+
+Pas testé : tout en jeu (fabrication, contrôles et démarrages d'essai, normal et « mixins stricts », sur GitHub).
