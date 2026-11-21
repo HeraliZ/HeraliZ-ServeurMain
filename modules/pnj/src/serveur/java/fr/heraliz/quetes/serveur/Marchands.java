@@ -264,6 +264,14 @@ final class Marchands {
         long total = 0, horsBoutique = 0, pointsEvenement = 0;
         int nombre = 0, essais = 0, sansPoints = 0, boursesRefusees = 0;
         Map<String, Long> ventes = SaisonQuetes.ventes();
+        // 21/11 (validation de l'audit) : un compte ne dépasse jamais son plafond (10 000 000 hérals) et l'économie coupait le
+        // dépôt sans rien dire : Mila prenait tous les objets sans tout payer. Le total est maintenant compté d'abord, sans rien
+        // changer (bourses, objets d'événement, rachat) ; s'il ne tient pas sur le compte, rien n'est pris
+        if (prevu(p, def.marchand, v.cases(), ventes) > Ponts.place(p.getUUID())) {
+            Moteur.notif(p, Texte.cle("heraliz_quetes.notif.compte_plein", Texte.brut(Ponts.nombre(Math.max(0, Ponts.plafond())))), 0xFF6B6B);
+            envoyerA(p, v.entite(), def);
+            return;
+        }
         for (int c : new LinkedHashSet<>(v.cases())) {
             if (c < 0 || c >= Reseau.CASES) continue;
             ItemStack s = p.getInventory().items.get(c);
@@ -327,6 +335,28 @@ final class Marchands {
         }
         LOG.info("[heraliz_quetes] {} vend {} objets à {} pour {} hérals", p.getGameProfile().getName(), nombre, def.id, total);
         envoyerA(p, v.entite(), def);
+    }
+
+    /** Ce que paierait la vente de ces cases (au plus : une bourse ou un objet refusés ensuite ne paient rien), sans rien changer. */
+    private static long prevu(ServerPlayer p, Defs.Marchand m, List<Integer> cases, Map<String, Long> ventes) {
+        long prevu = 0;
+        for (int c : new LinkedHashSet<>(cases)) {
+            if (c < 0 || c >= Reseau.CASES) continue;
+            ItemStack s = p.getInventory().items.get(c);
+            long b = Bourses.valeur(s);
+            if (b >= 0) {
+                prevu += b;
+                continue;
+            }
+            long pe = ObjetsEvenements.prix(s);
+            if (pe >= 0) {
+                prevu += pe;
+                continue;
+            }
+            long u = prixRachat(m, s, ventes);
+            if (u > 0) prevu += u * s.getCount();
+        }
+        return prevu;
     }
 
     static void envoyerA(ServerPlayer p, int entite, Defs.Pnj def) {

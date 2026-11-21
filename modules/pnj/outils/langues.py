@@ -66,6 +66,13 @@ TEXTES = {
     "heraliz_quetes.texte.suite": ("%s%s", "%s%s", "%s%s"),
     "heraliz_quetes.recycleur.titre": ("Recycleur", "Recycler", "Переработчик"),
     "heraliz_quetes.recycleur.ferme": ("Le recycleur est fermé pour l'instant.", "The recycler is closed for now.", "Переработка пока закрыта."),
+    # 21/11 (validation de l'audit) : jamais un objet recyclé sans sa part en hérals (économie indisponible, compte au plafond)
+    "heraliz_quetes.recycleur.economie": ("Recycleur à l'arrêt : les hérals ne peuvent pas être versés pour l'instant. Reviens un peu plus tard.",
+                                          "Recycler stopped: the herals cannot be paid right now. Come back a little later.",
+                                          "Переработчик остановлен: гералы сейчас нельзя выплатить. Загляни чуть позже."),
+    "heraliz_quetes.recycleur.compte_plein": ("Recycleur en attente : ton compte est au plafond (%s hérals). Dépense un peu pour continuer.",
+                                              "Recycler waiting: your account is at its limit (%s herals). Spend some to continue.",
+                                              "Переработчик ждёт: на твоём счёте предел (%s гералов). Потрать немного, чтобы продолжить."),
     "heraliz_quetes.recycleur.resultat": ("Recyclé : %s objet(s) → %s composant(s) et %s hérals", "Recycled: %s item(s) → %s component(s) and %s herals",
                                           "Переработано: %s предм. → %s компон. и %s гералов"),
     # 02/11 : ajoutées à la main dans les .json par l'audit, reprises ici le 03/11 (sinon l'outil les effaçait)
@@ -148,6 +155,10 @@ TEXTES = {
     "heraliz_quetes.recycleur_carte.titre": ("Recycleur de terrain", "Field Recycler", "Полевой переработчик"),
     "heraliz_quetes.recycleur_carte.indisponible": ("Ce recycleur est hors service pour l'instant.", "This recycler is out of order for now.",
                                                     "Этот переработчик сейчас не работает."),
+    # 21/11 (validation de l'audit) : économie indisponible : la machine ne recycle plus, ses objets se reprennent
+    "heraliz_quetes.recycleur_carte.economie": ("Recyclage en pause : les hérals ne peuvent pas être versés pour l'instant. Tes objets restent dans la machine, tu peux les reprendre.",
+                                                "Recycling paused: the herals cannot be paid right now. Your items stay in the machine, you can take them back.",
+                                                "Переработка на паузе: гералы сейчас нельзя выплатить. Твои предметы остаются в машине, их можно забрать."),
     "heraliz_quetes.recycleur_carte.case_prise": ("Cette case est à un autre joueur : prends une case libre.",
                                                   "This slot belongs to another player: use a free slot.",
                                                   "Эта ячейка занята другим игроком: возьми свободную."),
@@ -335,6 +346,10 @@ TEXTES = {
     "heraliz_quetes.notif.recompense_attente": ("Quête finie, mais les hérals ne peuvent pas être versés pour l'instant : reviens la rendre un peu plus tard.",
                                                 "Quest done, but the herals cannot be paid right now: come back and hand it in a little later.",
                                                 "Задание выполнено, но гералы сейчас нельзя выплатить: вернись и сдай его чуть позже."),
+    # 21/11 (validation de l'audit) : compte au plafond : la quête attend (avant : hérals coupés sans rien dire)
+    "heraliz_quetes.notif.recompense_plafond": ("Quête finie, mais ton compte dépasserait son plafond (%s hérals) : dépense un peu, puis reviens la rendre.",
+                                                "Quest done, but your account would go over its limit (%s herals): spend some, then come back and hand it in.",
+                                                "Задание выполнено, но на счёте стало бы больше предела (%s гералов): потрать немного и вернись сдать его."),
     "heraliz_quetes.notif.titre": ("Nouveau titre : %s", "New title: %s", "Новый титул: %s"),
     "heraliz_quetes.notif.echec": ("Quête échouée (temps écoulé) : %s", "Quest failed (time is up): %s", "Задание провалено (время вышло): %s"),
     "heraliz_quetes.notif.abandon": ("Quête abandonnée : %s", "Quest abandoned: %s", "Задание брошено: %s"),
@@ -513,6 +528,10 @@ TEXTES = {
     "heraliz_quetes.notif.economie_absente": ("Vente impossible pour l'instant : les hérals ne peuvent pas être versés. Rien n'a été pris.",
                                               "Selling is not possible right now: the herals cannot be paid. Nothing was taken.",
                                               "Продажа сейчас невозможна: гералы нельзя выплатить. Ничего не забрано."),
+    # 21/11 (validation de l'audit) : vente refusée, le compte dépasserait son plafond (rien n'est pris)
+    "heraliz_quetes.notif.compte_plein": ("Vente refusée : ton compte dépasserait son plafond (%s hérals). Vends moins d'objets. Rien n'a été pris.",
+                                          "Sale refused: your account would go over its limit (%s herals). Sell fewer items. Nothing was taken.",
+                                          "Продажа отклонена: на счёте стало бы больше предела (%s гералов). Продай меньше предметов. Ничего не забрано."),
     "heraliz_quetes.notif.points_evenement": ("+%s points de saison pour ton clan", "+%s season points for your clan", "+%s очков сезона для твоего клана"),
     "heraliz_quetes.notif.objet_essai": ("Objet d'essai (événement lancé par le staff) : hérals seulement, aucun point de saison",
                                          "Test item (event launched by the staff): herals only, no season points",

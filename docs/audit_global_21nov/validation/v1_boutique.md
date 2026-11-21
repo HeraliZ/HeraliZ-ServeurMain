@@ -139,3 +139,70 @@ liste des refus de `/trade`, messages privés vers un membre du staff caché) : 
 - [ ] **Journal du serveur** : aucune erreur nouvelle de `heraliz_grades`, `heralizcasino` ou `heralizcrates`.
 
 Pas testé : tout en jeu (aucune compilation ici : fabrication et contrôles sur GitHub seulement).
+
+## Fin du 21/11 (choix du propriétaire : « tout terminé à 100 % »)
+
+En ligne avant cette suite : Boutique 1.7.4 (`main` = `1607d9655`). Fait dans le commit **`500ee5957`** (Boutique
+**1.7.5**). Aucun canal réseau ne change : un jeu de joueur d'avant se connecte toujours (le nouveau jar apporte seulement
+les deux nouveaux textes en anglais et en russe ; un vieux jeu les montre en français).
+
+Fait :
+1. **Tablette du Directeur du casino** (proposition n° 1 de `a1_boutique.md`) : la page de la caisse (objets et prix du
+   change, entrée du casino) et les réglages des machines (probabilités, gains, mises) demandent maintenant l'opérateur
+   de **niveau 4** connecté sur AuthMe, comme `/casino jetons donner` ou `/eco donner`. Un opérateur de niveau 2 ou 3 qui
+   enregistre ces pages lit « Caisse et réglages des machines : réservés aux opérateurs de niveau 4 connectés. » et rien
+   ne change. Le reste de la tablette ne change pas : lumières des machines et statistiques au niveau 2 connecté, comme
+   avant. `modules/boutique/src/serveur/java/fr/heraliz/casino/net/ReceptionServeur.java` l.67-76 ; texte
+   `message.heralizcasino.admin_niveau4` (français, anglais, russe).
+2. **Staff caché et messages privés** (« le cacher partout ») : `/msg`, `/tell` et `/w` (commandes de Minecraft) vers un
+   membre du staff caché, tapées par un joueur qui ne voit pas le staff caché, reçoivent **la réponse de Minecraft pour un
+   joueur absent** (« Aucun joueur n'a été trouvé », en rouge) et rien n'est envoyé. Le staff connecté garde l'accès.
+   `/r` (noyau) passe par `/msg` : même règle, sans rien changer dans le noyau. Rien à faire pour `/teammsg` et `/tm` :
+   le noyau les a retirées (`RETIREES_DEFAUT`). **Suggestions de pseudo (touche Tab)** de ces commandes : vérifié dans le
+   code, elles sont faites par le jeu du joueur à partir de sa liste Tab, d'où le staff caché est déjà retiré (Bukkit
+   `hidePlayer`, ou paquet « joueur retiré » sans Bukkit) : rien à changer. `/list` ne répond rien aux joueurs qui ne
+   sont pas op (règle du monde `sendCommandFeedback = false`).
+   `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/VanishServeur.java` l.79-81, l.319-362 (`messagePrive`).
+3. **`/boutique`** (proposition n° 1 de cette validation) : le solde de PB est demandé au site au plus une fois toutes les
+   5 s par joueur ; rouvert entre-temps, l'écran s'ouvre tout de suite avec le dernier solde connu, relu après chaque
+   achat (débit, refus avec solde, remboursement). Oublié à la déconnexion.
+   `modules/boutique/src/serveur/java/fr/heraliz/grades/serveur/BoutiqueServeur.java` l.65-71, l.112-127, l.210-227 ;
+   `ServeurGrades.java` l.189.
+4. **Onglet Économie du Fondateur** (proposition n° 3) : une erreur 500 ou 503 du site s'affiche « Erreur du site (500) :
+   résultat incertain, vérifie sur le site avant de recommencer. » au lieu de « Refusé par le site : rien n'a été fait »
+   (peut-être faux) ; pareil pour la simple lecture d'un solde. `PanelEconomie.java` l.264 et l.409-415 ; texte
+   `heraliz_grades.staff.msg.eco_pb_erreur_site` (français, anglais, russe).
+5. **`mods.toml`** : noyau **1.1.5** au moins pour le casino (relevé de la validation v10, l.92), et aussi pour les grades
+   (l.31 : arrivées des téléportations du noyau, appelées directement depuis le 19/11 par `/tpa`, `/warp` et le panel) et
+   les caisses (l.131 : attentes des matchs, `Matchs.inventaireRetenu`, 19/11), qui avaient le même oubli. Sans effet tant
+   que tous les jars partent ensemble ; un vieux noyau laissé seul donnerait un message clair au démarrage au lieu d'un
+   plantage au premier appel. `modules/boutique/src/commun/resources/META-INF/mods.toml`.
+
+Pas fait (choix du propriétaire) : `/trade`, `/kit` à 16 kits, `/heraliz loot fichier`.
+
+Remarque, à décider si besoin : un membre du staff caché qui écrit lui-même à un joueur par `/msg` se montre à ce joueur,
+mais le joueur ne peut pas lui répondre (« Aucun joueur n'a été trouvé », comme demandé : le caché est absent pour les
+joueurs). Si vous voulez qu'un joueur puisse répondre pendant quelques minutes au staff caché qui lui a écrit le premier,
+c'est un petit ajout ; pour parler à un joueur sans se montrer, le bouton « Message » du panel (« [Staff] … ») reste le
+moyen prévu.
+
+Contrôles faits ici : `outils/verifier_langues.py` (0 erreur), relecture ; aucune compilation ici (fabrication et
+contrôles sur GitHub).
+
+À tester en jeu :
+- [ ] **Tablette, opérateur de niveau 4 connecté** : régler une machine, puis la page de la caisse (prix d'un objet,
+      entrée) : « Réglages enregistrés », comme avant ; lumières et statistiques : comme avant.
+- [ ] **Tablette, opérateur de niveau 2 ou 3** (s'il y en a) : enregistrer une machine ou la caisse : message en rouge
+      « réservés aux opérateurs de niveau 4 connectés », rien ne change ; les lumières s'enregistrent encore.
+- [ ] **Staff caché** (S caché, A joueur hors du staff, B autre staff) : A tape `/msg S salut`, puis `/tell S salut` et
+      `/w S salut` : « Aucun joueur n'a été trouvé » en rouge, exactement comme `/msg <pseudo d'un absent>` ; S ne reçoit
+      rien. B tape `/msg S salut` : S le reçoit. A tape `/msg ` puis Tab : le pseudo de S n'est pas proposé. S se montre :
+      `/msg S` de A marche de nouveau.
+- [ ] **`/boutique`** : ouvrir, fermer, rouvrir aussitôt : le solde s'affiche tout de suite ; acheter un article : le
+      solde suit ; rouvrir 10 s plus tard : solde relu.
+- [ ] **Onglet Économie** (Fondateur) : donner ou retirer des PB, voir un solde : comme avant (si le site renvoie une
+      erreur 500 : « résultat incertain, vérifie sur le site »).
+- [ ] **Démarrage du serveur** : aucune ligne « dépendance manquante » pour `heraliz_grades`, `heralizcasino` ou
+      `heralizcrates`.
+
+Pas testé : tout en jeu.

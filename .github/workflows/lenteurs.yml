@@ -382,8 +382,15 @@ jobs:
             sort -t "$(printf '\t')" -k1,1nr disque_affiche.txt 2>/dev/null | masque | head -70
             echo "===== DISQUE : fichiers du premier niveau des dossiers de nos mods (octets en tout) ====="
             sort -t "$(printf '\t')" -k1,1nr fichiers_mods.txt 2>/dev/null | masque | head -40
-            echo "===== DISQUE : fichiers de la racine (sans les dossiers) ====="
-            masque < racine.txt | head -40
+            # 21/11 (validation v9, audit a9 n° 4, choix du propriétaire) : dépôt public, un fichier peut porter le nom d'une
+            # personne : seuls les noms connus (Minecraft, Mohist, plugins) sont écrits, les autres seulement comptés
+            echo "===== DISQUE : fichiers de la racine (sans les dossiers ; noms connus seulement, les autres comptés) ====="
+            tr -d '\r' < racine.txt | awk '
+              BEGIN { split("server.properties eula.txt gc.log bukkit.yml spigot.yml commands.yml help.yml permissions.yml wepif.yml ops.json whitelist.json banned-players.json banned-ips.json usercache.json usernamecache.json user_jvm_args.txt run.sh start.sh", c, " "); for (i in c) connu[c[i]] = 1 }
+              NF >= 9 { n = $9; for (i = 10; i <= NF; i++) n = n " " $i
+                if ((n in connu) || n ~ /^mohist-[0-9.]+-[0-9]+-server\.jar$/ || n ~ /^hs_err_pid[0-9]+\.log$/) printf "%s\t%s\n", $5, n
+                else { k++; t += $5 } }
+              END { printf "%d autre(s) fichier(s), %d octets en tout (noms pas écrits)\n", k, t }' | head -40
             echo "Fichiers de joueurs du monde (playerdata) : ${JOUEURS:-?}"
           } > memoire_disque.txt
           cat memoire_disque.txt

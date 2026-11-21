@@ -245,4 +245,31 @@ public final class Outils {
             return false;
         }
     }
+
+    private static Method authentifie;
+    private static boolean authentifieCherche;
+
+    /**
+     * Joueur connecté sur AuthMe (/login fait), d'après HeraliZ Grades ({@code fr.heraliz.grades.serveur.GradesApi.authentifie},
+     * par réflexion) : 21/11 (validation de l'audit), {@code /event objet} crée des hérals (Mila le rachète), donc la même règle
+     * que {@code /eco donner} et {@code /bourse donner} : op 4 connecté sur AuthMe. Faux si Grades manque ou ne répond pas : un
+     * pseudo d'op ne vaut rien avant le /login.
+     */
+    public static boolean authentifie(ServerPlayer p) {
+        if (!authentifieCherche) {
+            authentifieCherche = true;
+            try {
+                authentifie = Class.forName("fr.heraliz.grades.serveur.GradesApi").getMethod("authentifie", ServerPlayer.class);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                authentifie = null;
+                HeralizEvenements.LOG.warn("[evenements] HeraliZ Grades absent ({}) : /event objet refusé (il demande le /login d'AuthMe)", e.toString());
+            }
+        }
+        if (authentifie == null) return false;
+        try {
+            return Boolean.TRUE.equals(authentifie.invoke(null, p));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
 }
