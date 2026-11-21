@@ -1814,8 +1814,9 @@ Corrigé :
   numéro d'édition (livré avec ClashWar 1.3.6).
 - **`/sethome`** : la liste des commandes permises sur la carte écrite dans le code ne l'avait pas (seul le fichier de
   réglages l'avait) : sans ce fichier, `/sethome` aurait été refusée sur la carte. Ajoutée (Noyau 1.1.10). L'inventaire
-  des commandes la compte enfin (87 commandes) ; `docs/COMMANDES.md` a aussi `/aide`, `/bourse`, `/guide`, `/cycle` et
-  `/recolte`, qui y manquaient.
+  des commandes la compte enfin (87 commandes) et ne dit plus « tous » pour celles que le mod réserve au staff par sa
+  propre règle (`/zonevip`, `/grade`, `/bon`, `/staff`, `/warp set`…) : vérifié, un joueur sans droit y est bien refusé ;
+  `docs/COMMANDES.md` a aussi `/aide`, `/bourse`, `/guide`, `/cycle` et `/recolte`, qui y manquaient.
 - **Commentaires faux** : distance de simulation (le réglage disait « 5 », c'est 4 sur le Ptero) et `ARCHITECTURE.md`.
 - **Hautes herbes du pack « herbe »** : sur 7 701 fichiers de données relus, un seul était mal écrit (une accolade de
   trop). Le jeu le lisait quand même ; corrigé, rien ne change à l'écran (Interface 2.0.17).
