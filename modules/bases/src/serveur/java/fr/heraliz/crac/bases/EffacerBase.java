@@ -143,7 +143,11 @@ final class EffacerBase {
             if (level.getBlockState(a.above()).getBlock() instanceof fr.heraliz.crac.block.ClaimBlockHaut) {
                 level.removeBlock(a.above(), false);
             }
-            level.removeBlock(a, false);
+            // 21/11 (validation) : l'armoire seulement si c'en est une (comme la remise à zéro, WipeBases) : jamais le bloc de
+            // la carte resté à la place d'une armoire disparue
+            if (level.getBlockState(a).getBlock() instanceof fr.heraliz.crac.block.ClaimBlock) {
+                level.removeBlock(a, false);
+            }
             // HeraliZ (21/11, audit) : le claim de CETTE armoire seulement (au tutoriel, deux membres d'un même clan ont chacun
             // la leur sous le groupe du clan : « le claim du groupe » cassait l'armoire de l'autre cabane, avec son stock)
             if (ClaimManager.getByAnchor(level, a) != null) {
