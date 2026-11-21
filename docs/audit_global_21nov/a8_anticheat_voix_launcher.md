@@ -90,8 +90,9 @@ se recoupe jamais (il faudrait 3 PC nouveaux). Le texte du réglage (« une règ
 
 La règle « clé du Gardien réutilisée » (`gardien:cle:`) est jugée à la réception du jeton, avant le `/login`, donc sans
 identifiant matériel. Un faux launcher avec une clé fixe, quatre comptes et des connexions différentes (VPN) la coupe
-pour une heure (le premier compte ne déclenche rien, les trois suivants comptent pour trois PC). Proposition : compter la clé du Gardien elle-même comme clé du PC (le vrai launcher en tire une neuve à
-chaque lancement : aucun joueur honnête n'est touché) ; les comptes qui partagent une clé fixe ne compteraient qu'une fois.
+pour une heure (le premier compte ne déclenche rien, les trois suivants comptent pour trois PC). Proposition : compter
+la clé du Gardien elle-même comme clé du PC (le vrai launcher en tire une neuve à chaque lancement : aucun joueur
+honnête n'est touché) ; les comptes qui partagent une clé fixe ne compteraient qu'une fois.
 Code : `integrity/Injection.java` `pc()`, clé connue dans `serveur/GardienServeur.java` (`CLE_JOUEUR`).
 
 ### P3. Disjoncteur (petit) : bloc d'adresses /24 et forfaits mobiles
