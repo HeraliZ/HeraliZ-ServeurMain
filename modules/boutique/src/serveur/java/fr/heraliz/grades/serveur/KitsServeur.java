@@ -284,9 +284,11 @@ final class KitsServeur {
                         return 0;
                     }
                     java.util.UUID uuid = p.getUUID();
-                    LienDiscord.verifierSoutien(uuid, () -> {
+                    // 21/11 (choix du propriétaire) : le menu s'ouvre tout de suite avec le dernier tag Soutien connu ;
+                    // HeraliBot n'est réinterrogé qu'une fois par minute, et sa réponse remet le menu à jour si elle change
+                    LienDiscord.verifierSoutien(uuid, () -> envoyerEtat(p, true), () -> {
                         ServerPlayer j = c.getSource().getServer().getPlayerList().getPlayer(uuid);
-                        if (j != null) envoyerEtat(j, true);
+                        if (j != null) envoyerEtat(j, false);
                     });
                     return 1;
                 })

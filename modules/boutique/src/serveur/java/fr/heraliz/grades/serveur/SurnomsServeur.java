@@ -91,6 +91,15 @@ final class SurnomsServeur {
         fichierSurnoms = dossier.resolve("nicks.json");
         fichierCouleurs = dossier.resolve("chat_couleurs.json");
         surnomsIllisible = couleursIllisible = false;
+        // 21/11 : pseudos de usercache.json (à la racine du serveur, à côté de heraliz_grades/) préchargés hors du fil du
+        // serveur, relus ensuite seulement quand le fichier change
+        Path racine = dossier.getParent();
+        fichierUsercache = racine == null ? Path.of("usercache.json") : racine.resolve("usercache.json");
+        pseudosCache = Map.of();
+        dateCache = -1;
+        Path usercache = fichierUsercache;
+        long date = DatesFichiers.date(usercache);
+        if (LECTURE.compareAndSet(false, true)) DatesFichiers.enFond(() -> relireUsercache(usercache, date));
         if (Files.exists(fichierSurnoms)) {
             try {
                 JsonObject joueurs = JsonParser.parseString(Files.readString(fichierSurnoms, StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonObject("joueurs");
@@ -132,6 +141,9 @@ final class SurnomsServeur {
         CHOIX_COULEUR.clear();
         PontBukkit.CODE_CHAT.clear();
         fichierSurnoms = fichierCouleurs = null;
+        fichierUsercache = null;
+        pseudosCache = Map.of();
+        dateCache = -1;
     }
 
     static void oublier(UUID joueur) {
@@ -223,26 +235,72 @@ final class SurnomsServeur {
         for (Map.Entry<UUID, String> e : NOMS.entrySet()) {
             if (!e.getKey().equals(moi) && e.getValue().equalsIgnoreCase(s)) return true;
         }
-        Path cache = srv.getServerDirectory().toPath().resolve("usercache.json");
-        if (Files.exists(cache)) {
-            try {
-                JsonArray l = JsonParser.parseString(Files.readString(cache, StandardCharsets.UTF_8)).getAsJsonArray();
+        // 21/11 (choix du propriétaire) : usercache.json gardé en mémoire tant qu'il ne change pas, relu hors du fil du
+        // serveur (avant : relu et décodé sur ce fil à chaque essai)
+        List<UUID> connus = pseudosConnus().get(s.toLowerCase(Locale.ROOT));
+        if (connus != null) {
+            for (UUID u : connus) if (!moi.equals(u)) return true;
+        }
+        return false;
+    }
+
+    // ------------------------------------------------------------------ pseudos du cache des profils (usercache.json)
+    /**
+     * Pseudos de {@code usercache.json} (1 000 au plus) : pseudo en minuscules -> identifiants (null : illisible). 21/11
+     * (choix du propriétaire, audit a1) : gardés en mémoire tant que le fichier ne change pas (date relevée à part,
+     * {@link DatesFichiers}), relus sur un fil à part, préchargés au démarrage. Table jamais modifiée après sa création et
+     * publiée d'un coup : lue sans verrou par le fil du serveur.
+     */
+    private static volatile Map<String, List<UUID>> pseudosCache = Map.of();
+    /** Date du fichier lu dans {@link #pseudosCache} ; -1 : jamais lu. */
+    private static volatile long dateCache = -1;
+    /** Une lecture est en cours (une seule à la fois). */
+    private static final java.util.concurrent.atomic.AtomicBoolean LECTURE = new java.util.concurrent.atomic.AtomicBoolean();
+    private static Path fichierUsercache;
+
+    /**
+     * La table gardée ; le fichier a changé : relu en fond (l'ancienne table sert d'ici là, quelques millisecondes).
+     * Jamais lu (préchargement raté) : lu tout de suite, comme avant.
+     */
+    private static Map<String, List<UUID>> pseudosConnus() {
+        Path f = fichierUsercache;
+        if (f == null) return Map.of();
+        long d = DatesFichiers.date(f);
+        if (d != dateCache && LECTURE.compareAndSet(false, true)) {
+            if (dateCache == -1) relireUsercache(f, d);
+            else DatesFichiers.enFond(() -> relireUsercache(f, d));
+        }
+        return pseudosCache;
+    }
+
+    /**
+     * Lit usercache.json (lu tel quel : en mode hors ligne, le cache de Minecraft inventerait un profil pour n'importe quel
+     * nom). Illisible (par exemple pendant que Minecraft le réécrit) : l'ancienne table reste, relue au prochain essai.
+     */
+    private static void relireUsercache(Path f, long d) {
+        try {
+            Map<String, List<UUID>> m = new java.util.HashMap<>();
+            if (d != 0) {
+                JsonArray l = JsonParser.parseString(Files.readString(f, StandardCharsets.UTF_8)).getAsJsonArray();
                 for (JsonElement x : l) {
                     JsonObject o = x.getAsJsonObject();
-                    if (!o.has("name") || !o.get("name").getAsString().equalsIgnoreCase(s)) continue;
+                    if (!o.has("name")) continue;
                     UUID u;
                     try {
                         u = o.has("uuid") ? UUID.fromString(o.get("uuid").getAsString()) : null;
                     } catch (IllegalArgumentException ex) {
                         u = null;
                     }
-                    if (!moi.equals(u)) return true;
+                    m.computeIfAbsent(o.get("name").getAsString().toLowerCase(Locale.ROOT), k -> new ArrayList<>(1)).add(u);
                 }
-            } catch (Exception ex) {
-                LOG.warn("[grades] usercache.json illisible pour /avantages nick : {}", ex.toString());
             }
+            pseudosCache = m;
+            dateCache = d;
+        } catch (Exception ex) {
+            LOG.warn("[grades] usercache.json illisible pour /avantages nick : {}", ex.toString());
+        } finally {
+            LECTURE.set(false);
         }
-        return false;
     }
 
     private static boolean surnomDUnAutre(String s, UUID moi) {

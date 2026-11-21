@@ -219,3 +219,68 @@ d'essais), panneau d'achat quand le staff retire un article pendant l'achat (sec
       (pourcentage, « Protégée 1 h 52 », « drapeau à 45 m ») ; changer la langue du jeu dans une zone : le panneau suit.
 
 Pas testé : tout en jeu (aucune compilation ici : contrôle de la branche sur GitHub).
+
+---
+
+## Suite du 21/11 (choix du propriétaire)
+
+Vos choix : « Sécurités en plus » et « Allègements du serveur ». **P1 refusée** : les captures du staff
+(`/territoire capturer`) gardent leurs points de saison et leur XP, rien n'est changé. P5 et P6 ne sont pas faites (pas
+demandées). Versions : **Quêtes 1.24.5**, **Clans 3.19.3** (le launcher les donne ; aucun canal réseau ne change).
+**Rien n'a été testé en jeu** : la fabrication et les contrôles sur GitHub seulement.
+
+### Fait
+
+**P2. Recycleur de la carte : jamais d'objet en double après une écriture ratée** — commits `24397a2d3` et `247ca990e`
+
+En simple : chaque changement de la machine est écrit tout de suite dans son fichier. Si cette écriture ratait (disque
+plein) juste après qu'un joueur avait repris un objet, l'ancien fichier gardait encore l'objet et la machine restait
+fermée jusqu'au redémarrage, qui relisait cet ancien fichier : l'objet était là ET chez le joueur. Maintenant, mieux vaut
+perdre que copier : dès qu'une écriture rate, l'ancien fichier est effacé (un effacement passe même disque plein), la
+machine se ferme et son écriture est réessayée toutes les 5 s, quand son coin de carte se décharge et à l'arrêt du
+serveur ; dès qu'elle passe, la machine rouvre telle quelle (rien de perdu). Un plantage avant fait perdre ce qu'elle
+contenait, jamais un objet en double. Un fichier illisible au chargement, lui, n'est toujours jamais écrasé.
+
+Pour les développeurs : `modules/pnj/src/serveur/java/fr/heraliz/quetes/serveur/RecycleurCarteEntiteServeur.java` :
+`ecrire()` (l. 230, ancien fichier effacé, `ecritureRatee` distinct de `bloquee` = fichier illisible), `ecritureReussie()`
+(l. 280), `effacer()` (l. 287, le journal ne parle que de l'ancien fichier, une fois), `reessayerEcritures()` (l. 307, rien
+tant que la liste est vide), `arret()` (l. 319), `onChunkUnloaded()` (l. 150, aucun bloc changé pendant le déchargement),
+`ferme()` (l. 348) ; branchés dans `ServeurQuetes` (l. 147 et 274).
+
+**P3. Profils : plus tout le fichier refait sur le fil du serveur chaque minute** — commit `b93e323b6`
+
+En simple : `heralisz_clans/profils.json` garde une fiche par joueur connu ; chaque minute où un chiffre avait changé
+(toujours, en jeu), tout le fichier était remis en forme pendant le tick du serveur. Maintenant le serveur ne fait qu'une
+copie des chiffres, très rapide ; la mise en forme et l'écriture se font à côté, sur le fil d'écriture des clans. Même
+fichier qu'avant ; à l'arrêt, le serveur attend la fin de l'écriture : rien n'est perdu au redémarrage ni à l'arrêt.
+
+Pour les développeurs : `modules/clans/src/serveur/java/fr/heralisz/clans/profil/Profils.java` `sauvegarder()` (l. 225-280 :
+tableaux `ids` / `noms` / `chiffres` relevés sur le fil serveur, JSON fait dans l'écriture en fond ; mêmes clés).
+
+**P4. Petites cadences sur les écrans qui se recalculent à chaque demande** — commits `24397a2d3` et `b93e323b6`
+
+En simple : un jeu modifié pouvait redemander en boucle le journal des quêtes, ses actions ou l'écran de la saison des
+clans (chaque demande refait la liste et la renvoie). Maintenant : journal des quêtes et ses actions (suivre, ne plus
+suivre, abandonner, visite du Guide, quitter le tutoriel), 4 demandes par seconde et par joueur au plus ; écran de la
+saison, une fois par seconde (l'onglet Saison ne le redemande que toutes les 2 s). Une demande en trop est ignorée sans
+message. Un joueur normal n'en envoie jamais autant.
+
+Pour les développeurs : `ServeurQuetes.java` l. 56-62 (`DEMANDE_JOURNAL`, `ACTION`) et l. 125-143 (`demandeOk`, oublié à la
+déconnexion et à l'arrêt) ; `modules/clans/src/serveur/java/fr/heralisz/clans/server/ServerHandlers.java` l. 41-61
+(`classementOk`, oublié à la déconnexion) et l. 197-199 (`CLASSEMENT`).
+
+### À tester en jeu
+
+- [ ] Recycleur de la carte : déposer, recycler, reprendre, redémarrer : tout comme avant, rien en double ni en moins.
+- [ ] (Facultatif, pour un développeur, serveur d'essai seulement : faire rater l'écriture.) Mettre deux objets dans la
+      machine ; dans `heraliz_quetes/recycleurs/<monde>/`, à côté du fichier `<x>_<y>_<z>.dat` de la machine, créer un
+      dossier `<x>_<y>_<z>.dat.tmp` avec un fichier dedans ; reprendre UN objet : la machine se ferme, le journal du serveur
+      dit « machine fermée, ancien fichier effacé ». Supprimer ce dossier : sous 5 s, « machine rouverte », elle contient
+      l'autre objet. Refaire (deux objets, en reprendre un), puis arrêter le serveur sans supprimer le dossier : au retour, la
+      machine est vide et l'objet repris n'est que chez le joueur (rien en double) ; supprimer ensuite le dossier.
+- [ ] `/profil` : temps de jeu, morts, zombies tués, extractions, conteneurs fouillés, séries et plus longue vie restent
+      justes après un redémarrage et après un arrêt propre ; aucune ligne « écriture de … profils.json impossible » dans le
+      journal du serveur.
+- [ ] Journal des quêtes (J), suivre ou abandonner une quête, visite du Guide avec Espace : tout répond comme avant, même en
+      cliquant vite.
+- [ ] Écran du clan, onglet Saison : le classement et le barème s'affichent et se mettent à jour comme avant.
