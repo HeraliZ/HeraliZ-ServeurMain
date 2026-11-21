@@ -55,6 +55,14 @@ public final class CasseBlocs {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void clic(LeftClickBlock e) {
+        // HeraliZ (21/11, validation) : Forge (et Mohist) préviennent les mods d'un clic gauche AVANT de vérifier la distance :
+        // un jeu modifié peut nommer un bloc à des milliers de blocs, et la lecture de ce bloc (juste en dessous) chargeait,
+        // voire créait, son tronçon sur le fil du serveur, à chaque paquet (gel du serveur). Tronçon pas complet : clic refusé
+        // sans rien lire (un vrai joueur ne vise jamais un tel bloc) ; annulé ici, les autres mods ne le lisent pas non plus.
+        if (!e.getLevel().isClientSide() && !fr.heraliz.noyau.api.Troncons.charge(e.getLevel(), e.getPos())) {
+            e.setCanceled(true);
+            return;
+        }
         BlockState s = vise(e.getLevel(), e.getPos(), e.getLevel().getBlockState(e.getPos()), e.getEntity());
         if (libre(e.getEntity()) || exception(s) || Carrieres.permet(e.getLevel(), e.getPos(), s)) {
             return;

@@ -58,6 +58,10 @@ public final class EtatJoueur {
     public static boolean enMatch(ServerPlayer p) {
         if (Boolean.TRUE.equals(appel(MATCH, p.getUUID()))) return true;
         if (p.getPersistentData().getBoolean("heralisz:en_match")) return true;
+        // 21/11 (validation de l'audit) : inventaire mis de côté par le Coffre du ClashWar aussi (marque du dépôt,
+        // reconnexion après un plantage comprise) : règle commune du noyau, déjà suivie par les marchands. Ce qui entrerait
+        // dans cet inventaire (coffre du clan, dissolution) serait effacé au retour de l'inventaire d'avant le match.
+        if (fr.heraliz.noyau.api.Matchs.inventaireRetenu(p)) return true;
         ResourceLocation monde = p.level().dimension().location();
         return "heraliz_clashwar".equals(monde.getNamespace());
     }
