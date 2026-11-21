@@ -215,10 +215,19 @@ complet, ce qu'un joueur voit et limites : `docs/SKINS_PROTEGES.md`.
 ### 2. Sacs : deux cases Curios inutiles retirées (`441d0cd86`, Sacs heralisz29)
 
 `modules/sacs/src/serveur/resources/data/backpacked/curios/entities/ear_protection.json` et `face.json` retirés : ces
-cases n'ont jamais existé (aucun mod ne les définit), Curios écrivait deux erreurs à chaque démarrage. Vérifié : rien ne
-s'en sert (les listes des combinaisons d'Équipement qui citent « face » et « ear_protection » ne regardent que les cases
-existantes ; les listes d'objets `data/curios/tags/items/…` restent). Aucun changement en jeu. Noté dans
+cases n'ont jamais existé (aucun mod ne les définit), Curios écrivait une erreur pour chacune à chaque démarrage. Vérifié :
+rien ne s'en sert (les listes des combinaisons d'Équipement qui citent « face » et « ear_protection » ne regardent que les
+cases existantes ; les listes d'objets `data/curios/tags/items/…` restent). Aucun changement en jeu. Noté dans
 `modules/sacs/NOTICE.md` (LGPL).
+
+**Résultat vérifié sur le démarrage d'essai de GitHub** (run 44950704890, `19008fffa`, serveur prêt en 76 s) : les erreurs
+« face / ear_protection is not a registered slot type! » passent de **deux de chaque à une de chaque**. La dernière vient
+d'un jar d'un **autre auteur**, `serveur/mods-tiers/geckolib222-forge-1.20.1-4.4.7.jar`, qui donne lui aussi ces deux
+cases aux joueurs (`data/geckolib/curios/entities/face.json` et `ear_protection.json`). Pas touché (jamais de retouche
+dans le jar d'un autre auteur, et hors de ma zone). **À décider** : l'alléger à la livraison comme TaCZ et les meubles
+(`ALLEGES` de `outils/construire.py` : copie sans ces deux fichiers, `CONTENU-RETIRE.txt` qui dit quoi et pourquoi,
+licence gardée) ferait disparaître les deux dernières erreurs, sans rien changer en jeu ; mais ce jar de 15 Mo est aussi
+donné aux joueurs, qui le retéléchargeraient une fois.
 
 ### 3. Mêlée : journal limité (`cdba3098b`)
 
@@ -253,8 +262,9 @@ plantage si un jour un vieux noyau traînait.
       refait, pas de gel.
 - [ ] **`/camos dessins`** (staff) : bandeau « 79 programmes prêts… · … ms » ; même résultat dans le journal du serveur.
 - [ ] **Monde solo d'essai** (jars -complet) : mêmes skins.
-- [ ] **Démarrage du serveur** : plus d'erreur « ear_protection / face is not a registered slot type! » ; cases Curios des
-      joueurs inchangées (sac, ceinture, mains, corps, bracelet, collier, bague, charme).
+- [ ] **Démarrage du serveur** : « ear_protection / face is not a registered slot type! » une seule fois chacune (au lieu
+      de deux, la dernière vient de geckolib222) ; cases Curios des joueurs inchangées (sac, ceinture, mains, corps,
+      bracelet, collier, bague, charme).
 - [ ] **Mêlée** : coups normaux comme avant (rien ne change pour un jeu normal).
 
 Pas testé en jeu : rien de cette section (relecture, essais hors du jeu, fabrication et contrôles de GitHub seulement).
