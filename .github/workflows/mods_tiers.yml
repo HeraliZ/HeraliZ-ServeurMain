@@ -73,11 +73,14 @@ jobs:
                   os.remove(os.path.join(dossier, ancien))
                   print("Retiré :", ancien)
           open(os.path.join(dossier, nom), "wb").write(data)
-          print(f"Ajouté : {dossier}/{nom} ({v['version_number']}, {len(data)} octets, sha512 {f['hashes']['sha512'][:16]}…)")
+          # 21/11 (audit) : numéro de version écrit par l'auteur du mod sur Modrinth : réduit à des caractères sûrs (un
+          # retour à la ligne dans GITHUB_ENV ajoutait une variable de son choix pour l'étape suivante, qui a le droit d'écrire)
+          version = re.sub(r"[^A-Za-z0-9._+-]", "", str(v.get("version_number", "")))[:40] or "?"
+          print(f"Ajouté : {dossier}/{nom} ({version}, {len(data)} octets, sha512 {f['hashes']['sha512'][:16]}…)")
           with open(os.environ["GITHUB_ENV"], "a") as e:
-              e.write(f"NOM={nom}\nVERSION={v['version_number']}\nCIBLE={dossier}\n")
+              e.write(f"NOM={nom}\nVERSION={version}\nCIBLE={dossier}\n")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as s:
-              s.write(f"## {projet}\n\n`{dossier}/{nom}` (version {v['version_number']}), empreinte contrôlée.\n")
+              s.write(f"## {projet}\n\n`{dossier}/{nom}` (version {version}), empreinte contrôlée.\n")
           EOF
 
       - name: Enregistrement sur la branche
