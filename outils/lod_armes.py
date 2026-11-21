@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Versions allégées (« LOD ») des armes TaCZ vues chez les autres joueurs : PRÊT, PAS APPLIQUÉ. C'est une décision du
-propriétaire, sur images (docs/TESTS_EN_JEU_17NOV_carte-ile.md, section 36, décision A).
+Versions allégées (« LOD ») des armes TaCZ vues chez les autres joueurs : décision du propriétaire, sur images
+(docs/TESTS_EN_JEU_17NOV_carte-ile.md, section 36, décision A), APPLIQUÉE le 20/11 (section 39 : 66 versions allégées,
+123 fiches reliées).
 
 En 3e personne (les armes des autres joueurs, la sienne en vue F5, une arme posée), TaCZ dessine la version allégée de
 l'arme quand sa fiche (display/guns/*.json, champ « lod ») en donne une, et sinon le modèle complet. Il dessine cube par
@@ -21,8 +22,17 @@ couteaux), l'arme reste sans version allégée. Les fiches qui ont déjà un vra
     python outils/lod_armes.py --apercu DOSSIER   planches avant / après à 3, 10, 30 et 60 blocs (rien n'est écrit
                                                   dans le dépôt ; il faut numpy et Pillow)
     python outils/lod_armes.py --installer        écrit les versions allégées (geo_models/gun/lod_hz/) et les relie aux
-                                                  fiches (champ « lod », même texture) : À FAIRE SEULEMENT APRÈS L'ACCORD
-                                                  DU PROPRIÉTAIRE ; relancer après l'ajout d'une arme
+                                                  fiches (champ « lod », même texture) ; relancer après l'ajout ou la mise
+                                                  à jour d'une arme ou d'un gunpack (les versions allégées déjà écrites
+                                                  sont refaites sur le modèle du moment, celles de plus aucune fiche
+                                                  retirées)
+    python outils/lod_armes.py --verifier         contrôle seul (lancé par outils/verifier.py, sans dépendance) : chaque
+                                                  version allégée citée existe, celles de lod_hz/ sont à jour avec leur
+                                                  modèle, aucune arme qui pourrait en avoir une n'en manque ; code 1 sinon
+
+21/11 (audit) : avant --verifier, une arme mise à jour dans un gunpack gardait pour toujours sa version allégée d'avant
+(l'outil la prenait pour un « vrai LOD » et ne la refaisait plus) : os renommés ou déplacés chez les autres joueurs, sans
+aucune alerte.
 
 Réglage lié (choix du propriétaire, à côté) : GunLodRenderDistance de TaCZ (tacz-client.toml des joueurs), aujourd'hui 0 =
 version allégée à toute distance en 3e personne ; N > 0 = modèle complet à moins de N blocs (plus beau de près, plus cher
@@ -165,8 +175,15 @@ def fiches():
     return out
 
 
-def a_alleger():
-    """Fiches sans vrai LOD : [(id, fichier, fiche, fichier du modèle, cubes du modèle, cubes du LOD actuel ou None)]."""
+def de_l_outil(rl):
+    """Version allégée écrite par ce script (dossier geo_models/gun/lod_hz/) ?"""
+    return isinstance(rl, str) and ("/%s/" % DOSSIER_LOD) in rl
+
+
+def a_alleger(nos_lod=False):
+    """Fiches sans vrai LOD : [(id, fichier, fiche, fichier du modèle, cubes du modèle, cubes du LOD actuel ou None)].
+    nos_lod : aussi les fiches dont le LOD a été écrit par ce script (--installer les refait sur le modèle du moment ;
+    sans ça, un modèle mis à jour gardait pour toujours la version allégée de l'ancien)."""
     res = []
     for cle, (f, d) in sorted(fiches().items()):
         modele = ressource(d.get("model"), "geo_models", ".json")
@@ -176,7 +193,7 @@ def a_alleger():
         lod = d.get("lod") if isinstance(d.get("lod"), dict) else {}
         flod = ressource(lod.get("model"), "geo_models", ".json")
         nl = len(cubes_de(lire_geo(flod))) if flod else None
-        if nl is not None and nl < nm * LOD_FAUX:
+        if nl is not None and nl < nm * LOD_FAUX and not (nos_lod and de_l_outil(lod.get("model"))):
             continue          # vrai LOD : rien à faire
         res.append((cle, f, d, modele, nm, nl))
     return res
@@ -223,14 +240,40 @@ def remplacer_lod(texte, rl_modele, rl_texture):
     return texte[:m.end()] + "\n  " + bloc + "," + texte[m.end():]
 
 
+def ecrit(leger):
+    """Texte exact d'une version allégée écrite (une ligne de JSON compact)."""
+    return json.dumps(leger, ensure_ascii=False, separators=(",", ":")) + "\n"
+
+
+def fichiers_lod():
+    """Versions allégées écrites par ce script, dans tous les gunpacks."""
+    return sorted(Path(p) for p in glob.glob(str(GUNPACKS / "*" / "assets" / "*" / "geo_models" / "gun" / DOSSIER_LOD / "*.json")))
+
+
+def citees():
+    """Fichiers des versions allégées citées par une fiche (résolus comme TaCZ : le dernier pack gagne)."""
+    out = set()
+    for f, d in fiches().values():
+        lod = d.get("lod")
+        if isinstance(lod, dict):
+            fl = ressource(lod.get("model"), "geo_models", ".json")
+            if fl is not None:
+                out.add(fl.resolve())
+    return out
+
+
 def installer():
-    liste = a_alleger()
+    liste = a_alleger(nos_lod=True)
     faits = set()
     sautes = 0
     for cle, f, d, modele, nm, nl in liste:
         leger = allege(lire_geo(modele))
         if leger is None:
             sautes += 1
+            lod = d.get("lod") if isinstance(d.get("lod"), dict) else {}
+            if de_l_outil(lod.get("model")):
+                print("[lod] %s : son modèle n'a plus rien à alléger, mais la fiche cite encore %s : retirer son champ "
+                      "« lod » à la main" % (cle, lod.get("model")))
             continue
         rl = id_lod(d["model"])
         ns, p = rl.split(":", 1)
@@ -238,7 +281,8 @@ def installer():
         sortie = pack / "assets" / ns / "geo_models" / (p + ".json")
         if sortie not in faits:
             sortie.parent.mkdir(parents=True, exist_ok=True)
-            sortie.write_text(json.dumps(leger, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+            # octets : fin de ligne LF sur tous les systèmes (write_text écrivait CRLF sous Windows)
+            sortie.write_bytes(ecrit(leger).encode("utf-8"))
             faits.add(sortie)
         texte = f.read_bytes().decode("utf-8")
         crlf = "\r\n" in texte
@@ -247,8 +291,55 @@ def installer():
         # contrôle : la fiche se relit et pointe bien sur la version allégée
         relu = json_lache(f.read_text(encoding="utf-8"))
         assert relu["lod"]["model"] == rl and ressource(rl, "geo_models", ".json") is not None, cle
-    print("[lod] %d versions allégées écrites, %d fiches reliées, %d gardées sans (petits cubes)" % (
-        len(faits), len(liste) - sautes, sautes))
+    # versions allégées que plus aucune fiche ne cite (arme retirée d'un gunpack) : retirées, elles partiraient chez les
+    # joueurs pour rien (seulement dans notre dossier lod_hz/, jamais un fichier des auteurs des gunpacks)
+    gardees = citees()
+    retirees = [f for f in fichiers_lod() if f.resolve() not in gardees]
+    for f in retirees:
+        f.unlink()
+        print("[lod] %s retirée (plus citée)" % f.relative_to(RACINE))
+    print("[lod] %d versions allégées écrites, %d fiches reliées, %d gardées sans (petits cubes), %d retirée(s)" % (
+        len(faits), len(liste) - sautes, sautes, len(retirees)))
+
+
+def verifier():
+    """Contrôle seul (outils/verifier.py) : rend le nombre de problèmes, rien n'est écrit."""
+    problemes = 0
+    attendus = {}             # modèle -> texte attendu de sa version allégée (plusieurs fiches partagent un modèle)
+    for cle, (f, d) in sorted(fiches().items()):
+        lod = d.get("lod")
+        if not isinstance(lod, dict):
+            continue
+        flod = ressource(lod.get("model"), "geo_models", ".json")
+        if flod is None or ressource(lod.get("texture"), "textures", ".png") is None:
+            # TaCZ n'aurait rien à dessiner de loin
+            print("[lod] %s : version allégée introuvable (modèle %s, texture %s)" % (cle, lod.get("model"), lod.get("texture")))
+            problemes += 1
+            continue
+        if not de_l_outil(lod.get("model")):
+            continue          # LOD de l'auteur du gunpack : pas à nous de le refaire
+        modele = ressource(d.get("model"), "geo_models", ".json")
+        if modele not in attendus:
+            leger = allege(lire_geo(modele)) if modele is not None else None
+            attendus[modele] = ecrit(leger) if leger is not None else None
+        attendu = attendus[modele]
+        if attendu is None or lod.get("model") != id_lod(d["model"]) or lod.get("texture") != d.get("texture") \
+                or flod.read_text(encoding="utf-8") != attendu:
+            print("[lod] %s : version allégée PAS à jour avec le modèle %s" % (cle, d.get("model")))
+            problemes += 1
+    for cle, f, d, modele, nm, nl in a_alleger():
+        if allege(lire_geo(modele)) is not None:
+            print("[lod] %s : sans version allégée (%d cubes dessinés chez les autres joueurs)" % (cle, nl if nl is not None else nm))
+            problemes += 1
+    gardees = citees()
+    for f in fichiers_lod():
+        if f.resolve() not in gardees:
+            print("[lod] %s : plus citée par aucune fiche" % f.relative_to(RACINE))
+            problemes += 1
+    if problemes:
+        print("[lod] relancer : python outils/lod_armes.py --installer")
+    print("[lod] %d problème(s)" % problemes)
+    return problemes
 
 
 # ------------------------------------------------------------------ aperçu (images avant / après)
@@ -462,7 +553,10 @@ def main():
                                                   "maxstuff:rpk16_display", "arkaniaz:butterfly_knife_asiimov_display"],
                    help="fiches à dessiner avec --apercu")
     a.add_argument("--installer", action="store_true", help="écrit les versions allégées (accord du propriétaire)")
+    a.add_argument("--verifier", action="store_true", help="contrôle seul (outils/verifier.py) : code 1 au moindre problème")
     o = a.parse_args()
+    if o.verifier:
+        sys.exit(1 if verifier() else 0)
     if o.installer:
         installer()
     elif o.apercu:

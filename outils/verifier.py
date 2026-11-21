@@ -31,6 +31,9 @@ Contrôles :
                        que le badge de l'infobulle) ; outils/raretes_objets.py --verifier ;
   - silencieux       : chaque silencieux des gunpacks (serveur/tacz) a sa portée de son (outils/silencieux.py) ;
   - accessoires      : listes communes d'accessoires TaCZ à jour (gunpack heraliz_accessoires, outils/accessoires.py) ;
+  - lod_armes        : versions allégées des armes vues en 3e personne (décision du 20/11) à jour avec les modèles
+                       des gunpacks, chaque version citée trouvée, aucune arme sans (outils/lod_armes.py --verifier,
+                       sans dépendance : tourne aussi sur GitHub) ;
   - logos            : plus de logo « M » de Max Stuff sur les icônes d'accessoires (outils/icones_sans_logo.py) ;
   - icones           : icônes « carte » des accessoires (chargeurs, munitions spéciales, crosses d'usine) à la couleur
                        de leur rareté (outils/icones_accessoires.py) ;
@@ -318,6 +321,19 @@ def main():
             if l.startswith("[accessoires]") and "problème(s)" not in l:
                 print(l.strip())
         print("[accessoires] relancer : python outils/accessoires.py")
+        erreurs += 1
+    # versions allégées des armes vues chez les autres joueurs (décision du 20/11, outils/lod_armes.py) : une arme ajoutée
+    # ou un modèle changé dans un gunpack sans relancer l'outil gardait le modèle complet, ou la version allégée d'un ancien
+    # modèle (os déplacés chez les autres joueurs), sans aucune alerte. Sans dépendance : tourne aussi sur GitHub.
+    code, out = lancer([str(O / "lod_armes.py"), "--verifier"])
+    if code != 0:
+        vues = [l.strip() for l in out.splitlines() if l.startswith("[lod]") and "problème(s)" not in l]
+        for l in vues[:15]:
+            print("[lod_armes] " + l[len("[lod]"):].strip())
+        if len(vues) > 15:
+            print("[lod_armes] ... et %d autre(s) : python outils/lod_armes.py --verifier" % (len(vues) - 15))
+        if not vues:
+            print("[lod_armes] " + out[-500:])
         erreurs += 1
     # logo « M » de Max Stuff retiré des icônes (choix du propriétaire, 11/10) : un gunpack remis à neuf le ramènerait.
     # L'outil lit les images avec numpy et Pillow : sans eux (machines de GitHub), contrôle sauté comme verif_reobf.
