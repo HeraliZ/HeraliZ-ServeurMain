@@ -62,6 +62,12 @@ final class SortieSalles {
             "Tu t'étais déconnecté dans une salle à carte : te voici devant sa porte.").withStyle(ChatFormatting.YELLOW), false);
          LOG.info("[salles] {} reconnecté dans la salle {} : sorti en {} {} {}", p.getGameProfile().getName(), s.nom,
             Mth.floor(place[0].x), Mth.floor(place[0].y), Mth.floor(place[0].z));
+         // 21/11 (validation) : tronçons des lecteurs de ses portes chargés ici (rare : à la connexion) ; depuis le 21/11,
+         // une porte n'est revue que s'ils sont complets (SallesMonde.notifier) : la porte se referme tout de suite derrière
+         // lui, comme avant, au lieu de rester ouverte jusqu'à 5 s s'ils étaient encore en lecture
+         for (BlockPos c : s.portes) {
+            if (l.getBlockEntity(c) instanceof DoorBlockEntity d) KeycardDoors.chargerLecteurs(l, KeycardDoors.parts(d));
+         }
          m.apresSortie(l, s);
       } catch (RuntimeException ex) {
          LOG.error("[salles] sortie de {} hors de la salle {} impossible", p.getGameProfile().getName(), s.nom, ex);

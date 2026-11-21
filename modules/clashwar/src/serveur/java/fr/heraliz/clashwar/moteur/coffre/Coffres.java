@@ -168,7 +168,11 @@ public final class Coffres {
         final long numero;
         final CompoundTag instantane;
         final List<ItemStack> aCote;
-        /** Objets laches pendant l'ecriture (deja dans l'instantane) : rendus seulement si le depot rate. */
+        /**
+         * Objets laches pendant l'ecriture : rendus si le depot rate. 21/11 (validation v7) : un seul suffit pour que le depot
+         * soit refait ({@link #confirmer}) : un objet qu'un autre mod livre a un joueur dont l'inventaire est plein tombe par
+         * le meme chemin (jet) sans changer son inventaire, et il etait perdu avec un depot confirme.
+         */
         final List<ItemStack> retenus = new ArrayList<>(0);
         final Path fichier;
         final Future<Long> ecrit;
@@ -405,7 +409,8 @@ public final class Coffres {
     /**
      * Objet que Minecraft fait tomber pendant la fermeture de l'ecran du depot (inventaire plein : cases d'un atelier,
      * d'une enclume...) : garde dans le depot avec les objets « a cote », jamais au sol. 19/11 : objet lache par un joueur
-     * dont le depot s'ecrit (fige) : retenu, il est deja dans l'instantane (rendu seulement si le depot rate).
+     * dont le depot s'ecrit (fige) : retenu ; 21/11 (validation v7) : le depot est alors refait et l'objet lui est rendu
+     * ({@link #confirmer}).
      */
     private static void lache(ItemTossEvent e) {
         Player joueur = e.getPlayer();
@@ -802,7 +807,9 @@ public final class Coffres {
         // (ensuite : refuse, joueur intact)
         boolean pareil;
         try {
-            pareil = inchange(p, d.releve);
+            // 21/11 (validation v7) : un objet retenu (lache pendant l'ecriture) compte comme un changement : depot refait, objet
+            // rendu (avant : perdu s'il venait d'ailleurs que l'inventaire, livraison d'un autre mod a un inventaire plein)
+            pareil = d.retenus.isEmpty() && inchange(p, d.releve);
         } catch (RuntimeException | LinkageError ex) {
             // 21/11 (choix du proprietaire) : erreur d'un autre mod pendant la verification : rien n'est vide ; ce fichier
             // n'est jamais rendu (efface), ce qui a ete mis a part lui est rendu
@@ -825,6 +832,17 @@ public final class Coffres {
             }
             HeralizClashWar.LOG.error("[matchs] coffre de {} : inventaire change pendant chacune des {} ecritures, depot refuse (joueur laisse intact)",
                     p.getGameProfile().getName(), ESSAIS_MAX);
+            finDepot(d.fini, u, false);
+            return;
+        }
+        // 21/11 (validation v7) : « disque avant toute modification » : le fichier doit encore etre la au moment de vider (il a
+        // pu etre deplace ou efface pendant l'ecriture : /clashwar coffre rendre du staff, wipe) ; sinon le joueur vide n'aurait
+        // plus rien a recuperer. Depot refuse, joueur intact.
+        if (!Files.isRegularFile(d.fichier)) {
+            HeralizClashWar.LOG.error("[matchs] coffre de {} : fichier du depot absent au moment de vider, depot refuse (joueur laisse intact)",
+                    p.getGameProfile().getName());
+            defaire(d);
+            depotsRates++;
             finDepot(d.fini, u, false);
             return;
         }
@@ -1335,7 +1353,7 @@ public final class Coffres {
                 Depot d = it.next();
                 if (!d.ecrit.isDone()) continue;
                 it.remove();
-                if (resultat(d.ecrit) >= 0) effacer(d.fichier, "depot abandonne (ecriture trop longue)");
+                if (resultat(d.ecrit) >= 0 && !remplace(d)) effacer(d.fichier, "depot abandonne (deconnexion ou ecriture trop longue)");
             }
         }
         // 3. nouveaux depots (releve sur le fil serveur, ecriture en fond)
@@ -1355,7 +1373,13 @@ public final class Coffres {
             if (r == null) break;
             if (!present(r.joueur)) {
                 // parti : son depot reste sur le disque, il lui sera rendu a sa reconnexion
-                finRetour(r.fini, r.joueur.getUUID(), false);
+                UUID u = r.joueur.getUUID();
+                finRetour(r.fini, u, false);
+                // 21/11 (validation v7) : toujours connecte, sous un autre objet joueur = reapparu (mort pendant l'attente de son
+                // retour : jamais rendu a un mort). Sa reapparition ne l'avait pas redemande (retour deja en cours) : il restait
+                // vide jusqu'a sa prochaine connexion. Le retour est redemande pour lui (rien en double : fichier relu a son tour).
+                ServerPlayer actuel = s.getPlayerList().getPlayer(u);
+                if (actuel != null && actuel != r.joueur && !RENDUS.contains(u) && Coffre.aUnDepot(u)) rendrePuis(actuel, null);
                 continue;
             }
             if (!pret(s, r)) {
@@ -1374,6 +1398,21 @@ public final class Coffres {
             depotsFaits = depotsRates = retoursFaits = 0;
             ecritureNs = ecritureMaxNs = 0;
         }
+    }
+
+    /**
+     * 21/11 (validation v7) : le fichier de ce depot abandonne est-il deja celui d'un depot plus recent du meme joueur ? Meme
+     * chemin ({@code <uuid>.dat}) : si l'ecriture abandonnee a traine (disque lent), le joueur a pu en recommencer un, que le
+     * fil des coffres ecrit apres elle (dans l'ordre) et qui peut etre confirme (joueur vide, marque posee) dans le meme tick
+     * que ce menage : l'effacer lui faisait perdre tout son inventaire. Nouveau depot en ecriture, ou joueur connecte qui
+     * porte une marque : rien n'est efface ici (le nouveau depot gere son fichier).
+     */
+    private static boolean remplace(Depot d) {
+        UUID u = d.joueur.getUUID();
+        if (EN_ECRITURE.containsKey(u)) return true;
+        MinecraftServer s = d.joueur.getServer();
+        ServerPlayer p = s == null ? null : s.getPlayerList().getPlayer(u);
+        return p != null && marque(p) != 0L;
     }
 
     /** Le retour peut-il se faire maintenant : depot lu (ou rien a lire), arrivee chargee, ou attente au plus long. */
