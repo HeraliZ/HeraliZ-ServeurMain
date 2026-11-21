@@ -1,5 +1,6 @@
 package fr.heraliz.usure;
 
+import fr.heralisz.utils.serveur.DatesFichiers;
 import fr.heraliz.usure.regles.Regles;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -15,13 +16,20 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 
 /**
  * Regles en vigueur cote serveur (fil serveur) : lues du fichier {@code serverconfig/heraliz_usure-server.toml} au
- * demarrage du monde, relues quand le fichier change (verification de la date toutes les 2 s, lecture une fois la date
- * stable : un fichier en cours d'enregistrement n'est jamais lu a moitie), reecrites par l'ecran d'administration. A
- * chaque changement, les regles partent a tous les joueurs (quelques centaines d'octets).
+ * demarrage du monde, relues quand le fichier change (lecture une fois la date stable : un fichier en cours
+ * d'enregistrement n'est jamais lu a moitie), reecrites par l'ecran d'administration. A chaque changement, les regles
+ * partent a tous les joueurs (quelques centaines d'octets).
+ * <p>
+ * 21/11 (audit) : la date du fichier est relevee par le fil a part du module ({@link DatesFichiers}, toutes les 5 s),
+ * comme pour les autres fichiers relus quand ils changent ; avant, le fil du serveur la demandait lui-meme au disque
+ * toutes les 2 s, meme quand rien ne changeait. Il ne regarde plus que la date gardee la-bas ; quand elle a change et
+ * n'a pas bouge d'un controle a l'autre (2 s), il relit la date au disque une seule fois, juste avant de lire le
+ * fichier : s'il a encore bouge depuis le releve du fil, il attend (meme garantie qu'avant contre le fichier a moitie
+ * enregistre). Un changement a la main est pris en compte en 2 a 9 s (avant : 2 a 4 s) ; l'ecran
+ * {@code /usure config} applique toujours tout de suite.
  */
 public final class ReglesServeur {
     private ReglesServeur() {
@@ -29,8 +37,9 @@ public final class ReglesServeur {
 
     private static volatile Regles actives = Regles.defauts();
     private static Path fichier;
-    /** Date du fichier deja prise en compte, et date vue au dernier controle (lecture quand elle ne bouge plus). */
-    private static FileTime dateConnue, dateVue;
+    /** Date du fichier deja prise en compte, et date vue au dernier controle (ms, 0 : aucune ; lecture quand elle ne
+     *  bouge plus). */
+    private static long dateConnue, dateVue;
     private static int controle;
     private static boolean erreurSignalee;
 
@@ -42,8 +51,9 @@ public final class ReglesServeur {
     static void onDemarrage(ServerAboutToStartEvent e) {
         // meme dossier que les configurations « serveur » de Forge : <monde>/serverconfig
         fichier = e.getServer().getWorldPath(LevelResource.ROOT).resolve("serverconfig").resolve(UsureConfig.NOM).normalize();
-        dateConnue = dateVue = null;
+        dateConnue = dateVue = 0L;
         erreurSignalee = false;
+        DatesFichiers.date(fichier); // inscrit le fichier au fil des dates : premier releve ici, au demarrage, pas en jeu
         if (!Files.exists(fichier)) {
             actives = Regles.defauts();
             ecrireFichier(actives);
@@ -58,19 +68,27 @@ public final class ReglesServeur {
         actives = Regles.defauts();
     }
 
-    /** Toutes les 2 s : le fichier a-t-il ete modifie a la main ? */
+    /** Toutes les 2 s : le fichier a-t-il ete modifie a la main ? (date relevee par DatesFichiers : le disque n'est
+     *  touche ici que quand le fichier a change) */
     static void onTick(TickEvent.ServerTickEvent e) {
         if (e.phase != TickEvent.Phase.END || fichier == null || ++controle < 40) return;
         controle = 0;
-        FileTime date;
+        long date = DatesFichiers.date(fichier);
+        if (date == 0L || date == dateConnue) return; // absent (en cours de remplacement ?) ou deja pris en compte
+        if (date != dateVue) {
+            dateVue = date; // la date bouge encore : on attend qu'elle soit stable
+            return;
+        }
+        // meme date qu'au controle d'avant : le fichier a-t-il rebouge depuis le releve du fil ? (un acces au disque par
+        // changement, juste avant la lecture du fichier lui-meme)
+        long maintenant;
         try {
-            date = Files.getLastModifiedTime(fichier);
+            maintenant = Files.getLastModifiedTime(fichier).toMillis();
         } catch (IOException ex) {
             return; // fichier absent ou en cours de remplacement : on reessaie plus tard
         }
-        if (date.equals(dateConnue)) return;
-        if (!date.equals(dateVue)) {
-            dateVue = date; // la date bouge encore : on attend qu'elle soit stable
+        if (maintenant != date) {
+            dateVue = maintenant; // encore en cours d'enregistrement : on attend qu'il ne bouge plus
             return;
         }
         relire(false);
@@ -78,7 +96,7 @@ public final class ReglesServeur {
 
     private static void relire(boolean demarrage) {
         try {
-            FileTime date = Files.getLastModifiedTime(fichier);
+            long date = Files.getLastModifiedTime(fichier).toMillis();
             UsureConfig.Lecture l = UsureConfig.lire(fichier);
             dateConnue = dateVue = date;
             erreurSignalee = false;
@@ -91,7 +109,7 @@ public final class ReglesServeur {
         } catch (Exception ex) {
             // fichier illisible (faute de frappe...) : on garde les regles en cours, le fichier n'est pas touche
             try {
-                dateConnue = dateVue = Files.getLastModifiedTime(fichier);
+                dateConnue = dateVue = Files.getLastModifiedTime(fichier).toMillis();
             } catch (IOException ignored) {
                 // tant pis
             }
@@ -106,7 +124,7 @@ public final class ReglesServeur {
         if (fichier == null) return;
         try {
             UsureConfig.ecrire(fichier, r);
-            dateConnue = dateVue = Files.getLastModifiedTime(fichier);
+            dateConnue = dateVue = Files.getLastModifiedTime(fichier).toMillis();
         } catch (IOException ex) {
             HeralizUsure.LOG.error("[usure] impossible d'ecrire {}", fichier, ex);
         }

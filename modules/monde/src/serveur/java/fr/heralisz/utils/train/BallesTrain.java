@@ -63,6 +63,14 @@ public final class BallesTrain {
     static final long DUREE_VITRE = 6000L;
     /** La balle s'arrête un millième de bloc avant la paroi. */
     private static final double MARGE = 1e-3;
+    /**
+     * Pré-tri des balles (21/11, audit) : une balle plus loin que ça du milieu d'une rame MAINTENANT est forcément à plus
+     * de LONGUEUR / 2 + 8 blocs de son milieu à l'instant testé (au plus RETARD_MAX ticks plus tôt, ou un tick plus
+     * tard) : la rame fait au plus VMAX blocs par seconde, et deux points de la voie ne sont jamais plus loin l'un de
+     * l'autre que le chemin de la voie entre eux. Même résultat qu'avant, sans refaire l'horaire des deux rames pour
+     * chaque balle de la carte (essai hors jeu sur les trois réseaux : le milieu bouge d'au plus 14,25 blocs, marge 1,75).
+     */
+    private static final double PRE_TRI = Horaire.LONGUEUR / 2 + 8 + Horaire.VMAX * (RETARD_MAX / 20.0) + 1;
 
     /** Une balle suivie : rame du tireur (-1 : tireur hors du train), retard compensé (ticks), impact prévu à ce tick. */
     private static final class Suivi {
@@ -83,6 +91,8 @@ public final class BallesTrain {
     private static final Map<Integer, Long> CASSEES = new HashMap<>();
     private static final Horaire.Placement PA = new Horaire.Placement(), PB = new Horaire.Placement();
     private static final double[] CENTRE = new double[3];
+    /** Milieu de chaque rame au début du tick (pré-tri, voir PRE_TRI). */
+    private static final double[][] MILIEUX = new double[Horaire.RAMES][3];
 
     static void init() {
         if (!ModList.get().isLoaded("tacz")) return;
@@ -145,6 +155,9 @@ public final class BallesTrain {
         boolean actif = actif(srv);
         Horaire h = Horaire.get();
         double t0 = actif ? TrainServeur.temps(srv) : 0;
+        if (actif) {
+            for (int r = 0; r < Horaire.RAMES; r++) h.reseau.point(h.etatRame(t0, r).s(), MILIEUX[r]);   // une fois par tick
+        }
         for (Iterator<Suivi> it = SUIVIES.iterator(); it.hasNext(); ) {
             Suivi s = it.next();
             s.impact = null;
@@ -160,6 +173,8 @@ public final class BallesTrain {
             Vec3 q = p.add(d);
             double best = 2;
             for (int r = 0; r < Horaire.RAMES; r++) {
+                double[] m = MILIEUX[r];
+                if (distanceSegment(p, q, m[0], m[1], m[2]) > PRE_TRI) continue;   // loin de cette rame (21/11)
                 double ta = t0 - (s.rame == r ? 0 : s.retard) / 20.0, tb = ta + 0.05;
                 Horaire.Etat ea = h.etatRame(ta, r), eb = h.etatRame(tb, r);
                 h.reseau.point(eb.s(), CENTRE);
