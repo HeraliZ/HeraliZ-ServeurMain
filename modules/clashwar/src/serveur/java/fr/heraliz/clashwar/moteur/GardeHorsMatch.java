@@ -33,7 +33,8 @@ final class GardeHorsMatch {
         if (s.getTickCount() % 20 != 7) return;
         for (ServerPlayer p : s.getPlayerList().getPlayers()) {
             if (!HeralizClashWar.MODID.equals(p.level().dimension().location().getNamespace())) continue;
-            if (p.isCreative() || p.isSpectator() || p.hasPermissions(2)) continue;
+            // 21/11 (audit a7) : pas un joueur mort (ecran de mort) : son Coffre lui est rendu a sa reapparition
+            if (p.isCreative() || p.isSpectator() || p.hasPermissions(2) || p.isDeadOrDying()) continue;
             if (MatchApi.partieDe(p.getUUID()) != null || Spectateurs.estSpectateur(p.getUUID())) continue;
             // 19/11 : dépôt ou retour du Coffre en cours (étalés), ou arrivée en attente : il part dans quelques ticks
             if (Coffres.enCours(p.getUUID()) || Arrivees.enAttente(p.getUUID())) continue;

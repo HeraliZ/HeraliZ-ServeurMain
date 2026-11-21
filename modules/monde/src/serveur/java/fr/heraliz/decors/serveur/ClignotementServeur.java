@@ -63,7 +63,8 @@ public final class ClignotementServeur {
         while ((q = A_VOIR.poll()) != null) {
             ServerLevel l = srv.getLevel((ResourceKey<Level>) q[0]);
             BlockPos p = (BlockPos) q[1];
-            if (l == null || !l.isLoaded(p)) continue;
+            // 21/11 (audit) : tronçon complet seulement (isLoaded répond « oui » pendant sa lecture : getBlockState l'attendrait)
+            if (l == null || !fr.heraliz.noyau.api.Troncons.charge(l, p)) continue;
             BlockState s = l.getBlockState(p);
             if (Clignotement.clignote(s.getBlock()) && l.getBrightness(LightLayer.BLOCK, p) < s.getLightEmission(l, p)) {
                 l.getChunkSource().getLightEngine().checkBlock(p);

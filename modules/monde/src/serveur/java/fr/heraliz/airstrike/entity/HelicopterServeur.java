@@ -399,15 +399,25 @@ public class HelicopterServeur extends Helicopter {
         return dx * dx + dz * dz;
     }
 
-    /** Terrain le plus haut sous lui et devant lui (0 à 64 blocs, tous les 16) ; un tronçon pas chargé ne compte pas. */
+    /**
+     * Terrain le plus haut sous lui et devant lui (0 à 64 blocs, tous les 16) ; un tronçon pas chargé ne compte pas. Aucun
+     * relevé possible (21/11 : tous les tronçons pas prêts, au passage d'un bord de tronçon) : il garde le sol d'avant.
+     */
     private double releverSol(ServerLevel level, double x, double z, double rad) {
         double fx = -Math.sin(rad), fz = Math.cos(rad);
         int h = level.getMinBuildHeight();
+        boolean releve = false;
         for (int d = 0; d <= 64; d += 16) {
-            // Level.getHeight ne charge rien : tronçon absent = hauteur minimale, sans effet sur le maximum
-            h = Math.max(h, level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(x + fx * d), Mth.floor(z + fz * d)));
+            int bx = Mth.floor(x + fx * d), bz = Mth.floor(z + fz * d);
+            // 21/11 (audit) : tronçon COMPLET seulement (Troncons du noyau). Level.getHeight ne charge pas un tronçon absent,
+            // mais il ATTEND celui qui est encore en lecture : les tronçons à 2 de lui reçoivent son ticket à chaque
+            // changement de tronçon, et ce relevé (tous les 16 blocs) tombait dessus loin des joueurs, le fil du serveur
+            // attendant le disque. Pas prêt = absent : sans effet sur le maximum
+            if (fr.heraliz.noyau.api.Troncons.pret(level, bx >> 4, bz >> 4) == null) continue;
+            releve = true;
+            h = Math.max(h, level.getHeight(Heightmap.Types.MOTION_BLOCKING, bx, bz));
         }
-        return h;
+        return releve ? h : solVise;
     }
 
     /**

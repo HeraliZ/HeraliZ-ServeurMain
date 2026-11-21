@@ -13,7 +13,7 @@ réflexion (Quêtes, Clans, Boutique, Monde, Loot, Événements, Armes, Antichea
 1.38.9-beta** (le launcher donnera le nouveau jar aux joueurs ; aucun canal réseau ne change : un jeu en 1.38.8 se
 connecte toujours).
 
-En bref : **10 points corrigés** (1 important, 4 moyens, 5 petits), 7 remarques ou propositions (rien de changé pour
+En bref : **9 points corrigés** (1 important, 4 moyens, 4 petits), 7 remarques ou propositions (rien de changé pour
 elles). Pas de plantage trouvé, pas de duplication d'objets ou de matériaux, pas de paquet du joueur accepté sans contrôle.
 Côté lenteurs, CRac reste petit (0,4 ms par tick au banc à 150 bots du 21/11) : aucun gros coût trouvé à chaque tick.
 
@@ -21,7 +21,7 @@ Côté lenteurs, CRac reste petit (0,4 ms par tick au banc à 150 bots du 21/11)
 
 ## Corrigé
 
-Commits **a47ec976** (points 1 à 9) et **8cb1e198** (point 10), CRac 1.38.9-beta.
+Commits **a47ec976** (tous les points sauf le 5) et **8cb1e198** (point 5), CRac 1.38.9-beta.
 
 ### 1. (Important) Tutoriel des bases fait en même temps par deux membres d'un même clan
 
