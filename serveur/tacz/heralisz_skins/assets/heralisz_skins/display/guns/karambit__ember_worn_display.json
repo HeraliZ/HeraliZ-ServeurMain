@@ -62,7 +62,7 @@
     "dry_fire": "",
     "head_hit": "arkaniaz:knife_hit",
     "flesh_hit": "arkaniaz:knife_hit",
-    "kill": "arkaniaz:knife_stab",
+    "kill": "arkaniaz:knife_stab_01",
     "melee_push": "arkaniaz:knife_slash"
   },
   "offhand_show": {
