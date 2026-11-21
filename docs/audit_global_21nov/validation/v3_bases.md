@@ -158,10 +158,11 @@ Pas testé : tout en jeu (fabrication et contrôles sur GitHub seulement).
 
 ## Fin du 21/11 (choix du propriétaire : « tout lançable et terminé à 100 % »)
 
-En ligne au départ : `main` = `1607d9655`, CRac 1.38.11-beta. Fait sur la branche de travail : **CRac 1.38.12-beta** (le
-launcher donne le nouveau jar ; aucun canal réseau ne change : un jeu en 1.38.11 se connecte toujours). **Rien n'a été
-testé en jeu** : relecture, contrôle de la syntaxe Java, `outils/verifier_langues.py` et `outils/verif_reflexion.py`
-(0 erreur), puis la fabrication et les contrôles sur GitHub.
+En ligne au départ : `main` = `1607d9655`, CRac 1.38.11-beta. Fait sur la branche de travail : **CRac 1.38.12-beta**,
+commit `23a66d753` (le launcher donne le nouveau jar ; aucun canal réseau ne change : un jeu en 1.38.11 se connecte
+toujours). **Rien n'a été testé en jeu** : relecture, contrôle de la syntaxe Java, `outils/verifier_langues.py` et
+`outils/verif_reflexion.py` (0 erreur), puis la fabrication et les contrôles sur GitHub : **« Contrôle de branche »
+réussi** (fabrication, contrôles et images, sur `19008fffa`, qui contient ce commit).
 
 ### 1. `/base effacer <chef>` : seulement les cabanes d'essai du joueur visé (a3 n° 1)
 

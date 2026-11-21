@@ -136,8 +136,8 @@ est reconnue aussi côté serveur, `modules/armes/.../ObjetsAVieServeur.java` l.
    échange, sous très forte charge, l'attente « Recherche d'un point d'arrivée sûr… » peut durer quelques secondes de
    plus. Petit changement, à essayer en jeu. Fichiers : `modules/monde/src/serveur/java/fr/heralisz/utils/spawn/
    DepartServeur.java` l. 287-310 (attente de 40 ticks, `ATTENTE_TIRAGE`), l. 549 et 575 (`carte.getChunk`). Les commandes du
-   staff qui envoient sans délai (`/depart essai`, `/depart envoyer`) cherchent tout d'un coup et chargent eux aussi : sans
-   importance (staff, rare).
+   staff qui envoient sans délai (`/depart essai`, `/depart joueur`) cherchent tout d'un coup et chargent eux aussi : sans
+   importance (staff, rare). **Fait le soir du 21/11**, à la demande du propriétaire : voir « Fin du 21/11 » plus bas.
 
 Remarques sans décision (rien à faire, notées pour la suite) :
 - `CoffresPersonnels.java` l. 491-493 : si l'enregistrement immédiat (joueur + coffres) à la fermeture d'une planque
@@ -233,3 +233,113 @@ Rien n'a été essayé en jeu (pas de jeu ici). En plus des essais déjà listé
       tombe sur le dernier sol valide survolé, comme avant.
 
 Pas testé : tout ce qui précède en jeu ; aucune mesure sur le serveur en ligne avec des joueurs.
+
+---
+
+## Fin du 21/11
+
+Demandé le soir par le propriétaire (« fais en sorte que tout soit lançable et terminé à 100 % ») : les quatre points
+restants de cette zone. Commits **`a7d82cbf7`** et **`958fe1631`**, **Monde 1.3.13**. Le jar du serveur change ; côté
+joueur, seulement des textes du staff et le `mods.toml` (point 4) ; aucun canal réseau ne change. Pas fait, comme
+demandé : planque et coffre VIP, jumelles, essai de la vue des zombies (à mesurer en jeu).
+
+### 1. Borne de départ : plus de terrain lu par le serveur pour un point pas prêt
+
+En simple : c'est la proposition n° 1 plus haut. Quand un joueur part du spawn, la borne tire un point d'arrivée et
+demande son tronçon à Minecraft, qui le lit en tâche de fond. Avant, si ce tronçon n'était pas prêt au bout de 2 s, le
+serveur le lisait lui-même (de 50 à 300 ms de gel pour tout le monde), et pouvait recommencer à chaque essai (60 au plus).
+Maintenant, ce point est abandonné et un autre est tiré, sans rien lire. Pour que le joueur parte toujours, deux derniers
+recours, contrôlés comme avant : le dernier des 60 essais, et une fois si rien n'est trouvé 15 s après la fin du compte à
+rebours. Donc au plus deux tronçons lus par le serveur pour un départ (au lieu de 60), jamais plus d'un par tick pour tout
+le serveur, et au plus 8 points contrôlés par tick en tout (les autres attendent le tick suivant).
+
+Pour les joueurs : rien ne change quand le serveur va bien (une lecture prend bien moins de 2 s). Sous très forte charge
+(par exemple tout le monde qui part en même temps après un redémarrage), « Recherche d'un point d'arrivée sûr… » peut
+durer quelques secondes de plus, mais sans gel.
+
+Dans le même esprit :
+- réglage `delai = 0` (pas utilisé sur le serveur, qui garde 5 s) : même recherche, sans compte à rebours ; avant, les
+  60 essais d'un coup ;
+- `/depart joueur <cibles>` (staff) : chaque joueur visé part par la même recherche, en une ou deux secondes ; avant, tous
+  les joueurs visés étaient cherchés d'un coup (des secondes de gel pour un groupe). Le staff voit « N joueur(s) en route
+  vers la carte : chacun part dès que son point d'arrivée est prêt. » Ce départ imposé n'est annulé ni par un pas ni par
+  une blessure (le joueur ne l'a pas demandé) ; la mort ou un changement de monde l'annulent ;
+- `/depart info` donne deux compteurs depuis le démarrage : points abandonnés (terrain pas encore chargé) et points
+  contrôlés en dernier recours. Normalement 0 ou presque : des nombres qui grimpent veulent dire que le serveur a du mal à
+  charger le terrain ;
+- seul `/depart essai` (staff, pour essayer les réglages) cherche encore tout d'un coup : commande rare, à la main.
+
+Pour les développeurs : `modules/monde/src/serveur/java/fr/heralisz/utils/spawn/DepartServeur.java` : `ATTENTE_TIRAGE`,
+`RECHERCHE_MAX`, `CONTROLES_PAR_TICK`, compteurs l. 145-164 ; `EnCours.force` et `EnCours.recours` ; `demander` l. 234
+(plus d'appel à `chercher`) ; `tick` l. 324-352 ; `blesse` l. 793 ; `envoyer` l. 1021 ; `info` l. 1060 ; `chercher`
+l. 468 ne sert plus qu'à `/depart essai` (l. 1002).
+
+### 2. `/inspecter <joueur> base` : les tronçons de la base lus en tâche de fond
+
+En simple : la vue « base » montre tous les conteneurs de la base d'un joueur. Pour une base loin de tout joueur, ses
+tronçons (des dizaines pour une grande base) n'étaient pas en mémoire et le serveur les lisait tous d'un coup : jusqu'à une
+seconde de gel pour tout le monde. Maintenant, Minecraft les lit en tâche de fond ; le staff voit « Base de X : N
+morceau(x) de carte à charger, la vue s'ouvre dès qu'ils sont prêts (10 s au plus). » et la vue s'ouvre toute seule dès
+que tout est prêt. Au bout de 10 s, elle s'ouvre avec ce qui est prêt et le staff est prévenu : « … N morceau(x) de carte
+toujours pas chargé(s) : leurs conteneurs ne sont pas dans la vue. Relance-la dans quelques secondes. » Une base déjà en
+mémoire (près d'un joueur) s'ouvre tout de suite, comme avant. Pour cette vue, le serveur ne lit plus jamais un tronçon
+pas prêt. Si le staff ouvre une autre vue pendant l'attente, celle de la base ne vient pas par-dessus. Le joueur inspecté
+est repris au moment de l'ouverture (il a pu se connecter ou partir pendant l'attente). Même chose depuis le bouton
+« Contenu de la base » de la vue de l'inventaire.
+
+Pour les développeurs : `modules/monde/src/serveur/java/fr/heralisz/utils/inspecter/Inspecter.java` : `ouvrirBase` l. 271
+(tickets, puis vue tout de suite ou attente) ; `DemandeBase`, `BASES_EN_ATTENTE`, `ATTENTE_BASE` l. 310-317 ; `manquants`
+l. 320 et `tick` l. 331 (toutes les 5 ticks, seulement avec une demande ; `Troncons.pret` : rien chargé ni attendu) ;
+`afficherBase` l. 371 (seulement les tronçons complets) ; `ouvrir` l. 161 (une autre vue annule l'attente).
+
+### 3. Panneau d'ascenseur sans machine : plus de recherche à chaque clic
+
+En simple : un panneau d'appel cherche sa machine au-dessus de lui (jusqu'à 220 blocs plus haut, à 5 blocs de l'axe :
+jusqu'à 26 000 cases). Un panneau mal posé, sans machine, refaisait toute cette recherche à chaque clic : un joueur qui
+cliquait vite pouvait faire ramer le serveur. Maintenant, un panneau sans machine n'est recherché qu'une fois toutes les
+5 s ; entre-temps, « L'ascenseur ne répond pas » s'affiche tout de suite. Une machine posée ensuite est reconnue dès son
+premier relevé des paliers (au plus 5 s pour un panneau tout au bord de sa zone). Rien ne change pour un ascenseur bien
+monté (sa machine est déjà connue).
+
+Pour les développeurs : `modules/monde/src/serveur/java/fr/heralisz/utils/ascenseur/MachineBlockEntityServeur.java`
+l. 150-190 (`SANS_MACHINE`, 5 s ; jamais plus de 256 panneaux gardés).
+
+### 4. `mods.toml` : version du noyau demandée
+
+Relevé de la validation v10 : trois sous-mods de ce jar se servent des tronçons complets du noyau (`Troncons`, noyau 1.1.5
+ou plus) mais acceptaient un noyau plus ancien. Maintenant, `heraliz_usure` et `heraliz_extraction` demandent le noyau
+1.1.5 ou plus ; `heraliz_ping` le demande obligatoire (avant : facultatif), 1.1.5 ou plus (il appelle `Troncons` sans
+protection). Le noyau est bien plus récent (1.1.12 en ligne, 1.1.13 sur la branche) : rien ne change, sauf qu'un vieux
+noyau serait refusé au démarrage avec un message clair, au lieu d'une erreur en jeu. Fichier :
+`modules/monde/src/commun/resources/META-INF/mods.toml` l. 70-82 (ping), 172-177 (usure), 292-297 (extraction).
+
+### Vérifié hors du jeu
+
+- relu tout ce que lit le contrôle d'un point de départ : une fois le tronçon du point prêt, seulement ce tronçon (sol de
+  la colonne, place du corps) ; bases de CRac et conteneurs de loot : leurs listes, pas le terrain ;
+- nouveaux textes en français, anglais et russe (`assets/heralisz_utils/lang/`) ; contrôle des langues : 0 erreur ;
+- fabrication et contrôles sur GitHub (« Contrôle de branche », sur `19008fffa` qui contient les deux commits) :
+  **réussis** (fabrication, images, contrôles : synchronisation 0 erreur, langues 0 erreur, vérificateur 0 problème) ;
+- **démarrage d'essai** lancé sur GitHub sur le même commit, avec Monde 1.3.13 refabriqué à partir de ces sources :
+  **réussi**, le serveur arrive à « Done » (24 s), aucune erreur de dépendance (les nouvelles versions du noyau demandées
+  sont acceptées) ; aucune des 11 lignes d'erreur du journal ne vient de cette zone (modèles des véhicules d'un autre
+  auteur, deux cases Curios, réglages du monde plat de l'essai).
+
+### À tester en jeu (Monde 1.3.13)
+
+Rien n'a été essayé en jeu.
+
+- [ ] Borne de départ, un joueur : compte à rebours de 5 s, départ, arrivée sur un sol valide, comme avant ; bouger ou
+      être blessé pendant le compte à rebours annule, comme avant.
+- [ ] Borne, beaucoup de joueurs en même temps (ou juste après un redémarrage) : tous partent, pas d'alerte « [Diag]
+      Blocage » ; puis `/depart info` : les deux nouveaux compteurs (normalement 0 ou presque).
+- [ ] `/depart joueur <pseudo>`, puis `/depart joueur @a` au spawn : message « en route » ; chaque joueur part en une ou
+      deux secondes, même s'il marche.
+- [ ] `/inspecter <joueur> base` sur une base loin de tout joueur : message « N morceau(x) de carte à charger », puis la
+      vue s'ouvre seule avec tous les conteneurs ; sur une base près du staff : la vue s'ouvre tout de suite, comme avant ;
+      ouvrir une autre vue (inventaire, sac) pendant l'attente : la vue de la base ne vient pas par-dessus.
+- [ ] Ascenseur bien monté : comme avant. Panneau posé sans machine au-dessus : « L'ascenseur ne répond pas », pas de
+      ralentissement en cliquant vite ; poser ensuite la machine : le panneau marche (au plus 5 s après).
+- [ ] Démarrage du serveur et connexion d'un joueur avec Monde 1.3.13 : aucune erreur de dépendance.
+
+Pas testé : tout ce qui précède en jeu ; aucune mesure sur le serveur en ligne.
