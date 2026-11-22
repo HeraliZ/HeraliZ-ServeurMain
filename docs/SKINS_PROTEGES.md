@@ -60,7 +60,7 @@ possible un sac camouflé.
 2. **Déconnexion puis reconnexion** : rien n'est refait (journal : « même copie que celle déjà en place »).
 3. **F3+T** : rien n'est refait, pas de gel en plus, les skins restent pareils.
 4. **`/camos dessins`** (staff, op 2) : le jeu refait tous les programmes depuis la copie, comme à la connexion ; un
-   bandeau à droite donne « Dessins des skins — 79 programmes prêts depuis la copie du serveur · … ms » (le temps de
+   bandeau à droite donne « Dessins des skins — 92 programmes prêts depuis la copie du serveur · … ms » (le temps de
    compilation sur ce PC). Le même résultat arrive dans le journal du serveur.
 5. **Monde solo d'essai** (jars -complet) : mêmes skins qu'en ligne.
 6. Envoyer le journal du jeu (`logs/latest.log`) si quelque chose cloche.
@@ -74,32 +74,36 @@ Ce qu'il ne faut pas voir :
 
 Lignes attendues dans le journal du jeu (`logs/latest.log`) :
 - au démarrage du jeu : `[Camos] dessins des skins pas encore reçus : ils arrivent du serveur à la connexion (skins sans effet d'ici là)` ;
-- à la connexion : `[Camos] dessins des skins reçus du serveur : 167 fichiers, 698 Ko (87 Ko compressés, 1 paquet(s)), empreinte … ; gardés en mémoire seulement` ;
-- quelques instants après : `[Camos] dessins des skins fabriqués depuis la copie du serveur : 79 programmes prêts, 0 en échec, … ms de compilation (… ms en tout)` ;
+- à la connexion : `[Camos] dessins des skins reçus du serveur : 193 fichiers, 798 Ko (environ 100 Ko compressés, 1 paquet(s)), empreinte … ; gardés en mémoire seulement` ;
+- quelques instants après : `[Camos] dessins des skins fabriqués depuis la copie du serveur : 92 programmes prêts, 0 en échec, … ms de compilation (… ms en tout)` ;
 - à une reconnexion au même serveur : `[Camos] dessins des skins : même copie que celle déjà en place, rien à refaire` ;
-- au F3+T : `Shaders des camos inchangés : 79 programmes gardés, rien recompilé` ;
+- au F3+T : `Shaders des camos inchangés : 92 programmes gardés, rien recompilé` ;
 - si le serveur n'envoie rien : `[Camos] aucun dessin des skins reçu de ce serveur 30 s après l'arrivée : …` ;
 - si la copie est abîmée : `[Camos] copie des dessins des skins illisible (…) : rien n'est refait (…)`.
 
 Lignes attendues dans le journal du serveur :
-- au démarrage : `[Camos] dessins des skins : 167 fichiers (698 Ko) compressés en 87 Ko, 1 paquet(s) par joueur, empreinte …, … ms` ;
-- à chaque connexion : `[Camos] dessins des skins envoyés à <pseudo> : 87 Ko en 1 paquet(s)` ;
+- au démarrage : `[Camos] dessins des skins : 193 fichiers (798 Ko) compressés en environ 100 Ko, 1 paquet(s) par joueur, empreinte …, … ms` ;
+- à chaque connexion : `[Camos] dessins des skins envoyés à <pseudo> : environ 100 Ko en 1 paquet(s)` ;
 - à `/camos dessins` : `[Camos] /camos dessins : le jeu de <pseudo> refait ses programmes des skins depuis la copie du serveur`,
-  puis le résultat renvoyé par son jeu : `[Camos] /camos dessins chez <pseudo> : 79 programmes prêts, 0 en échec, … ms`.
+  puis le résultat renvoyé par son jeu : `[Camos] /camos dessins chez <pseudo> : 92 programmes prêts, 0 en échec, … ms`.
 
 Le contenu des dessins n'est jamais écrit dans les journaux : seulement des nombres, des tailles et une empreinte.
 
-Pourquoi 167 fichiers et pas 161 (validation du 21/11, journal du Ptero de 17 h 45) : la livraison
+Chiffres depuis la collection de Noël du 22/11 (13 programmes de plus : 8 camos, 5 couteaux ; avant : 79 programmes,
+167 fichiers, 698 Ko, 87 Ko compressés) ; la taille compressée est une estimation faite hors du jeu, à relire dans le
+journal du serveur après la mise en ligne.
+
+Pourquoi 193 fichiers et pas 187 (167 et 161 avant le 22/11 ; validation du 21/11, journal du Ptero de 17 h 45) : la livraison
 (`outils/construire.py`, `marquer`) pose la mention de licence `LISEZ-MOI-HeraliZ.txt` dans chaque dossier de nos jars,
 donc aussi dans les 6 sous-dossiers de la copie. Le serveur les envoie avec les dessins (5 Ko, 1 Ko compressé) ; le jeu
-les ignore (leur nom, avec des majuscules, n'est pas un nom de ressource valable). Rien d'anormal : 161 dessins + 6
+les ignore (leur nom, avec des majuscules, n'est pas un nom de ressource valable). Rien d'anormal : 187 dessins + 6
 mentions. Le contrôle « dessins » de `outils/verifier.py` regarde les jars fabriqués, avant cette mention.
 
 ## Coût
 
-- 87 Ko envoyés à chaque connexion (un paquet), environ 0,8 Mo de mémoire chez le joueur (copie et fichiers ouverts). Au
+- Environ 100 Ko envoyés à chaque connexion (un paquet ; 87 Ko avant la collection de Noël), environ 0,9 Mo de mémoire chez le joueur (copie et fichiers ouverts). Au
   démarrage du serveur, lecture et compression une seule fois (132 ms sur le Ptero le 21/11).
-- La fabrication des 79 programmes une fois par session, juste après la connexion, étalée sur les images (25 ms de
+- La fabrication des 92 programmes une fois par session, juste après la connexion, étalée sur les images (25 ms de
   compilation au plus par image). C'est le travail que le jeu faisait avant au lancement, pendant le chargement des
   ressources : le lancement du jeu est donc un peu plus court, la connexion un peu plus longue. Ensuite aucun coût en
   jeu : ce sont exactement les mêmes programmes qu'avant.
@@ -141,7 +145,7 @@ mentions. Le contrôle « dessins » de `outils/verifier.py` regarde les jars fa
 - **Programmes** (`CamoShaders`) : `fabriquerDepuisCopie()` (fil du rendu) ne fait rien si les programmes en place ou en
   cours viennent de la même copie (empreinte annoncée) ou de sources identiques ; sinon `demarrer()` ferme les morceaux
   de programme que Minecraft garde en réserve sous leur nom (`Program.Type…getPrograms()`, noms `heralisz_camo:camo…` et
-  `heralisz_camo:fx…`) et les anciens programmes, puis la `Fabrique` compile les 79 programmes un par un au début de
+  `heralisz_camo:fx…`) et les anciens programmes, puis la `Fabrique` compile les 92 programmes un par un au début de
   chaque image (`TickEvent.RenderTickEvent`, branché par `PartieClient`), 25 ms au plus par image, rien pendant un écran
   de chargement des ressources ; à la fin, les icônes 3D sont vidées (`IconesArmes.vider()`) et une ligne va au journal.
   `onRegisterShaders` (démarrage, F3+T) : sans copie, rien (une ligne) ; avec la copie, rien si l'empreinte « copie +

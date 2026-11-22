@@ -70,6 +70,16 @@ public enum Camo {
    DICHROIQUE("dichroique", 87, Tier.EPIC, Camo.ALL),
    VIPERE("vipere", 88, Tier.LEGENDARY, Camo.ALL),
    ROUAGES("rouages", 89, Tier.LEGENDARY, Camo.ALL),
+   // collection de Noël du 22/11 (rendus validés par le propriétaire), entièrement dessinée par le shader ; 90 et 94 libres
+   // (Sucre d'Orge et Houx Royal, écartés). Givre Vivant : l'inspection givre l'arme, la suivante la dégivre (GivreVivant)
+   GUIRLANDE("guirlande", 91, Tier.LEGENDARY, Camo.ALL),
+   FLOCON_ROYAL("flocon_royal", 92, Tier.EPIC, Camo.ALL),
+   NUIT_HIVER("nuit_hiver", 93, Tier.LEGENDARY, Camo.ALL),
+   PAIN_EPICES("pain_epices", 95, Tier.RARE, Camo.ALL),
+   BOULE_NOEL("boule_noel", 96, Tier.LEGENDARY, Camo.ALL),
+   JOYAU_IMPERIAL("joyau_imperial", 97, Tier.LEGENDARY, Camo.ALL),
+   PULL_NOEL("pull_noel", 98, Tier.EPIC, Camo.ALL),
+   GIVRE_VIVANT("givre_vivant", 99, Tier.LEGENDARY, Camo.ALL),
    // (72 Dark Matter Origine, le Dark Matter à piquots visqueux, retiré en 0.9.12 : son id est lu comme DARK_MATTER, voir byId)
    // (73 à 75 Pack-a-Punch I à III, camos du mode Zombies retiré, supprimés le 02/11 : plus rien ne les donnait ; une arme
    // qui porte encore « pap_1 » à « pap_3 » s'affiche sans camo, voir byId)

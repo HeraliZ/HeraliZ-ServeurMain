@@ -2193,3 +2193,55 @@ copie que pour un jar pris chez un joueur, pas pour qui lit le dépôt.
 
 Pas testé : tout en jeu (fabrication, contrôles et démarrages d'essai, normal et « mixins stricts », sur GitHub). Launcher :
 tests, relecture et fabrication d'essai sur GitHub seulement, jamais installé ni lancé.
+
+## 53. Collection de Noël du 22/11 : 8 skins d'armes et 5 skins de couteaux
+
+Demande du propriétaire : des skins « WOW » pour Noël ; trois tours de rendus (galerie « Collection Noël HeraliZ »), puis
+« je valide, tu peux tout mettre sur le serveur ». Écartés à sa demande : Sucre d'Orge (arme), Houx Royal (arme et
+couteau), Paquet Royal, Blizzard, Krampus, Charbon.
+
+Ce qui change :
+- **8 camos** (Armes 2.60.0), dessinés entièrement par le skin, objets `heralisz_camo:camo_<id>` (identifiants figés) :
+  Guirlande (Légendaire, animé), Flocon Royal (Épique, animé), Nuit d'Hiver (Légendaire, animé : neige qui tombe dans
+  l'arme, neige posée sur le dessus), Pain d'Épices (Rare), Boule de Noël (Légendaire), Joyau Impérial (Légendaire), Pull
+  de Noël (Épique), Givre Vivant (Légendaire). Icônes d'inventaire tirées des vrais dessins ; noms en français, anglais et
+  russe.
+- **Givre Vivant, deux skins en un** : inspecter l'arme (touche d'inspection) la couvre de givre en 2,5 s ; elle reste
+  givrée ; une nouvelle inspection fait fondre le givre (quelques gouttes d'eau) et rend l'acier poli. L'état est gardé
+  sur l'arme : il la suit (sol, coffre, échange) et tous les joueurs voient le même. Inspecter pendant le gel le retourne
+  en dégel sans saut. Le serveur décide (arme tenue, camo vérifié, une bascule par seconde au plus par joueur). Une ligne
+  bleue de l'infobulle de l'objet le dit au joueur. Sur un sac, ce camo reste en acier nu (pas d'inspection).
+- **5 couteaux** (`heralisz_skins:<couteau>__<finition>`, identifiants figés) : Karambit | Sucre d'Orge (Prestige,
+  3 étoiles, manche en caoutchouc noir), Butterfly | Saphir Givré (Ultime, 4 étoiles), M9 | Guirlande (Prestige,
+  3 étoiles, guirlande en relief), Karambit | Or Givré (Ultime, 4 étoiles), Karambit | Glace Sculptée (Ultime, 4 étoiles).
+  Icônes rendues comme celles du catalogue.
+- **Caisses** (`outils/caisses.py`, règle du 19/11 : chaque nouveau camo a la chance des camos de sa rareté) : caisse
+  Camo, stickers et StatTrak restent à leur minimum de 10 % et tous les camos baissent ensemble d'environ 7 % (mêmes
+  écarts entre raretés) ; caisse Événement, les nouveaux camos Épiques et Légendaires à leur chance fixe, hérals 36,5 % au
+  lieu de 39,7 % ; caisse Gemme (154 lots au lieu de 149) et Événement : les 5 couteaux selon leurs étoiles. Boutique
+  1.7.6 : butin par défaut de la caisse Camo (seulement si son fichier manquait).
+- **Loot de la carte** (Loot 0.20.11) : comme tous les couteaux de 1 à 3 étoiles, Sucre d'Orge et M9 Guirlande peuvent
+  sortir des coffres T7 (Unique) ; jamais les 4 étoiles. Rareté des 5 couteaux : Unique (`raretes.json`).
+- **Dessins des skins** : 92 programmes (86 camos et couteaux, 6 effets 3D) au lieu de 79, tous compilés avec un vrai
+  compilateur OpenGL ; copie envoyée aux joueurs à la connexion : 26 fichiers de plus, environ 100 Ko compressés au lieu
+  de 87 (`docs/SKINS_PROTEGES.md`).
+
+À tester en jeu :
+- [ ] **Connexion** après la mise à jour : journal du jeu « 92 programmes prêts, 0 en échec » ; journal du serveur
+      « 193 fichiers ».
+- [ ] **Les 8 camos** sur 2 ou 3 armes chacun (pistolet, fusil d'assaut, précision) : comme sur la galerie, en main, en 3e
+      personne, dans l'atelier et sur l'icône de l'arme ; Guirlande et Nuit d'Hiver aussi de nuit ; Nuit d'Hiver : neige
+      posée sur le dessus de l'arme.
+- [ ] **Givre Vivant** : inspecter → givre en 2,5 s, l'arme reste givrée ; changer d'arme et revenir, se déconnecter et
+      revenir : toujours givrée ; inspecter de nouveau → dégel avec gouttes ; un autre joueur voit les mêmes états ; deux
+      appuis très rapprochés ne font pas clignoter l'arme ; l'animation d'inspection n'est pas coupée ; l'icône de l'arme
+      dans l'inventaire suit l'état.
+- [ ] **Infobulle** de l'objet Givre Vivant : la ligne bleue « Inspectez l'arme pour la givrer, puis pour la dégivrer ».
+- [ ] **Les 5 couteaux** : en main, en 3e personne, inspection, icône (Butterfly : manche noir et incrustations bleues ;
+      Sucre d'Orge : manche caoutchouc noir, seule la lame et l'anneau ont le sucre d'orge), étoiles dans l'infobulle.
+- [ ] **Caisses** Camo, Événement et Gemme : la roue montre les nouveaux lots ; en ouvrir quelques-unes.
+
+Pas testé : tout en jeu. Fait hors du jeu : rendus des vrais programmes (identiques à la galerie validée), compilation
+des 92 programmes, contrôles des textes (aucune erreur, avertissements d'avant), outils des caisses (0 problème) ; la
+fabrication et les contrôles des jars se font sur GitHub (la fabrication n'est pas possible sur la machine de Claude). Les
+chiffres de la copie des dessins (environ 100 Ko) sont estimés : à relire dans le journal du serveur.

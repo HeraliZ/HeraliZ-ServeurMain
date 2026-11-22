@@ -48,7 +48,8 @@ def wrap(dark, light, accent, glow=0.0):
 
 
 # (shader, couteau, finition, nom, palier, style, arguments, manche, insert du Butterfly)
-# style None : finition exclusive déjà écrite dans le gabarit (uniqueFinish / uniqueHandle, ids 100 à 111)
+# style None : finition exclusive déjà écrite dans le gabarit (uniqueFinish / uniqueHandle, ids 100 à 111 ; noelCouteau,
+# ids 112 à 116 : collection de Noël du 22/11)
 SKINS = [
     # --- M9 Bayonet (manche caoutchouc)
     (120, "m9", "night_ops", "Night Ops", "classique", "kNightOps", [0x383a41, 0xe02a36], RUBBER, None),
@@ -317,6 +318,17 @@ for _x in _LOT2:
     if style is not None:
         _id += 1
     SKINS.append((sid, couteau, fin, nom, pal, style, args, manche, insert))
+
+# collection de Noël du 22/11 (rendus validés par le propriétaire) : finitions exclusives écrites dans le gabarit
+# (noelCouteau : lame, manche et incrustations propres à chacune). En fin de liste : les finitions déjà dans le jeu ne
+# changent pas de rang dans KnifeFinish.
+SKINS += [
+    (112, "karambit", "sucre_orge", "Sucre d'Orge", "prestige", None, [], None, None),
+    (113, "butterfly", "saphir_givre", "Saphir Givré", "ultime", None, [], None, None),
+    (114, "m9", "guirlande", "Guirlande", "prestige", None, [], None, None),
+    (115, "karambit", "or_givre", "Or Givré", "ultime", None, [], None, None),
+    (116, "karambit", "glace_sculptee", "Glace Sculptée", "ultime", None, [], None, None),
+]
 
 # skins retirés après l'essai en jeu du propriétaire (19/10) : fichiers effacés par ce script (et du Ptero pour les
 # couteaux TaCZ, par serveur/tacz_retires.txt) ; les numéros des autres skins ne bougent pas
@@ -628,6 +640,9 @@ for _n, _cles in {
         "executor__hazard", "dragons_fang__citrine", "desmoulins_edge__rose_gold", "desmoulins_edge__silver_lore",
         "desmoulins_edge__molten_gold", "creed__twin_tone", "sea_gleam__navy", "sea_gleam__tidal_marble",
         "m9__sakura",
+        # 22/11 (collection de Noël, choix du propriétaire) : Sucre d'Orge et Guirlande ; Saphir Givré, Or Givré et
+        # Glace Sculptée à 4 (rang par défaut)
+        "karambit__sucre_orge", "m9__guirlande",
         "cs2_push__crimson_web", "cs2_push__marble_fade", "cs2_skeleton__fade", "cs2_skeleton__volt",
         "cs2_stiletto__lore", "cs2_stiletto__mirage"],
     # 4 étoiles (rappel, c'est aussi le rang par défaut) : Push Doppler Sapphire, Skeleton Case Hardened et Doppler Ruby,

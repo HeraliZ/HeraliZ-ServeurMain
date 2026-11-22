@@ -140,6 +140,11 @@ public enum KnifeFinish {
    ROSSO("rosso", 433, true),
    MIRAGE("mirage", 434, true),
    CASE_HARDENED_CS("case_hardened_cs", 436, true),
+   SUCRE_ORGE("sucre_orge", 112, false),
+   SAPHIR_GIVRE("saphir_givre", 113, false),
+   GUIRLANDE("guirlande", 114, false),
+   OR_GIVRE("or_givre", 115, false),
+   GLACE_SCULPTEE("glace_sculptee", 116, false),
    // </skins_couteaux>
    ;
 

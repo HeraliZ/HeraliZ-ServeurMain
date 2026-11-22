@@ -74,6 +74,10 @@
    "rarity": "rare"
   },
   {
+   "item": "heralisz_camo:camo_pain_epices",
+   "rarity": "rare"
+  },
+  {
    "item": "heralisz_camo:camo_gold",
    "rarity": "epic"
   },
@@ -158,6 +162,14 @@
    "rarity": "epic"
   },
   {
+   "item": "heralisz_camo:camo_flocon_royal",
+   "rarity": "epic"
+  },
+  {
+   "item": "heralisz_camo:camo_pull_noel",
+   "rarity": "epic"
+  },
+  {
    "item": "heralisz_camo:camo_orion",
    "rarity": "legendary"
   },
@@ -203,6 +215,26 @@
   },
   {
    "item": "heralisz_camo:camo_rouages",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_guirlande",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_nuit_hiver",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_boule_noel",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_joyau_imperial",
+   "rarity": "legendary"
+  },
+  {
+   "item": "heralisz_camo:camo_givre_vivant",
    "rarity": "legendary"
   },
   {

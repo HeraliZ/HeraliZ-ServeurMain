@@ -81,6 +81,10 @@ public class CamoItem extends Item {
       if (this.camo.gun != null) {
          tooltip.add(Component.translatable("item.heralisz_camo.camo.gun." + this.camo.id).withStyle(ChatFormatting.GOLD));
       }
+      if (this.camo == Camo.GIVRE_VIVANT) {
+         // le seul camo qui change à l'inspection (22/11) : sans cette ligne, rien ne dit au joueur qu'il a deux skins en un
+         tooltip.add(Component.translatable("item.heralisz_camo.camo.astuce.givre_vivant").withStyle(ChatFormatting.AQUA));
+      }
       tooltip.add(Component.translatable("item.heralisz_camo.camo.collect").withStyle(ChatFormatting.GRAY));
    }
 }

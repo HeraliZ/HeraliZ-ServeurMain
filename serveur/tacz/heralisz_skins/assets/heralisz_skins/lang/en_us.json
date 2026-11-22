@@ -122,5 +122,15 @@
   "heralisz_skins.knife.t_knife__inferno_circuit.name": "§7T Knife §7| §7§lInferno Circuit",
   "heralisz_skins.tooltip.t_knife__inferno_circuit.desc": "§6★§8★★★\n§8HeraliZ Exclusive",
   "heralisz_skins.knife.t_knife__desert_sakura.name": "§7T Knife §7| §7§lDesert Sakura",
-  "heralisz_skins.tooltip.t_knife__desert_sakura.desc": "§6★§8★★★\n§8HeraliZ Exclusive"
+  "heralisz_skins.tooltip.t_knife__desert_sakura.desc": "§6★§8★★★\n§8HeraliZ Exclusive",
+  "heralisz_skins.knife.karambit__sucre_orge.name": "§5Karambit §7| §5§lSucre d'Orge",
+  "heralisz_skins.tooltip.karambit__sucre_orge.desc": "§6★★★§8★\n§8HeraliZ Exclusive",
+  "heralisz_skins.knife.butterfly__saphir_givre.name": "§cButterfly Knife §7| §c§lSaphir Givré",
+  "heralisz_skins.tooltip.butterfly__saphir_givre.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
+  "heralisz_skins.knife.m9__guirlande.name": "§5M9 Bayonet §7| §5§lGuirlande",
+  "heralisz_skins.tooltip.m9__guirlande.desc": "§6★★★§8★\n§8HeraliZ Exclusive",
+  "heralisz_skins.knife.karambit__or_givre.name": "§cKarambit §7| §c§lOr Givré",
+  "heralisz_skins.tooltip.karambit__or_givre.desc": "§6★★★★§8\n§8HeraliZ Exclusive",
+  "heralisz_skins.knife.karambit__glace_sculptee.name": "§cKarambit §7| §c§lGlace Sculptée",
+  "heralisz_skins.tooltip.karambit__glace_sculptee.desc": "§6★★★★§8\n§8HeraliZ Exclusive"
 }

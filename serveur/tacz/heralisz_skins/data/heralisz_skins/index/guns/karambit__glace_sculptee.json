@@ -1,0 +1,9 @@
+{
+  "name": "heralisz_skins.knife.karambit__glace_sculptee.name",
+  "display": "heralisz_skins:karambit__glace_sculptee_display",
+  "data": "arkaniaz:knife_data",
+  "tooltip": "heralisz_skins.tooltip.karambit__glace_sculptee.desc",
+  "type": "rpg",
+  "item_type": "modern_kinetic",
+  "sort": 346
+}

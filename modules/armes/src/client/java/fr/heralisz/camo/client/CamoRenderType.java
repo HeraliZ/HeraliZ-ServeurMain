@@ -18,6 +18,8 @@ import java.util.Map;
 public final class CamoRenderType extends RenderType {
    private static final Map<Key, RenderType> CACHE = new HashMap<>();
    private static final Map<RenderType, Info> INFO = new HashMap<>();
+   /** Dessin du Givre Vivant : le seul qui lit l'état gardé sur l'arme (uniforme CamoEtat). */
+   private static final int GIVRE_VIVANT = fr.heralisz.camo.Camo.GIVRE_VIVANT.shaderId;
 
    /** Ce qu'un rendu camo dessine (pour les effets 3D : CamoFx). */
    public record Info(int shaderId, int posMap) {}
@@ -61,6 +63,10 @@ public final class CamoRenderType extends RenderType {
                   shader.safeGetUniform("CamoTime").set((Util.getMillis() % 3_600_000L) / 1000.0F);
                   shader.safeGetUniform("CamoReveal").set(k.bag ? -1 : CamoFx.pendingReveal);
                   shader.safeGetUniform("CamoUvRect").set(k.u0, k.v0, k.du, k.dv);
+                  if (k.shaderId == GIVRE_VIVANT) {
+                     // avancement et sens du givre de cette arme (GivreClient) ; un sac reste en acier nu
+                     shader.safeGetUniform("CamoEtat").set(k.bag ? 0.0F : GivreClient.pendingEtat, k.bag ? 1.0F : GivreClient.pendingSens);
+                  }
                }
             }, () -> CamoFx.DEFAULT_BLEND.apply()))   // le mélange du shader camo ne doit pas rester « dernier appliqué » (voir CamoFx.emit)
             .setTransparencyState(NO_TRANSPARENCY)

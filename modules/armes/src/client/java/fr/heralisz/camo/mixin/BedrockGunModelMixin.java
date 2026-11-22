@@ -44,6 +44,10 @@ public abstract class BedrockGunModelMixin {
       if (camo != null) {
          shaderId = camo.shaderId;
          parts = camo.parts;
+         if (camo == Camo.GIVRE_VIVANT) {
+            // givrée ou non, et où en est le gel ou le dégel (22/11) : lu par CamoRenderType pour cette arme
+            fr.heralisz.camo.client.GivreClient.preparer(gun);
+         }
       } else {
          shaderId = skin.finish().shaderId;
          // bits 0-3 : lame, manche caoutchouc, métal et manche métal sombre ; bits 4+ : type de couteau (réglages propres

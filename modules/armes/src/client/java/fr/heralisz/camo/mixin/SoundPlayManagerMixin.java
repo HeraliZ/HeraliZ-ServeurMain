@@ -12,11 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Inspection d'un skin qui a sa propre scène : certaines armes (AWP du pack) jouent un seul son d'inspection calé sur leur
  * animation d'origine ; il ne suivrait plus la scène, qui porte ses propres bruitages (sound_effects de son animation).
+ * Ce son marque aussi le vrai début d'une inspection (TaCZ l'a acceptée) : le Givre Vivant y bascule (22/11, GivreClient).
  */
 @Mixin(value = SoundPlayManager.class, remap = false)
 public abstract class SoundPlayManagerMixin {
    @Inject(method = "playInspectSound", at = @At("HEAD"), cancellable = true)
    private static void heralisz$skinInspectSound(LivingEntity entity, GunDisplayInstance display, boolean noAmmo, CallbackInfo ci) {
+      fr.heralisz.camo.client.GivreClient.inspection(entity);
       if (SkinInspect.hasScene(entity.getMainHandItem())) ci.cancel();
    }
 }

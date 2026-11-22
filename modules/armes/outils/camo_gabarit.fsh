@@ -25,6 +25,11 @@ uniform float CamoReveal;
 // coordonnées de texture -> carte de positions : (u0, v0, largeur, hauteur). Armes : (0, 0, 1, 1) ; sacs : leur texture
 // dans l'atlas des blocs. Hors du rectangle (autre texture du même modèle) : pas de camo.
 uniform vec4 CamoUvRect;
+// Givre vivant (99) : (état du givre, 0 dégivrée .. 1 givrée ; sens, +1 gèle / -1 fond), posé par le mod pour chaque arme
+// (une inspection bascule l'état : GivreVivant) ; les autres programmes ne le déclarent pas
+#if CAMO_ID == 99
+uniform vec2 CamoEtat;
+#endif
 // rotation du repère de la vue vers celui du monde (posée par Minecraft) : reflets liés au monde des camos refaits
 uniform mat3 IViewRotMat;
 
@@ -51,8 +56,8 @@ vec3 VN_DETAIL = vec3(0.0, 0.0, 1.0);
 #define CAMO_RELIEF
 #endif
 // nouveaux camos du 19/11 (Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses ; Forge, Or craquelé, Dichroïque,
-// Vipère, Rouages, Prisme) : même relief, mêmes reflets
-#if (CAMO_ID >= 80 && CAMO_ID <= 89) || (CAMO_ID >= 210 && CAMO_ID <= 212)
+// Vipère, Rouages, Prisme) et collection de Noël du 22/11 (91 à 99) : même relief, mêmes reflets
+#if (CAMO_ID >= 80 && CAMO_ID <= 99) || (CAMO_ID >= 210 && CAMO_ID <= 212)
 #define CAMO_RELIEF
 #endif
 const float TAU = 6.2831853;
@@ -3740,7 +3745,7 @@ vec3 solid(int id, vec3 p, out vec3 em) {
 // Contre le bruit de pixels (vue joueur) : chaque détail a une taille minimale à l'écran ; un trait plus fin qu'un pixel
 // s'estompe (couverture) au lieu de clignoter ; un point lumineux garde son énergie en grossissant jusqu'à un pixel.
 // Outils communs aux deux lots du 19/11 (le 2e lot, plus bas, s'en sert aussi)
-#if (CAMO_ID >= 80 && CAMO_ID <= 89) || (CAMO_ID >= 210 && CAMO_ID <= 212)
+#if (CAMO_ID >= 80 && CAMO_ID <= 99) || (CAMO_ID >= 112 && CAMO_ID <= 119) || (CAMO_ID >= 210 && CAMO_ID <= 212)
 
 // taille d'un pixel à l'écran, en unités de l'arme (1 = longueur de l'arme)
 float ncPx(vec3 p) {
@@ -5161,6 +5166,896 @@ vec3 l2Prisme(vec3 p, out vec3 em) {
 }
 #endif
 
+#if (CAMO_ID >= 90 && CAMO_ID <= 99) || (CAMO_ID >= 112 && CAMO_ID <= 119)
+// ================================================================== collection de Noël (22/11, rendus validés par le propriétaire)
+// Camos : Guirlande 91, Flocon royal 92, Nuit d'hiver 93, Pain d'épices 95, Boule de Noël 96, Joyau impérial 97, Pull de
+// Noël 98, Givre vivant 99 (deux skins en un : une inspection gèle l'arme, la suivante la dégivre, CamoEtat). Finitions de
+// couteaux 112 à 116 (Karambit Sucre d'orge, Butterfly Saphir givré, M9 Guirlande, Karambit Or givré, Karambit Glace
+// sculptée ; objets écrits par outils/skins_couteaux.py). Entièrement procéduraux (aucune texture) ; les camos gardent le
+// relief de l'arme et les reflets liés au monde (CAMO_RELIEF) comme les lots du 19/11. Aperçus : outils/apercu_camos
+// (« #define APERCU_GIVRE » : le Givre vivant y suit une scène de 12 s au lieu de CamoEtat).
+// Contre le bruit de pixels : chaque détail a une taille minimale à l'écran (ncPx, ncTrait), comme les lots du 19/11.
+
+// 1 entre a et b (s : position dans la période, de 0 à 1), bords adoucis sur fw
+float noelBande(float s, float a, float b, float fw) {
+    return smoothstep(a - fw, a + fw, s) * (1.0 - smoothstep(b - fw, b + fw, s));
+}
+
+// vernis transparent (bonbon, laque) : reflet net du décor lié au monde, Fresnel d'un diélectrique
+vec3 noelVernis(vec3 col, vec3 n, float rough, float force) {
+    float ndv = facing(n);
+    float fres = 0.04 + 0.96 * pow(1.0 - ndv, 5.0);
+    vec3 env = envWorld(reflWorld(n), rough);
+    return col * (1.0 - 0.6 * fres) + env * fres * force;
+}
+
+// paillettes : un point par cellule (taille cs), qui s'allume quand le reflet passe par sa propre orientation ; énergie
+// gardée de loin (rayon d'au moins un pixel)
+float noelPaillettes(vec3 q, float cs, vec3 r, float px, float seuil, float graine) {
+    vec3 g = q / cs;
+    vec3 c = floor(g);
+    vec3 h = hash3(c + graine);
+    vec3 pt = c + 0.2 + 0.6 * h;
+    float d = length(g - pt) * cs;
+    float rr = max(0.18 * cs, 0.7 * px);
+    vec3 o = normalize(hash3(c + graine + 7.7) - 0.5);
+    float al = max(dot(r, o), 0.0);
+    float k = smoothstep(seuil, 1.0, al);
+    return exp(-d * d / (rr * rr)) * k * (0.18 * cs / rr) * (0.18 * cs / rr);
+}
+
+// distance sur la surface de l'arme (unités de l'arme) entre le point dessiné et le point voisin où les champs f (f1, f2)
+// valent f + d : la jacobienne écran des champs (constante sur une face plane) est inversée, le déplacement à l'écran
+// ramené sur l'arme. Des pastilles posées ainsi restent rondes quelle que soit la pente des champs sur la face.
+// df1, df2 : dérivées écran de f (passées par l'appelant pour les champs à saut, comme un angle)
+float noelDistChamps(vec2 d, vec2 dfx, vec2 dfy, vec3 p) {
+    float det = dfx.x * dfy.y - dfy.x * dfx.y;
+    if (abs(det) < 1e-14) return 1e3;
+    float sx = (d.x * dfy.y - dfy.x * d.y) / det;
+    float sy = (dfx.x * d.y - d.x * dfx.y) / det;
+    return length(dFdx(p) * sx + dFdy(p) * sy);
+}
+
+
+#if CAMO_ID == 91
+// ------------------------------------------------------------------ 91 Guirlande (légendaire, animé)
+// laque vert sapin presque noire, satinée (aiguilles très fines, poussière dorée qui scintille) ; un fil d'or fin enroule
+// l'arme en boucles qui pendent un peu, chargé d'ampoules de verre de cinq couleurs (rouge, or, vert, bleu, rose)
+// régulièrement espacées ; elles s'allument par vagues qui courent le long de l'arme et scintillent ; chaque ampoule
+// éclaire la laque autour d'elle
+vec3 grlCouleur(float h) {
+    return h < 0.2 ? hexc(0xff2626) : h < 0.4 ? hexc(0xffb01a) : h < 0.6 ? hexc(0x2cff70) : h < 0.8 ? hexc(0x3c80ff) : hexc(0xff48d0);
+}
+
+vec3 guirlande(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.2;
+    vec3 nv = normalize(viewNormal);
+    float px = ncPx(p);
+    // boucles : plans de normale dir ; (u, w) dans leur plan
+    vec3 dir = normalize(vec3(1.0, 0.5, 0.3));
+    vec3 u = normalize(cross(dir, vec3(0.0, 0.0, 1.0)));
+    vec3 w = cross(dir, u);
+    const float P = 0.095;
+    float qu = dot(p, u), qw = dot(p, w);
+    float sag = 0.12 * sin(qu * 30.0 + 1.3) + 0.08 * sin(qw * 26.0 - 0.7);
+    float s = dot(p, dir) / P + sag;
+    float k = floor(s + 0.5);
+    float gs = max(length(vec2(dFdx(s), dFdy(s))) / max(px, 1e-6), 1e-3);   // pente de s par unité de l'arme
+    float dfil = (s - k) / gs;
+    // ampoules : là où le fil croise une seconde famille de plans (normale (0, 1, 1) : elle coupe le fil sur les flancs, où
+    // il monte, comme sur le dessus, où il passe en travers) ; distance exacte sur la surface -> ampoules rondes
+    const float D2 = 0.03;
+    float t2 = dot(p, normalize(vec3(0.0, 1.0, 1.0))) / D2;
+    float off = hash(vec3(k, 1.7, 3.1));
+    float j0 = floor(t2 + off) - off;
+    vec2 dfx = vec2(dFdx(s), dFdx(t2)), dfy = vec2(dFdy(s), dFdy(t2));
+    const float RB = 0.0072;
+    // les deux ampoules voisines sur le fil : la plus proche est dessinée, les deux éclairent la laque (lueur continue)
+    float bd = 1e3, bon = 0.0, coeur = 0.0;
+    vec3 bcol = vec3(0.0), lumiere = vec3(0.0);
+    for (int i = 0; i <= 1; i++) {
+        float j = j0 + float(i);
+        float d = noelDistChamps(vec2(k - s, j - t2), dfx, dfy, p);
+        float bh = hash(vec3(k, j, 5.3));
+        vec3 c = grlCouleur(fract(bh + 0.37 * mod(j + 2.0 * k, 5.0)));
+        // vagues qui courent le long de l'arme (période 2,4 s), scintillement propre à chaque ampoule
+        float vague = 0.5 + 0.5 * sin(TAU * (t / 2.4 - k * 0.21 - j * 0.13));
+        float sc = 0.8 + 0.2 * sin(t * (2.0 + 3.0 * hash(vec3(k, j, 8.1))) + bh * 40.0);
+        float on = (0.18 + 0.82 * smoothstep(0.3, 0.85, vague)) * sc;
+        lumiere += c * on * (0.65 * exp(-pow(d / (RB * 1.7), 2.0)) + 0.4 * exp(-pow(d / (RB * 3.6), 2.0)));
+        if (d < bd) { bd = d; bon = on; bcol = c; }
+    }
+    float bulbe = 1.0 - smoothstep(RB - 0.7 * px, RB + 0.7 * px, bd);
+    coeur = exp(-pow(bd / (RB * 0.45), 2.0));
+    float fil = ncTrait(dfil, 0.0013, px) * (1.0 - bulbe);
+    // laque sapin satinée
+    float loin = smoothstep(0.001, 0.0035, px);
+    float aig = (vnoise(p * vec3(60.0, 160.0, 160.0) + vec3(vnoise(p * 90.0) * 3.0)) - 0.5) * (1.0 - loin);
+    vec3 base = mix(hexc(0x020d06), hexc(0x082414), 0.5 + 0.5 * fbm(p * 6.0, 3)) * (1.0 + 0.3 * aig);
+    vec3 col = base + envWorld(reflWorld(nv), 0.35) * (0.02 + 0.2 * pow(1.0 - facing(nv), 4.0));
+    // fil d'or
+    vec3 or_ = mix(hexc(0x6a4410), hexc(0xffd27a), smoothstep(0.2, 1.0, lum3(envWorld(reflWorld(nv), 0.2)) * 0.6));
+    col = mix(col, or_, fil);
+    // ampoule : verre coloré, cœur presque blanc quand elle est allumée
+    vec3 verre = bcol * (0.25 + 0.75 * bon) + vec3(1.0) * coeur * bon * 0.9;
+    // verre : bord plus sombre, petit reflet net du décor en haut de l'ampoule
+    float bord = smoothstep(RB * 0.55, RB, bd);
+    col = mix(col, bcol * 0.2 * (1.0 - 0.6 * bord) + envWorld(reflWorld(nv), 0.05) * 0.12, bulbe);
+    float poussiere = noelPaillettes(p, 0.0045, reflWorld(nv), px, 0.975, 9.4);
+    em = verre * bulbe * (1.3 - 0.5 * bord) + lumiere * (1.0 - bulbe) + hexc(0xffc860) * poussiere * 1.1;
+    return col * reliefMetal(0.5);
+}
+#endif
+
+// ------------------------------------------------------------------ outils des propositions de Noël
+// segment (distance d'un point du plan au segment ab)
+float noelSeg(vec2 q, vec2 a, vec2 b) {
+    vec2 pa = q - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-12), 0.0, 1.0);
+    return length(pa - ba * h);
+}
+
+// or jaune poli sur le reflet du décor lié au monde (rampe d'or, comme l'or du Diamond)
+vec3 noelOr(vec3 n, float rough) {
+    vec3 e = envWorld(reflWorld(n), rough);
+    float L = lum3(e) + 0.08;
+    L += (0.3 + 0.4 * L) * pow(1.0 - facing(n), 5.0);
+    float tt = 1.0 - exp(-0.95 * pow(L, 1.3) * 1.1);
+    float s[6] = float[6](0.0, 0.2, 0.42, 0.62, 0.82, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x2a1400), hexc(0x643a04), hexc(0xb0780c), hexc(0xe3aa1e), hexc(0xf9d046), hexc(0xffeca6));
+    return ramp6(tt, s, c);
+}
+
+// argent poli (même idée, rampe froide)
+vec3 noelArgent(vec3 n, float rough) {
+    vec3 e = envWorld(reflWorld(n), rough);
+    float L = lum3(e) + 0.1;
+    L += (0.3 + 0.4 * L) * pow(1.0 - facing(n), 5.0);
+    float tt = 1.0 - exp(-1.1 * pow(L, 1.2));
+    float s[6] = float[6](0.0, 0.2, 0.42, 0.62, 0.82, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x141a24), hexc(0x3a4656), hexc(0x7c8a9e), hexc(0xb8c6d8), hexc(0xe2ecf8), hexc(0xffffff));
+    return ramp6(tt, s, c);
+}
+
+// flocon à six branches dans le plan (centre 0, rayon R) : distance aux traits (bras, branches, hexagone du cœur) ;
+// g : graine (formes des branches)
+float noelFlocon(vec2 q, float R, vec3 g) {
+    float r = length(q);
+    float a = atan(q.y, q.x);
+    a = mod(a, PI / 3.0) - PI / 6.0;
+    a = abs(a);
+    vec2 f = r * vec2(cos(a), sin(a));
+    float d = noelSeg(f, vec2(0.0), vec2(R, 0.0));
+    // branches en V qui partent du bras à 60° (trois paires, longueurs tirées de la graine)
+    for (int i = 0; i < 3; i++) {
+        float xi = R * (0.3 + 0.2 * float(i) + 0.06 * (g.x - 0.5));
+        float li = R * (0.42 - 0.1 * float(i)) * (0.6 + 0.6 * fract(g.y * (3.0 + float(i) * 1.7)));
+        d = min(d, noelSeg(f, vec2(xi, 0.0), vec2(xi + li * 0.5, li * 0.866)));
+    }
+    // petit losange au bout du bras, hexagone du cœur
+    d = min(d, abs(length(f - vec2(R * 0.97, 0.0)) - R * 0.06));
+    float hx = R * (0.14 + 0.06 * g.z);
+    d = min(d, abs(f.x - hx) + step(hx * 0.6, f.y) * 1.0);
+    return d;
+}
+
+#if CAMO_ID == 92
+// ------------------------------------------------------------------ 92 Flocon royal (épique)
+// laque bleu roi métallisée (paillettes fines, vernis épais aux reflets nets) semée de grands flocons d'argent ciselés à
+// six branches, tous différents, et de quelques petits ; une poussière de diamant scintille et un éclat argenté traverse
+// lentement les flocons
+vec3 floconRoyal(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.25;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    float trait = 0.0, bordure = 0.0, eclatF = 0.0;
+    for (int L = 0; L < 2; L++) {
+        float C = L == 0 ? 0.12 : 0.075;
+        vec2 g = uv / C + float(L) * vec2(17.3, 5.1);
+        vec2 c0 = floor(g);
+        for (int i = -1; i <= 1; i++)
+        for (int j = -1; j <= 1; j++) {
+            vec2 c = c0 + vec2(float(i), float(j));
+            vec3 h = hash3(vec3(c, 31.0 + float(L)));
+            if (h.z < (L == 0 ? 0.3 : 0.65)) continue;
+            vec2 ctr = c + 0.3 + 0.4 * h.xy;
+            float R = (L == 0 ? 0.4 : 0.3) * (0.8 + 0.35 * fract(h.z * 7.3));
+            float ang = h.x * TAU;
+            vec2 q = (g - ctr);
+            q = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * q;
+            float d = noelFlocon(q, R, hash3(vec3(c, 77.0 + float(L)))) * C;
+            float w = max(R * C * 0.035, 0.0007);
+            float tr = ncTrait(d, w, px);
+            if (tr > trait) {
+                trait = tr;
+                eclatF = exp(-pow(fract(t * 0.12 + h.y + uv.x * 1.5) - 0.5, 2.0) / 0.004);
+            }
+            bordure = max(bordure, ncTrait(d, w * 2.2, px));
+        }
+    }
+    bordure *= 1.0 - trait;
+    float ndv = facing(nv);
+    vec3 r = reflWorld(nv);
+    vec3 laque = mix(hexc(0x051238), hexc(0x1c40a6), 0.3 + 0.45 * fbm(p * 5.0, 3) + 0.25 * ndv);
+    float pa = noelPaillettes(p, 0.0035, r, px, 0.9, 4.2);
+    laque += hexc(0x6a9cff) * pa * 0.8;
+    vec3 col = noelVernis(laque, nv, 0.04, 0.9);
+    vec3 n2 = bumpNormal(nv, 0.0008 * trait, p);
+    col = mix(col, col * 0.5, bordure * 0.8);
+    col = mix(col, noelArgent(n2, 0.1), trait);
+    float diam = noelPaillettes(p + vec3(0.3), 0.007, r, px, 0.992, 11.0);
+    em = hexc(0xd6ebff) * (trait * (0.1 + 0.9 * eclatF) + diam * 1.6);
+    return col * reliefMetal(0.55);
+}
+#endif
+
+#if CAMO_ID == 93
+// ------------------------------------------------------------------ 93 Nuit d'hiver (légendaire, animé)
+// l'arme ouvre sur une nuit d'hiver : bleu nuit profond vu sous un vernis de verre, voile d'aurore très léger, étoiles
+// lointaines qui scintillent, neige qui tombe en trois profondeurs (parallaxe : les flocons du fond bougent moins que
+// ceux de devant quand l'arme tourne) ; de la neige fraîche s'est posée sur les faces tournées vers le ciel (poudreuse
+// qui scintille), quelle que soit l'arme
+float noelNeige(vec3 q, float cs, float rad, float t, float vit, float graine, float px) {
+    q.y += t * vit;
+    vec3 g = q / cs;
+    vec3 c0 = floor(g);
+    float a = 0.0;
+    for (int i = 0; i <= 1; i++) {
+        vec3 c = c0 + vec3(0.0, float(i), 0.0);
+        vec3 h = hash3(c + graine);
+        if (h.z < 0.3) continue;
+        vec3 pt = c + 0.2 + 0.6 * h;
+        pt.x += 0.15 * sin(t * (0.6 + h.y) + h.x * 9.0);
+        pt.z += 0.15 * cos(t * (0.5 + h.x) + h.y * 7.0);
+        float d = length(g - pt) * cs;
+        float r = max(rad * (0.6 + 0.7 * h.z), 0.8 * px);
+        a += exp(-d * d / (r * r)) * (rad / r);
+    }
+    return a;
+}
+
+vec3 nuitHiver(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.35;
+    vec3 nv = normalize(viewNormal);
+    float px = ncPx(p);
+    vec3 par = ncParallaxe(p);
+    // ciel : dégradé bleu nuit (plus clair en bas, lueur de la neige au sol), brume douce qui dérive
+    float hy = clamp(p.y * 4.0 + 0.5, 0.0, 1.0);
+    vec3 nuit = mix(hexc(0x2f62b8), hexc(0x0a1846), smoothstep(0.0, 1.0, hy));
+    vec3 qb = (p + par * 0.03) * 5.0 + vec3(t * 0.015, 0.0, 0.0);
+    nuit += hexc(0x5a86d0) * 0.35 * smoothstep(0.45, 0.8, fbm(qb, 3));
+    // voile d'aurore très léger, loin derrière
+    float aur = exp(-pow((p.y + par.y * 0.04 + 0.08 * sin(p.x * 9.0 + t * 0.2)) / 0.05, 2.0));
+    nuit += hexc(0x2affb0) * 0.12 * aur * (0.6 + 0.4 * fbm(p * 12.0 + vec3(t * 0.05), 2));
+    // étoiles lointaines
+    vec3 qe = p + par * 0.05;
+    float et = 0.0;
+    {
+        vec3 g = qe / 0.01;
+        vec3 c = floor(g);
+        vec3 h = hash3(c + 4.4);
+        float d = length(g - c - 0.5 - 0.35 * (h - 0.5)) * 0.01;
+        float rr = max(0.0006, 0.7 * px);
+        et = step(0.78, h.x) * exp(-d * d / (rr * rr)) * (0.0006 / rr) * (0.0006 / rr) * (0.55 + 0.45 * sin(t * (1.0 + 2.0 * h.y) + h.z * 30.0));
+    }
+    // neige en trois profondeurs, beaucoup de flocons
+    float n1 = noelNeige(p + par * 0.03, 0.016, 0.0016, t, 0.03, 1.0, px);
+    float n2 = noelNeige(p + par * 0.014, 0.024, 0.0026, t, 0.045, 2.0, px);
+    float n3 = noelNeige(p + par * 0.004, 0.036, 0.0042, t, 0.065, 3.0, px);
+    vec3 neigeC = vec3(0.93, 0.97, 1.0);
+    vec3 col = nuit + neigeC * (n1 * 0.5 + n2 * 0.8 + n3 * 1.0);
+    col = noelVernis(col, nv, 0.02, 0.8);
+    // neige posée sur ce qui regarde le ciel (haut du monde, comme les reflets)
+    float haut = smoothstep(0.45, 0.8, (IViewRotMat * nv).y);
+    float tas = haut * smoothstep(0.3, 0.55, fbm(p * 24.0, 3) + 0.2);
+    vec3 poudre = mix(hexc(0xc6d8ee), hexc(0xffffff), fbm(p * 70.0, 2));
+    float scint = noelPaillettes(p, 0.0025, reflWorld(nv), px, 0.95, 6.6);
+    col = mix(col, poudre * (0.9 + 0.1 * facing(nv)), tas);
+    em = neigeC * (n3 * 0.45 + n2 * 0.25 + n1 * 0.1) + vec3(1.0) * et * 1.2 + vec3(0.85, 0.92, 1.0) * scint * tas * 1.6;
+    return col * reliefMetal(0.5);
+}
+#endif
+
+
+#if CAMO_ID == 95
+// ------------------------------------------------------------------ 95 Pain d'épices (rare)
+// biscuit doré au four (bords plus cuits, petites bulles, grain), glaçage royal blanc brillant en zigzags et en points le
+// long de l'arme, petits bonbons rouges et verts posés çà et là
+vec3 painEpices(vec3 p, out vec3 em) {
+    NO_SHADE = 0.0;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    float cuit = fbm(p * 14.0, 4);
+    vec3 biscuit = mix(hexc(0x5e2a10), hexc(0xa4622c), smoothstep(0.25, 0.75, cuit));
+    // bulles et grain du biscuit
+    float f1, f2; vec3 cell, fp;
+    worley(p * 90.0, f1, f2, cell, fp);
+    float bulle = smoothstep(0.18, 0.05, f1) * step(0.6, hash(cell));
+    float loin = smoothstep(0.001, 0.0035, px);
+    biscuit *= 1.0 - 0.35 * bulle * (1.0 - loin);
+    biscuit *= 0.92 + 0.16 * (vnoise(p * 220.0) - 0.5) * (1.0 - loin) + 0.08;
+    // glaçage : zigzag (bandes le long de l'arme) et points entre les zigzags
+    const float B = 0.075;
+    float rang = floor(uv.y / B);
+    float yl = uv.y - (rang + 0.5) * B;
+    float zz = abs(fract(uv.x / 0.03 + rang * 0.5) - 0.5) * 2.0;
+    float dz = abs(yl - (zz - 0.5) * B * 0.42);
+    float gl = 1.0 - smoothstep(0.0042 - 0.5 * px, 0.0042 + 0.5 * px, dz);
+    vec2 cp = vec2(fract(uv.x / 0.03 + rang * 0.5 + 0.5) - 0.5, (yl + B * 0.32) / 0.03);
+    float pt = 1.0 - smoothstep(0.18 - px / 0.03, 0.18 + px / 0.03, length(cp));
+    pt *= step(0.5, mod(rang, 2.0));
+    float glace = max(gl, pt);
+    // bonbons : pastilles rouges et vertes bombées, rares
+    vec2 gb = uv / 0.06;
+    vec2 cb = floor(gb);
+    vec3 hb = hash3(vec3(cb, 13.0));
+    float db = length(gb - cb - 0.25 - 0.5 * hb.xy) * 0.06;
+    float bonbon = (1.0 - smoothstep(0.0055 - 0.5 * px, 0.0055 + 0.5 * px, db)) * step(0.7, hb.z) * (1.0 - glace);
+    vec3 bcol = hb.x < 0.5 ? hexc(0xd8152e) : hexc(0x1aa653);
+    vec3 n2 = bumpNormal(nv, 0.0012 * glace + 0.0016 * bonbon, p);
+    vec3 col = biscuit * (0.95 + 0.1 * facing(nv));
+    vec3 blanc = hexc(0xfdf8ef);
+    col = mix(col, noelVernis(blanc * 0.92, n2, 0.1, 0.5), glace);
+    col = mix(col, noelVernis(bcol, n2, 0.05, 0.9), bonbon);
+    em = vec3(0.0);
+    return col * reliefMetal(0.45);
+}
+#endif
+
+#if CAMO_ID == 96
+// ------------------------------------------------------------------ 96 Boule de Noël (légendaire, animé)
+// verre de boule de sapin : miroir rouge profond (le décor lié au monde s'y reflète en rouge, éclats rose pâle), surface
+// très légèrement bombée ; arabesques de paillettes d'or posées dessus (volutes qui suivent un champ lisse), paillettes
+// qui scintillent ; un fin liseré blanc givré borde les volutes
+vec3 bouleNoelRouge(vec3 n, float rough) {
+    vec3 e = envWorld(reflWorld(n), rough);
+    float L = lum3(e) + 0.05;
+    L += (0.25 + 0.4 * L) * pow(1.0 - facing(n), 5.0);
+    float tt = 1.0 - exp(-0.9 * pow(L, 1.25));
+    float s[6] = float[6](0.0, 0.2, 0.42, 0.64, 0.84, 1.0);
+    vec3 c[6] = vec3[6](hexc(0x140003), hexc(0x4a0009), hexc(0x9c0717), hexc(0xe0182c), hexc(0xff7684), hexc(0xffe2e6));
+    return ramp6(tt, s, c);
+}
+
+vec3 bouleNoel(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.6;
+    vec3 nv = normalize(viewNormal);
+    float px = ncPx(p);
+    // bombé : la normale suit un champ lisse (les reflets se courbent comme sur une boule)
+    vec3 n = normalize(nv + softWarp(p, 3.0) * 0.35);
+    vec3 col = bouleNoelRouge(n, 0.02);
+    // volutes : une spirale d'or au centre de chaque grand panneau de l'arme (face de bloc du modèle, repérée par quadUV,
+    // comme le Diamond) : une par panneau, à sa taille, jamais coupée par une arête ; rien sur les faces fines
+    vec2 qx = dFdx(quadUV), qy = dFdy(quadUV);
+    vec3 px3 = dFdx(p), py3 = dFdy(p);
+    float detQ = qx.x * qy.y - qy.x * qx.y;
+    float dv = 1e3;
+    if (abs(detQ) > 1e-12) {
+        vec3 Pu = (px3 * qy.y - py3 * qx.y) / detQ;          // déplacement sur l'arme pour un côté de face entier
+        vec3 Pv = (py3 * qx.x - px3 * qy.x) / detQ;
+        vec2 dim = vec2(length(Pu), length(Pv));
+        float m = min(dim.x, dim.y);
+        if (m > 0.035) {
+            // panneau long : découpé en cases presque carrées le long de son grand côté, une volute centrée par case
+            bool long_x = dim.x >= dim.y;
+            float L = long_x ? dim.x : dim.y;
+            float N = max(1.0, floor(L / (m * 1.15) + 0.5));
+            vec2 o = quadUV * dim;
+            float cs = L / N;
+            float along = (long_x ? o.x : o.y) + 0.5 * L;
+            float ac = (floor(along / cs) + 0.5) * cs - 0.5 * L;
+            if (long_x) o.x -= ac; else o.y -= ac;
+            float sens = mod(floor(along / cs), 2.0) < 1.0 ? 1.0 : -1.0;
+            float R = min(0.4 * min(m, cs), 0.055);
+            float r = length(o);
+            float th = atan(o.y, o.x) * sens;
+            float K = R / 2.4;
+            float tours = r / K - th / TAU;
+            float d = abs(fract(tours) - 0.5) * K;
+            d = r > R ? max(d, r - R) : d;
+            dv = d;
+        }
+    }
+    float bande = ncTrait(dv, 0.0009, px);
+    // poudre d'or : plus dense vers le bas de l'arme, comme des paillettes tombées au fond de la boule
+    float poudre = smoothstep(0.02, -0.12, p.y + 0.04 * fbm(p * 12.0, 2));
+    bande = max(bande, poudre * step(0.55, hash(floor(p / 0.0016))));
+    // paillettes d'or : grain dense qui scintille dans la bande
+    vec3 r = reflWorld(nv);
+    float pa = noelPaillettes(p, 0.0022, r, px, 0.88, 5.5) + noelPaillettes(p + 0.37, 0.003, r, px, 0.9, 8.8);
+    vec3 orP = noelOr(normalize(nv + (hash3(floor(p / 0.0022)) - 0.5) * 0.8), 0.25);
+    col = mix(col, orP * 0.85, bande);
+    float tw = 0.6 + 0.4 * sin(t * 3.0 + hash(floor(p / 0.003)) * 40.0);
+    em = hexc(0xffd27a) * pa * bande * 1.6 * tw;
+    return col * reliefMetal(0.45);
+}
+#endif
+
+
+#if CAMO_ID >= 112 && CAMO_ID <= 119
+// ================================================================== finitions de couteaux de Noël (propositions, 22/11)
+// 112 Sucre d'orge, 113 Saphir givré, 114 Guirlande, 115 Or givré. Repère des couteaux : x le long de la lame
+// (-0.5 garde -> 0.5 pointe), y en travers, z épaisseur. Même rendu métal que les finitions existantes (metalShade).
+#if CAMO_ID == 114
+// guirlande du couteau 114 : relief au point q (repère de la lame) ; rend la couverture (fil, douille ou ampoule), et
+// hgt (hauteur du relief, unités de la lame), verre (1 sur l'ampoule), on (allumée), couleur, lumière portée sur l'acier
+// autour, glowS (cœur de l'ampoule)
+vec3 grlCouleurK(float h) {
+    return h < 0.2 ? hexc(0xff2626) : h < 0.4 ? hexc(0xffb01a) : h < 0.6 ? hexc(0x2cff70) : h < 0.8 ? hexc(0x3c80ff) : hexc(0xff48d0);
+}
+
+float grlRelief(vec2 q, float face, float t, out float hgt, out float verre, out float on, out vec3 coul, out vec3 lumiere,
+                out float glowS) {
+    const float P = 0.27, S = 0.6, SB = 0.135;
+    const float RW = 0.009, LS = 0.012, RS = 0.0105, LB = 0.034, RB = 0.022;
+    float off = face < 0.0 ? 0.5 : 0.0;
+    vec2 dW = normalize(vec2(face * S, 1.0));
+    vec2 aW = vec2(dW.y, -dW.x);
+    float u = (q.x - face * S * q.y) / P + off;
+    float k0 = floor(u + 0.5);
+    hgt = 0.0; verre = 0.0; on = 0.0; coul = vec3(0.0); lumiere = vec3(0.0); glowS = 0.0;
+    float cov = 0.0;
+    for (int dk = -1; dk <= 1; dk++) {
+        float k = k0 + float(dk);
+        float ck = (k - off) * P;
+        vec2 o = vec2(ck, 0.0);
+        // fil (tube)
+        float dl = dot(q - o, aW);
+        float hw = sqrt(max(RW * RW - dl * dl, 0.0));
+        if (hw > hgt) { hgt = hw; verre = 0.0; }
+        cov = max(cov, 1.0 - smoothstep(RW - 0.0015, RW, abs(dl)));
+        float ph = hash(vec3(k, 2.0, 9.0)) * SB;
+        float sq = dot(q - o, dW);
+        float j0 = floor((sq - ph) / SB + 0.5);
+        for (int dj = -1; dj <= 1; dj++) {
+            float j = j0 + float(dj);
+            vec2 A = o + dW * (j * SB + ph);
+            float side = mod(j + k, 2.0) < 1.0 ? 1.0 : -1.0;
+            vec2 hd = aW * side;
+            // douille
+            vec2 v2 = q - A;
+            float al2 = dot(v2, hd), sd2 = dot(v2, dW);
+            if (al2 > 0.0 && al2 < RW + LS && abs(sd2) < RS) {
+                float hs = RS * 0.8 * sqrt(max(1.0 - (sd2 / RS) * (sd2 / RS), 0.0));
+                if (hs > hgt) { hgt = hs; verre = 0.0; }
+                cov = 1.0;
+            }
+            // ampoule (ellipsoïde)
+            vec2 C = A + hd * (RW + LS + LB * 0.92);
+            vec2 v = q - C;
+            float al = dot(v, hd), sd = dot(v, dW);
+            float e = (al / LB) * (al / LB) + (sd / RB) * (sd / RB);
+            float bh = hash(vec3(k, j, 5.3));
+            vec3 c = grlCouleurK(bh);
+            float vague = 0.5 + 0.5 * sin(TAU * (t / 2.2 - C.x * 1.6 - bh * 0.3));
+            float o2 = (0.15 + 0.85 * smoothstep(0.3, 0.85, vague)) * (0.85 + 0.15 * sin(t * 3.0 + bh * 40.0));
+            if (e < 1.0) {
+                float hb = RB * sqrt(1.0 - e);
+                if (hb > hgt) { hgt = hb; verre = 1.0; on = o2; coul = c; glowS = exp(-e * 3.0); }
+                cov = 1.0;
+            }
+            float dC = length(v);
+            lumiere += c * o2 * (0.55 * exp(-pow(dC / 0.03, 2.0)) + 0.25 * exp(-pow(dC / 0.07, 2.0)));
+        }
+    }
+    return cov;
+}
+#endif
+
+
+vec3 noelLame(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    em = vec3(0.0);
+    float along = kAlong(p);
+#if CAMO_ID == 112
+    // sucre d'orge : bandes en biais sur la lame (large bande rouge entre deux filets, filet menthe), sucre dur verni
+    float s = (p.x + p.y * 2.2) / 0.16 - t * 0.04;
+    float fs = fract(s);
+    float fw = max(fwidth(s), 1e-4) * 0.7;
+    float rouge = noelBande(fs, 0.10, 0.135, fw) + noelBande(fs, 0.19, 0.45, fw) + noelBande(fs, 0.505, 0.54, fw);
+    float menthe = noelBande(fs, 0.74, 0.775, fw);
+    vec3 base = mix(hexc(0xf6efe4), hexc(0xfffbf4), fbm(p * 9.0, 2));
+    base = mix(base, hexc(0x12a85a), clamp(menthe, 0.0, 1.0));
+    base = mix(base, hexc(0xd8142e), clamp(rouge, 0.0, 1.0));
+    vec3 n = bladeNormal(p);
+    vec3 env = studio(n);
+    float fres = pow(1.0 - clamp(abs(n.z), 0.0, 1.0), 2.0);
+    float sp = p.y * 6.0 - 1.1 * viewNormal.y - 0.6 * viewNormal.x + p.x * 0.5;
+    float glint = exp(-pow((sp - 0.12) / 0.06, 2.0));
+    return base * (0.8 + 0.18 * min(env.g, 1.2)) + env * (0.08 + 0.3 * fres) + glint * 0.45;
+#elif CAMO_ID == 113
+    // saphir givré : gemme bleu glace (même vernis que les gemmes Doppler) avec des flocons de cristal pris dans la masse,
+    // vus un peu sous la surface (ils glissent avec l'angle) et qui scintillent
+    vec3 c = gemDoppler(p, hexc(0x030b30), hexc(0x1546b4), hexc(0x56bcff), hexc(0xeaf8ff), 0.1, vec3(12.7, 3.3, 8.1), em);
+    vec2 q = vec2(p.x, p.y) + viewNormal.xy * 0.02;
+    const float C = 0.12;
+    vec2 g = q / C;
+    vec2 c0 = floor(g);
+    float fl = 0.0;
+    for (int i = -1; i <= 1; i++)
+    for (int j = -1; j <= 1; j++) {
+        vec2 cc = c0 + vec2(float(i), float(j));
+        vec3 h = hash3(vec3(cc, 61.0));
+        if (h.z < 0.4) continue;
+        vec2 o = g - (cc + 0.3 + 0.4 * h.xy);
+        float a = h.x * TAU;
+        o = mat2(cos(a), -sin(a), sin(a), cos(a)) * o;
+        float R = 0.32 * (0.7 + 0.5 * h.y);
+        float d = noelFlocon(o, R, hash3(vec3(cc, 62.0))) * C;
+        fl = max(fl, kLine(d, R * C * 0.022));
+    }
+    float tw = 0.6 + 0.4 * sin(t * 2.0 + dot(p, vec3(40.0, 70.0, 10.0)));
+    c = mix(c, vec3(0.8, 0.93, 1.0), fl * 0.6);
+    em += vec3(0.7, 0.88, 1.0) * fl * 0.5 * tw;
+    return c;
+#elif CAMO_ID == 114
+    // guirlande en relief enroulée autour de la lame : un fil vert passe en biais d'un tranchant à l'autre et revient par
+    // l'autre face (biais inverse : il fait le tour de la lame) ; ampoules de verre bombées sur leur douille, en relief,
+    // allumées par vagues de la garde à la pointe ; elles portent leur ombre sur l'acier et l'éclairent de leur couleur
+    float px = ncPx(p);
+    vec3 n0 = bladeNormal(p);
+    float face = faceNormal(p).z >= 0.0 ? 1.0 : -1.0;
+    vec2 q = p.xy;
+    float hgt, verre, onB, glowS;
+    vec3 cB, lumiere;
+    float ombre = 1.0 - 0.55 * grlRelief(q + vec2(-0.007, 0.009), face, t, hgt, verre, onB, cB, lumiere, glowS);
+    float dans = grlRelief(q, face, t, hgt, verre, onB, cB, lumiere, glowS);
+    vec3 base = mix(hexc(0x262b33), hexc(0x3c424c), fbm(vec3(p.x * 30.0, p.y * 300.0, 1.0), 2));
+    vec3 col = metalShade(p, base, 0.0, 0.6) * ombre;
+    vec3 n = bumpNormal(n0, hgt, p);
+    vec3 env = studio(n);
+    float fres = pow(1.0 - clamp(abs(n.z), 0.0, 1.0), 2.0);
+    // fil et douille : plastique vert sombre brillant ; ampoule : verre coloré, cœur lumineux quand elle est allumée
+    vec3 plast = hexc(0x0b2a15) * (0.55 + 0.45 * env.g) + env * 0.22 * (0.4 + 0.6 * fres);
+    vec3 orD = mix(hexc(0x6a4410), hexc(0xffd27a), clamp(env.g * 0.7, 0.0, 1.0));
+    // verre : teinte de l'ampoule, bord sombre (bombé), reflet net du studio, cœur lumineux
+    float bord = 1.0 - glowS;
+    vec3 vit = cB * (0.22 + 0.2 * env.g) * (1.0 - 0.55 * bord) + env * (0.15 + 0.5 * fres);
+    vec3 objet = mix(mix(plast, orD, step(0.5, hgt / 0.0105) * (1.0 - verre) * 0.0), vit, verre);
+    col = mix(col, objet, dans);
+    // tache de reflet : là où la normale bombée regarde vers la lumière du studio
+    float spec = pow(clamp(dot(n, normalize(vec3(-0.45, 0.55, 0.7))), 0.0, 1.0), 40.0) * verre * dans;
+    col += vec3(1.0) * spec * 0.9;
+    em = cB * onB * verre * dans * (1.0 + 1.8 * glowS) + lumiere * (1.0 - dans) * 1.4;
+    return col;
+#elif CAMO_ID == 116
+    // glace sculptée : lame taillée dans un bloc de glace claire : grandes facettes nettes (chacune renvoie le studio à
+    // son angle), arêtes vives qui accrochent la lumière, bulles et fêlures prises dans la masse (parallaxe), cœur bleu
+    // qui luit doucement, givre blanc sur la pointe
+    float f1, f2; vec3 cell, fp;
+    worley(vec3(p.x * 7.0, p.y * 16.0, 0.5), f1, f2, cell, fp);
+    vec3 hf = hash3(cell + 4.0);
+    vec3 n = normalize(bladeNormal(p) + (hf - 0.5) * vec3(0.9, 0.9, 0.2));
+    vec3 env = studio(n);
+    float arete = 1.0 - smoothstep(0.0, 0.045, f2 - f1);
+    vec2 par = viewNormal.xy * 0.03;
+    float masse = fbm(vec3(p.x * 6.0 + par.x * 6.0, p.y * 14.0 + par.y * 14.0, 1.0), 3);
+    vec3 profond = mix(hexc(0x072a66), hexc(0x3aa0f0), masse);
+    vec3 col = profond * (0.45 + 0.25 * hf.z) + env * (0.18 + 0.42 * hf.y) * vec3(0.82, 0.93, 1.0);
+    col += vec3(0.85, 0.95, 1.0) * arete * (0.25 + 0.35 * env.g);
+    vec3 qb = vec3(p.x * 55.0 + par.x * 30.0, p.y * 110.0 + par.y * 60.0, 2.0);
+    float fel = smoothstep(0.92, 0.985, 1.0 - abs(2.0 * fbm(qb * 0.4, 3) - 1.0));
+    float bul = smoothstep(0.86, 0.93, vnoise(qb));
+    col += vec3(0.75, 0.9, 1.0) * (fel * 0.35 + bul * 0.4);
+    float pointe = smoothstep(0.7, 0.95, along + 0.15 * (fbm(p * 30.0, 2) - 0.5));
+    col = mix(col, vec3(0.9, 0.96, 1.0) * (0.8 + 0.25 * env.g), pointe * 0.85);
+    vec3 cellS = floor(p * 600.0);
+    float sc = step(0.975, hash(cellS)) * (0.5 + 0.5 * sin(t * 4.0 + hash(cellS + 2.0) * 40.0));
+    em = hexc(0x2a90ff) * 0.18 * (0.7 + 0.3 * sin(t * 1.3 + p.x * 6.0)) * (1.0 - pointe) + vec3(0.9, 0.96, 1.0) * sc * (0.6 + pointe);
+    return col;
+#else
+    // or givré : or poli miroir ; le givre part de la garde et gagne la lame (fougères de glace blanches et nettes, voile
+    // laiteux), cristaux qui scintillent
+    vec3 base = mix(hexc(0xc8901e), hexc(0xf6cc5a), fbm(p * 6.0, 2));
+    vec3 col = metalShade(p, base, 1.0, 0.9);
+    float front = smoothstep(0.8, 0.25, along + 0.3 * (fbm(p * 9.0, 3) - 0.5));
+    vec3 q = vec3(p.x * 22.0, p.y * 60.0, 3.1);
+    q.y += 0.8 * fbm(p * 26.0, 2);
+    float r1 = 1.0 - abs(2.0 * fbm(q, 5) - 1.0);
+    float r2 = 1.0 - abs(2.0 * fbm(q * 2.2 + vec3(4.0, 1.0, 0.0), 4) - 1.0);
+    float fougere = max(kLine(1.0 - r1, 0.035), 0.75 * kLine(1.0 - r2, 0.025));
+    float voile = smoothstep(0.25, 0.0, along) * 0.5;
+    float givre = clamp(fougere * front + voile, 0.0, 1.0);
+    vec3 blanc = mix(hexc(0xd4e6f8), hexc(0xffffff), fbm(p * 90.0, 2));
+    col = mix(col, blanc * (0.9 + 0.2 * studio(bladeNormal(p)).g), givre * 0.95);
+    vec3 cell = floor(p * 700.0);
+    float sc = step(0.96, hash(cell)) * (0.5 + 0.5 * sin(t * 4.0 + hash(cell + 3.0) * 40.0));
+    em = vec3(0.85, 0.93, 1.0) * sc * givre * 1.4 + vec3(0.6, 0.8, 1.0) * fougere * front * 0.08;
+    return col;
+#endif
+}
+
+vec3 noelCouteau(vec3 p, out vec3 em) {
+    em = vec3(0.0);
+    if (PART > 0.62 && PART <= 0.9) {                                                // manche caoutchouc (Karambit, M9)
+#if CAMO_ID == 112
+        return rubberGrip(p);
+#elif CAMO_ID == 113
+        return gripWrap(p, hexc(0x050c24), hexc(0x1c3a7a), hexc(0x8ad8ff), 0.6, em);
+#elif CAMO_ID == 114
+        return gripWrap(p, hexc(0x03120a), hexc(0x0f3a1e), hexc(0xffc040), 1.0, em);
+#elif CAMO_ID == 116
+        return gripWrap(p, hexc(0x060c1c), hexc(0x1a2c52), hexc(0x9fdcff), 0.6, em);
+#else
+        return gripWrap(p, hexc(0x1a120a), hexc(0x5a4020), hexc(0xd8f0ff), 0.5, em);
+#endif
+    }
+    if (PART > 0.15 && PART <= 0.28) {                                               // manche métal noir (Butterfly)
+        vec3 dark = mix(hexc(0x0c0d10), hexc(0x1e2025), fbm(vec3(p.x * 30.0, p.y * 300.0, 1.0), 2));
+        return metalShade(p, dark, 0.0, 0.35);
+    }
+    if (PART > 0.36 && PART <= 0.46) {                                               // pivots, loquet
+        return metalShade(p, mix(hexc(0x0d0e11), hexc(0x1a1c21), fbm(p * 40.0, 2)), 0.0, 0.55);
+    }
+    if (PART > 0.28 && PART <= 0.36) {                                               // insert du manche
+#if CAMO_ID == 112
+        vec3 inlay = hexc(0xb0102a);
+#elif CAMO_ID == 113
+        vec3 inlay = hexc(0x10308a);
+#elif CAMO_ID == 114
+        vec3 inlay = hexc(0x0c4a24);
+#elif CAMO_ID == 116
+        vec3 inlay = hexc(0x2a6ab0);
+#else
+        vec3 inlay = hexc(0xb88a2a);
+#endif
+        return metalShade(p, inlay * (0.92 + 0.08 * fbm(p * 12.0, 2)), 0.7, 0.55);
+    }
+#if CAMO_ID == 114
+    if (PART > 0.46 && PART <= 0.62) {                                               // garde, pommeau : acier sombre
+        return metalShade(p, mix(hexc(0x1a1d22), hexc(0x2c3038), fbm(p * 30.0, 2)), 0.0, 0.6);
+    }
+#endif
+    return noelLame(p, em);
+}
+#endif
+
+
+// ------------------------------------------------------------------ skins en relief (2e tour du 22/11)
+// lumière fixe dans la vue (haut gauche, devant) pour faire lire les reliefs fins (mailles, feuilles, perles)
+float noelLambert(vec3 n) {
+    return clamp(dot(n, normalize(vec3(-0.35, 0.6, 0.72))), 0.0, 1.0);
+}
+
+#if CAMO_ID == 97
+// ------------------------------------------------------------------ 97 Joyau impérial (légendaire)
+// orfèvrerie impériale : émail rouge translucide posé sur un guilloché d'argent (vagues gravées qui scintillent sous
+// l'émail quand l'arme bouge), treillis de fils d'or perlés en relief, un diamant serti à chaque croisement (dôme,
+// reflet très net, feux de couleur, éclats)
+vec3 joyauImperial(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.3;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    const float T = 0.074;
+    const float K = 0.70710678;
+    vec2 g = vec2(uv.x + uv.y, uv.x - uv.y) / T;
+    vec2 cid = floor(g);
+    vec2 f = fract(g) - 0.5;
+    float db = (0.5 - max(abs(f.x), abs(f.y))) * T * K;
+    vec2 vc = (sign(f) * 0.5 - f) * T * K;
+    float dc = length(vc);
+    // fil d'or perlé
+    const float WB = 0.0032;
+    float along = (abs(f.x) > abs(f.y) ? f.y : f.x) * T * K;
+    float perle = 0.7 + 0.3 * cos(along / 0.0034 * TAU);
+    float hB = sqrt(max(WB * WB - db * db, 0.0)) * perle;
+    float fil = 1.0 - smoothstep(WB - 0.6 * px, WB + 0.6 * px, db);
+    // diamant serti au croisement, griffes d'or
+    const float RG = 0.0062;
+    float gem = 1.0 - smoothstep(RG - 0.6 * px, RG + 0.6 * px, dc);
+    float hG = sqrt(max(RG * RG - dc * dc, 0.0));
+    float serti = (1.0 - smoothstep(RG + 0.0014 - 0.6 * px, RG + 0.0014 + 0.6 * px, dc)) * (1.0 - gem);
+    // guilloché sous l'émail : vagues concentriques ondulées autour du centre de la losange
+    float rr = length(f);
+    float ang = atan(f.y, f.x);
+    float gv = rr * 13.0 + 0.2 * sin(ang * 8.0);
+    float loin = smoothstep(0.0008, 0.0025, px);
+    vec3 nGuil = bumpNormal(nv, 0.00032 * sin(gv * TAU) * (1.0 - loin), p);
+    float lg = lum3(envWorld(reflWorld(nGuil), 0.06));
+    vec3 email = hexc(0x6a0412) * (0.3 + 1.15 * lg) + hexc(0xff3a4a) * 0.08 * smoothstep(0.6, 1.0, lg);
+    float fres = 0.04 + 0.96 * pow(1.0 - facing(nv), 5.0);
+    email = email * (1.0 - 0.4 * fres) + envWorld(reflWorld(nv), 0.02) * (0.05 + 0.55 * fres);
+    // ombre douce le long des fils et autour des pierres
+    float ao = smoothstep(WB, WB * 3.5, db) * smoothstep(RG + 0.0014, RG * 2.4, dc);
+    email *= 0.5 + 0.5 * ao;
+    // or en relief
+    vec3 nB = bumpNormal(nv, max(hB, serti * 0.0012), p);
+    vec3 orC = noelOr(nB, 0.1);
+    vec3 col = mix(email, orC, max(fil, serti));
+    // diamant
+    vec3 nD = bumpNormal(nv, hG * 1.4, p);
+    vec3 rD = reflWorld(nD);
+    float ld = lum3(envWorld(rD, 0.0));
+    vec3 feu = spectrum(fract(dot(rD, vec3(2.1, 1.3, 0.7)) * 1.5 + hash(vec3(cid, 3.0))));
+    vec3 diam = mix(vec3(0.62, 0.68, 0.78) * (0.15 + 1.0 * ld), feu * (0.5 + 0.8 * ld), 0.3);
+    col = mix(col, diam, gem);
+    float eclat = gem * smoothstep(0.8, 1.0, ld) * (0.55 + 0.45 * sin(t * 3.0 + hash(vec3(cid, 7.0)) * 30.0));
+    em = vec3(1.0) * eclat * 1.3 + feu * gem * 0.08;
+    return col * reliefMetal(0.4);
+}
+#endif
+
+#if CAMO_ID == 98
+// ------------------------------------------------------------------ 98 Pull de Noël (épique)
+// pull de Noël tricoté : mailles en V en relief (deux brins torsadés par maille, creux entre les rangs), laine duveteuse ;
+// motifs tricotés en rangées : flocons, sapins, zigzag et points, rouge, blanc et vert
+float pullMotif(vec2 ij) {
+    float j = mod(ij.y, 30.0);
+    float i = ij.x;
+    if (j < 2.0) return 2.0;
+    if (j < 3.0) return mod(i, 2.0) < 1.0 ? 1.0 : 2.0;
+    if (j < 4.0) return 2.0;
+    if (j < 5.0) return 0.0;
+    if (j < 14.0) {
+        float x = mod(i, 12.0) - 5.0, y = j - 9.0;
+        float ax = abs(x), ay = abs(y);
+        bool on = ax <= 4.0 && ay <= 4.0 && (x == 0.0 || y == 0.0 || (ax == ay && ax <= 3.0) || (ax <= 1.0 && ay <= 1.0));
+        return on ? 1.0 : 0.0;
+    }
+    if (j < 15.0) return 0.0;
+    if (j < 18.0) {
+        float z = abs(mod(i, 4.0) - 2.0);
+        return (j - 15.0) == z ? 1.0 : 0.0;
+    }
+    if (j < 19.0) return 0.0;
+    if (j < 21.0) return 2.0;
+    if (j < 28.0) {
+        float x = mod(i + 3.0, 10.0) - 4.0, y = j - 21.0;
+        bool tronc = y < 1.0 && abs(x) < 0.5;
+        bool cime = y >= 1.0 && abs(x) <= floor((5.0 - y) * 0.75 + 0.01);
+        return (tronc || cime) && y < 6.0 ? 1.0 : 2.0;
+    }
+    return 2.0;
+}
+
+vec3 pullNoel(vec3 p, out vec3 em) {
+    NO_SHADE = 0.05;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    const vec2 M = vec2(0.0088, 0.0074);
+    vec2 g = uv / M;
+    vec2 ij = floor(g);
+    vec2 a = fract(g);
+    // maille en V : deux brins en biais qui se rejoignent en bas de la maille, torsadés
+    float dl = noelSeg(a, vec2(0.06, 1.08), vec2(0.5, 0.0));
+    float dr = noelSeg(a, vec2(0.94, 1.08), vec2(0.5, 0.0));
+    float d = min(dl, dr);
+    float brin = sqrt(max(1.0 - (d / 0.31) * (d / 0.31), 0.0));
+    float tors = 0.5 + 0.5 * sin((a.y * 3.2 + (dl < dr ? a.x : -a.x) * 2.2) * TAU);
+    float hm = brin * (0.8 + 0.2 * tors);
+    float loin = smoothstep(0.0009, 0.0028, px);
+    float h = mix(hm, 0.62, loin) * 0.0011;
+    vec3 n2 = bumpNormal(nv, h, p);
+    float c = pullMotif(ij);
+    vec3 laine = c < 0.5 ? hexc(0xb0102a) : c < 1.5 ? hexc(0xf0ebe0) : hexc(0x17663a);
+    float duvet = (vnoise(p * 1100.0) - 0.5) * (1.0 - loin);
+    vec3 col = laine * (0.55 + 0.45 * mix(hm, 0.72, loin)) * (1.0 + 0.25 * duvet);
+    col *= 0.62 + 0.55 * noelLambert(n2);
+    // poils de laine qui accrochent la lumière de biais
+    col += laine * 0.16 * pow(1.0 - facing(n2), 3.0);
+    em = vec3(0.0);
+    return col * reliefMetal(0.3);
+}
+#endif
+
+#if CAMO_ID == 99
+// ------------------------------------------------------------------ 99 Givre vivant (légendaire, deux skins en un)
+// Dégivrée : acier polaire, bleu profond poli (reflets nets bleutés, fines paillettes froides). Une inspection fait geler
+// l'arme : le givre part de germes et gagne toute la surface en 2,5 s (front dentelé qui luit en avançant), puis reste :
+// cristaux en aiguilles (chaque domaine du givre a son orientation, deux familles d'aiguilles à 60°), plumes de glace
+// en relief, voile laiteux plus épais au cœur, éclats qui scintillent. L'inspection suivante la dégivre : le givre
+// s'amincit et recule vers ses germes, des gouttes d'eau bombées restent un instant puis s'évaporent.
+// État (0 dégivrée .. 1 givrée) et sens (+1 gèle, -1 fond) : en jeu, donnés par le mod à chaque inspection ; dans
+// l'aperçu, une scène de 12 s (arme nue, inspection, arme givrée, inspection, arme nue).
+void givreEtat(float t, out float etat, out float sens) {
+#ifdef APERCU_GIVRE
+    float s = mod(t, 12.0);
+    sens = s < 7.5 ? 1.0 : -1.0;
+    etat = s < 1.5 ? 0.0 : s < 4.0 ? (s - 1.5) / 2.5 : s < 7.5 ? 1.0 : s < 10.0 ? 1.0 - (s - 7.5) / 2.5 : 0.0;
+#else
+    etat = clamp(CamoEtat.x, 0.0, 1.0);
+    sens = CamoEtat.y < 0.0 ? -1.0 : 1.0;
+#endif
+}
+
+vec3 givreVivant(vec3 p, out vec3 em) {
+    float t = CamoTime;
+    NO_SHADE = 0.25;
+    vec3 nv = normalize(viewNormal);
+    vec3 fn = faceNormal(p);
+    float px = ncPx(p);
+    float etat, sens;
+    givreEtat(t, etat, sens);
+    // ---- acier polaire (l'arme dégivrée)
+    vec3 r0 = reflWorld(nv);
+    float ndv = facing(nv);
+    vec3 envA = envWorld(r0, 0.06);
+    vec3 acier = mix(hexc(0x081530), hexc(0x183a70), 0.35 + 0.45 * fbm(p * 5.0, 3));
+    acier = acier * (0.55 + 0.35 * lum3(envA)) + envA * hexc(0x9cc8ff) * (0.08 + 0.55 * pow(1.0 - ndv, 4.0));
+    acier += hexc(0x8ac4ff) * noelPaillettes(p, 0.003, r0, px, 0.93, 2.7) * 0.7;
+    // ---- front du givre : il part de germes ; en gelant il avance (bord qui luit), en fondant il recule
+    float f1, f2; vec3 cell, fp;
+    worley(p * 7.0, f1, f2, cell, fp);
+    float germe = f1 / 7.0;
+    vec3 w = vec3(fbm(p * 18.0, 2), fbm(p * 18.0 + 4.0, 2), fbm(p * 18.0 + 8.0, 2)) - 0.5;
+    float r1 = 1.0 - abs(2.0 * fbm(p * vec3(70.0, 30.0, 30.0) + w * 3.0, 4) - 1.0);
+    float r2 = 1.0 - abs(2.0 * fbm(p * vec3(30.0, 70.0, 48.0) + w * 3.0 + 7.0, 4) - 1.0);
+    float e = etat * etat * (3.0 - 2.0 * etat);
+    float R = e * 0.2 - 0.01;
+    float front = R - germe + 0.02 * (r1 - 0.5) + 0.012 * (r2 - 0.5);
+    float givre = smoothstep(0.0, 0.004, front);
+    // en fondant, le givre s'amincit partout en plus de reculer
+    float mince = sens > 0.0 ? 1.0 : smoothstep(0.0, 0.6, etat);
+    // épaisseur qui varie par plaques : la glace fine laisse deviner l'acier bleu, les plaques épaisses sont blanches
+    float epais = smoothstep(0.0, 0.04, front) * mince * (0.7 + 0.3 * smoothstep(0.3, 0.7, fbm(p * 8.0 + vec3(3.0), 3)));
+    float bord = givre * (1.0 - smoothstep(0.003, 0.016, front)) * step(0.0, sens) * step(etat, 0.999);
+    // ---- cristaux en aiguilles : domaines de Voronoï dans le plan de la face, chacun son orientation
+    vec3 plan;
+    vec2 uv = diamPlan(p, fn, plan);
+    float g1, g2; vec3 dc, dfp;
+    worley(vec3(uv * 24.0, 3.7), g1, g2, dc, dfp);
+    vec3 hd = hash3(dc + 1.3);
+    float th = hd.x * PI;
+    vec2 q = uv * 24.0 - dfp.xy;
+    vec2 d1 = vec2(cos(th), sin(th)), d2 = vec2(cos(th + PI / 3.0), sin(th + PI / 3.0));
+    float u1 = dot(q, d1) * 3.0 + hd.y, u2 = dot(q, d2) * 4.0 + hd.z;
+    float a1 = 1.0 - smoothstep(0.0, 0.07 + fwidth(u1), abs(fract(u1) - 0.5));
+    float a2 = (1.0 - smoothstep(0.0, 0.05 + fwidth(u2), abs(fract(u2) - 0.5))) * step(0.45, fract(dot(q, d1) * 1.3 + hd.x));
+    float joint = 1.0 - smoothstep(0.0, 0.08, g2 - g1);
+    float loin = smoothstep(0.0012, 0.0035, px);
+    float aig = max(a1, 0.7 * a2) * (1.0 - loin) + 0.35 * loin;
+    float nerv = smoothstep(0.88, 0.97, r1) + 0.8 * smoothstep(0.9, 0.98, r2);
+    // ---- relief et matière du givre
+    float h = givre * (0.0003 + 0.0006 * epais + 0.0007 * nerv + 0.00045 * aig * epais + 0.0002 * joint);
+    vec3 n2 = bumpNormal(nv, h, p);
+    float lam = noelLambert(n2);
+    // givre duveteux : grain de petits cristaux clairs (effacé de loin), plumes de glace bien blanches, aiguilles discrètes
+    float grain = smoothstep(0.62, 0.8, vnoise(p * 1400.0)) * (1.0 - loin);
+    vec3 laiteux = mix(hexc(0xbcd8f0), hexc(0xf0f7fd), epais) * (0.95 + 0.1 * fbm(p * 40.0, 2)) + 0.1 * grain;
+    float blanc = clamp(0.3 * aig * epais + 1.3 * nerv + 0.25 * joint * epais, 0.0, 1.0);
+    vec3 cristal = mix(laiteux, hexc(0xffffff), blanc);
+    vec3 glace = cristal * (0.66 + 0.46 * lam) + envWorld(reflWorld(n2), 0.03) * hexc(0xcfe6ff) * (0.08 + 0.3 * pow(1.0 - facing(n2), 3.0));
+    // mince au front et en fondant : l'acier se voit au travers, teinté par la glace
+    float opac = givre * clamp(0.55 + 0.45 * epais + 0.4 * blanc, 0.0, 1.0);
+    vec3 col = mix(acier, glace, opac);
+    // ---- gouttes d'eau en fondant : petites lentilles bombées là où le givre vient de partir, qui s'évaporent
+    float gouttes = 0.0;
+    if (sens < 0.0) {
+        vec2 gc = floor(uv / 0.007);
+        vec3 hg = hash3(vec3(gc, 9.0));
+        vec2 go = (uv / 0.007 - gc - 0.25 - 0.5 * hg.xy) * 0.007;
+        float rg = 0.0012 + 0.0016 * hg.z;
+        float dg = length(go);
+        float parti = smoothstep(0.0, 0.03, -front) * (1.0 - smoothstep(0.03, 0.08, -front));
+        gouttes = (1.0 - smoothstep(rg - 0.5 * px, rg + 0.5 * px, dg)) * step(0.55, hg.x) * parti * smoothstep(0.0, 0.5, etat + 0.15);
+        vec3 ng = bumpNormal(nv, sqrt(max(rg * rg - dg * dg, 0.0)), p);
+        vec3 eau = acier * 0.6 + envWorld(reflWorld(ng), 0.0) * 0.35;
+        col = mix(col, eau, gouttes);
+    }
+    float sc = (noelPaillettes(p, 0.0024, reflWorld(n2), px, 0.9, 4.4) + noelPaillettes(p + 0.21, 0.0016, reflWorld(n2), px, 0.93, 6.1)) * givre * (0.5 + 0.5 * epais);
+    em = vec3(0.88, 0.96, 1.0) * sc * 1.7 + hexc(0x8fd8ff) * bord * 0.7 + hexc(0xbfe8ff) * aig * epais * givre * 0.04 + hexc(0x5ab8ff) * givre * (1.0 - epais) * 0.05;
+    return col * reliefMetal(0.5);
+}
+#endif
+#endif
+
 vec3 camoColor(int id, vec3 p, out vec3 em) {
     em = vec3(0.0);
 #if CAMO_ID == 1
@@ -5251,6 +6146,24 @@ vec3 camoColor(int id, vec3 p, out vec3 em) {
     return l2Vipere(p, em);
 #elif CAMO_ID == 89
     return l2Rouages(p, em);
+#elif CAMO_ID == 91
+    return guirlande(p, em);
+#elif CAMO_ID == 92
+    return floconRoyal(p, em);
+#elif CAMO_ID == 93
+    return nuitHiver(p, em);
+#elif CAMO_ID == 95
+    return painEpices(p, em);
+#elif CAMO_ID == 96
+    return bouleNoel(p, em);
+#elif CAMO_ID == 97
+    return joyauImperial(p, em);
+#elif CAMO_ID == 98
+    return pullNoel(p, em);
+#elif CAMO_ID == 99
+    return givreVivant(p, em);
+#elif CAMO_ID >= 112 && CAMO_ID <= 116
+    return noelCouteau(p, em);
 #elif CAMO_ID >= 200
     return skinSurface(p, em);
 #elif (CAMO_ID >= 50 && CAMO_ID < 70) || (CAMO_ID >= 100 && CAMO_ID < 200)

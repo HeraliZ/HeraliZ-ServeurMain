@@ -59,6 +59,10 @@ NODE_PATH=$(npm root -g) node rendre.js travaux.json
   sur l'arme, fond transparent ; `camo: 0` = sans camo) : rendre en 512 px puis réduire (moyenne) pour une icône lisse ;
 - `temps` : `CamoTime` (camos animés) ; `relief: true` : affiche la carte de relief tirée de la texture ;
 - `"ancien": true` sur une passe : `main` d'avant la refonte 2026-10 (comparaisons avant / après avec l'ancien shader).
+- `"defines": "#define APERCU_GIVRE"` sur une passe du Givre Vivant (camo 99) : cycle gel / dégel de 12 s piloté par
+  `temps` (dans le jeu, l'état vient de l'arme : uniforme `CamoEtat`) ; sans lui, l'aperçu montre l'acier nu.
+- couteaux : `"parts": 15 | (n << 4)` sur le rendu (n = 1 Butterfly, 2 Karambit, 3 M9, comme le jeu), sinon manches et
+  pièces gardent la texture d'origine.
 
 Pour une animation : une image par pas, puis `ffmpeg -framerate 12 -i %03d.png ... anim.gif`.
 
