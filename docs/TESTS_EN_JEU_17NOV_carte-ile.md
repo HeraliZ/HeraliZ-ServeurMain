@@ -2223,8 +2223,8 @@ Ce qui change :
 - **Loot de la carte** (Loot 0.20.11) : comme tous les couteaux de 1 à 3 étoiles, Sucre d'Orge et M9 Guirlande peuvent
   sortir des coffres T7 (Unique) ; jamais les 4 étoiles. Rareté des 5 couteaux : Unique (`raretes.json`).
 - **Dessins des skins** : 92 programmes (86 camos et couteaux, 6 effets 3D) au lieu de 79, tous compilés avec un vrai
-  compilateur OpenGL ; copie envoyée aux joueurs à la connexion : 26 fichiers de plus, environ 100 Ko compressés au lieu
-  de 87 (`docs/SKINS_PROTEGES.md`).
+  compilateur OpenGL ; copie envoyée aux joueurs à la connexion : 26 fichiers de plus, 103 Ko compressés au lieu de 87
+  (journal du Ptero, `docs/SKINS_PROTEGES.md`).
 
 À tester en jeu :
 - [ ] **Connexion** après la mise à jour : journal du jeu « 92 programmes prêts, 0 en échec » ; journal du serveur
@@ -2244,5 +2244,7 @@ Ce qui change :
 
 Pas testé : tout en jeu. Fait hors du jeu : rendus des vrais programmes (identiques à la galerie validée), compilation
 des 92 programmes, contrôles des textes (aucune erreur, avertissements d'avant), outils des caisses (0 problème) ; la
-fabrication et les contrôles des jars se font sur GitHub (la fabrication n'est pas possible sur la machine de Claude). Les
-chiffres de la copie des dessins (environ 100 Ko) sont estimés : à relire dans le journal du serveur.
+fabrication et les contrôles des jars se font sur GitHub (la fabrication n'est pas possible sur la machine de Claude) :
+contrôle de branche vert (0 problème), démarrage d'essai réussi (mêmes erreurs et avertissements connus que la veille).
+Mis en ligne le 22/11 avec redémarrage : serveur démarré à 15 h 33 (heure UTC), aucune erreur Java après le démarrage,
+copie des dessins prête (193 fichiers, 800 Ko, 103 Ko compressés) ; pack du launcher fabriqué et envoyé.

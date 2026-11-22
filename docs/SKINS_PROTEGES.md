@@ -74,7 +74,7 @@ Ce qu'il ne faut pas voir :
 
 Lignes attendues dans le journal du jeu (`logs/latest.log`) :
 - au démarrage du jeu : `[Camos] dessins des skins pas encore reçus : ils arrivent du serveur à la connexion (skins sans effet d'ici là)` ;
-- à la connexion : `[Camos] dessins des skins reçus du serveur : 193 fichiers, 798 Ko (environ 100 Ko compressés, 1 paquet(s)), empreinte … ; gardés en mémoire seulement` ;
+- à la connexion : `[Camos] dessins des skins reçus du serveur : 193 fichiers, 800 Ko (103 Ko compressés, 1 paquet(s)), empreinte … ; gardés en mémoire seulement` ;
 - quelques instants après : `[Camos] dessins des skins fabriqués depuis la copie du serveur : 92 programmes prêts, 0 en échec, … ms de compilation (… ms en tout)` ;
 - à une reconnexion au même serveur : `[Camos] dessins des skins : même copie que celle déjà en place, rien à refaire` ;
 - au F3+T : `Shaders des camos inchangés : 92 programmes gardés, rien recompilé` ;
@@ -82,16 +82,16 @@ Lignes attendues dans le journal du jeu (`logs/latest.log`) :
 - si la copie est abîmée : `[Camos] copie des dessins des skins illisible (…) : rien n'est refait (…)`.
 
 Lignes attendues dans le journal du serveur :
-- au démarrage : `[Camos] dessins des skins : 193 fichiers (798 Ko) compressés en environ 100 Ko, 1 paquet(s) par joueur, empreinte …, … ms` ;
-- à chaque connexion : `[Camos] dessins des skins envoyés à <pseudo> : environ 100 Ko en 1 paquet(s)` ;
+- au démarrage : `[Camos] dessins des skins : 193 fichiers (800 Ko) compressés en 103 Ko, 1 paquet(s) par joueur, empreinte …, … ms` ;
+- à chaque connexion : `[Camos] dessins des skins envoyés à <pseudo> : 103 Ko en 1 paquet(s)` ;
 - à `/camos dessins` : `[Camos] /camos dessins : le jeu de <pseudo> refait ses programmes des skins depuis la copie du serveur`,
   puis le résultat renvoyé par son jeu : `[Camos] /camos dessins chez <pseudo> : 92 programmes prêts, 0 en échec, … ms`.
 
 Le contenu des dessins n'est jamais écrit dans les journaux : seulement des nombres, des tailles et une empreinte.
 
 Chiffres depuis la collection de Noël du 22/11 (13 programmes de plus : 8 camos, 5 couteaux ; avant : 79 programmes,
-167 fichiers, 698 Ko, 87 Ko compressés) ; la taille compressée est une estimation faite hors du jeu, à relire dans le
-journal du serveur après la mise en ligne.
+167 fichiers, 698 Ko, 87 Ko compressés), relus dans le journal du Ptero après la mise en ligne du 22/11 (démarrage de
+15 h 33, heure UTC : 193 fichiers, 800 Ko, 103 Ko compressés, 57 ms).
 
 Pourquoi 193 fichiers et pas 187 (167 et 161 avant le 22/11 ; validation du 21/11, journal du Ptero de 17 h 45) : la livraison
 (`outils/construire.py`, `marquer`) pose la mention de licence `LISEZ-MOI-HeraliZ.txt` dans chaque dossier de nos jars,
@@ -101,7 +101,7 @@ mentions. Le contrôle « dessins » de `outils/verifier.py` regarde les jars fa
 
 ## Coût
 
-- Environ 100 Ko envoyés à chaque connexion (un paquet ; 87 Ko avant la collection de Noël), environ 0,9 Mo de mémoire chez le joueur (copie et fichiers ouverts). Au
+- 103 Ko envoyés à chaque connexion (un paquet ; 87 Ko avant la collection de Noël), environ 0,9 Mo de mémoire chez le joueur (copie et fichiers ouverts). Au
   démarrage du serveur, lecture et compression une seule fois (132 ms sur le Ptero le 21/11).
 - La fabrication des 92 programmes une fois par session, juste après la connexion, étalée sur les images (25 ms de
   compilation au plus par image). C'est le travail que le jeu faisait avant au lancement, pendant le chargement des
