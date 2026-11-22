@@ -2294,4 +2294,6 @@ chances validés par le propriétaire (« oui good »), puis mise en ligne avec 
 - [ ] panneau du staff : donner 1 clé de Noël à un joueur ; ouvrir (accroupi + clic droit) : la roue, un lot donné ;
       aperçu du contenu de la caisse : les 19 lots et leurs chances.
 
-Pas testé : tout en jeu ; rendus hors jeu seulement (outil d'aperçu des caisses, sans la lumière du jeu).
+Pas testé : tout en jeu ; rendus hors jeu seulement (outil d'aperçu des caisses, sans la lumière du jeu). Sur GitHub :
+contrôle de branche vert, démarrage d'essai réussi (mêmes erreurs connues que la veille). Mise en ligne le 22/11 avec
+redémarrage : serveur redémarré à 16 h 34 (heure UTC), aucune erreur Java après le démarrage ; pack du launcher envoyé.
