@@ -13,7 +13,8 @@ import java.util.Map;
  * Les caisses du serveur : quatre caisses de boss (Sujet N-07, Sylvorn, Mere des Ruines, Porteur de Peste), la caisse de
  * vote, la caisse de quetes, la caisse d'evenement, la caisse Gemme (les couteaux aux finitions rubis/saphir/emeraude/
  * perle noire), les caisses d'objets (camos, stickers, chantier, medicale, largage) et la caisse des emotes (scene de
- * spectacle : chaque recompense debloque une emote de HeraliZ Emote).
+ * spectacle : chaque recompense debloque une emote de HeraliZ Emote) ; la caisse de Noel (22/11, premiere caisse d'evenement
+ * preparee en avance, choix du proprietaire : les objets de Noel et des herals ; ses cles sont donnees par le staff).
  * glow = couleur principale (lumiere, particules, nom), accent = couleur secondaire.
  * L'identifiant est aussi celui du design 3D (voir client.render.scene.Designs).
  */
@@ -31,7 +32,9 @@ public enum CrateType {
     BUILD("build", 0xFFB020, 0x6FD8FF, LootRarity.EPIC),
     TRAUMA("trauma", 0x3CFF8A, 0xFF2A3A, LootRarity.EPIC),
     LARGAGE("largage", 0xFF5A1A, 0x9FD85A, LootRarity.EPIC),
-    SPECTACLE("spectacle", 0xFF4FD8, 0x3FE0FF, LootRarity.EPIC);
+    SPECTACLE("spectacle", 0xFF4FD8, 0x3FE0FF, LootRarity.EPIC),
+    // toujours en dernier : l'ordre des caisses sert d'index (formes de collision, CrateShapes)
+    NOEL("noel", 0xFF3B4F, 0xFFD86A, LootRarity.LEGENDARY);
 
     /** Autres noms acceptes par les commandes. */
     private static final Map<String, CrateType> ALIASES = Map.ofEntries(
@@ -40,7 +43,7 @@ public enum CrateType {
             Map.entry("peste", PORTEUR_DE_PESTE), Map.entry("porteur", PORTEUR_DE_PESTE),
             Map.entry("quetes", QUETE), Map.entry("quest", QUETE), Map.entry("quests", QUETE),
             Map.entry("evenement", EVENT), Map.entry("events", EVENT),
-            Map.entry("gemmes", GEMME), Map.entry("gem", GEMME), Map.entry("gems", GEMME), Map.entry("geode", GEMME), Map.entry("camos", CAMO), Map.entry("skins", CAMO), Map.entry("peinture", CAMO), Map.entry("atelier", CAMO), Map.entry("stickers", STICKER), Map.entry("booster", STICKER), Map.entry("holo", STICKER), Map.entry("chantier", BUILD), Map.entry("construction", BUILD), Map.entry("base", BUILD), Map.entry("bunker", BUILD), Map.entry("medical", TRAUMA), Map.entry("medic", TRAUMA), Map.entry("medicale", TRAUMA), Map.entry("soin", TRAUMA), Map.entry("soins", TRAUMA), Map.entry("hopital", TRAUMA), Map.entry("airdrop", LARGAGE), Map.entry("ravitaillement", LARGAGE), Map.entry("supply", LARGAGE), Map.entry("drop", LARGAGE), Map.entry("largages", LARGAGE), Map.entry("emote", SPECTACLE), Map.entry("emotes", SPECTACLE), Map.entry("danse", SPECTACLE), Map.entry("scene", SPECTACLE), Map.entry("show", SPECTACLE));
+            Map.entry("gemmes", GEMME), Map.entry("gem", GEMME), Map.entry("gems", GEMME), Map.entry("geode", GEMME), Map.entry("camos", CAMO), Map.entry("skins", CAMO), Map.entry("peinture", CAMO), Map.entry("atelier", CAMO), Map.entry("stickers", STICKER), Map.entry("booster", STICKER), Map.entry("holo", STICKER), Map.entry("chantier", BUILD), Map.entry("construction", BUILD), Map.entry("base", BUILD), Map.entry("bunker", BUILD), Map.entry("medical", TRAUMA), Map.entry("medic", TRAUMA), Map.entry("medicale", TRAUMA), Map.entry("soin", TRAUMA), Map.entry("soins", TRAUMA), Map.entry("hopital", TRAUMA), Map.entry("airdrop", LARGAGE), Map.entry("ravitaillement", LARGAGE), Map.entry("supply", LARGAGE), Map.entry("drop", LARGAGE), Map.entry("largages", LARGAGE), Map.entry("emote", SPECTACLE), Map.entry("emotes", SPECTACLE), Map.entry("danse", SPECTACLE), Map.entry("scene", SPECTACLE), Map.entry("show", SPECTACLE), Map.entry("christmas", NOEL), Map.entry("xmas", NOEL), Map.entry("sapin", NOEL));
 
     public final String id;
     public final int glow;

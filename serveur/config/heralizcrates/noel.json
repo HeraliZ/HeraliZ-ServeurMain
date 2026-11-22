@@ -1,0 +1,142 @@
+{
+  "_aide": "Écrit par outils/caisses.py (ne pas modifier à la main). Chaque récompense : item, count, weight (poids du tirage), rarity, nbt, name, commands ({player} = pseudo), give_item (false = commandes seulement).",
+  "rewards": [
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 22000,
+      "rarity": "rare",
+      "name": "&9+1 500 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 1500 Caisse"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 12000,
+      "rarity": "epic",
+      "name": "&5+3 000 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 3000 Caisse"
+      ]
+    },
+    {
+      "item": "heraliz_grades:bon",
+      "count": 1,
+      "weight": 6000,
+      "rarity": "legendary",
+      "name": "&6+6 000 hérals",
+      "give_item": false,
+      "commands": [
+        "eco donner {player} 6000 Caisse"
+      ]
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"cadeau_surprise\"}",
+      "weight": 8000,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"sucre_d_orge\"}",
+      "weight": 8000,
+      "rarity": "rare"
+    },
+    {
+      "item": "reanimation:finisher",
+      "count": 1,
+      "nbt": "{Execution:\"bonhomme_de_neige\"}",
+      "weight": 4000,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_pain_epices",
+      "count": 1,
+      "weight": 10000,
+      "rarity": "rare"
+    },
+    {
+      "item": "heralisz_camo:camo_flocon_royal",
+      "count": 1,
+      "weight": 5000,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_pull_noel",
+      "count": 1,
+      "weight": 5000,
+      "rarity": "epic"
+    },
+    {
+      "item": "heralisz_camo:camo_guirlande",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_nuit_hiver",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_boule_noel",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_joyau_imperial",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "legendary"
+    },
+    {
+      "item": "heralisz_camo:camo_givre_vivant",
+      "count": 1,
+      "weight": 3000,
+      "rarity": "legendary"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "nbt": "{GunId:\"heralisz_skins:karambit__sucre_orge\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b,HeralizRarete:\"legendaire\"}",
+      "weight": 1500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "nbt": "{GunId:\"heralisz_skins:m9__guirlande\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b,HeralizRarete:\"legendaire\"}",
+      "weight": 1500,
+      "rarity": "legendary"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "nbt": "{GunId:\"heralisz_skins:butterfly__saphir_givre\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b,HeralizRarete:\"unique\"}",
+      "weight": 667,
+      "rarity": "mythic"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "nbt": "{GunId:\"heralisz_skins:karambit__glace_sculptee\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b,HeralizRarete:\"unique\"}",
+      "weight": 667,
+      "rarity": "mythic"
+    },
+    {
+      "item": "tacz:modern_kinetic_gun",
+      "count": 1,
+      "nbt": "{GunId:\"heralisz_skins:karambit__or_givre\",GunFireMode:\"SEMI\",GunCurrentAmmoCount:1,HasBulletInBarrel:1b,HeralizRarete:\"unique\"}",
+      "weight": 667,
+      "rarity": "mythic"
+    }
+  ]
+}

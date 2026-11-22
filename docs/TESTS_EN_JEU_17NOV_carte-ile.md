@@ -2268,3 +2268,29 @@ hérals, clés données par le staff le moment venu) viendra après validation d
 - [ ] aperçu des caisses Camo, Événement, Gemme : aucun objet de Noël ; Vote et Quête : plus les 3 finishers de Noël.
 
 Pas testé : tout en jeu (outils des caisses et du loot : 0 problème ; fabrication et contrôles sur GitHub).
+
+## 55. Caisse de Noël : première caisse d'événement préparée en avance (22/11, en attente de validation)
+
+Choix du propriétaire : une caisse Noël avec tous les objets de Noël et des hérals ; modèle fixe (« pas de modèle animé,
+les autres on a retiré les animations ») : un sapin avec étoile, guirlande, cadeaux au sol et neige. **Pas mise en ligne
+tant que le propriétaire n'a pas validé les rendus du sapin et les chances.**
+
+- Caisse `heralizcrates:noel_crate`, clé `heralizcrates:noel_key` (identifiants figés dès la mise en ligne), Boutique 1.8.0.
+  Modèle : `client/render/scene/crates/Sapin.java` (sapin à cinq étages enneigés, guirlande d'ampoules de cinq couleurs en
+  festons, boules, étoile d'or en croix, six cadeaux enrubannés sur un tapis de neige, cadenas sur le grand cadeau rouge),
+  textures `modules/boutique/outils/textures_noel.py`, formes de collision `outils/formes_caisses.py` (2,75 blocs de haut).
+- Contenu (`outils/caisses.py`, `serveur/config/heralizcrates/noel.json`) : hérals 40 % (1 500 : 22 %, 3 000 : 12 %,
+  6 000 : 6 %), finishers 20 % (Cadeau surprise 8 %, Sucre d'orge 8 %, Bonhomme de neige 4 %), camos 35 % (Pain d'Épices
+  10 %, Flocon Royal et Pull de Noël 5 % chacun, les 5 légendaires 3 % chacun), couteaux 5 % (Sucre d'Orge et M9
+  Guirlande 1,5 % chacun, Saphir Givré, Or Givré et Glace Sculptée 0,67 % chacun).
+- Clés : seulement données par le staff (panneau du staff, onglet Économie, clés « Noël » ; ou
+  `/heraliz givekey <joueur> noel <nombre>`) ; dans « Mes clés » de la boutique : « Donnée par le staff, lors
+  d'événements ». La caisse se pose en jeu par le staff (bloc `heralizcrates:noel_crate`), au moment de l'événement.
+
+À tester en jeu (après la mise en ligne) :
+- [ ] caisse posée au spawn : le sapin comme sur les rendus, de jour et de nuit (ampoules et étoile lumineuses), sans
+      saccade en arrivant ; on ne passe pas au travers ; icône de la caisse et de la clé dans l'inventaire ;
+- [ ] panneau du staff : donner 1 clé de Noël à un joueur ; ouvrir (accroupi + clic droit) : la roue, un lot donné ;
+      aperçu du contenu de la caisse : les 19 lots et leurs chances.
+
+Pas testé : tout en jeu ; rendus hors jeu seulement (outil d'aperçu des caisses, sans la lumière du jeu).

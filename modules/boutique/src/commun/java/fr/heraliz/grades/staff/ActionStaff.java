@@ -61,7 +61,7 @@ public enum ActionStaff {
     // (PanelEconomie) ; ce que fait chaque action : OperationEco. Ajouter une action : ici à la suite, puis OperationEco,
     // PanelEconomie et les textes.
     ECO_HERALS("eco_herals", Onglet.ECONOMIE, "joueur", false, 5, true, true, null, true),
-    ECO_CLES("eco_cles", Onglet.ECONOMIE, "joueur", false, 5, true, true, List.of("vote", "quete", "event", "gemme", "camo", "spectacle"), true),
+    ECO_CLES("eco_cles", Onglet.ECONOMIE, "joueur", false, 5, true, true, List.of("vote", "quete", "event", "gemme", "camo", "spectacle", "noel"), true),
     ECO_PB("eco_pb", Onglet.ECONOMIE, "joueur", false, 5, true, true, null, true),
     ECO_SAISON("eco_saison", Onglet.ECONOMIE, "clan", false, 5, true, true, List.of("pve", "pvp", "events"), true),
     ECO_XP_CLAN("eco_xp_clan", Onglet.ECONOMIE, "clan", false, 5, true, true, null, true);

@@ -5,6 +5,7 @@ import fr.heraliz.crates.client.render.scene.crates.Gemme;
 import fr.heraliz.crates.client.render.scene.crates.MereDesRuines;
 import fr.heraliz.crates.client.render.scene.crates.PorteurDePeste;
 import fr.heraliz.crates.client.render.scene.crates.Quete;
+import fr.heraliz.crates.client.render.scene.crates.Sapin;
 import fr.heraliz.crates.client.render.scene.crates.SujetN07;
 import fr.heraliz.crates.client.render.scene.crates.Sylvorn;
 import fr.heraliz.crates.client.render.scene.crates.Urne;
@@ -52,6 +53,7 @@ public final class Designs {
             case "trauma" -> new Trauma();
             case "largage" -> new Largage();
             case "spectacle" -> new Spectacle();
+            case "noel" -> new Sapin();
             default -> throw new IllegalArgumentException("caisse inconnue : " + id);
         };
     }

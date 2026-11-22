@@ -167,6 +167,16 @@ CAISSES_BETA = {
         ("camos_mythiques_chacun", 2 / 2, "mythic"),
         ("emotes", "epic", 13.5, "epic"),
     ],
+    # caisse de Noël (22/11, choix du propriétaire : « une caisse Noël avec tous les trucs de Noël dedans », plus des hérals
+    # pour que les objets de Noël restent rares ; première caisse d'événement préparée en avance, clés données par le
+    # staff) : chaque objet de Noël (outils/donnees/noel.json) à chance fixe, environ 40 % de hérals
+    "noel": [
+        ("herals", 1500, 22, "rare"), ("herals", 3000, 12, "epic"), ("herals", 6000, 6, "legendary"),
+        ("noel_finisher", "cadeau_surprise", 8, "rare"), ("noel_finisher", "sucre_d_orge", 8, "rare"),
+        ("noel_finisher", "bonhomme_de_neige", 4, "legendary"),
+        ("noel_camos", "rare", 10, "rare"), ("noel_camos", "epic", 5, "epic"), ("noel_camos", "legendary", 3, "legendary"),
+        ("noel_couteaux", 3, 1.5, "legendary"), ("noel_couteaux", 4, 2 / 3, "mythic"),
+    ],
     "vote": [
         ("herals", 30, 22, "common"), ("herals", 50, 14, "common"), ("herals", 100, 6, "uncommon"),
         ("grade", "rescape", 1, 2.5, "rare"), ("grade", "traqueur", 1, 1.5, "epic"), ("grade", "roi_de_la_zone", 1, 1, "legendary"),
@@ -205,16 +215,18 @@ def _etoiles():
     return env["ETOILES"]
 
 
-def couteaux_par_etoiles():
+def couteaux_par_etoiles(noel=False):
     """{étoiles: [récompense sans poids]} : couteaux TaCZ (heralisz_skins) et armes de mêlée (heralisz_melee) skinnées,
-    sauf les couteaux de Noël (NOEL : caisse Noël seulement)."""
+    sauf les couteaux de Noël (NOEL : caisse Noël seulement) ; noel : seulement les couteaux de Noël."""
     et = _etoiles()
     out = {}
     for f in sorted((RACINE / "serveur/tacz/heralisz_skins/data/heralisz_skins/index/guns").glob("*.json")):
-        if "heralisz_skins:" + f.stem in NOEL["couteaux"]:
+        if ("heralisz_skins:" + f.stem in NOEL["couteaux"]) != noel:
             continue
         out.setdefault(et.get(f.stem, 4), []).append({"item": "tacz:modern_kinetic_gun", "count": 1, "nbt":
             '{GunId:"heralisz_skins:%s",GunFireMode:"SEMI",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}' % f.stem})
+    if noel:
+        return out
     for f in sorted((RACINE / "modules/armes/src/serveur/resources/data/heralisz_melee/index/melee").glob("*__*.json")):
         out.setdefault(et.get(f.stem, 4), []).append({"item": "heralisz_tactical:melee", "count": 1,
                                                       "nbt": '{MeleeWeaponId:"heralisz_melee:%s"}' % f.stem})
@@ -272,6 +284,21 @@ def recompenses_beta(nom, lignes):
             _, r0, p, rar = l
             ids = [c["item"] for c in cos["camos"] if c["rarity"] == r0 and c["item"] not in NOEL["camos"]]
             out += _groupe([{"item": i, "count": 1} for i in ids], p * len(ids), rar)
+        elif g == "noel_camos":
+            # caisse Noël : chaque camo de Noël de cette rareté d'origine à p %
+            _, r0, p, rar = l
+            ids = [c["item"] for c in cos["camos"] if c["rarity"] == r0 and c["item"] in NOEL["camos"]]
+            out += _groupe([{"item": i, "count": 1} for i in ids], p * len(ids), rar)
+        elif g == "noel_couteaux":
+            # caisse Noël : chaque couteau de Noël de ce rang (étoiles) à p %, la rareté inscrite sur l'objet
+            _, et, p, rar = l
+            ids = couteaux_par_etoiles(noel=True).get(et, [])
+            out += _groupe(inscrire_rarete(ids, rar), p * len(ids), rar)
+        elif g == "noel_finisher":
+            _, fid, p, rar = l
+            if fid not in NOEL["finishers"]:
+                raise SystemExit("[caisses] %s : finisher %s absent de outils/donnees/noel.json" % (nom, fid))
+            out += _groupe([{"item": "reanimation:finisher", "count": 1, "nbt": '{Execution:"%s"}' % fid}], p, rar)
         elif g == "camos_mythiques":
             _, p, rar = l
             out += _groupe([{"item": i, "count": 1} for i in CAMOS_MYTHIQUES], p, rar)
@@ -348,7 +375,8 @@ def recompenses_beta(nom, lignes):
     return out
 
 
-NOM_CLE = {"camo": "Camo", "spectacle": "Émotes", "gemme": "Gemme", "quete": "Quêtes", "event": "Événement", "vote": "Vote"}
+NOM_CLE = {"camo": "Camo", "spectacle": "Émotes", "gemme": "Gemme", "quete": "Quêtes", "event": "Événement", "vote": "Vote",
+           "noel": "Noël"}
 
 
 # ---------------------------------------------------------------- réparations des autres caisses

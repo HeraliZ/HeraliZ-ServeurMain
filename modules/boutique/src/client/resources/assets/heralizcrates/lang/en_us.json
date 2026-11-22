@@ -162,6 +162,8 @@
   "subtitles.heralizcrates.theme.gem_charge": "Crystal charging",
   "block.heralizcrates.spectacle_crate": "Emote Crate",
   "item.heralizcrates.spectacle_key": "Emote Key",
+  "block.heralizcrates.noel_crate": "Christmas Crate",
+  "item.heralizcrates.noel_key": "Christmas Key",
   "message.heralizcrates.all_emotes": "You already have every emote from this crate.",
   "gui.heralizcrates.case.error.all_emotes": "You already have every emote from this crate.",
   "gui.heralizcrates.case.state.preview": "content preview",

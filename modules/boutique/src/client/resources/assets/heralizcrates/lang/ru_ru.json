@@ -162,6 +162,8 @@
   "subtitles.heralizcrates.theme.gem_charge": "Кристалл заряжается",
   "block.heralizcrates.spectacle_crate": "Ящик эмоций",
   "item.heralizcrates.spectacle_key": "Ключ эмоций",
+  "block.heralizcrates.noel_crate": "Рождественский ящик",
+  "item.heralizcrates.noel_key": "Рождественский ключ",
   "message.heralizcrates.all_emotes": "У тебя уже есть все эмоции из этого ящика.",
   "gui.heralizcrates.case.error.all_emotes": "У тебя уже есть все эмоции из этого ящика.",
   "gui.heralizcrates.case.state.preview": "просмотр содержимого",

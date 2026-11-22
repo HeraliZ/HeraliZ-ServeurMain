@@ -288,6 +288,25 @@ final class DefaultLoot {
                 }
                 l.get(0).weight += TOTAL - total(l);
             }
+            // caisse de Noel (22/11, choix du proprietaire) : les objets de Noel (outils/donnees/noel.json) et des herals ;
+            // le fichier du serveur, ecrit par outils/caisses.py, passe devant. Poids : 1 = 0,01 %
+            case NOEL -> {
+                l.add(e("heraliz_grades:bon", 1, 2200, RARE).name("&9+1 500 hérals").noItem().command("eco donner {player} 1500 Caisse"));
+                l.add(e("heraliz_grades:bon", 1, 1200, EPIC).name("&5+3 000 hérals").noItem().command("eco donner {player} 3000 Caisse"));
+                l.add(e("heraliz_grades:bon", 1, 600, LEGENDARY).name("&6+6 000 hérals").noItem().command("eco donner {player} 6000 Caisse"));
+                l.add(e("reanimation:finisher", 1, 800, RARE).nbt("{Execution:\"cadeau_surprise\"}"));
+                l.add(e("reanimation:finisher", 1, 800, RARE).nbt("{Execution:\"sucre_d_orge\"}"));
+                l.add(e("reanimation:finisher", 1, 400, LEGENDARY).nbt("{Execution:\"bonhomme_de_neige\"}"));
+                l.add(camo("pain_epices", 1000, RARE));
+                for (String c : new String[]{"flocon_royal", "pull_noel"}) l.add(camo(c, 500, EPIC));
+                for (String c : new String[]{"guirlande", "nuit_hiver", "boule_noel", "joyau_imperial", "givre_vivant"}) {
+                    l.add(camo(c, 300, LEGENDARY));
+                }
+                for (String k : new String[]{"karambit__sucre_orge", "m9__guirlande"}) l.add(knife(k, 150, LEGENDARY));
+                for (String k : new String[]{"butterfly__saphir_givre", "karambit__or_givre", "karambit__glace_sculptee"}) {
+                    l.add(knife(k, 67, MYTHIC));
+                }
+            }
         }
         return l;
     }
