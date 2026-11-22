@@ -2267,7 +2267,8 @@ hérals, clés données par le staff le moment venu) viendra après validation d
 À tester en jeu :
 - [ ] aperçu des caisses Camo, Événement, Gemme : aucun objet de Noël ; Vote et Quête : plus les 3 finishers de Noël.
 
-Pas testé : tout en jeu (outils des caisses et du loot : 0 problème ; fabrication et contrôles sur GitHub).
+Pas testé : tout en jeu (outils des caisses et du loot : 0 problème ; fabrication et contrôles sur GitHub). Mis en ligne
+le 22/11 avec redémarrage : serveur redémarré à 16 h 08 (heure UTC), aucune erreur Java après le démarrage.
 
 ## 55. Caisse de Noël : première caisse d'événement préparée en avance (22/11, en attente de validation)
 
