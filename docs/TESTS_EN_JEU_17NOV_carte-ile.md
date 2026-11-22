@@ -2270,11 +2270,11 @@ hérals, clés données par le staff le moment venu) viendra après validation d
 Pas testé : tout en jeu (outils des caisses et du loot : 0 problème ; fabrication et contrôles sur GitHub). Mis en ligne
 le 22/11 avec redémarrage : serveur redémarré à 16 h 08 (heure UTC), aucune erreur Java après le démarrage.
 
-## 55. Caisse de Noël : première caisse d'événement préparée en avance (22/11, en attente de validation)
+## 55. Caisse de Noël : première caisse d'événement préparée en avance (22/11)
 
 Choix du propriétaire : une caisse Noël avec tous les objets de Noël et des hérals ; modèle fixe (« pas de modèle animé,
-les autres on a retiré les animations ») : un sapin avec étoile, guirlande, cadeaux au sol et neige. **Pas mise en ligne
-tant que le propriétaire n'a pas validé les rendus du sapin et les chances.**
+les autres on a retiré les animations ») : un sapin avec étoile, guirlande, cadeaux au sol et neige. Rendus du sapin et
+chances validés par le propriétaire (« oui good »), puis mise en ligne avec redémarrage.
 
 - Caisse `heralizcrates:noel_crate`, clé `heralizcrates:noel_key` (identifiants figés dès la mise en ligne), Boutique 1.8.0.
   Modèle : `client/render/scene/crates/Sapin.java` (sapin à cinq étages enneigés, guirlande d'ampoules de cinq couleurs en
