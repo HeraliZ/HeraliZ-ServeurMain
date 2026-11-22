@@ -122,20 +122,19 @@ final class DefaultLoot {
             }
             // caisse Camos : tous les camos d'armes de heralisz_camo, par rarete (communs 9 % chacun ... skins X 0,1 %) ; 19/11 :
             // Patine, Opale, Neon, Marbre noir, Rubis, Phenix et Abysses, puis Forge, Or craquele, Dichroique, Vipere, Rouages et
-            // Prisme ; 22/11 : la collection de Noel (Pain d'epices, Flocon royal, Pull de Noel, Guirlande, Nuit d'hiver, Boule de
-            // Noel, Joyau imperial, Givre vivant), avec le meme poids que les camos de leur rarete
+            // Prisme, avec le meme poids que les camos de leur rarete (22/11 : la collection de Noel n'est que dans la caisse Noel,
+            // choix du proprietaire)
             case CAMO -> {
                 for (String c : new String[]{"crimson", "navy", "arctic", "olive", "sand", "sakura"}) l.add(camo(c, 90, COMMON));
                 for (String c : new String[]{"carbon", "woodland", "digital", "tiger", "rust", "damascus"}) l.add(camo(c, 45, UNCOMMON));
-                for (String c : new String[]{"ice", "toxic", "plasma", "circuit", "patine", "forge", "pain_epices"}) l.add(camo(c, 25, RARE));
+                for (String c : new String[]{"ice", "toxic", "plasma", "circuit", "patine", "forge"}) l.add(camo(c, 25, RARE));
                 for (String c : new String[]{"gold", "honeycomb", "lava", "galaxy", "solar", "borealis", "afterlife", "bioluminescence",
                         "genesis", "dark_aether", "infestation", "atomic", "obsidian", "glitch", "amethyst", "diamond", "black_ice", "opale",
-                        "neon", "or_craquele", "dichroique", "flocon_royal", "pull_noel"}) {
+                        "neon", "or_craquele", "dichroique"}) {
                     l.add(camo(c, 4, EPIC));
                 }
                 for (String c : new String[]{"orion", "singularity", "nexus_horizon", "dark_matter_nuclear", "liquid_chrome", "dragon", "storm", "dark_matter",
-                        "marbre_noir", "rubis", "vipere", "rouages", "guirlande", "nuit_hiver", "boule_noel", "joyau_imperial",
-                        "givre_vivant"}) {
+                        "marbre_noir", "rubis", "vipere", "rouages"}) {
                     l.add(camo(c, 2, LEGENDARY));
                 }
                 for (String c : new String[]{"seraphin", "chaines_enfer", "phenix", "abysses", "prisme"}) {

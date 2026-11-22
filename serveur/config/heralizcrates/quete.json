@@ -93,35 +93,28 @@
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"chute_meteore\"}",
-      "weight": 2800,
+      "weight": 3500,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"combo_aerien\"}",
-      "weight": 2800,
+      "weight": 3500,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"faille\"}",
-      "weight": 2800,
+      "weight": 3500,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"courroux_ciel\"}",
-      "weight": 2800,
-      "rarity": "rare"
-    },
-    {
-      "item": "reanimation:finisher",
-      "count": 1,
-      "nbt": "{Execution:\"cadeau_surprise\"}",
-      "weight": 2800,
+      "weight": 3500,
       "rarity": "rare"
     },
     {

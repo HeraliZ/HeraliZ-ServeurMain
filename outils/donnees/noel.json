@@ -1,0 +1,25 @@
+{
+  "_aide": "Objets de Noël (22/11, choix du propriétaire : « une caisse Noël avec tous les trucs de Noël dedans, retirés du reste ») : donnés seulement par la caisse Noël, jamais par une autre caisse (outils/caisses.py) ni par le loot de la carte (outils/loot_armes.py). Identifiants figés (CLAUDE.md, règle 8).",
+  "camos": [
+    "heralisz_camo:camo_pain_epices",
+    "heralisz_camo:camo_flocon_royal",
+    "heralisz_camo:camo_pull_noel",
+    "heralisz_camo:camo_guirlande",
+    "heralisz_camo:camo_nuit_hiver",
+    "heralisz_camo:camo_boule_noel",
+    "heralisz_camo:camo_joyau_imperial",
+    "heralisz_camo:camo_givre_vivant"
+  ],
+  "couteaux": [
+    "heralisz_skins:karambit__sucre_orge",
+    "heralisz_skins:m9__guirlande",
+    "heralisz_skins:butterfly__saphir_givre",
+    "heralisz_skins:karambit__or_givre",
+    "heralisz_skins:karambit__glace_sculptee"
+  ],
+  "finishers": [
+    "cadeau_surprise",
+    "sucre_d_orge",
+    "bonhomme_de_neige"
+  ]
+}

@@ -166,6 +166,10 @@ def etoiles_couteaux():
 
 def couteau_4_etoiles(gid, etoiles):
     return gid.startswith("heralisz_skins:") and etoiles.get(gid.split(":", 1)[1], 4) >= 4
+
+
+# couteaux de Noël (22/11, choix du propriétaire) : seulement dans la caisse Noël, jamais dans le loot de la carte
+COUTEAUX_NOEL = set(json.loads((RACINE / "outils/donnees/noel.json").read_text(encoding="utf-8"))["couteaux"])
 COMPOSANTS_EXCLUS = {"tonnelet_poudre", "bocal_poudre_ii", "bocal_poudre_iii", "bocal_poudre_iv", "plaque_recyclee", "plaque_soudee", "plaque_metal", "plaque_renforcee"}  # jamais dans le loot
 COMPOSANTS_PLUS = {"clou": 3.0, "sac_ciment": 3.0, "equerres_acier": 3.0, "bocal_poudre": 7.0, "ferraille": 9.0}  # chance multipliée dans leur rareté
 # composants ajoutés en plus dans un palier, hors raretés du palier (nombre pour 100 conteneurs)
@@ -455,7 +459,7 @@ def familles():
             out[f].setdefault(r, []).append((entree, rel))
 
     for gid, r in sorted(tout["armes"].items()):
-        if gid in jeu and not couteau_4_etoiles(gid, etoiles):
+        if gid in jeu and not couteau_4_etoiles(gid, etoiles) and gid not in COUTEAUX_NOEL:
             ajouter("armes", r, {"item": ARME, "nombre": [1, 1], "nbt": jeu[gid], "_cat": "armes"},
                     LOURDES if lourde(gid, fam_armes) else 1)
     for f in (sorted(glob.glob(str(TACZ / "*/data/*/recipes/gun/*.json"))) if "plans" in POUR_100 else []):

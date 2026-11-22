@@ -110,84 +110,70 @@
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"frappe_orbitale\"}",
-      "weight": 2333,
+      "weight": 2800,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"arrache_ame\"}",
-      "weight": 2333,
+      "weight": 2800,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"apesanteur\"}",
-      "weight": 2333,
+      "weight": 2800,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"tag_final\"}",
-      "weight": 2333,
+      "weight": 2800,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"jugement_runique\"}",
-      "weight": 2333,
-      "rarity": "rare"
-    },
-    {
-      "item": "reanimation:finisher",
-      "count": 1,
-      "nbt": "{Execution:\"sucre_d_orge\"}",
-      "weight": 2333,
+      "weight": 2800,
       "rarity": "rare"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"marionnettiste\"}",
-      "weight": 500,
+      "weight": 600,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"singularite\"}",
-      "weight": 500,
+      "weight": 600,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"danse_ombres\"}",
-      "weight": 500,
+      "weight": 600,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"souffle_dragon\"}",
-      "weight": 500,
-      "rarity": "legendary"
-    },
-    {
-      "item": "reanimation:finisher",
-      "count": 1,
-      "nbt": "{Execution:\"bonhomme_de_neige\"}",
-      "weight": 500,
+      "weight": 600,
       "rarity": "legendary"
     },
     {
       "item": "reanimation:finisher",
       "count": 1,
       "nbt": "{Execution:\"tempete_sakura\"}",
-      "weight": 500,
+      "weight": 600,
       "rarity": "legendary"
     },
     {

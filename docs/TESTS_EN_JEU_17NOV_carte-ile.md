@@ -2248,3 +2248,23 @@ fabrication et les contrôles des jars se font sur GitHub (la fabrication n'est 
 contrôle de branche vert (0 problème), démarrage d'essai réussi (mêmes erreurs et avertissements connus que la veille).
 Mis en ligne le 22/11 avec redémarrage : serveur démarré à 15 h 33 (heure UTC), aucune erreur Java après le démarrage,
 copie des dessins prête (193 fichiers, 800 Ko, 103 Ko compressés) ; pack du launcher fabriqué et envoyé.
+
+## 54. Objets de Noël réservés à la future caisse Noël (22/11)
+
+Choix du propriétaire, juste après la mise en ligne de la section 53 : « une caisse Noël avec tous les trucs de Noël
+dedans, retirés du reste ; ça nous fait notre première caisse d'événement préparée en avance ». Liste des objets de Noël :
+`outils/donnees/noel.json` (8 camos, 5 couteaux, 3 finishers : Cadeau surprise, Sucre d'orge, Bonhomme de neige), lue par
+`outils/caisses.py` et `outils/loot_armes.py`.
+
+Ce qui change maintenant (mise en ligne avec redémarrage, choix du propriétaire) :
+- caisses Camo, Événement, Gemme et coffres T7 : exactement comme avant la collection de Noël (fichiers identiques) ;
+- caisse Vote : plus de Sucre d'orge ni de Bonhomme de neige ; caisse Quête : plus de Cadeau surprise (la part de leur
+  groupe revient aux autres finishers du même groupe, les autres finishers restent dans leur caisse) ;
+- Boutique 1.7.7 (liste de secours de la caisse Camo comme avant), Loot 0.20.12 (table T7 du jar comme avant).
+Les objets déjà gagnés depuis 16 h 33 restent à leurs joueurs. La caisse Noël elle-même (sapin fixe, objets de Noël et
+hérals, clés données par le staff le moment venu) viendra après validation de ses rendus.
+
+À tester en jeu :
+- [ ] aperçu des caisses Camo, Événement, Gemme : aucun objet de Noël ; Vote et Quête : plus les 3 finishers de Noël.
+
+Pas testé : tout en jeu (outils des caisses et du loot : 0 problème ; fabrication et contrôles sur GitHub).

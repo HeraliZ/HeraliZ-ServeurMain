@@ -133,6 +133,10 @@ FINISHERS = {
 # finishers vendus seulement à la caisse du casino (27/10, demande du propriétaire : Main du Joker, 80 000 capsules) :
 # retirés des caisses après le partage Vote / Quête, pour que les autres finishers restent dans leur caisse
 EXCLUSIFS_CASINO = ("main_joker",)
+# objets de Noël (22/11, choix du propriétaire : « une caisse Noël avec tous les trucs de Noël dedans, retirés du reste ») :
+# camos, couteaux et finishers de outils/donnees/noel.json, retirés de toutes les autres caisses (les finishers après le
+# partage Vote / Quête, comme EXCLUSIFS_CASINO : les autres finishers restent dans leur caisse)
+NOEL = json.loads((RACINE / "outils/donnees/noel.json").read_text(encoding="utf-8"))
 CAISSES_BETA = {
     # 19/11 (7 nouveaux camos : Opale, Marbre noir, Patine, Néon, Rubis, Phénix, Abysses ; puis 6 : Forge, Or craquelé,
     # Dichroïque, Vipère, Rouages, Prisme) : rares, épiques, légendaires et skins X à chance fixe PAR camo, celle du 26/10
@@ -202,10 +206,13 @@ def _etoiles():
 
 
 def couteaux_par_etoiles():
-    """{étoiles: [récompense sans poids]} : couteaux TaCZ (heralisz_skins) et armes de mêlée (heralisz_melee) skinnées."""
+    """{étoiles: [récompense sans poids]} : couteaux TaCZ (heralisz_skins) et armes de mêlée (heralisz_melee) skinnées,
+    sauf les couteaux de Noël (NOEL : caisse Noël seulement)."""
     et = _etoiles()
     out = {}
     for f in sorted((RACINE / "serveur/tacz/heralisz_skins/data/heralisz_skins/index/guns").glob("*.json")):
+        if "heralisz_skins:" + f.stem in NOEL["couteaux"]:
+            continue
         out.setdefault(et.get(f.stem, 4), []).append({"item": "tacz:modern_kinetic_gun", "count": 1, "nbt":
             '{GunId:"heralisz_skins:%s",GunFireMode:"SEMI",GunCurrentAmmoCount:1,HasBulletInBarrel:1b}' % f.stem})
     for f in sorted((RACINE / "modules/armes/src/serveur/resources/data/heralisz_melee/index/melee").glob("*__*.json")):
@@ -259,10 +266,11 @@ def recompenses_beta(nom, lignes):
         debut = len(out)
         if g == "camos":
             _, r0, p, rar = l
-            out += _groupe([{"item": c["item"], "count": 1} for c in cos["camos"] if c["rarity"] == r0], p, rar)
+            out += _groupe([{"item": c["item"], "count": 1} for c in cos["camos"] if c["rarity"] == r0
+                            and c["item"] not in NOEL["camos"]], p, rar)
         elif g == "camos_chacun":
             _, r0, p, rar = l
-            ids = [c["item"] for c in cos["camos"] if c["rarity"] == r0]
+            ids = [c["item"] for c in cos["camos"] if c["rarity"] == r0 and c["item"] not in NOEL["camos"]]
             out += _groupe([{"item": i, "count": 1} for i in ids], p * len(ids), rar)
         elif g == "camos_mythiques":
             _, p, rar = l
@@ -286,7 +294,8 @@ def recompenses_beta(nom, lignes):
             out += _groupe([{k: v for k, v in e.items() if k not in ("weight", "rarity")} for e in spectacle if e.get("rarity") == r0], p, rar)
         elif g == "finishers":
             _, caisse, groupe, p, rar = l
-            ids = [i for i in FINISHERS[groupe][(0 if caisse == "vote" else 1)::2] if i not in EXCLUSIFS_CASINO]
+            ids = [i for i in FINISHERS[groupe][(0 if caisse == "vote" else 1)::2]
+                   if i not in EXCLUSIFS_CASINO and i not in NOEL["finishers"]]
             out += _groupe([{"item": "reanimation:finisher", "count": 1, "nbt": '{Execution:"%s"}' % i} for i in ids], p, rar)
         elif g == "coeur":
             _, p, rar = l
