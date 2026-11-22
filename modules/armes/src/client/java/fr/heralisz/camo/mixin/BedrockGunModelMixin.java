@@ -45,8 +45,9 @@ public abstract class BedrockGunModelMixin {
          shaderId = camo.shaderId;
          parts = camo.parts;
          if (camo == Camo.GIVRE_VIVANT) {
-            // givrée ou non, et où en est le gel ou le dégel (22/11) : lu par CamoRenderType pour cette arme
-            fr.heralisz.camo.client.GivreClient.preparer(gun);
+            // givrée ou non, et où en est le gel ou le dégel (22/11) : lu par CamoRenderType pour cette arme ; dans une
+            // interface (photo de l'icône d'inventaire comprise), l'état final
+            fr.heralisz.camo.client.GivreClient.preparer(gun, ctx == ItemDisplayContext.GUI);
          }
       } else {
          shaderId = skin.finish().shaderId;

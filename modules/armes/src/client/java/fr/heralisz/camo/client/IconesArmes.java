@@ -208,12 +208,21 @@ public final class IconesArmes {
       ECHECS.clear();
    }
 
-   /** Le skin : le camo de l'arme, sinon la finition de lame d'un couteau. */
+   /**
+    * Le skin : le camo de l'arme, sinon la finition de lame d'un couteau. Givre Vivant givré : une icône à part (22/11),
+    * l'icône suit l'état de l'arme (photographié dans son état final, GivreClient).
+    */
    @Nullable
    private static Object skin(ItemStack stack) {
-      Object camo = CamoData.get(stack);
+      Camo camo = CamoData.get(stack);
+      if (camo == Camo.GIVRE_VIVANT && fr.heralisz.camo.GivreVivant.givree(stack)) {
+         return GIVRE_VIVANT_GIVREE;
+      }
       return camo != null ? camo : KnifeSkins.of(stack);
    }
+
+   /** Clé de l'icône d'une arme Givre Vivant givrée (comparée par identité : toujours ce même objet). */
+   private static final Object GIVRE_VIVANT_GIVREE = new Object();
 
    /**
     * Vrai si le skin de l'arme n'est pas encore prêt : sa carte de positions se calcule à part (PosMapCache), et une photo

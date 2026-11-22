@@ -2235,7 +2235,8 @@ Ce qui change :
 - [ ] **Givre Vivant** : inspecter → givre en 2,5 s, l'arme reste givrée ; changer d'arme et revenir, se déconnecter et
       revenir : toujours givrée ; inspecter de nouveau → dégel avec gouttes ; un autre joueur voit les mêmes états ; deux
       appuis très rapprochés ne font pas clignoter l'arme ; l'animation d'inspection n'est pas coupée ; l'icône de l'arme
-      dans l'inventaire suit l'état.
+      dans l'inventaire suit l'état (une icône givrée, une non givrée, sans le passage ; la première fois, l'icône dessinée
+      du pack peut s'afficher une image le temps de la photo).
 - [ ] **Infobulle** de l'objet Givre Vivant : la ligne bleue « Inspectez l'arme pour la givrer, puis pour la dégivrer ».
 - [ ] **Les 5 couteaux** : en main, en 3e personne, inspection, icône (Butterfly : manche noir et incrustations bleues ;
       Sucre d'Orge : manche caoutchouc noir, seule la lame et l'anneau ont le sucre d'orge), étoiles dans l'infobulle.

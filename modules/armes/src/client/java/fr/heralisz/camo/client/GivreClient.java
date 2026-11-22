@@ -35,11 +35,20 @@ public final class GivreClient {
       }
    }
 
-   /** Avant le dessin d'une arme Givre Vivant (BedrockGunModelMixin) : son état à cette image. */
-   public static void preparer(ItemStack arme) {
-      Minecraft mc = Minecraft.getInstance();
-      double temps = mc.level == null ? 0.0 : mc.level.getGameTime() + (double) mc.getFrameTime();
-      pendingEtat = GivreVivant.etat(arme, temps);
-      pendingSens = GivreVivant.givree(arme) ? 1.0F : -1.0F;
+   /**
+    * Avant le dessin d'une arme Givre Vivant (BedrockGunModelMixin) : son état à cette image. {@code fixe} (dessin pour
+    * une interface, dont la photo de l'icône d'inventaire, IconesArmes) : l'état final, sans le passage en cours (une
+    * icône photographiée en plein gel le garderait jusqu'au prochain rechargement).
+    */
+   public static void preparer(ItemStack arme, boolean fixe) {
+      boolean givree = GivreVivant.givree(arme);
+      if (fixe) {
+         pendingEtat = givree ? 1.0F : 0.0F;
+      } else {
+         Minecraft mc = Minecraft.getInstance();
+         double temps = mc.level == null ? 0.0 : mc.level.getGameTime() + (double) mc.getFrameTime();
+         pendingEtat = GivreVivant.etat(arme, temps);
+      }
+      pendingSens = givree ? 1.0F : -1.0F;
    }
 }
