@@ -2330,7 +2330,7 @@ Demande du propriétaire : « quel bug ferait qu'on doive fermer le serveur ? »
 bunker et événements ; économie ; armes, sacs, combat, réanimation ; monde, anticheat, réglages et mise en ligne ;
 ClashWar et liens entre mods). Aucune duplication, perte d'inventaire ou plantage trouvé dans le code de la semaine.
 
-Corrigé (pas encore en ligne au moment d'écrire) :
+Corrigé (en ligne le 23/11 avec redémarrage, serveur reparti à 23 h 41 heure UTC, aucune erreur Java dans le journal) :
 - ClashWar 1.4.1, retouche des cartes : re-poser une carte déjà ouverte en retouche y ramène (avant : une copie neuve
   d'après l'ancienne carte, et la sauver effaçait les retouches) ; `sauver` ne lit plus l'air (la 4v4 aurait figé le
   serveur plusieurs secondes) ; fichier écrit sur le disque puis relu avant de remplacer l'ancien ; une carte retouchée
