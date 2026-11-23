@@ -298,5 +298,11 @@
   "clashwar.annonce.manche": "ROUND %s",
   "clashwar.annonce.manche_gagnee": "ROUND WON",
   "clashwar.annonce.manche_perdue": "ROUND LOST",
-  "clashwar.hud.manche": "CLASHWAR · %s · ROUND %s"
+  "clashwar.hud.manche": "CLASHWAR · %s · ROUND %s",
+  "heraliz_clashwar.commande.carte.inconnue": "Unknown map: %s (/clashwar arenes liste).",
+  "heraliz_clashwar.commande.carte.pose": "Map %s is being placed (%s): you will be taken there as soon as it is ready.",
+  "heraliz_clashwar.commande.carte.arrivee": "Map %s: edit it (in creative), then /clashwar carte sauver; /clashwar carte quitter to go back to spawn.",
+  "heraliz_clashwar.commande.carte.pas_dedans": "Stand inside a map placed with /clashwar carte poser.",
+  "heraliz_clashwar.commande.carte.sauvee": "Map %s saved (%s blocks). Matches will use it after the next restart.",
+  "heraliz_clashwar.commande.carte.echec": "Save failed (see the log): nothing changed."
 }

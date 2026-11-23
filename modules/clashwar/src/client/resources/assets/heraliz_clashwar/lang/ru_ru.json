@@ -298,5 +298,11 @@
   "clashwar.annonce.manche": "РАУНД %s",
   "clashwar.annonce.manche_gagnee": "РАУНД ВЫИГРАН",
   "clashwar.annonce.manche_perdue": "РАУНД ПРОИГРАН",
-  "clashwar.hud.manche": "CLASHWAR · %s · РАУНД %s"
+  "clashwar.hud.manche": "CLASHWAR · %s · РАУНД %s",
+  "heraliz_clashwar.commande.carte.inconnue": "Неизвестная карта: %s (/clashwar arenes liste).",
+  "heraliz_clashwar.commande.carte.pose": "Карта %s устанавливается (%s): вас перенесут туда, как только она будет готова.",
+  "heraliz_clashwar.commande.carte.arrivee": "Карта %s: измените её (в творческом режиме), затем /clashwar carte sauver; /clashwar carte quitter — вернуться на спавн.",
+  "heraliz_clashwar.commande.carte.pas_dedans": "Встаньте внутри карты, установленной через /clashwar carte poser.",
+  "heraliz_clashwar.commande.carte.sauvee": "Карта %s сохранена (%s блоков). Матчи будут использовать её после следующего перезапуска.",
+  "heraliz_clashwar.commande.carte.echec": "Сохранить не удалось (см. журнал): ничего не изменилось."
 }

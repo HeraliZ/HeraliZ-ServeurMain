@@ -298,5 +298,11 @@
   "clashwar.annonce.manche": "MANCHE %s",
   "clashwar.annonce.manche_gagnee": "MANCHE GAGNÉE",
   "clashwar.annonce.manche_perdue": "MANCHE PERDUE",
-  "clashwar.hud.manche": "CLASHWAR · %s · MANCHE %s"
+  "clashwar.hud.manche": "CLASHWAR · %s · MANCHE %s",
+  "heraliz_clashwar.commande.carte.inconnue": "Carte inconnue : %s (/clashwar arenes liste).",
+  "heraliz_clashwar.commande.carte.pose": "Carte %s en cours de pose (%s) : tu y seras emmené dès qu'elle est prête.",
+  "heraliz_clashwar.commande.carte.arrivee": "Carte %s : retouche-la (en créatif), puis /clashwar carte sauver ; /clashwar carte quitter pour revenir au spawn.",
+  "heraliz_clashwar.commande.carte.pas_dedans": "Place-toi dans une carte posée par /clashwar carte poser.",
+  "heraliz_clashwar.commande.carte.sauvee": "Carte %s sauvée (%s blocs). Les matchs la prendront après le prochain redémarrage.",
+  "heraliz_clashwar.commande.carte.echec": "Sauvegarde impossible (voir le journal) : rien n'a changé."
 }

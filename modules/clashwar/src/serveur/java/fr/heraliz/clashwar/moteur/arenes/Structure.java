@@ -100,16 +100,27 @@ public final class Structure {
         this.maxZ = vide ? 0 : z1;
     }
 
+    /**
+     * Cartes retouchées en jeu par le staff ({@code /clashwar carte sauver}, 23/11) : {@code <serveur>/heraliz_clashwar/
+     * cartes_retouchees/<carte>.nbt} passe devant la carte du jar. Le dossier n'est jamais effacé par la mise en ligne.
+     */
+    public static java.nio.file.Path dossierRetouches(MinecraftServer serveur) {
+        return serveur.getServerDirectory().toPath().resolve("heraliz_clashwar").resolve("cartes_retouchees");
+    }
+
     /** Lit la structure de la carte, ou null (avertissement) si elle est absente ou illisible. */
     @Nullable
     public static Structure lire(MinecraftServer serveur, String carte) {
         ResourceLocation rl = HeralizClashWar.id("structures/" + carte + ".nbt");
-        Optional<Resource> res = serveur.getResourceManager().getResource(rl);
-        if (res.isEmpty()) {
+        java.nio.file.Path retouche = dossierRetouches(serveur).resolve(carte + ".nbt");
+        boolean retouchee = java.nio.file.Files.isRegularFile(retouche);
+        Optional<Resource> res = retouchee ? Optional.empty() : serveur.getResourceManager().getResource(rl);
+        if (!retouchee && res.isEmpty()) {
             HeralizClashWar.LOG.warn("[matchs] structure absente : {}", rl);
             return null;
         }
-        try (InputStream in = res.get().open()) {
+        if (retouchee) HeralizClashWar.LOG.info("[matchs] structure {} : version retouchee en jeu ({})", carte, retouche);
+        try (InputStream in = retouchee ? java.nio.file.Files.newInputStream(retouche) : res.get().open()) {
             byte[] octets = in.readAllBytes();
             CRC32 crc = new CRC32();
             crc.update(octets);

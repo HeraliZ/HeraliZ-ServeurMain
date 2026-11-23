@@ -2297,3 +2297,27 @@ chances validés par le propriétaire (« oui good »), puis mise en ligne avec 
 Pas testé : tout en jeu ; rendus hors jeu seulement (outil d'aperçu des caisses, sans la lumière du jeu). Sur GitHub :
 contrôle de branche vert, démarrage d'essai réussi (mêmes erreurs connues que la veille). Mise en ligne le 22/11 avec
 redémarrage : serveur redémarré à 16 h 34 (heure UTC), aucune erreur Java après le démarrage ; pack du launcher envoyé.
+
+## 56. ClashWar : retouche des cartes en jeu (23/11)
+
+Demande du propriétaire : pouvoir faire apparaître une carte du ClashWar, la corriger et la ré-enregistrer
+(`/place template` n'existe pas sur le serveur). Plutôt qu'un fichier .schem de WorldEdit (qui peut perdre les blocs de
+nos mods), trois commandes du ClashWar (op 2), ClashWar 1.4.0 :
+
+- `/clashwar carte poser <carte>` (cartes : `clashwar_1v1_depot`, `clashwar_2v2_kombinat`, `clashwar_3v3_port`,
+  `clashwar_4v4_garnison`) : la carte apparaît dans le monde des arènes, réservée à la retouche (jamais prise par un
+  match), et on y est emmené dès qu'elle est posée ;
+- `/clashwar carte sauver`, debout dans la carte : enregistre la carte telle qu'elle est dans
+  `heraliz_clashwar/cartes_retouchees/<carte>.nbt` du serveur (l'air et les murs invisibles ne sont pas gardés) ;
+  cette version passe devant celle du mod. Les matchs la prennent **après le prochain redémarrage** (les arènes déjà
+  posées de cette carte sont reposées au démarrage). Pour revenir à l'ancienne carte : supprimer ce fichier sur le Ptero ;
+- `/clashwar carte quitter` : retour au spawn.
+
+À tester en jeu (après la mise en ligne, en créatif) :
+- [ ] `/clashwar carte poser clashwar_1v1_depot` : on arrive dans la carte ; on casse/pose quelques blocs (dont des
+      blocs de nos mods : décors, cfm) ; `/clashwar carte sauver` : message « Carte … sauvée (… blocs) » ;
+- [ ] `/clashwar carte quitter` : retour au spawn ; après un redémarrage, un match sur cette carte montre bien les
+      retouches (et les murs invisibles autour sont toujours là).
+
+Pas testé : tout en jeu. Les retouches sauvées ne sont que sur le Ptero (pas dans GitHub) : les envoyer à Claude si on
+veut les garder dans le mod pour de bon.

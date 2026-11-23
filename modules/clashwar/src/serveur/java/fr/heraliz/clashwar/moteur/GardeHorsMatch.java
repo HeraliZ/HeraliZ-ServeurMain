@@ -58,7 +58,8 @@ final class GardeHorsMatch {
                 "Tu n'es plus dans aucune partie : retour au spawn."));
     }
 
-    private static void spawn(ServerPlayer p) {
+    /** Renvoi au spawn de la carte (aussi pour quitter l'édition d'une carte : EditionCartes). */
+    static void spawn(ServerPlayer p) {
         if (p.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) p.setGameMode(GameType.SURVIVAL);
         if (!cherche) {
             cherche = true;

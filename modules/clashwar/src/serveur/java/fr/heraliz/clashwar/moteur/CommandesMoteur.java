@@ -54,6 +54,13 @@ public final class CommandesMoteur {
                     for (Partie p : MatchApi.parties()) retour(x, Component.literal(p.toString()));
                     return MatchApi.parties().size();
                 }))
+                // 23/11 : retouche des cartes en jeu (poser, sauver, quitter : EditionCartes)
+                .then(Commands.literal("carte").requires(s -> s.hasPermission(2))
+                        .then(Commands.literal("poser").then(Commands.argument("carte", StringArgumentType.word())
+                                .suggests((x, b) -> SharedSuggestionProvider.suggest(Arenes.cartes().stream().map(Carte::id), b))
+                                .executes(EditionCartes::poser)))
+                        .then(Commands.literal("sauver").executes(EditionCartes::sauver))
+                        .then(Commands.literal("quitter").executes(EditionCartes::quitter)))
                 .then(Commands.literal("arenes").requires(s -> s.hasPermission(2))
                         .then(Commands.literal("liste").executes(x -> {
                             for (Carte ca : Arenes.cartes()) {
