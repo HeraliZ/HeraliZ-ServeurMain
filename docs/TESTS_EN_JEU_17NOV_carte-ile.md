@@ -2320,4 +2320,6 @@ nos mods), trois commandes du ClashWar (op 2), ClashWar 1.4.0 :
       retouches (et les murs invisibles autour sont toujours là).
 
 Pas testé : tout en jeu. Les retouches sauvées ne sont que sur le Ptero (pas dans GitHub) : les envoyer à Claude si on
-veut les garder dans le mod pour de bon.
+veut les garder dans le mod pour de bon. Sur GitHub : contrôle de branche vert, démarrage d'essai réussi. Mise en
+ligne le 23/11 avec redémarrage (accord du propriétaire) : serveur reparti à 21 h 02 (heure UTC), aucune erreur Java
+dans le journal.
