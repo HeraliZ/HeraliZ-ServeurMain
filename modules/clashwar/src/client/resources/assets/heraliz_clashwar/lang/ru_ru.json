@@ -304,5 +304,7 @@
   "heraliz_clashwar.commande.carte.arrivee": "Карта %s: измените её (в творческом режиме), затем /clashwar carte sauver; /clashwar carte quitter — вернуться на спавн.",
   "heraliz_clashwar.commande.carte.pas_dedans": "Встаньте внутри карты, установленной через /clashwar carte poser.",
   "heraliz_clashwar.commande.carte.sauvee": "Карта %s сохранена (%s блоков). Матчи будут использовать её после следующего перезапуска.",
-  "heraliz_clashwar.commande.carte.echec": "Сохранить не удалось (см. журнал): ничего не изменилось."
+  "heraliz_clashwar.commande.carte.echec": "Сохранить не удалось (см. журнал): ничего не изменилось.",
+  "heraliz_clashwar.commande.carte.tournoi": "Идут матчи: редактировать карту можно после турнира.",
+  "heraliz_clashwar.commande.carte.en_match": "Недоступно во время матча или при просмотре матча."
 }

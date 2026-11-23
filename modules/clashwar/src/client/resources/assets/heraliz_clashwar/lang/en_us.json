@@ -304,5 +304,7 @@
   "heraliz_clashwar.commande.carte.arrivee": "Map %s: edit it (in creative), then /clashwar carte sauver; /clashwar carte quitter to go back to spawn.",
   "heraliz_clashwar.commande.carte.pas_dedans": "Stand inside a map placed with /clashwar carte poser.",
   "heraliz_clashwar.commande.carte.sauvee": "Map %s saved (%s blocks). Matches will use it after the next restart.",
-  "heraliz_clashwar.commande.carte.echec": "Save failed (see the log): nothing changed."
+  "heraliz_clashwar.commande.carte.echec": "Save failed (see the log): nothing changed.",
+  "heraliz_clashwar.commande.carte.tournoi": "Matches are running: map editing is possible after the tournament.",
+  "heraliz_clashwar.commande.carte.en_match": "Not possible while in a match or spectating one."
 }

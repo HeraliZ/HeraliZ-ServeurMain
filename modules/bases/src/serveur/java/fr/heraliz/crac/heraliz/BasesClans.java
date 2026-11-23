@@ -164,15 +164,50 @@ public final class BasesClans extends SafeSavedData {
             return false;
         }
         try {
-            return clan.equals(Pont.clan(joueur)) && !Pont.perm(joueur, action);
+            if (clan.equals(Pont.clan(joueur))) {
+                return !Pont.perm(joueur, action);
+            }
         } catch (LinkageError | RuntimeException e) {
             return false;
         }
+        return partiRecemment(joueur, clan);
+    }
+
+    /**
+     * Audit final du 23/11 : un membre sans le droit « Ouvrir les coffres » qui tapait /clan quitter dans la base devenait un
+     * pillard déjà entré et vidait les coffres. Pendant {@value #DELAI_APRES_DEPART_MS} ms après son départ (ou son
+     * exclusion), il garde les refus d'un membre sans droit dans la base de ce clan. En mémoire seulement.
+     */
+    private static final long DELAI_APRES_DEPART_MS = 10 * 60_000L;
+    private static final java.util.Map<UUID, Object[]> DEPARTS = new java.util.HashMap<>();
+    private static boolean departsEcoutes;
+
+    /** Départ d'un membre (fil serveur, événement de HeraliZ Clans). */
+    static void depart(UUID joueur, UUID clan) {
+        long maintenant = System.currentTimeMillis();
+        DEPARTS.values().removeIf(d -> (Long) d[1] < maintenant);
+        DEPARTS.put(joueur, new Object[]{clan, maintenant + DELAI_APRES_DEPART_MS});
+    }
+
+    private static boolean partiRecemment(UUID joueur, UUID clan) {
+        Object[] d = DEPARTS.get(joueur);
+        return d != null && clan.equals(d[0]) && (Long) d[1] >= System.currentTimeMillis();
     }
 
     /** Toutes les 5 secondes : groupes des clans remis à l'image des clans, clans dissous, nouveaux clans. */
     public static void seconde(MinecraftServer server) {
-        if (!actif() || ++ticks % 5 != 0) {
+        if (!actif()) {
+            return;
+        }
+        if (!departsEcoutes) {
+            departsEcoutes = true;
+            try {
+                Pont.ecouterDeparts();
+            } catch (LinkageError | RuntimeException e) {
+                Crac.LOGGER.error("[CRac] départs des clans : écoute impossible", e);
+            }
+        }
+        if (++ticks % 5 != 0) {
             return;
         }
         try {
@@ -397,6 +432,11 @@ public final class BasesClans extends SafeSavedData {
     /** La seule classe qui nomme les types de HeraliZ Clans : chargée au premier appel, qui n'a lieu que s'il est là. */
     private static final class Pont {
         private Pont() {
+        }
+
+        static void ecouterDeparts() {
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
+                (fr.heralisz.clans.api.events.MembreQuitteEvent e) -> depart(e.joueur, e.clanId));
         }
 
         @Nullable

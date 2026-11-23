@@ -108,23 +108,82 @@ public final class Structure {
         return serveur.getServerDirectory().toPath().resolve("heraliz_clashwar").resolve("cartes_retouchees");
     }
 
-    /** Lit la structure de la carte, ou null (avertissement) si elle est absente ou illisible. */
+    /** Clé gardée dans une carte retouchée : empreinte de la carte du jar au moment de la sauvegarde. */
+    public static final String CLE_CRC_JAR = "heraliz_crc_jar";
+
+    /** Empreinte (CRC) du fichier de la carte dans le jar, ou null s'il est absent ou illisible. */
+    @Nullable
+    public static Long crcJar(MinecraftServer serveur, String carte) {
+        Optional<Resource> res = serveur.getResourceManager().getResource(HeralizClashWar.id("structures/" + carte + ".nbt"));
+        if (res.isEmpty()) return null;
+        try (InputStream in = res.get().open()) {
+            CRC32 crc = new CRC32();
+            crc.update(in.readAllBytes());
+            return crc.getValue();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Lit la structure de la carte, ou null (avertissement) si elle est absente ou illisible. Une version retouchée en
+     * jeu passe devant celle du jar, sauf si elle est illisible, d'une autre taille que la carte, ou faite d'après une
+     * carte du jar qui a changé depuis (mise à jour du mod) : alors la carte du jar sert, avec une erreur au journal.
+     */
     @Nullable
     public static Structure lire(MinecraftServer serveur, String carte) {
-        ResourceLocation rl = HeralizClashWar.id("structures/" + carte + ".nbt");
         java.nio.file.Path retouche = dossierRetouches(serveur).resolve(carte + ".nbt");
-        boolean retouchee = java.nio.file.Files.isRegularFile(retouche);
-        Optional<Resource> res = retouchee ? Optional.empty() : serveur.getResourceManager().getResource(rl);
-        if (!retouchee && res.isEmpty()) {
+        if (java.nio.file.Files.isRegularFile(retouche)) {
+            try {
+                byte[] octets = java.nio.file.Files.readAllBytes(retouche);
+                CompoundTag t = NbtIo.readCompressed(new ByteArrayInputStream(octets));
+                String refus = refusRetouche(serveur, carte, t);
+                if (refus == null) {
+                    HeralizClashWar.LOG.info("[matchs] structure {} : version retouchee en jeu ({})", carte, retouche);
+                    return lire(serveur, carte, octets, t);
+                }
+                HeralizClashWar.LOG.error("[matchs] carte retouchee {} ignoree ({}) : carte du jar utilisee ; supprimer ou refaire {}",
+                        carte, refus, retouche);
+            } catch (Exception ex) {
+                HeralizClashWar.LOG.error("[matchs] carte retouchee {} illisible : carte du jar utilisee ; supprimer ou refaire {}",
+                        carte, retouche, ex);
+            }
+        }
+        ResourceLocation rl = HeralizClashWar.id("structures/" + carte + ".nbt");
+        Optional<Resource> res = serveur.getResourceManager().getResource(rl);
+        if (res.isEmpty()) {
             HeralizClashWar.LOG.warn("[matchs] structure absente : {}", rl);
             return null;
         }
-        if (retouchee) HeralizClashWar.LOG.info("[matchs] structure {} : version retouchee en jeu ({})", carte, retouche);
-        try (InputStream in = retouchee ? java.nio.file.Files.newInputStream(retouche) : res.get().open()) {
+        try (InputStream in = res.get().open()) {
             byte[] octets = in.readAllBytes();
+            return lire(serveur, carte, octets, NbtIo.readCompressed(new ByteArrayInputStream(octets)));
+        } catch (Exception ex) {
+            HeralizClashWar.LOG.error("[matchs] structure {} illisible", rl, ex);
+            return null;
+        }
+    }
+
+    /** Raison de ne pas prendre une carte retouchée, ou null si elle convient. */
+    @Nullable
+    private static String refusRetouche(MinecraftServer serveur, String carte, CompoundTag t) {
+        if (t.getList("blocks", Tag.TAG_COMPOUND).isEmpty()) return "aucun bloc";
+        Carte c = Arenes.carte(carte);
+        ListTag taille = t.getList("size", Tag.TAG_INT);
+        if (c != null && (taille.size() != 3 || taille.getInt(0) != c.taille().getX() || taille.getInt(1) != c.taille().getY()
+                || taille.getInt(2) != c.taille().getZ())) {
+            return "taille differente de la carte";
+        }
+        Long jar = crcJar(serveur, carte);
+        if (jar != null && t.contains(CLE_CRC_JAR) && t.getLong(CLE_CRC_JAR) != jar) return "la carte du mod a change depuis";
+        return null;
+    }
+
+    /** Structure tirée du fichier lu ; une erreur remonte à l'appelant (retouche : retour à la carte du jar). */
+    private static Structure lire(MinecraftServer serveur, String carte, byte[] octets, CompoundTag t) throws Exception {
+        {
             CRC32 crc = new CRC32();
             crc.update(octets);
-            CompoundTag t = NbtIo.readCompressed(new ByteArrayInputStream(octets));
             HolderGetter<Block> registre = serveur.registryAccess().lookupOrThrow(Registries.BLOCK);
             ListTag palette = t.getList("palette", Tag.TAG_COMPOUND);
             if (palette.isEmpty() && t.contains("palettes")) palette = t.getList("palettes", Tag.TAG_LIST).getList(0);
@@ -181,9 +240,6 @@ public final class Structure {
             if (annexes > 0) HeralizClashWar.LOG.info("[matchs] structure {} : {} annexe(s), {} blocs a poser", carte, annexes, n);
             if (murs > 0) HeralizClashWar.LOG.info("[matchs] structure {} : {} barrieres autour de la carte", carte, murs);
             return new Structure(carte, List.copyOf(blocs), List.copyOf(ents), crc.getValue());
-        } catch (Exception ex) {
-            HeralizClashWar.LOG.error("[matchs] structure {} illisible", rl, ex);
-            return null;
         }
     }
     /** Hauteur des murs invisibles au-dessus du haut de la structure (on ne les saute pas). */

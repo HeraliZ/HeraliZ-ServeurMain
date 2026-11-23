@@ -2302,7 +2302,7 @@ redémarrage : serveur redémarré à 16 h 34 (heure UTC), aucune erreur Java ap
 
 Demande du propriétaire : pouvoir faire apparaître une carte du ClashWar, la corriger et la ré-enregistrer
 (`/place template` n'existe pas sur le serveur). Plutôt qu'un fichier .schem de WorldEdit (qui peut perdre les blocs de
-nos mods), trois commandes du ClashWar (op 2), ClashWar 1.4.0 :
+nos mods), trois commandes du ClashWar (op 2), ClashWar 1.4.0 (jar resté nommé 1.3.10 par erreur ; 1.4.1 ensuite) :
 
 - `/clashwar carte poser <carte>` (cartes : `clashwar_1v1_depot`, `clashwar_2v2_kombinat`, `clashwar_3v3_port`,
   `clashwar_4v4_garnison`) : la carte apparaît dans le monde des arènes, réservée à la retouche (jamais prise par un
@@ -2323,3 +2323,31 @@ Pas testé : tout en jeu. Les retouches sauvées ne sont que sur le Ptero (pas d
 veut les garder dans le mod pour de bon. Sur GitHub : contrôle de branche vert, démarrage d'essai réussi. Mise en
 ligne le 23/11 avec redémarrage (accord du propriétaire) : serveur reparti à 21 h 02 (heure UTC), aucune erreur Java
 dans le journal.
+
+## 57. Audit final avant l'ouverture (23/11, 6 relectures du code + tri de cette fiche)
+
+Demande du propriétaire : « quel bug ferait qu'on doive fermer le serveur ? ». Six relectures (bases et clans ; loot,
+bunker et événements ; économie ; armes, sacs, combat, réanimation ; monde, anticheat, réglages et mise en ligne ;
+ClashWar et liens entre mods). Aucune duplication, perte d'inventaire ou plantage trouvé dans le code de la semaine.
+
+Corrigé (pas encore en ligne au moment d'écrire) :
+- ClashWar 1.4.1, retouche des cartes : re-poser une carte déjà ouverte en retouche y ramène (avant : une copie neuve
+  d'après l'ancienne carte, et la sauver effaçait les retouches) ; `sauver` ne lit plus l'air (la 4v4 aurait figé le
+  serveur plusieurs secondes) ; fichier écrit sur le disque puis relu avant de remplacer l'ancien ; une carte retouchée
+  illisible, d'une autre taille ou faite d'après une carte du mod qui a changé depuis est ignorée (erreur au journal,
+  carte du mod utilisée) au lieu de rendre la carte injouable ; `poser`/`quitter` refusés en match ou en regardant un
+  match, `poser` refusé pendant des matchs.
+- Bases (CRac 1.38.13-beta) : un membre sans le droit « Ouvrir les coffres » qui quittait son clan dans la base pouvait
+  vider les coffres ; pendant 10 min après son départ (ou son exclusion), il garde les refus d'un membre sans droit.
+
+Signalé, en attente d'une décision du propriétaire : anti-bot d'AuthMe (bloquerait les nouveaux joueurs à l'ouverture),
+réseau du serveur sur un seul fil (`netty-threads: -1` dans spigot.yml), explosifs et wipe qui touchent des blocs de la
+carte dans la zone d'une base. Connu, laissé : hérals d'une caisse perdus si le compte est près du plafond de 10 millions.
+
+À tester en jeu :
+- [ ] `/clashwar carte poser clashwar_1v1_depot`, retouche, `sauver`, `quitter`, puis `poser` de nouveau : les
+      retouches sont là ;
+- [ ] une recrue sans le droit « Ouvrir les coffres » tape `/clan quitter` dans la base : les coffres restent refusés
+      10 min.
+
+Pas testé : tout en jeu.

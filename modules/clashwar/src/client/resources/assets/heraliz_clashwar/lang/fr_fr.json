@@ -304,5 +304,7 @@
   "heraliz_clashwar.commande.carte.arrivee": "Carte %s : retouche-la (en créatif), puis /clashwar carte sauver ; /clashwar carte quitter pour revenir au spawn.",
   "heraliz_clashwar.commande.carte.pas_dedans": "Place-toi dans une carte posée par /clashwar carte poser.",
   "heraliz_clashwar.commande.carte.sauvee": "Carte %s sauvée (%s blocs). Les matchs la prendront après le prochain redémarrage.",
-  "heraliz_clashwar.commande.carte.echec": "Sauvegarde impossible (voir le journal) : rien n'a changé."
+  "heraliz_clashwar.commande.carte.echec": "Sauvegarde impossible (voir le journal) : rien n'a changé.",
+  "heraliz_clashwar.commande.carte.tournoi": "Des matchs sont en cours : retouche possible après le tournoi.",
+  "heraliz_clashwar.commande.carte.en_match": "Impossible en match ou en regardant un match."
 }

@@ -6,6 +6,8 @@ import fr.heraliz.clashwar.HeralizClashWar;
 import fr.heraliz.clashwar.moteur.api.Annonces;
 import fr.heraliz.clashwar.moteur.api.Arenes;
 import fr.heraliz.clashwar.moteur.api.Carte;
+import fr.heraliz.clashwar.moteur.api.Coffre;
+import fr.heraliz.clashwar.moteur.api.MatchApi;
 import fr.heraliz.clashwar.moteur.api.Instance;
 import fr.heraliz.clashwar.moteur.api.Pose;
 import fr.heraliz.clashwar.moteur.arenes.ArenesService;
@@ -22,7 +24,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
-import java.io.OutputStream;
+import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -50,10 +54,29 @@ final class EditionCartes {
     static int poser(CommandContext<CommandSourceStack> x) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = x.getSource().getPlayerOrException();
         String id = StringArgumentType.getString(x, "carte");
+        if (occupe(x, p)) return 0;
+        if (!MatchApi.parties().isEmpty()) {
+            // la pose passe dans la meme file que les arenes des matchs : jamais pendant un tournoi
+            x.getSource().sendFailure(Component.translatableWithFallback("heraliz_clashwar.commande.carte.tournoi",
+                    "Des matchs sont en cours : retouche possible après le tournoi."));
+            return 0;
+        }
         if (Arenes.carte(id) == null) {
             x.getSource().sendFailure(Component.translatableWithFallback("heraliz_clashwar.commande.carte.inconnue",
                     "Carte inconnue : %s (/clashwar arenes liste).", id));
             return 0;
+        }
+        // carte deja ouverte en retouche depuis le dernier redemarrage : on y retourne (une neuve serait posee d'apres
+        // l'ancienne version, et la sauver effacerait les retouches deja faites)
+        for (Instance d : Arenes.instances()) {
+            if (d.carte().id().equals(id) && EDITION.equals(d.occupant())) {
+                if (d.prete()) aller(p, d);
+                else d.quandPrete(() -> {
+                    ServerPlayer q = p.getServer().getPlayerList().getPlayer(p.getUUID());
+                    if (q != null) aller(q, d);
+                });
+                return 1;
+            }
         }
         Instance i = Arenes.reserver(id);
         if (i == null) {
@@ -99,14 +122,29 @@ final class EditionCartes {
         Carte c = i.carte();
         try {
             StructureTemplate t = new StructureTemplate();
-            t.fillFromWorld(i.niveau(), i.origine(), c.taille(), false, Blocks.STRUCTURE_VOID);
+            // l'air n'est pas lu (la pose ne le pose pas) : sinon plus d'un million de cases pour la 4v4, sur le fil du serveur
+            t.fillFromWorld(i.niveau(), i.origine(), c.taille(), false, Blocks.AIR);
             CompoundTag tag = t.save(new CompoundTag());
             int gardes = sansAirNiBarrieres(tag);
+            Long crcJar = Structure.crcJar(p.getServer(), c.id());
+            if (crcJar != null) tag.putLong(Structure.CLE_CRC_JAR, crcJar);
             Path dossier = Structure.dossierRetouches(p.getServer());
             Files.createDirectories(dossier);
             Path fichier = dossier.resolve(c.id() + ".nbt"), tmp = dossier.resolve(c.id() + ".nbt.tmp");
-            try (OutputStream o = Files.newOutputStream(tmp)) {
-                NbtIo.writeCompressed(tag, o);
+            // ecrit en memoire d'abord (writeCompressed ferme son flux), puis force sur le disque
+            java.io.ByteArrayOutputStream octets = new java.io.ByteArrayOutputStream();
+            NbtIo.writeCompressed(tag, octets);
+            try (FileChannel f = FileChannel.open(tmp, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING)) {
+                java.nio.ByteBuffer tampon = java.nio.ByteBuffer.wrap(octets.toByteArray());
+                while (tampon.hasRemaining()) f.write(tampon);
+                f.force(true);
+            }
+            // relu avant de remplacer l'ancien : un fichier abime ne prend jamais la place d'un bon
+            try (InputStream in = Files.newInputStream(tmp)) {
+                if (NbtIo.readCompressed(in).getList("blocks", Tag.TAG_COMPOUND).size() != gardes) {
+                    throw new java.io.IOException("relecture differente");
+                }
             }
             Files.move(tmp, fichier, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             ArenesService.oublierStructures();
@@ -126,8 +164,17 @@ final class EditionCartes {
 
     static int quitter(CommandContext<CommandSourceStack> x) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer p = x.getSource().getPlayerOrException();
+        if (occupe(x, p)) return 0;
         GardeHorsMatch.spawn(p);
         return 1;
+    }
+
+    /** En match ou avec un inventaire mis de côté (/clashwar regarder) : les commandes de retouche sont refusées. */
+    private static boolean occupe(CommandContext<CommandSourceStack> x, ServerPlayer p) {
+        if (MatchApi.partieDe(p) == null && !Coffre.aUnDepot(p.getUUID())) return false;
+        x.getSource().sendFailure(Component.translatableWithFallback("heraliz_clashwar.commande.carte.en_match",
+                "Impossible en match ou en regardant un match."));
+        return true;
     }
 
     /**
