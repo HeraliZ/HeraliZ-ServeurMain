@@ -82,13 +82,22 @@ public final class AdminManager {
             }
         }
         // collected first: removing one half of a bed or door also removes the other
+        // HeraliZ (23/11) : seulement les objets posés par un joueur dans une base, jamais le décor de la carte (tonneau,
+        // four, feu de camp de la carte que la zone d'une base recouvre)
+        PlacablePositionData posees = PlacablePositionData.get(level);
+        int retires = 0;
         for (BlockPos pos : found) {
+            net.minecraft.world.level.block.state.BlockState etat = level.getBlockState(pos);
+            if (PlacableHpManager.isTracked(etat) && !posees.wasClaimed(fr.heraliz.crac.placable.MultiBlocks.canonical(etat, pos))) {
+                continue;
+            }
+            retires++;
             if (PlacableHpManager.isTracked(level.getBlockState(pos))) {
                 level.removeBlock(pos, false);
             }
             PlacableHpManager.clear(level, pos);
         }
-        return found.size();
+        return retires;
     }
 
     private static void collectPlacables(LevelChunk chunk, BlockPos min, BlockPos max, List<BlockPos> out) {

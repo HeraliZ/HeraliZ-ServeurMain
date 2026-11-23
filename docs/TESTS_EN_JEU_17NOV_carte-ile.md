@@ -2340,14 +2340,24 @@ Corrigé (pas encore en ligne au moment d'écrire) :
 - Bases (CRac 1.38.13-beta) : un membre sans le droit « Ouvrir les coffres » qui quittait son clan dans la base pouvait
   vider les coffres ; pendant 10 min après son départ (ou son exclusion), il garde les refus d'un membre sans droit.
 
-Signalé, en attente d'une décision du propriétaire : anti-bot d'AuthMe (bloquerait les nouveaux joueurs à l'ouverture),
-réseau du serveur sur un seul fil (`netty-threads: -1` dans spigot.yml), explosifs et wipe qui touchent des blocs de la
-carte dans la zone d'une base. Connu, laissé : hérals d'une caisse perdus si le compte est près du plafond de 10 millions.
+Choix du propriétaire (23/11) :
+- anti-bot d'AuthMe coupé (`serveur/plugins/AuthMe/config.yml`, `enableAntiBot: false`) : 11 nouveaux joueurs à moins
+  de 5 s d'écart fermaient le serveur aux nouveaux pendant 10 min ;
+- réseau du serveur sur 4 fils (`serveur/spigot.yml`, `netty-threads: 4` ; -1 n'en donnait qu'un) ;
+- « ne pas casser les blocs de la map avec les explosifs, uniquement les blocs de base, la table TaCZ, les coffres » :
+  `raidBreaksBlocks = false` (`crac-server.toml`) ; les objets à points de vie (coffres, table TaCZ, fours…) ne prennent
+  des dégâts que s'ils ont été posés par un joueur dans une base ; le wipe et `/base effacer` ne retirent plus que
+  ceux-là (avant : aussi les tonneaux, fours, feux de camp de la carte recouverts par la zone d'une base).
+
+Connu, laissé : hérals d'une caisse perdus si le compte est près du plafond de 10 millions.
 
 À tester en jeu :
 - [ ] `/clashwar carte poser clashwar_1v1_depot`, retouche, `sauver`, `quitter`, puis `poser` de nouveau : les
       retouches sont là ;
 - [ ] une recrue sans le droit « Ouvrir les coffres » tape `/clan quitter` dans la base : les coffres restent refusés
       10 min.
+- [ ] raid au C4 : les murs et portes de base cassent, les coffres et la table TaCZ posés dans la base prennent des
+      dégâts ; un C4 collé à un arbre, un mur ou un tonneau de la carte dans la zone d'une base ne casse rien ;
+- [ ] 12 comptes jamais inscrits se connectent en 30 s : tous entrent ; journal : « Using 4 threads for Netty ».
 
 Pas testé : tout en jeu.

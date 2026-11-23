@@ -22,7 +22,8 @@ settings:
   timeout-time: 60
   restart-on-crash: true
   restart-script: ./start.sh
-  netty-threads: -1
+  # HeraliZ (23/11, choix du propriétaire) : -1 donnait un seul fil réseau à Netty pour tous les joueurs
+  netty-threads: 4
   attribute:
     maxHealth:
       max: 2048.0

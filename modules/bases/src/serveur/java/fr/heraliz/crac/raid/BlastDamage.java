@@ -15,6 +15,7 @@ import fr.heraliz.crac.build.world.StructureStore;
 import fr.heraliz.crac.claim.ClaimManager;
 import fr.heraliz.crac.placable.MultiBlocks;
 import fr.heraliz.crac.placable.PlacableHpManager;
+import fr.heraliz.crac.placable.PlacablePositionData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -62,10 +63,14 @@ public final class BlastDamage {
 
     /**
      * Placables have HP inside claims only: elsewhere a chest, a furnace or a barrel is an ordinary block of the map
-     * (HeraliZ: loot spots, decor) that blasts treat as vanilla does.
+     * (HeraliZ: loot spots, decor) that blasts treat as vanilla does. HeraliZ (23/11, choix du propriétaire : « ne pas
+     * casser les blocs de la map avec les explosifs, uniquement les blocs de base, la table TaCZ, les coffres ») : seulement
+     * un objet posé par un joueur dans une base ({@link PlacablePositionData#wasClaimed}) ; un tonneau, un four ou un feu
+     * de camp de la carte que la zone d'une base recouvre ne prend aucun dégât.
      */
     static boolean isClaimedPlacable(ServerLevel level, BlockPos pos, BlockState state) {
-        return PlacableHpManager.isTracked(state) && (fr.heraliz.crac.heraliz.Heraliz.cracRulesOutsideClaims() || ClaimManager.getAt(level, pos) != null);
+        return PlacableHpManager.isTracked(state) && (fr.heraliz.crac.heraliz.Heraliz.cracRulesOutsideClaims() || ClaimManager.getAt(level, pos) != null)
+            && PlacablePositionData.get(level).wasClaimed(MultiBlocks.canonical(state, pos));
     }
 
     /** The blast centre and its six neighbours (Explosive Charge splash). */

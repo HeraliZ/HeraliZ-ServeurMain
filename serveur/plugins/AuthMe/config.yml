@@ -426,7 +426,9 @@ Protection:
     countriesBlacklist: 
     - A1
     # Do we need to enable automatic antibot system?
-    enableAntiBot: true
+    # HeraliZ (23/11, choix du propriétaire) : coupé. Inscription en jeu par /register : à l'ouverture, 11 nouveaux joueurs
+    # à moins de 5 s d'écart fermaient le serveur aux nouveaux pendant 10 min. KauriVPN et Spartan filtrent les bots.
+    enableAntiBot: false
     # The interval in seconds
     antiBotInterval: 5
     # Max number of players allowed to login in the interval

@@ -185,7 +185,9 @@
 	#foundation stands on, building pieces, placables (they have HP) and the Claim Block. Breaking into a claim
 	#starts its raid block.
 	#Outside claims CRac leaves the block list of a blast to the other mods (only its own blocks are kept out).
-	raidBreaksBlocks = true
+	#HeraliZ (23/11, choix du propriétaire) : false. Les explosifs ne cassent aucun bloc de la carte, seulement les pièces de
+	#base et les objets posés par les joueurs dans une base (coffres, table TaCZ...), qui ont des points de vie.
+	raidBreaksBlocks = false
 
 [zombies]
 	#If true, hostile mobs chew on building pieces blocking their way.
