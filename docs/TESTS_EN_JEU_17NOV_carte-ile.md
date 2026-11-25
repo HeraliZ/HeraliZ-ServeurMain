@@ -2414,3 +2414,28 @@ admin, il faut donner les récompenses comme si c'était automatique ».
       une seule fois ; points dans l'onglet Saison (4 clans ou plus).
 
 Pas testé : tout en jeu.
+
+## 61. Récolte : arbres et gisements un peu partout, métal plus rare (25/11)
+
+Retour du propriétaire : « je ne trouve aucun arbre ni minerai à farmer ; il en faut un peu partout, à la Rust, sans
+marcher 1 500 blocs ; mais le métal et le métal renforcé bien plus rares que la pierre et le bois ; et comme on va en
+ajouter énormément, en donner moins ou en demander plus ». Journal du serveur : 1 584 places prévues, **150 posées
+seulement** (40 % réservées à l'île arctique, le reste très dispersé : environ un arbre tous les 200 blocs).
+
+Réglages seulement (relus tout seuls, sans redémarrage, une fois le fichier sur le Ptero) :
+- `serveur/config/heraliz_recolte/recolte.json` : arbres 720 → 1 500, pierre 540 → 1 200 (reviennent en 30 et 40 min au
+  lieu de 45 et 60, plus serrés), métal 240 → 300, titane 84 → 90 ; part de l'île arctique 40 % → 20 % ; une place qui
+  attend un coin de carte où personne ne va est tirée ailleurs (souvent près d'un joueur) au bout de 10 min (avant 20).
+  Matière par arbre ou gisement inchangée.
+- `serveur/config/heraliz_quetes/pnj/contremaitre.json` (échanges du Contremaître) : 8 bûches pour 1 planche (avant 5),
+  12 pierres brutes pour 1 pierre taillée (avant 8), 20 minerais de fer pour 1 fragment de métal (avant 10), 16 minerais
+  de titane pour 1 métal renforcé (avant 8). Au total sur la carte : environ 1,7 fois plus de bois et 2 fois plus de pierre
+  qu'avant, mais 0,75 fois le métal et 0,6 fois le métal renforcé.
+
+À tester en jeu (op) :
+- [ ] `/recolte info` 15 à 30 min après la mise en ligne : nombre posé de chaque sorte, et la ligne « Places refusées »
+      (si une raison revient très souvent, elle bloque l'apparition : me l'envoyer) ;
+- [ ] se balader hors des villes : des arbres et des pierres à moins de 150 à 200 blocs, du métal plus rarement ;
+- [ ] images par seconde normales dans une zone où il y a beaucoup d'arbres à abattre.
+
+Pas testé : tout en jeu.
