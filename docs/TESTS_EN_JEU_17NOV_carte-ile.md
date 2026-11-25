@@ -2489,3 +2489,28 @@ Pas testé : tout en jeu.
 Mise en ligne des sections 58 à 63 (accord du propriétaire, 25/11) : un seul redémarrage, serveur reparti à 3 h 36 (heure
 UTC), aucune erreur Java dans le journal ; pack du launcher envoyé (les joueurs reçoivent l'inventaire, l'image claire et
 F4 bloqué en relançant le launcher).
+
+## 64. Armoire et objets de base refusés par WorldGuard aux joueurs (25/11)
+
+Retour du propriétaire : « dé-op, en survie, dans un clan, en pleine nature : j'ai posé une fondation, mais l'armoire se
+pose puis s'enlève tout de suite, avec des particules noires et grises (comme un bloc de terre sur la carte), aucun
+message ». Ces particules sont celles de WorldGuard quand il refuse (`use-particle-effects: true`).
+
+Cause : sur Mohist, poser un bloc passe aussi par les événements Bukkit ; les régions de WorldGuard de la carte refusent de
+construire à qui n'est pas op. L'armoire, les coffres et **tous les objets de base** étaient donc refusés à **tous les
+joueurs** (les fondations passaient : CRac les pose lui-même). Le staff, op, ne le voyait pas.
+
+Correction (CRac 1.38.14-beta, `heraliz/PoseBasesBukkit`) : pour les objets de base seulement (armoire, objets posables en
+base, cœur de clan, échelle de raid), le refus de WorldGuard est levé en dernier et CRac juge la pose avec ses règles
+(armoire seulement dans un clan et hors des zones interdites, objets seulement dans la base de son clan, sur une
+fondation…). Tout autre bloc (terre, blocs de Minecraft) reste refusé par WorldGuard ; le bloc visé reste jugé par
+WorldGuard (un coffre protégé ne s'ouvre pas plus qu'avant). La fumée de WorldGuard peut encore apparaître une fraction de
+seconde au moment de la pose (WorldGuard l'envoie avant que le refus soit levé).
+
+À tester en jeu (compte NON op, en survie, dans un clan) :
+- [ ] fondation, puis armoire dessus en pleine nature : elle reste, message vert « base créée » ;
+- [ ] coffre, caisse en métal, table TaCZ sur une fondation de sa base : ils restent ;
+- [ ] bloc de terre ou coffre posé dans la nature, hors d'une base : toujours refusé ;
+- [ ] armoire dans une ville ou une zone interdite : refusée avec le message de CRac.
+
+Pas testé : tout en jeu.
