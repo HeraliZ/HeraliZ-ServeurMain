@@ -2518,3 +2518,13 @@ Pas testé : tout en jeu.
 Mise en ligne de la section 64 (accord du propriétaire, 25/11) : redémarrage, serveur reparti vers 8 h 59 (heure UTC),
 aucune erreur Java ; journal : « [CRac] objets de base : poses jugées par CRac, pas par les régions de WorldGuard » (le
 correctif est bien branché).
+
+### 64 bis. 2e essai (25/11, CRac 1.38.15-beta)
+
+Retour du propriétaire après la mise en ligne : toujours refusé (objet pris dans l'inventaire créatif : sans effet, c'est
+le même objet). Cause lue dans le code de Mohist (`ServerPlayerGameMode.useItemOn`) : quand WorldGuard refuse le BLOC
+VISÉ (`useInteractedBlock = DENY`), le serveur saute toute la pose, quel que soit l'objet ; le 1er essai ne levait que le
+refus de l'objet. Maintenant, pour un objet de base tenu en main et une pièce de CRac visée (fondation, plancher, mur),
+le clic passe (bloc visé rendu, objet permis), puis la pose est levée du refus de WorldGuard et jugée par CRac. Le bloc
+visé n'est rendu que pour une pièce de CRac (jamais un coffre ni une porte de la carte). Journal : « [CRac] objets de
+base : refus de WorldGuard levé (clic, …) » pour les 20 premiers.

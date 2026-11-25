@@ -42,10 +42,13 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 public final class PoseBasesBukkit {
     private static final String[] PORTEURS = {"WorldGuard", "LuckPerms", "AuthMe"};
     private static boolean fini;
+    /** Refus levés notés au journal (les premiers seulement, pour vérifier que le correctif sert). */
+    private static int notes;
     private static MinecraftServer serveur;
-    private static Method getPlayer, getUniqueId, getAction, getHand, useItemInHand, setUseItemInHand;
+    private static Method getPlayer, getUniqueId, getAction, getHand, useItemInHand, setUseItemInHand, setUseInteractedBlock,
+            useInteractedBlock, getClickedBlock;
     private static Method getBlockPlaced, getX, getY, getZ, setCancelled, setBuild, isCancelled;
-    private static Object resultatDefaut, resultatRefus;
+    private static Object resultatDefaut, resultatRefus, resultatPermis;
 
     private PoseBasesBukkit() {
     }
@@ -89,6 +92,9 @@ public final class PoseBasesBukkit {
             getHand = interaction.getMethod("getHand");
             useItemInHand = interaction.getMethod("useItemInHand");
             setUseItemInHand = interaction.getMethod("setUseItemInHand", resultat);
+            setUseInteractedBlock = interaction.getMethod("setUseInteractedBlock", resultat);
+            useInteractedBlock = interaction.getMethod("useInteractedBlock");
+            getClickedBlock = interaction.getMethod("getClickedBlock");
             getBlockPlaced = pose.getMethod("getBlockPlaced");
             setCancelled = pose.getMethod("setCancelled", boolean.class);
             setBuild = pose.getMethod("setBuild", boolean.class);
@@ -100,8 +106,11 @@ public final class PoseBasesBukkit {
             Object defaut = Enum.valueOf((Class) resultat, "DEFAULT");
             @SuppressWarnings({"unchecked", "rawtypes"})
             Object refus = Enum.valueOf((Class) resultat, "DENY");
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Object permis = Enum.valueOf((Class) resultat, "ALLOW");
             resultatDefaut = defaut;
             resultatRefus = refus;
+            resultatPermis = permis;
             serveur = srv;
             Object e = Proxy.newProxyInstance(cl, new Class<?>[]{ecouteur}, (px, m, a) -> objet(px, m, a));
             Object exec = Proxy.newProxyInstance(cl, new Class<?>[]{executeur}, (px, m, a) -> {
@@ -132,19 +141,30 @@ public final class PoseBasesBukkit {
                 || b instanceof fr.heraliz.crac.block.EchelleBlock || PlacableSet.contains(sl, b);
     }
 
-    /** HIGHEST : clic droit avec un objet de base en main refusé par une région : l'objet peut servir (CRac jugera la pose). */
+    /**
+     * HIGHEST : clic droit avec un objet de base en main sur une pièce de base (fondation, plancher, mur), refusé par une
+     * région : le clic passe (CRac jugera la pose). 25/11, 2e essai : lever seulement le refus de l'objet ne suffisait pas :
+     * tant que le bloc VISÉ est refusé (useInteractedBlock DENY), le serveur ne pose rien, quel que soit l'objet. Le bloc
+     * visé n'est rendu que pour une pièce de CRac, que CRac protège lui-même (jamais un coffre, une porte de la carte...).
+     */
     private static void interaction(Object ev) {
         try {
             if (!(getAction.invoke(ev) instanceof Enum<?> action) || !"RIGHT_CLICK_BLOCK".equals(action.name())) return;
-            if (useItemInHand.invoke(ev) != resultatRefus) return;
+            if (useItemInHand.invoke(ev) != resultatRefus && useInteractedBlock.invoke(ev) != resultatRefus) return;
             ServerPlayer sp = joueur(getPlayer.invoke(ev));
             if (sp == null || sp.isSpectator()) return;
             InteractionHand main = getHand.invoke(ev) instanceof Enum<?> h && "OFF_HAND".equals(h.name())
                     ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
             ItemStack st = sp.getItemInHand(main);
-            if (st.getItem() instanceof BlockItem bi && objetDeBase(sp.serverLevel(), bi.getBlock())) {
-                setUseItemInHand.invoke(ev, resultatDefaut);
-            }
+            ServerLevel sl = sp.serverLevel();
+            if (!(st.getItem() instanceof BlockItem bi) || !objetDeBase(sl, bi.getBlock())) return;
+            Object vise = getClickedBlock.invoke(ev);
+            if (vise == null) return;
+            BlockPos pos = new BlockPos((int) getX.invoke(vise), (int) getY.invoke(vise), (int) getZ.invoke(vise));
+            if (!(sl.getBlockState(pos).getBlock() instanceof fr.heraliz.crac.build.world.StructureBlock)) return;
+            setUseInteractedBlock.invoke(ev, resultatDefaut);
+            setUseItemInHand.invoke(ev, resultatPermis);
+            noter("clic", bi.getBlock());
         } catch (Throwable ex) {
             Crac.LOGGER.debug("[CRac] objets de base : clic Bukkit illisible ({})", ex.toString());
         }
@@ -162,9 +182,18 @@ public final class PoseBasesBukkit {
             if (objetDeBase(sl, sl.getBlockState(pos).getBlock())) {
                 setCancelled.invoke(ev, false);
                 setBuild.invoke(ev, true);
+                noter("pose", sl.getBlockState(pos).getBlock());
             }
         } catch (Throwable ex) {
             Crac.LOGGER.debug("[CRac] objets de base : pose Bukkit illisible ({})", ex.toString());
+        }
+    }
+
+    private static void noter(String quoi, Block b) {
+        if (notes < 20) {
+            notes++;
+            Crac.LOGGER.info("[CRac] objets de base : refus de WorldGuard levé ({}, {})", quoi,
+                    net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(b));
         }
     }
 
