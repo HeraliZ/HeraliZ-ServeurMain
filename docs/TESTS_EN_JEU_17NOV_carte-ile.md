@@ -2514,3 +2514,7 @@ seconde au moment de la pose (WorldGuard l'envoie avant que le refus soit levé)
 - [ ] armoire dans une ville ou une zone interdite : refusée avec le message de CRac.
 
 Pas testé : tout en jeu.
+
+Mise en ligne de la section 64 (accord du propriétaire, 25/11) : redémarrage, serveur reparti vers 8 h 59 (heure UTC),
+aucune erreur Java ; journal : « [CRac] objets de base : poses jugées par CRac, pas par les régions de WorldGuard » (le
+correctif est bien branché).
