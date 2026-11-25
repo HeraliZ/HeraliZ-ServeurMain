@@ -2469,3 +2469,19 @@ staff n'est pas touchée ; `actif = false` de la bêta le coupe aussi).
       plus de conteneurs pleins.
 
 Pas testé : tout en jeu (le code des véhicules est compilé sur GitHub, jamais lancé avec un joueur).
+
+## 63. Touche F4 bloquée, image toujours claire (25/11)
+
+Demande du propriétaire : « quand on appuie sur F4, c'est soit clair, soit plus foncé : qu'on ne puisse pas changer,
+bloqué sur le rendu clair ». F4 est une touche de Minecraft qui allume et coupe l'effet d'image en cours : ici le filtre
+d'image de HeraliZ (étalonnage façon film : couleurs un peu ternies, vignette, grain), qui rend l'image plus foncée.
+- Filtre d'image coupé pour tout le monde (`ambiance/FiltreImage`, `ACTIF = false`) : rendu clair, comme avec F4 avant.
+  Les nuits, le ciel et le brouillard ne changent pas (ils ne passent pas par ce filtre).
+- F4 ne fait plus rien (`mixin/F4BloqueMixin`) : sinon F4 coupait aussi l'écran gris d'un joueur à terre, le saignement
+  ou l'irradiation.
+
+À tester en jeu :
+- [ ] image claire dès l'arrivée ; F4 : rien ne change ;
+- [ ] à terre (écran gris) puis F4 : l'écran reste gris.
+
+Pas testé : tout en jeu.

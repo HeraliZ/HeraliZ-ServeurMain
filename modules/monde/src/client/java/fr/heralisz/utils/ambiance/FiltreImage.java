@@ -31,6 +31,8 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 @Mod.EventBusSubscriber(modid = HeraliszUtils.MODID, value = Dist.CLIENT)
 public final class FiltreImage {
     static final ResourceLocation CHAINE = new ResourceLocation(HeraliszUtils.MODID, "shaders/post/ambiance.json");
+    /** Filtre d'image en service (25/11 : non, rendu clair pour tout le monde, demande du propriétaire). */
+    private static final boolean ACTIF = false;
     private static PostChain chaine;
     private static EffectInstance effet;
     private static Field champPasses;
@@ -49,7 +51,9 @@ public final class FiltreImage {
         GameRenderer gr = mc.gameRenderer;
         if (gr == null) return;
         PostChain cur = gr.currentEffect();
-        boolean veut = !enPanne && AmbianceConfig.filtre() && mc.level != null && Ambiance.actif
+        // 25/11 (choix du propriétaire : « bloqué sur le rendu clair ») : filtre coupé pour tout le monde (ACTIF), et la
+        // touche F4 qui l'allumait et le coupait ne fait plus rien (mixin F4BloqueMixin)
+        boolean veut = ACTIF && !enPanne && AmbianceConfig.filtre() && mc.level != null && Ambiance.actif
                 && mc.player != null && mc.getCameraEntity() == mc.player && !irisActif()
                 && !"off".equals(System.getProperty("heralisz.filtre"));        // banc d'essai : mesure sans le filtre
         if (cur != null && cur == chaine) {

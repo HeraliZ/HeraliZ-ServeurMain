@@ -6,6 +6,7 @@
   "refmap": "heraliz_monde.refmap.json",
   "client": [
     "BordureCinematiqueMixin",
+    "F4BloqueMixin",
     "LivingEntityTrainMixin",
     "LocalPlayerTrainMixin",
     "TaczAjustementTrainMixin",
