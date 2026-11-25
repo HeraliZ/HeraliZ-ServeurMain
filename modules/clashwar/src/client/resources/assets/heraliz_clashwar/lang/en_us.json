@@ -306,5 +306,6 @@
   "heraliz_clashwar.commande.carte.sauvee": "Map %s saved (%s blocks). Matches will use it after the next restart.",
   "heraliz_clashwar.commande.carte.echec": "Save failed (see the log): nothing changed.",
   "heraliz_clashwar.commande.carte.tournoi": "Matches are running: map editing is possible after the tournament.",
-  "heraliz_clashwar.commande.carte.en_match": "Not possible while in a match or spectating one."
+  "heraliz_clashwar.commande.carte.en_match": "Not possible while in a match or spectating one.",
+  "clashwar.mur.par_staff": "Announced by the staff"
 }

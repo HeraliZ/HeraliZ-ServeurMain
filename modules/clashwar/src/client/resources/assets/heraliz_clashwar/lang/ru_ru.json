@@ -306,5 +306,6 @@
   "heraliz_clashwar.commande.carte.sauvee": "Карта %s сохранена (%s блоков). Матчи будут использовать её после следующего перезапуска.",
   "heraliz_clashwar.commande.carte.echec": "Сохранить не удалось (см. журнал): ничего не изменилось.",
   "heraliz_clashwar.commande.carte.tournoi": "Идут матчи: редактировать карту можно после турнира.",
-  "heraliz_clashwar.commande.carte.en_match": "Недоступно во время матча или при просмотре матча."
+  "heraliz_clashwar.commande.carte.en_match": "Недоступно во время матча или при просмотре матча.",
+  "clashwar.mur.par_staff": "Объявляется администрацией"
 }

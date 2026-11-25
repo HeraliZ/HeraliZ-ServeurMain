@@ -45,7 +45,7 @@ mais toujours utilisables si on les tape), `serveur/commands.yml`.
 | `/quetes` | Quêtes | journal des quêtes (touche J) |
 | `/aide <ton problème>` | Grades | (03/11) appeler le staff : le message part au staff connecté et sur le salon Discord du staff, avec le pseudo, le monde et la position ; une fois par minute, 200 caractères au plus ; permise pendant le tutoriel des bases, en combat et sur la carte |
 | `/journalieres` | Quêtes | quêtes du jour (aussi le bouton « Quêtes du jour » du journal, touche libre dans les options) : choisir une difficulté par jour, une quête parmi trois, puis un tirage de récompense par réussite (26/10) |
-| `/clashwar` | ClashWar | inscription, tableau, regarder un match, revenir en salle |
+| `/clashwar` | ClashWar | inscription, tableau, regarder un match, revenir en salle ; depuis le 25/11 plus de lancement automatique : un admin le lance (`/clashwar lancer [format] [minutes]`, op 2) |
 | `/heraliz` | Caisses | aperçu des caisses ; staff : `givekey` (clés ajoutées au compte du joueur, plus d'objet depuis le 25/10), `cles voir <joueur>`, `cles retirer <joueurs> <caisse> <nombre>` |
 
 ## 2. Staff — gestion du serveur (à garder)

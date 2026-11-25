@@ -123,7 +123,7 @@ public final class PeintreTableau {
                 couleur = Ui.MUTED;
             }
             default -> {
-                etat = v.prochaineMs() > 0 ? tr("clashwar.mur.etat.prochain", date(v.prochaineMs())) : "";
+                etat = v.prochaineMs() > 0 ? tr("clashwar.mur.etat.prochain", date(v.prochaineMs())) : tr("clashwar.mur.par_staff");
                 couleur = Ui.ACCENT_NEUTRE;
             }
         }
@@ -155,11 +155,11 @@ public final class PeintreTableau {
             }
             case ANNULE -> {
                 titre = tr("clashwar.mur.annulee");
-                ligne1 = v.prochaineMs() > 0 ? tr("clashwar.mur.prochain", date(v.prochaineMs()), v.prochainFormat().toUpperCase(Locale.ROOT)) : "";
+                ligne1 = v.prochaineMs() > 0 ? tr("clashwar.mur.prochain", date(v.prochaineMs()), v.prochainFormat().toUpperCase(Locale.ROOT)) : tr("clashwar.mur.par_staff");
             }
             default -> {
                 titre = tr("clashwar.mur.prochain_titre");
-                ligne1 = v.prochaineMs() > 0 ? date(v.prochaineMs()) : "";
+                ligne1 = v.prochaineMs() > 0 ? date(v.prochaineMs()) : tr("clashwar.mur.par_staff");
                 ligne2 = v.prochainFormat().isEmpty() ? "" : tr("clashwar.mur.format_prochain", v.prochainFormat().toUpperCase(Locale.ROOT));
             }
         }

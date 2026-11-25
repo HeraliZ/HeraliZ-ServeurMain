@@ -109,6 +109,11 @@ public final class Tournois {
         return maintenant.plusDays(8);
     }
 
+    /** Date de la prochaine edition montree aux joueurs (epoch ms), 0 si le ClashWar n'est lance que par un admin. */
+    static long prochaineMs(CwConfig cfg) {
+        return cfg.automatique ? prochainCreneau(ZonedDateTime.now(cfg.zone())).toInstant().toEpochMilli() : 0L;
+    }
+
     /** Format de la prochaine edition planifiee (sans avancer la rotation). */
     static Format prochainFormat() {
         CwConfig cfg = CwConfig.get();
@@ -129,6 +134,8 @@ public final class Tournois {
         // une simulation du banc n'empeche jamais une vraie edition
         if (courant != null && courant.actif() && !courant.simulation) return;
         CwConfig cfg = CwConfig.get();
+        // 25/11 : lance par un admin seulement (/clashwar lancer), plus d'annonce ni d'ouverture tout seul
+        if (!cfg.automatique) return;
         ZonedDateTime now = ZonedDateTime.now(cfg.zone());
         ZonedDateTime h = prochainCreneau(now);
         long hMs = h.toInstant().toEpochMilli();
@@ -191,8 +198,7 @@ public final class Tournois {
 
     private static VueTableau construireVue() {
         CwConfig cfg = CwConfig.get();
-        ZonedDateTime now = ZonedDateTime.now(cfg.zone());
-        long prochaine = prochainCreneau(now).toInstant().toEpochMilli();
+        long prochaine = prochaineMs(cfg);
         String prochainFormat = prochainFormat().nom;
         VueTableau.Equipe dernier = null;
         int dernierEdition = 0;
@@ -224,7 +230,7 @@ public final class Tournois {
             l.add(new CwPaquets.LigneClassement(x.tag, x.nom, x.couleur, x.titres, x.matchsGagnes, x.matchs, x.eliminations, x.morts));
         }
         CwConfig cfg = CwConfig.get();
-        long prochaine = prochainCreneau(ZonedDateTime.now(cfg.zone())).toInstant().toEpochMilli();
+        long prochaine = prochaineMs(cfg);
         CwEtat.Champion c = CwEtat.champion;
         return new CwPaquets.ClassementS2C(l, prochaine, c == null ? "" : c.tag(), c == null ? 0 : c.edition());
     }

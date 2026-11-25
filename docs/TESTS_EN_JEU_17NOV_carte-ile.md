@@ -2393,3 +2393,24 @@ Demandes du propriétaire (à mettre en ligne avec les autres petites modifs, un
 - [ ] un compte sans le grade Fondateur fait clic droit sur une table de craft : « Ce poste est hors service. ».
 
 Pas testé : tout en jeu.
+
+## 60. ClashWar lancé par un admin seulement (25/11)
+
+Demande du propriétaire : « le ClashWar ne doit plus être automatique, c'est un admin qui le lance ; même lancé par un
+admin, il faut donner les récompenses comme si c'était automatique ».
+- Nouveau réglage `automatique` de `serveur/heraliz_clashwar/clashwar.json`, mis à **false** : plus d'annonce 15 min
+  avant ni d'ouverture tout seul le mercredi et le dimanche (`Tournois.planifier`) ; aucune date de prochaine édition
+  montrée : le tableau du spawn dit « Annoncé par le staff » (ClashWar 1.4.2). Remettre `true` (puis
+  `/recharger clashwar`) rend le planning d'avant.
+- Lancer : `/clashwar lancer [format] [minutes]` (op 2) : inscriptions ouvertes tout de suite (10 min par défaut ; format
+  au choix, sinon le suivant de la rotation), annonce à tous les joueurs comme avant.
+- Récompenses : une édition lancée par un admin était déjà une vraie édition (seules les simulations du banc n'en
+  donnent pas) : mêmes primes, clés, points de saison, avec les mêmes règles (3 clans au moins pour les primes, 4 pour les
+  points de saison). Rien changé de ce côté.
+
+À tester en jeu :
+- [ ] mercredi ou dimanche à 20 h 15 / 20 h 30 : rien ne se lance tout seul ; tableau du spawn : « Annoncé par le staff » ;
+- [ ] `/clashwar lancer 2v2 5` : annonce, inscriptions 5 min, matchs ; avec 3 clans ou plus : primes et clés données
+      une seule fois ; points dans l'onglet Saison (4 clans ou plus).
+
+Pas testé : tout en jeu.

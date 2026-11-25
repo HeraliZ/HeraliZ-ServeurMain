@@ -30,6 +30,12 @@ import java.util.Map;
  * <p>Fil serveur. Valeurs publiques en lecture seule par convention.
  */
 public final class CwConfig {
+    /**
+     * Lancement tout seul aux jours et heure du planning (25/11, choix du propriétaire : faux, « c'est un admin qui le lance »
+     * avec /clashwar lancer ; mêmes récompenses qu'une édition planifiée). Faux : ni annonce, ni ouverture automatique, et
+     * aucune date de prochaine édition montrée aux joueurs.
+     */
+    public boolean automatique = true;
     /** Jours de l'evenement (defaut mercredi et dimanche). */
     public List<DayOfWeek> jours = List.of(DayOfWeek.WEDNESDAY, DayOfWeek.SUNDAY);
     /** Heure de depart (fin des inscriptions). */
@@ -144,7 +150,8 @@ public final class CwConfig {
         fr.heraliz.clashwar.moteur.coffre.Coffres.regler(c.coffresEnFond, c.coffresParTick, c.coffresBudgetMs);
         fr.heraliz.clashwar.moteur.Arrivees.regler(c.prechargerArrivees);
         fr.heraliz.clashwar.moteur.arenes.ArenesService.regler(c.arenesAuDemarrage);
-        HeralizClashWar.LOG.info("[clashwar] reglages : jours {} a {}:{} ({}), rotation {}, format fixe {}", c.jours, c.heure,
+        HeralizClashWar.LOG.info("[clashwar] reglages : {}, jours {} a {}:{} ({}), rotation {}, format fixe {}",
+                c.automatique ? "lancement automatique" : "lance par un admin seulement", c.jours, c.heure,
                 String.format(Locale.ROOT, "%02d", c.minute), c.zone(), c.rotation, c.formatFixe);
         HeralizClashWar.LOG.info("[clashwar] reglages : primes des {} clans, coffre {} ({} par tick, {} ms), arrivees prechargees {}, arenes au demarrage {}",
                 c.recompensesClansMin, c.coffresEnFond ? "en fond" : "sur le fil serveur", c.coffresParTick, c.coffresBudgetMs,
@@ -223,11 +230,13 @@ public final class CwConfig {
         coffresBudgetMs = Math.max(1, Math.min(40, entier(o, "coffres_budget_ms", coffresBudgetMs)));
         prechargerArrivees = booleen(o, "precharger_arrivees", prechargerArrivees);
         arenesAuDemarrage = booleen(o, "arenes_au_demarrage", arenesAuDemarrage);
+        automatique = booleen(o, "automatique", automatique);
     }
 
     private JsonObject toJson() {
         JsonObject o = new JsonObject();
         o.addProperty("_aide", AIDE);
+        o.addProperty("automatique", automatique);
         JsonArray j = new JsonArray();
         for (DayOfWeek d : jours) j.add(d.name());
         o.add("jours", j);
@@ -279,7 +288,8 @@ public final class CwConfig {
     }
 
     /** Texte d'aide en tete du fichier (le JSON n'a pas de commentaires). */
-    static final String AIDE = "ClashWar HeraliZ : jours (MONDAY..SUNDAY ou lundi..dimanche), heure HH:MM de depart, "
+    static final String AIDE = "ClashWar HeraliZ : automatique (false = jamais lance tout seul : un admin le lance avec "
+            + "/clashwar lancer [format] [minutes], memes recompenses qu'une edition planifiee), jours (MONDAY..SUNDAY ou lundi..dimanche), heure HH:MM de depart, "
             + "rotation des formats (1v1, 2v2, 3v3, 4v4), format_fixe vide = rotation ; /recharger clashwar pour relire. "
             + "recompenses_clans_min : primes et cles versees seulement si au moins tant de clans differents ont une equipe dans le "
             + "tableau, une seule prime par clan (sa meilleure place) ; saison_clans_min : meme regle pour les points de saison. "
