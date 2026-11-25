@@ -2528,3 +2528,6 @@ refus de l'objet. Maintenant, pour un objet de base tenu en main et une pièce d
 le clic passe (bloc visé rendu, objet permis), puis la pose est levée du refus de WorldGuard et jugée par CRac. Le bloc
 visé n'est rendu que pour une pièce de CRac (jamais un coffre ni une porte de la carte). Journal : « [CRac] objets de
 base : refus de WorldGuard levé (clic, …) » pour les 20 premiers.
+
+Mise en ligne du 2e essai (accord du propriétaire, 25/11) : redémarrage, serveur reparti à 13 h 37 (heure UTC), aucune
+erreur Java.
