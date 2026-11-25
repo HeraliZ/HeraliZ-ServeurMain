@@ -2485,3 +2485,7 @@ d'image de HeraliZ (étalonnage façon film : couleurs un peu ternies, vignette,
 - [ ] à terre (écran gris) puis F4 : l'écran reste gris.
 
 Pas testé : tout en jeu.
+
+Mise en ligne des sections 58 à 63 (accord du propriétaire, 25/11) : un seul redémarrage, serveur reparti à 3 h 36 (heure
+UTC), aucune erreur Java dans le journal ; pack du launcher envoyé (les joueurs reçoivent l'inventaire, l'image claire et
+F4 bloqué en relançant le launcher).
