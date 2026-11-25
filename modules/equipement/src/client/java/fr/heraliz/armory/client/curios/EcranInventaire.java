@@ -46,7 +46,8 @@ import top.theillusivec4.curios.common.inventory.container.CuriosContainerV2;
  *     fine bande des effets (icônes dans un anneau fin, bonus de loot en doré tout à gauche), détail au survol ;</li>
  *     <li>à gauche, le personnage entre ses cases d'équipement (cases de 22) : casque, masque, gilet, plastron, jambières,
  *     bottes ; sac, corps, mains, brassard, genoux ;</li>
- *     <li>à droite, « Sur toi » (27 cases) et « Accès rapide » (la barre), puis la carte du sac à dos porté : bouton
+ *     <li>à droite, la carte du sac à dos porté en haut (25/11, demande du propriétaire : « mettre le sac en haut et
+ *     l'inventaire plus bas »), puis « Sur toi » (27 cases) et « Accès rapide » (la barre) ; carte du sac : bouton
  *     « Ouvrir » du kit (18/11, demande du propriétaire : avant, une pastille dessinée à la main, pas nette, qui ne
  *     marchait pas), ou sa touche (B par défaut) ;</li>
  *     <li>plus d'artisanat 2 x 2 (bloqué par le serveur à part) ni de main gauche (retirée le 31/10), ni d'aides.</li>
@@ -65,8 +66,8 @@ public final class EcranInventaire extends AbstractContainerScreen<CuriosContain
     private static final int EQ_CADRE = 22, EQ_PAD = 3, EQ_Y0 = 40, EQ_PAS = 30, COL_G = 12, COL_D = 134;
     /** Puits du personnage, pieds et échelle du personnage. */
     private static final int PUITS_X0 = 40, PUITS_X1 = 128, PIEDS = 184, ECHELLE = 54;
-    /** « Sur toi » + « Accès rapide », carte du sac. */
-    private static final int G_X = 172, G_Y0 = 40, BARRE_Y = 130, SAC_Y = 177, SAC_H = 35;
+    /** Carte du sac (en haut), puis « Sur toi » + « Accès rapide » : mêmes écarts qu'avant, ordre inversé (25/11). */
+    private static final int G_X = 172, SAC_Y = 40, SAC_H = 35, G_Y0 = 102, BARRE_Y = 190;
     private static final int CADRE = InventaireVerre.CADRE, PAD = InventaireVerre.PAD;
     /** Rangée (0 en haut, colonne de gauche) des cases d'armure, par case de l'inventaire : 36 pieds … 39 tête. */
     private static final int[] RANG_ARMURE = {5, 4, 3, 0};

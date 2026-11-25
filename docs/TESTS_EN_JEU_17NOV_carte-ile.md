@@ -2361,3 +2361,17 @@ Connu, laissé : hérals d'une caisse perdus si le compte est près du plafond d
 - [ ] 12 comptes jamais inscrits se connectent en 30 s : tous entrent ; journal : « Using 4 threads for Netty ».
 
 Pas testé : tout en jeu.
+
+## 58. Inventaire : sac à dos en haut (25/11)
+
+Demande du propriétaire : « inverser le sac et l'inventaire : mettre le sac en haut et l'inventaire plus bas ». Dans
+l'écran d'inventaire (touche E), à droite : la carte du sac à dos (avec « Ouvrir ») est maintenant en haut, puis « Sur
+toi » (27 cases) et « Accès rapide » en dessous ; mêmes écarts qu'avant, seul l'ordre change (Équipement 1.4.3,
+`armory/client/curios/EcranInventaire`). Aperçu fait à partir de la capture du propriétaire.
+
+À tester en jeu :
+- [ ] touche E : sac en haut, « Sur toi » puis « Accès rapide » en dessous, rien ne se chevauche ;
+- [ ] avec un sac porté : bouton « Ouvrir » au bon endroit et qui marche ; Maj + clic, glisser, touches 1 à 9 entre
+      « Sur toi » et la barre comme avant.
+
+Pas testé : tout en jeu.
