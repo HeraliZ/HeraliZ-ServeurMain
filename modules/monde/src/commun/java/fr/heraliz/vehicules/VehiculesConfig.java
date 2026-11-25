@@ -33,6 +33,18 @@ public final class VehiculesConfig {
     public static final ForgeConfigSpec.DoubleValue PETITE_MARCHE;
     public static final ForgeConfigSpec.DoubleValue ADHERENCE;
     public static final ForgeConfigSpec.DoubleValue BRAQUAGE_MIN;
+    public static final ForgeConfigSpec.BooleanValue APPARITION_ACTIVE;
+    public static final ForgeConfigSpec.IntValue APPARITION_MAX;
+    public static final ForgeConfigSpec.IntValue APPARITION_INTERVALLE;
+    public static final ForgeConfigSpec.DoubleValue APPARITION_ESSENCE;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPARITION_VEHICULES;
+    public static final ForgeConfigSpec.ConfigValue<String> APPARITION_DIMENSION;
+    public static final ForgeConfigSpec.IntValue APPARITION_DISTANCE_MIN;
+    public static final ForgeConfigSpec.IntValue APPARITION_DISTANCE_MAX;
+    public static final ForgeConfigSpec.IntValue APPARITION_ECART;
+    public static final ForgeConfigSpec.IntValue APPARITION_LOIN_DU_SPAWN;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPARITION_SOLS;
+    public static final ForgeConfigSpec.IntValue APPARITION_OUBLI_JOURS;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -102,6 +114,44 @@ public final class VehiculesConfig {
                 .defineInRange("adherence", 0.2, 0.0, 1.0);
         BRAQUAGE_MIN = b.comment("Vitesse minimale de braquage du volant (degres par tick ; moteur d'origine : 0.1 pour le camion).")
                 .defineInRange("braquage_min", 0.25, 0.0, 2.0);
+        b.pop();
+        b.push("apparition");
+        APPARITION_ACTIVE = b.comment("Vehicules qui apparaissent tout seuls un peu partout sur la carte (25/11, demande du proprietaire :",
+                        "« des vehicules en plus grande quantite un peu partout, avec une limite sur la carte, chacun avec 3 % d'essence »).",
+                        "Un vehicule apparait hors de la vue des joueurs, pres de l'un d'eux (le coin de carte doit deja etre charge : le",
+                        "serveur ne charge jamais rien pour ca), sur un sol naturel plat (liste « sols »), pas dans l'eau ni sous un toit.")
+                .define("active", true);
+        APPARITION_MAX = b.comment("Vehicules apparus tout seuls sur la carte au plus en meme temps (ceux poses par les joueurs ne comptent",
+                        "pas). Un vehicule detruit, ramasse ou retire libere sa place ; un vehicule jamais revu depuis « oubli_jours » aussi.")
+                .defineInRange("max", 40, 0, 500);
+        APPARITION_INTERVALLE = b.comment("Un essai d'apparition toutes les ... secondes (tant que la carte n'a pas son maximum, et seulement",
+                        "avec un joueur sur la carte).")
+                .defineInRange("intervalle_secondes", 90, 10, 3600);
+        APPARITION_ESSENCE = b.comment("Essence a l'apparition, en pour cent du reservoir du vehicule.")
+                .defineInRange("essence_pourcent", 3.0, 0.0, 100.0);
+        APPARITION_VEHICULES = b.comment("Vehicules qui apparaissent et leur poids (plus le poids est grand, plus il est frequent) :",
+                        "« identifiant=poids ». Seulement les vehicules du serveur (moto, buggy, fourgon, camion).")
+                .defineListAllowEmpty("vehicules", List.of("ywzj_vehicle:motorcycle=4", "ywzj_vehicle:atv_mrzr4=3",
+                        "ywzj_vehicle:hiace=2", "ywzj_vehicle:dump_truck=1"), o -> o instanceof String);
+        APPARITION_DIMENSION = b.comment("Monde ou les vehicules apparaissent (la carte).")
+                .define("dimension", "minecraft:overworld");
+        APPARITION_DISTANCE_MIN = b.comment("Blocs au moins entre le vehicule qui apparait et tout joueur (personne ne le voit surgir).")
+                .defineInRange("distance_min", 80, 16, 512);
+        APPARITION_DISTANCE_MAX = b.comment("Blocs au plus entre le vehicule et le joueur pres de qui il apparait (le coin doit etre charge).")
+                .defineInRange("distance_max", 180, 32, 1024);
+        APPARITION_ECART = b.comment("Blocs au moins entre deux vehicules apparus tout seuls (endroit d'apparition).")
+                .defineInRange("ecart", 150, 0, 2000);
+        APPARITION_LOIN_DU_SPAWN = b.comment("Blocs au moins autour du point d'apparition du monde (le spawn) sans vehicule qui apparait.")
+                .defineInRange("loin_du_spawn", 150, 0, 5000);
+        APPARITION_SOLS = b.comment("Blocs sur lesquels un vehicule peut apparaitre (« #... » : une etiquette de blocs). Sous un toit ou",
+                        "sur un toit : jamais (le dessus de la colonne doit etre un de ces sols, a l'air libre).")
+                .defineListAllowEmpty("sols", List.of("minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt",
+                        "minecraft:podzol", "minecraft:dirt_path", "minecraft:gravel", "minecraft:sand", "minecraft:red_sand",
+                        "minecraft:stone", "minecraft:andesite", "minecraft:snow_block", "minecraft:snow", "minecraft:mud",
+                        "minecraft:packed_mud", "minecraft:rooted_dirt"), o -> o instanceof String);
+        APPARITION_OUBLI_JOURS = b.comment("Un vehicule apparu qui n'a plus ete vu charge depuis ce nombre de jours ne compte plus dans le",
+                        "maximum (il est peut-etre parti dans un coin ou personne ne va).")
+                .defineInRange("oubli_jours", 3, 1, 60);
         b.pop();
         SPEC = b.build();
     }

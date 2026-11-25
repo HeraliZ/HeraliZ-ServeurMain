@@ -76,6 +76,7 @@ public final class SuiviVehicules {
     private static void entretenir(AbstractVehicle v) {
         PointsDeVie.ajuster(v);
         Passagers.appliquer(v);
+        ApparitionVehicules.entretenir(v);   // 25/11 : essence de départ des véhicules apparus tout seuls
         if (!CoffreRetire.actif() || !CoffreRetire.contientQuelqueChose(v)) return;
         Entity ent = v;
         if (ent.level() instanceof ServerLevel level) {

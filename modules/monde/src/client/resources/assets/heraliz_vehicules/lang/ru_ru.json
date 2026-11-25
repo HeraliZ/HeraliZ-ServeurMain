@@ -6,5 +6,6 @@
   "heraliz_vehicules.cmd.inconnu": "Неизвестный транспорт: %s (buggy, moto, camion, fourgon).",
   "heraliz_vehicules.cmd.donne": "%s выдано (игроков: %s).",
   "heraliz_vehicules.sortie.aide": "%s: выйти из транспорта",
-  "heraliz_vehicules.sortie.trop_vite": "Слишком быстро, чтобы выйти: сбавь скорость ниже %s км/ч"
+  "heraliz_vehicules.sortie.trop_vite": "Слишком быстро, чтобы выйти: сбавь скорость ниже %s км/ч",
+  "heraliz_vehicules.cmd.apparus": "Транспорт, появившийся сам на карте: %s из %s максимум (попытка каждые %s с)."
 }

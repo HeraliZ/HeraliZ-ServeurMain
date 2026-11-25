@@ -164,7 +164,8 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
 
         /**
          * Part d'actifs : celle réglée en jeu, sinon celle de son niveau dans la configuration (parts_par_niveau), sinon
-         * celle de la zone (ou de la configuration serveur), multipliée par le facteur de son niveau.
+         * celle de la zone (ou de la configuration serveur), multipliée par le facteur de son niveau et, pendant la bêta, par
+         * {@code conteneurs_remplis} (25/11).
          */
         public double proportion() {
             Double p = partForcee;
@@ -173,7 +174,8 @@ public final class ZonesLoot extends SimpleJsonResourceReloadListener {
             // 17/11 : part du niveau imposée par la configuration (parts_par_niveau) avant celle du fichier de la carte
             double base = ConfigLoot.partNiveau(niveau);
             if (base < 0) base = actifs != null ? actifs : ConfigLoot.proportion();
-            return base * ConfigLoot.facteur(niveau);
+            // 25/11 : bêta, plus de conteneurs remplis à la fois (conteneurs_remplis de [beta]) ; jamais plus que tous
+            return Math.min(1.0, base * ConfigLoot.facteur(niveau) * ConfigLoot.betaConteneurs());
         }
 
         /**

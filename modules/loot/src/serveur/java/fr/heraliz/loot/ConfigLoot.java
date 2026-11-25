@@ -36,7 +36,7 @@ public final class ConfigLoot {
             NUIS_CLAIMS;
     /** Loot plus généreux pendant la bêta (03/11, src/serveur : LootBeta). */
     public static final ForgeConfigSpec.BooleanValue BETA_ACTIF;
-    public static final ForgeConfigSpec.DoubleValue BETA_QUANTITE, BETA_HAUTES, BETA_PEU_COMMUN;
+    public static final ForgeConfigSpec.DoubleValue BETA_QUANTITE, BETA_HAUTES, BETA_PEU_COMMUN, BETA_CONTENEURS;
     public static final ForgeConfigSpec.IntValue BETA_OBJETS_MAX;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BETA_EXCLUS;
     /** Économie de la bêta (03/11, suite : src/serveur : EconomieBeta, lue par HeraliZ Quêtes et HeraliZ Clans). */
@@ -104,6 +104,11 @@ public final class ConfigLoot {
                 .defineInRange("chances_raretes_hautes", 1.5, 1.0, 3.0);
         BETA_PEU_COMMUN = b.comment("Chances des objets Peu commun multipliées par ce nombre (1 : inchangées).")
                 .defineInRange("chances_peu_commun", 1.0, 1.0, 3.0);
+        BETA_CONTENEURS = b.comment("Conteneurs remplis à la fois dans chaque zone multipliés par ce nombre (25/11, demande du propriétaire :",
+                        "« trop de conteneurs vides ; pour la bêta, dans le même esprit que le x1.5, un peu plus de conteneurs remplis",
+                        "dans chaque zone »). Jamais au-delà de tous les conteneurs de la zone ; une part réglée en jeu par le staff",
+                        "(/heralizloot zone) n'est pas touchée. 1 : comme hors bêta.")
+                .defineInRange("conteneurs_remplis", 1.5, 1.0, 3.0);
         BETA_OBJETS_MAX = b.comment("Objets au plus dans un conteneur avec la quantité en plus (27 cases), sauf si sa table en donnait",
                 "déjà plus : les conteneurs ne deviennent jamais pleins.").defineInRange("objets_max", 20, 1, 27);
         BETA_EXCLUS = b.comment("Objets qui gardent leurs chances d'aujourd'hui (en plus des Uniques et des objets à vie) : identifiant",
@@ -334,6 +339,11 @@ public final class ConfigLoot {
 
     static double betaHautes() {
         return SPEC.isLoaded() ? BETA_HAUTES.get() : 1.0;
+    }
+
+    /** Multiplicateur des conteneurs remplis par zone (1 hors bêta ou bêta coupée). */
+    static double betaConteneurs() {
+        return betaActif() ? BETA_CONTENEURS.get() : 1.0;
     }
 
     static double betaPeuCommun() {

@@ -2439,3 +2439,33 @@ Réglages seulement (relus tout seuls, sans redémarrage, une fois le fichier su
 - [ ] images par seconde normales dans une zone où il y a beaucoup d'arbres à abattre.
 
 Pas testé : tout en jeu.
+
+## 62. Véhicules qui apparaissent un peu partout, plus de conteneurs remplis (25/11)
+
+Demandes du propriétaire : « des véhicules contrôlables en plus grande quantité un peu partout, avec une limite sur la
+carte, chacun avec genre 3 % d'essence » ; « pas assez de loot, trop de conteneurs vides : pour la bêta, dans le même
+esprit que le x1.5, un peu plus de conteneurs remplis dans chaque zone ».
+
+**Véhicules** (nouveau, Monde 1.3.14, `vehicules/ApparitionVehicules`, section `[apparition]` de
+`heraliz_vehicules-server.toml`) : avant, aucun véhicule n'apparaissait tout seul. Maintenant, un essai toutes les 90 s
+tant que la carte en a moins de **40** (apparus tout seuls ; ceux posés par les joueurs ne comptent pas) : un point à 80
+à 180 blocs d'un joueur pris au hasard, dans un coin de carte déjà chargé, à plus de 80 blocs de tous les joueurs (on ne
+le voit pas surgir), à plus de 150 blocs du spawn et des autres véhicules apparus, sur un sol naturel à l'air libre (herbe,
+terre, chemin, gravier, sable, pierre, neige… : jamais sur un toit ni sous un arbre, ni dans l'eau), à plat sur 5 x 5
+blocs. Moto 4, buggy 3, fourgon 2, camion 1 (poids). **Essence : 3 % du réservoir.** Un véhicule détruit, ramassé ou
+retiré libère sa place ; un véhicule jamais revu depuis 3 jours aussi. Staff : `/vehicules apparus` (nombre / maximum).
+Tout se règle dans le fichier (max, intervalle, essence, véhicules et poids, distances, sols).
+
+**Loot** (Loot 0.20.13) : nouveau réglage `conteneurs_remplis = 1.5` dans `[beta]` de `heraliz_loot-server.toml` :
+1,5 fois plus de conteneurs remplis à la fois dans chaque zone (jamais plus que tous ; une part réglée en jeu par le
+staff n'est pas touchée ; `actif = false` de la bêta le coupe aussi).
+
+À tester en jeu :
+- [ ] se balader 10 à 20 min sur la carte : des véhicules apparaissent au loin (pas sous ses yeux), posés à plat,
+      jamais sur un toit ni dans l'eau ; on monte dedans, il roule un peu (3 % d'essence) puis s'arrête ; le jerrican le
+      remplit ; `/vehicules apparus` monte jusqu'à 40 au plus ;
+- [ ] détruire un véhicule apparu : `/vehicules apparus` baisse d'un ;
+- [ ] `/heralizloot zone <zone> info` : environ 1,5 fois plus d'actifs qu'avant dans chaque zone ; fouiller une ville :
+      plus de conteneurs pleins.
+
+Pas testé : tout en jeu (le code des véhicules est compilé sur GitHub, jamais lancé avec un joueur).

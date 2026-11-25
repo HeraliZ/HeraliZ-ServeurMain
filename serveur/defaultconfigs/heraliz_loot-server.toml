@@ -52,6 +52,12 @@
 	#Chances des objets Peu commun multipliées par ce nombre (1 : inchangées).
 	#Range: 1.0 ~ 3.0
 	chances_peu_commun = 1.0
+	#Conteneurs remplis à la fois dans chaque zone multipliés par ce nombre (25/11, demande du propriétaire :
+	#« trop de conteneurs vides ; pour la bêta, dans le même esprit que le x1.5, un peu plus de conteneurs remplis
+	#dans chaque zone »). Jamais au-delà de tous les conteneurs de la zone ; une part réglée en jeu par le staff
+	#(/heralizloot zone) n'est pas touchée. 1 : comme hors bêta.
+	#Range: 1.0 ~ 3.0
+	conteneurs_remplis = 1.5
 	#Objets au plus dans un conteneur avec la quantité en plus (27 cases), sauf si sa table en donnait déjà plus.
 	#Range: 1 ~ 27
 	objets_max = 20

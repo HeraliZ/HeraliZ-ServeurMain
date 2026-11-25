@@ -39,11 +39,21 @@ public final class Commandes {
         // passe au niveau 2 (staff), elle sort de la liste des commandes des joueurs
         d.register(Commands.literal("vehicules").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("liste").executes(Commandes::liste))
+                .then(Commands.literal("apparus").executes(Commandes::apparus))
                 .then(Commands.literal("donner")
                         .then(Commands.argument("joueurs", EntityArgument.players())
                                 .then(Commands.argument("vehicule", StringArgumentType.word())
                                         .suggests((c, b) -> SharedSuggestionProvider.suggest(choix, b))
                                         .executes(Commandes::donner)))));
+    }
+
+    /** 25/11 : véhicules apparus tout seuls sur la carte, sur le maximum réglé. */
+    private static int apparus(CommandContext<CommandSourceStack> c) {
+        repondre(c.getSource(), Component.translatableWithFallback("heraliz_vehicules.cmd.apparus",
+                "Véhicules apparus tout seuls sur la carte : %s sur %s au plus (un essai toutes les %s s).",
+                ApparitionVehicules.compte(c.getSource().getServer()), VehiculesConfig.APPARITION_MAX.get(),
+                VehiculesConfig.APPARITION_INTERVALLE.get()).withStyle(ChatFormatting.GOLD));
+        return 1;
     }
 
     private static int liste(CommandContext<CommandSourceStack> c) {

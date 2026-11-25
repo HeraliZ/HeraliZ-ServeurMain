@@ -42,3 +42,44 @@
 	#le conducteur qui remonte le redemarre comme d'habitude. false : le vehicule continue sur sa lancee, moteur allume.
 	arret_sans_conducteur = true
 
+[apparition]
+	#Vehicules qui apparaissent tout seuls un peu partout sur la carte (25/11, demande du proprietaire :
+	#« des vehicules en plus grande quantite un peu partout, avec une limite sur la carte, chacun avec 3 % d'essence »).
+	#Un vehicule apparait hors de la vue des joueurs, pres de l'un d'eux (le coin de carte doit deja etre charge : le
+	#serveur ne charge jamais rien pour ca), sur un sol naturel plat (liste « sols »), pas dans l'eau ni sous un toit.
+	active = true
+	#Vehicules apparus tout seuls sur la carte au plus en meme temps (ceux poses par les joueurs ne comptent
+	#pas). Un vehicule detruit, ramasse ou retire libere sa place ; un vehicule jamais revu depuis « oubli_jours » aussi.
+	#Range: 0 ~ 500
+	max = 40
+	#Un essai d'apparition toutes les ... secondes (tant que la carte n'a pas son maximum, et seulement
+	#avec un joueur sur la carte).
+	#Range: 10 ~ 3600
+	intervalle_secondes = 90
+	#Essence a l'apparition, en pour cent du reservoir du vehicule.
+	#Range: 0.0 ~ 100.0
+	essence_pourcent = 3.0
+	#Vehicules qui apparaissent et leur poids (plus le poids est grand, plus il est frequent) :
+	#« identifiant=poids ». Seulement les vehicules du serveur (moto, buggy, fourgon, camion).
+	vehicules = ["ywzj_vehicle:motorcycle=4", "ywzj_vehicle:atv_mrzr4=3", "ywzj_vehicle:hiace=2", "ywzj_vehicle:dump_truck=1"]
+	#Monde ou les vehicules apparaissent (la carte).
+	dimension = "minecraft:overworld"
+	#Blocs au moins entre le vehicule qui apparait et tout joueur (personne ne le voit surgir).
+	#Range: 16 ~ 512
+	distance_min = 80
+	#Blocs au plus entre le vehicule et le joueur pres de qui il apparait (le coin doit etre charge).
+	#Range: 32 ~ 1024
+	distance_max = 180
+	#Blocs au moins entre deux vehicules apparus tout seuls (endroit d'apparition).
+	#Range: 0 ~ 2000
+	ecart = 150
+	#Blocs au moins autour du point d'apparition du monde (le spawn) sans vehicule qui apparait.
+	#Range: 0 ~ 5000
+	loin_du_spawn = 150
+	#Blocs sur lesquels un vehicule peut apparaitre (« #... » : une etiquette de blocs). Sous un toit ou
+	#sur un toit : jamais (le dessus de la colonne doit etre un de ces sols, a l'air libre).
+	sols = ["minecraft:grass_block", "minecraft:dirt", "minecraft:coarse_dirt", "minecraft:podzol", "minecraft:dirt_path", "minecraft:gravel", "minecraft:sand", "minecraft:red_sand", "minecraft:stone", "minecraft:andesite", "minecraft:snow_block", "minecraft:snow", "minecraft:mud", "minecraft:packed_mud", "minecraft:rooted_dirt"]
+	#Un vehicule apparu qui n'a plus ete vu charge depuis ce nombre de jours ne compte plus dans le
+	#maximum (il est peut-etre parti dans un coin ou personne ne va).
+	#Range: 1 ~ 60
+	oubli_jours = 3

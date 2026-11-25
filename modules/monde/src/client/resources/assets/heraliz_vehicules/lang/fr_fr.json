@@ -6,5 +6,6 @@
   "heraliz_vehicules.cmd.inconnu": "Véhicule inconnu : %s (buggy, moto, camion, fourgon).",
   "heraliz_vehicules.cmd.donne": "%s donné à %s joueur(s).",
   "heraliz_vehicules.sortie.aide": "%s : sortir du véhicule",
-  "heraliz_vehicules.sortie.trop_vite": "Trop vite pour sortir : ralentis sous %s km/h"
+  "heraliz_vehicules.sortie.trop_vite": "Trop vite pour sortir : ralentis sous %s km/h",
+  "heraliz_vehicules.cmd.apparus": "Véhicules apparus tout seuls sur la carte : %s sur %s au plus (un essai toutes les %s s)."
 }
