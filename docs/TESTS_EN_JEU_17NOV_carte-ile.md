@@ -2375,3 +2375,21 @@ toi » (27 cases) et « Accès rapide » en dessous ; mêmes écarts qu'avant, s
       « Sur toi » et la barre comme avant.
 
 Pas testé : tout en jeu.
+
+## 59. Planque à 2 lignes, table de craft (25/11)
+
+Demandes du propriétaire (à mettre en ligne avec les autres petites modifs, un seul redémarrage) :
+- **Planque** (coffre personnel du spawn, « Safe Planque », comme le coffre de l'Ender) : **2 lignes (18 cases) au moins
+  pour tout le monde** (avant : 1). Réglage « Planque » des grades : minimum et valeur de base passés à 2
+  (`PermsGrades.PLANQUE`, Boutique 1.8.1) ; un grade réglé plus haut garde son nombre ; un grade réglé à 1 ou 2 ne
+  donne plus d'avantage (à revoir dans l'éditeur des grades si un grade payant avait 2). Sans le mod des grades : 2 aussi
+  (`CoffresPersonnels`, Monde 1.3.14).
+- **Table de craft** : déjà bloquée depuis le 14/11 (`CraftReserve`, réglage `craft_fondateurs_seulement`) : seul le
+  grade Fondateur l'ouvre ; tous les autres, staff et créatif compris, lisent « Ce poste est hors service. », et
+  aucune fabrication (grille 2 × 2 de l'inventaire comprise). Rien changé.
+
+À tester en jeu :
+- [ ] un joueur sans grade ouvre la planque : 2 lignes ; ce qu'il y avait dans la 1re ligne est toujours là ;
+- [ ] un compte sans le grade Fondateur fait clic droit sur une table de craft : « Ce poste est hors service. ».
+
+Pas testé : tout en jeu.

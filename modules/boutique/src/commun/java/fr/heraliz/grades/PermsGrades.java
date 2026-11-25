@@ -40,7 +40,8 @@ public final class PermsGrades {
     */
    public static final Perm HOME_RECHARGE = new Perm("home_recharge", Sorte.SECONDES, 0, 3600, 15, 480, true, "deplacements");
    public static final Perm RTP_RECHARGE = new Perm("rtp_recharge", Sorte.SECONDES, 0, 3600, 15, 300, true, "deplacements");
-   public static final Perm PLANQUE = new Perm("planque_lignes", Sorte.LIGNES, 1, 6, 1, 1, false, "coffres");
+   /** Planque : 2 lignes au moins pour tout le monde (25/11, demande du propriétaire ; avant : 1). */
+   public static final Perm PLANQUE = new Perm("planque_lignes", Sorte.LIGNES, 2, 6, 1, 2, false, "coffres");
    public static final Perm COFFRE_VIP = new Perm("coffre_vip_lignes", Sorte.LIGNES, 0, 6, 1, 0, false, "coffres");
    public static final Perm ZONES_VIP = new Perm("zones_vip", Sorte.OUI_NON, 0, 1, 1, 0, false, "coffres");
    /**

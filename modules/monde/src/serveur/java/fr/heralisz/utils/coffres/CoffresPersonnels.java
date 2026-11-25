@@ -39,7 +39,8 @@ import net.minecraftforge.registries.ForgeRegistries;
  * Coffres personnels (18/10, demande du propriétaire) : un clic droit sur un coffre-fort du mod de meubles ouvre le coffre
  * du joueur, le même quel que soit le bloc (comme le coffre de l'Ender) :
  * <ul>
- *    <li>« Safe Planque 1 » ({@code cfm:safe_planque_1}) : la planque, 1 ligne (9 cases), pour tout le monde ;</li>
+ *    <li>« Safe Planque 1 » ({@code cfm:safe_planque_1}) : la planque, 2 lignes (18 cases) au moins pour tout le monde
+ *    (25/11, demande du propriétaire ; avant : 1 ligne), plus selon le grade ;</li>
  *    <li>« Safe Sentinel 1 » ({@code cfm:safe_sentinel_1}) : le coffre VIP, seulement pour les grades de la boutique
  *    (HeraliZ Grades, par réflexion ; sans Grades : fermé) ; depuis le 22/10 en cases : Rescapé 3, Traqueur 6, Roi de la
  *    Zone 9 (permission « coffre_vip_cases », réglable dans l'éditeur des grades). Un joueur qui
@@ -54,6 +55,8 @@ public final class CoffresPersonnels {
     public static final ResourceLocation BLOC_VIP = new ResourceLocation("cfm", "safe_sentinel_1");
     /** Cases d'une ligne. */
     public static final int CASES = 9;
+    /** Lignes de la planque au moins (25/11 : 2, avant 1), même avec un grade réglé plus bas. */
+    private static final int PLANQUE_MIN = 2;
     /** Cases gardées par coffre : 6 lignes au plus (taille montrée selon le grade, HeraliZ Grades 2.0.0). */
     public static final int CASES_MAX = 54;
     private static final String FICHIER = "heraliz_coffres_perso";
@@ -272,9 +275,9 @@ public final class CoffresPersonnels {
     private static int lignes(UUID joueur, Sorte sorte) {
         int v = permGrade(joueur, sorte == Sorte.PLANQUE ? "planque_lignes" : "coffre_vip_lignes");
         if (v >= 0) {
-            return Math.min(6, sorte == Sorte.PLANQUE ? Math.max(1, v) : v);
+            return Math.min(6, sorte == Sorte.PLANQUE ? Math.max(PLANQUE_MIN, v) : v);
         }
-        return sorte == Sorte.PLANQUE ? 1 : rangBoutique(joueur) > 0 ? 1 : 0;
+        return sorte == Sorte.PLANQUE ? PLANQUE_MIN : rangBoutique(joueur) > 0 ? 1 : 0;
     }
 
     private static Method rang;
