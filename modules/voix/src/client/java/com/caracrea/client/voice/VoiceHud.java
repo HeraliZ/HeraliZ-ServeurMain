@@ -1,10 +1,12 @@
 package com.caracrea.client.voice;
 
+import com.caracrea.CaraCrea;
 import com.caracrea.CaraCreaConfig;
 import com.caracrea.client.CompositeSkins;
 import com.caracrea.network.CaraCreaNetwork.GroupInfo;
 import com.caracrea.voice.VoiceActivity;
 import com.caracrea.voice.net.VoiceProtocol;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
@@ -119,57 +121,71 @@ public final class VoiceHud {
     }
 
     /**
-     * Votre état, sur une ligne : le micro quand vous parlez (vert, bleu en chuchotant, orange en criant), coupé (rouge,
-     * barré) ou introuvable (gris) ; puis le haut-parleur barré quand vous avez coupé tout le monde ; puis le mode de voix
-     * (« Chuchoter », « Crier ») tant qu'il n'est pas « Parler ». Chat vocal coupé : seulement le haut-parleur barré.
+     * Icône du mode de voix (27/11, retour du propriétaire : « une icône de micro avec 1 barre de chaque côté chuchoter,
+     * deux parler, 3 crier, plus propre que le mot » ; maquette validée {@code maquettes/icone_allonge/voix_micro_27nov.png}) :
+     * 18 x 11 unités, textures blanches teintées, écrites par {@code modules/voix/outils/icone_voix.py}.
+     */
+    private static final int ICONE_L = 18, ICONE_H = 11, TEX_L = 72, TEX_H = 44;
+    private static final ResourceLocation MICRO = icone("micro"), BARRE = icone("barre");
+    private static final ResourceLocation[] ONDES = {icone("ondes_1"), icone("ondes_2"), icone("ondes_3")};
+
+    private static ResourceLocation icone(String nom) {
+        return new ResourceLocation(CaraCrea.MOD_ID, "textures/gui/voix/" + nom + ".png");
+    }
+
+    /**
+     * Votre état (27/11) : toujours le micro et ses ondes (1 chuchoter, 2 parler, 3 crier ; couleur du mode) ; le micro
+     * prend la couleur du mode quand vous parlez, rouge et barré quand il est coupé (gris si introuvable) ; puis le
+     * haut-parleur barré quand vous avez coupé tout le monde. Chat vocal coupé : seulement le haut-parleur barré. Placé
+     * au-dessus de l'icône « s'allonger » de Tactique (HudAllonge, haut à 18 unités du bas) : avant, le mot « Crier »
+     * s'écrivait par-dessus.
      */
     private static void renderSelf(GuiGraphics g, Font font, int height, boolean adminMuted) {
         boolean disabled = !CaraCreaConfig.CLIENT.voiceChat.get();
         int x = 6;
-        int y = height - 24;
+        int ySon = height - 38;
         if (disabled) {
-            g.fill(x - 2, y - 2, x + 18, y + 18, 0x80101418);
-            g.blit(TabIcons.TEXTURE, x, y, 16, 16, TabIcons.OFF * 16, 0, 16, 16, TabIcons.COUNT * 16, 16);
+            g.fill(x - 2, ySon - 2, x + 18, ySon + 18, 0x80101418);
+            g.blit(TabIcons.TEXTURE, x, ySon, 16, 16, TabIcons.OFF * 16, 0, 16, 16, TabIcons.COUNT * 16, 16);
             return;
         }
         boolean muted = CaraCreaConfig.CLIENT.muted.get() || adminMuted;
         boolean unavailable = VoiceClient.microphoneUnavailable();
         boolean talking = VoiceClient.transmitting();
         int mode = VoiceClient.voiceMode();
-        int modeColor = mode == VoiceProtocol.MODE_WHISPER ? 0xFF6FB6F0 : mode == VoiceProtocol.MODE_SHOUT ? 0xFFF0A24A : 0xFF6FD98A;
-        if (muted || unavailable || talking) {
-            renderMicrophone(g, x, y, unavailable ? 0xFF9A9A9A : muted ? 0xFFE0605A : modeColor, muted || unavailable);
-            x += 18;
-        }
+        int modeColor = mode == VoiceProtocol.MODE_WHISPER ? 0x6FB6F0 : mode == VoiceProtocol.MODE_SHOUT ? 0xF0A24A : 0x6FD98A;
+        int n = mode == VoiceProtocol.MODE_WHISPER ? 1 : mode == VoiceProtocol.MODE_SHOUT ? 3 : 2;
+        boolean coupe = muted || unavailable;
+        int corps = coupe ? (unavailable ? 0x9A9A9A : 0xE0605A) : talking ? modeColor : 0xC8CCD0;
+        int ondes = coupe ? 0x9A9A9A : modeColor;
+        float aOndes = coupe ? 0.35f : talking ? 1f : 0.8f;
+        int y = height - 34;
+        // ombre d'un pixel d'écran, puis l'icône
+        float px = 1f / (float) Math.max(1.0, Minecraft.getInstance().getWindow().getGuiScale());
+        g.pose().pushPose();
+        g.pose().translate(px, px, 0f);
+        dessiner(g, MICRO, x, y, 0x000000, 0.45f);
+        dessiner(g, ONDES[n - 1], x, y, 0x000000, 0.45f * aOndes);
+        if (coupe) dessiner(g, BARRE, x, y, 0x000000, 0.45f);
+        g.pose().popPose();
+        dessiner(g, ONDES[n - 1], x, y, ondes, aOndes);
+        dessiner(g, MICRO, x, y, corps, 1f);
+        if (coupe) dessiner(g, BARRE, x, y, 0xE0605A, 1f);
+        x += ICONE_L + 4;
         if (VoiceClient.everyoneMuted()) {
             // Tout le monde coupé : le même haut-parleur barré que « chat vocal coupé », à côté du micro.
-            g.fill(x - 2, y - 2, x + 18, y + 18, 0x80101418);
-            g.blit(TabIcons.TEXTURE, x, y, 16, 16, TabIcons.OFF * 16, 0, 16, 16, TabIcons.COUNT * 16, 16);
-            x += 22;
-        }
-        if (mode != VoiceProtocol.MODE_TALK) {
-            Component label = Component.translatable(VoiceClient.modeKey(mode));
-            g.fill(x - 2, y + 2, x + font.width(label) + 3, y + 14, 0x80101418);
-            g.drawString(font, label, x + 1, y + 4, modeColor, false);
+            g.fill(x - 2, ySon - 2, x + 18, ySon + 18, 0x80101418);
+            g.blit(TabIcons.TEXTURE, x, ySon, 16, 16, TabIcons.OFF * 16, 0, 16, 16, TabIcons.COUNT * 16, 16);
         }
     }
 
-    /** Le petit micro, barré de rouge quand il est coupé ou introuvable. */
-    private static void renderMicrophone(GuiGraphics g, int x, int y, int color, boolean crossed) {
-        g.fill(x - 2, y - 2, x + 14, y + 18, 0x80101418);
-        // A small microphone: capsule, cradle, stem and foot.
-        g.fill(x + 4, y, x + 8, y + 9, color);
-        g.fill(x + 3, y + 1, x + 9, y + 8, color);
-        g.fill(x + 1, y + 5, x + 2, y + 10, color);
-        g.fill(x + 10, y + 5, x + 11, y + 10, color);
-        g.fill(x + 2, y + 10, x + 10, y + 11, color);
-        g.fill(x + 5, y + 11, x + 7, y + 14, color);
-        g.fill(x + 3, y + 14, x + 9, y + 15, color);
-        if (crossed) {
-            for (int i = 0; i < 14; i++) {
-                g.fill(x - 1 + i, y + i, x + 1 + i, y + i + 2, 0xFFE0605A);
-            }
-        }
+    /** Une couche de l'icône, teintée {@code rgb}, opacité {@code a}, lissée (filtre linéaire de la texture). */
+    private static void dessiner(GuiGraphics g, ResourceLocation tex, int x, int y, int rgb, float a) {
+        Minecraft.getInstance().getTextureManager().getTexture(tex).setFilter(true, false);
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, a);
+        g.blit(tex, x, y, ICONE_L, ICONE_H, 0, 0, TEX_L, TEX_H, TEX_L, TEX_H);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     /** The members of your group, with a speaker next to whoever talks. Returns the y below the list. */

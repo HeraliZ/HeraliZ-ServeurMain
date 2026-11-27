@@ -18,19 +18,20 @@ import org.joml.Matrix4f;
 
 /**
  * Icône « s'allonger » en bas à gauche (03/11, demande du propriétaire : voir sans essayer si on peut se rallonger).
- * Petit disque de verre (rayon {@link #R}) avec un soldat allongé, à {@link #GAUCHE} du bord gauche, au milieu des cases
- * de la barre d'objets DayZ ({@link #MILIEU_BAS} du bas, comme l'usure à droite) ; rendus :
- * {@code rendus_03nov/armes-objets/allonge_*.png}.
+ * v2 du 27/11 (retour du propriétaire : « plus propre, petit, une barre de recharge dessous comme celle des soins, on
+ * voit au 1er coup d'oeil si on est en recharge » ; maquette validée {@code maquettes/icone_allonge/v2_barre_27nov.png}) :
+ * plus de disque ni d'anneau ; une petite silhouette fine (15 x 5,5 unités) et, dessous, une barre penchée comme
+ * {@link fr.heraliz.noyau.client.kit.BarreProgression} (même pente, même ombre, même piste), à {@link #GAUCHE} du bord
+ * gauche et {@link #HAUT} au-dessus du bas.
  * <ul>
- *    <li><b>prêt</b> : soldat clair, anneau plein clair ;</li>
- *    <li><b>délai</b> (on vient de se relever, ou le serveur a refusé) : soldat grisé, anneau ambre qui se remplit de midi
- *    dans le sens horaire, secondes restantes à droite ;</li>
+ *    <li><b>prêt</b> : silhouette claire, barre pleine claire ;</li>
+ *    <li><b>délai</b> (on vient de se relever, ou le serveur a refusé) : silhouette grisée, barre ambre qui se remplit,
+ *    secondes restantes à droite ;</li>
  *    <li><b>plongeon en recharge</b> (s'allonger sur place est permis, mais le délai entre deux plongeons, compté depuis le
- *    début du dernier, n'est pas écoulé) : soldat clair, l'anneau clair de « prêt » se remplit, secondes restantes à
- *    droite ; plein, on peut de nouveau plonger ;</li>
- *    <li><b>impossible</b> (à terre, en train de fouiller ou réanimer, en véhicule, dans l'eau) : soldat grisé, trait
- *    rouge ;</li>
- *    <li><b>allongé</b>, ou en plein plongeon (de l'élan à la retombée) : soldat et anneau verts.</li>
+ *    début du dernier, n'est pas écoulé) : silhouette claire, barre claire qui se remplit, secondes restantes à droite ;</li>
+ *    <li><b>impossible</b> (à terre, en train de fouiller ou réanimer, en véhicule, dans l'eau) : silhouette grisée,
+ *    barre rouge ;</li>
+ *    <li><b>allongé</b>, ou en plein plongeon (de l'élan à la retombée) : silhouette et barre vertes.</li>
  * </ul>
  * L'état est celui que le jeu du joueur applique déjà à la touche (AllongeClient : même délai que le serveur, réglage
  * {@code delai_rallonger} et {@code delai_plongeon} envoyés par Forge, attentes annoncées par un refus du serveur, plongeon
@@ -42,14 +43,14 @@ public final class HudAllonge {
    private HudAllonge() {
    }
 
-   /** Rayon du disque de verre, rayon et épaisseur de l'anneau, cotes depuis le bord gauche et le bas. */
-   static final float R = 9.5f, R_ANNEAU = 8f, EP_ANNEAU = 1.5f, GAUCHE = 8f, MILIEU_BAS = 12f, ECART_TEXTE = 3f;
-   static final int VERRE_ALPHA = 150;
    /**
-    * Soldat grisé pendant le délai : l'atténué mêlé au verre, opaque (le soldat est fait de plusieurs traits qui se
-    * chevauchent : une couleur transparente foncerait leurs jointures).
+    * Bord gauche de la silhouette, haut de la silhouette au-dessus du bas de l'écran ; barre : largeur, hauteur, écart
+    * sous la silhouette ; écart entre la barre et les secondes. La voix (CaraCrea) s'affiche au-dessus (VoiceHud).
     */
-   private static final int GRIS_DELAI = Palette.mix(Palette.ATTENUE, Palette.VERRE, 0.4f);
+   static final float GAUCHE = 8f, HAUT = 18f, L_BARRE = 16f, H_BARRE = 2f, ECART_BARRE = 2.2f, ECART_TEXTE = 3f;
+   /** Opacités de l'ombre (silhouette et barre) et de la piste vide, comme BarreProgression. */
+   static final float OMBRE_ALPHA = 0.35f, PISTE_ALPHA = 0.18f;
+   private static final float PENTE = Formes.pente(fr.heraliz.noyau.client.kit.BarreProgression.INCLINAISON);
 
    private enum Etat { PRET, DELAI, RECHARGE, IMPOSSIBLE, ALLONGE }
 
@@ -83,42 +84,53 @@ public final class HudAllonge {
          etat = restant > 0L ? Etat.RECHARGE : Etat.PRET;
       }
 
-      float cx = Formes.caler(GAUCHE + R), cy = Formes.caler(h - MILIEU_BAS);
+      float ox = Formes.caler(GAUCHE), oy = Formes.caler(h - HAUT);
       float px = Formes.pixel();
       Matrix4f m = g.pose().last().pose();
       VertexConsumer vc = Formes.tampon(g);
-      Formes.disque(vc, m, cx, cy, R, Palette.argb(Palette.VERRE, (int) (VERRE_ALPHA * a)), px);
-      Formes.arc(vc, m, cx, cy, R - px, R, 0f, 1f, Palette.argb(0xFFFFFF, (int) (Palette.BORD_ALPHA * a)), px);
-      float r0 = R_ANNEAU - EP_ANNEAU / 2f, r1 = R_ANNEAU + EP_ANNEAU / 2f;
-      Formes.arc(vc, m, cx, cy, r0, r1, 0f, 1f, Palette.argb(0xFFFFFF, 0.16f * a), px);
-      int soldat;
+      int silhouette, barre;
+      float plein = 1f, opacite;
       switch (etat) {
          case PRET -> {
-            Formes.arc(vc, m, cx, cy, r0, r1, 0f, 1f, Palette.argb(Palette.TEXTE, 0.55f * a), px);
-            soldat = Palette.argb(Palette.TEXTE, a);
+            silhouette = Palette.TEXTE;
+            barre = Palette.TEXTE;
+            opacite = 0.65f;
          }
          case DELAI -> {
             long total = Math.max(Allonge.delaiRallongerMs(), restant);
-            float fait = total <= 0L ? 1f : 1f - (float) restant / total;
-            Formes.arc(vc, m, cx, cy, r0, r1, 0f, fait, Palette.argb(Palette.ALERTE, 0.95f * a), px);
-            soldat = Palette.argb(GRIS_DELAI, a);
+            plein = total <= 0L ? 1f : 1f - (float) restant / total;
+            silhouette = Palette.ATTENUE;
+            barre = Palette.ALERTE;
+            opacite = 0.95f;
          }
          case RECHARGE -> {
             long total = Math.max(Allonge.delaiPlongeonMs(), restant);
-            float fait = total <= 0L ? 1f : 1f - (float) restant / total;
-            Formes.arc(vc, m, cx, cy, r0, r1, 0f, fait, Palette.argb(Palette.TEXTE, 0.55f * a), px);
-            soldat = Palette.argb(Palette.TEXTE, a);
+            plein = total <= 0L ? 1f : 1f - (float) restant / total;
+            silhouette = Palette.TEXTE;
+            barre = Palette.TEXTE;
+            opacite = 0.65f;
          }
          case ALLONGE -> {
-            Formes.arc(vc, m, cx, cy, r0, r1, 0f, 1f, Palette.argb(Palette.OK, 0.9f * a), px);
-            soldat = Palette.argb(Palette.OK, a);
+            silhouette = Palette.OK;
+            barre = Palette.OK;
+            opacite = 0.92f;
          }
-         default -> soldat = Palette.argb(Palette.TRES_ATTENUE, a);
+         default -> {
+            silhouette = Palette.ATTENUE;
+            barre = Palette.DANGER;
+            opacite = 0.9f;
+         }
       }
-      soldat(vc, m, cx - 0.4f, cy - 0.3f, soldat, px);
-      if (etat == Etat.IMPOSSIBLE) {
-         Formes.segment(vc, m, cx - 5.6f, cy + 5.6f, cx + 5.6f, cy - 5.6f, 1.4f, Palette.argb(Palette.DANGER, 0.9f * a));
-      }
+      // ombre d'un pixel d'écran, puis la silhouette (couleur opaque : les traits qui se chevauchent ne foncent pas)
+      soldat(vc, m, ox + px, oy + px, Palette.argb(0x000000, OMBRE_ALPHA * a), px);
+      soldat(vc, m, ox, oy, Palette.argb(silhouette, a), px);
+      // barre penchée sous la silhouette, centrée sur elle
+      float x0 = Formes.caler(ox + (15f - L_BARRE) / 2f), y0 = Formes.caler(oy + 5f + ECART_BARRE);
+      float x1 = x0 + L_BARRE, y1 = y0 + H_BARRE, r = (y0 + y1) / 2f;
+      float xp = x0 + L_BARRE * Math.max(0f, Math.min(1f, plein));
+      Formes.parallelogramme(vc, m, x0 - px, y0 - px, x1 + px, y1 + px, PENTE, r, Palette.argb(0x000000, OMBRE_ALPHA * a), px);
+      Formes.parallelogramme(vc, m, xp, y0, x1, y1, PENTE, r, Palette.argb(0xFFFFFF, PISTE_ALPHA * a), px);
+      Formes.parallelogramme(vc, m, x0, y0, xp, y1, PENTE, r, Palette.argb(barre, opacite * a), px);
       g.flush();
 
       if (etat == Etat.DELAI || etat == Etat.RECHARGE) {
@@ -127,19 +139,28 @@ public final class HudAllonge {
             SECONDES.texte(s + " s");
             secondesAffichees = s;
          }
-         SECONDES.ajouter(g, cx + R + ECART_TEXTE, cy, Palette.argb(Palette.ATTENUE, a), TexteHud.GAUCHE, true);
+         float bx = Formes.caler(ox + (15f - L_BARRE) / 2f) + L_BARRE + ECART_TEXTE;
+         float by = Formes.caler(oy + 5f + ECART_BARRE) + H_BARRE / 2f;
+         SECONDES.ajouter(g, bx, by, Palette.argb(Palette.ATTENUE, a), TexteHud.GAUCHE, true);
          g.flush();
       }
    }
 
-   /** Soldat allongé à plat ventre, tête à droite, arme vers l'avant (13 x 5 unités), mêmes cotes que le rendu. */
-   private static void soldat(VertexConsumer vc, Matrix4f m, float cx, float cy, int c, float px) {
-      capsule(vc, m, cx - 5.8f, cy + 1.6f, cx - 1.6f, cy + 1.1f, 0.8f, c, px);   // jambe du dessous
-      capsule(vc, m, cx - 5.4f, cy + 0.7f, cx - 1.6f, cy + 0.6f, 0.75f, c, px);  // jambe du dessus
-      capsule(vc, m, cx - 1.6f, cy + 0.7f, cx + 2.4f, cy + 0.2f, 1.35f, c, px);  // buste
-      Formes.disque(vc, m, cx + 3.9f, cy - 1.3f, 1.5f, c, px);                    // tête
-      capsule(vc, m, cx + 2.0f, cy + 1.2f, cx + 4.4f, cy + 1.9f, 0.55f, c, px);  // bras
-      capsule(vc, m, cx + 3.6f, cy + 1.0f, cx + 7.0f, cy + 1.0f, 0.4f, c, px);   // arme
+   /**
+    * Soldat à plat ventre, tête relevée, coude au sol, arme en joue (15 x 5,5 unités depuis le coin haut gauche
+    * {@code (ox, oy)}), mêmes cotes que la maquette validée du 27/11.
+    */
+   private static void soldat(VertexConsumer vc, Matrix4f m, float ox, float oy, int c, float px) {
+      capsule(vc, m, ox + 0.8f, oy + 4.4f, ox + 5.6f, oy + 3.9f, 0.55f, c, px);    // jambe arrière
+      capsule(vc, m, ox + 1.1f, oy + 3.55f, ox + 5.6f, oy + 3.4f, 0.5f, c, px);    // jambe avant
+      capsule(vc, m, ox + 0.35f, oy + 4.6f, ox + 0.9f, oy + 3.7f, 0.38f, c, px);   // pieds
+      capsule(vc, m, ox + 5.4f, oy + 3.75f, ox + 9.3f, oy + 3.25f, 1.0f, c, px);   // buste
+      Formes.disque(vc, m, ox + 10.85f, oy + 2.35f, 1.2f, c, px);                   // tête relevée
+      capsule(vc, m, ox + 9.1f, oy + 3.5f, ox + 9.95f, oy + 4.6f, 0.42f, c, px);   // bras jusqu'au coude
+      capsule(vc, m, ox + 9.95f, oy + 4.6f, ox + 11.9f, oy + 3.75f, 0.38f, c, px); // avant-bras
+      capsule(vc, m, ox + 10.2f, oy + 3.45f, ox + 14.7f, oy + 3.45f, 0.3f, c, px); // fusil
+      capsule(vc, m, ox + 9.7f, oy + 3.6f, ox + 10.7f, oy + 3.85f, 0.45f, c, px);  // crosse
+      capsule(vc, m, ox + 12.3f, oy + 3.45f, ox + 12.45f, oy + 4.3f, 0.24f, c, px); // chargeur
    }
 
    /** Trait épais aux bouts arrondis, de rayon r. */
