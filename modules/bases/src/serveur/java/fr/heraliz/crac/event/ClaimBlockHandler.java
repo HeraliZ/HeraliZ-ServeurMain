@@ -55,6 +55,10 @@ public final class ClaimBlockHandler {
         }
         BlockPos pos = event.getPos();
         Component deny = claim(level, player, pos);
+        // 27/11 (essais du propriétaire : « même avec un clan je ne peux pas poser de TC ») : chaque pose d'armoire au
+        // journal, avec la raison d'un refus, pour savoir ce qui bloque
+        fr.heraliz.crac.Crac.LOGGER.info("[CRac] armoire de {} en {} : {}", player.getGameProfile().getName(), pos.toShortString(),
+            deny == null ? "posée" : "refusée (" + deny.getString() + ")");
         if (deny != null) {
             event.setCanceled(true);
             // 27/11 (retour du propriétaire : « aucun message ») : dans le chat ; la ligne au-dessus de la barre d'objets
