@@ -7,5 +7,16 @@
   "heraliz_vehicules.cmd.donne": "%s выдано (игроков: %s).",
   "heraliz_vehicules.sortie.aide": "%s: выйти из транспорта",
   "heraliz_vehicules.sortie.trop_vite": "Слишком быстро, чтобы выйти: сбавь скорость ниже %s км/ч",
-  "heraliz_vehicules.cmd.apparus": "Транспорт, появившийся сам на карте: %s из %s максимум (попытка каждые %s с)."
+  "heraliz_vehicules.cmd.apparus": "Транспорт, появившийся сам на карте: %s из %s максимум (попытка каждые %s с).",
+  "heraliz_vehicules.coffre.titre": "Багажник транспорта",
+  "heraliz_vehicules.coffre.titre.moto": "Багажник мотоцикла",
+  "heraliz_vehicules.coffre.titre.buggy": "Багажник багги",
+  "heraliz_vehicules.coffre.titre.fourgon": "Кузов фургона",
+  "heraliz_vehicules.coffre.titre.camion": "Кузов грузовика",
+  "heraliz_vehicules.coffre.refus.epave": "Транспорт уничтожен: багажника больше нет.",
+  "heraliz_vehicules.coffre.refus.a_bord": "Выйди из транспорта, чтобы открыть багажник.",
+  "heraliz_vehicules.coffre.refus.a_terre": "Нельзя открыть багажник в нокауте.",
+  "heraliz_vehicules.coffre.refus.match": "Нельзя открыть багажник транспорта во время матча.",
+  "heraliz_vehicules.coffre.refus.roule": "Транспорт должен стоять, чтобы открыть багажник.",
+  "heraliz_vehicules.coffre.refus.loin": "Слишком далеко от транспорта."
 }

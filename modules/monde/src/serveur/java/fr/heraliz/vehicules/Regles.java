@@ -122,6 +122,7 @@ public final class Regles {
         HeralizVehicules.LOG.warn("[vehicules] vehicule {} retire de {} ({} {} {}) : dimension sans vehicules", id,
                 level.dimension().location(), (int) x, (int) y, (int) z);
         List<ItemStack> contenu = CoffreRetire.sortir(v);
+        contenu.addAll(CoffresVehicules.sortir(v)); // 27/11 : coffre HeraliZ du véhicule, posé avec lui
         // un débris d'épave (VehiclePart) porte l'id du véhicule détruit : pas de véhicule neuf rendu pour lui
         boolean rendu = !(v instanceof VehiclePart) && id != null && Contenu.VEHICULES.contains(id.toString());
         if (rendu || !contenu.isEmpty()) {

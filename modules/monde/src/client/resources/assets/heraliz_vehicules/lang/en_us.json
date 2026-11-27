@@ -7,5 +7,16 @@
   "heraliz_vehicules.cmd.donne": "%s given to %s player(s).",
   "heraliz_vehicules.sortie.aide": "%s: exit the vehicle",
   "heraliz_vehicules.sortie.trop_vite": "Too fast to get out: slow down below %s km/h",
-  "heraliz_vehicules.cmd.apparus": "Vehicles spawned on their own on the map: %s of %s at most (one try every %s s)."
+  "heraliz_vehicules.cmd.apparus": "Vehicles spawned on their own on the map: %s of %s at most (one try every %s s).",
+  "heraliz_vehicules.coffre.titre": "Vehicle trunk",
+  "heraliz_vehicules.coffre.titre.moto": "Motorcycle storage",
+  "heraliz_vehicules.coffre.titre.buggy": "Buggy trunk",
+  "heraliz_vehicules.coffre.titre.fourgon": "Van cargo",
+  "heraliz_vehicules.coffre.titre.camion": "Truck cargo",
+  "heraliz_vehicules.coffre.refus.epave": "This vehicle is destroyed: no more storage.",
+  "heraliz_vehicules.coffre.refus.a_bord": "Get out of the vehicle to open its storage.",
+  "heraliz_vehicules.coffre.refus.a_terre": "You can't open storage while downed.",
+  "heraliz_vehicules.coffre.refus.match": "You can't open a vehicle's storage during a match.",
+  "heraliz_vehicules.coffre.refus.roule": "The vehicle must be stopped to open its storage.",
+  "heraliz_vehicules.coffre.refus.loin": "Too far from the vehicle."
 }

@@ -7,5 +7,16 @@
   "heraliz_vehicules.cmd.donne": "%s donné à %s joueur(s).",
   "heraliz_vehicules.sortie.aide": "%s : sortir du véhicule",
   "heraliz_vehicules.sortie.trop_vite": "Trop vite pour sortir : ralentis sous %s km/h",
-  "heraliz_vehicules.cmd.apparus": "Véhicules apparus tout seuls sur la carte : %s sur %s au plus (un essai toutes les %s s)."
+  "heraliz_vehicules.cmd.apparus": "Véhicules apparus tout seuls sur la carte : %s sur %s au plus (un essai toutes les %s s).",
+  "heraliz_vehicules.coffre.titre": "Coffre du véhicule",
+  "heraliz_vehicules.coffre.titre.moto": "Coffre de la moto",
+  "heraliz_vehicules.coffre.titre.buggy": "Coffre du buggy",
+  "heraliz_vehicules.coffre.titre.fourgon": "Coffre du fourgon",
+  "heraliz_vehicules.coffre.titre.camion": "Coffre du camion",
+  "heraliz_vehicules.coffre.refus.epave": "Ce véhicule est détruit : plus de coffre.",
+  "heraliz_vehicules.coffre.refus.a_bord": "Descends du véhicule pour ouvrir son coffre.",
+  "heraliz_vehicules.coffre.refus.a_terre": "Impossible d'ouvrir un coffre à terre.",
+  "heraliz_vehicules.coffre.refus.match": "Impossible d'ouvrir le coffre d'un véhicule en match.",
+  "heraliz_vehicules.coffre.refus.roule": "Le véhicule doit être arrêté pour ouvrir son coffre.",
+  "heraliz_vehicules.coffre.refus.loin": "Trop loin du véhicule."
 }

@@ -22,6 +22,9 @@ import org.slf4j.Logger;
  *   sur le serveur) ;</li>
  *   <li>{@code CoffreRetire}, {@code SuiviVehicules} : plus de coffre dans les véhicules (contenu déjà rangé posé au
  *   sol) ;</li>
+ *   <li>{@code CoffresVehicules} (27/11) : le coffre HeraliZ des véhicules (Maj + clic droit ; moto 27 cases, buggy 72,
+ *   fourgon 90, camion 144), gardé avec le véhicule, posé au sol quand il est détruit ; menu
+ *   {@link fr.heraliz.vehicules.menu.CoffreVehiculeMenu}, écran {@code client.EcranCoffreVehicule} ;</li>
  *   <li>{@link PointsDeVie} : PV max divisés par 5 (réglage pv_pourcent), véhicules déjà posés compris ;</li>
  *   <li>{@code Passagers} (11/11) : un joueur dans ou sur un véhicule prend les dégâts comme à pied (réglages
  *   passagers_proteges et balles_traversent) ;</li>
@@ -51,6 +54,8 @@ public final class HeralizVehicules {
         // (ancien onglet heraliz_vehicules:vehicules : groupe « Véhicules » de l'onglet commun HeraliZ · Utils, déclaré dans
         // l'ordre par le porteur, HeraliszUtils, avec Contenu.VEHICULES et Contenu.outils())
         modBus.addListener(ContenuRetire::onBuildContents);
+        // 27/11 : menu du coffre des véhicules (heraliz_vehicules:coffre), chez les joueurs et sur le serveur
+        fr.heraliz.vehicules.menu.MenusVehicules.enregistrer(modBus);
         // logique serveur (Regles::onConfig, objets retirés effacés, règles, commandes) : partie serveur
         // (HeralizVehiculesServeur.init, appelé par serveur.PartieServeur ci-dessous), dans l'ordre d'origine
         // parties du jar fusionné HeraliZ Utils (docs/METHODE_CLIENT_SERVEUR.md §4)

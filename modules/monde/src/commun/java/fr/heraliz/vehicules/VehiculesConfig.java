@@ -45,6 +45,10 @@ public final class VehiculesConfig {
     public static final ForgeConfigSpec.IntValue APPARITION_LOIN_DU_SPAWN;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> APPARITION_SOLS;
     public static final ForgeConfigSpec.IntValue APPARITION_OUBLI_JOURS;
+    public static final ForgeConfigSpec.BooleanValue COFFRE_ACTIF;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> COFFRE_TAILLES;
+    public static final ForgeConfigSpec.DoubleValue COFFRE_DISTANCE;
+    public static final ForgeConfigSpec.DoubleValue COFFRE_VITESSE_MAX_KMH;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -152,6 +156,24 @@ public final class VehiculesConfig {
         APPARITION_OUBLI_JOURS = b.comment("Un vehicule apparu qui n'a plus ete vu charge depuis ce nombre de jours ne compte plus dans le",
                         "maximum (il est peut-etre parti dans un coin ou personne ne va).")
                 .defineInRange("oubli_jours", 3, 1, 60);
+        b.pop();
+        b.push("coffre");
+        COFFRE_ACTIF = b.comment("Coffre des vehicules HeraliZ (27/11, demande du proprietaire) : Maj + clic droit sur un vehicule ouvre son",
+                        "coffre, meme en combat (pour emporter le butin d'un raid). Refuse : a terre, en match, a bord, sur une epave,",
+                        "vehicule qui roule. Vehicule detruit (ou /kill) : tout le contenu tombe au sol a cote de lui. Ce coffre n'est",
+                        "pas celui de Limitless Vehicle (toujours retire, coffre_retire) et aucun entonnoir n'y a acces.",
+                        "false : plus d'ouverture (le contenu reste garde dans le vehicule).")
+                .define("actif", true);
+        COFFRE_TAILLES = b.comment("Taille du coffre de chaque vehicule : « identifiant=colonnesxlignes » (24 colonnes et 9 lignes au plus,",
+                        "216 cases au plus). Un vehicule absent de la liste n'a pas de coffre. Taille baissee : les objets des cases en",
+                        "trop sont ranges dans les cases libres a l'ouverture, sinon gardes (caches) et poses au sol a la destruction.")
+                .defineListAllowEmpty("tailles", List.of("ywzj_vehicle:motorcycle=9x3", "ywzj_vehicle:atv_mrzr4=12x6",
+                        "ywzj_vehicle:hiace=15x6", "ywzj_vehicle:dump_truck=24x6"), o -> o instanceof String);
+        COFFRE_DISTANCE = b.comment("Distance (blocs) des yeux du joueur au bord du vehicule pour ouvrir le coffre ; il reste ouvert jusqu'a",
+                        "un bloc de plus.")
+                .defineInRange("distance", 5.0, 1.0, 16.0);
+        COFFRE_VITESSE_MAX_KMH = b.comment("Vitesse au sol (km/h) au-dessus de laquelle le coffre ne s'ouvre pas et se ferme (vehicule qui roule).")
+                .defineInRange("vitesse_max_kmh", 4.0, 0.5, 100.0);
         b.pop();
         SPEC = b.build();
     }

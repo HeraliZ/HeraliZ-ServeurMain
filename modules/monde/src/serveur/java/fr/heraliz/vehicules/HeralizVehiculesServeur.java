@@ -22,6 +22,7 @@ public final class HeralizVehiculesServeur {
         MinecraftForge.EVENT_BUS.addListener(Commandes::onRegister);
         SuiviVehicules.enregistrer(MinecraftForge.EVENT_BUS);
         ApparitionVehicules.enregistrer(MinecraftForge.EVENT_BUS);   // 25/11 : véhicules qui apparaissent un peu partout
+        CoffresVehicules.enregistrer(MinecraftForge.EVENT_BUS);      // 27/11 : coffre des véhicules (Maj + clic droit)
         // ArretSansConducteur (évènement VehicleMoveEvent du moteur) et SortieSure (sortie jamais dans un mur) : inscrits au
         // démarrage du serveur, quand tous les mods sont construits ; ils ne chargent ainsi aucune classe de Limitless
         // Vehicle pendant sa construction (banc du 14/11)
@@ -35,5 +36,6 @@ public final class HeralizVehiculesServeur {
         arretInscrit = true;
         ArretSansConducteur.enregistrer(MinecraftForge.EVENT_BUS);
         SortieSure.enregistrer(MinecraftForge.EVENT_BUS);
+        CoffresVehicules.enregistrerMoteur(MinecraftForge.EVENT_BUS); // coups sur les véhicules : coffre d'une épave au sol
     }
 }
