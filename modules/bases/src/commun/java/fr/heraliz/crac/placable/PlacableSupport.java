@@ -177,7 +177,13 @@ public final class PlacableSupport {
                         BlockPos q = new BlockPos(x, y, z);
                         BlockState s = level.getBlockState(q);
                         if (!(s.getBlock() instanceof StructureBlock)) continue;
-                        for (net.minecraft.world.phys.AABB c : s.getCollisionShape(level, q).toAabbs()) {
+                        // 27/11 (planchers à mi-bloc) : les pièces seules, pas la collision qui ajoute les objets adossés
+                        // voisins (Adosse.morceaux) : un coffre descendu, déjà écrit dans le monde au moment de ce contrôle,
+                        // se touchait lui-même dans le bloc du plancher (refus au hasard du cache) ; les autres objets
+                        // sont contrôlés par Adosse.tient / CoffreBlock.tient
+                        net.minecraft.world.phys.shapes.VoxelShape piece = level.getBlockEntity(q)
+                            instanceof fr.heraliz.crac.build.world.StructureBlockEntity be ? be.shape() : s.getCollisionShape(level, q);
+                        for (net.minecraft.world.phys.AABB c : piece.toAabbs()) {
                             if (c.move(q).intersects(m)) {
                                 return true;
                             }

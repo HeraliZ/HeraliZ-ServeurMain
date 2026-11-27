@@ -33,6 +33,7 @@ public final class MondeBasesServeur {
         Tutoriel.commandes(e.getDispatcher());
         EffacerBase.commandes(e.getDispatcher());
         FicheBase.commandes(e.getDispatcher());
+        ArmoiresStaff.commandes(e.getDispatcher());   // /base armoires, /base armoire <clan> (op 4, 27/11)
     }
 
     @SubscribeEvent

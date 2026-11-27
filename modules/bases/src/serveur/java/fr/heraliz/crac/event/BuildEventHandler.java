@@ -340,6 +340,18 @@ public class BuildEventHandler {
                         PlacementSync.revert(player, sl, event.getPos(), event.getFace());
                         return;
                     }
+                    if (placesSomething(item) && item instanceof BlockItem hb2 && event.getFace() == Direction.UP
+                        && fr.heraliz.crac.block.Adosse.peutDescendre(hb2.getBlock())
+                        && StructureBlock.standIssue(sl, event.getPos()) == StructureBlock.StandIssue.HALF_LEVEL
+                        && sl.getBlockState(event.getPos().above()).getBlock() instanceof StructureBlock) {
+                        // 27/11 (retour du propriétaire : « si un sol est au-dessus, je ne peux rien poser ») : plancher à
+                        // mi-bloc avec un plancher juste au-dessus (posé sur un 2e demi-mur) : la case du coffre est déjà
+                        // celle du plancher du haut (une case ne tient qu'un bloc) ; avant, rien ne se passait, sans message
+                        event.setUseItem(Result.DENY);
+                        player.displayClientMessage(Txt.red("crac.placable.sous_plancher"), true);
+                        PlacementSync.revert(player, sl, event.getPos(), event.getFace());
+                        return;
+                    }
                     if (placesSomething(item) && !(item instanceof fr.heraliz.crac.item.EchelleItem)) {   // échelle : à la pose
                         if (!(item instanceof BlockItem bi && isSystemBlock(bi.getBlock().defaultBlockState()))) {
                             BlockPos placePos = event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace());

@@ -75,7 +75,7 @@
   "crac.claim.not_yours": "Not your group's claim.",
   "crac.claim.coffre_droit": "Your clan has not given you the \"Open chests\" permission.",
   "crac.claim.on_floor": "The Claim Block must be placed on a foundation or a floor of your building.",
-  "crac.claim.one_per_group": "Your group already owns a claim. Break it first.",
+  "crac.claim.one_per_group": "Your clan already has a tool cupboard placed: only one per clan.",
   "crac.claim.only_inside": "You can only build inside your claim.",
   "crac.claim.only_placables": "Only placable blocks can be placed here.",
   "crac.claim.owner_only": "Only the group owner can place a claim.",
@@ -664,5 +664,12 @@
   "crac.journal.coeur_repris": "%s picked up the clan core (%s min to place it back)",
   "crac.journal.base_reservee": "Cupboard destroyed in a raid: base kept for 24 h",
   "crac.journal.base_abandonnee": "%s abandoned the base without a cupboard",
-  "crac.journal.base_liberee": "Base left 24 h without a cupboard: free for all"
+  "crac.journal.base_liberee": "Base left 24 h without a cupboard: free for all",
+  "crac.base.armoires.aucune": "No tool cupboard placed.",
+  "crac.base.armoires.titre": "Tool cupboards placed: %s (click to go there)",
+  "crac.base.armoires.survol": "Click: go to this tool cupboard",
+  "crac.base.armoire.joueur": "Only a player in game can teleport there.",
+  "crac.base.armoire.inconnue": "No tool cupboard for the clan \"%s\" (/base armoires for the list).",
+  "crac.base.armoire.tp": "Teleported to the tool cupboard of the clan %s.",
+  "crac.placable.sous_plancher": "No room under the floor above: the upper floor needs a full wall under it (not a half wall)."
 }

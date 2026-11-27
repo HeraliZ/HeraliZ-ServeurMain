@@ -75,7 +75,7 @@
   "crac.claim.not_yours": "Ce claim n'est pas à ton groupe.",
   "crac.claim.coffre_droit": "Ton clan ne t'a pas donné le droit « Ouvrir les coffres ».",
   "crac.claim.on_floor": "Le Claim Block se pose sur une fondation ou un plancher de ton bâtiment.",
-  "crac.claim.one_per_group": "Ton groupe a déjà un claim. Casse-le d'abord.",
+  "crac.claim.one_per_group": "Ton clan a déjà une armoire posée : une seule armoire par clan.",
   "crac.claim.only_inside": "Tu ne peux construire que dans ton claim.",
   "crac.claim.only_placables": "Ici, seuls les blocs « placables » se posent.",
   "crac.claim.owner_only": "Seul le chef du groupe peut poser un claim.",
@@ -664,5 +664,12 @@
   "crac.journal.coeur_repris": "%s a repris le cœur du clan (%s min pour le reposer)",
   "crac.journal.base_reservee": "Armoire détruite en raid : base réservée 24 h",
   "crac.journal.base_abandonnee": "%s a abandonné la base sans armoire",
-  "crac.journal.base_liberee": "Base restée 24 h sans armoire : libre pour tous"
+  "crac.journal.base_liberee": "Base restée 24 h sans armoire : libre pour tous",
+  "crac.base.armoires.aucune": "Aucune armoire posée.",
+  "crac.base.armoires.titre": "Armoires posées : %s (clic pour y aller)",
+  "crac.base.armoires.survol": "Clic : aller à cette armoire",
+  "crac.base.armoire.joueur": "Seul un joueur en jeu peut s'y téléporter.",
+  "crac.base.armoire.inconnue": "Aucune armoire pour le clan « %s » (/base armoires pour la liste).",
+  "crac.base.armoire.tp": "Téléporté à l'armoire du clan %s.",
+  "crac.placable.sous_plancher": "Pas de place sous le plancher du dessus : il faut un mur plein (pas un demi-mur) sous le plancher du haut."
 }

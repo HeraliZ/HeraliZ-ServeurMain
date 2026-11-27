@@ -57,7 +57,9 @@ public final class ClaimBlockHandler {
         Component deny = claim(level, player, pos);
         if (deny != null) {
             event.setCanceled(true);
-            player.displayClientMessage(deny, true);
+            // 27/11 (retour du propriétaire : « aucun message ») : dans le chat ; la ligne au-dessus de la barre d'objets
+            // est cachée par la barre d'objets DayZ
+            player.displayClientMessage(deny, false);
             PlacementSync.revert(player, level, pos);
         }
     }

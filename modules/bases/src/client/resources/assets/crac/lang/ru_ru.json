@@ -75,7 +75,7 @@
   "crac.claim.not_yours": "Этот приват не принадлежит твоей группе.",
   "crac.claim.coffre_droit": "Твой клан не дал тебе право «Открывать сундуки».",
   "crac.claim.on_floor": "Блок привата ставится на фундамент или пол твоей постройки.",
-  "crac.claim.one_per_group": "У твоей группы уже есть приват. Сначала сломай его.",
+  "crac.claim.one_per_group": "У твоего клана уже есть шкаф: только один на клан.",
   "crac.claim.only_inside": "Строить можно только в своём привате.",
   "crac.claim.only_placables": "Здесь можно ставить только «размещаемые» блоки.",
   "crac.claim.owner_only": "Ставить приват может только лидер группы.",
@@ -664,5 +664,12 @@
   "crac.journal.coeur_repris": "%s забрал ядро клана (%s мин, чтобы поставить снова)",
   "crac.journal.base_reservee": "Шкаф уничтожен в рейде: база закреплена на 24 ч",
   "crac.journal.base_abandonnee": "%s бросил базу без шкафа",
-  "crac.journal.base_liberee": "База 24 ч без шкафа: свободна для всех"
+  "crac.journal.base_liberee": "База 24 ч без шкафа: свободна для всех",
+  "crac.base.armoires.aucune": "Ни одного шкафа не установлено.",
+  "crac.base.armoires.titre": "Установленные шкафы: %s (нажми, чтобы перейти)",
+  "crac.base.armoires.survol": "Нажми: перейти к этому шкафу",
+  "crac.base.armoire.joueur": "Телепортироваться может только игрок в игре.",
+  "crac.base.armoire.inconnue": "Нет шкафа у клана «%s» (/base armoires — список).",
+  "crac.base.armoire.tp": "Телепорт к шкафу клана %s.",
+  "crac.placable.sous_plancher": "Нет места под верхним полом: под верхним полом нужна полная стена (не полустена)."
 }
