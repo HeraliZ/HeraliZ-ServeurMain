@@ -13,6 +13,7 @@ public final class PartieClient implements Partie {
         ClientVehicules.init(busMod);
         IndicateurDegats.init();
         SortieAccroupi.init();
+        BarreVieVehicules.init();   // 27/11 : petite barre de vie au-dessus des véhicules abîmés
         // 27/11 : écran du coffre des véhicules (menu heraliz_vehicules:coffre)
         busMod.addListener((net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() ->
                 net.minecraft.client.gui.screens.MenuScreens.register(fr.heraliz.vehicules.menu.MenusVehicules.COFFRE.get(),
