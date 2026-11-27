@@ -156,6 +156,13 @@ public class StructureBlock extends BaseEntityBlock {
         if (fr.heraliz.crac.block.Adosse.vise(level, pos, player, shapeAt(level, pos)) != null) {
             return false;
         }
+        // 27/11 (retour du propriétaire : « j'ai cassé un mur, ça a fait un trou dans le mur d'à côté ») : le jeu du joueur
+        // ne vide jamais lui-même une case de construction (casse instantanée prédite en créatif) ; il perdait les autres
+        // pièces de la case (paquet des occupants ignoré pendant la prédiction) : trou visible et traversable chez lui.
+        // Le serveur seul retire la pièce visée (BuildEventHandler) et renvoie la case
+        if (level.isClientSide()) {
+            return false;
+        }
         return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
     }
 

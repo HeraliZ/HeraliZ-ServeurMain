@@ -75,6 +75,23 @@ public class BuildEventHandler {
                     StructureService.remove(sl, piece, StructureService.Cause.ADMIN);
                 }
                 event.setCanceled(true);
+                // 27/11 : au tick suivant (après l'accusé de la prédiction du joueur), la case et ses voisines renvoyées
+                // telles quelles, pièces restantes comprises (sinon un trou peut rester chez lui)
+                if (player instanceof ServerPlayer sp) {
+                    BlockPos centre = pos.immutable();
+                    sl.getServer().tell(new net.minecraft.server.TickTask(sl.getServer().getTickCount() + 1, () -> {
+                        for (BlockPos q : BlockPos.betweenClosed(centre.offset(-1, -1, -1), centre.offset(1, 1, 1))) {
+                            sp.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(sl, q));
+                            BlockEntity be2 = sl.getBlockEntity(q);
+                            if (be2 != null) {
+                                Packet<ClientGamePacketListener> pkt2 = be2.getUpdatePacket();
+                                if (pkt2 != null) {
+                                    sp.connection.send(pkt2);
+                                }
+                            }
+                        }
+                    }));
+                }
             }
         } else if (isBuildBlock) {
             event.setCanceled(true);
