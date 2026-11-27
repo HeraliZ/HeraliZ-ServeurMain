@@ -49,7 +49,8 @@ public final class ModeleDescendu extends BakedModelWrapper<BakedModel> {
         for (Block b : new Block[]{ModBlocks.METAL_CRATE.get(), ModBlocks.MALLE_CHANTIER.get(), ModBlocks.CASIER_METALLIQUE.get(),
             ModBlocks.CAISSE_ARMES.get(), ModBlocks.COFFRE_FORT.get()}) {
             for (BlockState s : b.getStateDefinition().getPossibleStates()) {
-                if (!Adosse.bas(s)) continue;
+                // dans la case d'un mur : ModeleDansMur fait le décalage et la descente ensemble (27/11)
+                if (!Adosse.bas(s) || s.hasProperty(Adosse.DANS_MUR) && s.getValue(Adosse.DANS_MUR) != Adosse.AUCUN) continue;
                 BlockState haut = s.setValue(Adosse.BAS, false);
                 ModelResourceLocation ici = BlockModelShaper.stateToModelLocation(s);
                 BakedModel m = modeles.get(BlockModelShaper.stateToModelLocation(haut));

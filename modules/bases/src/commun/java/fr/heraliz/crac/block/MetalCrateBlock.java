@@ -48,11 +48,13 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
     /** Posée dans la case d'un mur, contre lui ({@link Adosse#DANS_MUR}, 31/10) : [sens][côté du mur]. */
     private static final VoxelShape[][] DANS_LE_MUR = Adosse.formesDansMur(
         f -> f != Direction.EAST && f != Direction.WEST ? SHAPE_NS : SHAPE_EW, BOITE);
+    /** Les mêmes, descendues sur un plancher à mi-bloc (27/11). */
+    private static final VoxelShape[][] DANS_LE_MUR_BAS = Adosse.descendre(DANS_LE_MUR);
 
     private static VoxelShape shapeFor(BlockState state) {
         int mur = state.getValue(Adosse.DANS_MUR);
         if (mur != Adosse.AUCUN) {
-            return DANS_LE_MUR[state.getValue(FACING).get2DDataValue()][mur];
+            return (state.getValue(Adosse.BAS) ? DANS_LE_MUR_BAS : DANS_LE_MUR)[state.getValue(FACING).get2DDataValue()][mur];
         }
         return (state.getValue(Adosse.BAS) ? DESCENDUES : DECALEES)[state.getValue(FACING).get2DDataValue()][state.getValue(Adosse.ADOSSE)];
     }
@@ -88,7 +90,8 @@ public class MetalCrateBlock extends Block implements EntityBlock, Adosse.Adossa
         // dans la case d'un mur, contre lui (31/10) : décidé et vérifié par ObjetAdossable (Adosse.dansMur), sans poussée
         Integer mur = Adosse.dansMurPose();
         if (mur != null) {
-            return this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false).setValue(Adosse.DANS_MUR, mur);
+            return this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false).setValue(Adosse.DANS_MUR, mur)
+                .setValue(Adosse.BAS, Adosse.doitDescendre(ctx.getLevel(), ctx.getClickedPos()));
         }
         // face vers le joueur (OrientationObjet) ; descendue sur un plancher à mi-bloc (Adosse.BAS)
         BlockState s = this.defaultBlockState().setValue(FACING, OrientationObjet.face(ctx)).setValue(OPEN, false)

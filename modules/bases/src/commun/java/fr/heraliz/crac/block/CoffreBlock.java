@@ -73,7 +73,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
     /** Formes poussées contre le mur : [case annexe ou non][descendu ou non][sens][décalage]. */
     private final VoxelShape[][][][] formes;
     /** Formes dans la case d'un mur ({@link Adosse#DANS_MUR}) : [case annexe ou non][sens][côté du mur]. */
-    private final VoxelShape[][][] formesDansMur;
+    private final VoxelShape[][][][] formesDansMur;
 
     public CoffreBlock(String nom, boolean large, int colonnes, int lignes, SoundEvent sonOuvre, SoundEvent sonFerme,
                        float hauteurSon, Properties props) {
@@ -90,8 +90,10 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         VoxelShape[][] principale = Adosse.formesDecalees(f -> tournee(this.mesures.formePrincipale(), f), boite);
         VoxelShape[][] annexe = Adosse.formesDecalees(f -> tournee(this.mesures.formeAnnexe(), f), boite);
         this.formes = new VoxelShape[][][][]{{principale, Adosse.descendre(principale)}, {annexe, Adosse.descendre(annexe)}};
-        this.formesDansMur = new VoxelShape[][][]{Adosse.formesDansMur(f -> tournee(this.mesures.formePrincipale(), f), boite),
-            Adosse.formesDansMur(f -> tournee(this.mesures.formeAnnexe(), f), boite)};
+        // [case][descendu (27/11, plancher à mi-bloc)][sens][côté du mur]
+        VoxelShape[][] murP = Adosse.formesDansMur(f -> tournee(this.mesures.formePrincipale(), f), boite);
+        VoxelShape[][] murA = Adosse.formesDansMur(f -> tournee(this.mesures.formeAnnexe(), f), boite);
+        this.formesDansMur = new VoxelShape[][][][]{{murP, Adosse.descendre(murP)}, {murA, Adosse.descendre(murA)}};
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false)
             .setValue(ANNEXE, false).setValue(Adosse.ADOSSE, Adosse.AUCUN).setValue(Adosse.BAS, false)
             .setValue(Adosse.DANS_MUR, Adosse.AUCUN));
@@ -206,7 +208,9 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
         // mur juste avant la pose (avant, pour le fantôme et le choix de l'état, elles sont encore des cases du mur)
         Integer mur = Adosse.dansMurPose();
         if (mur != null) {
-            return this.defaultBlockState().setValue(FACING, f).setValue(Adosse.DANS_MUR, mur);
+            // 27/11 : descendu sur un plancher à mi-bloc, comme hors du mur (Adosse.dansMur l'a vérifié)
+            return this.defaultBlockState().setValue(FACING, f).setValue(Adosse.DANS_MUR, mur)
+                .setValue(Adosse.BAS, Adosse.doitDescendre(ctx.getLevel(), ctx.getClickedPos()));
         }
         BlockPos pos = ctx.getClickedPos();
         BlockPos autre = this.annexeDe(pos, f);
@@ -243,6 +247,10 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
             return -1;
         }
         BlockPos autre = this.annexeDe(principal, s.getValue(FACING));
+        // 27/11 : un coffre de 2 de large à cheval sur deux hauteurs (une case descendue, l'autre non) est refusé
+        if (this.large && Adosse.doitDescendre(level, principal) != Adosse.doitDescendre(level, autre)) {
+            return -1;
+        }
         if (level.getBlockState(autre).getBlock() instanceof StructureBlock) {
             return Adosse.dansMur(level, autre, s.setValue(ANNEXE, true), this.large) == w ? w : -1;
         }
@@ -350,7 +358,7 @@ public class CoffreBlock extends Block implements EntityBlock, Adosse.Adossable 
     public VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) {
         int mur = Adosse.dansMur(s);
         if (mur != Adosse.AUCUN) {
-            return this.formesDansMur[s.getValue(ANNEXE) ? 1 : 0][s.getValue(FACING).get2DDataValue()][mur];
+            return this.formesDansMur[s.getValue(ANNEXE) ? 1 : 0][s.getValue(Adosse.BAS) ? 1 : 0][s.getValue(FACING).get2DDataValue()][mur];
         }
         return this.formes[s.getValue(ANNEXE) ? 1 : 0][s.getValue(Adosse.BAS) ? 1 : 0][s.getValue(FACING).get2DDataValue()][s.getValue(Adosse.ADOSSE)];
     }

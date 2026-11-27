@@ -40,13 +40,14 @@ public final class ModeleDansMur extends BakedModelWrapper<BakedModel> {
     private static final Direction[] DIRS = Direction.values();
     private static final Object SANS_COUCHE = new Object();
     private final BlockState original;
-    private final float dx, dz;
+    private final float dx, dy, dz;
     private final Map<Object, List<BakedQuad>> quads = new ConcurrentHashMap<>();
 
-    private ModeleDansMur(BakedModel modele, BlockState original, double dx, double dz) {
+    private ModeleDansMur(BakedModel modele, BlockState original, double dx, double dy, double dz) {
         super(modele);
         this.original = original;
         this.dx = (float) (dx / 16.0);
+        this.dy = (float) (dy / 16.0);
         this.dz = (float) (dz / 16.0);
     }
 
@@ -64,14 +65,17 @@ public final class ModeleDansMur extends BakedModelWrapper<BakedModel> {
     private static void remplacer(Map<ResourceLocation, BakedModel> modeles, Block b, Adosse.Adossable a) {
         for (BlockState s : b.getStateDefinition().getPossibleStates()) {
             int mur = s.getValue(Adosse.DANS_MUR);
-            // jamais descendue ni poussée vers une case voisine en même temps (Adosse.dansMur) : ces états ne servent pas
-            if (mur == Adosse.AUCUN || Adosse.bas(s) || s.getValue(Adosse.ADOSSE) != Adosse.AUCUN) continue;
-            BlockState sansMur = s.setValue(Adosse.DANS_MUR, Adosse.AUCUN);
+            // jamais poussée vers une case voisine en même temps (Adosse.dansMur) : ces états ne servent pas. 27/11 : aussi
+            // descendue d'un demi-bloc sur un plancher à mi-bloc (Adosse.BAS dans la case du mur) ; le modèle de départ est
+            // celui de l'état ni décalé ni descendu (jamais remplacé, ni ici ni par ModeleDescendu, qui laisse les états
+            // DANS_MUR à cette classe) : le résultat ne dépend pas de l'ordre des deux classes
+            if (mur == Adosse.AUCUN || s.getValue(Adosse.ADOSSE) != Adosse.AUCUN) continue;
+            BlockState sansMur = s.setValue(Adosse.DANS_MUR, Adosse.AUCUN).setValue(Adosse.BAS, false);
             BakedModel m = modeles.get(BlockModelShaper.stateToModelLocation(sansMur));
             if (m == null) continue;
             double[] d = Adosse.decalageDansMur(Adosse.tourner(a.boiteNord(), s.getValue(ClaimBlock.FACING)), mur);
             ModelResourceLocation ici = BlockModelShaper.stateToModelLocation(s);
-            modeles.put(ici, new ModeleDansMur(m, sansMur, d[0], d[1]));
+            modeles.put(ici, new ModeleDansMur(m, sansMur, d[0], Adosse.bas(s) ? -Adosse.DEMI : 0.0, d[1]));
         }
     }
 
@@ -92,6 +96,7 @@ public final class ModeleDansMur extends BakedModelWrapper<BakedModel> {
                 int pas = v.length / 4;
                 for (int k = 0; k < 4; k++) {
                     v[k * pas] = Float.floatToRawIntBits(Float.intBitsToFloat(v[k * pas]) + this.dx);
+                    v[k * pas + 1] = Float.floatToRawIntBits(Float.intBitsToFloat(v[k * pas + 1]) + this.dy);
                     v[k * pas + 2] = Float.floatToRawIntBits(Float.intBitsToFloat(v[k * pas + 2]) + this.dz);
                 }
                 out.add(new BakedQuad(v, q.getTintIndex(), q.getDirection(), q.getSprite(), q.isShade(), q.hasAmbientOcclusion()));

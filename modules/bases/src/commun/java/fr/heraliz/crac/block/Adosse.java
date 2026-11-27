@@ -551,7 +551,11 @@ public final class Adosse {
             return -1;
         }
         List<fr.heraliz.crac.build.world.Occupant> occ = be.occupants();
-        if (occ.isEmpty() || surSol && (doitDescendre(level, cell) || !StructureBlock.holdsBlockOnTop(level, cell.below()))) {
+        // 27/11 (retour du propriétaire : « sur un sol posé sur un demi-mur je ne peux mettre que 2 coffres, espacés de 1 ;
+        // les sols doivent agir comme les fondations ») : sur un plancher à mi-bloc, l'objet se pose aussi dans la case
+        // du mur, descendu d'un demi-bloc (BAS), comme il le fait hors du mur
+        boolean descendu = surSol && doitDescendre(level, cell);
+        if (occ.isEmpty() || surSol && !descendu && !StructureBlock.holdsBlockOnTop(level, cell.below())) {
             return -1;
         }
         double cx = cell.getX() * 16.0, cz = cell.getZ() * 16.0;
@@ -594,10 +598,22 @@ public final class Adosse {
         if (x0 < -1.0E-6 || z0 < -1.0E-6 || x1 > 16.0 + 1.0E-6 || z1 > 16.0 + 1.0E-6) {
             return -1;
         }
-        AABB boite = new AABB(cell.getX() + x0 / 16.0, cell.getY(), cell.getZ() + z0 / 16.0, cell.getX() + x1 / 16.0,
-            cell.getY() + a.hauteur(etat) / 16.0, cell.getZ() + z1 / 16.0).deflate(1.0E-4);
+        double bas = descendu ? DEMI / 16.0 : 0.0;
+        AABB boite = new AABB(cell.getX() + x0 / 16.0, cell.getY() - bas, cell.getZ() + z0 / 16.0, cell.getX() + x1 / 16.0,
+            cell.getY() - bas + a.hauteur(etat) / 16.0, cell.getZ() + z1 / 16.0).deflate(1.0E-4);
         for (Voisin o : voisins(level, cell, 2)) {
             if (o.boite().intersects(boite)) {
+                return -1;
+            }
+        }
+        if (descendu) {
+            // sa moitié basse entre dans la case de construction dessous : rien des pièces (mur, demi-mur) ne doit y être
+            BlockPos c = cell.below();
+            if (!(level.getBlockEntity(c) instanceof fr.heraliz.crac.build.world.StructureBlockEntity dessous)) {
+                return -1;
+            }
+            VoxelShape pieces = dessous.shape();
+            if (!pieces.isEmpty() && Shapes.joinIsNotEmpty(pieces.move(c.getX(), c.getY(), c.getZ()), Shapes.create(boite), BooleanOp.AND)) {
                 return -1;
             }
         }
