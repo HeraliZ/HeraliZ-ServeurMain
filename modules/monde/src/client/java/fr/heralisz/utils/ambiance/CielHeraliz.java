@@ -81,6 +81,13 @@ public final class CielHeraliz extends DimensionSpecialEffects.OverworldEffects 
             g = Mth.lerp(sombre, g, g * 0.6f);
             bl = Mth.lerp(sombre, bl, bl * 0.6f);
         }
+        // 27/11 : lueur minimale dans les bases (LueurBases, choix du propriétaire « on ne voit rien dans les bases »)
+        float lueur = LueurBases.niveau;
+        if (lueur > 0f) {
+            r = Math.max(r, lueur);
+            g = Math.max(g, lueur);
+            bl = Math.max(bl, lueur * 1.05f);
+        }
         colors.set(r, g, bl);
     }
 }
