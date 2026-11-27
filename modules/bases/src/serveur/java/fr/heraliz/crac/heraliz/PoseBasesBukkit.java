@@ -47,7 +47,9 @@ public final class PoseBasesBukkit {
     private static MinecraftServer serveur;
     private static Method getPlayer, getUniqueId, getAction, getHand, useItemInHand, setUseItemInHand, setUseInteractedBlock,
             useInteractedBlock, getClickedBlock;
-    private static Method getBlockPlaced, getX, getY, getZ, setCancelled, setBuild, isCancelled;
+    private static Method getBlockPlaced, getX, getY, getZ, setCancelled, setBuild, isCancelled, getHandPose;
+    /** Poses refusées par une région et laissées refusées, notées au journal (les premières seulement). */
+    private static int restees;
     private static Object resultatDefaut, resultatRefus, resultatPermis;
 
     private PoseBasesBukkit() {
@@ -99,6 +101,7 @@ public final class PoseBasesBukkit {
             setCancelled = pose.getMethod("setCancelled", boolean.class);
             setBuild = pose.getMethod("setBuild", boolean.class);
             isCancelled = pose.getMethod("isCancelled");
+            getHandPose = pose.getMethod("getHand");
             getX = bloc.getMethod("getX");
             getY = bloc.getMethod("getY");
             getZ = bloc.getMethod("getZ");
@@ -170,7 +173,13 @@ public final class PoseBasesBukkit {
         }
     }
 
-    /** HIGHEST : pose d'un objet de base refusée par une région : levée, CRac la juge ensuite (événements de Forge). */
+    /**
+     * HIGHEST : pose d'un objet de base refusée par une région : levée, CRac la juge ensuite (événements de Forge).
+     * 27/11 (3e essai, journal du 27/11 : « clic » levé 10 fois, « pose » jamais) : pendant cet événement, Mohist (comme
+     * CraftBukkit) n'a pas encore écrit le bloc dans le monde (états capturés, écrits seulement si l'événement passe) : le
+     * bloc lu à cet endroit était de l'air, la pose restait refusée. Le bloc posé se lit maintenant sur l'objet tenu dans
+     * la main de l'événement (le bloc du monde reste lu en premier, si un jour il y est déjà).
+     */
     private static void pose(Object ev) {
         try {
             if (!Boolean.TRUE.equals(isCancelled.invoke(ev))) return;
@@ -179,10 +188,20 @@ public final class PoseBasesBukkit {
             Object b = getBlockPlaced.invoke(ev);
             BlockPos pos = new BlockPos((int) getX.invoke(b), (int) getY.invoke(b), (int) getZ.invoke(b));
             ServerLevel sl = sp.serverLevel();
-            if (objetDeBase(sl, sl.getBlockState(pos).getBlock())) {
+            Block pose = sl.getBlockState(pos).getBlock();
+            if (!objetDeBase(sl, pose)) {
+                InteractionHand main = getHandPose.invoke(ev) instanceof Enum<?> h && "OFF_HAND".equals(h.name())
+                        ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+                if (sp.getItemInHand(main).getItem() instanceof BlockItem bi) pose = bi.getBlock();
+            }
+            if (objetDeBase(sl, pose)) {
                 setCancelled.invoke(ev, false);
                 setBuild.invoke(ev, true);
-                noter("pose", sl.getBlockState(pos).getBlock());
+                noter("pose", pose);
+            } else if (restees < 10) {
+                restees++;
+                Crac.LOGGER.info("[CRac] objets de base : pose refusée par une région, laissée refusée ({} par {})",
+                        net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(pose), sp.getGameProfile().getName());
             }
         } catch (Throwable ex) {
             Crac.LOGGER.debug("[CRac] objets de base : pose Bukkit illisible ({})", ex.toString());
